@@ -392,7 +392,7 @@ int  CombatController::initialNumberOfCreatures(const class Creature *creature) 
 
     /* if in an unusual combat situation, generally we stick to normal encounter sizes,
        (such as encounters from sleeping in an inn, etc.) */
-    if (camping || inn || map->isWorldMap() || (c->location->context & CTX_DUNGEON)) {
+    if (camping || inn || map->isWorldMap() || (c->location->prev && c->location->prev->context & CTX_DUNGEON)) {
         ncreatures = xu4_random(8) + 1;
         
         if (ncreatures == 1) {
