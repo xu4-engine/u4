@@ -7,8 +7,6 @@
 
 #include "rle.h"
 
-#define RLE_RUNSTART 02
-
 /**
  * Decompress an RLE encoded file.
  */
