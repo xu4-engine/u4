@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
 #include "camp.h"
 #include "u4.h"
@@ -68,6 +69,7 @@ void campEnd() {
         c->parent->aura = c->aura;
         c->parent->auraDuration = c->auraDuration;
         c->parent->horseSpeed = c->horseSpeed;
+        c->parent->lastCommandTime = time(NULL);
         c = c->parent;
         c->col = 0;
         free(t);
