@@ -79,7 +79,7 @@
         <city name="Yew" tlk_fname="yew.tlk" companion="32" foodvendor="27" healer="26"/>
     </map>
     <map id="9" type="town" fname="minoc.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Minoc" tlk_fname="minoc.tlk" companion="32" weaponsvendor="30" healer="31"/>
+        <city name="Minoc" tlk_fname="minoc.tlk" companion="32" weaponsvendor="30" innkeeper="31"/>
     </map>
     <map id="10" type="town" fname="trinsic.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
         <city name="Trinsic" tlk_fname="trinsic.tlk" companion="32" weaponsvendor="29" armorvendor="28" tavernkeeper="31" innkeeper="30"/>
