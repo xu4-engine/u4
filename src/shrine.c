@@ -172,7 +172,7 @@ int shrineEjectOnKey(int key, void *data) {
 void shrineEject() {
     if (c->parent != NULL) {
         Context *t = c;
-        annotationClear();
+        annotationClear(c->map->id);
         mapClearObjects(c->map);
         c->parent->saveGame->x = c->saveGame->dngx;
         c->parent->saveGame->y = c->saveGame->dngy;
