@@ -283,11 +283,11 @@ bool Music::toggle() {
     eventHandler->getTimer()->remove(&Music::callback);
 
     on = !on;
+    settings.musicVol = on;
+
     if (!on)
         fadeOut(1000);
-    else fadeIn(1000, true);
-    
-    settings.musicVol = on;
+    else fadeIn(1000, true);   
 
     eventHandler->getTimer()->add(&Music::callback, settings.gameCyclesPerSecond);
     
