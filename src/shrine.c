@@ -25,6 +25,7 @@ int shrineHandleCycles(char choice);
 void shrineMeditationCycle();
 void shrineTimer(void *data);
 int shrineHandleMantra(const char *message);
+int shrineVision(int key, void *data);
 int shrineEjectOnKey(int key, void *data);
 void shrineEject();
 
@@ -33,11 +34,22 @@ void shrineEject();
 const Shrine *shrine;
 char virtueBuffer[20];
 int cycles, completedCycles;
+int elevated;
 char mantraBuffer[20];
 int reps;
+char **shrineAdvice = NULL;
 
 void shrineEnter(const Shrine *s) {
     ReadBufferActionInfo *info;
+    U4FILE *avatar;
+
+    if (!shrineAdvice) {
+        avatar = u4fopen("avatar.exe");
+        if (!avatar)
+            return;
+        shrineAdvice = u4read_stringtable(avatar, 93682, 24);
+        u4fclose(avatar);
+    }
 
     shrine = s;
     screenMessage("You enter the ancient shrine and sit before the altar...\nUpon which virtue dost thou meditate?\n");
@@ -118,10 +130,10 @@ void shrineTimer(void *data) {
         info->screenY = TEXT_AREA_Y + c->line;
         eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
         screenRedrawScreen();
-    } 
+    }
     else {
         screenDisableCursor();
-        screenMessage(".");        
+        screenMessage(".");
         screenRedrawScreen();
     }
 }
@@ -145,24 +157,30 @@ int shrineHandleMantra(const char *message) {
         completedCycles++;
         playerAdjustKarma(c->saveGame, KA_MEDITATION);
 
-        if (completedCycles == 3 &&
-            playerAttemptElevation(c->saveGame, shrine->virtue)) {
-            screenMessage("Thou hast achieved partial Avatarhood in the Virtue of %s\n\n"
-                          "Thou art granted a vision!\n", 
+        elevated = completedCycles == 3 && playerAttemptElevation(c->saveGame, shrine->virtue);
+        if (elevated)
+            screenMessage("\nThou hast achieved partial Avatarhood in the Virtue of %s\n\n",
                           getVirtueName(shrine->virtue));
-
-            gameSetViewMode(VIEW_RUNE);
-            screenDrawBackgroundInMapArea(BKGD_SHRINE_HON + shrine->virtue);
-
-        } else {
+        else
             screenMessage("\nThy thoughts are pure.  "
                           "Thou art granted a vision!\n");
-            /* FIXME: print advice string */
-        }
-
-        eventHandlerPushKeyHandler(&shrineEjectOnKey);
+        eventHandlerPushKeyHandler(&shrineVision);
     }
 
+    return 1;
+}
+
+int shrineVision(int key, void *data) {
+    if (elevated) {
+        screenMessage("Thou art granted a vision!\n");
+        gameSetViewMode(VIEW_RUNE);
+        screenDrawBackgroundInMapArea(BKGD_SHRINE_HON + shrine->virtue);
+    }
+    else {
+        screenMessage(shrineAdvice[shrine->virtue * 3 + completedCycles - 1]);
+    }
+    eventHandlerPopKeyHandler();
+    eventHandlerPushKeyHandler(&shrineEjectOnKey);
     return 1;
 }
 
