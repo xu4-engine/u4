@@ -316,7 +316,7 @@ int u4fgetc(U4FILE *f) {
 
     switch(f->type) {
     case STDIO_FILE:
-        retval = fgetc(f->file);
+        retval = (unsigned char) fgetc(f->file);
         break;
     case ZIP_FILE:
         if (unzReadCurrentFile(f->zfile, &c, 1) > 0)
