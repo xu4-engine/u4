@@ -311,6 +311,11 @@ int introKeyHandler(int key, void *data) {
         case 'v':
             settings->vol = !settings->vol;
             break;
+        case 'b':
+            settings->battleSpeed++;
+            if (settings->battleSpeed > MAX_BATTLE_SPEED)
+                settings->battleSpeed = 1;
+            break;
         case 'c':
             mode = INTRO_MENU;
             break;
@@ -497,12 +502,13 @@ void introUpdateScreen() {
     case INTRO_CONFIG:
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(2, 14, "Settings (take effect on restart):");
-        screenTextAt(11, 15, "Scale       x%d", settings->scale);
-        screenTextAt(11, 16, "Mode        %s", settings->fullscreen ? "Fullscreen" : "Window");
-        screenTextAt(11, 17, "Filter      %s", settingsFilterToString(settings->filter));
-        screenTextAt(11, 18, "Volume      %s", settings->vol ? "On" : "Off");
-        screenTextAt(11, 19, "Use These Settings");
-        screenTextAt(11, 20, "Cancel");
+        screenTextAt(11, 15, "Scale        x%d", settings->scale);
+        screenTextAt(11, 16, "Mode         %s", settings->fullscreen ? "Fullscreen" : "Window");
+        screenTextAt(11, 17, "Filter       %s", settingsFilterToString(settings->filter));
+        screenTextAt(11, 18, "Volume       %s", settings->vol ? "On" : "Off");
+        screenTextAt(11, 19, "Battle Speed %d", settings->battleSpeed);
+        screenTextAt(11, 20, "Use These Settings");
+        screenTextAt(11, 21, "Cancel");
         introDrawBeasties();
         break;
 
