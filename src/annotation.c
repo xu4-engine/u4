@@ -54,12 +54,12 @@ void annotationCycle(void) {
 }
 
 void annotationClear(void) {
-    Annotation *annotation = c->map->annotation, **prev;
+    Annotation *annotation = c->map->annotation, *tmp;
     
-    prev = &(c->map->annotation);
     while (annotation) {
-        *prev = annotation->next;
+        tmp = annotation->next;
         free(annotation);
-        annotation = *prev;
+        annotation = tmp;
     }
+    c->map->annotation = NULL;
 }
