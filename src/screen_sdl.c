@@ -459,9 +459,20 @@ int screenLoadBackground(BackgroundType bkgd) {
     if (!info)
         errorFatal("no information on image %d in graphics.xml", bkgd);
 
+    /*
+     * If the u4 VGA upgrade is installed (i.e. setup has been run and
+     * the u4dos files have been renamed), we need to use VGA names
+     * for EGA and vice versa, but *only* when the upgrade file has a
+     * .old extention.  The charset and tiles have a .vga extention
+     * and are not renamed in the upgrade installation process
+     */
     filename = info->filename;
-    if ((!u4upgradeExists || strcmp(settings->videoType, "EGA") == 0) && u4upgradeInstalled)
-        filename = screenGetImageInfoFromSet(bkgd, "VGA")->filename;
+    if (u4upgradeInstalled && strstr(screenGetImageInfoFromSet(bkgd, "VGA")->filename, ".old") != NULL) {
+        if (strcmp(settings->videoType, "EGA") == 0)
+            filename = screenGetImageInfoFromSet(bkgd, "VGA")->filename;
+        else
+            filename = screenGetImageInfoFromSet(bkgd, "EGA")->filename;
+    }
 
     if (!filename)
         return 0;
