@@ -141,7 +141,7 @@ void gameInit() {
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));    
     c->annotation = NULL;    
-    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, &gameFinishTurn, &moveAvatar, NULL);
+    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, &gameFinishTurn, &moveAvatar, &mapTileAt, NULL);
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.playerInquiryBuffer[0] = '\0';
@@ -302,6 +302,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     LocationContext context;
     FinishTurnCallback finishTurn = &gameFinishTurn;
     MoveCallback move = &moveAvatar;
+    TileAt tileAt = &mapTileAt;
 
     if (portal) {
         x = portal->startx;
@@ -324,6 +325,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         viewMode = VIEW_DUNGEON;
         c->saveGame->orientation = DIR_EAST;
         move = &moveAvatarInDungeon;
+        tileAt = &mapDungeonTileAt;
         break;
     case MAPTYPE_COMBAT:
         context = CTX_COMBAT;
@@ -341,7 +343,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         break;
     }
     
-    ct->location = locationNew(x, y, z, map, viewMode, context, finishTurn, move, ct->location);    
+    ct->location = locationNew(x, y, z, map, viewMode, context, finishTurn, move, tileAt, ct->location);    
 
     if ((map->type == MAPTYPE_TOWN ||
          map->type == MAPTYPE_VILLAGE ||
@@ -408,11 +410,8 @@ void gameFinishTurn() {
         /* Monsters cannot spawn, move or attack while the avatar is on the balloon */
         if (!c->saveGame->balloonstate) {
 
-            /* FIXME: there needs to be a better way of getting tiles */
             /* apply effects from tile avatar is standing on */
-            if (c->location->context == CTX_DUNGEON)
-                playerApplyEffect(c->saveGame, tileGetEffect(mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
-            else playerApplyEffect(c->saveGame, tileGetEffect(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
+            playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
 
             /* Move monsters and see if something is attacking the avatar */
             attacker = mapMoveObjects(c->location->map, c->location->x, c->location->y, c->location->z);        
@@ -721,7 +720,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 screenMessage("Land Balloon\n");
                 if (c->saveGame->balloonstate == 0)
                     screenMessage("Already Landed!\n");
-                else if (tileCanLandBalloon(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z))) {
+                else if (tileCanLandBalloon((*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z))) {
                     c->saveGame->balloonstate = 0;
                     c->opacity = 1;
                 }
@@ -771,7 +770,7 @@ int gameBaseKeyHandler(int key, void *data) {
             if ((obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) != NULL)
                 tile = obj->tile;
             else
-                tile = mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
+                tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z);
     
             if (tileIsChest(tile))
             {
@@ -1657,7 +1656,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     }
 
     /* attack successful */
-    ground = mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
+    ground = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z);
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
@@ -1874,7 +1873,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
             return 1;
         }
         
-        annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE));
+        annotationSetVisual(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE));
         gameUpdateScreen();
 
         /* Based on attack speed setting in setting struct, make a delay for
@@ -1892,45 +1891,33 @@ int fireAtCoord(int x, int y, int distance, void *data) {
 
 int gameGetChest(int player) {
     Object *obj;
-    unsigned char tile;
-    int basex, basey, x, y, z;
-    extern CombatInfo combatInfo;
-
-    /* FIXME: move to function */
-    if (c->location->context & CTX_COMBAT) {
-        basex = x = combatInfo.party[FOCUS].obj->x;
-        basey = y = combatInfo.party[FOCUS].obj->y;
-        z = combatInfo.party[FOCUS].obj->z;
-    }
-    else {
-        basex = x = c->location->x;
-        basey = y = c->location->y;
-        z = c->location->z;
-    }
+    unsigned char tile, newTile;
+    int x, y, z;
     
-    if ((player >= 0) && playerIsDisabled(c->saveGame, player)) {
-        screenMessage("Disabled!\n");
-        (*c->location->finishTurn)();
-        return 0;
-    }
+    locationGetCurrentPosition(c->location, &x, &y, &z);    
+
+    /* FIXME: figure out the tile that will replace the treasure chest */
+    //newTile = (*c->location->tileAt)(c->location->map, x, y, z);
+    newTile = BRICKFLOOR_TILE;    
 
     if ((obj = mapObjectAt(c->location->map, x, y, z)) != NULL)
         tile = obj->tile;
     else
-        tile = mapTileAt(c->location->map, x, y, z);
+        tile = (*c->location->tileAt)(c->location->map, x, y, z);
     
     if (tileIsChest(tile)) {
         if (obj)
             mapRemoveObject(c->location->map, obj);
         else
-            annotationAdd(x, y, z, c->location->map->id, BRICKFLOOR_TILE); 
+            annotationAdd(x, y, z, c->location->map->id, newTile);
         
+        /* see if the chest is trapped and handle it */
         getChestTrapHandler(player);
         screenMessage("The Chest Holds: %d Gold\n", playerGetChest(c->saveGame));
 
         statsUpdate();
         
-        if (obj == NULL)
+        if ((c->location->context & CTX_NON_COMBAT) && (obj == NULL))
             playerAdjustKarma(c->saveGame, KA_STOLE_CHEST);
     }    
     else
@@ -2006,7 +1993,7 @@ int jimmyAtCoord(int x, int y, int distance, void *data) {
         return 0;
     }
 
-    if (!tileIsLockedDoor(mapTileAt(c->location->map, x, y, c->location->z)))
+    if (!tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z)))
         return 0;
         
     if (c->saveGame->keys) {
@@ -2246,11 +2233,11 @@ int openAtCoord(int x, int y, int distance, void *data) {
         return 0;
     }
 
-    if (!tileIsDoor(mapTileAt(c->location->map, x, y, c->location->z)) &&
-        !tileIsLockedDoor(mapTileAt(c->location->map, x, y, c->location->z)))
+    if (!tileIsDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z)) &&
+        !tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z)))
         return 0;
 
-    if (tileIsLockedDoor(mapTileAt(c->location->map, x, y, c->location->z))) {
+    if (tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z))) {
         screenMessage("Can't!\n");
         (*c->location->finishTurn)();
         return 1;
@@ -2664,10 +2651,10 @@ int moveAvatar(Direction dir, int userEvent) {
         if (!DIR_IN_MASK(dir, movementMask)) {
 
             if (settings->shortcutCommands) {
-                if (tileIsDoor(mapTileAt(c->location->map, newx, newy, c->location->z))) {
+                if (tileIsDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z))) {
                     openAtCoord(newx, newy, 1, NULL);
                     return result;
-                } else if (tileIsLockedDoor(mapTileAt(c->location->map, newx, newy, c->location->z))) {
+                } else if (tileIsLockedDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z))) {
                     jimmyAtCoord(newx, newy, 1, NULL);
                     return result;
                 } /*else if (mapPersonAt(c->location->map, newx, newy, c->location->z) != NULL) {
@@ -2683,7 +2670,7 @@ int moveAvatar(Direction dir, int userEvent) {
         /* Are we slowed by terrain or by wind direction? */
         switch(slowedType) {
         case SLOWED_BY_TILE:
-            slowed = slowedByTile(mapTileAt(c->location->map, newx, newy, c->location->z));
+            slowed = slowedByTile((*c->location->tileAt)(c->location->map, newx, newy, c->location->z));
             break;
         case SLOWED_BY_WIND:
             slowed = slowedByWind(dir);
@@ -2971,7 +2958,7 @@ void gameCheckBridgeTrolls() {
     Object *obj;
 
     if (!mapIsWorldMap(c->location->map) ||
-        mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z) != BRIDGE_TILE ||
+        (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z) != BRIDGE_TILE ||
         (rand() % 8) != 0)
         return;
 
@@ -3153,7 +3140,7 @@ void gameMonsterAttack(Object *obj) {
     
     screenMessage("\nAttacked by %s\n", monsterForTile(obj->tile)->name);
 
-    ground = mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
+    ground = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z);
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
@@ -3225,7 +3212,7 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
         }
         
         /* Show the attack annotation */
-        annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, tile));
+        annotationSetVisual(annotationAdd(x, y, c->location->z, c->location->map->id, tile));
         gameUpdateScreen();
 
         /* Based on attack speed setting in setting struct, make a delay for
@@ -3276,7 +3263,7 @@ int gameDirectionalAction(CoordActionInfo *info) {
                 if (MAP_IS_OOB(c->location->map, t_x, t_y))
                     break;
 
-                tile = mapGroundTileAt(c->location->map, t_x, t_y, c->location->z);
+                tile = (*c->location->tileAt)(c->location->map, t_x, t_y, c->location->z);
 
                 /* should we see if the action is blocked before trying it? */       
                 if (info->blockBefore && info->blockedPredicate &&
@@ -3487,7 +3474,7 @@ void gameSpawnMonster(const Monster *m) {
     if (m)
         monster = m;
     else
-        monster = monsterRandomForTile(mapTileAt(c->location->map, x, y, c->location->z));
+        monster = monsterRandomForTile((*c->location->tileAt)(c->location->map, x, y, c->location->z));
 
     if (monster) mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);    
 }
@@ -3497,7 +3484,6 @@ void gameSpawnMonster(const Monster *m) {
  */
 void gameDestroyAllMonsters(void) {
     int i;
-    extern CombatInfo combatInfo;
     
     (*spellEffectCallback)('t', -1, 0); /* same effect as tremor */
     

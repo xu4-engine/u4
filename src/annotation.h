@@ -19,13 +19,11 @@ typedef struct _Annotation {
     unsigned char mapid;
     int time_to_live;
     unsigned char tile;
-    int visual;
-    int permanent;
+    int visual;    
     struct _Annotation *next;
 } Annotation;
 
 Annotation *annotationAdd(int x, int y, int z, unsigned char mapid, unsigned char tile);
-Annotation *annotationAddTemporary(int x, int y, int z, unsigned char mapid, unsigned char tile);
 Annotation *annotationSetVisual(Annotation *a);
 Annotation *annotationSetTurnDuration(Annotation *a, int ttl);
 Annotation *annotationSetTimeDuration(Annotation *a, int interval);

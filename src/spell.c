@@ -298,7 +298,6 @@ unsigned char spellMagicAttackTile;
 int spellMagicAttackDamage;
 
 void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxDamage) {
-    extern CombatInfo combatInfo;        
     CoordActionInfo *info;
 
     spellMagicAttackDamage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
@@ -327,8 +326,6 @@ void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxD
 
 int spellMagicAttackAtCoord(int x, int y, int distance, void *data) {
     int monster;
-//    int i;
-    extern CombatInfo combatInfo;
     CoordActionInfo* info = (CoordActionInfo*)data;
     int oldx = info->prev_x,
         oldy = info->prev_y;
@@ -347,7 +344,7 @@ int spellMagicAttackAtCoord(int x, int y, int distance, void *data) {
         monster = combatMonsterAt(x, y, c->location->z);        
 
         if (monster == -1) {
-            annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, spellMagicAttackTile));
+            annotationSetVisual(annotationAdd(x, y, c->location->z, c->location->map->id, spellMagicAttackTile));
             gameUpdateScreen();
         
             /* Based on attack speed setting in setting struct, make a delay for
@@ -370,7 +367,6 @@ int spellMagicAttackAtCoord(int x, int y, int distance, void *data) {
 }
 
 static int spellAwaken(int player) {
-    extern CombatInfo combatInfo;
     ASSERT(player < 8, "player out of range: %d", player);
 
     if (player < c->saveGame->members && 
@@ -421,10 +417,10 @@ static int spellBlink(int dir) {
     
     i = distance;   
     /* begin walking backward until you find a valid spot */
-    while ((i-- > 0) && !tileIsWalkable(mapGroundTileAt(c->location->map, x, y, c->location->z)))
+    while ((i-- > 0) && !tileIsWalkable((*c->location->tileAt)(c->location->map, x, y, c->location->z)))
         mapDirMove(c->location->map, reverseDir, &x, &y);
     
-    if (tileIsWalkable(mapGroundTileAt(c->location->map, x, y, c->location->z))) {
+    if (tileIsWalkable((*c->location->tileAt)(c->location->map, x, y, c->location->z))) {
         /* we didn't move! */
         if (c->location->x == x && c->location->y == y)
             failed = 1;
@@ -443,24 +439,19 @@ static int spellCure(int player) {
 }
 
 static int spellDispel(int dir) {
-    int basex, basey, basez, x, y, z;
-    unsigned char tile;
-    unsigned char newGroundTile;
+    int x, y, z;
+    unsigned char tile, newTile;    
     const Annotation *a;
-    extern CombatInfo combatInfo;
-    
-    /* FIXME: this should be moved to its own function in location.c */
-    /* get the current location, based on context */
-    if (c->location->context & CTX_COMBAT) {
-        basex = x = combatInfo.party[FOCUS].obj->x;
-        basey = y = combatInfo.party[FOCUS].obj->y;
-        basez = z = combatInfo.party[FOCUS].obj->z;
-    }
-    else {
-        basex = x = c->location->x;
-        basey = y = c->location->y;
-        basez = z = c->location->z;
-    }
+
+    /* 
+     * get the location of the avatar (or current party member, if in battle)
+     */
+    locationGetCurrentPosition(c->location, &x, &y, &z);    
+
+    /*
+     * get the ground tile underneath the avatar/player
+     */
+    newTile = (*c->location->tileAt)(c->location->map, x, y, z);
 
     mapDirMove(c->location->map, (Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->location->map, x, y))
@@ -479,28 +470,17 @@ static int spellDispel(int dir) {
      * if the map tile itself is a field, overlay it with the tile
      * that the avatar/player is standing on
      */
-    tile = (c->location->context == CTX_DUNGEON) ?        
-        mapDungeonTileAt(c->location->map, x, y, z) :
-        mapTileAt(c->location->map, x, y, z);
-    
+    tile = (*c->location->tileAt)(c->location->map, x, y, z);    
     if (!tileCanDispel(tile))
-        return 0;
+        return 0;   
     
-    /*
-     * get the ground tile underneath the avatar/player
-     */
-    newGroundTile = (c->location->context == CTX_DUNGEON) ?
-        mapDungeonTileAt(c->location->map, basex, basey, basez) :
-        mapGroundTileAt(c->location->map, basex, basey, basez);
-    
-    annotationAdd(x, y, z, c->location->map->id, newGroundTile);
+    annotationAdd(x, y, z, c->location->map->id, newTile);
 
     return 1;
 }
 
 static int spellEField(int dir) {
     int x, y, z;
-    extern CombatInfo combatInfo;
 
     z = c->location->z;
 
@@ -598,7 +578,6 @@ static int spellQuick(int unused) {
 }
 
 static int spellSleep(int unused) {
-    extern CombatInfo combatInfo;
     int i;
 
     /* try to put each monster to sleep */
@@ -616,7 +595,6 @@ static int spellSleep(int unused) {
 }
 
 static int spellTremor(int unused) {
-    extern CombatInfo combatInfo;
     int i, x, y;        
 
     for (i = 0; i < AREA_MONSTERS; i++) {
@@ -625,7 +603,7 @@ static int spellTremor(int unused) {
 
             x = combatInfo.monsters[i].obj->x;
             y = combatInfo.monsters[i].obj->y;
-            annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, HITFLASH_TILE));
+            annotationSetVisual(annotationAdd(x, y, c->location->z, c->location->map->id, HITFLASH_TILE));
             
             eventHandlerSleep(50);
             gameUpdateScreen();
@@ -642,7 +620,6 @@ static int spellTremor(int unused) {
 
 static int spellUndead(int unused) {    
     int i;
-    extern CombatInfo combatInfo;
     
     for (i = 0; i < AREA_MONSTERS; i++) {
         /* Deal enough damage to undead to make them flee */
@@ -673,7 +650,7 @@ static int spellXit(int unused) {
 }
 
 static int spellYup(int unused) {
-    unsigned char tile = mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z - 1);
+    unsigned char tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z - 1);
 
     if (c->location->z > 0) {
         if (tileIsDungeonWalkable(tile))
@@ -689,7 +666,7 @@ static int spellYup(int unused) {
 }
 
 static int spellZdown(int unused) {
-    unsigned char tile = mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z + 1);
+    unsigned char tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z + 1);
 
     if (c->location->z < 7) {
         if (tileIsDungeonWalkable(tile))

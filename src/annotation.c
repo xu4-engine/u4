@@ -23,8 +23,7 @@ Annotation *annotationAdd(int x, int y, int z, unsigned char mapid, unsigned cha
     a->mapid = mapid;
     a->time_to_live = -1;
     a->tile = tile;
-    a->visual = 0;
-    a->permanent = 1;
+    a->visual = 0;    
     a->next = c->annotation;
     
     c->annotation = a;
@@ -36,12 +35,6 @@ Annotation *annotationAdd(int x, int y, int z, unsigned char mapid, unsigned cha
  * Functions the same as annotationAdd() but marks the annotation as temporary
  */
 
-Annotation *annotationAddTemporary(int x, int y, int z, unsigned char mapid, unsigned char tile) {
-    Annotation *a = annotationAdd(x, y, z, mapid, tile);
-    a->permanent = 0;
-    return a;
-}
-
 Annotation *annotationSetVisual(Annotation *a) {
     a->visual = 1;
     return a;
@@ -52,8 +45,7 @@ Annotation *annotationSetTurnDuration(Annotation *a, int ttl) {
     return a;
 }
 
-Annotation *annotationSetTimeDuration(Annotation *a, int interval) {
-    a->permanent = 0;
+Annotation *annotationSetTimeDuration(Annotation *a, int interval) {    
     eventHandlerAddTimerCallbackData(&annotationTimer, (void *) a, interval * eventTimerGranularity);
     return a;
 }

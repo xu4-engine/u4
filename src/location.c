@@ -8,6 +8,7 @@
 
 #include "annotation.h"
 #include "context.h"
+#include "combat.h"
 #include "game.h"
 #include "monster.h"
 #include "object.h"
@@ -20,8 +21,9 @@ Location *locationPop(Location **stack);
  * Add a new location to the stack, or 
  * start a new stack if 'prev' is NULL
  */
-
-Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, Location *prev) {
+Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx,
+                      FinishTurnCallback finishTurnCallback, MoveCallback moveCallback,
+                      TileAt tileAtCallback, Location *prev) {
     Location *newLoc = (Location *)malloc(sizeof(Location));
 
     newLoc->x = x;
@@ -32,6 +34,7 @@ Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationConte
     newLoc->context = ctx;
     newLoc->finishTurn = finishTurnCallback;
     newLoc->move = moveCallback;
+    newLoc->tileAt = tileAtCallback;
     
     return locationPush(prev, newLoc);    
 }
@@ -53,8 +56,8 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
         else return mapGetTileFromData(location->map, x, y, z);
     }
     
-    /* draw objects -- temporary annotations go first */
-    else if (a && a->visual && !a->permanent) {
+    /* draw objects -- visual-only annotations go first */
+    else if (a && a->visual) {
         *focus = 0;
         tile = a->tile;
     }        
@@ -65,7 +68,7 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
         tile = (unsigned char)c->saveGame->transport;
     }
     /* then permanent annotations */
-    else if (a && a->visual) {
+    else if (a) {
         *focus = 0;
         tile = a->tile;
     }
@@ -101,18 +104,43 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
 }
 
 /**
+ * Returns the current coordinates of the location given:
+ *     If in combat - returns the coordinates of party member with focus
+ *     If elsewhere - returns the coordinates of the avatar
+ */
+int locationGetCurrentPosition(Location *location, int *x, int *y, int *z) {
+    if (c->location->context & CTX_COMBAT) {
+        *x = combatInfo.party[FOCUS].obj->x;
+        *y = combatInfo.party[FOCUS].obj->y;
+        *z = combatInfo.party[FOCUS].obj->z;
+    }
+    else {
+        *x = location->x;
+        *y = location->y;
+        *z = location->z;
+    }
+
+    return 1;
+}
+
+/**
  * Pop a location from the stack and free the memory
  */
-
 void locationFree(Location **stack) {
     free(locationPop(stack));
 }
 
+/**
+ * Push a location onto the stack
+ */
 Location *locationPush(Location *stack, Location *loc) {
     loc->prev = stack;
     return loc;
 }
 
+/**
+ * Pop a location off the stack
+ */
 Location *locationPop(Location **stack) {
     Location *loc = *stack;    
     *stack = (*stack)->prev;

@@ -74,7 +74,7 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {
     case SLOWED_BY_TILE:
-        slowed = slowedByTile(mapTileAt(map, newx, newy, obj->z));
+        slowed = slowedByTile((*c->location->tileAt)(map, newx, newy, obj->z));
         break;
     case SLOWED_BY_WIND:
         slowed = slowedByWind(tileGetDirection(obj->tile));
@@ -116,7 +116,7 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
 int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
     unsigned int newx = obj->x,
                  newy = obj->y,
-                 valid_dirs = mapGetValidMoves(c->location->map, newx, newy, c->location->z, obj->tile),
+                 valid_dirs = mapGetValidMoves(map, newx, newy, c->location->z, obj->tile),
                  dir = DIR_NONE;
     CombatAction action = (CombatAction)act;
     SlowedType slowedType = SLOWED_BY_TILE;
@@ -135,11 +135,11 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
         // If they're not fleeing, make sure they don't flee on accident
         if (newx == 0)
             valid_dirs = DIR_REMOVE_FROM_MASK(DIR_WEST, valid_dirs);
-        else if (newx >= c->location->map->width - 1)
+        else if (newx >= map->width - 1)
             valid_dirs = DIR_REMOVE_FROM_MASK(DIR_EAST, valid_dirs);
         if (newy == 0)
             valid_dirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, valid_dirs);
-        else if (newy >= c->location->map->height - 1)
+        else if (newy >= map->height - 1)
             valid_dirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, valid_dirs);        
 
         dir = dirFindPathToTarget(newx, newy, targetx, targety, valid_dirs);
@@ -153,7 +153,7 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {
     case SLOWED_BY_TILE:
-        slowed = slowedByTile(mapTileAt(c->location->map, newx, newy, c->location->z));
+        slowed = slowedByTile((*c->location->tileAt)(map, newx, newy, c->location->z));
         break;
     case SLOWED_BY_WIND:
         slowed = slowedByWind(tileGetDirection(obj->tile));

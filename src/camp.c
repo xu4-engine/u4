@@ -57,8 +57,6 @@ void campTimer(void *data) {
 
     /* Is the party ambushed during their rest? */
     if (rand() % 8 == 0) {
-
-        extern CombatInfo combatInfo;
         const Monster *m;
 
         m = monsterGetAmbushingMonster();
@@ -81,7 +79,6 @@ void campTimer(void *data) {
 
 void campEnd(void) {
     int i, healed = 0;
-    extern CombatInfo combatInfo;
 
     eventHandlerPopKeyHandler();
     gameExitToParentMap(c);

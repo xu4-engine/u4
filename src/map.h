@@ -73,7 +73,6 @@ const struct _Portal *mapPortalAt(const Map *map, int x, int y, int z, int actio
 unsigned char mapGetTileFromData(const Map *map, int x, int y, int z);
 void mapSetTileData(const Map *map, int x, int y, int z, unsigned char tile);
 unsigned char mapTileAt(const Map *map, int x, int y, int z);
-unsigned char mapGroundTileAt(const Map *map, int x, int y, int z);
 unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z);
 int mapIsWorldMap(const Map *map);
 struct _Object *mapAddPersonObject(Map *map, const struct _Person *person);
@@ -91,6 +90,5 @@ int mapDistance(int x1, int y1, int x2, int y2);
 int mapMovementDistance(int x1, int y1, int x2, int y2);
 int mapDirMove(const Map *map, Direction dir, int *x, int *y);
 int mapWrapCoordinates(const Map *map, int *x, int *y);
-int mapIsObstructed(const Map *map, int x, int y, int z, Direction dir, int distance);
 
 #endif

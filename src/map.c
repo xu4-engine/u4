@@ -295,55 +295,34 @@ unsigned char mapGetTileFromData(const Map *map, int x, int y, int z) {
 }
 
 /**
- * Returns the real tile at the given point on a map.  Visual-only
- * annotations like moongates and attack icons are ignored.
+ * Returns the current ground tile at the given point on a map.  Visual-only
+ * annotations like moongates and attack icons are ignored.  Any walkable tiles
+ * are taken into account (treasure chests, ships, balloon, etc.)
  */
 unsigned char mapTileAt(const Map *map, int x, int y, int z) {
     unsigned char tile;
-    const Annotation *a;
+    const Annotation *a = annotationAt(x, y, z, map->id);
+    Object *obj = mapObjectAt(map, x, y, z);
  
     tile = mapGetTileFromData(map, x, y, z);
-    if ((a = annotationAt(x, y, z, map->id)) != NULL &&
-        !a->visual)
+    if ((a != NULL) && !a->visual)
         tile = a->tile;
+    else if (obj && tileIsWalkable(obj->tile))
+        tile = obj->tile;
     
     return tile;
 }
 
 /**
- * Returns the current ground tile at the given point on a map.  Monster
- * objects, moongates, attack icons are ignored.  Any walkable tiles
- * are taken into account (treasure chests, ships, balloon, etc.)
+ * Functions the same as mapTileAt, but for dungeons
  */
-unsigned char mapGroundTileAt(const Map *map, int x, int y, int z) {
-    unsigned char tile;
-    const Annotation *a;
-    Object *obj;
-
-    tile = mapGetTileFromData(map, x, y, z);
-    a = annotationAt(x, y, z, map->id);
-    obj = mapObjectAt(map, x, y, z);
-
-    if (a && a->permanent) 
-        tile = a->tile;
-    else if (obj && tileIsWalkable(obj->tile))
-        tile = obj->tile;
-
-    return tile;
-}
-
 unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z) {
     unsigned char tile = mapGetTileFromData(map, x, y, z);
     unsigned char real = mapTileAt(map, x, y, z);
 
+    /* get any annotation or walkable objects first */
     if (real != tile)
-        return real;
-    else {
-        Object *obj = mapObjectAt(map, x, y, z);
-
-        if (obj && obj->objType == OBJECT_MONSTER)    
-            return obj->tile;
-    }
+        return real;    
     
     switch (tile & 0xF0) {
     case 0x00:
@@ -599,7 +578,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         
         /* in dungeons, everything but walls are walkable */
         if (c->location->context == CTX_DUNGEON) {            
-            tile = mapDungeonTileAt(map, x, y, z);
+            tile = (*c->location->tileAt)(map, x, y, z);
             if (tileIsDungeonWalkable(tile)) {
                 retval = DIR_ADD_TO_MASK(d, retval);
                 continue;
@@ -624,9 +603,9 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         else if (obj)
             tile = obj->tile;
         else 
-            tile = mapGroundTileAt(map, x, y, z);
+            tile = (*c->location->tileAt)(map, x, y, z);
 
-        prev_tile = mapGroundTileAt(map, from_x, from_y, z);
+        prev_tile = (*c->location->tileAt)(map, from_x, from_y, z);
 
         /* get the monster object, if it exists (the one that's moving) */
         m = monsterForTile(transport);
@@ -769,25 +748,6 @@ int mapWrapCoordinates(const Map *map, int *x, int *y) {
         if (*y < 0) *y += map->height;
         if (*y >= (int)map->height) *y -= map->height;
         return 1;
-    }
-    return 0;
-}
-
-int mapIsObstructed(const Map *map, int x, int y, int z, Direction dir, int distance) {
-    int i;
-    int t_x = x,
-        t_y = y;
-    Object *obj;
-
-    for (i = 0; i < distance; i++) {
-        mapDirMove(map, dir, &t_x, &t_y);
-        obj = mapObjectAt(map, t_x, t_y, z);
-
-        if (obj)
-            return 1;
-        /* FIXME: function declaration will need to change for type of movement
-           (walking, swimming, sailing, flying, etc).  Then, we can test here
-           whether or not the path is obstructed */
     }
     return 0;
 }

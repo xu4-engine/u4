@@ -433,7 +433,7 @@ unsigned char combatMapForTile(unsigned char groundTile, unsigned char transport
 
     /* We can fight monsters and townsfolk */       
     if (obj->objType != OBJECT_UNKNOWN) {
-        unsigned char tileUnderneath = mapTileAt(c->location->map, obj->x, obj->y, obj->z);
+        unsigned char tileUnderneath = (*c->location->tileAt)(c->location->map, obj->x, obj->y, obj->z);
 
         if (toShip)
             return MAP_SHORSHIP_CON;
@@ -469,7 +469,7 @@ void combatFinishTurn() {
     /* make sure the player with the focus is still in battle (hasn't fled or died) */
     if (party[FOCUS].obj) {
         /* apply effects from tile player is standing on */
-        playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->location->map, party[FOCUS].obj->x, party[FOCUS].obj->y, c->location->z)), FOCUS);
+        playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, party[FOCUS].obj->x, party[FOCUS].obj->y, c->location->z)), FOCUS);
     }
 
     /* check to see if the player gets to go again (and is still alive) */
@@ -809,7 +809,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
         
             /* If the weapon is shown as it travels, show it now */
             if (weaponShowTravel(weapon)) {
-                annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, misstile));
+                annotationSetVisual(annotationAdd(x, y, c->location->z, c->location->map->id, misstile));
                 gameUpdateScreen();
         
                 /* Based on attack speed setting in setting struct, make a delay for
@@ -854,7 +854,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
         combatReturnWeaponToOwner(x, y, distance, data);
 
     /* If the weapon leaves a tile behind, do it here! (flaming oil, etc) */
-    groundTile = mapGroundTileAt(c->location->map, x, y, c->location->z);
+    groundTile = (*c->location->tileAt)(c->location->map, x, y, c->location->z);
     if (!wrongRange && (weaponLeavesTile(weapon) && tileIsWalkable(groundTile)))
         annotationAdd(x, y, c->location->z, c->location->map->id, weaponLeavesTile(weapon));    
     
@@ -893,7 +893,7 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
         /* If we haven't hit a player, stop now */
         if (player == -1) {
         
-            annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, misstile));
+            annotationSetVisual(annotationAdd(x, y, c->location->z, c->location->map->id, misstile));
             gameUpdateScreen();
     
             /* Based on attack speed setting in setting struct, make a delay for
@@ -979,7 +979,7 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
         m = mapObjectAt(c->location->map, info->origin_x, info->origin_y, c->location->z)->monster;
 
         /* If the monster leaves a tile behind, do it here! (lava lizard, etc) */
-        groundTile = mapGroundTileAt(c->location->map, oldx, oldy, c->location->z);
+        groundTile = (*c->location->tileAt)(c->location->map, oldx, oldy, c->location->z);
         if (monsterLeavesTile(m) && tileIsWalkable(groundTile))
             annotationAdd(oldx, oldy, c->location->z, c->location->map->id, hittile);
     }
@@ -1006,7 +1006,7 @@ int combatReturnWeaponToOwner(int x, int y, int distance, void *data) {
     for (i = distance; i > 1; i--) {
         dirMove(dir, &new_x, &new_y);
         
-        annotationSetVisual(annotationAddTemporary(new_x, new_y, c->location->z, c->location->map->id, misstile));
+        annotationSetVisual(annotationAdd(new_x, new_y, c->location->z, c->location->map->id, misstile));
         gameUpdateScreen();
 
         /* Based on attack speed setting in setting struct, make a delay for
@@ -1096,7 +1096,7 @@ void combatEnd(int adjustKarma) {
                 x = combatInfo.monsterObj->x;
                 y = combatInfo.monsterObj->y;
                 z = combatInfo.monsterObj->z;
-                ground = mapGroundTileAt(c->location->map, x, y, z);
+                ground = (*c->location->tileAt)(c->location->map, x, y, z);
 
                 /* add a chest, if the monster leaves one */
                 if (monsterLeavesChest(combatInfo.monster) && 
@@ -1250,17 +1250,8 @@ void combatMoveMonsters() {
             
             /* Apply the sleep spell to everyone still in combat */
             for (i = 0; i < 8; i++) {
-                if (party[i].obj != NULL) {
-                    /* save the original status for the party member, we'll need it later! */
-                    if (c->saveGame->players[i].status != STAT_SLEEPING)
-                        party[i].status = c->saveGame->players[i].status;
-
-                    /* FIXME: Add combatPutPlayerToSleep() to playerApplySleepSpell() */
-                    playerApplySleepSpell(&c->saveGame->players[i]);                
-                    /* display a sleeping person if they were put to sleep */
-                    if (c->saveGame->players[i].status == STAT_SLEEPING)
-                        party[i].obj->tile = CORPSE_TILE;                
-                }
+                if ((party[i].obj != NULL) && (rand()%2 == 0))
+                    combatPutPlayerToSleep(i);                
             }
 
             statsUpdate();
@@ -1277,7 +1268,7 @@ void combatMoveMonsters() {
                     newx = rand() % c->location->map->width,
                     newy = rand() % c->location->map->height;
                     
-                    tile = mapTileAt(c->location->map, newx, newy, c->location->z);
+                    tile = (*c->location->tileAt)(c->location->map, newx, newy, c->location->z);
                     obj = mapObjectAt(c->location->map, newx, newy, c->location->z);
                     if (obj)
                         tile = obj->tile;
@@ -1526,7 +1517,7 @@ void attackFlash(int x, int y, unsigned char tile, int timeFactor) {
     int i;
     int divisor = settings->battleSpeed;
     
-    annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, tile));
+    annotationSetVisual(annotationAdd(x, y, c->location->z, c->location->map->id, tile));
     for (i = 0; i < timeFactor; i++) {        
         /* do screen animations while we're pausing */
         if (i % divisor == 1)
@@ -1594,7 +1585,7 @@ void combatApplyMonsterTileEffects(void) {
     for (i = 0; i < AREA_MONSTERS; i++) {
         if (combatInfo.monsters[i].obj) {
             TileEffect effect;
-            effect = tileGetEffect(mapTileAt(c->location->map, combatInfo.monsters[i].obj->x, combatInfo.monsters[i].obj->y, c->location->z));
+            effect = tileGetEffect((*c->location->tileAt)(c->location->map, combatInfo.monsters[i].obj->x, combatInfo.monsters[i].obj->y, c->location->z));
 
             if (effect != EFFECT_NONE) {
 
