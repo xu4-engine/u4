@@ -234,7 +234,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->handleAtCoord = &openAtCoord;
         info->range = 1;
         info->blockedPredicate = NULL;
-        info->failedMessage = "Open what?";
+        info->failedMessage = "Not Here!";
         eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, info);
         screenMessage("Open\nDir: ");
         break;
@@ -418,8 +418,7 @@ int gameGetDirectionKeyHandler(int key, void *data) {
     }
 
     screenMessage("%s\n", info->failedMessage);
-    c->statsItem = STATS_PARTY_OVERVIEW;
-    statsUpdate();
+    gameFinishTurn();
 
  success:
     free(info);
@@ -549,6 +548,7 @@ int attackAtCoord(int x, int y) {
         return 0;
 
     screenMessage("attack at %d, %d\n(not implemented)\n", x, y);
+    gameFinishTurn();
 
     return 1;
 }
@@ -610,8 +610,9 @@ int jimmyAtCoord(int x, int y) {
         return 0;
 
 
-    screenMessage("door at %d, %d unlocked!\n", x, y);
     annotationAdd(x, y, -1, 0x3b);
+    screenMessage("\nUnlocked!\n");
+    gameFinishTurn();
 
     return 1;
 }
@@ -719,12 +720,19 @@ int newOrderForPlayer2(int player2) {
  * temporary annotation of a floor tile for 4 turns.
  */
 int openAtCoord(int x, int y) {
-    if ((x == -1 && y == -1) ||
-        !tileIsDoor(mapTileAt(c->map, x, y)))
+    if (x == -1 && y == -1)
+        return 0;
+    if (tileIsLockedDoor(mapTileAt(c->map, x, y))) {
+        screenMessage("Can't!\n");
+        gameFinishTurn();
+        return 1;
+    }
+    if (!tileIsDoor(mapTileAt(c->map, x, y)))
         return 0;
 
-    screenMessage("door at %d, %d, opened!\n", x, y);
     annotationAdd(x, y, 4, 0x3e);
+    screenMessage("\nOpened!\n");
+    gameFinishTurn();
 
     return 1;
 }
