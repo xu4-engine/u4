@@ -188,6 +188,7 @@ int keyHandlerReadBuffer(int key, void *data) {
 
     if ((key >= 'a' && key <= 'z') || 
         (key >= 'A' && key <= 'Z') ||
+        (key >= '0' && key <= '9') ||
         key == ' ') {
         int len;
 
