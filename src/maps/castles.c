@@ -88,9 +88,9 @@ Map lcb_2_map;
 extern Map hythloth_map;
 
 const Portal lcb_1_portals[] = {
-    { 3, 3, 0, &lcb_2_map, 3, 3, 1,  ACTION_KLIMB },
-    { 27, 3, 0, &lcb_2_map, 27, 3, 1, ACTION_KLIMB },
-    { 7, 2, 0, &hythloth_map, 0, 0, 0, ACTION_DESCEND }
+    { 3, 3, 0, &lcb_2_map, 3, 3, 1,  ACTION_KLIMB, NULL },
+    { 27, 3, 0, &lcb_2_map, 27, 3, 1, ACTION_KLIMB, NULL },
+    { 7, 2, 0, &hythloth_map, 0, 0, 0, ACTION_DESCEND, NULL }
 };
 
 City lcb_1_city;
@@ -119,8 +119,8 @@ City lcb_1_city  = {
 };
 
 const Portal lcb_2_portals[] = {
-    { 3, 3, 1, &lcb_1_map,  3, 3, 0,  ACTION_DESCEND },
-    { 27, 3, 1, &lcb_1_map, 27, 3, 0, ACTION_DESCEND }
+    { 3, 3, 1, &lcb_1_map,  3, 3, 0,  ACTION_DESCEND, NULL },
+    { 27, 3, 1, &lcb_1_map, 27, 3, 0, ACTION_DESCEND, NULL }
 };
 
 City lcb_2_city;
