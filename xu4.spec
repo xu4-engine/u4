@@ -1,6 +1,6 @@
 Summary: xu4 - Ultima IV Recreated
 Name: xu4
-Version: 0.07
+Version: 0.08
 Release: 1
 URL: http://xu4.sourceforge.net/
 Source0: http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
@@ -22,7 +22,7 @@ it -- yet.  New features that improve the gameplay and keep with the
 spirit of the original game will be added.
 
 %prep
-%setup -n u4
+%setup -n u4 -q
 
 %build
 cd src && make datadir=%{_datadir} libdir=%{_libdir}
@@ -53,6 +53,9 @@ rm -rf $RPM_BUILD_ROOT
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Mon Sep 25 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added quiet flag (-q) to %setup rule to reduce visual clutter
+
 * Mon Jun  4 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added dumpsavegame binary
 
