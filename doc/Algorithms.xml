@@ -24,7 +24,7 @@
         <algorithm desc="Ambushed by rats at inn?" prec="unknown">
             <line>random(4) == 0</line>
         </algorithm>
-        <algorithm desc="Visited by Isaac the Ghost?" prec="unknown">
+        <algorithm desc="Visited by Isaac the Ghost?" prec="exact">
             <line>(map == Skara Brae) and (random(4) == 0)</line>
         </algorithm>
     </section>
@@ -80,7 +80,7 @@
         <algorithm desc="Player hits creature" prec="exact">
             <line>(player.dex + 0x80) >= xu4_random(0x100)</line>
         </algorithm>
-        <algorithm desc="Player is disabled" prec="near">
+        <algorithm desc="Player is disabled" prec="exact">
             <line>(player.status == 'G') or (player.status == 'P')</line>
         </algorithm>
     </section>    
@@ -100,7 +100,7 @@
         <algorithm desc="Player slept on sleep field?" prec="exact">
             <line>random(2) == 0</line>
         </algorithm>
-        <algorithm desc="Ship repaired this turn?" prec="unknown">
+        <algorithm desc="Ship repaired this turn?" prec="exact">
             <line>(hull &lt; 50) and (random(4) == 0)</line>
         </algorithm>
         <algorithm desc="Amount of gold in chest" prec="exact">
