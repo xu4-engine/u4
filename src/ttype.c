@@ -9,14 +9,13 @@
 
 #define MASK_WALKABLE  0x0003
 #define MASK_EFFECT    0x000C
-#define MASK_FLYABLE   0x0010
 #define MASK_OPAQUE    0x0020
 #define MASK_SAILABLE  0x0040
 #define MASK_ANIMATED  0x0080
-#define MASK_UNFLYABLE 0x0200
-#define MASK_SHIP      0x0400
-#define MASK_HORSE     0x0800
-#define MASK_BALLOON   0x1000
+#define MASK_UNFLYABLE 0x0100
+#define MASK_SHIP      0x0200
+#define MASK_HORSE     0x0400
+#define MASK_BALLOON   0x0800
 
 #define WALKABLE       0x0000
 #define SLOW           0x0001
