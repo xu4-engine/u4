@@ -245,6 +245,12 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
         return 0;
     }
 
+    /* tried to cast the 'open' spell while not on a chest */
+    if (spell == ('o'-'a') && !tileIsChest(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z))) {
+        *error = CASTERR_WRONGCONTEXT;
+        return 0;
+    }
+
     c->saveGame->mixtures[spell]--;
     c->saveGame->players[character].mp -= spells[spell].mp;
 
@@ -296,7 +302,8 @@ void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxD
     info->firstValidDistance = 1;
     info->dir = MASK_DIR(dir);
 
-    gameDirectionalAction(info);    
+    gameDirectionalAction(info);
+    free(info);
 }
 
 int spellMagicAttackAtCoord(int x, int y, int distance, void *data) {
@@ -531,9 +538,8 @@ static int spellNegate(int unused) {
     return 1;
 }
 
-static int spellOpen(int unused) {
-    /* FIXME */
-    screenMessage("\nNot implemented yet!\n\n");
+static int spellOpen(int unused) {    
+    gameGetChest(-1);
     return 1;
 }
 

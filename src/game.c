@@ -58,7 +58,6 @@ int castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
 int castForPlayerGetPhase(int phase);
 int destroyAtCoord(int x, int y, int distance, void *data);
-int getChest(int player);
 int getChestTrapHandler(int player);
 int jimmyAtCoord(int x, int y, int distance, void *data);
 int mixReagentsForSpell(int spell, void *data);
@@ -685,7 +684,7 @@ int gameBaseKeyHandler(int key, void *data) {
         if (tileIsChest(tile))
         {
             screenMessage("Who opens? ");
-            gameGetPlayerForCommand(&getChest);
+            gameGetPlayerForCommand(&gameGetChest);
         }
         else
             screenMessage("Not here!\n");
@@ -1520,7 +1519,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
  * Get the chest at the current x,y of the current context for player 'player'
  */
 
-int getChest(int player) {
+int gameGetChest(int player) {
     Object *obj;
     unsigned char tile;    
 
@@ -1553,7 +1552,7 @@ int getChest(int player) {
 }
 
 /**
- * Called by getChest() to handle possible traps on chests
+ * Called by gameGetChest() to handle possible traps on chests
  **/
 
 int getChestTrapHandler(int player)
@@ -1561,6 +1560,9 @@ int getChestTrapHandler(int player)
     int trapType = 0;
     int dex = c->saveGame->players[player].dex;
     int randNum = rand()%100;
+
+    if (player < 0)
+        return 0;
 
     /** 
      * FIXME: formulas are guessed and
@@ -1593,10 +1595,11 @@ int getChestTrapHandler(int player)
             }            
         }
     
-        else screenMessage("Evaded!\n");        
+        else screenMessage("Evaded!\n");
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 /**
@@ -1605,6 +1608,8 @@ int getChestTrapHandler(int player)
  * tile.
  */
 int jimmyAtCoord(int x, int y, int distance, void *data) {
+    CoordActionInfo *info = (CoordActionInfo*)data;
+
     if (x == -1 && y == -1) {
         screenMessage("Jimmy what?\n");
         (*c->location->finishTurn)();
@@ -1613,7 +1618,7 @@ int jimmyAtCoord(int x, int y, int distance, void *data) {
 
     if (!tileIsLockedDoor(mapTileAt(c->location->map, x, y, c->location->z)))
         return 0;
-
+        
     if (c->saveGame->keys) {
         c->saveGame->keys--;
         annotationAdd(x, y, c->location->z, c->location->map->id, 0x3b);

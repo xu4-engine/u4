@@ -51,6 +51,7 @@ int gameGetDirectionKeyHandler(int key, void *data);
 int gameGetFieldTypeKeyHandler(int key, void *data);
 int gameGetPhaseKeyHandler(int key, void *data);
 int gameGetCoordinateKeyHandler(int key, void *data);
+int gameGetChest(int player);
 int gamePeerCity(int city, void *data);
 void gamePeerGem(void);
 int gameSpecialCmdKeyHandler(int key, void *data);
