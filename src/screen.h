@@ -67,7 +67,6 @@ void screenDrawImage(const string &name, int x = 0, int y = 0);
 void screenDrawImageInMapArea(const string &bkgd);
 
 void screenCycle(void);
-void screenFillRect(int x, int y, int w, int h, int r, int g, int b);
 void screenEraseMapArea(void);
 void screenEraseTextArea(int x, int y, int width, int height);
 void screenFindLineOfSight(void);
