@@ -237,7 +237,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     /* If we don't want to save the location, then just pop the current location,
        as there may still be ones in the stack we want to keep */
     if (!saveLocation)
-        free(locationPop(&ct->location));
+        locationFree(&ct->location);
     
     ct->location = locationNew(x, y, z, map, ct->location);
 
@@ -266,7 +266,7 @@ int gameExitToParentMap(struct _Context *ct)
     if (ct->location->prev != NULL) {
         annotationClear(c->location->map->id);
         mapClearObjects(c->location->map);
-        free(locationPop(&ct->location));
+        locationFree(&ct->location);        
         musicPlay();
         
         return 1;
@@ -1673,11 +1673,9 @@ int gamePeerCity(int city, void *data) {
 /**
  * Wait for space bar to return from gem mode and returns map to normal
  */
-int peerCityHandleChoice(char choice) {
-//    Context *oldc = c;    
-    
+int peerCityHandleChoice(char choice) {    
     eventHandlerPopKeyHandler();
-    free(locationPop(&c->location));
+    locationFree(&c->location);    
 
     viewMode = VIEW_NORMAL; 
     gameFinishTurn();

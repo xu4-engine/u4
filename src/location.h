@@ -1,3 +1,7 @@
+/*
+ * $Id$
+ */
+
 #ifndef LOCATION_H
 #define LOCATION_H
 
@@ -12,7 +16,6 @@ typedef struct _Location {
 } Location;
 
 Location *locationNew(int x, int y, int z, Map *map, Location *prev);
-Location *locationPush(Location *stack, Location *loc);
-Location *locationPop(Location **stack);
+void locationFree(Location **stack);
 
 #endif
