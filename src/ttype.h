@@ -97,6 +97,8 @@ typedef struct _TileRule {
 } TileRule;
 
 typedef struct _Tile {    
+    const char *name;
+    int index;
     unsigned char displayTile;
     unsigned char animated;
     unsigned char opaque;

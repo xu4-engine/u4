@@ -1,135 +1,128 @@
 <?xml version="1.0"?>
 <!DOCTYPE tiles SYSTEM "dtd/tiles.dtd">
 <!-- $Id$ -->
-<tiles>
-    <tile rule="water" animated="true"/> <!-- sea -->
-    <tile rule="water" animated="true"/> <!-- water -->
-    <tile rule="shallows" animated="true"/> <!-- shallows -->
-    <tile rule="swamp"/> <!-- swamp -->
-    <tile rule="grass"/> <!-- grass -->
-    <tile rule="brush"/> <!-- brush -->
-    <tile rule="brush" opaque="true"/> <!-- forest -->
-    <tile rule="hills"/> <!-- hills -->
-    <tile rule="mountains" opaque="true"/> <!-- mountains -->
-    <tile/> <!-- dungeon -->
-    <tile/> <!-- city -->
-    <tile/> <!-- castle -->
-    <tile/> <!-- town -->
-    <tile rule="lcb"/> <!-- lcb1 -->
-    <tile rule="lcb_entrance"/> <!-- lcb2 -->
-    <tile rule="lcb"/> <!-- lcb3 -->
-    <tile rule="ship"/> <!-- west ship -->
-    <tile rule="ship"/> <!-- north ship -->
-    <tile rule="ship"/> <!-- east ship -->
-    <tile rule="ship"/> <!-- south ship -->
-    <tile rule="horse"/> <!-- west horse -->
-    <tile rule="horse"/> <!-- east horse -->
-    <tile rule="floors"/> <!-- dungeon floor -->
-    <tile/> <!-- bridge -->
-    <tile rule="balloon"/> <!-- balloon -->
-    <tile/> <!-- nbridge -->
-    <tile/> <!-- sbridge -->
-    <tile/> <!-- uladder -->
-    <tile/> <!-- dladder -->
-    <tile/> <!-- ruins -->
-    <tile/> <!-- shrine -->
-    <tile rule="person"/> <!-- avatar -->
-    <tile rule="person"/> <!-- mage1 -->
-    <tile rule="person"/> <!-- mage2 -->
-    <tile rule="person"/> <!-- bard1 -->
-    <tile rule="person"/> <!-- bard2 -->
-    <tile rule="person"/> <!-- fighter1 -->
-    <tile rule="person"/> <!-- fighter2 -->
-    <tile rule="person"/> <!-- druid1 -->
-    <tile rule="person"/> <!-- druid2 -->
-    <tile rule="person"/> <!-- tinker1 -->
-    <tile rule="person"/> <!-- tinker2 -->
-    <tile rule="person"/> <!-- paladin1 -->
-    <tile rule="person"/> <!-- paladin2 -->
-    <tile rule="person"/> <!-- ranger1 -->
-    <tile rule="person"/> <!-- ranger2 -->
-    <tile rule="person"/> <!-- shepherd1 -->
-    <tile rule="person"/> <!-- shepherd2 -->
-    <tile rule="solid"/> <!-- column -->
-    <tile rule="solid_attackover"/> <!-- solid SW -->
-    <tile rule="solid_attackover"/> <!-- solid SE -->
-    <tile rule="solid_attackover"/> <!-- solid NW -->
-    <tile rule="solid_attackover"/> <!-- solid NE -->
-    <tile rule="solid"/> <!-- shipmast -->
-    <tile rule="solid"/> <!-- shipwheel -->
-    <tile rule="solid"/> <!-- rocks -->
-    <tile rule="solid"/> <!-- corpse -->
-    <tile rule="walls"/> <!-- stonewall -->
-    <tile rule="locked_door"/> <!-- ldoor -->
-    <tile rule="door"/> <!-- door -->
-    <tile rule="chest"/> <!-- chest -->
-    <tile rule="solid"/> <!-- ankh -->
-    <tile rule="floors"/> <!-- brickfloor -->
-    <tile rule="floors"/> <!-- woodfloor -->
-    <tile rule="solid"/> <!-- mgate0 -->
-    <tile rule="solid"/> <!-- mgate1 -->
-    <tile rule="solid"/> <!-- mgate2 -->
-    <tile/> <!-- mgate3 -->
-    <tile rule="poison_field" animated="true"/> <!-- poison field -->
-    <tile rule="energy_field" animated="true"/> <!-- energy field -->
-    <tile rule="fire_field" animated="true"/> <!-- fire field -->
-    <tile rule="sleep_field" animated="true"/> <!-- sleep field -->
-    <tile rule="solid_attackover"/> <!-- solid -->
-    <tile opaque="true"/> <!-- secret door -->
-    <tile/> <!-- altar -->
-    <tile rule="solid"/> <!-- roast -->
-    <tile rule="lava"/> <!-- lava -->
-    <tile/> <!-- miss flash -->
-    <tile/> <!-- magic flash -->
-    <tile/> <!-- hit flash -->
-    <tile rule="person"/> <!-- guard1 -->
-    <tile rule="person"/> <!-- guard2 -->
-    <tile rule="person"/> <!-- villager1 -->
-    <tile rule="person"/> <!-- villager2 -->
-    <tile rule="person"/> <!-- bard1 -->
-    <tile rule="person"/> <!-- bard2 -->
-    <tile rule="person"/> <!-- bard1 -->
-    <tile rule="person"/> <!-- bard2 -->
-    <tile rule="person"/> <!-- jester1 -->
-    <tile rule="person"/> <!-- jester2 -->
-    <tile rule="person"/> <!-- beggar1 -->
-    <tile rule="person"/> <!-- beggar2 -->
-    <tile rule="person"/> <!-- bull1 -->
-    <tile rule="person"/> <!-- bull2 -->
-    <tile rule="person"/> <!-- lordbritish1 -->
-    <tile rule="person"/> <!-- lordbritish2 -->
-    <tile rule="signs"/> <!-- A -->
-    <tile rule="signs"/> <!-- B -->
-    <tile rule="signs"/> <!-- C -->
-    <tile rule="signs"/> <!-- D -->
-    <tile rule="signs"/> <!-- E -->
-    <tile rule="signs"/> <!-- F -->
-    <tile rule="signs"/> <!-- G -->
-    <tile rule="signs"/> <!-- H -->
-    <tile rule="signs"/> <!-- I -->
-    <tile rule="signs"/> <!-- J -->
-    <tile rule="signs"/> <!-- K -->
-    <tile rule="signs"/> <!-- L -->
-    <tile rule="signs"/> <!-- M -->
-    <tile rule="signs"/> <!-- N -->
-    <tile rule="signs"/> <!-- O -->
-    <tile rule="signs"/> <!-- P -->
-    <tile rule="signs"/> <!-- Q -->
-    <tile rule="signs"/> <!-- R -->
-    <tile rule="signs"/> <!-- S -->
-    <tile rule="signs"/> <!-- T -->
-    <tile rule="signs"/> <!-- U -->
-    <tile rule="signs"/> <!-- V -->
-    <tile rule="signs"/> <!-- W -->
-    <tile rule="signs"/> <!-- X -->
-    <tile rule="signs"/> <!-- Y -->
-    <tile rule="signs"/> <!-- Z -->
-    <tile rule="signs"/> <!-- space -->
-    <tile rule="spacers"/> <!-- right -->
-    <tile rule="spacers"/> <!-- left -->
-    <tile rule="spacers"/> <!-- window -->
-    <tile rule="spacers"/> <!-- blank -->
-    <tile rule="walls" opaque="true"/> <!-- brickwall -->
+
+<tiles width="16"
+       height="16"
+       bpp="8"
+       indexed="true"
+       cga="shapes.cga"
+       ega="shapes.ega"
+       vga="shapes.vga"
+       compression="none">
+
+    <tile name="sea" rule="water" animated="true"/>
+    <tile name="water" rule="water" animated="true"/>
+    <tile name="shallows" rule="shallows" animated="true"/>
+    <tile name="swamp" rule="swamp"/>
+    <tile name="grass" rule="grass"/>
+    <tile name="brush" rule="brush"/>
+    <tile name="forest" rule="brush" opaque="true"/>
+    <tile name="hills" rule="hills"/>
+    <tile name="mountains" rule="mountains" opaque="true"/>
+    <tile name="dungeon"/>
+    <tile name="city"/>
+    <tile name="castle"/>
+    <tile name="town"/>
+    <tile name="lcb_west" rule="lcb"/>
+    <tile name="lcb_entrance" rule="lcb_entrance"/>
+    <tile name="lcb_east" rule="lcb"/>
+    <tile name="ship" rule="ship" frames="4" directions="nesw"/>
+    <tile name="horse" rule="horse" frames="2" directions="ew"/>
+    <tile name="dungeon_floor" rule="floors"/>
+    <tile name="bridge"/>
+    <tile name="balloon" rule="balloon"/>
+    <tile name="bridge_pieces" frames="2"/>
+    <tile name="up_ladder"/>
+    <tile name="down_ladder"/>
+    <tile name="ruins"/>
+    <tile name="shrine"/>
+    <tile name="avatar" rule="person"/>
+    <tile name="mage" rule="person" frames="2"/>
+    <tile name="bard" rule="person" frames="2"/>
+    <tile name="fighter" rule="person" frames="2"/>
+    <tile name="druid" rule="person" frames="2"/>
+    <tile name="tinker" rule="person" frames="2"/>
+    <tile name="paladin" rule="person" frames="2"/>
+    <tile name="ranger" rule="person" frames="2"/>
+    <tile name="shepherd" rule="person" frames="2"/>
+    <tile name="column" rule="solid"/>
+    <tile name="solids" rule="solid_attackover" frames="4"/>
+    <tile name="shipmast" rule="solid"/>
+    <tile name="shipwheel" rule="solid"/>
+    <tile name="rocks" rule="solid"/>
+    <tile name="corpse" rule="solid"/>
+    <tile name="stone_wall" rule="walls"/>
+    <tile name="locked_door" rule="locked_door"/>
+    <tile name="door" rule="door"/>
+    <tile name="chest" rule="chest"/>
+    <tile name="ankh" rule="solid"/>
+    <tile name="brick_floor" rule="floors"/>
+    <tile name="wood_floor" rule="floors"/>
+    <tile name="moongate_opening" rule="solid" frames="3"/>
+    <tile name="moongate_open"/>
+    <tile name="poison_field" rule="poison_field" animated="true"/>
+    <tile name="energy_field" rule="energy_field" animated="true"/>
+    <tile name="fire_field" rule="fire_field" animated="true"/>
+    <tile name="sleep_field" rule="sleep_field" animated="true"/>
+    <tile name="solid" rule="solid_attackover"/>
+    <tile name="secret_door" opaque="true"/>
+    <tile name="altar"/>
+    <tile name="campfire" rule="solid"/>
+    <tile name="lava" rule="lava"/>
+    <tile name="miss_flash"/>
+    <tile name="magic_flash"/>
+    <tile name="hit_flash"/>
+    <tile name="guard" rule="person" frames="2"/>
+    <tile name="villager" rule="person" frames="2"/>
+    <tile name="bard_singing" rule="person" frames="2"/>    
+    <tile name="jester" rule="person" frames="2"/>
+    <tile name="beggar" rule="person" frames="2"/>
+    <tile name="child" rule="person" frames="2"/>
+    <tile name="bull" rule="person" frames="2"/>
+    <tile name="lord_british" rule="person" frames="2"/>
+    <tile name="signs" rule="signs" frames="27"/> <!-- the alphabet -->    
+    <tile name="spacers" rule="spacers" frames="4"/> <!-- sign spacers -->
+    <tile name="brick_wall" rule="walls" opaque="true"/>
+
+    <!-- Water monsters -->
+    <tile name="pirate_ship" rule="monster" frames="4" directions="nesw"/>
+    <tile name="nixie" rule="monster" frames="2"/>
+    <tile name="giant_squid" rule="monster" frames="2"/>
+    <tile name="sea_serpent" rule="monster" frames="2"/>
+    <tile name="sea_horse" rule="monster" frames="2"/>
+    <tile name="whirlpool" frames="2"/>
+    <tile name="storm" frames="2"/>
+    
+    <!-- Land monsters -->
+    <tile name="rat" rule="monster" frames="4"/>
+    <tile name="bat" rule="monster" frames="4"/>
+    <tile name="spider" rule="monster" frames="4"/>
+    <tile name="ghost" rule="monster" frames="4"/>
+    <tile name="slime" rule="monster" frames="4"/>
+    <tile name="troll" rule="monster" frames="4"/>
+    <tile name="gremlin" rule="monster" frames="4"/>
+    <tile name="mimic" rule="monster" frames="4"/>
+    <tile name="reaper" rule="monster" frames="4"/>
+    <tile name="insect_swarm" rule="monster" frames="4"/>
+    <tile name="gazer" rule="monster" frames="4"/>
+    <tile name="phantom" rule="monster" frames="4"/>
+    <tile name="orc" rule="monster" frames="4"/>
+    <tile name="skeleton" rule="monster" frames="4"/>
+    <tile name="rogue" rule="monster" frames="4"/>
+    <tile name="python" rule="monster" frames="4"/>
+    <tile name="ettin" rule="monster" frames="4"/>
+    <tile name="headless" rule="monster" frames="4"/>
+    <tile name="cyclops" rule="monster" frames="4"/>
+    <tile name="wisp" rule="monster" frames="4"/>
+    <tile name="evil_mage" rule="monster" frames="4"/>
+    <tile name="liche" rule="monster" frames="4"/>
+    <tile name="lava_lizard" rule="monster" frames="4"/>
+    <tile name="zorn" rule="monster" frames="4"/>
+    <tile name="daemon" rule="monster" frames="4"/>
+    <tile name="hydra" rule="monster" frames="4"/>
+    <tile name="dragon" rule="monster" frames="4"/>
+    <tile name="balron" rule="monster" frames="4"/>
 
     <!-- Dungeon tiles: * == 0-F -->
     <dngTile displayTile="62" rule="floors"/> <!-- corridor (0x00) -->

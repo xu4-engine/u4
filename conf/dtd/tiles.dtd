@@ -1,13 +1,29 @@
 <!-- $Id$ -->
 
 <!ENTITY % bool '( true | false )'>
+<!ENTITY % comp '( none | rle | lzw )'>
+<!ENTITY % anim '( scroll | frames | rowswap | none )'>
 
 <!ELEMENT tiles ( tile* | dngTile* ) >
+<!ATTLIST tiles width              NMTOKEN  #REQUIRED
+                height             NMTOKEN  #REQUIRED
+                bpp                NMTOKEN  #REQUIRED
+                indexed            %bool;   #IMPLIED
+                vga                CDATA    #IMPLIED
+                ega                CDATA    #IMPLIED
+                cga                CDATA    #IMPLIED
+                compression        %comp;   #IMPLIED>
 
 <!ELEMENT tile EMPTY >
-<!ATTLIST tile rule               CDATA    #IMPLIED
-               animated           %bool;   #IMPLIED               
-               opaque             %bool;   #IMPLIED>
+<!ATTLIST tile  name               CDATA    #REQUIRED
+                rule               CDATA    #IMPLIED
+                frames             NMTOKEN  #IMPLIED
+                directions         CDATA    #IMPLIED
+                animated           %bool;   #IMPLIED
+                rowtoswap          NMTOKEN  #IMPLIED
+                opaque             %bool;   #IMPLIED>
+
+<!-- animation          %anim;   #IMPLIED -->
 
 <!ELEMENT dngTile ( dngTile+ ) >
 <!ATTLIST dngTile displayTile           NMTOKEN       #REQUIRED

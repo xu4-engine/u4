@@ -30,6 +30,7 @@
     <rule name="lava" effect="lava"/>
     <rule name="signs" cantwalkon="all" talkover="true"/>
     <rule name="spacers" cantwalkon="all"/>
+    <rule name="monster" cantwalkon="all"/>    
 
     <!-- Dungeon tile rules -->
     <rule name="dng_altar" monsterunwalkable="true"/>

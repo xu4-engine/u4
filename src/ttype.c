@@ -19,19 +19,17 @@
 #include "xml.h"
 
 /* attr masks */
-#define MASK_OPAQUE             0x0001
-#define MASK_ANIMATED           0x0002
-#define MASK_SHIP               0x0004
-#define MASK_HORSE              0x0008
-#define MASK_BALLOON            0x0010
-#define MASK_DISPEL             0x0020
-#define MASK_TALKOVER           0x0040
-#define MASK_DOOR               0x0080
-#define MASK_LOCKEDDOOR         0x0100
-#define MASK_CHEST              0x0200
-#define MASK_ATTACKOVER         0x0400
-#define MASK_CANLANDBALLOON     0x0800
-#define MASK_REPLACEMENT        0x1000
+#define MASK_SHIP               0x0001
+#define MASK_HORSE              0x0002
+#define MASK_BALLOON            0x0004
+#define MASK_DISPEL             0x0008
+#define MASK_TALKOVER           0x0010
+#define MASK_DOOR               0x0020
+#define MASK_LOCKEDDOOR         0x0040
+#define MASK_CHEST              0x0080
+#define MASK_ATTACKOVER         0x0100
+#define MASK_CANLANDBALLOON     0x0200
+#define MASK_REPLACEMENT        0x0400
 
 /* movement masks */
 #define MASK_SWIMABLE           0x0001
@@ -55,6 +53,7 @@ int mapTile = 0,
 
 int tileLoadTileInfo(xmlNodePtr node);
 int ruleLoadProperties(TileRule *rule, xmlNodePtr node);
+Tile *tileFindByName(const char *name);
 TileRule *ruleFindByName(const char *name);
 
 Tile *tileCurrentTilesetInfo() {
@@ -108,8 +107,7 @@ void tileLoadRulesFromXml() {
 void tileLoadInfoFromXml() {
     xmlDocPtr doc;
     xmlNodePtr root, node, child;
-    TileRule *rule;
-    int i;
+    Tile *tile;
 
     if (tileInfoLoaded)
         return;
@@ -133,51 +131,31 @@ void tileLoadInfoFromXml() {
     }
 
     /* ensure information for all non-monster tiles was loaded */
-    if (mapTile != 128)
-        errorFatal("tiles.xml contained %d entries (must be 128)\n", mapTile);
-
-    /* initialize the values for the monster tiles */
-    for ( ; mapTile < sizeof(_ttype_info) / sizeof(_ttype_info[0]); mapTile++)
-        _ttype_info[mapTile].rule = ruleFindByName("solid");
+    if (mapTile != 256)
+        errorFatal("tiles.xml contained %d entries (must be 256)\n", mapTile);
 
     /* FIXME: this is not very clean; baseChest, baseHorse, etc. should be removed */
     /* find the base tiles for each item */
 
     /* find base chest tile */
-    rule = ruleFindByName("chest");
-    for (i = 0; rule, i < mapTile; i++) {
-        if (_ttype_info[i].rule == rule) {
-            baseChest = i;
-            break;
-        }
-    }
+    tile = tileFindByName("chest");
+    if (tile)
+        baseChest = tile->index;
 
     /* find base ship tile */
-    rule = ruleFindByName("ship");
-    for (i = 0; rule, i < mapTile; i++) {
-        if (_ttype_info[i].rule == rule) {
-            baseShip = i;
-            break;
-        }
-    }
+    tile = tileFindByName("ship");
+    if (tile)
+        baseShip = tile->index;
         
     /* find base horse tile */
-    rule = ruleFindByName("horse");
-    for (i = 0; rule, i < mapTile; i++) {
-        if (_ttype_info[i].rule == rule) {
-            baseHorse = i;
-            break;
-        }
-    }
+    tile = tileFindByName("horse");
+    if (tile)
+        baseHorse = tile->index;
 
     /* find base balloon tile */
-    rule = ruleFindByName("balloon");
-    for (i = 0; rule, i < mapTile; i++) {
-        if (_ttype_info[i].rule == rule) {
-            baseBalloon = i;
-            break;
-        }
-    }
+    tile = tileFindByName("balloon");
+    if (tile)
+        baseBalloon = tile->index;
 
     /* make sure all of our "base" tiles have been found */   
     if (baseChest == -1)
@@ -207,9 +185,10 @@ void tileLoadInfoFromXml() {
 int tileLoadTileInfo(xmlNodePtr node) {
     Tile *current;
     int *index;
-    int lshift;
-    int offset;
-    int realIndex;        
+    int lshift,
+        offset,
+        realIndex,
+        frames;
 
     /* ignore 'text' nodes */        
     if (xmlNodeIsText(node))
@@ -242,8 +221,10 @@ int tileLoadTileInfo(xmlNodePtr node) {
     /* figure out what our real index is going to be for this tile */
     realIndex = ((*index) << lshift) + offset;
 
+    current[realIndex].name = xmlGetPropAsStr(node, "name"); /* get the name of the tile */
+    current[realIndex].index = realIndex; /* get the index of the tile */
     current[realIndex].animated = xmlGetPropAsBool(node, "animated"); /* see if the tile is animated */
-    current[realIndex].opaque = xmlGetPropAsBool(node, "opaque"); /* see if the tile is opaque */    
+    current[realIndex].opaque = xmlGetPropAsBool(node, "opaque"); /* see if the tile is opaque */
 
     /* get the tile to display for the current tile */
     if (xmlPropExists(node, "displayTile"))
@@ -258,7 +239,21 @@ int tileLoadTileInfo(xmlNodePtr node) {
         if (current[realIndex].rule == NULL)
             current[realIndex].rule = ruleFindByName("default");
     }
-    else current[realIndex].rule = ruleFindByName("default");    
+    else current[realIndex].rule = ruleFindByName("default");
+
+    /* for each frame of the tile, duplicate our values */
+    frames = 1;
+    if (xmlPropExists(node, "frames"))
+        frames = xmlGetPropAsInt(node, "frames");
+
+    if (frames > 1) {
+        int i;
+        for (i = 1; i < frames; i++) {
+            memcpy(&current[realIndex + i], &current[realIndex], sizeof(Tile));
+            current[realIndex + i].index += i; /* fix the index */
+            (*index)++;
+        }
+    }
 
     /* fill in blank values with duplicates of what we just created */
     if (lshift > 0) {
@@ -358,6 +353,22 @@ int ruleLoadProperties(TileRule *rule, xmlNodePtr node) {
     rule->effect = xmlGetPropAsEnum(node, "effect", effectsEnumStrings);
 
     return 1;
+}
+
+Tile *tileFindByName(const char *name) {
+    /* FIXME: rewrite for new system */
+    Tile *tileset = tileCurrentTilesetInfo();
+    int i;
+
+    if (!name)
+        return NULL;
+
+    for (i = 0; i < 256; i++) {
+        if (strcasecmp(name, tileset[i].name) == 0)
+            return &tileset[i];
+    }
+
+    return NULL;
 }
 
 TileRule *ruleFindByName(const char *name) {
