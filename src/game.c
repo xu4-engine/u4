@@ -313,11 +313,14 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
  * such as the map, map position, etc. (such as exiting a city)
  **/
 
-int gameExitToParentMap(struct _Context *ct)
-{
+int gameExitToParentMap(struct _Context *ct) {
+
     if (ct->location->prev != NULL) {
-        annotationClear(c->location->map->id);
-        mapClearObjects(c->location->map);
+        /* free map info only if previous location was on a different map */
+        if (ct->location->prev->map != c->location->map) {
+            annotationClear(c->location->map->id);
+            mapClearObjects(c->location->map);
+        }
         locationFree(&ct->location);        
         
         return 1;
@@ -2041,8 +2044,7 @@ void gamePeerGem(void) {
 int peerCityHandleChoice(char choice) {
     eventHandlerPopKeyHandler();
     gameExitToParentMap(c);
-
-    c->location->viewMode = VIEW_NORMAL; 
+    
     (*c->location->finishTurn)();
 
     return 1;

@@ -499,7 +499,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
     unsigned char tile, prev_tile;
     Object *obj;
     int x, y;
-    const Monster *m;
+    const Monster *m, *to_m;
     int ontoAvatar, ontoMonster;
     int isAvatar = (from_x == c->location->x && from_y == c->location->y && z == c->location->z);
 
@@ -539,8 +539,10 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
 
         prev_tile = mapGroundTileAt(map, from_x, from_y, z);
 
-        /* get the monster object */
+        /* get the monster object, if it exists (the one that's moving) */
         m = monsterForTile(transport);
+        /* get the other monster object, if it exists (the one that's being moved onto) */
+        to_m = (obj) ? monsterForTile(obj->tile) : NULL;
 
         /* move on if unable to move onto the avatar or another monster */
         if (m && !isAvatar) { /* some monsters/persons have the same tile as the avatar, so we have to adjust */
@@ -549,7 +551,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
                 continue;
         }
         /* this really only happens with the avatar */
-        else if (ontoMonster && monsterCanMoveOnto(obj->monster)) {
+        else if (ontoMonster && monsterCanMoveOnto(to_m)) {
             retval = DIR_ADD_TO_MASK(d, retval);
             continue;
         }
