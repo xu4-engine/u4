@@ -198,7 +198,8 @@ int mapReadDng(Map *map, U4FILE *dng) {
         map->data[i] = u4fgetc(dng);
 
     map->dungeon->room = NULL;
-    /* read in the dungeon rooms */    
+    /* read in the dungeon rooms */
+    /* FIXME: needs a cleanup function to free this memory later */
     map->dungeon->rooms = (DngRoom *)malloc(sizeof(DngRoom) * map->dungeon->n_rooms);
     u4fread(map->dungeon->rooms, sizeof(DngRoom) * map->dungeon->n_rooms, 1, dng);
 

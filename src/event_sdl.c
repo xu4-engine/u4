@@ -92,9 +92,13 @@ void eventHandlerMain(void (*updateScreen)(void)) {
                 key = event.key.keysym.sym;
 
             /* see if the key was ignored */
-            processed = eventHandlerIsKeyIgnored(key) ?
-                0 :
-                (*eventHandlerGetKeyHandler())(key, eventHandlerGetKeyHandlerData());
+            if (!eventHandlerIsKeyIgnored(key)) {
+                processed = eventHandlerUniversalKeyHandler(key);
+                if (!processed)
+                    processed = (*eventHandlerGetKeyHandler())(key, eventHandlerGetKeyHandlerData());                    
+            }
+            /*processed = eventHandlerIsKeyIgnored(key) ?
+                0 :*/                
 
             if (processed) {
                 if (updateScreen)

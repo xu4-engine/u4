@@ -19,6 +19,8 @@
 #include "settings.h"
 #include "u4file.h"
 
+extern int quit;
+
 #define INTRO_TEXT_OFFSET 17445
 #define INTRO_MAP_OFFSET 30339
 #define INTRO_MAP_HEIGHT 5
@@ -74,8 +76,6 @@ typedef struct _IntroObjectState {
 #define GYP_UPON_TABLE 3
 #define GYP_SEGUE1 13
 #define GYP_SEGUE2 14
-
-extern int quit;
 
 /* introduction state */
 IntroMode mode;
@@ -355,11 +355,6 @@ int introKeyHandler(int key, void *data) {
     int valid = 1;
     GetChoiceActionInfo *info;
 
-    if (key == 'x' + U4_ALT) {
-        quit = 1;
-        eventHandlerSetExitFlag(1);
-    }
-
     switch (mode) {
 
     case INTRO_MAP:
@@ -394,8 +389,8 @@ int introKeyHandler(int key, void *data) {
             introUpdateScreen();
             break;
         case 'q':
-            quit = 1;
             eventHandlerSetExitFlag(1);
+            quit = 1;
             break;
         case '1':
         case '2':

@@ -67,6 +67,7 @@ void eventHandlerSetKeyHandler(KeyHandler kh);
 KeyHandler eventHandlerGetKeyHandler();
 void *eventHandlerGetKeyHandlerData();
 int eventHandlerIsKeyIgnored(int key);
+int eventHandlerUniversalKeyHandler(int key);
 int eventKeyboardSetKeyRepeat(int delay, int interval);
 
 int keyHandlerDefault(int key, void *data);

@@ -1015,11 +1015,6 @@ int gameBaseKeyHandler(int key, void *data) {
         screenMessage("XU4 %s\n", VERSION);        
         break;
 
-    case 'x' + U4_ALT:
-        eventHandlerSetExitFlag(1);
-        valid = 0;
-        break;
-
     default:
         valid = 0;        
         break;

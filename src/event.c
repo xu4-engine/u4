@@ -18,6 +18,7 @@
 #include "debug.h"
 
 int eventTimerGranularity = 250;
+extern int quit;
 
 typedef struct TimerCallbackNode {
     TimerCallback callback;
@@ -218,6 +219,18 @@ int eventHandlerIsKeyIgnored(int key) {
     case U4_RIGHT_ALT:
     case U4_LEFT_ALT:
     case U4_TAB:
+        return 1;
+    default: return 0;
+    }
+}
+
+/**
+ * A key handler that handles every keypress
+ */
+int eventHandlerUniversalKeyHandler(int key) {
+    switch(key) {
+    case U4_ALT + 'x': /* Alt+x */
+        quit = eventExitFlag = 1;        
         return 1;
     default: return 0;
     }
