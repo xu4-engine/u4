@@ -612,23 +612,25 @@ int gameBaseKeyHandler(int key, void *data) {
             if (obj && (tileIsShip(obj->tile) || tileIsHorse(obj->tile) ||
                 tileIsBalloon(obj->tile))) key = 'b';
         }
+        /* Klimb/Descend Balloon */
+        else if (c->transportContext == TRANSPORT_BALLOON) {            
+            if (c->saveGame->balloonstate == 1)
+                key = 'd';
+            else key = 'k';
+        }
+        /* X-it transport */
+        else key = 'x';        
         
-        /* How about descend? */
-        if (((c->transportContext == TRANSPORT_BALLOON) && 
-             (c->saveGame->balloonstate == 1)) || 
-            (mapPortalAt(c->location->map, c->location->x, c->location->y, 
-                c->location->z, ACTION_DESCEND) != NULL)) 
-            key = 'd';
-
         /* Klimb? */
-        if (((c->transportContext == TRANSPORT_BALLOON) && 
-             (c->saveGame->balloonstate == 0)) ||
-            (mapPortalAt(c->location->map, c->location->x, c->location->y,
-                c->location->z, ACTION_KLIMB) != NULL))
-            key = 'k';
-            
-        /* Enter? */
         if (mapPortalAt(c->location->map, c->location->x, c->location->y,
+                c->location->z, ACTION_KLIMB) != NULL)
+            key = 'k';
+        /* Descend? */
+        else if (mapPortalAt(c->location->map, c->location->x, c->location->y,
+                c->location->z, ACTION_DESCEND) != NULL)
+            key = 'd';        
+        /* Enter? */
+        else if (mapPortalAt(c->location->map, c->location->x, c->location->y,
                 c->location->z, ACTION_ENTER) != NULL)
             key = 'e';
         
