@@ -505,6 +505,14 @@ SOURCE=..\src\tileanim.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\tilemap.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\tilemap.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\tileset.cpp
 # End Source File
 # Begin Source File
