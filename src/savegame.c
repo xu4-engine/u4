@@ -164,7 +164,7 @@ void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avat
     for (i = 1; i < 8; i++)
         saveGamePlayerRecordInit(&(save->players[i]));
 
-    save->food = 300;
+    save->food = 30000;
     save->gold = 200;
 
     for (i = 0; i < 8; i++)
