@@ -225,7 +225,7 @@ int combatAttackAtCoord(int x, int y) {
             monster = i;
     }
 
-    if (monster == -1) {
+    if (monster == -1 || !playerAttackHit(&c->saveGame->players[focus])) {
         screenMessage("Missed!\n");
 
         annotationSetTimeDuration(annotationAdd(x, y, MISSFLASH_TILE), 2);
@@ -237,13 +237,15 @@ int combatAttackAtCoord(int x, int y) {
         annotationSetTimeDuration(annotationAdd(x, y, HITFLASH_TILE), 2);
 
         /* FIXME: every hit is fatal for now */
-        
-        screenMessage("%s Killed!\nExp. %d\n", m->name, m->xp);
-        c->saveGame->players[focus].xp += m->xp;
-        if (monsterIsEvil(m))
-            gameLostEighth(playerAdjustKarma(c->saveGame, KA_KILLED_EVIL));
-        mapRemoveObject(c->map, monsters[monster]);
-        monsters[monster] = NULL;
+        if ( 1 ) {
+            int xp = monsterGetXp(m);
+            screenMessage("%s Killed!\nExp. %d\n", m->name, xp);
+            c->saveGame->players[focus].xp += xp;
+            if (monsterIsEvil(m))
+                gameLostEighth(playerAdjustKarma(c->saveGame, KA_KILLED_EVIL));
+            mapRemoveObject(c->map, monsters[monster]);
+            monsters[monster] = NULL;
+        }
     }
 
     combatEndTurn();
