@@ -19,6 +19,7 @@
 #include "settings.h"
 #include "scale.h"
 #include "screen.h"
+#include "tileanim.h"
 #include "tileset.h"
 #include "dngview.h"
 #include "u4.h"
@@ -175,15 +176,18 @@ ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node);
 Layout *screenLoadLayoutFromXml(xmlNodePtr node);
 SDL_Cursor *screenInitCursor(char *xpm[]);
 
-char **imageSetNames = NULL;
 ListNode *imageSets = NULL;
 ListNode *layouts = NULL;
+ListNode *tileanimSets = NULL;
+char **imageSetNames = NULL;
 char **gemLayoutNames = NULL;
 Layout *gemlayout = NULL;
+TileAnimSet *tileanims = NULL;
 
 extern int verbose;
 
 void screenInit() {
+    ListNode *node;
 
     screenLoadGraphicsFromXml();
 
@@ -237,6 +241,16 @@ void screenInit() {
     } else {
         SDL_ShowCursor(SDL_DISABLE);
     }
+
+    /* find the tile animations for our tileset */
+    tileanims = NULL;
+    for (node = tileanimSets; node; node = node->next) {
+        TileAnimSet *set = (TileAnimSet *) node->data;
+        if (strcmp(set->name, settings->videoType) == 0)
+            tileanims = set;
+    }
+    if (!tileanims)
+        errorFatal("unable to find tile animations for \"%s\" video mode in graphics.xml", settings->videoType);
 }
 
 void screenDelete() {
@@ -290,6 +304,8 @@ void screenLoadGraphicsFromXml() {
             imageSets = listAppend(imageSets, screenLoadImageSetFromXml(node));
         else if (xmlStrcmp(node->name, (const xmlChar *) "layout") == 0)
             layouts = listAppend(layouts, screenLoadLayoutFromXml(node));
+        else if (xmlStrcmp(node->name, (const xmlChar *) "tileanimset") == 0)
+            tileanimSets = listAppend(tileanimSets, tileAnimSetLoadFromXml(node));
     }
 
     if (imageSetNames) {
@@ -978,10 +994,11 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
  * Draw a tile graphic on the screen.
  */
 void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int y) {
-    int offset, i, swaprow;
+    int offset;
     SDL_Rect src, dest;
     int unscaled_x, unscaled_y;
     Image *tiles;
+    TileAnim *anim = NULL;
 
     if (image[tileset->imageId] == NULL) {
         if (!screenLoadBackground(tileset->imageId))
@@ -1032,36 +1049,25 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
      */
     switch (tileGetAnimationStyle(tile)) {
     case ANIM_CITYFLAG:
-        swaprow = 3;
+        anim = tileAnimSetGetAnimByName(tileanims, "cityflag");
         break;
     case ANIM_CASTLEFLAG:
+        anim = tileAnimSetGetAnimByName(tileanims, "castleflag");
+        break;
     case ANIM_LCBFLAG:
-        swaprow = 1;
+        anim = tileAnimSetGetAnimByName(tileanims, "lcbflag");
         break;
     case ANIM_WESTSHIPFLAG:
     case ANIM_EASTSHIPFLAG:
-        swaprow = 2;
+        anim = tileAnimSetGetAnimByName(tileanims, "shipflag");
         break;
     default:
-        swaprow = -1;
+        anim = NULL;
         break;
     }
 
-    if (swaprow != -1 && xu4_random(2) == 0) {
-
-        for (i = 0; i < (scale * 2) + 2; i++) {
-            src.x = scale * 5;
-            src.y = tile * (tiles->h / N_TILES) + (swaprow * scale) + i - 1;
-            src.w = tiles->w - (scale * 5);
-            src.h = 1;
-            dest.x = x * tiles->w + (BORDER_WIDTH * scale) + (scale * 5);
-            dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale) + ((swaprow + 2) * scale) - i;
-            dest.w = tiles->w - (scale * 5);
-            dest.h = 1;
-
-            SDL_BlitSurface(tiles->surface, &src, screen, &dest);            
-        }
-    }
+    if (anim)
+        tileAnimDraw(anim, tiles, tile, scale, x * tiles->w + (BORDER_WIDTH * scale), y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale));
 
     /*
      * finally draw the focus rectangle if the tile has the focus
