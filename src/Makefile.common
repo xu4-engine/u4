@@ -45,6 +45,7 @@ SRCS=\
         ttype.c \
         u4.c \
         u4file.c \
+        utils.c \
         unzip.c \
         vendor.c \
         weapon.c \
