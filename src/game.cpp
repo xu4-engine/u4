@@ -1572,10 +1572,14 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
     case 'f':
     case 'g':
     case 'h':
-        /* select the corresponding reagent */
-        menu->setCurrent(menu->getById((MenuId)(key-'a')));
-        gameSpellMixMenuKeyHandler(U4_SPACE, menu);        
-        break;
+        {
+            /* select the corresponding reagent (if visible) */
+            Menu::MenuItemList::iterator mi = menu->getById((MenuId)(key-'a'));
+            if (mi->isVisible()) {        
+                menu->setCurrent(menu->getById((MenuId)(key-'a')));
+                gameSpellMixMenuKeyHandler(U4_SPACE, menu);
+            }
+        } break;
     case U4_UP:
         menu->prev();
         break;
