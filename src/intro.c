@@ -24,6 +24,11 @@
 #define INTRO_SCRIPT_TABLE_OFFSET 30434
 #define INTRO_BASETILE_TABLE_SIZE 15
 #define INTRO_BASETILE_TABLE_OFFSET 16584
+#define BEASTIE1_FRAMES 0x80
+#define BEASTIE2_FRAMES 0x40
+#define BEASTIE_FRAME_TABLE_OFFSET 0x7380
+#define BEASTIE1_FRAMES_OFFSET 0
+#define BEASTIE2_FRAMES_OFFSET 0x78
 
 #define INTRO_TEXT_X 0
 #define INTRO_TEXT_Y 19
@@ -65,6 +70,8 @@ char **introQuestions;
 char **introGypsy;
 unsigned char *scriptTable;
 unsigned char *baseTileTable;
+unsigned char *beastie1FrameTable;
+unsigned char *beastie2FrameTable;
 
 /* additional introduction state data */
 char nameBuffer[16];
@@ -145,6 +152,32 @@ int introInit() {
     objectStateTable = (IntroObjectState *) malloc(sizeof(IntroObjectState) * INTRO_BASETILE_TABLE_SIZE);
     memset(objectStateTable, 0, sizeof(IntroObjectState) * INTRO_BASETILE_TABLE_SIZE);
 
+    /* --------------------------
+       load beastie frame table 1
+       -------------------------- */
+    beastie1FrameTable = (unsigned char *) malloc(sizeof(unsigned char) * BEASTIE1_FRAMES);
+    if (!beastie1FrameTable) {
+        u4fclose(title);
+        return(0);
+    }
+    fseek(title, BEASTIE_FRAME_TABLE_OFFSET + BEASTIE1_FRAMES_OFFSET, SEEK_SET);
+    for (i = 0; i < BEASTIE1_FRAMES; i++) {
+        beastie1FrameTable[i] = fgetc(title);
+    }
+
+    /* --------------------------
+       load beastie frame table 2
+       -------------------------- */
+    beastie2FrameTable = (unsigned char *) malloc(sizeof(unsigned char) * BEASTIE2_FRAMES);
+    if (!beastie2FrameTable) {
+        u4fclose(title);
+        return(0);
+    }
+    fseek(title, BEASTIE_FRAME_TABLE_OFFSET + BEASTIE2_FRAMES_OFFSET, SEEK_SET);
+    for (i = 0; i < BEASTIE2_FRAMES; i++) {
+        beastie2FrameTable[i] = fgetc(title);
+    }
+
     u4fclose(title);
 
     screenLoadIntroAnimations();
@@ -180,6 +213,9 @@ void introDelete() {
     baseTileTable = NULL;
     free(objectStateTable);
     objectStateTable = NULL;
+
+    free(beastie1FrameTable);
+    free(beastie2FrameTable);
 
     screenFreeIntroAnimations();
     screenFreeIntroBackgrounds();
@@ -345,8 +381,8 @@ void introDrawMapAnimated() {
  * Draws the animated beasts in the upper corners of the screen.
  */
 void introDrawBeasties() {
-    screenShowBeastie(0, beastie1Cycle);
-    screenShowBeastie(1, beastie2Cycle);
+    screenShowBeastie(0, beastie1FrameTable[beastie1Cycle]);
+    screenShowBeastie(1, beastie2FrameTable[beastie2Cycle]);
 }
 
 /**
@@ -584,9 +620,9 @@ void introTimer() {
         introDrawBeasties();
     screenForceRedraw();
 
-    if ((rand() % 2) && ++beastie1Cycle >= 18)
+    if ((rand() % 2) && ++beastie1Cycle >= BEASTIE1_FRAMES)
         beastie1Cycle = 0;
-    if ((rand() % 2) && ++beastie2Cycle >= 18)
+    if ((rand() % 2) && ++beastie2Cycle >= BEASTIE2_FRAMES)
         beastie2Cycle = 0;
 }
 
