@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
     c->parent = NULL;
     c->map = &world_map;
+    c->talker = NULL;
     c->line = 0;
     c->col = 0;
 
