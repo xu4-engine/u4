@@ -659,7 +659,7 @@ char *lordBritishGetHelp(const Conversation *cnv) {
 }
 
 char *hawkwindGetIntro(Conversation *cnv) {
-    char *intro;
+    char *intro;   
 
     if (c->saveGame->players[0].status == STAT_SLEEPING ||
         c->saveGame->players[0].status == STAT_DEAD) {
@@ -681,6 +681,8 @@ char *hawkwindGetIntro(Conversation *cnv) {
                        hawkwindText[HW_GREETING2],
                        NULL);
         cnv->state = CONV_TALK;
+
+        musicHawkwind();
     }
 
     return intro;
@@ -695,6 +697,7 @@ char *hawkwindGetResponse(Conversation *cnv, const char *inquiry) {
         strcasecmp(inquiry, "bye") == 0) {
         reply = strdup(hawkwindText[HW_BYE]);
         cnv->state = CONV_DONE;
+        musicPlay();
         return reply;
     }
 

@@ -547,7 +547,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->blockBefore = 0;
         info->firstValidDistance = 1;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
-        screenMessage("Attack\nDir: ");
+        screenMessage("Attack: ");
         break;
 
     case 'b':

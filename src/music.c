@@ -85,8 +85,12 @@ void musicIntroSwitch(int n) {
     }
 }
 
-void musicLordBritish(void){  /* Music when you talk to LB */
+void musicLordBritish(void) {  /* Music when you talk to LB */
     musicPlayMid(MUSIC_FANFARE);
+}
+
+void musicHawkwind(void) { /* Music when you talk to Hawkwind */
+    musicPlayMid(MUSIC_SHOPPING);
 }
 
 void musicCamp(void){  /* Music when camping */

@@ -137,12 +137,13 @@ int campHeal(void) {
     return healed;
 }
 
-void innBegin(void) {
-    musicFadeOut(2000); /* Fade volume out to ease into rest */
+void innBegin(void) {  
 
     /* first, show the avatar before sleeping */
     gameUpdateScreen();
-    eventHandlerSleep(500);
+    musicFadeOut(1000); /* Fade volume out to ease into rest */
+
+    eventHandlerSleep(1000);
 
     /* show the sleeping avatar */
     c->saveGame->transport = CORPSE_TILE;
