@@ -120,7 +120,7 @@ const Spell spells[] = {
 
 #define N_SPELLS (sizeof(spells) / sizeof(spells[0]))
 
-void playerSetSpellEffectCallback(SpellEffectCallback callback) {
+void spellSetEffectCallback(SpellEffectCallback callback) {
     spellEffectCallback = callback;    
 }
 

@@ -372,7 +372,7 @@ void Creature::act() {
         {            
             screenMessage("Sleep!\n");
 
-            (*spellEffectCallback)('s', -1, (Sound)0); /* show the sleep spell effect */
+            gameSpellEffect('s', -1, (Sound)0); /* show the sleep spell effect */
         
             /* Apply the sleep spell to party members still in combat */
             if (!isPartyMember(this)) {
