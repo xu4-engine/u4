@@ -64,8 +64,6 @@ int gameSave(void);
 bool talkHandleAnyKey(int key, void *data);
 bool cmdHandleAnyKey(int key, void *data);
 bool windCmdKeyHandler(int key, void *data);
-bool helpPage2KeyHandler(int key, void *data);
-bool helpPage3KeyHandler(int key, void *data);
 
 /* map and screen functions */
 void gameUpdateMoons(int showmoongates);
@@ -1300,7 +1298,9 @@ bool gameBaseKeyHandler(int key, void *data) {
         }
         break;
     
-    case 'h' + U4_ALT:
+    case 'h' + U4_ALT: {
+        ReadChoiceController pauseController("");
+
         screenMessage("Key Reference:\n"
                       "Arrow Keys: Move\n"
                       "a: Attack\n"
@@ -1313,8 +1313,41 @@ bool gameBaseKeyHandler(int key, void *data) {
                       "h: Hole up\n"
                       "i: Ignite torch\n"
                       "(more)");
-        eventHandler.pushKeyHandler(&helpPage2KeyHandler);
+
+        eventHandler.pushController(&pauseController);
+        pauseController.waitFor();
+
+        screenMessage("\n"
+                      "j: Jimmy lock\n"
+                      "k: Klimb\n"
+                      "l: Locate\n"
+                      "m: Mix reagents\n"
+                      "n: New Order\n"
+                      "o: Open door\n"
+                      "p: Peer at Gem\n"
+                      "q: Quit & Save\n"
+                      "r: Ready weapon\n"
+                      "s: Search\n"
+                      "t: Talk\n"
+                      "(more)");
+
+        eventHandler.pushController(&pauseController);
+        pauseController.waitFor();
+
+        screenMessage("\n"
+                      "u: Use Item\n"
+                      "v: Volume On/Off\n"
+                      "w: Wear armour\n"
+                      "x: eXit\n"
+                      "y: Yell\n"
+                      "z: Ztats\n"
+                      "Space: Pass\n"
+                      "Alt-V: Version\n"
+                      "Alt-X: Quit\n"
+                      );
+        screenPrompt();
         break;
+    }
 
     case 'q' + U4_ALT:
         {
@@ -2039,45 +2072,6 @@ bool windCmdKeyHandler(int key, void *data) {
 
     return true;
 }
-
-bool helpPage2KeyHandler(int key, void *data) {
-    eventHandler.popKeyHandler();
-
-    screenMessage("\n"
-                    "j: Jimmy lock\n"
-                    "k: Klimb\n"
-                    "l: Locate\n"
-                    "m: Mix reagents\n"
-                    "n: New Order\n"
-                    "o: Open door\n"
-                    "p: Peer at Gem\n"
-                    "q: Quit & Save\n"
-                    "r: Ready weapon\n"
-                    "s: Search\n"
-                    "t: Talk\n"
-                "(more)");
-    eventHandler.pushKeyHandler(&helpPage3KeyHandler);
-    return true;
-}
-
-bool helpPage3KeyHandler(int key, void *data) {
-    eventHandler.popKeyHandler();
-
-    screenMessage("\n"
-                    "u: Use Item\n"
-                    "v: Volume On/Off\n"
-                    "w: Wear armour\n"
-                    "x: eXit\n"
-                    "y: Yell\n"
-                    "z: Ztats\n"
-                    "Space: Pass\n"
-                    "Alt-V: Version\n"
-                    "Alt-X: Quit\n"
-                    );
-    screenPrompt();
-    return true;
-}
-
 
 /**
  * Attempts to attack a creature at map coordinates x,y.  If no
@@ -3203,12 +3197,12 @@ void gameTimer(void *data) {
         /*
          * force pass if no commands within last 20 seconds
          */
-        if ((*eventHandler.getKeyHandler() == &gameBaseKeyHandler ||
-            *eventHandler.getKeyHandler() == &CombatController::baseKeyHandler) &&
+        KeyHandler *keyHandler = eventHandler.getKeyHandler();
+        if (keyHandler != NULL && (*keyHandler == &gameBaseKeyHandler || *keyHandler == &CombatController::baseKeyHandler) &&
              gameTimeSinceLastCommand() > 20) {
          
             /* pass the turn, and redraw the text area so the prompt is shown */
-            eventHandler.getKeyHandler()->handle(U4_SPACE);
+            keyHandler->handle(U4_SPACE);
             screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
         }
     }
