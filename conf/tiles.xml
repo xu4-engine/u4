@@ -10,7 +10,7 @@
     <tile rule="brush"/> <!-- brush -->
     <tile rule="brush" opaque="true"/> <!-- forest -->
     <tile rule="hills"/> <!-- hills -->
-    <tile rule="mountains"/> <!-- mountains -->
+    <tile rule="mountains" opaque="true"/> <!-- mountains -->
     <tile/> <!-- dungeon -->
     <tile/> <!-- city -->
     <tile/> <!-- castle -->
