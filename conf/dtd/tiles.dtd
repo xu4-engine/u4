@@ -5,14 +5,7 @@
 <!ENTITY % anim '( scroll | frames | rowswap | none )'>
 
 <!ELEMENT tiles ( tile+ ) >
-<!ATTLIST tiles width              NMTOKEN  #IMPLIED
-                height             NMTOKEN  #IMPLIED
-                bpp                NMTOKEN  #IMPLIED
-                indexed            %bool;   #IMPLIED
-                vga                CDATA    #IMPLIED
-                ega                CDATA    #IMPLIED
-                cga                CDATA    #IMPLIED
-                compression        %comp;   #IMPLIED>
+<!ATTLIST tiles imageId            NMTOKEN  #IMPLIED>
 
 <!ELEMENT tile EMPTY >
 <!ATTLIST tile  name               CDATA    #REQUIRED

@@ -2,15 +2,7 @@
 <!DOCTYPE tiles SYSTEM "dtd/tiles.dtd">
 <!-- $Id$ -->
 
-<tiles width="16"
-       height="16"
-       bpp="8"
-       indexed="true"
-       cga="shapes.cga"
-       ega="shapes.ega"
-       vga="shapes.vga"
-       compression="none">
-
+<tiles imageId="0">
     <tile name="sea" rule="water" animated="true"/>
     <tile name="water" rule="water" animated="true"/>
     <tile name="shallows" rule="shallows" animated="true"/>
