@@ -1,8 +1,6 @@
 <!-- $Id$ -->
 
-<!ENTITY % bool '( true | false )'>
 <!ENTITY % hitmisstile '( fire | poison | lightning | magic | lava | fireblast | boulder | sleep | random )'>
-<!ENTITY % class '( mage | bard | fighter | druid | tinker | paladin | ranger | shepherd | all )'>
 
 <!ELEMENT weapons ( weapon+ ) >
 
@@ -22,7 +20,3 @@
                  magic                  %bool;  #IMPLIED
                  misstile               %hitmisstile; #IMPLIED
                  returns                %bool;  #IMPLIED>
-
-<!ELEMENT constraint EMPTY >
-<!ATTLIST constraint canuse             %bool;  #REQUIRED
-                     class              %class; #REQUIRED>

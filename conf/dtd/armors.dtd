@@ -1,14 +1,7 @@
 <!-- $Id$ -->
 
-<!ENTITY % bool '( true | false )'>
-<!ENTITY % class '( mage | bard | fighter | druid | tinker | paladin | ranger | shepherd )'>
-
 <!ELEMENT armors ( armor+ ) >
 
 <!ELEMENT armor ( constraint* ) >
 <!ATTLIST armor name       CDATA   #REQUIRED
                 defense    NMTOKEN #REQUIRED>
-
-<!ELEMENT constraint EMPTY >
-<!ATTLIST constraint canuse             %bool;  #REQUIRED
-                     class              %class; #REQUIRED>
