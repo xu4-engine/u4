@@ -35,6 +35,10 @@ void eventHandlerDelete() {
     SDL_RemoveTimer(timer);
 }
 
+void eventHandlerSleep(int usec) {
+    SDL_Delay(usec);
+}
+
 void eventHandlerMain(void (*updateScreen)(void)) {
     eventHandlerSetExitFlag(0);
 
