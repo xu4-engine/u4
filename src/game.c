@@ -161,6 +161,7 @@ void gameFinishTurn() {
 
     /* draw a prompt */
     screenMessage("\020");
+    screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
 }
 
 /**
@@ -608,7 +609,6 @@ int gameBaseKeyHandler(int key, void *data) {
         eventHandlerPushKeyHandler(&gameZtatsKeyHandler);
         screenMessage("Ztats for: ");
         break;
-
 
     case 'x' + U4_ALT:
         eventHandlerSetExitFlag(1);
