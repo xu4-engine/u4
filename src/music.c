@@ -57,6 +57,8 @@ void musicPlayMid(Music music) {
     pathname = u4find_music(musicFilenames[music]);
     if (pathname) {
         playing = Mix_LoadMUS(pathname);
+        if (!playing)
+            fprintf(stderr, "Unable to load music file %s: %s\n", pathname, Mix_GetError());
         if (toggle && playing)
             Mix_PlayMusic(playing, -1);
         free(pathname);
@@ -103,7 +105,7 @@ int musicInit(int sound) {
             return 1;
         }
 
-#ifdef WIN32			
+#ifdef WIN32
         SDL_AudioInit("waveout");
 #endif
 
