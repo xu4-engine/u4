@@ -4,6 +4,7 @@
 
 BUNDLE_CONTENTS=../xu4.app/Contents
 
+CC=gcc
 CXX=g++
 UI=sdl
 UILIBS=-L$(HOME)/Library/Frameworks \
@@ -25,6 +26,7 @@ DEBUGCXXFLAGS=-ggdb
 #DEBUGCXXFLAGS=-O2 -faltivec -mdynamic-no-pic
 
 CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
+CFLAGS=$(CXXFLAGS)
 LIBS=$(UILIBS)
 INSTALL=install
 
