@@ -51,10 +51,10 @@ typedef struct _Spell {
     int mp;
 } Spell;
 
-typedef void (*SpellCallback)(unsigned int spell, int player, int hzSound);
-extern SpellCallback spellCallback;
+typedef void (*SpellEffectCallback)(unsigned int spell, int player, int hzSound);
+extern SpellEffectCallback spellEffectCallback;
 
-void playerSetSpellCallback(SpellCallback callback);
+void playerSetSpellEffectCallback(SpellEffectCallback callback);
 Mixture *mixtureNew();
 void mixtureDelete(Mixture *mix);
 int mixtureAddReagent(Mixture *mix, Reagent reagent);

@@ -24,7 +24,7 @@
 #include "settings.h"
 #include "ttype.h"
 
-SpellCallback spellCallback = NULL;
+SpellEffectCallback spellEffectCallback = NULL;
 
 void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxDamage);
 int spellMagicAttackAtCoord(int x, int y, int distance, void *data);
@@ -116,8 +116,8 @@ const Spell spells[] = {
 
 #define N_SPELLS (sizeof(spells) / sizeof(spells[0]))
 
-void playerSetSpellCallback(SpellCallback callback) {
-    spellCallback = callback;    
+void playerSetSpellEffectCallback(SpellEffectCallback callback) {
+    spellEffectCallback = callback;    
 }
 
 Mixture *mixtureNew() {
@@ -268,7 +268,7 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
         c->saveGame->players[character].mp -= spells[spell].mp;
 
         if (spellEffect)
-            (*spellCallback)(spell + 'a', player, 1);
+            (*spellEffectCallback)(spell + 'a', player, 1);
     
         if (!(*spells[spell].spellFunc)(param)) {
             *error = CASTERR_FAILED;

@@ -1015,7 +1015,7 @@ void combatMoveMonsters() {
         case CA_CAST_SLEEP:
             screenMessage("Sleep!\n");
 
-            (*spellCallback)('s', -1, 0); /* show the sleep spell effect */
+            (*spellEffectCallback)('s', -1, 0); /* show the sleep spell effect */
             
             /* Apply the sleep spell to everyone still on combat */
             for (i = 0; i < 8; i++) {

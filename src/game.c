@@ -158,7 +158,7 @@ void gameInit() {
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
     playerSetItemStatsChangedCallback(&statsUpdate);
-    playerSetSpellCallback(&gameSpellEffect);
+    playerSetSpellEffectCallback(&gameSpellEffect);
     playerSetPartyStarvingCallback(&gamePartyStarving);
     playerSetSetTransportCallback(&gameSetTransport);
     itemSetDestroyAllMonstersCallback(&gameDestroyAllCreatures);
@@ -401,7 +401,7 @@ void gameLostEighth(Virtue virtue) {
 void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
     screenMessage("\n%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
 
-    (*spellCallback)('r', -1, 0); // Same as resurrect spell
+    (*spellEffectCallback)('r', -1, 0); // Same as resurrect spell
 }
 
 void gamePartyStarving(void) {
@@ -2173,7 +2173,7 @@ void talkShowReply(int showPrompt) {
             playerHeal(c->saveGame, HT_CURE, i);        // cure the party
             playerHeal(c->saveGame, HT_FULLHEAL, i);    // heal the party
         }        
-        (*spellCallback)('r', -1, 0); // same spell effect as 'r'esurrect
+        (*spellEffectCallback)('r', -1, 0); // same spell effect as 'r'esurrect
 
         statsUpdate();
         c->conversation.state = CONV_TALK;
@@ -2673,14 +2673,14 @@ int gameCheckMoongates(void) {
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase,
                                  c->location->x, c->location->y, &destx, &desty)) {
 
-        (*spellCallback)(-1, -1, 0); // Default spell effect (screen inversion without 'spell' sound effects)
+        (*spellEffectCallback)(-1, -1, 0); // Default spell effect (screen inversion without 'spell' sound effects)
         
         if ((c->location->x != destx) && 
             (c->location->y != desty)) {
             
             c->location->x = destx;    
             c->location->y = desty;
-            (*spellCallback)(-1, -1, 0); // Again, after arriving
+            (*spellEffectCallback)(-1, -1, 0); // Again, after arriving
         }
 
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
@@ -3088,7 +3088,7 @@ void gameDestroyAllCreatures(void) {
     int i;
     extern CombatInfo combatInfo;
     
-    (*spellCallback)('t', -1, 0); /* same effect as tremor */
+    (*spellEffectCallback)('t', -1, 0); /* same effect as tremor */
     
     if (c->location->context == CTX_COMBAT) {
         /* destroy all monsters in combat */
