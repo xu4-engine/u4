@@ -1490,8 +1490,9 @@ bool gameBaseKeyHandler(int key, void *data) {
     }
 
     if (valid && endTurn) {
-        if (!eventHandler->getKeyHandler() || (c->combat && *eventHandler->getKeyHandler() == &gameBaseKeyHandler &&
-            c->location->finishTurn == &gameFinishTurn))
+        if (eventHandler->getController() != c->combat &&
+            (!eventHandler->getKeyHandler() || (*eventHandler->getKeyHandler() == &gameBaseKeyHandler &&
+            c->location->finishTurn == &gameFinishTurn)))
             (*c->location->finishTurn)();
     }
     else if (!endTurn) {
@@ -1552,7 +1553,7 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
             return -1;
         }
 
-        screenMessage("%d\n", player + 1);
+        screenMessage("\n");
         if (!canBeDisabled && c->party->member(player)->isDisabled()) {
             screenMessage("\nDisabled!\n");
             return -1;
@@ -2347,7 +2348,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
         /* Based on attack speed setting in setting struct, make a delay for
            the attack annotation */
         if (attackdelay > 0)
-            EventHandler::sleep(attackdelay * 4);
+            EventHandler::wait_msecs(attackdelay * 4);
     }
 
     return false;
@@ -3542,7 +3543,7 @@ bool creatureRangeAttack(MapCoords coords, int distance, void *data) {
         /* Based on attack speed setting in setting struct, make a delay for
            the attack annotation */
         if (attackdelay > 0)
-            EventHandler::sleep(attackdelay * 4);
+            EventHandler::wait_msecs(attackdelay * 4);
     }
 
     return false;    
@@ -3630,7 +3631,7 @@ void gameDamageParty(int minDamage, int maxDamage) {
         }
     }
     
-    EventHandler::sleep(100);
+    EventHandler::wait_msecs(100);
     screenShake(1);
 }
 
@@ -3725,11 +3726,14 @@ void gameLordBritishCheckLevels(void) {
  * as the creature's name, or the creature's id.  Once it finds the
  * creature to be summoned, it calls gameSpawnCreature() to spawn it.
  */
-void gameSummonCreature(const string &creatureName) {    
+void gameSummonCreature(const string &name) {    
     unsigned int id;
     const Creature *m = NULL;
+    string creatureName = name;
 
+    trim(creatureName);
     if (creatureName.empty()) {
+        screenMessage("\n");
         screenPrompt();
         return;
     }

@@ -30,6 +30,31 @@ EventHandler *EventHandler::getInstance() {
     return instance;
 }
 
+/**
+ * Waits a given number of milliseconds before continuing 
+ */ 
+void EventHandler::wait_msecs(unsigned int msecs) {
+    int msecs_per_cycle = (1000 / settings.gameCyclesPerSecond);
+    int cycles = msecs / msecs_per_cycle;
+
+    if (cycles > 0) {        
+        WaitController waitCtrl(cycles);
+        getInstance()->pushController(&waitCtrl);
+        waitCtrl.wait();
+    }
+    // Sleep the rest of the msecs we can't wait for
+    EventHandler::sleep(msecs % msecs_per_cycle);
+}
+
+/**
+ * Waits a given number of game cycles before continuing
+ */ 
+void EventHandler::wait_cycles(unsigned int cycles) {
+    WaitController waitCtrl(cycles);
+    getInstance()->pushController(&waitCtrl);
+    waitCtrl.wait();
+}
+
 void EventHandler::setControllerDone(bool done) { controllerDone = done; }     /**< Sets the controller exit flag for the event handler */
 bool EventHandler::getControllerDone()         { return controllerDone; }      /**< Returns the current value of the global exit flag */
 void EventHandler::end() { ended = true; }                                     /**< End all event processing */
@@ -243,7 +268,8 @@ bool ReadStringController::keyPressed(int key) {
                 screenShowCursor();
             }
         }
-        else if (key == '\n' || key == '\r') {
+        else if (key == '\n' || key == '\r') {            
+            screenMessage("%s", value.c_str());
             doneWaiting();
         }
         else if (len < maxlen) {
@@ -297,6 +323,9 @@ bool ReadChoiceController::keyPressed(int key) {
     value = key;
 
     if (choices.empty() || choices.find_first_of(value) < choices.length()) {
+        // If the value is printable, display it
+        if (!isspace(key))
+            screenMessage("%c", toupper(key));
         doneWaiting();
         return true;
     }
@@ -355,9 +384,7 @@ bool WaitController::keyPressed(int key) {
 }
 
 void WaitController::wait() {
-    eventHandler->run();
-    eventHandler->setControllerDone(false);
-    eventHandler->popController();
+    Controller_startWait();    
 }
 
 void WaitController::setCycles(int c) {
