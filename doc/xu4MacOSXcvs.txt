@@ -42,7 +42,9 @@ Things you only have to do once
    i.e. cd u4/src
 
 9. Compile xu4
-   make -f Makefile.macosx u4
+   make -f Makefile.macosx install
+   (Note: This creates an xu4 application bundle in the src directory
+   which you can launch by double-clicking.)
 
 10. Build tools that don't require libpng
    make -f Makefile.macosx dumpsavegame
@@ -65,7 +67,7 @@ Things you have to do every time the xu4 source code changes
 
 5. Compile xu4
    make -f Makefile.macosx clean
-   make -f Makefile.macosx u4
+   make -f Makefile.macosx install
 
 6. Build tools that don't require libpng
    make -f Makefile.macosx dumpsavegame
