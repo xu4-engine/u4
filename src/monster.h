@@ -68,7 +68,9 @@ typedef enum {
     MATTR_CASTS_SLEEP = 0x04,
     MATTR_UNDEAD    = 0x08,
     MATTR_GOOD      = 0x10,
-    MATTR_WATER     = 0x20
+    MATTR_WATER     = 0x20,
+    MATTR_STATIONARY = 0x40,
+    MATTR_NONATTACKABLE = 0x80
 } MonsterAttrib;
 
 typedef enum {
