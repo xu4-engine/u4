@@ -630,13 +630,14 @@ offset  len   notes
 0x111f5 330   ???
 0x1133f 26    mp required for each spell (one byte per spell)
 0x11359 654   ???
-0x115e7 16    mask of which clases can use each weapon (one byte per
+0x115e7 16    mask of which classes can use each weapon (one byte per
               weapon)
-0x115f7 8     mask of which clases can use each type of armor (one byte
+0x115f7 8     mask of which classes can use each type of armor (one byte
               per armor type)
 0x115ff 186   ???
 0x116b9 36    monster leader types (one byte per monster type)
-0x116dd 38    ???
+0x116dd 36    monster encounter size table (one byte per monster type)
+0x11701 2     ???
 0x11703 16    weapon value list (one byte per weapon type)
 0x11713 8     armor value list (one byte per armor type)
 0x1171b 16    weapon type list (one byte per weapon type; 0 = melee, 0xff
