@@ -94,7 +94,7 @@ int MapLoader::loadData(Map *map, U4FILE *f) {
         }
     }
     clock_t end = clock();
-
+    
 #ifndef NPERF
     FILE *file = FileSystem::openFile("debug/mapLoadData.txt", "wt");
     if (file) {
@@ -299,6 +299,8 @@ int DngMapLoader::load(Map *map) {
     dungeon->rooms = new DngRoom[dungeon->n_rooms];
 
     for (i = 0; i < dungeon->n_rooms; i++) {
+        unsigned char room_tiles[121];
+
         for (j = 0; j < DNGROOM_NTRIGGERS; j++) {
             int tmp;
 
@@ -334,7 +336,7 @@ int DngMapLoader::load(Map *map) {
         u4fread(dungeon->rooms[i].party_south_start_y, sizeof(dungeon->rooms[i].party_south_start_y), 1, dng);
         u4fread(dungeon->rooms[i].party_west_start_x, sizeof(dungeon->rooms[i].party_west_start_x), 1, dng);
         u4fread(dungeon->rooms[i].party_west_start_y, sizeof(dungeon->rooms[i].party_west_start_y), 1, dng);
-        u4fread(dungeon->rooms[i].map_data, sizeof(dungeon->rooms[i].map_data), 1, dng);
+        u4fread(room_tiles, sizeof(room_tiles), 1, dng);
         u4fread(dungeon->rooms[i].buffer, sizeof(dungeon->rooms[i].buffer), 1, dng);
 
         /* translate each creature tile to a tile id */
@@ -342,8 +344,8 @@ int DngMapLoader::load(Map *map) {
             dungeon->rooms[i].creature_tiles[j] = Tile::translate(dungeon->rooms[i].creature_tiles[j]).id;
 
         /* translate each map tile to a tile id */
-        for (j = 0; j < sizeof(dungeon->rooms[i].map_data); j++)
-            dungeon->rooms[i].map_data[j] = Tile::translate(dungeon->rooms[i].map_data[j]).id;
+        for (j = 0; j < sizeof(room_tiles); j++)
+            dungeon->rooms[i].map_data.push_back(Tile::translate(room_tiles[j]));
     }
     u4fclose(dng);
 
@@ -363,13 +365,7 @@ void DngMapLoader::initDungeonRoom(Dungeon *dng, int room) {
     dng->roomMaps[room]->id = 0;
     dng->roomMaps[room]->border_behavior = Map::BORDER_FIXED;
     dng->roomMaps[room]->width = dng->roomMaps[room]->height = 11;
-
-    for (unsigned int y = 0; y < dng->roomMaps[room]->height; y++) {
-        for (unsigned int x = 0; x < dng->roomMaps[room]->width; x++) {
-            dng->roomMaps[room]->data.push_back(MapTile(dng->rooms[room].map_data[x + (y * dng->roomMaps[room]->width)]));
-        }
-    }
-
+    dng->roomMaps[room]->data = dng->rooms[room].map_data; // Load map data
     dng->roomMaps[room]->music = Music::COMBAT;
     dng->roomMaps[room]->type = Map::COMBAT;
     dng->roomMaps[room]->flags |= NO_LINE_OF_SIGHT;

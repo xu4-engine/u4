@@ -36,7 +36,8 @@ typedef struct _DngRoom {
     unsigned char party_south_start_y[8];
     unsigned char party_west_start_x[8];
     unsigned char party_west_start_y[8];
-    unsigned char map_data[121];
+    MapData  map_data;  // This is OK to change to MapData since sizeof(DngRoom) or 
+                        // anything like it is not being used.
     unsigned char buffer[7];
 } DngRoom;
 
