@@ -24,6 +24,7 @@ install::
 	install -D ../mid/Combat.mid $(libdir)/u4/music/Combat.mid
 	install -D ../mid/Dungeon.mid $(libdir)/u4/music/Dungeon.mid
 	install -D ../mid/Fanfare_Of_Lord_British.mid $(libdir)/u4/music/Fanfare_Of_Lord_British.mid
+	install -D ../mid/Rule_Britannia.mid $(libdir)/u4/music/Rule_Britannia.mid
 	install -D ../mid/Shopping.mid $(libdir)/u4/music/Shopping.mid
 	install -D ../mid/Shrines.mid $(libdir)/u4/music/Shrines.mid
 	install -D ../mid/Towns.mid $(libdir)/u4/music/Towns.mid

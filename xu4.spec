@@ -44,6 +44,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/music/Combat.mid
 %{_libdir}/u4/music/Dungeon.mid
 %{_libdir}/u4/music/Fanfare_Of_Lord_British.mid
+%{_libdir}/u4/music/Rule_Britannia.mid
 %{_libdir}/u4/music/Shopping.mid
 %{_libdir}/u4/music/Shrines.mid
 %{_libdir}/u4/music/Towns.mid
