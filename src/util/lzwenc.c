@@ -136,9 +136,10 @@ int main(int argc, char *argv[]) {
     FILE *out;
     char *fname;
     unsigned char str[4096];
-    int idx;
+    int idx, datalen;
     int c;
     unsigned char *data, *p;
+    int bits;
 
     if (argc != 2 && argc != 3) {
         fprintf(stderr, "usage: lzwenc infile [outfile]\n");
@@ -156,17 +157,18 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    readEgaFromPng(&data, fname);
+    readEgaFromPng(&data, 200, 320, &bits, fname);
 
     initdict();
 
     p = data;
+    datalen = 320 * 200 * bits / 8;
     idx = 0;
     c = *p++;
     str[idx++] = c;
     while (1) {
         c = *p++;
-        if (p > (data + (320 * 200 / 2)))
+        if (p > (data + datalen))
             break;
         str[idx++] = c;
         if (getcode(str, idx) == -1) {
@@ -181,7 +183,7 @@ int main(int argc, char *argv[]) {
                 initdict();
                 putc_12(c, out);
                 c = *p++;
-                if (p > (data + (320 * 200 / 2)))
+                if (p > (data + datalen))
                     break;
             }
             idx = 0;

@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 
     lzwDecompress(indata, outdata, inlen);
 
-    writePngFromEga(outdata, fname);
+    writePngFromEga(outdata, 200, 320, outlen * 8 / (200 * 320), fname);
 
     return 0;
 }
