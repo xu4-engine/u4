@@ -39,6 +39,22 @@ typedef struct CoordActionInfo {
     int firstValidDistance; /* the first distance at which the action will function correctly */
 } CoordActionInfo;
 
+/**
+ * A controller to read a player number.
+ */
+class ReadPlayerController : public ReadChoiceController {
+public:
+    ReadPlayerController();
+    virtual bool keyPressed(int key);
+
+    int getPlayer();
+    int waitFor();
+};
+
+/**
+ * Controller for the reagents menu used when mixing spells.  Fills
+ * the passed in Ingredients with the selected reagents.
+ */
 class ReagentsMenuController : public MenuController {
 public:
     ReagentsMenuController(Menu *menu, Ingredients *i) : MenuController(menu), ingredients(i) { }
@@ -50,8 +66,8 @@ private:
 };
 
 /**
- * Handles input for commands requiring a letter argument in the range
- * 'a' - lastValidLetter.
+ * A controller to handle input for commands requiring a letter
+ * argument in the range 'a' - lastValidLetter.
  */
 class AlphaActionController : public WaitableController<int> {
 public:

@@ -89,6 +89,10 @@ protected:
     void *data;
 };
 
+/**
+ * A controller that wraps a keyhander function.  Keyhandlers are
+ * deprecated -- please use a controller instead.
+ */
 class KeyHandlerController : public Controller {
 public:
     KeyHandlerController(KeyHandler *handler);
@@ -101,6 +105,9 @@ private:
     KeyHandler *handler;
 };
 
+/**
+ * A controller to read a string, terminated by the enter key.
+ */
 class ReadStringController : public WaitableController<string> {
 public:
     ReadStringController(int maxlen, int screenX, int screenY, const string &accepted_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 \n\r\010");
@@ -113,6 +120,10 @@ protected:
     string accepted;
 };
 
+/**
+ * A controller to read a integer, terminated by the enter key.
+ * Non-numeric keys are ignored.
+ */
 class ReadIntController : public ReadStringController {
 public:
     ReadIntController(int maxlen, int screenX, int screenY);
@@ -121,6 +132,9 @@ public:
     int getInt() const;
 };
 
+/**
+ * A controller to read a single key from a provided list.
+ */
 class ReadChoiceController : public WaitableController<int> {
 public:
     ReadChoiceController(const string &choices);
@@ -132,21 +146,19 @@ protected:
     string choices;
 };
 
+/**
+ * A controller to read a direction enter with the arrow keys.
+ */
 class ReadDirController : public WaitableController<Direction> {
 public:    
     ReadDirController();
     virtual bool keyPressed(int key);    
 };
 
-class ReadPlayerController : public ReadChoiceController {
-public:
-    ReadPlayerController();
-    virtual bool keyPressed(int key);
-
-    int getPlayer();
-    int waitFor();
-};
-
+/**
+ * A controller to pause for a given length of time, ignoring all
+ * keyboard input.
+ */
 class WaitController : public Controller {
 public:
     WaitController(unsigned int cycles);

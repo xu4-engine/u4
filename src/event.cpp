@@ -210,6 +210,12 @@ MouseArea* EventHandler::getMouseAreaSet() const {
         return NULL;
 }
 
+/**
+ * @param maxlen the maximum length of the string
+ * @param screenX the screen column where to begin input
+ * @param screenY the screen row where to begin input
+ * @param accepted_chars a string characters to be accepted for input
+ */
 ReadStringController::ReadStringController(int maxlen, int screenX, int screenY, const string &accepted_chars) {
     this->maxlen = maxlen;
     this->screenX = screenX;
