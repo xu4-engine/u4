@@ -1077,7 +1077,6 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         c->location->y = moongate->y;
         screenMessage("Gate %d!\n", key - '0');
         break;
-
     case 'c':
         collisionOverride = !collisionOverride;
         screenMessage("Collision detection %s!\n\020", collisionOverride ? "off" : "on");
@@ -1271,20 +1270,38 @@ int castForPlayerGetPhase(int phase) {
 }
 
 int fireAtCoord(int x, int y, int distance, void *data) {
+    
     if (x == -1 && y == -1) {
         if (distance == 0)
             screenMessage("Broadsides Only!\n");
-        else
-            screenMessage("Missed!\n");
+
         gameFinishTurn();
-        return 0;
+        return 1;
     }
+    else {
+        const Monster *m = NULL;
+        const Object *obj = NULL;
 
-    screenMessage("Boom!\n");
+        obj = mapObjectAt(c->location->map, x, y, c->location->z);
+        if (obj)
+            m = monsterForTile(obj->tile);
 
-    gameFinishTurn();
+        if (m) {
+            if (rand() % 2 == 0) 
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE), 2));
+            else {
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, HITFLASH_TILE), 2));
+                if (rand() % 2 == 0)
+                    mapRemoveObject(c->location->map, obj);                
+            }
+            
+            gameFinishTurn();
+            return 1;
 
-    return 1;
+        } else annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE), 1));        
+    }       
+
+    return 0;
 }
 
 /**
@@ -2143,7 +2160,7 @@ void gameCheckHullIntegrity() {
     /* see if the ship has sunk */
     if (tileIsShip(c->saveGame->transport) && c->saveGame->shiphull <= 0)
     {
-        screenMessage("\nThy ship sinks!\n\n");
+        screenMessage("\nThy ship sinks!\n\n");        
 
         for (i = 0; i < c->saveGame->members; i++)
         {

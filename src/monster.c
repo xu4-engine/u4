@@ -140,11 +140,11 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     int era;
     
     if (tileIsSailable(tile)) {
-        mtile = ((rand() % 8) << 1) + PIRATE_TILE; 
+        mtile = ((rand() % 8) << 1) + PIRATE_TILE;         
         return monsterForTile(mtile);
     }
     else if (tileIsSwimable(tile)) {
-        mtile = ((rand() % 7) << 1) + NIXIE_TILE;
+        mtile = ((rand() % 7) << 1) + NIXIE_TILE;        
         return monsterForTile(mtile);
     }
 
@@ -196,7 +196,10 @@ MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
 
 int monsterSpecialAction(const Monster *monster) {
     switch(monster->tile) {
-    case PIRATE_TILE: /* fire cannon */
+    case PIRATE_TILE:
+        /* fire cannon */
+        break;
+
     case GIANT_SQUID_TILE: /* ranged */
     case SEA_SERPENT_TILE: /* ranged */
     case DRAGON_TILE: /* ranged */
@@ -211,7 +214,7 @@ int monsterSpecialAction(const Monster *monster) {
     return 0;
 }
 
-void monsterSpecialEffect(const Object *obj){
+void monsterSpecialEffect(Object *obj){
     Object *o;
 
     switch(obj->tile) {
@@ -221,8 +224,21 @@ void monsterSpecialEffect(const Object *obj){
             if (obj->x == c->location->x &&
                     obj->y == c->location->y &&
                     obj->z == c->location->z) {
+
+                if (tileIsShip(c->saveGame->transport)) {
+                    /* FIXME: Check actual damage from u4dos
+                       Screen should shake here */
+                    c->saveGame->shiphull -= (11 + rand()%20);
+                    if (c->saveGame->shiphull > 99)
+                    {
+                        c->saveGame->shiphull = 0;
+                        gameCheckHullIntegrity();
+                    }
+                }
+                else {
                     /* FIXME: The party gets severely damaged by the storm! */                    
-                    break;
+                }
+                break;
             }
 
             /* See if the storm is on top of any objects and destroy them! */
@@ -248,6 +264,8 @@ void monsterSpecialEffect(const Object *obj){
                 
                 /* FIXME: Screen should shake here */
                 c->saveGame->shiphull -= 10;
+                gameCheckHullIntegrity();
+
                 c->location->x = 127;
                 c->location->y = 78;
 

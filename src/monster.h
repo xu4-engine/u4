@@ -116,6 +116,6 @@ const Monster *monsterRandomForTile(unsigned char tile);
 int monsterGetInitialHp(const Monster *monster);
 MonsterStatus monsterGetStatus(const Monster *monster, int hp);
 int monsterSpecialAction(const Monster *monster);
-void monsterSpecialEffect(const Object *obj);
+void monsterSpecialEffect(Object *obj);
 
 #endif
