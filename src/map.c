@@ -43,9 +43,8 @@ int mapRead(City *city, FILE *ult, FILE *tlk) {
     memset(&(city->persons[0]), 0, sizeof(Person) * CITY_MAX_PERSONS);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (!readChar(&c, ult))
+        if (!readChar(&city->persons[i].tile0, ult))
             return 0;
-        city->persons[i].tile0 = c;
     }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
@@ -61,9 +60,8 @@ int mapRead(City *city, FILE *ult, FILE *tlk) {
     }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (!readChar(&c, ult))
+        if (!readChar(&city->persons[i].tile1, ult))
             return 0;
-        city->persons[i].tile1 = c;
     }
 
     for (i = 0; i < CITY_MAX_PERSONS * 2; i++) {
@@ -275,6 +273,8 @@ void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned i
     obj->prevtile = prevtile;
     obj->x = x;
     obj->y = y;
+    obj->prevx = x;
+    obj->prevy = y;
     obj->movement_behavior = MOVEMENT_FIXED;
     obj->person = NULL;
     obj->next = map->objects;
@@ -283,15 +283,20 @@ void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned i
 }
 
 void mapRemoveObject(Map *map, Object *rem) {
-    Object *obj = map->objects, **prev;
+    Object *obj = map->objects, *prev;
 
-    prev = &(map->objects);
+    prev = NULL;
     while (obj) {
         if (obj == rem) {
-            *prev = obj->next;
+            if (prev)
+                prev->next = obj->next;
+            else
+                map->objects = obj->next;
             free(obj);
+            return;
         }
-        obj = *prev;
+        prev = obj;
+        obj = obj->next;
     }
 }
 
