@@ -2194,7 +2194,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
             /* only the avatar can hurt other monsters with cannon fire */
             else if (originAvatar) {
                 attackFlash(x, y, HITFLASH_TILE, 5);
-                if (rand() % 2 == 0)
+                if (rand() % 4 == 0) /* reverse-engineered from u4dos */
                     mapRemoveObject(c->location->map, obj);
             }
             
