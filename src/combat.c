@@ -387,7 +387,7 @@ int combatBaseKeyHandler(int key, void *data) {
         break;
 
     case 'c':        
-        castForPlayer(focus);
+        gameCastForPlayer(focus);
         break;
 
     case 'r':

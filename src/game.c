@@ -53,7 +53,6 @@ int gameCheckPlayerDisabled(int player);
 void gameGetPlayerForCommand(int (*commandFn)(int player));
 int moveAvatar(Direction dir, int userEvent);
 int attackAtCoord(int x, int y, int distance, void *data);
-int castForPlayer(int player);
 int castForPlayer2(int spell, void *data);
 int castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
@@ -585,7 +584,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'c':
         screenMessage("Cast Spell!\nPlayer: ");
-        gameGetPlayerForCommand(&castForPlayer);
+        gameGetPlayerForCommand(&gameCastForPlayer);
         break;
 
     case 'd':
@@ -1308,7 +1307,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
 int castPlayer;
 unsigned int castSpell;
 
-int castForPlayer(int player) {
+int gameCastForPlayer(int player) {
     AlphaActionInfo *info;
 
     castPlayer = player;
