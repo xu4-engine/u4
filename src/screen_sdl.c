@@ -71,7 +71,7 @@ void screenInit(const char *screenScale, int fullScreen) {
         filterScaler = &screenScale2xBilinear;
     } else if (strcmp(screenScale, "2xSaI") == 0) {
         if (verbose)
-            printf("using 2xBi scaler\n");
+            printf("using 2xSaI scaler\n");
         scale = 2;
         filterScaler = &screenScale2xSaI;
     } else {
@@ -886,7 +886,6 @@ SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n) {
             for (i = 0; i < scale; i++) {
                 for (j = 0; j < scale; j++)
                     memcpy(&((char *)dest->pixels)[dest->pitch * (y * scale + i) + (x * scale + j) * src->format->BytesPerPixel], &((char *)src->pixels)[src->pitch * y + (x * src->format->BytesPerPixel)], src->format->BytesPerPixel);
-                //((Uint8 *)dest->pixels)[dest->pitch * (y * scale + i) + x * scale + j] = ((Uint8 *)src->pixels)[src->pitch * y + x];
             }
         }
     }
@@ -1021,14 +1020,12 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
     /*
      * Each pixel in the source image is translated into four in the
      * destination.  The destination pixels are dependant on the pixel
-     * itself, and the three surrounding pixels (A is the original
-     * pixel):
-     * A B
-     * C D
-     * The four destination pixels mapping to A are calculated as
-     * follows:
-     * [   A   ] [  (A+B)/2  ]
-     * [(A+C)/2] [(A+B+C+D)/4]
+     * itself, and the surrounding pixels as shown below (A is the
+     * original pixel):
+     * I E F J
+     * G A B K
+     * H C D L
+     * M N O P
      */
 
     for (ii = 0; ii < N; ii++) {
