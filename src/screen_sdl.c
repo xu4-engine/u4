@@ -851,7 +851,7 @@ void screenShake(int iterations) {
     SDL_Rect dest;
     int i;
 
-    if (settings->minorEnhancements && settings->minorEnhancementsOptions.screenShakes) {
+    if (settings->screenShakes) {
         dest.x = 0 * scale;
         dest.w = 320 * scale;
         dest.h = 200 * scale;

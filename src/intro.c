@@ -243,11 +243,12 @@ int introInit() {
     mainOptions = menuAddItem(mainOptions, 2, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
     mainOptions = menuAddItem(mainOptions, 0xFF, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
-    videoOptions = menuAddItem(videoOptions, 0, "Scale", 11, 16, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-    videoOptions = menuAddItem(videoOptions, 1, "Mode", 11, 17, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-    videoOptions = menuAddItem(videoOptions, 2, "Filter", 11, 18, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-    videoOptions = menuAddItem(videoOptions, 0xFE, "Use These Settings", 11, 20, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    videoOptions = menuAddItem(videoOptions, 0xFF, "Cancel", 11, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    videoOptions = menuAddItem(videoOptions, 0, "Scale", 6, 5, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+    videoOptions = menuAddItem(videoOptions, 1, "Mode", 6, 6, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+    videoOptions = menuAddItem(videoOptions, 2, "Filter", 6, 7, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+    videoOptions = menuAddItem(videoOptions, 3, "Screen Shaking", 6, 8, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+    videoOptions = menuAddItem(videoOptions, 0xFE, "Use These Settings", 6, 20, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    videoOptions = menuAddItem(videoOptions, 0xFF, "Cancel", 6, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
     soundOptions = menuAddItem(soundOptions, 0, "Volume", 11, 16, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
     soundOptions = menuAddItem(soundOptions, 1, "Fading", 11, 17, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
@@ -282,11 +283,10 @@ int introInit() {
     speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 7, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
     speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 7, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
-    minorOptions = menuAddItem(minorOptions, 3, "Screen Shaking", 7, 5, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
-    minorOptions = menuAddItem(minorOptions, 4, "Ultima V Spell Mixing", 7, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
-    minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 7, 7, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
-    minorOptions = menuAddItem(minorOptions, 1, "Slime Divides", 7, 8, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
-    minorOptions = menuAddItem(minorOptions, 2, "Fixed Chest Traps", 7, 9, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
+    minorOptions = menuAddItem(minorOptions, 4, "Ultima V Spell Mixing", 7, 5, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
+    minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 7, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
+    minorOptions = menuAddItem(minorOptions, 1, "Slime Divides", 7, 7, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
+    minorOptions = menuAddItem(minorOptions, 2, "Fixed Chest Traps", 7, 8, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
     minorOptions = menuAddItem(minorOptions, 0xFE, "Use These Settings", 7, 20, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
     minorOptions = menuAddItem(minorOptions, 0xFF, "Cancel", 7, 21, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
@@ -436,6 +436,7 @@ int introKeyHandler(int key, void *data) {
             case 's': videoOptions = menuActivateItem(videoOptions, 0, ACTIVATE_NORMAL); break;
             case 'm': videoOptions = menuActivateItem(videoOptions, 1, ACTIVATE_NORMAL); break;
             case 'f': videoOptions = menuActivateItem(videoOptions, 2, ACTIVATE_NORMAL); break;
+            case 'k': videoOptions = menuActivateItem(videoOptions, 3, ACTIVATE_NORMAL); break;
             default: break;
             }
         }
@@ -688,13 +689,13 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG_VIDEO:
-        screenDrawBackground(BKGD_INTRO);
-        screenTextAt(2, 14, "Video Options:");
-        screenTextAt(24, 16, "x%d", settings->scale);
-        screenTextAt(24, 17, "%s", settings->fullscreen ? "Fullscreen" : "Window");
-        screenTextAt(24, 18, "%s", settingsFilterToString(settings->filter));
-        menuShow(menuGetRoot(videoOptions));
-        introDrawBeasties();
+        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenTextAt(2, 3, "Video Options:");
+        screenTextAt(24, 5, "x%d", settings->scale);
+        screenTextAt(24, 6, "%s", settings->fullscreen ? "Fullscreen" : "Window");
+        screenTextAt(24, 7, "%s", settingsFilterToString(settings->filter));
+        screenTextAt(24, 8, "%s", settings->screenShakes ? "On" : "Off");
+        menuShow(menuGetRoot(videoOptions));        
         break;
 
     case INTRO_CONFIG_SOUND:
@@ -749,12 +750,11 @@ void introUpdateScreen() {
 
     case INTRO_CONFIG_MINOR_OPTIONS:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3,   "Minor Game Enhancement Options:");
-        screenTextAt(31, 5,  "%s", settings->minorEnhancementsOptions.screenShakes ? "On" : "Off");
-        screenTextAt(31, 6,  "%s", settings->minorEnhancementsOptions.u5spellMixing ? "On" : "Off");
-        screenTextAt(31, 7,  "%s", settings->minorEnhancementsOptions.u5shrines ? "On" : "Off");
-        screenTextAt(31, 8,  "%s", settings->minorEnhancementsOptions.slimeDivides ? "On" : "Off");
-        screenTextAt(31, 9,  "%s", settings->minorEnhancementsOptions.c64chestTraps ? "On" : "Off");
+        screenTextAt(2, 3,   "Minor Game Enhancement Options:");        
+        screenTextAt(31, 5,  "%s", settings->minorEnhancementsOptions.u5spellMixing ? "On" : "Off");
+        screenTextAt(31, 6,  "%s", settings->minorEnhancementsOptions.u5shrines ? "On" : "Off");
+        screenTextAt(31, 7,  "%s", settings->minorEnhancementsOptions.slimeDivides ? "On" : "Off");
+        screenTextAt(31, 8,  "%s", settings->minorEnhancementsOptions.c64chestTraps ? "On" : "Off");
         menuShow(menuGetRoot(minorOptions));
         break;
 
@@ -1013,8 +1013,7 @@ void introTimer(void *data) {
     if (mode == INTRO_MAP)
         introDrawMap();
     if (mode == INTRO_MAP || mode == INTRO_MENU || mode == INTRO_CONFIG ||
-        mode == INTRO_CONFIG_VIDEO || mode == INTRO_CONFIG_SOUND ||
-        mode == INTRO_ABOUT ||
+        mode == INTRO_ABOUT || mode == INTRO_CONFIG_SOUND ||        
         mode == INTRO_INIT_NAME || mode == INTRO_INIT_SEX)
         introDrawBeasties();
 
@@ -1340,6 +1339,10 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         }
         break;
 
+    case 3:
+        settings->screenShakes = settings->screenShakes ? 0 : 1;
+        break;
+
     case 0xFE:        
         settingsWrite();        
     
@@ -1555,10 +1558,7 @@ void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
     case 2: 
         settings->minorEnhancementsOptions.c64chestTraps = settings->minorEnhancementsOptions.c64chestTraps ? 0 : 1;
-        break;
-    case 3:
-        settings->minorEnhancementsOptions.screenShakes = settings->minorEnhancementsOptions.screenShakes ? 0 : 1;
-        break;
+        break;    
     case 4:
         settings->minorEnhancementsOptions.u5spellMixing = settings->minorEnhancementsOptions.u5spellMixing ? 0 : 1;
         break;

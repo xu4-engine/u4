@@ -14,6 +14,7 @@
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
 #define DEFAULT_FILTER                  SCL_Scale2x
+#define DEFAULT_SCREEN_SHAKES           1
 #define DEFAULT_VOLUME                  1
 #define DEFAULT_VOLUME_FADES            1
 #define DEFAULT_GERMAN_KEYBOARD         0
@@ -40,8 +41,7 @@ typedef enum {
 typedef struct _SettingsMinorOptions {
     int u5shrines;
     int slimeDivides;
-    int c64chestTraps;
-    int screenShakes;
+    int c64chestTraps;    
     int u5spellMixing;
 } SettingsMinorOptions;
 
@@ -53,6 +53,7 @@ typedef struct _Settings {
     unsigned int scale;
     int fullscreen;
     FilterType filter;
+    int screenShakes;
     int vol;
     int volumeFades;
     int germanKbd;

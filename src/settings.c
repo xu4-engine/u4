@@ -62,6 +62,7 @@ void settingsRead() {
     settings->scale                 = DEFAULT_SCALE;
     settings->fullscreen            = DEFAULT_FULLSCREEN;
     settings->filter                = DEFAULT_FILTER;
+    settings->screenShakes          = DEFAULT_SCREEN_SHAKES;
     settings->vol                   = DEFAULT_VOLUME;
     settings->volumeFades           = DEFAULT_VOLUME_FADES;
     settings->germanKbd             = DEFAULT_GERMAN_KEYBOARD;
@@ -80,8 +81,7 @@ void settingsRead() {
     /* all specific minor and major enhancements default to "on" */
     settings->minorEnhancementsOptions.u5shrines        = 1;
     settings->minorEnhancementsOptions.slimeDivides     = 1;
-    settings->minorEnhancementsOptions.c64chestTraps    = 1;    
-    settings->minorEnhancementsOptions.screenShakes     = 1;
+    settings->minorEnhancementsOptions.c64chestTraps    = 1;
     settings->minorEnhancementsOptions.u5spellMixing    = 1;
     settings->majorEnhancementsOptions.u5combat         = 1;
 
@@ -106,6 +106,8 @@ void settingsRead() {
                 settings->filter = SCL_POINT;
             }
         }
+        else if (strstr(buffer, "screenShakes=") == buffer)
+            settings->screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);
         else if (strstr(buffer, "vol=") == buffer)
             settings->vol = (int) strtoul(buffer + strlen("vol="), NULL, 0);
         else if (strstr(buffer, "volumeFades=") == buffer)
@@ -146,9 +148,7 @@ void settingsRead() {
         else if (strstr(buffer, "slimeDivides=") == buffer)
             settings->minorEnhancementsOptions.slimeDivides = (int) strtoul(buffer + strlen("slimeDivides="), NULL, 0);
         else if (strstr(buffer, "c64chestTraps=") == buffer)
-            settings->minorEnhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);
-        else if (strstr(buffer, "screenShakes=") == buffer)
-            settings->minorEnhancementsOptions.screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);
+            settings->minorEnhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);        
         else if (strstr(buffer, "u5spellMixing=") == buffer)
             settings->minorEnhancementsOptions.u5spellMixing = (int) strtoul(buffer + strlen("u5spellMixing="), NULL, 0);        
         
@@ -184,6 +184,7 @@ void settingsWrite() {
             "scale=%d\n"
             "fullscreen=%d\n"
             "filter=%s\n"
+            "screenShakes=%d\n"
             "vol=%d\n"
             "volumeFades=%d\n"
             "germanKbd=%d\n"
@@ -200,13 +201,13 @@ void settingsWrite() {
             "spellEffectSpeed=%d\n"
             "u5shrines=%d\n"
             "slimeDivides=%d\n"
-            "c64chestTraps=%d\n"
-            "screenShakes=%d\n"
+            "c64chestTraps=%d\n"            
             "u5spellMixing=%d\n"
             "u5combat=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
+            settings->screenShakes,
             settings->vol,
             settings->volumeFades,
             settings->germanKbd,
@@ -223,8 +224,7 @@ void settingsWrite() {
             settings->spellEffectSpeed,
             settings->minorEnhancementsOptions.u5shrines,
             settings->minorEnhancementsOptions.slimeDivides,
-            settings->minorEnhancementsOptions.c64chestTraps,
-            settings->minorEnhancementsOptions.screenShakes,
+            settings->minorEnhancementsOptions.c64chestTraps,            
             settings->minorEnhancementsOptions.u5spellMixing,
             settings->majorEnhancementsOptions.u5combat);
 
