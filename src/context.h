@@ -86,8 +86,10 @@ public:
     bool operator!=(const AuraType &t) const    { return !operator==(t); }
 
     void passTurn() {
-        if (--duration < 0)
+        if (--duration <= 0) {
+            type = AURA_NONE;
             duration = 0;
+        }
     }    
 
 private:
