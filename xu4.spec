@@ -36,13 +36,16 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc README doc/FileFormats.txt
+%doc README AUTHORS COPYING doc/FileFormats.txt
 %{_bindir}/u4
 %{_datadir}/pixmaps/u4.bmp
 %{_datadir}/pixmaps/u4.png
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Mon May 13 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added new doc files
+
 * Mon May  6 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added pixmaps, desktop entry
 
