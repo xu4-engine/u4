@@ -255,6 +255,10 @@ int gameBaseKeyHandler(int key, void *data) {
         eventHandlerPushKeyHandler(&gameSpecialCmdKeyHandler);
         break;
 
+    case ' ':
+        screenMessage("Pass!\n");
+        break;
+
     case 'a':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &attackAtCoord;
@@ -970,8 +974,13 @@ int jimmyAtCoord(int x, int y) {
         !tileIsLockedDoor(mapTileAt(c->map, x, y)))
         return 0;
 
-    annotationAdd(x, y, -1, 0x3b);
-    screenMessage("\nUnlocked!\n");
+    if (c->saveGame->keys) {
+        c->saveGame->keys--;
+        annotationAdd(x, y, -1, 0x3b);
+        screenMessage("\nUnlocked!\n");
+    } else
+        screenMessage("No keys left!\n");
+
     gameFinishTurn();
 
     return 1;

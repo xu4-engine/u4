@@ -179,6 +179,10 @@ int combatBaseKeyHandler(int key, void *data) {
         combatEnd();
         break;
         
+    case ' ':
+        screenMessage("Pass!\n");
+        break;
+
     case 'a':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &combatAttackAtCoord;
