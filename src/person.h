@@ -25,7 +25,7 @@ typedef enum {
     QUESTION_SHOULDSAYNO
 } PersonQuestionType;
 
-typedef struct {
+typedef struct _Person {
     char *name;
     char *pronoun;
     char *description;
