@@ -536,10 +536,7 @@ void IntroController::initiateNewGame() {
     screenShowCursor();
     screenRedrawScreen();
 
-    ReadStringController nameCont(12, 12, 20);
-    eventHandler->pushController(&nameCont);
-    nameBuffer = nameCont.waitFor();
-
+    nameBuffer = ReadStringController::get(12, 12, 20);
     if (nameBuffer[0] == '\0') {
         mode = INTRO_MENU;
         updateScreen();
@@ -553,10 +550,7 @@ void IntroController::initiateNewGame() {
     screenSetCursorPos(29, 16);
     screenShowCursor();
 
-    ReadChoiceController sexCont("mf");
-    eventHandler->pushController(&sexCont);
-    int sexChoice = sexCont.waitFor();
-
+    int sexChoice = ReadChoiceController::get("mf");
     if (sexChoice == 'm')
         sex = SEX_MALE;
     else
@@ -763,9 +757,7 @@ void IntroController::about() {
     drawBeasties();
     screenHideCursor();
 
-    ReadChoiceController pauseController("");
-    eventHandler->pushController(&pauseController);
-    pauseController.waitFor();
+    ReadChoiceController::get("");
 
     mode = INTRO_MENU;
     screenShowCursor();

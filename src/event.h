@@ -41,6 +41,7 @@ using std::string;
 extern int eventTimerGranularity;
 
 struct _MouseArea;
+class EventHandler;
 
 /**
  * A class for handling keystrokes. 
@@ -105,6 +106,7 @@ public:
     ReadStringController(int maxlen, int screenX, int screenY);
     virtual bool keyPressed(int key);
 
+    static string get(int maxlen, int screenX, int screenY, EventHandler *eh = NULL);
     string getString();
     string waitFor();
 
@@ -119,6 +121,7 @@ public:
     ReadChoiceController(const string &choices);
     virtual bool keyPressed(int key);
 
+    static char get(const string &choices, EventHandler *eh = NULL);
     int getChoice();
     int waitFor();
 
@@ -139,6 +142,15 @@ public:
 private:
     Direction dir;
     bool exitWhenDone;
+};
+
+class ReadPlayerController : public ReadChoiceController {
+public:
+    ReadPlayerController();
+    virtual bool keyPressed(int key);
+
+    int getPlayer();
+    int waitFor();
 };
 
 class WaitController : public Controller {

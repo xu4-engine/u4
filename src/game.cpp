@@ -1415,11 +1415,9 @@ bool gameBaseKeyHandler(int key, void *data) {
             endTurn = false;
 
             screenMessage("Quit to menu?");            
-            ReadChoiceController readChoice("yn \015\033");
-
-            eventHandler->pushController(&readChoice);
-            screenMessage("%c", readChoice.waitFor());
-            if (readChoice.getChoice() != 'y') {
+            char choice = ReadChoiceController::get("yn \015\033");            
+            screenMessage("%c", choice);
+            if (choice != 'y') {
                 screenMessage("\n");
                 break;
             }
@@ -1910,8 +1908,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         return true;
 
     case 't':
-        if (c->location->map->isWorldMap()) {
-            ReadChoiceController readChoice("shb \033\015");
+        if (c->location->map->isWorldMap()) {            
             MapCoords coords = c->location->coords;
             static MapTile horse = Tileset::findTileByName("horse")->id,
                 ship = Tileset::findTileByName("ship")->id,
@@ -1919,12 +1916,11 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
             MapTile *choice; 
             Tile *tile;
             
-            screenMessage("Create transport!\nWhich? ");
-            
-            // Get the transport of choice
-            eventHandler->pushController(&readChoice);            
+            screenMessage("Create transport!\nWhich? ");            
 
-            switch(readChoice.waitFor()) {
+            // Get the transport of choice
+            char transport = ReadChoiceController::get("shb \033\015");
+            switch(transport) {
                 case 's': choice = &ship; break;
                 case 'h': choice = &horse; break;
                 case 'b': choice = &balloon; break;
@@ -1950,7 +1946,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
 
                     screenMessage("%s\n", getDirectionName(readDir.getDir()));
 
-                    switch(readChoice.getChoice()) {
+                    switch(transport) {
                     case 's': ok = ground->isSailable(); break;
                     case 'h': ok = ground->isWalkable(); break;
                     case 'b': ok = ground->isWalkable(); break;
@@ -2708,10 +2704,7 @@ void mixReagents() {
         screenMessage("For Spell: ");
         c->stats->showMixtures();
 
-        ReadChoiceController getSpellController("abcdefghijklmnopqrstuvwxyz \033\n\r");
-        eventHandler->pushController(&getSpellController);
-        int choice = getSpellController.waitFor();
-
+        int choice = ReadChoiceController::get("abcdefghijklmnopqrstuvwxyz \033\n\r");
         if (choice == ' ' || choice == '\033' || choice == '\n' || choice == '\r')
             break;
 
@@ -2751,9 +2744,7 @@ bool mixReagentsForSpell(int spell) {
 
         screenMessage("How many? ");
 
-        ReadStringController howManyController(2, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
-        eventHandler->pushController(&howManyController);
-        string howmany = howManyController.waitFor();
+        string howmany = ReadStringController::get(2, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);        
         gameSpellMixHowMany(spell, (int) strtol(howmany.c_str(), NULL, 10), &ingredients);
     }
 
@@ -2763,10 +2754,8 @@ bool mixReagentsForSpell(int spell) {
         c->stats->showReagents();
 
         while (1) {
-            ReadChoiceController getReagentController("abcdefgh\n\r \033");
-            eventHandler->pushController(&getReagentController);
-            int choice = getReagentController.waitFor();
-
+            int choice = ReadChoiceController::get("abcdefgh\n\r \033");
+            
             // done selecting reagents? mix it up and prompt to mix
             // another spell
             if (choice == '\n' || choice == '\r' || choice == ' ') {

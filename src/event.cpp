@@ -255,6 +255,15 @@ bool ReadStringController::keyPressed(int key) {
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
+string ReadStringController::get(int maxlen, int screenX, int screenY, EventHandler *eh) {
+    if (!eh)
+        eh = eventHandler;
+
+    ReadStringController ctrl(maxlen, screenX, screenY);
+    eh->pushController(&ctrl);
+    return ctrl.waitFor();
+}
+
 string ReadStringController::getString() {
     return value;
 }
@@ -285,6 +294,15 @@ bool ReadChoiceController::keyPressed(int key) {
     }
 
     return false;
+}
+
+char ReadChoiceController::get(const string &choices, EventHandler *eh) {
+    if (!eh)
+        eh = eventHandler;
+    
+    ReadChoiceController ctrl(choices);
+    eh->pushController(&ctrl);
+    return ctrl.waitFor();
 }
 
 int ReadChoiceController::getChoice() {

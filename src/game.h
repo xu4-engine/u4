@@ -46,15 +46,6 @@ typedef struct CoordActionInfo {
     int firstValidDistance; /* the first distance at which the action will function correctly */
 } CoordActionInfo;
 
-class ReadPlayerController : public ReadChoiceController {
-public:
-    ReadPlayerController();
-    virtual bool keyPressed(int key);
-
-    int getPlayer();
-    int waitFor();
-};
-
 class ReagentsMenuController : public MenuController {
 public:
     ReagentsMenuController(Menu *menu, Ingredients *i) : MenuController(menu), ingredients(i) { }
