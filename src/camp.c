@@ -65,6 +65,8 @@ void campEnd() {
         c->parent->moonPhase = c->moonPhase;
         c->parent->windDirection = c->windDirection;
         c->parent->windCounter = c->windCounter;
+        c->parent->aura = c->aura;
+        c->parent->auraDuration = c->auraDuration;
         c = c->parent;
         c->col = 0;
         free(t);

@@ -106,6 +106,8 @@ int main(int argc, char *argv[]) {
     c->moonPhase = 0;
     c->windDirection = DIR_NORTH;
     c->windCounter = 0;
+    c->aura = AURA_NONE;
+    c->auraDuration = 0;
 
     /* load in the save game */
     saveGameFile = fopen("party.sav", "rb");

@@ -92,6 +92,8 @@ void deathRevive() {
             c->parent->moonPhase = c->moonPhase;
             c->parent->windDirection = c->windDirection;
             c->parent->windCounter = c->windCounter;
+            c->parent->aura = c->aura;
+            c->parent->auraDuration = c->auraDuration;
             c = c->parent;
             c->col = 0;
             free(t);
@@ -108,6 +110,8 @@ void deathRevive() {
     c->saveGame->y = REVIVE_CASTLE_Y;
     c->saveGame->dngx = REVIVE_WORLD_X;
     c->saveGame->dngy = REVIVE_WORLD_Y;
+    c->aura = AURA_NONE;
+    c->auraDuration = 0;
     gameSetViewMode(VIEW_NORMAL);
     musicPlay();
 
