@@ -2,7 +2,7 @@
 <!DOCTYPE tileset SYSTEM "dtd/tileset.dtd">
 <!-- $Id$ -->
 <tileset name="dungeon" extends="base">
-    <tile name="up_down_ladder"/>
+    <tile name="up_down_ladder" image="tile_bridge"/>
     <tile name="ceiling_hole" image="tile_brick_floor"/>
     <tile name="floor_hole" image="tile_brick_floor"/>
     <tile name="magic_orb" image="tile_magic_flash"/>
