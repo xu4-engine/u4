@@ -44,11 +44,11 @@ int u4fgetshort(U4FILE *f);
 int u4fputc(int c, U4FILE *f);
 long u4flength(U4FILE *f);
 std::vector<std::string> u4read_stringtable(U4FILE *f, long offset, int nstrings);
-std::string u4find_path(const char *fname, const char * const *pathent, unsigned int npathents);
-std::string u4find_music(const char *fname);
-std::string u4find_sound(const char *fname);
-std::string u4find_conf(const char *fname);
-std::string u4find_graphics(const char *fname);
+std::string u4find_path(const std::string &fname, const char * const *pathent, unsigned int npathents);
+std::string u4find_music(const std::string &fname);
+std::string u4find_sound(const std::string &fname);
+std::string u4find_conf(const std::string &fname);
+std::string u4find_graphics(const std::string &fname);
 std::string u4upgrade_translate_filename(const std::string &fname);
 CompressionType u4GetCompTypeByStr(const char *comp);
 

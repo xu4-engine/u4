@@ -332,12 +332,12 @@ U4FILE *u4fopen(const string &fname) {
      */
     string fname_copy(fname);
 
-    pathname = u4find_path(fname_copy.c_str(), paths, sizeof(paths) / sizeof(paths[0]));
+    pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
     if (pathname.empty()) {
         using namespace std;
         if (islower(fname_copy[0])) {
             fname_copy[0] = toupper(fname_copy[0]);
-            pathname = u4find_path(fname_copy.c_str(), paths, sizeof(paths) / sizeof(paths[0]));
+            pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
         }
 
         if (pathname.empty()) {
@@ -345,7 +345,7 @@ U4FILE *u4fopen(const string &fname) {
                 if (islower(fname_copy[i]))
                     fname_copy[i] = toupper(fname_copy[i]);
             }
-            pathname = u4find_path(fname_copy.c_str(), paths, sizeof(paths) / sizeof(paths[0]));
+            pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
         }
     }
 
@@ -428,13 +428,13 @@ vector<string> u4read_stringtable(U4FILE *f, long offset, int nstrings) {
     return strs;
 }
 
-string u4find_path(const char *fname, const char * const *pathent, unsigned int npathents) {
+string u4find_path(const string &fname, const char * const *pathent, unsigned int npathents) {
     FILE *f = NULL;
     unsigned int i;
     char pathname[128];
 
     for (i = 0; i < npathents; i++) {
-        snprintf(pathname, sizeof(pathname), "%s%s", pathent[i], fname);
+        snprintf(pathname, sizeof(pathname), "%s%s", pathent[i], fname.c_str());
 
         if (verbose)
             printf("trying to open %s\n", pathname);
@@ -447,7 +447,7 @@ string u4find_path(const char *fname, const char * const *pathent, unsigned int 
         if (f != NULL)
             printf("%s successfully found\n", pathname);
         else 
-            printf("%s not found\n", fname);
+            printf("%s not found\n", fname.c_str());
     }
 
     if (f) {
@@ -457,19 +457,19 @@ string u4find_path(const char *fname, const char * const *pathent, unsigned int 
         return "";
 }
 
-string u4find_music(const char *fname) {
+string u4find_music(const string &fname) {
     return u4find_path(fname, music_paths, sizeof(music_paths) / sizeof(music_paths[0]));
 }
 
-string u4find_sound(const char *fname) {
+string u4find_sound(const string &fname) {
     return u4find_path(fname, sound_paths, sizeof(sound_paths) / sizeof(sound_paths[0]));
 }
 
-string u4find_conf(const char *fname) {
+string u4find_conf(const string &fname) {
     return u4find_path(fname, conf_paths, sizeof(conf_paths) / sizeof(conf_paths[0]));
 }
 
-string u4find_graphics(const char *fname) {
+string u4find_graphics(const string &fname) {
     return u4find_path(fname, graphics_paths, sizeof(graphics_paths) / sizeof(graphics_paths[0]));
 }
 
