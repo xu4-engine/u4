@@ -249,7 +249,7 @@ Things that might be in here, but haven't been verified:
  - direction of the wind
 
 offset len  notes
-0x0    4    ???
+0x0    4    counter (incremented regularly, probably every screen update)
 0x4    2    moves (low word)
 0x6    2    moves (high word)
 0x8    39   player 0 record
@@ -296,10 +296,13 @@ offset len  notes
             facing west, 0x15-horse facing east, 0x18-balloon, 0x1f-on
             foot)
 0x1DC  2    balloon status (0-on ground, 1-flying)
-0x1DE  6    ???
+0x1DE  2    current phase of left moon (Trammel); range = 0-7
+0x1E0  2    current phase of right moon (Felucca); range = 0-7
+0x1E2  2    ???
 0x1E4  1    introduced to Lord British (0-haven't been introduced, 1-introduced)
 0x1E5  9    ???
-0x1EE  2    ??? (coordinates of a dungeon)
+0x1EE  2    if the party is in a dungeon: coordinates of this dungeon
+            if not: coordinates of the dungeon last entered by the party
 0x1F0  2    orientation in dungeon (0-west, 1-north, 2-east, 3-south)
 0x1F2  2    dungeon level (starting at zero)
 0x1F4  2    ???
