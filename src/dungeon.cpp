@@ -45,7 +45,7 @@ DungeonToken dungeonTokenForTile(MapTile tile) {
     const static std::string tileNames[] = {
         "brick_floor", "up_ladder", "down_ladder", "up_down_ladder", "chest",
         "ceiling_hole", "floor_hole", "magic_orb", "brick_floor", "fountain", 
-        "brick_floor", "altar", "dungeon_door", "dungeon_room", "secret_door", "brick_wall", ""
+        "brick_floor", "dungeon_altar", "dungeon_door", "dungeon_room", "secret_door", "brick_wall", ""
     };
 
     const static std::string fieldNames[] = { "poison_field", "energy_field", "fire_field", "sleep_field", "" };
