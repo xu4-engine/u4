@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
     c->parent = NULL;
     c->map = &world_map;
-    c->annotation = NULL;
+    c->map->annotation = NULL;
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.buffer[0] = '\0';
