@@ -9,12 +9,16 @@
 #include "event.h"
 #include "map.h"
 #include "menu.h"
+#include "movement.h"
+#include "sound.h"
 #include "types.h"
 
 class Map;
 struct Portal;
 class Creature;
 class Ingredients;
+class Party;
+class PartyMember;
 
 typedef enum {
     VIEW_NORMAL,
@@ -81,9 +85,23 @@ private:
     string prompt;
 };
 
+/**
+ * The main game controller that handles basic game flow and keypresses.
+ */
+class GameController : public Controller {
+public:
+    /* controller functions */
+    virtual bool keyPressed(int key);
+    virtual void timerFired();
+
+    /* main game functions */
+    void init(void);    
+    static void finishTurn(void);
+};
+
+extern GameController *game;
+
 /* main game functions */
-void gameInit(void);
-void gameTimer(void *data);
 void gameFinishTurn(void);
 
 /* key handlers */

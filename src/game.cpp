@@ -52,6 +52,8 @@
 #include "script.h"
 #include "weapon.h"
 
+GameController *game = NULL;
+
 /*-----------------*/
 /* Functions BEGIN */
 
@@ -247,7 +249,7 @@ int AlphaActionController::get(char lastValidLetter, const string &prompt, Event
     return ctrl.waitFor();
 }
 
-void gameInit() {
+void GameController::init() {
     FILE *saveGameFile, *monstersFile;    
     Image *screen = imageMgr->get("screen")->image;
 
@@ -390,11 +392,7 @@ void gameInit() {
     c->aura->addObserver(c->stats);
     c->party->addObserver(c->stats);
     spellMixMenu.addObserver(c->stats);
-
-    TRACE_LOCAL(gameDbg, "Setting up event timer and key handler.");
-
-    eventHandler->getTimer()->add(&gameTimer, 1);
-    eventHandler->setKeyHandler(&gameBaseKeyHandler);
+    
     eventHandler->setScreenUpdate(&gameUpdateScreen);
 
     TRACE_LOCAL(gameDbg, "Setting up script information providers.");
@@ -585,7 +583,7 @@ void gameUpdateScreen() {
 void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
     int viewMode;
     LocationContext context;
-    FinishTurnCallback finishTurn = &gameFinishTurn;
+    FinishTurnCallback finishTurn = &GameController::finishTurn;
     Tileset *tileset = Tileset::get("base");
     MoveCallback move = &gameMoveAvatar;        
     int activePlayer = (c->location) ? c->location->activePlayer : -1;
@@ -680,7 +678,7 @@ int gameExitToParentMap() {
  * tasks like adjusting the party's food, incrementing the number of
  * moves, etc.
  */
-void gameFinishTurn() {
+void GameController::finishTurn() {
     Creature *attacker = NULL;    
 
     while (1) {
@@ -846,7 +844,7 @@ bool gameCheckPlayerDisabled(int player) {
  * The main key handler for the game.  Interpretes each key as a
  * command - 'a' for attack, 't' for talk, etc.
  */
-bool gameBaseKeyHandler(int key, void *data) {
+bool GameController::keyPressed(int key) {
     bool valid = true;
     int endTurn = 1;
     Object *obj;
@@ -1453,16 +1451,18 @@ bool gameBaseKeyHandler(int key, void *data) {
             }
             
             eventHandler->setScreenUpdate(NULL);
+            eventHandler->popController();
+            
             eventHandler->pushController(intro);
             intro->init();
-            eventHandler->getTimer()->remove(&gameTimer);
             eventHandler->run();
             intro->deleteIntro();
             if (!quit) {
                 eventHandler->setControllerDone(false);
-                eventHandler->popController();            
-                
-                gameInit();
+                eventHandler->popController();
+                eventHandler->pushController(game);
+                game->init();
+                eventHandler->run();                
             }
         }
         break;
@@ -1502,9 +1502,7 @@ bool gameBaseKeyHandler(int key, void *data) {
     }
 
     if (valid && endTurn) {
-        if (eventHandler->getController() != c->combat &&
-            (!eventHandler->getKeyHandler() || (*eventHandler->getKeyHandler() == &gameBaseKeyHandler &&
-            c->location->finishTurn == &gameFinishTurn)))
+        if (eventHandler->getController() != c->combat && eventHandler->getController() == game)            
             (*c->location->finishTurn)();
     }
     else if (!endTurn) {
@@ -3027,7 +3025,7 @@ int useItem(string *itemName) {
 
     itemUse(itemName->c_str());
 
-    if (*eventHandler->getKeyHandler() == &gameBaseKeyHandler ||
+    if (eventHandler->getController() == game ||
         eventHandler->getController() == c->combat)
         (*c->location->finishTurn)();
 
@@ -3096,8 +3094,8 @@ bool ztatsFor(int player) {
 
 /**
  * This function is called every quarter second.
- */
-void gameTimer(void *data) {
+ */    
+void GameController::timerFired() {
 
     if (pausedTimer > 0) {
         pausedTimer--;
@@ -3138,9 +3136,8 @@ void gameTimer(void *data) {
          * force pass if no commands within last 20 seconds
          */
         Controller *controller = eventHandler->getController();
-        KeyHandlerController *keyHandlerController = dynamic_cast<KeyHandlerController *>(controller);
-        bool baseKeyHandlerActive = (keyHandlerController != NULL) && (*keyHandlerController->getKeyHandler()) == &gameBaseKeyHandler;
-        if (controller != NULL && (baseKeyHandlerActive || eventHandler->getController() == c->combat) &&
+        KeyHandlerController *keyHandlerController = dynamic_cast<KeyHandlerController *>(controller);        
+        if (controller != NULL && (eventHandler->getController() == game || eventHandler->getController() == c->combat) &&
              gameTimeSinceLastCommand() > 20) {
          
             /* pass the turn, and redraw the text area so the prompt is shown */

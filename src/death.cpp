@@ -94,12 +94,11 @@ void deathRevive() {
     while(!c->location->map->isWorldMap() && c->location->prev != NULL) {
         gameExitToParentMap();        
     }
+
+    eventHandler->setController(game);
     
     deathSequenceRunning = 0;
     gameSetViewMode(VIEW_NORMAL);
-
-    eventHandler->setKeyHandler(&KeyHandler::defaultHandler);
-    eventHandler->pushKeyHandler(&gameBaseKeyHandler);
 
     /* Move our world map location to Lord British's Castle */
     c->location->coords = c->location->map->portals[0]->coords;

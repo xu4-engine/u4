@@ -134,18 +134,17 @@ int main(int argc, char *argv[]) {
 
     /* play the game! */
     perf.start();
-    gameInit();
+    game = new GameController();
+    game->init();    
     perf.end("gameInit()");
     
     /* give a performance report */
     if (settings.debug)
         perf.report("\n===============================\n\n");
-    
-    eventHandler->run();    
 
-    /* main event handler returned - cleanup and exit! */
-    eventHandler->getTimer()->remove(&gameTimer);
-    eventHandler->popKeyHandler();
+    eventHandler->pushController(game);    
+    eventHandler->run();
+    eventHandler->popController();
 
     Tileset::unloadAll();
 
