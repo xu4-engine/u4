@@ -84,6 +84,15 @@ void playerAdvanceLevel(SaveGamePlayerRecord *player) {
 }
 
 /**
+ * Award a player experience points.  Maxs out the players xp at 9999.
+ */
+void playerAwardXp(SaveGamePlayerRecord *player, int xp) {
+    player->xp += xp;
+    if (player->xp > 9999)
+        player->xp = 9999;
+}
+
+/**
  * Determine the most magic points a character could given his class
  * and intelligence.
  */

@@ -59,6 +59,7 @@ void playerApplyDamage(SaveGamePlayerRecord *player, int damage);
 int playerGetRealLevel(const SaveGamePlayerRecord *player);
 int playerGetMaxLevel(const SaveGamePlayerRecord *player);
 void playerAdvanceLevel(SaveGamePlayerRecord *player);
+void playerAwardXp(SaveGamePlayerRecord *player, int xp);
 int playerGetMaxMp(const SaveGamePlayerRecord *player);
 int playerCanWear(const SaveGamePlayerRecord *player, ArmorType armor);
 int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon);
