@@ -16,55 +16,6 @@ class TileRule;
 
 typedef std::vector<class Tile *> TileVector;
 
-/*#define DEEP_WATER_TILE 0x0
-#define WATER_TILE 0x1
-#define SHALLOW_WATER_TILE 0x2
-#define SWAMP_TILE 0x3
-#define GRASS_TILE 0x4
-#define BRUSH_TILE 0x5
-#define FOREST_TILE 0x6
-#define HILLS_TILE 0x7
-#define DUNGEON_TILE 0x9
-#define CITY_TILE 0xa
-#define CASTLE_TILE 0xb
-#define TOWN_TILE 0xc
-#define LCB1_TILE 0xd
-#define LCB2_TILE 0xe
-#define LCB3_TILE 0xf
-#define LADDERUP_TILE 0x1b
-#define LADDERDOWN_TILE 0x1c
-#define HORSE1_TILE 0x14
-#define HORSE2_TILE 0x15
-#define BRICKFLOOR_1_TILE 0x16
-#define BRIDGE_TILE 0x17
-#define BALLOON_TILE 0x18
-#define NORTHBRIDGE_TILE 0x19
-#define SOUTHBRIDGE_TILE 0x1a
-#define SHRINE_TILE 0x1e
-#define AVATAR_TILE 0x1f
-#define CHEST_TILE 0x3c
-#define BOULDER_TILE 0x37
-#define CORPSE_TILE 0x38
-#define BRICKFLOOR_TILE 0x3e
-#define WOODFLOOR_TILE 0x3f
-#define MOONGATE0_TILE 0x40
-#define MOONGATE1_TILE 0x41
-#define MOONGATE2_TILE 0x42
-#define MOONGATE3_TILE 0x43
-#define POISONFIELD_TILE 0x44
-#define LIGHTNINGFIELD_TILE 0x45
-#define FIREFIELD_TILE 0x46
-#define SLEEPFIELD_TILE 0x47
-#define ALTAR_TILE 0x4A
-#define LAVA_TILE 0x4C
-#define MISSFLASH_TILE 0x4D
-#define MAGICFLASH_TILE 0x4E
-#define HITFLASH_TILE 0x4F
-#define BLACK_TILE 0x7e
-#define WALL_TILE 0x7f
-#define PIRATE_TILE 0x80
-#define WHIRLPOOL_TILE 0x8c*/
-
 /* attr masks */
 #define MASK_SHIP               0x0001
 #define MASK_HORSE              0x0002
@@ -91,7 +42,7 @@ class Tile : public MapTile {
 public:
     static Tile *findByName(string name);
     static void loadProperties(Tile *tile, void *xmlNode);    
-    static MapTile getMapTile(int index);
+    static MapTile translate(int index, string tileMap = "base");
     static unsigned int getIndex(TileId id);
 
     string name;    

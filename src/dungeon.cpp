@@ -44,13 +44,14 @@ string Dungeon::getName() {
 DungeonToken dungeonTokenForTile(MapTile tile) {    
     const static std::string tileNames[] = {
         "brick_floor", "up_ladder", "down_ladder", "up_down_ladder", "chest",
-        "ceiling_hole", "floor_hole", "magic_orb", "brick_floor", "shallows", 
-        "brick_floor", "altar", "door", "room", "secret_door", "brick_wall", ""
+        "ceiling_hole", "floor_hole", "magic_orb", "brick_floor", "fountain", 
+        "brick_floor", "altar", "dungeon_door", "dungeon_room", "secret_door", "brick_wall", ""
     };
 
     int i;
-    for (i = 0; !tileNames[i].empty(); i++) {
-        Tile *t = Tileset::tiles[tile.id];
+    Tile *t = Tileset::tiles[tile.id];
+
+    for (i = 0; !tileNames[i].empty(); i++) {        
         if (strcasecmp(t->name.c_str(), tileNames[i].c_str()) == 0)
             return DungeonToken(i<<4);
     }
@@ -63,7 +64,7 @@ DungeonToken dungeonTokenForTile(MapTile tile) {
  * NOTE: This function will always need type-casting to the token type necessary
  */
 unsigned char dungeonSubTokenForTile(MapTile tile) {    
-    return (tile.frame);
+    return (tile.type);
 }
 
 /**

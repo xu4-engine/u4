@@ -154,7 +154,7 @@ TileVector  Tileset::tiles;
 int         Tileset::totalFrames = 0;
 string      Tileset::imageName;
 TileId      Tileset::currentId = 0;
-std::map<int, int> Tileset::indexMap;
+Tileset::TileMapMap Tileset::tileMaps;
 
 /**
  * Loads all tilesets using the filename
@@ -182,16 +182,20 @@ void Tileset::load(string filename) {
 
     /* load all of the tilesets */
     for (node = root->xmlChildrenNode; node; node = node->next) {
-        string groupFilename;
-                
-        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tileset") != 0)
+        if (xmlNodeIsText(node))            
             continue;
-        
-        /* get filename of each group */
-        groupFilename = xmlGetPropAsStr(node, "file");        
-    
-        /* load the tile group! */
-        loadGroup(groupFilename);
+        else if (xmlStrcmp(node->name, (xmlChar *)"tileset") == 0) {        
+            /* get filename of each group */
+            string groupFilename = xmlGetPropAsStr(node, "file");
+            /* load the tile group! */
+            loadGroup(groupFilename);
+        }
+        else if (xmlStrcmp(node->name, (xmlChar *)"tilemap") == 0) {
+            /* get filename of the tilemap */
+            string tilemapFilename = xmlGetPropAsStr(node, "file");
+            /* load the tilemap ! */
+            loadTileMap(tilemapFilename);
+        }
     }
 }
 
@@ -200,12 +204,62 @@ void Tileset::load(string filename) {
  */
 void Tileset::unload() {
     TileVector::iterator i;
+    TileMapMap::iterator map;
+        
+    /* free all the memory for the tiles */
     for (i = tiles.begin(); i != tiles.end(); i++)
         delete *i;
+    
+    /* free all the memory for the tile maps */
+    for (map = tileMaps.begin(); map != tileMaps.end(); map++)
+        delete map->second;
+
     tiles.clear();
     totalFrames = 0;
     imageName.erase();
     currentId = 0;    
+}
+
+/**
+ * Loads a tile map which translates between tile indices and tile names
+ * Tile maps are useful to translate from dos tile indices to xu4 tile ids
+ */
+void Tileset::loadTileMap(string filename) {
+    xmlDocPtr doc;
+    xmlNodePtr root, node;        
+    
+    /* open the filename for the group and parse it! */
+    doc = xmlParse(filename.c_str());
+    root = xmlDocGetRootElement(doc);
+    if (xmlStrcmp(root->name, (const xmlChar *) "tilemap") != 0)
+        errorFatal("malformed %s", filename.c_str());
+
+    TileMap* tileMap = new TileMap;
+    
+    string name = xmlGetPropAsStr(root, "name");    
+    
+    int index = 0;
+    for (node = root->xmlChildrenNode; node; node = node->next) {
+        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"map") != 0)
+            continue;
+        
+        int frames = 1;
+        string tile = xmlGetPropAsStr(node, "tile");
+        
+        if (xmlPropExists(node, "index"))
+            index = xmlGetPropAsInt(node, "index");
+        if (xmlPropExists(node, "frames"))
+            frames = xmlGetPropAsInt(node, "frames");
+
+        /* insert the tile into the tile map */
+        for (int i = 0; i < frames; i++)
+            (*tileMap)[index+i] = tile;        
+
+        index += frames;
+    }
+    
+    /* add the tilemap to our list */
+    tileMaps[name] = tileMap;
 }
 
 /**
@@ -219,7 +273,7 @@ void Tileset::loadGroup(string filename) {
     doc = xmlParse(filename.c_str());
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "tiles") != 0)
-        errorFatal("malformed %s", filename.c_str());    
+        errorFatal("malformed %s", filename.c_str());
 
     static int index = 0;
     for (node = root->xmlChildrenNode; node; node = node->next) {
@@ -236,14 +290,8 @@ void Tileset::loadGroup(string filename) {
         tile.id = getNextTileId();
 
         /* add the tile to our tileset */
-        tiles.push_back(new Tile(tile));
+        tiles.push_back(new Tile(tile));        
         
-        /* FIXME: the index map should only be used for the
-           base tiles -- for others it is unpredictable */
-        /* setup our index map for the tileset */
-        for (int i = 0; i < tile.frames; i++)
-            indexMap[tile.index + i] = tile.id;
-
         index += tile.frames;
     }
     totalFrames = index;

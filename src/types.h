@@ -106,6 +106,7 @@ public:
     // Properties
     TileId id;
     unsigned char frame;
+    unsigned char type;
 };
 
 #endif

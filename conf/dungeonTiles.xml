@@ -6,6 +6,8 @@
     <tile name="ceiling_hole"/>
     <tile name="floor_hole"/>
     <tile name="magic_orb"/>
-    <tile name="fountain" animated="true"/>    
-    <tile name="room" rule="dng_room"/>    
+    <tile name="fountain" animated="true"/>
+    <tile name="dungeon_room" rule="dng_room"/>    
+    <tile name="dungeon_door" rule="dng_door"/>
+    <tile name="dungeon_altar" rule="dng_altar"/>
 </tiles>

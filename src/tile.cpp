@@ -66,9 +66,18 @@ Tile *Tile::findByName(string name) {
 /**
  * Returns the tile at the corresponding index of the current tileset
  */ 
-MapTile Tile::getMapTile(int index) {    
-    Tile *tile = Tileset::tiles[Tileset::indexMap[index]];    
-    return MapTile(tile->id, index - tile->index);
+MapTile Tile::translate(int index, string tileMap) {    
+    Tileset::TileMapMap::iterator i = Tileset::tileMaps.find(tileMap);
+    if (i != Tileset::tileMaps.end()) {
+        TileMap *map = i->second;
+        Tile *tile = Tile::findByName((*map)[index]);
+        if (!tile)
+            errorFatal("Error: the tile '%s' was not found in the tileset", (*map)[index].c_str());
+        
+        /* FIXME: is tile->index accurate? almost definately not */
+        return MapTile(tile->id, index - tile->index);
+    }
+    return MapTile();
 }
 
 unsigned int Tile::getIndex(TileId id) {
@@ -254,7 +263,7 @@ bool MapTile::canAttackOverTile(MapTile tile) {
 }
 
 MapTile MapTile::tileForClass(int klass) {    
-    return Tile::getMapTile((klass * 2) + 0x20);
+    return Tile::translate((klass * 2) + 0x20);
 }
 
 #undef TESTBIT

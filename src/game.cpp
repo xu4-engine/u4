@@ -248,7 +248,7 @@ void gameInit() {
     }
 
     /* set the party's transport */
-    c->party->setTransport(Tile::getMapTile(c->saveGame->transport));
+    c->party->setTransport(Tile::translate(c->saveGame->transport));
 
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
@@ -3189,58 +3189,58 @@ void gameUpdateMoons(int showmoongates)
             if (trammelSubphase == 0) {
                 gate = moongateGetGateCoordsForPhase(oldTrammel);
                 if (gate)
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x40));
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x40));
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate)
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x40));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x40));
             }
             else if (trammelSubphase == 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x40));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x41));
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x40));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x41));
                 }
             }
             else if (trammelSubphase == 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x41));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x42));
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x41));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x42));
                 }
             }
             else if (trammelSubphase == 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x42));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x43));
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x42));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x43));
                 }
             }
             else if ((trammelSubphase > 3) && (trammelSubphase < (MOON_SECONDS_PER_PHASE * 4 * 3) - 3)) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x43));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x43));
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x43));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x43));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x43));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x42));
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x43));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x42));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x42));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x41));
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x42));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x41));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x41));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x40));
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x41));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x40));
                 }
             }
         }
