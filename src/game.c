@@ -391,7 +391,7 @@ void gameFinishTurn() {
  * Inform a player he has lost zero or more eighths of avatarhood.
  */
 void gameLostEighth(Virtue virtue) {
-    screenMessage("Thou hast lost an eighth!\n");
+    screenMessage("\n Thou hast lost\n  an eighth!\n");
     statsUpdate();
 }
 

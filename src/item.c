@@ -261,14 +261,28 @@ void itemUse(const char *shortname) {
 
     for (i = 0; i < N_ITEMS; i++) {
         if (items[i].shortname &&
-            strcasecmp(items[i].shortname, shortname) == 0 &&
-            (*items[i].isItemInInventory)(items[i].data))
-            item = &(items[i]);
+            strcasecmp(items[i].shortname, shortname) == 0) {
             
+            item = &items[i];
+
+            /* item name found, see if we have that item in our inventory */
+            if ((*items[i].isItemInInventory)(items[i].data)) {       
+
+                /* use the item, if we can! */
+                if (!item || !item->useItem)
+                    screenMessage("\nNot a Usable item!\n");
+                else
+                    (*item->useItem)(items[i].data);
+            }
+            else
+                screenMessage("\nNone owned!\n");
+
+            /* we found the item, no need to keep searching */
+            break;
+        }
     }
 
-    if (!item || !item->useItem)
+    /* item was not found */
+    if (!item)
         screenMessage("\nNot a Usable item!\n");
-    else
-        (*item->useItem)(items[i].data);
 }
