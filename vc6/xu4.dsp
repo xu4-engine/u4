@@ -196,6 +196,10 @@ SOURCE=..\src\dngview.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\dungeon.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\dungeon.h
 # End Source File
 # Begin Source File
