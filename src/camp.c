@@ -58,20 +58,34 @@ void campTimer(void *data) {
 
 void campEnd() {
     gameExitToParentMap(c);
-    campHeal();   
+    
+    if (c->saveGame->moves - c->saveGame->lastcamp > CAMP_HEAL_INTERVAL)
+        campHeal();
+    else screenMessage("No effect.\n");
+
+    c->saveGame->lastcamp = c->saveGame->moves;
 
     gameFinishTurn();
 }
 
 void campHeal() {
-    int i;
+    int i, healed;
+
+    healed = 0;
 
     for (i = 0; i < c->saveGame->members; i++) {
         c->saveGame->players[i].mp = playerGetMaxMp(&c->saveGame->players[i]);
-        playerHeal(c->saveGame, HT_HEAL, i);
+        if (c->saveGame->players[i].hp < c->saveGame->players[i].hpMax)
+        {
+            playerHeal(c->saveGame, HT_HEAL, i);
+            healed = 1;
+        }
     }
     statsUpdate();
-    screenMessage("Party Healed!\n");
+
+    if (healed)
+        screenMessage("Party Healed!\n");
+    else screenMessage("No effect.\n");    
 }
 
 
