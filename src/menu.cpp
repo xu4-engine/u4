@@ -8,7 +8,7 @@
 
 #include "error.h"
 #include "event.h"
-#include "screen.h"
+#include "textview.h"
 
 /**
  * MenuItem class
@@ -121,22 +121,19 @@ void Menu::setCurrent(MenuId id) {
     setCurrent(getById(id));
 }
 
-/**
- * Displays the menu
- */
-void Menu::show() {
+void Menu::show(TextView *view) {
     for (current = items.begin(); current != items.end(); current++) {
         MenuItem *mi = &(*current);
 
         if (mi->isVisible()) {
             if (mi->isSelected())
-                screenTextAt(mi->x-1, mi->y, "\010%s", mi->text.c_str());
-            else screenTextAt(mi->x, mi->y, mi->text.c_str());
+                view->textAt(mi->x-1, mi->y, "\010%s", mi->text.c_str());
+            else
+                view->textAt(mi->x, mi->y, mi->text.c_str());
 
             if (mi->isHighlighted()) {
-                screenEnableCursor();
-                screenSetCursorPos(mi->x - 2, mi->y);
-                screenShowCursor();
+                view->enableCursor();
+                view->setCursorPos(mi->x - 2, mi->y, true);
             }
         }
     }
@@ -340,12 +337,17 @@ void Menu::setClosed(bool closed) {
     this->closed = closed;
 }
 
-MenuController::MenuController(Menu *menu) {
+MenuController::MenuController(Menu *menu, TextView *view) {
     this->menu = menu;
+    this->view = view;
 }
 
 bool MenuController::keyPressed(int key) {
     bool handled = true;
+    bool cursorOn = view->getCursorEnabled();
+
+    if (cursorOn)
+        view->disableCursor();
 
     switch(key) {
     case U4_UP:
@@ -371,10 +373,11 @@ bool MenuController::keyPressed(int key) {
         handled = menu->activateItemByShortcut(key, MenuEvent::ACTIVATE);
     }    
 
-    screenHideCursor();
-    menu->show();
-    screenUpdateCursor();
-    screenRedrawScreen();
+    menu->show(view);
+
+    if (cursorOn)
+        view->enableCursor();
+    view->update();
 
     if (menu->getClosed())
         doneWaiting();

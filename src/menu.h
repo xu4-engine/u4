@@ -17,6 +17,7 @@ using std::set;
 
 class Menu;
 class MenuItem;
+class TextView;
 
 typedef short MenuId;
 
@@ -104,7 +105,7 @@ public:
     MenuItemList::iterator  getCurrent();
     void                    setCurrent(MenuItemList::iterator i);
     void                    setCurrent(MenuId id);
-    void                    show();
+    void                    show(TextView *view);
     bool                    isVisible();
     void                    next();
     void                    prev();
@@ -133,11 +134,12 @@ private:
  */
 class MenuController : public WaitableController<void *> {
 public:
-    MenuController(Menu *menu);
+    MenuController(Menu *menu, TextView *view);
     bool keyPressed(int key);
 
 protected:
     Menu *menu;
+    TextView *view;
 };
 
 #endif
