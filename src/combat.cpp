@@ -540,6 +540,7 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
 
         /* show the 'miss' tile */
         attackFlash(old, misstile, 3);
+		soundPlay(SOUND_MISSED, false);
 
         /* This goes here so messages are shown in the original order */
         screenMessage("Missed!\n");
@@ -580,11 +581,12 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
         
             /* show the 'miss' tile */
             attackFlash(coords, misstile, 3);
+			soundPlay(SOUND_MISSED, false);
 
         } else { /* The weapon hit! */
 
             /* show the 'hit' tile */
-            attackFlash(coords, hittile, 3);
+            attackFlash(coords, hittile, 3);			
 
             /* apply the damage to the creature */
 			if (!attacker->dealDamage(creature, attacker->getDamage()))
@@ -637,9 +639,9 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
         target = isCreature(attacker) ? cm->partyMemberAt(coords) : cm->creatureAt(coords);
 
         /* If we haven't hit something valid, stop now */
-        if (!target) {
-            cm->annotations->add(coords, misstile, true);
-            gameUpdateScreen();
+        if (!target) {			
+            cm->annotations->add(coords, misstile, true);			
+            gameUpdateScreen();			
     
             /* Based on attack speed setting in setting struct, make a delay for
                the attack annotation */
@@ -652,20 +654,10 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
         /* Get the effects of the tile the creature is using */
         effect = tileGetEffect(hittile);
   
-        /* Did the weapon miss? */
-        if (!attacker->attackHit(target)) {
-        
-            /* show the 'miss' tile */
-            attackFlash(coords, misstile, 4);
+        /* Monster's ranged attacks never miss */
 
-        } else { /* The weapon hit! */                   
-
-            /* show the 'hit' tile */
-            attackFlash(coords, hittile, 4);             
-
-            /* add something here if you want it only to happen
-               when the target is hit */
-        }        
+		/* show the 'hit' tile */
+        attackFlash(coords, hittile, 4);		
 
         /* These effects happen whether or not the opponent was hit */
         switch(effect) {
@@ -682,14 +674,17 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
             screenMessage("\n%s Poisoned!\n", target->getName().c_str());
 
             /* see if the player is poisoned */
-            if ((xu4_random(2) == 0) && (target->getStatus() != STAT_POISONED))
+            if ((xu4_random(2) == 0) && (target->getStatus() != STAT_POISONED)) {
                 target->addStatus(STAT_POISONED);
+				soundPlay(SOUND_PLAYERHIT, false);
+			}
             else screenMessage("Failed.\n");
             break;
         
         case EFFECT_SLEEP:
 
             screenMessage("\n%s Slept!\n", target->getName().c_str());
+			soundPlay(SOUND_PLAYERHIT, false);
 
             /* see if the player is put to sleep */
             if (xu4_random(2) == 0)
@@ -716,6 +711,8 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
 
     }
     else {
+		soundPlay(SOUND_MISSED, false);
+
         /* If the creature leaves a tile behind, do it here! (lava lizard, etc) */
         groundTile = cm->tileAt(old, WITH_GROUND_OBJECTS);
         if (attacker->leavesTile() && tileIsWalkable(groundTile))

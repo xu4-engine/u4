@@ -353,7 +353,7 @@ void Creature::act() {
     switch(action) {
     case CA_ATTACK:
         if (attackHit(target)) {            
-            CombatController::attackFlash(target->getCoords(), HITFLASH_TILE, 3);
+            CombatController::attackFlash(target->getCoords(), HITFLASH_TILE, 3);			
             if (!dealDamage(target, getDamage()))
                 target = NULL;
 
@@ -667,6 +667,7 @@ bool Creature::applyDamage(int damage) {
 }
 
 bool Creature::dealDamage(Creature *m, int damage) {
+	soundPlay(SOUND_CREATUREATTACK, false);
 	return m->applyDamage(damage);
 }
 

@@ -71,6 +71,6 @@ void soundPlay(Sound sound, bool onlyOnce) {
      */ 
     if (!onlyOnce || !Mix_Playing(1)) {
         if (Mix_PlayChannel(1, soundChunk[sound], 0) == -1)
-            errorWarning("error playing sound: %s", Mix_GetError());
+            fprintf(stderr, "Error playing sound %d: %s\n", sound, Mix_GetError());
     }
 }
