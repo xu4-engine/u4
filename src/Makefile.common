@@ -1,6 +1,6 @@
 MAIN=u4$(EXEEXT)
 
-SRCS=u4.c map.c ttype.c screen.c screen_$(UI).c event.c event_$(UI).c person.c vendor.c annotation.c io.c savegame.c u4file.c mapinit.c stats.c spell.c game.c intro.c player.c names.c music.c moongate.c maps/cities.c maps/castles.c maps/worldmap.c maps/areas.c lzw/lzw.c lzw/u4decode.c
+SRCS=u4.c map.c ttype.c screen.c screen_$(UI).c event.c event_$(UI).c person.c vendor.c annotation.c io.c savegame.c u4file.c mapinit.c stats.c spell.c game.c intro.c player.c names.c music.c moongate.c item.c maps/cities.c maps/castles.c maps/worldmap.c maps/areas.c lzw/lzw.c lzw/u4decode.c
 OBJS += $(SRCS:.c=.o)
 
 all:: $(MAIN) dumpsavegame$(EXEEXT)
