@@ -690,6 +690,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
                 if (monsterSails(m) && tileIsSailable(tile))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
+            /* ghosts and other incorporeal monsters */
             else if (monsterIsIncorporeal(m)) {
                 /* can move anywhere but onto water, unless of course the monster can swim */
                 if (!(tileIsSwimable(tile) || tileIsSailable(tile)))
