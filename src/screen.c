@@ -29,7 +29,7 @@ int screenLos[VIEWPORT_W][VIEWPORT_H];
 
 void screenTextAt(int x, int y, char *fmt, ...) {
     char buffer[1024];
-    int i;
+    unsigned int i;
 
     va_list args;
     va_start(args, fmt);
@@ -49,7 +49,7 @@ void screenPrompt() {
 
 void screenMessage(const char *fmt, ...) {
     char buffer[1024];
-    int i;
+    unsigned int i;
     int wordlen;
 
     va_list args;
@@ -85,7 +85,7 @@ void screenMessage(const char *fmt, ...) {
     screenNeedPrompt = 1;
 }
 
-unsigned char screenViewportTile(int width, int height, int x, int y, int *focus) {
+unsigned char screenViewportTile(unsigned int width, unsigned int height, int x, int y, int *focus) {
     int centerx, centery, tx, ty, z;
 
     z = c->location->z;
@@ -107,9 +107,9 @@ unsigned char screenViewportTile(int width, int height, int x, int y, int *focus
                 tx += c->location->map->width;
             if (ty < 0)
                 ty += c->location->map->height;
-            if (tx >= c->location->map->width)
+            if (tx >= (int)c->location->map->width)
                 tx -= c->location->map->width;
-            if (ty >= c->location->map->height)
+            if (ty >= (int)c->location->map->height)
                 ty -= c->location->map->height;
         }
         else {

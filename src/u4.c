@@ -31,14 +31,14 @@ int main(int argc, char *argv[]) {
 
     settingsRead();
 
-    for (i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-filter") == 0 && argc > i + 1) {
+    for (i = 1; i < (unsigned int)argc; i++) {
+        if (strcmp(argv[i], "-filter") == 0 && (unsigned int)argc > i + 1) {
             settings->filter = settingsStringToFilter(argv[i+1]);
             if (settings->filter == SCL_MAX)
                 errorFatal("%s is not a valid filter", argv[i+1]);
             i++;
         }
-        if (strcmp(argv[i], "-scale") == 0 && argc > i + 1) {
+        if (strcmp(argv[i], "-scale") == 0 && (unsigned int)argc > i + 1) {
             settings->scale = strtoul(argv[i+1], NULL, 0);
             i++;
         }

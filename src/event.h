@@ -35,7 +35,7 @@ typedef struct ReadBufferActionInfo {
 /** Additional information to be passed as data param for get choice key handler */
 typedef struct GetChoiceActionInfo {
     const char *choices;
-    int (*handleChoice)(char);
+    int (*handleChoice)(int);
 } GetChoiceActionInfo;
 
 void eventHandlerInit(void);

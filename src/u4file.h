@@ -29,7 +29,7 @@ int u4fgetshort(U4FILE *f);
 int u4fputc(int c, U4FILE *f);
 long u4flength(U4FILE *f);
 char **u4read_stringtable(U4FILE *f, long offset, int nstrings);
-char *u4find_path(const char *fname, const char * const *pathent, int npathents);
+char *u4find_path(const char *fname, const char * const *pathent, unsigned int npathents);
 char *u4find_music(const char *fname);
 char *u4find_conf(const char *fname);
 const char *u4upgrade_translate_filename(const char *fname);

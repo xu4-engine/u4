@@ -300,7 +300,7 @@ int itemConditionsMet(unsigned char conditions) {
  * Returns an item location record if a searchable object exists at
  * the given location. NULL is returned if nothing is there.
  */
-const ItemLocation *itemAtLocation(const Map *map, unsigned short x, unsigned short y, unsigned short z) {
+const ItemLocation *itemAtLocation(const Map *map, int x, int y, int z) {
     int i;
     for (i = 0; i < N_ITEMS; i++) {
         if (items[i].map == map && 

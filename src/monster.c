@@ -25,7 +25,7 @@
 #include "u4file.h"
 
 int monsterInfoLoaded = 0;
-int numMonsters = 0;
+unsigned int numMonsters = 0;
 Monster monsters[MAX_MONSTERS];
 
 /**
@@ -288,11 +288,11 @@ void monsterLoadInfoFromXml() {
 }
 
 const Monster *monsterForTile(unsigned char tile) {
-    int i;
+    unsigned int i;
     monsterLoadInfoFromXml();
 
-    for (i = 0; i < numMonsters; i++) {        
-        if (tile >= monsters[i].tile && tile < monsters[i].tile + monsters[i].frames)
+    for (i = 0; i < numMonsters; i++) {
+        if ((tile >= monsters[i].tile) && (tile < monsters[i].tile + monsters[i].frames))
             return &(monsters[i]);
     }
 
@@ -431,10 +431,10 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     int era;    
     
     if (tileIsSailable(tile)) {        
-        return monsterById((rand() % 7) + PIRATE_ID);        
+        return monsterById((unsigned short)((rand() % 7) + PIRATE_ID));
     }
     else if (tileIsSwimable(tile)) {        
-        return monsterById((rand() % 6) + NIXIE_ID);
+        return monsterById((unsigned short)((rand() % 6) + NIXIE_ID));
     }
 
     if (!tileIsMonsterWalkable(tile))
@@ -447,7 +447,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
     
-    return monsterById((era & rand() & rand()) + ORC_ID);    
+    return monsterById((unsigned short)((era & rand() & rand()) + ORC_ID));
 }
 
 
@@ -487,7 +487,7 @@ MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
 }
 
 const Monster *monsterGetAmbushingMonster(void) {
-    int i,
+    unsigned int i,
         numAmbushingMonsters = 0,
         randMonster;    
 
@@ -677,7 +677,7 @@ void monsterSpecialEffect(Object *obj) {
  */
 
 const Monster *monsterById(unsigned short id) {
-    int i;
+    unsigned int i;
 
     /* make sure monster info has been loaded */
     monsterLoadInfoFromXml();

@@ -21,12 +21,12 @@
  * (fixed objects, nowhere to go, etc.)
  */
 int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
-    int dir,
-        newx = obj->x,
-        newy = obj->y,
-        z = obj->z,
+    int dir,        
         dirmask = DIR_NONE,
         oldtile = obj->tile;
+    unsigned int newx = obj->x,
+                 newy = obj->y,
+                 z = obj->z;
     SlowedType slowedType = SLOWED_BY_TILE;
     int slowed = 0;
 
@@ -114,10 +114,10 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
  * Moves an object in combat according to its chosen combat action
  */
 int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
-    int newx = obj->x,
-        newy = obj->y,
-        valid_dirs = mapGetValidMoves(c->location->map, newx, newy, c->location->z, obj->tile),
-        dir = DIR_NONE;
+    unsigned int newx = obj->x,
+                 newy = obj->y,
+                 valid_dirs = mapGetValidMoves(c->location->map, newx, newy, c->location->z, obj->tile),
+                 dir = DIR_NONE;
     CombatAction action = (CombatAction)act;
     SlowedType slowedType = SLOWED_BY_TILE;
     int slowed = 0;
@@ -183,7 +183,7 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
  * Default handler for slowing movement.
  * Returns 1 if slowed, 0 if not slowed
  */
-int slowedByTile(int tile) {
+int slowedByTile(unsigned char tile) {
     int slow;
     
     switch (tileGetSpeed(tile)) {    

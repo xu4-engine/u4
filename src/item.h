@@ -17,7 +17,7 @@ typedef enum {
 typedef struct _ItemLocation {
     const char *name;
     const char *shortname;
-    unsigned short x, y, z;
+    int x, y, z;
     const struct _Map* map;
     int (*isItemInInventory)(void *);
     void (*putItemInInventory)(void *);
@@ -29,7 +29,7 @@ typedef struct _ItemLocation {
 typedef void (*DestroyAllMonstersCallback)(void);
 
 void itemSetDestroyAllMonstersCallback(DestroyAllMonstersCallback callback);
-const ItemLocation *itemAtLocation(const struct _Map *map, unsigned short x, unsigned short y, unsigned short z);
+const ItemLocation *itemAtLocation(const struct _Map *map, int x, int y, int z);
 void itemUse(const char *shortname);
 
 #endif

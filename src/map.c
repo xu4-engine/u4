@@ -187,7 +187,7 @@ int mapReadCon(Map *map, U4FILE *con) {
 }
 
 int mapReadDng(Map *map, U4FILE *dng) {
-    int i;
+    unsigned int i;
 
     /* the map must be 11x11 to be read from an .CON file */
     ASSERT(map->width == DNG_WIDTH, "map width is %d, should be %d", map->width, DNG_WIDTH);
@@ -325,7 +325,7 @@ Object *mapAddPersonObject(Map *map, const Person *person) {
     return obj;
 }
 
-Object *mapAddMonsterObject(Map *map, const Monster *monster, unsigned short x, unsigned short y, unsigned short z) {
+Object *mapAddMonsterObject(Map *map, const Monster *monster, int x, int y, int z) {
     Object *obj = mapAddObject(map, monster->tile, monster->tile, x, y, z);
 
     if (monsterWanders(monster))
@@ -344,7 +344,7 @@ Object *mapAddMonsterObject(Map *map, const Monster *monster, unsigned short x, 
     return obj;
 }
 
-Object *mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned short x, unsigned short y, unsigned short z) {
+Object *mapAddObject(Map *map, unsigned char tile, unsigned char prevtile, int x, int y, int z) {
     Object *obj = (Object *) malloc(sizeof(Object));
 
     obj->tile = tile;
@@ -531,7 +531,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
             
         /* get the destination tile */
         if (ontoAvatar)
-            tile = c->saveGame->transport;
+            tile = (unsigned char)c->saveGame->transport;
         else if (obj)
             tile = obj->tile;
         else

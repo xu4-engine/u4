@@ -176,7 +176,7 @@ typedef struct _Monster {
     unsigned char tile;
     unsigned char camouflageTile;
     unsigned char frames;
-    unsigned char leader;
+    unsigned short leader;
     unsigned char basehp;
     unsigned short xp;
     unsigned char ranged;

@@ -438,7 +438,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
     /* x location for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
-            r = writeChar(monsterTable[i]->x, f);
+            r = writeChar((unsigned char)monsterTable[i]->x, f);
         else
             r = writeChar(0, f);
         if (!r) return 0;
@@ -447,7 +447,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
     /* y location for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
-            r = writeChar(monsterTable[i]->y, f);
+            r = writeChar((unsigned char)monsterTable[i]->y, f);
         else
             r = writeChar(0, f);
         if (!r) return 0;
@@ -456,7 +456,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
     /* previous tile for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
-            r = writeChar(monsterTable[i]->prevtile, f);
+            r = writeChar((unsigned char)monsterTable[i]->prevtile, f);
         else
             r = writeChar(0, f);
         if (!r) return 0;
@@ -465,7 +465,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
     /* previous x location for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
-            r = writeChar(monsterTable[i]->prevx, f);
+            r = writeChar((unsigned char)monsterTable[i]->prevx, f);
         else
             r = writeChar(0, f);
         if (!r) return 0;
@@ -474,7 +474,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
     /* previous y location for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
-            r = writeChar(monsterTable[i]->prevy, f);
+            r = writeChar((unsigned char)monsterTable[i]->prevy, f);
         else
             r = writeChar(0, f);
         if (!r) return 0;

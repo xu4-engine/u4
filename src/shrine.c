@@ -23,7 +23,7 @@
 #include "settings.h"
 
 int shrineHandleVirtue(const char *message);
-int shrineHandleCycles(char choice);
+int shrineHandleCycles(int choice);
 void shrineMeditationCycle();
 void shrineTimer(void *data);
 int shrineHandleMantra(const char *message);
@@ -110,7 +110,7 @@ int shrineHandleVirtue(const char *message) {
     return 1;
 }
 
-int shrineHandleCycles(char choice) {
+int shrineHandleCycles(int choice) {
     eventHandlerPopKeyHandler();
 
     if (choice == '\033' || choice == '\015')

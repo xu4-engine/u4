@@ -307,7 +307,7 @@ char **u4read_stringtable(U4FILE *f, long offset, int nstrings) {
     return strs;
 }
 
-char *u4find_path(const char *fname, const char * const *pathent, int npathents) {
+char *u4find_path(const char *fname, const char * const *pathent, unsigned int npathents) {
     FILE *f = NULL;
     unsigned int i;
     char pathname[128];

@@ -88,7 +88,10 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
         if (c->saveGame->players[i].status != STAT_DEAD) {
             /* We'll consider our party members as "monsters" because their rules correspond to the
                monsters of the corresponding class (Ranger, Bard, Mage, etc) */
-            combatInfo.party[i] = mapAddMonsterObject(c->location->map, monsterForTile(tileForClass(c->saveGame->players[i].klass)), c->location->map->area->player_start[i].x, c->location->map->area->player_start[i].y, c->location->z);            
+            combatInfo.party[i] = mapAddMonsterObject(c->location->map, monsterForTile(tileForClass(c->saveGame->players[i].klass)), 
+                (int)c->location->map->area->player_start[i].x,
+                (int)c->location->map->area->player_start[i].y,
+                c->location->z);
         
             /* Replace the party mamber with a sleeping person if they're asleep */
             if (c->saveGame->players[i].status == STAT_SLEEPING) {
@@ -156,7 +159,7 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
 }
 
 
-Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, Object *obj) {
+Map *getCombatMapForTile(unsigned char partytile, unsigned char transport, Object *obj) {
     int i;
     int fromShip = 0,
         toShip = 0;
@@ -201,7 +204,7 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, Obje
 
     /* We can fight monsters and townsfolk */       
     if (obj->objType != OBJECT_UNKNOWN) {
-        int tileUnderneath = mapTileAt(c->location->map, obj->x, obj->y, obj->z);
+        unsigned char tileUnderneath = mapTileAt(c->location->map, obj->x, obj->y, obj->z);
 
         if (toShip)
             return &shorship_map;
@@ -245,7 +248,10 @@ void combatCreateMonster(int index, int canbeleader) {
             /* normal */
             ;
     }
-    combatInfo.monsters[index] = mapAddMonsterObject(c->location->map, monsterForTile(mtile), c->location->map->area->monster_start[index].x, c->location->map->area->monster_start[index].y, c->location->z);
+    combatInfo.monsters[index] = mapAddMonsterObject(c->location->map, monsterForTile(mtile),
+        (int)c->location->map->area->monster_start[index].x,
+        (int)c->location->map->area->monster_start[index].y,
+        c->location->z);
     combatInfo.monsterHp[index] = monsterGetInitialHp(combatInfo.monsters[index]->monster);
     combatInfo.monster_status[index] = STAT_GOOD;
 }
@@ -499,7 +505,8 @@ int combatBaseKeyHandler(int key, void *data) {
 
 int combatAttackAtCoord(int x, int y, int distance, void *data) {
     int monster;    
-    int i, hittile, misstile;
+    int i;
+    unsigned char hittile, misstile;
     CoordActionInfo* info = (CoordActionInfo*)data;    
     int weapon = c->saveGame->players[info->player].weapon;    
     int wrongRange = weaponRangeAbsolute(weapon) && (distance != info->range);
@@ -609,7 +616,8 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
 int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
     int player;
     const Monster *m;
-    int i, hittile, misstile;
+    int i;
+    unsigned char hittile, misstile;
     CoordActionInfo* info = (CoordActionInfo*)data;    
     int oldx = info->prev_x,
         oldy = info->prev_y;  
@@ -740,7 +748,8 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
 
 
 int combatReturnWeaponToOwner(int x, int y, int distance, void *data) {
-    int i, new_x, new_y, misstile, dir;
+    int i, new_x, new_y, dir;
+    unsigned char misstile;
     CoordActionInfo* info = (CoordActionInfo*)data;
     int weapon = c->saveGame->players[info->player].weapon;
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
@@ -1029,9 +1038,10 @@ void combatMoveMonsters() {
             break;
 
         case CA_TELEPORT: {
-                int newx, newy, tile,
+                int newx, newy,
                     valid = 0,
                     firstTry = 1;
+                unsigned char tile;
             
                 while (!valid) {
                     newx = rand() % c->location->map->width,
@@ -1240,7 +1250,7 @@ void combatApplyDamageToMonster(int monster, int damage, int player) {
  * by weapons, cannon fire, spells, etc.
  */
 
-void attackFlash(int x, int y, int tile, int timeFactor) {
+void attackFlash(int x, int y, unsigned char tile, int timeFactor) {
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
     int divisor = 8 * timeFactor;
     int mult = 12 * timeFactor;    

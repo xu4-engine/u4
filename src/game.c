@@ -63,16 +63,16 @@ int destroyAtCoord(int x, int y, int distance, void *data);
 int getChestTrapHandler(int player);
 int jimmyAtCoord(int x, int y, int distance, void *data);
 int mixReagentsForSpell(int spell, void *data);
-int mixReagentsForSpell2(char choice);
+int mixReagentsForSpell2(int choice);
 int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y, int distance, void *data);
-int gemHandleChoice(char choice);
-int peerCityHandleChoice(char choice);
+int gemHandleChoice(int choice);
+int peerCityHandleChoice(int choice);
 int readyForPlayer(int player);
 int talkAtCoord(int x, int y, int distance, void *data);
 int talkHandleBuffer(const char *message);
-int talkHandleChoice(char choice);
+int talkHandleChoice(int choice);
 void talkShowReply(int showPrompt);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
@@ -152,7 +152,7 @@ void gameInit() {
     gameFixupMonsters();
 
     /* setup transport context */
-    gameSetTransport(c->saveGame->transport);
+    gameSetTransport((unsigned char)c->saveGame->transport);
 
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
@@ -688,7 +688,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'f':
         if (c->transportContext == TRANSPORT_SHIP) {
-            int broadsidesDirs = dirGetBroadsidesDirs(tileGetDirection(c->saveGame->transport));            
+            int broadsidesDirs = dirGetBroadsidesDirs(tileGetDirection((unsigned char)c->saveGame->transport));            
 
             info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
             info->handleAtCoord = &fireAtCoord;
@@ -931,7 +931,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'x':
         if ((c->transportContext != TRANSPORT_FOOT) && c->saveGame->balloonstate == 0) {
-            Object *obj = mapAddObject(c->location->map, c->saveGame->transport, c->saveGame->transport, c->location->x, c->location->y, c->location->z);
+            Object *obj = mapAddObject(c->location->map, (unsigned char)c->saveGame->transport, (unsigned char)c->saveGame->transport, c->location->x, c->location->y, c->location->z);
             if (c->transportContext == TRANSPORT_SHIP)
                 c->lastShip = obj; 
 
@@ -1266,7 +1266,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     case 'k':        
         screenMessage("Karma!\n\n");
         for (i = 0; i < 8; i++) {
-            int j;
+            unsigned int j;
             screenMessage("%s:", getVirtueName(i));
             for (j = 13; j > strlen(getVirtueName(i)); j--)
                 screenMessage(" ");
@@ -1458,7 +1458,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
         ((obj->objType != OBJECT_MONSTER) && (obj->movement_behavior != MOVEMENT_ATTACK_AVATAR))) 
         playerAdjustKarma(c->saveGame, KA_ATTACKED_GOOD);
 
-    combatBegin(getCombatMapForTile(ground, c->saveGame->transport, obj), obj, 1);
+    combatBegin(getCombatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), obj, 1);
     return 1;
 }
 
@@ -1860,7 +1860,7 @@ int mixReagentsForSpell(int spell, void *data) {
     return 0;
 }
 
-int mixReagentsForSpell2(char choice) {
+int mixReagentsForSpell2(int choice) {
     GetChoiceActionInfo *info;
     AlphaActionInfo *alphaInfo;
 
@@ -1999,7 +1999,7 @@ int openAtCoord(int x, int y, int distance, void *data) {
 /**
  * Waits for space bar to return from gem mode.
  */
-int gemHandleChoice(char choice) {
+int gemHandleChoice(int choice) {
     eventHandlerPopKeyHandler();
 
     c->location->viewMode = VIEW_NORMAL;
@@ -2064,7 +2064,7 @@ void gamePeerGem(void) {
 /**
  * Wait for space bar to return from gem mode and returns map to normal
  */
-int peerCityHandleChoice(char choice) {
+int peerCityHandleChoice(int choice) {
     eventHandlerPopKeyHandler();
     gameExitToParentMap(c);
     
@@ -2121,7 +2121,7 @@ int talkHandleBuffer(const char *message) {
     return 1;
 }
 
-int talkHandleChoice(char choice) {
+int talkHandleChoice(int choice) {
     char message[2];
 
     eventHandlerPopKeyHandler();
@@ -2318,8 +2318,8 @@ int moveAvatar(Direction dir, int userEvent) {
     /*musicPlayEffect();*/
 
     if (c->transportContext == TRANSPORT_SHIP) {
-        if (tileGetDirection(c->saveGame->transport) != dir) {
-	    temp = c->saveGame->transport;
+        if (tileGetDirection((unsigned char)c->saveGame->transport) != dir) {
+	    temp = (unsigned char)c->saveGame->transport;
             tileSetDirection(&temp, dir);
 	    c->saveGame->transport = temp;
             if (!settings->filterMoveMessages)
@@ -2330,8 +2330,8 @@ int moveAvatar(Direction dir, int userEvent) {
 
     if (c->transportContext == TRANSPORT_HORSE) {
         if ((dir == DIR_WEST || dir == DIR_EAST) &&
-            tileGetDirection(c->saveGame->transport) != dir) {
-	    temp = c->saveGame->transport;
+            tileGetDirection((unsigned char)c->saveGame->transport) != dir) {
+	    temp = (unsigned char)c->saveGame->transport;
             tileSetDirection(&temp, dir);
 	    c->saveGame->transport = temp;
         }
@@ -2373,7 +2373,7 @@ int moveAvatar(Direction dir, int userEvent) {
     if (!collisionOverride && !c->saveGame->balloonstate) {
         int movementMask;
 
-        movementMask = mapGetValidMoves(c->location->map, c->location->x, c->location->y, c->location->z, c->saveGame->transport);
+        movementMask = mapGetValidMoves(c->location->map, c->location->x, c->location->y, c->location->z, (unsigned char)c->saveGame->transport);
         if (!DIR_IN_MASK(dir, movementMask)) {
 
             if (settings->shortcutCommands) {
@@ -2778,7 +2778,7 @@ void gameMonsterAttack(Object *obj) {
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
-    combatBegin(getCombatMapForTile(ground, c->saveGame->transport, obj), obj, 1);
+    combatBegin(getCombatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), obj, 1);
 }
 
 /**
@@ -2791,7 +2791,7 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;   
     Object *obj;
     const Monster *m;
-    int tile;
+    unsigned char tile;
 
     info->prev_x = x;
     info->prev_y = y;
@@ -2863,13 +2863,13 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
  * by the tile it passes over.
  */
 int gameDirectionalAction(CoordActionInfo *info) {
-    int distance = 0,
-        tile,
+    int distance = 0,        
         t_x = info->origin_x,
         t_y = info->origin_y,
         succeeded = 0,
         dirx = DIR_NONE,
         diry = DIR_NONE;
+    unsigned char tile;
 
     /* Figure out which direction the action is going */
     if (DIR_IN_MASK(DIR_WEST, info->dir)) dirx = DIR_WEST;
@@ -3022,8 +3022,8 @@ void gameLordBritishCheckLevels(void) {
 
 int gameSummonMonster(const char *monsterName) {
     extern Monster monsters[];
-    extern int numMonsters;
-    int i, j, id;
+    extern unsigned int numMonsters;
+    unsigned int i, j, id;
 
     eventHandlerPopKeyHandler();
 
@@ -3032,7 +3032,7 @@ int gameSummonMonster(const char *monsterName) {
     
     /* find the monster by its id and spawn it */
     id = atoi(monsterName);
-    if (id > 0) {        
+    if (id > 0) {
         for (i = 0; i < numMonsters; i++) {
             if (monsters[i].id == id) {
                 screenMessage("\n%s summoned!\n", monsters[i].name);

@@ -181,7 +181,7 @@ void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int
     dest.w = w * scale;
     dest.h = h * scale;
 
-    SDL_FillRect(surface, &dest, SDL_MapRGB(surface->format, r, g, b));
+    SDL_FillRect(surface, &dest, SDL_MapRGB(surface->format, (Uint8)r, (Uint8)g, (Uint8)b));
 }
 
 /**
@@ -211,7 +211,7 @@ void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, int r, int g, in
 
     for (xs = 0; xs < scale; xs++) {
         for (ys = 0; ys < scale; ys++) {
-            putPixel(surface, x*scale + xs, y*scale+ys, SDL_MapRGB(surface->format, r, g, b));
+            putPixel(surface, x*scale + xs, y*scale+ys, SDL_MapRGB(surface->format, (Uint8)r, (Uint8)g, (Uint8)b));
         }
     }
 }
@@ -806,7 +806,7 @@ void screenInvertRect(int x, int y, int w, int h) {
     for (i = 0; i < src.h; i++) {
         for (j = 0; j < src.w; j++) {
             SDL_GetRGB(getPixel(tmp, j, i), tmp->format, &c.r, &c.g, &c.b);
-            putPixel(tmp, j, i, SDL_MapRGB(tmp->format, 0xff - c.r, 0xff - c.g, 0xff - c.b));
+            putPixel(tmp, j, i, SDL_MapRGB(tmp->format, (Uint8)(0xff - c.r), (Uint8)(0xff - c.g), (Uint8)(0xff - c.b)));
         }
     }
 
@@ -1072,9 +1072,9 @@ SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
                 SDL_GetRGB(getPixel(src, x + xoff, y + yoff), src->format, &d.r, &d.g, &d.b);
 
                 putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
-                putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1));
-                putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1));
-                putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2));
+                putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (Uint8)((a.r + b.r) >> 1), (Uint8)((a.g + b.g) >> 1), (Uint8)((a.b + b.b) >> 1)));
+                putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, (Uint8)((a.r + c.r) >> 1), (Uint8)((a.g + c.g) >> 1), (Uint8)((a.b + c.b) >> 1)));
+                putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, (Uint8)((a.r + b.r + c.r + d.r) >> 2), (Uint8)((a.g + b.g + c.g + d.g) >> 2), (Uint8)((a.b + b.b + c.b + d.b) >> 2)));
             }
         }
     }
@@ -1216,12 +1216,12 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
                         (colorEqual(a, c) && colorEqual(a, f) && !colorEqual(b, e) && colorEqual(b, j)))
                         prod0 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
                     else
-                        prod0 = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
+                        prod0 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r) >> 1), (Uint8)((a.g + b.g) >> 1), (Uint8)((a.b + b.b) >> 1));
                     if ((colorEqual(a, g) && colorEqual(c, o)) ||
                         (colorEqual(a, b) && colorEqual(a, h) && !colorEqual(g, c) && colorEqual(c, m)))
                         prod1 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
                     else
-                        prod1 = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+                        prod1 = SDL_MapRGB(dest->format, (Uint8)((a.r + c.r) >> 1), (Uint8)((a.g + c.g) >> 1), (Uint8)((a.b + c.b) >> 1));
                     
                     prod2 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
                 }
@@ -1230,12 +1230,12 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
                         (colorEqual(b, e) && colorEqual(b, d) && !colorEqual(a, f) && colorEqual(a, i)))
                         prod0 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
                     else
-                        prod0 = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
+                        prod0 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r) >> 1), (Uint8)((a.g + b.g) >> 1), (Uint8)((a.b + b.b) >> 1));
                     if ((colorEqual(c, h) && colorEqual(a, f)) ||
                         (colorEqual(c, g) && colorEqual(c, d) && !colorEqual(a, h) && colorEqual(a, i)))
                         prod1 = SDL_MapRGB(dest->format, c.r, c.g, c.b);
                     else
-                        prod1 = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+                        prod1 = SDL_MapRGB(dest->format, (Uint8)((a.r + c.r) >> 1), (Uint8)((a.g + c.g) >> 1), (Uint8)((a.b + c.b) >> 1));
                     prod2 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
                 }
                 else if (colorEqual(a, d) && colorEqual(b, c)) {
@@ -1246,8 +1246,8 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
                     }
                     else {
                         int r = 0;
-                        prod0 = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
-                        prod1 = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+                        prod0 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r) >> 1), (Uint8)((a.g + b.g) >> 1), (Uint8)((a.b + b.b) >> 1));
+                        prod1 = SDL_MapRGB(dest->format, (Uint8)((a.r + c.r) >> 1), (Uint8)((a.g + c.g) >> 1), (Uint8)((a.b + c.b) >> 1));
 
                         r += _2xSaI_GetResult1(a, b, g, e);
                         r += _2xSaI_GetResult2(b, a, k, f);
@@ -1259,7 +1259,7 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
                         else if (r < 0)
                             prod2 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
                         else
-                            prod2 = SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2);
+                            prod2 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r + c.r + d.r) >> 2), (Uint8)((a.g + b.g + c.g + d.g) >> 2), (Uint8)((a.b + b.b + c.b + d.b) >> 2));
                     }
                 }
                 else {
@@ -1268,16 +1268,16 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
                     else if (colorEqual(b, e) && colorEqual(b, d) && !colorEqual(a, f) && colorEqual(a, i))
                         prod0 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
                     else
-                        prod0 = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
+                        prod0 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r) >> 1), (Uint8)((a.g + b.g) >> 1), (Uint8)((a.b + b.b) >> 1));
 
                     if (colorEqual(a, b) && colorEqual(a, h) && !colorEqual(g, c) && colorEqual(c, m))
                         prod1 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
                     else if (colorEqual(c, g) && colorEqual(c, d) && !colorEqual(a, h) && colorEqual(a, i))
                         prod1 = SDL_MapRGB(dest->format, c.r, c.g, c.b);
                     else
-                        prod1 = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+                        prod1 = SDL_MapRGB(dest->format, (Uint8)((a.r + c.r) >> 1), (Uint8)((a.g + c.g) >> 1), (Uint8)((a.b + c.b) >> 1));
 
-                    prod2 = SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2);
+                    prod2 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r + c.r + d.r) >> 2), (Uint8)((a.g + b.g + c.g + d.g) >> 2), (Uint8)((a.b + b.b + c.b + d.b) >> 2));
                 }
 
 

@@ -48,7 +48,7 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
     if (location->viewMode == VIEW_GEM) {
         *focus = 0;
         if ((location->map->flags & SHOW_AVATAR) && location->x == x && location->y == y)            
-            return c->saveGame->transport;        
+            return (unsigned char)c->saveGame->transport;        
         else return MAP_TILE_AT(location->map, x, y, z);
     }
     
@@ -61,7 +61,7 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
     else if ((location->map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && 
         location->x == x && location->y == y) {
         *focus = 0;
-        tile = c->saveGame->transport;
+        tile = (unsigned char)c->saveGame->transport;
     }
     /* then permanent annotations */
     else if (a && a->visual) {
@@ -86,7 +86,7 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
     /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */
     else if ((location->map->flags & SHOW_AVATAR) && location->x == x && location->y == y) {
         *focus = 0;
-        tile = c->saveGame->transport;
+        tile = (unsigned char)c->saveGame->transport;
     }
     /* then the base tile */
     else {

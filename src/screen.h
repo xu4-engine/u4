@@ -57,7 +57,7 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, char *fmt, ...);
 void screenPrompt(void);
 void screenMessage(const char *fmt, ...);
-unsigned char screenViewportTile(int width, int height, int x, int y, int *focus);
+unsigned char screenViewportTile(unsigned int width, unsigned int height, int x, int y, int *focus);
 void screenScrollMessageArea(void);
 void screenInvertRect(int x, int y, int w, int h);
 void screenUpdate(int showmap, int blackout);

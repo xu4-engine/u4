@@ -13,7 +13,7 @@
 #include "ttype.h"
 
 unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
-    int x, y;
+    unsigned int x, y;
     unsigned char tile;
 
     c->saveGame->orientation = DIR_EAST;

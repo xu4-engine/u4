@@ -211,7 +211,7 @@ int weaponAlwaysHits(int weapon) {
  * Returns 0 if the weapon leaves no tile, otherwise it
  * returns the # of the tile the weapon leaves
  */
-int weaponLeavesTile(int weapon) {
+unsigned char weaponLeavesTile(int weapon) {
     weaponLoadInfoFromXml();
 
     return (weapons[weapon].mask & MASK_LEAVETILE) ? weapons[weapon].leavetile : 0;

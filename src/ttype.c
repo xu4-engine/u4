@@ -163,13 +163,13 @@ void tileLoadInfoFromXml() {
         errorFatal("tile attributes: a tile must have the \"chest\" attribute");
 
     if (baseShip == -1 ||
-        !tileIsShip(baseShip + 1) ||
-        !tileIsShip(baseShip + 2) ||
-        !tileIsShip(baseShip + 3))
+        !tileIsShip((unsigned char)(baseShip + 1)) ||
+        !tileIsShip((unsigned char)(baseShip + 2)) ||
+        !tileIsShip((unsigned char)(baseShip + 3)))
         errorFatal("tile attributes: four consecutive tiles must have the \"ship\" attribute");
 
     if (baseHorse == -1 ||
-        !tileIsHorse(baseHorse + 1))
+        !tileIsHorse((unsigned char)(baseHorse + 1)))
         errorFatal("tile attributes: two consecutive tiles must have the \"horse\" attribute");
 
     if (baseBalloon == -1)

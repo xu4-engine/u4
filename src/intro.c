@@ -104,13 +104,13 @@ void introDrawMapAnimated(void);
 void introDrawBeasties(void);
 void introStartQuestions(void);
 int introHandleName(const char *message);
-int introHandleSexChoice(char choice);
+int introHandleSexChoice(int choice);
 void introJourneyOnward(void);
 void introShowText(const char *text);
 void introInitQuestionTree(void);
 const char *introGetQuestion(int v1, int v2);
 int introDoQuestion(int answer);
-int introHandleQuestionChoice(char choice);
+int introHandleQuestionChoice(int choice);
 void introInitPlayers(SaveGame *saveGame);
 
 /**
@@ -680,7 +680,7 @@ int introHandleName(const char *message) {
 /**
  * Callback to receive the character sex choice.
  */
-int introHandleSexChoice(char choice) {
+int introHandleSexChoice(int choice) {
 
     if (choice == 'm')
         sex = SEX_MALE;
@@ -849,7 +849,7 @@ int introDoQuestion(int answer) {
 /**
  * Callback to receive question answer choice.
  */
-int introHandleQuestionChoice(char choice) {
+int introHandleQuestionChoice(int choice) {
     FILE *saveGameFile;
     SaveGame saveGame;
 
