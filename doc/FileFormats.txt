@@ -135,7 +135,7 @@ offset len  notes
 These contain town information.  Specifically, a 32x32 map, plus the
 starting position, movement behavior, and conversation index of each
 NPC.  The conversation index gives the starting position of the NPC's
-dialog block in the cooresponding .TLK file.  I'm not sure why some of
+dialog block in the corresponding .TLK file.  I'm not sure why some of
 the data is duplicated.
 
 offset len  notes
@@ -645,7 +645,7 @@ offset  len   notes
 0x1196b 190   miscellaneous text strings
 0x11a29 26    spell reagent masks (one byte per spell)
 0x11a43 364   miscellaneous text strings
-0x11baf 16    city/runemask pairs (city id, cooresponding rune bitmask)
+0x11baf 16    city/runemask pairs (city id, corresponding rune bitmask)
 0x11bbf 12    miscellaneous text string
 0x11bcb 120   24 five-byte item location records (see below)
 0x11c43 288   ???
@@ -750,7 +750,7 @@ offset  len   notes
 0x155df 16    food vendor index for each city (one byte per castle/city/town)
 0x155ef 10    price for 25 units of food at each vendor (two bytes for
               each price) for Moonglow, Britan, Yew, Skara Brae, and
-              Paws, repectively
+              Paws, respectively
 0x155f9 10    5 two-byte offsets to food shop names (value + 62067 gives
               file offset)
 0x15603 10    5 two-byte offsets to food shopkeeper names (value + 62067
