@@ -7,22 +7,15 @@
 
 #include "map.h"
 
-/*typedef void (*MapSetTile)(Map *map, int x, int y, int z, unsigned char tile);
-typedef void (*MapGetTile)(Map *map, int x, int y, int z);*/
 typedef unsigned char (*TileAt)(const Map *map, int x, int y, int z, int withObjects);
 
 typedef enum {
     CTX_WORLDMAP    = 0x0001,
     CTX_COMBAT      = 0x0002,
     CTX_CITY        = 0x0004,
-    CTX_DUNGEON     = 0x0008
+    CTX_DUNGEON     = 0x0008,
+    CTX_ALTAR_ROOM  = 0x0010  /* FIXME: implement */
 } LocationContext;
-
-/*typedef struct _TileFunctions {
-    MapSetTile mapSetTile;
-    MapGetTile mapGetTile;
-    MapTileAt mapTileAt;
-} TileFunctions;*/
 
 #define CTX_ANY             (0xffff)
 #define CTX_NORMAL          (CTX_WORLDMAP | CTX_CITY)

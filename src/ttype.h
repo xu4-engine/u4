@@ -23,6 +23,7 @@
 #define LADDERDOWN_TILE 0x1c
 #define HORSE1_TILE 0x14
 #define HORSE2_TILE 0x15
+#define BRICKFLOOR_1_TILE 0x16
 #define BRIDGE_TILE 0x17
 #define BALLOON_TILE 0x18
 #define NORTHBRIDGE_TILE 0x19
@@ -33,6 +34,7 @@
 #define BOULDER_TILE 0x37
 #define CORPSE_TILE 0x38
 #define BRICKFLOOR_TILE 0x3e
+#define WOODFLOOR_TILE 0x3f
 #define MOONGATE0_TILE 0x40
 #define MOONGATE1_TILE 0x41
 #define MOONGATE2_TILE 0x42
@@ -93,6 +95,7 @@ int tileCanWalkOn(unsigned char tile, Direction d);
 int tileCanWalkOff(unsigned char tile, Direction d);
 int tileCanAttackOver(unsigned char tile);
 int tileCanLandBalloon(unsigned char tile);
+int tileIsReplacement(unsigned char tile);
 int tileIsWalkable(unsigned char tile);
 int tileIsMonsterWalkable(unsigned char tile);
 int tileIsDungeonWalkable(unsigned char tile);

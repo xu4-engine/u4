@@ -25,6 +25,7 @@
 #define MASK_CHEST              0x0200
 #define MASK_ATTACKOVER         0x0400
 #define MASK_CANLANDBALLOON     0x0800
+#define MASK_REPLACEMENT        0x1000
 
 /* movement masks */
 #define MASK_SWIMABLE           0x0001
@@ -61,7 +62,8 @@ void tileLoadInfoFromXml() {
         { "horse", MASK_HORSE, &baseHorse },
         { "balloon", MASK_BALLOON, &baseBalloon },
         { "canattackover", MASK_ATTACKOVER, NULL },
-        { "canlandballoon", MASK_CANLANDBALLOON, NULL }
+        { "canlandballoon", MASK_CANLANDBALLOON, NULL },
+        { "replacement", MASK_REPLACEMENT, NULL }
     };
 
     static const struct {
@@ -218,6 +220,10 @@ int tileCanAttackOver(unsigned char tile) {
 
 int tileCanLandBalloon(unsigned char tile) {
     return tileTestBit(tile, MASK_CANLANDBALLOON);
+}
+
+int tileIsReplacement(unsigned char tile) {
+    return tileTestBit(tile, MASK_REPLACEMENT);
 }
 
 int tileIsWalkable(unsigned char tile) {

@@ -368,7 +368,11 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
 int gameExitToParentMap(Context *ct) {
 
     if (ct->location->prev != NULL) {
-        if (ct->location->map->id == 23) /* hythloth dungeon */
+        if (ct->location->context == CTX_DUNGEON)
+            c->saveGame->torchduration = 0;
+
+        /* Create the balloon for Hythloth */
+        if (ct->location->map->id == MAP_HYTHLOTH)
             gameCreateBalloon(ct->location->prev->map);            
 
         /* free map info only if previous location was on a different map */
@@ -376,7 +380,7 @@ int gameExitToParentMap(Context *ct) {
             annotationClear(c->location->map->id);
             mapClearObjects(c->location->map);
         }
-        locationFree(&ct->location);
+        locationFree(&ct->location);       
         
         return 1;
     }
@@ -439,6 +443,12 @@ void gameFinishTurn() {
         } else {            
             screenMessage("Zzzzzz\n");
         }
+    }
+
+    if (c->location->context == CTX_DUNGEON) {
+        if (c->saveGame->torchduration <= 0)
+            screenMessage("It's Dark!\n");
+        else c->saveGame->torchduration--;
     }
 
     /* draw a prompt */
@@ -613,6 +623,13 @@ int gameBaseKeyHandler(int key, void *data) {
         }
         break;
 
+    case U4_FKEY+11:
+        if (settings->debug) {
+            screenMessage("Torch: %d\n", c->saveGame->torchduration);
+            screenPrompt();
+        }
+        break;
+
     case 3:                     /* ctrl-C */
         if (settings->debug) {
             screenMessage("Cmd (h = help):");
@@ -764,7 +781,11 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'g':
         screenMessage("Get Chest!\n");
 
-        if (c->saveGame->balloonstate)
+         {
+
+        
+         }
+        if ((c->location->context != CTX_DUNGEON) && c->saveGame->balloonstate)        
             screenMessage("Drift only!\n");
         else {
             tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_OBJECTS);                            
@@ -794,7 +815,10 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'i':
-        screenMessage("Ignite torch!\nNot Here!\n");
+        screenMessage("Ignite torch!\n");
+        if (c->location->context == CTX_DUNGEON)
+            c->saveGame->torchduration += 100;
+        else screenMessage("Not here!\n");
         break;
 
     case 'j':
@@ -1895,18 +1919,20 @@ int gameGetChest(int player) {
         mapDirMove(c->location->map, d, &tx, &ty);        
         newTile = (*c->location->tileAt)(c->location->map, tx, ty, c->location->z, WITHOUT_OBJECTS);
 
-        if (!tileIsChest(newTile) && tileIsWalkable(newTile) && tileIsMonsterWalkable(newTile))
+        /* make sure the tile we found is a valid replacement */
+        if (tileIsReplacement(newTile))
             break;
         else newTile = 0;
     }            
+    /* couldn't find a tile to replace with -- take a guess! */
     if (newTile == 0)
-        newTile = BRICKFLOOR_TILE;
+        newTile = (c->location->context & CTX_COMBAT) ? BRICKFLOOR_1_TILE : BRICKFLOOR_TILE;
 
     tile = (*c->location->tileAt)(c->location->map, x, y, z, WITH_OBJECTS);
     
     /* get the object for the chest, if it is indeed an object */
     obj = mapObjectAt(c->location->map, x, y, z);
-    if (!tileIsChest(obj->tile))
+    if (obj && !tileIsChest(obj->tile))
         obj = NULL;
     
     if (tileIsChest(tile)) {
@@ -2731,6 +2757,7 @@ int moveAvatarInDungeon(Direction dir, int userEvent) {
     if (c->saveGame->orientation != realDir &&
         c->saveGame->orientation != dirReverse(realDir)) {
         
+        /* FIXME: turning in dungeons does NOT take a turn to do */
         if (!settings->filterMoveMessages) {
             if (dirRotateCCW(c->saveGame->orientation) == realDir)
                 screenMessage("Turn Left\n");

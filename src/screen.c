@@ -140,8 +140,11 @@ void screenUpdate(int showmap, int blackout) {
                 else
                     tile = dungeonViewGetVisibleTile((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
+                /* Only show blackness if there is no light */
+                if (c->saveGame->torchduration <= 0)
+                    screenShowTile(BLACK_TILE, 0, x, y);
                 /* FIXME: for now, show the avatar */
-                if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
+                else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
                     screenShowTile(AVATAR_TILE, 0, x, y);
                 else screenShowTile(tile, 0, x, y);
             }
