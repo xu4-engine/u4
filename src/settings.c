@@ -62,7 +62,7 @@ void settingsRead() {
     settings->scale                 = DEFAULT_SCALE;
     settings->fullscreen            = DEFAULT_FULLSCREEN;
     settings->filter                = DEFAULT_FILTER;
-    settings->videoType             = DEFAULT_VIDEO_TYPE;
+    settings->videoType             = strdup(DEFAULT_VIDEO_TYPE);
     settings->screenShakes          = DEFAULT_SCREEN_SHAKES;
     settings->vol                   = DEFAULT_VOLUME;
     settings->volumeFades           = DEFAULT_VOLUME_FADES;
@@ -116,13 +116,8 @@ void settingsRead() {
                 settings->filter = SCL_POINT;
             }
         }
-        else if (strstr(buffer, "video=") == buffer) {
-            settings->videoType = settingsStringToVideoType(buffer + strlen("video="));
-            if (settings->videoType == VIDEO_MAX) {
-                errorWarning("invalid video type name in settings file: resetting to VGA");
-                settings->videoType = VIDEO_VGA;
-            }
-        }
+        else if (strstr(buffer, "video=") == buffer)
+            settings->videoType = strdup(buffer + strlen("video="));
         else if (strstr(buffer, "screenShakes=") == buffer)
             settings->screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);
         else if (strstr(buffer, "vol=") == buffer)
@@ -264,7 +259,7 @@ void settingsWrite() {
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
-            settingsVideoTypeToString(settings->videoType),
+            settings->videoType,
             settings->screenShakes,
             settings->vol,
             settings->volumeFades,
@@ -298,6 +293,39 @@ void settingsWrite() {
 }
 
 /**
+ * Copy settings.  Does a bitwise copy on all members except for
+ * string pointer videoType.
+ */
+void settingsCopy(Settings *to, const Settings *from) {
+    if (to->videoType)
+        free(to->videoType);
+    memcpy(to, from, sizeof(Settings));
+    to->videoType = strdup(from->videoType);
+}
+
+/**
+ * Compare settings.  Does a bitwise compare on all members except for
+ * string pointer videoType.
+ */
+int settingsCompare(const Settings *s1, const Settings *s2) {
+    int r;
+
+    r = memcmp(s1, s2, (void *) &(s1->videoType) - (void *) &(s1->scale));
+    if (r != 0)
+        return r;
+
+    r = strcmp(s1->videoType, s2->videoType);
+    if (r != 0)
+        return r;
+
+    r = memcmp(&(s1->screenShakes), &(s2->screenShakes), sizeof(Settings) - ((void *) &(s1->screenShakes) - (void *) &(s1->scale)));
+    if (r != 0)
+        return r;
+
+    return 0;
+}
+
+/**
  * Convert a filter enum into a readable string.
  */
 const char *settingsFilterToString(FilterType filter) {
@@ -320,35 +348,6 @@ FilterType settingsStringToFilter(const char *str) {
     for (f = (FilterType) (SCL_MIN+1); f < SCL_MAX; f++) {
         if (strcmp(str, settingsFilterToString((FilterType) f)) == 0) {
             result = (FilterType) f;
-            break;
-        }
-    }
-
-    return result;
-}
-
-/**
- * Convert a video type enum into a readable string.
- */
-const char *settingsVideoTypeToString(VideoType type) {
-    static const char * const videoNames[] = {
-        "VIDEO_MIN", "VGA", "EGA"   //, "CGA"
-    };
-
-    ASSERT(type < VIDEO_MAX, "invalid video type %d\n", type);
-
-    return videoNames[type];
-}
-
-/**
- * Convert a string into a video type enum
- */
-VideoType settingsStringToVideoType(const char *str) {
-    int v;
-    VideoType result = VIDEO_MAX;
-    for (v = (VideoType) (VIDEO_MIN+1); v < VIDEO_MAX; v++) {
-        if (strcmp(str, settingsVideoTypeToString((VideoType) v)) == 0) {
-            result = (VideoType) v;
             break;
         }
     }
