@@ -252,12 +252,18 @@ int mapReadWorld(Map *map, U4FILE *world) {
 
 Object *mapObjectAt(const Map *map, int x, int y, int z) {
     Object *obj;
+    Object *objAt = NULL;
 
     for(obj = map->objects; obj; obj = obj->next) {
-        if (obj->x == x && obj->y == y && obj->z == z)
-            return obj;
+        if (obj->x == x && obj->y == y && obj->z == z) {
+            /* get the most visible object */
+            if (objAt && (objAt->objType == OBJECT_UNKNOWN) && (obj->objType != OBJECT_UNKNOWN))
+                objAt = obj;
+            else if (!objAt)
+                objAt = obj;
+        }            
     }
-    return NULL;
+    return objAt;
 }
 
 const Person *mapPersonAt(const Map *map, int x, int y, int z) {
@@ -327,22 +333,30 @@ unsigned char mapGroundTileAt(const Map *map, int x, int y, int z) {
  */
 unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus) {
     unsigned char tile;
-    const Annotation *a;
-    const Object *obj;
- 
-    a = annotationAt(x, y, z, map->id);
+    const Annotation *a = annotationAt(x, y, z, map->id);
+    const Object *obj = mapObjectAt(c->location->map, x, y, z);
+     
+    /* draw annotations first */
     if (a && a->visual) {
         *focus = 0;
         tile = a->tile;
-    }
-    else if ((map->flags & SHOW_AVATAR) && c->location->x == x && c->location->y == y) {
-        *focus = 0;
-        tile = c->saveGame->transport;
-    }
-    else if ((obj = mapObjectAt(c->location->map, x, y, z))) {
+    }    
+    /* then monsters */
+    else if (obj && obj->objType != OBJECT_UNKNOWN) {
         *focus = obj->hasFocus;
         tile = obj->tile;
     }
+    /* then the avatar */
+    else if ((map->flags & SHOW_AVATAR) && c->location->x == x && c->location->y == y) {
+        *focus = 0;
+        tile = c->saveGame->transport;
+    }    
+    /* then other objects */
+    else if (obj) {
+        *focus = obj->hasFocus;
+        tile = obj->tile;
+    }
+    /* then the base tile */
     else {
         *focus = 0;
         tile = MAP_TILE_AT(map, x, y, z);
