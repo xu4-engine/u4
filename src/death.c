@@ -107,6 +107,8 @@ void deathRevive() {
     gameSetMap(c, lcb_2_city.map, 0);
     c->saveGame->x = REVIVE_CASTLE_X;
     c->saveGame->y = REVIVE_CASTLE_Y;
+    c->saveGame->dngx = REVIVE_WORLD_X;
+    c->saveGame->dngy = REVIVE_WORLD_Y;
     mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
     gameSetViewMode(VIEW_NORMAL);
     musicPlay();
