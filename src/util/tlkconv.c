@@ -100,12 +100,14 @@ xmlDocPtr tlkToXml(FILE *tlk) {
     xmlNodeSetSpacePreserve(root, 1);
 
     for (i = 0; ; i++) {
+        char *ptr;
+
         if (fread(tlk_buffer, 1, sizeof(tlk_buffer), tlk) != sizeof(tlk_buffer))
             break;
 
         node = xmlNewChild(root, NULL, "person", NULL);
 
-        char *ptr = tlk_buffer + 3;
+        ptr = tlk_buffer + 3;
 
         if (tlk_buffer[0] == 0)
             strcpy(buf, "none");
