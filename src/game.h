@@ -86,6 +86,7 @@ void gameMonsterCleanup(void);
 void gameSpawnMonster(const struct _Monster *m);
 
 /* etc */
+void gameGetPlayerForCommand(int (*commandFn)(int player));
 void gameDamageParty(int minDamage, int maxDamage);
 void gameDamageShip(int minDamage, int maxDamage);
 

@@ -59,7 +59,8 @@ void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned c
     combatInfo.placeMonsters = 1;
     combatInfo.placeParty = 1;
     combatInfo.camping = 0;
-    combatInfo.winOrLose = 1;    
+    combatInfo.winOrLose = 1;
+    combatInfo.dungeonRoom = 0;
 
     /* new map for combat */
     if (mapid > 0) {
@@ -141,7 +142,7 @@ void combatInitDungeonRoom(int room, Direction from) {
         mapLoadDungeonRoom(dng, room);
         combatInfo.newCombatMap = dng->room;
         combatInfo.winOrLose = 0;
-        combatInfo.dungeonRoom = 1;
+        combatInfo.dungeonRoom = 0xD0 | room;
         combatInfo.exitDir = DIR_NONE;
 
         /* load in monsters and monster start coordinates */
@@ -1352,7 +1353,7 @@ int movePartyMember(Direction dir, int userEvent) {
     int result = 1;
     int newx, newy;
     int movementMask;
-    int member = combatInfo.partyFocus;
+    int member = combatInfo.partyFocus;    
 
     newx = combatInfo.party[member].obj->x;
     newy = combatInfo.party[member].obj->y;
@@ -1386,9 +1387,24 @@ int movePartyMember(Direction dir, int userEvent) {
     }
 
     combatInfo.party[member].obj->x = newx;
-    combatInfo.party[member].obj->y = newy; 
+    combatInfo.party[member].obj->y = newy;
 
-    /* FIXME: add support for dungeon room triggers here */
+    /* handle dungeon room triggers */
+    if (combatInfo.dungeonRoom) {
+        int i;
+        Trigger *triggers = c->location->prev->map->dungeon->rooms[combatInfo.dungeonRoom & 0xF].triggers;
+
+        for (i = 0; i < 4; i++) {
+            /* see if we're on a trigger */
+            if (triggers[i].x == newx && triggers[i].y == newy) {
+                /* change the tiles! */
+                if (triggers[i].change_x1 && triggers[i].change_y1)
+                    mapSetTileData(c->location->map, triggers[i].change_x1, triggers[i].change_y1, c->location->z, triggers[i].tile);                                    
+                if (triggers[i].change_x2 && triggers[i].change_y2) 
+                    mapSetTileData(c->location->map, triggers[i].change_x2, triggers[i].change_y2, c->location->z, triggers[i].tile);
+            }
+        }
+    }    
 
     return result;
 }

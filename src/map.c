@@ -276,6 +276,15 @@ const Portal *mapPortalAt(const Map *map, int x, int y, int z, int actionFlags) 
     return NULL;
 }
 
+void mapSetTileData(const Map *map, int x, int y, int z, unsigned char tile) {
+    int index;
+
+    index = x + (y * map->width);
+    if ((short)z >= 0)
+        index += (map->width * map->height * z);
+    map->data[index] = tile;
+}
+
 unsigned char mapGetTileFromData(const Map *map, int x, int y, int z) {
     int index;
 

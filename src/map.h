@@ -71,6 +71,7 @@ struct _Object *mapObjectAt(const Map *map, int x, int y, int z);
 const struct _Person *mapPersonAt(const Map *map, int x, int y, int z);
 const struct _Portal *mapPortalAt(const Map *map, int x, int y, int z, int actionFlags);
 unsigned char mapGetTileFromData(const Map *map, int x, int y, int z);
+void mapSetTileData(const Map *map, int x, int y, int z, unsigned char tile);
 unsigned char mapTileAt(const Map *map, int x, int y, int z);
 unsigned char mapGroundTileAt(const Map *map, int x, int y, int z);
 unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z);

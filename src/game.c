@@ -115,7 +115,6 @@ int gameSummonMonster(const char *monsterName);
 
 /* etc */
 int gameCreateBalloon(Map *map);
-void gameGetPlayerForCommand(int (*commandFn)(int player));
 
 /* Functions END */
 /*---------------*/
@@ -902,7 +901,9 @@ int gameBaseKeyHandler(int key, void *data) {
     case 's':
         screenMessage("Searching...\n");
 
-        if (c->saveGame->balloonstate)
+        if (c->location->context == CTX_DUNGEON)
+            dungeonSearch();
+        else if (c->saveGame->balloonstate)
             screenMessage("Drift only!\n");
         else {
             item = itemAtLocation(c->location->map, c->location->x, c->location->y, c->location->z);
@@ -915,7 +916,7 @@ int gameBaseKeyHandler(int key, void *data) {
                     (*item->putItemInInventory)(item->data);
                 }
             } else
-                screenMessage("Nothing Here!\n");  
+                screenMessage("Nothing Here!\n");
         }
 
         break;
@@ -1046,7 +1047,9 @@ int gameGetPlayerNoKeyHandler(int key, void *data) {
     if (key >= '1' &&
         key <= ('0' + c->saveGame->members)) {
         screenMessage("%c\n", key);
-        (*handlePlayerNo)(key - '1');
+        if (playerIsDisabled(c->saveGame, key - '1'))
+            screenMessage("\nDisabled!\n");
+        else (*handlePlayerNo)(key - '1');
     } else {
         screenMessage("None\n");
         (*c->location->finishTurn)();
@@ -2687,17 +2690,15 @@ int moveAvatarInDungeon(Direction dir, int userEvent) {
     if (c->location->context != CTX_DUNGEON)
         return (result = 0);
 
-    /* you must turn first! */
-    /* figure out what our real direction is */   
-
-    while (temp != DIR_NORTH) {
+    /* figure out what our real direction is */
+    while (temp != DIR_NORTH) {        
         temp = dirRotateCW(temp);
         realDir = dirRotateCCW(realDir);
     }
         
-    /* right/left turn the avatar, up advanced and down retreats */
+    /* you must turn first! */
     if (c->saveGame->orientation != realDir &&
-        c->saveGame->orientation != dirReverse(realDir)) {            
+        c->saveGame->orientation != dirReverse(realDir)) {
         
         if (!settings->filterMoveMessages) {
             if (dirRotateCCW(c->saveGame->orientation) == realDir)
