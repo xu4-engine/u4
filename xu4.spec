@@ -59,13 +59,14 @@ rm -rf %{buildroot}
 %{_libdir}/u4/graphics/ega/*.rle
 %{_libdir}/u4/graphics/ega/*.png
 %{_libdir}/u4/graphics/vga/*.png
-%{_libdir}/u4/ultima4.zip
+%{_libdir}/u4/ultima4-1.01.zip
 %{_libdir}/u4/u4upgrad.zip
 
 %changelog
 * Sun Nov 28 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - flatten conf directory
 - download u4 upgrade from sourceforge instead of www.moongates.com
+- package ultima4 zip file as ultima4-1.01.zip
 
 * Thu Nov 25 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - kill libstdc++ for all executables
