@@ -24,6 +24,7 @@
 Context *c;
 
 extern Map world_map;
+int verbose = 0;
 
 int main(int argc, char *argv[]) {
     unsigned int i, scale = 2;
@@ -35,6 +36,8 @@ int main(int argc, char *argv[]) {
             if (scale < 1 || scale > 5)
                 scale = 2;
         }
+        if (strcmp(argv[i], "-v") == 0)
+            verbose++;
     }
 
     srand(time(NULL));
