@@ -285,7 +285,7 @@ int introInit() {
     minorOptions = menuAddItem(minorOptions, 0xFE, "Use These Settings", 7, 20, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
     minorOptions = menuAddItem(minorOptions, 0xFF, "Cancel", 7, 21, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
-    majorOptions = menuAddItem(majorOptions, 0, "Ultima V Combat", 7, 5, &introMajorOptionsMenuItemActivate, ACTIVATE_ANY);
+    //majorOptions = menuAddItem(majorOptions, 0, "Ultima V Combat", 7, 5, &introMajorOptionsMenuItemActivate, ACTIVATE_ANY);
     majorOptions = menuAddItem(majorOptions, 0xFE, "Use These Settings", 7, 20, &introMajorOptionsMenuItemActivate, ACTIVATE_NORMAL);
     majorOptions = menuAddItem(majorOptions, 0xFF, "Cancel", 7, 21, &introMajorOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
@@ -466,7 +466,15 @@ int introKeyHandler(int key, void *data) {
         return 1;
 
     case INTRO_CONFIG_ADVANCED:
-        introBaseMenuKeyHandler(key, &advancedOptions);
+        if (!introBaseMenuKeyHandler(key, &advancedOptions)) {
+            /* navigate to the item and activate it! */
+            switch(key) {
+            case 'd': advancedOptions = menuActivateItem(advancedOptions, 2, ACTIVATE_NORMAL); break;            
+            case 'k': advancedOptions = menuActivateItem(advancedOptions, 3, ACTIVATE_NORMAL); break;
+            case 's': advancedOptions = menuActivateItem(advancedOptions, 4, ACTIVATE_NORMAL); break;
+            default: break;
+            }
+        }
         
         introUpdateScreen();
         return 1;
@@ -747,7 +755,7 @@ void introUpdateScreen() {
     case INTRO_CONFIG_MAJOR_OPTIONS:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Major Game Enhancement Options:");
-        screenTextAt(31, 5,  "%s", settings->majorEnhancementsOptions.u5combat ? "On" : "Off");
+        //screenTextAt(31, 5,  "%s", settings->majorEnhancementsOptions.u5combat ? "On" : "Off");
         menuShow(menuGetRoot(majorOptions));
         break;
 
@@ -1357,7 +1365,10 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0:
-        settings->minorEnhancements = settings->minorEnhancements ? 0 : 1;
+        settings->minorEnhancements = settings->minorEnhancements ? 0 : 1;        
+        break;
+    case 3:
+        settings->majorEnhancements = settings->majorEnhancements ? 0 : 1;
         break;
     case 1:
         settings->shortcutCommands = settings->shortcutCommands ? 0 : 1;
@@ -1370,10 +1381,7 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         menuItemSetVisible(menuGetItemById(advancedOptions, 0), settings->minorEnhancements);
         menuItemSetVisible(menuGetItemById(advancedOptions, 1), settings->majorEnhancements);
 
-        break;
-    case 3:
-        settings->majorEnhancements = settings->majorEnhancements ? 0 : 1;
-        break;
+        break;    
     case 0xFE:        
         settingsWrite();        
     
@@ -1392,14 +1400,6 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     case 2:
         settings->debug = settings->debug ? 0 : 1;
         break;
-    case 3:
-        mode = INTRO_CONFIG_KEYBOARD;
-        keyboardOptions = menuReset(keyboardOptions);
-        break;
-    case 4:
-        mode = INTRO_CONFIG_SPEED;
-        speedOptions = menuReset(speedOptions);
-        break;
     case 0:
         mode = INTRO_CONFIG_MINOR_OPTIONS;
         minorOptions = menuReset(minorOptions);
@@ -1408,6 +1408,14 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         mode = INTRO_CONFIG_MAJOR_OPTIONS;
         majorOptions = menuReset(majorOptions);
         break;
+    case 3:
+        mode = INTRO_CONFIG_KEYBOARD;
+        keyboardOptions = menuReset(keyboardOptions);
+        break;
+    case 4:
+        mode = INTRO_CONFIG_SPEED;
+        speedOptions = menuReset(speedOptions);
+        break;    
     case 0xFE:        
         settingsWrite();        
     
