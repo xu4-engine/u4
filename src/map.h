@@ -48,7 +48,7 @@ typedef struct _Map {
     unsigned char *data;
     union {
         struct _City *city;
-        struct _Shrine *shrine;
+        const struct _Shrine *shrine;
     };
     struct _Annotation *annotation;
     struct _Object *objects;
