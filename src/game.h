@@ -21,12 +21,12 @@ typedef struct AlphaActionInfo {
     void *data;
 } AlphaActionInfo;
 
-typedef struct DirectedActionInfo {
+typedef struct CoordActionInfo {
     int (*handleAtCoord)(int, int);
     int range;
     int (*blockedPredicate)(unsigned char tile);
     const char *failedMessage;
-} DirectedActionInfo;
+} CoordActionInfo;
 
 void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
@@ -34,7 +34,7 @@ void gameSetMap(struct _Context *ct, struct _Map *map, int setStartPos);
 int gameBaseKeyHandler(int key, void *data);
 int gameGetPlayerNoKeyHandler(int key, void *data);
 int gameGetAlphaChoiceKeyHandler(int key, void *data);
-int gameGetDirectionKeyHandler(int key, void *data);
+int gameGetCoordinateKeyHandler(int key, void *data);
 int gameZtatsKeyHandler(int key, void *data);
 int gameZtatsKeyHandler2(int key, void *data);
 int gameSpecialCmdKeyHandler(int key, void *data);
