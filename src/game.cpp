@@ -1881,8 +1881,10 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
 
     case 'p':        
         eventHandler->popKeyHandler();
-        if (c->location->viewMode == VIEW_NORMAL)
+        if ((c->location->viewMode == VIEW_NORMAL) || (c->location->viewMode == VIEW_DUNGEON))
             c->location->viewMode = VIEW_GEM;
+        else if (c->location->context == CTX_DUNGEON)
+            c->location->viewMode = VIEW_DUNGEON;
         else c->location->viewMode = VIEW_NORMAL;
         
         screenMessage("\nToggle View!\n");
