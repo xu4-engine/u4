@@ -9,57 +9,38 @@ Things you only have to do once
 1. Download and install the latest MacOSX developer tools from:
    http://developer.apple.com/
 
-2. Add /usr/local/bin to your path. To do this in bash (e.g. in Mac OS X
-   Panther) add the folloing line to your ".profile":
-   	export PATH=$PATH:/usr/local/bin
+2. Grab SDL-devel-1.2.6.pkg.tar.gz from http://www.libsdl.org/download-1.2.php
+   Unpack and install it.
 
-3. Download the following libraries in source-code form and build them.
-   Make sure they all install to /usr/local
+3. Grab SDL_mixer-devel-1.2.5.pkg.tar.gz from
+   http://www.libsdl.org/projects/SDL_mixer/
+   Unpack and install it.
 
-   SDL: http://www.libsdl.org
-   OGG Vorbis Libraries: http://www.vorbis.com
-     Note: Get the 1.0 developer kit for MacOSX. Copy the includes to
-     /usr/local/include and the libs to /usr/local/lib
-     These libraries need to be in place before you build SDL_mixer.
-   SDL_mixer: http://www.libsdl.org/projects/SDL_mixer/
-     Note: Build with "./configure --disable-music-mp3" unless you want to 
-     get the smpeg library and build that too (unnecessary for XU4)
-   libpng: http://www.libpng.org/pub/png/libpng.html
+4. Grab gnome-combo-20030923.dmg.gz from
+   http://www.zveno.com/open_source/libxml2xslt.html
+   Unpack and open the .dmg. Copy the libiconv and libxml frameworks into
+   ~/Library/Frameworks
 
-   The following two libraries are only necessary if you are running on a
-   version of Mac OS X earlier than Panther, or if you want to build a
-   statically linked version of XU4 that will run on a pre-Panther system.
+5. Start the Terminal app (usually in /Applications/Utilities)
 
-   libiconv: http://www.gnu.org/software/libiconv/
-     Note: Build with "./configure --enable-static --disable-shared"
-   libxml2: http://www.xmlsoft.org/
-
-4. Start the Terminal app (usually in /Applications/Utilities)
-
-5. Change to the directory where you want XU4 cvs
+6. Change to the directory where you want XU4 cvs
    e.g. cd ~/
 
-6. Check out the current xu4 cvs source code
+7. Check out the current xu4 cvs source code
    cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 login
    Just press enter when it asks for password
    cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 co u4
 
-7. Change to the src directory of the XU4 source code
+8. Change to the src directory of the XU4 source code
    i.e. cd u4/src
 
-8. Edit Makefile.macosx. Select the type of build desired (either static
-   or dynamically linked, for Panther or Jaguar) and uncomment the appropriate
-   lines. Make sure the lines for the other sections are commented out.
-     Note: The default settings are fine for either Panther or Jaguar, as
-     long as libiconv and libxml2 were downloaded and installed in /usr/local
+9. Copy the files SDLMain.h and SDLMain.c into the 'macosx' dir
+   cp "/Developer/ProjectBuilder Extras/Project Templates/Application/SDL Application"/SDLMain.* macosx
 
-8. Compile xu4 and utilities
-   make -f Makefile.macosx
-
-9. To build an application bundle version of xu4 type
+9. Compile xu4 
    make -f Makefile.macosx install
 
-10. Download the Ultima IV data files and update (if desired) and copy
+10. Download the Ultima IV data files and gfx update (if desired) and copy
     them into the appropriate location:
     cp (wherever_you_put_ultima4.zip) xu4.app/Contents/Resources
     cp (wherever_you_put_u4upgrad.zip) xu4.app/Contents/Resources
@@ -81,7 +62,6 @@ Things you have to do every time the xu4 source code changes
 
 5. Compile xu4
    make -f Makefile.macosx clean
-   make -f Makefile.macosx
    make -f Makefile.macosx install
 
 6. If you have moved or deleted the old application bundle, it may be
