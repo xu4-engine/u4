@@ -20,20 +20,6 @@ typedef struct KeyHandlerNode {
     struct KeyHandlerNode *next;
 } KeyHandlerNode;
 
-typedef struct AlphaActionInfo {
-    char lastValidLetter;
-    int (*handleAlpha)(int, void *);
-    const char *prompt;
-    void *data;
-} AlphaActionInfo;
-
-typedef struct DirectedActionInfo {
-    int (*handleAtCoord)(int, int);
-    int range;
-    int (*blockedPredicate)(unsigned char tile);
-    const char *failedMessage;
-} DirectedActionInfo;
-
 typedef struct ReadBufferActionInfo {
     int (*handleBuffer)(const char *);
     char *buffer;
@@ -55,12 +41,6 @@ KeyHandler eventHandlerGetKeyHandler();
 void *eventHandlerGetKeyHandlerData();
 
 int keyHandlerDefault(int key, void *data);
-int keyHandlerNormal(int key, void *data);
-int keyHandlerGetPlayerNo(int key, void *data);
-int keyHandlerGetDirection(int key, void *data);
 int keyHandlerReadBuffer(int key, void *data);
-int keyHandlerQuit(int key, void *data);
-int keyHandlerZtats(int key, void *data);
-int keyHandlerZtats2(int key, void *data);
 
 #endif
