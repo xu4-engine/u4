@@ -297,6 +297,8 @@ void gameUpdateScreen() {
     case VIEW_DEAD:
         screenUpdate(1, 1);
         break;
+    case VIEW_CODEX: /* the screen updates will be handled elsewhere */
+        break;
     default:
         ASSERT(0, "invalid view mode: %d", c->location->viewMode);
     }
@@ -1087,6 +1089,14 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'v' + U4_ALT:
         screenMessage("XU4 %s\n", VERSION);        
         break;
+
+    case 'a' + U4_ALT:
+        if (settings->debug) {
+            gameSetMap(c, mapMgrGetById(MAP_ABYSS), 1, NULL);
+            c->location->x = 7;
+            c->location->y = 7;
+            c->location->z = 7;            
+        }
 
     default:
         valid = 0;        

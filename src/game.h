@@ -15,7 +15,8 @@ typedef enum {
     VIEW_GEM,
     VIEW_RUNE,
     VIEW_DUNGEON,
-    VIEW_DEAD
+    VIEW_DEAD,
+    VIEW_CODEX
 } ViewMode;
 
 typedef struct AlphaActionInfo {

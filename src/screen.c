@@ -138,7 +138,7 @@ void screenUpdate(int showmap, int blackout) {
         /* 1st-person perspective */
         if (screen3dDungeonView) {
             screenEraseMapArea();
-            if (c->saveGame->torchduration > 0) {
+            if (c->saveGame->torchduration > 0 && !blackout) {
                 for (y = 3; y >= 0; y--) {
 
                     tile = dungeonViewGetVisibleTile(y, -1);

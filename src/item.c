@@ -10,6 +10,7 @@
 #include "item.h"
 
 #include "annotation.h"
+#include "codex.h"
 #include "combat.h"
 #include "context.h"
 #include "debug.h"
@@ -328,8 +329,7 @@ void useStone(void *item) {
                     }
                     /* start chamber of the codex sequence... */
                     else {
-                        /* FIXME: add codex sequence (probably in codex.c for cleanliness) */
-                        screenMessage("\n\nCongratulations!\n\nYou sorta just beat the game!\n");
+                        codexStart();                        
                     }
                 }
                 else screenMessage("\nHmm...No effect!\n");
@@ -351,7 +351,7 @@ void useStone(void *item) {
         int virtueMask = getBaseVirtues((Virtue)c->location->z);
         if (virtueMask > 0)
             screenMessage("\n\nAs thou doth approach, a voice rings out: What virtue dost stem from %s?\n\n", getBaseVirtueName(virtueMask));
-        else screenMessage("\n\nAs thou doth approach, a voice rings out: What virtue exists independently of Truth, Love, and Courage?\n\n");
+        else screenMessage("\n\nA voice rings out:  What virtue exists independently of Truth, Love, and Courage?\n\n");
 
         readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
         readBufferInfo->handleBuffer = &nameVirtue;
