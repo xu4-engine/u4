@@ -91,6 +91,7 @@ void gameMonsterAttack(Object *obj);
 void gameLordBritishCheckLevels(void);
 int gameSummonMonster(const char *monsterName);
 void gameDestroyAllCreatures(void);
+int gameCreateBalloon(Map *map);
 
 extern Map world_map;
 extern Object *party[8];
@@ -249,12 +250,7 @@ void gameUpdateScreen() {
 void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     int i, x, y, z, viewMode;    
     LocationContext context;
-    FinishTurnCallback finishTurn = &gameFinishTurn;
-
-    if (map->type == MAP_DUNGEON && c->transportContext != TRANSPORT_FOOT) {
-        screenMessage("Only on foot!\n");
-        return;
-    }    
+    FinishTurnCallback finishTurn = &gameFinishTurn;    
 
     if (portal) {
         x = portal->startx;
@@ -316,12 +312,15 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
 int gameExitToParentMap(struct _Context *ct) {
 
     if (ct->location->prev != NULL) {
+        if (ct->location->map->id == 23) /* hythloth dungeon */
+            gameCreateBalloon(ct->location->prev->map);            
+
         /* free map info only if previous location was on a different map */
         if (ct->location->prev->map != c->location->map) {
             annotationClear(c->location->map->id);
             mapClearObjects(c->location->map);
         }
-        locationFree(&ct->location);        
+        locationFree(&ct->location);
         
         return 1;
     }
@@ -505,9 +504,7 @@ int gameCheckPlayerDisabled(int player) {
 int gameBaseKeyHandler(int key, void *data) {
     int valid = 1;
     Object *obj;
-    const Portal *portal;
-    CoordActionInfo *info;
-    /*GetChoiceActionInfo *choiceInfo;*/
+    CoordActionInfo *info;    
     AlphaActionInfo *alphaInfo;
     ReadBufferActionInfo *readBufferInfo;
     const ItemLocation *item;
@@ -610,80 +607,28 @@ int gameBaseKeyHandler(int key, void *data) {
         gameGetPlayerForCommand(&gameCastForPlayer);
         break;
 
-    case 'd':
-        portal = mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z);
-        if (portal && portal->trigger_action == ACTION_DESCEND &&
-            (!portal->portalConditionsMet || (*portal->portalConditionsMet)())) {
-            annotationClear(c->location->map->id);            
-            gameSetMap(c, portal->destination, 0, portal);
+    case 'd':        
+        if (!usePortalAt(c->location, c->location->x, c->location->y, c->location->z, ACTION_DESCEND)) {
+            if (c->transportContext == TRANSPORT_BALLOON) {
+                screenMessage("Land Balloon\n");
+                if (c->saveGame->balloonstate == 0)
+                    screenMessage("Already Landed!\n");
+                else if (tileCanLandBalloon(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z))) {
+                    c->saveGame->balloonstate = 0;
+                    c->opacity = 1;
+                }
+                else screenMessage("Not Here!\n");
+            }
+            else screenMessage("Descend what?\n");
+        }        
 
-            screenMessage("Descend to first floor!\n");
-        } else if (c->transportContext == TRANSPORT_BALLOON) {
-            screenMessage("Land Balloon\n");
-            if (c->saveGame->balloonstate == 0)
-                screenMessage("Already Landed!\n");
-            else if (tileCanLandBalloon(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z))) {
-                c->saveGame->balloonstate = 0;
-                c->opacity = 1;
-            } else screenMessage("Not Here!\n");
-        } else
-            screenMessage("Descend what?\n");
         break;
 
     case 'e':
-        portal = mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z);
-        /* must enter on foot or on horse */
-        if ((portal && portal->trigger_action == ACTION_ENTER) &&
-            (c->transportContext & TRANSPORT_FOOT_OR_HORSE)) {
-
-            if (!portal->portalConditionsMet || (*portal->portalConditionsMet)()) {
-                switch (portal->destination->type) {
-                case MAP_TOWN:
-                    screenMessage("Enter towne!\n\n%s\n\n", portal->destination->city->name);
-                    break;
-                case MAP_VILLAGE:
-                    screenMessage("Enter village!\n\n%s\n\n", portal->destination->city->name);
-                    break;
-                case MAP_CASTLE:
-                    screenMessage("Enter castle!\n\n%s\n\n", portal->destination->city->name);
-                    break;
-                case MAP_RUIN:
-                    screenMessage("Enter ruin!\n\n%s\n\n", portal->destination->city->name);
-                    break;
-                case MAP_SHRINE:
-                    screenMessage("Enter the Shrine of %s!\n\n", getVirtueName(portal->destination->shrine->virtue));
-                    break;
-                case MAP_DUNGEON:
-                    screenMessage("Enter dungeon!\n\n%s\n\n", portal->destination->dungeon->name);
-                    break;
-                default:
-                    break;
-                }
-
-                /*
-                 * if trying to enter a shrine, ensure the player is
-                 * allowed in
-                 */
-                if (portal->destination->type == MAP_SHRINE) {
-                    if (!playerCanEnterShrine(c->saveGame, portal->destination->shrine->virtue)) {
-                        screenMessage("Thou dost not bear the rune of entry!  A strange force keeps you out!\n");
-                        break;
-                    } else {
-                        gameSetMap(c, portal->destination, 1, portal);            
-                        musicPlay();
-                        shrineEnter(portal->destination->shrine);
-                    }
-                }
-                else {
-                    gameSetMap(c, portal->destination, 1, portal);            
-                    musicPlay();
-                }
-            }
-            /* failed conditions of entering the portal */
-            else screenMessage("Enter Can't!\n");
-
-        } else
-            screenMessage("Enter what?\n");
+        if (!usePortalAt(c->location, c->location->x, c->location->y, c->location->z, ACTION_ENTER)) {
+            if (!mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z))
+                screenMessage("Enter what?\n");
+        }
         break;
 
     case 'f':
@@ -764,24 +709,15 @@ int gameBaseKeyHandler(int key, void *data) {
         screenMessage("Jimmy\nDir: ");
         break;
 
-    case 'k':
-        portal = mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z);
-        if (portal && portal->trigger_action == ACTION_KLIMB && 
-            (!portal->portalConditionsMet || (*portal->portalConditionsMet)())) {
-            if (c->transportContext != TRANSPORT_FOOT)
-                screenMessage("Klimb\nOnly on foot!\n");
-            else {
-                annotationClear(c->location->map->id);
-                gameSetMap(c, portal->destination, 0, portal);
-                
-                screenMessage("Klimb to second floor!\n");
-            }
-        } else if (c->transportContext == TRANSPORT_BALLOON) {
-            c->saveGame->balloonstate = 1;
-            c->opacity = 0;
-            screenMessage("Klimb altitude\n");            
-        } else
-            screenMessage("Klimb what?\n");
+    case 'k':        
+        if (!usePortalAt(c->location, c->location->x, c->location->y, c->location->z, ACTION_KLIMB)) {
+            if (c->transportContext == TRANSPORT_BALLOON) {
+                c->saveGame->balloonstate = 1;
+                c->opacity = 0;
+                screenMessage("Klimb altitude\n");            
+            } else
+                screenMessage("Klimb what?\n");
+        }
         break;
 
     case 'l':
@@ -3142,4 +3078,16 @@ void gameDestroyAllCreatures(void) {
             }
         }
     }
+}
+
+int gameCreateBalloon(Map *map) {
+    Object *obj;    
+
+    /* see if the balloon has already been created (and not destroyed) */
+    for (obj = map->objects; obj; obj = obj->next)
+        if (tileIsBalloon(obj->tile))
+            return 0;
+
+    mapAddObject(map, BALLOON_TILE, BALLOON_TILE, 233, 242, -1);
+    return 1;
 }

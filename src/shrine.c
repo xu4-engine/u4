@@ -41,6 +41,14 @@ char mantraBuffer[20];
 int reps;
 char **shrineAdvice = NULL;
 
+int shrineCanEnter(const Portal *p) {
+    if (!playerCanEnterShrine(c->saveGame, p->destination->shrine->virtue)) {
+        screenMessage("Thou dost not bear the rune of entry!  A strange force keeps you out!\n");
+        return 0;
+    }
+    return 1;
+}
+
 void shrineEnter(const Shrine *s) {
     ReadBufferActionInfo *info;
     U4FILE *avatar;

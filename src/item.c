@@ -14,6 +14,7 @@
 #include "game.h"
 #include "location.h"
 #include "player.h"
+#include "portal.h"
 #include "savegame.h"
 #include "screen.h"
 
@@ -54,7 +55,7 @@ void putMysticInInventory(void *mystic);
 void useTelescope(void *notused);
 int isReagentInInventory(void *reag);
 void putReagentInInventory(void *reag);
-int isAbyssOpened(void);
+int isAbyssOpened(const Portal *p);
 
 static const ItemLocation items[] = {
     { "Mandrake Root", NULL, 182, 54, -1, &world_map, 
@@ -345,8 +346,12 @@ void itemUse(const char *shortname) {
         screenMessage("\nNot a Usable item!\n");
 }
 
-int isAbyssOpened(void) {
+int isAbyssOpened(const Portal *p) {
     /* make sure the bell, book and candle have all been used */
     int items = c->saveGame->items;
-    return (items & ITEM_BELL_USED) && (items & ITEM_BOOK_USED) && (items & ITEM_CANDLE_USED);
+    int isopened = (items & ITEM_BELL_USED) && (items & ITEM_BOOK_USED) && (items & ITEM_CANDLE_USED);
+    
+    if (!isopened)
+        screenMessage("Enter Can't!\n");
+    return isopened;
 }
