@@ -40,7 +40,7 @@ install: u4.exe
 	mkdir -p $(U4PATH)/graphics/vga
 	mkdir -p $(U4PATH)/mid
 	mkdir -p $(U4PATH)/sound
-	cp $(MAIN) $(U4PATH)
+	strip $(MAIN) -o $(U4PATH)/$(MAIN)
 	cp ../conf/*.xml $(U4PATH)/conf
 	cp ../conf/dtd/*.dtd $(U4PATH)/dtd/
 	cp ../conf/tileset/*.xml $(U4PATH)/conf/tileset
