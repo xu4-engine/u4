@@ -134,21 +134,21 @@ const struct {
     { "dung3m.rle", 176, 16,  4, 0,   80,  COMP_RLE },
     { "dung3r.rle", 88,  16,  4, 88,  80,  COMP_RLE },
 
+    { "dung0l_door.rle", 32,  176, 4, 0,   0,   COMP_RLE },
     { NULL },
-    { NULL },
-    { NULL },
+    { "dung0r_door.rle", 32,  176, 4, 144, 0,   COMP_RLE },
 
-    { NULL },
+    { "dung1l_door.rle", 64,  112, 4, 0,   32,  COMP_RLE },
     { "dung1m_door.rle", 176, 112, 4, 0,   32,  COMP_RLE },
-    { NULL },
+    { "dung1r_door.rle", 64,  112, 4, 112, 32,  COMP_RLE },
 
-    { NULL },
+    { "dung2l_door.rle", 80,  48,  4, 0,   64,  COMP_RLE },
     { "dung2m_door.rle", 176, 48,  4, 0,   64,  COMP_RLE },
-    { NULL },
+    { "dung2r_door.rle", 80,  48,  4, 96,  64,  COMP_RLE },
 
-    { NULL },
+    { "dung3l_door.rle", 88,  16,  4, 0,   80,  COMP_RLE },
     { "dung3m_door.rle", 176, 16,  4, 0,   80,  COMP_RLE },
-    { NULL },
+    { "dung3r_door.rle", 88,  16,  4, 88,  80,  COMP_RLE },
 
 };
 
@@ -978,7 +978,7 @@ int screenDungeonGraphicIndex(int xoffset, int distance, DungeonGraphicType type
     if (type != DNGGRAPHIC_WALL && type != DNGGRAPHIC_DOOR)
         return -1;
 
-    if (xoffset == 0 && distance != 0 && type == DNGGRAPHIC_DOOR)
+    if (type == DNGGRAPHIC_DOOR && ((xoffset == 0 && distance != 0) || (xoffset != 0)))
         index += 12;
 
     index += xoffset + 1;
