@@ -43,8 +43,8 @@ install::
 	mkdir -p $(libdir)/u4/graphics
 	mkdir -p $(libdir)/u4/graphics/ega
 	mkdir -p $(libdir)/u4/graphics/vga
-	$(INSTALL) ../graphics/ega/*.rle $(libdir)/u4/graphics/ega
-	$(INSTALL) ../graphics/vga/*.rle $(libdir)/u4/graphics/vga
+	$(INSTALL) ../graphics/ega/*.rle ../graphics/ega/*.png $(libdir)/u4/graphics/ega
+	$(INSTALL) ../graphics/vga/*.png $(libdir)/u4/graphics/vga
 	$(INSTALL) -D ../u4.desktop $(datadir)/applications/u4.desktop
 
 # use GCC's automatic dependency generation
