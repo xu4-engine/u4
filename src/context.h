@@ -12,7 +12,7 @@
 #include "savegame.h"
 
 class CombatController;
-struct _Location;
+class Location;
 class Object;
 class Party;
 class Person;
@@ -107,7 +107,7 @@ public:
     Party *party;
     SaveGame *saveGame;
     CombatController *combat;
-    struct _Location *location;
+    class Location *location;
     Conversation conversation;
     int line, col;
     StatsArea *stats;
