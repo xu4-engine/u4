@@ -23,5 +23,6 @@ void annotationRemove(int x, int y, unsigned char tile);
 const Annotation *annotationAt(int x, int y);
 void annotationCycle(void);
 void annotationClear(void);
+int annotationCount(void);
 
 #endif

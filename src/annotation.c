@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "context.h"
 #include "map.h"
@@ -22,8 +23,10 @@ void annotationAdd(int x, int y, int ttl, unsigned char tile) {
 }
 
 void annotationRemove(int x, int y, unsigned char tile) {
-    int found = 0;
+    int found = 0, count;
     Annotation *annotation = c->map->annotation, **prev;
+
+    count = annotationCount();
 
     prev = &(c->map->annotation);
     while (annotation) {
@@ -33,13 +36,14 @@ void annotationRemove(int x, int y, unsigned char tile) {
             found = 1;
             break;
         }
+        prev = &(annotation->next);
         annotation = annotation->next;
-        prev = &annotation;
     }
 
     if (found) {
         *prev = annotation->next;
         free(annotation);
+        assert(annotationCount() == (count - 1));
     }
 }
 
@@ -71,8 +75,8 @@ void annotationCycle(void) {
         else if (annotation->time_to_live != -1)
             annotation->time_to_live--;
 
+        prev = &(annotation->next);
         annotation = annotation->next;
-        prev = &annotation;
     }
 }
 
@@ -85,4 +89,16 @@ void annotationClear(void) {
         annotation = tmp;
     }
     c->map->annotation = NULL;
+}
+
+int annotationCount(void) {
+    Annotation *annotation = c->map->annotation;
+    int count = 0;
+    
+    while (annotation) {
+        count++;
+        annotation = annotation->next;
+    }
+
+    return count;
 }
