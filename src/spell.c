@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "u4.h"
 #include "spell.h"
@@ -16,6 +15,7 @@
 #include "ttype.h"
 #include "screen.h"
 #include "player.h"
+#include "debug.h"
 
 static int spellAwaken(int player);
 static int spellBlink(int dir);
@@ -106,7 +106,7 @@ void mixtureDelete(Mixture *mix) {
 }
 
 int mixtureAddReagent(Mixture *mix, Reagent reagent) {
-    assert(reagent < REAG_MAX);
+    ASSERT(reagent < REAG_MAX, "invalid reagent: %d", reagent);
     if (c->saveGame->reagents[reagent] < 1)
         return 0;
     c->saveGame->reagents[reagent]--;
@@ -124,7 +124,7 @@ void mixtureRevert(Mixture *mix) {
 }
 
 const char *spellGetName(unsigned int spell) {
-    assert(spell < N_SPELLS);
+    ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
 
     return spells[spell].name;
 }
@@ -136,7 +136,7 @@ const char *spellGetName(unsigned int spell) {
 int spellMix(unsigned int spell, const Mixture *mix) {
     int regmask, reg;
 
-    assert(spell < N_SPELLS);
+    ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
 
     regmask = 0;
     for (reg = 0; reg < REAG_MAX; reg++) {
@@ -153,7 +153,7 @@ int spellMix(unsigned int spell, const Mixture *mix) {
 }
 
 SpellParam spellGetParamType(unsigned int spell) {
-    assert(spell < N_SPELLS);
+    ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
 
     return spells[spell].paramType;
 }
@@ -164,8 +164,8 @@ SpellParam spellGetParamType(unsigned int spell) {
  * invalid.  The error code is updated with the reason for failure.
  */
 int spellCast(unsigned int spell, int character, int param, SpellCastError *error) {
-    assert(spell < N_SPELLS);
-    assert(character >= 0 && character < c->saveGame->members);
+    ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
+    ASSERT(character >= 0 && character < c->saveGame->members, "character out of range: %d", character);
 
     *error = CASTERR_NOERROR;
 
@@ -208,7 +208,7 @@ void spellMagicAttack(unsigned char tile, int maxDamage, int minDamage) {
 }
 
 static int spellAwaken(int player) {
-    assert(player < 8);
+    ASSERT(player < 8, "player out of range: %d", player);
 
     if (player < c->saveGame->members && 
         c->saveGame->players[player].status == STAT_SLEEPING) {
@@ -231,7 +231,7 @@ static int spellBlink(int dir) {
 }
 
 static int spellCure(int player) {
-    assert(player < 8);
+    ASSERT(player < 8, "player out of range: %d", player);
 
     return playerHeal(c->saveGame, HT_CURE, player);
 }
@@ -295,7 +295,7 @@ static int spellGate(int phase) {
 }
 
 static int spellHeal(int player) {
-    assert(player < 8);
+    ASSERT(player < 8, "player out of range: %d", player);
 
     return playerHeal(c->saveGame, HT_HEAL, player);
 }
@@ -344,7 +344,7 @@ static int spellProtect(int unused) {
 }
 
 static int spellRez(int player) {
-    assert(player < 8);
+    ASSERT(player < 8, "player out of range: %d", player);
 
     return playerHeal(c->saveGame, HT_RESURRECT, player);
 }
