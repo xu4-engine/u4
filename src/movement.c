@@ -123,6 +123,10 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
     SlowedType slowedType = SLOWED_BY_TILE;
     int slowed = 0;
 
+    /* fixed objects cannot move */
+    if (obj->movement_behavior == MOVEMENT_FIXED)
+        return;
+
     if (action == CA_FLEE)
         dir = dirFindPathToEdge(newx, newy, c->location->map->width, c->location->map->height, valid_dirs);
     else if (action == CA_ADVANCE)

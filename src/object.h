@@ -32,6 +32,7 @@ typedef struct _Object {
     };
     int objType;
     int hasFocus;
+    int isVisible;
     struct _Object *next;
 } Object;
 

@@ -484,6 +484,7 @@ static int spellWinds(int fromdir) {
 static int spellXit(int unused) {
     if (!mapIsWorldMap(c->location->map)) {
         gameExitToParentMap(c);
+        musicPlay();
         return 1;
     }
     return 0;

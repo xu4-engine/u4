@@ -133,22 +133,22 @@
 #define BALRON_TILE 252
 
 typedef enum {
-    MATTR_STEALFOOD   = 0x01,
-    MATTR_STEALGOLD   = 0x02,
-    MATTR_CASTS_SLEEP = 0x04,
-    MATTR_UNDEAD      = 0x08,
-    MATTR_GOOD        = 0x10,
-    MATTR_WATER       = 0x20,
-    MATTR_STATIONARY  = 0x40,
+    MATTR_STEALFOOD     = 0x01,
+    MATTR_STEALGOLD     = 0x02,
+    MATTR_CASTS_SLEEP   = 0x04,
+    MATTR_UNDEAD        = 0x08,
+    MATTR_GOOD          = 0x10,
+    MATTR_WATER         = 0x20,
+    MATTR_STATIONARY    = 0x40,
     MATTR_NONATTACKABLE = 0x80,
-    MATTR_NEGATE      = 0x100,
-    MATTR_TELEPORT    = 0x200,
+    MATTR_NEGATE        = 0x100,
+    MATTR_TELEPORT      = 0x200,
     MATTR_FIRERESISTANT = 0x400,
-    MATTR_CAMOUFLAGE  = 0x800,
-    MATTR_WANDERS     = 0x1000,
-    MATTR_NOATTACK    = 0x2000,
-    MATTR_FLIES       = 0x4000,
-    MATTR_AMBUSHES    = 0x8000
+    MATTR_CAMOUFLAGE    = 0x800,
+    MATTR_WANDERS       = 0x1000,
+    MATTR_NOATTACK      = 0x2000,
+    MATTR_FLIES         = 0x4000,
+    MATTR_AMBUSHES      = 0x8000
 } MonsterAttrib;
 
 typedef enum {
@@ -164,6 +164,7 @@ typedef struct _Monster {
     const char *name;
     unsigned short id;
     unsigned char tile;
+    unsigned char camouflageTile;
     unsigned char frames;
     unsigned char leader;
     unsigned char basehp;
@@ -188,10 +189,13 @@ int monsterIsAttackable(const Monster *monster);
 int monsterWillAttack(const Monster *monster);
 int monsterStealsGold(const Monster *monster);
 int monsterStealsFood(const Monster *monster);
+int monsterNegates(const Monster *monster);
+int monsterCamouflages(const Monster *monster);
 int monsterAmbushes(const Monster *monster);
 int monsterGetXp(const Monster *monster);
 int monsterCastSleep(const Monster *monster);
 int monsterGetDamage(const Monster *monster);
+int monsterGetCamouflageTile(const Monster *monster);
 const Monster *monsterRandomForTile(unsigned char tile);
 int monsterGetInitialHp(const Monster *monster);
 MonsterStatus monsterGetStatus(const Monster *monster, int hp);

@@ -255,8 +255,8 @@ void combatFinishTurn() {
         playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->location->map, combatInfo.party[focus]->x, combatInfo.party[focus]->y, c->location->z)), focus);
     }
 
-    /* check to see if the player gets to go again */
-    if ((c->aura != AURA_QUICKNESS) || (rand() % 2 == 0)) {
+    /* check to see if the player gets to go again (and is still alive) */
+    if ((c->aura != AURA_QUICKNESS) || (rand() % 2 == 0) || (c->saveGame->players[focus].hp <= 0)){
         do {
             annotationCycle();
 
@@ -629,6 +629,9 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
             /* show the 'hit' tile */
             attackFlash(x, y, hittile, 2); 
             playerApplyDamage(&c->saveGame->players[player], monsterGetDamage(m));
+
+            /* show the 'hit' message */
+            screenMessage("\n%s Hit!\n", c->saveGame->players[player].name);
         }
     }    
 
@@ -774,27 +777,54 @@ void combatMoveMonsters() {
             continue;
         m = combatInfo.monsters[i]->monster;
 
-        if (m->mattr & MATTR_NEGATE) {
+        if (monsterNegates(m)) {
             c->aura = AURA_NEGATE;
             c->auraDuration = 2;
             statsUpdate();
         }
 
-        /* monsters who teleport do so 1/8 of the time */
-        if (monsterTeleports(m) && (rand() % 8) == 0)
-            action = CA_TELEPORT;
-        /* monsters who ranged attack do so 1/4 of the time */
-        else if (m->ranged != 0 && (rand() % 4) == 0)
-            action = CA_RANGED;
-        /* monsters who cast sleep do so 1/4 of the time they don't ranged attack */
-        else if (monsterCastSleep(m) && (rand() % 4) == 0)
-            action = CA_CAST_SLEEP;
-        
-        else if (monsterGetStatus(m, combatInfo.monsterHp[i]) == MSTAT_FLEEING)
-            action = CA_FLEE;
-        else
-            action = CA_ATTACK;
+        /* default action */
+        action = CA_ATTACK;
 
+        /* let's see if the monster blends into the background, or if he appears... */
+        if (monsterCamouflages(m)) {            
+            int member, nearest = 0, dist, leastDist = 0xFFFF;
+
+            /* find the nearest party member */
+            for (member = 0; member < c->saveGame->members; member++) {
+                if (combatInfo.party[member]) {
+                    dist = mapMovementDistance(combatInfo.monsters[i]->x, combatInfo.monsters[i]->y,
+                                               combatInfo.party[member]->x, combatInfo.party[member]->y);
+                    if (dist < leastDist) {
+                        nearest = member;
+                        leastDist = dist;
+                    }
+                }
+            }
+
+            /* ok, now we've got the nearest party member.  Now, see if they're close enough */
+            if ((leastDist <= 5) && !combatInfo.monsters[i]->isVisible)
+                action = CA_SHOW; /* show yourself! */           
+            else if (leastDist > 5)
+                action = CA_HIDE; /* hide and take no action! */
+        }
+
+        /* if the monster doesn't have something specific to do yet, let's try to find something! */
+        if (action == CA_ATTACK) {
+            /* monsters who teleport do so 1/8 of the time */
+            if (monsterTeleports(m) && (rand() % 8) == 0)
+                action = CA_TELEPORT;
+            /* monsters who ranged attack do so 1/4 of the time */
+            else if (m->ranged != 0 && (rand() % 4) == 0)
+                action = CA_RANGED;
+            /* monsters who cast sleep do so 1/4 of the time they don't ranged attack */
+            else if (monsterCastSleep(m) && (rand() % 4) == 0)
+                action = CA_CAST_SLEEP;
+        
+            else if (monsterGetStatus(m, combatInfo.monsterHp[i]) == MSTAT_FLEEING)
+                action = CA_FLEE;
+        }
+        
         target = combatFindTargetForMonster(combatInfo.monsters[i], &distance, action == CA_RANGED);
         if (target == -1 && action == CA_RANGED) {
             action = CA_ADVANCE;
@@ -908,6 +938,14 @@ void combatMoveMonsters() {
             gameDirectionalAction(info);
             free(info);           
 
+            break;
+
+        case CA_SHOW:
+            combatInfo.monsters[i]->isVisible = 1;            
+            break;
+
+        case CA_HIDE:
+            combatInfo.monsters[i]->isVisible = 0;            
             break;
 
         case CA_FLEE:

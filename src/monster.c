@@ -129,6 +129,7 @@ void monsterLoadInfoFromXml() {
             (const xmlChar *) "true") == 0);
         monsters[monster].tile = (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"tile"));
         monsters[monster].frames = 1;
+        monsters[monster].camouflageTile = 0;
 
         monsters[monster].rangedhittile = HITFLASH_TILE;
         monsters[monster].rangedmisstile = MISSFLASH_TILE;
@@ -148,6 +149,12 @@ void monsterLoadInfoFromXml() {
         if (xmlGetProp(node, (const xmlChar *)"basehp") != NULL) {
             monsters[monster].basehp =
                 (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"basehp"));
+        }
+
+        /* get the camouflaged tile */
+        if (xmlGetProp(node, (const xmlChar *)"camouflageTile") != NULL) {
+            monsters[monster].camouflageTile =
+                (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"camouflageTile"));
         }
 
         /* get ranged hit tile */
@@ -269,6 +276,14 @@ int monsterStealsFood(const Monster *monster) {
     return (monster->mattr & MATTR_STEALFOOD) ? 1 : 0;
 }
 
+int monsterNegates(const Monster *monster) {
+    return (monster->mattr & MATTR_NEGATE) ? 1 : 0;
+}
+
+int monsterCamouflages(const Monster *monster) {
+    return (monster->mattr & MATTR_CAMOUFLAGE) ? 1 : 0;
+}
+
 int monsterAmbushes(const Monster *monster) {
     return (monster->mattr & MATTR_AMBUSHES) ? 1 : 0;
 }
@@ -286,6 +301,10 @@ int monsterGetDamage(const Monster *monster) {
     damage = (x >> 4) + ((x >> 2) & 0xfc);
     damage += x % 10;
     return damage;
+}
+
+int monsterGetCamouflageTile(const Monster *monster) {
+    return monster->camouflageTile;
 }
 
 int monsterCastSleep(const Monster *monster) {
@@ -315,7 +334,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
     
-    return monsterById((era & rand() & rand()) + ORC_ID);
+    return monsterById((era & rand() & rand()) + ORC_ID);    
 }
 
 int monsterGetInitialHp(const Monster *monster) {

@@ -18,7 +18,9 @@ typedef enum {
     CA_ADVANCE,
     CA_RANGED,
     CA_FLEE,
-    CA_TELEPORT
+    CA_TELEPORT,
+    CA_SHOW,
+    CA_HIDE
 } CombatAction;
 
 typedef struct _CombatInfo {

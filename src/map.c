@@ -329,8 +329,13 @@ unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus) 
         *focus = 0;
         tile = a->tile;
     }    
-    /* then monsters */
-    else if (obj && obj->objType != OBJECT_UNKNOWN) {
+    /* then camouflaged monsters that have a disguise */
+    else if (obj && (obj->objType == OBJECT_MONSTER) && !obj->isVisible && (obj->monster->camouflageTile > 0)) {
+        *focus = obj->hasFocus;
+        tile = obj->monster->camouflageTile;
+    }        
+    /* then visible monsters */
+    else if (obj && (obj->objType != OBJECT_UNKNOWN) && obj->isVisible) {
         *focus = obj->hasFocus;
         tile = obj->tile;
     }
@@ -339,8 +344,8 @@ unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus) 
         *focus = 0;
         tile = c->saveGame->transport;
     }    
-    /* then other objects */
-    else if (obj) {
+    /* then other visible objects */
+    else if (obj && obj->isVisible) {
         *focus = obj->hasFocus;
         tile = obj->tile;
     }
@@ -378,6 +383,10 @@ Object *mapAddMonsterObject(Map *map, const Monster *monster, unsigned short x, 
         obj->movement_behavior = MOVEMENT_FIXED;
     else obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
 
+    /* hide camouflaged monsters from view during combat */
+    if (monsterCamouflages(monster) && (map->type == MAP_COMBAT))
+        obj->isVisible = 0;
+
     obj->monster = monster;
     obj->objType = OBJECT_MONSTER;
 
@@ -397,6 +406,7 @@ Object *mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigne
     obj->movement_behavior = MOVEMENT_FIXED;
     obj->objType = OBJECT_UNKNOWN;
     obj->hasFocus = 0;
+    obj->isVisible = 1;
     obj->next = map->objects;
 
     map->objects = obj;

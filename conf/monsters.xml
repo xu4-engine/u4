@@ -41,7 +41,7 @@
 	<monster id="29" encounterSize="15" name="Slime" tile="160" frames="4" ambushes="true" basehp="176" level="3"/>
 	<monster id="30" encounterSize="6" name="Troll" tile="164" frames="4" ambushes="true" basehp="192" level="6" ranged="true" leader="41"/>
 	<monster id="31" encounterSize="15" name="Gremlin" tile="168" frames="4" basehp="96" level="3" steals="food"/>
-	<monster id="32" encounterSize="1" name="Mimic" tile="172" frames="4" basehp="240" level="12" ranged="true" rangedhittile="poison" rangedmisstile="poison" movement="none" camouflage="true"/>
+	<monster id="32" encounterSize="1" name="Mimic" tile="172" frames="4" basehp="240" level="12" ranged="true" rangedhittile="poison" rangedmisstile="poison" movement="none" camouflage="true" camouflageTile="60"/>
 	<monster id="33" encounterSize="1" name="Reaper" tile="176" frames="4" basehp="112" level="16" ranged="true" rangedhittile="random" rangedmisstile="random" movement="none" casts="sleep"/>
 	<monster id="34" encounterSize="15" name="Insect Swarm" tile="180" frames="4" ambushes="true" basehp="208" level="3" good="true" movement="wanders" leader="25"/>
 	<monster id="35" encounterSize="4" name="Gazer" tile="184" frames="4" basehp="224" level="15" ranged="true" rangedhittile="sleep" rangedmisstile="sleep" leader="36"/>

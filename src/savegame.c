@@ -554,6 +554,7 @@ int saveGameMonstersRead(Object **objs, FILE *f) {
 
             obj->objType = OBJECT_UNKNOWN;
             obj->hasFocus = 0;
+            obj->isVisible = 1;            
             obj->next = *objs;
             *objs = obj;
         }
