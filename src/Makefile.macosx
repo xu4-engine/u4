@@ -32,17 +32,17 @@ OBJS=macosx/SDLMain.o macosx/osxinit.o macosx/osxerror.o
 
 include Makefile.common
 
-SDLMain.o: macosx/SDLMain.m macosx/SDLMain.h
+macosx/SDLMain.o: macosx/SDLMain.m macosx/SDLMain.h
 	$(CC) $(CXXFLAGS) -c -o macosx/SDLMain.o macosx/SDLMain.m
 
-osxerror.o: macosx/osxerror.m
+macosx/osxerror.o: macosx/osxerror.m
 	$(CC) $(CXXFLAGS) -c -o macosx/osxerror.o macosx/osxerror.m 
 
-osxinit.o: macosx/osxinit.cpp
+macosx/osxinit.o: macosx/osxinit.cpp
 	$(CXX) $(CXXFLAGS) -c -o macosx/osxinit.o macosx/osxinit.cpp
 
 mactlkconv: util/tlkconv.o
-	$(CXX) $(CXXFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks -framework libxml -framework libiconv
+	$(CXX) $(CXXFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks -framework libxml
 
 install: u4
 	mkdir -p $(BUNDLE_CONTENTS)/MacOS
