@@ -81,9 +81,9 @@ int castForPlayerGetEnergyDir(Direction dir);
 bool castForPlayer2(int spell, void *data);
 void gameCastSpell(unsigned int spell, int caster, int param);
 void gameSpellEffect(int spell, int player, Sound sound);
-int gameSpellMixHowMany(string *message);
-bool mixReagentsForSpell(int spell, void *data);
-int mixReagentsForSpell2(int choice);
+int gameSpellMixHowMany(int spell, int num, Ingredients *ingredients);
+void mixReagents();
+bool mixReagentsForSpell(int spell);
 
 /* conversation functions */
 bool talkAtCoord(MapCoords coords, int distance, void *data);
@@ -132,7 +132,6 @@ Context *c = NULL;
 int windLock = 0;
 string itemNameBuffer;
 string creatureNameBuffer;
-string howmany;
 string destination;
 int paused = 0;
 int pausedTimer = 0;
@@ -142,9 +141,6 @@ EnergyFieldType fieldType;
 
 Debug gameDbg("debug/game.txt", "Game");
 
-/* FIXME */
-Ingredients *mixIngredients;
-int mixSpell;
 Menu spellMixMenu;
 
 MouseArea mouseAreas[] = {
@@ -153,6 +149,16 @@ MouseArea mouseAreas[] = {
     { 3, { { 184, 8 }, { 184, 184 }, { 96, 96 } }, MC_EAST, { U4_ENTER, 0, U4_RIGHT } },
     { 3, { { 8, 184 }, { 184, 184 }, { 96, 96 } }, MC_SOUTH, { U4_ENTER, 0, U4_DOWN } },
     { 0 }
+};
+
+class ReagentsMenuController : public MenuController {
+public:
+    ReagentsMenuController(Menu *menu, Ingredients *i) : MenuController(menu), ingredients(i) { }
+
+    bool keyPressed(int key);
+
+private:
+    Ingredients *ingredients;
 };
 
 void gameInit() {
@@ -745,7 +751,6 @@ bool gameBaseKeyHandler(int key, void *data) {
     int endTurn = 1;
     Object *obj;
     CoordActionInfo *info;    
-    AlphaActionInfo *alphaInfo;
     const ItemLocation *item;
     MapTile *tile;
 
@@ -1132,18 +1137,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'm':
-        screenMessage("Mix reagents\n");
-        
-        alphaInfo = new AlphaActionInfo;
-        alphaInfo->lastValidLetter = 'z';
-        alphaInfo->handleAlpha = mixReagentsForSpell;
-        alphaInfo->prompt = "For Spell: ";
-        alphaInfo->data = NULL;
-
-        screenMessage("%s", alphaInfo->prompt.c_str());
-        eventHandler->pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, alphaInfo));        
-
-        c->stats->showMixtures();
+        mixReagents();
         break;
 
     case 'n':
@@ -1628,93 +1622,6 @@ bool gameGetCoordinateKeyHandler(int key, void *data) {
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
-/**
- * Handles spell mixing for the Ultima V-style menu-system
- */
-bool gameSpellMixMenuKeyHandler(int key, void *data) {
-    Menu *menu = (Menu *)data;    
-    
-    switch(key) {
-    case 'a':
-    case 'b':
-    case 'c':
-    case 'd':
-    case 'e':
-    case 'f':
-    case 'g':
-    case 'h':
-        {
-            /* select the corresponding reagent (if visible) */
-            Menu::MenuItemList::iterator mi = menu->getById((MenuId)(key-'a'));
-            if (mi->isVisible()) {        
-                menu->setCurrent(menu->getById((MenuId)(key-'a')));
-                gameSpellMixMenuKeyHandler(U4_SPACE, menu);
-            }
-        } break;
-    case U4_UP:
-        menu->prev();
-        break;
-    case U4_DOWN:
-        menu->next();
-        break;
-    case U4_LEFT:
-    case U4_RIGHT:
-    case U4_SPACE:
-        if (menu->isVisible()) {            
-            MenuItem *item = &(*menu->getCurrent());
-            
-            /* change whether or not it's selected */
-            item->setSelected(!item->isSelected());
-                        
-            if (item->isSelected())
-                mixIngredients->addReagent((Reagent)item->getId());
-            else
-                mixIngredients->removeReagent((Reagent)item->getId());
-        }
-        break;
-    case U4_ENTER:
-        /* you have reagents! */
-        if (menu->isVisible())
-        {
-            screenHideCursor();
-            eventHandler->popKeyHandler();
-            c->stats->showMixtures();
-         
-            screenMessage("How many? ");
-            
-            howmany.erase();
-            gameGetInput(&gameSpellMixHowMany, &howmany, 2);
-        }
-        /* you don't have any reagents */
-        else {
-            eventHandler->popKeyHandler();
-            //eventHandler->popKeyHandlerData();
-            c->stats->showPartyView();
-            screenEnableCursor();
-            (*c->location->finishTurn)();
-        }
-        break;
-
-    case U4_ESC:
-        eventHandler->popKeyHandler();
-        //eventHandler->popKeyHandlerData();
-
-        mixIngredients->revert();
-        delete mixIngredients;
-
-        screenHideCursor();
-        c->stats->showPartyView();
-        screenMessage("\n");
-        
-        screenEnableCursor();
-        (*c->location->finishTurn)();        
-    default:
-        return false;
-    }
-
-    return true;
-}
-
 void gameResetSpellMixing(void) {
     Menu::MenuItemList::iterator current;
     int i, row;    
@@ -1733,53 +1640,42 @@ void gameResetSpellMixing(void) {
     spellMixMenu.reset(false);
 }
 
-int gameSpellMixHowMany(string *message) {
-    int i, num;
-    
-    eventHandler->popKeyHandler();
-
-    num = (int) strtol(message->c_str(), NULL, 10);
+int gameSpellMixHowMany(int spell, int num, Ingredients *ingredients) {
+    int i;
     
     /* entered 0 mixtures, don't mix anything! */
     if (num == 0) {
         screenMessage("\nNone mixed!\n");
-        mixIngredients->revert();
-        delete mixIngredients;
-        (*c->location->finishTurn)();
+        ingredients->revert();
         return 0;
     }
     
     /* if they ask for more than will give them 99, only use what they need */
-    if (num > 99 - c->saveGame->mixtures[mixSpell]) {
-        num = 99 - c->saveGame->mixtures[mixSpell];
+    if (num > 99 - c->saveGame->mixtures[spell]) {
+        num = 99 - c->saveGame->mixtures[spell];
         screenMessage("\nOnly need %d!", num);
     }
     
     screenMessage("\nMixing %d...\n", num);
 
     /* see if there's enough reagents to make number of mixtures requested */
-    if (!mixIngredients->checkMultiple(num)) {
+    if (!ingredients->checkMultiple(num)) {
         screenMessage("\nYou don't have enough reagents to mix %d spells!\n\n", num);
-        mixIngredients->revert();
-        delete mixIngredients;
-        (*c->location->finishTurn)();
+        ingredients->revert();
         return 0;
     }
 
     screenMessage("\nYou mix the Reagents, and...\n");
-    if (spellMix(mixSpell, mixIngredients)) {
-        screenMessage("Success!\n\n");
+    if (spellMix(spell, ingredients)) {
+        screenMessage("Success!");
         /* mix the extra spells */
-        mixIngredients->multiply(num);
+        ingredients->multiply(num);
         for (i = 0; i < num-1; i++)
-            spellMix(mixSpell, mixIngredients);
+            spellMix(spell, ingredients);
     }
     else 
-        screenMessage("It Fizzles!\n\n");
+        screenMessage("It Fizzles!");
 
-    delete mixIngredients;
-
-    (*c->location->finishTurn)();
     return 1;        
 }
 
@@ -2734,101 +2630,155 @@ bool readyForPlayer2(int w, void *data) {
 }
 
 /**
+ * Handles spell mixing for the Ultima V-style menu-system
+ */
+bool ReagentsMenuController::keyPressed(int key) {
+    switch(key) {
+    case 'a':
+    case 'b':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+    case 'g':
+    case 'h':
+        {
+            /* select the corresponding reagent (if visible) */
+            Menu::MenuItemList::iterator mi = menu->getById((MenuId)(key-'a'));
+            if (mi->isVisible()) {        
+                menu->setCurrent(menu->getById((MenuId)(key-'a')));
+                keyPressed(U4_SPACE);
+            }
+        } break;
+    case U4_LEFT:
+    case U4_RIGHT:
+    case U4_SPACE:
+        if (menu->isVisible()) {            
+            MenuItem *item = &(*menu->getCurrent());
+            
+            /* change whether or not it's selected */
+            item->setSelected(!item->isSelected());
+                        
+            if (item->isSelected())
+                ingredients->addReagent((Reagent)item->getId());
+            else
+                ingredients->removeReagent((Reagent)item->getId());
+        }
+        break;
+    case U4_ENTER:
+        eventHandler->setControllerDone();
+        break;
+
+    case U4_ESC:
+        ingredients->revert();
+        eventHandler->setControllerDone();
+        break;
+
+    default:
+        return MenuController::keyPressed(key);
+    }
+
+    return true;
+}
+
+/**
+ * Mixes reagents.  Prompts for a spell, then which reagents to
+ * include in the mix.
+ */
+void mixReagents() {
+    bool done = false;
+
+    while (!done) {
+        screenMessage("Mix reagents\n");
+        screenMessage("For Spell: ");
+        c->stats->showMixtures();
+
+        ReadChoiceController getSpellController("abcdefghijklmnopqrstuvwxyz \033\n\r");
+        eventHandler->pushController(&getSpellController);
+        int choice = getSpellController.waitFor();
+
+        if (choice == ' ' || choice == '\033' || choice == '\n' || choice == '\r')
+            break;
+
+        done = mixReagentsForSpell(choice - 'a');
+    }
+
+    screenMessage("\n\n");
+    (*c->location->finishTurn)();
+}
+
+/**
  * Mixes reagents for a spell.  Prompts for reagents.
  */
-bool mixReagentsForSpell(int spell, void *data) {
-    KeyHandler::GetChoice *info;    
+bool mixReagentsForSpell(int spell) {
+    Ingredients ingredients;
 
-    mixSpell = spell;
-    mixIngredients = new Ingredients();
+    screenMessage("%s\n", spellGetName(spell));
 
     if (c->saveGame->mixtures[spell] == 99) {
-        screenMessage("%s\n", spellGetName(spell));
         screenMessage("\nYou cannot mix any more of that spell!\n");
         c->stats->showPartyView();
         (*c->location->finishTurn)();
+        return true;
     }
-    else {    
-        /* do we use the Ultima V menu system? */
-        if (settings.enhancements && settings.enhancementsOptions.u5spellMixing) {
-            screenMessage("%s\n", spellGetName(spell));
-            screenDisableCursor();
-            gameResetSpellMixing();
-            spellMixMenu.reset(); /* reset the menu, highlighting the first item */
-            eventHandler->pushKeyHandler(KeyHandler(&gameSpellMixMenuKeyHandler, &spellMixMenu));
-        }
-        else {
-            screenMessage("%s\nReagent: ", spellGetName(spell));    
 
-            info = new KeyHandler::GetChoice;
-            info->choices = "abcdefgh\n\r \033";
-            info->handleChoice = &mixReagentsForSpell2;        
-            eventHandler->pushKeyHandler(KeyHandler(&keyHandlerGetChoice, info));
-        }
-
+    /* do we use the Ultima V menu system? */
+    if (settings.enhancements && settings.enhancementsOptions.u5spellMixing) {
         c->stats->showReagents();
+
+        screenDisableCursor();
+        gameResetSpellMixing();
+        spellMixMenu.reset(); /* reset the menu, highlighting the first item */
+
+        ReagentsMenuController getReagentsController(&spellMixMenu, &ingredients);
+        eventHandler->pushController(&getReagentsController);
+        getReagentsController.waitFor();
+
+        screenMessage("How many? ");
+
+        ReadStringController howManyController(2, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+        eventHandler->pushController(&howManyController);
+        string howmany = howManyController.waitFor();
+        gameSpellMixHowMany(spell, (int) strtol(howmany.c_str(), NULL, 10), &ingredients);
     }
 
-    return 0;
-}
-
-int mixReagentsForSpell2(int choice) {
-    KeyHandler::GetChoice *info;
-    AlphaActionInfo *alphaInfo;
-
-    eventHandler->popKeyHandler();
-
-    if (choice == '\n' || choice == '\r' || choice == ' ') {
-        screenMessage("\n\nYou mix the Reagents, and...\n");
-
-        if (spellMix(mixSpell, mixIngredients))
-            screenMessage("Success!\n\n");
-        else
-            screenMessage("It Fizzles!\n\n");
-
-        delete mixIngredients;
-
-        screenMessage("Mix reagents\n");
-        alphaInfo = new AlphaActionInfo;
-        alphaInfo->lastValidLetter = 'z';
-        alphaInfo->handleAlpha = mixReagentsForSpell;
-        alphaInfo->prompt = "For Spell: ";
-        alphaInfo->data = NULL;
-
-        screenMessage("%s", alphaInfo->prompt.c_str());
-        eventHandler->pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, alphaInfo));
-
-        c->stats->showMixtures();
-
-        return 1;
-    }
-
-    else if (choice == '\033') {
-
-        mixIngredients->revert();
-        delete mixIngredients;
-
-        screenMessage("\n\n");
-        (*c->location->finishTurn)();
-        return 1;
-    }
-
+    /* traditional Ultima 4 mixing */
     else {
-        screenMessage("%c\n", toupper(choice));
-
-        if (!mixIngredients->addReagent((Reagent)(choice - 'a')))
-            screenMessage("None Left!\n");
-
         screenMessage("Reagent: ");
+        c->stats->showReagents();
 
-        info = new KeyHandler::GetChoice;
-        info->choices = "abcdefgh\n\r \033";
-        info->handleChoice = &mixReagentsForSpell2;
-        eventHandler->pushKeyHandler(KeyHandler(&keyHandlerGetChoice, info));
+        while (1) {
+            ReadChoiceController getReagentController("abcdefgh\n\r \033");
+            eventHandler->pushController(&getReagentController);
+            int choice = getReagentController.waitFor();
 
+            // done selecting reagents? mix it up and prompt to mix
+            // another spell
+            if (choice == '\n' || choice == '\r' || choice == ' ') {
+                screenMessage("\n\nYou mix the Reagents, and...\n");
 
-        return 1;
+                if (spellMix(spell, &ingredients))
+                    screenMessage("Success!\n\n");
+                else
+                    screenMessage("It Fizzles!\n\n");
+
+                return false;
+            }
+
+            // escape: put ingredients back and quit mixing
+            if (choice == '\033') {
+                ingredients.revert();
+                return true;
+            }
+
+            screenMessage("%c\n", toupper(choice));
+            if (!ingredients.addReagent((Reagent)(choice - 'a')))
+                screenMessage("None Left!\n");
+            screenMessage("Reagent: ");
+        }
     }
+
+    return true;
 }
 
 /* FIXME: must be a better way.. */
