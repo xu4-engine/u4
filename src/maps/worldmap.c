@@ -41,37 +41,37 @@ extern Map hythloth_map;
 extern Map abyss_map;
 
 const Portal world_portals[] = {
-    { 86, 107, -1, &lcb_1_map, ACTION_ENTER },
-    { 218, 107, -1, &lycaeum_map, ACTION_ENTER },
-    { 28, 50, -1, &empath_map, ACTION_ENTER },
-    { 146, 241, -1, &serpent_map, ACTION_ENTER },
-    { 232, 135, -1, &moonglow_map, ACTION_ENTER },
-    { 82, 106, -1, &britain_map, ACTION_ENTER },
-    { 36, 222, -1, &jhelom_map, ACTION_ENTER },
-    { 58, 43, -1, &yew_map, ACTION_ENTER },
-    { 159, 20, -1, &minoc_map, ACTION_ENTER },
-    { 106, 184, -1, &trinsic_map, ACTION_ENTER },
-    { 22, 128, -1, &skara_map, ACTION_ENTER },
-    { 187, 169, -1, &magincia_map, ACTION_ENTER },
-    { 98, 145, -1, &paws_map, ACTION_ENTER },
-    { 136, 158, -1, &den_map, ACTION_ENTER },
-    { 201, 59, -1, &vesper_map, ACTION_ENTER },
-    { 136, 90, -1, &cove_map, ACTION_ENTER },
-    { 233, 66, -1, &shrine_honesty_map, ACTION_ENTER },
-    { 128, 92, -1, &shrine_compassion_map, ACTION_ENTER },
-    { 36, 229, -1, &shrine_valor_map, ACTION_ENTER },
-    { 73, 11, -1, &shrine_justice_map, ACTION_ENTER },
-    { 205, 45, -1, &shrine_sacrifice_map, ACTION_ENTER },
-    { 81, 207, -1, &shrine_honor_map, ACTION_ENTER },
-    { 231, 216, -1, &shrine_humility_map, ACTION_ENTER },
-    { 240, 73, -1, &deceit_map, ACTION_ENTER },
-    { 91, 67, -1, &despise_map, ACTION_ENTER },
-    { 72, 168, -1, &destard_map, ACTION_ENTER },
-    { 126, 20, -1, &wrong_map, ACTION_ENTER },
-    { 156, 27, -1, &covetous_map, ACTION_ENTER },
-    { 58, 102, -1, &shame_map, ACTION_ENTER },
-    { 239, 240, -1, &hythloth_map, ACTION_ENTER },
-    { 233, 233, -1, &abyss_map, ACTION_ENTER }
+    { 86, 107, -1,  &lcb_1_map,   15, 30, 0, ACTION_ENTER },
+    { 218, 107, -1, &lycaeum_map, 15, 30, 0, ACTION_ENTER },
+    { 28, 50, -1,   &empath_map,  15, 30, 0, ACTION_ENTER },
+    { 146, 241, -1, &serpent_map, 15, 30, 0, ACTION_ENTER },
+    { 232, 135, -1, &moonglow_map, 1, 15, 0, ACTION_ENTER },
+    { 82, 106, -1,  &britain_map,  1, 15, 0, ACTION_ENTER },
+    { 36, 222, -1,  &jhelom_map,   1, 15, 0, ACTION_ENTER },
+    { 58, 43, -1,   &yew_map,      1, 15, 0, ACTION_ENTER },
+    { 159, 20, -1,  &minoc_map,    1, 15, 0, ACTION_ENTER },
+    { 106, 184, -1, &trinsic_map,  1, 15, 0, ACTION_ENTER },
+    { 22, 128, -1,  &skara_map,    1, 15, 0, ACTION_ENTER },
+    { 187, 169, -1, &magincia_map, 1, 15, 0, ACTION_ENTER },
+    { 98, 145, -1,  &paws_map,     1, 15, 0, ACTION_ENTER },
+    { 136, 158, -1, &den_map,      1, 15, 0, ACTION_ENTER },
+    { 201, 59, -1,  &vesper_map,   1, 15, 0, ACTION_ENTER },
+    { 136, 90, -1,  &cove_map,     1, 15, 0, ACTION_ENTER },
+    { 233, 66, -1,  &shrine_honesty_map, 0, 0, 0, ACTION_ENTER },
+    { 128, 92, -1,  &shrine_compassion_map, 0, 0, 0, ACTION_ENTER },
+    { 36, 229, -1,  &shrine_valor_map, 0, 0, 0, ACTION_ENTER },
+    { 73, 11, -1,   &shrine_justice_map, 0, 0, 0, ACTION_ENTER },
+    { 205, 45, -1,  &shrine_sacrifice_map, 0, 0, 0, ACTION_ENTER },
+    { 81, 207, -1,  &shrine_honor_map, 0, 0, 0, ACTION_ENTER },
+    { 231, 216, -1, &shrine_humility_map, 0, 0, 0, ACTION_ENTER },
+    { 240, 73, -1,  &deceit_map,   0, 0, 0, ACTION_ENTER },
+    { 91, 67, -1,   &despise_map,  0, 0, 0, ACTION_ENTER },
+    { 72, 168, -1,  &destard_map,  0, 0, 0, ACTION_ENTER },
+    { 126, 20, -1,  &wrong_map,    0, 0, 0, ACTION_ENTER },
+    { 156, 27, -1,  &covetous_map, 0, 0, 0, ACTION_ENTER },
+    { 58, 102, -1,  &shame_map,    0, 0, 0, ACTION_ENTER },
+    { 239, 240, -1, &hythloth_map, 0, 0, 0, ACTION_ENTER },
+    { 233, 233, -1, &abyss_map,    0, 0, 0, ACTION_ENTER }
 };
 
 Map world_map = {
@@ -79,7 +79,6 @@ Map world_map = {
     NULL, /* fname */
     MAP_WORLD, /* type */
     MAP_WIDTH, MAP_HEIGHT, 1, /* width, height, levels */
-    86, 108, -1, /* startx, starty, startlevel */
     BORDER_WRAP, /* border_behavior */
     sizeof(world_portals) / sizeof(world_portals[0]), /* n_portals */
     world_portals, /* portals */

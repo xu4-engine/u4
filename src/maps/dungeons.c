@@ -12,7 +12,6 @@ Map deceit_map = {
     "deceit.dng", /* fname */
     MAP_DUNGEON, /* type */
     DNG_WIDTH, DNG_HEIGHT, 8, /* width, height, levels */
-    0, 0, 0, /* startx, starty, startlevel */
     BORDER_WRAP, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -27,7 +26,6 @@ Map despise_map = {
     "despise.dng", /* fname */
     MAP_DUNGEON, /* type */
     DNG_WIDTH, DNG_HEIGHT, 8, /* width, height, levels */
-    0, 0, 0, /* startx, starty, startlevel */
     BORDER_WRAP, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -42,7 +40,6 @@ Map destard_map = {
     "destard.dng", /* fname */
     MAP_DUNGEON, /* type */
     DNG_WIDTH, DNG_HEIGHT, 8, /* width, height, levels */
-    0, 0, 0, /* startx, starty, startlevel */
     BORDER_WRAP, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -57,7 +54,6 @@ Map wrong_map = {
     "wrong.dng", /* fname */
     MAP_DUNGEON, /* type */
     DNG_WIDTH, DNG_HEIGHT, 8, /* width, height, levels */
-    0, 0, 0, /* startx, starty, startlevel */
     BORDER_WRAP, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -72,7 +68,6 @@ Map covetous_map = {
     "covetous.dng", /* fname */
     MAP_DUNGEON, /* type */
     DNG_WIDTH, DNG_HEIGHT, 8, /* width, height, levels */
-    0, 0, 0, /* startx, starty, startlevel */
     BORDER_WRAP, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -87,7 +82,6 @@ Map shame_map = {
     "shame.dng", /* fname */
     MAP_DUNGEON, /* type */
     DNG_WIDTH, DNG_HEIGHT, 8, /* width, height, levels */
-    0, 0, 0, /* startx, starty, startlevel */
     BORDER_WRAP, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -102,7 +96,6 @@ Map hythloth_map = {
     "hythloth.dng", /* fname */
     MAP_DUNGEON, /* type */
     DNG_WIDTH, DNG_HEIGHT, 8, /* width, height, levels */
-    0, 0, 0, /* startx, starty, startlevel */
     BORDER_WRAP, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -117,7 +110,6 @@ Map abyss_map = {
     "abyss.dng", /* fname */
     MAP_DUNGEON, /* type */
     DNG_WIDTH, DNG_HEIGHT, 8, /* width, height, levels */
-    0, 0, 0, /* startx, starty, startlevel */
     BORDER_WRAP, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */

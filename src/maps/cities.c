@@ -15,7 +15,6 @@ Map britain_map = {
     "britain.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -41,7 +40,6 @@ Map cove_map = {
     "cove.ult", /* fname */
     MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -67,7 +65,6 @@ Map den_map = {
     "den.ult", /* fname */
     MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -93,7 +90,6 @@ Map jhelom_map = {
     "jhelom.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -119,7 +115,6 @@ Map magincia_map = {
     "magincia.ult", /* fname */
     MAP_RUIN, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -145,7 +140,6 @@ Map minoc_map = {
     "minoc.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -171,7 +165,6 @@ Map moonglow_map = {
     "moonglow.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -197,7 +190,6 @@ Map paws_map = {
     "paws.ult", /* fname */
     MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -223,7 +215,6 @@ Map skara_map = {
     "skara.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -249,7 +240,6 @@ Map trinsic_map = {
     "trinsic.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -275,7 +265,6 @@ Map vesper_map = {
     "vesper.ult", /* fname */
     MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -301,7 +290,6 @@ Map yew_map = {
     "yew.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    1, 15, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */

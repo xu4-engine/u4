@@ -16,7 +16,6 @@ Map empath_map = {
     "empath.ult", /* fname */
     MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    15, 30, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -42,7 +41,6 @@ Map lycaeum_map = {
     "lycaeum.ult", /* fname */
     MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    15, 30, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -68,7 +66,6 @@ Map serpent_map = {
     "serpent.ult", /* fname */
     MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    15, 30, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -88,10 +85,12 @@ City serpent_city  = {
 };
 
 Map lcb_2_map;
+extern Map hythloth_map;
 
 const Portal lcb_1_portals[] = {
-    { 3, 3, 0, &lcb_2_map, ACTION_KLIMB },
-    { 27, 3, 0, &lcb_2_map, ACTION_KLIMB }
+    { 3, 3, 0, &lcb_2_map, 3, 3, 1,  ACTION_KLIMB },
+    { 27, 3, 0, &lcb_2_map, 27, 3, 1, ACTION_KLIMB },
+    { 7, 2, 0, &hythloth_map, 0, 0, 0, ACTION_DESCEND }
 };
 
 City lcb_1_city;
@@ -101,7 +100,6 @@ Map lcb_1_map = {
     "lcb_1.ult", /* fname */
     MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, 2, /* width, height, levels */
-    15, 30, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     2, /* n_portals */
     lcb_1_portals, /* portals */
@@ -121,8 +119,8 @@ City lcb_1_city  = {
 };
 
 const Portal lcb_2_portals[] = {
-    { 3, 3, 1, &lcb_1_map, ACTION_DESCEND },
-    { 27, 3, 1, &lcb_1_map, ACTION_DESCEND }
+    { 3, 3, 1, &lcb_1_map,  3, 3, 0,  ACTION_DESCEND },
+    { 27, 3, 1, &lcb_1_map, 27, 3, 0, ACTION_DESCEND }
 };
 
 City lcb_2_city;
@@ -132,7 +130,6 @@ Map lcb_2_map = {
     "lcb_2.ult", /* fname */
     MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, 1, /* width, height, levels */
-    15, 30, 0, /* startx, starty, startlevel */
     BORDER_EXIT2PARENT, /* border_behavior */
     2, /* n_portals */
     lcb_2_portals, /* portals */

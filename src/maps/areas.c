@@ -12,7 +12,6 @@ Map brick_map = {
     "brick.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -27,7 +26,6 @@ Map bridge_map = {
     "bridge.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -42,7 +40,6 @@ Map brush_map = {
     "brush.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -57,7 +54,6 @@ Map camp_map = {
     "camp.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -72,7 +68,6 @@ Map dng0_map = {
     "dng0.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -87,7 +82,6 @@ Map dng1_map = {
     "dng1.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -102,7 +96,6 @@ Map dng2_map = {
     "dng2.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -117,7 +110,6 @@ Map dng3_map = {
     "dng3.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -132,7 +124,6 @@ Map dng4_map = {
     "dng4.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -147,7 +138,6 @@ Map dng5_map = {
     "dng5.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -162,7 +152,6 @@ Map dng6_map = {
     "dng6.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -177,7 +166,6 @@ Map dungeon_map = {
     "dungeon.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -192,7 +180,6 @@ Map forest_map = {
     "forest.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -207,7 +194,6 @@ Map grass_map = {
     "grass.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -222,7 +208,6 @@ Map hill_map = {
     "hill.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -237,7 +222,6 @@ Map inn_map = {
     "inn.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -252,7 +236,6 @@ Map marsh_map = {
     "marsh.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -267,7 +250,6 @@ Map shipsea_map = {
     "shipsea.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -282,7 +264,6 @@ Map shipship_map = {
     "shipship.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -297,7 +278,6 @@ Map shipshor_map = {
     "shipshor.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -312,7 +292,6 @@ Map shore_map = {
     "shore.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -327,7 +306,6 @@ Map shorship_map = {
     "shorship.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
-    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
