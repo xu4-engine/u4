@@ -140,6 +140,7 @@ RGBA *U4PaletteLoader::loadEgaPalette() {
     if (egaPalette == NULL) {
         int index = 0;
         const Config *config = Config::getInstance();
+        
         egaPalette = new RGBA[16];
 
         vector<ConfigElement> paletteConf = config->getElement("/config/egaPalette").getChildren();
@@ -166,6 +167,8 @@ RGBA *U4PaletteLoader::loadVgaPalette() {
         U4FILE *pal = u4fopen("u4vga.pal");
         if (!pal)
             return NULL;
+
+        vgaPalette = new RGBA[256];
 
         for (int i = 0; i < 256; i++) {
             vgaPalette[i].r = u4fgetc(pal) * 255 / 63;
