@@ -896,12 +896,7 @@ Creature *CreatureMgr::getByTile(MapTile tile) {
 
     for (i = creatures.begin(); i != creatures.end(); i++) {
         if (i->second->getTile() == tile)
-            return i->second;
-        /*MapTile mtile = i->second->getTile();
-        Tile *t = Tile::getTile(mtile);
-        
-        if ((tile >= mtile) && (tile < mtile + t->frames))
-            return i->second;*/
+            return i->second;        
     }
     return NULL;
 }

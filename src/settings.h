@@ -74,6 +74,7 @@ typedef struct _SettingsEnhancementOptions {
     int slimeDivides;
     int c64chestTraps;    
     int smartEnterKey;
+    int peerShowsObjects;
 } SettingsEnhancementOptions;
 
 typedef struct _MouseOptions {

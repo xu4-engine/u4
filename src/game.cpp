@@ -920,6 +920,35 @@ bool gameBaseKeyHandler(int key, void *data) {
         screenMessage("Pass\n");        
         break;
 
+    case '+':
+    case '-':
+    case U4_KEYPAD_ENTER:
+        {
+            int old_cycles = settings.gameCyclesPerSecond;
+            if (key == '+' && ++settings.gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
+                settings.gameCyclesPerSecond = MAX_CYCLES_PER_SECOND;        
+            else if (key == '-' && --settings.gameCyclesPerSecond == 0)
+                settings.gameCyclesPerSecond = 1;
+            else if (key == U4_KEYPAD_ENTER)
+                settings.gameCyclesPerSecond = DEFAULT_CYCLES_PER_SECOND;
+
+            if (old_cycles != settings.gameCyclesPerSecond) {
+                eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
+                eventHandler.getTimer()->reset(eventTimerGranularity);                
+        
+                if (settings.gameCyclesPerSecond == DEFAULT_CYCLES_PER_SECOND)
+                    screenMessage("Speed: Normal\n");
+                else if (key == '+')
+                    screenMessage("Speed Up (%d)\n", settings.gameCyclesPerSecond);
+                else screenMessage("Speed Down (%d)\n", settings.gameCyclesPerSecond);                
+            }
+            else if (settings.gameCyclesPerSecond == DEFAULT_CYCLES_PER_SECOND)
+                screenMessage("Speed: Normal\n");
+        }        
+
+        endTurn = false;
+        break;
+
     case 'a':
         screenMessage("Attack: ");
 
@@ -1854,9 +1883,13 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         break;
 
     case 'p':        
-        screenMessage("\nPeer at a Gem!\n");
         eventHandler.popKeyHandler();
-        gamePeerGem();
+        if (c->location->viewMode == VIEW_NORMAL)
+            c->location->viewMode = VIEW_GEM;
+        else c->location->viewMode = VIEW_NORMAL;
+        
+        screenMessage("\nToggle View!\n");
+        screenPrompt();
         return true;
 
     case 'r':
@@ -3684,6 +3717,10 @@ void gameSetActivePlayer(int player) {
             screenMessage("Disabled!\n");
         else c->location->activePlayer = player;
     }
+    // FIXME: we should move the active player into the Party class
+    // so it will notify the stats area when a new active player is
+    // selected.  For now, this will do:
+    c->stats->update(NULL, "::gameSetActivePlayer()");
 }
 
 /**

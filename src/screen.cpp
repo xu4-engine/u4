@@ -110,7 +110,7 @@ void screenMessage(const char *fmt, ...) {
 
 MapTile* screenViewportTile(unsigned int width, unsigned int height, int x, int y, bool &focus) {
     MapCoords center = c->location->coords;    
-    static MapTile grass = Tileset::findTileByName("grass")->id;
+    static MapTile grass = Tileset::findTileByName("grass")->id;    
     
     if (c->location->map->width <= width &&
         c->location->map->height <= height) {
@@ -123,16 +123,14 @@ MapTile* screenViewportTile(unsigned int width, unsigned int height, int x, int 
     tc.x += x - (width / 2);
     tc.y += y - (height / 2);
 
-    /* off the edge of the map: wrap or pad with grass tiles */
-    if (MAP_IS_OOB(c->location->map, tc)) {
-        if (c->location->map->border_behavior == BORDER_WRAP) 
-            tc.wrap(c->location->map);
-        else {
-            focus = false;
-            return &grass;
-        }
-    }
+    /* Wrap the location if we can */    
+    tc.wrap(c->location->map);
 
+    /* off the edge of the map: pad with grass tiles */
+    if (MAP_IS_OOB(c->location->map, tc)) {        
+        *focus = 0;        
+        return &grass;
+    }
 
     return c->location->visibleTileAt(tc, focus);
 }

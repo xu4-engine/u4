@@ -127,7 +127,8 @@ bool Settings::read() {
     enhancementsOptions.slimeDivides     = 1;
     enhancementsOptions.c64chestTraps    = 1;    
     enhancementsOptions.smartEnterKey    = 1;
-    enhancementsOptions.u5combat         = 0;
+    enhancementsOptions.peerShowsObjects = 0;
+    enhancementsOptions.u5combat         = 0;    
 
     innAlwaysCombat = 0;
     campingAlwaysCombat = 0;
@@ -216,9 +217,11 @@ bool Settings::read() {
         else if (strstr(buffer, "c64chestTraps=") == buffer)
             enhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);                
         else if (strstr(buffer, "smartEnterKey=") == buffer)
-            enhancementsOptions.smartEnterKey = (int) strtoul(buffer + strlen("smartEnterKey="), NULL, 0);
+            enhancementsOptions.smartEnterKey = (int) strtoul(buffer + strlen("smartEnterKey="), NULL, 0);        
         
         /* major enhancement options */
+        else if (strstr(buffer, "peerShowsObjects=") == buffer)
+            enhancementsOptions.peerShowsObjects = (int) strtoul(buffer + strlen("peerShowsObjects="), NULL, 0);
         else if (strstr(buffer, "u5combat=") == buffer)
             enhancementsOptions.u5combat = (int) strtoul(buffer + strlen("u5combat="), NULL, 0);
         else if (strstr(buffer, "innAlwaysCombat=") == buffer)
@@ -302,6 +305,7 @@ bool Settings::write() {
             "slimeDivides=%d\n"
             "c64chestTraps=%d\n"            
             "smartEnterKey=%d\n"
+            "peerShowsObjects=%d\n"
             "u5combat=%d\n"
             "innAlwaysCombat=%d\n"
             "campingAlwaysCombat=%d\n"
@@ -337,6 +341,7 @@ bool Settings::write() {
             enhancementsOptions.slimeDivides,
             enhancementsOptions.c64chestTraps,            
             enhancementsOptions.smartEnterKey,
+            enhancementsOptions.peerShowsObjects,
             enhancementsOptions.u5combat,
             innAlwaysCombat,
             campingAlwaysCombat,

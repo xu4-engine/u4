@@ -23,7 +23,7 @@ typedef std::vector<class Creature *> CreatureVector;
 /* Creatures on world map */
 
 #define MAX_CREATURES_ON_MAP 4
-#define MAX_CREATURE_DISTANCE 10
+#define MAX_CREATURE_DISTANCE 16
 
 /* Creature ids */
 

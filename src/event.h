@@ -21,6 +21,7 @@ using std::string;
 #define U4_ESC          27
 #define U4_ENTER        13
 #define U4_ALT          128
+#define U4_KEYPAD_ENTER 271
 #define U4_META         323
 #define U4_FKEY         282
 #define U4_RIGHT_SHIFT  303

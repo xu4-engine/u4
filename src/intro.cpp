@@ -299,6 +299,7 @@ int introInit() {
         enhancementOptions.add(1, "Slime Divides", 7, 8, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
         enhancementOptions.add(2, "Fixed Chest Traps", 7, 9, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
         enhancementOptions.add(5, "Smart 'Enter' Key", 7, 10, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+        enhancementOptions.add(7, "Peer Shows Objects", 7, 11, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
         enhancementOptions.add(0xFE, "Use These Settings", 7, 20, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
         enhancementOptions.add(0xFF, "Cancel", 7, 21, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
@@ -773,6 +774,7 @@ void introUpdateScreen() {
         screenTextAt(31, 8,  "%s", settingsChanged.enhancementsOptions.slimeDivides ? "On" : "Off");
         screenTextAt(31, 9,  "%s", settingsChanged.enhancementsOptions.c64chestTraps ? "On" : "Off");
         screenTextAt(31, 10,  "%s", settingsChanged.enhancementsOptions.smartEnterKey ? "On" : "Off");
+        screenTextAt(31, 11,  "%s", settingsChanged.enhancementsOptions.peerShowsObjects ? "On" : "Off");
         enhancementOptions.show();
         break;    
 
@@ -1714,6 +1716,9 @@ void introEnhancementOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction 
         break;
     case 6:
         settingsChanged.enhancementsOptions.activePlayer = settingsChanged.enhancementsOptions.activePlayer ? 0 : 1;
+        break;
+    case 7:
+        settingsChanged.enhancementsOptions.peerShowsObjects = settingsChanged.enhancementsOptions.peerShowsObjects ? 0 : 1;
         break;
     case 0xFE:        
         /* save settings */

@@ -98,7 +98,7 @@ public:
     MapTile* getTileFromData(Coords coords);
     MapTile* tileAt(Coords coords, int withObjects);
     bool isWorldMap();
-    bool isEnclosed();
+    bool isEnclosed(Coords party);
     class Creature *addCreature(const class Creature *m, Coords coords);
     class Object *addObject(MapTile tile, MapTile prevTile, Coords coords);
     void removeObject(const class Object *rem);
@@ -135,6 +135,9 @@ public:
 
     // u4dos compatibility
     SaveGameMonsterRecord monsterTable[MONSTERTABLE_SIZE];
+
+private:
+    void findWalkability(Coords coords, int *path_data);
 };
 
 #endif

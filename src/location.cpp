@@ -16,6 +16,7 @@
 #include "map.h"
 #include "object.h"
 #include "savegame.h"
+#include "settings.h"
 #include "tileset.h"
 
 Location *locationPush(Location *stack, Location *loc);
@@ -67,11 +68,14 @@ std::vector<MapTile *> Location::tilesAt(MapCoords coords, bool &focus) {
     bool avatar = this->coords == coords;
 
     /* Do not return objects for VIEW_GEM mode, show only the avatar and tiles */
-    if (viewMode == VIEW_GEM) {
-        if ((map->flags & SHOW_AVATAR) && avatar)
+    if (location->viewMode == VIEW_GEM && (!settings.enhancements || !settings.enhancementsOptions.peerShowsObjects)) {        
+        // When viewing a gem, always show the avatar regardless of whether or not
+        // it is shown in our normal view
+        if (avatar)
             tiles.push_back(&c->party->transport);
-        else
-            tiles.push_back(map->getTileFromData(coords));
+        else             
+            tiles.push_back(location->map->getTileFromData(coords));
+
         return tiles;
     }
     
@@ -141,10 +145,7 @@ MapTile Location::getReplacementTile(MapCoords coords) {
     }
 
     /* couldn't find a tile, give it our best guess */
-    if (context & CTX_DUNGEON)
-        return 0;
-    else
-        return (context & CTX_COMBAT) ? Tileset::findTileByName("dungeon_floor")->id : Tileset::findTileByName("brick_floor")->id;
+    return Tileset::findTileByName("brick_floor")->id;
 }
 
 /**

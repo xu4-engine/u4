@@ -338,23 +338,53 @@ bool Map::isWorldMap() {
 /**
  * Returns true if the map is enclosed (to see if gem layouts should cut themselves off)
  */ 
-bool Map::isEnclosed() {
-    unsigned int x, y;    
+bool Map::isEnclosed(Coords party) {    
+    unsigned int x, y;
+    int *path_data;
 
     if (border_behavior != BORDER_WRAP)
-        return true;    
+        return true;
 
+    path_data = new int[width * height];
+    memset(path_data, -1, sizeof(int) * width * height);
+
+    // Determine what's walkable (1), and what's border-walkable (2)
+    findWalkability(party, path_data);
+
+    // Find two connecting pathways where the avatar can reach both without wrapping
     for (x = 0; x < width; x++) {
-        if (tileAt(Coords(x, 0), WITHOUT_OBJECTS)->isWalkable()) {
-
-        }
+        int index = x;
+        if (path_data[index] == 2 && path_data[index + ((height-1)*width)] == 2)
+            return false;        
     }
 
     for (y = 0; y < width; y++) {
-
+        int index = (y * width);
+        if (path_data[index] == 2 && path_data[index + width - 1] == 2)
+            return false;
     }
 
     return true;
+}
+
+void Map::findWalkability(Coords coords, int *path_data) {
+    MapTile *mt = tileAt(coords, WITHOUT_OBJECTS);
+    int index = coords.x + (coords.y * width);
+
+    if (mt->isWalkable()) {        
+        bool isBorderTile = (coords.x == 0) || (coords.x == signed(width-1)) || (coords.y == 0) || (coords.y == signed(height-1));
+        path_data[index] = isBorderTile ? 2 : 1;
+
+        if ((coords.x > 0) && path_data[coords.x - 1 + (coords.y * width)] < 0)
+            findWalkability(Coords(coords.x - 1, coords.y, coords.z), path_data);
+        if ((coords.x < signed(width-1)) && path_data[coords.x + 1 + (coords.y * width)] < 0)
+            findWalkability(Coords(coords.x + 1, coords.y, coords.z), path_data);
+        if ((coords.y > 0) && path_data[coords.x + ((coords.y - 1) * width)] < 0)
+            findWalkability(Coords(coords.x, coords.y - 1, coords.z), path_data);
+        if ((coords.y < signed(height-1)) && path_data[coords.x + ((coords.y + 1) * width)] < 0)
+            findWalkability(Coords(coords.x, coords.y + 1, coords.z), path_data);    
+    }
+    else path_data[index] = 0;    
 }
 
 /**

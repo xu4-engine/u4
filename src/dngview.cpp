@@ -55,6 +55,7 @@ DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile *> &tiles
     MapTile *tile = tiles.front();
     DungeonToken token;
 
+    static const MapTile corridor = Tileset::findTileByName("brick_floor")->id;
     static const MapTile up_ladder = Tileset::findTileByName("up_ladder")->id;
     static const MapTile down_ladder = Tileset::findTileByName("down_ladder")->id;
     static const MapTile updown_ladder = Tileset::findTileByName("up_down_ladder")->id;
@@ -70,9 +71,11 @@ DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile *> &tiles
             return DNGGRAPHIC_LADDERDOWN;
         else if (tile->id == updown_ladder.id)
             return DNGGRAPHIC_LADDERUP;
-            //return DNGGRAPHIC_LADDERUPDOWN;
+            //FIXME: return DNGGRAPHIC_LADDERUPDOWN;
+        else if (tile->id == corridor.id)
+            return DNGGRAPHIC_NONE;
         else
-            return DNGGRAPHIC_BASETILE;        
+            return DNGGRAPHIC_BASETILE;
     }
 
     /* 

@@ -1058,7 +1058,12 @@ void screenShowTile(MapTile *mapTile, bool focus, int x, int y) {
  * Draw a tile graphic on the screen.
  */
 void screenShowGemTile(MapTile *mapTile, bool focus, int x, int y) {
-    unsigned int tile = mapTile->getIndex();    
+    // Make sure we account for tiles that look like other tiles (dungeon tiles, mainly)
+    Tile *t = Tileset::get()->get(mapTile->id);
+    if (!t->looks_like.empty())
+        t = Tileset::findTileByName(t->looks_like);
+
+    unsigned int tile = Tile::getIndex(t->id);
 
     if (gemTilesInfo == NULL) {
         gemTilesInfo = screenLoadImage(BKGD_GEMTILES);

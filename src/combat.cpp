@@ -958,6 +958,33 @@ bool CombatController::baseKeyHandler(int key, void *data) {
             break;
         }
 
+    // Change the speed of battle
+    case '+':
+    case '-':
+    case U4_KEYPAD_ENTER:
+        {
+            int old_speed = settings.battleSpeed;
+            if (key == '+' && ++settings.battleSpeed > MAX_BATTLE_SPEED)
+                settings.battleSpeed = MAX_BATTLE_SPEED;        
+            else if (key == '-' && --settings.battleSpeed == 0)
+                settings.battleSpeed = 1;
+            else if (key == U4_KEYPAD_ENTER)
+                settings.battleSpeed = DEFAULT_BATTLE_SPEED;
+
+            if (old_speed != settings.battleSpeed) {        
+                if (settings.battleSpeed == DEFAULT_BATTLE_SPEED)
+                    screenMessage("Battle Speed:\nNormal\n");
+                else if (key == '+')
+                    screenMessage("Battle Speed:\nUp (%d)\n", settings.battleSpeed);
+                else screenMessage("Battle Speed:\nDown (%d)\n", settings.battleSpeed);
+            }
+            else if (settings.battleSpeed == DEFAULT_BATTLE_SPEED)
+                screenMessage("Battle Speed:\nNormal\n");
+        }        
+
+        valid = false;
+        break;
+
     case 'a':
         info = new CoordActionInfo;
         info->handleAtCoord = &CombatController::attackAtCoord;
