@@ -294,15 +294,15 @@
     <map id="33" type="combat" fname="brick.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
     <map id="34" type="combat" fname="bridge.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
     <map id="35" type="combat" fname="brush.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
-    <map id="36" type="combat" fname="camp.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
-    <map id="37" type="combat" fname="dng0.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
-    <map id="38" type="combat" fname="dng1.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
-    <map id="39" type="combat" fname="dng2.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
-    <map id="40" type="combat" fname="dng3.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
-    <map id="41" type="combat" fname="dng4.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
-    <map id="42" type="combat" fname="dng5.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
-    <map id="43" type="combat" fname="dng6.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
-    <map id="44" type="combat" fname="dungeon.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
+    <map id="36" type="combat" fname="camp.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>    
+    <map id="37" type="combat" fname="dng0.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>   <!-- Walls -->
+    <map id="38" type="combat" fname="dng1.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>   <!-- Up ladder -->
+    <map id="39" type="combat" fname="dng2.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>   <!-- Down ladder -->
+    <map id="40" type="combat" fname="dng3.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>   <!-- Up-down ladder -->
+    <map id="41" type="combat" fname="dng4.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>   <!-- Chest -->
+    <map id="42" type="combat" fname="dng5.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>   <!-- Doorway -->
+    <map id="44" type="combat" fname="dng6.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>   <!-- Secret Door -->
+    <map id="64" type="combat" fname="dungeon.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/><!-- Dungeon -->
     <map id="45" type="combat" fname="forest.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
     <map id="46" type="combat" fname="grass.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
     <map id="47" type="combat" fname="hill.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
