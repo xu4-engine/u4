@@ -28,8 +28,43 @@ CHARSET.EGA
 This contains the bitmaps for each character in the font.  Each
 character is 8x8 pixels, and each byte represents two pixels.  In
 other words, the first 4 bytes represent the 8 pixels on the first row
-of the first character.  The order is the standard ASCII mapping; 'A'
-is character 65, 'z' is character 122.
+of the first character.
+
+The order is the standard ASCII mapping; 'A' is character 65, 'z' is
+character 122.  The lowest 32 characters have the following glyphs:
+0 - Ankh
+1 - Symbol for horn effect
+2 - Brick wall 1
+3 - Brick wall 2
+4 - Updown arrow
+5 - Down arrow
+6 - Up arrow
+7 - Partial ankh
+8 - Filled circle
+9 - Copyright
+10 - Registered trademark
+11 - Male symbol
+12 - Female symbol
+13 - Border bar
+14 - Hollow square
+15 - 
+16 - Border endpiece (right)
+17 - Border endpiece (left)
+18 - 
+19 - Ellipsis
+20 - Moon phase 0
+21 - Moon phase 1
+22 - Moon phase 2
+23 - Moon phase 3
+24 - Moon phase 4
+25 - Moon phase 5
+26 - Moon phase 6
+27 - Moon phase 7
+28 - Cursor image 1
+29 - Cursor image 2
+30 - Cursor image 3
+31 - Cursor image 4
+
 
 offset  len  notes
 0x0     32   character 0
