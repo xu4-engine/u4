@@ -51,9 +51,9 @@ IntroMode mode;
 
 /* data loaded in from title.exe */
 unsigned char *introMap[INTRO_MAP_HEIGHT];
-char *introText[24];
-char *introQuestions[28];
-char *introGypsy[15];
+char **introText;
+char **introQuestions;
+char **introGypsy;
 
 /* additional introduction state data */
 char nameBuffer[16];
@@ -84,7 +84,6 @@ int introInit() {
     unsigned char screenFixData[533];
     FILE *title;
     int i, j;
-    char buffer[256];
 
     mode = INTRO_MAP;
     introAskToggle = 0;
@@ -93,35 +92,9 @@ int introInit() {
     if (!title)
         return 0;
 
-    fseek(title, INTRO_TEXT_OFFSET, SEEK_SET);
-    for (i = 0; i < sizeof(introQuestions) / sizeof(introQuestions[0]); i++) {
-        for (j = 0; j < sizeof(buffer) - 1; j++) {
-            buffer[j] = fgetc(title);
-            if (buffer[j] == '\0')
-                break;
-        }
-        introQuestions[i] = strdup(buffer);
-    }
-
-    for (i = 0; i < sizeof(introText) / sizeof(introText[0]); i++) {
-        for (j = 0; j < sizeof(buffer) - 1; j++) {
-            buffer[j] = fgetc(title);
-            if (buffer[j] == '\0')
-                break;
-        }
-        introText[i] = strdup(buffer);
-    }
-
-    for (i = 0; i < sizeof(introGypsy) / sizeof(introGypsy[0]); i++) {
-        for (j = 0; j < sizeof(buffer) - 1; j++) {
-            buffer[j] = fgetc(title);
-            if (buffer[j] == '\0')
-                break;
-        }
-        if (buffer[j-1] == '\n')
-            buffer[j-1] = '\0';
-        introGypsy[i] = strdup(buffer);
-    }
+    introQuestions = u4read_stringtable(title, INTRO_TEXT_OFFSET, 28);
+    introText = u4read_stringtable(title, -1, 24);
+    introGypsy = u4read_stringtable(title, -1, 15);
 
     fseek(title, INTRO_FIXUPDATA_OFFSET, SEEK_SET);
     fread(screenFixData, 1, sizeof(screenFixData), title);
@@ -149,12 +122,18 @@ int introInit() {
 void introDelete() {
     int i;
 
-    for (i = 0; i < sizeof(introQuestions) / sizeof(introQuestions[0]); i++)
+    for (i = 0; i < 28; i++)
         free(introQuestions[i]);
-    for (i = 0; i < sizeof(introText) / sizeof(introText[0]); i++)
+    free(introQuestions);
+    introQuestions = NULL;
+    for (i = 0; i < 24; i++)
         free(introText[i]);
-    for (i = 0; i < sizeof(introGypsy) / sizeof(introGypsy[0]); i++)
+    free(introText);
+    introText = NULL;
+    for (i = 0; i < 15; i++)
         free(introGypsy[i]);
+    free(introGypsy);
+    introGypsy = NULL;
 
     free(introMap[0]);
 
