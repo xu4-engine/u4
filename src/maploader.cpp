@@ -294,7 +294,7 @@ int ConMapLoader::load(Map *map) {
  * Loads a dungeon map from the 'dng' file
  */
 int DngMapLoader::load(Map *map) {
-    Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
+    Dungeon *dungeon = dynamic_cast<Dungeon*>(map);    
 
     U4FILE *dng = u4fopen(dungeon->fname);
     if (!dng)
@@ -369,7 +369,7 @@ int DngMapLoader::load(Map *map) {
     u4fclose(dng);
 
     dungeon->roomMaps = new CombatMap *[dungeon->n_rooms];
-    for (unsigned int i = 0; i < dungeon->n_rooms; i++)
+    for (i = 0; i < dungeon->n_rooms; i++)
         initDungeonRoom(dungeon, i);
 
     return 1;
