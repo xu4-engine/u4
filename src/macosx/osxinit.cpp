@@ -1,4 +1,5 @@
 
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <sys/param.h>
@@ -8,6 +9,8 @@
 #include <cerrno>
 #include "error.h"
 
+char macOSX_AppBundle_Resource_Path[MAXPATHLEN];
+
 void osxInit(char *binpath)
 {
     char parentdir[MAXPATHLEN];
@@ -16,16 +19,17 @@ void osxInit(char *binpath)
     mode_t mask;
     int result;
     
-    // Change working directory to the location of the XU4 resources
+    // Figure out and store the path to the application bundle's
+    // 'Resources' directory, so that it can be searched in
+    // u4file.cpp:u4find_path()
     strncpy ( parentdir, binpath, sizeof(parentdir) );
     c = (char*) parentdir;
     while (*c != '\0') c++;    /* go to end */
     while (*c != '/') c--;     /* back up to parent */
     do c--; while (*c != '/'); /* One more level up */
     *c++ = '\0';               /* cut off remainder */
-    if ((chdir(parentdir) != 0) || (chdir("Resources") != 0)) {
-        errorFatal("Cannot access application bundle's Resources directory.");
-    }
+    snprintf(macOSX_AppBundle_Resource_Path, MAXPATHLEN, "%s/Resources/",
+        parentdir);
     
     // On the first run, the directory for user files must be created.
     // This code checks if it has been created, and creates it if not.

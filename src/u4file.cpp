@@ -107,6 +107,9 @@ static const char * const graphics_paths[] = {
     "/usr/local/lib/u4/graphics/"
 };
 
+#ifdef MACOSX
+extern char macOSX_AppBundle_Resource_Path[];
+#endif
 
 /**
  * Returns true if the upgrade is present.
@@ -529,6 +532,18 @@ string u4find_path(const string &fname, const char * const *pathent, unsigned in
         if ((f = fopen(pathname, "rb")) != NULL)
             break;
     }
+
+#ifdef MACOSX
+    /* Try the application bundle's 'Resources' directory in Mac OS X */
+    if (f == NULL) {
+        snprintf(pathname, sizeof(pathname), "%s%s", macOSX_AppBundle_Resource_Path, fname.c_str());
+
+        if (verbose)
+            printf("trying to open %s\n", pathname);
+
+        f = fopen(pathname, "rb");
+    }
+#endif
 
     if (verbose) {
         if (f != NULL)
