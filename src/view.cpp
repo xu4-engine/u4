@@ -29,12 +29,12 @@ void View::clear() {
  * Update the view to the screen.
  */
 void View::update() {
-    SDL_UpdateRect(SDL_GetVideoSurface(), SCALED(x), SCALED(y), SCALED(height), SCALED(width));
+    SDL_UpdateRect(SDL_GetVideoSurface(), SCALED(x), SCALED(y), SCALED(width), SCALED(height));    
 }
 
 /**
  * Update a piece of the view to the screen.
  */
 void View::update(int x, int y, int height, int width) {
-    SDL_UpdateRect(SDL_GetVideoSurface(), SCALED(this->x + x), SCALED(this->y + y), SCALED(height), SCALED(width));
+    SDL_UpdateRect(SDL_GetVideoSurface(), SCALED(this->x + x), SCALED(this->y + y), SCALED(width), SCALED(height));
 }
