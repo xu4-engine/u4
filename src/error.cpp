@@ -5,6 +5,8 @@
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include <cstdio>
+#include <cstdarg>
+#include <cstdlib>
 
 #include "error.h"
 
