@@ -28,7 +28,7 @@ int get_halfbyte(FILE *f) {
 
 void dump_bmp(char *name, char *tmpfn, FILE *out) {
     FILE *convert;
-    int c, first, size;
+    int c, first, size, status;
     char cmd[256];
 
     sprintf(cmd, "convert -compress None %s bmp:-", tmpfn);
@@ -56,6 +56,12 @@ const unsigned char %s_data[] = {
 
 const int %s_size = %d;
 ", name, size);
+
+    status = pclose(convert);
+    if (status != 0) {
+        fprintf(stderr, "ImageMagick convert failed\n");
+        exit(1);
+    }
 }
 
 
