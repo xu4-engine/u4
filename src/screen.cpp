@@ -169,7 +169,7 @@ void screenUpdate(int showmap, int blackout) {
                     if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
                         screenDungeonDrawTile(tiles.front(), y, Direction(c->saveGame->orientation));
                     else
-                        screenDungeonDrawWall(0, y, (Direction)c->saveGame->orientation, dungeonViewTilesToGraphic(tiles));
+                        screenDungeonDrawWall(0, y, (Direction)c->saveGame->orientation, type);
                 }
             }
         }

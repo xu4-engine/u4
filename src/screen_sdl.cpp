@@ -149,8 +149,12 @@ const struct {
     { 45,  87,  "dung0_ladderdown" },
     { 64,  86,  "dung1_ladderdown" },
     { 77,  86,  "dung2_ladderdown" },
-    { 84,  88,  "dung3_ladderdown" }
+    { 84,  88,  "dung3_ladderdown" },
 
+    { 45,  0,   "dung0_ladderupdown" },
+    { 64,  40,  "dung1_ladderupdown" },
+    { 77,  68,  "dung2_ladderupdown" },
+    { 84,  82,  "dung3_ladderupdown" },
 };
 
 void screenLoadGraphicsFromConf(void);
@@ -666,6 +670,7 @@ ImageInfo *screenLoadImage(const string &name) {
         loader->setDimensions(info->width, info->height, info->depth);
         unscaled = loader->load(file);
         u4fclose(file);
+
     }
     if (unscaled == NULL)
         return NULL;
@@ -1217,9 +1222,12 @@ int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, 
     if (type == DNGGRAPHIC_LADDERDOWN && xoffset == 0)
         return 52 + distance;
 
+    if (type == DNGGRAPHIC_LADDERUPDOWN && xoffset == 0)
+        return 56 + distance;
+
     /* FIXME */
     if (type != DNGGRAPHIC_WALL && type != DNGGRAPHIC_DOOR)
-        return -1;
+        return -1;    
 
     if (type == DNGGRAPHIC_DOOR)
         index += 24;

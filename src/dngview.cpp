@@ -69,9 +69,8 @@ DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile *> &tiles
             return DNGGRAPHIC_LADDERUP;
         else if (tile->id == down_ladder.id)
             return DNGGRAPHIC_LADDERDOWN;
-        else if (tile->id == updown_ladder.id)
-            return DNGGRAPHIC_LADDERUP;
-            //FIXME: return DNGGRAPHIC_LADDERUPDOWN;
+        else if (tile->id == updown_ladder.id)            
+            return DNGGRAPHIC_LADDERUPDOWN;
         else if (tile->id == corridor.id)
             return DNGGRAPHIC_NONE;
         else
@@ -98,9 +97,8 @@ DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile *> &tiles
         return DNGGRAPHIC_LADDERUP;
     case DUNGEON_LADDER_DOWN:
         return DNGGRAPHIC_LADDERDOWN;
-    case DUNGEON_LADDER_UPDOWN:
-        return DNGGRAPHIC_LADDERUP;
-        //return DNGGRAPHIC_LADDERUPDOWN;
+    case DUNGEON_LADDER_UPDOWN:        
+        return DNGGRAPHIC_LADDERUPDOWN;
     
     default:
         return DNGGRAPHIC_DNGTILE;
