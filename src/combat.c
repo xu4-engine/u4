@@ -349,7 +349,7 @@ void combatFinishTurn() {
     screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, weaponGetName(c->saveGame->players[focus].weapon));
     c->statsItem = STATS_PARTY_OVERVIEW;
     statsUpdate();
-    statsHighlightCharacter(focus);    
+    statsHighlightCharacter(focus);
 }
 
 int combatBaseKeyHandler(int key, void *data) {
@@ -486,6 +486,7 @@ int combatBaseKeyHandler(int key, void *data) {
     }
 
     if (valid) {
+        c->lastCommandTime = time(NULL);
         if (eventHandlerGetKeyHandler() == &combatBaseKeyHandler)
             (*c->location->finishTurn)();
     }

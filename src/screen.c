@@ -41,7 +41,7 @@ void screenTextAt(int x, int y, char *fmt, ...) {
 }
 
 void screenPrompt() {
-    if (screenNeedPrompt && screenCursorEnabled) {
+    if (screenNeedPrompt && screenCursorEnabled && c->col == 0) {
         screenMessage("%c", CHARSET_PROMPT);
         screenNeedPrompt = 0;
     }

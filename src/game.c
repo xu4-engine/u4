@@ -337,7 +337,7 @@ void gameFinishTurn() {
     Object *attacker;
 
     /* apply effects from tile avatar is standing on */
-    playerApplyEffect(c->saveGame, tileGetEffect(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
+    playerApplyEffect(c->saveGame, tileGetEffect(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);    
 
     while (1) {
         /* adjust food and moves */
@@ -364,7 +364,8 @@ void gameFinishTurn() {
             }       
 
             /* Spawn new monsters */
-            gameCheckRandomMonsters();
+            gameCheckRandomMonsters();            
+            gameCheckBridgeTrolls();
         }
 
         /* update map annotations and the party stats */
@@ -552,8 +553,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case ' ':
-        gameCheckBridgeTrolls();
-        screenMessage("Pass\n");
+        screenMessage("Pass\n");        
         break;
 
     case 'a':
@@ -2405,8 +2405,7 @@ int moveAvatar(Direction dir, int userEvent) {
         monsterSpecialEffect(destObj);
 
     /* things that happen while on foot or horseback */
-    if (c->transportContext & TRANSPORT_FOOT_OR_HORSE) {
-        gameCheckBridgeTrolls();
+    if (c->transportContext & TRANSPORT_FOOT_OR_HORSE) {        
         gameCheckMoongates();
     }
 
@@ -2462,9 +2461,11 @@ void gameTimer(void *data) {
         /*
          * force pass if no commands within last 20 seconds
          */
-        if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler &&
-            gameTimeSinceLastCommand() > 20)
-            gameBaseKeyHandler(' ', NULL);
+        if ((eventHandlerGetKeyHandler() == &gameBaseKeyHandler ||
+             eventHandlerGetKeyHandler() == &combatBaseKeyHandler) &&
+             gameTimeSinceLastCommand() > 20) {
+            (*eventHandlerGetKeyHandler())(' ', NULL);            
+        }
     }
 
 }
