@@ -4,46 +4,47 @@ MAIN=u4$(EXEEXT)
 VERSION=0.8cvs
 
 SRCS=\
-        u4.c \
+        annotation.c \
+        armor.c \
+        camp.c \
+        combat.c \        
+        death.c \
+        debug.c \
         direction.c \
-        map.c \
-        location.c \
-        ttype.c \
-        screen.c \
-        screen_$(UI).c \
+        dngview.c \
+        error.c \
         event.c \
         event_$(UI).c \
-        person.c \
-        vendor.c \
-        annotation.c \
-        io.c \
-        savegame.c \
-        u4file.c \
-        mapinit.c \
-        stats.c \
-        spell.c \
         game.c \
+        io.c \
         intro.c \
-        player.c \
-        names.c \
-        music.c \
-        sound.c \
-        moongate.c \
         item.c \
-        shrine.c \
-        death.c \
-        combat.c \
-        camp.c \
-        settings.c \
+        location.c \        
+        map.c \
+        mapinit.c \
         monster.c \
-        rle.c \
-        error.c \
-        debug.c \
-        dngview.c \
-        armor.c \
-        weapon.c \
+        moongate.c \
         movement.c \
+        music.c \
+        names.c \
+        person.c \
+        player.c \
+        portal.c \
+        rle.c \
+        savegame.c \        
+        screen.c \
+        screen_$(UI).c \
+        settings.c \
+        shrine.c \
+        sound.c \
+        spell.c \
+        stats.c \
+        ttype.c \
+        u4.c \        
+        u4file.c \
         unzip.c \
+        vendor.c \
+        weapon.c \       
         maps/cities.c \
         maps/castles.c \
         maps/worldmap.c \
