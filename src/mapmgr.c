@@ -120,9 +120,10 @@ Map *mapMgrInitMap(void) {
 
 Map *mapMgrInitMapFromXml(xmlNodePtr node) {
     Map *map;
-    char *prop;
     xmlNodePtr child;
     ListNode *portals = NULL;
+    static const char *mapTypeEnumStrings[] = { "world", "town", "village", "castle", "ruins", "shrine", "combat", "dungeon", NULL };
+    static const char *borderBehaviorEnumStrings[] = { "wrap", "exit", "fixed", NULL };
 
     map = mapMgrInitMap();
     if (!map)
@@ -130,46 +131,13 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
 
     map->id = (unsigned char)xmlGetPropAsInt(node, "id");
 
-    prop = xmlGetPropAsStr(node, "type");
-    if (strcmp(prop, "world") == 0)
-        map->type = MAPTYPE_WORLD;
-    else if (strcmp(prop, "town") == 0)
-        map->type = MAPTYPE_TOWN;
-    else if (strcmp(prop, "village") == 0)
-        map->type = MAPTYPE_VILLAGE;
-    else if (strcmp(prop, "castle") == 0)
-        map->type = MAPTYPE_CASTLE;
-    else if (strcmp(prop, "ruins") == 0)
-        map->type = MAPTYPE_RUIN;
-    else if (strcmp(prop, "shrine") == 0)
-        map->type = MAPTYPE_SHRINE;
-    else if (strcmp(prop, "combat") == 0)
-        map->type = MAPTYPE_COMBAT;
-    else if (strcmp(prop, "dungeon") == 0)
-        map->type = MAPTYPE_DUNGEON;
-    else
-        errorFatal("unknown type: %s", prop);
-    xmlFree(prop);
-
-    prop = xmlGetPropAsStr(node, "fname");
-    map->fname = strdup(prop);
-    xmlFree(prop);
-
+    map->type = xmlGetPropAsEnum(node, "type", mapTypeEnumStrings);
+    map->fname = xmlGetPropAsStr(node, "fname");
     map->width = xmlGetPropAsInt(node, "width");
     map->height = xmlGetPropAsInt(node, "height");
     map->levels = xmlGetPropAsInt(node, "levels");
+    map->border_behavior = xmlGetPropAsEnum(node, "borderbehavior", borderBehaviorEnumStrings);
 
-    prop = xmlGetPropAsStr(node, "borderbehavior");
-    if (strcmp(prop, "wrap") == 0)
-        map->border_behavior = BORDER_WRAP;
-    else if (strcmp(prop, "exit") == 0)
-        map->border_behavior = BORDER_EXIT2PARENT;
-    else if (strcmp(prop, "fixed") == 0)
-        map->border_behavior = BORDER_FIXED;
-    else
-        errorFatal("unknown borderbehavoir: %s", prop);
-    xmlFree(prop);
-    
     if (xmlGetPropAsBool(node, "showavatar"))
         map->flags |= SHOW_AVATAR;
 

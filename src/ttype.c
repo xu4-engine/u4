@@ -202,6 +202,8 @@ int tileLoadProperties(Tile *tileset, int index, xmlNodePtr node) {
         { "unflyable", MASK_UNFLYABLE },       
         { "monsterunwalkable", MASK_MONSTER_UNWALKABLE }        
     };
+    static const char *speedEnumStrings[] = { "fast", "slow", "vslow", "vvslow", NULL };
+    static const char *effectsEnumStrings[] = { "none", "fire", "sleep", "poison", "poisonField", "electricity", "lava", NULL };
 
     tileset[index].mask = 0;
     tileset[index].movementMask = 0;
@@ -258,25 +260,8 @@ int tileLoadProperties(Tile *tileset, int index, xmlNodePtr node) {
     else if (xmlPropCmp(node, "cantwalkoff", "retreat") == 0)
         tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_RETREAT, tileset[index].walkoffDirs);
 
-    if (xmlPropCmp(node, "speed", "slow") == 0)
-        tileset[index].speed = SLOW;
-    else if (xmlPropCmp(node, "speed", "vslow") == 0)
-        tileset[index].speed = VSLOW;
-    else if (xmlPropCmp(node, "speed", "vvslow") == 0)
-        tileset[index].speed = VVSLOW;
-
-    if (xmlPropCmp(node, "effect", "fire") == 0)
-        tileset[index].effect = EFFECT_FIRE;
-    else if (xmlPropCmp(node, "effect", "sleep") == 0)
-        tileset[index].effect = EFFECT_SLEEP;
-    else if (xmlPropCmp(node, "effect", "poison") == 0)
-        tileset[index].effect = EFFECT_POISON;
-    else if (xmlPropCmp(node, "effect", "poisonField") == 0)
-        tileset[index].effect = EFFECT_POISONFIELD;
-    else if (xmlPropCmp(node, "effect", "electricity") == 0)
-        tileset[index].effect = EFFECT_ELECTRICITY;
-    else if (xmlPropCmp(node, "effect", "lava") == 0)
-        tileset[index].effect = EFFECT_LAVA;    
+    tileset[index].speed = xmlGetPropAsEnum(node, "speed", speedEnumStrings);
+    tileset[index].effect = xmlGetPropAsEnum(node, "effect", effectsEnumStrings);
 
     return 1;
 }
