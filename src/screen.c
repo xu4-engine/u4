@@ -17,6 +17,7 @@
 #include "names.h"
 #include "ttype.h"
 
+int screenNeedPrompt = 1;
 int screenCurrentCycle = 0;
 int screenCursorX = 0;
 int screenCursorY = 0;
@@ -36,6 +37,13 @@ void screenTextAt(int x, int y, char *fmt, ...) {
         screenShowChar(buffer[i], x + i, y);
 }
 
+void screenPrompt() {
+    if (screenNeedPrompt) {
+        screenMessage("%c", CHARSET_PROMPT);
+        screenNeedPrompt = 0;
+    }
+}
+
 void screenMessage(const char *fmt, ...) {
     char buffer[1024];
     int i;
@@ -50,7 +58,7 @@ void screenMessage(const char *fmt, ...) {
 
     // scroll the message area, if necessary
     if (c->line == 12) {
-        screenScrollMessageArea(); 
+        screenScrollMessageArea();
         c->line--;
     }
 
@@ -70,6 +78,8 @@ void screenMessage(const char *fmt, ...) {
 
     screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
     screenEnableCursor();
+
+    screenNeedPrompt = 1;
 }
 
 unsigned char screenViewportTile(int width, int height, int x, int y, int *focus) {
@@ -119,7 +129,19 @@ void screenUpdate(int showmap, int blackout) {
 
     assert(c != NULL);
 
-    if (showmap) {
+    if (c->map->flags & FIRST_PERSON) {
+        for (y = 0; y < VIEWPORT_H; y++) {
+            for (x = 0; x < VIEWPORT_W; x++) {
+                if (x < 2 || y < 2 || x >= 10 || y >= 10)
+                    tile = BLACK_TILE;
+                else
+                    tile = dungeonViewGetVisibleTile((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
+                screenShowTile(tile, 0, x, y);
+            }
+        }
+    }
+
+    else if (showmap) {
         if (!blackout)
             screenFindLineOfSight();
 

@@ -55,6 +55,7 @@ void screenShowGemTile(unsigned char tile, int focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, char *fmt, ...);
+void screenPrompt(void);
 void screenMessage(const char *fmt, ...);
 unsigned char screenViewportTile(int width, int height, int x, int y, int *focus);
 void screenScrollMessageArea(void);
