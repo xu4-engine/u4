@@ -1942,6 +1942,7 @@ int helpPage3KeyHandler(int key, void *data) {
  */
 void gameAlertTheGuards(const Map *map) {
     Object *temp;
+    const Monster *m;
     
     /* switch all the guards to attack mode */
     for (temp = map->objects; temp; temp = temp->next) {            
@@ -1986,7 +1987,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
 
     /* You're attacking a townsperson!  Alert the guards! */
     if ((obj->objType != OBJECT_MONSTER) && (obj->movement_behavior != MOVEMENT_ATTACK_AVATAR))
-        alertTheGuards(c->location->map);
+        gameAlertTheGuards(c->location->map);
 
     /* not good karma to be killing the innocent.  Bad avatar! */
     m = monsterForTile(obj->tile);
