@@ -16,6 +16,7 @@
 #include "context.h"
 #include "savegame.h"
 #include "ttype.h"
+#include "rle.h"
 
 typedef enum {
     ANIM_HONCOM,
@@ -25,6 +26,12 @@ typedef enum {
     ANIM_ANIMATE,
     ANIM_MAX
 } AnimType;
+
+typedef enum {
+    COMP_NONE,
+    COMP_RLE,
+    COMP_LZW
+} CompressionType;
 
 typedef SDL_Surface *(*ScreenScaler)(SDL_Surface *src, int scale, int n);
 
@@ -37,13 +44,10 @@ int screenLoadBackgrounds();
 void screenFreeIntroBackground();
 int screenLoadTiles();
 int screenLoadCharSet();
-int screenLoadPaletteEga(SDL_Surface *surface);
-int screenLoadPaletteVga(SDL_Surface *surface, const char *filename);
-int screenLoadTileSetEga(SDL_Surface **surface, int width, int height, int n, const char *filename);
-int screenLoadTileSetVga(SDL_Surface **surface, int width, int height, int n, const char *filename, const char *palette_fname);
-int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const char *filename);
-int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const char *filename, const char *palette_fname);
-int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const char *filename);
+int screenLoadPaletteEga();
+int screenLoadPaletteVga(const char *filename);
+int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp);
+int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp);
 SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter);
 SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n);
@@ -56,12 +60,12 @@ SDL_Surface *screen;
 SDL_Surface *bkgds[BKGD_MAX];
 SDL_Surface *introAnimations[ANIM_MAX];
 SDL_Surface *tiles, *charset;
+SDL_Color egaPalette[16];
+SDL_Color vgaPalette[256];
 int scale, forceEga, forceVga;
 ScreenScaler filterScaler;
 
 extern int verbose;
-
-#define RLE_RUNSTART 02
 
 void screenInit() {
 
@@ -105,6 +109,10 @@ void screenInit() {
 #ifdef ICON_FILE
     SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
 #endif
+
+    screenLoadPaletteEga();
+    if (!screenLoadPaletteVga("u4vga.pal"))
+        forceEga = 1;
 
     if (!screenLoadBackgrounds() || 
         !screenLoadTiles() ||
@@ -210,34 +218,43 @@ void screenFixIntroScreen(const unsigned char *sigData) {
 int screenLoadBackgrounds() {
     unsigned int i;
     int ret;
+    SDL_Surface *unscaled;
     static const struct {
         BackgroundType bkgd;
         const char *filename;
-    } lzwBkgdInfo[] = {
-        { BKGD_INTRO, "title.ega" },
-        { BKGD_TREE, "tree.ega" },
-        { BKGD_PORTAL, "portal.ega" },
-        { BKGD_OUTSIDE, "outside.ega" },
-        { BKGD_INSIDE, "inside.ega" },
-        { BKGD_WAGON, "wagon.ega" },
-        { BKGD_GYPSY, "gypsy.ega" },
-        { BKGD_ABACUS, "abacus.ega" }
+        int hasVga;             
+        CompressionType comp;
+        int filter;
+    } bkgdInfo[] = {
+        { BKGD_INTRO, "title.ega", 0, COMP_LZW, 1 },
+        { BKGD_BORDERS, "start.ega", 1, COMP_RLE, 1 },
+        { BKGD_TREE, "tree.ega", 0, COMP_LZW, 1 },
+        { BKGD_PORTAL, "portal.ega", 0, COMP_LZW, 1 },
+        { BKGD_OUTSIDE, "outside.ega", 0, COMP_LZW, 1 },
+        { BKGD_INSIDE, "inside.ega", 0, COMP_LZW, 1 },
+        { BKGD_WAGON, "wagon.ega", 0, COMP_LZW, 1 },
+        { BKGD_GYPSY, "gypsy.ega", 0, COMP_LZW, 1 },
+        { BKGD_ABACUS, "abacus.ega", 0, COMP_LZW, 1 },
+        
     };
 
-    for (i = 0; i < sizeof(lzwBkgdInfo) / sizeof(lzwBkgdInfo[0]); i++) {
-        /* no vga version of lzw files... yet */
-        ret = screenLoadLzwImageEga(&bkgds[lzwBkgdInfo[i].bkgd], 320, 200, lzwBkgdInfo[i].filename);
+    for (i = 0; i < sizeof(bkgdInfo) / sizeof(bkgdInfo[0]); i++) {
+        ret = 0;
+        if (!forceEga && bkgdInfo[i].hasVga)
+            ret = screenLoadImageVga(&unscaled, 
+                                     320, 200, 
+                                     bkgdInfo[i].filename, 
+                                     bkgdInfo[i].comp);
+        if (!ret && !forceVga)
+            ret = screenLoadImageEga(&unscaled, 
+                                     320, 200, 
+                                     bkgdInfo[i].filename, 
+                                     bkgdInfo[i].comp);
         if (!ret)
             return 0;
+
+        bkgds[bkgdInfo[i].bkgd] = screenScale(unscaled, scale, 1, bkgdInfo[i].filter);
     }
-
-    if (!forceEga)
-        ret = screenLoadRleImageVga(&bkgds[BKGD_BORDERS], 320, 200, "start.ega", "u4vga.pal");
-    if (!ret && !forceVga)
-        ret = screenLoadRleImageEga(&bkgds[BKGD_BORDERS], 320, 200, "start.ega");
-    if (!ret)
-        return 0;
-
 
     return 1;
 }
@@ -248,22 +265,37 @@ int screenLoadBackgrounds() {
 int screenLoadIntroAnimations() {
     unsigned int i;
     int ret;
+    SDL_Surface *unscaled;
     static const struct {
         AnimType anim;
         const char *filename;
-    } lzwAnimInfo[] = {
-        { ANIM_HONCOM, "honcom.ega" },
-        { ANIM_VALJUS, "valjus.ega" },
-        { ANIM_SACHONOR, "sachonor.ega" },
-        { ANIM_SPIRHUM, "spirhum.ega" },
-        { ANIM_ANIMATE, "animate.ega" }
+        int hasVga;             
+        CompressionType comp;
+        int filter;
+    } animInfo[] = {
+        { ANIM_HONCOM, "honcom.ega", 0, COMP_LZW, 1 },
+        { ANIM_VALJUS, "valjus.ega", 0, COMP_LZW, 1 },
+        { ANIM_SACHONOR, "sachonor.ega", 0, COMP_LZW, 1 },
+        { ANIM_SPIRHUM, "spirhum.ega", 0, COMP_LZW, 1 },
+        { ANIM_ANIMATE, "animate.ega", 0, COMP_LZW, 1 }
     };
 
-    for (i = 0; i < sizeof(lzwAnimInfo) / sizeof(lzwAnimInfo[0]); i++) {
-        /* no vga version of lzw files... yet */
-        ret = screenLoadLzwImageEga(&introAnimations[lzwAnimInfo[i].anim], 320, 200, lzwAnimInfo[i].filename);
+    for (i = 0; i < sizeof(animInfo) / sizeof(animInfo[0]); i++) {
+        ret = 0;
+        if (!forceEga && animInfo[i].hasVga)
+            ret = screenLoadImageVga(&unscaled, 
+                                     320, 200,
+                                     animInfo[i].filename,
+                                     animInfo[i].comp);
+        if (!ret && !forceVga)
+            ret = screenLoadImageEga(&unscaled, 
+                                     320, 200, 
+                                     animInfo[i].filename, 
+                                     animInfo[i].comp);
         if (!ret)
             return 0;
+
+        introAnimations[animInfo[i].anim] = screenScale(unscaled, scale, 1, animInfo[i].filter);
     }
 
     return 1;
@@ -296,10 +328,12 @@ int screenLoadTiles() {
     int ret = 0;
 
     if (!forceEga)
-        ret = screenLoadTileSetVga(&tiles, TILE_WIDTH, TILE_HEIGHT, N_TILES, "shapes.vga", "u4vga.pal");
+        ret = screenLoadImageVga(&tiles, TILE_WIDTH, TILE_HEIGHT * N_TILES, "shapes.vga", COMP_NONE);
 
     if (!ret && !forceVga)
-        ret = screenLoadTileSetEga(&tiles, TILE_WIDTH, TILE_HEIGHT, N_TILES, "shapes.ega");
+        ret = screenLoadImageEga(&tiles, TILE_WIDTH, TILE_HEIGHT * N_TILES, "shapes.ega", COMP_NONE);
+
+    tiles = screenScale(tiles, scale, N_TILES, 1);
 
     return ret;
 }
@@ -311,22 +345,24 @@ int screenLoadCharSet() {
     int ret = 0;
 
     if (!forceEga)
-        ret = screenLoadTileSetVga(&charset, CHAR_WIDTH, CHAR_HEIGHT, N_CHARS, "charset.vga", "u4vga.pal");
+        ret = screenLoadImageVga(&charset, CHAR_WIDTH, CHAR_HEIGHT * N_CHARS, "charset.vga", COMP_NONE);
 
     if (!ret && !forceVga)
-        ret = screenLoadTileSetEga(&charset, CHAR_WIDTH, CHAR_HEIGHT, N_CHARS, "charset.ega");
+        ret = screenLoadImageEga(&charset, CHAR_WIDTH, CHAR_HEIGHT * N_CHARS, "charset.ega", COMP_NONE);
+
+    charset = screenScale(charset, scale, N_CHARS, 1);
 
     return ret;
 }
 
 /**
- * Set up an SDL surface with the basic EGA palette.
+ * Loads the basic EGA palette.
  */
-int screenLoadPaletteEga(SDL_Surface *surface) {
+int screenLoadPaletteEga() {
     #define setpalentry(i, red, green, blue) \
-        surface->format->palette->colors[i].r = red; \
-        surface->format->palette->colors[i].g = green; \
-        surface->format->palette->colors[i].b = blue;
+        egaPalette[i].r = red; \
+        egaPalette[i].g = green; \
+        egaPalette[i].b = blue;
     setpalentry(0, 0x00, 0x00, 0x00);
     setpalentry(1, 0x00, 0x00, 0x80);
     setpalentry(2, 0x00, 0x80, 0x00);
@@ -349,9 +385,9 @@ int screenLoadPaletteEga(SDL_Surface *surface) {
 }
 
 /**
- * Set up an SDL surface with a 256 color palette loaded from the given file.
+ * Load the 256 color VGA palette from the given file.
  */
-int screenLoadPaletteVga(SDL_Surface *surface, const char *filename) {
+int screenLoadPaletteVga(const char *filename) {
     FILE *pal;
     int i;
 
@@ -360,9 +396,9 @@ int screenLoadPaletteVga(SDL_Surface *surface, const char *filename) {
         return 0;
 
     for (i = 0; i < 256; i++) {
-        surface->format->palette->colors[i].r = getc(pal) * 255 / 63;
-        surface->format->palette->colors[i].g = getc(pal) * 255 / 63;
-        surface->format->palette->colors[i].b = getc(pal) * 255 / 63;
+        vgaPalette[i].r = getc(pal) * 255 / 63;
+        vgaPalette[i].g = getc(pal) * 255 / 63;
+        vgaPalette[i].b = getc(pal) * 255 / 63;
     }
     u4fclose(pal);
 
@@ -370,238 +406,120 @@ int screenLoadPaletteVga(SDL_Surface *surface, const char *filename) {
 }
 
 /**
- * Load a tile set from a ".ega" tile set file.
+ * Load an image from an ".ega" image file.
  */
-int screenLoadTileSetEga(SDL_Surface **surface, int width, int height, int n, const char *filename) {
+int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp) {
     FILE *in;
-    SDL_Surface *unscaled;
-    int x, y;
-    Uint8 *p;
-
-    in = u4fopen(filename);
-    if (!in)
-        return 0;
-
-    unscaled = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height * n, 8, 0, 0, 0, 0);
-    if (!unscaled) {
-        u4fclose(in);
-        return 0;
-    }
-
-    if (!screenLoadPaletteEga(unscaled)) {
-        SDL_FreeSurface(unscaled);
-        u4fclose(in);
-        return 0;
-    }
-
-    p = (Uint8 *) unscaled->pixels;
-    for (y = 0; y < height * n; y++) {
-        for (x = 0; x < width; x += 2) {
-            int temp = getc(in);
-            *p = temp >> 4;
-            p++;
-            *p = temp & 0x0f;
-            p++;
-        }
-        p += unscaled->pitch - width;
-    }
-
-    u4fclose(in);
-
-    (*surface) = screenScale(unscaled, scale, n, 1);
-
-    return 1;
-}
-
-/**
- * Load a tile set from a ".vga" tile set file (from the U4 upgrade).
- */
-int screenLoadTileSetVga(SDL_Surface **surface, int width, int height, int n, const char *filename, const char *palette_fname) {
-    FILE *in;
-    SDL_Surface *unscaled;
-    int x, y;
-    Uint8 *p;
-
-    in = u4fopen(filename);
-    if (!in)
-        return 0;
-
-    unscaled = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height * n, 8, 0, 0, 0, 0);
-    if (!unscaled) {
-        u4fclose(in);
-        return 0;
-    }
-
-    if (!screenLoadPaletteVga(unscaled, palette_fname)) {
-        SDL_FreeSurface(unscaled);
-        u4fclose(in);
-        return 0;
-    }
-
-    p = (Uint8 *) unscaled->pixels;
-    for (y = 0; y < height * n; y++) {
-        for (x = 0; x < width; x++) {
-            int temp = getc(in);
-            *p++ = temp;
-        }
-        p += unscaled->pitch - width;
-    }
-
-    u4fclose(in);
-
-    (*surface) = screenScale(unscaled, scale, n, 1);
-
-    return 1;
-}
-
-/**
- * Load an image from an ".ega" RLE encoded image file.
- */
-int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const char *filename) {
-    FILE *in;
-    SDL_Surface *unscaled;
-    Uint8 *p;
-
-    in = u4fopen(filename);
-    if (!in)
-        return 0;
-
-    unscaled = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
-    if (!unscaled) {
-        u4fclose(in);
-        return 0;
-    }
-
-    if (!screenLoadPaletteEga(unscaled)) {
-        SDL_FreeSurface(unscaled);
-        u4fclose(in);
-        return 0;
-    }
-
-    p = (Uint8 *) unscaled->pixels;
-    while (p < ((Uint8 *)unscaled->pixels) + (unscaled->pitch * unscaled->h)) {
-        int temp = getc(in);
-        if (temp == RLE_RUNSTART) {
-            int i, count;
-            count = getc(in);
-            temp = getc(in);
-            for (i = 0; i < count; i++) {
-                *p = temp >> 4;
-                p++;
-                *p = temp & 0x0f;
-                p++;
-            }
-        } else {
-            *p = temp >> 4;
-            p++;
-            *p = temp & 0x0f;
-            p++;
-        }
-    }
-
-    u4fclose(in);
-
-    (*surface) = screenScale(unscaled, scale, 1, 1);
-
-    return 1;
-}
-
-/**
- * Load an image from an ".ega" RLE encoded image file (from the U4 upgrade).
- */
-int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const char *filename, const char *palette_fname) {
-    FILE *in;
-    SDL_Surface *unscaled;
-    Uint8 *p;
-
-    in = u4fopen(filename);
-    if (!in)
-        return 0;
-
-    unscaled = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
-    if (!unscaled) {
-        u4fclose(in);
-        return 0;
-    }
-
-    if (!screenLoadPaletteVga(unscaled, palette_fname)) {
-        SDL_FreeSurface(unscaled);
-        u4fclose(in);
-        return 0;
-    }
-
-    p = (Uint8 *) unscaled->pixels;
-    while (p < ((Uint8 *)unscaled->pixels) + (unscaled->pitch * unscaled->h)) {
-        int temp = getc(in);
-        if (temp == EOF) {
-            u4fclose(in);
-            SDL_FreeSurface(unscaled);
-            return 0;
-        }
-        if (temp == RLE_RUNSTART) {
-            int i, count;
-            count = getc(in);
-            temp = getc(in);
-            for (i = 0; i < count; i++) {
-                *p = temp;
-                p++;
-            }
-        } else {
-            *p = temp;
-            p++;
-        }
-    }
-
-    u4fclose(in);
-
-    (*surface) = screenScale(unscaled, scale, 1, 1);
-
-    return 1;
-}
-
-int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const char *filename) {
-    FILE *in;
-    SDL_Surface *unscaled;
+    SDL_Surface *img;
     int x, y;
     Uint8 *p, *data;
+    long decompResult;
 
     in = u4fopen(filename);
     if (!in)
         return 0;
 
-    unscaled = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
-    if (!unscaled) {
+    img = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+    if (!img) {
+        u4fclose(in);
+        return 0;
+    }
+    SDL_SetColors(img, egaPalette, 0, 16);
+
+    switch(comp) {
+    case COMP_NONE:
+        decompResult = u4flength(in);
+        data = (Uint8 *) malloc(decompResult);
+        fread(data, 1, decompResult, in);
+        break;
+    case COMP_RLE:
+        decompResult = rleDecompressFile(in, u4flength(in), (void **) &data);
+        break;
+    case COMP_LZW:
+        decompResult = decompress_u4_file(in, u4flength(in), (void **) &data);
+        break;
+    default:
+        assert(0);
+    }
+
+    if (decompResult == -1) {
+        SDL_FreeSurface(img);
         u4fclose(in);
         return 0;
     }
 
-    if (!screenLoadPaletteEga(unscaled)) {
-        SDL_FreeSurface(unscaled);
-        u4fclose(in);
-        return 0;
-    }
-
-    if (decompress_u4_file(in, u4flength(in), (void **) &data) == -1) {
-        SDL_FreeSurface(unscaled);
-        u4fclose(in);
-        return 0;
-    }
-
-    p = (Uint8 *) unscaled->pixels;
+    p = (Uint8 *) img->pixels;
     for (y = 0; y < height; y++) {
         for (x = 0; x < width / 2; x++) {
-            *p = data[y * width / 2 + x] >> 4;
-            p++;
-            *p = data[y * width / 2 + x] & 0x0f;
-            p++;
+            *p++ = data[y * width / 2 + x] >> 4;
+            *p++ = data[y * width / 2 + x] & 0x0f;
         }
-        p += unscaled->pitch - width;
+        p += img->pitch - width;
     }
     free(data);
 
     u4fclose(in);
 
-    (*surface) = screenScale(unscaled, scale, 1, 0);
+    (*surface) = img;
+
+    return 1;
+}
+
+/**
+ * Load an image from a ".vga" or ".ega" image file from the U4 VGA upgrade.
+ */
+int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp) {
+    FILE *in;
+    SDL_Surface *img;
+    int x, y;
+    Uint8 *p, *data;
+    long decompResult;
+
+    in = u4fopen(filename);
+    if (!in)
+        return 0;
+
+    img = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+    if (!img) {
+        u4fclose(in);
+        return 0;
+    }
+    SDL_SetColors(img, vgaPalette, 0, 256);
+
+    switch(comp) {
+    case COMP_NONE:
+        decompResult = u4flength(in);
+        data = (Uint8 *) malloc(decompResult);
+        fread(data, 1, decompResult, in);
+        break;
+    case COMP_RLE:
+        decompResult = rleDecompressFile(in, u4flength(in), (void **) &data);
+        break;
+    case COMP_LZW:
+        decompResult = decompress_u4_file(in, u4flength(in), (void **) &data);
+        break;
+    default:
+        assert(0);
+    }
+
+    if (decompResult == -1 ||
+        decompResult != (width * height)) {
+        SDL_FreeSurface(img);
+        u4fclose(in);
+        return 0;
+    }
+
+    p = (Uint8 *) img->pixels;
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++)
+            *p++ = data[y * width + x];
+        p += img->pitch - width;
+    }
+    free(data);
+
+    u4fclose(in);
+
+    (*surface) = img;
 
     return 1;
 }
@@ -894,7 +812,7 @@ void screenShowBeastie(int beast, int frame) {
 
     if (beast == 0) {
         src.x = col * 56 * scale;
-        src.w = 56 * scale;
+        src.w = 55 * scale;  
     }
     else {
         src.x = (176 + col * 48) * scale;
