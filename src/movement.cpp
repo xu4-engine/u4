@@ -66,7 +66,7 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
     if (MAP_IS_OOB(c->location->map, newCoords))
         return (MoveReturnValue)(MOVE_MAP_CHANGE | MOVE_EXIT_TO_PARENT | MOVE_SUCCEEDED);
 
-    if (!collisionOverride && !c->saveGame->balloonstate) {
+    if (!collisionOverride && !c->party->isFlying()) {
         int movementMask;
 
         movementMask = c->location->map->getValidMoves(c->location->coords, c->party->transport);

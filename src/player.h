@@ -139,7 +139,7 @@ public:
     void adjustGold(int gold);
     void adjustKarma(KarmaAction action);
     void applyEffect(TileEffect effect);
-    bool attemptElevation(Virtue virtue);    
+    bool attemptElevation(Virtue virtue);        
     void burnTorch(int turns = 1);
     bool canEnterShrine(Virtue virtue);    
     bool canPersonJoin(string name, Virtue *v);    
@@ -147,8 +147,9 @@ public:
     bool donate(int quantity);
     void endTurn();
     int  getChest();
-    int  getTorchDuration() const;
+    int  getTorchDuration() const;    
     void healShip(unsigned int pts);
+    bool isFlying() const;
     bool isImmobilized();
     bool isDead();
     bool isPersonJoined(string name);

@@ -657,11 +657,8 @@ void gameFinishTurn() {
         /* update party stats */
         c->stats->showPartyView();        
 
-        /* Creatures cannot spawn, move or attack while the avatar is on the balloon */
-        /* FIXME: balloonstate is causing problems when mixed with torchduration --
-           needs to be separated during gameplay and then put into savegame structure
-           when saving */
-        if (c->location->context == CTX_DUNGEON || (!c->saveGame->balloonstate)) {
+        /* Creatures cannot spawn, move or attack while the avatar is on the balloon */        
+        if (!c->party->isFlying()) {
 
             // apply effects from tile avatar is standing on 
             c->party->applyEffect(c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS)->getEffect());
@@ -832,7 +829,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         }
         /* Klimb/Descend Balloon */
         else if (c->transportContext == TRANSPORT_BALLOON) {            
-            if (c->saveGame->balloonstate == 1)
+            if (c->party->isFlying())
                 key = 'd';
             else key = 'k';
         }
@@ -854,8 +851,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             key = 'e';
         
         /* Get Chest? */
-        if ((c->location->context == CTX_DUNGEON) || 
-            (!c->saveGame->balloonstate)) {
+        if (!c->party->isFlying()) {
             tile = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
     
             if (tile->isChest()) key = 'g';
@@ -1026,7 +1022,7 @@ bool gameBaseKeyHandler(int key, void *data) {
     case 'a':
         screenMessage("Attack: ");
 
-        if (c->saveGame->balloonstate)
+        if (c->party->isFlying())
             screenMessage("\nDrift only!\n");
         else {
             info = new CoordActionInfo;
@@ -1080,7 +1076,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         if (!usePortalAt(c->location, c->location->coords, ACTION_DESCEND)) {
             if (c->transportContext == TRANSPORT_BALLOON) {
                 screenMessage("Land Balloon\n");
-                if (c->saveGame->balloonstate == 0)
+                if (!c->party->isFlying())
                     screenMessage("Already Landed!\n");
                 else if (c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->canLandBalloon()) {
                     c->saveGame->balloonstate = 0;
@@ -1126,7 +1122,7 @@ bool gameBaseKeyHandler(int key, void *data) {
     case 'g':
         screenMessage("Get Chest!\n");
         
-        if ((c->location->context != CTX_DUNGEON) && c->saveGame->balloonstate)        
+        if (c->party->isFlying())
             screenMessage("Drift only!\n");
         else {
             tile = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
@@ -1210,7 +1206,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'o':
-        if (c->saveGame->balloonstate)
+        if (c->party->isFlying())
             screenMessage("Open; Not Here!\n");
         else {
             info = new CoordActionInfo;
@@ -1256,7 +1252,7 @@ bool gameBaseKeyHandler(int key, void *data) {
     case 's':
         if (c->location->context == CTX_DUNGEON)
             dungeonSearch();
-        else if (c->saveGame->balloonstate)
+        else if (c->party->isFlying())
             screenMessage("Searching...\nDrift only!\n");
         else {
             screenMessage("Searching...\n");
@@ -1277,7 +1273,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 't':
-        if (c->saveGame->balloonstate)
+        if (c->party->isFlying())
             screenMessage("Talk\nDrift only!\n");
         else {
             info = new CoordActionInfo;
@@ -1318,7 +1314,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'x':
-        if ((c->transportContext != TRANSPORT_FOOT) && c->saveGame->balloonstate == 0) {
+        if ((c->transportContext != TRANSPORT_FOOT) && !c->party->isFlying()) {
             Object *obj = c->location->map->addObject(c->party->transport, c->party->transport, c->location->coords);
             if (c->transportContext == TRANSPORT_SHIP)
                 c->lastShip = obj;
@@ -3203,7 +3199,7 @@ void gameTimer(void *data) {
 
         /* balloon moves about 4 times per second */
         if ((c->transportContext == TRANSPORT_BALLOON) &&
-            c->saveGame->balloonstate) {
+            c->party->isFlying()) {
             dir = dirReverse((Direction) c->windDirection);
             gameMoveAvatar(dir, 0);            
         }        

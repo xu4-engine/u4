@@ -802,6 +802,13 @@ void Party::healShip(unsigned int pts) {
 }
 
 /**
+ * Returns true if the balloon is currently in the air
+ */
+bool Party::isFlying() const {
+    return (saveGame->balloonstate && torchduration <= 0);        
+}
+
+/**
  * Whether or not the party can make an action.
  */
 bool Party::isImmobilized() {
