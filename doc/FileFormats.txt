@@ -567,7 +567,10 @@ its own to skip the intro).  Lots of the special case data is embedded
 in this .exe.
 
 offset  len   notes
-0x0     63871 ???
+0x0     63843 ???
+0x0f963 1     volume on/off flag
+0x0f964 27    13 two-byte code pointers to 13 sound generation routines
+              plus one padding byte
 0x0f97f 171   .ULT filenames; 16 zero terminated strings
 0x0fa2a 48    stone colors; 8 zero terminated strings
 0x0fa5a 91    .DNG filenames; 8 zero terminated strings
@@ -591,8 +594,10 @@ offset  len   notes
 0x0fbb1 8     pirates cove ship y coordinates
 0x0fbb9 8     pirates cove ship tiles
 0x0fbc1 37    zero terminated list of tiles that are walkable
-0x0fbe6 2033  ???
-0x103d7 1280  abyss question dialog strings 
+0x0fbe6 149   14 zero-terminated navigation strings ("North", "Sail
+              North", etc.)
+0x0fc7b 1884  ???
+0x103d7 1280  abyss question dialog strings
 0x108d7 22    11 two-byte offsets to abyss question answers (value +
               62141 gives file offset)
 0x108ed 80    ???
@@ -652,7 +657,7 @@ offset  len   notes
 0x11d63 250   companion dialog text
 0x11e5d 16    8 two-byte offsets to virtue adjectives for companion
               dialogs (value + 62123 gives file offset)
-0x11e6d 1404  ??? 
+0x11e6d 1404  ???
 0x123e9 3486  Hawkwind dialog text; the first 40 zero terminated
               strings are his responses for 5 levels times 8 virtues,
               plus some other miscellaneous dialog strings
@@ -756,9 +761,11 @@ offset  len   notes
 0x15603 10    5 two-byte offsets to food shopkeeper names (value + 62067
               gives file offset)
 0x1560d 189   Lord British dialog keywords; 27 zero terminated strings
-0x156ca 2967  Lord British dialog text; 27 zero terminated strings
-              (responses for above keywords)
-0x16261 ...
+0x156ca 2968  Lord British dialog text; 25 zero terminated strings ("He
+              says", plus responses for last 24 of the above keywords)
+0x16262 104   ???
+0x162ca 2037  Lord British "help" response dialog strings
+0x16abf ...   ???
 
 Each item location record has the following structure: 
 
