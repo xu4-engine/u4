@@ -808,6 +808,8 @@ int introDoQuestion(int answer) {
         questionTree[answerInd] = questionTree[questionRound * 2];
     else
         questionTree[answerInd] = questionTree[questionRound * 2 + 1];
+    
+    /* FIXME: draw abacus results here */
 
     answerInd++;
     questionRound++;
