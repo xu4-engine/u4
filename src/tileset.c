@@ -113,10 +113,10 @@ void tilesetLoad(const char *filename, TilesetType type) {
     
     tileset->type = type;
 
-    if (xmlPropExists(root, "imageId"))
-        tileset->imageId = xmlGetPropAsInt(root, "imageId");
+    if (xmlPropExists(root, "imageName"))
+        tileset->imageName = xmlGetPropAsStr(root, "imageName");
     else
-        tileset->imageId = 0;
+        tileset->imageName = NULL;
 
     /* count how many tiles are in the tileset */
     for (node = root->xmlChildrenNode; node; node = node->next) {

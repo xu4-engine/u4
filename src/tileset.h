@@ -35,7 +35,7 @@ typedef struct _Tileset {
     int numTiles;
     Tile *tiles;
     int totalFrames;
-    int imageId;
+    const char *imageName;
     struct _Image *tileGraphic;
 } Tileset;
 

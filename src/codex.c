@@ -254,6 +254,12 @@ int codexHandleWOP(const char *word) {
  * Handles naming of virtues in the Chamber of the Codex
  */
 int codexHandleVirtues(const char *virtue) {    
+    static const char *codexImageNames[] = {
+        BKGD_HONESTY, BKGD_COMPASSN, BKGD_VALOR, BKGD_JUSTICE, 
+        BKGD_SACRIFIC, BKGD_HONOR, BKGD_SPIRIT, BKGD_HUMILITY,
+        BKGD_TRUTH, BKGD_LOVE, BKGD_COURAGE
+    };
+
     static int current = 0;
     static int tries = 1;
 
@@ -268,7 +274,7 @@ int codexHandleVirtues(const char *virtue) {
     if ((current < VIRT_MAX) && 
         (strcasecmp(virtue, getVirtueName((Virtue)current)) == 0)) {
 
-        screenDrawBackgroundInMapArea(BKGD_HONESTY + current);
+        screenDrawBackgroundInMapArea(codexImageNames[current]);
         screenRedrawMapArea();
 
         current++;
@@ -289,11 +295,11 @@ int codexHandleVirtues(const char *virtue) {
         gameGetInput(&codexHandleVirtues, codexInputBuffer, sizeof(codexInputBuffer), 0, 0);
     }
 
-    /* answered with the correct base virtue (truth, love, courage) */
+    /* answered with the correct princple (truth, love, courage) */
     else if ((current >= VIRT_MAX) &&
-             (strcasecmp(virtue, getBaseVirtueName((BaseVirtue)(1 << (current - VIRT_MAX)))) == 0)) {
+             (strcasecmp(virtue, getPrincipleName((Principle)(1 << (current - VIRT_MAX)))) == 0)) {
 
-        screenDrawBackgroundInMapArea(BKGD_HONESTY + current);
+        screenDrawBackgroundInMapArea(codexImageNames[current]);
         screenRedrawMapArea();
 
         current++;

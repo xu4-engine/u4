@@ -215,7 +215,7 @@ void combatBegin() {
 
     /* if we entered an altar room, show the name */
     if (combatInfo.altarRoom) {
-        screenMessage("\nThe Altar Room of %s\n", getBaseVirtueName(combatInfo.altarRoom));    
+        screenMessage("\nThe Altar Room of %s\n", getPrincipleName(combatInfo.altarRoom));    
         c->location->context |= CTX_ALTAR_ROOM;
     }
 
