@@ -30,25 +30,7 @@
 using std::string;
 using std::vector;
 
-int shrineHandleVirtue(string *message);
-int shrineHandleCycles(int choice);
-void shrineMeditationCycle();
-void shrineTimer(void *data);
-int shrineHandleMantra(string *message);
-void shrineEject();
-
-/**
- * Key handlers
- */ 
-bool shrineVision(int key, void *data);
-bool shrineEjectOnKey(int key, void *data);
-
-const Shrine *shrine;
-string virtueBuffer;
 int cycles, completedCycles;
-int elevated;
-string mantraBuffer;
-int reps;
 vector<string> shrineAdvice;
 
 /**
@@ -96,68 +78,25 @@ void Shrine::setMantra(string m)    { mantra = m; }
  * Enter the shrine
  */
 void Shrine::enter() {
-    U4FILE *avatar;
-    Object *obj;
 
     if (shrineAdvice.empty()) {
-        avatar = u4fopen("avatar.exe");
+        U4FILE *avatar = u4fopen("avatar.exe");
         if (!avatar)
             return;
         shrineAdvice = u4read_stringtable(avatar, 93682, 24);
         u4fclose(avatar);
     }
 
-    shrine = this;
-
-    /* Add-on shrine sequence START */
-    if (settings.enhancements && settings.enhancementsOptions.u5shrines) {
-        /* replace the 'static' avatar tile with grass */        
-        annotations->add(Coords(5, 6, c->location->coords.z), Tileset::findTileByName("grass")->id, true);
-
-        screenDisableCursor();
-        screenMessage("You approach\nthe ancient\nshrine...\n");
-        gameUpdateScreen(); EventHandler::sleep(1000);
-        
-        obj = addCreature(creatures.getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
-        obj->setTile(Tileset::findTileByName("avatar")->id);
-
-        gameUpdateScreen(); EventHandler::sleep(400);        
-        c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(400);
-        c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(400);
-        c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(400);
-        annotations->remove(Coords(5, 6, c->location->coords.z), Tileset::findTileByName("grass")->id);
-        c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(800);
-        obj->setTile(creatures.getById(BEGGAR_ID)->getTile()); gameUpdateScreen();
-        
-        screenMessage("\n...and kneel before the altar.\n");        
-        EventHandler::sleep(1000);
-        screenEnableCursor();
-        screenMessage("\nUpon which virtue dost thou meditate?\n");        
-    }
-    /* Add-on shrine sequence END */
+    if (settings.enhancements && settings.enhancementsOptions.u5shrines)
+        enhancedSequence();
     else  
-        screenMessage("You enter the ancient shrine and sit before the altar...\nUpon which virtue dost thou meditate?\n");
+        screenMessage("You enter the ancient shrine and sit before the altar...");
 
-    gameGetInput(&shrineHandleVirtue, &virtueBuffer);
-}
-
-int shrineHandleVirtue(string *message) {
-    KeyHandler::GetChoice *info;
-
-    eventHandler->popKeyHandler();
+    screenMessage("\nUpon which virtue dost thou meditate?\n");        
+    string virtue = ReadStringController::get(32, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
 
     screenMessage("\n\nFor how many Cycles (0-3)? ");
-
-    info = new KeyHandler::GetChoice;
-    info->choices = "0123\015\033";
-    info->handleChoice = &shrineHandleCycles;
-    eventHandler->pushKeyHandler(KeyHandler(&keyHandlerGetChoice, info));
-
-    return 1;
-}
-
-int shrineHandleCycles(int choice) {
-    eventHandler->popKeyHandler();
+    int choice = ReadChoiceController::get("0123\015\033");
 
     if (choice == '\033' || choice == '\015')
         cycles = 0;
@@ -167,24 +106,48 @@ int shrineHandleCycles(int choice) {
 
     screenMessage("%c\n\n", cycles + '0');
 
-    if (strncasecmp(virtueBuffer.c_str(), getVirtueName(shrine->getVirtue()), 6) != 0 || cycles == 0) {
+    // ensure the player chose the right virtue and entered a valid number for cycles
+    if (strncasecmp(virtue.c_str(), getVirtueName(getVirtue()), 6) != 0 || cycles == 0) {
         screenMessage("Thou art unable to focus thy thoughts on this subject!\n");
-        shrineEject();
-    } else {
-        if (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) >= 0x10000) || (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff) != c->saveGame->lastmeditation)) {
-            screenMessage("Begin Meditation\n");
-            shrineMeditationCycle();
-        }
-        else { 
-            screenMessage("Thy mind is still weary from thy last Meditation!\n");
-            shrineEject();
-        }
+        eject();
+        return;
     }
 
-    return 1;
+    if (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) >= 0x10000) || (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff) != c->saveGame->lastmeditation)) {
+        screenMessage("Begin Meditation\n");
+        meditationCycle();
+    }
+    else { 
+        screenMessage("Thy mind is still weary from thy last Meditation!\n");
+        eject();
+    }
 }
 
-void shrineMeditationCycle() {
+void Shrine::enhancedSequence() {
+    /* replace the 'static' avatar tile with grass */        
+    annotations->add(Coords(5, 6, c->location->coords.z), Tileset::findTileByName("grass")->id, true);
+
+    screenDisableCursor();
+    screenMessage("You approach\nthe ancient\nshrine...\n");
+    gameUpdateScreen(); EventHandler::sleep(1000);
+        
+    Object *obj = addCreature(creatures.getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
+    obj->setTile(Tileset::findTileByName("avatar")->id);
+
+    gameUpdateScreen(); EventHandler::sleep(400);        
+    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(400);
+    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(400);
+    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(400);
+    annotations->remove(Coords(5, 6, c->location->coords.z), Tileset::findTileByName("grass")->id);
+    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(800);
+    obj->setTile(creatures.getById(BEGGAR_ID)->getTile()); gameUpdateScreen();
+        
+    screenMessage("\n...and kneel before the altar.\n");        
+    EventHandler::sleep(1000);
+    screenEnableCursor();
+}
+
+void Shrine::meditationCycle() {
     /* find our interval for meditation */
     int interval = (settings.shrineTime * 1000) / MEDITATION_MANTRAS_PER_CYCLE;
     interval -= (interval % eventTimerGranularity);
@@ -192,65 +155,57 @@ void shrineMeditationCycle() {
     if (interval <= 0)
         interval = 1;    
 
-    reps = 0;
-
     c->saveGame->lastmeditation = (c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff;
 
     screenDisableCursor();
-    eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
-    eventHandler->getTimer()->add(&shrineTimer, interval);
-}
-
-void shrineTimer(void *data) {
-    if (reps++ >= MEDITATION_MANTRAS_PER_CYCLE) {
-        eventHandler->getTimer()->remove(&shrineTimer);
-        eventHandler->popKeyHandler();
-
-        screenMessage("\nMantra: ");
-
-        gameGetInput(&shrineHandleMantra, &mantraBuffer, 4);
-        screenRedrawScreen();
-    }
-    else {
-        screenDisableCursor();
+    for (int i = 0; i < MEDITATION_MANTRAS_PER_CYCLE; i++) {
+        WaitController controller(interval);
+        eventHandler->pushController(&controller);
+        controller.wait();
         screenMessage(".");
         screenRedrawScreen();
     }
+    askMantra();
 }
 
-int shrineHandleMantra(string *message) {
-    eventHandler->popKeyHandler();
-
+void Shrine::askMantra() {
+    screenEnableCursor();
+    screenMessage("\nMantra: ");
+    screenRedrawScreen();       // FIXME: needed?
+    string mantra = ReadStringController::get(4, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
     screenMessage("\n");
 
-    if (strcasecmp(mantraBuffer.c_str(), shrine->getMantra().c_str()) != 0) {
+    if (strcasecmp(mantra.c_str(), getMantra().c_str()) != 0) {
         c->party->adjustKarma(KA_BAD_MANTRA);
         screenMessage("Thou art not able to focus thy thoughts with that Mantra!\n");
-        shrineEject();
+        eject();
     }
     else if (--cycles > 0) {
         completedCycles++;
         c->party->adjustKarma(KA_MEDITATION);
-        shrineMeditationCycle();
+        meditationCycle();
     }
     else {
         completedCycles++;
         c->party->adjustKarma(KA_MEDITATION);
 
-        elevated = completedCycles == 3 && c->party->attemptElevation(shrine->getVirtue());
+        bool elevated = completedCycles == 3 && c->party->attemptElevation(getVirtue());
         if (elevated)
             screenMessage("\nThou hast achieved partial Avatarhood in the Virtue of %s\n\n",
-                          getVirtueName(shrine->getVirtue()));
+                          getVirtueName(getVirtue()));
         else
             screenMessage("\nThy thoughts are pure. "
                           "Thou art granted a vision!\n");
-        eventHandler->pushKeyHandler(&shrineVision);
-    }
 
-    return 1;
+        ReadChoiceController::get("");
+        showVision(elevated);
+        ReadChoiceController::get("");
+        gameSetViewMode(VIEW_NORMAL);
+        eject();
+    }
 }
 
-bool shrineVision(int key, void *data) {
+void Shrine::showVision(bool elevated) {
     static const char *visionImageNames[] = {
         BKGD_SHRINE_HON, BKGD_SHRINE_COM, BKGD_SHRINE_VAL, BKGD_SHRINE_JUS, 
         BKGD_SHRINE_SAC, BKGD_SHRINE_HNR, BKGD_SHRINE_SPI, BKGD_SHRINE_HUM
@@ -259,24 +214,14 @@ bool shrineVision(int key, void *data) {
     if (elevated) {
         screenMessage("Thou art granted a vision!\n");
         gameSetViewMode(VIEW_RUNE);
-        screenDrawImageInMapArea(visionImageNames[shrine->getVirtue()]);
+        screenDrawImageInMapArea(visionImageNames[getVirtue()]);
     }
     else {
-        screenMessage("\n%s", shrineAdvice[shrine->getVirtue() * 3 + completedCycles - 1].c_str());
+        screenMessage("\n%s", shrineAdvice[getVirtue() * 3 + completedCycles - 1].c_str());
     }
-    eventHandler->popKeyHandler();
-    eventHandler->pushKeyHandler(&shrineEjectOnKey);
-    return true;
 }
 
-bool shrineEjectOnKey(int key, void *data) {
-    gameSetViewMode(VIEW_NORMAL);
-    eventHandler->popKeyHandler();
-    shrineEject();
-    return true;
-}
-
-void shrineEject() {
+void Shrine::eject() {
     gameExitToParentMap();
     musicMgr->play();
     (*c->location->finishTurn)();

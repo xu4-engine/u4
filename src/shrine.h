@@ -29,6 +29,11 @@ public:
     void            setMantra(string mantra);
 
     void enter();
+    void enhancedSequence();
+    void meditationCycle();
+    void askMantra();
+    void eject();
+    void showVision(bool elevated);
 
     // Properties
 private:
