@@ -98,3 +98,12 @@ int menuCompareFindItemById(void *val1, void *val2) {
         return -1;
     return 0;
 }
+
+Menu menuActivateItem(Menu menu, unsigned char id, ActivateAction action) {
+    Menu m = menu;
+    
+    m = menuHighlightNew(menu, menuGetItemById(menuGetRoot(menu), id));
+    (*((MenuItem *)m->data)->activateMenuItem)(m, action);
+
+    return m;
+}

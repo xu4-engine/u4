@@ -372,22 +372,10 @@ int introKeyHandler(int key, void *data) {
         if (!introBaseMenuKeyHandler(key, INTRO_MENU, &mainOptions)) {
             /* navigate to the item and activate it! */
             switch(key) {
-            case 'v':                
-                mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 0));
-                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions, ACTIVATE_NORMAL);
-                break;
-            case 's':
-                mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 1));
-                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions, ACTIVATE_NORMAL);
-                break;
-            case 'g':
-                mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 2));
-                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions, ACTIVATE_NORMAL);
-                break;
-            case 'm':
-                mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 0xFF));
-                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions, ACTIVATE_NORMAL);                
-                break;
+            case 'v': mainOptions = menuActivateItem(mainOptions, 0, ACTIVATE_NORMAL); break;
+            case 's': mainOptions = menuActivateItem(mainOptions, 1, ACTIVATE_NORMAL); break;                
+            case 'g': mainOptions = menuActivateItem(mainOptions, 2, ACTIVATE_NORMAL); break;                
+            case 'm': mainOptions = menuActivateItem(mainOptions, 0xFF, ACTIVATE_NORMAL); break;                
             default: break;
             }
         }
@@ -400,18 +388,10 @@ int introKeyHandler(int key, void *data) {
         if (!introBaseMenuKeyHandler(key, INTRO_CONFIG, &videoOptions)) {            
             /* navigate to the item and activate it! */
             switch (key) {
-            case 's':
-                videoOptions = menuHighlightNew(videoOptions, menuGetItemById(menuGetRoot(videoOptions), 0));
-                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions, ACTIVATE_NORMAL);
-                break;
-            case 'm':
-                videoOptions = menuHighlightNew(videoOptions, menuGetItemById(menuGetRoot(videoOptions), 1));
-                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions, ACTIVATE_NORMAL);
-                break;
-            case 'f':
-                videoOptions = menuHighlightNew(videoOptions, menuGetItemById(menuGetRoot(videoOptions), 2));
-                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions, ACTIVATE_NORMAL);
-                break;
+            case 's': videoOptions = menuActivateItem(videoOptions, 0, ACTIVATE_NORMAL); break;
+            case 'm': videoOptions = menuActivateItem(videoOptions, 1, ACTIVATE_NORMAL); break;
+            case 'f': videoOptions = menuActivateItem(videoOptions, 2, ACTIVATE_NORMAL); break;
+            default: break;
             }
         }
         
@@ -423,10 +403,8 @@ int introKeyHandler(int key, void *data) {
         if (!introBaseMenuKeyHandler(key, INTRO_CONFIG, &soundOptions)) {
             /* navigate to the item and activate it! */
             switch (key) {
-            case 'v':
-                soundOptions = menuHighlightNew(soundOptions, menuGetItemById(menuGetRoot(soundOptions), 0));
-                (*((MenuItem *)soundOptions->data)->activateMenuItem)(soundOptions, ACTIVATE_NORMAL);
-                break;
+            case 'v': soundOptions = menuActivateItem(soundOptions, 0, ACTIVATE_NORMAL); break;
+            default: break;
             }
         }
         
@@ -438,18 +416,10 @@ int introKeyHandler(int key, void *data) {
         if (!introBaseMenuKeyHandler(key, INTRO_CONFIG, &gameplayOptions)) {
             /* navigate to the item and activate it! */
             switch(key) {
-            case 'g':
-                gameplayOptions = menuHighlightNew(gameplayOptions, menuGetItemById(menuGetRoot(gameplayOptions), 0));
-                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions, ACTIVATE_NORMAL);
-                break;
-            case 's':
-                gameplayOptions = menuHighlightNew(gameplayOptions, menuGetItemById(menuGetRoot(gameplayOptions), 1));
-                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions, ACTIVATE_NORMAL);
-                break;
-            case 'a':
-                gameplayOptions = menuHighlightNew(gameplayOptions, menuGetItemById(menuGetRoot(gameplayOptions), 2));
-                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions, ACTIVATE_NORMAL);
-                break;                
+            case 'g': gameplayOptions = menuActivateItem(gameplayOptions, 0, ACTIVATE_NORMAL); break;                
+            case 's': gameplayOptions = menuActivateItem(gameplayOptions, 1, ACTIVATE_NORMAL); break;                
+            case 'a': gameplayOptions = menuActivateItem(gameplayOptions, 2, ACTIVATE_NORMAL); break;
+            default: break;
             }            
         }
 

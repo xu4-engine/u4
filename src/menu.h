@@ -34,5 +34,6 @@ void menuDelete(Menu menu);
 Menu menuReset(Menu current);
 Menu menuGetItemById(Menu menu, unsigned char id);
 int menuCompareFindItemById(void *val1, void *val2);
+Menu menuActivateItem(Menu menu, unsigned char id, ActivateAction action);
 
 #endif
