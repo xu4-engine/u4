@@ -63,7 +63,6 @@ int main(int argc, char *argv[]) {
     if (!skipIntro) {
         /* do the intro */
         introInit();
-        musicIntro();
         eventHandlerAddTimerCallback(&introTimer, 1);
         eventHandlerPushKeyHandler(&introKeyHandler);
         eventHandlerMain(NULL);
