@@ -13,7 +13,7 @@
 extern int verbose;
 
 /* the possible paths where u4 for DOS can be installed */
-const char * const paths[] = {
+static const char * const paths[] = {
     "./",
     "./ultima4/",
     "/usr/lib/u4/ultima4/",
@@ -21,7 +21,7 @@ const char * const paths[] = {
 };
 
 /* the possible paths where u4 for the music files */
-const char * const music_paths[] = {
+static const char * const music_paths[] = {
     "./",
     "./ultima4/",
     "../mid/",
