@@ -408,10 +408,10 @@ void mapRemovePerson(Map *map, const Person *person) {
     }
 }
 
-void mapMoveObjects(Map *map, int avatarx, int avatary, int z, void(*doAttack)(Object *)) {
+Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
     int newx, newy;
     int distance, slow;
-    Object *obj = map->objects;
+    Object *obj = map->objects, *attacker = NULL;
     const Monster *m;
 
     for (obj = map->objects; obj; obj = obj->next) {
@@ -433,7 +433,7 @@ void mapMoveObjects(Map *map, int avatarx, int avatary, int z, void(*doAttack)(O
             distance = (newx - avatarx) * (newx - avatarx);
             distance += (newy - avatary) * (newy - avatary);
             if (distance == 1)
-                (*doAttack)(obj);
+                attacker = obj;
             else
                 dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, z, obj->tile)), &newx, &newy);
             break;
@@ -473,6 +473,8 @@ void mapMoveObjects(Map *map, int avatarx, int avatary, int z, void(*doAttack)(O
             obj->y = newy;
         }
     }
+
+    return attacker;
 }
 
 void mapAnimateObjects(Map *map) {
