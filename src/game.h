@@ -5,6 +5,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "direction.h"
+
 struct _Context;
 struct _Map;
 struct _Portal;
@@ -54,7 +56,7 @@ void gameCheckHullIntegrity(void);
 void gameTimer(void *data);
 void gameFinishTurn(void);
 int fireAtCoord(int x, int y, int distance, void *data);
-int gameDirectionalAction(int dir, CoordActionInfo *info);
+int gameDirectionalAction(Direction dir, CoordActionInfo *info);
 void gameDamageParty(int minDamage, int maxDamage);
 void gameDamageShip(int minDamage, int maxDamage);
 
