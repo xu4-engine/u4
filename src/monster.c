@@ -8,6 +8,7 @@
 
 #include "monster.h"
 #include "context.h"
+#include "savegame.h"
 #include "ttype.h"
 
 #define UNKNOWN 0
@@ -32,15 +33,15 @@ static const Monster monsters[] = {
     { BEGGAR_TILE,      UNKNOWN,       "Beggar",       13, 0 },
     { CHILD_TILE,       UNKNOWN,       "Child",        10, 0 },
     { BULL_TILE,        UNKNOWN,       "Bull",         11, 0 },
-    { LORDBRITISH_TILE, UNKNOWN,       "Lord British", UNKNOWN, 0 },
+    { LORDBRITISH_TILE, UNKNOWN,       "Lord British", 16, 0 },
 
-    { PIRATE_TILE,      UNKNOWN,       "Pirate Ship",  UNKNOWN, 0 },
-    { NIXIE_TILE,       SEAHORSE_TILE, "Nixie",        5,  0 },
-    { GIANT_SQUID_TILE, UNKNOWN,       "Giant Squid",  9,  0 },
-    { SEA_SERPENT_TILE, UNKNOWN,       "Sea Serpent",  9,  0 },
-    { SEAHORSE_TILE,    UNKNOWN,       "Seahorse",     7,  MATTR_GOOD },
-    { WHIRLPOOL_TILE,   UNKNOWN,       "Whirlpool",    UNKNOWN, 0 },
-    { STORM_TILE,       UNKNOWN,       "Storm",        UNKNOWN, 0 },
+    { PIRATE_TILE,      UNKNOWN,       "Pirate Ship",  16, 0 },
+    { NIXIE_TILE,       SEAHORSE_TILE, "Nixie",        4,  0 },
+    { GIANT_SQUID_TILE, UNKNOWN,       "Giant Squid",  6,  0 },
+    { SEA_SERPENT_TILE, UNKNOWN,       "Sea Serpent",  8,  0 },
+    { SEAHORSE_TILE,    UNKNOWN,       "Seahorse",     6,  MATTR_GOOD },
+    { WHIRLPOOL_TILE,   UNKNOWN,       "Whirlpool",    16, 0 },
+    { STORM_TILE,       UNKNOWN,       "Storm",        16, 0 },
     { RAT_TILE,         UNKNOWN,       "Rat",          3,  MATTR_GOOD },
     { BAT_TILE,         UNKNOWN,       "Bat",          3,  MATTR_GOOD },
     { GIANT_SPIDER_TILE, UNKNOWN,      "Giant Spider", 4,  MATTR_GOOD },
@@ -77,6 +78,8 @@ const Monster *monsterForTile(unsigned char tile) {
     int i, n;
 
     for (i = 0; i < N_MONSTERS; i++) {
+            
+
         switch (tileGetAnimationStyle(monsters[i].tile)) {
         case ANIM_TWOFRAMES:
             n = 2;
@@ -85,7 +88,10 @@ const Monster *monsterForTile(unsigned char tile) {
             n = 4;
             break;
         default:
-            n = 1;
+            if (tileIsPirateShip(tile))
+                n = 4;
+            else
+                n = 1;
             break;
         }
 
@@ -127,4 +133,29 @@ int monsterCastSleep(const Monster *monster) {
         (monster->mattr & MATTR_CASTS_SLEEP) &&
         (c->aura != AURA_NEGATE) &&
         (rand() % 4) == 0;
+}
+
+unsigned char monsterRandomForTile(unsigned char tile) {
+    unsigned char monster;
+    int era;
+    
+    if (tileIsSailable(tile)) {
+        monster = ((rand() % 8) << 1) + PIRATE_TILE;
+        monster = monsterForTile(monster)->tile;
+        return monster;
+    }
+
+    if (!tileIsWalkable(tile))
+        return 0;
+
+    if (c->saveGame->moves > 100000)
+        era = 0x0f;
+    else if (c->saveGame->moves > 20000)
+        era = 0x07;
+    else
+        era = 0x03;
+
+    monster = ((era & rand() & rand()) << 2) + ORC_TILE;
+
+    return monster;
 }

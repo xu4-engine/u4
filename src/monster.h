@@ -83,5 +83,6 @@ int monsterIsEvil(const Monster *monster);
 int monsterGetXp(const Monster *monster);
 int monsterCastSleep(const Monster *monster);
 int monsterGetDamage(const Monster *monster);
+unsigned char monsterRandomForTile(unsigned char tile);
 
 #endif
