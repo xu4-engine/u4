@@ -458,7 +458,9 @@ void mapResetObjectAnimations(Map *map) {
             obj->tile = obj->person->tile0;
             obj->prevtile = obj->person->tile1;
         } else if (obj->objType == OBJECT_MONSTER) {
-            obj->tile = obj->monster->tile;
+            /* we don't want to mess with anything but the prevtile on pirate ships */
+            if (obj->monster->id != PIRATE_ID)
+                obj->tile = obj->monster->tile;
             obj->prevtile = obj->monster->tile;
         }
 
