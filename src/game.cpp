@@ -140,7 +140,7 @@ unsigned int castSpell;
 EnergyFieldType fieldType;
 
 /* FIXME */
-Mixture *mix;
+Ingredients *mixIngredients;
 int mixSpell;
 Menu spellMixMenu;
 
@@ -645,7 +645,7 @@ void gamePartyStarving(void) {
 
 void gameSpellEffect(int spell, int player, Sound sound) {
     int time;
-    SpellEffect effect = SPELLEFFECT_INVERT;
+    Spell::SpecialEffects effect = Spell::SFX_INVERT;
         
     if (player >= 0)
         c->stats->highlightPlayer(player);
@@ -663,7 +663,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
         break;
     case 't': /* tremor */
         time = (time * 3) / 2;
-        effect = SPELLEFFECT_TREMOR;        
+        effect = Spell::SFX_TREMOR;        
         break;
     default:
         /* default spell effect */        
@@ -678,17 +678,17 @@ void gameSpellEffect(int spell, int player, Sound sound) {
 
     switch(effect)
     {
-    case SPELLEFFECT_NONE: 
+    case Spell::SFX_NONE:
         break;
-    case SPELLEFFECT_TREMOR:
-    case SPELLEFFECT_INVERT:
+    case Spell::SFX_TREMOR:
+    case Spell::SFX_INVERT:
         gameUpdateScreen();
         screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
         screenRedrawScreen();
         
         eventHandlerSleep(time);
 
-        if (effect == SPELLEFFECT_TREMOR) {
+        if (effect == Spell::SFX_TREMOR) {
             gameUpdateScreen();
             screenShake(10);            
         }
@@ -1569,8 +1569,9 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
             item->setSelected(!item->isSelected());
                         
             if (item->isSelected())
-                mixtureAddReagent(mix, (Reagent)item->getId());
-            else mixtureRemoveReagent(mix, (Reagent)item->getId());
+                mixIngredients->addReagent((Reagent)item->getId());
+            else
+                mixIngredients->removeReagent((Reagent)item->getId());
         }
         break;
     case U4_ENTER:
@@ -1600,8 +1601,8 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
         eventHandlerPopKeyHandler();
         eventHandlerPopKeyHandlerData();
 
-        mixtureRevert(mix);
-        mixtureDelete(mix);
+        mixIngredients->revert();
+        delete mixIngredients;
 
         screenHideCursor();
         c->stats->showPartyView();
@@ -1644,8 +1645,8 @@ int gameSpellMixHowMany(string *message) {
     /* entered 0 mixtures, don't mix anything! */
     if (num == 0) {
         screenMessage("\nNone mixed!\n");
-        mixtureRevert(mix);
-        mixtureDelete(mix);
+        mixIngredients->revert();
+        delete mixIngredients;
         (*c->location->finishTurn)();
         return 0;
     }
@@ -1658,33 +1659,27 @@ int gameSpellMixHowMany(string *message) {
     
     screenMessage("\nMixing %d...\n", num);
 
-    for (i = 0; i < REAG_MAX; i++) {
-        /* see if there's enough reagents to mix (-1 because one is being mixed now) */
-        if (mix->reagents[i] > 0 && c->saveGame->reagents[i] < num-1) {
-            screenMessage("\nYou don't have enough reagents to mix %d spells!\n\n", num);
-            mixtureRevert(mix);
-            mixtureDelete(mix);
-            (*c->location->finishTurn)();
-            return 0;
-        }
-    }    
-       
+    /* see if there's enough reagents to make number of mixtures requested */
+    if (!mixIngredients->checkMultiple(num)) {
+        screenMessage("\nYou don't have enough reagents to mix %d spells!\n\n", num);
+        mixIngredients->revert();
+        delete mixIngredients;
+        (*c->location->finishTurn)();
+        return 0;
+    }
+
     screenMessage("\nYou mix the Reagents, and...\n");
-    if (spellMix(mixSpell, mix)) {
+    if (spellMix(mixSpell, mixIngredients)) {
         screenMessage("Success!\n\n");
         /* mix the extra spells */
+        mixIngredients->multiply(num);
         for (i = 0; i < num-1; i++)
-            spellMix(mixSpell, mix);
-        /* subtract the reagents from inventory */
-        for (i = 0; i < REAG_MAX; i++) {
-            if (mix->reagents[i] > 0)
-                c->saveGame->reagents[i] -= num-1;
-        }
+            spellMix(mixSpell, mixIngredients);
     }
     else 
         screenMessage("It Fizzles!\n\n");
 
-    mixtureDelete(mix);
+    delete mixIngredients;
 
     (*c->location->finishTurn)();
     return 1;        
@@ -2126,19 +2121,19 @@ bool castForPlayer2(int spell, void *data) {
 
     /* Get the final parameters for the spell */
     switch (spellGetParamType(spell)) {
-    case SPELLPRM_NONE:
+    case Spell::PARAM_NONE:
         gameCastSpell(castSpell, castPlayer, 0);
         (*c->location->finishTurn)();
         break;
-    case SPELLPRM_PHASE:
+    case Spell::PARAM_PHASE:
         screenMessage("To Phase: ");
         eventHandlerPushKeyHandlerWithData(&gameGetPhaseKeyHandler, (void *) &castForPlayerGetPhase);        
         break;
-    case SPELLPRM_PLAYER:
+    case Spell::PARAM_PLAYER:
         screenMessage("Who: ");
         gameGetPlayerForCommand(&castForPlayerGetDestPlayer, 1, 0);        
         break;
-    case SPELLPRM_DIR:
+    case Spell::PARAM_DIR:
         if (c->location->context == CTX_DUNGEON)
             gameCastSpell(castSpell, castPlayer, c->saveGame->orientation);
         else {
@@ -2146,11 +2141,11 @@ bool castForPlayer2(int spell, void *data) {
             eventHandlerPushKeyHandlerWithData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir);
         }
         break;
-    case SPELLPRM_TYPEDIR:
+    case Spell::PARAM_TYPEDIR:
         screenMessage("Energy type? ");
         eventHandlerPushKeyHandlerWithData(&gameGetFieldTypeKeyHandler, (void *) &castForPlayerGetEnergyType);
         break;
-    case SPELLPRM_FROMDIR:
+    case Spell::PARAM_FROMDIR:
         screenMessage("From Dir: ");
         eventHandlerPushKeyHandlerWithData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir);
         break;
@@ -2633,7 +2628,7 @@ bool mixReagentsForSpell(int spell, void *data) {
     GetChoiceActionInfo *info;    
 
     mixSpell = spell;
-    mix = mixtureNew();    
+    mixIngredients = new Ingredients();
     
     /* do we use the Ultima V menu system? */
     if (settings.enhancements && settings.enhancementsOptions.u5spellMixing) {
@@ -2666,12 +2661,12 @@ int mixReagentsForSpell2(int choice) {
     if (choice == '\n' || choice == '\r' || choice == ' ') {
         screenMessage("\n\nYou mix the Reagents, and...\n");
 
-        if (spellMix(mixSpell, mix))
+        if (spellMix(mixSpell, mixIngredients))
             screenMessage("Success!\n\n");
         else
             screenMessage("It Fizzles!\n\n");
 
-        mixtureDelete(mix);
+        delete mixIngredients;
 
         screenMessage("Mix reagents\n");
         alphaInfo = new AlphaActionInfo;
@@ -2690,8 +2685,8 @@ int mixReagentsForSpell2(int choice) {
 
     else if (choice == '\033') {
 
-        mixtureRevert(mix);
-        mixtureDelete(mix);
+        mixIngredients->revert();
+        delete mixIngredients;
 
         screenMessage("\n\n");
         (*c->location->finishTurn)();
@@ -2701,7 +2696,7 @@ int mixReagentsForSpell2(int choice) {
     else {
         screenMessage("%c\n", toupper(choice));
 
-        if (!mixtureAddReagent(mix, (Reagent)(choice - 'a')))
+        if (!mixIngredients->addReagent((Reagent)(choice - 'a')))
             screenMessage("None Left!\n");
 
         screenMessage("Reagent: ");

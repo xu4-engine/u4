@@ -23,21 +23,6 @@ typedef enum {
     CASTERR_WORLDMAPONLY,       /* e.g. spell must be cast on the world map */
 } SpellCastError;
 
-typedef enum {
-    SPELLPRM_NONE,              /* none */
-    SPELLPRM_PLAYER,            /* number of a player required */
-    SPELLPRM_DIR,               /* direction required */
-    SPELLPRM_TYPEDIR,           /* type of field and direction required (energy field) */
-    SPELLPRM_PHASE,             /* phase required (gate) */
-    SPELLPRM_FROMDIR            /* direction from required (winds) */
-} SpellParam;
-
-typedef enum {
-    SPELLEFFECT_NONE,           /* none */
-    SPELLEFFECT_INVERT,         /* invert the screen (moongates, most normal spells) */
-    SPELLEFFECT_TREMOR          /* tremor spell */
-} SpellEffect;
-
 /* Field types for the Energy field spell */
 typedef enum {
     ENERGYFIELD_NONE,
@@ -47,36 +32,59 @@ typedef enum {
     ENERGYFIELD_SLEEP
 } EnergyFieldType;
 
-typedef struct _Mixture {
-    unsigned short reagents[REAG_MAX];
-} Mixture;
+/**
+ * The ingredients for a spell mixture.
+ */
+class Ingredients {
+public:
+    Ingredients();
+    bool addReagent(Reagent reagent);
+    bool removeReagent(Reagent reagent);
+    int getReagent(Reagent reagent) const;
+    void revert();
+    bool checkMultiple(int mixes) const;
+    void multiply(int mixes);
 
-typedef struct _Spell {
+private:
+    unsigned short reagents[REAG_MAX];
+};
+
+struct Spell {
+    typedef enum {
+        PARAM_NONE,             /* none */
+        PARAM_PLAYER,           /* number of a player required */
+        PARAM_DIR,              /* direction required */
+        PARAM_TYPEDIR,          /* type of field and direction required (energy field) */
+        PARAM_PHASE,            /* phase required (gate) */
+        PARAM_FROMDIR           /* direction from required (winds) */
+    } Param;
+
+    typedef enum {
+        SFX_NONE,               /* none */
+        SFX_INVERT,             /* invert the screen (moongates, most normal spells) */
+        SFX_TREMOR              /* tremor spell */
+    } SpecialEffects;
+
     const char *name;
     int components;
     LocationContext context;
     TransportContext transportContext;
     int (*spellFunc)(int);
-    SpellParam paramType;
+    Param paramType;
     int mp;
-} Spell;
+};
 
 typedef void (*SpellEffectCallback)(int spell, int player, Sound sound);
 extern SpellEffectCallback spellEffectCallback;
 
 void playerSetSpellEffectCallback(SpellEffectCallback callback);
-Mixture *mixtureNew();
-void mixtureDelete(Mixture *mix);
-int mixtureAddReagent(Mixture *mix, Reagent reagent);
-int mixtureRemoveReagent(Mixture *mix, Reagent reagent);
-void mixtureRevert(Mixture *mix);
 const char *spellGetName(unsigned int spell);
 int spellGetRequiredMP(unsigned int spell);
 LocationContext spellGetContext(unsigned int spell);
 TransportContext spellGetTransportContext(unsigned int spell);
 string spellGetErrorMessage(unsigned int spell, SpellCastError error);
-int spellMix(unsigned int spell, const Mixture *mix);
-SpellParam spellGetParamType(unsigned int spell);
+int spellMix(unsigned int spell, const Ingredients *ingredients);
+Spell::Param spellGetParamType(unsigned int spell);
 int spellCast(unsigned int spell, int character, int param, SpellCastError *error, int spellEffect);
 
 #endif
