@@ -1134,6 +1134,19 @@ int gameBaseKeyHandler(int key, void *data) {
         screenMessage("Ztats for: ");
         gameGetPlayerForCommand(&ztatsFor, 1);
         break;
+
+    case 'c' + U4_ALT:
+        if (settings->debug && mapIsWorldMap(c->location->map)) {
+            /* first teleport to the abyss */
+            c->location->x = 0xe9;
+            c->location->y = 0xe9;
+            gameSetMap(c, mapMgrGetById(MAP_ABYSS), 1, NULL);
+            /* then to the final altar */
+            c->location->x = 7;
+            c->location->y = 7;
+            c->location->z = 7;            
+        }
+        break;
     
     case 'h' + U4_ALT:
         screenMessage("Key Reference:\n"
@@ -1151,21 +1164,15 @@ int gameBaseKeyHandler(int key, void *data) {
         eventHandlerPushKeyHandler(&helpPage2KeyHandler);
         break;
 
-    case 'v' + U4_ALT:
-        screenMessage("XU4 %s\n", VERSION);        
+    case 'q' + U4_ALT:
+        {
+            /* FIXME: return to main menu */            
+        }
         break;
 
-    case 'c' + U4_ALT:
-        if (settings->debug && mapIsWorldMap(c->location->map)) {
-            /* first teleport to the abyss */
-            c->location->x = 0xe9;
-            c->location->y = 0xe9;
-            gameSetMap(c, mapMgrGetById(MAP_ABYSS), 1, NULL);
-            /* then to the final altar */
-            c->location->x = 7;
-            c->location->y = 7;
-            c->location->z = 7;            
-        }
+    case 'v' + U4_ALT:
+        screenMessage("XU4 %s\n", VERSION);        
+        break;    
 
     default:
         valid = 0;        

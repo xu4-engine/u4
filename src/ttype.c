@@ -42,52 +42,23 @@ int baseChest = -1;
 int baseShip = -1;
 int baseHorse = -1;
 int baseBalloon = -1;
+int mapTile = 0,
+    dngTile = 0,
+    subTile = 0;
+
+int tileLoadTileInfo(xmlNodePtr node);
+int tileLoadProperties(Tile *tileset, int index, xmlNodePtr node);
 
 Tile *tileCurrentTilesetInfo() {
-    return c && c->location ? c->location->tileset_info : _ttype_info;
+    return (c && c->location) ? c->location->tileset_info : _ttype_info;
 }
 
+/**
+ * Load tile information from xml.
+ */
 void tileLoadInfoFromXml() {
     xmlDocPtr doc;
-    xmlNodePtr root, node;
-    int mapTile = 0,
-        dngTile = 0,
-        subTile = 0,
-        i;
-    Tile *current;
-    int *index;
-    int lshift;
-    int offset;
-
-    static const struct {
-        const char *name;
-        unsigned int mask;
-        int *base;
-    } booleanAttributes[] = {
-        { "opaque", MASK_OPAQUE, NULL },
-        { "animated", MASK_ANIMATED, NULL },
-        { "dispel", MASK_DISPEL, NULL },
-        { "talkover", MASK_TALKOVER, NULL },
-        { "door", MASK_DOOR, NULL },
-        { "lockeddoor", MASK_LOCKEDDOOR, NULL },
-        { "chest", MASK_CHEST, &baseChest },
-        { "ship", MASK_SHIP, &baseShip },
-        { "horse", MASK_HORSE, &baseHorse },
-        { "balloon", MASK_BALLOON, &baseBalloon },
-        { "canattackover", MASK_ATTACKOVER, NULL },
-        { "canlandballoon", MASK_CANLANDBALLOON, NULL },
-        { "replacement", MASK_REPLACEMENT, NULL }
-    };
-
-    static const struct {
-        const char *name;
-        unsigned int mask;      
-    } movementBooleanAttr[] = {        
-        { "swimable", MASK_SWIMABLE },
-        { "sailable", MASK_SAILABLE },        
-        { "unflyable", MASK_UNFLYABLE },        
-        { "monsterunwalkable", MASK_MONSTER_UNWALKABLE }        
-    };    
+    xmlNodePtr root, node, child;    
 
     tileInfoLoaded = 1;
 
@@ -97,113 +68,12 @@ void tileLoadInfoFromXml() {
         errorFatal("malformed tiles.xml");
     
     for (node = root->xmlChildrenNode; node; node = node->next) {
-        int realIndex;
-
-        if (xmlNodeIsText(node))
-            continue;
-        /* a standard map tile */
-        else if (xmlStrcmp(node->name, (const xmlChar *) "tile") == 0) {
-            current = _ttype_info;
-            index = &mapTile;
-            lshift = 0; /* keep indices the same */
-            offset = 0;
-        }
-        /* a dungeon tile */
-        else if (xmlStrcmp(node->name, (const xmlChar *) "dngTile") == 0) {
-            current = _dng_ttype_info;
-            index = &dngTile;
-            lshift = 4; /* turns 0x1 into 0x10, 0x2 into 0x20, etc */
-            offset = 0;
-
-            /* subtile of dungeon tile (for example, magic fields - poison, energy, fire, sleep) */
-            if (xmlStrcmp(node->parent->name, (const xmlChar *) "dngTile") == 0) {                
-                /* FIXME: this isn't handled yet */
-                index = &subTile;
-                offset = ((*index) - 1) << lshift; /* offsets to 0x90, 0x91, 0x92, etc */
-                lshift = 0;
-            }
-            else subTile = 0; /* reset subtile if this is a normal dngTile */
-        }
-        else continue;
-
-        /* figure out what our real index is going to be for this tile */
-        realIndex = ((*index) << lshift) + offset;
-
-        current[realIndex].mask = 0;
-        current[realIndex].movementMask = 0;
-        current[realIndex].speed = FAST;
-        current[realIndex].effect = EFFECT_NONE;
-        current[realIndex].walkonDirs = MASK_DIR_ALL;
-        current[realIndex].walkoffDirs = MASK_DIR_ALL;
-        current[realIndex].displayTile = realIndex; /* itself */
-
-        if (xmlGetPropAsStr(node, (const xmlChar *)"displayTile") != NULL)
-            current[realIndex].displayTile = (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"displayTile");
-
-        for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
-            if (xmlGetPropAsBool(node, (const xmlChar *) booleanAttributes[i].name)) {
-                current[realIndex].mask |= booleanAttributes[i].mask;
-                if (booleanAttributes[i].base &&
-                    (*booleanAttributes[i].base) == -1)
-                    (*booleanAttributes[i].base) = realIndex;
-            }
-        }
-
-        for (i = 0; i < sizeof(movementBooleanAttr) / sizeof(movementBooleanAttr[0]); i++) {
-            if (xmlGetPropAsBool(node, (const xmlChar *) movementBooleanAttr[i].name))
-                current[realIndex].movementMask |= movementBooleanAttr[i].mask;
-        }
-
-        if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "all") == 0)
-            current[realIndex].walkonDirs = 0;
-        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "west") == 0)
-            current[realIndex].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, current[realIndex].walkonDirs);
-        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "north") == 0)
-            current[realIndex].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, current[realIndex].walkonDirs);
-        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "east") == 0)
-            current[realIndex].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, current[realIndex].walkonDirs);
-        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "south") == 0)
-            current[realIndex].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, current[realIndex].walkonDirs);
-
-        if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "all") == 0)
-            current[realIndex].walkoffDirs = 0;
-        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "west") == 0)
-            current[realIndex].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, current[realIndex].walkoffDirs);
-        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "north") == 0)
-            current[realIndex].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, current[realIndex].walkoffDirs);
-        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "east") == 0)
-            current[realIndex].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, current[realIndex].walkoffDirs);
-        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "south") == 0)
-            current[realIndex].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, current[realIndex].walkoffDirs);
-
-        if (xmlPropCmp(node, (const xmlChar *) "speed", "slow") == 0)
-            current[realIndex].speed = SLOW;
-        else if (xmlPropCmp(node, (const xmlChar *) "speed", "vslow") == 0)
-            current[realIndex].speed = VSLOW;
-        else if (xmlPropCmp(node, (const xmlChar *) "speed", "vvslow") == 0)
-            current[realIndex].speed = VVSLOW;
-
-        if (xmlPropCmp(node, (const xmlChar *) "effect", "fire") == 0)
-            current[realIndex].effect = EFFECT_FIRE;
-        else if (xmlPropCmp(node, (const xmlChar *) "effect", "sleep") == 0)
-            current[realIndex].effect = EFFECT_SLEEP;
-        else if (xmlPropCmp(node, (const xmlChar *) "effect", "poison") == 0)
-            current[realIndex].effect = EFFECT_POISON;
-        else if (xmlPropCmp(node, (const xmlChar *) "effect", "poisonField") == 0)
-            current[realIndex].effect = EFFECT_POISONFIELD;
-        else if (xmlPropCmp(node, (const xmlChar *) "effect", "electricity") == 0)
-            current[realIndex].effect = EFFECT_ELECTRICITY;
-        else if (xmlPropCmp(node, (const xmlChar *) "effect", "lava") == 0)
-            current[realIndex].effect = EFFECT_LAVA;
-
-        /* fill in blank values with duplicates of what we just created */
-        if (lshift > 0) {
-            int j;
-            for (j = 0; j < (1<<lshift)-1; j++)
-                memcpy(&current[realIndex]+j+1, &current[realIndex], sizeof(Tile));
-        }            
-
-        (*index)++;
+        /* load tile info from the xml node */
+        tileLoadTileInfo(node);
+        
+        /* load children info if possible */
+        for (child = node->xmlChildrenNode; child; child = child->next)
+            tileLoadTileInfo(child);
     }
 
     /* ensure information for all non-monster tiles was loaded */
@@ -239,10 +109,174 @@ void tileLoadInfoFromXml() {
     xmlFreeDoc(doc);
 }
 
+/**
+ * Loads tile information from the xml node 'node', if it
+ * is a valid tile node.  This loads in both <tile> and 
+ * <dngTile> nodes.
+ */
+int tileLoadTileInfo(xmlNodePtr node) {
+    Tile *current;
+    int *index;
+    int lshift;
+    int offset;
+    int realIndex;        
+
+    /* ignore 'text' nodes */        
+    if (xmlNodeIsText(node))
+        return 1;
+
+    /* a standard map tile */
+    else if (xmlStrcmp(node->name, (const xmlChar *) "tile") == 0) {
+        current = _ttype_info;
+        index = &mapTile;
+        lshift = 0; /* count by 1 */
+        offset = 0;
+    }
+    /* a dungeon tile */
+    else if (xmlStrcmp(node->name, (const xmlChar *) "dngTile") == 0) {
+        current = _dng_ttype_info;
+        index = &dngTile;
+        lshift = 4; /* count by 16, turns 0x1 into 0x10, 0x2 into 0x20, etc */
+        offset = 0;
+
+        /* subtile of dungeon tile (for example, magic fields - poison, energy, fire, sleep) */
+        if (xmlStrcmp(node->parent->name, (const xmlChar *) "dngTile") == 0) {            
+            offset = ((*index) - 1) << lshift; /* offsets to 0x90, 0x91, 0x92, etc */
+            index = &subTile;            
+            lshift = 0;
+        }
+        else subTile = 0; /* reset subtile if this is a normal dngTile */
+    }
+    else return 0;
+
+    /* figure out what our real index is going to be for this tile */
+    realIndex = ((*index) << lshift) + offset;
+
+    /* load the properties for the tile! */
+    tileLoadProperties(current, realIndex, node);    
+
+    /* fill in blank values with duplicates of what we just created */
+    if (lshift > 0) {
+        int j;
+        for (j = 0; j < (1<<lshift)-1; j++)
+            memcpy(&current[realIndex]+j+1, &current[realIndex], sizeof(Tile));
+    }            
+
+    (*index)++;
+    return 1;
+}
+
+/**
+ * Load properties for the current xml <tile> or <dngTile>
+ * node into the appropriate tileset info structure.
+ */
+int tileLoadProperties(Tile *tileset, int index, xmlNodePtr node) {
+    int i;
+    
+    static const struct {
+        const char *name;
+        unsigned int mask;
+        int *base;
+    } booleanAttributes[] = {
+        { "opaque", MASK_OPAQUE, NULL },
+        { "animated", MASK_ANIMATED, NULL },
+        { "dispel", MASK_DISPEL, NULL },
+        { "talkover", MASK_TALKOVER, NULL },
+        { "door", MASK_DOOR, NULL },
+        { "lockeddoor", MASK_LOCKEDDOOR, NULL },
+        { "chest", MASK_CHEST, &baseChest },
+        { "ship", MASK_SHIP, &baseShip },
+        { "horse", MASK_HORSE, &baseHorse },
+        { "balloon", MASK_BALLOON, &baseBalloon },
+        { "canattackover", MASK_ATTACKOVER, NULL },
+        { "canlandballoon", MASK_CANLANDBALLOON, NULL },
+        { "replacement", MASK_REPLACEMENT, NULL }
+    };
+
+    static const struct {
+        const char *name;
+        unsigned int mask;      
+    } movementBooleanAttr[] = {        
+        { "swimable", MASK_SWIMABLE },
+        { "sailable", MASK_SAILABLE },        
+        { "unflyable", MASK_UNFLYABLE },        
+        { "monsterunwalkable", MASK_MONSTER_UNWALKABLE }        
+    };
+
+    tileset[index].mask = 0;
+    tileset[index].movementMask = 0;
+    tileset[index].speed = FAST;
+    tileset[index].effect = EFFECT_NONE;
+    tileset[index].walkonDirs = MASK_DIR_ALL;
+    tileset[index].walkoffDirs = MASK_DIR_ALL;
+    tileset[index].displayTile = index; /* itself */
+
+    if (xmlGetPropAsStr(node, (const xmlChar *)"displayTile") != NULL)
+        tileset[index].displayTile = (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"displayTile");
+
+    for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
+        if (xmlGetPropAsBool(node, (const xmlChar *) booleanAttributes[i].name)) {
+            tileset[index].mask |= booleanAttributes[i].mask;
+            if (booleanAttributes[i].base &&
+                (*booleanAttributes[i].base) == -1)
+                (*booleanAttributes[i].base) = index;
+        }
+    }
+
+    for (i = 0; i < sizeof(movementBooleanAttr) / sizeof(movementBooleanAttr[0]); i++) {
+        if (xmlGetPropAsBool(node, (const xmlChar *) movementBooleanAttr[i].name))
+            tileset[index].movementMask |= movementBooleanAttr[i].mask;
+    }
+
+    if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "all") == 0)
+        tileset[index].walkonDirs = 0;
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "west") == 0)
+        tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, tileset[index].walkonDirs);
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "north") == 0)
+        tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, tileset[index].walkonDirs);
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "east") == 0)
+        tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, tileset[index].walkonDirs);
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "south") == 0)
+        tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, tileset[index].walkonDirs);
+
+    if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "all") == 0)
+        tileset[index].walkoffDirs = 0;
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "west") == 0)
+        tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, tileset[index].walkoffDirs);
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "north") == 0)
+        tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, tileset[index].walkoffDirs);
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "east") == 0)
+        tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, tileset[index].walkoffDirs);
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "south") == 0)
+        tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, tileset[index].walkoffDirs);
+
+    if (xmlPropCmp(node, (const xmlChar *) "speed", "slow") == 0)
+        tileset[index].speed = SLOW;
+    else if (xmlPropCmp(node, (const xmlChar *) "speed", "vslow") == 0)
+        tileset[index].speed = VSLOW;
+    else if (xmlPropCmp(node, (const xmlChar *) "speed", "vvslow") == 0)
+        tileset[index].speed = VVSLOW;
+
+    if (xmlPropCmp(node, (const xmlChar *) "effect", "fire") == 0)
+        tileset[index].effect = EFFECT_FIRE;
+    else if (xmlPropCmp(node, (const xmlChar *) "effect", "sleep") == 0)
+        tileset[index].effect = EFFECT_SLEEP;
+    else if (xmlPropCmp(node, (const xmlChar *) "effect", "poison") == 0)
+        tileset[index].effect = EFFECT_POISON;
+    else if (xmlPropCmp(node, (const xmlChar *) "effect", "poisonField") == 0)
+        tileset[index].effect = EFFECT_POISONFIELD;
+    else if (xmlPropCmp(node, (const xmlChar *) "effect", "electricity") == 0)
+        tileset[index].effect = EFFECT_ELECTRICITY;
+    else if (xmlPropCmp(node, (const xmlChar *) "effect", "lava") == 0)
+        tileset[index].effect = EFFECT_LAVA;    
+
+    return 1;
+}
+
 int tileTestBit(unsigned char tile, unsigned short mask) {
     Tile *tileset = tileCurrentTilesetInfo();
     if (!tileInfoLoaded)
-        tileLoadInfoFromXml();    
+        tileLoadInfoFromXml();
 
     return (tileset[tile].mask & mask) != 0;
 }

@@ -14,6 +14,7 @@
 #include "combat.h"
 #include "context.h"
 #include "debug.h"
+#include "dungeon.h"
 #include "event.h"
 #include "game.h"
 #include "location.h"
@@ -218,7 +219,9 @@ void useWheel(void *item) {
  * Uses or destroys the skull of Mondain
  */
 void useSkull(void *item) {
-    
+    /* FIXME: check to see if the abyss must be opened first
+       for the skull to be *able* to be destroyed */
+
     /* destroy the skull! pat yourself on the back */
     if (c->location->x == 0xe9 && c->location->y == 0xe9) {
         screenMessage("\n\nYou cast the Skull of Mondain into the Abyss!\n");
@@ -276,6 +279,7 @@ void useStone(void *item) {
                     /* we need to use the stone, and we haven't used it yet */
                     if ((*attr & stone) && (stone & ~stoneMask))
                         stoneMask |= stone;
+                    /* we already used that stone! */
                     else if (stone & stoneMask) {
                         screenMessage("\nAlready used!\n");
                         needStoneNames = 0;
@@ -290,7 +294,7 @@ void useStone(void *item) {
                     screenMessage("\n%c:", 'E'-needStoneNames);
                     gameGetInput(&itemHandleStones, itemNameBuffer, sizeof(itemNameBuffer), 0, 0);
                 }
-                /* all the stones have been entered, check them out! */
+                /* all the stones have been entered, verify them! */
                 else {
                     unsigned short key = 0xFFFF;
                     switch(combatInfo.altarRoom) {
@@ -339,9 +343,9 @@ void useStone(void *item) {
     /**
      * in the abyss, on an altar to place the stones
      */
-    else if (c->location->context == CTX_DUNGEON && 
-        (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS) == ALTAR_TILE &&
-        c->location->map->id == MAP_ABYSS) {
+    else if ((c->location->map->id == MAP_ABYSS) &&
+             (c->location->context & CTX_DUNGEON) && 
+             (dungeonCurrentToken() == DUNGEON_ALTAR)) {
 
         int virtueMask = getBaseVirtues((Virtue)c->location->z);
         if (virtueMask > 0)
@@ -370,7 +374,8 @@ void useKey(void *item) {
 
 int isMysticInInventory(void *mystic) {
     /* FIXME: you could feasibly get more mystic weapons and armor if you
-       have 8 party members and equip them all with everything */
+       have 8 party members and equip them all with everything,
+       then search for Mystic Weapons/Armor again */
     if (((int)mystic) == WEAP_MYSTICSWORD)
         return c->saveGame->weapons[WEAP_MYSTICSWORD] > 0;
     else if (((int)mystic) == ARMR_MYSTICROBES)

@@ -15,6 +15,9 @@
 
 void annotationTimer(void *data);
 
+/**
+ * Adds an annotation to the map with the given mapid
+ */
 Annotation *annotationAdd(int x, int y, int z, unsigned char mapid, unsigned char tile) {
     Annotation *a = (Annotation *) malloc(sizeof(Annotation));
     a->x = x;
@@ -32,24 +35,34 @@ Annotation *annotationAdd(int x, int y, int z, unsigned char mapid, unsigned cha
 }
 
 /**
- * Functions the same as annotationAdd() but marks the annotation as temporary
+ * Sets the annotation as visual-only.  Visual-only annotations (attack flashes, etc.)
+ * are drawn on top of most everything else, whereas normal annotations are drawn
+ * under almost everything.
  */
-
 Annotation *annotationSetVisual(Annotation *a) {
     a->visual = 1;
     return a;
 }
 
+/**
+ * Sets the annotation to expire after the given number of turns
+ */
 Annotation *annotationSetTurnDuration(Annotation *a, int ttl) {
     a->time_to_live = ttl;    
     return a;
 }
 
+/**
+ * Sets the annotation to expire after 'interval' game cycles have passed
+ */
 Annotation *annotationSetTimeDuration(Annotation *a, int interval) {    
     eventHandlerAddTimerCallbackData(&annotationTimer, (void *) a, interval * eventTimerGranularity);
     return a;
 }
 
+/**
+ * Timer to remove timed annotations after their life-cycle has ended
+ */
 void annotationTimer(void *data) {
     Annotation *annotation = c->annotation, **prev;
 
@@ -68,6 +81,10 @@ void annotationTimer(void *data) {
     errorWarning("couldn't remove annotation %d", (int) data);
 }
 
+/**
+ * Removes an annotation from the map designated by mapid, if an
+ * annotation exists that matches 'tile'
+ */
 void annotationRemove(int x, int y, int z, unsigned char mapid, unsigned char tile) {
     int found = 0, count;
     Annotation *annotation = c->annotation, **prev;
@@ -95,6 +112,10 @@ void annotationRemove(int x, int y, int z, unsigned char mapid, unsigned char ti
     }
 }
 
+/**
+ * Returns the annotation at the (x,y,z) coords.  If no
+ * annotation is found at those coordinates, returns NULL.
+ */
 const Annotation *annotationAt(int x, int y, int z, unsigned char mapid) {
     Annotation *annotation = c->annotation;
 
@@ -111,6 +132,10 @@ const Annotation *annotationAt(int x, int y, int z, unsigned char mapid) {
     return NULL;
 }
 
+/**
+ * Removes annotations that were set with annotationSetTurnDuration()
+ * after their life cycle has ended.
+ */
 void annotationCycle(void) {
     Annotation *annotation = c->annotation, **prev;
     
@@ -130,6 +155,9 @@ void annotationCycle(void) {
     }
 }
 
+/**
+ * Removes all annotations on the map designated by mapid
+ */
 void annotationClear(unsigned char mapid) {
     Annotation *annotation = c->annotation, **prev;
     
@@ -147,6 +175,11 @@ void annotationClear(unsigned char mapid) {
     }
 }
 
+/**
+ * Returns the number of annotations currently in memory.
+ * This applies to all maps that currently have annotations,
+ * not just the current map.
+ */
 int annotationCount(void) {
     Annotation *annotation = c->annotation;
     int count = 0;

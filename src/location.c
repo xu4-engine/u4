@@ -25,6 +25,7 @@ Location *locationPop(Location **stack);
 Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx,
                       FinishTurnCallback finishTurnCallback, MoveCallback moveCallback,
                       TileAt tileAtCallback, Tile *tileset_info, Location *prev) {
+
     Location *newLoc = (Location *)malloc(sizeof(Location));
 
     newLoc->x = x;
@@ -43,7 +44,7 @@ Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationConte
 
 /**
  * Returns the visible tile at the given point on a map.  This
- * includes visual-only annotations like moongates and attack icons.
+ * includes visual-only annotations like attack icons.
  */
 unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int *focus) {
     unsigned char tile;
@@ -109,7 +110,7 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
  * Finds a valid replacement tile for the given location, using surrounding tiles
  * as guidelines to choose the new tile.  The new tile will only be chosen if it
  * is marked as a valid replacement tile in tiles.xml.  If a valid replacement 
- * cannot be found, it returns it's best guess.
+ * cannot be found, it returns a "best guess" tile.
  */
 unsigned char locationGetReplacementTile(Location *location, int x, int y, int z) {
     Direction d;
@@ -127,6 +128,7 @@ unsigned char locationGetReplacementTile(Location *location, int x, int y, int z
             return newTile;
     }            
     
+    /* couldn't find a tile, give it our best guess */
     if (c->location->context & CTX_DUNGEON)
         return 0;
     else

@@ -25,6 +25,10 @@
 #include "savegame.h"
 #include "ttype.h"
 
+/**
+ * Loads a city/town/castle/etc. map from the 'ult' file, also using
+ * the 'tlk' file to load conversations for the given town.
+ */
 int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
     unsigned char conv_idx[CITY_MAX_PERSONS];
     unsigned char c;
@@ -148,6 +152,9 @@ int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
     return 1;
 }
 
+/**
+ * Loads a combat map from the 'con' file
+ */
 int mapReadCon(Map *map, U4FILE *con) {
     int i;
 
@@ -183,6 +190,9 @@ int mapReadCon(Map *map, U4FILE *con) {
     return 1;
 }
 
+/**
+ * Loads a dungeon map from the 'dng' file
+ */
 int mapReadDng(Map *map, U4FILE *dng) {
     unsigned int i;
 
@@ -206,6 +216,9 @@ int mapReadDng(Map *map, U4FILE *dng) {
     return 1;
 }
 
+/**
+ * Loads the world map data in from the 'world' file.
+ */
 int mapReadWorld(Map *map, U4FILE *world) {
     int x, xch, y, ych;
 
@@ -234,6 +247,10 @@ int mapReadWorld(Map *map, U4FILE *world) {
     return 1;
 }
 
+/**
+ * Returns the object at the given (x,y,z) coords, if one exists.
+ * Otherwise, returns NULL.
+ */
 Object *mapObjectAt(const Map *map, int x, int y, int z) {
     Object *obj;
     Object *objAt = NULL;
@@ -253,6 +270,10 @@ Object *mapObjectAt(const Map *map, int x, int y, int z) {
     return objAt;
 }
 
+/**
+ * Returns the person object at the given (x,y,z) coords, if one exists.
+ * Otherwise, returns NULL.
+ */
 const Person *mapPersonAt(const Map *map, int x, int y, int z) {
     Object *obj;
 
@@ -263,6 +284,11 @@ const Person *mapPersonAt(const Map *map, int x, int y, int z) {
         return NULL;
 }
 
+/**
+ * Returns the portal for the correspoding action(s) given.
+ * If there is no portal that corresponds to the actions flagged
+ * by 'actionFlags' at the given (x,y,z) coords, it returns NULL.
+ */
 const Portal *mapPortalAt(const Map *map, int x, int y, int z, int actionFlags) {
     int i;
 
@@ -277,6 +303,10 @@ const Portal *mapPortalAt(const Map *map, int x, int y, int z, int actionFlags) 
     return NULL;
 }
 
+/**
+ * Sets the raw tile for the given (x,y,z) coords for the given map.
+ * These remain changed until/unless the map is reloaded from file.
+ */
 void mapSetTileData(const Map *map, int x, int y, int z, unsigned char tile) {
     int index;
 
@@ -286,6 +316,9 @@ void mapSetTileData(const Map *map, int x, int y, int z, unsigned char tile) {
     map->data[index] = tile;
 }
 
+/**
+ * Returns the raw tile for the given (x,y,z) coords for the given map
+ */
 unsigned char mapGetTileFromData(const Map *map, int x, int y, int z) {
     int index;
 
@@ -314,10 +347,16 @@ unsigned char mapTileAt(const Map *map, int x, int y, int z, int withObjects) {
     return tile;
 }
 
+/**
+ * Returns true if the given map is the world map
+ */
 int mapIsWorldMap(const Map *map) {
-    return map->id == 0;
+    return map->id == MAP_WORLD;
 }
 
+/**
+ * Adds a person object to the given map
+ */
 Object *mapAddPersonObject(Map *map, const Person *person) {
     Object *obj = mapAddObject(map, person->tile0, person->tile1, person->startx, person->starty, person->startz);
 
@@ -328,6 +367,9 @@ Object *mapAddPersonObject(Map *map, const Person *person) {
     return obj;
 }
 
+/**
+ * Adds a monster object to the given map
+ */
 Object *mapAddMonsterObject(Map *map, const Monster *monster, int x, int y, int z) {
     Object *obj = mapAddObject(map, monster->tile, monster->tile, x, y, z);
 
@@ -347,6 +389,9 @@ Object *mapAddMonsterObject(Map *map, const Monster *monster, int x, int y, int 
     return obj;
 }
 
+/**
+ * Adds an object to the given map
+ */
 Object *mapAddObject(Map *map, unsigned char tile, unsigned char prevtile, int x, int y, int z) {
     Object *obj = (Object *) malloc(sizeof(Object));
 
@@ -369,6 +414,9 @@ Object *mapAddObject(Map *map, unsigned char tile, unsigned char prevtile, int x
     return obj;
 }
 
+/**
+ * Removes the object 'rem' from the given map
+ */
 void mapRemoveObject(Map *map, Object *rem) {
     Object *obj = map->objects, *prev;
 
@@ -392,6 +440,9 @@ void mapRemoveObject(Map *map, Object *rem) {
     }
 }
 
+/**
+ * Removes the given Person object from the given map
+ */
 void mapRemovePerson(Map *map, const Person *person) {
     Object *obj = map->objects, *prev;
 
@@ -410,6 +461,11 @@ void mapRemovePerson(Map *map, const Person *person) {
     }
 }
 
+/**
+ * Moves all of the objects on the given map.
+ * Returns an attacking object if there is a monster attacking.
+ * Also performs special monster actions and monster effects.
+ */
 Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {        
     Object *obj = map->objects, *attacker = NULL;        
 
@@ -427,7 +483,7 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
             }
         }
 
-        /* Perform any special actions */
+        /* Perform any special actions (such as pirate ships firing cannons, sea serpents' fireblast attect, etc.) */
         monsterSpecialAction(obj);
 
         /* Now, move the object according to its movement behavior */
@@ -440,6 +496,9 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
     return attacker;
 }
 
+/**
+ * Animates the objects on the given map
+ */
 void mapAnimateObjects(Map *map) {
     Object *obj = map->objects;
 
@@ -453,6 +512,10 @@ void mapAnimateObjects(Map *map) {
     }
 }
 
+/**
+ * Resets object animations to a value that is acceptable for
+ * savegame compatibility with u4dos.
+ */
 void mapResetObjectAnimations(Map *map) {
     Object *obj = map->objects;        
 
@@ -471,18 +534,18 @@ void mapResetObjectAnimations(Map *map) {
     }
 }
 
+/**
+ * Removes all objects from the given map
+ */
 void mapClearObjects(Map *map) {
-    Object *obj = map->objects, *tmp;
-
-    while (obj) {
-        tmp = obj->next;
-        free(obj);
-        obj = tmp;
-    }
-
+    while (map->objects)
+        mapRemoveObject(map, map->objects);
     map->objects = NULL;
 }
 
+/**
+ * Returns the number of monsters on the given map
+ */
 int mapNumberOfMonsters(const Map *map) {
     Object *obj = map->objects;
     int n;
@@ -498,6 +561,9 @@ int mapNumberOfMonsters(const Map *map) {
     return n;
 }
 
+/**
+ * Returns a mask of valid moves for the given transport on the given map
+ */
 int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned char transport) {
     int retval;
     Direction d;
@@ -517,19 +583,11 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
 
         dirMove(d, &x, &y);
         
-        if (MAP_IS_OOB(map, x, y) && !mapWrapCoordinates(map, &x, &y)) {        
+        /* you can always walk off the edge of the map */
+        if (isAvatar && MAP_IS_OOB(map, x, y) && !mapWrapCoordinates(map, &x, &y)) {        
             retval = DIR_ADD_TO_MASK(d, retval);
             continue;
-        }
-        
-        /* in dungeons, everything but walls are walkable */
-        if (c->location->context == CTX_DUNGEON) {            
-            tile = (*c->location->tileAt)(map, x, y, z, WITH_OBJECTS);
-            if (tileIsWalkable(tile)) {
-                retval = DIR_ADD_TO_MASK(d, retval);
-                continue;
-            }
-        }
+        }        
 
         obj = mapObjectAt(map, x, y, z);
 
@@ -570,20 +628,23 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
             continue;
         }
 
-        /* if the transport is a ship, check sailable */
-        if (tileIsShip(transport) && tileIsSailable(tile))            
-            retval = DIR_ADD_TO_MASK(d, retval);
-        /* if it is a balloon or flying monster, check flyable */
-        else if (tileIsBalloon(transport) && tileIsFlyable(tile))
-            retval = DIR_ADD_TO_MASK(d, retval);        
-        /* avatar or horseback: check walkable */
-        else if (isAvatar && (transport == AVATAR_TILE || tileIsHorse(transport))) {
-            if (tileCanWalkOn(tile, d) &&
-                tileCanWalkOff(prev_tile, d))
+        /* avatar movement */
+        if (isAvatar) {
+            /* if the transport is a ship, check sailable */
+            if (tileIsShip(transport) && tileIsSailable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);
+            /* if it is a balloon, check flyable */
+            else if (tileIsBalloon(transport) && tileIsFlyable(tile))
+                retval = DIR_ADD_TO_MASK(d, retval);        
+            /* avatar or horseback: check walkable */
+            else if (transport == AVATAR_TILE || tileIsHorse(transport)) {
+                if (tileCanWalkOn(tile, d) &&
+                    tileCanWalkOff(prev_tile, d))
+                    retval = DIR_ADD_TO_MASK(d, retval);
+            }
         }
         
-        /* monsters */
+        /* monster movement */
         else if (m) {
             /* flying monsters */
             if (tileIsFlyable(tile) && monsterFlies(m)) {  
@@ -623,7 +684,6 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
  * Find the distance from point a to point b,
  * allowing diagonal movements to calculate
  **/
-
 int mapDistance(int x1, int y1, int x2, int y2) {
     int dist, lowx, highx, lowy, highy;
 
@@ -647,13 +707,10 @@ int mapDistance(int x1, int y1, int x2, int y2) {
  * Find the number of moves it would take to get
  * from point a to point b (no diagonals allowed)
  */
-
 int mapMovementDistance(int x1, int y1, int x2, int y2) {
-    int dx = x1 - x2,
-        dy = y1 - y2;
+    int dx = abs(x1 - x2),
+        dy = abs(y1 - y2);
 
-    if (dx < 0) dx *= -1;
-    if (dy < 0) dy *= -1;
     return (dx + dy);
 }
 
@@ -662,15 +719,13 @@ int mapMovementDistance(int x1, int y1, int x2, int y2) {
  * Returns 1 if succeeded, 0 if map doesn't wrap and x or y was moved
  * beyond the borders of the map
  */
-
 int mapDirMove(const Map *map, Direction dir, int *x, int *y) {
     int newx = *x,
         newy = *y,
         wraps = map->border_behavior == BORDER_WRAP;
 
     dirMove(dir, &newx, &newy);
-    if (MAP_IS_OOB(map, newx, newy)) {
-        
+    if (MAP_IS_OOB(map, newx, newy)) {        
         if (!wraps)
             return 0;
         else mapWrapCoordinates(map, &newx, &newy);
@@ -686,7 +741,6 @@ int mapDirMove(const Map *map, Direction dir, int *x, int *y) {
  * Wraps x,y coordinates on a map if necessary and possible
  * Returns 1 if succeeded, 0 if not needed or not possible
  */
-
 int mapWrapCoordinates(const Map *map, int *x, int *y) {
     if (map->border_behavior == BORDER_WRAP) {
         if (*x < 0) *x += map->width;
