@@ -548,7 +548,10 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
     else if (tolower(answer[0]) == 'n') {        
         reply = strdup("\n\nHe says: Let me heal thy wounds!\n");
         for (i = 0; i < c->saveGame->members; i++) {
-            playerHeal(c->saveGame, HT_FULLHEAL, i);
+            extern Spell spells[];            
+            (*spells['c' - 'a'].spellFunc)(i); // cure the party
+            (*spells['r' - 'a'].spellFunc)(i); // resurrect the party
+            playerHeal(c->saveGame, HT_FULLHEAL, i); // heal the party
         }        
         (*spellCallback)('r', -1); // Same effect as resurrection spell
 
