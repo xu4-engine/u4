@@ -737,28 +737,32 @@ void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y) {
      * finally draw the focus rectangle if the tile has the focus
      */
     if (tileInfo->hasFocus && (screenCurrentCycle % 2)) {
+        /* left edge */
         dest.x = x * tiles->w + (BORDER_WIDTH * scale);
         dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
         dest.w = 2 * scale;
         dest.h = tiles->h / N_TILES;
         SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
 
+        /* top edge */
         dest.x = x * tiles->w + (BORDER_WIDTH * scale);
         dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
         dest.w = tiles->w;
         dest.h = 2 * scale;
         SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
 
+        /* right edge */
         dest.x = (x + 1) * tiles->w + (BORDER_WIDTH * scale) - (2 * scale);
         dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
-        dest.w = tiles->w;
+        dest.w = 2 * scale;
         dest.h = tiles->h / N_TILES;
         SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
 
+        /* bottom edge */
         dest.x = x * tiles->w + (BORDER_WIDTH * scale);
         dest.y = (y + 1) * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale) - (2 * scale);
         dest.w = tiles->w;
-        dest.h = tiles->h / N_TILES;
+        dest.h = 2 * scale;
         SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
     }
 }
