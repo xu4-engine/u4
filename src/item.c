@@ -255,9 +255,12 @@ void useStone(void *item) {
     
     locationGetCurrentPosition(c->location, &x, &y, &z);
 
+    /**
+     * Named a specific stone (after using "stone" or "stones")
+     */    
     if (item != NULL) {
         if (needStoneNames) {
-            /* we're asking for stones while in a dungeon altar room */
+            /* named a stone while in a dungeon altar room */
             if (c->location->context & CTX_ALTAR_ROOM) {
                 needStoneNames--;
 
@@ -313,13 +316,21 @@ void useStone(void *item) {
             }
 
             /* Otherwise, we're asking for a stone while in the abyss on top of an altar */
-            else {
-                /* replace the altar with a down-ladder if it is the stone we're looking for! */
+            else {                
+                /* see if they entered the correct stone */
                 if (stone == (1 << c->location->z)) {
-                    int x, y, z;
-                    screenMessage("\n\nThe altar changes before thyne eyes!\n");
-                    locationGetCurrentPosition(c->location, &x, &y, &z);
-                    annotationAdd(x, y, z, c->location->map->id, LADDERDOWN_TILE);                    
+                    if (c->location->z < 7) {
+                        /* replace the altar with a down-ladder */
+                        int x, y, z;
+                        screenMessage("\n\nThe altar changes before thyne eyes!\n");
+                        locationGetCurrentPosition(c->location, &x, &y, &z);
+                        annotationAdd(x, y, z, c->location->map->id, LADDERDOWN_TILE);
+                    }
+                    /* start chamber of the codex sequence... */
+                    else {
+                        /* FIXME: add codex sequence (probably in codex.c for cleanliness) */
+                        screenMessage("\n\nCongratulations!\n\nYou sorta just beat the game!\n");
+                    }
                 }
                 else screenMessage("\nHmm...No effect!\n");
             }
@@ -329,7 +340,10 @@ void useStone(void *item) {
             stoneMask = 0; /* reset the mask so you can try again */            
         }
     }
-    /* in the abyss, on an altar to place the stones */
+
+    /**
+     * in the abyss, on an altar to place the stones
+     */
     else if (c->location->context == CTX_DUNGEON && 
         (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS) == ALTAR_TILE &&
         c->location->map->id == MAP_ABYSS) {
@@ -348,7 +362,10 @@ void useStone(void *item) {
         itemNameBuffer[0] = '\0';
         eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
     }
-    /* in a dungeon altar room, on the altar */
+
+    /**
+     * in a dungeon altar room, on the altar
+     */
     else if ((c->location->context & CTX_ALTAR_ROOM) &&
             (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS) == ALTAR_TILE) {
         needStoneNames = 4;
@@ -513,7 +530,7 @@ int isAbyssOpened(const Portal *p) {
 }
 
 /**
- * handles naming of stones when used
+ * Handles naming of stones when used
  */
 int nameStones(const char *color) {
     int i;
