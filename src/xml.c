@@ -16,6 +16,10 @@
 #include "settings.h"
 #include "u4file.h"
 
+#if defined(_WIN32)
+    #define vsnprintf _vsnprintf
+#endif
+
 void xmlAccumError(void *l, const char *fmt, ...);
 
 extern int verbose;
