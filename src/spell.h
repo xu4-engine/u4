@@ -16,10 +16,19 @@ typedef enum {
     CASTERR_MPTOOLOW           /* caster doesn't have enough mp */
 } SpellCastError;
 
+typedef enum {
+    SPELLPRM_NONE,              /* none */
+    SPELLPRM_PLAYER,            /* number of a player required */
+    SPELLPRM_DIR,               /* direction required */
+    SPELLPRM_PHASE,             /* phase required (gate) */
+    SPELLPRM_FROMDIR            /* direction from required (winds) */
+} SpellParam;
+
 typedef struct _Spell {
     const char *name;
     int components;
     int context;
+    SpellParam param;
     int mp;
 } Spell;
 
