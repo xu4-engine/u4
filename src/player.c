@@ -405,7 +405,7 @@ void playerEndTurn(void) {
 
 void playerApplyEffect(SaveGame *saveGame, TileEffect effect, int player) {
     int i;
-
+    
     for (i = 0; i < saveGame->members; i++) {
 
         if (i != player && player != ALL_PLAYERS)
@@ -418,8 +418,10 @@ void playerApplyEffect(SaveGame *saveGame, TileEffect effect, int player) {
         case EFFECT_NONE:
             break;
         case EFFECT_FIRE:
-            if (i == player || /* FIXME */ 0)            
-                playerApplyDamage(&(saveGame->players[i]), 16 + (rand() % 32));
+            if (i == player)
+                playerApplyDamage(&(saveGame->players[i]), 16 + (rand() % 32));                
+            else if (player == ALL_PLAYERS && rand() % 2 == 0)
+                playerApplyDamage(&(saveGame->players[i]), 10 + (rand() % 25));
             break;
         case EFFECT_SLEEP:
             if (i == player || rand() % 5 == 0)

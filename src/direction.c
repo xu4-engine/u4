@@ -128,7 +128,7 @@ Direction dirGetBroadsidesDirs(Direction dir) {
 Direction dirFindPath(int from_x, int from_y, int to_x, int to_y, int valid_directions_mask, int towards) {
     int directionsToObject;
     
-    /* find the directions that lead to our target */
+    /* find the directions that lead [to/away from] our target */
     directionsToObject = towards ?
         dirGetRelativeDirection(from_x, from_y, to_x, to_y) :
         ~dirGetRelativeDirection(from_x, from_y, to_x, to_y);
