@@ -551,7 +551,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
                 continue;
         }
         /* this really only happens with the avatar */
-        else if (ontoMonster && monsterCanMoveOnto(to_m)) {
+        else if (ontoMonster && to_m && monsterCanMoveOnto(to_m)) {
             retval = DIR_ADD_TO_MASK(d, retval);
             continue;
         }
