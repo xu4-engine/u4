@@ -59,8 +59,8 @@
     <tile unwalkable="true"/> <!-- rocks -->
     <tile unwalkable="true"/> <!-- corpse -->
     <tile unwalkable="true" opaque="true"/> <!-- stonewall -->
-    <tile unwalkable="true"/> <!-- ldoor -->
-    <tile unwalkable="true"/> <!-- door -->
+    <tile unwalkable="true" lockeddoor="true"/> <!-- ldoor -->
+    <tile unwalkable="true" door="true"/> <!-- door -->
     <tile monsterunwalkable="true"/> <!-- chest -->
     <tile unwalkable="true"/> <!-- ankh -->
     <tile/> <!-- brickfloor -->
