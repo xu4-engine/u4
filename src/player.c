@@ -99,28 +99,41 @@ void playerAwardXp(SaveGamePlayerRecord *player, int xp) {
  * and intelligence.
  */
 int playerGetMaxMp(const SaveGamePlayerRecord *player) {
+    int max_mp = -1;
+
     switch (player->klass) {
-    case CLASS_MAGE:
-        return player->intel * 2;
+    case CLASS_MAGE:            /*  mage: 200% of int */
+        max_mp = player->intel * 2;
+        break;
 
-    case CLASS_DRUID:
-        return player->intel * 3 / 2;
+    case CLASS_DRUID:           /* druid: 150% of int */
+        max_mp = player->intel * 3 / 2;
+        break;
 
-    case CLASS_BARD:
+    case CLASS_BARD:            /* bard, paladin, ranger: 100% of int */
     case CLASS_PALADIN:
     case CLASS_RANGER:
-        return player->intel;
+        max_mp = player->intel;
+        break;
 
-    case CLASS_TINKER:
-        return player->intel / 2;
+    case CLASS_TINKER:          /* tinker: 50% of int */
+        max_mp = player->intel / 2;
+        break;
 
-    case CLASS_FIGHTER:
+    case CLASS_FIGHTER:         /* fighter, shepherd: no mp at all */
     case CLASS_SHEPHERD:
-        return 0;
+        max_mp = 0;
+        break;
+
+    default:
+        ASSERT(0, "invalid player class: %d", player->klass);
     }
 
-    ASSERT(0, "invalid player class: %d", player->klass);
-    return 0;
+    /* mp always maxes out at 99 */
+    if (max_mp > 99)
+        max_mp = 99;
+
+    return max_mp;
 }
 
 int playerCanEnterShrine(const SaveGame *saveGame, Virtue virtue) {
@@ -298,7 +311,7 @@ int playerIsPersonJoined(SaveGame *saveGame, const char *name) {
 
     if (!name)
         return 0;
-    
+
     for (i = 1; i < saveGame->members; i++) {
         if (strcmp(saveGame->players[i].name, name) == 0)
             return 1;
@@ -625,7 +638,7 @@ int playerGetDamage(const SaveGamePlayerRecord *player) {
     maxDamage += player->str;
     if (maxDamage > 255)
         maxDamage = 255;
-    
+
     return rand() % maxDamage;
 }
 
