@@ -58,6 +58,8 @@ int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y, int distance);
 int gemHandleChoice(char choice);
+int gamePeerCity(int city, void *data);
+int peerCityHandleChoice(char choice);
 int readyForPlayer(int player);
 int readyForPlayer2(int weapon, void *data);
 int talkAtCoord(int x, int y, int distance);
@@ -672,16 +674,40 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 's':
         screenMessage("Searching...\n");
-        item = itemAtLocation(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
-        if (item) {
-            if ((*item->isItemInInventory)(item->data))
+
+        /*
+         * Player is using the Lycaeum telescope!
+         */
+        if ((c->map->type == MAP_CASTLE) && (strcmp(c->map->city->name, "Lycaeum") == 0) &&
+            (c->saveGame->x == 22) && (c->saveGame->y == 3))        
+        {
+            alphaInfo = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
+            alphaInfo->lastValidLetter = 'p';
+            alphaInfo->handleAlpha = gamePeerCity;
+            alphaInfo->prompt = "You Select:";
+            alphaInfo->data = NULL;           
+
+            screenMessage("You see a knob\non the telescope\nmarked A-P\n%s", alphaInfo->prompt);
+            eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);            
+        }
+
+        /*
+         * Searching for a normal, searchable item
+         */
+        else
+        {
+            item = itemAtLocation(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+            if (item) {
+                if ((*item->isItemInInventory)(item->data))
+                    screenMessage("Nothing Here!\n");
+                else {
+                    (*item->putItemInInventory)(item->data);
+                    screenMessage("You find...\n%s!\n", item->name);
+                }
+            } else
                 screenMessage("Nothing Here!\n");
-            else {
-                (*item->putItemInInventory)(item->data);
-                screenMessage("You find...\n%s!\n", item->name);
-            }
-        } else
-            screenMessage("Nothing Here!\n");
+        }
+
         break;
 
     case 't':
@@ -1442,6 +1468,60 @@ int gemHandleChoice(char choice) {
     eventHandlerPopKeyHandler();
 
     viewMode = VIEW_NORMAL;
+    gameFinishTurn();
+
+    return 1;
+}
+
+/**
+ * Peers at a city from A-P (Lycaeum telescope) and functions like a gem
+ */
+int gamePeerCity(int city, void *data) {
+    GetChoiceActionInfo *choiceInfo;    
+    City *peerCity = NULL;
+    extern City * const cities[];    
+    int i = 0;
+
+    // Find the city we're looking for...
+    for (i=0; i<=16; i++)
+    {
+        if (cities[i]->map->id == city+1)
+        {
+            peerCity = cities[i];   
+            break;
+        }
+    }
+
+    if (peerCity)
+    {
+        viewMode = VIEW_GEM;
+
+        c = gameCloneContext(c);
+        c->map = peerCity->map;
+    
+        // Wait for player to hit a key
+        choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+        choiceInfo->choices = " \033";
+        choiceInfo->handleChoice = &peerCityHandleChoice;
+        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
+        return 1;
+    }
+    return 0;
+}
+
+/**
+ * Wait for space bar to return from gem mode and returns map to normal
+ */
+int peerCityHandleChoice(char choice) {
+    Context *oldc = c;    
+    
+    eventHandlerPopKeyHandler();
+
+    c->map = c->parent->map;
+    c = c->parent;
+    free(oldc);
+
+    viewMode = VIEW_NORMAL; 
     gameFinishTurn();
 
     return 1;
