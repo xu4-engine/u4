@@ -51,7 +51,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/tlkconv
 %{_libdir}/u4/*.xml
 %{_libdir}/u4/graphics/*.rle
-%{_libdir}/u4/ultima4-1.01.zip
+%{_libdir}/u4/ultima4.zip
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
