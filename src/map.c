@@ -305,7 +305,7 @@ unsigned char mapGroundTileAt(const Map *map, int x, int y, int z) {
     a = annotationAt(x, y, z, map->id);
     obj = mapObjectAt(map, x, y, z);
 
-    if (a && a->permanent && tileIsWalkable(a->tile)) 
+    if (a && a->permanent) 
         tile = a->tile;
     else if (obj && tileIsWalkable(obj->tile))
         tile = obj->tile;
