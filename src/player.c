@@ -381,7 +381,7 @@ void playerEndTurn(void) {
     for (i = 0; i < saveGame->members; i++) {
 
         /* Handle player status (only for non-combat turns) */
-        if (c->location->context & CTX_NON_COMBAT) {
+        if ((c->location->context & CTX_NON_COMBAT) == c->location->context) {
             
             /* party members eat food (also non-combat) */
             if (saveGame->players[i].status != STAT_DEAD)
@@ -409,7 +409,7 @@ void playerEndTurn(void) {
     }
 
     /* The party is starving! */
-    if ((saveGame->food == 0) && (c->location->context & CTX_NON_COMBAT))
+    if ((saveGame->food == 0) && ((c->location->context & CTX_NON_COMBAT) == c->location->context))
         (*partyStarvingCallback)();
     
     /* heal ship (25% chance it is healed each turn) */

@@ -220,7 +220,7 @@ void screenUpdateMoons() {
         screenShowChar('1'+c->location->z, 12, 0);        
     }
     /* show the current moons (non-combat) */
-    else if (c->location->context & CTX_NON_COMBAT) {
+    else if ((c->location->context & CTX_NON_COMBAT) == c->location->context) {
         trammelChar = (c->saveGame->trammelphase == 0) ?
             MOON_CHAR + 7 :
             MOON_CHAR + c->saveGame->trammelphase - 1;
@@ -243,7 +243,7 @@ void screenUpdateWind() {
         screenTextAt(WIND_AREA_X, WIND_AREA_Y, "Dir: %5s", getDirectionName(c->saveGame->orientation));        
     }
     /* show the wind direction */
-    else if (c->location->context & CTX_NON_COMBAT) {
+    else if ((c->location->context & CTX_NON_COMBAT) == c->location->context) {
         screenEraseTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
         screenTextAt(WIND_AREA_X, WIND_AREA_Y, "Wind %5s", getDirectionName((Direction) c->windDirection));
     }

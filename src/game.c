@@ -2039,7 +2039,7 @@ int gameGetChest(int player) {
 
         statsUpdate();
         
-        if ((c->location->context & CTX_NON_COMBAT) && (obj == NULL))
+        if (((c->location->context & CTX_NON_COMBAT) == c->location->context) && obj == NULL)
             playerAdjustKarma(c->saveGame, KA_STOLE_CHEST);
     }    
     else
