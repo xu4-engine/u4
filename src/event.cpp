@@ -242,6 +242,9 @@ bool eventHandlerUniversalKeyHandler(int key) {
     case U4_META + 'x': /* Cmd+x */
 #endif
     case U4_ALT + 'x': /* Alt+x */
+#if defined(WIN32)
+	case U4_ALT + U4_FKEY + 3:
+#endif
         quit = eventExitFlag = true;
         return true;
     default: return false;
