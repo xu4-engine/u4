@@ -11,16 +11,6 @@ struct _Person;
 
 #define CONV_BUFFERLEN 16
 
-typedef struct _Conversation {
-    const struct _Person *talker;
-    int state;
-    char buffer[CONV_BUFFERLEN];
-    int itemType;
-    int itemSubtype;
-    int quant;
-    int price;
-} Conversation;
-
 typedef enum {
     STATS_PARTY_OVERVIEW,
     STATS_CHAR1,
@@ -47,6 +37,17 @@ typedef enum {
     AURA_PROTECTION,
     AURA_QUICKNESS
 } Aura;
+
+typedef struct _Conversation {
+    const struct _Person *talker;
+    int state;
+    char buffer[CONV_BUFFERLEN];
+    int itemType;
+    int itemSubtype;
+    int quant;
+    int price;
+    int player;
+} Conversation;
 
 typedef struct _Context {
     struct _SaveGame *saveGame;
