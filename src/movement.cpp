@@ -96,7 +96,7 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
 
     /* if the avatar moved onto a creature (whirlpool, twister), then do the creature's special effect */
     destObj = c->location->map->objectAt(newCoords);
-    if (destObj && destObj->getType() == OBJECT_CREATURE) {
+    if (destObj && destObj->getType() == Object::CREATURE) {
         Creature *m = dynamic_cast<Creature*>(destObj);
         m->specialEffect();
     }
@@ -202,7 +202,7 @@ int moveObject(Map *map, Creature *obj, MapCoords avatar) {
         return 0;
 
     /* figure out what method to use to tell if the object is getting slowed */   
-    if (obj->getType() == OBJECT_CREATURE)
+    if (obj->getType() == Object::CREATURE)
         slowedType = obj->slowedType;
     
     /* is the object slowed by terrain or by wind direction? */
@@ -278,7 +278,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
         return 0;
 
     /* figure out what method to use to tell if the object is getting slowed */   
-    if (obj->getType() == OBJECT_CREATURE)
+    if (obj->getType() == Object::CREATURE)
         slowedType = obj->slowedType;
 
     /* is the object slowed by terrain or by wind direction? */

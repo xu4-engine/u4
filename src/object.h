@@ -19,20 +19,19 @@ typedef enum {
     MOVEMENT_ATTACK_AVATAR
 } ObjectMovementBehavior;
 
-typedef enum {
-    OBJECT_UNKNOWN,
-    OBJECT_PERSON,
-    OBJECT_CREATURE    
-} ObjectType;
-
 class Object {
 public:
-    Object(ObjectType type = OBJECT_UNKNOWN) :
+    enum Type {
+        UNKNOWN,
+        CREATURE,
+        PERSON
+    };
+
+    Object(Type type = UNKNOWN) :    
       tile(0),
-      prevTile(0),
+      prevTile(0),      
       movement_behavior(MOVEMENT_FIXED),
-      objType(type),
-      map(NULL),
+      objType(type), 
       focused(false),
       visible(true),
       animated(true)
@@ -46,11 +45,10 @@ public:
     const Coords& getCoords() const         { return coords; }
     const Coords& getPrevCoords() const     { return prevCoords; }    
     const ObjectMovementBehavior getMovementBehavior() const    { return movement_behavior; }
-    const ObjectType getType() const        { return objType; }
+    const Type getType() const              { return objType; }
     bool hasFocus() const                   { return focused; }
     bool isVisible() const                  { return visible; }
-    bool isAnimated() const                 { return animated; }
-    class Map* getMap() const               { return map; }
+    bool isAnimated() const                 { return animated; }    
 
     void setTile(MapTile t)                 { tile = t; }
     void setTile(Tile *t)                   { tile = t->id; }
@@ -58,11 +56,14 @@ public:
     void setCoords(Coords c)                { prevCoords = coords; coords = c; }
     void setPrevCoords(Coords c)            { prevCoords = c; }    
     void setMovementBehavior(ObjectMovementBehavior b)          { movement_behavior = b; }
-    void setType(ObjectType t)              { objType = t; }
+    void setType(Type t)                    { objType = t; }
     void setFocus(bool f = true)            { focused = f; }
     void setVisible(bool v = true)          { visible = v; }
     void setAnimated(bool a = true)         { animated = a; }
-    void setMap(class Map *m)                { map = m; }
+    
+    void setMap(class Map *m);
+    Map *getMap();    
+    void remove();  /**< Removes itself from any maps that it is a part of */
 
     bool setDirection(Direction d);
         
@@ -71,8 +72,8 @@ protected:
     MapTile tile, prevTile;
     Coords coords, prevCoords;
     ObjectMovementBehavior movement_behavior;
-    ObjectType objType;
-    class Map *map;
+    Type objType;
+    std::deque<class Map *> maps;           /**< A list of maps this object is a part of */    
     
     bool focused;
     bool visible;
