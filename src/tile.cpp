@@ -26,82 +26,84 @@ Tileset *tilesetGetCurrent() {
  * Loads tile information from the xml node 'node', if it
  * is a valid tile node.
  */
-bool tileLoadTileInfo(Tile** tiles, int index, void *xmlNode) {    
-    int i;
-    Tile tile, *tilePtr;
+void Tile::loadProperties(Tile *tile, void *xmlNode) {
     xmlNodePtr node = (xmlNodePtr)xmlNode;
 
     /* ignore 'text' nodes */        
     if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
-        return 1;
+        return;
             
-    tile.name = xmlGetPropAsStr(node, "name"); /* get the name of the tile */
-    tile.index = index; /* get the index of the tile */
-    tile.frames = 1;
-    tile.animated = xmlGetPropAsBool(node, "animated"); /* see if the tile is animated */
-    tile.opaque = xmlGetPropAsBool(node, "opaque"); /* see if the tile is opaque */
+    tile->name = xmlGetPropAsStr(node, "name"); /* get the name of the tile */    
+    tile->frames = 1;
+    tile->animated = xmlGetPropAsBool(node, "animated"); /* see if the tile is animated */
+    tile->opaque = xmlGetPropAsBool(node, "opaque"); /* see if the tile is opaque */
 
     /* get the tile to display for the current tile */
     if (xmlPropExists(node, "displayTile"))
-        tile.displayTile = xmlGetPropAsInt(node, "displayTile");
-    else
-        tile.displayTile = index; /* itself */    
+        tile->displayTile = xmlGetPropAsInt(node, "displayTile");    
 
     /* find the rule that applies to the current tile, if there is one.
        if there is no rule specified, it defaults to the "default" rule */
     if (xmlPropExists(node, "rule")) {
-        tile.rule = TileRule::findByName(xmlGetPropAsStr(node, "rule"));
-        if (tile.rule == NULL)
-            tile.rule = TileRule::findByName("default");
+        tile->rule = TileRule::findByName(xmlGetPropAsStr(node, "rule"));
+        if (tile->rule == NULL)
+            tile->rule = TileRule::findByName("default");
     }
-    else tile.rule = TileRule::findByName("default");
+    else tile->rule = TileRule::findByName("default");
 
-    /* for each frame of the tile, duplicate our values */    
+    /* get the number of frames the tile has */    
     if (xmlPropExists(node, "frames"))
-        tile.frames = xmlGetPropAsInt(node, "frames");
-    
-    tilePtr = (*tiles) + index;
-    for (i = 0; i < tile.frames; i++) {        
-        memcpy(tilePtr + i, &tile, sizeof(Tile));
-        (tilePtr + i)->index += i; /* fix the index */        
-    }
-    
-    return 1;
+        tile->frames = xmlGetPropAsInt(node, "frames");    
 }
 
-Tile *tileFindByName(const char *name, Tileset *t) {    
+/**
+ * Returns the tile with the given name in the tileset
+ */ 
+Tile *Tile::findByName(string name, Tileset *t) {
     Tileset *tileset = t ? t : tilesetGetCurrent();
     int i;
 
-    if (!name)
-        return NULL;
-
-    /* FIXME: instead of 256, use real number of tiles in tileset */
-    for (i = 0; i < 256; i++) {
-        if (tileset->tiles[i].name == NULL)
+    for (i = 0; i < tileset->tiles.size(); i++) { 
+        Tile *tile = tileset->tiles[i];
+        if (tile->name.empty())
             errorFatal("Error: not all tiles have a \"name\" attribute");
             
-        if (strcasecmp(name, tileset->tiles[i].name) == 0)
-            return &tileset->tiles[i];
+        if (strcasecmp(name.c_str(), tile->name.c_str()) == 0)
+            return tile;
     }
 
     return NULL;
 }
 
+/**
+ * Returns the tile at the corresponding index of the current tileset
+ */ 
+Tile *Tile::get(int index) {
+    Tileset *tileset = tilesetGetCurrent();    
+    for (int i = 0; i < tileset->tiles.size(); i+= tileset->tiles[i]->frames) {
+        Tile *tile = tileset->tiles[i];
+        
+        /* FIXME: this function should change when the new tileset setup is finished */
+        if ((index >= tile->index) && (index < tile->index + tile->frames))
+            return tile;
+    }
+    return NULL;
+}
+
 bool tileTestBit(MapTile tile, unsigned short mask) {    
-    return (tilesetGetCurrent()->tiles[tile].rule->mask & mask) != 0;
+    return (tilesetGetCurrent()->tiles[tile]->rule->mask & mask) != 0;
 }
 
 bool tileTestMovementBit(MapTile tile, unsigned short mask) {    
-    return (tilesetGetCurrent()->tiles[tile].rule->movementMask & mask) != 0;
+    return (tilesetGetCurrent()->tiles[tile]->rule->movementMask & mask) != 0;
 }
 
 bool tileCanWalkOn(MapTile tile, Direction d) {    
-    return DIR_IN_MASK(d, tilesetGetCurrent()->tiles[tile].rule->walkonDirs) ? true : false;
+    return DIR_IN_MASK(d, tilesetGetCurrent()->tiles[tile]->rule->walkonDirs) ? true : false;
 }
 
 bool tileCanWalkOff(MapTile tile, Direction d) {    
-    return DIR_IN_MASK(d, tilesetGetCurrent()->tiles[tile].rule->walkoffDirs) ? true : false;
+    return DIR_IN_MASK(d, tilesetGetCurrent()->tiles[tile]->rule->walkoffDirs) ? true : false;
 }
 
 bool tileCanAttackOver(MapTile tile) {    
@@ -120,7 +122,7 @@ bool tileIsReplacement(MapTile tile) {
 }
 
 bool tileIsWalkable(MapTile tile) {    
-    return tilesetGetCurrent()->tiles[tile].rule->walkonDirs > 0;
+    return tilesetGetCurrent()->tiles[tile]->rule->walkonDirs > 0;
 }
 
 bool tileIsCreatureWalkable(MapTile tile) {
@@ -156,7 +158,7 @@ bool tileIsChest(MapTile tile) {
 }
 
 MapTile tileGetChestBase() {
-    return tileFindByName("chest")->index;
+    return Tile::findByName("chest")->index;
 }
 
 bool tileIsShip(MapTile tile) {
@@ -164,13 +166,14 @@ bool tileIsShip(MapTile tile) {
 }
 
 MapTile tileGetShipBase() {
-    return tileFindByName("ship")->index;
+    return Tile::findByName("ship")->index;
 }
 
 bool tileIsPirateShip(MapTile tile) {
-    if (tile >= PIRATE_TILE && tile < (PIRATE_TILE + 4))
-        return 1;
-    return 0;
+    Tile *pirate = Tile::get(PIRATE_TILE);
+    if (tile >= pirate->id && tile < pirate->id + pirate->frames)
+        return true;
+    return false;
 }
 
 bool tileIsHorse(MapTile tile) {
@@ -178,7 +181,7 @@ bool tileIsHorse(MapTile tile) {
 }
 
 MapTile tileGetHorseBase() {
-    return tileFindByName("horse")->index;
+    return Tile::findByName("horse")->index;
 }
 
 bool tileIsBalloon(MapTile tile) {
@@ -186,7 +189,7 @@ bool tileIsBalloon(MapTile tile) {
 }
 
 MapTile tileGetBalloonBase() {
-    return tileFindByName("balloon")->index;
+    return Tile::findByName("balloon")->index;
 }
 
 bool tileCanDispel(MapTile tile) {
@@ -195,11 +198,11 @@ bool tileCanDispel(MapTile tile) {
 
 Direction tileGetDirection(MapTile tile) {
     if (tileIsShip(tile))
-        return (Direction) (tile - tileFindByName("ship")->index + DIR_WEST);
+        return (Direction) (tile - Tile::findByName("ship")->index + DIR_WEST);
     if (tileIsPirateShip(tile))
         return (Direction) (tile - PIRATE_TILE + DIR_WEST);
     else if (tileIsHorse(tile))
-        return tile == tileFindByName("horse")->index ? DIR_WEST : DIR_EAST;
+        return tile == Tile::findByName("horse")->index ? DIR_WEST : DIR_EAST;
     else
         return DIR_WEST;        /* some random default */
 }
@@ -213,11 +216,11 @@ bool tileSetDirection(MapTile *tile, Direction dir) {
         return false;
 
     if (tileIsShip(*tile))
-        *tile = tileFindByName("ship")->index + dir - DIR_WEST;
+        *tile = Tile::findByName("ship")->index + dir - DIR_WEST;
     else if (tileIsPirateShip(*tile))
         *tile = PIRATE_TILE + dir - DIR_WEST;
     else if (tileIsHorse(*tile))
-        *tile = (dir == DIR_WEST ? tileFindByName("horse")->index : tileFindByName("horse")->index + 1);
+        *tile = (dir == DIR_WEST ? Tile::findByName("horse")->index : Tile::findByName("horse")->index + 1);
     else   
         changed_direction = false;
 
@@ -232,15 +235,15 @@ bool tileCanTalkOver(MapTile tile) {
 }
 
 TileSpeed tileGetSpeed(MapTile tile) {    
-    return tilesetGetCurrent()->tiles[tile].rule->speed;
+    return tilesetGetCurrent()->tiles[tile]->rule->speed;
 }
 
 TileEffect tileGetEffect(MapTile tile) {    
-    return tilesetGetCurrent()->tiles[tile].rule->effect;
+    return tilesetGetCurrent()->tiles[tile]->rule->effect;
 }
 
 TileAnimationStyle tileGetAnimationStyle(MapTile tile) {   
-    if (tilesetGetCurrent()->tiles[tile].animated)
+    if (tilesetGetCurrent()->tiles[tile]->animated)
         return ANIM_SCROLL;
     else if (tile == 75)
         return ANIM_CAMPFIRE;
@@ -285,7 +288,7 @@ bool tileIsOpaque(MapTile tile) {
     extern Context *c;    
 
     if (c->opacity)
-        return tilesetGetCurrent()->tiles[tile].opaque ? 1 : 0;
+        return tilesetGetCurrent()->tiles[tile]->opaque ? 1 : 0;
     else return 0;
 }
 

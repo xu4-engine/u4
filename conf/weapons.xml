@@ -32,7 +32,7 @@
         <constraint canuse="false" class="shepherd"/>
     </weapon>
     <weapon name="Flaming Oil" abbr="OIL" range="9" damage="64" lose="true" choosedistance="true"
-        leavetile="fire"/>
+        leavetile="fire_field"/>
     <weapon name="Halberd" abbr="HAL" absolute_range="2" attackthroughobjects="true" damage="96"
         dontshowtravel="true">
         <constraint canuse="false" class="all"/>
@@ -57,7 +57,7 @@
         <constraint canuse="false" class="fighter"/>
         <constraint canuse="false" class="shepherd"/>
     </weapon>
-    <weapon name="Magic Wand" abbr="WND" range="10" damage="160" magic="true" hittile="magic" misstile="magic">
+    <weapon name="Magic Wand" abbr="WND" range="10" damage="160" magic="true" hittile="magic_flash" misstile="magic_flash">
         <constraint canuse="false" class="all"/>
         <constraint canuse="true" class="mage"/>
         <constraint canuse="true" class="bard"/>

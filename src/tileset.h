@@ -51,8 +51,7 @@ public:
     static TilesetType getTypeByStr(string type);
 
     TilesetType type;
-    int numTiles;
-    Tile *tiles;
+    TileVector tiles;
     int totalFrames;
     string imageName;
 };

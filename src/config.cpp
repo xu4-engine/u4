@@ -118,6 +118,17 @@ ConfigElement &ConfigElement::operator=(const ConfigElement &e) {
     return *this;
 }
 
+/**
+ * Returns true if the property exists in the current config element
+ */
+bool ConfigElement::exists(const std::string &name) const {
+    xmlChar *prop = xmlGetProp(node, reinterpret_cast<const xmlChar *>(name.c_str()));
+    bool exists = prop != NULL;
+    xmlFree(prop);
+
+    return exists;
+}
+
 string ConfigElement::getString(const string &name) const {
     xmlChar *prop = xmlGetProp(node, reinterpret_cast<const xmlChar *>(name.c_str()));
     if (!prop)

@@ -84,7 +84,7 @@ int mapLoadCity(City *city) {
     /* then, use those tiles to properly construct the Person
        object for each person */
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i] = new Person(tiles[i]);
+        people[i] = new Person(Tile::get(tiles[i])->id);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
         people[i]->start.x = u4fgetc(ult);

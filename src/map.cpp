@@ -572,7 +572,7 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             else if (tileIsBalloon(transport) && tileIsFlyable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);        
             // avatar or horseback: check walkable
-            else if (transport == AVATAR_TILE || tileIsHorse(transport)) {
+            else if (transport == Tile::get(AVATAR_TILE)->id || tileIsHorse(transport)) {
                 if (tileCanWalkOn(tile, d) &&
                     tileCanWalkOff(prev_tile, d))
                     retval = DIR_ADD_TO_MASK(d, retval);

@@ -1,7 +1,5 @@
 <!-- $Id$ -->
 
-<!ENTITY % hitmisstile '( fire | poison | lightning | magic | lava | fireblast | boulder | sleep | random )'>
-
 <!ELEMENT weapons ( weapon+ ) >
 
 <!ELEMENT weapon ( constraint* ) >
@@ -13,10 +11,10 @@
                  attackthroughobjects   %bool;  #IMPLIED
                  choosedistance         %bool;  #IMPLIED
                  dontshowtravel         %bool;  #IMPLIED
-                 hittile                %hitmisstile; #IMPLIED
-                 leavetile              %hitmisstile; #IMPLIED
+                 hittile                NMTOKEN #IMPLIED
+                 leavetile              NMTOKEN #IMPLIED
                  lose                   %bool;  #IMPLIED
                  losewhenranged         %bool;  #IMPLIED
                  magic                  %bool;  #IMPLIED
-                 misstile               %hitmisstile; #IMPLIED
+                 misstile               NMTOKEN #IMPLIED
                  returns                %bool;  #IMPLIED>

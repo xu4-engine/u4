@@ -1,7 +1,6 @@
 <!-- $Id$ -->
 
 <!ENTITY % bool '( true | false )'>
-<!ENTITY % hitmisstile '( fire | poison | lightning | magic | lava | fireblast | boulder | sleep | random )'>
 <!ENTITY % effect '( fire | poison | sleep )'>
 
 <!ELEMENT creatures ( creature+ ) >
@@ -10,8 +9,7 @@
 <!ATTLIST creature id                   NMTOKEN  #REQUIRED
                   encounterSize        NMTOKEN  #IMPLIED
                   name                 CDATA    #REQUIRED
-                  tile                 NMTOKEN  #REQUIRED
-                  frames               NMTOKEN  #IMPLIED
+                  tile                 NMTOKEN  #REQUIRED                  
                   basehp               NMTOKEN  #IMPLIED
                   exp                  NMTOKEN  #REQUIRED
                   leader               NMTOKEN  #IMPLIED
@@ -32,8 +30,8 @@
                   nochest              %bool;   #IMPLIED
                   poisons              %bool;   #IMPLIED
                   ranged               %bool;   #IMPLIED
-                  rangedhittile        %hitmisstile; #IMPLIED
-                  rangedmisstile       %hitmisstile; #IMPLIED
+                  rangedhittile        NMTOKEN  #IMPLIED
+                  rangedmisstile       NMTOKEN  #IMPLIED
                   resists              %effect; #IMPLIED
                   sails                %bool;   #IMPLIED
                   spawntile            NMTOKEN  #IMPLIED

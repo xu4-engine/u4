@@ -37,8 +37,7 @@ int main(int argc, char *argv[]) {
 #endif    
 
     /* Read the game settings from file */
-    settings.read();
-    creatures.loadInfoFromXml();
+    settings.read();    
 
     for (i = 1; i < (unsigned int)argc; i++) {
         if (strcmp(argv[i], "-filter") == 0 && (unsigned int)argc > i + 1) {
@@ -74,6 +73,7 @@ int main(int argc, char *argv[]) {
     eventHandlerInit();    
 
     Tileset::loadAll("tilesets.xml");
+    creatures.loadInfoFromXml();
 
     if (!skipIntro) {
         /* do the intro */

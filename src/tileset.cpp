@@ -224,40 +224,30 @@ void Tileset::load(string filename, TilesetType type) {
         errorFatal("error allocating memory for tileset");
     
     tileset->type = type;
-    tileset->numTiles = 0;
-    tileset->tiles = NULL;
     tileset->totalFrames = 0;
     
-
     if (xmlPropExists(root, "imageName"))
         tileset->imageName = xmlGetPropAsString(root, "imageName");
 
-    /* count how many tiles are in the tileset */
+    int index = 0;
     for (node = root->xmlChildrenNode; node; node = node->next) {
         if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
             continue;
-        else tileset->numTiles++;
-    }
-
-    if (tileset->numTiles > 0) {
-        /* FIXME: eventually, each tile definition won't be duplicated,
-           so this will work as it should.  For now, we stick to 256 tiles
-        tileset->tiles = new Tile[tileset->numTiles + 1];
-        */
-        tileset->tiles = new Tile[257];
-
-        if (tileset->tiles == NULL)
-            errorFatal("error allocating memory for tiles");
         
-        for (node = root->xmlChildrenNode; node; node = node->next) {
-            if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
-                continue;
-            
-            tileLoadTileInfo(&tileset->tiles, tileset->totalFrames, node);
-            tileset->totalFrames += tileset->tiles[tileset->totalFrames].frames;            
+        /** 
+         * FIXME: revise the following when the tiles are being handled correectly
+         */        
+        Tile tile;
+        Tile::loadProperties(&tile, node);
+        for (int i = 0; i < tile.frames; i++) {
+            /* assign tile index and id */
+            tile.index = index + i;
+            tile.id = tile.index;
+            tileset->tiles.push_back(new Tile(tile));
         }
+        index += tile.frames;
     }
-    else errorFatal("Error: no 'tile' nodes defined in %s", filename);    
+    tileset->totalFrames = index;
 
     /* insert the tileset into our tileset list */
     tilesets[type] = tileset;

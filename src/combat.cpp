@@ -704,7 +704,7 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
                 
         default: 
             /* show the appropriate 'hit' message */
-            if (hittile == MAGICFLASH_TILE)
+            if (hittile == Tile::get(MAGICFLASH_TILE)->id)
                 screenMessage("\n%s Magical Hit!\n", target->getName().c_str());
             else screenMessage("\n%s Hit!\n", target->getName().c_str());
             attacker->dealDamage(target, attacker->getDamage());
@@ -1234,39 +1234,36 @@ Creature *CombatMap::creatureAt(Coords coords) {
  * Returns a valid combat map given the provided information
  */ 
 MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) {
-    unsigned int i;
     int fromShip = 0,
         toShip = 0;
     Object *objUnder = c->location->map->objectAt(c->location->coords);
 
-    static const struct {
-        MapTile tile;
-        MapId mapid;
-    } tileToMap[] = {
-        { HORSE1_TILE,  MAP_GRASS_CON },
-        { HORSE2_TILE,  MAP_GRASS_CON },
-        { SWAMP_TILE,   MAP_MARSH_CON },
-        { GRASS_TILE,   MAP_GRASS_CON },
-        { BRUSH_TILE,   MAP_BRUSH_CON },
-        { FOREST_TILE,  MAP_FOREST_CON },
-        { HILLS_TILE,   MAP_HILL_CON },
-        { DUNGEON_TILE, MAP_HILL_CON },
-        { CITY_TILE,    MAP_GRASS_CON },
-        { CASTLE_TILE,  MAP_GRASS_CON },
-        { TOWN_TILE,    MAP_GRASS_CON },
-        { LCB2_TILE,    MAP_GRASS_CON },
-        { BRIDGE_TILE,  MAP_BRIDGE_CON },
-        { BALLOON_TILE, MAP_GRASS_CON },
-        { NORTHBRIDGE_TILE, MAP_BRIDGE_CON },
-        { SOUTHBRIDGE_TILE, MAP_BRIDGE_CON },
-        { SHRINE_TILE,  MAP_GRASS_CON },
-        { CHEST_TILE,   MAP_GRASS_CON },
-        { BRICKFLOOR_TILE, MAP_BRICK_CON },
-        { MOONGATE0_TILE, MAP_GRASS_CON },
-        { MOONGATE1_TILE, MAP_GRASS_CON },
-        { MOONGATE2_TILE, MAP_GRASS_CON },
-        { MOONGATE3_TILE, MAP_GRASS_CON }
-    };
+    static std::map<MapTile, MapId> tileMap;
+    if (!tileMap.size()) {        
+        tileMap[Tile::get(HORSE1_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(HORSE2_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(SWAMP_TILE)->id] = MAP_MARSH_CON;
+        tileMap[Tile::get(GRASS_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(BRUSH_TILE)->id] = MAP_BRUSH_CON;
+        tileMap[Tile::get(FOREST_TILE)->id] = MAP_FOREST_CON;
+        tileMap[Tile::get(HILLS_TILE)->id] = MAP_HILL_CON;
+        tileMap[Tile::get(DUNGEON_TILE)->id] = MAP_HILL_CON;
+        tileMap[Tile::get(CITY_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(CASTLE_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(TOWN_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(LCB2_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(BRIDGE_TILE)->id] = MAP_BRIDGE_CON;
+        tileMap[Tile::get(BALLOON_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(NORTHBRIDGE_TILE)->id] = MAP_BRIDGE_CON;
+        tileMap[Tile::get(SOUTHBRIDGE_TILE)->id] = MAP_BRIDGE_CON;
+        tileMap[Tile::get(SHRINE_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(CHEST_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(BRICKFLOOR_TILE)->id] = MAP_BRICK_CON;
+        tileMap[Tile::get(MOONGATE0_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(MOONGATE1_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(MOONGATE2_TILE)->id] = MAP_GRASS_CON;
+        tileMap[Tile::get(MOONGATE3_TILE)->id] = MAP_GRASS_CON;
+    }
 
     if (tileIsShip(transport) || (objUnder && tileIsShip(objUnder->getTile())))
         fromShip = 1;
@@ -1290,10 +1287,8 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
             return MAP_SHIPSHOR_CON;        
     }
 
-    for (i = 0; i < sizeof(tileToMap) / sizeof(tileToMap[0]); i++) {
-        if (tileToMap[i].tile == groundTile)
-            return tileToMap[i].mapid;
-    }    
+    if (tileMap.find(groundTile) != tileMap.end())
+        return tileMap[groundTile];    
 
     return MAP_BRICK_CON;
 }

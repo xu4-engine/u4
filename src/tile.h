@@ -5,15 +5,17 @@
 #ifndef TILE_H
 #define TILE_H
 
+#include <string>
+#include <vector>
 #include "direction.h"
 #include "types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+using std::string;
 
 class Tileset;
 class TileRule;
+
+typedef std::vector<class Tile *> TileVector;
 
 #define DEEP_WATER_TILE 0x0
 #define WATER_TILE 0x1
@@ -113,19 +115,24 @@ typedef enum {
     ANIM_FOURFRAMES
 } TileAnimationStyle;
 
-typedef struct _Tile {    
-    const char *name;
+/**
+ * Tile class
+ */
+class Tile {
+public:
+    static Tile *findByName(string name, Tileset *t = NULL);
+    static void loadProperties(Tile *tile, void *xmlNode);
+    static Tile *get(int index);
+
+    string name;
     int id;
     int index;
     int frames;
     MapTile displayTile; /* FIXME: this will go away soon */
-    unsigned char animated; /* FIXME: this will be changed to 'animation' of type TileAnimationStyle */
-    unsigned char opaque;
+    bool animated; /* FIXME: this will be changed to 'animation' of type TileAnimationStyle */
+    bool opaque;
     TileRule *rule;
-} Tile;
-
-Tile *tileFindByName(const char *name, Tileset *t = NULL);
-bool tileLoadTileInfo(Tile** tiles, int index, void *node);
+};
 
 bool tileCanWalkOn(MapTile tile, Direction d);
 bool tileCanWalkOff(MapTile tile, Direction d);
@@ -160,9 +167,5 @@ TileAnimationStyle tileGetAnimationStyle(MapTile tile);
 void tileAdvanceFrame(MapTile *tile);
 bool tileIsOpaque(MapTile tile);
 MapTile tileForClass(int klass);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

@@ -114,7 +114,7 @@ int Creature::setInitialHp(int points) {
 }
 
 void Creature::setRandomRanged() {
-    rangedhittile = rangedmisstile = xu4_random(4) + POISONFIELD_TILE;
+    rangedhittile = rangedmisstile = xu4_random(4) + Tile::get(POISONFIELD_TILE)->id;
 }
 
 CreatureStatus Creature::getState() const {
@@ -326,7 +326,7 @@ void Creature::act() {
         /* creatures who ranged attack do so 1/4 of the time.
            make sure their ranged attack is not negated! */
         else if (ranged != 0 && xu4_random(4) == 0 && 
-                 ((rangedhittile != MAGICFLASH_TILE) || (*c->aura != AURA_NEGATE)))
+            ((rangedhittile != Tile::get(MAGICFLASH_TILE)->id) || (*c->aura != AURA_NEGATE)))
             action = CA_RANGED;
         /* creatures who cast sleep do so 1/4 of the time they don't ranged attack */
         else if (castsSleep() && (*c->aura != AURA_NEGATE) && (xu4_random(4) == 0))
@@ -350,7 +350,7 @@ void Creature::act() {
     switch(action) {
     case CA_ATTACK:
         if (attackHit(target)) {            
-            CombatController::attackFlash(target->getCoords(), HITFLASH_TILE, 3);            
+            CombatController::attackFlash(target->getCoords(), Tile::get(HITFLASH_TILE)->id, 3);
             if (!dealDamage(target, getDamage()))
                 target = NULL;
 
@@ -364,7 +364,7 @@ void Creature::act() {
                     c->party->adjustFood(-2500);
             }
         } else {
-            CombatController::attackFlash(target->getCoords(), MISSFLASH_TILE, 3);
+            CombatController::attackFlash(target->getCoords(), Tile::get(MISSFLASH_TILE)->id, 3);
         }
         break;
 
@@ -736,21 +736,6 @@ void CreatureMgr::loadInfoFromXml() {
         { "canMoveOn", MATTR_CANMOVEON }
     };
 
-    /* hit and miss tiles */
-    static const struct {
-        const char *name;
-        unsigned int tile;
-    } tiles[] = {
-        { "fire", FIREFIELD_TILE },
-        { "poison", POISONFIELD_TILE },
-        { "lightning", LIGHTNINGFIELD_TILE },
-        { "magic", MAGICFLASH_TILE },
-        { "lava", LAVA_TILE },
-        { "fireblast", HITFLASH_TILE },
-        { "boulder", BOULDER_TILE },
-        { "sleep", SLEEPFIELD_TILE }
-    };
-
     static const struct {
         const char *name;
         TileEffect effect;
@@ -782,8 +767,7 @@ void CreatureMgr::loadInfoFromXml() {
         
         m->xp = (unsigned short)xmlGetPropAsInt(node, "exp");
         m->ranged = xmlGetPropAsBool(node, "ranged");
-        m->setTile((MapTile)xmlGetPropAsInt(node, "tile"));
-        m->frames = 1;
+        m->setTile(Tile::findByName(xmlGetPropAsStr(node, "tile")));
         m->camouflageTile = 0;
 
         m->worldrangedtile = 0;
@@ -813,34 +797,25 @@ void CreatureMgr::loadInfoFromXml() {
         }
 
         /* get the camouflaged tile */
-        if (xmlPropExists(node, "camouflageTile")) {        
-            m->camouflageTile =
-                (MapTile)xmlGetPropAsInt(node, "camouflageTile");
-        }
+        if (xmlPropExists(node, "camouflageTile"))
+            m->camouflageTile = Tile::findByName(xmlGetPropAsStr(node, "camouflageTile"))->id;
 
         /* get the ranged tile for world map attacks */
-        for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, "worldrangedtile", tiles[i].name) == 0) {
-                m->worldrangedtile = tiles[i].tile;
-            }
-        }
+        if (xmlPropExists(node, "worldrangedtile"))
+            m->worldrangedtile = Tile::findByName(xmlGetPropAsStr(node, "worldrangedtile"))->id;
 
         /* get ranged hit tile */
-        for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, "rangedhittile", tiles[i].name) == 0) {
-                m->setHitTile(tiles[i].tile);
-            }
-            else if (xmlPropCmp(node, "rangedhittile", "random") == 0)
+        if (xmlPropExists(node, "rangedhittile")) {
+            if (xmlPropCmp(node, "rangedhittile", "random") == 0)
                 m->mattr = (CreatureAttrib)(m->mattr | MATTR_RANDOMRANGED);
+            else m->setHitTile(Tile::findByName(xmlGetPropAsStr(node, "rangedhittile"))->id);
         }
-
+        
         /* get ranged miss tile */
-        for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, "rangedmisstile", tiles[i].name) == 0) {
-                m->setMissTile(tiles[i].tile);
-            }
-            else if (xmlPropCmp(node, "rangedhittile", "random") == 0)
+        if (xmlPropExists(node, "rangedmisstile")) {
+            if (xmlPropCmp(node, "rangedmisstile", "random") == 0)
                 m->mattr = (CreatureAttrib)(m->mattr | MATTR_RANDOMRANGED);
+            else m->setMissTile(Tile::findByName(xmlGetPropAsStr(node, "rangedmisstile"))->id);
         }
 
         /* find out if the creature leaves a tile behind on ranged attacks */
@@ -852,14 +827,7 @@ void CreatureMgr::loadInfoFromXml() {
                 m->resists = effects[i].effect;
             }
         }
-
-        /* get the number of frames for animation */
-        if (xmlPropExists(node, "frames")) {
-            m->frames =
-                (unsigned char)xmlGetPropAsInt(node, "frames");
-        }
-        else m->frames = 2;
-
+        
         /* Load creature attributes */
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
             if (xmlGetPropAsBool(node, booleanAttributes[i].name)) {
@@ -919,7 +887,9 @@ const Creature *CreatureMgr::getByTile(MapTile tile) const {
 
     for (i = creatures.begin(); i != creatures.end(); i++) {
         MapTile mtile = i->second->getTile();
-        if ((tile >= mtile) && (tile < mtile + i->second->frames))
+        Tile *t = Tile::get(mtile);
+        
+        if ((tile >= mtile) && (tile < mtile + t->frames))
             return i->second;
     }
     return NULL;

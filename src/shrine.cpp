@@ -111,20 +111,20 @@ void Shrine::enter() {
     /* Add-on shrine sequence START */
     if (settings.enhancements && settings.enhancementsOptions.u5shrines) {
         /* replace the 'static' avatar tile with grass */        
-        annotations->add(Coords(5, 6, c->location->coords.z), GRASS_TILE, true);
+        annotations->add(Coords(5, 6, c->location->coords.z), Tile::get(GRASS_TILE)->id, true);
 
         screenDisableCursor();
         screenMessage("You approach\nthe ancient\nshrine...\n");
         gameUpdateScreen(); eventHandlerSleep(1000);
         
         obj = addCreature(creatures.getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
-        obj->setTile(AVATAR_TILE);
+        obj->setTile(Tile::get(AVATAR_TILE)->id);
 
         gameUpdateScreen(); eventHandlerSleep(400);        
         c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
         c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
         c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
-        annotations->remove(Coords(5, 6, c->location->coords.z), GRASS_TILE);
+        annotations->remove(Coords(5, 6, c->location->coords.z), Tile::get(GRASS_TILE)->id);
         c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(800);
         obj->setTile(creatures.getById(BEGGAR_ID)->getTile()); gameUpdateScreen();
         

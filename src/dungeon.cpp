@@ -281,7 +281,7 @@ bool dungeonLadderUpAt(class Map *map, MapCoords coords) {
     if (a.size() > 0) {
         AnnotationList::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == LADDERUP_TILE)            
+            if (i->getTile() == Tile::get(LADDERUP_TILE)->id)
                 return true;
         }
     }
@@ -301,7 +301,7 @@ bool dungeonLadderDownAt(class Map *map, MapCoords coords) {
     if (a.size() > 0) {
         AnnotationList::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == LADDERDOWN_TILE)
+            if (i->getTile() == Tile::get(LADDERDOWN_TILE)->id)
                 return true;
         }
     }

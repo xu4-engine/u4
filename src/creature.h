@@ -204,10 +204,9 @@ protected:
     MapTile         rangedmisstile;
 
 public:    
-    CreatureId       id;    
-    MapTile         camouflageTile;
-    unsigned char   frames;
-    CreatureId       leader;
+    CreatureId      id;    
+    MapTile         camouflageTile;    
+    CreatureId      leader;
     unsigned short  basehp;
     short           hp;
     StatusList      status;

@@ -354,7 +354,7 @@ bool PartyMember::applyDamage(int damage) {
     if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();                    
         screenMessage("%s is Killed!\n", getName().c_str());
-        map->annotations->add(p, CORPSE_TILE)->setTTL(party->size());
+        map->annotations->add(p, Tile::get(CORPSE_TILE)->id)->setTTL(party->size());
 
         /* remove yourself from the map */
         map->removeObject(this);        
@@ -855,7 +855,7 @@ void Party::reviveParty() {
     
     saveGame->food = 20099;
     saveGame->gold = 200;
-    (*setTransportCallback)(AVATAR_TILE);
+    (*setTransportCallback)(Tile::get(AVATAR_TILE)->id);
     setChanged();
     notifyObservers("Party::reviveParty");
 }

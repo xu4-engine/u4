@@ -51,6 +51,7 @@ public:
     class Map* getMap() const                { return map; }
 
     void setTile(MapTile t)                 { tile = t; }
+    void setTile(Tile *t)                   { tile = t->id; }
     void setPrevTile(MapTile t)             { prevTile = t; }
     void setCoords(Coords c)                { prevCoords = coords; coords = c; }
     void setPrevCoords(Coords c)            { prevCoords = c; }    

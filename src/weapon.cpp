@@ -69,24 +69,15 @@ Weapon::Weapon(const ConfigElement &conf) {
         { "attackthroughobjects", MASK_ATTACKTHROUGHOBJECTS },
         { "returns", MASK_RETURNS },
         { "dontshowtravel", MASK_DONTSHOWTRAVEL }
-    };
-    static const struct {
-        const char *name;
-        unsigned int tile;
-    } tiles[] = {
-        { "fire", FIREFIELD_TILE },
-        { "poison", POISONFIELD_TILE },
-        { "lightning", LIGHTNINGFIELD_TILE },
-        { "magic", MAGICFLASH_TILE }
-    };
+    };    
 
     type = static_cast<WeaponType>(weapons.size());
     name = conf.getString("name");
     abbr = conf.getString("abbr");
     canuse = 0xFF;
     damage = conf.getInt("damage");
-    hittile = HITFLASH_TILE;
-    misstile = MISSFLASH_TILE;
+    hittile = Tile::get(HITFLASH_TILE)->id;
+    misstile = Tile::get(MISSFLASH_TILE)->id;
     leavetile = 0;
     mask = 0;
 
@@ -110,30 +101,17 @@ Weapon::Weapon(const ConfigElement &conf) {
     }
 
     /* Load hit tiles */
-    for (unsigned ht = 0; ht < sizeof(tiles) / sizeof(tiles[0]); ht++) {
-        if (conf.getString("hittile") == tiles[ht].name) {
-            hittile = tiles[ht].tile;
-            break;
-        }
-    }
-
+    if (conf.exists("hittile"))
+        hittile = Tile::findByName(conf.getString("hittile"))->id;
+    
     /* Load miss tiles */
-    for (unsigned mt = 0; mt < sizeof(tiles) / sizeof(tiles[0]); mt++) {
-        if (conf.getString("misstile") == tiles[mt].name) {
-            misstile = tiles[mt].tile;
-            break;
-        }
-    }
-
+    if (conf.exists("misstile"))
+        misstile = Tile::findByName(conf.getString("misstile"))->id;
+    
     /* Load leave tiles */
-    for (unsigned lt = 0; lt < sizeof(tiles) / sizeof(tiles[0]); lt++) {
-        if (conf.getString("leavetile") == tiles[lt].name) {
-            mask |= MASK_LEAVETILE;
-            leavetile = tiles[lt].tile;
-            break;
-        }
-    }
-
+    if (conf.exists("leavetile"))
+        leavetile = Tile::findByName(conf.getString("leavetile"))->id;
+        
     vector<ConfigElement> contraintConfs = conf.getChildren();
     for (std::vector<ConfigElement>::iterator i = contraintConfs.begin(); i != contraintConfs.end(); i++) {
         unsigned char mask = 0;

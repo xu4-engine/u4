@@ -44,6 +44,7 @@ public:
 
     const std::string getName() const { return name; }
 
+    bool exists(const std::string &name) const;
     std::string getString(const std::string &name) const;
     int getInt(const std::string &name, int defaultValue = 0) const;
     bool getBool(const std::string &name) const;
