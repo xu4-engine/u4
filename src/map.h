@@ -38,6 +38,7 @@ typedef enum {
 #define NO_LINE_OF_SIGHT (1 << 1)
 
 typedef struct _Map {
+    unsigned char id;
     const char *fname;
     MapType type;
     unsigned int width, height;

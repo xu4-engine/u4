@@ -8,6 +8,7 @@
 #include "../map.h"
 
 Map brick_map = {
+    33,
     "brick.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -22,6 +23,7 @@ Map brick_map = {
 };
 
 Map bridge_map = {
+    33,
     "bridge.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -36,6 +38,7 @@ Map bridge_map = {
 };
 
 Map brush_map = {
+    33,
     "brush.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -50,6 +53,7 @@ Map brush_map = {
 };
 
 Map camp_map = {
+    33,
     "camp.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -64,6 +68,7 @@ Map camp_map = {
 };
 
 Map dng0_map = {
+    33,
     "dng0.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -78,6 +83,7 @@ Map dng0_map = {
 };
 
 Map dng1_map = {
+    33,
     "dng1.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -92,6 +98,7 @@ Map dng1_map = {
 };
 
 Map dng2_map = {
+    33,
     "dng2.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -106,6 +113,7 @@ Map dng2_map = {
 };
 
 Map dng3_map = {
+    33,
     "dng3.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -120,6 +128,7 @@ Map dng3_map = {
 };
 
 Map dng4_map = {
+    33,
     "dng4.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -134,6 +143,7 @@ Map dng4_map = {
 };
 
 Map dng5_map = {
+    33,
     "dng5.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -148,6 +158,7 @@ Map dng5_map = {
 };
 
 Map dng6_map = {
+    33,
     "dng6.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -162,6 +173,7 @@ Map dng6_map = {
 };
 
 Map dungeon_map = {
+    33,
     "dungeon.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -176,6 +188,7 @@ Map dungeon_map = {
 };
 
 Map forest_map = {
+    33,
     "forest.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -190,6 +203,7 @@ Map forest_map = {
 };
 
 Map grass_map = {
+    33,
     "grass.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -204,6 +218,7 @@ Map grass_map = {
 };
 
 Map hill_map = {
+    33,
     "hill.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -218,6 +233,7 @@ Map hill_map = {
 };
 
 Map inn_map = {
+    33,
     "inn.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -232,6 +248,7 @@ Map inn_map = {
 };
 
 Map marsh_map = {
+    33,
     "marsh.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -246,6 +263,7 @@ Map marsh_map = {
 };
 
 Map shipsea_map = {
+    33,
     "shipsea.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -260,6 +278,7 @@ Map shipsea_map = {
 };
 
 Map shipship_map = {
+    33,
     "shipship.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -274,6 +293,7 @@ Map shipship_map = {
 };
 
 Map shipshor_map = {
+    33,
     "shipshor.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -288,6 +308,7 @@ Map shipshor_map = {
 };
 
 Map shore_map = {
+    33,
     "shore.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -302,6 +323,7 @@ Map shore_map = {
 };
 
 Map shorship_map = {
+    33,
     "shorship.con", /* fname */
     MAP_COMBAT, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */

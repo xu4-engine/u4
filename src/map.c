@@ -264,9 +264,7 @@ unsigned char mapTileAt(const Map *map, int x, int y) {
 }
 
 int mapIsWorldMap(const Map *map) {
-    return 
-        map->width == MAP_WIDTH &&
-        map->height == MAP_HEIGHT;
+    return map->id == 0;
 }
 
 Object *mapAddPersonObject(Map *map, const Person *person) {

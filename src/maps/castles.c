@@ -12,6 +12,7 @@
 City empath_city;
 
 Map empath_map = {
+    3,
     "empath.ult", /* fname */
     MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -37,6 +38,7 @@ City empath_city  = {
 City lycaeum_city;
 
 Map lycaeum_map = {
+    2,
     "lycaeum.ult", /* fname */
     MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -62,6 +64,7 @@ City lycaeum_city  = {
 City serpent_city;
 
 Map serpent_map = {
+    4,
     "serpent.ult", /* fname */
     MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -94,6 +97,7 @@ const Portal lcb_1_portals[] = {
 City lcb_1_city;
 
 Map lcb_1_map = {
+    1,
     "lcb_1.ult", /* fname */
     MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -124,6 +128,7 @@ const Portal lcb_2_portals[] = {
 City lcb_2_city;
 
 Map lcb_2_map = {
+    1,
     "lcb_2.ult", /* fname */
     MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */

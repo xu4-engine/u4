@@ -11,6 +11,7 @@
 City britain_city;
 
 Map britain_map = {
+    6,
     "britain.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -36,6 +37,7 @@ City britain_city  = {
 City cove_city;
 
 Map cove_map = {
+    16,
     "cove.ult", /* fname */
     MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -61,6 +63,7 @@ City cove_city  = {
 City den_city;
 
 Map den_map = {
+    14,
     "den.ult", /* fname */
     MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -86,6 +89,7 @@ City den_city  = {
 City jhelom_city;
 
 Map jhelom_map = {
+    7,
     "jhelom.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -111,6 +115,7 @@ City jhelom_city  = {
 City magincia_city;
 
 Map magincia_map = {
+    12,
     "magincia.ult", /* fname */
     MAP_RUIN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -136,6 +141,7 @@ City magincia_city  = {
 City minoc_city;
 
 Map minoc_map = {
+    9,
     "minoc.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -161,6 +167,7 @@ City minoc_city  = {
 City moonglow_city;
 
 Map moonglow_map = {
+    5,
     "moonglow.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -186,6 +193,7 @@ City moonglow_city  = {
 City paws_city;
 
 Map paws_map = {
+    13,
     "paws.ult", /* fname */
     MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -211,6 +219,7 @@ City paws_city  = {
 City skara_city;
 
 Map skara_map = {
+    11,
     "skara.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -236,6 +245,7 @@ City skara_city  = {
 City trinsic_city;
 
 Map trinsic_map = {
+    10,
     "trinsic.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -261,6 +271,7 @@ City trinsic_city  = {
 City vesper_city;
 
 Map vesper_map = {
+    15,
     "vesper.ult", /* fname */
     MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
@@ -286,6 +297,7 @@ City vesper_city  = {
 City yew_city;
 
 Map yew_map = {
+    8,
     "yew.ult", /* fname */
     MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */

@@ -11,6 +11,7 @@
 const Shrine honesty_shrine;
 
 Map shrine_honesty_map = {
+    25,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -32,6 +33,7 @@ const Shrine honesty_shrine = {
 const Shrine compassion_shrine;
 
 Map shrine_compassion_map = {
+    26,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -53,6 +55,7 @@ const Shrine compassion_shrine = {
 const Shrine valor_shrine;
 
 Map shrine_valor_map = {
+    27,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -74,6 +77,7 @@ const Shrine valor_shrine = {
 const Shrine justice_shrine;
 
 Map shrine_justice_map = {
+    28,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -95,6 +99,7 @@ const Shrine justice_shrine = {
 const Shrine sacrifice_shrine;
 
 Map shrine_sacrifice_map = {
+    29,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -116,6 +121,7 @@ const Shrine sacrifice_shrine = {
 const Shrine honor_shrine;
 
 Map shrine_honor_map = {
+    30,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -137,6 +143,7 @@ const Shrine honor_shrine = {
 const Shrine spirituality_shrine;
 
 Map shrine_spirituality_map = {
+    31,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
@@ -158,6 +165,7 @@ const Shrine spirituality_shrine = {
 const Shrine humility_shrine;
 
 Map shrine_humility_map = {
+    32,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
     CON_WIDTH, CON_HEIGHT, /* width, height */
