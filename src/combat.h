@@ -29,8 +29,9 @@ typedef struct _CombatInfo {
     int focus;
     struct _Object *party[AREA_PLAYERS];
     struct _Object *monsters[AREA_MONSTERS];
-    int monsterHp[AREA_MONSTERS];
+    int monsterHp[AREA_MONSTERS];    
     StatusType party_status[AREA_PLAYERS];
+    StatusType monster_status[AREA_MONSTERS];
     int isNormalCombat  : 1;
     int isCamping       : 1;
 } CombatInfo;
@@ -41,7 +42,7 @@ void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);
 int combatInitialNumberOfMonsters(const struct _Monster *monster);
 struct _Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, const struct _Monster *monster);
-void combatApplyDamageToMonster(int monster, int damage);
+void combatApplyDamageToMonster(int monster, int damage, int player);
 void attackFlash(int x, int y, int tile, int timeFactor);
 
 #endif

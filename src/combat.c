@@ -65,6 +65,7 @@ int combatFindTargetForMonster(const Object *monster, int *distance, int ranged)
 int movePartyMember(Direction dir, int member);
 int combatChooseWeaponDir(int key, void *data);
 int combatChooseWeaponRange(int key, void *data);
+void combatApplyMonsterTileEffects(void);
 
 void combatBegin(Map *map, Object *monster, int isNormalCombat) {
     int i, j;
@@ -241,6 +242,7 @@ void combatCreateMonster(int index, int canbeleader) {
     }
     combatInfo.monsters[index] = mapAddMonsterObject(c->location->map, monsterForTile(mtile), c->location->map->area->monster_start[index].x, c->location->map->area->monster_start[index].y, c->location->z);
     combatInfo.monsterHp[index] = monsterGetInitialHp(combatInfo.monsters[index]->monster);
+    combatInfo.monster_status[index] = STAT_GOOD;
 }
 
 void combatFinishTurn() {    
@@ -308,10 +310,16 @@ void combatFinishTurn() {
                  * ====================
                  */
             
-                /* FIXME: apply tile effects to monsters */
-                combatMoveMonsters();                
+                /* first, move all the monsters */
+                combatMoveMonsters();
 
+                /* then, apply tile effects to monsters */
+                combatApplyMonsterTileEffects();                
+
+                /* reset the focus to the avatar and start the party's turn over again */
                 combatInfo.focus = focus = 0;
+
+                /* check to see if combat is over */
                 if (combatIsLost()) {
                     if (!playerPartyDead(c->saveGame)) {
                         if (combatInfo.monsterObj && monsterIsGood(combatInfo.monster))
@@ -324,7 +332,8 @@ void combatFinishTurn() {
                     combatEnd();
                     return;
                 }
-                /* End combat immediately if the enemy has fled */
+
+                /* end combat immediately if the enemy has fled */
                 else if (combatIsWon()) {
                     eventHandlerPopKeyHandler();
                     combatEnd();
@@ -525,7 +534,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
             attackFlash(x, y, hittile, 1);
 
             /* apply the damage to the monster */
-            combatApplyDamageToMonster(monster, playerGetDamage(&c->saveGame->players[focus]));
+            combatApplyDamageToMonster(monster, playerGetDamage(&c->saveGame->players[focus]), focus);
         }
     }
 
@@ -746,6 +755,16 @@ void combatMoveMonsters() {
         if (!combatInfo.monsters[i])
             continue;
         m = combatInfo.monsters[i]->monster;
+
+        /* see if monster wakes up if it is asleep */
+        if ((combatInfo.monster_status[i] == STAT_SLEEPING) && (rand() % 8 == 0)) {
+            combatInfo.monster_status[i] = STAT_GOOD;
+            combatInfo.monsters[i]->canAnimate = 1;
+        }
+
+        /* if the monster is still asleep, then move on to the next monster */
+        if (combatInfo.monster_status[i] == STAT_SLEEPING)
+            continue;
 
         if (monsterNegates(m)) {
             c->aura = AURA_NEGATE;
@@ -1003,11 +1022,11 @@ int movePartyMember(Direction dir, int member) {
  * Applies 'damage' amount of damage to the monster
  */
 
-void combatApplyDamageToMonster(int monster, int damage) {
-    int xp,
-        focus = combatInfo.focus;
+void combatApplyDamageToMonster(int monster, int damage, int player) {
+    int xp;
     const Monster *m = combatInfo.monsters[monster]->monster;
 
+    /* deal the damage */
     if (m->id != LORDBRITISH_ID)
         combatInfo.monsterHp[monster] -= damage;
 
@@ -1016,9 +1035,15 @@ void combatApplyDamageToMonster(int monster, int damage) {
     case MSTAT_DEAD:
         xp = monsterGetXp(m);
         screenMessage("%s Killed!\nExp. %d\n", m->name, xp);
-        playerAwardXp(&c->saveGame->players[focus], xp);
-        if (monsterIsEvil(m))
-            playerAdjustKarma(c->saveGame, KA_KILLED_EVIL);
+        
+        /* if a player killed the creature, then award the XP,
+           otherwise, it died on its own */
+        if (player >= 0) {
+            playerAwardXp(&c->saveGame->players[player], xp);
+            if (monsterIsEvil(m))
+                playerAdjustKarma(c->saveGame, KA_KILLED_EVIL);
+        }
+
         mapRemoveObject(c->location->map, combatInfo.monsters[monster]);
         combatInfo.monsters[monster] = NULL;
         break;
@@ -1105,4 +1130,45 @@ int combatChooseWeaponRange(int key, void *data) {
     }
     
     return 0;
+}
+
+/**
+ * Apply tile effects to all monsters depending on what they're standing on
+ */
+void combatApplyMonsterTileEffects(void) {
+    int i;
+
+    for (i = 0; i < AREA_MONSTERS; i++) {
+        if (combatInfo.monsters[i]) {
+            TileEffect effect;
+            effect = tileGetEffect(mapTileAt(c->location->map, combatInfo.monsters[i]->x, combatInfo.monsters[i]->y, c->location->z));
+
+            switch(effect) {
+            case EFFECT_SLEEP:
+                /* monster fell asleep! */
+                if ((combatInfo.monsters[i]->monster->resists != EFFECT_SLEEP) &&
+                    ((rand() % 0xFF) >= combatInfo.monsterHp[i])) {
+                    combatInfo.monster_status[i] = STAT_SLEEPING;
+                    combatInfo.monsters[i]->canAnimate = 0; /* freeze monster */
+                }
+                break;
+
+            case EFFECT_FIRE:
+                /* deal 0 - 127 damage to the monster if it is not immune to fire damage */
+                if (combatInfo.monsters[i]->monster->resists != EFFECT_FIRE)
+                    combatApplyDamageToMonster(i, rand() % 0x7F, -1);
+                break;
+
+            case EFFECT_POISONFIELD:
+                /* deal 0 - 127 damage to the monster if it is not immune to poison field damage */
+                if (combatInfo.monsters[i]->monster->resists != EFFECT_POISONFIELD)
+                    combatApplyDamageToMonster(i, rand() % 0x7F, -1);
+                break;
+
+            case EFFECT_POISON:
+            case EFFECT_NONE:
+            default: break;
+            }
+        }
+    }
 }

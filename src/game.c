@@ -2620,7 +2620,7 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;   
     Object *obj;
     const Monster *m;
-    int hittile, misstile;
+    int tile;
 
     info->prev_x = x;
     info->prev_y = y;
@@ -2629,13 +2629,12 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
     obj = mapObjectAt(c->location->map, info->origin_x, info->origin_y, c->location->z);
     m = (obj && obj->objType == OBJECT_MONSTER) ? obj->monster : NULL;
 
-    /* Figure out what the range attack should look like */
-    hittile = (m) ? m->rangedhittile : HITFLASH_TILE;
-    misstile = (m) ? m->rangedmisstile : MISSFLASH_TILE;
+    /* Figure out what the ranged attack should look like */
+    tile = (m && (m->worldrangedtile > 0)) ? m->worldrangedtile : HITFLASH_TILE;
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (oldx >= 0) && (oldy >= 0))
-        annotationRemove(oldx, oldy, c->location->z, c->location->map->id, misstile);
+        annotationRemove(oldx, oldy, c->location->z, c->location->map->id, tile);
     
     /* Attack missed, stop now */
     if (x == -1 && y == -1) {
@@ -2651,7 +2650,7 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
         /* Does the attack hit the avatar? */
         if (x == c->location->x && y == c->location->y) {
             /* always displays as a 'hit' */
-            attackFlash(x, y, hittile, 2);
+            attackFlash(x, y, tile, 2);
 
             /* FIXME: check actual damage from u4dos -- values here are guessed */
             if (tileIsShip(c->saveGame->transport))
@@ -2662,7 +2661,7 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
         }
         
         /* Show the attack annotation */
-        annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, misstile));
+        annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, tile));
         gameUpdateScreen();
 
         /* Based on attack speed setting in setting struct, make a delay for

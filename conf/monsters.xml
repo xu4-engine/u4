@@ -37,7 +37,7 @@
     <monster id="25" encounterSize="12" name="Rat" tile="144" frames="4" basehp="112" level="3" movement="wanders" good="true" leader="38"/>
     <monster id="26" encounterSize="12" name="Bat" tile="148" frames="4" basehp="64" level="3" flies="true" movement="wanders" good="true" leader="47"/>
     <monster id="27" encounterSize="6" name="Giant Spider" tile="152" frames="4" basehp="128" level="4" ranged="true" rangedhittile="poison" rangedmisstile="poison" spawntile="3" movement="wanders" good="true" poisons="true" leader="25"/>
-    <monster id="28" encounterSize="4" name="Ghost" tile="156" frames="4" basehp="64" level="5" undead="true" leader="46"/>
+    <monster id="28" encounterSize="4" name="Ghost" tile="156" frames="4" basehp="64" level="5" undead="true" resists="sleep" leader="46"/>
     <monster id="29" encounterSize="15" name="Slime" tile="160" frames="4" ambushes="true" basehp="176" level="3"/>
     <monster id="30" encounterSize="6" name="Troll" tile="164" frames="4" ambushes="true" basehp="192" level="6" ranged="true" leader="41"/>
     <monster id="31" encounterSize="15" name="Gremlin" tile="168" frames="4" basehp="96" level="3" steals="food"/>
@@ -45,9 +45,9 @@
     <monster id="33" encounterSize="1" name="Reaper" tile="176" frames="4" basehp="112" level="16" ranged="true" rangedhittile="random" rangedmisstile="random" movement="none" casts="sleep"/>
     <monster id="34" encounterSize="15" name="Insect Swarm" tile="180" frames="4" ambushes="true" basehp="208" level="3" good="true" movement="wanders" leader="25"/>
     <monster id="35" encounterSize="4" name="Gazer" tile="184" frames="4" basehp="224" level="15" ranged="true" rangedhittile="sleep" rangedmisstile="sleep" leader="36"/>
-    <monster id="36" encounterSize="8" name="Phantom" tile="188" frames="4" basehp="255" level="8" undead="true" leader="28"/>
+    <monster id="36" encounterSize="8" name="Phantom" tile="188" frames="4" basehp="255" level="8" undead="true" resists="sleep" leader="28"/>
     <monster id="37" encounterSize="10" name="Orc" tile="192" frames="4" ambushes="true" basehp="112" level="5" leader="30"/>
-    <monster id="38" encounterSize="12" name="Skeleton" tile="196" frames="4" ambushes="true" basehp="48" level="3" leader="45"/>
+    <monster id="38" encounterSize="12" name="Skeleton" tile="196" frames="4" ambushes="true" basehp="48" level="3" undead="true" resists="sleep" leader="45"/>
     <monster id="39" encounterSize="10" name="Rogue" tile="200" frames="4" ambushes="true" basehp="96" level="5" steals="gold"/>
     <monster id="40" encounterSize="12" name="Python" tile="204" frames="4" basehp="64" ambushes="true" level="3" ranged="true" rangedhittile="poison" rangedmisstile="poison" poisons="true" good="true" movement="wanders" leader="25"/>
     <monster id="41" encounterSize="6" name="Ettin" tile="208" frames="4" basehp="96" level="7" ranged="true" rangedhittile="boulder" rangedmisstile="boulder" leader="49"/>
@@ -55,8 +55,8 @@
     <monster id="43" encounterSize="6" name="Cyclops" tile="216" frames="4" basehp="144" level="8" ranged="true" rangedhittile="boulder" rangedmisstile="boulder" leader="48"/>
     <monster id="44" encounterSize="12" name="Wisp" tile="220" frames="4" ambushes="true" basehp="48" level="4" teleports="true" leader="36"/>
     <monster id="45" encounterSize="6" name="Mage" tile="224" frames="4" basehp="128" level="11" ranged="true" rangedhittile="magic" rangedmisstile="magic" leader="49"/>
-    <monster id="46" encounterSize="4" name="Lich" tile="228" frames="4" basehp="48" level="12" ranged="true" rangedhittile="magic" rangedmisstile="magic" undead="true" leader="49"/>
-    <monster id="47" encounterSize="8" name="Lava Lizard" tile="232" frames="4" basehp="48" level="5" ranged="true" worldrangedtile="fire" rangedhittile="lava" rangedmisstile="lava" resists="fire" leader="50"/>
+    <monster id="46" encounterSize="4" name="Lich" tile="228" frames="4" basehp="48" level="12" ranged="true" rangedhittile="magic" rangedmisstile="magic" undead="true" resists="sleep" leader="49"/>
+    <monster id="47" encounterSize="8" name="Lava Lizard" tile="232" frames="4" basehp="48" level="5" ranged="true" worldrangedtile="fireblast" rangedhittile="lava" rangedmisstile="lava" resists="fire" leader="50" leavestile="lava"/>
     <monster id="48" encounterSize="4" name="Zorn" tile="236" frames="4" basehp="48" level="15" casts="negate" leader="35"/>
     <monster id="49" encounterSize="6" name="Daemon" tile="240" frames="4" basehp="32" level="7" ranged="true" rangedhittile="magic" rangedmisstile="magic" resists="fire" leader="52"/>
     <monster id="50" encounterSize="4" name="Hydra" tile="244" frames="4" basehp="32" level="13" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" resists="fire" leader="51"/>

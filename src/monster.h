@@ -170,11 +170,13 @@ typedef struct _Monster {
     unsigned char basehp;
     unsigned short level;
     unsigned char ranged;
+    unsigned char worldrangedtile;
     unsigned char rangedhittile;
     unsigned char rangedmisstile;
     MonsterAttrib mattr;
     SlowedType slowedType;
     unsigned char encounterSize;
+    unsigned char resists;
 } Monster;
 
 const Monster *monsterForTile(unsigned char tile);

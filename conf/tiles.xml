@@ -69,15 +69,15 @@
     <tile/> <!-- mgate1 -->
     <tile/> <!-- mgate2 -->
     <tile/> <!-- mgate3 -->
-    <tile effect="poison" animated="true" dispel="true"/> <!-- poison field -->
-    <tile cantwalkon="all" monsterunwalkable="true" animated="true" dispel="true"/> <!-- energy field -->
+    <tile effect="poisonField" animated="true" dispel="true"/> <!-- poison field -->
+    <tile cantwalkon="all" effect="electricity" monsterunwalkable="true" animated="true" dispel="true"/> <!-- energy field -->
     <tile speed="vvslow" effect="fire" animated="true" dispel="true"/> <!-- fire field -->
     <tile effect="sleep" animated="true" candispel="true"/> <!-- sleep field -->
     <tile cantwalkon="all" canattackover="true"/> <!-- solid -->
     <tile opaque="true"/> <!-- secret door -->
     <tile/> <!-- altar -->
     <tile cantwalkon="all"/> <!-- roast -->
-    <tile cantwalkon="all" animated="true"/> <!-- lava -->
+    <tile animated="true" effect="fire"/> <!-- lava -->
     <tile/> <!-- miss flash -->
     <tile/> <!-- magic flash -->
     <tile/> <!-- hit flash -->

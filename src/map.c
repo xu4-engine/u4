@@ -407,6 +407,7 @@ Object *mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigne
     obj->objType = OBJECT_UNKNOWN;
     obj->hasFocus = 0;
     obj->isVisible = 1;
+    obj->canAnimate = 1;
     obj->next = map->objects;
 
     map->objects = obj;
@@ -490,7 +491,7 @@ void mapAnimateObjects(Map *map) {
     Object *obj = map->objects;
 
     while (obj) {
-        if (rand() % 2) {
+        if (obj->canAnimate && rand() % 2) {
             obj->prevtile = obj->tile;   
             tileAdvanceFrame(&obj->tile);
         }

@@ -425,6 +425,7 @@ void playerApplyEffect(SaveGame *saveGame, TileEffect effect, int player) {
             if (i == player || rand() % 5 == 0)
                 saveGame->players[i].status = STAT_SLEEPING;
             break;
+        case EFFECT_POISONFIELD:
         case EFFECT_POISON:
             if (i == player || rand() % 5 == 0)
                 saveGame->players[i].status = STAT_POISONED;

@@ -95,6 +95,15 @@ void monsterLoadInfoFromXml() {
         { "sleep", SLEEPFIELD_TILE }
     };
 
+    static const struct {
+        const char *name;
+        TileEffect effect;
+    } effects[] = {
+        { "fire", EFFECT_FIRE },
+        { "poison", EFFECT_POISON | EFFECT_POISONFIELD },
+        { "sleep", EFFECT_SLEEP }
+    };
+
     if (!monsterInfoLoaded)
         monsterInfoLoaded = 1;
     else return;
@@ -131,13 +140,15 @@ void monsterLoadInfoFromXml() {
         monsters[monster].frames = 1;
         monsters[monster].camouflageTile = 0;
 
+        monsters[monster].worldrangedtile = 0;
         monsters[monster].rangedhittile = HITFLASH_TILE;
         monsters[monster].rangedmisstile = MISSFLASH_TILE;
 
         monsters[monster].mattr = 0;
         monsters[monster].slowedType = SLOWED_BY_TILE;
         monsters[monster].basehp = 0;
-        monsters[monster].encounterSize = 0;        
+        monsters[monster].encounterSize = 0;
+        monsters[monster].resists = 0;
 
         /* get the encounter size */
         if (xmlGetProp(node, (const xmlChar *)"encounterSize") != NULL) {
@@ -157,6 +168,14 @@ void monsterLoadInfoFromXml() {
                 (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"camouflageTile"));
         }
 
+        /* get the ranged tile for world map attacks */
+        for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
+            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"worldrangedtile"), 
+                          (const xmlChar *)tiles[i].name) == 0) {
+                monsters[monster].worldrangedtile = tiles[i].tile;
+            }
+        }
+
         /* get ranged hit tile */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
             if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"rangedhittile"), 
@@ -170,6 +189,14 @@ void monsterLoadInfoFromXml() {
             if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"rangedmisstile"), 
                           (const xmlChar *)tiles[i].name) == 0) {
                 monsters[monster].rangedmisstile = tiles[i].tile;
+            }
+        }
+
+        /* get effects that this monster is immune to */
+        for (i = 0; i < sizeof(effects) / sizeof(effects[0]); i++) {
+            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"resists"), 
+                          (const xmlChar *)effects[i].name) == 0) {
+                monsters[monster].resists = effects[i].effect;
             }
         }
 
@@ -404,6 +431,7 @@ int monsterSpecialAction(Object *obj) {
        
         switch(m->id) {
         
+        case LAVA_LIZARD_ID:
         case SEA_SERPENT_ID:
         case HYDRA_ID:
         case DRAGON_ID:

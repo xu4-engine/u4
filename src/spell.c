@@ -479,8 +479,20 @@ static int spellQuick(int unused) {
 }
 
 static int spellSleep(int unused) {
-    /* FIXME */
-    screenMessage("\nNot implemented yet!\n\n");
+    extern CombatInfo combatInfo;
+    int i;
+
+    /* try to put each monster to sleep */
+    for (i = 0; i < AREA_MONSTERS; i++) { 
+        if (combatInfo.monsters[i]) {
+            if ((combatInfo.monsters[i]->monster->resists != EFFECT_SLEEP) &&
+                ((rand() % 0xFF) >= combatInfo.monsterHp[i])) {
+                combatInfo.monster_status[i] = STAT_SLEEPING;
+                combatInfo.monsters[i]->canAnimate = 0; /* freeze monster */
+            }
+        }
+    }
+
     return 1;
 }
 
@@ -498,7 +510,7 @@ static int spellTremor(int unused) {
             eventHandlerSleep(250);
             gameUpdateScreen();
 
-            combatApplyDamageToMonster(i, rand() % 0xFF);
+            combatApplyDamageToMonster(i, rand() % 0xFF, combatInfo.focus);
 
             annotationRemove(x, y, c->location->z, c->location->map->id, HITFLASH_TILE);
         }
