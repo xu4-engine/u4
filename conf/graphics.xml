@@ -106,7 +106,7 @@
         <image name="rune8"    filename="rune_4.ega"   width="320" height="200" depth="4" filetype="image/x-u4rle"/>
 
         <!-- gem tiles -->
-        <image name="gemtiles" filename="ega/gem.rle"  width="4"   height="512" depth="4" filetype="image/x-u4rle" tiles="128" xu4Graphic="true"/>
+        <image name="gemtiles" filename="ega/gem.png"  width="4"   height="512" depth="4" filetype="image/png" tiles="128" xu4Graphic="true"/>
 
     </imageset>
 
@@ -145,7 +145,7 @@
         <image name="rune8"    filename="rune_8.ega"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
 
         <!-- gem tiles -->
-        <image name="gemtiles" filename="vga/gem.rle"  width="4"   height="512" depth="8" filetype="image/x-u4rle" tiles="128" xu4Graphic="true"/>
+        <image name="gemtiles" filename="vga/gem.png"  width="4"   height="512" depth="8" filetype="image/png" tiles="128" xu4Graphic="true"/>
 
     </imageset>
 
