@@ -86,8 +86,8 @@ void eventHandlerMain(void (*updateScreen)(void)) {
         case SDL_KEYDOWN: {
             int key;
 
-            if (event.key.keysym.sym >= 'a' &&
-                event.key.keysym.sym <= 'z') {
+            if (event.key.keysym.sym >= SDLK_a &&
+                event.key.keysym.sym <= SDLK_z) {
 
                 if (event.key.keysym.mod & KMOD_ALT)
                     key = event.key.keysym.sym - SDLK_a + 'a' + U4_ALT;
