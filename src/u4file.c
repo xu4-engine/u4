@@ -28,14 +28,10 @@ const char *paths[] = {
 FILE *u4fopen(const char *fname) {
     FILE *f = NULL;
     unsigned int i, j;
-    char *pathname = NULL;
+    char pathname[128];
 
     for (i = 0; i < sizeof(paths) / sizeof(paths[0]); i++) {
-        pathname = malloc(strlen(paths[i]) + strlen(fname) + 1);
-        if (!pathname)
-            continue;
-        strcpy(pathname, paths[i]);
-        strcat(pathname, fname);
+        snprintf(pathname, sizeof(pathname), "%s%s", paths[i], fname);
 
         if ((f = fopen(pathname, "rb")) != NULL)
             break;
@@ -47,13 +43,7 @@ FILE *u4fopen(const char *fname) {
         
         if ((f = fopen(pathname, "rb")) != NULL)
             break;
-
-        free(pathname);
-        pathname = NULL;
     }
-
-    if (pathname)
-        free(pathname);
 
     return f;
 }
