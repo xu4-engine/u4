@@ -33,6 +33,8 @@ install::
 	$(INSTALL) -D rledec $(libdir)/u4/rledec
 	$(INSTALL) -D tlkconv $(libdir)/u4/tlkconv
 	$(INSTALL) ../conf/*.xml $(libdir)/u4
+	mkdir -p $(libdir)/u4/dtd
+	$(INSTALL) ../conf/dtd/*.dtd $(libdir)/u4/dtd
 	mkdir -p $(libdir)/u4/graphics
 	$(INSTALL) ../graphics/*.rle $(libdir)/u4/graphics
 	$(INSTALL) -D ../u4.desktop $(desktopdir)/Games/u4.desktop
