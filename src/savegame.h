@@ -85,12 +85,18 @@ typedef enum {
 
 typedef enum {
     ITEM_SKULL  = 0x01,
+    ITEM_SKULL_DESTROYED = 0x02,
     ITEM_CANDLE = 0x04,
     ITEM_BOOK   = 0x08,
     ITEM_BELL   = 0x10,
     ITEM_KEY_C  = 0x20,
     ITEM_KEY_L  = 0x40,
-    ITEM_KEY_T  = 0x80
+    ITEM_KEY_T  = 0x80,
+    ITEM_HORN   = 0x100,
+    ITEM_WHEEL  = 0x200,
+    ITEM_CANDLE_USED = 0x400,
+    ITEM_BOOK_USED = 0x800,
+    ITEM_BELL_USED = 0x1000
 } Item;
 
 typedef enum {
@@ -151,8 +157,13 @@ typedef struct _SaveGame {
     unsigned char stones;
     unsigned char runes;
     unsigned short members;
-    unsigned char partytile;
-    char unknown2[27];
+    unsigned short transport;
+    unsigned short balloonstate;
+    char unknown2[6];
+    unsigned char lbintro;
+    char unknown3[9];
+    unsigned char dngx, dngy;
+    char unknown4[6];
 } SaveGame;
 
 int saveGameWrite(const SaveGame *save, FILE *f);

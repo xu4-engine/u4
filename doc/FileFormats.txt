@@ -91,9 +91,10 @@ variable length strings terminated by a single zero byte and the
 following field starts immediately after.  The blocks are padded
 with zero bytes to 288 bytes.
 
-0x0    1    NPC 0 ??? question flag (0x0-no question? (water in LCB), 0x3-??? (Seanna in BD), 0x4-??? (Brigant in BD) 0x5-???, 0x6-???)
-0x1    1    NPC 0 question type (0x0-should answer yes, 0x1-should answer no)
-0x2    1    NPC 0 ??? (0x0, 0x10, 0x20, 0x32)
+0x0    1    NPC 0 question flag (0-no question, 3-job triggers, 4-health
+            triggers, 5-keyword 1 triggers, 6-keyword 2 triggers)
+0x1    1    NPC 0 question type (0-should answer yes, 0-should answer no)
+0x2    1    NPC 0 turns away probability
 0x3    var  NPC 0 name (zero terminated)
 var    var  NPC 0 pronoun (zero terminated)
 var    var  NPC 0 description (zero terminated)
@@ -106,7 +107,7 @@ var    var  NPC 0 no answer (zero terminated)
 var    5    NPC 0 keyword 1 (zero terminated)
 var    5    NPC 0 keyword 2 (zero terminated)
 var    var  zero padding
-0x120  3    NPC 0 ???
+0x120  3    NPC 1 question flag
 ...
 
 
@@ -194,7 +195,7 @@ offset len  notes
 0x140  4    food (in units of hundredths)
 0x144  2    gold
 0x146  16   karma (2 bytes each for honesty, compassion, valor, justice,
-            sacrifice, honor, spirituality and humility; 0 - partial avatar)
+            sacrifice, honor, spirituality and humility; 0-partial avatar)
 0x156  2    torches
 0x158  2    gems
 0x15A  2    keys
@@ -212,20 +213,26 @@ offset len  notes
             magic missile, negate, open, protection, quickness,
             resurrect, sleep, tremor, undead, view, winds, x-it, y-up,
             z-down)
-0x1D2  1    items (1 bit each for skull, ???, candle, book, bell, key part
-            C, key part L, key part T)
-0x1D3  1    items (1 bit each for horn, wheel, ???)
+0x1D2  1    items (1 bit each for skull, skull destroyed, candle, book,
+            bell, key part C, key part L, key part T)
+0x1D3  1    items (1 bit each for horn, wheel, candle used at abyss 
+            entrance, book used at abyss entrance, bell used at abyss
+            entrance, (3 bits unused))
 0x1D4  1    x coord
 0x1D5  1    y coord
 0x1D6  1    stones (1 bit each for BYRGOPWB)
 0x1D7  1    runes (1 bit each for HCVJSHSH)
 0x1D8  2    number of characters in party
-0x1DA  1    tile that represents the party (always 0x1f)
-0x1DB  10   ???
-0x1E4  1    introduced to Lord British (0 - haven't been introduced, 1 - introduced)
+0x1DA  2    transport (0x10-ship facing west, 0x11-ship facing north,
+            0x12-ship facing east, 0x13-ship facing south, 0x14-horse
+            facing west, 0x15-horse facing east, 0x18-balloon, 0x1f-on
+            foot)
+0x1DC  2    balloon status (0-on ground, 1-flying (?verify?))
+0x1DE  6    ???
+0x1E4  1    introduced to Lord British (0-haven't been introduced, 1-introduced)
 0x1E5  9    ???
 0x1EE  2    ??? (coordinates of a dungeon)
-0x1F0  6    ???
+0x1F0  7    ???
 
 The character record format:
 
@@ -241,12 +248,13 @@ offset len  notes
 0x10   2    weapon
 0x12   2    armor
 0x14   16   name
-0x24   1    sex (0xb - female, 0xd - male)
+0x24   1    sex (0xb-female, 0xd-male)
 0x25   1    class
-0x26   1    status ('G' - good, 'P' - poisoned, 'S' - sleeping, 'D' - dead)
+0x26   1    status ('G'-good, 'P'-poisoned, 'S'-sleeping, 'D'-dead)
 
 
 Sources
 -------
 
 http://www.geocities.com/xenerkes/
+http://www.moongates.com/u4/Tech.asp
