@@ -22,7 +22,7 @@
 #include "monster.h"
 #include "debug.h"
 
-#define MAP_TILE_AT(mapptr, x, y) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
+#define MAP_TILE_AT(mapptr, x, y, z) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 
 int mapRead(City *city, FILE *ult, FILE *tlk) {
     unsigned char conv_idx[CITY_MAX_PERSONS];
@@ -93,6 +93,10 @@ int mapRead(City *city, FILE *ult, FILE *tlk) {
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         if (!readChar(&(conv_idx[i]), ult))
             return 0;
+    }
+
+    for (i = 0; i < CITY_MAX_PERSONS; i++) {
+        city->persons[i].startz = 0; /* FIXME */
     }
 
     for (i = 0; ; i++) {
@@ -221,32 +225,33 @@ int mapReadWorld(Map *map, FILE *world) {
     return 1;
 }
 
-Object *mapObjectAt(const Map *map, int x, int y) {
+Object *mapObjectAt(const Map *map, int x, int y, int z) {
     Object *obj;
 
     for(obj = map->objects; obj; obj = obj->next) {
-        if (obj->x == x && obj->y == y)
+        if (obj->x == x && obj->y == y && obj->z == z)
             return obj;
     }
     return NULL;
 }
 
-const Person *mapPersonAt(const Map *map, int x, int y) {
+const Person *mapPersonAt(const Map *map, int x, int y, int z) {
     Object *obj;
 
-    obj = mapObjectAt(map, x, y);
+    obj = mapObjectAt(map, x, y, z);
     if (obj)
         return obj->person;
     else
         return NULL;
 }
 
-const Portal *mapPortalAt(const Map *map, int x, int y) {
+const Portal *mapPortalAt(const Map *map, int x, int y, int z) {
     int i;
 
     for(i = 0; i < map->n_portals; i++) {
         if (map->portals[i].x == x &&
-            map->portals[i].y == y) {
+            map->portals[i].y == y &&
+            map->portals[i].z == z) {
             return &(map->portals[i]);
         }
     }
@@ -257,12 +262,12 @@ const Portal *mapPortalAt(const Map *map, int x, int y) {
  * Returns the real tile at the given point on a map.  Visual-only
  * annotations like moongates and attack icons are ignored.
  */
-unsigned char mapTileAt(const Map *map, int x, int y) {
+unsigned char mapTileAt(const Map *map, int x, int y, int z) {
     unsigned char tile;
     const Annotation *a;
  
-    tile = MAP_TILE_AT(map, x, y);
-    if ((a = annotationAt(x, y)) != NULL &&
+    tile = MAP_TILE_AT(map, x, y, z);
+    if ((a = annotationAt(x, y, z, map->id)) != NULL &&
         !a->visual)
         tile = a->tile;
     
@@ -273,12 +278,12 @@ unsigned char mapTileAt(const Map *map, int x, int y) {
  * Returns the visible tile at the given point on a map.  This
  * includes visual-only annotations like moongates and attack icons.
  */
-unsigned char mapVisibleTileAt(const Map *map, int x, int y, int *focus) {
+unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus) {
     unsigned char tile;
     const Annotation *a;
     const Object *obj;
  
-    a = annotationAt(x, y);
+    a = annotationAt(x, y, z, map->id);
     if (a && a->visual) {
         *focus = 0;
         tile = a->tile;
@@ -287,13 +292,13 @@ unsigned char mapVisibleTileAt(const Map *map, int x, int y, int *focus) {
         *focus = 0;
         tile = c->saveGame->transport;
     }
-    else if ((obj = mapObjectAt(c->map, x, y))) {
+    else if ((obj = mapObjectAt(c->map, x, y, z))) {
         *focus = obj->hasFocus;
         tile = obj->tile;
     }
     else {
         *focus = 0;
-        tile = MAP_TILE_AT(map, x, y);
+        tile = MAP_TILE_AT(map, x, y, z);
         if (a)
             tile = a->tile;
     }
@@ -312,6 +317,7 @@ Object *mapAddPersonObject(Map *map, const Person *person) {
     obj->prevtile = person->tile1;
     obj->x = person->startx;
     obj->y = person->starty;
+    obj->z = person->startz;
     obj->movement_behavior = person->movement_behavior;
     obj->person = person;
     obj->hasFocus = 0;
@@ -322,13 +328,14 @@ Object *mapAddPersonObject(Map *map, const Person *person) {
     return obj;
 }
 
-Object *mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned short x, unsigned short y) {
+Object *mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned short x, unsigned short y, unsigned short z) {
     Object *obj = (Object *) malloc(sizeof(Object));
 
     obj->tile = tile;
     obj->prevtile = prevtile;
     obj->x = x;
     obj->y = y;
+    obj->z = z;
     obj->prevx = x;
     obj->prevy = y;
     obj->movement_behavior = MOVEMENT_FIXED;
@@ -377,7 +384,7 @@ void mapRemovePerson(Map *map, const Person *person) {
     }
 }
 
-void mapMoveObjects(Map *map, int avatarx, int avatary, void(*doAttack)(Object *)) {
+void mapMoveObjects(Map *map, int avatarx, int avatary, int z, void(*doAttack)(Object *)) {
     int newx, newy;
     int distance, slow;
     Object *obj = map->objects;
@@ -395,7 +402,7 @@ void mapMoveObjects(Map *map, int avatarx, int avatary, void(*doAttack)(Object *
 
         case MOVEMENT_WANDER:
             if (rand() % 2 == 0)
-                dirMove(dirRandomDir(mapGetValidMoves(map, newx, newy, obj->tile)), &newx, &newy);
+                dirMove(dirRandomDir(mapGetValidMoves(map, newx, newy, z, obj->tile)), &newx, &newy);
             break;
                 
         case MOVEMENT_ATTACK_AVATAR:
@@ -404,15 +411,15 @@ void mapMoveObjects(Map *map, int avatarx, int avatary, void(*doAttack)(Object *
             if (distance == 1)
                 (*doAttack)(obj);
             else
-                dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, obj->tile)), &newx, &newy);
+                dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, z, obj->tile)), &newx, &newy);
             break;
 
         case MOVEMENT_FOLLOW_AVATAR:
-            dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, obj->tile)), &newx, &newy);
+            dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, z, obj->tile)), &newx, &newy);
             break;
         }
 
-        switch (tileGetSpeed(mapTileAt(map, newx, newy))) {
+        switch (tileGetSpeed(mapTileAt(map, newx, newy, obj->z))) {
         case FAST:
             slow = 0;
             break;
@@ -488,7 +495,7 @@ int mapNumberOfMonsters(const Map *map) {
     return n;
 }
 
-int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char transport) {
+int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned char transport) {
     int retval;
     Direction d;
     unsigned char tile, prev_tile;
@@ -524,12 +531,12 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char trans
             x == c->saveGame->x && 
             y == c->saveGame->y)
             tile = c->saveGame->transport;
-        else if ((obj = mapObjectAt(map, x, y)) != NULL)
+        else if ((obj = mapObjectAt(map, x, y, z)) != NULL)
             tile = obj->tile;
         else
-            tile = mapTileAt(map, x, y);
+            tile = mapTileAt(map, x, y, z);
 
-        prev_tile = mapTileAt(map, from_x, from_y);
+        prev_tile = mapTileAt(map, from_x, from_y, z);
 
         /* if the transport is a ship, check sailable */
         if (tileIsShip(transport) || tileIsPirateShip(transport)) {
