@@ -483,7 +483,7 @@ void introUpdateScreen() {
 
     case INTRO_CONFIG:
         screenDrawBackground(BKGD_INTRO);
-        screenTextAt(15, 14, "Settings:");
+        screenTextAt(2, 14, "Settings (take effect on restart):");
         screenTextAt(11, 15, "Scale       x%d", settings->scale);
         screenTextAt(11, 16, "Mode        %s", settings->fullscreen ? "Fullscreen" : "Window");
         screenTextAt(11, 17, "Filter      %s", settingsFilterToString(settings->filter));
@@ -495,7 +495,7 @@ void introUpdateScreen() {
 
     case INTRO_ABOUT:
         screenDrawBackground(BKGD_INTRO);
-        screenTextAt(15, 14, "XU4 %s", "0.09");
+        screenTextAt(15, 14, "XU4 %s", VERSION);
         screenTextAt(2, 16, "xu4 is free software; you can redist-");
         screenTextAt(2, 17, "ribute it and/or modify it under the");
         screenTextAt(2, 18, "terms of the GNU GPL as published by");
