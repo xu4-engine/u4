@@ -609,7 +609,7 @@ int mapDistance(int x1, int y1, int x2, int y2) {
     highx = (x1 > x2) ? x1 : x2;
     highy = (y1 > y2) ? y1 : y2;
 
-    while ((lowx < highx) && (lowy < highy))
+    while ((lowx < highx) || (lowy < highy))
     {
         if (lowx < highx) lowx++;
         if (lowy < highy) lowy++;

@@ -13,6 +13,7 @@ typedef enum {
     DIR_SOUTH
 } Direction;
 
+#define MASK_DIR(dir) (1 << (dir))
 #define MASK_DIR_WEST (1 << DIR_WEST)
 #define MASK_DIR_NORTH (1 << DIR_NORTH)
 #define MASK_DIR_EAST (1 << DIR_EAST)

@@ -81,6 +81,21 @@ void monsterLoadInfoFromXml() {
         { "wanders", MATTR_WANDERS }
     };    
 
+    /* hit and miss tiles */
+    static const struct {
+        const char *name;
+        unsigned int tile;
+    } tiles[] = {
+        { "fire", FIREFIELD_TILE },
+        { "poison", POISONFIELD_TILE },
+        { "lightning", LIGHTNINGFIELD_TILE },
+        { "magic", MAGICFLASH_TILE },
+        { "lava", LAVA_TILE },
+        { "fireblast", HITFLASH_TILE },
+        { "boulder", BOULDER_TILE },
+        { "sleep", SLEEPFIELD_TILE }
+    };
+
     if (!monsterInfoLoaded)
         monsterInfoLoaded = 1;
     else return;
@@ -114,6 +129,10 @@ void monsterLoadInfoFromXml() {
         monsters[monster].ranged = (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"ranged"), 
             (const xmlChar *) "true") == 0);
         monsters[monster].tile = (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"tile"));
+
+        monsters[monster].rangedhittile = HITFLASH_TILE;
+        monsters[monster].rangedmisstile = MISSFLASH_TILE;
+
         monsters[monster].mattr = 0;
         monsters[monster].slowedType = SLOWED_BY_TILE;
         monsters[monster].basehp = 0;
@@ -129,6 +148,22 @@ void monsterLoadInfoFromXml() {
         if (xmlGetProp(node, (const xmlChar *)"basehp") != NULL) {
             monsters[monster].basehp =
                 (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"basehp"));
+        }
+
+        /* get ranged hit tile */
+        for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
+            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"rangedhittile"), 
+                          (const xmlChar *)tiles[i].name) == 0) {
+                monsters[monster].rangedhittile = tiles[i].tile;
+            }
+        }
+
+        /* get ranged miss tile */
+        for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
+            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"rangedmisstile"), 
+                          (const xmlChar *)tiles[i].name) == 0) {
+                monsters[monster].rangedmisstile = tiles[i].tile;
+            }
         }
 
         /* Load monster attributes */
@@ -316,10 +351,10 @@ MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
 }
 
 int monsterSpecialAction(Object *obj) {
-    int broadsidesDirs, dx, dy, dirx, diry;
+    int broadsidesDirs, dx, dy, mapdist, dirx, diry;
     const Monster *m = NULL;
     CoordActionInfo *info;
-    int retval = 0;
+    int retval = 0;    
 
     if (obj->objType == OBJECT_MONSTER) {
 
@@ -330,18 +365,23 @@ int monsterSpecialAction(Object *obj) {
 
         dx = c->location->x - obj->x;
         dy = c->location->y - obj->y;
+        mapdist = mapDistance(c->location->x, c->location->y, obj->x, obj->y);
+
+        dirx = diry = DIR_NONE;
         
         /* Find out if the avatar is east or west of the object */
         if (dx < 0) {
             dx *= -1;
             dirx = DIR_WEST;
-        } else dirx = DIR_EAST;
+        } else if (dx > 0)
+            dirx = DIR_EAST;
 
         /* Find out if the avatar is north or south of the object */
         if (dy < 0) {            
             dy *= -1;
             diry = DIR_NORTH;
-        } else diry = DIR_SOUTH;
+        } else if (dy > 0)
+            diry = DIR_SOUTH;
 
         switch(m->id) {
         case PIRATE_ID:
@@ -364,20 +404,45 @@ int monsterSpecialAction(Object *obj) {
             
             if ((dy == 0) && (dx <= 3) && DIR_IN_MASK(dirx, broadsidesDirs)) {
                 /* Fire cannon in 'dirx' direction */
-                gameDirectionalAction(dirx, info);
+                info->dir = MASK_DIR(dirx);
+                gameDirectionalAction(info);
             }
             else if ((dx == 0) && (dy <= 3) && DIR_IN_MASK(diry, broadsidesDirs)) {
                 /* Fire cannon in 'diry' direction */
-                gameDirectionalAction(diry, info);
+                info->dir = MASK_DIR(diry);
+                gameDirectionalAction(info);
             }
             else retval = 0;
 
             free(info);
             break;
-
-        case GIANT_SQUID_ID: /* ranged */
+        
         case SEA_SERPENT_ID: /* ranged */
         case DRAGON_ID: /* ranged */
+
+            retval = 1;
+            
+            info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
+            info->handleAtCoord = &monsterRangeAttack;
+            info->origin_x = obj->x;
+            info->origin_y = obj->y;
+            info->prev_x = info->prev_y = -1;
+            info->range = 3;
+            info->validDirections = MASK_DIR_ALL;
+            info->player = -1;
+            info->blockedPredicate = &tileCanAttackOver;
+            info->blockBefore = 1;
+            info->firstValidDistance = 1;
+
+            /* A 50/50 chance they try to range attack when you're close enough */
+            if (mapdist <= 3 && (rand() % 2 == 0)) {
+                info->dir = (diry ? MASK_DIR(diry) : 0) | (dirx ? MASK_DIR(dirx) : 0);
+                gameDirectionalAction(info);
+            }
+            else retval = 0;
+
+            free(info);
+            break;
     
             /* FIXME: add ranged monster's behavior here */
 

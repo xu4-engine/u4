@@ -75,7 +75,7 @@ void playerEndTurn(SaveGame *saveGame);
 void playerApplyEffect(SaveGame *saveGame, TileEffect effect, int player);
 int playerPartyImmobilized(const SaveGame *saveGame);
 int playerPartyDead(const SaveGame *saveGame);
-void playerApplySleepSpell(SaveGame *saveGame);
+void playerApplySleepSpell(SaveGamePlayerRecord *player);
 int playerHeal(SaveGame *saveGame, HealType type, int player);
 void playerReviveParty(SaveGame *saveGame);
 int playerCanAfford(SaveGame *saveGame, int price);

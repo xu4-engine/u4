@@ -458,14 +458,9 @@ int playerPartyDead(const SaveGame *saveGame) {
 /**
  * Applies a sleep spell to the party.
  */
-void playerApplySleepSpell(SaveGame *saveGame) {
-    int i;
-
-    for (i = 0; i < saveGame->members; i++) {
-        if (saveGame->players[i].status == STAT_GOOD &&
-            (rand() % 2) == 0)
-            saveGame->players[i].status = STAT_SLEEPING;
-    }
+void playerApplySleepSpell(SaveGamePlayerRecord *player) {
+    if (player->status != STAT_DEAD && (rand() % 2) == 0)
+        player->status = STAT_SLEEPING;
 }
 
 int playerHeal(SaveGame *saveGame, HealType type, int player) {

@@ -167,6 +167,8 @@ typedef struct _Monster {
     unsigned char basehp;
     unsigned short level;
     unsigned char ranged;
+    unsigned char rangedhittile;
+    unsigned char rangedmisstile;
     MonsterAttrib mattr;
     SlowedType slowedType;
     unsigned char encounterSize;

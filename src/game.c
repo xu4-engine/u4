@@ -1005,12 +1005,13 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
     int distance = 0;
     Direction dir = keyToDirection(key);
     int valid = (dir != DIR_NONE);
+    info->dir = MASK_DIR(dir);
 
     eventHandlerPopKeyHandler();    
 
     if (valid) {
         screenMessage("%s\n", getDirectionName(dir));
-        gameDirectionalAction(dir, info);
+        gameDirectionalAction(info);
     }
 
     free(info);
@@ -2507,16 +2508,79 @@ void gameMonsterAttack(Object *obj) {
 }
 
 /**
+ * Performs a ranged attack for the monster at x,y on the world map
+ */
+int monsterRangeAttack(int x, int y, int distance, void *data) {
+    CoordActionInfo* info = (CoordActionInfo*)data;
+    int oldx = info->prev_x,
+        oldy = info->prev_y;  
+    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;    
+    int xdir = DIR_NONE,
+        ydir = DIR_NONE;
+    Monster *m = mapObjectAt(c->location->map, info->origin_x, info->origin_y, c->location->z)->monster;
+    int hittile, misstile;
+
+    info->prev_x = x;
+    info->prev_y = y;
+
+    hittile = m->rangedhittile;
+    misstile = m->rangedmisstile;
+
+    /* Remove the last weapon annotation left behind */
+    if ((distance > 0) && (oldx >= 0) && (oldy >= 0))
+        annotationRemove(oldx, oldy, c->location->z, c->location->map->id, misstile);
+    
+    if (x == -1 && y == -1) {
+        return 1;
+    }
+    else {
+        Object *obj = NULL;
+
+        obj = mapObjectAt(c->location->map, x, y, c->location->z);        
+        
+        /* Does the attack hit the avatar? */
+        if (x == c->location->x && y == c->location->y) {
+            /* always displays as a 'hit' */
+            attackFlash(x, y, hittile, 2);
+
+            if (tileIsShip(c->saveGame->transport))
+                gameDamageShip(-1, 10);
+            else gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */            
+
+            return 1;
+        }
+        
+        annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, misstile));
+        gameUpdateScreen();
+
+        /* Based on attack speed setting in setting struct, make a delay for
+           the attack annotation */
+        if (attackdelay > 0)
+            eventHandlerSleep(attackdelay * 4);
+    }
+
+    return 0;    
+}
+
+/**
  * Perform an action in the given direction, using the 'handleAtCoord'
  * function of the CoordActionInfo struct.  The 'blockedPredicate'
  * function is used to determine whether or not the action is blocked
  * by the tile it passes over.
  */
-int gameDirectionalAction(Direction dir, CoordActionInfo *info) {
+int gameDirectionalAction(CoordActionInfo *info) {
     int distance, tile;
     int t_x = info->origin_x,
         t_y = info->origin_y,
-        succeeded = 0;
+        succeeded = 0,
+        dirx = DIR_NONE,
+        diry = DIR_NONE;
+
+    /* Figure out which direction the action is going */
+    if (DIR_IN_MASK(DIR_WEST, info->dir)) dirx = DIR_WEST;
+    else if (DIR_IN_MASK(DIR_EAST, info->dir)) dirx = DIR_EAST;
+    if (DIR_IN_MASK(DIR_NORTH, info->dir)) diry = DIR_NORTH;
+    else if (DIR_IN_MASK(DIR_SOUTH, info->dir)) diry = DIR_SOUTH;
 
     /*
      * try every tile in the given direction, up to the given range.
@@ -2524,9 +2588,12 @@ int gameDirectionalAction(Direction dir, CoordActionInfo *info) {
      * or the action is blocked.
      */
 
-    if (DIR_IN_MASK(dir, info->validDirections)) {
-        for (distance = 0; distance <= info->range; distance++, dirMove(dir, &t_x, &t_y)) {
+    if ((dirx <= 0 || DIR_IN_MASK(dirx, info->validDirections)) && 
+        (diry <= 0 || DIR_IN_MASK(diry, info->validDirections))) {
+        for (distance = 0; distance <= info->range;
+             distance++, dirMove(dirx, &t_x, &t_y), dirMove(diry, &t_x, &t_y)) {
             if (distance >= info->firstValidDistance) {
+
                 mapWrapCoordinates(c->location->map, &t_x, &t_y);
             
                 /* make sure our action isn't taking us off the map */

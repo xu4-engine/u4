@@ -5,8 +5,6 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "direction.h"
-
 struct _Context;
 struct _Map;
 struct _Portal;
@@ -33,9 +31,10 @@ typedef struct CoordActionInfo {
     int range;
     int validDirections;    
     int player;
-    Direction dir;
+    int dir;                /* mask of the direction the action is taken
+                               (so that (DIR_NORTH | DIR_EAST) makes a diagonal */
     int (*blockedPredicate)(unsigned char tile);
-    int blockBefore; /* try the action first, or test to see if it was blocked first? */
+    int blockBefore;        /* try the action first, or test to see if it was blocked first? */
     int firstValidDistance; /* the first distance at which the action will function correctly */
 } CoordActionInfo;
 
@@ -58,7 +57,8 @@ void gameCheckHullIntegrity(void);
 void gameTimer(void *data);
 void gameFinishTurn(void);
 int fireAtCoord(int x, int y, int distance, void *data);
-int gameDirectionalAction(Direction dir, CoordActionInfo *info);
+int monsterRangeAttack(int x, int y, int distance, void *data);
+int gameDirectionalAction(CoordActionInfo *info);
 void gameDamageParty(int minDamage, int maxDamage);
 void gameDamageShip(int minDamage, int maxDamage);
 void gameMonsterCleanup(void);
