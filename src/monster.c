@@ -369,6 +369,7 @@ int monsterSpecialAction(Object *obj) {
 
         /* setup info for monster action */
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));        
+        info->handleAtCoord = &monsterRangeAttack; /* standard action */
         info->origin_x = obj->x;
         info->origin_y = obj->y;
         info->prev_x = info->prev_y = -1;
@@ -383,10 +384,23 @@ int monsterSpecialAction(Object *obj) {
         info->dir = dirGetRelativeDirection(obj->x, obj->y, c->location->x, c->location->y);
        
         switch(m->id) {
+        
+        case SEA_SERPENT_ID:
+        case HYDRA_ID:
+        case DRAGON_ID:
+
+            retval = 1;            
+            
+            /* A 50/50 chance they try to range attack when you're close enough */
+            if (mapdist <= 3 && (rand() % 2 == 0))                
+                gameDirectionalAction(info);            
+            else retval = 0;
+            
+            break;
+
         case PIRATE_ID:
-            /** 
-             * Fire cannon: Pirates only fire broadsides and only when they can hit you :)
-             */
+            
+            /* Fire cannon: Pirates only fire broadsides and only when they can hit you :) */
             retval = 1;
 
             info->handleAtCoord = &fireAtCoord;
@@ -399,22 +413,7 @@ int monsterSpecialAction(Object *obj) {
             else
                 retval = 0;            
             
-            break;
-        
-        case SEA_SERPENT_ID: /* ranged */
-        case HYDRA_ID: /* ranged */
-        case DRAGON_ID: /* ranged */
-
-            retval = 1;
-            
-            info->handleAtCoord = &monsterRangeAttack;
-            
-            /* A 50/50 chance they try to range attack when you're close enough */
-            if (mapdist <= 3 && (rand() % 2 == 0))                
-                gameDirectionalAction(info);            
-            else retval = 0;
-            
-            break;            
+            break;       
 
         default: break;
         }
