@@ -15,6 +15,7 @@
 #include "context.h"
 #include "event.h"
 #include "game.h"
+#include "imagemgr.h"
 #include "location.h"
 #include "mapmgr.h"
 #include "creature.h"

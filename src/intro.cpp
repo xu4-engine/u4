@@ -12,6 +12,7 @@
 #include "debug.h"
 #include "error.h"
 #include "event.h"
+#include "imagemgr.h"
 #include "menu.h"
 #include "music.h"
 #include "player.h"
@@ -281,7 +282,7 @@ void IntroController::deleteIntro() {
     delete beastie1FrameTable;
     delete beastie2FrameTable;
 
-    screenFreeIntroBackgrounds();    
+    imageMgr->freeIntroBackgrounds();
 }
 
 unsigned char *IntroController::getSigData() {
@@ -917,7 +918,7 @@ void IntroController::updateVideoOptions(MenuEvent &event) {
 
         case 4:
             {   
-                const vector<string> &imageSetNames = screenGetImageSetNames();
+                const vector<string> &imageSetNames = imageMgr->getSetNames();
                 vector<string>::const_iterator set = find(imageSetNames.begin(), imageSetNames.end(), settingsChanged.videoType);
                 if (set == imageSetNames.end())
                     errorFatal("Error: image set '%s' not found", settingsChanged.videoType.c_str());
