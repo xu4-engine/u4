@@ -27,7 +27,7 @@ DEBUGCXXFLAGS=-ggdb
 
 CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
 CFLAGS=$(CXXFLAGS)
-LIBS=$(UILIBS)
+LIBS=$(UILIBS) -lpng
 INSTALL=install
 
 OBJS=macosx/SDLMain.o macosx/osxinit.o macosx/osxerror.o
