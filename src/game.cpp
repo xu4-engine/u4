@@ -934,7 +934,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             if (obj->getTile().isShip()) {
                 screenMessage("Board Frigate!\n");
                 if (c->lastShip != obj)
-                    c->saveGame->shiphull = 50;                
+                    c->party->setShipHull(50);                    
             }
             else if (obj->getTile().isHorse())
                 screenMessage("Mount Horse!\n");

@@ -212,7 +212,7 @@ void useHorn(void *item) {
 void useWheel(void *item) {
     if ((c->transportContext == TRANSPORT_SHIP) && (c->saveGame->shiphull == 50)) {
         screenMessage("\nOnce mounted, the Wheel glows with a blue light!\n");
-        c->saveGame->shiphull = 99;        
+        c->party->setShipHull(99);
     }
     else screenMessage("\nHmm...No effect!\n");    
 }

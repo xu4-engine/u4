@@ -142,16 +142,18 @@ public:
     bool attemptElevation(Virtue virtue);    
     bool canEnterShrine(Virtue virtue);    
     bool canPersonJoin(string name, Virtue *v);    
-    void damageShip(int pts);
+    void damageShip(unsigned int pts);
     bool donate(int quantity);
     void endTurn();
     int  getChest();
+    void healShip(unsigned int pts);
     bool isImmobilized();
     bool isDead();
     bool isPersonJoined(string name);
     CannotJoinError join(string name);
     void reviveParty();
     void setTransport(MapTile transport);
+    void setShipHull(int str);
     
     void adjustReagent(int reagent, int amt);
     int reagents(int reagent) const;

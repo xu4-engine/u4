@@ -687,7 +687,7 @@ bool Party::canPersonJoin(string name, Virtue *v) {
 /**
  * Damages the party's ship
  */
-void Party::damageShip(int pts) {
+void Party::damageShip(unsigned int pts) {
     saveGame->shiphull -= pts;
     if ((short)saveGame->shiphull < 0)
         saveGame->shiphull = 0;
@@ -753,7 +753,7 @@ void Party::endTurn() {
     
     /* heal ship (25% chance it is healed each turn) */
     if ((c->location->context == CTX_WORLDMAP) && (saveGame->shiphull < 50) && xu4_random(4) == 0)
-        saveGame->shiphull++;
+        healShip(1);
 }
 
 /**
@@ -764,6 +764,18 @@ int Party::getChest() {
     adjustGold(gold);    
 
     return gold;
+}
+
+/**
+ * Heals the ship's hull strength by 'pts' points
+ */
+void Party::healShip(unsigned int pts) {
+    saveGame->shiphull += pts;
+    if (saveGame->shiphull > 50)
+        saveGame->shiphull = 50;
+
+    setChanged();
+    notifyObservers("Party::healShip");
 }
 
 /**
@@ -882,6 +894,17 @@ void Party::setTransport(MapTile tile) {
 
     setChanged();
     notifyObservers("Party::setTransport");
+}
+
+void Party::setShipHull(int str) {
+    int newStr = str;
+    AdjustValue(newStr, 0, 99, 0);
+
+    if (saveGame->shiphull != newStr) {
+        saveGame->shiphull = newStr;
+        setChanged();
+        notifyObservers("Party::setShipHull");
+    }
 }
 
 void Party::adjustReagent(int reagent, int amt) {
