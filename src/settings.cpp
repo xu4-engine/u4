@@ -263,7 +263,8 @@ bool Settings::read() {
 }
 
 /**
- * Write the settings out into a human readable file.
+ * Write the settings out into a human readable file.  This also
+ * notifies observers that changes have been commited.
  */
 bool Settings::write() {    
     FILE *settingsFile;
@@ -349,6 +350,10 @@ bool Settings::write() {
             logging.c_str());
 
     fclose(settingsFile);
+
+    setChanged();
+    notifyObservers(this);
+
     return true;
 }
 

@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include "observable.h"
 #include "types.h"
 
 using std::string;
@@ -171,7 +172,7 @@ public:
  * The settings class is a singleton that holds all the settings
  * information.  It is dynamically initialized when first accessed.
  */ 
-class Settings : public SettingsData {
+class Settings : public SettingsData, public Observable<Settings *> {
     typedef Translator FilterTranslator;
     typedef Translator BattleDiffTranslator;
     typedef std::map<string, int, std::less<string> > SettingsMap;
