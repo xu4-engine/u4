@@ -8,6 +8,7 @@
 #include "unzip.h"
 #include "debug.h"
 
+using std::map;
 using std::string;
 using std::vector;
 
@@ -16,7 +17,7 @@ using std::vector;
  */
 class U4FILE_stdio : public U4FILE {
 public:
-    static U4FILE *create(const string &fname);
+    static U4FILE *open(const string &fname);
 
     virtual void close();
     virtual int seek(long offset, int whence);
@@ -36,7 +37,7 @@ private:
  */
 class U4FILE_zip : public U4FILE {
 public:
-    static U4FILE *create(const string &fname, const string &zipfile, const string &zippath, int translate);
+    static U4FILE *open(const string &fname, const U4ZipPackage *package);
 
     virtual void close();
     virtual int seek(long offset, int whence);
@@ -51,10 +52,6 @@ private:
 };
 
 extern bool verbose;
-
-/* these are for figuring out where to find files */
-int u4zipExists = 0;
-int u4upgradeZipExists = 0;
 
 /* the possible paths where u4 for DOS can be installed */
 static const char * const paths[] = {
@@ -151,12 +148,101 @@ bool u4isUpgradeInstalled() {
     return result;
 }
 
+/**
+ * Creates a new zip package.
+ */
+U4ZipPackage::U4ZipPackage(const string &name, const string &path, bool extension) {
+    this->name = name;
+    this->path = path;
+    this->extension = extension;
+}
+
+void U4ZipPackage::addTranslation(const string &value, const string &translation) {
+    translations[value] = translation;
+}
+    
+const string &U4ZipPackage::translate(const string &name) const {
+    std::map<string, string>::const_iterator i = translations.find(name);
+    if (i != translations.end())
+        return i->second;
+    else
+        return name;
+}
+
+U4ZipPackageMgr *U4ZipPackageMgr::instance = NULL;
+
+U4ZipPackageMgr *U4ZipPackageMgr::getInstance() {
+    if (instance == NULL) {
+        instance = new U4ZipPackageMgr();
+    }
+    return instance;
+}
+
+void U4ZipPackageMgr::destroy() {
+    if (instance != NULL) {
+        delete instance;
+        instance = NULL;
+    }
+}
+    
+void U4ZipPackageMgr::add(U4ZipPackage *package) {
+    packages.push_back(package);
+}
+
+U4ZipPackageMgr::U4ZipPackageMgr() {
+    string upg_pathname(u4find_path("u4upgrad.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0])));
+    if (!upg_pathname.empty()) {
+        /* upgrade zip is present */
+        U4ZipPackage *upgrade = new U4ZipPackage(upg_pathname, "", false);
+        upgrade->addTranslation("compassn.ega", "compassn.old");
+        upgrade->addTranslation("courage.ega", "courage.old");
+        upgrade->addTranslation("cove.tlk", "cove.old");
+        upgrade->addTranslation("ega.drv", "ega.old"); // not actually used
+        upgrade->addTranslation("honesty.ega", "honesty.old");
+        upgrade->addTranslation("honor.ega", "honor.old");
+        upgrade->addTranslation("humility.ega", "humility.old");
+        upgrade->addTranslation("key7.ega", "key7.old");
+        upgrade->addTranslation("lcb.tlk", "lcb.old");
+        upgrade->addTranslation("love.ega", "love.old");
+        upgrade->addTranslation("love.ega", "love.old");
+        upgrade->addTranslation("minoc.tlk", "minoc.old");
+        upgrade->addTranslation("rune_0.ega", "rune_0.old");
+        upgrade->addTranslation("rune_1.ega", "rune_1.old");
+        upgrade->addTranslation("rune_2.ega", "rune_2.old");
+        upgrade->addTranslation("rune_3.ega", "rune_3.old");
+        upgrade->addTranslation("rune_4.ega", "rune_4.old");
+        upgrade->addTranslation("rune_5.ega", "rune_5.old");
+        upgrade->addTranslation("sacrific.ega", "sacrific.old");
+        upgrade->addTranslation("skara.tlk", "skara.old");
+        upgrade->addTranslation("spirit.ega", "spirit.old");
+        upgrade->addTranslation("start.ega", "start.old");
+        upgrade->addTranslation("stoncrcl.ega", "stoncrcl.old");
+        upgrade->addTranslation("truth.ega", "truth.old");
+        upgrade->addTranslation("ultima.com", "ultima.old"); // not actually used
+        upgrade->addTranslation("valor.ega", "valor.old");
+        upgrade->addTranslation("yew.tlk", "yew.old");
+        add(upgrade);
+    }
+    // check for the default zip packages
+    string pathname(u4find_path("ultima4.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0])));
+    if (!pathname.empty()) {
+        /* original u4 zip is present */
+        add(new U4ZipPackage(pathname, "ultima4/", false));
+    }
+    /* scan for extensions */
+}
+
+U4ZipPackageMgr::~U4ZipPackageMgr() {
+    for (std::vector<U4ZipPackage *>::iterator i = packages.begin(); i != packages.end(); i++)
+        delete *i;
+}
+
 int U4FILE::getshort() {
     int byteLow = getc();
     return byteLow | (getc() << 8);
 }
 
-U4FILE *U4FILE_stdio::create(const string &fname) {
+U4FILE *U4FILE_stdio::open(const string &fname) {
     U4FILE_stdio *u4f;
     FILE *f;
 
@@ -206,25 +292,17 @@ long U4FILE_stdio::length() {
 }
 
 /**
- * Opens a file from within a zip archive.  fname is the filename
- * being searched for, zipfile is the name of the zip archive, zippath
- * is a path prefix prepended to each filename.  If translate is
- * non-zero, some special case translation is done to the filenames to
- * match up with the names in u4upgrad.zip.
+ * Opens a file from within a zip archive.
  */
-U4FILE *U4FILE_zip::create(const string &fname, const string &zipfile, const string &zippath, int translate) {
+U4FILE *U4FILE_zip::open(const string &fname, const U4ZipPackage *package) {
     U4FILE_zip *u4f;
     unzFile f;
 
-    f = unzOpen(zipfile.c_str());
+    f = unzOpen(package->getFilename().c_str());
     if (!f)
         return NULL;
 
-    string pathname(zippath);
-    if (translate)
-        pathname += u4upgrade_translate_filename(fname);
-    else
-        pathname += fname;
+    string pathname = package->getInternalPath() + package->translate(fname);
 
     if (unzLocateFile(f, pathname.c_str(), 2) == UNZ_END_OF_LIST_OF_FILE) {
         unzClose(f);
@@ -323,29 +401,13 @@ U4FILE *u4fopen(const string &fname) {
         printf("looking for %s\n", fname.c_str());
 
     /**
-     * search for file within ultima4.zip or u4upgrad.zip
+     * search for file within zipfiles (ultima4.zip, u4upgrad.zip, etc.)
      */
-    string pathname(u4find_path("ultima4.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0])));
-    if (!pathname.empty()) {
-        /* original u4 zip is present */
-        u4zipExists = 1;
-        
-        string upg_pathname(u4find_path("u4upgrad.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0])));
-        /* both zip files are present */
-        if (!upg_pathname.empty())
-            u4upgradeZipExists = 1;        
-
-        /* look for the file in ultima4.zip */
-        u4f = U4FILE_zip::create(fname, pathname, "ultima4/", 0);
+    const vector<U4ZipPackage *> &packages = U4ZipPackageMgr::getInstance()->getPackages(); 
+    for (std::vector<U4ZipPackage *>::const_reverse_iterator i = packages.rbegin(); i != packages.rend(); i++) {
+        u4f = U4FILE_zip::open(fname, *i);
         if (u4f)
             return u4f; /* file was found, return it! */
-
-        /* look for the file in u4upgrad.zip */
-        if (u4upgradeZipExists) {
-            u4f = U4FILE_zip::create(fname, upg_pathname, "", 1);
-            if (u4f)
-                return u4f; /* file was found, return it! */ 
-        }
     }
 
     /*
@@ -353,7 +415,7 @@ U4FILE *u4fopen(const string &fname) {
      */
     string fname_copy(fname);
 
-    pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
+    string pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
     if (pathname.empty()) {
         using namespace std;
         if (islower(fname_copy[0])) {
@@ -371,7 +433,7 @@ U4FILE *u4fopen(const string &fname) {
     }
 
     if (!pathname.empty()) {
-        u4f = U4FILE_stdio::create(pathname);
+        u4f = U4FILE_stdio::open(pathname);
         if (verbose && u4f != NULL)
             printf("%s successfully opened\n", pathname.c_str());
     }
@@ -384,7 +446,7 @@ U4FILE *u4fopen(const string &fname) {
  * U4FILE struct.
  */
 U4FILE *u4fopen_stdio(const string &fname) {
-    return U4FILE_stdio::create(fname);
+    return U4FILE_stdio::open(fname);
 }
 
 /**
@@ -496,46 +558,4 @@ string u4find_conf(const string &fname) {
 
 string u4find_graphics(const string &fname) {
     return u4find_path(fname, graphics_paths, sizeof(graphics_paths) / sizeof(graphics_paths[0]));
-}
-
-string u4upgrade_translate_filename(const string &fname) {
-    unsigned int i;
-    const static struct {
-        char *name;
-        char *translation;
-    } translations[] = {
-        { "compassn.ega", "compassn.old" },
-        { "courage.ega", "courage.old" },
-        { "cove.tlk", "cove.old" },
-        { "ega.drv", "ega.old" }, /* not actually used */
-        { "honesty.ega", "honesty.old" },
-        { "honor.ega", "honor.old" },
-        { "humility.ega", "humility.old" },
-        { "key7.ega", "key7.old" },
-        { "lcb.tlk", "lcb.old" },
-        { "love.ega", "love.old" },
-        { "love.ega", "love.old" },
-        { "minoc.tlk", "minoc.old" },
-        { "rune_0.ega", "rune_0.old" },
-        { "rune_1.ega", "rune_1.old" },
-        { "rune_2.ega", "rune_2.old" },
-        { "rune_3.ega", "rune_3.old" },
-        { "rune_4.ega", "rune_4.old" },
-        { "rune_5.ega", "rune_5.old" },
-        { "sacrific.ega", "sacrific.old" },
-        { "skara.tlk", "skara.old" },
-        { "spirit.ega", "spirit.old" },
-        { "start.ega", "start.old" },
-        { "stoncrcl.ega", "stoncrcl.old" },
-        { "truth.ega", "truth.old" },
-        { "ultima.com", "ultima.old" }, /* not actually used */
-        { "valor.ega", "valor.old" },
-        { "yew.tlk", "yew.old" }
-    };
-
-    for (i = 0; i < sizeof(translations) / sizeof(translations[0]); i++) {
-        if (strcasecmp(translations[i].name, fname.c_str()) == 0)
-            return translations[i].translation;
-    }
-    return fname;
 }

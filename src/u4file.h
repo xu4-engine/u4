@@ -6,8 +6,50 @@
 #define U4FILE_H
 
 #include "vc6.h"
+#include <map>
 #include <string>
 #include <vector>
+
+/**
+ * Represents zip files that game resources can be loaded from.
+ */
+class U4ZipPackage {
+public:
+    typedef std::string string;
+
+    U4ZipPackage(const string &name, const string &path, bool extension);
+    void addTranslation(const string &value, const string &translation);
+
+    const string &getFilename() const { return name; }
+    const string &getInternalPath() const { return path; }
+    bool isExtension() const { return extension; }
+    const string &translate(const string &name) const;
+
+private:    
+    string name;                /**< filename */
+    string path;                /**< the path within the zipfile where resources are located */
+    bool extension;             /**< whether this zipfile is an extension with config information */
+    std::map<string, string> translations; /**< mapping from standard resource names to internal names */
+};
+
+/**
+ * Keeps track of available zip packages.
+ */
+class U4ZipPackageMgr {
+public:
+    static U4ZipPackageMgr *getInstance();
+    static void destroy();
+    
+    void add(U4ZipPackage *package);
+    const std::vector<U4ZipPackage *> &getPackages() const { return packages; }
+
+private:
+    U4ZipPackageMgr();
+    ~U4ZipPackageMgr();
+
+    static U4ZipPackageMgr *instance;
+    std::vector<U4ZipPackage *> packages;
+};
 
 /**
  * An abstract interface for file access.
@@ -45,9 +87,5 @@ std::string u4find_music(const std::string &fname);
 std::string u4find_sound(const std::string &fname);
 std::string u4find_conf(const std::string &fname);
 std::string u4find_graphics(const std::string &fname);
-std::string u4upgrade_translate_filename(const std::string &fname);
-
-extern int u4zipExists;
-extern int u4upgradeZipExists;
 
 #endif
