@@ -94,12 +94,12 @@ std::vector<MapTile *> Location::tilesAt(MapCoords coords, bool &focus) {
         tiles.push_back(&c->party->transport);
 
     /* then camouflaged creatures that have a disguise */
-    if (obj && (obj->getType() == OBJECT_CREATURE) && !obj->isVisible() && (m->camouflageTile.id > 0)) {
+    if (obj && (obj->getType() == Object::CREATURE) && !obj->isVisible() && (m->camouflageTile.id > 0)) {
         focus = focus || obj->hasFocus();
         tiles.push_back(&m->camouflageTile);
     }
     /* then visible creatures */
-    else if (obj && (obj->getType() != OBJECT_UNKNOWN) && obj->isVisible()) {
+    else if (obj && (obj->getType() != Object::UNKNOWN) && obj->isVisible()) {
         focus = focus || obj->hasFocus();
         tiles.push_back(&obj->getTile());
     }
