@@ -736,6 +736,10 @@ int movePartyMember(Direction dir, int member) {
     return result;
 }
 
+/**
+ * Show an attack flash at x, y. This is used for 'being hit' or 'being missed' 
+ * by weapons, cannon fire, spells, etc.
+ */
 
 void attackFlash(int x, int y, int tile, int timeFactor) {
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
@@ -744,5 +748,5 @@ void attackFlash(int x, int y, int tile, int timeFactor) {
 
     annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, tile), (attackdelay + divisor)/divisor));
     gameUpdateScreen();
-    eventHandlerSleep(attackdelay * mult);
+    eventHandlerSleep((attackdelay+2) * mult);
 }
