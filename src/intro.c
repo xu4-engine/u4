@@ -91,6 +91,7 @@ int introAskToggle;
 int questionTree[15];
 int beastie1Cycle;
 int beastie2Cycle;
+int beastieOffset;
 int sleepCycles;
 int scrPos;  /* current position in the script table */
 IntroObjectState *objectStateTable;
@@ -123,6 +124,7 @@ int introInit() {
     introAskToggle = 0;
     beastie1Cycle = 0;
     beastie2Cycle = 0;
+    beastieOffset = -32;
     introErrorMessage = NULL;
 
     title = u4fopen("title.exe");
@@ -450,8 +452,10 @@ void introDrawMapAnimated() {
  * Draws the animated beasts in the upper corners of the screen.
  */
 void introDrawBeasties() {
-    screenShowBeastie(0, beastie1FrameTable[beastie1Cycle]);
-    screenShowBeastie(1, beastie2FrameTable[beastie2Cycle]);
+    screenShowBeastie(0, beastieOffset, beastie1FrameTable[beastie1Cycle]);
+    screenShowBeastie(1, beastieOffset, beastie2FrameTable[beastie2Cycle]);
+    if (beastieOffset < 0)
+        beastieOffset++;
 }
 
 /**
