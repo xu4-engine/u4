@@ -62,81 +62,80 @@ struct Layout {
 };
 
 const struct {
-    int x, y;
     const char *subimage;
     int x2, y2;
     const char *subimage2;
 } dngGraphicInfo[] = {
-    { 0,   0,   "dung0_lft_ew" },
-    { 0,   0,   "dung0_lft_ns" },
-    { 0,   0,   "dung0_mid_ew" },
-    { 0,   0,   "dung0_mid_ns" },
-    { 144, 0,   "dung0_rgt_ew" },
-    { 144, 0,   "dung0_rgt_ns" },
+    { "dung0_lft_ew" },
+    { "dung0_lft_ns" },
+    { "dung0_mid_ew" },
+    { "dung0_mid_ns" },
+    { "dung0_rgt_ew" },
+    { "dung0_rgt_ns" },
 
-    { 32,  32,  "dung1_lft_ew", 0, 32, "dung1_xxx_ew" },
-    { 32,  32,  "dung1_lft_ns", 0, 32, "dung1_xxx_ns" },
-    { 0,   32,  "dung1_mid_ew" },
-    { 0,   32,  "dung1_mid_ns" },
-    { 112, 32,  "dung1_rgt_ew", 144, 32, "dung1_xxx_ew" },
-    { 112, 32,  "dung1_rgt_ns", 144, 32, "dung1_xxx_ns" },
+    { "dung1_lft_ew", 0, 32, "dung1_xxx_ew" },
+    { "dung1_lft_ns", 0, 32, "dung1_xxx_ns" },
+    { "dung1_mid_ew" },
+    { "dung1_mid_ns" },
+    { "dung1_rgt_ew", 144, 32, "dung1_xxx_ew" },
+    { "dung1_rgt_ns", 144, 32, "dung1_xxx_ns" },
 
-    { 64,  64,  "dung2_lft_ew", 0, 64, "dung2_xxx_ew" },
-    { 64,  64,  "dung2_lft_ns", 0, 64, "dung2_xxx_ns" },
-    { 0,   64,  "dung2_mid_ew" },
-    { 0,   64,  "dung2_mid_ns" },
-    { 96,  64,  "dung2_rgt_ew", 112, 64, "dung2_xxx_ew" },
-    { 96,  64,  "dung2_rgt_ns", 112, 64, "dung2_xxx_ns" },
+    { "dung2_lft_ew", 0, 64, "dung2_xxx_ew" },
+    { "dung2_lft_ns", 0, 64, "dung2_xxx_ns" },
+    { "dung2_mid_ew" },
+    { "dung2_mid_ns" },
+    { "dung2_rgt_ew", 112, 64, "dung2_xxx_ew" },
+    { "dung2_rgt_ns", 112, 64, "dung2_xxx_ns" },
 
-    { 80,  80,  "dung3_lft_ew", 0, 80, "dung3_xxx_ew" },
-    { 80,  80,  "dung3_lft_ns", 0, 80, "dung3_xxx_ns" },
-    { 0,   80,  "dung3_mid_ew" },
-    { 0,   80,  "dung3_mid_ns" },
-    { 88,  80,  "dung3_rgt_ew", 96, 80, "dung3_xxx_ew" },
-    { 88,  80,  "dung3_rgt_ns", 96, 80, "dung3_xxx_ns" },
+    { "dung3_lft_ew", 0, 80, "dung3_xxx_ew" },
+    { "dung3_lft_ns", 0, 80, "dung3_xxx_ns" },
+    { "dung3_mid_ew" },
+    { "dung3_mid_ns" },
+    { "dung3_rgt_ew", 96, 80, "dung3_xxx_ew" },
+    { "dung3_rgt_ns", 96, 80, "dung3_xxx_ns" },
 
-    { 0,   0,   "dung0_lft_ew_door" },
-    { 0,   0,   "dung0_lft_ns_door" },
-    { 0,   0,   "dung0_mid_ew_door" },
-    { 0,   0,   "dung0_mid_ns_door" },
-    { 144, 0,   "dung0_rgt_ew_door" },
-    { 144, 0,   "dung0_rgt_ns_door" },
+    { "dung0_lft_ew_door" },
+    { "dung0_lft_ns_door" },
+    { "dung0_mid_ew_door" },
+    { "dung0_mid_ns_door" },
+    { "dung0_rgt_ew_door" },
+    { "dung0_rgt_ns_door" },
 
-    { 32,  32,  "dung1_lft_ew_door", 0, 32, "dung1_xxx_ew" },
-    { 32,  32,  "dung1_lft_ns_door", 0, 32, "dung1_xxx_ns" },
-    { 0,   32,  "dung1_mid_ew_door" },
-    { 0,   32,  "dung1_mid_ns_door" },
-    { 112, 32,  "dung1_rgt_ew_door", 144, 32, "dung1_xxx_ew" },
-    { 112, 32,  "dung1_rgt_ns_door", 144, 32, "dung1_xxx_ns" },
+    { "dung1_lft_ew_door", 0, 32, "dung1_xxx_ew" },
+    { "dung1_lft_ns_door", 0, 32, "dung1_xxx_ns" },
+    { "dung1_mid_ew_door" },
+    { "dung1_mid_ns_door" },
+    { "dung1_rgt_ew_door", 144, 32, "dung1_xxx_ew" },
+    { "dung1_rgt_ns_door", 144, 32, "dung1_xxx_ns" },
 
-    { 64,  64,  "dung2_lft_ew_door", 0, 64, "dung2_xxx_ew" },
-    { 64,  64,  "dung2_lft_ns_door", 0, 64, "dung2_xxx_ns" },
-    { 0,   64,  "dung2_mid_ew_door" },
-    { 0,   64,  "dung2_mid_ns_door" },
-    { 96,  64,  "dung2_rgt_ew_door", 112, 64, "dung2_xxx_ew" },
-    { 96,  64,  "dung2_rgt_ns_door", 112, 64, "dung2_xxx_ns" },
+    { "dung2_lft_ew_door", 0, 64, "dung2_xxx_ew" },
+    { "dung2_lft_ns_door", 0, 64, "dung2_xxx_ns" },
+    { "dung2_mid_ew_door" },
+    { "dung2_mid_ns_door" },
+    { "dung2_rgt_ew_door", 112, 64, "dung2_xxx_ew" },
+    { "dung2_rgt_ns_door", 112, 64, "dung2_xxx_ns" },
 
-    { 80,  80,  "dung3_lft_ew_door", 0, 80, "dung3_xxx_ew" },
-    { 80,  80,  "dung3_lft_ns_door", 0, 80, "dung3_xxx_ns" },
-    { 0,   80,  "dung3_mid_ew_door" },
-    { 0,   80,  "dung3_mid_ns_door" },
-    { 88,  80,  "dung3_rgt_ew_door", 96, 80, "dung3_xxx_ew" },
-    { 88,  80,  "dung3_rgt_ns_door", 96, 80, "dung3_xxx_ns" },
+    { "dung3_lft_ew_door", 0, 80, "dung3_xxx_ew" },
+    { "dung3_lft_ns_door", 0, 80, "dung3_xxx_ns" },
+    { "dung3_mid_ew_door" },
+    { "dung3_mid_ns_door" },
+    { "dung3_rgt_ew_door", 96, 80, "dung3_xxx_ew" },
+    { "dung3_rgt_ns_door", 96, 80, "dung3_xxx_ns" },
 
-    { 45,  0,   "dung0_ladderup" },
-    { 64,  40,  "dung1_ladderup" },
-    { 77,  68,  "dung2_ladderup" },
-    { 84,  82,  "dung3_ladderup" },
+    { "dung0_ladderup" },
+    { "dung1_ladderup" },
+    { "dung2_ladderup" },
+    { "dung3_ladderup" },
 
-    { 45,  87,  "dung0_ladderdown" },
-    { 64,  86,  "dung1_ladderdown" },
-    { 77,  86,  "dung2_ladderdown" },
-    { 84,  88,  "dung3_ladderdown" },
+    { "dung0_ladderdown" },
+    { "dung1_ladderdown" },
+    { "dung2_ladderdown" },
+    { "dung3_ladderdown" },
 
-    { 45,  0,   "dung0_ladderupdown" },
-    { 64,  40,  "dung1_ladderupdown" },
-    { 77,  68,  "dung2_ladderupdown" },
-    { 84,  82,  "dung3_ladderupdown" },
+    { "dung0_ladderupdown" },
+    { "dung1_ladderupdown" },
+    { "dung2_ladderupdown" },
+    { "dung3_ladderupdown" },
 };
 
 void screenLoadGraphicsFromConf(void);
@@ -607,7 +606,14 @@ void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, Dun
     if (index == -1)
         return;
 
-    screenDrawImage(dngGraphicInfo[index].subimage, (8 + dngGraphicInfo[index].x) * scale, (8 + dngGraphicInfo[index].y) * scale);
+    int x = 0, y = 0;
+    SubImage *subimage = imageMgr->getSubImage(dngGraphicInfo[index].subimage);
+    if (subimage) {
+        x = subimage->x;
+        y = subimage->y;
+    }
+
+    screenDrawImage(dngGraphicInfo[index].subimage, (BORDER_WIDTH + x) * scale, (BORDER_HEIGHT + y) * scale);
     if (dngGraphicInfo[index].subimage2 != NULL)
         screenDrawImage(dngGraphicInfo[index].subimage2, (8 + dngGraphicInfo[index].x2) * scale, (8 + dngGraphicInfo[index].y2) * scale);
 }
