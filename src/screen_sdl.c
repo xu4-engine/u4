@@ -134,21 +134,21 @@ const struct {
     { "dung3m.rle", 176, 16,  4, 0,   80,  COMP_RLE },
     { "dung3r.rle", 88,  16,  4, 88,  80,  COMP_RLE },
 
-    { },
-    { },
-    { },
+    { NULL },
+    { NULL },
+    { NULL },
 
-    { },
+    { NULL },
     { "dung1m_door.rle", 176, 112, 4, 0,   32,  COMP_RLE },
-    { },
+    { NULL },
 
-    { },
+    { NULL },
     { "dung2m_door.rle", 176, 48,  4, 0,   64,  COMP_RLE },
-    { },
+    { NULL },
 
-    { },
+    { NULL },
     { "dung3m_door.rle", 176, 16,  4, 0,   80,  COMP_RLE },
-    { }
+    { NULL },
 
 };
 
