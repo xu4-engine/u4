@@ -15,20 +15,29 @@ file formats.  After all, there are better image/text/xml editors out
 there than I can possibly hope to write.
 
 
-rleenc & rledec
+u4enc & u4dec
 ---------------
 
-These two tools are used with the background graphics used in the game
-including the borders that surround the main play screen and the
-shrine visions.  They convert the images from the U4 internal image
-format to the .PNG file format, which should be easy to modify in
-paint programs like Photoshop, Paint Shop Pro, or The Gimp.
+These two tools are used with the graphics used in the game including
+the character set, the tiles, the borders that surround the main play
+screen and the shrine visions.  They convert the images from the U4
+internal image formats to the .PNG file format, which should be easy
+to modify in paint programs like Photoshop, Paint Shop Pro, or The
+Gimp.
 
 They work equally well with the original 16 color EGA graphics files
 and the 256 color VGA upgrade files.  The "u4vga.pal" file must be in
 the current directory when converting VGA files.
 
-These tools work with the following files:
+Ultima IV uses three different algorithms to encode its graphics:
+"lzw", used for the introduction graphics, "rle", used for most
+in-game graphics, and finally "raw", which is used only for the tile
+set and character set images.
+
+You must specify which algorithm to use, and it must be the correct
+one or else you'll get a corrupt image.
+
+Use "rle" with with the following files:
 
 start.ega                compassn.ega
 courage.ega              honesty.ega
@@ -40,25 +49,12 @@ rune_0.ega               rune_1.ega
 rune_2.ega               rune_3.ega
 rune_4.ega               rune_5.ega
 
-They also work with these files, found only in the VGA upgrade:
+And also with these files, found only in the VGA upgrade:
 
 rune_6.ega               rune_7.ega
 rune_8.ega
 
-Example:
-C:\xu4> rledec START.EGA START.PNG      (to convert to PNG)
-C:\xu4> rleenc START.PNG START.EGA      (to convert back to U4 format)
-
-
-lzwenc & lzwdec
----------------
-
-These two tools are ulike rleenc and rledec, except they work with the
-intro graphics files, such as the stone circle, the gypsy wagon, and
-the card images.  They convert the images from the U4 LZW image format
-to .PNG.
-
-These tools work with the following files:
+Use "lzw" with the following files:
 
 title.ega                tree.ega
 portal.ega               outside.ega
@@ -68,9 +64,20 @@ honcom.ega               valjus.ega
 sachonor.ega             spirhum.ega
 animate.ega
 
-Example:
-C:\xu4> lzwdec TITLE.EGA TITLE.PNG      (to convert to PNG)
-C:\xu4> lzwenc TITLE.PNG TITLE.EGA      (to convert back to U4 format)
+And finally, use "raw" with the following files:
+
+charset.ega              shapes.ega
+
+Examples:
+C:\xu4> u4dec rle START.EGA START.PNG            (to convert to PNG)
+C:\xu4> u4enc rle START.PNG START.EGA            (to convert back to U4 format)
+C:\xu4> u4dec lzw TITLE.EGA TITLE.PNG            (to convert to PNG)
+C:\xu4> u4enc lzw TITLE.PNG TITLE.EGA            (to convert back to U4 format)
+C:\xu4> u4dec raw CHARSET.EGA CHARSET.PNG 8 2048 (to convert to PNG)
+C:\xu4> u4enc raw CHARSET.PNG CHARSET.EGA        (to convert back to U4 format)
+C:\xu4> u4dec raw SHAPES.EGA SHAPES.PNG 16 4096  (to convert to PNG)
+C:\xu4> u4enc raw SHAPES.PNG SHAPES.EGA          (to convert back to U4 format)
+
 
 tlkconv
 -------
