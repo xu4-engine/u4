@@ -547,6 +547,8 @@ void playerReviveParty(SaveGame *saveGame) {
  * afford.
  */
 int playerCanAfford(SaveGame *saveGame, int price) {
+    if (price == 0)
+        return 9999;
     return saveGame->gold / price;
 }
 
