@@ -157,7 +157,7 @@ void screenInit() {
         !screenLoadCharSet())
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
-    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL); 
+    SDL_EnableKeyRepeat(settings->keydelay, settings->keyinterval); 
 }
 
 void screenDelete() {

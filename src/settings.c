@@ -44,6 +44,8 @@ void settingsRead() {
     settings->vol = 1;
     settings->germanKbd = 0;
     settings->shortcutCommands = 0;
+    settings->keydelay = 500;
+    settings->keyinterval = 30;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -72,6 +74,10 @@ void settingsRead() {
             settings->germanKbd = (int) strtoul(buffer + strlen("germanKbd="), NULL, 0);
         else if (strstr(buffer, "shortcutCommands=") == buffer)
             settings->shortcutCommands = (int) strtoul(buffer + strlen("shortcutCommands="), NULL, 0);
+        else if (strstr(buffer, "keydelay=") == buffer)
+            settings->keydelay = (int) strtoul(buffer + strlen("keydelay="), NULL, 0);
+        else if (strstr(buffer, "keyinterval=") == buffer)
+            settings->keyinterval = (int) strtoul(buffer + strlen("keyinterval="), NULL, 0);
         else
             errorWarning("invalid line in settings file %s", buffer);
     }
@@ -100,13 +106,17 @@ void settingsWrite() {
             "filter=%s\n"
             "vol=%d\n"
             "germanKbd=%d\n"
-            "shortcutCommands=%d\n",
+            "shortcutCommands=%d\n"
+            "keydelay=%d\n"
+            "keyinterval=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
             settings->vol,
             settings->germanKbd,
-            settings->shortcutCommands);
+            settings->shortcutCommands,
+            settings->keydelay,
+            settings->keyinterval);
 
     fclose(settingsFile);
 }

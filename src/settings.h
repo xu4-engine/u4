@@ -21,6 +21,8 @@ typedef struct _Settings {
     int vol;
     int germanKbd;
     int shortcutCommands;
+    int keydelay;
+    int keyinterval;
 } Settings;
 
 char *settingsFilename(void);
