@@ -91,16 +91,16 @@ Weapon::Weapon(const ConfigElement &conf) {
     mask = 0;
 
     /* Get the range of the weapon, whether it is absolute or normal range */
-    string range = conf.getString("range");
-    if (range.empty()) {
-        range = conf.getString("absolute_range");
-        if (!range.empty())
+    string _range = conf.getString("range");
+    if (_range.empty()) {
+        _range = conf.getString("absolute_range");
+        if (!_range.empty())
             mask |= MASK_ABSOLUTERANGE;
     }
-    if (range.empty())
+    if (_range.empty())
         errorFatal("malformed weapons.xml file: range or absolute_range not found for weapon %s", name.c_str());
 
-    range = atoi(range.c_str());
+    range = atoi(_range.c_str());
 
     /* Load weapon attributes */
     for (unsigned at = 0; at < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); at++) {
