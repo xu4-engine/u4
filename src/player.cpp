@@ -534,8 +534,9 @@ void Party::adjustKarma(KarmaAction action) {
         timeLimited = 1;
         AdjustValueMax(newKarma[VIRT_HUMILITY], 10, maxVal[VIRT_HUMILITY]);
         break;
-    case KA_HAWKWIND:
+    case KA_HAWKWIND:        
     case KA_MEDITATION:
+        timeLimited = 1;
         AdjustValueMax(newKarma[VIRT_SPIRITUALITY], 3, maxVal[VIRT_SPIRITUALITY]);
         break;
     case KA_BAD_MANTRA:
