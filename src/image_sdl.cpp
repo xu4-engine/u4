@@ -74,6 +74,16 @@ Image *Image::createScreenImage() {
 }
 
 /**
+ * Creates a duplicate of another image
+ */
+Image *Image::duplicate(Image *image) {
+    Image *im = create(image->width(), image->height(), image->isIndexed(), image->surface->flags & SDL_HWSURFACE ? HARDWARE : SOFTWARE);
+
+    image->drawOn(im, 0, 0);
+    return im;
+}
+
+/**
  * Frees the image.
  */
 Image::~Image() {

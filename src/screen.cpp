@@ -127,7 +127,7 @@ MapTile screenViewportTile(unsigned int width, unsigned int height, int x, int y
             tc.wrap(c->location->map);
         else {
             *focus = 0;
-            return Tile::findByName("grass")->id;
+            return Tileset::findTileByName("grass")->id;
         }
     }
 
@@ -178,15 +178,15 @@ void screenUpdate(int showmap, int blackout) {
             for (y = 0; y < VIEWPORT_H; y++) {
                 for (x = 0; x < VIEWPORT_W; x++) {
                     if (x < 2 || y < 2 || x >= 10 || y >= 10)
-                        screenShowTile(Tile::findByName("black")->id, 0, x, y);
+                        screenShowTile(Tileset::findTileByName("black")->id, 0, x, y);
                     else {
                         tiles = dungeonViewGetTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
                         /* Only show blackness if there is no light */
                         if (c->saveGame->torchduration <= 0)
-                            screenShowTile(Tile::findByName("black")->id, 0, x, y);
+                            screenShowTile(Tileset::findTileByName("black")->id, 0, x, y);
                         else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
-                            screenShowTile(Tile::findByName("avatar")->id, 0, x, y);
+                            screenShowTile(Tileset::findTileByName("avatar")->id, 0, x, y);
                         else
                             screenShowTile(tiles->front(), 0, x, y);                        
                         delete tiles;
@@ -209,7 +209,7 @@ void screenUpdate(int showmap, int blackout) {
                     tile = screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y, &focus);
                     screenShowTile(tile, focus, x, y);
                 } else
-                    screenShowTile(Tile::findByName("black")->id, 0, x, y);
+                    screenShowTile(Tileset::findTileByName("black")->id, 0, x, y);
             }
         }
         screenRedrawMapArea();

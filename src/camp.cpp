@@ -26,7 +26,7 @@
 #include "screen.h"
 #include "settings.h"
 #include "stats.h"
-#include "tile.h"
+#include "tileset.h"
 #include "utils.h"
 
 void campTimer(void *data);
@@ -130,7 +130,7 @@ void innBegin(void) {
     eventHandlerSleep(INN_FADE_OUT_TIME);
 
     /* show the sleeping avatar */
-    c->party->setTransport(Tile::findByName("corpse")->id);
+    c->party->setTransport(Tileset::findTileByName("corpse")->id);
     gameUpdateScreen();
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
@@ -151,7 +151,7 @@ void innTimer(void *data) {
     screenEnableCursor();
 
     /* restore the avatar to normal */
-    c->party->setTransport(Tile::findByName("avatar")->id);
+    c->party->setTransport(Tileset::findTileByName("avatar")->id);
     gameUpdateScreen();
 
     /* the party is always healed */

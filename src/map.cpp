@@ -21,7 +21,7 @@
 #include "player.h"
 #include "portal.h"
 #include "savegame.h"
-#include "tile.h"
+#include "tileset.h"
 #include "types.h"
 #include "utils.h"
 
@@ -573,7 +573,7 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             else if (transport.isBalloon() && tile.isFlyable())
                 retval = DIR_ADD_TO_MASK(d, retval);        
             // avatar or horseback: check walkable
-            else if (transport == Tile::findByName("avatar")->id || transport.isHorse()) {
+            else if (transport == Tileset::findTileByName("avatar")->id || transport.isHorse()) {
                 if (tile.canWalkOn(d) &&
                     prev_tile.canWalkOff(d))
                     retval = DIR_ADD_TO_MASK(d, retval);

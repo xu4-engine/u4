@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <!DOCTYPE tiles SYSTEM "dtd/tiles.dtd">
 <!-- $Id$ -->
-<tiles>
+<tiles name="dungeon" extends="base">
     <tile name="up_down_ladder"/>
-    <tile name="ceiling_hole"/>
-    <tile name="floor_hole"/>
-    <tile name="magic_orb"/>
-    <tile name="fountain" animation="scroll"/>
-    <tile name="dungeon_room" rule="dng_room"/>    
-    <tile name="dungeon_door" rule="dng_door"/>
-    <tile name="dungeon_altar" rule="dng_altar"/>
+    <tile name="ceiling_hole" looks_like="brick_floor"/>
+    <tile name="floor_hole" looks_like="brick_floor"/>
+    <tile name="magic_orb" looks_like="magic_flash"/>
+    <tile name="fountain" looks_like="shallows" animation="scroll"/>
+    <tile name="dungeon_room" looks_like="solid" rule="dng_room"/>    
+    <tile name="dungeon_door" looks_like="door" rule="dng_door"/>
+    <tile name="dungeon_altar" looks_like="altar" rule="dng_altar"/>
 </tiles>

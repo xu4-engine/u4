@@ -22,6 +22,7 @@
 #include "settings.h"
 #include "spell.h"
 #include "stats.h"
+#include "tileset.h"
 #include "u4file.h"
 #include "utils.h"
 #include "weapon.h"
@@ -1152,7 +1153,7 @@ ScriptReturnCode Script::add(xmlNodePtr script, xmlNodePtr current) {
         c->party->adjustFood(quant);
     }
     else if (type == "horse")
-        c->party->setTransport(Tile::findByName("horse")->id);
+        c->party->setTransport(Tileset::findTileByName("horse")->id);
     else if (type == "torch")
         AdjustValueMax(c->saveGame->torches, quant, 99);
     else if (type == "gem")

@@ -11,6 +11,7 @@
 #include <SDL.h>
 
 #include "config.h"
+#include "context.h"
 #include "cursors.h"
 #include "debug.h"
 #include "error.h"
@@ -52,35 +53,6 @@ RGBA vgaPalette[256];
 SDL_Cursor *cursors[5];
 int scale;
 Scaler filterScaler;
-
-enum ImageFixup {
-    FIXUP_NONE,
-    FIXUP_INTRO,
-    FIXUP_INTRO_EXTENDED,
-    FIXUP_ABYSS,
-    FIXUP_ABACUS
-};
-
-struct SubImage {
-    string name;
-    string srcImageName;
-    int x, y, width, height;
-};
-
-struct ImageInfo {
-    string name;
-    string filename;
-    int width, height, depth;
-    int prescale;
-    CompressionType filetype;
-    int tiles;                  /* used to scale the without bleeding colors between adjacent tiles */
-    bool introOnly;             /* whether can be freed after the intro */
-    int transparentIndex;       /* color index to consider transparent */
-    bool xu4Graphic;            /* an original xu4 graphic not part of u4dos or the VGA upgrade */
-    ImageFixup fixup;           /* a routine to do miscellaneous fixes to the image */
-    Image *image;
-    map<string, SubImage *> subImages;
-};
 
 struct ImageSet {
     string name;
@@ -287,11 +259,11 @@ void screenDelete() {
  */
 void screenReInit() {        
     introDelete(DONT_FREE_MENUS);  /* delete intro stuff */
-    Tileset::unload(); /* unload tilesets */
+    Tileset::unloadAll(); /* unload tilesets */
     screenDelete(); /* delete screen stuff */            
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
     eventHandlerInit();  
-    Tileset::load("tilesets.xml"); /* re-load tilesets */
+    Tileset::loadAll("tilesets.xml"); /* re-load tilesets */
     introInit();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
 
@@ -1075,24 +1047,86 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
 }
 
 /**
+ * Draws a maptile to the screen
+ */
+void MapTile::draw(int x, int y) const {
+    Tileset *t = Tileset::get();    
+    Tile *tile = t->get(id);
+
+    tile->draw(x, y, frame);   
+}
+
+void Tile::draw(int x, int y, int frame) {
+    /* FIXME: maybe we should load tiles somewhere else for better performance? */
+    if (image == NULL) {        
+        if (!looks_like.empty()) {            
+            // draw the tile that looks just like ours first (to make sure it's loaded)
+            Tile *tile = Tileset::findTileByName(looks_like);
+            tile->draw(x, y, frame);            
+            
+            image = tile->getImage();            
+            w = image->width();
+            h = image->height();
+            return;
+        }
+        
+        // load the image
+        else if (tilesInfo == NULL || tilesInfo->name != tileset->getImageName()) {
+            tilesInfo = screenLoadImage(tileset->getImageName());            
+            if (!tilesInfo)
+                errorFatal("unable to load tileset images: is Ultima IV installed?  See http://xu4.sourceforge.net/");            
+        }
+
+        Image* tiles = tilesInfo->image;
+        
+        /* create the image for our tile */
+        w = tiles->width();
+        h = tiles->height() / tileset->numFrames();
+        image = Image::create(w, frames * h, false, Image::HARDWARE);                
+
+        /* draw the tile from the main image to our tile */
+        tiles->drawSubRectOn(image, 0, 0, 0, index * h, w, image->height());
+
+        if (image == NULL)
+            errorFatal("Error: not all tile images loaded correctly, aborting...");    
+    }   
+
+    int offset = 0;
+    if (getAnimationStyle() == ANIM_SCROLL)
+        offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale;
+
+    image->drawSubRect(x * w + (BORDER_WIDTH * scale), y * h + (BORDER_HEIGHT * scale) + offset,
+        0, frame * h, w, h - offset);
+    
+    if (offset != 0) {
+        image->drawSubRect(x * w + (BORDER_WIDTH * scale), y * h + (BORDER_HEIGHT * scale),
+            0, (frame + 1) * h - offset, w, offset);                           
+    }
+}
+
+/**
  * Draw a tile graphic on the screen.
  */
 void screenShowTile(MapTile mapTile, int focus, int x, int y) {
-    int offset;
-    int unscaled_x, unscaled_y;
+    //int offset;
+    //int unscaled_x, unscaled_y;
     Image *tiles;
     TileAnim *anim = NULL;
+    
+    mapTile.draw(x, y);
+    
     unsigned int tile = mapTile.getIndex();
+    Tileset *t = Tileset::get();
 
-    if (tilesInfo == NULL || tilesInfo->name != Tileset::imageName) {
-        tilesInfo = screenLoadImage(Tileset::imageName);
+    if (tilesInfo == NULL || tilesInfo->name != t->getImageName()) {
+        tilesInfo = screenLoadImage(t->getImageName());
         if (!tilesInfo)
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
     tiles = tilesInfo->image;
 
-    if (mapTile.getAnimationStyle() == ANIM_SCROLL)
+    /*if (mapTile.getAnimationStyle() == ANIM_SCROLL)
         offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale;
     else
         offset = 0;
@@ -1145,7 +1179,7 @@ void screenShowTile(MapTile mapTile, int focus, int x, int y) {
     }
 
     if (anim)
-        anim->draw(tiles, tile, scale, 
+        anim->draw(tiles, mapTile.id + mapTile.frame, scale, 
                    x * tiles->width() / scale + BORDER_WIDTH, 
                    y * tiles->height() / N_TILES / scale + BORDER_HEIGHT);
 

@@ -366,7 +366,7 @@ int mapLoadData(Map *map, U4FILE *f) {
                 for(x = 0; x < map->chunk_width; ++x) {
 
                     if (mapIsChunkCompressed(map, ych * map->chunk_width + xch))
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = Tile::findByName("water")->id;
+                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = Tileset::findTileByName("water")->id;
 
                     else {
                         int c;                        

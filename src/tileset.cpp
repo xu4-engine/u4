@@ -151,30 +151,26 @@ bool TileRule::loadProperties(TileRule *rule, void *xmlNode) {
  * Tileset Class Implementation
  */
 
-TileVector  Tileset::tiles;
-int         Tileset::totalFrames = 0;
-string      Tileset::imageName;
-TileId      Tileset::currentId = 0;
+/* static member variables */
+TileId              Tileset::currentId = 0;
+Tileset::TilesetMap Tileset::tilesets;    
+Tileset*            Tileset::current = NULL;
 
 /**
  * Loads all tilesets using the filename
  * indicated by 'filename' as a definition
  */
-void Tileset::load(string filename) {
+void Tileset::loadAll(string filename) {
     xmlDocPtr doc;
     xmlNodePtr root, node;
 
-    unload();
+    unloadAll();
 
     /* open the filename for the tileset and parse it! */
     doc = xmlParse(filename.c_str());
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "tilesets") != 0)
         errorFatal("malformed %s", filename.c_str());
-
-    /* get the image name for the tileset */
-    if (xmlPropExists(root, "imageName"))
-        imageName = xmlGetPropAsString(root, "imageName");
 
     /* load tile rules from xml */
     if (!TileRule::rules.size())
@@ -188,36 +184,85 @@ void Tileset::load(string filename) {
     for (node = root->xmlChildrenNode; node; node = node->next) {
         if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tileset") != 0)            
             continue;
+
+        Tileset *tileset = new Tileset;
         
-        /* get filename of each group */
-        string groupFilename = xmlGetPropAsStr(node, "file");
-        /* load the tile group! */
-        loadGroup(groupFilename);                
+        /* get filename of each tileset */
+        string tilesetFilename = xmlGetPropAsStr(node, "file");
+        /* load the tileset! */
+        tileset->load(tilesetFilename);
+
+        tilesets[tileset->name] = tileset;
     }
+
+    /* make the current tileset the first one encountered */
+    set(tilesets.begin()->second);    
 }
 
 /**
- * Delete all tiles
+ * Delete all tilesets
  */
-void Tileset::unload() {
-    TileVector::iterator i;    
-        
-    /* free all the memory for the tiles */
-    for (i = tiles.begin(); i != tiles.end(); i++)
-        delete *i;
-    
-    TileMap::unloadAll();    
+void Tileset::unloadAll() {
+    TilesetMap::iterator i;
 
-    tiles.clear();
-    totalFrames = 0;
-    imageName.erase();
-    currentId = 0;    
+    for (i = tilesets.begin(); i != tilesets.end(); i++) {
+        i->second->unload();
+        delete i->second;
+    }
+    tilesets.clear();
+
+    TileMap::unloadAll();
+    currentId = 0;
 }
 
 /**
- * Loads a tile group from the .xml file indicated by 'filename'
+ * Returns the tileset with the given name, if it exists
  */
-void Tileset::loadGroup(string filename) {
+Tileset* Tileset::get(string name) {
+    if (tilesets.find(name) != tilesets.end())
+        return tilesets[name];
+    else return NULL;
+}
+
+/**
+ * Returns the next unique id for a tile
+ */
+TileId Tileset::getNextTileId() {
+    return currentId++;
+}
+
+/**
+ * Returns the tile that has the given name from any tileset, if there is one
+ */
+Tile* Tileset::findTileByName(string name) {
+	TilesetMap::iterator i;
+	for (i = tilesets.begin(); i != tilesets.end(); i++) {
+		Tile *t = i->second->getByName(name);
+		if (t)
+			return t;		
+	}
+
+	return NULL;
+}
+
+/**
+ * Returns the current tileset
+ */ 
+Tileset* Tileset::get(void) {
+    return current;
+}
+
+/**
+ * Sets the current tileset
+ */ 
+void Tileset::set(Tileset* t) {
+    current = t;
+}
+
+/**
+ * Loads a tileset from the .xml file indicated by 'filename'
+ */
+void Tileset::load(string filename) {
     xmlDocPtr doc;
     xmlNodePtr root, node;        
     
@@ -227,30 +272,104 @@ void Tileset::loadGroup(string filename) {
     if (xmlStrcmp(root->name, (const xmlChar *) "tiles") != 0)
         errorFatal("malformed %s", filename.c_str());
 
-    static int index = 0;
+    name = xmlGetPropAsStr(root, "name");
+    if (xmlPropExists(root, "imageName"))
+        imageName = xmlGetPropAsStr(root, "imageName");
+    if (xmlPropExists(root, "extends"))
+        extends = Tileset::get(xmlGetPropAsStr(root, "extends"));
+    else extends = NULL;    
+
+    int index = 0;
     for (node = root->xmlChildrenNode; node; node = node->next) {
         if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
             continue;
         
-        Tile tile;
-        Tile::loadProperties(&tile, node);
-        
-        /* set the base index for the tile */
-        tile.index = index;
+        Tile *tile = new Tile;
+        Tile::loadProperties(tile, node);
+
+        /* set the base index for the tile (if it isn't already set explicitly) */
+        if (tile->index != -1)
+            index = tile->index;
+        else            
+            tile->index = index;        
 
         /* grab a unique id for the tile */
-        tile.id = getNextTileId();
+        tile->id = getNextTileId();
+        
+        /* assign the tileset this tile belongs to */
+        tile->tileset = this;
+
+        /* the tiles will load their own images when needed */
+        tile->image = NULL;
 
         /* add the tile to our tileset */
-        tiles.push_back(new Tile(tile));        
+        tiles[tile->id] = tile;
+		nameMap[tile->name] = tile;
         
-        index += tile.frames;
+        index += tile->frames;
     }
-    totalFrames = index;
+    totalFrames = index;   
     
     xmlFree(doc);
 }
 
-TileId Tileset::getNextTileId() {
-    return currentId++;
+/**
+ * Unload the current tileset
+ */
+void Tileset::unload() {
+    Tileset::TileMap::iterator i;    
+        
+    /* free all the memory for the tiles */
+    for (i = tiles.begin(); i != tiles.end(); i++)
+        delete i->second;    
+
+    tiles.clear();
+    totalFrames = 0;
+    imageName.erase();    
 }
+
+/**
+ * Returns the tile with the given id in the tileset
+ */
+Tile* Tileset::get(TileId id) {
+	if (tiles.find(id) != tiles.end())
+		return tiles[id];
+	else if (extends)
+		return extends->get(id);
+	return NULL;    
+}
+
+/**
+ * Returns the tile with the given name from the tileset, if it exists
+ */
+Tile* Tileset::getByName(string name) {
+	if (nameMap.find(name) != nameMap.end())
+		return nameMap[name];
+	else if (extends)
+		return extends->getByName(name);
+	else return NULL;
+}
+
+/**
+ * Returns the image name for the tileset, if it exists
+ */
+string Tileset::getImageName() const {
+	if (imageName.empty() && extends)
+		return extends->getImageName();
+    else return imageName;
+}
+
+/**
+ * Returns the number of tiles in the tileset
+ */
+unsigned int Tileset::numTiles() const {
+    return tiles.size();
+}
+
+/**
+ * Returns the total number of frames in the tileset
+ */ 
+unsigned int Tileset::numFrames() const {
+    return totalFrames;
+}
+

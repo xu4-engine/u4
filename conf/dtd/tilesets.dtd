@@ -1,7 +1,6 @@
 <!-- $Id$ -->
 
 <!ELEMENT tilesets ( tileset+ | tilemap* ) >
-<!ATTLIST tilesets imageName       CDATA    #REQUIRED>
 
 <!ELEMENT tileset EMPTY >
 <!ATTLIST tileset file             CDATA    #REQUIRED>

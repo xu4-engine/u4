@@ -65,24 +65,15 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
     /* get the number of frames the tile has */    
     if (xmlPropExists(node, "frames"))
         tile->frames = xmlGetPropAsInt(node, "frames");    
-}
 
-/**
- * Returns the tile with the given name in the tileset
- */ 
-Tile *Tile::findByName(string name) {    
-    unsigned int i;
+    /* if the tile looks exactly like another tile, record it */
+    if (xmlPropExists(node, "looks_like"))
+        tile->looks_like = xmlGetPropAsStr(node, "looks_like");
 
-    for (i = 0; i < Tileset::tiles.size(); i++) { 
-        Tile *tile = Tileset::tiles[i];
-        if (tile->name.empty())
-            errorFatal("Error: not all tiles have a \"name\" attribute");
-            
-        if (strcasecmp(name.c_str(), tile->name.c_str()) == 0)
-            return tile;
-    }
-
-    return NULL;
+    /* get the index, if it is provided.  Otherwise, it is implied */
+    if (xmlPropExists(node, "index"))
+        tile->index = xmlGetPropAsInt(node, "index");
+    else tile->index = -1;
 }
 
 /**
@@ -98,17 +89,25 @@ MapTile Tile::translate(int index, string tileMap) {
         while (base > 0 && name == (*im)[base-1])
             base--;
                    
-        Tile *tile = Tile::findByName((*im)[index]);
+        Tile *tile = Tileset::findTileByName((*im)[index]);
         if (!tile)
             errorFatal("Error: the tile '%s' was not found in the tileset", name.c_str());        
+
+        int frame = index - base;
+        if (frame > tile->frames - 1)
+            frame = tile->frames - 1;
         
-        return MapTile(tile->id, index - base);
+        return MapTile(tile->id, frame);
     }
     return MapTile();
 }
 
 unsigned int Tile::getIndex(TileId id) {
-    return Tileset::tiles[id]->index;
+    return c && c->location ? c->location->tileset->get(id)->index : Tileset::get("base")->get(id)->index;    
+}
+
+Image *Tile::getImage() {
+    return image;
 }
 
 /**
@@ -145,54 +144,65 @@ bool MapTile::setDirection(Direction d) {
 }
 
 void MapTile::advanceFrame() {
-    if (++frame >= Tileset::tiles[id]->frames)
+    Tileset *t = Tileset::get();
+    if (++frame >= t->get(id)->frames)
         frame = 0;
 }
 
 void MapTile::reverseFrame() {
+    Tileset *t = Tileset::get();
     if (frame-- == 0)
-        frame = Tileset::tiles[id]->frames - 1;    
+        frame = t->get(id)->frames - 1;    
 }
 
-#define TESTBIT(against)     (Tileset::tiles[id]->rule->mask & (against))
-#define TESTMOVEBIT(against) (Tileset::tiles[id]->rule->movementMask & (against))
-#define GETRULE              (Tileset::tiles[id]->rule)
+#define TESTBIT(against)     (t->get(id)->rule->mask & (against))
+#define TESTMOVEBIT(against) (t->get(id)->rule->movementMask & (against))
+#define GETRULE              (t->get(id)->rule)
 
 bool MapTile::canWalkOn(Direction d) const {
-    return DIR_IN_MASK(d, Tileset::tiles[id]->rule->walkonDirs) ? true : false;
+    Tileset *t = Tileset::get();
+    return DIR_IN_MASK(d, t->get(id)->rule->walkonDirs) ? true : false;
 }
 
 bool MapTile::canWalkOff(Direction d) const {    
-    return DIR_IN_MASK(d, Tileset::tiles[id]->rule->walkoffDirs) ? true : false;
+    Tileset *t = Tileset::get();
+    return DIR_IN_MASK(d, t->get(id)->rule->walkoffDirs) ? true : false;
 }
 
 bool MapTile::canAttackOver() const {
     /* All tiles that you can walk, swim, or sail on, can be attacked over.
        All others must declare themselves */
+    Tileset *t = Tileset::get();
     return isWalkable() || isSwimable() || isSailable() || TESTBIT(MASK_ATTACKOVER);        
 }
 
 bool MapTile::canLandBalloon() const {
+    Tileset *t = Tileset::get();
     return TESTBIT(MASK_CANLANDBALLOON);
 }
 
 bool MapTile::isReplacement() const {
+    Tileset *t = Tileset::get();
     return TESTBIT(MASK_REPLACEMENT);
 }
 
 bool MapTile::isWalkable() const {    
+    Tileset *t = Tileset::get();
     return GETRULE->walkonDirs > 0;
 }
 
 bool MapTile::isCreatureWalkable() const {
+    Tileset *t = Tileset::get();
     return canWalkOn(DIR_ADVANCE) && !TESTMOVEBIT(MASK_CREATURE_UNWALKABLE);
 }
 
 bool MapTile::isSwimable() const {
+    Tileset *t = Tileset::get();
     return TESTMOVEBIT(MASK_SWIMABLE);
 }
 
 bool MapTile::isSailable() const {
+    Tileset *t = Tileset::get();
     return TESTMOVEBIT(MASK_SAILABLE);
 }
 
@@ -201,65 +211,78 @@ bool MapTile::isWater() const {
 }
 
 bool MapTile::isFlyable() const {
+    Tileset *t = Tileset::get();
     return !TESTMOVEBIT(MASK_UNFLYABLE);
 }
 
 bool MapTile::isDoor() const {
+    Tileset *t = Tileset::get();
     return TESTBIT(MASK_DOOR);
 }
 
 bool MapTile::isLockedDoor() const {
+    Tileset *t = Tileset::get();
     return TESTBIT(MASK_LOCKEDDOOR);
 }
 
 bool MapTile::isChest() const {
+    Tileset *t = Tileset::get();
     return TESTBIT(MASK_CHEST);
 }
 
 bool MapTile::isShip() const {
+    Tileset *t = Tileset::get();
     return TESTBIT(MASK_SHIP);
 }
 
 bool MapTile::isPirateShip() const {
-    Tile *pirate = Tile::findByName("pirate_ship");
+    Tile *pirate = Tileset::findTileByName("pirate_ship");
     if (id == pirate->id)
         return true;
     return false;
 }
 
 bool MapTile::isHorse() const {
+    Tileset *t = Tileset::get();
     return TESTBIT(MASK_HORSE);
 }
 
 bool MapTile::isBalloon() const {
+    Tileset *t = Tileset::get();
     return TESTBIT(MASK_BALLOON);
 }
 
 bool MapTile::canDispel() const {
+    Tileset *t = Tileset::get();
     return TESTBIT(MASK_DISPEL);
 }
 
 bool MapTile::canTalkOver() const {
+    Tileset *t = Tileset::get();
     return TESTBIT(MASK_TALKOVER);
 }
 
-TileSpeed MapTile::getSpeed() const {    
+TileSpeed MapTile::getSpeed() const { 
+    Tileset *t = Tileset::get();
     return GETRULE->speed;
 }
 
 TileEffect MapTile::getEffect() const {
+    Tileset *t = Tileset::get();
     return GETRULE->effect;
 }
 
 TileAnimationStyle MapTile::getAnimationStyle() const {
-    return Tileset::tiles[id]->animation;
+    Tileset *t = Tileset::get();
+    return t->get(id)->animation;
 }
 
 bool MapTile::isOpaque() const {
     extern Context *c;    
+    Tileset *t = Tileset::get();
 
     if (c->opacity)
-        return Tileset::tiles[id]->opaque ? 1 : 0;
+        return t->get(id)->opaque ? 1 : 0;
     else return 0;
 }
 

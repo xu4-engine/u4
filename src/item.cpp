@@ -21,6 +21,7 @@
 #include "portal.h"
 #include "savegame.h"
 #include "screen.h"
+#include "tileset.h"
 #include "u4.h"
 #include "utils.h"
 
@@ -327,7 +328,7 @@ void useStone(void *item) {
                         MapCoords coords;
                         screenMessage("\n\nThe altar changes before thyne eyes!\n");
                         locationGetCurrentPosition(c->location, &coords);
-                        c->location->map->annotations->add(coords, Tile::findByName("down_ladder")->id);
+                        c->location->map->annotations->add(coords, Tileset::findTileByName("down_ladder")->id);
                     }
                     /* start chamber of the codex sequence... */
                     else {
@@ -362,7 +363,7 @@ void useStone(void *item) {
      * in a dungeon altar room, on the altar
      */
     else if ((c->location->context & CTX_ALTAR_ROOM) &&
-        c->location->map->tileAt(coords, WITHOUT_OBJECTS) == Tile::findByName("altar")->id) {
+        c->location->map->tileAt(coords, WITHOUT_OBJECTS) == Tileset::findTileByName("altar")->id) {
         needStoneNames = 4;
         screenMessage("\n\nThere are holes for 4 stones.\nWhat colors:\nA:");        
 

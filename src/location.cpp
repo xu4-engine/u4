@@ -11,11 +11,12 @@
 #include "annotation.h"
 #include "context.h"
 #include "combat.h"
+#include "creature.h"
 #include "game.h"
 #include "map.h"
-#include "creature.h"
 #include "object.h"
 #include "savegame.h"
+#include "tileset.h"
 
 Location *locationPush(Location *stack, Location *loc);
 Location *locationPop(Location **stack);
@@ -25,7 +26,7 @@ Location *locationPop(Location **stack);
  * start a new stack if 'prev' is NULL
  */
 Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx,
-                      FinishTurnCallback finishTurnCallback, MoveCallback moveCallback,
+                      FinishTurnCallback finishTurnCallback, Tileset* tileset, MoveCallback moveCallback,
                       Location *prev) {
 
     Location *newLoc = new Location;
@@ -35,6 +36,7 @@ Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext 
     newLoc->viewMode = viewmode;
     newLoc->context = ctx;
     newLoc->finishTurn = finishTurnCallback;
+	newLoc->tileset = tileset;
     newLoc->move = moveCallback;        
     newLoc->activePlayer = -1;
 
@@ -148,7 +150,7 @@ MapTile locationGetReplacementTile(Location *location, MapCoords coords) {
     if (location->context & CTX_DUNGEON)
         return 0;
     else
-        return (location->context & CTX_COMBAT) ? Tile::findByName("dungeon_floor")->id : Tile::findByName("brick_floor")->id;
+        return (location->context & CTX_COMBAT) ? Tileset::findTileByName("dungeon_floor")->id : Tileset::findTileByName("brick_floor")->id;
 }
 
 /**

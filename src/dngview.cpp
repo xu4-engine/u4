@@ -12,7 +12,7 @@
 #include "debug.h"
 #include "dungeon.h"
 #include "savegame.h"
-#include "tile.h"
+#include "tileset.h"
 
 MapTileList dungeonViewGetTiles(int fwd, int side) {    
     int focus;
@@ -60,9 +60,9 @@ DungeonGraphicType dungeonViewTilesToGraphic(MapTileList tiles) {
      * (always displayed as a tile, unless a ladder)
      */
     if (tiles->size() > 1) {
-        if (tile == Tile::findByName("up_ladder")->id)
+        if (tile == Tileset::findTileByName("up_ladder")->id)
             return DNGGRAPHIC_LADDERUP;
-        else if (tile == Tile::findByName("down_ladder")->id)
+        else if (tile == Tileset::findTileByName("down_ladder")->id)
             return DNGGRAPHIC_LADDERDOWN;
         else
             return DNGGRAPHIC_BASETILE;        

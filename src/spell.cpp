@@ -493,10 +493,10 @@ static int spellEField(int param) {
     
     /* Make sure params valid */
     switch (fieldType) {
-        case ENERGYFIELD_FIRE: fieldTile = Tile::findByName("fire_field")->id; break;
-        case ENERGYFIELD_LIGHTNING: fieldTile = Tile::findByName("energy_field")->id; break;
-        case ENERGYFIELD_POISON: fieldTile = Tile::findByName("poison_field")->id; break;
-        case ENERGYFIELD_SLEEP: fieldTile = Tile::findByName("sleep_field")->id; break;
+        case ENERGYFIELD_FIRE: fieldTile = Tileset::findTileByName("fire_field")->id; break;
+        case ENERGYFIELD_LIGHTNING: fieldTile = Tileset::findTileByName("energy_field")->id; break;
+        case ENERGYFIELD_POISON: fieldTile = Tileset::findTileByName("poison_field")->id; break;
+        case ENERGYFIELD_SLEEP: fieldTile = Tileset::findTileByName("sleep_field")->id; break;
         default: return 0; break;
     }
 
@@ -534,7 +534,7 @@ static int spellEField(int param) {
 }
 
 static int spellFireball(int dir) {
-    spellMagicAttack(Tile::findByName("hit_flash")->id, (Direction)dir, 24, 128);    
+    spellMagicAttack(Tileset::findTileByName("hit_flash")->id, (Direction)dir, 24, 128);    
     return 1;
 }
 
@@ -556,7 +556,7 @@ static int spellHeal(int player) {
 }
 
 static int spellIceball(int dir) {
-    spellMagicAttack(Tile::findByName("magic_flash")->id, (Direction)dir, 32, 224);    
+    spellMagicAttack(Tileset::findTileByName("magic_flash")->id, (Direction)dir, 32, 224);    
     return 1;
 }
 
@@ -566,7 +566,7 @@ static int spellJinx(int unused) {
 }
 
 static int spellKill(int dir) {
-    spellMagicAttack(Tile::findByName("whirlpool")->id, (Direction)dir, -1, 232);
+    spellMagicAttack(Tileset::findTileByName("whirlpool")->id, (Direction)dir, -1, 232);
     return 1;
 }
 
@@ -576,7 +576,7 @@ static int spellLight(int unused) {
 }
 
 static int spellMMissle(int dir) {
-    spellMagicAttack(Tile::findByName("miss_flash")->id, (Direction)dir, 64, 16);
+    spellMagicAttack(Tileset::findTileByName("miss_flash")->id, (Direction)dir, 64, 16);
     return 1;
 }
 
@@ -640,13 +640,13 @@ static int spellTremor(int unused) {
             /* Deal maximum damage to creature */
             if (xu4_random(2) == 0) {
                 ct->getCurrentPlayer()->dealDamage(m, 0xFF);                
-                CombatController::attackFlash(coords, Tile::findByName("hit_flash")->id, 1);
+                CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 1);
             }
             /* Deal enough damage to creature to make it flee */
             else if (xu4_random(2) == 0) {
                 if (m->hp > 23)
                     ct->getCurrentPlayer()->dealDamage(m, m->hp-23);
-                CombatController::attackFlash(coords, Tile::findByName("hit_flash")->id, 1);
+                CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 1);
             }
         }
     }

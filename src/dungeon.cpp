@@ -49,7 +49,7 @@ DungeonToken dungeonTokenForTile(MapTile tile) {
     };
 
     int i;
-    Tile *t = Tileset::tiles[tile.id];
+    Tile *t = c->location->tileset->get(tile.id);
 
     for (i = 0; !tileNames[i].empty(); i++) {        
         if (strcasecmp(t->name.c_str(), tileNames[i].c_str()) == 0)
@@ -295,7 +295,7 @@ bool dungeonLadderUpAt(class Map *map, MapCoords coords) {
     if (a.size() > 0) {
         AnnotationList::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == Tile::findByName("up_ladder")->id)
+            if (i->getTile() == Tileset::findTileByName("up_ladder")->id)
                 return true;
         }
     }
@@ -315,7 +315,7 @@ bool dungeonLadderDownAt(class Map *map, MapCoords coords) {
     if (a.size() > 0) {
         AnnotationList::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == Tile::findByName("down_ladder")->id)
+            if (i->getTile() == Tileset::findTileByName("down_ladder")->id)
                 return true;
         }
     }

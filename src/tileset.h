@@ -37,16 +37,40 @@ public:
  * Tileset class
  */
 class Tileset {
-public:    
-    static void loadGroup(string filename);
-    static void load(string filename);
-    static void unload();    
+public:
+	typedef std::map<string, Tileset*> TilesetMap;
+	typedef std::map<TileId, Tile*> TileMap;
+	typedef std::map<string, Tile*> TileStrMap;
+
+    static void loadAll(string filename);
+    static void unloadAll();
+	static Tileset* get(string name);
     static TileId getNextTileId();
+	static Tile* findTileByName(string name);        
+    static Tileset* get(void);
+    static void set(Tileset*);
+
+public:
+	void load(string filename);
+	void unload();
+	Tile* get(TileId id);
+	Tile* getByName(string name);
+	string getImageName() const;
+	unsigned int numTiles() const;
+    unsigned int numFrames() const;
     
+private:
+    static TilesetMap tilesets;
     static TileId currentId;    
-    static TileVector tiles;
-    static int totalFrames;
-    static string imageName;
+    static Tileset* current;
+
+	string name;
+	TileMap tiles;
+    unsigned int totalFrames;
+    string imageName;
+	Tileset* extends;
+
+	TileStrMap nameMap;
 };
 
 #endif

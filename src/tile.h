@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 #include "direction.h"
+#include "image.h"
 #include "types.h"
 
 using std::string;
 
+class Tileset;
 class TileRule;
-
-typedef std::vector<class Tile *> TileVector;
 
 /* attr masks */
 #define MASK_SHIP               0x0001
@@ -40,17 +40,23 @@ typedef std::vector<class Tile *> TileVector;
  */
 class Tile : public MapTile {
 public:
-    static Tile *findByName(string name);
     static void loadProperties(Tile *tile, void *xmlNode);    
     static MapTile translate(int index, string tileMap = "base");
     static unsigned int getIndex(TileId id);
 
-    string name;    
-    int index;
-    int frames;
-    TileAnimationStyle animation;    
-    bool opaque;
-    TileRule *rule;
+	void draw(int x, int y, int frame);
+    Image *getImage();
+
+    string name;        /* The name of this tile */
+    int w, h;           /* width and height of the tile */
+    int index;          /* The physical tile index of this tile on its parent image (the whole tileset image) */
+    int frames;         /* The number of frames this tile has */
+    TileAnimationStyle animation;   /* The animation style of this tile */
+    bool opaque;        /* Is this tile opaque? */
+    TileRule *rule;     /* The rules that govern the behavior of this tile */
+	Image *image;       /* The actual image for this tile (with all of its frames) */
+    Tileset *tileset;   /* The tileset this tile belongs to */
+    string looks_like;  /* The name of the tile that this tile looks exactly like (if any) */    
 };
 
 #endif

@@ -2,7 +2,7 @@
 <!DOCTYPE tilesets SYSTEM "dtd/tilesets.dtd">
 <!-- $Id$ -->
 
-<tilesets imageName="tiles">
+<tilesets>
     <!-- Load some tilemaps -->
     <tilemap file="tilemap/base.xml"/>
     <tilemap file="tilemap/dungeon.xml"/>

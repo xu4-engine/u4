@@ -176,6 +176,9 @@ void gameInit() {
     c->opacity = 1;
     c->lastCommandTime = time(NULL);
     c->lastShip = NULL;
+    
+    /* set the map to the world map by default */
+    gameSetMap(mapMgrGetById(MAP_WORLD), 0, NULL);    
 
     /* load in the save game */
     saveGameFile = saveGameOpenForReading();
@@ -193,22 +196,13 @@ void gameInit() {
 
     /* initialize our start location */
     Map *map = mapMgrGetById(c->saveGame->location);
+
+    /* initialize the moons (must be done from the world map) */
+    gameInitMoons();
     
-    /* if our map is not the world map, then load the world map first */
-    if (map->type != MAPTYPE_WORLD) {
-        gameSetMap(mapMgrGetById(MAP_WORLD), 0, NULL);
-
-        /* initialize the moons (must be done from the world map) */
-        gameInitMoons();
-
-        gameSetMap(map, 1, NULL);        
-    }
-    else {
-        gameSetMap(map, 0, NULL);        
-        
-        /* initialize the moons (must be done from the world map) */
-        gameInitMoons();
-    }
+    /* if our map is not the world map, then load our map */
+    if (map->type != MAPTYPE_WORLD)
+        gameSetMap(map, 1, NULL);    
 
     /**
      * Translate info from the savegame to something we can use
@@ -462,7 +456,8 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn = &gameFinishTurn;
-    MoveCallback move = &gameMoveAvatar;    
+	Tileset *tileset = Tileset::get("base");
+    MoveCallback move = &gameMoveAvatar;    	
     int activePlayer = (c->location) ? c->location->activePlayer : -1;
     MapCoords coords;
 
@@ -486,6 +481,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         viewMode = VIEW_DUNGEON;
         if (portal)
             c->saveGame->orientation = DIR_EAST;
+		tileset = Tileset::get("dungeon");
         move = &gameMoveAvatarInDungeon;        
         break;
     case MAPTYPE_COMBAT:
@@ -501,10 +497,13 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         context = CTX_CITY;
         viewMode = VIEW_NORMAL;
         break;
-    }
+    }    
     
-    c->location = locationNew(coords, map, viewMode, context, finishTurn, move, c->location);    
+    c->location = locationNew(coords, map, viewMode, context, finishTurn, tileset, move, c->location);    
     c->location->activePlayer = activePlayer;
+
+    /* now, actually set our new tileset */
+    Tileset::set(tileset);
 
     if (isCity(map)) {
         City *city = dynamic_cast<City*>(map);
@@ -532,7 +531,10 @@ int gameExitToParentMap() {
             c->location->map->annotations->clear();
             c->location->map->clearObjects();
         }
-        locationFree(&c->location);       
+        locationFree(&c->location);
+
+        /* restore the tileset to the one the current location uses */
+        Tileset::set(c->location->tileset);
         
         return 1;
     }
@@ -1213,7 +1215,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             if (c->transportContext == TRANSPORT_SHIP)
                 c->lastShip = obj;
 
-            c->party->setTransport(Tile::findByName("avatar")->id);
+            c->party->setTransport(Tileset::findTileByName("avatar")->id);
             c->horseSpeed = 0;
             screenMessage("X-it\n");
         } else
@@ -1863,9 +1865,9 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
 
     case 't':
         if (c->location->map->isWorldMap()) {
-            MapTile horse = Tile::findByName("horse")->id,
-                ship = Tile::findByName("ship")->id,
-                balloon = Tile::findByName("balloon")->id;
+            MapTile horse = Tileset::findTileByName("horse")->id,
+                ship = Tileset::findTileByName("ship")->id,
+                balloon = Tileset::findTileByName("balloon")->id;
             c->location->map->addObject(horse, horse, MapCoords(84, 106));
             c->location->map->addObject(ship, ship, MapCoords(88, 109));
             c->location->map->addObject(balloon, balloon, MapCoords(85, 105));
@@ -2223,7 +2225,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
-        c->location->map->annotations->remove(old, Tile::findByName("miss_flash")->id);
+        c->location->map->annotations->remove(old, Tileset::findTileByName("miss_flash")->id);
     
     if (coords.x == -1 && coords.y == -1) {
         if (distance == 0)
@@ -2261,7 +2263,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
             
             /* Is is a pirate ship firing at US? */
             if (hitsAvatar) {
-                CombatController::attackFlash(coords, Tile::findByName("hit_flash")->id, 5);
+                CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
 
                 if (c->transportContext == TRANSPORT_SHIP)
                     gameDamageShip(-1, 10);
@@ -2269,13 +2271,13 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
             }          
             /* inanimate objects get destroyed instantly, while creatures get a chance */
             else if (obj->getType() == OBJECT_UNKNOWN) {
-                CombatController::attackFlash(coords, Tile::findByName("hit_flash")->id, 5);
+                CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
                 c->location->map->removeObject(obj);
             }
             
             /* only the avatar can hurt other creatures with cannon fire */
             else if (originAvatar) {
-                CombatController::attackFlash(coords, Tile::findByName("hit_flash")->id, 5);
+                CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
                 if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
                     c->location->map->removeObject(obj);
             }
@@ -2286,7 +2288,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
             return true;
         }
         
-        c->location->map->annotations->add(coords, Tile::findByName("miss_flash")->id, true);
+        c->location->map->annotations->add(coords, Tileset::findTileByName("miss_flash")->id, true);
         gameUpdateScreen();
 
         /* Based on attack speed setting in setting struct, make a delay for
@@ -2789,7 +2791,7 @@ bool openAtCoord(MapCoords coords, int distance, void *data) {
         return true;
     }
     
-    c->location->map->annotations->add(coords, Tile::findByName("brick_floor")->id)->setTTL(4);    
+    c->location->map->annotations->add(coords, Tileset::findTileByName("brick_floor")->id)->setTTL(4);    
 
     screenMessage("\nOpened!\n");
     (*c->location->finishTurn)();
@@ -3278,7 +3280,7 @@ void gameCheckBridgeTrolls() {
     Creature *m;
 
     if (!c->location->map->isWorldMap() ||
-        c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS) != Tile::findByName("bridge")->id ||
+        c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS) != Tileset::findTileByName("bridge")->id ||
         xu4_random(8) != 0)
         return;
 
@@ -3441,7 +3443,7 @@ void gameFixupObjects(Map *map) {
                 if (creature)
 				    obj = map->addCreature(creature, c);
                 else {
-                    fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", Tileset::tiles[tile.id]->name.c_str());
+                    fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", ::c->location->tileset->get(tile.id)->name.c_str());
                     obj = map->addObject(tile, oldTile, c);
                 }
             }
@@ -3494,7 +3496,7 @@ bool creatureRangeAttack(MapCoords coords, int distance, void *data) {
     m = dynamic_cast<Creature*>(c->location->map->objectAt(info->origin));    
 
     /* Figure out what the ranged attack should look like */
-    tile = (m && (m->worldrangedtile.id > 0)) ? m->worldrangedtile : Tile::findByName("hit_flash")->id;
+    tile = (m && (m->worldrangedtile.id > 0)) ? m->worldrangedtile : Tileset::findTileByName("hit_flash")->id;
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
@@ -3759,12 +3761,14 @@ int gameSummonCreature(string *creatureName) {
  * If (m==NULL) then it finds its own creature to spawn and spawns it.
  */
 void gameSpawnCreature(const Creature *m) {
-    int dx, dy, t, i;
+    int dx, dy, t; //, i;
     const Creature *creature;
     MapCoords coords = c->location->coords;
 
     if (c->location->context & CTX_DUNGEON) {
-        MapTile tile;
+        /* FIXME: for some reason dungeon monsters aren't spawning correctly */
+
+        /*MapTile tile;
         int found = 0;        
         
         for (i = 0; i < 0x20; i++) {
@@ -3780,7 +3784,7 @@ void gameSpawnCreature(const Creature *m) {
             return;
         
         dx = coords.x - c->location->coords.x;
-        dy = coords.y - c->location->coords.y;
+        dy = coords.y - c->location->coords.y;*/
     }    
     else {    
         dx = 7;
@@ -3880,7 +3884,7 @@ bool gameCreateBalloon(Map *map) {
             return false;
     }
     
-    MapTile balloon = Tile::findByName("balloon")->id;
+    MapTile balloon = Tileset::findTileByName("balloon")->id;
     map->addObject(balloon, balloon, MapCoords(233, 242, -1));
     return true;
 }

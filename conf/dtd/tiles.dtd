@@ -5,12 +5,18 @@
 <!ENTITY % anim '( scroll | frames | cityflag | castleflag | lcbflag | shipflag | campfire | none )'>
 
 <!ELEMENT tiles ( tile+ ) >
+<!ATTLIST tiles name               CDATA    #REQUIRED
+                imageName          CDATA    #IMPLIED
+                extends            CDATA    #IMPLIED>
 
 <!ELEMENT tile EMPTY >
 <!ATTLIST tile  name               CDATA    #REQUIRED
                 rule               CDATA    #IMPLIED
+                index              NMTOKEN  #IMPLIED
                 frames             NMTOKEN  #IMPLIED
                 directions         CDATA    #IMPLIED
                 animation          %anim;   #IMPLIED 
                 rowtoswap          NMTOKEN  #IMPLIED
-                opaque             %bool;   #IMPLIED>
+                opaque             %bool;   #IMPLIED
+                looks_like         CDATA    #IMPLIED
+                frame              NMTOKEN  #IMPLIED>

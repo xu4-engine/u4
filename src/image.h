@@ -5,12 +5,48 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#include <map>
+#include <string>
 #include "types.h"
+#include "u4file.h"
+
+using std::string;
 
 struct RGBA {
     unsigned int r, g, b, a;
 };
 bool operator==(const RGBA &lhs, const RGBA &rhs);
+
+class Image;
+
+enum ImageFixup {
+    FIXUP_NONE,
+    FIXUP_INTRO,
+    FIXUP_INTRO_EXTENDED,
+    FIXUP_ABYSS,
+    FIXUP_ABACUS
+};
+
+struct SubImage {
+    string name;
+    string srcImageName;
+    int x, y, width, height;
+};
+
+struct ImageInfo {
+    string name;
+    string filename;
+    int width, height, depth;
+    int prescale;
+    CompressionType filetype;
+    int tiles;                  /* used to scale the without bleeding colors between adjacent tiles */
+    bool introOnly;             /* whether can be freed after the intro */
+    int transparentIndex;       /* color index to consider transparent */
+    bool xu4Graphic;            /* an original xu4 graphic not part of u4dos or the VGA upgrade */
+    ImageFixup fixup;           /* a routine to do miscellaneous fixes to the image */
+    Image *image;
+	std::map<string, SubImage *> subImages;
+};
 
 #define IM_OPAQUE 255
 #define IM_TRANSPARENT 0
@@ -28,6 +64,7 @@ public:
 
     static Image *create(int w, int h, bool indexed, Type type);
     static Image *createScreenImage();
+    static Image *duplicate(Image *image);
     ~Image();
 
     /* palette handling */

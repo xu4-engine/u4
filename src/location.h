@@ -36,12 +36,13 @@ typedef struct _Location {
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn;
+	Tileset *tileset;
     MoveCallback move;    
     int activePlayer;
     struct _Location *prev;
 } Location;
 
-Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, Location *prev);
+Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, Tileset* tileset, MoveCallback moveCallback, Location *prev);
 MapTile locationVisibleTileAt(Location *location, MapCoords coords, int *focus);
 MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus);
 MapTile locationGetReplacementTile(Location *location, MapCoords coords);

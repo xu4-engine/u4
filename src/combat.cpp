@@ -29,7 +29,7 @@
 #include "settings.h"
 #include "spell.h"
 #include "stats.h"
-#include "tile.h"
+#include "tileset.h"
 #include "utils.h"
 #include "weapon.h"
 
@@ -272,12 +272,12 @@ void CombatController::end(bool adjustKarma) {
                 /* FIXME: move to separate function */
                 /* add a chest, if the creature leaves one */
                 if (!inn && creature->leavesChest() && ground.isCreatureWalkable()) {
-                    MapTile chest = Tile::findByName("chest")->id;
+                    MapTile chest = Tileset::findTileByName("chest")->id;
                     c->location->map->addObject(chest, chest, coords);
                 }
                 /* add a ship if you just defeated a pirate ship */
                 else if (creature->getTile().isPirateShip()) {
-                    MapTile ship = Tile::findByName("ship")->id;
+                    MapTile ship = Tileset::findTileByName("ship")->id;
                     ship.setDirection(creature->getTile().getDirection());
                     c->location->map->addObject(ship, ship, coords);
                 }
@@ -704,7 +704,7 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
                 
         default: 
             /* show the appropriate 'hit' message */
-            if (hittile == Tile::findByName("magic_flash")->id)
+            if (hittile == Tileset::findTileByName("magic_flash")->id)
                 screenMessage("\n%s Magical Hit!\n", target->getName().c_str());
             else screenMessage("\n%s Hit!\n", target->getName().c_str());
             attacker->dealDamage(target, attacker->getDamage());
@@ -1240,25 +1240,25 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
 
     static std::map<MapTile, MapId> tileMap;
     if (!tileMap.size()) {        
-        tileMap[Tile::findByName("horse")->id] = MAP_GRASS_CON;        
-        tileMap[Tile::findByName("swamp")->id] = MAP_MARSH_CON;
-        tileMap[Tile::findByName("grass")->id] = MAP_GRASS_CON;
-        tileMap[Tile::findByName("brush")->id] = MAP_BRUSH_CON;
-        tileMap[Tile::findByName("forest")->id] = MAP_FOREST_CON;
-        tileMap[Tile::findByName("hills")->id] = MAP_HILL_CON;
-        tileMap[Tile::findByName("dungeon")->id] = MAP_HILL_CON;
-        tileMap[Tile::findByName("city")->id] = MAP_GRASS_CON;
-        tileMap[Tile::findByName("castle")->id] = MAP_GRASS_CON;
-        tileMap[Tile::findByName("town")->id] = MAP_GRASS_CON;
-        tileMap[Tile::findByName("lcb_entrance")->id] = MAP_GRASS_CON;
-        tileMap[Tile::findByName("bridge")->id] = MAP_BRIDGE_CON;
-        tileMap[Tile::findByName("balloon")->id] = MAP_GRASS_CON;
-        tileMap[Tile::findByName("bridge_pieces")->id] = MAP_BRIDGE_CON;        
-        tileMap[Tile::findByName("shrine")->id] = MAP_GRASS_CON;
-        tileMap[Tile::findByName("chest")->id] = MAP_GRASS_CON;
-        tileMap[Tile::findByName("brick_floor")->id] = MAP_BRICK_CON;
-        tileMap[Tile::findByName("moongate")->id] = MAP_GRASS_CON;
-        tileMap[Tile::findByName("moongate_opening")->id] = MAP_GRASS_CON;        
+        tileMap[Tileset::findTileByName("horse")->id] = MAP_GRASS_CON;        
+        tileMap[Tileset::findTileByName("swamp")->id] = MAP_MARSH_CON;
+        tileMap[Tileset::findTileByName("grass")->id] = MAP_GRASS_CON;
+        tileMap[Tileset::findTileByName("brush")->id] = MAP_BRUSH_CON;
+        tileMap[Tileset::findTileByName("forest")->id] = MAP_FOREST_CON;
+        tileMap[Tileset::findTileByName("hills")->id] = MAP_HILL_CON;
+        tileMap[Tileset::findTileByName("dungeon")->id] = MAP_HILL_CON;
+        tileMap[Tileset::findTileByName("city")->id] = MAP_GRASS_CON;
+        tileMap[Tileset::findTileByName("castle")->id] = MAP_GRASS_CON;
+        tileMap[Tileset::findTileByName("town")->id] = MAP_GRASS_CON;
+        tileMap[Tileset::findTileByName("lcb_entrance")->id] = MAP_GRASS_CON;
+        tileMap[Tileset::findTileByName("bridge")->id] = MAP_BRIDGE_CON;
+        tileMap[Tileset::findTileByName("balloon")->id] = MAP_GRASS_CON;
+        tileMap[Tileset::findTileByName("bridge_pieces")->id] = MAP_BRIDGE_CON;        
+        tileMap[Tileset::findTileByName("shrine")->id] = MAP_GRASS_CON;
+        tileMap[Tileset::findTileByName("chest")->id] = MAP_GRASS_CON;
+        tileMap[Tileset::findTileByName("brick_floor")->id] = MAP_BRICK_CON;
+        tileMap[Tileset::findTileByName("moongate")->id] = MAP_GRASS_CON;
+        tileMap[Tileset::findTileByName("moongate_opening")->id] = MAP_GRASS_CON;        
     }
 
     if (transport.isShip() || (objUnder && objUnder->getTile().isShip()))

@@ -14,6 +14,7 @@
 #include "game.h"
 #include "location.h"
 #include "screen.h" /* FIXME: remove dependency on this */
+#include "tileset.h"
 #include "types.h"
 #include "utils.h"
 #include "weapon.h"
@@ -349,7 +350,7 @@ bool PartyMember::applyDamage(int damage) {
     if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();                    
         screenMessage("%s is Killed!\n", getName().c_str());
-        map->annotations->add(p, Tile::findByName("corpse")->id)->setTTL(party->size());
+        map->annotations->add(p, Tileset::findTileByName("corpse")->id)->setTTL(party->size());
 
         /* remove yourself from the map */
         map->removeObject(this);        
@@ -455,7 +456,7 @@ int PartyMember::loseWeapon() {
 void PartyMember::putToSleep() {    
     if (getStatus() != STAT_DEAD) {
         addStatus(STAT_SLEEPING);
-        setTile(Tile::findByName("corpse")->id);
+        setTile(Tileset::findTileByName("corpse")->id);
     }
 }
 
@@ -862,7 +863,7 @@ void Party::reviveParty() {
     
     saveGame->food = 20099;
     saveGame->gold = 200;
-    setTransport(Tile::findByName("avatar")->id);
+    setTransport(Tileset::findTileByName("avatar")->id);
     setChanged();
     notifyObservers("Party::reviveParty");
 }

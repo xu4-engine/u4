@@ -61,11 +61,8 @@ public:
     bool operator==(const TileId &i) const   { return id == i; }
     bool operator!=(const MapTile &m) const  { return id != m.id; }
     bool operator!=(const TileId &i) const   { return id != i; }
-    bool operator<(const MapTile &m) const   { return id < m.id; }
+    bool operator<(const MapTile &m) const   { return id < m.id; } /* for std::less */
     
-    /* FIXME: when tilesets are used correctly, this operator should be unnecessary */
-    TileId operator+(const int i) { return TileId(id + i); }
-
     Direction getDirection() const;
     bool setDirection(Direction d);
     void advanceFrame();
@@ -100,6 +97,8 @@ public:
     static bool canTalkOverTile(MapTile tile);
     static bool canAttackOverTile(MapTile tile);
     static MapTile tileForClass(int klass);
+
+    void draw(int x, int y) const;
 
     // Properties
     TileId id;

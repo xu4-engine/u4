@@ -11,7 +11,7 @@
 #include "config.h"
 #include "error.h"
 #include "names.h"
-#include "tile.h"
+#include "tileset.h"
 
 using std::string;
 using std::vector;
@@ -76,8 +76,8 @@ Weapon::Weapon(const ConfigElement &conf) {
     abbr = conf.getString("abbr");
     canuse = 0xFF;
     damage = conf.getInt("damage");
-    hittile = Tile::findByName("hit_flash")->id;
-    misstile = Tile::findByName("miss_flash")->id;
+    hittile = Tileset::findTileByName("hit_flash")->id;
+    misstile = Tileset::findTileByName("miss_flash")->id;
     leavetile = 0;
     mask = 0;
 
@@ -102,15 +102,15 @@ Weapon::Weapon(const ConfigElement &conf) {
 
     /* Load hit tiles */
     if (conf.exists("hittile"))
-        hittile = Tile::findByName(conf.getString("hittile"))->id;
+        hittile = Tileset::findTileByName(conf.getString("hittile"))->id;
     
     /* Load miss tiles */
     if (conf.exists("misstile"))
-        misstile = Tile::findByName(conf.getString("misstile"))->id;
+        misstile = Tileset::findTileByName(conf.getString("misstile"))->id;
     
     /* Load leave tiles */
     if (conf.exists("leavetile"))
-        leavetile = Tile::findByName(conf.getString("leavetile"))->id;
+        leavetile = Tileset::findTileByName(conf.getString("leavetile"))->id;
         
     vector<ConfigElement> contraintConfs = conf.getChildren();
     for (std::vector<ConfigElement>::iterator i = contraintConfs.begin(); i != contraintConfs.end(); i++) {
