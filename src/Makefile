@@ -16,35 +16,25 @@ FEATURES=-DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
 DEBUGCFLAGS=-ggdb -rdynamic
 CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\" -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS)
 LIBS=$(UILIBS) $(shell xml2-config --libs)
-INSTALL=install -D
+INSTALL=install
 
 include Makefile.common
 
 install::
-	$(INSTALL) $(MAIN) $(bindir)/$(MAIN)
-	$(INSTALL) ../icons/u4.bmp $(datadir)/pixmaps/u4.bmp
-	$(INSTALL) ../icons/u4.png $(datadir)/pixmaps/u4.png
-	$(INSTALL) ../mid/Castles.mid $(libdir)/u4/music/Castles.mid
-	$(INSTALL) ../mid/Combat.mid $(libdir)/u4/music/Combat.mid
-	$(INSTALL) ../mid/Dungeon.mid $(libdir)/u4/music/Dungeon.mid
-	$(INSTALL) ../mid/Fanfare_Of_Lord_British.mid $(libdir)/u4/music/Fanfare_Of_Lord_British.mid
-	$(INSTALL) ../mid/Rule_Britannia.mid $(libdir)/u4/music/Rule_Britannia.mid
-	$(INSTALL) ../mid/Shopping.mid $(libdir)/u4/music/Shopping.mid
-	$(INSTALL) ../mid/Shrines.mid $(libdir)/u4/music/Shrines.mid
-	$(INSTALL) ../mid/Towns.mid $(libdir)/u4/music/Towns.mid
-	$(INSTALL) ../mid/Wanderer.mid $(libdir)/u4/music/Wanderer.mid
-	$(INSTALL) dumpsavegame $(libdir)/u4/dumpsavegame
-	$(INSTALL) lzwenc $(libdir)/u4/lzwenc
-	$(INSTALL) lzwdec $(libdir)/u4/lzwdec
-	$(INSTALL) rleenc $(libdir)/u4/rleenc
-	$(INSTALL) rledec $(libdir)/u4/rledec
-	$(INSTALL) tlkconv $(libdir)/u4/tlkconv
-	$(INSTALL) ../conf/tiles.xml $(libdir)/u4/tiles.xml
-	$(INSTALL) ../conf/armors.xml $(libdir)/u4/armors.xml
-	$(INSTALL) ../conf/weapons.xml $(libdir)/u4/weapons.xml
-	$(INSTALL) ../conf/monsters.xml $(libdir)/u4/monsters.xml
-	$(INSTALL) ../conf/music.xml $(libdir)/u4/music.xml
-	$(INSTALL) ../conf/maps.xml $(libdir)/u4/maps.xml
-	$(INSTALL) ../u4.desktop $(desktopdir)/Games/u4.desktop
+	$(INSTALL) -D $(MAIN) $(bindir)/$(MAIN)
+	$(INSTALL) -D ../icons/u4.bmp $(datadir)/pixmaps/u4.bmp
+	$(INSTALL) -D ../icons/u4.png $(datadir)/pixmaps/u4.png
+	mkdir -p $(libdir)/u4/music
+	$(INSTALL) ../mid/*.mid $(libdir)/music
+	$(INSTALL) -D dumpsavegame $(libdir)/u4/dumpsavegame
+	$(INSTALL) -D lzwenc $(libdir)/u4/lzwenc
+	$(INSTALL) -D lzwdec $(libdir)/u4/lzwdec
+	$(INSTALL) -D rleenc $(libdir)/u4/rleenc
+	$(INSTALL) -D rledec $(libdir)/u4/rledec
+	$(INSTALL) -D tlkconv $(libdir)/u4/tlkconv
+	install ../conf/*.xml $(libdir)/u4
+	mkdir -p $(libdir)/u4/graphics
+	$(INSTALL) ../graphics/*.rle $(libdir)/u4/graphics
+	$(INSTALL) -D ../u4.desktop $(desktopdir)/Games/u4.desktop
 
 -include .depends
