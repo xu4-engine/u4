@@ -19,7 +19,6 @@
 #include "image.h"
 #include "imageloader.h"
 #include "intro.h"
-#include "rle.h"
 #include "savegame.h"
 #include "settings.h"
 #include "scale.h"
@@ -31,7 +30,6 @@
 #include "u4_sdl.h"
 #include "u4file.h"
 #include "utils.h"
-#include "lzw/u4decode.h"
 
 using std::vector;
 using std::map;
@@ -41,7 +39,6 @@ void fixupIntroExtended(Image *im, int prescale);
 void fixupAbyssVision(Image *im, int prescale);
 void fixupAbacus(Image *im, int prescale);
 void screenFreeIntroBackground();
-int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp);
 Image *screenScale(Image *src, int scale, int n, int filter);
 int screenLoadPaletteEga();
 int screenLoadPaletteVga(const char *filename);
@@ -770,6 +767,7 @@ int screenLoadPaletteVga(const char *filename) {
     return 1;
 }
 
+#if 0
 void screenDeinterlaceCga(unsigned char *data, int width, int height, int tiles, int fudge) {
     unsigned char *tmp;
     int t, x, y;
@@ -862,103 +860,7 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
 
     return 1;
 }
-
-/**
- * Load an image from a ".vga" or ".ega" image file.  Both 4-bpp
- * (original) or 8-bpp (VGA upgrade) images are supported.
- */
-int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp) {
-    Image *img;
-    int x, y, indexed;
-    unsigned char *compressed_data, *decompressed_data = NULL;
-    long inlen, decompResult;
-
-    ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp passed to screenLoadImageData: %d", bpp);
-
-    inlen = u4flength(file);
-    compressed_data = (Uint8 *) malloc(inlen);
-    u4fread(compressed_data, 1, inlen, file);
-
-    switch(comp) {
-    case COMP_NONE:
-        decompressed_data = compressed_data;
-        decompResult = inlen;
-        break;
-    case COMP_RLE:
-        decompResult = rleDecompressMemory(compressed_data, inlen, (void **) &decompressed_data);
-        free(compressed_data);
-        break;
-    case COMP_LZW:
-        decompResult = decompress_u4_memory(compressed_data, inlen, (void **) &decompressed_data);
-        free(compressed_data);
-        break;
-    default:
-        ASSERT(0, "invalid compression type %d", comp);
-    }
-
-    if (decompResult == -1 ||
-        decompResult != (width * height * bpp / 8)) {
-        if (decompressed_data)
-            free(decompressed_data);
-        return 0;
-    }
-
-    indexed = (bpp == 4 || bpp == 8);
-    img = Image::create(width, height, indexed, Image::HARDWARE);
-    if (!img) {
-        if (decompressed_data)
-            free(decompressed_data);
-        return 0;
-    }
-
-    if (bpp == 32) {
-        for (y = 0; y < height; y++) {
-            for (x = 0; x < width; x++)
-                img->putPixel(x, y, 
-                              decompressed_data[(y * width + x) * 4], 
-                              decompressed_data[(y * width + x) * 4 + 1], 
-                              decompressed_data[(y * width + x) * 4 + 2],
-                              decompressed_data[(y * width + x) * 4 + 3]);
-        }
-    }
-
-    else if (bpp == 24) {
-        for (y = 0; y < height; y++) {
-            for (x = 0; x < width; x++)
-                img->putPixel(x, y, 
-                              decompressed_data[(y * width + x) * 3], 
-                              decompressed_data[(y * width + x) * 3 + 1], 
-                              decompressed_data[(y * width + x) * 3 + 2],
-                              IM_OPAQUE);
-        }
-    }
-
-    else if (bpp == 8) {
-        img->setPalette(vgaPalette, 256);
-
-        for (y = 0; y < height; y++) {
-            for (x = 0; x < width; x++)
-                img->putPixelIndex(x, y, decompressed_data[y * width + x]);
-        }
-    } 
-
-    else if (bpp == 4) {
-        img->setPalette(egaPalette, 16);
-
-        for (y = 0; y < height; y++) {
-            for (x = 0; x < width; x+=2) {
-                img->putPixelIndex(x, y, decompressed_data[(y * width + x) / 2] >> 4);
-                img->putPixelIndex(x + 1, y, decompressed_data[(y * width + x) / 2] & 0x0f);
-            }
-        }
-    }
-
-    free(decompressed_data);
-
-    (*image) = img;
-
-    return 1;
-}
+#endif
 
 /**
  * Draw an image or subimage on the screen.
