@@ -83,17 +83,18 @@ const struct {
     { "animate.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
 
     /* abyss vision images */
-    { "compassn.ega", "compassn.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "courage.ega",  "courage.old",  320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "key7.ega",     "key7.old",     320, 200, 1, COMP_RLE, 1, 0, 1 },
     { "honesty.ega",  "honesty.old",  320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "honor.ega",    "honor.old",    320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "humility.ega", "humility.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "justice.ega",  "justice.old",  320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "love.ega",     "love.old",     320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "sacrific.ega", "sacrific.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "spirit.ega",   "spirit.old",   320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "truth.ega",    "truth.old",    320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "compassn.ega", "compassn.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
     { "valor.ega",    "valor.old",    320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "justice.ega",  "justice.old",  320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "sacrific.ega", "sacrific.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "honor.ega",    "honor.old",    320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "spirit.ega",   "spirit.old",   320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "humility.ega", "humility.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "truth.ega",    "truth.old",    320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "love.ega",     "love.old",     320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "courage.ega",  "courage.old",  320, 200, 1, COMP_RLE, 1, 0, 1 },
 
     /* shrine vision images */
     { "rune_0.ega",   "rune_0.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
