@@ -7,7 +7,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <sys/stat.h>
-#include <sys/types.h>
 
 #include "filesystem.h"
 
@@ -16,10 +15,6 @@
     const char Path::delim = '\\';
 #else
     const char Path::delim = '/';
-#endif
-
-#if defined(_WIN32)
-#define S_IFDIR _S_IFDIR
 #endif
 
 /**
@@ -43,11 +38,11 @@ Path::Path(const string &p) : path(p) {
         path[pos] = dest_char;
 
     /* determine if the path really exists */
-    _exists = (stat(path.c_str(), &path_stat) == 0);
+    _exists = (stat(path.c_str(), &path_stat) == 0) ? true : false;
     
     /* if so, let's glean more information */
     if (_exists) 
-        isDir = (path_stat.st_mode & S_IFDIR);
+        isDir = (path_stat.st_mode & _S_IFDIR) ? true : false;
 
     /* find the elements of the path that involve directory structure */
     string dir_path = isDir ? path : path.substr(0, path.find_last_of(dest_char));
@@ -63,7 +58,7 @@ Path::Path(const string &p) : path(p) {
     }
 
     /* If it's for sure a file, get file information! */
-    if ((path_stat.st_mode & S_IFDIR) == 0) {
+    if (path_stat.st_mode & _S_IFREG) {
         file = dirs.size() ? path.substr(path.find_last_of(dest_char)+1) : path;
         if ((pos = file.find_last_of(".")) < file.size()) {
             ext = file.substr(pos + 1);
@@ -77,7 +72,7 @@ Path::Path(const string &p) : path(p) {
  */
 bool Path::exists() const {
     struct stat path_stat;
-    return (stat(path.c_str(), &path_stat) == 0);
+    return (stat(path.c_str(), &path_stat) == 0) ? true : false;
 }
 
 /**
@@ -85,7 +80,7 @@ bool Path::exists() const {
  */
 bool Path::isFile() const {
     struct stat path_stat;
-    if ((stat(path.c_str(), &path_stat) == 0) && ((path_stat.st_mode & S_IFDIR) == 0))
+    if ((stat(path.c_str(), &path_stat) == 0) && (path_stat.st_mode & _S_IFREG))
         return true;
     return false;
 }
@@ -95,7 +90,7 @@ bool Path::isFile() const {
  */
 bool Path::isDir() const {
     struct stat path_stat;
-    if ((stat(path.c_str(), &path_stat) == 0) && (path_stat.st_mode & S_IFDIR))
+    if ((stat(path.c_str(), &path_stat) == 0) && (path_stat.st_mode & _S_IFDIR))
         return true;
     return false;
 }
@@ -136,7 +131,7 @@ string Path::getExt() const             { return ext; }     /**< Returns the ext
  */
 bool Path::exists(const string &path) {
     struct stat path_stat;
-    return (stat(path.c_str(), &path_stat) == 0);
+    return (stat(path.c_str(), &path_stat) == 0) ? true : false;
 }
 
 /**

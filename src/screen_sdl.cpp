@@ -225,7 +225,7 @@ void screenInit() {
         printf("screen initialized [screenInit()], using %s video driver\n", SDL_VideoDriverName(driver, sizeof(driver)));
     }
 
-    eventKeyboardSetKeyRepeat(settings.keydelay, settings.keyinterval);
+    KeyHandler::setKeyRepeat(settings.keydelay, settings.keyinterval);
 
     /* enable or disable the mouse cursor */
     if (settings.mouseOptions.enabled) {
@@ -265,8 +265,7 @@ void screenReInit() {
     introDelete(DONT_FREE_MENUS);  /* delete intro stuff */
     Tileset::unloadAll(); /* unload tilesets */
     screenDelete(); /* delete screen stuff */            
-    screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
-    eventHandlerInit();  
+    screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */    
     Tileset::loadAll("tilesets.xml"); /* re-load tilesets */
     introInit();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
@@ -1189,13 +1188,13 @@ void screenShake(int iterations) {
 
             screen->drawSubRectOn(screen, x, y, 0, 0, w, h);
             screenRedrawScreen();
-            eventHandlerSleep(settings.shakeInterval);
+            EventHandler::sleep(settings.shakeInterval);
 
             y = -1 * scale;
 
             screen->drawSubRectOn(screen, x, y, 0, 0, w, h);
             screenRedrawScreen();
-            eventHandlerSleep(settings.shakeInterval);
+            EventHandler::sleep(settings.shakeInterval);
         }
         /* FIXME: remove next line? doesn't seem necessary,
            just adds another screen refresh (which is visible on my screen)... */

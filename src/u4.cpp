@@ -83,8 +83,7 @@ int main(int argc, char *argv[]) {
 
     perf.start();
     musicInit();
-    soundInit();
-    eventHandlerInit();    
+    soundInit();    
     perf.end("Misc Initialization");
 
     perf.start();
@@ -105,14 +104,15 @@ int main(int argc, char *argv[]) {
         if (settings.debug)
             perf.report();
 
-        eventHandlerAddTimerCallback(&introTimer, eventTimerGranularity);
-        eventHandlerPushKeyHandler(&introKeyHandler);
-        eventHandlerMain(NULL);
-        eventHandlerRemoveTimerCallback(&introTimer);
-        eventHandlerPopKeyHandler();
+        eventHandler.getTimer()->add(&introTimer, 1);
+        eventHandler.pushKeyHandler(&introKeyHandler);
+        eventHandler.main(NULL);
+        eventHandler.getTimer()->remove(&introTimer);
+        eventHandler.popKeyHandler();
         introDelete(FREE_MENUS);
     }
 
+    eventHandler.setExitFlag(false);
     if (quit)
         return 0;
 
@@ -137,17 +137,16 @@ int main(int argc, char *argv[]) {
     if (settings.debug)
         perf.report("\n===============================\n\n");
 
-    eventHandlerAddTimerCallback(&gameTimer, eventTimerGranularity);
-    eventHandlerPushKeyHandler(&gameBaseKeyHandler);
-    eventHandlerMain(&gameUpdateScreen);
+    eventHandler.getTimer()->add(&gameTimer, 1);
+    eventHandler.pushKeyHandler(&gameBaseKeyHandler);
+    eventHandler.main(&gameUpdateScreen);
 
     /* main event handler returned - cleanup and exit! */
-    eventHandlerRemoveTimerCallback(&gameTimer);
-    eventHandlerPopKeyHandler();
+    eventHandler.getTimer()->remove(&gameTimer);
+    eventHandler.popKeyHandler();
 
     Tileset::unloadAll();
-
-    eventHandlerDelete();
+    
     soundDelete();
     musicDelete();
     screenDelete();

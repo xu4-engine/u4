@@ -229,7 +229,7 @@ void CombatController::begin() {
     }
 
     /* Use the combat key handler */
-    eventHandlerPushKeyHandler(&CombatController::baseKeyHandler);
+    eventHandler.pushKeyHandler(&CombatController::baseKeyHandler);
  
     /* if there are creatures around, start combat! */    
     if (showMessage && placeCreaturesOnMap && winOrLose)
@@ -564,7 +564,7 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
                 /* Based on attack speed setting in setting struct, make a delay for
                    the attack annotation */
                 if (attackdelay > 0)
-                    eventHandlerSleep(attackdelay * 2);
+                    EventHandler::sleep(attackdelay * 2);
             }       
 
             return 0;
@@ -648,7 +648,7 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
             /* Based on attack speed setting in setting struct, make a delay for
                the attack annotation */
             if (attackdelay > 0)
-                eventHandlerSleep(attackdelay * 2);
+                EventHandler::sleep(attackdelay * 2);
 
             return 0;
         }
@@ -748,7 +748,7 @@ bool CombatController::returnWeaponToOwner(MapCoords coords, int distance, void 
         /* Based on attack speed setting in setting struct, make a delay for
            the attack annotation */
         if (attackdelay > 0)
-            eventHandlerSleep(attackdelay * 2);
+            EventHandler::sleep(attackdelay * 2);
         
         cm->annotations->remove(new_coords, misstile);
     }
@@ -773,7 +773,7 @@ void CombatController::attackFlash(Coords coords, MapTile tile, int timeFactor) 
             screenCycle();
 
         gameUpdateScreen();       
-        eventHandlerSleep(eventTimerGranularity/divisor);
+        EventHandler::sleep(eventTimerGranularity/divisor);
     }
     c->location->map->annotations->remove(coords, tile);
 }
@@ -787,7 +787,7 @@ void CombatController::finishTurn(void) {
     c->stats->showPartyView();    
 
     if (ct->isWon() && ct->winOrLose) {
-        eventHandlerPopKeyHandler();
+        eventHandler.popKeyHandler();
         ct->end(true);
         return;
     }
@@ -831,7 +831,7 @@ void CombatController::finishTurn(void) {
                 player = ct->getCurrentPlayer();
 
                 gameUpdateScreen();
-                eventHandlerSleep(50); /* give a slight pause in case party members are asleep for awhile */
+                EventHandler::sleep(50); /* give a slight pause in case party members are asleep for awhile */
 
                 /* adjust moves */
                 c->party->endTurn();
@@ -853,14 +853,14 @@ void CombatController::finishTurn(void) {
 
                 /* check to see if combat is over */
                 if (ct->isLost()) {                    
-                    eventHandlerPopKeyHandler();
+                    eventHandler.popKeyHandler();
                     ct->end(true);
                     return;
                 }
 
                 /* end combat immediately if the enemy has fled */
                 else if (ct->isWon() && ct->winOrLose) {
-                    eventHandlerPopKeyHandler();
+                    eventHandler.popKeyHandler();
                     ct->end(true);
                     return;
                 }
@@ -937,7 +937,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
 
     case U4_ESC:
         if (settings.debug) {
-            eventHandlerPopKeyHandler();
+            eventHandler.popKeyHandler();
             ct->end(false); /* don't adjust karma */
         }
         else screenMessage("Bad command\n");        
@@ -973,9 +973,8 @@ bool CombatController::baseKeyHandler(int key, void *data) {
         info->blockBefore = 1;
         info->firstValidDistance = 0;
         
-        eventHandlerPushKeyHandlerWithData(&CombatController::chooseWeaponDir, info);        
-
-        screenMessage("Dir: ");
+        screenMessage("Dir: ");        
+        eventHandler.pushKeyHandler(KeyHandler(&CombatController::chooseWeaponDir, info));
         break;
 
     case 'c':
@@ -1009,7 +1008,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
 
             screenMessage(alphaInfo->prompt.c_str());
 
-            eventHandlerPushKeyHandlerWithData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
+            eventHandler.pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, alphaInfo));
         }
         break;
 
@@ -1065,7 +1064,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
                and hide reagents that you don't have */            
             gameResetSpellMixing();
 
-            eventHandlerPushKeyHandler(&gameZtatsKeyHandler);
+            eventHandler.pushKeyHandler(&gameZtatsKeyHandler);
             screenMessage("Ztats\n");        
         }
         break;    
@@ -1113,7 +1112,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
 
     if (valid) {
         c->lastCommandTime = time(NULL);
-        if (eventHandlerGetKeyHandler() == &CombatController::baseKeyHandler &&
+        if (*eventHandler.getKeyHandler() == &CombatController::baseKeyHandler &&
             c->location->finishTurn == &CombatController::finishTurn)
             (*c->location->finishTurn)();
     }
@@ -1132,8 +1131,8 @@ bool CombatController::chooseWeaponRange(int key, void *data) {
         screenMessage("%d\n", info->range);
         gameDirectionalAction(info);
 
-        eventHandlerPopKeyHandler();
-        eventHandlerPopKeyHandlerData();
+        eventHandler.popKeyHandler();
+        //eventHandler.popKeyHandlerData();
 
         return true;
     }
@@ -1146,26 +1145,26 @@ bool CombatController::chooseWeaponRange(int key, void *data) {
  */
 bool CombatController::chooseWeaponDir(int key, void *data) {
     CombatController *ct = c->combat;
-    CoordActionInfo *info = (CoordActionInfo *)eventHandlerGetKeyHandlerData();
+    CoordActionInfo *info = (CoordActionInfo *)data;
     Direction dir = keyToDirection(key);
     bool valid = (dir != DIR_NONE) ? true : false;
     WeaponType weapon = ct->party[info->player]->getWeapon();
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
     info->dir = MASK_DIR(dir);
 
     if (valid) {
         screenMessage("%s\n", getDirectionName(dir));
         if (Weapon::get(weapon)->canChooseDistance()) {
             screenMessage("Range: ");
-            eventHandlerPushKeyHandlerWithData(&CombatController::chooseWeaponRange, info);
+            eventHandler.pushKeyHandler(KeyHandler(&CombatController::chooseWeaponRange, info));
         }
         else gameDirectionalAction(info);        
     }
 
-    eventHandlerPopKeyHandlerData();
+    //eventHandler.popKeyHandlerData();
     
-    return valid || keyHandlerDefault(key, NULL);
+    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 /**

@@ -14,6 +14,7 @@
 #include "debug.h"
 #include "error.h"
 #include "event.h"
+#include "filesystem.h"
 #include "game.h"
 #include "music.h"
 #include "player.h"
@@ -60,15 +61,15 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
      * If the script is set to debug, then open our script debug file
      */ 
     if (xmlPropExists(root, "debug")) {
-        static const char *dbg_filename = "script_debug.txt";
+        static const char *dbg_filename = "debug/script.txt";
         // Our script is going to hog all the debug info
         if (xmlGetPropAsBool(root, "debug"))
-            debug = fopen(dbg_filename, "wt");
+            debug = FileSystem::openFile(dbg_filename, "wt");
         else {
             // See if we share our debug space with other scripts
             string val = xmlGetPropAsStr(root, "debug");
             if (val == "share")
-                debug = fopen(dbg_filename, "at");
+                debug = FileSystem::openFile(dbg_filename, "at");
         }
     }
 
@@ -933,7 +934,7 @@ ScriptReturnCode Script::include(xmlNodePtr script, xmlNodePtr current) {
  */ 
 ScriptReturnCode Script::wait(xmlNodePtr script, xmlNodePtr current) {
     int msecs = getPropAsInt(current, "msecs");
-    eventHandlerSleep(msecs);
+    EventHandler::sleep(msecs);
     return SCRIPT_RET_OK;
 }
 

@@ -5,14 +5,11 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#include <list>
 #include <string>
 #include "types.h"
 
 using std::string;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define U4_UP           '['
 #define U4_DOWN         '/'
@@ -39,58 +36,166 @@ extern int eventTimerGranularity;
 
 struct _MouseArea;
 
-typedef bool (*KeyHandler)(int, void *);
-typedef void (*TimerCallback)(void *);
+/**
+ * A class for handling keystrokes. 
+ */
+class KeyHandler {
+public:
+    /* Typedefs */
+    typedef bool (*Callback)(int, void*);
 
-/** Additional information to be passed as data param for read buffer key handler */
-typedef struct ReadBufferActionInfo {
-    int (*handleBuffer)(string*);
-    string *buffer;
-    int bufferLen;
-    int screenX, screenY;
-} ReadBufferActionInfo;
+    /** Additional information to be passed as data param for read buffer key handler */
+    typedef struct ReadBuffer {        
+        int (*handleBuffer)(string*);
+        string *buffer;
+        int bufferLen;
+        int screenX, screenY;
+    } ReadBuffer;
 
-/** Additional information to be passed as data param for get choice key handler */
-typedef struct GetChoiceActionInfo {
-    string choices;
-    int (*handleChoice)(int);
-} GetChoiceActionInfo;
+    /** Additional information to be passed as data param for get choice key handler */
+    typedef struct GetChoice {
+        string choices;
+        int (*handleChoice)(int);
+    } GetChoice;
 
-void eventHandlerInit(void);
-void eventHandlerDelete(void);
-void eventHandlerSleep(int usec);
-void eventHandlerMain(void (*updateScreen)(void));
-bool eventHandlerTimerQueueEmpty(void);
-void eventHandlerSetExitFlag(bool flag);
-bool eventHandlerGetExitFlag();
-void eventHandlerAddTimerCallback(TimerCallback callback, int interval);
-void eventHandlerAddTimerCallbackData(TimerCallback callback, void *data, int interval);
-void eventHandlerRemoveTimerCallback(TimerCallback callback);
-void eventHandlerRemoveTimerCallbackData(TimerCallback callback, void *data);
-void eventHandlerCallTimerCallbacks();
-void eventHandlerResetTimerCallbacks();
-void eventHandlerPushKeyHandler(KeyHandler kh);
-void eventHandlerPushKeyHandlerWithData(KeyHandler kh, void *data);
-void eventHandlerPopKeyHandler();
-void eventHandlerPopKeyHandlerData();
-void eventHandlerSetKeyHandler(KeyHandler kh);
-KeyHandler eventHandlerGetKeyHandler();
-void *eventHandlerGetKeyHandlerData();
-bool eventHandlerIsKeyIgnored(int key);
-bool eventHandlerUniversalKeyHandler(int key);
-int eventKeyboardSetKeyRepeat(int delay, int interval);
+    /* Constructors */
+    KeyHandler(Callback func, void *data = NULL, bool asyncronous = true);
+    
+    /* Static functions */    
+    static int setKeyRepeat(int delay, int interval);
+    static bool globalHandler(int key);    
 
-bool keyHandlerDefault(int key, void *data);
-bool keyHandlerIgnoreKeys(int key, void *data);
-bool keyHandlerReadBuffer(int key, void *data);
+    /* Static default key handler functions */
+    static bool defaultHandler(int key, void *data);
+    static bool ignoreKeys(int key, void *data);
+
+    /* Operators */
+    bool operator==(Callback cb) const;
+    
+    /* Member functions */    
+    bool handle(int key); 
+    virtual bool isKeyIgnored(int key);
+
+protected:
+    Callback handler;
+    bool async;
+    void *data;
+};
+
+/**
+ * A class for handling timed events.
+ */ 
+class TimedEvent {
+public:
+    /* Typedefs */
+    typedef std::list<TimedEvent*> List;
+    typedef void (*Callback)(void *);
+
+    /* Constructors */
+    TimedEvent(Callback callback, int interval, void *data = NULL);
+
+    /* Member functions */
+    Callback getCallback() const;
+    void *getData();
+    void tick();
+    
+    /* Properties */
+protected:    
+    Callback callback;
+    void *data;
+    int interval;
+    int current;
+};
+
+/**
+ * A class for managing timed events
+ */ 
+class TimedEventMgr {
+public:
+    /* Typedefs */
+    typedef TimedEvent::List List;    
+
+    /* Constructors */
+    TimedEventMgr(int baseInterval);
+    ~TimedEventMgr();
+
+    /* Static functions */
+    static unsigned int callback(unsigned int interval, void *param);
+
+    /* Member functions */
+    bool isLocked() const;      /**< Returns true if the event list is locked (in use) */    
+
+    void add(TimedEvent::Callback callback, int interval, void *data = NULL);
+    List::iterator remove(List::iterator i);                          
+    void remove(TimedEvent* event);
+    void remove(TimedEvent::Callback callback, void *data = NULL);
+    void tick();
+    
+    void reset(unsigned int interval);     /**< Re-initializes the event manager to a new base interval */
+
+private:
+    void lock();                /**< Locks the event list */
+    void unlock();              /**< Unlocks the event list */
+
+    /* Properties */
+protected:
+    /* Static properties */
+    static unsigned int instances;
+
+    void *id;
+    int baseInterval;
+    bool locked;
+    List events;
+    List deferredRemovals;
+};
+
+
+/**
+ * A class for handling game events. 
+ */
+class EventHandler {
+public:    
+    /* Typedefs */
+    typedef std::list<KeyHandler*> KeyHandlerList;
+    typedef std::list<_MouseArea*> MouseAreaList;    
+
+    /* Constructors */
+    EventHandler();    
+
+    /* Static functions */    
+    static void sleep(unsigned int usec);    
+    static void setExitFlag(bool exit = true);
+    static bool getExitFlag();
+    static bool timerQueueEmpty();
+
+    /* Member functions */
+    TimedEventMgr* getTimer();
+
+    /* Event functions */
+    void main(void (*updateScreen)(void));    
+
+    /* Key handler functions */
+    void pushKeyHandler(KeyHandler kh);
+    KeyHandler *popKeyHandler();
+    KeyHandler *getKeyHandler() const;
+    void setKeyHandler(KeyHandler kh);
+
+    /* Mouse area functions */
+    void pushMouseAreaSet(_MouseArea *mouseAreas);
+    void popMouseAreaSet();
+    _MouseArea* getMouseAreaSet() const;
+    _MouseArea* mouseAreaForPoint(int x, int y);
+
+protected:    
+    static bool exit;
+    TimedEventMgr timer;
+    KeyHandlerList keyHandlers;
+    MouseAreaList mouseAreaSets;
+};
+
 bool keyHandlerGetChoice(int key, void *data);
+bool keyHandlerReadBuffer(int key, void *data);
 
-void eventHandlerPushMouseAreaSet(struct _MouseArea *mouseAreas);
-void eventHandlerPopMouseAreaSet(void);
-struct _MouseArea *eventHandlerGetMouseAreaSet(void);
-
-#ifdef __cplusplus
-}
-#endif
+extern EventHandler eventHandler;
 
 #endif

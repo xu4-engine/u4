@@ -85,37 +85,37 @@ static const struct {
 };
 
 const Spell spells[] = {
-    { "Awaken",       GINSENG | GARLIC,         CTX_ANY,        TRANSPORT_ANY,  &spellAwaken,  Spell::PARAM_PLAYER,  5 },
+    { "Awaken",       GINSENG | GARLIC,         CTX_ANY,        TRANSPORT_ANY,  &spellAwaken,  SPELLPRM_PLAYER,  5 },
     { "Blink",        SILK | MOSS,              CTX_WORLDMAP,   TRANSPORT_FOOT_OR_HORSE,
-                                                                                &spellBlink,   Spell::PARAM_DIR,     15 },
-    { "Cure",         GINSENG | GARLIC,         CTX_ANY,        TRANSPORT_ANY,  &spellCure,    Spell::PARAM_PLAYER,  5 },
-    { "Dispell",      ASH | GARLIC | PEARL,     CTX_ANY,        TRANSPORT_ANY,  &spellDispel,  Spell::PARAM_DIR,     20 },
+                                                                                &spellBlink,   SPELLPRM_DIR,     15 },
+    { "Cure",         GINSENG | GARLIC,         CTX_ANY,        TRANSPORT_ANY,  &spellCure,    SPELLPRM_PLAYER,  5 },
+    { "Dispell",      ASH | GARLIC | PEARL,     CTX_ANY,        TRANSPORT_ANY,  &spellDispel,  SPELLPRM_DIR,     20 },
     { "Energy Field", ASH | SILK | PEARL,       (LocationContext)(CTX_COMBAT | CTX_DUNGEON),
-                                                                TRANSPORT_ANY,  &spellEField,  Spell::PARAM_TYPEDIR, 10 },
-    { "Fireball",     ASH | PEARL,              CTX_COMBAT,     TRANSPORT_ANY,  &spellFireball,Spell::PARAM_DIR,     15 },
+                                                                TRANSPORT_ANY,  &spellEField,  SPELLPRM_TYPEDIR, 10 },
+    { "Fireball",     ASH | PEARL,              CTX_COMBAT,     TRANSPORT_ANY,  &spellFireball,SPELLPRM_DIR,     15 },
     { "Gate",         ASH | PEARL | MANDRAKE,   CTX_WORLDMAP,   TRANSPORT_FOOT_OR_HORSE,
-                                                                                &spellGate,    Spell::PARAM_PHASE,   40 },
-    { "Heal",         GINSENG | SILK,           CTX_ANY,        TRANSPORT_ANY,  &spellHeal,    Spell::PARAM_PLAYER,  10 },
-    { "Iceball",      PEARL | MANDRAKE,         CTX_COMBAT,     TRANSPORT_ANY,  &spellIceball, Spell::PARAM_DIR,     20 },
+                                                                                &spellGate,    SPELLPRM_PHASE,   40 },
+    { "Heal",         GINSENG | SILK,           CTX_ANY,        TRANSPORT_ANY,  &spellHeal,    SPELLPRM_PLAYER,  10 },
+    { "Iceball",      PEARL | MANDRAKE,         CTX_COMBAT,     TRANSPORT_ANY,  &spellIceball, SPELLPRM_DIR,     20 },
     { "Jinx",         PEARL | NIGHTSHADE | MANDRAKE,
-                                                CTX_COMBAT,     TRANSPORT_ANY,  &spellJinx,    Spell::PARAM_NONE,    30 },
-    { "Kill",         PEARL | NIGHTSHADE,       CTX_COMBAT,     TRANSPORT_ANY,  &spellKill,    Spell::PARAM_DIR,     25 },
-    { "Light",        ASH,                      CTX_DUNGEON,    TRANSPORT_ANY,  &spellLight,   Spell::PARAM_NONE,    5 },
-    { "Magic missile", ASH | PEARL,             CTX_COMBAT,     TRANSPORT_ANY,  &spellMMissle, Spell::PARAM_DIR,     5 },
-    { "Negate",       ASH | GARLIC | MANDRAKE,  CTX_ANY,        TRANSPORT_ANY,  &spellNegate,  Spell::PARAM_NONE,    20 },
-    { "Open",         ASH | MOSS,               CTX_ANY,        TRANSPORT_ANY,  &spellOpen,    Spell::PARAM_NONE,    5 },
-    { "Protection",   ASH | GINSENG | GARLIC,   CTX_ANY,        TRANSPORT_ANY,  &spellProtect, Spell::PARAM_NONE,    15 },
-    { "Quickness",    ASH | GINSENG | MOSS,     CTX_ANY,        TRANSPORT_ANY,  &spellQuick,   Spell::PARAM_NONE,    20 },
+                                                CTX_COMBAT,     TRANSPORT_ANY,  &spellJinx,    SPELLPRM_NONE,    30 },
+    { "Kill",         PEARL | NIGHTSHADE,       CTX_COMBAT,     TRANSPORT_ANY,  &spellKill,    SPELLPRM_DIR,     25 },
+    { "Light",        ASH,                      CTX_DUNGEON,    TRANSPORT_ANY,  &spellLight,   SPELLPRM_NONE,    5 },
+    { "Magic missile", ASH | PEARL,             CTX_COMBAT,     TRANSPORT_ANY,  &spellMMissle, SPELLPRM_DIR,     5 },
+    { "Negate",       ASH | GARLIC | MANDRAKE,  CTX_ANY,        TRANSPORT_ANY,  &spellNegate,  SPELLPRM_NONE,    20 },
+    { "Open",         ASH | MOSS,               CTX_ANY,        TRANSPORT_ANY,  &spellOpen,    SPELLPRM_NONE,    5 },
+    { "Protection",   ASH | GINSENG | GARLIC,   CTX_ANY,        TRANSPORT_ANY,  &spellProtect, SPELLPRM_NONE,    15 },
+    { "Quickness",    ASH | GINSENG | MOSS,     CTX_ANY,        TRANSPORT_ANY,  &spellQuick,   SPELLPRM_NONE,    20 },
     { "Resurrect",    ASH | GINSENG | GARLIC | SILK | MOSS | MANDRAKE, 
-                                                CTX_ANY,        TRANSPORT_ANY,  &spellRez,     Spell::PARAM_PLAYER,  45 },
-    { "Sleep",        SILK | GINSENG,           CTX_COMBAT,     TRANSPORT_ANY,  &spellSleep,   Spell::PARAM_NONE,    15 },
-    { "Tremor",       ASH | MOSS | MANDRAKE,    CTX_COMBAT,     TRANSPORT_ANY,  &spellTremor,  Spell::PARAM_NONE,    30 },
-    { "Undead",       ASH | GARLIC,             CTX_COMBAT,     TRANSPORT_ANY,  &spellUndead,  Spell::PARAM_NONE,    15 },
-    { "View",         NIGHTSHADE | MANDRAKE,    CTX_NON_COMBAT, TRANSPORT_ANY,  &spellView,    Spell::PARAM_NONE,    15 },
-    { "Winds",        ASH | MOSS,               CTX_WORLDMAP,   TRANSPORT_ANY,  &spellWinds,   Spell::PARAM_FROMDIR, 10 },
-    { "X-it",         ASH | SILK | MOSS,        CTX_DUNGEON,    TRANSPORT_ANY,  &spellXit,     Spell::PARAM_NONE,    15 },
-    { "Y-up",         SILK | MOSS,              CTX_DUNGEON,    TRANSPORT_ANY,  &spellYup,     Spell::PARAM_NONE,    10 },
-    { "Z-down",       SILK | MOSS,              CTX_DUNGEON,    TRANSPORT_ANY,  &spellZdown,   Spell::PARAM_NONE,    5 }
+                                                CTX_ANY,        TRANSPORT_ANY,  &spellRez,     SPELLPRM_PLAYER,  45 },
+    { "Sleep",        SILK | GINSENG,           CTX_COMBAT,     TRANSPORT_ANY,  &spellSleep,   SPELLPRM_NONE,    15 },
+    { "Tremor",       ASH | MOSS | MANDRAKE,    CTX_COMBAT,     TRANSPORT_ANY,  &spellTremor,  SPELLPRM_NONE,    30 },
+    { "Undead",       ASH | GARLIC,             CTX_COMBAT,     TRANSPORT_ANY,  &spellUndead,  SPELLPRM_NONE,    15 },
+    { "View",         NIGHTSHADE | MANDRAKE,    CTX_NON_COMBAT, TRANSPORT_ANY,  &spellView,    SPELLPRM_NONE,    15 },
+    { "Winds",        ASH | MOSS,               CTX_WORLDMAP,   TRANSPORT_ANY,  &spellWinds,   SPELLPRM_FROMDIR, 10 },
+    { "X-it",         ASH | SILK | MOSS,        CTX_DUNGEON,    TRANSPORT_ANY,  &spellXit,     SPELLPRM_NONE,    15 },
+    { "Y-up",         SILK | MOSS,              CTX_DUNGEON,    TRANSPORT_ANY,  &spellYup,     SPELLPRM_NONE,    10 },
+    { "Z-down",       SILK | MOSS,              CTX_DUNGEON,    TRANSPORT_ANY,  &spellZdown,   SPELLPRM_NONE,    5 }
 };
 
 #define N_SPELLS (sizeof(spells) / sizeof(spells[0]))
@@ -124,59 +124,41 @@ void playerSetSpellEffectCallback(SpellEffectCallback callback) {
     spellEffectCallback = callback;    
 }
 
-Ingredients::Ingredients() {
-    memset(reagents, 0, sizeof(reagents));
+Mixture *mixtureNew() {
+    Mixture *mix = new Mixture;
+    memset(mix, 0, sizeof(Mixture));
+    return mix;
 }
 
-bool Ingredients::addReagent(Reagent reagent) {
+void mixtureDelete(Mixture *mix) {
+    memset(mix, 0, sizeof(Mixture));
+    delete mix;
+}
+
+int mixtureAddReagent(Mixture *mix, Reagent reagent) {
     ASSERT(reagent < REAG_MAX, "invalid reagent: %d", reagent);    
     if (c->party->reagents(reagent) < 1)
-        return false;
+        return 0;
     c->party->adjustReagent(reagent, -1);    
-    reagents[reagent]++;
-    return true;
+    mix->reagents[reagent]++;
+    return 1;
 }
 
-bool Ingredients::removeReagent(Reagent reagent) {
+int mixtureRemoveReagent(Mixture *mix, Reagent reagent) {
     ASSERT(reagent < REAG_MAX, "invalid reagent: %d", reagent);
-    if (reagents[reagent] == 0)
-        return false;
+    if (mix->reagents[reagent] == 0)
+        return 0;
     c->party->adjustReagent(reagent, 1);    
-    reagents[reagent]--;
-    return true;
+    mix->reagents[reagent]--;
+    return 1;
 }
 
-int Ingredients::getReagent(Reagent reagent) const {
-    ASSERT(reagent < REAG_MAX, "invalid reagent: %d", reagent);
-    return reagents[reagent];
-}
-
-void Ingredients::revert() {
+void mixtureRevert(Mixture *mix) {
     int reg;
 
     for (reg = 0; reg < REAG_MAX; reg++) {
-        c->saveGame->reagents[reg] += reagents[reg];
-        reagents[reg] = 0;
-    }
-}
-
-bool Ingredients::checkMultiple(int batches) const {
-    for (int i = 0; i < REAG_MAX; i++) {
-        /* see if there's enough reagents to mix (-1 because one is already counted) */
-        if (reagents[i] > 0 && c->saveGame->reagents[i] < batches - 1) {
-            return false;
-        }
-    }    
-    return true;
-}
-
-void Ingredients::multiply(int batches) {
-    ASSERT(checkMultiple(batches), "not enough reagents to multiply ingredients by %d\n", batches);
-    for (int i = 0; i < REAG_MAX; i++) {
-        if (reagents[i] > 0) {
-            c->saveGame->reagents[i] -= batches - 1;
-            reagents[i] += batches - 1;
-        }
+        c->saveGame->reagents[reg] += mix->reagents[reg];
+        mix->reagents[reg] = 0;
     }
 }
 
@@ -231,14 +213,14 @@ string spellGetErrorMessage(unsigned int spell, SpellCastError error) {
  * Mix reagents for a spell.  Fails and returns false if the reagents
  * selected were not correct.
  */
-int spellMix(unsigned int spell, const Ingredients *ingredients) {
+int spellMix(unsigned int spell, const Mixture *mix) {
     int regmask, reg;
 
     ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
 
     regmask = 0;
     for (reg = 0; reg < REAG_MAX; reg++) {
-        if (ingredients->getReagent((Reagent) reg) > 0)
+        if (mix->reagents[reg] > 0)
             regmask |= (1 << reg);
     }
 
@@ -250,7 +232,7 @@ int spellMix(unsigned int spell, const Ingredients *ingredients) {
     return 1;
 }
 
-Spell::Param spellGetParamType(unsigned int spell) {
+SpellParam spellGetParamType(unsigned int spell) {
     ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
 
     return spells[spell].paramType;
@@ -262,7 +244,7 @@ Spell::Param spellGetParamType(unsigned int spell) {
  * invalid.  The error code is updated with the reason for failure.
  */
 int spellCast(unsigned int spell, int character, int param, SpellCastError *error, int spellEffect) {
-    int player = (spells[spell].paramType == Spell::PARAM_PLAYER) ? param : -1;
+    int player = (spells[spell].paramType == SPELLPRM_PLAYER) ? param : -1;
     PartyMember *p = c->party->member(character);
     
     ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
@@ -372,7 +354,7 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
             /* Based on attack speed setting in setting struct, make a delay for
                the attack annotation */
             if (attackdelay > 0)
-                eventHandlerSleep(attackdelay * 2);
+                EventHandler::sleep(attackdelay * 2);
 
             return 0;
         }

@@ -14,72 +14,194 @@
 #include "settings.h"
 #include "u4_sdl.h"
 
-extern bool verbose;
+extern bool verbose, quit;
+extern int eventTimerGranularity;
 
-SDL_TimerID timer;
+KeyHandler::KeyHandler(Callback func, void *d, bool asyncronous) :
+    handler(func),
+    async(asyncronous),
+    data(d)
+{}
 
-Uint32 eventCallback(Uint32 interval, void *param) {
+/**
+ * Sets the key-repeat characteristics of the keyboard.
+ */
+int KeyHandler::setKeyRepeat(int delay, int interval) {
+    return SDL_EnableKeyRepeat(delay, interval);
+}
+
+/**
+ * Handles any and all keystrokes.
+ * Generally used to exit the application, switch applications,
+ * minimize, maximize, etc.
+ */
+bool KeyHandler::globalHandler(int key) {
+    switch(key) {
+#if defined(MACOSX)
+    case U4_META + 'q': /* Cmd+q */
+    case U4_META + 'x': /* Cmd+x */
+#endif
+    case U4_ALT + 'x': /* Alt+x */
+#if defined(WIN32)
+    case U4_ALT + U4_FKEY + 3:
+#endif
+        quit = true;
+        EventHandler::setExitFlag();
+        return true;
+    default: return false;
+    }
+}
+
+/**
+ * A default key handler that should be valid everywhere
+ */
+bool KeyHandler::defaultHandler(int key, void *data) {
+    bool valid = true;
+
+    switch (key) {
+    case '`':
+        if (c && c->location)
+            printf("x = %d, y = %d, level = %d, tile = %d\n", c->location->coords.x, c->location->coords.y, c->location->coords.z, c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->id);
+        break;
+    default:
+        valid = false;
+        break;
+    }
+
+    return valid;
+}
+
+/**
+ * A key handler that ignores keypresses
+ */
+bool KeyHandler::ignoreKeys(int key, void *data) {
+    return true;
+}
+
+/**
+ * Handles a keypress.
+ * First it makes sure the key combination is not ignored
+ * by the current key handler. Then, it passes the keypress
+ * through the global key handler. If the global handler
+ * does not process the keystroke, then the key handler
+ * handles it itself by calling its handler callback function.
+ */ 
+bool KeyHandler::handle(int key) {
+    bool processed = false;
+    if (!isKeyIgnored(key)) {
+        processed = globalHandler(key);
+        if (!processed)
+            processed = handler(key, data);
+    }
+    
+    return processed;
+}
+
+/**
+ * Returns true if the key or key combination is always ignored by xu4
+ */
+bool KeyHandler::isKeyIgnored(int key) {
+    switch(key) {
+    case U4_RIGHT_SHIFT:
+    case U4_LEFT_SHIFT:
+    case U4_RIGHT_CTRL:
+    case U4_LEFT_CTRL:
+    case U4_RIGHT_ALT:
+    case U4_LEFT_ALT:
+    case U4_RIGHT_META:
+    case U4_LEFT_META:
+    case U4_TAB:
+        return true;
+    default: return false;
+    }
+}
+
+bool KeyHandler::operator==(Callback cb) const {
+    return (handler == cb) ? true : false;        
+}
+
+/**
+ * Constructs a timed event manager object.
+ * Adds a timer callback to the SDL subsystem, which
+ * will drive all of the timed events that this object
+ * controls.
+ */
+TimedEventMgr::TimedEventMgr(int i) : baseInterval(i) {
+    /* start the SDL timer */    
+    if (instances == 0) {
+        if (u4_SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
+            errorFatal("unable to init SDL: %s", SDL_GetError());
+    }
+
+    id = static_cast<void*>(SDL_AddTimer(i, &TimedEventMgr::callback, this));
+    instances++;
+}
+
+/**
+ * Destructs a timed event manager object.
+ * It removes the callback timer and un-initializes the
+ * SDL subsystem if there are no other active TimedEventMgr
+ * objects.
+ */
+TimedEventMgr::~TimedEventMgr() {
+    SDL_RemoveTimer(static_cast<SDL_TimerID>(id));
+    id = NULL;
+    
+    if (instances == 1)
+        u4_SDL_QuitSubSystem(SDL_INIT_TIMER);
+
+    if (instances > 0)
+        instances--;
+}
+
+/**
+ * Adds an SDL timer event to the message queue.
+ */
+unsigned int TimedEventMgr::callback(unsigned int interval, void *param) {
     SDL_Event event;
 
     event.type = SDL_USEREVENT;
     event.user.code = 0;
-    event.user.data1 = NULL;
+    event.user.data1 = param;
     event.user.data2 = NULL;
     SDL_PushEvent(&event);
 
     return interval;
 }
 
-void eventHandlerInit() {    
-    extern int eventTimerGranularity;    
+/**
+ * Re-initializes the timer manager to a new timer granularity
+ */ 
+void TimedEventMgr::reset(unsigned int interval) {
+    baseInterval = interval;
+    SDL_RemoveTimer(static_cast<SDL_TimerID>(id));
+    id = static_cast<void*>(SDL_AddTimer(baseInterval, &TimedEventMgr::callback, this));
+}
 
-    if (timer != NULL)
-        SDL_RemoveTimer(timer);
-
-    /* start the SDL timer */    
-    if (u4_SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
-        errorFatal("unable to init SDL: %s", SDL_GetError());    
-    
+/**
+ * Constructs an event handler object. 
+ */
+EventHandler::EventHandler() : timer(eventTimerGranularity) {    
     SDL_EnableUNICODE(1);
-
-    timer = SDL_AddTimer(eventTimerGranularity, &eventCallback, NULL);
 }
 
-void eventHandlerDelete() {
-    SDL_RemoveTimer(timer);
-    u4_SDL_QuitSubSystem(SDL_INIT_TIMER);
+/**
+ * Delays program execution for the specified number of milliseconds.
+ */
+void EventHandler::sleep(unsigned int usec) {
+    SDL_Delay(usec);
 }
 
-void eventHandlerSleep(int usec) {    
-    SDL_Delay(usec);    
-}
-
-static MouseArea *eventMouseAreaForPoint(int x, int y) {
-    int i;
-    MouseArea *areas = eventHandlerGetMouseAreaSet();
-
-    if (!areas)
-        return NULL;
-
-    for (i = 0; areas[i].npoints != 0; i++) {
-        if (screenPointInMouseArea(x, y, &(areas[i]))) {
-            return &(areas[i]);
-        }
-    }
-    return NULL;
-}
-
-void eventHandlerMain(void (*updateScreen)(void)) {
-    eventHandlerSetExitFlag(false);
-
+void EventHandler::main(void (*updateScreen)(void)) {
     if (updateScreen)
         (*updateScreen)();
     screenRedrawScreen();
 
-    while (!eventHandlerGetExitFlag()) {
+    while (!exit) {
         int processed = 0;
         SDL_Event event;
         MouseArea *area;
+        KeyHandler *kh = getKeyHandler();
 
         SDL_WaitEvent(&event);
 
@@ -120,12 +242,8 @@ void eventHandlerMain(void (*updateScreen)(void)) {
                        event.key.keysym.mod, 
                        key);
 
-            /* see if the key was ignored */
-            if (!eventHandlerIsKeyIgnored(key)) {
-                processed = eventHandlerUniversalKeyHandler(key);
-                if (!processed)
-                    processed = (*eventHandlerGetKeyHandler())(key, eventHandlerGetKeyHandlerData());                    
-            }            
+            /* handle the keypress */
+            processed = kh->handle(key);           
 
             if (processed) {
                 if (updateScreen)
@@ -143,10 +261,10 @@ void eventHandlerMain(void (*updateScreen)(void)) {
 
             if (button > 2)
                 button = 0;
-            area = eventMouseAreaForPoint(event.button.x, event.button.y);
+            area = eventHandler.mouseAreaForPoint(event.button.x, event.button.y);
             if (!area || area->command[button] == 0)
                 break;
-            (*eventHandlerGetKeyHandler())(area->command[button], eventHandlerGetKeyHandlerData());
+            kh->handle(area->command[button]);            
             if (updateScreen)
                 (*updateScreen)();
             screenRedrawScreen();
@@ -157,7 +275,7 @@ void eventHandlerMain(void (*updateScreen)(void)) {
             if (!settings.mouseOptions.enabled)
                 break;
 
-            area = eventMouseAreaForPoint(event.button.x, event.button.y);
+            area = eventHandler.mouseAreaForPoint(event.button.x, event.button.y);
             if (area)
                 screenSetMouseCursor(area->cursor);
             else
@@ -165,7 +283,7 @@ void eventHandlerMain(void (*updateScreen)(void)) {
             break;
 
         case SDL_USEREVENT:
-            eventHandlerCallTimerCallbacks();
+            eventHandler.getTimer()->tick();            
             break;
 
         case SDL_ACTIVEEVENT:
@@ -180,17 +298,16 @@ void eventHandlerMain(void (*updateScreen)(void)) {
             break;
 
         case SDL_QUIT:
-            exit(0);
+            ::exit(0);
             break;
         }
     }
 }
 
 /**
- * Returns true if there are no more timer messages currently in the
- * event queue.
+ * Returns true if the queue is empty of events that match 'mask'. 
  */
-bool eventHandlerTimerQueueEmpty() {
+ bool EventHandler::timerQueueEmpty() {
     SDL_Event event;
 
     if (SDL_PeepEvents(&event, 1, SDL_PEEKEVENT, SDL_EVENTMASK(SDL_USEREVENT)))
@@ -199,6 +316,61 @@ bool eventHandlerTimerQueueEmpty() {
         return true;
 }
 
-int eventKeyboardSetKeyRepeat(int delay, int interval) {    
-    return SDL_EnableKeyRepeat(delay, interval);
+/**
+ * Adds a key handler to the stack.
+ */ 
+void EventHandler::pushKeyHandler(KeyHandler kh) {
+    KeyHandler *new_kh = new KeyHandler(kh);
+    keyHandlers.push_back(new_kh);
+}
+
+/**
+ * Pops a key handler off the stack.
+ * Returns a pointer to the resulting key handler after
+ * the current handler is popped.
+ */ 
+KeyHandler *EventHandler::popKeyHandler() {
+    if (!keyHandlers.empty()) {
+        delete keyHandlers.back();
+        keyHandlers.pop_back();
+        return getKeyHandler();
+    }
+    else return NULL;
+}
+
+/**
+ * Returns a pointer to the current key handler.
+ * Returns NULL if there is no key handler.
+ */ 
+KeyHandler *EventHandler::getKeyHandler() const {
+    if (keyHandlers.empty())
+        return NULL;
+    else return keyHandlers.back();
+}
+
+/**
+ * Eliminates all key handlers and begins stack with new handler.
+ * This pops all key handlers off the stack and adds
+ * the key handler provided to the stack, making it the
+ * only key handler left. Use this function only if you
+ * are sure the key handlers in the stack are disposable.
+ */ 
+void EventHandler::setKeyHandler(KeyHandler kh) {
+    while (popKeyHandler() != NULL) {}
+    pushKeyHandler(kh);
+}
+
+MouseArea* EventHandler::mouseAreaForPoint(int x, int y) {
+    int i;
+    MouseArea *areas = getMouseAreaSet();
+
+    if (!areas)
+        return NULL;
+
+    for (i = 0; areas[i].npoints != 0; i++) {
+        if (screenPointInMouseArea(x, y, &(areas[i]))) {
+            return &(areas[i]);
+        }
+    }
+    return NULL;
 }

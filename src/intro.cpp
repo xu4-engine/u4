@@ -348,7 +348,7 @@ void introDelete(int freeMenus) {
  */
 bool introKeyHandler(int key, void *data) {
     bool valid = true;
-    GetChoiceActionInfo *info;
+    KeyHandler::GetChoice *info;
 
     switch (mode) {
 
@@ -385,7 +385,7 @@ bool introKeyHandler(int key, void *data) {
             introUpdateScreen();
             break;
         case 'q':
-            eventHandlerSetExitFlag(true);
+            EventHandler::setExitFlag();
             quit = true;
             break;
         case '1':
@@ -516,10 +516,10 @@ bool introKeyHandler(int key, void *data) {
 
     case INTRO_INIT_QUESTIONS:
         introAskToggle = 1;
-        info = new GetChoiceActionInfo;
+        info = new KeyHandler::GetChoice;
         info->choices = "ab";
         info->handleChoice = &introHandleQuestionChoice;
-        eventHandlerPushKeyHandlerWithData(&keyHandlerGetChoice, info);
+        eventHandler.pushKeyHandler(KeyHandler(&keyHandlerGetChoice, info));
         introUpdateScreen();
         return true;
 
@@ -527,7 +527,7 @@ bool introKeyHandler(int key, void *data) {
         segueInd++;
         if (segueInd >= 2) {
             mode = INTRO_DONE;
-            eventHandlerSetExitFlag(true);
+            EventHandler::setExitFlag();
         }
         else
             introUpdateScreen();
@@ -537,7 +537,7 @@ bool introKeyHandler(int key, void *data) {
         return false;
     }
 
-    return valid || keyHandlerDefault(key, NULL);
+    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 /**
@@ -863,7 +863,7 @@ void introUpdateScreen() {
  * series of questions to determine the class of the new character.
  */
 void introInitiateNewGame() {
-    ReadBufferActionInfo *info;
+    KeyHandler::ReadBuffer *info;
 
     /* display name  prompt and read name from keyboard */
     mode = INTRO_INIT_NAME;
@@ -872,7 +872,7 @@ void introInitiateNewGame() {
     screenShowCursor();
     screenRedrawScreen();
 
-    info = new ReadBufferActionInfo;
+    info = new KeyHandler::ReadBuffer;
     info->handleBuffer = &introHandleName;
     info->buffer = &nameBuffer;
     info->bufferLen = 12;
@@ -880,7 +880,7 @@ void introInitiateNewGame() {
     info->screenY = 20;
     nameBuffer.erase();
 
-    eventHandlerPushKeyHandlerWithData(&keyHandlerReadBuffer, info);
+    eventHandler.pushKeyHandler(KeyHandler(&keyHandlerReadBuffer, info));
 }
 
 /**
@@ -898,9 +898,9 @@ void introStartQuestions() {
  * Callback to receive the read character name.
  */
 int introHandleName(string *message) {
-    GetChoiceActionInfo *info;
+    KeyHandler::GetChoice *info;
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     if ((*message)[0] == '\0') {
         mode = INTRO_MENU;
@@ -915,10 +915,10 @@ int introHandleName(string *message) {
         screenSetCursorPos(29, 16);
         screenShowCursor();
 
-        info = new GetChoiceActionInfo;
+        info = new KeyHandler::GetChoice;
         info->choices = "mf";
         info->handleChoice = &introHandleSexChoice;
-        eventHandlerPushKeyHandlerWithData(&keyHandlerGetChoice, info);
+        eventHandler.pushKeyHandler(KeyHandler(&keyHandlerGetChoice, info));
     }
 
     screenRedrawScreen();
@@ -936,7 +936,7 @@ int introHandleSexChoice(int choice) {
     else
         sex = SEX_FEMALE;
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
     mode = INTRO_INIT_STORY;
     storyInd = 0;
 
@@ -987,7 +987,7 @@ void introJourneyOnward() {
     }
 
     fclose(saveGameFile);
-    eventHandlerSetExitFlag(true);
+    EventHandler::setExitFlag();
 }
 
 /**
@@ -1031,7 +1031,7 @@ void introTimer(void *data) {
      * refresh the screen only if the timer queue is empty --
      * i.e. drop a frame if another timer event is about to be fired
      */
-    if (eventHandlerTimerQueueEmpty())
+    if (EventHandler::timerQueueEmpty())
         screenRedrawScreen();
 
     if (xu4_random(2) && ++beastie1Cycle >= BEASTIE1_FRAMES)
@@ -1103,7 +1103,7 @@ int introHandleQuestionChoice(int choice) {
     FILE *saveGameFile;
     SaveGame saveGame;
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     if (introDoQuestion(choice == 'a' ? 0 : 1)) {
         SaveGamePlayerRecord avatar;
@@ -1579,7 +1579,7 @@ void introKeyboardOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
         settings.write();
 
         /* re-initialize keyboard */
-        eventKeyboardSetKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
+        KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
     
         mode = INTRO_CONFIG_ADVANCED;
         break;
@@ -1680,7 +1680,8 @@ void introSpeedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
         settings.write();
     
         /* re-initialize events */
-        eventHandlerResetTimerCallbacks();
+        eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
+        eventHandler.getTimer()->reset(eventTimerGranularity);            
         
         mode = INTRO_CONFIG_ADVANCED;
         break;

@@ -435,7 +435,7 @@ void useTelescope(void *notused) {
     alphaInfo->data = NULL;
 
     screenMessage("You see a knob\non the telescope\nmarked A-P\n%s", alphaInfo->prompt.c_str());
-    eventHandlerPushKeyHandlerWithData(&gameGetAlphaChoiceKeyHandler, alphaInfo); 
+    eventHandler.pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, alphaInfo)); 
 }
 
 int isReagentInInventory(void *reag) {
@@ -559,7 +559,7 @@ int itemHandleStones(string *color) {
     if (!found) {
         screenMessage("\nNone owned!\n");
         stoneMask = 0; /* make sure stone mask is reset */
-        eventHandlerPopKeyHandler();
+        eventHandler.popKeyHandler();
         (*c->location->finishTurn)();
     }
     
@@ -572,7 +572,7 @@ int itemHandleStones(string *color) {
 int itemHandleVirtues(string *virtue) {
     extern string itemNameBuffer;
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
         
     if (strncasecmp(virtue->c_str(), getVirtueName((Virtue)c->location->coords.z), 6) == 0) {
         /* now ask for stone */

@@ -15,6 +15,7 @@
 #include "armor.h"
 #include "camp.h"
 #include "city.h"
+#include "debug.h"
 #include "dungeon.h"
 #include "combat.h"
 #include "context.h"
@@ -139,8 +140,10 @@ int castPlayer;
 unsigned int castSpell;
 EnergyFieldType fieldType;
 
+Debug gameDbg("debug/game.txt", "Game");
+
 /* FIXME */
-Ingredients *mixIngredients;
+Mixture *mix;
 int mixSpell;
 Menu spellMixMenu;
 
@@ -153,12 +156,15 @@ MouseArea mouseAreas[] = {
 };
 
 void gameInit() {
-    FILE *saveGameFile, *monstersFile;    
-    //SaveGame *saveGame;
+    FILE *saveGameFile, *monstersFile;        
+
+    TRACE(gameDbg, "gameInit() running.");
 
     /* initialize the global game context */
     c = new Context;
     c->saveGame = new SaveGame;
+
+    TRACE_LOCAL(gameDbg, "Global context initialized.");
 
     /* initialize conversation and game state variables */
     c->conversation.talker = NULL;
@@ -180,6 +186,8 @@ void gameInit() {
     /* set the map to the world map by default */
     gameSetMap(mapMgrGetById(MAP_WORLD), 0, NULL);    
 
+    TRACE_LOCAL(gameDbg, "World map set.");
+
     /* load in the save game */
     saveGameFile = saveGameOpenForReading();
     if (saveGameFile) {
@@ -188,14 +196,17 @@ void gameInit() {
     } else
         errorFatal("no savegame found!");
 
+    TRACE_LOCAL(gameDbg, "Save game loaded.");
+
     /* initialize our party */
-    c->party = new Party(c->saveGame);    
+    c->party = new Party(c->saveGame);  
 
     /* initialize our combat controller */
     c->combat = new CombatController();
 
     /* initialize our start location */
     Map *map = mapMgrGetById(c->saveGame->location);
+    TRACE_LOCAL(gameDbg, "Initializing start location.");
 
     /* initialize the moons (must be done from the world map) */
     gameInitMoons();
@@ -222,6 +233,8 @@ void gameInit() {
      */
     if (MAP_IS_OOB(c->location->map, c->location->coords))
         c->location->coords.putInBounds(c->location->map);    
+
+    TRACE_LOCAL(gameDbg, "Loading monsters.");
 
     /* load in creatures.sav */
     monstersFile = saveGameMonstersOpenForReading(MONSTERS_SAV_BASE_FILENAME);
@@ -257,6 +270,8 @@ void gameInit() {
     screenMessage("Press Alt-h for help\n");    
     screenPrompt();    
 
+    TRACE_LOCAL(gameDbg, "Settings up reagent menu.");
+
     /* reagents menu */    
     spellMixMenu.add(0, getReagentName((Reagent)0), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
     spellMixMenu.add(1, getReagentName((Reagent)1), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
@@ -268,12 +283,14 @@ void gameInit() {
     spellMixMenu.add(7, getReagentName((Reagent)7), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
     gameResetSpellMixing();
 
-    eventHandlerPushMouseAreaSet(mouseAreas); 
+    eventHandler.pushMouseAreaSet(mouseAreas); 
     
     /* add some observers */
     c->aura->addObserver(c->stats);
     c->party->addObserver(c->stats);
     spellMixMenu.addObserver(c->stats);
+
+    TRACE(gameDbg, "gameInit() completed successfully.");
 }
 
 /**
@@ -645,7 +662,7 @@ void gamePartyStarving(void) {
 
 void gameSpellEffect(int spell, int player, Sound sound) {
     int time;
-    Spell::SpecialEffects effect = Spell::SFX_INVERT;
+    SpellEffect effect = SPELLEFFECT_INVERT;
         
     if (player >= 0)
         c->stats->highlightPlayer(player);
@@ -663,7 +680,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
         break;
     case 't': /* tremor */
         time = (time * 3) / 2;
-        effect = Spell::SFX_TREMOR;        
+        effect = SPELLEFFECT_TREMOR;        
         break;
     default:
         /* default spell effect */        
@@ -678,17 +695,17 @@ void gameSpellEffect(int spell, int player, Sound sound) {
 
     switch(effect)
     {
-    case Spell::SFX_NONE:
+    case SPELLEFFECT_NONE: 
         break;
-    case Spell::SFX_TREMOR:
-    case Spell::SFX_INVERT:
+    case SPELLEFFECT_TREMOR:
+    case SPELLEFFECT_INVERT:
         gameUpdateScreen();
         screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
         screenRedrawScreen();
         
-        eventHandlerSleep(time);
+        EventHandler::sleep(time);
 
-        if (effect == Spell::SFX_TREMOR) {
+        if (effect == SPELLEFFECT_TREMOR) {
             gameUpdateScreen();
             screenShake(10);            
         }
@@ -851,7 +868,7 @@ bool gameBaseKeyHandler(int key, void *data) {
     case 3:                     /* ctrl-C */
         if (settings.debug) {
             screenMessage("Cmd (h = help):");
-            eventHandlerPushKeyHandler(&gameSpecialCmdKeyHandler);            
+            eventHandler.pushKeyHandler(&gameSpecialCmdKeyHandler);            
         }
         else valid = false;
         break;
@@ -867,7 +884,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             info->blockedPredicate = NULL;
             info->blockBefore = 0;
             info->firstValidDistance = 1;
-            eventHandlerPushKeyHandlerWithData(&gameGetCoordinateKeyHandler, info);
+            eventHandler.pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
             screenMessage("Destroy Object\nDir: ");
         }
         else valid = false;
@@ -918,7 +935,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             info->blockedPredicate = NULL;
             info->blockBefore = 0;
             info->firstValidDistance = 1;
-            eventHandlerPushKeyHandlerWithData(&gameGetCoordinateKeyHandler, info);            
+            eventHandler.pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));            
         }
         break;
 
@@ -995,7 +1012,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             info->blockedPredicate = NULL; /* nothing (not even mountains!) can block cannonballs */
             info->blockBefore = 1;
             info->firstValidDistance = 1;
-            eventHandlerPushKeyHandlerWithData(&gameGetCoordinateKeyHandler, info);
+            eventHandler.pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
             
             screenMessage("Fire Cannon!\nDir: ");
         }
@@ -1053,7 +1070,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         info->blockedPredicate = NULL;
         info->blockBefore = 0;
         info->firstValidDistance = 1;
-        eventHandlerPushKeyHandlerWithData(&gameGetCoordinateKeyHandler, info);
+        eventHandler.pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
         screenMessage("Jimmy\nDir: ");
         break;
 
@@ -1091,7 +1108,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         alphaInfo->data = NULL;
 
         screenMessage("%s", alphaInfo->prompt.c_str());
-        eventHandlerPushKeyHandlerWithData(&gameGetAlphaChoiceKeyHandler, alphaInfo);        
+        eventHandler.pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, alphaInfo));        
 
         c->stats->showMixtures();
         break;
@@ -1115,7 +1132,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             info->blockedPredicate = NULL;
             info->blockBefore = 0;
             info->firstValidDistance = 1;
-            eventHandlerPushKeyHandlerWithData(&gameGetCoordinateKeyHandler, info);
+            eventHandler.pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
             screenMessage("Open\nDir: ");
         }
         break;
@@ -1182,7 +1199,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             info->blockedPredicate = &MapTile::canTalkOverTile;
             info->blockBefore = 0;
             info->firstValidDistance = 1;
-            eventHandlerPushKeyHandlerWithData(&gameGetCoordinateKeyHandler, info);
+            eventHandler.pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
             screenMessage("Talk\nDir: ");
         }
         break;
@@ -1267,7 +1284,7 @@ bool gameBaseKeyHandler(int key, void *data) {
                       "h: Hole up\n"
                       "i: Ignite torch\n"
                       "(more)");
-        eventHandlerPushKeyHandler(&helpPage2KeyHandler);
+        eventHandler.pushKeyHandler(&helpPage2KeyHandler);
         break;
 
     case 'q' + U4_ALT:
@@ -1303,7 +1320,7 @@ bool gameBaseKeyHandler(int key, void *data) {
     }
 
     if (valid && endTurn) {
-        if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler &&
+        if (*eventHandler.getKeyHandler() == &gameBaseKeyHandler &&
             c->location->finishTurn == &gameFinishTurn)
             (*c->location->finishTurn)();
     }
@@ -1312,11 +1329,11 @@ bool gameBaseKeyHandler(int key, void *data) {
         screenPrompt();        
     }
 
-    return valid || keyHandlerDefault(key, NULL);
+    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen) {
-    ReadBufferActionInfo *readBufferInfo;
+    KeyHandler::ReadBuffer *readBufferInfo;
 
     screenEnableCursor();
     screenShowCursor();
@@ -1327,14 +1344,14 @@ void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen) {
     /* clear out the input buffer */
     buffer->erase();
 
-    readBufferInfo = new ReadBufferActionInfo;
+    readBufferInfo = new KeyHandler::ReadBuffer;
     readBufferInfo->handleBuffer = handleBuffer; 
     readBufferInfo->buffer = buffer;    
     readBufferInfo->bufferLen = bufferlen+1;
     readBufferInfo->screenX = TEXT_AREA_X + c->col;
     readBufferInfo->screenY = TEXT_AREA_Y + c->line;
 
-    eventHandlerPushKeyHandlerWithData(&keyHandlerReadBuffer, readBufferInfo);
+    eventHandler.pushKeyHandler(KeyHandler(&keyHandlerReadBuffer, readBufferInfo));
 }
 
 void gameGetPlayerForCommand(bool (*commandFn)(int player), int canBeDisabled, int canBeActivePlayer) {
@@ -1347,7 +1364,7 @@ void gameGetPlayerForCommand(bool (*commandFn)(int player), int canBeDisabled, i
         info->canBeDisabled = canBeDisabled;        
         info->command = commandFn;
 
-        eventHandlerPushKeyHandlerWithData(&gameGetPlayerNoKeyHandler, (void *)info);
+        eventHandler.pushKeyHandler(KeyHandler(&gameGetPlayerNoKeyHandler, (void *)info));
         if (canBeActivePlayer && (c->location->activePlayer >= 0))
             gameGetPlayerNoKeyHandler(c->location->activePlayer + '1', (void *)info);        
     }
@@ -1362,7 +1379,7 @@ bool gameGetPlayerNoKeyHandler(int key, void *data) {
     GetPlayerInfo *info = (GetPlayerInfo*)data;    
     bool valid = true;
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     if (key >= '1' &&
         key <= ('0' + c->saveGame->members)) {
@@ -1376,8 +1393,8 @@ bool gameGetPlayerNoKeyHandler(int key, void *data) {
         valid = false;
     }
 
-    eventHandlerPopKeyHandlerData();
-    return valid || keyHandlerDefault(key, NULL);
+    //eventHandler.popKeyHandlerData();
+    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 /**
@@ -1394,13 +1411,13 @@ bool gameGetAlphaChoiceKeyHandler(int key, void *data) {
 
     if (key >= 'A' && key <= toupper(info->lastValidLetter)) {
         screenMessage("%c\n", key);
-        eventHandlerPopKeyHandler();
+        eventHandler.popKeyHandler();
         (*(info->handleAlpha))(key - 'A', info->data);
-        eventHandlerPopKeyHandlerData();
+        //eventHandler.popKeyHandlerData();
     } else if (key == U4_SPACE || key == U4_ESC || key == U4_ENTER) {
         screenMessage("\n");
-        eventHandlerPopKeyHandler();
-        eventHandlerPopKeyHandlerData();
+        eventHandler.popKeyHandler();
+        //eventHandler.popKeyHandlerData();
         (*c->location->finishTurn)();
     } else {
         valid = false;
@@ -1408,7 +1425,7 @@ bool gameGetAlphaChoiceKeyHandler(int key, void *data) {
         screenRedrawScreen();
     }
 
-    return valid || keyHandlerDefault(key, NULL);
+    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 bool gameGetDirectionKeyHandler(int key, void *data) {
@@ -1420,31 +1437,31 @@ bool gameGetDirectionKeyHandler(int key, void *data) {
     case U4_ESC:
     case U4_SPACE:
     case U4_ENTER:
-        eventHandlerPopKeyHandler();
-        eventHandlerPopKeyHandlerData();
+        eventHandler.popKeyHandler();
+        //eventHandler.popKeyHandlerData();
 
         screenMessage("\n");
         (*c->location->finishTurn)();        
 
     default:
         if (valid) {
-            eventHandlerPopKeyHandler();
+            eventHandler.popKeyHandler();
 
             screenMessage("%s\n", getDirectionName(dir));
             (*handleDirection)(dir);
-            eventHandlerPopKeyHandlerData();
+            //eventHandler.popKeyHandlerData();
         }
         break;
     }    
 
-    return valid || keyHandlerDefault(key, NULL);
+    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 bool gameGetFieldTypeKeyHandler(int key, void *data) {
     int (*handleFieldType)(int field) = (int(*)(int))data;    
     fieldType = ENERGYFIELD_NONE;
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
     
     switch(tolower(key)) {
     case 'f': fieldType = ENERGYFIELD_FIRE; break;
@@ -1457,7 +1474,7 @@ bool gameGetFieldTypeKeyHandler(int key, void *data) {
     if (fieldType != ENERGYFIELD_NONE) {
         screenMessage("%c\n", toupper(key));
         (*handleFieldType)((int)fieldType);
-        eventHandlerPopKeyHandlerData();
+        //eventHandler.popKeyHandlerData();
         return true;
     } else {
         /* Invalid input here = spell failure */
@@ -1471,7 +1488,7 @@ bool gameGetFieldTypeKeyHandler(int key, void *data) {
         (*c->location->finishTurn)();
     }
 
-    eventHandlerPopKeyHandlerData();
+    //eventHandler.popKeyHandlerData();
     
     return false;
 }
@@ -1480,7 +1497,7 @@ bool gameGetPhaseKeyHandler(int key, void *data) {
     int (*handlePhase)(int) = (int(*)(int))data;
     bool valid = true;
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     if (key >= '1' && key <= '8') {
         screenMessage("%c\n", key);
@@ -1491,9 +1508,9 @@ bool gameGetPhaseKeyHandler(int key, void *data) {
         valid = false;
     }
 
-    eventHandlerPopKeyHandlerData();
+    //eventHandler.popKeyHandlerData();
 
-    return valid || keyHandlerDefault(key, NULL);
+    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 /**
@@ -1511,23 +1528,23 @@ bool gameGetCoordinateKeyHandler(int key, void *data) {
     case U4_ESC:
     case U4_SPACE:
     case U4_ENTER:
-        eventHandlerPopKeyHandler();
-        eventHandlerPopKeyHandlerData();
+        eventHandler.popKeyHandler();
+        //eventHandler.popKeyHandlerData();
 
         screenMessage("\n");        
         (*c->location->finishTurn)();        
 
     default:
         if (valid) {
-            eventHandlerPopKeyHandler();
+            eventHandler.popKeyHandler();
             screenMessage("%s\n", getDirectionName(dir));
             gameDirectionalAction(info);
-            eventHandlerPopKeyHandlerData();
+            //eventHandler.popKeyHandlerData();
         }        
         break;
     }    
 
-    return valid || keyHandlerDefault(key, NULL);
+    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 /**
@@ -1569,9 +1586,8 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
             item->setSelected(!item->isSelected());
                         
             if (item->isSelected())
-                mixIngredients->addReagent((Reagent)item->getId());
-            else
-                mixIngredients->removeReagent((Reagent)item->getId());
+                mixtureAddReagent(mix, (Reagent)item->getId());
+            else mixtureRemoveReagent(mix, (Reagent)item->getId());
         }
         break;
     case U4_ENTER:
@@ -1579,7 +1595,7 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
         if (menu->isVisible())
         {
             screenHideCursor();
-            eventHandlerPopKeyHandler();
+            eventHandler.popKeyHandler();
             c->stats->showMixtures();
          
             screenMessage("How many? ");
@@ -1589,8 +1605,8 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
         }
         /* you don't have any reagents */
         else {
-            eventHandlerPopKeyHandler();
-            eventHandlerPopKeyHandlerData();
+            eventHandler.popKeyHandler();
+            //eventHandler.popKeyHandlerData();
             c->stats->showPartyView();
             screenEnableCursor();
             (*c->location->finishTurn)();
@@ -1598,11 +1614,11 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
         break;
 
     case U4_ESC:
-        eventHandlerPopKeyHandler();
-        eventHandlerPopKeyHandlerData();
+        eventHandler.popKeyHandler();
+        //eventHandler.popKeyHandlerData();
 
-        mixIngredients->revert();
-        delete mixIngredients;
+        mixtureRevert(mix);
+        mixtureDelete(mix);
 
         screenHideCursor();
         c->stats->showPartyView();
@@ -1638,15 +1654,15 @@ void gameResetSpellMixing(void) {
 int gameSpellMixHowMany(string *message) {
     int i, num;
     
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     num = (int) strtol(message->c_str(), NULL, 10);
     
     /* entered 0 mixtures, don't mix anything! */
     if (num == 0) {
         screenMessage("\nNone mixed!\n");
-        mixIngredients->revert();
-        delete mixIngredients;
+        mixtureRevert(mix);
+        mixtureDelete(mix);
         (*c->location->finishTurn)();
         return 0;
     }
@@ -1659,27 +1675,33 @@ int gameSpellMixHowMany(string *message) {
     
     screenMessage("\nMixing %d...\n", num);
 
-    /* see if there's enough reagents to make number of mixtures requested */
-    if (!mixIngredients->checkMultiple(num)) {
-        screenMessage("\nYou don't have enough reagents to mix %d spells!\n\n", num);
-        mixIngredients->revert();
-        delete mixIngredients;
-        (*c->location->finishTurn)();
-        return 0;
-    }
-
+    for (i = 0; i < REAG_MAX; i++) {
+        /* see if there's enough reagents to mix (-1 because one is being mixed now) */
+        if (mix->reagents[i] > 0 && c->saveGame->reagents[i] < num-1) {
+            screenMessage("\nYou don't have enough reagents to mix %d spells!\n\n", num);
+            mixtureRevert(mix);
+            mixtureDelete(mix);
+            (*c->location->finishTurn)();
+            return 0;
+        }
+    }    
+       
     screenMessage("\nYou mix the Reagents, and...\n");
-    if (spellMix(mixSpell, mixIngredients)) {
+    if (spellMix(mixSpell, mix)) {
         screenMessage("Success!\n\n");
         /* mix the extra spells */
-        mixIngredients->multiply(num);
         for (i = 0; i < num-1; i++)
-            spellMix(mixSpell, mixIngredients);
+            spellMix(mixSpell, mix);
+        /* subtract the reagents from inventory */
+        for (i = 0; i < REAG_MAX; i++) {
+            if (mix->reagents[i] > 0)
+                c->saveGame->reagents[i] -= num-1;
+        }
     }
     else 
         screenMessage("It Fizzles!\n\n");
 
-    delete mixIngredients;
+    mixtureDelete(mix);
 
     (*c->location->finishTurn)();
     return 1;        
@@ -1699,7 +1721,7 @@ bool gameZtatsKeyHandler(int key, void *data) {
         c->stats->nextItem();
         break;
     default:
-        eventHandlerPopKeyHandler();
+        eventHandler.popKeyHandler();
         (*c->location->finishTurn)();
         break;
     }
@@ -1781,8 +1803,8 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
                       "l - Location\n"
                       "m - Mixtures\n"                      
                       "(more)");
-        eventHandlerPopKeyHandler();
-        eventHandlerPushKeyHandler(&cmdHandleAnyKey);
+        eventHandler.popKeyHandler();
+        eventHandler.pushKeyHandler(&cmdHandleAnyKey);
         return true;
 
     case 'i':
@@ -1838,7 +1860,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
 
     case 'p':        
         screenMessage("\nPeer at a Gem!\n");
-        eventHandlerPopKeyHandler();
+        eventHandler.popKeyHandler();
         gamePeerGem();
         return true;
 
@@ -1851,7 +1873,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
 
     case 's':
         screenMessage("Summon!\n");
-        eventHandlerPopKeyHandler();
+        eventHandler.popKeyHandler();
 
         screenMessage("What?\n");
         gameGetInput(&gameSummonCreature, &creatureNameBuffer);
@@ -1881,8 +1903,8 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
 
     case 'w':        
         screenMessage("Wind Dir ('l' to lock):\n");
-        eventHandlerPopKeyHandler();
-        eventHandlerPushKeyHandler(&windCmdKeyHandler);
+        eventHandler.popKeyHandler();
+        eventHandler.pushKeyHandler(&windCmdKeyHandler);
         return true;
 
     case 'x':
@@ -1945,13 +1967,13 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
     }
 
     if (valid)
-        eventHandlerPopKeyHandler();
+        eventHandler.popKeyHandler();
 
-    return valid || keyHandlerDefault(key, NULL);
+    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 bool cmdHandleAnyKey(int key, void *data) {
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     screenMessage("\n"
                   "o - Opacity\n"
@@ -1984,14 +2006,14 @@ bool windCmdKeyHandler(int key, void *data) {
         break;
     }
 
-    eventHandlerPopKeyHandler();    
+    eventHandler.popKeyHandler();    
     screenPrompt();
 
     return true;
 }
 
 bool helpPage2KeyHandler(int key, void *data) {
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     screenMessage("\n"
                     "j: Jimmy lock\n"
@@ -2006,12 +2028,12 @@ bool helpPage2KeyHandler(int key, void *data) {
                     "s: Search\n"
                     "t: Talk\n"
                 "(more)");
-    eventHandlerPushKeyHandler(&helpPage3KeyHandler);
+    eventHandler.pushKeyHandler(&helpPage3KeyHandler);
     return true;
 }
 
 bool helpPage3KeyHandler(int key, void *data) {
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     screenMessage("\n"
                     "u: Use Item\n"
@@ -2096,7 +2118,7 @@ bool gameCastForPlayer(int player) {
 
     screenMessage("%s", info->prompt.c_str());
 
-    eventHandlerPushKeyHandlerWithData(&gameGetAlphaChoiceKeyHandler, info);
+    eventHandler.pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, info));
 
     return true;
 }
@@ -2121,33 +2143,33 @@ bool castForPlayer2(int spell, void *data) {
 
     /* Get the final parameters for the spell */
     switch (spellGetParamType(spell)) {
-    case Spell::PARAM_NONE:
+    case SPELLPRM_NONE:
         gameCastSpell(castSpell, castPlayer, 0);
         (*c->location->finishTurn)();
         break;
-    case Spell::PARAM_PHASE:
+    case SPELLPRM_PHASE:
         screenMessage("To Phase: ");
-        eventHandlerPushKeyHandlerWithData(&gameGetPhaseKeyHandler, (void *) &castForPlayerGetPhase);        
+        eventHandler.pushKeyHandler(KeyHandler(&gameGetPhaseKeyHandler, (void *) &castForPlayerGetPhase));        
         break;
-    case Spell::PARAM_PLAYER:
+    case SPELLPRM_PLAYER:
         screenMessage("Who: ");
         gameGetPlayerForCommand(&castForPlayerGetDestPlayer, 1, 0);        
         break;
-    case Spell::PARAM_DIR:
+    case SPELLPRM_DIR:
         if (c->location->context == CTX_DUNGEON)
             gameCastSpell(castSpell, castPlayer, c->saveGame->orientation);
         else {
             screenMessage("Dir: ");
-            eventHandlerPushKeyHandlerWithData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir);
+            eventHandler.pushKeyHandler(KeyHandler(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir));
         }
         break;
-    case Spell::PARAM_TYPEDIR:
+    case SPELLPRM_TYPEDIR:
         screenMessage("Energy type? ");
-        eventHandlerPushKeyHandlerWithData(&gameGetFieldTypeKeyHandler, (void *) &castForPlayerGetEnergyType);
+        eventHandler.pushKeyHandler(KeyHandler(&gameGetFieldTypeKeyHandler, (void *) &castForPlayerGetEnergyType));
         break;
-    case Spell::PARAM_FROMDIR:
+    case SPELLPRM_FROMDIR:
         screenMessage("From Dir: ");
-        eventHandlerPushKeyHandlerWithData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir);
+        eventHandler.pushKeyHandler(KeyHandler(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir));
         break;
     }    
 
@@ -2178,7 +2200,7 @@ int castForPlayerGetEnergyType(int fieldType) {
         castForPlayerGetEnergyDir((Direction)c->saveGame->orientation);
     else {
         screenMessage("Dir: ");
-        eventHandlerPushKeyHandlerWithData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetEnergyDir);
+        eventHandler.pushKeyHandler(KeyHandler(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetEnergyDir));
     }
     return 1;
 }
@@ -2289,7 +2311,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
         /* Based on attack speed setting in setting struct, make a delay for
            the attack annotation */
         if (attackdelay > 0)
-            eventHandlerSleep(attackdelay * 4);
+            EventHandler::sleep(attackdelay * 4);
     }
 
     return false;
@@ -2566,7 +2588,7 @@ bool readyForPlayer(int player) {
 
     screenMessage("%s", info->prompt.c_str());
 
-    eventHandlerPushKeyHandlerWithData(&gameGetAlphaChoiceKeyHandler, info);
+    eventHandler.pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, info));
 
     return true;
 }
@@ -2625,10 +2647,10 @@ bool readyForPlayer2(int w, void *data) {
  * Mixes reagents for a spell.  Prompts for reagents.
  */
 bool mixReagentsForSpell(int spell, void *data) {
-    GetChoiceActionInfo *info;    
+    KeyHandler::GetChoice *info;    
 
     mixSpell = spell;
-    mixIngredients = new Ingredients();
+    mix = mixtureNew();    
     
     /* do we use the Ultima V menu system? */
     if (settings.enhancements && settings.enhancementsOptions.u5spellMixing) {
@@ -2636,15 +2658,15 @@ bool mixReagentsForSpell(int spell, void *data) {
         screenDisableCursor();
         gameResetSpellMixing();
         spellMixMenu.reset(); /* reset the menu, highlighting the first item */
-        eventHandlerPushKeyHandlerWithData(&gameSpellMixMenuKeyHandler, &spellMixMenu);
+        eventHandler.pushKeyHandler(KeyHandler(&gameSpellMixMenuKeyHandler, &spellMixMenu));
     }
     else {
         screenMessage("%s\nReagent: ", spellGetName(spell));    
 
-        info = new GetChoiceActionInfo;
+        info = new KeyHandler::GetChoice;
         info->choices = "abcdefgh\n\r \033";
         info->handleChoice = &mixReagentsForSpell2;        
-        eventHandlerPushKeyHandlerWithData(&keyHandlerGetChoice, info);
+        eventHandler.pushKeyHandler(KeyHandler(&keyHandlerGetChoice, info));
     }
 
     c->stats->showReagents();
@@ -2653,20 +2675,20 @@ bool mixReagentsForSpell(int spell, void *data) {
 }
 
 int mixReagentsForSpell2(int choice) {
-    GetChoiceActionInfo *info;
+    KeyHandler::GetChoice *info;
     AlphaActionInfo *alphaInfo;
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     if (choice == '\n' || choice == '\r' || choice == ' ') {
         screenMessage("\n\nYou mix the Reagents, and...\n");
 
-        if (spellMix(mixSpell, mixIngredients))
+        if (spellMix(mixSpell, mix))
             screenMessage("Success!\n\n");
         else
             screenMessage("It Fizzles!\n\n");
 
-        delete mixIngredients;
+        mixtureDelete(mix);
 
         screenMessage("Mix reagents\n");
         alphaInfo = new AlphaActionInfo;
@@ -2676,7 +2698,7 @@ int mixReagentsForSpell2(int choice) {
         alphaInfo->data = NULL;
 
         screenMessage("%s", alphaInfo->prompt.c_str());
-        eventHandlerPushKeyHandlerWithData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
+        eventHandler.pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, alphaInfo));
 
         c->stats->showMixtures();
 
@@ -2685,8 +2707,8 @@ int mixReagentsForSpell2(int choice) {
 
     else if (choice == '\033') {
 
-        mixIngredients->revert();
-        delete mixIngredients;
+        mixtureRevert(mix);
+        mixtureDelete(mix);
 
         screenMessage("\n\n");
         (*c->location->finishTurn)();
@@ -2696,15 +2718,15 @@ int mixReagentsForSpell2(int choice) {
     else {
         screenMessage("%c\n", toupper(choice));
 
-        if (!mixIngredients->addReagent((Reagent)(choice - 'a')))
+        if (!mixtureAddReagent(mix, (Reagent)(choice - 'a')))
             screenMessage("None Left!\n");
 
         screenMessage("Reagent: ");
 
-        info = new GetChoiceActionInfo;
+        info = new KeyHandler::GetChoice;
         info->choices = "abcdefgh\n\r \033";
         info->handleChoice = &mixReagentsForSpell2;
-        eventHandlerPushKeyHandlerWithData(&keyHandlerGetChoice, info);
+        eventHandler.pushKeyHandler(KeyHandler(&keyHandlerGetChoice, info));
 
 
         return 1;
@@ -2733,7 +2755,7 @@ bool newOrderForPlayer(int player) {
     playerInfo = new GetPlayerInfo;
     playerInfo->canBeDisabled = 1;
     playerInfo->command = newOrderForPlayer2;
-    eventHandlerPushKeyHandlerWithData(&gameGetPlayerNoKeyHandler, playerInfo);
+    eventHandler.pushKeyHandler(KeyHandler(&gameGetPlayerNoKeyHandler, playerInfo));
 
     return true;
 }
@@ -2799,7 +2821,7 @@ bool openAtCoord(MapCoords coords, int distance, void *data) {
  * Waits for space bar to return from gem mode.
  */
 int gemHandleChoice(int choice) {
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     screenEnableCursor();    
     
@@ -2816,7 +2838,7 @@ int gemHandleChoice(int choice) {
  * Peers at a city from A-P (Lycaeum telescope) and functions like a gem
  */
 bool gamePeerCity(int city, void *data) {
-    GetChoiceActionInfo *choiceInfo;    
+    KeyHandler::GetChoice *choiceInfo;    
     Map *peerMap;
 
     peerMap = mapMgrGetById((MapId)(city+1));
@@ -2829,10 +2851,10 @@ bool gamePeerCity(int city, void *data) {
         screenDisableCursor();
             
         // Wait for player to hit a key
-        choiceInfo = new GetChoiceActionInfo;
+        choiceInfo = new KeyHandler::GetChoice;
         choiceInfo->choices = "\015 \033";
         choiceInfo->handleChoice = &peerCityHandleChoice;
-        eventHandlerPushKeyHandlerWithData(&keyHandlerGetChoice, choiceInfo);
+        eventHandler.pushKeyHandler(KeyHandler(&keyHandlerGetChoice, choiceInfo));
         return true;
     }
     return false;
@@ -2842,24 +2864,24 @@ bool gamePeerCity(int city, void *data) {
  * Peers at a gem
  */
 void gamePeerGem(void) {
-    GetChoiceActionInfo *choiceInfo;
+    KeyHandler::GetChoice *choiceInfo;
 
     paused = 1;
     pausedTimer = 0;
     screenDisableCursor();
     
     c->location->viewMode = VIEW_GEM;
-    choiceInfo = new GetChoiceActionInfo;
+    choiceInfo = new KeyHandler::GetChoice;
     choiceInfo->choices = "\015 \033";
     choiceInfo->handleChoice = &gemHandleChoice;
-    eventHandlerPushKeyHandlerWithData(&keyHandlerGetChoice, choiceInfo);
+    eventHandler.pushKeyHandler(KeyHandler(&keyHandlerGetChoice, choiceInfo));
 }
 
 /**
  * Wait for space bar to return from gem mode and returns map to normal
  */
 int peerCityHandleChoice(int choice) {
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
     gameExitToParentMap();
     screenEnableCursor();    
     
@@ -2915,7 +2937,7 @@ bool talkAtCoord(MapCoords coords, int distance, void *data) {
  * Handles a query while talking to an NPC.
  */
 int talkHandleBuffer(string *message) {
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     c->conversation.reply = personGetConversationText(&c->conversation, message->c_str());
     c->conversation.playerInquiryBuffer.erase();
@@ -2928,7 +2950,7 @@ int talkHandleBuffer(string *message) {
 int talkHandleChoice(int choice) {
     char message[2];
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     message[0] = choice;
     message[1] = '\0';
@@ -2944,7 +2966,7 @@ int talkHandleChoice(int choice) {
 bool talkHandleAnyKey(int key, void *data) {
     int showPrompt = (int) data;
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     talkShowReply(showPrompt);
 
@@ -2957,7 +2979,7 @@ bool talkHandleAnyKey(int key, void *data) {
  */
 void talkShowReply(int showPrompt) {
     string prompt;
-    GetChoiceActionInfo *gcInfo;
+    KeyHandler::GetChoice *gcInfo;
     int bufferlen;
     
     screenMessage("%s", c->conversation.reply->front());
@@ -2967,7 +2989,7 @@ void talkShowReply(int showPrompt) {
     /* if all chunks haven't been shown, wait for a key and process next chunk*/    
     size = c->conversation.reply->size();
     if (size > 0) {    
-        eventHandlerPushKeyHandlerWithData(&talkHandleAnyKey, (void *) showPrompt);
+        eventHandler.pushKeyHandler(KeyHandler(&talkHandleAnyKey, (void *) showPrompt));
         return;
     }
 
@@ -3010,10 +3032,10 @@ void talkShowReply(int showPrompt) {
         break;
 
     case CONVINPUT_CHARACTER:
-        gcInfo = new GetChoiceActionInfo;
+        gcInfo = new KeyHandler::GetChoice;
         gcInfo->choices = personGetChoices(&c->conversation);
         gcInfo->handleChoice = &talkHandleChoice;
-        eventHandlerPushKeyHandlerWithData(&keyHandlerGetChoice, gcInfo);
+        eventHandler.pushKeyHandler(KeyHandler(&keyHandlerGetChoice, gcInfo));
         break;
 
     case CONVINPUT_NONE:
@@ -3023,12 +3045,12 @@ void talkShowReply(int showPrompt) {
 }
 
 int useItem(string *itemName) {
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     itemUse(itemName->c_str());
 
-    if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler ||
-        eventHandlerGetKeyHandler() == &CombatController::baseKeyHandler)
+    if (*eventHandler.getKeyHandler() == &gameBaseKeyHandler ||
+        *eventHandler.getKeyHandler() == &CombatController::baseKeyHandler)
         (*c->location->finishTurn)();
 
     return 1;
@@ -3050,7 +3072,7 @@ bool wearForPlayer(int player) {
 
     screenMessage("%s", info->prompt.c_str());
 
-    eventHandlerPushKeyHandlerWithData(&gameGetAlphaChoiceKeyHandler, info);
+    eventHandler.pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, info));
 
     return true;
 }
@@ -3096,7 +3118,7 @@ bool ztatsFor(int player) {
 
     c->stats->showPlayerDetails(player);
 
-    eventHandlerPushKeyHandler(&gameZtatsKeyHandler);    
+    eventHandler.pushKeyHandler(&gameZtatsKeyHandler);    
     return true;
 }
 
@@ -3137,18 +3159,18 @@ void gameTimer(void *data) {
          * refresh the screen only if the timer queue is empty --
          * i.e. drop a frame if another timer event is about to be fired
          */
-        if (eventHandlerTimerQueueEmpty())
+        if (eventHandler.timerQueueEmpty())
             gameUpdateScreen();
 
         /*
          * force pass if no commands within last 20 seconds
          */
-        if ((eventHandlerGetKeyHandler() == &gameBaseKeyHandler ||
-            eventHandlerGetKeyHandler() == &CombatController::baseKeyHandler) &&
+        if ((*eventHandler.getKeyHandler() == &gameBaseKeyHandler ||
+            *eventHandler.getKeyHandler() == &CombatController::baseKeyHandler) &&
              gameTimeSinceLastCommand() > 20) {
          
             /* pass the turn, and redraw the text area so the prompt is shown */
-            (*eventHandlerGetKeyHandler())(' ', NULL);
+            eventHandler.getKeyHandler()->handle(U4_SPACE);
             screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
         }
     }
@@ -3541,7 +3563,7 @@ bool creatureRangeAttack(MapCoords coords, int distance, void *data) {
         /* Based on attack speed setting in setting struct, make a delay for
            the attack annotation */
         if (attackdelay > 0)
-            eventHandlerSleep(attackdelay * 4);
+            EventHandler::sleep(attackdelay * 4);
     }
 
     return false;    
@@ -3629,7 +3651,7 @@ void gameDamageParty(int minDamage, int maxDamage) {
         }
     }
     
-    eventHandlerSleep(100);
+    EventHandler::sleep(100);
     screenShake(1);
 }
 
@@ -3724,7 +3746,7 @@ int gameSummonCreature(string *creatureName) {
     unsigned int id;
     const Creature *m = NULL;
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
 
     if (creatureName->empty()) {
         screenPrompt();

@@ -48,16 +48,16 @@ void campBegin(void) {
     c->combat->initCamping();
     c->combat->begin();    
     
-    eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&campTimer, (eventTimerGranularity * settings.gameCyclesPerSecond) * settings.campTime);
+    eventHandler.pushKeyHandler(&KeyHandler::ignoreKeys);
+    eventHandler.getTimer()->add(&campTimer, settings.gameCyclesPerSecond * settings.campTime);
 
     screenMessage("Resting...\n");
     screenDisableCursor();
 }
 
 void campTimer(void *data) {
-    eventHandlerRemoveTimerCallback(&campTimer);
-    eventHandlerPopKeyHandler();
+    eventHandler.getTimer()->remove(&campTimer);
+    eventHandler.popKeyHandler();
     screenEnableCursor();
 
     /* Is the party ambushed during their rest? */
@@ -83,7 +83,7 @@ void campTimer(void *data) {
 void campEnd(void) {
     int i, healed = 0;    
 
-    eventHandlerPopKeyHandler();
+    eventHandler.popKeyHandler();
     gameExitToParentMap();
     musicFadeIn(CAMP_FADE_IN_TIME, 1);
     
@@ -127,27 +127,27 @@ void innBegin(void) {
     if (settings.enhancements)
         musicFadeOut(INN_FADE_OUT_TIME); /* Fade volume out to ease into rest */
 
-    eventHandlerSleep(INN_FADE_OUT_TIME);
+    EventHandler::sleep(INN_FADE_OUT_TIME);
 
     /* show the sleeping avatar */
     c->party->setTransport(Tileset::findTileByName("corpse")->id);
     gameUpdateScreen();
 
-    eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&innTimer, (eventTimerGranularity * settings.gameCyclesPerSecond) * settings.innTime);
+    eventHandler.pushKeyHandler(&KeyHandler::ignoreKeys);
+    eventHandler.getTimer()->add(&innTimer, settings.gameCyclesPerSecond * settings.innTime);
 
     screenDisableCursor();
 }
 
 void innTimer(void *data) {
-    eventHandlerRemoveTimerCallback(&innTimer);    
+    eventHandler.getTimer()->remove(&innTimer);    
 
     /**
      * FIXME: normally we would "pop" the key handler
      * here, but for some reason the "ignore key"
      * handler doesn't pop every time.  Weird...
      **/
-    eventHandlerSetKeyHandler(&gameBaseKeyHandler);
+    eventHandler.setKeyHandler(&gameBaseKeyHandler);
     screenEnableCursor();
 
     /* restore the avatar to normal */

@@ -60,14 +60,14 @@ void deathStart(int delay) {
     timerCount = 0;
     timerMsg = 0;    
 
-    eventHandlerSleep(delay * 1000);
+    EventHandler::sleep(delay * 1000);
     
     gameSetViewMode(VIEW_DEAD);
     
-    eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
+    eventHandler.pushKeyHandler(&KeyHandler::ignoreKeys);
     screenDisableCursor();
 
-    eventHandlerAddTimerCallback(&deathTimer, eventTimerGranularity * settings.gameCyclesPerSecond);
+    eventHandler.getTimer()->add(&deathTimer, settings.gameCyclesPerSecond);
 }
 
 void deathTimer(void *data) {
@@ -82,7 +82,7 @@ void deathTimer(void *data) {
         timerMsg++;
 
         if (timerMsg >= N_MSGS) {
-            eventHandlerRemoveTimerCallback(&deathTimer);
+            eventHandler.getTimer()->remove(&deathTimer);
             deathRevive();
         }
     }
@@ -96,8 +96,8 @@ void deathRevive() {
     deathSequenceRunning = 0;
     gameSetViewMode(VIEW_NORMAL);
 
-    eventHandlerSetKeyHandler(&keyHandlerDefault);
-    eventHandlerPushKeyHandler(&gameBaseKeyHandler);
+    eventHandler.setKeyHandler(&KeyHandler::defaultHandler);
+    eventHandler.pushKeyHandler(&gameBaseKeyHandler);
 
     /* Move our world map location to Lord British's Castle */
     c->location->coords = c->location->map->portals[0]->coords;

@@ -17,284 +17,119 @@
 #include "settings.h"
 
 int eventTimerGranularity = 250;
-
-typedef struct TimerCallbackNode {
-    TimerCallback callback;
-    void *data;
-    int interval;
-    int current;
-    struct TimerCallbackNode *next;
-} TimerCallbackNode;
-
-TimerCallbackNode *timerCallbackHead = NULL;
-TimerCallbackNode *deferedTimerCallbackRemoval = NULL;
-bool timerCallbackListLocked = false;
+EventHandler eventHandler;
 
 extern bool quit;
-bool eventExitFlag = false;
+bool EventHandler::exit = false;
+unsigned int TimedEventMgr::instances = 0;
 
-std::list<KeyHandler>    keyHandlers;    /* key handler <stack> */
-std::list<void *>        keyHandlerData; /* key handler data <queue> */
-std::list<MouseArea*>    mouseAreaSets;  /* mouse areas <stack> */
+void EventHandler::setExitFlag(bool xit) { exit = xit; }     /**< Sets the global exit flag for the event handler */
+bool EventHandler::getExitFlag()         { return exit; }    /**< Returns the current value of the global exit flag */
+TimedEventMgr* EventHandler::getTimer()  { return &timer;}
 
-/**
- * Set flag to end eventHandlerMain loop.
- */
-void eventHandlerSetExitFlag(bool flag) {
-    eventExitFlag = flag;
-}
+/* TimedEvent functions */
+TimedEvent::TimedEvent(TimedEvent::Callback cb, int i, void *d) :
+    callback(cb),
+    data(d),
+    interval(i),
+    current(0)
+{}
 
-/**
- * Get flag that controls eventHandlerMain loop.
- */
-bool eventHandlerGetExitFlag() {
-    return eventExitFlag;
-}
+TimedEvent::Callback TimedEvent::getCallback() const    { return callback; }
+void *TimedEvent::getData()                             { return data; }
 
 /**
- * Adds a new timer callback to the timer callback list.  The interval
- * value determines how many milliseconds between calls; a value of
- * 250 generates 4 callbacks per second, a value of 1000 generates 1
- * callback per second, etc.
+ * Advances the timed event forward a tick.
+ * When (current >= interval), then it executes its callback function.
  */
-void eventHandlerAddTimerCallback(TimerCallback callback, int interval) {
-    eventHandlerAddTimerCallbackData(callback, NULL, interval);
-}
-
-void eventHandlerAddTimerCallbackData(TimerCallback callback, void *data, int interval) {
-    TimerCallbackNode *n = new TimerCallbackNode;
-
-    ASSERT((interval > 0) && (interval % eventTimerGranularity == 0), "invalid timer interval: %d", interval);
-    if (n) {
-        n->callback = callback;
-        n->interval = interval;
-        n->current = interval;
-        n->data = data;
-        n->next = timerCallbackHead;
-        timerCallbackHead = n;
+void TimedEvent::tick() {
+    if (++current >= interval) {
+        (*callback)(data);
+        current = 0;
     }
 }
 
 /**
- * Removes a timer callback from the timer callback list.
+ * Returns true if the event queue is locked
  */
-void eventHandlerRemoveTimerCallback(TimerCallback callback) {
-    eventHandlerRemoveTimerCallbackData(callback, NULL);
-}
-
-void eventHandlerRemoveTimerCallbackData(TimerCallback callback, void *data) {
-    TimerCallbackNode *n, *prev;
-
-    if (timerCallbackListLocked) {
-        n = new TimerCallbackNode;
-        n->callback = callback;
-        n->data = data;
-        n->next = deferedTimerCallbackRemoval;
-        deferedTimerCallbackRemoval = n;
-        return;
-    }
-
-    n = timerCallbackHead;
-    prev = NULL;
-    while (n) {
-        if (n->callback != callback || n->data != data) {
-            prev = n;
-            n = n->next;
-            continue;
-        }
-
-        if (prev)
-            prev->next = n->next;
-        else
-            timerCallbackHead = n->next;
-        delete n;
-        return;
-    }
+bool TimedEventMgr::isLocked() const {
+    return locked;
 }
 
 /**
- * Trigger all the timer callbacks.
+ * Adds a timed event to the event queue.
  */
-void eventHandlerCallTimerCallbacks() {
-    TimerCallbackNode *n;    
+void TimedEventMgr::add(TimedEvent::Callback callback, int interval, void *data) {
+    events.push_back(new TimedEvent(callback, interval, data));
+}
 
-    timerCallbackListLocked = 1;
+/**
+ * Removes a timed event from the event queue.
+ */
+TimedEventMgr::List::iterator TimedEventMgr::remove(List::iterator i) {
+    if (isLocked()) {
+        deferredRemovals.push_back(*i);
+        return i;
+    }
+    else {
+        delete *i;
+        return events.erase(i);
+    }
+}
 
-    for (n = timerCallbackHead; n != NULL; n = n->next) {
-        n->current -= eventTimerGranularity;
-        if (n->current <= 0) {
-            (*n->callback)(n->data);
-            n->current = n->interval;
+void TimedEventMgr::remove(TimedEvent* event) {
+    List::iterator i;
+    for (i = events.begin(); i != events.end(); i++) {
+        if ((*i) == event) {
+            remove(i);
+            break;
         }
     }
+}
 
-    timerCallbackListLocked = 0;
-
-    while (deferedTimerCallbackRemoval) {
-        eventHandlerRemoveTimerCallbackData(deferedTimerCallbackRemoval->callback, deferedTimerCallbackRemoval->data);
-        n = deferedTimerCallbackRemoval;
-        deferedTimerCallbackRemoval = deferedTimerCallbackRemoval->next;
-        delete n;
+void TimedEventMgr::remove(TimedEvent::Callback callback, void *data) {
+    List::iterator i;
+    for (i = events.begin(); i != events.end(); i++) {
+        if ((*i)->getCallback() == callback && (*i)->getData() == data) {
+            remove(i);
+            break;
+        }
     }
 }
 
 /**
- * Re-initializes each timer callback to a new eventTimerGranularity
- */ 
-void eventHandlerResetTimerCallbacks() {
-    int baseInterval;
-    TimerCallbackNode *n;
-
-    for (n = timerCallbackHead; n != NULL; n = n->next) {
-        baseInterval = n->interval / eventTimerGranularity;
-        eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);        
-        n->interval = baseInterval * eventTimerGranularity;
-    }
-
-    /* re-initialize the main event loop */
-    eventHandlerDelete();
-    eventHandlerInit();
-}
-
-/**
- * Push a key handler onto the top of the keyhandler stack.
+ * Runs each of the callback functions of the TimedEvents associated with this manager.
  */
-void eventHandlerPushKeyHandler(KeyHandler kh) {
-    eventHandlerPushKeyHandlerWithData(kh, NULL);
+void TimedEventMgr::tick() {
+    List::iterator i;
+    lock();
+    
+    for (i = events.begin(); i != events.end(); i++)
+        (*i)->tick();   
+
+    unlock();
+
+    // Remove events that have been deferred for removal
+    for (i = deferredRemovals.begin(); i != deferredRemovals.end(); i++)
+        events.remove(*i);
 }
 
-/**
- * Push a key handler onto the top of the key handler stack, and
- * provide specific data to pass to the handler.
- */
-void eventHandlerPushKeyHandlerWithData(KeyHandler kh, void *data) {
-    keyHandlers.push_front(kh);
-    keyHandlerData.push_back(data);
-}
-
-/**
- * Pop the top key handler off.
- */
-void eventHandlerPopKeyHandler() {
-    if (keyHandlers.size() > 0)        
-        keyHandlers.pop_front();    
-}
-
-/**
- * Pop the key handler data off the front of the queue
- */ 
-void eventHandlerPopKeyHandlerData() {
-    if (keyHandlerData.size() > 0)
-        keyHandlerData.pop_front();
-}
-
-/**
- * Eliminate all key handlers and begin stack with new handler
- */
-void eventHandlerSetKeyHandler(KeyHandler kh) {
-    while (keyHandlers.size() > 0)        
-        eventHandlerPopKeyHandler();
-
-    eventHandlerPushKeyHandler(kh);
-}
-
-/**
- * Get the currently active key handler off the top of the key handler
- * stack.
- */
-KeyHandler eventHandlerGetKeyHandler() {
-    return keyHandlers.front();
-}
-
-/**
- * Get the call data associated with the currently active key handler.
- */
-void *eventHandlerGetKeyHandlerData() {
-    return keyHandlerData.back();
-}
-
-/**
- * Returns true if the key or key combination is always ignored by xu4
- */
-bool eventHandlerIsKeyIgnored(int key) {
-    switch(key) {
-    case U4_RIGHT_SHIFT:
-    case U4_LEFT_SHIFT:
-    case U4_RIGHT_CTRL:
-    case U4_LEFT_CTRL:
-    case U4_RIGHT_ALT:
-    case U4_LEFT_ALT:
-    case U4_RIGHT_META:
-    case U4_LEFT_META:
-    case U4_TAB:
-        return true;
-    default: return false;
-    }
-}
-
-/**
- * A key handler that handles every keypress
- */
-bool eventHandlerUniversalKeyHandler(int key) {
-    switch(key) {
-#if defined(MACOSX)
-    case U4_META + 'q': /* Cmd+q */
-    case U4_META + 'x': /* Cmd+x */
-#endif
-    case U4_ALT + 'x': /* Alt+x */
-#if defined(WIN32)
-    case U4_ALT + U4_FKEY + 3:
-#endif
-        quit = eventExitFlag = true;
-        return true;
-#if defined(MACOSX)
-    case U4_META + U4_TAB: /* Cmd+tab */
-        screenIconify();
-        return true;
-#endif
-    default: return false;
-    }
-}
-
-/**
- * A base key handler that should be valid everywhere.
- */
-bool keyHandlerDefault(int key, void *data) {
-    bool valid = true;
-
-    switch (key) {
-    case '`':
-        if (c && c->location)
-            printf("x = %d, y = %d, level = %d, tile = %d\n", c->location->coords.x, c->location->coords.y, c->location->coords.z, c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->id);
-        break;
-    default:
-        valid = false;
-        break;
-    }
-
-    return valid;
-}
-
-/**
- * Generic handler for discarding all keyboard input.
- */
-bool keyHandlerIgnoreKeys(int key, void *data) {
-    return true;
-}
+void TimedEventMgr::lock()      { locked = true; }
+void TimedEventMgr::unlock()    { locked = false; }
 
 /**
  * Generic handler for reading a single character choice from a set of
  * valid characters.
  */
 bool keyHandlerGetChoice(int key, void *data) {
-    GetChoiceActionInfo *info = (GetChoiceActionInfo *) data;
+    KeyHandler::GetChoice *info = (KeyHandler::GetChoice *) data;
 
     if (isupper(key))
         key = tolower(key);
 
     if (info->choices.find_first_of(key) < info->choices.length()) {
         if ((*info->handleChoice)(key))
-            eventHandlerPopKeyHandlerData();
+            //eventHandler.popKeyHandlerData();
 
         return true;
     }    
@@ -308,7 +143,7 @@ bool keyHandlerGetChoice(int key, void *data) {
  * Control is then passed to a seperate handler.
  */
 bool keyHandlerReadBuffer(int key, void *data) {
-    ReadBufferActionInfo *info = (ReadBufferActionInfo *) data;
+    KeyHandler::ReadBuffer *info = (KeyHandler::ReadBuffer *) data;
     int valid = true,
         len = info->buffer->length();    
 
@@ -337,7 +172,7 @@ bool keyHandlerReadBuffer(int key, void *data) {
 
     } else if (key == '\n' || key == '\r') {
         if ((*info->handleBuffer)(info->buffer))
-            eventHandlerPopKeyHandlerData();
+            ;//eventHandler.popKeyHandlerData();
         else
             info->screenX -= info->buffer->length();
     }    
@@ -345,25 +180,24 @@ bool keyHandlerReadBuffer(int key, void *data) {
         valid = false;
     }
 
-    return valid || keyHandlerDefault(key, NULL);
+    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
-void eventHandlerPushMouseAreaSet(MouseArea *mouseAreas) {
+void EventHandler::pushMouseAreaSet(MouseArea *mouseAreas) {
     mouseAreaSets.push_front(mouseAreas);
 }
 
-void eventHandlerPopMouseAreaSet(void) {
+void EventHandler::popMouseAreaSet() {
     if (mouseAreaSets.size())
-        mouseAreaSets.pop_front();    
+        mouseAreaSets.pop_front();
 }
 
 /**
- * Get the currently active mouse area set of the top of the stack.
+ * Get the currently active mouse area set off the top of the stack.
  */
-MouseArea *eventHandlerGetMouseAreaSet() {
+MouseArea* EventHandler::getMouseAreaSet() const {
     if (mouseAreaSets.size())
         return mouseAreaSets.front();
     else
         return NULL;
 }
-
