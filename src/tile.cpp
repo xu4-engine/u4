@@ -284,6 +284,12 @@ bool MapTile::isOpaque() const {
     else return 0;
 }
 
+/**
+ * Is tile a foreground tile (i.e. has transparent parts).
+ */
+bool MapTile::isForeground() const {
+    return TESTBIT(MASK_FOREGROUND);
+}
 
 bool MapTile::canTalkOverTile(MapTile tile) {
     return tile.canTalkOver();

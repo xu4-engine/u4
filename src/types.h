@@ -39,6 +39,12 @@ typedef enum {
     ANIM_FRAMES
 } TileAnimationStyle;
 
+/**
+ * @todo
+ *  <ul> 
+ *      <li>relationship between MapTile, Tile, and TileSet is fuzzy</li>
+ *  </ul>
+ */
 class MapTile {
 public:
     MapTile() : id(0), frame(0) {}
@@ -90,6 +96,7 @@ public:
     TileSpeed getSpeed() const;
     TileEffect getEffect() const;
     bool isOpaque() const;
+    bool isForeground() const;
 
     static bool canTalkOverTile(MapTile tile);
     static bool canAttackOverTile(MapTile tile);

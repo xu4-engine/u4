@@ -29,6 +29,7 @@ class TileRule;
 #define MASK_ATTACKOVER         0x0100
 #define MASK_CANLANDBALLOON     0x0200
 #define MASK_REPLACEMENT        0x0400
+#define MASK_FOREGROUND         0x0800
 
 /* movement masks */
 #define MASK_SWIMABLE           0x0001
