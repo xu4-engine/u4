@@ -21,9 +21,13 @@
 #include "moongate.h"
 #include "player.h"
 #include "screen.h"     /* for spells not implemented yet, should be removable when implemented */
+#include "settings.h"
 #include "ttype.h"
 
-SpellCallback spellCallback = NULL; 
+SpellCallback spellCallback = NULL;
+
+void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxDamage);
+int spellMagicAttackAtCoord(int x, int y, int distance, void *data);
 
 static int spellAwaken(int player);
 static int spellBlink(int dir);
@@ -261,14 +265,89 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
     return 1;
 }
 
-void spellMagicAttack(unsigned char tile, int minDamage, int maxDamage) {
-    int damage = 0;
+/**
+ * Makes a special magic ranged attack in the given direction
+ */
+unsigned char spellMagicAttackTile;
+int spellMagicAttackDamage;
 
-    damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
+void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxDamage) {
+    extern CombatInfo combatInfo;    
+    int focus = combatInfo.focus;    
+    CoordActionInfo *info;
+
+    spellMagicAttackDamage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
         rand() % ((maxDamage + 1) - minDamage) + minDamage :
         maxDamage;
 
-    printf("spell does %d damage\n", damage);
+    spellMagicAttackTile = tile;
+        
+    /* setup the spell */
+    info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
+    info->handleAtCoord = &spellMagicAttackAtCoord;
+    info->origin_x = combatInfo.party[focus]->x;
+    info->origin_y = combatInfo.party[focus]->y;
+    info->prev_x = info->prev_y = -1;
+    info->range = 11;
+    info->validDirections = MASK_DIR_ALL;
+    info->player = focus;        
+    info->blockedPredicate = &tileCanAttackOver;
+    info->blockBefore = 1;
+    info->firstValidDistance = 1;
+    info->dir = MASK_DIR(dir);
+
+    gameDirectionalAction(info);    
+}
+
+int spellMagicAttackAtCoord(int x, int y, int distance, void *data) {
+    int monster;    
+    int i;
+    extern CombatInfo combatInfo;
+    CoordActionInfo* info = (CoordActionInfo*)data;    
+    int oldx = info->prev_x,
+        oldy = info->prev_y;
+    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
+    int focus = combatInfo.focus;    
+    
+    info->prev_x = x;
+    info->prev_y = y;   
+
+    /* Remove the last weapon annotation left behind */
+    if ((distance > 0) && (oldx >= 0) && (oldy >= 0))
+        annotationRemove(oldx, oldy, c->location->z, c->location->map->id, spellMagicAttackTile);
+
+    /* Check to see if we might hit something */
+    if (x != -1 && y != -1) {   
+
+        monster = -1;
+        for (i = 0; i < AREA_MONSTERS; i++) {
+            if (combatInfo.monsters[i] &&
+                combatInfo.monsters[i]->x == x &&
+                combatInfo.monsters[i]->y == y)
+                monster = i;
+        }   
+
+        if (monster == -1) {
+            annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, spellMagicAttackTile));
+            gameUpdateScreen();
+        
+            /* Based on attack speed setting in setting struct, make a delay for
+               the attack annotation */
+            if (attackdelay > 0)
+                eventHandlerSleep(attackdelay * 2);
+
+            return 0;
+        }
+        else {
+            /* show the 'hit' tile */
+            attackFlash(x, y, spellMagicAttackTile, 1);
+
+            /* apply the damage to the monster */
+            combatApplyDamageToMonster(monster, spellMagicAttackDamage, focus);
+        }
+    }
+
+    return 1;
 }
 
 static int spellAwaken(int player) {
@@ -397,8 +476,7 @@ static int spellEField(int dir) {
 }
 
 static int spellFireball(int dir) {
-    spellMagicAttack(HITFLASH_TILE, 24, 128);
-    screenMessage("\nNot implemented yet!\n\n");
+    spellMagicAttack(HITFLASH_TILE, (Direction)dir, 24, 128);    
     return 1;
 }
 
@@ -422,8 +500,7 @@ static int spellHeal(int player) {
 }
 
 static int spellIceball(int dir) {
-    spellMagicAttack(MAGICFLASH_TILE, 32, 224);
-    screenMessage("\nNot implemented yet!\n\n");
+    spellMagicAttack(MAGICFLASH_TILE, (Direction)dir, 32, 224);    
     return 1;
 }
 
@@ -434,7 +511,7 @@ static int spellJinx(int unused) {
 }
 
 static int spellKill(int dir) {
-    spellMagicAttack(140, 0, 232);
+    spellMagicAttack(WHIRLPOOL_TILE, (Direction)dir, 255, 255);
     return 1;
 }
 
@@ -444,7 +521,7 @@ static int spellLight(int unused) {
 }
 
 static int spellMMissle(int dir) {
-    spellMagicAttack(MISSFLASH_TILE, 64, 16);
+    spellMagicAttack(MISSFLASH_TILE, (Direction)dir, 64, 16);
     return 1;
 }
 
