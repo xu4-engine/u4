@@ -72,7 +72,7 @@ int movePartyMember(Direction dir, int member);
 void combatBegin(unsigned char partytile, unsigned short transport, Object *monster) {
     int i, j;
     int nmonsters;
-    Monster *m = (monster->objType == OBJECT_MONSTER) ? monster->monster : monsterForTile(monster->tile);
+    const Monster *m = (monster->objType == OBJECT_MONSTER) ? monster->monster : monsterForTile(monster->tile);
 
     monsterObj = monster;
 
@@ -236,8 +236,13 @@ void combatFinishTurn() {
 
             focus = 0;
             if (combatIsLost()) {
-                if (!playerPartyDead(c->saveGame))
-                    playerAdjustKarma(c->saveGame, KA_FLED);
+                if (!playerPartyDead(c->saveGame)) {
+                    if (monsterIsGood(monsterForTile(monsterObj->tile)))
+                        playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
+                    else
+                        playerAdjustKarma(c->saveGame, KA_FLED_EVIL);
+                }
+
                 eventHandlerPopKeyHandler();
                 combatEnd();
                 return;
@@ -573,7 +578,7 @@ int combatIsLost() {
 
 void combatEnd() {
     
-    Monster *m = (monsterObj->objType == OBJECT_MONSTER) ? monsterObj->monster : monsterForTile(monsterObj->tile);
+    const Monster *m = (monsterObj->objType == OBJECT_MONSTER) ? monsterObj->monster : monsterForTile(monsterObj->tile);
     gameExitToParentMap(c);
     
     if (combatIsWon()) {
@@ -675,6 +680,11 @@ void combatMoveMonsters() {
             if (moveCombatObject(action, c->location->map, combat_monsters[i], party[target]->x, party[target]->y)) {
                 if (MAP_IS_OOB(c->location->map, (int)combat_monsters[i]->x, (int)combat_monsters[i]->y)) {
                     screenMessage("\n%s Flees!\n", m->name);
+                    
+                    /* Congrats, you have a heart! */
+                    if (monsterIsGood(combat_monsters[i]->monster))
+                        playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
+
                     mapRemoveObject(c->location->map, combat_monsters[i]);
                     combat_monsters[i] = NULL;
                 }

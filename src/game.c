@@ -1238,10 +1238,13 @@ int attackAtCoord(int x, int y, int distance, void *data) {
             m = monsterForTile(temp->tile);
             if (m && (m->id == GUARD_ID))
                 temp->movement_behavior = MOVEMENT_ATTACK_AVATAR;
-        }
-
-        /* FIXME: I'm sure there are karma implications here */
+        }       
     }
+
+    /* not good karma to be killing the innocent.  Bad avatar! */
+    m = monsterForTile(obj->tile);
+    if (monsterIsGood(m))
+        playerAdjustKarma(c->saveGame, KA_ATTACKED_GOOD);
 
     combatBegin(ground, c->saveGame->transport, obj);
     return 1;

@@ -193,22 +193,22 @@ void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
     case KA_BAD_MANTRA:
         newKarma[VIRT_SPIRITUALITY] -= 3;
         break;
-    case KA_ATTACKED_NONEVIL:
+    case KA_ATTACKED_GOOD:
         newKarma[VIRT_COMPASSION] -= 5;
-        newKarma[VIRT_JUSTICE] -= 3;
-        newKarma[VIRT_HONOR] -= 3;
+        newKarma[VIRT_JUSTICE] -= 5;
+        newKarma[VIRT_HONOR] -= 5;
         break;
-    case KA_FLED:
+    case KA_FLED_EVIL:
         newKarma[VIRT_VALOR] -= 2;
         newKarma[VIRT_SACRIFICE] -= 2;
         break;
     case KA_KILLED_EVIL:
         newKarma[VIRT_VALOR] += rand() % 2; /* gain one valor half the time, zero the rest */
         break;
-    case KA_SPARED_NONEVIL:
+    case KA_SPARED_GOOD:        
         newKarma[VIRT_COMPASSION]++;
         newKarma[VIRT_JUSTICE]++;
-        break;
+        break;    
     case KA_DONATED_BLOOD:
         newKarma[VIRT_SACRIFICE] += 5;
         break;
@@ -221,6 +221,7 @@ void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
         newKarma[VIRT_HONOR] -= 10;
         break;
     case KA_DIDNT_CHEAT_REAGENTS:
+        timeLimited = 1;
         newKarma[VIRT_HONESTY] += 2;
         newKarma[VIRT_JUSTICE] += 2;
         newKarma[VIRT_HONOR] += 2;
