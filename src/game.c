@@ -2125,8 +2125,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
 int gameGetChest(int player) {
     Object *obj;
     unsigned char tile, newTile;
-    int x, y, z, tx, ty;
-    Direction d;
+    int x, y, z;    
     
     locationGetCurrentPosition(c->location, &x, &y, &z);
     tile = (*c->location->tileAt)(c->location->map, x, y, z, WITH_OBJECTS);
