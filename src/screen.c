@@ -185,6 +185,21 @@ void screenFindLineOfSight() {
     if (c == NULL)
         return;
 
+    /*
+     * if the map has the no line of sight flag, all is visible
+     */
+    if (c->map->flags & NO_LINE_OF_SIGHT) {
+        for (y = 0; y < VIEWPORT_H; y++) {
+            for (x = 0; x < VIEWPORT_W; x++) {
+                screenLos[x][y] = 1;
+            }
+        }
+        return;
+    }
+
+    /*
+     * otherwise calculate it from the map data
+     */
     for (y = 0; y < VIEWPORT_H; y++) {
         for (x = 0; x < VIEWPORT_W; x++) {
             screenLos[x][y] = 0;

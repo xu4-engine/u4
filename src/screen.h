@@ -19,6 +19,7 @@ typedef enum {
 } BackgroundType;
 
 void screenInit(const char *screenScale, int fullScreen);
+void screenDelete();
 void screenFixIntroScreen(const unsigned char *sigData);
 int screenLoadIntroAnimations();
 void screenFreeIntroAnimations();

@@ -91,7 +91,6 @@ void screenInit(const char *screenScale, int fullScreen) {
 	fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
 	exit(1);
     }
-    atexit(SDL_Quit);
 
     screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (fullScreen ? SDL_FULLSCREEN : 0));
     if (!screen) {
@@ -111,6 +110,13 @@ void screenInit(const char *screenScale, int fullScreen) {
     }
 
     SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL); 
+}
+
+void screenDelete() {
+    SDL_FreeSurface(bkgds[BKGD_BORDERS]);
+    SDL_FreeSurface(tiles);
+    SDL_FreeSurface(charset);
+    SDL_Quit();
 }
 
 /**
@@ -262,8 +268,10 @@ int screenLoadIntroAnimations() {
 void screenFreeIntroAnimations() {
     unsigned int i;
 
-    for (i = 0; i < sizeof(introAnimations) / sizeof(introAnimations[0]); i++)
+    for (i = 0; i < sizeof(introAnimations) / sizeof(introAnimations[0]); i++) {
         SDL_FreeSurface(introAnimations[i]);
+        introAnimations[i] = NULL;
+    }
 }
 
 void screenFreeIntroBackgrounds() {
