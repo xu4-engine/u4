@@ -14,7 +14,7 @@
 #include "context.h"
 #include "savegame.h"
 
-int screenCycle = 0;
+int screenCurrentCycle = 0;
 int screenCursorX = 0;
 int screenCursorY = 0;
 int screenCursorStatus = 0;
@@ -98,17 +98,14 @@ void screenUpdate() {
     screenUpdateMoons();
 }
 
-void screenAnimate() {
-    if (++screenCycle >= SCR_CYCLE_MAX)
-        screenCycle = 0;
-
-    if (screenCycle % 2 == 1)
-        screenUpdateCursor(screenCycle * 4 / SCR_CYCLE_MAX);
-    screenUpdate();
-    screenForceRedraw();
+void screenCycle() {
+    if (++screenCurrentCycle >= SCR_CYCLE_MAX)
+        screenCurrentCycle = 0;
 }
 
-void screenUpdateCursor(int phase) {
+void screenUpdateCursor() {
+    int phase = screenCurrentCycle * 4 / SCR_CYCLE_MAX;
+
     if (screenCursorStatus)
         screenShowChar(31 - phase, screenCursorX, screenCursorY);
 }
@@ -130,7 +127,7 @@ void screenUpdateMoons() {
 
 void screenEnableCursor() {
     if (!screenCursorStatus)
-        screenUpdateCursor(screenCycle * 4 / SCR_CYCLE_MAX);
+        screenUpdateCursor();
     screenCursorStatus = 1;
 }
 
