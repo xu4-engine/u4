@@ -9,8 +9,7 @@
 #include <libxml/xmlmemory.h>
 
 xmlDocPtr xmlParse(const char *filename);
-int xmlPropExists(xmlNodePtr node, const char *name);
-char *xmlGetPropAsStr(xmlNodePtr node, const char *name);
+bool xmlPropExists(xmlNodePtr node, const char *name);
 std::string xmlGetPropAsString(xmlNodePtr node, const char *name);
 int xmlGetPropAsBool(xmlNodePtr node, const char *name);
 int xmlGetPropAsInt(xmlNodePtr node, const char *name);

@@ -90,21 +90,12 @@ void xmlAccumError(void *l, const char *fmt, ...) {
     errorMessage->append(buffer);
 }
 
-int xmlPropExists(xmlNodePtr node, const char *name) {
-    return (xmlGetPropAsStr(node, name) != NULL) ? 1 : 0;
-}
-
-char *xmlGetPropAsStr(xmlNodePtr node, const char *name) {
-    xmlChar *prop;
-
-    if (settings.validateXml && !xmlHasProp(node, (const xmlChar *)name))
-        return NULL;
-    
-    prop = xmlGetProp(node, (const xmlChar *)name);
-    if (!prop)
-        return NULL;
-    
-    return (char *)prop;
+bool xmlPropExists(xmlNodePtr node, const char *name) {
+    xmlChar *prop = xmlGetProp(node, (const xmlChar *)name);
+    bool exists = (prop != NULL);
+    if (prop)
+        xmlFree(prop);
+    return exists;
 }
 
 string xmlGetPropAsString(xmlNodePtr node, const char *name) {
