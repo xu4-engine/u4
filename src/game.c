@@ -288,9 +288,14 @@ void gameLostEighth(Virtue virtue) {
 }
 
 void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
-    screenMessage("\n\n%s\nThou art now Level %d", player->name, playerGetRealLevel(player));
+    screenMessage("\n\n%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
 
-    /* FIXME: special effect here */
+    /* special effect FIXME: needs sound */
+    gameUpdateScreen();
+    screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
+    screenRedrawMapArea();
+    eventHandlerSleep(2000);
+
     statsUpdate();
 }
 
@@ -1974,7 +1979,7 @@ void gameCheckBridgeTrolls() {
 
     screenMessage("\nBridge Trolls!\n");
 
-    combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel), c->saveGame->transport, 
+    combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel), c->saveGame->transport,
                 mapAddObject(c->map, TROLL_TILE, TROLL_TILE, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel));
 }
 
@@ -1995,6 +2000,10 @@ void gameCheckSpecialMonsters(Direction dir) {
         { 228, 222, DIR_NORTH } /* N'O" O'E" */
     };
 
+    /*
+     * if heading east into pirates cove (O'A" N'N"), generate pirate
+     * ships
+     */
     if (dir == DIR_EAST &&
         c->saveGame->x == 0xdd &&
         c->saveGame->y == 0xe0) {
@@ -2006,11 +2015,16 @@ void gameCheckSpecialMonsters(Direction dir) {
         }
     }
 
+    /*
+     * if heading south towards the shrine of humility, generate
+     * daemons unless horn has been blown
+     */
     if (dir == DIR_SOUTH &&
         c->saveGame->x >= 229 &&
         c->saveGame->x < 234 &&
         c->saveGame->y >= 212 &&
-        c->saveGame->y < 217) {
+        c->saveGame->y < 217 &&
+        c->aura != AURA_HORN) {
         for (i = 0; i < 8; i++) {
             obj = mapAddObject(c->map, DAEMON_TILE, DAEMON_TILE, 231, c->saveGame->y + 1, c->saveGame->dnglevel);
             obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
