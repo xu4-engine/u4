@@ -10,6 +10,9 @@
 #import "SDLMain.h"
 #import <sys/param.h> /* for MAXPATHLEN */
 #import <unistd.h>
+#import <sys/types.h>
+#import <sys/stat.h>
+#import <errno.h>
 
 /* Use this flag to determine whether we use SDLMain.nib or not */
 #define		SDL_USE_NIB_FILE	0
@@ -251,6 +254,10 @@ void CustomApplicationMain (argc, argv)
 /* Main entry point to executable - should *not* be SDL_main! */
 int main (int argc, char **argv)
 {
+    struct stat sb;
+    mode_t mask;
+    char *dirname, *home;
+    int result;
 
     /* Copy the arguments into a global variable */
     int i;
@@ -268,6 +275,29 @@ int main (int argc, char **argv)
     for (i = 0; i < gArgc; i++)
         gArgv[i] = argv[i];
     gArgv[i] = NULL;
+
+    /**
+     * On the first run, the directory for user files must be created.
+     * This code checks if it has been created, and creates it if not.
+     */
+    home = getenv("HOME");
+    if (home && home[0]) {
+        dirname = (char *) malloc(strlen(home) +
+        strlen(MACOSX_USER_FILES_PATH) + 1);
+        strcpy(dirname, home);
+        strcat(dirname, MACOSX_USER_FILES_PATH);
+
+        /* Check if directory exists */
+        result = stat(dirname, &sb);
+        if ((result != 0) && (errno == ENOENT)) {
+            /* Doesn't exist. Create it */
+            mask = umask(0); /* Get current umask */
+            umask(mask); /* Restore old umask */
+            mkdir(dirname, S_IRWXU | mask);
+        }
+
+        free(dirname);
+    }
 
 #if SDL_USE_NIB_FILE
     [SDLApplication poseAsClass:[NSApplication class]];
