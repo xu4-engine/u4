@@ -121,7 +121,7 @@ typedef enum {
     RUNE_SACRIFICE    = 0x10,
     RUNE_HONOR        = 0x20,
     RUNE_SPIRITUALITY = 0x40,
-    RUNE_BLACK        = 0x80
+    RUNE_HUMILITY     = 0x80
 } Rune;
 
 typedef struct {
