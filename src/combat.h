@@ -13,6 +13,7 @@
 #include "creature.h"
 #include "movement.h"
 #include "object.h"
+#include "observer.h"
 #include "player.h"
 #include "savegame.h"
 #include "types.h"
@@ -35,11 +36,12 @@ typedef enum {
 /**
  * CombatController class
  */ 
-class CombatController : public Controller {
+class CombatController : public Controller, public Observer<Party *, PartyEvent &> {
 public:
     CombatController();
     CombatController(class CombatMap *m);
     CombatController(MapId id);
+    virtual ~CombatController();
 
     // Accessor Methods    
     bool          isCamping() const;
@@ -91,6 +93,8 @@ public:
     virtual bool keyPressed(int key);
     static bool chooseWeaponRange(int key, void *data);
     static bool chooseWeaponDir(int key, void *data);
+
+    virtual void update(Party *party, PartyEvent &event);
 
     // Properties
 protected:

@@ -62,14 +62,22 @@ CombatMap *getCombatMap(Map *punknown) {
 /**
  * CombatController class implementation
  */
-CombatController::CombatController() {}
+CombatController::CombatController() {
+    c->party->addObserver(this);
+}
 CombatController::CombatController(CombatMap *m) {
     map = m;
     gameSetMap(map, true, NULL);    
+    c->party->addObserver(this);
 }
 CombatController::CombatController(MapId id) {
     map = getCombatMap(mapMgr->get(id));
     gameSetMap(map, true, NULL);
+    c->party->addObserver(this);
+}
+
+CombatController::~CombatController() {
+    c->party->deleteObserver(this);
 }
 
 // Accessor Methods    
@@ -1186,6 +1194,12 @@ bool CombatController::chooseWeaponDir(int key, void *data) {
     
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
+
+void CombatController::update(Party *party, PartyEvent &event) {
+    if (event.type == PartyEvent::PLAYER_KILLED)
+        screenMessage("%s is Killed!\n", event.player->getName().c_str());
+}
+
 
 /**
  * CombatMap class implementation
