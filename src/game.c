@@ -27,6 +27,7 @@
 #include "music.h"
 
 void gameFinishTurn(void);
+int gameCanMoveOntoTile(const Map *map, int x, int y);
 int moveAvatar(int dx, int dy);
 int attackAtCoord(int x, int y);
 int castForPlayer(int player);
@@ -46,6 +47,24 @@ int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 
 int collisionOverride = 0;
+
+void gameSetMap(Context *ct, Map *map) {
+    int i;
+
+    ct->map = map;
+    ct->map->annotation = NULL;
+    ct->saveGame->dngx = ct->parent->saveGame->x;
+    ct->saveGame->dngy = ct->parent->saveGame->y;
+    ct->saveGame->x = map->startx;
+    ct->saveGame->y = map->starty;
+
+    if (map->city) {
+        for (i = 0; i < map->city->n_persons; i++) {
+            if (map->city->persons[i].tile0 != 0)
+                mapAddPersonObject(map, &(map->city->persons[i]));
+        }
+    }
+}
 
 /**
  * Terminates a game turn.  This performs the post-turn housekeeping
@@ -94,6 +113,7 @@ void gameFinishTurn() {
  */
 int gameBaseKeyHandler(int key, void *data) {
     int valid = 1;
+    Object *obj;
     const Portal *portal;
     DirectedActionInfo *info;
     GetChoiceActionInfo *choiceInfo;
@@ -139,6 +159,16 @@ int gameBaseKeyHandler(int key, void *data) {
         screenMessage("Attack\nDir: ");
         break;
 
+    case 'b':
+        obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y);
+        if (obj && tileIsShip(obj->tile)) {
+            c->saveGame->transport = obj->tile;
+            mapRemoveObject(c->map, obj);
+            screenMessage("Board Ship\n");
+        } else
+            screenMessage("Board What?\n");
+        break;
+
     case 'c':
         eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, &castForPlayer);
         screenMessage("Cast Spell!\nPlayer: ");
@@ -161,16 +191,11 @@ int gameBaseKeyHandler(int key, void *data) {
             Context *new = (Context *) malloc(sizeof(Context));
             new->parent = c;
             new->saveGame = c->saveGame;
-            new->map = portal->destination;
-            new->annotation = NULL;
-            new->saveGame->dngx = new->parent->saveGame->x;
-            new->saveGame->dngy = new->parent->saveGame->y;
-            new->saveGame->x = new->map->startx;
-            new->saveGame->y = new->map->starty;
             new->col = new->parent->col;
             new->line = new->parent->line;
             new->statsItem = new->parent->statsItem;
             new->moonPhase = new->parent->moonPhase;
+            gameSetMap(new, portal->destination);
             c = new;
 
             if (c->map->city) {
@@ -279,6 +304,15 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'w':
         eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, &wearForPlayer);
         screenMessage("Wear Armor\nfor: ");
+        break;
+
+    case 'x':
+        if (tileIsShip(c->saveGame->transport)) {
+            mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
+            c->saveGame->transport = 0x1f;
+            screenMessage("X-it Ship\n");
+        } else
+            screenMessage("X-it What?\n");
         break;
 
     case 'y':
@@ -494,6 +528,11 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     eventHandlerPopKeyHandler();
 
     switch (key) {
+    case 'b':
+        if (mapIsWorldMap(c->map))
+            mapAddObject(c->map, 0x10, 0x10, 88, 109);
+        screenMessage("Boat created!\n\020");
+        break;
     case 'c':
         collisionOverride = !collisionOverride;
         screenMessage("Collision detection %s!\n\020", collisionOverride ? "off" : "on");
@@ -506,7 +545,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             c->saveGame->weapons[i] = 8;
         break;
     case 'h':
-        screenMessage("Help:\nc - Collision\ne - Equipment\nh - Help\ni - Items\nk - Show Karma\nm - Mixtures\nr - Reagents\n\020");
+        screenMessage("Help:\nb - Boat\nc - Collision\ne - Equipment\nh - Help\ni - Items\nk - Show Karma\nm - Mixtures\nr - Reagents\n\020");
         break;
     case 'i':
         screenMessage("Items!\n\020");
@@ -957,6 +996,32 @@ int wearForPlayer2(int armor, void *data) {
 }
 
 /**
+ * Returns true if moving onto the given coordinate is possible,
+ * taking into account the current party transport (on foot, ship,
+ * horse, etc.). 
+ */
+int gameCanMoveOntoTile(const Map *map, int x, int y) {
+    unsigned char tile;
+    Object *obj;
+
+    /* if an object is on the map tile in question, check it instead */
+    if ((obj = mapObjectAt(map, x, y)) != NULL)
+        tile = obj->tile;
+    else
+        tile = mapTileAt(map, x, y);
+
+    /* if the party in is a ship, check sailable, otherwise walkable */
+    if (tileIsShip(c->saveGame->transport)) {
+        if (!tileIsSailable(tile))
+            return 0;
+    }
+    else if (!tileIsWalkable(tile))
+        return 0;
+
+    return 1;
+}
+
+/**
  * Attempt to move the avatar.  The number of tiles to move is given
  * by dx (horizontally) and dy (vertically); negative indicates
  * right/down, positive indicates left/up.  Returns zero if the avatar
@@ -964,6 +1029,25 @@ int wearForPlayer2(int armor, void *data) {
  */
 int moveAvatar(int dx, int dy) {
     int newx, newy;
+
+    if (tileIsShip(c->saveGame->transport)) {
+        if (dx < 0 && tileGetDirection(c->saveGame->transport) != DIR_WEST) {
+            tileSetDirection(&c->saveGame->transport, DIR_WEST);
+            return 1;
+        }
+        if (dx > 0 && tileGetDirection(c->saveGame->transport) != DIR_EAST) {
+            tileSetDirection(&c->saveGame->transport, DIR_EAST);
+            return 1;
+        }
+        if (dy < 0 && tileGetDirection(c->saveGame->transport) != DIR_NORTH) {
+            tileSetDirection(&c->saveGame->transport, DIR_NORTH);
+            return 1;
+        }
+        if (dy > 0 && tileGetDirection(c->saveGame->transport) != DIR_SOUTH) {
+            tileSetDirection(&c->saveGame->transport, DIR_SOUTH);
+            return 1;
+        }
+    }
 
     newx = c->saveGame->x + dx;
     newy = c->saveGame->y + dy;
@@ -984,6 +1068,8 @@ int moveAvatar(int dx, int dy) {
 	case BORDER_EXIT2PARENT:
 	    if (c->parent != NULL) {
 		Context *t = c;
+                annotationClear();
+                mapClearObjects(c->map);
                 c->parent->saveGame->x = c->saveGame->dngx;
                 c->parent->saveGame->y = c->saveGame->dngy;
                 c->parent->line = c->line;
@@ -1005,10 +1091,9 @@ int moveAvatar(int dx, int dy) {
     }
 
     if (!collisionOverride) {
-        if (!tileIsWalkable(mapTileAt(c->map, newx, newy)))
+        if (!gameCanMoveOntoTile(c->map, newx, newy))
             return 0;
-        if (mapPersonAt(c->map, newx, newy))
-            return 0;
+
         /* 
          * special cases for tile 0x0e: the center tile of the castle
          * of lord british, which is walkable from the south only
