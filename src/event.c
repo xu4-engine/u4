@@ -172,7 +172,6 @@ void eventHandlerPopKeyHandler() {
 /**
  * Eliminate all key handlers and begin stack with new handler
  */
-
 void eventHandlerSetKeyHandler(KeyHandler kh) {
     while (keyHandlerHead)
         eventHandlerPopKeyHandler();

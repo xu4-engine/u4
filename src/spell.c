@@ -57,6 +57,20 @@ static int spellZdown(int unused);
 #define NIGHTSHADE (1 << REAG_NIGHTSHADE)
 #define MANDRAKE (1 << REAG_MANDRAKE)
 
+/* spell error messages */
+static const struct {
+    SpellCastError err;
+    const char *msg;
+} spellErrorMsgs[] = {
+    { CASTERR_NOMIX, "None Mixed!\n" },        
+    { CASTERR_MPTOOLOW, "Not Enough MP!\n" },
+    { CASTERR_FAILED, "Failed!\n" },
+    { CASTERR_WRONGCONTEXT, "Not here!\nFailed!\n" },
+    { CASTERR_COMBATONLY, "Combat only!\nFailed!\n" },
+    { CASTERR_DUNGEONONLY, "Dungeon only!\nFailed!\n" },
+    { CASTERR_WORLDMAPONLY, "World map only!\nFailed!\n" }
+};
+
 const Spell spells[] = {
     { "Awaken",       GINSENG | GARLIC,         CTX_ANY,      &spellAwaken,  SPELLPRM_PLAYER,  5 },
     { "Blink",        SILK | MOSS,              CTX_WORLDMAP, &spellBlink,   SPELLPRM_DIR,     15 },
@@ -130,6 +144,41 @@ const char *spellGetName(unsigned int spell) {
     return spells[spell].name;
 }
 
+int spellGetRequiredMP(unsigned int spell) {
+    ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
+    
+    return spells[spell].mp;
+}
+
+int spellGetContext(unsigned int spell) {
+    ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
+
+    return spells[spell].context;
+}
+
+const char *spellGetErrorMessage(unsigned int spell, SpellCastError error) {
+    int i;
+    SpellCastError err = error;
+
+    /* try to find a more specific error message */
+    if (err == CASTERR_WRONGCONTEXT) {
+        switch(spells[spell].context) {
+            case CTX_COMBAT: err = CASTERR_COMBATONLY; break;
+            case CTX_DUNGEON: err = CASTERR_DUNGEONONLY; break;
+            case CTX_WORLDMAP: err = CASTERR_WORLDMAPONLY; break;
+            default: break;
+        }
+    }
+
+    /* find the message that we're looking for and return it! */
+    for (i = 0; i < sizeof(spellErrorMsgs) / sizeof(spellErrorMsgs[0]); i++) {
+        if (err == spellErrorMsgs[i].err)
+            return spellErrorMsgs[i].msg;
+    }
+
+    return NULL;
+}
+
 /**
  * Mix reagents for a spell.  Fails and returns false if the reagents
  * selected were not correct.
@@ -182,7 +231,7 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
      * implemented 
      */    
     if ((c->location->context & spells[spell].context) == 0) {
-        *error = CASTERR_WRONGCONTEXT;
+        *error = CASTERR_WRONGCONTEXT;        
         return 0;
     }
 

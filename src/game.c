@@ -428,32 +428,10 @@ void gameSpellEffect(unsigned int spell, int player) {
 void gameCastSpell(unsigned int spell, int caster, int param) {
     SpellCastError spellError;
     int i;
-    const char *msg = NULL;
-    static const struct {
-        SpellCastError err;
-        const char *msg;
-    } errorMsgs[] = {
-        { CASTERR_NOMIX, "None Mixed!\n" },        
-        { CASTERR_MPTOOLOW, "Not Enough MP!\n" },
-        { CASTERR_FAILED, "Failed!\n" }
-    };
+    const char *msg = NULL;    
 
-    if (!spellCast(spell, caster, param, &spellError, 1)) {
-        if (spellError == CASTERR_WRONGCONTEXT) {
-            extern Spell spells[];
-            switch(spells[spell].context) {
-            case CTX_WORLDMAP: screenMessage("World map only!\n"); break;
-            case CTX_COMBAT: screenMessage("Combat only!\n"); break;
-            case CTX_DUNGEON: screenMessage("Dungeon only!\n"); break;
-            default: screenMessage("Not here!\n"); break;
-            }
-        }
-        else for (i = 0; i < sizeof(errorMsgs) / sizeof(errorMsgs[0]); i++) {
-            if (spellError == errorMsgs[i].err) {
-                msg = errorMsgs[i].msg;
-                break;
-            }
-        }
+    if (!spellCast(spell, caster, param, &spellError, 1)) {        
+        msg = spellGetErrorMessage(spell, spellError);
         if (msg)
             screenMessage(msg);
     }
@@ -1323,14 +1301,24 @@ int castForPlayer(int player) {
     return 1;
 }
 
-int castForPlayer2(int spell, void *data) {
+int castForPlayer2(int spell, void *data) {        
+    const char *errorMsg = NULL;
     castSpell = spell;
 
-    screenMessage("%s!\n", spellGetName(spell));
+    screenMessage("%s!\n", spellGetName(spell));    
 
     c->statsItem = STATS_PARTY_OVERVIEW;
     statsUpdate();
 
+    /* If we can't really cast this spell, skip the extra parameters */
+    if ((spellGetRequiredMP(spell) > c->saveGame->players[castPlayer].mp) || /* not enough mp */
+        ((spellGetContext(spell) & c->location->context) == 0) ||            /* wrong context */
+        (c->saveGame->mixtures[spell] == 0)) {                               /* none mixed! */
+        gameCastSpell(castSpell, castPlayer, 0);
+        return 1;
+    }
+        
+    /* Get the final parameters for the spell */
     switch (spellGetParamType(spell)) {
     case SPELLPRM_NONE:
         gameCastSpell(castSpell, castPlayer, 0);
@@ -1352,7 +1340,7 @@ int castForPlayer2(int spell, void *data) {
         screenMessage("From Dir: ");
         eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir);
         break;
-    }
+    }    
 
     return 1;
 }

@@ -11,10 +11,14 @@
 
 typedef enum {
     CASTERR_NOERROR,            /* success */
-    CASTERR_NOMIX,              /* no mixture available */
-    CASTERR_WRONGCONTEXT,       /* e.g. spell must be cast in combat */
+    CASTERR_NOMIX,              /* no mixture available */    
     CASTERR_MPTOOLOW,           /* caster doesn't have enough mp */
-    CASTERR_FAILED              /* the spell failed */
+    CASTERR_FAILED,             /* the spell failed */
+    CASTERR_WRONGCONTEXT,       /* generic 'wrong-context' error (generrally finds the correct
+                                   context error message on its own) */
+    CASTERR_COMBATONLY,         /* e.g. spell must be cast in combat */
+    CASTERR_DUNGEONONLY,        /* e.g. spell must be cast in dungeons */
+    CASTERR_WORLDMAPONLY,       /* e.g. spell must be cast on the world map */
 } SpellCastError;
 
 typedef enum {
@@ -54,6 +58,9 @@ void mixtureDelete(Mixture *mix);
 int mixtureAddReagent(Mixture *mix, Reagent reagent);
 void mixtureRevert(Mixture *mix);
 const char *spellGetName(unsigned int spell);
+int spellGetRequiredMP(unsigned int spell);
+int spellGetContext(unsigned int spell);
+const char *spellGetErrorMessage(unsigned int spell, SpellCastError error);
 int spellMix(unsigned int spell, const Mixture *mix);
 SpellParam spellGetParamType(unsigned int spell);
 int spellCast(unsigned int spell, int character, int param, SpellCastError *error, int spellEffect);
