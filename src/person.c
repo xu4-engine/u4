@@ -65,11 +65,11 @@ int chars_needed(const char *s, int columnmax, int linesdesired);
 Reply *replyNew(const char *text) {
     static const char paragraphBreak[] = "\n\n";
     Reply *reply;
-    char *ptr;
+    const char *ptr;
     int i;
     int offset;
 
-    reply = (Reply *) malloc(sizeof(Reply));    
+    reply = (Reply *) malloc(sizeof(Reply));
 
     /*
      * find the first paragraph break, after skipping over any initial
@@ -86,12 +86,12 @@ Reply *replyNew(const char *text) {
         ptr = text + offset;
         ptr += chars_needed(text + offset, 16, 11);
     }
-    
+
     /*
      * don't split up reply if less than a screenful or can't find a
      * paragraph break
      */
-    if (linecount(text, 16) < 12) {        
+    if (linecount(text, 16) < 12) {
         reply->nchunks = 1;
         reply->chunk = (char **) malloc(sizeof(char *) * reply->nchunks);
         reply->chunk[0] = strdup(text);
@@ -103,9 +103,9 @@ Reply *replyNew(const char *text) {
      */
     else {
         Reply *tmp = replyNew(ptr);
-        
+
         /* +1 so that the cursor is a line below the continuous text */
-        int len = ptr - text + 1;        
+        int len = ptr - text + 1;
         if (*(text+len)!='\n') len--; // If there is no break point, then just display normally
 
         reply->nchunks = tmp->nchunks + 1;
@@ -140,14 +140,13 @@ void replyDelete(Reply *reply) {
  */
 int personInit() {
     FILE *avatar;
-    int i;
 
     avatar = u4fopen("avatar.exe");
     if (!avatar)
         return 0;
 
     lbKeywords = u4read_stringtable(avatar, 87581, 24);
-    lbText = u4read_stringtable(avatar, 87754, 24);    
+    lbText = u4read_stringtable(avatar, 87754, 24);
 
     hawkwindText = u4read_stringtable(avatar, 74729, 53);
 
@@ -163,7 +162,7 @@ int personIsVendor(const Person *person) {
 }
 
 Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
-    char *text;    
+    char *text;
     Reply *reply;
 
     /*
@@ -450,20 +449,19 @@ char *beggarGetQuantityResponse(Conversation *cnv, const char *response) {
 }
 
 void lordBritishCheckLevels(Conversation *cnv) {
-    int i;    
+    int i;
 
     for (i = 0; i < c->saveGame->members; i++) {
         if (playerGetRealLevel(&c->saveGame->players[i]) <
             playerGetMaxLevel(&c->saveGame->players[i]))
-            playerAdvanceLevel(&c->saveGame->players[i]);        
+            playerAdvanceLevel(&c->saveGame->players[i]);
     }
 }
 
 char *lordBritishGetIntro(Conversation *cnv) {
     char *intro;
-    int i;
 
-    musicLordBritish();    
+    musicLordBritish();
 
     if (c->saveGame->lbintro) {
         if (c->saveGame->members == 1)
@@ -475,14 +473,14 @@ char *lordBritishGetIntro(Conversation *cnv) {
         else
             screenMessage("\n\n\nLord British\nsays:  Welcome\n%s and thy\nworthy\nAdventurers!",
                            c->saveGame->players[0].name);
-        
+
         // Check levels here, just like the original!
         lordBritishCheckLevels(cnv);
 
         intro = strdup("\nWhat would thou\nask of me?\n");
     }
 
-    else {        
+    else {
         intro = concat("\n\n\nLord British rises and says: At long last!\n",
                        c->saveGame->players[0].name,
                        " thou hast come!  We have waited such a long, long time...\n\n",
