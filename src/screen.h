@@ -51,7 +51,7 @@ struct _Image;
 #define BKGD_TRUTH "truth"
 #define BKGD_LOVE "love"
 #define BKGD_COURAGE "courage"
-#define BKGD_STONCRCL "stonecrl"
+#define BKGD_STONCRCL "stoncrcl"
 #define BKGD_RUNE_INF "rune0"
 #define BKGD_SHRINE_HON "rune1"
 #define BKGD_SHRINE_COM "rune2"
