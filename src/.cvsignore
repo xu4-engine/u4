@@ -1,10 +1,8 @@
 .depends
 dumpsavegame
 u4
-lzwenc
-lzwdec
-rleenc
-rledec
+u4enc
+u4dec
 coord
 tlkconv
 party.sav
