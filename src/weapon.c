@@ -12,7 +12,7 @@
 #define MASK_LOSE               0x0001
 #define MASK_LOSEWHENRANGED     0x0002
 #define MASK_CHOOSEDISTANCE     0x0004
-#define MASK_ALWAYSHIT          0x0008
+#define MASK_ALWAYSHITS         0x0008
 #define MASK_MAGIC              0x0010
 #define MASK_LEAVETILE          0x0020
 
@@ -31,7 +31,7 @@ void weaponLoadInfoFromXml() {
         { "lose", MASK_LOSE },
         { "losewhenranged", MASK_LOSEWHENRANGED },
         { "choosedistance", MASK_CHOOSEDISTANCE },
-        { "alwayshit", MASK_ALWAYSHIT },
+        { "alwayshits", MASK_ALWAYSHITS },
         { "magic", MASK_MAGIC }        
     };
 
@@ -180,10 +180,10 @@ int weaponGetMissTile(int weapon) {
  * Returns true if the weapon always hits it's target
  */
 
-int weaponAlwaysHit(int weapon) {
+int weaponAlwaysHits(int weapon) {
     weaponLoadInfoFromXml();
 
-    return weapons[weapon].mask & MASK_ALWAYSHIT;
+    return weapons[weapon].mask & MASK_ALWAYSHITS;
 }
 
 /**

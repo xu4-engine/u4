@@ -619,7 +619,7 @@ int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, i
  * Determine whether a players attack hits or not.
  */
 int playerAttackHit(const SaveGamePlayerRecord *player) {   
-    if (weaponAlwaysHit(player->weapon) || player->dex >= 40)
+    if (weaponAlwaysHits(player->weapon) || player->dex >= 40)
         return 1;
 
     if ((player->dex + 128) >= (rand() & 0xff))

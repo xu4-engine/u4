@@ -22,7 +22,7 @@ int weaponGetRange(int weapon);
 int weaponGetDamage(int weapon);
 int weaponGetHitTile(int weapon);
 int weaponGetMissTile(int weapon);
-int weaponAlwaysHit(int weapon);
+int weaponAlwaysHits(int weapon);
 int weaponLeavesTile(int weapon);
 int weaponCanReady(int weapon, const char *className);
 
