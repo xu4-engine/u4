@@ -42,6 +42,7 @@ install: u4.exe
 	cp ../graphics/ega/*.rle $(U4PATH)/graphics/ega/
 	cp ../graphics/vga/*.rle $(U4PATH)/graphics/vga/
 	cp ../mid/*.mid $(U4PATH)/mid
+	cp ../sound/*.ogg $(U4PATH)/sound
 	cp ../sound/*.wav $(U4PATH)/sound
 	cp SDL/lib/SDL.dll $(U4PATH)
 	cp SDL/lib/SDL_mixer.dll $(U4PATH)

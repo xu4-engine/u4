@@ -26,6 +26,7 @@ install::
 	mkdir -p $(libdir)/u4/music
 	$(INSTALL) ../mid/*.mid $(libdir)/u4/music
 	mkdir -p $(libdir)/u4/sound
+	$(INSTALL) ../sound/*.ogg $(libdir)/u4/sound
 	$(INSTALL) ../sound/*.wav $(libdir)/u4/sound
 	$(INSTALL) -D dumpsavegame $(libdir)/u4/dumpsavegame
 	$(INSTALL) -D lzwenc $(libdir)/u4/lzwenc
