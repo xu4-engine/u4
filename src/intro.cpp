@@ -268,7 +268,7 @@ int IntroController::init() {
 
     updateScreen();
 
-    musicIntro();
+    musicMgr->intro();
 
     return 1;
 }
@@ -354,7 +354,7 @@ bool IntroController::keyPressed(int key) {
         case '7':
         case '8':
         case '9':
-            musicIntroSwitch(key - '0');
+            musicMgr->introSwitch(key - '0');
             break;
         default:
             valid = false;
@@ -1258,7 +1258,7 @@ void IntroController::introSoundOptionsMenuItemActivate(MenuItem *menuItem, Acti
         settings.setData(settingsChanged);
         settings.write();
         
-        musicIntro();
+        musicMgr->intro();
 
         break;
     case 0xFF:

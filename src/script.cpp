@@ -1333,19 +1333,19 @@ Script::ReturnCode Script::karma(xmlNodePtr script, xmlNodePtr current) {
  * Set the currently playing music
  */ 
 Script::ReturnCode Script::music(xmlNodePtr script, xmlNodePtr current) {
-    if (xmlGetPropAsBool(current, "reset"))
-        musicPlay();
+    if (xmlGetPropAsBool(current, "reset"))        
+        musicMgr->play();
     else {
         string type = getPropAsStr(current, "type");
 
         if (xmlGetPropAsBool(current, "play"))
-            musicPlay();
+            musicMgr->play();
         if (xmlGetPropAsBool(current, "stop"))
-            musicStop();
+            musicMgr->stop();
         else if (type == "shopping")
-            musicShopping();
+            musicMgr->shopping();
         else if (type == "camp")
-            musicCamp();
+            musicMgr->camp();
     }
 
     return RET_OK;

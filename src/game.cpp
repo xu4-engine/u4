@@ -332,7 +332,7 @@ void gameInit() {
     playerSetPartyStarvingCallback(&gamePartyStarving);    
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
 
-    musicPlay();
+    musicMgr->play();
     screenDrawImage(BKGD_BORDERS);
     c->stats->update(); /* draw the party stats */
 
@@ -1302,7 +1302,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'v':
-        if (musicToggle())
+        if (musicMgr->toggle())
             screenMessage("Volume On!\n");
         else
             screenMessage("Volume Off!\n");
@@ -1990,7 +1990,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         screenMessage("\nX-it!\n");        
         if (!gameExitToParentMap())
             screenMessage("Not Here!\n");
-        musicPlay();
+        musicMgr->play();
         screenPrompt();
         break;
 
@@ -2001,7 +2001,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         else {
             screenMessage("Leaving...\n");
             gameExitToParentMap();
-            musicPlay();
+            musicMgr->play();
         }
         screenPrompt();
         break;
@@ -2520,7 +2520,7 @@ MoveReturnValue gameMoveAvatar(Direction dir, int userEvent) {
     if (retval & MOVE_EXIT_TO_PARENT) {
         screenMessage("Leaving...\n");
         gameExitToParentMap();
-        musicPlay();
+        musicMgr->play();
     }
 
     /* things that happen while not on board the balloon */
@@ -2562,7 +2562,7 @@ MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
     if (retval & MOVE_EXIT_TO_PARENT) {
         screenMessage("Leaving...\n");
         gameExitToParentMap();
-        musicPlay();
+        musicMgr->play();
     }
 
     /* check to see if we're entering a dungeon room */
@@ -3474,7 +3474,7 @@ int gameCheckMoongates(void) {
                 return 1;
             
             gameSetMap(shrine_spirituality, 1, NULL);
-            musicPlay();
+            musicMgr->play();
 
             shrine_spirituality->enter();
         }

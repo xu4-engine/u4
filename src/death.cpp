@@ -114,7 +114,7 @@ void deathRevive() {
     c->aura->set();
     c->horseSpeed = 0;
     c->lastCommandTime = time(NULL);    
-    musicPlay();
+    musicMgr->play();
 
     c->party->reviveParty();
 

@@ -6,11 +6,11 @@
 
 /* FIXME: should this file have all SDL-related stuff extracted and put in music_sdl.c? */
 
-#include <string>
-#include <vector>
-
 #include <SDL.h>
 #include <SDL_mixer.h>
+
+#include <string>
+#include <vector>
 
 #include "music.h"
 
@@ -18,6 +18,7 @@
 #include "context.h"
 #include "debug.h"
 #include "error.h"
+#include "event.h"
 #include "location.h"
 #include "settings.h"
 #include "u4.h"
@@ -34,45 +35,115 @@ using std::vector;
 #define NLOOPS -1
 #endif
 
-void musicPlayMid(Music music);
-int musicLoad(Music music);
+/*
+ * Static variables
+ */
+Music *Music::instance = NULL;
+bool Music::fading = false;
+bool Music::on = false;
 
-vector<string> musicFilenames;
+Music *Music::getInstance() {
+    if (!instance)
+        instance = new Music();
+    return instance;
+}
 
-Music introMid = MUSIC_TOWNS;
-Mix_Music *playing = NULL;
+/*
+ * Constructors/Destructors
+ */
+
+/**
+ * Initiliaze the music
+ */
+Music::Music() : introMid(TOWNS), playing(NULL) {
+    filenames.push_back("");    // filename for MUSIC_NONE;
+
+    /*
+     * load music track filenames from xml config file
+     */
+    const Config *config = Config::getInstance();
+
+    vector<ConfigElement> musicConfs = config->getElement("/config/music").getChildren();
+    for (std::vector<ConfigElement>::iterator i = musicConfs.begin(); i != musicConfs.end(); i++) {
+
+        if (i->getName() != "track")
+            continue;
+
+        filenames.push_back(i->getString("file"));
+
+    }
+    filenames.resize(MAX, "");
+
+    /*
+     * initialize sound subsystem
+     */
+    {        
+        int audio_rate = 22050;
+        Uint16 audio_format = AUDIO_S16LSB; /* 16-bit stereo */
+        int audio_channels = 2;
+        int audio_buffers = 4096;
+
+        if (u4_SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
+            errorWarning("unable to init SDL audio subsystem: %s", SDL_GetError());
+            return;
+        }
+
+        if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
+            errorWarning("unable to open audio!");
+            return;
+        }
+
+        Mix_AllocateChannels(16);
+    }
+
+    on = settings.musicVol;    
+}
+
+/**
+ * Stop playing the music and cleanup
+ */
+Music::~Music() {
+    eventHandler->getTimer()->remove(&Music::callback);
+
+    if (playing) {
+        Mix_FreeMusic(playing);
+        playing = NULL;
+    }
+    
+    Mix_CloseAudio();
+    u4_SDL_QuitSubSystem(SDL_INIT_AUDIO);
+}
 
 /**
  * Play a midi file
  */
-void musicPlayMid(Music music) {    
-
-    if (settings.musicVol == 0) {        
-        musicFadeOut(1000);
-        return;
+void Music::playMid(Type music) {
+    if (!settings.musicVol) {
+        musicMgr->fadeOut(1000);
+        return;    
     }    
 
     /* loaded a new piece of music */
-    if (musicLoad(music))
-        Mix_PlayMusic(playing, NLOOPS);
+    if (load(music))
+        Mix_PlayMusic(playing, NLOOPS);    
 }
 
-int musicLoad(Music music) {
-    static Music current = MUSIC_NONE;
+bool Music::load(Type music) {
+    static Type current = NONE;
 
-    ASSERT(music < MUSIC_MAX, "Attempted to load an invalid piece of music in musicLoad()");
+    ASSERT(music < MAX, "Attempted to load an invalid piece of music in Music::load()");
 
     /* music already loaded */
     if (music == current) {
         /* tell calling function it didn't load correctly (because it's already playing) */
-        if (musicIsPlaying())
-            return 0;
+        if (isPlaying())
+            return false;
         /* it loaded correctly */
         else 
-            return 1;
+            return true;
     }
 
-    string pathname(u4find_music(musicFilenames[music]));
+    string pathname(u4find_music(filenames[music]));
     if (!pathname.empty()) {
         
         if (playing) {
@@ -87,121 +158,75 @@ int musicLoad(Music music) {
         }
         
         current = music;
-        return 1;
+        return true;
     }
-    else return 0;
+    else return false;
 }
 
 /**
- * Initiliaze the music
+ * Ensures that the music is playing if it is supposed to be, or off
+ * if it is supposed to be turned off.
  */
-int musicInit() {
-    musicFilenames.push_back("");    // filename for MUSIC_NONE;
-
-    /*
-     * load music track filenames from xml config file
-     */
-    const Config *config = Config::getInstance();
-
-    vector<ConfigElement> musicConfs = config->getElement("/config/music").getChildren();
-    for (std::vector<ConfigElement>::iterator i = musicConfs.begin(); i != musicConfs.end(); i++) {
-
-        if (i->getName() != "track")
-            continue;
-
-        musicFilenames.push_back(i->getString("file"));
-
-    }
-    musicFilenames.resize(MUSIC_MAX, "");
-
-    /*
-     * initialize sound subsystem
-     */
-    {        
-        int audio_rate = 22050;
-        Uint16 audio_format = AUDIO_S16LSB; /* 16-bit stereo */
-        int audio_channels = 2;
-        int audio_buffers = 4096;
-
-        if (u4_SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
-            errorWarning("unable to init SDL audio subsystem: %s", SDL_GetError());
-            return 1;
-        }
-
-        if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
-            errorWarning("unable to open audio!");
-            return 1;
-        }
-
-        Mix_AllocateChannels(16);
-    }
-
-    return 0;
-}
-
-/**
- * Stop playing the music and cleanup
- */
-void musicDelete() {
-    if (playing) {
-        Mix_FreeMusic(playing);
-        playing = NULL;
-    }
+void Music::callback(void *data) {    
+    eventHandler->getTimer()->remove(&Music::callback);
     
-    Mix_CloseAudio();
-    u4_SDL_QuitSubSystem(SDL_INIT_AUDIO);
+    if (on && !isPlaying())
+        musicMgr->play();
+    else if (!on && isPlaying())
+        musicMgr->stop();
+    settings.musicVol = on;
 }
-
+    
 /**
  * Returns true if the mixer is playing any audio
  */
-int musicIsPlaying(void) {
-    return Mix_PlayingMusic();    
+bool Music::isPlaying() {
+    return Mix_PlayingMusic();
 }
 
 /**
  * Main music loop
  */
-void musicPlay(void) {
-    musicPlayMid(c->location->map->music);
+void Music::play() {
+    playMid(c->location->map->music);
 }
 
 /**
  * Stop playing music
  */
-void musicStop(void) {
-    Mix_HaltMusic();
+void Music::stop() {
+    on = false;
+    Mix_HaltMusic();    
 }
 
 /**
  * Fade out the music
  */
-void musicFadeOut(int msecs) {
-    if (musicIsPlaying()) {
+void Music::fadeOut(int msecs) {
+    if (isPlaying()) {        
         if (!settings.volumeFades)
-            musicStop();
-        else {
+            stop();
+        else {            
             if (Mix_FadeOutMusic(msecs) == -1)
-                errorWarning("Mix_FadeOutMusic: %s\n", Mix_GetError());
-        }
+                errorWarning("Mix_FadeOutMusic: %s\n", Mix_GetError());            
+        }    
     }
 }
 
 /**
  * Fade in the music
  */
-void musicFadeIn(int msecs, int loadFromMap) {
-    if (!musicIsPlaying() && settings.musicVol) {
-
+void Music::fadeIn(int msecs, bool loadFromMap) {
+    if (!isPlaying() && settings.musicVol) {
         /* make sure we've got something loaded to play */
         if (loadFromMap || !playing)
-            musicLoad(c->location->map->music);        
+            load(c->location->map->music);        
 
         if (!settings.volumeFades)
-            Mix_PlayMusic(playing, NLOOPS);
-        else {        
+            play();
+        else {            
             if(Mix_FadeInMusic(playing, NLOOPS, msecs) == -1)
-                errorWarning("Mix_FadeInMusic: %s\n", Mix_GetError());
+                errorWarning("Mix_FadeInMusic: %s\n", Mix_GetError());            
         }
     }
 }
@@ -209,59 +234,62 @@ void musicFadeIn(int msecs, int loadFromMap) {
 /**
  * Music when you talk to Lord British
  */
-void musicLordBritish(void) {
-    musicPlayMid(MUSIC_FANFARE);
+void Music::lordBritish() {
+    playMid(FANFARE);
 }
 
 /**
  * Music when you talk to Hawkwind
  */
-void musicHawkwind(void) {
-    musicPlayMid(MUSIC_SHOPPING);
+void Music::hawkwind() {
+    playMid(SHOPPING);
 }
 
 /**
  * Music that plays while camping
  */
-void musicCamp(void) {
-    musicFadeOut(1000);    
+void Music::camp() {
+    fadeOut(1000);
 }
 
 /**
  * Music when talking to a vendor
  */
-void musicShopping(void) {
-    musicPlayMid(MUSIC_SHOPPING);
+void Music::shopping() {
+    playMid(SHOPPING);
 }
 
 /**
  * Play the introduction music on title loadup
  */
-void musicIntro(void) {
-    musicPlayMid(introMid);
+void Music::intro() {
+    playMid(introMid);
 }
 
 /**
  * Cycle through the introduction music
  */
-void musicIntroSwitch(int n) {
-    if (n > MUSIC_NONE &&
-        n < MUSIC_MAX) {
-        introMid = (Music)n;
-        musicIntro();
+void Music::introSwitch(int n) {
+    if (n > NONE && n < MAX) {
+        introMid = static_cast<Type>(n);
+        intro();
     }
 }
 
 /**
  * Toggle the music on/off (usually by pressing 'v')
  */
-int musicToggle() {
-    settings.musicVol = settings.musicVol ? 0 : 1;
+bool Music::toggle() {
+    eventHandler->getTimer()->remove(&Music::callback);
 
-    if (!settings.musicVol)
-        musicFadeOut(1000);
-    else
-        musicFadeIn(1000, 1);    
+    on = !on;
+    if (!on)
+        fadeOut(1000);
+    else fadeIn(1000, true);
+    
+    settings.musicVol = on;
 
-    return settings.musicVol;
+    eventHandler->getTimer()->add(&Music::callback, settings.gameCyclesPerSecond);
+    
+    return on;    
 }

@@ -145,7 +145,7 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
     if (mapConf.getBool("firstperson"))
         map->flags |= FIRST_PERSON;
 
-    map->music = static_cast<Music>(mapConf.getInt("music"));
+    map->music = static_cast<Music::Type>(mapConf.getInt("music"));
 
     vector<ConfigElement> children = mapConf.getChildren();
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {

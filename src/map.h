@@ -142,7 +142,7 @@ public:
     PortalList      portals;
     AnnotationMgr  *annotations;
     int             flags;
-    Music           music;
+    Music::Type     music;
     MapData         data;
     ObjectDeque     objects;
 

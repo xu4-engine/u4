@@ -36,7 +36,7 @@ int campHeal(HealType heal_type);
 void innTimer(void *data);
 
 void campBegin(void) {    
-    musicCamp();
+    musicMgr->camp();
     MapId id;
     
     /* setup camp (possible, but not for-sure combat situation */
@@ -65,7 +65,7 @@ void campTimer(void *data) {
     if (settings.campingAlwaysCombat || (xu4_random(8) == 0)) {        
         const Creature *m = creatures.randomAmbushing();
                 
-        musicPlay();        
+        musicMgr->play();        
         screenMessage("Ambushed!\n");
         
         /* create an ambushing creature (so it leaves a chest) */
@@ -86,7 +86,7 @@ void campEnd(void) {
 
     eventHandler->popKeyHandler();
     gameExitToParentMap();
-    musicFadeIn(CAMP_FADE_IN_TIME, 1);
+    musicMgr->fadeIn(CAMP_FADE_IN_TIME, true);
     
     /* Wake everyone up! */    
     for (i = 0; i < c->party->size(); i++)
@@ -126,7 +126,7 @@ void innBegin(void) {
 
     /* in the original, the vendor music plays straight through sleeping */
     if (settings.enhancements)
-        musicFadeOut(INN_FADE_OUT_TIME); /* Fade volume out to ease into rest */
+        musicMgr->fadeOut(INN_FADE_OUT_TIME); /* Fade volume out to ease into rest */
 
     EventHandler::sleep(INN_FADE_OUT_TIME);
 
@@ -239,5 +239,5 @@ void innTimer(void *data) {
         }*/
     }    
     
-    musicFadeIn(INN_FADE_IN_TIME, 1);
+    musicMgr->fadeIn(INN_FADE_IN_TIME, true);
 }

@@ -237,7 +237,7 @@ void CombatController::begin() {
     
     /* FIXME: there should be a better way to accomplish this */
     if (!camping) {
-        musicPlay();
+        musicMgr->play();
     }
 
     /* Set focus to the first active party member, if there is one */ 
@@ -271,7 +271,7 @@ void CombatController::end(bool adjustKarma) {
     bool won = isWon();    
     
     gameExitToParentMap();
-    musicPlay();
+    musicMgr->play();
     
     if (winOrLose) {
         if (won) {
@@ -1080,7 +1080,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
         }
 
     case 'v':
-        if (musicToggle())
+        if (musicMgr->toggle())
             screenMessage("Volume On!\n");
         else
             screenMessage("Volume Off!\n");

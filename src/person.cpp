@@ -573,7 +573,7 @@ string beggarGetQuantityResponse(Conversation *cnv, const char *response) {
 string lordBritishGetIntro(Conversation *cnv) {
     string intro;
 
-    musicLordBritish();
+    musicMgr->lordBritish();
     cnv->state = Conversation::TALK;
 
     if (c->saveGame->lbintro) {
@@ -617,7 +617,7 @@ string lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
         strcasecmp(inquiry, "bye") == 0) {
         reply = "\nLord British says: Fare thee well my friends!\n";
         cnv->state = Conversation::DONE;
-        musicPlay();
+        musicMgr->play();
     }
 
     else if (strncasecmp(inquiry, "heal", 4) == 0) {
@@ -776,7 +776,7 @@ string hawkwindGetIntro(Conversation *cnv) {
         intro += hawkwindText[HW_GREETING1] + hawkwindText[HW_GREETING2];
         cnv->state = Conversation::TALK;
 
-        musicHawkwind();
+        musicMgr->hawkwind();
     }
 
     return intro;
@@ -790,7 +790,7 @@ string hawkwindGetResponse(Conversation *cnv, const char *inquiry) {
     if (inquiry[0] == '\0' || strcasecmp(inquiry, "bye") == 0) {
         reply = hawkwindText[HW_BYE];
         cnv->state = Conversation::DONE;
-        musicPlay();
+        musicMgr->play();
         return reply;
     }
 

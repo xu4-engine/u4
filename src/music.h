@@ -5,38 +5,75 @@
 #ifndef MUSIC_H
 #define MUSIC_H
 
+#include <string>
+#include <vector>
+
+#define musicMgr   (Music::getInstance())
+
 #define CAMP_FADE_OUT_TIME          1000
 #define CAMP_FADE_IN_TIME           0
 #define INN_FADE_OUT_TIME           1000
 #define INN_FADE_IN_TIME            5000
 
-typedef enum {
-    MUSIC_NONE,
-    MUSIC_OUTSIDE,
-    MUSIC_TOWNS,
-    MUSIC_SHRINES,
-    MUSIC_SHOPPING,
-    MUSIC_RULEBRIT,
-    MUSIC_FANFARE,
-    MUSIC_DUNGEON,
-    MUSIC_COMBAT,
-    MUSIC_CASTLES,
-    MUSIC_MAX
-} Music;
+class Music {
+public:
+    enum Type {
+        NONE,
+        OUTSIDE,
+        TOWNS,
+        SHRINES,
+        SHOPPING,
+        RULEBRIT,
+        FANFARE,
+        DUNGEON,
+        COMBAT,
+        CASTLES,
+        MAX
+    };
 
-int musicInit(void);
-void musicDelete(void);
-int musicIsPlaying(void);
-void musicPlay(void);
-void musicStop(void);
-void musicFadeOut(int msecs);
-void musicFadeIn(int msecs, int loadFromMap);
-void musicLordBritish(void);
-void musicHawkwind(void);
-void musicCamp(void);
-void musicShopping(void);
-void musicIntro(void);
-void musicIntroSwitch(int n);
-int musicToggle(void);
+    Music();
+    ~Music();
+
+    static Music *getInstance();
+    static void callback(void *);    
+    static bool isPlaying();
+
+    void play();
+    void stop();
+    void fadeOut(int msecs);
+    void fadeIn(int msecs, bool loadFromMap);
+    void lordBritish();
+    void hawkwind();
+    void camp();
+    void shopping();
+    void intro();
+    void introSwitch(int n);
+    bool toggle();    
+
+private:
+    void playMid(Type music);
+    bool load(Type music);
+
+    /*
+     * Static variables
+     */
+private:
+    static Music *instance;
+    static bool fading;
+    static bool on;
+
+    /*
+     * Properties
+     */
+
+    std::vector<std::string> filenames;
+    Type introMid;
+
+#ifndef _MIXER_H_
+    struct Mix_Music { int dummy; };
+#endif 
+
+    Mix_Music* playing;    
+};
 
 #endif

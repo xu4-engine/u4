@@ -278,6 +278,6 @@ bool shrineEjectOnKey(int key, void *data) {
 
 void shrineEject() {
     gameExitToParentMap();
-    musicPlay();
+    musicMgr->play();
     (*c->location->finishTurn)();
 }

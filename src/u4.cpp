@@ -82,7 +82,6 @@ int main(int argc, char *argv[]) {
     perf.end("Screen Initialization");
 
     perf.start();
-    musicInit();
     soundInit();    
     perf.end("Misc Initialization");
 
@@ -139,7 +138,6 @@ int main(int argc, char *argv[]) {
     Tileset::unloadAll();
     
     soundDelete();
-    musicDelete();
     screenDelete();
 
     return 0;

@@ -364,7 +364,7 @@ void DngMapLoader::initDungeonRoom(Dungeon *dng, int room) {
         }
     }
 
-    dng->roomMaps[room]->music = MUSIC_COMBAT;
+    dng->roomMaps[room]->music = Music::COMBAT;
     dng->roomMaps[room]->type = Map::COMBAT;
     dng->roomMaps[room]->flags |= NO_LINE_OF_SIGHT;
 }
