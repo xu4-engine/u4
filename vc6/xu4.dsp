@@ -296,6 +296,14 @@ SOURCE=..\src\map.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\maploader.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\maploader.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\mapmgr.c
 # End Source File
 # Begin Source File
