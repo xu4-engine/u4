@@ -5,8 +5,6 @@
 prefix=/usr/local
 bindir=$(prefix)/bin
 libdir=$(prefix)/lib
-datadir=$(prefix)/share
-desktopdir=/etc/X11/applnk
 
 UI=sdl
 UILIBS=$(shell sdl-config --libs) -lSDL_mixer
@@ -22,8 +20,6 @@ include Makefile.common
 
 install::
 	$(INSTALL) $(MAIN) $(bindir)/$(MAIN)
-	$(INSTALL) ../icons/u4.bmp $(datadir)/pixmaps/u4.bmp
-	$(INSTALL) ../icons/u4.png $(datadir)/pixmaps/u4.png
 	$(INSTALL) ../mid/Castles.mid $(libdir)/u4/music/Castles.mid
 	$(INSTALL) ../mid/Combat.mid $(libdir)/u4/music/Combat.mid
 	$(INSTALL) ../mid/Dungeon.mid $(libdir)/u4/music/Dungeon.mid
@@ -40,6 +36,5 @@ install::
 	$(INSTALL) rledec $(libdir)/u4/rledec
 	$(INSTALL) tlkconv $(libdir)/u4/tlkconv
 	$(INSTALL) ../conf/tiles.xml $(libdir)/u4/tiles.xml
-	$(INSTALL) ../u4.desktop $(desktopdir)/Games/u4.desktop
 
 -include .depends
