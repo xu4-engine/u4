@@ -20,6 +20,10 @@
 #define CITY_WIDTH 32
 #define CITY_MAX_PERSONS 32
 
+// info for building area data from u4/*.con
+#define CON_HEIGHT 11
+#define CON_WIDTH 11
+
 // info for building tiles.xpm from u4/shapes.ega
 #define N_TILES 256
 #define TILE_WIDTH (2 * CHAR_WIDTH)
