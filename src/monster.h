@@ -142,13 +142,13 @@ typedef enum {
     MATTR_STATIONARY    = 0x40,
     MATTR_NONATTACKABLE = 0x80,
     MATTR_NEGATE        = 0x100,
-    MATTR_TELEPORT      = 0x200,
-    MATTR_FIRERESISTANT = 0x400,
-    MATTR_CAMOUFLAGE    = 0x800,
-    MATTR_WANDERS       = 0x1000,
-    MATTR_NOATTACK      = 0x2000,
-    MATTR_FLIES         = 0x4000,
-    MATTR_AMBUSHES      = 0x8000
+    MATTR_TELEPORT      = 0x200,    
+    MATTR_CAMOUFLAGE    = 0x400,
+    MATTR_WANDERS       = 0x800,
+    MATTR_NOATTACK      = 0x1000,
+    MATTR_FLIES         = 0x2000,
+    MATTR_AMBUSHES      = 0x4000,
+    MATTR_RANDOMRANGED  = 0x8000
 } MonsterAttrib;
 
 typedef enum {
@@ -194,10 +194,12 @@ int monsterStealsFood(const Monster *monster);
 int monsterNegates(const Monster *monster);
 int monsterCamouflages(const Monster *monster);
 int monsterAmbushes(const Monster *monster);
+int monsterHasRandomRangedAttack(const Monster *monster);
 int monsterGetXp(const Monster *monster);
 int monsterCastSleep(const Monster *monster);
 int monsterGetDamage(const Monster *monster);
 int monsterGetCamouflageTile(const Monster *monster);
+void monsterSetRandomRangedWeapon(Monster *monster);
 const Monster *monsterRandomForTile(unsigned char tile);
 int monsterGetInitialHp(const Monster *monster);
 MonsterStatus monsterGetStatus(const Monster *monster, int hp);

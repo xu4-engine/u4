@@ -182,6 +182,9 @@ void monsterLoadInfoFromXml() {
                           (const xmlChar *)tiles[i].name) == 0) {
                 monsters[monster].rangedhittile = tiles[i].tile;
             }
+            else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"rangedhittile"),
+                               (const xmlChar *)"random") == 0)
+                monsters[monster].mattr |= MATTR_RANDOMRANGED;
         }
 
         /* get ranged miss tile */
@@ -189,7 +192,10 @@ void monsterLoadInfoFromXml() {
             if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"rangedmisstile"), 
                           (const xmlChar *)tiles[i].name) == 0) {
                 monsters[monster].rangedmisstile = tiles[i].tile;
-            }
+            } 
+            else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"rangedhittile"),
+                               (const xmlChar *)"random") == 0)
+                monsters[monster].mattr |= MATTR_RANDOMRANGED;
         }
 
         /* get effects that this monster is immune to */
@@ -315,6 +321,10 @@ int monsterAmbushes(const Monster *monster) {
     return (monster->mattr & MATTR_AMBUSHES) ? 1 : 0;
 }
 
+int monsterHasRandomRangedAttack(const Monster *monster) {
+    return (monster->mattr & MATTR_RANDOMRANGED) ? 1 : 0;
+}
+
 int monsterGetXp(const Monster *monster) {
     return (monster->level == 16) ? 16 : monster->level + 1;    
 }
@@ -332,6 +342,10 @@ int monsterGetDamage(const Monster *monster) {
 
 int monsterGetCamouflageTile(const Monster *monster) {
     return monster->camouflageTile;
+}
+
+void monsterSetRandomRangedWeapon(Monster *monster) {
+    monster->rangedhittile = monster->rangedmisstile = (rand() % 4) + POISONFIELD_TILE;
 }
 
 int monsterCastSleep(const Monster *monster) {
@@ -361,7 +375,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
     
-    return monsterById((era & rand() & rand()) + ORC_ID);    
+    return monsterById((era & rand() & rand()) + ORC_ID);
 }
 
 int monsterGetInitialHp(const Monster *monster) {

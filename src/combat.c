@@ -803,8 +803,10 @@ void combatMoveMonsters() {
             /* monsters who teleport do so 1/8 of the time */
             if (monsterTeleports(m) && (rand() % 8) == 0)
                 action = CA_TELEPORT;
-            /* monsters who ranged attack do so 1/4 of the time */
-            else if (m->ranged != 0 && (rand() % 4) == 0)
+            /* monsters who ranged attack do so 1/4 of the time.
+               make sure their ranged attack is not negated! */
+            else if (m->ranged != 0 && (rand() % 4) == 0 && 
+                     ((m->rangedhittile != MAGICFLASH_TILE) || (c->aura != AURA_NEGATE)))
                 action = CA_RANGED;
             /* monsters who cast sleep do so 1/4 of the time they don't ranged attack */
             else if (monsterCastSleep(m) && (rand() % 4) == 0)
@@ -918,12 +920,17 @@ void combatMoveMonsters() {
             info->blockBefore = 1;
             info->firstValidDistance = 0;
 
-            /* Figure out which direction to fire the weapon */
+            /* if the monster has a random tile for a ranged weapon,
+               let's switch it now! */
+            if (monsterHasRandomRangedAttack(combatInfo.monsters[i]->monster))
+                monsterSetRandomRangedWeapon((Monster *)combatInfo.monsters[i]->monster);
+
+            /* figure out which direction to fire the weapon */
             info->dir = dirGetRelativeDirection(
                 combatInfo.monsters[i]->x, combatInfo.monsters[i]->y,
                 combatInfo.party[target]->x, combatInfo.party[target]->y);            
             
-            /* Fire! */
+            /* fire! */
             gameDirectionalAction(info);
             free(info);           
 
