@@ -6,15 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
+
 #include "u4.h"
-
 #include "event.h"
-
 #include "context.h"
 #include "location.h"
 #include "savegame.h"
 #include "screen.h"
+#include "debug.h"
 
 typedef struct TimerCallbackNode {
     TimerCallback callback;
@@ -46,9 +45,9 @@ int eventHandlerGetExitFlag() {
 
 /**
  * Adds a new timer callback to the timer callback list.  The interval
- * value determines how many cycles (1/4 second intervals) between
- * calls; a value of 1 generates 4 callbacks per second, a value of 4
- * generates 1 callback per second, etc.
+ * value determines how many milliseconds between calls; a value of
+ * 250 generates 4 callbacks per second, a value of 1000 generates 1
+ * callback per second, etc.
  */
 void eventHandlerAddTimerCallback(TimerCallback callback, int interval) {
     eventHandlerAddTimerCallbackData(callback, NULL, interval);
@@ -57,11 +56,11 @@ void eventHandlerAddTimerCallback(TimerCallback callback, int interval) {
 void eventHandlerAddTimerCallbackData(TimerCallback callback, void *data, int interval) {
     TimerCallbackNode *n = (TimerCallbackNode *) malloc(sizeof(TimerCallbackNode));
 
-    assert(interval > 0);
+    ASSERT((interval > 0) && (interval % EVENT_TIMER_GRANULARITY == 0), "invalid timer interval: %d", interval);
     if (n) {
         n->callback = callback;
         n->interval = interval;
-        n->current = interval - 1;
+        n->current = interval;
         n->data = data;
         n->next = timerCallbackHead;
         timerCallbackHead = n;
@@ -114,11 +113,10 @@ void eventHandlerCallTimerCallbacks() {
     timerCallbackListLocked = 1;
 
     for (n = timerCallbackHead; n != NULL; n = n->next) {
-        if (n->current == 0) {
+        n->current -= EVENT_TIMER_GRANULARITY;
+        if (n->current <= 0) {
             (*n->callback)(n->data);
-            n->current = n->interval - 1;
-        } else {
-            n->current--;
+            n->current = n->interval;
         }
     }
 

@@ -54,7 +54,7 @@ Annotation *annotationSetTurnDuration(Annotation *a, int ttl) {
 
 Annotation *annotationSetTimeDuration(Annotation *a, int interval) {
     a->permanent = 0;
-    eventHandlerAddTimerCallbackData(&annotationTimer, (void *) a, interval);
+    eventHandlerAddTimerCallbackData(&annotationTimer, (void *) a, interval * 250);
     return a;
 }
 

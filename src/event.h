@@ -15,6 +15,8 @@
 #define U4_ENTER 13
 #define U4_ALT 128
 
+#define EVENT_TIMER_GRANULARITY 25
+
 typedef int (*KeyHandler)(int, void *);
 typedef void (*TimerCallback)(void *);
 

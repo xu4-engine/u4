@@ -50,7 +50,7 @@ void campBegin(void) {
     combatBegin(&camp_map, NULL, 0);
     
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&campTimer, 4 * 10);    
+    eventHandlerAddTimerCallback(&campTimer, 1000 * 10);
 
     screenMessage("Resting...\n");
     screenDisableCursor();
@@ -153,7 +153,7 @@ void innBegin(void) {
     gameUpdateScreen();
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&innTimer, 8 * 4);
+    eventHandlerAddTimerCallback(&innTimer, 1000 * 8);
 
     screenDisableCursor();
 }

@@ -69,7 +69,7 @@ void deathStart(int delay) {
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
     screenDisableCursor();
 
-    eventHandlerAddTimerCallback(&deathTimer, 4);    
+    eventHandlerAddTimerCallback(&deathTimer, 1000);
 }
 
 void deathTimer(void *data) {
