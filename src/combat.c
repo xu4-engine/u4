@@ -629,8 +629,7 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
                 break;
 
             case EFFECT_FIRE:
-                /* FIXME: are there any special effects here? */
-                
+                /* FIXME: are there any special effects here? */            
             default:
                 /* show the default 'hit' message */
                 screenMessage("\n%s Hit!\n", c->saveGame->players[player].name);
@@ -664,6 +663,8 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
                 }
                 else screenMessage("Failed.\n");
                 break;
+                
+            default: break;
         }       
 
     }
@@ -1009,7 +1010,10 @@ void combatMoveMonsters() {
         case CA_FLEE:
         case CA_ADVANCE:
             if (moveCombatObject(action, c->location->map, combatInfo.monsters[i], combatInfo.party[target]->x, combatInfo.party[target]->y)) {
-                if (MAP_IS_OOB(c->location->map, (int)combatInfo.monsters[i]->x, (int)combatInfo.monsters[i]->y)) {
+                int x = combatInfo.monsters[i]->x,
+                    y = combatInfo.monsters[i]->y;
+
+                if (MAP_IS_OOB(c->location->map, x, y)) {
                     screenMessage("\n%s Flees!\n", m->name);
                     
                     /* Congrats, you have a heart! */

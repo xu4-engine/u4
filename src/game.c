@@ -36,6 +36,7 @@
 #include "screen.h"
 #include "settings.h"
 #include "shrine.h"
+#include "sound.h"
 #include "spell.h"
 #include "stats.h"
 #include "ttype.h"
@@ -409,6 +410,8 @@ void gameSpellEffect(unsigned int spell, int player) {
      * with known spells -- if it is the default effect, leave it off! :)
      * The sound that goes along with the screen inversion, etc. is good everywhere, though.
      */
+
+    soundPlay(SOUND_MAGIC);
     
 
     switch(spell)
@@ -1354,8 +1357,7 @@ int gameCastForPlayer(int player) {
     return 1;
 }
 
-int castForPlayer2(int spell, void *data) {        
-    const char *errorMsg = NULL;
+int castForPlayer2(int spell, void *data) {    
     castSpell = spell;
 
     screenMessage("%s!\n", spellGetName(spell));    
@@ -1607,8 +1609,7 @@ int getChestTrapHandler(int player)
  * door is replaced by a permanent annotation of an unlocked door
  * tile.
  */
-int jimmyAtCoord(int x, int y, int distance, void *data) {
-    CoordActionInfo *info = (CoordActionInfo*)data;
+int jimmyAtCoord(int x, int y, int distance, void *data) {    
 
     if (x == -1 && y == -1) {
         screenMessage("Jimmy what?\n");

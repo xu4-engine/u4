@@ -15,7 +15,6 @@
 /* FIXME: should monsterSpecialAction() and monsterSpecialEffect() be placed elsewhere
    to make monster.c as independent as possible? */
 
-#include "combat.h"
 #include "context.h"
 #include "debug.h"
 #include "error.h"
@@ -427,8 +426,7 @@ MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
 const Monster *monsterGetAmbushingMonster(void) {
     int i,
         numAmbushingMonsters = 0,
-        randMonster;
-    extern CombatInfo combatInfo;
+        randMonster;    
 
     /* first, find out how many monsters exist that might ambush you */
     for (i = 0; i < numMonsters; i++) {
