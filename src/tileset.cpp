@@ -94,7 +94,6 @@ void tilesetLoad(const char *filename, TilesetType type) {
     tileset->numTiles = 0;
     tileset->tiles = NULL;
     tileset->totalFrames = 0;
-    tileset->tileGraphic = NULL;
     
 
     if (xmlPropExists(root, "imageName"))

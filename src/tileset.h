@@ -36,7 +36,6 @@ typedef struct _Tileset {
     Tile *tiles;
     int totalFrames;
     string imageName;
-    struct _Image *tileGraphic;
 } Tileset;
 
 typedef xu4_map<TilesetType, Tileset*, std::less<TilesetType> > TilesetList;
