@@ -21,6 +21,7 @@ typedef enum {
 
 #define DIR_IN_MASK(dir,mask) ((1 << (dir)) & (mask))
 #define DIR_ADD_TO_MASK(dir,mask) ((1 << (dir)) | (mask))
+#define DIR_REMOVE_FROM_MASK(dir,mask) ((~(1 << (dir))) & (mask))
 
 void dirMove(Direction dir, int *x, int *y);
 Direction dirReverse(Direction dir);
