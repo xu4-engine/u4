@@ -4,16 +4,19 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
-#include <libxml/xmlmemory.h>
+#include <vector>
 
 #include "tileset.h"
 
+#include "config.h"
 #include "debug.h"
 #include "error.h"
 #include "screen.h"
 #include "settings.h"
 #include "tilemap.h"
 #include "xml.h"
+
+using std::vector;
 
 /**
  * TileRule Class Implementation
@@ -33,35 +36,24 @@ TileRule *TileRule::findByName(string name) {
 /**
  * Load tile information from xml.
  */
-void TileRule::load(string filename) {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;
-    
-    doc = xmlParse(filename.c_str());
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "tileRules") != 0)
-        errorFatal("malformed %s", filename.c_str());
+void TileRule::load() {
+    const Config *config = Config::getInstance();
+    vector<ConfigElement> rules = config->getElement("/config/tileRules").getChildren();
 
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"rule") != 0)
-            continue;
-
+    for (std::vector<ConfigElement>::iterator i = rules.begin(); i != rules.end(); i++) {
         TileRule *rule = new TileRule;
-        TileRule::loadProperties(rule, reinterpret_cast<void*>(node));
-        rules[rule->name] = rule;
-    }
-
+        rule->initFromConf(*i);
+        TileRule::rules[rule->name] = rule;
+    }    
+    
     if (TileRule::findByName("default") == NULL)
-        errorFatal("no 'default' rule found in tileRules.xml");
-
-    xmlFree(doc);
+        errorFatal("no 'default' rule found in tile rules");
 }
 
 /**
  * Load properties for the current rule node 
  */
-bool TileRule::loadProperties(TileRule *rule, void *xmlNode) {
-    xmlNodePtr node = reinterpret_cast<xmlNodePtr>(xmlNode);
+bool TileRule::initFromConf(const ConfigElement &conf) {    
     unsigned int i;
     
     static const struct {
@@ -93,56 +85,58 @@ bool TileRule::loadProperties(TileRule *rule, void *xmlNode) {
     static const char *speedEnumStrings[] = { "fast", "slow", "vslow", "vvslow", NULL };
     static const char *effectsEnumStrings[] = { "none", "fire", "sleep", "poison", "poisonField", "electricity", "lava", NULL };
 
-    rule->mask = 0;
-    rule->movementMask = 0;
-    rule->speed = FAST;
-    rule->effect = EFFECT_NONE;
-    rule->walkonDirs = MASK_DIR_ALL;
-    rule->walkoffDirs = MASK_DIR_ALL;    
-    rule->name = xmlGetPropAsStr(node, "name");    
+    this->mask = 0;
+    this->movementMask = 0;
+    this->speed = FAST;
+    this->effect = EFFECT_NONE;
+    this->walkonDirs = MASK_DIR_ALL;
+    this->walkoffDirs = MASK_DIR_ALL;    
+    this->name = conf.getString("name");
 
     for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
-        if (xmlGetPropAsBool(node, booleanAttributes[i].name))
-            rule->mask |= booleanAttributes[i].mask;        
+        if (conf.getBool(booleanAttributes[i].name))
+            this->mask |= booleanAttributes[i].mask;        
     }
 
     for (i = 0; i < sizeof(movementBooleanAttr) / sizeof(movementBooleanAttr[0]); i++) {
-        if (xmlGetPropAsBool(node, movementBooleanAttr[i].name))
-            rule->movementMask |= movementBooleanAttr[i].mask;
+        if (conf.getBool(movementBooleanAttr[i].name))
+            this->movementMask |= movementBooleanAttr[i].mask;
     }
 
-    if (xmlPropCmp(node, "cantwalkon", "all") == 0)
-        rule->walkonDirs = 0;
-    else if (xmlPropCmp(node, "cantwalkon", "west") == 0)
-        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, rule->walkonDirs);
-    else if (xmlPropCmp(node, "cantwalkon", "north") == 0)
-        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, rule->walkonDirs);
-    else if (xmlPropCmp(node, "cantwalkon", "east") == 0)
-        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, rule->walkonDirs);
-    else if (xmlPropCmp(node, "cantwalkon", "south") == 0)
-        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, rule->walkonDirs);
-    else if (xmlPropCmp(node, "cantwalkon", "advance") == 0)
-        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_ADVANCE, rule->walkonDirs);
-    else if (xmlPropCmp(node, "cantwalkon", "retreat") == 0)
-        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_RETREAT, rule->walkonDirs);
+    string cantwalkon = conf.getString("cantwalkon");
+    if (cantwalkon == "all")
+        this->walkonDirs = 0;
+    else if (cantwalkon == "west")
+        this->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, this->walkonDirs);
+    else if (cantwalkon == "north")
+        this->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, this->walkonDirs);
+    else if (cantwalkon == "east")
+        this->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, this->walkonDirs);
+    else if (cantwalkon == "south")
+        this->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, this->walkonDirs);
+    else if (cantwalkon == "advance")
+        this->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_ADVANCE, this->walkonDirs);
+    else if (cantwalkon == "retreat")
+        this->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_RETREAT, this->walkonDirs);
 
-    if (xmlPropCmp(node, "cantwalkoff", "all") == 0)
-        rule->walkoffDirs = 0;
-    else if (xmlPropCmp(node, "cantwalkoff", "west") == 0)
-        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, rule->walkoffDirs);
-    else if (xmlPropCmp(node, "cantwalkoff", "north") == 0)
-        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, rule->walkoffDirs);
-    else if (xmlPropCmp(node, "cantwalkoff", "east") == 0)
-        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, rule->walkoffDirs);
-    else if (xmlPropCmp(node, "cantwalkoff", "south") == 0)
-        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, rule->walkoffDirs);
-    else if (xmlPropCmp(node, "cantwalkoff", "advance") == 0)
-        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_ADVANCE, rule->walkoffDirs);
-    else if (xmlPropCmp(node, "cantwalkoff", "retreat") == 0)
-        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_RETREAT, rule->walkoffDirs);
+    string cantwalkoff = conf.getString("cantwalkoff");
+    if (cantwalkoff == "all")
+        this->walkoffDirs = 0;
+    else if (cantwalkoff == "west")
+        this->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, this->walkoffDirs);
+    else if (cantwalkoff == "north")
+        this->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, this->walkoffDirs);
+    else if (cantwalkoff == "east")
+        this->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, this->walkoffDirs);
+    else if (cantwalkoff == "south")
+        this->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, this->walkoffDirs);
+    else if (cantwalkoff == "advance")
+        this->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_ADVANCE, this->walkoffDirs);
+    else if (cantwalkoff == "retreat")
+        this->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_RETREAT, this->walkoffDirs);
 
-    rule->speed = (TileSpeed)xmlGetPropAsEnum(node, "speed", speedEnumStrings);
-    rule->effect = (TileEffect)xmlGetPropAsEnum(node, "effect", effectsEnumStrings);
+    this->speed = static_cast<TileSpeed>(conf.getEnum("speed", speedEnumStrings));
+    this->effect = static_cast<TileEffect>(conf.getEnum("effect", effectsEnumStrings));
 
     return true;
 }
@@ -180,7 +174,7 @@ void Tileset::loadAll(string filename) {
     /* load tile rules from xml */
     TRACE_LOCAL(dbg, "Loading tile rules");
     if (!TileRule::rules.size())
-        TileRule::load("tileRules.xml");    
+        TileRule::load();
 
     /* load all of the tilesets */
     for (node = root->xmlChildrenNode; node; node = node->next) {

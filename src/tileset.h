@@ -12,6 +12,8 @@
 
 using std::string;
 
+class ConfigElement;
+
 typedef std::map<string, class TileRule *> TileRuleMap;
 
 /**
@@ -20,9 +22,10 @@ typedef std::map<string, class TileRule *> TileRuleMap;
 class TileRule {
 public:    
     static TileRule *findByName(string name);
-    static void load(string filename);
-    static bool loadProperties(TileRule *rule, void *xmlNode);
+    static void load();
     static TileRuleMap rules;   // A map of rule names to rules
+
+    bool initFromConf(const ConfigElement &tileRuleConf);
 
     string name;
     unsigned short mask;    
