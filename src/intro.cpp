@@ -1285,7 +1285,7 @@ int introBaseMenuKeyHandler(int key, void *data) {
             MenuItem *menuItem = &(*menu->getCurrent());
             ActivateAction action = ACTIVATE_NORMAL;
             
-            if (menuItem->activateMenuItem) {
+            if (menuItem->getActivateFunc()) {
                 if (key == U4_LEFT)
                     action = ACTIVATE_DECREMENT;
                 else if (key == U4_RIGHT)
@@ -1317,7 +1317,7 @@ void introMainOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action)
     if (action != ACTIVATE_NORMAL)
         return;
 
-    switch(menuItem->id) {
+    switch(menuItem->getId()) {
     case 0: mode = INTRO_CONFIG_VIDEO; videoOptions.reset(); break;        
     case 1: mode = INTRO_CONFIG_SOUND; soundOptions.reset(); break;
     case 2: mode = INTRO_CONFIG_GAMEPLAY; gameplayOptions.reset(); break;
@@ -1328,7 +1328,7 @@ void introMainOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action)
 
 /* video options menu handler */
 void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->id) {
+    switch(menuItem->getId()) {
     case 0:
         if (action != ACTIVATE_DECREMENT) {
             settingsChanged.scale++;
@@ -1434,7 +1434,7 @@ void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 
 /* sound options menu handler */
 void introSoundOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->id) {
+    switch(menuItem->getId()) {
     case 0: 
         settingsChanged.musicVol = settingsChanged.musicVol ? 0 : 1;
         break;
@@ -1465,7 +1465,7 @@ void introSoundOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 
 /* gameplay options menu handler */
 void introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->id) {
+    switch(menuItem->getId()) {
     case 0:
         settingsChanged.enhancements = settingsChanged.enhancements ? 0 : 1;        
         break;    
@@ -1488,7 +1488,7 @@ void introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
         advancedOptions.reset();
 
         /* show or hide game enhancement options if enhancements are enabled/disabled */
-        advancedOptions.getItemById(0)->isVisible = settingsChanged.enhancements;
+        advancedOptions.getItemById(0)->setVisible(settingsChanged.enhancements);
 
         break;    
 
@@ -1514,7 +1514,7 @@ void introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
 
 /* advanced options menu handler */
 void introAdvancedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->id) {
+    switch(menuItem->getId()) {
     case 1:
         settingsChanged.debug = settingsChanged.debug ? 0 : 1;
         break;
@@ -1548,7 +1548,7 @@ void introAdvancedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
 
 /* keyboard options menu handler */
 void introKeyboardOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->id) {
+    switch(menuItem->getId()) {
     case 1:
         if (action != ACTIVATE_DECREMENT) {
             settingsChanged.keydelay += 100;
@@ -1592,7 +1592,7 @@ void introKeyboardOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
 
 /* speed options menu handler */
 void introSpeedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->id) {
+    switch(menuItem->getId()) {
     case 0:
         if (action != ACTIVATE_DECREMENT) {
             settingsChanged.gameCyclesPerSecond++;
@@ -1693,7 +1693,7 @@ void introSpeedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 
 /* minor enhancement options menu handler */
 void introEnhancementOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {
-    switch(menuItem->id) {
+    switch(menuItem->getId()) {
     case 0: 
         settingsChanged.enhancementsOptions.u5shrines = settingsChanged.enhancementsOptions.u5shrines ? 0 : 1;
         break;

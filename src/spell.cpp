@@ -136,10 +136,10 @@ void mixtureDelete(Mixture *mix) {
 }
 
 int mixtureAddReagent(Mixture *mix, Reagent reagent) {
-    ASSERT(reagent < REAG_MAX, "invalid reagent: %d", reagent);
-    if (c->saveGame->reagents[reagent] < 1)
+    ASSERT(reagent < REAG_MAX, "invalid reagent: %d", reagent);    
+    if (c->party->reagents(reagent) < 1)
         return 0;
-    c->saveGame->reagents[reagent]--;
+    c->party->adjustReagent(reagent, -1);    
     mix->reagents[reagent]++;
     return 1;
 }
@@ -148,7 +148,7 @@ int mixtureRemoveReagent(Mixture *mix, Reagent reagent) {
     ASSERT(reagent < REAG_MAX, "invalid reagent: %d", reagent);
     if (mix->reagents[reagent] == 0)
         return 0;
-    c->saveGame->reagents[reagent]++;
+    c->party->adjustReagent(reagent, 1);    
     mix->reagents[reagent]--;
     return 1;
 }

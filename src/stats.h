@@ -34,7 +34,7 @@ typedef enum {
     STATS_MIXTURES
 } StatsView;
 
-class StatsArea : public Observer<std::string> {
+class StatsArea : public Observer<std::string>, public Observable<std::string> {
 public:
     StatsArea();
 

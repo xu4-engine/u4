@@ -188,10 +188,7 @@ void gameInit() {
     /* initialize our party */
     c->party = new Party(c->saveGame);    
 
-    /* add some observers */
-    c->aura->addObserver(c->stats);
-    c->party->addObserver(c->stats);
-
+    /* initialize our combat controller */
     c->combat = new CombatController();
 
     /* initialize our start location */
@@ -278,7 +275,12 @@ void gameInit() {
     spellMixMenu.add(7, getReagentName((Reagent)7), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
     gameResetSpellMixing();
 
-    eventHandlerPushMouseAreaSet(mouseAreas);    
+    eventHandlerPushMouseAreaSet(mouseAreas); 
+    
+    /* add some observers */
+    c->aura->addObserver(c->stats);
+    c->party->addObserver(c->stats);
+    spellMixMenu.addObserver(c->stats);
 }
 
 /**
@@ -1587,11 +1589,11 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
             MenuItem *item = &(*menu->getCurrent());
             
             /* change whether or not it's selected */
-            item->isSelected = !item->isSelected;
+            item->setSelected(!item->isSelected());
                         
-            if (item->isSelected)
-                mixtureAddReagent(mix, (Reagent)item->id);
-            else mixtureRemoveReagent(mix, (Reagent)item->id);
+            if (item->isSelected())
+                mixtureAddReagent(mix, (Reagent)item->getId());
+            else mixtureRemoveReagent(mix, (Reagent)item->getId());
         }
         break;
     case U4_ENTER:
@@ -1615,7 +1617,7 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
             screenEnableCursor();
             (*c->location->finishTurn)();
         }
-        return true;
+        break;
 
     case U4_ESC:
         eventHandlerPopKeyHandler();
@@ -1629,7 +1631,7 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
         screenMessage("\n");
         
         screenEnableCursor();
-        (*c->location->finishTurn)();
+        (*c->location->finishTurn)();        
     default:
         return false;
     }
@@ -1645,14 +1647,14 @@ void gameResetSpellMixing(void) {
     row = 0;
     for (current = spellMixMenu.begin(); current != spellMixMenu.end(); current++) {    
         if (c->saveGame->reagents[i++] > 0) {
-            current->isVisible = true;
-            current->y = STATS_AREA_Y + row;
+            current->setVisible(true);
+            current->setY(STATS_AREA_Y + row);
             row++;
         }
-        else current->isVisible = false;
+        else current->setVisible(false);
     }
 
-    spellMixMenu.reset();
+    spellMixMenu.reset(false);
 }
 
 int gameSpellMixHowMany(string *message) {
@@ -1897,7 +1899,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
     case 'v':
         screenMessage("\nFull Virtues!\n");
         for (i = 0; i < 8; i++)
-            c->saveGame->karma[i] = 0;
+            c->saveGame->karma[i] = 0;        
         c->stats->update();
         screenPrompt();
         break;
@@ -2007,8 +2009,7 @@ bool windCmdKeyHandler(int key, void *data) {
         break;
     }
 
-    eventHandlerPopKeyHandler();
-    c->stats->update();
+    eventHandlerPopKeyHandler();    
     screenPrompt();
 
     return true;
@@ -2658,7 +2659,7 @@ bool mixReagentsForSpell(int spell, void *data) {
         screenMessage("%s\n", spellGetName(spell));
         screenDisableCursor();
         gameResetSpellMixing();
-        spellMixMenu.reset();        
+        spellMixMenu.reset(); /* reset the menu, highlighting the first item */
         eventHandlerPushKeyHandlerWithData(&gameSpellMixMenuKeyHandler, &spellMixMenu);
     }
     else {
@@ -2666,7 +2667,7 @@ bool mixReagentsForSpell(int spell, void *data) {
 
         info = new GetChoiceActionInfo;
         info->choices = "abcdefgh\n\r \033";
-        info->handleChoice = &mixReagentsForSpell2;
+        info->handleChoice = &mixReagentsForSpell2;        
         eventHandlerPushKeyHandlerWithData(&keyHandlerGetChoice, info);
     }
 
@@ -2719,9 +2720,7 @@ int mixReagentsForSpell2(int choice) {
     else {
         screenMessage("%c\n", toupper(choice));
 
-        if (mixtureAddReagent(mix, (Reagent)(choice - 'a')))
-            c->stats->update();
-        else
+        if (!mixtureAddReagent(mix, (Reagent)(choice - 'a')))
             screenMessage("None Left!\n");
 
         screenMessage("Reagent: ");
@@ -3459,7 +3458,7 @@ void gameFixupCreatures(Map *map) {
             /* replace the object with a creature object */
             map->addCreature(creatures.getByTile(obj->getTile()), obj->getCoords());
             obj->setMap(map);
-            i = map->removeObject(i);
+            i = map->removeObject(i) - 1;
         }
         else obj->setMap(map);
     }    

@@ -18,6 +18,7 @@
 #include "person.h"
 #include "portal.h"
 #include "u4file.h"
+#include "utils.h"
 
 int mapLoadCity(City *map);
 int mapLoadCon(Map *map);
@@ -160,12 +161,8 @@ int mapLoadCity(City *city) {
                 people[j]->keyword2 = strdup(ptr);
 
                 /* trim whitespace on keywords */
-                /* FIXME: need to trim whitespace on keywords
-                   using std::string */
-                /*if (strchr(people[j]->keyword1, ' '))
-                    *strchr(people[j]->keyword1, ' ') = '\0';
-                if (strchr(people[j]->keyword2, ' '))
-                    *strchr(people[j]->keyword2, ' ') = '\0';*/
+                trim(&people[j]->keyword1);
+                trim(&people[j]->keyword2);                
             }
         }
     }    

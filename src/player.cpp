@@ -75,51 +75,19 @@ void PartyMember::notifyOfChange(string arg) {
     }
 }
 
-/**
- * Determine whether a player's attack hits or not.
- */
-bool PartyMember::attackHit(Creature *m) {
-    if (Weapon::get(player->weapon)->alwaysHits() || player->dex >= 40)
-        return true;
-
-    return(m->isHit(player->dex));
-}
-
-ClassType PartyMember::getClass() {
-    return player->klass;
-}
-
-/**
- * Calculate damage for an attack.
- */
-int PartyMember::getDamage() {
-    int maxDamage;
-
-    maxDamage = Weapon::get(player->weapon)->getDamage();
-    maxDamage += player->str;
-    if (maxDamage > 255)
-        maxDamage = 255;
-
-    return xu4_random(maxDamage);
-}
-
-int PartyMember::getHp() {
-    return player->hp;
-}
-
-int PartyMember::getMaxHp() {
-    return player->hpMax;
-}
-
-int PartyMember::getMp() {
-    return player->mp;
-}
+int PartyMember::getHp() const      { return player->hp; }
+int PartyMember::getMaxHp() const   { return player->hpMax; }
+int PartyMember::getExp() const     { return player->xp; }
+int PartyMember::getStr() const     { return player->str; }
+int PartyMember::getDex() const     { return player->dex; }
+int PartyMember::getInt() const     { return player->intel; }
+int PartyMember::getMp() const      { return player->mp; }
 
 /**
  * Determine the most magic points a character could have
  * given his class and intelligence.
  */
-int PartyMember::getMaxMp() {
+int PartyMember::getMaxMp() const {
     int max_mp = -1;
 
     switch (player->klass) {
@@ -157,10 +125,17 @@ int PartyMember::getMaxMp() {
     return max_mp;
 }
 
+WeaponType PartyMember::getWeapon() const   { return player->weapon; }
+ArmorType PartyMember::getArmor() const     { return player->armor; }
+string PartyMember::getName() const         { return player->name; }
+SexType PartyMember::getSex() const         { return player->sex; }
+ClassType PartyMember::getClass() const     { return player->klass; }
+StatusType PartyMember::getStatus() const   { return status.back(); }
+
 /**
  * Determine what level a character has.
  */
-int PartyMember::getRealLevel() {
+int PartyMember::getRealLevel() const {
     return player->hpMax / 100;
 }
 
@@ -168,7 +143,7 @@ int PartyMember::getRealLevel() {
  * Determine the highest level a character could have with the number
  * of experience points he has.
  */
-int PartyMember::getMaxLevel() {
+int PartyMember::getMaxLevel() const {
     int level = 1;
     int next = 100;
 
@@ -180,66 +155,6 @@ int PartyMember::getMaxLevel() {
     return level;
 }
 
-string PartyMember::getName() const {
-    return player->name;
-}
-
-StatusType PartyMember::getStatus() {
-    return status.back();
-}
-
-SexType PartyMember::getSex() const {
-    return player->sex;
-}
-
-int PartyMember::getStr() const {
-    return player->str;
-}
-
-int PartyMember::getDex() const {
-    return player->dex;
-}
-
-int PartyMember::getInt() const {
-    return player->intel;
-}
-
-int PartyMember::getExp() const {
-    return player->xp;
-}
-
-MapTile PartyMember::getHitTile() const {
-    return Weapon::get(getWeapon())->getHitTile();
-}
-
-MapTile PartyMember::getMissTile() const {
-    return Weapon::get(getWeapon())->getMissTile();
-}
-
-ArmorType PartyMember::getArmor() const {
-    return player->armor;
-}
-
-WeaponType PartyMember::getWeapon() const {
-    return player->weapon;
-}
-
-/**
- * Determine whether a player is hit by a melee attack.
- */
-bool PartyMember::isHit(int hit_offset) {
-    return xu4_random(0x100) + hit_offset > Armor::get(player->armor)->getDefense();
-}
-
-bool PartyMember::isDead() {
-    return getStatus() == STAT_DEAD;
-}
-
-bool PartyMember::isDisabled() {
-    return (getStatus() == STAT_GOOD ||
-        getStatus() == STAT_POISONED) ? false : true;
-}
-
 /**
  * Adds a status effect to the player
  */ 
@@ -249,6 +164,9 @@ void PartyMember::addStatus(StatusType s) {
     notifyOfChange("PartyMember::addStatus");
 }
 
+/**
+ * Adjusts the player's mp by 'pts'
+ */
 void PartyMember::adjustMp(int pts) {
     AdjustValueMax(player->mp, pts, getMaxMp());
     notifyOfChange("PartyMember::adjustMp");
@@ -280,54 +198,8 @@ void PartyMember::advanceLevel() {
 }
 
 /**
- * Applies damage to a player, and changes status to dead if hit
- * points drop to zero or below.
+ * Apply an effect to the party member
  */
-bool PartyMember::applyDamage(int damage) {
-    int newHp = player->hp;
-
-    if (getStatus() == STAT_DEAD)
-        return false;
-
-    newHp -= damage;
-
-    if (newHp < 0) {
-        setStatus(STAT_DEAD);
-        newHp = 0;
-    }
-    
-    player->hp = newHp;
-    notifyOfChange("PartyMember::applyDamage");
-
-    if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
-        Coords p = getCoords();                    
-        screenMessage("%s is Killed!\n", getName().c_str());
-        map->annotations->add(p, CORPSE_TILE)->setTTL(party->size());
-
-        /* remove yourself from the map */
-        map->removeObject(this);        
-        return false;
-    }
-
-    return true;
-}
-
-bool PartyMember::dealDamage(Creature *m, int damage) {
-    /* we have to record these now, because if we
-       kill the target, it gets destroyed */
-    bool isEvil = m->isEvil();
-    int m_xp = m->xp;
-
-    if (!Creature::dealDamage(m, damage)) {
-        /* half the time you kill an evil creature you get a karma boost */
-        if (isEvil && xu4_random(2) == 0)
-            c->party->adjustKarma(KA_KILLED_EVIL);
-        awardXp(m_xp);
-        return false;
-    }
-    return true;
-}
-
 void PartyMember::applyEffect(TileEffect effect) {
     if (getStatus() == STAT_DEAD)
         return;
@@ -368,6 +240,9 @@ void PartyMember::awardXp(int xp) {
     notifyOfChange("PartyMember::awardXp");
 }
 
+/**
+ * Perform a certain type of healing on the party member
+ */
 bool PartyMember::heal(HealType type) {
     switch(type) {
 
@@ -428,33 +303,8 @@ bool PartyMember::heal(HealType type) {
 }
 
 /**
- * Lose the equipped weapon for the player (flaming oil, ranged daggers, etc.)
- * Returns the number of weapons left of that type, including the one in
- * the players hand
+ * Remove status effects from the party member
  */
-int PartyMember::loseWeapon() {
-    int weapon = player->weapon;
-    
-    notifyOfChange("PartyMember::loseWeapon");
-
-    if (party->saveGame->weapons[weapon] > 0)
-        return (--party->saveGame->weapons[weapon]) + 1;
-    else {
-        player->weapon = WEAP_HANDS;
-        return 0;
-    }
-}
-
-/**
- * Applies a sleep spell to the party.
- */
-void PartyMember::putToSleep() {    
-    if (getStatus() != STAT_DEAD) {
-        addStatus(STAT_SLEEPING);
-        setTile(CORPSE_TILE);
-    }
-}
-
 void PartyMember::removeStatus(StatusType s) {
     Creature::removeStatus(s);
     player->status = status.back();
@@ -481,6 +331,142 @@ void PartyMember::setWeapon(WeaponType w) {
     notifyOfChange("PartyMember::setWeapon");
 }
 
+/**
+ * Applies damage to a player, and changes status to dead if hit
+ * points drop to zero or below.
+ */
+bool PartyMember::applyDamage(int damage) {
+    int newHp = player->hp;
+
+    if (getStatus() == STAT_DEAD)
+        return false;
+
+    newHp -= damage;
+
+    if (newHp < 0) {
+        setStatus(STAT_DEAD);
+        newHp = 0;
+    }
+    
+    player->hp = newHp;
+    notifyOfChange("PartyMember::applyDamage");
+
+    if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
+        Coords p = getCoords();                    
+        screenMessage("%s is Killed!\n", getName().c_str());
+        map->annotations->add(p, CORPSE_TILE)->setTTL(party->size());
+
+        /* remove yourself from the map */
+        map->removeObject(this);        
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Determine whether a player's attack hits or not.
+ */
+bool PartyMember::attackHit(Creature *m) {
+    if (Weapon::get(player->weapon)->alwaysHits() || player->dex >= 40)
+        return true;
+
+    return(m->isHit(player->dex));
+}
+
+bool PartyMember::dealDamage(Creature *m, int damage) {
+    /* we have to record these now, because if we
+       kill the target, it gets destroyed */
+    bool isEvil = m->isEvil();
+    int m_xp = m->xp;
+
+    if (!Creature::dealDamage(m, damage)) {
+        /* half the time you kill an evil creature you get a karma boost */
+        if (isEvil && xu4_random(2) == 0)
+            c->party->adjustKarma(KA_KILLED_EVIL);
+        awardXp(m_xp);
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Calculate damage for an attack.
+ */
+int PartyMember::getDamage() {
+    int maxDamage;
+
+    maxDamage = Weapon::get(player->weapon)->getDamage();
+    maxDamage += player->str;
+    if (maxDamage > 255)
+        maxDamage = 255;
+
+    return xu4_random(maxDamage);
+}
+
+/**
+ * Returns the tile that will be displayed when the party
+ * member's attack hits
+ */
+MapTile PartyMember::getHitTile() const {
+    return Weapon::get(getWeapon())->getHitTile();
+}
+
+/**
+ * Returns the tile that will be displayed when the party
+ * member's attack fails
+ */
+MapTile PartyMember::getMissTile() const {
+    return Weapon::get(getWeapon())->getMissTile();
+}
+
+/**
+ * Determine whether a player is hit by a melee attack.
+ */
+bool PartyMember::isHit(int hit_offset) {
+    return xu4_random(0x100) + hit_offset > Armor::get(player->armor)->getDefense();
+}
+
+bool PartyMember::isDead() {
+    return getStatus() == STAT_DEAD;
+}
+
+bool PartyMember::isDisabled() {
+    return (getStatus() == STAT_GOOD ||
+        getStatus() == STAT_POISONED) ? false : true;
+}
+
+/**
+ * Lose the equipped weapon for the player (flaming oil, ranged daggers, etc.)
+ * Returns the number of weapons left of that type, including the one in
+ * the players hand
+ */
+int PartyMember::loseWeapon() {
+    int weapon = player->weapon;
+    
+    notifyOfChange("PartyMember::loseWeapon");
+
+    if (party->saveGame->weapons[weapon] > 0)
+        return (--party->saveGame->weapons[weapon]) + 1;
+    else {
+        player->weapon = WEAP_HANDS;
+        return 0;
+    }
+}
+
+/**
+ * Put the party member to sleep
+ */
+void PartyMember::putToSleep() {    
+    if (getStatus() != STAT_DEAD) {
+        addStatus(STAT_SLEEPING);
+        setTile(CORPSE_TILE);
+    }
+}
+
+/**
+ * Wakes up the party member
+ */
 void PartyMember::wakeUp() {
     removeStatus(STAT_SLEEPING);    
     setTile(tileForClass(getClass()));
@@ -490,7 +476,6 @@ void PartyMember::wakeUp() {
 /**
  * Party class implementation
  */ 
-
 Party::Party(SaveGame *s) : saveGame(s) {
     for (int i = 0; i < saveGame->members; i++) {
         // add the members to the party
@@ -503,14 +488,14 @@ void Party::adjustFood(int food) {
     AdjustValue(saveGame->food, food, 999900, 0);
     if ((saveGame->food / 100) != (oldFood / 100)) {
         setChanged();
-        notifyObservers("adjustFood");
+        notifyObservers("Party::adjustFood");
     }
 }
 
 void Party::adjustGold(int gold) {
     AdjustValue(saveGame->gold, gold, 9999, 0);    
     setChanged();
-    notifyObservers("adjustGold");
+    notifyObservers("Party::adjustGold");
 }
 
 /**
@@ -619,7 +604,7 @@ void Party::adjustKarma(KarmaAction action) {
 
     /* something changed */
     setChanged();
-    notifyObservers("adjustKarma");
+    notifyObservers("Party::adjustKarma");
 
     /*
      * return to u4dos compatibility and handle losing of eighths
@@ -637,6 +622,9 @@ void Party::adjustKarma(KarmaAction action) {
     }
 }
 
+/**
+ * Apply effects to the entire party
+ */
 void Party::applyEffect(TileEffect effect) {
     int i;
 
@@ -658,16 +646,22 @@ void Party::applyEffect(TileEffect effect) {
     }
 }
 
+/**
+ * Attempt to elevate in the given virtue
+ */
 bool Party::attemptElevation(Virtue virtue) {
     if (saveGame->karma[virtue] == 99) {
         saveGame->karma[virtue] = 0;
         setChanged();
-        notifyObservers("attemptElevation");
+        notifyObservers("Party::attemptElevation");
         return true;
     } else
         return false;
 }
 
+/**
+ * Returns true if the party can enter the shrine
+ */
 bool Party::canEnterShrine(Virtue virtue) {
     if (saveGame->runes & (1 << (int) virtue))
         return true;
@@ -675,6 +669,9 @@ bool Party::canEnterShrine(Virtue virtue) {
         return false;
 }
 
+/**
+ * Returns true if the person can join the party
+ */
 bool Party::canPersonJoin(string name, Virtue *v) {
     int i;
 
@@ -691,6 +688,10 @@ bool Party::canPersonJoin(string name, Virtue *v) {
     return false;
 }
 
+/**
+ * Donates 'quantity' gold. Returns true if the donation succeeded,
+ * or false if there was not enough gold to make the donation
+ */
 bool Party::donate(int quantity) {
     if (quantity > saveGame->gold)
         return false;
@@ -701,6 +702,9 @@ bool Party::donate(int quantity) {
     return true;
 }
 
+/**
+ * Ends the party's turn
+ */
 void Party::endTurn() {
     int i;    
     
@@ -712,11 +716,11 @@ void Party::endTurn() {
         if ((c->location->context & CTX_NON_COMBAT) == c->location->context) {
             
             /* party members eat food (also non-combat) */
-            if (members[i]->getStatus() != STAT_DEAD)
+            if (!members[i]->isDead())
                 adjustFood(-1);
 
             switch (members[i]->getStatus()) {
-            case STAT_SLEEPING:            
+            case STAT_SLEEPING:
                 if (xu4_random(5) == 0)
                     members[i]->wakeUp();                    
                 break;
@@ -744,6 +748,9 @@ void Party::endTurn() {
         saveGame->shiphull++;
 }
 
+/**
+ * Adds a chest worth of gold to the party's inventory
+ */
 int Party::getChest() {
     int gold = xu4_random(50) + xu4_random(8) + 10;
     adjustGold(gold);    
@@ -782,6 +789,10 @@ bool Party::isDead() {
     return dead;
 }
 
+/**
+ * Returns true if the person with that name
+ * is already in the party
+ */
 bool Party::isPersonJoined(string name) {
     int i;
 
@@ -795,6 +806,10 @@ bool Party::isPersonJoined(string name) {
     return false;
 }
 
+/**
+ * Attempts to add the person to the party.
+ * Returns JOIN_SUCCEEDED if successful.
+ */
 CannotJoinError Party::join(string name) {
     int i;
     SaveGamePlayerRecord tmp;
@@ -816,7 +831,7 @@ CannotJoinError Party::join(string name) {
             saveGame->players[i] = tmp;
             saveGame->members++;
             setChanged();
-            notifyObservers("join");
+            notifyObservers("Party::join");
 
             members.push_back(new PartyMember(this, &saveGame->players[saveGame->members]));
 
@@ -827,6 +842,9 @@ CannotJoinError Party::join(string name) {
     return JOIN_NOT_EXPERIENCED;
 }
 
+/**
+ * Revives the party after the entire party has been killed
+ */
 void Party::reviveParty() {
     int i;
 
@@ -834,18 +852,36 @@ void Party::reviveParty() {
         members[i]->setStatus(STAT_GOOD);
         saveGame->players[i].hp = saveGame->players[i].hpMax;
     }
-
-    setChanged();
-    notifyObservers("reviveParty");
+    
     saveGame->food = 20099;
     saveGame->gold = 200;
     (*setTransportCallback)(AVATAR_TILE);
+    setChanged();
+    notifyObservers("Party::reviveParty");
 }
 
+void Party::adjustReagent(int reagent, int amt) {
+    if (c->saveGame->reagents[reagent] >= amt) {
+        AdjustValue(c->saveGame->reagents[reagent], amt, 99, 0);
+        setChanged();
+        notifyObservers("Party::adjustReagent");
+    }
+}
+
+int Party::reagents(int reagent) const {
+    return c->saveGame->reagents[reagent];
+}
+
+/**
+ * Returns the size of the party
+ */
 int Party::size() const {
     return members.size();
 }
 
+/**
+ * Returns a pointer to the party member indicated
+ */
 PartyMember *Party::member(int index) const {
     return members[index];
 }

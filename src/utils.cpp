@@ -5,6 +5,7 @@
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include "utils.h"
+#include <cctype>
 #include <cstdlib>
 #include <ctime>
 
@@ -24,4 +25,16 @@ void xu4_srandom() {
 int xu4_random(int upperRange) {
     int r = rand();
     return (int) ((((double)upperRange) * r) / (RAND_MAX+1.0));
+}
+
+/**
+ * Trims whitespace from a std::string
+ */
+void trim(std::string *val) {
+    using namespace std;
+    string::iterator i;
+    for (i = val->begin(); (i != val->end()) && isspace(*i); )
+        i = val->erase(i);
+    for (i = val->end()-1; (i != val->begin()) && isspace(*i); )
+        i = val->erase(i)-1;
 }

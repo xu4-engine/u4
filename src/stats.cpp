@@ -19,6 +19,8 @@
 #include "tile.h"
 #include "weapon.h"
 
+extern bool verbose;
+
 /**
  * StatsArea class implementation
  */
@@ -55,7 +57,7 @@ void StatsArea::update(Observable<string> *o, string arg) {
     int i;
     unsigned char mask;
 
-    if (!arg.empty())
+    if (!arg.empty() && verbose)
         fprintf(stdout, "Observer updated: Stats area redrawn from function %s()\n", arg.c_str());
 
     clear();
@@ -357,7 +359,8 @@ void StatsArea::showReagents() {
     int r, line;    
     extern Menu spellMixMenu;
     view = STATS_REAGENTS;
-
+    
+    clear();
     setTitle("Reagents");    
     
     line = STATS_AREA_Y;
@@ -372,7 +375,7 @@ void StatsArea::showReagents() {
             screenTextAt(STATS_AREA_X+13, line++, "%2d", n);
         }
     }
-
+    
     spellMixMenu.show();    
 }
 
@@ -383,6 +386,7 @@ void StatsArea::showMixtures() {
     int s, line, col;
     view = STATS_MIXTURES;
 
+    clear();
     setTitle("Mixtures");
 
     line = STATS_AREA_Y;

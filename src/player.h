@@ -77,51 +77,52 @@ public:
 
     void notifyOfChange(string arg);
     
-    virtual bool attackHit(Creature *m);
-    ClassType getClass();
-    int getDamage();
-    int getHp();
-    int getMaxHp();
-    int getMp();
-    int getMaxMp();
-    int getRealLevel();
-    int getMaxLevel();
-    virtual string getName() const;
-    StatusType getStatus();
-    SexType getSex() const;
+    // Accessor methods
+    int getHp() const;
+    int getMaxHp() const;
+    int getExp() const;
     int getStr() const;
     int getDex() const;
     int getInt() const;
-    int getExp() const;
-    virtual MapTile getHitTile() const;
-    virtual MapTile getMissTile() const;
+    int getMp() const;
+    int getMaxMp() const;
+    WeaponType getWeapon() const;
     ArmorType getArmor() const;
-    WeaponType getWeapon() const;    
-    virtual bool isHit(int hit_offset = 0);
-    bool isDead();
-    bool isDisabled();        
-    
+    virtual string getName() const;    
+    SexType getSex() const;
+    ClassType getClass() const;
+    StatusType getStatus() const;
+    int getRealLevel() const;
+    int getMaxLevel() const;
+
     virtual void addStatus(StatusType status);
     void adjustMp(int pts);
-    void advanceLevel();
-    virtual bool applyDamage(int damage);
-    virtual bool dealDamage(Creature *m, int damage);
+    void advanceLevel();    
     void applyEffect(TileEffect effect);
     void awardXp(int xp);
     bool heal(HealType type);    
-    int  loseWeapon();
-    virtual void putToSleep();
     virtual void removeStatus(StatusType status);
     void setHp(int hp);
     void setMp(int mp);    
     void setArmor(ArmorType a);
     void setWeapon(WeaponType w);    
+    
+    virtual bool applyDamage(int damage);    
+    virtual bool attackHit(Creature *m);
+    virtual bool dealDamage(Creature *m, int damage);
+    int getDamage();   
+    virtual MapTile getHitTile() const;
+    virtual MapTile getMissTile() const;    
+    virtual bool isHit(int hit_offset = 0);
+    bool isDead();
+    bool isDisabled();
+    int  loseWeapon();
+    virtual void putToSleep();
     virtual void wakeUp();
 
 protected:
     SaveGamePlayerRecord *player;
-    class Party *party;
-    
+    class Party *party;    
 };
 
 /**
@@ -148,7 +149,10 @@ public:
     bool isDead();
     bool isPersonJoined(string name);
     CannotJoinError join(string name);
-    void reviveParty();    
+    void reviveParty();
+    
+    void adjustReagent(int reagent, int amt);
+    int reagents(int reagent) const;
 
     int size() const;
     PartyMember *member(int index) const;    

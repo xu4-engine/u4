@@ -1488,7 +1488,7 @@ bool Script::mathParse(string str, int *lval, int *rval, string *op) {
 }
 
 /**
- * Parses a string containing in operator (+, -, *, /, etc.) into 3 parts,
+ * Parses a string containing an operator (+, -, *, /, etc.) into 3 parts,
  * left, right, and operator.
  */
 void Script::parseOperation(string str, string *left, string *right, string *op) {

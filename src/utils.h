@@ -5,6 +5,8 @@
 #ifndef UTILS_C
 #define UTILS_C
 
+#include <string>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -15,6 +17,7 @@ extern "C" {
 
 void xu4_srandom(void);
 int xu4_random(int upperval);
+void trim(std::string *val);
 
 #ifdef __cplusplus
 }

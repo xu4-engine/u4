@@ -10,22 +10,112 @@
 #include "screen.h"
 
 /**
+ * MenuItem class
+ */
+MenuItem::MenuItem(class Menu *m, MenuId i, string t, short xpos, short ypos, ActivateMenuItem af, ActivateAction ao) :
+    menu(m),
+    id(i),
+    x(xpos),
+    y(ypos),
+    text(t),    
+    highlighted(false),
+    selected(false),
+    visible(true),
+    activateMenuItem(af),
+    activateOn(ao)
+{    
+}
+
+/**
+ * Notifies the containing menu that the menu item has changed
+ */
+void MenuItem::notifyOfChange(string arg) {
+    if (menu) {
+        menu->setChanged();
+        menu->notifyObservers(arg);
+    }
+}
+
+MenuId MenuItem::getId() const                      { return id; }
+short MenuItem::getX() const                        { return x; }
+short MenuItem::getY() const                        { return y; }
+string MenuItem::getText() const                    { return text; }
+bool MenuItem::isHighlighted() const                { return highlighted; }
+bool MenuItem::isSelected() const                   { return selected; }
+bool MenuItem::isVisible() const                    { return visible; }
+ActivateMenuItem MenuItem::getActivateFunc() const  { return activateMenuItem; }
+ActivateAction MenuItem::getActivateAction() const  { return activateOn; }
+
+void MenuItem::setId(MenuId i) {
+    if (id != i) {
+        id = i;
+        notifyOfChange("MenuItem::setId");
+    }
+}
+
+void MenuItem::setX(int xpos) {
+    if (xpos != x) {
+        x = xpos;
+        notifyOfChange("MenuItem::setX");
+    }
+}
+
+void MenuItem::setY(int ypos) {
+    if (ypos != y) {
+        y = ypos;
+        notifyOfChange("MenuItem::setY");
+    }
+}
+
+void MenuItem::setText(string t) {
+    text = t;
+    notifyOfChange("MenuItem::setText");
+}
+
+void MenuItem::setHighlighted(bool h) {
+    if (h != highlighted) {
+        highlighted = h;
+        notifyOfChange("MenuItem::setHighlighted");
+    }
+}
+
+void MenuItem::setSelected(bool s) {
+    if (s != selected) {
+        selected = s;
+        notifyOfChange("MenuItem::setSelected");
+    }
+}
+
+void MenuItem::setVisible(bool v) {
+    if (v != visible) {
+        visible = v;
+        notifyOfChange("MenuItem::setVisible");
+    }
+}
+
+void MenuItem::setActivateFunc(ActivateMenuItem ami) {
+    if (ami != activateMenuItem) {
+        activateMenuItem = ami;
+        notifyOfChange("MenuItem::setActivateFunc");
+    }
+}
+
+void MenuItem::setActivateAction(ActivateAction aa) {
+    if (aa != activateOn) {
+        activateOn = aa;
+        notifyOfChange("MenuItem::setActivateAction");
+    }
+}
+
+/**
  * Adds an item to the menu list and returns the menu
  */
 void Menu::add(MenuId id, string text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn) {
-    MenuItem menuItem;
-
-    menuItem.id = id;
-    menuItem.text = text;
-    menuItem.x = x;
-    menuItem.y = y;
-    menuItem.isHighlighted = 0;
-    menuItem.isSelected = 0;
-    menuItem.isVisible = 1;
-    menuItem.activateMenuItem = activate;
-    menuItem.activateOn = activateOn;
+    MenuItem menuItem(this, id, text, x, y, activate, activateOn);
 
     items.push_back(menuItem);
+    setChanged();
+    notifyObservers("Menu::add");
 }
 
 /**
@@ -41,10 +131,14 @@ Menu::MenuItemList::iterator Menu::getCurrent() {
 void Menu::setCurrent(MenuItemList::iterator i) {
     selected = i;
     highlight(&(*selected));
+    setChanged();
+    notifyObservers("Menu::setCurrent");
 }
 
 void Menu::setCurrent(MenuId id) {
     selected = getById(id);
+    setChanged();
+    notifyObservers("Menu::setCurrent");
 }
 
 /**
@@ -54,12 +148,12 @@ void Menu::show() {
     for (current = items.begin(); current != items.end(); current++) {
         MenuItem *mi = &(*current);
 
-        if (mi->isVisible) {
-            if (mi->isSelected)
+        if (mi->isVisible()) {
+            if (mi->isSelected())
                 screenTextAt(mi->x-1, mi->y, "\010%s", mi->text.c_str());
             else screenTextAt(mi->x, mi->y, mi->text.c_str());
 
-            if (mi->isHighlighted) {
+            if (mi->isHighlighted()) {
                 screenEnableCursor();
                 screenSetCursorPos(mi->x - 2, mi->y);
                 screenShowCursor();
@@ -77,7 +171,7 @@ bool Menu::isVisible() {
     bool visible = false;
 
     for (current = items.begin(); current != items.end(); current++) {
-        if (current->isVisible)
+        if (current->isVisible())
             visible = true;
     }
 
@@ -91,13 +185,15 @@ void Menu::next() {
     if (isVisible()) {        
         if (++selected == items.end())
             selected = items.begin();
-        while (!selected->isVisible) {
+        while (!selected->isVisible()) {
             if (++selected == items.end())
                 selected = items.begin();            
         }
-    }    
+    }
 
     highlight(&(*selected));
+    setChanged();
+    notifyObservers("Menu::next");
 }
 
 /**
@@ -109,7 +205,7 @@ void Menu::prev() {
             selected = items.end();
         
         selected--;
-        while (!selected->isVisible) {
+        while (!selected->isVisible()) {
             if (selected == items.begin())
                 selected = items.end();
             selected--;
@@ -117,6 +213,8 @@ void Menu::prev() {
     }
 
     highlight(&(*selected));
+    setChanged();
+    notifyObservers("Menu::prev");
 }
 
 /**
@@ -124,9 +222,12 @@ void Menu::prev() {
  */ 
 void Menu::highlight(MenuItem *item) {
     for (current = items.begin(); current != items.end(); current++)
-        current->isHighlighted = false;    
+        current->highlighted = false;
     if (item)
-        item->isHighlighted = true;    
+        item->highlighted = true;
+    
+    setChanged();
+    notifyObservers("Menu::highlight");
 }
 
 /**
@@ -151,7 +252,7 @@ Menu::MenuItemList::iterator Menu::begin_visible() {
         return items.end();
 
     current = items.begin();
-    while (!current->isVisible && current != items.end())
+    while (!current->isVisible() && current != items.end())
         current++;
 
     return current;
@@ -163,18 +264,22 @@ Menu::MenuItemList::iterator Menu::begin_visible() {
  *      - highlights the first menu item
  *      - selects the first visible menu item
  */
-void Menu::reset() {
-    /* get the first visible menu item */
+void Menu::reset(bool highlightFirst) {
+    /* get the first visible menu item */    
     selected = begin_visible();
     
     /* un-highlight and deselect each menu item */
     for (current = items.begin(); current != items.end(); current++) {
-        current->isHighlighted = 0;        
-        current->isSelected = 0;
+        current->highlighted = false;
+        current->selected = false;
     }
 
     /* highlight the first visible menu item */
-    highlight(&(*selected));    
+    if (highlightFirst)
+        highlight(&(*selected));  
+
+    setChanged();
+    notifyObservers("Menu::reset");
 }
 
 /**
@@ -223,4 +328,7 @@ void Menu::activateItem(MenuId id, ActivateAction action) {
     /* make sure the action given will activate the menu item */
     if ((mi->activateOn & action) && mi->activateMenuItem)
         (*mi->activateMenuItem)(mi, action);    
+
+    setChanged();
+    notifyObservers("Menu::activateItem");
 }
