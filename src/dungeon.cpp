@@ -88,7 +88,7 @@ bool dungeonLoadRoom(Dungeon *dng, int room) {
     if (dng->room != NULL)
         delete dng->room;    
     
-    dng->room = dynamic_cast<CombatMap*>(mapMgrInitMap(MAPTYPE_COMBAT));
+    dng->room = getCombatMap(mapMgrInitMap(MAPTYPE_COMBAT));
 
     dng->room->id = 0;
     dng->room->border_behavior = BORDER_FIXED;

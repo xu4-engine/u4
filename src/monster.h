@@ -164,7 +164,7 @@ public:
     int setInitialHp(int hp = -1);
 
     bool specialAction();
-    bool specialEffect();
+    bool specialEffect();	
 
     // Properties
 public:

@@ -13,6 +13,7 @@
 #include "debug.h"
 #include "direction.h"
 #include "location.h"
+#include "mapmgr.h"
 #include "monster.h"
 #include "movement.h"
 #include "object.h"
@@ -229,6 +230,9 @@ int MapCoords::distance(const MapCoords &c, const Map *map) const {
  */ 
 
 Map::Map() {}
+Map::Map(MapId id) {
+    *this = *mapMgrGetById(id);
+}
 Map::~Map() {}
 
 string Map::getName() {

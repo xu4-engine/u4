@@ -302,6 +302,7 @@ MapTile spellMagicAttackTile;
 int spellMagicAttackDamage;
 
 void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage) {
+	CombatMap *cm = getCombatMap();
     CoordActionInfo *info;
 
     spellMagicAttackDamage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
@@ -313,11 +314,11 @@ void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage)
     /* setup the spell */
     info = new CoordActionInfo;
     info->handleAtCoord = &spellMagicAttackAtCoord;
-    info->origin = combatInfo.party[FOCUS]->getCoords();
+    info->origin = cm->party[cm->focus]->getCoords();
     info->prev = MapCoords(-1, -1);
     info->range = 11;
     info->validDirections = MASK_DIR_ALL;
-    info->player = FOCUS;
+    info->player = cm->focus;
     info->blockedPredicate = &tileCanAttackOver;
     info->blockBefore = 1;
     info->firstValidDistance = 1;
@@ -332,6 +333,7 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
     CoordActionInfo* info = (CoordActionInfo*)data;
     MapCoords old = info->prev;
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
+	CombatMap *cm = getCombatMap();
     
     info->prev = coords;
 
@@ -342,10 +344,10 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
     /* Check to see if we might hit something */
     if (coords.x != -1 && coords.y != -1) {
 
-        monster = combatMonsterAt(coords);
+        monster = cm->monsterAt(coords);
 
         if (monster == -1) {
-            c->location->map->annotations->add(coords, spellMagicAttackTile, true);
+            cm->annotations->add(coords, spellMagicAttackTile, true);
             gameUpdateScreen();
         
             /* Based on attack speed setting in setting struct, make a delay for
@@ -360,7 +362,7 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
             attackFlash(coords, spellMagicAttackTile, 3);
 
             /* apply the damage to the monster */
-            combatApplyDamageToMonster(monster, spellMagicAttackDamage, FOCUS);
+            cm->applyDamageToMonster(monster, spellMagicAttackDamage, cm->focus);
         }
     }
 
@@ -368,6 +370,7 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
 }
 
 static int spellAwaken(int player) {
+	CombatMap *cm = getCombatMap();
     ASSERT(player < 8, "player out of range: %d", player);
 
     if (player < c->saveGame->members && 
@@ -380,8 +383,8 @@ static int spellAwaken(int player) {
         c->players[player].status = STAT_GOOD;
 
         /* wake the member up! */
-        if (combatInfo.party.find(player) != combatInfo.party.end())
-            combatInfo.party[player]->setTile(tileForClass(c->players[player].klass));
+        if (cm->party.find(player) != cm->party.end())
+            cm->party[player]->setTile(tileForClass(c->players[player].klass));
 
         return 1;
     }
@@ -546,7 +549,7 @@ static int spellFireball(int dir) {
 }
 
 static int spellGate(int phase) {
-    const Coords *moongate;
+    const MapCoords *moongate;
 
     moongate = moongateGetGateCoordsForPhase(phase);
     if (moongate) 
@@ -618,15 +621,16 @@ static int spellQuick(int unused) {
 }
 
 static int spellSleep(int unused) {
+	CombatMap *cm = getCombatMap();
     int i;
 
     /* try to put each monster to sleep */
     for (i = 0; i < AREA_MONSTERS; i++) { 
-        if (combatInfo.monsters.find(i) != combatInfo.monsters.end()) {
-            if ((combatInfo.monsters[i]->resists != EFFECT_SLEEP) &&
-                xu4_random(0xFF) >= combatInfo.monsters[i]->hp) {
-                combatInfo.monsters[i]->status = STAT_SLEEPING;
-                combatInfo.monsters[i]->setAnimated(false); /* freeze monster */
+        if (cm->monsters.find(i) != cm->monsters.end()) {
+            if ((cm->monsters[i]->resists != EFFECT_SLEEP) &&
+                xu4_random(0xFF) >= cm->monsters[i]->hp) {
+                cm->monsters[i]->status = STAT_SLEEPING;
+                cm->monsters[i]->setAnimated(false); /* freeze monster */
             }
         }
     }
@@ -635,28 +639,29 @@ static int spellSleep(int unused) {
 }
 
 static int spellTremor(int unused) {
+	CombatMap *cm = getCombatMap();
     int i;        
     MapCoords coords;
 
     for (i = 0; i < AREA_MONSTERS; i++) {        
         /* make sure we have a valid monster */
-        if (combatInfo.monsters.find(i) == combatInfo.monsters.end())
+        if (cm->monsters.find(i) == cm->monsters.end())
             continue;
         /* monsters with over 192 hp are unaffected */
-        else if (combatInfo.monsters[i]->hp > 192)
+        else if (cm->monsters[i]->hp > 192)
             continue;
         else {
-            coords = combatInfo.monsters[i]->getCoords();
+            coords = cm->monsters[i]->getCoords();
 
             /* Deal maximum damage to monster */
             if (xu4_random(2) == 0) {
-                combatApplyDamageToMonster(i, 0xFF, FOCUS);
+                cm->applyDamageToMonster(i, 0xFF, cm->focus);
                 attackFlash(coords, HITFLASH_TILE, 1);
             }
             /* Deal enough damage to monster to make it flee */
             else if (xu4_random(2) == 0) {
-                if (combatInfo.monsters[i]->hp > 23)
-                    combatApplyDamageToMonster(i, combatInfo.monsters[i]->hp-23, FOCUS);                
+                if (cm->monsters[i]->hp > 23)
+                    cm->applyDamageToMonster(i, cm->monsters[i]->hp-23, cm->focus);
                 attackFlash(coords, HITFLASH_TILE, 1);
             }
         }
@@ -666,13 +671,14 @@ static int spellTremor(int unused) {
 }
 
 static int spellUndead(int unused) {    
+	CombatMap *cm = getCombatMap();
     int i;
     
     for (i = 0; i < AREA_MONSTERS; i++) {
         /* Deal enough damage to undead to make them flee */
-        if ((combatInfo.monsters.find(i) != combatInfo.monsters.end()) && 
-            combatInfo.monsters[i]->isUndead() && xu4_random(2) == 0)
-            combatInfo.monsters[i]->hp = 23;        
+        if ((cm->monsters.find(i) != cm->monsters.end()) && 
+            cm->monsters[i]->isUndead() && xu4_random(2) == 0)
+            cm->monsters[i]->hp = 23;        
     }
     
     return 1;

@@ -3,13 +3,7 @@ MAIN=u4$(EXEEXT)
 
 VERSION=1.0cvs
 
-CSRCS=\
-        lzw/hash.c \
-        lzw/lzw.c \
-        unzip.c \
-        $(NULL)
-
-CXXSRCS=\
+SRCS=\
         annotation.cpp \
         armor.cpp \
         camp.cpp \
@@ -61,12 +55,15 @@ CXXSRCS=\
         u4_$(UI).cpp \
         u4file.cpp \
         utils.cpp \
+        unzip.cpp \
         weapon.cpp \
         xml.cpp \
+        lzw/hash.cpp \
+        lzw/lzw.cpp \
         lzw/u4decode.cpp \
         $(NULL)
 
-OBJS += $(CSRCS:.c=.o) $(CXXSRCS:.cpp=.o)
+OBJS += $(SRCS:.cpp=.o)
 
 all:: $(MAIN) mkutils
 
@@ -93,5 +90,5 @@ clean:: cleanutil
 cleanutil::
 	rm -rf util/dumpsavegame.o dumpsavegame$(EXEEXT) util/u4enc.o u4enc$(EXEEXT) util/u4dec.o u4dec$(EXEEXT) util/pngconv.o util/tlkconv.o tlkconv$(EXEEXT)
 
-TAGS: $(CSRCS) $(CXXSRCS)
-	etags $(CSRCS) $(CXXSRCS)
+TAGS: $(SRCS)
+	etags $(SRCS)

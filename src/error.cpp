@@ -5,12 +5,8 @@
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include <cstdio>
-#include <cstdlib>
-#include <cstdarg>
 
 #include "error.h"
-
-using namespace std;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 

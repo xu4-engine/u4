@@ -15,7 +15,6 @@
 
 #define AREA_MONSTERS   16
 #define AREA_PLAYERS    8
-#define FOCUS           combatInfo.partyFocus
 
 class Object;
 class Monster;
@@ -33,62 +32,75 @@ typedef enum {
 
 class CombatMap : public Map {
 public:
-    CombatMap() {}
+    CombatMap();
+    CombatMap(MapId id);
 
-    Coords monster_start[AREA_MONSTERS];
-    Coords player_start[AREA_PLAYERS];
-};
+    // Methods
+    void init(class Monster *m);
+    void initCamping();
+    void initDungeonRoom(int room, Direction from);
+    void begin();
+    bool addMonster(const class Monster *m, Coords coords);
+    bool setActivePlayer(int player);
+    bool putPlayerToSleep(int player);
+    int partyMemberAt(Coords coords);    
+    int monsterAt(Coords coords);
+    void placePartyMembers();
+    void fillMonsterTable(const Monster *monster);
+    void placeMonsters();
+    int initialNumberOfMonsters(const class Monster *monster);
+    static MapId mapForTile(MapTile ground, MapTile transport, class Object *obj);
+    void applyDamageToMonster(int monster, int damage, int player);
+    void applyDamageToPlayer(int player, int damage);    
 
-typedef struct _CombatInfo {
-    unsigned char partyFocus;
-    const class Monster *monsterTable[AREA_MONSTERS];
-    class Monster *monster;
+    int isWon(void);
+    int isLost(void);
+    void end(bool adjustKarma);
+    void moveMonsters(void);
+    void applyMonsterTileEffects(void);
+        
+//protected:
+    int findTargetForMonster(Monster *monster, int *distance, int ranged);    
+    int divideMonster(Monster *monster);
+    int nearestPartyMember(Monster *obj, int *dist);
+    int hideOrShowCamouflageMonster(Monster *monster);
+
+    // Properties
+public:
+    unsigned char focus;
 
     CombatObjectMap party;
     CombatObjectMap monsters;
-    
-    MapCoords partyStartCoords[AREA_PLAYERS];
-    MapCoords monsterStartCoords[AREA_MONSTERS];
 
-    unsigned char dungeonRoom;
-    unsigned char altarRoom;
-    unsigned char camping;
-    unsigned char inn;    
-    unsigned char placeParty;
-    unsigned char placeMonsters;    
-    unsigned char winOrLose;
-    unsigned char showCombatMessage;
+//protected:
+    
+    const class Monster *monsterTable[AREA_MONSTERS];
+    class Monster *monster;
+
+    Coords monster_start[AREA_MONSTERS];
+    Coords player_start[AREA_PLAYERS];    
+
+    bool dungeonRoom;
+    BaseVirtue altarRoom;
+    bool camping;
+    bool inn;
+    bool placePartyOnMap;
+    bool placeMonstersOnMap;
+    bool winOrLose;
+    bool showCombatMessage;
     Direction exitDir;
-    CombatMap *newCombatMap;
-} CombatInfo;
+};
+
+bool isCombatMap(Map *punknown);
+CombatMap *getCombatMap(Map *punknown = NULL);
 
 void attackFlash(Coords coords, MapTile tile, int timeFactor);
-void combatInit(class Monster *m, MapId mapid);
-void combatInitCamping(void);
-void combatInitDungeonRoom(int room, Direction from);
-void combatBegin();
-int combatAddMonster(const class Monster *monster, Coords coords);
-void combatFillMonsterTable(const class Monster *monster);
-int combatSetActivePlayer(int player);
-int combatPutPlayerToSleep(int player);
-int combatPartyMemberAt(Coords coords);
-int combatMonsterAt(Coords coords);
-void combatPlacePartyMembers(void);
-void combatPlaceMonsters(void);
 void combatFinishTurn(void);
-int combatInitialNumberOfMonsters(const class Monster *monster);
-MapId combatMapForTile(MapTile groundTile, MapTile transport, class Object *obj);
-void combatApplyDamageToMonster(int monster, int damage, int player);
-void combatApplyDamageToPlayer(int player, int damage);
 MoveReturnValue combatMovePartyMember(Direction dir, int userEvent);
 
 /**
  * Key handlers
  */ 
 bool combatBaseKeyHandler(int key, void *data);
-
-extern CombatInfo combatInfo;
-
-bool isCombatMap(Map *punknown);
 
 #endif

@@ -86,6 +86,7 @@ public:
 class Map {    
 public:
     Map();
+    Map(MapId id);
     virtual ~Map();
 
     // Member functions

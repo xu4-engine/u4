@@ -316,35 +316,36 @@ int moveCombatObject(int act, Map *map, Monster *obj, MapCoords target) {
  * Moves a party member during combat screens
  */
 MoveReturnValue movePartyMember(Direction dir, int userEvent) {
+    CombatMap *cm = getCombatMap();
     MoveReturnValue result = MOVE_SUCCEEDED;    
     int movementMask;
-    int member = combatInfo.partyFocus;
+    int member = cm->focus;
     MapCoords newCoords;
 
     /* find our new location */
-    newCoords = combatInfo.party[member]->getCoords();
+    newCoords = cm->party[member]->getCoords();
     newCoords.move(dir, c->location->map);
 
     if (MAP_IS_OOB(c->location->map, newCoords)) {
-        bool sameExit = (!combatInfo.dungeonRoom || (combatInfo.exitDir == DIR_NONE) || (dir == combatInfo.exitDir));
+        bool sameExit = (!cm->dungeonRoom || (cm->exitDir == DIR_NONE) || (dir == cm->exitDir));
         if (sameExit) {
             /* if in a win-or-lose battle and not camping, then it can be bad to flee while healthy */
-            if (combatInfo.winOrLose && !combatInfo.camping) {
+            if (cm->winOrLose && !cm->camping) {
                 /* A fully-healed party member fled from an evil monster :( */
-                if (combatInfo.monster && combatInfo.monster->isEvil() && 
+                if (cm->monster && cm->monster->isEvil() && 
                     c->players[member].hp == c->players[member].hpMax)
                     playerAdjustKarma(KA_HEALTHY_FLED_EVIL);
             }
 
-            combatInfo.exitDir = dir;
-            c->location->map->removeObject(combatInfo.party[member]);
-            combatInfo.party.erase(combatInfo.party.find(member));            
+            cm->exitDir = dir;
+            c->location->map->removeObject(cm->party[member]);
+            cm->party.erase(cm->party.find(member));            
             return (MoveReturnValue)(MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE | MOVE_SUCCEEDED | MOVE_END_TURN);
         }
         else return (MoveReturnValue)(MOVE_MUST_USE_SAME_EXIT | MOVE_END_TURN);
     }
 
-    movementMask = c->location->map->getValidMoves(combatInfo.party[member]->getCoords(), combatInfo.party[member]->getTile());
+    movementMask = c->location->map->getValidMoves(cm->party[member]->getCoords(), cm->party[member]->getTile());
     if (!DIR_IN_MASK(dir, movementMask))
         return (MoveReturnValue)(MOVE_BLOCKED | MOVE_END_TURN);
 
@@ -352,10 +353,10 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
     if (!slowedByTile(c->location->map->tileAt(newCoords, WITHOUT_OBJECTS)))
     {
         /* move succeeded */        
-        combatInfo.party[member]->setCoords(newCoords);
+        cm->party[member]->setCoords(newCoords);
 
         /* handle dungeon room triggers */
-        if (combatInfo.dungeonRoom) {
+        if (cm->dungeonRoom) {
             Dungeon *dungeon = dynamic_cast<Dungeon*>(c->location->prev->map);
             int i;
             Trigger *triggers = dungeon->currentRoom->triggers;            

@@ -159,8 +159,10 @@ MapTile locationGetReplacementTile(Location *location, MapCoords coords) {
  *     If elsewhere - returns the coordinates of the avatar
  */
 int locationGetCurrentPosition(Location *location, MapCoords *coords) {
-    if (location->context & CTX_COMBAT)
-        *coords = combatInfo.party[FOCUS]->getCoords();
+    if (location->context & CTX_COMBAT) {
+        CombatMap *cm = getCombatMap();
+        *coords = cm->party[cm->focus]->getCoords();
+    }
     else
         *coords = location->coords;
 

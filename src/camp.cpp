@@ -38,8 +38,13 @@ void campBegin(void) {
     musicCamp();    
     
     /* setup camp (possible, but not for-sure combat situation */
-    combatInitCamping();
-    combatBegin();
+    if (c->location->context & CTX_DUNGEON)
+        gameSetMap(mapMgrGetById(MAP_DUNGEON_CON), 1, NULL);
+    else gameSetMap(mapMgrGetById(MAP_CAMP_CON), 1, NULL);
+
+    CombatMap *cm = getCombatMap();
+    cm->initCamping();
+    cm->begin();    
     
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
     eventHandlerAddTimerCallback(&campTimer, (eventTimerGranularity * settings.gameCyclesPerSecond) * settings.campTime);
@@ -55,17 +60,18 @@ void campTimer(void *data) {
 
     /* Is the party ambushed during their rest? */
     if (settings.campingAlwaysCombat || (xu4_random(8) == 0)) {
-        const Monster *m = monsters.randomAmbushing();        
+        CombatMap *cm = getCombatMap();
+        const Monster *m = monsters.randomAmbushing();
                 
         musicPlay();        
         screenMessage("Ambushed!\n");
         
         /* create an ambushing monster (so it leaves a chest) */
-        combatInfo.monster = c->location->prev->map->addMonster(m, c->location->prev->coords);
+        cm->monster = c->location->prev->map->addMonster(m, c->location->prev->coords);
         
         /* fill the monster table with monsters and place them */
-        combatFillMonsterTable(m);
-        combatPlaceMonsters();
+        cm->fillMonsterTable(m);
+        cm->placeMonsters();
 
         /* monsters go first! */
         combatFinishTurn();
@@ -74,11 +80,11 @@ void campTimer(void *data) {
 }
 
 void campEnd(void) {
-    int i, healed = 0;
+    int i, healed = 0;    
 
     eventHandlerPopKeyHandler();
     gameExitToParentMap();
-    musicFadeIn(CAMP_FADE_IN_TIME, 1);    
+    musicFadeIn(CAMP_FADE_IN_TIME, 1);
     
     /* Wake everyone up! */
     /* FIXME: sleeping like this will again cure poison -- needs to be fixed */
@@ -93,8 +99,7 @@ void campEnd(void) {
 
     screenMessage(healed ? "Party Healed!\n" : "No effect.\n");
     c->saveGame->lastcamp = (c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff;
-
-    combatInfo.camping = 0;
+    
     (*c->location->finishTurn)();
 }
 
@@ -138,7 +143,8 @@ void innBegin(void) {
 }
 
 void innTimer(void *data) {
-    eventHandlerRemoveTimerCallback(&innTimer);
+    eventHandlerRemoveTimerCallback(&innTimer);    
+
     /**
      * FIXME: normally we would "pop" the key handler
      * here, but for some reason the "ignore key"
@@ -172,11 +178,14 @@ void innTimer(void *data) {
             screenMessage("\nIn the middle of the night while out on a stroll...\n\n");
             showMessage = false;
         }
+
+        gameSetMap(mapMgrGetById(mapid), true, NULL);
+        CombatMap *cm = getCombatMap();
         
-        combatInfo.inn = 1;
-        combatInit(monster, mapid);
-        combatInfo.showCombatMessage = showMessage;
-        combatBegin();        
+        cm->inn = true;
+        cm->init(monster);
+        cm->showCombatMessage = showMessage;        
+        cm->begin();
     }
     
     else {

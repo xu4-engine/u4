@@ -264,12 +264,14 @@ void useStone(void *item) {
      * Named a specific stone (after using "stone" or "stones")
      */    
     if (item != NULL) {
+        CombatMap *cm = getCombatMap();
+
         if (needStoneNames) {
             /* named a stone while in a dungeon altar room */
             if (c->location->context & CTX_ALTAR_ROOM) {
-                needStoneNames--;
+                needStoneNames--;                
 
-                switch(combatInfo.altarRoom) {
+                switch(cm->altarRoom) {
                 case VIRT_TRUTH: attr = &truth; break;
                 case VIRT_LOVE: attr = &love; break;
                 case VIRT_COURAGE: attr = &courage; break;
@@ -299,7 +301,7 @@ void useStone(void *item) {
                 /* all the stones have been entered, verify them! */
                 else {
                     unsigned short key = 0xFFFF;
-                    switch(combatInfo.altarRoom) {
+                    switch(cm->altarRoom) {
                         case VIRT_TRUTH:    key = ITEM_KEY_T; break;
                         case VIRT_LOVE:     key = ITEM_KEY_L; break;
                         case VIRT_COURAGE:  key = ITEM_KEY_C; break;

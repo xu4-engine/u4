@@ -1758,7 +1758,7 @@ bool gameZtatsKeyHandler(int key, void *data) {
 
 bool gameSpecialCmdKeyHandler(int key, void *data) {
     int i;
-    const Coords *moongate;
+    const MapCoords *moongate;
     bool valid = true;
 
     switch (key) {
@@ -2116,8 +2116,12 @@ bool attackAtCoord(MapCoords coords, int distance, void *data) {
         ((m->getType() == OBJECT_PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))) 
         playerAdjustKarma(KA_ATTACKED_GOOD);
 
-    combatInit(m, combatMapForTile(ground, (MapTile)c->saveGame->transport, m));
-    combatBegin();
+    Map *map = mapMgrGetById(CombatMap::mapForTile(ground, (MapTile)c->saveGame->transport, m));
+    gameSetMap(map, true, NULL);
+    CombatMap *cm = getCombatMap();
+    
+    cm->init(m);
+    cm->begin();
     return true;
 }
 
@@ -2551,8 +2555,14 @@ MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
             if (c->location->map->id == MAP_ABYSS)
                 room = (0x10 * (c->location->coords.z/2)) + room;
 
-            combatInitDungeonRoom(room, dirReverse(realDir));
-            combatBegin();
+            Dungeon *dng = dynamic_cast<Dungeon*>(c->location->map);
+            dungeonLoadRoom(dng, room);
+            /* load the map so dng->room points to a valid CombatMap */
+
+            /* set the map and start combat! */
+            gameSetMap(dng->room, 1, NULL);
+            dng->room->initDungeonRoom(room, dirReverse(realDir));
+            dng->room->begin();
         }
     }
 
@@ -3214,7 +3224,7 @@ void gameUpdateMoons(int showmoongates)
     int realMoonPhase,
         oldTrammel,
         trammelSubphase;        
-    const Coords *gate;
+    const MapCoords *gate;
 
     if (c->location->map->isWorldMap() && c->location->viewMode == VIEW_NORMAL) {        
         oldTrammel = c->saveGame->trammelphase;
@@ -3331,8 +3341,10 @@ void gameCheckBridgeTrolls() {
     screenMessage("\nBridge Trolls!\n");
     
     m = c->location->map->addMonster(monsters.getById(TROLL_ID), c->location->coords);
-    combatInit(m, MAP_BRIDGE_CON);
-    combatBegin();
+    gameSetMap(mapMgrGetById(MAP_BRIDGE_CON), true, NULL);
+    CombatMap *cm = getCombatMap();
+    cm->init(m);
+    cm->begin();
 }
 
 /**
@@ -3413,9 +3425,9 @@ void gameCheckSpecialMonsters(Direction dir) {
  * Checks for and handles when the avatar steps on a moongate
  */
 int gameCheckMoongates(void) {
-    Coords dest;
+    MapCoords dest;
     
-    if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, c->location->coords, dest)) {
+    if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, c->location->coords, &dest)) {
 
         (*spellEffectCallback)(-1, -1, SOUND_MOONGATE); // Default spell effect (screen inversion without 'spell' sound effects)
         
@@ -3502,9 +3514,13 @@ void gameMonsterAttack(Monster *m) {
     if ((under = c->location->map->objectAt(c->location->coords)) &&
         tileIsShip(under->getTile()))
         ground = under->getTile();
-    
-    combatInit(m, combatMapForTile(ground, (MapTile)c->saveGame->transport, m));
-    combatBegin();
+
+    Map *map = mapMgrGetById(CombatMap::mapForTile(ground, (MapTile)c->saveGame->transport, m));
+    gameSetMap(map, true, NULL);
+    CombatMap *cm = getCombatMap();
+
+    cm->init(m);
+    cm->begin();
 }
 
 /**
@@ -3866,15 +3882,17 @@ void gameDestroyAllMonsters(void) {
     if (c->location->context & CTX_COMBAT) {
         /* destroy all monsters in combat */
         for (i = 0; i < AREA_MONSTERS; i++) {
-            CombatObjectMap::iterator obj;            
-            for (obj = combatInfo.monsters.begin(); obj != combatInfo.monsters.end();) {
+            CombatObjectMap::iterator obj;
+            CombatMap *cm = getCombatMap();
+
+            for (obj = cm->monsters.begin(); obj != cm->monsters.end();) {
                 if (obj->second->id != LORDBRITISH_ID) {
                     /* FIXME: This is a crappy way of doing things, but
                        when the combat is setup the way it should be, this 
                        should work out */
-                    c->location->map->removeObject(obj->second);
+                    cm->removeObject(obj->second);
                     /* this, however, is a BAD way of doing it, but necessary for now */
-                    combatInfo.monsters.clear();
+                    cm->monsters.clear();
                 }
                 else obj++;
             }            

@@ -57,6 +57,8 @@ public:
     void setFocus(bool f = true)            { focused = f; }
     void setVisible(bool v = true)          { visible = v; }
     void setAnimated(bool a = true)         { animated = a; }
+
+	virtual void applyDamage(int damage) {} // Has no effect on a normal object, but defined so it can simply receive damage.
     
     bool setDirection(Direction d);
     void advanceFrame();

@@ -220,7 +220,7 @@ int mapLoadCon(Map *map) {
     ASSERT(map->height == CON_HEIGHT, "map height is %d, should be %d", map->height, CON_HEIGHT);
 
     if (map->type != MAPTYPE_SHRINE) {
-        CombatMap *cm = dynamic_cast<CombatMap*>(map);
+        CombatMap *cm = getCombatMap(map);
 
         for (i = 0; i < AREA_MONSTERS; i++)
             cm->monster_start[i] = MapCoords(u4fgetc(con));        
