@@ -10,6 +10,7 @@
 #include "savegame.h"
 #include "map.h"
 #include "item.h"
+#include "player.h"
 
 extern Map world_map;
 extern Map britain_map;
@@ -45,12 +46,12 @@ static const ItemLocation items[] = {
     { "the rune of Humility", 29, 29, &paws_map, &isRuneInInventory, &putRuneInInventory, (void *) RUNE_HUMILITY, 0 },
     { "the White Stone", 64, 80, &world_map, &isStoneInInventory, &putStoneInInventory, (void *) STONE_WHITE, 0 },
     { "the Black Stone", 224, 133, &world_map, &isStoneInInventory, &putStoneInInventory, (void *) STONE_BLACK, SC_NEWMOONS },
-    { "the Skull", 197, 245, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_SKULL, SC_NEWMOONS },
+    { "the Skull of Modain the Wizard", 197, 245, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_SKULL, SC_NEWMOONS },
     { "the Candle of Love", 22, 1, &cove_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_CANDLE, 0 },
     { "the Book of Truth", 6, 6, &lycaeum_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_BOOK, 0 },
     { "the Bell of Courage", 176, 208, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_BELL, 0 },
-    { "the Silver Horn", 45, 173, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_HORN, 0 },
-    { "the Wheel", 96, 215, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_WHEEL, 0 },
+    { "A Silver Horn", 45, 173, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_HORN, 0 },
+    { "the Wheel from the H.M.S. Cape", 96, 215, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_WHEEL, 0 },
     { "Mystic Armor", 22, 4, &empath_map, &isMysticInInventory, &putMysticInInventory, (void *) ARMR_MYSTICROBES, SC_FULLAVATAR },
     { "Mystic Swords", 8, 15, &serpent_map, &isMysticInInventory, &putMysticInInventory, (void *) WEAP_MYSTICSWORD, SC_FULLAVATAR }
 };
@@ -60,6 +61,8 @@ int isRuneInInventory(void *virt) {
 }
 
 void putRuneInInventory(void *virt) {
+    c->saveGame->players[0].xp += 100;
+    playerAdjustKarma(c->saveGame, VIRT_HONOR, KARMA_ADJ_FOUND_ITEM);
     c->saveGame->runes |= (int)virt;
 }
 
@@ -68,6 +71,8 @@ int isStoneInInventory(void *virt) {
 }
 
 void putStoneInInventory(void *virt) {
+    c->saveGame->players[0].xp += 200;
+    playerAdjustKarma(c->saveGame, VIRT_HONOR, KARMA_ADJ_FOUND_ITEM);
     c->saveGame->stones |= (int)virt;
 }
 
@@ -76,6 +81,8 @@ int isItemInInventory(void *item) {
 }
 
 void putItemInInventory(void *item) {
+    c->saveGame->players[0].xp += 400;
+    playerAdjustKarma(c->saveGame, VIRT_HONOR, KARMA_ADJ_FOUND_ITEM);
     c->saveGame->items |= (int)item;
 }
 
@@ -91,6 +98,7 @@ int isMysticInInventory(void *mystic) {
 }
 
 void putMysticInInventory(void *mystic) {
+    c->saveGame->players[0].xp += 400;
     if (((int)mystic) == WEAP_MYSTICSWORD)
         c->saveGame->weapons[WEAP_MYSTICSWORD] += 8;
     else if (((int)mystic) == ARMR_MYSTICROBES)
