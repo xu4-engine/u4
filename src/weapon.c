@@ -146,7 +146,6 @@ void weaponLoadInfoFromXml() {
 /**
  * Returns the name of the weapon
  */
-
 char *weaponGetName(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -156,7 +155,6 @@ char *weaponGetName(int weapon) {
 /**
  * Returns the abbreviation for the weapon
  */
-
 char *weaponGetAbbrev(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -166,7 +164,6 @@ char *weaponGetAbbrev(int weapon) {
 /**
  * Return the range of the weapon
  */
-
 int weaponGetRange(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -175,8 +172,7 @@ int weaponGetRange(int weapon) {
 
 /**
  * Return the damage for the specified weapon
- */ 
-
+ */
 int weaponGetDamage(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -185,8 +181,7 @@ int weaponGetDamage(int weapon) {
 
 /**
  * Return the hit tile for the specified weapon
- */ 
-
+ */
 int weaponGetHitTile(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -195,8 +190,7 @@ int weaponGetHitTile(int weapon) {
 
 /**
  * Return the miss tile for the specified weapon
- */ 
-
+ */
 int weaponGetMissTile(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -206,7 +200,6 @@ int weaponGetMissTile(int weapon) {
 /**
  * Returns true if the weapon always hits it's target
  */
-
 int weaponAlwaysHits(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -217,7 +210,6 @@ int weaponAlwaysHits(int weapon) {
  * Returns 0 if the weapon leaves no tile, otherwise it
  * returns the # of the tile the weapon leaves
  */
-
 int weaponLeavesTile(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -227,7 +219,6 @@ int weaponLeavesTile(int weapon) {
 /**
  * Returns true if the class given can ready the weapon
  */
-
 int weaponCanReady(int weapon, const char *className) {
     char *klass;
     int allCanReady = 1;
@@ -260,7 +251,6 @@ int weaponCanReady(int weapon, const char *className) {
 /**
  * Returns true if the weapon can attack through solid objects
  */
-
 int weaponCanAttackThroughObjects(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -270,7 +260,6 @@ int weaponCanAttackThroughObjects(int weapon) {
 /**
  * Returns true if the weapon's range is absolute (only works at specific distance)
  */
-
 int weaponRangeAbsolute(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -280,7 +269,6 @@ int weaponRangeAbsolute(int weapon) {
 /**
  * Returns true if the weapon 'returns' to its user after used/thrown
  */
-
 int weaponReturns(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -290,7 +278,6 @@ int weaponReturns(int weapon) {
 /**
  * Return true if the weapon is lost when used
  */
-
 int weaponLoseWhenUsed(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -300,7 +287,6 @@ int weaponLoseWhenUsed(int weapon) {
 /**
  * Returns true if the weapon is lost if it is a ranged attack
  */
-
 int weaponLoseWhenRanged(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -310,7 +296,6 @@ int weaponLoseWhenRanged(int weapon) {
 /**
  * Returns true if the weapon allows you to choose the distance
  */
-
 int weaponCanChooseDistance(int weapon) {
     weaponLoadInfoFromXml();
 
@@ -318,10 +303,18 @@ int weaponCanChooseDistance(int weapon) {
 }
 
 /**
+ * Returns true if the weapon is magical
+ */
+int weaponIsMagic(int weapon) {
+    weaponLoadInfoFromXml();
+
+    return (weapons[weapon].mask & MASK_MAGIC);
+}
+
+/**
  * Returns true if the weapon displays a tile while it travels
  * to give the appearance of 'flying' to its target
  */
-
 int weaponShowTravel(int weapon) {
     weaponLoadInfoFromXml();
 

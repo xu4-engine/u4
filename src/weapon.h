@@ -35,6 +35,7 @@ int weaponReturns(int weapon);
 int weaponLoseWhenUsed(int weapon);
 int weaponLoseWhenRanged(int weapon);
 int weaponCanChooseDistance(int weapon);
+int weaponIsMagic(int weapon);
 int weaponShowTravel(int weapon);
 
 #endif
