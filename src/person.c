@@ -437,7 +437,16 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
                            " says: I cannot join thee.",
                            NULL);
     }
-
+    
+    /* 
+     * This little easter egg appeared in the Amiga version of Ultima IV.
+     * I've never figured out what the number means.
+     * "Banjo" Bob Hardy was the programmer for the Amiga version.
+     */
+    else if (strncasecmp(inquiry, "ojna", 4) == 0) {
+        reply = strdup("Hi Banjo Bob!\nYour secret\nnumber is\n4F4A4E0A");
+    }
+    
     else
         reply = strdup("That I cannot\nhelp thee with.");
 
