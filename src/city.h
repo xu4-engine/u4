@@ -12,7 +12,7 @@ typedef struct _City {
     const char *name;
     int n_persons;
     struct _Person *persons;
-    const unsigned char person_types[13];
+    const unsigned char person_types[12];
     const char *tlk_fname;
     struct _Map *map;
 } City;
