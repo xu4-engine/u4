@@ -51,10 +51,8 @@ rm -rf %{buildroot}
 %{_libdir}/u4/sound/*.wav
 %{_libdir}/u4/sound/*.ogg
 %{_libdir}/u4/dumpsavegame
-%{_libdir}/u4/lzwenc
-%{_libdir}/u4/lzwdec
-%{_libdir}/u4/rleenc
-%{_libdir}/u4/rledec
+%{_libdir}/u4/u4enc
+%{_libdir}/u4/u4dec
 %{_libdir}/u4/tlkconv
 %{_libdir}/u4/*.xml
 %{_libdir}/u4/dtd/*.dtd
@@ -64,6 +62,9 @@ rm -rf %{buildroot}
 %{_libdir}/u4/u4upgrad.zip
 
 %changelog
+* Sat Feb 28 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- replaced lzwenc, lzwdec, rleenc, rledec with u4enc and u4dec
+
 * Tue Feb 23 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - updated for v0.9, minor cleanup
 
