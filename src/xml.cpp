@@ -165,7 +165,7 @@ int xmlGetPropAsInt(xmlNodePtr node, const char *name) {
     if (!prop)
         return 0;
 
-    result = std::strtol((const char *)prop, NULL, 0);
+    result = strtol((const char *)prop, NULL, 0);
     xmlFree(prop);
 
     return (int) result;
