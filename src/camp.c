@@ -29,7 +29,7 @@
 #include "screen.h"
 #include "settings.h"
 #include "stats.h"
-#include "ttype.h"
+#include "tile.h"
 
 void campTimer(void *data);
 void campEnd(void);

@@ -28,7 +28,7 @@
 #include "settings.h"
 #include "spell.h"
 #include "stats.h"
-#include "ttype.h"
+#include "tile.h"
 #include "weapon.h"
 
 CombatInfo combatInfo;

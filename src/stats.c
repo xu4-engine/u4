@@ -17,7 +17,7 @@
 #include "player.h"
 #include "savegame.h"
 #include "screen.h"
-#include "ttype.h"
+#include "tile.h"
 #include "weapon.h"
 
 void statsAreaSetTitle(const char *title);

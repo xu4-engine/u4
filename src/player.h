@@ -6,7 +6,7 @@
 #define PLAYER_H
 
 #include "savegame.h"
-#include "ttype.h"
+#include "tile.h"
 
 #define ALL_PLAYERS -1
 

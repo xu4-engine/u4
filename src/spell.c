@@ -24,7 +24,7 @@
 #include "player.h"
 #include "screen.h"
 #include "settings.h"
-#include "ttype.h"
+#include "tile.h"
 
 SpellEffectCallback spellEffectCallback = NULL;
 

@@ -14,7 +14,7 @@
 #include "dungeon.h"
 #include "location.h"
 #include "savegame.h"
-#include "ttype.h"
+#include "tile.h"
 
 unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
     int x, y;

@@ -13,7 +13,7 @@
 #include "monster.h"
 #include "object.h"
 #include "savegame.h"
-#include "ttype.h"
+#include "tileset.h"
 
 Location *locationPush(Location *stack, Location *loc);
 Location *locationPop(Location **stack);

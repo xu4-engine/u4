@@ -17,7 +17,7 @@
 #include "names.h"
 #include "object.h"
 #include "savegame.h"
-#include "ttype.h"
+#include "tileset.h"
 
 int screenNeedPrompt = 1;
 int screenCurrentCycle = 0;

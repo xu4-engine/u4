@@ -42,7 +42,7 @@
 #include "sound.h"
 #include "spell.h"
 #include "stats.h"
-#include "ttype.h"
+#include "tileset.h"
 #include "utils.h"
 #include "vendor.h"
 #include "weapon.h"

@@ -21,7 +21,7 @@
 #include "screen.h"
 #include "settings.h"
 #include "sound.h"
-#include "ttype.h"
+#include "tileset.h"
 
 #if defined(MACOSX)
 #include "macosx/osxinit.h"

@@ -18,6 +18,7 @@
 #include "screen.h"
 #include "settings.h"
 #include "shrine.h"
+#include "tileset.h"
 #include "u4file.h"
 
 extern int quit;

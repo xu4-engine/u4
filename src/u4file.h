@@ -11,7 +11,8 @@
 typedef enum {
     COMP_NONE,
     COMP_RLE,
-    COMP_LZW
+    COMP_LZW,
+    COMP_MAX
 } CompressionType;
 
 typedef struct {
@@ -43,6 +44,7 @@ char *u4find_sound(const char *fname);
 char *u4find_conf(const char *fname);
 char *u4find_graphics(const char *fname);
 const char *u4upgrade_translate_filename(const char *fname);
+CompressionType u4GetCompTypeByStr(const char *comp);
 
 extern int u4zipExists;
 extern int u4upgradeZipExists;

@@ -18,7 +18,7 @@
 #include "person.h"
 #include "portal.h"
 #include "savegame.h"
-#include "ttype.h"
+#include "tile.h"
 
 /**
  * Returns the object at the given (x,y,z) coords, if one exists.

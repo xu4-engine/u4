@@ -21,7 +21,7 @@
 #include "player.h"	/* required by monsterSpecial functions */
 #include "savegame.h"
 #include "settings.h"
-#include "ttype.h"
+#include "tile.h"
 #include "xml.h"
 
 int monsterInfoLoaded = 0;

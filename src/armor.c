@@ -11,7 +11,7 @@
 
 #include "error.h"
 #include "names.h"
-#include "ttype.h"
+#include "tile.h"
 #include "xml.h"
 
 int armorInfoLoaded = 0;

@@ -18,7 +18,7 @@
 #include "player.h"
 #include "savegame.h"
 #include "settings.h"
-#include "ttype.h"
+#include "tile.h"
 
 int collisionOverride = 0;
 

@@ -17,7 +17,7 @@
 #include "settings.h"
 #include "scale.h"
 #include "screen.h"
-#include "ttype.h"
+#include "tileset.h"
 #include "dngview.h"
 #include "u4.h"
 #include "u4_sdl.h"
@@ -236,11 +236,13 @@ void screenDelete() {
 /**
  * Re-initializes the screen and implements any changes made in settings
  */
-void screenReInit() {    
+void screenReInit() {        
     introDelete();  /* delete intro stuff */
-    screenDelete(); /* delete screen stuff */
+    tilesetDeleteAllTilesets(); /* unload tilesets */
+    screenDelete(); /* delete screen stuff */            
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
-    introInit();    /* re-fix the backgrounds loaded and scale images, etc. */        
+    tilesetLoadAllTilesetsFromXml("tilesets.xml"); /* re-load tilesets */
+    introInit();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
 
 /**

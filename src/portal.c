@@ -16,7 +16,7 @@
 #include "names.h"
 #include "screen.h"
 #include "shrine.h"
-#include "ttype.h"
+#include "tile.h"
 
 /**
  * Creates a dungeon ladder portal based on the action given
