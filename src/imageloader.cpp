@@ -20,7 +20,6 @@ ImageLoader *ImageLoader::getLoader(const std::string &fileType) {
     ASSERT(loaderMap != NULL, "loaderMap not initialized");
     if (loaderMap->find(fileType) == loaderMap->end())
         return NULL;
-    printf("found loader for %s\n", fileType.c_str());
     return (*loaderMap)[fileType];
 }
 
