@@ -567,33 +567,91 @@ in this .exe.
 
 offset  len   notes
 0x0     74729 ???
-0x123e9 3485  Hawkwind dialog text; the first 40 zero terminated
+0x103d7 1280  abyss question dialog strings 
+0x108d7 22    11 two-byte offsets to abyss question answers (value +
+              62141 gives file offset)
+0x108ed 5238  ???
+0x11d63 250   companion dialog text
+0x11e5d 16    8 two-byte offsets to virtue adjectives for companion
+              dialogs (value + 62123 gives file offset)
+0x11e6d 1404  ??? 
+0x123e9 3486  Hawkwind dialog text; the first 40 zero terminated
               strings are his responses for 5 levels times 8 virtures,
               plus some other miscellaneous dialog strings
-0x13186 645   ??? 
-0x1340b 24    price for each of the first five reagents at Moonglow,
+0x13187 80    40 two-byte offsets to Hawkwind dialog strings (value +
+              62075 gives file offset)
+0x131d7 564   reagent vendor dialog text; x zero terminated strings
+0x133eb 16    reagent vendor index for each city (one byte per
+              castle/city/town)
+0x133fb 8     4 two-byte offsets to reagent shop names (value + 62075
+              gives file offset)
+0x13403 8     4 two-byte offsets to reagent shopkeeper names (value +
+              62075 gives file offset)
+0x1340b 24    price for each of the first six reagents at Moonglow,
               Skara Brae, Paws, and Buccaneers Den respectively (one
               byte per price)
-0x13423 1273  weapon vendor dialog text; 28 zero terminated strings
-0x1391c 25    ??? 
+0x13423 1274  weapon vendor dialog text; 28 zero terminated strings
+0x1391d 12    6 two-byte offsets to weapon shop names (value + 62075
+              gives file offset)
+0x13929 12    6 two-byte offsets to weapon shopkeeper names (value +
+              62075 gives file offset)
 0x13935 24    which four weapons each of the six weapons vendors can
               sell (one byte per weapon)
 0x1394d 32    price of each weapon (two bytes for each price)
-0x1396d 45    ???
-0x1399a 497   more weapon vendor dialog text; 27 zero terminated strings
-0x13b8b 24    ???
+0x1396d 16    weapon vendor index for each city (one byte per
+              castle/city/town)
+0x1397d 28    14 two-byte offsets to weapon descriptions (value + 62075
+              gives file offset) for all weapons except hands and
+              mystic
+0x13999 522   more weapon vendor dialog text; 27 zero terminated strings
 0x13ba3 646   armor vendor dialog text; 19 zero terminated strings
-0x13e29 22    ???
+0x13e29 10    5 two-byte offsets to armor shop names (value + 62075 gives
+              file offset)
+0x13933 12    6 two-byte offsets to armor shopkeeper names (value + 62075
+              gives file offset)
 0x13e3f 20    which four types of armor each of the five armor vendors
               can sell (one byte per armor type)
 0x13e53 4     zero padding
 0x13e57 16    price of each type of armor (two bytes for each price)
-0x13e67 29    ???
-0x13e84 482   more armor vendor dialog text; 27 zero terminated strings
-0x14066 5559  ???
-0x1561d 172   Lord British dialog keywords; 24 zero terminated strings
-0x156c9 1     zero terminating byte
-0x156ca 2967  Lord British dialog text; 24 zero terminated strings
+0x1396d 16    armor vendor index for each city (one byte per
+              castle/city/town)
+0x13e77 12    6 two-byte offsets to armor descriptions (value + 62075
+              gives file offset) for all armor types except skin and
+              mystic
+0x13e83 484   more armor vendor dialog text; 27 zero terminated strings
+0x14067 318   horse vendor dialog text; 7 zero terminated strings
+0x141a5 622   guild vendor dialog text; x zero terminated strings
+0x14413 6     ???
+0x14419 8     price per unit of each guild item (two bytes for each price)
+0x14521 8     quantity per unit of each guild item (two bytes for each
+              quantity)
+0x14429 4     2 two-byte offsets to guild shop names (value + 62075 gives
+              file offset)
+0x1442d 4     2 two-byte offsets to guild shopkeeper names (value + 62075
+              gives file offset)
+0x14431 8     4 two-byte offsets to guild item inquiry responses (value +
+              62075 gives file offset) for torches, gems, keys,
+              sextants
+0x14439 702   inn dialog text; x zero terminated strings
+0x146F7 16    inn index for each city (one byte per castle/city/town)
+0x14707 8     inn sleep location x coordinate for seven inns plus zero pad
+0x1470f 8     inn sleep location y coordinate for seven inns plus zero pad
+0x14817 8     inn prices for seven inns plus zero pad
+0x1481f 210   ??? (inn related)
+0x148f1 266   healer dialog text; x zero terminated strings
+0x149fb 16    healer index for each city (one byte per castle/city/town)
+0x14a0b 894   ???
+0x14d89 978   tavern dialog text; x zero terminated strings
+0x1515b 16    tavern index for each city (one byte per castle/city/town)
+0x1516b 684   ???
+0x15417 456   food vendor dialog text; x zero terminated strings
+0x155df 16    food vendor index for each city (one byte per castle/city/town)
+0x155ef 10    price for 25 units of food at each vendor (two bytes for
+              each price) for Moonglow, Britan, Yew, Skara Brae, and
+              Paws, repectively
+0x155f9 20    ???
+0x1560d 189   Lord British dialog keywords; 27 zero terminated strings
+0x156ca 2967  Lord British dialog text; 27 zero terminated strings
               (responses for above keywords)
 0x16261 ...
 
