@@ -507,3 +507,17 @@ int playerGetDamage(const SaveGamePlayerRecord *player) {
     
     return rand() % maxDamage;
 }
+
+/**
+ * Determine whether a player is hit by a melee attack.
+ */
+int playerIsHitByAttack(const SaveGamePlayerRecord *player) {
+    static int armorVal[] = {
+        96, 128,                /* skin, cloth */
+        144, 160,               /* leather, chain */
+        176, 192,               /* plate, magic chain */
+        208, 248                /* magic plate, mystic robes */
+    };
+
+    return (rand() % 256) > armorVal[player->armor];
+}

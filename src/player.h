@@ -59,5 +59,6 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
 int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
 int playerAttackHit(const SaveGamePlayerRecord *player);
 int playerGetDamage(const SaveGamePlayerRecord *player);
+int playerIsHitByAttack(const SaveGamePlayerRecord *player);
 
 #endif
