@@ -23,7 +23,7 @@
 #include "error.h"
 #include "event.h"
 #include "image.h"
-#include "imageloader.h"
+#include "imagemgr.h"
 #include "intro.h"
 #include "savegame.h"
 #include "settings.h"
@@ -38,14 +38,6 @@
 #include "utils.h"
 
 using std::vector;
-using std::map;
-
-void fixupIntro(Image *im, int prescale);
-void fixupIntroExtended(Image *im, int prescale);
-void fixupAbyssVision(Image *im, int prescale);
-void fixupAbacus(Image *im, int prescale);
-void fixupDungNS(Image *im, int prescale);
-void screenFreeIntroBackground();
 
 Image *screenScale(Image *src, int scale, int n, int filter);
 Image *screenScaleDown(Image *src, int scale);
@@ -54,13 +46,6 @@ Image *screen;
 SDL_Cursor *cursors[5];
 int scale;
 Scaler filterScaler;
-
-struct ImageSet {
-    string name;
-    string location;
-    string extends;
-    map<string, ImageInfo *> info;
-};
 
 enum LayoutType {
     LAYOUT_STANDARD,
@@ -158,18 +143,11 @@ const struct {
 };
 
 void screenLoadGraphicsFromConf(void);
-ImageSet *screenLoadImageSetFromConf(const ConfigElement &conf);
-ImageInfo *screenLoadImageInfoFromConf(const ConfigElement &conf);
-SubImage *screenLoadSubImageFromConf(const ImageInfo *image, const ConfigElement &conf);
 Layout *screenLoadLayoutFromConf(const ConfigElement &conf);
-ImageInfo *screenLoadImage(const string &name);
 SDL_Cursor *screenInitCursor(char *xpm[]);
-int imageInfoByName(void *info1, void *info2);
 
-map<string, ImageSet *> imageSets;
 vector<Layout *> layouts;
 vector<TileAnimSet *> tileanimSets;
-vector<string> imageSetNames;
 vector<string> gemLayoutNames;
 Layout *gemlayout = NULL;
 TileAnimSet *tileanims = NULL;
@@ -207,16 +185,8 @@ void screenInit() {
 
     screen = Image::createScreenImage();
 
-    /* see if the upgrade exists */
-    U4FILE *pal;
-    if ((pal = u4fopen("u4vga.pal")) != NULL) {
-        u4upgradeExists = 1;
-        u4fclose(pal);
-    }
-    u4upgradeInstalled = u4isUpgradeInstalled();
-
     /* if we can't use vga, reset to default:ega */
-    if (!u4upgradeExists && settings.videoType == "VGA")
+    if (!u4isUpgradeAvailable() && settings.videoType == "VGA")
         settings.videoType = "EGA";
 
     if (verbose) {
@@ -250,7 +220,7 @@ void screenInit() {
 }
 
 void screenDelete() {
-    screenFreeImages();
+    imageMgr->freeAll();
     u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
     if (verbose)
@@ -276,10 +246,6 @@ void screenIconify() {
     SDL_WM_IconifyWindow();
 }
 
-const vector<string> &screenGetImageSetNames() {
-    return imageSetNames;
-}
-
 const vector<string> &screenGetGemLayoutNames() {
     return gemLayoutNames;
 }
@@ -290,19 +256,11 @@ void screenLoadGraphicsFromConf() {
     vector<ConfigElement> graphicsConf = config->getElement("/config/graphics").getChildren();
     for (std::vector<ConfigElement>::iterator conf = graphicsConf.begin(); conf != graphicsConf.end(); conf++) {
 
-        if (conf->getName() == "imageset") {
-            ImageSet *set = screenLoadImageSetFromConf(*conf);
-            imageSets[set->name] = set;
-        }
-        else if (conf->getName() == "layout")
+        if (conf->getName() == "layout")
             layouts.push_back(screenLoadLayoutFromConf(*conf));
         else if (conf->getName() == "tileanimset")
             tileanimSets.push_back(new TileAnimSet(*conf));
     }
-
-    imageSetNames.clear();
-    for (std::map<string, ImageSet *>::const_iterator set = imageSets.begin(); set != imageSets.end(); set++)
-        imageSetNames.push_back(set->first);
 
     gemLayoutNames.clear();
     std::vector<Layout *>::const_iterator i;
@@ -326,91 +284,6 @@ void screenLoadGraphicsFromConf() {
     }
     if (!gemlayout)
         errorFatal("no gem layout named %s found!\n", settings.gemLayout.c_str());
-}
-
-ImageSet *screenLoadImageSetFromConf(const ConfigElement &conf) {
-    ImageSet *set;
-
-    set = new ImageSet;
-    set->name = conf.getString("name");
-    set->location = conf.getString("location");
-    set->extends = conf.getString("extends");
-
-    vector<ConfigElement> children = conf.getChildren();
-    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
-        if (i->getName() == "image") {
-            ImageInfo *info = screenLoadImageInfoFromConf(*i);
-            set->info[info->name] = info;
-        }
-    }
-
-    return set;
-}
-
-ImageInfo *screenLoadImageInfoFromConf(const ConfigElement &conf) {
-    ImageInfo *info;
-    static const char *fixupEnumStrings[] = { "none", "intro", "introExtended", "abyss", "abacus", "dungns", NULL };
-
-    info = new ImageInfo;
-    info->name = conf.getString("name");
-    info->filename = conf.getString("filename");
-    info->width = conf.getInt("width");
-    info->height = conf.getInt("height");
-    info->depth = conf.getInt("depth");
-    info->prescale = conf.getInt("prescale");
-    info->filetype = conf.getString("filetype");
-    info->tiles = conf.getInt("tiles");
-    info->introOnly = conf.getBool("introOnly");
-    info->transparentIndex = conf.getInt("transparentIndex", -1);
-
-    info->xu4Graphic = conf.getBool("xu4Graphic");
-    info->fixup = static_cast<ImageFixup>(conf.getEnum("fixup", fixupEnumStrings));
-    info->image = NULL;
-
-    vector<ConfigElement> children = conf.getChildren();
-    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
-        if (i->getName() == "subimage") {
-            SubImage *subimage = screenLoadSubImageFromConf(info, *i);            
-            info->subImages[subimage->name] = subimage;
-        }
-    }
-
-    return info;
-}
-
-SubImage *screenLoadSubImageFromConf(const ImageInfo *info, const ConfigElement &conf) {
-    SubImage *subimage;
-    static int x = 0,
-               y = 0,
-               last_width = 0,
-               last_height = 0;    
-
-    subimage = new SubImage;
-    subimage->name = conf.getString("name");    
-    subimage->width = conf.getInt("width");
-    subimage->height = conf.getInt("height");
-    subimage->srcImageName = info->name;
-    if (conf.exists("x") && conf.exists("y")) {
-        x = subimage->x = conf.getInt("x");
-        y = subimage->y = conf.getInt("y");
-    }
-    else {
-        // Automatically increment our position through the base image
-        x += last_width;
-        if (x >= last_width) {
-            x = 0;
-            y += last_height;
-        }
-
-        subimage->x = x;
-        subimage->y = y;
-    }
-
-    // "remember" the width and height of this subimage
-    last_width = subimage->width;
-    last_height = subimage->height;
-
-    return subimage;
 }
 
 Layout *screenLoadLayoutFromConf(const ConfigElement &conf) {
@@ -445,328 +318,6 @@ Layout *screenLoadLayoutFromConf(const ConfigElement &conf) {
  */
 void screenFillRect(int x, int y, int w, int h, int r, int g, int b) {
     screen->fillRect(x * scale, y * scale, w * scale, h * scale, r, g, b);
-}
-
-void fixupIntro(Image *im, int prescale) {
-    const unsigned char *sigData;
-    int i, x, y;
-
-    sigData = intro->getSigData();
-
-    /* -----------------------------------------------------------------------------
-     * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
-     * ----------------------------------------------------------------------------- */
-
-    im->drawSubRectOn(im, 
-                      136 * prescale,
-                      33 * prescale,
-                      136 * prescale,
-                      0 * prescale,
-                      55 * prescale,
-                      5 * prescale);
-
-    /* ----------------------------
-     * erase the original "present"
-     * ---------------------------- */
-
-    im->fillRect(136 * prescale, 0 * prescale, 55 * prescale, 5 * prescale, 0, 0, 0);
-
-    /* -----------------------------
-     * draw "Lord British" signature
-     * ----------------------------- */
-    i = 0;
-    while (sigData[i] != 0) {
-        /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
-        x = sigData[i] + 0x14;
-        y = 0xBF - sigData[i+1];
-        im->fillRect(x * prescale, y * prescale, prescale, prescale, 0, 255, 255); /* cyan */
-        im->fillRect((x + 1) * prescale, y * prescale, prescale, prescale, 0, 255, 255); /* cyan */
-        i += 2;
-    }
-
-    /* --------------------------------------------------------------
-     * draw the red line between "Origin Systems, Inc." and "present"
-     * -------------------------------------------------------------- */
-    /* we're still working with an unscaled surface */
-    for (i = 86; i < 239; i++)
-        im->fillRect(i * prescale, 31 * prescale, prescale, prescale, 128, 0, 0); /* red */
-}
-
-void fixupIntroExtended(Image *im, int prescale) {
-    fixupIntro(im, prescale);
-
-    im->drawSubRectOn(im, 
-                      0 * prescale,
-                      10 * prescale,
-                      0 * prescale,
-                      95 * prescale,
-                      320 * prescale,
-                      50 * prescale);
-
-    im->drawSubRectOn(im, 
-                      0 * prescale,
-                      60 * prescale,
-                      0 * prescale, 
-                      105 * prescale,
-                      320 * prescale,
-                      45 * prescale);
-}
-
-void fixupAbyssVision(Image *im, int prescale) {
-    int i;
-    static unsigned char *data = NULL;
-
-    /*
-     * Each VGA vision components must be XORed with all the previous
-     * vision components to get the actual image.
-     */
-    if (data != NULL) {
-        for (i = 0; i < im->surface->pitch * im->surface->h; i++)
-            ((unsigned char *)im->surface->pixels)[i] ^= data[i];
-    } else {
-        data = new unsigned char[im->surface->pitch * im->surface->h];
-    }
-
-    memcpy(data, im->surface->pixels, im->surface->pitch * im->surface->h);
-}
-
-void fixupAbacus(Image *im, int prescale) {
-
-    /* 
-     * surround each bead with a row green pixels to avoid artifacts
-     * when scaling
-     */
-
-    im->fillRect(7 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    im->fillRect(16 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    im->fillRect(8 * prescale, 186 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
-    im->fillRect(8 * prescale, 199 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
-
-    im->fillRect(23 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    im->fillRect(32 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    im->fillRect(24 * prescale, 186 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
-    im->fillRect(24 * prescale, 199 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
-}
-
-/**
- * Swap blue and green for the dungeon walls when facing north or
- * south.
- */
-void fixupDungNS(Image *im, int prescale) {
-    for (int y = 0; y < im->height(); y++) {
-        for (int x = 0; x < im->width(); x++) {
-            unsigned int index;
-            im->getPixelIndex(x, y, index);
-            if (index == 1)
-                im->putPixelIndex(x, y, 2);
-            else if (index == 2)
-                im->putPixelIndex(x, y, 1);
-        }
-    }
-}
-
-/**
- * Returns information for the given image set.
- */
-ImageSet *screenGetImageSet(const string &setname) {
-    std::map<string, ImageSet *>::iterator i = imageSets.find(setname);
-    if (i != imageSets.end())
-        return i->second;
-    else
-        return NULL;
-}
-
-/**
- * Returns information for the given image set.
- */
-ImageInfo *screenGetImageInfoFromSet(const string &name, const string &setname) {
-    ImageSet *set;
-    
-    set = screenGetImageSet(setname);
-    if (!set)
-        return NULL;
-
-    /* if the image set contains the image we want, we are done */
-    
-    std::map<string, ImageInfo *>::iterator i = set->info.find(name);
-    if (i != set->info.end())
-        return i->second;
-
-    /* otherwise if this image set extends another, check the base image set */
-    if (set->extends != "")
-        return screenGetImageInfoFromSet(name, set->extends);
-
-    return NULL;
-}
-
-/**
- * Returns image information for the current image set.
- */
-ImageInfo *screenGetImageInfo(const string &name) {
-    string setname;
-    
-    if (!u4upgradeExists)
-        setname = "EGA";
-    else
-        setname = settings.videoType;
-
-    return screenGetImageInfoFromSet(name, setname);
-}
-
-/**
- * Returns information for the given image set.
- */
-SubImage *screenGetSubImage(const string &name) {
-    string setname;
-    ImageSet *set;
-    
-    if (!u4upgradeExists)
-        setname = "EGA";
-    else
-        setname = settings.videoType;
-
-    set = screenGetImageSet(setname);
-
-    while (set != NULL) {
-        for (std::map<string, ImageInfo *>::iterator i = set->info.begin(); i != set->info.end(); i++) {
-            ImageInfo *info = (ImageInfo *) i->second;
-            std::map<string, SubImage *>::iterator j = info->subImages.find(name);
-            if (j != info->subImages.end())
-                return j->second;
-        }
-
-        set = screenGetImageSet(set->extends);
-    }
-        
-    return NULL;
-}
-
-/**
- * Load in a background image from a ".ega" file.
- */
-ImageInfo *screenLoadImage(const string &name) {
-    ImageInfo *info = screenGetImageInfo(name);
-    if (!info)
-        return NULL;
-
-    /* return if already loaded */
-    if (info->image != NULL)
-        return info;
-
-    /*
-     * If the u4 VGA upgrade is installed (i.e. setup has been run and
-     * the u4dos files have been renamed), we need to use VGA names
-     * for EGA and vice versa, but *only* when the upgrade file has a
-     * .old extention.  The charset and tiles have a .vga extention
-     * and are not renamed in the upgrade installation process
-     */
-    string filename = info->filename;
-    if (u4upgradeInstalled && screenGetImageInfoFromSet(name, "VGA")->filename.find(".old") != string::npos) {
-        if (settings.videoType == "EGA")
-            filename = screenGetImageInfoFromSet(name, "VGA")->filename;
-        else
-            filename = screenGetImageInfoFromSet(name, "EGA")->filename;
-    }
-
-    if (filename == "")
-        return NULL;
-
-    U4FILE *file = NULL;
-    if (info->xu4Graphic) {
-        string pathname(u4find_graphics(filename));
-
-        if (!pathname.empty())
-            file = u4fopen_stdio(pathname);
-    } 
-    else {
-        file = u4fopen(filename);
-    }
-    
-    Image *unscaled = NULL;
-    if (file) {
-        ImageLoader *loader = ImageLoader::getLoader(info->filetype);
-        if (loader == NULL)
-            errorFatal("can't load image of type \"%s\"", info->filetype.c_str());
-        loader->setDimensions(info->width, info->height, info->depth);
-        unscaled = loader->load(file);
-        u4fclose(file);
-
-    }
-    if (unscaled == NULL)
-        return NULL;
-
-    if (info->transparentIndex != -1)
-        unscaled->setTransparentIndex(info->transparentIndex);
-
-    if (info->prescale == 0)
-        info->prescale = 1;
-
-    /*
-     * fixup the image before scaling it
-     */
-    switch (info->fixup) {
-    case FIXUP_NONE:
-        break;
-    case FIXUP_INTRO:
-        fixupIntro(unscaled, info->prescale);
-        break;
-    case FIXUP_INTRO_EXTENDED:
-        fixupIntroExtended(unscaled, info->prescale);
-        break;
-    case FIXUP_ABYSS:
-        fixupAbyssVision(unscaled, info->prescale);
-        break;
-    case FIXUP_ABACUS:
-        fixupAbacus(unscaled, info->prescale);
-        break;
-    case FIXUP_DUNGNS:
-        fixupDungNS(unscaled, info->prescale);
-        break;
-    }
-
-    int imageScale = scale;
-    if (info->prescale != 0) {
-        if ((scale % info->prescale) != 0)
-            errorFatal("image %s is prescaled to an incompatible size: %d\n", filename.c_str(), info->prescale);
-        imageScale /= info->prescale;
-    }
-        
-    info->image = screenScale(unscaled, imageScale, info->tiles, 1);
-
-    delete unscaled;
-    return info;
-}
-
-/**
- * Free up all images
- */
-void screenFreeImages() {
-    for (std::map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++) {
-        ImageSet *set = i->second;
-        for (std::map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
-            ImageInfo *info = j->second;
-            if (info->image != NULL) {
-                delete info->image;                
-                info->image = NULL;
-            }
-        }
-    }
-}
-
-/**
- * Free up any background images used only in the animations.
- */
-void screenFreeIntroBackgrounds() {
-    for (std::map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++) {
-        ImageSet *set = i->second;
-        for (std::map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
-            ImageInfo *info = j->second;
-            if (info->image != NULL && info->introOnly) {
-                delete info->image;
-                info->image = NULL;
-            }
-        }
-    }
 }
 
 #if 0
@@ -868,15 +419,15 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
  * Draw an image or subimage on the screen.
  */
 void screenDrawImage(const string &name, int x, int y) {
-    ImageInfo *info = screenLoadImage(name);
+    ImageInfo *info = imageMgr->get(name);
     if (info) {
         info->image->draw(x, y);
         return;
     }
 
-    SubImage *subimage = screenGetSubImage(name);
+    SubImage *subimage = imageMgr->getSubImage(name);
     if (subimage) {
-        info = screenLoadImage(subimage->srcImageName);
+        info = imageMgr->get(subimage->srcImageName);
 
         if (info) {
             info->image->drawSubRect(x, y, 
@@ -894,7 +445,7 @@ void screenDrawImage(const string &name, int x, int y) {
 void screenDrawImageInMapArea(const string &name) {
     ImageInfo *info;
 
-    info = screenLoadImage(name);
+    info = imageMgr->get(name);
     if (!info)
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
@@ -910,7 +461,7 @@ void screenDrawImageInMapArea(const string &name) {
  */
 void screenShowChar(int chr, int x, int y) {
     if (charsetInfo == NULL) {
-        charsetInfo = screenLoadImage(BKGD_CHARSET);
+        charsetInfo = imageMgr->get(BKGD_CHARSET);
         if (!charsetInfo)
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
@@ -1045,11 +596,11 @@ void Tile::loadImage() {
     if (!image) {
         SubImage *subimage = NULL;        
 
-        ImageInfo *info = screenLoadImage(imageName);
+        ImageInfo *info = imageMgr->get(imageName);
         if (!info) {
-            subimage = screenGetSubImage(imageName);
+            subimage = imageMgr->getSubImage(imageName);
             if (subimage)            
-                info = screenLoadImage(subimage->srcImageName);            
+                info = imageMgr->get(subimage->srcImageName);            
         }
 
         scale = ::scale;
@@ -1108,7 +659,7 @@ void screenShowGemTile(MapTile *mapTile, bool focus, int x, int y) {
     unsigned int tile = Tile::getIndex(t->id);
 
     if (gemTilesInfo == NULL) {
-        gemTilesInfo = screenLoadImage(BKGD_GEMTILES);
+        gemTilesInfo = imageMgr->get(BKGD_GEMTILES);
         if (!gemTilesInfo)
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }

@@ -16,6 +16,7 @@
  *      <li>Create a View class</li>
  *      <li>Create a TextView and MapView class as subclasses of the View class</li>
  *      <li>Create game-specific U4GameView and U4IntroView classes</li>
+ *      <li>make an ImageMgr class to store images and retrieve by name</li>
  *  </ul>
  */
 
@@ -34,47 +35,6 @@
 #else
 #define PRINTF_LIKE(x,y)
 #endif
-
-#define BKGD_SHAPES "tiles"
-#define BKGD_CHARSET "charset"
-#define BKGD_BORDERS "borders"
-#define BKGD_INTRO "title"
-#define BKGD_INTRO_EXTENDED "titlex"
-#define BKGD_TREE "tree"
-#define BKGD_PORTAL "portal"
-#define BKGD_OUTSIDE "outside"
-#define BKGD_INSIDE "inside"
-#define BKGD_WAGON "wagon"
-#define BKGD_GYPSY "gypsy"
-#define BKGD_ABACUS "abacus"
-#define BKGD_HONCOM "honcom"
-#define BKGD_VALJUS "valjus"
-#define BKGD_SACHONOR "sachonor"
-#define BKGD_SPIRHUM "spirhum"
-#define BKGD_ANIMATE "beasties"
-#define BKGD_KEY "key"
-#define BKGD_HONESTY "honesty"
-#define BKGD_COMPASSN "compassn"
-#define BKGD_VALOR "valor"
-#define BKGD_JUSTICE "justice"
-#define BKGD_SACRIFIC "sacrific"
-#define BKGD_HONOR "honor"
-#define BKGD_SPIRIT "spirit"
-#define BKGD_HUMILITY "humility"
-#define BKGD_TRUTH "truth"
-#define BKGD_LOVE "love"
-#define BKGD_COURAGE "courage"
-#define BKGD_STONCRCL "stoncrcl"
-#define BKGD_RUNE_INF "rune0"
-#define BKGD_SHRINE_HON "rune1"
-#define BKGD_SHRINE_COM "rune2"
-#define BKGD_SHRINE_VAL "rune3"
-#define BKGD_SHRINE_JUS "rune4"
-#define BKGD_SHRINE_SAC "rune5"
-#define BKGD_SHRINE_HNR "rune6"
-#define BKGD_SHRINE_SPI "rune7"
-#define BKGD_SHRINE_HUM "rune8"
-#define BKGD_GEMTILES "gemtiles"
 
 typedef enum {
     MC_DEFAULT,
@@ -101,12 +61,10 @@ void screenReInit(void);
 
 void screenIconify(void);
 
-const std::vector<string> &screenGetImageSetNames(void);
 const std::vector<string> &screenGetGemLayoutNames(void);
 
 void screenDrawImage(const string &name, int x = 0, int y = 0);
 void screenDrawImageInMapArea(const string &bkgd);
-void screenFreeImages();
 
 void screenCycle(void);
 void screenFillRect(int x, int y, int w, int h, int r, int g, int b);
@@ -134,8 +92,6 @@ void screenUpdateWind(void);
 MapTile* screenViewportTile(unsigned int width, unsigned int height, int x, int y, bool &focus);
 
 void screenAnimateIntro(const string &frame);
-void screenFreeIntroAnimations();
-void screenFreeIntroBackgrounds();
 void screenShowCard(int pos, int card);
 void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue);
 void screenShowBeastie(int beast, int vertoffset, int frame);
