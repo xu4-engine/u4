@@ -53,10 +53,10 @@
     <tile name="wood_floor" rule="floors"/>
     <tile name="moongate_opening" rule="solid" frames="3"/>
     <tile name="moongate"/>
-    <tile name="poison_field" rule="poison_field" animation="scroll"/>
-    <tile name="energy_field" rule="energy_field" animation="scroll"/>
-    <tile name="fire_field" rule="fire_field" animation="scroll"/>
-    <tile name="sleep_field" rule="sleep_field" animation="scroll"/>
+    <tile name="poison_field" rule="poison_field" animation="scroll" large="true"/>
+    <tile name="energy_field" rule="energy_field" animation="scroll" large="true"/>
+    <tile name="fire_field" rule="fire_field" animation="scroll" large="true"/>
+    <tile name="sleep_field" rule="sleep_field" animation="scroll" large="true"/>
     <tile name="solid" rule="solid_attackover"/>
     <tile name="secret_door" opaque="true"/>
     <tile name="altar"/>

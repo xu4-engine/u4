@@ -19,4 +19,5 @@
                 rowtoswap          NMTOKEN  #IMPLIED
                 opaque             %bool;   #IMPLIED
                 looks_like         CDATA    #IMPLIED
-                frame              NMTOKEN  #IMPLIED>
+                frame              NMTOKEN  #IMPLIED
+                large              %bool;   #IMPLIED>

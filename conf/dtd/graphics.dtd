@@ -4,7 +4,7 @@
 <!ENTITY % fixup '( none | intro | introExtended | abyss | abacus | dungns )'>
 <!ENTITY % layouttype '( standard | gem )'>
 <!ENTITY % transformtype '( invert | pixel | scroll | frame | pixel_color )'>
-<!ENTITY % context '( frame )'>
+<!ENTITY % context '( frame | dir )'>
 
 <!ELEMENT graphics ( imageset | layout | tileanimset )+ >
 
@@ -52,12 +52,12 @@
 
 <!ELEMENT tileanim ( transform+ ) >
 <!ATTLIST tileanim name           NMTOKEN  #REQUIRED
-                   controlling    NMTOKEN  #IMPLIED
                    random         NMTOKEN  #IMPLIED>                   
 
 <!ELEMENT context ( transform+ ) >
 <!ATTLIST context type            %context; #REQUIRED
-                  frame           NMTOKEN   #REQUIRED>
+                  frame           NMTOKEN   #IMPLIED
+                  dir             NMTOKEN   #IMPLIED>
 
 <!ELEMENT transform ( color* ) >
 <!ATTLIST transform type          %transformtype; #REQUIRED
@@ -65,4 +65,5 @@
                     y             NMTOKEN  #IMPLIED
                     width         NMTOKEN  #IMPLIED
                     height        NMTOKEN  #IMPLIED
-                    random        NMTOKEN  #IMPLIED>
+                    random        NMTOKEN  #IMPLIED
+                    increment     NMTOKEN  #IMPLIED>  <!-- If not provided, equals scale -->

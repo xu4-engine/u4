@@ -236,10 +236,10 @@
     </layout>
 
     <tileanimset name="EGA">
-        <tileanim name="scroll" controlling="true">
+        <tileanim name="scroll">
             <transform type="scroll"/>
         </tileanim>
-        <tileanim name="frame" controlling="true" random="true">
+        <tileanim name="frame" random="true">
             <transform type="frame"/>
         </tileanim>
         <tileanim name="cityflag" random="true">
@@ -262,7 +262,7 @@
         <tileanim name="pirateflag" random="true">
             <transform type="invert" x="0" y="1" width="16" height="2"/>
         </tileanim>  
-        <tileanim name="campfire" controlling="true">
+        <tileanim name="campfire">
             <transform type="pixel" x="4" y="7">
                 <color red="0" green="0" blue="0"/>
                 <color red="162" green="0" blue="0"/>
@@ -423,10 +423,10 @@
     </tileanimset>
 
     <tileanimset name="VGA">
-        <tileanim name="scroll" controlling="true">
-            <transform type="scroll"/>
+        <tileanim name="scroll">
+            <transform type="scroll" increment="1"/>
         </tileanim>
-        <tileanim name="frame" controlling="true" random="true">
+        <tileanim name="frame" random="true">
             <transform type="frame"/>
         </tileanim>
         <tileanim name="cityflag" random="true">
