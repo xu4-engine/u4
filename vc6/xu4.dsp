@@ -232,6 +232,14 @@ SOURCE=..\src\game.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\image.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\image_sdl.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\intro.c
 # End Source File
 # Begin Source File
@@ -380,6 +388,14 @@ SOURCE=..\src\savegame.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\scale.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\scale.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\screen.c
 # End Source File
 # Begin Source File
@@ -461,6 +477,14 @@ SOURCE=..\src\unzip.c
 # Begin Source File
 
 SOURCE=..\src\unzip.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\utils.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\utils.h
 # End Source File
 # Begin Source File
 
