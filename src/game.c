@@ -1246,9 +1246,11 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         for (i = 0; i < 8; i++) {
             int j;
             screenMessage("%s:", getVirtueName(i));
-            for (j = 12; j > strlen(getVirtueName(i)); j--)
+            for (j = 13; j > strlen(getVirtueName(i)); j--)
                 screenMessage(" ");
-            screenMessage("%d\n", (c->saveGame->karma[i] > 0) ? c->saveGame->karma[i] : 100);
+            if (c->saveGame->karma[i] > 0)
+                screenMessage("%d\n", c->saveGame->karma[i]);
+            else screenMessage("--");
         }
         screenPrompt();
 
@@ -1326,6 +1328,8 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         screenPrompt();
         break;
 
+    case '\033':
+    case '\015':
     case ' ':
         screenMessage("Nothing\n");
         screenPrompt();
