@@ -5,7 +5,6 @@
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include <algorithm>
-#include <vector>
 #include "u4.h"
 
 #include "intro.h"
@@ -28,6 +27,8 @@ using namespace std;
 
 extern bool quit;
 
+IntroController *intro = NULL;
+
 #define INTRO_TEXT_OFFSET 17445
 #define INTRO_MAP_OFFSET 30339
 #define INTRO_MAP_HEIGHT 5
@@ -48,34 +49,6 @@ extern bool quit;
 #define INTRO_TEXT_WIDTH 40
 #define INTRO_TEXT_HEIGHT 6
 
-/**
- * The states of the intro.
- */
-typedef enum {
-    INTRO_MAP,                          /* displaying the animated intro map */
-    INTRO_MENU,                         /* displaying the main menu: journey onward, etc. */
-    INTRO_CONFIG,                       /* the configuration screen */
-    INTRO_CONFIG_VIDEO,                 /* video configuration */
-    INTRO_CONFIG_SOUND,                 /* sound configuration */
-    INTRO_CONFIG_GAMEPLAY,              /* gameplay configuration */
-    INTRO_CONFIG_ADVANCED,              /* advanced gameplay config */
-    INTRO_CONFIG_KEYBOARD,              /* keyboard config */
-    INTRO_CONFIG_SPEED,                 /* speed config */
-    INTRO_CONFIG_ENHANCEMENT_OPTIONS,   /* game enhancement options */    
-    INTRO_ABOUT,                        /* about xu4 screen */
-    INTRO_INIT_NAME,                    /* prompting for character name */
-    INTRO_INIT_SEX,                     /* prompting for character sex */
-    INTRO_INIT_STORY,                   /* displaying the intro story leading up the gypsy */
-    INTRO_INIT_QUESTIONS,               /* prompting for the questions that determine class */
-    INTRO_INIT_SEGTOGAME,               /* displaying the text that segues to the game */
-    INTRO_DONE
-} IntroMode;
-
-typedef struct _IntroObjectState {
-    int x, y;
-    unsigned char tile;  /* base tile + tile frame */
-} IntroObjectState;
-
 #define GYP_PLACES_FIRST 0
 #define GYP_PLACES_TWOMORE 1
 #define GYP_PLACES_LAST 2
@@ -83,36 +56,10 @@ typedef struct _IntroObjectState {
 #define GYP_SEGUE1 13
 #define GYP_SEGUE2 14
 
-/* introduction state */
-IntroMode mode;
-
-/* data loaded in from title.exe */
-unsigned char *introMap[INTRO_MAP_HEIGHT];
-vector<string> introText;
-vector<string> introQuestions;
-vector<string> introGypsy;
-unsigned char *sigData = NULL;
-unsigned char *scriptTable = NULL;
-unsigned char *baseTileTable = NULL;
-unsigned char *beastie1FrameTable = NULL;
-unsigned char *beastie2FrameTable = NULL;
-string introErrorMessage;
-
-/* additional introduction state data */
-string nameBuffer;
-SexType sex;
-int storyInd;
-int segueInd;
-int answerInd;
-int questionRound;
-int introAskToggle;
-int questionTree[15];
-int beastie1Cycle;
-int beastie2Cycle;
-int beastieOffset;
-int sleepCycles;
-int scrPos;  /* current position in the script table */
-IntroObjectState *objectStateTable;
+struct IntroObjectState {
+    int x, y;
+    unsigned char tile;  /* base tile + tile frame */
+};
 
 /* menus */
 static Menu mainOptions;
@@ -128,40 +75,24 @@ bool menusLoaded = false;
 /* temporary place-holder for settings changes */
 SettingsData settingsChanged;
 
-void introInitiateNewGame(void);
-void introDrawMap(void);
-void introDrawMapAnimated(void);
-void introDrawBeasties(void);
-void introStartQuestions(void);
-int introHandleName(string *message);
-int introHandleSexChoice(int choice);
-void introJourneyOnward(void);
-void introShowText(string text);
-void introInitQuestionTree(void);
-string *introGetQuestion(int v1, int v2);
-int introDoQuestion(int answer);
-int introHandleQuestionChoice(int choice);
-void introInitPlayers(SaveGame *saveGame);
-
-void introMainOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-void introSoundOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-void introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-void introAdvancedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-void introKeyboardOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-void introSpeedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-void introEnhancementOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
+IntroController::IntroController() : Controller(1) {
+    introMap = NULL;
+    sigData = NULL;
+    scriptTable = NULL;
+    baseTileTable = NULL;
+    beastie1FrameTable = NULL;
+    beastie2FrameTable = NULL;
+}
 
 /**
  * Initializes intro state and loads in introduction graphics, text
  * and map data from title.exe.
  */
-int introInit() {
+int IntroController::init() {
     U4FILE *title;
     int i, j;
 
     mode = INTRO_MAP;
-    introAskToggle = 0;
     beastie1Cycle = 0;
     beastie2Cycle = 0;
     beastieOffset = -32;    
@@ -189,6 +120,7 @@ int introInit() {
     u4fread(sigData, 1, 533, title);
 
     u4fseek(title, INTRO_MAP_OFFSET, SEEK_SET);
+    introMap = new unsigned char *[INTRO_MAP_HEIGHT];
     introMap[0] = new unsigned char[INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT];
     for (i = 0; i < INTRO_MAP_HEIGHT; i++) {
         introMap[i] = introMap[0] + INTRO_MAP_WIDTH * i;
@@ -309,22 +241,17 @@ int introInit() {
     /* Make a copy of our settings so we can change them */
     settingsChanged = settings;
 
-    introUpdateScreen();
+    updateScreen();
 
     musicIntro();
 
     return 1;
 }
 
-unsigned char *introGetSigData() {
-    ASSERT(sigData != NULL, "intro sig data not loaded");
-    return sigData;
-}
-
 /**
  * Frees up data not needed after introduction.
  */
-void introDelete(int freeMenus) {
+void IntroController::deleteIntro() {
     delete introMap[0];
 
     introQuestions.clear();
@@ -344,46 +271,48 @@ void introDelete(int freeMenus) {
     screenFreeIntroBackgrounds();    
 }
 
+unsigned char *IntroController::getSigData() {
+    ASSERT(sigData != NULL, "intro sig data not loaded");
+    return sigData;
+}
+
 /**
  * Handles keystrokes during the introduction.
  */
-bool introKeyHandler(int key, void *data) {
+bool IntroController::keyPressed(int key) {
     bool valid = true;
-    KeyHandler::GetChoice *info;
 
     switch (mode) {
 
     case INTRO_MAP:
-    case INTRO_ABOUT:
         mode = INTRO_MENU;
-        introUpdateScreen();
+        updateScreen();
         return true;
 
     case INTRO_MENU:
         switch (key) {
         case 'i':
-            introErrorMessage.erase();
-            introInitiateNewGame();
+            errorMessage.erase();
+            initiateNewGame();
             break;
         case 'j':
-            introJourneyOnward();
+            journeyOnward();
             break;
         case 'r':
-            introErrorMessage.erase();
+            errorMessage.erase();
             mode = INTRO_MAP;
-            introUpdateScreen();
+            updateScreen();
             break;
         case 'c':
-            introErrorMessage.erase();
+            errorMessage.erase();
             mode = INTRO_CONFIG;
             mainOptions.reset();
             settingsChanged = settings;
-            introUpdateScreen();
+            updateScreen();
             break;
         case 'a':
-            introErrorMessage.erase();
-            mode = INTRO_ABOUT;
-            introUpdateScreen();
+            errorMessage.erase();
+            about();
             break;
         case 'q':
             EventHandler::setExitFlag();
@@ -408,7 +337,7 @@ bool introKeyHandler(int key, void *data) {
 
     case INTRO_CONFIG:
 
-        if (!introBaseMenuKeyHandler(key, &mainOptions)) {
+        if (!baseMenuKeyHandler(key, &mainOptions)) {
             /* navigate to the item and activate it! */
             switch(key) {
             case 'v': mainOptions.activateItem(0, ACTIVATE_NORMAL); break;
@@ -419,12 +348,12 @@ bool introKeyHandler(int key, void *data) {
             }
         }
 
-        introUpdateScreen();
+        updateScreen();
         return true;
 
     case INTRO_CONFIG_VIDEO:
         
-        if (!introBaseMenuKeyHandler(key, &videoOptions)) {            
+        if (!baseMenuKeyHandler(key, &videoOptions)) {
             /* navigate to the item and activate it! */
             switch (key) {
             case 'g': videoOptions.activateItem(4, ACTIVATE_NORMAL); break;
@@ -436,12 +365,12 @@ bool introKeyHandler(int key, void *data) {
             }
         }
         
-        introUpdateScreen();
+        updateScreen();
         return true;
 
     case INTRO_CONFIG_SOUND:
         
-        if (!introBaseMenuKeyHandler(key, &soundOptions)) {
+        if (!baseMenuKeyHandler(key, &soundOptions)) {
             /* navigate to the item and activate it! */
             switch (key) {
             case 'v': soundOptions.activateItem(0, ACTIVATE_NORMAL); break;
@@ -451,12 +380,12 @@ bool introKeyHandler(int key, void *data) {
             }
         }
         
-        introUpdateScreen();
+        updateScreen();
         return true;
 
     case INTRO_CONFIG_GAMEPLAY:
         
-        if (!introBaseMenuKeyHandler(key, &gameplayOptions)) {
+        if (!baseMenuKeyHandler(key, &gameplayOptions)) {
             /* navigate to the item and activate it! */
             switch(key) {
             case 'g': gameplayOptions.activateItem(0, ACTIVATE_NORMAL); break;                
@@ -467,11 +396,11 @@ bool introKeyHandler(int key, void *data) {
             }            
         }
 
-        introUpdateScreen();
+        updateScreen();
         return true;
 
     case INTRO_CONFIG_ADVANCED:
-        if (!introBaseMenuKeyHandler(key, &advancedOptions)) {
+        if (!baseMenuKeyHandler(key, &advancedOptions)) {
             /* navigate to the item and activate it! */
             switch(key) {
             case 'd': advancedOptions.activateItem(1, ACTIVATE_NORMAL); break;            
@@ -482,60 +411,32 @@ bool introKeyHandler(int key, void *data) {
             }
         }
         
-        introUpdateScreen();
+        updateScreen();
         return true;
 
     case INTRO_CONFIG_KEYBOARD:
-        introBaseMenuKeyHandler(key, &keyboardOptions);
+        baseMenuKeyHandler(key, &keyboardOptions);
         
-        introUpdateScreen();
+        updateScreen();
         return true;
 
     case INTRO_CONFIG_SPEED:
-        introBaseMenuKeyHandler(key, &speedOptions);
+        baseMenuKeyHandler(key, &speedOptions);
         
-        introUpdateScreen();
+        updateScreen();
         return true;
         
     case INTRO_CONFIG_ENHANCEMENT_OPTIONS:
-        introBaseMenuKeyHandler(key, &enhancementOptions);
+        baseMenuKeyHandler(key, &enhancementOptions);
 
-        introUpdateScreen();
+        updateScreen();
         return true;
 
-    case INTRO_INIT_NAME:
-    case INTRO_INIT_SEX:
+    case INTRO_ABOUT:
+    case INTRO_INIT:
+    case INTRO_INIT_STORY:
         ASSERT(0, "key handler called in wrong mode");
         return true;
-
-    case INTRO_INIT_STORY:
-        storyInd++;
-        if (storyInd >= 24)
-            introStartQuestions();
-        introUpdateScreen();
-        return true;
-
-    case INTRO_INIT_QUESTIONS:
-        introAskToggle = 1;
-        info = new KeyHandler::GetChoice;
-        info->choices = "ab";
-        info->handleChoice = &introHandleQuestionChoice;
-        eventHandler.pushKeyHandler(KeyHandler(&keyHandlerGetChoice, info));
-        introUpdateScreen();
-        return true;
-
-    case INTRO_INIT_SEGTOGAME:
-        segueInd++;
-        if (segueInd >= 2) {
-            mode = INTRO_DONE;
-            EventHandler::setExitFlag();
-        }
-        else
-            introUpdateScreen();
-        return true;
-
-    case INTRO_DONE:
-        return false;
     }
 
     return valid || KeyHandler::defaultHandler(key, NULL);
@@ -544,9 +445,9 @@ bool introKeyHandler(int key, void *data) {
 /**
  * Draws the small map on the intro screen.
  */
-void introDrawMap() {
+void IntroController::drawMap() {
     if (sleepCycles > 0) {
-        introDrawMapAnimated();
+        drawMapAnimated();
         sleepCycles--;
     }
     else {
@@ -593,7 +494,7 @@ void introDrawMap() {
                    Format: 8c
                    c = cycles to sleep
                    ---------------------------------------------- */
-                introDrawMapAnimated();
+                drawMapAnimated();
 
                 /* set sleep cycles */
                 sleepCycles = scriptTable[scrPos] & 0xf;
@@ -617,7 +518,7 @@ void introDrawMap() {
     }
 }
 
-void introDrawMapAnimated() {
+void IntroController::drawMapAnimated() {
     int x, y, i;    
 
     /* draw unmodified map */
@@ -640,7 +541,7 @@ void introDrawMapAnimated() {
 /**
  * Draws the animated beasts in the upper corners of the screen.
  */
-void introDrawBeasties() {
+void IntroController::drawBeasties() {
     screenShowBeastie(0, beastieOffset, beastie1FrameTable[beastie1Cycle]);
     screenShowBeastie(1, beastieOffset, beastie2FrameTable[beastie2Cycle]);
     if (beastieOffset < 0)
@@ -650,15 +551,15 @@ void introDrawBeasties() {
 /**
  * Paints the screen.
  */
-void introUpdateScreen() {
+void IntroController::updateScreen() {
 
     screenHideCursor();
 
     switch (mode) {
     case INTRO_MAP:
         screenDrawImage(BKGD_INTRO);
-        introDrawMap();
-        introDrawBeasties();
+        drawMap();
+        drawBeasties();
         break;
 
     case INTRO_MENU:        
@@ -673,16 +574,16 @@ void introUpdateScreen() {
         screenTextAt(11, 19, "Initiate New Game");
         screenTextAt(11, 20, "Configure");
         screenTextAt(11, 21, "About");
-        if (!introErrorMessage.empty())
-            screenTextAt(11, 22, introErrorMessage.c_str());
-        introDrawBeasties();
+        if (!errorMessage.empty())
+            screenTextAt(11, 22, errorMessage.c_str());
+        drawBeasties();
         break;
 
     case INTRO_CONFIG:
         screenDrawImage(BKGD_INTRO);
         screenTextAt(9, 14, "-- xu4 Configuration --");
         mainOptions.show();
-        introDrawBeasties();
+        drawBeasties();
         break;
 
     case INTRO_CONFIG_VIDEO:
@@ -704,7 +605,7 @@ void introUpdateScreen() {
         screenTextAt(26, 17, "%s", settingsChanged.soundVol ? "On" : "Off");
         screenTextAt(26, 18, "%s", settingsChanged.volumeFades ? "On" : "Off");        
         soundOptions.show();
-        introDrawBeasties();
+        drawBeasties();
         break;
 
     case INTRO_CONFIG_GAMEPLAY:
@@ -779,31 +680,70 @@ void introUpdateScreen() {
         break;    
 
     case INTRO_ABOUT:
-        screenDrawImage(BKGD_INTRO);
-        screenTextAt(15, 14, "XU4 %s", VERSION);
-        screenTextAt(2, 16, "xu4 is free software; you can redist-");
-        screenTextAt(2, 17, "ribute it and/or modify it under the");
-        screenTextAt(2, 18, "terms of the GNU GPL as published by");
-        screenTextAt(2, 19, "the FSF.  See COPYING.");
-        screenTextAt(2, 21, "\011 Copyright 2002-2003 xu4 team");
-        screenTextAt(2, 22, "\011 Copyright 1987 Lord British");
-        introDrawBeasties();
-        break;
-
-    case INTRO_INIT_NAME:
-        screenDrawImage(BKGD_INTRO);
-        screenTextAt(4, 16, "By what name shalt thou be known");
-        screenTextAt(4, 17, "in this world and time?");
-        introDrawBeasties();
-        break;
-
-    case INTRO_INIT_SEX:
-        screenDrawImage(BKGD_INTRO);
-        screenTextAt(4, 16, "Art thou Male or Female?");
-        introDrawBeasties();
-        break;
-
+    case INTRO_INIT:
     case INTRO_INIT_STORY:
+        break;
+
+    default:
+        ASSERT(0, "bad mode in updateScreen");
+    }
+
+    screenUpdateCursor();
+    screenRedrawScreen();
+}
+
+/**
+ * Initiate a new savegame by reading the name, sex, then presenting a
+ * series of questions to determine the class of the new character.
+ */
+void IntroController::initiateNewGame() {
+    mode = INTRO_INIT;
+
+    // display name prompt and read name from keyboard
+    screenDrawImage(BKGD_INTRO);
+    screenTextAt(4, 16, "By what name shalt thou be known");
+    screenTextAt(4, 17, "in this world and time?");
+    drawBeasties();
+    screenSetCursorPos(12, 20);
+    screenShowCursor();
+    screenRedrawScreen();
+
+    ReadStringController nameCont(12, 12, 20);
+    eventHandler.pushController(&nameCont);
+    nameBuffer = nameCont.waitFor();
+
+    if (nameBuffer[0] == '\0') {
+        mode = INTRO_MENU;
+        updateScreen();
+        return;
+    }
+
+    // display sex prompt and read sex from keyboard
+    screenDrawImage(BKGD_INTRO);
+    screenTextAt(4, 16, "Art thou Male or Female?");
+    drawBeasties();
+    screenSetCursorPos(29, 16);
+    screenShowCursor();
+
+    ReadChoiceController sexCont("mf");
+    eventHandler.pushController(&sexCont);
+    int sexChoice = sexCont.waitFor();
+
+    if (sexChoice == 'm')
+        sex = SEX_MALE;
+    else
+        sex = SEX_FEMALE;
+
+    // show the lead up story
+    showStory();
+}
+
+void IntroController::showStory() {
+    ReadChoiceController pauseController("");
+
+    mode = INTRO_INIT_STORY;
+
+    for (int storyInd = 0; storyInd < 24; storyInd++) {
         if (storyInd == 0)
             screenDrawImage(BKGD_TREE);
         else if (storyInd == 3)
@@ -824,135 +764,104 @@ void introUpdateScreen() {
             screenDrawImage(BKGD_GYPSY);
         else if (storyInd == 23)
             screenDrawImage(BKGD_ABACUS);
-        introShowText(introText[storyInd]);
-        break;
-
-    case INTRO_INIT_QUESTIONS:
-        if (introAskToggle == 0) {
-            if (questionRound == 0)
-                screenDrawImage(BKGD_ABACUS);
-            screenShowCard(0, questionTree[questionRound * 2]);
-            screenShowCard(1, questionTree[questionRound * 2 + 1]);
-
-            screenEraseTextArea(INTRO_TEXT_X, INTRO_TEXT_Y, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT);
-        
-            screenTextAt(0, 19, "%s", introGypsy[questionRound == 0 ? GYP_PLACES_FIRST : (questionRound == 6 ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE)].c_str());
-            screenTextAt(0, 20, "%s", introGypsy[GYP_UPON_TABLE].c_str());
-            screenTextAt(0, 21, "%s and %s.  She says", introGypsy[questionTree[questionRound * 2] + 4].c_str(), introGypsy[questionTree[questionRound * 2 + 1] + 4].c_str());
-            screenTextAt(0, 22, "\"Consider this:\"");
-            screenSetCursorPos(16, 22);
-        } else
-            introShowText(*introGetQuestion(questionTree[questionRound * 2], questionTree[questionRound * 2 + 1]));
-        break;
-
-    case INTRO_INIT_SEGTOGAME:
-        introShowText(introGypsy[GYP_SEGUE1 + segueInd]);
-        break;
-
-    case INTRO_DONE:
-        break;
-
-    default:
-        ASSERT(0, "bad mode in introUpdateScreen");
+        showText(introText[storyInd]);
+    
+        eventHandler.pushController(&pauseController);
+        pauseController.waitFor();
     }
-
-    screenUpdateCursor();
-    screenRedrawScreen();
-}
-
-/**
- * Initiate a new savegame by reading the name, sex, then presenting a
- * series of questions to determine the class of the new character.
- */
-void introInitiateNewGame() {
-    KeyHandler::ReadBuffer *info;
-
-    /* display name  prompt and read name from keyboard */
-    mode = INTRO_INIT_NAME;
-    introUpdateScreen();    
-    screenSetCursorPos(12, 20);
-    screenShowCursor();
-    screenRedrawScreen();
-
-    info = new KeyHandler::ReadBuffer;
-    info->handleBuffer = &introHandleName;
-    info->buffer = &nameBuffer;
-    info->bufferLen = 12;
-    info->screenX = 12;
-    info->screenY = 20;
-    nameBuffer.erase();
-
-    eventHandler.pushKeyHandler(KeyHandler(&keyHandlerReadBuffer, info));
+    startQuestions();
 }
 
 /**
  * Starts the gypsys questioning that eventually determines the new
  * characters class.
  */
-void introStartQuestions() {
-    mode = INTRO_INIT_QUESTIONS;
+void IntroController::startQuestions() {
+    ReadChoiceController pauseController("");
+    ReadChoiceController questionController("ab");
+
     questionRound = 0;
-    introAskToggle = 0;
-    introInitQuestionTree();
-}
+    initQuestionTree();
 
-/**
- * Callback to receive the read character name.
- */
-int introHandleName(string *message) {
-    KeyHandler::GetChoice *info;
+    while (1) {
+        // draw the abacus background, if necessary
+        if (questionRound == 0)
+            screenDrawImage(BKGD_ABACUS);
 
-    eventHandler.popKeyHandler();
+        // draw the cards
+        screenShowCard(0, questionTree[questionRound * 2]);
+        screenShowCard(1, questionTree[questionRound * 2 + 1]);
 
-    if ((*message)[0] == '\0') {
-        mode = INTRO_MENU;
+        screenEraseTextArea(INTRO_TEXT_X, INTRO_TEXT_Y, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT);
+        
+        screenTextAt(0, 19, "%s", introGypsy[questionRound == 0 ? GYP_PLACES_FIRST : (questionRound == 6 ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE)].c_str());
+        screenTextAt(0, 20, "%s", introGypsy[GYP_UPON_TABLE].c_str());
+        screenTextAt(0, 21, "%s and %s.  She says", introGypsy[questionTree[questionRound * 2] + 4].c_str(), introGypsy[questionTree[questionRound * 2 + 1] + 4].c_str());
+        screenTextAt(0, 22, "\"Consider this:\"");
+        screenSetCursorPos(16, 22);
 
-        introUpdateScreen();
+        eventHandler.pushController(&pauseController);
+        pauseController.waitFor();
+
+        showText(getQuestion(questionTree[questionRound * 2], questionTree[questionRound * 2 + 1]));
+
+        eventHandler.pushController(&questionController);
+        int choice = questionController.waitFor();
+
+        if (doQuestion(choice == 'a' ? 0 : 1)) {
+            SaveGame saveGame;
+            SaveGamePlayerRecord avatar;
+
+            FILE *saveGameFile = saveGameOpenForWriting();
+            if (!saveGameFile) {
+                mode = INTRO_MENU;
+                errorMessage = "Unable to create save game!";
+                updateScreen();
+                return;
+            }
+
+            avatar.init();
+            saveGame.init(&avatar);
+            screenHideCursor();
+            initPlayers(&saveGame);
+            saveGame.food = 30000;
+            saveGame.gold = 200;
+            saveGame.reagents[REAG_GINSENG] = 3;
+            saveGame.reagents[REAG_GARLIC] = 4;
+            saveGame.torches = 2;
+            saveGame.write(saveGameFile);
+            fclose(saveGameFile);
+
+            saveGameFile = saveGameMonstersOpenForWriting(MONSTERS_SAV_BASE_FILENAME);
+            if (saveGameFile) {
+                saveGameMonstersWrite(NULL, saveGameFile);
+                fclose(saveGameFile);
+            }
+
+            // show the text thats segues into the main game
+            showText(introGypsy[GYP_SEGUE1]);
+
+            eventHandler.pushController(&pauseController);
+            pauseController.waitFor();
+
+            showText(introGypsy[GYP_SEGUE2]);
+
+            eventHandler.pushController(&pauseController);
+            pauseController.waitFor();
+
+            // done: exit intro and let game begin
+            EventHandler::setExitFlag();
+
+            return;
+        }
     }
-
-    else {
-        mode = INTRO_INIT_SEX;
-
-        introUpdateScreen();
-        screenSetCursorPos(29, 16);
-        screenShowCursor();
-
-        info = new KeyHandler::GetChoice;
-        info->choices = "mf";
-        info->handleChoice = &introHandleSexChoice;
-        eventHandler.pushKeyHandler(KeyHandler(&keyHandlerGetChoice, info));
-    }
-
-    screenRedrawScreen();
-
-    return 1;
-}
-
-/**
- * Callback to receive the character sex choice.
- */
-int introHandleSexChoice(int choice) {
-
-    if (choice == 'm')
-        sex = SEX_MALE;
-    else
-        sex = SEX_FEMALE;
-
-    eventHandler.popKeyHandler();
-    mode = INTRO_INIT_STORY;
-    storyInd = 0;
-
-    introUpdateScreen();
-    screenRedrawScreen();
-
-    return 1;
 }
 
 /**
  * Get the text for the question giving a choice between virtue v1 and
  * virtue v2 (zero based virtue index, starting at honesty).
  */
-string *introGetQuestion(int v1, int v2) {
+string IntroController::getQuestion(int v1, int v2) {
     int i = 0;
     int d = 7;
 
@@ -967,13 +876,13 @@ string *introGetQuestion(int v1, int v2) {
 
     ASSERT((i + v2 - 1) < 28, "calculation failed");
 
-    return &introQuestions[i + v2 - 1];
+    return introQuestions[i + v2 - 1];
 }
 
 /**
  * Starts the game.
  */
-void introJourneyOnward() {
+void IntroController::journeyOnward() {
     FILE *saveGameFile;
 
     /*
@@ -982,8 +891,8 @@ void introJourneyOnward() {
      */
     saveGameFile = saveGameOpenForReading();
     if (!saveGameFile) {
-        introErrorMessage = "Initiate game first!";
-        introUpdateScreen();
+        errorMessage = "Initiate game first!";
+        updateScreen();
         screenRedrawScreen();
         return;
     }
@@ -992,10 +901,33 @@ void introJourneyOnward() {
     EventHandler::setExitFlag();
 }
 
+void IntroController::about() {
+    mode = INTRO_ABOUT;
+
+    screenDrawImage(BKGD_INTRO);
+    screenTextAt(15, 14, "XU4 %s", VERSION);
+    screenTextAt(2, 16, "xu4 is free software; you can redist-");
+    screenTextAt(2, 17, "ribute it and/or modify it under the");
+    screenTextAt(2, 18, "terms of the GNU GPL as published by");
+    screenTextAt(2, 19, "the FSF.  See COPYING.");
+    screenTextAt(2, 21, "\011 Copyright 2002-2003 xu4 team");
+    screenTextAt(2, 22, "\011 Copyright 1987 Lord British");
+    drawBeasties();
+    screenHideCursor();
+
+    ReadChoiceController pauseController("");
+    eventHandler.pushController(&pauseController);
+    pauseController.waitFor();
+
+    mode = INTRO_MENU;
+    screenShowCursor();
+    updateScreen();
+}
+
 /**
  * Shows text in the lower six lines of the screen.
  */
-void introShowText(string text) {
+void IntroController::showText(const string &text) {
     string current = text;
     int lineNo = INTRO_TEXT_Y;
     unsigned long pos;
@@ -1019,15 +951,15 @@ void introShowText(string text) {
  * Timer callback for the intro sequence.  Handles animating the intro
  * map, the beasties, etc..
  */
-void introTimer(void *data) {
+void IntroController::timerFired() {
     screenCycle();
     screenUpdateCursor();
     if (mode == INTRO_MAP)
-        introDrawMap();
+        drawMap();
     if (mode == INTRO_MAP || mode == INTRO_MENU || mode == INTRO_CONFIG ||
         mode == INTRO_ABOUT || mode == INTRO_CONFIG_SOUND ||        
-        mode == INTRO_INIT_NAME || mode == INTRO_INIT_SEX)
-        introDrawBeasties();
+        mode == INTRO_INIT)
+        drawBeasties();
 
     /* 
      * refresh the screen only if the timer queue is empty --
@@ -1046,7 +978,7 @@ void introTimer(void *data) {
  * Initializes the question tree.  The tree starts off with the first
  * eight entries set to the numbers 0-7 in a random order.
  */
-void introInitQuestionTree() {
+void IntroController::initQuestionTree() {
     int i, tmp, r;
 
     for (i = 0; i < 8; i++)
@@ -1072,7 +1004,7 @@ void introInitQuestionTree() {
  * Updates the question tree with the given answer, and advances to
  * the next round.
  */
-int introDoQuestion(int answer) {
+int IntroController::doQuestion(int answer) {
     int tmp;
     
     if (!answer)
@@ -1099,59 +1031,10 @@ int introDoQuestion(int answer) {
 }
 
 /**
- * Callback to receive question answer choice.
- */
-int introHandleQuestionChoice(int choice) {
-    FILE *saveGameFile;
-    SaveGame saveGame;
-
-    eventHandler.popKeyHandler();
-
-    if (introDoQuestion(choice == 'a' ? 0 : 1)) {
-        SaveGamePlayerRecord avatar;
-
-        mode = INTRO_INIT_SEGTOGAME;
-        segueInd = 0;
-
-        saveGameFile = saveGameOpenForWriting();
-        if (!saveGameFile) {
-            mode = INTRO_MENU;
-            introErrorMessage = "Unable to create save game!";
-            introUpdateScreen();
-            return 1;
-        }
-
-        avatar.init();
-        saveGame.init(&avatar);
-        screenHideCursor();
-        introInitPlayers(&saveGame);
-        saveGame.food = 30000;
-        saveGame.gold = 200;
-        saveGame.reagents[REAG_GINSENG] = 3;
-        saveGame.reagents[REAG_GARLIC] = 4;
-        saveGame.torches = 2;
-        saveGame.write(saveGameFile);
-        fclose(saveGameFile);
-
-        saveGameFile = saveGameMonstersOpenForWriting(MONSTERS_SAV_BASE_FILENAME);
-        if (saveGameFile) {            
-            saveGameMonstersWrite(NULL, saveGameFile);
-            fclose(saveGameFile);
-        }
-    } else {
-        introAskToggle = 0;
-    }
-
-    introUpdateScreen();
-
-    return 1;
-}
-
-/**
  * Build the initial avatar player record from the answers to the
  * gypsy's questions.
  */
-void introInitPlayers(SaveGame *saveGame) {
+void IntroController::initPlayers(SaveGame *saveGame) {
     int i, p;
     static const struct {
         WeaponType weapon;
@@ -1265,15 +1148,15 @@ void introInitPlayers(SaveGame *saveGame) {
 /**
  * The base key handler for the configuration menus
  */
-int introBaseMenuKeyHandler(int key, void *data) {
+int IntroController::baseMenuKeyHandler(int key, void *data) {
     Menu *menu = static_cast<Menu *>(data);
     char cancelKey = (mode == INTRO_CONFIG) ? 'm' : 'c';
     char saveKey = (mode == INTRO_CONFIG) ? '\0' : 'u';
 
     if (key == cancelKey)
-        return introBaseMenuKeyHandler(' ', menu);
+        return baseMenuKeyHandler(' ', menu);
     else if (key == saveKey)
-        return introBaseMenuKeyHandler(0, menu);
+        return baseMenuKeyHandler(0, menu);
     
     switch(key) {
     case U4_UP:
@@ -1317,21 +1200,21 @@ int introBaseMenuKeyHandler(int key, void *data) {
 }
 
 /* main options menu handler */
-void introMainOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {
+void IntroController::introMainOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {
     if (action != ACTIVATE_NORMAL)
         return;
 
     switch(menuItem->getId()) {
-    case 0: mode = INTRO_CONFIG_VIDEO; videoOptions.reset(); break;        
-    case 1: mode = INTRO_CONFIG_SOUND; soundOptions.reset(); break;
-    case 2: mode = INTRO_CONFIG_GAMEPLAY; gameplayOptions.reset(); break;
-    case 0xFF: mode = INTRO_MENU; break;
+    case 0: intro->mode = INTRO_CONFIG_VIDEO; videoOptions.reset(); break;        
+    case 1: intro->mode = INTRO_CONFIG_SOUND; soundOptions.reset(); break;
+    case 2: intro->mode = INTRO_CONFIG_GAMEPLAY; gameplayOptions.reset(); break;
+    case 0xFF: intro->mode = INTRO_MENU; break;
     default: break;
     }
 }
 
 /* video options menu handler */
-void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
+void IntroController::introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
     switch(menuItem->getId()) {
     case 0:
         if (action != ACTIVATE_DECREMENT) {
@@ -1423,13 +1306,13 @@ void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
             screenReInit();
         }        
     
-        mode = INTRO_CONFIG;
+        intro->mode = INTRO_CONFIG;
         
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        mode = INTRO_CONFIG;
+        intro->mode = INTRO_CONFIG;
         break;
         
     default: break;
@@ -1437,7 +1320,7 @@ void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 }
 
 /* sound options menu handler */
-void introSoundOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
+void IntroController::introSoundOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
     switch(menuItem->getId()) {
     case 0: 
         settingsChanged.musicVol = settingsChanged.musicVol ? 0 : 1;
@@ -1455,12 +1338,12 @@ void introSoundOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
         
         musicIntro();
     
-        mode = INTRO_CONFIG;        
+        intro->mode = INTRO_CONFIG;
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        mode = INTRO_CONFIG;
+        intro->mode = INTRO_CONFIG;
         break;
     
     default: break;
@@ -1468,7 +1351,7 @@ void introSoundOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 }
 
 /* gameplay options menu handler */
-void introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
+void IntroController::introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
     switch(menuItem->getId()) {
     case 0:
         settingsChanged.enhancements = settingsChanged.enhancements ? 0 : 1;        
@@ -1488,7 +1371,7 @@ void introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
         }
         break;
     case 2:
-        mode = INTRO_CONFIG_ADVANCED;        
+        intro->mode = INTRO_CONFIG_ADVANCED;
         advancedOptions.reset();
 
         /* show or hide game enhancement options if enhancements are enabled/disabled */
@@ -1505,33 +1388,33 @@ void introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
         settings.setData(settingsChanged);
         settings.write();
     
-        mode = INTRO_CONFIG;        
+        intro->mode = INTRO_CONFIG;
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        mode = INTRO_CONFIG;
+        intro->mode = INTRO_CONFIG;
         break;
     default: break;
     }
 }
 
 /* advanced options menu handler */
-void introAdvancedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
+void IntroController::introAdvancedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
     switch(menuItem->getId()) {
     case 1:
         settingsChanged.debug = settingsChanged.debug ? 0 : 1;
         break;
     case 0:
-        mode = INTRO_CONFIG_ENHANCEMENT_OPTIONS;
+        intro->mode = INTRO_CONFIG_ENHANCEMENT_OPTIONS;
         enhancementOptions.reset();
         break;    
     case 2:
-        mode = INTRO_CONFIG_KEYBOARD;
+        intro->mode = INTRO_CONFIG_KEYBOARD;
         keyboardOptions.reset();
         break;
     case 3:
-        mode = INTRO_CONFIG_SPEED;
+        intro->mode = INTRO_CONFIG_SPEED;
         speedOptions.reset();
         break;    
     case 0xFE:
@@ -1539,19 +1422,19 @@ void introAdvancedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
         settings.setData(settingsChanged);
         settings.write();
     
-        mode = INTRO_CONFIG_GAMEPLAY;        
+        intro->mode = INTRO_CONFIG_GAMEPLAY;
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        mode = INTRO_CONFIG_GAMEPLAY;
+        intro->mode = INTRO_CONFIG_GAMEPLAY;
         break;
     default: break;
     }
 }
 
 /* keyboard options menu handler */
-void introKeyboardOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
+void IntroController::introKeyboardOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
     switch(menuItem->getId()) {
     case 1:
         if (action != ACTIVATE_DECREMENT) {
@@ -1583,19 +1466,19 @@ void introKeyboardOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
         /* re-initialize keyboard */
         KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
     
-        mode = INTRO_CONFIG_ADVANCED;
+        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        mode = INTRO_CONFIG_ADVANCED;
+        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     default: break;
     }    
 }
 
 /* speed options menu handler */
-void introSpeedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
+void IntroController::introSpeedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
     switch(menuItem->getId()) {
     case 0:
         if (action != ACTIVATE_DECREMENT) {
@@ -1685,19 +1568,19 @@ void introSpeedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
         eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
         eventHandler.getTimer()->reset(eventTimerGranularity);            
         
-        mode = INTRO_CONFIG_ADVANCED;
+        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        mode = INTRO_CONFIG_ADVANCED;
+        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     default: break;
     }
 }
 
 /* minor enhancement options menu handler */
-void introEnhancementOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {
+void IntroController::introEnhancementOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {
     switch(menuItem->getId()) {
     case 0: 
         settingsChanged.enhancementsOptions.u5shrines = settingsChanged.enhancementsOptions.u5shrines ? 0 : 1;
@@ -1725,12 +1608,12 @@ void introEnhancementOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction 
         settings.setData(settingsChanged);
         settings.write();        
     
-        mode = INTRO_CONFIG_ADVANCED;
+        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     case 0xFF:        
         /* discard settings */
         settingsChanged = settings;
-        mode = INTRO_CONFIG_ADVANCED;
+        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     
     default: break;
