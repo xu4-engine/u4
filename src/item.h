@@ -6,6 +6,7 @@
 #define ITEM_H
 
 typedef enum {
+    SC_NONE,
     SC_NEWMOONS,
     SC_FULLAVATAR
 } SearchCondition;
