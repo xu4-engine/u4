@@ -45,7 +45,7 @@ int eventHandlerDefault(SDL_Event *event) {
     case SDL_KEYDOWN:
         switch (event->key.keysym.sym) {
         case SDLK_HOME:
-            printf("x = %d, y = %d, tile = %d\n", c->x, c->y, MAP_TILE_AT(c->map, c->x, c->y));
+            printf("x = %d, y = %d, tile = %d\n", c->saveGame->x, c->saveGame->y, MAP_TILE_AT(c->map, c->saveGame->x, c->saveGame->y));
             break;
         case SDLK_m:
             screenMessage("0123456789012345\n");
@@ -95,14 +95,14 @@ int eventHandlerNormal(SDL_Event *event) {
             break;
 
         case SDLK_e:
-            portal = mapPortalAt(c->map, c->x, c->y);
+            portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
             if (portal && portal->trigger_action == ACTION_ENTER) {
 
                 Context *new = (Context *) malloc(sizeof(Context));
                 new->parent = c;
                 new->map = portal->destination;
-                new->x = new->map->startx;
-                new->y = new->map->starty;
+                new->saveGame->x = new->map->startx;
+                new->saveGame->y = new->map->starty;
                 new->state = STATE_NORMAL;
                 new->line = new->parent->line;
                 c = new;
@@ -150,23 +150,23 @@ int eventHandlerTalk(SDL_Event *event) {
         switch (event->key.keysym.sym) {
         case SDLK_UP:
             screenMessage("North\n");
-            t_x = c->x;
-            t_y = c->y - 1;
+            t_x = c->saveGame->x;
+            t_y = c->saveGame->y - 1;
             break;
         case SDLK_DOWN:
             screenMessage("South\n");
-            t_x = c->x;
-            t_y = c->y + 1;
+            t_x = c->saveGame->x;
+            t_y = c->saveGame->y + 1;
             break;
         case SDLK_LEFT:
             screenMessage("West\n");
-            t_x = c->x - 1;
-            t_y = c->y;
+            t_x = c->saveGame->x - 1;
+            t_y = c->saveGame->y;
             break;
         case SDLK_RIGHT:
             screenMessage("East\n");
-            t_x = c->x + 1;
-            t_y = c->y;
+            t_x = c->saveGame->x + 1;
+            t_y = c->saveGame->y;
             break;
         default:
             processed = 0;
@@ -258,8 +258,6 @@ int eventHandlerQuit(SDL_Event *event) {
     if (answer == 'y' || answer == 'n') {
         saveGameFile = fopen("party.sav", "w");
         if (saveGameFile) {
-            c->saveGame->x = c->x;
-            c->saveGame->y = c->y;
             saveGameWrite(c->saveGame, saveGameFile);
             fclose(saveGameFile);
         } else {

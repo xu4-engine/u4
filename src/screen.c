@@ -14,6 +14,7 @@
 #include "person.h"
 #include "event.h"
 #include "context.h"
+#include "savegame.h"
 
 const extern unsigned char charset_data[];
 const extern int charset_size;
@@ -193,19 +194,19 @@ void screenUpdate() {
     for (y = 0; y < VIEWPORT_H; y++) {
 	for (x = 0; x < VIEWPORT_W; x++) {
 
-	    if (MAP_IS_OOB(c->map, x + c->x - (VIEWPORT_W / 2), y + c->y - (VIEWPORT_H / 2)))
+	    if (MAP_IS_OOB(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2)))
 		tile = 4;
 
 	    else if ((c->map->flags & SHOW_AVATAR) &&
                      x == (VIEWPORT_W / 2) &&
 		     y == (VIEWPORT_H / 2))
-		tile = 31;
+		tile = c->saveGame->partytile;
 	  
-	    else if ((p = mapPersonAt(c->map, x + c->x - (VIEWPORT_W / 2), y + c->y - (VIEWPORT_H / 2)))) 
+	    else if ((p = mapPersonAt(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2)))) 
 		tile = p->tile0;
 
 	    else
-		tile = MAP_TILE_AT(c->map, x + c->x - (VIEWPORT_W / 2), y + c->y - (VIEWPORT_H / 2));
+		tile = MAP_TILE_AT(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2));
 
 	    screenShowTile(tile, x, y);
 	}

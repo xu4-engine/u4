@@ -51,9 +51,6 @@ int main(int argc, char *argv[]) {
         saveGameInit(c->saveGame, 86, 109, &avatar);
     }
 
-    c->x = c->saveGame->x;
-    c->y = c->saveGame->y;
-
     screenDrawBorders();
     screenUpdate(c);
     SDL_UpdateRect(screen, 0, 0, 0, 0);
@@ -66,8 +63,8 @@ int main(int argc, char *argv[]) {
 void move(int dx, int dy) {
     int newx, newy;
 
-    newx = c->x + dx;
-    newy = c->y + dy;
+    newx = c->saveGame->x + dx;
+    newy = c->saveGame->y + dy;
 
     if (MAP_IS_OOB(c->map, newx, newy)) {
 	switch (c->map->border_behavior) {
@@ -93,16 +90,16 @@ void move(int dx, int dy) {
 	    
 	case BORDER_FIXED:
 	    if (newx < 0 || newx >= c->map->width)
-		newx = c->x;
+		newx = c->saveGame->x;
 	    if (newy < 0 || newy >= c->map->height)
-		newy = c->y;
+		newy = c->saveGame->y;
 	    break;
 	}
     }
 
     if (/*iswalkable(MAP_TILE_AT(c->map, newx, newy)) &&*/
         !mapPersonAt(c->map, newx, newy)) {
-	c->x = newx;
-	c->y = newy;
+	c->saveGame->x = newx;
+	c->saveGame->y = newy;
     }
 }
