@@ -30,7 +30,7 @@ City empath_city  = {
     "Empath Abbey", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    { 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0 }, /* person_types */
     "empath.tlk", /* tlk_fname */
     &empath_map /* map */
 };
@@ -56,7 +56,7 @@ City lycaeum_city  = {
     "Lycaeum", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    { 0, 0, 0, 0, 0, 0, 23, 0, 0, 0, 0, 0 }, /* person_types */
     "lycaeum.tlk", /* tlk_fname */
     &lycaeum_map /* map */
 };
@@ -82,7 +82,7 @@ City serpent_city  = {
     "Serpents Hold", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    { 0, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0, 0 }, /* person_types */
     "serpent.tlk", /* tlk_fname */
     &serpent_map /* map */
 };
@@ -115,7 +115,7 @@ City lcb_1_city  = {
     "Britannia", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30 }, /* person_types */
+    { 0, 0, 0, 0, 0, 0, 29, 0, 0, 0, 0, 30 }, /* person_types */
     "lcb.tlk", /* tlk_fname */
     &lcb_1_map /* map */
 };
