@@ -227,11 +227,18 @@ U4ZipPackageMgr::U4ZipPackageMgr() {
         add(upgrade);
     }
     // check for the default zip packages
-    string pathname(u4find_path("ultima4.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0])));
+    string pathname(u4find_path("ultima4-1.01.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0])));
     if (!pathname.empty()) {
-        /* original u4 zip is present */
+        /* updated 1.01 u4 zip is present */
         add(new U4ZipPackage(pathname, "ultima4/", false));
+    } else {
+        pathname = u4find_path("ultima4.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0]));
+        if (!pathname.empty()) {
+            /* original u4 zip is present */
+            add(new U4ZipPackage(pathname, "ultima4/", false));
+        }
     }
+
     /* scan for extensions */
 }
 
@@ -446,10 +453,17 @@ U4FILE *u4fopen(const string &fname) {
 
 /**
  * Opens a file with the standard C stdio facilities and wrap it in a
- * U4FILE struct.
+ * U4FILE.
  */
 U4FILE *u4fopen_stdio(const string &fname) {
     return U4FILE_stdio::open(fname);
+}
+
+/**
+ * Opens a file from a zipfile and wraps it in a U4FILE.
+ */
+U4FILE *u4fopen_zip(const string &fname, U4ZipPackage *package) {
+    return U4FILE_zip::open(fname, package);
 }
 
 /**
