@@ -8,7 +8,11 @@
 
 #include "u4.h"
 #include "spell.h"
+#include "direction.h"
 #include "context.h"
+#include "map.h"
+#include "annotation.h"
+#include "ttype.h"
 #include "screen.h"
 
 static int spellAwaken(int player);
@@ -59,12 +63,13 @@ const Spell spells[] = {
     { "Blink",        SILK | MOSS,              SC_NORMAL,   &spellBlink,   SPELLPRM_DIR,     15 },
     { "Cure",         GINSENG | GARLIC,         SC_ANY,      &spellCure,    SPELLPRM_PLAYER,  5 },
     { "Dispel",       ASH | GARLIC | PEARL,     SC_ANY,      &spellDispel,  SPELLPRM_DIR,     20 },
-    { "Energy Field", ASH | SILK | PEARL,       SC_ANY,      &spellEField,  SPELLPRM_DIR,     10 },
+    { "Energy Field", ASH | SILK | PEARL,       SC_ANY,      &spellEField,  SPELLPRM_TYPEDIR, 10 },
     { "Fireball",     ASH | PEARL,              SC_COMBAT,   &spellFireball,SPELLPRM_DIR,     15 },
     { "Gate",         ASH | PEARL | MANDRAKE,   SC_NORMAL,   &spellGate,    SPELLPRM_PHASE,   40 },
     { "Heal",         GINSENG | SILK,           SC_ANY,      &spellHeal,    SPELLPRM_PLAYER,  10 },
     { "Iceball",      PEARL | MANDRAKE,         SC_COMBAT,   &spellIceball, SPELLPRM_DIR,     20 },
-    { "Jinx",         PEARL | NIGHTSHADE | MANDRAKE, SC_COMBAT, &spellJinx, SPELLPRM_NONE,    30 },
+    { "Jinx",         PEARL | NIGHTSHADE | MANDRAKE,
+                                                SC_COMBAT,   &spellJinx,    SPELLPRM_NONE,    30 },
     { "Kill",         PEARL | NIGHTSHADE,       SC_COMBAT,   &spellKill,    SPELLPRM_DIR,     25 },
     { "Light",        ASH,                      SC_DUNGEON,  &spellLight,   SPELLPRM_NONE,    5 },
     { "Magic missile", ASH | PEARL,             SC_COMBAT,   &spellMMissle, SPELLPRM_DIR,     5 },
@@ -72,11 +77,13 @@ const Spell spells[] = {
     { "Open",         ASH | MOSS,               SC_NORMAL,   &spellOpen,    SPELLPRM_NONE,    5 },
     { "Protection",   ASH | GINSENG | GARLIC,   SC_ANY,      &spellProtect, SPELLPRM_NONE,    15 },
     { "Quickness",    ASH | GINSENG | MOSS,     SC_ANY,      &spellQuick,   SPELLPRM_NONE,    20 },
-    { "Resurrect",    ASH | GINSENG | GARLIC | SILK | MOSS | MANDRAKE, SC_ANY, &spellRez, SPELLPRM_PLAYER, 45 },
+    { "Resurrect",    ASH | GINSENG | GARLIC | SILK | MOSS | MANDRAKE, 
+                                                SC_ANY,      &spellRez,     SPELLPRM_PLAYER,  45 },
     { "Sleep",        SILK | GINSENG,           SC_COMBAT,   &spellSleep,   SPELLPRM_NONE,    15 },
     { "Tremor",       ASH | MOSS | MANDRAKE,    SC_COMBAT,   &spellTremor,  SPELLPRM_NONE,    30 },
     { "Undead",       ASH | GARLIC,             SC_ANY,      &spellUndead,  SPELLPRM_NONE,    15 },
-    { "View",         NIGHTSHADE | MANDRAKE,    SC_NORMAL | SC_DUNGEON, &spellView, SPELLPRM_NONE,  15 },
+    { "View",         NIGHTSHADE | MANDRAKE,    SC_NORMAL | SC_DUNGEON, 
+                                                             &spellView,    SPELLPRM_NONE,    15 },
     { "Winds",        ASH | MOSS,               SC_NORMAL,   &spellWinds,   SPELLPRM_FROMDIR, 10 },
     { "X-it",         ASH | SILK | MOSS,        SC_DUNGEON,  &spellXit,     SPELLPRM_NONE,    15 },
     { "Y-up",         SILK | MOSS,              SC_DUNGEON,  &spellYup,     SPELLPRM_NONE,    10 },
@@ -192,6 +199,36 @@ static int spellCure(int player) {
 }
 
 static int spellDispel(int dir) {
+    int x, y;
+    unsigned char tile;
+    const Annotation *a;
+
+    x = c->saveGame->x;
+    y = c->saveGame->y;
+    dirMove(dir, &x, &y);
+    if (MAP_IS_OOB(c->map, x, y))
+        return 0;
+
+    /*
+     * if there is a field annotation, remove it
+     */
+    a = annotationAt(x, y);
+    if (a && tileCanDispel(a->tile)) {
+        annotationRemove(x, y, a->tile);
+        return 1;
+    }
+
+    /*
+     * if the map tile itself is a field, overlay it with a brick
+     * annotation
+     */
+    tile = mapTileAt(c->map, x, y);
+    
+    if (!tileCanDispel(tile))
+        return 0;
+
+    annotationAdd(x, y, -1, BRICKFLOOR_TILE);
+
     return 1;
 }
 
@@ -208,7 +245,15 @@ static int spellGate(int phase) {
 }
 
 static int spellHeal(int player) {
-    return 1;
+    assert(player < 8);
+
+    if (player < c->saveGame->members && 
+        c->saveGame->players[player].status != STAT_DEAD) {
+        c->saveGame->players[player].hp = c->saveGame->players[player].hpMax;
+        return 1;
+    }
+
+    return 0;
 }
 
 static int spellIceball(int dir) {
