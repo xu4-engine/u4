@@ -11,6 +11,7 @@
 #include "armor.h"
 #include "context.h"
 #include "debug.h"
+#include "game.h"
 //#include "u4.h"
 #include "utils.h"
 #include "weapon.h"
@@ -593,7 +594,8 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
         playerAdjustFood(saveGame, quantity * 100);        
         break;
     case INV_REAGENT:
-        AdjustValue(saveGame->reagents[type], quantity, 99);        
+        AdjustValue(saveGame->reagents[type], quantity, 99);
+        gameResetSpellMixing();
         break;
     case INV_GUILDITEM:
         if (type == 0)
