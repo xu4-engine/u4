@@ -23,7 +23,7 @@
 #include "names.h"
 #include "player.h"
 
-void moveAvatar(int dx, int dy);
+int moveAvatar(int dx, int dy);
 int attackAtCoord(int x, int y);
 int castForPlayer(int player);
 int castForPlayer2(int spell, void *data);
@@ -54,23 +54,27 @@ int gameBaseKeyHandler(int key, void *data) {
     switch (key) {
 
     case U4_UP:
-        moveAvatar(0, -1);
         screenMessage("North\n");
+        if (!moveAvatar(0, -1))
+            screenMessage("Blocked!\n");
         break;
 
     case U4_DOWN:
-        moveAvatar(0, 1);
         screenMessage("South\n");
+        if (!moveAvatar(0, 1))
+            screenMessage("Blocked!\n");
         break;
 
     case U4_LEFT:
-        moveAvatar(-1, 0);
         screenMessage("West\n");
+        if (!moveAvatar(-1, 0))
+            screenMessage("Blocked!\n");
         break;
 
     case U4_RIGHT:
-        moveAvatar(1, 0);
         screenMessage("East\n");
+        if (!moveAvatar(1, 0))
+            screenMessage("Blocked!\n");
         break;
 
     case 3:                     /* ctrl-C */
@@ -225,6 +229,22 @@ int gameBaseKeyHandler(int key, void *data) {
                 /* FIXME: handle starving */
                 c->saveGame->food = 0;
             }
+            switch (tileGetEffect(mapTileAt(c->map, c->saveGame->x, c->saveGame->y))) {
+            case EFFECT_NONE:
+                break;
+            case EFFECT_FIRE:
+                screenMessage("Burning!\n");
+                break;
+            case EFFECT_SLEEP:
+                screenMessage("Zzzz!\n");
+                break;
+            case EFFECT_POISON:
+                screenMessage("Poison!\n");
+                break;
+            default:
+                assert(0);
+            }
+
             screenMessage("\020");
             annotationCycle();
         }
@@ -543,7 +563,7 @@ int castForPlayer2(int spell, void *data) {
  */
 int jimmyAtCoord(int x, int y) {
     if ((x == -1 && y == -1) ||
-        !islockeddoor(mapTileAt(c->map, x, y)))
+        !tileIsLockedDoor(mapTileAt(c->map, x, y)))
         return 0;
 
 
@@ -651,7 +671,7 @@ int newOrderForPlayer2(int player2) {
  */
 int openAtCoord(int x, int y) {
     if ((x == -1 && y == -1) ||
-        !isdoor(mapTileAt(c->map, x, y)))
+        !tileIsDoor(mapTileAt(c->map, x, y)))
         return 0;
 
     screenMessage("door at %d, %d, opened!\n", x, y);
@@ -838,9 +858,10 @@ int wearForPlayer2(int armor, void *data) {
 /**
  * Attempt to move the avatar.  The number of tiles to move is given
  * by dx (horizontally) and dy (vertically); negative indicates
- * right/down, positive indicates left/up.
+ * right/down, positive indicates left/up.  Returns zero if the avatar
+ * is blocked.
  */
-void moveAvatar(int dx, int dy) {
+int moveAvatar(int dx, int dy) {
     int newx, newy;
 
     newx = c->saveGame->x + dx;
@@ -869,7 +890,7 @@ void moveAvatar(int dx, int dy) {
 		c = c->parent;
 		free(t);
 	    }
-	    return;
+	    return 1;
 	    
 	case BORDER_FIXED:
 	    if (newx < 0 || newx >= c->map->width)
@@ -880,11 +901,24 @@ void moveAvatar(int dx, int dy) {
 	}
     }
 
-    if (collisionOverride || 
-        (iswalkable(mapTileAt(c->map, newx, newy)) && !mapPersonAt(c->map, newx, newy))) {
-	c->saveGame->x = newx;
-	c->saveGame->y = newy;
+    if (!collisionOverride) {
+        if (!tileIsWalkable(mapTileAt(c->map, newx, newy)))
+            return 0;
+        if (mapPersonAt(c->map, newx, newy))
+            return 0;
+        /* 
+         * special cases for tile 0x0e: the center tile of the castle
+         * of lord british, which is walkable from the south only
+         */
+        if (mapTileAt(c->map, newx, newy) == 0x0e && dy == 1)
+            return 0;
+        if (mapTileAt(c->map, c->saveGame->x, c->saveGame->y) == 0x0e && dy == -1)
+            return 0;
     }
+
+    c->saveGame->x = newx;
+    c->saveGame->y = newy;
+    return 1;
 }
 
 /**
