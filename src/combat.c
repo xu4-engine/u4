@@ -57,6 +57,7 @@ int monsterHp[AREA_MONSTERS];
 
 void combatCreateMonster(int index);
 int combatBaseKeyHandler(int key, void *data);
+int combatZtatsKeyHandler(int key, void *data);
 void combatFinishTurn(void);
 int combatAttackAtCoord(int x, int y, int distance);
 int combatInitialNumberOfMonsters(unsigned char monster);
@@ -284,6 +285,13 @@ int combatBaseKeyHandler(int key, void *data) {
         screenMessage("Dir: ");
         break;
 
+    case 'z':
+        eventHandlerPushKeyHandler(&combatZtatsKeyHandler);
+        screenMessage("Ztats\n");
+        c->statsItem = (StatsItem) (STATS_CHAR1 + focus);
+        statsUpdate();
+        break;
+
     case 'x' + U4_ALT:
         eventHandlerSetExitFlag(1);
         break;
@@ -299,6 +307,27 @@ int combatBaseKeyHandler(int key, void *data) {
     }
 
     return valid;
+}
+
+int combatZtatsKeyHandler(int key, void *data) {
+    switch (key) {
+    case U4_UP:
+    case U4_LEFT:
+        statsPrevItem();
+        break;
+    case U4_DOWN:
+    case U4_RIGHT:
+        statsNextItem();
+        break;
+    default:
+        eventHandlerPopKeyHandler();
+        combatFinishTurn();
+        break;
+    }
+
+    statsUpdate();
+
+    return 1;
 }
 
 int combatAttackAtCoord(int x, int y, int distance) {
@@ -561,9 +590,9 @@ int combatFindTargetForMonster(const Object *monster, int *distance) {
         if (!party[i])
             continue;
 
-        dx = abs(monster->x - party[i]->x);
+        dx = monster->x - party[i]->x;
         dx *= dx;
-        dy = abs(monster->y - party[i]->y);
+        dy = monster->y - party[i]->y;
         dy *= dy;
 
         if (dx + dy < (*distance) ||
