@@ -65,7 +65,7 @@ char *concat(const char *str, ...) {
 /**
  * Seed the random number generator.
  */
-void xu4_srandom(long seed) {
+void xu4_srandom() {
     srand(time(NULL));
 }
 
