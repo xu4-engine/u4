@@ -38,6 +38,7 @@
 #include "weapon.h"
 #include "armor.h"
 #include "movement.h"
+#include "vendor.h"
 #include "debug.h"
 
 int gameSave(void);
@@ -2524,7 +2525,7 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
         oldy = info->prev_y;  
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;   
     Object *obj;
-    Monster *m;
+    const Monster *m;
     int hittile, misstile;
 
     info->prev_x = x;

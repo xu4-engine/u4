@@ -35,12 +35,9 @@ void innTimer(void *data);
 void innEnd(void);
 
 void campBegin() {
-    int i;    
-
     /* setup camp */
     combatBegin(CORPSE_TILE, AVATAR_TILE, NULL);
-
-    //gameSetMap(c, &camp_map, 1, NULL);
+    
     musicFadeOut(2000); /* Fade volume out to ease into camp */    
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
