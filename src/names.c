@@ -139,3 +139,15 @@ const char *getItemName(Item item) {
         return "???";
     }
 }
+
+const char *getDirectionName(Direction dir) {
+    static const char * const directionNames[] = {
+        "West", "North", "East", "South"
+    };
+
+    if (dir < 4)
+        return directionNames[dir - DIR_WEST];
+    else
+        return "???";
+}
+

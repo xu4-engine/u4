@@ -6,6 +6,7 @@
 #define NAMES_H
 
 #include "savegame.h"
+#include "u4.h"
 
 /*
  * These routines convert the various enumerations for weapons,
@@ -21,5 +22,6 @@ const char *getReagentName(Reagent reagent);
 const char *getVirtueName(Virtue virtue);
 const char *getStoneName(Virtue virtue);
 const char *getItemName(Item item);
+const char *getDirectionName(Direction dir);
 
 #endif
