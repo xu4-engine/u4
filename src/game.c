@@ -1819,9 +1819,9 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         screenPrompt();
         break;
 
-    case '\033':
-    case '\015':
-    case ' ':
+    case U4_ESC:
+    case U4_ENTER:
+    case U4_SPACE:
         screenMessage("Nothing\n");
         screenPrompt();
         break;
