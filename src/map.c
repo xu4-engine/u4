@@ -359,12 +359,12 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
 
         case MOVEMENT_WANDER:
             if (rand() % 2 == 0)
-                dirMove(dirRandomDir(MASK_DIR_ALL), &newx, &newy);
+                dirMove(dirRandomDir(mapGetValidMoves(map, newx, newy, obj->tile)), &newx, &newy);
             break;
                 
         case MOVEMENT_ATTACK_AVATAR:
         case MOVEMENT_FOLLOW_AVATAR:
-            dirMove(dirFindPath(newx, newy, avatarx, avatary, MASK_DIR_ALL), &newx, &newy);
+            dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, obj->tile)), &newx, &newy);
             break;
         }
 
@@ -446,6 +446,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char trans
     unsigned char tile;
     Object *obj;
     int x, y;
+    const Monster *m;
 
     retval = 0;
     for (d = DIR_WEST; d <= DIR_SOUTH; d++) {
@@ -480,9 +481,24 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char trans
         else
             tile = mapTileAt(map, x, y);
 
+        /* 
+         * check special cases for tile 0x0e: the center tile of the
+         * castle of lord british, which is walkable from the south
+         * only
+         */
+        if (tile == 0x0e && d == DIR_SOUTH)
+            continue;
+        if (mapTileAt(map, from_x, from_y) == 0x0e && d == DIR_NORTH)
+            continue;
+
         /* if the transport is a ship, check sailable */
         if (tileIsShip(transport) || tileIsPirateShip(transport)) {
             if (tileIsSailable(tile))
+                retval = DIR_ADD_TO_MASK(d, retval);
+        }
+        /* aquatic monster */
+        else if ((m = monsterForTile(transport)) && (m->mattr & MATTR_WATER)) {
+            if (tileIsSwimable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);
         }
         /* if it is a balloon, check flyable */
