@@ -39,6 +39,7 @@ SRCS=\
         maps/worldmap.c \
         maps/areas.c \
         maps/shrines.c \
+        lzw/hash.c \
         lzw/lzw.c \
         lzw/u4decode.c \
         $(NULL)
@@ -53,11 +54,11 @@ $(MAIN): $(OBJS)
 dumpsavegame$(EXEEXT) : util/dumpsavegame.o savegame.o io.o names.o
 	$(CC) $(CFLAGS) -o dumpsavegame util/dumpsavegame.o savegame.o io.o names.o
 
-lzwenc$(EXEEXT) : util/lzwenc.o
-	$(CC) $(CFLAGS) -o lzwenc util/lzwenc.o
+lzwenc$(EXEEXT) : util/lzwenc.o lzw/hash.o
+	$(CC) $(CFLAGS) -o lzwenc util/lzwenc.o lzw/hash.o
 
 lzwdec$(EXEEXT) : util/lzwdec.o lzw/lzw.o lzw/u4decode.o
-	$(CC) $(CFLAGS) -o lzwdec util/lzwdec.o lzw/lzw.o lzw/u4decode.o
+	$(CC) $(CFLAGS) -o lzwdec util/lzwdec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o
 
 clean:: cleanutil
 	rm -rf *~ */*~ $(OBJS) $(MAIN) 
