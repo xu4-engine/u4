@@ -1,4 +1,9 @@
+/*
+ * $Id$
+ */
+
 #include <stdio.h>
+#include <string.h>
 
 #include "savegame.h"
 
@@ -166,6 +171,47 @@ int saveGameRead(SaveGame *save, FILE *f) {
     return 1;
 }
 
+void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avatarInfo) {
+    int i;
+
+    save->unknown1 = 0;
+    save->moves = 0;
+
+    memcpy(&(save->players[0]), avatarInfo, sizeof(SaveGamePlayerRecord));
+    for (i = 1; i < 8; i++)
+        saveGamePlayerRecordInit(&(save->players[i]));
+
+    save->food = 300;
+    save->gold = 200;
+
+    for (i = 0; i < 8; i++)
+        save->karma[i] = 20;
+
+    save->torches = 0;
+    save->gems = 0;
+    save->keys = 0;
+    save->sextants = 0;
+
+    for (i = 0; i < ARMR_MAX; i++)
+        save->armor[i] = 0;
+
+    for (i = 0; i < WEAP_MAX; i++)
+        save->weapons[i] = 0;
+
+    for (i = 0; i < REAG_MAX; i++)
+        save->reagents[i] = 0;
+
+    for (i = 0; i < 26; i++)
+        save->mixtures[i] = 0;
+
+    save->unknown2 = 0;
+    save->x = x;
+    save->y = y;
+
+    for (i = 0; i < 32; i++)
+        save->unknown3[i] = 0;
+}
+
 int saveGamePlayerRecordWrite(const SaveGamePlayerRecord *record, FILE *f) {
     int i;
 
@@ -233,3 +279,24 @@ int saveGamePlayerRecordRead(SaveGamePlayerRecord *record, FILE *f) {
     return 1;
 }
 
+void saveGamePlayerRecordInit(SaveGamePlayerRecord *record) {
+    int i;
+
+    record->hp = 0;
+    record->hpMax = 0;
+    record->xp = 0;
+    record->str = 0;
+    record->dex = 0;
+    record->intel = 0;
+    record->mp = 0;
+    record->unknown = 0;
+    record->weapon = WEAP_HANDS;
+    record->armor = ARMR_NONE;
+
+    for (i = 0; i < 16; i++)
+      record->name[i] = '\0';
+
+    record->sex = SEX_MALE;
+    record->class = 0;
+    record->status = STAT_GOOD;
+}

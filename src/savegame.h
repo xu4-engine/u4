@@ -88,7 +88,7 @@ typedef struct {
 } SaveGamePlayerRecord;
 
 
-typedef struct {
+typedef struct _SaveGame {
     unsigned int unknown1;
     unsigned int moves;
     SaveGamePlayerRecord players[8];
@@ -110,7 +110,9 @@ typedef struct {
 
 int saveGameWrite(const SaveGame *save, FILE *f);
 int saveGameRead(SaveGame *save, FILE *f);
+void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avatarInfo);
 int saveGamePlayerRecordWrite(const SaveGamePlayerRecord *record, FILE *f);
 int saveGamePlayerRecordRead(SaveGamePlayerRecord *record, FILE *f);
+void saveGamePlayerRecordInit(SaveGamePlayerRecord *record);
 
 #endif
