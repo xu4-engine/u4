@@ -264,7 +264,7 @@ void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
      * action is time limited -- if not, throw away new values
      */
     if (timeLimited) {
-        if (((saveGame->moves / 16) & 0xFFFF) != saveGame->lastvirtue)
+        if (((saveGame->moves / 16) >= 0x10000) || (((saveGame->moves / 16) & 0xFFFF) != saveGame->lastvirtue))
             saveGame->lastvirtue = (saveGame->moves / 16) & 0xFFFF;
         else
             return;

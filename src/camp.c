@@ -92,7 +92,7 @@ void campEnd(void) {
     }    
 
     /* Make sure we've waited long enough for camping to be effective */
-    if (((c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff) != c->saveGame->lastcamp)  
+    if (((c->saveGame->moves / CAMP_HEAL_INTERVAL) >= 0x10000) || (((c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff) != c->saveGame->lastcamp))
         healed = campHeal(HT_CAMPHEAL);
 
     screenMessage(healed ? "Party Healed!\n" : "No effect.\n");

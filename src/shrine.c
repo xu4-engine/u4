@@ -124,7 +124,7 @@ int shrineHandleCycles(int choice) {
         screenMessage("Thou art unable to focus thy thoughts on this subject!\n");
         shrineEject();
     } else {
-        if (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff) != c->saveGame->lastmeditation) {
+        if (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) >= 0x10000) || (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff) != c->saveGame->lastmeditation)) {
             screenMessage("Begin Meditation\n");
             shrineMeditationCycle();
         }

@@ -358,29 +358,41 @@ offset len  notes
             been mysteriously repaired.
 0x1E4  2    introduced to Lord British (0-haven't been introduced, 1-introduced)
 0x1E6  2    time of last successful hole up & camp
-            the game stores ((moves / 0x64) & 0xffff) in this field when
-            you successfully hole up & camp. You can only hole up & camp
-            successfully if the current ((moves / 0x64) & 0xffff) is
-            different from the value in this field.
+            The game stores ((moves / 0x64) & 0xffff) in this field when
+            you successfully hole up & camp.
+            If (moves / 0x64) < 0x10000:
+            You can only hole up & camp successfully if the current
+            ((moves / 0x64) & 0xffff) is different from the value in this
+            field.
+            If (moves / 0x64) >= 0x10000:
+            Hole up & camp is always successful.
 0x1E8  2    time of last mandrake/nightshade find
-            the game stores (moves & 0xf0) in this field when you find
+            The game stores (moves & 0xf0) in this field when you find
             mandrake/nightshade. You can only find mandrake/nightshade
             if the current (moves & 0xf0) is different from the value
             in this field.
 0x1EA  2    time of last successful meditation at a shrine
-            the game stores ((moves / 0x64) & 0xffff) in this field when
-            you successfully meditate at a shrine. You can only meditate
-            successfuly if the current ((moves / 0x64) & 0xffff) is
-            different from the value in this field.
+            The game stores ((moves / 0x64) & 0xffff) in this field when
+            you successfully meditate at a shrine.
+            If (moves / 0x64) < 0x10000:
+            You can only meditate successfully if the current
+            ((moves / 0x64) & 0xffff) is different from the value in this
+            field.
+            If (moves / 0x64) >= 0x10000:
+            Meditating at a shrine is always successful.
 0x1EC  2    time of last virtue-related conversation
-            the game stores ((moves / 0x10) & 0xffff) in this field when
+            The game stores ((moves / 0x10) & 0xffff) in this field when
             one of the following happens:
             1) you give gold to a beggar
-            2) you answer a yes/no question from an NPC
+            2) you answer a yes/no question from an NPC (doesn't have to
+               be a question where the answer affects your virtue)
+            If ((moves / 0x10) & 0xffff) < 0x10000:
             Giving gold to a beggar or answering a virtue-related yes/no
-            question only increases your virtue if the current
-            ((moves / 0x10) & 0xffff) is different from the value in this
-            field.
+            question only increases your karma if ((moves / 0x10) & 0xffff)
+            is different from the value in this field.
+            If ((moves / 0x10) & 0xffff) >= 0x10000:
+            Giving gold or answering a virtue question always increases
+            your karma.
 0x1EE  2    if the party is in a dungeon: coordinates of this dungeon
             if not: coordinates of the dungeon last entered by the party
 0x1F0  2    orientation in dungeon (0-west, 1-north, 2-east, 3-south)
