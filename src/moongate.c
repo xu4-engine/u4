@@ -9,14 +9,14 @@
 #include "moongate.h"
 
 static const Moongate gates[] = {
-    {  95, 103 },               /* britain */
-    {  38, 224 },               /* jhelom */
-    {  50,  37 },               /* yew */
-    { 166,  19 },               /* minoc */
-    { 103, 195 },               /* trinsic */
-    {  23, 126 },               /* skara brae */
-    { 187, 167 },               /* magincia */
-    { 224, 134 }                /* moonglow */
+    {  95, 103 },               /* britain: G'H" F'P" */
+    {  38, 224 },               /* jhelom: O'A" C'G" */
+    {  50,  37 },               /* yew: C'F" D'C" */
+    { 166,  19 },               /* minoc: B'A" K'G" */
+    { 103, 194 },               /* trinsic: M'C" G'H" */
+    {  23, 126 },               /* skara brae: H'O" B'H" */
+    { 187, 167 },               /* magincia: K'H" L'L" */
+    { 224, 133 }                /* moonglow: I'F" O'A" */
 };
 
 const Moongate *moongateGetGateForPhase(int phase) {
