@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- $Id$ -->
+<sound>
+    <track file="walk.wav"/>
+    <track file="blocked.wav"/>
+    <track file=""/>
+    <track file=""/>
+    <track file=""/>
+    <track file=""/>
+    <track file=""/>
+    <track file=""/>
+    <track file=""/>
+</sound>
