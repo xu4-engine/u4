@@ -104,17 +104,16 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
         combatInfo.party[i] = NULL;
 
     /* normal combat situation */
-    if (!combatInfo.isCamping) {
+    if (partyIsReadyToFight) {
         i = 0;
-        while ((combatInfo.party[i] == NULL) && (c->saveGame->players[i].status != STAT_SLEEPING))
+        while ((combatInfo.party[i] == NULL) || (c->saveGame->players[i].status == STAT_SLEEPING))
             i++;
         combatInfo.focus = i;
         combatInfo.party[i]->hasFocus = 1;
     }
     
     /* camping, make sure everyone's asleep */
-    else {
-        partyIsReadyToFight = 0;
+    else if (combatInfo.isCamping) {        
         for (i = 0; i < c->saveGame->members; i++) {
             /* save their stats before putting them to sleep */
             combatInfo.party_status[i] = c->saveGame->players[i].status;

@@ -286,7 +286,9 @@ const char *personGetChoices(const struct _Conversation *cnv) {
 
     case CONV_BUY_ITEM:
     case CONV_SELL_ITEM:
-        return "abcdefghijklmnopqrstuvwxyz\015 \033";
+        if (cnv->talker->npcType == NPC_VENDOR_WEAPONS || cnv->talker->npcType == NPC_VENDOR_ARMOR)
+            return "bcdefghijklmnopqrstuvwxyz\015 \033"; /* a is invalid with weapon and armor vendors */
+        else return "abcdefghijklmnopqrstuvwxyz\015 \033";
 
     case CONV_CONFIRMATION:
     case CONV_CONTINUEQUESTION:
