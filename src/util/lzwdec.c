@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     long inlen, outlen;
     char *fname;
 
-    if (argc != 2 && argc != 3) {
+    if (argc != 3) {
         fprintf(stderr, "usage: lzwdec infile outfile\n");
         exit(1);
     }
