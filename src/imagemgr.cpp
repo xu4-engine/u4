@@ -107,7 +107,7 @@ void ImageMgr::init() {
     for (std::map<string, ImageSet *>::const_iterator set = imageSets.begin(); set != imageSets.end(); set++)
         imageSetNames.push_back(set->first);
 
-    update(NULL, &settings);
+    update(&settings);
 }
 
 ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
@@ -506,7 +506,7 @@ const vector<string> &ImageMgr::getSetNames() {
 /**
  * Find the new base image set when settings have changed.
  */
-void ImageMgr::update(Observable<Settings *> *o, Settings *newSettings) {
+void ImageMgr::update(Settings *newSettings) {
     string setname;
 
     if (!u4isUpgradeAvailable())

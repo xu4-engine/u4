@@ -79,7 +79,7 @@ public:
     PartyMember(class Party *p, SaveGamePlayerRecord *pr);
     virtual ~PartyMember();
 
-    void notifyOfChange(string arg);
+    void notifyOfChange();
 
     // Used to translate script values into something useful
     virtual string translate(std::vector<string>& parts);
@@ -137,13 +137,13 @@ protected:
  */ 
 typedef std::vector<PartyMember *> PartyMemberVector;
 
-class Party : public Observable<string>, public Script::Provider {
+class Party : public Observable<Party *>, public Script::Provider {
     friend class PartyMember;
 public:
     Party(SaveGame *saveGame);
     virtual ~Party();
 
-    void notifyOfChange(string arg);
+    void notifyOfChange();
     
     // Used to translate script values into something useful
     virtual string translate(std::vector<string>& parts);

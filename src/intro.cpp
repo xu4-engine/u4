@@ -78,7 +78,8 @@ SettingsData settingsChanged;
 
 IntroController::IntroController() : 
     Controller(1), 
-    questionArea(INTRO_TEXT_X, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT) {
+    questionArea(INTRO_TEXT_X * CHAR_WIDTH, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT)
+{
 
     beastiesVisible = false;
     introMap = NULL;
@@ -828,9 +829,7 @@ void IntroController::timerFired() {
  * Update the screen when an observed menu is reset or has an item
  * activated.
  */
-void IntroController::update(Observable<MenuEvent &> *o, MenuEvent &event) {
-    const Menu *menu = event.getMenu();
-
+void IntroController::update(Menu *menu, MenuEvent &event) {
     if (menu == &mainOptions)
         updateMainOptions(event);
     else if (menu == &videoOptions)

@@ -125,7 +125,7 @@ private:
     void fixupAbacus(Image *im, int prescale);
     void fixupDungNS(Image *im, int prescale);
 
-    void update(Observable<Settings *> *o, Settings *newSettings);
+    void update(Settings *newSettings);
 
     static ImageMgr *instance;
     std::map<std::string, ImageSet *> imageSets;

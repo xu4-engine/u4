@@ -3143,7 +3143,7 @@ void GameController::timerFired() {
          * force pass if no commands within last 20 seconds
          */
         Controller *controller = eventHandler->getController();
-        KeyHandlerController *keyHandlerController = dynamic_cast<KeyHandlerController *>(controller);        
+        KeyHandlerController *keyHandlerController = dynamic_cast<KeyHandlerController *>(controller);
         if (controller != NULL && (eventHandler->getController() == game || eventHandler->getController() == c->combat) &&
              gameTimeSinceLastCommand() > 20) {
          
@@ -3670,7 +3670,7 @@ void gameSetActivePlayer(int player) {
     // FIXME: we should move the active player into the Party class
     // so it will notify the stats area when a new active player is
     // selected.  For now, this will do:
-    c->stats->update(NULL, "::gameSetActivePlayer()");
+    c->stats->update();
 }
 
 /**

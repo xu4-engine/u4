@@ -14,7 +14,7 @@ using std::string;
 /**
  * Aura class
  */
-class Aura : public Observable<string> {
+class Aura : public Observable<Aura *> {
 public:
     enum Type {
         NONE,

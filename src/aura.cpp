@@ -15,20 +15,20 @@ bool Aura::isActive() const           { return duration > 0; }
 void Aura::setDuration(int d) {
     duration = d;
     setChanged();
-    notifyObservers("Aura::setDuration");
+    notifyObservers(NULL);
 }
 
 void Aura::set(Type t, int d) {
     type = t;
     duration = d;
     setChanged();
-    notifyObservers("Aura::set");
+    notifyObservers(NULL);
 }
 
 void Aura::setType(Type t) {
     type = t;
     setChanged();
-    notifyObservers("Aura::setType");
+    notifyObservers(NULL);
 }
 
 bool Aura::operator==(const Type &t) const    { return type == t; }
@@ -42,7 +42,7 @@ void Aura::passTurn() {
             type = NONE;
 
             setChanged();
-            notifyObservers("Aura::passTurn");
+            notifyObservers(NULL);
         }
     }
 }

@@ -1098,27 +1098,27 @@ Script::ReturnCode Script::add(xmlNodePtr script, xmlNodePtr current) {
         c->party->setTransport(Tileset::findTileByName("horse")->id);
     else if (type == "torch") {
         AdjustValueMax(c->saveGame->torches, quant, 99);
-        c->party->notifyOfChange("Script::add");
+        c->party->notifyOfChange();
     }
     else if (type == "gem") {
         AdjustValueMax(c->saveGame->gems, quant, 99);
-        c->party->notifyOfChange("Script::add");
+        c->party->notifyOfChange();
     }
     else if (type == "key") {
         AdjustValueMax(c->saveGame->keys, quant, 99);
-        c->party->notifyOfChange("Script::add");
+        c->party->notifyOfChange();
     }
     else if (type == "sextant") {
         AdjustValueMax(c->saveGame->sextants, quant, 99);
-        c->party->notifyOfChange("Script::add");
+        c->party->notifyOfChange();
     }
     else if (type == "weapon") {
         AdjustValueMax(c->saveGame->weapons[subtype[0] - 'a'], quant, 99);
-        c->party->notifyOfChange("Script::add");
+        c->party->notifyOfChange();
     }
     else if (type == "armor") {
         AdjustValueMax(c->saveGame->armor[subtype[0] - 'a'], quant, 99);
-        c->party->notifyOfChange("Script::add");
+        c->party->notifyOfChange();
     }
     else if (type == "reagent") {
         int reagent;

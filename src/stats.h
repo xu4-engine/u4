@@ -10,7 +10,12 @@
 #include "observer.h"
 
 struct SaveGame;
+class Aura;
+class Menu;
 class MenuEvent;
+class Party;
+
+using std::string;
 
 #define STATS_AREA_WIDTH 15
 #define STATS_AREA_HEIGHT 8
@@ -35,7 +40,7 @@ enum StatsView {
     STATS_MIXTURES
 };
 
-class StatsArea : public Observer<std::string>, public Observer<MenuEvent &>, public Observable<std::string> {
+class StatsArea : public Observer<Aura *>, public Observer<Party *>, public Observer<Menu *, MenuEvent &>, public Observable<StatsArea *, string> {
 public:
     StatsArea();
 
@@ -43,8 +48,10 @@ public:
     void clear();
     void prevItem();
     void nextItem();
-    virtual void update(Observable<std::string> *o = NULL, std::string arg = "");
-    virtual void update(Observable<MenuEvent &> *o, MenuEvent &event);
+    void update();
+    virtual void update(Aura *aura);
+    virtual void update(Party *party);
+    virtual void update(Menu *menu, MenuEvent &event);
     void highlightPlayer(int player);
     void redraw();
     void showPartyView(int player = -1);    
@@ -57,7 +64,7 @@ public:
     void showMixtures();
 
 private:
-    void setTitle(std::string title);
+    void setTitle(string title);
     
     // Properties
 //private:

@@ -53,13 +53,7 @@ void StatsArea::nextItem() {
 /**
  * Update the stats (ztats) box on the upper right of the screen.
  */
-void StatsArea::update(Observable<string> *o, string arg) {
-    int i;
-    unsigned char mask;
-
-    if (!arg.empty() && verbose)
-        fprintf(stdout, "Observer updated: Stats area redrawn from function %s()\n", arg.c_str());
-
+void StatsArea::update() {
     clear();
 
     /*
@@ -107,13 +101,19 @@ void StatsArea::update(Observable<string> *o, string arg) {
     else
         screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
 
-    mask = 0xff;
-    for (i = 0; i < VIRT_MAX; i++) {
+    update(c->aura);
+
+    redraw();
+}
+
+void StatsArea::update(Aura *aura) {
+    unsigned char mask = 0xff;
+    for (int i = 0; i < VIRT_MAX; i++) {
         if (c->saveGame->karma[i] == 0)
             mask &= ~(1 << i);
     }
 
-    switch (c->aura->getType()) {
+    switch (aura->getType()) {
     case Aura::NONE:
         screenShowCharMasked(0, STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1, mask);
         break;
@@ -134,10 +134,16 @@ void StatsArea::update(Observable<string> *o, string arg) {
         break;
     }    
 
-    redraw();
+    screenRedrawTextArea(STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1, 1, 1);
 }
 
-void StatsArea::update(Observable<MenuEvent &> *o, MenuEvent &event) {
+void StatsArea::update(Party *party) {
+    // do a full update
+    update();
+}
+
+void StatsArea::update(Menu *menu, MenuEvent &event) {
+    // do a full update
     update();
 }
 

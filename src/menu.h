@@ -91,7 +91,7 @@ private:
 /**
  * Menu class definition
  */
-class Menu : public Observable<MenuEvent &> {
+class Menu : public Observable<Menu *, MenuEvent &> {
 public:
     typedef std::list<MenuItem> MenuItemList;
 

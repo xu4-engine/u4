@@ -29,7 +29,7 @@ class Tile;
  *      <li>get rid global intro instance -- should only need to be accessed from u4.cpp</li>
  * </ul>
  */
-class IntroController : public Controller, public Observer<MenuEvent &> {
+class IntroController : public Controller, public Observer<Menu *, MenuEvent &> {
 public:
     IntroController();
 
@@ -40,7 +40,7 @@ public:
     void updateScreen();
     void timerFired();
 
-    void update(Observable<MenuEvent &> *o, MenuEvent &event);
+    void update(Menu *menu, MenuEvent &event);
     void updateMainOptions(MenuEvent &event);
     void updateVideoOptions(MenuEvent &event);
     void updateSoundOptions(MenuEvent &event);

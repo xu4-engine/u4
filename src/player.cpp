@@ -69,10 +69,9 @@ PartyMember::~PartyMember() {
 /**
  * Notify the party that this player has changed somehow
  */
-void PartyMember::notifyOfChange(string arg) {
+void PartyMember::notifyOfChange() {
     if (party) {
-        party->setChanged();
-        party->notifyObservers(arg);
+        party->notifyOfChange();
     }
 }
 
@@ -223,7 +222,7 @@ int PartyMember::getMaxLevel() const {
 void PartyMember::addStatus(StatusType s) {
     Creature::addStatus(s);
     player->status = status.back();
-    notifyOfChange("PartyMember::addStatus");
+    notifyOfChange();
 }
 
 /**
@@ -231,7 +230,7 @@ void PartyMember::addStatus(StatusType s) {
  */
 void PartyMember::adjustMp(int pts) {
     AdjustValueMax(player->mp, pts, getMaxMp());
-    notifyOfChange("PartyMember::adjustMp");
+    notifyOfChange();
 }
 
 /**
@@ -256,7 +255,7 @@ void PartyMember::advanceLevel() {
     if (advanceLevelCallback)
         (*advanceLevelCallback)(this);
 
-    notifyOfChange("PartyMember::advanceLevel");
+    notifyOfChange();
 }
 
 /**
@@ -288,10 +287,8 @@ void PartyMember::applyEffect(TileEffect effect) {
         ASSERT(0, "invalid effect: %d", effect);
     }
 
-    if (party && effect != EFFECT_NONE) {
-        party->setChanged();
-        party->notifyObservers("PartyMember::applyEffect");
-    }
+    if (effect != EFFECT_NONE)
+        notifyOfChange();
 }
 
 /**
@@ -299,7 +296,7 @@ void PartyMember::applyEffect(TileEffect effect) {
  */
 void PartyMember::awardXp(int xp) {
     AdjustValueMax(player->xp, xp, 9999);
-    notifyOfChange("PartyMember::awardXp");
+    notifyOfChange();
 }
 
 /**
@@ -359,7 +356,7 @@ bool PartyMember::heal(HealType type) {
     if (player->hp > player->hpMax)
         player->hp = player->hpMax;
     
-    notifyOfChange("PartyMember::heal");
+    notifyOfChange();
     
     return true;
 }
@@ -370,27 +367,27 @@ bool PartyMember::heal(HealType type) {
 void PartyMember::removeStatus(StatusType s) {
     Creature::removeStatus(s);
     player->status = status.back();
-    notifyOfChange("PartyMember::removeStatus");
+    notifyOfChange();
 }
 
 void PartyMember::setHp(int hp) {
     player->hp = hp;
-    notifyOfChange("PartyMember::setHp");
+    notifyOfChange();
 }
 
 void PartyMember::setMp(int mp) {
     player->mp = mp;
-    notifyOfChange("PartyMember::setMp");
+    notifyOfChange();
 }
 
 void PartyMember::setArmor(ArmorType a) {
     player->armor = a;
-    notifyOfChange("PartyMember::setArmor");
+    notifyOfChange();
 }
 
 void PartyMember::setWeapon(WeaponType w) {
     player->weapon = w;
-    notifyOfChange("PartyMember::setWeapon");
+    notifyOfChange();
 }
 
 /**
@@ -411,7 +408,7 @@ bool PartyMember::applyDamage(int damage) {
     }
     
     player->hp = newHp;
-    notifyOfChange("PartyMember::applyDamage");
+    notifyOfChange();
 
     if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();                    
@@ -508,7 +505,7 @@ bool PartyMember::isDisabled() {
 int PartyMember::loseWeapon() {
     int weapon = player->weapon;
     
-    notifyOfChange("PartyMember::loseWeapon");
+    notifyOfChange();
 
     if (party->saveGame->weapons[weapon] > 0)
         return (--party->saveGame->weapons[weapon]) + 1;
@@ -556,9 +553,9 @@ Party::~Party() {
 /**
  * Notify the party that something about it has changed
  */
-void Party::notifyOfChange(string arg) {
+void Party::notifyOfChange() {
     setChanged();
-    notifyObservers(arg);
+    notifyObservers(NULL);
 }
 
 string Party::translate(std::vector<string>& parts) {        
@@ -638,15 +635,13 @@ void Party::adjustFood(int food) {
     int oldFood = saveGame->food;    
     AdjustValue(saveGame->food, food, 999900, 0);
     if ((saveGame->food / 100) != (oldFood / 100)) {
-        setChanged();
-        notifyObservers("Party::adjustFood");
+        notifyOfChange();
     }
 }
 
 void Party::adjustGold(int gold) {
     AdjustValue(saveGame->gold, gold, 9999, 0);    
-    setChanged();
-    notifyObservers("Party::adjustGold");
+    notifyOfChange();
 }
 
 /**
@@ -758,8 +753,7 @@ void Party::adjustKarma(KarmaAction action) {
     }
 
     /* something changed */
-    setChanged();
-    notifyObservers("Party::adjustKarma");
+    notifyOfChange();
 
     /*
      * return to u4dos compatibility and handle losing of eighths
@@ -807,8 +801,7 @@ void Party::applyEffect(TileEffect effect) {
 bool Party::attemptElevation(Virtue virtue) {
     if (saveGame->karma[virtue] == 99) {
         saveGame->karma[virtue] = 0;
-        setChanged();
-        notifyObservers("Party::attemptElevation");
+        notifyOfChange();
         return true;
     } else
         return false;
@@ -824,8 +817,7 @@ void Party::burnTorch(int turns) {
 
     saveGame->torchduration = torchduration;
 
-    setChanged();
-    notifyObservers("Party::burnTorch");
+    notifyOfChange();
 }
 
 /**
@@ -865,8 +857,7 @@ void Party::damageShip(unsigned int pts) {
     if ((short)saveGame->shiphull < 0)
         saveGame->shiphull = 0;
     
-    setChanged();
-    notifyObservers("Party::damageShip");
+    notifyOfChange();
 }
 
 /**
@@ -956,8 +947,7 @@ void Party::healShip(unsigned int pts) {
     if (saveGame->shiphull > 50)
         saveGame->shiphull = 50;
 
-    setChanged();
-    notifyObservers("Party::healShip");
+    notifyOfChange();
 }
 
 /**
@@ -1038,8 +1028,7 @@ CannotJoinError Party::join(string name) {
             tmp = saveGame->players[saveGame->members];
             saveGame->players[saveGame->members] = saveGame->players[i];
             saveGame->players[i] = tmp;            
-            setChanged();
-            notifyObservers("Party::join");
+            notifyOfChange();
 
             members.push_back(new PartyMember(this, &saveGame->players[saveGame->members++]));
 
@@ -1065,8 +1054,7 @@ void Party::lightTorch(int duration, bool loseTorch) {
     torchduration += duration;
     saveGame->torchduration = torchduration;
 
-    setChanged();
-    notifyObservers("Party::lightTorch");
+    notifyOfChange();
 }
 
 /**
@@ -1075,8 +1063,7 @@ void Party::lightTorch(int duration, bool loseTorch) {
 void Party::quenchTorch() {
     torchduration = saveGame->torchduration = 0;
 
-    setChanged();
-    notifyObservers("Party::quenchTorch");
+    notifyOfChange();
 }
 
 /**
@@ -1093,8 +1080,7 @@ void Party::reviveParty() {
     saveGame->food = 20099;
     saveGame->gold = 200;
     setTransport(Tileset::findTileByName("avatar")->id);
-    setChanged();
-    notifyObservers("Party::reviveParty");
+    notifyOfChange();
 }
 
 void Party::setTransport(MapTile tile) {
@@ -1109,8 +1095,7 @@ void Party::setTransport(MapTile tile) {
         c->transportContext = TRANSPORT_BALLOON;
     else c->transportContext = TRANSPORT_FOOT;
 
-    setChanged();
-    notifyObservers("Party::setTransport");
+    notifyOfChange();
 }
 
 void Party::setShipHull(int str) {
@@ -1119,8 +1104,7 @@ void Party::setShipHull(int str) {
 
     if (saveGame->shiphull != newStr) {
         saveGame->shiphull = newStr;
-        setChanged();
-        notifyObservers("Party::setShipHull");
+        notifyOfChange();
     }
 }
 
@@ -1129,8 +1113,7 @@ void Party::adjustReagent(int reagent, int amt) {
     AdjustValue(c->saveGame->reagents[reagent], amt, 99, 0);
 
     if (oldVal != c->saveGame->reagents[reagent]) {        
-        setChanged();
-        notifyObservers("Party::adjustReagent");
+        notifyOfChange();
     }
 }
 

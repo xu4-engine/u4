@@ -352,7 +352,7 @@ bool Settings::write() {
     fclose(settingsFile);
 
     setChanged();
-    notifyObservers(this);
+    notifyObservers(NULL);
 
     return true;
 }
