@@ -53,10 +53,42 @@ int playerGetMaxMp(const SaveGamePlayerRecord *player) {
     }
 }
 
+/**
+ * Determines whether a player can wear the given armor type.
+ */
 int playerCanWear(const SaveGamePlayerRecord *player, ArmorType armor) {
-    return 1;
+
+    /* anybody can wear mystic robes */
+    if (armor == ARMR_MYSTICROBES)
+        return 1;
+
+    switch (player->klass) {
+    case CLASS_MAGE:
+        return armor == ARMR_CLOTH;
+    case CLASS_BARD:
+    case CLASS_DRUID:
+    case CLASS_RANGER:
+    case CLASS_SHEPHERD:
+        return armor <= ARMR_LEATHER;
+
+    case CLASS_TINKER:
+        return armor <= ARMR_PLATE;
+
+    case CLASS_FIGHTER:
+        return armor <= ARMR_MAGICCHAIN;
+
+    case CLASS_PALADIN:
+        return 1;
+
+    default:
+        assert(0);              /* shoudn't happen */
+    }
 }
 
+/**
+ * Determines whether a player can ready the given weapon type.
+ */
 int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon) {
     return 1;
 }
+
