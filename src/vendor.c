@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 
 #include "u4.h"
 #include "context.h"
@@ -19,6 +18,7 @@
 #include "stats.h"
 #include "map.h"
 #include "player.h"
+#include "debug.h"
 
 /*
  * Warning -- this is not the nicest code; vendors are (so far) the
@@ -375,7 +375,7 @@ int vendorInit() {
 
 void vendorGetConversationText(Conversation *cnv, const char *inquiry, char **response) {
     switch (cnv->state) {
-    case CONV_INTRO:
+        case CONV_INTRO:
         *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getIntro)(cnv);
         return;
     case CONV_VENDORQUESTION:
@@ -406,8 +406,7 @@ void vendorGetConversationText(Conversation *cnv, const char *inquiry, char **re
         *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getTopicResponse)(cnv, inquiry);
         return;
     default:
-        assert(0);          /* shouldn't happen */
-
+        ASSERT(0, "invalid state: %d", cnv->state);
     }
 }
 
@@ -440,7 +439,7 @@ char *vendorGetPrompt(const Conversation *cnv) {
         break;
 
     default:
-        assert(0);
+        ASSERT(0, "invalid state: %d", cnv->state);
     }
 
     return strdup("");
@@ -478,7 +477,7 @@ char *vendorGetFarewell(const Conversation *cnv, const char *prefix) {
         return concat(prefix, vendorGetText(cnv->talker, SV_ASHAME), NULL);
 
     default:
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "invalid npc type: %d", cnv->talker->npcType);
     }
 
     return NULL;
@@ -499,27 +498,27 @@ const char *vendorGetVendorQuestionChoices(const Conversation *cnv) {
 int vendorGetVendorNo(const Person *v) {
     int type;
 
-    assert(v->npcType >= NPC_VENDOR_WEAPONS && v->npcType <= NPC_VENDOR_STABLE);
+    ASSERT(v->npcType >= NPC_VENDOR_WEAPONS && v->npcType <= NPC_VENDOR_STABLE, "invalid npc type: %d", v->npcType);
 
     if (v->npcType == NPC_VENDOR_GUILD) {
         if (c->map->id == 14)   /* Buccaneers Den */
             return 0;
         if (c->map->id == 15)   /* Vesper */
             return 1;
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "map doesn't have guild vendor: %d", c->map->id);
     }
 
     if (v->npcType == NPC_VENDOR_STABLE) {
         if (c->map->id == 13)   /* Paws */
             return 0;
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "map doesn't have stable: %d", c->map->id);
     }
 
 
     type = v->npcType - NPC_VENDOR_WEAPONS;
 
-    assert((c->map->id - 1) < VCM_SIZE);
-    assert(vendorTypeInfo[type]->cityMap[c->map->id - 1] != 0);
+    ASSERT((c->map->id - 1) < VCM_SIZE, "map id out of range: %d", c->map->id);
+    ASSERT(vendorTypeInfo[type]->cityMap[c->map->id - 1] != 0, "map doesn't have vendor: %d", c->map->id);
 
     return vendorTypeInfo[type]->cityMap[c->map->id - 1] - 1;
 }
@@ -553,7 +552,7 @@ const char *vendorGetShop(const Person *v) {
  */
 const VendorTypeInfo *vendorGetInfo(const Person *v) {
     int type;
-    assert(v->npcType >= NPC_VENDOR_WEAPONS && v->npcType <= NPC_VENDOR_STABLE);
+    ASSERT(v->npcType >= NPC_VENDOR_WEAPONS && v->npcType <= NPC_VENDOR_STABLE, "npc type out of range: %d", v->npcType);
 
     type = v->npcType - NPC_VENDOR_WEAPONS;
 
@@ -661,7 +660,7 @@ char *vendorGetIntro(Conversation *cnv) {
         break;
 
     default:
-        assert(0);          /* shouldn't happen */
+        ASSERT(0, "invalid npc type: %d", cnv->talker->npcType);
     }
 
     statsUpdate();
@@ -744,7 +743,7 @@ char *vendorGetArmsBuyItemResponse(Conversation *cnv, const char *response) {
     else if (cnv->talker->npcType == NPC_VENDOR_ARMOR)
         info = &armorVendorInfo;
     else
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "invalid npc type: %d", cnv->talker->npcType);
 
     if (response[0] == '\033') {
         cnv->state = CONV_DONE;
@@ -967,7 +966,7 @@ char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response) {
                           NULL);
 
         default:
-            assert(0);          /* shouldn't happen */
+            ASSERT(0, "invalid npc type: %d", cnv->talker->npcType);
         }
     }
 
@@ -1000,7 +999,7 @@ char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response) {
                       NULL);
 
     default:
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "invalid npc type: %d", cnv->talker->npcType);
     }
 }
 
@@ -1008,8 +1007,9 @@ char *vendorGetSellQuantityResponse(Conversation *cnv, const char *response) {
     char buffer[10];
     char *reply;
 
-    assert (cnv->talker->npcType == NPC_VENDOR_WEAPONS ||
-            cnv->talker->npcType == NPC_VENDOR_ARMOR);
+    ASSERT(cnv->talker->npcType == NPC_VENDOR_WEAPONS ||
+           cnv->talker->npcType == NPC_VENDOR_ARMOR,
+           "invalid npc type: %d", cnv->talker->npcType);
 
     cnv->quant = (int) strtol(response, NULL, 10);
 
@@ -1242,7 +1242,7 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
         break;
 
     default:
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "invalid npc type: %d", cnv->talker->npcType);
     }
 
     return reply;
@@ -1252,8 +1252,9 @@ char *vendorDoSellTransaction(Conversation *cnv) {
     char *reply;
     int success;
 
-    assert (cnv->talker->npcType == NPC_VENDOR_WEAPONS ||
-            cnv->talker->npcType == NPC_VENDOR_ARMOR);
+    ASSERT(cnv->talker->npcType == NPC_VENDOR_WEAPONS ||
+           cnv->talker->npcType == NPC_VENDOR_ARMOR, 
+           "invalid npc type: %d", cnv->talker->npcType);
 
     success = playerSell(c->saveGame, cnv->itemType, cnv->itemSubtype, cnv->quant, cnv->price);
 
@@ -1459,7 +1460,7 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
         break;
 
     default:
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "invalid npc type: %d", cnv->talker->npcType);
     }
     return reply;
 }

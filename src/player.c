@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "player.h"
+#include "debug.h"
 
 LostEighthCallback lostEighthCallback = NULL;
 AdvanceLevelCallback advanceLevelCallback = NULL;
@@ -108,7 +108,7 @@ int playerGetMaxMp(const SaveGamePlayerRecord *player) {
         return 0;
     }
 
-    assert(0);                  /* shouldn't happen */
+    ASSERT(0, "invalid player class: %d", player->klass);
 }
 
 /**
@@ -139,7 +139,7 @@ int playerCanWear(const SaveGamePlayerRecord *player, ArmorType armor) {
         return 1;
     }
 
-    assert(0);                  /* shoudn't happen */
+    ASSERT(0, "invalid player class: %d", player->klass);
 }
 
 /**
@@ -165,10 +165,12 @@ int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon) {
         /* WEAP_MYSTICSWORD */0xff /* all */
     };
 
+    ASSERT(player->klass < 8, "invalid player class: %d", player->klass);
+
     if (weapon < WEAP_MAX)
         return ((weapMask[weapon] & (1 << player->klass)) != 0);
 
-    assert(0);                  /* shouldn't happen */
+    ASSERT(0, "invalid weapon: %d", weapon);
 }
 
 int playerCanEnterShrine(const SaveGame *saveGame, Virtue virtue) {
@@ -431,7 +433,7 @@ void playerApplyEffect(SaveGame *saveGame, TileEffect effect) {
                 saveGame->players[i].status = STAT_POISONED;
             break;
         default:
-            assert(0);
+            ASSERT(0, "invalid effect: %d", effect);
         }
     }
 
@@ -607,7 +609,7 @@ int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, i
 
     switch (item) {
     case INV_NONE:
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "invalid item: %d", item);
         break;
     case INV_WEAPON:
         if (saveGame->weapons[type] < quantity)

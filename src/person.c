@@ -7,7 +7,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
-#include <assert.h>
 
 #include "u4.h"
 #include "context.h"
@@ -21,6 +20,7 @@
 #include "music.h"
 #include "player.h"
 #include "map.h"
+#include "debug.h"
 
 char **hawkwindText;
 char **lbKeywords;
@@ -115,7 +115,7 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
             return;
 
         case CONV_ASK:
-            assert(cnv->talker->npcType != NPC_HAWKWIND);
+            ASSERT(cnv->talker->npcType != NPC_HAWKWIND, "invalid state for hawkwind conversation");
             if (cnv->talker->npcType == NPC_LORD_BRITISH)
                 *response = lordBritishGetQuestionResponse(cnv, inquiry);
             else 
@@ -123,12 +123,12 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
             return;
     
         case CONV_BUY_QUANTITY:
-            assert(cnv->talker->npcType == NPC_TALKER_BEGGAR);
+            ASSERT(cnv->talker->npcType == NPC_TALKER_BEGGAR, "invalid npc type: %d", cnv->talker->npcType);
             *response = beggarGetQuantityResponse(cnv, inquiry);
             return;
 
         default:
-            assert(0);          /* shouldn't happen */
+            ASSERT(0, "invalid state: %d", cnv->state);
         }
     }
 }
@@ -168,7 +168,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
         return CONVINPUT_NONE;
     }
 
-    assert(0);                  /* shouldn't happen */
+    ASSERT(0, "invalid state: %d", cnv->state);
     return CONVINPUT_NONE;
 }
 
@@ -178,7 +178,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
 const char *personGetChoices(const struct _Conversation *cnv) {
     switch (cnv->state) {
     case CONV_VENDORQUESTION:
-        assert(personIsVendor(cnv->talker));
+        ASSERT(personIsVendor(cnv->talker), "person must be vendor");
         return vendorGetVendorQuestionChoices(cnv);
 
     case CONV_BUY_ITEM:
@@ -190,7 +190,7 @@ const char *personGetChoices(const struct _Conversation *cnv) {
         return "ny\033";
 
     default:
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "invalid state: %d", cnv->state);
     }
 
     return NULL;

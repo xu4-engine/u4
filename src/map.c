@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "u4.h"
 #include "map.h"
@@ -21,6 +20,7 @@
 #include "context.h"
 #include "savegame.h"
 #include "monster.h"
+#include "debug.h"
 
 #define MAP_TILE_AT(mapptr, x, y) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 
@@ -31,8 +31,8 @@ int mapRead(City *city, FILE *ult, FILE *tlk) {
     char tlk_buffer[288];
 
     /* the map must be 32x32 to be read from an .ULT file */
-    assert(city->map->width == CITY_WIDTH);
-    assert(city->map->height == CITY_HEIGHT);
+    ASSERT(city->map->width == CITY_WIDTH, "map width is %d, should be %d", city->map->width, CITY_WIDTH);
+    ASSERT(city->map->height == CITY_HEIGHT, "map height is %d, should be %d", city->map->height, CITY_HEIGHT);
 
     city->map->data = (unsigned char *) malloc(CITY_HEIGHT * CITY_WIDTH);
     if (!city->map->data)
@@ -156,8 +156,8 @@ int mapReadCon(Map *map, FILE *con) {
     int i;
 
     /* the map must be 11x11 to be read from an .CON file */
-    assert(map->width == CON_WIDTH);
-    assert(map->height == CON_HEIGHT);
+    ASSERT(map->width == CON_WIDTH, "map width is %d, should be %d", map->width, CON_WIDTH);
+    ASSERT(map->height == CON_HEIGHT, "map height is %d, should be %d", map->height, CON_HEIGHT);
 
     map->data = (unsigned char *) malloc(CON_HEIGHT * CON_WIDTH);
     if (!map->data)
@@ -196,8 +196,8 @@ int mapReadWorld(Map *map, FILE *world) {
     int x, xch, y, ych;
 
     /* the map must be 256x256 to be read from the world map file */
-    assert(map->width == MAP_WIDTH);
-    assert(map->height == MAP_WIDTH);
+    ASSERT(map->width == MAP_WIDTH, "map width is %d, should be %d", map->width, MAP_WIDTH);
+    ASSERT(map->height == MAP_HEIGHT, "map height is %d, should be %d", map->height, MAP_HEIGHT);
 
     map->data = (unsigned char *) malloc(MAP_HEIGHT * MAP_WIDTH);
     if (!map->data)

@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "u4.h"
 #include "stats.h"
@@ -15,6 +14,7 @@
 #include "names.h"
 #include "ttype.h"
 #include "player.h"
+#include "debug.h"
 
 #define STATS_AREA_WIDTH 15
 #define STATS_AREA_HEIGHT 8
@@ -139,7 +139,7 @@ void statsAreaSetTitle(const char *title) {
 void statsShowPartyView() {
     int i;
 
-    assert(c->saveGame->members <= 8);
+    ASSERT(c->saveGame->members <= 8, "party members out of range: %d", c->saveGame->members);
 
     for (i = 0; i < c->saveGame->members; i++)
         screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, "%d-%-9s%3d%c", i+1, c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
@@ -152,7 +152,7 @@ void statsShowCharDetails(int charNo) {
     const char *classString;
     int classStart;
 
-    assert(charNo < 8);
+    ASSERT(charNo < 8, "character number out of range: %d", charNo);
 
     statsAreaSetTitle(c->saveGame->players[charNo].name);
     screenTextAt(STATS_AREA_X, STATS_AREA_Y+0, "%c             %c", c->saveGame->players[charNo].sex, c->saveGame->players[charNo].status);
