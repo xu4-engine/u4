@@ -9,7 +9,7 @@ LIBS=-lSDL -lpthread
 MAIN=u4
 MAPS=maps/worldmap.c maps/britain.c maps/yew.c maps/minoc.c maps/trinsic.c maps/jhelom.c maps/skara.c maps/magincia.c maps/moonglow.c maps/paws.c maps/vesper.c maps/den.c maps/cove.c maps/empath.c maps/lycaeum.c maps/serpent.c maps/lcb_1.c maps/lcb_2.c maps/shrine.c
 TILES=images/tiles.c images/charset.c
-SRCS=u4.c map.c ttype.c screen.c event.c event_sdl.c person.c savegame.c $(MAPS) $(TILES)
+SRCS=u4.c map.c ttype.c screen.c screen_sdl.c event.c event_sdl.c person.c savegame.c $(MAPS) $(TILES)
 OBJS=$(SRCS:.c=.o)
 
 all:: images maps u4
