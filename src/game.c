@@ -1839,7 +1839,6 @@ void gameCheckRandomMonsters() {
     if ((monster = monsterRandomForTile(mapTileAt(c->map, x, y))) == 0)
         return;
 
-    printf("random monster %d!\n", monster);
     obj = mapAddObject(c->map, monster, monster, x, y);
     obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
 }
