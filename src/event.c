@@ -447,7 +447,7 @@ int keyHandlerTalking(int key, void *data) {
 
     } else if (key == '\n' || key == '\r') {
         int done;
-        char *reply;
+        char *reply, *prompt;
         int askq;
 
         screenMessage("\n");
@@ -457,6 +457,7 @@ int keyHandlerTalking(int key, void *data) {
         else
             done = personGetResponse(c->conversation.talker, c->conversation.buffer, &reply, &askq);
         screenMessage("\n%s\n", reply);
+        free(reply);
         
         c->conversation.question = askq;
         c->conversation.buffer[0] = '\0';
@@ -467,8 +468,11 @@ int keyHandlerTalking(int key, void *data) {
             eventHandlerPopKeyHandler();
             screenMessage("\020");
         }
-        else
-            screenMessage("\nYour Interest:\n");
+        else {
+            personGetPrompt(c->conversation.talker, &prompt);
+            screenMessage("\n%s\n", prompt);
+            free(prompt);
+        }
 
     } else {
         valid = 0;
@@ -758,8 +762,8 @@ int openAtCoord(int x, int y) {
  * NPC is present at that point, zero is returned.
  */
 int talkAtCoord(int x, int y) {
-    char buffer[100];
     const Person *talker;
+    char *intro;
 
     if (x == -1 && y == -1)
         return 0;
@@ -770,12 +774,11 @@ int talkAtCoord(int x, int y) {
 
     talker = c->conversation.talker;
     c->conversation.question = 0;
-    sprintf(buffer, "\nYou meet\n%s\n\n", talker->description);
-    if (isupper(buffer[9]))
-        buffer[9] = tolower(buffer[9]);
-    screenMessage(buffer);
-    screenMessage("%s says: I am %s\n\n:", talker->pronoun, talker->name);
     c->conversation.buffer[0] = '\0';
+    
+    personGetIntroduction(c->conversation.talker, &intro);
+    screenMessage("\n\n%s", intro);
+    free(intro);
     eventHandlerPushKeyHandler(&keyHandlerTalking);
 
     return 1;
@@ -870,7 +873,7 @@ void moveAvatar(int dx, int dy) {
     }
 
     if (iswalkable(mapTileAt(c->map, newx, newy)) &&
-        !mapPersonAt(c->map, newx, newy)) {
+          !mapPersonAt(c->map, newx, newy)) {
 	c->saveGame->x = newx;
 	c->saveGame->y = newy;
     }
