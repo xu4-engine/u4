@@ -34,7 +34,8 @@
                weaponsvendor      NMTOKEN  #IMPLIED>
 
 <!ELEMENT dungeon EMPTY >
-<!ATTLIST dungeon name            CDATA    #REQUIRED>
+<!ATTLIST dungeon name            CDATA    #REQUIRED
+                  rooms           NMTOKEN  #REQUIRED>
 
 <!ELEMENT shrine EMPTY >
 <!ATTLIST shrine mantra           NMTOKEN  #REQUIRED

@@ -107,28 +107,28 @@
 
     <!-- dungeons -->
     <map id="17" type="dungeon" fname="deceit.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Deceit"/>        
+        <dungeon name="Deceit" rooms="16"/>        
     </map>
     <map id="18" type="dungeon" fname="despise.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Despise"/>        
+        <dungeon name="Despise" rooms="16"/>        
     </map>
     <map id="19" type="dungeon" fname="destard.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Destard"/>        
+        <dungeon name="Destard" rooms="16"/>        
     </map>
     <map id="20" type="dungeon" fname="wrong.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Wrong"/>        
+        <dungeon name="Wrong" rooms="16"/>        
     </map>
     <map id="21" type="dungeon" fname="covetous.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Covetous"/>        
+        <dungeon name="Covetous" rooms="16"/>        
     </map>
     <map id="22" type="dungeon" fname="shame.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Shame"/>        
+        <dungeon name="Shame" rooms="16"/>        
     </map>
     <map id="23" type="dungeon" fname="hythloth.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Hythloth"/>        
+        <dungeon name="Hythloth" rooms="16"/>        
     </map>
     <map id="24" type="dungeon" fname="abyss.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="The Great Stygian Abyss"/>        
+        <dungeon name="The Great Stygian Abyss" rooms="64"/>        
     </map>
 
     <!-- shrines -->
