@@ -36,6 +36,7 @@ long decompress_u4_memory(void *in, long inlen, void **out);
 void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b);
 void fixupIntro(Image *im);
 void fixupIntroExtended(Image *im);
+void fixupAbyssVision(Image *im);
 void screenFreeIntroBackground();
 int screenLoadTiles();
 int screenLoadGemTiles();
@@ -85,17 +86,17 @@ const struct {
 
     /* abyss vision images */
     { "key7.ega",     "key7.old",     320, 200, 1, COMP_RLE, 1, 0 },
-    { "honesty.ega",  "honesty.old",  320, 200, 1, COMP_RLE, 1, 0 },
-    { "compassn.ega", "compassn.old", 320, 200, 1, COMP_RLE, 1, 0 },
-    { "valor.ega",    "valor.old",    320, 200, 1, COMP_RLE, 1, 0 },
-    { "justice.ega",  "justice.old",  320, 200, 1, COMP_RLE, 1, 0 },
-    { "sacrific.ega", "sacrific.old", 320, 200, 1, COMP_RLE, 1, 0 },
-    { "honor.ega",    "honor.old",    320, 200, 1, COMP_RLE, 1, 0 },
-    { "spirit.ega",   "spirit.old",   320, 200, 1, COMP_RLE, 1, 0 },
-    { "humility.ega", "humility.old", 320, 200, 1, COMP_RLE, 1, 0 },
-    { "truth.ega",    "truth.old",    320, 200, 1, COMP_RLE, 1, 0 },
-    { "love.ega",     "love.old",     320, 200, 1, COMP_RLE, 1, 0 },
-    { "courage.ega",  "courage.old",  320, 200, 1, COMP_RLE, 1, 0 },
+    { "honesty.ega",  "honesty.old",  320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
+    { "compassn.ega", "compassn.old", 320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
+    { "valor.ega",    "valor.old",    320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
+    { "justice.ega",  "justice.old",  320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
+    { "sacrific.ega", "sacrific.old", 320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
+    { "honor.ega",    "honor.old",    320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
+    { "spirit.ega",   "spirit.old",   320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
+    { "humility.ega", "humility.old", 320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
+    { "truth.ega",    "truth.old",    320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
+    { "love.ega",     "love.old",     320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
+    { "courage.ega",  "courage.old",  320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
 
     /* shrine vision images */
     { "rune_0.ega",   "rune_0.old", 320, 200, 1, COMP_RLE, 1, 0 },
@@ -322,6 +323,34 @@ void fixupIntroExtended(Image *im) {
     src.x = 0;  src.y = 105;  src.w = 320;  src.h = 45;
     dest.x = 0; dest.y = 60; dest.w = 320;  dest.h = 45;
     SDL_BlitSurface(im->surface, &src, im->surface, &dest);    
+}
+
+void fixupAbyssVision(Image *im) {
+    int i;
+    static unsigned char *data = NULL;
+
+    /*
+     * The EGA vision components need to be made transparent, so they
+     * can be overlaid on each previous image.
+     */
+    if (settings->videoType == VIDEO_EGA) {
+        im->surface->format->colorkey = 0;
+        im->surface->flags |= SDL_SRCCOLORKEY;
+        return;
+    }
+
+    /*
+     * Each VGA vision components must be XORed with all the previous
+     * vision components to get the actual image.
+     */
+    if (data != NULL) {
+        for (i = 0; i < im->surface->pitch * im->surface->h; i++)
+            ((unsigned char *)im->surface->pixels)[i] ^= data[i];
+    } else {
+        data = malloc(im->surface->pitch * im->surface->h);
+    }
+
+    memcpy(data, im->surface->pixels, im->surface->pitch * im->surface->h);
 }
 
 /**
@@ -1338,6 +1367,9 @@ void screenGemUpdate() {
 
 Image *screenScale(Image *src, int scale, int n, int filter) {
     Image *dest;
+    int transparent;
+
+    transparent = (src->surface->flags & SDL_SRCCOLORKEY) != 0;
 
     dest = src;
 
@@ -1357,6 +1389,11 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
     if (scale != 1) {
         dest = (*scalerGet(SCL_POINT))(src, scale, n);
         imageDelete(src);
+    }
+
+    if (transparent) {
+        src->surface->format->colorkey = 0;
+        src->surface->flags |= SDL_SRCCOLORKEY;
     }
 
     return dest;
