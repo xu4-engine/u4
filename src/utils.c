@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <time.h>
 
 #include "utils.h"
 
@@ -59,4 +60,22 @@ char *concat(const char *str, ...) {
     }
 
     return result;
+}
+
+/**
+ * Seed the random number generator.
+ */
+void xu4_srandom(long seed) {
+    srand(time(NULL));
+}
+
+/**
+ * Generate a random number between 0 and (upperRange - 1).  This
+ * routine uses the upper bits of random number provided by rand() to
+ * compensate for older generators that have low entropy in the lower
+ * bits (e.g. MacOS X).
+ */
+int xu4_random(int upperRange) {
+    int r = rand();
+    return (int) ((((double)upperRange) * r) / (RAND_MAX+1.0));
 }

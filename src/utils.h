@@ -11,5 +11,7 @@
 
 char *concat(const char *str, ...);
 int strcmp_i(const char *str1, const char *str2);
+void xu4_srandom(void);
+int xu4_random(int upperval);
 
 #endif
