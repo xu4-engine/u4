@@ -73,7 +73,6 @@ int main(int argc, char *argv[]) {
     }
 
     xu4_srandom();    
-    intro = new IntroController();
 
     perf.start();    
     screenInit();
@@ -93,6 +92,7 @@ int main(int argc, char *argv[]) {
     creatures.loadInfoFromXml();
     perf.end("CreatureMgr::loadInfoFromXml()");
 
+    intro = new IntroController();
     if (!skipIntro) {
         /* do the intro */
         perf.start();
