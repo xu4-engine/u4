@@ -14,6 +14,7 @@ typedef enum {
 
 typedef struct _ItemLocation {
     const char *name;
+    const char *shortname;
     unsigned char x, y;
     const Map* map;
     int (*isItemInInventory)(void *);
@@ -23,5 +24,6 @@ typedef struct _ItemLocation {
 } ItemLocation;
 
 const ItemLocation *itemAtLocation(const Map *map, unsigned char x, unsigned char y);
+void itemUse(const char *shortname);
 
 #endif

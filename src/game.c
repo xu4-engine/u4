@@ -1555,7 +1555,7 @@ int talkHandleChoice(char choice) {
 int useItem(const char *itemName) {
     eventHandlerPopKeyHandler();
 
-    screenMessage("\nNot a Usable item!\n");
+    itemUse(itemName);
 
     gameFinishTurn();
 
