@@ -105,6 +105,22 @@ char *xmlGetPropAsStr(xmlNodePtr node, const char *name) {
     return (char *)prop;
 }
 
+std::string xmlGetPropAsString(xmlNodePtr node, const char *name) {
+    xmlChar *prop;
+
+    if (settings.validateXml && !xmlHasProp(node, (const xmlChar *)name))
+        return "";
+    
+    prop = xmlGetProp(node, (const xmlChar *)name);
+    if (!prop)
+        return "";
+
+    string result((char *)prop);
+    free(prop);
+    
+    return result;
+}
+
 /**
  * Get an XML property and convert it to a boolean value.  The value
  * should be "true" or "false", case sensitive.  If it is neither,
