@@ -25,6 +25,8 @@ typedef enum {
     ANIM_MAX
 } AnimType;
 
+typedef SDL_Surface *(*ScreenScaler)(SDL_Surface *src, int scale, int n);
+
 SDL_Surface *screen;
 SDL_Surface *bkgds[BKGD_MAX];
 SDL_Surface *introAnimations[ANIM_MAX];
@@ -47,6 +49,12 @@ int screenLoadTileSetVga(SDL_Surface **surface, int width, int height, int n, co
 int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const char *filename);
 int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const char *filename, const char *palette_fname);
 int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const char *filename);
+SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n);
+SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n);
+
+ScreenScaler tileScaler = &screenScale2xBilinear;
+ScreenScaler lzwScaler = &screenScaleDefault;
+ScreenScaler rleScaler = &screenScale2xBilinear;
 
 #define RLE_RUNSTART 02
 
@@ -61,7 +69,7 @@ void screenInit(int screenScale) {
     }
     atexit(SDL_Quit);
 
-    screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE);
+    screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT);
     if (!screen) {
 	fprintf(stderr, "Unable to set video: %s\n", SDL_GetError());
 	exit(1);
@@ -330,51 +338,42 @@ int screenLoadPaletteVga(SDL_Surface *surface, const char *filename) {
  */
 int screenLoadTileSetEga(SDL_Surface **surface, int width, int height, int n, const char *filename) {
     FILE *in;
-    int x, y, xs, ys;
+    SDL_Surface *unscaled;
+    int x, y;
     Uint8 *p;
 
     in = u4fopen(filename);
     if (!in)
         return 0;
 
-    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * n * scale, 8, 0, 0, 0, 0);
-    if (!(*surface)) {
+    unscaled = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height * n, 8, 0, 0, 0, 0);
+    if (!unscaled) {
         u4fclose(in);
         return 0;
     }
 
-    if (!screenLoadPaletteEga(*surface)) {
-        SDL_FreeSurface(*surface);
+    if (!screenLoadPaletteEga(unscaled)) {
+        SDL_FreeSurface(unscaled);
         u4fclose(in);
         return 0;
     }
 
-    p = (*surface)->pixels;
+    p = unscaled->pixels;
     for (y = 0; y < height * n; y++) {
         for (x = 0; x < width; x += 2) {
             int temp = getc(in);
-            for (xs = 0; xs < scale; xs++) {
-                *p = temp >> 4;
-                p++;
-            }
-            for (xs = 0; xs < scale; xs++) {
-                *p = temp & 0x0f;
-                p++;
-            }
+            *p = temp >> 4;
+            p++;
+            *p = temp & 0x0f;
+            p++;
         }
-        p += ((*surface)->pitch) - (width * scale);
-        for (ys = 1; ys < scale; ys++) {
-            for (x = 0; x < width; x++) {
-                for (xs = 0; xs < scale; xs++) {
-                    *p = *(p - (*surface)->pitch);
-                    p++;
-                }
-            }
-            p += ((*surface)->pitch) - (width * scale);
-        }
+        p += unscaled->pitch - width;
     }
 
     u4fclose(in);
+
+    (*surface) = (*tileScaler)(unscaled, scale, n);
+    SDL_FreeSurface(unscaled);
 
     return 1;
 }
@@ -384,46 +383,39 @@ int screenLoadTileSetEga(SDL_Surface **surface, int width, int height, int n, co
  */
 int screenLoadTileSetVga(SDL_Surface **surface, int width, int height, int n, const char *filename, const char *palette_fname) {
     FILE *in;
-    int x, y, xs, ys;
+    SDL_Surface *unscaled;
+    int x, y;
     Uint8 *p;
 
     in = u4fopen(filename);
     if (!in)
         return 0;
 
-    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * n * scale, 8, 0, 0, 0, 0);
-    if (!(*surface)) {
+    unscaled = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height * n, 8, 0, 0, 0, 0);
+    if (!unscaled) {
         u4fclose(in);
         return 0;
     }
 
-    if (!screenLoadPaletteVga(*surface, palette_fname)) {
-        SDL_FreeSurface(*surface);
+    if (!screenLoadPaletteVga(unscaled, palette_fname)) {
+        SDL_FreeSurface(unscaled);
         u4fclose(in);
         return 0;
     }
 
-    p = (*surface)->pixels;
+    p = unscaled->pixels;
     for (y = 0; y < height * n; y++) {
         for (x = 0; x < width; x++) {
             int temp = getc(in);
-            for (xs = 0; xs < scale; xs++) {
-                *p++ = temp;
-            }
+            *p++ = temp;
         }
-        p += ((*surface)->pitch) - (width * scale);
-        for (ys = 1; ys < scale; ys++) {
-            for (x = 0; x < width; x++) {
-                for (xs = 0; xs < scale; xs++) {
-                    *p = *(p - (*surface)->pitch);
-                    p++;
-                }
-            }
-            p += ((*surface)->pitch) - (width * scale);
-        }
+        p += unscaled->pitch - width;
     }
 
     u4fclose(in);
+
+    (*surface) = (*tileScaler)(unscaled, scale, n);
+    SDL_FreeSurface(unscaled);
 
     return 1;
 }
@@ -433,35 +425,27 @@ int screenLoadTileSetVga(SDL_Surface **surface, int width, int height, int n, co
  */
 int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const char *filename) {
     FILE *in;
-    int x, y, xs, ys;
+    SDL_Surface *unscaled;
     Uint8 *p;
-    Uint8 *data;
 
     in = u4fopen(filename);
     if (!in)
         return 0;
 
-    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * scale, 8, 0, 0, 0, 0);
-    if (!(*surface)) {
+    unscaled = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+    if (!unscaled) {
         u4fclose(in);
         return 0;
     }
 
-    if (!screenLoadPaletteEga(*surface)) {
-        SDL_FreeSurface(*surface);
+    if (!screenLoadPaletteEga(unscaled)) {
+        SDL_FreeSurface(unscaled);
         u4fclose(in);
         return 0;
     }
 
-    data = malloc(sizeof(Uint8) * height * width);
-    if (!data) {
-        SDL_FreeSurface(*surface);
-        u4fclose(in);
-        return 0;
-    }
-
-    p = data;
-    while (p < data + (height * width)) {
+    p = unscaled->pixels;
+    while (p < ((Uint8 *)unscaled->pixels) + (unscaled->pitch * unscaled->h)) {
         int temp = getc(in);
         if (temp == RLE_RUNSTART) {
             int i, count;
@@ -481,32 +465,10 @@ int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const ch
         }
     }
 
-    p = (*surface)->pixels;
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x += 2) {
-            for (xs = 0; xs < scale; xs++) {
-                *p = data[y * width + x];
-                p++;
-            }
-            for (xs = 0; xs < scale; xs++) {
-                *p = data[y * width + x + 1];
-                p++;
-            }
-        }
-        p += ((*surface)->pitch) - (width * scale);
-        for (ys = 1; ys < scale; ys++) {
-            for (x = 0; x < width; x++) {
-                for (xs = 0; xs < scale; xs++) {
-                    *p = *(p - (*surface)->pitch);
-                    p++;
-                }
-            }
-            p += ((*surface)->pitch) - (width * scale);
-        }
-    }
-    free(data);
-        
     u4fclose(in);
+
+    (*surface) = (*rleScaler)(unscaled, scale, 1);
+    SDL_FreeSurface(unscaled);
 
     return 1;
 }
@@ -516,39 +478,31 @@ int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const ch
  */
 int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const char *filename, const char *palette_fname) {
     FILE *in;
-    int x, y, xs, ys;
-    Uint8 *p, *data;
+    SDL_Surface *unscaled;
+    Uint8 *p;
 
     in = u4fopen(filename);
     if (!in)
         return 0;
 
-    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * scale, 8, 0, 0, 0, 0);
-    if (!(*surface)) {
+    unscaled = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+    if (!unscaled) {
         u4fclose(in);
         return 0;
     }
 
-    if (!screenLoadPaletteVga(*surface, palette_fname)) {
-        SDL_FreeSurface(*surface);
+    if (!screenLoadPaletteVga(unscaled, palette_fname)) {
+        SDL_FreeSurface(unscaled);
         u4fclose(in);
         return 0;
     }
 
-    data = malloc(sizeof(Uint8) * height * width);
-    if (!data) {
-        SDL_FreeSurface(*surface);
-        u4fclose(in);
-        return 0;
-    }
-
-    p = data;
-    while (p < data + (height * width)) {
+    p = unscaled->pixels;
+    while (p < ((Uint8 *)unscaled->pixels) + (unscaled->pitch * unscaled->h)) {
         int temp = getc(in);
         if (temp == EOF) {
             u4fclose(in);
-            free(data);
-            SDL_FreeSurface(*surface);
+            SDL_FreeSurface(unscaled);
             return 0;
         }
         if (temp == RLE_RUNSTART) {
@@ -565,86 +519,58 @@ int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const ch
         }
     }
 
-    p = (*surface)->pixels;
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
-            for (xs = 0; xs < scale; xs++) {
-                *p = data[y * width + x];
-                p++;
-            }
-        }
-        p += ((*surface)->pitch) - (width * scale);
-        for (ys = 1; ys < scale; ys++) {
-            for (x = 0; x < width; x++) {
-                for (xs = 0; xs < scale; xs++) {
-                    *p = *(p - (*surface)->pitch);
-                    p++;
-                }
-            }
-            p += ((*surface)->pitch) - (width * scale);
-        }
-    }
-    free(data);
-        
     u4fclose(in);
+
+    (*surface) = (*rleScaler)(unscaled, scale, 1);
+    SDL_FreeSurface(unscaled);
 
     return 1;
 }
 
 int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const char *filename) {
     FILE *in;
-    int x, y, xs, ys;
+    SDL_Surface *unscaled;
+    int x, y;
     Uint8 *p, *data;
 
     in = u4fopen(filename);
     if (!in)
         return 0;
 
-    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * scale, 8, 0, 0, 0, 0);
-    if (!(*surface)) {
+    unscaled = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+    if (!unscaled) {
         u4fclose(in);
         return 0;
     }
 
-    if (!screenLoadPaletteEga(*surface)) {
-        SDL_FreeSurface(*surface);
+    if (!screenLoadPaletteEga(unscaled)) {
+        SDL_FreeSurface(unscaled);
         u4fclose(in);
         return 0;
     }
 
     if (decompress_u4_file(in, u4flength(in), (void **) &data) == -1) {
-        SDL_FreeSurface(*surface);
+        SDL_FreeSurface(unscaled);
         u4fclose(in);
         return 0;
     }
 
-
-    p = (*surface)->pixels;
+    p = unscaled->pixels;
     for (y = 0; y < height; y++) {
         for (x = 0; x < width / 2; x++) {
-            for (xs = 0; xs < scale; xs++) {
-                *p = data[y * width / 2 + x] >> 4;
-                p++;
-            }
-            for (xs = 0; xs < scale; xs++) {
-                *p = data[y * width / 2 + x] & 0x0f;
-                p++;
-            }
+            *p = data[y * width / 2 + x] >> 4;
+            p++;
+            *p = data[y * width / 2 + x] & 0x0f;
+            p++;
         }
-        p += ((*surface)->pitch) - (width * scale);
-        for (ys = 1; ys < scale; ys++) {
-            for (x = 0; x < width; x++) {
-                for (xs = 0; xs < scale; xs++) {
-                    *p = *(p - (*surface)->pitch);
-                    p++;
-                }
-            }
-            p += ((*surface)->pitch) - (width * scale);
-        }
+        p += unscaled->pitch - width;
     }
     free(data);
 
     u4fclose(in);
+
+    (*surface) = (*lzwScaler)(unscaled, scale, 1);
+    SDL_FreeSurface(unscaled);
 
     return 1;
 }
@@ -896,3 +822,86 @@ void screenGemUpdate() {
     screenUpdateWind();
 }
 
+SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n) {
+    int x, y, i, j;
+    SDL_Surface *dest;
+
+    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, 8, 0, 0, 0, 0);
+    if (!dest)
+        return NULL;
+
+    memcpy(dest->format->palette->colors, src->format->palette->colors, sizeof(SDL_Color) * src->format->palette->ncolors);
+
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            for (i = 0; i < scale; i++) {
+                for (j = 0; j < scale; j++)
+                    ((Uint8 *)dest->pixels)[dest->pitch * (y * 2 + i) + x * 2 + j] = ((Uint8 *)src->pixels)[src->pitch * y + x];
+            }
+        }
+    }
+
+    return dest;
+}
+
+SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
+    int i, x, y;
+    SDL_Color a, b, c, d;
+    SDL_Surface *dest;
+    Uint32 rmask, gmask, bmask, amask;
+
+    assert(scale == 2);
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+#else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+#endif
+
+    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, 32, rmask, gmask, bmask, amask);
+    if (!dest)
+        return NULL;
+
+    for (i = 0; i < n; i++) {
+        for (y = (src->h / n) * i; y < (src->h / n) * (i + 1) - 1; y++) {
+            for (x = 0; x < src->w - 1; x++) {
+                a = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x]];
+                b = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x + 1]];
+                c = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * (y + 1) + x]];
+                d = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * (y + 1) + x + 1]];
+
+                ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2 + 1] = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
+                ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2] = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+                ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2 + 1] = SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2);
+            }
+            a = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x]];
+            c = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * (y + 1) + x]];
+            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2 + 1] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2] = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2 + 1] = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+        }
+        for (x = 0; x < src->w - 1; x++) {
+            a = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x]];
+            b = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x + 1]];
+            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2 + 1] = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
+            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2 + 1] = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
+        }
+        a = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x]];
+        ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+        ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2 + 1] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+        ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+        ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2 + 1] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+    }
+
+    return dest;
+}
