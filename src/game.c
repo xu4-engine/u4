@@ -141,6 +141,14 @@ Mixture *mix;
 int mixSpell;
 Menu spellMixMenu;
 
+MouseArea mouseAreas[] = {
+    { 3, { { 8, 8 }, { 8, 184 }, { 96, 96 } }, MC_WEST, { U4_ENTER, 0, U4_LEFT } },
+    { 3, { { 8, 8 }, { 184, 8 }, { 96, 96 } }, MC_NORTH, { U4_ENTER, 0, U4_UP }  },
+    { 3, { { 184, 8 }, { 184, 184 }, { 96, 96 } }, MC_EAST, { U4_ENTER, 0, U4_RIGHT } },
+    { 3, { { 8, 184 }, { 184, 184 }, { 96, 96 } }, MC_SOUTH, { U4_ENTER, 0, U4_DOWN } },
+    { 0 }
+};
+
 void gameInit() {
     FILE *saveGameFile, *monstersFile;    
 
@@ -222,6 +230,8 @@ void gameInit() {
     spellMixMenu = menuAddItem(spellMixMenu, 6, getReagentName(6), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
     spellMixMenu = menuAddItem(spellMixMenu, 7, getReagentName(7), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
     gameResetSpellMixing();    
+
+    eventHandlerPushMouseAreaSet(mouseAreas);
 }
 
 /**
