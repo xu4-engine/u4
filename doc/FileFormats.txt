@@ -289,7 +289,8 @@ offset len  notes
             0x12-ship facing east, 0x13-ship facing south, 0x14-horse
             facing west, 0x15-horse facing east, 0x18-balloon, 0x1f-on
             foot)
-0x1DC  2    balloon status (0-on ground, 1-flying)
+0x1DC  2    on surface: balloon status (0-on ground, 1-flying)
+            in dungeon: current torch duration
 0x1DE  2    current phase of left moon (Trammel); range = 0-7
 0x1E0  2    current phase of right moon (Felucca); range = 0-7
 0x1E2  2    hull integrity of currently boarded ship
@@ -570,7 +571,11 @@ offset  len   notes
 0x0f97f 171   .ULT filenames; 16 zero terminated strings
 0x0fa2a 48    stone colors; 8 zero terminated strings
 0x0fa5a 91    .DNG filenames; 8 zero terminated strings
-0x0fab5 44    ???
+0x0fab5 28    ???
+0x0fad1 8     moongate x-coordinates (one byte for each moongate starting
+              at moonglow)
+0x0fad9 8     moongate y-coordinates (one byte for each moongate starting
+              at moonglow)
 0x0fae1 32    16 two-byte offsets to .ULT filenames (value + 62141 gives
               file offset)
 0x0fb01 32    area x-coordinates (one byte for each town, city, castle,
@@ -581,7 +586,12 @@ offset  len   notes
               file offset)
 0x0fb51 16    8 two-byte offsets to .DNG filenames (value + 62141 gives
               file offset)
-0x0fb61 2166  ???
+0x0fb61 72    ???
+0x0fba9 8     pirates cove ship x coordinates
+0x0fbb1 8     pirates cove ship y coordinates
+0x0fbb9 8     pirates cove ship tiles
+0x0fbc1 37    zero terminated list of tiles that are walkable
+0x0fbe6 2033  ???
 0x103d7 1280  abyss question dialog strings 
 0x108d7 22    11 two-byte offsets to abyss question answers (value +
               62141 gives file offset)
@@ -603,7 +613,14 @@ offset  len   notes
               strings
 0x11142 509   ???
 0x1133f 26    mp required for each spell (one byte per spell)
-0x11359 2162  ???
+0x11359 654   ???
+0x115e7 16    mask of which clases can use each weapon (one byte per
+              weapon)
+0x115f7 8     mask of which clases can use each type of armor (one byte
+              per armor type)
+0x115ff 1066  ???
+0x11a29 26    spell reagent masks (one byte per spell)
+0x11a43 392   ???
 0x11bcb 120   24 five-byte item location records (see below)
 0x11c43 288   ???
 0x11d63 250   companion dialog text
@@ -648,7 +665,7 @@ offset  len   notes
               can sell (one byte per armor type)
 0x13e53 4     zero padding
 0x13e57 16    price of each type of armor (two bytes for each price)
-0x1396d 16    armor vendor index for each city (one byte per
+0x13e67 16    armor vendor index for each city (one byte per
               castle/city/town)
 0x13e77 12    6 two-byte offsets to armor descriptions (value + 62075
               gives file offset) for all armor types except skin and
