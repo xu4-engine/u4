@@ -52,8 +52,8 @@
     </map>
     <map id="100" type="castle" fname="lcb_2.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="5">
         <city name="Britannia" tlk_fname="lcb.tlk" lordbritish="32"/>
-        <portal x="3" y="3" z="1" destmapid="1" startx="3" starty="3" startlevel="0" action="descend" savelocation="false" message="Descend to first floor!&#xA;" transport="foot"/>
-        <portal x="27" y="3" z="1" destmapid="1" startx="27" starty="3" startlevel="0" action="descend" savelocation="false" message="Descend to first floor!&#xA;" transport="foot"/>
+        <portal x="3" y="3" z="0" destmapid="1" startx="3" starty="3" startlevel="0" action="descend" savelocation="false" message="Descend to first floor!&#xA;" transport="foot"/>
+        <portal x="27" y="3" z="0" destmapid="1" startx="27" starty="3" startlevel="0" action="descend" savelocation="false" message="Descend to first floor!&#xA;" transport="foot"/>
     </map>
     <map id="2" type="castle" fname="lycaeum.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="9">
         <city name="Lycaeum" tlk_fname="lycaeum.tlk" healer="23"/>
