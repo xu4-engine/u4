@@ -120,7 +120,7 @@ int spellCast(int spell, int character, SpellCastError *error) {
     c->saveGame->mixtures[spell]--;
     c->saveGame->players[character].mp -= spells[spell].mp;
 
-    screenMessage("Player %d casted %s!", character, spells[spell].name);
+    screenMessage("%s!\n", spells[spell].name);
 
     return 1;
 }
