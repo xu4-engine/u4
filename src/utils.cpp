@@ -33,10 +33,12 @@ int xu4_random(int upperRange) {
 string& trim(string &val) {
     using namespace std;
     string::iterator i;
-    for (i = val.begin(); (i != val.end()) && isspace(*i); )
-        i = val.erase(i);
-    for (i = val.end()-1; (i != val.begin()) && isspace(*i); )
-        i = val.erase(i)-1;
+    if (val.size()) {
+        for (i = val.begin(); (i != val.end()) && isspace(*i); )
+            i = val.erase(i);    
+        for (i = val.end()-1; (i != val.begin()) && isspace(*i); )
+            i = val.erase(i)-1;
+    }
     return val;
 }
 
