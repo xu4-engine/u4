@@ -400,6 +400,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case ' ':
+        gameCheckBridgeTrolls();
         screenMessage("Pass\n");
         break;
 
