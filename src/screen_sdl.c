@@ -6,7 +6,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
-#include <SDL/SDL.h>
+#include <SDL.h>
 
 #include "u4.h"
 #include "screen.h"
