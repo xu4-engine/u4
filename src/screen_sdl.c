@@ -13,7 +13,6 @@
 #include "settings.h"
 #include "screen.h"
 #include "map.h"
-#include "context.h"
 #include "savegame.h"
 #include "ttype.h"
 #include "rle.h"
