@@ -23,16 +23,19 @@ typedef struct _MenuItem {
     short x, y;
     char *text;
     unsigned char isHighlighted;
+    unsigned char isVisible;
     ActivateMenuItem activateMenuItem;
     ActivateAction activateOn;
 } MenuItem;
 
 Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn);
+MenuItem *menuGetItem(Menu current);
 int menuShow(Menu menu);
 Menu menuGetNextItem(Menu current);
 Menu menuGetPreviousItem(Menu current);
 Menu menuGetRoot(Menu current);
 Menu menuHighlightNew(Menu oldItem, Menu newItem);
+void menuItemSetVisible(Menu item, int visible);
 void menuDelete(Menu menu);
 Menu menuReset(Menu current);
 Menu menuGetItemById(Menu menu, unsigned char id);

@@ -1315,8 +1315,13 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         settings->shortcutCommands = settings->shortcutCommands ? 0 : 1;
         break;
     case 2:
-        mode = INTRO_CONFIG_ADVANCED;
+        mode = INTRO_CONFIG_ADVANCED;        
         advancedOptions = menuReset(advancedOptions);        
+
+        /* show or hide minor/major options if they are enabled/disabled */
+        menuItemSetVisible(menuGetItemById(advancedOptions, 7), settings->minorEnhancements);
+        menuItemSetVisible(menuGetItemById(advancedOptions, 8), settings->majorEnhancements);
+
         break;
     case 3:
         settings->majorEnhancements = settings->majorEnhancements ? 0 : 1;

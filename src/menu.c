@@ -16,38 +16,53 @@ Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, Acti
     menuItem->x = x;
     menuItem->y = y;
     menuItem->isHighlighted = 0;
+    menuItem->isVisible = 1;
     menuItem->activateMenuItem = activate;
     menuItem->activateOn = activateOn;
     
     return listAppend(menu, menuItem);
-} 
+}
+
+MenuItem *menuGetItem(Menu current) {
+    return ((MenuItem *)current->data);
+}
 
 int menuShow(Menu menu) {
     Menu current;
 
     for (current = menu; current; current = current->next) {
-        MenuItem *menuItem = (MenuItem *)current->data;
+        MenuItem *menuItem = menuGetItem(current);
         
-        screenTextAt(menuItem->x, menuItem->y, menuItem->text);
-        if (menuItem->isHighlighted) {
-            screenEnableCursor();
-            screenSetCursorPos(menuItem->x - 2, menuItem->y);
-            screenShowCursor();
+        if (menuItem->isVisible) {
+            screenTextAt(menuItem->x, menuItem->y, menuItem->text);
+            if (menuItem->isHighlighted) {
+                screenEnableCursor();
+                screenSetCursorPos(menuItem->x - 2, menuItem->y);
+                screenShowCursor();
+            }
         }
     }
     return 1;
 }
 
-Menu menuGetNextItem(Menu current) {    
-    if (current->next != NULL)        
-        return current->next;    
+Menu menuGetNextItem(Menu current) {
+    if (current->next != NULL) {
+        /* if the item is not visible, skip it! */
+        if (menuGetItem(current->next)->isVisible)
+            return current->next;
+        return menuGetNextItem(current->next);
+    }
     /* wrap around to first node in the list */
     else return menuGetRoot(current);
 }
 
 Menu menuGetPreviousItem(Menu current) {
-    if (current->prev != NULL)
-        return current->prev;    
+    if (current->prev != NULL) {
+        /* if the item is not visible, skip it! */
+        if (menuGetItem(current->prev)->isVisible)
+            return current->prev;
+        else return menuGetPreviousItem(current->prev);        
+    }
     else {
         /* wrap around to last node in the list */
         Menu m = current;
@@ -65,9 +80,13 @@ Menu menuGetRoot(Menu current) {
 }
 
 Menu menuHighlightNew(Menu oldItem, Menu newItem) {
-    if (oldItem) ((MenuItem *)oldItem->data)->isHighlighted = 0;
-    if (newItem) ((MenuItem *)newItem->data)->isHighlighted = 1;
+    if (oldItem) menuGetItem(oldItem)->isHighlighted = 0;
+    if (newItem) menuGetItem(newItem)->isHighlighted = 1;
     return newItem;
+}
+
+void menuItemSetVisible(Menu item, int visible) {
+    menuGetItem(item)->isVisible = visible;    
 }
 
 void menuDelete(Menu menu) {
@@ -87,10 +106,10 @@ Menu menuReset(Menu current) {
 
     /* un-highlight each menu item */
     for (item = m; item; item = item->next)
-        ((MenuItem *)item->data)->isHighlighted = 0;
+        menuGetItem(item)->isHighlighted = 0;        
 
     /* highlight the first menu item */
-    ((MenuItem *)m->data)->isHighlighted = 1;
+    menuGetItem(m)->isHighlighted = 1;    
     return m;
 }
 
@@ -121,7 +140,7 @@ Menu menuActivateItem(Menu menu, short id, ActivateAction action) {
 
     m = menuHighlightNew(menu, newItem);
 
-    mi = (MenuItem *)m->data;
+    mi = menuGetItem(m);
     /* make sure the action given will activate the menu item */
     if (mi && (mi->activateOn & action) && mi->activateMenuItem)
         (*mi->activateMenuItem)(m, action);
