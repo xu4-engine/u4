@@ -803,14 +803,14 @@ int gameBaseKeyHandler(int key, void *data) {
             screenMessage("Peer at What?\n");
         break;
 
-    case 'q':
-        if (!mapIsWorldMap(c->location->map)) {
-            screenMessage("Quit & save\n%d moves\nNot Here!\n", c->saveGame->moves);
-        } else {
-            screenMessage("Quit & Save...\n");
-            if (gameSave())
-                screenMessage("%d moves\nPress Alt-x to quit\n", c->saveGame->moves);
+    case 'q':        
+        screenMessage("Quit & Save...\n%d moves\n", c->saveGame->moves);
+        if (mapIsWorldMap(c->location->map)) {
+            gameSave();
+            screenMessage("Press Alt-x to quit\n", c->saveGame->moves);
         }
+        else screenMessage("Not here!\n");
+        
         break;
 
     case 'r':
@@ -1582,8 +1582,8 @@ int gameGetChest(int player) {
     }
     
     else
-        screenMessage("Not Here!\n");
-
+        screenMessage("Not Here!\n");        
+    
     return 1;
 }
 
@@ -1593,45 +1593,27 @@ int gameGetChest(int player) {
 
 int getChestTrapHandler(int player)
 {            
-    int trapType = 0;
+    TileEffect trapType = EFFECT_FIRE;
     int dex = c->saveGame->players[player].dex;
-    int randNum = rand()%100;
+    int randNum = rand()%100;   
 
-    if (player < 0)
-        return 0;
-
-    /** 
-     * FIXME: formulas are guessed and
-     *        damage done by an acid trap is a
-     *        vague guess. (Same as damage taken from
-     *        EFFECT_FIRE)
-     **/
-    
     /* Chest is trapped! */
-    if (rand()%2 == 1)
+    if (rand() % 2 == 1)
     {    
-        if (rand()%2 == 1)
-            trapType = 1; // Poison trap
+        if (rand() % 2 == 1)
+            trapType = EFFECT_POISON; // Poison trap
     
-        screenMessage(trapType ? "Poison Trap!\n" : "Acid Trap!\n");
+        screenMessage(trapType == EFFECT_POISON ? "Poison Trap!\n" : "Acid Trap!\n");
 
-        /* See of the player evaded the trap!
-           There's always a 5% chance the played botched
-           and triggered the trap */
-        if (randNum > (dex * 2) || randNum < 5)
-        {
-            switch(trapType)
-            {
-                case 0: // Acid trap
-                    playerApplyDamage(&(c->saveGame->players[player]), 16 + (rand() % 32));
-                    break;
-                case 1: // Poison trap
-                    c->saveGame->players[player].status = STAT_POISONED;
-                    break;
-            }            
-        }
-    
+        /* See of the player evaded the trap! */           
+        if (((randNum > (dex * 2)) || /* test the player's dexterity */
+            (randNum < 5)) &&         /* there's always a 5% chance of failure */
+            (player >= 0))            /* player is < 0 during the 'O'pen spell (immune to traps) */
+            
+            /* apply the effects from the trap */
+            playerApplyEffect(c->saveGame, trapType, player);
         else screenMessage("Evaded!\n");
+
         return 1;
     }
 

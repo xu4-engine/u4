@@ -74,7 +74,7 @@ static const struct {
     { CASTERR_NOMIX, "None Mixed!\n" },        
     { CASTERR_MPTOOLOW, "Not Enough MP!\n" },
     { CASTERR_FAILED, "Failed!\n" },
-    { CASTERR_WRONGCONTEXT, "Not here!\nFailed!\n" },
+    { CASTERR_WRONGCONTEXT, "Not here!\n" },
     { CASTERR_COMBATONLY, "Combat only!\nFailed!\n" },
     { CASTERR_DUNGEONONLY, "Dungeon only!\nFailed!\n" },
     { CASTERR_WORLDMAPONLY, "World map only!\nFailed!\n" }
@@ -97,7 +97,7 @@ const Spell spells[] = {
     { "Light",        ASH,                      CTX_DUNGEON,  &spellLight,   SPELLPRM_NONE,    5 },
     { "Magic missile", ASH | PEARL,             CTX_COMBAT,   &spellMMissle, SPELLPRM_DIR,     5 },
     { "Negate",       ASH | GARLIC | MANDRAKE,  CTX_ANY,      &spellNegate,  SPELLPRM_NONE,    20 },
-    { "Open",         ASH | MOSS,               CTX_NORMAL,   &spellOpen,    SPELLPRM_NONE,    5 },
+    { "Open",         ASH | MOSS,               CTX_ANY,      &spellOpen,    SPELLPRM_NONE,    5 },
     { "Protection",   ASH | GINSENG | GARLIC,   CTX_ANY,      &spellProtect, SPELLPRM_NONE,    15 },
     { "Quickness",    ASH | GINSENG | MOSS,     CTX_ANY,      &spellQuick,   SPELLPRM_NONE,    20 },
     { "Resurrect",    ASH | GINSENG | GARLIC | SILK | MOSS | MANDRAKE, 
@@ -106,7 +106,7 @@ const Spell spells[] = {
     { "Tremor",       ASH | MOSS | MANDRAKE,    CTX_COMBAT,   &spellTremor,  SPELLPRM_NONE,    30 },
     { "Undead",       ASH | GARLIC,             CTX_ANY,      &spellUndead,  SPELLPRM_NONE,    15 },
     { "View",         NIGHTSHADE | MANDRAKE,    CTX_NON_COMBAT, 
-                                                             &spellView,    SPELLPRM_NONE,    15 },
+                                                              &spellView,    SPELLPRM_NONE,    15 },
     { "Winds",        ASH | MOSS,               CTX_WORLDMAP, &spellWinds,   SPELLPRM_FROMDIR, 10 },
     { "X-it",         ASH | SILK | MOSS,        CTX_DUNGEON,  &spellXit,     SPELLPRM_NONE,    15 },
     { "Y-up",         SILK | MOSS,              CTX_DUNGEON,  &spellYup,     SPELLPRM_NONE,    10 },
@@ -246,12 +246,6 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
 
     if (c->saveGame->players[character].mp < spells[spell].mp) {
         *error = CASTERR_MPTOOLOW;
-        return 0;
-    }
-
-    /* tried to cast the 'open' spell while not on a chest */
-    if (spell == ('o'-'a') && !tileIsChest(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z))) {
-        *error = CASTERR_WRONGCONTEXT;
         return 0;
     }    
 
