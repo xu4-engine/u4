@@ -78,7 +78,7 @@ int castForPlayerGetEnergyType(int fieldType);
 int castForPlayerGetEnergyDir(Direction dir);
 int castForPlayer2(int spell, void *data);
 void gameCastSpell(unsigned int spell, int caster, int param);
-void gameSpellEffect(unsigned int spell, int player, int hzSound);
+void gameSpellEffect(unsigned int spell, int player, Sound sound);
 int gameSpellMixHowMany(const char *message);
 int mixReagentsForSpell(int spell, void *data);
 int mixReagentsForSpell2(int choice);
@@ -496,7 +496,7 @@ void gameLostEighth(Virtue virtue) {
 void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
     screenMessage("\n%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
 
-    (*spellEffectCallback)('r', -1, 0); // Same as resurrect spell
+    (*spellEffectCallback)('r', -1, SOUND_MAGIC); // Same as resurrect spell
 }
 
 void gamePartyStarving(void) {
@@ -510,7 +510,7 @@ void gamePartyStarving(void) {
         playerApplyDamage(&c->saveGame->players[i], 2);    
 }
 
-void gameSpellEffect(unsigned int spell, int player, int hzSound) {
+void gameSpellEffect(unsigned int spell, int player, Sound sound) {
     int time;
     SpellEffect effect = SPELLEFFECT_INVERT;
         
@@ -520,18 +520,7 @@ void gameSpellEffect(unsigned int spell, int player, int hzSound) {
     /* recalculate spell speed - based on 5/sec */
     time = settings->spellEffectSpeed * 200;
 
-    /**
-     * special effect FIXME: needs sound     
-     */
-
-    /* I'm not sure if this is how this will be done in the end...
-       just showing why hzSound is included... :) */
-    
-    /*if (hzSound)
-        soundPlay(SOUND_MAGIC_HZ);
-    else
-    */
-        soundPlay(SOUND_MAGIC);
+    soundPlay(sound);
 
     switch(spell)
     {
@@ -2816,7 +2805,7 @@ int talkAtCoord(int x, int y, int distance, void *data) {
         
         c->saveGame->players[0].status = STAT_GOOD;
         playerHeal(c->saveGame, HT_FULLHEAL, 0);
-        (*spellEffectCallback)('r', -1, 0);
+        (*spellEffectCallback)('r', -1, SOUND_LBHEAL);
     }
 
     talker = c->conversation.talker;
@@ -2907,7 +2896,7 @@ void talkShowReply(int showPrompt) {
             playerHeal(c->saveGame, HT_CURE, i);        // cure the party
             playerHeal(c->saveGame, HT_FULLHEAL, i);    // heal the party
         }        
-        (*spellEffectCallback)('r', -1, 0); // same spell effect as 'r'esurrect
+        (*spellEffectCallback)('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
 
         statsUpdate();
         c->conversation.state = CONV_TALK;
@@ -3291,14 +3280,14 @@ int gameCheckMoongates(void) {
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase,
                                  c->location->x, c->location->y, &destx, &desty)) {
 
-        (*spellEffectCallback)(-1, -1, 0); // Default spell effect (screen inversion without 'spell' sound effects)
+        (*spellEffectCallback)(-1, -1, SOUND_MOONGATE); // Default spell effect (screen inversion without 'spell' sound effects)
         
         if ((c->location->x != destx) && 
             (c->location->y != desty)) {
             
             c->location->x = destx;    
             c->location->y = desty;
-            (*spellEffectCallback)(-1, -1, 0); // Again, after arriving
+            (*spellEffectCallback)(-1, -1, SOUND_MOONGATE); // Again, after arriving
         }
 
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
@@ -3748,7 +3737,7 @@ void gameSpawnMonster(const Monster *m) {
 void gameDestroyAllMonsters(void) {
     int i;
     
-    (*spellEffectCallback)('t', -1, 0); /* same effect as tremor */
+    (*spellEffectCallback)('t', -1, SOUND_MAGIC); /* same effect as tremor */
     
     if (c->location->context & CTX_COMBAT) {
         /* destroy all monsters in combat */

@@ -9,6 +9,7 @@
 
 #include "context.h"
 #include "savegame.h"
+#include "sound.h"
 
 typedef enum {
     CASTERR_NOERROR,            /* success */
@@ -60,7 +61,7 @@ typedef struct _Spell {
     int mp;
 } Spell;
 
-typedef void (*SpellEffectCallback)(unsigned int spell, int player, int hzSound);
+typedef void (*SpellEffectCallback)(unsigned int spell, int player, Sound sound);
 extern SpellEffectCallback spellEffectCallback;
 
 void playerSetSpellEffectCallback(SpellEffectCallback callback);

@@ -279,7 +279,7 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
         c->saveGame->players[character].mp -= spells[spell].mp;
 
         if (spellEffect)
-            (*spellEffectCallback)(spell + 'a', player, 1);
+            (*spellEffectCallback)(spell + 'a', player, SOUND_MAGIC);
     
         if (!(*spells[spell].spellFunc)(param)) {
             *error = CASTERR_FAILED;

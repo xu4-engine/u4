@@ -19,6 +19,7 @@
 #include "player.h"
 #include "savegame.h"
 #include "spell.h"
+#include "sound.h"
 #include "stats.h"
 #include "u4file.h"
 #include "utils.h"
@@ -1260,7 +1261,7 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
         if (success) {
             playerHeal(c->saveGame, cnv->itemSubtype, cnv->player);
             /* spell flash */
-            (*spellEffectCallback)(cnv->itemSubtype == HT_RESURRECT ? 'r' : -1, -1, 0);
+            (*spellEffectCallback)(cnv->itemSubtype == HT_RESURRECT ? 'r' : -1, -1, SOUND_MAGIC);
             reply = concat("\n\n", vendorGetName(cnv->talker), 
                            vendorGetText(cnv->talker, HV_MOREHELP),
                            NULL);
