@@ -446,7 +446,7 @@ char *lordBritishGetIntro(Conversation *cnv) {
         intro = concat(leveled, 
                        "Lord British\nsays:  Welcome\n",
                        c->saveGame->players[0].name,
-                       "and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n",
+                       " and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n",
                        NULL);
     else {
         intro = concat(leveled, 
