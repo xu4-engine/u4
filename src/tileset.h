@@ -25,32 +25,14 @@ typedef struct _TileRule {
     int walkoffDirs;
 } TileRule;
 
-/* FIXME: to be done (something like this)
-typedef struct _TilesetGraphic {
-    const char *filename;
-    int tileWidth;
-    int tileHeight;
-    int bpp;
-    int indexed;
-    VideoType mode;
-    struct _Image *graphic;
-} TilesetGraphic;
-*/
-
 typedef struct _Tileset {    
     TilesetType type;
     CompressionType compType;    
     int numTiles;
-    int totalFrames;
-    int tileWidth;
-    int tileHeight;    
-    int bpp;
-    int indexed;
     Tile *tiles;
+    int totalFrames;
+    int imageId;
     struct _Image *tileGraphic;
-    /* FIXME: to be implemented instead of above (using TilesetGraphic above for data)
-    ListNode *graphics;
-    */
 } Tileset;
 
 void tilesetLoadAllTilesetsFromXml(const char *tilesetFilename);

@@ -49,7 +49,6 @@ void tilesetLoadAllTilesetsFromXml(const char *tilesetFilename) {
     for (node = root->xmlChildrenNode; node; node = node->next) {
         const char *filename;
         TilesetType type;
-        ListNode *list = tilesetList;
                 
         if (xmlNodeIsText(node) || xmlStrcmp(node->name, "tileset") != 0)
             continue;
@@ -92,9 +91,6 @@ void tilesetLoad(const char *filename, TilesetType type) {
     Tileset *tileset;
     ListNode *list = tilesetList;    
     
-    const char *vga = NULL,
-               *ega = NULL;    
-    
     /* make sure we aren't loading the same type of tileset twice */
     while (list) {
         if (type == ((Tileset*)list->data)->type)
@@ -117,21 +113,10 @@ void tilesetLoad(const char *filename, TilesetType type) {
     
     tileset->type = type;
 
-    /* load properties for the tileset */
-    if (xmlPropExists(root, "width"))
-        tileset->tileWidth = xmlGetPropAsInt(root, "width");
-    if (xmlPropExists(root, "height"))
-        tileset->tileHeight = xmlGetPropAsInt(root, "height");
-    if (xmlPropExists(root, "bpp"))
-        tileset->bpp = xmlGetPropAsInt(root, "bpp");    
-    if (xmlPropExists(root, "indexed"))
-        tileset->indexed = xmlGetPropAsInt(root, "indexed");
-    if (xmlPropExists(root, "vga"))
-        vga = xmlGetPropAsStr(root, "vga");
-    if (xmlPropExists(root, "ega"))
-        ega = xmlGetPropAsStr(root, "ega");
-    if (xmlPropExists(root, "compression"))
-        tileset->compType = u4GetCompTypeByStr(xmlGetPropAsStr(root, "compression"));
+    if (xmlPropExists(root, "imageId"))
+        tileset->imageId = xmlGetPropAsInt(root, "imageId");
+    else
+        tileset->imageId = 0;
 
     /* count how many tiles are in the tileset */
     for (node = root->xmlChildrenNode; node; node = node->next) {
@@ -159,28 +144,6 @@ void tilesetLoad(const char *filename, TilesetType type) {
         }
     }
     else errorFatal("Error: no 'tile' nodes defined in %s", filename);    
-
-    /***/
-    /* FIXME: move to tilesetLoadTileImage() function */
-    /***/
-    if (vga && settings->videoType == VIDEO_VGA) {
-        U4FILE *file = u4fopen(vga);    
-        if (file)
-            screenLoadImageVga(&tileset->tileGraphic, tileset->tileWidth, tileset->tileHeight * tileset->totalFrames, file, tileset->compType);
-        u4fclose(file);
-
-        tileset->tileGraphic = screenScale(tileset->tileGraphic, settings->scale, tileset->totalFrames, 1);
-    }
-    else if (ega && settings->videoType == VIDEO_EGA) {
-        U4FILE *file = u4fopen(ega);
-
-        if (file)
-            screenLoadImageEga(&tileset->tileGraphic, tileset->tileWidth, tileset->tileHeight * tileset->totalFrames, file, tileset->compType);
-        u4fclose(file);
-
-        tileset->tileGraphic = screenScale(tileset->tileGraphic, settings->scale, tileset->totalFrames, 1);
-    }
-    /***/
 
     tilesetList = listAppend(tilesetList, tileset);
     xmlFree(doc);
