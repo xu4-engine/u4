@@ -10,7 +10,7 @@ VPATH=$(SRC):$(SRC)/maps:$(SRC)/util:$(SRC)/lzw
 
 ### Modify these paths
 SDL_CFLAGS=-I$(SRC)/sdl/include
-SDL_LIBS=-L$(SRC)/sdl/lib -lSDLmain -lSDL -lSDL_mixer
+SDL_LIBS=-L$(SRC)/sdl/lib -lSDL_mixer -lSDLmain -lSDL
 
 CC=gcc
 CFLAGS=-Wall -I. -Dsnprintf=_snprintf $(SDL_CFLAGS)
