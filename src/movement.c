@@ -125,7 +125,7 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
 
     /* fixed objects cannot move */
     if (obj->movement_behavior == MOVEMENT_FIXED)
-        return;
+        return 0;
 
     if (action == CA_FLEE)
         dir = dirFindPathToEdge(newx, newy, c->location->map->width, c->location->map->height, valid_dirs);
