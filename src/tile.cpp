@@ -58,9 +58,10 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
     if (xmlPropExists(node, "frames"))
         tile->frames = xmlGetPropAsInt(node, "frames");    
 
-    /* if the tile looks exactly like another tile, record it */
-    if (xmlPropExists(node, "looks_like"))
-        tile->looks_like = xmlGetPropAsStr(node, "looks_like");
+    /* get the name of the image that belongs to this tile */
+    if (xmlPropExists(node, "image"))
+        tile->imageName = xmlGetPropAsStr(node, "image");
+    else tile->imageName = string("tile_") + tile->name;
 
     /* get the index, if it is provided.  Otherwise, it is implied */
     if (xmlPropExists(node, "index"))

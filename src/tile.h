@@ -57,18 +57,19 @@ public:
     Image *getImage();    
     bool isLarge() const;
 
-    string name;        /* The name of this tile */
-    int w, h;           /* width and height of the tile */
-    int index;          /* The physical tile index of this tile on its parent image (the whole tileset image) */
-    int frames;         /* The number of frames this tile has */
-    int scale;          /* The scale of the tile */
-    TileAnim *anim;     /* The tile animation for this tile */    
-    bool opaque;        /* Is this tile opaque? */
-    TileRule *rule;     /* The rules that govern the behavior of this tile */
-    Image *image;       /* The original image for this tile (with all of its frames) */
-    Image *animated;    /* The resulting image from animating the tile */
-    Tileset *tileset;   /* The tileset this tile belongs to */
-    string looks_like;  /* The name of the tile that this tile looks exactly like (if any) */    
+    string name;        /**< The name of this tile */
+    int w, h;           /**< width and height of the tile */
+    int index;          /**< The physical tile index of this tile on its parent image (the whole tileset image) */
+    int frames;         /**< The number of frames this tile has */
+    int scale;          /**< The scale of the tile */
+    TileAnim *anim;     /**< The tile animation for this tile */    
+    bool opaque;        /**< Is this tile opaque? */
+    TileRule *rule;     /**< The rules that govern the behavior of this tile */
+    string imageName;   /**< The name of the image that belongs to this tile */
+    Image *image;       /**< The original image for this tile (with all of its frames) */
+    Image *animated;    /**< The resulting image from animating the tile */
+    Tileset *tileset;   /**< The tileset this tile belongs to */
+    string looks_like;  /**< The name of the tile that this tile looks exactly like (if any) */    
 
 private:
     bool large;
