@@ -135,9 +135,10 @@ protected:
 /**
  * Party class
  */ 
+class PartyEvent;
 typedef std::vector<PartyMember *> PartyMemberVector;
 
-class Party : public Observable<Party *>, public Script::Provider {
+class Party : public Observable<Party *, PartyEvent &>, public Script::Provider {
     friend class PartyMember;
 public:
     Party(SaveGame *saveGame);
@@ -167,7 +168,7 @@ public:
     bool isDead();
     bool isPersonJoined(string name);
     CannotJoinError join(string name);
-    void lightTorch(int duration = 100, bool loseTorch = true);
+    bool lightTorch(int duration = 100, bool loseTorch = true);
     void quenchTorch();
     void reviveParty();
     void setTransport(MapTile transport);
@@ -187,15 +188,23 @@ public:
     int torchduration;
 };
 
-typedef void (*LostEighthCallback)(Virtue);
-typedef void (*AdvanceLevelCallback)(PartyMember *player);
-typedef void (*PartyStarvingCallback)(void);
-typedef void (*SetTransportCallback)(MapTile tile);
+class PartyEvent {
+public:
+    enum Type {
+        GENERIC,
+        LOST_EIGHTH,
+        ADVANCED_LEVEL,
+        STARVING,
+        TRANSPORT_CHANGED,
+        PLAYER_KILLED
+    };
 
-void playerSetLostEighthCallback(LostEighthCallback callback);
-void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback);
-void playerSetPartyStarvingCallback(PartyStarvingCallback callback);
-void playerSetSetTransportCallback(SetTransportCallback callback);
+    PartyEvent(Type type) { this->type = type; }
+
+    Type type;
+    PartyMember *player;
+    MapTile tile;
+};
 
 bool isPartyMember(Object *punknown);
 

@@ -15,31 +15,10 @@
 #include "location.h"
 #include "mapmgr.h"
 #include "names.h"
-#include "screen.h" /* FIXME: remove dependency on this */
 #include "tileset.h"
 #include "types.h"
 #include "utils.h"
 #include "weapon.h"
-
-LostEighthCallback lostEighthCallback = NULL;
-AdvanceLevelCallback advanceLevelCallback = NULL;
-PartyStarvingCallback partyStarvingCallback = NULL;
-
-/**
- * Sets up a callback to handle player losing an eighth of his or her
- * avatarhood.
- */
-void playerSetLostEighthCallback(LostEighthCallback callback) {
-    lostEighthCallback = callback;
-}
-
-void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback) {
-    advanceLevelCallback = callback;
-}
-
-void playerSetPartyStarvingCallback(PartyStarvingCallback callback) {
-    partyStarvingCallback = callback;
-}
 
 bool isPartyMember(Object *punknown) {
     PartyMember *pm;
@@ -252,10 +231,12 @@ void PartyMember::advanceLevel() {
     if (player->dex > 50) player->dex = 50;
     if (player->intel > 50) player->intel = 50;
 
-    if (advanceLevelCallback)
-        (*advanceLevelCallback)(this);
-
-    notifyOfChange();
+    if (party) {
+        party->setChanged();
+        PartyEvent event(PartyEvent::ADVANCED_LEVEL);
+        event.player = this;
+        party->notifyObservers(event);
+    }    
 }
 
 /**
@@ -413,9 +394,14 @@ bool PartyMember::applyDamage(int damage) {
     if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();                    
         Map *map = getMap();
-
-        screenMessage("%s is Killed!\n", getName().c_str());
         map->annotations->add(p, Tileset::findTileByName("corpse")->id)->setTTL(party->size());
+
+        if (party) {
+            party->setChanged();
+            PartyEvent event(PartyEvent::PLAYER_KILLED);
+            event.player = this;
+            party->notifyObservers(event);
+        }
 
         /* remove yourself from the map */
         remove();        
@@ -555,7 +541,8 @@ Party::~Party() {
  */
 void Party::notifyOfChange() {
     setChanged();
-    notifyObservers(NULL);
+    PartyEvent event(PartyEvent::GENERIC);
+    notifyObservers(event);
 }
 
 string Party::translate(std::vector<string>& parts) {        
@@ -645,8 +632,9 @@ void Party::adjustGold(int gold) {
 }
 
 /**
- * Adjusts the avatar's karma level for the given action.  Activate
- * the lost eighth callback if the player has lost avatarhood.
+ * Adjusts the avatar's karma level for the given action.  Notify
+ * observers with a lost eighth event if the player has lost
+ * avatarhood.
  */
 void Party::adjustKarma(KarmaAction action) {
     int timeLimited = 0;
@@ -761,9 +749,10 @@ void Party::adjustKarma(KarmaAction action) {
     for (v = 0; v < VIRT_MAX; v++) {
         if (maxVal[v] == 100) { /* already an avatar */
             if (newKarma[v] < 100) { /* but lost it */
-                if (lostEighthCallback)
-                    (*lostEighthCallback)((Virtue)v);
                 saveGame->karma[v] = newKarma[v];
+                setChanged();
+                PartyEvent event(PartyEvent::LOST_EIGHTH);
+                notifyObservers(event);
             }
             else saveGame->karma[v] = 0; /* return to u4dos compatibility */
         }
@@ -914,8 +903,11 @@ void Party::endTurn() {
     }
 
     /* The party is starving! */
-    if ((saveGame->food == 0) && ((c->location->context & CTX_NON_COMBAT) == c->location->context))
-        (*partyStarvingCallback)();
+    if ((saveGame->food == 0) && ((c->location->context & CTX_NON_COMBAT) == c->location->context)) {
+        setChanged();
+        PartyEvent event(PartyEvent::STARVING);
+        notifyObservers(event);
+    }
     
     /* heal ship (25% chance it is healed each turn) */
     if ((c->location->context == CTX_WORLDMAP) && (saveGame->shiphull < 50) && xu4_random(4) == 0)
@@ -1042,19 +1034,19 @@ CannotJoinError Party::join(string name) {
 /**
  * Lights a torch with a default duration of 100
  */
-void Party::lightTorch(int duration, bool loseTorch) {
+bool Party::lightTorch(int duration, bool loseTorch) {
     if (loseTorch) { 
-        if (!c->saveGame->torches) {
-            screenMessage("None left!\n");
-            return;
-        }
-        else c->saveGame->torches--;
+        if (c->saveGame->torches <= 0)
+            return false;
+        c->saveGame->torches--;
     }
     
     torchduration += duration;
     saveGame->torchduration = torchduration;
 
     notifyOfChange();
+
+    return true;
 }
 
 /**
