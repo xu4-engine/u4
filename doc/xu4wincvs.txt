@@ -1,109 +1,66 @@
-Last updated on 16-Nov-2002
-
 ======================================
 How to Compile xu4 from CVS in Windows
 ======================================
 
 This document explains how to download the latest version of the xu4 source code from CVS and how to compile it.
-The paths I've used are just examples; you can change them if you want, as long as you're consistent.
+The paths used are just examples; you can change them if you want, as long as you're consistent.
 
 -------------------------------
 Things you only have to do once
 -------------------------------
 
-1. Download the necessary files
-- WinCVS client
-http://www.wincvs.org/
-- source code for both SDL and SDL_mixer
-http://www.libsdl.org/
-- MinGW and MSYS
-http://www.mingw.org/
+1. Download and install MinGW from:
+   http://prdownloads.sourceforge.net/mingw/MinGW-2.0.0-3.exe
 
-2. Create a few folders
-- c:\stuff
-- c:\stuff\xu4cvs
-- c:\xu4
+2. Download and install MSYS from:
+   http://prdownloads.sourceforge.net/mingw/MSYS-1.0.8.exe
 
-3. Install WinCVS
-- during installation, WinCVS will ask you to fill in the WinCVS preferences.
--- "General" tab:
-Enter the CVSROOT = :pserver:anonymous@cvs.xu4.sourceforge.net:/cvsroot/xu4
-Authentication = "passwd" file on the cvs server
--- "Globals" tab:
-Uncheck "Checkout read-only"
--- "Proxy" tab:
-If you're connecting to the Internet through a proxy server, check "Connect using a proxy server" and enter the proxy's address and port in the appropriate fields.
-Note: WinCVS connects through an HTTP proxy, *not* through a SOCKS proxy.
--- "WinCvs" tab:
-HOME folder (where CVS stores your passwords) = c:\stuff\home
-- Change the root location of the file browser:
-Click on "View --> Browse Location --> Change" and choose the folder "c:\stuff\xu4cvs"
-This is where WinCVS will checkout the xu4 source to.
-- Log in to the CVS server:
-Click on Admin --> Login. When asked for the password, just press Enter or click on OK (you don't need a password for read-only access to the CVS repository).
-- Checkout the xu4 CVS source for the first time:
-Click on Create -> Checkout module.
-In the field "Enter the module name and path on the server", type "." (a period, without the quotes). The period tells WinCVS to download all source files.
-- Log out:
-Admin -> Logout
-- Note:
-If WinCVS tells you "CVS exited normally with code 0", it means that everything went fine and there were no errors. "Code 1" indicates some sort of error (WinCVS will usually tell you what went wrong).
+3. Download and install MSYSDTK from:
+   http://prdownloads.sourceforge.net/mingw/msysDTK-1.0.0.exe
 
-4. Extract SDL and SDL_mixer (source code)
-I'll assume that you've extracted them to c:\stuff, so you now have two new directories:
-C:\stuff\SDL_mixer-1.2.4
-C:\stuff\SDL-1.2.5
+4. Download the SDL binaries & headers from:
+   http://exult.sourceforge.net/snapshots/exult_sdl_win32.zip
 
-5. Install MinGW and MSYS
-- I'll assume that you've installed them to:
-C:\MinGW
-C:\msys\1.0
-- the MSYS installer places a shortcut on the desktop.
-Right-click on this shortcut, click on "Properties", select the "Memory" tab and set "Initial environment" to 4096.
-- start MSYS and exit (by typing "exit" ;-). MSYS should have created a new directory:
-C:\msys\1.0\home\Username
-- now you have to create the directory
-C:\msys\1.0\home\Username\stuff
-- in C:\msys\1.0\etc, rename "fstab.sample" to "fstab"
-- add the following line to the newly renamed "fstab":
-c:/stuff /home/Username/stuff
+5. Start MSYS
 
-6. Compile SDL and SDL_mixer
-- start MSYS
-- change to your SDL directory and compile SDL:
-cd ~/stuff/SDL-1.2.5
-./configure; make; make install
-- copy SDL.dll to your SDL_mixer directory:
-cp /local/lib/SDL.dll ~/stuff/SDL_mixer-1.2.4
-- change to your SDL_mixer directory and compile SDL mixer:
-cd ~/stuff/SDL_mixer-1.2.4
-./configure; make; make install
+6. Change to the directory where you want xu4 cvs 
+   ie cd C:/
 
-7. Copy headers and libraries
-- create these directories:
-mkdir ~/stuff/xu4cvs/u4/src/sdl
-mkdir ~/stuff/xu4cvs/u4/src/sdl/include
-mkdir ~/stuff/xu4cvs/u4/src/sdl/lib
-- copy the SDL header files:
-cp /local/include/SDL/* ~/stuff/xu4cvs/u4/src/sdl/include
-- copy the SDL library files:
-cp /local/lib/* ~/stuff/xu4cvs/u4/src/sdl/lib
-- exit MSYS
+4. Check out the current xu4 cvs source code
+   cvs -d:pserver:anonymous@cvs.xu4.sourceforge.net:/cvsroot/xu4 login 
+   Just press enter when it asks for password
+   cvs -z3 -d:pserver:anonymous@cvs.xu4.sourceforge.net:/cvsroot/xu4 co u4
+
+5. Extract SDL binaries & headers to src directory of xu4 source code
+
+6. Change to src directory of xu4 source code
+   ie cd C:/u4/src
+
+7. Open makefile.mingw in a text editor and change C:/xu4 to the directory you want xu4 to be installed to.
+   ie C:/Games/Ultima4
+
+8. Compile xu4
+   make -f makefile.mingw install
+
+9. Exit MSYS and enjoy xu4!
 
 ------------------------------------------------------------
 Things you have to do every time the xu4 source code changes
 ------------------------------------------------------------
 
-1. Checkout the latest changes from CVS
-You learned how to do this in the "Install WinCVS" section.
+1. Start MSYS
+
+2. Change to xu4 source code directory
+   ie cd C:/u4
+
+3. Checkout the latest changes from CVS
+   cvs update -d
+
+4. Change to src directory of xu4 source code
+   cd src
 
 2. Compile and install xu4
-- start MSYS
-- change to the xu4 source directory:
-cd ~/stuff/xu4cvs/u4/src
-- if you're compiling xu4 for the first time, or if "Makefile.mingw" has changed:
-cp Makefile.mingw Makefile
-- compile and install xu4:
-make; make install
-(the files will be copied to c:\xu4; you can change this by editing "Makefile")
-- exit MSYS
+   make -f makefile.mingw clean
+   make -f makefile.mingw install
+
+6. exit MSYS
