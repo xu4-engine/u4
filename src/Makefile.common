@@ -31,6 +31,7 @@ CXXSRCS=\
         io.cpp \
         image_$(UI).cpp \
         imageloader.cpp \
+        imageloader_png.cpp \
         imageloader_u4.cpp \
         intro.cpp \
         item.cpp \
