@@ -20,11 +20,10 @@ extern int eventTimerGranularity;
 typedef int (*KeyHandler)(int, void *);
 typedef void (*TimerCallback)(void *);
 
-typedef struct KeyHandlerNode {
+typedef struct KeyHandlerInfo {
     KeyHandler kh;
     void *data;
-    struct KeyHandlerNode *next;
-} KeyHandlerNode;
+} KeyHandlerInfo;
 
 /** Additional information to be passed as data param for read buffer key handler */
 typedef struct ReadBufferActionInfo {

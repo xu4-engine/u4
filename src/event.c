@@ -10,6 +10,7 @@
 #include "u4.h"
 #include "event.h"
 #include "context.h"
+#include "list.h"
 #include "location.h"
 #include "savegame.h"
 #include "screen.h"
@@ -27,7 +28,7 @@ typedef struct TimerCallbackNode {
 } TimerCallbackNode;
 
 TimerCallbackNode *timerCallbackHead = NULL;
-KeyHandlerNode *keyHandlerHead = NULL;
+ListNode *keyHandlers = NULL;
 int eventExitFlag = 0;
 int timerCallbackListLocked = 0;
 TimerCallbackNode *deferedTimerCallbackRemoval = NULL;
@@ -154,13 +155,7 @@ void eventHandlerResetTimerCallbacks() {
  * Push a key handler onto the top of the keyhandler stack.
  */
 void eventHandlerPushKeyHandler(KeyHandler kh) {
-    KeyHandlerNode *n = (KeyHandlerNode *) malloc(sizeof(KeyHandlerNode));
-    if (n) {
-        n->kh = kh;
-        n->data = NULL;
-        n->next = keyHandlerHead;
-        keyHandlerHead = n;
-    }
+    eventHandlerPushKeyHandlerData(kh, NULL);
 }
 
 /**
@@ -168,12 +163,11 @@ void eventHandlerPushKeyHandler(KeyHandler kh) {
  * provide specific data to pass to the handler.
  */
 void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data) {
-    KeyHandlerNode *n = (KeyHandlerNode *) malloc(sizeof(KeyHandlerNode));
-    if (n) {
-        n->kh = kh;
-        n->data = data;
-        n->next = keyHandlerHead;
-        keyHandlerHead = n;
+    KeyHandlerInfo *k = (KeyHandlerInfo *) malloc(sizeof(KeyHandlerInfo));
+    if (k) {
+        k->kh = kh;
+        k->data = data;
+        keyHandlers = listPrepend(keyHandlers, k);
     }
 }
 
@@ -181,10 +175,9 @@ void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data) {
  * Pop the top key handler off.
  */
 void eventHandlerPopKeyHandler() {
-    KeyHandlerNode *n = keyHandlerHead;
-    if (n) {
-        keyHandlerHead = n->next;
-        free(n);
+    if (keyHandlers) {
+        free(keyHandlers->data);
+        keyHandlers = listRemove(keyHandlers, keyHandlers);
     }
 }
 
@@ -192,7 +185,7 @@ void eventHandlerPopKeyHandler() {
  * Eliminate all key handlers and begin stack with new handler
  */
 void eventHandlerSetKeyHandler(KeyHandler kh) {
-    while (keyHandlerHead)
+    while (keyHandlers)
         eventHandlerPopKeyHandler();
 
     eventHandlerPushKeyHandler(kh);
@@ -203,14 +196,14 @@ void eventHandlerSetKeyHandler(KeyHandler kh) {
  * stack.
  */
 KeyHandler eventHandlerGetKeyHandler() {
-    return keyHandlerHead->kh;
+    return ((KeyHandlerInfo *)keyHandlers->data)->kh;
 }
 
 /**
  * Get the call data associated with the currently active key handler.
  */
 void *eventHandlerGetKeyHandlerData() {
-    return keyHandlerHead->data;
+    return ((KeyHandlerInfo *)keyHandlers->data)->data;
 }
 
 /**
