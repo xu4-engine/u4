@@ -62,28 +62,25 @@ extern int verbose;
 
 #define RLE_RUNSTART 02
 
-void screenInit(const char *screenScale, int fullScreen) {
+void screenInit(int screenScale, const char *filter, int fullScreen) {
 
     /* set up scaling parameters */
-    if (strcmp(screenScale, "2xBi") == 0) {
+    scale = screenScale;
+    if (strcmp(filter, "2xBi") == 0) {
         if (verbose)
-            printf("using 2xBi scaler\n");
-        scale = 2;
+            printf("using 2xBi filter\n");
         filterScaler = &screenScale2xBilinear;
-    } else if (strcmp(screenScale, "2xSaI") == 0) {
+    } else if (strcmp(filter, "2xSaI") == 0) {
         if (verbose)
             printf("using 2xSaI scaler\n");
-        scale = 2;
         filterScaler = &screenScale2xSaI;
-    } else if (strcmp(screenScale, "AdvanceMAMEScale2x") == 0) {
+    } else if (strcmp(filter, "AdvanceMAMEScale2x") == 0) {
         if (verbose)
             printf("using AdvanceMAMEScale2x scaler\n");
-        scale = 2;
         filterScaler = &screenAdvanceMAMEScale2x;
     } else {
         if (verbose)
             printf("using default scaler\n");
-        scale = strtoul(screenScale, NULL, 0);
     }
 
     if (scale < 1 || scale > 5)
@@ -94,14 +91,14 @@ void screenInit(const char *screenScale, int fullScreen) {
 
     /* start SDL */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
-	fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
-	exit(1);
+        fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
+        exit(1);
     }
 
     screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (fullScreen ? SDL_FULLSCREEN : 0));
     if (!screen) {
-	fprintf(stderr, "Unable to set video: %s\n", SDL_GetError());
-	exit(1);
+        fprintf(stderr, "Unable to set video: %s\n", SDL_GetError());
+        exit(1);
     }
     SDL_WM_SetCaption("Ultima IV", NULL);
 #ifdef ICON_FILE
@@ -961,10 +958,10 @@ SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
                 else
                     xoff = 1;
 
-                a = src->format->palette->colors[getPixel(src, x, y)];
-                b = src->format->palette->colors[getPixel(src, x + xoff, y)];
-                c = src->format->palette->colors[getPixel(src, x, y + yoff)];
-                d = src->format->palette->colors[getPixel(src, x + xoff, y + yoff)];
+                SDL_GetRGB(getPixel(src, x, y), src->format, &a.r, &a.g, &a.b);
+                SDL_GetRGB(getPixel(src, x + xoff, y), src->format, &b.r, &b.g, &b.b);
+                SDL_GetRGB(getPixel(src, x, y + yoff), src->format, &c.r, &c.g, &c.b);
+                SDL_GetRGB(getPixel(src, x + xoff, y + yoff), src->format, &d.r, &d.g, &d.b);
 
                 putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
                 putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1));
@@ -1083,25 +1080,25 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
                 }
                 
 
-                a = src->format->palette->colors[getPixel(src, x, y)];
-                b = src->format->palette->colors[getPixel(src, x + xoff1, y)];
-                c = src->format->palette->colors[getPixel(src, x, y + yoff1)];
-                d = src->format->palette->colors[getPixel(src, x + xoff1, y + yoff1)];
+                SDL_GetRGB(getPixel(src, x, y), src->format, &a.r, &a.g, &a.b);
+                SDL_GetRGB(getPixel(src, x + xoff1, y), src->format, &b.r, &b.g, &b.b);
+                SDL_GetRGB(getPixel(src, x, y + yoff1), src->format, &c.r, &c.g, &c.b);
+                SDL_GetRGB(getPixel(src, x + xoff1, y + yoff1), src->format, &d.r, &d.g, &d.b);
 
-                e = src->format->palette->colors[getPixel(src, x, y + yoff0)];
-                f = src->format->palette->colors[getPixel(src, x + xoff1, y + yoff0)];
-                g = src->format->palette->colors[getPixel(src, x + xoff0, y)];
-                h = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff1)];
+                SDL_GetRGB(getPixel(src, x, y + yoff0), src->format, &e.r, &e.g, &e.b);
+                SDL_GetRGB(getPixel(src, x + xoff1, y + yoff0), src->format, &f.r, &f.g, &f.b);
+                SDL_GetRGB(getPixel(src, x + xoff0, y), src->format, &g.r, &g.g, &g.b);
+                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff1), src->format, &h.r, &h.g, &h.b);
                 
-                i = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff0)];
-                j = src->format->palette->colors[getPixel(src, x + xoff2, y + yoff0)];
-                k = src->format->palette->colors[getPixel(src, x + xoff0, y)];
-                l = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff1)];
+                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff0), src->format, &i.r, &i.g, &i.b);
+                SDL_GetRGB(getPixel(src, x + xoff2, y + yoff0), src->format, &j.r, &j.g, &j.b);
+                SDL_GetRGB(getPixel(src, x + xoff0, y), src->format, &k.r, &k.g, &k.b);
+                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff1), src->format, &l.r, &l.g, &l.b);
 
-                m = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff2)];
-                n = src->format->palette->colors[getPixel(src, x, y + yoff2)];
-                o = src->format->palette->colors[getPixel(src, x + xoff1, y + yoff2)];
-                p = src->format->palette->colors[getPixel(src, x + xoff2, y + yoff2)];
+                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff2), src->format, &m.r, &m.g, &m.b);
+                SDL_GetRGB(getPixel(src, x, y + yoff2), src->format, &n.r, &n.g, &n.b);
+                SDL_GetRGB(getPixel(src, x + xoff1, y + yoff2), src->format, &o.r, &o.g, &o.b);
+                SDL_GetRGB(getPixel(src, x + xoff2, y + yoff2), src->format, &p.r, &p.g, &p.b);
 
                 if (colorEqual(a, d) && !colorEqual(b, c)) {
                     if ((colorEqual(a, e) && colorEqual(b, l)) ||
@@ -1207,9 +1204,12 @@ SDL_Surface *screenAdvanceMAMEScale2x(SDL_Surface *src, int scale, int n) {
     amask = 0xff000000;
 #endif
 
-    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, 32, rmask, gmask, bmask, amask);
+    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
     if (!dest)
         return NULL;
+
+    if (dest->format->palette)
+        memcpy(dest->format->palette->colors, src->format->palette->colors, sizeof(SDL_Color) * src->format->palette->ncolors);
 
     /*
      * Each pixel in the source image is translated into four in the
@@ -1243,17 +1243,17 @@ SDL_Surface *screenAdvanceMAMEScale2x(SDL_Surface *src, int scale, int n) {
                 else
                     xoff1 = 1;
 
-                a = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff0)];
-                b = src->format->palette->colors[getPixel(src, x, y + yoff0)];
-                c = src->format->palette->colors[getPixel(src, x + xoff1, y + yoff0)];
+                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff0), src->format, &a.r, &a.g, &a.b);
+                SDL_GetRGB(getPixel(src, x, y + yoff0), src->format, &b.r, &b.g, &b.b);
+                SDL_GetRGB(getPixel(src, x + xoff1, y + yoff0), src->format, &c.r, &c.g, &c.b);
 
-                d = src->format->palette->colors[getPixel(src, x + xoff0, y)];
-                e = src->format->palette->colors[getPixel(src, x, y)];
-                f = src->format->palette->colors[getPixel(src, x + xoff1, y)];
+                SDL_GetRGB(getPixel(src, x + xoff0, y), src->format, &d.r, &d.g, &d.b);
+                SDL_GetRGB(getPixel(src, x, y), src->format, &e.r, &e.g, &e.b);
+                SDL_GetRGB(getPixel(src, x + xoff1, y), src->format, &f.r, &f.g, &f.b);
 
-                g = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff1)];
-                h = src->format->palette->colors[getPixel(src, x, y + yoff1)];
-                i = src->format->palette->colors[getPixel(src, x + xoff1, y + yoff1)];
+                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff1), src->format, &g.r, &g.g, &g.b);
+                SDL_GetRGB(getPixel(src, x, y + yoff1), src->format, &h.r, &h.g, &h.b);
+                SDL_GetRGB(getPixel(src, x + xoff1, y + yoff1), src->format, &i.r, &i.g, &i.b);
 
                 e0 = colorEqual(d, b) && (!colorEqual(b, f)) && (!colorEqual(d, h)) ? d : e;
                 e1 = colorEqual(b, f) && (!colorEqual(b, d)) && (!colorEqual(f, h)) ? f : e;

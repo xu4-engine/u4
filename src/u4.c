@@ -31,12 +31,16 @@ int quit = 0;
 int main(int argc, char *argv[]) {
     unsigned int i;
     FILE *saveGameFile, *monstersFile;
-    char *scale = "2xSaI";
-    int sound = 1, fullScreen = 0, skipIntro = 0;
+    char *filter = "2xSaI";
+    int scale = 2, sound = 1, fullScreen = 0, skipIntro = 0;
 
     for (i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-filter") == 0 && argc > i + 1) {
+            filter = argv[i+1];
+            i++;
+        }
         if (strcmp(argv[i], "-scale") == 0 && argc > i + 1) {
-            scale = argv[i+1];
+            scale = strtoul(argv[i+1], NULL, 0);
             i++;
         }
         else if (strcmp(argv[i], "-i") == 0)
@@ -51,7 +55,7 @@ int main(int argc, char *argv[]) {
 
     srand(time(NULL));
 
-    screenInit(scale, fullScreen);
+    screenInit(scale, filter, fullScreen);
     musicInit(sound);
     eventHandlerInit();
 

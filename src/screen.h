@@ -23,7 +23,7 @@ typedef struct {
     int hasFocus;
 } ScreenTileInfo;
 
-void screenInit(const char *screenScale, int fullScreen);
+void screenInit(int screenScale, const char *filter, int fullScreen);
 void screenDelete();
 void screenFixIntroScreen(const unsigned char *sigData);
 int screenLoadIntroAnimations();
