@@ -1398,7 +1398,7 @@ int getChestTrapHandler(int player)
 {            
     int trapType = 0;
     int dex = c->saveGame->players[player].dex;
-    int randNum = rand()%50;
+    int randNum = rand()%100;
 
     /** 
      * FIXME: formulas are guessed and
@@ -1416,9 +1416,9 @@ int getChestTrapHandler(int player)
         screenMessage(trapType ? "Poison Trap!\n" : "Acid Trap!\n");
 
         /* See of the player evaded the trap!
-           There's always a chance the played botched
+           There's always a 5% chance the played botched
            and triggered the trap */
-        if (randNum > dex || randNum < 5)
+        if (randNum > (dex * 2) || randNum < 5)
         {
             switch(trapType)
             {
