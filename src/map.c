@@ -13,7 +13,6 @@
 #include "portal.h"
 #include "object.h"
 #include "person.h"
-#include "io.h"
 #include "annotation.h"
 #include "ttype.h"
 #include "area.h"
@@ -41,46 +40,31 @@ int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
     if (!city->map->data)
         return 0;
 
-    for (i = 0; i < (CITY_HEIGHT * CITY_WIDTH); i++) {
-        if (!readChar(&(city->map->data[i]), ult))
-            return 0;
-    }
+    for (i = 0; i < (CITY_HEIGHT * CITY_WIDTH); i++)
+        city->map->data[i] = u4fgetc(ult);
 
     city->persons = (Person *) malloc(sizeof(Person) * CITY_MAX_PERSONS);
     if (!city->persons)
         return 0;
     memset(&(city->persons[0]), 0, sizeof(Person) * CITY_MAX_PERSONS);
 
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (!readChar(&city->persons[i].tile0, ult))
-            return 0;
-    }
+    for (i = 0; i < CITY_MAX_PERSONS; i++)
+        city->persons[i].tile0 = u4fgetc(ult);
+
+    for (i = 0; i < CITY_MAX_PERSONS; i++)
+        city->persons[i].startx = u4fgetc(ult);
+
+    for (i = 0; i < CITY_MAX_PERSONS; i++)
+        city->persons[i].starty = u4fgetc(ult);
+
+    for (i = 0; i < CITY_MAX_PERSONS; i++)
+        city->persons[i].tile1 = u4fgetc(ult);
+
+    for (i = 0; i < CITY_MAX_PERSONS * 2; i++)
+        u4fgetc(ult);           /* read redundant startx/starty */
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (!readChar(&c, ult))
-            return 0;
-        city->persons[i].startx = c;
-    }
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (!readChar(&c, ult))
-            return 0;
-        city->persons[i].starty = c;
-    }
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (!readChar(&city->persons[i].tile1, ult))
-            return 0;
-    }
-
-    for (i = 0; i < CITY_MAX_PERSONS * 2; i++) {
-        if (!readChar(&c, ult)) /* read redundant startx/starty */
-            return 0;
-    }
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (!readChar(&c, ult))
-            return 0;
+        c = u4fgetc(ult);
         if (c == 0)
             city->persons[i].movement_behavior = MOVEMENT_FIXED;
         else if (c == 1)
@@ -89,14 +73,12 @@ int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
             city->persons[i].movement_behavior = MOVEMENT_FOLLOW_AVATAR;
         else if (c == 0xFF)
             city->persons[i].movement_behavior = MOVEMENT_ATTACK_AVATAR;
-        else 
+        else
             return 0;
     }
 
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (!readChar(&(conv_idx[i]), ult))
-            return 0;
-    }
+    for (i = 0; i < CITY_MAX_PERSONS; i++)
+        conv_idx[i] = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         if (city == &lcb_2_city) /* FIXME: level is hardcoded for lcb2 */
@@ -175,29 +157,24 @@ int mapReadCon(Map *map, U4FILE *con) {
 
     if (map->type != MAP_SHRINE) {
         map->area = (Area *) malloc(sizeof(Area));
-        for (i = 0; i < AREA_MONSTERS; i++) {
-            if (!readChar(&(map->area->monster_start[i].x), con))
-                return 0;
-        }
-        for (i = 0; i < AREA_MONSTERS; i++) {
-            if (!readChar(&(map->area->monster_start[i].y), con))
-                return 0;
-        }
-        for (i = 0; i < AREA_PLAYERS; i++) {
-            if (!readChar(&(map->area->player_start[i].x), con))
-                return 0;
-        }
-        for (i = 0; i < AREA_PLAYERS; i++) {
-            if (!readChar(&(map->area->player_start[i].y), con))
-                return 0;
-        }
+
+        for (i = 0; i < AREA_MONSTERS; i++)
+            map->area->monster_start[i].x = u4fgetc(con);
+
+        for (i = 0; i < AREA_MONSTERS; i++)
+            map->area->monster_start[i].y = u4fgetc(con);
+
+        for (i = 0; i < AREA_PLAYERS; i++)
+            map->area->player_start[i].x = u4fgetc(con);
+
+        for (i = 0; i < AREA_PLAYERS; i++)
+            map->area->player_start[i].y = u4fgetc(con);
+
         u4fseek(con, 16L, SEEK_CUR);
     }
 
-    for (i = 0; i < (CON_HEIGHT * CON_WIDTH); i++) {
-        if (!readChar(&(map->data[i]), con))
-            return 0;
-    }
+    for (i = 0; i < (CON_HEIGHT * CON_WIDTH); i++)
+        map->data[i] = u4fgetc(con);
 
     return 1;
 }
@@ -213,10 +190,8 @@ int mapReadDng(Map *map, U4FILE *dng) {
     if (!map->data)
         return 0;
 
-    for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * map->levels); i++) {
-        if (!readChar(&(map->data[i]), dng))
-            return 0;
-    }
+    for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * map->levels); i++)
+        map->data[i] = u4fgetc(dng);
 
     return 1;
 }
@@ -240,9 +215,8 @@ int mapReadWorld(Map *map, U4FILE *world) {
     for(ych = 0; ych < MAP_VERT_CHUNKS; ++ych) {
         for(xch = 0; xch < MAP_HORIZ_CHUNKS; ++xch) {
             for(y = 0; y < MAP_CHUNK_HEIGHT; ++y) {
-                for(x = 0; x < MAP_CHUNK_WIDTH; ++x) {
-                    readChar(&(map->data[x + (y * MAP_CHUNK_WIDTH * MAP_HORIZ_CHUNKS) + (xch * MAP_CHUNK_WIDTH) + (ych * MAP_CHUNK_HEIGHT * MAP_HORIZ_CHUNKS * MAP_CHUNK_WIDTH)]), world);
-                }
+                for(x = 0; x < MAP_CHUNK_WIDTH; ++x)
+                    map->data[x + (y * MAP_CHUNK_WIDTH * MAP_HORIZ_CHUNKS) + (xch * MAP_CHUNK_WIDTH) + (ych * MAP_CHUNK_HEIGHT * MAP_HORIZ_CHUNKS * MAP_CHUNK_WIDTH)] = u4fgetc(world);
             }
         }
     }

@@ -14,7 +14,6 @@
 #include "person.h"
 #include "u4file.h"
 #include "names.h"
-#include "io.h"
 #include "stats.h"
 #include "location.h"
 #include "player.h"
@@ -337,18 +336,15 @@ int vendorInit() {
 
     u4fseek(avatar, 78859, SEEK_SET);
     for (i = 0; i < N_REAG_VENDORS; i++) {
-        for (j = 0; j < REAG_MAX - 2; j++) {
-            if (!readChar(&(reagPrices[i][j]), avatar))
-                return 0;
-        }
+        for (j = 0; j < REAG_MAX - 2; j++)
+            reagPrices[i][j] = u4fgetc(avatar);
         reagPrices[i][REAG_NIGHTSHADE] = 0;
         reagPrices[i][REAG_MANDRAKE] = 0;
     }
 
     u4fseek(avatar, 87535, SEEK_SET);
     for (i = 0; i < N_FOOD_VENDORS; i++) {
-        if (!readShort(&(foodPrices[i]), avatar))
-            return 0;
+        foodPrices[i] = u4fgetshort(avatar);
     }
 
     tavernSpecialties = u4read_stringtable(avatar, 85521, N_TAVERN_VENDORS);
@@ -356,32 +352,24 @@ int vendorInit() {
     tavernInfo = u4read_stringtable(avatar, 85671, N_TAVERN_TOPICS);
 
     u4fseek(avatar, 86379, SEEK_SET);
-    for (i = 0; i < N_TAVERN_TOPICS; i++) {
-        if (!readShort(&(tavernInfoPrices[i]), avatar))
-            return 0;
-    }
+    for (i = 0; i < N_TAVERN_TOPICS; i++)
+        tavernInfoPrices[i] = u4fgetshort(avatar);
 
     u4fseek(avatar, 86427, SEEK_SET);
-    for (i = 0; i < N_TAVERN_VENDORS; i++) {
-        if (!readShort(&(tavernFoodPrices[i]), avatar))
-            return 0;
-    }
+    for (i = 0; i < N_TAVERN_VENDORS; i++)
+        tavernFoodPrices[i] = u4fgetshort(avatar);
 
     u4fseek(avatar, 83719, SEEK_SET);
     if (!innVendorInfoRead(&(innVendorInfo[0]), avatar))
         return 0;
 
     u4fseek(avatar, 82969, SEEK_SET);
-    for (i = 0; i < N_GUILD_ITEMS; i++) {
-        if (!readShort(&(guildItemPrices[i]), avatar))
-            return 0;
-    }
+    for (i = 0; i < N_GUILD_ITEMS; i++)
+        guildItemPrices[i] = u4fgetshort(avatar);
 
     u4fseek(avatar, 82977, SEEK_SET);
-    for (i = 0; i < N_GUILD_ITEMS; i++) {
-        if (!readShort(&(guildItemQuantities[i]), avatar))
-            return 0;
-    }
+    for (i = 0; i < N_GUILD_ITEMS; i++)
+        guildItemQuantities[i] = u4fgetshort(avatar);
 
     u4fseek(avatar, 80181, SEEK_SET);
     if (!armsVendorInfoRead(&weaponVendorInfo, WEAP_MAX, avatar))
@@ -1568,42 +1556,33 @@ int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, U4FILE *f) {
     int i, j;
 
     for (i = 0; i < N_ARMS_VENDORS; i++) {
-        for (j = 0; j < ARMS_VENDOR_INVENTORY_SIZE; j++) {
-            if (!readChar(&(info->vendorInventory[i][j]), f))
-                return 0;
-        }
+        for (j = 0; j < ARMS_VENDOR_INVENTORY_SIZE; j++)
+            info->vendorInventory[i][j] = u4fgetc(f);
     }
 
-    for (i = 0; i < nprices; i++) {
-        if (!readShort(&(info->prices[i]), f))
-            return 0;
-    }
+    for (i = 0; i < nprices; i++)
+        info->prices[i] = u4fgetshort(f);
 
     return 1;
 }
 
 int innVendorInfoRead(InnVendorInfo *info, U4FILE *f) {
-    unsigned char pad;
     int i;
 
-    for (i = 0; i < N_INN_VENDORS; i++) {
-        if (!readChar(&(info[i].room_x), f))
-            return 0;
-    }
-    if (!readChar(&pad, f))
-        return 0;
+    for (i = 0; i < N_INN_VENDORS; i++)
+        info[i].room_x = u4fgetc(f);
 
-    for (i = 0; i < N_INN_VENDORS; i++) {
-        if (!readChar(&(info[i].room_y), f))
-            return 0;
-    }
-    if (!readChar(&pad, f))
-        return 0;
+    /* read pad byte */
+    u4fgetc(f);
 
-    for (i = 0; i < N_INN_VENDORS; i++) {
-        if (!readChar(&(info[i].price), f))
-            return 0;
-    }
+    for (i = 0; i < N_INN_VENDORS; i++)
+        info[i].room_y = u4fgetc(f);
+
+    /* read pad byte */
+    u4fgetc(f);
+
+    for (i = 0; i < N_INN_VENDORS; i++)
+        info[i].price = u4fgetc(f);
 
     return 1;
 }
@@ -1618,10 +1597,8 @@ VendorTypeInfo *vendorLoadTypeInfo(U4FILE *avatar, const VendorTypeDesc *desc) {
 
     if (desc->cityMapOffset != -1) {
         u4fseek(avatar, desc->cityMapOffset, SEEK_SET);
-        for (i = 0; i < VCM_SIZE; i++) {
-            if (!readChar(&(info->cityMap[i]), avatar))
-                return NULL;
-        }
+        for (i = 0; i < VCM_SIZE; i++)
+            info->cityMap[i] = u4fgetc(avatar);
     }
 
     info->n_shops = desc->n_shops;
