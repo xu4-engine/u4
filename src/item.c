@@ -217,11 +217,11 @@ void useSkull(void *item) {
 }
 
 void useStone(void *item) {
-    screenMessage("No place to Use them!\nHmm...No effect!\n");
+    screenMessage("\nNo place to Use them!\nHmm...No effect!\n");
 }
 
 void useKey(void *item) {
-    screenMessage("No place to Use them!\n");
+    screenMessage("\nNo place to Use them!\n");
 }
 
 int isMysticInInventory(void *mystic) {

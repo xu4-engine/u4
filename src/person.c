@@ -394,18 +394,21 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, "join", 4) == 0) {
-        Virtue v;
-        if (playerCanPersonJoin(c->saveGame, cnv->talker->name, &v)) {
-            if (playerJoin(c->saveGame, cnv->talker->name)) {
+        Virtue v;        
+
+        if (playerCanPersonJoin(c->saveGame, cnv->talker->name, &v)) {            
+            
+            CannotJoinError join = playerJoin(c->saveGame, cnv->talker->name);
+            
+            if (join == JOIN_SUCCEEDED) {
                 reply = strdup("I am honored to join thee!");
                 statsUpdate();
                 mapRemovePerson(c->location->map, cnv->talker);
                 cnv->state = CONV_DONE;
-            } else
-                reply = concat("Thou art not ",
-                               getVirtueAdjective(v), /* fixme */
-                               " enough for me to join thee.",
-                               NULL);
+            } else reply = concat("Thou art not ",
+                                  (join == JOIN_NOT_VIRTUOUS) ? getVirtueAdjective(v) : "experienced",
+                                  " enough for me to join thee.",
+                                  NULL);
         } else
             reply = concat(cnv->talker->pronoun,
                            " says: I cannot join thee.",

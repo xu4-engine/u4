@@ -73,7 +73,7 @@ void shrineEnter(const Shrine *s) {
         obj->y--; gameUpdateScreen(); eventHandlerSleep(400);
         obj->y--; gameUpdateScreen(); eventHandlerSleep(400);
         annotationRemove(5, 6, c->location->z, c->location->map->id, GRASS_TILE);
-        obj->y--; gameUpdateScreen(); eventHandlerSleep(1000);
+        obj->y--; gameUpdateScreen(); eventHandlerSleep(800);
         obj->tile = monsterById(BEGGAR_ID)->tile; gameUpdateScreen();
         
         screenMessage("\n...and kneel before the altar.\n");        

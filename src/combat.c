@@ -437,6 +437,10 @@ int combatBaseKeyHandler(int key, void *data) {
             readBufferInfo->screenY = TEXT_AREA_Y + c->line;
             itemNameBuffer[0] = '\0';
             eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+
+            c->statsItem = STATS_ITEMS;
+            statsUpdate();
+
             return 1;
         }
 
@@ -864,15 +868,13 @@ void combatEnd(int adjustKarma) {
     }
 
     else if (!playerPartyDead(c->saveGame)) {
-        screenMessage("Battle is lost!\n");
-
-        if (adjustKarma) {
-            /* bonus points for fleeing from good, minus points for everything else */
-            if (combatInfo.monsterObj && monsterIsGood(combatInfo.monster))
-                playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
-            else
-                playerAdjustKarma(c->saveGame, KA_FLED_EVIL);
+        /* minus points for fleeing from evil creatures */
+        if (adjustKarma && combatInfo.monsterObj && monsterIsEvil(combatInfo.monster)) {
+            screenMessage("Battle is lost!\n");
+            playerAdjustKarma(c->saveGame, KA_FLED_EVIL);
         }
+        else if (adjustKarma && combatInfo.monsterObj && monsterIsGood(combatInfo.monster))
+            playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
     }
 
     /* remove the monster */

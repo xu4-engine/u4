@@ -316,7 +316,7 @@ int playerCanPersonJoin(SaveGame *saveGame, const char *name, Virtue *v) {
     int i;
 
     if (!name)
-        return 0;
+        return 0;    
 
     for (i = 1; i < 8; i++) {
         if (strcmp(saveGame->players[i].name, name) == 0) {
@@ -348,20 +348,24 @@ int playerJoin(SaveGame *saveGame, const char *name) {
     for (i = saveGame->members; i < 8; i++) {
         if (strcmp(saveGame->players[i].name, name) == 0) {
 
+            /* ensure avatar is experienced enough */
+            if (saveGame->members + 1 > (saveGame->players[0].hpMax / 100))
+                return JOIN_NOT_EXPERIENCED;
+
             /* ensure character has enough karma */
             if ((saveGame->karma[saveGame->players[i].klass] > 0) &&
                 (saveGame->karma[saveGame->players[i].klass] < 40))
-                return 0;
+                return JOIN_NOT_VIRTUOUS;
 
             tmp = saveGame->players[saveGame->members];
             saveGame->players[saveGame->members] = saveGame->players[i];
             saveGame->players[i] = tmp;
             saveGame->members++;
-            return 1;
+            return JOIN_SUCCEEDED;
         }
     }
 
-    return 0;
+    return JOIN_NOT_EXPERIENCED;
 }
 
 void playerEndTurn(void) {

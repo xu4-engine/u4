@@ -50,6 +50,12 @@ typedef enum {
     INV_HORSE
 } InventoryItem;
 
+typedef enum {    
+    JOIN_SUCCEEDED,
+    JOIN_NOT_EXPERIENCED,
+    JOIN_NOT_VIRTUOUS
+} CannotJoinError;
+
 typedef void (*LostEighthCallback)(Virtue);
 typedef void (*AdvanceLevelCallback)(const SaveGamePlayerRecord *player);
 typedef void (*ItemStatsChangedCallback)(void);

@@ -81,7 +81,7 @@ int cmdHandleAnyKey(int key, void *data);
 int windCmdKeyHandler(int key, void *data);
 void gameCheckBridgeTrolls(void);
 void gameCheckSpecialMonsters(Direction dir);
-void gameCheckMoongates(void);
+int gameCheckMoongates(void);
 void gameUpdateMoons(int showmoongates);
 void gameInitMoons();
 void gameCheckRandomMonsters(void);
@@ -521,9 +521,12 @@ int gameBaseKeyHandler(int key, void *data) {
     case U4_RIGHT:
         /* Check to see if we're on the balloon */
         if (c->transportContext != TRANSPORT_BALLOON) {
-            moveAvatar(keyToDirection(key), 1);
-            /* horse doubles speed */
-            if ((c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
+
+            /* move the avatar */
+            int moved = moveAvatar(keyToDirection(key), 1);
+            
+            /* horse doubles speed (make sure we're on the same map as the previous move first) */
+            if (moved && (c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
                 gameUpdateScreen(); /* to give it a smooth look of movement */
                 moveAvatar(keyToDirection(key), 0);
             }
@@ -597,8 +600,9 @@ int gameBaseKeyHandler(int key, void *data) {
                 gameSetTransport(obj->tile);
                 mapRemoveObject(c->location->map, obj);
             }
+            else screenMessage("Board What?\n");
         }
-        else screenMessage("Board What?\n");        
+        else screenMessage("Board What?\n");
         break;
 
     case 'c':
@@ -1188,6 +1192,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             c->location->y = moongate->y;            
         }
         else screenMessage("Not here!\n");
+        screenPrompt();
         break;
 
     case 'a':
@@ -1199,6 +1204,8 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             screenMessage("Advance Moons!\n");
             while (c->saveGame->trammelphase != newTrammelphase)
                 gameUpdateMoons(0);
+
+            screenPrompt();
         }
         break;
 
@@ -1313,10 +1320,11 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         readBufferInfo->handleBuffer = &gameSummonMonster;
         readBufferInfo->buffer = monsterNameBuffer;
         readBufferInfo->bufferLen = sizeof(monsterNameBuffer);
-        readBufferInfo->screenX = TEXT_AREA_X + c->col;
+        readBufferInfo->screenX = TEXT_AREA_X + c->col + 6;
         readBufferInfo->screenY = TEXT_AREA_Y + c->line;
         monsterNameBuffer[0] = '\0';
         eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+        screenMessage("What? ");
         return 1;
 
     case 't':
@@ -1550,6 +1558,9 @@ int castForPlayerGetPhase(int phase) {
 
 int destroyAtCoord(int x, int y, int distance, void *data) {
     Object *obj = mapObjectAt(c->location->map, x, y, c->location->z);
+
+    screenPrompt();
+
     if (obj) {
         mapRemoveObject(c->location->map, obj);
         return 1;
@@ -2348,7 +2359,7 @@ int moveAvatar(Direction dir, int userEvent) {
             screenMessage("Leaving...\n");
             gameExitToParentMap(c);
             musicPlay();
-            return result;
+            return (result = 0);
 
         case BORDER_FIXED:
             if (newx < 0 || newx >= (int) c->location->map->width)
@@ -2397,9 +2408,8 @@ int moveAvatar(Direction dir, int userEvent) {
         
         if (slowed) {
             if (!settings->filterMoveMessages)
-                screenMessage("Slow progress!\n");
-            result = 0;
-            return result;
+                screenMessage("Slow progress!\n");            
+            return (result = 0);
         }
     }    
 
@@ -2411,14 +2421,14 @@ int moveAvatar(Direction dir, int userEvent) {
     if (destObj && destObj->objType == OBJECT_MONSTER)
         monsterSpecialEffect(destObj);
 
-    /* things that happen while on foot or horseback */
-    if (c->transportContext & TRANSPORT_FOOT_OR_HORSE) {        
-        gameCheckMoongates();
-    }
-
     /* things that happen while not on board the balloon */    
     if (c->transportContext & ~TRANSPORT_BALLOON)
-        gameCheckSpecialMonsters(dir);    
+        gameCheckSpecialMonsters(dir);
+    /* things that happen while on foot or horseback */
+    if (c->transportContext & TRANSPORT_FOOT_OR_HORSE) {
+        if (gameCheckMoongates())
+            return (result = 0);
+    }
 
     return result;
 }
@@ -2670,7 +2680,7 @@ void gameCheckSpecialMonsters(Direction dir) {
 /**
  * Checks for and handles when the avatar steps on a moongate
  */
-void gameCheckMoongates() {
+int gameCheckMoongates(void) {
     int destx, desty;
     extern Map shrine_spirituality_map;    
     
@@ -2698,7 +2708,11 @@ void gameCheckMoongates() {
 
             annotationClear(c->location->map->id);  /* clear out world map annotations */            
         }
+
+        return 1;
     }
+
+    return 0;
 }
 
 /**
@@ -3018,7 +3032,8 @@ int gameSummonMonster(const char *monsterName) {
     if (id > 0) {        
         for (i = 0; i < numMonsters; i++) {
             if (monsters[i].id == id) {
-                screenMessage("%s summoned!\n", monsters[i].name);
+                screenMessage("\n%s summoned!\n", monsters[i].name);
+                screenPrompt();
                 gameSpawnMonster(&monsters[i]);
                 return 1;
             }                
@@ -3035,13 +3050,15 @@ int gameSummonMonster(const char *monsterName) {
         }
 
         if (match) {
-            screenMessage("%s summoned!\n", monsterName);
+            screenMessage("\n%s summoned!\n", monsterName);
+            screenPrompt();
             gameSpawnMonster(&monsters[i]);
             return 1;
         }
     }
 
-    screenMessage("%s not found\n", monsterName);    
+    screenMessage("\n%s not found\n", monsterName);
+    screenPrompt();
     return 0;
 }
 
