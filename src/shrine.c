@@ -17,10 +17,11 @@
 #include "map.h"
 #include "music.h"
 #include "game.h"
+#include "player.h"
 
 const Shrine *shrine;
 char virtueBuffer[20];
-int cycles;
+int cycles, completedCycles;
 char mantraBuffer[20];
 
 int shrineHandleVirtue(const char *message);
@@ -67,6 +68,7 @@ int shrineHandleCycles(char choice) {
         cycles = 0;
     else
         cycles = choice - '0';
+    completedCycles = 0;
 
     screenMessage("%c\n\n", cycles + '0');
 
@@ -101,14 +103,28 @@ int shrineHandleMantra(const char *message) {
     eventHandlerPopKeyHandler();
 
     if (strcasecmp(mantraBuffer, shrine->mantra) != 0) {
+        gameLostEighth(playerAdjustKarma(c->saveGame, KA_BAD_MANTRA));
         screenMessage("Thou art not able to focus thy thoughts with that Mantra!\n");
         shrineEject();
     }
     else if (--cycles > 0) {
+        completedCycles++;
+        gameLostEighth(playerAdjustKarma(c->saveGame, KA_MEDITATION));
         shrineMeditationCycle();
     }
     else {
-        screenMessage("\nThy thoughts are pure.  Thou art granted a vision!\n");
+        completedCycles++;
+        gameLostEighth(playerAdjustKarma(c->saveGame, KA_MEDITATION));
+
+        if (completedCycles == 3 &&
+            playerAttemptElevation(c->saveGame, shrine->virtue)) {
+            screenMessage("Thou hast achieved partial Avatarhood in the Virtue of %s\n\n", getVirtueName(shrine->virtue));
+        } else {
+            screenMessage("\nThy thoughts are pure.  ");
+        }
+
+        screenMessage("Thou art granted a vision!\n");
+
         shrineEject();
     }
 

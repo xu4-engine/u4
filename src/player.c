@@ -204,6 +204,14 @@ int playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
     return eighths;
 }
 
+int playerAttemptElevation(SaveGame *saveGame, Virtue virtue) {
+    if (saveGame->karma[virtue] == 99) {
+        saveGame->karma[virtue] = 0;
+        return 1;
+    } else
+        return 0;
+}
+
 void playerGetChest(SaveGame *saveGame) {
     saveGame->gold += rand() % 32;
     saveGame->gold += rand() % 32;

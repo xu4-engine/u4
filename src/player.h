@@ -29,6 +29,7 @@ int playerCanWear(const SaveGamePlayerRecord *player, ArmorType armor);
 int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon);
 int playerCanEnterShrine(const SaveGame *saveGame, Virtue virtue);
 int playerAdjustKarma(SaveGame *saveGame, KarmaAction action);
+int playerAttemptElevation(SaveGame *saveGame, Virtue virtue);
 void playerGetChest(SaveGame *saveGame);
 int playerDonate(SaveGame *saveGame, int quantity);
 void playerJoin(SaveGame *saveGame, const char *name);
