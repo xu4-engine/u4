@@ -8,6 +8,7 @@
 typedef enum {
     BKGD_BORDERS,
     BKGD_INTRO,
+    BKGD_INTRO_EXTENDED,
     BKGD_TREE,
     BKGD_PORTAL,
     BKGD_OUTSIDE,
@@ -45,7 +46,8 @@ typedef enum {
 
 void screenInit(void);
 void screenDelete(void);
-void screenFixIntroScreen(const unsigned char *sigData);
+void screenFixIntroScreen(BackgroundType bkgd, const unsigned char *sigData);
+void screenFixIntroScreenExtended(BackgroundType bkgd);
 void screenFreeIntroAnimations();
 void screenFreeIntroBackgrounds();
 void screenDrawBackground(BackgroundType bkgd);

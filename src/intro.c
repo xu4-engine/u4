@@ -203,7 +203,11 @@ int introInit() {
 
     u4fclose(title);
 
-    screenFixIntroScreen(screenFixData);
+    screenFixIntroScreen(BKGD_INTRO, screenFixData);
+
+    /* redraw some of the intro screen to allow for additional options */
+    screenFixIntroScreen(BKGD_INTRO_EXTENDED, screenFixData);    
+    screenFixIntroScreenExtended(BKGD_INTRO_EXTENDED);
 
     introUpdateScreen();
 
@@ -316,7 +320,7 @@ int introKeyHandler(int key, void *data) {
         switch(key) {
         case 'v': mode = INTRO_CONFIG_VIDEO; break;
         case 's': mode = INTRO_CONFIG_SOUND; break;
-        case 'o': mode = INTRO_CONFIG_OTHER; break;
+        case 'g': mode = INTRO_CONFIG_OTHER; break;
         case U4_ESC:
         case ' ':
         case U4_ENTER:
@@ -581,12 +585,12 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG:
-        screenDrawBackground(BKGD_INTRO);        
+        screenDrawBackground(BKGD_INTRO);
         screenTextAt(9, 14, "-- xu4 Configuration --");
-        screenTextAt(13, 16, "Video Settings");
-        screenTextAt(13, 17, "Sound Settings");
-        screenTextAt(13, 18, "Other Settings");
-        screenTextAt(15, 20, "Main Menu");
+        screenTextAt(13, 16, "Video Options");
+        screenTextAt(13, 17, "Sound Options");
+        screenTextAt(13, 18, "Gameplay Options");
+        screenTextAt(13, 21, "Main Menu");
         introDrawBeasties();
         break;
 
@@ -610,15 +614,14 @@ void introUpdateScreen() {
         introDrawBeasties();
         break;
 
-    case INTRO_CONFIG_OTHER:
-        screenDrawBackground(BKGD_INTRO);
+    case INTRO_CONFIG_OTHER:        
+        screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 14, "Settings:");
         screenTextAt(10, 16, "Battle Speed       %d", settings->battleSpeed);
         screenTextAt(10, 17, "xu4 Enhancements   %s", settings->minorEnhancements ? "On" : "Off");
         screenTextAt(10, 18, "Shortcut Commands  %s", settings->shortcutCommands ? "On" : "Off");
         screenTextAt(11, 20, "Use These Settings");
-        screenTextAt(11, 21, "Cancel");
-        introDrawBeasties();
+        screenTextAt(11, 21, "Cancel");        
         break;
 
     case INTRO_ABOUT:
@@ -870,7 +873,7 @@ void introTimer(void *data) {
         introDrawMap();
     if (mode == INTRO_MAP || mode == INTRO_MENU || mode == INTRO_CONFIG ||
         mode == INTRO_CONFIG_VIDEO || mode == INTRO_CONFIG_SOUND ||
-        mode == INTRO_CONFIG_OTHER || mode == INTRO_ABOUT ||
+        mode == INTRO_ABOUT ||
         mode == INTRO_INIT_NAME || mode == INTRO_INIT_SEX)
         introDrawBeasties();
 
@@ -1096,3 +1099,4 @@ void introInitPlayers(SaveGame *saveGame) {
     }
 
 }
+
