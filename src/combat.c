@@ -79,11 +79,8 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
     olddngx = c->saveGame->dngx;
     olddngy = c->saveGame->dngy;
     oldlevel = c->saveGame->dnglevel;
-    gameSetMap(c, getCombatMapForTile(partytile, transport), 0, NULL);
-    c->saveGame->dngx = c->saveGame->x;
-    c->saveGame->dngy = c->saveGame->y;
-    c->saveGame->x = 5;
-    c->saveGame->y = 5;
+    gameSetMap(c, getCombatMapForTile(partytile, transport), 1, NULL);
+    c->saveGame->dnglevel = 0;
 
     musicPlay();
 
@@ -523,6 +520,7 @@ void combatMoveMonsters() {
     int i, newx, newy, valid_dirs, target, distance;
     CombatAction action;
     const Monster *m;
+    Direction dir;
     int slow;
 
     for (i = 0; i < AREA_MONSTERS; i++) {
@@ -540,6 +538,8 @@ void combatMoveMonsters() {
             action = CA_RANGED;
         else if (monsterCastSleep(m) && (rand() % 4) == 0)
             action = CA_CAST_SLEEP;
+        else if (monsterGetStatus(m, monsterHp[i]) == MSTAT_FLEEING)
+            action = CA_FLEE;
         else
             action = CA_ATTACK;
 
@@ -584,14 +584,15 @@ void combatMoveMonsters() {
             break;
 
         case CA_FLEE:
-            /* FIXME */
-            break;
-
         case CA_ADVANCE:
             newx = monsters[i]->x;
             newy = monsters[i]->y;
             valid_dirs = mapGetValidMoves(c->map, newx, newy, c->saveGame->dnglevel, monsters[i]->tile);
-            dirMove(dirFindPath(newx, newy, party[target]->x, party[target]->y, valid_dirs), &newx, &newy);
+            if (action == CA_FLEE)
+                dir = dirFindPathToEdge(newx, newy, c->map->width, c->map->height, valid_dirs);
+            else
+                dir = dirFindPath(newx, newy, party[target]->x, party[target]->y, valid_dirs);
+            dirMove(dir, &newx, &newy);
 
             switch (tileGetSpeed(mapTileAt(c->map, newx, newy, c->saveGame->dnglevel))) {
             case FAST:
@@ -615,6 +616,12 @@ void combatMoveMonsters() {
                 }
                 monsters[i]->x = newx;
                 monsters[i]->y = newy;
+
+                if (MAP_IS_OOB(c->map, newx, newy)) {
+                    screenMessage("\n%s Flees!\n", m->name);
+                    mapRemoveObject(c->map, monsters[i]);
+                    monsters[i] = NULL;
+                }
             }
             break;
         }
