@@ -94,12 +94,14 @@ int MapLoader::loadData(Map *map, U4FILE *f) {
         }
     }
     clock_t end = clock();
-    
+
+#ifndef NPERF
     FILE *file = FileSystem::openFile("debug/mapLoadData.txt", "wt");
     if (file) {
         fprintf(file, "%d msecs total\n%d msecs used by Tile::translate()", int(end - start), int(total));
         fclose(file);
     }
+#endif
 
     return 1;
 }
