@@ -60,6 +60,7 @@ int talkHandleChoice(char choice);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 void gameCheckMoongates(void);
+void gameCheckRandomMonsters(void);
 
 int collisionOverride = 0;
 ViewMode viewMode = VIEW_NORMAL;
@@ -138,6 +139,8 @@ void gameFinishTurn() {
         annotationCycle();
         c->statsItem = STATS_PARTY_OVERVIEW;
         statsUpdate();
+
+        gameCheckRandomMonsters();
 
         if (!playerPartyImmobilized(c->saveGame))
             break;
@@ -896,14 +899,18 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
  * creature is present at that point, zero is returned.
  */
 int attackAtCoord(int x, int y) {
+    unsigned char tile;
     Object *obj;
 
     if (x == -1 && y == -1)
         return 0;
 
     if ((obj = mapObjectAt(c->map, x, y)) != NULL &&
-        monsterForTile(obj->tile) != NULL)
-        combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport, obj->tile);
+        monsterForTile(obj->tile) != NULL) {
+        tile = obj->tile;
+        mapRemoveObject(c->map, obj);
+        combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport, tile);
+    }
     else {
         screenMessage("Attack What?\n");
         gameFinishTurn();
@@ -1730,4 +1737,25 @@ void gameCheckMoongates() {
             musicPlay();
         }
     }
+}
+
+void gameCheckRandomMonsters() {
+    int x, y;
+    unsigned char monster;
+    Object *obj;
+
+    if (!mapIsWorldMap(c->map) ||
+        (rand() % 16) != 0)
+        return;
+
+    /* FIXME */
+    x = c->saveGame->x + 2;
+    y = c->saveGame->y + 2;
+
+    if ((monster = monsterRandomForTile(mapTileAt(c->map, x, y))) == 0)
+        return;
+
+    printf("random monster %d!\n", monster);
+    obj = mapAddObject(c->map, monster, monster, x, y);
+    obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
 }
