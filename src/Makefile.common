@@ -30,6 +30,8 @@ CXXSRCS=\
         game.cpp \
         io.cpp \
         image_$(UI).cpp \
+        imageloader.cpp \
+        imageloader_u4.cpp \
         intro.cpp \
         item.cpp \
         location.cpp \
