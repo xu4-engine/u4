@@ -33,6 +33,7 @@ static const char * const zip_paths[] = {
 static const char * const music_paths[] = {
     "./",
     "./ultima4/",
+    "./mid/",
     "../mid/",
     "/usr/lib/u4/music/",
     "/usr/local/lib/u4/music/"
@@ -42,6 +43,7 @@ static const char * const music_paths[] = {
 static const char * const sound_paths[] = {
     "./",
     "./ultima4/",
+    "./sound/",
     "../sound/",
     "/usr/lib/u4/sound/",
     "/usr/local/lib/u4/sound/"
@@ -50,6 +52,7 @@ static const char * const sound_paths[] = {
 /* the possible paths where the u4 config files can be installed */
 static const char * const conf_paths[] = {
     "./",
+    "./conf/",
     "../conf/",
     "/usr/lib/u4/",
     "/usr/local/lib/u4/"
@@ -59,6 +62,7 @@ static const char * const conf_paths[] = {
 static const char * const graphics_paths[] = {
     "./",
     "./ultima4/",
+    "./graphics/",
     "../graphics/",
     "/usr/lib/u4/graphics/",
     "/usr/local/lib/u4/graphics/"
