@@ -88,3 +88,16 @@ const char *getReagentName(Reagent reagent) {
     else
         return "???";
 }
+
+const char *getVirtueName(Virtue virtue) {
+    static const char *virtueNames[] = {
+        "Honesty", "Compassion", "Valor", 
+        "Justice", "Sacrifice", "Honor", 
+        "Spirituality", "Humility"
+    };
+
+    if (virtue < 8)
+        return virtueNames[virtue - VIRT_HONESTY];
+    else
+        return "???";
+}
