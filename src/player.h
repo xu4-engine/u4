@@ -55,5 +55,6 @@ int playerPartyImmobilized(const SaveGame *saveGame);
 int playerPartyDead(const SaveGame *saveGame);
 void playerRevive(SaveGame *saveGame);
 int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
+int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
 
 #endif

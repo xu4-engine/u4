@@ -387,6 +387,11 @@ void playerRevive(SaveGame *saveGame) {
     saveGame->gold = 200;
 }
 
+/**
+ * Attempt to purchase a given quantity of an item for a specified
+ * price.  If successful, the inventory will be updated and 1
+ * returned.  Zero is returned on failure.
+ */
 int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price) {
 
     if (price > saveGame->gold)
@@ -421,6 +426,33 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
         /* FIXME */
         break;
     }
+
+    return 1;
+}
+
+/**
+ * Attempt to sell a given quantity of an item for a specified price.
+ * If successful, the inventory will be updated and 1 returned.  Zero
+ * is returned on failure.
+ */
+int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price) {
+
+    switch (item) {
+    case INV_WEAPON:
+        if (saveGame->weapons[type] < quantity)
+            return 0;
+        saveGame->weapons[type] -= quantity;
+        break;
+    case INV_ARMOR:
+        if (saveGame->armor[type] < quantity)
+            return 0;
+        saveGame->armor[type] -= quantity;
+        break;
+    default:
+        return 0;
+    }
+
+    saveGame->gold += price;
 
     return 1;
 }
