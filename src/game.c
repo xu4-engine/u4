@@ -932,8 +932,8 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'n':
-        gameGetPlayerForCommand(&newOrderForPlayer, 1);
         screenMessage("New Order!\nExchange # ");
+        gameGetPlayerForCommand(&newOrderForPlayer, 1);
         break;
 
     case 'o':
@@ -2442,11 +2442,13 @@ int newOrderForPlayer(int player) {
     GetPlayerInfo *playerInfo;
 
     if (player == 0) {
+        fprintf(stdout,"one player, player# == %d\n", player);
         screenMessage("%s, You must lead!\n", c->saveGame->players[0].name);
         (*c->location->finishTurn)();
         return 0;
     }
 
+    fprintf(stdout,"many players, player# == %d\n", player);
     screenMessage("    with # ");
 
     newOrderTemp = player;
