@@ -387,7 +387,8 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
     
-    return monsterById((era & rand() & rand()) + ORC_ID);    
+    //return monsterById((era & rand() & rand()) + ORC_ID);    
+    return monsterById(LAVA_LIZARD_ID);
 }
 
 int monsterGetInitialHp(const Monster *monster) {

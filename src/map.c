@@ -324,13 +324,18 @@ unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus) 
     
     /* FIXME: do not return objects for VIEW_GEM mode */
 
-    /* avatar is always drawn on top (unless on a ship) */
-    if ((map->flags & SHOW_AVATAR) && !tileIsShip(c->saveGame->transport) && 
+    /* temporary annotations go first */
+    if (a && a->visual && !a->permanent) {
+        *focus = 0;
+        tile = a->tile;
+    }        
+    /* then the avatar is drawn (unless on a ship) */
+    else if ((map->flags & SHOW_AVATAR) && !tileIsShip(c->saveGame->transport) && 
         c->location->x == x && c->location->y == y) {
         *focus = 0;
         tile = c->saveGame->transport;
     }
-    /* then annotations */
+    /* then permanent annotations */
     else if (a && a->visual) {
         *focus = 0;
         tile = a->tile;
