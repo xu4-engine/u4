@@ -33,7 +33,8 @@ install: u4.exe
 	mkdir -p $(U4PATH)
 	mkdir -p $(U4PATH)/conf
 	mkdir -p $(U4PATH)/dtd
-	mkdir -p $(U4PATH)/conf/tilemap
+	mkdir -p $(U4PATH)/conf/tileset
+    mkdir -p $(U4PATH)/conf/tileset/tilemap    
 	mkdir -p $(U4PATH)/graphics
 	mkdir -p $(U4PATH)/graphics/ega
 	mkdir -p $(U4PATH)/graphics/vga
@@ -42,7 +43,8 @@ install: u4.exe
 	strip $(MAIN) -o $(U4PATH)/$(MAIN)
 	cp ../conf/*.xml $(U4PATH)/conf
 	cp ../conf/dtd/*.dtd $(U4PATH)/dtd/
-	cp ../conf/tilemap/*.xml $(U4PATH)/conf/tilemap
+	cp ../conf/tileset/*.xml $(U4PATH)/conf/tileset
+    cp ../conf/tileset/tilemap/*.xml $(U4PATH)/conf/tileset/tilemap
 	cp ../graphics/ega/*.rle $(U4PATH)/graphics/ega/
 	cp ../graphics/vga/*.rle $(U4PATH)/graphics/vga/
 	cp ../mid/*.mid $(U4PATH)/mid
