@@ -198,6 +198,14 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
     return 1;
 }
 
+void spellMagicAttack(unsigned char tile, int maxDamage, int minDamage) {
+    int damage = 0;
+    if (maxDamage > 0)
+        damage = rand() % maxDamage;
+    damage |= minDamage;
+    printf("spell does %d damage\n", damage);
+}
+
 static int spellAwaken(int player) {
     assert(player < 8);
 
@@ -211,6 +219,7 @@ static int spellAwaken(int player) {
 }
 
 static int spellBlink(int dir) {
+    /* FIXME */
     return 1;
 }
 
@@ -275,10 +284,12 @@ static int spellEField(int dir) {
 }
 
 static int spellFireball(int dir) {
+    spellMagicAttack(HITFLASH_TILE, 128, 24);
     return 1;
 }
 
 static int spellGate(int phase) {
+    /* FIXME */
     return 1;
 }
 
@@ -295,6 +306,7 @@ static int spellHeal(int player) {
 }
 
 static int spellIceball(int dir) {
+    spellMagicAttack(MAGICFLASH_TILE, 224, 32);
     return 1;
 }
 
@@ -305,14 +317,17 @@ static int spellJinx(int unused) {
 }
 
 static int spellKill(int dir) {
+    spellMagicAttack(140, 0, 232);
     return 1;
 }
 
 static int spellLight(int unused) {
+    /* FIXME */
     return 1;
 }
 
 static int spellMMissle(int dir) {
+    spellMagicAttack(MISSFLASH_TILE, 64, 16);
     return 1;
 }
 
@@ -323,6 +338,7 @@ static int spellNegate(int unused) {
 }
 
 static int spellOpen(int unused) {
+    /* FIXME */
     return 1;
 }
 
@@ -351,18 +367,22 @@ static int spellQuick(int unused) {
 }
 
 static int spellSleep(int unused) {
+    /* FIXME */
     return 1;
 }
 
 static int spellTremor(int unused) {
+    /* FIXME */
     return 1;
 }
 
 static int spellUndead(int unused) {
+    /* FIXME */
     return 1;
 }
 
 static int spellView(int unsued) {
+    /* FIXME */
     return 1;
 }
 
@@ -372,13 +392,16 @@ static int spellWinds(int fromdir) {
 }
 
 static int spellXit(int unused) {
+    /* FIXME */
     return 1;
 }
 
 static int spellYup(int unused) {
+    /* FIXME */
     return 1;
 }
 
 static int spellZdown(int unused) {
+    /* FIXME */
     return 1;
 }
