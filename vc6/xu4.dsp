@@ -118,34 +118,6 @@ SOURCE=..\src\lzw\lzw.h
 SOURCE=..\src\lzw\u4decode.c
 # End Source File
 # End Group
-# Begin Group "maps"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\src\maps\areas.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\maps\castles.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\maps\cities.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\maps\dungeons.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\maps\shrines.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\maps\worldmap.c
-# End Source File
-# End Group
 # Begin Source File
 
 SOURCE=..\src\annotation.c
@@ -280,6 +252,14 @@ SOURCE=..\src\item.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\list.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\list.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\location.c
 # End Source File
 # Begin Source File
@@ -296,11 +276,19 @@ SOURCE=..\src\map.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\mapinit.c
+SOURCE=..\src\mapmgr.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\mapinit.h
+SOURCE=..\src\mapmgr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\menu.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\menu.h
 # End Source File
 # Begin Source File
 
