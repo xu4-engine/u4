@@ -160,7 +160,7 @@ const struct {
 void screenLoadGraphicsFromConf(void);
 ImageSet *screenLoadImageSetFromConf(const ConfigElement &conf);
 ImageInfo *screenLoadImageInfoFromConf(const ConfigElement &conf);
-SubImage *screenLoadSubImageFromConf(const ConfigElement &conf);
+SubImage *screenLoadSubImageFromConf(const ImageInfo *image, const ConfigElement &conf);
 Layout *screenLoadLayoutFromConf(const ConfigElement &conf);
 ImageInfo *screenLoadImage(const string &name);
 SDL_Cursor *screenInitCursor(char *xpm[]);
@@ -265,7 +265,7 @@ void screenReInit() {
     Tileset::unloadAll(); /* unload tilesets */
     screenDelete(); /* delete screen stuff */            
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */    
-    Tileset::loadAll("tilesets.xml"); /* re-load tilesets */
+    Tileset::loadAll(); /* re-load tilesets */
     intro->init();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
 
@@ -370,8 +370,7 @@ ImageInfo *screenLoadImageInfoFromConf(const ConfigElement &conf) {
     vector<ConfigElement> children = conf.getChildren();
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "subimage") {
-            SubImage *subimage = screenLoadSubImageFromConf(*i);
-            subimage->srcImageName = info->name;
+            SubImage *subimage = screenLoadSubImageFromConf(info, *i);            
             info->subImages[subimage->name] = subimage;
         }
     }
@@ -379,15 +378,37 @@ ImageInfo *screenLoadImageInfoFromConf(const ConfigElement &conf) {
     return info;
 }
 
-SubImage *screenLoadSubImageFromConf(const ConfigElement &conf) {
+SubImage *screenLoadSubImageFromConf(const ImageInfo *info, const ConfigElement &conf) {
     SubImage *subimage;
+    static int x = 0,
+               y = 0,
+               last_width = 0,
+               last_height = 0;    
 
     subimage = new SubImage;
-    subimage->name = conf.getString("name");
-    subimage->x = conf.getInt("x");
-    subimage->y = conf.getInt("y");
+    subimage->name = conf.getString("name");    
     subimage->width = conf.getInt("width");
     subimage->height = conf.getInt("height");
+    subimage->srcImageName = info->name;
+    if (conf.exists("x") && conf.exists("y")) {
+        x = subimage->x = conf.getInt("x");
+        y = subimage->y = conf.getInt("y");
+    }
+    else {
+        // Automatically increment our position through the base image
+        x += last_width;
+        if (x >= last_width) {
+            x = 0;
+            y += last_height;
+        }
+
+        subimage->x = x;
+        subimage->y = y;
+    }
+
+    // "remember" the width and height of this subimage
+    last_width = subimage->width;
+    last_height = subimage->height;
 
     return subimage;
 }
@@ -619,7 +640,6 @@ SubImage *screenGetSubImage(const string &name) {
         
     return NULL;
 }
-
 
 /**
  * Load in a background image from a ".ega" file.
@@ -948,7 +968,7 @@ void Tile::draw(MapTile *mapTile, int x, int y) {
 void Tile::drawInDungeon(MapTile *mapTile, int distance, Direction orientation, bool large) {    
     Image *tmp, *scaled;
     const static int nscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
-    const static int lscale[] = { 22, 14, 6, 2 };
+    const static int lscale[] = { 22, 14, 6, 2 };    
     const int *dscale = large ? lscale : nscale;
     int scale = ::scale;
 
@@ -1019,59 +1039,40 @@ void Tile::drawFocus(int x, int y) const {
 }
 
 /**
- * Loads the tileset image into the global tileset image info
- */ 
-void Tileset::loadImage() {
-    if (tilesInfo == NULL || tilesInfo->name != getImageName()) {
-        tilesInfo = screenLoadImage(getImageName());
-                    
-        tilesInfo->image->alphaOff(); /* turn alpha off here to preserve it */            
-
-        if (!tilesInfo)
-            errorFatal("unable to load tileset images: is Ultima IV installed?  See http://xu4.sourceforge.net/");
-    }
-}
-
-/**
  * Loads the tile image
  */ 
 void Tile::loadImage() {
     if (!image) {
-        Tile *tile = NULL;
+        SubImage *subimage = NULL;        
 
-        if (!looks_like.empty()) {
-            // load the tile that looks just like ours
-            tile = Tileset::findTileByName(looks_like);
-            tile->loadImage();
+        ImageInfo *info = screenLoadImage(imageName);
+        if (!info) {
+            subimage = screenGetSubImage(imageName);
+            if (subimage)            
+                info = screenLoadImage(subimage->srcImageName);            
         }
-        
-        /* make sure the tileset image is loaded */
-        tileset->loadImage();
 
-        Image* tiles = Tileset::getImageInfo()->image;
         scale = ::scale;
 
-        /* load the tile that this looks like */
-        if (tile) {
-            w = tile->w;
-            h = tile->h;
-            image = Image::duplicate(tile->image);
-            animated = Image::create(w, h, false, Image::HARDWARE);
-        }
-        else {
-            /* create the image for our tile */
-            w = tiles->width();
-            h = tiles->height() / tileset->numFrames();
-            image = Image::create(w, frames * h, false, Image::HARDWARE);
+        if (info) {
+            w = (subimage ? subimage->width * scale : info->width * scale);
+            h = (subimage ? (subimage->height * scale) / frames : (info->height * scale) / frames);
+            image = Image::create(w, h * frames, false, Image::HARDWARE);
             animated = Image::create(w, h, false, Image::HARDWARE);
 
-            /* draw the tile from the main image to our tile */
-            tiles->drawSubRectOn(image, 0, 0, 0, index * h, w, image->height());
+            info->image->alphaOff();
+
+            /* draw the tile from the image we found to our tile image */
+            if (subimage) {
+                Image *tiles = info->image;
+                tiles->drawSubRectOn(image, 0, 0, subimage->x * scale, subimage->y * scale, subimage->width * scale, subimage->height * scale);
+            }
+            else info->image->drawOn(image, 0, 0);                
         }
 
         /* if we have animations, we always used 'animated' to draw from */
         if (anim)
-            image->alphaOff();        
+            image->alphaOff();
 
         if (image == NULL)
             errorFatal("Error: not all tile images loaded correctly, aborting...");
