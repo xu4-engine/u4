@@ -13,7 +13,7 @@
 #include "ttype.h"
 
 unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
-    unsigned int x, y;
+    int x, y;
     unsigned char tile;
 
     c->saveGame->orientation = DIR_EAST;
@@ -39,14 +39,14 @@ unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
         y = c->location->y + fwd;
         break;
     }
-    if (MAP_IS_OOB(c->location->map, x, y)) {
+    if (MAP_IS_OOB(c->location->map, x, y)) {        
         while (x < 0)
             x += c->location->map->width;
         while (y < 0)
             y += c->location->map->height;
-        while (x >= c->location->map->width)
+        while (x >= (int)c->location->map->width)
             x -= c->location->map->width;
-        while (y >= c->location->map->height)
+        while (y >= (int)c->location->map->height)
             y -= c->location->map->height;
     }
     tile = mapTileAt(c->location->map, x, y, c->location->z);
