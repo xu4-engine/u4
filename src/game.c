@@ -1642,8 +1642,7 @@ int getChestTrapHandler(int player)
     TileEffect trapType;
     int dex = c->saveGame->players[player].dex;
     int randNum = rand() & 3;
-    int member = player;
-    int evadable = 1;
+    int member = player;    
 
     /* Chest is trapped! 50/50 chance */
     if ((randNum & 1) == 0)
@@ -1666,14 +1665,12 @@ int getChestTrapHandler(int player)
             screenMessage("Sleep Trap!\n");            
         else if (trapType == EFFECT_LAVA) {
             screenMessage("Bomb Trap!\n");
-            member = ALL_PLAYERS;
-            evadable = 0;
+            member = ALL_PLAYERS;            
         }
 
-        /* See of the player evaded the trap! */           
-        if (((dex + 25) < ((rand() & 0xFF) % 100) || /* test player's dex */
-            !evadable) &&                            /* see if the trap is unevadable */
-            (player >= 0)) {                         /* player is < 0 during the 'O'pen spell (immune to traps) */                         
+        /* See if the trap was evaded! */           
+        if ((dex + 25) < ((rand() & 0xFF) % 100) && /* test player's dex */            
+            (player >= 0)) {                        /* player is < 0 during the 'O'pen spell (immune to traps) */                         
             playerApplyEffect(c->saveGame, trapType, member);
             statsUpdate();
         }
