@@ -14,6 +14,7 @@
 #include "savegame.h"
 #include "names.h"
 #include "ttype.h"
+#include "player.h"
 
 #define STATS_AREA_WIDTH 15
 #define STATS_AREA_HEIGHT 8
@@ -131,7 +132,7 @@ void statsShowCharDetails(int charNo) {
     classString = getClassName(c->saveGame->players[charNo].klass);
     classStart = (STATS_AREA_WIDTH / 2) - (strlen(classString) / 2);
     screenTextAt(STATS_AREA_X + classStart, STATS_AREA_Y, "%s", classString);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+2, " MP:%02d  LV:%d", c->saveGame->players[charNo].mp, c->saveGame->players[charNo].hpMax / 100);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+2, " MP:%02d  LV:%d", c->saveGame->players[charNo].mp, playerGetRealLevel(&c->saveGame->players[charNo]));
     screenTextAt(STATS_AREA_X, STATS_AREA_Y+3, "STR:%02d  HP:%04d", c->saveGame->players[charNo].str, c->saveGame->players[charNo].hp);
     screenTextAt(STATS_AREA_X, STATS_AREA_Y+4, "DEX:%02d  HM:%04d", c->saveGame->players[charNo].dex, c->saveGame->players[charNo].hpMax);
     screenTextAt(STATS_AREA_X, STATS_AREA_Y+5, "INT:%02d  EX:%04d", c->saveGame->players[charNo].intel, c->saveGame->players[charNo].xp);

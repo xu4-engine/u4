@@ -785,6 +785,6 @@ void introInitAvatar(SaveGamePlayerRecord *avatar, int *initX, int *initY) {
         }
     }
 
-    avatar->hp = avatar->hpMax = playerGetLevel(avatar) * 100;
-    avatar->mp = playerGetMaxMp(avatar);;
+    avatar->hp = avatar->hpMax = playerGetMaxLevel(avatar) * 100;
+    avatar->mp = playerGetMaxMp(avatar);
 }
