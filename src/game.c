@@ -183,6 +183,7 @@ Context *gameCloneContext(Context *ctx) {
     newContext->moonPhase = newContext->parent->moonPhase;
     newContext->aura = newContext->parent->aura;
     newContext->auraDuration = newContext->parent->auraDuration;
+    newContext->horseSpeed = newContext->parent->horseSpeed;
 
     return newContext;
 }
@@ -549,13 +550,24 @@ int gameBaseKeyHandler(int key, void *data) {
         if (c->saveGame->transport != AVATAR_TILE && c->saveGame->balloonstate == 0) {
             mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
             c->saveGame->transport = AVATAR_TILE;
+            c->horseSpeed = 0;
             screenMessage("X-it\n");
         } else
             screenMessage("X-it What?\n");
         break;
 
     case 'y':
-        screenMessage("Yell what?\n");
+        screenMessage("Yell ");
+        if (tileIsHorse(c->saveGame->transport)) {
+            if (c->horseSpeed == 0) {
+                screenMessage("Giddyup!\n");
+                c->horseSpeed = 1;
+            } else {
+                screenMessage("Whoa!\n");
+                c->horseSpeed = 0;
+            }
+        } else
+            screenMessage("what?\n");
         break;
 
     case 'z':
@@ -1531,6 +1543,7 @@ int moveAvatar(Direction dir, int userEvent) {
                 c->parent->windCounter = c->windCounter;
                 c->parent->aura = c->aura;
                 c->parent->auraDuration = c->auraDuration;
+                c->parent->horseSpeed = c->horseSpeed;
 		c = c->parent;
                 c->col = 0;
 		free(t);
