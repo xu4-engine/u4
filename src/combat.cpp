@@ -426,10 +426,9 @@ bool CombatController::isWon() const {
  * Returns true if the player has lost.
  */
 bool CombatController::isLost() const {
-    for (int i = 0; i < AREA_PLAYERS; i++) {
-        if (party[i] != NULL)
-            return false;
-    }
+	PartyMemberVector party = map->getPartyMembers();
+    if (party.size())
+		return false;
     return true;
 }
 
