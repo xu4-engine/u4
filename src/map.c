@@ -9,6 +9,7 @@
 
 #include "u4.h"
 #include "map.h"
+#include "direction.h"
 #include "city.h"
 #include "portal.h"
 #include "object.h"
@@ -370,22 +371,8 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
             break;
 
         case MOVEMENT_WANDER:
-            if (rand() % 2 == 0) {
-                switch(rand() % 4) {
-                case 0:
-                    newx--;
-                    break;
-                case 1:
-                    newy--;
-                    break;
-                case 2:
-                    newx++;
-                    break;
-                case 3:
-                    newy++;
-                    break;
-                }
-            }
+            if (rand() % 2 == 0)
+                dirMove(rand() % 4, &newx, &newy);
             break;
                 
         case MOVEMENT_ATTACK_AVATAR:
@@ -410,9 +397,9 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
                         break;
                     }
                 } else if (newx != avatarx) {
-                        newx += dx;
+                    newx += dx;
                 } else if (obj->y != avatary) {
-                        newy += dy;
+                    newy += dy;
                 }
             }
             break;
@@ -420,7 +407,7 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
 
         if ((newx != obj->x || newy != obj->y) &&
             newx >= 0 && newx < map->width &&
-	    newy >= 0 && newy < map->height) {
+            newy >= 0 && newy < map->height) {
             if ((other = mapObjectAt(map, newx, newy, 0)) != NULL)
                 tile = obj->tile;
             else
