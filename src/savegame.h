@@ -162,12 +162,12 @@ typedef struct _SaveGame {
     unsigned short balloonstate;
     unsigned short trammelphase;
     unsigned short feluccaphase;
-    unsigned short unknown2;
+    unsigned short shiphull;
     unsigned short lbintro;
-    unsigned short unknown3;
-    unsigned short unknown4;
-    unsigned short unknown5;
-    unsigned short unknown6;
+    unsigned short lastcamp;
+    unsigned short lastreagent;
+    unsigned short lastmeditation;
+    unsigned short lastvirtue;
     unsigned char dngx, dngy;
     unsigned short orientation;
     unsigned short dnglevel;

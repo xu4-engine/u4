@@ -65,12 +65,12 @@ int saveGameWrite(const SaveGame *save, FILE *f) {
         !writeShort(save->balloonstate, f) ||
         !writeShort(save->trammelphase, f) ||
         !writeShort(save->feluccaphase, f) ||
-        !writeShort(save->unknown2, f) ||
+        !writeShort(save->shiphull, f) ||
         !writeShort(save->lbintro, f) ||
-        !writeShort(save->unknown3, f) ||
-        !writeShort(save->unknown4, f) ||
-        !writeShort(save->unknown5, f) ||
-        !writeShort(save->unknown6, f) ||
+        !writeShort(save->lastcamp, f) ||
+        !writeShort(save->lastreagent, f) ||
+        !writeShort(save->lastmeditation, f) ||
+        !writeShort(save->lastvirtue, f) ||
         !writeChar(save->dngx, f) ||
         !writeChar(save->dngy, f) ||
         !writeShort(save->orientation, f) ||
@@ -138,12 +138,12 @@ int saveGameRead(SaveGame *save, FILE *f) {
         !readShort(&(save->balloonstate), f) ||
         !readShort(&(save->trammelphase), f) ||
         !readShort(&(save->feluccaphase), f) ||
-        !readShort(&(save->unknown2), f) ||
+        !readShort(&(save->shiphull), f) ||
         !readShort(&(save->lbintro), f) ||
-        !readShort(&(save->unknown3), f) ||
-        !readShort(&(save->unknown4), f) ||
-        !readShort(&(save->unknown5), f) ||
-        !readShort(&(save->unknown6), f) ||
+        !readShort(&(save->lastcamp), f) ||
+        !readShort(&(save->lastreagent), f) ||
+        !readShort(&(save->lastmeditation), f) ||
+        !readShort(&(save->lastvirtue), f) ||
         !readChar(&(save->dngx), f) ||
         !readChar(&(save->dngy), f) ||
         !readShort(&(save->orientation), f) ||
@@ -197,12 +197,12 @@ void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avat
     save->balloonstate = 0;
     save->trammelphase = 0;
     save->feluccaphase = 0;
-    save->unknown2 = 0;
+    save->shiphull = 0;
     save->lbintro = 0;
-    save->unknown3 = 0;
-    save->unknown4 = 0;
-    save->unknown5 = 0;
-    save->unknown6 = 0;
+    save->lastcamp = 0;
+    save->lastreagent = 0;
+    save->lastmeditation = 0;
+    save->lastvirtue = 0;
     save->dngx = 0;
     save->dngy = 0;
     save->orientation = 0;
