@@ -29,6 +29,7 @@ SRCS=\
         shrine.c \
         death.c \
         combat.c \
+        camp.c \
         maps/cities.c \
         maps/castles.c \
         maps/worldmap.c \
