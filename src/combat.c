@@ -327,13 +327,6 @@ void combatFinishTurn() {
 
                 /* check to see if combat is over */
                 if (combatIsLost()) {
-                    if (!playerPartyDead(c->saveGame)) {
-                        if (combatInfo.monsterObj && monsterIsGood(combatInfo.monster))
-                            playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
-                        else
-                            playerAdjustKarma(c->saveGame, KA_FLED_EVIL);
-                    }
-
                     eventHandlerPopKeyHandler();
                     combatEnd();
                     return;
@@ -869,8 +862,15 @@ void combatEnd() {
         screenMessage("\nVictory!\n");
     }
 
-    else if (!playerPartyDead(c->saveGame))
+    else if (!playerPartyDead(c->saveGame)) {
         screenMessage("Battle is lost!\n");
+
+        /* bonus points for fleeing from good, minus points for everything else */
+        if (combatInfo.monsterObj && monsterIsGood(combatInfo.monster))
+            playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
+        else
+            playerAdjustKarma(c->saveGame, KA_FLED_EVIL);
+    }
 
     /* remove the monster */
     if (combatInfo.monsterObj)
@@ -1082,11 +1082,11 @@ void combatMoveMonsters() {
             break;
 
         case CA_SHOW:
-            combatInfo.monsters[i]->isVisible = 1;            
+            combatInfo.monsters[i]->isVisible = 1;
             break;
 
         case CA_HIDE:
-            combatInfo.monsters[i]->isVisible = 0;            
+            combatInfo.monsters[i]->isVisible = 0;
             break;
 
         case CA_FLEE:

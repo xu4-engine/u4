@@ -214,8 +214,7 @@ void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
         newKarma[VIRT_HONOR] -= 5;
         break;
     case KA_FLED_EVIL:
-        newKarma[VIRT_VALOR] -= 2;
-        newKarma[VIRT_SACRIFICE] -= 2;
+        newKarma[VIRT_VALOR] -= 2;        
         break;
     case KA_KILLED_EVIL:
         newKarma[VIRT_VALOR] += rand() % 2; /* gain one valor half the time, zero the rest */
@@ -271,7 +270,7 @@ void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
     for (v = 0; v < VIRT_MAX; v++) {
         if (saveGame->karma[v] == 0) {               /* already an avatar */
             if (newKarma[v] < 0) {
-                saveGame->karma[v] = newKarma[v] + 100;
+                saveGame->karma[v] = newKarma[v] + 99; /* first, karma is brought back to 99, then dropped */
                 if (lostEighthCallback)
                     (*lostEighthCallback)(v);
             }
