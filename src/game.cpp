@@ -2049,6 +2049,7 @@ bool cmdHandleAnyKey(int key, void *data) {
                   "r - Reagents\n"
                   "s - Summon\n"
                   "t - Transports\n"
+                  "v - Full Virtues\n"
                   "w - Change Wind\n"
                   "x - Exit Map\n"
                   "y - Y-up\n"
