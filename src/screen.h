@@ -13,6 +13,5 @@ void screenMessage(char *fmt, ...);
 void screenUpdate();
 
 extern SDL_Surface *screen;
-extern SDL_Surface *tiles, *charset;
 
 #endif
