@@ -6,9 +6,11 @@
 #define ANNOTATION_H
 
 /*
- * Annotations are temporary or permenent updates to a map.  When one
- * is created, an x,y coordinate and time to live are provided.  A
- * time to live of -1 means permenent (the life of the context).
+ * Annotations are temporary or permanent updates to a map.  When one
+ * is created, an x,y coordinate and time to live are provided.  The
+ * time to live is number of cycles the annotation will exist before
+ * being automatically removed.  A time to live of -1 means permanent
+ * (the life of the context, or until removed or cleared).
  */
 
 typedef struct _Annotation {
