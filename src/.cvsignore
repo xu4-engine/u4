@@ -3,7 +3,10 @@ dumpsavegame
 u4
 lzwenc
 lzwdec
+rleenc
+rledec
 coord
+tlkconv
 party.sav
 monsters.sav
 
