@@ -496,22 +496,33 @@ char *vendorGetBuyItemResponse(Conversation *cnv, const char *response) {
     else
         info = &armorVendorInfo;
 
-    if (response[0] == '\033') {
-        cnv->state = CONV_DONE;
-        return concat(vendorGetName(cnv->talker), vendorGetText(cnv->talker, WV_BYE), NULL);
-    }
+    switch (cnv->talker->npcType) {
 
-    for (i = 0; i < ARMS_VENDOR_INVENTORY_SIZE; i++) {
-        if (info->vendorInventory[vendorGetVendorNo(cnv->talker)][i] != 0 &&
-            (tolower(response[0]) - 'a') == info->vendorInventory[vendorGetVendorNo(cnv->talker)][i])
-            cnv->item = info->vendorInventory[vendorGetVendorNo(cnv->talker)][i];
-    }
+    case NPC_VENDOR_WEAPONS:
+    case NPC_VENDOR_ARMOR:
 
-    if (cnv->item == -1)
-        reply = strdup("");
-    else {
-        reply = strdup(vendorGetInfo(cnv->talker)->itemDescriptions[cnv->item - 1]);
-        cnv->state = CONV_BUY_QUANTITY;
+        if (response[0] == '\033') {
+            cnv->state = CONV_DONE;
+            return concat(vendorGetName(cnv->talker), vendorGetText(cnv->talker, WV_BYE), NULL);
+        }
+
+        for (i = 0; i < ARMS_VENDOR_INVENTORY_SIZE; i++) {
+            if (info->vendorInventory[vendorGetVendorNo(cnv->talker)][i] != 0 &&
+                (tolower(response[0]) - 'a') == info->vendorInventory[vendorGetVendorNo(cnv->talker)][i])
+                cnv->item = info->vendorInventory[vendorGetVendorNo(cnv->talker)][i];
+        }
+
+        if (cnv->item == -1)
+            reply = strdup("");
+        else {
+            reply = strdup(vendorGetInfo(cnv->talker)->itemDescriptions[cnv->item - 1]);
+            cnv->state = CONV_BUY_QUANTITY;
+        }
+        break;
+
+    default:
+        assert(0);              /* shouldn't happen */
+        break;
     }
 
     return reply;
@@ -789,6 +800,7 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
         if (cont) {
             reply = concat(vendorGetName(cnv->talker),
                            vendorGetText(cnv->talker, HV_CANPERFORM),
+                           vendorGetText(cnv->talker, HV_YOURNEED),
                            NULL);
             cnv->state = CONV_DONE;
         }
