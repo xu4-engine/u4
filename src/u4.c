@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     unsigned int i;
     FILE *saveGameFile, *monstersFile;
     char *scale = "2";
-    int fullScreen = 0;
+    int sound = 1, fullScreen = 0;
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-scale") == 0 && argc > i + 1) {
@@ -41,12 +41,14 @@ int main(int argc, char *argv[]) {
             verbose++;
         else if (strcmp(argv[i], "-f") == 0)
             fullScreen = 1;
+        else if (strcmp(argv[i], "-q") == 0)
+            sound = 0;
     }
 
     srand(time(NULL));
 
     screenInit(scale, fullScreen);
-    musicInit();
+    musicInit(sound);
 
     eventHandlerInit();
 
