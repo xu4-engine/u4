@@ -76,8 +76,8 @@ int getBaseVirtues(Virtue virtue) {
     case VIRT_JUSTICE: return VIRT_TRUTH | VIRT_LOVE;
     case VIRT_SACRIFICE: return VIRT_LOVE | VIRT_COURAGE;
     case VIRT_HONOR: return VIRT_COURAGE | VIRT_TRUTH;
-    case VIRT_SPIRITUALITY: return 0;
-    case VIRT_HUMILITY: return VIRT_TRUTH | VIRT_LOVE | VIRT_COURAGE;
+    case VIRT_SPIRITUALITY: return VIRT_TRUTH | VIRT_LOVE | VIRT_COURAGE;
+    case VIRT_HUMILITY: return 0;
     default: return 0;
     }
 }
