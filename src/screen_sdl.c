@@ -653,8 +653,9 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
  * Draw a tile graphic on the screen.
  */
 void screenShowTile(unsigned char tile, int focus, int x, int y) {
-    int offset, i, swaprow;
+    int offset, i, j, swaprow;
     SDL_Rect src, dest;
+    int unscaled_x, unscaled_y;
 
     if (tileGetAnimationStyle(tile) == ANIM_SCROLL)
         offset = screenCurrentCycle * scale;
@@ -670,7 +671,24 @@ void screenShowTile(unsigned char tile, int focus, int x, int y) {
     dest.w = tiles->w;
     dest.h = tiles->h / N_TILES;
 
-    SDL_BlitSurface(tiles, &src, screen, &dest);
+    unscaled_x = x * (tiles->w / scale) + BORDER_WIDTH;
+    unscaled_y = y * ((tiles->h / scale) / N_TILES) + BORDER_HEIGHT;
+
+    /* FIXME: sucks */
+    if (tileGetAnimationStyle(tile) == ANIM_CAMPFIRE) {
+        for (i = 0; i < tiles->w; i++) {
+            for (j = (tile * (tiles->h / N_TILES)); j < (tile + 1) * (tiles->h / N_TILES); j++) {
+                Uint8 r, g, b;
+                SDL_GetRGB(getPixel(tiles, i, j), tiles->format, &r, &g, &b);                
+                if ((r > 128) && (g + b + 256 < (r << 1)))
+                    putPixel(tiles, i, j, SDL_MapRGB(tiles->format, (Uint8)((rand()%64) + 192), (Uint8)((rand()%64)+48), (Uint8)(rand()%32)));
+            }
+            //putPixel(tiles, rand()%tiles->w, (tile * (tiles->h / N_TILES)) + (rand()%(tiles->h / N_TILES)), SDL_MapRGB(tiles->format, (Uint8)((rand()%128) + 128), (Uint8)(rand()%64), (Uint8)(rand()%64)));
+            //screenWriteScaledPixel(tiles, rand()%16, ((tile * (tiles->h / N_TILES)) / scale) + rand()%16, rand()%255, rand()%64, rand()%32);  
+        }            
+    }
+
+    SDL_BlitSurface(tiles, &src, screen, &dest);    
 
     if (offset != 0) {
 
@@ -718,7 +736,7 @@ void screenShowTile(unsigned char tile, int focus, int x, int y) {
             dest.w = tiles->w - (scale * 5);
             dest.h = 1;
 
-            SDL_BlitSurface(tiles, &src, screen, &dest);
+            SDL_BlitSurface(tiles, &src, screen, &dest);            
         }
     }
 
@@ -842,6 +860,7 @@ void screenInvertRect(int x, int y, int w, int h) {
 
     SDL_BlitSurface(tmp, NULL, screen, &src);
     SDL_FreeSurface(tmp);
+    SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
 /**
@@ -1516,4 +1535,3 @@ void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel) {
         break;
     }
 }
-

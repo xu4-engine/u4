@@ -3334,11 +3334,15 @@ void gameDamageParty(int minDamage, int maxDamage) {
         if (rand() % 2 == 0) {
             damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
                 rand() % ((maxDamage + 1) - minDamage) + minDamage :
-                maxDamage;
-            screenShake(1);
+                maxDamage;            
             playerApplyDamage(&c->saveGame->players[i], damage);
+            statsHighlightCharacter(i);            
         }
     }
+    
+    eventHandlerSleep(100);
+    statsUpdate();    
+    screenShake(1);
 }
 
 /**
