@@ -432,7 +432,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     unsigned char randTile;
     
     if (tileIsSailable(tile) || tileIsSwimable(tile)) {
-        randTile = ((rand() & 7) << 1) + PIRATE_TILE;
+        randTile = ((rand() & 7) << 1) + monsterById(PIRATE_ID)->tile;
         return monsterForTile(randTile);        
     }    
 
@@ -447,8 +447,8 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
 
-    randTile = ((era & rand() & rand()) << 2) + ORC_TILE;
-    return monsterForTile(randTile);    
+    randTile = ((era & rand() & rand()) << 2) + monsterById(ORC_ID)->tile;
+    return monsterForTile(randTile);
 }
 
 

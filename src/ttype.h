@@ -19,6 +19,8 @@
 #define LCB1_TILE 0xd
 #define LCB2_TILE 0xe
 #define LCB3_TILE 0xf
+#define HORSE1_TILE 0x14
+#define HORSE2_TILE 0x15
 #define BRIDGE_TILE 0x17
 #define BALLOON_TILE 0x18
 #define NORTHBRIDGE_TILE 0x19
@@ -42,6 +44,8 @@
 #define MAGICFLASH_TILE 0x4E
 #define HITFLASH_TILE 0x4F
 #define BLACK_TILE 0x7e
+#define PIRATE_TILE 0x80
+#define WHIRLPOOL_TILE 0x8c
 
 typedef enum {
     FAST,

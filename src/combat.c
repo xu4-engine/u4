@@ -225,31 +225,27 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned char transport, Objec
     return &brick_map;
 }
 
-void combatCreateMonster(int index, int canbeleader) {    
-    unsigned char mtile;
+void combatCreateMonster(int index, int canbeleader) {
+    
+    const Monster *m = combatInfo.monster;
 
-    mtile = combatInfo.monsterObj->tile;
+    /* pirate ships have rogues */
+    if (m->id == PIRATE_ID)
+        m = monsterById(ROGUE_ID);
 
-    if (tileIsPirateShip(mtile))
-        mtile = ROGUE_TILE;
-
-    /* if mtile < 0x80, the monster can't be a leader */
-    if (mtile >= 0x80) {
+    if (monsterById(m->leader) != m) {
         /* the monster can be normal, a leader or a leader's leader */
         if (canbeleader && (rand() % 32) == 0) {
             /* leader's leader */
-            mtile = monsterById(monsterForTile(mtile)->leader)->tile;
-            mtile = monsterById(monsterForTile(mtile)->leader)->tile;
+            m = monsterById(monsterById(m->leader)->leader);            
         }
         else if (canbeleader && (rand() % 8) == 0) {
             /* leader */
-            mtile = monsterById(monsterForTile(mtile)->leader)->tile;
+            m = monsterById(m->leader);            
         }
-        else
-            /* normal */
-            ;
     }
-    combatInfo.monsters[index] = mapAddMonsterObject(c->location->map, monsterForTile(mtile),
+        
+    combatInfo.monsters[index] = mapAddMonsterObject(c->location->map, m,
         (int)c->location->map->area->monster_start[index].x,
         (int)c->location->map->area->monster_start[index].y,
         c->location->z);

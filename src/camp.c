@@ -237,8 +237,8 @@ void innTimer(void *data) {
             Isaac->startx = 27;
             Isaac->starty = (rand() % 3) + 10;
             Isaac->startz = 0;
-            Isaac->tile0 = GHOST_TILE;
-            Isaac->tile1 = GHOST_TILE+1;
+            Isaac->tile0 = monsterById(GHOST_ID)->tile;
+            Isaac->tile1 = Isaac->tile0 + 1;
             Isaac->turnAwayProb = 0;
             Isaac->vendorIndex = 0; 
             

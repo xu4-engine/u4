@@ -2562,7 +2562,7 @@ void gameCheckBridgeTrolls() {
 
     screenMessage("\nBridge Trolls!\n");
 
-    combatBegin(&bridge_map, mapAddMonsterObject(c->location->map, monsterForTile(TROLL_TILE), c->location->x, c->location->y, c->location->z), 1);
+    combatBegin(&bridge_map, mapAddMonsterObject(c->location->map, monsterById(TROLL_ID), c->location->x, c->location->y, c->location->z), 1);
 }
 
 /**
@@ -2596,8 +2596,7 @@ void gameCheckHullIntegrity() {
  */
 void gameCheckSpecialMonsters(Direction dir) {
     int i;
-    Object *obj;
-    const Monster *m;
+    Object *obj;    
     static const struct {
         int x, y;
         Direction dir;
@@ -2619,9 +2618,8 @@ void gameCheckSpecialMonsters(Direction dir) {
     if (dir == DIR_EAST &&
         c->location->x == 0xdd &&
         c->location->y == 0xe0) {
-        for (i = 0; i < 8; i++) {            
-            m = monsterForTile(PIRATE_TILE);
-            obj = mapAddMonsterObject(c->location->map, m, pirateInfo[i].x, pirateInfo[i].y, c->location->z);
+        for (i = 0; i < 8; i++) {        
+            obj = mapAddMonsterObject(c->location->map, monsterById(PIRATE_ID), pirateInfo[i].x, pirateInfo[i].y, c->location->z);
             tileSetDirection(&obj->tile, pirateInfo[i].dir);            
         }
     }
@@ -2636,10 +2634,8 @@ void gameCheckSpecialMonsters(Direction dir) {
         c->location->y >= 212 &&
         c->location->y < 217 &&
         c->aura != AURA_HORN) {
-        for (i = 0; i < 8; i++) {
-            m = monsterForTile(DAEMON_TILE);
-            obj = mapAddMonsterObject(c->location->map, m, 231, c->location->y + 1, c->location->z);            
-        }
+        for (i = 0; i < 8; i++)            
+            obj = mapAddMonsterObject(c->location->map, monsterById(DAEMON_ID), 231, c->location->y + 1, c->location->z);                    
     }
 }
 
