@@ -115,4 +115,44 @@
             <line>((party.karma[class] == 0) or (party.karma[class] >= 40))</line>
         </algorithm>
     </section>
+    
+    <section name="Game">
+		<algorithm desc="Spawned creature location in dungeon" prec="exact">
+			<line>for (i = 0; i &lt; 0x20; i++) {
+				<line>test_x = random(map.width)</line>
+				<line>test_y = random(map.height)</line>
+				<line>tile = map.tileAt(test_x, test_y)</line>
+				<line>if (tile.isCreatureWalkable()) {
+					<line>x = test_x</line>
+					<line>y = test_y</line>					
+				</line>
+				<line>}</line>
+			</line>
+			<line>}</line>			
+		</algorithm>
+		
+		<algorithm desc="Spawned creature location (world map)" prec="exact">
+			<line>bool ok = false</line>
+			<line>int tries = 0</line>
+			<line>static const int MAX_TRIES = 10</line>
+			<line>while (!ok and (tries &lt; MAX_TRIES)) {
+				<line>dx = 7</line>			
+				<line>dy = random(7)</line>				
+				<line>if (random(2))<line>dx = -dx</line></line>
+				<line>if (random(2))<line>dy = -dy</line></line>
+				<line>if (random(2)) {
+					<line>temp = dx</line>
+					<line>dx = dy</line>
+					<line>dy = temp</line>
+				</line>				
+				<line>}</line>
+				<line>if (creature.canMoveOn(map.tileAt(avatar.x + dx, avatar.y + dy))) {
+					<line>spawn_x = avatar.x + dx</line>				
+					<line>spawn_y = avatar.y + dy</line>
+					<line>ok = true</line>
+				</line>
+				<line>} else tries++</line>
+			</line>
+		</algorithm>
+    </section>
 </algorithms>
