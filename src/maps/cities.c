@@ -211,7 +211,7 @@ City paws_city  = {
     "Paws", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 0, 0, 27, 31, 0, 28, 0, 0, 0, 18, 0, 0 }, /* person_types */
+    { 0, 0, 27, 31, 30, 28, 0, 0, 0, 18, 0, 0 }, /* person_types */
     "paws.tlk", /* tlk_fname */
     &paws_map /* map */
 };
@@ -263,7 +263,7 @@ City trinsic_city  = {
     "Trinsic", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 32, 29, 28, 0, 31, 0, 0, 29, 0, 0, 0, 0 }, /* person_types */
+    { 32, 29, 28, 0, 31, 0, 0, 30, 0, 0, 0, 0 }, /* person_types */
     "trinsic.tlk", /* tlk_fname */
     &trinsic_map /* map */
 };
