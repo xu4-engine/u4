@@ -659,17 +659,17 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowTile(unsigned char tile, int x, int y) {
+void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y) {
     int offset;
     SDL_Rect src, dest;
 
-    if (tileGetAnimationStyle(tile) == ANIM_SCROLL)
+    if (tileGetAnimationStyle(tileInfo->tile) == ANIM_SCROLL)
         offset = screenCurrentCycle * scale;
     else
         offset = 0;
 
     src.x = 0;
-    src.y = tile * (tiles->h / N_TILES);
+    src.y = tileInfo->tile * (tiles->h / N_TILES);
     src.w = tiles->w;
     src.h = tiles->h / N_TILES - offset;
     dest.x = x * tiles->w + (BORDER_WIDTH * scale);
@@ -683,7 +683,7 @@ void screenShowTile(unsigned char tile, int x, int y) {
         return;
 
     src.x = 0;
-    src.y = (tile + 1) * (tiles->h / N_TILES) - offset;
+    src.y = (tileInfo->tile + 1) * (tiles->h / N_TILES) - offset;
     src.w = tiles->w;
     src.h = offset;
     dest.x = x * tiles->w + (BORDER_WIDTH * scale);
@@ -697,12 +697,12 @@ void screenShowTile(unsigned char tile, int x, int y) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowGemTile(unsigned char tile, int x, int y) {
+void screenShowGemTile(const ScreenTileInfo *tileInfo, int x, int y) {
     /* FIXME: show gem tile rather than some random color rectangle */
     SDL_Rect src, dest;
 
     src.x = 0;
-    src.y = tile * (tiles->h / N_TILES);
+    src.y = tileInfo->tile * (tiles->h / N_TILES);
     src.w = GEMTILE_W * scale;
     src.h = GEMTILE_H * scale;
     dest.x = (GEMAREA_X + (x * GEMTILE_W)) * scale;
@@ -842,13 +842,15 @@ void screenShowBeastie(int beast, int frame) {
 }
 
 void screenGemUpdate() {
+    ScreenTileInfo tileInfo;
     int x, y;
 
     screenFillRect(screen, BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0);
 
     for (x = 0; x < GEMAREA_W; x++) {
         for (y = 0; y < GEMAREA_H; y++) {
-            screenShowGemTile(screenViewportTile(GEMAREA_W, GEMAREA_H, x, y), x, y);
+            tileInfo = screenViewportTile(GEMAREA_W, GEMAREA_H, x, y);
+            screenShowGemTile(&tileInfo, x, y);
         }
     }
     screenRedrawMapArea();
