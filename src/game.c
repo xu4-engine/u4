@@ -906,9 +906,11 @@ int gameBaseKeyHandler(int key, void *data) {
         itemNameBuffer[0] = '\0';
         eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
 
-        /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
-        c->statsItem = STATS_ITEMS;
-        statsUpdate();
+        if (settings->minorEnhancements) {
+            /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
+            c->statsItem = STATS_ITEMS;
+            statsUpdate();
+        }
         break;
 
     case 'v':
