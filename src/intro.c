@@ -173,8 +173,10 @@ int introInit() {
 
     /* clean up stray newlines at end of strings */
     for (i = 0; i < 15; i++) {
-        while (isspace(introGypsy[i][strlen(introGypsy[i]) - 1]))
-            introGypsy[i][strlen(introGypsy[i]) - 1] = '\0';
+        int len;
+        while ((len = strlen(introGypsy[i])) > 0 && 
+               isspace(introGypsy[i][len - 1]))
+            introGypsy[i][len - 1] = '\0';
     }
 
     if (sigData)
