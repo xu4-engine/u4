@@ -1402,6 +1402,7 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
             if (settings->spellEffectSpeed < 1)
                 settings->spellEffectSpeed = MAX_SPELL_EFFECT_SPEED;
         }
+        break;
     case 7:
         mode = INTRO_CONFIG_MINOR_OPTIONS;
         minorOptions = menuReset(minorOptions);
