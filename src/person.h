@@ -82,7 +82,7 @@ typedef struct _Person {
     PersonQuestionType questionType;
     int turnAwayProb;
     unsigned char tile0, tile1;
-    unsigned int startx, starty;
+    unsigned int startx, starty, startz;
     ObjectMovementBehavior movement_behavior;
     PersonNpcType npcType;
     int vendorIndex;
