@@ -19,7 +19,12 @@ UIFLAGS=-F$(HOME)/Library/Frameworks \
 	-I$(HOME)/Library/Frameworks/SDL_mixer.framework/Headers
 
 FEATURES=-DHAVE_BACKTRACE=0 -DHAVE_VARIADIC_MACROS=1
+
+# Debugging
 DEBUGCFLAGS=-ggdb
+# Optimising
+#DEBUGCFLAGS=-O2 -faltivec -mdynamic-no-pic
+
 CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(XML2FLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
 LIBS=$(UILIBS)
 INSTALL=install
