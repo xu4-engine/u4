@@ -13,6 +13,7 @@
 #include "debug.h"
 #include "game.h"
 #include "location.h"
+#include "mapmgr.h"
 #include "names.h"
 #include "screen.h" /* FIXME: remove dependency on this */
 #include "tileset.h"
@@ -540,6 +541,8 @@ void PartyMember::wakeUp() {
  * Party class implementation
  */ 
 Party::Party(SaveGame *s) : saveGame(s), torchduration(0) {
+    if (MAP_DECEIT <= saveGame->location && saveGame->location <= MAP_ABYSS)
+        torchduration = saveGame->torchduration;
     for (int i = 0; i < saveGame->members; i++) {
         // add the members to the party
         members.push_back(new PartyMember(this, &saveGame->players[i]));
