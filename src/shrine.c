@@ -90,14 +90,13 @@ void shrineMeditationCycle() {
 
     screenDisableCursor();
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&shrineTimer);
+    eventHandlerAddTimerCallback(&shrineTimer, 4);
 }
 
 void shrineTimer() {
     ReadBufferActionInfo *info;
 
-    reps++;
-    if (reps > (16 * 4)) {
+    if (reps++ >= 16) {
         eventHandlerRemoveTimerCallback(&shrineTimer);
         eventHandlerPopKeyHandler();
 
@@ -113,7 +112,7 @@ void shrineTimer() {
         eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
         screenRedrawScreen();
     } 
-    else if ((reps % 4) == 0) {
+    else {
         screenMessage(".");
         screenDisableCursor();
         screenRedrawScreen();
