@@ -7,7 +7,6 @@
 
 #include <string>
 #include <map>
-#include "u4file.h"
 #include "tile.h"
 
 typedef enum {
@@ -29,7 +28,6 @@ typedef struct _TileRule {
 
 typedef struct _Tileset {    
     TilesetType type;
-    CompressionType compType;    
     int numTiles;
     Tile *tiles;
     int totalFrames;

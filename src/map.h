@@ -15,7 +15,6 @@
 #include "music.h"
 #include "object.h"
 #include "types.h"
-#include "u4file.h"
 
 using std::string;
 
