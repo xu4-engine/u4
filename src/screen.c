@@ -12,7 +12,6 @@
 #include "screen.h"
 #include "map.h"
 #include "person.h"
-#include "event.h"
 #include "context.h"
 #include "savegame.h"
 
