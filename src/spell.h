@@ -41,7 +41,8 @@ typedef struct _Spell {
 
 Mixture *mixtureNew();
 void mixtureDelete(Mixture *mix);
-void mixtureAddReagent(Mixture *mix, Reagent reagent);
+int mixtureAddReagent(Mixture *mix, Reagent reagent);
+void mixtureRevert(Mixture *mix);
 const char *spellGetName(unsigned int spell);
 int spellMix(unsigned int spell, const Mixture *mix);
 SpellParam spellGetParamType(unsigned int spell);

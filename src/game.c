@@ -45,7 +45,7 @@ int castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
 int jimmyAtCoord(int x, int y);
 int mixReagentsForSpell(int spell, void *data);
-int mixReagentsForSpell2(int spell, void *data);
+int mixReagentsForSpell2(char choice);
 int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y);
@@ -438,11 +438,11 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'm':
-        screenMessage("Mix reagents!\n");
+        screenMessage("Mix reagents\n");
         alphaInfo = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
         alphaInfo->lastValidLetter = 'z';
         alphaInfo->handleAlpha = mixReagentsForSpell;
-        alphaInfo->prompt = "Spell: ";
+        alphaInfo->prompt = "For Spell: ";
         alphaInfo->data = NULL;
 
         screenMessage("%s", alphaInfo->prompt);
@@ -1047,40 +1047,84 @@ int mixSpell;
  * Mixes reagents for a spell.  Prompts for reagents.
  */
 int mixReagentsForSpell(int spell, void *data) {
-    AlphaActionInfo *info;
+    GetChoiceActionInfo *info;
 
     mixSpell = spell;
     mix = mixtureNew();
 
-    screenMessage("%s!\n", spellGetName(spell));
+    screenMessage("%s\nReagent: ", spellGetName(spell));
 
     c->statsItem = STATS_REAGENTS;
     statsUpdate();
 
-    info = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
-    info->lastValidLetter = REAG_MAX + 'a' - 1;
-    info->handleAlpha = mixReagentsForSpell2;
-    info->prompt = "Reagent: ";
-    info->data = (void *) spell;
-
-    eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, info);
+    info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+    info->choices = "abcdefgh\n\r \033";
+    info->handleChoice = &mixReagentsForSpell2;
+    eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
 
     return 0;
 }
 
-int mixReagentsForSpell2(int spell, void *data) {
-    AlphaActionInfo *info;
+int mixReagentsForSpell2(char choice) {
+    GetChoiceActionInfo *info;
+    AlphaActionInfo *alphaInfo;
 
-    info = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
-    info->lastValidLetter = REAG_MAX + 'a' - 1;
-    info->handleAlpha = mixReagentsForSpell2;
-    info->prompt = "Reagent: ";
-    info->data = (void *) spell;
+    eventHandlerPopKeyHandler();
 
-    eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, info);
+    if (choice == '\n' || choice == '\r' || choice == ' ') {
+        screenMessage("\n\nYou mix the Reagents, and...\n");
 
-    gameFinishTurn();
-    return 0;
+        if (spellMix(mixSpell, mix))
+            screenMessage("Success!\n\n");
+        else
+            screenMessage("It Fizzles!\n\n");
+
+        mixtureDelete(mix);
+
+        screenMessage("Mix reagents\n");
+        alphaInfo = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
+        alphaInfo->lastValidLetter = 'z';
+        alphaInfo->handleAlpha = mixReagentsForSpell;
+        alphaInfo->prompt = "For Spell: ";
+        alphaInfo->data = NULL;
+
+        screenMessage("%s", alphaInfo->prompt);
+        eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
+
+        c->statsItem = STATS_MIXTURES;
+        statsUpdate();
+
+        return 1;
+    } 
+
+    else if (choice == '\033') {
+
+        mixtureRevert(mix);
+        mixtureDelete(mix);
+
+        screenMessage("\n\n");
+        gameFinishTurn();
+        return 1;
+    } 
+
+    else {
+        screenMessage("%c\n", toupper(choice));
+
+        if (mixtureAddReagent(mix, choice - 'a'))
+            statsUpdate();
+        else
+            screenMessage("None Left!\n");
+
+        screenMessage("Reagent: ");
+
+        info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+        info->choices = "abcdefgh\n\r \033";
+        info->handleChoice = &mixReagentsForSpell2;
+        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
+
+
+        return 1;
+    }
 }
 
 /* FIXME: must be a better way.. */

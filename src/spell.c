@@ -104,10 +104,22 @@ void mixtureDelete(Mixture *mix) {
     free(mix);
 }
 
-void mixtureAddReagent(Mixture *mix, Reagent reagent) {
+int mixtureAddReagent(Mixture *mix, Reagent reagent) {
     assert(reagent < REAG_MAX);
+    if (c->saveGame->reagents[reagent] < 1)
+        return 0;
     c->saveGame->reagents[reagent]--;
     mix->reagents[reagent]++;
+    return 1;
+}
+
+void mixtureRevert(Mixture *mix) {
+    int reg;
+
+    for (reg = 0; reg < REAG_MAX; reg++) {
+        c->saveGame->reagents[reg] += mix->reagents[reg];
+        mix->reagents[reg] = 0;
+    }
 }
 
 const char *spellGetName(unsigned int spell) {
