@@ -69,7 +69,7 @@ int shrineHandleVirtue(const char *message) {
 
     eventHandlerPopKeyHandler();
 
-    screenMessage("\nFor how many Cycles (0-3)? ");
+    screenMessage("\n\nFor how many Cycles (0-3)? ");
 
     info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
     info->choices = "0123\033";
@@ -94,8 +94,14 @@ int shrineHandleCycles(char choice) {
         screenMessage("Thou art unable to focus thy thoughts on this subject!\n");
         shrineEject();
     } else {
-        screenMessage("Begin Meditation\n");
-        shrineMeditationCycle();
+        if (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff) != c->saveGame->lastmeditation) {
+            screenMessage("Begin Meditation\n");
+            shrineMeditationCycle();
+        }
+        else { 
+            screenMessage("Thy mind is still weary from thy last Meditation!\n");
+            shrineEject();
+        }
     }
 
     return 1;
@@ -103,6 +109,8 @@ int shrineHandleCycles(char choice) {
 
 void shrineMeditationCycle() {
     reps = 0;
+
+    c->saveGame->lastmeditation = (c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff;
 
     screenDisableCursor();
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
@@ -162,7 +170,7 @@ int shrineHandleMantra(const char *message) {
             screenMessage("\nThou hast achieved partial Avatarhood in the Virtue of %s\n\n",
                           getVirtueName(shrine->virtue));
         else
-            screenMessage("\nThy thoughts are pure.  "
+            screenMessage("\nThy thoughts are pure. "
                           "Thou art granted a vision!\n");
         eventHandlerPushKeyHandler(&shrineVision);
     }
@@ -177,7 +185,7 @@ int shrineVision(int key, void *data) {
         screenDrawBackgroundInMapArea(BKGD_SHRINE_HON + shrine->virtue);
     }
     else {
-        screenMessage(shrineAdvice[shrine->virtue * 3 + completedCycles - 1]);
+        screenMessage("\n%s", shrineAdvice[shrine->virtue * 3 + completedCycles - 1]);
     }
     eventHandlerPopKeyHandler();
     eventHandlerPushKeyHandler(&shrineEjectOnKey);
