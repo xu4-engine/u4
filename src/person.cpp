@@ -183,7 +183,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
          */ 
         if (c->conversation->state == Conversation::INTRO) {
             // unload the previous script if it wasn't already unloaded
-            if (c->conversation->script->getState() != SCRIPT_STATE_UNLOADED)
+            if (c->conversation->script->getState() != Script::STATE_UNLOADED)
                 c->conversation->script->unload();
             c->conversation->script->load("vendorScript.xml", ids[cnv->getTalker()->npcType - NPC_VENDOR_WEAPONS], "vendor", c->location->map->getName());
             c->conversation->script->run("intro");
@@ -194,23 +194,23 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
          */
         else {
             switch(c->conversation->script->getState()) {
-            case SCRIPT_STATE_CHOICE:
+            case Script::STATE_CHOICE:
                 if (isspace(inquiry[0]))
                     c->conversation->script->setChoice("nothing");
                 else c->conversation->script->setChoice(tolower(inquiry[0]));
                 break;
 
-            case SCRIPT_STATE_NORMAL:
-            case SCRIPT_STATE_WAIT_FOR_KEYPRESS:
+            case Script::STATE_NORMAL:
+            case Script::STATE_WAIT_FOR_KEYPRESS:
                 break;
 
-            case SCRIPT_STATE_INPUT_PLAYER:
+            case Script::STATE_INPUT_PLAYER:
                 if (isspace(inquiry[0]) || inquiry[0] == '0')
                     c->conversation->script->setChoice("nothing");
                 c->conversation->script->setPlayer((int)strtol(inquiry, NULL, 10));
                 break;
 
-            case SCRIPT_STATE_INPUT_TEXT:
+            case Script::STATE_INPUT_TEXT:
                 {
                     string val = inquiry;
                     string::iterator current;                    
@@ -225,7 +225,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                 }
                 break;
 
-            case SCRIPT_STATE_INPUT_PRICE:
+            case Script::STATE_INPUT_PRICE:
                 {
                     c->conversation->script->setChoice(inquiry);
                     c->conversation->script->setPrice((int)strtol(inquiry, NULL, 10));
@@ -233,7 +233,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                         c->conversation->script->setChoice("nothing");
                 } break;
 
-            case SCRIPT_STATE_INPUT_QUANTITY:            
+            case Script::STATE_INPUT_QUANTITY:            
                 c->conversation->script->setChoice(inquiry);
                 c->conversation->script->setQuantity((int)strtol(inquiry, NULL, 10));
                 if (c->conversation->script->getQuantity() == 0)
@@ -252,13 +252,13 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
          * Set our conversation to gather the correct input for the script
          */
         switch(c->conversation->script->getState()) {
-        case SCRIPT_STATE_CHOICE:               c->conversation->state = Conversation::VENDORQUESTION; break;
-        case SCRIPT_STATE_WAIT_FOR_KEYPRESS:    c->conversation->state = Conversation::CONFIRMATION; break;
-        case SCRIPT_STATE_INPUT_QUANTITY:       c->conversation->state = Conversation::BUY_QUANTITY; break;
-        case SCRIPT_STATE_INPUT_PRICE:          c->conversation->state = Conversation::BUY_PRICE; break;
-        case SCRIPT_STATE_INPUT_TEXT:           c->conversation->state = Conversation::TOPIC; break;
-        case SCRIPT_STATE_INPUT_PLAYER:         c->conversation->state = Conversation::PLAYER; break;
-        case SCRIPT_STATE_DONE:
+        case Script::STATE_CHOICE:               c->conversation->state = Conversation::VENDORQUESTION; break;
+        case Script::STATE_WAIT_FOR_KEYPRESS:    c->conversation->state = Conversation::CONFIRMATION; break;
+        case Script::STATE_INPUT_QUANTITY:       c->conversation->state = Conversation::BUY_QUANTITY; break;
+        case Script::STATE_INPUT_PRICE:          c->conversation->state = Conversation::BUY_PRICE; break;
+        case Script::STATE_INPUT_TEXT:           c->conversation->state = Conversation::TOPIC; break;
+        case Script::STATE_INPUT_PLAYER:         c->conversation->state = Conversation::PLAYER; break;
+        case Script::STATE_DONE:
             // Unload the script
             c->conversation->script->unload();
             c->conversation->state = Conversation::DONE;

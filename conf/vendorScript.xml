@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
-<scripts xml:space="preserve" debug="true">
+<scripts xml:space="preserve" debug="true" id_prop="choice">
     <!--
     /**
      * Weapons
      */ 
     -->
-    <script id="Weapons">
+    <script id="Weapons" item_prop="weapon">
         <intro>
             <ztats screen="weapons"/>
             <music type="shopping"/>
@@ -41,21 +41,21 @@
          * how much gold to give you when you sell it
          */ 
          -->
-        <item choice="b" name="Staff" price="20"/>
-        <item choice="c" name="Dagger" price="2"/>
-        <item choice="d" name="Sling" price="25"/>
-        <item choice="e" name="Mace" price="100"/>
-        <item choice="f" name="Axe" price="225"/>
-        <item choice="g" name="Sword" price="300"/>
-        <item choice="h" name="Bow" price="250"/>
-        <item choice="i" name="Crossbow" price="600"/>
-        <item choice="j" name="Flaming Oil" price="5"/>
-        <item choice="k" name="Halberd" price="350"/>
-        <item choice="l" name="Magic Axe" price="1500"/>
-        <item choice="m" name="Magic Sword" price="2500"/>
-        <item choice="n" name="Magic Bow" price="2000"/>
-        <item choice="o" name="Magic Wand" price="5000"/>
-        <item choice="p" name="Mystic Sword" price="7000"/>
+        <weapon choice="b" name="Staff" price="20"/>
+        <weapon choice="c" name="Dagger" price="2"/>
+        <weapon choice="d" name="Sling" price="25"/>
+        <weapon choice="e" name="Mace" price="100"/>
+        <weapon choice="f" name="Axe" price="225"/>
+        <weapon choice="g" name="Sword" price="300"/>
+        <weapon choice="h" name="Bow" price="250"/>
+        <weapon choice="i" name="Crossbow" price="600"/>
+        <weapon choice="j" name="Flaming Oil" price="5"/>
+        <weapon choice="k" name="Halberd" price="350"/>
+        <weapon choice="l" name="Magic Axe" price="1500"/>
+        <weapon choice="m" name="Magic Sword" price="2500"/>
+        <weapon choice="n" name="Magic Bow" price="2000"/>
+        <weapon choice="o" name="Magic Wand" price="5000"/>
+        <weapon choice="p" name="Mystic Sword" price="7000"/>
 
         <buy_sell default="true" redirect="bye"/>
         
@@ -85,7 +85,7 @@
 
         <!-- check to see if the player has enough gold first -->
         <check_money choice="nothing" redirect="bye"/>
-        <check_money item="item">
+        <check_money ctx="weapon">
             <if test="{totalgold}&lt;{price}">
                 You have not the funds for even one!<redirect target="anything_else_buy"/>
             </if>
@@ -110,75 +110,75 @@
 
         <!-- description of each weapon -->
 
-        <tell_about item="item" choice="b">
+        <tell_about ctx="weapon" choice="b">
 
             We are the only staff makers in Britannia, yet sell them for only {price}gp.            
         </tell_about>
         
-        <tell_about item="item" choice="c">
+        <tell_about ctx="weapon" choice="c">
 
             We sell the most deadly of daggers, a bargain at only {price}gp each.            
         </tell_about>
 
-        <tell_about item="item" choice="d">
+        <tell_about ctx="weapon" choice="d">
 
             Our slings are made from only the finest guy and leather,
             'Tis yours for {price}gp.            
         </tell_about>
 
-        <tell_about item="item" choice="e">
+        <tell_about ctx="weapon" choice="e">
 
             These maces have a hardened shaft and a 5lb head fairly priced at {price}gp.            
         </tell_about>
 
-        <tell_about item="item" choice="f">
+        <tell_about ctx="weapon" choice="f">
 
             Notice the fine workmanship on this axe, you'll agree {price}gp is a good price.
         </tell_about>
 
-        <tell_about item="item" choice="g">
+        <tell_about ctx="weapon" choice="g">
 
             The fine work on these swords will be the dread of thy foes, for {price}gp.
         </tell_about>
 
-        <tell_about item="item" choice="h">
+        <tell_about ctx="weapon" choice="h">
 
             Our bows are made of finest yew, and the arrows willow, a steal at {price}gp.
         </tell_about>
 
-        <tell_about item="item" choice="i">
+        <tell_about ctx="weapon" choice="i">
 
             Crossbows made by Iolo the Bard are the finest in the world, your for {price}gp.
         </tell_about>
 
-        <tell_about item="item" choice="j">
+        <tell_about ctx="weapon" choice="j">
                 
             Flasks of oil make great weapons and creates a wall of flame too.
             {price}gp each.
         </tell_about>
 
-        <tell_about item="item" choice="k">
+        <tell_about ctx="weapon" choice="k">
 
             A Halberd is a mighty weapon to attack over obstacles; a must and only {price}gp.
         </tell_about>
 
-        <tell_about item="item" choice="l">
+        <tell_about ctx="weapon" choice="l">
                 
             This magical axe can be thrown at thy enemy and will then return all for {price}gp.
         </tell_about>
 
-        <tell_about item="item" choice="m">
+        <tell_about ctx="weapon" choice="m">
                 
             Magical swords such as these are rare indeed
             I will part with one for {price}gp.            
         </tell_about>
 
-        <tell_about item="item" choice="n">
+        <tell_about ctx="weapon" choice="n">
 
             A magical bow will keep thy enemies far away or dead! A must for {price}gp!
         </tell_about>
 
-        <tell_about item="item" choice="o">
+        <tell_about ctx="weapon" choice="o">
 
             This magic wand casts mighty blue bolts to strike down thy foes, {price}gp.
         </tell_about>
@@ -191,7 +191,7 @@
 
         <!-- buy the weapon -->
         <buy choice="nothing" redirect="toobad"/>        
-        <buy item="item" use_saved_choice="true">
+        <buy ctx="weapon" use_saved_choice="true">
             <if test="{totalgold}&lt;{math({current_quantity}*{price})}" redirect="not_enough_money"/>
             <pay cantpay="check_money"/>
             <add type="weapon" subtype="{saved_choice}"/>
@@ -226,7 +226,7 @@
         </you_sell>
 
         <sell_weapon choice="nothing" redirect="bye"/>
-        <sell_weapon item="item">
+        <sell_weapon ctx="weapon">
             <if test="{quantity:weapons:{name}}==0" redirect="you_sell"/>
             <save_choice/>
             <set_price value="{math({price}/2)}"/>
@@ -236,13 +236,13 @@
         </sell_weapon>
 
         <!-- sell just one item -->
-        <sell_one item="item">
+        <sell_one ctx="weapon">
             <set_quantity value="1"/>
             I will give you {current_price}gp for that {name}.
             Deal? <choice options="yn" target="sell"/>
         </sell_one>
 
-        <sell_many item="item">
+        <sell_many ctx="weapon">
         
             How many {name}s
             would you wish
@@ -250,7 +250,7 @@
         </sell_many>
         
         <sell_many_offer choice="nothing" redirect="bye"/>
-        <sell_many_offer item="item" use_saved_choice="true">
+        <sell_many_offer ctx="weapon" use_saved_choice="true">
             <if test="{current_quantity}&gt;{quantity:weapons:{name}}" redirect="dont_have_that_many"/>
             I will give you {math({current_price}*{current_quantity})}gp for them.
             Deal? <choice options="yn" target="sell"/>
@@ -266,7 +266,7 @@
             Hmmph. What else
             would <redirect target="you_sell"/>
         </sell>
-        <sell choice="y" item="item" use_saved_choice="true">
+        <sell choice="y" ctx="weapon" use_saved_choice="true">
             <lose type="weapon" subtype="{saved_choice}"/>
             <add type="gold"/>
             
@@ -275,45 +275,45 @@
         </sell>
 
         <vendor id="Britain" name="Windsor Weaponry" owner="Winston">
-            <item choice="b" name="Staff" price="20"/>
-            <item choice="c" name="Dagger" price="2"/>
-            <item choice="d" name="Sling" price="25"/>
-            <item choice="g" name="Sword" price="300"/>
+            <weapon choice="b" name="Staff" price="20"/>
+            <weapon choice="c" name="Dagger" price="2"/>
+            <weapon choice="d" name="Sling" price="25"/>
+            <weapon choice="g" name="Sword" price="300"/>
         </vendor>
 
         <vendor id="Jhelom" name="Willard's Weaponry" owner="Willard">
-            <item choice="f" name="Axe" price="225"/>
-            <item choice="g" name="Sword" price="300"/>
-            <item choice="i" name="Crossbow" price="600"/>
-            <item choice="k" name="Halberd" price="350"/>
+            <weapon choice="f" name="Axe" price="225"/>
+            <weapon choice="g" name="Sword" price="300"/>
+            <weapon choice="i" name="Crossbow" price="600"/>
+            <weapon choice="k" name="Halberd" price="350"/>
         </vendor>
 
         <vendor id="Minoc" name="The Iron Works" owner="Peter">
-            <item choice="e" name="Mace" price="100"/>
-            <item choice="k" name="Halberd" price="300"/>
-            <item choice="l" name="Magic Axe" price="1500"/>
-            <item choice="m" name="Magic Sword" price="2500"/>
+            <weapon choice="e" name="Mace" price="100"/>
+            <weapon choice="k" name="Halberd" price="300"/>
+            <weapon choice="l" name="Magic Axe" price="1500"/>
+            <weapon choice="m" name="Magic Sword" price="2500"/>
         </vendor>
 
         <vendor id="Trinsic" name="Dueling Weapons" owner="Jumar">
-            <item choice="e" name="Mace" price="100"/>
-            <item choice="f" name="Axe" price="225"/>
-            <item choice="g" name="Sword" price="300"/>
-            <item choice="h" name="Bow" price="250"/>
+            <weapon choice="e" name="Mace" price="100"/>
+            <weapon choice="f" name="Axe" price="225"/>
+            <weapon choice="g" name="Sword" price="300"/>
+            <weapon choice="h" name="Bow" price="250"/>
         </vendor>
 
         <vendor id="Buccaneers Den" name="Hook's Arms" owner="Hook">
-            <item choice="i" name="Crossbow" price="600"/>
-            <item choice="j" name="Flaming Oil" price="5"/>
-            <item choice="n" name="Magic Bow" price="2000"/>
-            <item choice="o" name="Magic Wand" price="5000"/>
+            <weapon choice="i" name="Crossbow" price="600"/>
+            <weapon choice="j" name="Flaming Oil" price="5"/>
+            <weapon choice="n" name="Magic Bow" price="2000"/>
+            <weapon choice="o" name="Magic Wand" price="5000"/>
         </vendor>
 
         <vendor id="Vesper" name="Village Arms" owner="Wendy">
-            <item choice="c" name="Dagger" price="2"/>
-            <item choice="d" name="Sling" price="25"/>
-            <item choice="h" name="Bow" price="250"/>
-            <item choice="j" name="Flaming Oil" price="5"/>            
+            <weapon choice="c" name="Dagger" price="2"/>
+            <weapon choice="d" name="Sling" price="25"/>
+            <weapon choice="h" name="Bow" price="250"/>
+            <weapon choice="j" name="Flaming Oil" price="5"/>            
         </vendor>
 
     </script>
@@ -396,7 +396,7 @@
 
         <!-- check to see if the player has enough gold first -->
         <check_money choice="nothing" redirect="bye"/>
-        <check_money item="item">
+        <check_money ctx="item">
             <if test="{totalgold}&lt;{price}">
                 You have not the funds for even one!<redirect target="anything_else_buy"/>
             </if>            
@@ -421,33 +421,33 @@
 
         <!-- description of each armor -->
 
-        <tell_about item="item" choice="b">
+        <tell_about ctx="item" choice="b">
             
             Cloth Armour is good for a tight budget, Fairly priced at {price}gp.
         </tell_about>
 
-        <tell_about item="item" choice="c">
+        <tell_about ctx="item" choice="c">
 
             Leather Armour is both supple and strong, and costs a mere {price}gp.
             A Bargain!
         </tell_about>
 
-        <tell_about item="item" choice="d">
+        <tell_about ctx="item" choice="d">
 
             Chail Mail is the armour used by more warriors than all others. Ours costs {price}gp.
         </tell_about>
 
-        <tell_about item="item" choice="e">
+        <tell_about ctx="item" choice="e">
 
             Full Plate armour is the ultimate in non-magical armour. Get yours for {price}gp.
         </tell_about>
 
-        <tell_about item="item" choice="f">
+        <tell_about ctx="item" choice="f">
 
             Magic Armour is rare and expensive. This chain sells for {price}gp.
         </tell_about>
 
-        <tell_about item="item" choice="g">
+        <tell_about ctx="item" choice="g">
 
             Magic Plate Armour is the best known protection. Only we have it. Cost: {price}gp.
         </tell_about>
@@ -460,7 +460,7 @@
 
         <!-- buy the armor -->
         <buy choice="nothing" redirect="toobad"/>
-        <buy item="item" use_saved_choice="true">
+        <buy ctx="item" use_saved_choice="true">
             <if test="{totalgold}&lt;{math({current_quantity}*{price})}" redirect="not_enough_money"/>
             <pay cantpay="check_money"/>
             <add type="armor" subtype="{saved_choice}"/>
@@ -494,7 +494,7 @@
         </you_sell>
 
         <sell_armor choice="nothing" redirect="bye"/>
-        <sell_armor item="item">
+        <sell_armor ctx="item">
             <if test="{quantity:armor:{name}}==0">
                 Come on, you
                 don't own any.<redirect target="you_sell"/>
@@ -507,13 +507,13 @@
         </sell_armor>
 
         <!-- sell just one item -->
-        <sell_one item="item">
+        <sell_one ctx="item">
             <set_quantity value="1"/>
             I will give you {current_price}gp for that {name}.
             Deal? <choice options="yn" target="sell"/>
         </sell_one>
 
-        <sell_many item="item">
+        <sell_many ctx="item">
 
             How many {name}s
             would you wish
@@ -521,7 +521,7 @@
         </sell_many>
 
         <sell_many_offer choice="nothing" redirect="bye"/>
-        <sell_many_offer item="item" use_saved_choice="true">
+        <sell_many_offer ctx="item" use_saved_choice="true">
             <if test="{current_quantity}&gt;{quantity:armor:{name}}" redirect="dont_have_that_many"/>            
             I will give you {math({current_price}*{current_quantity})}gp for them.
             Deal? <choice options="yn" target="sell"/>
@@ -537,7 +537,7 @@
             
             Harumph. What else would <redirect target="you_sell"/>
         </sell>
-        <sell choice="y" item="item" use_saved_choice="true">
+        <sell choice="y" ctx="item" use_saved_choice="true">
             <lose type="armor" subtype="{saved_choice}"/>
             <add type="gold"/>
     
@@ -799,7 +799,7 @@
         </sorry>
 
         <foggy choice="nothing" redirect="sorry"/>
-        <foggy item="topic" use_saved_choice="true">
+        <foggy ctx="topic" use_saved_choice="true">
             <pay price="{current_price}" cantpay="cantpay_topic"/>
             <if test="{price}&lt;={current_price}" choice="{saved_choice}" redirect="reply"/>
             
@@ -893,7 +893,7 @@
         <show_item>{toupper({choice})}-{name}</show_item>
 
         <how_many choice="nothing" redirect="bye"/>
-        <how_many item="item">
+        <how_many ctx="item">
             <save_choice/>
 
             Very well, we sell {name} for {price}gp. How many would you
@@ -911,14 +911,14 @@
         </anything_else>
 
         <you_pay choice="nothing" redirect="i_see_then"/>
-        <you_pay item="item" use_saved_choice="true">
+        <you_pay ctx="item" use_saved_choice="true">
             
             Very good, that will be {math({price}*{current_quantity})}gp.
             You pay: <input type="price" target="buy"/>
         </you_pay>
 
         <buy choice="nothing" redirect="i_see_then"/>
-        <buy item="item" use_saved_choice="true">
+        <buy ctx="item" use_saved_choice="true">
             <pay price="{current_price}" quant="1" cantpay="cantpay"/>
             <add type="reagent" subtype="{type}"/>
 
@@ -963,7 +963,7 @@
             <item choice="f" name="Black Pearl" type="pearl" price="7"/>
         </vendor>
 
-        <vendor id="Buccanneers Den" name="Magic Mentar" owner="Shannon">
+        <vendor id="Buccaneers Den" name="Magic Mentar" owner="Shannon">
             <item choice="a" name="Sulfurous Ash" type="ash" price="6"/>
             <item choice="b" name="Ginseng" type="ginseng" price="7"/>
             <item choice="c" name="Garlic" type="garlic" price="9"/>
@@ -1049,7 +1049,7 @@
             No one? <redirect target="more_help"/>
         </will_pay>
 
-        <will_pay item="item" use_saved_choice="true">
+        <will_pay ctx="item" use_saved_choice="true">
             <if test="!{party:member{current_player}:needs:{type}}">                
                 <include script="dont_need" choice="{saved_choice}"/>
                 <redirect target="more_help"/>
@@ -1064,7 +1064,7 @@
         </will_pay>
 
         <heal default="true" redirect="more_help"/>
-        <heal choice="y" item="item" use_saved_choice="true">
+        <heal choice="y" ctx="item" use_saved_choice="true">
             <pay/>
             <cast_spell/>
             <heal type="{type}" player="{current_player}"/>
@@ -1183,7 +1183,7 @@
             You won't find a better deal in this towne!            
             <end/>
         </no_better_deal>
-        <stay item="room">
+        <stay ctx="room">
             <pay cantpay="cantpay"/>
             <cursor enable="false"/>
             
@@ -1324,19 +1324,19 @@
         <show_item>{toupper({choice})}-{name}</show_item>
 
         <tell_about default="true" redirect="bye"/>
-        <tell_about item="item" choice="a">
+        <tell_about ctx="item" choice="a">
             
             I can give ya {quant} long lasting Torches for a mere {price}gp.<redirect target="will_buy"/>
         </tell_about>
-        <tell_about item="item" choice="b">
+        <tell_about ctx="item" choice="b">
             
             I've got magical mapping Gems, {quant} for only {price}gp.<redirect target="will_buy"/>
         </tell_about>
-        <tell_about item="item" choice="c">
+        <tell_about ctx="item" choice="c">
             
             Magical Keys, 1 use each, a fair price at {price}gp for {quant}.<redirect target="will_buy"/>
         </tell_about>
-        <tell_about item="item" choice="d">
+        <tell_about ctx="item" choice="d">
             
             So...Ya want a Sextant...Well I gots one which I might part with fer {price} gold!<redirect target="will_buy"/>
         </tell_about>
@@ -1355,8 +1355,8 @@
             <redirect target="buy" choice="{saved_choice}"/>
         </buy_item>
         
-        <buy item="item">
-            <pay item="item" cantpay="cantpay"/>
+        <buy ctx="item">
+            <pay ctx="item" cantpay="cantpay"/>
             
             Fine... fine...
             <add type="{type}"/>
