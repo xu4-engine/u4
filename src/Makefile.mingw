@@ -27,8 +27,17 @@ include Makefile.common
 xu4ico.o: xu4.ico xu4.rc
 	windres xu4.rc xu4ico.o
 
-install: all
+install: u4.exe
+	mkdir -p $(U4PATH)
 	strip $(MAIN) -o $(U4PATH)/$(MAIN)
+	cp ../mid/*.mid $(U4PATH)
+	cp ../conf/*.xml $(U4PATH)
+	cp SDL/lib/SDL.dll $(U4PATH)
+	cp SDL/lib/SDL_mixer.dll $(U4PATH)
+	cp /mingw/bin/libxml2.dll $(U4PATH)
+
+tools: utils
+	mkdir -p $(U4PATH)
 	mkdir -p $(U4PATH)/tools
 	strip dumpsavegame.exe -o $(U4PATH)/tools/dumpsavegame.exe
 	strip lzwenc.exe -o $(U4PATH)/tools/lzwenc.exe
@@ -36,14 +45,13 @@ install: all
 	strip rleenc.exe -o $(U4PATH)/tools/rleenc.exe
 	strip rledec.exe -o $(U4PATH)/tools/rledec.exe
 	strip tlkconv.exe -o $(U4PATH)/tools/tlkconv.exe
-	cp ../README $(U4PATH)/readme.txt
-	cp ../mid/*.mid $(U4PATH)
-	cp ../conf/*.xml $(U4PATH)
+	cp /mingw/bin/libxml2.dll $(U4PATH)/tools
 
-dist:  install
+dist:  install tools
+	cp ../AUTHORS $(U4PATH)/AUTHORS.txt
+	cp ../COPYING $(U4PATH)/COPYING.txt
+	cp ../README $(U4PATH)/README.txt
+	cp ../doc/tools.txt $(U4PATH)/tools/tools.txt
 	cp SDL/README-SDL.txt $(U4PATH)
-	cp SDL/lib/SDL.dll $(U4PATH)
-	cp SDL/lib/SDL_mixer.dll $(U4PATH)
-	cp /mingw/bin/libxml2.dll $(U4PATH)
 	cp ../doc/xu4wincvs.txt $(U4PATH)
-	u2d $(U4PATH)/readme.txt
+	u2d $(U4PATH)/*.txt $(U4PATH)/tools/*.txt

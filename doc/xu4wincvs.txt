@@ -47,7 +47,10 @@ Things you only have to do once
 13. Compile xu4
    make -f makefile.mingw install
 
-14. Exit MSYS and enjoy xu4!
+14. Compile xu4 tools (Optional)
+   make -f makefile.mingw tools
+
+15. Exit MSYS and enjoy xu4!
 
 ------------------------------------------------------------
 Things you have to do every time the xu4 source code changes
@@ -64,8 +67,11 @@ Things you have to do every time the xu4 source code changes
 4. Change to src directory of xu4 source code
    cd src
 
-2. Compile and install xu4
+5. Compile and install xu4
    make -f makefile.mingw clean
    make -f makefile.mingw install
 
-6. exit MSYS
+6. Compile and install xu4 tools (Optional)
+   make -f makefile.mingw tools
+
+7. exit MSYS
