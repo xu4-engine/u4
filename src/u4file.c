@@ -113,9 +113,11 @@ char **u4read_stringtable(FILE *f, long offset, int nstrings) {
         for (j = 0; j < sizeof(buffer) - 1; j++) {
             buffer[j] = fgetc(f);
             if (buffer[j] == '\0' &&
-                j > 0 && buffer[j - 1] != 8) /* needed to handle weird characters in lb's abyss response */
+                (j < 2 || !(buffer[j - 2] == 10 && buffer[j - 1] == 8))) /* needed to handle weird characters in lb's abyss response */
                 break;
         }
+        while(j > 0 && !(isprint(buffer[j - 1]) || isspace(buffer[j - 1])))
+            j--;
         buffer[j] = '\0';
         strs[i] = strdup(buffer);
     }
