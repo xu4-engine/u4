@@ -20,19 +20,22 @@ typedef struct _Image {
 #endif
 } Image;
 
-typedef struct _RGB {
-    int r, g, b;
-} RGB;
+typedef struct _RGBA {
+    unsigned int r, g, b, a;
+} RGBA;
+
+#define IM_OPAQUE 255
+#define IM_TRANSPARENT 0
 
 Image *imageNew(int w, int h, int scale, int indexed, ImageType type);
 void imageDelete(Image *im);
 void imageSetPaletteFromImage(Image *im, Image *src);
-int imageGetTransparentIndex(Image *im, int *index);
-void imageSetTransparentIndex(Image *im, int index);
-void imagePutPixel(Image *im, int x, int y, int r, int g, int b);
+int imageGetTransparentIndex(Image *im, unsigned int *index);
+void imageSetTransparentIndex(Image *im, unsigned int index);
+void imagePutPixel(Image *im, int x, int y, int r, int g, int b, int a);
 void imagePutPixelIndex(Image *im, int x, int y, unsigned int index);
-void imagePutPixelScaled(Image *im, int x, int y, int r, int g, int b);
-void imageGetPixel(Image *im, int x, int y, int *r, int *g, int *b);
+void imagePutPixelScaled(Image *im, int x, int y, int r, int g, int b, int a);
+void imageGetPixel(Image *im, int x, int y, int *r, int *g, int *b, int *a);
 void imageGetPixelIndex(Image *im, int x, int y, unsigned int *index);
 void imageFillRect(Image *im, int x, int y, int w, int h, int r, int g, int b);
 void imageDraw(const Image *im, int x, int y);

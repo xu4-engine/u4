@@ -17,7 +17,7 @@ Scaler scalerGet(FilterType filter) {
     switch (filter) {
     case SCL_POINT:
         return &scalePoint;
-        
+
     case SCL_2xBi:
         return &scale2xBilinear;
 
@@ -58,7 +58,7 @@ Image *scalePoint(Image *src, int scale, int n) {
             for (i = 0; i < scale; i++) {
                 for (j = 0; j < scale; j++) {
                     unsigned int index;
-                    imageGetPixelIndex(src, x, y, &index);                
+                    imageGetPixelIndex(src, x, y, &index);
                     imagePutPixelIndex(dest, x * scale + j, y * scale + i, index);
                 }
             }
@@ -74,7 +74,7 @@ Image *scalePoint(Image *src, int scale, int n) {
  */
 Image *scale2xBilinear(Image *src, int scale, int n) {
     int i, x, y, xoff, yoff;
-    RGB a, b, c, d;
+    RGBA a, b, c, d;
     Image *dest;
 
     /* this scaler works only with images scaled by 2x */
@@ -110,15 +110,15 @@ Image *scale2xBilinear(Image *src, int scale, int n) {
                 else
                     xoff = 1;
 
-                imageGetPixel(src, x, y, &a.r, &a.g, &a.b);
-                imageGetPixel(src, x + xoff, y, &b.r, &b.g, &b.b);
-                imageGetPixel(src, x, y + yoff, &c.r, &c.g, &c.b);
-                imageGetPixel(src, x + xoff, y + yoff, &d.r, &d.g, &d.b);
+                imageGetPixel(src, x, y, &a.r, &a.g, &a.b, &a.a);
+                imageGetPixel(src, x + xoff, y, &b.r, &b.g, &b.b, &b.a);
+                imageGetPixel(src, x, y + yoff, &c.r, &c.g, &c.b, &c.a);
+                imageGetPixel(src, x + xoff, y + yoff, &d.r, &d.g, &d.b, &d.a);
 
-                imagePutPixel(dest, x * 2, y * 2, a.r, a.g, a.b);
-                imagePutPixel(dest, x * 2 + 1, y * 2, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
-                imagePutPixel(dest, x * 2, y * 2 + 1, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
-                imagePutPixel(dest, x * 2 + 1, y * 2 + 1, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2);
+                imagePutPixel(dest, x * 2, y * 2, a.r, a.g, a.b, a.a);
+                imagePutPixel(dest, x * 2 + 1, y * 2, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1, (a.a + b.a) >> 1);
+                imagePutPixel(dest, x * 2, y * 2 + 1, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1, (a.a + c.a) >> 1);
+                imagePutPixel(dest, x * 2 + 1, y * 2 + 1, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2, (a.a + b.a + c.a + d.a) >> 2);
             }
         }
     }
@@ -126,22 +126,24 @@ Image *scale2xBilinear(Image *src, int scale, int n) {
     return dest;
 }
 
-int colorEqual(RGB a, RGB b) {
+int colorEqual(RGBA a, RGBA b) {
     return
         a.r == b.r &&
         a.g == b.g &&
-        a.b == b.b;
+        a.b == b.b &&
+        a.a == b.a;
 }
 
-RGB colorAverage(RGB a, RGB b) {
-    RGB result;
+RGBA colorAverage(RGBA a, RGBA b) {
+    RGBA result;
     result.r = (a.r + b.r) >> 1;
     result.g = (a.g + b.g) >> 1;
     result.b = (a.b + b.b) >> 1;
+    result.a = (a.a + b.a) >> 1;
     return result;
 }
 
-int _2xSaI_GetResult1(RGB a, RGB b, RGB c, RGB d) {
+int _2xSaI_GetResult1(RGBA a, RGBA b, RGBA c, RGBA d) {
     int x = 0;
     int y = 0;
     int r = 0;
@@ -152,7 +154,7 @@ int _2xSaI_GetResult1(RGB a, RGB b, RGB c, RGB d) {
     return r;
 }
 
-int _2xSaI_GetResult2(RGB a, RGB b, RGB c, RGB d) {
+int _2xSaI_GetResult2(RGBA a, RGBA b, RGBA c, RGBA d) {
     int x = 0;
     int y = 0;
     int r = 0;
@@ -169,8 +171,8 @@ int _2xSaI_GetResult2(RGB a, RGB b, RGB c, RGB d) {
  */
 Image *scale2xSaI(Image *src, int scale, int N) {
     int ii, x, y, xoff0, xoff1, xoff2, yoff0, yoff1, yoff2;
-    RGB a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;    
-    RGB prod0, prod1, prod2;
+    RGBA a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;
+    RGBA prod0, prod1, prod2;
     Image *dest;
 
     /* this scaler works only with images scaled by 2x */
@@ -209,7 +211,7 @@ Image *scale2xSaI(Image *src, int scale, int N) {
                 yoff1 = 1;
                 yoff2 = 2;
             }
-                
+
 
             for (x = 0; x < src->w; x++) {
                 if (x == 0)
@@ -227,27 +229,27 @@ Image *scale2xSaI(Image *src, int scale, int N) {
                 else {
                     xoff1 = 1;
                     xoff2 = 2;
-                }                
+                }
 
-                imageGetPixel(src, x, y, &a.r, &a.g, &a.b);                
-                imageGetPixel(src, x + xoff1, y, &b.r, &b.g, &b.b);
-                imageGetPixel(src, x, y + yoff1, &c.r, &c.g, &c.b);
-                imageGetPixel(src, x + xoff1, y + yoff1, &d.r, &d.g, &d.b);
+                imageGetPixel(src, x, y, &a.r, &a.g, &a.b, &a.a);
+                imageGetPixel(src, x + xoff1, y, &b.r, &b.g, &b.b, &b.a);
+                imageGetPixel(src, x, y + yoff1, &c.r, &c.g, &c.b, &c.a);
+                imageGetPixel(src, x + xoff1, y + yoff1, &d.r, &d.g, &d.b, &d.a);
 
-                imageGetPixel(src, x, y + yoff0, &e.r, &e.g, &e.b);
-                imageGetPixel(src, x + xoff1, y + yoff0, &f.r, &f.g, &f.b);
-                imageGetPixel(src, x + xoff0, y, &g.r, &g.g, &g.b);
-                imageGetPixel(src, x + xoff0, y + yoff1, &h.r, &h.g, &h.b);
-                
-                imageGetPixel(src, x + xoff0, y + yoff0, &i.r, &i.g, &i.b);
-                imageGetPixel(src, x + xoff2, y + yoff0, &j.r, &j.g, &j.b);
-                imageGetPixel(src, x + xoff0, y, &k.r, &k.g, &k.b);
-                imageGetPixel(src, x + xoff0, y + yoff1, &l.r, &l.g, &l.b);
+                imageGetPixel(src, x, y + yoff0, &e.r, &e.g, &e.b, &e.a);
+                imageGetPixel(src, x + xoff1, y + yoff0, &f.r, &f.g, &f.b, &f.a);
+                imageGetPixel(src, x + xoff0, y, &g.r, &g.g, &g.b, &g.a);
+                imageGetPixel(src, x + xoff0, y + yoff1, &h.r, &h.g, &h.b, &h.a);
 
-                imageGetPixel(src, x + xoff0, y + yoff2, &m.r, &m.g, &m.b);
-                imageGetPixel(src, x, y + yoff2, &n.r, &n.g, &n.b);
-                imageGetPixel(src, x + xoff1, y + yoff2, &o.r, &o.g, &o.b);
-                imageGetPixel(src, x + xoff2, y + yoff2, &p.r, &p.g, &p.b);
+                imageGetPixel(src, x + xoff0, y + yoff0, &i.r, &i.g, &i.b, &i.a);
+                imageGetPixel(src, x + xoff2, y + yoff0, &j.r, &j.g, &j.b, &j.a);
+                imageGetPixel(src, x + xoff0, y, &k.r, &k.g, &k.b, &k.a);
+                imageGetPixel(src, x + xoff0, y + yoff1, &l.r, &l.g, &l.b, &l.a);
+
+                imageGetPixel(src, x + xoff0, y + yoff2, &m.r, &m.g, &m.b, &m.a);
+                imageGetPixel(src, x, y + yoff2, &n.r, &n.g, &n.b, &n.a);
+                imageGetPixel(src, x + xoff1, y + yoff2, &o.r, &o.g, &o.b, &o.a);
+                imageGetPixel(src, x + xoff2, y + yoff2, &p.r, &p.g, &p.b, &p.a);
 
                 if (colorEqual(a, d) && !colorEqual(b, c)) {
                     if ((colorEqual(a, e) && colorEqual(b, l)) ||
@@ -261,7 +263,7 @@ Image *scale2xSaI(Image *src, int scale, int N) {
                         prod1 = a;
                     else
                         prod1 = colorAverage(a, c);
-                    
+
                     prod2 = a;
                 }
                 else if (colorEqual(b, c) && !colorEqual(a, d)) {
@@ -276,12 +278,12 @@ Image *scale2xSaI(Image *src, int scale, int N) {
                         prod1 = c;
                     else
                         prod1 = colorAverage(a, c);
-                    
+
                     prod2 = b;
                 }
                 else if (colorEqual(a, d) && colorEqual(b, c)) {
                     if (colorEqual(a, b))
-                        prod0 = prod1 = prod2 = a;                    
+                        prod0 = prod1 = prod2 = a;
                     else {
                         int r = 0;
                         prod0 = colorAverage(a, b);
@@ -300,7 +302,7 @@ Image *scale2xSaI(Image *src, int scale, int N) {
                             prod2.r = (a.r + b.r + c.r + d.r) >> 2;
                             prod2.g = (a.g + b.g + c.g + d.g) >> 2;
                             prod2.b = (a.b + b.b + c.b + d.b) >> 2;
-                        }                        
+                        }
                     }
                 }
                 else {
@@ -320,13 +322,13 @@ Image *scale2xSaI(Image *src, int scale, int N) {
 
                     prod2.r = (a.r + b.r + c.r + d.r) >> 2;
                     prod2.g = (a.g + b.g + c.g + d.g) >> 2;
-                    prod2.b = (a.b + b.b + c.b + d.b) >> 2;                    
+                    prod2.b = (a.b + b.b + c.b + d.b) >> 2;
                 }
 
-                imagePutPixel(dest, (x << 1), (y << 1), a.r, a.g, a.b);                
-                imagePutPixel(dest, (x << 1) + 1, (y << 1), prod0.r, prod0.g, prod0.b);
-                imagePutPixel(dest, (x << 1), (y << 1) + 1, prod1.r, prod1.g, prod1.b);
-                imagePutPixel(dest, (x << 1) + 1, (y << 1) + 1, prod2.r, prod2.g, prod2.b);
+                imagePutPixel(dest, (x << 1), (y << 1), a.r, a.g, a.b, a.a);
+                imagePutPixel(dest, (x << 1) + 1, (y << 1), prod0.r, prod0.g, prod0.b, prod0.a);
+                imagePutPixel(dest, (x << 1), (y << 1) + 1, prod1.r, prod1.g, prod1.b, prod1.a);
+                imagePutPixel(dest, (x << 1) + 1, (y << 1) + 1, prod2.r, prod2.g, prod2.b, prod2.a);
             }
         }
     }
@@ -340,9 +342,9 @@ Image *scale2xSaI(Image *src, int scale, int N) {
  */
 Image *scaleScale2x(Image *src, int scale, int n) {
     int ii, x, y, xoff0, xoff1, yoff0, yoff1;
-    RGB a, b, c, d, e, f, g, h, i;
-    RGB e0, e1, e2, e3;
-    RGB e4, e5, e6, e7;
+    RGBA a, b, c, d, e, f, g, h, i;
+    RGBA e0, e1, e2, e3;
+    RGBA e4, e5, e6, e7;
     Image *dest;
 
     /* this scaler works only with images scaled by 2x or 3x */
@@ -360,7 +362,7 @@ Image *scaleScale2x(Image *src, int scale, int n) {
      * nine) in the destination.  The destination pixels are dependant
      * on the pixel itself, and the eight surrounding pixels (E is the
      * original pixel):
-     * 
+     *
      * A B C
      * D E F
      * G H I
@@ -387,20 +389,20 @@ Image *scaleScale2x(Image *src, int scale, int n) {
                 else
                     xoff1 = 1;
 
-                imageGetPixel(src, x + xoff0, y + yoff0, &a.r, &a.g, &a.b);
-                imageGetPixel(src, x, y + yoff0, &b.r, &b.g, &b.b);
-                imageGetPixel(src, x + xoff1, y + yoff0, &c.r, &c.g, &c.b);
+                imageGetPixel(src, x + xoff0, y + yoff0, &a.r, &a.g, &a.b, &a.a);
+                imageGetPixel(src, x, y + yoff0, &b.r, &b.g, &b.b, &b.a);
+                imageGetPixel(src, x + xoff1, y + yoff0, &c.r, &c.g, &c.b, &c.a);
 
-                imageGetPixel(src, x + xoff0, y, &d.r, &d.g, &d.b);
-                imageGetPixel(src, x, y, &e.r, &e.g, &e.b);
-                imageGetPixel(src, x + xoff1, y, &f.r, &f.g, &f.b);
+                imageGetPixel(src, x + xoff0, y, &d.r, &d.g, &d.b, &d.a);
+                imageGetPixel(src, x, y, &e.r, &e.g, &e.b, &e.a);
+                imageGetPixel(src, x + xoff1, y, &f.r, &f.g, &f.b, &f.a);
 
-                imageGetPixel(src, x + xoff0, y + yoff1, &g.r, &g.g, &g.b);
-                imageGetPixel(src, x, y + yoff1, &h.r, &h.g, &h.b);
-                imageGetPixel(src, x + xoff1, y + yoff1, &i.r, &i.g, &i.b);
+                imageGetPixel(src, x + xoff0, y + yoff1, &g.r, &g.g, &g.b, &g.a);
+                imageGetPixel(src, x, y + yoff1, &h.r, &h.g, &h.b, &h.a);
+                imageGetPixel(src, x + xoff1, y + yoff1, &i.r, &i.g, &i.b, &i.a);
 
                 // lissen diagonals (45°,135°,225°,315°)
-                // corner : if there is gradient towards a diagonal direction, 
+                // corner : if there is gradient towards a diagonal direction,
                 // take the color of surrounding points in this direction
                 e0 = colorEqual(d, b) && (!colorEqual(b, f)) && (!colorEqual(d, h)) ? d : e;
                 e1 = colorEqual(b, f) && (!colorEqual(b, d)) && (!colorEqual(f, h)) ? f : e;
@@ -416,20 +418,20 @@ Image *scaleScale2x(Image *src, int scale, int n) {
                 e7 = colorEqual(e3, g) ? e3 : colorEqual(e2, i) ? e2 : e;
 
                 if (scale == 2) {
-                    imagePutPixel(dest, x * 2, y * 2, e0.r, e0.g, e0.b);
-                    imagePutPixel(dest, x * 2 + 1, y * 2, e1.r, e1.g, e1.b);
-                    imagePutPixel(dest, x * 2, y * 2 + 1, e2.r, e2.g, e2.b);
-                    imagePutPixel(dest, x * 2 + 1, y * 2 + 1, e3.r, e3.g, e3.b);
+                    imagePutPixel(dest, x * 2, y * 2, e0.r, e0.g, e0.b, e0.a);
+                    imagePutPixel(dest, x * 2 + 1, y * 2, e1.r, e1.g, e1.b, e1.a);
+                    imagePutPixel(dest, x * 2, y * 2 + 1, e2.r, e2.g, e2.b, e2.a);
+                    imagePutPixel(dest, x * 2 + 1, y * 2 + 1, e3.r, e3.g, e3.b, e3.a);
                 } else if (scale == 3) {
-                    imagePutPixel(dest, x * 3, y * 3, e0.r, e0.g, e0.b);
-                    imagePutPixel(dest, x * 3 + 1, y * 3, e4.r, e4.g, e4.b);
-                    imagePutPixel(dest, x * 3 + 2, y * 3, e1.r, e1.g, e1.b);
-                    imagePutPixel(dest, x * 3, y * 3 + 1, e5.r, e5.g, e5.b);
-                    imagePutPixel(dest, x * 3 + 1, y * 3 + 1, e.r, e.g, e.b);
-                    imagePutPixel(dest, x * 3 + 2, y * 3 + 1, e6.r, e6.g, e6.b);
-                    imagePutPixel(dest, x * 3, y * 3 + 2, e2.r, e2.g, e2.b);
-                    imagePutPixel(dest, x * 3 + 1, y * 3 + 2, e7.r, e7.g, e7.b);
-                    imagePutPixel(dest, x * 3 + 2, y * 3 + 2, e3.r, e3.g, e3.b);
+                    imagePutPixel(dest, x * 3, y * 3, e0.r, e0.g, e0.b, e0.a);
+                    imagePutPixel(dest, x * 3 + 1, y * 3, e4.r, e4.g, e4.b, e4.a);
+                    imagePutPixel(dest, x * 3 + 2, y * 3, e1.r, e1.g, e1.b, e1.a);
+                    imagePutPixel(dest, x * 3, y * 3 + 1, e5.r, e5.g, e5.b, e5.a);
+                    imagePutPixel(dest, x * 3 + 1, y * 3 + 1, e.r, e.g, e.b, e.a);
+                    imagePutPixel(dest, x * 3 + 2, y * 3 + 1, e6.r, e6.g, e6.b, e6.a);
+                    imagePutPixel(dest, x * 3, y * 3 + 2, e2.r, e2.g, e2.b, e2.a);
+                    imagePutPixel(dest, x * 3 + 1, y * 3 + 2, e7.r, e7.g, e7.b, e7.a);
+                    imagePutPixel(dest, x * 3 + 2, y * 3 + 2, e3.r, e3.g, e3.b, e3.a);
 
                 }
             }

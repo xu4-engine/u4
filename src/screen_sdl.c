@@ -292,8 +292,8 @@ void fixupIntro(Image *im) {
         /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
         x = sigData[i] + 0x14;
         y = 0xBF - sigData[i+1]; 
-        imagePutPixel(im, x, y, 0, 255, 255); /* cyan */
-        imagePutPixel(im, x+1, y, 0, 255, 255); /* cyan */
+        imagePutPixel(im, x, y, 0, 255, 255, IM_OPAQUE); /* cyan */
+        imagePutPixel(im, x+1, y, 0, 255, 255, IM_OPAQUE); /* cyan */
         i += 2;
     }
 
@@ -302,7 +302,7 @@ void fixupIntro(Image *im) {
      * -------------------------------------------------------------- */
     /* we're still working with an unscaled surface */
     for (i = 86; i < 239; i++)
-        imagePutPixel(im, i, 31, 128, 0, 0); /* red */    
+        imagePutPixel(im, i, 31, 128, 0, 0, IM_OPAQUE); /* red */
 }
 
 void fixupIntroExtended(Image *im) {
@@ -1091,7 +1091,7 @@ void screenScrollMessageArea() {
 void screenInvertRect(int x, int y, int w, int h) {
     SDL_Rect src;
     Image *tmp;
-    RGB c;
+    RGBA c;
     int i, j;
 
     src.x = x * scale;
@@ -1107,8 +1107,8 @@ void screenInvertRect(int x, int y, int w, int h) {
 
     for (i = 0; i < src.h; i++) {
         for (j = 0; j < src.w; j++) {
-            imageGetPixel(tmp, j, i, &c.r, &c.g, &c.b);
-            imagePutPixel(tmp, j, i, 0xff - c.r, 0xff - c.g, 0xff - c.b);
+            imageGetPixel(tmp, j, i, &c.r, &c.g, &c.b, &c.a);
+            imagePutPixel(tmp, j, i, 0xff - c.r, 0xff - c.g, 0xff - c.b, c.a);
         }
     }
 
@@ -1225,6 +1225,7 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
     Image *tmp, *scaled;
     const static int dscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
     int offset;
+    int savedflags;
 
     tmp = imageNew(tiles->w, tiles->h / N_TILES, 1, tiles->indexed, IMTYPE_SW);
     if (tiles->indexed)
@@ -1239,7 +1240,13 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
     dest.w = tiles->w;
     dest.h = tiles->h / N_TILES;
 
+    /* have to turn off alpha on tiles before blitting: why? */
+    savedflags = tiles->surface->flags;
+    tiles->surface->flags &= ~SDL_SRCALPHA;
+
     SDL_BlitSurface(tiles->surface, &src, tmp->surface, &dest);
+
+    tiles->surface->flags = savedflags;
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
     if (dscale[distance] == 1)
@@ -1498,6 +1505,12 @@ void screenGemUpdate() {
     screenUpdateWind();
 }
 
+/**
+ * Scale an image up.  The resulting image will be scale * the
+ * original dimensions.  The original image is deleted.  n is the
+ * number of tiles in the image; each tile is filtered seperately.
+ * filter determines whether or not to filter the resulting image.
+ */
 Image *screenScale(Image *src, int scale, int n, int filter) {
     Image *dest;
     int transparent;
@@ -1530,6 +1543,10 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
     return dest;
 }
 
+/**
+ * Scale an image down.  The resulting image will be 1/scale * the
+ * original dimensions.  The original image is deleted.
+ */
 Image *screenScaleDown(Image *src, int scale) {
     int x, y;
     Image *dest;

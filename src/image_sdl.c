@@ -76,7 +76,7 @@ void imageSetPaletteFromImage(Image *im, Image *src) {
            sizeof(SDL_Color) * src->surface->format->palette->ncolors);
 }
 
-int imageGetTransparentIndex(Image *im, int *index) {
+int imageGetTransparentIndex(Image *im, unsigned int *index) {
     if (!im->indexed || (im->surface->flags & SDL_SRCCOLORKEY) == 0)
         return 0;
         
@@ -84,18 +84,37 @@ int imageGetTransparentIndex(Image *im, int *index) {
     return 1;
 }
 
-void imageSetTransparentIndex(Image *im, int index) {
+void imageSetTransparentIndex(Image *im, unsigned int index) {
+
+    SDL_SetAlpha(im->surface, SDL_SRCALPHA, SDL_ALPHA_OPAQUE);
+
     if (im->indexed) {
-        im->surface->format->colorkey = index;
-        im->surface->flags |= SDL_SRCCOLORKEY;
+        SDL_SetColorKey(im->surface, SDL_SRCCOLORKEY, index);
+    } else {
+        int x, y;
+        Uint8 t_r, t_g, t_b;
+
+        SDL_GetRGB(index, im->surface->format, &t_r, &t_g, &t_b);
+
+        for (y = 0; y < im->h; y++) {
+            for (x = 0; x < im->w; x++) {
+                unsigned int r, g, b, a;
+                imageGetPixel(im, x, y, &r, &g, &b, &a);
+                if (r == t_r &&
+                    g == t_g &&
+                    b == t_b) {
+                    imagePutPixel(im, x, y, r, g, b, IM_TRANSPARENT);
+                }
+            }
+        }
     }
 }
 
 /**
  * Sets the color of a single pixel.
  */
-void imagePutPixel(Image *im, int x, int y, int r, int g, int b) {
-    imagePutPixelIndex(im, x, y, SDL_MapRGB(im->surface->format, (Uint8)r, (Uint8)g, (Uint8)b));
+void imagePutPixel(Image *im, int x, int y, int r, int g, int b, int a) {
+    imagePutPixelIndex(im, x, y, SDL_MapRGBA(im->surface->format, (Uint8)r, (Uint8)g, (Uint8)b, (Uint8)a));
 }
 
 /**
@@ -141,12 +160,12 @@ void imagePutPixelIndex(Image *im, int x, int y, unsigned int index) {
  * Sets the color of a "U4" scale pixel, which may be more than one
  * actual pixel.
  */
-void imagePutPixelScaled(Image *im, int x, int y, int r, int g, int b) {
+void imagePutPixelScaled(Image *im, int x, int y, int r, int g, int b, int a) {
     int xs, ys;
 
     for (xs = 0; xs < im->scale; xs++) {
         for (ys = 0; ys < im->scale; ys++) {
-            imagePutPixel(im, x * im->scale + xs, y * im->scale + ys, r, g, b);
+            imagePutPixel(im, x * im->scale + xs, y * im->scale + ys, r, g, b, a);
         }
     }
 }
@@ -154,16 +173,17 @@ void imagePutPixelScaled(Image *im, int x, int y, int r, int g, int b) {
 /**
  * Gets the color of a single pixel.
  */
-void imageGetPixel(Image *im, int x, int y, int *r, int *g, int *b) {
+void imageGetPixel(Image *im, int x, int y, int *r, int *g, int *b, int *a) {
     unsigned int index;
-    Uint8 r1, g1, b1;
+    Uint8 r1, g1, b1, a1;
 
     imageGetPixelIndex(im, x, y, &index);
 
-    SDL_GetRGB(index, im->surface->format, &r1, &g1, &b1);
+    SDL_GetRGBA(index, im->surface->format, &r1, &g1, &b1, &a1);
     *r = r1;
     *g = g1;
     *b = b1;
+    *a = a1;
 }
 
 /**
