@@ -257,9 +257,11 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         context = CTX_DUNGEON;
         viewMode = VIEW_DUNGEON;
         break;
-    case MAP_COMBAT:
+    case MAP_COMBAT:        
         context = CTX_COMBAT;
-        finishTurn = &combatFinishTurn;
+        viewMode = VIEW_NORMAL;
+        finishTurn = &combatFinishTurn;        
+        break;
     case MAP_TOWN:
     case MAP_VILLAGE:
     case MAP_CASTLE:

@@ -180,11 +180,7 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
     /* 
      * FIXME: handle dungeon and combat contexts when they are
      * implemented 
-     */
-    /*if ((spells[spell].context & CTX_NORMAL) == 0) {
-        *error = CASTERR_WRONGCONTEXT;
-        return 0;
-    }*/
+     */    
     if ((c->location->context & spells[spell].context) == 0) {
         *error = CASTERR_WRONGCONTEXT;
         return 0;
