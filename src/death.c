@@ -88,6 +88,7 @@ void deathRevive() {
         mapClearObjects(c->map);
         c->parent->saveGame->x = c->saveGame->dngx;
         c->parent->saveGame->y = c->saveGame->dngy;
+        c->parent->annotation = c->annotation;
         c->parent->line = c->line;
         c->parent->moonPhase = c->moonPhase;
         c->parent->windDirection = c->windDirection;

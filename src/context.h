@@ -8,6 +8,7 @@
 struct _SaveGame;
 struct _Map;
 struct _Person;
+struct _Annotation;
 
 #define CONV_BUFFERLEN 16
 
@@ -52,6 +53,7 @@ typedef struct _Conversation {
 typedef struct _Context {
     struct _SaveGame *saveGame;
     struct _Context *parent;
+    struct _Annotation *annotation;
     struct _Map *map;
     Conversation conversation;
     int line, col;

@@ -24,6 +24,8 @@
 
 #define MAP_TILE_AT(mapptr, x, y, z) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 
+extern City lcb_2_city;
+
 int mapRead(City *city, FILE *ult, FILE *tlk) {
     unsigned char conv_idx[CITY_MAX_PERSONS];
     unsigned char c;
@@ -96,7 +98,10 @@ int mapRead(City *city, FILE *ult, FILE *tlk) {
     }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        city->persons[i].startz = 0; /* FIXME */
+        if (city == &lcb_2_city) /* FIXME: level is hardcoded for lcb2 */
+            city->persons[i].startz = 1;
+        else
+            city->persons[i].startz = 0;
     }
 
     for (i = 0; ; i++) {

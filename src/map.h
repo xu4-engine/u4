@@ -13,7 +13,6 @@ struct _Area;
 struct _Object;
 struct _Person;
 struct _Portal;
-struct _Annotation;
 
 #include "music.h"
 
@@ -55,7 +54,6 @@ typedef struct _Map {
         const struct _Shrine *shrine;
         struct _Area *area;
     };
-    struct _Annotation *annotation;
     struct _Object *objects;
 } Map;
 

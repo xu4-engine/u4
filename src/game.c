@@ -87,8 +87,8 @@ void gameInit() {
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
     c->parent = NULL;
+    c->annotation = NULL;
     c->map = &world_map;
-    c->map->annotation = NULL;
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.buffer[0] = '\0';
@@ -245,6 +245,7 @@ Context *gameCloneContext(Context *ctx) {
     newContext = (Context *) malloc(sizeof(Context));
     newContext->parent = ctx;
     newContext->saveGame = newContext->parent->saveGame;
+    newContext->annotation = newContext->parent->annotation;
     newContext->col = newContext->parent->col;
     newContext->line = newContext->parent->line;
     newContext->statsItem = newContext->parent->statsItem;
@@ -394,7 +395,9 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'd':
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
         if (portal && portal->trigger_action == ACTION_DESCEND) {
+            annotationClear(c->map->id);
             gameSetMap(c, portal->destination, 0);
+            c->saveGame->dnglevel--;
             screenMessage("Descend to first floor!\n");
         } else if (tileIsBalloon(c->saveGame->transport)) {
             screenMessage("Land Balloon\n");
@@ -440,8 +443,6 @@ int gameBaseKeyHandler(int key, void *data) {
                     shrineEnter(portal->destination->shrine);
                 }
             }
-
-            annotationClear(c->map->id);  /* clear out world map annotations */
 
             c = gameCloneContext(c);
 
@@ -529,7 +530,9 @@ int gameBaseKeyHandler(int key, void *data) {
             if (c->saveGame->transport != AVATAR_TILE)
                 screenMessage("Klimb\nOnly on foot!\n");
             else {
+                annotationClear(c->map->id);
                 gameSetMap(c, portal->destination, 0);
+                c->saveGame->dnglevel++;
                 screenMessage("Klimb to second floor!\n");
             }
         } else if (tileIsBalloon(c->saveGame->transport)) {
@@ -612,7 +615,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 's':
         screenMessage("Searching...\n");
-        item = itemAtLocation(c->map, c->saveGame->x, c->saveGame->y);
+        item = itemAtLocation(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
         if (item) {
             if ((*item->isItemInInventory)(item->data))
                 screenMessage("Nothing Here!\n");
@@ -1676,6 +1679,7 @@ int moveAvatar(Direction dir, int userEvent) {
                 mapClearObjects(c->map);
                 c->parent->saveGame->x = c->saveGame->dngx;
                 c->parent->saveGame->y = c->saveGame->dngy;
+                c->parent->annotation = c->annotation;
                 c->parent->line = c->line;
                 c->parent->moonPhase = c->moonPhase;
                 c->parent->windDirection = c->windDirection;

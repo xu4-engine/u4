@@ -23,9 +23,9 @@ Annotation *annotationAdd(int x, int y, int z, unsigned char mapid, unsigned cha
     a->time_to_live = -1;
     a->tile = tile;
     a->visual = 0;
-    a->next = c->map->annotation;
+    a->next = c->annotation;
     
-    c->map->annotation = a;
+    c->annotation = a;
 
     return a;
 }
@@ -46,11 +46,11 @@ Annotation *annotationSetTimeDuration(Annotation *a, int interval) {
 }
 
 void annotationTimer(void *data) {
-    Annotation *annotation = c->map->annotation, **prev;
+    Annotation *annotation = c->annotation, **prev;
 
     eventHandlerRemoveTimerCallbackData(&annotationTimer, data);
 
-    prev = &(c->map->annotation);
+    prev = &(c->annotation);
     while (annotation) {
         if (annotation == (Annotation *) data) {
             *prev = annotation->next;
@@ -65,11 +65,11 @@ void annotationTimer(void *data) {
 
 void annotationRemove(int x, int y, int z, unsigned char mapid, unsigned char tile) {
     int found = 0, count;
-    Annotation *annotation = c->map->annotation, **prev;
+    Annotation *annotation = c->annotation, **prev;
 
     count = annotationCount();
 
-    prev = &(c->map->annotation);
+    prev = &(c->annotation);
     while (annotation) {
         if (annotation->x == x &&
             annotation->y == y &&
@@ -91,7 +91,7 @@ void annotationRemove(int x, int y, int z, unsigned char mapid, unsigned char ti
 }
 
 const Annotation *annotationAt(int x, int y, int z, unsigned char mapid) {
-    Annotation *annotation = c->map->annotation;
+    Annotation *annotation = c->annotation;
 
     while (annotation) {
         if (annotation->x == x &&
@@ -107,9 +107,9 @@ const Annotation *annotationAt(int x, int y, int z, unsigned char mapid) {
 }
 
 void annotationCycle(void) {
-    Annotation *annotation = c->map->annotation, **prev;
+    Annotation *annotation = c->annotation, **prev;
     
-    prev = &(c->map->annotation);
+    prev = &(c->annotation);
     while (annotation) {
         if (annotation->time_to_live == 0) {
             *prev = annotation->next;
@@ -126,9 +126,9 @@ void annotationCycle(void) {
 }
 
 void annotationClear(unsigned char mapid) {
-    Annotation *annotation = c->map->annotation, **prev;
+    Annotation *annotation = c->annotation, **prev;
     
-    prev = &(c->map->annotation);
+    prev = &(c->annotation);
     while (annotation) {
         if (annotation->mapid == mapid) {
             eventHandlerRemoveTimerCallbackData(&annotationTimer, (void *)annotation);
@@ -143,7 +143,7 @@ void annotationClear(unsigned char mapid) {
 }
 
 int annotationCount(void) {
-    Annotation *annotation = c->map->annotation;
+    Annotation *annotation = c->annotation;
     int count = 0;
     
     while (annotation) {
