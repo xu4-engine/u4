@@ -6,6 +6,13 @@
 #define TTYPE_H
 
 typedef enum {
+    EFFECT_NONE = 0x00,
+    EFFECT_FIRE = 0x04,
+    EFFECT_SLEEP = 0x08,
+    EFFECT_POISON = 0x0C
+} TileEffect;
+
+typedef enum {
     ANIM_NONE,
     ANIM_SCROLL,
     ANIM_CAMPFIRE,
@@ -14,14 +21,15 @@ typedef enum {
     ANIM_WESTSHIPFLAG,
     ANIM_EASTSHIPFLAG,
     ANIM_LCBFLAG
-} AnimationStyle;
+} TileAnimationStyle;
 
-int iswalkable(unsigned char tile);
-int isslow(unsigned char tile);
-int isvslow(unsigned char tile);
-int isdoor(unsigned char tile);
-int islockeddoor(unsigned char tile);
+int tileIsWalkable(unsigned char tile);
+int tileIsSlow(unsigned char tile);
+int tileIsVslow(unsigned char tile);
+int tileIsDoor(unsigned char tile);
+int tileIsLockedDoor(unsigned char tile);
 int tileCanTalkOver(unsigned char tile);
-AnimationStyle tileGetAnimationStyle(unsigned char tile);
+TileEffect tileGetEffect(unsigned char tile);
+TileAnimationStyle tileGetAnimationStyle(unsigned char tile);
 
 #endif
