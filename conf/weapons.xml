@@ -1,5 +1,11 @@
 <?xml version="1.0"?>
-<!DOCTYPE weapons SYSTEM "dtd/weapons.dtd">
+<!DOCTYPE weapons SYSTEM "dtd/weapons.dtd" [
+  <!ENTITY % common SYSTEM "dtd/common.dtd">
+  %common;
+  <!ENTITY % constraint SYSTEM "dtd/constraint.dtd">
+  %constraint;
+]>
+
 <!-- $Id$ -->
 <weapons>
     <weapon name="Hands" abbr="HND" range="1" damage="8"/>
