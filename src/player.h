@@ -73,6 +73,7 @@ int playerPartyDead(const SaveGame *saveGame);
 void playerApplySleepSpell(SaveGame *saveGame);
 int playerHeal(SaveGame *saveGame, HealType type, int player);
 void playerReviveParty(SaveGame *saveGame);
+int playerCanAfford(SaveGame *saveGame, int price);
 int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
 int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
 int playerAttackHit(const SaveGamePlayerRecord *player);

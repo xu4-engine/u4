@@ -520,9 +520,18 @@ void playerReviveParty(SaveGame *saveGame) {
 }
 
 /**
+ * Returns the maximum number of items of a given price the player can
+ * afford.
+ */
+int playerCanAfford(SaveGame *saveGame, int price) {
+    return saveGame->gold / price;
+}
+
+/**
  * Attempt to purchase a given quantity of an item for a specified
- * price.  If successful, the inventory will be updated and 1
- * returned.  Zero is returned on failure.
+ * price.  INV_NONE can be used to indicate a service is being
+ * purchased instead of an item.  If successful, the inventory will be
+ * updated and 1 returned.  Zero is returned on failure.
  */
 int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price) {
 
@@ -533,7 +542,7 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
 
     switch (item) {
     case INV_NONE:
-        assert(0);              /* shouldn't happen */
+        /* nothing */
         break;
     case INV_WEAPON:
         saveGame->weapons[type] += quantity;
@@ -558,7 +567,7 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
             saveGame->sextants += quantity;
         break;
     case INV_HORSE:
-        /* FIXME */
+        saveGame->transport = tileGetHorseBase();
         break;
     }
 
