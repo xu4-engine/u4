@@ -35,7 +35,6 @@ long decompress_u4_file(FILE *in, long filesize, void **out);
 void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int color);
 void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h);
 void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, Uint8 color);
-void screenFixIntroScreen();
 int screenLoadBackgrounds();
 void screenFreeIntroBackground();
 int screenLoadTiles();
@@ -127,11 +126,7 @@ void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, Uint8 color) {
     }
 }
 
-void screenFixIntroScreen() {
-    FILE *sigFile;
-    unsigned char *sigData;
-    const int sigDataOffset = 0x746E;   /* offset in title.exe */
-    const int sigDataLength = 0x7682 - sigDataOffset + 1;
+void screenFixIntroScreen(const unsigned char *sigData) {
     const Uint8 sigColor = 0xB;   /* light cyan */
     const Uint8 lineColor = 4;   /* dark red */
     int i,x,y;
@@ -149,25 +144,15 @@ void screenFixIntroScreen() {
     /* -----------------------------
      * draw "Lord British" signature
      * ----------------------------- */
-    sigData = (unsigned char *)malloc(sigDataLength);
-    sigFile = u4fopen("title.exe");
-    if (sigData && sigFile /*&& (sigData[sigDataLength-1] == 0)*/) {
-        /* read sig data from title.exe; it's an array of byte pairs (pixel coordinates) */
-        fseek(sigFile, sigDataOffset, SEEK_SET);
-        fread(sigData, 1, sigDataLength, sigFile);
-        /* draw sig */
-        i = 0;
-        while (sigData[i] != 0) {
-            /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
-            x = sigData[i] + 0x14;
-            y = 0xBF - sigData[i+1];
-            screenWriteScaledPixel(bkgds[BKGD_INTRO],x,y,sigColor);
-            screenWriteScaledPixel(bkgds[BKGD_INTRO],x+1,y,sigColor);
-            i += 2;
-        }
+    i = 0;
+    while (sigData[i] != 0) {
+        /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
+        x = sigData[i] + 0x14;
+        y = 0xBF - sigData[i+1];
+        screenWriteScaledPixel(bkgds[BKGD_INTRO],x,y,sigColor);
+        screenWriteScaledPixel(bkgds[BKGD_INTRO],x+1,y,sigColor);
+        i += 2;
     }
-    if (sigFile) u4fclose(sigFile);
-    if (sigData) free(sigData);
 
     /* --------------------------------------------------------------
      * draw the red line between "Origin Systems, Inc." and "present"
@@ -201,7 +186,6 @@ int screenLoadBackgrounds() {
         if (!ret)
             return 0;
     }
-    screenFixIntroScreen();
 
     if (!forceEga)
         ret = screenLoadRleImageVga(&bkgds[BKGD_BORDERS], 320, 200, "start.ega", "u4vga.pal");
@@ -674,7 +658,6 @@ void screenDrawBackground(BackgroundType bkgd) {
     r.w = 320 * scale;
     r.h = 200 * scale;
     SDL_BlitSurface(bkgds[bkgd], &r, screen, &r);
-    screenForceRedraw();
 }
 
 /**
