@@ -50,6 +50,7 @@ int gameGetDirectionKeyHandler(int key, void *data);
 int gameGetPhaseKeyHandler(int key, void *data);
 int gameGetCoordinateKeyHandler(int key, void *data);
 int gamePeerCity(int city, void *data);
+int gamePeerGem(void);
 int gameSpecialCmdKeyHandler(int key, void *data);
 int gameZtatsKeyHandler(int key, void *data);
 int readyForPlayer2(int weapon, void *data);

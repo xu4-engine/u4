@@ -790,11 +790,8 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'p':
         if (c->saveGame->gems) {
             c->saveGame->gems--;
-            c->location->viewMode = VIEW_GEM;
-            choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-            choiceInfo->choices = " \033";
-            choiceInfo->handleChoice = &gemHandleChoice;
-            eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
+            
+            gamePeerGem();            
             screenMessage("Peer at a Gem!\n");
         } else
             screenMessage("Peer at What?\n");
@@ -1085,11 +1082,13 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         c->location->y = moongate->y;
         screenMessage("Gate %d!\n", key - '0');
         break;
+
     case 'c':
         collisionOverride = !collisionOverride;
         screenMessage("Collision detection %s!\n", collisionOverride ? "off" : "on");
         screenPrompt();
         break;
+
     case 'e':
         screenMessage("Equipment!\n");
         screenPrompt();
@@ -1100,6 +1099,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
                 c->saveGame->weapons[i] = 99;
             else c->saveGame->weapons[i] = 8;
         break;
+
     case 'h':
         screenMessage("Help:\n"
                       "1-8 - gate\n"
@@ -1131,12 +1131,14 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         c->saveGame->gold = 9999;
         statsUpdate();
         break;
+
     case 'k':
         screenMessage("Karma:\nH C V J S H S H\n%02x%02x%02x%02x%02x%02x%02x%02x\n",
                       c->saveGame->karma[0], c->saveGame->karma[1], c->saveGame->karma[2], c->saveGame->karma[3],
                       c->saveGame->karma[4], c->saveGame->karma[5], c->saveGame->karma[6], c->saveGame->karma[7]);
         screenPrompt();
         break;
+
     case 'l':
         if (mapIsWorldMap(c->location->map))
             screenMessage("\nLocation:\n%s\nx: %d\ny: %d\n", "World Map", c->location->x, c->location->y);
@@ -1165,6 +1167,12 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         screenMessage("Opacity %s!\n", c->opacity ? "on" : "off");
         screenPrompt();
         break;
+
+    case 'p':        
+        screenMessage("\nPeer at a Gem!\n");
+        eventHandlerPopKeyHandler();
+        gamePeerGem();
+        return 1;
 
     case 'r':
         screenMessage("Reagents!\n");
@@ -1212,6 +1220,7 @@ int cmdHandleAnyKey(int key, void *data) {
     eventHandlerPopKeyHandler();
 
     screenMessage("\n"
+                  "p - Peer\n"
                   "r - Reagents\n"
                   "t - Transports\n"
                   "w - Change Wind\n");
@@ -1820,6 +1829,9 @@ int gemHandleChoice(char choice) {
     c->location->viewMode = VIEW_NORMAL;
     (*c->location->finishTurn)();
 
+    /* unpause the game */
+    paused = 0;
+
     return 1;
 }
 
@@ -1855,6 +1867,21 @@ int gamePeerCity(int city, void *data) {
         return 1;
     }
     return 0;
+}
+
+/**
+ * Peers at a gem
+ */
+int gamePeerGem(void) {
+    GetChoiceActionInfo *choiceInfo;
+
+    paused = 1;    
+    
+    c->location->viewMode = VIEW_GEM;
+    choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+    choiceInfo->choices = " \033";
+    choiceInfo->handleChoice = &gemHandleChoice;
+    eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
 }
 
 /**
