@@ -70,8 +70,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MD /W3 /Gm /GX /ZI /Od /I "C:\Documents and Settings\Main\Desktop\xu4\zlib" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D strncasecmp=strnicmp /D strcasecmp=stricmp /D snprintf=_snprintf /D vsnprintf=_vsnprintf /FR /FD /GZ /c
-# SUBTRACT CPP /WX /YX
+# ADD CPP /nologo /MD /W3 /Gm /GX /ZI /Od /I "C:\Documents and Settings\Main\Desktop\xu4_old\zlib" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D strncasecmp=strnicmp /D strcasecmp=stricmp /D snprintf=_snprintf /D vsnprintf=_vsnprintf /FD /GZ /c
+# SUBTRACT CPP /WX /Fr /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
@@ -81,8 +81,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 SDL.lib SDLmain.lib SDL_mixer.lib libxml2.lib zlibstat.lib user32.lib shell32.lib comdlg32.lib gdi32.lib kernel32.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"LIBC" /out:"C:\Documents and Settings\Main\Desktop\xu4\u4\vc6\Debug\xu4.exe" /pdbtype:sept /libpath:"C:\Documents and Settings\Main\Desktop\xu4\zlib"
-# SUBTRACT LINK32 /pdb:none
+# ADD LINK32 SDL.lib SDLmain.lib SDL_mixer.lib libxml2.lib zlibstat.lib user32.lib shell32.lib comdlg32.lib gdi32.lib kernel32.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386 /nodefaultlib:"LIBC" /out:"c:\xu4\xu4.exe" /libpath:"C:\Documents and Settings\Main\Desktop\xu4_old\zlib"
+# SUBTRACT LINK32 /map
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
 PreLink_Cmds=set U4ZIPFILE=ultima4.zip
@@ -117,10 +117,14 @@ SOURCE=..\src\lzw\lzw.h
 
 SOURCE=..\src\lzw\u4decode.c
 # End Source File
+# Begin Source File
+
+SOURCE=..\src\lzw\u4decode.h
+# End Source File
 # End Group
 # Begin Source File
 
-SOURCE=..\src\annotation.c
+SOURCE=..\src\annotation.cpp
 # End Source File
 # Begin Source File
 
@@ -132,7 +136,7 @@ SOURCE=..\src\area.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\armor.c
+SOURCE=..\src\armor.cpp
 # End Source File
 # Begin Source File
 
@@ -140,7 +144,7 @@ SOURCE=..\src\armor.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\camp.c
+SOURCE=..\src\camp.cpp
 # End Source File
 # Begin Source File
 
@@ -152,7 +156,7 @@ SOURCE=..\src\city.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\codex.c
+SOURCE=..\src\codex.cpp
 # End Source File
 # Begin Source File
 
@@ -160,7 +164,7 @@ SOURCE=..\src\codex.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\combat.c
+SOURCE=..\src\combat.cpp
 # End Source File
 # Begin Source File
 
@@ -172,7 +176,7 @@ SOURCE=..\src\context.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\death.c
+SOURCE=..\src\death.cpp
 # End Source File
 # Begin Source File
 
@@ -180,7 +184,7 @@ SOURCE=..\src\death.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\debug.c
+SOURCE=..\src\debug.cpp
 # End Source File
 # Begin Source File
 
@@ -188,7 +192,7 @@ SOURCE=..\src\debug.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\direction.c
+SOURCE=..\src\direction.cpp
 # End Source File
 # Begin Source File
 
@@ -196,7 +200,7 @@ SOURCE=..\src\direction.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\dngview.c
+SOURCE=..\src\dngview.cpp
 # End Source File
 # Begin Source File
 
@@ -204,7 +208,7 @@ SOURCE=..\src\dngview.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\dungeon.c
+SOURCE=..\src\dungeon.cpp
 # End Source File
 # Begin Source File
 
@@ -212,7 +216,7 @@ SOURCE=..\src\dungeon.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\error.c
+SOURCE=..\src\error.cpp
 # End Source File
 # Begin Source File
 
@@ -220,7 +224,7 @@ SOURCE=..\src\error.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\event.c
+SOURCE=..\src\event.cpp
 # End Source File
 # Begin Source File
 
@@ -228,11 +232,11 @@ SOURCE=..\src\event.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\event_sdl.c
+SOURCE=..\src\event_sdl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\game.c
+SOURCE=..\src\game.cpp
 # End Source File
 # Begin Source File
 
@@ -244,11 +248,11 @@ SOURCE=..\src\image.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\image_sdl.c
+SOURCE=..\src\image_sdl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\intro.c
+SOURCE=..\src\intro.cpp
 # End Source File
 # Begin Source File
 
@@ -256,7 +260,7 @@ SOURCE=..\src\intro.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\io.c
+SOURCE=..\src\io.cpp
 # End Source File
 # Begin Source File
 
@@ -264,7 +268,7 @@ SOURCE=..\src\io.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\item.c
+SOURCE=..\src\item.cpp
 # End Source File
 # Begin Source File
 
@@ -272,15 +276,7 @@ SOURCE=..\src\item.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\list.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\list.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\location.c
+SOURCE=..\src\location.cpp
 # End Source File
 # Begin Source File
 
@@ -288,7 +284,7 @@ SOURCE=..\src\location.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\map.c
+SOURCE=..\src\map.cpp
 # End Source File
 # Begin Source File
 
@@ -296,7 +292,7 @@ SOURCE=..\src\map.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\maploader.c
+SOURCE=..\src\maploader.cpp
 # End Source File
 # Begin Source File
 
@@ -304,7 +300,7 @@ SOURCE=..\src\maploader.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\mapmgr.c
+SOURCE=..\src\mapmgr.cpp
 # End Source File
 # Begin Source File
 
@@ -312,7 +308,7 @@ SOURCE=..\src\mapmgr.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\menu.c
+SOURCE=..\src\menu.cpp
 # End Source File
 # Begin Source File
 
@@ -320,7 +316,7 @@ SOURCE=..\src\menu.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\monster.c
+SOURCE=..\src\monster.cpp
 # End Source File
 # Begin Source File
 
@@ -328,7 +324,7 @@ SOURCE=..\src\monster.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\moongate.c
+SOURCE=..\src\moongate.cpp
 # End Source File
 # Begin Source File
 
@@ -336,7 +332,7 @@ SOURCE=..\src\moongate.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\movement.c
+SOURCE=..\src\movement.cpp
 # End Source File
 # Begin Source File
 
@@ -344,7 +340,7 @@ SOURCE=..\src\movement.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\music.c
+SOURCE=..\src\music.cpp
 # End Source File
 # Begin Source File
 
@@ -352,7 +348,7 @@ SOURCE=..\src\music.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\names.c
+SOURCE=..\src\names.cpp
 # End Source File
 # Begin Source File
 
@@ -364,7 +360,7 @@ SOURCE=..\src\object.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\person.c
+SOURCE=..\src\person.cpp
 # End Source File
 # Begin Source File
 
@@ -372,7 +368,7 @@ SOURCE=..\src\person.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\player.c
+SOURCE=..\src\player.cpp
 # End Source File
 # Begin Source File
 
@@ -380,7 +376,7 @@ SOURCE=..\src\player.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\portal.c
+SOURCE=..\src\portal.cpp
 # End Source File
 # Begin Source File
 
@@ -388,7 +384,7 @@ SOURCE=..\src\portal.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\rle.c
+SOURCE=..\src\rle.cpp
 # End Source File
 # Begin Source File
 
@@ -396,7 +392,7 @@ SOURCE=..\src\rle.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\savegame.c
+SOURCE=..\src\savegame.cpp
 # End Source File
 # Begin Source File
 
@@ -404,7 +400,7 @@ SOURCE=..\src\savegame.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\scale.c
+SOURCE=..\src\scale.cpp
 # End Source File
 # Begin Source File
 
@@ -412,7 +408,7 @@ SOURCE=..\src\scale.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\screen.c
+SOURCE=..\src\screen.cpp
 # End Source File
 # Begin Source File
 
@@ -420,11 +416,19 @@ SOURCE=..\src\screen.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\screen_sdl.c
+SOURCE=..\src\screen_sdl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\settings.c
+SOURCE=..\src\script.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\script.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\settings.cpp
 # End Source File
 # Begin Source File
 
@@ -432,7 +436,7 @@ SOURCE=..\src\settings.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\shrine.c
+SOURCE=..\src\shrine.cpp
 # End Source File
 # Begin Source File
 
@@ -440,7 +444,7 @@ SOURCE=..\src\shrine.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\sound.c
+SOURCE=..\src\sound.cpp
 # End Source File
 # Begin Source File
 
@@ -448,7 +452,7 @@ SOURCE=..\src\sound.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\spell.c
+SOURCE=..\src\spell.cpp
 # End Source File
 # Begin Source File
 
@@ -456,7 +460,7 @@ SOURCE=..\src\spell.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\stats.c
+SOURCE=..\src\stats.cpp
 # End Source File
 # Begin Source File
 
@@ -464,7 +468,7 @@ SOURCE=..\src\stats.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\tile.c
+SOURCE=..\src\tile.cpp
 # End Source File
 # Begin Source File
 
@@ -472,7 +476,15 @@ SOURCE=..\src\tile.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\tileset.c
+SOURCE=..\src\tileanim.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\tileanim.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\tileset.cpp
 # End Source File
 # Begin Source File
 
@@ -480,7 +492,11 @@ SOURCE=..\src\tileset.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\u4.c
+SOURCE=..\src\types.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\u4.cpp
 # End Source File
 # Begin Source File
 
@@ -488,7 +504,7 @@ SOURCE=..\src\u4.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\u4_sdl.c
+SOURCE=..\src\u4_sdl.cpp
 # End Source File
 # Begin Source File
 
@@ -496,7 +512,7 @@ SOURCE=..\src\u4_sdl.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\u4file.c
+SOURCE=..\src\u4file.cpp
 # End Source File
 # Begin Source File
 
@@ -512,7 +528,7 @@ SOURCE=..\src\unzip.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\utils.c
+SOURCE=..\src\utils.cpp
 # End Source File
 # Begin Source File
 
@@ -520,15 +536,7 @@ SOURCE=..\src\utils.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\vendor.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\vendor.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\weapon.c
+SOURCE=..\src\weapon.cpp
 # End Source File
 # Begin Source File
 
@@ -536,7 +544,7 @@ SOURCE=..\src\weapon.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\xml.c
+SOURCE=..\src\xml.cpp
 # End Source File
 # Begin Source File
 
