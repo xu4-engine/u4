@@ -998,6 +998,26 @@ int gameGetDirectionKeyHandler(int key, void *data) {
     return valid || keyHandlerDefault(key, NULL);
 }
 
+int gameGetFieldTypeKeyHandler(int key, void *data) {
+    int (*handleFieldType)(int field) = (int(*)(int))data;    
+    int fieldTile = 0;
+
+    switch(tolower(key)) {
+    case 'f': fieldTile = FIREFIELD_TILE; break;
+    case 'l': fieldTile = LIGHTNINGFIELD_TILE; break;
+    case 'p': fieldTile = POISONFIELD_TILE; break;
+    case 's': fieldTile = SLEEPFIELD_TILE; break;
+    default: break;
+    }
+
+    if (fieldTile > 0) {
+        (*handleFieldType)(fieldTile);
+        return 1;
+    }
+
+    return 0;    
+}
+
 int gameGetPhaseKeyHandler(int key, void *data) {    
     int (*handlePhase)(int) = (int(*)(int))data;
     int valid = 1;

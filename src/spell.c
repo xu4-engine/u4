@@ -81,7 +81,7 @@ const Spell spells[] = {
     { "Blink",        SILK | MOSS,              CTX_WORLDMAP, &spellBlink,   SPELLPRM_DIR,     15 },
     { "Cure",         GINSENG | GARLIC,         CTX_ANY,      &spellCure,    SPELLPRM_PLAYER,  5 },
     { "Dispel",       ASH | GARLIC | PEARL,     CTX_ANY,      &spellDispel,  SPELLPRM_DIR,     20 },
-    { "Energy Field", ASH | SILK | PEARL,       CTX_ANY,      &spellEField,  SPELLPRM_TYPEDIR, 10 },
+    { "Energy Field", ASH | SILK | PEARL, CTX_COMBAT | CTX_DUNGEON, &spellEField, SPELLPRM_TYPEDIR, 10 },
     { "Fireball",     ASH | PEARL,              CTX_COMBAT,   &spellFireball,SPELLPRM_DIR,     15 },
     { "Gate",         ASH | PEARL | MANDRAKE,   CTX_WORLDMAP, &spellGate,    SPELLPRM_PHASE,   40 },
     { "Heal",         GINSENG | SILK,           CTX_ANY,      &spellHeal,    SPELLPRM_PLAYER,  10 },
@@ -326,11 +326,10 @@ static int spellBlink(int dir) {
 
     if (!failed) {
         c->location->x = x;
-        c->location->y = y;
-        return 1;
+        c->location->y = y;        
     }
-    
-    return 0;    
+
+    return (failed ? 0 : 1);
 }
 
 static int spellCure(int player) {
@@ -376,14 +375,22 @@ static int spellDispel(int dir) {
 
 static int spellEField(int dir) {
     int x, y, z;
+    extern CombatInfo combatInfo;
 
-    x = c->location->x;
-    y = c->location->y;
     z = c->location->z;
+
+    if (c->location->context == CTX_DUNGEON) {
+        x = c->location->x;
+        y = c->location->y;        
+    } else {
+        x = combatInfo.party[combatInfo.focus]->x;
+        y = combatInfo.party[combatInfo.focus]->y;
+    }
+
     dirMove((Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->location->map, x, y))
         return 0;
-
+    
     annotationAdd(x, y, z, c->location->map->id, LIGHTNINGFIELD_TILE);
 
     return 1;

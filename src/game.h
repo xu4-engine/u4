@@ -48,6 +48,7 @@ int gameCastForPlayer(int player);
 int gameGetPlayerNoKeyHandler(int key, void *data);
 int gameGetAlphaChoiceKeyHandler(int key, void *data);
 int gameGetDirectionKeyHandler(int key, void *data);
+int gameGetFieldTypeKeyHandler(int key, void *data);
 int gameGetPhaseKeyHandler(int key, void *data);
 int gameGetCoordinateKeyHandler(int key, void *data);
 int gamePeerCity(int city, void *data);
