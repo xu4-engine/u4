@@ -71,6 +71,7 @@ void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
 void gameCheckRandomMonsters(void);
 long gameTimeSinceLastCommand(void);
+int gameWindSlowsShip(Direction shipdir);
 
 extern Map world_map;
 Context *c = NULL;
@@ -1744,6 +1745,10 @@ int moveAvatar(Direction dir, int userEvent) {
             slow = (rand() % 2) == 0;
             break;
         }
+
+        if (tileIsShip(c->saveGame->transport) && gameWindSlowsShip(dir))
+            slow = 1;
+
         if (slow) {
             screenMessage("Slow progress!\n");
             result = 0;
@@ -1976,4 +1981,17 @@ void gameCheckRandomMonsters() {
 
 long gameTimeSinceLastCommand() {
     return time(NULL) - c->lastCommandTime;
+}
+
+/**
+ * Check whether a ship movement in a given direction is slowed down
+ * by the wind.
+ */
+int gameWindSlowsShip(Direction shipdir) {
+    if (shipdir == (Direction) c->windDirection)
+        return (c->saveGame->moves % 4) != 3;
+    else if (shipdir == dirReverse((Direction) c->windDirection))
+        return (c->saveGame->moves % 4) == 0;
+    else
+        return 0;
 }
