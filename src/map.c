@@ -204,18 +204,12 @@ int mapReadWorld(Map *map, FILE *world) {
     ych = 0;
     x = 0;
     y = 0;
-    for (i = 0; i < (MAP_VERT_CHUNKS * MAP_CHUNK_HEIGHT * MAP_HORIZ_CHUNKS * MAP_CHUNK_WIDTH); i++) {
-        readChar(&(map->data[x + (y * MAP_CHUNK_WIDTH * MAP_HORIZ_CHUNKS) + (xch * MAP_CHUNK_WIDTH) + (ych * MAP_CHUNK_HEIGHT * MAP_HORIZ_CHUNKS * MAP_CHUNK_WIDTH)]), world);
-        x++;
-        if (x >= MAP_CHUNK_WIDTH) {
-            x = 0;
-            y++;
-            if (y >= MAP_CHUNK_HEIGHT) {
-                y = 0;
-                xch++;
-                if (xch >= MAP_HORIZ_CHUNKS) {
-                    xch = 0;
-                    ych++;
+
+    for(ych = 0; ych < MAP_VERT_CHUNKS; ++ych) {
+        for(xch = 0; xch < MAP_HORIZ_CHUNKS; ++xch) {
+            for(y = 0; y < MAP_CHUNK_HEIGHT; ++y) {
+                for(x = 0; x < MAP_CHUNK_WIDTH; ++x) {
+                    readChar(&(map->data[x + (y * MAP_CHUNK_WIDTH * MAP_HORIZ_CHUNKS) + (xch * MAP_CHUNK_WIDTH) + (ych * MAP_CHUNK_HEIGHT * MAP_HORIZ_CHUNKS * MAP_CHUNK_WIDTH)]), world);
                 }
             }
         }
@@ -284,6 +278,7 @@ void mapAddPersonObject(Map *map, const Person *person) {
     obj->movement_behavior = person->movement_behavior;
     obj->person = person;
     obj->isAvatar = 0;
+    obj->hasFocus = 0;
     obj->next = map->objects;
 
     map->objects = obj;
@@ -301,6 +296,7 @@ void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned s
     obj->movement_behavior = MOVEMENT_FIXED;
     obj->person = NULL;
     obj->isAvatar = 0;
+    obj->hasFocus = 0;
     obj->next = map->objects;
 
     map->objects = obj;
@@ -318,6 +314,7 @@ void mapAddAvatarObject(Map *map, unsigned int tile, unsigned short x, unsigned 
     obj->movement_behavior = MOVEMENT_FIXED;
     obj->person = NULL;
     obj->isAvatar = 1;
+    obj->hasFocus = 0;
     obj->next = map->objects;
 
     map->objects = obj;
