@@ -13,7 +13,7 @@ SDL_CFLAGS=-I$(SRC)/sdl/include
 SDL_LIBS=-L$(SRC)/sdl/lib -lSDLmain -lSDL
 
 CC=gcc
-CFLAGS=-Wall -I. $(SDL_CFLAGS)
+CFLAGS=-Wall -I. -Dsnprintf=_snprintf $(SDL_CFLAGS)
 
 LIBS=-lmingw32 $(SDL_LIBS) -mwindows
 MAIN=u4.exe
