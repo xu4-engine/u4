@@ -30,8 +30,9 @@ typedef enum {
 typedef enum {
    NPC_EMPTY,
    NPC_TALKER,
-   NPC_TALKER_COMPANION,
    NPC_TALKER_BEGGAR,
+   NPC_TALKER_GUARD,
+   NPC_TALKER_COMPANION,
    NPC_VENDOR_WEAPONS,
    NPC_VENDOR_ARMOR,
    NPC_VENDOR_FOOD,
@@ -77,7 +78,6 @@ typedef struct _Person {
 } Person;
 
 int personInit(void);
-void personInitType(Person *p);
 void personGetConversationText(struct _Conversation *cnv, const char *inquiry, char **response);
 void personGetPrompt(const struct _Conversation *cnv, char **prompt);
 
