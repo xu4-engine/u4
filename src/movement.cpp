@@ -12,13 +12,10 @@
 #include "debug.h"
 #include "dungeon.h"
 #include "location.h"
-#include "mapmgr.h"
 #include "creature.h"
-#include "names.h"
 #include "object.h"
 #include "player.h"
 #include "savegame.h"
-#include "settings.h"
 #include "tile.h"
 #include "utils.h"
 
@@ -29,16 +26,18 @@ bool collisionOverride = false;
  * should be set if the avatar is being moved in response to a
  * keystroke.  Returns zero if the avatar is blocked.
  */
-MoveReturnValue moveAvatar(Direction dir, int userEvent) {    
+void moveAvatar(MoveEvent &event) {    
     MapCoords newCoords;
     int slowed = 0;
     SlowedType slowedType = SLOWED_BY_TILE;
     Object *destObj;
 
     /* Check to see if we're on the balloon */
-    if (c->transportContext == TRANSPORT_BALLOON && userEvent)
-        return (MoveReturnValue)(MOVE_DRIFT_ONLY | MOVE_END_TURN);
-        
+    if (c->transportContext == TRANSPORT_BALLOON && event.userEvent) {
+        event.result = (MoveResult)(MOVE_DRIFT_ONLY | MOVE_END_TURN);
+        return;
+    }
+
     if (c->transportContext == TRANSPORT_SHIP)
         slowedType = SLOWED_BY_WIND;
     else if (c->transportContext == TRANSPORT_BALLOON)
@@ -46,33 +45,36 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
 
     /* if you're on ship, you must turn first! */
     if (c->transportContext == TRANSPORT_SHIP) {
-        if (c->party->transport.getDirection() != dir) {
-            c->party->transport.setDirection(dir);            
-            return (MoveReturnValue)(MOVE_TURNED | MOVE_END_TURN);
+        if (c->party->transport.getDirection() != event.dir) {
+            c->party->transport.setDirection(event.dir);
+            event.result = (MoveResult)(MOVE_TURNED | MOVE_END_TURN);
+            return;
         }
     }
     
     /* change direction of horse, if necessary */
     if (c->transportContext == TRANSPORT_HORSE) {
-        if ((dir == DIR_WEST || dir == DIR_EAST) && (c->party->transport.getDirection() != dir))
-            c->party->transport.setDirection(dir);        
+        if ((event.dir == DIR_WEST || event.dir == DIR_EAST) && (c->party->transport.getDirection() != event.dir))
+            c->party->transport.setDirection(event.dir);
     }
 
     /* figure out our new location we're trying to move to */
     newCoords = c->location->coords;    
-    newCoords.move(dir, c->location->map);    
+    newCoords.move(event.dir, c->location->map);
 
     /* see if we moved off the map */
-    if (MAP_IS_OOB(c->location->map, newCoords))
-        return (MoveReturnValue)(MOVE_MAP_CHANGE | MOVE_EXIT_TO_PARENT | MOVE_SUCCEEDED);
+    if (MAP_IS_OOB(c->location->map, newCoords)) {
+        event.result = (MoveResult)(MOVE_MAP_CHANGE | MOVE_EXIT_TO_PARENT | MOVE_SUCCEEDED);
+        return;
+    }
 
     if (!collisionOverride && !c->party->isFlying()) {
-        int movementMask;
-
-        movementMask = c->location->map->getValidMoves(c->location->coords, c->party->transport);
+        int movementMask = c->location->map->getValidMoves(c->location->coords, c->party->transport);
         /* See if movement was blocked */
-        if (!DIR_IN_MASK(dir, movementMask))
-            return (MoveReturnValue)(MOVE_BLOCKED | MOVE_END_TURN);
+        if (!DIR_IN_MASK(event.dir, movementMask)) {
+            event.result = (MoveResult)(MOVE_BLOCKED | MOVE_END_TURN);
+            return;
+        }
 
         /* Are we slowed by terrain or by wind direction? */
         switch(slowedType) {
@@ -80,15 +82,17 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
             slowed = slowedByTile(*c->location->map->tileAt(newCoords, WITHOUT_OBJECTS));
             break;
         case SLOWED_BY_WIND:
-            slowed = slowedByWind(dir);
+            slowed = slowedByWind(event.dir);
             break;
         case SLOWED_BY_NOTHING:
         default:
             break;
         }
         
-        if (slowed)            
-            return (MoveReturnValue)(MOVE_SLOWED | MOVE_END_TURN);
+        if (slowed) {
+            event.result = (MoveResult)(MOVE_SLOWED | MOVE_END_TURN);
+            return;
+        }
     }
 
     /* move succeeded */
@@ -101,15 +105,15 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
         m->specialEffect();
     }
 
-    return (MoveReturnValue)(MOVE_SUCCEEDED | MOVE_END_TURN);
+    event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);
 }
 
 /**
  * Moves the avatar while in dungeon view
  */
-MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {    
+void moveAvatarInDungeon(MoveEvent &event) {
     MapCoords newCoords;
-    Direction realDir = dirNormalize((Direction)c->saveGame->orientation, dir); /* get our real direction */  
+    Direction realDir = dirNormalize((Direction)c->saveGame->orientation, event.dir); /* get our real direction */  
     int advancing = realDir == c->saveGame->orientation,
         retreating = realDir == dirReverse((Direction)c->saveGame->orientation);
     MapTile *tile;
@@ -120,7 +124,8 @@ MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {
     /* you must turn first! */
     if (!advancing && !retreating) {        
         c->saveGame->orientation = realDir;
-        return MOVE_TURNED;
+        event.result = MOVE_TURNED;
+        return;
     }
     
     /* figure out our new location */
@@ -130,27 +135,29 @@ MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {
     tile = c->location->map->tileAt(newCoords, WITH_OBJECTS);
 
     /* see if we moved off the map (really, this should never happen in a dungeon) */
-    if (MAP_IS_OOB(c->location->map, newCoords))
-        return (MoveReturnValue)(MOVE_MAP_CHANGE | MOVE_EXIT_TO_PARENT | MOVE_SUCCEEDED);
+    if (MAP_IS_OOB(c->location->map, newCoords)) {
+        event.result = (MoveResult)(MOVE_MAP_CHANGE | MOVE_EXIT_TO_PARENT | MOVE_SUCCEEDED);
+        return;
+    }
 
     if (!collisionOverride) {
-        int movementMask;        
-        
-        movementMask = c->location->map->getValidMoves(c->location->coords, c->party->transport);
+        int movementMask = c->location->map->getValidMoves(c->location->coords, c->party->transport);
 
         if (advancing && !tile->canWalkOn(DIR_ADVANCE))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
         else if (retreating && !tile->canWalkOn(DIR_RETREAT))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
 
-        if (!DIR_IN_MASK(realDir, movementMask))
-            return (MoveReturnValue)(MOVE_BLOCKED | MOVE_END_TURN);
+        if (!DIR_IN_MASK(realDir, movementMask)) {
+            event.result = (MoveResult)(MOVE_BLOCKED | MOVE_END_TURN);
+            return;
+        }
     }
 
     /* move succeeded */
     c->location->coords = newCoords;    
 
-    return (MoveReturnValue)(MOVE_SUCCEEDED | MOVE_END_TURN);
+    event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);
 }
 
 /**
@@ -308,21 +315,21 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
 /**
  * Moves a party member during combat screens
  */
-MoveReturnValue movePartyMember(Direction dir, int userEvent) {
+void movePartyMember(MoveEvent &event) {
     CombatController *ct = c->combat;
     CombatMap *cm = getCombatMap();
-    MoveReturnValue result = MOVE_SUCCEEDED;    
-    int movementMask;
     int member = ct->getFocus();
     MapCoords newCoords;
     PartyMemberVector *party = ct->getParty();
 
+    event.result = MOVE_SUCCEEDED;    
+
     /* find our new location */
     newCoords = (*party)[member]->getCoords();
-    newCoords.move(dir, c->location->map);
+    newCoords.move(event.dir, c->location->map);
 
     if (MAP_IS_OOB(c->location->map, newCoords)) {
-        bool sameExit = (!cm->isDungeonRoom() || (ct->getExitDir() == DIR_NONE) || (dir == ct->getExitDir()));
+        bool sameExit = (!cm->isDungeonRoom() || (ct->getExitDir() == DIR_NONE) || (event.dir == ct->getExitDir()));
         if (sameExit) {
             /* if in a win-or-lose battle and not camping, then it can be bad to flee while healthy */
             if (ct->isWinOrLose() && !ct->isCamping()) {
@@ -332,17 +339,23 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
                     c->party->adjustKarma(KA_HEALTHY_FLED_EVIL);
             }
 
-            ct->setExitDir(dir);
+            ct->setExitDir(event.dir);
             c->location->map->removeObject((*party)[member]);
             (*party)[member] = NULL;
-            return (MoveReturnValue)(MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE | MOVE_SUCCEEDED | MOVE_END_TURN);
+            event.result = (MoveResult)(MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE | MOVE_SUCCEEDED | MOVE_END_TURN);
+            return;
         }
-        else return (MoveReturnValue)(MOVE_MUST_USE_SAME_EXIT | MOVE_END_TURN);
+        else {
+            event.result = (MoveResult)(MOVE_MUST_USE_SAME_EXIT | MOVE_END_TURN);
+            return;
+        }
     }
 
-    movementMask = c->location->map->getValidMoves((*party)[member]->getCoords(), (*party)[member]->getTile());
-    if (!DIR_IN_MASK(dir, movementMask))
-        return (MoveReturnValue)(MOVE_BLOCKED | MOVE_END_TURN);
+    int movementMask = c->location->map->getValidMoves((*party)[member]->getCoords(), (*party)[member]->getTile());
+    if (!DIR_IN_MASK(event.dir, movementMask)) {
+        event.result = (MoveResult)(MOVE_BLOCKED | MOVE_END_TURN);
+        return;
+    }
 
     /* is the party member slowed? */
     if (!slowedByTile(*c->location->map->tileAt(newCoords, WITHOUT_OBJECTS)))
@@ -387,9 +400,10 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
             }
         }    
     }
-    else return (MoveReturnValue)(MOVE_SLOWED | MOVE_END_TURN);
-        
-    return result;
+    else {
+        event.result = (MoveResult)(MOVE_SLOWED | MOVE_END_TURN);
+        return;
+    }
 }
  
 /**

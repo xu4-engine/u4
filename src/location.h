@@ -9,6 +9,7 @@
 
 #include "map.h"
 #include "movement.h"
+#include "observable.h"
 #include "types.h"
 
 class Tileset;
@@ -28,14 +29,15 @@ typedef enum {
 
 typedef void (*FinishTurnCallback)(void);
 
-class Location {
+class Location : public Observable<Location *, MoveEvent &> {
 public:
-    Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, Tileset* tileset, MoveCallback moveCallback, Location *prev);
+    Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, Tileset* tileset, Location *prev);
 
     MapTile *visibleTileAt(MapCoords coords, bool &focus);
     std::vector<MapTile *> tilesAt(MapCoords coords, bool &focus);
     MapTile getReplacementTile(MapCoords coords);
     int getCurrentPosition(MapCoords *coords);
+    MoveResult move(Direction dir, bool userEvent);
 
     MapCoords coords;    
     Map *map;
@@ -43,7 +45,6 @@ public:
     LocationContext context;
     FinishTurnCallback finishTurn;
     Tileset *tileset;
-    MoveCallback move;    
     int activePlayer;
     Location *prev;
 };

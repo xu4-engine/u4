@@ -27,8 +27,7 @@ Location *locationPop(Location **stack);
  * start a new stack if 'prev' is NULL
  */
 Location::Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx,
-                   FinishTurnCallback finishTurnCallback, Tileset* tileset, MoveCallback moveCallback,
-                   Location *prev) {
+                   FinishTurnCallback finishTurnCallback, Tileset* tileset, Location *prev) {
 
     this->coords = coords;
     this->map = map;
@@ -36,7 +35,6 @@ Location::Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx
     this->context = ctx;
     this->finishTurn = finishTurnCallback;
     this->tileset = tileset;
-    this->move = moveCallback;        
     this->activePlayer = -1;
 
     locationPush(prev, this);
@@ -167,6 +165,30 @@ int Location::getCurrentPosition(MapCoords *coords) {
 
     return 1;
 }
+
+MoveResult Location::move(Direction dir, bool userEvent) {
+    MoveEvent event(dir, userEvent);
+    switch (map->type) {
+
+    case Map::DUNGEON:
+        moveAvatarInDungeon(event);
+        break;
+
+    case Map::COMBAT:
+        movePartyMember(event);
+        break;
+
+    default:
+        moveAvatar(event);
+        break;
+    }
+
+    setChanged();
+    notifyObservers(event);
+
+    return event.result;
+}
+
 
 /**
  * Pop a location from the stack and free the memory

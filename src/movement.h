@@ -8,20 +8,16 @@
 #include "direction.h"
 #include "map.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 class Object;
 class Map;
 
-typedef enum {
+enum SlowedType {
     SLOWED_BY_NOTHING,
     SLOWED_BY_TILE,
     SLOWED_BY_WIND
-} SlowedType;
+};
 
-typedef enum {
+enum MoveResult {
     MOVE_SUCCEEDED          = 0x0001,    
     MOVE_END_TURN           = 0x0002,
     MOVE_BLOCKED            = 0x0004,
@@ -31,22 +27,25 @@ typedef enum {
     MOVE_EXIT_TO_PARENT     = 0x0040,
     MOVE_SLOWED             = 0x0080,
     MOVE_MUST_USE_SAME_EXIT = 0x0100
-} MoveReturnValue;
+};
 
-typedef MoveReturnValue (*MoveCallback)(Direction, int);
+class MoveEvent {
+public:
+    MoveEvent(Direction d, bool user) : dir(d), userEvent(user), result(MOVE_SUCCEEDED) {}
 
-MoveReturnValue moveAvatar(Direction dir, int userEvent);
-MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent);
+    Direction dir;              /**< the direction of the move */
+    bool userEvent;             /**< whether the user initiated the move */
+    MoveResult result;          /**< how the movement was resolved */
+};
+
+void moveAvatar(MoveEvent &event);
+void moveAvatarInDungeon(MoveEvent &event);
 int moveObject(class Map *map, class Creature *obj, MapCoords avatar);
 int moveCombatObject(int action, class Map *map, class Creature *obj, MapCoords target);
-MoveReturnValue movePartyMember(Direction dir, int userEvent);
+void movePartyMember(MoveEvent &event);
 int slowedByTile(MapTile tile);
 int slowedByWind(int direction);
 
 extern bool collisionOverride;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
