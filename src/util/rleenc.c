@@ -21,6 +21,7 @@ int main(int argc, char *argv[]) {
     unsigned char *data, *p;
     int bits;
     int threshold;
+    int height = 0, width = 0;
 
     if (argc != 2 && argc != 3) {
         fprintf(stderr, "usage: rleenc infile [outfile]\n");
@@ -38,14 +39,18 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    readEgaFromPng(&data, 200, 320, &bits, fname);
+    readEgaFromPng(&data, &height, &width, &bits, fname);
+
+    fprintf(stderr, "image is %dx%d (%d bits)\n", width, height, bits);
 
     /* 
      * The original, 4-bit graphics only start a run if the count is 5
      * or more; but the upgrade uses a run whereever it doesn't expand
      * the file (i.e. at a count of 3).  This value is adjusted to
      * reecode the files exactly as they were, if they weren't
-     * changed.
+     * changed.  A threshold of 3 or 4 gives optimal compression; 5 is
+     * slightly worse and it is not clear why the original files used
+     * it.
      */
     if (bits == 4)
         threshold = 5;
@@ -53,7 +58,7 @@ int main(int argc, char *argv[]) {
         threshold = 3;
 
     p = data;
-    datalen = 320 * 200 * bits / 8;
+    datalen = width * height * bits / 8;
     count = 0;
     val = -1;
 

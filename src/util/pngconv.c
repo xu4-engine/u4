@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <png.h>
 
+#include "pngconv.h"
+
 void setEgaPalette(png_color *palette) {
     #define setpalentry(i, r, g, b) \
         palette[i].red = r; \
@@ -126,7 +128,7 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
     return 0;
 }
 
-int readEgaFromPng(unsigned char **data, int height, int width, int *bits, const char *fname) {
+int readEgaFromPng(unsigned char **data, int *height, int *width, int *bits, const char *fname) {
     FILE *fp;
     unsigned char *p;
     char header[8];
@@ -185,19 +187,16 @@ int readEgaFromPng(unsigned char **data, int height, int width, int *bits, const
        &bit_depth, &color_type, &interlace_type,
        &compression_type, &filter_method);
 
-    if (height != pheight ||
-        width != pwidth) {
-        fprintf(stderr, "PNG must be %dx%d\n", width, height);
-        exit(1);
-    }
+    *height = pheight;
+    *width = pwidth;
 
     row_pointers = png_get_rows(png_ptr, info_ptr);
 
-    *data = (unsigned char *) malloc(width * height * bit_depth / 8);
+    *data = (unsigned char *) malloc(pwidth * pheight * bit_depth / 8);
 
     p = *data;
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width * bit_depth / 8; j++) {
+    for (i = 0; i < pheight; i++) {
+        for (j = 0; j < pwidth * bit_depth / 8; j++) {
             *p++ = row_pointers[i][j];
         }
     }

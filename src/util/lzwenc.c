@@ -140,6 +140,7 @@ int main(int argc, char *argv[]) {
     int c;
     unsigned char *data, *p;
     int bits;
+    int height = 0, width = 0;
 
     if (argc != 2 && argc != 3) {
         fprintf(stderr, "usage: lzwenc infile [outfile]\n");
@@ -157,12 +158,14 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    readEgaFromPng(&data, 200, 320, &bits, fname);
+    readEgaFromPng(&data, &height, &width, &bits, fname);
+
+    fprintf(stderr, "image is %dx%d (%d bits)\n", width, height, bits);
 
     initdict();
 
     p = data;
-    datalen = 320 * 200 * bits / 8;
+    datalen = width * height * bits / 8;
     idx = 0;
     c = *p++;
     str[idx++] = c;
