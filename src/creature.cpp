@@ -619,6 +619,11 @@ void Creature::removeStatus(StatusType s) {
             i = status.erase(i);
         else i++;
     }
+
+    // Just to be sure, if a player is poisoned from a savegame, then they won't have
+    // a STAT_GOOD in the stack yet.
+    if (status.empty())
+        addStatus(STAT_GOOD);
 }
 
 void Creature::setStatus(StatusType s) {
