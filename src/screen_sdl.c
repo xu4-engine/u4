@@ -746,7 +746,18 @@ void screenShowTile(unsigned char tile, int x, int y) {
  */
 void screenShowGemTile(unsigned char tile, int x, int y) {
     /* FIXME: show gem tile rather than some random color rectangle */
-    screenFillRect(screen, GEMAREA_X + (x * GEMTILE_W), GEMAREA_Y + (y * GEMTILE_H), GEMTILE_W, GEMTILE_H, tile);
+    SDL_Rect src, dest;
+
+    src.x = 0;
+    src.y = tile * (tiles->h / N_TILES);
+    src.w = GEMTILE_W * scale;
+    src.h = GEMTILE_H * scale;
+    dest.x = (GEMAREA_X + (x * GEMTILE_W)) * scale;
+    dest.y = (GEMAREA_Y + (y * GEMTILE_H)) * scale;
+    dest.w = GEMTILE_W * scale;
+    dest.h = GEMTILE_H * scale;
+
+    SDL_BlitSurface(tiles, &src, screen, &dest);
 }
 
 /**
@@ -869,8 +880,7 @@ void screenShowBeastie(int beast, int frame) {
     SDL_BlitSurface(introAnimations[ANIM_ANIMATE], &src, screen, &dest);
 }
 
-#if 0
-void screenShowGem() {
+void screenGemUpdate() {
     int x, y;
 
     screenFillRect(screen, 8, 8, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0);
@@ -881,8 +891,8 @@ void screenShowGem() {
         }
     }
 
-    screenForceRedraw();
-
-    sleep(3);
+    screenUpdateCursor();
+    screenUpdateMoons();
+    screenUpdateWind();
 }
-#endif
+

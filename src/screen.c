@@ -73,24 +73,50 @@ void screenMessage(const char *fmt, ...) {
 }
 
 unsigned char screenViewportTile(int width, int height, int x, int y) {
+    int centerx, centery, tx, ty;
     const Object *obj;
 
-    /* off the edge of the map: show sea (world map) or grass (all other maps) */
-    if (MAP_IS_OOB(c->map, x + c->saveGame->x - (width / 2), y + c->saveGame->y - (height / 2)))
-        return (mapIsWorldMap(c->map) ? SEA_TILE : GRASS_TILE);
+    centerx = c->saveGame->x;
+    centery = c->saveGame->y;
+    if (c->map->width == width &&
+        c->map->height == height) {
+        centerx = width / 2;
+        centery = height / 2;
+    }
 
-    else if ((obj = mapObjectAt(c->map, x + c->saveGame->x - (width / 2), y + c->saveGame->y - (height / 2)))) 
+    tx = x + centerx - (width / 2);
+    ty = y + centery - (height / 2);
+
+    /* off the edge of the map: wrap or pad with grass tiles */
+    if (MAP_IS_OOB(c->map, tx, ty)) {
+        if (c->map->border_behavior == BORDER_WRAP) {
+	    if (tx < 0)
+		tx += c->map->width;
+	    if (ty < 0)
+		ty += c->map->height;
+	    if (tx >= c->map->width)
+		tx -= c->map->width;
+	    if (ty >= c->map->height)
+		ty -= c->map->height;
+        }
+        else
+            return GRASS_TILE;
+    }
+
+    if ((obj = mapObjectAt(c->map, tx, ty, 0))) 
         return obj->tile;
 
     else
-        return mapTileAt(c->map, x + c->saveGame->x - (width / 2), y + c->saveGame->y - (height / 2));
+        return mapTileAt(c->map, tx, ty);
 }
 
 void screenUpdate() {
     int y, x;
 
-    if (c == NULL)
+    if (c == NULL) {
+        printf("screenUpdate called with NULL\n");
         return;
+    }
 
     screenFindLineOfSight();
 
