@@ -833,9 +833,9 @@ void introUpdateScreen() {
         if (storyInd == 0)
             screenDrawBackground(BKGD_TREE);
         else if (storyInd == 3)
-            screenAnimateIntro(0);
+            screenAnimateIntro("moongate");
         else if (storyInd == 5)
-            screenAnimateIntro(1);
+            screenAnimateIntro("items");
         else if (storyInd == 6)
             screenDrawBackground(BKGD_PORTAL);
         else if (storyInd == 11)

@@ -57,18 +57,18 @@ const char *getVirtueName(Virtue virtue) {
         return "???";
 }
 
-const char *getBaseVirtueName(int virtueMask) {
-    if (virtueMask == VIRT_TRUTH)           return "Truth";
-    else if (virtueMask == VIRT_LOVE)       return "Love";
-    else if (virtueMask == VIRT_COURAGE)    return "Courage";
-    else if (virtueMask == (VIRT_TRUTH | VIRT_LOVE)) return "Truth and Love";
-    else if (virtueMask == (VIRT_LOVE | VIRT_COURAGE)) return "Love and Courage";
-    else if (virtueMask == (VIRT_COURAGE | VIRT_TRUTH)) return "Courage and Truth";
-    else if (virtueMask == (VIRT_TRUTH | VIRT_LOVE | VIRT_COURAGE)) return "Truth, Love and Courage";
+const char *getPrincipleName(int principleMask) {
+    if (principleMask == VIRT_TRUTH)           return "Truth";
+    else if (principleMask == VIRT_LOVE)       return "Love";
+    else if (principleMask == VIRT_COURAGE)    return "Courage";
+    else if (principleMask == (VIRT_TRUTH | VIRT_LOVE)) return "Truth and Love";
+    else if (principleMask == (VIRT_LOVE | VIRT_COURAGE)) return "Love and Courage";
+    else if (principleMask == (VIRT_COURAGE | VIRT_TRUTH)) return "Courage and Truth";
+    else if (principleMask == (VIRT_TRUTH | VIRT_LOVE | VIRT_COURAGE)) return "Truth, Love and Courage";
     else return "???";
 }
 
-int getBaseVirtues(Virtue virtue) {
+int getPrinciples(Virtue virtue) {
     switch(virtue) {
     case VIRT_HONESTY: return VIRT_TRUTH;
     case VIRT_COMPASSION: return VIRT_LOVE;

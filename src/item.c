@@ -355,9 +355,9 @@ void useStone(void *item) {
              (c->location->context & CTX_DUNGEON) && 
              (dungeonCurrentToken() == DUNGEON_ALTAR)) {
 
-        int virtueMask = getBaseVirtues((Virtue)c->location->z);
+        int virtueMask = getPrinciples((Virtue)c->location->z);
         if (virtueMask > 0)
-            screenMessage("\n\nAs thou doth approach, a voice rings out: What virtue dost stem from %s?\n\n", getBaseVirtueName(virtueMask));
+            screenMessage("\n\nAs thou doth approach, a voice rings out: What virtue dost stem from %s?\n\n", getPrincipleName(virtueMask));
         else screenMessage("\n\nA voice rings out:  What virtue exists independently of Truth, Love, and Courage?\n\n");
 
         gameGetInput(&itemHandleVirtues, itemNameBuffer, sizeof(itemNameBuffer), 0, 0);
