@@ -57,6 +57,7 @@ int talkAtCoord(int x, int y);
 void talkSetHandler(const Conversation *cnv);
 int talkHandleBuffer(const char *message);
 int talkHandleChoice(char choice);
+int useItem(const char *itemName);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 void gameCheckSpecialMonsters(Direction dir);
@@ -65,6 +66,7 @@ void gameCheckRandomMonsters(void);
 
 int collisionOverride = 0;
 ViewMode viewMode = VIEW_NORMAL;
+char itemNameBuffer[16];
 
 /**
  * Sets the view mode.
@@ -108,7 +110,7 @@ void gameSetMap(Context *ct, Map *map, int setStartPos) {
         map->objects == NULL) {
         for (i = 0; i < map->city->n_persons; i++) {
             if (map->city->persons[i].tile0 != 0 &&
-                !(personIsJoinable(&(map->city->persons[i])) && personIsJoined(&(map->city->persons[i]))))
+                !(personIsJoinable(&(map->city->persons[i]), NULL) && personIsJoined(&(map->city->persons[i]))))
                 mapAddPersonObject(map, &(map->city->persons[i]));
         }
     }
@@ -242,6 +244,7 @@ int gameBaseKeyHandler(int key, void *data) {
     CoordActionInfo *info;
     GetChoiceActionInfo *choiceInfo;
     AlphaActionInfo *alphaInfo;
+    ReadBufferActionInfo *readBufferInfo;
     const ItemLocation *item;
     unsigned char tile;
 
@@ -381,6 +384,13 @@ int gameBaseKeyHandler(int key, void *data) {
 
         } else
             screenMessage("Enter what?\n");
+        break;
+
+    case 'f':
+        if (tileIsShip(c->saveGame->transport))
+            screenMessage("FIXME\n");
+        else
+            screenMessage("Fire What?\n");
         break;
 
     case 'g':
@@ -536,6 +546,18 @@ int gameBaseKeyHandler(int key, void *data) {
         info->failedMessage = "Funny, no\nresponse!";
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Talk\nDir: ");
+        break;
+
+    case 'u':
+        screenMessage("Use which item:\n");
+        readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+        readBufferInfo->handleBuffer = &useItem;
+        readBufferInfo->buffer = itemNameBuffer;
+        readBufferInfo->bufferLen = sizeof(itemNameBuffer);
+        readBufferInfo->screenX = TEXT_AREA_X + c->col;
+        readBufferInfo->screenY = TEXT_AREA_Y + c->line;
+        itemNameBuffer[0] = '\0';
+        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
         break;
 
     case 'v':
@@ -1396,6 +1418,16 @@ int talkHandleChoice(char choice) {
     }
 
     talkSetHandler(&c->conversation);
+
+    return 1;
+}
+
+int useItem(const char *itemName) {
+    eventHandlerPopKeyHandler();
+
+    screenMessage("\nNot a Usable item!\n");
+
+    gameFinishTurn();
 
     return 1;
 }
