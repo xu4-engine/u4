@@ -55,6 +55,8 @@ rm -rf %{buildroot}
 %{_libdir}/u4/u4dec
 %{_libdir}/u4/tlkconv
 %{_libdir}/u4/*.xml
+%{_libdir}/u4/tileset/*.xml
+%{_libdir}/u4/tileset/tilemap/*.xml
 %{_libdir}/u4/dtd/*.dtd
 %{_libdir}/u4/graphics/ega/*.rle
 %{_libdir}/u4/graphics/ega/*.png
@@ -63,6 +65,9 @@ rm -rf %{buildroot}
 %{_libdir}/u4/u4upgrad.zip
 
 %changelog
+* Thu Nov 25 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added xml files in subdirectories to files section
+
 * Thu Nov 25 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - fixed to build utils again
 
