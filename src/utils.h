@@ -54,7 +54,7 @@ public:
     }
 
     void report(const char *pre = NULL) {
-        static const double msec = CLOCKS_PER_SEC / 1000;
+        static const double msec = double(CLOCKS_PER_SEC) / double(1000);
         TimeMap::const_iterator i;
         clock_t total = 0;
         std::map<double, string> percentages;
