@@ -135,3 +135,5 @@ clean:: cleanimages cleanmaps cleanmisc
 
 cleanmisc:
 	rm -rf *~ */*~ $(OBJS)
+
+-include .depends
