@@ -59,6 +59,12 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    /* initialize person data */
+    if (!personInit()) {
+        fprintf(stderr, "error initializing person data: is Ultima 4 for DOS installed?\n");
+        exit(1);
+    }
+
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
     c->parent = NULL;
