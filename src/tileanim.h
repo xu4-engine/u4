@@ -5,39 +5,49 @@
 #ifndef TILEANIM_H
 #define TILEANIM_H
 
-#include "types.h"
+#include <string>
+#include <map>
+#include <vector>
+
 #include "xml.h"
 
 struct _Image;
-struct _TileAnimTransform;
-struct _TileAnim;
+struct _RGBA;
 
-typedef xu4_list<struct _TileAnimTransform*> TileAnimTransformList;
-typedef xu4_map<string, struct _TileAnim*, std::less<string> > TileAnimSetAnimMap;
+struct TileAnimPixelTransform {
+    int x, y;
+    std::vector<struct _RGBA *> colors;
+};
 
-typedef enum {
-    TRANSFORM_INVERT
-} TileAnimTransformType;
-
-typedef struct _TileAnimTransform {
-    TileAnimTransformType type;
+struct TileAnimInvertTransform {
     int x, y, w, h;
-} TileAnimTransform;
+};
 
-typedef struct _TileAnim {
-    string name;
-    TileAnimTransformList transforms;
-} TileAnim;
+struct  TileAnimTransform {
+    enum TileAnimTransformType {
+        TRANSFORM_INVERT,
+        TRANSFORM_PIXEL
+    } type;
+    TileAnimInvertTransform invert;
+    TileAnimPixelTransform pixel;
+};
 
-typedef struct _TileAnimSet {
-    string name;
-    TileAnimSetAnimMap tileanims;
-} TileAnimSet;
+struct TileAnim {
+    std::string name;
+    std::vector<TileAnimTransform *> transforms;
+};
+
+struct TileAnimSet {
+    std::string name;
+    std::map<std::string, TileAnim *> tileanims;
+};
+
 
 TileAnimSet *tileAnimSetLoadFromXml(xmlNodePtr node);
 TileAnim *tileAnimLoadFromXml(xmlNodePtr node);
 TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node);
-TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, string name);
-void tileAnimDraw(TileAnim *anim, struct _Image *tiles, int tile, int scale, int x, int y);
+TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const std::string &name);
+RGBA *tileAnimColorLoadFromXml(xmlNodePtr node);
+void tileAnimDraw(TileAnim *anim, Image *tiles, int tile, int scale, int x, int y);
 
 #endif

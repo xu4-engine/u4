@@ -2,14 +2,16 @@
  * $Id$
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <algorithm>
+#include <functional>
+#include <vector>
+#include <map>
+#include <cstdlib>
+#include <cctype>
 #include <SDL.h>
 
 #include "cursors.h"
 #include "debug.h"
-#include "dngview.h"
 #include "error.h"
 #include "event.h"
 #include "image.h"
@@ -21,18 +23,21 @@
 #include "screen.h"
 #include "tileanim.h"
 #include "tileset.h"
+#include "dngview.h"
 #include "u4.h"
 #include "u4_sdl.h"
 #include "u4file.h"
 #include "utils.h"
 #include "xml.h"
-
 #include "lzw/u4decode.h"
 
-void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b);
+using std::vector;
+using std::map;
+
 void fixupIntro(Image *im, int prescale);
 void fixupIntroExtended(Image *im, int prescale);
 void fixupAbyssVision(Image *im, int prescale);
+void fixupAbacus(Image *im, int prescale);
 void screenFreeIntroBackground();
 int screenLoadImageData(struct _Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp);
 Image *screenScale(Image *src, int scale, int n, int filter);
@@ -41,13 +46,65 @@ int screenLoadPaletteVga(const char *filename);
 Image *screenScaleDown(Image *src, int scale);
 
 SDL_Surface *screen;
-Image *image[BKGD_MAX];
 Image *dngGraphic[56];
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
 SDL_Cursor *cursors[5];
 int scale;
 Scaler filterScaler;
+
+enum ImageFixup {
+    FIXUP_NONE,
+    FIXUP_INTRO,
+    FIXUP_INTRO_EXTENDED,
+    FIXUP_ABYSS,
+    FIXUP_ABACUS
+};
+
+struct SubImage {
+    string name;
+    string srcImageName;
+    int x, y, width, height;
+};
+
+struct ImageInfo {
+    string name;
+    string filename;
+    int width, height, depth;
+    int prescale;
+    CompressionType filetype;
+    int tiles;                  /* used to scale the without bleeding colors between adjacent tiles */
+    int introOnly;              /* whether can be freed after the intro */
+    int transparentIndex;       /* color index to consider transparent */
+    int xu4Graphic;             /* an original xu4 graphic not part of u4dos or the VGA upgrade */
+    ImageFixup fixup;           /* a routine to do miscellaneous fixes to the image */
+    Image *image;
+    map<string, SubImage *> subImages;
+};
+
+struct ImageSet {
+    string name;
+    string location;
+    string extends;
+    map<string, ImageInfo *> info;
+};
+
+enum LayoutType {
+    LAYOUT_STANDARD,
+    LAYOUT_GEM
+};
+
+struct Layout {
+    string name;
+    LayoutType type;
+    struct {
+        int width, height;
+    } tileshape;
+    struct {
+        int x, y;
+        int width, height;
+    } viewport;
+};
 
 const struct {
     const char *filename;
@@ -127,20 +184,31 @@ const struct {
 void screenLoadGraphicsFromXml(void);
 ImageSet *screenLoadImageSetFromXml(xmlNodePtr node);
 ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node);
+SubImage *screenLoadSubImageFromXml(xmlNodePtr node);
 Layout *screenLoadLayoutFromXml(xmlNodePtr node);
+ImageInfo *screenLoadImage(const string &name);
+void screenDrawSubImage(const string &name, int x, int y);
 SDL_Cursor *screenInitCursor(char *xpm[]);
+int imageInfoByName(void *info1, void *info2);
 
-ImageSetMap imageSets;
-LayoutMap layouts;
-LayoutMap gemLayouts;
-TileAnimSetMap tileanimSets;
-
+map<string, ImageSet *> imageSets;
+vector<Layout *> layouts;
+vector<TileAnimSet *> tileanimSets;
+vector<string> imageSetNames;
+vector<string> gemLayoutNames;
 Layout *gemlayout = NULL;
 TileAnimSet *tileanims = NULL;
+ImageInfo *charsetInfo = NULL;
+ImageInfo *tilesInfo = NULL;
+ImageInfo *gemTilesInfo = NULL;
 
-extern bool verbose;
+extern int verbose;
 
 void screenInit() {
+    charsetInfo = NULL;
+    tilesInfo = NULL;
+    gemTilesInfo = NULL;
+
     screenLoadGraphicsFromXml();
 
     /* set up scaling parameters */
@@ -172,8 +240,8 @@ void screenInit() {
     u4upgradeInstalled = u4isUpgradeInstalled();
 
     /* if we can't use vga, reset to default:ega */
-    if (!u4upgradeExists && strcmp(settings.videoType.c_str(), "VGA") == 0)
-        settings.videoType = "EGA";    
+    if (!u4upgradeExists && settings.videoType == "VGA")
+        settings.videoType = "EGA";
 
     if (verbose)
         printf("screen initialized [screenInit()]\n");
@@ -193,15 +261,18 @@ void screenInit() {
     }
 
     /* find the tile animations for our tileset */
-    TileAnimSetMap::iterator found = tileanimSets.find(settings.videoType);
-    if (found != tileanimSets.end())
-        tileanims = found->second;
-    else 
+    tileanims = NULL;
+    for (vector<TileAnimSet *>::const_iterator i = tileanimSets.begin(); i != tileanimSets.end(); i++) {
+        TileAnimSet *set = *i;
+        if (set->name == settings.videoType)
+            tileanims = set;
+    }
+    if (!tileanims)
         errorFatal("unable to find tile animations for \"%s\" video mode in graphics.xml", settings.videoType.c_str());
 }
 
 void screenDelete() {
-    screenFreeBackgrounds();    
+    screenFreeImages();
     u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
     if (verbose)
@@ -216,13 +287,22 @@ void screenReInit() {
     tilesetDeleteAllTilesets(); /* unload tilesets */
     screenDelete(); /* delete screen stuff */            
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
+    eventHandlerInit();    
     tilesetLoadAllTilesetsFromXml("tilesets.xml"); /* re-load tilesets */
     introInit();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
 
+const vector<string> &screenGetImageSetNames() {
+    return imageSetNames;
+}
+
+const vector<string> &screenGetGemLayoutNames() {
+    return gemLayoutNames;
+}
+
 void screenLoadGraphicsFromXml() {
     xmlDocPtr doc;
-    xmlNodePtr root, node;    
+    xmlNodePtr root, node;
 
     doc = xmlParse("graphics.xml");
     root = xmlDocGetRootElement(doc);
@@ -236,30 +316,37 @@ void screenLoadGraphicsFromXml() {
         if (xmlStrcmp(node->name, (const xmlChar *) "imageset") == 0) {
             ImageSet *set = screenLoadImageSetFromXml(node);
             imageSets[set->name] = set;
-        }            
-        else if (xmlStrcmp(node->name, (const xmlChar *) "layout") == 0) {
-            Layout *layout = screenLoadLayoutFromXml(node);            
-            
-            /* add the layout to the global layout list */
-            layouts[layout->name] = layout;
+        }
+        else if (xmlStrcmp(node->name, (const xmlChar *) "layout") == 0)
+            layouts.push_back(screenLoadLayoutFromXml(node));
+        else if (xmlStrcmp(node->name, (const xmlChar *) "tileanimset") == 0)
+            tileanimSets.push_back(tileAnimSetLoadFromXml(node));
+    }
 
-            /* if the layout is a gem layout, add it to our special gem layout list */
-            if (layout->type == LAYOUT_GEM)
-                gemLayouts[layout->name] = layout;
+    imageSetNames.clear();
+    for (map<string, ImageSet *>::const_iterator i = imageSets.begin(); i != imageSets.end(); i++)
+        imageSetNames.push_back(i->first);
+
+    gemLayoutNames.clear();
+    for (vector<Layout *>::const_iterator i = layouts.begin(); i != layouts.end(); i++) {
+        Layout *layout = *i;
+        if (layout->type == LAYOUT_GEM) {
+            gemLayoutNames.push_back(layout->name);
         }
-        else if (xmlStrcmp(node->name, (const xmlChar *) "tileanimset") == 0) {            
-            TileAnimSet *set = tileAnimSetLoadFromXml(node);
-            tileanimSets[set->name] = set;
-        }
-    }    
+    }
 
     /*
      * Find gem layout to use.
      */
-    LayoutMap::iterator found = gemLayouts.find(settings.gemLayout);
-    if (found != gemLayouts.end())
-        gemlayout = found->second;
-    else
+    for (vector<Layout *>::const_iterator i = layouts.begin(); i != layouts.end(); i++) {
+        Layout *layout = *i;
+
+        if (layout->type == LAYOUT_GEM && layout->name == settings.gemLayout) {
+            gemlayout = layout;
+            break;
+        }
+    }
+    if (!gemlayout)
         errorFatal("no gem layout named %s found!\n", settings.gemLayout.c_str());
 }
 
@@ -268,21 +355,17 @@ ImageSet *screenLoadImageSetFromXml(xmlNodePtr node) {
     xmlNodePtr child;
 
     set = new ImageSet;
-    memset(set, 0, sizeof(ImageSet));
-    set->name = xmlGetPropAsStr(node, "name");
-    set->location = xmlGetPropAsStr(node, "location");
-    set->extends = xmlGetPropAsStr(node, "extends");
+    set->name = xmlGetPropAsString(node, "name");
+    set->location = xmlGetPropAsString(node, "location");
+    set->extends = xmlGetPropAsString(node, "extends");
 
     for (child = node->xmlChildrenNode; child; child = child->next) {
         if (xmlNodeIsText(child))
             continue;
 
         if (xmlStrcmp(child->name, (const xmlChar *) "image") == 0) {
-            ImageInfo *image = screenLoadImageInfoFromXml(child);
-            if (image->id >= BKGD_MAX)
-                errorWarning("image id out of range: %d (%s)", image->id, image->filename);
-            else
-                set->image[image->id] = image;
+            ImageInfo *info = screenLoadImageInfoFromXml(child);
+            set->info[info->name] = info;
         }
     }
 
@@ -290,30 +373,55 @@ ImageSet *screenLoadImageSetFromXml(xmlNodePtr node) {
 }
 
 ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node) {
-    ImageInfo *image;
+    ImageInfo *info;
+    xmlNodePtr child;
     static const char *filetypeEnumStrings[] = { "raw", "rle", "lzw", NULL };
-    static const char *fixupEnumStrings[] = { "none", "intro", "introExtended", "abyss", NULL };
+    static const char *fixupEnumStrings[] = { "none", "intro", "introExtended", "abyss", "abacus", NULL };
 
-    image = new ImageInfo;
-    image->id = xmlGetPropAsInt(node, "id");
-    image->filename = xmlGetPropAsStr(node, "filename");
-    image->width = xmlGetPropAsInt(node, "width");
-    image->height = xmlGetPropAsInt(node, "height");
-    image->depth = xmlGetPropAsInt(node, "depth");
-    image->prescale = xmlGetPropAsInt(node, "prescale");
-    image->filetype = (CompressionType)xmlGetPropAsEnum(node, "filetype", filetypeEnumStrings);
-    image->tiles = xmlGetPropAsInt(node, "tiles");
-    image->introOnly = xmlGetPropAsBool(node, "introOnly");
+    info = new ImageInfo;
+    info->name = xmlGetPropAsString(node, "name");
+    info->filename = xmlGetPropAsString(node, "filename");
+    info->width = xmlGetPropAsInt(node, "width");
+    info->height = xmlGetPropAsInt(node, "height");
+    info->depth = xmlGetPropAsInt(node, "depth");
+    info->prescale = xmlGetPropAsInt(node, "prescale");
+    info->filetype = (CompressionType) xmlGetPropAsEnum(node, "filetype", filetypeEnumStrings);
+    info->tiles = xmlGetPropAsInt(node, "tiles");
+    info->introOnly = xmlGetPropAsBool(node, "introOnly");
     if (xmlPropExists(node, "transparentIndex"))
-        image->transparentIndex = xmlGetPropAsInt(node, "transparentIndex");
+        info->transparentIndex = xmlGetPropAsInt(node, "transparentIndex");
     else
-        image->transparentIndex = -1;
-    image->xu4Graphic = xmlGetPropAsBool(node, "xu4Graphic");
-    image->fixup = (ImageFixup)xmlGetPropAsEnum(node, "fixup", fixupEnumStrings);
+        info->transparentIndex = -1;
+    info->xu4Graphic = xmlGetPropAsBool(node, "xu4Graphic");
+    info->fixup = (ImageFixup) xmlGetPropAsEnum(node, "fixup", fixupEnumStrings);
+    info->image = NULL;
 
-    return image;
+    for (child = node->xmlChildrenNode; child; child = child->next) {
+        if (xmlNodeIsText(child))
+            continue;
+
+        if (xmlStrcmp(child->name, (const xmlChar *) "subimage") == 0) {
+            SubImage *subimage = screenLoadSubImageFromXml(child);
+            subimage->srcImageName = info->name;
+            info->subImages[subimage->name] = subimage;
+        }
+    }
+
+    return info;
 }
 
+SubImage *screenLoadSubImageFromXml(xmlNodePtr node) {
+    SubImage *subimage;
+
+    subimage = new SubImage;
+    subimage->name = xmlGetPropAsString(node, "name");
+    subimage->x = xmlGetPropAsInt(node, "x");
+    subimage->y = xmlGetPropAsInt(node, "y");
+    subimage->width = xmlGetPropAsInt(node, "width");
+    subimage->height = xmlGetPropAsInt(node, "height");
+
+    return subimage;
+}
 
 Layout *screenLoadLayoutFromXml(xmlNodePtr node) {
     Layout *layout;
@@ -321,8 +429,8 @@ Layout *screenLoadLayoutFromXml(xmlNodePtr node) {
     static const char *typeEnumStrings[] = { "standard", "gem", NULL };
 
     layout = new Layout;
-    layout->name = xmlGetPropAsStr(node, "name");
-    layout->type = (LayoutType)xmlGetPropAsEnum(node, "type", typeEnumStrings);
+    layout->name = xmlGetPropAsString(node, "name");
+    layout->type = (LayoutType) xmlGetPropAsEnum(node, "type", typeEnumStrings);
 
     for (child = node->xmlChildrenNode; child; child = child->next) {
         if (xmlNodeIsText(child))
@@ -348,7 +456,7 @@ Layout *screenLoadLayoutFromXml(xmlNodePtr node) {
  *  Fills a rectangular screen area with the specified color.  The x,
  *  y, width and height parameters are unscaled, i.e. for 320x200.
  */
-void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b) {
+void screenFillRect(int x, int y, int w, int h, int r, int g, int b) {
     SDL_Rect dest;
 
     dest.x = x * scale;
@@ -356,7 +464,7 @@ void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int
     dest.w = w * scale;
     dest.h = h * scale;
 
-    if (SDL_FillRect(surface, &dest, SDL_MapRGB(surface->format, (Uint8)r, (Uint8)g, (Uint8)b)) != 0)
+    if (SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, (Uint8)r, (Uint8)g, (Uint8)b)) != 0)
         errorWarning("screenFillRect: SDL_FillRect failed\n%s", SDL_GetError());
 }
 
@@ -435,37 +543,62 @@ void fixupAbyssVision(Image *im, int prescale) {
     memcpy(data, im->surface->pixels, im->surface->pitch * im->surface->h);
 }
 
-/**
- * Returns image information for the given image set.
- */
-ImageInfo *screenGetImageInfoFromSet(BackgroundType bkgd, string setname) {    
-    ImageSetMap::iterator found;
-    ImageSet *set;
-    
-    ASSERT(imageSets.size(), "imageSets isn't initialized");
-
-    /* find the correct image set */
-    found = imageSets.find(setname);
-    if (found == imageSets.end())
-        return NULL;
-    
-    set = found->second;
+void fixupAbacus(Image *im, int prescale) {
 
     /* 
-     * if the image set contains the image we want, we are done;
-     * otherwise, if this image set extends another, check the base
-     * image set.
+     * surround each bead with a row green pixels to avoid artifacts
+     * when scaling
      */
-    if (set->image[bkgd])
-        return set->image[bkgd];
 
-    if (set->extends)
-        return screenGetImageInfoFromSet(bkgd, set->extends);
+    imageFillRect(im, 7 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
+    imageFillRect(im, 16 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
+    imageFillRect(im, 8 * prescale, 186 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
+    imageFillRect(im, 8 * prescale, 199 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
+
+    imageFillRect(im, 23 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
+    imageFillRect(im, 32 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
+    imageFillRect(im, 24 * prescale, 186 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
+    imageFillRect(im, 24 * prescale, 199 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
+}
+
+/**
+ * Returns information for the given image set.
+ */
+ImageSet *screenGetImageSet(const string &setname) {
+    map<string, ImageSet *>::iterator i = imageSets.find(setname);
+    if (i != imageSets.end())
+        return i->second;
+    else
+        return NULL;
+}
+
+/**
+ * Returns information for the given image set.
+ */
+ImageInfo *screenGetImageInfoFromSet(const string &name, const string &setname) {
+    ImageSet *set;
+    
+    set = screenGetImageSet(setname);
+    if (!set)
+        return NULL;
+
+    /* if the image set contains the image we want, we are done */
+    
+    map<string, ImageInfo *>::iterator i = set->info.find(name);
+    if (i != set->info.end())
+        return i->second;
+
+    /* otherwise if this image set extends another, check the base image set */
+    if (set->extends != "")
+        return screenGetImageInfoFromSet(name, set->extends);
 
     return NULL;
 }
 
-ImageInfo *screenGetImageInfo(BackgroundType bkgd) {
+/**
+ * Returns image information for the current image set.
+ */
+ImageInfo *screenGetImageInfo(const string &name) {
     string setname;
     
     if (!u4upgradeExists)
@@ -473,22 +606,55 @@ ImageInfo *screenGetImageInfo(BackgroundType bkgd) {
     else
         setname = settings.videoType;
 
-    return screenGetImageInfoFromSet(bkgd, setname);
+    return screenGetImageInfoFromSet(name, setname);
 }
+
+/**
+ * Returns information for the given image set.
+ */
+SubImage *screenGetSubImage(const string &name) {
+    string setname;
+    ImageSet *set;
+    
+    if (!u4upgradeExists)
+        setname = "EGA";
+    else
+        setname = settings.videoType;
+
+    set = screenGetImageSet(setname);
+
+    while (set != NULL) {
+        for (map<string, ImageInfo *>::iterator i = set->info.begin(); i != set->info.end(); i++) {
+            ImageInfo *info = (ImageInfo *) i->second;
+            map<string, SubImage *>::iterator j = info->subImages.find(name);
+            if (j != info->subImages.end())
+                return j->second;
+        }
+
+        set = screenGetImageSet(set->extends);
+    }
+        
+    return NULL;
+}
+
 
 /**
  * Load in a background image from a ".ega" file.
  */
-int screenLoadBackground(BackgroundType bkgd) {
+ImageInfo *screenLoadImage(const string &name) {
     int ret, imageScale;
     ImageInfo *info;
-    const char *filename;
+    string filename;
     Image *unscaled;
     U4FILE *file;
 
-    info = screenGetImageInfo(bkgd);
+    info = screenGetImageInfo(name);
     if (!info)
-        errorFatal("no information on image %d in graphics.xml", bkgd);
+        return NULL;
+
+    /* return if already loaded */
+    if (info->image != NULL)
+        return info;
 
     /*
      * If the u4 VGA upgrade is installed (i.e. setup has been run and
@@ -498,27 +664,27 @@ int screenLoadBackground(BackgroundType bkgd) {
      * and are not renamed in the upgrade installation process
      */
     filename = info->filename;
-    if (u4upgradeInstalled && strstr(screenGetImageInfoFromSet(bkgd, "VGA")->filename, ".old") != NULL) {
-        if (strcmp(settings.videoType.c_str(), "EGA") == 0)
-            filename = screenGetImageInfoFromSet(bkgd, "VGA")->filename;
+    if (u4upgradeInstalled && screenGetImageInfoFromSet(name, "VGA")->filename.find(".old") != string::npos) {
+        if (settings.videoType == "EGA")
+            filename = screenGetImageInfoFromSet(name, "VGA")->filename;
         else
-            filename = screenGetImageInfoFromSet(bkgd, "EGA")->filename;
+            filename = screenGetImageInfoFromSet(name, "EGA")->filename;
     }
 
-    if (!filename)
-        return 0;
+    if (filename == "")
+        return NULL;
 
     if (info->xu4Graphic) {
         char *pathname;
 
-        pathname = u4find_graphics(filename);
+        pathname = u4find_graphics(filename.c_str());
         if (pathname) {
             file = u4fopen_stdio(pathname);
-            delete pathname;
+            free(pathname);
         }
     } 
     else {
-        file = u4fopen(filename);
+        file = u4fopen(filename.c_str());
     }
     
     ret = 0;
@@ -532,7 +698,7 @@ int screenLoadBackground(BackgroundType bkgd) {
         u4fclose(file);
     }
     if (!ret)
-        return 0;
+        return NULL;
 
     if (info->transparentIndex != -1)
         imageSetTransparentIndex(unscaled, info->transparentIndex);
@@ -555,30 +721,35 @@ int screenLoadBackground(BackgroundType bkgd) {
     case FIXUP_ABYSS:
         fixupAbyssVision(unscaled, info->prescale);
         break;
+    case FIXUP_ABACUS:
+        fixupAbacus(unscaled, info->prescale);
+        break;
     }
 
     imageScale = scale;
     if (info->prescale != 0) {
         if ((scale % info->prescale) != 0)
-            errorFatal("image %s is prescaled to an incompatible size: %d\n", filename, info->prescale);
+            errorFatal("image %s is prescaled to an incompatible size: %d\n", filename.c_str(), info->prescale);
         imageScale /= info->prescale;
     }
         
-    image[bkgd] = screenScale(unscaled, imageScale, info->tiles, 1);
+    info->image = screenScale(unscaled, imageScale, info->tiles, 1);
 
-    return 1;
+    return info;
 }
 
 /**
- * Free up all background images
+ * Free up all images
  */
-void screenFreeBackgrounds() {
-    int i;
-
-    for (i = 0; i < BKGD_MAX; i++) {
-        if (image[i] != NULL) {
-            imageDelete(image[i]);
-            image[i] = NULL;
+void screenFreeImages() {
+    for (map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++) {
+        ImageSet *set = i->second;
+        for (map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
+            ImageInfo *info = j->second;
+            if (info->image != NULL) {
+                imageDelete(info->image);
+                info->image = NULL;
+            }
         }
     }
 }
@@ -587,15 +758,15 @@ void screenFreeBackgrounds() {
  * Free up any background images used only in the animations.
  */
 void screenFreeIntroBackgrounds() {
-    ImageInfo *info;
-    int i;
-
-    for (i = 0; i < BKGD_MAX; i++) {
-        info = screenGetImageInfo((BackgroundType)i);
-        if (image[i] == NULL || !info || !info->introOnly)
-            continue;
-        imageDelete(image[i]);
-        image[i] = NULL;
+    for (map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++) {
+        ImageSet *set = i->second;
+        for (map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
+            ImageInfo *info = j->second;
+            if (info->image != NULL && info->introOnly) {
+                imageDelete(info->image);
+                info->image = NULL;
+            }
+        }
     }
 }
 
@@ -653,7 +824,7 @@ void screenDeinterlaceCga(unsigned char *data, int width, int height, int tiles,
     int t, x, y;
     int tileheight = height / tiles;
 
-    tmp = new unsigned char [width * tileheight / 4];
+    tmp = new unsigned char[width * tileheight / 4];
 
     for (t = 0; t < tiles; t++) {
         unsigned char *base;
@@ -676,7 +847,7 @@ void screenDeinterlaceCga(unsigned char *data, int width, int height, int tiles,
         }
     }
 
-    delete tmp;
+    delete [] tmp;
 }
 
 /**
@@ -689,7 +860,7 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
     long inlen, decompResult;
 
     inlen = u4flength(file);
-    compressed_data = new Uint8[inlen];
+    compressed_data = (Uint8 *) malloc(inlen);
     u4fread(compressed_data, 1, inlen, file);
 
     switch(comp) {
@@ -699,11 +870,11 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
         break;
     case COMP_RLE:
         decompResult = rleDecompressMemory(compressed_data, inlen, (void **) &decompressed_data);
-        delete compressed_data;;
+        free(compressed_data);
         break;
     case COMP_LZW:
         decompResult = decompress_u4_memory(compressed_data, inlen, (void **) &decompressed_data);
-        delete compressed_data;;
+        free(compressed_data);
         break;
     default:
         ASSERT(0, "invalid compression type %d", comp);
@@ -711,7 +882,7 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
 
     if (decompResult == -1) {
         if (decompressed_data)
-            delete decompressed_data;
+            free(decompressed_data);
         return 0;
     }
 
@@ -720,7 +891,7 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
     img = imageNew(width, height, 1, 1, IMTYPE_HW);
     if (!img) {
         if (decompressed_data)
-            delete decompressed_data;
+            free(decompressed_data);
         return 0;
     }
 
@@ -734,7 +905,7 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
             imagePutPixelIndex(img, x + 3, y, (decompressed_data[(y * width + x) / 4]) & 0x03);
         }
     }
-    delete decompressed_data;
+    free(decompressed_data);
 
     (*image) = img;
 
@@ -754,7 +925,7 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
     ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp passed to screenLoadImageData: %d", bpp);
 
     inlen = u4flength(file);
-    compressed_data = new Uint8[inlen];
+    compressed_data = (Uint8 *) malloc(inlen);
     u4fread(compressed_data, 1, inlen, file);
 
     switch(comp) {
@@ -764,11 +935,11 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
         break;
     case COMP_RLE:
         decompResult = rleDecompressMemory(compressed_data, inlen, (void **) &decompressed_data);
-        delete compressed_data;;
+        free(compressed_data);
         break;
     case COMP_LZW:
         decompResult = decompress_u4_memory(compressed_data, inlen, (void **) &decompressed_data);
-        delete compressed_data;;
+        free(compressed_data);
         break;
     default:
         ASSERT(0, "invalid compression type %d", comp);
@@ -777,7 +948,7 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
     if (decompResult == -1 ||
         decompResult != (width * height * bpp / 8)) {
         if (decompressed_data)
-            delete decompressed_data;
+            free(decompressed_data);
         return 0;
     }
 
@@ -785,7 +956,7 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
     img = imageNew(width, height, 1, indexed, IMTYPE_HW);
     if (!img) {
         if (decompressed_data)
-            delete decompressed_data;
+            free(decompressed_data);
         return 0;
     }
 
@@ -831,7 +1002,7 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
         }
     }
 
-    delete decompressed_data;
+    free(decompressed_data);
 
     (*image) = img;
 
@@ -839,47 +1010,69 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
 }
 
 /**
- * Draw the surrounding borders on the screen.
+ * Draw an image or subimage on the screen.
  */
-void screenDrawBackground(BackgroundType bkgd) {
-    ASSERT(bkgd < BKGD_MAX, "bkgd out of range: %d", bkgd);
+void screenDrawImage(const string &name) {
+    ImageInfo *info;
 
-    if (image[bkgd] == NULL) {
-        if (!screenLoadBackground(bkgd))
-            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+    info = screenLoadImage(name);
+    if (info) {
+        imageDraw(info->image, 0, 0);
+        return;
     }
 
-    imageDraw(image[bkgd], 0, 0);
+    errorFatal("unable to load image \"%s\": is Ultima IV installed?  See http://xu4.sourceforge.net/", name.c_str());
 }
 
-void screenDrawBackgroundInMapArea(BackgroundType bkgd) {
-    ASSERT(bkgd < BKGD_MAX, "bkgd out of range: %d", bkgd);
+void screenDrawImageInMapArea(const string &name) {
+    ImageInfo *info;
 
-    if (image[bkgd] == NULL) {
-        if (!screenLoadBackground(bkgd))
-            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
-    }
+    info = screenLoadImage(name);
+    if (!info)
+        errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
-    imageDrawSubRect(image[bkgd], BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
+    imageDrawSubRect(info->image, BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
                      BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
                      VIEWPORT_W * TILE_WIDTH * scale, 
                      VIEWPORT_H * TILE_HEIGHT * scale);
+}
+
+
+void screenDrawSubImage(const string &name, int x, int y) {
+    SubImage *subimage;
+    ImageInfo *info;
+
+    subimage = screenGetSubImage(name);
+    if (subimage) {
+        info = screenLoadImage(subimage->srcImageName);
+        
+        if (info) {
+            imageDrawSubRect(info->image, x, y, 
+                             subimage->x * (scale / info->prescale),
+                             subimage->y * (scale / info->prescale),
+                             subimage->width * (scale / info->prescale),
+                             subimage->height * (scale / info->prescale));
+            return;
+        }
+    }
+
+    errorFatal("unable to load subimage \"%s\": is Ultima IV installed?  See http://xu4.sourceforge.net/", name.c_str());
+
 }
 
 /**
  * Draw a character from the charset onto the screen.
  */
 void screenShowChar(int chr, int x, int y) {
-    Image *charset;
-
-    if (image[BKGD_CHARSET] == NULL) {
-        if (!screenLoadBackground(BKGD_CHARSET))
+    if (charsetInfo == NULL) {
+        charsetInfo = screenLoadImage(BKGD_CHARSET);
+        if (!charsetInfo)
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
-    charset = image[BKGD_CHARSET];
-    imageDrawSubRect(charset, x * charset->w, y * (CHAR_HEIGHT * scale),
+
+    imageDrawSubRect(charsetInfo->image, x * charsetInfo->image->w, y * (CHAR_HEIGHT * scale),
                      0, chr * (CHAR_HEIGHT * scale),
-                     charset->w, CHAR_HEIGHT * scale);
+                     charsetInfo->image->w, CHAR_HEIGHT * scale);
 }
 
 /**
@@ -893,8 +1086,8 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
     int i;
 
     screenShowChar(chr, x, y);
-    dest.x = x * image[BKGD_CHARSET]->w;
-    dest.w = image[BKGD_CHARSET]->w;
+    dest.x = x * charsetInfo->image->w;
+    dest.w = charsetInfo->image->w;
     dest.h = scale;
     for (i = 0; i < 8; i++) {
         if (mask & (1 << i)) {
@@ -907,18 +1100,20 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowTile(Tileset *tileset, MapTile tile, int focus, int x, int y) {
+void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int y) {
     int offset;
     SDL_Rect src, dest;
     int unscaled_x, unscaled_y;
     Image *tiles;
     TileAnim *anim = NULL;
 
-    if (image[tileset->imageId] == NULL) {
-        if (!screenLoadBackground((BackgroundType)tileset->imageId))
+    if (tilesInfo == NULL || tilesInfo->name != tileset->imageName) {
+        tilesInfo = screenLoadImage(tileset->imageName);
+        if (!tilesInfo)
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
-    tiles = image[tileset->imageId];
+
+    tiles = tilesInfo->image;
 
     if (tileGetAnimationStyle(tile) == ANIM_SCROLL)
         offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale;
@@ -938,10 +1133,6 @@ void screenShowTile(Tileset *tileset, MapTile tile, int focus, int x, int y) {
     unscaled_x = x * (tiles->w / scale) + BORDER_WIDTH;
     unscaled_y = y * ((tiles->h / scale) / N_TILES) + BORDER_HEIGHT;
 
-    if (tileGetAnimationStyle(tile) == ANIM_CAMPFIRE) {
-        /* FIXME: animate campfire */
-    }
-
     SDL_BlitSurface(tiles->surface, &src, screen, &dest);    
 
     if (offset != 0) {
@@ -959,7 +1150,7 @@ void screenShowTile(Tileset *tileset, MapTile tile, int focus, int x, int y) {
     }
 
     /*
-     * animate flags
+     * animate flags and camp fires
      */
     switch (tileGetAnimationStyle(tile)) {
     case ANIM_CITYFLAG:
@@ -977,13 +1168,16 @@ void screenShowTile(Tileset *tileset, MapTile tile, int focus, int x, int y) {
     case ANIM_EASTSHIPFLAG:
         anim = tileAnimSetGetAnimByName(tileanims, "shipflageast");
         break;
+    case ANIM_CAMPFIRE:
+        anim = tileAnimSetGetAnimByName(tileanims, "fire");
+        break;
     default:
         anim = NULL;
         break;
     }
 
     if (anim)
-        tileAnimDraw(anim, tiles, tile, scale, x * tiles->w + (BORDER_WIDTH * scale), y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale));
+        tileAnimDraw(anim, tiles, tile, scale, x * tiles->w / scale + BORDER_WIDTH, y * tiles->h / N_TILES / scale + BORDER_HEIGHT);
 
     /*
      * finally draw the focus rectangle if the tile has the focus
@@ -1022,29 +1216,29 @@ void screenShowTile(Tileset *tileset, MapTile tile, int focus, int x, int y) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowGemTile(MapTile tile, int focus, int x, int y) {
-    SDL_Rect src, dest;
-
-    if (!image[BKGD_GEMTILES]) {
-        if (!screenLoadBackground(BKGD_GEMTILES))
+void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
+    if (gemTilesInfo == NULL) {
+        gemTilesInfo = screenLoadImage(BKGD_GEMTILES);
+        if (!gemTilesInfo)
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
-    dest.x = (gemlayout->viewport.x + (x * gemlayout->tileshape.width)) * scale;
-    dest.y = (gemlayout->viewport.y + (y * gemlayout->tileshape.height)) * scale;
-    dest.w = gemlayout->tileshape.width * scale;
-    dest.h = gemlayout->tileshape.height * scale;
-
     if (tile < 128) {
-        src.x = 0;
-        src.y = tile * gemlayout->tileshape.height * scale;
-        src.w = gemlayout->tileshape.width * scale;
-        src.h = gemlayout->tileshape.height * scale;
+        imageDrawSubRect(gemTilesInfo->image, 
+                         (gemlayout->viewport.x + (x * gemlayout->tileshape.width)) * scale,
+                         (gemlayout->viewport.y + (y * gemlayout->tileshape.height)) * scale,
+                         0, 
+                         tile * gemlayout->tileshape.height * scale, 
+                         gemlayout->tileshape.width * scale,
+                         gemlayout->tileshape.height * scale);
+    } else {
+        SDL_Rect dest;
 
-        SDL_BlitSurface(image[BKGD_GEMTILES]->surface, &src, screen, &dest);
-    }
+        dest.x = (gemlayout->viewport.x + (x * gemlayout->tileshape.width)) * scale;
+        dest.y = (gemlayout->viewport.y + (y * gemlayout->tileshape.height)) * scale;
+        dest.w = gemlayout->tileshape.width * scale;
+        dest.h = gemlayout->tileshape.height * scale;
 
-    else {
         SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0, 0, 0));
     }
 }
@@ -1055,11 +1249,11 @@ void screenShowGemTile(MapTile tile, int focus, int x, int y) {
 void screenScrollMessageArea() {
     SDL_Rect src, dest;
         
-    ASSERT(image[BKGD_CHARSET] != NULL, "charset not initialized!");
+    ASSERT(charsetInfo != NULL && charsetInfo->image != NULL, "charset not initialized!");
 
-    src.x = TEXT_AREA_X * image[BKGD_CHARSET]->w;
+    src.x = TEXT_AREA_X * charsetInfo->image->w;
     src.y = (TEXT_AREA_Y + 1) * CHAR_HEIGHT * scale;
-    src.w = TEXT_AREA_W * image[BKGD_CHARSET]->w;
+    src.w = TEXT_AREA_W * charsetInfo->image->w;
     src.h = (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale;
 
     dest.x = src.x;
@@ -1183,7 +1377,7 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
         return 0;
 
     file = u4fopen_stdio(pathname);
-    delete pathname;
+    free(pathname);
     if (!file)
         return 0;
 
@@ -1204,33 +1398,33 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
     return 1;
 }
 
-void screenDungeonDrawTile(int distance, MapTile tile) {
+void screenDungeonDrawTile(int distance, unsigned char tile) {
     SDL_Rect src, dest;
     Image *tmp, *scaled;
     const static int dscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
     int offset;
     int savedflags;
 
-    tmp = imageNew(image[BKGD_SHAPES]->w, image[BKGD_SHAPES]->h / N_TILES, 1, image[BKGD_SHAPES]->indexed, IMTYPE_SW);
-    if (image[BKGD_SHAPES]->indexed)
-        imageSetPaletteFromImage(tmp, image[BKGD_SHAPES]);
+    tmp = imageNew(tilesInfo->image->w, tilesInfo->image->h / N_TILES, 1, tilesInfo->image->indexed, IMTYPE_SW);
+    if (tilesInfo->image->indexed)
+        imageSetPaletteFromImage(tmp, tilesInfo->image);
 
     src.x = 0;
-    src.y = tile * (image[BKGD_SHAPES]->h / N_TILES);
-    src.w = image[BKGD_SHAPES]->w;
-    src.h = image[BKGD_SHAPES]->h / N_TILES;
+    src.y = tile * (tilesInfo->image->h / N_TILES);
+    src.w = tilesInfo->image->w;
+    src.h = tilesInfo->image->h / N_TILES;
     dest.x = 0;
     dest.y = 0;
-    dest.w = image[BKGD_SHAPES]->w;
-    dest.h = image[BKGD_SHAPES]->h / N_TILES;
+    dest.w = tilesInfo->image->w;
+    dest.h = tilesInfo->image->h / N_TILES;
 
     /* have to turn off alpha on tiles before blitting: why? */
-    savedflags = image[BKGD_SHAPES]->surface->flags;
-    image[BKGD_SHAPES]->surface->flags &= ~SDL_SRCALPHA;
+    savedflags = tilesInfo->image->surface->flags;
+    tilesInfo->image->surface->flags &= ~SDL_SRCALPHA;
 
-    SDL_BlitSurface(image[BKGD_SHAPES]->surface, &src, tmp->surface, &dest);
+    SDL_BlitSurface(tilesInfo->image->surface, &src, tmp->surface, &dest);
 
-    image[BKGD_SHAPES]->surface->flags = savedflags;
+    tilesInfo->image->surface->flags = savedflags;
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
     if (dscale[distance] == 1)
@@ -1248,7 +1442,7 @@ void screenDungeonDrawTile(int distance, MapTile tile) {
     src.y = 0;
     src.w = scaled->w;
     src.h = scaled->h - offset;
-    dest.x = (VIEWPORT_W * image[BKGD_SHAPES]->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
+    dest.x = (VIEWPORT_W * tilesInfo->image->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
     dest.y = ((doffset[distance] + BORDER_HEIGHT) * scale) + offset;
     dest.w = scaled->w;
     dest.h = scaled->h;
@@ -1261,7 +1455,7 @@ void screenDungeonDrawTile(int distance, MapTile tile) {
         src.y = scaled->h - offset;
         src.w = scaled->w;
         src.h = offset;
-        dest.x = (VIEWPORT_W * image[BKGD_SHAPES]->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
+        dest.x = (VIEWPORT_W * tilesInfo->image->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
         dest.y = ((doffset[distance] + BORDER_HEIGHT) * scale);
         dest.w = scaled->w;
         dest.h = scaled->h;
@@ -1306,28 +1500,8 @@ void screenRedrawMapArea() {
  * the circle without the moongate, but with a small white dot
  * representing the anhk and history book.
  */
-void screenAnimateIntro(int frame) {
-    SDL_Rect src, dest;
-
-    ASSERT(frame == 0 || frame == 1, "invalid frame: %d", frame);
-
-    if (frame == 0) {
-        src.x = 0 * scale;
-        src.y = 152 * scale;
-    } else {
-        src.x = 24 * scale;
-        src.y = 152 * scale;
-    }
-
-    src.w = 24 * scale;
-    src.h = 24 * scale;
-
-    dest.x = 72 * scale;
-    dest.y = 68 * scale;
-    dest.w = 24 * scale;
-    dest.h = 24 * scale;
-
-    SDL_BlitSurface(image[BKGD_TREE]->surface, &src, screen, &dest);
+void screenAnimateIntro(const string &frame) {
+    screenDrawSubImage(frame, 72 * scale, 68 * scale);
 }
 
 void screenEraseMapArea() {
@@ -1361,72 +1535,27 @@ void screenRedrawTextArea(int x, int y, int width, int height) {
  * the gypsy.
  */
 void screenShowCard(int pos, int card) {
-    SDL_Rect src, dest;
+    static const char *subImageNames[] = { 
+        "honestycard", "compassioncard", "valorcard", "justicecard",
+        "sacrificecard", "honorcard", "spiritualitycard", "humilitycard" 
+    };
 
     ASSERT(pos == 0 || pos == 1, "invalid pos: %d", pos);
     ASSERT(card < 8, "invalid card: %d", card);
 
-    if (image[card / 2 + BKGD_HONCOM] == NULL)
-        screenLoadBackground((BackgroundType)(card / 2 + BKGD_HONCOM));
-
-    src.x = ((card % 2) ? 218 : 12) * scale;
-    src.y = 12 * scale;
-    src.w = 90 * scale;
-    src.h = 124 * scale;
-
-    dest.x = (pos ? 218 : 12) * scale;
-    dest.y = 12 * scale;
-    dest.w = 90 * scale;
-    dest.h = 124 * scale;
-
-    SDL_BlitSurface(image[card / 2 + BKGD_HONCOM]->surface, &src, screen, &dest);
+    screenDrawSubImage(subImageNames[card], (pos ? 218 : 12) * scale, 12 * scale);
 }
 
 /**
  * Draws the beads in the abacus during the character creation sequence
  */
 void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
-    int x, y, c;
-
     ASSERT(row >= 0 && row < 7, "invalid row: %d", row);
     ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
     ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
     
-    /* FIXME: Should really be blitting the beads from ABACUS.EGA at 
-       (8, 188) and (24, 188) but there are ugly artifacts if you do
-       this with scaling switched on. Need to get rid of the artifacts
-       somehow. */
-
-    /* For now, here's some code to draw some beads that look something
-       like the beads from the Amiga version of Ultima IV (not exactly
-       the same) */
-       
-    /* Draw black bead for the virtue that was *not* selected */
-    x = 128 + (rejectedVirtue * 9);
-    y = 24 + (row * 15);
-    if (row > 2) y--;
-    if (row > 3) y--; 
-    c = 64;
-    screenFillRect(screen, x+3, y, 2, 12, c, c, c);
-    screenFillRect(screen, x+2, y+1, 4, 10, c, c, c);
-    screenFillRect(screen, x+1, y+2, 6, 8, c, c, c);
-    screenFillRect(screen, x, y+3, 8, 6, c, c, c);
-    c += 32;
-    screenFillRect(screen, x+3, y+1, 1, 10, c, c, c);
-    screenFillRect(screen, x+2, y+2, 1, 8, c, c, c);
-    screenFillRect(screen, x+1, y+3, 1, 6, c, c, c);
-    
-    /* Draw white bead for the virtue that was selected */
-    x = 128 + (selectedVirtue * 9);
-    c = 223;
-    screenFillRect(screen, x+3, y, 2, 12, c, c, c);
-    screenFillRect(screen, x+2, y+1, 4, 10, c, c, c);
-    screenFillRect(screen, x+1, y+2, 6, 8, c, c, c);
-    screenFillRect(screen, x, y+3, 8, 6, c, c, c);
-    c = 255;
-    screenFillRect(screen, x+3, y+1, 1, 10, c, c, c);
-    screenFillRect(screen, x+2, y+2, 1, 8, c, c, c);
-    screenFillRect(screen, x+1, y+3, 1, 6, c, c, c);
+    screenDrawSubImage("whitebead", (128 + (selectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
+    screenDrawSubImage("blackbead", (128 + (rejectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
 }
 
 /**
@@ -1437,44 +1566,22 @@ void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
  * from the top of the screen.
  */
 void screenShowBeastie(int beast, int vertoffset, int frame) {
-    SDL_Rect src, dest;
-    int col, row, destx;
+    char buffer[128];
+    int destx;
 
     ASSERT(beast == 0 || beast == 1, "invalid beast: %d", beast);
 
-    if (image[BKGD_ANIMATE] == NULL)
-        screenLoadBackground(BKGD_ANIMATE);
-
-    row = frame % 6;
-    col = frame / 6;
-
-    if (beast == 0) {
-        src.x = col * 56 * scale;
-        src.w = 55 * scale;
-    }
-    else {
-        src.x = (176 + col * 48) * scale;
-        src.w = 48 * scale;
-    }
-
-    src.y = row * 32 * scale;
-    src.h = 31 * scale;
+    sprintf(buffer, "beast%dframe%02d", beast, frame);
 
     destx = beast ? (320 - 48) : 0;
-
-    dest.x = destx * scale;
-    dest.y = vertoffset * scale;
-    dest.w = src.w;
-    dest.h = src.h;
-
-    SDL_BlitSurface(image[BKGD_ANIMATE]->surface, &src, screen, &dest);
+    screenDrawSubImage(buffer, destx * scale, vertoffset * scale);
 }
 
 void screenGemUpdate() {
-    MapTile tile;
+    unsigned char tile;
     int focus, x, y;
 
-    screenFillRect(screen, BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0, 0, 0);
+    screenFillRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0, 0, 0);
 
     for (x = 0; x < gemlayout->viewport.width; x++) {
         for (y = 0; y < gemlayout->viewport.height; y++) {

@@ -90,15 +90,15 @@ void tilesetLoad(const char *filename, TilesetType type) {
     if (tileset == NULL)
         errorFatal("error allocating memory for tileset");
     
-    /* init all values to 0 */
-    memset(tileset, 0, sizeof(Tileset));  
-    
     tileset->type = type;
+    tileset->numTiles = 0;
+    tileset->tiles = NULL;
+    tileset->totalFrames = 0;
+    tileset->tileGraphic = NULL;
+    
 
-    if (xmlPropExists(root, "imageId"))
-        tileset->imageId = xmlGetPropAsInt(root, "imageId");
-    else
-        tileset->imageId = 0;
+    if (xmlPropExists(root, "imageName"))
+        tileset->imageName = xmlGetPropAsString(root, "imageName");
 
     /* count how many tiles are in the tileset */
     for (node = root->xmlChildrenNode; node; node = node->next) {

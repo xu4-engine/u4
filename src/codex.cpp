@@ -101,7 +101,7 @@ void codexStart() {
         return;
     }
 
-    screenDrawBackgroundInMapArea(BKGD_KEY);
+    screenDrawImageInMapArea(BKGD_KEY);
     screenRedrawMapArea();
 
     screenMessage("\nYou use your key of Three Parts.\n");
@@ -257,6 +257,12 @@ int codexHandleWOP(string *word) {
  * Handles naming of virtues in the Chamber of the Codex
  */
 int codexHandleVirtues(string *virtue) {    
+    static const char *codexImageNames[] = {
+        BKGD_HONESTY, BKGD_COMPASSN, BKGD_VALOR, BKGD_JUSTICE, 
+        BKGD_SACRIFIC, BKGD_HONOR, BKGD_SPIRIT, BKGD_HUMILITY,
+        BKGD_TRUTH, BKGD_LOVE, BKGD_COURAGE
+    };
+
     static int current = 0;
     static int tries = 1;
 
@@ -271,7 +277,7 @@ int codexHandleVirtues(string *virtue) {
     if ((current < VIRT_MAX) && 
         (strcasecmp(virtue->c_str(), getVirtueName((Virtue)current)) == 0)) {
 
-        screenDrawBackgroundInMapArea((BackgroundType)(BKGD_HONESTY + current));
+        screenDrawImageInMapArea(codexImageNames[current]);
         screenRedrawMapArea();
 
         current++;
@@ -295,7 +301,7 @@ int codexHandleVirtues(string *virtue) {
     else if ((current >= VIRT_MAX) &&
              (strcasecmp(virtue->c_str(), getBaseVirtueName((BaseVirtue)(1 << (current - VIRT_MAX)))) == 0)) {
 
-        screenDrawBackgroundInMapArea((BackgroundType)(BKGD_HONESTY + current));
+        screenDrawImageInMapArea(codexImageNames[current]);
         screenRedrawMapArea();
 
         current++;
@@ -390,7 +396,7 @@ bool codexHandleEndgameAnyKey(int key, void *data) {
             screenMessage(codexEndgameText1[index].c_str());
         } 
         else if (index == 7) {
-            screenDrawBackgroundInMapArea(BKGD_STONCRCL);
+            screenDrawImageInMapArea(BKGD_STONCRCL);
             screenRedrawMapArea();
             screenMessage("\n\n%s", codexEndgameText2[index-7].c_str());
         }

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE tiles SYSTEM "dtd/tiles.dtd">
 <!-- $Id$ -->
-<tiles>
+<tiles imageName="tiles">
     <tile name="dungeon_floor" displayTile="62" rule="floors" frames="16"/>
     <tile name="up_ladder" displayTile="27" frames="16"/>
     <tile name="down_ladder" displayTile="28" frames="16"/>

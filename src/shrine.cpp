@@ -244,10 +244,15 @@ int shrineHandleMantra(string *message) {
 }
 
 bool shrineVision(int key, void *data) {
+    static const char *visionImageNames[] = {
+        BKGD_SHRINE_HON, BKGD_SHRINE_COM, BKGD_SHRINE_VAL, BKGD_SHRINE_JUS, 
+        BKGD_SHRINE_SAC, BKGD_SHRINE_HNR, BKGD_SHRINE_SPI, BKGD_SHRINE_HUM
+    };
+
     if (elevated) {
         screenMessage("Thou art granted a vision!\n");
         gameSetViewMode(VIEW_RUNE);
-        screenDrawBackgroundInMapArea((BackgroundType)(BKGD_SHRINE_HON + shrine->getVirtue()));
+        screenDrawImageInMapArea(visionImageNames[shrine->getVirtue()]);
     }
     else {
         screenMessage("\n%s", shrineAdvice[shrine->getVirtue() * 3 + completedCycles - 1].c_str());

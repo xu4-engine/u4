@@ -254,7 +254,7 @@ void gameInit() {
     itemSetDestroyAllMonstersCallback(&gameDestroyAllMonsters);
 
     musicPlay();
-    screenDrawBackground(BKGD_BORDERS);
+    screenDrawImage(BKGD_BORDERS);
     statsUpdate();
     screenMessage("Press Alt-h for help\n");
     screenPrompt();    
