@@ -2,7 +2,7 @@
 <!DOCTYPE tiles SYSTEM "dtd/tiles.dtd">
 <!-- $Id$ -->
 
-<tiles imageId="0">
+<tiles imageName="tiles">
     <tile name="sea" rule="water" animated="true"/>
     <tile name="water" rule="water" animated="true"/>
     <tile name="shallows" rule="shallows" animated="true"/>
