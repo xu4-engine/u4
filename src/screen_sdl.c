@@ -16,15 +16,24 @@
 #include "savegame.h"
 
 SDL_Surface *screen;
-SDL_Surface *tiles, *charset;
-int scale;
+SDL_Surface *border, *tiles, *charset;
+int scale, useVga;
 
+int screenLoadBorders();
 int screenLoadTiles();
 int screenLoadCharSet();
-int screenLoadTileSet(SDL_Surface **surface, int width, int height, int n, const char *filename);
+int screenLoadPaletteEga(SDL_Surface *surface);
+int screenLoadPaletteVga(SDL_Surface *surface, const char *filename);
+int screenLoadTileSetEga(SDL_Surface **surface, int width, int height, int n, const char *filename);
+int screenLoadTileSetVga(SDL_Surface **surface, int width, int height, int n, const char *filename, const char *palette_fname);
+int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const char *filename);
+int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const char *filename, const char *palette_fname);
+
+#define RLE_RUNSTART 02
 
 void screenInit(int screenScale) {
     scale = screenScale;
+    useVga = 0;
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 	fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
@@ -39,7 +48,8 @@ void screenInit(int screenScale) {
     }
     SDL_WM_SetCaption("Ultima IV", NULL);
 
-    if (!screenLoadTiles() ||
+    if (!screenLoadBorders() ||
+        !screenLoadTiles() ||
         !screenLoadCharSet()) {
         fprintf(stderr, "Unable to load data files\n");
         exit(1);
@@ -48,33 +58,44 @@ void screenInit(int screenScale) {
     SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL); 
 }
 
+/**
+ * Load the background borders image from the "start" file.
+ */
+int screenLoadBorders() {
+    if (useVga)
+        return screenLoadRleImageVga(&border, 320, 200, "start.ega", "u4vga.pal");
+    else
+        return screenLoadRleImageEga(&border, 320, 200, "start.ega");
+}
+
+/**
+ * Load the tiles graphics from the "shapes" file.
+ */
 int screenLoadTiles() {
-    return screenLoadTileSet(&tiles, TILE_WIDTH, TILE_HEIGHT, N_TILES, "shapes.ega");
+    if (useVga)
+        return screenLoadTileSetVga(&tiles, TILE_WIDTH, TILE_HEIGHT, N_TILES, "shapes.vga", "u4vga.pal");
+    else
+        return screenLoadTileSetEga(&tiles, TILE_WIDTH, TILE_HEIGHT, N_TILES, "shapes.ega");
 }
 
+/**
+ * Load the character set graphics from the "charset" file.
+ */
 int screenLoadCharSet() {
-    return screenLoadTileSet(&charset, CHAR_WIDTH, CHAR_HEIGHT, N_CHARS, "charset.ega");
+    if (useVga)
+        return screenLoadTileSetVga(&charset, CHAR_WIDTH, CHAR_HEIGHT, N_CHARS, "charset.vga", "u4vga.pal");
+    else
+        return screenLoadTileSetEga(&charset, CHAR_WIDTH, CHAR_HEIGHT, N_CHARS, "charset.ega");
 }
 
-int screenLoadTileSet(SDL_Surface **surface, int width, int height, int n, const char *filename) {
-    FILE *in;
-    int x, y, xs, ys;
-    Uint8 *p;
-
-    in = u4fopen(filename);
-    if (!in)
-        return 0;
-
-    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * n * scale, 8, 0, 0, 0, 0);
-    if (!(*surface)) {
-        u4fclose(in);
-        return 0;
-    }
-
+/**
+ * Set up an SDL surface with the basic EGA palette.
+ */
+int screenLoadPaletteEga(SDL_Surface *surface) {
     #define setpalentry(i, red, green, blue) \
-        (*surface)->format->palette->colors[i].r = red; \
-        (*surface)->format->palette->colors[i].g = green; \
-        (*surface)->format->palette->colors[i].b = blue;
+        surface->format->palette->colors[i].r = red; \
+        surface->format->palette->colors[i].g = green; \
+        surface->format->palette->colors[i].b = blue;
     setpalentry(0, 0x00, 0x00, 0x00);
     setpalentry(1, 0x00, 0x00, 0x80);
     setpalentry(2, 0x00, 0x80, 0x00);
@@ -92,6 +113,49 @@ int screenLoadTileSet(SDL_Surface **surface, int width, int height, int n, const
     setpalentry(14, 0xFF, 0xFF, 0x00);
     setpalentry(15, 0xFF, 0xFF, 0xFF);
     #undef setpalentry
+
+    return 1;
+}
+
+/**
+ * Set up an SDL surface with a 256 color palette loaded from the given file.
+ */
+int screenLoadPaletteVga(SDL_Surface *surface, const char *filename) {
+    FILE *pal;
+    int i;
+
+    pal = u4fopen(filename);
+    if (!pal)
+        return 0;
+
+    for (i = 0; i < 256; i++) {
+        surface->format->palette->colors[i].r = getc(pal) * 255 / 63;
+        surface->format->palette->colors[i].g = getc(pal) * 255 / 63;
+        surface->format->palette->colors[i].b = getc(pal) * 255 / 63;
+    }
+    u4fclose(pal);
+
+    return 1;
+}
+
+/**
+ * Load a tile set from a ".ega" tile set file.
+ */
+int screenLoadTileSetEga(SDL_Surface **surface, int width, int height, int n, const char *filename) {
+    FILE *in;
+    int x, y, xs, ys;
+    Uint8 *p;
+
+    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * n * scale, 8, 0, 0, 0, 0);
+    if (!(*surface))
+        return 0;
+
+    if (!screenLoadPaletteEga(*surface))
+        return 0;
+
+    in = u4fopen(filename);
+    if (!in)
+        return 0;
 
     p = (*surface)->pixels;
     for (y = 0; y < height * n; y++) {
@@ -123,64 +187,209 @@ int screenLoadTileSet(SDL_Surface **surface, int width, int height, int n, const
     return 1;
 }
 
+/**
+ * Load a tile set from a ".vga" tile set file (from the U4 upgrade).
+ */
+int screenLoadTileSetVga(SDL_Surface **surface, int width, int height, int n, const char *filename, const char *palette_fname) {
+    FILE *in;
+    int x, y, xs, ys;
+    Uint8 *p;
 
+    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * n * scale, 8, 0, 0, 0, 0);
+    if (!(*surface))
+        return 0;
+
+    if (!screenLoadPaletteVga(*surface, palette_fname))
+        return 0;
+
+    in = u4fopen(filename);
+    if (!in)
+        return 0;
+
+    p = (*surface)->pixels;
+    for (y = 0; y < height * n; y++) {
+        for (x = 0; x < width; x++) {
+            int temp = getc(in);
+            for (xs = 0; xs < scale; xs++) {
+                *p++ = temp;
+            }
+        }
+        p += ((*surface)->pitch) - (width * scale);
+        for (ys = 1; ys < scale; ys++) {
+            for (x = 0; x < width; x++) {
+                for (xs = 0; xs < scale; xs++) {
+                    *p = *(p - (*surface)->pitch);
+                    p++;
+                }
+            }
+            p += ((*surface)->pitch) - (width * scale);
+        }
+    }
+
+    u4fclose(in);
+
+    return 1;
+}
+
+/**
+ * Load an image from an ".ega" RLE encoded image file.
+ */
+int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const char *filename) {
+    FILE *in;
+    int x, y, xs, ys;
+    Uint8 *p;
+    Uint8 *data;
+
+    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * scale, 8, 0, 0, 0, 0);
+    if (!(*surface))
+        return 0;
+
+    if (!screenLoadPaletteEga(*surface))
+        return 0;
+
+    data = malloc(sizeof(Uint8) * height * width);
+    if (!data)
+        return 0;
+
+    in = u4fopen(filename);
+    if (!in)
+        return 0;
+
+    p = data;
+    while (p < data + (height * width)) {
+        int temp = getc(in);
+        if (temp == RLE_RUNSTART) {
+            int i, count;
+            count = getc(in);
+            temp = getc(in);
+            for (i = 0; i < count; i++) {
+                *p = temp >> 4;
+                p++;
+                *p = temp & 0x0f;
+                p++;
+            }
+        } else {
+            *p = temp >> 4;
+            p++;
+            *p = temp & 0x0f;
+            p++;
+        }
+    }
+
+    p = (*surface)->pixels;
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x += 2) {
+            for (xs = 0; xs < scale; xs++) {
+                *p = data[y * width + x];
+                p++;
+            }
+            for (xs = 0; xs < scale; xs++) {
+                *p = data[y * width + x + 1];
+                p++;
+            }
+        }
+        p += ((*surface)->pitch) - (width * scale);
+        for (ys = 1; ys < scale; ys++) {
+            for (x = 0; x < width; x++) {
+                for (xs = 0; xs < scale; xs++) {
+                    *p = *(p - (*surface)->pitch);
+                    p++;
+                }
+            }
+            p += ((*surface)->pitch) - (width * scale);
+        }
+    }
+    free(data);
+        
+    u4fclose(in);
+
+    return 1;
+}
+
+/**
+ * Load an image from an ".ega" RLE encoded image file (from the U4 upgrade).
+ */
+int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const char *filename, const char *palette_fname) {
+    FILE *in;
+    int x, y, xs, ys;
+    Uint8 *p;
+    Uint8 *data;
+
+    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * scale, 8, 0, 0, 0, 0);
+    if (!(*surface))
+        return 0;
+
+    if (!screenLoadPaletteVga(*surface, palette_fname))
+        return 0;
+
+    data = malloc(sizeof(Uint8) * height * width);
+    if (!data)
+        return 0;
+
+    in = u4fopen(filename);
+    if (!in)
+        return 0;
+
+    p = data;
+    while (p < data + (height * width)) {
+        int temp = getc(in);
+        if (temp == RLE_RUNSTART) {
+            int i, count;
+            count = getc(in);
+            temp = getc(in);
+            for (i = 0; i < count; i++) {
+                *p = temp;
+                p++;
+            }
+        } else {
+            *p = temp;
+            p++;
+        }
+    }
+
+    p = (*surface)->pixels;
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
+            for (xs = 0; xs < scale; xs++) {
+                *p = data[y * width + x];
+                p++;
+            }
+        }
+        p += ((*surface)->pitch) - (width * scale);
+        for (ys = 1; ys < scale; ys++) {
+            for (x = 0; x < width; x++) {
+                for (xs = 0; xs < scale; xs++) {
+                    *p = *(p - (*surface)->pitch);
+                    p++;
+                }
+            }
+            p += ((*surface)->pitch) - (width * scale);
+        }
+    }
+    free(data);
+        
+    u4fclose(in);
+
+    return 1;
+}
+
+/**
+ * Draw the surrounding borders on the screen.
+ */
 void screenDrawBorders() {
     SDL_Rect r;
 
-#define do_rect(X, Y, W, H, red, green, blue) \
-    r.x = (X) * scale; \
-    r.y = (Y) * scale; \
-    r.w = (W) * scale; \
-    r.h = (H) * scale; \
-    SDL_FillRect(screen, &r, SDL_MapRGB(screen->format, red, green, blue));
-
-    do_rect(0, 0, CHAR_WIDTH * 40, CHAR_HEIGHT, 0, 0, 255);
-    do_rect(CHAR_WIDTH, CHAR_HEIGHT - 1, CHAR_WIDTH * 38, 1, 0xC3, 0xC3, 0xC3);
-    do_rect(CHAR_WIDTH * 11, 0, CHAR_WIDTH * 2, CHAR_HEIGHT, 0, 0, 0);
-    do_rect(0, CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT * 23, 0, 0, 255);
-    do_rect(CHAR_WIDTH - 1, CHAR_HEIGHT, 1, CHAR_HEIGHT * 22, 0xC3, 0xC3, 0xC3);
-    do_rect(CHAR_WIDTH, CHAR_HEIGHT * 23, CHAR_WIDTH * 22, CHAR_HEIGHT, 0, 0, 255);
-    do_rect(CHAR_WIDTH, CHAR_HEIGHT * 23, CHAR_WIDTH * 22, 1, 0xC3, 0xC3, 0xC3);
-    do_rect(CHAR_WIDTH * 23, 0, CHAR_WIDTH, CHAR_HEIGHT * 24, 0, 0, 255);
-    do_rect(CHAR_WIDTH * 23, CHAR_HEIGHT, 1, CHAR_HEIGHT * 22, 0xC3, 0xC3, 0xC3);
-    do_rect(CHAR_WIDTH * 24 - 1, CHAR_HEIGHT, 1, CHAR_HEIGHT * 23, 0xC3, 0xC3, 0xC3);
-    do_rect(CHAR_WIDTH * 39, CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT * 11, 0, 0, 255);
-    do_rect(CHAR_WIDTH * 39, CHAR_HEIGHT, 1, CHAR_HEIGHT * 11, 0xC3, 0xC3, 0xC3);
-    do_rect(CHAR_WIDTH * 24 - 1, CHAR_HEIGHT * 9, CHAR_WIDTH * 16 + 1, CHAR_HEIGHT, 0, 0, 255);
-    do_rect(CHAR_WIDTH * 24, CHAR_HEIGHT * 9, CHAR_WIDTH * 15, 1, 0xC3, 0xC3, 0xC3);
-    do_rect(CHAR_WIDTH * 24, CHAR_HEIGHT * 10 - 1, CHAR_WIDTH * 15, 1, 0xC3, 0xC3, 0xC3);
-    do_rect(CHAR_WIDTH * 24 - 1, CHAR_HEIGHT * 11, CHAR_WIDTH * 16 + 1, CHAR_HEIGHT, 0, 0, 255);
-    do_rect(CHAR_WIDTH * 24, CHAR_HEIGHT * 11, CHAR_WIDTH * 15, 1, 0xC3, 0xC3, 0xC3);
-    do_rect(CHAR_WIDTH * 24, CHAR_HEIGHT * 12 - 1, CHAR_WIDTH * 16, 1, 0xC3, 0xC3, 0xC3);
-
-    /* corners */
-    do_rect(0, 0, CHAR_WIDTH + 1, 1, 0, 0, 0);
-    do_rect(0, 1, CHAR_WIDTH - 2, 1, 0, 0, 0);
-    do_rect(0, 2, CHAR_WIDTH - 4, 1, 0, 0, 0);
-    do_rect(0, 3, CHAR_WIDTH - 5, 1, 0, 0, 0);
-    do_rect(0, 4, CHAR_WIDTH - 6, 2, 0, 0, 0);
-    do_rect(0, 6, CHAR_WIDTH - 7, 3, 0, 0, 0);
-    
-    do_rect(0, (CHAR_HEIGHT * 24) - 9, CHAR_WIDTH - 7, 3, 0, 0, 0);
-    do_rect(0, (CHAR_HEIGHT * 24) - 6, CHAR_WIDTH - 6, 2, 0, 0, 0);
-    do_rect(0, (CHAR_HEIGHT * 24) - 4, CHAR_WIDTH - 5, 1, 0, 0, 0);
-    do_rect(0, (CHAR_HEIGHT * 24) - 3, CHAR_WIDTH - 4, 1, 0, 0, 0);
-    do_rect(0, (CHAR_HEIGHT * 24) - 2, CHAR_WIDTH - 2, 1, 0, 0, 0);
-    do_rect(0, (CHAR_HEIGHT * 24) - 1, CHAR_WIDTH + 1, 1, 0, 0, 0);
-    
-    do_rect(CHAR_WIDTH * 39, 0, CHAR_WIDTH + 1, 1, 0, 0, 0);
-    do_rect(CHAR_WIDTH * 39 + 2, 1, CHAR_WIDTH - 2, 1, 0, 0, 0);
-    do_rect(CHAR_WIDTH * 39 + 4, 2, CHAR_WIDTH - 4, 1, 0, 0, 0);
-    do_rect(CHAR_WIDTH * 39 + 5, 3, CHAR_WIDTH - 5, 1, 0, 0, 0);
-    do_rect(CHAR_WIDTH * 39 + 6, 4, CHAR_WIDTH - 6, 2, 0, 0, 0);
-    do_rect(CHAR_WIDTH * 39 + 7, 6, CHAR_WIDTH - 7, 3, 0, 0, 0);
-    
-    screenShowChar(16, 10, 0);
-    screenShowChar(17, 13, 0);
-
-    SDL_UpdateRect(screen, 0, 0, 0, 0);
+    r.x = 0;
+    r.y = 0;
+    r.w = 320 * scale;
+    r.h = 200 * scale;
+    SDL_BlitSurface(border, &r, screen, &r);
+    screenForceRedraw();
 }
 
+/**
+ * Draw a character from the charset onto the screen.
+ */
 void screenShowChar(int chr, int x, int y) {
     SDL_Rect src, dest;
 
@@ -195,6 +404,9 @@ void screenShowChar(int chr, int x, int y) {
     SDL_BlitSurface(charset, &src, screen, &dest);
 }
 
+/**
+ * Draw a tile graphic on the screen.
+ */
 void screenShowTile(int tile, int x, int y) {
     SDL_Rect src, dest;
 
@@ -209,6 +421,9 @@ void screenShowTile(int tile, int x, int y) {
     SDL_BlitSurface(tiles, &src, screen, &dest);
 }
 
+/**
+ * Scroll the text in the message area up one position.
+ */
 void screenScrollMessageArea() {
     SDL_Rect src, dest;
         
@@ -231,6 +446,9 @@ void screenScrollMessageArea() {
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
+/**
+ * Force a redraw.
+ */
 void screenForceRedraw() {
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
