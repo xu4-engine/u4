@@ -77,6 +77,7 @@ void combatFinishTurn(void);
 int combatInitialNumberOfMonsters(const class Monster *monster);
 MapId combatMapForTile(MapTile groundTile, MapTile transport, class Object *obj);
 void combatApplyDamageToMonster(int monster, int damage, int player);
+void combatApplyDamageToPlayer(int player, int damage);
 MoveReturnValue combatMovePartyMember(Direction dir, int userEvent);
 
 /**

@@ -483,7 +483,7 @@ void combatFinishTurn() {
     quick = (c->aura == AURA_QUICKNESS) && (party->find(FOCUS) != party->end()) && (xu4_random(2) == 0) ? 1 : 0;
 
     /* check to see if the player gets to go again (and is still alive) */
-    if (!quick || (c->players[FOCUS].hp <= 0)){    
+    if (!quick || (playerIsDisabled(FOCUS))){    
 
         do {            
             c->location->map->annotations->passTurn();
@@ -951,7 +951,7 @@ bool combatMonsterRangedAttack(MapCoords coords, int distance, void *data) {
         case EFFECT_ELECTRICITY:
             /* FIXME: are there any special effects here? */
             screenMessage("\n%s Electrified!\n", c->players[player].name);
-            playerApplyDamage(&c->players[player], m->getDamage());
+            combatApplyDamageToPlayer(player, m->getDamage());
             break;
         
         case EFFECT_POISON:
@@ -980,7 +980,7 @@ bool combatMonsterRangedAttack(MapCoords coords, int distance, void *data) {
             /* FIXME: are there any special effects here? */            
             screenMessage("\n%s %s Hit!\n", c->players[player].name,
                 effect == EFFECT_LAVA ? "Lava" : "Fiery");
-            playerApplyDamage(&c->players[player], m->getDamage());
+            combatApplyDamageToPlayer(player, m->getDamage());
             break;
                 
         default: 
@@ -988,7 +988,7 @@ bool combatMonsterRangedAttack(MapCoords coords, int distance, void *data) {
             if (hittile == MAGICFLASH_TILE)
                 screenMessage("\n%s Magical Hit!\n", c->players[player].name);
             else screenMessage("\n%s Hit!\n", c->players[player].name);
-            playerApplyDamage(&c->players[player], m->getDamage());
+            combatApplyDamageToPlayer(player, m->getDamage());
             break;
         }       
 
@@ -1287,14 +1287,7 @@ void combatMoveMonsters() {
                                
                 attackFlash((*party)[target]->getCoords(), HITFLASH_TILE, 3);
 
-                playerApplyDamage(&c->players[target], m->getDamage());
-                if (c->players[target].status == STAT_DEAD) {
-                    MapCoords p = (*party)[target]->getCoords();                    
-                    c->location->map->removeObject((*party)[target]);
-                    party->erase(party->find(target));                    
-                    c->location->map->annotations->add(p, CORPSE_TILE)->setTTL(c->saveGame->members);
-                    screenMessage("%s is Killed!\n", c->players[target].name);
-                }                
+                combatApplyDamageToPlayer(target, m->getDamage());               
             } else {
                 attackFlash((*party)[target]->getCoords(), MISSFLASH_TILE, 3);
             }
@@ -1480,6 +1473,25 @@ void combatApplyDamageToMonster(int monster, int damage, int player) {
         screenMessage("%s\nBarely Wounded!\n", m->name.c_str());
         break;
     }
+}
+
+/**
+ * Applies 'damage' amount of damage to the player, updates map if
+ * player killed.
+ */
+ 
+void combatApplyDamageToPlayer(int player, int damage) {
+    CombatObjectMap *party = &combatInfo.party;
+    
+    playerApplyDamage(&c->players[player], damage);
+    
+    if (c->players[player].status == STAT_DEAD) {
+        MapCoords p = (*party)[player]->getCoords();                    
+        c->location->map->removeObject((*party)[player]);
+        party->erase(party->find(player));                    
+        c->location->map->annotations->add(p, CORPSE_TILE)->setTTL(c->saveGame->members);
+        screenMessage("%s is Killed!\n", c->players[player].name);
+    }  
 }
 
 /**
