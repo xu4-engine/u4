@@ -591,10 +591,8 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
             combatApplyDamageToMonster(monster, playerGetDamage(&c->saveGame->players[focus]), focus);
 
             /* monster is still alive and has the chance to divide - xu4 enhancement */
-            if (settings->minorEnhancements && rand()%2 == 0 &&
-                combatInfo.monsters[monster] && monsterDivides(combatInfo.monsters[monster]->monster)) {                
-                combatDivideMonster(combatInfo.monsters[monster]);                                
-            }
+            if (rand()%2 == 0 && combatInfo.monsters[monster] && monsterDivides(combatInfo.monsters[monster]->monster))
+                combatDivideMonster(combatInfo.monsters[monster]);            
         }
     }
 
@@ -1359,10 +1357,14 @@ void combatApplyMonsterTileEffects(void) {
 
 int combatDivideMonster(const Object *obj) {
     int dirmask = mapGetValidMoves(c->location->map, obj->x, obj->y, c->location->z, obj->tile);
-    Direction d = dirRandomDir(dirmask);                
+    Direction d = dirRandomDir(dirmask);
+
+    /* this is a game enhancement, make sure it's turned on! */
+    if (!settings->minorEnhancements || !settings->minorEnhancementsOptions.slimeDivides)
+        return 0;
     
     /* make sure there's a place to put the divided monster! */
-    if (d != DIR_NONE) {                    
+    if (d != DIR_NONE) {
         int index;
                             
         /* find the first free slot in the monster table, if there is one */

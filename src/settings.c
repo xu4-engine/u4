@@ -70,10 +70,15 @@ void settingsRead() {
     settings->filterMoveMessages    = DEFAULT_FILTER_MOVE_MESSAGES;
     settings->battleSpeed           = DEFAULT_BATTLE_SPEED;
     settings->minorEnhancements     = DEFAULT_MINOR_ENHANCEMENTS;
+    settings->majorEnhancements     = DEFAULT_MAJOR_ENHANCEMENTS;
     settings->gameCyclesPerSecond   = DEFAULT_CYCLES_PER_SECOND;
     settings->debug                 = DEFAULT_DEBUG;
     settings->validateXml           = DEFAULT_VALIDATE_XML;
     settings->spellEffectSpeed      = DEFAULT_SPELL_EFFECT_SPEED;
+
+    /* all specific minor and major enhancements default to "on" */
+    memset(&settings->minorEnhancementsOptions, 1, sizeof(settings->minorEnhancementsOptions));
+    memset(&settings->majorEnhancementsOptions, 1, sizeof(settings->majorEnhancementsOptions));
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -117,6 +122,8 @@ void settingsRead() {
             ;
         else if (strstr(buffer, "minorEnhancements=") == buffer)
             settings->minorEnhancements = (int) strtoul(buffer + strlen("minorEnhancements="), NULL, 0);
+        else if (strstr(buffer, "majorEnhancements=") == buffer)
+            settings->majorEnhancements = (int) strtoul(buffer + strlen("majorEnhancements="), NULL, 0);
         else if (strstr(buffer, "gameCyclesPerSecond=") == buffer)
             settings->gameCyclesPerSecond = (int) strtoul(buffer + strlen("gameCyclesPerSecond="), NULL, 0);
         else if (strstr(buffer, "debug=") == buffer)
@@ -125,6 +132,19 @@ void settingsRead() {
             settings->validateXml = (int) strtoul(buffer + strlen("validateXml="), NULL, 0);
         else if (strstr(buffer, "spellEffectSpeed=") == buffer)
             settings->spellEffectSpeed = (int) strtoul(buffer + strlen("spellEffectSpeed="), NULL, 0);
+        
+        /* minor enhancement options */
+        else if (strstr(buffer, "u5shrines=") == buffer)
+            settings->minorEnhancementsOptions.u5shrines = (int) strtoul(buffer + strlen("u5shrines="), NULL, 0);
+        else if (strstr(buffer, "slimeDivides=") == buffer)
+            settings->minorEnhancementsOptions.slimeDivides = (int) strtoul(buffer + strlen("slimeDivides="), NULL, 0);
+        else if (strstr(buffer, "c64chestTraps=") == buffer)
+            settings->minorEnhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);
+
+        /* major enhancement options */
+        else if (strstr(buffer, "u5combat=") == buffer)
+            settings->majorEnhancementsOptions.u5combat = (int) strtoul(buffer + strlen("u5combat="), NULL, 0);
+
         else
             errorWarning("invalid line in settings file %s", buffer);
     }
@@ -161,10 +181,15 @@ void settingsWrite() {
             "filterMoveMessages=%d\n"
             "battlespeed=%d\n"
             "minorEnhancements=%d\n"
+            "majorEnhancements=%d\n"
             "gameCyclesPerSecond=%d\n"
             "debug=%d\n"
             "validateXml=%d\n"
-            "spellEffectSpeed=%d\n",
+            "spellEffectSpeed=%d\n"
+            "u5shrines=%d\n"
+            "slimeDivides=%d\n"
+            "c64chestTraps=%d\n"
+            "u5combat=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
@@ -176,10 +201,15 @@ void settingsWrite() {
             settings->filterMoveMessages,
             settings->battleSpeed,
             settings->minorEnhancements,
+            settings->majorEnhancements,
             settings->gameCyclesPerSecond,
             settings->debug,
             settings->validateXml,
-            settings->spellEffectSpeed);
+            settings->spellEffectSpeed,
+            settings->minorEnhancementsOptions.u5shrines,
+            settings->minorEnhancementsOptions.slimeDivides,
+            settings->minorEnhancementsOptions.c64chestTraps,
+            settings->majorEnhancementsOptions.u5combat);
 
     fclose(settingsFile);
 }

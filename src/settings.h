@@ -22,6 +22,7 @@
 #define DEFAULT_FILTER_MOVE_MESSAGES    0
 #define DEFAULT_BATTLE_SPEED            5
 #define DEFAULT_MINOR_ENHANCEMENTS      1
+#define DEFAULT_MAJOR_ENHANCEMENTS      0
 #define DEFAULT_CYCLES_PER_SECOND       4
 #define DEFAULT_DEBUG                   0
 #define DEFAULT_VALIDATE_XML            1
@@ -35,6 +36,16 @@ typedef enum {
     SCL_MAX
 } FilterType;
 
+typedef struct _SettingsMinorOptions {
+    int u5shrines;
+    int slimeDivides;
+    int c64chestTraps;
+} SettingsMinorOptions;
+
+typedef struct _SettingsMajorOptions {
+    int u5combat;
+} SettingsMajorOptions;
+
 typedef struct _Settings {
     unsigned int scale;
     int fullscreen;
@@ -47,10 +58,13 @@ typedef struct _Settings {
     int filterMoveMessages;
     int battleSpeed;
     int minorEnhancements;
+    int majorEnhancements;
     int gameCyclesPerSecond;
     int debug;
     int validateXml;
     int spellEffectSpeed;
+    SettingsMinorOptions minorEnhancementsOptions;
+    SettingsMajorOptions majorEnhancementsOptions;
 } Settings;
 
 char *settingsFilename(void);

@@ -1669,7 +1669,7 @@ int getChestTrapHandler(int player) {
     int member = player;
     
     /* Do we use u4dos's way of trap-determination, or the original intended way? */
-    int passTest = settings->minorEnhancements ?
+    int passTest = (settings->minorEnhancements && settings->minorEnhancementsOptions.c64chestTraps) ?
         ((rand() % 2) == 0) : /* xu4-enhanced */
         ((randNum & 1) == 0); /* u4dos original way (only allows even numbers through, so only acid and poison show) */
 
