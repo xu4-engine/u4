@@ -128,6 +128,33 @@ private:
     bool exitWhenDone;
 };
 
+class ReadDirController : public Controller {
+public:    
+    ReadDirController();
+    virtual bool keyPressed(int key);    
+
+    Direction getDir();
+    Direction waitFor();
+
+private:
+    Direction dir;
+    bool exitWhenDone;
+};
+
+class WaitController : public Controller {
+public:
+    WaitController(unsigned int cycles);
+    virtual bool keyPressed(int key);
+    virtual void timerFired();
+
+    void wait();
+    void setCycles(int c);
+
+private:
+    unsigned int cycles;
+    unsigned int current;
+};
+
 /**
  * A class for handling timed events.
  */ 
@@ -176,6 +203,8 @@ public:
     void remove(TimedEvent* event);
     void remove(TimedEvent::Callback callback, void *data = NULL);
     void tick();
+    void stop();
+    void start();
     
     void reset(unsigned int interval);     /**< Re-initializes the event manager to a new base interval */
 

@@ -193,8 +193,20 @@ unsigned int TimedEventMgr::callback(unsigned int interval, void *param) {
  */ 
 void TimedEventMgr::reset(unsigned int interval) {
     baseInterval = interval;
-    SDL_RemoveTimer(static_cast<SDL_TimerID>(id));
-    id = static_cast<void*>(SDL_AddTimer(baseInterval, &TimedEventMgr::callback, this));
+    stop();
+    start();    
+}
+
+void TimedEventMgr::stop() {
+    if (id) {
+        SDL_RemoveTimer(static_cast<SDL_TimerID>(id));
+        id = NULL;
+    }
+}
+
+void TimedEventMgr::start() {
+    if (!id)
+        id = static_cast<void*>(SDL_AddTimer(baseInterval, &TimedEventMgr::callback, this));
 }
 
 /**

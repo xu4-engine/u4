@@ -298,3 +298,63 @@ int ReadChoiceController::waitFor() {
     eventHandler->popController();
     return choice;
 }
+
+ReadDirController::ReadDirController() : dir(DIR_NONE), exitWhenDone(false) {}
+bool ReadDirController::keyPressed(int key) {    
+    Direction d = keyToDirection(key);
+    bool valid = (d != DIR_NONE);
+    
+    switch(key) {
+    case U4_ESC:
+    case U4_SPACE:
+    case U4_ENTER:
+        dir = DIR_NONE;
+        eventHandler->setControllerDone(true);
+        return true;
+
+    default:
+        if (valid) {
+            dir = d;
+            eventHandler->setControllerDone(true);
+            return true;
+        }
+        break;
+    }    
+
+    return false;
+}
+
+Direction ReadDirController::getDir() {
+    return dir;
+}
+
+Direction ReadDirController::waitFor() {
+    exitWhenDone = true;    
+    eventHandler->run();
+    eventHandler->setControllerDone(false);
+    eventHandler->popController();
+    return dir;
+}
+
+WaitController::WaitController(unsigned int c) : Controller(), cycles(c), current(0) {}
+
+void WaitController::timerFired() {
+    if (++current >= cycles) {
+        current = 0;
+        eventHandler->setControllerDone(true);
+    }
+}
+
+bool WaitController::keyPressed(int key) {
+    return true;
+}
+
+void WaitController::wait() {
+    eventHandler->run();
+    eventHandler->setControllerDone(false);
+    eventHandler->popController();
+}
+
+void WaitController::setCycles(int c) {
+    cycles = c;
+}
