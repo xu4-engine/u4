@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    in = fopen(argv[1], "r");
+    in = fopen(argv[1], "rb");
     if (!in) {
         perror(argv[1]);
         exit(1);
@@ -91,11 +91,26 @@ void showSaveGame(SaveGame *sg) {
 }
 
 void showSaveGamePlayerRecord(SaveGamePlayerRecord *rec) {
+    static const char * const weapNames[] = {
+        "Hands", "Staff", "Dagger",
+        "Sling", "Mace", "Axe",
+        "Sword", "Bow", "Crossbow",
+        "Flaming Oil", "Halberd", "Magic Axe",
+        "Magic Sword", "Magic Bow", "Magic Wand",
+        "Mystic Sword"
+    };
+
+    static const char * const armorNames[] = {
+        "Skin", "Cloth", "Leather", 
+        "Chain Mail", "Plate Mail", 
+        "Magic Chain", "Magic Plate", "Mystic Robe"
+    };
+
     printf("  name: %-17s hp: %-7d hpMax: %-4d xp: %d\n", 
            rec->name, rec->hp, rec->hpMax, rec->xp);
     printf("  str: %-6d dex: %-6d intel: %-4d mp: %-7d ???: %d\n", 
            rec->str, rec->dex, rec->intel, rec->mp, rec->unknown);
-    printf("  weapon: %-15s armor: %s\n", weaponGetName(rec->weapon), armorGetName(rec->armor));
+    printf("  weapon: %-15s armor: %s\n", weapNames[rec->weapon], armorNames[rec->armor]);
     printf("  sex: %-6s class: %-16s status: %c\n", 
            rec->sex == 11 ? "M" : "F", getClassName(rec->klass), rec->status);
 }
