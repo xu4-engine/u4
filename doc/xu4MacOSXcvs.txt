@@ -1,51 +1,81 @@
-=====================================
-How to Compile xu4 from CVS in MacOSX
-=====================================
+=======================================
+How to Compile xu4 from CVS in Mac OS X
+=======================================
+
+This document explains how to download the latest version of the xu4 source
+code from CVS and how to compile it in Mac OS X.
+
+You will need to have the Xcode developer tools installed. Get them from
+here:
+
+   http://developer.apple.com/tools/macosxtools.html
+   
+For those with Mac OS X version 10.2 or earlier, building with Project Builder
+instead of Xcode should be possible.
 
 -------------------------------
 Things you only have to do once
 -------------------------------
 
-1. Download and install the latest MacOSX developer tools from:
-   http://developer.apple.com/
-
-2. Grab SDL-devel-1.2.7.pkg.tar.gz from http://www.libsdl.org/download-1.2.php
+1. Grab SDL-devel-1.2.7.pkg.tar.gz from http://www.libsdl.org/download-1.2.php
    Unpack and install it.
 
-3. Grab SDL_mixer-devel-1.2.5.pkg.tar.gz from
+2. Grab SDL_mixer-devel-1.2.5.pkg.tar.gz from
    http://www.libsdl.org/projects/SDL_mixer/
    Unpack and install it.
 
-4. Grab xu4_libxml_osx.dmg.gz from
+3. Grab xu4_libxml_osx.dmg.gz from
    http://xu4.sourceforge.net/download/xu4_libxml_osx.dmg.gz
    Unpack and open the .dmg. Copy the libxml frameworks into
    ~/Library/Frameworks
    If you have older versions of the libxml and libiconv frameworks from
    previous xu4 development, you need to remove them first.
 
-5. Start the Terminal app (usually in /Applications/Utilities)
+4. Grab libpng-1.2.6.tar.gz from
+   http://www.libpng.org/pub/png/libpng.html
+   Unpack it into a temporary directory. Then run the following commands
+   using the Terminal app:
+      cd libpng-1.2.6
+      cp scripts/makefile.std Makefile
+   Edit Makefile and change the ZLIBLIB and ZLIBINC lines to:
+      ZLIBLIB=/usr/lib
+      ZLIBINC=/usr/include
+   Execute the following command:
+      make
 
-6. Change to the directory where you want XU4 cvs
+5. Change to the directory where you want XU4 cvs
    e.g. cd ~/
 
-7. Check out the current xu4 cvs source code
-   cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 login
+6. Check out the current xu4 cvs source code
+      cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 login
    Just press enter when it asks for password
-   cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 co u4
+      cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 co u4
 
-8. Download the Ultima IV data files and gfx update (if desired) and copy
-   them into the u4 directory:
-   cp path/to/ultima4.zip u4/
-   cp path/to/u4upgrad.zip u4/
+7. Download the Ultima IV data files and gfx update (if desired) and copy
+   them into the directory where you put xu4:
+      cp path/to/ultima4.zip .
+      cp path/to/u4upgrad.zip .
 
+8. Copy or move the libpng-1.2.6 directory containing the libpng headers
+   and library to the same directory:
+      cp -R path/to/libpng-1.2.6 libpng
+   Alternatively you can edit u4/src/Makefile.macosx and change the LIBPNGDIR
+   line to point to the correct location for the libpng headers and library.
+   
 9. Change to the src directory of the XU4 source code
-   i.e. cd u4/src
+      cd u4/src
 
-9. Copy the files SDLMain.h and SDLMain.c into the 'macosx' dir
-   cp "/Library/Application Support/Apple/Developer Tools/Project Templates/Application"/SDLMain.* macosx
+10. Copy the files SDLMain.h and SDLMain.c into the 'macosx' dir
+      cp "/Library/Application Support/Apple/Developer Tools/Project Templates/Application/SDL Application"/SDLMain.* macosx
 
-9. Compile xu4 
-   make -f Makefile.macosx install
+11. Compile xu4 
+      make -f Makefile.macosx
+    If you are running on Mac OS X version 10.2 or earlier, the tlkconv utility
+    will fail to build correctly. You can build it by executing this command:
+      make -f Makefile.macosx mactlkconv
+    Finally, execute this command to build the xu4 application bundle:
+      make -f Makefile.macosx install
+    This will place the bundle in the directory from which you checked out xu4.
 
 ------------------------------------------------------------
 Things you have to do every time the xu4 source code changes
@@ -54,15 +84,15 @@ Things you have to do every time the xu4 source code changes
 1. Start the Terminal app
 
 2. Change to the xu4 directory
-   e.g. cd u4
+      cd u4
 
 3. Checkout the latest changes from CVS
-   cvs update -d
+      cvs update -d
 
 4. Change to the source directory
-   cd src
+      cd src
 
 5. Compile xu4
-   make -f Makefile.macosx clean
-   make -f Makefile.macosx install
+      make -f Makefile.macosx clean
+      make -f Makefile.macosx install
 
