@@ -59,10 +59,11 @@ typedef enum {
 } VideoType;
 
 typedef struct _SettingsMinorOptions {
+    int activePlayer;
+    int u5spellMixing;
     int u5shrines;
     int slimeDivides;
     int c64chestTraps;    
-    int u5spellMixing;
     int smartEnterKey;
 } SettingsMinorOptions;
 

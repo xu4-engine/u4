@@ -98,12 +98,12 @@ void dungeonSearch(void) {
     switch (token) {
     case DUNGEON_MAGIC_ORB: /* magic orb */
         screenMessage("You find a Magical Ball...\nWho touches? ");
-        gameGetPlayerForCommand(&dungeonTouchOrb, 0);
+        gameGetPlayerForCommand(&dungeonTouchOrb, 0, 0);
         break;
 
     case DUNGEON_FOUNTAIN: /* fountains */
         screenMessage("You find a Fountain.\nWho drinks? ");
-        gameGetPlayerForCommand(&dungeonDrinkFountain, 0);
+        gameGetPlayerForCommand(&dungeonDrinkFountain, 0, 0);
         break;
 
     default: 

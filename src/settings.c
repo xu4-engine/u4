@@ -84,11 +84,13 @@ void settingsRead() {
     settings->shakeInterval         = DEFAULT_SHAKE_INTERVAL;
 
     /* all specific minor and major enhancements default to "on" */
+    settings->minorEnhancementsOptions.activePlayer     = 1;
+    settings->minorEnhancementsOptions.u5spellMixing    = 1;
     settings->minorEnhancementsOptions.u5shrines        = 1;
     settings->minorEnhancementsOptions.slimeDivides     = 1;
-    settings->minorEnhancementsOptions.c64chestTraps    = 1;
-    settings->minorEnhancementsOptions.u5spellMixing    = 1;
-    settings->minorEnhancementsOptions.smartEnterKey    = 1;
+    settings->minorEnhancementsOptions.c64chestTraps    = 1;    
+    settings->minorEnhancementsOptions.smartEnterKey    = 1;    
+
     settings->majorEnhancementsOptions.u5combat         = 1;
 
     settingsFname = settingsFilename();
@@ -164,14 +166,16 @@ void settingsRead() {
             settings->shakeInterval = (int) strtoul(buffer + strlen("shakeInterval="), NULL, 0);
         
         /* minor enhancement options */
+        else if (strstr(buffer, "activePlayer=") == buffer)
+            settings->minorEnhancementsOptions.activePlayer = (int) strtoul(buffer + strlen("activePlayer="), NULL, 0);
+        else if (strstr(buffer, "u5spellMixing=") == buffer)
+            settings->minorEnhancementsOptions.u5spellMixing = (int) strtoul(buffer + strlen("u5spellMixing="), NULL, 0);
         else if (strstr(buffer, "u5shrines=") == buffer)
             settings->minorEnhancementsOptions.u5shrines = (int) strtoul(buffer + strlen("u5shrines="), NULL, 0);
         else if (strstr(buffer, "slimeDivides=") == buffer)
             settings->minorEnhancementsOptions.slimeDivides = (int) strtoul(buffer + strlen("slimeDivides="), NULL, 0);
         else if (strstr(buffer, "c64chestTraps=") == buffer)
-            settings->minorEnhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);        
-        else if (strstr(buffer, "u5spellMixing=") == buffer)
-            settings->minorEnhancementsOptions.u5spellMixing = (int) strtoul(buffer + strlen("u5spellMixing="), NULL, 0);
+            settings->minorEnhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);                
         else if (strstr(buffer, "smartEnterKey=") == buffer)
             settings->minorEnhancementsOptions.smartEnterKey = (int) strtoul(buffer + strlen("smartEnterKey="), NULL, 0);
         
@@ -227,10 +231,11 @@ void settingsWrite() {
             "innTime=%d\n"
             "shrineTime=%d\n"
             "shakeInterval=%d\n"
+            "activePlayer=%d\n"
+            "u5spellMixing=%d\n"
             "u5shrines=%d\n"
             "slimeDivides=%d\n"
             "c64chestTraps=%d\n"            
-            "u5spellMixing=%d\n"
             "smartEnterKey=%d\n"
             "u5combat=%d\n",
             settings->scale,
@@ -256,10 +261,11 @@ void settingsWrite() {
             settings->innTime,
             settings->shrineTime,
             settings->shakeInterval,
+            settings->minorEnhancementsOptions.activePlayer,
+            settings->minorEnhancementsOptions.u5spellMixing,
             settings->minorEnhancementsOptions.u5shrines,
             settings->minorEnhancementsOptions.slimeDivides,
             settings->minorEnhancementsOptions.c64chestTraps,            
-            settings->minorEnhancementsOptions.u5spellMixing,
             settings->minorEnhancementsOptions.smartEnterKey,
             settings->majorEnhancementsOptions.u5combat);
 

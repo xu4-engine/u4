@@ -294,11 +294,12 @@ int introInit() {
     speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 4, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
     speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 4, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
-    minorOptions = menuAddItem(minorOptions, 4, "Ultima V Spell Mixing", 7, 5, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
-    minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 7, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
-    minorOptions = menuAddItem(minorOptions, 1, "Slime Divides", 7, 7, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
-    minorOptions = menuAddItem(minorOptions, 2, "Fixed Chest Traps", 7, 8, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
-    minorOptions = menuAddItem(minorOptions, 5, "Smart 'Enter' Key", 7, 9, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
+    minorOptions = menuAddItem(minorOptions, 6, "Set Active Player", 7, 5, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
+    minorOptions = menuAddItem(minorOptions, 4, "Ultima V Spell Mixing", 7, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
+    minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 7, 7, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
+    minorOptions = menuAddItem(minorOptions, 1, "Slime Divides", 7, 8, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
+    minorOptions = menuAddItem(minorOptions, 2, "Fixed Chest Traps", 7, 9, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
+    minorOptions = menuAddItem(minorOptions, 5, "Smart 'Enter' Key", 7, 10, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
     minorOptions = menuAddItem(minorOptions, 0xFE, "Use These Settings", 7, 20, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
     minorOptions = menuAddItem(minorOptions, 0xFF, "Cancel", 7, 21, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
@@ -784,11 +785,12 @@ void introUpdateScreen() {
     case INTRO_CONFIG_MINOR_OPTIONS:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Minor Game Enhancement Options:");        
-        screenTextAt(31, 5,  "%s", settingsChanged->minorEnhancementsOptions.u5spellMixing ? "On" : "Off");
-        screenTextAt(31, 6,  "%s", settingsChanged->minorEnhancementsOptions.u5shrines ? "On" : "Off");
-        screenTextAt(31, 7,  "%s", settingsChanged->minorEnhancementsOptions.slimeDivides ? "On" : "Off");
-        screenTextAt(31, 8,  "%s", settingsChanged->minorEnhancementsOptions.c64chestTraps ? "On" : "Off");
-        screenTextAt(31, 9,  "%s", settingsChanged->minorEnhancementsOptions.smartEnterKey ? "On" : "Off");
+        screenTextAt(31, 5,  "%s", settingsChanged->minorEnhancementsOptions.activePlayer ? "On" : "Off");
+        screenTextAt(31, 6,  "%s", settingsChanged->minorEnhancementsOptions.u5spellMixing ? "On" : "Off");
+        screenTextAt(31, 7,  "%s", settingsChanged->minorEnhancementsOptions.u5shrines ? "On" : "Off");
+        screenTextAt(31, 8,  "%s", settingsChanged->minorEnhancementsOptions.slimeDivides ? "On" : "Off");
+        screenTextAt(31, 9,  "%s", settingsChanged->minorEnhancementsOptions.c64chestTraps ? "On" : "Off");
+        screenTextAt(31, 10,  "%s", settingsChanged->minorEnhancementsOptions.smartEnterKey ? "On" : "Off");
         menuShow(menuGetRoot(minorOptions));
         break;
 
@@ -1690,6 +1692,9 @@ void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
     case 5:
         settingsChanged->minorEnhancementsOptions.smartEnterKey = settingsChanged->minorEnhancementsOptions.smartEnterKey ? 0 : 1;
+        break;
+    case 6:
+        settingsChanged->minorEnhancementsOptions.activePlayer = settingsChanged->minorEnhancementsOptions.activePlayer ? 0 : 1;
         break;
     case 0xFE:        
         /* save settings */

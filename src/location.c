@@ -38,6 +38,7 @@ Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationConte
     newLoc->move = moveCallback;
     newLoc->tileAt = tileAtCallback;
     newLoc->tileset_info = tileset_info;
+    newLoc->activePlayer = -1;
     
     return locationPush(prev, newLoc);    
 }

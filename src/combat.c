@@ -567,7 +567,10 @@ void combatFinishTurn() {
                 }                
             }
         } while (!party[FOCUS].obj ||    /* dead */
-                 c->saveGame->players[FOCUS].status == STAT_SLEEPING);
+                 (c->saveGame->players[FOCUS].status == STAT_SLEEPING) || /* sleeping */
+                 ((c->location->activePlayer >= 0) && /* active player is set */
+                  !playerIsDisabled(c->saveGame, c->location->activePlayer) /* and the active player is not disabled */
+                  && (c->location->activePlayer != FOCUS)));
     }
     else annotationCycle();
 
@@ -752,7 +755,7 @@ int combatBaseKeyHandler(int key, void *data) {
         screenMessage("Not here!\n");
         break;
 
-    case '0':
+    case '0':        
     case '1':
     case '2':
     case '3':
@@ -761,9 +764,20 @@ int combatBaseKeyHandler(int key, void *data) {
     case '6':
     case '7':
     case '8':
-    case '9':    
-        screenMessage("Bad command\n");        
-        break;
+    case '9':
+        if (settings->minorEnhancements && settings->minorEnhancementsOptions.activePlayer) {
+            if (key == '0') {             
+                c->location->activePlayer = -1;
+                screenMessage("Set Active Player: None!\n");
+            }
+            else if (key-'1' < c->saveGame->members) {
+                c->location->activePlayer = key - '1';
+                screenMessage("Set Active Player: %s!\n", c->saveGame->players[c->location->activePlayer].name);
+            }
+        }
+        else screenMessage("Bad command\n");
+
+        break;    
 
     default:
         valid = 0;

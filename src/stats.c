@@ -165,15 +165,16 @@ void statsAreaSetTitle(const char *title) {
  */
 void statsShowPartyView(int member) {
     int i;
+    char *format = "%d%c%-9.8s%3d%c";
 
     ASSERT(c->saveGame->members <= 8, "party members out of range: %d", c->saveGame->members);
     ASSERT(member <= 8, "party member out of range: %d", member);
 
     if (member == -1) {
         for (i = 0; i < c->saveGame->members; i++)
-            screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, "%d-%-9.8s%3d%c", i+1, c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
+            screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, format, i+1, (i==c->location->activePlayer) ? CHARSET_BULLET : '-', c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
     }
-    else screenTextAt(STATS_AREA_X, STATS_AREA_Y+member, "%d-%-9.8s%3d%c", member+1, c->saveGame->players[member].name, c->saveGame->players[member].hp, c->saveGame->players[member].status);
+    else screenTextAt(STATS_AREA_X, STATS_AREA_Y+member, format, member+1, (member==c->location->activePlayer) ? CHARSET_BULLET : '-', c->saveGame->players[member].name, c->saveGame->players[member].hp, c->saveGame->players[member].status);
 }
 
 /**

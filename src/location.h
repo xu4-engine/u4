@@ -40,6 +40,7 @@ typedef struct _Location {
     MoveCallback move;
     TileAt tileAt;
     struct _Tile *tileset_info;
+    int activePlayer;
     struct _Location *prev;
 } Location;
 

@@ -165,7 +165,7 @@ void gameInit() {
     c->horseSpeed = 0;
     c->opacity = 1;
     c->lastCommandTime = time(NULL);
-    c->lastShip = NULL;    
+    c->lastShip = NULL;
 
     /* load in the save game */
     saveGameFile = saveGameOpenForReading();
@@ -314,6 +314,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     MoveCallback move = &gameMoveAvatar;
     TileAt tileAt = &mapTileAt;
     Tile *tileset_info = _ttype_info;
+    int activePlayer = ct->location->activePlayer;
 
     if (portal) {
         x = portal->startx;
@@ -344,6 +345,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         viewMode = VIEW_NORMAL;
         finishTurn = &combatFinishTurn;
         move = &combatMovePartyMember;
+        activePlayer = -1; /* different active player for combat, defaults to 'None' */
         break;
     case MAPTYPE_TOWN:
     case MAPTYPE_VILLAGE:
@@ -356,6 +358,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     }
     
     ct->location = locationNew(x, y, z, map, viewMode, context, finishTurn, move, tileAt, tileset_info, ct->location);    
+    ct->location->activePlayer = activePlayer;
 
     if ((map->type == MAPTYPE_TOWN ||
          map->type == MAPTYPE_VILLAGE ||
@@ -846,7 +849,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'c':
         screenMessage("Cast Spell!\nPlayer: ");
-        gameGetPlayerForCommand(&gameCastForPlayer, 0);
+        gameGetPlayerForCommand(&gameCastForPlayer, 0, 1);
         break;
 
     case 'd':        
@@ -908,7 +911,7 @@ int gameBaseKeyHandler(int key, void *data) {
             if (tileIsChest(tile))
             {
                 screenMessage("Who opens? ");
-                gameGetPlayerForCommand(&gameGetChest, 0);                
+                gameGetPlayerForCommand(&gameGetChest, 0, 1);
             }
             else
                 screenMessage("Not here!\n");
@@ -994,7 +997,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'n':
         screenMessage("New Order!\nExchange # ");
-        gameGetPlayerForCommand(&newOrderForPlayer, 1);
+        gameGetPlayerForCommand(&newOrderForPlayer, 1, 0);
         break;
 
     case 'o':
@@ -1039,7 +1042,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'r':
         screenMessage("Ready a weapon\nfor: ");
-        gameGetPlayerForCommand(&readyForPlayer, 1);
+        gameGetPlayerForCommand(&readyForPlayer, 1, 0);
         break;
 
     case 's':
@@ -1105,7 +1108,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'w':
         screenMessage("Wear Armour\nfor: ");
-        gameGetPlayerForCommand(&wearForPlayer, 1);
+        gameGetPlayerForCommand(&wearForPlayer, 1, 0);
         break;
 
     case 'x':
@@ -1137,7 +1140,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'z':        
         screenMessage("Ztats for: ");
-        gameGetPlayerForCommand(&ztatsFor, 1);
+        gameGetPlayerForCommand(&ztatsFor, 1, 0);
         break;
 
     case 'c' + U4_ALT:
@@ -1177,8 +1180,33 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'v' + U4_ALT:
         screenMessage("XU4 %s\n", VERSION);        
-        break;    
+        break;
+        
+    case '0':        
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':        
+        if (settings->minorEnhancements && settings->minorEnhancementsOptions.activePlayer) {
+            if (key == '0') {             
+                c->location->activePlayer = -1;
+                screenMessage("Set Active Player: None!\n");
+            }
+            else if (key-'1' < c->saveGame->members) {
+                c->location->activePlayer = key - '1';
+                screenMessage("Set Active Player: %s!\n", c->saveGame->players[c->location->activePlayer].name);
+            }
+        }
+        else screenMessage("Bad command!\n");
 
+        endTurn = 0;
+        break;
+        
     default:
         valid = 0;        
         break;
@@ -1216,17 +1244,19 @@ void gameGetInput(int (*handleBuffer)(const char *), char *buffer, int bufferLen
     eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
 }
 
-void gameGetPlayerForCommand(int (*commandFn)(int player), int canBeDisabled) {
+void gameGetPlayerForCommand(int (*commandFn)(int player), int canBeDisabled, int canBeActivePlayer) {
     if (c->saveGame->members <= 1) {
         screenMessage("1\n");
         (*commandFn)(0);
     }
     else {
         GetPlayerInfo *info = (GetPlayerInfo *)malloc(sizeof(GetPlayerInfo));
-        info->canBeDisabled = canBeDisabled;
+        info->canBeDisabled = canBeDisabled;        
         info->command = commandFn;
 
         eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *)info);
+        if (canBeActivePlayer && (c->location->activePlayer >= 0))
+            gameGetPlayerNoKeyHandler(c->location->activePlayer + '1', (void *)info);        
     }
 }
 
@@ -1994,7 +2024,7 @@ int castForPlayer2(int spell, void *data) {
         break;
     case SPELLPRM_PLAYER:
         screenMessage("Who: ");
-        gameGetPlayerForCommand(&castForPlayerGetDestPlayer, 1);        
+        gameGetPlayerForCommand(&castForPlayerGetDestPlayer, 1, 0);        
         break;
     case SPELLPRM_DIR:
         if (c->location->context == CTX_DUNGEON)
