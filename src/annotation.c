@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "context.h"
+#include "map.h"
 #include "annotation.h"
 
 void annotationAdd(int x, int y, int ttl, unsigned char tile) {
@@ -15,13 +16,13 @@ void annotationAdd(int x, int y, int ttl, unsigned char tile) {
     annotation->y = y;
     annotation->time_to_live = ttl;
     annotation->tile = tile;
-    annotation->next = c->annotation;
+    annotation->next = c->map->annotation;
     
-    c->annotation = annotation;
+    c->map->annotation = annotation;
 }
 
 const Annotation *annotationAt(int x, int y) {
-    Annotation *annotation = c->annotation;
+    Annotation *annotation = c->map->annotation;
 
     while (annotation) {
         if (annotation->x == x &&
@@ -34,10 +35,10 @@ const Annotation *annotationAt(int x, int y) {
     return NULL;
 }
 
-void annotationCycle() {
-    Annotation *annotation = c->annotation, **prev;
+void annotationCycle(void) {
+    Annotation *annotation = c->map->annotation, **prev;
     
-    prev = &(c->annotation);
+    prev = &(c->map->annotation);
     while (annotation) {
         if (annotation->time_to_live == 0) {
             *prev = annotation->next;
@@ -49,5 +50,16 @@ void annotationCycle() {
             annotation->time_to_live--;
 
         annotation = annotation->next;
+    }
+}
+
+void annotationClear(void) {
+    Annotation *annotation = c->map->annotation, **prev;
+    
+    prev = &(c->map->annotation);
+    while (annotation) {
+        *prev = annotation->next;
+        free(annotation);
+        annotation = *prev;
     }
 }

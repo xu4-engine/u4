@@ -20,6 +20,7 @@ typedef struct _Annotation {
 
 void annotationAdd(int x, int y, int ttl, unsigned char tile);
 const Annotation *annotationAt(int x, int y);
-void annotationCycle();
+void annotationCycle(void);
+void annotationClear(void);
 
 #endif

@@ -7,7 +7,6 @@
 
 struct _SaveGame;
 struct _Map;
-struct _Annotation;
 struct _Person;
 
 #define CONV_BUFFERLEN 16
@@ -41,8 +40,7 @@ typedef enum {
 typedef struct _Context {
     struct _SaveGame *saveGame;
     struct _Context *parent;
-    const struct _Map *map;
-    struct _Annotation *annotation;
+    struct _Map *map;
     Conversation conversation;
     int line, col;
     StatsItem statsItem;
