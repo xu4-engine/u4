@@ -18,8 +18,8 @@ typedef enum {
     STATS_CHAR2,
     STATS_CHAR3,
     STATS_CHAR4,
-    STATS_CHAR5, 
-    STATS_CHAR6, 
+    STATS_CHAR5,
+    STATS_CHAR6,
     STATS_CHAR7,
     STATS_CHAR8,
     STATS_WEAPONS,
@@ -42,7 +42,10 @@ typedef enum {
 typedef struct _Conversation {
     const struct _Person *talker;
     int state;
-    char buffer[CONV_BUFFERLEN];
+    char playerInquiryBuffer[CONV_BUFFERLEN];
+    char **reply;
+    int replyLine;
+    /* for vendor conversations */
     int itemType;
     int itemSubtype;
     int quant;

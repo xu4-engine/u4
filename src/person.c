@@ -54,6 +54,7 @@ char *hawkwindGetIntro(Conversation *cnv);
 char *hawkwindGetResponse(Conversation *cnv, const char *inquiry);
 char *hawkwindGetPrompt(const Conversation *cnv);
 char **personResponseSplit(char *r);
+int linecount(const char *s, int columnmax);
 
 /**
  * Loads in conversation data for special cases and vendors from
@@ -376,7 +377,7 @@ void lordBritishCheckLevels(Conversation *cnv) {
     int i;
 
     for (i = 0; i < c->saveGame->members; i++) {
-        if (playerGetRealLevel(&c->saveGame->players[i]) < 
+        if (playerGetRealLevel(&c->saveGame->players[i]) <
             playerGetMaxLevel(&c->saveGame->players[i]))
             playerAdvanceLevel(&c->saveGame->players[i]);
     }
@@ -407,11 +408,12 @@ char *lordBritishGetIntro(Conversation *cnv) {
                            c->saveGame->players[0].name,
                            " and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n",
                            NULL);
-            
     }
     else {
-        intro = concat("Lord British rises and says: At long last!\n thou hast come!  We have waited such a long, long time...\n\n",
-                       "Lord British sits and says: A new age is upon Britannia. The great evil Lords are gone but our people lack direction and purpose in their lives...\n\n\n",
+        intro = concat("\n\n\nLord British rises and says: At long last!\n",
+                       c->saveGame->players[0].name,
+                       " thou hast come!  We have waited such a long, long time...\n\n",
+                       "\n\nLord British sits and says: A new age is upon Britannia. The great evil Lords are gone but our people lack direction and purpose in their lives...\n\n\n",
                        "A champion of virtue is called for. Thou may be this champion, but only time shall tell.  I will aid thee any way that I can!\n"
                        "How may I help thee?\n",
                        NULL);
@@ -524,7 +526,7 @@ char *hawkwindGetResponse(Conversation *cnv, const char *inquiry) {
         cnv->state = CONV_DONE;
         return reply;
     }
-        
+
     /* check if asking about a virtue */
     for (v = 0; v < VIRT_MAX; v++) {
         if (strncasecmp(inquiry, getVirtueName((Virtue) v), 4) == 0) {
@@ -534,17 +536,17 @@ char *hawkwindGetResponse(Conversation *cnv, const char *inquiry) {
     }
     if (virtue != -1) {
         if (virtueLevel == 0)
-            reply = strdup(hawkwindText[HW_ALREADYAVATAR]);
+            reply = concat("\n\n", hawkwindText[HW_ALREADYAVATAR], NULL);
         else if (virtueLevel < 20)
-            reply = strdup(hawkwindText[0 * 8 + virtue]);
+            reply = concat("\n\n", hawkwindText[0 * 8 + virtue], NULL);
         else if (virtueLevel < 40)
-            reply = strdup(hawkwindText[1 * 8 + virtue]);
+            reply = concat("\n\n", hawkwindText[1 * 8 + virtue], NULL);
         else if (virtueLevel < 60)
-            reply = strdup(hawkwindText[2 * 8 + virtue]);
+            reply = concat("\n\n", hawkwindText[2 * 8 + virtue], NULL);
         else if (virtueLevel < 99)
-            reply = strdup(hawkwindText[3 * 8 + virtue]);
+            reply = concat("\n\n", hawkwindText[3 * 8 + virtue], NULL);
         else /* virtueLevel >= 99 */
-            reply = concat(hawkwindText[4 * 8 + virtue], hawkwindText[HW_GOTOSHRINE], NULL);
+            reply = concat("\n\n", hawkwindText[4 * 8 + virtue], hawkwindText[HW_GOTOSHRINE], NULL);
 
         return reply;
     }
@@ -553,7 +555,7 @@ char *hawkwindGetResponse(Conversation *cnv, const char *inquiry) {
 }
 
 char *hawkwindGetPrompt(const Conversation *cnv) {
-    return strdup(hawkwindText[HW_PROMPT]);
+    return concat("\n", hawkwindText[HW_PROMPT], NULL);
 }
 
 void personGetQuestion(const Person *p, char **question) {
@@ -566,13 +568,46 @@ void personGetQuestion(const Person *p, char **question) {
  * Splits a response into screen-sized chunks.
  */
 char **personResponseSplit(char *r) {
-    char **result = (char **) malloc(sizeof(char *) * 2);
+    char **result;
+
+    result = (char **) malloc(sizeof(char *) * 2);
     result[0] = strdup(r);
     result[1] = NULL;
 
     free(r);
+    return result;
+
+#if 0
+    char *ptr;
+    char **result, **tmp;
+    int i;
+
+    ptr = strstr(r+2, "\n\n");
+    if (linecount(r, 16) < 9 || ptr == NULL) {
+        result = (char **) malloc(sizeof(char *) * 2);
+        result[0] = strdup(r);
+        result[1] = NULL;
+    }
+
+    else {
+        result = (char **) malloc(sizeof(char *) * 5);
+        result[0] = (char *) malloc(ptr - r + 2 + 1);
+        strncpy(result[0], r, ptr - r + 2);
+        result[0][ptr - r + 2] = '\0';
+
+        tmp = personResponseSplit(strdup(ptr + 2));
+        for (i = 0; tmp[i]; i++)
+            result[i+1] = tmp[i];
+        result[i + 1] = NULL;
+        free(tmp);
+
+        ASSERT(i < 5, "reply split into too many chunks: %d\n", i);
+    }
+
+    free(r);
 
     return result;
+#endif
 }
 
 /**
@@ -624,4 +659,24 @@ char *concat(const char *str, ...) {
     }
 
     return result;
+}
+
+/**
+ * Counts the number of lines (of the maximum width given by
+ * columnmax) in the string.
+ */
+int linecount(const char *s, int columnmax) {
+    int lines = 1;
+    int col;
+
+    col = 0;
+    for (; *s; s++) {
+        if (*s == '\n' || col >= columnmax) {
+            lines++;
+            col = 0;
+        } else
+            col++;
+    }
+
+    return lines;
 }

@@ -61,9 +61,9 @@ int quitHandleChoice(char choice);
 int readyForPlayer(int player);
 int readyForPlayer2(int weapon, void *data);
 int talkAtCoord(int x, int y, int distance);
-void talkSetHandler(const Conversation *cnv);
 int talkHandleBuffer(const char *message);
 int talkHandleChoice(char choice);
+void talkShowReply(int showPrompt);
 int useItem(const char *itemName);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
@@ -93,7 +93,9 @@ void gameInit() {
     c->map = &world_map;
     c->conversation.talker = NULL;
     c->conversation.state = 0;
-    c->conversation.buffer[0] = '\0';
+    c->conversation.playerInquiryBuffer[0] = '\0';
+    c->conversation.reply = NULL;
+    c->conversation.replyLine = 0;
     c->line = TEXT_AREA_H - 1;
     c->col = 0;
     c->statsItem = STATS_PARTY_OVERVIEW;
@@ -1458,8 +1460,6 @@ int quitHandleChoice(char choice) {
  */
 int talkAtCoord(int x, int y, int distance) {
     const Person *talker;
-    char **text;
-    int i;
 
     if (x == -1 && y == -1) {
         screenMessage("Funny, no\nresponse!\n");
@@ -1474,115 +1474,113 @@ int talkAtCoord(int x, int y, int distance) {
 
     talker = c->conversation.talker;
     c->conversation.state = CONV_INTRO;
-    c->conversation.buffer[0] = '\0';
+    c->conversation.reply = personGetConversationText(&c->conversation, "");
+    c->conversation.replyLine = 0;
+    c->conversation.playerInquiryBuffer[0] = '\0';
 
-    text = personGetConversationText(&c->conversation, "");
-    for(i = 0; text[i]; i++)
-        screenMessage("\n\n%s", text[i]);
-    personFreeConversationText(text);
-
-    if (c->conversation.state == CONV_DONE)
-        gameFinishTurn();
-    else
-        talkSetHandler(&c->conversation);
+    talkShowReply(0);
 
     return 1;
-}
-
-/**
- * Set up a key handler to handle the current conversation state.
- */
-void talkSetHandler(const Conversation *cnv) {
-    ReadBufferActionInfo *rbInfo;
-    GetChoiceActionInfo *gcInfo;
-
-    switch (personGetInputRequired(cnv)) {
-    case CONVINPUT_STRING:
-        rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-        rbInfo->buffer = c->conversation.buffer;
-        rbInfo->bufferLen = CONV_BUFFERLEN;
-        rbInfo->handleBuffer = &talkHandleBuffer;
-        rbInfo->screenX = TEXT_AREA_X + c->col;
-        rbInfo->screenY = TEXT_AREA_Y + c->line;
-        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, rbInfo);
-        break;
-
-    case CONVINPUT_CHARACTER:
-        gcInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-        gcInfo->choices = personGetChoices(cnv);
-        gcInfo->handleChoice = &talkHandleChoice;
-        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
-        break;
-
-    case CONVINPUT_NONE:
-        /* no handler: conversation done! */
-        break;
-    }
 }
 
 /**
  * Handles a query while talking to an NPC.
  */
 int talkHandleBuffer(const char *message) {
-    char **reply, *prompt;
-    int i;
-
     eventHandlerPopKeyHandler();
 
-    reply = personGetConversationText(&c->conversation, message);
-    for (i = 0; reply[i]; i++)
-        screenMessage("%s", reply[i]);
-    personFreeConversationText(reply);
+    c->conversation.reply = personGetConversationText(&c->conversation, message);
+    c->conversation.replyLine = 0;
+    c->conversation.playerInquiryBuffer[0] = '\0';
 
-    c->conversation.buffer[0] = '\0';
-
-    if (c->conversation.state == CONV_DONE) {
-        gameFinishTurn();
-        return 1;
-    }
-
-    prompt = personGetPrompt(&c->conversation);
-    if (prompt) {
-        screenMessage("%s", prompt);
-        free(prompt);
-    }
-
-    talkSetHandler(&c->conversation);
+    talkShowReply(1);
 
     return 1;
 }
 
 int talkHandleChoice(char choice) {
     char message[2];
-    char **reply, *prompt;
-    int i;
 
     eventHandlerPopKeyHandler();
 
     message[0] = choice;
     message[1] = '\0';
 
-    reply = personGetConversationText(&c->conversation, message);
-    for (i = 0; reply[i]; i++)
-        screenMessage("\n\n%s\n", reply[i]);
-    personFreeConversationText(reply);
+    c->conversation.reply = personGetConversationText(&c->conversation, message);
+    c->conversation.replyLine = 0;
+    c->conversation.playerInquiryBuffer[0] = '\0';
 
-    c->conversation.buffer[0] = '\0';
-
-    if (c->conversation.state == CONV_DONE) {
-        gameFinishTurn();
-        return 1;
-    }
-
-    prompt = personGetPrompt(&c->conversation);
-    if (prompt) {
-        screenMessage("%s", prompt);
-        free(prompt);
-    }
-
-    talkSetHandler(&c->conversation);
+    talkShowReply(1);
 
     return 1;
+}
+
+int talkHandleAnyKey(int key, void *data) {
+    int showPrompt = (int) data;
+
+    eventHandlerPopKeyHandler();
+
+    talkShowReply(showPrompt);
+
+    return 1;
+}
+
+/**
+ * Shows the conversation reply and sets up a key handler to handle
+ * the current conversation state.
+ */
+void talkShowReply(int showPrompt) {
+    char *prompt;
+    ReadBufferActionInfo *rbInfo;
+    GetChoiceActionInfo *gcInfo;
+
+    screenMessage("%s", c->conversation.reply[c->conversation.replyLine]);
+
+    c->conversation.replyLine++;
+
+    if (c->conversation.reply[c->conversation.replyLine] == NULL) {
+        personFreeConversationText(c->conversation.reply);
+        c->conversation.reply = NULL;
+
+        if (c->conversation.state == CONV_DONE) {
+            gameFinishTurn();
+            return;
+        }
+
+        if (showPrompt &&
+            (prompt = personGetPrompt(&c->conversation)) != NULL) {
+            screenMessage("%s", prompt);
+            free(prompt);
+        }
+
+        switch (personGetInputRequired(&c->conversation)) {
+        case CONVINPUT_STRING:
+            rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+            rbInfo->buffer = c->conversation.playerInquiryBuffer;
+            rbInfo->bufferLen = CONV_BUFFERLEN;
+            rbInfo->handleBuffer = &talkHandleBuffer;
+            rbInfo->screenX = TEXT_AREA_X + c->col;
+            rbInfo->screenY = TEXT_AREA_Y + c->line;
+            eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, rbInfo);
+            break;
+
+        case CONVINPUT_CHARACTER:
+            gcInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+            gcInfo->choices = personGetChoices(&c->conversation);
+            gcInfo->handleChoice = &talkHandleChoice;
+            eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
+            break;
+
+        case CONVINPUT_NONE:
+            /* no handler: conversation done! */
+            break;
+        }
+
+    }
+
+    else {
+        eventHandlerPushKeyHandlerData(&talkHandleAnyKey, (void *) showPrompt);
+    }
 }
 
 int useItem(const char *itemName) {
