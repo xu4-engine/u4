@@ -47,22 +47,16 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
 
     /* if you're on ship, you must turn first! */
     if (c->transportContext == TRANSPORT_SHIP) {
-        if (tileGetDirection((MapTile)c->saveGame->transport) != dir) {
-            temp = (MapTile)c->saveGame->transport;
-            tileSetDirection(&temp, dir);
-            c->saveGame->transport = temp;
+        if (c->party->transport.getDirection() != dir) {
+            c->party->transport.setDirection(dir);            
             return (MoveReturnValue)(MOVE_TURNED | MOVE_END_TURN);
         }
     }
     
     /* change direction of horse, if necessary */
     if (c->transportContext == TRANSPORT_HORSE) {
-        if ((dir == DIR_WEST || dir == DIR_EAST) &&
-            tileGetDirection((MapTile)c->saveGame->transport) != dir) {
-        temp = (MapTile)c->saveGame->transport;
-            tileSetDirection(&temp, dir);
-        c->saveGame->transport = temp;
-        }
+        if ((dir == DIR_WEST || dir == DIR_EAST) && (c->party->transport.getDirection() != dir))
+            c->party->transport.setDirection(dir);        
     }
 
     /* figure out our new location we're trying to move to */
@@ -76,7 +70,7 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
     if (!collisionOverride && !c->saveGame->balloonstate) {
         int movementMask;
 
-        movementMask = c->location->map->getValidMoves(c->location->coords, (MapTile)c->saveGame->transport);
+        movementMask = c->location->map->getValidMoves(c->location->coords, c->party->transport);
         /* See if movement was blocked */
         if (!DIR_IN_MASK(dir, movementMask))
             return (MoveReturnValue)(MOVE_BLOCKED | MOVE_END_TURN);
@@ -143,11 +137,11 @@ MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {
     if (!collisionOverride) {
         int movementMask;        
         
-        movementMask = c->location->map->getValidMoves(c->location->coords, (MapTile)c->saveGame->transport);        
+        movementMask = c->location->map->getValidMoves(c->location->coords, c->party->transport);
 
-        if (advancing && !tileCanWalkOn(tile, DIR_ADVANCE))
+        if (advancing && !tile.canWalkOn(DIR_ADVANCE))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
-        else if (retreating && !tileCanWalkOn(tile, DIR_RETREAT))
+        else if (retreating && !tile.canWalkOn(DIR_RETREAT))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
 
         if (!DIR_IN_MASK(realDir, movementMask))
@@ -192,9 +186,9 @@ int moveObject(Map *map, Creature *obj, MapCoords avatar) {
         
         /* If the pirate ship turned last move instead of moving, this time it must
            try to move, not turn again */
-        if (tileIsPirateShip(obj->getTile()) && DIR_IN_MASK(tileGetDirection(obj->getTile()), dirmask) &&
+        if (obj->getTile().isPirateShip() && DIR_IN_MASK(obj->getTile().getDirection(), dirmask) &&
             (obj->getTile() != obj->getPrevTile()) && (obj->getPrevCoords() == obj->getCoords())) {
-            dir = tileGetDirection(obj->getTile());
+            dir = obj->getTile().getDirection();
             break;
         }
 
@@ -218,7 +212,7 @@ int moveObject(Map *map, Creature *obj, MapCoords avatar) {
         slowed = slowedByTile(map->tileAt(new_coords, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
-        slowed = slowedByWind(tileGetDirection(obj->getTile()));
+        slowed = slowedByWind(obj->getTile().getDirection());
         break;
     case SLOWED_BY_NOTHING:
     default:
@@ -294,7 +288,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
         slowed = slowedByTile(map->tileAt(new_coords, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
-        slowed = slowedByWind(tileGetDirection(obj->getTile()));
+        slowed = slowedByWind(obj->getTile().getDirection());
         break;
     case SLOWED_BY_NOTHING:
     default:
@@ -406,7 +400,7 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
 int slowedByTile(MapTile tile) {
     int slow;
     
-    switch (tileGetSpeed(tile)) {    
+    switch (tile.getSpeed()) {    
     case SLOW:
         slow = xu4_random(8) == 0;
         break;

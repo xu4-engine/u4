@@ -73,7 +73,7 @@ typedef enum {
 
 typedef struct _IntroObjectState {
     int x, y;
-    MapTile tile;  /* base tile + tile frame */
+    unsigned char tile;  /* base tile + tile frame */
 } IntroObjectState;
 
 #define GYP_PLACES_FIRST 0
@@ -617,19 +617,18 @@ void introDrawMap() {
 }
 
 void introDrawMapAnimated() {
-    int x, y, i;
-    Tileset *base = Tileset::get(TILESET_BASE);
+    int x, y, i;    
 
     /* draw unmodified map */
     for (y = 0; y < INTRO_MAP_HEIGHT; y++) {
         for (x = 0; x < INTRO_MAP_WIDTH; x++)
-            screenShowTile(base, introMap[y][x], 0, x, y + 6);
+            screenShowTile(Tile::getMapTile(introMap[y][x]), 0, x, y + 6);
     }
 
     /* draw animated objects */
     for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
         if (objectStateTable[i].tile != 0)
-            screenShowTile(base, objectStateTable[i].tile, 0, objectStateTable[i].x, objectStateTable[i].y + 6);
+            screenShowTile(Tile::getMapTile(objectStateTable[i].tile), 0, objectStateTable[i].x, objectStateTable[i].y + 6);
     }
 }
 

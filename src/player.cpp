@@ -50,7 +50,7 @@ bool isPartyMember(Object *punknown) {
  * PartyMember class implementation
  */ 
 PartyMember::PartyMember(class Party *p, SaveGamePlayerRecord *pr) : 
-    Creature(tileForClass(pr->klass)),    
+    Creature(MapTile::tileForClass(pr->klass)),    
     player(pr),
     party(p)
 {
@@ -349,7 +349,7 @@ bool PartyMember::applyDamage(int damage) {
     if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();                    
         screenMessage("%s is Killed!\n", getName().c_str());
-        map->annotations->add(p, Tile::getMapTile(CORPSE_TILE))->setTTL(party->size());
+        map->annotations->add(p, Tile::findByName("corpse")->id)->setTTL(party->size());
 
         /* remove yourself from the map */
         map->removeObject(this);        
@@ -455,7 +455,7 @@ int PartyMember::loseWeapon() {
 void PartyMember::putToSleep() {    
     if (getStatus() != STAT_DEAD) {
         addStatus(STAT_SLEEPING);
-        setTile(CORPSE_TILE);
+        setTile(Tile::findByName("corpse")->id);
     }
 }
 
@@ -464,7 +464,7 @@ void PartyMember::putToSleep() {
  */
 void PartyMember::wakeUp() {
     removeStatus(STAT_SLEEPING);    
-    setTile(tileForClass(getClass()));
+    setTile(MapTile::tileForClass(getClass()));
 }
 
 
@@ -862,19 +862,20 @@ void Party::reviveParty() {
     
     saveGame->food = 20099;
     saveGame->gold = 200;
-    setTransport(Tile::getMapTile(AVATAR_TILE));
+    setTransport(Tile::findByName("avatar")->id);
     setChanged();
     notifyObservers("Party::reviveParty");
 }
 
 void Party::setTransport(MapTile tile) {
-    c->saveGame->transport = tile;
+    saveGame->transport = tile.getIndex();
+    transport = tile;
     
-    if (tileIsHorse(tile))
+    if (tile.isHorse())
         c->transportContext = TRANSPORT_HORSE;
-    else if (tileIsShip(tile))
+    else if (tile.isShip())
         c->transportContext = TRANSPORT_SHIP;
-    else if (tileIsBalloon(tile))
+    else if (tile.isBalloon())
         c->transportContext = TRANSPORT_BALLOON;
     else c->transportContext = TRANSPORT_FOOT;
 

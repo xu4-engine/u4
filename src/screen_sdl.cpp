@@ -287,11 +287,11 @@ void screenDelete() {
  */
 void screenReInit() {        
     introDelete(DONT_FREE_MENUS);  /* delete intro stuff */
-    Tileset::unloadAll(); /* unload tilesets */
+    Tileset::unload(); /* unload tilesets */
     screenDelete(); /* delete screen stuff */            
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
     eventHandlerInit();  
-    Tileset::loadAll("tilesets.xml"); /* re-load tilesets */
+    Tileset::load("tilesets.xml"); /* re-load tilesets */
     introInit();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
 
@@ -1077,21 +1077,22 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int y) {
+void screenShowTile(MapTile mapTile, int focus, int x, int y) {
     int offset;
     int unscaled_x, unscaled_y;
     Image *tiles;
     TileAnim *anim = NULL;
+    unsigned int tile = mapTile.getIndex();
 
-    if (tilesInfo == NULL || tilesInfo->name != tileset->imageName) {
-        tilesInfo = screenLoadImage(tileset->imageName);
+    if (tilesInfo == NULL || tilesInfo->name != Tileset::imageName) {
+        tilesInfo = screenLoadImage(Tileset::imageName);
         if (!tilesInfo)
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
     tiles = tilesInfo->image;
 
-    if (tileGetAnimationStyle(tile) == ANIM_SCROLL)
+    if (mapTile.getAnimationStyle() == ANIM_SCROLL)
         offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale;
     else
         offset = 0;
@@ -1119,7 +1120,7 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
     /*
      * animate flags and camp fires
      */
-    switch (tileGetAnimationStyle(tile)) {
+    switch (mapTile.getAnimationStyle()) {
     case ANIM_CITYFLAG:
         anim = tileAnimSetGetAnimByName(tileanims, "cityflag");
         break;
@@ -1185,7 +1186,9 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
+void screenShowGemTile(MapTile mapTile, int focus, int x, int y) {
+    unsigned int tile = mapTile.getIndex();    
+
     if (gemTilesInfo == NULL) {
         gemTilesInfo = screenLoadImage(BKGD_GEMTILES);
         if (!gemTilesInfo)
@@ -1353,12 +1356,13 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
     return 1;
 }
 
-void screenDungeonDrawTile(int distance, unsigned char tile) {
+void screenDungeonDrawTile(int distance, MapTile mapTile) {
     SDL_Rect src, dest;
     Image *tmp, *scaled;
     const static int dscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
     int offset;
     int savedflags;
+    unsigned int tile = mapTile.getIndex();
 
     tmp = Image::create(tilesInfo->image->w, tilesInfo->image->h / N_TILES, tilesInfo->image->isIndexed(), Image::SOFTWARE);
     if (tilesInfo->image->indexed)
@@ -1388,7 +1392,7 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
         scaled = screenScale(tmp, dscale[distance] / 2, 1, 1);
 
     /* FIXME: get animation flag properly */
-    if (/*tileGetAnimationStyle(tile) == ANIM_SCROLL*/ tile == 2)
+    if (/*tileGetAnimationStyle(mapTile) == ANIM_SCROLL*/ tile == 2)
         offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale * dscale[distance] / 2;
     else
         offset = 0;
@@ -1520,7 +1524,7 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
 }
 
 void screenGemUpdate() {
-    unsigned char tile;
+    MapTile tile;
     int focus, x, y;
 
     screen->fillRect(BORDER_WIDTH * scale, 

@@ -4,6 +4,7 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <string>
 #include "dungeon.h"
 
 #include "annotation.h"
@@ -40,8 +41,20 @@ string Dungeon::getName() {
 /**
  * Returns the dungeon token associated with the given dungeon tile
  */
-DungeonToken dungeonTokenForTile(MapTile tile) {
-    return (DungeonToken)(tile & 0xF0);
+DungeonToken dungeonTokenForTile(MapTile tile) {    
+    const static std::string tileNames[] = {
+        "brick_floor", "up_ladder", "down_ladder", "up_down_ladder", "chest",
+        "ceiling_hole", "floor_hole", "magic_orb", "brick_floor", "shallows", 
+        "brick_floor", "altar", "door", "room", "secret_door", "brick_wall", ""
+    };
+
+    int i;
+    for (i = 0; !tileNames[i].empty(); i++) {
+        Tile *t = Tileset::tiles[tile.id];
+        if (strcasecmp(t->name.c_str(), tileNames[i].c_str()) == 0)
+            return DungeonToken(i<<4);
+    }
+    return (DungeonToken)0;
 }
 
 /**
@@ -49,8 +62,8 @@ DungeonToken dungeonTokenForTile(MapTile tile) {
  * For instance, for tile 0x91, returns FOUNTAIN_HEALING
  * NOTE: This function will always need type-casting to the token type necessary
  */
-unsigned char dungeonSubTokenForTile(MapTile tile) {
-    return (tile & 0xF);
+unsigned char dungeonSubTokenForTile(MapTile tile) {    
+    return (tile.frame);
 }
 
 /**
@@ -281,7 +294,7 @@ bool dungeonLadderUpAt(class Map *map, MapCoords coords) {
     if (a.size() > 0) {
         AnnotationList::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == Tile::getMapTile(LADDERUP_TILE))
+            if (i->getTile() == Tile::findByName("up_ladder")->id)
                 return true;
         }
     }
@@ -301,7 +314,7 @@ bool dungeonLadderDownAt(class Map *map, MapCoords coords) {
     if (a.size() > 0) {
         AnnotationList::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == Tile::getMapTile(LADDERDOWN_TILE))
+            if (i->getTile() == Tile::findByName("down_ladder")->id)
                 return true;
         }
     }

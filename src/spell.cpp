@@ -320,7 +320,7 @@ void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage)
     info->range = 11;
     info->validDirections = MASK_DIR_ALL;
     info->player = c->combat->getFocus();
-    info->blockedPredicate = &tileCanAttackOver;
+    info->blockedPredicate = &MapTile::canAttackOverTile;
     info->blockBefore = 1;
     info->firstValidDistance = 1;
     info->dir = MASK_DIR(dir);
@@ -410,10 +410,10 @@ static int spellBlink(int dir) {
     
     i = distance;   
     /* begin walking backward until you find a valid spot */
-    while ((i-- > 0) && !tileIsWalkable(c->location->map->tileAt(coords, WITH_OBJECTS)))
+    while ((i-- > 0) && !c->location->map->tileAt(coords, WITH_OBJECTS).isWalkable())
         coords.move(reverseDir, c->location->map);
     
-    if (tileIsWalkable(c->location->map->tileAt(coords, WITH_OBJECTS))) {
+    if (c->location->map->tileAt(coords, WITH_OBJECTS).isWalkable()) {
         /* we didn't move! */
         if (c->location->coords == coords)
             failed = 1;
@@ -460,7 +460,7 @@ static int spellDispel(int dir) {
     if (a.size() > 0) {
         AnnotationList::iterator i;
         for (i = a.begin(); i != a.end(); i++) {            
-            if (tileCanDispel(i->getTile())) {
+            if (i->getTile().canDispel()) {
                 c->location->map->annotations->remove(&*i);
                 c->location->map->annotations->add(field, newTile);
                 break;
@@ -472,7 +472,7 @@ static int spellDispel(int dir) {
      * if the map tile itself is a field, overlay it with a replacement tile
      */
     tile = c->location->map->tileAt(field, WITHOUT_OBJECTS);    
-    if (!tileCanDispel(tile))
+    if (!tile.canDispel())
         return 0;
     
     c->location->map->annotations->add(field, newTile);
@@ -493,10 +493,10 @@ static int spellEField(int param) {
     
     /* Make sure params valid */
     switch (fieldType) {
-        case ENERGYFIELD_FIRE: fieldTile = Tile::getMapTile(FIREFIELD_TILE); break;
-        case ENERGYFIELD_LIGHTNING: fieldTile = Tile::getMapTile(LIGHTNINGFIELD_TILE); break;
-        case ENERGYFIELD_POISON: fieldTile = Tile::getMapTile(POISONFIELD_TILE); break;
-        case ENERGYFIELD_SLEEP: fieldTile = Tile::getMapTile(SLEEPFIELD_TILE); break;
+        case ENERGYFIELD_FIRE: fieldTile = Tile::findByName("fire_field")->id; break;
+        case ENERGYFIELD_LIGHTNING: fieldTile = Tile::findByName("energy_field")->id; break;
+        case ENERGYFIELD_POISON: fieldTile = Tile::findByName("poison_field")->id; break;
+        case ENERGYFIELD_SLEEP: fieldTile = Tile::findByName("sleep_field")->id; break;
         default: return 0; break;
     }
 
@@ -515,14 +515,14 @@ static int spellEField(int param) {
          * The code below seems to produce this behaviour.
          */
         tile = c->location->map->tileAt(coords, WITH_GROUND_OBJECTS);
-        if (!tileIsWalkable(tile)) return 0;
+        if (!tile.isWalkable()) return 0;
         
         /* Get rid of old field, if any */
         AnnotationList a = c->location->map->annotations->allAt(coords);
         if (a.size() > 0) {
             AnnotationList::iterator i;
             for (i = a.begin(); i != a.end(); i++) {                
-                if (tileCanDispel(i->getTile()))
+                if (i->getTile().canDispel())
                     c->location->map->annotations->remove(&*i);
             }
         }     
@@ -534,7 +534,7 @@ static int spellEField(int param) {
 }
 
 static int spellFireball(int dir) {
-    spellMagicAttack(Tile::getMapTile(HITFLASH_TILE), (Direction)dir, 24, 128);    
+    spellMagicAttack(Tile::findByName("hit_flash")->id, (Direction)dir, 24, 128);    
     return 1;
 }
 
@@ -556,7 +556,7 @@ static int spellHeal(int player) {
 }
 
 static int spellIceball(int dir) {
-    spellMagicAttack(Tile::getMapTile(MAGICFLASH_TILE), (Direction)dir, 32, 224);    
+    spellMagicAttack(Tile::findByName("magic_flash")->id, (Direction)dir, 32, 224);    
     return 1;
 }
 
@@ -566,7 +566,7 @@ static int spellJinx(int unused) {
 }
 
 static int spellKill(int dir) {
-    spellMagicAttack(Tile::getMapTile(WHIRLPOOL_TILE), (Direction)dir, -1, 232);
+    spellMagicAttack(Tile::findByName("whirlpool")->id, (Direction)dir, -1, 232);
     return 1;
 }
 
@@ -576,7 +576,7 @@ static int spellLight(int unused) {
 }
 
 static int spellMMissle(int dir) {
-    spellMagicAttack(Tile::getMapTile(MISSFLASH_TILE), (Direction)dir, 64, 16);
+    spellMagicAttack(Tile::findByName("miss_flash")->id, (Direction)dir, 64, 16);
     return 1;
 }
 
@@ -640,13 +640,13 @@ static int spellTremor(int unused) {
             /* Deal maximum damage to creature */
             if (xu4_random(2) == 0) {
                 ct->getCurrentPlayer()->dealDamage(m, 0xFF);                
-                CombatController::attackFlash(coords, HITFLASH_TILE, 1);
+                CombatController::attackFlash(coords, Tile::findByName("hit_flash")->id, 1);
             }
             /* Deal enough damage to creature to make it flee */
             else if (xu4_random(2) == 0) {
                 if (m->hp > 23)
                     ct->getCurrentPlayer()->dealDamage(m, m->hp-23);
-                CombatController::attackFlash(coords, HITFLASH_TILE, 1);
+                CombatController::attackFlash(coords, Tile::findByName("hit_flash")->id, 1);
             }
         }
     }

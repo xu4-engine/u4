@@ -4,6 +4,7 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <string>
 #include "u4.h"
 
 #include "maploader.h"
@@ -18,6 +19,7 @@
 #include "person.h"
 #include "portal.h"
 #include "screen.h"
+#include "tileset.h"
 #include "u4file.h"
 #include "utils.h"
 
@@ -252,8 +254,33 @@ int mapLoadDng(Dungeon *dungeon) {
     ASSERT(dungeon->width == DNG_WIDTH, "map width is %d, should be %d", dungeon->width, DNG_WIDTH);
     ASSERT(dungeon->height == DNG_HEIGHT, "map height is %d, should be %d", dungeon->height, DNG_HEIGHT);
 
-    for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * dungeon->levels); i++)
-        dungeon->data.push_back(Tile::getMapTile(u4fgetc(dng)));
+    /* create a map from .dng tile indexes to tile names */
+    static std::map<TileId, string> dungeonTiles;
+    if (!dungeonTiles.size()) {
+        const static std::string tileNames[] = {
+            "brick_floor", "up_ladder", "down_ladder", "up_down_ladder", "chest",
+            "ceiling_hole", "floor_hole", "magic_orb", "brick_floor", "shallows", 
+            "brick_floor", "altar", "door", "room", "secret_door", "brick_wall"
+        };
+        int i;
+        for (i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++)
+                dungeonTiles[(16*i)+j] = tileNames[i];
+        }        
+    }
+
+    /* load the dungeon map */
+    for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * dungeon->levels); i++) {
+        unsigned char mapData = u4fgetc(dng);
+        std::map<TileId, string>::iterator found = dungeonTiles.find(mapData);
+        
+        /* split the tile into base/sub parts using the id/frame */
+        if (found != dungeonTiles.end())
+            dungeon->data.push_back(MapTile(Tile::findByName(found->second)->id, mapData % 16));
+        else
+            dungeon->data.push_back(MapTile(Tile::findByName("brick_floor")->id, mapData % 16));
+        MapTile tile = dungeon->data.back();
+    }
 
     dungeon->room = NULL;
     /* read in the dungeon rooms */
@@ -264,7 +291,7 @@ int mapLoadDng(Dungeon *dungeon) {
         for (j = 0; j < DNGROOM_NTRIGGERS; j++) {
             int tmp;
 
-            dungeon->rooms[i].triggers[j].tile = Tile::getMapTile(u4fgetc(dng));
+            dungeon->rooms[i].triggers[j].tile = Tile::getMapTile(u4fgetc(dng)).id;
 
             tmp = u4fgetc(dng);
             if (tmp == EOF)
@@ -301,11 +328,11 @@ int mapLoadDng(Dungeon *dungeon) {
 
         /* translate each creature tile to a tile id */
         for (j = 0; j < sizeof(dungeon->rooms[i].creature_tiles); j++)
-            dungeon->rooms[i].creature_tiles[j] = Tile::getMapTile(dungeon->rooms[i].creature_tiles[j]);        
+            dungeon->rooms[i].creature_tiles[j] = Tile::getMapTile(dungeon->rooms[i].creature_tiles[j]).id;
 
         /* translate each map tile to a tile id */
         for (j = 0; j < sizeof(dungeon->rooms[i].map_data); j++)
-            dungeon->rooms[i].map_data[j] = Tile::getMapTile(dungeon->rooms[i].map_data[j]);
+            dungeon->rooms[i].map_data[j] = Tile::getMapTile(dungeon->rooms[i].map_data[j]).id;
     }
     u4fclose(dng);
 
@@ -365,7 +392,8 @@ int mapLoadData(Map *map, U4FILE *f) {
                         if (c == EOF)
                             return 0;
                         
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = Tile::getMapTile(c);
+                        MapTile mt = Tile::getMapTile(c);
+                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt;
                     }
                 }
             }

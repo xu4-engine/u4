@@ -22,6 +22,7 @@
 #include "portal.h"
 #include "savegame.h"
 #include "tile.h"
+#include "types.h"
 #include "utils.h"
 
 /**
@@ -318,7 +319,7 @@ MapTile Map::tileAt(Coords coords, int withObjects) {
     
     if ((withObjects == WITH_OBJECTS) && obj)
         tile = obj->getTile();
-    else if ((withObjects == WITH_GROUND_OBJECTS) && obj && tileIsWalkable(obj->getTile()))
+    else if ((withObjects == WITH_GROUND_OBJECTS) && obj && obj->getTile().isWalkable())
         tile = obj->getTile();
     
     return tile;
@@ -454,8 +455,8 @@ void Map::animateObjects() {
     ObjectDeque::iterator i;
     
     for (i = objects.begin(); i != objects.end(); i++) {
-        if ((*i)->isAnimated() && xu4_random(2))
-            (*i)->advanceFrame();
+        if ((*i)->isAnimated() && ((*i)->getTile().getAnimationStyle() != ANIM_NONE) && xu4_random(2))
+            (*i)->advanceFrame();        
     }
 }
 
@@ -538,7 +539,7 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             
         // get the destination tile
         if (ontoAvatar)
-            tile = (MapTile)c->saveGame->transport;
+            tile = (MapTile)c->party->transport;
         else if (ontoCreature)
             tile = obj->getTile();
         else 
@@ -566,15 +567,15 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
         // avatar movement
         if (isAvatar) {
             // if the transport is a ship, check sailable
-            if (tileIsShip(transport) && tileIsSailable(tile))
+            if (transport.isShip() && tile.isSailable())
                 retval = DIR_ADD_TO_MASK(d, retval);
             // if it is a balloon, check flyable
-            else if (tileIsBalloon(transport) && tileIsFlyable(tile))
+            else if (transport.isBalloon() && tile.isFlyable())
                 retval = DIR_ADD_TO_MASK(d, retval);        
             // avatar or horseback: check walkable
-            else if (transport == Tile::getMapTile(AVATAR_TILE) || tileIsHorse(transport)) {
-                if (tileCanWalkOn(tile, d) &&
-                    tileCanWalkOff(prev_tile, d))
+            else if (transport == Tile::findByName("avatar")->id || transport.isHorse()) {
+                if (tile.canWalkOn(d) &&
+                    prev_tile.canWalkOff(d))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
         }
@@ -582,31 +583,31 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
         // creature movement
         else if (m) {
             // flying creatures
-            if (tileIsFlyable(tile) && m->flies()) {  
+            if (tile.isFlyable() && m->flies()) {  
                 // FIXME: flying creatures behave differently on the world map?
                 if (isWorldMap())
                     retval = DIR_ADD_TO_MASK(d, retval);
-                else if (tileIsWalkable(tile) || tileIsSwimable(tile) || tileIsSailable(tile))
+                else if (tile.isWalkable() || tile.isSwimable() || tile.isSailable())
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
             // swimming creatures and sailing creatures
-            else if (tileIsSwimable(tile) || tileIsSailable(tile)) {
-                if (m->swims() && tileIsSwimable(tile))
+            else if (tile.isSwimable() || tile.isSailable()) {
+                if (m->swims() && tile.isSwimable())
                     retval = DIR_ADD_TO_MASK(d, retval);
-                if (m->sails() && tileIsSailable(tile))
+                if (m->sails() && tile.isSailable())
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
             // ghosts and other incorporeal creatures
             else if (m->isIncorporeal()) {
                 // can move anywhere but onto water, unless of course the creature can swim
-                if (!(tileIsSwimable(tile) || tileIsSailable(tile)))
+                if (!(tile.isSwimable() || tile.isSailable()))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
             // walking creatures
             else if (m->walks()) {
-                if (tileCanWalkOn(tile, d) &&
-                    tileCanWalkOff(prev_tile, d) &&
-                    tileIsCreatureWalkable(tile))
+                if (tile.canWalkOn(d) &&
+                    prev_tile.canWalkOff(d) &&
+                    tile.isCreatureWalkable())
                     retval = DIR_ADD_TO_MASK(d, retval);
             }            
         }

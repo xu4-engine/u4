@@ -196,7 +196,7 @@ void CombatController::applyCreatureTileEffects() {
 
     for (i = creatures.begin(); i != creatures.end(); i++) {        
         Creature *m = *i;
-        TileEffect effect = tileGetEffect(map->tileAt(m->getCoords(), WITH_GROUND_OBJECTS));        
+        TileEffect effect = map->tileAt(m->getCoords(), WITH_GROUND_OBJECTS).getEffect();
         m->applyTileEffect(effect);
     }
 }
@@ -271,14 +271,14 @@ void CombatController::end(bool adjustKarma) {
 
                 /* FIXME: move to separate function */
                 /* add a chest, if the creature leaves one */
-                if (!inn && creature->leavesChest() && 
-                    tileIsCreatureWalkable(ground) && tileIsWalkable(ground)) {                    
-                    c->location->map->addObject(tileGetChestBase(), tileGetChestBase(), coords);
+                if (!inn && creature->leavesChest() && ground.isCreatureWalkable()) {
+                    MapTile chest = Tile::findByName("chest")->id;
+                    c->location->map->addObject(chest, chest, coords);
                 }
                 /* add a ship if you just defeated a pirate ship */
-                else if (tileIsPirateShip(creature->getTile())) {
-                    MapTile ship = tileGetShipBase();
-                    tileSetDirection(&ship, tileGetDirection(creature->getTile()));
+                else if (creature->getTile().isPirateShip()) {
+                    MapTile ship = Tile::findByName("ship")->id;
+                    ship.setDirection(creature->getTile().getDirection());
                     c->location->map->addObject(ship, ship, coords);
                 }
             }
@@ -606,7 +606,7 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
 
     /* If the weapon leaves a tile behind, do it here! (flaming oil, etc) */
     groundTile = cm->tileAt(coords, WITHOUT_OBJECTS);
-    if (!wrongRange && (weapon->leavesTile() && tileIsWalkable(groundTile)))
+    if (!wrongRange && (weapon->leavesTile().id > 0 && groundTile.isWalkable()))
         cm->annotations->add(coords, weapon->leavesTile());    
     
     /* only end the turn if we're still in combat */
@@ -654,7 +654,7 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
         }
 
         /* Get the effects of the tile the creature is using */
-        effect = tileGetEffect(hittile);
+        effect = hittile.getEffect();
   
         /* Monster's ranged attacks never miss */
 
@@ -704,7 +704,7 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
                 
         default: 
             /* show the appropriate 'hit' message */
-            if (hittile == Tile::getMapTile(MAGICFLASH_TILE))
+            if (hittile == Tile::findByName("magic_flash")->id)
                 screenMessage("\n%s Magical Hit!\n", target->getName().c_str());
             else screenMessage("\n%s Hit!\n", target->getName().c_str());
             attacker->dealDamage(target, attacker->getDamage());
@@ -717,7 +717,7 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
 
         /* If the creature leaves a tile behind, do it here! (lava lizard, etc) */
         groundTile = cm->tileAt(old, WITH_GROUND_OBJECTS);
-        if (attacker->leavesTile() && tileIsWalkable(groundTile))
+        if (attacker->leavesTile() && groundTile.isWalkable())
             cm->annotations->add(old, hittile);
     }
 
@@ -795,7 +795,7 @@ void CombatController::finishTurn(void) {
     /* make sure the player with the focus is still in battle (hasn't fled or died) */
     if (player) {
         /* apply effects from tile player is standing on */
-        player->applyEffect(tileGetEffect(c->location->map->tileAt(player->getCoords(), WITH_GROUND_OBJECTS)));
+        player->applyEffect(c->location->map->tileAt(player->getCoords(), WITH_GROUND_OBJECTS).getEffect());
     }
 
     quick = (*c->aura == AURA_QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;
@@ -969,7 +969,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
         info->player = ct->getFocus();
         info->blockedPredicate = Weapon::get(weapon)->canAttackThroughObjects() ?
             NULL :
-            &tileCanAttackOver;
+            &MapTile::canAttackOverTile;
         info->blockBefore = 1;
         info->firstValidDistance = 0;
         
@@ -1240,34 +1240,30 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
 
     static std::map<MapTile, MapId> tileMap;
     if (!tileMap.size()) {        
-        tileMap[Tile::getMapTile(HORSE1_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(HORSE2_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(SWAMP_TILE)] = MAP_MARSH_CON;
-        tileMap[Tile::getMapTile(GRASS_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(BRUSH_TILE)] = MAP_BRUSH_CON;
-        tileMap[Tile::getMapTile(FOREST_TILE)] = MAP_FOREST_CON;
-        tileMap[Tile::getMapTile(HILLS_TILE)] = MAP_HILL_CON;
-        tileMap[Tile::getMapTile(DUNGEON_TILE)] = MAP_HILL_CON;
-        tileMap[Tile::getMapTile(CITY_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(CASTLE_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(TOWN_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(LCB2_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(BRIDGE_TILE)] = MAP_BRIDGE_CON;
-        tileMap[Tile::getMapTile(BALLOON_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(NORTHBRIDGE_TILE)] = MAP_BRIDGE_CON;
-        tileMap[Tile::getMapTile(SOUTHBRIDGE_TILE)] = MAP_BRIDGE_CON;
-        tileMap[Tile::getMapTile(SHRINE_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(CHEST_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(BRICKFLOOR_TILE)] = MAP_BRICK_CON;
-        tileMap[Tile::getMapTile(MOONGATE0_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(MOONGATE1_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(MOONGATE2_TILE)] = MAP_GRASS_CON;
-        tileMap[Tile::getMapTile(MOONGATE3_TILE)] = MAP_GRASS_CON;
+        tileMap[Tile::findByName("horse")->id] = MAP_GRASS_CON;        
+        tileMap[Tile::findByName("swamp")->id] = MAP_MARSH_CON;
+        tileMap[Tile::findByName("grass")->id] = MAP_GRASS_CON;
+        tileMap[Tile::findByName("brush")->id] = MAP_BRUSH_CON;
+        tileMap[Tile::findByName("forest")->id] = MAP_FOREST_CON;
+        tileMap[Tile::findByName("hills")->id] = MAP_HILL_CON;
+        tileMap[Tile::findByName("dungeon")->id] = MAP_HILL_CON;
+        tileMap[Tile::findByName("city")->id] = MAP_GRASS_CON;
+        tileMap[Tile::findByName("castle")->id] = MAP_GRASS_CON;
+        tileMap[Tile::findByName("town")->id] = MAP_GRASS_CON;
+        tileMap[Tile::findByName("lcb_entrance")->id] = MAP_GRASS_CON;
+        tileMap[Tile::findByName("bridge")->id] = MAP_BRIDGE_CON;
+        tileMap[Tile::findByName("balloon")->id] = MAP_GRASS_CON;
+        tileMap[Tile::findByName("bridge_pieces")->id] = MAP_BRIDGE_CON;        
+        tileMap[Tile::findByName("shrine")->id] = MAP_GRASS_CON;
+        tileMap[Tile::findByName("chest")->id] = MAP_GRASS_CON;
+        tileMap[Tile::findByName("brick_floor")->id] = MAP_BRICK_CON;
+        tileMap[Tile::findByName("moongate")->id] = MAP_GRASS_CON;
+        tileMap[Tile::findByName("moongate_opening")->id] = MAP_GRASS_CON;        
     }
 
-    if (tileIsShip(transport) || (objUnder && tileIsShip(objUnder->getTile())))
+    if (transport.isShip() || (objUnder && objUnder->getTile().isShip()))
         fromShip = 1;
-    if (tileIsPirateShip(obj->getTile()))
+    if (obj->getTile().isPirateShip())
         toShip = 1;
 
     if (fromShip && toShip)
@@ -1279,11 +1275,11 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
 
         if (toShip)
             return MAP_SHORSHIP_CON;
-        else if (fromShip && tileIsWater(tileUnderneath))
+        else if (fromShip && tileUnderneath.isWater())
             return MAP_SHIPSEA_CON;
-        else if (tileIsWater(tileUnderneath))
+        else if (tileUnderneath.isWater())
             return MAP_SHORE_CON;
-        else if (fromShip && !tileIsWater(tileUnderneath))
+        else if (fromShip && !tileUnderneath.isWater())
             return MAP_SHIPSHOR_CON;        
     }
 

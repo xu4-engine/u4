@@ -130,7 +130,7 @@ void innBegin(void) {
     eventHandlerSleep(INN_FADE_OUT_TIME);
 
     /* show the sleeping avatar */
-    c->party->setTransport(Tile::getMapTile(CORPSE_TILE));
+    c->party->setTransport(Tile::findByName("corpse")->id);
     gameUpdateScreen();
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
@@ -151,7 +151,7 @@ void innTimer(void *data) {
     screenEnableCursor();
 
     /* restore the avatar to normal */
-    c->party->setTransport(Tile::getMapTile(AVATAR_TILE));
+    c->party->setTransport(Tile::findByName("avatar")->id);
     gameUpdateScreen();
 
     /* the party is always healed */
@@ -233,7 +233,7 @@ void innTimer(void *data) {
             Isaac->questionType = QUESTION_NORMAL;
             Isaac->start = MapCoords(27, xu4_random(3) + 10, 0);
             Isaac->setTile(creatures.getById(GHOST_ID)->getTile());
-            Isaac->setPrevTile(Isaac->getTile() + 1);            
+            Isaac->setPrevTile(Isaac->getTile());            
             Isaac->turnAwayProb = 0;
             
             /* Add Isaac near the Avatar */

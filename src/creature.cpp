@@ -114,7 +114,7 @@ int Creature::setInitialHp(int points) {
 }
 
 void Creature::setRandomRanged() {
-    rangedhittile = rangedmisstile = xu4_random(4) + Tile::getMapTile(POISONFIELD_TILE);
+    rangedhittile = rangedmisstile = Tile::findByName("poison_field")->id + xu4_random(4);
 }
 
 CreatureStatus Creature::getState() const {
@@ -148,7 +148,7 @@ bool Creature::specialAction() {
     int broadsidesDirs, dx, dy, mapdist;    
     CoordActionInfo *info;
     bool retval = false;        
-    broadsidesDirs = dirGetBroadsidesDirs(tileGetDirection(tile));
+    broadsidesDirs = dirGetBroadsidesDirs(tile.getDirection());
 
     dx = abs(c->location->coords.x - coords.x);
     dy = abs(c->location->coords.y - coords.y);
@@ -282,7 +282,7 @@ bool Creature::specialEffect() {
                     Creature *m = dynamic_cast<Creature*>(obj);
                                     
                     /* Make sure the object isn't a flying creature or object */
-                    if (!tileIsBalloon(obj->getTile()) && (!m || !m->flies())) {
+                    if (!obj->getTile().isBalloon() && (!m || !m->flies())) {
                         /* Destroy the object it met with */
                         i = c->location->map->removeObject(i);
                         retval = true;
@@ -326,7 +326,7 @@ void Creature::act() {
         /* creatures who ranged attack do so 1/4 of the time.
            make sure their ranged attack is not negated! */
         else if (ranged != 0 && xu4_random(4) == 0 && 
-            ((rangedhittile != Tile::getMapTile(MAGICFLASH_TILE)) || (*c->aura != AURA_NEGATE)))
+            ((rangedhittile != Tile::findByName("magic_flash")->id) || (*c->aura != AURA_NEGATE)))
             action = CA_RANGED;
         /* creatures who cast sleep do so 1/4 of the time they don't ranged attack */
         else if (castsSleep() && (*c->aura != AURA_NEGATE) && (xu4_random(4) == 0))
@@ -350,7 +350,7 @@ void Creature::act() {
     switch(action) {
     case CA_ATTACK:
         if (attackHit(target)) {            
-            CombatController::attackFlash(target->getCoords(), Tile::getMapTile(HITFLASH_TILE), 3);
+            CombatController::attackFlash(target->getCoords(), Tile::findByName("hit_flash")->id, 3);
             if (!dealDamage(target, getDamage()))
                 target = NULL;
 
@@ -364,7 +364,7 @@ void Creature::act() {
                     c->party->adjustFood(-2500);
             }
         } else {
-            CombatController::attackFlash(target->getCoords(), Tile::getMapTile(MISSFLASH_TILE), 3);
+            CombatController::attackFlash(target->getCoords(), Tile::findByName("miss_flash")->id, 3);
         }
         break;
 
@@ -399,9 +399,9 @@ void Creature::act() {
                 
                 tile = map->tileAt(new_c, WITH_OBJECTS);
             
-                if (tileIsCreatureWalkable(tile) && tileIsWalkable(tile)) {
+                if (tile.isCreatureWalkable()) {
                     /* If the tile would slow me down, try again! */
-                    if (firstTry && tileGetSpeed(tile) != FAST)
+                    if (firstTry && tile.getSpeed() != FAST)
                         firstTry = false;
                     /* OK, good enough! */
                     else
@@ -428,7 +428,7 @@ void Creature::act() {
             info->range = 11;
             info->validDirections = MASK_DIR_ALL;
             info->obj = this;
-            info->blockedPredicate = &tileCanAttackOver;
+            info->blockedPredicate = &MapTile::canAttackOverTile;
             info->blockBefore = 1;
             info->firstValidDistance = 0;
 
@@ -780,8 +780,8 @@ void CreatureMgr::loadInfoFromXml() {
         m->camouflageTile = 0;
 
         m->worldrangedtile = 0;
-        m->setHitTile(HITFLASH_TILE);
-        m->setMissTile(MISSFLASH_TILE);
+        m->setHitTile(Tile::findByName("hit_flash")->id);
+        m->setMissTile(Tile::findByName("miss_flash")->id);
         m->leavestile = 0;
 
         m->mattr = (CreatureAttrib)0;
@@ -895,11 +895,13 @@ const Creature *CreatureMgr::getByTile(MapTile tile) const {
     CreatureMap::const_iterator i;
 
     for (i = creatures.begin(); i != creatures.end(); i++) {
-        MapTile mtile = i->second->getTile();
+        if (i->second->getTile() == tile)
+            return i->second;
+        /*MapTile mtile = i->second->getTile();
         Tile *t = Tile::getTile(mtile);
         
         if ((tile >= mtile) && (tile < mtile + t->frames))
-            return i->second;
+            return i->second;*/
     }
     return NULL;
 }
@@ -934,24 +936,29 @@ const Creature *CreatureMgr::getByName(string name) const {
  * Creates a random creature based on the tile given
  */ 
 const Creature *CreatureMgr::randomForTile(MapTile tile) const {
-    int era;
-    MapTile randTile;    
+    /* FIXME: this is too dependent on the tile system, and easily
+       broken when tileset changes are made.  Methinks the logic 
+       behind this should be moved to monsters.xml or another conf
+       file */
 
-    if (tileIsSailable(tile)) {        
-        randTile = creatures.find(PIRATE_ID)->second->getTile();
-        randTile += (xu4_random(8) << 1);
+    int era;
+    TileId randTile;
+
+    if (tile.isSailable()) {        
+        randTile = creatures.find(PIRATE_ID)->second->getTile().id;
+        randTile += xu4_random(7);
         return getByTile(randTile);        
     }
-    else if (tileIsSwimable(tile)) {
-        randTile = creatures.find(NIXIE_ID)->second->getTile();
-        randTile += (xu4_random(5) << 1);
+    else if (tile.isSwimable()) {
+        randTile = creatures.find(NIXIE_ID)->second->getTile().id;
+        randTile += xu4_random(5);
         return getByTile(randTile);
     }
 
-    if (!tileIsCreatureWalkable(tile))
+    if (!tile.isCreatureWalkable())
         return 0;
 
-    //if (c->saveGame->moves > 100000) /* what's 100,000 moves all about? */
+    //if (c->saveGame->moves > 100000) // what's 100,000 moves all about?
     if (c->saveGame->moves > 30000)
         era = 0x0f;
     else if (c->saveGame->moves > 20000)
@@ -959,8 +966,8 @@ const Creature *CreatureMgr::randomForTile(MapTile tile) const {
     else
         era = 0x03;
 
-    randTile = creatures.find(ORC_ID)->second->getTile();
-    randTile += ((era & xu4_random(0x10) & xu4_random(0x10)) << 2);
+    randTile = creatures.find(ORC_ID)->second->getTile().id;
+    randTile += era & xu4_random(0x10) & xu4_random(0x10);
     return getByTile(randTile);
 }
 

@@ -248,7 +248,7 @@ void gameInit() {
     }
 
     /* set the party's transport */
-    c->party->setTransport(MapTile(c->saveGame->transport));
+    c->party->setTransport(Tile::getMapTile(c->saveGame->transport));
 
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
@@ -287,13 +287,11 @@ void gameInit() {
  */
 int gameSave() {
     FILE *saveGameFile, *monstersFile, *dngMapFile;
-    SaveGame save;
+    SaveGame save = *c->saveGame;
 
     /*************************************************/
     /* Make sure the savegame struct is accurate now */
-
-    memcpy(save.armor, c->saveGame->armor, sizeof(save.armor));    
-    save.balloonstate = c->saveGame->balloonstate;
+    
     if (c->location->prev) {
         save.x = c->location->coords.x;
         save.y = c->location->coords.y;
@@ -308,34 +306,8 @@ int gameSave() {
         save.dngx = c->saveGame->dngx;
         save.dngy = c->saveGame->dngy;
     }
-    save.feluccaphase = c->saveGame->feluccaphase;
-    save.food = c->saveGame->food;
-    save.gems = c->saveGame->gems;
-    save.gold = c->saveGame->gold;
-    save.items = c->saveGame->items;
-    memcpy(save.karma, c->saveGame->karma, sizeof(save.karma));
-    save.keys = c->saveGame->keys;
-    save.lastcamp = c->saveGame->lastcamp;
-    save.lastmeditation = c->saveGame->lastmeditation;
-    save.lastreagent = c->saveGame->lastreagent;
-    save.lastvirtue = c->saveGame->lastvirtue;
-    save.lbintro = c->saveGame->lbintro;
     save.location = c->location->map->id;
-    save.members = c->saveGame->members;
-    memcpy(save.mixtures, c->saveGame->mixtures, sizeof(save.mixtures));
-    save.moves = c->saveGame->moves;
-    save.orientation = (Direction)(c->saveGame->orientation - DIR_WEST);
-    memcpy(save.players, c->saveGame->players, sizeof(save.players));
-    memcpy(save.reagents, c->saveGame->reagents, sizeof(save.reagents));
-    save.runes = c->saveGame->runes;
-    save.sextants = c->saveGame->sextants;
-    save.shiphull = c->saveGame->shiphull;
-    save.stones = c->saveGame->stones;
-    save.torchduration = c->saveGame->torchduration;
-    save.torches = c->saveGame->torches;
-    save.trammelphase = c->saveGame->trammelphase;
-    save.transport = c->saveGame->transport;
-    memcpy(save.weapons, c->saveGame->weapons, sizeof(save.weapons));    
+    save.orientation = (Direction)(c->saveGame->orientation - DIR_WEST);    
 
     /* Done making sure the savegame struct is accurate */
     /****************************************************/
@@ -408,7 +380,7 @@ int gameSave() {
         for (z = 0; z < c->location->map->levels; z++) {
             for (y = 0; y < c->location->map->height; y++) {
                 for (x = 0; x < c->location->map->width; x++) {
-                    MapTile tile = c->location->map->getTileFromData(MapCoords(x, y, z));
+                    unsigned char tile = c->location->map->getTileFromData(MapCoords(x, y, z)).getIndex();
                     Object *obj = c->location->map->objectAt(MapCoords(x, y, z));
 
                     /**
@@ -488,8 +460,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn = &gameFinishTurn;
-    MoveCallback move = &gameMoveAvatar;
-    Tileset *tileset = Tileset::get(TILESET_BASE);
+    MoveCallback move = &gameMoveAvatar;    
     int activePlayer = (c->location) ? c->location->activePlayer : -1;
     MapCoords coords;
 
@@ -513,8 +484,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         viewMode = VIEW_DUNGEON;
         if (portal)
             c->saveGame->orientation = DIR_EAST;
-        move = &gameMoveAvatarInDungeon;
-        tileset = Tileset::get(TILESET_DUNGEON);        
+        move = &gameMoveAvatarInDungeon;        
         break;
     case MAPTYPE_COMBAT:
         coords = MapCoords(-1, -1); /* set these to -1 just to be safe; we don't need them */
@@ -531,7 +501,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         break;
     }
     
-    c->location = locationNew(coords, map, viewMode, context, finishTurn, move, tileset, c->location);    
+    c->location = locationNew(coords, map, viewMode, context, finishTurn, move, c->location);    
     c->location->activePlayer = activePlayer;
 
     if (isCity(map)) {
@@ -594,7 +564,7 @@ void gameFinishTurn() {
         if (c->location->context == CTX_DUNGEON || (!c->saveGame->balloonstate)) {
 
             // apply effects from tile avatar is standing on 
-            c->party->applyEffect(tileGetEffect(c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS)));
+            c->party->applyEffect(c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS).getEffect());
 
             // Move creatures and see if something is attacking the avatar
             attacker = c->location->map->moveObjects(c->location->coords);        
@@ -762,8 +732,8 @@ bool gameBaseKeyHandler(int key, void *data) {
         /* Do they want to board something? */
         if (c->transportContext == TRANSPORT_FOOT) {
             obj = c->location->map->objectAt(c->location->coords);
-            if (obj && (tileIsShip(obj->getTile()) || tileIsHorse(obj->getTile()) ||
-                tileIsBalloon(obj->getTile()))) key = 'b';
+            if (obj && (obj->getTile().isShip() || obj->getTile().isHorse() || obj->getTile().isBalloon()))
+                key = 'b';
         }
         /* Klimb/Descend Balloon */
         else if (c->transportContext == TRANSPORT_BALLOON) {            
@@ -793,7 +763,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             (!c->saveGame->balloonstate)) {
             tile = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
     
-            if (tileIsChest(tile)) key = 'g';
+            if (tile.isChest()) key = 'g';
         }
         
         /* None of these? Default to search */
@@ -957,14 +927,14 @@ bool gameBaseKeyHandler(int key, void *data) {
         else if (obj) {
             int validTransport = 1;
             
-            if (tileIsShip(obj->getTile())) {
+            if (obj->getTile().isShip()) {
                 screenMessage("Board Frigate!\n");
                 if (c->lastShip != obj)
                     c->saveGame->shiphull = 50;                
             }
-            else if (tileIsHorse(obj->getTile()))
+            else if (obj->getTile().isHorse())
                 screenMessage("Mount Horse!\n");
-            else if (tileIsBalloon(obj->getTile()))
+            else if (obj->getTile().isBalloon())
                 screenMessage("Board Balloon!\n");
             else validTransport = 0;
 
@@ -988,7 +958,7 @@ bool gameBaseKeyHandler(int key, void *data) {
                 screenMessage("Land Balloon\n");
                 if (c->saveGame->balloonstate == 0)
                     screenMessage("Already Landed!\n");
-                else if (tileCanLandBalloon(c->location->map->tileAt(c->location->coords, WITH_OBJECTS))) {
+                else if (c->location->map->tileAt(c->location->coords, WITH_OBJECTS).canLandBalloon()) {
                     c->saveGame->balloonstate = 0;
                     c->opacity = 1;
                 }
@@ -1009,7 +979,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'f':
         if (c->transportContext == TRANSPORT_SHIP) {
-            int broadsidesDirs = dirGetBroadsidesDirs(tileGetDirection((MapTile)c->saveGame->transport));            
+            int broadsidesDirs = dirGetBroadsidesDirs(c->party->transport.getDirection());
 
             info = new CoordActionInfo;
             info->handleAtCoord = &fireAtCoord;
@@ -1037,7 +1007,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         else {
             tile = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
     
-            if (tileIsChest(tile))
+            if (tile.isChest())
             {
                 screenMessage("Who opens? ");
                 gameGetPlayerForCommand(&gameGetChest, 0, 1);
@@ -1205,7 +1175,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             info->range = 2;
             info->validDirections = MASK_DIR_ALL;
             info->player = -1;
-            info->blockedPredicate = &tileCanTalkOver;
+            info->blockedPredicate = &MapTile::canTalkOverTile;
             info->blockBefore = 0;
             info->firstValidDistance = 1;
             eventHandlerPushKeyHandlerWithData(&gameGetCoordinateKeyHandler, info);
@@ -1237,11 +1207,11 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'x':
         if ((c->transportContext != TRANSPORT_FOOT) && c->saveGame->balloonstate == 0) {
-            Object *obj = c->location->map->addObject((MapTile)c->saveGame->transport, (MapTile)c->saveGame->transport, c->location->coords);
+            Object *obj = c->location->map->addObject(c->party->transport, c->party->transport, c->location->coords);
             if (c->transportContext == TRANSPORT_SHIP)
                 c->lastShip = obj;
 
-            c->party->setTransport(Tile::getMapTile(AVATAR_TILE));
+            c->party->setTransport(Tile::findByName("avatar")->id);
             c->horseSpeed = 0;
             screenMessage("X-it\n");
         } else
@@ -1891,9 +1861,12 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
 
     case 't':
         if (c->location->map->isWorldMap()) {
-            c->location->map->addObject(tileGetHorseBase(), tileGetHorseBase(), MapCoords(84, 106));
-            c->location->map->addObject(tileGetShipBase(), tileGetShipBase(), MapCoords(88, 109));
-            c->location->map->addObject(tileGetBalloonBase(), tileGetBalloonBase(), MapCoords(85, 105));
+            MapTile horse = Tile::findByName("horse")->id,
+                ship = Tile::findByName("ship")->id,
+                balloon = Tile::findByName("balloon")->id;
+            c->location->map->addObject(horse, horse, MapCoords(84, 106));
+            c->location->map->addObject(ship, ship, MapCoords(88, 109));
+            c->location->map->addObject(balloon, balloon, MapCoords(85, 105));
             screenMessage("Transports: Ship, Horse and Balloon created!\n");
             screenPrompt();
         }
@@ -2077,14 +2050,14 @@ bool attackAtCoord(MapCoords coords, int distance, void *data) {
     /* nothing attackable: move on to next tile */
     if ((m == NULL) || 
         /* can't attack horse transport */
-        (tileIsHorse(m->getTile()) && m->getMovementBehavior() == MOVEMENT_FIXED)) {
+        (m->getTile().isHorse() && m->getMovementBehavior() == MOVEMENT_FIXED)) {
         return false;
     }
 
     /* attack successful */
     ground = c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS);
     if ((under = c->location->map->objectAt(c->location->coords)) &&
-        tileIsShip(under->getTile()))
+        under->getTile().isShip())
         ground = under->getTile();
 
     /* You're attacking a townsperson!  Alert the guards! */
@@ -2098,7 +2071,7 @@ bool attackAtCoord(MapCoords coords, int distance, void *data) {
         c->party->adjustKarma(KA_ATTACKED_GOOD);
 
     delete(c->combat);
-    c->combat = new CombatController(CombatMap::mapForTile(ground, (MapTile)c->saveGame->transport, m));
+    c->combat = new CombatController(CombatMap::mapForTile(ground, c->party->transport, m));
     c->combat->init(m);
     c->combat->begin();    
     return true;
@@ -2248,7 +2221,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
-        c->location->map->annotations->remove(old, Tile::getMapTile(MISSFLASH_TILE));
+        c->location->map->annotations->remove(old, Tile::findByName("miss_flash")->id);
     
     if (coords.x == -1 && coords.y == -1) {
         if (distance == 0)
@@ -2271,7 +2244,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
             (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID))
             validObject = 1;        
         /* See if it's an object to be destroyed (the avatar cannot destroy the balloon) */
-        else if (obj && (obj->getType() == OBJECT_UNKNOWN) && !(tileIsBalloon(obj->getTile()) && originAvatar))
+        else if (obj && (obj->getType() == OBJECT_UNKNOWN) && !(obj->getTile().isBalloon() && originAvatar))
             validObject = 1;
         
         /* Does the cannon hit the avatar? */
@@ -2286,7 +2259,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
             
             /* Is is a pirate ship firing at US? */
             if (hitsAvatar) {
-                CombatController::attackFlash(coords, Tile::getMapTile(HITFLASH_TILE), 5);
+                CombatController::attackFlash(coords, Tile::findByName("hit_flash")->id, 5);
 
                 if (c->transportContext == TRANSPORT_SHIP)
                     gameDamageShip(-1, 10);
@@ -2294,13 +2267,13 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
             }          
             /* inanimate objects get destroyed instantly, while creatures get a chance */
             else if (obj->getType() == OBJECT_UNKNOWN) {
-                CombatController::attackFlash(coords, HITFLASH_TILE, 5);
+                CombatController::attackFlash(coords, Tile::findByName("hit_flash")->id, 5);
                 c->location->map->removeObject(obj);
             }
             
             /* only the avatar can hurt other creatures with cannon fire */
             else if (originAvatar) {
-                CombatController::attackFlash(coords, HITFLASH_TILE, 5);
+                CombatController::attackFlash(coords, Tile::findByName("hit_flash")->id, 5);
                 if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
                     c->location->map->removeObject(obj);
             }
@@ -2311,7 +2284,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
             return true;
         }
         
-        c->location->map->annotations->add(coords, MISSFLASH_TILE, true);
+        c->location->map->annotations->add(coords, Tile::findByName("miss_flash")->id, true);
         gameUpdateScreen();
 
         /* Based on attack speed setting in setting struct, make a delay for
@@ -2337,10 +2310,10 @@ bool gameGetChest(int player) {
     
     /* get the object for the chest, if it is indeed an object */
     obj = c->location->map->objectAt(coords);
-    if (obj && !tileIsChest(obj->getTile()))
+    if (obj && !obj->getTile().isChest())
         obj = NULL;
     
-    if (tileIsChest(tile)) {
+    if (tile.isChest()) {
         if (obj)
             c->location->map->removeObject(obj);
         else
@@ -2439,10 +2412,10 @@ MoveReturnValue gameMoveAvatar(Direction dir, int userEvent) {
                 new_coords.move(dir, c->location->map);                
                 tile = c->location->map->tileAt(new_coords, WITH_OBJECTS);
 
-                if (tileIsDoor(tile)) {
+                if (tile.isDoor()) {
                     openAtCoord(new_coords, 1, NULL);
                     retval = (MoveReturnValue)(MOVE_SUCCEEDED | MOVE_END_TURN);
-                } else if (tileIsLockedDoor(tile)) {
+                } else if (tile.isLockedDoor()) {
                     jimmyAtCoord(new_coords, 1, NULL);
                     retval = (MoveReturnValue)(MOVE_SUCCEEDED | MOVE_END_TURN);
                 } /*else if (mapPersonAt(c->location->map, new_coords) != NULL) {
@@ -2561,7 +2534,7 @@ bool jimmyAtCoord(MapCoords coords, int distance, void *data) {
 
     tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
-    if (!tileIsLockedDoor(tile))
+    if (!tile.isLockedDoor())
         return false;
         
     if (c->saveGame->keys) {
@@ -2805,16 +2778,16 @@ bool openAtCoord(MapCoords coords, int distance, void *data) {
 
     tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
-    if (!tileIsDoor(tile) && !tileIsLockedDoor(tile))
+    if (!tile.isDoor() && !tile.isLockedDoor())
         return false;
 
-    if (tileIsLockedDoor(tile)) {
+    if (tile.isLockedDoor()) {
         screenMessage("Can't!\n");
         (*c->location->finishTurn)();
         return true;
     }
     
-    c->location->map->annotations->add(coords, Tile::getMapTile(BRICKFLOOR_TILE))->setTTL(4);    
+    c->location->map->annotations->add(coords, Tile::findByName("brick_floor")->id)->setTTL(4);    
 
     screenMessage("\nOpened!\n");
     (*c->location->finishTurn)();
@@ -3216,58 +3189,58 @@ void gameUpdateMoons(int showmoongates)
             if (trammelSubphase == 0) {
                 gate = moongateGetGateCoordsForPhase(oldTrammel);
                 if (gate)
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE0_TILE));
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x40));
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate)
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE0_TILE));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x40));
             }
             else if (trammelSubphase == 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE0_TILE));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE1_TILE));
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x40));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x41));
                 }
             }
             else if (trammelSubphase == 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE1_TILE));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE2_TILE));
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x41));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x42));
                 }
             }
             else if (trammelSubphase == 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE2_TILE));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE3_TILE));
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x42));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x43));
                 }
             }
             else if ((trammelSubphase > 3) && (trammelSubphase < (MOON_SECONDS_PER_PHASE * 4 * 3) - 3)) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE3_TILE));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE3_TILE));
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x43));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x43));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE3_TILE));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE2_TILE));
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x43));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x42));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE2_TILE));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE1_TILE));
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x42));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x41));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE1_TILE));
-                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE0_TILE));
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(0x41));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(0x40));
                 }
             }
         }
@@ -3303,7 +3276,7 @@ void gameCheckBridgeTrolls() {
     Creature *m;
 
     if (!c->location->map->isWorldMap() ||
-        c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS) != Tile::getMapTile(BRIDGE_TILE) ||
+        c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS) != Tile::findByName("bridge")->id ||
         xu4_random(8) != 0)
         return;
 
@@ -3482,11 +3455,11 @@ void gameCreatureAttack(Creature *m) {
 
     ground = c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS);
     if ((under = c->location->map->objectAt(c->location->coords)) &&
-        tileIsShip(under->getTile()))
+        under->getTile().isShip())
         ground = under->getTile();
 
     delete c->combat;
-    c->combat = new CombatController(CombatMap::mapForTile(ground, (MapTile)c->saveGame->transport, m));
+    c->combat = new CombatController(CombatMap::mapForTile(ground, c->party->transport, m));
     c->combat->init(m);
     c->combat->begin();
 }
@@ -3507,7 +3480,7 @@ bool creatureRangeAttack(MapCoords coords, int distance, void *data) {
     m = dynamic_cast<Creature*>(c->location->map->objectAt(info->origin));    
 
     /* Figure out what the ranged attack should look like */
-    tile = (m && (m->worldrangedtile > 0)) ? m->worldrangedtile : HITFLASH_TILE;
+    tile = (m && (m->worldrangedtile.id > 0)) ? m->worldrangedtile : Tile::findByName("hit_flash")->id;
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
@@ -3783,7 +3756,7 @@ void gameSpawnCreature(const Creature *m) {
         for (i = 0; i < 0x20; i++) {
             coords = MapCoords(xu4_random(c->location->map->width), xu4_random(c->location->map->height), c->location->coords.z);
             tile = c->location->map->tileAt(coords, WITH_OBJECTS);
-            if (tileIsCreatureWalkable(tile)) {
+            if (tile.isCreatureWalkable()) {
                 found = 1;
                 break;
             }
@@ -3889,11 +3862,11 @@ bool gameCreateBalloon(Map *map) {
 
     /* see if the balloon has already been created (and not destroyed) */
     for (i = map->objects.begin(); i != map->objects.end(); i++) {
-        if (tileIsBalloon((*i)->getTile()))
+        if ((*i)->getTile().isBalloon())
             return false;
     }
     
-    MapTile balloon = Tile::getMapTile(BALLOON_TILE);
+    MapTile balloon = Tile::findByName("balloon")->id;
     map->addObject(balloon, balloon, MapCoords(233, 242, -1));
     return true;
 }

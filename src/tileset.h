@@ -8,17 +8,10 @@
 #include <string>
 #include <map>
 #include "tile.h"
+#include "types.h"
 
 using std::string;
 
-typedef enum {
-    TILESET_BASE,
-    TILESET_DUNGEON,
-    TILESET_GEM,
-    TILESET_MAX
-} TilesetType;
-
-typedef std::map<TilesetType, class Tileset *> TilesetMap;
 typedef std::map<string, class TileRule *> TileRuleMap;
 
 /**
@@ -44,21 +37,19 @@ public:
  * Tileset class
  */
 class Tileset {
-public:
-    static void load(string filename, TilesetType type);
-    static void loadAll(string filename);
-    static void unloadAll();
-    static Tileset *get(TilesetType type);
-    static TilesetType getTypeByStr(string type);
+public:    
+    static void loadGroup(string filename);
+    static void load(string filename);
+    static void unload();    
+    static TileId getNextTileId();
     
-    static TilesetMap tilesets;  // A map of tileset types to tilesets
-    
-    std::map<int, int> indexMap; // Maps indices to tile ids
-
-    TilesetType type;
-    TileVector tiles;
-    int totalFrames;
-    string imageName;
+    static TileId currentId;    
+    static TileVector tiles;
+    static int totalFrames;
+    static string imageName;
+        
+    /* FIXME: this should be handled elsewhere */
+    static std::map<int, int> indexMap; // Maps indices to tile ids    
 };
 
 #endif

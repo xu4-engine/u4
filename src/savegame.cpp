@@ -453,7 +453,7 @@ int saveGameMonstersWrite(std::deque<Object *> &objs, FILE *f) {
     /* tile for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
-            r = writeChar(monsterTable[i]->getTile(), f);
+            r = writeChar(monsterTable[i]->getTile().getIndex(), f);
         else
             r = writeChar(0, f);
         if (!r) return 0;
@@ -480,7 +480,7 @@ int saveGameMonstersWrite(std::deque<Object *> &objs, FILE *f) {
     /* previous tile for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
-            r = writeChar((unsigned char)monsterTable[i]->getPrevTile(), f);
+            r = writeChar((unsigned char)monsterTable[i]->getPrevTile().getIndex(), f);
         else
             r = writeChar(0, f);
         if (!r) return 0;
@@ -530,7 +530,7 @@ int saveGameMonstersRead(std::deque<Object *> *objs, FILE *f) {
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (!readChar(&ch, f))
             return 0;
-        monsterTable[i].setPrevTile(ch);
+        monsterTable[i].setPrevTile(Tile::getMapTile(ch));
     }
 
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
@@ -553,7 +553,7 @@ int saveGameMonstersRead(std::deque<Object *> *objs, FILE *f) {
         if (!readChar(&ch, f))
             return 0;
         if (ch > 0)
-            monsterTable[i].setTile(ch);
+            monsterTable[i].setTile(Tile::getMapTile(ch));
         isEmpty[i] = (ch == 0) ? true : false;
     }
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "savegame.h"
+#include "types.h"
 
 class ConfigElement;
 
@@ -21,10 +22,10 @@ public:
     const std::string &getAbbrev() const;
     int getRange() const;
     int getDamage() const;
-    int getHitTile() const;
-    int getMissTile() const;
+    MapTile getHitTile() const;
+    MapTile getMissTile() const;
     bool alwaysHits() const;
-    unsigned char leavesTile() const;
+    MapTile leavesTile() const;
     bool canReady(ClassType klass) const;
     bool canAttackThroughObjects() const;
     bool rangeAbsolute() const;
@@ -48,9 +49,9 @@ private:
     unsigned char canuse;
     int range;
     int damage;
-    int hittile;
-    int misstile;
-    int leavetile;
+    MapTile hittile;
+    MapTile misstile;
+    MapTile leavetile;
     unsigned short mask;
 };
 

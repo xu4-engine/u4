@@ -5,6 +5,8 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#include "types.h"
+
 struct RGBA {
     unsigned int r, g, b, a;
 };
@@ -71,7 +73,7 @@ private:
 
     /* FIXME: blah -- need to find a better way */
     friend void fixupAbyssVision(Image *im, int prescale);
-    friend void screenDungeonDrawTile(int distance, unsigned char tile);
+    friend void screenDungeonDrawTile(int distance, MapTile tile);
 };
 
 #endif /* IMAGE_H */

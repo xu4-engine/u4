@@ -76,8 +76,8 @@ Weapon::Weapon(const ConfigElement &conf) {
     abbr = conf.getString("abbr");
     canuse = 0xFF;
     damage = conf.getInt("damage");
-    hittile = Tile::getMapTile(HITFLASH_TILE);
-    misstile = Tile::getMapTile(MISSFLASH_TILE);
+    hittile = Tile::findByName("hit_flash")->id;
+    misstile = Tile::findByName("miss_flash")->id;
     leavetile = 0;
     mask = 0;
 
@@ -193,14 +193,14 @@ int Weapon::getDamage() const {
 /**
  * Return the hit tile for the specified weapon
  */
-int Weapon::getHitTile() const {
+MapTile Weapon::getHitTile() const {
     return hittile;
 }
 
 /**
  * Return the miss tile for the specified weapon
  */
-int Weapon::getMissTile() const {
+MapTile Weapon::getMissTile() const {
     return misstile;
 }
 
@@ -215,7 +215,7 @@ bool Weapon::alwaysHits() const {
  * Returns 0 if the weapon leaves no tile, otherwise it
  * returns the # of the tile the weapon leaves
  */
-unsigned char Weapon::leavesTile() const {
+MapTile Weapon::leavesTile() const {
     return (mask & MASK_LEAVETILE) ? leavetile : 0;
 }
 

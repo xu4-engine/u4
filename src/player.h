@@ -141,7 +141,7 @@ public:
     void applyEffect(TileEffect effect);
     bool attemptElevation(Virtue virtue);    
     bool canEnterShrine(Virtue virtue);    
-    bool canPersonJoin(string name, Virtue *v);
+    bool canPersonJoin(string name, Virtue *v);    
     void damageShip(int pts);
     bool donate(int quantity);
     void endTurn();
@@ -162,7 +162,8 @@ public:
 //protected:
 public:
     PartyMemberVector members;
-    SaveGame *saveGame;    
+    SaveGame *saveGame;
+    MapTile transport;
 };
 
 typedef void (*LostEighthCallback)(Virtue);

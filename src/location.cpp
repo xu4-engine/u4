@@ -16,7 +16,6 @@
 #include "creature.h"
 #include "object.h"
 #include "savegame.h"
-#include "tileset.h"
 
 Location *locationPush(Location *stack, Location *loc);
 Location *locationPop(Location **stack);
@@ -27,7 +26,7 @@ Location *locationPop(Location **stack);
  */
 Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx,
                       FinishTurnCallback finishTurnCallback, MoveCallback moveCallback,
-                      Tileset *tileset, Location *prev) {
+                      Location *prev) {
 
     Location *newLoc = new Location;
 
@@ -36,8 +35,7 @@ Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext 
     newLoc->viewMode = viewmode;
     newLoc->context = ctx;
     newLoc->finishTurn = finishTurnCallback;
-    newLoc->move = moveCallback;    
-    newLoc->tileset = tileset;
+    newLoc->move = moveCallback;        
     newLoc->activePlayer = -1;
 
     return locationPush(prev, newLoc);
@@ -75,7 +73,7 @@ MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {
     /* Do not return objects for VIEW_GEM mode, show only the avatar and tiles */
     if (location->viewMode == VIEW_GEM) {
         if ((location->map->flags & SHOW_AVATAR) && avatar)
-            tiles->push_back(c->saveGame->transport);
+            tiles->push_back(c->party->transport);
         else
             tiles->push_back(location->map->getTileFromData(coords));
         return tiles;
@@ -89,10 +87,10 @@ MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {
 
     /* then the avatar is drawn (unless on a ship) */
     if ((location->map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && avatar)
-        tiles->push_back(c->saveGame->transport);
+        tiles->push_back(c->party->transport);
 
     /* then camouflaged creatures that have a disguise */
-    if (obj && (obj->getType() == OBJECT_CREATURE) && !obj->isVisible() && (m->camouflageTile > 0)) {
+    if (obj && (obj->getType() == OBJECT_CREATURE) && !obj->isVisible() && (m->camouflageTile.id > 0)) {
         *focus = *focus || obj->hasFocus();
         tiles->push_back(m->camouflageTile);
     }
@@ -110,7 +108,7 @@ MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {
 
     /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */
     if ((location->map->flags & SHOW_AVATAR) && (c->transportContext == TRANSPORT_SHIP) && avatar)
-        tiles->push_back(c->saveGame->transport);
+        tiles->push_back(c->party->transport);
 
     /* then permanent annotations */
     for (i = a.begin(); i != a.end(); i++) {
@@ -142,7 +140,7 @@ MapTile locationGetReplacementTile(Location *location, MapCoords coords) {
         newTile = location->map->tileAt(new_c, WITHOUT_OBJECTS);
 
         /* make sure the tile we found is a valid replacement */
-        if (tileIsReplacement(newTile))
+        if (newTile.isReplacement())
             return newTile;
     }
 
@@ -150,7 +148,7 @@ MapTile locationGetReplacementTile(Location *location, MapCoords coords) {
     if (location->context & CTX_DUNGEON)
         return 0;
     else
-        return (location->context & CTX_COMBAT) ? Tile::getMapTile(BRICKFLOOR_1_TILE) : Tile::getMapTile(BRICKFLOOR_TILE);
+        return (location->context & CTX_COMBAT) ? Tile::findByName("dungeon_floor")->id : Tile::findByName("brick_floor")->id;
 }
 
 /**

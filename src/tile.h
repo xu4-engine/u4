@@ -12,12 +12,11 @@
 
 using std::string;
 
-class Tileset;
 class TileRule;
 
 typedef std::vector<class Tile *> TileVector;
 
-#define DEEP_WATER_TILE 0x0
+/*#define DEEP_WATER_TILE 0x0
 #define WATER_TILE 0x1
 #define SHALLOW_WATER_TILE 0x2
 #define SWAMP_TILE 0x3
@@ -64,7 +63,7 @@ typedef std::vector<class Tile *> TileVector;
 #define BLACK_TILE 0x7e
 #define WALL_TILE 0x7f
 #define PIRATE_TILE 0x80
-#define WHIRLPOOL_TILE 0x8c
+#define WHIRLPOOL_TILE 0x8c*/
 
 /* attr masks */
 #define MASK_SHIP               0x0001
@@ -85,88 +84,22 @@ typedef std::vector<class Tile *> TileVector;
 #define MASK_UNFLYABLE          0x0004
 #define MASK_CREATURE_UNWALKABLE 0x0008
 
-typedef enum {
-    FAST,
-    SLOW,
-    VSLOW,
-    VVSLOW
-} TileSpeed;
-
-typedef enum {
-    EFFECT_NONE,
-    EFFECT_FIRE,
-    EFFECT_SLEEP,
-    EFFECT_POISON,
-    EFFECT_POISONFIELD,
-    EFFECT_ELECTRICITY,
-    EFFECT_LAVA
-} TileEffect;
-
-typedef enum {
-    ANIM_NONE,
-    ANIM_SCROLL,
-    ANIM_CAMPFIRE,
-    ANIM_CITYFLAG,
-    ANIM_CASTLEFLAG,
-    ANIM_WESTSHIPFLAG,
-    ANIM_EASTSHIPFLAG,
-    ANIM_LCBFLAG,
-    ANIM_TWOFRAMES,
-    ANIM_FOURFRAMES
-} TileAnimationStyle;
-
 /**
  * Tile class
  */
-class Tile {
+class Tile : public MapTile {
 public:
-    static Tile *findByName(string name, Tileset *t = NULL);
-    static void loadProperties(Tile *tile, void *xmlNode);
-    static Tile *getTile(int index);
+    static Tile *findByName(string name);
+    static void loadProperties(Tile *tile, void *xmlNode);    
     static MapTile getMapTile(int index);
+    static unsigned int getIndex(TileId id);
 
-    string name;
-    int id;
+    string name;    
     int index;
     int frames;
-    MapTile displayTile; /* FIXME: this will go away soon */
     bool animated; /* FIXME: this will be changed to 'animation' of type TileAnimationStyle */
     bool opaque;
     TileRule *rule;
 };
-
-bool tileCanWalkOn(MapTile tile, Direction d);
-bool tileCanWalkOff(MapTile tile, Direction d);
-bool tileCanAttackOver(MapTile tile);
-bool tileCanLandBalloon(MapTile tile);
-bool tileIsReplacement(MapTile tile);
-bool tileIsWalkable(MapTile tile);
-bool tileIsCreatureWalkable(MapTile tile);
-bool tileIsDungeonWalkable(MapTile tile);
-bool tileIsSwimable(MapTile tile);
-bool tileIsSailable(MapTile tile);
-bool tileIsWater(MapTile tile);
-bool tileIsFlyable(MapTile tile);
-bool tileIsDoor(MapTile tile);
-bool tileIsLockedDoor(MapTile tile);
-bool tileIsChest(MapTile tile);
-MapTile tileGetChestBase();
-bool tileIsShip(MapTile tile);
-MapTile tileGetShipBase();
-bool tileIsPirateShip(MapTile tile);
-bool tileIsHorse(MapTile tile);
-MapTile tileGetHorseBase();
-bool tileIsBalloon(MapTile tile);
-MapTile tileGetBalloonBase();
-bool tileCanDispel(MapTile tile);
-Direction tileGetDirection(MapTile tile);
-bool tileSetDirection(MapTile *tile, Direction dir);
-bool tileCanTalkOver(MapTile tile);
-TileSpeed tileGetSpeed(MapTile tile);
-TileEffect tileGetEffect(MapTile tile);
-TileAnimationStyle tileGetAnimationStyle(MapTile tile);
-void tileAdvanceFrame(MapTile *tile);
-bool tileIsOpaque(MapTile tile);
-MapTile tileForClass(int klass);
 
 #endif

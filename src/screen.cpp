@@ -127,7 +127,7 @@ MapTile screenViewportTile(unsigned int width, unsigned int height, int x, int y
             tc.wrap(c->location->map);
         else {
             *focus = 0;
-            return Tile::getMapTile(GRASS_TILE);
+            return Tile::findByName("grass")->id;
         }
     }
 
@@ -141,8 +141,7 @@ MapTile screenViewportTile(unsigned int width, unsigned int height, int x, int y
  */
 void screenUpdate(int showmap, int blackout) {
     MapTileList tiles;
-    int focus, x, y;
-    Tileset *base = Tileset::get(TILESET_BASE);
+    int focus, x, y;    
 
     ASSERT(c != NULL, "context has not yet been initialized");
 
@@ -165,15 +164,8 @@ void screenUpdate(int showmap, int blackout) {
 
                     tiles = dungeonViewGetTiles(y, 0);
                     type = dungeonViewTilesToGraphic(tiles);
-                    if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE)) {
-                        /* FIXME: this isn't very clean, but I guess it works */
-                        /* draw creature objects using the base tileset */
-                        if ((tiles->size() > 1) && (tiles->front() >= 128))
-                            screenDungeonDrawTile(y, tiles->front());
-                        else screenDungeonDrawTile(y, c->location->tileset->tiles[tiles->front()]->displayTile);
-                    }
-                    /*else if (type == DNGGRAPHIC_BASETILE)
-                        screenDungeonDrawTile(y, tileFindByName(c->location->tileset->tiles[tiles->front()].name)->index);*/
+                    if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
+                        screenDungeonDrawTile(y, tiles->front());
                     else
                         screenDungeonDrawWall(0, y, (Direction)c->saveGame->orientation, dungeonViewTilesToGraphic(tiles));
                     delete tiles;
@@ -186,22 +178,17 @@ void screenUpdate(int showmap, int blackout) {
             for (y = 0; y < VIEWPORT_H; y++) {
                 for (x = 0; x < VIEWPORT_W; x++) {
                     if (x < 2 || y < 2 || x >= 10 || y >= 10)
-                        screenShowTile(base, Tile::getMapTile(BLACK_TILE), 0, x, y);
+                        screenShowTile(Tile::findByName("black")->id, 0, x, y);
                     else {
                         tiles = dungeonViewGetTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
                         /* Only show blackness if there is no light */
                         if (c->saveGame->torchduration <= 0)
-                            screenShowTile(base, Tile::getMapTile(BLACK_TILE), 0, x, y);
+                            screenShowTile(Tile::findByName("black")->id, 0, x, y);
                         else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
-                            screenShowTile(base, Tile::getMapTile(AVATAR_TILE), 0, x, y);
-                        else {
-                            /* FIXME: this isn't very clean, but I guess it works */
-                            /* draw creature objects using the base tileset */
-                            if ((tiles->size() > 1) && (tiles->front() >= 128))
-                                screenShowTile(base, tiles->front(), 0, x, y);
-                            else screenShowTile(base, c->location->tileset->tiles[tiles->front()]->displayTile, 0, x, y);
-                        }
+                            screenShowTile(Tile::findByName("avatar")->id, 0, x, y);
+                        else
+                            screenShowTile(tiles->front(), 0, x, y);                        
                         delete tiles;
                     }
                 }
@@ -220,9 +207,9 @@ void screenUpdate(int showmap, int blackout) {
 
                 if (!blackout && screenLos[x][y]) {
                     tile = screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y, &focus);
-                    screenShowTile(base, tile, focus, x, y);
+                    screenShowTile(tile, focus, x, y);
                 } else
-                    screenShowTile(base, BLACK_TILE, 0, x, y);
+                    screenShowTile(Tile::findByName("black")->id, 0, x, y);
             }
         }
         screenRedrawMapArea();
@@ -348,47 +335,47 @@ void screenFindLineOfSight() {
 
     for (x = VIEWPORT_W / 2 - 1; x >= 0; x--)
         if (screenLos[x + 1][VIEWPORT_H / 2] &&
-            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, VIEWPORT_H / 2, &focus)))
+            !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, VIEWPORT_H / 2, &focus).isOpaque())
             screenLos[x][VIEWPORT_H / 2] = 1;
 
     for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++)
         if (screenLos[x - 1][VIEWPORT_H / 2] &&
-            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, VIEWPORT_H / 2, &focus)))
+            !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, VIEWPORT_H / 2, &focus).isOpaque())
             screenLos[x][VIEWPORT_H / 2] = 1;
 
     for (y = VIEWPORT_H / 2 - 1; y >= 0; y--)
         if (screenLos[VIEWPORT_W / 2][y + 1] &&
-            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, VIEWPORT_W / 2, y + 1, &focus)))
+            !screenViewportTile(VIEWPORT_W, VIEWPORT_H, VIEWPORT_W / 2, y + 1, &focus).isOpaque())
             screenLos[VIEWPORT_W / 2][y] = 1;
 
     for (y = VIEWPORT_H / 2 + 1; y < VIEWPORT_H; y++)
         if (screenLos[VIEWPORT_W / 2][y - 1] &&
-            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, VIEWPORT_W / 2, y - 1, &focus)))
+            !screenViewportTile(VIEWPORT_W, VIEWPORT_H, VIEWPORT_W / 2, y - 1, &focus).isOpaque())
             screenLos[VIEWPORT_W / 2][y] = 1;
 
     for (y = VIEWPORT_H / 2 - 1; y >= 0; y--) {
         
         for (x = VIEWPORT_W / 2 - 1; x >= 0; x--) {
             if (screenLos[x][y + 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y + 1, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y + 1, &focus).isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y, &focus).isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y + 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y + 1, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y + 1, &focus).isOpaque())
                 screenLos[x][y] = 1;
         }
                 
         for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++) {
             if (screenLos[x][y + 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y + 1, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y + 1, &focus).isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y, &focus).isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y + 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y + 1, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y + 1, &focus).isOpaque())
                 screenLos[x][y] = 1;
         }
     }
@@ -397,25 +384,25 @@ void screenFindLineOfSight() {
         
         for (x = VIEWPORT_W / 2 - 1; x >= 0; x--) {
             if (screenLos[x][y - 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y - 1, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y - 1, &focus).isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y, &focus).isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y - 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y - 1, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y - 1, &focus).isOpaque())
                 screenLos[x][y] = 1;
         }
                 
         for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++) {
             if (screenLos[x][y - 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y - 1, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y - 1, &focus).isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y, &focus).isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y - 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y - 1, &focus)))
+                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y - 1, &focus).isOpaque())
                 screenLos[x][y] = 1;
         }
     }

@@ -72,8 +72,13 @@ int main(int argc, char *argv[]) {
     soundInit();
     eventHandlerInit();    
 
-    Tileset::loadAll("tilesets.xml");
+    Tileset::load("tilesets.xml");
     creatures.loadInfoFromXml();
+
+    TileVector::iterator tile;
+    for (tile = Tileset::tiles.begin(); tile != Tileset::tiles.end(); tile++) {
+        Tile *t = *tile;
+    }
 
     if (!skipIntro) {
         /* do the intro */
@@ -107,7 +112,7 @@ int main(int argc, char *argv[]) {
     eventHandlerRemoveTimerCallback(&gameTimer);
     eventHandlerPopKeyHandler();
 
-    Tileset::unloadAll();
+    Tileset::unload();
 
     eventHandlerDelete();
     soundDelete();
