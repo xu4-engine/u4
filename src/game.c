@@ -1968,7 +1968,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
         ((obj->objType != OBJECT_MONSTER) && (obj->movement_behavior != MOVEMENT_ATTACK_AVATAR))) 
         playerAdjustKarma(c->saveGame, KA_ATTACKED_GOOD);
 
-    combatInit(m, obj, combatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), 0);
+    combatInit(m, obj, combatMapForTile(ground, (unsigned char)c->saveGame->transport, obj));
     combatBegin();
     return 1;
 }
@@ -3173,8 +3173,8 @@ void gameCheckBridgeTrolls() {
     screenMessage("\nBridge Trolls!\n");
     
     obj = mapAddMonsterObject(c->location->map, monsterById(TROLL_ID), c->location->x, c->location->y, c->location->z);
-    combatInit(obj->monster, obj, MAP_BRIDGE_CON, 0);
-    combatBegin();    
+    combatInit(obj->monster, obj, MAP_BRIDGE_CON);
+    combatBegin();
 }
 
 /**
@@ -3356,7 +3356,7 @@ void gameMonsterAttack(Object *obj) {
         tileIsShip(under->tile))
         ground = under->tile;
     
-    combatInit(monsterForTile(obj->tile), obj, combatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), 0);
+    combatInit(monsterForTile(obj->tile), obj, combatMapForTile(ground, (unsigned char)c->saveGame->transport, obj));
     combatBegin();
 }
 

@@ -156,11 +156,11 @@ void innTimer(void *data) {
     campHeal();
 
     /* Is there a special encounter during your stay? */
-    if (rand() % 8 == 0) {
-        
+    if (rand() % 8 != 0) {
         unsigned char mapid;
         Object *monsterObj;        
-                
+        int showMessage = 1;
+            
         /* Rats seem much more rare than meeting rogues in the streets */
         if (rand() % 4 == 0) {
             /* Rats! */
@@ -171,10 +171,12 @@ void innTimer(void *data) {
             mapid = MAP_INN_CON;
             monsterObj = mapAddMonsterObject(c->location->map, monsterById(ROGUE_ID), c->location->x, c->location->y, c->location->z);
             screenMessage("\nIn the middle of the night while out on a stroll...\n\n");
-        }        
-
-        /* begin combat! */
-        combatInit(monsterObj->monster, monsterObj, mapid, 0);
+            showMessage = 0;
+        }
+        
+        combatInfo.inn = 1;
+        combatInit(monsterObj->monster, monsterObj, mapid);
+        combatInfo.showCombatMessage = showMessage;
         combatBegin();        
     }
     

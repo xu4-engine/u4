@@ -52,15 +52,17 @@ typedef struct _CombatInfo {
     unsigned char dungeonRoom;
     unsigned char altarRoom;
     unsigned char camping;
+    unsigned char inn;    
     unsigned char placeParty;
     unsigned char placeMonsters;    
     unsigned char winOrLose;
+    unsigned char showCombatMessage;
     Direction exitDir;
     struct _Map *newCombatMap;
 } CombatInfo;
 
 void attackFlash(int x, int y, unsigned char tile, int timeFactor);
-void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned char mapid, unsigned char camping);
+void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned char mapid);
 void combatInitCamping(void);
 void combatInitDungeonRoom(int room, Direction from);
 void combatBegin();

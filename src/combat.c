@@ -51,7 +51,7 @@ int combatHideOrShowCamouflageMonster(Object *monster);
 /**
  * Initializes the CombatInfo structure with combat information
  */
-void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned char mapid, unsigned char camping) {
+void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned char mapid) {
     int i;
     const Map *map = c->location->map;
     MonsterCombatInfo *monsters = &combatInfo.monsters[0];
@@ -60,11 +60,11 @@ void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned c
     combatInfo.monsterObj = monsterObj;
 
     combatInfo.placeMonsters = 1;
-    combatInfo.placeParty = 1;
-    combatInfo.camping = 0;
+    combatInfo.placeParty = 1;    
     combatInfo.winOrLose = 1;
     combatInfo.dungeonRoom = 0;    
     combatInfo.altarRoom = 0;
+    combatInfo.showCombatMessage = 1;
 
     /* new map for combat */
     if (mapid > 0) {
@@ -98,10 +98,8 @@ void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned c
     }    
 
     /* party is camping */
-    if (camping) {
-        combatInfo.placeMonsters = 0;
-        combatInfo.camping = 1;
-    }
+    if (combatInfo.camping)
+        combatInfo.placeMonsters = 0;    
 
     if (map->type != MAPTYPE_DUNGEON) {
         /* setup player starting positions */
@@ -121,10 +119,12 @@ void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned c
  * Initializes information for camping
  */
 void combatInitCamping(void) {
+    combatInfo.camping = 1;    
+
     if (c->location->context & CTX_DUNGEON)
-        combatInit(NULL, NULL, MAP_DUNGEON_CON, 1); /* FIXME: use dungeon camping map */    
+        combatInit(NULL, NULL, MAP_DUNGEON_CON); /* FIXME: use dungeon camping map */
     else
-        combatInit(NULL, NULL, MAP_CAMP_CON, 1);   
+        combatInit(NULL, NULL, MAP_CAMP_CON);
 }
 
 /**
@@ -132,7 +132,7 @@ void combatInitCamping(void) {
  */
 void combatInitDungeonRoom(int room, Direction from) {
     int offset, i;    
-    combatInit(NULL, NULL, 0, 0);    
+    combatInit(NULL, NULL, 0);
 
     ASSERT(c->location->context & CTX_DUNGEON, "Error: called combatInitDungeonRoom from non-dungeon context");        
     {
@@ -220,12 +220,7 @@ void combatBegin() {
 
     /* Use the combat key handler */
     eventHandlerPushKeyHandler(&combatBaseKeyHandler);
-
-    /* if there are monsters around, start combat! */    
-    if (combatInfo.placeMonsters && combatInfo.winOrLose) {
-        screenMessage("\n**** COMBAT ****\n\n");        
-    }
-
+ 
     /* FIXME: there should be a better way to accomplish this */
     if (!combatInfo.camping) {
         musicPlay();
@@ -238,6 +233,10 @@ void combatBegin() {
             break;
         }
     }
+
+    /* if there are monsters around, start combat! */    
+    if (combatInfo.showCombatMessage && combatInfo.placeMonsters && combatInfo.winOrLose)
+        screenMessage("\n**** COMBAT ****\n\n");    
 
     if (!combatInfo.camping && !partyIsReadyToFight)
         (*c->location->finishTurn)();
@@ -1076,7 +1075,7 @@ int combatInitialNumberOfMonsters(const Monster *monster) {
 
     /* if in an unusual combat situation, generally we stick to normal encounter sizes,
        (such as encounters from sleeping in an inn, etc.) */
-    if (combatInfo.camping || mapIsWorldMap(c->location->map) || (c->location->context & CTX_DUNGEON)) {
+    if (combatInfo.camping || combatInfo.inn || mapIsWorldMap(c->location->map) || (c->location->context & CTX_DUNGEON)) {
         nmonsters = (rand() % 8) + 1;
         
         if (nmonsters == 1) {            
@@ -1131,7 +1130,7 @@ int combatIsLost() {
 
 void combatEnd(int adjustKarma) {
     int i, x, y, z;
-    unsigned char ground;
+    unsigned char ground;    
     
     gameExitToParentMap(c);
     musicPlay();    
@@ -1213,7 +1212,11 @@ void combatEnd(int adjustKarma) {
             if (c->saveGame->players[i].status == STAT_SLEEPING)
                 c->saveGame->players[i].status = combatInfo.party[i].status;
         }
-    }    
+    }
+
+    /* reset our combat variables */
+    combatInfo.camping = 0;
+    combatInfo.inn = 0;
     
     if (playerPartyDead(c->saveGame))
         deathStart(0);
