@@ -313,8 +313,9 @@ void gameFinishTurn() {
         if (playerPartyDead(c->saveGame)) {
             deathStart();
             return;
-        } else {
+        } else {            
             screenMessage("Zzzzzz\n");
+            eventHandlerSleep(1000);
         }
     }
 
@@ -1909,7 +1910,8 @@ int moveAvatar(Direction dir, int userEvent) {
     }
 
     newx = c->saveGame->x;
-    newy = c->saveGame->y;
+    newy = c->saveGame->y;    
+
     dirMove(dir, &newx, &newy);
 
     if (!settings->filterMoveMessages) {
@@ -2226,8 +2228,20 @@ void gameCheckRandomMonsters() {
     const Monster *monster;
     Object *obj;
 
+    /* remove monsters that are too far away from the avatar */
+
+    for (obj = c->map->objects; obj; obj = obj->next)
+    {
+        const Monster *m = monsterForTile(obj->tile);
+                
+        if (m && (obj->z == c->saveGame->dnglevel) && 
+            mapDistance(obj->x, obj->y, c->saveGame->x, c->saveGame->y) > MAX_MONSTER_DISTANCE)
+            mapRemoveObject(c->map, obj);    
+    }
+    
+    /* If there's too many monsters already, don't worry about it! */
     if (!mapIsWorldMap(c->map) ||
-        mapNumberOfMonsters(c->map) >= 4 ||
+        mapNumberOfMonsters(c->map) >= MAX_MONSTERS ||
         (rand() % 16) != 0)
         return;
 

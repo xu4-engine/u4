@@ -5,6 +5,13 @@
 #ifndef MONSTER_H
 #define MONSTER_H
 
+/* Monster generation/destruction */
+
+#define MAX_MONSTERS 4
+#define MAX_MONSTER_DISTANCE 30
+
+/* Monster tiles */
+
 #define HORSE1_TILE 20
 #define HORSE2_TILE 21
 

@@ -614,3 +614,27 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
 
     return retval;
 }
+
+/**
+ * Find the distance from point a to point b,
+ * allowing diagonal movements to calculate
+ **/
+
+int mapDistance(int x1, int y1, int x2, int y2) {
+    int dist, lowx, highx, lowy, highy;
+    
+    dist = 0;
+    lowx = (x1 < x2) ? x1 : x2;
+    lowy = (y1 < y2) ? y1 : y2;
+    highx = (x1 > x2) ? x1 : x2;
+    highy = (y1 > y2) ? y1 : y2;
+
+    while ((lowx < highx) && (lowy < highy))
+    {
+        if (lowx < highx) lowx++;
+        if (lowy < highy) lowy++;
+        dist++;
+    }
+
+    return dist;
+}
