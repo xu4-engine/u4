@@ -21,6 +21,28 @@ void annotationAdd(int x, int y, int ttl, unsigned char tile) {
     c->map->annotation = annotation;
 }
 
+void annotationRemove(int x, int y, unsigned char tile) {
+    int found = 0;
+    Annotation *annotation = c->map->annotation, **prev;
+
+    prev = &(c->map->annotation);
+    while (annotation) {
+        if (annotation->x == x &&
+            annotation->y == y &&
+            annotation->tile == tile) {
+            found = 1;
+            break;
+        }
+        annotation = annotation->next;
+        prev = &annotation;
+    }
+
+    if (found) {
+        *prev = annotation->next;
+        free(annotation);
+    }
+}
+
 const Annotation *annotationAt(int x, int y) {
     Annotation *annotation = c->map->annotation;
 
@@ -50,6 +72,7 @@ void annotationCycle(void) {
             annotation->time_to_live--;
 
         annotation = annotation->next;
+        prev = &annotation;
     }
 }
 

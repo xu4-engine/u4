@@ -19,6 +19,7 @@ typedef struct _Annotation {
 } Annotation;
 
 void annotationAdd(int x, int y, int ttl, unsigned char tile);
+void annotationRemove(int x, int y, unsigned char tile);
 const Annotation *annotationAt(int x, int y);
 void annotationCycle(void);
 void annotationClear(void);
