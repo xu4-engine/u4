@@ -12,28 +12,19 @@
 #include "u4.h"
 #include "settings.h"
 #include "mapinit.h"
-#include "direction.h"
 #include "screen.h"
 #include "event.h"
-#include "map.h"
 #include "person.h"
 #include "game.h"
 #include "intro.h"
-#include "context.h"
-#include "savegame.h"
-#include "stats.h"
 #include "error.h"
+#include "music.h"
 
-Context *c;
-
-extern Map world_map;
 int verbose = 0;
 int quit = 0;
-int germanKbd = 0;
 
 int main(int argc, char *argv[]) {
     unsigned int i;
-    FILE *saveGameFile, *monstersFile;
     int skipIntro = 0;
 
     settingsRead();
@@ -52,7 +43,7 @@ int main(int argc, char *argv[]) {
         else if (strcmp(argv[i], "-i") == 0)
             skipIntro = 1;
         else if (strcmp(argv[i], "-g") == 0)
-            germanKbd = 1;
+            settings->germanKbd = 1;
         else if (strcmp(argv[i], "-v") == 0)
             verbose++;
         else if (strcmp(argv[i], "-f") == 0)
@@ -90,43 +81,8 @@ int main(int argc, char *argv[]) {
     if (!personInit())
         errorFatal("unable to load person data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
-    c = (Context *) malloc(sizeof(Context));
-    c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
-    c->parent = NULL;
-    c->map = &world_map;
-    c->map->annotation = NULL;
-    c->conversation.talker = NULL;
-    c->conversation.state = 0;
-    c->conversation.buffer[0] = '\0';
-    c->line = TEXT_AREA_H - 1;
-    c->col = 0;
-    c->statsItem = STATS_PARTY_OVERVIEW;
-    c->moonPhase = 0;
-    c->windDirection = DIR_NORTH;
-    c->windCounter = 0;
-    c->aura = AURA_NONE;
-    c->auraDuration = 0;
-    c->horseSpeed = 0;
-
-    /* load in the save game */
-    saveGameFile = fopen("party.sav", "rb");
-    if (saveGameFile) {
-        saveGameRead(c->saveGame, saveGameFile);
-        fclose(saveGameFile);
-    } else
-        errorFatal("no savegame found!");
-
-    monstersFile = fopen("monsters.sav", "rb");
-    if (monstersFile) {
-        saveGameMonstersRead(&c->map->objects, monstersFile);
-        fclose(monstersFile);
-    }
-
     /* play the game! */
-    musicPlay();
-    screenDrawBackground(BKGD_BORDERS);
-    statsUpdate();
-    screenMessage("\020");
+    gameInit();
 
     eventHandlerAddTimerCallback(&gameTimer, 1);
     eventHandlerPushKeyHandler(&gameBaseKeyHandler);
