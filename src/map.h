@@ -9,6 +9,7 @@
 
 struct _City;
 struct _Shrine;
+struct _Con;
 struct _Object;
 struct _Person;
 struct _Portal;
@@ -34,6 +35,7 @@ typedef enum {
 
 /* flags */
 #define SHOW_AVATAR (1 << 0)
+#define NO_LINE_OF_SIGHT (1 << 1)
 
 typedef struct _Map {
     const char *fname;
@@ -49,6 +51,7 @@ typedef struct _Map {
     union {
         struct _City *city;
         const struct _Shrine *shrine;
+        struct _Con *con;
     };
     struct _Annotation *annotation;
     struct _Object *objects;
