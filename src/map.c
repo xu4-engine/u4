@@ -4,19 +4,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "u4.h"
 
 #include "map.h"
 
 #include "annotation.h"
-#include "area.h"
-#include "city.h"
 #include "context.h"
 #include "debug.h"
 #include "direction.h"
-#include "dungeon.h"
-#include "mapmgr.h"
 #include "monster.h"
 #include "movement.h"
 #include "object.h"
@@ -24,234 +19,6 @@
 #include "portal.h"
 #include "savegame.h"
 #include "ttype.h"
-
-/**
- * Loads a city/town/castle/etc. map from the 'ult' file, also using
- * the 'tlk' file to load conversations for the given town.
- */
-int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
-    unsigned char conv_idx[CITY_MAX_PERSONS];
-    unsigned char c;
-    int i, j;
-    char tlk_buffer[288];
-
-    /* the map must be 32x32 to be read from an .ULT file */
-    ASSERT(city->map->width == CITY_WIDTH, "map width is %d, should be %d", city->map->width, CITY_WIDTH);
-    ASSERT(city->map->height == CITY_HEIGHT, "map height is %d, should be %d", city->map->height, CITY_HEIGHT);
-
-    city->map->data = (unsigned char *) malloc(CITY_HEIGHT * CITY_WIDTH);
-    if (!city->map->data)
-        return 0;
-
-    for (i = 0; i < (CITY_HEIGHT * CITY_WIDTH); i++)
-        city->map->data[i] = u4fgetc(ult);
-
-    city->persons = (Person *) malloc(sizeof(Person) * CITY_MAX_PERSONS);
-    if (!city->persons)
-        return 0;
-    memset(&(city->persons[0]), 0, sizeof(Person) * CITY_MAX_PERSONS);
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++)
-        city->persons[i].tile0 = u4fgetc(ult);
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++)
-        city->persons[i].startx = u4fgetc(ult);
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++)
-        city->persons[i].starty = u4fgetc(ult);
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++)
-        city->persons[i].tile1 = u4fgetc(ult);
-
-    for (i = 0; i < CITY_MAX_PERSONS * 2; i++)
-        u4fgetc(ult);           /* read redundant startx/starty */
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        c = u4fgetc(ult);
-        if (c == 0)
-            city->persons[i].movement_behavior = MOVEMENT_FIXED;
-        else if (c == 1)
-            city->persons[i].movement_behavior = MOVEMENT_WANDER;
-        else if (c == 0x80)
-            city->persons[i].movement_behavior = MOVEMENT_FOLLOW_AVATAR;
-        else if (c == 0xFF)
-            city->persons[i].movement_behavior = MOVEMENT_ATTACK_AVATAR;
-        else
-            return 0;
-
-        city->persons[i].permanent = 1; /* permanent residents (i.e. memory is allocated here and automatically freed) */
-    }
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++)
-        conv_idx[i] = u4fgetc(ult);
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        city->persons[i].startz = 0;
-    }
-
-    for (i = 0; ; i++) {
-        if (u4fread(tlk_buffer, 1, sizeof(tlk_buffer), tlk) != sizeof(tlk_buffer))
-            break;
-        for (j = 0; j < CITY_MAX_PERSONS; j++) {
-            /** 
-             * Match the conversation to the person;
-             * sometimes we'll have a rogue entry for the .tlk file -- 
-             * we'll fill in the empty spaces with this conversation 
-             * (such as Isaac the Ghost in Skara Brae)
-             */
-            if (conv_idx[j] == i+1 || (conv_idx[j] == 0 && city->persons[j].tile0 == 0)) {
-                char *ptr = tlk_buffer + 3;
-
-                city->persons[j].questionTrigger = (PersonQuestionTrigger) tlk_buffer[0];
-                city->persons[j].questionType = (PersonQuestionType) tlk_buffer[1];
-                city->persons[j].turnAwayProb = tlk_buffer[2];
-
-                city->persons[j].name = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                city->persons[j].pronoun = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                city->persons[j].description = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                city->persons[j].job = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                city->persons[j].health = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                city->persons[j].response1 = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                city->persons[j].response2 = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                city->persons[j].question = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                city->persons[j].yesresp = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                city->persons[j].noresp = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                city->persons[j].keyword1 = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                city->persons[j].keyword2 = strdup(ptr);
-
-                /* trim whitespace on keywords */
-                if (strchr(city->persons[j].keyword1, ' '))
-                    *strchr(city->persons[j].keyword1, ' ') = '\0';
-                if (strchr(city->persons[j].keyword2, ' '))
-                    *strchr(city->persons[j].keyword2, ' ') = '\0';
-            }
-        }
-    }
-
-    city->n_persons = CITY_MAX_PERSONS;
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        city->persons[i].npcType = NPC_EMPTY;
-        if (city->persons[i].name)
-            city->persons[i].npcType = NPC_TALKER;
-        if (city->persons[i].tile0 == 88 || city->persons[i].tile0 == 89)
-            city->persons[i].npcType = NPC_TALKER_BEGGAR;
-        if (city->persons[i].tile0 == 80 || city->persons[i].tile0 == 81)
-            city->persons[i].npcType = NPC_TALKER_GUARD;
-        for (j = 0; j < 12; j++) {
-            if (city->person_types[j] == (i + 1))
-                city->persons[i].npcType = (PersonNpcType) (j + NPC_TALKER_COMPANION);
-        }
-    }
-
-    return 1;
-}
-
-/**
- * Loads a combat map from the 'con' file
- */
-int mapReadCon(Map *map, U4FILE *con) {
-    int i;
-
-    /* the map must be 11x11 to be read from an .CON file */
-    ASSERT(map->width == CON_WIDTH, "map width is %d, should be %d", map->width, CON_WIDTH);
-    ASSERT(map->height == CON_HEIGHT, "map height is %d, should be %d", map->height, CON_HEIGHT);
-
-    map->data = (unsigned char *) malloc(CON_HEIGHT * CON_WIDTH);
-    if (!map->data)
-        return 0;
-
-    if (map->type != MAPTYPE_SHRINE) {
-        map->area = (Area *) malloc(sizeof(Area));
-
-        for (i = 0; i < AREA_MONSTERS; i++)
-            map->area->monster_start[i].x = u4fgetc(con);
-
-        for (i = 0; i < AREA_MONSTERS; i++)
-            map->area->monster_start[i].y = u4fgetc(con);
-
-        for (i = 0; i < AREA_PLAYERS; i++)
-            map->area->player_start[i].x = u4fgetc(con);
-
-        for (i = 0; i < AREA_PLAYERS; i++)
-            map->area->player_start[i].y = u4fgetc(con);
-
-        u4fseek(con, 16L, SEEK_CUR);
-    }
-
-    for (i = 0; i < (CON_HEIGHT * CON_WIDTH); i++)
-        map->data[i] = u4fgetc(con);
-
-    return 1;
-}
-
-/**
- * Loads a dungeon map from the 'dng' file
- */
-int mapReadDng(Map *map, U4FILE *dng) {
-    unsigned int i;
-
-    /* the map must be 11x11 to be read from an .CON file */
-    ASSERT(map->width == DNG_WIDTH, "map width is %d, should be %d", map->width, DNG_WIDTH);
-    ASSERT(map->height == DNG_HEIGHT, "map height is %d, should be %d", map->height, DNG_HEIGHT);
-
-    map->data = (unsigned char *) malloc(DNG_HEIGHT * DNG_WIDTH * map->levels);
-    if (!map->data)
-        return 0;
-
-    for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * map->levels); i++)
-        map->data[i] = u4fgetc(dng);
-
-    map->dungeon->room = NULL;
-    /* read in the dungeon rooms */
-    /* FIXME: needs a cleanup function to free this memory later */
-    map->dungeon->rooms = (DngRoom *)malloc(sizeof(DngRoom) * map->dungeon->n_rooms);
-    u4fread(map->dungeon->rooms, sizeof(DngRoom) * map->dungeon->n_rooms, 1, dng);
-
-    return 1;
-}
-
-/**
- * Loads the world map data in from the 'world' file.
- */
-int mapReadWorld(Map *map, U4FILE *world) {
-    int x, xch, y, ych;
-
-    /* the map must be 256x256 to be read from the world map file */
-    ASSERT(map->width == MAP_WIDTH, "map width is %d, should be %d", map->width, MAP_WIDTH);
-    ASSERT(map->height == MAP_HEIGHT, "map height is %d, should be %d", map->height, MAP_HEIGHT);
-
-    map->data = (unsigned char *) malloc(MAP_HEIGHT * MAP_WIDTH);
-    if (!map->data)
-        return 0;
-
-    xch = 0;
-    ych = 0;
-    x = 0;
-    y = 0;
-
-    for(ych = 0; ych < MAP_VERT_CHUNKS; ++ych) {
-        for(xch = 0; xch < MAP_HORIZ_CHUNKS; ++xch) {
-            for(y = 0; y < MAP_CHUNK_HEIGHT; ++y) {
-                for(x = 0; x < MAP_CHUNK_WIDTH; ++x)
-                    map->data[x + (y * MAP_CHUNK_WIDTH * MAP_HORIZ_CHUNKS) + (xch * MAP_CHUNK_WIDTH) + (ych * MAP_CHUNK_HEIGHT * MAP_HORIZ_CHUNKS * MAP_CHUNK_WIDTH)] = u4fgetc(world);
-            }
-        }
-    }
-
-    return 1;
-}
 
 /**
  * Returns the object at the given (x,y,z) coords, if one exists.
@@ -357,7 +124,7 @@ unsigned char mapTileAt(const Map *map, int x, int y, int z, int withObjects) {
  * Returns true if the given map is the world map
  */
 int mapIsWorldMap(const Map *map) {
-    return map->id == MAP_WORLD;
+    return map->type == MAPTYPE_WORLD;
 }
 
 /**

@@ -16,6 +16,7 @@
 #include "error.h"
 #include "list.h"
 #include "map.h"
+#include "maploader.h"
 #include "mapmgr.h"
 #include "person.h"
 #include "portal.h"
@@ -38,7 +39,6 @@ void mapMgrInit() {
     xmlDocPtr doc;
     xmlNodePtr root, node;
     Map *map;
-    U4FILE *world, *ult, *tlk, *con, *dng;
 
     doc = xmlParse("maps.xml");
     root = xmlDocGetRootElement(doc);
@@ -51,47 +51,7 @@ void mapMgrInit() {
             continue;
 
         map = mapMgrInitMapFromXml(node);
-
-        switch (map->type) {
-        case MAPTYPE_WORLD:
-            world = u4fopen("world.map");
-            if (!world)
-                errorFatal("unable to load map data");
-            mapReadWorld(map, world);
-            u4fclose(world);
-            break;
-
-        case MAPTYPE_TOWN:
-        case MAPTYPE_VILLAGE:
-        case MAPTYPE_CASTLE:
-        case MAPTYPE_RUIN:
-            ult = u4fopen(map->fname);
-            tlk = u4fopen(map->city->tlk_fname);
-            if (!ult || !tlk)
-                errorFatal("unable to load map data");
-
-            mapRead(map->city, ult, tlk);
-            u4fclose(ult);
-            u4fclose(tlk);
-            break;
-
-        case MAPTYPE_SHRINE:
-        case MAPTYPE_COMBAT:
-            con = u4fopen(map->fname);
-            if (!con)
-                errorFatal("unable to load map data");
-            mapReadCon(map, con);
-            u4fclose(con);
-            break;
-
-        case MAPTYPE_DUNGEON:
-            dng = u4fopen(map->fname);
-            if (!dng)
-                errorFatal("unable to load map data");
-            mapReadDng(map, dng);
-            u4fclose(dng);
-            break;
-        }
+        mapLoad(map);
         mapMgrRegister(map);
     }
 
