@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
@@ -779,3 +778,17 @@ void moveAvatar(int dx, int dy) {
 	c->saveGame->y = newy;
     }
 }
+
+/**
+ * This function is called every quarter second.
+ */
+void gameTimer() {
+    screenCycle();
+    screenUpdate();
+    screenForceRedraw();
+
+    if (++c->moonPhase >= (MOON_SECONDS_PER_PHASE * 4 * MOON_PHASES))
+        c->moonPhase = 0;
+}
+
+
