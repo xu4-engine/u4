@@ -23,6 +23,7 @@
 #define MASK_HORSE     0x0800
 #define MASK_BALLOON   0x1000
 #define MASK_CANDISPEL 0x2000
+#define MASK_MONSTER_UNWALKABLE 0x4000
 
 /* tile values 0-79 */
 int tileInfoLoaded = 0;
@@ -41,7 +42,7 @@ void tileLoadInfoFromXml() {
 
     fname = u4find_conf("tiles.xml");
     if (!fname)
-        errorFatal("unable to file tiles.xml");
+        errorFatal("unable to open file tiles.xml");
     doc = xmlParseFile(fname);
     if (!doc)
         errorFatal("error parsing tiles.xml");
@@ -111,6 +112,9 @@ void tileLoadInfoFromXml() {
         if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "candispel"), (const xmlChar *) "true") == 0)
             _ttype_info[tile] |= MASK_CANDISPEL;
 
+        if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "monsterunwalkable"), (const xmlChar *) "true") == 0)
+            _ttype_info[tile] |= MASK_MONSTER_UNWALKABLE;
+
         tile++;
     }
 
@@ -142,6 +146,10 @@ int tileTestBit(unsigned char tile, unsigned short mask, int defaultVal) {
 
 int tileIsWalkable(unsigned char tile) {
     return !tileTestBit(tile, MASK_UNWALKABLE, 1);
+}
+
+int tileIsMonsterWalkable(unsigned char tile) {
+    return !(tileTestBit(tile, MASK_UNWALKABLE, 1) || tileTestBit(tile, MASK_MONSTER_UNWALKABLE, 1));
 }
 
 int tileIsSwimable(unsigned char tile) {
