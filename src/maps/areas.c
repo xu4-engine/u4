@@ -15,7 +15,7 @@ Map brick_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -29,7 +29,7 @@ Map bridge_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -43,7 +43,7 @@ Map brush_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -57,7 +57,7 @@ Map camp_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -71,7 +71,7 @@ Map dng0_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -85,7 +85,7 @@ Map dng1_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -99,7 +99,7 @@ Map dng2_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -113,7 +113,7 @@ Map dng3_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -127,7 +127,7 @@ Map dng4_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -141,7 +141,7 @@ Map dng5_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -155,7 +155,7 @@ Map dng6_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -169,7 +169,7 @@ Map dungeon_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -183,7 +183,7 @@ Map forest_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -197,7 +197,7 @@ Map grass_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -211,7 +211,7 @@ Map hill_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -225,7 +225,7 @@ Map inn_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -239,7 +239,7 @@ Map marsh_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -253,7 +253,7 @@ Map shipsea_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -267,7 +267,7 @@ Map shipship_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -281,7 +281,7 @@ Map shipshor_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -295,7 +295,7 @@ Map shore_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
@@ -309,7 +309,7 @@ Map shorship_map = {
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* flags */
+    NO_LINE_OF_SIGHT, /* flags */
     MUSIC_COMBAT, /* music */
     NULL, /* data */
     { NULL } /* city */
