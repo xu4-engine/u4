@@ -13,6 +13,7 @@
 
 #include "context.h"
 #include "dngview.h"
+#include "list.h"
 #include "location.h"
 #include "names.h"
 #include "object.h"
@@ -147,7 +148,7 @@ unsigned char screenViewportTile(unsigned int width, unsigned int height, int x,
  * neither is set, the map area is left untouched.
  */
 void screenUpdate(int showmap, int blackout) {
-    unsigned char tile;
+    ListNode *tiles;
     int focus, x, y;
     Tileset *base = tilesetGetByType(TILESET_BASE);
 
@@ -160,19 +161,25 @@ void screenUpdate(int showmap, int blackout) {
             screenEraseMapArea();
             if (c->saveGame->torchduration > 0 && !blackout) {
                 for (y = 3; y >= 0; y--) {
+                    DungeonGraphicType type;
 
-                    tile = dungeonViewGetVisibleTile(y, -1);
-                    screenDungeonDrawWall(-1, y, c->saveGame->orientation, dungeonViewTileToGraphic(tile));
+                    tiles = dungeonViewGetTiles(y, -1);
+                    screenDungeonDrawWall(-1, y, c->saveGame->orientation, dungeonViewTilesToGraphic(tiles));
+                    listDelete(tiles);
 
-                    tile = dungeonViewGetVisibleTile(y, 1);
-                    screenDungeonDrawWall(1, y, c->saveGame->orientation, dungeonViewTileToGraphic(tile));
+                    tiles = dungeonViewGetTiles(y, 1);
+                    screenDungeonDrawWall(1, y, c->saveGame->orientation, dungeonViewTilesToGraphic(tiles));
+                    listDelete(tiles);
 
-                    tile = dungeonViewGetVisibleTile(y, 0);
-                    if (dungeonViewTileToGraphic(tile) == DNGGRAPHIC_TILE)
-                        screenDungeonDrawTile(y, c->location->tileset->tiles[tile].displayTile);
+                    tiles = dungeonViewGetTiles(y, 0);
+                    type = dungeonViewTilesToGraphic(tiles);
+                    if (type == DNGGRAPHIC_DNGTILE)
+                        screenDungeonDrawTile(y, c->location->tileset->tiles[(unsigned char) (unsigned) tiles->data].displayTile);
+                    else if (type == DNGGRAPHIC_BASETILE)
+                        screenDungeonDrawTile(y, base->tiles[(unsigned char) (unsigned) tiles->data].displayTile);
                     else
-                        screenDungeonDrawWall(0, y, c->saveGame->orientation, dungeonViewTileToGraphic(tile));
-                        
+                        screenDungeonDrawWall(0, y, c->saveGame->orientation, dungeonViewTilesToGraphic(tiles));
+                    listDelete(tiles);
                 }
             }
         }
@@ -184,14 +191,16 @@ void screenUpdate(int showmap, int blackout) {
                     if (x < 2 || y < 2 || x >= 10 || y >= 10)
                         screenShowTile(base, BLACK_TILE, 0, x, y);
                     else {
-                        tile = dungeonViewGetVisibleTile((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
+                        tiles = dungeonViewGetTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
                         /* Only show blackness if there is no light */
                         if (c->saveGame->torchduration <= 0)
                             screenShowTile(base, BLACK_TILE, 0, x, y);
                         else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
                             screenShowTile(base, AVATAR_TILE, 0, x, y);
-                        else screenShowTile(base, c->location->tileset->tiles[tile].displayTile, 0, x, y);
+                        else
+                            screenShowTile(base, c->location->tileset->tiles[(unsigned char) (unsigned) tiles->data].displayTile, 0, x, y);
+                        listDelete(tiles);
                     }
                 }
             }
@@ -205,6 +214,8 @@ void screenUpdate(int showmap, int blackout) {
 
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
+                unsigned char tile;
+
                 if (!blackout && screenLos[x][y]) {
                     tile = screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y, &focus);
                     screenShowTile(base, tile, focus, x, y);
