@@ -342,6 +342,7 @@ Image *scaleScale2x(Image *src, int scale, int n) {
     int ii, x, y, xoff0, xoff1, yoff0, yoff1;
     RGB a, b, c, d, e, f, g, h, i;
     RGB e0, e1, e2, e3;
+    RGB e4, e5, e6, e7;
     Image *dest;
 
     /* this scaler works only with images scaled by 2x or 3x */
@@ -398,11 +399,22 @@ Image *scaleScale2x(Image *src, int scale, int n) {
                 imageGetPixel(src, x, y + yoff1, &h.r, &h.g, &h.b);
                 imageGetPixel(src, x + xoff1, y + yoff1, &i.r, &i.g, &i.b);
 
+                // lissen diagonals (45°,135°,225°,315°)
+                // corner : if there is gradient towards a diagonal direction, 
+                // take the color of surrounding points in this direction
                 e0 = colorEqual(d, b) && (!colorEqual(b, f)) && (!colorEqual(d, h)) ? d : e;
                 e1 = colorEqual(b, f) && (!colorEqual(b, d)) && (!colorEqual(f, h)) ? f : e;
                 e2 = colorEqual(d, h) && (!colorEqual(d, b)) && (!colorEqual(h, f)) ? d : e;
                 e3 = colorEqual(h, f) && (!colorEqual(d, h)) && (!colorEqual(b, f)) ? f : e;
-                
+
+                // lissen eight more directions (22° or 67°, 112° or 157°...)
+                // middle of side : if there is a gradient towards one of these directions (middle of side direction and of direction of either diagonal around this side),
+                // take the color of surrounding points in this direction
+                e4 = colorEqual(e0, c) ? e0 : colorEqual(e1, a) ? e1 : e;
+                e5 = colorEqual(e2, a) ? e2 : colorEqual(e0, g) ? e0 : e;
+                e6 = colorEqual(e1, i) ? e1 : colorEqual(e3, c) ? e3 : e;
+                e7 = colorEqual(e3, g) ? e3 : colorEqual(e2, i) ? e2 : e;
+
                 if (scale == 2) {
                     imagePutPixel(dest, x * 2, y * 2, e0.r, e0.g, e0.b);
                     imagePutPixel(dest, x * 2 + 1, y * 2, e1.r, e1.g, e1.b);
@@ -410,14 +422,15 @@ Image *scaleScale2x(Image *src, int scale, int n) {
                     imagePutPixel(dest, x * 2 + 1, y * 2 + 1, e3.r, e3.g, e3.b);
                 } else if (scale == 3) {
                     imagePutPixel(dest, x * 3, y * 3, e0.r, e0.g, e0.b);
-                    imagePutPixel(dest, x * 3 + 1, y * 3, e1.r, e1.g, e1.b);
+                    imagePutPixel(dest, x * 3 + 1, y * 3, e4.r, e4.g, e4.b);
                     imagePutPixel(dest, x * 3 + 2, y * 3, e1.r, e1.g, e1.b);
-                    imagePutPixel(dest, x * 3, y * 3 + 1, e0.r, e0.g, e0.b);
-                    imagePutPixel(dest, x * 3 + 1, y * 3 + 1, e1.r, e1.g, e1.b);
-                    imagePutPixel(dest, x * 3 + 2, y * 3 + 1, e1.r, e1.g, e1.b);
+                    imagePutPixel(dest, x * 3, y * 3 + 1, e5.r, e5.g, e5.b);
+                    imagePutPixel(dest, x * 3 + 1, y * 3 + 1, e.r, e.g, e.b);
+                    imagePutPixel(dest, x * 3 + 2, y * 3 + 1, e6.r, e6.g, e6.b);
                     imagePutPixel(dest, x * 3, y * 3 + 2, e2.r, e2.g, e2.b);
-                    imagePutPixel(dest, x * 3 + 1, y * 3 + 2, e3.r, e3.g, e3.b);
+                    imagePutPixel(dest, x * 3 + 1, y * 3 + 2, e7.r, e7.g, e7.b);
                     imagePutPixel(dest, x * 3 + 2, y * 3 + 2, e3.r, e3.g, e3.b);
+
                 }
             }
         }
