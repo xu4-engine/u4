@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 #include "direction.h"
-#include "image.h"
-#include "tileanim.h"
 #include "types.h"
 
 using std::string;
 
+class Image;
 class Tileset;
+class TileAnim;
 class TileRule;
 
 /* attr masks */
@@ -41,20 +41,14 @@ class TileRule;
  */
 class Tile : public MapTile {
 public:
-    friend class TileAnim;
-
     Tile() : w(0), h(0), index(0), frames(0), scale(1), anim(NULL), opaque(false), rule(NULL), 
-        image(NULL), animated(NULL), tileset(NULL) {}
+        tileset(NULL), image(NULL) {}
 
     static void loadProperties(Tile *tile, void *xmlNode);    
     static MapTile translate(int index, string tileMap = "base");    
     static unsigned int getIndex(TileId id);
 
-    void draw(MapTile *mapTile, int x, int y);
-    void drawInDungeon(MapTile *mapTile, int distance, Direction orientation, bool large = false);
-    void drawFocus(int x, int y) const;
-    void loadImage();
-    Image *getImage();    
+    Image *getImage();
     bool isLarge() const;
 
     string name;        /**< The name of this tile */
@@ -66,12 +60,13 @@ public:
     bool opaque;        /**< Is this tile opaque? */
     TileRule *rule;     /**< The rules that govern the behavior of this tile */
     string imageName;   /**< The name of the image that belongs to this tile */
-    Image *image;       /**< The original image for this tile (with all of its frames) */
-    Image *animated;    /**< The resulting image from animating the tile */
     Tileset *tileset;   /**< The tileset this tile belongs to */
     string looks_like;  /**< The name of the tile that this tile looks exactly like (if any) */    
 
 private:
+    void loadImage();
+
+    Image *image;       /**< The original image for this tile (with all of its frames) */
     bool large;
 };
 

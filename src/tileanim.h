@@ -25,7 +25,7 @@ public:
     static TileAnimTransform *create(const ConfigElement &config);    
     static RGBA *loadColorFromConf(const ConfigElement &conf);
     
-    virtual void draw(Tile *tile, MapTile *mapTile) = 0;
+    virtual void draw(Image *dest, Tile *tile, MapTile *mapTile) = 0;
     virtual ~TileAnimTransform() {}
     virtual bool drawsTile() const = 0;
     
@@ -43,7 +43,7 @@ private:
 class TileAnimInvertTransform : public TileAnimTransform {
 public:
     TileAnimInvertTransform(int x, int y, int w, int h);
-    virtual void draw(Tile *tile, MapTile *mapTile);
+    virtual void draw(Image *dest, Tile *tile, MapTile *mapTile);
     virtual bool drawsTile() const;
     
 private:
@@ -58,7 +58,7 @@ private:
 class TileAnimPixelTransform : public TileAnimTransform {
 public:
     TileAnimPixelTransform(int x, int y);
-    virtual void draw(Tile *tile, MapTile *mapTile);
+    virtual void draw(Image *dest, Tile *tile, MapTile *mapTile);
     virtual bool drawsTile() const;
 
     int x, y;
@@ -72,7 +72,7 @@ public:
 class TileAnimScrollTransform : public TileAnimTransform {
 public:    
     TileAnimScrollTransform(int increment);
-    virtual void draw(Tile *tile, MapTile *mapTile);    
+    virtual void draw(Image *dest, Tile *tile, MapTile *mapTile);    
     virtual bool drawsTile() const;
 private:
     int increment, current, lastOffset;
@@ -84,7 +84,7 @@ private:
  */ 
 class TileAnimFrameTransform : public TileAnimTransform {
 public:
-    virtual void draw(Tile *tile, MapTile *mapTile);
+    virtual void draw(Image *dest, Tile *tile, MapTile *mapTile);
     virtual bool drawsTile() const;
 };
 
@@ -96,7 +96,7 @@ public:
 class TileAnimPixelColorTransform : public TileAnimTransform {
 public:
     TileAnimPixelColorTransform(int x, int y, int w, int h);
-    virtual void draw(Tile *tile, MapTile *mapTile);
+    virtual void draw(Image *dest, Tile *tile, MapTile *mapTile);
     virtual bool drawsTile() const;
 
     int x, y, w, h;
@@ -163,7 +163,7 @@ public:
     std::vector<TileAnimContext *> contexts;
 
     /* returns the frame to set the mapTile to (only relevent if persistent) */
-    void draw(Tile *tile, MapTile *mapTile, Direction dir);     
+    void draw(Image *dest, Tile *tile, MapTile *mapTile, Direction dir);     
 
     int random;   /* true if the tile animation occurs randomely */
 };

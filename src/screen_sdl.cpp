@@ -20,6 +20,7 @@
 #endif
 
 #include "debug.h"
+#include "dungeonview.h"
 #include "error.h"
 #include "event.h"
 #include "image.h"
@@ -38,9 +39,6 @@
 #include "utils.h"
 
 using std::vector;
-
-Image *screenScale(Image *src, int scale, int n, int filter);
-Image *screenScaleDown(Image *src, int scale);
 
 SDL_Cursor *cursors[5];
 int scale;
@@ -470,188 +468,6 @@ void screenShowChar(int chr, int x, int y) {
 }
 
 /**
- * Draw a character from the charset onto the screen, but mask it with
- * horizontal lines.  This is used for the avatar symbol in the
- * statistics area, where a line is masked out for each virtue in
- * which the player is not an avatar.
- */
-void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
-    Image *screen = imageMgr->get("screen")->image;
-    int i;
-
-    screenShowChar(chr, x, y);
-    for (i = 0; i < 8; i++) {
-        if (mask & (1 << i)) {
-            screen->fillRect(x * charsetInfo->image->width(),
-                             y * (CHAR_HEIGHT * scale) + (i * scale),
-                             charsetInfo->image->width(),
-                             scale,
-                             0, 0, 0);
-        }
-    }
-}
-
-/**
- * Draws a tile to the screen
- */
-void Tile::draw(MapTile *mapTile, int x, int y) {
-    int scale = ::scale;
-
-    if (image == NULL)
-        loadImage();
-
-    if (anim) {
-        // First, create our animated version of the tile
-        anim->draw(this, mapTile, DIR_NONE);        
-
-        // Then draw it to the screen
-        animated->drawSubRect(x * w + (BORDER_WIDTH * scale),
-            y * h + (BORDER_HEIGHT * scale),
-            0, 0, w, h);
-    }
-    else {
-        image->drawSubRect(x * w + (BORDER_WIDTH * scale), y * h + (BORDER_HEIGHT * scale),
-            0, mapTile->frame * h, w, h);    
-    }
-}
-
-void Tile::drawInDungeon(MapTile *mapTile, int distance, Direction orientation, bool large) {    
-    Image *tmp, *scaled;
-    const static int nscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
-    const static int lscale[] = { 22, 14, 6, 2 };    
-    const int *dscale = large ? lscale : nscale;
-    int scale = ::scale;
-
-    if (image == NULL)
-        loadImage();
-
-    // create our animated version of the tile
-    if (anim) {
-        anim->draw(this, mapTile, orientation);
-        tmp = Image::duplicate(animated);
-    }
-    else tmp = Image::duplicate(image);
-
-    /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
-    if (dscale[distance] == 1)
-        scaled = screenScaleDown(tmp, 2);
-    else
-        scaled = screenScale(tmp, dscale[distance] / 2, 1, 1);
-
-    scaled->drawSubRect((VIEWPORT_W * w / 2) + (BORDER_WIDTH * scale) - (scaled->width() / 2),
-        large ? (VIEWPORT_H * h / 2) + (BORDER_HEIGHT * scale) - (scaled->height() / 2) :
-        (doffset[distance] + BORDER_HEIGHT) * scale,
-        0,
-        0,
-        scaled->width(),
-        scaled->height());
-        
-    delete scaled;
-    delete tmp;
-}
-
-/**
- * Draw a focus rectangle around the tile
- */
-void Tile::drawFocus(int x, int y) const {
-    int scale = ::scale;
-    Image *screen = imageMgr->get("screen")->image;
-
-    /**
-     * draw the focus rectangle around the tile
-     */
-    if ((screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2) {
-        /* left edge */
-        screen->fillRect(x * w + (BORDER_WIDTH * scale),
-                         y * h + (BORDER_HEIGHT * scale),
-                         2 * scale,
-                         h, 
-                         0xff, 0xff, 0xff);
-
-        /* top edge */
-        screen->fillRect(x * w + (BORDER_WIDTH * scale),
-                         y * h + (BORDER_HEIGHT * scale),
-                         w,
-                         2 * scale,
-                         0xff, 0xff, 0xff);
-
-        /* right edge */
-        screen->fillRect((x + 1) * w + (BORDER_WIDTH * scale) - (2 * scale),
-                         y * h + (BORDER_HEIGHT * scale),
-                         2 * scale,
-                         h,
-                         0xff, 0xff, 0xff);
-
-        /* bottom edge */
-        screen->fillRect(x * w + (BORDER_WIDTH * scale),
-                         (y + 1) * h + (BORDER_HEIGHT * scale) - (2 * scale),
-                         w,
-                         2 * scale,
-                         0xff, 0xff, 0xff);
-    }
-}
-
-/**
- * Loads the tile image
- */ 
-void Tile::loadImage() {
-    if (!image) {
-        SubImage *subimage = NULL;        
-
-        ImageInfo *info = imageMgr->get(imageName);
-        if (!info) {
-            subimage = imageMgr->getSubImage(imageName);
-            if (subimage)            
-                info = imageMgr->get(subimage->srcImageName);            
-        }
-
-        scale = ::scale;
-
-        if (info) {
-            w = (subimage ? subimage->width * scale : info->width * scale);
-            h = (subimage ? (subimage->height * scale) / frames : (info->height * scale) / frames);
-            image = Image::create(w, h * frames, false, Image::HARDWARE);
-            animated = Image::create(w, h, false, Image::HARDWARE);
-
-            info->image->alphaOff();
-
-            /* draw the tile from the image we found to our tile image */
-            if (subimage) {
-                Image *tiles = info->image;
-                tiles->drawSubRectOn(image, 0, 0, subimage->x * scale, subimage->y * scale, subimage->width * scale, subimage->height * scale);
-            }
-            else info->image->drawOn(image, 0, 0);                
-        }
-
-        /* if we have animations, we always used 'animated' to draw from */
-        if (anim)
-            image->alphaOff();
-
-        if (image == NULL)
-            errorFatal("Error: not all tile images loaded correctly, aborting...");
-    }
-}
-
-/**
- * Draw a tile graphic on the screen.
- */
-void screenShowTile(MapTile *mapTile, bool focus, int x, int y) {
-    Tileset *t = Tileset::get();    
-    Tile *tile = t->get(mapTile->id);    
-    
-    ASSERT(tile != NULL, "couldn't find tile for id %d", mapTile->id);
-
-    /**
-     * Draw the tile to the screen
-     */
-    tile->draw(mapTile, x, y);    
-    
-    /* draw the focus around the tile if it has the focus */
-    if (focus)
-        tile->drawFocus(x, y);
-}
-
-/**
  * Draw a tile graphic on the screen.
  */
 void screenShowGemTile(MapTile *mapTile, bool focus, int x, int y) {
@@ -804,11 +620,12 @@ int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, 
 }
 
 void screenDungeonDrawTile(MapTile *mapTile, int distance, Direction orientation) {
+    DungeonView view(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H);
     Tileset *t = Tileset::get();    
     Tile *tile = t->get(mapTile->id);
     
     // Draw the tile to the screen
-    tile->drawInDungeon(mapTile, distance, orientation, tile->isLarge());
+    view.drawInDungeon(mapTile, distance, orientation, tile->isLarge());
 }
 
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
