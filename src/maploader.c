@@ -23,6 +23,7 @@ int mapLoadCity(Map *map);
 int mapLoadCon(Map *map);
 int mapLoadDng(Map *map);
 int mapLoadWorld(Map *map);
+int mapLoadData(Map *map, U4FILE *f);
 
 /**
  * Load map data from into map object.  The metadata in the map must
@@ -73,12 +74,8 @@ int mapLoadCity(Map *map) {
     ASSERT(map->width == CITY_WIDTH, "map width is %d, should be %d", map->width, CITY_WIDTH);
     ASSERT(map->height == CITY_HEIGHT, "map height is %d, should be %d", map->height, CITY_HEIGHT);
 
-    map->data = (unsigned char *) malloc(map->width * map->height);
-    if (!map->data)
+    if (!mapLoadData(map, ult))
         return 0;
-
-    for (i = 0; i < (map->width * map->height); i++)
-        map->data[i] = u4fgetc(ult);
 
     map->city->persons = (Person *) malloc(sizeof(Person) * CITY_MAX_PERSONS);
     if (!map->city->persons)
@@ -210,10 +207,6 @@ int mapLoadCon(Map *map) {
     ASSERT(map->width == CON_WIDTH, "map width is %d, should be %d", map->width, CON_WIDTH);
     ASSERT(map->height == CON_HEIGHT, "map height is %d, should be %d", map->height, CON_HEIGHT);
 
-    map->data = (unsigned char *) malloc(CON_HEIGHT * CON_WIDTH);
-    if (!map->data)
-        return 0;
-
     if (map->type != MAPTYPE_SHRINE) {
         map->area = (Area *) malloc(sizeof(Area));
 
@@ -232,8 +225,8 @@ int mapLoadCon(Map *map) {
         u4fseek(con, 16L, SEEK_CUR);
     }
 
-    for (i = 0; i < (CON_HEIGHT * CON_WIDTH); i++)
-        map->data[i] = u4fgetc(con);
+    if (!mapLoadData(map, con))
+        return 0;
 
     u4fclose(con);
 
@@ -273,16 +266,36 @@ int mapLoadDng(Map *map) {
     return 1;
 }
 
+int mapIsChunkCompressed(Map *map, int chunk) {
+    int i;
+
+    for (i = 0; i < map->n_compressed_chunks; i++) {
+        if (chunk == map->compressed_chunks[i])
+            return 1;
+    }
+    return 0;
+}
+
 /**
  * Loads the world map data in from the 'world' file.
  */
 int mapLoadWorld(Map *map) {
     U4FILE *world;
-    unsigned int x, xch, y, ych;
 
     world = u4fopen(map->fname);
     if (!world)
         errorFatal("unable to load map data");
+
+    if (!mapLoadData(map, world))
+        return 0;
+
+     u4fclose(world);
+
+     return 1;
+}
+
+int mapLoadData(Map *map, U4FILE *f) {
+    int x, xch, y, ych;
 
     map->data = (unsigned char *) malloc(map->height * map->width);
     if (!map->data)
@@ -296,14 +309,23 @@ int mapLoadWorld(Map *map) {
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
         for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
             for(y = 0; y < map->chunk_height; ++y) {
-                for(x = 0; x < map->chunk_width; ++x)
-                    map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = u4fgetc(world);
+                for(x = 0; x < map->chunk_width; ++x) {
+
+                    if (mapIsChunkCompressed(map, ych * map->chunk_width + xch))
+                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = 1;
+
+                    else {
+                        int c;
+                        c = u4fgetc(f);
+                        if (c == EOF)
+                            return 0;
+
+                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = c;
+                    }
+                }
             }
         }
     }
 
-    u4fclose(world);
-
     return 1;
 }
-
