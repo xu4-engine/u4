@@ -1548,6 +1548,7 @@ int moveAvatar(Direction dir, int userEvent) {
 
     if (!collisionOverride) {
         int movementMask;
+        int slow;
 
         movementMask = mapGetValidMoves(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->transport);
         if (!DIR_IN_MASK(dir, movementMask)) {
@@ -1567,6 +1568,26 @@ int moveAvatar(Direction dir, int userEvent) {
         }
         if (mapTileAt(c->map, c->saveGame->x, c->saveGame->y) == 0x0e && dir == DIR_NORTH) {
             screenMessage("Blocked!\n");
+            result = 0;
+            goto done;
+        }
+
+        switch (tileGetSpeed(mapTileAt(c->map, newx, newy))) {
+        case FAST:
+            slow = 0;
+            break;
+        case SLOW:
+            slow = (rand() % 8) == 0;
+            break;
+        case VSLOW:
+            slow = (rand() % 4) == 0;
+            break;
+        case VVSLOW:
+            slow = (rand() % 2) == 0;
+            break;
+        }
+        if (slow) {
+            screenMessage("Slow progress!\n");
             result = 0;
             goto done;
         }
