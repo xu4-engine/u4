@@ -50,7 +50,7 @@ OBJS += $(SRCS:.c=.o)
 
 all:: $(MAIN) utils
 
-utils::  dumpsavegame$(EXEEXT) lzwenc$(EXEEXT) lzwdec$(EXEEXT) rleenc$(EXEEXT) rledec$(EXEEXT)
+utils::  dumpsavegame$(EXEEXT) lzwenc$(EXEEXT) lzwdec$(EXEEXT) rleenc$(EXEEXT) rledec$(EXEEXT) tlkconv$(EXEEXT)
 
 $(MAIN): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
@@ -69,6 +69,9 @@ rleenc$(EXEEXT) : util/rleenc.o util/pngconv.o
 
 rledec$(EXEEXT) : util/rledec.o rle.o util/pngconv.o
 	$(CC) $(CFLAGS) -o rledec util/rledec.o rle.o util/pngconv.o -lpng -lz
+
+tlkconv$(EXEEXT) : util/tlkconv.o
+	$(CC) $(CFLAGS) -o tlkconv util/tlkconv.o -lxml2
 
 clean:: cleanutil
 	rm -rf *~ */*~ $(OBJS) $(MAIN) 
