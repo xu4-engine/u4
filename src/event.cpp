@@ -223,7 +223,7 @@ bool ReadStringController::keyPressed(int key) {
 
     if ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z') ||
         (key >= '0' && key <= '9') || key == ' ') {        
-        if (len < maxlen - 1) {
+        if (len < maxlen) {
             /* add a character to the end */
             value += key;
 
