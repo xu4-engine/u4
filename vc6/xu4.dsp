@@ -364,6 +364,10 @@ SOURCE=..\src\player.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\portal.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\portal.h
 # End Source File
 # Begin Source File
