@@ -111,7 +111,7 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
             else if (cnv->talker->npcType == NPC_HAWKWIND)
                 *response = hawkwindGetResponse(cnv, inquiry);
             else 
-                *response = talkerGetResponse(cnv, inquiry);
+                *response = concat("\n\n", talkerGetResponse(cnv, inquiry), "\n", NULL);
             return;
 
         case CONV_ASK:
@@ -119,7 +119,7 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
             if (cnv->talker->npcType == NPC_LORD_BRITISH)
                 *response = lordBritishGetQuestionResponse(cnv, inquiry);
             else 
-                *response = talkerGetQuestionResponse(cnv, inquiry);
+                *response = concat("\n\n", talkerGetQuestionResponse(cnv, inquiry), "\n", NULL);
             return;
     
         case CONV_BUY_QUANTITY:
@@ -231,14 +231,13 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, "look", 4) == 0) {
-        reply = (char *) malloc(strlen(cnv->talker->pronoun) + 7 + strlen(cnv->talker->description) + 1);
-        sprintf(reply, "%s says: %s", cnv->talker->pronoun, cnv->talker->description);
+        reply = concat("You see ", cnv->talker->description, NULL);
+        if (isupper(reply[8]))
+            reply[8] = tolower(reply[8]);
     }
 
-    else if (strncasecmp(inquiry, "name", 4) == 0) {
-        reply = (char *) malloc(strlen(cnv->talker->pronoun) + 12 + strlen(cnv->talker->name) + 1);
-        sprintf(reply, "%s says: I am %s", cnv->talker->pronoun, cnv->talker->name);
-    }
+    else if (strncasecmp(inquiry, "name", 4) == 0)
+        reply = concat(cnv->talker->pronoun, " says: I am ", cnv->talker->name, NULL);
 
     else if (strncasecmp(inquiry, "job", 4) == 0) {
         reply = strdup(cnv->talker->job);
@@ -269,9 +268,7 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
             reply = strdup("");
             cnv->state = CONV_BUY_QUANTITY;
         } else
-            reply = concat(cnv->talker->pronoun, 
-                           " says: I do not need thy gold.  Keep it!",
-                           NULL);
+            reply = concat(cnv->talker->pronoun, " says: I do not need thy gold.  Keep it!", NULL);
     }
 
     else if (strncasecmp(inquiry, "join", 4) == 0) {
@@ -285,7 +282,7 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
             } else
                 reply = concat("Thou art not ",
                                getVirtueAdjective(v), /* fixme */
-                               " enough for me to join thee.\n",
+                               " enough for me to join thee.",
                                NULL);
         } else 
             reply = concat(cnv->talker->pronoun, 
@@ -328,7 +325,7 @@ char *talkerGetPrompt(const Conversation *cnv) {
     if (cnv->state == CONV_ASK)
         personGetQuestion(cnv->talker, &prompt);
     else if (cnv->state == CONV_BUY_QUANTITY)
-        prompt = strdup("How much? ");
+        prompt = strdup("\n\nHow much? ");
     else
         prompt = strdup("\nYour Interest:\n");
 
@@ -343,8 +340,8 @@ char *beggarGetQuantityResponse(Conversation *cnv, const char *response) {
 
     if (cnv->quant > 0) {
         if (playerDonate(c->saveGame, cnv->quant)) {
-            reply = concat(cnv->talker->pronoun, 
-                           " says: Oh Thank thee! I shall never forget thy kindness!",
+            reply = concat("\n\n", cnv->talker->pronoun, 
+                           " says: Oh Thank thee! I shall never forget thy kindness!\n",
                            NULL);
             statsUpdate();
         }
