@@ -1152,7 +1152,7 @@ ScriptReturnCode Script::add(xmlNodePtr script, xmlNodePtr current) {
         c->party->adjustFood(quant);
     }
     else if (type == "horse")
-        gameSetTransport(tileGetHorseBase());
+        c->party->setTransport(tileGetHorseBase());
     else if (type == "torch")
         AdjustValueMax(c->saveGame->torches, quant, 99);
     else if (type == "gem")

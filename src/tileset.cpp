@@ -13,20 +13,17 @@
 #include "settings.h"
 #include "xml.h"
 
-/* global variables */
-TilesetMap tilesets;
-TileRuleMap tileRules;
-
 /**
  * TileRule Class Implementation
  */
+TileRuleMap TileRule::rules;
 
 /**
  * Returns the tile rule with the given name, or NULL if none could be found
  */
 TileRule *TileRule::findByName(string name) {
-    TileRuleMap::iterator i = tileRules.find(name);
-    if (i != tileRules.end())
+    TileRuleMap::iterator i = rules.find(name);
+    if (i != rules.end())
         return i->second;
     return NULL;
 }
@@ -49,7 +46,7 @@ void TileRule::load(string filename) {
 
         TileRule *rule = new TileRule;
         TileRule::loadProperties(rule, reinterpret_cast<void*>(node));
-        tileRules[rule->name] = rule;
+        rules[rule->name] = rule;
     }
 
     if (TileRule::findByName("default") == NULL)
@@ -153,6 +150,8 @@ bool TileRule::loadProperties(TileRule *rule, void *xmlNode) {
  * Tileset Class Implementation
  */
 
+TilesetMap Tileset::tilesets;
+
 /**
  * Loads all tilesets using the filename
  * indicated by 'filename' as a definition
@@ -170,7 +169,7 @@ void Tileset::loadAll(string filename) {
         errorFatal("malformed %s", filename.c_str());
 
     /* load tile rules from xml */
-    if (!tileRules.size())
+    if (!TileRule::rules.size())
         TileRule::load("tileRules.xml");
 
     /* load all of the tilesets */
@@ -194,11 +193,10 @@ void Tileset::loadAll(string filename) {
  * Delete all tilesets
  */
 void Tileset::unloadAll() {
-    TilesetMap::iterator i;
-    for (i = tilesets.begin(); i != tilesets.end(); ) {
+    TilesetMap::iterator i;    
+    for (i = tilesets.begin(); i != tilesets.end(); i++)
         delete i->second;
-        i = tilesets.erase(i);
-    }
+    tilesets.clear();
 }
 
 /**
@@ -244,6 +242,7 @@ void Tileset::load(string filename, TilesetType type) {
             tile.index = index + i;
             tile.id = tile.index;
             tileset->tiles.push_back(new Tile(tile));
+            tileset->indexMap[tile.index] = tile.id;
         }
         index += tile.frames;
     }

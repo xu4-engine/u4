@@ -11,7 +11,7 @@
 #include "moongate.h"
 #include "types.h"
 
-typedef std::map<int, Coords, std::less<int> > MoongateList; /* map moon phase to map coordinates */
+typedef std::map<int, Coords> MoongateList; /* map moon phase to map coordinates */
 
 MoongateList gates; 
 

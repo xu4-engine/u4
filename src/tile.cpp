@@ -75,19 +75,17 @@ Tile *Tile::findByName(string name, Tileset *t) {
     return NULL;
 }
 
+Tile *Tile::getTile(int index) {
+    Tileset *tileset = tilesetGetCurrent();
+    return tileset->tiles[tileset->indexMap[index]];
+}
+
 /**
  * Returns the tile at the corresponding index of the current tileset
  */ 
-Tile *Tile::get(int index) {
+MapTile Tile::getMapTile(int index) {
     Tileset *tileset = tilesetGetCurrent();    
-    for (int i = 0; i < tileset->tiles.size(); i+= tileset->tiles[i]->frames) {
-        Tile *tile = tileset->tiles[i];
-        
-        /* FIXME: this function should change when the new tileset setup is finished */
-        if ((index >= tile->index) && (index < tile->index + tile->frames))
-            return tile;
-    }
-    return NULL;
+    return MapTile(tileset->indexMap[index]);    
 }
 
 bool tileTestBit(MapTile tile, unsigned short mask) {    
@@ -170,7 +168,7 @@ MapTile tileGetShipBase() {
 }
 
 bool tileIsPirateShip(MapTile tile) {
-    Tile *pirate = Tile::get(PIRATE_TILE);
+    Tile *pirate = Tile::getTile(PIRATE_TILE);
     if (tile >= pirate->id && tile < pirate->id + pirate->frames)
         return true;
     return false;

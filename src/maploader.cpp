@@ -17,6 +17,7 @@
 #include "object.h"
 #include "person.h"
 #include "portal.h"
+#include "screen.h"
 #include "u4file.h"
 #include "utils.h"
 
@@ -62,8 +63,7 @@ int mapLoadCity(City *city) {
     unsigned char c;
     unsigned int i, j;
     char tlk_buffer[288];
-    Person *people[CITY_MAX_PERSONS];
-    MapTile tiles[CITY_MAX_PERSONS];
+    Person *people[CITY_MAX_PERSONS];    
 
     ult = u4fopen(city->fname);
     tlk = u4fopen(city->tlk_fname);
@@ -75,16 +75,11 @@ int mapLoadCity(City *city) {
     ASSERT(city->height == CITY_HEIGHT, "map height is %d, should be %d", city->height, CITY_HEIGHT);
 
     if (!mapLoadData(dynamic_cast<Map*>(city), ult))
-        return 0;    
+        return 0;
 
-    /* first, get all the tiles for the townspeople */
-    for (i = 0; i < CITY_MAX_PERSONS; i++)        
-        tiles[i] = u4fgetc(ult);
-    
-    /* then, use those tiles to properly construct the Person
-       object for each person */
+    /* Properly construct people for the city */       
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i] = new Person(Tile::get(tiles[i])->id);
+        people[i] = new Person(Tile::getMapTile(u4fgetc(ult)));
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
         people[i]->start.x = u4fgetc(ult);
@@ -93,7 +88,7 @@ int mapLoadCity(City *city) {
         people[i]->start.y = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i]->setPrevTile(u4fgetc(ult));
+        people[i]->setPrevTile(Tile::getMapTile(u4fgetc(ult)));
 
     for (i = 0; i < CITY_MAX_PERSONS * 2; i++)
         u4fgetc(ult);           /* read redundant startx/starty */
@@ -175,7 +170,7 @@ int mapLoadCity(City *city) {
         
         people[i]->npcType = NPC_EMPTY;
         if (!people[i]->name.empty())
-            people[i]->npcType = NPC_TALKER;
+            people[i]->npcType = NPC_TALKER;        
         if (people[i]->getTile() == 88 || people[i]->getTile() == 89)
             people[i]->npcType = NPC_TALKER_BEGGAR;
         if (people[i]->getTile() == 80 || people[i]->getTile() == 81)
@@ -258,7 +253,7 @@ int mapLoadDng(Dungeon *dungeon) {
     ASSERT(dungeon->height == DNG_HEIGHT, "map height is %d, should be %d", dungeon->height, DNG_HEIGHT);
 
     for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * dungeon->levels); i++)
-        dungeon->data.push_back(MapTile(u4fgetc(dng)));
+        dungeon->data.push_back(Tile::getMapTile(u4fgetc(dng)));
 
     dungeon->room = NULL;
     /* read in the dungeon rooms */
@@ -269,7 +264,7 @@ int mapLoadDng(Dungeon *dungeon) {
         for (j = 0; j < DNGROOM_NTRIGGERS; j++) {
             int tmp;
 
-            dungeon->rooms[i].triggers[j].tile = u4fgetc(dng);
+            dungeon->rooms[i].triggers[j].tile = Tile::getMapTile(u4fgetc(dng));
 
             tmp = u4fgetc(dng);
             if (tmp == EOF)
@@ -303,6 +298,14 @@ int mapLoadDng(Dungeon *dungeon) {
         u4fread(dungeon->rooms[i].party_west_start_y, sizeof(dungeon->rooms[i].party_west_start_y), 1, dng);
         u4fread(dungeon->rooms[i].map_data, sizeof(dungeon->rooms[i].map_data), 1, dng);
         u4fread(dungeon->rooms[i].buffer, sizeof(dungeon->rooms[i].buffer), 1, dng);
+
+        /* translate each creature tile to a tile id */
+        for (j = 0; j < sizeof(dungeon->rooms[i].creature_tiles); j++)
+            dungeon->rooms[i].creature_tiles[j] = Tile::getMapTile(dungeon->rooms[i].creature_tiles[j]);        
+
+        /* translate each map tile to a tile id */
+        for (j = 0; j < sizeof(dungeon->rooms[i].map_data); j++)
+            dungeon->rooms[i].map_data[j] = Tile::getMapTile(dungeon->rooms[i].map_data[j]);
     }
     u4fclose(dng);
 
@@ -354,15 +357,15 @@ int mapLoadData(Map *map, U4FILE *f) {
                 for(x = 0; x < map->chunk_width; ++x) {
 
                     if (mapIsChunkCompressed(map, ych * map->chunk_width + xch))
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = 1;
+                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = Tile::findByName("water")->id;
 
                     else {
-                        int c;
+                        int c;                        
                         c = u4fgetc(f);
                         if (c == EOF)
                             return 0;
-
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = c;
+                        
+                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = Tile::getMapTile(c);
                     }
                 }
             }

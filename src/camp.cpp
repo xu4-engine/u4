@@ -130,7 +130,7 @@ void innBegin(void) {
     eventHandlerSleep(INN_FADE_OUT_TIME);
 
     /* show the sleeping avatar */
-    gameSetTransport(Tile::get(CORPSE_TILE)->id);
+    c->party->setTransport(Tile::getMapTile(CORPSE_TILE));
     gameUpdateScreen();
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
@@ -151,7 +151,7 @@ void innTimer(void *data) {
     screenEnableCursor();
 
     /* restore the avatar to normal */
-    gameSetTransport(Tile::get(AVATAR_TILE)->id);
+    c->party->setTransport(Tile::getMapTile(AVATAR_TILE));
     gameUpdateScreen();
 
     /* the party is always healed */

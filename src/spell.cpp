@@ -493,10 +493,10 @@ static int spellEField(int param) {
     
     /* Make sure params valid */
     switch (fieldType) {
-        case ENERGYFIELD_FIRE: fieldTile = Tile::get(FIREFIELD_TILE)->id; break;
-        case ENERGYFIELD_LIGHTNING: fieldTile = Tile::get(LIGHTNINGFIELD_TILE)->id; break;
-        case ENERGYFIELD_POISON: fieldTile = Tile::get(POISONFIELD_TILE)->id; break;
-        case ENERGYFIELD_SLEEP: fieldTile = Tile::get(SLEEPFIELD_TILE)->id; break;
+        case ENERGYFIELD_FIRE: fieldTile = Tile::getMapTile(FIREFIELD_TILE); break;
+        case ENERGYFIELD_LIGHTNING: fieldTile = Tile::getMapTile(LIGHTNINGFIELD_TILE); break;
+        case ENERGYFIELD_POISON: fieldTile = Tile::getMapTile(POISONFIELD_TILE); break;
+        case ENERGYFIELD_SLEEP: fieldTile = Tile::getMapTile(SLEEPFIELD_TILE); break;
         default: return 0; break;
     }
 
@@ -534,7 +534,7 @@ static int spellEField(int param) {
 }
 
 static int spellFireball(int dir) {
-    spellMagicAttack(Tile::get(HITFLASH_TILE)->id, (Direction)dir, 24, 128);    
+    spellMagicAttack(Tile::getMapTile(HITFLASH_TILE), (Direction)dir, 24, 128);    
     return 1;
 }
 
@@ -556,7 +556,7 @@ static int spellHeal(int player) {
 }
 
 static int spellIceball(int dir) {
-    spellMagicAttack(Tile::get(MAGICFLASH_TILE)->id, (Direction)dir, 32, 224);    
+    spellMagicAttack(Tile::getMapTile(MAGICFLASH_TILE), (Direction)dir, 32, 224);    
     return 1;
 }
 
@@ -566,7 +566,7 @@ static int spellJinx(int unused) {
 }
 
 static int spellKill(int dir) {
-    spellMagicAttack(Tile::get(WHIRLPOOL_TILE)->id, (Direction)dir, -1, 232);
+    spellMagicAttack(Tile::getMapTile(WHIRLPOOL_TILE), (Direction)dir, -1, 232);
     return 1;
 }
 
@@ -576,7 +576,7 @@ static int spellLight(int unused) {
 }
 
 static int spellMMissle(int dir) {
-    spellMagicAttack(Tile::get(MISSFLASH_TILE)->id, (Direction)dir, 64, 16);
+    spellMagicAttack(Tile::getMapTile(MISSFLASH_TILE), (Direction)dir, 64, 16);
     return 1;
 }
 

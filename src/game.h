@@ -69,7 +69,6 @@ void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
 void gameSetMap(class Map *map, bool saveLocation, const struct _Portal *portal);
 int gameExitToParentMap();
-void gameSetTransport(MapTile tile);
 
 /* spell functions */
 bool gameCastForPlayer(int player);

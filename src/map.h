@@ -127,7 +127,7 @@ public:
     int             flags;
     Music           music;
     MapData         data;
-    ObjectDeque      objects;    
+    ObjectDeque     objects;    
 };
 
 #endif

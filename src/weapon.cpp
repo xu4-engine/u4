@@ -76,8 +76,8 @@ Weapon::Weapon(const ConfigElement &conf) {
     abbr = conf.getString("abbr");
     canuse = 0xFF;
     damage = conf.getInt("damage");
-    hittile = Tile::get(HITFLASH_TILE)->id;
-    misstile = Tile::get(MISSFLASH_TILE)->id;
+    hittile = Tile::getMapTile(HITFLASH_TILE);
+    misstile = Tile::getMapTile(MISSFLASH_TILE);
     leavetile = 0;
     mask = 0;
 

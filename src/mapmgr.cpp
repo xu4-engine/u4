@@ -48,7 +48,7 @@ void mapMgrInit() {
     vector<ConfigElement> maps = config->getElement("/config/maps").getChildren();
     for (std::vector<ConfigElement>::iterator i = maps.begin(); i != maps.end(); i++) {
         map = mapMgrInitMapFromConf(*i);
-        mapLoad(map);
+        /* map actually gets loaded later, when it's needed */        
         mapMgrRegister(map);
     }
 }
@@ -289,5 +289,8 @@ void mapMgrRegister(Map *map) {
 }
 
 Map *mapMgrGetById(MapId id) {    
+    /* if the map hasn't been loaded yet, load it! */
+    if (!mapList[id]->data.size())
+        mapLoad(mapList[id]);
     return mapList[id];
 }

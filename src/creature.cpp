@@ -114,7 +114,7 @@ int Creature::setInitialHp(int points) {
 }
 
 void Creature::setRandomRanged() {
-    rangedhittile = rangedmisstile = xu4_random(4) + Tile::get(POISONFIELD_TILE)->id;
+    rangedhittile = rangedmisstile = xu4_random(4) + Tile::getMapTile(POISONFIELD_TILE);
 }
 
 CreatureStatus Creature::getState() const {
@@ -326,7 +326,7 @@ void Creature::act() {
         /* creatures who ranged attack do so 1/4 of the time.
            make sure their ranged attack is not negated! */
         else if (ranged != 0 && xu4_random(4) == 0 && 
-            ((rangedhittile != Tile::get(MAGICFLASH_TILE)->id) || (*c->aura != AURA_NEGATE)))
+            ((rangedhittile != Tile::getMapTile(MAGICFLASH_TILE)) || (*c->aura != AURA_NEGATE)))
             action = CA_RANGED;
         /* creatures who cast sleep do so 1/4 of the time they don't ranged attack */
         else if (castsSleep() && (*c->aura != AURA_NEGATE) && (xu4_random(4) == 0))
@@ -350,7 +350,7 @@ void Creature::act() {
     switch(action) {
     case CA_ATTACK:
         if (attackHit(target)) {            
-            CombatController::attackFlash(target->getCoords(), Tile::get(HITFLASH_TILE)->id, 3);
+            CombatController::attackFlash(target->getCoords(), Tile::getMapTile(HITFLASH_TILE), 3);
             if (!dealDamage(target, getDamage()))
                 target = NULL;
 
@@ -364,7 +364,7 @@ void Creature::act() {
                     c->party->adjustFood(-2500);
             }
         } else {
-            CombatController::attackFlash(target->getCoords(), Tile::get(MISSFLASH_TILE)->id, 3);
+            CombatController::attackFlash(target->getCoords(), Tile::getMapTile(MISSFLASH_TILE), 3);
         }
         break;
 
@@ -465,8 +465,17 @@ void Creature::act() {
     }    
 }
 
+/**
+ * Add status effects to the creature, in order of importance
+ */
 void Creature::addStatus(StatusType s) {
-    status.push_back(s);
+    if (status.size() && status.back() > s) {
+        StatusType prev = status.back();
+        status.pop_back();
+        status.push_back(s);
+        status.push_back(prev);
+    }
+    else status.push_back(s);
 }
 
 void Creature::applyTileEffect(TileEffect effect) {        
@@ -887,7 +896,7 @@ const Creature *CreatureMgr::getByTile(MapTile tile) const {
 
     for (i = creatures.begin(); i != creatures.end(); i++) {
         MapTile mtile = i->second->getTile();
-        Tile *t = Tile::get(mtile);
+        Tile *t = Tile::getTile(mtile);
         
         if ((tile >= mtile) && (tile < mtile + t->frames))
             return i->second;

@@ -122,7 +122,8 @@ class Tile {
 public:
     static Tile *findByName(string name, Tileset *t = NULL);
     static void loadProperties(Tile *tile, void *xmlNode);
-    static Tile *get(int index);
+    static Tile *getTile(int index);
+    static MapTile getMapTile(int index);
 
     string name;
     int id;

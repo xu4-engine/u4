@@ -150,7 +150,7 @@ MapTile locationGetReplacementTile(Location *location, MapCoords coords) {
     if (location->context & CTX_DUNGEON)
         return 0;
     else
-        return (location->context & CTX_COMBAT) ? Tile::get(BRICKFLOOR_1_TILE)->id : Tile::get(BRICKFLOOR_TILE)->id;
+        return (location->context & CTX_COMBAT) ? Tile::getMapTile(BRICKFLOOR_1_TILE) : Tile::getMapTile(BRICKFLOOR_TILE);
 }
 
 /**

@@ -29,6 +29,7 @@ public:
     static TileRule *findByName(string name);
     static void load(string filename);
     static bool loadProperties(TileRule *rule, void *xmlNode);
+    static TileRuleMap rules;   // A map of rule names to rules
 
     string name;
     unsigned short mask;    
@@ -49,6 +50,10 @@ public:
     static void unloadAll();
     static Tileset *get(TilesetType type);
     static TilesetType getTypeByStr(string type);
+    
+    static TilesetMap tilesets;  // A map of tileset types to tilesets
+    
+    std::map<int, int> indexMap; // Maps indices to tile ids
 
     TilesetType type;
     TileVector tiles;

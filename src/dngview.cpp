@@ -60,9 +60,9 @@ DungeonGraphicType dungeonViewTilesToGraphic(MapTileList tiles) {
      * (always displayed as a tile, unless a ladder)
      */
     if (tiles->size() > 1) {
-        if (tile == Tile::get(LADDERUP_TILE)->id)
+        if (tile == Tile::getMapTile(LADDERUP_TILE))
             return DNGGRAPHIC_LADDERUP;
-        else if (tile == Tile::get(LADDERDOWN_TILE)->id)
+        else if (tile == Tile::getMapTile(LADDERDOWN_TILE))
             return DNGGRAPHIC_LADDERDOWN;
         else
             return DNGGRAPHIC_BASETILE;        

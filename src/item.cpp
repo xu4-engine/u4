@@ -327,7 +327,7 @@ void useStone(void *item) {
                         MapCoords coords;
                         screenMessage("\n\nThe altar changes before thyne eyes!\n");
                         locationGetCurrentPosition(c->location, &coords);
-                        c->location->map->annotations->add(coords, Tile::get(LADDERDOWN_TILE)->id);
+                        c->location->map->annotations->add(coords, Tile::getMapTile(LADDERDOWN_TILE));
                     }
                     /* start chamber of the codex sequence... */
                     else {
@@ -362,7 +362,7 @@ void useStone(void *item) {
      * in a dungeon altar room, on the altar
      */
     else if ((c->location->context & CTX_ALTAR_ROOM) &&
-        c->location->map->tileAt(coords, WITHOUT_OBJECTS) == Tile::get(ALTAR_TILE)->id) {
+        c->location->map->tileAt(coords, WITHOUT_OBJECTS) == Tile::getMapTile(ALTAR_TILE)) {
         needStoneNames = 4;
         screenMessage("\n\nThere are holes for 4 stones.\nWhat colors:\nA:");        
 

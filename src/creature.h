@@ -15,7 +15,7 @@
 #include "types.h"
 
 typedef unsigned short CreatureId;
-typedef std::map<CreatureId, class Creature*, std::less<CreatureId> > CreatureMap;
+typedef std::map<CreatureId, class Creature*> CreatureMap;
 typedef std::vector<class Creature *> CreatureVector;
 
 #define MAX_CREATURES 128

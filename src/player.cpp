@@ -21,7 +21,6 @@
 LostEighthCallback lostEighthCallback = NULL;
 AdvanceLevelCallback advanceLevelCallback = NULL;
 PartyStarvingCallback partyStarvingCallback = NULL;
-SetTransportCallback setTransportCallback = NULL;
 
 /**
  * Sets up a callback to handle player losing an eighth of his or her
@@ -37,10 +36,6 @@ void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback) {
 
 void playerSetPartyStarvingCallback(PartyStarvingCallback callback) {
     partyStarvingCallback = callback;
-}
-
-void playerSetSetTransportCallback(SetTransportCallback callback) {
-    setTransportCallback = callback;
 }
 
 bool isPartyMember(Object *punknown) {
@@ -159,7 +154,7 @@ int PartyMember::getMaxLevel() const {
  * Adds a status effect to the player
  */ 
 void PartyMember::addStatus(StatusType s) {
-    status.push_back(s);
+    Creature::addStatus(s);
     player->status = status.back();
     notifyOfChange("PartyMember::addStatus");
 }
@@ -354,7 +349,7 @@ bool PartyMember::applyDamage(int damage) {
     if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();                    
         screenMessage("%s is Killed!\n", getName().c_str());
-        map->annotations->add(p, Tile::get(CORPSE_TILE)->id)->setTTL(party->size());
+        map->annotations->add(p, Tile::getMapTile(CORPSE_TILE))->setTTL(party->size());
 
         /* remove yourself from the map */
         map->removeObject(this);        
@@ -689,6 +684,18 @@ bool Party::canPersonJoin(string name, Virtue *v) {
 }
 
 /**
+ * Damages the party's ship
+ */
+void Party::damageShip(int pts) {
+    saveGame->shiphull -= pts;
+    if ((short)saveGame->shiphull < 0)
+        saveGame->shiphull = 0;
+    
+    setChanged();
+    notifyObservers("Party::damageShip");
+}
+
+/**
  * Donates 'quantity' gold. Returns true if the donation succeeded,
  * or false if there was not enough gold to make the donation
  */
@@ -855,9 +862,24 @@ void Party::reviveParty() {
     
     saveGame->food = 20099;
     saveGame->gold = 200;
-    (*setTransportCallback)(Tile::get(AVATAR_TILE)->id);
+    setTransport(Tile::getMapTile(AVATAR_TILE));
     setChanged();
     notifyObservers("Party::reviveParty");
+}
+
+void Party::setTransport(MapTile tile) {
+    c->saveGame->transport = tile;
+    
+    if (tileIsHorse(tile))
+        c->transportContext = TRANSPORT_HORSE;
+    else if (tileIsShip(tile))
+        c->transportContext = TRANSPORT_SHIP;
+    else if (tileIsBalloon(tile))
+        c->transportContext = TRANSPORT_BALLOON;
+    else c->transportContext = TRANSPORT_FOOT;
+
+    setChanged();
+    notifyObservers("Party::setTransport");
 }
 
 void Party::adjustReagent(int reagent, int amt) {

@@ -127,7 +127,7 @@ MapTile screenViewportTile(unsigned int width, unsigned int height, int x, int y
             tc.wrap(c->location->map);
         else {
             *focus = 0;
-            return Tile::get(GRASS_TILE)->id;
+            return Tile::getMapTile(GRASS_TILE);
         }
     }
 
@@ -186,15 +186,15 @@ void screenUpdate(int showmap, int blackout) {
             for (y = 0; y < VIEWPORT_H; y++) {
                 for (x = 0; x < VIEWPORT_W; x++) {
                     if (x < 2 || y < 2 || x >= 10 || y >= 10)
-                        screenShowTile(base, Tile::get(BLACK_TILE)->id, 0, x, y);
+                        screenShowTile(base, Tile::getMapTile(BLACK_TILE), 0, x, y);
                     else {
                         tiles = dungeonViewGetTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
                         /* Only show blackness if there is no light */
                         if (c->saveGame->torchduration <= 0)
-                            screenShowTile(base, Tile::get(BLACK_TILE)->id, 0, x, y);
+                            screenShowTile(base, Tile::getMapTile(BLACK_TILE), 0, x, y);
                         else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
-                            screenShowTile(base, Tile::get(AVATAR_TILE)->id, 0, x, y);
+                            screenShowTile(base, Tile::getMapTile(AVATAR_TILE), 0, x, y);
                         else {
                             /* FIXME: this isn't very clean, but I guess it works */
                             /* draw creature objects using the base tileset */

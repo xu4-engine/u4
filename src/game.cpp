@@ -201,10 +201,10 @@ void gameInit() {
         /* initialize the moons (must be done from the world map) */
         gameInitMoons();
 
-        gameSetMap(map, 1, NULL);
+        gameSetMap(map, 1, NULL);        
     }
     else {
-        gameSetMap(map, 0, NULL);
+        gameSetMap(map, 0, NULL);        
         
         /* initialize the moons (must be done from the world map) */
         gameInitMoons();
@@ -247,22 +247,21 @@ void gameInit() {
         gameFixupCreatures(c->location->prev->map);
     }
 
-    /* setup transport context */
-    gameSetTransport((MapTile)c->saveGame->transport);
+    /* set the party's transport */
+    c->party->setTransport(MapTile(c->saveGame->transport));
 
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
     playerSetSpellEffectCallback(&gameSpellEffect);
-    playerSetPartyStarvingCallback(&gamePartyStarving);
-    playerSetSetTransportCallback(&gameSetTransport);
+    playerSetPartyStarvingCallback(&gamePartyStarving);    
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
 
     musicPlay();
-    screenDrawImage(BKGD_BORDERS);
+    screenDrawImage(BKGD_BORDERS);    
     c->stats->update(); /* draw the party stats */
 
-    screenMessage("Press Alt-h for help\n");
-    screenPrompt();
+    screenMessage("Press Alt-h for help\n");    
+    screenPrompt();    
 
     /* reagents menu */    
     spellMixMenu.add(0, getReagentName((Reagent)0), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
@@ -376,7 +375,7 @@ int gameSave() {
     if (c->location->context & CTX_DUNGEON) {
         unsigned int x, y, z;
 
-        typedef std::map<const Creature*, int, std::less<const Creature*> > DngCreatureIdMap;
+        typedef std::map<const Creature*, int> DngCreatureIdMap;
         static DngCreatureIdMap id_map;        
 
         /**
@@ -961,7 +960,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             if (tileIsShip(obj->getTile())) {
                 screenMessage("Board Frigate!\n");
                 if (c->lastShip != obj)
-                    c->saveGame->shiphull = 50;
+                    c->saveGame->shiphull = 50;                
             }
             else if (tileIsHorse(obj->getTile()))
                 screenMessage("Mount Horse!\n");
@@ -970,7 +969,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             else validTransport = 0;
 
             if (validTransport) {
-                gameSetTransport(obj->getTile());
+                c->party->setTransport(obj->getTile());
                 c->location->map->removeObject(obj);
             }
             else screenMessage("Board What?\n");
@@ -1242,7 +1241,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             if (c->transportContext == TRANSPORT_SHIP)
                 c->lastShip = obj;
 
-            gameSetTransport(Tile::get(AVATAR_TILE)->id);
+            c->party->setTransport(Tile::getMapTile(AVATAR_TILE));
             c->horseSpeed = 0;
             screenMessage("X-it\n");
         } else
@@ -2249,7 +2248,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
-        c->location->map->annotations->remove(old, Tile::get(MISSFLASH_TILE)->id);
+        c->location->map->annotations->remove(old, Tile::getMapTile(MISSFLASH_TILE));
     
     if (coords.x == -1 && coords.y == -1) {
         if (distance == 0)
@@ -2287,7 +2286,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
             
             /* Is is a pirate ship firing at US? */
             if (hitsAvatar) {
-                CombatController::attackFlash(coords, Tile::get(HITFLASH_TILE)->id, 5);
+                CombatController::attackFlash(coords, Tile::getMapTile(HITFLASH_TILE), 5);
 
                 if (c->transportContext == TRANSPORT_SHIP)
                     gameDamageShip(-1, 10);
@@ -2815,7 +2814,7 @@ bool openAtCoord(MapCoords coords, int distance, void *data) {
         return true;
     }
     
-    c->location->map->annotations->add(coords, Tile::get(BRICKFLOOR_TILE)->id)->setTTL(4);    
+    c->location->map->annotations->add(coords, Tile::getMapTile(BRICKFLOOR_TILE))->setTTL(4);    
 
     screenMessage("\nOpened!\n");
     (*c->location->finishTurn)();
@@ -3217,58 +3216,58 @@ void gameUpdateMoons(int showmoongates)
             if (trammelSubphase == 0) {
                 gate = moongateGetGateCoordsForPhase(oldTrammel);
                 if (gate)
-                    c->location->map->annotations->remove(*gate, Tile::get(MOONGATE0_TILE)->id);
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE0_TILE));
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate)
-                    c->location->map->annotations->add(*gate, Tile::get(MOONGATE0_TILE)->id);
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE0_TILE));
             }
             else if (trammelSubphase == 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::get(MOONGATE0_TILE)->id);
-                    c->location->map->annotations->add(*gate, Tile::get(MOONGATE1_TILE)->id);
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE0_TILE));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE1_TILE));
                 }
             }
             else if (trammelSubphase == 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::get(MOONGATE1_TILE)->id);
-                    c->location->map->annotations->add(*gate, Tile::get(MOONGATE2_TILE)->id);
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE1_TILE));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE2_TILE));
                 }
             }
             else if (trammelSubphase == 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::get(MOONGATE2_TILE)->id);
-                    c->location->map->annotations->add(*gate, Tile::get(MOONGATE3_TILE)->id);
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE2_TILE));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE3_TILE));
                 }
             }
             else if ((trammelSubphase > 3) && (trammelSubphase < (MOON_SECONDS_PER_PHASE * 4 * 3) - 3)) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::get(MOONGATE3_TILE)->id);
-                    c->location->map->annotations->add(*gate, Tile::get(MOONGATE3_TILE)->id);
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE3_TILE));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE3_TILE));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::get(MOONGATE3_TILE)->id);
-                    c->location->map->annotations->add(*gate, Tile::get(MOONGATE2_TILE)->id);
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE3_TILE));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE2_TILE));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::get(MOONGATE2_TILE)->id);
-                    c->location->map->annotations->add(*gate, Tile::get(MOONGATE1_TILE)->id);
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE2_TILE));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE1_TILE));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::get(MOONGATE1_TILE)->id);
-                    c->location->map->annotations->add(*gate, Tile::get(MOONGATE0_TILE)->id);
+                    c->location->map->annotations->remove(*gate, Tile::getMapTile(MOONGATE1_TILE));
+                    c->location->map->annotations->add(*gate, Tile::getMapTile(MOONGATE0_TILE));
                 }
             }
         }
@@ -3304,7 +3303,7 @@ void gameCheckBridgeTrolls() {
     Creature *m;
 
     if (!c->location->map->isWorldMap() ||
-        c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS) != Tile::get(BRIDGE_TILE)->id ||
+        c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS) != Tile::getMapTile(BRIDGE_TILE) ||
         xu4_random(8) != 0)
         return;
 
@@ -3664,10 +3663,8 @@ void gameDamageShip(int minDamage, int maxDamage) {
             maxDamage;
 
         screenShake(1);
-
-        c->saveGame->shiphull -= damage;
-        if ((short)c->saveGame->shiphull < 0)
-            c->saveGame->shiphull = 0;
+        
+        c->party->damageShip(damage);        
         gameCheckHullIntegrity();        
     }
 }
@@ -3708,22 +3705,6 @@ void gameCreatureCleanup(void) {
         }
         else i++;
     }
-}
-
-/**
- * Sets the transport for the avatar
- */
-void gameSetTransport(MapTile tile) {       
-    
-    if (tileIsHorse(tile))
-        c->transportContext = TRANSPORT_HORSE;
-    else if (tileIsShip(tile))
-        c->transportContext = TRANSPORT_SHIP;
-    else if (tileIsBalloon(tile))
-        c->transportContext = TRANSPORT_BALLOON;
-    else c->transportContext = TRANSPORT_FOOT;
-
-    c->saveGame->transport = tile;
 }
 
 /**
@@ -3912,7 +3893,7 @@ bool gameCreateBalloon(Map *map) {
             return false;
     }
     
-    MapTile balloon = Tile::get(BALLOON_TILE)->id;
+    MapTile balloon = Tile::getMapTile(BALLOON_TILE);
     map->addObject(balloon, balloon, MapCoords(233, 242, -1));
     return true;
 }
