@@ -5,6 +5,7 @@
 #include "ttype.h"
 #include "u4file.h"
 #include "armor.h"
+#include "error.h"
 
 int armorInfoLoaded = 0;
 Armor armors[MAX_ARMORS];

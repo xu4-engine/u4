@@ -5,6 +5,7 @@
 #include "ttype.h"
 #include "u4file.h"
 #include "weapon.h"
+#include "error.h"
 
 #define MASK_LOSE               0x0001
 #define MASK_LOSEWHENRANGED     0x0002

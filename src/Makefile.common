@@ -21,7 +21,6 @@ SRCS=\
         mapinit.c \
         stats.c \
         spell.c \
-        game.c \
         intro.c \
         player.c \
         names.c \
@@ -39,6 +38,8 @@ SRCS=\
         error.c \
         debug.c \
         dngview.c \
+        armor.c \
+        weapon.c \
         maps/cities.c \
         maps/castles.c \
         maps/worldmap.c \
