@@ -233,7 +233,7 @@ bool dungeonTouchOrb(int player) {
     MapTile replacementTile;
     
     /* Get current position and find a replacement tile for it */   
-    replacementTile = locationGetReplacementTile(c->location, c->location->coords);
+    replacementTile = c->location->getReplacementTile(c->location->coords);
 
     switch(c->location->map->id) {
     case MAP_DECEIT:    stats = STATSBONUS_INT; break;

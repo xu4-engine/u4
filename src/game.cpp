@@ -516,7 +516,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         break;
     }    
     
-    c->location = locationNew(coords, map, viewMode, context, finishTurn, tileset, move, c->location);    
+    c->location = new Location(coords, map, viewMode, context, finishTurn, tileset, move, c->location);    
     c->location->activePlayer = activePlayer;
 
     /* now, actually set our new tileset */
@@ -2320,9 +2320,9 @@ bool gameGetChest(int player) {
     MapTile *tile, newTile;
     MapCoords coords;    
     
-    locationGetCurrentPosition(c->location, &coords);
+    c->location->getCurrentPosition(&coords);
     tile = c->location->map->tileAt(coords, WITH_GROUND_OBJECTS);
-    newTile = locationGetReplacementTile(c->location, coords);    
+    newTile = c->location->getReplacementTile(coords);    
     
     /* get the object for the chest, if it is indeed an object */
     obj = c->location->map->objectAt(coords);

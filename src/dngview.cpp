@@ -14,8 +14,7 @@
 #include "savegame.h"
 #include "tileset.h"
 
-MapTileList dungeonViewGetTiles(int fwd, int side) {    
-    int focus;
+std::vector<MapTile *> dungeonViewGetTiles(int fwd, int side) {    
     MapCoords coords = c->location->coords;
 
     switch (c->saveGame->orientation) {
@@ -48,11 +47,12 @@ MapTileList dungeonViewGetTiles(int fwd, int side) {
     // Wrap the coordinates if necessary
     coords.wrap(c->location->map);
 
-    return locationTilesAt(c->location, coords, &focus);
+    bool focus;
+    return c->location->tilesAt(coords, focus);
 }
 
-DungeonGraphicType dungeonViewTilesToGraphic(const MapTileList &tiles) {
-    MapTile *tile = tiles->front();
+DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile *> &tiles) {
+    MapTile *tile = tiles.front();
     DungeonToken token;
 
     static const MapTile up_ladder = Tileset::findTileByName("up_ladder")->id;
@@ -63,7 +63,7 @@ DungeonGraphicType dungeonViewTilesToGraphic(const MapTileList &tiles) {
      * check if the dungeon tile has an annotation or object on top
      * (always displayed as a tile, unless a ladder)
      */
-    if (tiles->size() > 1) {
+    if (tiles.size() > 1) {
         if (tile->id == up_ladder.id)
             return DNGGRAPHIC_LADDERUP;
         else if (tile->id == down_ladder.id)

@@ -258,7 +258,7 @@ void useStone(void *item) {
     unsigned char courage = STONE_WHITE | STONE_RED    | STONE_PURPLE | STONE_ORANGE;
     static unsigned char *attr   = NULL;
     
-    locationGetCurrentPosition(c->location, &coords);
+    c->location->getCurrentPosition(&coords);
 
     /**
      * Named a specific stone (after using "stone" or "stones")
@@ -327,7 +327,7 @@ void useStone(void *item) {
                         /* replace the altar with a down-ladder */
                         MapCoords coords;
                         screenMessage("\n\nThe altar changes before thyne eyes!\n");
-                        locationGetCurrentPosition(c->location, &coords);
+                        c->location->getCurrentPosition(&coords);
                         c->location->map->annotations->add(coords, Tileset::findTileByName("down_ladder")->id);
                     }
                     /* start chamber of the codex sequence... */

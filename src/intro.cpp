@@ -623,7 +623,7 @@ void introDrawMapAnimated() {
     for (y = 0; y < INTRO_MAP_HEIGHT; y++) {
         for (x = 0; x < INTRO_MAP_WIDTH; x++) {
             MapTile tile = Tile::translate(introMap[y][x]);
-            screenShowTile(&tile, 0, x, y + 6);
+            screenShowTile(&tile, false, x, y + 6);
         }
     }
 
@@ -631,7 +631,7 @@ void introDrawMapAnimated() {
     for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
         if (objectStateTable[i].tile != 0) {
             MapTile tile = Tile::translate(objectStateTable[i].tile);
-            screenShowTile(&tile, 0, objectStateTable[i].x, objectStateTable[i].y + 6);
+            screenShowTile(&tile, false, objectStateTable[i].x, objectStateTable[i].y + 6);
         }
     }
 }

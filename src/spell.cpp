@@ -455,7 +455,7 @@ static int spellDispel(int dir) {
     /* 
      * get the location of the avatar (or current party member, if in battle)
      */
-    locationGetCurrentPosition(c->location, &field);        
+    c->location->getCurrentPosition(&field);        
 
     /*
      * find where we want to dispel the field
@@ -465,7 +465,7 @@ static int spellDispel(int dir) {
     /*
      * get a replacement tile for the field
      */
-    newTile = locationGetReplacementTile(c->location, field);
+    newTile = c->location->getReplacementTile(field);
 
     /*
      * if there is a field annotation, remove it and replace it with a valid
@@ -518,7 +518,7 @@ static int spellEField(int param) {
         default: return 0; break;
     }
 
-    locationGetCurrentPosition(c->location, &coords);        
+    c->location->getCurrentPosition(&coords);        
     
     coords.move((Direction)dir, c->location->map);    
     if (MAP_IS_OOB(c->location->map, coords))

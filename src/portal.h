@@ -9,9 +9,9 @@
 #include "context.h"
 #include "map.h"
 
-struct _Map;
+class Map;
+class Location;
 struct _Portal;
-struct _Location;
 
 typedef enum {
     ACTION_NONE         = 0x0,
@@ -44,7 +44,7 @@ typedef struct _Portal {
     bool exitPortal;
 } Portal;
 
-void createDngLadder(struct _Location *location, PortalTriggerAction action, Portal *p);
-int usePortalAt(struct _Location *location, MapCoords coords, PortalTriggerAction action);
+void createDngLadder(Location *location, PortalTriggerAction action, Portal *p);
+int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action);
 
 #endif

@@ -5,6 +5,8 @@
 #ifndef DNGVIEW_H
 #define DNGVIEW_H
 
+#include <vector>
+
 #include "types.h"
 #include "location.h"
 
@@ -19,7 +21,7 @@ typedef enum {
     DNGGRAPHIC_BASETILE
 } DungeonGraphicType;
 
-MapTileList dungeonViewGetTiles(int fwd, int side);
-DungeonGraphicType dungeonViewTilesToGraphic(const MapTileList &tiles);
+std::vector<MapTile *> dungeonViewGetTiles(int fwd, int side);
+DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile *> &tiles);
 
 #endif

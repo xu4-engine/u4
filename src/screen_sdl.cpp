@@ -1031,7 +1031,7 @@ void Tile::loadImage() {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowTile(MapTile *mapTile, int focus, int x, int y) {            
+void screenShowTile(MapTile *mapTile, bool focus, int x, int y) {
     Tileset *t = Tileset::get();    
     Tile *tile = t->get(mapTile->id);
     TileAnim *anim = tile->anim;    
@@ -1057,7 +1057,7 @@ void screenShowTile(MapTile *mapTile, int focus, int x, int y) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowGemTile(MapTile *mapTile, int focus, int x, int y) {
+void screenShowGemTile(MapTile *mapTile, bool focus, int x, int y) {
     unsigned int tile = mapTile->getIndex();    
 
     if (gemTilesInfo == NULL) {
@@ -1310,7 +1310,7 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
 
 void screenGemUpdate() {
     MapTile *tile;
-    int focus, x, y;
+    int x, y;
     
     const static MapTile black = Tileset::get()->getByName("black")->id;
 
@@ -1322,7 +1322,8 @@ void screenGemUpdate() {
 
     for (x = 0; x < gemlayout->viewport.width; x++) {
         for (y = 0; y < gemlayout->viewport.height; y++) {
-            tile = screenViewportTile(gemlayout->viewport.width, gemlayout->viewport.height, x, y, &focus);
+            bool focus;
+            tile = screenViewportTile(gemlayout->viewport.width, gemlayout->viewport.height, x, y, focus);
             screenShowGemTile(tile, focus, x, y);
         }
     }

@@ -5,15 +5,13 @@
 #ifndef LOCATION_H
 #define LOCATION_H
 
-#include <list>
+#include <vector>
 
 #include "map.h"
 #include "movement.h"
 #include "types.h"
 
 class Tileset;
-
-typedef std::list<MapTile*>* MapTileList;
 
 typedef enum {
     CTX_WORLDMAP    = 0x0001,
@@ -30,7 +28,15 @@ typedef enum {
 
 typedef void (*FinishTurnCallback)(void);
 
-typedef struct _Location {
+class Location {
+public:
+    Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, Tileset* tileset, MoveCallback moveCallback, Location *prev);
+
+    MapTile *visibleTileAt(MapCoords coords, bool &focus);
+    std::vector<MapTile *> tilesAt(MapCoords coords, bool &focus);
+    MapTile getReplacementTile(MapCoords coords);
+    int getCurrentPosition(MapCoords *coords);
+
     MapCoords coords;    
     Map *map;
     int viewMode;
@@ -39,14 +45,9 @@ typedef struct _Location {
     Tileset *tileset;
     MoveCallback move;    
     int activePlayer;
-    struct _Location *prev;
-} Location;
+    Location *prev;
+};
 
-Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, Tileset* tileset, MoveCallback moveCallback, Location *prev);
-MapTile* locationVisibleTileAt(Location *location, MapCoords coords, int *focus);
-MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus);
-MapTile locationGetReplacementTile(Location *location, MapCoords coords);
-int locationGetCurrentPosition(Location *location, MapCoords *coords);
 void locationFree(Location **stack);
 
 #endif
