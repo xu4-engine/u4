@@ -12,6 +12,7 @@
 #include "context.h"
 
 int eventDone;
+SDL_TimerID timer;
 
 Uint32 eventCallback(Uint32 interval, void *param) {
     SDL_Event event;
@@ -26,7 +27,11 @@ Uint32 eventCallback(Uint32 interval, void *param) {
 }
 
 void eventHandlerInit() {
-    SDL_AddTimer(250, &eventCallback, NULL);
+    timer = SDL_AddTimer(250, &eventCallback, NULL);
+}
+
+void eventHandlerDelete() {
+    SDL_RemoveTimer(timer);
 }
 
 void eventHandlerMain(void (*updateScreen)(void)) {
