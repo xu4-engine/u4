@@ -590,9 +590,9 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         else if (obj)
             tile = obj->tile;
         else
-            tile = mapTileAt(map, x, y, z);
+            tile = mapGroundTileAt(map, x, y, z);
 
-        prev_tile = mapTileAt(map, from_x, from_y, z);
+        prev_tile = mapGroundTileAt(map, from_x, from_y, z);
 
         /* get the monster object */
         m = monsterForTile(transport);

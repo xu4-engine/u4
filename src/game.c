@@ -832,10 +832,10 @@ int gameBaseKeyHandler(int key, void *data) {
         if (item) {
             if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
                 screenMessage("Nothing Here!\n");
-            else {
-                (*item->putItemInInventory)(item->data);
+            else {                
                 if (item->name)
                     screenMessage("You find...\n%s!\n", item->name);
+                (*item->putItemInInventory)(item->data);
             }
         } else
             screenMessage("Nothing Here!\n");  
@@ -1147,6 +1147,18 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         else screenMessage("Not here!\n");
         break;
 
+    case 'a':
+        {
+            int newTrammelphase = c->saveGame->trammelphase + 1;
+            if (newTrammelphase > 7)
+                newTrammelphase = 0;
+
+            screenMessage("Advance Moons!\n");
+            while (c->saveGame->trammelphase != newTrammelphase)
+                gameUpdateMoons(0);
+        }
+        break;
+
     case 'c':
         collisionOverride = !collisionOverride;
         screenMessage("Collision detection %s!\n", collisionOverride ? "off" : "on");
@@ -1172,6 +1184,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     case 'h':
         screenMessage("Help:\n"
                       "1-8 - gate\n"
+                      "a - Adv. Moons\n"
                       "c - Collision\n"
                       "e - Equipment\n"
                       "h - Help\n"
@@ -1179,8 +1192,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
                       "k - Show Karma\n"
                       "l - Location\n"
                       "m - Mixtures\n"                      
-                      "o - Opacity\n"
-                      "p - Peer\n"
+                      "o - Opacity\n"                      
                       "(more)");
         eventHandlerPopKeyHandler();
         eventHandlerPushKeyHandler(&cmdHandleAnyKey);
@@ -1299,8 +1311,10 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
 int cmdHandleAnyKey(int key, void *data) {
     eventHandlerPopKeyHandler();
 
-    screenMessage("\n"                  
+    screenMessage("\n"
+                  "p - Peer\n"
                   "r - Reagents\n"
+                  "s - Summon\n"
                   "t - Transports\n"
                   "w - Change Wind\n"
                   "x - Exit Map\n");
@@ -1585,7 +1599,13 @@ int fireAtCoord(int x, int y, int distance, void *data) {
 
 int gameGetChest(int player) {
     Object *obj;
-    unsigned char tile;    
+    unsigned char tile;
+    
+    if ((player >= 0) && (c->saveGame->players[player].status != STAT_GOOD)) {
+        screenMessage("Disabled!\n");
+        (*c->location->finishTurn)();
+        return 0;
+    }
 
     if ((obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) != NULL)
         tile = obj->tile;
@@ -1605,13 +1625,11 @@ int gameGetChest(int player) {
         
         if (obj == NULL)
             playerAdjustKarma(c->saveGame, KA_STOLE_CHEST);
-
-        (*c->location->finishTurn)();
-    }
-    
+    }    
     else
         screenMessage("Not Here!\n");        
-    
+
+    (*c->location->finishTurn)();    
     return 1;
 }
 
@@ -2445,6 +2463,11 @@ void gameUpdateMoons(int showmoongates)
                 annotationRemove(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE2_TILE);
                 annotationSetVisual(annotationAdd(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE3_TILE));
             }
+            else if ((trammelSubphase > 3) && (trammelSubphase < (MOON_SECONDS_PER_PHASE * 4 * 3) - 3)) {
+                gate = moongateGetGateForPhase(c->saveGame->trammelphase);
+                annotationRemove(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE3_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE3_TILE));
+            }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
                 gate = moongateGetGateForPhase(c->saveGame->trammelphase);
                 annotationRemove(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE3_TILE);
@@ -2592,10 +2615,13 @@ void gameCheckMoongates() {
 
         (*spellCallback)(-1, -1); // Default spell effect (screen inversion without 'spell' sound effects)
         
-        c->location->x = destx;
-        c->location->y = desty;
-
-        (*spellCallback)(-1, -1); // Again, after arriving
+        if ((c->location->x != destx) && 
+            (c->location->y != desty)) {
+            
+            c->location->x = destx;    
+            c->location->y = desty;
+            (*spellCallback)(-1, -1); // Again, after arriving
+        }
 
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
             if (!playerCanEnterShrine(c->saveGame, shrine_spirituality_map.shrine->virtue))
