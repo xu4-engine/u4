@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
 
     perf.start();    
     screenInit();
-    ProgressBar pb((320/2) - (200/2), (200/2), 200, 20, 0, 4);
+    ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, 4);
     pb.setBorderColor(240, 240, 240);
     pb.setColor(0, 0, 128);
     pb.setBorderWidth(1);    

@@ -266,7 +266,7 @@ bool IntroController::init() {
  * Frees up data not needed after introduction.
  */
 void IntroController::deleteIntro() {
-    delete [] introMap[0];
+    delete [] introMap;
 
     introQuestions.clear();
     introText.clear();

@@ -19,8 +19,8 @@ using std::string;
 City::~City() {
     for (PersonList::iterator i = persons.begin(); i != persons.end(); i++)
         delete *i;
-    for (PersonRoleList::iterator i = personroles.begin(); i != personroles.end(); i++)
-        delete *i;
+    for (PersonRoleList::iterator j = personroles.begin(); j != personroles.end(); j++)
+        delete *j;
 }
 
 /**

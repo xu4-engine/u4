@@ -62,7 +62,7 @@ MapMgr::MapMgr() {
 }
 
 MapMgr::~MapMgr() {
-    for (vector<Map *>::iterator i = mapList.begin(); i != mapList.end(); i++)
+    for (std::vector<Map *>::iterator i = mapList.begin(); i != mapList.end(); i++)
         delete *i;
 
     delete logger;

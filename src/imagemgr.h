@@ -14,7 +14,7 @@
 
 class ConfigElement;
 class Debug;
-struct ImageSet; // VC6 is stupid -- it won't reinterpret a class declaration later as a struct
+class ImageSet;
 class Settings;
 
 /*

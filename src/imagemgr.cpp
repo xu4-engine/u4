@@ -59,7 +59,7 @@ ImageMgr::ImageMgr() {
 ImageMgr::~ImageMgr() {
     settings.deleteObserver(this);
 
-    for (map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++)
+    for (std::map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++)
         delete i->second;
 
     delete logger;
@@ -347,19 +347,19 @@ ImageInfo *ImageMgr::getInfo(const string &name) {
 /**
  * Returns information for the given image set.
  */
-ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *set) {
-    if (!set)
+ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
+    if (!imageset)
         return NULL;
 
     /* if the image set contains the image we want, we are done */
-    std::map<string, ImageInfo *>::iterator i = set->info.find(name);
-    if (i != set->info.end())
+    std::map<string, ImageInfo *>::iterator i = imageset->info.find(name);
+    if (i != imageset->info.end())
         return i->second;
 
     /* otherwise if this image set extends another, check the base image set */
-    if (set->extends != "") {
-        set = getSet(set->extends);
-        return getInfoFromSet(name, set);
+    if (imageset->extends != "") {
+        imageset = getSet(imageset->extends);
+        return getInfoFromSet(name, imageset);
     }
 
     return NULL;
@@ -520,7 +520,7 @@ void ImageMgr::update(Observable<Settings *> *o, Settings *newSettings) {
 }
 
 ImageSet::~ImageSet() {
-    for (map<string, ImageInfo *>::iterator i = info.begin(); i != info.end(); i++) {
+    for (std::map<string, ImageInfo *>::iterator i = info.begin(); i != info.end(); i++) {
         ImageInfo *imageInfo = i->second;
         if (imageInfo->name != "screen")
             delete imageInfo;
@@ -528,7 +528,7 @@ ImageSet::~ImageSet() {
 }
 
 ImageInfo::~ImageInfo() {
-    for (map<string, SubImage *>::iterator i = subImages.begin(); i != subImages.end(); i++)
+    for (std::map<string, SubImage *>::iterator i = subImages.begin(); i != subImages.end(); i++)
         delete i->second;
     if (image != NULL)
         delete image;

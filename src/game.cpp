@@ -256,7 +256,7 @@ void gameInit() {
     screen->fillRect(0, 0, screen->width(), screen->height(), 0, 0, 0);
     screenTextAt(13, 11, "Loading Game...");    
     screenRedrawScreen();    
-    ProgressBar pb((320/2) - (200/2), (200/2), 200, 20, 0, 4);
+    ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, 4);
     pb.setBorderColor(240, 240, 240);
     pb.setBorderWidth(1);
     pb.setColor(0, 0, 128);
@@ -285,7 +285,7 @@ void gameInit() {
     gameSetMap(mapMgr->get(MAP_WORLD), 0, NULL);  
     c->location->map->clearObjects();
 
-    TRACE_LOCAL(gameDbg, "World map set."); pb++;
+    TRACE_LOCAL(gameDbg, "World map set."); ++pb;
 
     /* load in the save game */
     saveGameFile = saveGameOpenForReading();
@@ -295,7 +295,7 @@ void gameInit() {
     } else
         errorFatal("no savegame found!");
 
-    TRACE_LOCAL(gameDbg, "Save game loaded."); pb++;
+    TRACE_LOCAL(gameDbg, "Save game loaded."); ++pb;
 
     /* initialize our party */
     c->party = new Party(c->saveGame);    
@@ -333,7 +333,7 @@ void gameInit() {
     if (MAP_IS_OOB(c->location->map, c->location->coords))
         c->location->coords.putInBounds(c->location->map);    
 
-    TRACE_LOCAL(gameDbg, "Loading monsters."); pb++;
+    TRACE_LOCAL(gameDbg, "Loading monsters."); ++pb;
 
     /* load in creatures.sav */
     monstersFile = saveGameMonstersOpenForReading(MONSTERS_SAV_BASE_FILENAME);
@@ -362,7 +362,7 @@ void gameInit() {
     playerSetPartyStarvingCallback(&gamePartyStarving);    
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
 
-    pb++;
+    ++pb;
 
     musicMgr->play();
     imageMgr->get(BKGD_BORDERS)->image->draw(0, 0);
