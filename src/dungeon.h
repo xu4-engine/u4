@@ -51,6 +51,9 @@ typedef struct _Dungeon {
     unsigned char party_starty[8];
 } Dungeon;
 
+/**
+ * Dungeon tokens
+ */
 typedef enum _DungeonToken {
     DUNGEON_CORRIDOR            = 0x00,
     DUNGEON_LADDER_UP           = 0x10,
@@ -69,6 +72,10 @@ typedef enum _DungeonToken {
     DUNGEON_SECRET_DOOR         = 0xE0,
     DUNGEON_WALL                = 0xF0,
 } DungeonToken;
+
+/**
+ * Dungeon sub-tokens
+ */
 
 typedef enum _TrapType {
     TRAP_WINDS                  = 0x0,
