@@ -159,7 +159,8 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, cons
         unsigned char tile;
         Map *map;
     } tileToMap[] = {   
-        { HORSE_TILE,   &grass_map },
+        { HORSE1_TILE,  &grass_map },
+        { HORSE2_TILE,  &grass_map },
         { SWAMP_TILE,   &marsh_map },
         { GRASS_TILE,   &grass_map },
         { BRUSH_TILE,   &brush_map },
