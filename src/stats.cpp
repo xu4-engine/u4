@@ -160,7 +160,7 @@ void StatsArea::update(Aura *aura) {
     summary.update();
 }
 
-void StatsArea::update(Party *party) {
+void StatsArea::update(Party *party, PartyEvent &event) {
     // do a full update
     update();
 }
