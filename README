@@ -32,9 +32,22 @@ are looking for a game with modern gameplay and graphics, this is not
 it -- yet.  New features that improve the gameplay and keep with the
 spirit of the original game will be added.
 
+XU4 also tries to maintain strict compatibility with the original for
+its savegame files.  You can use a game saved in XU4 with the original
+and vice versa, at least in theory.
+
 
 STATUS
 ------
+
+New in v0.09:
+ - first go at combat; still need to figure out true U4
+   combat algorithms
+ - food vendors now work and buggy weapons/armor vendors are fixed
+ - AdvanceMAME scaler (now the default), handles x2, x3, x4
+ - configuration menu at startup, settings saved in .xu4rc file
+ - drops frames when needed to better handle slow computers or X displays 
+ - lots of code cleanup and bug fixes
 
 New in v0.08:
  - 2xSaI scaler (now the default)
@@ -108,9 +121,6 @@ v0.01 features:
 To do, in no particular order:
  - sound
  - dungeons
- - karma
- - monsters, combat
- - spells
  - autoconf, automake
  - everything else :)
 
@@ -122,6 +132,7 @@ Some thoughts for possible improvements:
  - automatically fetch Ultima 4 for DOS if not found
  - move hardcoded data (tile attributes, starting attributes, etc.)
    into xml config file
+ - menu-based interface, like Sega version
 
 
 COMPILING
@@ -160,8 +171,9 @@ xu4 accepts the following command line options:
  -f       - fullscreen mode
  -i       - skip the intro, go directly into the game
  -q       - quiet mode - no music
- -scale n - scale the original graphics by a factor of n; two special
-            scalers called 2xSaI and 2xBi can also be specified
+ -scale n - scale the original graphics by a factor of n
+ -filter n - use a filter on the scaled images, AdvanceMAME 2xSaI and
+            2xBi can be specified
  -v       - verbose output; prints out information useful for
             troubleshooting
 
