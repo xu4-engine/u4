@@ -70,7 +70,7 @@
     <tile/> <!-- mgate2 -->
     <tile/> <!-- mgate3 -->
     <tile effect="poison" animated="true" dispel="true"/> <!-- poison field -->
-    <tile cantwalkon="all" animated="true" dispel="true"/> <!-- energy field -->
+    <tile cantwalkon="all" monsterunwalkable="true" animated="true" dispel="true"/> <!-- energy field -->
     <tile speed="vvslow" effect="fire" animated="true" dispel="true"/> <!-- fire field -->
     <tile effect="sleep" animated="true" candispel="true"/> <!-- sleep field -->
     <tile cantwalkon="all" canattackover="true"/> <!-- solid -->
