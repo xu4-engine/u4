@@ -570,7 +570,9 @@ offset  len   notes
 0x103d7 1280  abyss question dialog strings 
 0x108d7 22    11 two-byte offsets to abyss question answers (value +
               62141 gives file offset)
-0x108ed 5238  ???
+0x108ed 4830  ???
+0x11bcb 120   24 five-byte item location records (see below)
+0x11c43 288   ???
 0x11d63 250   companion dialog text
 0x11e5d 16    8 two-byte offsets to virtue adjectives for companion
               dialogs (value + 62123 gives file offset)
@@ -636,24 +638,59 @@ offset  len   notes
 0x146F7 16    inn index for each city (one byte per castle/city/town)
 0x14707 8     inn sleep location x coordinate for seven inns plus zero pad
 0x1470f 8     inn sleep location y coordinate for seven inns plus zero pad
-0x14817 8     inn prices for seven inns plus zero pad
-0x1481f 210   ??? (inn related)
+0x14717 8     inn prices for seven inns plus zero pad
+0x1471f 14    7 two-byte offsets to inn names (value + 62067 gives file
+              offset)
+0x1472d 14    7 two-byte offsets to inn names (value + 62067 gives file
+              offset)
+0x1473b 14    7 two-byte offsets to inn price dialogs (value + 62067
+              gives file offset)
+0x14749 424   more inn dialog text; x zero terminated strings
 0x148f1 266   healer dialog text; x zero terminated strings
 0x149fb 16    healer index for each city (one byte per castle/city/town)
-0x14a0b 894   ???
+0x14a0b 20    10 two-byte offsets to healer shopkeeper names (value + 62067
+              gives file offset)
+0x14a1f 20    10 two-byte offsets to healer shopkeeper names (value + 62067
+              gives file offset)
+0x14b33 598   more healer dialog text; x zero terminated strings
 0x14d89 978   tavern dialog text; x zero terminated strings
 0x1515b 16    tavern index for each city (one byte per castle/city/town)
-0x1516b 684   ???
+0x1516b 12    ??? (price of information?)
+0x15177 12    6 two-byte offsets to tavern shop names (value + 62067 gives
+              file offset)
+0x15183 12    6 two-byte offsets to tavern shopkeeper names (value + 62067
+              gives file offset)
+0x1518f 12    6 two-byte offsets to tavern specialty names (value + 62067
+              gives file offset)
+0x1519b 12    price for plate of food at each tavern (two bytes for
+              each price)
+0x151a7 12    7 two-byte offsets to tavern information topics (value +
+              62067 gives file offset) (??? why 7, not 6)
+0x151b5 12    6 two-byte offsets to tavern information responses (value +
+              62067 gives file offset)
+0x151c1 598   more tavern dialog text; x zero terminated strings
 0x15417 456   food vendor dialog text; x zero terminated strings
 0x155df 16    food vendor index for each city (one byte per castle/city/town)
 0x155ef 10    price for 25 units of food at each vendor (two bytes for
               each price) for Moonglow, Britan, Yew, Skara Brae, and
               Paws, repectively
-0x155f9 20    ???
+0x155f9 10    5 two-byte offsets to food shop names (value + 62067 gives
+              file offset)
+0x15603 10    5 two-byte offsets to food shopkeeper names (value + 62067
+              gives file offset)
 0x1560d 189   Lord British dialog keywords; 27 zero terminated strings
 0x156ca 2967  Lord British dialog text; 27 zero terminated strings
               (responses for above keywords)
 0x16261 ...
+
+Each item location record has the following structure: 
+
+offset len  notes
+0x0    1    item location (same encoding as party location in PARTY.SAV,
+            e.g. 0 for surface)
+0x1    1    item x coordinate
+0x2    1    item y coordinate
+0x3    2    ??? (a pointer?)
 
 
 Sources
