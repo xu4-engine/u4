@@ -21,6 +21,7 @@ SRCS=\
         mapinit.c \
         stats.c \
         spell.c \
+        game.c \
         intro.c \
         player.c \
         names.c \
