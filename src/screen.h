@@ -14,5 +14,12 @@ void screenMessage(char *fmt, ...);
 void screenScrollMessageArea();
 void screenUpdate();
 void screenForceRedraw();
+void screenAnimate();
+void screenUpdateCursor();
+void screenUpdateMoons();
+
+extern int screenCycle;
+
+#define SCR_CYCLE_MAX 16
 
 #endif

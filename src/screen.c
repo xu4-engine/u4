@@ -14,6 +14,8 @@
 #include "context.h"
 #include "savegame.h"
 
+int screenCycle = 0;
+
 void screenTextAt(int x, int y, char *fmt, ...) {
     char buffer[1024];
     int i;
@@ -80,4 +82,36 @@ void screenUpdate() {
 	    screenShowTile(tile, x, y);
 	}
     }
+
+    screenUpdateCursor();
+    screenUpdateMoons();
+}
+
+void screenAnimate() {
+    if (++screenCycle >= SCR_CYCLE_MAX)
+        screenCycle = 0;
+
+    if (screenCycle % 2 == 1)
+        screenUpdateCursor();
+    screenUpdate();
+    screenForceRedraw();
+}
+
+void screenUpdateCursor() {
+    screenShowChar(31 - (screenCycle * 4 / SCR_CYCLE_MAX), TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+}
+
+void screenUpdateMoons() {
+    int trammelPhase, feluccaPhase;
+
+    trammelPhase = c->moonPhase / (MOON_SECONDS_PER_PHASE * 4) / 3;
+    feluccaPhase = c->moonPhase / (MOON_SECONDS_PER_PHASE * 4) % 8;
+
+    if (--trammelPhase < 0)
+        trammelPhase = 7;
+    if (--feluccaPhase < 0)
+        feluccaPhase = 7;
+
+    screenShowChar(20 + trammelPhase, 11, 0);
+    screenShowChar(20 + feluccaPhase, 12, 0);
 }

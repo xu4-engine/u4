@@ -14,6 +14,7 @@
 #include "map.h"
 #include "context.h"
 #include "savegame.h"
+#include "ttype.h"
 
 SDL_Surface *screen;
 SDL_Surface *border, *tiles, *charset;
@@ -36,7 +37,7 @@ void screenInit(int screenScale) {
     forceEga = 0;
     forceVga = 0;
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
 	fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
 	exit(1);
     }
@@ -455,16 +456,37 @@ void screenShowChar(int chr, int x, int y) {
  * Draw a tile graphic on the screen.
  */
 void screenShowTile(int tile, int x, int y) {
+    int offset;
     SDL_Rect src, dest;
+
+    if (tileIsAnimated(tile))
+        offset = screenCycle * scale;
+    else
+        offset = 0;
 
     src.x = 0;
     src.y = tile * (tiles->h / N_TILES);
     src.w = tiles->w;
-    src.h = tiles->h / N_TILES;
+    src.h = tiles->h / N_TILES - offset;
+    dest.x = x * tiles->w + (BORDER_WIDTH * scale);
+    dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale) + offset;
+    dest.w = tiles->w;
+    dest.h = tiles->h / N_TILES;
+
+    SDL_BlitSurface(tiles, &src, screen, &dest);
+
+    if (offset == 0)
+        return;
+
+    src.x = 0;
+    src.y = (tile + 1) * (tiles->h / N_TILES) - offset;
+    src.w = tiles->w;
+    src.h = offset;
     dest.x = x * tiles->w + (BORDER_WIDTH * scale);
     dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
     dest.w = tiles->w;
     dest.h = tiles->h / N_TILES;
+
     SDL_BlitSurface(tiles, &src, screen, &dest);
 }
 
