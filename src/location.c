@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "location.h"
 
 Location *locationNew(int x, int y, int z, Map *map, Location *prev) {

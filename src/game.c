@@ -1645,7 +1645,7 @@ int gamePeerCity(int city, void *data) {
  * Wait for space bar to return from gem mode and returns map to normal
  */
 int peerCityHandleChoice(char choice) {
-    Context *oldc = c;    
+//    Context *oldc = c;    
     
     eventHandlerPopKeyHandler();
     free(locationPop(&c->location));
