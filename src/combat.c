@@ -53,7 +53,7 @@ Object *party[8];
 Object *monsters[AREA_MONSTERS];
 
 int combatBaseKeyHandler(int key, void *data);
-void combatEndTurn(void);
+void combatFinishTurn(void);
 int combatAttackAtCoord(int x, int y);
 int combatIsWon(void);
 int combatIsLost(void);
@@ -126,7 +126,7 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     return &brick_map;
 }
 
-void combatEndTurn() {
+void combatFinishTurn() {
     if (combatIsWon()) {
 
         eventHandlerPopKeyHandler();
@@ -136,9 +136,14 @@ void combatEndTurn() {
     if (party[focus])
         party[focus]->hasFocus = 0;
     do {
+        /* put the focus on the next party member */
         focus++;
+
+        /* move monsters and wrap around at end */
         if (focus >= c->saveGame->members) {
+
             combatMoveMonsters();
+
             focus = 0;
             if (combatIsLost()) {
                 if (!playerPartyDead(c->saveGame))
@@ -149,8 +154,19 @@ void combatEndTurn() {
                     deathStart();
                 return;
             }
+
+            /* adjust food and moves */
+            playerEndTurn(c->saveGame);
+
+            /* check if aura has expired */
+            if (c->auraDuration > 0) {
+                if (--c->auraDuration == 0)
+                    c->aura = AURA_NONE;
+            }
+
         }
-    } while (!party[focus]);
+    } while (!party[focus] ||    /* dead */
+             c->saveGame->players[focus].status == STAT_SLEEPING);
     party[focus]->hasFocus = 1;
 
     screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, getWeaponName(c->saveGame->players[focus].weapon));
@@ -205,7 +221,7 @@ int combatBaseKeyHandler(int key, void *data) {
 
     if (valid) {
         if (eventHandlerGetKeyHandler() == &combatBaseKeyHandler)
-            combatEndTurn();
+            combatFinishTurn();
     }
 
     return valid;
@@ -250,7 +266,7 @@ int combatAttackAtCoord(int x, int y) {
         }
     }
 
-    combatEndTurn();
+    combatFinishTurn();
 
     return 1;
 }
@@ -349,6 +365,8 @@ void combatMoveMonsters() {
 
         case CA_CAST_SLEEP:
             screenMessage("Sleep!\n");
+            playerApplySleepSpell(c->saveGame);
+            statsUpdate();
             break;
 
         case CA_FLEE:
