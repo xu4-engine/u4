@@ -20,6 +20,7 @@
 #include "names.h"
 #include "player.h"
 #include "screen.h"
+#include "settings.h"
 
 int shrineHandleVirtue(const char *message);
 int shrineHandleCycles(char choice);
@@ -55,9 +56,8 @@ void shrineEnter(const Shrine *s) {
 
     shrine = s;    
 
-    /* FIXME: make this optional */
     /* Add-on shrine sequence START */
-    if (1) {       
+    if (settings->minorEnhancements) {
         /* replace the 'static' avatar tile with grass */        
         annotationSetVisual(annotationAdd(5, 6, c->location->z, c->location->map->id, GRASS_TILE));
 
