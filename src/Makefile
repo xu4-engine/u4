@@ -12,6 +12,8 @@ MAIN=u4
 SRCS=u4.c map.c ttype.c screen.c screen_$(UI).c event.c event_$(UI).c person.c annotation.c io.c savegame.c maps/cities.c maps/castles.c maps/worldmap.c maps/areas.c
 OBJS=$(SRCS:.c=.o)
 
+bindir=/usr/bin
+
 all:: $(MAIN)
 
 $(MAIN): $(OBJS)
@@ -19,5 +21,8 @@ $(MAIN): $(OBJS)
 
 clean::
 	rm -rf *~ */*~ $(OBJS) $(MAIN)
+
+install::
+	install -D $(MAIN) $(bindir)/$(MAIN)
 
 -include .depends
