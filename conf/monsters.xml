@@ -62,4 +62,10 @@
     <monster id="50" encounterSize="4" name="Hydra" tile="244" frames="4" basehp="208" exp="14" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" resists="fire" leader="51"/>
     <monster id="51" encounterSize="4" name="Dragon" tile="248" frames="4" basehp="224" exp="15" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" flies="true" resists="fire" leader="52"/>
     <monster id="52" encounterSize="1" name="Balron" tile="252" frames="4" basehp="255" exp="16" ranged="true" rangedhittile="random" rangedmisstile="random" flies="true" casts="sleep" resists="fire"/>
+
+    <!-- Non-standard monsters -->
+    <monster id="53" name="Phantom" tile="61" frames="1" basehp="48" exp="14" good="true"/> <!-- Ankh -->
+    <monster id="54" name="Phantom" tile="75" frames="1" basehp="48" exp="4" good="true"/> <!-- Campfire -->
+    <monster id="55" name="Villager" tile="56" frames="1" basehp="32" exp="13" good="true"/> <!-- Wounded Villager -->
+    <monster id="56" name="Adventurer" tile="31" frames="1" basehp="160" exp="11" good="true"/> <!-- Avatar tile -->
 </monsters>
