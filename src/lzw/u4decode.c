@@ -38,7 +38,6 @@ long decompress_u4_file(FILE *in, long filesize, void **out)
     unsigned char *compressed_mem, *decompressed_mem;
     long compressed_filesize, decompressed_filesize;
     long errorCode;
-    long i;
 
     /* size of the compressed input file */
     compressed_filesize = filesize;
@@ -70,13 +69,49 @@ long decompress_u4_file(FILE *in, long filesize, void **out)
     decompressed_mem = (unsigned char *) malloc(decompressed_filesize);
 
     /* testing: clear destination mem */
-    for (i = 0; i < decompressed_filesize; i++) {
-        decompressed_mem[i] = 0;
-    }
+    memset(decompressed_mem, 0, decompressed_filesize);
 
     errorCode = lzwDecompress(compressed_mem, decompressed_mem, compressed_filesize);
 
     free(compressed_mem);
+
+    *out = decompressed_mem;
+
+    return(errorCode);
+}
+
+long decompress_u4_memory(void *in, long inlen, void **out) {
+    unsigned char *compressed_mem, *decompressed_mem;
+    long compressed_filesize, decompressed_filesize;
+    long errorCode;
+
+    /* size of the compressed input */
+    compressed_filesize = inlen;
+
+    /* input file should be longer than 0 bytes */
+    if (compressed_filesize == 0)
+        return(-1);
+
+    compressed_mem = (unsigned char *) in;
+
+    /*
+     * determine decompressed data size
+     * if lzw_get_decompressed_size() can't determine the decompressed size (i.e. the compressed
+     * data is corrupt), it returns -1
+     */
+    decompressed_filesize = lzwGetDecompressedSize(compressed_mem,compressed_filesize);
+
+    if (decompressed_filesize <= 0) {
+        return(-1);
+    }
+
+    /* decompress file from compressed_mem[] into decompressed_mem[] */
+    decompressed_mem = (unsigned char *) malloc(decompressed_filesize);
+
+    /* testing: clear destination mem */
+    memset(decompressed_mem, 0, decompressed_filesize);
+
+    errorCode = lzwDecompress(compressed_mem, decompressed_mem, compressed_filesize);
 
     *out = decompressed_mem;
 
