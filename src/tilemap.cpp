@@ -124,6 +124,8 @@ void TileMap::load(string filename) {
     
     /* add the tilemap to our list */
     tileMaps[name] = tileMap;
+
+    xmlFreeDoc(doc);
 }
 
 /**

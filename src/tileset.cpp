@@ -322,7 +322,7 @@ void Tileset::load(string filename) {
     }
     totalFrames = index;   
     
-    xmlFree(doc);
+    xmlFreeDoc(doc);
 }
 
 /**
