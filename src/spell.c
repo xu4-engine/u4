@@ -20,7 +20,7 @@
 #include "monster.h"
 #include "moongate.h"
 #include "player.h"
-#include "screen.h"
+#include "screen.h"     /* for spells not implemented yet, should be removable when implemented */
 #include "ttype.h"
 
 SpellCallback spellCallback = NULL; 
@@ -480,7 +480,6 @@ static int spellTremor(int unused) {
             gameUpdateScreen();
 
             combatApplyDamageToMonster(i, rand() % 0xFF);
-            screenMessage("\n");
 
             annotationRemove(x, y, c->location->z, c->location->map->id, HITFLASH_TILE);
         }
