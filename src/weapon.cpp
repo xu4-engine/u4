@@ -89,7 +89,7 @@ void Weapon::loadConf() {
     const Config *config = Config::getInstance();
 
     vector<ConfigElement> weaponConfs = config->getElement("/config/weapons").getChildren();
-    for (vector<ConfigElement>::iterator i = weaponConfs.begin(); i != weaponConfs.end(); i++) {
+    for (std::vector<ConfigElement>::iterator i = weaponConfs.begin(); i != weaponConfs.end(); i++) {
         if (i->getName() != "weapon")
             continue;
 
@@ -149,7 +149,7 @@ void Weapon::loadConf() {
         }
 
         vector<ConfigElement> contraintConfs = i->getChildren();
-        for (vector<ConfigElement>::iterator j = contraintConfs.begin(); j != contraintConfs.end(); j++) {
+        for (std::vector<ConfigElement>::iterator j = contraintConfs.begin(); j != contraintConfs.end(); j++) {
             unsigned char mask = 0;
 
             if (j->getName() != "constraint")

@@ -269,6 +269,7 @@ int U4FILE_zip::getc() {
 
 int U4FILE_zip::putc(int c) {
     ASSERT(0, "zipfiles must be read-only!");
+    return c;
 }
 
 long U4FILE_zip::length() {
@@ -333,15 +334,16 @@ U4FILE *u4fopen(const string &fname) {
 
     pathname = u4find_path(fname_copy.c_str(), paths, sizeof(paths) / sizeof(paths[0]));
     if (pathname.empty()) {
-        if (std::islower(fname_copy[0])) {
-            fname_copy[0] = std::toupper(fname_copy[0]);
+        using namespace std;
+        if (islower(fname_copy[0])) {
+            fname_copy[0] = toupper(fname_copy[0]);
             pathname = u4find_path(fname_copy.c_str(), paths, sizeof(paths) / sizeof(paths[0]));
         }
 
         if (pathname.empty()) {
             for (i = 0; fname_copy[i] != '\0'; i++) {
-                if (std::islower(fname_copy[i]))
-                    fname_copy[i] = std::toupper(fname_copy[i]);
+                if (islower(fname_copy[i]))
+                    fname_copy[i] = toupper(fname_copy[i]);
             }
             pathname = u4find_path(fname_copy.c_str(), paths, sizeof(paths) / sizeof(paths[0]));
         }
@@ -415,7 +417,7 @@ vector<string> u4read_stringtable(U4FILE *f, long offset, int nstrings) {
         f->seek(offset, SEEK_SET);
     for (i = 0; i < nstrings; i++) {
         char c;
-        buffer.clear();
+        buffer.erase();
 
         while ((c = f->getc()) != '\0')
             buffer += c;

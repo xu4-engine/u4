@@ -53,8 +53,8 @@ void Armor::loadConf() {
 
     const Config *config = Config::getInstance();
 
-    vector<ConfigElement> armorConfs = config->getElement("/config/armors").getChildren();
-    for (vector<ConfigElement>::iterator i = armorConfs.begin(); i != armorConfs.end(); i++) {
+    vector<ConfigElement> armorConfs = config->getElement("/config/armors").getChildren();	
+    for (std::vector<ConfigElement>::iterator i = armorConfs.begin(); i != armorConfs.end(); i++) {
         if (i->getName() != "armor")
             continue;
 
@@ -66,7 +66,7 @@ void Armor::loadConf() {
         armor->mask = 0;
 
         vector<ConfigElement> contraintConfs = i->getChildren();
-        for (vector<ConfigElement>::iterator j = contraintConfs.begin(); j != contraintConfs.end(); j++) {
+        for (std::vector<ConfigElement>::iterator j = contraintConfs.begin(); j != contraintConfs.end(); j++) {
             unsigned char mask = 0;
 
             if (j->getName() != "constraint")
