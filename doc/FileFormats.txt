@@ -1,6 +1,12 @@
 Ultima 4 File Structures
 ========================
 
+$Id$
+
+Please send additions, corrections and feedback to
+<andrewtaylor@users.sourceforge.net>!
+
+
 SHAPES.EGA
 ----------
 
