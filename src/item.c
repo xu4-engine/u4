@@ -195,7 +195,7 @@ int itemConditionsMet(unsigned char conditions) {
     int i;
 
     if ((conditions & SC_NEWMOONS) &&
-        !(c->saveGame->trammelphase == 7 && c->saveGame->feluccaphase == 7))
+        !(c->saveGame->trammelphase == 1 && c->saveGame->feluccaphase == 1))
         return 0;
 
     if (conditions & SC_FULLAVATAR) {
