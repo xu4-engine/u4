@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 
 #include "u4file.h"
+#include "debug.h"
 
 extern int verbose;
 
@@ -48,7 +48,7 @@ static const char * const conf_paths[] = {
  * paths, meaning up to twelve opens per file.  Seems to be ok for
  * performance, but could be getting excessive.
  */
-FILE *u4fopen(const char *fname) {
+U4FILE *u4fopen(const char *fname) {
     FILE *f = NULL;
     unsigned int i, j;
     char pathname[128];
@@ -64,7 +64,7 @@ FILE *u4fopen(const char *fname) {
 
         if (islower(pathname[strlen(paths[i])]))
             pathname[strlen(paths[i])] = toupper(pathname[strlen(paths[i])]);
-        
+
         if (verbose)
             printf("trying to open %s\n", pathname);
 
@@ -75,7 +75,7 @@ FILE *u4fopen(const char *fname) {
             if (islower(pathname[j]))
                 pathname[j] = toupper(pathname[j]);
         }
-        
+
         if (verbose)
             printf("trying to open %s\n", pathname);
 
@@ -92,14 +92,30 @@ FILE *u4fopen(const char *fname) {
 /**
  * Closes a data file from the Ultima 4 for DOS installation.
  */
-void u4fclose(FILE *f) {
+void u4fclose(U4FILE *f) {
     fclose(f);
+}
+
+int u4fseek(U4FILE *f, long offset, int whence) {
+    return fseek(f, offset, whence);
+}
+
+size_t u4fread(void *ptr, size_t size, size_t nmemb, U4FILE *f) {
+    return fread(ptr, size, nmemb, f);
+}
+
+int u4fgetc(U4FILE *f) {
+    return fgetc(f);
+}
+
+int u4fputc(int c, U4FILE *f) {
+    return fputc(c, f);
 }
 
 /**
  * Returns the length in bytes of a file.
  */
-long u4flength(FILE *f) {
+long u4flength(U4FILE *f) {
     long curr, len;
 
     curr = ftell(f);
@@ -115,17 +131,17 @@ long u4flength(FILE *f) {
  * are read from the given offset, or the current file position if
  * offset is -1.
  */
-char **u4read_stringtable(FILE *f, long offset, int nstrings) {
+char **u4read_stringtable(U4FILE *f, long offset, int nstrings) {
     char buffer[384];
     int i, j;
     char **strs = (char **) malloc(nstrings * sizeof(char *));
     if (!strs)
         return NULL;
 
-    assert(offset < u4flength(f));
+    ASSERT(offset < u4flength(f), "offset begins beyond end of file");
 
     if (offset != -1)
-        fseek(f, offset, SEEK_SET);
+        u4fseek(f, offset, SEEK_SET);
     for (i = 0; i < nstrings; i++) {
         for (j = 0; j < sizeof(buffer) - 1; j++) {
             buffer[j] = fgetc(f);
