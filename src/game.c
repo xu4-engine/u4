@@ -3076,7 +3076,7 @@ void gameCheckRandomMonsters() {
         (rand() % 32) != 0)
         return;
     
-    //gameSpawnMonster(NULL);
+    gameSpawnMonster(NULL);
 }
 
 /**
