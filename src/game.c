@@ -75,7 +75,6 @@ int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 int ztatsFor(int player);
 void gameCheckBridgeTrolls(void);
-void gameCheckHullIntegrity(void);
 void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
 void gameUpdateMoons(int showmoongates);
@@ -1280,7 +1279,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
     }
     else {
         const Monster *m = NULL;
-        const Object *obj = NULL;
+        Object *obj = NULL;
 
         obj = mapObjectAt(c->location->map, x, y, c->location->z);
         if (obj)
@@ -2266,7 +2265,8 @@ void gameCheckRandomMonsters() {
             mapRemoveObject(c->location->map, obj);    
     }
     
-    /* If there's too many monsters already, don't worry about it! */
+    /* If there are too many monsters already,
+       or we're not on the world map, don't worry about it! */
     if (!mapIsWorldMap(c->location->map) ||
         mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS ||
         (rand() % 16) != 0)

@@ -7,6 +7,12 @@
 #include <assert.h>
 
 #include "monster.h"
+
+/* FIXME: should monsterSpecialAction() and monsterSpecialEffect() be placed elsewhere
+   to make monster.c as independent as possible? */
+
+#include "game.h"	/* required by monsterSpecial functions */
+#include "player.h"	/* required by monsterSpecial functions */
 #include "context.h"
 #include "savegame.h"
 #include "ttype.h"
@@ -140,7 +146,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     int era;
     
     if (tileIsSailable(tile)) {
-        mtile = ((rand() % 8) << 1) + PIRATE_TILE;         
+        mtile = ((rand() % 8) << 1) + PIRATE_TILE;
         return monsterForTile(mtile);
     }
     else if (tileIsSwimable(tile)) {
@@ -158,7 +164,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
 
-    mtile = ((era & rand() & rand()) << 2) + ORC_TILE;
+    mtile = ((era & rand() & rand()) << 2) + ORC_TILE;    
 
     return monsterForTile(mtile);
 }
@@ -214,8 +220,9 @@ int monsterSpecialAction(const Monster *monster) {
     return 0;
 }
 
-void monsterSpecialEffect(Object *obj){
+void monsterSpecialEffect(Object *obj) {
     Object *o;
+    Monster *m;
 
     switch(obj->tile) {
     case STORM_TILE:
@@ -236,7 +243,11 @@ void monsterSpecialEffect(Object *obj){
                     }
                 }
                 else {
-                    /* FIXME: The party gets severely damaged by the storm! */                    
+                    /* FIXME: formula for twister damage is guesstimated from u4dos */
+                    int i;
+
+                    for (i = 0; i < c->saveGame->members; i++)
+                        playerApplyDamage(&c->saveGame->players[i], rand() % 75);
                 }
                 break;
             }
@@ -273,14 +284,18 @@ void monsterSpecialEffect(Object *obj){
                 break;
             }
             
-            /* See if the storm is on top of any objects and destroy them! */
-            for (o = c->location->map->objects; o; o = o->next) {                
+            /* See if the whirlpool is on top of any objects and destroy them! */
+            for (o = c->location->map->objects; o; o = o->next) {
                 if (o != obj && 
                     o->x == obj->x &&
                     o->y == obj->y &&
-                    o->z == obj->z) {
-                    /* Converged with an object, destroy the object! */
-                    mapRemoveObject(c->location->map, o);
+                    o->z == obj->z) {                    
+
+                    m = monsterForTile(o->tile);
+                    
+                    /* Make sure the object isn't a flying monster or object */
+                    if (!tileIsBalloon(o->tile) && (!m || !(m->mattr & MATTR_FLIES)))
+                        mapRemoveObject(c->location->map, o); /* Destroy the object it met with */
                     break;
                 }
             }            

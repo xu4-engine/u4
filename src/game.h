@@ -46,6 +46,7 @@ int gameGetCoordinateKeyHandler(int key, void *data);
 int gamePeerCity(int city, void *data);
 int gameSpecialCmdKeyHandler(int key, void *data);
 int gameZtatsKeyHandler(int key, void *data);
+void gameCheckHullIntegrity(void);
 void gameTimer(void *data);
 void gameFinishTurn(void);
 
