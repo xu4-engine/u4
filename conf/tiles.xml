@@ -19,9 +19,8 @@
     <tile name="lcb_west" rule="lcb"/>
     <tile name="lcb_entrance" rule="lcb_entrance" animation="lcbflag"/>
     <tile name="lcb_east" rule="lcb"/>
-    <!--<tile name="ship" rule="ship" frames="4" directions="nesw" animation="shipflag"/>-->
-    <tile name="ship" looks_like="ankh"/>
-    <tile name="horse" index="20" rule="horse" frames="2" directions="ew"/>
+    <tile name="ship" rule="ship" frames="4" directions="nesw" animation="shipflag"/>    
+    <tile name="horse" rule="horse" frames="2" directions="ew"/>
     <tile name="dungeon_floor" rule="floors"/>
     <tile name="bridge"/>
     <tile name="balloon" rule="balloon"/>
