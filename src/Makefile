@@ -14,7 +14,7 @@ UIFLAGS=$(shell sdl-config --cflags)
 
 FEATURES=-DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
 DEBUGCFLAGS=-ggdb -rdynamic
-CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\" -DVERSION=\"$(VERSION)\"
+CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\" -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS)
 LIBS=$(UILIBS) $(shell xml2-config --libs)
 INSTALL=install -D
 
@@ -38,6 +38,7 @@ install::
 	$(INSTALL) lzwdec $(libdir)/u4/lzwdec
 	$(INSTALL) rleenc $(libdir)/u4/rleenc
 	$(INSTALL) rledec $(libdir)/u4/rledec
+	$(INSTALL) tlkconv $(libdir)/u4/tlkconv
 	$(INSTALL) ../conf/tiles.xml $(libdir)/u4/tiles.xml
 	$(INSTALL) ../u4.desktop $(desktopdir)/Games/u4.desktop
 
