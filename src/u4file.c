@@ -84,25 +84,18 @@ int u4isUpgradeInstalled(void) {
 
     /* FIXME: Is there a better way to determine this? */
     u4f = u4fopen("ega.drv");
-    if (u4f) {
-        if (u4f->type != STDIO_FILE) {
-            u4fclose(u4f);
-            return 0;
-        }
-        else {
-            fseek(u4f->file, 0, SEEK_END);
-            if ((filelength = ftell(u4f->file)) == -1L) {
-                u4fclose(u4f);
-                return 0;
-            }
-            
-            u4fclose(u4f);
-            /* see if (ega.drv > 5k).  If so, the upgrade is installed */
-            if (filelength > (5 * 1024))
-                return 1;
-            else return 0;
-        }
-    }
+    if (!u4f)
+        return 0;
+
+    filelength = u4flength(u4f);
+    u4fclose(u4f);
+
+    /* see if (ega.drv > 5k).  If so, the upgrade is installed */
+    if (filelength > (5 * 1024))
+        return 1;
+    else 
+        return 0;
+
     return 0;
 }
 
