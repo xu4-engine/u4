@@ -365,6 +365,11 @@ void gameInit() {
     eventHandler->setKeyHandler(&gameBaseKeyHandler);
     eventHandler->setScreenUpdate(&gameUpdateScreen);
 
+    TRACE_LOCAL(gameDbg, "Setting up script information providers.");
+
+    Script *script = c->conversation->script;
+    script->addProvider("party", c->party);
+
     TRACE(gameDbg, "gameInit() completed successfully.");
 }
 

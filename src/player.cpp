@@ -13,6 +13,7 @@
 #include "debug.h"
 #include "game.h"
 #include "location.h"
+#include "names.h"
 #include "screen.h" /* FIXME: remove dependency on this */
 #include "tileset.h"
 #include "types.h"
@@ -69,6 +70,67 @@ void PartyMember::notifyOfChange(string arg) {
         party->setChanged();
         party->notifyObservers(arg);
     }
+}
+
+/**
+ * Provides some translation information for scripts
+ */
+string PartyMember::translate(std::vector<string>& parts) {
+    if (parts.size() == 0)
+        return "";
+    else if (parts.size() == 1) {
+        if (parts[0] == "hp")
+            return to_string(getHp());
+        else if (parts[0] == "max_hp")
+            return to_string(getMaxHp());
+        else if (parts[0] == "mp")
+            return to_string(getMp());
+        else if (parts[0] == "max_mp")
+            return to_string(getMaxMp());
+        else if (parts[0] == "str")
+            return to_string(getStr());
+        else if (parts[0] == "dex")
+            return to_string(getDex());
+        else if (parts[0] == "int")
+            return to_string(getInt());
+        else if (parts[0] == "exp")
+            return to_string(getExp());
+        else if (parts[0] == "name")
+            return getName();
+        else if (parts[0] == "weapon")
+            return Weapon::get(getWeapon())->getName();
+        else if (parts[0] == "armor")
+            return Armor::get(getArmor())->getName();
+        else if (parts[0] == "sex") {
+            string var = " ";
+            var[0] = getSex();
+            return var;
+        }
+        else if (parts[0] == "class")
+            return getClassName(getClass());
+        else if (parts[0] == "level")
+            return to_string(getRealLevel());
+    }
+    else if (parts.size() == 2) {
+        if (parts[0] == "needs") {
+            if (parts[1] == "cure") {
+                if (getStatus() == STAT_POISONED)
+                    return "true";
+                else return "false";
+            }
+            else if (parts[1] == "heal" || parts[1] == "fullheal") {
+                if (getHp() < getMaxHp())
+                    return "true";
+                else return "false";
+            }
+            else if (parts[1] == "resurrect") {
+                if (getStatus() == STAT_DEAD)
+                    return "true";
+                else return "false";
+            }
+        }        
+    }    
+    return "";
 }
 
 int PartyMember::getHp() const      { return player->hp; }
@@ -479,6 +541,60 @@ Party::Party(SaveGame *s) : saveGame(s), torchduration(0) {
         // add the members to the party
         members.push_back(new PartyMember(this, &saveGame->players[i]));
     }    
+}
+
+string Party::translate(std::vector<string>& parts) {        
+    if (parts.size() == 0)
+        return "";
+    else if (parts.size() == 1) {
+        // Translate some different items for the script
+        if (parts[0] == "transport") {
+            if (c->transportContext & TRANSPORT_FOOT)
+                return "foot";
+            if (c->transportContext & TRANSPORT_HORSE)
+                return "horse";
+            if (c->transportContext & TRANSPORT_SHIP)
+                return "ship";
+            if (c->transportContext & TRANSPORT_BALLOON)
+                return "balloon";
+        }
+        else if (parts[0] == "gold")
+            return to_string(saveGame->gold);
+        else if (parts[0] == "food")
+            return to_string(saveGame->food);
+        else if (parts[0] == "members")
+            return to_string(size());
+        else if (parts[0] == "keys")        
+            return to_string(saveGame->keys);
+        else if (parts[0] == "torches")
+            return to_string(saveGame->torches);
+        else if (parts[0] == "gems")
+            return to_string(saveGame->gems);
+        else if (parts[0] == "sextants")
+            return to_string(saveGame->sextants);
+        else if (parts[0] == "food")
+            return to_string((saveGame->food / 100));
+        else if (parts[0] == "gold")
+            return to_string(saveGame->gold);
+        else if (parts[0] == "party_members")
+            return to_string(saveGame->members);
+        else if (parts[0] == "moves")
+            return to_string(saveGame->moves);
+    }
+    else if (parts.size() >= 2) {
+        if (parts[0].find_first_of("member") == 0) {
+            // Make a new parts list, but remove the first item
+            std::vector<string> new_parts = parts;
+            new_parts.erase(new_parts.begin());
+
+            // Find the member we'll be working with
+            string str = parts[0];
+            str = str.substr(str.find_first_of("member"));
+            int p_member = (int)strtol(str.c_str(), NULL, 10);
+            return member(p_member - 1)->translate(parts);
+        }
+    }    
+    return "";
 }
 
 void Party::adjustFood(int food) {

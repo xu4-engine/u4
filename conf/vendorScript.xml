@@ -93,12 +93,12 @@
             <var name="cost" value="{price}"/>
             <var name="quantity" value="1"/>
 
-            <if test="{totalgold}&lt;{price}">
+            <if test="{party:gold}&lt;{price}">
                 You have not the funds for even one!<redirect target="anything_else_buy"/>
             </if>
             
             <include script="tell_about" choice="{$choice}"/>
-            <if test="{totalgold}&gt;={math({price}*2)}">
+            <if test="{party:gold}&gt;={math({price}*2)}">
                 <redirect target="howmany_buy"/>
             </if>            
             Take it? <input type="choice" options="yn" target="take_it"/>
@@ -197,7 +197,7 @@
         <!-- buy the weapon -->
         <buy choice="nothing" redirect="toobad"/>
         <buy>
-            <if test="{totalgold}&lt;{math({$quantity}*{price})}" redirect="not_enough_money"/>
+            <if test="{party:gold}&lt;{math({$quantity}*{price})}" redirect="not_enough_money"/>
             <pay price="{$cost}" quantity="{$quantity}" cantpay="check_money"/>
             <add type="weapon" subtype="{$weapon}" quantity="{$quantity}"/>
         
@@ -409,12 +409,12 @@
             <var name="armor" value="{$choice}"/>
             <var name="quantity" value="1"/>            
 
-            <if test="{totalgold}&lt;{price}">
+            <if test="{party:gold}&lt;{price}">
                 You have not the funds for even one!<redirect target="anything_else_buy"/>
             </if>
             
             <include script="tell_about" choice="{$choice}"/>
-            <if test="{totalgold}&gt;={math({price}*2)}">
+            <if test="{party:gold}&gt;={math({price}*2)}">
                 <redirect target="howmany_buy"/>
             </if>            
             Take it? <input type="choice" options="yn" target="take_it"/>
@@ -471,7 +471,7 @@
         <!-- buy the armor -->
         <buy choice="nothing" redirect="toobad"/>
         <buy>
-            <if test="{totalgold}&lt;{math({$quantity}*{price})}" redirect="not_enough_money"/>
+            <if test="{party:gold}&lt;{math({$quantity}*{price})}" redirect="not_enough_money"/>
             <pay price="{price}" quantity="{$quantity}" cantpay="check_money"/>
             <add type="armor" subtype="{$armor}" quantity="{$quantity}"/>
 
@@ -603,7 +603,7 @@
             Welcome to {name}
         
             {owner} says: Good day, and Welcome friend.
-            <if test="{totalgold}&lt;{price}" redirect="come_back"/>
+            <if test="{party:gold}&lt;{price}" redirect="come_back"/>
             May I interest you in some rations? <input type="choice" options="yn" target="ask"/>            
         </intro>
         
@@ -627,13 +627,13 @@
             <pay price="{price}" quantity="{$quantity}" cantpay="cantpay"/>            
             <add type="food" quantity="{math({quant}*{$quantity})}"/>
 
-            Thank you.<if test="{totalgold}&lt;{price}" redirect="come_again"/>
+            Thank you.<if test="{party:gold}&lt;{price}" redirect="come_again"/>
             Anything
             else? <input type="choice" options="yn" target="ask"/>
         </buy>
         <cantpay>
             
-            You can only afford {math({totalgold}/{price})} packs.
+            You can only afford {math({party:gold}/{price})} packs.
 
             <redirect target="howmany"/>
         </cantpay>
@@ -707,7 +707,7 @@
 
         <cantpay_food>
             
-            Ya can only afford {math({totalgold}/{spec_price})} plates.
+            Ya can only afford {math({party:gold}/{spec_price})} plates.
 
             <redirect target="how_many_plates"/>
         </cantpay_food>
@@ -1060,7 +1060,7 @@
             <var name="service" value="{$choice}"/>
             <var name="player" value="1"/>
                         
-            <if test="{party_members}==1" redirect="will_pay"/>            
+            <if test="{party:members}==1" redirect="will_pay"/>            
             {healer} asks:
             Who is in
             need? <input name="player" type="player" target="will_pay"/>
@@ -1077,7 +1077,7 @@
             </if>
         
             {desc} will cost thee {price}gp.
-            <if test="{totalgold}&lt;{price}">
+            <if test="{party:gold}&lt;{price}">
                 I see by thy purse that thou hast not enough gold. I cannot aid thee. <redirect target="more_help"/>
             </if>
             Wilt thou
@@ -1453,7 +1453,7 @@
             <end/>
         </buy>       
 
-        <vendor id="Paws" price="{math({party_members}*100)}"/>
+        <vendor id="Paws" price="{math({party:members}*100)}"/>
     </script>
     
 </scripts>

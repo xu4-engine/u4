@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "types.h"
 #include "xml.h"
@@ -17,17 +18,30 @@ using std::string;
 /**
  * An xml-scripting class. It loads and runs xml scripts that
  * take information and interact with the game environment itself.
- * Currently, it is only useful for writing vendor code; however,
- * with some additions it should be possible to write any kind of
- * game script that can be run from within the game.
+ * Currently, it is mainly useful for writing vendor code; however,
+ * it should be possible to write scripts for other parts of the
+ * game.
  *
  * @todo
  * <ul>
- *      <li>Add variable-support and strip vendor-specific code from the script</li>
+ *      <li>Strip vendor-specific code from the language</li>
  *      <li>Fill in some of the missing integration with the game</li>
  * </ul>
  */ 
 class Script {
+public:    
+    /**
+     * A class that provides information to a script.  It is designed to
+     * translate qualifiers and identifiers in a script to another value.
+     * Each provider is assigned a qualifier that the script uses to
+     * select a provider.  The provider then uses the rest of the information
+     * provided for translation.
+     */
+    class Provider {
+    public:
+        virtual string translate(std::vector<string>& parts) = 0;
+    };
+
 private:
     /**
      * A class that represents a script variable
@@ -117,6 +131,7 @@ public:
     Script();
     ~Script();
 
+    void addProvider(const string &name, Provider *p);
     bool load(string filename, string baseId, string subNodeName = "", string subNodeId = "");
     void unload();
     void run(string script);
@@ -216,6 +231,7 @@ private:
     int iterator;   
 
     std::map<string, Variable*> variables;    
+    std::map<string, Provider*> providers;
 };
 
 #endif

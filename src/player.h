@@ -8,9 +8,11 @@
 #include <list>
 #include <string>
 #include <vector>
+
 #include "creature.h"
 #include "observable.h"
 #include "savegame.h"
+#include "script.h"
 #include "tile.h"
 #include "types.h"
 
@@ -71,11 +73,14 @@ typedef enum {
 /**
  * PartyMember class
  */ 
-class PartyMember : public Creature {
+class PartyMember : public Creature, public Script::Provider {
 public:
     PartyMember(class Party *p, SaveGamePlayerRecord *pr);
 
     void notifyOfChange(string arg);
+
+    // Used to translate script values into something useful
+    virtual string translate(std::vector<string>& parts);
     
     // Accessor methods
     int getHp() const;
@@ -130,10 +135,13 @@ protected:
  */ 
 typedef std::vector<PartyMember *> PartyMemberVector;
 
-class Party : public Observable<string> {
+class Party : public Observable<string>, public Script::Provider {
     friend class PartyMember;
 public:
     Party(SaveGame *saveGame);
+
+    // Used to translate script values into something useful
+    virtual string translate(std::vector<string>& parts);
     
     void adjustFood(int food);
     void adjustGold(int gold);

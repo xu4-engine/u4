@@ -96,6 +96,13 @@ Script::~Script() {
 }
 
 /**
+ * Adds an information provider for the script
+ */
+void Script::addProvider(const string &name, Provider *p) {
+    providers[name] = p;
+}
+
+/**
  * Loads the vendor script
  */ 
 bool Script::load(string filename, string baseId, string subNodeName, string subNodeId) {
@@ -464,66 +471,6 @@ void Script::translate(string *text) {
         // Get the current iterator for our loop
         else if (item == "iterator")
             prop = to_string(this->iterator);        
-        // Get the party's gold amount
-        else if (item == "totalgold")
-            prop = to_string(c->saveGame->gold);
-        // Get the number of party members in the party
-        else if (item == "party_members")
-            prop = to_string(c->party->size());
-        // Get the current transport
-        else if (item == "transport") {
-            if (c->transportContext & TRANSPORT_FOOT)
-                prop = "foot";
-            if (c->transportContext & TRANSPORT_HORSE)
-                prop = "horse";
-            if (c->transportContext & TRANSPORT_SHIP)
-                prop = "ship";
-            if (c->transportContext & TRANSPORT_BALLOON)
-                prop = "balloon";
-        }
-        else if ((pos = item.find("quantity:")) < item.length()) {            
-            pos = item.find_first_of(":");
-
-            string subItem = item.substr(pos+1);
-            pos = subItem.find_first_of(":");
-            
-            /* multi-parameter quantity */
-            if ((pos > 0) && (pos < subItem.length())) {
-                string lastItem = subItem.substr(pos+1);
-                subItem = subItem.substr(0, pos);                
-
-                if (subItem == "weapons") {
-                    const Weapon *weapon = Weapon::get(lastItem);
-                    if (weapon != NULL)
-                        prop = to_string(c->saveGame->weapons[weapon->getType()]);
-                }
-                else if (subItem == "armor") {
-                    const Armor *armor = Armor::get(lastItem);
-                    if (armor != NULL)
-                        prop = to_string(c->saveGame->armor[armor->getType()]);
-                }
-            }
-
-            /* single-parameter quantity */
-            else {
-                if (subItem == "keys")
-                    prop = to_string(c->saveGame->keys);
-                else if (subItem == "torches")
-                    prop = to_string(c->saveGame->torches);
-                else if (subItem == "gems")
-                    prop = to_string(c->saveGame->gems);
-                else if (subItem == "sextants")
-                    prop = to_string(c->saveGame->sextants);
-                else if (subItem == "food")
-                    prop = to_string((c->saveGame->food / 100));
-                else if (subItem == "gold")
-                    prop = to_string(c->saveGame->gold);
-                else if (subItem == "party_members")
-                    prop = to_string(c->saveGame->members);
-                else if (subItem == "moves")
-                    prop = to_string(c->saveGame->moves);                
-            }
-        }
         else if ((pos = item.find("show_inventory:")) < item.length()) {
             pos = item.find(":");
             string itemScript = item.substr(pos+1);
@@ -590,69 +537,21 @@ void Script::translate(string *text) {
         }
 
         /**
-         * Retrieve game settings
-         */ 
-        else if (item.find("settings:") == 0) {
-            string subitem;
-            pos = item.find_first_of(":");            
+         * Ask our providers if they have a valid translation for us
+         */
+        else if (item.find_first_of(":") != string::npos) {
+            int pos = item.find_first_of(":");
+            string provider = item;
+            string to_find;
 
-            subitem = item.substr(pos+1);
-            item = item.substr(0, pos);
-
-            if (subitem == "enhancements")
-                prop = settings.enhancements ? "true" : "false";
-            else if (subitem == "game_cycles_per_second")
-                prop = to_string(settings.gameCyclesPerSecond);                
-            else if (subitem == "music")
-                prop = settings.musicVol ? "true" : "false";
-            else if (subitem == "sound")
-                prop = settings.soundVol ? "true" : "false";            
+            provider = item.substr(0, pos);
+            to_find = item.substr(pos + 1);
+            if (providers.find(provider) != providers.end()) {
+                std::vector<string> parts = split(to_find, ":");
+                Provider* p = providers[provider];
+                prop = p->translate(parts);
+            }
         }
-
-        /**
-         * Retrieve party data
-         */ 
-        else if ((pos = item.find("party:")) < item.length()) {
-            string item2, item3, item4;
-
-            pos = item.find_first_of(":");
-
-            /* get 2nd parameter */
-            item2 = item.substr(pos+1);
-            pos = item2.find_first_of(":");
-
-            /* get 3rd and 4th parameters, if they exist */
-            if ((pos > 0) && (pos < item2.length())) {
-                item3 = item2.substr(pos+1);
-                item2 = item2.substr(0, pos);
-                pos = item3.find_first_of(":");
-
-                if ((pos > 0) && (pos < item3.length())) {
-                    item4 = item3.substr(pos+1);
-                    item3 = item3.substr(0, pos);
-                }
-            }
-
-            /* party:member# */
-            if (item2.find_first_of("member") == 0) {                
-                int member = (int)strtol(item2.substr(6,1).c_str(), NULL, 10) - 1;
-                PartyMember *p = c->party->member(member);
-                
-                /* party:member#:needs */
-                if (item3 == "needs") {                    
-                    if (item4 == "cure") /* party:member:needs:cure */
-                        prop = (p->getStatus() == STAT_POISONED) ? "true" : "false";
-                    else if ((item4 == "heal") || (item4 == "fullheal")) /* party:member:needs:(heal||fullheal) */
-                        prop = (p->getHp() < p->getMaxHp()) ? "true" : "false";
-                    else if (item4 == "resurrect") /* party:member:needs:resurrect */
-                        prop = (p->getStatus() == STAT_DEAD) ? "true" : "false";
-                }                
-                else if (item3 == "hp") /* party:member#:hp */
-                    prop = to_string(p->getHp());                
-                else if (item3 == "mp") /* party:member#:mp */
-                    prop = to_string(p->getMp());
-            }
-        }        
         
         /**
          * Resolve as a property name or a function
