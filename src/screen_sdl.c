@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 #include <SDL.h>
 
 #include "u4.h"
@@ -17,6 +16,7 @@
 #include "ttype.h"
 #include "rle.h"
 #include "error.h"
+#include "debug.h"
 
 typedef enum {
     COMP_NONE,
@@ -58,7 +58,7 @@ ScreenScaler filterScaler;
 const struct {
     const char *filename;
     int width, height;
-    int hasVga;             
+    int hasVga;
     CompressionType comp;
     int filter;
     int introAnim;
@@ -157,7 +157,7 @@ void screenInit() {
         !screenLoadCharSet())
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
-    SDL_EnableKeyRepeat(settings->keydelay, settings->keyinterval); 
+    SDL_EnableKeyRepeat(settings->keydelay, settings->keyinterval);
 }
 
 void screenDelete() {
@@ -218,13 +218,13 @@ void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, int r, int g, in
 void screenFixIntroScreen(const unsigned char *sigData) {
     int i,x,y;
 
-    assert(bkgds[BKGD_INTRO]);
+    ASSERT(bkgds[BKGD_INTRO], "intro background must be loaded before fixing");
 
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
      * ----------------------------------------------------------------------------- */
     screenCopyRect(bkgds[BKGD_INTRO], 136, 0, 136, 0x21, 54, 5);
-    
+
     /* ----------------------------
      * erase the original "present"
      * ---------------------------- */
@@ -441,7 +441,7 @@ int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char 
         decompResult = decompress_u4_file(in, u4flength(in), (void **) &data);
         break;
     default:
-        assert(0);
+        ASSERT(0, "invalid compression type %d", comp);
     }
 
     if (decompResult == -1) {
@@ -500,7 +500,7 @@ int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char 
         decompResult = decompress_u4_file(in, u4flength(in), (void **) &data);
         break;
     default:
-        assert(0);
+        ASSERT(0, "invalid compression type %d", comp);
     }
 
     if (decompResult == -1 ||
@@ -537,7 +537,7 @@ int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char 
 void screenDrawBackground(BackgroundType bkgd) {
     SDL_Rect r;
 
-    assert(bkgd < BKGD_MAX);
+    ASSERT(bkgd < BKGD_MAX, "bkgd out of range: %d", bkgd);
 
     if (bkgds[bkgd] == NULL) {
         if (!screenLoadBackground(bkgd))
@@ -554,7 +554,7 @@ void screenDrawBackground(BackgroundType bkgd) {
 void screenDrawBackgroundInMapArea(BackgroundType bkgd) {
     SDL_Rect r;
 
-    assert(bkgd < BKGD_MAX);
+    ASSERT(bkgd < BKGD_MAX, "bkgd out of range: %d", bkgd);
 
     if (bkgds[bkgd] == NULL) {
         if (!screenLoadBackground(bkgd))
@@ -798,7 +798,7 @@ void screenInvertRect(int x, int y, int w, int h) {
             putPixel(tmp, j, i, SDL_MapRGB(tmp->format, 0xff - c.r, 0xff - c.g, 0xff - c.b));
         }
     }
-            
+
     SDL_BlitSurface(tmp, NULL, screen, &src);
     SDL_FreeSurface(tmp);
 }
@@ -815,18 +815,27 @@ void screenRedrawMapArea() {
     SDL_UpdateRect(screen, BORDER_WIDTH * scale, BORDER_HEIGHT * scale, VIEWPORT_W * TILE_WIDTH * scale, VIEWPORT_H * TILE_HEIGHT * scale);
 }
 
+/**
+ * Animates the moongate in the intro.  The tree intro image has two
+ * overlays in the part of the image normally covered by the text.  If
+ * the frame parameter is zero, the first overlay is painted over the
+ * image: a moongate.  If frame is one, the second overlay is painted:
+ * the circle without the moongate, but with a small white dot
+ * representing the anhk and history book.
+ */
 void screenAnimateIntro(int frame) {
     SDL_Rect src, dest;
+
+    ASSERT(frame == 0 || frame == 1, "invalid frame: %d", frame);
 
     if (frame == 0) {
         src.x = 0 * scale;
         src.y = 152 * scale;
-    } else if (frame == 1) {
+    } else {
         src.x = 24 * scale;
         src.y = 152 * scale;
-    } else
-        assert(0);
-        
+    }
+
     src.w = 24 * scale;
     src.h = 24 * scale;
 
@@ -860,8 +869,8 @@ void screenRedrawTextArea(int x, int y, int width, int height) {
 void screenShowCard(int pos, int card) {
     SDL_Rect src, dest;
 
-    assert(pos == 0 || pos == 1);
-    assert(card < 8);
+    ASSERT(pos == 0 || pos == 1, "invalid pos: %d", pos);
+    ASSERT(card < 8, "invalid card: %d", card);
 
     if (bkgds[card / 2 + BKGD_HONCOM] == NULL)
         screenLoadBackground(card / 2 + BKGD_HONCOM);
@@ -879,11 +888,18 @@ void screenShowCard(int pos, int card) {
     SDL_BlitSurface(bkgds[card / 2 + BKGD_HONCOM], &src, screen, &dest);
 }
 
+/**
+ * Animates the "beasties" in the intro.  The animate intro image is
+ * made up frames for the two creatures in the top left and top right
+ * corners of the screen.  This function draws the frame for the given
+ * beastie on the screen.  vertoffset is used lower the creatures down
+ * from the top of the screen.
+ */
 void screenShowBeastie(int beast, int vertoffset, int frame) {
     SDL_Rect src, dest;
     int col, row, destx;
-    
-    assert(beast == 0 || beast == 1);
+
+    ASSERT(beast == 0 || beast == 1, "invalid beast: %d", beast);
 
     if (bkgds[BKGD_ANIMATE] == NULL)
         screenLoadBackground(BKGD_ANIMATE);
@@ -893,7 +909,7 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
 
     if (beast == 0) {
         src.x = col * 56 * scale;
-        src.w = 55 * scale;  
+        src.w = 55 * scale;
     }
     else {
         src.x = (176 + col * 48) * scale;
@@ -995,7 +1011,7 @@ SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
     Uint32 rmask, gmask, bmask, amask;
 
     /* this scaler works only with images scaled by 2x */
-    assert(scale == 2);
+    ASSERT(scale == 2, "invalid scale: %d", scale);
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     rmask = 0xff000000;
@@ -1056,7 +1072,7 @@ SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
 }
 
 int colorEqual(SDL_Color a, SDL_Color b) {
-    return 
+    return
         a.r == b.r &&
         a.g == b.g &&
         a.b == b.b;
@@ -1068,13 +1084,13 @@ int _2xSaI_GetResult1(SDL_Color a, SDL_Color b, SDL_Color c, SDL_Color d) {
     int r = 0;
     if (colorEqual(a, c)) x++; else if (colorEqual(b, c)) y++;
     if (colorEqual(a, d)) x++; else if (colorEqual(b, d)) y++;
-    if (x <= 1) r++; 
+    if (x <= 1) r++;
     if (y <= 1) r--;
     return r;
 }
 
 int _2xSaI_GetResult2(SDL_Color a, SDL_Color b, SDL_Color c, SDL_Color d) {
-    int x = 0; 
+    int x = 0;
     int y = 0;
     int r = 0;
     if (colorEqual(a, c)) x++; else if (colorEqual(b, c)) y++;
@@ -1096,7 +1112,7 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
     Uint32 rmask, gmask, bmask, amask;
 
     /* this scaler works only with images scaled by 2x */
-    assert(scale == 2);
+    ASSERT(scale == 2, "invalid scale: %d", scale);
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     rmask = 0xff000000;
@@ -1277,7 +1293,7 @@ SDL_Surface *screenScaleScale2x(SDL_Surface *src, int scale, int n) {
     Uint32 rmask, gmask, bmask, amask;
 
     /* this scaler works only with images scaled by 2x or 3x */
-    assert(scale == 2 || scale == 3);
+    ASSERT(scale == 2 || scale == 3, "invalid scale: %d", scale);
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     rmask = 0xff000000;
