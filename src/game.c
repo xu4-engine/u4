@@ -214,7 +214,8 @@ void gameUpdateScreen() {
     case VIEW_RUNE:
         screenUpdate(0, 0);
         break;
-    case VIEW_DUNGEON:        
+    case VIEW_DUNGEON:
+        break;
     case VIEW_DEAD:
         screenUpdate(1, 1);
         break;
@@ -1747,9 +1748,8 @@ int gamePeerCity(int city, void *data) {
 
     if (peerCity)
     {
+        gameSetMap(c, peerCity->map, 1, NULL);
         c->location->viewMode = VIEW_GEM;
-
-        gameSetMap(c, peerCity->map, 1, NULL);    
             
         // Wait for player to hit a key
         choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
@@ -1766,7 +1766,7 @@ int gamePeerCity(int city, void *data) {
  */
 int peerCityHandleChoice(char choice) {    
     eventHandlerPopKeyHandler();
-    locationFree(&c->location);    
+    locationFree(&c->location);
 
     c->location->viewMode = VIEW_NORMAL; 
     (*c->location->finishTurn)();
