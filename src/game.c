@@ -436,11 +436,11 @@ void gameSpellEffect(unsigned int spell, int player) {
 
     switch(spell)
     {
-    case 'g': // gate
-    case 'r': // resurrection        
+    case 'g': /* gate */
+    case 'r': /* resurrection */
         time <<= 1;        
         break;
-    case 't': // tremor        
+    case 't': /* tremor */
         time <<= 1;
         effect = SPELLEFFECT_TREMOR;        
         break;
@@ -457,16 +457,23 @@ void gameSpellEffect(unsigned int spell, int player) {
 
     switch(effect)
     {
-    case SPELLEFFECT_NONE: break;
+    case SPELLEFFECT_NONE: 
+        break;
     case SPELLEFFECT_TREMOR:
     case SPELLEFFECT_INVERT:
-        {
-            gameUpdateScreen();
+        gameUpdateScreen();
+        screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
+        screenRedrawScreen();
+        
+        eventHandlerSleep(time);
+
+        if (effect == SPELLEFFECT_TREMOR) {
             screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
             screenRedrawScreen();
-        
-            eventHandlerSleep(time);
-        } break;       
+            screenShake(10);
+        }
+
+        break;
     }
     
     statsUpdate();
@@ -1779,7 +1786,7 @@ int readyForPlayer2(int w, void *data) {
         return 0;
     }
 
-    if (!weaponCanReady(weapon, getClassName(c->saveGame->players[player].klass))) {
+    if (!weaponCanReady(weapon, c->saveGame->players[player].klass)) {
         const char *indef_article;
 
         switch(tolower(weaponName[0])) {
@@ -2244,7 +2251,7 @@ int wearForPlayer2(int a, void *data) {
         return 0;
     }
 
-    if (!armorCanWear(armor, getClassName(c->saveGame->players[player].klass))) {
+    if (!armorCanWear(armor, c->saveGame->players[player].klass)) {
         screenMessage("\nA %s may NOT use\n%s\n", getClassName(c->saveGame->players[player].klass), armorGetName(armor));
         (*c->location->finishTurn)();
         return 0;
