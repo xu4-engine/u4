@@ -40,7 +40,7 @@ void settingsRead() {
     /* default settings */
     settings->scale = 2;
     settings->fullscreen = 0;
-    settings->filter = SCL_AdvanceMAME;
+    settings->filter = SCL_Scale2x;
     settings->vol = 1;
     settings->germanKbd = 0;
 
@@ -111,7 +111,7 @@ void settingsWrite() {
  */
 const char *settingsFilterToString(FilterType filter) {
     static const char * const filterNames[] = {
-        "point", "2xBi", "2xSaI", "AdvanceMAME"
+        "point", "2xBi", "2xSaI", "Scale2x"
     };
 
     if (filter >= SCL_MAX)

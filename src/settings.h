@@ -9,7 +9,7 @@ typedef enum {
     SCL_POINT,
     SCL_2xBi,
     SCL_2xSaI,
-    SCL_AdvanceMAME,
+    SCL_Scale2x,
     SCL_MAX
 } FilterType;
 
