@@ -19,6 +19,6 @@ typedef enum {
 int moveObject(struct _Map *map, struct _Object *obj, int avatarx, int avatary);
 int moveCombatObject(int action, struct _Map *map, struct _Object *obj, int targetx, int targety);
 int slowedByTile(int tile);
-int slowedByWind(Direction dir);
+int slowedByWind(int direction);
 
 #endif

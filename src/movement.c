@@ -51,7 +51,7 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
            try to move not turn again */
         if (tileIsPirateShip(obj->tile) && DIR_IN_MASK(tileGetDirection(obj->tile), dirmask) &&
             (obj->tile != obj->prevtile) && (obj->prevx == obj->x) && (obj->prevy == obj->y))
-            if (dir = dirFindPath(newx, newy, avatarx, avatary, 1 << tileGetDirection(obj->tile)))
+            if ((dir = dirFindPath(newx, newy, avatarx, avatary, 1 << tileGetDirection(obj->tile))))
                 break;            
 
         dir = dirFindPath(newx, newy, avatarx, avatary, dirmask);
