@@ -3,6 +3,7 @@ MAIN=u4$(EXEEXT)
 
 SRCS=\
         u4.c \
+        direction.c \
         map.c \
         ttype.c \
         screen.c \
