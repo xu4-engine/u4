@@ -42,6 +42,7 @@ SRCS=\
         maps/worldmap.c \
         maps/areas.c \
         maps/shrines.c \
+        maps/dungeons.c \
         lzw/hash.c \
         lzw/lzw.c \
         lzw/u4decode.c \
