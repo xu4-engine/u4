@@ -218,6 +218,12 @@ void screenInit() {
 
 void screenDelete() {
     imageMgr->freeAll();
+
+    std::vector<Layout *>::const_iterator i;
+    for (i = layouts.begin(); i != layouts.end(); i++)
+        delete(*i);
+    layouts.clear();
+
     u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
     if (verbose)
