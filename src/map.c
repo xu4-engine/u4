@@ -465,7 +465,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char trans
                 retval = DIR_ADD_TO_MASK(d, retval);
         }
         /* otherwise check walkable */
-        else if (!tileIsWalkable(tile))
+        else if (tileIsWalkable(tile))
             retval = DIR_ADD_TO_MASK(d, retval);
     }
 
