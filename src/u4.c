@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <SDL.h>
 
 #include "u4.h"
 #include "mapinit.h"
