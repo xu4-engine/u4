@@ -557,7 +557,7 @@ int gameBaseKeyHandler(int key, void *data) {
         }
         else valid = 0;
         break;    
-
+    
     case ' ':
         screenMessage("Pass\n");        
         break;
@@ -1643,15 +1643,19 @@ int gameGetChest(int player) {
  * Called by gameGetChest() to handle possible traps on chests
  **/
 
-int getChestTrapHandler(int player)
-{            
+int getChestTrapHandler(int player) {            
     TileEffect trapType;
     int dex = c->saveGame->players[player].dex;
     int randNum = rand() & 3;
-    int member = player;    
+    int member = player;
+    
+    /* Do we use u4dos's way of trap-determination, or the original intended way? */
+    int passTest = settings->minorEnhancements ?
+        ((rand() % 2) == 0) : /* xu4-enhanced */
+        ((randNum & 1) == 0); /* u4dos original way (only allows even numbers through, so only acid and poison show) */
 
     /* Chest is trapped! 50/50 chance */
-    if ((randNum & 1) == 0)
+    if (passTest)
     {   
         /* Figure out which trap the chest has */
         switch(randNum & rand()) {
