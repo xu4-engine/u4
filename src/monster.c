@@ -344,6 +344,12 @@ int monsterSails(const Monster *monster) {
     return (monster->movementAttr & MATTR_SAILS) ? 1 : 0;
 }
 
+int monsterWalks(const Monster *monster) {
+    return (monsterFlies(monster) |
+            monsterSwims(monster) |
+            monsterSails(monster)) ? 0 : 1;
+}
+
 int monsterCanMoveOntoMonsters(const Monster *monster) {
     return (monster->movementAttr & MATTR_CANMOVEMONSTERS) ? 1 : 0;
 }

@@ -584,47 +584,65 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         else if ((obj = mapObjectAt(map, x, y, z)) != NULL && (obj->objType != OBJECT_UNKNOWN))
             ontoMonster = 1;
             
-        tile = mapTileAt(map, x, y, z);
-        prev_tile = mapTileAt(map, from_x, from_y, z);        
+        /* get the destination tile */
+        if (ontoAvatar)
+            tile = c->saveGame->transport;
+        else if (obj)
+            tile = obj->tile;
+        else
+            tile = mapTileAt(map, x, y, z);
 
+        prev_tile = mapTileAt(map, from_x, from_y, z);
+
+        /* get the monster object */
         m = monsterForTile(transport);
 
         /* move on if unable to move onto the avatar or another monster */
         if ((ontoAvatar && m && !monsterCanMoveOntoAvatar(m)) ||
             (ontoMonster && m && !monsterCanMoveOntoMonsters(m)))
-            continue;        
+            continue;
 
         /* if the transport is a ship, check sailable */
-        if (tileIsShip(transport) || (m && monsterSails(m))) {
-            if (tileIsSailable(tile))
-                retval = DIR_ADD_TO_MASK(d, retval);
-        }
-        /* aquatic monster */
-        else if (m && monsterSwims(m)) {
-            if (tileIsSwimable(tile))
-                retval = DIR_ADD_TO_MASK(d, retval);
-        }
-        /* incorporeal monster */
-        else if (m && monsterIsIncorporeal(m)) {
-            retval = DIR_ADD_TO_MASK(d, retval);
-        }
+        if (tileIsShip(transport) && tileIsSailable(tile))            
+            retval = DIR_ADD_TO_MASK(d, retval);        
         /* if it is a balloon or flying monster, check flyable */
-        else if (tileIsBalloon(transport) || (m && monsterFlies(m))) {
-            if (tileIsFlyable(tile))
-                retval = DIR_ADD_TO_MASK(d, retval);
-        }
+        else if (tileIsBalloon(transport) && tileIsFlyable(tile))
+            retval = DIR_ADD_TO_MASK(d, retval);        
         /* avatar or horseback: check walkable */
         else if (transport == AVATAR_TILE || tileIsHorse(transport)) {
             if (tileCanWalkOn(tile, d) &&
                 tileCanWalkOff(prev_tile, d))
                 retval = DIR_ADD_TO_MASK(d, retval);
         }
-        /* other: check monster walkable */
-        else if (tileCanWalkOn(tile, d) &&
-                 tileCanWalkOff(prev_tile, d) &&
-                 tileIsMonsterWalkable(tile))
-            retval = DIR_ADD_TO_MASK(d, retval);
-
+        
+        /* monsters */
+        else if (m) {
+            /* swimming monsters */
+            if (tileIsSwimable(tile)) {
+                if (monsterSwims(m))
+                    retval = DIR_ADD_TO_MASK(d, retval);
+            }
+            /* sailing monsters */
+            else if (tileIsSailable(tile)) {
+                if (monsterSails(m))
+                    retval = DIR_ADD_TO_MASK(d, retval);
+            }
+            /* flying monsters */
+            else if (tileIsFlyable(tile) && monsterFlies(m))
+                retval = DIR_ADD_TO_MASK(d, retval);
+            /* walking monsters */
+            else if (monsterWalks(m)) {
+                if (tileCanWalkOn(tile, d) &&
+                    tileCanWalkOff(prev_tile, d) &&
+                    tileIsMonsterWalkable(tile))
+                    retval = DIR_ADD_TO_MASK(d, retval);
+            }
+            else if (monsterIsIncorporeal(m)) {
+                /* can move anywhere but onto water, unless of course the monster can swim */
+                if (!(tileIsSwimable(tile) || tileIsSailable(tile)))
+                    retval = DIR_ADD_TO_MASK(d, retval);
+            }            
+        } 
     }
 
     return retval;

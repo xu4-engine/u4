@@ -203,6 +203,7 @@ int monsterFlies(const Monster *monster);
 int monsterTeleports(const Monster *monster);
 int monsterSwims(const Monster *monster);
 int monsterSails(const Monster *monster);
+int monsterWalks(const Monster *monster);
 int monsterCanMoveOntoMonsters(const Monster *monster);
 int monsterCanMoveOntoAvatar(const Monster *monster);
 int monsterIsAttackable(const Monster *monster);
