@@ -16,6 +16,7 @@
 #include "ttype.h"
 #include "context.h"
 #include "savegame.h"
+#include "stats.h"
 
 Context *c;
 
@@ -50,6 +51,7 @@ int main(int argc, char *argv[]) {
     c->conversation.buffer[0] = '\0';
     c->line = 0;
     c->col = 0;
+    c->statsItem = STATS_PARTY_OVERVIEW;
 
     saveGameFile = fopen("party.sav", "r");
     if (saveGameFile) {
@@ -69,6 +71,7 @@ int main(int argc, char *argv[]) {
 
     screenDrawBorders();
     screenUpdate(c);
+    statsUpdate();
     screenForceRedraw();
 
     eventHandlerMain();
