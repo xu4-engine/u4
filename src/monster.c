@@ -352,7 +352,7 @@ MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
 }
 
 int monsterSpecialAction(Object *obj) {
-    int broadsidesDirs, dx, dy, mapdist, dirx, diry;
+    int broadsidesDirs, dx, dy, mapdist;
     const Monster *m = NULL;
     CoordActionInfo *info;
     int retval = 0;    
@@ -361,29 +361,27 @@ int monsterSpecialAction(Object *obj) {
 
         m = obj->monster;
 
-        broadsidesDirs = DIR_REMOVE_FROM_MASK(tileGetDirection(obj->tile), MASK_DIR_ALL);
-        broadsidesDirs = DIR_REMOVE_FROM_MASK(dirReverse(tileGetDirection(obj->tile)), broadsidesDirs);
+        broadsidesDirs = dirGetBroadsidesDirs(tileGetDirection(obj->tile));        
 
-        dx = c->location->x - obj->x;
-        dy = c->location->y - obj->y;
+        dx = abs(c->location->x - obj->x);
+        dy = abs(c->location->y - obj->y);
         mapdist = mapDistance(c->location->x, c->location->y, obj->x, obj->y);
 
-        dirx = diry = DIR_NONE;
-        
-        /* Find out if the avatar is east or west of the object */
-        if (dx < 0) {
-            dx *= -1;
-            dirx = DIR_WEST;
-        } else if (dx > 0)
-            dirx = DIR_EAST;
+        /* setup info for monster action */
+        info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));        
+        info->origin_x = obj->x;
+        info->origin_y = obj->y;
+        info->prev_x = info->prev_y = -1;
+        info->range = 3;
+        info->validDirections = MASK_DIR_ALL;
+        info->player = -1;
+        info->blockedPredicate = NULL;
+        info->blockBefore = 1; 
+        info->firstValidDistance = 1;
 
-        /* Find out if the avatar is north or south of the object */
-        if (dy < 0) {            
-            dy *= -1;
-            diry = DIR_NORTH;
-        } else if (dy > 0)
-            diry = DIR_SOUTH;
-
+        /* find out which direction the avatar is in relation to the monster */
+        info->dir = dirGetRelativeDirection(obj->x, obj->y, c->location->x, c->location->y);
+       
         switch(m->id) {
         case PIRATE_ID:
             /** 
@@ -391,31 +389,16 @@ int monsterSpecialAction(Object *obj) {
              */
             retval = 1;
 
-            info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
             info->handleAtCoord = &fireAtCoord;
-            info->origin_x = obj->x;
-            info->origin_y = obj->y;
-            info->prev_x = info->prev_y = -1;
-            info->range = 3;
-            info->validDirections = broadsidesDirs;
-            info->player = -1;
-            info->blockedPredicate = NULL;
-            info->blockBefore = 1; 
-            info->firstValidDistance = 1;
+            info->validDirections = broadsidesDirs;            
             
-            if ((dy == 0) && (dx <= 3) && DIR_IN_MASK(dirx, broadsidesDirs)) {
-                /* Fire cannon in 'dirx' direction */
-                info->dir = MASK_DIR(dirx);
-                gameDirectionalAction(info);
-            }
-            else if ((dx == 0) && (dy <= 3) && DIR_IN_MASK(diry, broadsidesDirs)) {
-                /* Fire cannon in 'diry' direction */
-                info->dir = MASK_DIR(diry);
-                gameDirectionalAction(info);
-            }
-            else retval = 0;
-
-            free(info);
+            if ((((dx == 0) && (dy <= 3)) ||        /* avatar is close enough and on the same column, OR */
+                 ((dy == 0) && (dx <= 3))) &&       /* avatar is close enough and on the same row, AND */
+                 ((broadsidesDirs & info->dir) > 0))/* pirate ship is firing broadsides */
+                 gameDirectionalAction(info);       /* *** FIRE! *** */
+            else
+                retval = 0;            
+            
             break;
         
         case SEA_SERPENT_ID: /* ranged */
@@ -424,36 +407,21 @@ int monsterSpecialAction(Object *obj) {
 
             retval = 1;
             
-            info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
             info->handleAtCoord = &monsterRangeAttack;
-            info->origin_x = obj->x;
-            info->origin_y = obj->y;
-            info->prev_x = info->prev_y = -1;
-            info->range = 3;
-            info->validDirections = MASK_DIR_ALL;
-            info->player = -1;
-            info->blockedPredicate = NULL;
-            info->blockBefore = 1;
-            info->firstValidDistance = 1;
-
+            
             /* A 50/50 chance they try to range attack when you're close enough */
-            if (mapdist <= 3 && (rand() % 2 == 0)) {
-                info->dir = (diry ? MASK_DIR(diry) : 0) | (dirx ? MASK_DIR(dirx) : 0);
-                gameDirectionalAction(info);
-            }
+            if (mapdist <= 3 && (rand() % 2 == 0))                
+                gameDirectionalAction(info);            
             else retval = 0;
-
-            free(info);
-            break;
-    
-            /* FIXME: add ranged monster's behavior here */
-
-            /* Other ranged monsters here too, whoever you are! */
+            
+            break;            
 
         default: break;
         }
-    }
 
+        free(info);
+    }
+    
     return retval;
 }
 

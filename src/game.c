@@ -646,9 +646,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'f':
         if (tileIsShip(c->saveGame->transport)) {
-            int validDirs;
-            validDirs = DIR_REMOVE_FROM_MASK(tileGetDirection(c->saveGame->transport), MASK_DIR_ALL);
-            validDirs = DIR_REMOVE_FROM_MASK(dirReverse(tileGetDirection(c->saveGame->transport)), validDirs);
+            int broadsidesDirs = dirGetBroadsidesDirs(tileGetDirection(c->saveGame->transport));            
 
             info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
             info->handleAtCoord = &fireAtCoord;
@@ -656,14 +654,13 @@ int gameBaseKeyHandler(int key, void *data) {
             info->origin_y = c->location->y;
             info->prev_x = info->prev_y = -1;
             info->range = 3;
-            info->validDirections = validDirs;
+            info->validDirections = broadsidesDirs; /* can only fire broadsides! */
             info->player = -1;
             info->blockedPredicate = &tileCanAttackOver;
             info->blockBefore = 1;
             info->firstValidDistance = 1;
             eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
-
-            printf("validDirs = %d\n", validDirs);
+            
             screenMessage("Fire Cannon!\nDir: ");
         }
         else
@@ -2090,12 +2087,6 @@ int moveAvatar(Direction dir, int userEvent) {
 
     /*musicPlayEffect();*/
 
-    /*
-    if (tileIsBalloon(c->saveGame->transport) && userEvent) {
-        screenMessage("Drift Only!\n");
-        return result;
-    }*/
-
     if (tileIsShip(c->saveGame->transport)) {
         if (tileGetDirection(c->saveGame->transport) != dir) {
             tileSetDirection((unsigned char *)&c->saveGame->transport, dir);
@@ -2633,7 +2624,7 @@ int gameDirectionalAction(CoordActionInfo *info) {
      * try every tile in the given direction, up to the given range.
      * Stop when the command handler succeeds, the range is exceeded,
      * or the action is blocked.
-     */    
+     */
     
     if ((dirx <= 0 || DIR_IN_MASK(dirx, info->validDirections)) && 
         (diry <= 0 || DIR_IN_MASK(diry, info->validDirections))) {

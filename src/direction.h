@@ -26,8 +26,11 @@ typedef enum {
 
 void dirMove(Direction dir, int *x, int *y);
 Direction dirReverse(Direction dir);
+Direction dirFromMask(int dir_mask);
 Direction dirRotateCW(Direction dir);
 Direction dirRotateCCW(Direction dir);
+Direction dirGetRelativeDirection(int from_x, int from_y, int to_x, int to_y);
+Direction dirGetBroadsidesDirs(Direction dir);
 Direction dirFindPath(int from_x, int from_y, int to_x, int to_y, int valid_directions_mask);
 Direction dirFindPathToEdge(int from_x, int from_y, int width, int height, int valid_directions_mask);
 Direction dirRandomDir(int valid_directions_mask);

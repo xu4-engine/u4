@@ -635,7 +635,7 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
 
 
 int combatReturnWeaponToOwner(int x, int y, int distance, void *data) {
-    int i, new_x, new_y, orig_x, orig_y, misstile, dir;
+    int i, new_x, new_y, misstile, dir;
     CoordActionInfo* info = (CoordActionInfo*)data;
     int weapon = c->saveGame->players[info->player].weapon;
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
@@ -643,14 +643,10 @@ int combatReturnWeaponToOwner(int x, int y, int distance, void *data) {
     misstile = weaponGetMissTile(weapon);
 
     new_x = x;
-    new_y = y;
-    orig_x = info->origin_x;
-    orig_y = info->origin_y;
+    new_y = y;    
 
-    if (x > orig_x) dir = DIR_WEST;
-    else if (x < orig_x) dir = DIR_EAST;
-    else if (y > orig_y) dir = DIR_NORTH;
-    else dir = DIR_SOUTH;
+    /* reverse the direction of the weapon */
+    dir = dirReverse(dirFromMask(info->dir));
 
     for (i = distance; i > 1; i--) {
         dirMove(dir, &new_x, &new_y);
@@ -765,7 +761,7 @@ void combatEnd() {
 }
 
 void combatMoveMonsters() {
-    int i, target, distance, dx, dy, dirx, diry;
+    int i, target, distance;
     CombatAction action;
     CoordActionInfo *info;
     const Monster *m;
@@ -886,8 +882,7 @@ void combatMoveMonsters() {
 
             break;
 
-        case CA_RANGED:
-            //printf("%s does a ranged attack!\n", m->name);
+        case CA_RANGED:            
             
             info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
             info->handleAtCoord = &combatMonsterRangedAttack;
@@ -902,27 +897,9 @@ void combatMoveMonsters() {
             info->firstValidDistance = 0;
 
             /* Figure out which direction to fire the weapon */
-            dx = combatInfo.party[target]->x - combatInfo.monsters[i]->x;
-            dy = combatInfo.party[target]->y - combatInfo.monsters[i]->y;            
-
-            dirx = diry = DIR_NONE;
-        
-            /* Find out if the target is east or west of the monster */
-            if (dx < 0) {
-                dx *= -1;
-                dirx = DIR_WEST;
-            } else if (dx > 0)
-                dirx = DIR_EAST;
-
-            /* Find out if the target is north or south of the monster */
-            if (dy < 0) {            
-                dy *= -1;
-                diry = DIR_NORTH;
-            } else if (dy > 0)
-                diry = DIR_SOUTH;
-
-            /* We've got our direction! */
-            info->dir = (dirx ? MASK_DIR(dirx) : 0) | (diry ? MASK_DIR(diry) : 0);                        
+            info->dir = dirGetRelativeDirection(
+                combatInfo.monsters[i]->x, combatInfo.monsters[i]->y,
+                combatInfo.party[target]->x, combatInfo.party[target]->y);            
             
             /* Fire! */
             gameDirectionalAction(info);

@@ -32,7 +32,7 @@ typedef struct CoordActionInfo {
     int validDirections;    
     int player;
     int dir;                /* mask of the direction the action is taken
-                               (so that (DIR_NORTH | DIR_EAST) makes a diagonal */
+                               (so that (MASK_DIR(DIR_NORTH) | MASK_DIR(DIR_EAST)) makes a diagonal) */
     int (*blockedPredicate)(unsigned char tile);
     int blockBefore;        /* try the action first, or test to see if it was blocked first? */
     int firstValidDistance; /* the first distance at which the action will function correctly */

@@ -58,7 +58,7 @@ typedef void (*PartyStarvingCallback)(void);
 void playerSetLostEighthCallback(LostEighthCallback callback);
 void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback);
 void playerSetItemStatsChangedCallback(ItemStatsChangedCallback callback);
-void playerSetPartyStarvingCallbkac(PartyStarvingCallback callback);
+void playerSetPartyStarvingCallback(PartyStarvingCallback callback);
 void playerApplyDamage(SaveGamePlayerRecord *player, int damage);
 int playerGetRealLevel(const SaveGamePlayerRecord *player);
 int playerGetMaxLevel(const SaveGamePlayerRecord *player);

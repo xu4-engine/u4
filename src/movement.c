@@ -51,11 +51,11 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
         dirmask = mapGetValidMoves(map, newx, newy, z, obj->tile);
         
         /* If the pirate ship turned last move instead of moving, this time it must
-           try to move not turn again */
+           try to move, not turn again */
         if (tileIsPirateShip(obj->tile) && DIR_IN_MASK(tileGetDirection(obj->tile), dirmask) &&
             (obj->tile != obj->prevtile) && (obj->prevx == obj->x) && (obj->prevy == obj->y))
             if ((dir = dirFindPath(newx, newy, avatarx, avatary, 1 << tileGetDirection(obj->tile))))
-                break;            
+                break;
 
         dir = dirFindPath(newx, newy, avatarx, avatary, dirmask);
         break;
