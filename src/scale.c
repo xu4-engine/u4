@@ -169,7 +169,7 @@ int _2xSaI_GetResult2(RGB a, RGB b, RGB c, RGB d) {
  */
 Image *scale2xSaI(Image *src, int scale, int N) {
     int ii, x, y, xoff0, xoff1, xoff2, yoff0, yoff1, yoff2;
-    RGB a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;
+    RGB a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;    
     RGB prod0, prod1, prod2;
     Image *dest;
 
@@ -227,10 +227,9 @@ Image *scale2xSaI(Image *src, int scale, int N) {
                 else {
                     xoff1 = 1;
                     xoff2 = 2;
-                }
-                
+                }                
 
-                imageGetPixel(src, x, y, &a.r, &a.g, &a.b);
+                imageGetPixel(src, x, y, &a.r, &a.g, &a.b);                
                 imageGetPixel(src, x + xoff1, y, &b.r, &b.g, &b.b);
                 imageGetPixel(src, x, y + yoff1, &c.r, &c.g, &c.b);
                 imageGetPixel(src, x + xoff1, y + yoff1, &d.r, &d.g, &d.b);
@@ -277,15 +276,12 @@ Image *scale2xSaI(Image *src, int scale, int N) {
                         prod1 = c;
                     else
                         prod1 = colorAverage(a, c);
-
+                    
                     prod2 = b;
                 }
                 else if (colorEqual(a, d) && colorEqual(b, c)) {
-                    if (colorEqual(a, b)) {
-                        prod0 = a;
-                        prod1 = a;
-                        prod2 = a;
-                    }
+                    if (colorEqual(a, b))
+                        prod0 = prod1 = prod2 = a;                    
                     else {
                         int r = 0;
                         prod0 = colorAverage(a, b);
@@ -304,7 +300,7 @@ Image *scale2xSaI(Image *src, int scale, int N) {
                             prod2.r = (a.r + b.r + c.r + d.r) >> 2;
                             prod2.g = (a.g + b.g + c.g + d.g) >> 2;
                             prod2.b = (a.b + b.b + c.b + d.b) >> 2;
-                        }
+                        }                        
                     }
                 }
                 else {
@@ -324,14 +320,13 @@ Image *scale2xSaI(Image *src, int scale, int N) {
 
                     prod2.r = (a.r + b.r + c.r + d.r) >> 2;
                     prod2.g = (a.g + b.g + c.g + d.g) >> 2;
-                    prod2.b = (a.b + b.b + c.b + d.b) >> 2;
+                    prod2.b = (a.b + b.b + c.b + d.b) >> 2;                    
                 }
 
-
-                imagePutPixel(dest, x * 2, y * 2, a.r, a.g, a.b);
-                imagePutPixel(dest, x * 2 + 1, y * 2, prod0.r, prod0.g, prod0.b);
-                imagePutPixel(dest, x * 2, y * 2 + 1, prod1.r, prod1.g, prod1.g);
-                imagePutPixel(dest, x * 2 + 1, y * 2 + 1, prod2.r, prod2.g, prod2.b);
+                imagePutPixel(dest, (x << 1), (y << 1), a.r, a.g, a.b);                
+                imagePutPixel(dest, (x << 1) + 1, (y << 1), prod0.r, prod0.g, prod0.b);
+                imagePutPixel(dest, (x << 1), (y << 1) + 1, prod1.r, prod1.g, prod1.b);
+                imagePutPixel(dest, (x << 1) + 1, (y << 1) + 1, prod2.r, prod2.g, prod2.b);
             }
         }
     }
