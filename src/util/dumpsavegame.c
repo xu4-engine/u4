@@ -95,7 +95,7 @@ void showSaveGamePlayerRecord(SaveGamePlayerRecord *rec) {
            rec->name, rec->hp, rec->hpMax, rec->xp);
     printf("  str: %-6d dex: %-6d intel: %-4d mp: %-7d ???: %d\n", 
            rec->str, rec->dex, rec->intel, rec->mp, rec->unknown);
-    printf("  weapon: %-15s armor: %s\n", getWeaponName(rec->weapon), getArmorName(rec->armor));
+    printf("  weapon: %-15s armor: %s\n", weaponGetName(rec->weapon), armorGetName(rec->armor));
     printf("  sex: %-6s class: %-16s status: %c\n", 
            rec->sex == 11 ? "M" : "F", getClassName(rec->klass), rec->status);
 }
