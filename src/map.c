@@ -327,27 +327,30 @@ unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z) {
     case 0x10:
         return 0x1b;
     case 0x20:
+    case 0x30:
         return 0x1c;
     case 0x40:
         return tileGetChestBase();
     case 0x50:
-    case 0x60:
-        return BRICKFLOOR_TILE; /* FIXME */
+    case 0x60: /* floor hole (not used?) */
+        return 0x7c;        
     case 0x70:
         return MAGICFLASH_TILE;
     case 0x90:
         return 0;
     case 0xA0:
         return LIGHTNINGFIELD_TILE;
-    case 0xB0:
-        return BRICKFLOOR_TILE; /* FIXME: altar */
-    case 0xC0:
-    case 0xD0:
+    case 0xB0: /* altar */
+        return 0x4a; 
+    case 0xC0: /* door */
         return 0x3b;
+    case 0xD0: /* dungeon room */
+        return 0x48;
 
-    case 0xE0:
+    case 0xE0: /* secret door */
+        return 0x49;
     case 0xF0:
-        return 0x7F;
+        return WALL_TILE;
     default:
         return BLACK_TILE;
     }
