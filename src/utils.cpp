@@ -29,14 +29,17 @@ int xu4_random(int upperRange) {
 
 /**
  * Trims whitespace from a std::string
+ * @param val The string you are trimming
+ * @param chars_to_trim A list of characters that will be trimmed
  */
-string& trim(string &val) {
+string& trim(string &val, const string &chars_to_trim) {
     using namespace std;
     string::iterator i;
     if (val.size()) {
-        for (i = val.begin(); (i != val.end()) && isspace(*i); )
+        unsigned int pos;
+        for (i = val.begin(); (i != val.end()) && (pos = chars_to_trim.find(*i)) != string::npos; )
             i = val.erase(i);    
-        for (i = val.end()-1; (i != val.begin()) && isspace(*i); )
+        for (i = val.end()-1; (i != val.begin()) && (pos = chars_to_trim.find(*i)) != string::npos; )
             i = val.erase(i)-1;
     }
     return val;

@@ -21,7 +21,7 @@ using std::string;
 
 void xu4_srandom(void);
 int xu4_random(int upperval);
-string& trim(string &val);
+string& trim(string &val, const string &chars_to_trim = "\t\013\014 \n\r");
 string& lowercase(string &val);
 string& uppercase(string &val);
 string  to_string(int val);
