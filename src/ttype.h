@@ -6,6 +6,13 @@
 #define TTYPE_H
 
 typedef enum {
+    DIR_WEST,
+    DIR_NORTH,
+    DIR_EAST,
+    DIR_SOUTH
+} Direction;
+
+typedef enum {
     EFFECT_NONE = 0x00,
     EFFECT_FIRE = 0x04,
     EFFECT_SLEEP = 0x08,
@@ -33,6 +40,8 @@ int tileIsDoor(unsigned char tile);
 int tileIsLockedDoor(unsigned char tile);
 int tileIsShip(unsigned char tile);
 int tileIsHorse(unsigned char tile);
+Direction tileGetDirection(unsigned char tile);
+void tileSetDirection(unsigned short *tile, Direction dir);
 int tileCanTalkOver(unsigned char tile);
 TileEffect tileGetEffect(unsigned char tile);
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile);

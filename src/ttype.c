@@ -97,6 +97,22 @@ int tileIsHorse(unsigned char tile) {
     return tile >= 20 && tile < 22;
 }
 
+Direction tileGetDirection(unsigned char tile) {
+    if (tileIsShip(tile))
+        return tile - 16 + DIR_WEST;
+    else if (tileIsHorse(tile))
+        return tile == 20 ? DIR_WEST : DIR_EAST;
+    else 
+        return DIR_WEST;        /* some random default */
+}
+
+void tileSetDirection(unsigned short *tile, Direction dir) {
+    if (tileIsShip(*tile))
+        *tile = 16 + dir;
+    else if (tileIsHorse(*tile))
+        *tile = (dir == DIR_WEST ? 20 : 21);
+}
+
 int tileCanTalkOver(unsigned char tile) {
     return tile >= 96 && tile <= 122;
 }
