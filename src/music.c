@@ -16,7 +16,7 @@
 #include "u4file.h"
 #include "music.h"
 
-const char *musicFilenames[] = {
+const char * const musicFilenames[] = {
     NULL,
     "Wanderer.mid",
     "Towns.mid",
@@ -97,13 +97,12 @@ int init_music(void) {
    SDL_AudioInit("waveout");
 #endif
 
-if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
-       printf("Unable to open audio!\n");
-       return(1);
+   if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
+       fprintf(stderr, "Unable to open audio!\n");
+       return 1;
    }
 
-
    Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
-   return(0);
+   return 0;
 }
 

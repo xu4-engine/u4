@@ -32,7 +32,7 @@ const char *getClassName(ClassType klass) {
 }
 
 const char *getWeaponName(WeaponType weapon) {
-    static const char *weapNames[] = {
+    static const char * const weapNames[] = {
         "Hands", "Staff", "Dagger",
         "Sling", "Mace", "Axe",
         "Sword", "Bow", "Crossbow",
@@ -48,7 +48,7 @@ const char *getWeaponName(WeaponType weapon) {
 }
 
 const char *getWeaponAbbrev(WeaponType weapon) {
-    static const char *weapAbbrevs[] = {
+    static const char * const weapAbbrevs[] = {
         "HND", "STF", "DAG",
         "SLN", "MAC", "AXE",
         "SWD", "BOW", "XBO",
@@ -64,7 +64,7 @@ const char *getWeaponAbbrev(WeaponType weapon) {
 }
 
 const char *getArmorName(ArmorType armor) {
-    static const char *armorNames[] = {
+    static const char * const armorNames[] = {
         "Skin", "Cloth", "Leather", 
         "Chain Mail", "Plate Mail", 
         "Magic Chain", "Magic Plate", "Mystic Robe"
@@ -77,7 +77,7 @@ const char *getArmorName(ArmorType armor) {
 }
 
 const char *getReagentName(Reagent reagent) {
-    static const char *reagentNames[] = {
+    static const char * const reagentNames[] = {
         "Sulfur Ash", "Ginseng", "Garlic", 
         "Spider Silk", "Blood Moss", "Black Pearl", 
         "Nightshade", "Mandrake"
@@ -90,7 +90,7 @@ const char *getReagentName(Reagent reagent) {
 }
 
 const char *getVirtueName(Virtue virtue) {
-    static const char *virtueNames[] = {
+    static const char * const virtueNames[] = {
         "Honesty", "Compassion", "Valor", 
         "Justice", "Sacrifice", "Honor", 
         "Spirituality", "Humility"
@@ -103,7 +103,7 @@ const char *getVirtueName(Virtue virtue) {
 }
 
 const char *getStoneName(Virtue virtue) {
-    static const char *virtueNames[] = {
+    static const char * const virtueNames[] = {
         "Blue", "Yellow", "Red", 
         "Green", "Orange", "Purple", 
         "White", "Black"

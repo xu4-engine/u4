@@ -59,7 +59,7 @@ extern Map shore_map;
 extern Map shorship_map;
 extern Map shrine_map;
 
-City *cities[] = {
+City * const cities[] = {
     &lcb_1_city, &lcb_2_city,
     &lycaeum_city, &empath_city,
     &serpent_city,
@@ -71,7 +71,7 @@ City *cities[] = {
     &vesper_city, &cove_city
 };
 
-Map *areas[] = {
+Map * const areas[] = {
     &brick_map, &bridge_map,
     &brush_map, &camp_map,
     &dng0_map, &dng1_map,
