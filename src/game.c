@@ -59,6 +59,7 @@ int talkHandleBuffer(const char *message);
 int talkHandleChoice(char choice);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
+void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
 void gameCheckRandomMonsters(void);
 
@@ -899,7 +900,6 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
  * creature is present at that point, zero is returned.
  */
 int attackAtCoord(int x, int y) {
-    unsigned char tile;
     Object *obj;
 
     if (x == -1 && y == -1)
@@ -907,9 +907,7 @@ int attackAtCoord(int x, int y) {
 
     if ((obj = mapObjectAt(c->map, x, y)) != NULL &&
         monsterForTile(obj->tile) != NULL) {
-        tile = obj->tile;
-        mapRemoveObject(c->map, obj);
-        combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport, tile);
+        combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport, obj);
     }
     else {
         screenMessage("Attack What?\n");
@@ -1618,6 +1616,7 @@ int moveAvatar(Direction dir, int userEvent) {
     c->saveGame->x = newx;
     c->saveGame->y = newy;
 
+    gameCheckSpecialMonsters(dir);
     gameCheckMoongates();
 
  done:
@@ -1712,6 +1711,47 @@ void gameTimer(void *data) {
         gameUpdateScreen();
 }
 
+void gameCheckSpecialMonsters(Direction dir) {
+    int i;
+    Object *obj;
+    static const struct {
+        int x, y;
+        Direction dir;
+    } pirateInfo[] = {
+        { 224, 220, DIR_EAST }, /* N'M" O'A" */
+        { 224, 228, DIR_EAST }, /* O'E" O'A" */
+        { 226, 220, DIR_EAST }, /* O'E" O'C" */
+        { 227, 228, DIR_EAST }, /* O'E" O'D" */
+        { 228, 227, DIR_SOUTH }, /* O'D" O'E" */
+        { 229, 225, DIR_SOUTH }, /* O'B" O'F" */
+        { 229, 223, DIR_NORTH }, /* N'P" O'F" */
+        { 228, 222, DIR_NORTH } /* N'O" O'E" */
+    };
+
+    if (dir == DIR_EAST &&
+        c->saveGame->x == 0xdd &&
+        c->saveGame->y == 0xe0) {
+        for (i = 0; i < 8; i++) {
+            unsigned short tile = PIRATE_TILE;
+            tileSetDirection(&tile, pirateInfo[i].dir);
+            obj = mapAddObject(c->map, tile, tile, pirateInfo[i].x, pirateInfo[i].y);
+            obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+        }
+    }
+
+    if (dir == DIR_SOUTH &&
+        c->saveGame->x >= 229 &&
+        c->saveGame->x < 234 &&
+        c->saveGame->y >= 212 &&
+        c->saveGame->y < 217) {
+        for (i = 0; i < 8; i++) {
+            obj = mapAddObject(c->map, DAEMON_TILE, DAEMON_TILE, 231, c->saveGame->y + 1);
+            obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+        }
+    }
+}
+
+
 void gameCheckMoongates() {
     int destx, desty;
     extern Map shrine_spirituality_map;
@@ -1740,7 +1780,7 @@ void gameCheckMoongates() {
 }
 
 void gameCheckRandomMonsters() {
-    int x, y;
+    int x, y, dx, dy, t;
     unsigned char monster;
     Object *obj;
 
@@ -1748,9 +1788,21 @@ void gameCheckRandomMonsters() {
         (rand() % 16) != 0)
         return;
 
-    /* FIXME */
-    x = c->saveGame->x + 2;
-    y = c->saveGame->y + 2;
+    dx = 7;
+    dy = rand() % 7;
+
+    if (rand() % 2)
+        dx = -dx;
+    if (rand() % 2)
+        dy = -dy;
+    if (rand() % 2) {
+        t = dx;
+        dx = dy;
+        dy = t;
+    }
+
+    x = c->saveGame->x + dx;
+    y = c->saveGame->y + dy;
 
     if ((monster = monsterRandomForTile(mapTileAt(c->map, x, y))) == 0)
         return;
