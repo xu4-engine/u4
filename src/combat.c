@@ -751,7 +751,7 @@ void combatMoveMonsters() {
                     playerAdjustGold(c->saveGame, -(rand() % 0x3f));
                 
                 /* steal food if the monster steals food */
-                if (monsterStealsFood(m)) {
+                if (monsterStealsFood(m))
                     playerAdjustFood(c->saveGame, -2500);
                                
                 attackFlash(party[target]->x, party[target]->y, HITFLASH_TILE, 1);
