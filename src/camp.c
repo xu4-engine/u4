@@ -156,7 +156,7 @@ void innTimer(void *data) {
     campHeal();
 
     /* Is there a special encounter during your stay? */
-    if (rand() % 8 != 0) {
+    if (rand() % 8 == 0) {
         unsigned char mapid;
         Object *monsterObj;        
         int showMessage = 1;
