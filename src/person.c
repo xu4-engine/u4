@@ -325,7 +325,7 @@ char *talkerGetPrompt(const Conversation *cnv) {
     if (cnv->state == CONV_ASK)
         personGetQuestion(cnv->talker, &prompt);
     else if (cnv->state == CONV_BUY_QUANTITY)
-        prompt = strdup("\n\nHow much? ");
+        prompt = strdup("\nHow much? ");
     else
         prompt = strdup("\nYour Interest:\n");
 
@@ -343,12 +343,12 @@ char *beggarGetQuantityResponse(Conversation *cnv, const char *response) {
             reply = concat("\n\n", cnv->talker->pronoun, 
                            " says: Oh Thank thee! I shall never forget thy kindness!\n",
                            NULL);
-            statsUpdate();
         }
         
         else
-            reply = strdup("Thou hast not that much gold!\n");
-    }
+            reply = strdup("\n\nThou hast not that much gold!\n");
+    } else
+        reply = strdup("\n");
 
     return reply;
 }
