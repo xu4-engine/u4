@@ -64,7 +64,7 @@ int playerCanWear(const SaveGamePlayerRecord *player, ArmorType armor) {
 
     switch (player->klass) {
     case CLASS_MAGE:
-        return armor == ARMR_CLOTH;
+        return armor <= ARMR_CLOTH;
     case CLASS_BARD:
     case CLASS_DRUID:
     case CLASS_RANGER:
@@ -89,6 +89,28 @@ int playerCanWear(const SaveGamePlayerRecord *player, ArmorType armor) {
  * Determines whether a player can ready the given weapon type.
  */
 int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon) {
-    return 1;
-}
+    static const int weapMask[] = {
+        /* WEAP_NONE */     0xff /* all */,
+        /* WEAP_STAFF */    0xff /* all */,
+        /* WEAP_DAGGER */   0xff /* all */,
+        /* WEAP_SLING */    0xff /* all */,
+        /* WEAP_MACE */     0xff & (~(1 << CLASS_MAGE)),
+        /* WEAP_AXE */      0xff & (~((1 << CLASS_MAGE) | (1 << CLASS_SHEPHERD) | (1 << CLASS_DRUID))),
+        /* WEAP_SWORD */    0xff & (~((1 << CLASS_MAGE) | (1 << CLASS_SHEPHERD) | (1 << CLASS_DRUID))),
+        /* WEAP_BOW */      0xff & (~((1 << CLASS_MAGE) | (1 << CLASS_SHEPHERD))),
+        /* WEAP_CROSSBOW */ 0xff & (~((1 << CLASS_MAGE) | (1 << CLASS_SHEPHERD))),
+        /* WEAP_OIL */      0xff /* all */,
+        /* WEAP_HALBERD */  (1 << CLASS_FIGHTER) | (1 << CLASS_TINKER) | (1 << CLASS_PALADIN),
+        /* WEAP_MAGICAXE */ (1 << CLASS_TINKER) | (1 << CLASS_PALADIN),
+        /* WEAP_MAGICSWORD*/(1 << CLASS_FIGHTER) | (1 << CLASS_TINKER) | (1 << CLASS_PALADIN) | (1 << CLASS_RANGER),
+        /* WEAP_MAGICBOW */ 0xff & (~((1 << CLASS_MAGE) | (1 << CLASS_FIGHTER) | (1 << CLASS_SHEPHERD))),
+        /* WEAP_MAGICWAND */(1 << CLASS_MAGE) | (1 << CLASS_BARD) | (1 << CLASS_DRUID),
+        /* WEAP_MYSTICSWORD */0xff /* all */
+    };
 
+    if (weapon < WEAP_MAX)
+        return ((weapMask[weapon] & (1 << player->klass)) != 0);
+
+    assert(0);
+    return 0;
+}
