@@ -88,8 +88,10 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
             combatInfo.party[i] = mapAddObject(c->location->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->location->map->area->player_start[i].x, c->location->map->area->player_start[i].y, c->location->z);
         
             /* Replace the party mamber with a sleeping person if they're asleep */
-            if (c->saveGame->players[i].status == STAT_SLEEPING)
+            if (c->saveGame->players[i].status == STAT_SLEEPING) {
+                combatInfo.party_status[i] = STAT_GOOD;
                 combatInfo.party[i]->tile = CORPSE_TILE;
+            }
             else partyIsReadyToFight = 1;
         }
         else
@@ -283,7 +285,14 @@ void combatFinishTurn() {
                 playerAdjustFood(c->saveGame, -1);                
 
             /* put the focus on the next party member */
-            combatInfo.focus++; focus++;            
+            combatInfo.focus++; focus++;
+            
+            /* display a sleeping person or an awake person for those who were awakened by alternate means */
+            if (combatInfo.party[focus]) {
+                if (c->saveGame->players[focus].status == STAT_SLEEPING)
+                    combatInfo.party[focus]->tile = CORPSE_TILE;
+                else combatInfo.party[focus]->tile = tileForClass(c->saveGame->players[focus].klass);
+            }
 
             /* move monsters and wrap around at end */
             if (focus >= c->saveGame->members) {            

@@ -261,20 +261,28 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
     return 1;
 }
 
-void spellMagicAttack(unsigned char tile, int maxDamage, int minDamage) {
+void spellMagicAttack(unsigned char tile, int minDamage, int maxDamage) {
     int damage = 0;
-    if (maxDamage > 0)
-        damage = rand() % maxDamage;
-    damage |= minDamage;
+
+    damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
+        rand() % ((maxDamage + 1) - minDamage) + minDamage :
+        maxDamage;
+
     printf("spell does %d damage\n", damage);
 }
 
 static int spellAwaken(int player) {
+    extern CombatInfo combatInfo;
     ASSERT(player < 8, "player out of range: %d", player);
 
     if (player < c->saveGame->members && 
         c->saveGame->players[player].status == STAT_SLEEPING) {
-        c->saveGame->players[player].status = STAT_GOOD;
+        
+        /* restore the party member to their original state */
+        if (combatInfo.party_status[player])
+            c->saveGame->players[player].status = combatInfo.party_status[player];
+        else c->saveGame->players[player].status = STAT_GOOD;
+
         return 1;
     }
 

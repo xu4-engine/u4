@@ -1200,6 +1200,14 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         eventHandlerPushKeyHandler(&windCmdKeyHandler);
         return 1;
 
+    case 'x':
+        screenMessage("\nX-it!\n");        
+        if (!gameExitToParentMap(c))
+            screenMessage("Not Here!\n");
+        musicPlay();
+        screenPrompt();
+        break;
+
     case ' ':
         screenMessage("Nothing\n");
         screenPrompt();
@@ -1223,7 +1231,8 @@ int cmdHandleAnyKey(int key, void *data) {
                   "p - Peer\n"
                   "r - Reagents\n"
                   "t - Transports\n"
-                  "w - Change Wind\n");
+                  "w - Change Wind\n"
+                  "x - Exit Map\n");
     screenPrompt();
     return 1;
 }
