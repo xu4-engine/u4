@@ -218,7 +218,7 @@ void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, int r, int g, in
 void screenFixIntroScreen(const unsigned char *sigData) {
     int i,x,y;
 
-    ASSERT(bkgds[BKGD_INTRO], "intro background must be loaded before fixing");
+    ASSERT(bkgds[BKGD_INTRO] != NULL, "intro background must be loaded before fixing");
 
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"

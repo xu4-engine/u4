@@ -120,7 +120,7 @@ char *weaponGetName(int weapon)
 {
     weaponLoadInfoFromXml();
 
-    return weapons[weapon].name;
+    return (char *)weapons[weapon].name;
 }
 
 /**
@@ -131,7 +131,7 @@ char *weaponGetAbbrev(int weapon)
 {
     weaponLoadInfoFromXml();
 
-    return weapons[weapon].abbr;
+    return (char *)weapons[weapon].abbr;
 }
 
 /**

@@ -120,6 +120,7 @@ int playerGetMaxMp(const SaveGamePlayerRecord *player) {
     }
 
     ASSERT(0, "invalid player class: %d", player->klass);
+    return 0;
 }
 
 /**
@@ -151,6 +152,7 @@ int playerCanWear(const SaveGamePlayerRecord *player, ArmorType armor) {
     }
 
     ASSERT(0, "invalid player class: %d", player->klass);
+    return 0;
 }
 
 /**
@@ -182,6 +184,7 @@ int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon) {
         return ((weapMask[weapon] & (1 << player->klass)) != 0);
 
     ASSERT(0, "invalid weapon: %d", weapon);
+    return 0;
 }
 
 int playerCanEnterShrine(const SaveGame *saveGame, Virtue virtue) {

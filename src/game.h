@@ -24,7 +24,7 @@ typedef struct AlphaActionInfo {
 } AlphaActionInfo;
 
 typedef struct CoordActionInfo {
-    int (*handleAtCoord)(int, int, int);
+    int (*handleAtCoord)(int, int, int, void*);
     int origin_x, origin_y;
     int range;
     int validDirections;

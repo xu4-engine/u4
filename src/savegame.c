@@ -315,7 +315,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
     int i;
     int r;
 
-    memset(monsterTable, 0, MONSTERTABLE_SIZE * sizeof(Object *));
+    memset((void *)monsterTable, 0, MONSTERTABLE_SIZE * sizeof(Object *));
     anim = 0;
     inanim = MONSTERTABLE_SIZE;
     obj = objs;

@@ -1033,6 +1033,7 @@ char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response) {
     default:
         ASSERT(0, "invalid npc type: %d", cnv->talker->npcType);
     }
+    return NULL;
 }
 
 char *vendorGetSellQuantityResponse(Conversation *cnv, const char *response) {

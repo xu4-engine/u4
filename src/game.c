@@ -47,27 +47,27 @@ void gameCastSpell(unsigned int spell, int caster, int param);
 int gameCheckPlayerDisabled(int player);
 void gameGetPlayerForCommand(int (*commandFn)(int player));
 int moveAvatar(Direction dir, int userEvent);
-int attackAtCoord(int x, int y, int distance, CoordActionInfo *info);
+int attackAtCoord(int x, int y, int distance, void *data);
 int castForPlayer(int player);
 int castForPlayer2(int spell, void *data);
 int castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
 int castForPlayerGetPhase(int phase);
-int fireAtCoord(int x, int y, int distance, CoordActionInfo *info);
+int fireAtCoord(int x, int y, int distance, void *data);
 int getChest(int player);
 int getChestTrapHandler(int player);
-int jimmyAtCoord(int x, int y, int distance, CoordActionInfo *info);
+int jimmyAtCoord(int x, int y, int distance, void *data);
 int mixReagentsForSpell(int spell, void *data);
 int mixReagentsForSpell2(char choice);
 int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
-int openAtCoord(int x, int y, int distance, CoordActionInfo *info);
+int openAtCoord(int x, int y, int distance, void *data);
 int gemHandleChoice(char choice);
 int gamePeerCity(int city, void *data);
 int peerCityHandleChoice(char choice);
 int readyForPlayer(int player);
 int readyForPlayer2(int weapon, void *data);
-int talkAtCoord(int x, int y, int distance, CoordActionInfo *info);
+int talkAtCoord(int x, int y, int distance, void *data);
 int talkHandleBuffer(const char *message);
 int talkHandleChoice(char choice);
 void talkShowReply(int showPrompt);
@@ -1006,7 +1006,7 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
     int distance = 0;
     Direction dir;
     int t_x = info->origin_x, t_y = info->origin_y;
-    Object *obj, *player;
+    Object *obj;
     int tile, i;
 
     eventHandlerPopKeyHandler();
@@ -1194,10 +1194,11 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
  * Attempts to attack a creature at map coordinates x,y.  If no
  * creature is present at that point, zero is returned.
  */
-int attackAtCoord(int x, int y, int distance, CoordActionInfo *info) {
+int attackAtCoord(int x, int y, int distance, void *data) {
     Object *obj, *under;
     const Monster *m;
     unsigned char ground;
+    CoordActionInfo *info = (CoordActionInfo *)data;
 
     /* attack failed: finish up */
     if (x == -1 && y == -1) {
@@ -1301,7 +1302,7 @@ int castForPlayerGetPhase(int phase) {
     return 1;
 }
 
-int fireAtCoord(int x, int y, int distance, CoordActionInfo *info) {
+int fireAtCoord(int x, int y, int distance, void *data) {
     if (x == -1 && y == -1) {
         if (distance == 0)
             screenMessage("Broadsides Only!\n");
@@ -1348,6 +1349,8 @@ int getChest(int player) {
     
     else
         screenMessage("Not Here!\n");
+
+    return 1;
 }
 
 /**
@@ -1400,7 +1403,7 @@ int getChestTrapHandler(int player)
  * door is replaced by a permanent annotation of an unlocked door
  * tile.
  */
-int jimmyAtCoord(int x, int y, int distance, CoordActionInfo *info) {
+int jimmyAtCoord(int x, int y, int distance, void *data) {
     if (x == -1 && y == -1) {
         screenMessage("Jimmy what?\n");
         gameFinishTurn();
@@ -1611,7 +1614,7 @@ int newOrderForPlayer2(int player2) {
  * Attempts to open a door at map coordinates x,y.  The door is
  * replaced by a temporary annotation of a floor tile for 4 turns.
  */
-int openAtCoord(int x, int y, int distance, CoordActionInfo *info) {
+int openAtCoord(int x, int y, int distance, void *data) {
     if (x == -1 && y == -1) {
         screenMessage("Not Here!\n");
         gameFinishTurn();
@@ -1706,7 +1709,7 @@ int peerCityHandleChoice(char choice) {
  * Begins a conversation with the NPC at map coordinates x,y.  If no
  * NPC is present at that point, zero is returned.
  */
-int talkAtCoord(int x, int y, int distance, CoordActionInfo *info) {
+int talkAtCoord(int x, int y, int distance, void *data) {
     const Person *talker;
 
     if (x == -1 && y == -1) {
@@ -1900,6 +1903,7 @@ int ztatsFor(int player) {
     statsUpdate();
 
     eventHandlerPushKeyHandler(&gameZtatsKeyHandler);    
+    return 1;
 }
 
 /**
@@ -2143,11 +2147,10 @@ void gameUpdateMoons(int showmoongates)
 void gameInitMoons()
 {
     int trammelphase = c->saveGame->trammelphase,
-        feluccaphase = c->saveGame->feluccaphase,
-        showmoongates = 0;
+        feluccaphase = c->saveGame->feluccaphase;        
 
-    ASSERT(c, "Game context doesn't exist!");
-    ASSERT(c->saveGame, "Savegame doesn't exist in current context!");
+    ASSERT(c != NULL, "Game context doesn't exist!");
+    ASSERT(c->saveGame != NULL, "Savegame doesn't exist in current context!");
     ASSERT(mapIsWorldMap(c->map) && viewMode == VIEW_NORMAL, "Can only call gameInitMoons() from the world map!");
 
     c->saveGame->trammelphase = c->saveGame->feluccaphase = 0;
@@ -2155,7 +2158,7 @@ void gameInitMoons()
 
     while ((c->saveGame->trammelphase != trammelphase) ||
            (c->saveGame->feluccaphase != feluccaphase))
-        gameUpdateMoons(&showmoongates);    
+        gameUpdateMoons(0);    
 }
 
 void gameCheckBridgeTrolls() {

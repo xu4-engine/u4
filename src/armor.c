@@ -63,7 +63,7 @@ char *armorGetName(int armor)
 {
     armorLoadInfoFromXml();
 
-    return armors[armor].name;
+    return (char *)armors[armor].name;
 }
 
 /**
