@@ -5,7 +5,7 @@
     <tile cantwalkon="all" swimable="true" sailable="true" animated="true"/> <!-- water -->
     <tile cantwalkon="all" swimable="true" animated="true"/> <!-- shallows -->
     <tile speed="slow" effect="poison"/> <!-- swamp -->
-    <tile/> <!-- grass -->
+    <tile canlandballoon="true"/> <!-- grass -->
     <tile speed="vslow"/> <!-- brush -->
     <tile speed="vslow" opaque="true"/> <!-- forest -->
     <tile speed="vvslow"/> <!-- hills -->
