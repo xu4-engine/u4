@@ -32,6 +32,7 @@ typedef struct _Location {
 } Location;
 
 Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback callback, Location *prev);
+unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int *focus);
 void locationFree(Location **stack);
 
 #endif

@@ -6,6 +6,13 @@
 
 #include "location.h"
 
+#include "annotation.h"
+#include "context.h"
+#include "game.h"
+#include "monster.h"
+#include "object.h"
+#include "savegame.h"
+
 Location *locationPush(Location *stack, Location *loc);
 Location *locationPop(Location **stack);
 
@@ -26,6 +33,70 @@ Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationConte
     newLoc->finishTurn = callback;
     
     return locationPush(prev, newLoc);    
+}
+
+/**
+ * Returns the visible tile at the given point on a map.  This
+ * includes visual-only annotations like moongates and attack icons.
+ */
+unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int *focus) {
+    unsigned char tile;
+    const Annotation *a = annotationAt(x, y, z, location->map->id);
+    const Object *obj = mapObjectAt(location->map, x, y, z);
+    
+    /* Do not return objects for VIEW_GEM mode, show only the avatar and tiles */
+    if (location->viewMode == VIEW_GEM) {
+        *focus = 0;
+        if ((location->map->flags & SHOW_AVATAR) && location->x == x && location->y == y)            
+            return c->saveGame->transport;        
+        else return MAP_TILE_AT(location->map, x, y, z);
+    }
+    
+    /* draw objects -- temporary annotations go first */
+    else if (a && a->visual && !a->permanent) {
+        *focus = 0;
+        tile = a->tile;
+    }        
+    /* then the avatar is drawn (unless on a ship) */
+    else if ((location->map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && 
+        location->x == x && location->y == y) {
+        *focus = 0;
+        tile = c->saveGame->transport;
+    }
+    /* then permanent annotations */
+    else if (a && a->visual) {
+        *focus = 0;
+        tile = a->tile;
+    }
+    /* then camouflaged monsters that have a disguise */
+    else if (obj && (obj->objType == OBJECT_MONSTER) && !obj->isVisible && (obj->monster->camouflageTile > 0)) {
+        *focus = obj->hasFocus;
+        tile = obj->monster->camouflageTile;
+    }        
+    /* then visible monsters */
+    else if (obj && (obj->objType != OBJECT_UNKNOWN) && obj->isVisible) {
+        *focus = obj->hasFocus;
+        tile = obj->tile;
+    }
+    /* then other visible objects */
+    else if (obj && obj->isVisible) {
+        *focus = obj->hasFocus;
+        tile = obj->tile;
+    }
+    /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */
+    else if ((location->map->flags & SHOW_AVATAR) && location->x == x && location->y == y) {
+        *focus = 0;
+        tile = c->saveGame->transport;
+    }
+    /* then the base tile */
+    else {
+        *focus = 0;
+        tile = MAP_TILE_AT(location->map, x, y, z);
+        if (a)
+            tile = a->tile;
+    }
+    
+    return tile;
 }
 
 /**

@@ -23,8 +23,6 @@
 #include "savegame.h"
 #include "ttype.h"
 
-#define MAP_TILE_AT(mapptr, x, y, z) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
-
 extern City lcb_2_city;
 
 int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
@@ -313,64 +311,6 @@ unsigned char mapGroundTileAt(const Map *map, int x, int y, int z) {
     return tile;
 }
 
-/**
- * Returns the visible tile at the given point on a map.  This
- * includes visual-only annotations like moongates and attack icons.
- */
-unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus) {
-    unsigned char tile;
-    const Annotation *a = annotationAt(x, y, z, map->id);
-    const Object *obj = mapObjectAt(c->location->map, x, y, z);
-    
-    /* FIXME: do not return objects for VIEW_GEM mode */
-
-    /* temporary annotations go first */
-    if (a && a->visual && !a->permanent) {
-        *focus = 0;
-        tile = a->tile;
-    }        
-    /* then the avatar is drawn (unless on a ship) */
-    else if ((map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && 
-        c->location->x == x && c->location->y == y) {
-        *focus = 0;
-        tile = c->saveGame->transport;
-    }
-    /* then permanent annotations */
-    else if (a && a->visual) {
-        *focus = 0;
-        tile = a->tile;
-    }
-    /* then camouflaged monsters that have a disguise */
-    else if (obj && (obj->objType == OBJECT_MONSTER) && !obj->isVisible && (obj->monster->camouflageTile > 0)) {
-        *focus = obj->hasFocus;
-        tile = obj->monster->camouflageTile;
-    }        
-    /* then visible monsters */
-    else if (obj && (obj->objType != OBJECT_UNKNOWN) && obj->isVisible) {
-        *focus = obj->hasFocus;
-        tile = obj->tile;
-    }
-    /* then other visible objects */
-    else if (obj && obj->isVisible) {
-        *focus = obj->hasFocus;
-        tile = obj->tile;
-    }
-    /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */
-    else if ((map->flags & SHOW_AVATAR) && c->location->x == x && c->location->y == y) {
-        *focus = 0;
-        tile = c->saveGame->transport;
-    }
-    /* then the base tile */
-    else {
-        *focus = 0;
-        tile = MAP_TILE_AT(map, x, y, z);
-        if (a)
-            tile = a->tile;
-    }
-    
-    return tile;
-}
-
 int mapIsWorldMap(const Map *map) {
     return map->id == 0;
 }
@@ -618,8 +558,12 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         /* monsters */
         else if (m) {
             /* flying monsters */
-            if (tileIsFlyable(tile) && monsterFlies(m)) {                
-                retval = DIR_ADD_TO_MASK(d, retval);
+            if (tileIsFlyable(tile) && monsterFlies(m)) {  
+                /* FIXME: flying creatures behave differently on the world map? */
+                if (mapIsWorldMap(map))
+                    retval = DIR_ADD_TO_MASK(d, retval);
+                else if (tileIsWalkable(tile) || tileIsSwimable(tile) || tileIsSailable(tile))
+                    retval = DIR_ADD_TO_MASK(d, retval);
             }
             /* swimming monsters and sailing monsters */
             else if (tileIsSwimable(tile) || tileIsSailable(tile)) {

@@ -118,7 +118,7 @@ unsigned char screenViewportTile(int width, int height, int x, int y, int *focus
         }
     }
 
-    return mapVisibleTileAt(c->location->map, tx, ty, z, focus);
+    return locationVisibleTileAt(c->location, tx, ty, z, focus);
 }
 
 /**
