@@ -31,6 +31,12 @@ extern Map lycaeum_map;
 extern Map empath_map;
 extern Map serpent_map;
 
+DestroyAllMonstersCallback destroyAllMonstersCallback;
+
+void itemSetDestroyAllMonstersCallback(DestroyAllMonstersCallback callback) {
+    destroyAllMonstersCallback = callback;
+}
+
 int isRuneInInventory(void *virt);
 void putRuneInInventory(void *virt);
 int isStoneInInventory(void *virt);
@@ -148,8 +154,16 @@ void useWheel(void *item) {
     else screenMessage("\nHmm...No effect!\n");    
 }
 
-void useSkull(void *item) {
-    screenMessage("using skull\n");
+void useSkull(void *item) {    
+    
+    screenMessage("\n\nYou hold the evil Skull of Mondain the Wizard aloft....\n");
+    
+    /* destroy all monsters */    
+    (*destroyAllMonstersCallback)();    
+    
+    /* destroy the skull */
+    c->saveGame->items = (c->saveGame->items & ~ITEM_SKULL);
+    playerAdjustKarma(c->saveGame, KA_USED_SKULL);
 }
 
 int isMysticInInventory(void *mystic) {

@@ -69,5 +69,6 @@ void gameDamageShip(int minDamage, int maxDamage);
 void gameMonsterCleanup(void);
 void gameSetTransport(unsigned char tile);
 void gameSpawnMonster(const struct _Monster *m);
+int useItem(const char *itemName);
 
 #endif

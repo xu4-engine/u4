@@ -26,6 +26,9 @@ typedef struct _ItemLocation {
     unsigned char conditions;
 } ItemLocation;
 
+typedef void (*DestroyAllMonstersCallback)(void);
+
+void itemSetDestroyAllMonstersCallback(DestroyAllMonstersCallback callback);
 const ItemLocation *itemAtLocation(const struct _Map *map, unsigned short x, unsigned short y, unsigned short z);
 void itemUse(const char *shortname);
 

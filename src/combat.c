@@ -361,7 +361,8 @@ void combatFinishTurn() {
 int combatBaseKeyHandler(int key, void *data) {
     int valid = 1;
     CoordActionInfo *info;
-    AlphaActionInfo *alphaInfo; 
+    AlphaActionInfo *alphaInfo;
+    ReadBufferActionInfo *readBufferInfo;
     int focus = combatInfo.focus;
     int weapon = c->saveGame->players[focus].weapon;    
 
@@ -424,6 +425,21 @@ int combatBaseKeyHandler(int key, void *data) {
             eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
         }
         break;
+
+    case 'u':
+        {
+            extern char itemNameBuffer[16];
+            screenMessage("Use which item:\n");
+            readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+            readBufferInfo->handleBuffer = &useItem;
+            readBufferInfo->buffer = itemNameBuffer;
+            readBufferInfo->bufferLen = sizeof(itemNameBuffer);
+            readBufferInfo->screenX = TEXT_AREA_X + c->col;
+            readBufferInfo->screenY = TEXT_AREA_Y + c->line;
+            itemNameBuffer[0] = '\0';
+            eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+            return 1;
+        }
 
     case 'z':
         c->statsItem = (StatsItem) (STATS_CHAR1 + focus);

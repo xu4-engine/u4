@@ -73,7 +73,6 @@ int talkAtCoord(int x, int y, int distance, void *data);
 int talkHandleBuffer(const char *message);
 int talkHandleChoice(char choice);
 void talkShowReply(int showPrompt);
-int useItem(const char *itemName);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 int ztatsFor(int player);
@@ -90,6 +89,7 @@ long gameTimeSinceLastCommand(void);
 void gameMonsterAttack(Object *obj);
 void gameLordBritishCheckLevels(void);
 int gameSummonMonster(const char *monsterName);
+void gameDestroyAllMonsters(void);
 
 extern Map world_map;
 extern Object *party[8];
@@ -159,6 +159,7 @@ void gameInit() {
     playerSetSpellCallback(&gameSpellEffect);
     playerSetPartyStarvingCallback(&gamePartyStarving);
     playerSetSetTransportCallback(&gameSetTransport);
+    itemSetDestroyAllMonstersCallback(&gameDestroyAllMonsters);
     vendorSetInnHandlerCallback(&innBegin);
 
     musicPlay();
@@ -562,37 +563,28 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'b':
+
         obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z);
-        if (obj) {
-            if (tileIsShip(obj->tile)) {
-                if (c->transportContext != TRANSPORT_FOOT)
-                    screenMessage("Board: Can't!\n");
-                else {
-                    gameSetTransport(obj->tile);
-                    if (c->lastShip != obj)
-                        c->saveGame->shiphull = 50;
-                    mapRemoveObject(c->location->map, obj);
-                    screenMessage("Board Frigate!\n");
-                }
-            } else if (tileIsHorse(obj->tile)) {
-                if (c->transportContext != TRANSPORT_FOOT)
-                    screenMessage("Board: Can't!\n");
-                else {
-                    gameSetTransport(obj->tile);
-                    mapRemoveObject(c->location->map, obj);
-                    screenMessage("Mount Horse!\n");
-                }
-            } else if (tileIsBalloon(obj->tile)) {
-                if (c->transportContext != TRANSPORT_FOOT)
-                    screenMessage("Board: Can't!\n");
-                else {
-                    gameSetTransport(obj->tile);
-                    mapRemoveObject(c->location->map, obj);
-                    screenMessage("Board Balloon!\n");
-                }
+
+        if (c->transportContext != TRANSPORT_FOOT)
+            screenMessage("Board: Can't\n");
+        else if (obj) {
+            int valid = 1;
+            
+            if (tileIsShip(obj->tile))
+                screenMessage("Board Frigate!\n");
+            else if (tileIsHorse(obj->tile))
+                screenMessage("Mount Horse!\n");
+            else if (tileIsBalloon(obj->tile))
+                screenMessage("Board Balloon!\n");
+            else valid = 0;
+
+            if (valid) {
+                gameSetTransport(obj->tile);
+                mapRemoveObject(c->location->map, obj);
             }
-        } else
-            screenMessage("Board What?\n");
+        }
+        else screenMessage("Board What?\n");        
         break;
 
     case 'c':
@@ -3011,4 +3003,27 @@ void gameSpawnMonster(const Monster *m) {
         monster = monsterRandomForTile(mapTileAt(c->location->map, x, y, c->location->z));
 
     if (monster) mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);    
+}
+
+void gameDestroyAllMonsters(void) {
+    int i;
+    extern CombatInfo combatInfo;
+    
+    (*spellCallback)(-1, -1);
+    
+    if (c->location->context == CTX_COMBAT) {
+        /* destroy all monsters in combat */
+        for (i = 0; i < AREA_MONSTERS; i++) {
+            mapRemoveObject(c->location->map, combatInfo.monsters[i]);
+            combatInfo.monsters[i] = NULL;
+        }
+    }
+    else {
+        /* destroy all monsters on the map */
+        Object *obj;
+        for (obj = c->location->map->objects; obj; obj = obj->next) {
+            if (obj->objType == OBJECT_MONSTER)
+                mapRemoveObject(c->location->map, obj);
+        }
+    }
 }
