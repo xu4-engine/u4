@@ -27,6 +27,7 @@
 #include "debug.h"
 #include "settings.h"
 #include "movement.h"
+#include "u4.h"
 
 extern Map brick_map;
 extern Map bridge_map;
@@ -344,8 +345,13 @@ int combatBaseKeyHandler(int key, void *data) {
         screenMessage("Ztats\n");        
         break;
 
+    case 'v' + U4_ALT:
+        screenMessage("XU4 %s\n", VERSION);        
+        break;
+
     case 'x' + U4_ALT:
         eventHandlerSetExitFlag(1);
+        valid = 0;
         break;
 
     default:

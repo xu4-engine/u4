@@ -216,6 +216,7 @@ void gameUpdateScreen() {
         screenUpdate(0, 0);
         break;
     case VIEW_DUNGEON:
+        screenUpdate(1, 0);
         break;
     case VIEW_DEAD:
         screenUpdate(1, 1);
@@ -860,11 +861,12 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'v' + U4_ALT:
-        screenMessage("XU4 %s\n", VERSION);
+        screenMessage("XU4 %s\n", VERSION);        
         break;
 
     case 'x' + U4_ALT:
         eventHandlerSetExitFlag(1);
+        valid = 0;
         break;
 
     default:
@@ -2173,6 +2175,10 @@ void gameTimer(void *data) {
 
 }
 
+/**
+ * Updates the phases of the moons and shows
+ * the visual moongates on the map, if desired
+ */
 void gameUpdateMoons(int showmoongates)
 {
     int realMoonPhase,
@@ -2238,6 +2244,11 @@ void gameUpdateMoons(int showmoongates)
     }
 }
 
+/**
+ * Initializes the moon state according to the savegame file. This method of
+ * initializing the moons (rather than just setting them directly) is necessary
+ * to make sure trammel and felucca stay in sync
+ */
 void gameInitMoons()
 {
     int trammelphase = c->saveGame->trammelphase,
@@ -2255,6 +2266,9 @@ void gameInitMoons()
         gameUpdateMoons(0);    
 }
 
+/**
+ * Handles trolls under bridges
+ */
 void gameCheckBridgeTrolls() {
     if (!mapIsWorldMap(c->location->map) ||
         mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z) != BRIDGE_TILE ||
@@ -2267,6 +2281,10 @@ void gameCheckBridgeTrolls() {
                 mapAddMonsterObject(c->location->map, monsterForTile(TROLL_TILE), c->location->x, c->location->y, c->location->z));
 }
 
+/**
+ * Checks the hull integrity of the ship and handles
+ * the ship sinking, if necessary
+ */
 void gameCheckHullIntegrity() {
     int i;
 
@@ -2288,6 +2306,11 @@ void gameCheckHullIntegrity() {
     }
 }
 
+/**
+ * Checks for valid conditions and handles
+ * special monsters guarding the entrance to the
+ * abyss and to the shrine of spirituality
+ */
 void gameCheckSpecialMonsters(Direction dir) {
     int i;
     Object *obj;
@@ -2337,6 +2360,9 @@ void gameCheckSpecialMonsters(Direction dir) {
     }
 }
 
+/**
+ * Checks for and handles when the avatar steps on a moongate
+ */
 void gameCheckMoongates() {
     int destx, desty;
     extern Map shrine_spirituality_map;
@@ -2363,6 +2389,9 @@ void gameCheckMoongates() {
     }
 }
 
+/**
+ * Checks monster conditions and spawns new monsters if necessary
+ */
 void gameCheckRandomMonsters() {
     int x, y, dx, dy, t;
     const Monster *monster;    
@@ -2402,6 +2431,10 @@ void gameCheckRandomMonsters() {
     mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);
 }
 
+/**
+ * Fixes objects initially loaded by saveGameMonstersRead,
+ * and alters movement behavior accordingly to match the monster
+ */
 void gameFixupMonsters() {
     Object *obj;
 
@@ -2427,6 +2460,9 @@ long gameTimeSinceLastCommand() {
     return time(NULL) - c->lastCommandTime;
 }
 
+/**
+ * Handles what happens when a monster attacks you
+ */
 void gameMonsterAttack(Object *obj) {
     Object *under;
     unsigned char ground;    
@@ -2440,6 +2476,12 @@ void gameMonsterAttack(Object *obj) {
     combatBegin(ground, c->saveGame->transport, obj);
 }
 
+/**
+ * Perform an action in the given direction, using the 'handleAtCoord'
+ * function of the CoordActionInfo struct.  The 'blockedPredicate'
+ * function is used to determine whether or not the action is blocked
+ * by the tile it passes over.
+ */
 int gameDirectionalAction(Direction dir, CoordActionInfo *info) {
     int distance, tile;
     int t_x = info->origin_x,
@@ -2487,7 +2529,6 @@ int gameDirectionalAction(Direction dir, CoordActionInfo *info) {
  * avoid the damage.  If (minDamage == -1) or (minDamage >= maxDamage),
  * deals 'maxDamage' damage to each member.
  */
-
 void gameDamageParty(int minDamage, int maxDamage) {
     int i;
     int damage;
@@ -2507,7 +2548,6 @@ void gameDamageParty(int minDamage, int maxDamage) {
  * to the ship.  If (minDamage == -1) or (minDamage >= maxDamage),
  * deals 'maxDamage' damage to the ship.
  */
-
 void gameDamageShip(int minDamage, int maxDamage) {
     int damage;
 
@@ -2524,6 +2564,9 @@ void gameDamageShip(int minDamage, int maxDamage) {
     }
 }
 
+/**
+ * Removes monsters from the current map if they are too far away from the avatar
+ */
 void gameMonsterCleanup(void) {
     Object *obj, *prev;
     

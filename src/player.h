@@ -36,7 +36,8 @@ typedef enum {
     HT_CURE,
     HT_FULLHEAL,
     HT_RESURRECT,
-    HT_HEAL
+    HT_HEAL,
+    HT_RESTHEAL
 } HealType;
 
 typedef enum {

@@ -76,11 +76,9 @@ int campHeal() {
 
     for (i = 0; i < c->saveGame->members; i++) {
         c->saveGame->players[i].mp = playerGetMaxMp(&c->saveGame->players[i]);
-        if (c->saveGame->players[i].hp < c->saveGame->players[i].hpMax)
-        {
-            playerHeal(c->saveGame, HT_HEAL, i);
+        if ((c->saveGame->players[i].hp < c->saveGame->players[i].hpMax) &&
+            (playerHeal(c->saveGame, HT_RESTHEAL, i)))            
             healed = 1;
-        }
     }
     statsUpdate();
 

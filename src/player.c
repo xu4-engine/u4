@@ -501,14 +501,21 @@ int playerHeal(SaveGame *saveGame, HealType type, int player) {
         if (saveGame->players[player].status == STAT_DEAD ||
             saveGame->players[player].hp == saveGame->players[player].hpMax)
             return 0;
-        saveGame->players[player].hp += 75 + (rand() % 0x18);
-        if (saveGame->players[player].hp > saveGame->players[player].hpMax)
-            saveGame->players[player].hp = saveGame->players[player].hpMax;
+        saveGame->players[player].hp += 75 + (rand() % 0x18);        
         break;
 
+    case HT_RESTHEAL:
+        if (saveGame->players[player].status == STAT_DEAD ||
+            saveGame->players[player].hp == saveGame->players[player].hpMax)
+            return 0;        
+        saveGame->players[player].hp += 75 + (rand() % 75) + (rand() % 75);
+        break;
     default:
         return 0;
     }
+
+    if (saveGame->players[player].hp > saveGame->players[player].hpMax)
+        saveGame->players[player].hp = saveGame->players[player].hpMax;
     
     return 1;
 }
