@@ -13,6 +13,7 @@
 #include "monster.h"
 #include "object.h"
 #include "savegame.h"
+#include "ttype.h"
 
 Location *locationPush(Location *stack, Location *loc);
 Location *locationPop(Location **stack);
@@ -101,6 +102,31 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
     }
     
     return tile;
+}
+
+/**
+ * Finds a valid replacement tile for the given location, using surrounding tiles
+ * as guidelines to choose the new tile.  The new tile will only be chosen if it
+ * is marked as a valid replacement tile in tiles.xml.  If a valid replacement 
+ * cannot be found, it returns it's best guess.
+ */
+unsigned char locationGetReplacementTile(Location *location, int x, int y, int z) {
+    Direction d;
+
+    for (d = DIR_WEST; d <= DIR_SOUTH; d++) {
+        int tx = x,
+            ty = y;
+        unsigned char newTile;
+
+        mapDirMove(c->location->map, d, &tx, &ty);
+        newTile = (*c->location->tileAt)(c->location->map, tx, ty, c->location->z, WITHOUT_OBJECTS);
+
+        /* make sure the tile we found is a valid replacement */
+        if (tileIsReplacement(newTile))
+            return newTile;        
+    }            
+    
+    return (c->location->context & CTX_COMBAT) ? BRICKFLOOR_1_TILE : BRICKFLOOR_TILE;
 }
 
 /**

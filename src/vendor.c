@@ -1520,6 +1520,23 @@ char *vendorGetTavernTopicResponse(Conversation *cnv, const char *response) {
      * happens there are six vendors and six topics.
      */
 
+    /* FIXME: The above statement is incorrect.  There are 6 topics.
+       I'm not sure which topics are which -- to find out check for
+       the bug report which corresponds to this issue, but here is 
+       the pattern:
+               
+               1 2 3 4 5 6
+               x
+               x x
+               x x x
+               x x x x
+               x x x x x
+               x x x x x x
+
+       Where 1-6 are the different taverns, and the x's represent the
+       different topics that they'll discuss.
+    */
+
     /* FIXME: check price */
     for (i = 0; i < N_TAVERN_TOPICS; i++) {
         if (strcasecmp(response, tavernTopics[i]) == 0)

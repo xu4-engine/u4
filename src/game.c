@@ -2129,24 +2129,8 @@ int gameGetChest(int player) {
     Direction d;
     
     locationGetCurrentPosition(c->location, &x, &y, &z);
-        
-    /* figure out the tile that will replace the treasure chest */
-    for (d = DIR_WEST; d <= DIR_SOUTH; d++) {
-        tx = x;
-        ty = y;
-        mapDirMove(c->location->map, d, &tx, &ty);        
-        newTile = (*c->location->tileAt)(c->location->map, tx, ty, c->location->z, WITHOUT_OBJECTS);
-
-        /* make sure the tile we found is a valid replacement */
-        if (tileIsReplacement(newTile))
-            break;
-        else newTile = 0;
-    }            
-    /* couldn't find a tile to replace with -- take a guess! */
-    if (newTile == 0)
-        newTile = (c->location->context & CTX_COMBAT) ? BRICKFLOOR_1_TILE : BRICKFLOOR_TILE;
-
     tile = (*c->location->tileAt)(c->location->map, x, y, z, WITH_OBJECTS);
+    newTile = locationGetReplacementTile(c->location, x, y, z);    
     
     /* get the object for the chest, if it is indeed an object */
     obj = mapObjectAt(c->location->map, x, y, z);
@@ -2177,7 +2161,6 @@ int gameGetChest(int player) {
 /**
  * Called by gameGetChest() to handle possible traps on chests
  **/
-
 int getChestTrapHandler(int player) {            
     TileEffect trapType;
     int dex = c->saveGame->players[player].dex;
@@ -2277,14 +2260,14 @@ MoveReturnValue gameMoveAvatar(Direction dir, int userEvent) {
         /* movement was slowed */
         if (retval & MOVE_SLOWED)
             screenMessage("Slow progress!\n");        
-    }    
+    }
 
     /* exited map */
     if (retval & MOVE_EXIT_TO_PARENT) {
         screenMessage("Leaving...\n");
         gameExitToParentMap(c);
         musicPlay();
-    }    
+    }
 
     /* things that happen while not on board the balloon */
     if (c->transportContext & ~TRANSPORT_BALLOON)
