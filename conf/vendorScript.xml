@@ -1332,7 +1332,7 @@
     <script id="Guild" noun="item">        
         <intro>
             <music type="shopping"/>
-            <ztats screen="items"/>
+            <ztats screen="equipment"/>
             Avast ye mate! Shure ye wishes to buy from ol'
             {owner}?
 
@@ -1365,24 +1365,27 @@
 
         <tell_about default="true" redirect="bye"/>
         <tell_about choice="a">
+            <context name="item"/>
             
             I can give ya {quant} long lasting Torches for a mere {price}gp.<redirect target="will_buy"/>
         </tell_about>
         <tell_about choice="b">
+            <context name="item"/>
             
             I've got magical mapping Gems, {quant} for only {price}gp.<redirect target="will_buy"/>
         </tell_about>
         <tell_about choice="c">
+            <context name="item"/>
             
             Magical Keys, 1 use each, a fair price at {price}gp for {quant}.<redirect target="will_buy"/>
         </tell_about>
         <tell_about choice="d">
+            <context name="item"/>
             
             So...Ya want a Sextant...Well I gots one which I might part with fer {price} gold!<redirect target="will_buy"/>
         </tell_about>
 
         <will_buy>
-            <context name="item"/>
             <var name="item" value="{$choice}"/>
             
             Will ya buy? <input type="choice" options="yn" target="buy_item"/>
@@ -1410,6 +1413,7 @@
         </cantpay>
 
         <see_more>
+            <unset_context/>
 
             {owner} says: See
             more? <input type="choice" options="yn" target="show_goods"/>
@@ -1419,14 +1423,14 @@
             <item choice="a" name="Torches" price="50" quant="5" type="torch"/>
             <item choice="b" name="Magic Gems" price="60" quant="5" type="gem"/>
             <item choice="c" name="Magic Keys" price="60" quant="6" type="key"/>
-            <item choice="d" hidden="true" name="Sextant" price="900" type="sextant"/>            
+            <item choice="d" hidden="true" name="Sextant" price="900" quant="1" type="sextant"/>            
         </vendor>
 
         <vendor id="Buccaneers Den" name="Pirate's Guild" owner="One Eyed Willey">
             <item choice="a" name="Torches" price="50" quant="5" type="torch"/>
             <item choice="b" name="Magic Gems" price="60" quant="5" type="gem"/>
             <item choice="c" name="Magic Keys" price="60" quant="6" type="key"/>
-            <item choice="d" hidden="true" name="Sextant" price="900" type="sextant"/>            
+            <item choice="d" hidden="true" name="Sextant" price="900" quant="1" type="sextant"/>            
         </vendor>
     </script>
 
