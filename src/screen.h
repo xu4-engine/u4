@@ -98,6 +98,7 @@ void screenDrawBackgroundInMapArea(BackgroundType bkgd);
 void screenFreeBackgrounds();
 
 void screenCycle(void);
+void screenFillRect(int x, int y, int w, int h, int r, int g, int b);
 void screenEraseMapArea(void);
 void screenEraseTextArea(int x, int y, int width, int height);
 void screenFindLineOfSight(void);

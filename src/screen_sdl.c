@@ -31,7 +31,6 @@
 long decompress_u4_file(FILE *in, long filesize, void **out);
 long decompress_u4_memory(void *in, long inlen, void **out);
 
-void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b);
 void fixupIntro(Image *im, int prescale);
 void fixupIntroExtended(Image *im, int prescale);
 void fixupAbyssVision(Image *im, int prescale);
@@ -432,7 +431,7 @@ Layout *screenLoadLayoutFromXml(xmlNodePtr node) {
  *  Fills a rectangular screen area with the specified color.  The x,
  *  y, width and height parameters are unscaled, i.e. for 320x200.
  */
-void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b) {
+void screenFillRect(int x, int y, int w, int h, int r, int g, int b) {
     SDL_Rect dest;
 
     dest.x = x * scale;
@@ -440,7 +439,7 @@ void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int
     dest.w = w * scale;
     dest.h = h * scale;
 
-    if (SDL_FillRect(surface, &dest, SDL_MapRGB(surface->format, (Uint8)r, (Uint8)g, (Uint8)b)) != 0)
+    if (SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, (Uint8)r, (Uint8)g, (Uint8)b)) != 0)
         errorWarning("screenFillRect: SDL_FillRect failed\n%s", SDL_GetError());
 }
 
@@ -1024,10 +1023,6 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
     unscaled_x = x * (tiles->w / scale) + BORDER_WIDTH;
     unscaled_y = y * ((tiles->h / scale) / N_TILES) + BORDER_HEIGHT;
 
-    if (tileGetAnimationStyle(tile) == ANIM_CAMPFIRE) {
-        /* FIXME: animate campfire */
-    }
-
     SDL_BlitSurface(tiles->surface, &src, screen, &dest);    
 
     if (offset != 0) {
@@ -1045,7 +1040,7 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
     }
 
     /*
-     * animate flags
+     * animate flags and camp fires
      */
     switch (tileGetAnimationStyle(tile)) {
     case ANIM_CITYFLAG:
@@ -1063,13 +1058,16 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
     case ANIM_EASTSHIPFLAG:
         anim = tileAnimSetGetAnimByName(tileanims, "shipflageast");
         break;
+    case ANIM_CAMPFIRE:
+        anim = tileAnimSetGetAnimByName(tileanims, "fire");
+        break;
     default:
         anim = NULL;
         break;
     }
 
     if (anim)
-        tileAnimDraw(anim, tiles, tile, scale, x * tiles->w + (BORDER_WIDTH * scale), y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale));
+        tileAnimDraw(anim, tiles, tile, scale, x * tiles->w / scale + BORDER_WIDTH, y * tiles->h / N_TILES / scale + BORDER_HEIGHT);
 
     /*
      * finally draw the focus rectangle if the tile has the focus
@@ -1493,26 +1491,26 @@ void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
     if (row > 2) y--;
     if (row > 3) y--; 
     c = 64;
-    screenFillRect(screen, x+3, y, 2, 12, c, c, c);
-    screenFillRect(screen, x+2, y+1, 4, 10, c, c, c);
-    screenFillRect(screen, x+1, y+2, 6, 8, c, c, c);
-    screenFillRect(screen, x, y+3, 8, 6, c, c, c);
+    screenFillRect(x+3, y, 2, 12, c, c, c);
+    screenFillRect(x+2, y+1, 4, 10, c, c, c);
+    screenFillRect(x+1, y+2, 6, 8, c, c, c);
+    screenFillRect(x, y+3, 8, 6, c, c, c);
     c += 32;
-    screenFillRect(screen, x+3, y+1, 1, 10, c, c, c);
-    screenFillRect(screen, x+2, y+2, 1, 8, c, c, c);
-    screenFillRect(screen, x+1, y+3, 1, 6, c, c, c);
+    screenFillRect(x+3, y+1, 1, 10, c, c, c);
+    screenFillRect(x+2, y+2, 1, 8, c, c, c);
+    screenFillRect(x+1, y+3, 1, 6, c, c, c);
     
     /* Draw white bead for the virtue that was selected */
     x = 128 + (selectedVirtue * 9);
     c = 223;
-    screenFillRect(screen, x+3, y, 2, 12, c, c, c);
-    screenFillRect(screen, x+2, y+1, 4, 10, c, c, c);
-    screenFillRect(screen, x+1, y+2, 6, 8, c, c, c);
-    screenFillRect(screen, x, y+3, 8, 6, c, c, c);
+    screenFillRect(x+3, y, 2, 12, c, c, c);
+    screenFillRect(x+2, y+1, 4, 10, c, c, c);
+    screenFillRect(x+1, y+2, 6, 8, c, c, c);
+    screenFillRect(x, y+3, 8, 6, c, c, c);
     c = 255;
-    screenFillRect(screen, x+3, y+1, 1, 10, c, c, c);
-    screenFillRect(screen, x+2, y+2, 1, 8, c, c, c);
-    screenFillRect(screen, x+1, y+3, 1, 6, c, c, c);
+    screenFillRect(x+3, y+1, 1, 10, c, c, c);
+    screenFillRect(x+2, y+2, 1, 8, c, c, c);
+    screenFillRect(x+1, y+3, 1, 6, c, c, c);
 }
 
 /**
@@ -1560,7 +1558,7 @@ void screenGemUpdate() {
     unsigned char tile;
     int focus, x, y;
 
-    screenFillRect(screen, BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0, 0, 0);
+    screenFillRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0, 0, 0);
 
     for (x = 0; x < gemlayout->viewport.width; x++) {
         for (y = 0; y < gemlayout->viewport.height; y++) {
