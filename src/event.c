@@ -20,7 +20,6 @@
 void moveAvatar(int dx, int dy);
 
 KeyHandlerNode *head = NULL;
-char talkBuffer[5];
 
 
 void eventHandlerPushKeyHandler(KeyHandler kh) {
@@ -102,6 +101,21 @@ int keyHandlerNormal(int key) {
             screenMessage("Enter what?\n\020");
         break;
 
+    case 'k':
+        portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
+        if (portal && portal->trigger_action == ACTION_KLIMB) {
+
+            Context *new = (Context *) malloc(sizeof(Context));
+            new->parent = c;
+            new->saveGame = (SaveGame *) memcpy(malloc(sizeof(SaveGame)), c->saveGame, sizeof(SaveGame));
+            new->map = portal->destination;
+            c = new;
+
+            screenMessage("Klimb!\n\n\020");
+        } else
+            screenMessage("Klimb what?\n\020");
+        break;
+
     case 't':
         eventHandlerPushKeyHandler(&keyHandlerTalk);
         screenMessage("Talk\nDir: ");
@@ -156,19 +170,22 @@ int keyHandlerTalk(int key) {
 
     if (t_x != -1 ||
         t_y != -1) {
-        c->talker = mapPersonAt(c->map, t_x, t_y);
-        if (c->talker == NULL) {
+        c->conversation.talker = mapPersonAt(c->map, t_x, t_y);
+        if (c->conversation.talker == NULL) {
             screenMessage("Funny, no\nresponse!\n");
             eventHandlerPopKeyHandler();
         }
         else {
+            const Person *talker = c->conversation.talker;
             char buffer[100];
-            sprintf(buffer, "\nYou meet\n%s\n\n", c->talker->description);
+
+            c->conversation.question = 0;
+            sprintf(buffer, "\nYou meet\n%s\n\n", talker->description);
             if (isupper(buffer[9]))
                 buffer[9] = tolower(buffer[9]);
             screenMessage(buffer);
-            screenMessage("%s says: I am %s\n\n:", c->talker->pronoun, c->talker->name);
-            talkBuffer[0] = '\0';
+            screenMessage("%s says: I am %s\n\n:", talker->pronoun, talker->name);
+            c->conversation.buffer[0] = '\0';
             eventHandlerPopKeyHandler();
             eventHandlerPushKeyHandler(&keyHandlerTalking);
         }
@@ -184,46 +201,35 @@ int keyHandlerTalking(int key) {
         int len;
 
         screenMessage("%c", key);
-        len = strlen(talkBuffer);
+        len = strlen(c->conversation.buffer);
         if (len < 4) {
-            talkBuffer[len] = key;
-            talkBuffer[len + 1] = '\0';
+            c->conversation.buffer[len] = key;
+            c->conversation.buffer[len + 1] = '\0';
         }
 
     } else if (key == '\n' || key == '\r') {
+        int done;
+        char *reply;
+        int askq;
 
         screenMessage("\n");
-        if (talkBuffer[0] == '\0' ||
-            strcasecmp(talkBuffer, "bye") == 0) {
-            eventHandlerPopKeyHandler();
-            screenMessage("Bye.\n");
-            return 1;
-        } else if (strcasecmp(talkBuffer, "look") == 0) {
-            screenMessage("%s says: %s\n", c->talker->pronoun, c->talker->description);
-        } else if (strcasecmp(talkBuffer, "name") == 0) {
-            screenMessage("%s says: I am %s\n", c->talker->pronoun, c->talker->name);
-        } else if (strcasecmp(talkBuffer, "job") == 0) {
-            screenMessage("%s\n", c->talker->job);
-            if (c->talker->questionTrigger == QTRIGGER_JOB)
-                screenMessage("%s\n", c->talker->question);
-        } else if (strcasecmp(talkBuffer, "heal") == 0) {
-            screenMessage("%s\n", c->talker->health);
-            if (c->talker->questionTrigger == QTRIGGER_HEALTH)
-                screenMessage("%s\n", c->talker->question);
-        } else if (strcasecmp(talkBuffer, c->talker->keyword1) == 0) {
-            screenMessage("%s\n", c->talker->response1);
-            if (c->talker->questionTrigger == QTRIGGER_KEYWORD1)
-                screenMessage("%s\n", c->talker->question);
-        } else if (strcasecmp(talkBuffer, c->talker->keyword2) == 0) {
-            screenMessage("%s\n", c->talker->response2);
-            if (c->talker->questionTrigger == QTRIGGER_KEYWORD2)
-                screenMessage("%s\n", c->talker->question);
-        } else {
-            screenMessage("That I cannot\nhelp thee with.\n");
-        }
 
-        screenMessage("\nYour Interest:\n");
-        talkBuffer[0] = '\0';
+        if (c->conversation.question)
+            done = personGetQuestionResponse(c->conversation.talker, c->conversation.buffer, &reply, &askq);
+        else
+            done = personGetResponse(c->conversation.talker, c->conversation.buffer, &reply, &askq);
+        screenMessage("\n%s\n", reply);
+        
+        c->conversation.question = askq;
+        c->conversation.buffer[0] = '\0';
+
+        if (askq)
+            screenMessage("%s\n\nYou say: ", c->conversation.talker->question);
+        else if (done)
+            eventHandlerPopKeyHandler();
+        else
+            screenMessage("Your Interest:\n");
+
     } else {
         valid = 0;
     }
