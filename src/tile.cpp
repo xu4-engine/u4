@@ -91,12 +91,18 @@ Tile *Tile::findByName(string name) {
 MapTile Tile::translate(int index, string tileMap) {
     TileIndexMap* im = TileMap::get(tileMap);    
     if (im) {        
+        string name = (*im)[index];
+        int base = index;
+        
+        /* find the base tile for the index */
+        while (base > 0 && name == (*im)[base-1])
+            base--;
+                   
         Tile *tile = Tile::findByName((*im)[index]);
         if (!tile)
-            errorFatal("Error: the tile '%s' was not found in the tileset", (*im)[index].c_str());
+            errorFatal("Error: the tile '%s' was not found in the tileset", name.c_str());        
         
-        /* FIXME: is tile->index accurate? almost definately not */
-        return MapTile(tile->id, index - tile->index);
+        return MapTile(tile->id, index - base);
     }
     return MapTile();
 }
