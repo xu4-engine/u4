@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     c->map = &world_map;
     c->annotation = NULL;
     c->conversation.talker = NULL;
-    c->conversation.question = 0;
+    c->conversation.state = 0;
     c->conversation.buffer[0] = '\0';
     c->line = 0;
     c->col = 0;

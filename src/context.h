@@ -12,9 +12,9 @@ struct _Person;
 
 #define CONV_BUFFERLEN 16
 
-typedef struct {
+typedef struct _Conversation {
     const struct _Person *talker;
-    int question;
+    int state;
     char buffer[CONV_BUFFERLEN];
 } Conversation;
 
