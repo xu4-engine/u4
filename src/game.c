@@ -126,6 +126,12 @@ void gameFinishTurn() {
         /* adjust food and moves */
         playerEndTurn(c->saveGame);
 
+        /* check if aura has expired */
+        if (c->auraDuration > 0) {
+            if (--c->auraDuration == 0)
+                c->aura = AURA_NONE;
+        }
+
         mapMoveObjects(c->map, c->saveGame->x, c->saveGame->y);
 
         /* update map annotations and the party stats */
@@ -175,6 +181,8 @@ Context *gameCloneContext(Context *ctx) {
     newContext->windDirection = newContext->parent->windDirection;
     newContext->windCounter = newContext->parent->windCounter;
     newContext->moonPhase = newContext->parent->moonPhase;
+    newContext->aura = newContext->parent->aura;
+    newContext->auraDuration = newContext->parent->auraDuration;
 
     return newContext;
 }
@@ -1519,6 +1527,8 @@ int moveAvatar(Direction dir, int userEvent) {
                 c->parent->moonPhase = c->moonPhase;
                 c->parent->windDirection = c->windDirection;
                 c->parent->windCounter = c->windCounter;
+                c->parent->aura = c->aura;
+                c->parent->auraDuration = c->auraDuration;
 		c = c->parent;
                 c->col = 0;
 		free(t);
