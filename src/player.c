@@ -406,6 +406,7 @@ void playerRevive(SaveGame *saveGame) {
 
     saveGame->food = 20099;
     saveGame->gold = 200;
+    saveGame->transport = AVATAR_TILE;
 }
 
 /**
