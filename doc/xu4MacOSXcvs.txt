@@ -9,17 +9,19 @@ Things you only have to do once
 1. Download and install the latest MacOSX developer tools from:
    http://developer.apple.com/
 
-2. Grab SDL-devel-1.2.6.pkg.tar.gz from http://www.libsdl.org/download-1.2.php
+2. Grab SDL-devel-1.2.7.pkg.tar.gz from http://www.libsdl.org/download-1.2.php
    Unpack and install it.
 
 3. Grab SDL_mixer-devel-1.2.5.pkg.tar.gz from
    http://www.libsdl.org/projects/SDL_mixer/
    Unpack and install it.
 
-4. Grab gnome-combo-20031108.dmg.gz from
-   http://www.zveno.com/open_source/libxml2xslt.html
-   Unpack and open the .dmg. Copy the libiconv and libxml frameworks into
+4. Grab xu4_libxml_osx.dmg.gz from
+   http://xu4.sourceforge.net/xu4_libxml_osx.dmg.gz
+   Unpack and open the .dmg. Copy the libxml frameworks into
    ~/Library/Frameworks
+   If you have older versions of the libxml and libiconv frameworks from
+   previous xu4 development, you need to remove them first.
 
 5. Start the Terminal app (usually in /Applications/Utilities)
 
@@ -31,19 +33,19 @@ Things you only have to do once
    Just press enter when it asks for password
    cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 co u4
 
-8. Change to the src directory of the XU4 source code
+8. Download the Ultima IV data files and gfx update (if desired) and copy
+   them into the u4 directory:
+   cp path/to/ultima4.zip u4/
+   cp path/to/u4upgrad.zip u4/
+
+9. Change to the src directory of the XU4 source code
    i.e. cd u4/src
 
 9. Copy the files SDLMain.h and SDLMain.c into the 'macosx' dir
-   cp "/Developer/ProjectBuilder Extras/Project Templates/Application/SDL Application"/SDLMain.* macosx
+   cp "/Library/Application Support/Apple/Developer Tools/Project Templates/Application"/SDLMain.* macosx
 
 9. Compile xu4 
    make -f Makefile.macosx install
-
-10. Download the Ultima IV data files and gfx update (if desired) and copy
-    them into the appropriate location:
-    cp (wherever_you_put_ultima4.zip) ../xu4.app/Contents/Resources
-    cp (wherever_you_put_u4upgrad.zip) ../xu4.app/Contents/Resources
 
 ------------------------------------------------------------
 Things you have to do every time the xu4 source code changes
@@ -63,10 +65,4 @@ Things you have to do every time the xu4 source code changes
 5. Compile xu4
    make -f Makefile.macosx clean
    make -f Makefile.macosx install
-
-6. If you have moved or deleted the old application bundle, it may be
-   necessary to copy the Ultima IV data files and update into the bundle
-   again:
-   cp (wherever_you_put_ultima4.zip) ../xu4.app/Contents/Resources
-   cp (wherever_you_put_u4upgrad.zip) ../xu4.app/Contents/Resources
 
