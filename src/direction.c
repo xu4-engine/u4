@@ -52,6 +52,20 @@ Direction dirReverse(Direction dir) {
     return DIR_NONE;
 }
 
+Direction dirRotateCW(Direction dir) {
+    dir++;
+    if (dir > DIR_SOUTH)
+        dir = DIR_WEST;
+    return dir;
+}
+
+Direction dirRotateCCW(Direction dir) {
+    dir--;
+    if (dir < DIR_WEST)
+        dir = DIR_SOUTH;
+    return dir;
+}
+
 /**
  * Finds the appropriate direction to travel to get from one point to
  * another.  This algorithm will avoids getting trapped behind simple
