@@ -91,7 +91,27 @@ void statsUpdate() {
         if (c->saveGame->karma[i] == 0)
             mask &= ~(1 << i);
     }
-    screenShowCharMasked(0, STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1, mask);
+
+    switch (c->aura) {
+    case AURA_NONE:
+        screenShowCharMasked(0, STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1, mask);
+        break;
+    case AURA_HORN:
+        screenShowChar(1, STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1);
+        break;
+    case AURA_JINX:
+        screenShowChar('J', STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1);
+        break;
+    case AURA_NEGATE:
+        screenShowChar('N', STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1);
+        break;
+    case AURA_PROTECTION:
+        screenShowChar('P', STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1);
+        break;
+    case AURA_QUICKNESS:
+        screenShowChar('Q', STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1);
+        break;
+    }
 }
 
 void statsAreaClear() {
