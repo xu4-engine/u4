@@ -1,0 +1,131 @@
+/*
+ * $Id$
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <assert.h>
+
+#include "settings.h"
+
+Settings *settings = NULL;
+
+char *settingsFilename() {
+    char *fname, *home;
+
+    home = getenv("HOME");
+    if (home && home[0]) {
+        fname = malloc(strlen(home) + strlen("/.xu4rc") + 1);
+        strcpy(fname, home);
+        strcat(fname, "/.xu4rc");
+    } else
+        fname = strdup(".xu4rc");
+
+    return fname;
+}
+
+/**
+ * Read settings in from the settings file.
+ */
+void settingsRead() {
+    char buffer[256];
+    char *settingsFname;
+    FILE *settingsFile;
+
+    settings = malloc(sizeof(Settings));
+
+    /* default settings */
+    settings->scale = 2;
+    settings->fullscreen = 0;
+    settings->filter = SCL_2xSaI;
+    settings->vol = 1;
+
+    settingsFname = settingsFilename();
+    settingsFile = fopen(settingsFname, "r");
+    free(settingsFname);
+    if (!settingsFile)
+        return;
+
+    while(fgets(buffer, sizeof(buffer), settingsFile) != NULL) {
+        while (isspace(buffer[strlen(buffer) - 1]))
+            buffer[strlen(buffer) - 1] = '\0';
+
+        if (strstr(buffer, "scale=") == buffer)
+            settings->scale = (unsigned int) strtoul(buffer + strlen("scale="), NULL, 0);
+        else if (strstr(buffer, "fullscreen=") == buffer)
+            settings->fullscreen = (int) strtoul(buffer + strlen("fullscreen="), NULL, 0);
+        else if (strstr(buffer, "filter=") == buffer) {
+            settings->filter = settingsStringToFilter(buffer + strlen("filter="));
+            if (settings->filter == SCL_MAX) {
+                fprintf(stderr, "xu4: invalid filter name in settings file: resetting to default\n");
+                settings->filter = SCL_DEFAULT;
+            }
+        }
+        else if (strstr(buffer, "vol=") == buffer)
+            settings->vol = (int) strtoul(buffer + strlen("vol="), NULL, 0);
+        else
+            fprintf(stderr, "xu4: invalid line in settings file %s\n", buffer);
+    }
+
+    fclose(settingsFile);
+}
+
+/**
+ * Read the settings out into a human readable file.
+ */
+void settingsWrite() {
+    char *settingsFname;
+    FILE *settingsFile;
+    
+    settingsFname = settingsFilename();
+    settingsFile = fopen(settingsFname, "w");
+    free(settingsFname);
+    if (!settingsFile) {
+        fprintf(stderr, "xu4: can't write settings file\n");
+        return;
+    }
+
+    fprintf(settingsFile, 
+            "scale=%d\n"
+            "fullscreen=%d\n"
+            "filter=%s\n"
+            "vol=%d\n",
+            settings->scale,
+            settings->fullscreen,
+            settingsFilterToString(settings->filter),
+            settings->vol);
+
+    fclose(settingsFile);
+}
+
+/**
+ * Convert a filter enum into a readable string.
+ */
+const char *settingsFilterToString(FilterType filter) {
+    static const char * const filterNames[] = {
+        "default", "2xBi", "2xSaI", "AdvanceMAME"
+    };
+
+    if (filter >= SCL_MAX)
+        assert(0);              /* shouldn't happen */
+
+    return filterNames[filter];
+}
+
+/**
+ * Convert a string to a filter enum.  Returns SCL_MAX if the string
+ * doesn't match a filter.
+ */
+FilterType settingsStringToFilter(const char *str) {
+    FilterType f, result = SCL_MAX;
+    for (f = SCL_DEFAULT; f < SCL_MAX; f++) {
+        if (strcmp(str, settingsFilterToString(f)) == 0) {
+            result = f;
+            break;
+        }
+    }
+
+    return result;
+}
