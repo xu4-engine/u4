@@ -11,6 +11,24 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name xu4
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "tlkconv"=".\tlkconv\tlkconv.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name xu4
+    End Project Dependency
 }}}
 
 ###############################################################################
