@@ -192,7 +192,7 @@ int keyHandlerDefault(int key, void *data) {
 
     switch (key) {
     case '`':
-        printf("x = %d, y = %d, tile = %d\n", c->saveGame->x, c->saveGame->y, mapTileAt(c->map, c->saveGame->x, c->saveGame->y));
+        printf("x = %d, y = %d, level = %d, tile = %d\n", c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel, mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel));
         break;
     case 'm':
         screenMessage("0123456789012345\n");
