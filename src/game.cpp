@@ -2927,14 +2927,22 @@ int peerCityHandleChoice(int choice) {
 bool talkAtCoord(MapCoords coords, int distance, void *data) {
     const Person *talker;
     extern int personIsVendor(const Person *person);
-    City *city = dynamic_cast<City*>(c->location->map);
+    City *city;
 
+    /* can't have any conversations outside of town */
+    if (!isCity(c->location->map)) {
+        screenMessage("Funny, no\nresponse!\n");
+        (*c->location->finishTurn)();
+        return true;
+    }
+    
     if (coords.x == -1 && coords.y == -1) {
         screenMessage("Funny, no\nresponse!\n");
         (*c->location->finishTurn)();
         return false;
     }
 
+    city = dynamic_cast<City*>(c->location->map);
     c->conversation.talker = city->personAt(coords);
 
     /* some persons in some towns exists as a 'person' object, but they

@@ -406,7 +406,7 @@ const char *personGetChoices(const struct _Conversation *cnv) {
 
 string emptyGetIntro(Conversation *cnv) {
     cnv->state = CONV_DONE;
-    return string("Funny, no response!\n");
+    return string("Funny, no\nresponse!\n");
 }
 
 string talkerGetIntro(Conversation *cnv) {    
