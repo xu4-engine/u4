@@ -157,7 +157,7 @@ void combatInitDungeonRoom(int room, Direction from) {
                 combatInfo.altarRoom = VIRT_LOVE;
             else if (c->location->x <= 2)
                 combatInfo.altarRoom = VIRT_TRUTH;
-            else combatInfo.altarRoom = VIRT_COURAGE;
+            else combatInfo.altarRoom = VIRT_COURAGE;            
         }        
         
         /* load in monsters and monster start coordinates */
@@ -215,8 +215,10 @@ void combatBegin() {
     }
 
     /* if we entered an altar room, show the name */
-    if (combatInfo.altarRoom)
+    if (combatInfo.altarRoom) {
         screenMessage("\nThe Altar Room of %s\n", getBaseVirtueName(combatInfo.altarRoom));    
+        c->location->context |= CTX_ALTAR_ROOM;
+    }
 
     /* Use the combat key handler */
     eventHandlerPushKeyHandler(&combatBaseKeyHandler);

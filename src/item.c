@@ -349,7 +349,7 @@ void useStone(void *item) {
         eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
     }
     /* in a dungeon altar room, on the altar */
-    else if (c->location->context & CTX_ALTAR_ROOM &&
+    else if ((c->location->context & CTX_ALTAR_ROOM) &&
             (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS) == ALTAR_TILE) {
         needStoneNames = 4;
         screenMessage("\n\nThere are holes for 4 stones.\nWhat colors:\nA:");        
