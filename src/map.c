@@ -461,6 +461,25 @@ void mapClearObjects(Map *map) {
     map->objects = NULL;
 }
 
+int mapNumberOfMonsters(const Map *map) {
+    const Monster *m;
+    Object *obj = map->objects;
+    int n;
+
+    n = 0;
+    while (obj) {
+        m = monsterForTile(obj->tile);
+        if (obj->movement_behavior == MOVEMENT_ATTACK_AVATAR)
+            n++;
+        else if (m && (m->tile == WHIRLPOOL_TILE || m->tile == STORM_TILE))
+            n++;
+
+        obj = obj->next;
+    }
+
+    return n;
+}
+
 int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char transport) {
     int retval;
     Direction d;
@@ -531,9 +550,15 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char trans
             if (tileIsFlyable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);
         }
-        /* otherwise check walkable */
-        else if (tileIsWalkable(tile))
+        /* avatar: check walkable */
+        else if (transport == AVATAR_TILE) {
+            if (tileIsWalkable(tile))
+                retval = DIR_ADD_TO_MASK(d, retval);
+        } 
+        /* other: check monster walkable */
+        else if (tileIsMonsterWalkable(tile))
             retval = DIR_ADD_TO_MASK(d, retval);
+            
     }
 
     return retval;
