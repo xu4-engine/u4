@@ -155,3 +155,18 @@ int xmlPropCmp(xmlNodePtr node, const xmlChar *name, const char *s) {
     
     return result;
 }
+
+/**
+ * Compare an XML property to another string, case insensitively.  The
+ * return value is as str[case]cmp.
+ */
+int xmlPropCaseCmp(xmlNodePtr node, const xmlChar *name, const char *s) {
+    int result;
+    xmlChar *prop;
+    
+    prop = xmlGetProp(node, name);
+    result = xmlStrcasecmp(prop, (const xmlChar *) s);
+    xmlFree(prop);
+    
+    return result;
+}
