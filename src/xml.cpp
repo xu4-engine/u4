@@ -4,6 +4,9 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <cstdlib>
+#include <cstdarg>
+
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/valid.h>
@@ -13,6 +16,8 @@
 #include "error.h"
 #include "settings.h"
 #include "u4file.h"
+
+using namespace std;
 
 #if defined(_WIN32)
     #define vsnprintf _vsnprintf
@@ -102,7 +107,7 @@ char *xmlGetPropAsStr(xmlNodePtr node, const char *name) {
     return (char *)prop;
 }
 
-std::string xmlGetPropAsString(xmlNodePtr node, const char *name) {
+string xmlGetPropAsString(xmlNodePtr node, const char *name) {
     xmlChar *prop;
 
     if (settings.validateXml && !xmlHasProp(node, (const xmlChar *)name))
@@ -160,7 +165,7 @@ int xmlGetPropAsInt(xmlNodePtr node, const char *name) {
     if (!prop)
         return 0;
 
-    result = strtol((const char *)prop, NULL, 0);
+    result = std::strtol((const char *)prop, NULL, 0);
     xmlFree(prop);
 
     return (int) result;
