@@ -580,21 +580,18 @@ int gameBaseKeyHandler(int key, void *data) {
     case U4_UP:
     case U4_DOWN:
     case U4_LEFT:
-    case U4_RIGHT:
-        /* Check to see if we're on the balloon */
-        if (c->transportContext != TRANSPORT_BALLOON) {
-
+    case U4_RIGHT:        
+        {
             /* move the avatar */
-            int moved = moveAvatar(keyToDirection(key), 1);
-            
+            int moved = (*c->location->move)(keyToDirection(key), 1);
+        
             /* horse doubles speed (make sure we're on the same map as the previous move first) */
             if (moved && (c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
                 gameUpdateScreen(); /* to give it a smooth look of movement */
-                moveAvatar(keyToDirection(key), 0);
+                (*c->location->move)(keyToDirection(key), 0);
             }
-        } else {
-            screenMessage("Drift Only!\n");
         }
+        
         break;
 
     case '0':
@@ -2548,6 +2545,13 @@ int moveAvatar(Direction dir, int userEvent) {
     unsigned char temp;
     SlowedType slowedType = SLOWED_BY_TILE;
     Object *destObj;
+
+    /* Check to see if we're on the balloon */
+    if (c->transportContext == TRANSPORT_BALLOON) {
+        if (!settings->filterMoveMessages && userEvent)
+            screenMessage("Drift Only!\n");
+        return 0;
+    }            
     
     if (c->transportContext == TRANSPORT_SHIP)
         slowedType = SLOWED_BY_WIND;
@@ -2568,33 +2572,6 @@ int moveAvatar(Direction dir, int userEvent) {
         }
     }
     
-    /* if you're in a dungeon, you must turn first! */
-    else if (c->location->context == CTX_DUNGEON) {
-        /* figure out what our real direction is */
-        Direction realDir = dir,
-                  temp = c->saveGame->orientation;
-
-        while (temp != DIR_NORTH) {
-            temp = dirRotateCW(temp);
-            realDir = dirRotateCCW(realDir);
-        }
-        
-        /* right/left turn the avatar, up advanced and down retreats */
-        if (c->saveGame->orientation != realDir &&
-            c->saveGame->orientation != dirReverse(realDir)) {            
-            
-            if (!settings->filterMoveMessages) {
-                if (dirRotateCCW(c->saveGame->orientation) == realDir)
-                    screenMessage("Turn Left\n");
-                else screenMessage("Turn Right\n");
-            }
-            c->saveGame->orientation = realDir;
-            return result;
-        }
-
-        dir = realDir;
-    }
-
     if (c->transportContext == TRANSPORT_HORSE) {
         if ((dir == DIR_WEST || dir == DIR_EAST) &&
             tileGetDirection((unsigned char)c->saveGame->transport) != dir) {
@@ -2611,10 +2588,7 @@ int moveAvatar(Direction dir, int userEvent) {
 
     if (!settings->filterMoveMessages && userEvent) {
         if (c->transportContext == TRANSPORT_SHIP)
-            screenMessage("Sail %s!\n", getDirectionName(dir));
-        /* show 'Advance' or 'Retreat' in dungeons */
-        else if (c->location->context & CTX_DUNGEON)
-            screenMessage("%s\n", dir == c->saveGame->orientation ? "Advance" : "Retreat");
+            screenMessage("Sail %s!\n", getDirectionName(dir));    
         else if (c->transportContext != TRANSPORT_BALLOON)
             screenMessage("%s\n", getDirectionName(dir));
     }
@@ -2659,7 +2633,7 @@ int moveAvatar(Direction dir, int userEvent) {
                     }*/
             }
 
-            screenMessage("Blocked!\n");            
+            screenMessage("Blocked!\n");
             return (result = 0);
         }
 
@@ -2678,7 +2652,7 @@ int moveAvatar(Direction dir, int userEvent) {
         
         if (slowed) {
             if (!settings->filterMoveMessages)
-                screenMessage("Slow progress!\n");            
+                screenMessage("Slow progress!\n");
             return (result = 0);
         }
     }    
@@ -2742,7 +2716,6 @@ int moveAvatarInDungeon(Direction dir, int userEvent) {
     if (!settings->filterMoveMessages && userEvent) 
         /* show 'Advance' or 'Retreat' in dungeons */
         screenMessage("%s\n", realDir == c->saveGame->orientation ? "Advance" : "Retreat");
-    
 
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
         switch (c->location->map->border_behavior) {        
@@ -2764,9 +2737,26 @@ int moveAvatarInDungeon(Direction dir, int userEvent) {
             break;
         }
     }
-    
+
+    if (!collisionOverride) {
+        int movementMask;
+
+        movementMask = mapGetValidMoves(c->location->map, c->location->x, c->location->y, c->location->z, (unsigned char)c->saveGame->transport);
+        if (!DIR_IN_MASK(realDir, movementMask)) {
+            screenMessage("Blocked!\n");
+            return (result = 0);
+        }
+    }
+
     c->location->x = newx;
     c->location->y = newy;
+
+    /* check to see if we're entering a dungeon room */
+    if ((mapGetTileFromData(c->location->map, newx, newy, c->location->z) & 0xF0) == 0xD0) {
+        int room = mapGetTileFromData(c->location->map, newx, newy, c->location->z) & 0xF;
+        combatInitDungeonRoom(room, dirReverse(realDir));
+        combatBegin();
+    }   
 
     return result;
 }

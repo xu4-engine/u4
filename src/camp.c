@@ -173,8 +173,7 @@ void innTimer(void *data) {
 
         /* begin combat! */
         combatInit(monsterObj->monster, monsterObj, mapid, 0);
-        combatBegin();
-        //combatBegin(mapid, monsterObj, 0);        
+        combatBegin();        
     }
     
     else {

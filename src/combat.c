@@ -119,7 +119,7 @@ void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned c
  */
 void combatInitCamping(void) {
     if (c->location->context & CTX_DUNGEON)
-        combatInit(NULL, NULL, MAP_CAMP_CON, 1); /* FIXME: use dungeon camping map */    
+        combatInit(NULL, NULL, MAP_DUNGEON_CON, 1); /* FIXME: use dungeon camping map */    
     else
         combatInit(NULL, NULL, MAP_CAMP_CON, 1);   
 }
@@ -141,6 +141,8 @@ void combatInitDungeonRoom(int room, Direction from) {
         mapLoadDungeonRoom(dng, room);
         combatInfo.newCombatMap = dng->room;
         combatInfo.winOrLose = 0;
+        combatInfo.dungeonRoom = 1;
+        combatInfo.exitDir = DIR_NONE;
 
         /* load in monsters and monster start coordinates */
         for (i = 0; i < AREA_MONSTERS; i++) {
@@ -199,7 +201,7 @@ void combatBegin() {
 
     /* if there are monsters around, start combat! */
     /* FIXME: there should probably be another way to check to display this message */
-    if (combatInfo.placeMonsters) {
+    if (combatInfo.placeMonsters && combatInfo.winOrLose) {
         screenMessage("\n**** COMBAT ****\n\n");
         musicPlay();
     }
@@ -542,8 +544,8 @@ int combatBaseKeyHandler(int key, void *data) {
     case U4_UP:
     case U4_DOWN:
     case U4_LEFT:
-    case U4_RIGHT:
-        movePartyMember(keyToDirection(key), FOCUS);
+    case U4_RIGHT:        
+        (*c->location->move)(keyToDirection(key), 1);
         break;
 
     case U4_ESC:
@@ -1062,6 +1064,13 @@ void combatEnd(int adjustKarma) {
         }
     }
 
+    /* exiting a dungeon room */
+    if (combatInfo.dungeonRoom) {
+        screenMessage("Leave Room!\n\n");
+        c->saveGame->orientation = combatInfo.exitDir;  /* face the direction exiting the room */
+        (*c->location->move)(DIR_NORTH, 0);             /* advance 1 space outside of the room */
+    }
+
     /* remove the monster */
     if (combatInfo.monsterObj)
         mapRemoveObject(c->location->map, combatInfo.monsterObj);
@@ -1352,15 +1361,22 @@ int movePartyMember(Direction dir, int userEvent) {
     screenMessage("%s\n", getDirectionName(dir));
 
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
+        int sameExit = (!combatInfo.dungeonRoom || (combatInfo.exitDir == DIR_NONE) || (dir == combatInfo.exitDir));
+        if (sameExit) {
+            /* A fully-healed party member fled from an evil monster :( */
+            if (combatInfo.monster && monsterIsEvil(combatInfo.monster) && 
+                c->saveGame->players[member].hp == c->saveGame->players[member].hpMax)
+                playerAdjustKarma(c->saveGame, KA_HEALTHY_FLED_EVIL);
 
-        /* A fully-healed party member fled from an evil monster :( */
-        if (combatInfo.monster && monsterIsEvil(combatInfo.monster) && 
-            c->saveGame->players[member].hp == c->saveGame->players[member].hpMax)
-            playerAdjustKarma(c->saveGame, KA_HEALTHY_FLED_EVIL);
-
-        mapRemoveObject(c->location->map, combatInfo.party[member].obj);
-        combatInfo.party[member].obj = NULL;
-        return result;
+            combatInfo.exitDir = dir;
+            mapRemoveObject(c->location->map, combatInfo.party[member].obj);
+            combatInfo.party[member].obj = NULL;
+            return result;
+        }
+        else {
+            screenMessage("All must use same exit!\n");
+            return (result = 0);
+        }
     }
 
     movementMask = mapGetValidMoves(c->location->map, combatInfo.party[member].obj->x, combatInfo.party[member].obj->y, c->location->z, combatInfo.party[member].obj->tile);
@@ -1371,6 +1387,8 @@ int movePartyMember(Direction dir, int userEvent) {
 
     combatInfo.party[member].obj->x = newx;
     combatInfo.party[member].obj->y = newy; 
+
+    /* FIXME: add support for dungeon room triggers here */
 
     return result;
 }

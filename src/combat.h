@@ -50,10 +50,12 @@ typedef struct _CombatInfo {
     struct { unsigned char x, y; } partyStartCoords[AREA_PLAYERS];
     struct { unsigned char x, y; } monsterStartCoords[AREA_MONSTERS];
 
+    unsigned char dungeonRoom;
     unsigned char camping;
     unsigned char placeParty;
     unsigned char placeMonsters;    
     unsigned char winOrLose;
+    Direction exitDir;
     struct _Map *newCombatMap;
 } CombatInfo;
 
