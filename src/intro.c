@@ -1338,10 +1338,10 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         if (action != ACTIVATE_DECREMENT) {
             settings->filter++;
             if (settings->filter == SCL_MAX)
-                settings->filter = (FilterType) 0;
+                settings->filter = (FilterType)(SCL_MIN+1);
         } else {
             settings->filter--;
-            if (settings->filter < (FilterType) 0)
+            if (settings->filter == SCL_MIN)
                 settings->filter = (FilterType)(SCL_MAX-1);
         }
         break;
@@ -1354,10 +1354,10 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         if (action != ACTIVATE_DECREMENT) {
             settings->videoType++;
             if (settings->videoType == VIDEO_MAX)
-                settings->videoType = (VideoType) 0;
+                settings->videoType = (VideoType)(VIDEO_MIN+1);
         } else {
             settings->videoType--;
-            if (settings->videoType < (VideoType) 0)
+            if (settings->videoType == VIDEO_MIN)
                 settings->videoType = (VideoType)(VIDEO_MAX-1);
         }
         break;

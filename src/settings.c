@@ -256,7 +256,7 @@ void settingsWrite() {
  */
 const char *settingsFilterToString(FilterType filter) {
     static const char * const filterNames[] = {
-        "point", "2xBi", "2xSaI", "Scale2x"
+        "SCL_MIN", "point", "2xBi", "2xSaI", "Scale2x"
     };
 
     ASSERT(filter < SCL_MAX, "invalid filter value %d\n", filter);
@@ -271,7 +271,7 @@ const char *settingsFilterToString(FilterType filter) {
 FilterType settingsStringToFilter(const char *str) {
     int f;
     FilterType result = SCL_MAX;
-    for (f = (FilterType) 0; f < SCL_MAX; f++) {
+    for (f = (FilterType) (SCL_MIN+1); f < SCL_MAX; f++) {
         if (strcmp(str, settingsFilterToString((FilterType) f)) == 0) {
             result = (FilterType) f;
             break;
@@ -286,7 +286,7 @@ FilterType settingsStringToFilter(const char *str) {
  */
 const char *settingsVideoTypeToString(VideoType type) {
     static const char * const videoNames[] = {
-        "VGA", "EGA", "CGA"
+        "VIDEO_MIN", "VGA", "EGA"   //, "CGA"
     };
 
     ASSERT(type < VIDEO_MAX, "invalid video type %d\n", type);
@@ -300,7 +300,7 @@ const char *settingsVideoTypeToString(VideoType type) {
 VideoType settingsStringToVideoType(const char *str) {
     int v;
     VideoType result = VIDEO_MAX;
-    for (v = (VideoType) 0; v < VIDEO_MAX; v++) {
+    for (v = (VideoType) (VIDEO_MIN+1); v < VIDEO_MAX; v++) {
         if (strcmp(str, settingsVideoTypeToString((VideoType) v)) == 0) {
             result = (VideoType) v;
             break;

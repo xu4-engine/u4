@@ -36,6 +36,7 @@
 #define DEFAULT_INN_TIME                8
 
 typedef enum {
+    SCL_MIN,
     SCL_POINT,
     SCL_2xBi,
     SCL_2xSaI,
@@ -44,6 +45,7 @@ typedef enum {
 } FilterType;
 
 typedef enum {
+    VIDEO_MIN,
     VIDEO_VGA,
     VIDEO_EGA,
     //VIDEO_CGA,
