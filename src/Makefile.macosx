@@ -49,16 +49,18 @@ install: u4
 	mkdir -p $(BUNDLE_CONTENTS)/MacOS
 	mkdir -p $(BUNDLE_CONTENTS)/Resources
 	mkdir -p $(BUNDLE_CONTENTS)/Resources/dtd
+	mkdir -p $(BUNDLE_CONTENTS)/Resources/ega
+	mkdir -p $(BUNDLE_CONTENTS)/Resources/vga
 	echo "APPL????" > $(BUNDLE_CONTENTS)/PkgInfo
 	cp ../mid/*.mid $(BUNDLE_CONTENTS)/Resources
 	cp ../sound/*.wav $(BUNDLE_CONTENTS)/Resources
 	cp ../conf/*.xml $(BUNDLE_CONTENTS)/Resources
 	cp ../conf/dtd/*.dtd $(BUNDLE_CONTENTS)/Resources/dtd
 	cp ../icons/xu4.icns $(BUNDLE_CONTENTS)/Resources
-	cp ../graphics/*.rle $(BUNDLE_CONTENTS)/Resources
+	cp ../graphics/ega/*.rle $(BUNDLE_CONTENTS)/Resources/ega
+	cp ../graphics/vga/*.rle $(BUNDLE_CONTENTS)/Resources/vga
 	cp macosx/Info.plist $(BUNDLE_CONTENTS)
 	$(INSTALL) $< $(BUNDLE_CONTENTS)/MacOS
-	strip $(BUNDLE_CONTENTS)/MacOS/u4
 
 -include .depends
 
