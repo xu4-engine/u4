@@ -45,6 +45,7 @@ extern Map shipshor_map;
 extern Map shore_map;
 extern Map shorship_map;
 
+int saved_dngx, saved_dngy;
 int focus;
 Object *party[8];
 Object *monsters[AREA_MONSTERS];
@@ -66,6 +67,8 @@ void combatBegin(unsigned char partytile, unsigned short transport, unsigned cha
 
     c = gameCloneContext(c);
 
+    saved_dngx = c->saveGame->dngx;
+    saved_dngy = c->saveGame->dngy;
     gameSetMap(c, getCombatMapForTile(partytile, transport), 1);
     musicPlay();
 
@@ -275,6 +278,8 @@ void combatEnd() {
         mapClearObjects(c->map);
         c->parent->saveGame->x = c->saveGame->dngx;
         c->parent->saveGame->y = c->saveGame->dngy;
+        c->parent->saveGame->dngx = saved_dngx;
+        c->parent->saveGame->dngy = saved_dngy;
         c->parent->line = c->line;
         c->parent->moonPhase = c->moonPhase;
         c->parent->windDirection = c->windDirection;
