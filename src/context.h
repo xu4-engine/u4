@@ -44,6 +44,7 @@ typedef struct _Context {
     Conversation conversation;
     int line, col;
     StatsItem statsItem;
+    int moonPhase;
 } Context;
 
 extern Context *c;
