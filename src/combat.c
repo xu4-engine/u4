@@ -1365,10 +1365,14 @@ int movePartyMember(Direction dir, int userEvent) {
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
         int sameExit = (!combatInfo.dungeonRoom || (combatInfo.exitDir == DIR_NONE) || (dir == combatInfo.exitDir));
         if (sameExit) {
-            /* A fully-healed party member fled from an evil monster :( */
-            if (combatInfo.monster && monsterIsEvil(combatInfo.monster) && 
-                c->saveGame->players[member].hp == c->saveGame->players[member].hpMax)
-                playerAdjustKarma(c->saveGame, KA_HEALTHY_FLED_EVIL);
+            
+            /* if in a win-or-lose battle and not camping, then it can be bad to flee while healthy monsters */
+            if (combatInfo.winOrLose && !combatInfo.camping) {
+                /* A fully-healed party member fled from an evil monster :( */
+                if (combatInfo.monster && monsterIsEvil(combatInfo.monster) && 
+                    c->saveGame->players[member].hp == c->saveGame->players[member].hpMax)
+                    playerAdjustKarma(c->saveGame, KA_HEALTHY_FLED_EVIL);
+            }
 
             combatInfo.exitDir = dir;
             mapRemoveObject(c->location->map, combatInfo.party[member].obj);
