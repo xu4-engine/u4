@@ -3036,6 +3036,11 @@ void gameLordBritishCheckLevels(void) {
     screenMessage("\nWhat would thou\nask of me?\n");
 }
 
+/**
+ * Summons a monster given by 'monsterName'. This can either be given
+ * as the monster's name, or the monster's id.  Once it finds the
+ * monster to be summoned, it calls gameSpawnMonster() to spawn it.
+ */
 int gameSummonMonster(const char *monsterName) {
     extern Monster monsters[];
     extern unsigned int numMonsters;
@@ -3081,6 +3086,10 @@ int gameSummonMonster(const char *monsterName) {
     return 0;
 }
 
+/**
+ * Spawns a monster (m) just offscreen of the avatar.
+ * If (m==NULL) then it finds its own monster to spawn and spawns it.
+ */
 void gameSpawnMonster(const Monster *m) {
     int x, y, dx, dy, t;
     const Monster *monster;
@@ -3113,6 +3122,9 @@ void gameSpawnMonster(const Monster *m) {
     if (monster) mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);    
 }
 
+/**
+ * Destroys all creatures on the current map.
+ */
 void gameDestroyAllCreatures(void) {
     int i;
     extern CombatInfo combatInfo;
@@ -3140,6 +3152,9 @@ void gameDestroyAllCreatures(void) {
     }
 }
 
+/**
+ * Creates the balloon near Hythloth, but only if the balloon doesn't already exists somewhere
+ */
 int gameCreateBalloon(Map *map) {
     Object *obj;    
 

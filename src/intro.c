@@ -107,6 +107,7 @@ int sleepCycles;
 int scrPos;  /* current position in the script table */
 IntroObjectState *objectStateTable;
 
+/* menus */
 Menu mainOptions;
 Menu videoOptions;
 Menu soundOptions;
@@ -236,11 +237,13 @@ int introInit() {
     screenFixIntroScreen(BKGD_INTRO_EXTENDED, screenFixData);    
     screenFixIntroScreenExtended(BKGD_INTRO_EXTENDED);
 
+    /* load our menus */
+    
     mainOptions = menuAddItem(mainOptions, 0, "Video Options", 13, 16, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
     mainOptions = menuAddItem(mainOptions, 1, "Sound Options", 13, 17, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
     mainOptions = menuAddItem(mainOptions, 2, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
     mainOptions = menuAddItem(mainOptions, 0xFF, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
-
+    
     videoOptions = menuAddItem(videoOptions, 0, "Scale", 11, 16, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
     videoOptions = menuAddItem(videoOptions, 1, "Mode", 11, 17, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
     videoOptions = menuAddItem(videoOptions, 2, "Filter", 11, 18, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
@@ -329,6 +332,7 @@ void introDelete() {
 
     screenFreeIntroBackgrounds();
 
+    /* delete our menus */
     menuDelete(mainOptions);
     menuDelete(videoOptions);
     menuDelete(soundOptions);
@@ -1233,7 +1237,9 @@ void introInitPlayers(SaveGame *saveGame) {
 
 }
 
-
+/**
+ * The base key handler for the configuration menus
+ */
 int introBaseMenuKeyHandler(int key, Menu *menu) {
     char cancelKey = (mode == INTRO_CONFIG) ? 'm' : 'c';
     char saveKey = (mode == INTRO_CONFIG) ? '\0' : 'u';
@@ -1268,9 +1274,11 @@ int introBaseMenuKeyHandler(int key, Menu *menu) {
         break;
     case ' ':    
     case U4_ESC:
+        /* activate the 'cancel' menu item */
         menuActivateItem(*menu, 0xFF, ACTIVATE_NORMAL);
         break;
     case 0:
+        /* activate the 'save' menu item */
         menuActivateItem(*menu, 0xFE, ACTIVATE_NORMAL);        
         break;
     default:
@@ -1279,6 +1287,7 @@ int introBaseMenuKeyHandler(int key, Menu *menu) {
     return 1;
 }
 
+/* main options menu handler */
 void introMainOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
 
@@ -1294,6 +1303,7 @@ void introMainOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     }
 }
 
+/* video options menu handler */
 void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
@@ -1339,6 +1349,7 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     }
 }
 
+/* sound options menu handler */
 void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
@@ -1359,6 +1370,7 @@ void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     }
 }
 
+/* gameplay options menu handler */
 void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
@@ -1392,6 +1404,7 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     }
 }
 
+/* advanced options menu handler */
 void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
@@ -1426,6 +1439,7 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     }
 }
 
+/* keyboard options menu handler */
 void introKeyboardOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
@@ -1469,6 +1483,7 @@ void introKeyboardOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     }    
 }
 
+/* speed options menu handler */
 void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
@@ -1520,6 +1535,7 @@ void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     }
 }
 
+/* minor enhancement options menu handler */
 void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
@@ -1549,6 +1565,7 @@ void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     }
 }
 
+/* major enhancement options menu handler */
 void introMajorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
