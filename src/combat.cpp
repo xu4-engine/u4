@@ -256,9 +256,19 @@ void CombatController::end(bool adjustKarma) {
     int i;
     Coords coords;    
     MapTile *ground;    
+
+    /* The party is dead -- start the death sequence */
+    if (c->party->isDead()) {
+        /* remove the creature */
+        if (creature)
+            c->location->map->removeObject(creature);
+
+        deathStart(5);
+        return;
+    }
     
     /* need to get this here because when we exit to the parent map, all the monsters are cleared */
-    bool won = isWon();
+    bool won = isWon();    
     
     gameExitToParentMap();
     musicPlay();
@@ -339,10 +349,7 @@ void CombatController::end(bool adjustKarma) {
     camping = false;
     inn = false;
     
-    if (c->party->isDead())
-        deathStart(0);
-    else
-        (*c->location->finishTurn)();
+    (*c->location->finishTurn)();
 }
 
 /**

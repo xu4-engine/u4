@@ -58,9 +58,11 @@ void deathStart(int delay) {
     
     deathSequenceRunning = 1;
     timerCount = 0;
-    timerMsg = 0;    
+    timerMsg = 0;
 
-    EventHandler::sleep(delay * 1000);
+    WaitController waitCtrl(delay * settings.gameCyclesPerSecond);
+    eventHandler->pushController(&waitCtrl);
+    waitCtrl.wait();
     
     gameSetViewMode(VIEW_DEAD);
     
