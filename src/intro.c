@@ -250,21 +250,22 @@ int introInit() {
     videoOptions = menuAddItem(videoOptions, 0xFF, "Cancel", 11, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
     soundOptions = menuAddItem(soundOptions, 0, "Volume", 11, 16, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
+    soundOptions = menuAddItem(soundOptions, 1, "Fading", 11, 17, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
     soundOptions = menuAddItem(soundOptions, 0xFE, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
     soundOptions = menuAddItem(soundOptions, 0xFF, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
     gameplayOptions = menuAddItem(gameplayOptions, 0, "Minor Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
     gameplayOptions = menuAddItem(gameplayOptions, 3, "Major Game Enhancements", 6, 6, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
     gameplayOptions = menuAddItem(gameplayOptions, 1, "Shortcut Keys", 6, 8, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
-    gameplayOptions = menuAddItem(gameplayOptions, 2, "Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    gameplayOptions = menuAddItem(gameplayOptions, 2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     gameplayOptions = menuAddItem(gameplayOptions, 0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     gameplayOptions = menuAddItem(gameplayOptions, 0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
-    advancedOptions = menuAddItem(advancedOptions, 2, "Debug Mode (Cheats)", 4, 5, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);        
-    advancedOptions = menuAddItem(advancedOptions, 0, "Minor Enhancement Options", 4, 14, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    advancedOptions = menuAddItem(advancedOptions, 1, "Major Enhancement Options", 4, 15, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    advancedOptions = menuAddItem(advancedOptions, 4, "Speed Settings", 4, 17, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    advancedOptions = menuAddItem(advancedOptions, 3, "Keyboard Settings", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    advancedOptions = menuAddItem(advancedOptions, 4, "\010 Speed Settings", 4, 5, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    advancedOptions = menuAddItem(advancedOptions, 3, "\010 Keyboard Settings", 4, 6, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    advancedOptions = menuAddItem(advancedOptions, 2, "Debug Mode (Cheats)", 4, 8, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);        
+    advancedOptions = menuAddItem(advancedOptions, 0, "\010 Minor Enhancement Options", 4, 17, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    advancedOptions = menuAddItem(advancedOptions, 1, "\010 Major Enhancement Options", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);    
     advancedOptions = menuAddItem(advancedOptions, 0xFE, "Use These Settings", 4, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
     advancedOptions = menuAddItem(advancedOptions, 0xFF, "Cancel", 4, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
@@ -699,6 +700,7 @@ void introUpdateScreen() {
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(2, 14, "Sound Options:");
         screenTextAt(24, 16, "%s", settings->vol ? "On" : "Off");        
+        screenTextAt(24, 17, "%s", settings->volumeFades ? "On" : "Off");        
         menuShow(menuGetRoot(soundOptions));
         introDrawBeasties();
         break;
@@ -715,7 +717,7 @@ void introUpdateScreen() {
     case INTRO_CONFIG_ADVANCED:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Advanced Options:");
-        screenTextAt(34, 5,  "%s", settings->debug ? "On" : "Off");        
+        screenTextAt(34, 8,  "%s", settings->debug ? "On" : "Off");        
         menuShow(menuGetRoot(advancedOptions));
         break;
 
@@ -1357,6 +1359,9 @@ void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     switch(menuItem->id) {
     case 0: 
         settings->vol = settings->vol ? 0 : 1;
+        break;
+    case 1:
+        settings->volumeFades = settings->volumeFades ? 0 : 1;
         break;
     case 0xFE:        
         settingsWrite();

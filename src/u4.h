@@ -42,6 +42,7 @@
 #define CHAR_HEIGHT 8
 
 /* some character defines */
+#define CHARSET_BULLET '\010'
 #define CHARSET_COPYRIGHT '\011'
 #define CHARSET_REGISTERED '\012'
 #define CHARSET_MALE '\013'

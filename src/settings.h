@@ -15,6 +15,7 @@
 #define DEFAULT_FULLSCREEN              0
 #define DEFAULT_FILTER                  SCL_Scale2x
 #define DEFAULT_VOLUME                  1
+#define DEFAULT_VOLUME_FADES            1
 #define DEFAULT_GERMAN_KEYBOARD         0
 #define DEFAULT_SHORTCUT_COMMANDS       0
 #define DEFAULT_KEY_DELAY               500
@@ -53,6 +54,7 @@ typedef struct _Settings {
     int fullscreen;
     FilterType filter;
     int vol;
+    int volumeFades;
     int germanKbd;
     int shortcutCommands;
     int keydelay;

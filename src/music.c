@@ -50,8 +50,15 @@ int musicLoad(Music music) {
 
     assert(music < MUSIC_MAX);
 
-    if (music == current)
-        return 0;
+    /* music already loaded */
+    if (music == current) {
+        /* tell calling function it didn't load correctly (because it's already playing) */
+        if (musicIsPlaying())
+            return 0;
+        /* it loaded correctly */
+        else 
+            return 1;
+    }
 
     pathname = u4find_music(musicFilenames[music]);
     if (pathname) {
@@ -172,8 +179,12 @@ void musicStop(void) {
  */
 void musicFadeOut(int msecs) {
     if (musicIsPlaying()) {
-        if (Mix_FadeOutMusic(msecs) == -1)
-            errorWarning("Mix_FadeOutMusic: %s\n", Mix_GetError());
+        if (!settings->volumeFades)
+            musicStop();    
+        else {
+            if (Mix_FadeOutMusic(msecs) == -1)
+                errorWarning("Mix_FadeOutMusic: %s\n", Mix_GetError());
+        }
     }
 }
 
@@ -182,12 +193,17 @@ void musicFadeOut(int msecs) {
  */
 void musicFadeIn(int msecs, int loadFromMap) {
     if (!musicIsPlaying() && settings->vol) {
+
         /* make sure we've got something loaded to play */
         if (loadFromMap || !playing)
             musicLoad(c->location->map->music);        
-        
-        if(Mix_FadeInMusic(playing, -1, msecs) == -1)
-            errorWarning("Mix_FadeInMusic: %s\n", Mix_GetError());
+
+        if (!settings->volumeFades)
+            Mix_PlayMusic(playing, -1);
+        else {        
+            if(Mix_FadeInMusic(playing, -1, msecs) == -1)
+                errorWarning("Mix_FadeInMusic: %s\n", Mix_GetError());
+        }
     }
 }
 

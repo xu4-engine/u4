@@ -63,6 +63,7 @@ void settingsRead() {
     settings->fullscreen            = DEFAULT_FULLSCREEN;
     settings->filter                = DEFAULT_FILTER;
     settings->vol                   = DEFAULT_VOLUME;
+    settings->volumeFades           = DEFAULT_VOLUME_FADES;
     settings->germanKbd             = DEFAULT_GERMAN_KEYBOARD;
     settings->shortcutCommands      = DEFAULT_SHORTCUT_COMMANDS;
     settings->keydelay              = DEFAULT_KEY_DELAY;
@@ -107,6 +108,8 @@ void settingsRead() {
         }
         else if (strstr(buffer, "vol=") == buffer)
             settings->vol = (int) strtoul(buffer + strlen("vol="), NULL, 0);
+        else if (strstr(buffer, "volumeFades=") == buffer)
+            settings->volumeFades = (int) strtoul(buffer + strlen("volumeFades="), NULL, 0);        
         else if (strstr(buffer, "germanKbd=") == buffer)
             settings->germanKbd = (int) strtoul(buffer + strlen("germanKbd="), NULL, 0);
         else if (strstr(buffer, "shortcutCommands=") == buffer)
@@ -182,6 +185,7 @@ void settingsWrite() {
             "fullscreen=%d\n"
             "filter=%s\n"
             "vol=%d\n"
+            "volumeFades=%d\n"
             "germanKbd=%d\n"
             "shortcutCommands=%d\n"
             "keydelay=%d\n"
@@ -204,6 +208,7 @@ void settingsWrite() {
             settings->fullscreen,
             settingsFilterToString(settings->filter),
             settings->vol,
+            settings->volumeFades,
             settings->germanKbd,
             settings->shortcutCommands,
             settings->keydelay,
