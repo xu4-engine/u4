@@ -22,6 +22,8 @@
 #include "settings.h"
 #include "tileset.h"
 
+void screenFindLineOfSight(MapTile *viewportTiles[VIEWPORT_W][VIEWPORT_H]);
+
 int screenNeedPrompt = 1;
 int screenCurrentCycle = 0;
 int screenCursorX = 0;
@@ -198,17 +200,22 @@ void screenUpdate(int showmap, int blackout) {
     }
 
     else if (showmap) {
-        if (!blackout)
-            screenFindLineOfSight();
+        MapTile *viewportTiles[VIEWPORT_W][VIEWPORT_H];
+        bool viewportFocus[VIEWPORT_W][VIEWPORT_H];
 
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
-                MapTile *tile;
+                viewportTiles[x][y] = screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y, viewportFocus[x][y]);
+            }
+        }
 
+        if (!blackout)
+            screenFindLineOfSight(viewportTiles);
+
+        for (y = 0; y < VIEWPORT_H; y++) {
+            for (x = 0; x < VIEWPORT_W; x++) {
                 if (!blackout && screenLos[x][y]) {
-                    bool focus;
-                    tile = screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y, focus);
-                    screenShowTile(tile, focus, x, y);
+                    screenShowTile(viewportTiles[x][y], viewportFocus[x][y], x, y);
                 } else
                     screenShowTile(&black, false, x, y);
             }
@@ -305,9 +312,8 @@ void screenSetCursorPos(int x, int y) {
     screenCursorY = y;
 }
 
-void screenFindLineOfSight() {
+void screenFindLineOfSight(MapTile *viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
     int x, y;
-    bool focus;
 
     if (c == NULL)
         return;
@@ -337,47 +343,47 @@ void screenFindLineOfSight() {
 
     for (x = VIEWPORT_W / 2 - 1; x >= 0; x--)
         if (screenLos[x + 1][VIEWPORT_H / 2] &&
-            !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, VIEWPORT_H / 2, focus)->isOpaque())
+            !viewportTiles[x + 1][VIEWPORT_H / 2]->isOpaque())
             screenLos[x][VIEWPORT_H / 2] = 1;
 
     for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++)
         if (screenLos[x - 1][VIEWPORT_H / 2] &&
-            !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, VIEWPORT_H / 2, focus)->isOpaque())
+            !viewportTiles[x - 1][VIEWPORT_H / 2]->isOpaque())
             screenLos[x][VIEWPORT_H / 2] = 1;
 
     for (y = VIEWPORT_H / 2 - 1; y >= 0; y--)
         if (screenLos[VIEWPORT_W / 2][y + 1] &&
-            !screenViewportTile(VIEWPORT_W, VIEWPORT_H, VIEWPORT_W / 2, y + 1, focus)->isOpaque())
+            !viewportTiles[VIEWPORT_W / 2][y + 1]->isOpaque())
             screenLos[VIEWPORT_W / 2][y] = 1;
 
     for (y = VIEWPORT_H / 2 + 1; y < VIEWPORT_H; y++)
         if (screenLos[VIEWPORT_W / 2][y - 1] &&
-            !screenViewportTile(VIEWPORT_W, VIEWPORT_H, VIEWPORT_W / 2, y - 1, focus)->isOpaque())
+            !viewportTiles[VIEWPORT_W / 2][y - 1]->isOpaque())
             screenLos[VIEWPORT_W / 2][y] = 1;
 
     for (y = VIEWPORT_H / 2 - 1; y >= 0; y--) {
         
         for (x = VIEWPORT_W / 2 - 1; x >= 0; x--) {
             if (screenLos[x][y + 1] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y + 1, focus)->isOpaque())
+                !viewportTiles[x][y + 1]->isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y, focus)->isOpaque())
+                !viewportTiles[x + 1][y]->isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y + 1] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y + 1, focus)->isOpaque())
+                !viewportTiles[x + 1][y + 1]->isOpaque())
                 screenLos[x][y] = 1;
         }
                 
         for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++) {
             if (screenLos[x][y + 1] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y + 1, focus)->isOpaque())
+                !viewportTiles[x][y + 1]->isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y, focus)->isOpaque())
+                !viewportTiles[x - 1][y]->isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y + 1] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y + 1, focus)->isOpaque())
+                !viewportTiles[x - 1][y + 1]->isOpaque())
                 screenLos[x][y] = 1;
         }
     }
@@ -386,25 +392,25 @@ void screenFindLineOfSight() {
         
         for (x = VIEWPORT_W / 2 - 1; x >= 0; x--) {
             if (screenLos[x][y - 1] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y - 1, focus)->isOpaque())
+                !viewportTiles[x][y - 1]->isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y, focus)->isOpaque())
+                !viewportTiles[x + 1][y]->isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y - 1] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y - 1, focus)->isOpaque())
+                !viewportTiles[x + 1][y - 1]->isOpaque())
                 screenLos[x][y] = 1;
         }
                 
         for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++) {
             if (screenLos[x][y - 1] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y - 1, focus)->isOpaque())
+                !viewportTiles[x][y - 1]->isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y, focus)->isOpaque())
+                !viewportTiles[x - 1][y]->isOpaque())
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y - 1] &&
-                !screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y - 1, focus)->isOpaque())
+                !viewportTiles[x - 1][y - 1]->isOpaque())
                 screenLos[x][y] = 1;
         }
     }

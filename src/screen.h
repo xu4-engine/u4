@@ -68,7 +68,6 @@ void screenDrawImageInMapArea(const string &bkgd);
 void screenCycle(void);
 void screenEraseMapArea(void);
 void screenEraseTextArea(int x, int y, int width, int height);
-void screenFindLineOfSight(void);
 void screenGemUpdate(void);
 void screenInvertRect(int x, int y, int w, int h);
 void screenMessage(const char *fmt, ...) PRINTF_LIKE(1, 2);
