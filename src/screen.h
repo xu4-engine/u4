@@ -51,6 +51,8 @@ void screenDelete(void);
 
 void screenDrawBackground(BackgroundType bkgd);
 void screenDrawBackgroundInMapArea(BackgroundType bkgd);
+const char *screenGetVgaFilename(BackgroundType bkgd);
+const char *screenGetEgaFilename(BackgroundType bkgd);
 
 void screenCycle(void);
 void screenEraseMapArea(void);

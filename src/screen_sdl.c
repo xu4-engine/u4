@@ -100,9 +100,9 @@ const struct {
     { "rune_3.ega",   "rune_3.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
     { "rune_4.ega",   "rune_4.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
     { "rune_5.ega",   "rune_5.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_6.ega",   "rune_6.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_7.ega",   "rune_7.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_8.ega",   "rune_8.old", 320, 200, 1, COMP_RLE, 1, 0, 1 }
+    { "rune_6.ega",   "rune_6.ega", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "rune_7.ega",   "rune_7.ega", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "rune_8.ega",   "rune_8.ega", 320, 200, 1, COMP_RLE, 1, 0, 1 }
 };
 
 const struct {
@@ -297,6 +297,37 @@ void screenFixIntroScreenExtended(BackgroundType bkgd) {
 }
 
 /**
+ * Returns the filename that contains the Vga image for the background
+ */
+const char *screenGetVgaFilename(BackgroundType bkgd) {
+    const char *filename = NULL;
+    
+    /* find the correct VGA file to use */    
+    if (backgroundInfo[bkgd].hasVga && upgradeExists && settings->videoType == VIDEO_VGA) {
+        /* get the VGA filename for the file we're trying to load */
+        if (upgradeInstalled)
+            filename = backgroundInfo[bkgd].filename;            
+        else filename = backgroundInfo[bkgd].filenameOld;
+    }
+
+    return filename;
+}
+
+/**
+ * Returns the filename that contains the Ega image for the background
+ */
+const char *screenGetEgaFilename(BackgroundType bkgd) {
+    const char *filename = NULL;
+
+    /* find the correct EGA file to use */
+    if (upgradeInstalled && backgroundInfo[bkgd].filenameOld)
+        filename = backgroundInfo[bkgd].filenameOld;
+    else filename = backgroundInfo[bkgd].filename;
+
+    return filename;
+}
+
+/**
  * Load in a background image from a ".ega" file.
  */
 int screenLoadBackground(BackgroundType bkgd) {
@@ -304,22 +335,8 @@ int screenLoadBackground(BackgroundType bkgd) {
     Image *unscaled;
     U4FILE *file;
 
-    const char 
-        *vgaFilename = NULL,
-        *egaFilename = NULL;
-    
-    /* find the correct EGA file to use */
-    if (upgradeInstalled && backgroundInfo[bkgd].filenameOld)
-        egaFilename = backgroundInfo[bkgd].filenameOld;
-    else egaFilename = backgroundInfo[bkgd].filename;
-
-    /* find the correct VGA file to use */    
-    if (upgradeExists && settings->videoType == VIDEO_VGA) {
-        /* get the VGA filename for the file we're trying to load */
-        if (upgradeInstalled)
-            vgaFilename = backgroundInfo[bkgd].filename;            
-        else vgaFilename = backgroundInfo[bkgd].filenameOld;
-    }
+    const char *vgaFilename = screenGetVgaFilename(bkgd),
+               *egaFilename = screenGetEgaFilename(bkgd);   
 
     ret = 0;
     /* try to load the image in VGA first */
@@ -373,15 +390,17 @@ int screenLoadBackground(BackgroundType bkgd) {
             break;
         }
 
-        /* open the correct file for what we're trying to do */
-        file = egaFilename ?
-            u4fopen(egaFilename) : /* is there a different file for ega stuff? */
-            u4fopen(vgaFilename);  /* no? then use the normal file */
+        /* if we have a new file, recalculate the filename for it */
+        if (egaBkgd != bkgd)
+            egaFilename = screenGetEgaFilename(egaBkgd);
+
+        /* open the file */
+        file = u4fopen(egaFilename);
 
         if (file) {
             ret = screenLoadImageEga(&unscaled,
-                                     backgroundInfo[bkgd].width,
-                                     backgroundInfo[bkgd].height,
+                                     backgroundInfo[egaBkgd].width,
+                                     backgroundInfo[egaBkgd].height,
                                      file,
                                      backgroundInfo[egaBkgd].comp);
             u4fclose(file);
