@@ -33,6 +33,30 @@ void statsShowReagents();
 void statsShowMixtures();
 
 /**
+ * Sets the stats item to the previous in sequence.
+ */
+void statsPrevItem() {
+    c->statsItem = (StatsItem) (c->statsItem - 1);
+    if (c->statsItem < STATS_CHAR1)
+        c->statsItem = STATS_MIXTURES;
+    if (c->statsItem <= STATS_CHAR8 &&
+        (c->statsItem - STATS_CHAR1 + 1) > c->saveGame->members)
+        c->statsItem = (StatsItem) (STATS_CHAR1 - 1 + c->saveGame->members);
+}
+
+/**
+ * Sets the stats item to the next in sequence.
+ */
+void statsNextItem() {
+    c->statsItem = (StatsItem) (c->statsItem + 1);
+    if (c->statsItem > STATS_MIXTURES)
+        c->statsItem = STATS_CHAR1;
+    if (c->statsItem <= STATS_CHAR8 &&
+            (c->statsItem - STATS_CHAR1 + 1) > c->saveGame->members)
+            c->statsItem = STATS_WEAPONS;
+}
+
+/**
  * Update the stats (ztats) box on the upper right of the screen.
  */
 void statsUpdate() {
