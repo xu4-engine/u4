@@ -12,35 +12,61 @@
 #include "event.h"
 #include "screen.h"
 #include "u4file.h"
+#include "savegame.h"
 
+#define INTRO_TEXT_OFFSET 17445
+#define INTRO_MAP_OFFSET 30339
+#define INTRO_MAP_HEIGHT 5
+#define INTRO_MAP_WIDTH 19
+#define INTRO_FIXUPDATA_OFFSET 29806
+
+/**
+ * The states of the intro.
+ */
 typedef enum {
-    INTRO_MAP,
-    INTRO_MENU,
-    INTRO_INIT_NAME,
-    INTRO_INIT_SEX,
-    INTRO_INIT_STORY,
-    INTRO_INIT_QUESTIONS
+    INTRO_MAP,                  /* displaying the animated intro map */
+    INTRO_MENU,                 /* displaying the main menu: journey onward, etc. */
+    INTRO_INIT_NAME,            /* prompting for character name */
+    INTRO_INIT_SEX,             /* prompting for character sex */
+    INTRO_INIT_STORY,           /* displaying the intro story leading up the gypsy */
+    INTRO_INIT_QUESTIONS,       /* prompting for the questions that determine class */
+    INTRO_INIT_SEGTOGAME        /* displaying the text that segues to the game */
 } IntroMode;
 
-char storyInd;
+#define GYP_PLACES_FIRST 0
+#define GYP_PLACES_TWOMORE 1
+#define GYP_PLACES_LAST 2
+#define GYP_UPON_TABLE 3
+#define GYP_SEGUE1 13
+#define GYP_SEGUE2 14
+
+int storyInd;
+int segueInd;
+unsigned char *introMap[INTRO_MAP_HEIGHT];
 char *introText[24];
 char *introQuestions[28];
-char *introGypsy[4];
+char *introGypsy[15];
 int questionRound;
 int answerInd;
+int introAskToggle = 0;
 int questionTree[15];
 
 IntroMode mode = INTRO_MAP;
-char buffer[16];
+char nameBuffer[16];
+char sex;
 
+void introInitiateNewGame();
+void introStartQuestions();
 int introHandleName(const char *message);
 int introHandleSexChoice(char choice);
-void introShowText(int text);
+void introShowText(const char *text);
 void introInitQuestionTree();
+const char *introGetQuestion(int v1, int v2);
 int introDoQuestion(int answer);
 int introHandleQuestionChoice(char choice);
 
 int introInit() {
+    unsigned char screenFixData[533];
     FILE *title;
     int i, j;
     char buffer[256];
@@ -74,12 +100,27 @@ int introInit() {
             if (buffer[j] == '\0')
                 break;
         }
+        if (buffer[j-1] == '\n')
+            buffer[j-1] = '\0';
         introGypsy[i] = strdup(buffer);
+    }
+
+    fseek(title, INTRO_FIXUPDATA_OFFSET, SEEK_SET);
+    fread(screenFixData, 1, sizeof(screenFixData), title);
+
+    fseek(title, 30339, SEEK_SET);
+    introMap[0] = (unsigned char *) malloc(INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT);
+    for (i = 0; i < INTRO_MAP_HEIGHT; i++) {
+        introMap[i] = introMap[0] + INTRO_MAP_WIDTH * i;
+        for (j = 0; j < INTRO_MAP_WIDTH; j++) {
+            introMap[i][j] = (unsigned char) fgetc(title);
+        }
     }
 
     u4fclose(title);
 
     screenLoadCards();
+    screenFixIntroScreen(screenFixData);
 
     return 1;
 }
@@ -95,14 +136,15 @@ void introDelete() {
     for (i = 0; i < sizeof(introGypsy) / sizeof(introGypsy[0]); i++)
         free(introGypsy[i]);
 
+    free(introMap[0]);
+
     screenFreeCards();
     screenFreeIntroBackgrounds();
 }
 
 int introKeyHandler(int key, void *data) {
-    ReadBufferActionInfo *info;
-    GetChoiceActionInfo *choiceInfo;
     int valid = 1;
+    GetChoiceActionInfo *info;
 
     switch (mode) {
 
@@ -114,19 +156,7 @@ int introKeyHandler(int key, void *data) {
     case INTRO_MENU:
         switch (key) {
         case 'i':
-            mode = INTRO_INIT_NAME;
-            introUpdateScreen();
-            screenSetCursorPos(12, 20);
-            screenEnableCursor();
-            screenForceRedraw();
-            info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-            info->handleBuffer = &introHandleName;
-            info->buffer = buffer;
-            info->bufferLen = 16;
-            info->screenX = 12;
-            info->screenY = 20;
-            buffer[0] = '\0';
-            eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
+            introInitiateNewGame();
             break;
         case 'j':
             eventHandlerSetExitFlag(1);
@@ -151,24 +181,26 @@ int introKeyHandler(int key, void *data) {
 
     case INTRO_INIT_STORY:
         storyInd++;
-        if (storyInd >= 24) {
-            mode = INTRO_INIT_QUESTIONS;
-            questionRound = 0;
-            introInitQuestionTree();
-            choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-            choiceInfo->choices = "ab";
-            choiceInfo->handleChoice = &introHandleQuestionChoice;
-            eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
-        }
+        if (storyInd >= 24)
+            introStartQuestions();
         introUpdateScreen();
         return 1;
 
     case INTRO_INIT_QUESTIONS:
-        if (introDoQuestion(0)) {
-            screenDisableCursor();
-            mode = INTRO_MENU;
-        }
+        introAskToggle = 1;
+        info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+        info->choices = "ab";
+        info->handleChoice = &introHandleQuestionChoice;
+        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
         introUpdateScreen();
+        return 1;
+
+    case INTRO_INIT_SEGTOGAME:
+        segueInd++;
+        if (segueInd >= 2)
+            eventHandlerSetExitFlag(1);
+        else
+            introUpdateScreen();
         return 1;
     }
 
@@ -178,17 +210,10 @@ int introKeyHandler(int key, void *data) {
 
 void introDrawMap() {
     int x, y;
-    const int map[][19] = {
-        { 6, 6, 6, 4, 4, 4, 1, 1, 0, 0, 0, 0, 1, 4, 4, 13,14,15,4 },
-        { 6, 6, 4, 4, 4, 1, 1, 1, 1, 0, 0, 1, 1, 4, 4, 4, 4, 4, 4 },
-        { 6, 4, 4, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 10,4, 4, 4, 6 },
-        { 6, 4, 4, 1, 1, 2, 2, 1, 1, 9, 8, 1, 1, 1, 1, 4, 6, 6, 6 },
-        { 4, 4, 4, 4, 1, 1, 1, 1, 4, 4, 8, 8, 1, 1, 1, 1, 1, 6, 6 }
-    };
-    
-    for (y = 0; y < (sizeof(map) / sizeof(map[0])); y++) {
-        for (x = 0; x < (sizeof(map[0]) / sizeof(map[0][0])); x++) {
-            screenShowTile(map[y][x], x, y + 6);
+
+    for (y = 0; y < INTRO_MAP_HEIGHT; y++) {
+        for (x = 0; x < INTRO_MAP_WIDTH; x++) {
+            screenShowTile(introMap[y][x], x, y + 6);
         }
     }
 }
@@ -243,13 +268,29 @@ void introUpdateScreen() {
             screenDrawBackground(BKGD_GYPSY);
         else if (storyInd == 23)
             screenDrawBackground(BKGD_ABACUS);
-        introShowText(storyInd);
+        introShowText(introText[storyInd]);
         break;
 
     case INTRO_INIT_QUESTIONS:
-        screenDrawBackground(BKGD_ABACUS);
-        screenShowCard(0, questionTree[questionRound * 2]);
-        screenShowCard(1, questionTree[questionRound * 2 + 1]);
+        if (introAskToggle == 0) {
+            if (questionRound == 0)
+                screenDrawBackground(BKGD_ABACUS);
+            screenShowCard(0, questionTree[questionRound * 2]);
+            screenShowCard(1, questionTree[questionRound * 2 + 1]);
+
+            screenEraseIntroText();
+        
+            screenTextAt(0, 19, "%s", introGypsy[questionRound == 0 ? GYP_PLACES_FIRST : (questionRound == 6 ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE)]);
+            screenTextAt(0, 20, "%s", introGypsy[GYP_UPON_TABLE]);
+            screenTextAt(0, 21, "%s and %s.  She says", introGypsy[questionTree[questionRound * 2] + 4], introGypsy[questionTree[questionRound * 2 + 1] + 4]);
+            screenTextAt(0, 22, "\"Consider this:\"");
+            screenSetCursorPos(16, 22);
+        } else
+            introShowText(introGetQuestion(questionTree[questionRound * 2], questionTree[questionRound * 2 + 1]));
+        break;
+
+    case INTRO_INIT_SEGTOGAME:
+        introShowText(introGypsy[GYP_SEGUE1 + segueInd]);
         break;
 
     default:
@@ -259,10 +300,40 @@ void introUpdateScreen() {
     screenForceRedraw();
 }
 
+/**
+ * Initiate a new savegame by reading the name, sex, then presenting a
+ * series of questions to determine the class of the new character.
+ */
+void introInitiateNewGame() {
+    ReadBufferActionInfo *info;
+
+    /* display name  prompt and read name from keyboard */
+    mode = INTRO_INIT_NAME;
+    introUpdateScreen();
+    screenSetCursorPos(12, 20);
+    screenEnableCursor();
+    screenForceRedraw();
+
+    info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+    info->handleBuffer = &introHandleName;
+    info->buffer = nameBuffer;
+    info->bufferLen = 16;
+    info->screenX = 12;
+    info->screenY = 20;
+    nameBuffer[0] = '\0';
+
+    eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
+}
+
+void introStartQuestions() {
+    mode = INTRO_INIT_QUESTIONS;
+    questionRound = 0;
+    introAskToggle = 0;
+    introInitQuestionTree();
+}
+
 int introHandleName(const char *message) {
     GetChoiceActionInfo *info;
-
-    printf("name = %s\n", message);
 
     eventHandlerPopKeyHandler();
     mode = INTRO_INIT_SEX;
@@ -282,7 +353,10 @@ int introHandleName(const char *message) {
 
 int introHandleSexChoice(char choice) {
 
-    printf("sex = %c\n", choice);
+    if (choice == 'm')
+        sex = SEX_MALE;
+    else
+        sex = SEX_FEMALE;
 
     eventHandlerPopKeyHandler();
     mode = INTRO_INIT_STORY;
@@ -294,18 +368,36 @@ int introHandleSexChoice(char choice) {
     return 1;
 }
 
-void introGetQuestion() {
-    
+/**
+ * Get the text for the question giving a choice between virtue v1 and
+ * virtue v2 (zero based virtue index, starting at honesty).
+ */
+const char *introGetQuestion(int v1, int v2) {
+    int i = 0;
+    int d = 7;
+
+    assert (v1 < v2);
+
+    while (v1 > 0) {
+        i += d;
+        d--;
+        v1--;
+        v2--;
+    }
+        
+    assert((i + v2 - 1) < 28);
+
+    return introQuestions[i + v2 - 1];
 }
 
-void introShowText(int text) {
+void introShowText(const char *text) {
     char line[41];
-    char *p;
+    const char *p;
     int len, lineNo = 19;
 
     screenEraseIntroText();
 
-    p = introText[text];
+    p = text;
     while (*p) {
         len = strcspn(p, "\n");
         strncpy(line, p, len);
@@ -373,18 +465,34 @@ int introDoQuestion(int answer) {
 }
 
 int introHandleQuestionChoice(char choice) {
-    GetChoiceActionInfo *choiceInfo;
-
+    FILE *saveGameFile;
+    SaveGame saveGame;
     eventHandlerPopKeyHandler();
 
     if (introDoQuestion(choice == 'a' ? 0 : 1)) {
-        screenDisableCursor();
-        mode = INTRO_MENU;
+        mode = INTRO_INIT_SEGTOGAME;
+        segueInd = 0;
+
+        saveGameFile = fopen("party.sav", "wb");
+        if (saveGameFile) {
+            SaveGamePlayerRecord avatar;
+            saveGamePlayerRecordInit(&avatar);
+            strcpy(avatar.name, nameBuffer);
+            avatar.hp = 100;
+            avatar.hpMax = 100;
+            avatar.xp = 0;
+            avatar.str = 20;
+            avatar.dex = 20;
+            avatar.intel = 20;
+            avatar.mp = 20;
+            avatar.sex = sex;
+            avatar.klass = questionTree[14];
+            saveGameInit(&saveGame, 86, 109, &avatar);
+            saveGameWrite(&saveGame, saveGameFile);
+            fclose(saveGameFile);
+        }
     } else {
-        choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-        choiceInfo->choices = "ab";
-        choiceInfo->handleChoice = &introHandleQuestionChoice;
-        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
+        introAskToggle = 0;
     }
 
     introUpdateScreen();
