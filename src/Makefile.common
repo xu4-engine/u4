@@ -78,4 +78,5 @@ clean:: cleanutil
 	rm -rf *~ */*~ $(OBJS) $(MAIN) 
 
 cleanutil::
-	rm -rf util/dumpsavegame.o dumpsavegame$(EXEEXT) util/lzwenc.o lzwenc$(EXEEXT) util/lzwdec.o lzwdec$(EXEEXT) util/pngconv.o util/rleenc.o rleenc$(EXEEXT) util/rledec.o rledec$(EXEEXT)
+	rm -rf util/dumpsavegame.o dumpsavegame$(EXEEXT) util/lzwenc.o lzwenc$(EXEEXT) util/lzwdec.o lzwdec$(EXEEXT) util/pngconv.o util/rleenc.o rleenc$(EXEEXT) util/rledec.o rledec$(EXEEXT) util/tlkconv.o tlkconv$(EXEEXT)
+
