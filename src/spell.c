@@ -497,7 +497,7 @@ static int spellDispel(int dir) {
 
 static int spellEField(int param) {
     int x, y, z;
-    int fieldTile;
+    unsigned char fieldTile;
     int fieldType;
     int dir;
     unsigned char tile;
