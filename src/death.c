@@ -82,26 +82,23 @@ void deathTimer(void *data) {
 }
 
 void deathRevive() {
-    while(!mapIsWorldMap(c->map)) {
-        if (c->parent != NULL) {
-            Context *t = c;
-            annotationClear();
-            mapClearObjects(c->map);
-            c->parent->saveGame->x = c->saveGame->dngx;
-            c->parent->saveGame->y = c->saveGame->dngy;
-            c->parent->line = c->line;
-            c->parent->moonPhase = c->moonPhase;
-            c->parent->windDirection = c->windDirection;
-            c->parent->windCounter = c->windCounter;
-            c->parent->aura = c->aura;
-            c->parent->auraDuration = c->auraDuration;
-            c->parent->horseSpeed = c->horseSpeed;
-            c->parent->lastCommandTime = time(NULL);
-            c = c->parent;
-            c->col = 0;
-            free(t);
-                
-        }
+    while(!mapIsWorldMap(c->map) && c->parent != NULL) {
+        Context *t = c;
+        annotationClear(c->map->id);
+        mapClearObjects(c->map);
+        c->parent->saveGame->x = c->saveGame->dngx;
+        c->parent->saveGame->y = c->saveGame->dngy;
+        c->parent->line = c->line;
+        c->parent->moonPhase = c->moonPhase;
+        c->parent->windDirection = c->windDirection;
+        c->parent->windCounter = c->windCounter;
+        c->parent->aura = c->aura;
+        c->parent->auraDuration = c->auraDuration;
+        c->parent->horseSpeed = c->horseSpeed;
+        c->parent->lastCommandTime = time(NULL);
+        c = c->parent;
+        c->col = 0;
+        free(t);
     }
 
     c->saveGame->x = REVIVE_WORLD_X;
@@ -113,6 +110,7 @@ void deathRevive() {
     c->saveGame->y = REVIVE_CASTLE_Y;
     c->saveGame->dngx = REVIVE_WORLD_X;
     c->saveGame->dngy = REVIVE_WORLD_Y;
+    c->saveGame->dnglevel = 1;
     c->aura = AURA_NONE;
     c->auraDuration = 0;
     c->horseSpeed = 0;
