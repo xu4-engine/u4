@@ -873,8 +873,8 @@ void CombatController::finishTurn(void) {
         } while (!player || 
                   player->isDisabled() || /* dead or sleeping */                 
                  ((c->location->activePlayer >= 0) && /* active player is set */
-                  !ct->party[c->location->activePlayer]->isDisabled() && /* and the active player is not disabled */
                   (ct->party[c->location->activePlayer]) && /* and the active player is still in combat */
+                  !ct->party[c->location->activePlayer]->isDisabled() && /* and the active player is not disabled */
                   (c->location->activePlayer != ct->focus)));
     }
     else c->location->map->annotations->passTurn();
