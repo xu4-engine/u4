@@ -34,8 +34,7 @@ Mix_Music *playing = NULL;
 void musicPlayMid(Music music) {    
 
     if (settings->vol == 0) {        
-        if (musicIsPlaying())
-            musicFadeOut(1000);
+        musicFadeOut(1000);
         return;
     }    
 
@@ -180,7 +179,7 @@ void musicStop(void) {
 void musicFadeOut(int msecs) {
     if (musicIsPlaying()) {
         if (!settings->volumeFades)
-            musicStop();    
+            musicStop();
         else {
             if (Mix_FadeOutMusic(msecs) == -1)
                 errorWarning("Mix_FadeOutMusic: %s\n", Mix_GetError());

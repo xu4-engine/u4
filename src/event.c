@@ -149,6 +149,7 @@ void eventHandlerResetTimerCallbacks() {
     }
 
     /* re-initialize the main event loop */
+    eventHandlerDelete();
     eventHandlerInit();
 }
 

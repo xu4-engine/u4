@@ -48,9 +48,11 @@ typedef enum {
 
 void screenInit(void);
 void screenDelete(void);
+void screenReInit(void);
 
 void screenDrawBackground(BackgroundType bkgd);
 void screenDrawBackgroundInMapArea(BackgroundType bkgd);
+void screenFreeBackgrounds();
 const char *screenGetVgaFilename(BackgroundType bkgd);
 const char *screenGetEgaFilename(BackgroundType bkgd);
 

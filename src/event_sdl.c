@@ -8,6 +8,7 @@
 #include "u4.h"
 
 #include "context.h"
+#include "error.h"
 #include "event.h"
 #include "screen.h"
 #include "settings.h"
@@ -27,14 +28,23 @@ Uint32 eventCallback(Uint32 interval, void *param) {
 }
 
 void eventHandlerInit() {    
-    extern int eventTimerGranularity;
+    extern int eventTimerGranularity;    
+
     if (timer != NULL)
         SDL_RemoveTimer(timer);
+
+    /* start the SDL timer */
+    if (!SDL_WasInit(SDL_INIT_TIMER)) {
+        if (SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
+            errorFatal("unable to init SDL: %s", SDL_GetError());
+    }
+    
     timer = SDL_AddTimer(eventTimerGranularity, &eventCallback, NULL);
 }
 
 void eventHandlerDelete() {
     SDL_RemoveTimer(timer);
+    SDL_QuitSubSystem(SDL_INIT_TIMER);
 }
 
 void eventHandlerSleep(int usec) {    

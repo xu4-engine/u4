@@ -11,6 +11,8 @@
 #include "error.h"
 #include "event.h"
 #include "image.h"
+#include "intro.h"
+#include "music.h"    /* FIXME: this can be removed when musicInit and musicDelete are removed */
 #include "rle.h"
 #include "savegame.h"
 #include "settings.h"
@@ -169,8 +171,10 @@ void screenInit() {
         scale = 2;
 
     /* start SDL */
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
-        errorFatal("unable to init SDL: %s", SDL_GetError());
+    if (!SDL_WasInit(SDL_INIT_VIDEO)) {
+        if (SDL_Init(SDL_INIT_VIDEO) < 0)
+            errorFatal("unable to init SDL: %s", SDL_GetError());
+    }
 
     screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (settings->fullscreen ? SDL_FULLSCREEN : 0));
     if (!screen)
@@ -202,11 +206,26 @@ void screenInit() {
 }
 
 void screenDelete() {
-    if (bkgds[BKGD_BORDERS])
-        imageDelete(bkgds[BKGD_BORDERS]);
+    screenFreeBackgrounds();
     imageDelete(tiles);
     imageDelete(charset);
     SDL_Quit();
+}
+
+/**
+ * FIXME: re-load images here
+ */
+void screenReInit() {    
+    /* FIXME: much of this re-initialization does not need to happen:
+       move SDL_Init functions to SDLInit() and SDLDelete() and then
+       have each subsystem initialize itself */
+    musicDelete();
+    introDelete();  /* delete intro stuff */
+    screenDelete(); /* delete screen stuff */
+    screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
+    introInit();    /* re-fix the backgrounds loaded and scale images, etc. */
+    musicInit();
+    eventHandlerResetTimerCallbacks(); /* re-init the SDL_TIMER as well (because it gets killed by screenDelete()) */
 }
 
 /**
@@ -423,6 +442,20 @@ int screenLoadBackground(BackgroundType bkgd) {
         bkgds[bkgd] = unscaled;
     
     return 1;
+}
+
+/**
+ * Free up all background images
+ */
+void screenFreeBackgrounds() {
+    int i;
+
+    for (i = 0; i < BKGD_MAX; i++) {
+        if (bkgds[i] != NULL) {
+            imageDelete(bkgds[i]);
+            bkgds[i] = NULL;
+        }
+    }
 }
 
 /**

@@ -304,6 +304,8 @@ int introInit() {
     majorOptions = menuAddItem(majorOptions, 0xFE, "Use These Settings", 7, 20, &introMajorOptionsMenuItemActivate, ACTIVATE_NORMAL);
     majorOptions = menuAddItem(majorOptions, 0xFF, "Cancel", 7, 21, &introMajorOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
+    memcpy(settingsChanged, settings, sizeof(Settings));
+
     introUpdateScreen();
 
     musicIntro();
@@ -347,15 +349,15 @@ void introDelete() {
     screenFreeIntroBackgrounds();
 
     /* delete our menus */
-    menuDelete(mainOptions);
-    menuDelete(videoOptions);
-    menuDelete(soundOptions);
-    menuDelete(gameplayOptions);
-    menuDelete(advancedOptions);
-    menuDelete(keyboardOptions);
-    menuDelete(speedOptions);
-    menuDelete(minorOptions);
-    menuDelete(majorOptions);
+    menuDelete(mainOptions);     mainOptions = NULL;
+    menuDelete(videoOptions);    videoOptions = NULL;
+    menuDelete(soundOptions);    soundOptions = NULL;
+    menuDelete(gameplayOptions); gameplayOptions = NULL;
+    menuDelete(advancedOptions); advancedOptions = NULL;
+    menuDelete(keyboardOptions); keyboardOptions = NULL;
+    menuDelete(speedOptions);    speedOptions = NULL;
+    menuDelete(minorOptions);    minorOptions = NULL;
+    menuDelete(majorOptions);    majorOptions = NULL;
 }
 
 /**
@@ -1379,13 +1381,14 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
 
     case 0xFE:
-        /* save settings */
-        memcpy(settings, settingsChanged, sizeof(Settings));
-        settingsWrite();
+        /* save settings (if necessary) */
+        if (memcmp(settings, settingsChanged, sizeof(Settings)) != 0) {
+            memcpy(settings, settingsChanged, sizeof(Settings));
+            settingsWrite();
 
-        /* FIXME: resize intro stuff, fix 'timer-being-squashed-by-screenInit()' issue */
-        /*screenDelete(); 
-        screenInit();*/
+            /* FIXME: resize images, etc. */
+            screenReInit();
+        }        
     
         mode = INTRO_CONFIG;
         
@@ -1414,6 +1417,7 @@ void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         /* save settings */
         memcpy(settings, settingsChanged, sizeof(Settings));
         settingsWrite();
+        
         musicIntro();
     
         mode = INTRO_CONFIG;        
