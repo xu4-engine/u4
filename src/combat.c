@@ -297,12 +297,12 @@ int combatAttackAtCoord(int x, int y, int distance) {
     if (!playerAttackHit(&c->saveGame->players[focus])) {
         screenMessage("Missed!\n");
 
-        annotationSetTimeDuration(annotationAdd(x, y, MISSFLASH_TILE), 2);
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, MISSFLASH_TILE), 2));
 
     } else {
         m = monsterForTile(monsters[monster]->tile);
 
-        annotationSetTimeDuration(annotationAdd(x, y, HITFLASH_TILE), 2);
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, HITFLASH_TILE), 2));
 
         if (m->tile != LORDBRITISH_TILE)
             monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);
@@ -456,6 +456,9 @@ void combatMoveMonsters() {
         switch(action) {
         case CA_ATTACK:
             if (playerIsHitByAttack(&c->saveGame->players[target])) {
+
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, HITFLASH_TILE), 2));
+
                 playerApplyDamage(&c->saveGame->players[target], monsterGetDamage(m));
                 if (c->saveGame->players[target].hp == 0) {
                     mapRemoveObject(c->map, party[target]);
@@ -463,6 +466,8 @@ void combatMoveMonsters() {
                     screenMessage("%s is Killed!\n", c->saveGame->players[target].name);
                 }
                 statsUpdate();
+            } else {
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, MISSFLASH_TILE), 2));
             }
             break;
 

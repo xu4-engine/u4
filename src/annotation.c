@@ -20,6 +20,7 @@ Annotation *annotationAdd(int x, int y, unsigned char tile) {
     a->y = y;
     a->time_to_live = -1;
     a->tile = tile;
+    a->visual = 0;
     a->next = c->map->annotation;
     
     c->map->annotation = a;
@@ -27,12 +28,19 @@ Annotation *annotationAdd(int x, int y, unsigned char tile) {
     return a;
 }
 
-void annotationSetTurnDuration(Annotation *a, int ttl) {
-    a->time_to_live = ttl;
+Annotation *annotationSetVisual(Annotation *a) {
+    a->visual = 1;
+    return a;
 }
 
-void annotationSetTimeDuration(Annotation *a, int interval) {
+Annotation *annotationSetTurnDuration(Annotation *a, int ttl) {
+    a->time_to_live = ttl;
+    return a;
+}
+
+Annotation *annotationSetTimeDuration(Annotation *a, int interval) {
     eventHandlerAddTimerCallbackData(&annotationTimer, (void *) a, interval);
+    return a;
 }
 
 void annotationTimer(void *data) {

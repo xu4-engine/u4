@@ -253,13 +253,50 @@ const Portal *mapPortalAt(const Map *map, int x, int y) {
     return NULL;
 }
 
+/**
+ * Returns the real tile at the given point on a map.  Visual-only
+ * annotations like moongates and attack icons are ignored.
+ */
 unsigned char mapTileAt(const Map *map, int x, int y) {
     unsigned char tile;
     const Annotation *a;
  
     tile = MAP_TILE_AT(map, x, y);
-    if ((a = annotationAt(x, y)) != NULL)
+    if ((a = annotationAt(x, y)) != NULL &&
+        !a->visual)
         tile = a->tile;
+    
+    return tile;
+}
+
+/**
+ * Returns the visible tile at the given point on a map.  This
+ * includes visual-only annotations like moongates and attack icons.
+ */
+unsigned char mapVisibleTileAt(const Map *map, int x, int y, int *focus) {
+    unsigned char tile;
+    const Annotation *a;
+    const Object *obj;
+ 
+    a = annotationAt(x, y);
+    if (a && a->visual) {
+        *focus = 0;
+        tile = a->tile;
+    }
+    else if ((map->flags & SHOW_AVATAR) && c->saveGame->x == x && c->saveGame->y == y) {
+        *focus = 0;
+        tile = c->saveGame->transport;
+    }
+    else if ((obj = mapObjectAt(c->map, x, y))) {
+        *focus = obj->hasFocus;
+        tile = obj->tile;
+    }
+    else {
+        *focus = 0;
+        tile = MAP_TILE_AT(map, x, y);
+        if (a)
+            tile = a->tile;
+    }
     
     return tile;
 }

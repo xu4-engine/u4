@@ -68,6 +68,7 @@ struct _Object *mapObjectAt(const Map *map, int x, int y);
 const struct _Person *mapPersonAt(const Map *map, int x, int y);
 const struct _Portal *mapPortalAt(const Map *map, int x, int y);
 unsigned char mapTileAt(const Map *map, int x, int y);
+unsigned char mapVisibleTileAt(const Map *map, int x, int y, int *focus);
 int mapIsWorldMap(const Map *map);
 struct _Object *mapAddPersonObject(Map *map, const struct _Person *person);
 struct _Object *mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned short x, unsigned short y);

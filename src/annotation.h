@@ -18,12 +18,14 @@ typedef struct _Annotation {
     int x, y;
     int time_to_live;
     unsigned char tile;
+    int visual;
     struct _Annotation *next;
 } Annotation;
 
 Annotation *annotationAdd(int x, int y, unsigned char tile);
-void annotationSetTurnDuration(Annotation *a, int ttl);
-void annotationSetTimeDuration(Annotation *a, int interval);
+Annotation *annotationSetVisual(Annotation *a);
+Annotation *annotationSetTurnDuration(Annotation *a, int ttl);
+Annotation *annotationSetTimeDuration(Annotation *a, int interval);
 void annotationRemove(int x, int y, unsigned char tile);
 const Annotation *annotationAt(int x, int y);
 void annotationCycle(void);

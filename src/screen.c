@@ -72,12 +72,8 @@ void screenMessage(const char *fmt, ...) {
     screenEnableCursor();
 }
 
-ScreenTileInfo screenViewportTile(int width, int height, int x, int y) {
-    ScreenTileInfo retval;
+unsigned char screenViewportTile(int width, int height, int x, int y, int *focus) {
     int centerx, centery, tx, ty;
-    const Object *obj;
-
-    retval.hasFocus = 0;
 
     centerx = c->saveGame->x;
     centery = c->saveGame->y;
@@ -103,30 +99,17 @@ ScreenTileInfo screenViewportTile(int width, int height, int x, int y) {
                 ty -= c->map->height;
         }
         else {
-            retval.tile = GRASS_TILE;
-            return retval;
+            *focus = 0;
+            return GRASS_TILE;
         }
     }
 
-    if ((c->map->flags & SHOW_AVATAR) && c->saveGame->x == tx && c->saveGame->y == ty) {
-        retval.hasFocus = 0;
-        retval.tile = c->saveGame->transport;
-        return retval;
-    }
-    else if ((obj = mapObjectAt(c->map, tx, ty))) {
-        retval.hasFocus = obj->hasFocus;
-        retval.tile = obj->tile;
-        return retval;
-    }
-    else {
-        retval.tile = mapTileAt(c->map, tx, ty);
-        return retval;
-    }
+    return mapVisibleTileAt(c->map, tx, ty, focus);
 }
 
 void screenUpdate(int showmap, int blackout) {
-    ScreenTileInfo tileInfo;
-    int y, x;
+    unsigned char tile;
+    int focus, x, y;
 
     assert(c != NULL);
 
@@ -137,13 +120,10 @@ void screenUpdate(int showmap, int blackout) {
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
                 if (!blackout && screenLos[x][y]) {
-                    tileInfo = screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y);
-                    screenShowTile(&tileInfo, x, y);
-                } else {
-                    tileInfo.hasFocus = 0;
-                    tileInfo.tile = BLACK_TILE;
-                    screenShowTile(&tileInfo, x, y);
-                }
+                    tile = screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y, &focus);
+                    screenShowTile(tile, focus, x, y);
+                } else
+                    screenShowTile(BLACK_TILE, 0, x, y);
             }
         }
         screenRedrawMapArea();
@@ -201,7 +181,7 @@ void screenSetCursorPos(int x, int y) {
 }
 
 void screenFindLineOfSight() {
-    int y, x;
+    int focus, x, y;
 
     if (c == NULL)
         return;
@@ -231,47 +211,47 @@ void screenFindLineOfSight() {
 
     for (x = VIEWPORT_W / 2 - 1; x >= 0; x--)
         if (screenLos[x + 1][VIEWPORT_H / 2] &&
-            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, VIEWPORT_H / 2).tile))
+            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, VIEWPORT_H / 2, &focus)))
             screenLos[x][VIEWPORT_H / 2] = 1;
 
     for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++)
         if (screenLos[x - 1][VIEWPORT_H / 2] &&
-            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, VIEWPORT_H / 2).tile))
+            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, VIEWPORT_H / 2, &focus)))
             screenLos[x][VIEWPORT_H / 2] = 1;
 
     for (y = VIEWPORT_H / 2 - 1; y >= 0; y--)
         if (screenLos[VIEWPORT_W / 2][y + 1] &&
-            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, VIEWPORT_W / 2, y + 1).tile))
+            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, VIEWPORT_W / 2, y + 1, &focus)))
             screenLos[VIEWPORT_W / 2][y] = 1;
 
     for (y = VIEWPORT_H / 2 + 1; y < VIEWPORT_H; y++)
         if (screenLos[VIEWPORT_W / 2][y - 1] &&
-            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, VIEWPORT_W / 2, y - 1).tile))
+            !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, VIEWPORT_W / 2, y - 1, &focus)))
             screenLos[VIEWPORT_W / 2][y] = 1;
 
     for (y = VIEWPORT_H / 2 - 1; y >= 0; y--) {
         
         for (x = VIEWPORT_W / 2 - 1; x >= 0; x--) {
             if (screenLos[x][y + 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y + 1).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y + 1, &focus)))
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y, &focus)))
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y + 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y + 1).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y + 1, &focus)))
                 screenLos[x][y] = 1;
         }
                 
         for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++) {
             if (screenLos[x][y + 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y + 1).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y + 1, &focus)))
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y, &focus)))
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y + 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y + 1).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y + 1, &focus)))
                 screenLos[x][y] = 1;
         }
     }
@@ -280,25 +260,25 @@ void screenFindLineOfSight() {
         
         for (x = VIEWPORT_W / 2 - 1; x >= 0; x--) {
             if (screenLos[x][y - 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y - 1).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y - 1, &focus)))
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y, &focus)))
                 screenLos[x][y] = 1;
             else if (screenLos[x + 1][y - 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y - 1).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x + 1, y - 1, &focus)))
                 screenLos[x][y] = 1;
         }
                 
         for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++) {
             if (screenLos[x][y - 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y - 1).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y - 1, &focus)))
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y, &focus)))
                 screenLos[x][y] = 1;
             else if (screenLos[x - 1][y - 1] &&
-                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y - 1).tile))
+                !tileIsOpaque(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x - 1, y - 1, &focus)))
                 screenLos[x][y] = 1;
         }
     }

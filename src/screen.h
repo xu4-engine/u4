@@ -43,11 +43,6 @@ typedef enum {
     BKGD_MAX
 } BackgroundType;
 
-typedef struct {
-    unsigned char tile;
-    int hasFocus;
-} ScreenTileInfo;
-
 void screenInit(void);
 void screenDelete(void);
 void screenFixIntroScreen(const unsigned char *sigData);
@@ -55,14 +50,14 @@ void screenFreeIntroAnimations();
 void screenFreeIntroBackgrounds();
 void screenDrawBackground(BackgroundType bkgd);
 void screenDrawBackgroundInMapArea(BackgroundType bkgd);
-void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y);
-void screenShowGemTile(const ScreenTileInfo *tileInfo, int x, int y);
+void screenShowTile(unsigned char tile, int focus, int x, int y);
+void screenShowGemTile(unsigned char tile, int focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, char *fmt, ...);
 void screenMessage(const char *fmt, ...);
+unsigned char screenViewportTile(int width, int height, int x, int y, int *focus);
 void screenScrollMessageArea(void);
-ScreenTileInfo screenViewportTile(int width, int height, int x, int y);
 void screenUpdate(int showmap, int blackout);
 void screenGemUpdate(void);
 void screenRedrawScreen(void);

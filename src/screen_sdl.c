@@ -43,7 +43,7 @@ SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter);
 SDL_Surface *screenScalePoint(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N);
-SDL_Surface *screenAdvanceMAMEScale(SDL_Surface *src, int scale, int N);
+SDL_Surface *screenScaleScale2x(SDL_Surface *src, int scale, int N);
 Uint32 getPixel(SDL_Surface *s, int x, int y);
 void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel);
 
@@ -118,8 +118,8 @@ void screenInit() {
     case SCL_2xSaI:
         filterScaler = &screenScale2xSaI;
         break;
-    case SCL_AdvanceMAME:
-        filterScaler = &screenAdvanceMAMEScale;
+    case SCL_Scale2x:
+        filterScaler = &screenScaleScale2x;
         break;
     default:
         filterScaler = NULL;
@@ -608,17 +608,17 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y) {
+void screenShowTile(unsigned char tile, int focus, int x, int y) {
     int offset, i, swaprow;
     SDL_Rect src, dest;
 
-    if (tileGetAnimationStyle(tileInfo->tile) == ANIM_SCROLL)
+    if (tileGetAnimationStyle(tile) == ANIM_SCROLL)
         offset = screenCurrentCycle * scale;
     else
         offset = 0;
 
     src.x = 0;
-    src.y = tileInfo->tile * (tiles->h / N_TILES);
+    src.y = tile * (tiles->h / N_TILES);
     src.w = tiles->w;
     src.h = tiles->h / N_TILES - offset;
     dest.x = x * tiles->w + (BORDER_WIDTH * scale);
@@ -631,7 +631,7 @@ void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y) {
     if (offset != 0) {
 
         src.x = 0;
-        src.y = (tileInfo->tile + 1) * (tiles->h / N_TILES) - offset;
+        src.y = (tile + 1) * (tiles->h / N_TILES) - offset;
         src.w = tiles->w;
         src.h = offset;
         dest.x = x * tiles->w + (BORDER_WIDTH * scale);
@@ -645,7 +645,7 @@ void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y) {
     /*
      * animate flags
      */
-    switch (tileGetAnimationStyle(tileInfo->tile)) {
+    switch (tileGetAnimationStyle(tile)) {
     case ANIM_CITYFLAG:
         swaprow = 3;
         break;
@@ -666,7 +666,7 @@ void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y) {
 
         for (i = 0; i < (scale * 2) + 2; i++) {
             src.x = scale * 5;
-            src.y = tileInfo->tile * (tiles->h / N_TILES) + (swaprow * scale) + i - 1;
+            src.y = tile * (tiles->h / N_TILES) + (swaprow * scale) + i - 1;
             src.w = tiles->w - (scale * 5);
             src.h = 1;
             dest.x = x * tiles->w + (BORDER_WIDTH * scale) + (scale * 5);
@@ -681,7 +681,7 @@ void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y) {
     /*
      * finally draw the focus rectangle if the tile has the focus
      */
-    if (tileInfo->hasFocus && (screenCurrentCycle % 2)) {
+    if (focus && (screenCurrentCycle % 2)) {
         /* left edge */
         dest.x = x * tiles->w + (BORDER_WIDTH * scale);
         dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
@@ -715,12 +715,12 @@ void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowGemTile(const ScreenTileInfo *tileInfo, int x, int y) {
+void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
     /* FIXME: show gem tile rather than some random color rectangle */
     SDL_Rect src, dest;
 
     src.x = 0;
-    src.y = tileInfo->tile * (tiles->h / N_TILES);
+    src.y = tile * (tiles->h / N_TILES);
     src.w = GEMTILE_W * scale;
     src.h = GEMTILE_H * scale;
     dest.x = (GEMAREA_X + (x * GEMTILE_W)) * scale;
@@ -866,15 +866,15 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
 }
 
 void screenGemUpdate() {
-    ScreenTileInfo tileInfo;
-    int x, y;
+    unsigned char tile;
+    int focus, x, y;
 
     screenFillRect(screen, BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0, 0, 0);
 
     for (x = 0; x < GEMAREA_W; x++) {
         for (y = 0; y < GEMAREA_H; y++) {
-            tileInfo = screenViewportTile(GEMAREA_W, GEMAREA_H, x, y);
-            screenShowGemTile(&tileInfo, x, y);
+            tile = screenViewportTile(GEMAREA_W, GEMAREA_H, x, y, &focus);
+            screenShowGemTile(tile, focus, x, y);
         }
     }
     screenRedrawMapArea();
@@ -895,7 +895,7 @@ SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter) {
         SDL_FreeSurface(src);
         src = dest;
     }
-    if (scale == 3 && filterScaler == &screenAdvanceMAMEScale) {
+    if (scale == 3 && filterScaler == &screenScaleScale2x) {
         dest = (*filterScaler)(src, 3, n);
         scale /= 3;
         SDL_FreeSurface(src);
@@ -1221,7 +1221,7 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
  * A more sophisticated scaler that doesn't interpolate, but avoids
  * the stair step effect by detecting angles.
  */
-SDL_Surface *screenAdvanceMAMEScale(SDL_Surface *src, int scale, int n) {
+SDL_Surface *screenScaleScale2x(SDL_Surface *src, int scale, int n) {
     int ii, x, y, xoff0, xoff1, yoff0, yoff1;
     SDL_Color a, b, c, d, e, f, g, h, i;
     SDL_Color e0, e1, e2, e3;
