@@ -421,6 +421,7 @@ void gameSpellEffect(unsigned int spell, int player) {
         effect = SPELLEFFECT_INVERT;
         break;
     case 't': // tremor
+        time = 1000;
         effect = SPELLEFFECT_TREMOR;        
         break;
     default:
@@ -437,15 +438,15 @@ void gameSpellEffect(unsigned int spell, int player) {
     switch(effect)
     {
     case SPELLEFFECT_NONE: break;
+    case SPELLEFFECT_TREMOR:
     case SPELLEFFECT_INVERT:
         {
             gameUpdateScreen();
             screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
             screenRedrawScreen();
         
-            eventHandlerSleep(time);            
-        } break;
-    case SPELLEFFECT_TREMOR: break;
+            eventHandlerSleep(time);
+        } break;       
     }
     
     statsUpdate();
@@ -1347,13 +1348,15 @@ int castForPlayer2(int spell, void *data) {
         ((spellGetContext(spell) & c->location->context) == 0) ||            /* wrong context */
         (c->saveGame->mixtures[spell] == 0)) {                               /* none mixed! */
         gameCastSpell(castSpell, castPlayer, 0);
+        (*c->location->finishTurn)();
         return 1;
     }
-        
+
     /* Get the final parameters for the spell */
     switch (spellGetParamType(spell)) {
     case SPELLPRM_NONE:
         gameCastSpell(castSpell, castPlayer, 0);
+        (*c->location->finishTurn)();
         break;
     case SPELLPRM_PHASE:
         screenMessage("Phase: ");

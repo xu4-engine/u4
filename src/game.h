@@ -44,6 +44,7 @@ void gameUpdateScreen(void);
 void gameSetMap(struct _Context *ct, struct _Map *map, int saveLocation, const struct _Portal *portal);
 int gameExitToParentMap(struct _Context *ct);
 int gameBaseKeyHandler(int key, void *data);
+int gameCastForPlayer(int player);
 int gameGetPlayerNoKeyHandler(int key, void *data);
 int gameGetAlphaChoiceKeyHandler(int key, void *data);
 int gameGetDirectionKeyHandler(int key, void *data);

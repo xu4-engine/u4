@@ -10,13 +10,17 @@
 #include "spell.h"
 
 #include "annotation.h"
+#include "combat.h"
 #include "context.h"
 #include "debug.h"
 #include "direction.h"
+#include "event.h"
 #include "game.h"
 #include "location.h"
+#include "monster.h"
 #include "moongate.h"
 #include "player.h"
+#include "screen.h"
 #include "ttype.h"
 
 SpellCallback spellCallback = NULL; 
@@ -227,10 +231,6 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
         return 0;
     }
         
-    /* 
-     * FIXME: handle dungeon and combat contexts when they are
-     * implemented 
-     */    
     if ((c->location->context & spells[spell].context) == 0) {
         *error = CASTERR_WRONGCONTEXT;        
         return 0;
@@ -379,6 +379,7 @@ static int spellEField(int dir) {
 
 static int spellFireball(int dir) {
     spellMagicAttack(HITFLASH_TILE, 128, 24);
+    screenMessage("\nNot implemented yet!\n\n");
     return 1;
 }
 
@@ -403,6 +404,7 @@ static int spellHeal(int player) {
 
 static int spellIceball(int dir) {
     spellMagicAttack(MAGICFLASH_TILE, 224, 32);
+    screenMessage("\nNot implemented yet!\n\n");
     return 1;
 }
 
@@ -435,6 +437,7 @@ static int spellNegate(int unused) {
 
 static int spellOpen(int unused) {
     /* FIXME */
+    screenMessage("\nNot implemented yet!\n\n");
     return 1;
 }
 
@@ -458,21 +461,47 @@ static int spellQuick(int unused) {
 
 static int spellSleep(int unused) {
     /* FIXME */
+    screenMessage("\nNot implemented yet!\n\n");
     return 1;
 }
 
 static int spellTremor(int unused) {
-    /* FIXME */
+    extern CombatInfo combatInfo;
+    int i, 
+        lastx = -1,
+        lasty = -1;
+
+    for (i = 0; i < AREA_MONSTERS; i++) {
+        if (combatInfo.monsters[i] && (rand() % 2 == 0)) {
+            if ((lastx >= 0) && (lasty >= 0))
+                annotationRemove(lastx, lasty, c->location->z, c->location->map->id, HITFLASH_TILE);
+
+            lastx = combatInfo.monsters[i]->x;
+            lasty = combatInfo.monsters[i]->y;
+            annotationSetVisual(annotationAddTemporary(lastx, lasty, c->location->z, c->location->map->id, HITFLASH_TILE));
+            
+            eventHandlerSleep(250);
+            gameUpdateScreen();
+
+            combatApplyDamageToMonster(i, rand() % 0xFF);
+            screenMessage("\n");
+        }
+    }
+
+    if ((lastx >= 0) && (lasty >= 0))
+        annotationRemove(lastx, lasty, c->location->z, c->location->map->id, HITFLASH_TILE);
+    
     return 1;
 }
 
 static int spellUndead(int unused) {
     /* FIXME */
+    screenMessage("\nNot implemented yet!\n\n");
     return 1;
 }
 
-static int spellView(int unsued) {
-    /* FIXME */
+static int spellView(int unsued) {    
+    gamePeerGem();    
     return 1;
 }
 
@@ -492,10 +521,12 @@ static int spellXit(int unused) {
 
 static int spellYup(int unused) {
     /* FIXME */
+    screenMessage("\nNot implemented yet!\n\n");
     return 1;
 }
 
 static int spellZdown(int unused) {
     /* FIXME */
+    screenMessage("\nNot implemented yet!\n\n");
     return 1;
 }

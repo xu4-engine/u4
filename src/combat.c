@@ -386,6 +386,10 @@ int combatBaseKeyHandler(int key, void *data) {
         screenMessage("Dir: ");        
         break;
 
+    case 'c':        
+        castForPlayer(focus);
+        break;
+
     case 'r':
         c->statsItem = STATS_WEAPONS;
         statsUpdate();
@@ -432,9 +436,8 @@ int combatBaseKeyHandler(int key, void *data) {
 }
 
 int combatAttackAtCoord(int x, int y, int distance, void *data) {
-    int monster;
-    const Monster *m;
-    int i, xp, hittile, misstile;
+    int monster;    
+    int i, hittile, misstile;
     CoordActionInfo* info = (CoordActionInfo*)data;    
     int weapon = c->saveGame->players[info->player].weapon;    
     int wrongRange = weaponRangeAbsolute(weapon) && (distance != info->range);
@@ -514,48 +517,13 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
             /* show the 'miss' tile */
             attackFlash(x, y, misstile, 1);
 
-        } else { /* The weapon hit! */
-            m = combatInfo.monsters[monster]->monster;
+        } else { /* The weapon hit! */          
 
             /* show the 'hit' tile */
             attackFlash(x, y, hittile, 1);
 
-            if (m->tile != LORDBRITISH_TILE)
-                combatInfo.monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);
-
-            switch (monsterGetStatus(m, combatInfo.monsterHp[monster])) {
-
-            case MSTAT_DEAD:
-                xp = monsterGetXp(m);
-                screenMessage("%s Killed!\nExp. %d\n", m->name, xp);
-                playerAwardXp(&c->saveGame->players[focus], xp);
-                if (monsterIsEvil(m))
-                    playerAdjustKarma(c->saveGame, KA_KILLED_EVIL);
-                mapRemoveObject(c->location->map, combatInfo.monsters[monster]);
-                combatInfo.monsters[monster] = NULL;
-                break;
-
-            case MSTAT_FLEEING:
-                screenMessage("%s Fleeing!\n", m->name);
-                break;
-
-            case MSTAT_CRITICAL:
-                screenMessage("%s Critical!\n", m->name);
-                break;
-
-            case MSTAT_HEAVILYWOUNDED:
-                screenMessage("%s\nHeavily Wounded!\n", m->name);
-                break;
-
-            case MSTAT_LIGHTLYWOUNDED:
-                screenMessage("%s\nLightly Wounded!\n", m->name);
-                break;
-
-            case MSTAT_BARELYWOUNDED:
-                screenMessage("%s\nBarely Wounded!\n", m->name);
-                break;
-            }
-
+            /* apply the damage to the monster */
+            combatApplyDamageToMonster(monster, playerGetDamage(&c->saveGame->players[focus]));
         }
     }
 
@@ -1027,6 +995,52 @@ int movePartyMember(Direction dir, int member) {
     combatInfo.party[member]->y = newy; 
 
     return result;
+}
+
+/**
+ * Applies 'damage' amount of damage to the monster
+ */
+
+void combatApplyDamageToMonster(int monster, int damage) {
+    int xp,
+        focus = combatInfo.focus;
+    const Monster *m = combatInfo.monsters[monster]->monster;
+
+    if (m->id != LORDBRITISH_ID)
+        combatInfo.monsterHp[monster] -= damage;
+
+    switch (monsterGetStatus(m, combatInfo.monsterHp[monster])) {
+
+    case MSTAT_DEAD:
+        xp = monsterGetXp(m);
+        screenMessage("%s Killed!\nExp. %d\n", m->name, xp);
+        playerAwardXp(&c->saveGame->players[focus], xp);
+        if (monsterIsEvil(m))
+            playerAdjustKarma(c->saveGame, KA_KILLED_EVIL);
+        mapRemoveObject(c->location->map, combatInfo.monsters[monster]);
+        combatInfo.monsters[monster] = NULL;
+        break;
+
+    case MSTAT_FLEEING:
+        screenMessage("%s Fleeing!\n", m->name);
+        break;
+
+    case MSTAT_CRITICAL:
+        screenMessage("%s Critical!\n", m->name);
+        break;
+
+    case MSTAT_HEAVILYWOUNDED:
+        screenMessage("%s\nHeavily Wounded!\n", m->name);
+        break;
+
+    case MSTAT_LIGHTLYWOUNDED:
+        screenMessage("%s\nLightly Wounded!\n", m->name);
+        break;
+
+    case MSTAT_BARELYWOUNDED:
+        screenMessage("%s\nBarely Wounded!\n", m->name);
+        break;
+    }
 }
 
 /**
