@@ -46,7 +46,8 @@ SRCS=\
         sound.c \
         spell.c \
         stats.c \
-        ttype.c \
+        tile.c \
+        tileset.c \
         u4.c \
         u4_$(UI).c \
         u4file.c \
