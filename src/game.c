@@ -62,6 +62,8 @@ int gameSave(void);
 /* key handlers */
 int cmdHandleAnyKey(int key, void *data);
 int windCmdKeyHandler(int key, void *data);
+int helpPage2KeyHandler(int key, void *data);
+int helpPage3KeyHandler(int key, void *data);
 
 /* map and screen functions */
 void gameUpdateMoons(int showmoongates);
@@ -203,6 +205,7 @@ void gameInit() {
     musicPlay();
     screenDrawBackground(BKGD_BORDERS);
     statsUpdate();
+    screenMessage("Press Alt-h for help\n");
     screenPrompt();    
 
     /* reagents menu */
@@ -1079,6 +1082,22 @@ int gameBaseKeyHandler(int key, void *data) {
         screenMessage("Ztats for: ");
         gameGetPlayerForCommand(&ztatsFor, 1);
         break;
+    
+    case 'h' + U4_ALT:
+        screenMessage("Key Reference:\n"
+                      "Arrow Keys: Move\n"
+                      "a: Attack\n"
+                      "b: Board\n"
+                      "c: Cast Spell\n"
+                      "d: Descend\n"
+                      "e: Enter\n"
+                      "f: Fire\n"
+                      "g: Get Chest\n"
+                      "h: Hole up\n"
+                      "i: Ignite torch\n"
+                      "(more)");
+        eventHandlerPushKeyHandler(&helpPage2KeyHandler);
+        break;
 
     case 'v' + U4_ALT:
         screenMessage("XU4 %s\n", VERSION);        
@@ -1733,6 +1752,45 @@ int windCmdKeyHandler(int key, void *data) {
 
     return 1;
 }
+
+int helpPage2KeyHandler(int key, void *data) {
+    eventHandlerPopKeyHandler();
+
+    screenMessage("\n"
+                    "j: Jimmy lock\n"
+                    "k: Klimb\n"
+                    "l: Locate\n"
+                    "m: Mix reagents\n"
+                    "n: New Order\n"
+                    "o: Open door\n"
+                    "p: Peer at Gem\n"
+                    "q: Quit & Save\n"
+                    "r: Ready weapon\n"
+                    "s: Search\n"
+                    "t: Talk\n"
+                "(more)");
+    eventHandlerPushKeyHandler(&helpPage3KeyHandler);
+    return 1;
+}
+
+int helpPage3KeyHandler(int key, void *data) {
+    eventHandlerPopKeyHandler();
+
+    screenMessage("\n"
+                    "u: Use Item\n"
+                    "v: Volume On/Off\n"
+                    "w: Wear armour\n"
+                    "x: eXit\n"
+                    "y: Yell\n"
+                    "z: Ztats\n"
+                    "Space: Pass\n"
+                    "Alt-V: Version\n"
+                    "Alt-X: Quit\n"
+                    );
+    screenPrompt();
+    return 1;
+}
+
 
 /**
  * Attempts to attack a creature at map coordinates x,y.  If no
