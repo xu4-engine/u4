@@ -2,7 +2,7 @@
 # $Id$
 #
 
-prefix=/usr
+prefix=/usr/local
 bindir=$(prefix)/bin
 libdir=$(prefix)/lib
 datadir=$(prefix)/share
