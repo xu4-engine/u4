@@ -75,7 +75,7 @@ int saveGameWrite(const SaveGame *save, FILE *f) {
         !writeChar(save->dngy, f) ||
         !writeShort(save->orientation, f) ||
         !writeShort(save->dnglevel, f) ||
-        !writeShort(save->unknown7, f))
+        !writeShort(save->location, f))
         return 0;
 
     return 1;
@@ -148,7 +148,7 @@ int saveGameRead(SaveGame *save, FILE *f) {
         !readChar(&(save->dngy), f) ||
         !readShort(&(save->orientation), f) ||
         !readShort(&(save->dnglevel), f) ||
-        !readShort(&(save->unknown7), f))
+        !readShort(&(save->location), f))
         return 0;
 
     return 1;
@@ -206,8 +206,8 @@ void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avat
     save->dngx = 0;
     save->dngy = 0;
     save->orientation = 0;
-    save->dnglevel = 0;
-    save->unknown7 = 0;
+    save->dnglevel = 0xFFFF;
+    save->location = 0;
 }
 
 int saveGamePlayerRecordWrite(const SaveGamePlayerRecord *record, FILE *f) {

@@ -86,7 +86,7 @@ void showSaveGame(SaveGame *sg) {
     printf("???: %x\n", sg->unknown6);
     printf("dngx: %-5d dngy: %-5d orientation: %d dnglevel: %d\n", sg->dngx, sg->dngy, sg->orientation, sg->dnglevel);
 
-    printf("???: %d\n", sg->unknown7);
+    printf("location: %x\n", sg->location);
 
     for (i = 0; i < 8; i++) {
         printf("player %d\n", i);

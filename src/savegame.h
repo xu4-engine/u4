@@ -171,7 +171,7 @@ typedef struct _SaveGame {
     unsigned char dngx, dngy;
     unsigned short orientation;
     unsigned short dnglevel;
-    unsigned short unknown7;
+    unsigned short location;
 } SaveGame;
 
 int saveGameWrite(const SaveGame *save, FILE *f);
