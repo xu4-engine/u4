@@ -5,7 +5,14 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
+#include "direction.h"
 #include "dngview.h"
+
+#if __GNUC__
+#define PRINTF_LIKE(x,y)  __attribute__ ((format (printf, (x), (y))))
+#else
+#define PRINTF_LIKE(x,y)
+#endif
 
 typedef enum {
     BKGD_BORDERS,
@@ -65,7 +72,7 @@ void screenEraseTextArea(int x, int y, int width, int height);
 void screenFindLineOfSight(void);
 void screenGemUpdate(void);
 void screenInvertRect(int x, int y, int w, int h);
-void screenMessage(const char *fmt, ...);
+void screenMessage(const char *fmt, ...) PRINTF_LIKE(1, 2);
 void screenPrompt(void);
 void screenRedrawMapArea(void);
 void screenRedrawScreen(void);
@@ -76,7 +83,7 @@ void screenShowTile(unsigned char tile, int focus, int x, int y);
 void screenShowGemTile(unsigned char tile, int focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
-void screenTextAt(int x, int y, char *fmt, ...);
+void screenTextAt(int x, int y, char *fmt, ...) PRINTF_LIKE(3, 4);
 void screenUpdate(int showmap, int blackout);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);
@@ -99,7 +106,7 @@ void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);
 
 void screenDungeonDrawTile(int distance, unsigned char tile);
-void screenDungeonDrawWall(int xoffset, int distance, DungeonGraphicType type);
+void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
 
 extern int screenCurrentCycle;
 

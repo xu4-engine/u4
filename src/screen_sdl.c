@@ -47,7 +47,7 @@ Image *screenScale(Image *src, int scale, int n, int filter);
 
 SDL_Surface *screen;
 Image *bkgds[BKGD_MAX];
-Image *dngGraphic[36];
+Image *dngGraphic[56];
 Image *tiles, *charset, *gemtiles;
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
@@ -114,46 +114,70 @@ const struct {
     int x, y;
     CompressionType comp;
 } dngGraphicInfo[] = {
-    { "dung0l.rle", 32,  176, 4, 0,   0,   COMP_RLE },
-    { "dung0m.rle", 176, 176, 4, 0,   0,   COMP_RLE },
-    { "dung0r.rle", 32,  176, 4, 144, 0,   COMP_RLE },
+    { "ega/dung0la.rle", 32,  176, 4, 0,   0,   COMP_RLE },
+    { "ega/dung0lb.rle", 32,  176, 4, 0,   0,   COMP_RLE },
+    { "ega/dung0ma.rle", 176, 176, 4, 0,   0,   COMP_RLE },
+    { "ega/dung0mb.rle", 176, 176, 4, 0,   0,   COMP_RLE },
+    { "ega/dung0ra.rle", 32,  176, 4, 144, 0,   COMP_RLE },
+    { "ega/dung0rb.rle", 32,  176, 4, 144, 0,   COMP_RLE },
 
-    { "dung1l.rle", 64,  112, 4, 0,   32,  COMP_RLE },
-    { "dung1m.rle", 176, 112, 4, 0,   32,  COMP_RLE },
-    { "dung1r.rle", 64,  112, 4, 112, 32,  COMP_RLE },
+    { "ega/dung1la.rle", 64,  112, 4, 0,   32,  COMP_RLE },
+    { "ega/dung1lb.rle", 64,  112, 4, 0,   32,  COMP_RLE },
+    { "ega/dung1ma.rle", 176, 112, 4, 0,   32,  COMP_RLE },
+    { "ega/dung1mb.rle", 176, 112, 4, 0,   32,  COMP_RLE },
+    { "ega/dung1ra.rle", 64,  112, 4, 112, 32,  COMP_RLE },
+    { "ega/dung1rb.rle", 64,  112, 4, 112, 32,  COMP_RLE },
 
-    { "dung2l.rle", 80,  48,  4, 0,   64,  COMP_RLE },
-    { "dung2m.rle", 176, 48,  4, 0,   64,  COMP_RLE },
-    { "dung2r.rle", 80,  48,  4, 96,  64,  COMP_RLE },
+    { "ega/dung2la.rle", 80,  48,  4, 0,   64,  COMP_RLE },
+    { "ega/dung2lb.rle", 80,  48,  4, 0,   64,  COMP_RLE },
+    { "ega/dung2ma.rle", 176, 48,  4, 0,   64,  COMP_RLE },
+    { "ega/dung2mb.rle", 176, 48,  4, 0,   64,  COMP_RLE },
+    { "ega/dung2ra.rle", 80,  48,  4, 96,  64,  COMP_RLE },
+    { "ega/dung2rb.rle", 80,  48,  4, 96,  64,  COMP_RLE },
 
-    { "dung3l.rle", 88,  16,  4, 0,   80,  COMP_RLE },
-    { "dung3m.rle", 176, 16,  4, 0,   80,  COMP_RLE },
-    { "dung3r.rle", 88,  16,  4, 88,  80,  COMP_RLE },
+    { "ega/dung3la.rle", 88,  16,  4, 0,   80,  COMP_RLE },
+    { "ega/dung3lb.rle", 88,  16,  4, 0,   80,  COMP_RLE },
+    { "ega/dung3ma.rle", 176, 16,  4, 0,   80,  COMP_RLE },
+    { "ega/dung3mb.rle", 176, 16,  4, 0,   80,  COMP_RLE },
+    { "ega/dung3ra.rle", 88,  16,  4, 88,  80,  COMP_RLE },
+    { "ega/dung3rb.rle", 88,  16,  4, 88,  80,  COMP_RLE },
 
-    { "dung0l_door.rle", 32,  176, 4, 0,   0,   COMP_RLE },
-    { "dung0m_door.rle", 176, 176, 4, 0,   0,   COMP_RLE },
-    { "dung0r_door.rle", 32,  176, 4, 144, 0,   COMP_RLE },
+    { "ega/dung0la_door.rle", 32,  176, 4, 0,   0,   COMP_RLE },
+    { "ega/dung0lb_door.rle", 32,  176, 4, 0,   0,   COMP_RLE },
+    { "ega/dung0ma_door.rle", 176, 176, 4, 0,   0,   COMP_RLE },
+    { "ega/dung0mb_door.rle", 176, 176, 4, 0,   0,   COMP_RLE },
+    { "ega/dung0ra_door.rle", 32,  176, 4, 144, 0,   COMP_RLE },
+    { "ega/dung0rb_door.rle", 32,  176, 4, 144, 0,   COMP_RLE },
 
-    { "dung1l_door.rle", 64,  112, 4, 0,   32,  COMP_RLE },
-    { "dung1m_door.rle", 176, 112, 4, 0,   32,  COMP_RLE },
-    { "dung1r_door.rle", 64,  112, 4, 112, 32,  COMP_RLE },
+    { "ega/dung1la_door.rle", 64,  112, 4, 0,   32,  COMP_RLE },
+    { "ega/dung1lb_door.rle", 64,  112, 4, 0,   32,  COMP_RLE },
+    { "ega/dung1ma_door.rle", 176, 112, 4, 0,   32,  COMP_RLE },
+    { "ega/dung1mb_door.rle", 176, 112, 4, 0,   32,  COMP_RLE },
+    { "ega/dung1ra_door.rle", 64,  112, 4, 112, 32,  COMP_RLE },
+    { "ega/dung1rb_door.rle", 64,  112, 4, 112, 32,  COMP_RLE },
 
-    { "dung2l_door.rle", 80,  48,  4, 0,   64,  COMP_RLE },
-    { "dung2m_door.rle", 176, 48,  4, 0,   64,  COMP_RLE },
-    { "dung2r_door.rle", 80,  48,  4, 96,  64,  COMP_RLE },
+    { "ega/dung2la_door.rle", 80,  48,  4, 0,   64,  COMP_RLE },
+    { "ega/dung2lb_door.rle", 80,  48,  4, 0,   64,  COMP_RLE },
+    { "ega/dung2ma_door.rle", 176, 48,  4, 0,   64,  COMP_RLE },
+    { "ega/dung2mb_door.rle", 176, 48,  4, 0,   64,  COMP_RLE },
+    { "ega/dung2ra_door.rle", 80,  48,  4, 96,  64,  COMP_RLE },
+    { "ega/dung2rb_door.rle", 80,  48,  4, 96,  64,  COMP_RLE },
 
-    { "dung3l_door.rle", 88,  16,  4, 0,   80,  COMP_RLE },
-    { "dung3m_door.rle", 176, 16,  4, 0,   80,  COMP_RLE },
-    { "dung3r_door.rle", 88,  16,  4, 88,  80,  COMP_RLE },
+    { "ega/dung3la_door.rle", 88,  16,  4, 0,   80,  COMP_RLE },
+    { "ega/dung3lb_door.rle", 88,  16,  4, 0,   80,  COMP_RLE },
+    { "ega/dung3ma_door.rle", 176, 16,  4, 0,   80,  COMP_RLE },
+    { "ega/dung3mb_door.rle", 176, 16,  4, 0,   80,  COMP_RLE },
+    { "ega/dung3ra_door.rle", 88,  16,  4, 88,  80,  COMP_RLE },
+    { "ega/dung3rb_door.rle", 88,  16,  4, 88,  80,  COMP_RLE },
 
-    { "ladderup0.rle",   88,  87,  4, 45,  0,   COMP_RLE },
-    { "ladderup1.rle",   50,  48,  4, 64,  40,  COMP_RLE },
-    { "ladderup2.rle",   22,  19,  4, 77,  68,  COMP_RLE },
-    { "ladderup3.rle",   8,   6,   4, 84,  82,  COMP_RLE },
+    { "ega/ladderup0.rle",   88,  87,  4, 45,  0,   COMP_RLE },
+    { "ega/ladderup1.rle",   50,  48,  4, 64,  40,  COMP_RLE },
+    { "ega/ladderup2.rle",   22,  19,  4, 77,  68,  COMP_RLE },
+    { "ega/ladderup3.rle",   8,   6,   4, 84,  82,  COMP_RLE },
 
-    { "ladderdown0.rle", 88,  89,  4, 45,  87,  COMP_RLE },
-    { "ladderdown1.rle", 50,  50,  4, 64,  86,  COMP_RLE },
-    { "ladderdown2.rle", 22,  22,  4, 77,  86,  COMP_RLE }
+    { "ega/ladderdown0.rle", 88,  89,  4, 45,  87,  COMP_RLE },
+    { "ega/ladderdown1.rle", 50,  50,  4, 64,  86,  COMP_RLE },
+    { "ega/ladderdown2.rle", 22,  22,  4, 77,  86,  COMP_RLE }
 
 };
 
@@ -174,14 +198,14 @@ void screenInit() {
     if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
         errorFatal("unable to init SDL: %s", SDL_GetError());    
 
-    screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (settings->fullscreen ? SDL_FULLSCREEN : 0));
-    if (!screen)
-        errorFatal("unable to set video: %s", SDL_GetError());
-
     SDL_WM_SetCaption("Ultima IV", NULL);
 #ifdef ICON_FILE
     SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
 #endif   
+
+    screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (settings->fullscreen ? SDL_FULLSCREEN : 0));
+    if (!screen)
+        errorFatal("unable to set video: %s", SDL_GetError());
 
     screenLoadPaletteEga();        
     /* see if the upgrade exists */
@@ -512,7 +536,7 @@ int screenLoadGemTiles() {
 
     /* load vga gem tiles */
     if (settings->videoType == VIDEO_VGA) {
-        pathname = u4find_graphics("gem.vga.rle");
+        pathname = u4find_graphics("vga/gem.rle");
         if (pathname) {
             file = u4fopen_stdio(pathname);
             free(pathname);
@@ -525,7 +549,7 @@ int screenLoadGemTiles() {
 
     /* load ega gem tiles (also loads if vga load fails) */
     if (!ret || settings->videoType == VIDEO_EGA) {
-        pathname = u4find_graphics("gem.ega.rle");
+        pathname = u4find_graphics("ega/gem.rle");
         if (pathname) {
             file = u4fopen_stdio(pathname);
             free(pathname);
@@ -536,7 +560,8 @@ int screenLoadGemTiles() {
         }
     }
 
-    gemtiles = screenScale(gemtiles, scale, 128, 1);
+    if (gemtiles)
+        gemtiles = screenScale(gemtiles, scale, 128, 1);
 
     return ret;
 }
@@ -1023,39 +1048,42 @@ void screenShake(int iterations) {
     }
 }
 
-int screenDungeonGraphicIndex(int xoffset, int distance, DungeonGraphicType type) {
+int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
     int index;
 
     index = 0;
 
     if (type == DNGGRAPHIC_LADDERUP && xoffset == 0)
-        return 24 + distance;
+        return 48 + distance;
 
     if (type == DNGGRAPHIC_LADDERDOWN && xoffset == 0 && distance < 3)
-        return 28 + distance;
+        return 52 + distance;
 
     /* FIXME */
     if (type != DNGGRAPHIC_WALL && type != DNGGRAPHIC_DOOR)
         return -1;
 
     if (type == DNGGRAPHIC_DOOR)
-        index += 12;
+        index += 24;
 
-    index += xoffset + 1;
+    index += (xoffset + 1) * 2;
 
-    index += distance * 3;
+    index += distance * 6;
+
+    if (DIR_IN_MASK(orientation, MASK_DIR_SOUTH | MASK_DIR_NORTH))
+        index++;
 
     return index;
 }
 
-int screenDungeonLoadGraphic(int xoffset, int distance, DungeonGraphicType type) {
+int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
     char *pathname;
     U4FILE *file;
     int index, ret;
     Image *unscaled;
 
     ret = 0;
-    index = screenDungeonGraphicIndex(xoffset, distance, type);
+    index = screenDungeonGraphicIndex(xoffset, distance, orientation, type);
     ASSERT(index != -1, "invalid graphic paramters provided");
 
     pathname = u4find_graphics(dngGraphicInfo[index].filename);
@@ -1109,15 +1137,15 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
     SDL_BlitSurface(tiles->surface, &src, screen, &dest);
 }
 
-void screenDungeonDrawWall(int xoffset, int distance, DungeonGraphicType type) {
+void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
     int index;
 
-    index = screenDungeonGraphicIndex(xoffset, distance, type);
+    index = screenDungeonGraphicIndex(xoffset, distance, orientation, type);
     if (index == -1)
         return;
 
     if (dngGraphic[index] == NULL) {
-        if (!screenDungeonLoadGraphic(xoffset, distance, type))
+        if (!screenDungeonLoadGraphic(xoffset, distance, orientation, type))
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 

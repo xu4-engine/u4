@@ -142,16 +142,16 @@ void screenUpdate(int showmap, int blackout) {
                 for (y = 3; y >= 0; y--) {
 
                     tile = dungeonViewGetVisibleTile(y, -1);
-                    screenDungeonDrawWall(-1, y, dungeonViewTileToGraphic(tile));
+                    screenDungeonDrawWall(-1, y, c->saveGame->orientation, dungeonViewTileToGraphic(tile));
 
                     tile = dungeonViewGetVisibleTile(y, 1);
-                    screenDungeonDrawWall(1, y, dungeonViewTileToGraphic(tile));
+                    screenDungeonDrawWall(1, y, c->saveGame->orientation, dungeonViewTileToGraphic(tile));
 
                     tile = dungeonViewGetVisibleTile(y, 0);
                     if (dungeonViewTileToGraphic(tile) == DNGGRAPHIC_TILE)
                         screenDungeonDrawTile(y, c->location->tileset_info[tile].displayTile);
                     else
-                        screenDungeonDrawWall(0, y, dungeonViewTileToGraphic(tile));
+                        screenDungeonDrawWall(0, y, c->saveGame->orientation, dungeonViewTileToGraphic(tile));
                         
                 }
             }
