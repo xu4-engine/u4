@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
         eventHandlerMain(NULL);
         eventHandlerRemoveTimerCallback(&introTimer);
         eventHandlerPopKeyHandler();
-        introDelete();
+        introDelete(FREE_MENUS);
     }
 
     if (quit)

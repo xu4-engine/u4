@@ -528,9 +528,10 @@ void gameSpellEffect(unsigned int spell, int player, int hzSound) {
        just showing why hzSound is included... :) */
     
     /*if (hzSound)
-        soundPlay(SOUND_MAGIC_HZ);*/
-
-    soundPlay(SOUND_MAGIC);
+        soundPlay(SOUND_MAGIC_HZ);
+    else
+    */
+        soundPlay(SOUND_MAGIC);
 
     switch(spell)
     {

@@ -110,14 +110,15 @@ int scrPos;  /* current position in the script table */
 IntroObjectState *objectStateTable;
 
 /* menus */
-Menu mainOptions;
-Menu videoOptions;
-Menu soundOptions;
-Menu gameplayOptions;
-Menu advancedOptions;
-Menu keyboardOptions;
-Menu speedOptions;
-Menu enhancementOptions;
+Menu mainOptions        = NULL;
+Menu videoOptions       = NULL;
+Menu soundOptions       = NULL;
+Menu gameplayOptions    = NULL;
+Menu advancedOptions    = NULL;
+Menu keyboardOptions    = NULL;
+Menu speedOptions       = NULL;
+Menu enhancementOptions = NULL;
+int menusLoaded = 0;
 
 /* temporary place-holder for settings changes */
 Settings *settingsChanged;
@@ -239,64 +240,67 @@ int introInit() {
 
     u4fclose(title);
 
-    /* load our menus */
+    /* load our menus, checking to see if they're already loaded first */
+    if (!menusLoaded) {
+        mainOptions = menuAddItem(mainOptions, 0, "Video Options", 13, 16, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        mainOptions = menuAddItem(mainOptions, 1, "Sound Options", 13, 17, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        mainOptions = menuAddItem(mainOptions, 2, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        mainOptions = menuAddItem(mainOptions, 0xFF, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
-    mainOptions = menuAddItem(mainOptions, 0, "Video Options", 13, 16, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    mainOptions = menuAddItem(mainOptions, 1, "Sound Options", 13, 17, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    mainOptions = menuAddItem(mainOptions, 2, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    mainOptions = menuAddItem(mainOptions, 0xFF, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        videoOptions = menuAddItem(videoOptions, 4, "Graphics", 6, 5, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+        videoOptions = menuAddItem(videoOptions, 0, "Scale", 6, 6, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+        videoOptions = menuAddItem(videoOptions, 1, "Mode", 6, 7, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+        videoOptions = menuAddItem(videoOptions, 2, "Filter", 6, 8, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+        videoOptions = menuAddItem(videoOptions, 3, "Screen Shaking", 6, 9, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+        videoOptions = menuAddItem(videoOptions, 0xFE, "Use These Settings", 6, 20, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        videoOptions = menuAddItem(videoOptions, 0xFF, "Cancel", 6, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
-    videoOptions = menuAddItem(videoOptions, 4, "Graphics", 6, 5, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-    videoOptions = menuAddItem(videoOptions, 0, "Scale", 6, 6, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-    videoOptions = menuAddItem(videoOptions, 1, "Mode", 6, 7, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-    videoOptions = menuAddItem(videoOptions, 2, "Filter", 6, 8, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-    videoOptions = menuAddItem(videoOptions, 3, "Screen Shaking", 6, 9, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-    videoOptions = menuAddItem(videoOptions, 0xFE, "Use These Settings", 6, 20, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    videoOptions = menuAddItem(videoOptions, 0xFF, "Cancel", 6, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
-
-    soundOptions = menuAddItem(soundOptions, 0, "Volume", 11, 16, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
-    soundOptions = menuAddItem(soundOptions, 1, "Fading", 11, 17, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
-    soundOptions = menuAddItem(soundOptions, 0xFE, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    soundOptions = menuAddItem(soundOptions, 0xFF, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        soundOptions = menuAddItem(soundOptions, 0, "Volume", 11, 16, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
+        soundOptions = menuAddItem(soundOptions, 1, "Fading", 11, 17, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
+        soundOptions = menuAddItem(soundOptions, 0xFE, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        soundOptions = menuAddItem(soundOptions, 0xFF, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
-    gameplayOptions = menuAddItem(gameplayOptions, 0, "Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
-    gameplayOptions = menuAddItem(gameplayOptions, 1, "Automatic Actions", 6, 7, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
-    gameplayOptions = menuAddItem(gameplayOptions, 3, "Battle Difficulty", 6, 10, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
-    gameplayOptions = menuAddItem(gameplayOptions, 2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    gameplayOptions = menuAddItem(gameplayOptions, 0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    gameplayOptions = menuAddItem(gameplayOptions, 0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        gameplayOptions = menuAddItem(gameplayOptions, 0, "Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
+        gameplayOptions = menuAddItem(gameplayOptions, 1, "Automatic Actions", 6, 7, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
+        gameplayOptions = menuAddItem(gameplayOptions, 3, "Battle Difficulty", 6, 10, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
+        gameplayOptions = menuAddItem(gameplayOptions, 2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        gameplayOptions = menuAddItem(gameplayOptions, 0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        gameplayOptions = menuAddItem(gameplayOptions, 0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
-    advancedOptions = menuAddItem(advancedOptions, 3, "\010 Speed Settings", 4, 5, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    advancedOptions = menuAddItem(advancedOptions, 2, "\010 Keyboard Settings", 4, 6, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    advancedOptions = menuAddItem(advancedOptions, 1, "Debug Mode (Cheats)", 4, 8, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);        
-    advancedOptions = menuAddItem(advancedOptions, 0, "\010 Game Enhancement Options", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);    
-    advancedOptions = menuAddItem(advancedOptions, 0xFE, "Use These Settings", 4, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    advancedOptions = menuAddItem(advancedOptions, 0xFF, "Cancel", 4, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        advancedOptions = menuAddItem(advancedOptions, 3, "\010 Speed Settings", 4, 5, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        advancedOptions = menuAddItem(advancedOptions, 2, "\010 Keyboard Settings", 4, 6, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        advancedOptions = menuAddItem(advancedOptions, 1, "Debug Mode (Cheats)", 4, 8, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);        
+        advancedOptions = menuAddItem(advancedOptions, 0, "\010 Game Enhancement Options", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);    
+        advancedOptions = menuAddItem(advancedOptions, 0xFE, "Use These Settings", 4, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        advancedOptions = menuAddItem(advancedOptions, 0xFF, "Cancel", 4, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    
+        keyboardOptions = menuAddItem(keyboardOptions, 0, "German Keyboard", 5, 5, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
+        keyboardOptions = menuAddItem(keyboardOptions, 1, "Repeat Delay (in msecs)", 5, 6, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
+        keyboardOptions = menuAddItem(keyboardOptions, 2, "Repeat Interval (in msecs)", 5, 7, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
+        keyboardOptions = menuAddItem(keyboardOptions, 0xFE, "Use These Settings", 5, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        keyboardOptions = menuAddItem(keyboardOptions, 0xFF, "Cancel", 5, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    
+        speedOptions = menuAddItem(speedOptions, 0, "Game Cycles Per Second", 4, 5, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+        speedOptions = menuAddItem(speedOptions, 1, "Battle Speed", 4, 6, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+        speedOptions = menuAddItem(speedOptions, 2, "Spell Effect Length", 4, 7, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+        speedOptions = menuAddItem(speedOptions, 3, "Camping length", 4, 8, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+        speedOptions = menuAddItem(speedOptions, 4, "Inn rest length", 4, 9, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+        speedOptions = menuAddItem(speedOptions, 5, "Shrine Meditation length", 4, 10, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+        speedOptions = menuAddItem(speedOptions, 6, "Screen Shake Interval", 4, 11, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+        speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 4, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 4, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    
+        enhancementOptions = menuAddItem(enhancementOptions, 6, "Set Active Player", 7, 5, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+        enhancementOptions = menuAddItem(enhancementOptions, 4, "Ultima V Spell Mixing", 7, 6, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+        enhancementOptions = menuAddItem(enhancementOptions, 0, "Ultima V Shrines", 7, 7, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);    
+        enhancementOptions = menuAddItem(enhancementOptions, 1, "Slime Divides", 7, 8, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+        enhancementOptions = menuAddItem(enhancementOptions, 2, "Fixed Chest Traps", 7, 9, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+        enhancementOptions = menuAddItem(enhancementOptions, 5, "Smart 'Enter' Key", 7, 10, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+        enhancementOptions = menuAddItem(enhancementOptions, 0xFE, "Use These Settings", 7, 20, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        enhancementOptions = menuAddItem(enhancementOptions, 0xFF, "Cancel", 7, 21, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
-    keyboardOptions = menuAddItem(keyboardOptions, 0, "German Keyboard", 5, 5, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
-    keyboardOptions = menuAddItem(keyboardOptions, 1, "Repeat Delay (in msecs)", 5, 6, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
-    keyboardOptions = menuAddItem(keyboardOptions, 2, "Repeat Interval (in msecs)", 5, 7, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
-    keyboardOptions = menuAddItem(keyboardOptions, 0xFE, "Use These Settings", 5, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    keyboardOptions = menuAddItem(keyboardOptions, 0xFF, "Cancel", 5, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
-
-    speedOptions = menuAddItem(speedOptions, 0, "Game Cycles Per Second", 4, 5, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 1, "Battle Speed", 4, 6, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 2, "Spell Effect Length", 4, 7, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 3, "Camping length", 4, 8, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 4, "Inn rest length", 4, 9, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 5, "Shrine Meditation length", 4, 10, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 6, "Screen Shake Interval", 4, 11, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 4, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 4, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-
-    enhancementOptions = menuAddItem(enhancementOptions, 6, "Set Active Player", 7, 5, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-    enhancementOptions = menuAddItem(enhancementOptions, 4, "Ultima V Spell Mixing", 7, 6, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-    enhancementOptions = menuAddItem(enhancementOptions, 0, "Ultima V Shrines", 7, 7, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);    
-    enhancementOptions = menuAddItem(enhancementOptions, 1, "Slime Divides", 7, 8, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-    enhancementOptions = menuAddItem(enhancementOptions, 2, "Fixed Chest Traps", 7, 9, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-    enhancementOptions = menuAddItem(enhancementOptions, 5, "Smart 'Enter' Key", 7, 10, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-    enhancementOptions = menuAddItem(enhancementOptions, 0xFE, "Use These Settings", 7, 20, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    enhancementOptions = menuAddItem(enhancementOptions, 0xFF, "Cancel", 7, 21, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        menusLoaded = 1;
+    }
 
     memcpy(settingsChanged, settings, sizeof(Settings));
 
@@ -315,7 +319,7 @@ unsigned char *introGetSigData() {
 /**
  * Frees up data not needed after introduction.
  */
-void introDelete() {
+void introDelete(int freeMenus) {
     int i;
 
     free(settingsChanged);
@@ -348,14 +352,18 @@ void introDelete() {
     screenFreeIntroBackgrounds();
 
     /* delete our menus */
-    menuDelete(&mainOptions);
-    menuDelete(&videoOptions);
-    menuDelete(&soundOptions);
-    menuDelete(&gameplayOptions);
-    menuDelete(&advancedOptions);
-    menuDelete(&keyboardOptions);
-    menuDelete(&speedOptions);
-    menuDelete(&enhancementOptions);    
+    if (freeMenus == FREE_MENUS) {
+        menuDelete(&mainOptions);
+        menuDelete(&videoOptions);
+        menuDelete(&soundOptions);
+        menuDelete(&gameplayOptions);
+        menuDelete(&advancedOptions);
+        menuDelete(&keyboardOptions);
+        menuDelete(&speedOptions);
+        menuDelete(&enhancementOptions);
+
+        menusLoaded = 0;
+    }
 }
 
 /**

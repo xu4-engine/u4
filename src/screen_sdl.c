@@ -239,7 +239,7 @@ void screenDelete() {
  * Re-initializes the screen and implements any changes made in settings
  */
 void screenReInit() {        
-    introDelete();  /* delete intro stuff */
+    introDelete(DONT_FREE_MENUS);  /* delete intro stuff */
     tilesetDeleteAllTilesets(); /* unload tilesets */
     screenDelete(); /* delete screen stuff */            
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
