@@ -11,8 +11,8 @@ SRC=.
 SDL_CFLAGS=-I$(SRC)/sdl/include
 SDL_LIBS=-L$(SRC)/sdl/lib -lSDL_mixer -lSDLmain -lSDL
 
-XML_CFLAGS=$(shell pkg-config --cflags libxml-2.0)
-XML_LIBS=$(shell pkg-config --libs libxml-2.0)
+XML_CFLAGS=$(shell xml2-config --cflags)
+XML_LIBS=$(shell xml2-config --libs)
 
 UI=sdl
 
