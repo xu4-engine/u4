@@ -192,13 +192,16 @@ void innTimer(void *data) {
         if (c->location->map->id == 11) {// && (xu4_random(4) == 0)) {
             City *city = c->location->map->city;
             Person *Isaac;
-            Object *obj;
+            ObjectList::iterator i;
             int x = 27,
                 y = xu4_random(3) + 10,
                 z = c->location->coords.z;
 
             /* If Isaac is already around, just bring him back to the inn */
-            for (obj = c->location->map->objects; obj; obj = obj->next) {
+            for (i = c->location->map->objects.begin();
+                 i != c->location->map->objects.end();
+                 i++) {
+                Object *obj = *i;
                 if (obj->getType() == OBJECT_PERSON && obj->person->name && 
                     strcmp(obj->person->name, "Isaac") == 0) {
                     obj->setCoords(MapCoords(x, y, z));

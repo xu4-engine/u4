@@ -213,7 +213,7 @@ void combatBegin() {
 
     /* if we entered an altar room, show the name */
     if (combatInfo.altarRoom) {
-        screenMessage("\nThe Altar Room of %s\n", getPrincipleName(combatInfo.altarRoom));    
+        screenMessage("\nThe Altar Room of %s\n", getBaseVirtueName(combatInfo.altarRoom));    
         c->location->context = (LocationContext)(c->location->context | CTX_ALTAR_ROOM);
     }
 
@@ -1173,7 +1173,7 @@ void combatEnd(int adjustKarma) {
 
     /* remove the monster */
     if (combatInfo.monsterObj)
-        mapRemoveObject(c->location->map, combatInfo.monsterObj);
+        mapRemoveObject(c->location->map, combatInfo.monsterObj);    
 
     /* If we were camping and were ambushed, wake everyone up! */
     if (combatInfo.camping) {
@@ -1218,7 +1218,9 @@ MoveReturnValue combatMovePartyMember(Direction dir, int userEvent) {
     else if (retval & MOVE_BLOCKED)
         screenMessage("Blocked!\n");
     else if (retval & MOVE_SLOWED)
-        screenMessage("Slow progress!\n");    
+        screenMessage("Slow progress!\n"); 
+    else if (retval & (MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE))
+        soundPlay(SOUND_FLEE);    
 
     return retval;
 }
@@ -1309,8 +1311,7 @@ void combatMoveMonsters() {
                     party[target].obj = NULL;
                     c->location->map->annotations->add(p, CORPSE_TILE)->setTTL(c->saveGame->members);
                     screenMessage("%s is Killed!\n", c->players[target].name);
-                }
-                statsUpdate();
+                }                
             } else {
                 attackFlash(party[target].obj->getCoords(), MISSFLASH_TILE, 3);
             }
@@ -1326,8 +1327,7 @@ void combatMoveMonsters() {
                 if ((party[i].obj != NULL) && xu4_random(2) == 0)
                     combatPutPlayerToSleep(i);                
             }
-
-            statsUpdate();
+            
             break;
 
         case CA_TELEPORT: {
@@ -1405,6 +1405,8 @@ void combatMoveMonsters() {
             
             break;
         }
+        statsUpdate();
+        screenRedrawScreen();
     }
 }
 
@@ -1663,7 +1665,7 @@ int combatNearestPartyMember(const Object *obj, int *dist) {
         if (party[member].obj) {
             MapCoords p_coords = party[member].obj->getCoords();
 
-            d = o_coords.distance(p_coords);
+            d = o_coords.movementDistance(p_coords);
             if (d < leastDist) {
                 nearest = member;
                 leastDist = d;

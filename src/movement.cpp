@@ -22,7 +22,7 @@
 #include "tile.h"
 #include "utils.h"
 
-int collisionOverride = 0;
+bool collisionOverride = false;
 
 /**
  * Attempt to move the avatar in the given direction.  User event
@@ -190,12 +190,11 @@ int moveObject(Map *map, Object *obj, MapCoords avatar) {
         
         /* If the pirate ship turned last move instead of moving, this time it must
            try to move, not turn again */
-        
-        /* FIXME: this is broken */
-        /*if (tileIsPirateShip(obj->getTile()) && DIR_IN_MASK(tileGetDirection(obj->getTile()), dirmask) &&
-            (obj->getTile() != obj->prevtile) && (obj->getPrevCoords() == obj->getCoords()))
-            if (dir == tileGetDirection(obj->getTile()))
-                break;*/
+        if (tileIsPirateShip(obj->getTile()) && DIR_IN_MASK(tileGetDirection(obj->getTile()), dirmask) &&
+            (obj->getTile() != obj->getPrevTile()) && (obj->getPrevCoords() == obj->getCoords())) {
+            dir = tileGetDirection(obj->getTile());
+            break;
+        }
 
         dir = new_coords.pathTo(avatar, dirmask, true, c->location->map);
         break;
@@ -224,8 +223,10 @@ int moveObject(Map *map, Object *obj, MapCoords avatar) {
         break;
     }
     
+    obj->setPrevCoords(obj->getCoords());
+    
     /* see if the object needed to turn instead of move */
-    if (obj->setDirection(dir))        
+    if (obj->setDirection(dir))
         return 0;    
     
     /* was the object slowed? */
@@ -324,7 +325,7 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
 
     if (MAP_IS_OOB(c->location->map, newCoords)) {
         bool sameExit = (!combatInfo.dungeonRoom || (combatInfo.exitDir == DIR_NONE) || (dir == combatInfo.exitDir));
-        if (sameExit) {            
+        if (sameExit) {
             /* if in a win-or-lose battle and not camping, then it can be bad to flee while healthy */
             if (combatInfo.winOrLose && !combatInfo.camping) {
                 /* A fully-healed party member fled from an evil monster :( */

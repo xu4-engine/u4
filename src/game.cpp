@@ -121,7 +121,7 @@ void gameMonsterAttack(Object *obj);
 int gameSummonMonster(string *monsterName);
 
 /* etc */
-int gameCreateBalloon(Map *map);
+bool gameCreateBalloon(Map *map);
 
 /* Functions END */
 /*---------------*/
@@ -532,7 +532,7 @@ void gameSetMap(Map *map, int saveLocation, const Portal *portal) {
          map->type == MAPTYPE_VILLAGE ||
          map->type == MAPTYPE_CASTLE ||
          map->type == MAPTYPE_RUIN) &&
-         map->objects == NULL) {
+         map->objects.empty()) {
         PersonList::iterator current;
         for (current = map->city->persons.begin(); current != map->city->persons.end(); current++) {
             Person *p = *current;
@@ -3483,9 +3483,12 @@ void gameCheckRandomMonsters() {
  * and alters movement behavior accordingly to match the monster
  */
 void gameFixupMonsters(Map *map) {
+    ObjectList::iterator i;
     Object *obj;
 
-    for (obj = map->objects; obj; obj = obj->next) {
+    for (i = map->objects.begin(); i != map->objects.end(); i++) {
+        obj = *i;
+
         /* translate unknown objects into monster objects if necessary */
         if (obj->getType() == OBJECT_UNKNOWN && monsterForTile(obj->getTile()) != NULL &&
             obj->getMovementBehavior() != MOVEMENT_FIXED) {
@@ -3713,20 +3716,21 @@ void gameDamageShip(int minDamage, int maxDamage) {
  * Removes monsters from the current map if they are too far away from the avatar
  */
 void gameMonsterCleanup(void) {
-    Object *obj, *prev;
+    ObjectList::iterator i;
+    Map *map = c->location->map;
+    Object *obj;
     
-    for (obj = c->location->map->objects; obj != NULL; prev = obj)
-    {
+    for (i = map->objects.begin(); i != map->objects.end();) {
+        obj = *i;
         MapCoords o_coords = obj->getCoords();
 
         if ((obj->getType() == OBJECT_MONSTER) && (o_coords.z == c->location->coords.z) &&
              o_coords.distance(c->location->coords, c->location->map) > MAX_MONSTER_DISTANCE) {
             
-            /* make sure our pointer doesn't get destroyed by mapRemoveObject */
-            obj = obj->next;
-            mapRemoveObject(c->location->map, prev);                
+            /* delete the object and remove it from the map */
+            i = mapRemoveObject(map, i);            
         }
-        else obj = obj->next;        
+        else i++;
     }
 }
 
@@ -3874,14 +3878,14 @@ void gameSpawnMonster(const Monster *m) {
  * Alerts the guards that the avatar is doing something bad
  */ 
 void gameAlertTheGuards(Map *map) {
-    Object *temp;
+    ObjectList::iterator i;    
     const Monster *m;
 
     /* switch all the guards to attack mode */
-    for (temp = map->objects; temp; temp = temp->next) {
-        m = monsterForTile(temp->getTile());
+    for (i = map->objects.begin(); i != map->objects.end(); i++) {
+        m = monsterForTile((*i)->getTile());
         if (m && (m->id == GUARD_ID || m->id == LORDBRITISH_ID))
-            temp->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
+            (*i)->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
     }
 }
 
@@ -3905,19 +3909,20 @@ void gameDestroyAllMonsters(void) {
     }    
     else {
         /* destroy all monsters on the map */
-        Object *obj;
-        for (obj = c->location->map->objects; obj;) {
+        ObjectList::iterator current;
+        Map *map = c->location->map;
+        
+        for (current = map->objects.begin(); current != map->objects.end();) {
+            Object *obj = *current;
+
             if (obj->getType() != OBJECT_UNKNOWN) {
                 const Monster *m = (obj->getType() == OBJECT_MONSTER) ? obj->monster : monsterForTile(obj->getTile());
                 /* the skull does not destroy Lord British */
-                if (m && m->id != LORDBRITISH_ID) {
-                    Object *next = obj->next;
-                    mapRemoveObject(c->location->map, obj);
-                    obj = next;
-                }
-                else obj = obj->next;
+                if (m && m->id != LORDBRITISH_ID)
+                    current = mapRemoveObject(map, current);                
+                else current++;
             }
-            else obj = obj->next;
+            else current++;
         }
     }
 
@@ -3928,14 +3933,14 @@ void gameDestroyAllMonsters(void) {
 /**
  * Creates the balloon near Hythloth, but only if the balloon doesn't already exists somewhere
  */
-int gameCreateBalloon(Map *map) {
-    Object *obj;    
+bool gameCreateBalloon(Map *map) {
+    ObjectList::iterator i;    
 
     /* see if the balloon has already been created (and not destroyed) */
-    for (obj = map->objects; obj; obj = obj->next)
-        if (tileIsBalloon(obj->getTile()))
-            return 0;
+    for (i = map->objects.begin(); i != map->objects.end(); i++)
+        if (tileIsBalloon((*i)->getTile()))
+            return false;
 
     mapAddObject(map, BALLOON_TILE, BALLOON_TILE, MapCoords(233, 242, -1));
-    return 1;
+    return true;
 }

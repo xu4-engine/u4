@@ -13,6 +13,9 @@
 #include <map>
 #include <vector>
 
+class Object;
+class MovingObject;
+
 #define YesNo(i)    ((i) ? "Yes" : "No")
 #define Loading(i)  "\n====== %s loading ======\n", (i)
 
@@ -25,6 +28,8 @@
 namespace xu4 {
     typedef std::string string;    
 }
+
+typedef xu4_list<Object*> ObjectList;
 
 using namespace xu4;
 

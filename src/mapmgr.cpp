@@ -72,8 +72,7 @@ Map *mapMgrInitMap(void) {
     if (!map)
         return NULL;
     map->annotations = new AnnotationMgr();
-    map->init = NULL;
-    map->objects = NULL;
+    map->init = NULL;    
     map->flags = 0;
     map->width = 0;
     map->height = 0;

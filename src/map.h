@@ -14,7 +14,6 @@ class AnnotationMgr;
 struct _City;
 struct _Shrine;
 struct _Area;
-class Object;
 struct _Person;
 struct _Monster;
 struct _Portal;
@@ -72,7 +71,7 @@ typedef struct _Map {
         struct _Area *area;
         struct _Dungeon *dungeon;
     };
-    class Object *objects;
+    ObjectList objects;
 } Map;
 
 /**
@@ -295,7 +294,8 @@ int mapIsWorldMap(const Map *map);
 class Object *mapAddPersonObject(Map *map, const struct _Person *person);
 class Object *mapAddMonsterObject(Map *map, const struct _Monster *monster, MapCoords coords);
 class Object *mapAddObject(Map *map, MapTile tile, MapTile prevtile, MapCoords coords);
-void mapRemoveObject(Map *map, class Object *obj);
+void mapRemoveObject(Map *map, Object *rem);
+ObjectList::iterator mapRemoveObject(Map *map, ObjectList::iterator rem);
 void mapRemovePerson(Map *map, const struct _Person *person);
 void mapClearObjects(Map *map);
 class Object *mapMoveObjects(Map *map, MapCoords avatar);

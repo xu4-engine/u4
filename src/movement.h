@@ -43,7 +43,7 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent);
 int slowedByTile(MapTile tile);
 int slowedByWind(int direction);
 
-extern int collisionOverride;
+extern bool collisionOverride;
 
 #ifdef __cplusplus
 }

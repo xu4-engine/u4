@@ -27,10 +27,12 @@
  * Otherwise, returns NULL.
  */
 Object *mapObjectAt(const Map *map, MapCoords coords) {
-    Object *obj;
-    Object *objAt = NULL;
+    ObjectList::const_iterator i;        
+    Object *objAt = NULL;    
 
-    for(obj = map->objects; obj; obj = obj->next) {
+    for(i = map->objects.begin(); i != map->objects.end(); i++) {
+        Object *obj = *i;
+        
         if (obj->getCoords() == coords) {
             /* get the most visible object */
             if (objAt && (objAt->getType() == OBJECT_UNKNOWN) && (obj->getType() != OBJECT_UNKNOWN))
@@ -40,7 +42,7 @@ Object *mapObjectAt(const Map *map, MapCoords coords) {
                 objAt = obj;
             else if (!objAt)
                 objAt = obj;
-        }            
+        }
     }
     return objAt;
 }
@@ -168,57 +170,48 @@ Object *mapAddObject(Map *map, MapTile tile, MapTile prevtile, MapCoords coords)
     obj->setPrevTile(prevtile);
     obj->setCoords(coords);    
     obj->setPrevCoords(coords);
-    obj->next = map->objects;
-
-    map->objects = obj;
+    
+    map->objects.push_front(obj);    
 
     return obj;
 }
 
 /**
- * Removes the object 'rem' from the given map
- */
+ * Removes an object from the map
+ */ 
+
+// This function should only be used when not iterating through an
+// ObjectList, as the iterator will be invalidated and the
+// results will be unpredictable.  Instead, use the function
+// below.
 void mapRemoveObject(Map *map, Object *rem) {
-    Object *obj = map->objects, *prev;
-
-    prev = NULL;
-    while (obj) {
-        if (obj == rem) {
-            if (prev)
-                prev->next = obj->next;
-            else
-                map->objects = obj->next;
- 
-            /* free the memory used by a non-standard person object */
-            if (obj->getType() == OBJECT_PERSON && !obj->person->permanent)
-                delete (Person *)obj->person;
-
-            delete obj;
+    ObjectList::iterator i;
+    for (i = map->objects.begin(); i != map->objects.end(); i++) {
+        if (*i == rem) {
+            delete (*i);
+            map->objects.erase(i);
             return;
         }
-        prev = obj;
-        obj = obj->next;
     }
+}
+
+ObjectList::iterator mapRemoveObject(Map *map, ObjectList::iterator rem) {
+    delete (*rem);
+    return map->objects.erase(rem);
 }
 
 /**
  * Removes the given Person object from the given map
  */
 void mapRemovePerson(Map *map, const Person *person) {
-    Object *obj = map->objects, *prev;
+    ObjectList::iterator i;
 
-    prev = NULL;
-    while (obj) {
-        if ((obj->getType() == OBJECT_PERSON) && (obj->person == person)) {
-            if (prev)
-                prev->next = obj->next;
-            else
-                map->objects = obj->next;
-            delete obj;
-            return;
+    for (i = map->objects.begin(); i != map->objects.end();) {
+        if (((*i)->getType() == OBJECT_PERSON) && ((*i)->person == person)) {
+            delete (*i);
+            i = map->objects.erase(i);
         }
-        prev = obj;
-        obj = obj->next;
+        else i++;
     }
 }
 
@@ -228,10 +221,12 @@ void mapRemovePerson(Map *map, const Person *person) {
  * Also performs special monster actions and monster effects.
  */
 Object *mapMoveObjects(Map *map, MapCoords avatar) {        
-    Object *obj = map->objects, *attacker = NULL;        
+    ObjectList::iterator i;
+    Object *attacker = NULL;
 
-    for (obj = map->objects; obj; obj = obj->next) {                
-        
+    for (i = map->objects.begin(); i != map->objects.end(); i++) {
+        Object *obj = *i;
+
         /* check if the object is an attacking monster and not
            just a normal, docile person in town or an inanimate object */
         if ((obj->getType() != OBJECT_UNKNOWN) && 
@@ -267,13 +262,11 @@ Object *mapMoveObjects(Map *map, MapCoords avatar) {
  * Animates the objects on the given map
  */
 void mapAnimateObjects(Map *map) {
-    Object *obj = map->objects;
-
-    while (obj) {
-        if (obj->isAnimated() && xu4_random(2))
-            obj->advanceFrame();
-
-        obj = obj->next;
+    ObjectList::iterator i;
+    
+    for (i = map->objects.begin(); i != map->objects.end(); i++) {
+        if ((*i)->isAnimated() && xu4_random(2))
+            (*i)->advanceFrame();
     }
 }
 
@@ -282,16 +275,16 @@ void mapAnimateObjects(Map *map) {
  * savegame compatibility with u4dos.
  */
 void mapResetObjectAnimations(Map *map) {
-    Object *obj = map->objects;        
+    ObjectList::iterator i;
+    
+    for (i = map->objects.begin(); i != map->objects.end(); i++) {
+        Object *obj = *i;
 
-    while (obj) {
         if (obj->getType() == OBJECT_PERSON) {
             obj->setPrevTile(obj->person->tile0);
             obj->setTile(obj->person->tile0);
         } else if (obj->getType() == OBJECT_MONSTER)
             obj->setPrevTile(obj->monster->tile);        
-
-        obj = obj->next;
     }
 }
 
@@ -299,24 +292,21 @@ void mapResetObjectAnimations(Map *map) {
  * Removes all objects from the given map
  */
 void mapClearObjects(Map *map) {
-    while (map->objects)
-        mapRemoveObject(map, map->objects);
-    map->objects = NULL;
+    map->objects.clear();    
 }
 
 /**
  * Returns the number of monsters on the given map
  */
 int mapNumberOfMonsters(const Map *map) {
-    Object *obj = map->objects;
-    int n;
+    ObjectList::const_iterator i;
+    int n = 0;
 
-    n = 0;
-    while (obj) {
+    for (i = map->objects.begin(); i != map->objects.end(); i++) {
+        Object *obj = *i;
+
         if (obj->getType() == OBJECT_MONSTER)
             n++;
-
-        obj = obj->next;
     }
 
     return n;

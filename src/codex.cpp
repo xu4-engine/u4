@@ -293,7 +293,7 @@ int codexHandleVirtues(string *virtue) {
 
     /* answered with the correct base virtue (truth, love, courage) */
     else if ((current >= VIRT_MAX) &&
-             (strcasecmp(virtue->c_str(), getPrincipleName((Principle)(1 << (current - VIRT_MAX)))) == 0)) {
+             (strcasecmp(virtue->c_str(), getBaseVirtueName((BaseVirtue)(1 << (current - VIRT_MAX)))) == 0)) {
 
         screenDrawBackgroundInMapArea((BackgroundType)(BKGD_HONESTY + current));
         screenRedrawMapArea();

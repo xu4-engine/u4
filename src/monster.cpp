@@ -622,6 +622,8 @@ void monsterSpecialEffect(Object *obj) {
         
         case STORM_ID:
             {
+                ObjectList::iterator i;
+
                 if (obj->getCoords() == c->location->coords) {
 
                     /* damage the ship */
@@ -638,19 +640,24 @@ void monsterSpecialEffect(Object *obj) {
                 }
 
                 /* See if the storm is on top of any objects and destroy them! */
-                for (o = c->location->map->objects; o; o = o->next) {                
+                for (i = c->location->map->objects.begin();
+                     i != c->location->map->objects.end();) {
+
+                    o = *i;
                     if (o != obj && 
                         o->getCoords() == obj->getCoords()) {                        
                         /* Converged with an object, destroy the object! */
-                        mapRemoveObject(c->location->map, o);
-                        break;
+                        i = mapRemoveObject(c->location->map, i);
                     }
+                    else i++;
                 }
             }      
             break;
         
         case WHIRLPOOL_ID:        
             {
+                ObjectList::iterator i;
+
                 if (obj->getCoords() == c->location->coords && (c->transportContext == TRANSPORT_SHIP)) {                    
                                     
                     /* Deal 10 damage to the ship */
@@ -665,16 +672,21 @@ void monsterSpecialEffect(Object *obj) {
                 }
             
                 /* See if the whirlpool is on top of any objects and destroy them! */
-                for (o = c->location->map->objects; o; o = o->next) {
+                for (i = c->location->map->objects.begin();
+                     i != c->location->map->objects.end();) {
+                    
+                    o = *i;                    
                     if (o != obj && 
                         o->getCoords() == obj->getCoords()) {
                     
                         /* Make sure the object isn't a flying monster or object */
-                        if (!tileIsBalloon(o->getTile()) && ((o->getType() != OBJECT_MONSTER) || !monsterFlies(o->monster)))
+                        if (!tileIsBalloon(o->getTile()) && ((o->getType() != OBJECT_MONSTER) || !monsterFlies(o->monster))) {
                             /* Destroy the object it met with */
-                            mapRemoveObject(c->location->map, o);
-                        break;
+                            i = mapRemoveObject(c->location->map, i);
+                        }
+                        else i++;
                     }
+                    else i++;
                 }            
             }
 

@@ -205,7 +205,7 @@ Direction tileGetDirection(MapTile tile) {
 }
 
 bool tileSetDirection(MapTile *tile, Direction dir) {
-    bool changed_direction = false;
+    bool changed_direction = true;
     int oldTile = *tile;
 
     /* Make sure we even have a direction */

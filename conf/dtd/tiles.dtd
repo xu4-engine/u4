@@ -5,7 +5,7 @@
 <!ENTITY % anim '( scroll | frames | rowswap | none )'>
 
 <!ELEMENT tiles ( tile+ ) >
-<!ATTLIST tiles imageName          NMTOKEN  #IMPLIED>
+<!ATTLIST tiles imageId            NMTOKEN  #IMPLIED>
 
 <!ELEMENT tile EMPTY >
 <!ATTLIST tile  name               CDATA    #REQUIRED

@@ -20,7 +20,7 @@ Settings settings;
  * Initialize static members
  */ 
 const static string filterStrings[]     = {"SCL_MIN", "point", "2xBi", "2xSaI", "Scale2x", ""};
-const static string battleDiffStrings[] = {"Normal", "Hard", "Expert", ""};
+const static string battleDiffStrings[] = {"DIFF_MIN", "Normal", "Hard", "Expert", ""};
 
 Settings::FilterTranslator      Settings::filters       = FilterTranslator(filterStrings);
 Settings::BattleDiffTranslator  Settings::battleDiffs   = BattleDiffTranslator(battleDiffStrings);            

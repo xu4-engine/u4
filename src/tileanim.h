@@ -16,25 +16,12 @@ typedef xu4_list<struct _TileAnimTransform*> TileAnimTransformList;
 typedef xu4_map<string, struct _TileAnim*, std::less<string> > TileAnimSetAnimMap;
 
 typedef enum {
-    TRANSFORM_INVERT,
-    TRANSFORM_PIXEL
+    TRANSFORM_INVERT
 } TileAnimTransformType;
 
-typedef struct {
-    int x, y, w, h;
-} TileAnimInvertTransform;
-
-typedef struct {
-    int x, y;
-    struct _ListNode *colors;
-} TileAnimPixelTransform;
-
-typedef struct {
+typedef struct _TileAnimTransform {
     TileAnimTransformType type;
-    union {
-        TileAnimInvertTransform invert;
-        TileAnimPixelTransform pixel;
-    };
+    int x, y, w, h;
 } TileAnimTransform;
 
 typedef struct _TileAnim {
@@ -50,7 +37,6 @@ typedef struct _TileAnimSet {
 TileAnimSet *tileAnimSetLoadFromXml(xmlNodePtr node);
 TileAnim *tileAnimLoadFromXml(xmlNodePtr node);
 TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node);
-struct _RGBA *tileAnimColorLoadFromXml(xmlNodePtr node);
 TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, string name);
 void tileAnimDraw(TileAnim *anim, struct _Image *tiles, int tile, int scale, int x, int y);
 

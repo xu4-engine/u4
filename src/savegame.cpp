@@ -399,7 +399,8 @@ void saveGamePlayerRecordInit(SaveGamePlayerRecord *record) {
     record->status = STAT_GOOD;
 }
 
-int saveGameMonstersWrite(const Object *objs, FILE *f) {
+int saveGameMonstersWrite(ObjectList &objs, FILE *f) {
+    ObjectList::iterator current;
     const Object *obj;
     const Object *monsterTable[MONSTERTABLE_SIZE];
     xu4_list<const Object*> whirlpools_storms;
@@ -415,8 +416,10 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
     /**
      * First, categorize all the objects we have
      */ 
-    for (obj = objs; obj != NULL; obj = obj->next) {
-        /* animate objects first */
+    for (current = objs.begin(); current != objs.end(); current++) {
+        obj = *current;
+
+        /* moving objects first */
         if ((obj->getType() == OBJECT_MONSTER) && (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
             /* whirlpools and storms are separated from other moving objects */
             if ((obj->getTile() == 140) || (obj->getTile() == 142))
@@ -517,13 +520,13 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
     return 1;
 }
 
-int saveGameMonstersRead(Object **objs, FILE *f) {
+int saveGameMonstersRead(ObjectList *objs, FILE *f) {    
     Object *obj;
     Object monsterTable[MONSTERTABLE_SIZE];
     int i;
     unsigned char ch;
     MapCoords coords[MONSTERTABLE_SIZE];
-    bool isEmpty[MONSTERTABLE_SIZE];
+    bool isEmpty[MONSTERTABLE_SIZE];    
 
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (!readChar(&ch, f))
@@ -571,6 +574,9 @@ int saveGameMonstersRead(Object **objs, FILE *f) {
         monsterTable[i].setPrevCoords(coords[i]);
     }
 
+    /* empty out our object list first */
+    objs->clear();    
+    
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         /* check to see if this is a non-empty entry */
         if (!isEmpty[i]) {
@@ -581,9 +587,9 @@ int saveGameMonstersRead(Object **objs, FILE *f) {
                 obj->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
             else
                 obj->setMovementBehavior(MOVEMENT_FIXED);
-            
-            obj->next = *objs;
-            *objs = obj;
+
+            /* add it to the list! */
+            objs->push_back(obj);            
         }
     }    
     

@@ -1125,7 +1125,8 @@ int introHandleQuestionChoice(int choice) {
 
         saveGameFile = saveGameMonstersOpenForWriting(MONSTERS_SAV_BASE_FILENAME);
         if (saveGameFile) {
-            saveGameMonstersWrite(NULL, saveGameFile);
+            ObjectList noObjects;
+            saveGameMonstersWrite(noObjects, saveGameFile);
             fclose(saveGameFile);
         }
     } else {

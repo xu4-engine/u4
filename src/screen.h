@@ -24,46 +24,49 @@ struct _Tileset;
 struct _Image;
 struct _TileAnimSet;
 
-#define BKGD_SHAPES "tiles"
-#define BKGD_CHARSET "charset"
-#define BKGD_BORDERS "borders"
-#define BKGD_INTRO "title"
-#define BKGD_INTRO_EXTENDED "titlex"
-#define BKGD_TREE "tree"
-#define BKGD_PORTAL "portal"
-#define BKGD_OUTSIDE "outside"
-#define BKGD_INSIDE "inside"
-#define BKGD_WAGON "wagon"
-#define BKGD_GYPSY "gypsy"
-#define BKGD_ABACUS "abacus"
-#define BKGD_HONCOM "honcom"
-#define BKGD_VALJUS "valjus"
-#define BKGD_SACHONOR "sachonor"
-#define BKGD_SPIRHUM "spirhum"
-#define BKGD_ANIMATE "beasties"
-#define BKGD_KEY "key"
-#define BKGD_HONESTY "honesty"
-#define BKGD_COMPASSN "compassn"
-#define BKGD_VALOR "valor"
-#define BKGD_JUSTICE "justice"
-#define BKGD_SACRIFIC "sacrific"
-#define BKGD_HONOR "honor"
-#define BKGD_SPIRIT "spirit"
-#define BKGD_HUMILITY "humility"
-#define BKGD_TRUTH "truth"
-#define BKGD_LOVE "love"
-#define BKGD_COURAGE "courage"
-#define BKGD_STONCRCL "stoncrcl"
-#define BKGD_RUNE_INF "rune0"
-#define BKGD_SHRINE_HON "rune1"
-#define BKGD_SHRINE_COM "rune2"
-#define BKGD_SHRINE_VAL "rune3"
-#define BKGD_SHRINE_JUS "rune4"
-#define BKGD_SHRINE_SAC "rune5"
-#define BKGD_SHRINE_HNR "rune6"
-#define BKGD_SHRINE_SPI "rune7"
-#define BKGD_SHRINE_HUM "rune8"
-#define BKGD_GEMTILES "gemtiles"
+typedef enum {
+    BKGD_SHAPES,
+    BKGD_CHARSET,
+    BKGD_BORDERS,
+    BKGD_INTRO,
+    BKGD_INTRO_EXTENDED,
+    BKGD_TREE,
+    BKGD_PORTAL,
+    BKGD_OUTSIDE,
+    BKGD_INSIDE,
+    BKGD_WAGON,
+    BKGD_GYPSY,
+    BKGD_ABACUS,
+    BKGD_HONCOM,
+    BKGD_VALJUS,
+    BKGD_SACHONOR,
+    BKGD_SPIRHUM,
+    BKGD_ANIMATE,
+    BKGD_KEY,
+    BKGD_HONESTY,
+    BKGD_COMPASSN,
+    BKGD_VALOR,
+    BKGD_JUSTICE,
+    BKGD_SACRIFIC,
+    BKGD_HONOR,
+    BKGD_SPIRIT,
+    BKGD_HUMILITY,
+    BKGD_TRUTH,
+    BKGD_LOVE,
+    BKGD_COURAGE,
+    BKGD_STONCRCL,
+    BKGD_RUNE_INF,
+    BKGD_SHRINE_HON,
+    BKGD_SHRINE_COM,
+    BKGD_SHRINE_VAL,
+    BKGD_SHRINE_JUS,
+    BKGD_SHRINE_SAC,
+    BKGD_SHRINE_HNR,
+    BKGD_SHRINE_SPI,
+    BKGD_SHRINE_HUM,
+    BKGD_GEMTILES,
+    BKGD_MAX
+} BackgroundType;
 
 typedef enum {
     MC_DEFAULT,
@@ -138,12 +141,12 @@ void screenReInit(void);
 
 char **screenGetGemLayoutNames(void);
 
-void screenDrawImage(const char *bkgd);
-void screenDrawImageInMapArea(const char *bkgd);
-void screenFreeImages();
+int screenLoadBackground(BackgroundType bkgd);
+void screenDrawBackground(BackgroundType bkgd);
+void screenDrawBackgroundInMapArea(BackgroundType bkgd);
+void screenFreeBackgrounds();
 
 void screenCycle(void);
-void screenFillRect(int x, int y, int w, int h, int r, int g, int b);
 void screenEraseMapArea(void);
 void screenEraseTextArea(int x, int y, int width, int height);
 void screenFindLineOfSight(void);
@@ -167,7 +170,7 @@ void screenUpdateMoons(void);
 void screenUpdateWind(void);
 MapTile screenViewportTile(unsigned int width, unsigned int height, int x, int y, int *focus);
 
-void screenAnimateIntro(const char *frame);
+void screenAnimateIntro(int frame);
 void screenFreeIntroAnimations();
 void screenFreeIntroBackgrounds();
 void screenShowCard(int pos, int card);
