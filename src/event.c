@@ -17,6 +17,7 @@
 #include "context.h"
 #include "annotation.h"
 #include "savegame.h"
+#include "stats.h"
 
 void moveAvatar(int dx, int dy);
 int attackAtCoord(int x, int y);
@@ -217,7 +218,8 @@ int keyHandlerNormal(int key, void *data) {
         break;
 
     case 'z':
-        screenMessage("Z-stats\n\n");
+        eventHandlerPushKeyHandler(&keyHandlerZtats);
+        screenMessage("Ztats for: ");
         break;
 
     default:
@@ -387,6 +389,29 @@ int keyHandlerQuit(int key, void *data) {
             screenMessage("%c\n", key);
             eventHandlerPopKeyHandler();            
         }
+    }
+
+    return valid || keyHandlerDefault(key, NULL);
+}
+
+/**
+ * Handles key presses when the Ztats prompt is active.
+ */
+int keyHandlerZtats(int key, void *data) {
+    int valid = 1;
+
+    if (key == '0')
+        c->statsItem = STATS_WEAPONS;
+    else if (key >= '1' && key <= '8' && (key - '1' + 1) <= c->saveGame->members)
+        c->statsItem = STATS_CHAR1 + (key - '1');
+    else
+        valid = 0;
+
+    if (valid) {
+        statsUpdate();
+        eventHandlerPopKeyHandler();
+    } else {
+        screenMessage("\nZtats for: ");
     }
 
     return valid || keyHandlerDefault(key, NULL);

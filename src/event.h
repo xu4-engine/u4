@@ -31,5 +31,6 @@ int keyHandlerNormal(int key, void *data);
 int keyHandlerGetDirection(int key, void *data);
 int keyHandlerTalking(int key, void *data);
 int keyHandlerQuit(int key, void *data);
+int keyHandlerZtats(int key, void *data);
 
 #endif
