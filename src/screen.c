@@ -180,8 +180,17 @@ void screenUpdateCursor() {
 }
 
 void screenUpdateMoons() {
-    screenShowChar(MOON_CHAR + c->saveGame->trammelphase, 11, 0);
-    screenShowChar(MOON_CHAR + c->saveGame->feluccaphase, 12, 0);
+    int trammelChar, feluccaChar;    
+
+    trammelChar = (c->saveGame->trammelphase == 0) ?
+        MOON_CHAR + 7 :
+        MOON_CHAR + c->saveGame->trammelphase - 1;
+    feluccaChar = (c->saveGame->feluccaphase == 0) ?
+        MOON_CHAR + 7 :
+        MOON_CHAR + c->saveGame->feluccaphase - 1;
+
+    screenShowChar(trammelChar, 11, 0);
+    screenShowChar(feluccaChar, 12, 0);
     screenRedrawTextArea(11, 0, 2, 1);
 }
 
