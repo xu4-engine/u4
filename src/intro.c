@@ -11,19 +11,49 @@
 #include "intro.h"
 #include "event.h"
 #include "screen.h"
+#include "u4file.h"
 
 typedef enum {
     INTRO_MAP,
     INTRO_MENU,
     INTRO_INIT_NAME,
     INTRO_INIT_SEX,
+    INTRO_INIT_STORY,
 } IntroMode;
+
+char storyInd;
+char *introText[24];
 
 IntroMode mode = INTRO_MAP;
 char buffer[16];
 
 int introHandleName(const char *message);
 int introHandleSex(const char *message);
+void introShowText(int text);
+
+int introInit() {
+    FILE *title;
+    int i, j;
+    char buffer[256];
+
+    title = u4fopen("title.exe");
+    if (!title)
+        return 0;
+
+    fseek(title, 23488, SEEK_SET);
+    for (i = 0; i < 24; i++) {
+        for (j = 0; j < sizeof(buffer) - 1; j++) {
+            buffer[j] = fgetc(title);
+            if (buffer[j] == '\0')
+                break;
+        }
+        introText[i] = strdup(buffer);
+    }
+
+    u4fclose(title);
+    return 1;
+}
+
 
 int introKeyHandler(int key, void *data) {
     ReadBufferActionInfo *info;
@@ -67,12 +97,19 @@ int introKeyHandler(int key, void *data) {
         break;
 
     case INTRO_INIT_NAME:
-        mode = INTRO_MENU;
-        introUpdateScreen();
+        assert(0);              /* shouldn't happen */
         return 1;
 
     case INTRO_INIT_SEX:
-        mode = INTRO_MENU;
+        assert(0);              /* shouldn't happen */
+        return 1;
+
+    case INTRO_INIT_STORY:
+        storyInd++;
+        if (storyInd >= 24) {
+            screenDisableCursor();
+            mode = INTRO_MENU;
+        }
         introUpdateScreen();
         return 1;
     }
@@ -127,6 +164,30 @@ void introUpdateScreen() {
         screenTextAt(4, 16, "Art thou Male or Female?");
         break;
 
+    case INTRO_INIT_STORY:
+        if (storyInd == 0)
+            screenDrawBackground(BKGD_TREE);
+        else if (storyInd == 3)
+            screenAnimateIntro(0);
+        else if (storyInd == 5)
+            screenAnimateIntro(1);
+        else if (storyInd == 6)
+            screenDrawBackground(BKGD_PORTAL);
+        else if (storyInd == 11)
+            screenDrawBackground(BKGD_TREE);
+        else if (storyInd == 15)
+            screenDrawBackground(BKGD_OUTSIDE);
+        else if (storyInd == 17)
+            screenDrawBackground(BKGD_INSIDE);
+        else if (storyInd == 20)
+            screenDrawBackground(BKGD_WAGON);
+        else if (storyInd == 21)
+            screenDrawBackground(BKGD_GYPSY);
+        else if (storyInd == 23)
+            screenDrawBackground(BKGD_ABACUS);
+        introShowText(storyInd);
+        break;
+
     default:
         assert(0);
     }
@@ -156,6 +217,9 @@ int introHandleName(const char *message) {
     buffer[0] = '\0';
     eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
 
+    /* FIXME: this could be done somewhere better */
+    introInit();
+
     return 1;
 }
 
@@ -164,13 +228,32 @@ int introHandleSex(const char *message) {
     printf("sex = %s\n", message);
 
     eventHandlerPopKeyHandler();
-    mode = INTRO_MAP;
+    mode = INTRO_INIT_STORY;
+    storyInd = 0;
 
-    screenDisableCursor();
     introUpdateScreen();
     screenForceRedraw();
 
     return 1;
+}
+
+void introShowText(int text) {
+    char line[41];
+    char *p;
+    int len, lineNo = 19;
+
+    screenEraseIntroText();
+
+    p = introText[text];
+    while (*p) {
+        len = strcspn(p, "\n");
+        strncpy(line, p, len);
+        line[len] = '\0';
+        p += len + 1;
+        screenTextAt(0, lineNo, "%s", line);
+        lineNo++;
+    }
+    screenSetCursorPos(strlen(line), lineNo - 1);
 }
 
 void introTimer() {
