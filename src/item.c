@@ -33,6 +33,7 @@ void itemSetDestroyAllMonstersCallback(DestroyAllMonstersCallback callback) {
 }
 
 int needStoneNames = 0;
+unsigned char stoneMask = 0;
 
 int isRuneInInventory(void *virt);
 void putRuneInInventory(void *virt);
@@ -244,8 +245,7 @@ void useSkull(void *item) {
  */
 void useStone(void *item) {
     int x, y, z;
-    extern char itemNameBuffer[16];
-    static unsigned char stoneMask = 0;
+    extern char itemNameBuffer[16];    
     unsigned char stone = (unsigned char)((int)item);
     
     unsigned char truth   = STONE_WHITE | STONE_PURPLE | STONE_GREEN  | STONE_BLUE;
@@ -270,15 +270,18 @@ void useStone(void *item) {
                 case VIRT_COURAGE: attr = &courage; break;
                 default: break;
                 }
-
-                /* we need to use the stone, and we haven't used it yet */
-                if (attr && (*attr & stone) && (stone & ~stoneMask))
-                    stoneMask |= stone;
-                else if (attr && (stone & stoneMask)) {
-                    screenMessage("\nAlready used!\n");
-                    needStoneNames = 0;
-                    stoneMask = 0; /* reset the mask so you can try again */                
-                    return;
+                
+                /* make sure we're in an altar room */
+                if (attr) {
+                    /* we need to use the stone, and we haven't used it yet */
+                    if ((*attr & stone) && (stone & ~stoneMask))
+                        stoneMask |= stone;
+                    else if (stone & stoneMask) {
+                        screenMessage("\nAlready used!\n");
+                        needStoneNames = 0;
+                        stoneMask = 0; /* reset the mask so you can try again */                
+                        return;
+                    }
                 }
                 else ASSERT(0, "Not in an altar room!");
 
@@ -482,7 +485,7 @@ void itemUse(const char *shortname) {
                     (*item->useItem)(items[i].data);
             }
             else
-                screenMessage("\nNone owned!\n");
+                screenMessage("\nNone owned!\n");            
 
             /* we found the item, no need to keep searching */
             break;
@@ -512,13 +515,11 @@ int isAbyssOpened(const Portal *p) {
  */
 int itemHandleStones(const char *color) {
     int i;
-    int found = 0;
-    const char *colors[] = {
-        "red", "orange", "yellow", "green", "blue", "purple", "white", "black"
-    };    
+    int found = 0;    
 
     for (i = 0; i < 8; i++) {        
-        if (strcasecmp(color, colors[i]) == 0) {
+        if (strcasecmp(color, getStoneName((Virtue)i)) == 0 &&
+            isStoneInInventory((void *)(1<<i))) {
             found = 1;
             useItem(color);
         }
@@ -526,6 +527,7 @@ int itemHandleStones(const char *color) {
     
     if (!found) {
         screenMessage("\nNone owned!\n");
+        stoneMask = 0; /* make sure stone mask is reset */
         eventHandlerPopKeyHandler();
         (*c->location->finishTurn)();
     }
