@@ -66,7 +66,8 @@
 
     <!-- Non-standard creatures -->
     <creature id="53" name="Phantom" tile="phantom" basehp="48" exp="14" good="true"/> <!-- Ankh -->
-    <creature id="54" name="Phantom" tile="phantom" basehp="48" exp="4" good="true"/> <!-- Campfire -->
+    <creature id="54" name="Phantom" tile="campfire" basehp="48" exp="4" good="true"/> <!-- Campfire -->
     <creature id="55" name="Villager" tile="corpse" basehp="32" exp="13" good="true"/> <!-- Wounded Villager -->
     <creature id="56" name="Adventurer" tile="avatar" basehp="160" exp="11" good="true"/> <!-- Avatar tile -->
+    <creature id="57" name="Water" tile="shallows" basehp="255" exp="16" good="true" swims="true"/> <!-- Water in LBs castle -->
 </creatures>
