@@ -75,29 +75,6 @@ typedef enum {
     CONVINPUT_NONE
 } ConversationInputType;
 
-/*typedef struct _Person {
-    char *name;
-    char *pronoun;
-    char *description;
-    char *job;
-    char *health;
-    char *response1;
-    char *response2;
-    char *question;
-    char *yesresp;
-    char *noresp;
-    char *keyword1;
-    char *keyword2;
-    PersonQuestionTrigger questionTrigger;
-    PersonQuestionType questionType;
-    int turnAwayProb;
-    unsigned char tile0, tile1;
-    unsigned int startx, starty, startz;
-    ObjectMovementBehavior movement_behavior;
-    PersonNpcType npcType;
-    int permanent; // if the person is naturally part of the map, if not, we need to know
-} Person;*/
-
 class Person : public Monster {
 public:
     Person(MapTile tile = 0) : Monster(tile) {
