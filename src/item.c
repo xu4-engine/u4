@@ -28,9 +28,14 @@
 #include "utils.h"
 
 DestroyAllMonstersCallback destroyAllMonstersCallback;
+AlertTheGuardsCallback alertTheGuardsCallback;
 
 void itemSetDestroyAllMonstersCallback(DestroyAllMonstersCallback callback) {
     destroyAllMonstersCallback = callback;
+}
+
+void itemSetAlertTheGuardsCallback(AlertTheGuardsCallback callback) {
+    alertTheGuardsCallback = callback;
 }
 
 int needStoneNames = 0;
@@ -236,9 +241,12 @@ void useSkull(void *item) {
     
         /* destroy all monsters */    
         (*destroyAllMonstersCallback)();
-    
-        /* destroy the skull */
-        c->saveGame->items = (c->saveGame->items & ~ITEM_SKULL);
+
+        /* alert the guards, if there were any powerful enough to live (Lord British) */
+        (*alertTheGuardsCallback)(c->location->map);
+
+	/* you don't lose the skull unless you toss it into the Abyss!
+           oh... the temptation... */
         playerAdjustKarma(c->saveGame, KA_USED_SKULL);
     }
 }

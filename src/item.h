@@ -31,8 +31,10 @@ typedef struct _ItemLocation {
 } ItemLocation;
 
 typedef void (*DestroyAllMonstersCallback)(void);
+typedef void (*AlertTheGuardsCallback)(const struct _Map *map);
 
 void itemSetDestroyAllMonstersCallback(DestroyAllMonstersCallback callback);
+void itemSetAlertTheGuardsCallback(AlertTheGuardsCallback callback);
 const ItemLocation *itemAtLocation(const struct _Map *map, int x, int y, int z);
 void itemUse(const char *shortname);
 

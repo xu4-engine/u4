@@ -120,6 +120,7 @@ int gameSummonMonster(const char *monsterName);
 
 /* etc */
 int gameCreateBalloon(Map *map);
+void gameAlertTheGuards(const Map *map);
 
 /* Functions END */
 /*---------------*/
@@ -212,6 +213,7 @@ void gameInit() {
     playerSetPartyStarvingCallback(&gamePartyStarving);
     playerSetSetTransportCallback(&gameSetTransport);
     itemSetDestroyAllMonstersCallback(&gameDestroyAllMonsters);
+    itemSetAlertTheGuardsCallback(&gameAlertTheGuards);
     vendorSetInnHandlerCallback(&innBegin);
 
     musicPlay();
@@ -1935,6 +1937,19 @@ int helpPage3KeyHandler(int key, void *data) {
     return 1;
 }
 
+/**
+ * Alerts the guards (and Lord British) that you're doing something naughty!
+ */
+void gameAlertTheGuards(const Map *map) {
+    Object *temp;
+    
+    /* switch all the guards to attack mode */
+    for (temp = map->objects; temp; temp = temp->next) {            
+        m = monsterForTile(temp->tile);
+        if (m && (m->id == GUARD_ID || m->id == LORDBRITISH_ID))
+            temp->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+    }
+}
 
 /**
  * Attempts to attack a creature at map coordinates x,y.  If no
@@ -1943,7 +1958,6 @@ int helpPage3KeyHandler(int key, void *data) {
 int attackAtCoord(int x, int y, int distance, void *data) {
     Object *obj, *under;
     unsigned char ground;
-    Object *temp;
     const Monster *m;
 
     /* attack failed: finish up */
@@ -1971,15 +1985,8 @@ int attackAtCoord(int x, int y, int distance, void *data) {
         ground = under->tile;
 
     /* You're attacking a townsperson!  Alert the guards! */
-    if ((obj->objType != OBJECT_MONSTER) && (obj->movement_behavior != MOVEMENT_ATTACK_AVATAR)) {
-        
-        /* switch all the guards to attack mode */
-        for (temp = c->location->map->objects; temp; temp = temp->next) {            
-            m = monsterForTile(temp->tile);
-            if (m && (m->id == GUARD_ID || m->id == LORDBRITISH_ID))
-                temp->movement_behavior = MOVEMENT_ATTACK_AVATAR;
-        }       
-    }
+    if ((obj->objType != OBJECT_MONSTER) && (obj->movement_behavior != MOVEMENT_ATTACK_AVATAR))
+        alertTheGuards(c->location->map);
 
     /* not good karma to be killing the innocent.  Bad avatar! */
     m = monsterForTile(obj->tile);
