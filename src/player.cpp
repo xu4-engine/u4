@@ -268,7 +268,7 @@ bool PartyMember::applyDamage(int damage) {
     }
     player->hp = newHp;
 
-    if (getStatus() == STAT_DEAD) {
+    if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();                    
         screenMessage("%s is Killed!\n", getName().c_str());
         map->annotations->add(p, CORPSE_TILE)->setTTL(party->size());

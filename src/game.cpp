@@ -1321,16 +1321,8 @@ bool gameBaseKeyHandler(int key, void *data) {
     case '7':
     case '8':
     case '9':        
-        if (settings.enhancements && settings.enhancementsOptions.activePlayer) {
-            if (key == '0') {             
-                c->location->activePlayer = -1;
-                screenMessage("Set Active Player: None!\n");
-            }
-            else if (key-'1' < c->saveGame->members) {
-                c->location->activePlayer = key - '1';
-                screenMessage("Set Active Player: %s!\n", c->party->member(c->location->activePlayer)->getName().c_str());
-            }
-        }
+        if (settings.enhancements && settings.enhancementsOptions.activePlayer)
+            gameSetActivePlayer(key - '1');        
         else screenMessage("Bad command!\n");
 
         endTurn = 0;
@@ -3705,6 +3697,22 @@ void gameDamageShip(int minDamage, int maxDamage) {
             c->saveGame->shiphull = 0;
         statsUpdate();
         gameCheckHullIntegrity();        
+    }
+}
+
+/**
+ * Sets (or unsets) the active player
+ */
+void gameSetActivePlayer(int player) {
+	if (player == -1) {
+        c->location->activePlayer = -1;
+        screenMessage("Set Active Player: None!\n");
+    }
+    else if (player < c->party->size()) {
+		screenMessage("Set Active Player: %s!\n", c->party->member(player)->getName().c_str());
+		if (c->party->member(player)->isDisabled())
+			screenMessage("Disabled!\n");
+        else c->location->activePlayer = player;
     }
 }
 

@@ -97,5 +97,6 @@ void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen = 
 void gameGetPlayerForCommand(bool (*commandFn)(int player), int canBeDisabled, int canBeActivePlayer);
 void gameDamageParty(int minDamage, int maxDamage);
 void gameDamageShip(int minDamage, int maxDamage);
+void gameSetActivePlayer(int player);
 
 #endif

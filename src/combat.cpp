@@ -1110,16 +1110,8 @@ bool CombatController::baseKeyHandler(int key, void *data) {
     case '7':
     case '8':
     case '9':
-        if (settings.enhancements && settings.enhancementsOptions.activePlayer) {
-            if (key == '0') {             
-                c->location->activePlayer = -1;
-                screenMessage("Set Active Player: None!\n");
-            }
-            else if (key-'1' < c->saveGame->members) {
-                c->location->activePlayer = key - '1';
-                screenMessage("Set Active Player: %s!\n", ct->party[c->location->activePlayer]->getName().c_str());
-            }
-        }
+        if (settings.enhancements && settings.enhancementsOptions.activePlayer)
+			gameSetActivePlayer(key - '1');            
         else screenMessage("Bad command\n");
 
         break;    
