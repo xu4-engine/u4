@@ -14,9 +14,6 @@
 #define UNKNOWN 0
 
 static const Monster monsters[] = {
-    { HORSE1_TILE,      UNKNOWN,       "Horse",        9,  0 },
-    { HORSE2_TILE,      UNKNOWN,       "Horse",        9,  0 },
-
     { MAGE_TILE,        UNKNOWN,       "Mage",         8,  0 },
     { BARD_TILE,        UNKNOWN,       "Bard",         9,  0 },
     { FIGHTER_TILE,     UNKNOWN,       "Fighter",      7,  0 },
