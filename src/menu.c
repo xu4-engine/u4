@@ -203,7 +203,7 @@ Menu menuReset(Menu current) {
  * Returns the menu item associated with the given 'id'
  */
 Menu menuGetItemById(Menu menu, unsigned char id) {        
-    return listFind(menu, (void *)((unsigned long)id), &menuCompareFindItemById);
+    return listFind(menuGetRoot(menu), (void *)((unsigned long)id), &menuCompareFindItemById);
 }
 
 /**

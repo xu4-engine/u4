@@ -118,6 +118,9 @@ Menu speedOptions;
 Menu minorOptions;
 Menu majorOptions;
 
+/* temporary place-holder for settings changes */
+Settings *settingsChanged;
+
 void introInitiateNewGame(void);
 void introDrawMap(void);
 void introDrawMapAnimated(void);
@@ -158,6 +161,9 @@ int introInit() {
     beastie2Cycle = 0;
     beastieOffset = -32;
     introErrorMessage = NULL;
+
+    /* setup our temporary settings structure to hold changes made */
+    settingsChanged = (Settings *)malloc(sizeof(Settings));
 
     title = u4fopen("title.exe");
     if (!title)
@@ -311,6 +317,8 @@ int introInit() {
 void introDelete() {
     int i;
 
+    free(settingsChanged);
+
     for (i = 0; i < 28; i++)
         free(introQuestions[i]);
     free(introQuestions);
@@ -382,7 +390,8 @@ int introKeyHandler(int key, void *data) {
         case 'c':
             introErrorMessage = NULL;
             mode = INTRO_CONFIG;
-            mainOptions = menuReset(mainOptions);
+            mainOptions = menuReset(mainOptions);            
+            memcpy(settingsChanged, settings, sizeof(Settings));
             introUpdateScreen();
             break;
         case 'a':
@@ -691,19 +700,19 @@ void introUpdateScreen() {
     case INTRO_CONFIG_VIDEO:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Video Options:");
-        screenTextAt(24, 5, "%s", settingsVideoTypeToString(settings->videoType));
-        screenTextAt(24, 6, "x%d", settings->scale);
-        screenTextAt(24, 7, "%s", settings->fullscreen ? "Fullscreen" : "Window");
-        screenTextAt(24, 8, "%s", settingsFilterToString(settings->filter));
-        screenTextAt(24, 9, "%s", settings->screenShakes ? "On" : "Off");
+        screenTextAt(24, 5, "%s", settingsVideoTypeToString(settingsChanged->videoType));
+        screenTextAt(24, 6, "x%d", settingsChanged->scale);
+        screenTextAt(24, 7, "%s", settingsChanged->fullscreen ? "Fullscreen" : "Window");
+        screenTextAt(24, 8, "%s", settingsFilterToString(settingsChanged->filter));
+        screenTextAt(24, 9, "%s", settingsChanged->screenShakes ? "On" : "Off");
         menuShow(menuGetRoot(videoOptions));        
         break;
 
     case INTRO_CONFIG_SOUND:
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(2, 14, "Sound Options:");
-        screenTextAt(24, 16, "%s", settings->vol ? "On" : "Off");        
-        screenTextAt(24, 17, "%s", settings->volumeFades ? "On" : "Off");        
+        screenTextAt(24, 16, "%s", settingsChanged->vol ? "On" : "Off");        
+        screenTextAt(24, 17, "%s", settingsChanged->volumeFades ? "On" : "Off");        
         menuShow(menuGetRoot(soundOptions));
         introDrawBeasties();
         break;
@@ -711,25 +720,25 @@ void introUpdateScreen() {
     case INTRO_CONFIG_GAMEPLAY:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Gameplay Options:");
-        screenTextAt(32, 5, "%s", settings->minorEnhancements ? "On" : "Off");
-        screenTextAt(32, 6, "%s", settings->majorEnhancements ? "On" : "Off");
-        screenTextAt(6, 9, "  (Open, Jimmy, etc.)     %s", settings->shortcutCommands ? "On" : "Off");        
+        screenTextAt(32, 5, "%s", settingsChanged->minorEnhancements ? "On" : "Off");
+        screenTextAt(32, 6, "%s", settingsChanged->majorEnhancements ? "On" : "Off");
+        screenTextAt(6, 9, "  (Open, Jimmy, etc.)     %s", settingsChanged->shortcutCommands ? "On" : "Off");        
         menuShow(menuGetRoot(gameplayOptions));
         break;
 
     case INTRO_CONFIG_ADVANCED:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Advanced Options:");
-        screenTextAt(34, 8,  "%s", settings->debug ? "On" : "Off");        
+        screenTextAt(34, 8,  "%s", settingsChanged->debug ? "On" : "Off");        
         menuShow(menuGetRoot(advancedOptions));
         break;
 
     case INTRO_CONFIG_KEYBOARD:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Keyboard Settings:");
-        screenTextAt(34, 5, "%s", settings->germanKbd ? "Yes" : "No"); 
-        screenTextAt(34, 6,  "%d", settings->keydelay);
-        screenTextAt(34, 7,  "%d", settings->keyinterval);
+        screenTextAt(34, 5, "%s", settingsChanged->germanKbd ? "Yes" : "No"); 
+        screenTextAt(34, 6,  "%d", settingsChanged->keydelay);
+        screenTextAt(34, 7,  "%d", settingsChanged->keyinterval);
         menuShow(menuGetRoot(keyboardOptions));        
         break;
 
@@ -738,21 +747,21 @@ void introUpdateScreen() {
             char msg[16] = {0};
             screenDrawBackground(BKGD_INTRO_EXTENDED);
             screenTextAt(2, 3, "Speed Settings:");        
-            screenTextAt(32, 5, "%d", settings->gameCyclesPerSecond);
-            screenTextAt(32, 6, "%d", settings->battleSpeed);
+            screenTextAt(32, 5, "%d", settingsChanged->gameCyclesPerSecond);
+            screenTextAt(32, 6, "%d", settingsChanged->battleSpeed);
             
             sprintf(msg, "%0.*f sec",
-                (settings->spellEffectSpeed % 5 == 0) ? 0 : 1,
-                (double)settings->spellEffectSpeed / 5);        
+                (settingsChanged->spellEffectSpeed % 5 == 0) ? 0 : 1,
+                (double)settingsChanged->spellEffectSpeed / 5);        
             screenTextAt(37 - strlen(msg), 7, msg);
 
-            sprintf(msg, "%d sec", settings->campTime);
+            sprintf(msg, "%d sec", settingsChanged->campTime);
             screenTextAt(37 - strlen(msg), 8, msg);
 
-            sprintf(msg, "%d sec", settings->innTime);
+            sprintf(msg, "%d sec", settingsChanged->innTime);
             screenTextAt(37 - strlen(msg), 9, msg);
 
-            sprintf(msg, "%d sec", settings->shrineTime);
+            sprintf(msg, "%d sec", settingsChanged->shrineTime);
             screenTextAt(37 - strlen(msg), 10, msg);
 
             menuShow(menuGetRoot(speedOptions));
@@ -762,17 +771,17 @@ void introUpdateScreen() {
     case INTRO_CONFIG_MINOR_OPTIONS:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Minor Game Enhancement Options:");        
-        screenTextAt(31, 5,  "%s", settings->minorEnhancementsOptions.u5spellMixing ? "On" : "Off");
-        screenTextAt(31, 6,  "%s", settings->minorEnhancementsOptions.u5shrines ? "On" : "Off");
-        screenTextAt(31, 7,  "%s", settings->minorEnhancementsOptions.slimeDivides ? "On" : "Off");
-        screenTextAt(31, 8,  "%s", settings->minorEnhancementsOptions.c64chestTraps ? "On" : "Off");
+        screenTextAt(31, 5,  "%s", settingsChanged->minorEnhancementsOptions.u5spellMixing ? "On" : "Off");
+        screenTextAt(31, 6,  "%s", settingsChanged->minorEnhancementsOptions.u5shrines ? "On" : "Off");
+        screenTextAt(31, 7,  "%s", settingsChanged->minorEnhancementsOptions.slimeDivides ? "On" : "Off");
+        screenTextAt(31, 8,  "%s", settingsChanged->minorEnhancementsOptions.c64chestTraps ? "On" : "Off");
         menuShow(menuGetRoot(minorOptions));
         break;
 
     case INTRO_CONFIG_MAJOR_OPTIONS:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Major Game Enhancement Options:");
-        //screenTextAt(31, 5,  "%s", settings->majorEnhancementsOptions.u5combat ? "On" : "Off");
+        //screenTextAt(31, 5,  "%s", settingsChanged->majorEnhancementsOptions.u5combat ? "On" : "Off");
         menuShow(menuGetRoot(majorOptions));
         break;
 
@@ -1300,7 +1309,8 @@ int introBaseMenuKeyHandler(int key, void *data) {
         mode = INTRO_MENU; break;
     default:
         return 0;
-    }
+    }    
+
     return 1;
 }
 
@@ -1326,49 +1336,51 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     switch(menuItem->id) {
     case 0:
         if (action != ACTIVATE_DECREMENT) {
-            settings->scale++;
-            if (settings->scale > 5)
-                settings->scale = 1;
+            settingsChanged->scale++;
+            if (settingsChanged->scale > 5)
+                settingsChanged->scale = 1;
         } else {
-            settings->scale--;
-            if (settings->scale <= 0)
-                settings->scale = 5;
+            settingsChanged->scale--;
+            if (settingsChanged->scale <= 0)
+                settingsChanged->scale = 5;
         }
         break;
         
     case 1:
-        settings->fullscreen = settings->fullscreen ? 0 : 1;
+        settingsChanged->fullscreen = settingsChanged->fullscreen ? 0 : 1;
         break;
 
     case 2:
         if (action != ACTIVATE_DECREMENT) {
-            settings->filter++;
-            if (settings->filter == SCL_MAX)
-                settings->filter = (FilterType)(SCL_MIN+1);
+            settingsChanged->filter++;
+            if (settingsChanged->filter == SCL_MAX)
+                settingsChanged->filter = (FilterType)(SCL_MIN+1);
         } else {
-            settings->filter--;
-            if (settings->filter == SCL_MIN)
-                settings->filter = (FilterType)(SCL_MAX-1);
+            settingsChanged->filter--;
+            if (settingsChanged->filter == SCL_MIN)
+                settingsChanged->filter = (FilterType)(SCL_MAX-1);
         }
         break;
 
     case 3:
-        settings->screenShakes = settings->screenShakes ? 0 : 1;
+        settingsChanged->screenShakes = settingsChanged->screenShakes ? 0 : 1;
         break;
 
     case 4:
         if (action != ACTIVATE_DECREMENT) {
-            settings->videoType++;
-            if (settings->videoType == VIDEO_MAX)
-                settings->videoType = (VideoType)(VIDEO_MIN+1);
+            settingsChanged->videoType++;
+            if (settingsChanged->videoType == VIDEO_MAX)
+                settingsChanged->videoType = (VideoType)(VIDEO_MIN+1);
         } else {
-            settings->videoType--;
-            if (settings->videoType == VIDEO_MIN)
-                settings->videoType = (VideoType)(VIDEO_MAX-1);
+            settingsChanged->videoType--;
+            if (settingsChanged->videoType == VIDEO_MIN)
+                settingsChanged->videoType = (VideoType)(VIDEO_MAX-1);
         }
         break;
 
-    case 0xFE:        
+    case 0xFE:
+        /* save settings */
+        memcpy(settings, settingsChanged, sizeof(Settings));
         settingsWrite();
 
         /* FIXME: resize intro stuff, fix 'timer-being-squashed-by-screenInit()' issue */
@@ -1379,6 +1391,8 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         
         break;
     case 0xFF:
+        /* discard settings */
+        memcpy(settingsChanged, settings, sizeof(Settings));
         mode = INTRO_CONFIG;
         break;
         
@@ -1391,18 +1405,22 @@ void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0: 
-        settings->vol = settings->vol ? 0 : 1;
+        settingsChanged->vol = settingsChanged->vol ? 0 : 1;
         break;
     case 1:
-        settings->volumeFades = settings->volumeFades ? 0 : 1;
+        settingsChanged->volumeFades = settingsChanged->volumeFades ? 0 : 1;
         break;
-    case 0xFE:        
+    case 0xFE:
+        /* save settings */
+        memcpy(settings, settingsChanged, sizeof(Settings));
         settingsWrite();
         musicIntro();
     
         mode = INTRO_CONFIG;        
         break;
-    case 0xFF:        
+    case 0xFF:
+        /* discard settings */
+        memcpy(settingsChanged, settings, sizeof(Settings));
         mode = INTRO_CONFIG;
         break;
     
@@ -1415,29 +1433,33 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0:
-        settings->minorEnhancements = settings->minorEnhancements ? 0 : 1;        
+        settingsChanged->minorEnhancements = settingsChanged->minorEnhancements ? 0 : 1;        
         break;
     case 3:
-        settings->majorEnhancements = settings->majorEnhancements ? 0 : 1;
+        settingsChanged->majorEnhancements = settingsChanged->majorEnhancements ? 0 : 1;
         break;
     case 1:
-        settings->shortcutCommands = settings->shortcutCommands ? 0 : 1;
+        settingsChanged->shortcutCommands = settingsChanged->shortcutCommands ? 0 : 1;
         break;
     case 2:
         mode = INTRO_CONFIG_ADVANCED;        
         advancedOptions = menuReset(advancedOptions);        
 
         /* show or hide minor/major options if they are enabled/disabled */
-        menuItemSetVisible(menuGetItemById(advancedOptions, 0), settings->minorEnhancements);
-        menuItemSetVisible(menuGetItemById(advancedOptions, 1), settings->majorEnhancements);
+        menuItemSetVisible(menuGetItemById(advancedOptions, 0), settingsChanged->minorEnhancements);
+        menuItemSetVisible(menuGetItemById(advancedOptions, 1), settingsChanged->majorEnhancements);
 
         break;    
-    case 0xFE:        
+    case 0xFE:
+        /* save settings */
+        memcpy(settings, settingsChanged, sizeof(Settings));
         settingsWrite();        
     
         mode = INTRO_CONFIG;        
         break;
-    case 0xFF:        
+    case 0xFF:
+        /* discard settings */
+        memcpy(settingsChanged, settings, sizeof(Settings));
         mode = INTRO_CONFIG;
         break;
     default: break;
@@ -1449,7 +1471,7 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 2:
-        settings->debug = settings->debug ? 0 : 1;
+        settingsChanged->debug = settingsChanged->debug ? 0 : 1;
         break;
     case 0:
         mode = INTRO_CONFIG_MINOR_OPTIONS;
@@ -1467,12 +1489,16 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         mode = INTRO_CONFIG_SPEED;
         speedOptions = menuReset(speedOptions);
         break;    
-    case 0xFE:        
+    case 0xFE:
+        /* save settings */
+        memcpy(settings, settingsChanged, sizeof(Settings));
         settingsWrite();        
     
         mode = INTRO_CONFIG_GAMEPLAY;        
         break;
-    case 0xFF:        
+    case 0xFF:
+        /* discard settings */
+        memcpy(settingsChanged, settings, sizeof(Settings));
         mode = INTRO_CONFIG_GAMEPLAY;
         break;
     default: break;
@@ -1484,39 +1510,43 @@ void introKeyboardOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0:
-        settings->germanKbd = settings->germanKbd ? 0 : 1;
+        settingsChanged->germanKbd = settingsChanged->germanKbd ? 0 : 1;
         break;
     case 1:
         if (action != ACTIVATE_DECREMENT) {
-            settings->keydelay += 100;
-            if (settings->keydelay > MAX_KEY_DELAY)
-                settings->keydelay = 100;
+            settingsChanged->keydelay += 100;
+            if (settingsChanged->keydelay > MAX_KEY_DELAY)
+                settingsChanged->keydelay = 100;
         } else {
-            settings->keydelay -= 100;
-            if (settings->keydelay < 100)
-                settings->keydelay = MAX_KEY_DELAY;
+            settingsChanged->keydelay -= 100;
+            if (settingsChanged->keydelay < 100)
+                settingsChanged->keydelay = MAX_KEY_DELAY;
         }
         break;
     case 2:
         if (action != ACTIVATE_DECREMENT) {
-            settings->keyinterval += 10;
-            if (settings->keyinterval > MAX_KEY_INTERVAL)
-                settings->keyinterval = 10;
+            settingsChanged->keyinterval += 10;
+            if (settingsChanged->keyinterval > MAX_KEY_INTERVAL)
+                settingsChanged->keyinterval = 10;
         } else {
-            settings->keyinterval -= 10;
-            if (settings->keyinterval < 10)
-                settings->keyinterval = MAX_KEY_INTERVAL;
+            settingsChanged->keyinterval -= 10;
+            if (settingsChanged->keyinterval < 10)
+                settingsChanged->keyinterval = MAX_KEY_INTERVAL;
         }
         break;
-    case 0xFE:        
+    case 0xFE:
+        /* save settings */
+        memcpy(settings, settingsChanged, sizeof(Settings));
         settingsWrite();        
 
         /* re-initialize keyboard */
-        eventKeyboardSetKeyRepeat(settings->keydelay, settings->keyinterval);
+        eventKeyboardSetKeyRepeat(settingsChanged->keydelay, settingsChanged->keyinterval);
     
         mode = INTRO_CONFIG_ADVANCED;
         break;
-    case 0xFF:        
+    case 0xFF:
+        /* discard settings */
+        memcpy(settingsChanged, settings, sizeof(Settings));
         mode = INTRO_CONFIG_ADVANCED;
         break;
     default: break;
@@ -1529,72 +1559,74 @@ void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     switch(menuItem->id) {
     case 0:
         if (action != ACTIVATE_DECREMENT) {
-            settings->gameCyclesPerSecond++;
-            if (settings->gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
-                settings->gameCyclesPerSecond = 1;
+            settingsChanged->gameCyclesPerSecond++;
+            if (settingsChanged->gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
+                settingsChanged->gameCyclesPerSecond = 1;
         } else {
-            settings->gameCyclesPerSecond--;
-            if (settings->gameCyclesPerSecond < 1)
-                settings->gameCyclesPerSecond = MAX_CYCLES_PER_SECOND;
+            settingsChanged->gameCyclesPerSecond--;
+            if (settingsChanged->gameCyclesPerSecond < 1)
+                settingsChanged->gameCyclesPerSecond = MAX_CYCLES_PER_SECOND;
         }
         break;
     case 1:
         if (action != ACTIVATE_DECREMENT) {
-            settings->battleSpeed++;
-            if (settings->battleSpeed > MAX_BATTLE_SPEED)
-                settings->battleSpeed = 1;
+            settingsChanged->battleSpeed++;
+            if (settingsChanged->battleSpeed > MAX_BATTLE_SPEED)
+                settingsChanged->battleSpeed = 1;
         } else {
-            settings->battleSpeed--;
-            if (settings->battleSpeed < 1)
-                settings->battleSpeed = MAX_BATTLE_SPEED;
+            settingsChanged->battleSpeed--;
+            if (settingsChanged->battleSpeed < 1)
+                settingsChanged->battleSpeed = MAX_BATTLE_SPEED;
         }
         break;
     case 2:
         if (action != ACTIVATE_DECREMENT) {
-            settings->spellEffectSpeed++;
-            if (settings->spellEffectSpeed > MAX_SPELL_EFFECT_SPEED)
-                settings->spellEffectSpeed = 1;
+            settingsChanged->spellEffectSpeed++;
+            if (settingsChanged->spellEffectSpeed > MAX_SPELL_EFFECT_SPEED)
+                settingsChanged->spellEffectSpeed = 1;
         } else {
-            settings->spellEffectSpeed--;
-            if (settings->spellEffectSpeed < 1)
-                settings->spellEffectSpeed = MAX_SPELL_EFFECT_SPEED;
+            settingsChanged->spellEffectSpeed--;
+            if (settingsChanged->spellEffectSpeed < 1)
+                settingsChanged->spellEffectSpeed = MAX_SPELL_EFFECT_SPEED;
         }
         break;
     case 3:
         if (action != ACTIVATE_DECREMENT) {
-            settings->campTime++;
-            if (settings->campTime > MAX_CAMP_TIME)
-                settings->campTime = 1;
+            settingsChanged->campTime++;
+            if (settingsChanged->campTime > MAX_CAMP_TIME)
+                settingsChanged->campTime = 1;
         } else {
-            settings->campTime--;
-            if (settings->campTime < 1)
-                settings->campTime = MAX_CAMP_TIME;
+            settingsChanged->campTime--;
+            if (settingsChanged->campTime < 1)
+                settingsChanged->campTime = MAX_CAMP_TIME;
         }
         break;
     case 4:
         if (action != ACTIVATE_DECREMENT) {
-            settings->innTime++;
-            if (settings->innTime > MAX_INN_TIME)
-                settings->innTime = 1;
+            settingsChanged->innTime++;
+            if (settingsChanged->innTime > MAX_INN_TIME)
+                settingsChanged->innTime = 1;
         } else {
-            settings->innTime--;
-            if (settings->innTime < 1)
-                settings->innTime = MAX_INN_TIME;
+            settingsChanged->innTime--;
+            if (settingsChanged->innTime < 1)
+                settingsChanged->innTime = MAX_INN_TIME;
         }
         break;
     case 5:
         if (action != ACTIVATE_DECREMENT) {
-            settings->shrineTime++;
-            if (settings->shrineTime > MAX_SHRINE_TIME)
-                settings->shrineTime = 1;
+            settingsChanged->shrineTime++;
+            if (settingsChanged->shrineTime > MAX_SHRINE_TIME)
+                settingsChanged->shrineTime = 1;
         } else {
-            settings->shrineTime--;
-            if (settings->shrineTime < 1)
-                settings->shrineTime = MAX_SHRINE_TIME;
+            settingsChanged->shrineTime--;
+            if (settingsChanged->shrineTime < 1)
+                settingsChanged->shrineTime = MAX_SHRINE_TIME;
         }
         break;
 
-    case 0xFE:        
+    case 0xFE:
+        /* save settings */
+        memcpy(settings, settingsChanged, sizeof(Settings));
         settingsWrite();        
     
         /* re-initialize events */
@@ -1603,6 +1635,8 @@ void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         mode = INTRO_CONFIG_ADVANCED;
         break;
     case 0xFF:
+        /* discard settings */
+        memcpy(settingsChanged, settings, sizeof(Settings));
         mode = INTRO_CONFIG_ADVANCED;
         break;
     default: break;
@@ -1614,25 +1648,28 @@ void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0: 
-        settings->minorEnhancementsOptions.u5shrines = settings->minorEnhancementsOptions.u5shrines ? 0 : 1;
+        settingsChanged->minorEnhancementsOptions.u5shrines = settingsChanged->minorEnhancementsOptions.u5shrines ? 0 : 1;
         break;
     case 1: 
-        settings->minorEnhancementsOptions.slimeDivides = settings->minorEnhancementsOptions.slimeDivides ? 0 : 1;
+        settingsChanged->minorEnhancementsOptions.slimeDivides = settingsChanged->minorEnhancementsOptions.slimeDivides ? 0 : 1;
         break;
     case 2: 
-        settings->minorEnhancementsOptions.c64chestTraps = settings->minorEnhancementsOptions.c64chestTraps ? 0 : 1;
+        settingsChanged->minorEnhancementsOptions.c64chestTraps = settingsChanged->minorEnhancementsOptions.c64chestTraps ? 0 : 1;
         break;    
     case 4:
-        settings->minorEnhancementsOptions.u5spellMixing = settings->minorEnhancementsOptions.u5spellMixing ? 0 : 1;
+        settingsChanged->minorEnhancementsOptions.u5spellMixing = settingsChanged->minorEnhancementsOptions.u5spellMixing ? 0 : 1;
         break;
     case 0xFE:        
+        /* save settings */
+        memcpy(settings, settingsChanged, sizeof(Settings));
         settingsWrite();        
     
-        mode = INTRO_CONFIG_ADVANCED;        
+        mode = INTRO_CONFIG_ADVANCED;
         break;
-    case 0xFF:
-        if (action == ACTIVATE_NORMAL)
-            mode = INTRO_CONFIG_ADVANCED;
+    case 0xFF:        
+        /* discard settings */
+        memcpy(settingsChanged, settings, sizeof(Settings));
+        mode = INTRO_CONFIG_ADVANCED;
         break;
     
     default: break;
@@ -1644,14 +1681,18 @@ void introMajorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0: 
-        settings->majorEnhancementsOptions.u5combat = settings->majorEnhancementsOptions.u5combat ? 0 : 1;
+        settingsChanged->majorEnhancementsOptions.u5combat = settingsChanged->majorEnhancementsOptions.u5combat ? 0 : 1;
         break;
     case 0xFE:        
-        settingsWrite();        
+        /* save settings */
+        memcpy(settings, settingsChanged, sizeof(Settings));
+        settingsWrite();
     
         mode = INTRO_CONFIG_ADVANCED;        
         break;
-    case 0xFF:        
+    case 0xFF:
+        /* discard settings */
+        memcpy(settingsChanged, settings, sizeof(Settings));
         mode = INTRO_CONFIG_ADVANCED;
         break;
     
