@@ -831,7 +831,7 @@ char *vendorGetArmsBuyItemResponse(Conversation *cnv, const char *response) {
 
     if (cnv->itemSubtype == -1) {
         reply = strdup("");
-        cnv->state = CONV_DONE;
+        cnv->state = CONV_BUY_ITEM;
     }
     else if (playerCanAfford(c->saveGame, info->prices[cnv->itemSubtype]) == 0) {
         reply = concat("\n", vendorGetText(cnv->talker, WV_CANTAFFORDONE), 
@@ -1156,6 +1156,16 @@ char *vendorGetTavernBuyPriceResponse(Conversation *cnv, const char *response) {
 
 char *vendorGetReagentsBuyPriceResponse(Conversation *cnv, const char *response) {
     cnv->price = (int) strtol(response, NULL, 10);
+
+    /* 
+     * zero gold: skip the buy transaction; alternatively, we could
+     * say "Hey, come on let's hear the gold drop!" and go back into
+     * the CONV_BUY_PRICE state as do the c64 and atari st versions
+    */
+    if (cnv->price == 0) {
+        cnv->state = CONV_CONTINUEQUESTION;
+        return concat("\n", vendorGetText(cnv->talker, RV_ANYTHINGELSE), NULL);
+    }
 
     return vendorDoBuyTransaction(cnv);
 }
