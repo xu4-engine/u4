@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "ttype.h"
+#include "u4.h"
 
 #define MASK_WALKABLE 0x03
 #define MASK_EFFECT   0x0C
@@ -81,6 +82,10 @@ int tileIsSailable(unsigned char tile) {
     return 0;
 }
 
+int tileIsFlyable(unsigned char tile) {
+    return tile != 8;
+}
+
 int tileIsDoor(unsigned char tile) {
     return tile == 59;
 }
@@ -97,7 +102,12 @@ int tileIsHorse(unsigned char tile) {
     return tile >= 20 && tile < 22;
 }
 
-Direction tileGetDirection(unsigned char tile) {
+int tileIsBalloon(unsigned char tile) {
+    return tile == 24;
+}
+
+
+int tileGetDirection(unsigned char tile) {
     if (tileIsShip(tile))
         return tile - 16 + DIR_WEST;
     else if (tileIsHorse(tile))
@@ -106,7 +116,7 @@ Direction tileGetDirection(unsigned char tile) {
         return DIR_WEST;        /* some random default */
 }
 
-void tileSetDirection(unsigned short *tile, Direction dir) {
+void tileSetDirection(unsigned short *tile, int dir) {
     if (tileIsShip(*tile))
         *tile = 16 + dir;
     else if (tileIsHorse(*tile))

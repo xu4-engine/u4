@@ -8,13 +8,6 @@
 #define AVATAR_TILE 0x1f
 
 typedef enum {
-    DIR_WEST,
-    DIR_NORTH,
-    DIR_EAST,
-    DIR_SOUTH
-} Direction;
-
-typedef enum {
     EFFECT_NONE = 0x00,
     EFFECT_FIRE = 0x04,
     EFFECT_SLEEP = 0x08,
@@ -38,12 +31,14 @@ int tileIsWalkable(unsigned char tile);
 int tileIsSlow(unsigned char tile);
 int tileIsVslow(unsigned char tile);
 int tileIsSailable(unsigned char tile);
+int tileIsFlyable(unsigned char tile);
 int tileIsDoor(unsigned char tile);
 int tileIsLockedDoor(unsigned char tile);
 int tileIsShip(unsigned char tile);
 int tileIsHorse(unsigned char tile);
-Direction tileGetDirection(unsigned char tile);
-void tileSetDirection(unsigned short *tile, Direction dir);
+int tileIsBalloon(unsigned char tile);
+int tileGetDirection(unsigned char tile);
+void tileSetDirection(unsigned short *tile, int dir);
 int tileCanTalkOver(unsigned char tile);
 TileEffect tileGetEffect(unsigned char tile);
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile);
