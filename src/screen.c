@@ -15,6 +15,9 @@
 #include "savegame.h"
 
 int screenCycle = 0;
+int screenCursorX = 0;
+int screenCursorY = 0;
+int screenCursorStatus = 0;
 
 void screenTextAt(int x, int y, char *fmt, ...) {
     char buffer[1024];
@@ -38,6 +41,8 @@ void screenMessage(char *fmt, ...) {
     vsprintf(buffer, fmt, args);
     va_end(args);
 
+    screenDisableCursor();
+
     // scroll the message area, if necessary
     if (c->line == 12) {
         screenScrollMessageArea(); 
@@ -56,6 +61,9 @@ void screenMessage(char *fmt, ...) {
 	screenShowChar(buffer[i], TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
         c->col++;
     }
+
+    screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+    screenEnableCursor();
 }
 
 void screenUpdate() {
@@ -101,7 +109,8 @@ void screenAnimate() {
 }
 
 void screenUpdateCursor(int phase) {
-    screenShowChar(31 - phase, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+    if (screenCursorStatus)
+        screenShowChar(31 - phase, screenCursorX, screenCursorY);
 }
 
 void screenUpdateMoons() {
@@ -117,4 +126,21 @@ void screenUpdateMoons() {
 
     screenShowChar(20 + trammelPhase, 11, 0);
     screenShowChar(20 + feluccaPhase, 12, 0);
+}
+
+void screenEnableCursor() {
+    if (!screenCursorStatus)
+        screenUpdateCursor(screenCycle * 4 / SCR_CYCLE_MAX);
+    screenCursorStatus = 1;
+}
+
+void screenDisableCursor() {
+    if (screenCursorStatus)
+        screenShowChar(' ', screenCursorX, screenCursorY);
+    screenCursorStatus = 0;
+}
+
+void screenSetCursorPos(int x, int y) {
+    screenCursorX = x;
+    screenCursorY = y;
 }

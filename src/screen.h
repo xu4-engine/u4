@@ -7,7 +7,15 @@
 
 typedef enum {
     BKGD_INTRO,
-    BKGD_BORDERS
+    BKGD_BORDERS,
+    BKGD_TREE,
+    BKGD_PORTAL,
+    BKGD_OUTSIDE,
+    BKGD_INSIDE,
+    BKGD_WAGON,
+    BKGD_GYPSY,
+    BKGD_ABACUS,
+    BKGD_MAX
 } BackgroundType;
 
 void screenInit(int scale);
@@ -22,6 +30,9 @@ void screenForceRedraw();
 void screenAnimate();
 void screenUpdateCursor();
 void screenUpdateMoons();
+void screenEnableCursor();
+void screenDisableCursor();
+void screenSetCursorPos(int x, int y);
 
 extern int screenCycle;
 
