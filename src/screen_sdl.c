@@ -1177,6 +1177,47 @@ void screenShowCard(int pos, int card) {
 }
 
 /**
+ * Draws the beads in the abacus during the character creation sequence
+ */
+void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
+    int x, y, c;
+
+    ASSERT(row >= 0 && row < 7, "invalid row: %d", row);
+    ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
+    ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
+    
+    /* Beads modelled after the Amiga Ultima IV beads, not exactly the same,
+       but close */
+       
+    // Draw black bead for the virtue that was *not* selected
+    x = 128 + (rejectedVirtue * 9);
+    y = 24 + (row * 15);
+    if (row > 2) y--;
+    if (row > 3) y--; 
+    c = 64;
+    screenFillRect(screen, x+3, y, 2, 12, c, c, c);
+    screenFillRect(screen, x+2, y+1, 4, 10, c, c, c);
+    screenFillRect(screen, x+1, y+2, 6, 8, c, c, c);
+    screenFillRect(screen, x, y+3, 8, 6, c, c, c);
+    c += 32;
+    screenFillRect(screen, x+3, y+1, 1, 10, c, c, c);
+    screenFillRect(screen, x+2, y+2, 1, 8, c, c, c);
+    screenFillRect(screen, x+1, y+3, 1, 6, c, c, c);
+    
+    // Draw white bead for the virtue that was selected
+    x = 128 + (selectedVirtue * 9);
+    c = 223;
+    screenFillRect(screen, x+3, y, 2, 12, c, c, c);
+    screenFillRect(screen, x+2, y+1, 4, 10, c, c, c);
+    screenFillRect(screen, x+1, y+2, 6, 8, c, c, c);
+    screenFillRect(screen, x, y+3, 8, 6, c, c, c);
+    c = 255;
+    screenFillRect(screen, x+3, y+1, 1, 10, c, c, c);
+    screenFillRect(screen, x+2, y+2, 1, 8, c, c, c);
+    screenFillRect(screen, x+1, y+3, 1, 6, c, c, c);
+}
+
+/**
  * Animates the "beasties" in the intro.  The animate intro image is
  * made up frames for the two creatures in the top left and top right
  * corners of the screen.  This function draws the frame for the given

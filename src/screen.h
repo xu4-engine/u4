@@ -89,6 +89,7 @@ void screenFixIntroScreenExtended(BackgroundType bkgd);
 void screenFreeIntroAnimations();
 void screenFreeIntroBackgrounds();
 void screenShowCard(int pos, int card);
+void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue);
 void screenShowBeastie(int beast, int vertoffset, int frame);
 
 void screenShowCursor(void);

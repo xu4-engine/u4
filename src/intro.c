@@ -1093,13 +1093,14 @@ void introInitQuestionTree() {
  */
 int introDoQuestion(int answer) {
     int tmp;
-
+    
     if (!answer)
         questionTree[answerInd] = questionTree[questionRound * 2];
     else
         questionTree[answerInd] = questionTree[questionRound * 2 + 1];
     
-    /* FIXME: draw abacus results here */
+    screenShowAbacusBeads(questionRound, questionTree[answerInd], 
+        questionTree[questionRound * 2 + ((answer) ? 0 : 1)]);
 
     answerInd++;
     questionRound++;
