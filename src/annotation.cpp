@@ -19,13 +19,11 @@
 /**
  * Constructors
  */ 
-Annotation::Annotation() {};
-Annotation::Annotation(Coords coords, MapTile tile, bool visual) {
-    this->coords = coords;
-    this->tile = tile;
-    this->visual = visual;
-    this->ttl = -1;
-}
+Annotation::Annotation(const Coords &c, MapTile t, bool v) : 
+    coords(c), 
+    tile(t),
+    visual(v),
+    ttl(-1) {}
 
 /**
  * Members
