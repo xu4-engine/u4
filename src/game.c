@@ -2481,7 +2481,10 @@ void gameTimer(void *data) {
         if ((eventHandlerGetKeyHandler() == &gameBaseKeyHandler ||
              eventHandlerGetKeyHandler() == &combatBaseKeyHandler) &&
              gameTimeSinceLastCommand() > 20) {
-            (*eventHandlerGetKeyHandler())(' ', NULL);            
+         
+            /* pass the turn, and redraw the text area so the prompt is shown */
+            (*eventHandlerGetKeyHandler())(' ', NULL);
+            screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
         }
     }
 
@@ -2699,7 +2702,7 @@ int gameCheckMoongates(void) {
 
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
             if (!playerCanEnterShrine(c->saveGame, shrine_spirituality_map.shrine->virtue))
-                return;
+                return 1;
             
             gameSetMap(c, &shrine_spirituality_map, 1, NULL);
             musicPlay();
