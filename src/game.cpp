@@ -3427,7 +3427,7 @@ void gameFixupObjects(Map *map) {
     int i;
     Object *obj;
 
-	/* first, add stuff from the monster table to the map */
+	/* add stuff from the monster table to the map */
 	for (i = 0; i < MONSTERTABLE_SIZE; i++) {
 		SaveGameMonsterRecord *monster = &map->monsterTable[i];
 		if (monster->prevTile != 0) {
@@ -3435,8 +3435,16 @@ void gameFixupObjects(Map *map) {
 			MapTile tile = Tile::translate(monster->tile),
 				oldTile = Tile::translate(monster->prevTile);
 			
-			if (i < MONSTERTABLE_CREATURES_SIZE)
-				obj = map->addCreature(creatures.getByTile(tile), c);
+            if (i < MONSTERTABLE_CREATURES_SIZE) {
+                const Creature *creature = creatures.getByTile(tile);
+                /* make sure we really have a creature */
+                if (creature)
+				    obj = map->addCreature(creature, c);
+                else {
+                    fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", Tileset::tiles[tile.id]->name.c_str());
+                    obj = map->addObject(tile, oldTile, c);
+                }
+            }
 			else
 				obj = map->addObject(tile, oldTile, c);
 
