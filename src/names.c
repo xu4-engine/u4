@@ -109,7 +109,7 @@ const char *getStoneName(Virtue virtue) {
         "White", "Black"
     };
 
-    if (virtue < 8)
+    if (virtue < VIRT_MAX)
         return virtueNames[virtue - VIRT_HONESTY];
     else
         return "???";

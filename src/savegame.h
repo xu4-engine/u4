@@ -69,6 +69,7 @@ typedef enum {
     VIRT_HONOR,
     VIRT_SPIRITUALITY,
     VIRT_HUMILITY,
+    VIRT_MAX
 } Virtue;
 
 typedef enum {
@@ -143,7 +144,7 @@ typedef struct _SaveGame {
     SaveGamePlayerRecord players[8];
     unsigned int food;
     unsigned short gold;
-    unsigned short karma[8];
+    unsigned short karma[VIRT_MAX];
     unsigned short torches;
     unsigned short gems;
     unsigned short keys;
