@@ -756,7 +756,7 @@ void introUpdateScreen() {
         screenTextAt(2, 17, "ribute it and/or modify it under the");
         screenTextAt(2, 18, "terms of the GNU GPL as published by");
         screenTextAt(2, 19, "the FSF.  See COPYING.");
-        screenTextAt(2, 21, "\011 Copyright 2002 xu4 team");
+        screenTextAt(2, 21, "\011 Copyright 2002-2003 xu4 team");
         screenTextAt(2, 22, "\011 Copyright 1987 Lord British");
         introDrawBeasties();
         break;
