@@ -34,4 +34,5 @@ dist:  install
 	cp SDL/README-SDL.txt $(U4PATH)
 	cp SDL/lib/SDL.dll $(U4PATH)
 	cp SDL/lib/SDL_mixer.dll $(U4PATH)
+	cp doc/xu4wincvs.txt $(U4PATH)
 	u2d $(U4PATH)/readme.txt
