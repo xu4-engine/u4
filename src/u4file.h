@@ -18,6 +18,7 @@ public:
 
     virtual void close() = 0;
     virtual int seek(long offset, int whence) = 0;
+    virtual long tell() = 0;
     virtual size_t read(void *ptr, size_t size, size_t nmemb) = 0;
     virtual int getc() = 0;
     virtual int putc(int c) = 0;
@@ -31,6 +32,7 @@ U4FILE *u4fopen(const std::string &fname);
 U4FILE *u4fopen_stdio(const std::string &fname);
 void u4fclose(U4FILE *f);
 int u4fseek(U4FILE *f, long offset, int whence);
+long u4ftell(U4FILE *f);
 size_t u4fread(void *ptr, size_t size, size_t nmemb, U4FILE *f);
 int u4fgetc(U4FILE *f);
 int u4fgetshort(U4FILE *f);

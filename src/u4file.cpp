@@ -20,6 +20,7 @@ public:
 
     virtual void close();
     virtual int seek(long offset, int whence);
+    virtual long tell();
     virtual size_t read(void *ptr, size_t size, size_t nmemb);
     virtual int getc();
     virtual int putc(int c);
@@ -39,6 +40,7 @@ public:
 
     virtual void close();
     virtual int seek(long offset, int whence);
+    virtual long tell();
     virtual size_t read(void *ptr, size_t size, size_t nmemb);
     virtual int getc();
     virtual int putc(int c);
@@ -165,6 +167,10 @@ int U4FILE_stdio::seek(long offset, int whence) {
     return fseek(file, offset, whence);
 }
 
+long U4FILE_stdio::tell() {
+    return ftell(file);
+}
+
 size_t U4FILE_stdio::read(void *ptr, size_t size, size_t nmemb) {
     return fread(ptr, size, nmemb, file);
 }
@@ -245,6 +251,10 @@ int U4FILE_zip::seek(long offset, int whence) {
     unzReadCurrentFile(zfile, buf, offset - pos);
     delete buf;
     return 0;
+}
+
+long U4FILE_zip::tell() {
+    return unztell(zfile);
 }
 
 size_t U4FILE_zip::read(void *ptr, size_t size, size_t nmemb) {
@@ -376,6 +386,10 @@ void u4fclose(U4FILE *f) {
 
 int u4fseek(U4FILE *f, long offset, int whence) {
     return f->seek(offset, whence);
+}
+
+long u4ftell(U4FILE *f) {
+    return f->tell();
 }
 
 size_t u4fread(void *ptr, size_t size, size_t nmemb, U4FILE *f) {
