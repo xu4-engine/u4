@@ -85,7 +85,7 @@ const Spell spells[] = {
     { "Blink",        SILK | MOSS,              CTX_WORLDMAP,   TRANSPORT_FOOT_OR_HORSE,
                                                                                 &spellBlink,   SPELLPRM_DIR,     15 },
     { "Cure",         GINSENG | GARLIC,         CTX_ANY,        TRANSPORT_ANY,  &spellCure,    SPELLPRM_PLAYER,  5 },
-    { "Dispel",       ASH | GARLIC | PEARL,     CTX_ANY,        TRANSPORT_ANY,  &spellDispel,  SPELLPRM_DIR,     20 },
+    { "Dispell",      ASH | GARLIC | PEARL,     CTX_ANY,        TRANSPORT_ANY,  &spellDispel,  SPELLPRM_DIR,     20 },
     { "Energy Field", ASH | SILK | PEARL,       CTX_COMBAT | CTX_DUNGEON,
                                                                 TRANSPORT_ANY,  &spellEField,  SPELLPRM_TYPEDIR, 10 },
     { "Fireball",     ASH | PEARL,              CTX_COMBAT,     TRANSPORT_ANY,  &spellFireball,SPELLPRM_DIR,     15 },
@@ -445,10 +445,20 @@ static int spellDispel(int dir) {
     int x, y, z;
     unsigned char tile;
     const Annotation *a;
+    extern CombatInfo combatInfo;
+    
+    /* get the current location, based on context */
+    if (c->location->context == CTX_COMBAT) {
+        x = combatInfo.party[combatInfo.focus]->x;
+        y = combatInfo.party[combatInfo.focus]->y;
+        z = combatInfo.party[combatInfo.focus]->z;
+    }
+    else {
+        x = c->location->x;
+        y = c->location->y;
+        z = c->location->z;
+    }
 
-    x = c->location->x;
-    y = c->location->y;
-    z = c->location->z;
     dirMove((Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->location->map, x, y))
         return 0;
