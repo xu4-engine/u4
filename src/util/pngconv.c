@@ -2,27 +2,23 @@
 #include <stdlib.h>
 #include <png.h>
 
-#define EGA_WIDTH 320
-#define EGA_HEIGHT 200
-
-int writePngFromEga(unsigned char *data, const char *fname) {
+int writePngFromEga(unsigned char *data, int height, int width, int bits, const char *fname) {
     FILE *fp;
     unsigned char *p;
     png_structp png_ptr;
     png_infop info_ptr;
-    png_uint_32 width, height;
     int bit_depth, color_type, interlace_type, compression_type, filter_method;
     png_color palette[16];
     png_byte *row_pointers[200];
     int i, j;
 
-    for (i = 0; i < EGA_HEIGHT; i++) {
-        row_pointers[i] = (png_byte *) malloc(EGA_WIDTH * sizeof (png_byte));
+    for (i = 0; i < height; i++) {
+        row_pointers[i] = (png_byte *) malloc(width * sizeof (png_byte) * bits / 8);
     }
 
     p = data;
-    for (i = 0; i < EGA_HEIGHT; i++) {
-        for (j = 0; j < EGA_WIDTH / 2; j++) {
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width * bits / 8; j++) {
             row_pointers[i][j] = *p++;
         }
     }
@@ -77,14 +73,13 @@ int writePngFromEga(unsigned char *data, const char *fname) {
 
     png_init_io(png_ptr, fp);
 
-    width = EGA_WIDTH;
-    height = EGA_HEIGHT;
-    bit_depth = 4;
+    bit_depth = bits;
     color_type = PNG_COLOR_TYPE_PALETTE;
     interlace_type = PNG_INTERLACE_NONE;
     compression_type = PNG_COMPRESSION_TYPE_DEFAULT;
     filter_method = PNG_FILTER_TYPE_DEFAULT;
-    png_set_IHDR(png_ptr, info_ptr, width, height, bit_depth, color_type, interlace_type, compression_type, filter_method);
+    png_set_IHDR(png_ptr, info_ptr, (png_uint_32) width, (png_uint_32) height, bit_depth, 
+                 color_type, interlace_type, compression_type, filter_method);
 
     png_set_PLTE(png_ptr, info_ptr, palette, 16);
     png_set_rows(png_ptr, info_ptr, row_pointers);
@@ -96,14 +91,14 @@ int writePngFromEga(unsigned char *data, const char *fname) {
     return 0;
 }
 
-int readEgaFromPng(unsigned char **data, const char *fname) {
+int readEgaFromPng(unsigned char **data, int height, int width, int *bits, const char *fname) {
     FILE *fp;
     unsigned char *p;
     char header[8];
     png_structp png_ptr;
     png_infop info_ptr;
     png_infop end_info;
-    png_uint_32 width, height;
+    png_uint_32 pwidth, pheight;
     int bit_depth, color_type, interlace_type, compression_type, filter_method;
     png_byte **row_pointers;
     int i, j;
@@ -151,27 +146,27 @@ int readEgaFromPng(unsigned char **data, const char *fname) {
 
     png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
     
-    png_get_IHDR(png_ptr, info_ptr, &width, &height,
+    png_get_IHDR(png_ptr, info_ptr, &pwidth, &pheight,
        &bit_depth, &color_type, &interlace_type,
        &compression_type, &filter_method);
 
-    if (width != EGA_WIDTH ||
-        height != EGA_HEIGHT ||
-        bit_depth != 4) {
-        fprintf(stderr, "PNG must be %dx%d with 4 bits per pixel\n", EGA_WIDTH, EGA_HEIGHT);
+    if (height != pheight ||
+        width != pwidth) {
+        fprintf(stderr, "PNG must be %dx%d\n", width, height);
         exit(1);
     }
 
     row_pointers = png_get_rows(png_ptr, info_ptr);
 
-    *data = (unsigned char *) malloc(EGA_WIDTH * (EGA_HEIGHT / 2));
+    *data = (unsigned char *) malloc(width * height * bit_depth / 8);
 
     p = *data;
-    for (i = 0; i < EGA_HEIGHT; i++) {
-        for (j = 0; j < EGA_WIDTH / 2; j++) {
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width * bit_depth / 8; j++) {
             *p++ = row_pointers[i][j];
         }
     }
+    *bits = bit_depth;
 
     fclose(fp);
 
