@@ -879,18 +879,7 @@ int attackAtCoord(int x, int y) {
     if (x == -1 && y == -1)
         return 0;
 
-    combatMap = getCombatMapForTile(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport);
-
-    mapRemoveAvatarObject(c->map);
-    annotationClear();  /* clear out world map annotations */
-
-    c = gameCloneContext(c);
-
-    gameSetMap(c, combatMap, 1);
-    mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
-    musicPlay();
-
-    gameFinishTurn();
+    combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport);
 
     return 1;
 }
