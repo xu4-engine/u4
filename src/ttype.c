@@ -80,3 +80,7 @@ int isdoor(unsigned char tile) {
 int islockeddoor(unsigned char tile) {
     return tile == 58;
 }
+
+int canTalkOver(unsigned char tile) {
+    return tile >= 96 && tile <= 122;
+}
