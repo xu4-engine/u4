@@ -80,7 +80,7 @@ static const char * const graphics_paths[] = {
  */
 int u4isUpgradeInstalled(void) {
     U4FILE *u4f = NULL;
-    fpos_t filelength;
+    long int filelength;
 
     /* FIXME: Is there a better way to determine this? */
     u4f = u4fopen("ega.drv");
@@ -91,7 +91,7 @@ int u4isUpgradeInstalled(void) {
         }
         else {
             fseek(u4f->file, 0, SEEK_END);
-            if (fgetpos(u4f->file, &filelength) != 0) {
+            if ((filelength = ftell(u4f->file)) == -1L) {
                 u4fclose(u4f);
                 return 0;
             }
