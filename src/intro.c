@@ -23,6 +23,7 @@ IntroMode mode = INTRO_MAP;
 char buffer[16];
 
 int introHandleName(const char *message);
+int introHandleSex(const char *message);
 
 int introKeyHandler(int key, void *data) {
     ReadBufferActionInfo *info;
@@ -49,6 +50,7 @@ int introKeyHandler(int key, void *data) {
             info->bufferLen = 16;
             info->screenX = 12;
             info->screenY = 20;
+            buffer[0] = '\0';
             eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
             break;
         case 'j':
@@ -79,8 +81,7 @@ int introKeyHandler(int key, void *data) {
     return valid || keyHandlerDefault(key, NULL);
 }
 
-
-void introUpdateScreen() {
+void introDrawMap() {
     int x, y;
     const int map[][19] = {
         { 6, 6, 6, 4, 4, 4, 1, 1, 0, 0, 0, 0, 1, 4, 4, 13,14,15,4 },
@@ -89,16 +90,19 @@ void introUpdateScreen() {
         { 6, 4, 4, 1, 1, 2, 2, 1, 1, 9, 8, 1, 1, 1, 1, 4, 6, 6, 6 },
         { 4, 4, 4, 4, 1, 1, 1, 1, 4, 4, 8, 8, 1, 1, 1, 1, 1, 6, 6 }
     };
+    
+    for (y = 0; y < (sizeof(map) / sizeof(map[0])); y++) {
+        for (x = 0; x < (sizeof(map[0]) / sizeof(map[0][0])); x++) {
+            screenShowTile(map[y][x], x, y + 6);
+        }
+    }
+}
 
-
+void introUpdateScreen() {
     switch (mode) {
     case INTRO_MAP:
         screenDrawBackground(BKGD_INTRO);
-        for (y = 0; y < (sizeof(map) / sizeof(map[0])); y++) {
-            for (x = 0; x < (sizeof(map[0]) / sizeof(map[0][0])); x++) {
-                screenShowTile(map[y][x], x, y + 6);
-            }
-        }
+        introDrawMap();
         break;
 
     case INTRO_MENU:
@@ -131,8 +135,48 @@ void introUpdateScreen() {
 }
 
 int introHandleName(const char *message) {
+    ReadBufferActionInfo *info;
+
+    printf("name = %s\n", message);
+
+    eventHandlerPopKeyHandler();
     mode = INTRO_INIT_SEX;
-    printf("%s\n", message);
+
+    introUpdateScreen();
+    screenSetCursorPos(29, 16);
+    screenEnableCursor();
+    screenForceRedraw();
+
+    info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+    info->handleBuffer = &introHandleSex;
+    info->buffer = buffer;
+    info->bufferLen = 2;
+    info->screenX = 29;
+    info->screenY = 16;
+    buffer[0] = '\0';
+    eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
+
     return 1;
 }
 
+int introHandleSex(const char *message) {
+
+    printf("sex = %s\n", message);
+
+    eventHandlerPopKeyHandler();
+    mode = INTRO_MAP;
+
+    screenDisableCursor();
+    introUpdateScreen();
+    screenForceRedraw();
+
+    return 1;
+}
+
+void introTimer() {
+    screenCycle();
+    screenUpdateCursor();
+    if (mode == INTRO_MAP)
+        introDrawMap();
+    screenForceRedraw();
+}

@@ -7,5 +7,6 @@
 
 int introKeyHandler(int key, void *data);
 void introUpdateScreen();
+void introTimer();
 
 #endif
