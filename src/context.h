@@ -15,8 +15,10 @@ typedef struct _Conversation {
     const struct _Person *talker;
     int state;
     char buffer[CONV_BUFFERLEN];
-    int item;
+    int itemType;
+    int itemSubtype;
     int quant;
+    int price;
 } Conversation;
 
 typedef enum {
