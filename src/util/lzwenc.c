@@ -13,7 +13,7 @@
 #define MAX_DICT_CAPACITY 0xCCC
 #define DICT_SIZE 0x1000
 
-int compress = 1;
+int compressing = 1;
 int save = -1;
 int dictsize = 0;
 struct {
@@ -110,7 +110,7 @@ int getcode(unsigned char *str, int len) {
 void addcode(unsigned char *str, int len) {
     int hashcode;
 
-    if (!compress)
+    if (!compressing)
         return;
 
     hashcode = probe1(str[len - 1], getcode(str, len - 1));

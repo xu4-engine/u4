@@ -3,6 +3,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "u4.h"
 
 #include "dngview.h"
