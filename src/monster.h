@@ -148,7 +148,7 @@ typedef enum {
     MATTR_NOATTACK      = 0x1000,
     MATTR_FLIES         = 0x2000,
     MATTR_AMBUSHES      = 0x4000,
-    MATTR_RANDOMRANGED  = 0x8000
+    MATTR_RANDOMRANGED  = 0x8000    
 } MonsterAttrib;
 
 typedef enum {
@@ -173,6 +173,7 @@ typedef struct _Monster {
     unsigned char worldrangedtile;
     unsigned char rangedhittile;
     unsigned char rangedmisstile;
+    unsigned char leavestile        : 1;
     MonsterAttrib mattr;
     SlowedType slowedType;
     unsigned char encounterSize;
@@ -195,6 +196,7 @@ int monsterNegates(const Monster *monster);
 int monsterCamouflages(const Monster *monster);
 int monsterAmbushes(const Monster *monster);
 int monsterHasRandomRangedAttack(const Monster *monster);
+int monsterLeavesTile(const Monster *monster);
 int monsterGetXp(const Monster *monster);
 int monsterCastSleep(const Monster *monster);
 int monsterGetDamage(const Monster *monster);

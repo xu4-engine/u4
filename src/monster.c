@@ -143,6 +143,7 @@ void monsterLoadInfoFromXml() {
         monsters[monster].worldrangedtile = 0;
         monsters[monster].rangedhittile = HITFLASH_TILE;
         monsters[monster].rangedmisstile = MISSFLASH_TILE;
+        monsters[monster].leavestile = 0;
 
         monsters[monster].mattr = 0;
         monsters[monster].slowedType = SLOWED_BY_TILE;
@@ -196,6 +197,12 @@ void monsterLoadInfoFromXml() {
             else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"rangedhittile"),
                                (const xmlChar *)"random") == 0)
                 monsters[monster].mattr |= MATTR_RANDOMRANGED;
+        }
+
+        /* find out if the monster leaves a tile behind on ranged attacks */
+        if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"leavestile"), 
+                      (const xmlChar *) "true") == 0) {
+                monsters[monster].leavestile = 1;
         }
 
         /* get effects that this monster is immune to */
@@ -325,6 +332,10 @@ int monsterHasRandomRangedAttack(const Monster *monster) {
     return (monster->mattr & MATTR_RANDOMRANGED) ? 1 : 0;
 }
 
+int monsterLeavesTile(const Monster *monster) {
+    return (monster->leavestile);
+}
+
 int monsterGetXp(const Monster *monster) {
     return (monster->level == 16) ? 16 : monster->level + 1;    
 }
@@ -375,7 +386,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
     
-    return monsterById((era & rand() & rand()) + ORC_ID);
+    return monsterById((era & rand() & rand()) + ORC_ID);    
 }
 
 int monsterGetInitialHp(const Monster *monster) {

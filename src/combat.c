@@ -456,7 +456,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
         oldy = info->prev_y;  
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
     int focus = combatInfo.focus;
-    int groundTile;
+    unsigned char groundTile;
     
     info->prev_x = x;
     info->prev_y = y;
@@ -560,6 +560,7 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
     int oldx = info->prev_x,
         oldy = info->prev_y;  
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;    
+    unsigned char groundTile;
     
     info->prev_x = x;
     info->prev_y = y;
@@ -612,7 +613,15 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
             /* show the 'hit' message */
             screenMessage("\n%s Hit!\n", c->saveGame->players[player].name);
         }
-    }    
+    }
+    else {
+        m = mapObjectAt(c->location->map, info->origin_x, info->origin_y, c->location->z)->monster;
+
+        /* If the monster leaves a tile behind, do it here! (lava lizard, etc) */
+        groundTile = mapGroundTileAt(c->location->map, oldx, oldy, c->location->z);
+        if (monsterLeavesTile(m) && tileIsWalkable(groundTile))
+            annotationAdd(oldx, oldy, c->location->z, c->location->map->id, hittile);
+    }
 
     return 1;
 }
