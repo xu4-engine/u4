@@ -13,6 +13,8 @@
 #include "screen.h"
 #include "event.h"
 #include "map.h"
+#include "city.h"
+#include "portal.h"
 #include "person.h"
 #include "ttype.h"
 #include "context.h"
@@ -128,7 +130,8 @@ int gameBaseKeyHandler(int key, void *data) {
             new->moonPhase = new->parent->moonPhase;
             c = new;
 
-            screenMessage("Enter towne!\n\n%s\n\n", c->map->name);
+            if (c->map->city)
+                screenMessage("Enter towne!\n\n%s\n\n", c->map->city->name);
         } else
             screenMessage("Enter what?\n");
         break;
@@ -178,7 +181,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'q':
-        if (strcmp(c->map->name, "World") != 0) {
+        if (!mapIsWorldMap(c->map)) {
             screenMessage("Quit & save\nNot Here!\n");
         } else {
             choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
