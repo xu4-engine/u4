@@ -34,7 +34,7 @@ struct {
     TileEffect effect;
     int walkonDirs;
     int walkoffDirs;
-} _ttype_info[128];
+} _ttype_info[256];
 int baseChest = -1;
 int baseShip = -1;
 int baseHorse = -1;
@@ -129,7 +129,7 @@ void tileLoadInfoFromXml() {
             _ttype_info[tile].speed = VSLOW;
         else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "speed"), (const xmlChar *) "vvslow") == 0)
             _ttype_info[tile].speed = VVSLOW;
-        
+
         if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "effect"), (const xmlChar *) "fire") == 0)
             _ttype_info[tile].effect = EFFECT_FIRE;
         else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "effect"), (const xmlChar *) "sleep") == 0)
@@ -143,6 +143,23 @@ void tileLoadInfoFromXml() {
     /* ensure information for all non-monster tiles was loaded */
     if (tile != 128)
         errorFatal("tiles.xml contained %d entries (must be 128)\n", tile);
+
+    /* initialize the values for the monster tiles */
+    for ( ; tile < sizeof(_ttype_info) / sizeof(_ttype_info[0]); tile++) {
+        _ttype_info[tile].mask = 0;
+        _ttype_info[tile].speed = FAST;
+        _ttype_info[tile].effect = EFFECT_NONE;
+        _ttype_info[tile].walkonDirs = 0;
+        _ttype_info[tile].walkoffDirs = MASK_DIR_ALL;
+    }
+
+    /* special cases for storms and whirlpools */
+    _ttype_info[STORM_TILE].walkonDirs = MASK_DIR_ALL;
+    _ttype_info[STORM_TILE + 1].walkonDirs = MASK_DIR_ALL;
+    _ttype_info[STORM_TILE].mask |= MASK_SWIMABLE | MASK_SAILABLE;
+    _ttype_info[STORM_TILE + 1].mask |= MASK_SWIMABLE | MASK_SAILABLE;
+    _ttype_info[WHIRLPOOL_TILE].mask |= MASK_SWIMABLE | MASK_SAILABLE;
+    _ttype_info[WHIRLPOOL_TILE + 1].mask |= MASK_SWIMABLE | MASK_SAILABLE;
 
     if (baseChest == -1)
         errorFatal("tile attributes: a tile must have the \"chest\" attribute");
@@ -163,72 +180,48 @@ void tileLoadInfoFromXml() {
     xmlFreeDoc(doc);
 }
 
-int tileTestBit(unsigned char tile, unsigned short mask, int defaultVal) {
+int tileTestBit(unsigned char tile, unsigned short mask) {
     if (!tileInfoLoaded)
         tileLoadInfoFromXml();
 
-    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
-	return (_ttype_info[tile].mask & mask) != 0;
-    return defaultVal;
+    return (_ttype_info[tile].mask & mask) != 0;
 }
 
 
 int tileCanWalkOn(unsigned char tile, Direction d) {
-    if (tile >= STORM_TILE &&
-        tile <= (STORM_TILE + 1))
-        return 1;
-
-    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
-        return DIR_IN_MASK(d, _ttype_info[tile].walkonDirs);
-    else
-        return 0;
+    return DIR_IN_MASK(d, _ttype_info[tile].walkonDirs);
 }
 
 int tileCanWalkOff(unsigned char tile, Direction d) {
-    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
-        return DIR_IN_MASK(d, _ttype_info[tile].walkoffDirs);
-    else
-        return 1;
+    return DIR_IN_MASK(d, _ttype_info[tile].walkoffDirs);
 }
 
 int tileIsMonsterWalkable(unsigned char tile) {
-    if (tile >= STORM_TILE &&
-        tile <= (STORM_TILE + 1))
-        return 1;
-
-    return !tileTestBit(tile, MASK_MONSTER_UNWALKABLE, 1);
+    return !tileTestBit(tile, MASK_MONSTER_UNWALKABLE);
 }
 
 int tileIsSwimable(unsigned char tile) {
-    if (tile >= WHIRLPOOL_TILE &&
-        tile <= (STORM_TILE + 1))
-        return 1;
-
-    return tileTestBit(tile, MASK_SWIMABLE, 0);
+    return tileTestBit(tile, MASK_SWIMABLE);
 }
 
 int tileIsSailable(unsigned char tile) {
-    if (tile >= WHIRLPOOL_TILE &&
-        tile <= (STORM_TILE + 1))
-        return 1;
-
-    return tileTestBit(tile, MASK_SAILABLE, 0);
+    return tileTestBit(tile, MASK_SAILABLE);
 }
 
 int tileIsFlyable(unsigned char tile) {
-    return !tileTestBit(tile, MASK_UNFLYABLE, 0);
+    return !tileTestBit(tile, MASK_UNFLYABLE);
 }
 
 int tileIsDoor(unsigned char tile) {
-    return tileTestBit(tile, MASK_DOOR, 0);
+    return tileTestBit(tile, MASK_DOOR);
 }
 
 int tileIsLockedDoor(unsigned char tile) {
-    return tileTestBit(tile, MASK_LOCKEDDOOR, 0);
+    return tileTestBit(tile, MASK_LOCKEDDOOR);
 }
 
 int tileIsChest(unsigned char tile) {
-    return tileTestBit(tile, MASK_CHEST, 0);
+    return tileTestBit(tile, MASK_CHEST);
 }
 
 unsigned char tileGetChestBase() {
@@ -236,7 +229,7 @@ unsigned char tileGetChestBase() {
 }
 
 int tileIsShip(unsigned char tile) {
-    return tileTestBit(tile, MASK_SHIP, 0);
+    return tileTestBit(tile, MASK_SHIP);
 }
 
 unsigned char tileGetShipBase() {
@@ -250,7 +243,7 @@ int tileIsPirateShip(unsigned char tile) {
 }
 
 int tileIsHorse(unsigned char tile) {
-    return tileTestBit(tile, MASK_HORSE, 0);
+    return tileTestBit(tile, MASK_HORSE);
 }
 
 unsigned char tileGetHorseBase() {
@@ -258,7 +251,7 @@ unsigned char tileGetHorseBase() {
 }
 
 int tileIsBalloon(unsigned char tile) {
-    return tileTestBit(tile, MASK_BALLOON, 0);
+    return tileTestBit(tile, MASK_BALLOON);
 }
 
 unsigned char tileGetBalloonBase() {
@@ -266,7 +259,7 @@ unsigned char tileGetBalloonBase() {
 }
 
 int tileCanDispel(unsigned char tile) {
-    return tileTestBit(tile, MASK_DISPEL, 0);
+    return tileTestBit(tile, MASK_DISPEL);
 }
 
 Direction tileGetDirection(unsigned char tile) {
@@ -276,7 +269,7 @@ Direction tileGetDirection(unsigned char tile) {
         return (Direction) (tile - PIRATE_TILE + DIR_WEST);
     else if (tileIsHorse(tile))
         return tile == baseHorse ? DIR_WEST : DIR_EAST;
-    else 
+    else
         return DIR_WEST;        /* some random default */
 }
 
@@ -290,33 +283,28 @@ void tileSetDirection(unsigned short *tile, Direction dir) {
 }
 
 int tileCanTalkOver(unsigned char tile) {
-    return tileTestBit(tile, MASK_TALKOVER, 0);
+    return tileTestBit(tile, MASK_TALKOVER);
 }
 
 TileSpeed tileGetSpeed(unsigned char tile) {
     if (!tileInfoLoaded)
         tileLoadInfoFromXml();
 
-    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
-	return _ttype_info[tile].speed;
-    return (TileSpeed) 0;
+    return _ttype_info[tile].speed;
 }
 
 TileEffect tileGetEffect(unsigned char tile) {
     if (!tileInfoLoaded)
         tileLoadInfoFromXml();
 
-    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
-	return _ttype_info[tile].effect;
-    return (TileEffect) 0;
+    return _ttype_info[tile].effect;
 }
 
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile) {
     if (!tileInfoLoaded)
         tileLoadInfoFromXml();
 
-    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])) &&
-        (_ttype_info[tile].mask & MASK_ANIMATED) != 0)
+    if (_ttype_info[tile].mask & MASK_ANIMATED)
         return ANIM_SCROLL;
     else if (tile == 75)
         return ANIM_CAMPFIRE;
@@ -358,7 +346,7 @@ void tileAdvanceFrame(unsigned char *tile) {
 }
 
 int tileIsOpaque(unsigned char tile) {
-    return tileTestBit(tile, MASK_OPAQUE, 0);
+    return tileTestBit(tile, MASK_OPAQUE);
 }
 
 unsigned char tileForClass(int klass) {
