@@ -17,6 +17,7 @@
 #include "savegame.h"
 #include "screen.h"
 #include "settings.h"
+#include "shrine.h"
 #include "u4file.h"
 
 extern int quit;
@@ -284,14 +285,15 @@ int introInit() {
     keyboardOptions = menuAddItem(keyboardOptions, 0xFE, "Use These Settings", 5, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
     keyboardOptions = menuAddItem(keyboardOptions, 0xFF, "Cancel", 5, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
-    speedOptions = menuAddItem(speedOptions, 0, "Game Cycles Per Second", 6, 5, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 1, "Battle Speed", 6, 6, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 2, "Spell Effect Length", 6, 7, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 3, "Camping length", 6, 8, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 4, "Inn rest length", 6, 9, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 5, "Shrine Meditation length", 6, 10, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 6, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 6, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    speedOptions = menuAddItem(speedOptions, 0, "Game Cycles Per Second", 4, 5, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 1, "Battle Speed", 4, 6, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 2, "Spell Effect Length", 4, 7, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 3, "Camping length", 4, 8, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 4, "Inn rest length", 4, 9, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 5, "Shrine Meditation length", 4, 10, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 6, "Screen Shake Interval", 4, 11, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 4, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 4, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
     minorOptions = menuAddItem(minorOptions, 4, "Ultima V Spell Mixing", 7, 5, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
     minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 7, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
@@ -748,9 +750,13 @@ void introUpdateScreen() {
         {
             char msg[16] = {0};
             screenDrawBackground(BKGD_INTRO_EXTENDED);
-            screenTextAt(2, 3, "Speed Settings:");        
-            screenTextAt(32, 5, "%d", settingsChanged->gameCyclesPerSecond);
-            screenTextAt(32, 6, "%d", settingsChanged->battleSpeed);
+            screenTextAt(2, 3, "Speed Settings:");           
+
+            sprintf(msg, "%d", settingsChanged->gameCyclesPerSecond);
+            screenTextAt(33 - strlen(msg), 5, msg);
+
+            sprintf(msg, "%d", settingsChanged->battleSpeed);
+            screenTextAt(33 - strlen(msg), 6, msg);
             
             sprintf(msg, "%0.*f sec",
                 (settingsChanged->spellEffectSpeed % 5 == 0) ? 0 : 1,
@@ -765,6 +771,9 @@ void introUpdateScreen() {
 
             sprintf(msg, "%d sec", settingsChanged->shrineTime);
             screenTextAt(37 - strlen(msg), 10, msg);
+
+            sprintf(msg, "%d msec", settingsChanged->shakeInterval);
+            screenTextAt(38 - strlen(msg), 11, msg);
 
             menuShow(menuGetRoot(speedOptions));
         }
@@ -1617,14 +1626,26 @@ void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         }
         break;
     case 5:
+        /* make sure that the setting we're trying for is even possible */
         if (action != ACTIVATE_DECREMENT) {
             settingsChanged->shrineTime++;
             if (settingsChanged->shrineTime > MAX_SHRINE_TIME)
-                settingsChanged->shrineTime = 1;
+                settingsChanged->shrineTime = MEDITATION_MANTRAS_PER_CYCLE / settingsChanged->gameCyclesPerSecond;
         } else {
             settingsChanged->shrineTime--;
-            if (settingsChanged->shrineTime < 1)
+            if (settingsChanged->shrineTime < (MEDITATION_MANTRAS_PER_CYCLE / settingsChanged->gameCyclesPerSecond))
                 settingsChanged->shrineTime = MAX_SHRINE_TIME;
+        }
+        break;
+    case 6:
+        if (action != ACTIVATE_DECREMENT) {
+            settingsChanged->shakeInterval += 10;
+            if (settingsChanged->shakeInterval > MAX_SHAKE_INTERVAL)
+                settingsChanged->shakeInterval = MIN_SHAKE_INTERVAL;
+        } else {
+            settingsChanged->shakeInterval -= 10;
+            if (settingsChanged->shakeInterval < MIN_SHAKE_INTERVAL)
+                settingsChanged->shakeInterval = MAX_SHAKE_INTERVAL;
         }
         break;
 

@@ -5,6 +5,8 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#define MIN_SHAKE_INTERVAL              50
+
 #define MAX_BATTLE_SPEED                10
 #define MAX_KEY_DELAY                   1000
 #define MAX_KEY_INTERVAL                100
@@ -13,6 +15,7 @@
 #define MAX_CAMP_TIME                   10
 #define MAX_INN_TIME                    10
 #define MAX_SHRINE_TIME                 20
+#define MAX_SHAKE_INTERVAL              200
 
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
@@ -36,6 +39,7 @@
 #define DEFAULT_CAMP_TIME               10
 #define DEFAULT_INN_TIME                8
 #define DEFAULT_SHRINE_TIME             16
+#define DEFAULT_SHAKE_INTERVAL          100
 
 typedef enum {
     SCL_MIN,
@@ -88,6 +92,7 @@ typedef struct _Settings {
     int campTime;
     int innTime;
     int shrineTime;
+    int shakeInterval;
     SettingsMinorOptions minorEnhancementsOptions;
     SettingsMajorOptions majorEnhancementsOptions;
 } Settings;

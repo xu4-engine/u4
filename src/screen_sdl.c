@@ -966,13 +966,13 @@ void screenShake(int iterations) {
 
             SDL_BlitSurface(screen, NULL, screen, &dest);
             SDL_UpdateRect(screen, 0, 0, 0, 0);
-            eventHandlerSleep(100);
+            eventHandlerSleep(settings->shakeInterval);
 
             dest.y = -1 * scale;
 
             SDL_BlitSurface(screen, NULL, screen, &dest);
             SDL_UpdateRect(screen, 0, 0, 0, 0);
-            eventHandlerSleep(100);
+            eventHandlerSleep(settings->shakeInterval);
         }
         /* FIXME: remove next line? doesn't seem necessary,
            just adds another screen refresh (which is visible on my screen)... */
