@@ -1873,7 +1873,7 @@ int talkAtCoord(int x, int y, int distance, void *data) {
     /* some persons in some towns exists as a 'person' object, but they
        really are not someone you can talk to.  These persons have mostly null fields */
     if (c->conversation.talker == NULL || 
-        ((c->conversation.talker->name == NULL) && !personIsVendor(c->conversation.talker)))
+        ((c->conversation.talker->name == NULL) && (c->conversation.talker->npcType <= NPC_TALKER_COMPANION)))
         return 0;
 
     talker = c->conversation.talker;
