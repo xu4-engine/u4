@@ -730,7 +730,7 @@ char *vendorGetArmsVendorQuestionResponse(Conversation *cnv, const char *respons
     }
 
     else {
-        reply = strdup("");
+        reply = vendorGetFarewell(cnv, "\n\n");
         cnv->state = CONV_DONE;
     }
 
@@ -754,7 +754,7 @@ char *vendorGetTavernVendorQuestionResponse(Conversation *cnv, const char *respo
         cnv->state = CONV_BUY_PRICE;
     } 
     else {
-        reply = strdup("");
+        reply = vendorGetFarewell(cnv, "\n\n");
         cnv->state = CONV_DONE;
     }
 
@@ -764,7 +764,7 @@ char *vendorGetTavernVendorQuestionResponse(Conversation *cnv, const char *respo
 char *vendorGetInnVendorQuestionResponse(Conversation *cnv, const char *response) {
     if (response[0] < '1' || response[0] > '3') {
         cnv->state = CONV_DONE;
-        return strdup("");
+        return vendorGetFarewell(cnv, "\n\n");
     }
 
     cnv->quant = response[0] - '0';
@@ -854,7 +854,7 @@ char *vendorGetReagentsBuyItemResponse(Conversation *cnv, const char *response) 
     cnv->itemSubtype = tolower(response[0]) - 'a';
     if (cnv->itemSubtype < 0 || cnv->itemSubtype >= REAG_MAX || 
         reagPrices[vendorGetVendorNo(cnv->talker)][cnv->itemSubtype] == 0) {
-        reply = strdup("");
+        reply = vendorGetFarewell(cnv, "\n\n");
         cnv->state = CONV_DONE;
     }
     else {
@@ -930,7 +930,7 @@ char *vendorGetGuildBuyItemResponse(Conversation *cnv, const char *response) {
 
     cnv->itemSubtype = tolower(response[0]) - 'a';
     if (cnv->itemSubtype < 0 || cnv->itemSubtype >= 4) {
-        reply = strdup("");
+        reply = vendorGetFarewell(cnv, "\n\n");
         cnv->state = CONV_DONE;
     }
     else {
@@ -1369,7 +1369,7 @@ char *vendorGetArmsConfirmationResponse(Conversation *cnv, const char *response)
         cnv->state = CONV_SELL_ITEM;
     }
     else {
-        reply = strdup("");
+        reply =  vendorGetFarewell(cnv, "\n\n");
         cnv->state = CONV_DONE;
     }
 
@@ -1409,7 +1409,7 @@ char *vendorGetInnConfirmationResponse(Conversation *cnv, const char *response) 
         cnv->state = CONV_DONE;
     } 
     else {
-        reply = strdup("");
+        reply = vendorGetFarewell(cnv, "\n\n");
         cnv->state = CONV_DONE;
     }
 
@@ -1427,7 +1427,7 @@ char *vendorGetGuildConfirmationResponse(Conversation *cnv, const char *response
         cnv->state = CONV_DONE;
     } 
     else {
-        reply = strdup("");
+        reply = vendorGetFarewell(cnv, "\n\n");
         cnv->state = CONV_DONE;
     }
 
@@ -1445,7 +1445,7 @@ char *vendorGetStableConfirmationResponse(Conversation *cnv, const char *respons
         cnv->state = CONV_DONE;
     } 
     else {
-        reply = strdup("");
+        reply = vendorGetFarewell(cnv, "\n\n");
         cnv->state = CONV_DONE;
     }
 
