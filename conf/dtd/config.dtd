@@ -1,1 +1,8 @@
-<!ELEMENT config ( armors, maps, weapons ) >
+<!ELEMENT config ( armors, maps, music, sound, weapons ) >
+
+<!ELEMENT sound ( track+ ) >
+
+<!ELEMENT music ( track+ ) >
+
+<!ELEMENT track EMPTY >
+<!ATTLIST track file       CDATA   #REQUIRED>
