@@ -77,6 +77,8 @@ void settingsRead() {
     settings->debug                 = DEFAULT_DEBUG;
     settings->validateXml           = DEFAULT_VALIDATE_XML;
     settings->spellEffectSpeed      = DEFAULT_SPELL_EFFECT_SPEED;
+    settings->campTime              = DEFAULT_CAMP_TIME;
+    settings->innTime               = DEFAULT_INN_TIME;
 
     /* all specific minor and major enhancements default to "on" */
     settings->minorEnhancementsOptions.u5shrines        = 1;
@@ -141,6 +143,10 @@ void settingsRead() {
             settings->validateXml = (int) strtoul(buffer + strlen("validateXml="), NULL, 0);
         else if (strstr(buffer, "spellEffectSpeed=") == buffer)
             settings->spellEffectSpeed = (int) strtoul(buffer + strlen("spellEffectSpeed="), NULL, 0);
+        else if (strstr(buffer, "campTime=") == buffer)
+            settings->campTime = (int) strtoul(buffer + strlen("campTime="), NULL, 0);
+        else if (strstr(buffer, "innTime=") == buffer)
+            settings->innTime = (int) strtoul(buffer + strlen("innTime="), NULL, 0);
         
         /* minor enhancement options */
         else if (strstr(buffer, "u5shrines=") == buffer)
@@ -199,6 +205,8 @@ void settingsWrite() {
             "debug=%d\n"
             "validateXml=%d\n"
             "spellEffectSpeed=%d\n"
+            "campTime=%d\n"
+            "innTime=%d\n"
             "u5shrines=%d\n"
             "slimeDivides=%d\n"
             "c64chestTraps=%d\n"            
@@ -222,6 +230,8 @@ void settingsWrite() {
             settings->debug,
             settings->validateXml,
             settings->spellEffectSpeed,
+            settings->campTime,
+            settings->innTime,
             settings->minorEnhancementsOptions.u5shrines,
             settings->minorEnhancementsOptions.slimeDivides,
             settings->minorEnhancementsOptions.c64chestTraps,            

@@ -10,6 +10,8 @@
 #define MAX_KEY_INTERVAL                100
 #define MAX_CYCLES_PER_SECOND           20
 #define MAX_SPELL_EFFECT_SPEED          10
+#define MAX_CAMP_TIME                   10
+#define MAX_INN_TIME                    10
 
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
@@ -29,6 +31,8 @@
 #define DEFAULT_DEBUG                   0
 #define DEFAULT_VALIDATE_XML            1
 #define DEFAULT_SPELL_EFFECT_SPEED      5
+#define DEFAULT_CAMP_TIME               10
+#define DEFAULT_INN_TIME                8
 
 typedef enum {
     SCL_POINT,
@@ -68,6 +72,8 @@ typedef struct _Settings {
     int debug;
     int validateXml;
     int spellEffectSpeed;
+    int campTime;
+    int innTime;
     SettingsMinorOptions minorEnhancementsOptions;
     SettingsMajorOptions majorEnhancementsOptions;
 } Settings;

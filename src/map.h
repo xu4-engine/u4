@@ -61,34 +61,6 @@ typedef struct _Map {
     struct _Object *objects;
 } Map;
 
-typedef struct _Trigger {
-    unsigned char tile;
-    unsigned char
-        x : 4,
-        y : 4,
-        change_x1 : 4,
-        change_y1 : 4,
-        change_x2 : 4,
-        change_y2 : 4;
-} Trigger;
-
-typedef struct _DngRoom {
-    Trigger triggers[4];
-    unsigned char monster_tiles[16];
-    unsigned char monster_start_x[16];
-    unsigned char monster_start_y[16];
-    unsigned char party_north_start_x[8];
-    unsigned char party_north_start_y[8];
-    unsigned char party_east_start_x[8];
-    unsigned char party_east_start_y[8];
-    unsigned char party_south_start_x[8];
-    unsigned char party_south_start_y[8];
-    unsigned char party_west_start_x[8];
-    unsigned char party_west_start_y[8];
-    unsigned char map_data[121];
-    unsigned char buffer[7];
-} DngRoom;
-
 #define MAP_IS_OOB(mapptr, x, y) ((x) < 0 || (x) >= ((int)(mapptr)->width) || (y) < 0 || (y) >= ((int)(mapptr)->height))
 
 int mapRead(struct _City *city, U4FILE *ult, U4FILE *tlk);

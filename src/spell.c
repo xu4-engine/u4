@@ -298,8 +298,7 @@ unsigned char spellMagicAttackTile;
 int spellMagicAttackDamage;
 
 void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxDamage) {
-    extern CombatInfo combatInfo;    
-    int focus = combatInfo.focus;
+    extern CombatInfo combatInfo;        
     CoordActionInfo *info;
 
     spellMagicAttackDamage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
@@ -311,12 +310,12 @@ void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxD
     /* setup the spell */
     info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
     info->handleAtCoord = &spellMagicAttackAtCoord;
-    info->origin_x = combatInfo.party[focus]->x;
-    info->origin_y = combatInfo.party[focus]->y;
+    info->origin_x = combatInfo.party[FOCUS].obj->x;
+    info->origin_y = combatInfo.party[FOCUS].obj->y;
     info->prev_x = info->prev_y = -1;
     info->range = 11;
     info->validDirections = MASK_DIR_ALL;
-    info->player = focus;
+    info->player = FOCUS;
     info->blockedPredicate = &tileCanAttackOver;
     info->blockBefore = 1;
     info->firstValidDistance = 1;
@@ -328,13 +327,12 @@ void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxD
 
 int spellMagicAttackAtCoord(int x, int y, int distance, void *data) {
     int monster;
-    int i;
+//    int i;
     extern CombatInfo combatInfo;
     CoordActionInfo* info = (CoordActionInfo*)data;
     int oldx = info->prev_x,
         oldy = info->prev_y;
-    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
-    int focus = combatInfo.focus;
+    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;    
     
     info->prev_x = x;
     info->prev_y = y;
@@ -346,13 +344,7 @@ int spellMagicAttackAtCoord(int x, int y, int distance, void *data) {
     /* Check to see if we might hit something */
     if (x != -1 && y != -1) {
 
-        monster = -1;
-        for (i = 0; i < AREA_MONSTERS; i++) {
-            if (combatInfo.monsters[i] &&
-                combatInfo.monsters[i]->x == x &&
-                combatInfo.monsters[i]->y == y)
-                monster = i;
-        }
+        monster = combatMonsterAt(x, y, c->location->z);        
 
         if (monster == -1) {
             annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, spellMagicAttackTile));
@@ -367,10 +359,10 @@ int spellMagicAttackAtCoord(int x, int y, int distance, void *data) {
         }
         else {
             /* show the 'hit' tile */
-            attackFlash(x, y, spellMagicAttackTile, 1);
+            attackFlash(x, y, spellMagicAttackTile, 3);
 
             /* apply the damage to the monster */
-            combatApplyDamageToMonster(monster, spellMagicAttackDamage, focus);
+            combatApplyDamageToMonster(monster, spellMagicAttackDamage, FOCUS);
         }
     }
 
@@ -385,13 +377,13 @@ static int spellAwaken(int player) {
         c->saveGame->players[player].status == STAT_SLEEPING) {
         
         /* restore the party member to their original state */
-        if (combatInfo.party_status[player])
-            c->saveGame->players[player].status = combatInfo.party_status[player];
+        if (combatInfo.party[player].status)
+            c->saveGame->players[player].status = combatInfo.party[player].status;
         else c->saveGame->players[player].status = STAT_GOOD;
 
         /* wake the member up! */
-        if (combatInfo.party[player])
-            combatInfo.party[player]->tile = tileForClass(c->saveGame->players[player].klass);        
+        if (combatInfo.party[player].obj)
+            combatInfo.party[player].obj->tile = tileForClass(c->saveGame->players[player].klass);        
 
         return 1;
     }
@@ -458,9 +450,9 @@ static int spellDispel(int dir) {
     
     /* get the current location, based on context */
     if (c->location->context == CTX_COMBAT) {
-        x = combatInfo.party[combatInfo.focus]->x;
-        y = combatInfo.party[combatInfo.focus]->y;
-        z = combatInfo.party[combatInfo.focus]->z;
+        x = combatInfo.party[FOCUS].obj->x;
+        y = combatInfo.party[FOCUS].obj->y;
+        z = combatInfo.party[FOCUS].obj->z;
     }
     else {
         x = c->location->x;
@@ -468,7 +460,7 @@ static int spellDispel(int dir) {
         z = c->location->z;
     }
 
-    dirMove((Direction) dir, &x, &y);
+    mapDirMove(c->location->map, (Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->location->map, x, y))
         return 0;
 
@@ -507,8 +499,8 @@ static int spellEField(int dir) {
         x = c->location->x;
         y = c->location->y;        
     } else {
-        x = combatInfo.party[combatInfo.focus]->x;
-        y = combatInfo.party[combatInfo.focus]->y;
+        x = combatInfo.party[FOCUS].obj->x;
+        y = combatInfo.party[FOCUS].obj->y;
     }
 
     dirMove((Direction) dir, &x, &y);
@@ -602,11 +594,11 @@ static int spellSleep(int unused) {
 
     /* try to put each monster to sleep */
     for (i = 0; i < AREA_MONSTERS; i++) { 
-        if (combatInfo.monsters[i]) {
-            if ((combatInfo.monsters[i]->monster->resists != EFFECT_SLEEP) &&
-                ((rand() % 0xFF) >= combatInfo.monsterHp[i])) {
-                combatInfo.monster_status[i] = STAT_SLEEPING;
-                combatInfo.monsters[i]->canAnimate = 0; /* freeze monster */
+        if (combatInfo.monsters[i].obj) {
+            if ((combatInfo.monsters[i].obj->monster->resists != EFFECT_SLEEP) &&
+                ((rand() % 0xFF) >= combatInfo.monsters[i].hp)) {
+                combatInfo.monsters[i].status = STAT_SLEEPING;
+                combatInfo.monsters[i].obj->canAnimate = 0; /* freeze monster */
             }
         }
     }
@@ -620,17 +612,17 @@ static int spellTremor(int unused) {
 
     for (i = 0; i < AREA_MONSTERS; i++) {
         /* FIXME: monster selection (50/50) guessed */
-        if (combatInfo.monsters[i] && (rand() % 2 != 0)) {               
+        if (combatInfo.monsters[i].obj && (rand() % 2 != 0)) {               
 
-            x = combatInfo.monsters[i]->x;
-            y = combatInfo.monsters[i]->y;
+            x = combatInfo.monsters[i].obj->x;
+            y = combatInfo.monsters[i].obj->y;
             annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, HITFLASH_TILE));
             
             eventHandlerSleep(50);
             gameUpdateScreen();
 
             /* FIXME: damage guessed */
-            combatApplyDamageToMonster(i, rand() % 0xFF, combatInfo.focus);
+            combatApplyDamageToMonster(i, rand() % 0xFF, FOCUS);
 
             annotationRemove(x, y, c->location->z, c->location->map->id, HITFLASH_TILE);
         }
@@ -645,8 +637,8 @@ static int spellUndead(int unused) {
     
     for (i = 0; i < AREA_MONSTERS; i++) {
         /* Deal enough damage to undead to make them flee */
-        if (combatInfo.monsters[i] && monsterIsUndead(combatInfo.monsters[i]->monster) && (rand() % 2 == 0))
-            combatInfo.monsterHp[i] = 23;        
+        if (combatInfo.monsters[i].obj && monsterIsUndead(combatInfo.monsters[i].obj->monster) && (rand() % 2 == 0))
+            combatInfo.monsters[i].hp = 23;        
     }
     
     return 1;

@@ -36,18 +36,15 @@ void campEnd(void);
 int campHeal(void);
 void innTimer(void *data);
 
-void campBegin(void) {
-    
-    /* go to camp music and wait a bit to change to camp view */
-    //musicCamp();
-    musicFadeOut(CAMP_FADE_OUT_TIME);
-    eventHandlerSleep(CAMP_FADE_OUT_TIME);
+void campBegin(void) {    
+    musicCamp();    
     
     /* setup camp (possible, but not for-sure combat situation */
-    combatBegin(MAP_CAMP_CON, NULL, 0);
+    combatInitCamping();
+    combatBegin();
     
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&campTimer, eventTimerGranularity * settings->gameCyclesPerSecond * CAMP_REST_SECONDS);
+    eventHandlerAddTimerCallback(&campTimer, eventTimerGranularity * settings->gameCyclesPerSecond * settings->campTime);
 
     screenMessage("Resting...\n");
     screenDisableCursor();
@@ -59,7 +56,7 @@ void campTimer(void *data) {
     screenEnableCursor();
 
     /* Is the party ambushed during their rest? */
-    if (rand() % 8 == 0) {
+    if (rand() % 8 >= 0) {
         
         int i, j, numAmbushingMonsters;
         extern CombatInfo combatInfo;
@@ -70,27 +67,15 @@ void campTimer(void *data) {
         musicPlay();        
         screenMessage("Ambushed!\n");
         
-        /* assign the monster object for combat */
-        combatInfo.monsterObj = mapAddMonsterObject(c->location->prev->map, m, c->location->prev->x, c->location->prev->y, c->location->prev->z);
-        /* assign the monster object for combat so monsters can be created */
-        combatInfo.monster = combatInfo.monsterObj->monster;
+        /* create an ambushing monster (so it leaves a chest) */
+        combatInfo.monsterObj = mapAddMonsterObject(c->location->prev->map, m, c->location->prev->x, c->location->prev->y, c->location->prev->z);        
         
-        /* numAmbushingMonsters is the number of creatures we will have in combat */
-        numAmbushingMonsters = combatInitialNumberOfMonsters(m);
-
-        /* create the monsters */
-        for (i = 0; i < numAmbushingMonsters; i++) {
-            /* find a random free slot in the monster table */
-            do {j = rand() % AREA_MONSTERS;} while (combatInfo.monsters[j] != NULL);
-            combatCreateMonster(j, i != (numAmbushingMonsters - 1));
-        }
-
-        /* ok, we're done creating monsters, let's destroy this monster object
-           so it won't leave a treasure chest behind */
-        mapRemoveObject(c->location->prev->map, combatInfo.monsterObj);
+        /* fill the monster table with monsters and place them */
+        combatFillMonsterTable(m);
+        combatPlaceMonsters();
 
         /* monsters go first! */
-        combatFinishTurn();          
+        combatFinishTurn();
     }    
     else campEnd();
 }
@@ -106,15 +91,15 @@ void campEnd(void) {
     /* Wake everyone up! */
     for (i = 0; i < c->saveGame->members; i++) {
         if (c->saveGame->players[i].status == STAT_SLEEPING)
-            c->saveGame->players[i].status = combatInfo.party_status[i];
+            c->saveGame->players[i].status = combatInfo.party[i].status;
     }    
 
     /* Make sure we've waited long enough for camping to be effective */
-    if (((c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff) != c->saveGame->lastcamp)    
+    if (((c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff) != c->saveGame->lastcamp)  
         healed = campHeal();
 
     screenMessage(healed ? "Party Healed!\n" : "No effect.\n");
-    c->saveGame->lastcamp = (c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff;
+    c->saveGame->lastcamp = (c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff;   
 
     (*c->location->finishTurn)();
 }
@@ -152,7 +137,7 @@ void innBegin(void) {
     gameUpdateScreen();
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&innTimer, eventTimerGranularity * settings->gameCyclesPerSecond * INN_REST_SECONDS);
+    eventHandlerAddTimerCallback(&innTimer, eventTimerGranularity * settings->gameCyclesPerSecond * settings->innTime);
 
     screenDisableCursor();
 }
@@ -188,7 +173,9 @@ void innTimer(void *data) {
         }        
 
         /* begin combat! */
-        combatBegin(mapid, monsterObj, 0);        
+        combatInit(monsterObj->monster, monsterObj, mapid, 0);
+        combatBegin();
+        //combatBegin(mapid, monsterObj, 0);        
     }
     
     else {

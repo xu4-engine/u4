@@ -134,14 +134,14 @@ Mixture *mix;
 int mixSpell;
 Menu spellMixMenu;
 
-void gameInit() {    
+void gameInit() {
     FILE *saveGameFile, *monstersFile;
 
     /* initialize the global game context */
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));    
     c->annotation = NULL;    
-    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, (FinishTurnCallback)&gameFinishTurn, NULL);
+    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, &gameFinishTurn, NULL);
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.playerInquiryBuffer[0] = '\0';
@@ -603,11 +603,9 @@ int gameBaseKeyHandler(int key, void *data) {
     case '7':
     case '8':
     case '9':
-        if (c->location->context & CTX_DUNGEON) {
-            mapLoadDungeonRoom(c->location->map->dungeon, key - '0');
-            gameSetMap(c, c->location->map->dungeon->room, 1, NULL);
-            eventHandlerPushKeyHandler(&combatBaseKeyHandler);
-            combatBegin(0, NULL, 0);
+        if (c->location->context & CTX_DUNGEON) {            
+            combatInitDungeonRoom(key - '0', dirReverse(c->saveGame->orientation));
+            combatBegin();            
         }
         break;
 
@@ -1662,7 +1660,8 @@ int attackAtCoord(int x, int y, int distance, void *data) {
         ((obj->objType != OBJECT_MONSTER) && (obj->movement_behavior != MOVEMENT_ATTACK_AVATAR))) 
         playerAdjustKarma(c->saveGame, KA_ATTACKED_GOOD);
 
-    combatBegin(combatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), obj, 1);
+    combatInit(m, obj, combatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), 0);
+    combatBegin();
     return 1;
 }
 
@@ -1830,7 +1829,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
             
             /* Is is a pirate ship firing at US? */
             if (hitsAvatar) {
-                attackFlash(x, y, HITFLASH_TILE, 2);
+                attackFlash(x, y, HITFLASH_TILE, 5);
 
                 if (c->transportContext == TRANSPORT_SHIP)
                     gameDamageShip(-1, 10);
@@ -1838,13 +1837,13 @@ int fireAtCoord(int x, int y, int distance, void *data) {
             }          
             /* inanimate objects get destroyed instantly, while monsters get a chance */
             else if (obj->objType == OBJECT_UNKNOWN) {
-                attackFlash(x, y, HITFLASH_TILE, 2);
+                attackFlash(x, y, HITFLASH_TILE, 5);
                 mapRemoveObject(c->location->map, obj);
             }
             
             /* only the avatar can hurt other monsters with cannon fire */
             else if (originAvatar) {
-                attackFlash(x, y, HITFLASH_TILE, 2);
+                attackFlash(x, y, HITFLASH_TILE, 5);
                 if (rand() % 2 == 0)
                     mapRemoveObject(c->location->map, obj);
             }
@@ -2857,14 +2856,18 @@ void gameInitMoons()
  * Handles trolls under bridges
  */
 void gameCheckBridgeTrolls() {
+    Object *obj;
+
     if (!mapIsWorldMap(c->location->map) ||
         mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z) != BRIDGE_TILE ||
         (rand() % 8) != 0)
         return;
 
     screenMessage("\nBridge Trolls!\n");
-
-    combatBegin(MAP_BRIDGE_CON, mapAddMonsterObject(c->location->map, monsterById(TROLL_ID), c->location->x, c->location->y, c->location->z), 1);
+    
+    obj = mapAddMonsterObject(c->location->map, monsterById(TROLL_ID), c->location->x, c->location->y, c->location->z);
+    combatInit(obj->monster, obj, MAP_BRIDGE_CON, 0);
+    combatBegin();    
 }
 
 /**
@@ -3042,7 +3045,9 @@ void gameMonsterAttack(Object *obj) {
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
-    combatBegin(combatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), obj, 1);
+    
+    combatInit(monsterForTile(obj->tile), obj, combatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), 0);
+    combatBegin();
 }
 
 /**
@@ -3085,7 +3090,7 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
         /* Does the attack hit the avatar? */
         if (x == c->location->x && y == c->location->y) {
             /* always displays as a 'hit' */
-            attackFlash(x, y, tile, 2);
+            attackFlash(x, y, tile, 3);
 
             /* FIXME: check actual damage from u4dos -- values here are guessed */
             if (c->transportContext == TRANSPORT_SHIP)
@@ -3100,7 +3105,7 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
                 (obj->monster->id != WHIRLPOOL_ID) && (obj->monster->id != STORM_ID)) ||
                 obj->objType == OBJECT_UNKNOWN) {
                 
-                attackFlash(x, y, tile, 2);
+                attackFlash(x, y, tile, 3);
                 mapRemoveObject(c->location->map, obj);
 
                 return 1;
@@ -3385,8 +3390,8 @@ void gameDestroyAllMonsters(void) {
     if (c->location->context == CTX_COMBAT) {
         /* destroy all monsters in combat */
         for (i = 0; i < AREA_MONSTERS; i++) {
-            mapRemoveObject(c->location->map, combatInfo.monsters[i]);
-            combatInfo.monsters[i] = NULL;
+            mapRemoveObject(c->location->map, combatInfo.monsters[i].obj);
+            combatInfo.monsters[i].obj = NULL;
         }
     }    
     else {

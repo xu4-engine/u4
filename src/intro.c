@@ -271,15 +271,17 @@ int introInit() {
     advancedOptions = menuAddItem(advancedOptions, 0xFE, "Use These Settings", 4, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
     advancedOptions = menuAddItem(advancedOptions, 0xFF, "Cancel", 4, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
-    keyboardOptions = menuAddItem(keyboardOptions, 0, "German Keyboard", 5, 16, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
-    keyboardOptions = menuAddItem(keyboardOptions, 1, "Repeat Delay (in msecs)", 5, 17, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
-    keyboardOptions = menuAddItem(keyboardOptions, 2, "Repeat Interval (in msecs)", 5, 18, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
+    keyboardOptions = menuAddItem(keyboardOptions, 0, "German Keyboard", 5, 5, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
+    keyboardOptions = menuAddItem(keyboardOptions, 1, "Repeat Delay (in msecs)", 5, 6, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
+    keyboardOptions = menuAddItem(keyboardOptions, 2, "Repeat Interval (in msecs)", 5, 7, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
     keyboardOptions = menuAddItem(keyboardOptions, 0xFE, "Use These Settings", 5, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
     keyboardOptions = menuAddItem(keyboardOptions, 0xFF, "Cancel", 5, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
-    speedOptions = menuAddItem(speedOptions, 0, "Game Cycles Per Second", 7, 16, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 1, "Battle Speed", 7, 17, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 2, "Spell Effect Length", 7, 18, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 0, "Game Cycles Per Second", 7, 5, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 1, "Battle Speed", 7, 6, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 2, "Spell Effect Length", 7, 7, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 3, "Camping length", 7, 8, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 4, "Inn rest length", 7, 9, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
     speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 7, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
     speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 7, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
@@ -724,26 +726,33 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG_KEYBOARD:
-        screenDrawBackground(BKGD_INTRO);
-        screenTextAt(2, 14, "Keyboard Settings:");
-        screenTextAt(34, 16, "%s", settings->germanKbd ? "Yes" : "No"); 
-        screenTextAt(34, 17,  "%d", settings->keydelay);
-        screenTextAt(34, 18,  "%d", settings->keyinterval);
+        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenTextAt(2, 3, "Keyboard Settings:");
+        screenTextAt(34, 5, "%s", settings->germanKbd ? "Yes" : "No"); 
+        screenTextAt(34, 6,  "%d", settings->keydelay);
+        screenTextAt(34, 7,  "%d", settings->keyinterval);
         menuShow(menuGetRoot(keyboardOptions));        
         break;
 
     case INTRO_CONFIG_SPEED:
         {
             char msg[16] = {0};
-            screenDrawBackground(BKGD_INTRO);
-            screenTextAt(2, 14, "Speed Settings:");        
-            screenTextAt(32, 16, "%d", settings->gameCyclesPerSecond);
-            screenTextAt(32, 17, "%d", settings->battleSpeed);
+            screenDrawBackground(BKGD_INTRO_EXTENDED);
+            screenTextAt(2, 3, "Speed Settings:");        
+            screenTextAt(32, 5, "%d", settings->gameCyclesPerSecond);
+            screenTextAt(32, 6, "%d", settings->battleSpeed);
             
             sprintf(msg, "%0.*f sec",
                 (settings->spellEffectSpeed % 5 == 0) ? 0 : 1,
                 (double)settings->spellEffectSpeed / 5);        
-            screenTextAt(37 - strlen(msg), 18, msg);            
+            screenTextAt(37 - strlen(msg), 7, msg);
+
+            sprintf(msg, "%d sec", settings->campTime);
+            screenTextAt(37 - strlen(msg), 8, msg);
+
+            sprintf(msg, "%d sec", settings->innTime);
+            screenTextAt(37 - strlen(msg), 9, msg);
+
             menuShow(menuGetRoot(speedOptions));
         }
         break;
@@ -1531,6 +1540,29 @@ void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
                 settings->spellEffectSpeed = MAX_SPELL_EFFECT_SPEED;
         }
         break;
+    case 3:
+        if (action != ACTIVATE_DECREMENT) {
+            settings->campTime++;
+            if (settings->campTime > MAX_CAMP_TIME)
+                settings->campTime = 1;
+        } else {
+            settings->campTime--;
+            if (settings->campTime < 1)
+                settings->campTime = MAX_CAMP_TIME;
+        }
+        break;
+    case 4:
+        if (action != ACTIVATE_DECREMENT) {
+            settings->innTime++;
+            if (settings->innTime > MAX_INN_TIME)
+                settings->innTime = 1;
+        } else {
+            settings->innTime--;
+            if (settings->innTime < 1)
+                settings->innTime = MAX_INN_TIME;
+        }
+        break;
+
     case 0xFE:        
         settingsWrite();        
     
