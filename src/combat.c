@@ -414,6 +414,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     int oldx = info->prev_x,
         oldy = info->prev_y;  
     int attackdelay = settings->attackdelay;
+    int groundTile = mapTileAt(c->location->map, x, y, c->location->z);
     
     info->prev_x = x;
     info->prev_y = y;
@@ -454,7 +455,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
         return 0;
     }    
     /* If the weapon leaves a tile behind, do it here! (flaming oil) */
-    else if (weaponLeavesTile(weapon))
+    else if (weaponLeavesTile(weapon) && tileIsWalkable(groundTile))
         annotationAdd(x, y, c->location->z, c->location->map->id, weaponLeavesTile(weapon));       
 
     if (!playerAttackHit(&c->saveGame->players[focus])) {

@@ -197,7 +197,9 @@ int tileCanWalkOff(unsigned char tile, Direction d) {
 }
 
 int tileCanAttackOver(unsigned char tile) {
-    return tileIsWalkable(tile) || tileIsSwimable(tile) || tileIsSailable(tile);
+    /* FIXME: add parameters to the tiles.xml file to handle 'attackOver' on tiles */
+    return tileIsWalkable(tile) || tileIsSwimable(tile) || tileIsSailable(tile) ||       
+        tile == 72; /* Ship hull tile */
 }
 
 int tileIsWalkable(unsigned char tile) {
