@@ -57,6 +57,7 @@ int focus;
 Object *party[8];
 Object *combat_monsters[AREA_MONSTERS];
 int monsterHp[AREA_MONSTERS];
+int normalCombat;
 
 int combatAttackAtCoord(int x, int y, int distance, void *data);
 int combatMonsterRangedAttack(int x, int y, int distance, void *data);
@@ -70,10 +71,12 @@ int movePartyMember(Direction dir, int member);
 int combatChooseWeaponDir(int key, void *data);
 int combatChooseWeaponRange(int key, void *data);
 
-void combatBegin(unsigned char partytile, unsigned short transport, Object *monster) {
+void combatBegin(const Map *map, Object *monster, int isNormal) {
     int i, j;
     int nmonsters;
-    const Monster *m = NULL;    
+    const Monster *m = NULL;
+    int partyIsReadyToFight = 0;
+    normalCombat = isNormal;    
 
     monsterObj = monster;
     if (monster && (monster->objType == OBJECT_MONSTER))
@@ -81,7 +84,7 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
     else if (monster)
         m = monsterForTile(monster->tile);
 
-    gameSetMap(c, getCombatMapForTile(partytile, transport), 1, NULL);
+    gameSetMap(c, map, 1, NULL);
     musicPlay();
         
     for (i = 0; i < c->saveGame->members; i++) {
@@ -91,17 +94,18 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
             /* Replace the party mamber with a sleeping person if they're asleep */
             if (c->saveGame->players[i].status == STAT_SLEEPING)
                 party[i]->tile = CORPSE_TILE;
+            else partyIsReadyToFight = 1;
         }
         else
-            party[i] = NULL;            
+            party[i] = NULL;
     }
     for (; i < 8; i++)
         party[i] = NULL;
 
     /* normal combat situation */
-    if (monsterObj) {       
+    if (monsterObj) {
         i = 0;
-        while (party[i] == NULL)
+        while ((party[i] == NULL) && (c->saveGame->players[i].status != STAT_SLEEPING))
             i++;
         focus = i;
         party[i]->hasFocus = 1;
@@ -120,7 +124,7 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
     for (i = 0; i < AREA_MONSTERS; i++)
         combat_monsters[i] = NULL;
 
-    /* check if the battlefield has monsters on it.  If we're camping or in an inn, we don't want this yet */
+    /* check if the battlefield has monsters on it.  If we're camping, we don't want this yet */
     if (m) {
         nmonsters = combatInitialNumberOfMonsters(m);    
         for (i = 0; i < nmonsters; i++) {
@@ -128,11 +132,17 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
             do {j = rand() % AREA_MONSTERS;} while (combat_monsters[j] != NULL);
             combatCreateMonster(j, i != (nmonsters - 1));
         }    
+    }
 
-        eventHandlerPushKeyHandler(&combatBaseKeyHandler);
+    /* Use the combat key handler */
+    eventHandlerPushKeyHandler(&combatBaseKeyHandler);
 
-        screenMessage("\n**** COMBAT ****\n\n");
+    /* if the combat is a normal combat situation, treat it as such. */
+    if (normalCombat)
+        screenMessage("\n**** COMBAT ****\n\n");    
 
+    /* if the party is ready to fight, show info for the first active player */
+    if (partyIsReadyToFight) {
         screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, weaponGetName(c->saveGame->players[focus].weapon));
         statsHighlightCharacter(focus);
         statsUpdate(); /* If a character was awakened inbetween world view and combat, this fixes stats info */
@@ -140,15 +150,13 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
 }
 
 
-Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
-    int i;
-    const Monster *m;
+Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, const Monster *m) {
+    int i;    
 
     static const struct {
         unsigned char tile;
         Map *map;
     } tileToMap[] = {        
-        { CORPSE_TILE,  &camp_map }, /* FIXME: ouch, that's terrible */
         { SWAMP_TILE,   &marsh_map },
         { GRASS_TILE,   &grass_map },
         { BRUSH_TILE,   &brush_map },
@@ -172,14 +180,11 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
 
     /* We can fight monsters and townsfolk -- let's
        figure out which one we're dealing with */
-    if (monsterObj) {
-        if (monsterObj->objType == OBJECT_MONSTER)
-            m = monsterObj->monster;
-        else m = monsterForTile(monsterObj->tile);
-    
+    if (m) {
+        
         /* check if monster is aquatic */
         if (monsterIsAquatic(m)) {
-            if (tileIsPirateShip(monsterObj->tile)) {
+            if (tileIsPirateShip(m->tile)) {
                 if (tileIsShip(transport) || tileIsShip(partytile))
                     return &shipship_map;
                 else
@@ -205,7 +210,7 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
 }
 
 void combatCreateMonster(int index, int canbeleader) {    
-    unsigned char mtile;    
+    unsigned char mtile;
 
     mtile = monsterObj->tile;
 
@@ -263,6 +268,7 @@ void combatFinishTurn() {
                 gameUpdateScreen();
                 eventHandlerSleep(50); /* give a slight pause in case party members are asleep for awhile */
             
+                /* FIXME: apply tile effects to monsters */
                 combatMoveMonsters();                
 
                 focus = 0;
@@ -650,7 +656,9 @@ int combatReturnWeaponToOwner(int x, int y, int distance, void *data) {
 int combatInitialNumberOfMonsters(const Monster *monster) {
     int nmonsters;
 
-    if (mapIsWorldMap(c->location->prev->map)) {
+    /* if in an unusual combat situation, generally we stick to normal encounter sizes,
+       (such as encounters from sleeping in an inn, etc.) */
+    if (!normalCombat || mapIsWorldMap(c->location->prev->map)) {
         nmonsters = (rand() % 8) + 1;        
         
         if (nmonsters == 1) {            
@@ -716,7 +724,7 @@ void combatEnd() {
     if (combatIsWon()) {
 
         /* added chest or captured ship object */        
-        if (m) {
+        if (m && normalCombat) {
             if ((m->mattr & MATTR_WATER) == 0)
                 mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), monsterObj->x, monsterObj->y, c->location->z);
             else if (tileIsPirateShip(monsterObj->tile)) {

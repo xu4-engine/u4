@@ -91,6 +91,7 @@ typedef struct _Person {
     ObjectMovementBehavior movement_behavior;
     PersonNpcType npcType;
     int vendorIndex;
+    int permanent; /* if the person is naturally part of the map, if not, we need to know */
 } Person;
 
 Reply *replyNew(const char *text);

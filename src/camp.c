@@ -25,8 +25,12 @@
 #include "stats.h"
 #include "combat.h"
 #include "monster.h"
+#include "person.h"
+#include "city.h"
 
 extern Map camp_map;
+extern Map brick_map;
+extern Map inn_map;
 
 void campTimer(void *data);
 void campEnd(void);
@@ -36,7 +40,7 @@ void innEnd(void);
 
 void campBegin(void) {
     /* setup camp (possible, but not for-sure combat situation */
-    combatBegin(CORPSE_TILE, AVATAR_TILE, NULL);
+    combatBegin(&camp_map, NULL, 0);
     
     musicFadeOut(2000); /* Fade volume out to ease into camp */    
 
@@ -53,8 +57,8 @@ void campTimer(void *data) {
     screenEnableCursor();
 
     /* Is the party ambushed during their rest? */
-    if (rand() % 8 == 0) {        
-    
+    if (rand() % 8 == 0) {
+        
         int i, j,
             numAmbushingMonsters = 0,
             randMonster;
@@ -99,9 +103,7 @@ void campTimer(void *data) {
                         mapRemoveObject(c->location->prev->map, monsterObj);
 
                         /* monsters go first! */
-                        combatFinishTurn();
-
-                        eventHandlerPushKeyHandler(&combatBaseKeyHandler);
+                        combatFinishTurn();                        
 
                         break;
                     }
@@ -110,7 +112,7 @@ void campTimer(void *data) {
             }
         }        
     }    
-    else campEnd();    
+    else campEnd();
 }
 
 void campEnd(void) {
@@ -172,17 +174,92 @@ void innTimer(void *data) {
     eventHandlerPopKeyHandler();
     screenEnableCursor();
 
-    /* FIXME: add encounter and special case stuff here */
+    /* restore the avatar to normal */
+    c->saveGame->transport = AVATAR_TILE;
+    gameUpdateScreen();
 
-    innEnd();
+    /* Is there a special encounter during your stay? */
+    if (rand() % 8 == 0) {
+        
+        const Map *map;
+        Object *monsterObj;        
+                
+        /* Rats seem much more rare than meeting rogues in the streets */
+        if (rand() % 4 == 0) {
+            /* Rats! */
+            map = &brick_map;
+            monsterObj = mapAddMonsterObject(c->location->map, monsterById(RAT_ID), c->location->x, c->location->y, c->location->z);
+        } else {
+            /* While strolling down the street, attacked by rogues! */
+            map = &inn_map;
+            monsterObj = mapAddMonsterObject(c->location->map, monsterById(ROGUE_ID), c->location->x, c->location->y, c->location->z);
+            screenMessage("\nIn the middle of the night while out on a stroll...\n\n");
+        }
+
+        /* begin combat! */
+        combatBegin(map, monsterObj, 0);
+    }
+    
+    else {
+        innEnd();
+
+        /* Does Isaac the Ghost pay a visit to the Avatar? */
+        if (c->location->map->id == 11 && (rand() % 4 == 0)) {
+            City *city = c->location->map->city;
+            Person *Isaac;
+            Object *obj;
+            int x = 27,
+                y = (rand() % 3) + 10,
+                z = c->location->z;
+
+            /* If Isaac is already around, just bring him back */
+            for (obj = c->location->map->objects; obj; obj = obj->next) {
+                if (obj->objType == OBJECT_PERSON && obj->person->name && 
+                    strcmp(obj->person->name, "Isaac") == 0) {
+                    obj->x = x;
+                    obj->y = y;
+                    obj->z = z;
+                    return;
+                }
+            }
+
+            /* Otherwise, we need to create Isaac */
+            Isaac = (Person *)malloc(sizeof(Person));
+            Isaac->name = city->persons[10].name;
+            Isaac->pronoun = city->persons[10].pronoun;
+            Isaac->description = city->persons[10].description;
+            Isaac->job = city->persons[10].job;
+            Isaac->health = city->persons[10].health;
+            Isaac->response1 = city->persons[10].response1;
+            Isaac->response2 = city->persons[10].response2;
+            Isaac->question = city->persons[10].question;
+            Isaac->yesresp = city->persons[10].yesresp;
+            Isaac->noresp = city->persons[10].noresp;
+            Isaac->keyword1 = city->persons[10].keyword1;
+            Isaac->keyword2 = city->persons[10].keyword2;
+            Isaac->questionTrigger = QTRIGGER_KEYWORD1;
+            Isaac->movement_behavior = MOVEMENT_WANDER;
+            Isaac->npcType = NPC_TALKER;
+            Isaac->permanent = 0;
+            Isaac->questionType = QUESTION_NORMAL;
+            Isaac->startx = 27;
+            Isaac->starty = (rand() % 3) + 10;
+            Isaac->startz = 0;
+            Isaac->tile0 = GHOST_TILE;
+            Isaac->tile1 = GHOST_TILE+1;
+            Isaac->turnAwayProb = 0;
+            Isaac->vendorIndex = 0; 
+            
+            /* Add Isaac near the Avatar */
+            mapAddPersonObject(c->location->map, Isaac);
+        }
+    }
 }
 
 void innEnd(void) {
     campHeal();
     
-    /* restore avatar to normal */
-    c->saveGame->transport = AVATAR_TILE;
-    gameUpdateScreen();    
+    /* restore avatar to normal */    
     screenMessage("\nMorning!\n");
 }
 

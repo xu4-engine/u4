@@ -39,8 +39,11 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
     case MOVEMENT_FIXED:
         break;
 
-    case MOVEMENT_WANDER:        
-        dir = dirRandomDir(mapGetValidMoves(map, newx, newy, z, obj->tile));                
+    case MOVEMENT_WANDER:  
+        /* World map wandering creatures always move, whereas
+           town creatures that wander sometimes stay put */
+        if (mapIsWorldMap(map) || rand() % 2 == 0)
+            dir = dirRandomDir(mapGetValidMoves(map, newx, newy, z, obj->tile));                
         break;
 
     case MOVEMENT_FOLLOW_AVATAR:

@@ -387,10 +387,7 @@ static int spellGate(int phase) {
     if (!tileIsShip(c->saveGame->transport)) {
         moongate = moongateGetGateForPhase(phase);
         c->location->x = moongate->x;
-        c->location->y = moongate->y;    
-
-        /* shows gate spell effect again after teleport */
-        (*spellCallback)('g', -1);
+        c->location->y = moongate->y;        
 
         return 1;
     }

@@ -75,6 +75,8 @@ int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
             city->persons[i].movement_behavior = MOVEMENT_ATTACK_AVATAR;
         else
             return 0;
+
+        city->persons[i].permanent = 1; /* permanent residents (i.e. memory is allocated here and automatically freed) */
     }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
@@ -91,7 +93,13 @@ int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
         if (u4fread(tlk_buffer, 1, sizeof(tlk_buffer), tlk) != sizeof(tlk_buffer))
             break;
         for (j = 0; j < CITY_MAX_PERSONS; j++) {
-            if (conv_idx[j] == i+1) {
+            /** 
+             * Match the conversation to the person;
+             * sometimes we'll have a rogue entry for the .tlk file -- 
+             * we'll fill in the empty spaces with this conversation 
+             * (such as Isaac the Ghost in Skara Brae)
+             */
+            if (conv_idx[j] == i+1 || (conv_idx[j] == 0 && city->persons[j].tile0 == 0)) {
                 char *ptr = tlk_buffer + 3;
 
                 city->persons[j].questionTrigger = (PersonQuestionTrigger) tlk_buffer[0];
@@ -400,6 +408,11 @@ void mapRemoveObject(Map *map, Object *rem) {
                 prev->next = obj->next;
             else
                 map->objects = obj->next;
+ 
+            /* free the memory used by a non-standard person object */
+            if (obj->objType == OBJECT_PERSON && !obj->person->permanent)
+                free(obj->person);            
+
             free(obj);
             return;
         }

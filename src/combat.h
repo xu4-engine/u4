@@ -17,12 +17,12 @@ typedef enum {
     CA_FLEE
 } CombatAction;
 
-void combatBegin(unsigned char partytile, unsigned short transport, struct _Object *monster);
+void combatBegin(const struct _Map *map, struct _Object *monster);
 void combatFinishTurn(void);
 void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);
 int combatInitialNumberOfMonsters(const struct _Monster *monster);
-struct _Map *getCombatMapForTile(unsigned char partytile, unsigned short transport);
+struct _Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, const struct _Monster *monster);
 void attackFlash(int x, int y, int tile, int timeFactor);
 
 #endif

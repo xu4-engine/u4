@@ -1267,7 +1267,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     if (monsterIsGood(m))
         playerAdjustKarma(c->saveGame, KA_ATTACKED_GOOD);
 
-    combatBegin(ground, c->saveGame->transport, obj);
+    combatBegin(getCombatMapForTile(ground, c->saveGame->transport, m), obj, 1);
     return 1;
 }
 
@@ -2314,6 +2314,8 @@ void gameInitMoons()
  * Handles trolls under bridges
  */
 void gameCheckBridgeTrolls() {
+    extern Map bridge_map;
+
     if (!mapIsWorldMap(c->location->map) ||
         mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z) != BRIDGE_TILE ||
         (rand() % 8) != 0)
@@ -2321,8 +2323,7 @@ void gameCheckBridgeTrolls() {
 
     screenMessage("\nBridge Trolls!\n");
 
-    combatBegin(mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z), c->saveGame->transport,
-                mapAddMonsterObject(c->location->map, monsterForTile(TROLL_TILE), c->location->x, c->location->y, c->location->z));
+    combatBegin(&bridge_map, mapAddMonsterObject(c->location->map, monsterForTile(TROLL_TILE), c->location->x, c->location->y, c->location->z), 1);
 }
 
 /**
@@ -2417,6 +2418,8 @@ void gameCheckMoongates() {
         
         c->location->x = destx;
         c->location->y = desty;
+
+        (*spellCallback)('g', -1); // Again, after arriving
 
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
             if (!playerCanEnterShrine(c->saveGame, shrine_spirituality_map.shrine->virtue))
@@ -2517,7 +2520,7 @@ void gameMonsterAttack(Object *obj) {
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
-    combatBegin(ground, c->saveGame->transport, obj);
+    combatBegin(getCombatMapForTile(ground, c->saveGame->transport, monsterForTile(obj->tile)), obj, 1);
 }
 
 /**
