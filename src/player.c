@@ -79,11 +79,7 @@ void playerAdvanceLevel(SaveGamePlayerRecord *player) {
     player->hpMax = playerGetMaxLevel(player) * 100;
     player->hp = player->hpMax;
 
-    /* 
-        FIXME: are these correct? Guesstimated from u4dos
-        Also, are different stats biased based on the
-        class of the character advancing a level?
-    */
+    /* improve stats by 1-8 each */
     player->str   += (rand() % 8) + 1;
     player->dex   += (rand() % 8) + 1;
     player->intel += (rand() % 8) + 1;
