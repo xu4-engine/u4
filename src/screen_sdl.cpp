@@ -639,6 +639,8 @@ void screenShowTile(MapTile *mapTile, bool focus, int x, int y) {
     Tileset *t = Tileset::get();    
     Tile *tile = t->get(mapTile->id);    
     
+    ASSERT(tile != NULL, "couldn't find tile for id %d", mapTile->id);
+
     /**
      * Draw the tile to the screen
      */
