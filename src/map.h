@@ -23,7 +23,8 @@ typedef enum {
     MAP_CASTLE,
     MAP_RUIN,
     MAP_SHRINE,
-    MAP_COMBAT
+    MAP_COMBAT,
+    MAP_DUNGEON
 } MapType;
 
 typedef enum {
@@ -35,6 +36,7 @@ typedef enum {
 /* flags */
 #define SHOW_AVATAR (1 << 0)
 #define NO_LINE_OF_SIGHT (1 << 1)
+#define FIRST_PERSON (1 << 2)
 
 typedef struct _Map {
     unsigned char id;
@@ -61,6 +63,7 @@ typedef struct _Map {
 
 int mapRead(struct _City *city, FILE *ult, FILE *tlk);
 int mapReadCon(Map *map, FILE *con);
+int mapReadDng(Map *map, FILE *dng);
 int mapReadWorld(Map *map, FILE *world);
 struct _Object *mapObjectAt(const Map *map, int x, int y, int z);
 const struct _Person *mapPersonAt(const Map *map, int x, int y, int z);

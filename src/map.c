@@ -201,6 +201,25 @@ int mapReadCon(Map *map, FILE *con) {
     return 1;
 }
 
+int mapReadDng(Map *map, FILE *dng) {
+    int i;
+
+    /* the map must be 11x11 to be read from an .CON file */
+    ASSERT(map->width == DNG_WIDTH, "map width is %d, should be %d", map->width, DNG_WIDTH);
+    ASSERT(map->height == DNG_HEIGHT, "map height is %d, should be %d", map->height, DNG_HEIGHT);
+
+    map->data = (unsigned char *) malloc(DNG_HEIGHT * DNG_WIDTH * map->levels);
+    if (!map->data)
+        return 0;
+
+    for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * map->levels); i++) {
+        if (!readChar(&(map->data[i]), dng))
+            return 0;
+    }
+
+    return 1;
+}
+
 int mapReadWorld(Map *map, FILE *world) {
     int x, xch, y, ych;
 

@@ -31,6 +31,14 @@ extern Map shrine_justice_map;
 extern Map shrine_sacrifice_map;
 extern Map shrine_honor_map;
 extern Map shrine_humility_map;
+extern Map deceit_map;
+extern Map despise_map;
+extern Map destard_map;
+extern Map wrong_map;
+extern Map covetous_map;
+extern Map shame_map;
+extern Map hythloth_map;
+extern Map abyss_map;
 
 const Portal world_portals[] = {
     { 86, 107, -1, &lcb_1_map, ACTION_ENTER },
@@ -55,7 +63,15 @@ const Portal world_portals[] = {
     { 73, 11, -1, &shrine_justice_map, ACTION_ENTER },
     { 205, 45, -1, &shrine_sacrifice_map, ACTION_ENTER },
     { 81, 207, -1, &shrine_honor_map, ACTION_ENTER },
-    { 231, 216, -1, &shrine_humility_map, ACTION_ENTER }
+    { 231, 216, -1, &shrine_humility_map, ACTION_ENTER },
+    { 240, 73, -1, &deceit_map, ACTION_ENTER },
+    { 91, 67, -1, &despise_map, ACTION_ENTER },
+    { 72, 168, -1, &destard_map, ACTION_ENTER },
+    { 126, 20, -1, &wrong_map, ACTION_ENTER },
+    { 156, 27, -1, &covetous_map, ACTION_ENTER },
+    { 58, 102, -1, &shame_map, ACTION_ENTER },
+    { 239, 240, -1, &hythloth_map, ACTION_ENTER },
+    { 233, 233, -1, &abyss_map, ACTION_ENTER }
 };
 
 Map world_map = {
@@ -63,7 +79,7 @@ Map world_map = {
     NULL, /* fname */
     MAP_WORLD, /* type */
     MAP_WIDTH, MAP_HEIGHT, 1, /* width, height, levels */
-    86, 108, 0, /* startx, starty, startlevel */
+    86, 108, -1, /* startx, starty, startlevel */
     BORDER_WRAP, /* border_behavior */
     sizeof(world_portals) / sizeof(world_portals[0]), /* n_portals */
     world_portals, /* portals */

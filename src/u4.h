@@ -22,6 +22,10 @@
 #define CON_HEIGHT 11
 #define CON_WIDTH 11
 
+/* info for loading dungeon map data from *.dng */
+#define DNG_HEIGHT 8
+#define DNG_WIDTH 8
+
 /* info for loading image data from shapes.ega */
 #define N_TILES 256
 #define TILE_WIDTH (2 * CHAR_WIDTH)

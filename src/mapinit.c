@@ -66,6 +66,15 @@ extern Map shrine_honor_map;
 extern Map shrine_spirituality_map;
 extern Map shrine_humility_map;
 
+extern Map deceit_map;
+extern Map despise_map;
+extern Map destard_map;
+extern Map wrong_map;
+extern Map covetous_map;
+extern Map shame_map;
+extern Map hythloth_map;
+extern Map abyss_map;
+
 City * const cities[] = {
     &lcb_1_city, &lcb_2_city,
     &lycaeum_city, &empath_city,
@@ -96,6 +105,13 @@ Map * const areas[] = {
     &shrine_spirituality_map, &shrine_humility_map
 };
 
+Map * const dungeons[] = {
+    &deceit_map, &despise_map,
+    &destard_map, &wrong_map,
+    &covetous_map, &shame_map,
+    &hythloth_map, &abyss_map
+};
+
 int initializeMaps() {
     unsigned int i;
     FILE *world;
@@ -124,6 +140,15 @@ int initializeMaps() {
             return 0;
         mapReadCon(areas[i], con);
         u4fclose(con);
+    }
+
+    for (i = 0; i < sizeof(dungeons) / sizeof(dungeons[0]); i++) {
+        FILE *dng;
+        dng = u4fopen(dungeons[i]->fname);
+        if (!dng)
+            return 0;
+        mapReadDng(dungeons[i], dng);
+        u4fclose(dng);
     }
 
     return 1;
