@@ -127,6 +127,10 @@ int mapRead(Map *map, FILE *ult, FILE *tlk) {
 
     map->n_persons = CITY_MAX_PERSONS;
 
+    
+    for (i = 0; i < CITY_MAX_PERSONS; i++)
+        personInitType(&map->persons[i]);
+
     return 1;
 }
 
