@@ -70,7 +70,7 @@ const Spell spells[] = {
     { "Dispel",       ASH | GARLIC | PEARL,     SC_ANY,      &spellDispel,  SPELLPRM_DIR,     20 },
     { "Energy Field", ASH | SILK | PEARL,       SC_ANY,      &spellEField,  SPELLPRM_TYPEDIR, 10 },
     { "Fireball",     ASH | PEARL,              SC_COMBAT,   &spellFireball,SPELLPRM_DIR,     15 },
-    { "Gate",         ASH | PEARL | MANDRAKE,   SC_NORMAL,   &spellGate,    SPELLPRM_PHASE,   /*40*/ 1 },
+    { "Gate",         ASH | PEARL | MANDRAKE,   SC_NORMAL,   &spellGate,    SPELLPRM_PHASE,   40 },
     { "Heal",         GINSENG | SILK,           SC_ANY,      &spellHeal,    SPELLPRM_PLAYER,  10 },
     { "Iceball",      PEARL | MANDRAKE,         SC_COMBAT,   &spellIceball, SPELLPRM_DIR,     20 },
     { "Jinx",         PEARL | NIGHTSHADE | MANDRAKE,
