@@ -51,8 +51,8 @@
     </map>
 
     <!-- castles -->
-    <map id="1" type="castle" fname="lcb_1.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="5">
-        <city name="Britannia" tlk_fname="lcb.tlk">
+    <map id="1" type="city" fname="lcb_1.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="5">
+        <city name="Britannia" type="castle" tlk_fname="lcb.tlk">
             <personrole role="healer" id="29"/>
             <personrole role="hawkwind" id="30"/>
         </city>
@@ -62,32 +62,32 @@
             <retroActiveDest x="239" y="240" z="0" mapid="0"/>
         </portal>
     </map>
-    <map id="100" type="castle" fname="lcb_2.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="5">
-        <city name="Britannia" tlk_fname="lcb.tlk">
+    <map id="100" type="city" fname="lcb_2.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="5">
+        <city name="Britannia" type="castle" tlk_fname="lcb.tlk">
             <personrole role="lordbritish" id="32"/>
         </city>
         <portal x="3" y="3" z="0" destmapid="1" startx="3" starty="3" startlevel="0" action="descend" savelocation="false" message="Descend to first floor!&#xA;" transport="foot"/>
         <portal x="27" y="3" z="0" destmapid="1" startx="27" starty="3" startlevel="0" action="descend" savelocation="false" message="Descend to first floor!&#xA;" transport="foot"/>
     </map>
-    <map id="2" type="castle" fname="lycaeum.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="9">
-        <city name="Lycaeum" tlk_fname="lycaeum.tlk">
+    <map id="2" type="city" fname="lycaeum.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="9">
+        <city name="Lycaeum" type="castle" tlk_fname="lycaeum.tlk">
             <personrole role="healer" id="23"/>
         </city>
     </map>
-    <map id="3" type="castle" fname="empath.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="9">
-        <city name="Empath Abbey" tlk_fname="empath.tlk">
+    <map id="3" type="city" fname="empath.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="9">
+        <city name="Empath Abbey" type="castle" tlk_fname="empath.tlk">
             <personrole role="healer" id="30"/>
         </city>
     </map>
-    <map id="4" type="castle" fname="serpent.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="9">
-        <city name="Serpents Hold" tlk_fname="serpent.tlk">
+    <map id="4" type="city" fname="serpent.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="9">
+        <city name="Serpents Hold" type="castle" tlk_fname="serpent.tlk">
             <personrole role="healer" id="31"/>
         </city>
     </map>
 
     <!-- cities -->
-    <map id="5" type="town" fname="moonglow.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Moonglow" tlk_fname="moonglow.tlk">
+    <map id="5" type="city" fname="moonglow.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Moonglow" type="towne" tlk_fname="moonglow.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="foodvendor" id="26"/>
             <personrole role="reagentsvendor" id="24"/>
@@ -95,8 +95,8 @@
             <personrole role="innkeeper" id="30"/>
         </city>
     </map>
-    <map id="6" type="town" fname="britain.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Britain" tlk_fname="britain.tlk">
+    <map id="6" type="city" fname="britain.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Britain" type="towne" tlk_fname="britain.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="weaponsvendor" id="29"/>
             <personrole role="armorvendor" id="28"/>
@@ -106,8 +106,8 @@
             <personrole role="innkeeper" id="25"/>
         </city>
     </map>
-    <map id="7" type="town" fname="jhelom.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Jhelom" tlk_fname="jhelom.tlk">
+    <map id="7" type="city" fname="jhelom.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Jhelom" type="towne" tlk_fname="jhelom.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="weaponsvendor" id="29"/>
             <personrole role="armorvendor" id="28"/>
@@ -118,22 +118,22 @@
             <personrole role="innkeeper" id="31"/>
          </city>
     </map>
-    <map id="8" type="town" fname="yew.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Yew" tlk_fname="yew.tlk">
+    <map id="8" type="city" fname="yew.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Yew" type="towne" tlk_fname="yew.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="foodvendor" id="27"/>
             <personrole role="healer" id="26"/>
         </city>
     </map>
-    <map id="9" type="town" fname="minoc.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Minoc" tlk_fname="minoc.tlk">
+    <map id="9" type="city" fname="minoc.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Minoc" type="towne" tlk_fname="minoc.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="weaponsvendor" id="30"/>
             <personrole role="innkeeper" id="31"/>
         </city>
     </map>
-    <map id="10" type="town" fname="trinsic.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Trinsic" tlk_fname="trinsic.tlk">
+    <map id="10" type="city" fname="trinsic.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Trinsic" type="towne" tlk_fname="trinsic.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="weaponsvendor" id="29"/>
             <personrole role="armorvendor" id="28"/>
@@ -141,8 +141,8 @@
             <personrole role="innkeeper" id="30"/>
         </city>
     </map>
-    <map id="11" type="town" fname="skara.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Skara Brae" tlk_fname="skara.tlk">
+    <map id="11" type="city" fname="skara.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Skara Brae" type="towne" tlk_fname="skara.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="foodvendor" id="28"/>
             <personrole role="reagentsvendor" id="30"/>
@@ -150,15 +150,15 @@
             <personrole role="innkeeper" id="29"/>
         </city>
     </map>
-    <map id="12" type="ruins" fname="magincia.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Magincia" tlk_fname="magincia.tlk">
+    <map id="12" type="city" fname="magincia.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Magincia" type="ruins" tlk_fname="magincia.tlk">
             <personrole role="companion" id="32"/>
         </city>
     </map>
 
     <!-- villages -->
-    <map id="13" type="village" fname="paws.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Paws" tlk_fname="paws.tlk">
+    <map id="13" type="city" fname="paws.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Paws" type="village" tlk_fname="paws.tlk">
             <personrole role="armorvendor" id="27"/>
             <personrole role="foodvendor" id="31"/>
             <personrole role="tavernkeeper" id="30"/>
@@ -167,8 +167,8 @@
             <personrole role="horsevendor" id="18"/>
         </city>
     </map>
-    <map id="14" type="village" fname="den.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Buccaneers Den" tlk_fname="den.tlk">
+    <map id="14" type="city" fname="den.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Buccaneers Den" type="village" tlk_fname="den.tlk">
             <personrole role="weaponsvendor" id="28"/>
             <personrole role="armorvendor" id="27"/>
             <personrole role="tavernkeeper" id="26"/>
@@ -176,16 +176,16 @@
             <personrole role="guildvendor" id="29"/>
         </city>
     </map>
-    <map id="15" type="village" fname="vesper.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Vesper" tlk_fname="vesper.tlk">
+    <map id="15" type="city" fname="vesper.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Vesper" type="village" tlk_fname="vesper.tlk">
             <personrole role="weaponsvendor" id="25"/>
             <personrole role="tavernkeeper" id="23"/>
             <personrole role="innkeeper" id="26"/>
             <personrole role="guildvendor" id="24"/>
         </city>
     </map>
-    <map id="16" type="village" fname="cove.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
-        <city name="Cove" tlk_fname="cove.tlk">
+    <map id="16" type="city" fname="cove.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="2">
+        <city name="Cove" type="village" tlk_fname="cove.tlk">
             <personrole role="healer" id="31"/>
         </city>
     </map>

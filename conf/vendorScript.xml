@@ -1133,6 +1133,12 @@
             <item choice="c" name="Resurrection" desc="Resurrection" price="300" type="resurrect"/>
         </vendor>
 
+        <vendor id="Cove" name="The Healer Shop" healer="Quat">
+            <item choice="a" name="Curing" desc="A curing" price="100" type="cure"/>
+            <item choice="b" name="Healing" desc="A healing" price="200" type="fullheal"/>
+            <item choice="c" name="Resurrection" desc="Resurrection" price="300" type="resurrect"/>
+        </vendor>
+
     </script>
 
     <!-- 
@@ -1165,10 +1171,8 @@
         </nohorse>
         <ask default="true" redirect="bye"/>
         <ask choice="n" redirect="bye"/>
-        <rent default="true" redirect="bye"/>
+        <rent default="true" redirect="no_better_deal"/>
         <rent choice="y" redirect="stay"/>        
-        <rent choice="n" redirect="no_better_deal"/>
-        <rent choice="0" redirect="no_better_deal"/>
         <rent choice="1" redirect="stay"/>
         <rent choice="2" redirect="stay"/>
         <rent choice="3" redirect="stay"/>
