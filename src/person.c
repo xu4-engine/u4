@@ -19,8 +19,6 @@
 #include "names.h"
 #include "player.h"
 #include "savegame.h"
-#include "screen.h"
-#include "spell.h"
 #include "stats.h"
 #include "u4file.h"
 #include "vendor.h"
@@ -219,6 +217,11 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
         case CONV_BUY_QUANTITY:
             ASSERT(cnv->talker->npcType == NPC_TALKER_BEGGAR, "invalid npc type: %d", cnv->talker->npcType);
             text = beggarGetQuantityResponse(cnv, inquiry);
+            break;
+
+        case CONV_FULLHEAL:
+        case CONV_ADVANCELEVELS:
+            /* handled elsewhere */
             break;
 
         default:
@@ -474,36 +477,29 @@ char *beggarGetQuantityResponse(Conversation *cnv, const char *response) {
     return reply;
 }
 
-void lordBritishCheckLevels(Conversation *cnv) {
-    int i;
-
-    for (i = 0; i < c->saveGame->members; i++) {
-        if (playerGetRealLevel(&c->saveGame->players[i]) <
-            playerGetMaxLevel(&c->saveGame->players[i]))
-            playerAdvanceLevel(&c->saveGame->players[i]);
-    }
-}
-
 char *lordBritishGetIntro(Conversation *cnv) {
     char *intro;
 
     musicLordBritish();
+    cnv->state = CONV_TALK;
 
     if (c->saveGame->lbintro) {
         if (c->saveGame->members == 1)
-            screenMessage("\n\n\nLord British\nsays:  Welcome\n%s", c->saveGame->players[0].name);
+            intro = concat("\n\n\nLord British\nsays:  Welcome\n", c->saveGame->players[0].name, NULL);
         else if (c->saveGame->members == 2)
-            screenMessage("\n\n\nLord British\nsays:  Welcome\n%s and thee also %s!",
-                           c->saveGame->players[0].name,
-                           c->saveGame->players[1].name);
+            intro = concat("n\n\nLord British\nsays:  Welcome\n,",
+                            c->saveGame->players[0].name,
+                            " and thee also ",
+                            c->saveGame->players[1].name,
+                            "!", NULL);
         else
-            screenMessage("\n\n\nLord British\nsays:  Welcome\n%s and thy\nworthy\nAdventurers!",
-                           c->saveGame->players[0].name);
+            intro = concat("\n\n\nLord British\nsays:  Welcome\n",
+                            c->saveGame->players[0].name,
+                            " and thy\nworthy\nAdventurers!",
+                            NULL);                           
 
         // Check levels here, just like the original!
-        lordBritishCheckLevels(cnv);
-
-        intro = strdup("\nWhat would thou\nask of me?\n");
+        cnv->state = CONV_ADVANCELEVELS;      
     }
 
     else {
@@ -515,8 +511,7 @@ char *lordBritishGetIntro(Conversation *cnv) {
                        "How may I help thee?\n",
                        NULL);
         c->saveGame->lbintro = 1;
-    }
-    cnv->state = CONV_TALK;
+    }    
 
     return intro;
 }
@@ -562,7 +557,6 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
 }
 
 char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
-    int i;    
     char *reply;
 
     cnv->state = CONV_TALK;
@@ -571,16 +565,9 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
         reply = strdup("Y\n\nHe says: That is good.\n");
     }
 
-    else if (tolower(answer[0]) == 'n') {       
-        
+    else if (tolower(answer[0]) == 'n') {        
         reply = strdup("N\n\nHe says: Let me heal thy wounds!\n");
-        for (i = 0; i < c->saveGame->members; i++) {
-            playerHeal(c->saveGame, HT_CURE, i);        // cure the party
-            playerHeal(c->saveGame, HT_FULLHEAL, i);    // heal the party
-        }        
-        (*spellCallback)(-1, -1); // Default spell effect
-
-        statsUpdate();        
+        cnv->state = CONV_FULLHEAL;           
     }
 
     else

@@ -62,6 +62,8 @@ typedef enum {
     CONV_CONTINUEQUESTION,
     CONV_TOPIC,
     CONV_PLAYER,
+    CONV_FULLHEAL,
+    CONV_ADVANCELEVELS,
     CONV_DONE
 } ConversationState;
 

@@ -88,6 +88,7 @@ void gameCheckRandomMonsters(void);
 void gameFixupMonsters(void);
 long gameTimeSinceLastCommand(void);
 void gameMonsterAttack(Object *obj);
+void gameLordBritishCheckLevels(void);
 
 extern Map world_map;
 extern Object *party[8];
@@ -384,9 +385,9 @@ void gameLostEighth(Virtue virtue) {
 }
 
 void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
-    screenMessage("\n\n%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
+    screenMessage("\n%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
 
-    (*spellCallback)('r', -1); // Same effect as a resurrection spell
+    (*spellCallback)(-1, -1); // Default spell effect (invert screen)
 }
 
 void gamePartyStarving(void) {
@@ -2071,6 +2072,25 @@ void talkShowReply(int showPrompt) {
         (*c->location->finishTurn)();
         return;
     }
+    
+    /* When Lord British heals the party */
+    else if (c->conversation.state == CONV_FULLHEAL) {
+        int i;
+        
+        for (i = 0; i < c->saveGame->members; i++) {
+            playerHeal(c->saveGame, HT_CURE, i);        // cure the party
+            playerHeal(c->saveGame, HT_FULLHEAL, i);    // heal the party
+        }        
+        (*spellCallback)(-1, -1); // Default spell effect
+
+        statsUpdate();
+        c->conversation.state = CONV_TALK;
+    }
+    /* When Lord British checks and advances each party member's level */
+    else if (c->conversation.state == CONV_ADVANCELEVELS) {
+        gameLordBritishCheckLevels();
+        c->conversation.state = CONV_TALK;
+    }
 
     if (showPrompt &&
         (prompt = personGetPrompt(&c->conversation)) != NULL) {
@@ -2843,7 +2863,6 @@ void gameMonsterCleanup(void) {
 /**
  * Sets the transport for the avatar
  */
-
 void gameSetTransport(unsigned char tile) {       
     
     if (tileIsHorse(tile))
@@ -2855,4 +2874,27 @@ void gameSetTransport(unsigned char tile) {
     else c->transportContext = TRANSPORT_FOOT;
 
     c->saveGame->transport = tile;
+}
+
+/**
+ * Check the levels of each party member while talking to Lord British
+ */
+void gameLordBritishCheckLevels(void) {
+    int i;
+    int levelsRaised = 0;
+
+    for (i = 0; i < c->saveGame->members; i++) {
+        if (playerGetRealLevel(&c->saveGame->players[i]) <
+            playerGetMaxLevel(&c->saveGame->players[i]))
+
+            if (!levelsRaised) {
+                /* give an extra space to separate these messages */
+                screenMessage("\n");
+                levelsRaised = 1;
+            }
+
+            playerAdvanceLevel(&c->saveGame->players[i]);
+    }
+ 
+    screenMessage("\nWhat would thou\nask of me?\n");
 }
