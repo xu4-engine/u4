@@ -269,21 +269,21 @@ bool IntroController::init() {
  * Frees up data not needed after introduction.
  */
 void IntroController::deleteIntro() {
-    delete introMap[0];
+    delete [] introMap[0];
 
     introQuestions.clear();
     introText.clear();
     introGypsy.clear();
 
-    delete scriptTable;
+    delete [] scriptTable;
     scriptTable = NULL;
-    delete baseTileTable;
+    delete [] baseTileTable;
     baseTileTable = NULL;
-    delete objectStateTable;
+    delete [] objectStateTable;
     objectStateTable = NULL;
 
-    delete beastie1FrameTable;
-    delete beastie2FrameTable;
+    delete [] beastie1FrameTable;
+    delete [] beastie2FrameTable;
 
     imageMgr->freeIntroBackgrounds();
 }
