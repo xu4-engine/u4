@@ -26,7 +26,7 @@
                 fixup             %fixup;  #IMPLIED>
 
 <!ELEMENT layout ( tileshape, viewport ) >
-<!ATTLIST layout name             NMTOKEN  #REQUIRED
+<!ATTLIST layout name             CDATA    #REQUIRED
                  type             %layouttype; #REQUIRED>
 
 <!ELEMENT tileshape EMPTY >
