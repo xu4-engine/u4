@@ -29,7 +29,6 @@
 #define TILE_HEIGHT (2 * CHAR_HEIGHT)
 
 /* info for loading image data from charset.ega */
-#define N_CHARS 128
 #define CHAR_WIDTH 8
 #define CHAR_HEIGHT 8
 
@@ -66,13 +65,5 @@
 #define WIND_AREA_W 10
 #define WIND_AREA_H 1
 #define WIND_SECONDS_PER_PHASE 1
-
-/* gem view */
-#define GEMAREA_X (BORDER_WIDTH + 24)
-#define GEMAREA_Y (BORDER_WIDTH + 24)
-#define GEMAREA_W 32
-#define GEMAREA_H 32
-#define GEMTILE_W 4
-#define GEMTILE_H 4
 
 #endif
