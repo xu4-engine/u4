@@ -53,6 +53,7 @@ typedef enum {
     CONV_SELL_QUANTITY,
     CONV_BUY_PRICE,
     CONV_CONTINUEQUESTION,
+    CONV_TOPIC,
     CONV_DONE
 } ConversationState;
 

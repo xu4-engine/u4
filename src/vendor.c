@@ -78,12 +78,20 @@ typedef struct ArmsVendorInfo {
 #define N_REAG_VENDORS 4
 #define N_FOOD_VENDORS 5
 #define N_TAVERN_VENDORS 6
+#define N_TAVERN_TOPICS 6 
+#define N_GUILD_ITEMS 4
 
 ArmsVendorInfo weaponVendorInfo;
 ArmsVendorInfo armorVendorInfo;
 unsigned char reagPrices[N_REAG_VENDORS][REAG_MAX];
 unsigned short foodPrices[N_FOOD_VENDORS];
+char **tavernSpecialties;
+char **tavernTopics;
+char **tavernInfo;
+unsigned short tavernInfoPrices[N_TAVERN_TOPICS];
 unsigned short tavernFoodPrices[N_TAVERN_VENDORS];
+unsigned short guildItemPrices[N_GUILD_ITEMS];
+unsigned short guildItemQuantities[N_GUILD_ITEMS];
 
 #define WV_NOTENOUGH 0
 #define WV_FINECHOICE 1
@@ -125,6 +133,13 @@ unsigned short tavernFoodPrices[N_TAVERN_VENDORS];
 #define TV_AFFORDONLY1 4
 #define TV_AFFORDONLY2 5
 #define TV_BESTMUG 101
+#define TV_WONTPAY 102
+#define TV_NOTENOUGH 103
+#define TV_WHATINFO 104
+#define TV_DONTKNOW 105
+#define TV_MOREGOLD 106
+#define TV_SAYS 110
+#define TV_ANYTHINGELSE 111
 #define TV_WELCOME 112
 #define TV_FOODORALE 113
 #define TV_HEREYOUARE 114
@@ -173,6 +188,17 @@ unsigned short tavernFoodPrices[N_TAVERN_VENDORS];
 #define IV_RATS 110
 #define IV_WRONGPLACE 111
 
+#define GV_WELCOMETO 2
+#define GV_SEEGOODS 3
+#define GV_IGOT 4
+#define GV_WHATLLITBE 5
+#define GV_WILLYABUY 6
+#define GV_GRMBL 7
+#define GV_BUZZOFF 8
+#define GV_FINEFINE 9
+#define GV_SEEMORE 10
+#define GV_SEEYA 11 
+
 VendorTypeInfo *vendorLoadTypeInfo(FILE *avatar, const VendorTypeDesc *desc);
 const char *vendorGetName(const Person *v);
 const char *vendorGetShop(const Person *v);
@@ -184,13 +210,15 @@ char *vendorDoSellTransaction(Conversation *cnv);
 int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, FILE *f);
 
 const VendorTypeDesc vendorTypeDesc[] = {
-    { INV_WEAPON,  80237, 6, 78883, -1, 14, 79015, 2, 80077, 27, 80282 },    /* weapons */
-    { INV_ARMOR,   81511, 5, 80803, -1, 6, 80920, 2, 81374, 27, 81540 },     /* armor */
-    { INV_FOOD,    87519, 5, 87063, -1, 0, 0, 13, 87168, 0, 0 },             /* food */
-    { INV_FOOD,    86363, 6, 85385, -1, 0, 0, 6, 86235, 16, 86465 },         /* tavern */
-    { INV_REAGENT, 78827, 4, 78295, -1, 0, 0, 16, 78377, 0, 0 },             /* reagents */
-    { INV_NONE,    84475, 10, 84209, -1, 0, 0, 3, 84439, 20, 84531 },        /* healer */
-    { INV_NONE,    83703, 7, 83001, -1, 0, 0, 8, 83158, 12, 83785 }          /* inn */
+    { INV_WEAPON,  80237, 6,  78883, -1, 14, 79015, 2,  80077, 27, 80282 },  /* weapons */
+    { INV_ARMOR,   81511, 5,  80803, -1, 6,  80920, 2,  81374, 27, 81540 },  /* armor */
+    { INV_FOOD,    87519, 5,  87063, -1, 0,  0,     13, 87168, 0,  0 },      /* food */
+    { INV_FOOD,    86363, 6,  85385, -1, 0,  0,     6,  86235, 16, 86465 },  /* tavern */
+    { INV_REAGENT, 78827, 4,  78295, -1, 0,  0,     16, 78377, 0,  0 },      /* reagents */
+    { INV_NONE,    84475, 10, 84209, -1, 0,  0,     3,  84439, 20, 84531 },  /* healer */
+    { INV_NONE,    83703, 7,  83001, -1, 0,  0,     8,  83158, 12, 83785 },  /* inn */
+    { INV_GUILDITEM, -1,  2,  82341, -1, 4,  82403, 12, 82641, 0,  0 },      /* guild */
+    { INV_HORSE,   -1,    0,  0, 0,      0,  0,     7,  82023, 0,  0 }       /* stables */
 };
 
 #define N_VENDOR_TYPE_DESCS (sizeof(vendorTypeDesc) / sizeof(vendorTypeDesc[0]))
@@ -224,9 +252,31 @@ int vendorInit() {
             return 0;
     }
 
+    tavernSpecialties = u4read_stringtable(avatar, 85521, N_TAVERN_VENDORS);
+    tavernTopics = u4read_stringtable(avatar, 85599, N_TAVERN_TOPICS);
+    tavernInfo = u4read_stringtable(avatar, 85671, N_TAVERN_TOPICS);
+
+    fseek(avatar, 86379, SEEK_SET);
+    for (i = 0; i < N_TAVERN_TOPICS; i++) {
+        if (!readShort(&(tavernInfoPrices[i]), avatar))
+            return 0;
+    }
+
     fseek(avatar, 86427, SEEK_SET);
     for (i = 0; i < N_TAVERN_VENDORS; i++) {
         if (!readShort(&(tavernFoodPrices[i]), avatar))
+            return 0;
+    }
+
+    fseek(avatar, 82969, SEEK_SET);
+    for (i = 0; i < N_GUILD_ITEMS; i++) {
+        if (!readShort(&(guildItemPrices[i]), avatar))
+            return 0;
+    }
+
+    fseek(avatar, 82977, SEEK_SET);
+    for (i = 0; i < N_GUILD_ITEMS; i++) {
+        if (!readShort(&(guildItemQuantities[i]), avatar))
             return 0;
     }
 
@@ -250,14 +300,29 @@ int vendorInit() {
 /**
  * Gets the vendor number for the given vendor.  Vendor number is
  * derived from the vendor type and the city; it is looked up in a
- * vendor city map that gives the vendor number for each city.
+ * vendor city map that gives the vendor number for each city.  Guild
+ * and stables don't have a vendor city map, so they are handled as
+ * special cases.
  */
 int vendorGetVendorNo(const Person *v) {
     int type;
 
-    if (v->npcType < NPC_VENDOR_WEAPONS ||
-        v->npcType > NPC_VENDOR_INN)
-        return 0;
+    assert(v->npcType >= NPC_VENDOR_WEAPONS && v->npcType <= NPC_VENDOR_STABLE);
+
+    if (v->npcType == NPC_VENDOR_GUILD) {
+        if (c->map->id == 14)   /* Buccaneers Den */
+            return 0;
+        if (c->map->id == 15)   /* Vesper */
+            return 1;
+        assert(0);              /* shouldn't happen */
+    }
+
+    if (v->npcType == NPC_VENDOR_STABLE) {
+        if (c->map->id == 13)   /* Paws */
+            return 0;
+        assert(0);              /* shouldn't happen */
+    }
+
 
     type = v->npcType - NPC_VENDOR_WEAPONS;
 
@@ -296,7 +361,7 @@ const char *vendorGetShop(const Person *v) {
  */
 const VendorTypeInfo *vendorGetInfo(const Person *v) {
     int type;
-    assert(v->npcType >= NPC_VENDOR_WEAPONS && v->npcType <= NPC_VENDOR_INN);
+    assert(v->npcType >= NPC_VENDOR_WEAPONS && v->npcType <= NPC_VENDOR_STABLE);
 
     type = v->npcType - NPC_VENDOR_WEAPONS;
 
@@ -389,8 +454,13 @@ char *vendorGetIntro(Conversation *cnv) {
         break;
 
     case NPC_VENDOR_GUILD:
-        intro = strdup("I am a guild vendor!\n");
-        cnv->state = CONV_DONE;
+        c->statsItem = STATS_EQUIPMENT;
+        intro = concat(vendorGetName(cnv->talker),
+                       vendorGetText(cnv->talker, GV_WELCOMETO),
+                       vendorGetShop(cnv->talker),
+                       vendorGetText(cnv->talker, GV_SEEGOODS),
+                       NULL);
+        cnv->state = CONV_CONTINUEQUESTION;
         break;
 
     case NPC_VENDOR_STABLE:
@@ -412,8 +482,10 @@ char *vendorGetPrompt(const Conversation *cnv) {
     switch (cnv->state) {
 
     case CONV_VENDORQUESTION:
+    case CONV_SELL_QUANTITY:
     case CONV_BUY_PRICE:
     case CONV_CONTINUEQUESTION:
+    case CONV_TOPIC:
         prompt = strdup("");
         break;
 
@@ -443,10 +515,6 @@ char *vendorGetPrompt(const Conversation *cnv) {
             prompt = strdup("");
             break;
         }
-        break;
-
-    case CONV_SELL_QUANTITY:
-        prompt = strdup("");
         break;
 
     default:
@@ -490,7 +558,7 @@ char *vendorGetTavernVendorQuestionResponse(Conversation *cnv, const char *respo
     
     if (tolower(response[0]) == 'f') {
         snprintf(buffer, sizeof(buffer), "%d", tavernFoodPrices[vendorGetVendorNo(cnv->talker)]);
-        reply = concat(vendorGetText(cnv->talker, TV_SPECIALTY), "FIXME",
+        reply = concat(vendorGetText(cnv->talker, TV_SPECIALTY), tavernSpecialties[vendorGetVendorNo(cnv->talker)],
                        vendorGetText(cnv->talker, TV_COSTS), buffer,
                        vendorGetText(cnv->talker, TV_HOWMANY),
                        NULL);
@@ -498,7 +566,7 @@ char *vendorGetTavernVendorQuestionResponse(Conversation *cnv, const char *respo
     }
     else if (tolower(response[0]) == 'a') {
         reply = strdup(vendorGetText(cnv->talker, TV_BESTMUG));
-        cnv->state = CONV_BUY_QUANTITY;
+        cnv->state = CONV_BUY_PRICE;
     } 
     else {
         reply = strdup("");
@@ -525,6 +593,27 @@ char *vendorGetHealerVendorQuestionResponse(Conversation *cnv, const char *respo
                        vendorGetText(cnv->talker, HV_MOREHELP), 
                        NULL);
         cnv->state = CONV_CONTINUEQUESTION;
+    } 
+    else {
+        reply = strdup("");
+        cnv->state = CONV_DONE;
+    }
+
+    return reply;
+}
+
+char *vendorGetGuildVendorQuestionResponse(Conversation *cnv, const char *response) {
+    char *reply;
+    
+    if (tolower(response[0]) == 'y') {
+        return vendorDoBuyTransaction(cnv);
+    }
+    else if (tolower(response[0]) == 'n') {
+        reply = concat(vendorGetText(cnv->talker, GV_GRMBL), "\n",
+                       vendorGetName(cnv->talker), 
+                       vendorGetText(cnv->talker, GV_SEEYA), 
+                       NULL);
+        cnv->state = CONV_DONE;
     } 
     else {
         reply = strdup("");
@@ -641,6 +730,33 @@ char *vendorGetHealerBuyItemResponse(Conversation *cnv, const char *response) {
     return reply;
 }
 
+char *vendorGetGuildBuyItemResponse(Conversation *cnv, const char *response) {
+    char *reply;
+
+    cnv->itemSubtype = -1;
+
+    if (response[0] == '\033') {
+        cnv->state = CONV_DONE;
+        return concat(vendorGetName(cnv->talker), vendorGetText(cnv->talker, GV_SEEYA), NULL);
+    }
+
+    cnv->itemSubtype = tolower(response[0]) - 'a';
+    if (cnv->itemSubtype < 0 || cnv->itemSubtype >= 4) {
+        reply = strdup("");
+        cnv->state = CONV_DONE;
+    }
+    else {
+        cnv->quant = guildItemQuantities[cnv->itemSubtype];
+        cnv->price = guildItemPrices[cnv->itemSubtype];
+        reply = concat(vendorGetInfo(cnv->talker)->itemDescriptions[cnv->itemSubtype],
+                       vendorGetText(cnv->talker, GV_WILLYABUY),
+                       NULL);
+        cnv->state = CONV_VENDORQUESTION;
+    }
+
+    return reply;
+}
+
 char *vendorGetSellItemResponse(Conversation *cnv, const char *response) {
     char *reply;
     int itemMax;
@@ -741,9 +857,40 @@ char *vendorGetSellQuantityResponse(Conversation *cnv, const char *response) {
     return vendorDoSellTransaction(cnv);
 }
 
-char *vendorGetBuyPriceResponse(Conversation *cnv, const char *response) {
-    assert(cnv->talker->npcType == NPC_VENDOR_REAGENTS);
+char *vendorGetTavernBuyPriceResponse(Conversation *cnv, const char *response) {
+    char *reply;
     
+    cnv->price = (int) strtol(response, NULL, 10);
+
+    if (cnv->price > c->saveGame->gold) {
+        reply = concat(vendorGetText(cnv->talker, TV_NOTENOUGH),
+                       vendorGetText(cnv->talker, TV_BYE),
+                       NULL);
+        cnv->state = CONV_DONE;
+    }
+
+    if (cnv->price < 2) {
+        reply = concat(vendorGetText(cnv->talker, TV_WONTPAY),
+                       vendorGetText(cnv->talker, TV_BYE),
+                       NULL);
+        cnv->state = CONV_DONE;
+    } else if (cnv->price == 2) {
+        reply = strdup(vendorGetText(cnv->talker, TV_ANYTHINGELSE));
+        cnv->state = CONV_CONTINUEQUESTION;
+        c->saveGame->gold -= cnv->price;
+        statsUpdate();
+    } else {
+        reply = strdup(vendorGetText(cnv->talker, TV_WHATINFO));
+        cnv->state = CONV_TOPIC;
+        c->saveGame->gold -= cnv->price;
+        statsUpdate();
+    }
+
+    return reply;
+
+}
+
+char *vendorGetReagentsBuyPriceResponse(Conversation *cnv, const char *response) {
     cnv->price = (int) strtol(response, NULL, 10);
 
     return vendorDoBuyTransaction(cnv);
@@ -840,6 +987,20 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
             reply = concat(vendorGetText(cnv->talker, RV_CANTAFFORD),
                            vendorGetText(cnv->talker, RV_ANYTHINGELSE),
                            NULL);
+        break;
+
+    case NPC_VENDOR_GUILD:
+        if (success) {
+            reply = concat(vendorGetText(cnv->talker, GV_FINEFINE),
+                           vendorGetName(cnv->talker),
+                           vendorGetText(cnv->talker, GV_SEEMORE),
+                           NULL);
+            cnv->state = CONV_CONTINUEQUESTION;
+        }
+        else {
+            reply = strdup(vendorGetText(cnv->talker, GV_BUZZOFF));
+            cnv->state = CONV_DONE;
+        }
         break;
 
     default:
@@ -978,9 +1139,54 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
         } 
         break;
 
+    case NPC_VENDOR_GUILD:
+        if (cont) {
+            reply = concat(vendorGetName(cnv->talker),
+                           vendorGetText(cnv->talker, GV_IGOT), 
+                           vendorGetText(cnv->talker, GV_WHATLLITBE),
+                           NULL);
+            cnv->state = CONV_BUY_ITEM;
+        } else {
+            reply = concat(vendorGetName(cnv->talker),
+                           vendorGetText(cnv->talker, GV_SEEYA), 
+                           NULL);
+            cnv->state = CONV_DONE;
+        }
+        break;
+
     default:
         assert(0);              /* shouldn't happen */
     }
+    return reply;
+}
+
+char *vendorGetTavernTopicResponse(Conversation *cnv, const char *response) {
+    char *reply = NULL;
+    int i;
+
+    /*
+     * Note: I initially thought that each vendor would respond to
+     * only one topic; but it turns out that any tavern keeper will
+     * provide information on any of the available topics.  It just
+     * happens there are six vendors and six topics.
+     */
+
+    /* FIXME: check price */
+    for (i = 0; i < N_TAVERN_TOPICS; i++) {
+        if (strcasecmp(response, tavernTopics[i]) == 0)
+            reply = concat(vendorGetName(cnv->talker), 
+                           vendorGetText(cnv->talker, TV_SAYS), 
+                           tavernInfo[i], 
+                           vendorGetText(cnv->talker, TV_ANYTHINGELSE), 
+                           NULL);
+    }
+    if (!reply)
+        reply = concat(vendorGetText(cnv->talker, TV_DONTKNOW),
+                       vendorGetText(cnv->talker, TV_ANYTHINGELSE),
+                       NULL);
+
+    cnv->state = CONV_CONTINUEQUESTION;
+
     return reply;
 }
 
@@ -1010,10 +1216,12 @@ VendorTypeInfo *vendorLoadTypeInfo(FILE *avatar, const VendorTypeDesc *desc) {
 
     info->item = desc->item;
 
-    fseek(avatar, desc->cityMapOffset, SEEK_SET);
-    for (i = 0; i < VCM_SIZE; i++) {
-        if (!readChar(&(info->cityMap[i]), avatar))
-            return NULL;
+    if (desc->cityMapOffset != -1) {
+        fseek(avatar, desc->cityMapOffset, SEEK_SET);
+        for (i = 0; i < VCM_SIZE; i++) {
+            if (!readChar(&(info->cityMap[i]), avatar))
+                return NULL;
+        }
     }
 
     info->n_shops = desc->n_shops;
