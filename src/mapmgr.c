@@ -18,6 +18,7 @@
 #include "map.h"
 #include "maploader.h"
 #include "mapmgr.h"
+#include "moongate.h"
 #include "person.h"
 #include "portal.h"
 #include "shrine.h"
@@ -32,6 +33,8 @@ City *mapMgrInitCityFromXml(xmlNodePtr node);
 Portal *mapMgrInitPortalFromXml(xmlNodePtr node);
 Shrine *mapMgrInitShrineFromXml(xmlNodePtr node);
 Dungeon *mapMgrInitDungeonFromXml(xmlNodePtr node);
+void mapMgrCreateMoongateFromXml(xmlNodePtr node);
+int mapMgrInitCompressedChunkFromXml(xmlNodePtr node);
 
 ListNode *mapList = NULL;
 
@@ -73,6 +76,8 @@ Map *mapMgrInitMap(void) {
     map->width = 0;
     map->height = 0;
     map->levels = 1;
+    map->chunk_width = 0;
+    map->chunk_height = 0;
     map->id = 0;
 
     return map;
@@ -81,7 +86,7 @@ Map *mapMgrInitMap(void) {
 Map *mapMgrInitMapFromXml(xmlNodePtr node) {
     Map *map;
     xmlNodePtr child;
-    ListNode *portals = NULL;
+    ListNode *portals = NULL, *compressed_chunks = NULL;
     static const char *mapTypeEnumStrings[] = { "world", "town", "village", "castle", "ruins", "shrine", "combat", "dungeon", NULL };
     static const char *borderBehaviorEnumStrings[] = { "wrap", "exit", "fixed", NULL };
 
@@ -96,6 +101,8 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
     map->width = xmlGetPropAsInt(node, "width");
     map->height = xmlGetPropAsInt(node, "height");
     map->levels = xmlGetPropAsInt(node, "levels");
+    map->chunk_width = xmlGetPropAsInt(node, "chunkwidth");
+    map->chunk_height = xmlGetPropAsInt(node, "chunkheight");
     map->border_behavior = xmlGetPropAsEnum(node, "borderbehavior", borderBehaviorEnumStrings);
 
     if (xmlGetPropAsBool(node, "showavatar"))
@@ -123,6 +130,10 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
             map->dungeon = mapMgrInitDungeonFromXml(child);
         else if (xmlStrcmp(child->name, (const xmlChar *) "portal") == 0)
             portals = listAppend(portals, mapMgrInitPortalFromXml(child));
+        else if (xmlStrcmp(child->name, (const xmlChar *) "moongate") == 0)
+            mapMgrCreateMoongateFromXml(child);
+        else if (xmlStrcmp(child->name, (const xmlChar *) "compressedchunk") == 0)
+            compressed_chunks = listAppend(compressed_chunks, (void *) mapMgrInitCompressedChunkFromXml(child));
     }
     if (listLength(portals) > 0) {
         ListNode *node;
@@ -135,6 +146,18 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
         }
         map->n_portals = listLength(portals);
         listDelete(portals);
+    }
+    if (listLength(compressed_chunks) > 0) {
+        ListNode *node;
+        int i;
+
+        map->compressed_chunks = malloc(listLength(compressed_chunks) * sizeof(int));
+        for (node = compressed_chunks, i = 0; node; node = node->next, i++) {
+            map->compressed_chunks[i] = (int) node->data;
+            free(node->data);
+        }
+        map->n_compressed_chunks = listLength(compressed_chunks);
+        listDelete(compressed_chunks);
     }
 
     return map;
@@ -306,6 +329,21 @@ Dungeon *mapMgrInitDungeonFromXml(xmlNodePtr node) {
     xmlFree(prop);
 
     return dungeon;
+}
+
+void mapMgrCreateMoongateFromXml(xmlNodePtr node) {
+    int phase;
+    unsigned char x, y;
+
+    phase = xmlGetPropAsInt(node, "phase");
+    x = (unsigned char) xmlGetPropAsInt(node, "x");
+    y = (unsigned char) xmlGetPropAsInt(node, "y");
+
+    moongateAdd(phase, x, y);
+}
+
+int mapMgrInitCompressedChunkFromXml(xmlNodePtr node) {
+    return xmlGetPropAsInt(node, "index");
 }
 
 void mapMgrRegister(Map *map) {
