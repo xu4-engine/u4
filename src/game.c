@@ -849,8 +849,8 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         break;
     case 'w':
         c->windDirection++;
-        if (c->windDirection >= 4)
-            c->windDirection = 0;
+        if (c->windDirection >= DIR_SOUTH)
+            c->windDirection = DIR_WEST;
         screenMessage("Change Wind Direction\n");
         break;
 
@@ -1489,7 +1489,16 @@ int moveAvatar(Direction dir, int userEvent) {
     }
 
     if (!collisionOverride) {
-        if (!gameCanMoveOntoTile(c->map, newx, newy)) {
+        int movementMask;
+
+        movementMask = mapGetValidMoves(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->transport);
+        printf(" %c\n%cA%c\n %c\n", 
+               DIR_IN_MASK(DIR_NORTH, movementMask), 
+               DIR_IN_MASK(DIR_WEST, movementMask), 
+               DIR_IN_MASK(DIR_EAST, movementMask), 
+               DIR_IN_MASK(DIR_SOUTH, movementMask));
+
+        if (!DIR_IN_MASK(dir, movementMask)) {
             screenMessage("Blocked!\n");
             result = 0;
             goto done;
@@ -1531,7 +1540,7 @@ void gameTimer() {
     Direction dir = DIR_WEST;
     if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
         if ((rand() % 4) == 1)
-            c->windDirection = rand() % 4;
+            c->windDirection = (rand() % 4) + DIR_WEST;
         c->windCounter = 0;
         if (tileIsBalloon(c->saveGame->transport) &&
             c->saveGame->balloonstate) {
