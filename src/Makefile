@@ -2,13 +2,16 @@
 # $Id$
 #
 
-CFLAGS=-Wall -I.
-
 U4=./ultima4
+
 UI=sdl
-UILIBS=-lSDL -lpthread
+UILIBS=$(shell sdl-config --libs)
+UIFLAGS=$(shell sdl-config --cflags)
+
+CFLAGS=-Wall -I. $(UIFLAGS)
 LIBS=$(UILIBS)
 MAIN=u4
+
 SRCS=u4.c map.c ttype.c screen.c screen_$(UI).c event.c event_$(UI).c person.c annotation.c io.c savegame.c maps/cities.c maps/castles.c maps/worldmap.c maps/areas.c
 OBJS=$(SRCS:.c=.o)
 
