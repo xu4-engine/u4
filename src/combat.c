@@ -59,7 +59,7 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data);
 int combatReturnWeaponToOwner(int x, int y, int distance, void *data);
 int combatIsWon(void);
 int combatIsLost(void);
-void combatEnd(void);
+void combatEnd(int adjustKarma);
 void combatMoveMonsters(void);
 int combatFindTargetForMonster(const Object *monster, int *distance, int ranged);
 int movePartyMember(Direction dir, int member);
@@ -256,7 +256,7 @@ void combatFinishTurn() {
 
     if (combatIsWon()) {
         eventHandlerPopKeyHandler();
-        combatEnd();
+        combatEnd(1);
         return;
     }
     
@@ -328,14 +328,14 @@ void combatFinishTurn() {
                 /* check to see if combat is over */
                 if (combatIsLost()) {
                     eventHandlerPopKeyHandler();
-                    combatEnd();
+                    combatEnd(1);
                     return;
                 }
 
                 /* end combat immediately if the enemy has fled */
                 else if (combatIsWon()) {
                     eventHandlerPopKeyHandler();
-                    combatEnd();
+                    combatEnd(1);
                     return;
                 }                
             }
@@ -370,7 +370,7 @@ int combatBaseKeyHandler(int key, void *data) {
 
     case U4_ESC:
         eventHandlerPopKeyHandler();
-        combatEnd();
+        combatEnd(0); /* don't adjust karma */
         break;
 
     /* ALT key by itself; ignore it */
@@ -829,7 +829,7 @@ int combatIsLost() {
     return activePlayers == 0;
 }
 
-void combatEnd() {
+void combatEnd(int adjustKarma) {
     int i, x, y, z;
     unsigned char ground;
     
@@ -865,11 +865,13 @@ void combatEnd() {
     else if (!playerPartyDead(c->saveGame)) {
         screenMessage("Battle is lost!\n");
 
-        /* bonus points for fleeing from good, minus points for everything else */
-        if (combatInfo.monsterObj && monsterIsGood(combatInfo.monster))
-            playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
-        else
-            playerAdjustKarma(c->saveGame, KA_FLED_EVIL);
+        if (adjustKarma) {
+            /* bonus points for fleeing from good, minus points for everything else */
+            if (combatInfo.monsterObj && monsterIsGood(combatInfo.monster))
+                playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
+            else
+                playerAdjustKarma(c->saveGame, KA_FLED_EVIL);
+        }
     }
 
     /* remove the monster */

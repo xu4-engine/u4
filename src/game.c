@@ -1261,8 +1261,8 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             screenMessage("%s:", getVirtueName(i));
             for (j = 13; j > strlen(getVirtueName(i)); j--)
                 screenMessage(" ");
-            if (c->saveGame->karma[i] > 0)
-                screenMessage("%d\n", c->saveGame->karma[i]);
+            if (c->saveGame->karma[i] > 0)                
+                screenMessage("%.2d\n", c->saveGame->karma[i]);            
             else screenMessage("--");
         }
         screenPrompt();
