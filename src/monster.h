@@ -67,7 +67,8 @@ typedef enum {
     MATTR_STEALGOLD = 0x02,
     MATTR_CASTS_SLEEP = 0x04,
     MATTR_UNDEAD    = 0x08,
-    MATTR_GOOD      = 0x10
+    MATTR_GOOD      = 0x10,
+    MATTR_WATER     = 0x20
 } MonsterAttrib;
 
 typedef struct _Monster {
