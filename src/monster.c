@@ -65,7 +65,7 @@ static const Monster monsters[] = {
     { EVILMAGE_TILE,    DAEMON_TILE,   "Mage",         11, 0 },
     { LICH_TILE,        DAEMON_TILE,   "Lich",         12, MATTR_UNDEAD },
     { LAVA_LIZARD_TILE, HYDRA_TILE,    "Lava Lizard",  5,  0 },
-    { ZORN_TILE,        GAZER_TILE,    "Zorn",         15, 0 },
+    { ZORN_TILE,        GAZER_TILE,    "Zorn",         15, MATTR_NEGATE },
     { DAEMON_TILE,      BALRON_TILE,   "Daemon",       7,  0 },
     { HYDRA_TILE,       DRAGON_TILE,   "Hydra",        13, 0 },
     { DRAGON_TILE,      BALRON_TILE,   "Dragon",       14, 0 },

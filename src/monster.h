@@ -70,7 +70,8 @@ typedef enum {
     MATTR_GOOD      = 0x10,
     MATTR_WATER     = 0x20,
     MATTR_STATIONARY = 0x40,
-    MATTR_NONATTACKABLE = 0x80
+    MATTR_NONATTACKABLE = 0x80,
+    MATTR_NEGATE = 0x100
 } MonsterAttrib;
 
 typedef enum {
