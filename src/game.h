@@ -30,6 +30,7 @@ typedef struct CoordActionInfo {
     const char *failedMessage;
 } CoordActionInfo;
 
+void gameInit(void);
 void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
 void gameSetMap(struct _Context *ct, struct _Map *map, int setStartPos);
@@ -43,7 +44,6 @@ int gameZtatsKeyHandler2(int key, void *data);
 int gameSpecialCmdKeyHandler(int key, void *data);
 void gameTimer(void *data);
 void gameFinishTurn(void);
-void gameLostEighth(int eighths);
 struct _Context *gameCloneContext(struct _Context *ctx);
 
 #endif

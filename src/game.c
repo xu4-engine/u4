@@ -33,7 +33,10 @@
 #include "combat.h"
 #include "monster.h"
 #include "camp.h"
+#include "error.h"
 
+void gameLostEighth(Virtue virtue);
+void gameAdvanceLevel(const SaveGamePlayerRecord *player);
 void gameCastSpell(unsigned int spell, int caster, int param);
 int gameCheckPlayerDisabled(int player);
 int gameCanMoveOntoTile(const Map *map, int x, int y);
@@ -65,9 +68,56 @@ void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
 void gameCheckRandomMonsters(void);
 
+extern Map world_map;
+Context *c = NULL;
 int collisionOverride = 0;
 ViewMode viewMode = VIEW_NORMAL;
 char itemNameBuffer[16];
+
+void gameInit() {
+    FILE *saveGameFile, *monstersFile;
+
+    /* initialize the global game context */
+    c = (Context *) malloc(sizeof(Context));
+    c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
+    c->parent = NULL;
+    c->map = &world_map;
+    c->map->annotation = NULL;
+    c->conversation.talker = NULL;
+    c->conversation.state = 0;
+    c->conversation.buffer[0] = '\0';
+    c->line = TEXT_AREA_H - 1;
+    c->col = 0;
+    c->statsItem = STATS_PARTY_OVERVIEW;
+    c->moonPhase = 0;
+    c->windDirection = DIR_NORTH;
+    c->windCounter = 0;
+    c->aura = AURA_NONE;
+    c->auraDuration = 0;
+    c->horseSpeed = 0;
+
+    /* load in the save game */
+    saveGameFile = fopen("party.sav", "rb");
+    if (saveGameFile) {
+        saveGameRead(c->saveGame, saveGameFile);
+        fclose(saveGameFile);
+    } else
+        errorFatal("no savegame found!");
+
+    monstersFile = fopen("monsters.sav", "rb");
+    if (monstersFile) {
+        saveGameMonstersRead(&c->map->objects, monstersFile);
+        fclose(monstersFile);
+    }
+
+    playerSetLostEighthCallback(&gameLostEighth);
+    playerSetAdvanceLevelCallback(&gameAdvanceLevel);
+
+    musicPlay();
+    screenDrawBackground(BKGD_BORDERS);
+    statsUpdate();
+    screenMessage("\020");
+}
 
 /**
  * Sets the view mode.
@@ -114,7 +164,8 @@ void gameSetMap(Context *ct, Map *map, int setStartPos) {
         map->objects == NULL) {
         for (i = 0; i < map->city->n_persons; i++) {
             if (map->city->persons[i].tile0 != 0 &&
-                !(personIsJoinable(&(map->city->persons[i]), NULL) && personIsJoined(&(map->city->persons[i]))))
+                !(playerCanPersonJoin(c->saveGame, map->city->persons[i].name, NULL) && 
+                  playerIsPersonJoined(c->saveGame, map->city->persons[i].name)))
                 mapAddPersonObject(map, &(map->city->persons[i]));
         }
     }
@@ -168,15 +219,15 @@ void gameFinishTurn() {
 /**
  * Inform a player he has lost zero or more eighths of avatarhood.
  */
-void gameLostEighth(int eighths) {
-    int i;
+void gameLostEighth(Virtue virtue) {
+    screenMessage("Thou hast lost an eighth!\n");
+    statsUpdate();
+}
 
-    for (i = 0; i < eighths; i++) {
-        screenMessage("Thou hast lost an eighth!\n");
-    }
-
-    if (eighths)
-        statsUpdate();
+void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
+    screenMessage("%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
+    /* FIXME: special effect here */
+    statsUpdate();
 }
 
 Context *gameCloneContext(Context *ctx) {
@@ -411,7 +462,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 annotationAdd(c->saveGame->x, c->saveGame->y, BRICKFLOOR_TILE);
             screenMessage("The Chest Holds: %d Gold\n", playerGetChest(c->saveGame));
             if (obj == NULL)
-                gameLostEighth(playerAdjustKarma(c->saveGame, KA_STOLE_CHEST));
+                playerAdjustKarma(c->saveGame, KA_STOLE_CHEST);
         } else
             screenMessage("Not Here!\n");
         break;
@@ -609,6 +660,10 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'z':
         eventHandlerPushKeyHandler(&gameZtatsKeyHandler);
         screenMessage("Ztats for: ");
+        break;
+
+    case 'v' + U4_ALT:
+        screenTextAt(15, 14, "XU4 %s\n", VERSION);
         break;
 
     case 'x' + U4_ALT:
