@@ -34,7 +34,7 @@
 #define DEFAULT_CYCLES_PER_SECOND       4
 #define DEFAULT_DEBUG                   0
 #define DEFAULT_VALIDATE_XML            1
-#define DEFAULT_SPELL_EFFECT_SPEED      5
+#define DEFAULT_SPELL_EFFECT_SPEED      10
 #define DEFAULT_CAMP_TIME               10
 #define DEFAULT_INN_TIME                8
 #define DEFAULT_SHRINE_TIME             16
