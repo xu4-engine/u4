@@ -304,6 +304,7 @@ void StatsArea::showItems() {
     char buffer[17];
     view = STATS_ITEMS;
 
+    clear();
     setTitle("Items");
 
     line = STATS_AREA_Y;
