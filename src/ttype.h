@@ -28,8 +28,11 @@ typedef enum {
 int tileIsWalkable(unsigned char tile);
 int tileIsSlow(unsigned char tile);
 int tileIsVslow(unsigned char tile);
+int tileIsSailable(unsigned char tile);
 int tileIsDoor(unsigned char tile);
 int tileIsLockedDoor(unsigned char tile);
+int tileIsShip(unsigned char tile);
+int tileIsHorse(unsigned char tile);
 int tileCanTalkOver(unsigned char tile);
 TileEffect tileGetEffect(unsigned char tile);
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile);

@@ -89,6 +89,14 @@ int tileIsLockedDoor(unsigned char tile) {
     return tile == 58;
 }
 
+int tileIsShip(unsigned char tile) {
+    return tile >= 16 && tile < 20;
+}
+
+int tileIsHorse(unsigned char tile) {
+    return tile >= 20 && tile < 22;
+}
+
 int tileCanTalkOver(unsigned char tile) {
     return tile >= 96 && tile <= 122;
 }
