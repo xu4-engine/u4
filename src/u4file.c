@@ -99,6 +99,8 @@ U4FILE *u4fopen(const char *fname) {
 
         if (pathname)
             f = fopen(pathname, "rb");
+        else 
+	    return NULL;
 
         if (verbose && f != NULL)
             printf("%s successfully opened\n", pathname);
