@@ -12,15 +12,15 @@
 	<weapon name="Crossbow" abbr="XBO" range="10" damage="56" cantready="mage, shepherd"/>
 	<weapon name="Oil" abbr="OIL" range="9" damage="64" lose="true" choosedistance="true"
 			leavetile="fire" hittile="fire"/>
-	<weapon name="Halberd" abbr="HAL" range="1" damage="96" canready="fighter, tinker, paladin"/>
-	<weapon name="Magic Axe" abbr="+AX" range="1" damage="96" magic="true" hittile="magic"
-			misstile="magic" canready="tinker, paladin"/>
-	<weapon name="Magic Sword" abbr="+SW" range="1" damage="128" magic="true" hittile="magic"
-			misstile="magic" canready="fighter, tinker, paladin, ranger"/>
-	<weapon name="Magic Bow" abbr="+BO" range="10" damage="80" magic="true" hittile="magic"
-			misstile="magic" cantready="mage, fighter, shepherd"/>
+	<weapon name="Halberd" abbr="HAL" absolute_range="2" attackthroughobjects="true" damage="96"
+			canready="fighter, tinker, paladin"/>
+	<weapon name="Magic Axe" abbr="+AX" range="10" damage="96" magic="true"
+			canready="tinker, paladin"/>
+	<weapon name="Magic Sword" abbr="+SW" range="1" damage="128" magic="true"
+			canready="fighter, tinker, paladin, ranger"/>
+	<weapon name="Magic Bow" abbr="+BO" range="10" damage="80" magic="true"
+			cantready="mage, fighter, shepherd"/>
 	<weapon name="Magic Wand" abbr="WND" range="10" damage="160" magic="true" hittile="magic"
 			misstile="magic" canready="mage, bard, druid"/>	
-	<weapon name="Mystic Sword" abbr="^SW" range="1" damage="255" magic="true" hittile="magic"
-			misstile="magic"/>
+	<weapon name="Mystic Sword" abbr="^SW" range="1" damage="255" magic="true"/>
 </weapons>
