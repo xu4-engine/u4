@@ -680,7 +680,7 @@ int gameBaseKeyHandler(int key, void *data) {
     case 22:                    /* ctrl-V */
         {
             extern int screen3dDungeonView;
-            if (settings->debug) {
+            if (settings->debug && c->location->context == CTX_DUNGEON) {
                 screen3dDungeonView = screen3dDungeonView ? 0 : 1;
                 screenMessage("3-D view %s\n", screen3dDungeonView ? "on" : "off");
                 endTurn = 0;
