@@ -687,7 +687,7 @@ const char *introGetQuestion(int v1, int v2) {
         v1--;
         v2--;
     }
-        
+
     assert((i + v2 - 1) < 28);
 
     return introQuestions[i + v2 - 1];
@@ -699,7 +699,7 @@ const char *introGetQuestion(int v1, int v2) {
 void introJourneyOnward() {
     FILE *saveGameFile;
 
-    /* 
+    /*
      * ensure a party.sav file exists, otherwise require user to
      * initiate game
      */
@@ -869,16 +869,16 @@ void introInitPlayers(SaveGame *saveGame) {
         WeaponType weapon;
         ArmorType armor;
         int xp, x, y;
-	int virtues[8];
+        int virtues[8];
     } initValuesForClass[] = {
-        { WEAP_STAFF,  ARMR_CLOTH,   125, 231, 136, 65, 50, 60, 50, 50, 55, 55, 50 }, /* CLASS_MAGE */
-        { WEAP_SLING,  ARMR_CLOTH,   240,  83, 105, 50, 65, 55, 55, 50, 60, 50, 50 }, /* CLASS_BARD */
-        { WEAP_AXE,    ARMR_LEATHER, 205,  35, 221, 50, 55, 65, 50, 55, 50, 60, 50 }, /* CLASS_FIGHTER */
-        { WEAP_DAGGER, ARMR_CLOTH,   175,  59,  44, 55, 50, 50, 65, 50, 60, 55, 50 }, /* CLASS_DRUID */
-        { WEAP_MACE,   ARMR_LEATHER, 110, 158,  21, 50, 50, 60, 50, 65, 55, 55, 50 }, /* CLASS_TINKER */
-        { WEAP_SWORD,  ARMR_CHAIN,   325, 105, 183, 50, 50, 50, 55, 60, 65, 50, 55 }, /* CLASS_PALADIN */
-        { WEAP_SWORD,  ARMR_LEATHER, 150,  23, 129, 50, 50, 50, 55, 55, 60, 65, 50 }, /* CLASS_RANGER */
-        { WEAP_STAFF,  ARMR_CLOTH,     5, 186, 171, 50, 50, 60, 50, 50, 55, 55, 65 }  /* CLASS_SHEPHERD */
+        { WEAP_STAFF,  ARMR_CLOTH,   125, 231, 136, { 65, 50, 60, 50, 50, 55, 55, 50 } }, /* CLASS_MAGE */
+        { WEAP_SLING,  ARMR_CLOTH,   240,  83, 105, { 50, 65, 55, 55, 50, 60, 50, 50 } }, /* CLASS_BARD */
+        { WEAP_AXE,    ARMR_LEATHER, 205,  35, 221, { 50, 55, 65, 50, 55, 50, 60, 50 } }, /* CLASS_FIGHTER */
+        { WEAP_DAGGER, ARMR_CLOTH,   175,  59,  44, { 55, 50, 50, 65, 50, 60, 55, 50 } }, /* CLASS_DRUID */
+        { WEAP_MACE,   ARMR_LEATHER, 110, 158,  21, { 50, 50, 60, 50, 65, 55, 55, 50 } }, /* CLASS_TINKER */
+        { WEAP_SWORD,  ARMR_CHAIN,   325, 105, 183, { 50, 50, 50, 55, 60, 65, 50, 55 } }, /* CLASS_PALADIN */
+        { WEAP_SWORD,  ARMR_LEATHER, 150,  23, 129, { 50, 50, 50, 55, 55, 60, 65, 50 } }, /* CLASS_RANGER */
+        { WEAP_STAFF,  ARMR_CLOTH,     5, 186, 171, { 50, 50, 60, 50, 50, 55, 55, 65 } }  /* CLASS_SHEPHERD */
     };
     static const struct {
         const char *name;
@@ -900,13 +900,13 @@ void introInitPlayers(SaveGame *saveGame) {
     saveGame->players[0].klass = (ClassType) questionTree[14];
 
     assert(saveGame->players[0].klass < 8);
-    
+
     saveGame->players[0].weapon = initValuesForClass[saveGame->players[0].klass].weapon;
     saveGame->players[0].armor = initValuesForClass[saveGame->players[0].klass].armor;
     saveGame->players[0].xp = initValuesForClass[saveGame->players[0].klass].xp;
     saveGame->x = initValuesForClass[saveGame->players[0].klass].x;
     saveGame->y = initValuesForClass[saveGame->players[0].klass].y;
-    
+
     saveGame->players[0].str = 15;
     saveGame->players[0].dex = 15;
     saveGame->players[0].intel = 15;
@@ -950,10 +950,10 @@ void introInitPlayers(SaveGame *saveGame) {
 
     p = 1;
     for (i = 0; i < VIRT_MAX; i++) {
-		/* Setup the initial virtue levels according to the avatar's class */
-		saveGame->karma[i] = initValuesForClass[saveGame->players[0].klass].virtues[i];
+        /* Setup the initial virtue levels according to the avatar's class */
+        saveGame->karma[i] = initValuesForClass[saveGame->players[0].klass].virtues[i];
 
-		/* Initial setup for party members that aren't in your group yet... */
+        /* Initial setup for party members that aren't in your group yet... */
         if (i != saveGame->players[0].klass) {
             saveGame->players[p].klass = (ClassType) i;
             saveGame->players[p].xp = initValuesForClass[i].xp;
