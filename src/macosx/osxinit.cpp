@@ -1,11 +1,11 @@
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <sys/param.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <errno.h>
+#include <cerrno>
 #include "error.h"
 
 void osxInit(char *binpath)
