@@ -9,6 +9,7 @@
 #include "player.h"
 
 #include "armor.h"
+#include "context.h"
 #include "debug.h"
 #include "weapon.h"
 
@@ -351,8 +352,10 @@ int playerJoin(SaveGame *saveGame, const char *name) {
     return 0;
 }
 
-void playerEndTurn(SaveGame *saveGame) {
-    int i;
+void playerEndTurn(void) {
+    int i,
+        context = c->location->context;
+    SaveGame *saveGame = c->saveGame;
 
     saveGame->moves++;
     for (i = 0; i < saveGame->members; i++) {
@@ -372,7 +375,8 @@ void playerEndTurn(SaveGame *saveGame) {
             break;
 
         case STAT_POISONED:
-            playerApplyDamage(&saveGame->players[i], 2);
+            if (context != CTX_COMBAT)
+                playerApplyDamage(&saveGame->players[i], 2);
             break;
 
         default:

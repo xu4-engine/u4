@@ -14,7 +14,8 @@ typedef enum {
     CA_CAST_SLEEP,
     CA_ADVANCE,
     CA_RANGED,
-    CA_FLEE
+    CA_FLEE,
+    CA_TELEPORT
 } CombatAction;
 
 void combatBegin(struct _Map *map, struct _Object *monster, int isNormal);

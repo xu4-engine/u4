@@ -71,7 +71,7 @@ int playerDonate(SaveGame *saveGame, int quantity);
 int playerCanPersonJoin(SaveGame *saveGame, const char *name, Virtue *v);
 int playerIsPersonJoined(SaveGame *saveGame, const char *name);
 int playerJoin(SaveGame *saveGame, const char *name);
-void playerEndTurn(SaveGame *saveGame);
+void playerEndTurn(void);
 void playerApplyEffect(SaveGame *saveGame, TileEffect effect, int player);
 int playerPartyImmobilized(const SaveGame *saveGame);
 int playerPartyDead(const SaveGame *saveGame);

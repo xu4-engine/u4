@@ -293,7 +293,7 @@ void combatFinishTurn() {
                 }
 
                 /* adjust food and moves */
-                playerEndTurn(c->saveGame);
+                playerEndTurn();
 
                 /* put a sleeping person in place of the player,
                    or restore an awakened member to their original state */
@@ -767,10 +767,16 @@ void combatMoveMonsters() {
             statsUpdate();
         }
 
-        if (m->ranged != 0 && (rand() % 4) == 0)
+        /* monsters who teleport do so 1/8 of the time */
+        if (monsterTeleports(m) && (rand() % 8) == 0)
+            action = CA_TELEPORT;
+        /* monsters who ranged attack do so 1/4 of the time */
+        else if (m->ranged != 0 && (rand() % 4) == 0)
             action = CA_RANGED;
+        /* monsters who cast sleep do so 1/4 of the time they don't ranged attack */
         else if (monsterCastSleep(m) && (rand() % 4) == 0)
             action = CA_CAST_SLEEP;
+        
         else if (monsterGetStatus(m, monsterHp[i]) == MSTAT_FLEEING)
             action = CA_FLEE;
         else
@@ -826,6 +832,33 @@ void combatMoveMonsters() {
                     playerApplySleepSpell(&c->saveGame->players[i]);
 
             statsUpdate();
+            break;
+
+        case CA_TELEPORT: {
+                int newx, newy, tile,
+                    valid = 0,
+                    firstTry = 1;
+            
+                while (!valid) {
+                    newx = rand() % c->location->map->width,
+                    newy = rand() % c->location->map->height;
+                    tile = mapTileAt(c->location->map, newx, newy, c->location->z);
+                
+                    if (tileIsMonsterWalkable(tile) && tileIsWalkable(tile)) {
+                        /* If the tile would slow me down, try again! */
+                        if (firstTry && tileGetSpeed(tile) != FAST)
+                            firstTry = 0;
+                        /* OK, good enough! */
+                        else
+                            valid = 1;
+                    }
+                }
+            
+                /* Teleport! */
+                combat_monsters[i]->x = newx;
+                combat_monsters[i]->y = newy;
+            }
+
             break;
 
         case CA_RANGED:

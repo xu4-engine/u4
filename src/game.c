@@ -321,7 +321,7 @@ void gameFinishTurn() {
 
     while (1) {
         /* adjust food and moves */
-        playerEndTurn(c->saveGame);        
+        playerEndTurn();
 
         /* check if aura has expired */
         if (c->auraDuration > 0) {
