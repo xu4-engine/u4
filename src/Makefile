@@ -12,7 +12,7 @@ CFLAGS=-Wall -I. $(UIFLAGS)
 LIBS=$(UILIBS)
 MAIN=u4
 
-SRCS=u4.c map.c ttype.c screen.c screen_$(UI).c event.c event_$(UI).c person.c annotation.c io.c savegame.c u4file.c mapinit.c stats.c spell.c maps/cities.c maps/castles.c maps/worldmap.c maps/areas.c
+SRCS=u4.c map.c ttype.c screen.c screen_$(UI).c event.c event_$(UI).c person.c annotation.c io.c savegame.c u4file.c mapinit.c stats.c spell.c intro.c maps/cities.c maps/castles.c maps/worldmap.c maps/areas.c lzw/lzw.c lzw/u4decode.c
 OBJS=$(SRCS:.c=.o)
 
 bindir=/usr/bin
