@@ -79,7 +79,7 @@ char *introErrorMessage;
 
 /* additional introduction state data */
 char nameBuffer[16];
-char sex;
+SexType sex;
 int storyInd;
 int segueInd;
 int answerInd;
@@ -146,12 +146,12 @@ int introInit() {
     scrPos = 0;
 
     fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
-    scriptTable = malloc(INTRO_SCRIPT_TABLE_SIZE);
+    scriptTable = (unsigned char *) malloc(INTRO_SCRIPT_TABLE_SIZE);
     for (i = 0; i < INTRO_SCRIPT_TABLE_SIZE; i++)
         scriptTable[i] = fgetc(title);
 
     fseek(title, INTRO_BASETILE_TABLE_OFFSET, SEEK_SET);
-    baseTileTable = malloc(INTRO_BASETILE_TABLE_SIZE);
+    baseTileTable = (unsigned char *) malloc(INTRO_BASETILE_TABLE_SIZE);
     for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++)
         baseTileTable[i] = fgetc(title);
 
@@ -807,7 +807,7 @@ void introInitPlayers(SaveGame *saveGame) {
 
     strcpy(saveGame->players[0].name, nameBuffer);
     saveGame->players[0].sex = sex;
-    saveGame->players[0].klass = questionTree[14];
+    saveGame->players[0].klass = (ClassType) questionTree[14];
 
     assert(saveGame->players[0].klass < 8);
     
@@ -861,7 +861,7 @@ void introInitPlayers(SaveGame *saveGame) {
     p = 1;
     for (i = 0; i < VIRT_MAX; i++) {
         if (i != saveGame->players[0].klass) {
-            saveGame->players[p].klass = i;
+            saveGame->players[p].klass = (ClassType) i;
             saveGame->players[p].xp = initValuesForClass[i].xp;
             saveGame->players[p].str = initValuesForNpcClass[i].str;
             saveGame->players[p].dex = initValuesForNpcClass[i].dex;

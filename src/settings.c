@@ -17,7 +17,7 @@ char *settingsFilename() {
 
     home = getenv("HOME");
     if (home && home[0]) {
-        fname = malloc(strlen(home) + strlen("/.xu4rc") + 1);
+        fname = (char *) malloc(strlen(home) + strlen("/.xu4rc") + 1);
         strcpy(fname, home);
         strcat(fname, "/.xu4rc");
     } else
@@ -34,7 +34,7 @@ void settingsRead() {
     char *settingsFname;
     FILE *settingsFile;
 
-    settings = malloc(sizeof(Settings));
+    settings = (Settings *) malloc(sizeof(Settings));
 
     /* default settings */
     settings->scale = 2;
@@ -119,10 +119,11 @@ const char *settingsFilterToString(FilterType filter) {
  * doesn't match a filter.
  */
 FilterType settingsStringToFilter(const char *str) {
-    FilterType f, result = SCL_MAX;
+    int f;
+    FilterType result = SCL_MAX;
     for (f = SCL_DEFAULT; f < SCL_MAX; f++) {
-        if (strcmp(str, settingsFilterToString(f)) == 0) {
-            result = f;
+        if (strcmp(str, settingsFilterToString((FilterType) f)) == 0) {
+            result = (FilterType) f;
             break;
         }
     }

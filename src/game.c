@@ -162,20 +162,20 @@ void gameLostEighth(int eighths) {
 }
 
 Context *gameCloneContext(Context *ctx) {
-    Context *new;
+    Context *newContext;
 
-    new = (Context *) malloc(sizeof(Context));
-    new->parent = ctx;
-    new->saveGame = new->parent->saveGame;
-    new->col = new->parent->col;
-    new->line = new->parent->line;
-    new->statsItem = new->parent->statsItem;
-    new->moonPhase = new->parent->moonPhase;
-    new->windDirection = new->parent->windDirection;
-    new->windCounter = new->parent->windCounter;
-    new->moonPhase = new->parent->moonPhase;
+    newContext = (Context *) malloc(sizeof(Context));
+    newContext->parent = ctx;
+    newContext->saveGame = newContext->parent->saveGame;
+    newContext->col = newContext->parent->col;
+    newContext->line = newContext->parent->line;
+    newContext->statsItem = newContext->parent->statsItem;
+    newContext->moonPhase = newContext->parent->moonPhase;
+    newContext->windDirection = newContext->parent->windDirection;
+    newContext->windCounter = newContext->parent->windCounter;
+    newContext->moonPhase = newContext->parent->moonPhase;
 
-    return new;
+    return newContext;
 }
 
 void gameCastSpell(unsigned int spell, int caster, int param) {
@@ -297,7 +297,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'c':
-        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, &castForPlayer);
+        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &castForPlayer);
         screenMessage("Cast Spell!\nPlayer: ");
         break;
 
@@ -443,7 +443,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'n':
-        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, &newOrderForPlayer);
+        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &newOrderForPlayer);
         screenMessage("New Order!\nExchange # ");
         break;
 
@@ -483,7 +483,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'r':
-        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, &readyForPlayer);
+        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &readyForPlayer);
         screenMessage("Ready a weapon\nfor: ");
         break;
 
@@ -519,7 +519,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'w':
-        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, &wearForPlayer);
+        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &wearForPlayer);
         screenMessage("Wear Armor\nfor: ");
         break;
 
@@ -712,7 +712,7 @@ int gameZtatsKeyHandler(int key, void *data) {
     if (key == '0')
         c->statsItem = STATS_WEAPONS;
     else if (key >= '1' && key <= '8' && (key - '1' + 1) <= c->saveGame->members)
-        c->statsItem = STATS_CHAR1 + (key - '1');
+        c->statsItem = (StatsItem) (STATS_CHAR1 + (key - '1'));
     else if (key == '\033') {
         screenMessage("\n");
         eventHandlerPopKeyHandler();
@@ -739,16 +739,16 @@ int gameZtatsKeyHandler2(int key, void *data) {
     switch (key) {
     case U4_UP:
     case U4_LEFT:
-        c->statsItem--;
+        c->statsItem = (StatsItem) (c->statsItem - 1);
         if (c->statsItem < STATS_CHAR1)
             c->statsItem = STATS_MIXTURES;
         if (c->statsItem <= STATS_CHAR8 &&
             (c->statsItem - STATS_CHAR1 + 1) > c->saveGame->members)
-            c->statsItem = STATS_CHAR1 - 1 + c->saveGame->members;
+            c->statsItem = (StatsItem) (STATS_CHAR1 - 1 + c->saveGame->members);
         break;
     case U4_DOWN:
     case U4_RIGHT:
-        c->statsItem++;
+        c->statsItem = (StatsItem) (c->statsItem + 1);
         if (c->statsItem > STATS_MIXTURES)
             c->statsItem = STATS_CHAR1;
         if (c->statsItem <= STATS_CHAR8 &&
@@ -915,16 +915,16 @@ int castForPlayer2(int spell, void *data) {
         break;
     case SPELLPRM_PLAYER:
         screenMessage("Player: ");
-        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, &castForPlayerGetDestPlayer);
+        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &castForPlayerGetDestPlayer);
         break;
     case SPELLPRM_DIR:
     case SPELLPRM_TYPEDIR:
         screenMessage("Dir: ");
-        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, &castForPlayerGetDestDir);
+        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir);
         break;
     case SPELLPRM_FROMDIR:
         screenMessage("From Dir: ");
-        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, &castForPlayerGetDestDir);
+        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir);
         break;
     }
 
@@ -984,9 +984,9 @@ int readyForPlayer(int player) {
     return 1;
 }
 
-int readyForPlayer2(int weapon, void *data) {
+int readyForPlayer2(int w, void *data) {
     int player = (int) data;
-    int oldWeapon;
+    WeaponType weapon = (WeaponType) w, oldWeapon;
 
     if (weapon != WEAP_HANDS && c->saveGame->weapons[weapon] < 1) {
         screenMessage("None left!\n");
@@ -1075,7 +1075,7 @@ int newOrderForPlayer(int player) {
     screenMessage("    with # ");
 
     newOrderTemp = player;
-    eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, &newOrderForPlayer2);
+    eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &newOrderForPlayer2);
 
     return 1;
 }
@@ -1339,9 +1339,9 @@ int wearForPlayer(int player) {
     return 1;
 }
 
-int wearForPlayer2(int armor, void *data) {
+int wearForPlayer2(int a, void *data) {
     int player = (int) data;
-    int oldArmor;
+    ArmorType armor = (ArmorType) a, oldArmor;
 
     if (armor != ARMR_NONE && c->saveGame->armor[armor] < 1) {
         screenMessage("None left!\n");
@@ -1446,9 +1446,9 @@ int moveAvatar(Direction dir, int userEvent) {
 		newx += c->map->width;
 	    if (newy < 0)
 		newy += c->map->height;
-	    if (newx >= c->map->width)
+	    if (newx >= (int) c->map->width)
 		newx -= c->map->width;
-	    if (newy >= c->map->height)
+	    if (newy >= (int) c->map->height)
 		newy -= c->map->height;
 	    break;
 
@@ -1472,9 +1472,9 @@ int moveAvatar(Direction dir, int userEvent) {
             goto done;
 	    
 	case BORDER_FIXED:
-	    if (newx < 0 || newx >= c->map->width)
+	    if (newx < 0 || newx >= (int) c->map->width)
 		newx = c->saveGame->x;
-	    if (newy < 0 || newy >= c->map->height)
+	    if (newy < 0 || newy >= (int) c->map->height)
 		newy = c->saveGame->y;
 	    break;
 	}
@@ -1527,7 +1527,7 @@ void gameTimer() {
         c->windCounter = 0;
         if (tileIsBalloon(c->saveGame->transport) &&
             c->saveGame->balloonstate) {
-            dir = dirReverse(c->windDirection);
+            dir = dirReverse((Direction) c->windDirection);
             moveAvatar(dir, 0);
         }
     }
