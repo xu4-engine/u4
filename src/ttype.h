@@ -44,6 +44,7 @@
 #define MAGICFLASH_TILE 0x4E
 #define HITFLASH_TILE 0x4F
 #define BLACK_TILE 0x7e
+#define WALL_TILE 0x7f
 #define PIRATE_TILE 0x80
 #define WHIRLPOOL_TILE 0x8c
 

@@ -2307,15 +2307,37 @@ int moveAvatar(Direction dir, int userEvent) {
 
     /*musicPlayEffect();*/
 
+    /* if you're on ship, you must turn first! */
     if (c->transportContext == TRANSPORT_SHIP) {
         if (tileGetDirection((unsigned char)c->saveGame->transport) != dir) {
-	    temp = (unsigned char)c->saveGame->transport;
+	        temp = (unsigned char)c->saveGame->transport;
             tileSetDirection(&temp, dir);
-	    c->saveGame->transport = temp;
+	        c->saveGame->transport = temp;            
             if (!settings->filterMoveMessages)
                 screenMessage("Turn %s!\n", getDirectionName(dir));
             return result;
         }
+    }
+    
+    /* if you're in a dungeon, you must turn first! */
+    else if (c->location->context == CTX_DUNGEON) {
+        /* figure out what our real direction is */
+        Direction realDir = dir,
+                  temp = c->saveGame->orientation;
+
+        while (temp != DIR_NORTH) {
+            temp = dirRotateCW(temp);
+            realDir = dirRotateCCW(realDir);
+        }       
+        
+        if (c->saveGame->orientation != realDir) {
+            c->saveGame->orientation = realDir;
+            if (!settings->filterMoveMessages)
+                screenMessage("Turn %s!\n", getDirectionName(realDir));
+            return result;
+        }
+
+        dir = realDir;
     }
 
     if (c->transportContext == TRANSPORT_HORSE) {
@@ -2337,7 +2359,7 @@ int moveAvatar(Direction dir, int userEvent) {
             screenMessage("Sail %s!\n", getDirectionName(dir));
         else if (c->transportContext != TRANSPORT_BALLOON)
             screenMessage("%s\n", getDirectionName(dir));
-    }    
+    }
 
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
         switch (c->location->map->border_behavior) {        

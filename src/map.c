@@ -309,6 +309,42 @@ unsigned char mapGroundTileAt(const Map *map, int x, int y, int z) {
     return tile;
 }
 
+unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z) {
+    unsigned char tile = mapGroundTileAt(map, x, y, z);
+
+    switch (tile & 0xF0) {
+    case 0x00:
+    case 0x80:
+        return BRICKFLOOR_TILE;
+    case 0x10:
+        return 0x1b;
+    case 0x20:
+        return 0x1c;
+    case 0x40:
+        return tileGetChestBase();
+    case 0x50:
+    case 0x60:
+        return BRICKFLOOR_TILE; /* FIXME */
+    case 0x70:
+        return MAGICFLASH_TILE;
+    case 0x90:
+        return 0;
+    case 0xA0:
+        return LIGHTNINGFIELD_TILE;
+    case 0xB0:
+        return BRICKFLOOR_TILE; /* FIXME: altar */
+    case 0xC0:
+    case 0xD0:
+        return 0x3b;
+
+    case 0xE0:
+    case 0xF0:
+        return 0x7F;
+    default:
+        return BLACK_TILE;
+    }
+}
+
 int mapIsWorldMap(const Map *map) {
     return map->id == 0;
 }
@@ -516,6 +552,15 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
             retval = DIR_ADD_TO_MASK(d, retval);
             continue;
         }
+        
+        /* in dungeons, everything but walls are walkable */
+        if (c->location->context == CTX_DUNGEON) {            
+            tile = mapDungeonTileAt(map, x, y, z);
+            if (tile != WALL_TILE) {
+                retval = DIR_ADD_TO_MASK(d, retval);
+                continue;
+            }
+        }
 
         obj = mapObjectAt(map, x, y, z);
 
@@ -534,7 +579,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
             tile = (unsigned char)c->saveGame->transport;
         else if (obj)
             tile = obj->tile;
-        else
+        else 
             tile = mapGroundTileAt(map, x, y, z);
 
         prev_tile = mapGroundTileAt(map, from_x, from_y, z);
@@ -563,7 +608,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         else if (tileIsBalloon(transport) && tileIsFlyable(tile))
             retval = DIR_ADD_TO_MASK(d, retval);        
         /* avatar or horseback: check walkable */
-        else if (transport == AVATAR_TILE || tileIsHorse(transport)) {
+        else if (isAvatar && (transport == AVATAR_TILE || tileIsHorse(transport))) {
             if (tileCanWalkOn(tile, d) &&
                 tileCanWalkOff(prev_tile, d))
                 retval = DIR_ADD_TO_MASK(d, retval);
