@@ -711,9 +711,6 @@ int gameBaseKeyHandler(int key, void *data) {
             screenPrompt();
             
             /* Help! send me to Lord British (who conveniently is right around where you are)! */
-            while (c->location->prev)
-                gameExitToParentMap(c);
-
             gameSetMap(c, mapMgrGetById(100), 1, NULL);
             c->location->x = 19;
             c->location->y = 8;
