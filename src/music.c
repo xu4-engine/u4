@@ -120,3 +120,11 @@ int musicInit(int sound) {
     return 0;
 }
 
+void musicDelete() {
+    if (playing) {
+        Mix_FreeMusic(playing);
+        playing = NULL;
+    }
+
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+}

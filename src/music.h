@@ -19,6 +19,7 @@ typedef enum {
 } Music;
 
 int musicInit(int sound);
+void musicDelete();
 void musicPlay(void);
 void musicLordBritish(void);
 void musicIntro(void);
