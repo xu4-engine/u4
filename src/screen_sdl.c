@@ -214,11 +214,11 @@ void screenInit() {
     screenLoadPaletteEga();        
     /* see if the upgrade exists */
     if (screenLoadPaletteVga("u4vga.pal"))
-        upgradeExists = 1;
-    upgradeInstalled = u4isUpgradeInstalled();
+        u4upgradeExists = 1;
+    u4upgradeInstalled = u4isUpgradeInstalled();
 
     /* if we can't use vga, reset to default:ega */
-    if (!upgradeExists && settings->videoType == VIDEO_VGA)
+    if (!u4upgradeExists && settings->videoType == VIDEO_VGA)
         settings->videoType = VIDEO_EGA;
 
     if (!screenLoadTiles() ||
@@ -360,9 +360,9 @@ const char *screenGetVgaFilename(BackgroundType bkgd) {
     const char *filename = NULL;
     
     /* find the correct VGA file to use */    
-    if (backgroundInfo[bkgd].hasVga && upgradeExists && settings->videoType == VIDEO_VGA) {
+    if (backgroundInfo[bkgd].hasVga && u4upgradeExists && settings->videoType == VIDEO_VGA) {
         /* get the VGA filename for the file we're trying to load */
-        if (upgradeInstalled)
+        if (u4upgradeInstalled)
             filename = backgroundInfo[bkgd].filename;            
         else filename = backgroundInfo[bkgd].filenameOld;
     }
@@ -377,7 +377,7 @@ const char *screenGetEgaFilename(BackgroundType bkgd) {
     const char *filename = NULL;
 
     /* find the correct EGA file to use */
-    if (upgradeInstalled && backgroundInfo[bkgd].filenameOld)
+    if (u4upgradeInstalled && backgroundInfo[bkgd].filenameOld)
         filename = backgroundInfo[bkgd].filenameOld;
     else filename = backgroundInfo[bkgd].filename;
 

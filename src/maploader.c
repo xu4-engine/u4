@@ -61,7 +61,7 @@ int mapLoadCity(Map *map) {
     U4FILE *ult, *tlk;
     unsigned char conv_idx[CITY_MAX_PERSONS];
     unsigned char c;
-    int i, j;
+    unsigned int i, j;
     char tlk_buffer[288];
 
     ult = u4fopen(map->fname);
@@ -278,7 +278,7 @@ int mapLoadDng(Map *map) {
  */
 int mapLoadWorld(Map *map) {
     U4FILE *world;
-    int x, xch, y, ych;
+    unsigned int x, xch, y, ych;
 
     world = u4fopen(map->fname);
     if (!world)

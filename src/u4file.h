@@ -40,7 +40,7 @@ const char *u4upgrade_translate_filename(const char *fname);
 
 extern int u4zipExists;
 extern int u4upgradeZipExists;
-extern int upgradeExists;
-extern int upgradeInstalled;
+extern int u4upgradeExists;
+extern int u4upgradeInstalled;
 
 #endif

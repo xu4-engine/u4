@@ -16,8 +16,8 @@ extern int verbose;
 /* these are for figuring out where to find files */
 int u4zipExists = 0;
 int u4upgradeZipExists = 0;
-int upgradeExists = 0;
-int upgradeInstalled = 0;
+int u4upgradeExists = 0;
+int u4upgradeInstalled = 0;
 
 /* the possible paths where u4 for DOS can be installed */
 static const char * const paths[] = {
