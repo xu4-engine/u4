@@ -73,8 +73,9 @@ void screenMessage(const char *fmt, ...) {
 }
 
 unsigned char screenViewportTile(int width, int height, int x, int y, int *focus) {
-    int centerx, centery, tx, ty;
+    int centerx, centery, tx, ty, z;
 
+    z = c->saveGame->dnglevel;
     centerx = c->saveGame->x;
     centery = c->saveGame->y;
     if (c->map->width == width &&
@@ -104,7 +105,7 @@ unsigned char screenViewportTile(int width, int height, int x, int y, int *focus
         }
     }
 
-    return mapVisibleTileAt(c->map, tx, ty, focus);
+    return mapVisibleTileAt(c->map, tx, ty, z, focus);
 }
 
 void screenUpdate(int showmap, int blackout) {
