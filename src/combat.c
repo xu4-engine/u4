@@ -177,6 +177,7 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, cons
         { BRIDGE_TILE,  &bridge_map },
         { NORTHBRIDGE_TILE, &bridge_map },
         { SOUTHBRIDGE_TILE, &bridge_map },
+        { SHRINE_TILE,  &grass_map },
         { CHEST_TILE,   &grass_map },
         { BRICKFLOOR_TILE, &brick_map },
         { MOONGATE0_TILE, &grass_map },

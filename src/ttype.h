@@ -22,6 +22,7 @@
 #define BRIDGE_TILE 0x17
 #define NORTHBRIDGE_TILE 0x19
 #define SOUTHBRIDGE_TILE 0x1a
+#define SHRINE_TILE 0x1e
 #define AVATAR_TILE 0x1f
 #define CHEST_TILE 0x3c
 #define BOULDER_TILE 0x37

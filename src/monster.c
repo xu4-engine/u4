@@ -17,6 +17,7 @@
 
 #include "combat.h"
 #include "context.h"
+#include "debug.h"
 #include "error.h"
 #include "game.h"	/* required by monsterSpecial functions */
 #include "player.h"	/* required by monsterSpecial functions */

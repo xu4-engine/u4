@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 /*
- * Derived from XINE_ASSERT in xhe xine project.  I've updated it to
+ * Derived from XINE_ASSERT in the xine project.  I've updated it to
  * be C99 compliant, to use stderr rather than stdout, and to compile
  * out when NDEBUG is set, like a regular assert.  Finally, an
  * alternate ASSERT stub is provided for pre C99 systems.
