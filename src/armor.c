@@ -14,7 +14,7 @@ void armorLoadInfoFromXml() {
     char *fname;
     xmlDocPtr doc;
     xmlNodePtr root, node;
-    int armor, i;
+    int armor; //, i;
     
     if (!armorInfoLoaded)
         armorInfoLoaded = 1;
@@ -61,8 +61,7 @@ void armorLoadInfoFromXml() {
  * Returns the name of the armor
  */
 
-char *armorGetName(int armor)
-{
+char *armorGetName(int armor) {
     armorLoadInfoFromXml();
 
     return (char *)armors[armor].name;
@@ -72,8 +71,7 @@ char *armorGetName(int armor)
  * Returns the defense value of the armor
  */ 
 
-int armorGetDefense(int armor)
-{
+int armorGetDefense(int armor) {
     armorLoadInfoFromXml();
 
     return armors[armor].defense;
@@ -83,8 +81,7 @@ int armorGetDefense(int armor)
  * Returns true if the class given can wear the armor
  */
 
-int armorCanWear(int armor, const char *className)
-{
+int armorCanWear(int armor, const char *className) {
     char *klass;
     int allCanWear = 1;
     int retval = 0;

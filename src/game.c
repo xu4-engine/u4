@@ -1197,8 +1197,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
 int attackAtCoord(int x, int y, int distance, void *data) {
     Object *obj, *under;
     const Monster *m;
-    unsigned char ground;
-    CoordActionInfo *info = (CoordActionInfo *)data;
+    unsigned char ground;    
 
     /* attack failed: finish up */
     if (x == -1 && y == -1) {

@@ -59,7 +59,7 @@ void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);
 int combatZtatsKeyHandler(int key, void *data);
 void combatFinishTurn(void);
-int combatAttackAtCoord(int x, int y, int distance, CoordActionInfo *info);
+int combatAttackAtCoord(int x, int y, int distance, void *data);
 int combatInitialNumberOfMonsters(unsigned char monster);
 int combatIsWon(void);
 int combatIsLost(void);
@@ -342,11 +342,12 @@ int combatZtatsKeyHandler(int key, void *data) {
     return 1;
 }
 
-int combatAttackAtCoord(int x, int y, int distance, CoordActionInfo* info) {
+int combatAttackAtCoord(int x, int y, int distance, void *data) {
     int monster;
     const Monster *m;
     int i, xp, hittile, misstile;
-    int weapon = c->saveGame->players[info->player].weapon;
+    CoordActionInfo* info = (CoordActionInfo*)data;
+    int weapon = c->saveGame->players[info->player].weapon;    
 
     hittile = weaponGetHitTile(weapon);
     misstile = weaponGetMissTile(weapon);    
