@@ -37,9 +37,9 @@ typedef SDL_Surface *(*ScreenScaler)(SDL_Surface *src, int scale, int n);
 
 long decompress_u4_file(FILE *in, long filesize, void **out);
 
-void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int color);
+void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b);
 void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h);
-void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, Uint8 color);
+void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, int r, int g, int b);
 int screenLoadBackgrounds();
 void screenFreeIntroBackground();
 int screenLoadTiles();
@@ -135,7 +135,7 @@ void screenDelete() {
  *  Fills a rectangular screen area with the specified color.  The x,
  *  y, width and height parameters are unscaled, i.e. for 320x200.
  */
-void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int color) {
+void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b) {
     SDL_Rect dest;
 
     dest.x = x * scale;
@@ -143,7 +143,7 @@ void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int color)
     dest.w = w * scale;
     dest.h = h * scale;
 
-    SDL_FillRect(surface, &dest, color);
+    SDL_FillRect(surface, &dest, SDL_MapRGB(surface->format, r, g, b));
 }
 
 /**
@@ -167,30 +167,29 @@ void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int des
     SDL_BlitSurface(surface, &src, surface, &dest);
 }
 
-void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, Uint8 color) {
+void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, int r, int g, int b) {
     int xs, ys;
+
 
     for (xs = 0; xs < scale; xs++) {
         for (ys = 0; ys < scale; ys++) {
-            ((Uint8 *)surface->pixels)[(y*scale+ys) * scale * (surface->w / scale) + x*scale + xs] = color;
+            putPixel(surface, x*scale + xs, y*scale+ys, SDL_MapRGB(surface->format, r, g, b));
         }
     }
 }
 
 void screenFixIntroScreen(const unsigned char *sigData) {
-    const Uint8 sigColor = 0xB;   /* light cyan */
-    const Uint8 lineColor = 4;   /* dark red */
     int i,x,y;
 
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
      * ----------------------------------------------------------------------------- */
-    screenCopyRect(bkgds[BKGD_INTRO],136,0,136,0x21,54,5);
+    screenCopyRect(bkgds[BKGD_INTRO], 136, 0, 136, 0x21, 54, 5);
     
     /* ----------------------------
      * erase the original "present"
      * ---------------------------- */
-    screenFillRect(bkgds[BKGD_INTRO],136,0,54,5,0);
+    screenFillRect(bkgds[BKGD_INTRO], 136, 0, 54, 5, 0, 0, 0);
 
     /* -----------------------------
      * draw "Lord British" signature
@@ -200,8 +199,8 @@ void screenFixIntroScreen(const unsigned char *sigData) {
         /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
         x = sigData[i] + 0x14;
         y = 0xBF - sigData[i+1];
-        screenWriteScaledPixel(bkgds[BKGD_INTRO],x,y,sigColor);
-        screenWriteScaledPixel(bkgds[BKGD_INTRO],x+1,y,sigColor);
+        screenWriteScaledPixel(bkgds[BKGD_INTRO], x, y, 0, 255, 255); /* cyan */
+        screenWriteScaledPixel(bkgds[BKGD_INTRO], x+1, y, 0, 255, 255); /* cyan */
         i += 2;
     }
 
@@ -209,7 +208,7 @@ void screenFixIntroScreen(const unsigned char *sigData) {
      * draw the red line between "Origin Systems, Inc." and "present"
      * -------------------------------------------------------------- */
     /* (x/y) are unscaled coordinates */
-    screenFillRect(bkgds[BKGD_INTRO], 0x56, 0x1F, 0xEE - 0x56, 1, lineColor);
+    screenFillRect(bkgds[BKGD_INTRO], 0x56, 0x1F, 0xEE - 0x56, 1, 128, 0, 0); /* red */
 }
 
 /**
@@ -412,19 +411,12 @@ int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char 
     FILE *in;
     SDL_Surface *img;
     int x, y;
-    Uint8 *p, *data;
+    unsigned char *data;
     long decompResult;
 
     in = u4fopen(filename);
     if (!in)
         return 0;
-
-    img = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
-    if (!img) {
-        u4fclose(in);
-        return 0;
-    }
-    SDL_SetColors(img, egaPalette, 0, 16);
 
     switch(comp) {
     case COMP_NONE:
@@ -443,18 +435,22 @@ int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char 
     }
 
     if (decompResult == -1) {
-        SDL_FreeSurface(img);
         u4fclose(in);
         return 0;
     }
 
-    p = (Uint8 *) img->pixels;
+    img = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+    if (!img) {
+        u4fclose(in);
+        return 0;
+    }
+    SDL_SetColors(img, egaPalette, 0, 16);
+
     for (y = 0; y < height; y++) {
-        for (x = 0; x < width / 2; x++) {
-            *p++ = data[y * width / 2 + x] >> 4;
-            *p++ = data[y * width / 2 + x] & 0x0f;
+        for (x = 0; x < width; x+=2) {
+            putPixel(img, x, y, data[(y * width + x) / 2] >> 4);
+            putPixel(img, x + 1, y, data[(y * width + x) / 2] & 0x0f);
         }
-        p += img->pitch - width;
     }
     free(data);
 
@@ -472,19 +468,12 @@ int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char 
     FILE *in;
     SDL_Surface *img;
     int x, y;
-    Uint8 *p, *data;
+    unsigned char *data;
     long decompResult;
 
     in = u4fopen(filename);
     if (!in)
         return 0;
-
-    img = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
-    if (!img) {
-        u4fclose(in);
-        return 0;
-    }
-    SDL_SetColors(img, vgaPalette, 0, 256);
 
     switch(comp) {
     case COMP_NONE:
@@ -504,16 +493,20 @@ int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char 
 
     if (decompResult == -1 ||
         decompResult != (width * height)) {
-        SDL_FreeSurface(img);
         u4fclose(in);
         return 0;
     }
 
-    p = (Uint8 *) img->pixels;
+    img = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+    if (!img) {
+        u4fclose(in);
+        return 0;
+    }
+    SDL_SetColors(img, vgaPalette, 0, 256);
+
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++)
-            *p++ = data[y * width + x];
-        p += img->pitch - width;
+            putPixel(img, x, y, data[y * width + x]);
     }
     free(data);
 
@@ -836,7 +829,7 @@ void screenGemUpdate() {
     ScreenTileInfo tileInfo;
     int x, y;
 
-    screenFillRect(screen, BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0);
+    screenFillRect(screen, BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0, 0, 0);
 
     for (x = 0; x < GEMAREA_W; x++) {
         for (y = 0; y < GEMAREA_H; y++) {
@@ -892,7 +885,7 @@ SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n) {
         for (x = 0; x < src->w; x++) {
             for (i = 0; i < scale; i++) {
                 for (j = 0; j < scale; j++)
-                    memcpy(&((char *)dest->pixels)[dest->pitch * (y * scale + i) + (x * scale + j) * src->format->BytesPerPixel], &((char *)src->pixels)[src->pitch * y + (x * src->format->BytesPerPixel)], src->format->BytesPerPixel);
+                    putPixel(dest, x * scale + j, y * scale + i, getPixel(src, x, y));
             }
         }
     }
