@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
     if (!skipIntro) {
         /* do the intro */
         introInit();
-        eventHandlerAddTimerCallback(&introTimer, 1);
+        eventHandlerAddTimerCallback(&introTimer, eventTimerGranularity);
         eventHandlerPushKeyHandler(&introKeyHandler);
         eventHandlerMain(NULL);
         eventHandlerRemoveTimerCallback(&introTimer);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     /* play the game! */
     gameInit();
 
-    eventHandlerAddTimerCallback(&gameTimer, 1);
+    eventHandlerAddTimerCallback(&gameTimer, eventTimerGranularity);
     eventHandlerPushKeyHandler(&gameBaseKeyHandler);
     eventHandlerMain(&gameUpdateScreen);
 
