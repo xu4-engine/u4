@@ -177,7 +177,7 @@ Things that might be in here, but haven't been verified:
  - whether the skull has been destroyed (bit 2 on 0x1D1?)
  - which dungeon orbs have been used
  - location of balloon
- - phase of the moons/direction of the wind
+ - direction of the wind
 
 offset len  notes
 0x0    4    ???
@@ -212,16 +212,20 @@ offset len  notes
             magic missile, negate, open, protection, quickness,
             resurrect, sleep, tremor, undead, view, winds, x-it, y-up,
             z-down)
-0x1D1  1    items (1 bit each for skull, ???, candle, book, bell, key part
+0x1D2  1    items (1 bit each for skull, ???, candle, book, bell, key part
             C, key part L, key part T)
-0x1D2  1    items (1 bit each for horn, wheel, ???)
+0x1D3  1    items (1 bit each for horn, wheel, ???)
 0x1D4  1    x coord
 0x1D5  1    y coord
 0x1D6  1    stones (1 bit each for BYRGOPWB)
 0x1D7  1    runes (1 bit each for HCVJSHSH)
 0x1D8  2    number of characters in party
-0x1DA  1    tile that represents the party
-0x1DB  27   ???
+0x1DA  1    tile that represents the party (always 0x1f)
+0x1DB  10   ???
+0x1E4  1    introduced to Lord British (0 - haven't been introduced, 1 - introduced)
+0x1E5  9    ???
+0x1EE  2    ??? (coordinates of a dungeon)
+0x1F0  6    ???
 
 The character record format:
 
