@@ -146,7 +146,7 @@ void Image::setTransparentIndex(unsigned int index) {
  * Sets the color of a single pixel.
  */
 void Image::putPixel(int x, int y, int r, int g, int b, int a) {
-    putPixelIndex(x, y, SDL_MapRGBA(surface->format, (Uint8)r, (Uint8)g, (Uint8)b, (Uint8)a));
+    putPixelIndex(x, y, SDL_MapRGBA(surface->format, static_cast<Uint8>(r), static_cast<Uint8>(g), static_cast<Uint8>(b), static_cast<Uint8>(a)));
 }
 
 /**
@@ -159,7 +159,7 @@ void Image::putPixelIndex(int x, int y, unsigned int index) {
     Uint8 *p;
 
     bpp = surface->format->BytesPerPixel;
-    p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+    p = static_cast<Uint8 *>(surface->pixels) + y * surface->pitch + x * bpp;
 
     switch(bpp) {
     case 1:
@@ -167,7 +167,7 @@ void Image::putPixelIndex(int x, int y, unsigned int index) {
         break;
 
     case 2:
-        *(Uint16 *)p = index;
+        *reinterpret_cast<Uint16 *>(p) = index;
         break;
 
     case 3:
@@ -183,7 +183,7 @@ void Image::putPixelIndex(int x, int y, unsigned int index) {
         break;
 
     case 4:
-        *(Uint32 *)p = index;
+        *reinterpret_cast<Uint32 *>(p) = index;
         break;
     }
 }
@@ -195,7 +195,7 @@ void Image::fillRect(int x, int y, int w, int h, int r, int g, int b) {
     SDL_Rect dest;
     Uint32 pixel;
 
-    pixel = SDL_MapRGB(surface->format, (Uint8)r, (Uint8)g, (Uint8)b);
+    pixel = SDL_MapRGB(surface->format, static_cast<Uint8>(r), static_cast<Uint8>(g), static_cast<Uint8>(b));
     dest.x = x;
     dest.y = y;
     dest.w = w;
@@ -228,7 +228,7 @@ void Image::getPixel(int x, int y, unsigned int &r, unsigned int &g, unsigned in
 void Image::getPixelIndex(int x, int y, unsigned int &index) const {
     int bpp = surface->format->BytesPerPixel;
 
-    Uint8 *p = (Uint8 *) surface->pixels + y * surface->pitch + x * bpp;
+    Uint8 *p = static_cast<Uint8 *>(surface->pixels) + y * surface->pitch + x * bpp;
 
     switch(bpp) {
     case 1:
@@ -236,7 +236,7 @@ void Image::getPixelIndex(int x, int y, unsigned int &index) const {
         break;
 
     case 2:
-        index = *(Uint16 *)p;
+        index = *reinterpret_cast<Uint16 *>(p);
         break;
 
     case 3:
@@ -247,7 +247,7 @@ void Image::getPixelIndex(int x, int y, unsigned int &index) const {
         break;
 
     case 4:
-        index = *(Uint32 *)p;
+        index = *reinterpret_cast<Uint32 *>(p);
 
     default:
         return;

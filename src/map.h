@@ -18,7 +18,7 @@
 
 using std::string;
 
-#define MAP_IS_OOB(mapptr, c) (((c).x) < 0 || ((c).x) >= ((int)(mapptr)->width) || ((c).y) < 0 || ((c).y) >= ((int)(mapptr)->height) || ((c).z) < 0 || ((c).z) >= ((int)(mapptr)->levels))
+#define MAP_IS_OOB(mapptr, c) (((c).x) < 0 || ((c).x) >= (static_cast<int>((mapptr)->width)) || ((c).y) < 0 || ((c).y) >= (static_cast<int>((mapptr)->height)) || ((c).z) < 0 || ((c).z) >= (static_cast<int>((mapptr)->levels)))
 
 class AnnotationMgr;
 class Map;

@@ -43,14 +43,14 @@ Direction dirFromMask(int dir_mask) {
 }
 
 Direction dirRotateCW(Direction dir) {
-    dir = (Direction)(dir + 1);
+    dir = static_cast<Direction>(dir + 1);
     if (dir > DIR_SOUTH)
         dir = DIR_WEST;
     return dir;
 }
 
 Direction dirRotateCCW(Direction dir) {
-    dir = (Direction)(dir - 1);
+    dir = static_cast<Direction>(dir - 1);
     if (dir < DIR_WEST)
         dir = DIR_SOUTH;
     return dir;
@@ -80,7 +80,7 @@ Direction dirRandomDir(int valid_directions_mask) {
     n = 0;
     for (i = DIR_WEST; i <= DIR_SOUTH; i++) {
         if (DIR_IN_MASK(i, valid_directions_mask)) {
-            d[n] = (Direction)i;
+            d[n] = static_cast<Direction>(i);
             n++;
         }
     }
