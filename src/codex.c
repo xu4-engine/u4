@@ -98,7 +98,8 @@ void codexStart() {
         return;
     }
 
-    /* FIXME: draw graphic here */
+    screenDrawBackgroundInMapArea(BKGD_KEY);
+    screenRedrawMapArea();
 
     screenMessage("\nYou use your key of Three Parts.\n");
     eventHandlerSleep(3000);
@@ -216,6 +217,9 @@ int codexHandleWOP(const char *word) {
             }
         }        
         
+        screenEraseMapArea();
+        screenRedrawMapArea();
+
         screenMessage("\nPassage is granted.\n");
         eventHandlerSleep(4000);
 
@@ -263,6 +267,10 @@ int codexHandleVirtues(const char *virtue) {
     /* answered with the correct one of eight virtues */
     if ((current < VIRT_MAX) && 
         (strcasecmp(virtue, getVirtueName((Virtue)current)) == 0)) {
+
+        //screenDrawBackgroundInMapArea(BKGD_HONESTY + current);
+        //screenRedrawMapArea();
+
         current++;
         tries = 1;
 
@@ -284,6 +292,10 @@ int codexHandleVirtues(const char *virtue) {
     /* answered with the correct base virtue (truth, love, courage) */
     else if ((current >= VIRT_MAX) &&
              (strcasecmp(virtue, getBaseVirtueName((BaseVirtue)(1 << (current - VIRT_MAX)))) == 0)) {
+
+        //screenDrawBackgroundInMapArea(BKGD_HONESTY + current);
+        //screenRedrawMapArea();
+
         current++;
         tries = 1;
 
