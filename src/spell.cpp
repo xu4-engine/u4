@@ -717,7 +717,7 @@ static int spellYup(int unused) {
     /* staying in the dungeon */
     else if (coords.z > 0) {
         for (i = 0; i < 0x20; i++) {
-            coords = MapCoords(xu4_random(8), xu4_random(8), coords.z - 1);
+            coords = MapCoords(xu4_random(8), xu4_random(8), c->location->coords.z - 1);
             tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
             if (dungeonTokenForTile(*tile) == DUNGEON_CORRIDOR) {
@@ -750,7 +750,7 @@ static int spellZdown(int unused) {
         return 0;
     else {
         for (i = 0; i < 0x20; i++) {
-            coords = MapCoords(xu4_random(8), xu4_random(8), coords.z + 1);
+            coords = MapCoords(xu4_random(8), xu4_random(8), c->location->coords.z + 1);
             tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
             if (dungeonTokenForTile(*tile) == DUNGEON_CORRIDOR) {
