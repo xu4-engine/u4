@@ -45,6 +45,9 @@ typedef enum {
     INTRO_MAP,                  /* displaying the animated intro map */
     INTRO_MENU,                 /* displaying the main menu: journey onward, etc. */
     INTRO_CONFIG,               /* the configuration screen */
+    INTRO_CONFIG_VIDEO,         /* video configuration */
+    INTRO_CONFIG_SOUND,         /* sound configuration */
+    INTRO_CONFIG_OTHER,         /* other configuration */
     INTRO_ABOUT,                /* about xu4 screen */
     INTRO_INIT_NAME,            /* prompting for character name */
     INTRO_INIT_SEX,             /* prompting for character sex */
@@ -309,6 +312,22 @@ int introKeyHandler(int key, void *data) {
         break;
 
     case INTRO_CONFIG:
+        
+        switch(key) {
+        case 'v': mode = INTRO_CONFIG_VIDEO; break;
+        case 's': mode = INTRO_CONFIG_SOUND; break;
+        case 'o': mode = INTRO_CONFIG_OTHER; break;
+        case U4_ESC:
+        case ' ':
+        case U4_ENTER:
+        case 'm': mode = INTRO_MENU; break;
+        default: break;
+        }
+
+        introUpdateScreen();
+        return 1;
+
+    case INTRO_CONFIG_VIDEO:
         switch (key) {
         case 's':
             settings->scale++;
@@ -323,22 +342,68 @@ int introKeyHandler(int key, void *data) {
             if (settings->filter == SCL_MAX)
                 settings->filter = (FilterType) 0;
             break;
-        case 'v':
-            settings->vol = !settings->vol;
-            break;
-        case 'b':
-            settings->battleSpeed++;
-            if (settings->battleSpeed > MAX_BATTLE_SPEED)
-                settings->battleSpeed = 1;
-            break;
+        case U4_ESC:
+        case ' ':
+        case U4_ENTER:
         case 'c':
-            mode = INTRO_MENU;
+            mode = INTRO_CONFIG;
             break;
         case 'u':
             settingsWrite();
             musicIntro();
             
-            mode = INTRO_MENU;
+            mode = INTRO_CONFIG;
+            break;
+        }
+        introUpdateScreen();
+        return 1;
+
+    case INTRO_CONFIG_SOUND:
+        switch (key) {
+        case 'v':
+            settings->vol = !settings->vol;
+            break;
+        case U4_ESC:
+        case ' ':
+        case U4_ENTER:
+        case 'c':
+            mode = INTRO_CONFIG;
+            break;
+        case 'u':
+            settingsWrite();
+            musicIntro();
+            
+            mode = INTRO_CONFIG;
+            break;
+        }
+        introUpdateScreen();
+        return 1;
+
+    case INTRO_CONFIG_OTHER:
+        switch (key) {
+        case 'b':
+            settings->battleSpeed++;
+            if (settings->battleSpeed > MAX_BATTLE_SPEED)
+                settings->battleSpeed = 1;
+            break;
+        case 'x':
+        case 'e':
+            settings->minorEnhancements = !settings->minorEnhancements;
+            break;
+        case 's':
+            settings->shortcutCommands = !settings->shortcutCommands;
+            break;
+        case U4_ESC:
+        case ' ':
+        case U4_ENTER:
+        case 'c':
+            mode = INTRO_CONFIG;
+            break;
+        case 'u':
+            settingsWrite();
+            musicIntro();
+            
+            mode = INTRO_CONFIG;
             break;
         }
         introUpdateScreen();
@@ -516,13 +581,41 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG:
+        screenDrawBackground(BKGD_INTRO);        
+        screenTextAt(9, 14, "-- xu4 Configuration --");
+        screenTextAt(13, 16, "Video Settings");
+        screenTextAt(13, 17, "Sound Settings");
+        screenTextAt(13, 18, "Other Settings");
+        screenTextAt(15, 20, "Main Menu");
+        introDrawBeasties();
+        break;
+
+    case INTRO_CONFIG_VIDEO:
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(2, 14, "Settings (take effect on restart):");
-        screenTextAt(11, 15, "Scale        x%d", settings->scale);
-        screenTextAt(11, 16, "Mode         %s", settings->fullscreen ? "Fullscreen" : "Window");
-        screenTextAt(11, 17, "Filter       %s", settingsFilterToString(settings->filter));
-        screenTextAt(11, 18, "Volume       %s", settings->vol ? "On" : "Off");
-        screenTextAt(11, 19, "Battle Speed %d", settings->battleSpeed);
+        screenTextAt(11, 16, "Scale        x%d", settings->scale);
+        screenTextAt(11, 17, "Mode         %s", settings->fullscreen ? "Fullscreen" : "Window");
+        screenTextAt(11, 18, "Filter       %s", settingsFilterToString(settings->filter));
+        screenTextAt(11, 20, "Use These Settings");
+        screenTextAt(11, 21, "Cancel");
+        introDrawBeasties();
+        break;
+
+    case INTRO_CONFIG_SOUND:
+        screenDrawBackground(BKGD_INTRO);
+        screenTextAt(2, 14, "Settings:");
+        screenTextAt(11, 16, "Volume       %s", settings->vol ? "On" : "Off");
+        screenTextAt(11, 20, "Use These Settings");
+        screenTextAt(11, 21, "Cancel");
+        introDrawBeasties();
+        break;
+
+    case INTRO_CONFIG_OTHER:
+        screenDrawBackground(BKGD_INTRO);
+        screenTextAt(2, 14, "Settings:");
+        screenTextAt(10, 16, "Battle Speed       %d", settings->battleSpeed);
+        screenTextAt(10, 17, "xu4 Enhancements   %s", settings->minorEnhancements ? "On" : "Off");
+        screenTextAt(10, 18, "Shortcut Commands  %s", settings->shortcutCommands ? "On" : "Off");
         screenTextAt(11, 20, "Use These Settings");
         screenTextAt(11, 21, "Cancel");
         introDrawBeasties();
@@ -775,7 +868,9 @@ void introTimer(void *data) {
     screenUpdateCursor();
     if (mode == INTRO_MAP)
         introDrawMap();
-    if (mode == INTRO_MAP || mode == INTRO_MENU || mode == INTRO_CONFIG || mode == INTRO_ABOUT ||
+    if (mode == INTRO_MAP || mode == INTRO_MENU || mode == INTRO_CONFIG ||
+        mode == INTRO_CONFIG_VIDEO || mode == INTRO_CONFIG_SOUND ||
+        mode == INTRO_CONFIG_OTHER || mode == INTRO_ABOUT ||
         mode == INTRO_INIT_NAME || mode == INTRO_INIT_SEX)
         introDrawBeasties();
 

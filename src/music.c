@@ -38,8 +38,9 @@ void musicPlayMid(Music music) {
         return;
     }    
 
-    musicLoad(music);
-    Mix_PlayMusic(playing, -1);
+    /* loaded a new piece of music */
+    if (musicLoad(music))
+        Mix_PlayMusic(playing, -1);
 }
 
 int musicLoad(Music music) {
@@ -49,7 +50,7 @@ int musicLoad(Music music) {
     assert(music < MUSIC_MAX);
 
     if (music == current)
-        return 1;
+        return 0;
 
     pathname = u4find_music(musicFilenames[music]);
     if (pathname) {
