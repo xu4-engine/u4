@@ -25,8 +25,8 @@ IDI_ICON1               ICON    DISCARDABLE     "xu4.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,0,0
- PRODUCTVERSION 0,9,0,0
+ FILEVERSION 0,50,0,0
+ PRODUCTVERSION 0,50,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -43,12 +43,12 @@ BEGIN
         BEGIN
             //VALUE "CompanyName", "The XU4 Team\0"
             VALUE "FileDescription", "XU4 Ultima IV Engine\0"
-            VALUE "FileVersion", "0.9.0\0"
+            VALUE "FileVersion", "0.50.0\0"
             VALUE "InternalName", "XU4\0"
             VALUE "LegalCopyright", "Copyright © 2002\0"
             VALUE "OriginalFilename", "u4.exe\0"
             VALUE "ProductName", "XU4 Ultima IV Engine\0"
-            VALUE "ProductVersion", "0.9.0\0"
+            VALUE "ProductVersion", "0.50.0\0"
         END
     END
     BLOCK "VarFileInfo"
