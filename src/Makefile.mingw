@@ -17,7 +17,7 @@ XML_LIBS=$(shell xml2-config --libs)
 UI=sdl
 
 CC=gcc
-CFLAGS=-Wall -I. $(SDL_CFLAGS) $(XML_CFLAGS) -DVERSION=\"$(VERSION)\"
+CFLAGS=-Wall -I. $(SDL_CFLAGS) $(XML_CFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
 LIBS=-lmingw32 $(SDL_LIBS) $(XML_LIBS) -mwindows
 EXEEXT	:=.exe
 OBJS= xu4ico.o
