@@ -464,11 +464,19 @@ SOURCE=..\src\stats.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\ttype.c
+SOURCE=..\src\tile.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\ttype.h
+SOURCE=..\src\tile.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\tileset.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\tileset.h
 # End Source File
 # Begin Source File
 
