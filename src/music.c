@@ -21,7 +21,6 @@
 
 char *musicFilenames[MUSIC_MAX];
 
-int soundDisabled;
 int toggle = 1;
 Music introMid = MUSIC_TOWNS;
 Mix_Music *playing = NULL;
@@ -32,8 +31,11 @@ void musicPlayMid(Music music) {
 
     assert(music < MUSIC_MAX);
 
-    if (soundDisabled || current == music)
+    if (settings->vol == 0 || current == music) {
+        if (playing)
+            musicFadeOut(1000);
         return;
+    }
 
     if (playing) {
         Mix_FreeMusic(playing);
@@ -61,7 +63,7 @@ void musicPlayMid(Music music) {
 int musicToggle() {
     toggle = !toggle;
 
-    if (!soundDisabled) {
+    if (settings->vol) {
         if (!toggle)
             musicFadeOut(1000);
         else if (playing)
@@ -91,6 +93,10 @@ void musicCamp(void){  /* Music when camping */
     musicPlayMid(MUSIC_SHOPPING);
 }
 
+void musicShopping(void){  /* Music when talking to a vendor */
+    musicPlayMid(MUSIC_SHOPPING);
+}
+
 void musicPlay(void) {  /* Main music loop. */
     musicPlayMid(c->location->map->music);
 }
@@ -100,12 +106,12 @@ void musicStop(void) {
 }
 
 void musicFadeOut(int msecs) {
-    if (!soundDisabled)
+    if (settings->vol)
         Mix_FadeOutMusic(msecs);
 }
 
 void musicFadeIn(int msecs) {
-    if (!soundDisabled && toggle)
+    if (settings->vol && toggle)
         Mix_FadeInMusic(playing, -1, msecs);
 }
 
@@ -116,7 +122,7 @@ int musicInit() {
     xmlNodePtr root, node;
 
     /*
-     * load musc track filenames from xml config file
+     * load music track filenames from xml config file
      */
 
     fname = u4find_conf("music.xml");
@@ -151,10 +157,7 @@ int musicInit() {
     /*
      * initialize sound subsystem
      */
-
-    soundDisabled = settings->vol == 0;
-
-    if (!soundDisabled) {
+    if (settings->vol) {
         int audio_rate = 22050;
         Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
         int audio_channels = 2;
@@ -171,7 +174,7 @@ int musicInit() {
         }
 
 
-        Mix_AllocateChannels(1);
+        Mix_AllocateChannels(16);
     }
 
     return 0;
