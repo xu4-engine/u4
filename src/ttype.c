@@ -198,8 +198,8 @@ int tileLoadProperties(Tile *tileset, int index, xmlNodePtr node) {
         unsigned int mask;      
     } movementBooleanAttr[] = {        
         { "swimable", MASK_SWIMABLE },
-        { "sailable", MASK_SAILABLE },        
-        { "unflyable", MASK_UNFLYABLE },        
+        { "sailable", MASK_SAILABLE },       
+        { "unflyable", MASK_UNFLYABLE },       
         { "monsterunwalkable", MASK_MONSTER_UNWALKABLE }        
     };
 
@@ -211,11 +211,11 @@ int tileLoadProperties(Tile *tileset, int index, xmlNodePtr node) {
     tileset[index].walkoffDirs = MASK_DIR_ALL;
     tileset[index].displayTile = index; /* itself */
 
-    if (xmlGetPropAsStr(node, (const xmlChar *)"displayTile") != NULL)
-        tileset[index].displayTile = (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"displayTile");
+    if (xmlPropExists(node, "displayTile"))    
+        tileset[index].displayTile = (unsigned char)xmlGetPropAsInt(node, "displayTile");
 
     for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
-        if (xmlGetPropAsBool(node, (const xmlChar *) booleanAttributes[i].name)) {
+        if (xmlGetPropAsBool(node, booleanAttributes[i].name)) {
             tileset[index].mask |= booleanAttributes[i].mask;
             if (booleanAttributes[i].base &&
                 (*booleanAttributes[i].base) == -1)
@@ -224,58 +224,58 @@ int tileLoadProperties(Tile *tileset, int index, xmlNodePtr node) {
     }
 
     for (i = 0; i < sizeof(movementBooleanAttr) / sizeof(movementBooleanAttr[0]); i++) {
-        if (xmlGetPropAsBool(node, (const xmlChar *) movementBooleanAttr[i].name))
+        if (xmlGetPropAsBool(node, movementBooleanAttr[i].name))
             tileset[index].movementMask |= movementBooleanAttr[i].mask;
     }
 
-    if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "all") == 0)
+    if (xmlPropCmp(node, "cantwalkon", "all") == 0)
         tileset[index].walkonDirs = 0;
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "west") == 0)
+    else if (xmlPropCmp(node, "cantwalkon", "west") == 0)
         tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, tileset[index].walkonDirs);
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "north") == 0)
+    else if (xmlPropCmp(node, "cantwalkon", "north") == 0)
         tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, tileset[index].walkonDirs);
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "east") == 0)
+    else if (xmlPropCmp(node, "cantwalkon", "east") == 0)
         tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, tileset[index].walkonDirs);
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "south") == 0)
+    else if (xmlPropCmp(node, "cantwalkon", "south") == 0)
         tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, tileset[index].walkonDirs);
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "advance") == 0)
+    else if (xmlPropCmp(node, "cantwalkon", "advance") == 0)
         tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_ADVANCE, tileset[index].walkonDirs);
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "retreat") == 0)
+    else if (xmlPropCmp(node, "cantwalkon", "retreat") == 0)
         tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_RETREAT, tileset[index].walkonDirs);
 
-    if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "all") == 0)
+    if (xmlPropCmp(node, "cantwalkoff", "all") == 0)
         tileset[index].walkoffDirs = 0;
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "west") == 0)
+    else if (xmlPropCmp(node, "cantwalkoff", "west") == 0)
         tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, tileset[index].walkoffDirs);
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "north") == 0)
+    else if (xmlPropCmp(node, "cantwalkoff", "north") == 0)
         tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, tileset[index].walkoffDirs);
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "east") == 0)
+    else if (xmlPropCmp(node, "cantwalkoff", "east") == 0)
         tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, tileset[index].walkoffDirs);
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "south") == 0)
+    else if (xmlPropCmp(node, "cantwalkoff", "south") == 0)
         tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, tileset[index].walkoffDirs);
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "advance") == 0)
+    else if (xmlPropCmp(node, "cantwalkoff", "advance") == 0)
         tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_ADVANCE, tileset[index].walkoffDirs);
-    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "retreat") == 0)
+    else if (xmlPropCmp(node, "cantwalkoff", "retreat") == 0)
         tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_RETREAT, tileset[index].walkoffDirs);
 
-    if (xmlPropCmp(node, (const xmlChar *) "speed", "slow") == 0)
+    if (xmlPropCmp(node, "speed", "slow") == 0)
         tileset[index].speed = SLOW;
-    else if (xmlPropCmp(node, (const xmlChar *) "speed", "vslow") == 0)
+    else if (xmlPropCmp(node, "speed", "vslow") == 0)
         tileset[index].speed = VSLOW;
-    else if (xmlPropCmp(node, (const xmlChar *) "speed", "vvslow") == 0)
+    else if (xmlPropCmp(node, "speed", "vvslow") == 0)
         tileset[index].speed = VVSLOW;
 
-    if (xmlPropCmp(node, (const xmlChar *) "effect", "fire") == 0)
+    if (xmlPropCmp(node, "effect", "fire") == 0)
         tileset[index].effect = EFFECT_FIRE;
-    else if (xmlPropCmp(node, (const xmlChar *) "effect", "sleep") == 0)
+    else if (xmlPropCmp(node, "effect", "sleep") == 0)
         tileset[index].effect = EFFECT_SLEEP;
-    else if (xmlPropCmp(node, (const xmlChar *) "effect", "poison") == 0)
+    else if (xmlPropCmp(node, "effect", "poison") == 0)
         tileset[index].effect = EFFECT_POISON;
-    else if (xmlPropCmp(node, (const xmlChar *) "effect", "poisonField") == 0)
+    else if (xmlPropCmp(node, "effect", "poisonField") == 0)
         tileset[index].effect = EFFECT_POISONFIELD;
-    else if (xmlPropCmp(node, (const xmlChar *) "effect", "electricity") == 0)
+    else if (xmlPropCmp(node, "effect", "electricity") == 0)
         tileset[index].effect = EFFECT_ELECTRICITY;
-    else if (xmlPropCmp(node, (const xmlChar *) "effect", "lava") == 0)
+    else if (xmlPropCmp(node, "effect", "lava") == 0)
         tileset[index].effect = EFFECT_LAVA;    
 
     return 1;

@@ -98,13 +98,17 @@ void xmlAccumError(void *l, const char *fmt, ...) {
     *errlist = listAppend(*errlist, strdup(buffer));
 }
 
-char *xmlGetPropAsStr(xmlNodePtr node, const xmlChar *name) {
+int xmlPropExists(xmlNodePtr node, const char *name) {
+    return (xmlGetPropAsStr(node, (const xmlChar *)name) != NULL) ? 1 : 0;
+}
+
+char *xmlGetPropAsStr(xmlNodePtr node, const char *name) {
     xmlChar *prop;
 
-    if (settings->validateXml && !xmlHasProp(node, name))
+    if (settings->validateXml && !xmlHasProp(node, (const xmlChar *)name))
         return NULL;
     
-    prop = xmlGetProp(node, name);
+    prop = xmlGetProp(node, (const xmlChar *)name);
     if (!prop)
         return NULL;
     
@@ -116,14 +120,14 @@ char *xmlGetPropAsStr(xmlNodePtr node, const xmlChar *name) {
  * should be "true" or "false", case sensitive.  If it is neither,
  * false is returned.
  */
-int xmlGetPropAsBool(xmlNodePtr node, const xmlChar *name) {
+int xmlGetPropAsBool(xmlNodePtr node, const char *name) {
     int result;
     xmlChar *prop;
 
-    if (settings->validateXml && !xmlHasProp(node, name))
+    if (settings->validateXml && !xmlHasProp(node, (const xmlChar *)name))
         return 0;
 
-    prop = xmlGetProp(node, name);
+    prop = xmlGetProp(node, (const xmlChar *)name);
     if (!prop)
         return 0;
 
@@ -142,14 +146,14 @@ int xmlGetPropAsBool(xmlNodePtr node, const xmlChar *name) {
  * Get an XML property and convert it to an integer value.  Returns
  * zero if the property is not set.
  */
-int xmlGetPropAsInt(xmlNodePtr node, const xmlChar *name) {
+int xmlGetPropAsInt(xmlNodePtr node, const char *name) {
     long result;
     xmlChar *prop;
 
-    if (settings->validateXml && !xmlHasProp(node, name))
+    if (settings->validateXml && !xmlHasProp(node, (const xmlChar *)name))
         return 0;
 
-    prop = xmlGetProp(node, name);
+    prop = xmlGetProp(node, (const xmlChar *)name);
     if (!prop)
         return 0;
 
@@ -163,11 +167,11 @@ int xmlGetPropAsInt(xmlNodePtr node, const xmlChar *name) {
  * Compare an XML property to another string.  The return value is as
  * strcmp.
  */
-int xmlPropCmp(xmlNodePtr node, const xmlChar *name, const char *s) {
+int xmlPropCmp(xmlNodePtr node, const char *name, const char *s) {
     int result;
     xmlChar *prop;    
     
-    prop = xmlGetProp(node, name);
+    prop = xmlGetProp(node, (const xmlChar *)name);
     result = xmlStrcmp(prop, (const xmlChar *) s);
     xmlFree(prop);
     
@@ -178,11 +182,11 @@ int xmlPropCmp(xmlNodePtr node, const xmlChar *name, const char *s) {
  * Compare an XML property to another string, case insensitively.  The
  * return value is as str[case]cmp.
  */
-int xmlPropCaseCmp(xmlNodePtr node, const xmlChar *name, const char *s) {
+int xmlPropCaseCmp(xmlNodePtr node, const char *name, const char *s) {
     int result;
     xmlChar *prop;
     
-    prop = xmlGetProp(node, name);
+    prop = xmlGetProp(node, (const xmlChar *)name);
     result = xmlStrcasecmp(prop, (const xmlChar *) s);
     xmlFree(prop);
     

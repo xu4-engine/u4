@@ -42,10 +42,10 @@ void monsterLoadInfoFromXml() {
         { "undead", MATTR_UNDEAD },
         { "good", MATTR_GOOD },
         { "swims", MATTR_WATER },
-        { "sails", MATTR_WATER },        
-        { "cantattack", MATTR_NONATTACKABLE },        
+        { "sails", MATTR_WATER },       
+        { "cantattack", MATTR_NONATTACKABLE },       
         { "camouflage", MATTR_CAMOUFLAGE }, 
-        { "wontattack", MATTR_NOATTACK },        
+        { "wontattack", MATTR_NOATTACK },       
         { "ambushes", MATTR_AMBUSHES },
         { "incorporeal", MATTR_INCORPOREAL },
         { "nochest", MATTR_NOCHEST },
@@ -132,17 +132,17 @@ void monsterLoadInfoFromXml() {
             xmlStrcmp(node->name, (const xmlChar *) "monster") != 0)
             continue;
 
-        monsters[monster].name = xmlGetPropAsStr(node, (const xmlChar *)"name");
-        monsters[monster].id = (unsigned short)xmlGetPropAsInt(node, (const xmlChar *)"id");
+        monsters[monster].name = xmlGetPropAsStr(node, "name");
+        monsters[monster].id = (unsigned short)xmlGetPropAsInt(node, "id");
         
         /* Get the leader if it's been included, otherwise the leader is itself */
-        if (xmlGetPropAsStr(node, (const xmlChar *)"leader") != NULL)
-            monsters[monster].leader = (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"leader");
+        if (xmlPropExists(node, "leader"))        
+            monsters[monster].leader = (unsigned char)xmlGetPropAsInt(node, "leader");
         else monsters[monster].leader = monsters[monster].id;
         
-        monsters[monster].xp = (unsigned short)xmlGetPropAsInt(node, (const xmlChar *)"exp");
-        monsters[monster].ranged = xmlGetPropAsBool(node, (const xmlChar *)"ranged");
-        monsters[monster].tile = (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"tile");
+        monsters[monster].xp = (unsigned short)xmlGetPropAsInt(node, "exp");
+        monsters[monster].ranged = xmlGetPropAsBool(node, "ranged");
+        monsters[monster].tile = (unsigned char)xmlGetPropAsInt(node, "tile");
         monsters[monster].frames = 1;
         monsters[monster].camouflageTile = 0;
 
@@ -159,95 +159,96 @@ void monsterLoadInfoFromXml() {
         monsters[monster].resists = 0;
 
         /* get the encounter size */
-        if (xmlGetPropAsStr(node, (const xmlChar *)"encounterSize") != NULL) {
+        if (xmlPropExists(node, "encounterSize")) {
             monsters[monster].encounterSize = 
-                (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"encounterSize");
+                (unsigned char)xmlGetPropAsInt(node, "encounterSize");
         }
 
         /* get the base hp */
-        if (xmlGetPropAsStr(node, (const xmlChar *)"basehp") != NULL) {
+        if (xmlPropExists(node, "basehp")) {
             monsters[monster].basehp =
-                (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"basehp");
+                (unsigned char)xmlGetPropAsInt(node, "basehp");
         }
 
         /* get the camouflaged tile */
-        if (xmlGetPropAsStr(node, (const xmlChar *)"camouflageTile") != NULL) {
+        if (xmlPropExists(node, "camouflageTile")) {        
             monsters[monster].camouflageTile =
-                (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"camouflageTile");
+                (unsigned char)xmlGetPropAsInt(node, "camouflageTile");
         }
 
         /* get the ranged tile for world map attacks */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, (const xmlChar *)"worldrangedtile", tiles[i].name) == 0) {
+            if (xmlPropCmp(node, "worldrangedtile", tiles[i].name) == 0) {
                 monsters[monster].worldrangedtile = tiles[i].tile;
             }
         }
 
         /* get ranged hit tile */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, (const xmlChar *)"rangedhittile", tiles[i].name) == 0) {
+            if (xmlPropCmp(node, "rangedhittile", tiles[i].name) == 0) {
                 monsters[monster].rangedhittile = tiles[i].tile;
             }
-            else if (xmlPropCmp(node, (const xmlChar *)"rangedhittile", "random") == 0)
+            else if (xmlPropCmp(node, "rangedhittile", "random") == 0)
                 monsters[monster].mattr |= MATTR_RANDOMRANGED;
         }
 
         /* get ranged miss tile */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, (const xmlChar *)"rangedmisstile", tiles[i].name) == 0) {
+            if (xmlPropCmp(node, "rangedmisstile", tiles[i].name) == 0) {
                 monsters[monster].rangedmisstile = tiles[i].tile;
             }
-            else if (xmlPropCmp(node, (const xmlChar *)"rangedhittile", "random") == 0)
+            else if (xmlPropCmp(node, "rangedhittile", "random") == 0)
                 monsters[monster].mattr |= MATTR_RANDOMRANGED;
         }
 
         /* find out if the monster leaves a tile behind on ranged attacks */
-        monsters[monster].leavestile = xmlGetPropAsBool(node, (const xmlChar *)"leavestile");
+        monsters[monster].leavestile = xmlGetPropAsBool(node, "leavestile");
 
         /* get effects that this monster is immune to */
         for (i = 0; i < sizeof(effects) / sizeof(effects[0]); i++) {
-            if (xmlPropCmp(node, (const xmlChar *)"resists", effects[i].name) == 0) {
+            if (xmlPropCmp(node, "resists", effects[i].name) == 0) {
                 monsters[monster].resists = effects[i].effect;
             }
         }
 
         /* get the number of frames for animation */
-        if (xmlGetPropAsStr(node, (const xmlChar *)"frames") != NULL) {
+        if (xmlPropExists(node, "frames")) {
             monsters[monster].frames =
-                (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"frames");
+                (unsigned char)xmlGetPropAsInt(node, "frames");
         }
+        else monsters[monster].frames = 2;
 
         /* Load monster attributes */
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
-            if (xmlGetPropAsBool(node, (const xmlChar *) booleanAttributes[i].name)) {
+            if (xmlGetPropAsBool(node, booleanAttributes[i].name)) {
                 monsters[monster].mattr |= booleanAttributes[i].mask;
             }
         }
         
         /* Load boolean attributes that affect movement */
         for (i = 0; i < sizeof(movementBoolean) / sizeof(movementBoolean[0]); i++) {
-            if (xmlGetPropAsBool(node, (const xmlChar *) movementBoolean[i].name)) {
+            if (xmlGetPropAsBool(node, movementBoolean[i].name)) {
                 monsters[monster].movementAttr |= movementBoolean[i].mask;
             }
         }
 
         /* steals="" */
         for (i = 0; i < sizeof(steals) / sizeof(steals[0]); i++) {
-            if (xmlPropCmp(node, (const xmlChar *)"steals", steals[i].name) == 0) {
+            if (xmlPropCmp(node, "steals", steals[i].name) == 0) {
                 monsters[monster].mattr |= steals[i].mask;
             }
         }
 
         /* casts="" */
         for (i = 0; i < sizeof(casts) / sizeof(casts[0]); i++) {
-            if (xmlPropCmp(node, (const xmlChar *)"casts", casts[i].name) == 0) {
+            if (xmlPropCmp(node, "casts", casts[i].name) == 0) {
                 monsters[monster].mattr |= casts[i].mask;
             }
         }
 
         /* movement="" */
         for (i = 0; i < sizeof(movement) / sizeof(movement[0]); i++) {
-            if (xmlPropCmp(node, (const xmlChar *)"movement", movement[i].name) == 0) {
+            if (xmlPropCmp(node, "movement", movement[i].name) == 0) {
                 monsters[monster].movementAttr |= movement[i].mask;
             }
         }

@@ -37,14 +37,14 @@ void armorLoadInfoFromXml() {
             xmlStrcmp(node->name, (const xmlChar *) "armor") != 0)
             continue;
 
-        armors[armor].name = xmlGetPropAsStr(node, (const xmlChar *)"name");
+        armors[armor].name = xmlGetPropAsStr(node, "name");
         armors[armor].canuse = 0xFF;
-        armors[armor].defense = xmlGetPropAsInt(node, (const xmlChar *)"defense");
+        armors[armor].defense = xmlGetPropAsInt(node, "defense");
         armors[armor].mask = 0;
 
         /* Load armor attributes, if any 
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
-            if (xmlGetPropAsBool(node, (const xmlChar *) booleanAttributes[i].name)) {
+            if (xmlGetPropAsBool(node, booleanAttributes[i].name)) {
                 weapons[weapon].mask |= booleanAttributes[i].mask;
             }
         } */
@@ -53,20 +53,20 @@ void armorLoadInfoFromXml() {
             unsigned char mask = 0;
 
             if (xmlNodeIsText(child) ||
-                xmlStrcmp(child->name, (const xmlChar *) "constraint") != 0)
+                xmlStrcmp(child->name, "constraint") != 0)
                 continue;
 
             for (i = 0; i < 8; i++) {
-                if (xmlPropCaseCmp(child, (const xmlChar *) "class", getClassName((ClassType)i)) == 0)
+                if (xmlPropCaseCmp(child, "class", getClassName((ClassType)i)) == 0)
                     mask = (1 << i);
             }
-            if (mask == 0 && xmlPropCaseCmp(child, (const xmlChar *) "class", "all") == 0)
+            if (mask == 0 && xmlPropCaseCmp(child, "class", "all") == 0)
                 mask = 0xFF;
             if (mask == 0) {
                 errorFatal("malformed armor.xml file: constraint has unknown class %s", 
-                           xmlGetPropAsStr(child, (const xmlChar *) "class"));
+                           xmlGetPropAsStr(child, "class"));
             }
-            if (xmlGetPropAsBool(child, (const xmlChar *) "canuse"))
+            if (xmlGetPropAsBool(child, "canuse"))
                 armors[armor].canuse |= mask;
             else
                 armors[armor].canuse &= ~mask;

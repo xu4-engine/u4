@@ -75,19 +75,19 @@ void weaponLoadInfoFromXml() {
             xmlStrcmp(node->name, (const xmlChar *) "weapon") != 0)
             continue;
 
-        weapons[weapon].name = xmlGetPropAsStr(node, (const xmlChar *)"name");        
-        weapons[weapon].abbr = xmlGetPropAsStr(node, (const xmlChar *)"abbr");
+        weapons[weapon].name = xmlGetPropAsStr(node, "name");        
+        weapons[weapon].abbr = xmlGetPropAsStr(node, "abbr");
         weapons[weapon].canuse = 0xFF;
-        weapons[weapon].damage = xmlGetPropAsInt(node, (const xmlChar *)"damage");
+        weapons[weapon].damage = xmlGetPropAsInt(node, "damage");
         weapons[weapon].hittile = HITFLASH_TILE;
         weapons[weapon].misstile = MISSFLASH_TILE;
         weapons[weapon].leavetile = 0;
         weapons[weapon].mask = 0;
 
         /* Get the range of the weapon, whether it is absolute or normal range */
-        range = xmlGetPropAsStr(node, (const xmlChar *)"range");
+        range = xmlGetPropAsStr(node, "range");
         if (range == NULL) {
-            range = xmlGetPropAsStr(node, (const xmlChar *)"absolute_range");
+            range = xmlGetPropAsStr(node, "absolute_range");
             if (range != NULL)
                 weapons[weapon].mask |= MASK_ABSOLUTERANGE;
         }
@@ -98,28 +98,28 @@ void weaponLoadInfoFromXml() {
 
         /* Load weapon attributes */
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
-            if (xmlGetPropAsBool(node, (const xmlChar *) booleanAttributes[i].name)) {
+            if (xmlGetPropAsBool(node, booleanAttributes[i].name)) {
                 weapons[weapon].mask |= booleanAttributes[i].mask;
             }
         }
 
         /* Load hit tiles */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, (const xmlChar *) "hittile", tiles[i].name) == 0) {
+            if (xmlPropCmp(node, "hittile", tiles[i].name) == 0) {
                 weapons[weapon].hittile = tiles[i].tile;
             }
         }
 
         /* Load miss tiles */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, (const xmlChar *) "misstile", tiles[i].name) == 0) {
+            if (xmlPropCmp(node, "misstile", tiles[i].name) == 0) {
                 weapons[weapon].misstile = tiles[i].tile;
             }
         }
 
         /* Load leave tiles */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, (const xmlChar *) "leavetile", tiles[i].name) == 0) {
+            if (xmlPropCmp(node, "leavetile", tiles[i].name) == 0) {
                 weapons[weapon].mask |= MASK_LEAVETILE;
                 weapons[weapon].leavetile = tiles[i].tile;
             }
@@ -133,16 +133,16 @@ void weaponLoadInfoFromXml() {
                 continue;
 
             for (i = 0; i < 8; i++) {
-                if (xmlPropCaseCmp(child, (const xmlChar *) "class", getClassName((ClassType)i)) == 0)
+                if (xmlPropCaseCmp(child, "class", getClassName((ClassType)i)) == 0)
                     mask = (1 << i);
             }
-            if (mask == 0 && xmlPropCaseCmp(child, (const xmlChar *) "class", "all") == 0)
+            if (mask == 0 && xmlPropCaseCmp(child, "class", "all") == 0)
                 mask = 0xFF;
             if (mask == 0) {
                 errorFatal("malformed weapons.xml file: constraint has unknown class %s", 
-                           xmlGetPropAsStr(child, (const xmlChar *) "class"));
+                           xmlGetPropAsStr(child, "class"));
             }
-            if (xmlGetPropAsBool(child, (const xmlChar *) "canuse"))
+            if (xmlGetPropAsBool(child, "canuse"))
                 weapons[weapon].canuse |= mask;
             else
                 weapons[weapon].canuse &= ~mask;

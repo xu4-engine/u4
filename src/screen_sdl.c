@@ -589,9 +589,9 @@ int screenLoadPaletteEga() {
             xmlStrcmp(node->name, (const xmlChar *) "color") != 0)
             continue;
         
-        egaPalette[i].r = xmlGetPropAsInt(node, (const xmlChar *)"r");
-        egaPalette[i].g = xmlGetPropAsInt(node, (const xmlChar *)"g");
-        egaPalette[i].b = xmlGetPropAsInt(node, (const xmlChar *)"b");
+        egaPalette[i].r = xmlGetPropAsInt(node, "r");
+        egaPalette[i].g = xmlGetPropAsInt(node, "g");
+        egaPalette[i].b = xmlGetPropAsInt(node, "b");
 
         i++;
     }
