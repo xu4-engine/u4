@@ -50,6 +50,12 @@ Things you only have to do once
    make -f Makefile.macosx dumpsavegame
    make -f Makefile.macosx mactlkconv
 
+11. Life will probably be easiest if you keep your ultima4 directory
+    (containing the ultima 4 data files) in one of the following places:
+
+	/usr/lib/u4
+	/usr/local/lib/u4
+
 ------------------------------------------------------------
 Things you have to do every time the xu4 source code changes
 ------------------------------------------------------------
