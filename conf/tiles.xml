@@ -15,7 +15,7 @@
     <tile/> <!-- castle -->
     <tile/> <!-- town -->
     <tile cantwalkon="all" monsterunwalkable="true"/> <!-- lcb1 -->
-    <tile cantwalkon="south" cantwalkoff="north"/> <!-- lcb2 -->
+    <tile cantwalkon="south" cantwalkoff="north" monsterunwalkable="true"/> <!-- lcb2 -->
     <tile cantwalkon="all" monsterunwalkable="true"/> <!-- lcb3 -->
     <tile ship="true" monsterunwalkable="true"/> <!-- west ship -->
     <tile ship="true" monsterunwalkable="true"/> <!-- north ship -->
@@ -58,7 +58,7 @@
     <tile cantwalkon="all"/> <!-- shipwheel -->
     <tile cantwalkon="all"/> <!-- rocks -->
     <tile cantwalkon="all"/> <!-- corpse -->
-    <tile cantwalkon="all" opaque="true"/> <!-- stonewall -->
+    <tile cantwalkon="all"/> <!-- stonewall -->
     <tile cantwalkon="all" lockeddoor="true"/> <!-- ldoor -->
     <tile cantwalkon="all" door="true"/> <!-- door -->
     <tile chest="true"/> <!-- chest -->
