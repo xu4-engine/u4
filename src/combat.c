@@ -10,7 +10,7 @@
 #include "combat.h"
 #include "context.h"
 #include "ttype.h"
-#include "map.h"
+#include "location.h"
 #include "object.h"
 #include "annotation.h"
 #include "event.h"
@@ -74,16 +74,12 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
 
     monsterObj = monster;
 
-    c = gameCloneContext(c);
-
     gameSetMap(c, getCombatMapForTile(partytile, transport), 1, NULL);
-    c->saveGame->dnglevel = 0;
-
     musicPlay();
 
     for (i = 0; i < c->saveGame->members; i++) {
         if (c->saveGame->players[i].status != STAT_DEAD)
-            party[i] = mapAddObject(c->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->map->area->player_start[i].x, c->map->area->player_start[i].y, c->saveGame->dnglevel);
+            party[i] = mapAddObject(c->location->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->location->map->area->player_start[i].x, c->location->map->area->player_start[i].y, c->location->z);
         else
             party[i] = NULL;
     }
@@ -190,7 +186,7 @@ void combatCreateMonster(int index, int canbeleader) {
             /* normal */
             ;
     }
-    monsters[index] = mapAddObject(c->map, mtile, mtile, c->map->area->monster_start[index].x, c->map->area->monster_start[index].y, c->saveGame->dnglevel);
+    monsters[index] = mapAddObject(c->location->map, mtile, mtile, c->location->map->area->monster_start[index].x, c->location->map->area->monster_start[index].y, c->location->z);
 
     monsterHp[index] = monsterGetInitialHp(monsterForTile(monsters[index]->tile));
 }
@@ -204,7 +200,7 @@ void combatFinishTurn() {
 
     if (party[focus]) {
         /* apply effects from tile player is standing on */
-        playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->map, party[focus]->x, party[focus]->y, c->saveGame->dnglevel)), focus);
+        playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->location->map, party[focus]->x, party[focus]->y, c->location->z)), focus);
 
         /* remove focus */
         party[focus]->hasFocus = 0;
@@ -366,22 +362,22 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     }
 
     if (monster == -1) {
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, misstile), 1));
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, misstile), 1));
         return 0;
     }
     /* If the weapon leaves a tile behind, do it here! (flaming oil) */
     else if (weaponLeavesTile(weapon))
-        annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, weaponLeavesTile(weapon));       
+        annotationAdd(x, y, c->location->z, c->location->map->id, weaponLeavesTile(weapon));       
 
     if (!playerAttackHit(&c->saveGame->players[focus])) {
         screenMessage("Missed!\n");
 
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, misstile), 2));
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, misstile), 2));
 
     } else {
         m = monsterForTile(monsters[monster]->tile);
 
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, hittile), 2));
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, hittile), 2));
 
         if (m->tile != LORDBRITISH_TILE)
             monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);
@@ -394,7 +390,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
             playerAwardXp(&c->saveGame->players[focus], xp);
             if (monsterIsEvil(m))
                 playerAdjustKarma(c->saveGame, KA_KILLED_EVIL);
-            mapRemoveObject(c->map, monsters[monster]);
+            mapRemoveObject(c->location->map, monsters[monster]);
             monsters[monster] = NULL;
             break;
 
@@ -432,7 +428,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
 int combatInitialNumberOfMonsters(unsigned char monster) {
     int nmonsters;
 
-    if (mapIsWorldMap(c->parent->map)) {
+    if (mapIsWorldMap(c->location->prev->map)) {
         nmonsters = (rand() % 8) + 1;
         if (nmonsters == 1) {
             /* file offset 116DDh, 36 bytes, indexed by monster number */
@@ -493,11 +489,11 @@ void combatEnd() {
 
         /* added chest or captured ship object */
         if ((monsterForTile(monsterObj->tile)->mattr & MATTR_WATER) == 0)
-            mapAddObject(c->map, tileGetChestBase(), tileGetChestBase(), monsterObj->x, monsterObj->y, c->saveGame->dnglevel);
+            mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), monsterObj->x, monsterObj->y, c->location->z);
         else if (tileIsPirateShip(monsterObj->tile)) {
             unsigned short ship = tileGetShipBase();
             tileSetDirection(&ship, tileGetDirection(monsterObj->tile));
-            mapAddObject(c->map, ship, ship, monsterObj->x, monsterObj->y, c->saveGame->dnglevel);
+            mapAddObject(c->location->map, ship, ship, monsterObj->x, monsterObj->y, c->location->z);
         }
 
         screenMessage("\nVictory!\n");
@@ -506,7 +502,7 @@ void combatEnd() {
     else if (!playerPartyDead(c->saveGame))
         screenMessage("Battle is lost!\n");
 
-    mapRemoveObject(c->map, monsterObj);
+    mapRemoveObject(c->location->map, monsterObj);
     
     if (playerPartyDead(c->saveGame))
         deathStart();
@@ -556,21 +552,21 @@ void combatMoveMonsters() {
         case CA_ATTACK:
             if (playerIsHitByAttack(&c->saveGame->players[target])) {
 
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, c->saveGame->dnglevel, c->map->id, HITFLASH_TILE), 2));
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, c->location->z, c->location->map->id, HITFLASH_TILE), 2));
 
                 playerApplyDamage(&c->saveGame->players[target], monsterGetDamage(m));
                 if (c->saveGame->players[target].status == STAT_DEAD) {
                     int px, py;
                     px = party[target]->x;
                     py = party[target]->y;
-                    mapRemoveObject(c->map, party[target]);
+                    mapRemoveObject(c->location->map, party[target]);
                     party[target] = NULL;
-                    annotationSetVisual(annotationSetTurnDuration(annotationAdd(px, py, c->saveGame->dnglevel, c->map->id, CORPSE_TILE), c->saveGame->members));
+                    annotationSetVisual(annotationSetTurnDuration(annotationAdd(px, py, c->location->z, c->location->map->id, CORPSE_TILE), c->saveGame->members));
                     screenMessage("%s is Killed!\n", c->saveGame->players[target].name);
                 }
                 statsUpdate();
             } else {
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, c->saveGame->dnglevel, c->map->id, MISSFLASH_TILE), 2));
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, c->location->z, c->location->map->id, MISSFLASH_TILE), 2));
             }
             break;
 
@@ -589,26 +585,26 @@ void combatMoveMonsters() {
         case CA_ADVANCE:
             newx = monsters[i]->x;
             newy = monsters[i]->y;
-            valid_dirs = mapGetValidMoves(c->map, newx, newy, c->saveGame->dnglevel, monsters[i]->tile);
+            valid_dirs = mapGetValidMoves(c->location->map, newx, newy, c->location->z, monsters[i]->tile);
             if (action == CA_FLEE)
-                dir = dirFindPathToEdge(newx, newy, c->map->width, c->map->height, valid_dirs);
+                dir = dirFindPathToEdge(newx, newy, c->location->map->width, c->location->map->height, valid_dirs);
             else
             {
                 // If they're not fleeing, make sure they don't flee on accident
                 if (newx == 0)
                     valid_dirs = DIR_REMOVE_FROM_MASK(DIR_WEST, valid_dirs);
-                if (newx == c->map->width - 1)
+                if (newx == c->location->map->width - 1)
                     valid_dirs = DIR_REMOVE_FROM_MASK(DIR_EAST, valid_dirs);
                 if (newy == 0)
                     valid_dirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, valid_dirs);
-                if (newy == c->map->height - 1)
+                if (newy == c->location->map->height - 1)
                     valid_dirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, valid_dirs);
 
                 dir = dirFindPath(newx, newy, party[target]->x, party[target]->y, valid_dirs);
             }
             dirMove(dir, &newx, &newy);
 
-            switch (tileGetSpeed(mapTileAt(c->map, newx, newy, c->saveGame->dnglevel))) {
+            switch (tileGetSpeed(mapTileAt(c->location->map, newx, newy, c->location->z))) {
             case FAST:
                 slow = 0;
                 break;
@@ -631,9 +627,9 @@ void combatMoveMonsters() {
                 monsters[i]->x = newx;
                 monsters[i]->y = newy;
 
-                if (MAP_IS_OOB(c->map, newx, newy)) {
+                if (MAP_IS_OOB(c->location->map, newx, newy)) {
                     screenMessage("\n%s Flees!\n", m->name);
-                    mapRemoveObject(c->map, monsters[i]);
+                    mapRemoveObject(c->location->map, monsters[i]);
                     monsters[i] = NULL;                    
                 }
             }
@@ -686,13 +682,13 @@ int movePartyMember(Direction dir, int member) {
 
     screenMessage("%s\n", getDirectionName(dir));
 
-    if (MAP_IS_OOB(c->map, newx, newy)) {
-        mapRemoveObject(c->map, party[member]);
+    if (MAP_IS_OOB(c->location->map, newx, newy)) {
+        mapRemoveObject(c->location->map, party[member]);
         party[member] = NULL;
         return result;
     }
 
-    movementMask = mapGetValidMoves(c->map, party[member]->x, party[member]->y, c->saveGame->dnglevel, party[member]->tile);
+    movementMask = mapGetValidMoves(c->location->map, party[member]->x, party[member]->y, c->location->z, party[member]->tile);
     if (!DIR_IN_MASK(dir, movementMask)) {
         screenMessage("Blocked!\n");
         result = 0;

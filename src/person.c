@@ -20,7 +20,7 @@
 #include "music.h"
 #include "player.h"
 #include "spell.h"
-#include "map.h"
+#include "location.h"
 #include "debug.h"
 #include "screen.h"
 
@@ -381,7 +381,7 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
             if (playerJoin(c->saveGame, cnv->talker->name)) {
                 reply = strdup("I am honored to join thee!");
                 statsUpdate();
-                mapRemovePerson(c->map, cnv->talker);
+                mapRemovePerson(c->location->map, cnv->talker);
                 cnv->state = CONV_DONE;
             } else
                 reply = concat("Thou art not ",
@@ -548,9 +548,7 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
     else if (tolower(answer[0]) == 'n') {        
         reply = strdup("\n\nHe says: Let me heal thy wounds!\n");
         for (i = 0; i < c->saveGame->members; i++) {
-            extern Spell spells[];            
-            (*spells['c' - 'a'].spellFunc)(i); // cure the party
-            (*spells['r' - 'a'].spellFunc)(i); // resurrect the party
+            c->saveGame->players[i].status = STAT_GOOD; // res. and cure the party            
             playerHeal(c->saveGame, HT_FULLHEAL, i); // heal the party
         }        
         (*spellCallback)('r', -1); // Same effect as resurrection spell

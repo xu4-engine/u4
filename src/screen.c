@@ -10,7 +10,7 @@
 
 #include "u4.h"
 #include "screen.h"
-#include "map.h"
+#include "location.h"
 #include "object.h"
 #include "context.h"
 #include "savegame.h"
@@ -86,11 +86,11 @@ void screenMessage(const char *fmt, ...) {
 unsigned char screenViewportTile(int width, int height, int x, int y, int *focus) {
     int centerx, centery, tx, ty, z;
 
-    z = c->saveGame->dnglevel;
-    centerx = c->saveGame->x;
-    centery = c->saveGame->y;
-    if (c->map->width == width &&
-        c->map->height == height) {
+    z = c->location->z;
+    centerx = c->location->x;
+    centery = c->location->y;
+    if (c->location->map->width == width &&
+        c->location->map->height == height) {
         centerx = width / 2;
         centery = height / 2;
     }
@@ -99,16 +99,16 @@ unsigned char screenViewportTile(int width, int height, int x, int y, int *focus
     ty = y + centery - (height / 2);
 
     /* off the edge of the map: wrap or pad with grass tiles */
-    if (MAP_IS_OOB(c->map, tx, ty)) {
-        if (c->map->border_behavior == BORDER_WRAP) {
+    if (MAP_IS_OOB(c->location->map, tx, ty)) {
+        if (c->location->map->border_behavior == BORDER_WRAP) {
             if (tx < 0)
-                tx += c->map->width;
+                tx += c->location->map->width;
             if (ty < 0)
-                ty += c->map->height;
-            if (tx >= c->map->width)
-                tx -= c->map->width;
-            if (ty >= c->map->height)
-                ty -= c->map->height;
+                ty += c->location->map->height;
+            if (tx >= c->location->map->width)
+                tx -= c->location->map->width;
+            if (ty >= c->location->map->height)
+                ty -= c->location->map->height;
         }
         else {
             *focus = 0;
@@ -116,7 +116,7 @@ unsigned char screenViewportTile(int width, int height, int x, int y, int *focus
         }
     }
 
-    return mapVisibleTileAt(c->map, tx, ty, z, focus);
+    return mapVisibleTileAt(c->location->map, tx, ty, z, focus);
 }
 
 /**
@@ -130,7 +130,7 @@ void screenUpdate(int showmap, int blackout) {
 
     assert(c != NULL);
 
-    if (c->map->flags & FIRST_PERSON) {
+    if (c->location->map->flags & FIRST_PERSON) {
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
                 if (x < 2 || y < 2 || x >= 10 || y >= 10)
@@ -227,7 +227,7 @@ void screenFindLineOfSight() {
     /*
      * if the map has the no line of sight flag, all is visible
      */
-    if (c->map->flags & NO_LINE_OF_SIGHT) {
+    if (c->location->map->flags & NO_LINE_OF_SIGHT) {
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
                 screenLos[x][y] = 1;

@@ -9,7 +9,9 @@
 
 #include "context.h"
 #include "savegame.h"
-#include "map.h"
+#include "location.h"
+#include "game.h"
+#include "event.h"
 #include "item.h"
 #include "player.h"
 #include "screen.h"
@@ -40,6 +42,7 @@ void useWheel(void *item);
 void useSkull(void *item);
 int isMysticInInventory(void *mystic);
 void putMysticInInventory(void *mystic);
+void useTelescope(void *notused);
 int isReagentInInventory(void *reag);
 void putReagentInInventory(void *reag);
 
@@ -67,8 +70,8 @@ static const ItemLocation items[] = {
     { "the Book of Truth", "book", 6, 6, 0, &lycaeum_map, 
       &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_BOOK, 0 },
     { "the Candle of Love", "candle", 22, 1, 0, &cove_map, 
-      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_CANDLE, 0 },
-    /* FIXME: object at 22, 3 in the lycaeum */
+      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_CANDLE, 0 },    
+    { NULL, NULL, 22, 3, 0, &lycaeum_map, NULL, &useTelescope, NULL, NULL, 0 }, /* Lycaeum telescope */    
     { "Mystic Armor", NULL, 22, 4, 0, &empath_map, 
       &isMysticInInventory, &putMysticInInventory, NULL, (void *) ARMR_MYSTICROBES, SC_FULLAVATAR },
     { "Mystic Swords", NULL, 8, 15, 0, &serpent_map, 
@@ -163,6 +166,19 @@ void putMysticInInventory(void *mystic) {
     else
         assert(0);
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
+}
+
+void useTelescope(void *notused) {
+    AlphaActionInfo *alphaInfo;
+
+    alphaInfo = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
+    alphaInfo->lastValidLetter = 'p';
+    alphaInfo->handleAlpha = gamePeerCity;
+    alphaInfo->prompt = "You Select:";
+    alphaInfo->data = NULL;
+
+    screenMessage("You see a knob\non the telescope\nmarked A-P\n%s", alphaInfo->prompt);
+    eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo); 
 }
 
 int isReagentInInventory(void *reag) {

@@ -10,7 +10,7 @@
 #include "spell.h"
 #include "direction.h"
 #include "context.h"
-#include "map.h"
+#include "location.h"
 #include "moongate.h"
 #include "annotation.h"
 #include "ttype.h"
@@ -233,8 +233,8 @@ static int spellAwaken(int player) {
 
 static int spellBlink(int dir) {
     /* blink doesn't work in lower right corner of map */
-    if (c->saveGame->x >= 192 ||
-        c->saveGame->y >= 192)
+    if (c->location->x >= 192 ||
+        c->location->y >= 192)
         return 0;
 
     /* FIXME */
@@ -253,19 +253,19 @@ static int spellDispel(int dir) {
     unsigned char tile;
     const Annotation *a;
 
-    x = c->saveGame->x;
-    y = c->saveGame->y;
-    z = c->saveGame->dnglevel;
+    x = c->location->x;
+    y = c->location->y;
+    z = c->location->z;
     dirMove((Direction) dir, &x, &y);
-    if (MAP_IS_OOB(c->map, x, y))
+    if (MAP_IS_OOB(c->location->map, x, y))
         return 0;
 
     /*
      * if there is a field annotation, remove it
      */
-    a = annotationAt(x, y, z, c->map->id);
+    a = annotationAt(x, y, z, c->location->map->id);
     if (a && tileCanDispel(a->tile)) {
-        annotationRemove(x, y, z, c->map->id, a->tile);
+        annotationRemove(x, y, z, c->location->map->id, a->tile);
         return 1;
     }
 
@@ -273,12 +273,12 @@ static int spellDispel(int dir) {
      * if the map tile itself is a field, overlay it with a brick
      * annotation
      */
-    tile = mapTileAt(c->map, x, y, z);
+    tile = mapTileAt(c->location->map, x, y, z);
     
     if (!tileCanDispel(tile))
         return 0;
 
-    annotationAdd(x, y, z, c->map->id, BRICKFLOOR_TILE);
+    annotationAdd(x, y, z, c->location->map->id, BRICKFLOOR_TILE);
 
     return 1;
 }
@@ -286,14 +286,14 @@ static int spellDispel(int dir) {
 static int spellEField(int dir) {
     int x, y, z;
 
-    x = c->saveGame->x;
-    y = c->saveGame->y;
-    z = c->saveGame->dnglevel;
+    x = c->location->x;
+    y = c->location->y;
+    z = c->location->z;
     dirMove((Direction) dir, &x, &y);
-    if (MAP_IS_OOB(c->map, x, y))
+    if (MAP_IS_OOB(c->location->map, x, y))
         return 0;
 
-    annotationAdd(x, y, z, c->map->id, LIGHTNINGFIELD_TILE);
+    annotationAdd(x, y, z, c->location->map->id, LIGHTNINGFIELD_TILE);
 
     return 1;
 }
@@ -307,8 +307,8 @@ static int spellGate(int phase) {
     const Moongate *moongate;
 
     moongate = moongateGetGateForPhase(phase);
-    c->saveGame->x = moongate->x;
-    c->saveGame->y = moongate->y;    
+    c->location->x = moongate->x;
+    c->location->y = moongate->y;    
     return 1;
 }
 

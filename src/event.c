@@ -11,7 +11,7 @@
 #include "u4.h"
 #include "screen.h"
 #include "event.h"
-#include "map.h"
+#include "location.h"
 #include "context.h"
 #include "savegame.h"
 
@@ -192,7 +192,7 @@ int keyHandlerDefault(int key, void *data) {
 
     switch (key) {
     case '`':
-        printf("x = %d, y = %d, level = %d, tile = %d\n", c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel, mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel));
+        printf("x = %d, y = %d, level = %d, tile = %d\n", c->location->x, c->location->y, c->location->z, mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z));
         break;
     default:
         valid = 0;

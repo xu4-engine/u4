@@ -14,7 +14,7 @@
 #include "event.h"
 #include "names.h"
 #include "annotation.h"
-#include "map.h"
+#include "location.h"
 #include "music.h"
 #include "game.h"
 #include "player.h"
@@ -170,9 +170,6 @@ int shrineEjectOnKey(int key, void *data) {
 }
 
 void shrineEject() {
-    if (c->parent != NULL) {
-        gameExitToParentMap(c);
-    }
-
+    gameExitToParentMap(c);
     gameFinishTurn();
 }

@@ -11,7 +11,7 @@
 
 #include "u4.h"
 #include "settings.h"
-#include "map.h"
+#include "location.h"
 #include "context.h"
 #include "u4file.h"
 #include "music.h"
@@ -88,7 +88,7 @@ void musicLordBritish(void){  /* Music when you talk to LB */
 }
 
 void musicPlay(void) {  /* Main music loop. */
-    musicPlayMid(c->map->music);
+    musicPlayMid(c->location->map->music);
 }
 
 int musicInit() {

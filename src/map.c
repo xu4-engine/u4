@@ -312,11 +312,11 @@ unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus) 
         *focus = 0;
         tile = a->tile;
     }
-    else if ((map->flags & SHOW_AVATAR) && c->saveGame->x == x && c->saveGame->y == y) {
+    else if ((map->flags & SHOW_AVATAR) && c->location->x == x && c->location->y == y) {
         *focus = 0;
         tile = c->saveGame->transport;
     }
-    else if ((obj = mapObjectAt(c->map, x, y, z))) {
+    else if ((obj = mapObjectAt(c->location->map, x, y, z))) {
         *focus = obj->hasFocus;
         tile = obj->tile;
     }
@@ -565,8 +565,8 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         }
 
         if ((map->flags & SHOW_AVATAR) &&
-            x == c->saveGame->x && 
-            y == c->saveGame->y)
+            x == c->location->x && 
+            y == c->location->y)
             tile = c->saveGame->transport;
         else if ((obj = mapObjectAt(map, x, y, z)) != NULL)
             tile = obj->tile;

@@ -16,7 +16,7 @@
 #include "names.h"
 #include "io.h"
 #include "stats.h"
-#include "map.h"
+#include "location.h"
 #include "player.h"
 #include "debug.h"
 #include "weapon.h"
@@ -524,26 +524,26 @@ int vendorGetVendorNo(const Person *v) {
     ASSERT(v->npcType >= NPC_VENDOR_WEAPONS && v->npcType <= NPC_VENDOR_STABLE, "invalid npc type: %d", v->npcType);
 
     if (v->npcType == NPC_VENDOR_GUILD) {
-        if (c->map->id == 14)   /* Buccaneers Den */
+        if (c->location->map->id == 14)   /* Buccaneers Den */
             return 0;
-        if (c->map->id == 15)   /* Vesper */
+        if (c->location->map->id == 15)   /* Vesper */
             return 1;
-        ASSERT(0, "map doesn't have guild vendor: %d", c->map->id);
+        ASSERT(0, "map doesn't have guild vendor: %d", c->location->map->id);
     }
 
     if (v->npcType == NPC_VENDOR_STABLE) {
-        if (c->map->id == 13)   /* Paws */
+        if (c->location->map->id == 13)   /* Paws */
             return 0;
-        ASSERT(0, "map doesn't have stable: %d", c->map->id);
+        ASSERT(0, "map doesn't have stable: %d", c->location->map->id);
     }
 
 
     type = v->npcType - NPC_VENDOR_WEAPONS;
 
-    ASSERT((c->map->id - 1) < VCM_SIZE, "map id out of range: %d", c->map->id);
-    ASSERT(vendorTypeInfo[type]->cityMap[c->map->id - 1] != 0, "map doesn't have vendor: %d", c->map->id);
+    ASSERT((c->location->map->id - 1) < VCM_SIZE, "map id out of range: %d", c->location->map->id);
+    ASSERT(vendorTypeInfo[type]->cityMap[c->location->map->id - 1] != 0, "map doesn't have vendor: %d", c->location->map->id);
 
-    return vendorTypeInfo[type]->cityMap[c->map->id - 1] - 1;
+    return vendorTypeInfo[type]->cityMap[c->location->map->id - 1] - 1;
 }
 
 /**
@@ -1224,22 +1224,22 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
             if (vendorGetVendorNo(cnv->talker) == 3) {
                 switch (cnv->quant) {
                 case 1:
-                    c->saveGame->x = 2;
-                    c->saveGame->y = 6;
+                    c->location->x = 2;
+                    c->location->y = 6;
                     break;
                 case 2:
-                    c->saveGame->x = 2;
-                    c->saveGame->y = 2;
+                    c->location->x = 2;
+                    c->location->y = 2;
                     break;
                 case 3:
-                    c->saveGame->x = 8;
-                    c->saveGame->y = 2;
+                    c->location->x = 8;
+                    c->location->y = 2;
                     break;
                 }
             } 
             else {
-                c->saveGame->x = innVendorInfo[vendorGetVendorNo(cnv->talker)].room_x;
-                c->saveGame->y = innVendorInfo[vendorGetVendorNo(cnv->talker)].room_y;
+                c->location->x = innVendorInfo[vendorGetVendorNo(cnv->talker)].room_x;
+                c->location->y = innVendorInfo[vendorGetVendorNo(cnv->talker)].room_y;
             }
             if ((rand() % 4) == 0)
                 reply = concat(vendorGetText(cnv->talker, IV_GOODNIGHT), 

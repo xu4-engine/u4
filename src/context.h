@@ -5,8 +5,10 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+#include "location.h"
+
 struct _SaveGame;
-struct _Map;
+struct _Location;
 struct _Reply;
 struct _Person;
 struct _Annotation;
@@ -55,10 +57,9 @@ typedef struct _Conversation {
 } Conversation;
 
 typedef struct _Context {
-    struct _SaveGame *saveGame;
-    struct _Context *parent;
-    struct _Annotation *annotation;
-    struct _Map *map;
+    struct _SaveGame *saveGame;    
+    struct _Annotation *annotation;    
+    struct _Location *location;
     Conversation conversation;
     int line, col;
     StatsItem statsItem;

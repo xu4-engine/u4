@@ -35,7 +35,7 @@ typedef struct CoordActionInfo {
 void gameInit(void);
 void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
-void gameSetMap(struct _Context *ct, struct _Map *map, int saveOldPos, const struct _Portal *portal);
+void gameSetMap(struct _Context *ct, struct _Map *map, int saveLocation, const struct _Portal *portal);
 int gameExitToParentMap(struct _Context *ct);
 int gameBaseKeyHandler(int key, void *data);
 int gameGetPlayerNoKeyHandler(int key, void *data);
@@ -43,10 +43,10 @@ int gameGetAlphaChoiceKeyHandler(int key, void *data);
 int gameGetDirectionKeyHandler(int key, void *data);
 int gameGetPhaseKeyHandler(int key, void *data);
 int gameGetCoordinateKeyHandler(int key, void *data);
-int gameZtatsKeyHandler(int key, void *data);
+int gamePeerCity(int city, void *data);
 int gameSpecialCmdKeyHandler(int key, void *data);
+int gameZtatsKeyHandler(int key, void *data);
 void gameTimer(void *data);
 void gameFinishTurn(void);
-struct _Context *gameCloneContext(struct _Context *ctx);
 
 #endif

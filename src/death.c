@@ -17,7 +17,7 @@
 #include "player.h"
 #include "context.h"
 #include "annotation.h"
-#include "map.h"
+#include "location.h"
 #include "city.h"
 #include "music.h"
 #include "stats.h"
@@ -82,20 +82,15 @@ void deathTimer(void *data) {
 }
 
 void deathRevive() {
-    while(!mapIsWorldMap(c->map) && c->parent != NULL) {
+    while(!mapIsWorldMap(c->location->map) && c->location->prev != NULL) {
         gameExitToParentMap(c);
     }
+    
+    gameSetMap(c, lcb_2_city.map, 1, NULL);
+    c->location->x = REVIVE_CASTLE_X;
+    c->location->y = REVIVE_CASTLE_Y;
+    c->location->z = 1;    
 
-    c->saveGame->x = REVIVE_WORLD_X;
-    c->saveGame->y = REVIVE_WORLD_Y;
-
-    c = gameCloneContext(c);
-    gameSetMap(c, lcb_2_city.map, 0, NULL);
-    c->saveGame->x = REVIVE_CASTLE_X;
-    c->saveGame->y = REVIVE_CASTLE_Y;
-    c->saveGame->dngx = REVIVE_WORLD_X;
-    c->saveGame->dngy = REVIVE_WORLD_Y;
-    c->saveGame->dnglevel = 1;
     c->aura = AURA_NONE;
     c->auraDuration = 0;
     c->horseSpeed = 0;

@@ -13,7 +13,7 @@
 #include "game.h"
 #include "screen.h"
 #include "event.h"
-#include "map.h"
+#include "location.h"
 #include "city.h"
 #include "portal.h"
 #include "person.h"
@@ -63,7 +63,6 @@ int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y, int distance, void *data);
 int gemHandleChoice(char choice);
-int gamePeerCity(int city, void *data);
 int peerCityHandleChoice(char choice);
 int readyForPlayer(int player);
 int readyForPlayer2(int weapon, void *data);
@@ -93,15 +92,14 @@ int collisionOverride = 0;
 ViewMode viewMode = VIEW_NORMAL;
 char itemNameBuffer[16];
 
-void gameInit() {
+void gameInit() {    
     FILE *saveGameFile, *monstersFile;
 
     /* initialize the global game context */
     c = (Context *) malloc(sizeof(Context));
-    c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
-    c->parent = NULL;
-    c->annotation = NULL;
-    c->map = &world_map;
+    c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));    
+    c->annotation = NULL;    
+    c->location = locationNew(0, 0, 0, &world_map, NULL);
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.playerInquiryBuffer[0] = '\0';
@@ -126,13 +124,17 @@ void gameInit() {
     } else
         errorFatal("no savegame found!");
 
+    c->location->x = c->saveGame->x;
+    c->location->y = c->saveGame->y;
+    c->location->z = c->saveGame->dnglevel;
+
     /* initialize the moons */
     gameInitMoons();
 
     /* load in monsters.sav */
     monstersFile = fopen("monsters.sav", "rb");
     if (monstersFile) {
-        saveGameMonstersRead(&c->map->objects, monstersFile);
+        saveGameMonstersRead(&c->location->map->objects, monstersFile);
         fclose(monstersFile);
     }
     gameFixupMonstersBehavior();
@@ -154,6 +156,16 @@ void gameInit() {
 int gameSave() {
     FILE *saveGameFile, *monstersFile;
 
+    /*************************************************/
+    /* Make sure the savegame struct is accurate now */
+    
+    c->saveGame->x = c->location->x;
+    c->saveGame->y = c->location->y;
+    c->saveGame->dnglevel = c->location->z;
+
+    /* Done making sure the savegame struct is accurate */
+    /****************************************************/
+
     saveGameFile = fopen("party.sav", "wb");
     if (!saveGameFile) {
         screenMessage("Error opening party.sav\n");
@@ -173,7 +185,7 @@ int gameSave() {
         return 0;
     }
 
-    if (!saveGameMonstersWrite(c->map->objects, monstersFile)) {
+    if (!saveGameMonstersWrite(c->location->map->objects, monstersFile)) {
         screenMessage("Error opening monsters.sav\n");
         fclose(monstersFile);
         return 0;
@@ -209,22 +221,25 @@ void gameUpdateScreen() {
     }
 }
 
-void gameSetMap(Context *ct, Map *map, int saveOldPos, const Portal *portal) {
-    int i;
+void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
+    int i, x, y, z;    
 
-    ct->map = map;
-    if (saveOldPos) {
-        ct->saveGame->dngx = ct->saveGame->x;
-        ct->saveGame->dngy = ct->saveGame->y;
-    }
     if (portal) {
-        ct->saveGame->x = portal->startx;
-        ct->saveGame->y = portal->starty;
-        ct->saveGame->dnglevel = portal->startlevel;
+        x = portal->startx;
+        y = portal->starty;
+        z = portal->startlevel;
     } else {
-        ct->saveGame->x = map->width / 2;
-        ct->saveGame->y = map->height / 2;
+        x = map->width / 2;
+        y = map->height / 2;
+        z = 0;
     }
+
+    /* If we don't want to save the location, then just pop the current location,
+       as there may still be ones in the stack we want to keep */
+    if (!saveLocation)
+        free(locationPop(&ct->location));
+    
+    ct->location = locationNew(x, y, z, map, ct->location);
 
     if ((map->type == MAP_TOWN ||
          map->type == MAP_VILLAGE ||
@@ -248,26 +263,10 @@ void gameSetMap(Context *ct, Map *map, int saveOldPos, const Portal *portal) {
 
 int gameExitToParentMap(struct _Context *ct)
 {
-    if (c->parent != NULL) {
-        Context *t = c;
-        annotationClear(c->map->id);
-        mapClearObjects(c->map);
-        c->parent->saveGame->x = c->saveGame->dngx;
-        c->parent->saveGame->y = c->saveGame->dngy;
-        c->parent->annotation = c->annotation;
-        c->parent->line = c->line;        
-        c->parent->moonPhase = c->moonPhase;
-        c->parent->windDirection = c->windDirection;
-        c->parent->windCounter = c->windCounter;
-        c->parent->aura = c->aura;
-        c->parent->auraDuration = c->auraDuration;
-        c->parent->horseSpeed = c->horseSpeed;
-        c = c->parent;
-        c->col = 0;
-        free(t);
-        
-        if (mapIsWorldMap(c->map))
-            c->saveGame->dnglevel = -1;
+    if (ct->location->prev != NULL) {
+        annotationClear(c->location->map->id);
+        mapClearObjects(c->location->map);
+        free(locationPop(&ct->location));
         musicPlay();
         
         return 1;
@@ -284,7 +283,7 @@ void gameFinishTurn() {
     Object *attacker;
 
     /* apply effects from tile avatar is standing on */
-    playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel)), ALL_PLAYERS);
+    playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
 
     while (1) {
         /* adjust food and moves */
@@ -296,7 +295,7 @@ void gameFinishTurn() {
                 c->aura = AURA_NONE;
         }
 
-        attacker = mapMoveObjects(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);        
+        attacker = mapMoveObjects(c->location->map, c->location->x, c->location->y, c->location->z);        
 
         if (attacker) {
             gameMonsterAttack(attacker);
@@ -384,27 +383,6 @@ void gameSpellEffect(unsigned int spell, int player) {
     statsUpdate();
 }
 
-Context *gameCloneContext(Context *ctx) {
-    Context *newContext;
-
-    newContext = (Context *) malloc(sizeof(Context));
-    newContext->parent = ctx;
-    newContext->saveGame = newContext->parent->saveGame;
-    newContext->annotation = newContext->parent->annotation;
-    newContext->col = newContext->parent->col;
-    newContext->line = newContext->parent->line;
-    newContext->statsItem = newContext->parent->statsItem;        
-    newContext->windDirection = newContext->parent->windDirection;
-    newContext->windCounter = newContext->parent->windCounter;
-    newContext->moonPhase = newContext->parent->moonPhase;
-    newContext->aura = newContext->parent->aura;
-    newContext->auraDuration = newContext->parent->auraDuration;
-    newContext->horseSpeed = newContext->parent->horseSpeed;
-    newContext->horseSpeed = newContext->parent->horseSpeed;
-
-    return newContext;
-}
-
 void gameCastSpell(unsigned int spell, int caster, int param) {
     SpellCastError spellError;
     int i;
@@ -490,8 +468,8 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'a':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &attackAtCoord;
-        info->origin_x = c->saveGame->x;
-        info->origin_y = c->saveGame->y;
+        info->origin_x = c->location->x;
+        info->origin_y = c->location->y;
         info->range = 1;
         info->validDirections = MASK_DIR_ALL;
         info->blockedPredicate = NULL;
@@ -500,7 +478,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'b':
-        obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+        obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z);
         if (obj) {
             if (tileIsShip(obj->tile)) {
                 if (c->saveGame->transport != AVATAR_TILE)
@@ -508,7 +486,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 else {
                     c->saveGame->transport = obj->tile;
                     c->saveGame->shiphull = 50;
-                    mapRemoveObject(c->map, obj);
+                    mapRemoveObject(c->location->map, obj);
                     screenMessage("Board Frigate!\n");
                 }
             } else if (tileIsHorse(obj->tile)) {
@@ -516,7 +494,7 @@ int gameBaseKeyHandler(int key, void *data) {
                     screenMessage("Board: Can't!\n");
                 else {
                     c->saveGame->transport = obj->tile;
-                    mapRemoveObject(c->map, obj);
+                    mapRemoveObject(c->location->map, obj);
                     screenMessage("Mount Horse!\n");
                 }
             } else if (tileIsBalloon(obj->tile)) {
@@ -524,7 +502,7 @@ int gameBaseKeyHandler(int key, void *data) {
                     screenMessage("Board: Can't!\n");
                 else {
                     c->saveGame->transport = obj->tile;
-                    mapRemoveObject(c->map, obj);
+                    mapRemoveObject(c->location->map, obj);
                     screenMessage("Board Balloon!\n");
                 }
             }
@@ -538,10 +516,11 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'd':
-        portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+        portal = mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z);
         if (portal && portal->trigger_action == ACTION_DESCEND) {
-            annotationClear(c->map->id);
+            annotationClear(c->location->map->id);            
             gameSetMap(c, portal->destination, 0, portal);
+
             screenMessage("Descend to first floor!\n");
         } else if (tileIsBalloon(c->saveGame->transport)) {
             screenMessage("Land Balloon\n");
@@ -553,7 +532,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'e':
-        portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+        portal = mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z);
         if (portal && portal->trigger_action == ACTION_ENTER) {
             switch (portal->destination->type) {
             case MAP_TOWN:
@@ -588,9 +567,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 }
             }
 
-            c = gameCloneContext(c);
-
-            gameSetMap(c, portal->destination, 1, portal);
+            gameSetMap(c, portal->destination, 1, portal);            
             musicPlay();
 
         } else
@@ -606,8 +583,8 @@ int gameBaseKeyHandler(int key, void *data) {
 
             info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
             info->handleAtCoord = &fireAtCoord;
-            info->origin_x = c->saveGame->x;
-            info->origin_y = c->saveGame->y;
+            info->origin_x = c->location->x;
+            info->origin_y = c->location->y;
             info->range = 3;
             info->validDirections = validDirs;
             info->player = -1;
@@ -624,10 +601,10 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'g':
         screenMessage("Get Chest!\n");
 
-        if ((obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel)) != NULL)
+        if ((obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) != NULL)
             tile = obj->tile;
         else
-            tile = mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+            tile = mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
     
         if (tileIsChest(tile))
         {
@@ -640,7 +617,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'h':
-        if (!mapIsWorldMap(c->map)) {
+        if (!mapIsWorldMap(c->location->map)) {
             screenMessage("Hole up & Camp\nNot here!\n");
             break;
         }
@@ -659,8 +636,8 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'j':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &jimmyAtCoord;
-        info->origin_x = c->saveGame->x;
-        info->origin_y = c->saveGame->y;
+        info->origin_x = c->location->x;
+        info->origin_y = c->location->y;
         info->range = 1;
         info->validDirections = MASK_DIR_ALL;
         info->player = -1;
@@ -670,12 +647,12 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'k':
-        portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+        portal = mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z);
         if (portal && portal->trigger_action == ACTION_KLIMB) {
             if (c->saveGame->transport != AVATAR_TILE)
                 screenMessage("Klimb\nOnly on foot!\n");
             else {
-                annotationClear(c->map->id);
+                annotationClear(c->location->map->id);
                 gameSetMap(c, portal->destination, 0, portal);
                 screenMessage("Klimb to second floor!\n");
             }
@@ -689,8 +666,8 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'l':
         if (c->saveGame->sextants >= 1)
             screenMessage("Locate position\nwith sextant\n Latitude: %c'%c\"\nLongitude: %c'%c\"\n",
-                          c->saveGame->y / 16 + 'A', c->saveGame->y % 16 + 'A',
-                          c->saveGame->x / 16 + 'A', c->saveGame->x % 16 + 'A');
+                          c->location->y / 16 + 'A', c->location->y % 16 + 'A',
+                          c->location->x / 16 + 'A', c->location->x % 16 + 'A');
         else
             screenMessage("Locate position\nwith what?\n");
         break;
@@ -718,8 +695,8 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'o':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &openAtCoord;
-        info->origin_x = c->saveGame->x;
-        info->origin_y = c->saveGame->y;
+        info->origin_x = c->location->x;
+        info->origin_y = c->location->y;
         info->range = 1;
         info->validDirections = MASK_DIR_ALL;
         info->player = -1;
@@ -742,7 +719,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'q':
-        if (!mapIsWorldMap(c->map)) {
+        if (!mapIsWorldMap(c->location->map)) {
             screenMessage("Quit & save\nNot Here!\n");
         } else {
             screenMessage("Quit & Save...\n");
@@ -759,46 +736,25 @@ int gameBaseKeyHandler(int key, void *data) {
     case 's':
         screenMessage("Searching...\n");
 
-        /*
-         * Player is using the Lycaeum telescope!
-         */
-        if ((c->map->type == MAP_CASTLE) && (strcmp(c->map->city->name, "Lycaeum") == 0) &&
-            (c->saveGame->x == 22) && (c->saveGame->y == 3))        
-        {
-            alphaInfo = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
-            alphaInfo->lastValidLetter = 'p';
-            alphaInfo->handleAlpha = gamePeerCity;
-            alphaInfo->prompt = "You Select:";
-            alphaInfo->data = NULL;           
-
-            screenMessage("You see a knob\non the telescope\nmarked A-P\n%s", alphaInfo->prompt);
-            eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);            
-        }
-
-        /*
-         * Searching for a normal, searchable item
-         */
-        else
-        {
-            item = itemAtLocation(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
-            if (item) {
-                if ((*item->isItemInInventory)(item->data))
-                    screenMessage("Nothing Here!\n");
-                else {
-                    (*item->putItemInInventory)(item->data);
-                    screenMessage("You find...\n%s!\n", item->name);
-                }
-            } else
+        item = itemAtLocation(c->location->map, c->location->x, c->location->y, c->location->z);
+        if (item) {
+            if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
                 screenMessage("Nothing Here!\n");
-        }
+            else {
+                (*item->putItemInInventory)(item->data);
+                if (item->name)
+                    screenMessage("You find...\n%s!\n", item->name);
+            }
+        } else
+            screenMessage("Nothing Here!\n");  
 
         break;
 
     case 't':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &talkAtCoord;
-        info->origin_x = c->saveGame->x;
-        info->origin_y = c->saveGame->y;
+        info->origin_x = c->location->x;
+        info->origin_y = c->location->y;
         info->range = 2;
         info->validDirections = MASK_DIR_ALL;
         info->player = -1;
@@ -833,7 +789,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'x':
         if (c->saveGame->transport != AVATAR_TILE && c->saveGame->balloonstate == 0) {
-            mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+            mapAddObject(c->location->map, c->saveGame->transport, c->saveGame->transport, c->location->x, c->location->y, c->location->z);
             c->saveGame->transport = AVATAR_TILE;
             c->horseSpeed = 0;
             screenMessage("X-it\n");
@@ -1046,7 +1002,7 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
             goto success;
 
         // Make sure the object we're testing isn't a party member
-        obj = mapObjectAt(c->map, t_x, t_y, c->saveGame->dnglevel);
+        obj = mapObjectAt(c->location->map, t_x, t_y, c->location->z);
         if (obj != NULL) {
             for (i = 0; i < c->saveGame->members; i++) {                
                 if ((obj->x == party[i]->x) && (obj->y == party[i]->y) && (obj->z == party[i]->z)) {
@@ -1059,7 +1015,7 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
         if (obj != NULL)
             tile = obj->tile;
         else
-            tile = mapTileAt(c->map, t_x, t_y, c->saveGame->dnglevel);        
+            tile = mapTileAt(c->location->map, t_x, t_y, c->location->z);        
 
         if (info->blockedPredicate &&
             !(*(info->blockedPredicate))(tile))
@@ -1114,8 +1070,8 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     case '7':
     case '8':
         moongate = moongateGetGateForPhase(key - '1');
-        c->saveGame->x = moongate->x;
-        c->saveGame->y = moongate->y;
+        c->location->x = moongate->x;
+        c->location->y = moongate->y;
         screenMessage("Gate %d!\n", key - '0');
         break;
 
@@ -1165,10 +1121,10 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             c->saveGame->reagents[i] = 99;
         break;
     case 't':
-        if (mapIsWorldMap(c->map)) {
-            mapAddObject(c->map, tileGetHorseBase(), tileGetHorseBase(), 84, 106, -1);
-            mapAddObject(c->map, tileGetShipBase(), tileGetShipBase(), 88, 109, -1);
-            mapAddObject(c->map, tileGetBalloonBase(), tileGetBalloonBase(), 85, 105, -1);
+        if (mapIsWorldMap(c->location->map)) {
+            mapAddObject(c->location->map, tileGetHorseBase(), tileGetHorseBase(), 84, 106, -1);
+            mapAddObject(c->location->map, tileGetShipBase(), tileGetShipBase(), 88, 109, -1);
+            mapAddObject(c->location->map, tileGetBalloonBase(), tileGetBalloonBase(), 85, 105, -1);
             screenMessage("Transports: Ship, Horse and Balloon created!\n\020");
         }
         break;
@@ -1207,15 +1163,15 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     }
 
     /* nothing attackable: move on to next tile */
-    if ((obj = mapObjectAt(c->map, x, y, c->saveGame->dnglevel)) == NULL ||
+    if ((obj = mapObjectAt(c->location->map, x, y, c->location->z)) == NULL ||
         (m = monsterForTile(obj->tile)) == NULL ||
         (m->mattr & MATTR_NONATTACKABLE)) {
         return 0;
     }
 
     /* attack successful */
-    ground = mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
-    if ((under = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel)) &&
+    ground = mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
+    if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
     combatBegin(ground, c->saveGame->transport, obj);
@@ -1326,16 +1282,16 @@ int getChest(int player) {
     Object *obj;
     unsigned char tile;
 
-    if ((obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel)) != NULL)
+    if ((obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) != NULL)
         tile = obj->tile;
     else
-        tile = mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+        tile = mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
     
     if (tileIsChest(tile)) {
         if (obj)
-            mapRemoveObject(c->map, obj);
+            mapRemoveObject(c->location->map, obj);
         else
-            annotationAdd(c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel, c->map->id, BRICKFLOOR_TILE);        
+            annotationAdd(c->location->x, c->location->y, c->location->z, c->location->map->id, BRICKFLOOR_TILE);        
         
         getChestTrapHandler(player);
         screenMessage("The Chest Holds: %d Gold\n", playerGetChest(c->saveGame));
@@ -1409,12 +1365,12 @@ int jimmyAtCoord(int x, int y, int distance, void *data) {
         return 0;
     }
 
-    if (!tileIsLockedDoor(mapTileAt(c->map, x, y, c->saveGame->dnglevel)))
+    if (!tileIsLockedDoor(mapTileAt(c->location->map, x, y, c->location->z)))
         return 0;
 
     if (c->saveGame->keys) {
         c->saveGame->keys--;
-        annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, 0x3b);
+        annotationAdd(x, y, c->location->z, c->location->map->id, 0x3b);
         screenMessage("\nUnlocked!\n");
     } else
         screenMessage("No keys left!\n");
@@ -1620,17 +1576,17 @@ int openAtCoord(int x, int y, int distance, void *data) {
         return 0;
     }
 
-    if (!tileIsDoor(mapTileAt(c->map, x, y, c->saveGame->dnglevel)) &&
-        !tileIsLockedDoor(mapTileAt(c->map, x, y, c->saveGame->dnglevel)))
+    if (!tileIsDoor(mapTileAt(c->location->map, x, y, c->location->z)) &&
+        !tileIsLockedDoor(mapTileAt(c->location->map, x, y, c->location->z)))
         return 0;
 
-    if (tileIsLockedDoor(mapTileAt(c->map, x, y, c->saveGame->dnglevel))) {
+    if (tileIsLockedDoor(mapTileAt(c->location->map, x, y, c->location->z))) {
         screenMessage("Can't!\n");
         gameFinishTurn();
         return 1;
     }
 
-    annotationSetTurnDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, BRICKFLOOR_TILE), 4);
+    annotationSetTurnDuration(annotationAdd(x, y, c->location->z, c->location->map->id, BRICKFLOOR_TILE), 4);
 
     screenMessage("\nOpened!\n");
     gameFinishTurn();
@@ -1673,9 +1629,8 @@ int gamePeerCity(int city, void *data) {
     {
         viewMode = VIEW_GEM;
 
-        c = gameCloneContext(c);
-        c->map = peerCity->map;
-    
+        gameSetMap(c, peerCity->map, 1, NULL);    
+            
         // Wait for player to hit a key
         choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
         choiceInfo->choices = " \033";
@@ -1693,10 +1648,7 @@ int peerCityHandleChoice(char choice) {
     Context *oldc = c;    
     
     eventHandlerPopKeyHandler();
-
-    c->map = c->parent->map;
-    c = c->parent;
-    free(oldc);
+    free(locationPop(&c->location));
 
     viewMode = VIEW_NORMAL; 
     gameFinishTurn();
@@ -1717,7 +1669,7 @@ int talkAtCoord(int x, int y, int distance, void *data) {
         return 0;
     }
 
-    c->conversation.talker = mapPersonAt(c->map, x, y, c->saveGame->dnglevel);
+    c->conversation.talker = mapPersonAt(c->location->map, x, y, c->location->z);
     if (c->conversation.talker == NULL) {
         return 0;
     }
@@ -1937,8 +1889,8 @@ int moveAvatar(Direction dir, int userEvent) {
         }
     }
 
-    newx = c->saveGame->x;
-    newy = c->saveGame->y;    
+    newx = c->location->x;
+    newy = c->location->y;    
 
     dirMove(dir, &newx, &newy);
 
@@ -1949,17 +1901,17 @@ int moveAvatar(Direction dir, int userEvent) {
             screenMessage("%s\n", getDirectionName(dir));
     }
 
-    if (MAP_IS_OOB(c->map, newx, newy)) {
-        switch (c->map->border_behavior) {
+    if (MAP_IS_OOB(c->location->map, newx, newy)) {
+        switch (c->location->map->border_behavior) {
         case BORDER_WRAP:
             if (newx < 0)
-                newx += c->map->width;
+                newx += c->location->map->width;
             if (newy < 0)
-                newy += c->map->height;
-            if (newx >= (int) c->map->width)
-                newx -= c->map->width;
-            if (newy >= (int) c->map->height)
-                newy -= c->map->height;
+                newy += c->location->map->height;
+            if (newx >= (int) c->location->map->width)
+                newx -= c->location->map->width;
+            if (newy >= (int) c->location->map->height)
+                newy -= c->location->map->height;
             break;
 
         case BORDER_EXIT2PARENT:
@@ -1968,10 +1920,10 @@ int moveAvatar(Direction dir, int userEvent) {
             goto done;
 
         case BORDER_FIXED:
-            if (newx < 0 || newx >= (int) c->map->width)
-                newx = c->saveGame->x;
-            if (newy < 0 || newy >= (int) c->map->height)
-                newy = c->saveGame->y;
+            if (newx < 0 || newx >= (int) c->location->map->width)
+                newx = c->location->x;
+            if (newy < 0 || newy >= (int) c->location->map->height)
+                newy = c->location->y;
             break;
         }
     }
@@ -1980,17 +1932,17 @@ int moveAvatar(Direction dir, int userEvent) {
         int movementMask;
         int slow;
 
-        movementMask = mapGetValidMoves(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel, c->saveGame->transport);
+        movementMask = mapGetValidMoves(c->location->map, c->location->x, c->location->y, c->location->z, c->saveGame->transport);
         if (!DIR_IN_MASK(dir, movementMask)) {
 
             if (settings->shortcutCommands) {
-                if (tileIsDoor(mapTileAt(c->map, newx, newy, c->saveGame->dnglevel))) {
+                if (tileIsDoor(mapTileAt(c->location->map, newx, newy, c->location->z))) {
                     openAtCoord(newx, newy, 1, NULL);
                     goto done;
-                } else if (tileIsLockedDoor(mapTileAt(c->map, newx, newy, c->saveGame->dnglevel))) {
+                } else if (tileIsLockedDoor(mapTileAt(c->location->map, newx, newy, c->location->z))) {
                     jimmyAtCoord(newx, newy, 1, NULL);
                     goto done;
-                } /*else if (mapPersonAt(c->map, newx, newy, c->saveGame->dnglevel) != NULL) {
+                } /*else if (mapPersonAt(c->location->map, newx, newy, c->location->z) != NULL) {
                     talkAtCoord(newx, newy, 1, NULL);
                     goto done;
                     }*/
@@ -2001,7 +1953,7 @@ int moveAvatar(Direction dir, int userEvent) {
             goto done;
         }
 
-        switch (tileGetSpeed(mapTileAt(c->map, newx, newy, c->saveGame->dnglevel))) {
+        switch (tileGetSpeed(mapTileAt(c->location->map, newx, newy, c->location->z))) {
         case FAST:
             slow = 0;
             break;
@@ -2027,8 +1979,8 @@ int moveAvatar(Direction dir, int userEvent) {
         }
     }
 
-    c->saveGame->x = newx;
-    c->saveGame->y = newy;
+    c->location->x = newx;
+    c->location->y = newy;
 
     gameCheckBridgeTrolls();
     gameCheckSpecialMonsters(dir);
@@ -2058,7 +2010,7 @@ void gameTimer(void *data) {
 
     gameUpdateMoons(1);
 
-    mapAnimateObjects(c->map);
+    mapAnimateObjects(c->location->map);
 
     screenCycle();
 
@@ -2085,7 +2037,7 @@ void gameUpdateMoons(int showmoongates)
         trammelSubphase;        
     const Moongate *gate;
 
-    if (mapIsWorldMap(c->map) && viewMode == VIEW_NORMAL) {        
+    if (mapIsWorldMap(c->location->map) && viewMode == VIEW_NORMAL) {        
         oldTrammel = c->saveGame->trammelphase;
 
         if (++c->moonPhase >= MOON_PHASES * MOON_SECONDS_PER_PHASE * 4)
@@ -2105,39 +2057,39 @@ void gameUpdateMoons(int showmoongates)
             /* update the moongates if trammel changed */
             if (trammelSubphase == 0) {               
                 gate = moongateGetGateForPhase(oldTrammel);
-                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE);
+                annotationRemove(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE0_TILE);
                 gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE));
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE0_TILE));
             }
             else if (trammelSubphase == 1) {
                 gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE);
-                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE));
+                annotationRemove(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE0_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE1_TILE));
             }
             else if (trammelSubphase == 2) {
                 gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE);
-                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE));
+                annotationRemove(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE1_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE2_TILE));
             }
             else if (trammelSubphase == 3) {
                 gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE);
-                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE3_TILE));
+                annotationRemove(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE2_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE3_TILE));
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
                 gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE3_TILE);
-                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE));
+                annotationRemove(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE3_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE2_TILE));
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
                 gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE);
-                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE));
+                annotationRemove(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE2_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE1_TILE));
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
                 gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE);
-                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE));
+                annotationRemove(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE1_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->location->z, c->location->map->id, MOONGATE0_TILE));
             }
         }
     }
@@ -2150,7 +2102,7 @@ void gameInitMoons()
 
     ASSERT(c != NULL, "Game context doesn't exist!");
     ASSERT(c->saveGame != NULL, "Savegame doesn't exist in current context!");
-    ASSERT(mapIsWorldMap(c->map) && viewMode == VIEW_NORMAL, "Can only call gameInitMoons() from the world map!");
+    ASSERT(mapIsWorldMap(c->location->map) && viewMode == VIEW_NORMAL, "Can only call gameInitMoons() from the world map!");
 
     c->saveGame->trammelphase = c->saveGame->feluccaphase = 0;
     c->moonPhase = 0;
@@ -2161,15 +2113,15 @@ void gameInitMoons()
 }
 
 void gameCheckBridgeTrolls() {
-    if (!mapIsWorldMap(c->map) ||
-        mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel) != BRIDGE_TILE ||
+    if (!mapIsWorldMap(c->location->map) ||
+        mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z) != BRIDGE_TILE ||
         (rand() % 8) != 0)
         return;
 
     screenMessage("\nBridge Trolls!\n");
 
-    combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel), c->saveGame->transport,
-                mapAddObject(c->map, TROLL_TILE, TROLL_TILE, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel));
+    combatBegin(mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z), c->saveGame->transport,
+                mapAddObject(c->location->map, TROLL_TILE, TROLL_TILE, c->location->x, c->location->y, c->location->z));
 }
 
 void gameCheckSpecialMonsters(Direction dir) {
@@ -2194,12 +2146,12 @@ void gameCheckSpecialMonsters(Direction dir) {
      * ships
      */
     if (dir == DIR_EAST &&
-        c->saveGame->x == 0xdd &&
-        c->saveGame->y == 0xe0) {
+        c->location->x == 0xdd &&
+        c->location->y == 0xe0) {
         for (i = 0; i < 8; i++) {
             unsigned short tile = PIRATE_TILE;
             tileSetDirection(&tile, pirateInfo[i].dir);
-            obj = mapAddObject(c->map, tile, tile, pirateInfo[i].x, pirateInfo[i].y, c->saveGame->dnglevel);
+            obj = mapAddObject(c->location->map, tile, tile, pirateInfo[i].x, pirateInfo[i].y, c->location->z);
             obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
         }
     }
@@ -2209,13 +2161,13 @@ void gameCheckSpecialMonsters(Direction dir) {
      * daemons unless horn has been blown
      */
     if (dir == DIR_SOUTH &&
-        c->saveGame->x >= 229 &&
-        c->saveGame->x < 234 &&
-        c->saveGame->y >= 212 &&
-        c->saveGame->y < 217 &&
+        c->location->x >= 229 &&
+        c->location->x < 234 &&
+        c->location->y >= 212 &&
+        c->location->y < 217 &&
         c->aura != AURA_HORN) {
         for (i = 0; i < 8; i++) {
-            obj = mapAddObject(c->map, DAEMON_TILE, DAEMON_TILE, 231, c->saveGame->y + 1, c->saveGame->dnglevel);
+            obj = mapAddObject(c->location->map, DAEMON_TILE, DAEMON_TILE, 231, c->location->y + 1, c->location->z);
             obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
         }
     }
@@ -2226,12 +2178,12 @@ void gameCheckMoongates() {
     extern Map shrine_spirituality_map;
 
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase,
-                                 c->saveGame->x, c->saveGame->y, &destx, &desty)) {
+                                 c->location->x, c->location->y, &destx, &desty)) {
 
         (*spellCallback)('g', -1); // Same effect as 'gate' spell
         
-        c->saveGame->x = destx;
-        c->saveGame->y = desty;
+        c->location->x = destx;
+        c->location->y = desty;
 
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
             if (!playerCanEnterShrine(c->saveGame, shrine_spirituality_map.shrine->virtue))
@@ -2239,12 +2191,9 @@ void gameCheckMoongates() {
             else
                 shrineEnter(shrine_spirituality_map.shrine);
 
-            annotationClear(c->map->id);  /* clear out world map annotations */
-
-            c = gameCloneContext(c);
+            annotationClear(c->location->map->id);  /* clear out world map annotations */
 
             gameSetMap(c, &shrine_spirituality_map, 1, NULL);
-
             musicPlay();
         }
     }
@@ -2257,18 +2206,18 @@ void gameCheckRandomMonsters() {
 
     /* remove monsters that are too far away from the avatar */
 
-    for (obj = c->map->objects; obj; obj = obj->next)
+    for (obj = c->location->map->objects; obj; obj = obj->next)
     {
         const Monster *m = monsterForTile(obj->tile);
                 
-        if (m && (obj->z == c->saveGame->dnglevel) && 
-            mapDistance(obj->x, obj->y, c->saveGame->x, c->saveGame->y) > MAX_MONSTER_DISTANCE)
-            mapRemoveObject(c->map, obj);    
+        if (m && (obj->z == c->location->z) && 
+            mapDistance(obj->x, obj->y, c->location->x, c->location->y) > MAX_MONSTER_DISTANCE)
+            mapRemoveObject(c->location->map, obj);    
     }
     
     /* If there's too many monsters already, don't worry about it! */
-    if (!mapIsWorldMap(c->map) ||
-        mapNumberOfMonsters(c->map) >= MAX_MONSTERS ||
+    if (!mapIsWorldMap(c->location->map) ||
+        mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS ||
         (rand() % 16) != 0)
         return;
 
@@ -2285,13 +2234,13 @@ void gameCheckRandomMonsters() {
         dy = t;
     }
 
-    x = c->saveGame->x + dx;
-    y = c->saveGame->y + dy;
+    x = c->location->x + dx;
+    y = c->location->y + dy;
 
-    if ((monster = monsterRandomForTile(mapTileAt(c->map, x, y, c->saveGame->dnglevel))) == 0)
+    if ((monster = monsterRandomForTile(mapTileAt(c->location->map, x, y, c->location->z))) == 0)
         return;
 
-    obj = mapAddObject(c->map, monster->tile, monster->tile, x, y, c->saveGame->dnglevel);
+    obj = mapAddObject(c->location->map, monster->tile, monster->tile, x, y, c->location->z);
     if (monster->mattr & MATTR_WANDERS)
         obj->movement_behavior = MOVEMENT_WANDER;
     else if (monster->mattr & MATTR_STATIONARY)
@@ -2303,7 +2252,7 @@ void gameCheckRandomMonsters() {
 void gameFixupMonstersBehavior() {
     Object *obj;
 
-    for (obj = c->map->objects; obj; obj = obj->next) {
+    for (obj = c->location->map->objects; obj; obj = obj->next) {
         if (obj->movement_behavior == MOVEMENT_ATTACK_AVATAR) {
             const Monster *m = monsterForTile(obj->tile);
             if (m && m->mattr & MATTR_WANDERS)
@@ -2340,8 +2289,8 @@ void gameMonsterAttack(Object *obj) {
 
     screenMessage("\nAttacked by %s\n", m->name);
 
-    ground = mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
-    if ((under = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel)) &&
+    ground = mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
+    if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
     combatBegin(ground, c->saveGame->transport, obj);

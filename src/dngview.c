@@ -9,7 +9,7 @@
 #include "savegame.h"
 #include "ttype.h"
 #include "dngview.h"
-#include "map.h"
+#include "location.h"
 #include "ttype.h"
 
 
@@ -21,36 +21,36 @@ unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
 
     switch (c->saveGame->orientation) {
     case DIR_WEST:
-        x = c->saveGame->x - fwd;
-        y = c->saveGame->y - side;
+        x = c->location->x - fwd;
+        y = c->location->y - side;
         break;
 
     case DIR_NORTH:
-        x = c->saveGame->x + side;
-        y = c->saveGame->y - fwd;
+        x = c->location->x + side;
+        y = c->location->y - fwd;
         break;
 
     case DIR_EAST:
-        x = c->saveGame->x + fwd;
-        y = c->saveGame->y + side;
+        x = c->location->x + fwd;
+        y = c->location->y + side;
         break;
 
     case DIR_SOUTH:
-        x = c->saveGame->x - side;
-        y = c->saveGame->y + fwd;
+        x = c->location->x - side;
+        y = c->location->y + fwd;
         break;
     }
-    if (MAP_IS_OOB(c->map, x, y)) {
+    if (MAP_IS_OOB(c->location->map, x, y)) {
         while (x < 0)
-            x += c->map->width;
+            x += c->location->map->width;
         while (y < 0)
-            y += c->map->height;
-        while (x >= c->map->width)
-            x -= c->map->width;
-        while (y >= c->map->height)
-            y -= c->map->height;
+            y += c->location->map->height;
+        while (x >= c->location->map->width)
+            x -= c->location->map->width;
+        while (y >= c->location->map->height)
+            y -= c->location->map->height;
     }
-    tile = mapTileAt(c->map, x, y, c->saveGame->dnglevel);
+    tile = mapTileAt(c->location->map, x, y, c->location->z);
 
     printf("tile (%d, %d) = %d\n", fwd, side, tile);
 

@@ -15,7 +15,7 @@
 #include "event.h"
 #include "names.h"
 #include "annotation.h"
-#include "map.h"
+#include "location.h"
 #include "music.h"
 #include "game.h"
 #include "player.h"
@@ -31,15 +31,11 @@ void campEnd(void);
 void campBegin() {
     int i;
 
-    c = gameCloneContext(c);
-
     gameSetMap(c, &camp_map, 1, NULL);
-    c->saveGame->dnglevel = 0;
-
     musicPlay();
 
     for (i = 0; i < c->saveGame->members; i++)
-        mapAddObject(c->map, CORPSE_TILE, CORPSE_TILE, c->map->area->player_start[i].x, c->map->area->player_start[i].y, c->saveGame->dnglevel);
+        mapAddObject(c->location->map, CORPSE_TILE, CORPSE_TILE, c->location->map->area->player_start[i].x, c->location->map->area->player_start[i].y, c->location->z);
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
     eventHandlerAddTimerCallback(&campTimer, 4 * 10);
@@ -57,18 +53,20 @@ void campTimer(void *data) {
 }
 
 void campEnd() {
-    gameExitToParentMap(c);
+    int healed = 0;
+    
+    gameExitToParentMap(c);    
     
     if (c->saveGame->moves - c->saveGame->lastcamp > CAMP_HEAL_INTERVAL)
-        campHeal();
-    else screenMessage("No effect.\n");
+        healed = campHeal();
 
+    screenMessage(healed ? "Party Healed!\n" : "No effect.\n");
     c->saveGame->lastcamp = c->saveGame->moves;
 
     gameFinishTurn();
 }
 
-void campHeal() {
+int campHeal() {
     int i, healed;
 
     healed = 0;
@@ -83,9 +81,7 @@ void campHeal() {
     }
     statsUpdate();
 
-    if (healed)
-        screenMessage("Party Healed!\n");
-    else screenMessage("No effect.\n");    
+    return healed;    
 }
 
 
