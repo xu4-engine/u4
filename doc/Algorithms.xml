@@ -18,14 +18,14 @@
             <line>random(8) == 0</line>
         </algorithm>
         <algorithm desc="Healed after camping?" prec="exact">
-            <line>(((moves/100) >= 0x10000) || (((moves/100) &amp; 0xffff) != lastcamp))</line>
+            <line>(((moves/100) >= 0x10000) or (((moves/100) &amp; 0xffff) != lastcamp))</line>
             <line>lastcamp = (moves/100) &amp; 0xffff</line>
         </algorithm>
         <algorithm desc="Ambushed by rats at inn?" prec="unknown">
             <line>random(4) == 0</line>
         </algorithm>
         <algorithm desc="Visited by Isaac the Ghost?" prec="unknown">
-            <line>(map == Skara Brae) &amp;&amp; (random(4) == 0)</line>
+            <line>(map == Skara Brae) and (random(4) == 0)</line>
         </algorithm>
     </section>
 
@@ -34,7 +34,7 @@
             <line>random(32) == 0</line>
         </algorithm>
         <algorithm desc="Place monster's leader" prec="exact">
-            <line>!placedLeadersLeader &amp;&amp; (random(8) == 0)</line>
+            <line>!placedLeadersLeader and (random(8) == 0)</line>
         </algorithm>
         <algorithm desc="# of creatures (town)" prec="exact">
             <line>if (guard)<line>ncreatures = numPartyMembers * 2</line></line>
@@ -43,8 +43,8 @@
         <algorithm desc="# of creatures (normal)" prec="near">
             <line>ncreatures = random(8) + 1</line>
             <line>if (ncreatures == 1) {
-                <line>if (creature->encountersize == 0)
-                    <line>ncreatures = random(creature->encountersize) + creature->encountersize + 1</line></line>
+                <line>if (creature.encountersize == 0)
+                    <line>ncreatures = random(creature.encountersize) + creature.encountersize + 1</line></line>
                 <line>else ncreatures = 8</line>
             </line>
             <line>}</line>
@@ -53,10 +53,66 @@
             </line>
             </algorithm>
         <algorithm desc="Does player get an extra turn?" prec="near">
-            <line>(aura == quick) &amp;&amp; playerIsNotDisabled &amp;&amp; (random(2) == 0)</line>
+            <line>(aura == quick) and playerIsNotDisabled and (random(2) == 0)</line>
         </algorithm>
         <algorithm desc="Does player wake up?" prec="exact">
             <line>random(8) == 0</line>
+        </algorithm>
+        <algorithm desc="Monster placement" prec="exact">
+            <pseudo>Add monster to random empty location in combat monsters location array</pseudo>
+        </algorithm>
+        <algorithm desc="Player poisoned by ranged poison attack" prec="exact"><line>random(2) == 0 and !alreadyPoisoned</line></algorithm>
+        <algorithm desc="Player slept by ranged sleep attack" prec="exact"><line>random(2) == 0</line></algorithm>
+        <algorithm desc="Player damage to creature" prec="exact">
+            <line>maxDamage = weapon.damage</line>
+            <line>maxDamage += player.strength</line>
+            <line>if(maxDamage > 255)<line>maxDamage=255</line></line>
+            <line>realDamage = random(maxDamage)</line>
+        </algorithm>
+        <algorithm desc="Creature damage to player/creature" prec="exact">
+            <line>x = random(creature.basehp >> 2)</line>
+            <line>damage = (x >> 4) + ((x >> 2) &amp; 0xfc)</line>
+            <line>damage += x % 10</line>            
+        </algorithm>
+        <algorithm desc="Creature hits player" prec="exact">
+            <line>xu4_random(0x100) > armor.defense</line>
+        </algorithm>
+        <algorithm desc="Player hits creature" prec="exact">
+            <line>(player.dex + 0x80) >= xu4_random(0x100)</line>
+        </algorithm>
+        <algorithm desc="Player is disabled" prec="near">
+            <line>(player.status == 'G') or (player.status == 'P')</line>
+        </algorithm>
+    </section>    
+
+    <section name="Party">
+        <algorithm desc="Is karma adjusted?" prec="near">
+            <line>
+                if (!adjustment.isTimeLimited or (<line>((moves / 16) >= 0x10000) or (((moves / 16) &amp; 0xFFFF) != lastvirtue))) {</line>
+                <line>lastvirtue = (moves / 16) &amp; 0xFFFF;</line>
+                <line>return true;</line>
+            </line>
+            <line>}</line>
+        </algorithm>
+        <algorithm desc="Player poisoned on swamp?" prec="exact">
+            <line>random(5) == 0</line>
+        </algorithm>
+        <algorithm desc="Player slept on sleep field?" prec="exact">
+            <line>random(2) == 0</line>
+        </algorithm>
+        <algorithm desc="Ship repaired this turn?" prec="unknown">
+            <line>(hull &lt; 50) and (random(4) == 0)</line>
+        </algorithm>
+        <algorithm desc="Amount of gold in chest" prec="exact">
+            <line>random(50) + random(8) + 10</line>
+        </algorithm>
+        <algorithm desc="Party immobilized" prec="exact">
+            <pseudo>yes if all party members are disabled</pseudo>
+        </algorithm>
+        <algorithm desc="Can person join party?" prec="exact">            
+            <line>!(person of that class already in party) and</line>
+            <line>(numPartyMembers + 1 &lt; (avatar.hpMax / 100)) and </line>
+            <line>((party.karma[class] == 0) or (party.karma[class] >= 40))</line>
         </algorithm>
     </section>
 </algorithms>

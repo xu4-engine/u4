@@ -26,6 +26,11 @@
                 background: #aaaaaa;
                 text-align: center;
             }            
+
+            .pseudo {
+                font-style: italic;
+                color: green;
+            }
         </STYLE>
     </HEAD>
     <BODY style="margin: 0px; padding: 0px;">    
@@ -58,15 +63,16 @@
 <xsl:template match="algorithm">    
     <TR>
         <TD><xsl:value-of select="@desc"/></TD>
-        <TD><xsl:value-of select="@prec"/></TD>
+        <TD align="center"><xsl:value-of select="@prec"/></TD>
         <TD><code>      
             <xsl:apply-templates select="line"/>
+            <xsl:apply-templates select="pseudo"/>
         </code></TD>
     </TR>
 </xsl:template>
 
 <!-- Line of code -->
-<xsl:template match="line">
+<xsl:template match="line" name="line">
     <xsl:param name="indent" select="0"/>
     <div>
         <xsl:attribute name="style">padding-left: <xsl:value-of select="$indent*3"/>em; </xsl:attribute>        
@@ -75,6 +81,10 @@
             <xsl:with-param name="indent" select="1"/>
         </xsl:apply-templates>
     </div>
+</xsl:template>
+
+<xsl:template match="pseudo">
+    <span class="pseudo"><xsl:call-template name="line"/></span>
 </xsl:template>
 
 </xsl:stylesheet>
