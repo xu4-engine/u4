@@ -654,7 +654,7 @@ offset  len   notes
               dialogs (value + 62123 gives file offset)
 0x11e6d 1404  ??? 
 0x123e9 3486  Hawkwind dialog text; the first 40 zero terminated
-              strings are his responses for 5 levels times 8 virtures,
+              strings are his responses for 5 levels times 8 virtues,
               plus some other miscellaneous dialog strings
 0x13187 80    40 two-byte offsets to Hawkwind dialog strings (value +
               62075 gives file offset)
