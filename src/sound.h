@@ -17,7 +17,8 @@ typedef enum {
     SOUND_MAGIC,
     SOUND_LBHEAL,
     SOUND_WHIRLPOOL,
-    SOUND_STORM
+    SOUND_STORM,
+    SOUND_MAX
 } Sound;
 
 int soundInit(void);

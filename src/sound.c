@@ -3,31 +3,75 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
+#include <libxml/xmlmemory.h>
 
 #include "sound.h"
+#include "error.h"
+#include "settings.h"
+#include "u4file.h"
+#include "xml.h"
 
-Mix_Chunk *step = NULL;
+char *soundFilenames[SOUND_MAX];
+Mix_Chunk *soundChunk[SOUND_MAX];
 
 int soundInit() {
-    return 0;
+    Sound soundTrack;
+    xmlDocPtr doc;
+    xmlNodePtr root, node;
+
+    /*
+     * load sound track filenames from xml config file
+     */
+
+    doc = xmlParse("sound.xml");
+    root = xmlDocGetRootElement(doc);
+    if (xmlStrcmp(root->name, (const xmlChar *) "sound") != 0)
+        errorFatal("malformed sound.xml");
+
+    soundTrack = 0;
+    for (node = root->xmlChildrenNode; node; node = node->next) {
+        if (soundTrack >= SOUND_MAX)
+            break;
+
+        if (xmlNodeIsText(node) ||
+            xmlStrcmp(node->name, (const xmlChar *) "track") != 0)
+            continue;
+
+        soundFilenames[soundTrack] = (char *)xmlGetProp(node, (const xmlChar *) "file");
+        soundTrack++;
+    }
+    xmlFreeDoc(doc);
+
+    return 1;
 }
 
 void soundDelete() {
 }
 
 void soundPlay(Sound sound) {
-    /* FIXME: play the sound! */
+    char *pathname;
 
-#if 0
-    if (step == NULL) {
-        step = Mix_LoadWAV("walking.wav");
-        if (!step) {
-            errorWarning("unable to load sound effect file %s: %s", "walking.wav", Mix_GetError());
+    assert(sound < SOUND_MAX);
+
+    /* FIXME: control music seperate from sounds
+    if (!settings->vol)
+      return;*/
+
+    if (soundChunk[sound] == NULL) {
+        pathname = u4find_sound(soundFilenames[sound]);
+        if (pathname) {
+            soundChunk[sound] = Mix_LoadWAV(pathname);
+            free(pathname);
+            if (!soundChunk[sound]) {
+                errorWarning("unable to load sound effect file %s: %s", soundFilenames[sound], Mix_GetError());
+                return;
+            }
         }
-
     }
-    Mix_PlayChannel(0, step, 1);
-#endif
+    if (Mix_PlayChannel(-1, soundChunk[sound], 0) == -1)
+        errorWarning("error playing sound: %s", Mix_GetError());
 }
