@@ -1163,6 +1163,7 @@ void combatEnd(int adjustKarma) {
             case DIR_EAST:  action = ACTION_EXIT_EAST; break;
             case DIR_SOUTH: action = ACTION_EXIT_SOUTH; break;
             case DIR_WEST:  action = ACTION_EXIT_WEST; break;
+            case DIR_NONE:  break;
             default: ASSERT(0, "Invalid exit dir %d", combatInfo.exitDir); break;
             }
 
@@ -1171,8 +1172,10 @@ void combatEnd(int adjustKarma) {
         }
         else screenMessage("\n");
 
-        c->saveGame->orientation = combatInfo.exitDir;  /* face the direction exiting the room */
-        (*c->location->move)(DIR_NORTH, 0);             /* advance 1 space outside of the room */        
+        if (combatInfo.exitDir != DIR_NONE) {
+            c->saveGame->orientation = combatInfo.exitDir;  /* face the direction exiting the room */
+            (*c->location->move)(DIR_NORTH, 0);             /* advance 1 space outside of the room */
+        }
     }
 
     /* remove the monster */
