@@ -28,7 +28,7 @@ int verbose = 0;
 
 int main(int argc, char *argv[]) {
     unsigned int i, scale = 2;
-    FILE *saveGameFile;
+    FILE *saveGameFile, *monstersFile;
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-scale") == 0 && argc > i + 1) {
@@ -87,10 +87,15 @@ int main(int argc, char *argv[]) {
     saveGameFile = fopen("party.sav", "rb");
     if (saveGameFile) {
         saveGameRead(c->saveGame, saveGameFile);
-		fclose(saveGameFile);
+        fclose(saveGameFile);
     } else {
         printf("No savegame found!  Initiate game first\n");
         exit(0);
+    }
+    monstersFile = fopen("monsters.sav", "rb");
+    if (monstersFile) {
+        saveGameMonstersRead(&c->map->objects, monstersFile);
+        fclose(monstersFile);
     }
 
     /* play the game! */
