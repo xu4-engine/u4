@@ -75,15 +75,8 @@ int main(int argc, char *argv[]) {
         saveGameRead(c->saveGame, saveGameFile);
 		fclose(saveGameFile);
     } else {
-        SaveGamePlayerRecord avatar;
-        saveGamePlayerRecordInit(&avatar);
-        strcpy(avatar.name, "Avatar");
-        avatar.hp = 100;
-        avatar.hpMax = 100;
-        avatar.str = 20;
-        avatar.dex = 20;
-        avatar.intel = 20;
-        saveGameInit(c->saveGame, 86, 109, &avatar);
+        printf("No savegame found!  Initiate game first\n");
+        exit(0);
     }
 
     /* play the game! */
