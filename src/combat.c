@@ -68,6 +68,7 @@ int movePartyMember(Direction dir, int member);
 void combatBegin(unsigned char partytile, unsigned short transport, Object *monster) {
     int i;
     int nmonsters;
+    int mtile;
 
     monsterObj = monster;
 
@@ -89,7 +90,10 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
 
     nmonsters = combatInitialNumberOfMonsters(monster->tile);
     for (i = 0; i < nmonsters; i++) {
-        monsters[i] = mapAddObject(c->map, monster->tile, monster->tile, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
+        mtile = monster->tile;
+        if (tileIsPirateShip(mtile))
+            mtile = ROGUE_TILE;
+        monsters[i] = mapAddObject(c->map, mtile, mtile, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
         monsterHp[i] = monsterGetInitialHp(monsterForTile(monsters[i]->tile));
     }
     for (; i < AREA_MONSTERS; i++)
@@ -382,8 +386,15 @@ void combatEnd() {
         musicPlay();
     }
     
-    if (combatIsWon())
-        mapAddObject(c->map, CHEST_TILE, CHEST_TILE, monsterObj->x, monsterObj->y);
+    if (combatIsWon()) {
+        if ((monsterForTile(monsterObj->tile)->mattr & MATTR_WATER) == 0)
+            mapAddObject(c->map, CHEST_TILE, CHEST_TILE, monsterObj->x, monsterObj->y);
+        else if (tileIsPirateShip(monsterObj->tile)) {
+            unsigned short ship = 16;
+            tileSetDirection(&ship, tileGetDirection(monsterObj->tile));
+            mapAddObject(c->map, ship, ship, monsterObj->x, monsterObj->y);
+        }
+    }   
     mapRemoveObject(c->map, monsterObj);
     
     if (!playerPartyDead(c->saveGame))
@@ -392,10 +403,9 @@ void combatEnd() {
 
 void combatMoveMonsters() {
     int i, newx, newy, valid_dirs, target, distance;
-    unsigned char tile;
-    Object *other;
     CombatAction action;
     const Monster *m;
+    int slow;
 
     for (i = 0; i < AREA_MONSTERS; i++) {
         if (!monsters[i])
@@ -438,24 +448,31 @@ void combatMoveMonsters() {
         case CA_ADVANCE:
             newx = monsters[i]->x;
             newy = monsters[i]->y;
-            valid_dirs = mapGetValidMoves(c->map, newx, newy, AVATAR_TILE);
+            valid_dirs = mapGetValidMoves(c->map, newx, newy, monsters[i]->tile);
             dirMove(dirFindPath(newx, newy, party[target]->x, party[target]->y, valid_dirs), &newx, &newy);
 
-            if (newx >= 0 && newx < c->map->width &&
-                newy >= 0 && newy < c->map->height) {
-                if ((other = mapObjectAt(c->map, newx, newy)) != NULL)
-                    tile = other->tile;
-                else
-                    tile = mapTileAt(c->map, newx, newy);
-                if (tileIsWalkable(tile)) {
-                    if (newx != monsters[i]->x ||
-                        newy != monsters[i]->y) {
-                        monsters[i]->prevx = monsters[i]->x;
-                        monsters[i]->prevy = monsters[i]->y;
-                    }
-                    monsters[i]->x = newx;
-                    monsters[i]->y = newy;
+            switch (tileGetSpeed(mapTileAt(c->map, newx, newy))) {
+            case FAST:
+                slow = 0;
+                break;
+            case SLOW:
+                slow = (rand() % 8) == 0;
+                break;
+            case VSLOW:
+                slow = (rand() % 4) == 0;
+                break;
+            case VVSLOW:
+                slow = (rand() % 2) == 0;
+                break;
+            }
+            if (!slow) {
+                if (newx != monsters[i]->x ||
+                    newy != monsters[i]->y) {
+                    monsters[i]->prevx = monsters[i]->x;
+                    monsters[i]->prevy = monsters[i]->y;
                 }
+                monsters[i]->x = newx;
+                monsters[i]->y = newy;
             }
             break;
         }
