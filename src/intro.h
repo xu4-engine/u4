@@ -11,7 +11,7 @@
 #include "menu.h"
 #include "savegame.h"
 
-class IntroObjectState;
+struct IntroObjectState;
 
 class IntroController : public Controller {
 public:
