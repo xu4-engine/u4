@@ -13,6 +13,7 @@
 #include "debug.h"
 #include "game.h"
 #include "location.h"
+#include "types.h"
 #include "utils.h"
 #include "weapon.h"
 
@@ -314,14 +315,14 @@ int playerDonate(int quantity) {
     return 1;
 }
 
-int playerCanPersonJoin(const char *name, Virtue *v) {
+int playerCanPersonJoin(string name, Virtue *v) {
     int i;
 
-    if (!name)
+    if (name.empty())
         return 0;    
 
     for (i = 1; i < 8; i++) {
-        if (strcmp(c->players[i].name, name) == 0) {
+        if (name == c->players[i].name) {
             if (v)
                 *v = (Virtue) c->players[i].klass;
             return 1;
@@ -330,25 +331,25 @@ int playerCanPersonJoin(const char *name, Virtue *v) {
     return 0;
 }
 
-int playerIsPersonJoined(const char *name) {
+int playerIsPersonJoined(string name) {
     int i;
 
-    if (!name)
+    if (name.empty())
         return 0;
 
     for (i = 1; i < c->saveGame->members; i++) {
-        if (strcmp(c->players[i].name, name) == 0)
+        if (name == c->players[i].name)
             return 1;
     }
     return 0;
 }
 
-CannotJoinError playerJoin(const char *name) {
+CannotJoinError playerJoin(string name) {
     int i;
     SaveGamePlayerRecord tmp;
 
     for (i = c->saveGame->members; i < 8; i++) {
-        if (strcmp(c->players[i].name, name) == 0) {
+        if (name == c->players[i].name) {
 
             /* ensure avatar is experienced enough */
             if (c->saveGame->members + 1 > (c->players[0].hpMax / 100))
@@ -613,9 +614,9 @@ int playerLoseWeapon(int player) {
 }
 
 void playerAdjustGold(int gold) {
-    c->saveGame->gold += gold;
-    if (c->saveGame->gold > 9999)
-        c->saveGame->gold = (gold > 0) ? 9999 : 0;    
+    long curr = c->saveGame->gold;
+    AdjustValue(curr, gold, 9999, 0);
+    c->saveGame->gold = (unsigned short)curr;
 }
 
 void playerAdjustFood(int food) {

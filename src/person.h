@@ -5,7 +5,7 @@
 #ifndef PERSON_H
 #define PERSON_H
 
-#include "object.h"
+#include "monster.h"
 #include "types.h"
 
 struct _Conversation;
@@ -72,7 +72,7 @@ typedef enum {
     CONVINPUT_NONE
 } ConversationInputType;
 
-typedef struct _Person {
+/*typedef struct _Person {
     char *name;
     char *pronoun;
     char *description;
@@ -92,8 +92,40 @@ typedef struct _Person {
     unsigned int startx, starty, startz;
     ObjectMovementBehavior movement_behavior;
     PersonNpcType npcType;
-    int permanent; /* if the person is naturally part of the map, if not, we need to know */
-} Person;
+    int permanent; // if the person is naturally part of the map, if not, we need to know
+} Person;*/
+
+class Person : public Monster {
+public:
+    Person(MapTile tile = 0) : Monster(tile) {
+        setType(OBJECT_PERSON);
+    }
+
+public:
+    string name;
+    string pronoun;
+    string description;
+    string job;
+    string health;
+    string response1;
+    string response2;
+    string question;
+    string yesresp;
+    string noresp;
+    string keyword1;
+    string keyword2;
+    PersonQuestionTrigger questionTrigger;
+    PersonQuestionType questionType;
+    union {
+        int turnAwayProb;
+        int attackProb;
+    };     
+    MapCoords start;    
+    //ObjectMovementBehavior movement_behavior;
+    PersonNpcType npcType;
+};
+
+bool isPerson(Object *punknown);
 
 Reply *replyNew(string text);
 void replyDelete(Reply *reply);

@@ -26,6 +26,7 @@
 #include "screen.h"
 #include "settings.h"
 #include "tile.h"
+#include "tileset.h"
 #include "utils.h"
 
 SpellEffectCallback spellEffectCallback = NULL;
@@ -313,7 +314,7 @@ void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage)
     /* setup the spell */
     info = new CoordActionInfo;
     info->handleAtCoord = &spellMagicAttackAtCoord;
-    info->origin = combatInfo.party[FOCUS].obj->getCoords();
+    info->origin = combatInfo.party[FOCUS]->getCoords();
     info->prev = MapCoords(-1, -1);
     info->range = 11;
     info->validDirections = MASK_DIR_ALL;
@@ -374,13 +375,14 @@ static int spellAwaken(int player) {
         c->players[player].status == STAT_SLEEPING) {
         
         /* restore the party member to their original state */
-        if (combatInfo.party[player].status)
-            c->players[player].status = combatInfo.party[player].status;
-        else c->players[player].status = STAT_GOOD;
+        /*if (c->players[player].status)
+            c->players[player].status = combatInfo.party[player]->status;
+        else c->players[player].status = STAT_GOOD;*/
+        c->players[player].status = STAT_GOOD;
 
         /* wake the member up! */
-        if (combatInfo.party[player].obj)
-            combatInfo.party[player].obj->setTile(tileForClass(c->players[player].klass));
+        if (combatInfo.party.find(player) != combatInfo.party.end())
+            combatInfo.party[player]->setTile(tileForClass(c->players[player].klass));
 
         return 1;
     }
@@ -416,10 +418,10 @@ static int spellBlink(int dir) {
     
     i = distance;   
     /* begin walking backward until you find a valid spot */
-    while ((i-- > 0) && !tileIsWalkable((*c->location->tileAt)(c->location->map, coords, WITH_OBJECTS)))
+    while ((i-- > 0) && !tileIsWalkable(c->location->map->tileAt(coords, WITH_OBJECTS)))
         coords.move(reverseDir, c->location->map);
     
-    if (tileIsWalkable((*c->location->tileAt)(c->location->map, coords, WITH_OBJECTS))) {
+    if (tileIsWalkable(c->location->map->tileAt(coords, WITH_OBJECTS))) {
         /* we didn't move! */
         if (c->location->coords == coords)
             failed = 1;
@@ -477,7 +479,7 @@ static int spellDispel(int dir) {
     /*
      * if the map tile itself is a field, overlay it with a replacement tile
      */
-    tile = (*c->location->tileAt)(c->location->map, field, WITHOUT_OBJECTS);    
+    tile = c->location->map->tileAt(field, WITHOUT_OBJECTS);    
     if (!tileCanDispel(tile))
         return 0;
     
@@ -520,7 +522,7 @@ static int spellEField(int param) {
          * Field cast on top of field and then dispel = no fields left
          * The code below seems to produce this behaviour.
          */
-        tile = (*c->location->tileAt)(c->location->map, coords, WITH_GROUND_OBJECTS);
+        tile = c->location->map->tileAt(coords, WITH_GROUND_OBJECTS);
         if (!tileIsWalkable(tile)) return 0;
         
         /* Get rid of old field, if any */
@@ -621,11 +623,11 @@ static int spellSleep(int unused) {
 
     /* try to put each monster to sleep */
     for (i = 0; i < AREA_MONSTERS; i++) { 
-        if (combatInfo.monsters[i].obj) {
-            if ((combatInfo.monsters[i].obj->monster->resists != EFFECT_SLEEP) &&
-                xu4_random(0xFF) >= combatInfo.monsters[i].hp) {
-                combatInfo.monsters[i].status = STAT_SLEEPING;
-                combatInfo.monsters[i].obj->setAnimated(false); /* freeze monster */
+        if (combatInfo.monsters.find(i) != combatInfo.monsters.end()) {
+            if ((combatInfo.monsters[i]->resists != EFFECT_SLEEP) &&
+                xu4_random(0xFF) >= combatInfo.monsters[i]->hp) {
+                combatInfo.monsters[i]->status = STAT_SLEEPING;
+                combatInfo.monsters[i]->setAnimated(false); /* freeze monster */
             }
         }
     }
@@ -639,13 +641,13 @@ static int spellTremor(int unused) {
 
     for (i = 0; i < AREA_MONSTERS; i++) {        
         /* make sure we have a valid monster */
-        if (!combatInfo.monsters[i].obj)
+        if (combatInfo.monsters.find(i) == combatInfo.monsters.end())
             continue;
         /* monsters with over 192 hp are unaffected */
-        else if (combatInfo.monsters[i].hp > 192)
+        else if (combatInfo.monsters[i]->hp > 192)
             continue;
         else {
-            coords = combatInfo.monsters[i].obj->getCoords();
+            coords = combatInfo.monsters[i]->getCoords();
 
             /* Deal maximum damage to monster */
             if (xu4_random(2) == 0) {
@@ -654,8 +656,8 @@ static int spellTremor(int unused) {
             }
             /* Deal enough damage to monster to make it flee */
             else if (xu4_random(2) == 0) {
-                if (combatInfo.monsters[i].hp > 23)
-                    combatApplyDamageToMonster(i, combatInfo.monsters[i].hp-23, FOCUS);                
+                if (combatInfo.monsters[i]->hp > 23)
+                    combatApplyDamageToMonster(i, combatInfo.monsters[i]->hp-23, FOCUS);                
                 attackFlash(coords, HITFLASH_TILE, 1);
             }
         }
@@ -669,8 +671,9 @@ static int spellUndead(int unused) {
     
     for (i = 0; i < AREA_MONSTERS; i++) {
         /* Deal enough damage to undead to make them flee */
-        if (combatInfo.monsters[i].obj && monsterIsUndead(combatInfo.monsters[i].obj->monster) && xu4_random(2) == 0)
-            combatInfo.monsters[i].hp = 23;        
+        if ((combatInfo.monsters.find(i) != combatInfo.monsters.end()) && 
+            combatInfo.monsters[i]->isUndead() && xu4_random(2) == 0)
+            combatInfo.monsters[i]->hp = 23;        
     }
     
     return 1;
@@ -687,7 +690,7 @@ static int spellWinds(int fromdir) {
 }
 
 static int spellXit(int unused) {
-    if (!mapIsWorldMap(c->location->map)) {
+    if (!c->location->map->isWorldMap()) {
         screenMessage("Leaving...\n");
         gameExitToParentMap();
         musicPlay();
@@ -708,7 +711,7 @@ static int spellYup(int unused) {
     else if (coords.z > 0) {
         for (i = 0; i < 0x20; i++) {
             coords = MapCoords(xu4_random(8), xu4_random(8), coords.z - 1);
-            tile = (*c->location->tileAt)(c->location->map, coords, WITH_OBJECTS);
+            tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
             if (dungeonTokenForTile(tile) == DUNGEON_CORRIDOR) {
                 c->location->coords = coords;
@@ -741,7 +744,7 @@ static int spellZdown(int unused) {
     else {
         for (i = 0; i < 0x20; i++) {
             coords = MapCoords(xu4_random(8), xu4_random(8), coords.z + 1);
-            tile = (*c->location->tileAt)(c->location->map, coords, WITH_OBJECTS);
+            tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
             if (dungeonTokenForTile(tile) == DUNGEON_CORRIDOR) {
                 c->location->coords = coords;

@@ -54,7 +54,7 @@ void putWeaponInInventory(void *weapon);
 void useTelescope(void *notused);
 int isReagentInInventory(void *reag);
 void putReagentInInventory(void *reag);
-int isAbyssOpened(const Portal *p);
+bool isAbyssOpened(const Portal *p);
 int itemHandleStones(string *color);
 int itemHandleVirtues(string *virtue);
 
@@ -363,7 +363,7 @@ void useStone(void *item) {
      * in a dungeon altar room, on the altar
      */
     else if ((c->location->context & CTX_ALTAR_ROOM) &&
-            (*c->location->tileAt)(c->location->map, coords, WITHOUT_OBJECTS) == ALTAR_TILE) {
+            c->location->map->tileAt(coords, WITHOUT_OBJECTS) == ALTAR_TILE) {
         needStoneNames = 4;
         screenMessage("\n\nThere are holes for 4 stones.\nWhat colors:\nA:");        
 
@@ -379,7 +379,14 @@ void useKey(void *item) {
 int isMysticInInventory(void *mystic) {
     /* FIXME: you could feasibly get more mystic weapons and armor if you
        have 8 party members and equip them all with everything,
-       then search for Mystic Weapons/Armor again */
+       then search for Mystic Weapons/Armor again 
+
+       or, you could just sell them all and search again.  What an easy
+       way to make some cash!
+
+       This would be a good candidate for an xu4 "extended" savegame
+       format.
+    */
     if (((int)mystic) == WEAP_MYSTICSWORD)
         return c->saveGame->weapons[WEAP_MYSTICSWORD] > 0;
     else if (((int)mystic) == ARMR_MYSTICROBES)
@@ -524,7 +531,7 @@ void itemUse(string shortname) {
 /**
  * Checks to see if the abyss was opened
  */
-int isAbyssOpened(const Portal *p) {
+bool isAbyssOpened(const Portal *p) {
     /* make sure the bell, book and candle have all been used */
     int items = c->saveGame->items;
     int isopened = (items & ITEM_BELL_USED) && (items & ITEM_BOOK_USED) && (items & ITEM_CANDLE_USED);

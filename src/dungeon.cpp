@@ -16,7 +16,26 @@
 #include "player.h"
 #include "screen.h"
 #include "stats.h"
+#include "tileset.h"
 #include "utils.h"
+
+/**
+ * Returns true if 'map' points to a dungeon map
+ */ 
+bool isDungeon(Map *punknown) {
+    Dungeon *pd;
+    if ((pd = dynamic_cast<Dungeon*>(punknown)) != NULL)
+        return true;
+    else
+        return false;
+}
+
+/**
+ * Returns the name of the dungeon
+ */ 
+string Dungeon::getName() {
+    return name;
+}
 
 /**
  * Returns the dungeon token associated with the given dungeon tile
@@ -52,14 +71,14 @@ unsigned char dungeonCurrentSubToken() {
  * Returns the dungeon token for the given coordinates
  */
 DungeonToken dungeonTokenAt(Map *map, MapCoords coords) {
-    return dungeonTokenForTile(mapGetTileFromData(map, coords));
+    return dungeonTokenForTile(map->getTileFromData(coords));
 }
 
 /**
  * Returns the dungeon sub-token for the given coordinates
  */
 unsigned char dungeonSubTokenAt(Map *map, MapCoords coords) {
-    return dungeonSubTokenForTile(mapGetTileFromData(map, coords));
+    return dungeonSubTokenForTile(map->getTileFromData(coords));
 }
 
 /**
@@ -69,7 +88,7 @@ bool dungeonLoadRoom(Dungeon *dng, int room) {
     if (dng->room != NULL)
         delete dng->room;    
     
-    dng->room = mapMgrInitMap();
+    dng->room = dynamic_cast<CombatMap*>(mapMgrInitMap(MAPTYPE_COMBAT));
 
     dng->room->id = 0;
     dng->room->border_behavior = BORDER_FIXED;
@@ -192,7 +211,7 @@ bool dungeonTouchOrb(int player) {
     int damage = 0;    
     MapTile replacementTile;
     
-    /* Get current position and find a replacement tile for it */    
+    /* Get current position and find a replacement tile for it */   
     replacementTile = locationGetReplacementTile(c->location, c->location->coords);
 
     switch(c->location->map->id) {
@@ -254,7 +273,7 @@ bool dungeonHandleTrap(TrapType trap) {
 /**
  * Returns true if a ladder-up is found at the given coordinates
  */
-bool dungeonLadderUpAt(struct _Map *map, MapCoords coords) {    
+bool dungeonLadderUpAt(class Map *map, MapCoords coords) {    
     AnnotationList a = c->location->map->annotations->allAt(coords);
 
     if (dungeonTokenAt(map, coords) == DUNGEON_LADDER_UP ||
@@ -274,7 +293,7 @@ bool dungeonLadderUpAt(struct _Map *map, MapCoords coords) {
 /**
  * Returns true if a ladder-down is found at the given coordinates
  */
-bool dungeonLadderDownAt(struct _Map *map, MapCoords coords) {
+bool dungeonLadderDownAt(class Map *map, MapCoords coords) {
     AnnotationList a = c->location->map->annotations->allAt(coords);
 
     if (dungeonTokenAt(map, coords) == DUNGEON_LADDER_DOWN ||

@@ -25,7 +25,7 @@ Location *locationPop(Location **stack);
  */
 Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx,
                       FinishTurnCallback finishTurnCallback, MoveCallback moveCallback,
-                      TileAt tileAtCallback, Tileset *tileset, Location *prev) {
+                      Tileset *tileset, Location *prev) {
 
     Location *newLoc = new Location;
 
@@ -34,8 +34,7 @@ Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext 
     newLoc->viewMode = viewmode;
     newLoc->context = ctx;
     newLoc->finishTurn = finishTurnCallback;
-    newLoc->move = moveCallback;
-    newLoc->tileAt = tileAtCallback;
+    newLoc->move = moveCallback;    
     newLoc->tileset = tileset;
     newLoc->activePlayer = -1;
 
@@ -63,9 +62,10 @@ MapTile locationVisibleTileAt(Location *location, MapCoords coords, int *focus) 
  */
 MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {    
     MapTileList tiles = new xu4_list<MapTile>;
-    AnnotationList a = c->location->map->annotations->allAt(coords);    
+    AnnotationList a = location->map->annotations->allAt(coords);    
     AnnotationList::iterator i;
-    const Object *obj = mapObjectAt(location->map, coords);
+    const Object *obj = location->map->objectAt(coords);
+    const Monster *m = dynamic_cast<const Monster *>(obj);
     *focus = 0;
 
     bool avatar = location->coords == coords;
@@ -75,7 +75,7 @@ MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {
         if ((location->map->flags & SHOW_AVATAR) && avatar)
             tiles->push_back(c->saveGame->transport);
         else
-            tiles->push_back(mapGetTileFromData(location->map, coords));
+            tiles->push_back(location->map->getTileFromData(coords));
         return tiles;
     }
     
@@ -90,9 +90,9 @@ MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {
         tiles->push_back(c->saveGame->transport);
 
     /* then camouflaged monsters that have a disguise */
-    if (obj && (obj->getType() == OBJECT_MONSTER) && !obj->isVisible() && (obj->monster->camouflageTile > 0)) {
+    if (obj && (obj->getType() == OBJECT_MONSTER) && !obj->isVisible() && (m->camouflageTile > 0)) {
         *focus = *focus || obj->hasFocus();
-        tiles->push_back(obj->monster->camouflageTile);
+        tiles->push_back(m->camouflageTile);
     }
     /* then visible monsters */
     else if (obj && (obj->getType() != OBJECT_UNKNOWN) && obj->isVisible()) {
@@ -117,7 +117,7 @@ MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {
     }
 
     /* finally the base tile */
-    tiles->push_back(mapGetTileFromData(location->map, coords));
+    tiles->push_back(location->map->getTileFromData(coords));
 
     return tiles;
 }
@@ -136,8 +136,8 @@ MapTile locationGetReplacementTile(Location *location, MapCoords coords) {
         MapCoords new_c = coords;        
         MapTile newTile;
 
-        new_c.move(d, c->location->map);        
-        newTile = (*c->location->tileAt)(c->location->map, new_c, WITHOUT_OBJECTS);
+        new_c.move(d, location->map);        
+        newTile = location->map->tileAt(new_c, WITHOUT_OBJECTS);
 
         /* make sure the tile we found is a valid replacement */
         if (tileIsReplacement(newTile))
@@ -145,10 +145,10 @@ MapTile locationGetReplacementTile(Location *location, MapCoords coords) {
     }
 
     /* couldn't find a tile, give it our best guess */
-    if (c->location->context & CTX_DUNGEON)
+    if (location->context & CTX_DUNGEON)
         return 0;
     else
-        return (c->location->context & CTX_COMBAT) ? BRICKFLOOR_1_TILE : BRICKFLOOR_TILE;
+        return (location->context & CTX_COMBAT) ? BRICKFLOOR_1_TILE : BRICKFLOOR_TILE;
 }
 
 /**
@@ -157,8 +157,8 @@ MapTile locationGetReplacementTile(Location *location, MapCoords coords) {
  *     If elsewhere - returns the coordinates of the avatar
  */
 int locationGetCurrentPosition(Location *location, MapCoords *coords) {
-    if (c->location->context & CTX_COMBAT)
-        *coords = combatInfo.party[FOCUS].obj->getCoords();
+    if (location->context & CTX_COMBAT)
+        *coords = combatInfo.party[FOCUS]->getCoords();
     else
         *coords = location->coords;
 

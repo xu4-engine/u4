@@ -9,9 +9,6 @@
 #include "tile.h"
 #include "types.h"
 
-struct _Person;
-struct _Monster;
-
 typedef enum {
     MOVEMENT_FIXED,
     MOVEMENT_WANDER,
@@ -27,13 +24,15 @@ typedef enum {
 
 class Object {
 public:
-    Object() :
+    Object(ObjectType type = OBJECT_UNKNOWN) :
       movement_behavior(MOVEMENT_FIXED),
-      objType(OBJECT_UNKNOWN),
+      objType(type),
       focused(false),
       visible(true),
       animated(true)
     {}
+    
+    virtual ~Object() {}
 
     // Methods
     const MapTile& getTile() const          { return tile; }
@@ -56,7 +55,7 @@ public:
     void setVisible(bool v = true)          { visible = v; }
     void setAnimated(bool a = true)         { animated = a; }
     
-    bool move(Direction d) {
+    virtual bool move(Direction d) {
         MapCoords new_coords = coords;
         if (new_coords.move(d) != coords) {
             coords = new_coords;
@@ -72,13 +71,8 @@ public:
         tileAdvanceFrame(&tile);
     }
         
-    // Properties   
-    union {
-        const struct _Person *person;
-        const struct _Monster *monster;
-    };
-
-private:
+    // Properties    
+protected:
     MapTile tile, prevTile;
     MapCoords coords, prevCoords;
     ObjectMovementBehavior movement_behavior;
@@ -88,11 +82,5 @@ private:
     bool visible;
     bool animated;    
 };
-
-class MovingObject : public Object {
-public:
-    MovingObject() {}
-};
-
 
 #endif

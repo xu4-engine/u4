@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 class Object;
-struct _Map;
+class Map;
 
 typedef enum {
     SLOWED_BY_NOTHING,
@@ -37,8 +37,8 @@ typedef MoveReturnValue (*MoveCallback)(Direction, int);
 
 MoveReturnValue moveAvatar(Direction dir, int userEvent);
 MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent);
-int moveObject(struct _Map *map, class Object *obj, MapCoords avatar);
-int moveCombatObject(int action, struct _Map *map, class Object *obj, MapCoords target);
+int moveObject(class Map *map, class Monster *obj, MapCoords avatar);
+int moveCombatObject(int action, class Map *map, class Monster *obj, MapCoords target);
 MoveReturnValue movePartyMember(Direction dir, int userEvent);
 int slowedByTile(MapTile tile);
 int slowedByWind(int direction);

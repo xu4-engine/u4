@@ -8,10 +8,11 @@
 #include "object.h"
 #include "map.h"
 #include "movement.h"
+#include "savegame.h"
+#include "types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+typedef unsigned short MonsterId;
+typedef xu4_map<MonsterId, class Monster*, std::less<MonsterId> > MonsterMap;
 
 #define MAX_MONSTERS 128
 
@@ -118,70 +119,94 @@ typedef enum {
     MSTAT_BARELYWOUNDED
 } MonsterStatus;
 
-typedef struct _Monster {
-    const char *name;
-    unsigned short id;
-    MapTile tile;
-    MapTile camouflageTile;
-    unsigned char frames;
-    unsigned short leader;
-    unsigned short basehp;
-    unsigned short xp;
-    unsigned char ranged;
-    MapTile worldrangedtile;
-    MapTile rangedhittile;
-    MapTile rangedmisstile;
-    unsigned char leavestile        : 1;
-    MonsterAttrib mattr;
+/**
+ * Monster Class Definition
+ */ 
+
+class Monster : public Object {
+public:
+    Monster(MapTile tile = 0);
+
+    // Methods
+    bool isGood() const;
+    bool isEvil() const;
+    bool isUndead() const;
+    bool leavesChest() const;
+    bool isAquatic() const;
+    bool wanders() const;
+    bool isStationary() const;
+    bool flies() const;
+    bool teleports() const;
+    bool swims() const;
+    bool sails() const;
+    bool walks() const;
+    bool divides() const;
+    bool canMoveOntoMonsters() const;
+    bool canMoveOntoPlayer() const;
+    bool canMoveOnto() const;
+    bool isAttackable() const;
+    bool willAttack() const;
+    bool stealsGold() const;
+    bool stealsFood() const;
+    bool negates() const;
+    bool camouflages() const;
+    bool ambushes() const;
+    bool isIncorporeal() const;
+    bool hasRandomRanged() const;
+    bool leavesTile() const;
+    bool castsSleep() const;
+    int getDamage() const;    
+    MapTile getCamouflageTile() const;    
+    MonsterStatus getStatus() const;
+    void setRandomRanged();
+    int setInitialHp(int hp = -1);
+
+    bool specialAction();
+    bool specialEffect();
+
+    // Properties
+public:
+    string          name;
+    MonsterId       id;    
+    MapTile         camouflageTile;
+    unsigned char   frames;
+    MonsterId       leader;
+    unsigned short  basehp;
+    short           hp;
+    StatusType      status;
+    unsigned short  xp;
+    unsigned char   ranged;
+    MapTile         worldrangedtile;
+    MapTile         rangedhittile;
+    MapTile         rangedmisstile;
+    bool            leavestile;
+    MonsterAttrib   mattr;
     MonsterMovementAttrib movementAttr;
-    SlowedType slowedType;
-    unsigned char encounterSize;
-    unsigned char resists;
-} Monster;
+    SlowedType      slowedType;
+    unsigned char   encounterSize;
+    unsigned char   resists;
+};
 
-const Monster *monsterForTile(MapTile tile);
+/**
+ * MonsterMgr Class Definition
+ */ 
+class MonsterMgr {
+public:
+    MonsterMgr();
 
-int monsterIsGood(const Monster *monster);
-int monsterIsEvil(const Monster *monster);
-int monsterIsUndead(const Monster *monster);
-int monsterLeavesChest(const Monster *monster);
-int monsterIsAquatic(const Monster *monster);
-int monsterWanders(const Monster *monster);
-int monsterIsStationary(const Monster *monster);
-int monsterFlies(const Monster *monster);
-int monsterTeleports(const Monster *monster);
-int monsterSwims(const Monster *monster);
-int monsterSails(const Monster *monster);
-int monsterWalks(const Monster *monster);
-int monsterDivides(const Monster *monster);
-int monsterCanMoveOntoMonsters(const Monster *monster);
-int monsterCanMoveOntoAvatar(const Monster *monster);
-int monsterCanMoveOnto(const Monster *monster);
-int monsterIsAttackable(const Monster *monster);
-int monsterWillAttack(const Monster *monster);
-int monsterStealsGold(const Monster *monster);
-int monsterStealsFood(const Monster *monster);
-int monsterNegates(const Monster *monster);
-int monsterCamouflages(const Monster *monster);
-int monsterAmbushes(const Monster *monster);
-int monsterIsIncorporeal(const Monster *monster);
-int monsterHasRandomRangedAttack(const Monster *monster);
-int monsterLeavesTile(const Monster *monster);
-int monsterCastSleep(const Monster *monster);
-int monsterGetDamage(const Monster *monster);
-int monsterGetCamouflageTile(const Monster *monster);
-void monsterSetRandomRangedWeapon(Monster *monster);
-const Monster *monsterRandomForTile(MapTile tile);
-const Monster *monsterForDungeon(int dngLevel);
-int monsterGetInitialHp(const Monster *monster);
-MonsterStatus monsterGetStatus(const Monster *monster, int hp);
-const Monster *monsterGetAmbushingMonster(void);
-int monsterSpecialAction(Object *obj);
-void monsterSpecialEffect(Object *obj);
-const Monster *monsterById(unsigned short id);
+    void loadInfoFromXml();
 
-#ifdef __cplusplus
-}
-#endif
+    const Monster *getByTile(MapTile tile) const;
+    const Monster *getById(MonsterId id) const;
+    const Monster *getByName(string name) const;
+    const Monster *randomForTile(MapTile tile) const;
+    const Monster *randomForDungeon(int dnglevel) const;
+    const Monster *randomAmbushing() const;
+
+private:    
+    MonsterMap monsters;    
+};
+
+extern MonsterMgr monsters;
 
 #endif

@@ -7,6 +7,7 @@
 
 #include "savegame.h"
 #include "tile.h"
+#include "types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,9 +85,9 @@ void playerAdjustKarma(KarmaAction action);
 int playerAttemptElevation(Virtue virtue);
 int playerGetChest();
 int playerDonate(int quantity);
-int playerCanPersonJoin(const char *name, Virtue *v);
-int playerIsPersonJoined(const char *name);
-CannotJoinError playerJoin(const char *name);
+int playerCanPersonJoin(string name, Virtue *v);
+int playerIsPersonJoined(string name);
+CannotJoinError playerJoin(string name);
 void playerEndTurn(void);
 void playerApplyEffect(TileEffect effect, int player);
 int playerPartyImmobilized();

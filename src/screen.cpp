@@ -168,8 +168,8 @@ void screenUpdate(int showmap, int blackout) {
                     if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE)) {
                         /* FIXME: this isn't very clean, but I guess it works */
                         /* draw monster objects using the base tileset */
-                        if ((tiles->size() > 1) && (tiles->front() > 128))
-                            screenDungeonDrawTile(y, tiles->front());                        
+                        if ((tiles->size() > 1) && (tiles->front() >= 128))
+                            screenDungeonDrawTile(y, tiles->front());
                         else screenDungeonDrawTile(y, c->location->tileset->tiles[tiles->front()].displayTile);
                     }
                     /*else if (type == DNGGRAPHIC_BASETILE)
@@ -198,7 +198,7 @@ void screenUpdate(int showmap, int blackout) {
                         else {
                             /* FIXME: this isn't very clean, but I guess it works */
                             /* draw monster objects using the base tileset */
-                            if ((tiles->size() > 1) && (tiles->front() > 128))
+                            if ((tiles->size() > 1) && (tiles->front() >= 128))
                                 screenShowTile(base, tiles->front(), 0, x, y);
                             else screenShowTile(base, c->location->tileset->tiles[tiles->front()].displayTile, 0, x, y);
                         }

@@ -5,28 +5,34 @@
 #ifndef CITY_H
 #define CITY_H
 
-#include "types.h"
-
-struct _Map;
+#include "map.h"
 
 typedef struct _PersonRole {
     int role;
     int id;
 } PersonRole;
 
-typedef xu4_vector<struct _Person *> PersonList;
+typedef xu4_vector<Person *> PersonList;
 typedef xu4_list<PersonRole*> PersonRoleList;
 
-typedef struct _City {
+class City : public Map {
+public:
+    City() : Map() {}
+
+    // Members
+    virtual string getName();
+    class Person *addPerson(class Person *p);
+    void addPeople();
+    const class Person *personAt(MapCoords coords);    
+
+    // Properties
     string name;
-    /*int n_persons;
-    struct _Person *persons;*/
+    string type;
     PersonList persons;
     string tlk_fname;
-    PersonRoleList personroles;
-    /*int n_personroles;
-    PersonRole *personroles;*/
-    struct _Map *map;
-} City;
+    PersonRoleList personroles;    
+};
+
+bool isCity(Map *punknown);
 
 #endif

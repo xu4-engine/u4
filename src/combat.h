@@ -5,17 +5,20 @@
 #ifndef COMBAT_H
 #define COMBAT_H
 
-#include "area.h"
 #include "direction.h"
 #include "map.h"
 #include "movement.h"
 #include "savegame.h"
+#include "types.h"
 
-#define FOCUS   combatInfo.partyFocus
+#define AREA_MONSTERS   16
+#define AREA_PLAYERS    8
+#define FOCUS           combatInfo.partyFocus
 
 class Object;
-struct _Monster;
-struct _Map;
+class Monster;
+
+typedef xu4_map<int, class Monster *, std::less<int> > CombatObjectMap;
 
 typedef enum {
     CA_ATTACK,
@@ -26,26 +29,21 @@ typedef enum {
     CA_TELEPORT    
 } CombatAction;
 
-typedef struct _MonsterCombatInfo {
-    class Object *obj;
-    short hp;
-    StatusType status;
-} MonsterCombatInfo;
+class CombatMap : public Map {
+public:
+    CombatMap() {}
 
-typedef struct _PartyCombatInfo {
-    class Object *obj;
-    StatusType status;
-    SaveGamePlayerRecord *player;
-} PartyCombatInfo;
+    MapCoords monster_start[AREA_MONSTERS];
+    MapCoords player_start[AREA_PLAYERS];
+};
 
 typedef struct _CombatInfo {
-    PartyCombatInfo party[AREA_PLAYERS];
-    MonsterCombatInfo monsters[AREA_MONSTERS];
-
     unsigned char partyFocus;
-    const struct _Monster *monsterTable[AREA_MONSTERS];
-    const struct _Monster *monster;
-    class Object *monsterObj;
+    const class Monster *monsterTable[AREA_MONSTERS];
+    class Monster *monster;
+
+    CombatObjectMap party;
+    CombatObjectMap monsters;
     
     MapCoords partyStartCoords[AREA_PLAYERS];
     MapCoords monsterStartCoords[AREA_MONSTERS];
@@ -59,16 +57,16 @@ typedef struct _CombatInfo {
     unsigned char winOrLose;
     unsigned char showCombatMessage;
     Direction exitDir;
-    struct _Map *newCombatMap;
+    CombatMap *newCombatMap;
 } CombatInfo;
 
 void attackFlash(MapCoords coords, MapTile tile, int timeFactor);
-void combatInit(const struct _Monster *m, class Object *monsterObj, MapId mapid);
+void combatInit(class Monster *m, MapId mapid);
 void combatInitCamping(void);
 void combatInitDungeonRoom(int room, Direction from);
 void combatBegin();
-int combatAddMonster(const struct _Monster *monster, MapCoords coords);
-void combatFillMonsterTable(const struct _Monster *monster);
+int combatAddMonster(const class Monster *monster, MapCoords coords);
+void combatFillMonsterTable(const class Monster *monster);
 int combatSetActivePlayer(int player);
 int combatPutPlayerToSleep(int player);
 int combatPartyMemberAt(MapCoords coords);
@@ -76,7 +74,7 @@ int combatMonsterAt(MapCoords coords);
 void combatPlacePartyMembers(void);
 void combatPlaceMonsters(void);
 void combatFinishTurn(void);
-int combatInitialNumberOfMonsters(const struct _Monster *monster);
+int combatInitialNumberOfMonsters(const class Monster *monster);
 MapId combatMapForTile(MapTile groundTile, MapTile transport, class Object *obj);
 void combatApplyDamageToMonster(int monster, int damage, int player);
 MoveReturnValue combatMovePartyMember(Direction dir, int userEvent);
@@ -87,5 +85,7 @@ MoveReturnValue combatMovePartyMember(Direction dir, int userEvent);
 bool combatBaseKeyHandler(int key, void *data);
 
 extern CombatInfo combatInfo;
+
+bool isCombatMap(Map *punknown);
 
 #endif

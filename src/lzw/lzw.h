@@ -21,15 +21,7 @@
 #ifndef LZW_H
 #define LZW_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 long lzwGetDecompressedSize(unsigned char* compressedMem, long compressedSize);
 long lzwDecompress(unsigned char* compressedMem, unsigned char* decompressedMem, long compressedSize);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* LZW_H */

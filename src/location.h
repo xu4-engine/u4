@@ -13,8 +13,6 @@ struct _Tileset;
 
 typedef xu4_list<MapTile>* MapTileList;
 
-typedef MapTile (*TileAt)(const Map *map, MapCoords coords, int withObjects);
-
 typedef enum {
     CTX_WORLDMAP    = 0x0001,
     CTX_COMBAT      = 0x0002,
@@ -36,14 +34,13 @@ typedef struct _Location {
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn;
-    MoveCallback move;
-    TileAt tileAt;
+    MoveCallback move;    
     struct _Tileset *tileset;
     int activePlayer;
     struct _Location *prev;
 } Location;
 
-Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, TileAt tileAtCallback, struct _Tileset *tileset, Location *prev);
+Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, struct _Tileset *tileset, Location *prev);
 MapTile locationVisibleTileAt(Location *location, MapCoords coords, int *focus);
 MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus);
 MapTile locationGetReplacementTile(Location *location, MapCoords coords);

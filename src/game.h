@@ -8,9 +8,9 @@
 #include "map.h"
 #include "types.h"
 
-struct _Map;
+class Map;
 struct _Portal;
-struct _Monster;
+class Monster;
 
 typedef enum {
     VIEW_NORMAL,
@@ -66,7 +66,7 @@ bool gameZtatsKeyHandler(int key, void *data);
 /* map and screen functions */
 void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
-void gameSetMap(struct _Map *map, int saveLocation, const struct _Portal *portal);
+void gameSetMap(class Map *map, int saveLocation, const struct _Portal *portal);
 int gameExitToParentMap();
 void gameSetTransport(MapTile tile);
 
@@ -89,7 +89,7 @@ void gameCheckHullIntegrity(void);
 /* monster functions */
 bool monsterRangeAttack(MapCoords coords, int distance, void *data);
 void gameMonsterCleanup(void);
-void gameSpawnMonster(const struct _Monster *m);
+void gameSpawnMonster(const class Monster *m);
 
 /* etc */
 void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen = 32);

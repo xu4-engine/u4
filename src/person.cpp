@@ -41,6 +41,18 @@ string *lbText;
 #define HW_GOTOSHRINE 51
 #define HW_BYE 52
 
+/**
+ * Returns true of the object that 'punknown' points
+ * to is a person object
+ */ 
+bool isPerson(Object *punknown) {
+    Person *p;
+    if ((p = dynamic_cast<Person*>(punknown)) != NULL)
+        return true;
+    else
+        return false;
+}
+
 void personGetQuestion(const Person *p, string *question);
 
 string emptyGetIntro(Conversation *cnv);
@@ -167,7 +179,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
             // unload the previous script if it wasn't already unloaded
             if (c->conversation.script->getState() != SCRIPT_STATE_UNLOADED)
                 c->conversation.script->unload();
-            c->conversation.script->load("vendorScript.xml", ids[cnv->talker->npcType - NPC_VENDOR_WEAPONS], "vendor", c->location->map->city->name);
+            c->conversation.script->load("vendorScript.xml", ids[cnv->talker->npcType - NPC_VENDOR_WEAPONS], "vendor", c->location->map->getName());
             c->conversation.script->run("intro");
         }
 
@@ -452,16 +464,16 @@ string talkerGetResponse(Conversation *cnv, const char *inquiry) {
      */
 
     /* minimum 4-character "guessing" */
-    else if ((testLen >= 4 || strlen(cnv->talker->keyword1) == testLen) && 
-             strncasecmp(inquiry, cnv->talker->keyword1, testLen) == 0) {
+    else if ((testLen >= 4 || cnv->talker->keyword1.length() == testLen) && 
+             strncasecmp(inquiry, cnv->talker->keyword1.c_str(), testLen) == 0) {
         reply += cnv->talker->response1;
         if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD1)
             cnv->state = CONV_ASK;
     }
 
     /* minimum 4-character "guessing" */
-    else if ((testLen >= 4 || strlen(cnv->talker->keyword2) == testLen) &&
-             strncasecmp(inquiry, cnv->talker->keyword2, testLen) == 0) {
+    else if ((testLen >= 4 || cnv->talker->keyword2.length() == testLen) &&
+             strncasecmp(inquiry, cnv->talker->keyword2.c_str(), testLen) == 0) {
         reply += cnv->talker->response2;
         if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD2)
             cnv->state = CONV_ASK;
@@ -510,9 +522,10 @@ string talkerGetResponse(Conversation *cnv, const char *inquiry) {
             CannotJoinError join = playerJoin(cnv->talker->name);
 
             if (join == JOIN_SUCCEEDED) {
+                City *city = dynamic_cast<City*>(c->location->map);
                 reply += "I am honored to join thee!";
                 statsUpdate();
-                mapRemovePerson(c->location->map, cnv->talker);
+                city->removeObject(cnv->talker);
                 cnv->state = CONV_DONE;
             } else {
                 reply += "Thou art not ";

@@ -10,8 +10,8 @@
 #include "savegame.h"
 
 struct _Location;
-struct _Person;
 class Object;
+class Person;
 class Script;
 
 #define CONV_BUFFERLEN 16
@@ -54,7 +54,7 @@ typedef enum {
 #define TRANSPORT_FOOT_OR_HORSE     (TransportContext)(TRANSPORT_FOOT | TRANSPORT_HORSE)
 
 typedef struct _Conversation {
-    const struct _Person *talker;
+    const class Person *talker;
     int state;
     string playerInquiryBuffer;
     Reply *reply;

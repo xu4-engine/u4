@@ -27,7 +27,7 @@ typedef enum {
     ACTION_EXIT_WEST    = 0x40
 } PortalTriggerAction;
 
-typedef int (*PortalConditionsMet)(const struct _Portal *p);
+typedef bool (*PortalConditionsMet)(const struct _Portal *p);
 
 typedef struct _PortalDestination {
     MapCoords coords;    

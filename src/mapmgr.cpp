@@ -10,8 +10,8 @@
 #include "u4.h"
 
 #include "annotation.h"
-#include "area.h"
 #include "city.h"
+#include "combat.h"
 #include "debug.h"
 #include "dungeon.h"
 #include "error.h"
@@ -26,15 +26,15 @@
 #include "u4file.h"
 #include "xml.h"
 
-extern int isAbyssOpened(const Portal *p);
-extern int shrineCanEnter(const Portal *p);
+extern bool isAbyssOpened(const Portal *p);
+extern bool shrineCanEnter(const Portal *p);
 
 Map *mapMgrInitMapFromXml(xmlNodePtr node);
-City *mapMgrInitCityFromXml(xmlNodePtr node);
+void mapMgrInitCityFromXml(xmlNodePtr node, City *city);
 PersonRole *mapMgrInitPersonRoleFromXml(xmlNodePtr node);
 Portal *mapMgrInitPortalFromXml(xmlNodePtr node);
-Shrine *mapMgrInitShrineFromXml(xmlNodePtr node);
-Dungeon *mapMgrInitDungeonFromXml(xmlNodePtr node);
+void mapMgrInitShrineFromXml(xmlNodePtr node, Shrine *shrine);
+void mapMgrInitDungeonFromXml(xmlNodePtr node, Dungeon *dungeon);
 void mapMgrCreateMoongateFromXml(xmlNodePtr node);
 int mapMgrInitCompressedChunkFromXml(xmlNodePtr node);
 
@@ -58,21 +58,43 @@ void mapMgrInit() {
         map = mapMgrInitMapFromXml(node);
         mapLoad(map);
         mapMgrRegister(map);
-
-        delete map;
     }
 
     xmlFreeDoc(doc);
 }
 
-Map *mapMgrInitMap(void) {
+Map *mapMgrInitMap(MapType type) {
     Map *map;
 
-    map = new Map;
+    switch(type) {    
+    case MAPTYPE_WORLD:    
+        map = new Map;
+        break;
+
+    case MAPTYPE_COMBAT:
+        map = new CombatMap;
+        break;
+
+    case MAPTYPE_SHRINE:
+        map = new Shrine;
+        break;
+
+    case MAPTYPE_DUNGEON:
+        map = new Dungeon;
+        break;
+
+    case MAPTYPE_CITY:
+        map = new City;
+        break;
+        
+    default:
+        errorFatal("Error: invalid map type used");
+        break;
+    }
+    
     if (!map)
         return NULL;
-    map->annotations = new AnnotationMgr();
-    map->init = NULL;    
+    map->annotations = new AnnotationMgr();    
     map->flags = 0;
     map->width = 0;
     map->height = 0;
@@ -87,15 +109,14 @@ Map *mapMgrInitMap(void) {
 Map *mapMgrInitMapFromXml(xmlNodePtr node) {
     Map *map;
     xmlNodePtr child;    
-    static const char *mapTypeEnumStrings[] = { "world", "town", "village", "castle", "ruins", "shrine", "combat", "dungeon", NULL };
+    static const char *mapTypeEnumStrings[] = { "world", "city", "shrine", "combat", "dungeon", NULL };
     static const char *borderBehaviorEnumStrings[] = { "wrap", "exit", "fixed", NULL };
 
-    map = mapMgrInitMap();
+    map = mapMgrInitMap((MapType)xmlGetPropAsEnum(node, "type", mapTypeEnumStrings));
     if (!map)
         return NULL;
 
     map->id = (MapId)xmlGetPropAsInt(node, "id");
-
     map->type = (MapType)xmlGetPropAsEnum(node, "type", mapTypeEnumStrings);
     map->fname = xmlGetPropAsStr(node, "fname");
     map->width = xmlGetPropAsInt(node, "width");
@@ -121,13 +142,17 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
             continue;
 
         if (xmlStrcmp(child->name, (const xmlChar *) "city") == 0) {
-            map->city = mapMgrInitCityFromXml(child);
-            map->city->map = map;
+            City *city = dynamic_cast<City*>(map);
+            mapMgrInitCityFromXml(child, city);            
         }
-        else if (xmlStrcmp(child->name, (const xmlChar *) "shrine") == 0)
-            map->shrine = mapMgrInitShrineFromXml(child);
-        else if (xmlStrcmp(child->name, (const xmlChar *) "dungeon") == 0)
-            map->dungeon = mapMgrInitDungeonFromXml(child);
+        else if (xmlStrcmp(child->name, (const xmlChar *) "shrine") == 0) {
+            Shrine *shrine = dynamic_cast<Shrine*>(map);
+            mapMgrInitShrineFromXml(child, shrine);
+        }            
+        else if (xmlStrcmp(child->name, (const xmlChar *) "dungeon") == 0) {
+            Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
+            mapMgrInitDungeonFromXml(child, dungeon);
+        }
         else if (xmlStrcmp(child->name, (const xmlChar *) "portal") == 0)
             map->portals.push_back(mapMgrInitPortalFromXml(child));
         else if (xmlStrcmp(child->name, (const xmlChar *) "moongate") == 0)
@@ -139,16 +164,11 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
     return map;
 }
 
-City *mapMgrInitCityFromXml(xmlNodePtr node) {
-    City *city;
+void mapMgrInitCityFromXml(xmlNodePtr node, City *city) {    
     xmlNodePtr child;    
 
-    city = new City;
-    if (!city)
-        return NULL;    
-    city->map = NULL;
-
     city->name = xmlGetPropAsStr(node, "name");
+    city->type = xmlGetPropAsStr(node, "type");
     city->tlk_fname = xmlGetPropAsStr(node, "tlk_fname");
 
     for (child = node->xmlChildrenNode; child; child = child->next) {
@@ -158,8 +178,6 @@ City *mapMgrInitCityFromXml(xmlNodePtr node) {
         if (xmlStrcmp(child->name, (const xmlChar *) "personrole") == 0)
             city->personroles.push_back(mapMgrInitPersonRoleFromXml(child));
     }    
-
-    return city;
 }
 
 PersonRole *mapMgrInitPersonRoleFromXml(xmlNodePtr node) {
@@ -192,12 +210,10 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
     portal->retroActiveDest = NULL;
  
     portal->coords = MapCoords(
-        (unsigned short) xmlGetPropAsInt(node, "x"),
-        (unsigned short) xmlGetPropAsInt(node, "y"),
-        (unsigned short) xmlGetPropAsInt(node, "z"));
+        xmlGetPropAsInt(node, "x"),
+        xmlGetPropAsInt(node, "y"),
+        xmlGetPropAsInt(node, "z"));
     portal->destid = (MapId) xmlGetPropAsInt(node, "destmapid");
-        
-    portal->start = portal->coords;
     
     if (xmlPropExists(node, "startx"))
         portal->start.x = (unsigned short) xmlGetPropAsInt(node, "startx");    
@@ -275,41 +291,27 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
                 xmlGetPropAsInt(child, "z"));
             portal->retroActiveDest->mapid = (MapId) xmlGetPropAsInt(child, "mapid");
         }
-    }    
+    }
     return portal;
 }
 
-Shrine *mapMgrInitShrineFromXml(xmlNodePtr node) {
-    Shrine *shrine;
+void mapMgrInitShrineFromXml(xmlNodePtr node, Shrine *shrine) {    
     char *prop;
 
     static const char *virtues[] = {"Honesty", "Compassion", "Valor", "Justice", "Sacrifice", "Honor", "Spirituality", "Humility", NULL};
 
-    shrine = new Shrine;
-    if (!shrine)
-        return NULL;
-
-    shrine->virtue = (Virtue)xmlGetPropAsEnum(node, "virtue", virtues);
+    shrine->setVirtue((Virtue)xmlGetPropAsEnum(node, "virtue", virtues));
 
     prop = xmlGetPropAsStr(node, "mantra");
-    shrine->mantra = strdup(prop);
+    shrine->setMantra(prop);
     xmlFree(prop);
-
-    return shrine;
 }
 
-Dungeon *mapMgrInitDungeonFromXml(xmlNodePtr node) {
-    Dungeon *dungeon;    
-
-    dungeon = new Dungeon;
-    if (!dungeon)
-        return NULL;
+void mapMgrInitDungeonFromXml(xmlNodePtr node, Dungeon *dungeon) {
     dungeon->n_rooms = xmlGetPropAsInt(node, "rooms");
     dungeon->rooms = NULL;
 
-    dungeon->name = xmlGetPropAsStr(node, "name");        
-
-    return dungeon;
+    dungeon->name = xmlGetPropAsStr(node, "name");
 }
 
 void mapMgrCreateMoongateFromXml(xmlNodePtr node) {
@@ -327,8 +329,21 @@ int mapMgrInitCompressedChunkFromXml(xmlNodePtr node) {
 }
 
 void mapMgrRegister(Map *map) {
-    if (!mapList.insert(MapList::value_type(map->id, *map)).second)
+    if (mapList.find(map->id) != mapList.end())
         errorFatal("Error: A map with id '%d' already exists", map->id);
+
+    /**
+     * Add the appropriate type of pointer to the list
+     * We do this so virtual functions (such as getName()) will
+     * work correctly without having to dynamic_cast later
+     */      
+    switch(map->type) {
+    case MAPTYPE_CITY:      mapList[map->id] = dynamic_cast<City*>(map); break;
+    case MAPTYPE_DUNGEON:   mapList[map->id] = dynamic_cast<Dungeon*>(map); break;
+    case MAPTYPE_SHRINE:    mapList[map->id] = dynamic_cast<Shrine*>(map); break;
+    case MAPTYPE_COMBAT:    mapList[map->id] = dynamic_cast<CombatMap*>(map); break;
+    default:                mapList[map->id] = map; break;
+    }       
 }
 
 Map *mapMgrGetById(MapId id) {    
@@ -336,6 +351,6 @@ Map *mapMgrGetById(MapId id) {
 
     current = mapList.find(id);
     if (current != mapList.end())
-        return &current->second;
+        return current->second;
     else return NULL;
 }

@@ -76,7 +76,7 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
     if (!collisionOverride && !c->saveGame->balloonstate) {
         int movementMask;
 
-        movementMask = mapGetValidMoves(c->location->map, c->location->coords, (MapTile)c->saveGame->transport);
+        movementMask = c->location->map->getValidMoves(c->location->coords, (MapTile)c->saveGame->transport);
         /* See if movement was blocked */
         if (!DIR_IN_MASK(dir, movementMask))
             return (MoveReturnValue)(MOVE_BLOCKED | MOVE_END_TURN);
@@ -84,7 +84,7 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
         /* Are we slowed by terrain or by wind direction? */
         switch(slowedType) {
         case SLOWED_BY_TILE:
-            slowed = slowedByTile((*c->location->tileAt)(c->location->map, newCoords, WITHOUT_OBJECTS));
+            slowed = slowedByTile(c->location->map->tileAt(newCoords, WITHOUT_OBJECTS));
             break;
         case SLOWED_BY_WIND:
             slowed = slowedByWind(dir);
@@ -102,9 +102,11 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
     c->location->coords = newCoords;    
 
     /* if the avatar moved onto a monster (whirlpool, twister), then do the monster's special effect */
-    destObj = mapObjectAt(c->location->map, newCoords);
-    if (destObj && destObj->getType() == OBJECT_MONSTER)
-        monsterSpecialEffect(destObj);    
+    destObj = c->location->map->objectAt(newCoords);
+    if (destObj && destObj->getType() == OBJECT_MONSTER) {
+        Monster *m = dynamic_cast<Monster*>(destObj);
+        m->specialEffect();
+    }
 
     return (MoveReturnValue)(MOVE_SUCCEEDED | MOVE_END_TURN);
 }
@@ -132,7 +134,7 @@ MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {
     newCoords = c->location->coords;    
     newCoords.move(realDir, c->location->map);
 
-    tile = (*c->location->tileAt)(c->location->map, newCoords, WITH_OBJECTS);
+    tile = c->location->map->tileAt(newCoords, WITH_OBJECTS);
 
     /* see if we moved off the map (really, this should never happen in a dungeon) */
     if (MAP_IS_OOB(c->location->map, newCoords))
@@ -141,7 +143,7 @@ MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {
     if (!collisionOverride) {
         int movementMask;        
         
-        movementMask = mapGetValidMoves(c->location->map, c->location->coords, (MapTile)c->saveGame->transport);        
+        movementMask = c->location->map->getValidMoves(c->location->coords, (MapTile)c->saveGame->transport);        
 
         if (advancing && !tileCanWalkOn(tile, DIR_ADVANCE))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
@@ -164,7 +166,7 @@ MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {
  * tile direction changed, or object simply cannot move
  * (fixed objects, nowhere to go, etc.)
  */
-int moveObject(Map *map, Object *obj, MapCoords avatar) {
+int moveObject(Map *map, Monster *obj, MapCoords avatar) {
     int dirmask = DIR_NONE;
     Direction dir;
     MapCoords new_coords = obj->getCoords();    
@@ -180,13 +182,13 @@ int moveObject(Map *map, Object *obj, MapCoords avatar) {
     case MOVEMENT_WANDER:
         /* World map wandering creatures always move, whereas
            town creatures that wander sometimes stay put */
-        if (mapIsWorldMap(map) || xu4_random(2) == 0)
-            dir = dirRandomDir(mapGetValidMoves(map, new_coords, obj->getTile()));                
+        if (map->isWorldMap() || xu4_random(2) == 0)
+            dir = dirRandomDir(map->getValidMoves(new_coords, obj->getTile()));
         break;
 
     case MOVEMENT_FOLLOW_AVATAR:
     case MOVEMENT_ATTACK_AVATAR:
-        dirmask = mapGetValidMoves(map, new_coords, obj->getTile());
+        dirmask = map->getValidMoves(new_coords, obj->getTile());
         
         /* If the pirate ship turned last move instead of moving, this time it must
            try to move, not turn again */
@@ -208,12 +210,12 @@ int moveObject(Map *map, Object *obj, MapCoords avatar) {
 
     /* figure out what method to use to tell if the object is getting slowed */   
     if (obj->getType() == OBJECT_MONSTER)
-        slowedType = obj->monster->slowedType;
+        slowedType = obj->slowedType;
     
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {
     case SLOWED_BY_TILE:
-        slowed = slowedByTile((*c->location->tileAt)(map, new_coords, WITHOUT_OBJECTS));
+        slowed = slowedByTile(map->tileAt(new_coords, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
         slowed = slowedByWind(tileGetDirection(obj->getTile()));
@@ -246,9 +248,9 @@ int moveObject(Map *map, Object *obj, MapCoords avatar) {
 /**
  * Moves an object in combat according to its chosen combat action
  */
-int moveCombatObject(int act, Map *map, Object *obj, MapCoords target) {
+int moveCombatObject(int act, Map *map, Monster *obj, MapCoords target) {
     MapCoords new_coords = obj->getCoords();
-    int valid_dirs = mapGetValidMoves(map, new_coords, obj->getTile());
+    int valid_dirs = map->getValidMoves(new_coords, obj->getTile());
     Direction dir;
     CombatAction action = (CombatAction)act;
     SlowedType slowedType = SLOWED_BY_TILE;
@@ -284,12 +286,12 @@ int moveCombatObject(int act, Map *map, Object *obj, MapCoords target) {
 
     /* figure out what method to use to tell if the object is getting slowed */   
     if (obj->getType() == OBJECT_MONSTER)
-        slowedType = obj->monster->slowedType;
+        slowedType = obj->slowedType;
 
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {
     case SLOWED_BY_TILE:
-        slowed = slowedByTile((*c->location->tileAt)(map, new_coords, WITHOUT_OBJECTS));
+        slowed = slowedByTile(map->tileAt(new_coords, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
         slowed = slowedByWind(tileGetDirection(obj->getTile()));
@@ -320,7 +322,7 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
     MapCoords newCoords;
 
     /* find our new location */
-    newCoords = combatInfo.party[member].obj->getCoords();
+    newCoords = combatInfo.party[member]->getCoords();
     newCoords.move(dir, c->location->map);
 
     if (MAP_IS_OOB(c->location->map, newCoords)) {
@@ -329,36 +331,37 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
             /* if in a win-or-lose battle and not camping, then it can be bad to flee while healthy */
             if (combatInfo.winOrLose && !combatInfo.camping) {
                 /* A fully-healed party member fled from an evil monster :( */
-                if (combatInfo.monster && monsterIsEvil(combatInfo.monster) && 
+                if (combatInfo.monster && combatInfo.monster->isEvil() && 
                     c->players[member].hp == c->players[member].hpMax)
                     playerAdjustKarma(KA_HEALTHY_FLED_EVIL);
             }
 
             combatInfo.exitDir = dir;
-            mapRemoveObject(c->location->map, combatInfo.party[member].obj);
-            combatInfo.party[member].obj = NULL;
+            c->location->map->removeObject(combatInfo.party[member]);
+            combatInfo.party.erase(combatInfo.party.find(member));            
             return (MoveReturnValue)(MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE | MOVE_SUCCEEDED | MOVE_END_TURN);
         }
         else return (MoveReturnValue)(MOVE_MUST_USE_SAME_EXIT | MOVE_END_TURN);
     }
 
-    movementMask = mapGetValidMoves(c->location->map, combatInfo.party[member].obj->getCoords(), combatInfo.party[member].obj->getTile());
+    movementMask = c->location->map->getValidMoves(combatInfo.party[member]->getCoords(), combatInfo.party[member]->getTile());
     if (!DIR_IN_MASK(dir, movementMask))
         return (MoveReturnValue)(MOVE_BLOCKED | MOVE_END_TURN);
 
     /* is the party member slowed? */
-    if (!slowedByTile((*c->location->tileAt)(c->location->map, newCoords, WITHOUT_OBJECTS)))
+    if (!slowedByTile(c->location->map->tileAt(newCoords, WITHOUT_OBJECTS)))
     {
         /* move succeeded */        
-        combatInfo.party[member].obj->setCoords(newCoords);
+        combatInfo.party[member]->setCoords(newCoords);
 
         /* handle dungeon room triggers */
         if (combatInfo.dungeonRoom) {
+            Dungeon *dungeon = dynamic_cast<Dungeon*>(c->location->prev->map);
             int i;
-            Trigger *triggers = c->location->prev->map->dungeon->currentRoom->triggers;            
+            Trigger *triggers = dungeon->currentRoom->triggers;            
 
             for (i = 0; i < 4; i++) {
-                /*const Monster *m = monsterForTile(triggers[i].tile);*/
+                /*const Monster *m = monsters.getByTile(triggers[i].tile);*/
 
                 /* FIXME: when a monster is created by a trigger, it can be created over and over and over...
                    how do we fix this? */

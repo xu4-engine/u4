@@ -5,26 +5,39 @@
 #ifndef SHRINE_H
 #define SHRINE_H
 
+#include "map.h"
 #include "savegame.h"
-#include "portal.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define SHRINE_MEDITATION_INTERVAL  100
 #define MEDITATION_MANTRAS_PER_CYCLE 16
 
-typedef struct _Shrine {
+/*typedef struct _Shrine {
     Virtue virtue;
     const char *mantra;
-} Shrine;
+} Shrine;*/
 
-int shrineCanEnter(const Portal *p);
-void shrineEnter(const Shrine *s);
+class Shrine : public Map {
+public:
+    Shrine();
 
-#ifdef __cplusplus
-}
-#endif
+    // Methods
+    virtual string  getName();
+    Virtue          getVirtue() const;
+    string          getMantra() const;
+
+    void            setVirtue(Virtue v);
+    void            setMantra(string mantra);
+
+    void enter();
+
+    // Properties
+private:
+    string name;
+    Virtue virtue;
+    string mantra;   
+};
+
+bool shrineCanEnter(const struct _Portal *p);
+bool isShrine(Map *punknown);
 
 #endif

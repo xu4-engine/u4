@@ -49,7 +49,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
     Map *destination;
     char msg[32] = {0};
     
-    const Portal *portal = mapPortalAt(location->map, coords, action);
+    const Portal *portal = location->map->portalAt(coords, action);
     Portal dngLadder;
 
     /* didn't find a portal there */
@@ -91,23 +91,17 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
             break;
         case ACTION_ENTER:
             switch (destination->type) {
-            case MAPTYPE_TOWN:
-                screenMessage("Enter towne!\n\n%s\n\n", destination->city->name.c_str());
-                break;
-            case MAPTYPE_VILLAGE:
-                screenMessage("Enter village!\n\n%s\n\n", destination->city->name.c_str());
-                break;
-            case MAPTYPE_CASTLE:
-                screenMessage("Enter castle!\n\n%s\n\n", destination->city->name.c_str());
-                break;
-            case MAPTYPE_RUIN:
-                screenMessage("Enter ruin!\n\n%s\n\n", destination->city->name.c_str());
-                break;
+            case MAPTYPE_CITY: 
+                {
+                    City *city = dynamic_cast<City*>(destination);
+                    screenMessage("Enter %s!\n\n%s\n\n", city->type.c_str(), city->getName().c_str());
+                }
+                break;            
             case MAPTYPE_SHRINE:
-                screenMessage("Enter the Shrine of %s!\n\n", getVirtueName(destination->shrine->virtue));
+                screenMessage("Enter the %s!\n\n", destination->getName().c_str());
                 break;
             case MAPTYPE_DUNGEON:
-                screenMessage("Enter dungeon!\n\n%s\n\n", destination->dungeon->name.c_str());
+                screenMessage("Enter dungeon!\n\n%s\n\n", destination->getName().c_str());
                 break;
             default:
                 break;
@@ -147,8 +141,10 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         location->prev->map = mapMgrGetById(portal->retroActiveDest->mapid);
     }
 
-    if (destination->type == MAPTYPE_SHRINE)        
-        shrineEnter(destination->shrine);
+    if (destination->type == MAPTYPE_SHRINE) {
+        Shrine *shrine = dynamic_cast<Shrine*>(destination);
+        shrine->enter();
+    }
 
     return 1;
 }

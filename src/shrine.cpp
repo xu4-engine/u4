@@ -19,6 +19,7 @@
 #include "music.h"
 #include "names.h"
 #include "player.h"
+#include "portal.h"
 #include "screen.h"
 #include "settings.h"
 #include "types.h"
@@ -44,15 +45,51 @@ string mantraBuffer;
 int reps;
 string *shrineAdvice = NULL;
 
-int shrineCanEnter(const Portal *p) {
-    if (!playerCanEnterShrine(mapMgrGetById(p->destid)->shrine->virtue)) {
+/**
+ * Returns true if the player can use the portal to the shrine
+ */ 
+bool shrineCanEnter(const Portal *p) {
+    Shrine *shrine = dynamic_cast<Shrine*>(mapMgrGetById(p->destid));
+    if (!playerCanEnterShrine(shrine->getVirtue())) {
         screenMessage("Thou dost not bear the rune of entry!  A strange force keeps you out!\n");
         return 0;
     }
     return 1;
 }
 
-void shrineEnter(const Shrine *s) {
+/**
+ * Returns true if 'map' points to a Shrine map
+ */ 
+bool isShrine(Map *punknown) {
+    Shrine *ps;
+    if ((ps = dynamic_cast<Shrine*>(punknown)) != NULL)
+        return true;
+    else
+        return false;
+}
+
+/**
+ * Shrine class implementation
+ */ 
+Shrine::Shrine() {}
+
+string Shrine::getName() {
+    if (name.empty()) {
+        name = "Shrine of ";
+        name += getVirtueName(virtue);
+    }
+    return name;
+}
+Virtue Shrine::getVirtue() const    { return virtue; }
+string Shrine::getMantra() const    { return mantra; }
+
+void Shrine::setVirtue(Virtue v)    { virtue = v; }
+void Shrine::setMantra(string m)    { mantra = m; }
+
+/**
+ * Enter the shrine
+ */
+void Shrine::enter() {
     U4FILE *avatar;
     Object *obj;
 
@@ -64,27 +101,27 @@ void shrineEnter(const Shrine *s) {
         u4fclose(avatar);
     }
 
-    shrine = s;    
+    shrine = this;
 
     /* Add-on shrine sequence START */
     if (settings.enhancements && settings.enhancementsOptions.u5shrines) {
         /* replace the 'static' avatar tile with grass */        
-        c->location->map->annotations->add(MapCoords(5, 6, c->location->coords.z), GRASS_TILE, true);
+        annotations->add(MapCoords(5, 6, c->location->coords.z), GRASS_TILE, true);
 
         screenDisableCursor();
         screenMessage("You approach\nthe ancient\nshrine...\n");
         gameUpdateScreen(); eventHandlerSleep(1000);
         
-        obj = mapAddMonsterObject(c->location->map, monsterById(BEGGAR_ID), MapCoords(5, 10, c->location->coords.z));
+        obj = addMonster(monsters.getById(BEGGAR_ID), MapCoords(5, 10, c->location->coords.z));
         obj->setTile(AVATAR_TILE);
 
         gameUpdateScreen(); eventHandlerSleep(400);        
         obj->move(DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
         obj->move(DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
         obj->move(DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
-        c->location->map->annotations->remove(MapCoords(5, 6, c->location->coords.z), GRASS_TILE);
+        annotations->remove(MapCoords(5, 6, c->location->coords.z), GRASS_TILE);
         obj->move(DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(800);
-        obj->setTile(monsterById(BEGGAR_ID)->tile); gameUpdateScreen();
+        obj->setTile(monsters.getById(BEGGAR_ID)->getTile()); gameUpdateScreen();
         
         screenMessage("\n...and kneel before the altar.\n");        
         eventHandlerSleep(1000);
@@ -124,7 +161,7 @@ int shrineHandleCycles(int choice) {
 
     screenMessage("%c\n\n", cycles + '0');
 
-    if (strncasecmp(virtueBuffer.c_str(), getVirtueName(shrine->virtue), 6) != 0 || cycles == 0) {
+    if (strncasecmp(virtueBuffer.c_str(), getVirtueName(shrine->getVirtue()), 6) != 0 || cycles == 0) {
         screenMessage("Thou art unable to focus thy thoughts on this subject!\n");
         shrineEject();
     } else {
@@ -179,7 +216,7 @@ int shrineHandleMantra(string *message) {
 
     screenMessage("\n");
 
-    if (strcasecmp(mantraBuffer.c_str(), shrine->mantra) != 0) {
+    if (strcasecmp(mantraBuffer.c_str(), shrine->getMantra().c_str()) != 0) {
         playerAdjustKarma(KA_BAD_MANTRA);
         screenMessage("Thou art not able to focus thy thoughts with that Mantra!\n");
         shrineEject();
@@ -193,10 +230,10 @@ int shrineHandleMantra(string *message) {
         completedCycles++;
         playerAdjustKarma(KA_MEDITATION);
 
-        elevated = completedCycles == 3 && playerAttemptElevation(shrine->virtue);
+        elevated = completedCycles == 3 && playerAttemptElevation(shrine->getVirtue());
         if (elevated)
             screenMessage("\nThou hast achieved partial Avatarhood in the Virtue of %s\n\n",
-                          getVirtueName(shrine->virtue));
+                          getVirtueName(shrine->getVirtue()));
         else
             screenMessage("\nThy thoughts are pure. "
                           "Thou art granted a vision!\n");
@@ -210,10 +247,10 @@ bool shrineVision(int key, void *data) {
     if (elevated) {
         screenMessage("Thou art granted a vision!\n");
         gameSetViewMode(VIEW_RUNE);
-        screenDrawBackgroundInMapArea((BackgroundType)(BKGD_SHRINE_HON + shrine->virtue));
+        screenDrawBackgroundInMapArea((BackgroundType)(BKGD_SHRINE_HON + shrine->getVirtue()));
     }
     else {
-        screenMessage("\n%s", shrineAdvice[shrine->virtue * 3 + completedCycles - 1].c_str());
+        screenMessage("\n%s", shrineAdvice[shrine->getVirtue() * 3 + completedCycles - 1].c_str());
     }
     eventHandlerPopKeyHandler();
     eventHandlerPushKeyHandler(&shrineEjectOnKey);

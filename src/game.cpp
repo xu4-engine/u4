@@ -117,7 +117,7 @@ void gameLordBritishCheckLevels(void);
 void gameAlertTheGuards(Map *map);
 void gameDestroyAllMonsters(void);
 void gameFixupMonsters(Map *map);
-void gameMonsterAttack(Object *obj);
+void gameMonsterAttack(Monster *obj);
 int gameSummonMonster(string *monsterName);
 
 /* etc */
@@ -351,7 +351,7 @@ int gameSave() {
     }
 
     /* fix monster animations so they are compatible with u4dos */
-    mapResetObjectAnimations(c->location->map);
+    c->location->map->resetObjectAnimations();
 
     if (!saveGameMonstersWrite(c->location->map->objects, monstersFile)) {
         screenMessage("Error opening monsters.sav\n");
@@ -373,21 +373,21 @@ int gameSave() {
          * Map monsters to u4dos dungeon monster Ids
          */ 
         if (id_map.size() == 0) {
-            id_map[monsterById(RAT_ID)]             = 1;
-            id_map[monsterById(BAT_ID)]             = 2;
-            id_map[monsterById(GIANT_SPIDER_ID)]    = 3;
-            id_map[monsterById(GHOST_ID)]           = 4;
-            id_map[monsterById(SLIME_ID)]           = 5;
-            id_map[monsterById(TROLL_ID)]           = 6;
-            id_map[monsterById(GREMLIN_ID)]         = 7;
-            id_map[monsterById(MIMIC_ID)]           = 8;
-            id_map[monsterById(REAPER_ID)]          = 9;
-            id_map[monsterById(INSECT_SWARM_ID)]    = 10;
-            id_map[monsterById(GAZER_ID)]           = 11;
-            id_map[monsterById(PHANTOM_ID)]         = 12;
-            id_map[monsterById(ORC_ID)]             = 13;
-            id_map[monsterById(SKELETON_ID)]        = 14;
-            id_map[monsterById(ROGUE_ID)]           = 15;
+            id_map[monsters.getById(RAT_ID)]             = 1;
+            id_map[monsters.getById(BAT_ID)]             = 2;
+            id_map[monsters.getById(GIANT_SPIDER_ID)]    = 3;
+            id_map[monsters.getById(GHOST_ID)]           = 4;
+            id_map[monsters.getById(SLIME_ID)]           = 5;
+            id_map[monsters.getById(TROLL_ID)]           = 6;
+            id_map[monsters.getById(GREMLIN_ID)]         = 7;
+            id_map[monsters.getById(MIMIC_ID)]           = 8;
+            id_map[monsters.getById(REAPER_ID)]          = 9;
+            id_map[monsters.getById(INSECT_SWARM_ID)]    = 10;
+            id_map[monsters.getById(GAZER_ID)]           = 11;
+            id_map[monsters.getById(PHANTOM_ID)]         = 12;
+            id_map[monsters.getById(ORC_ID)]             = 13;
+            id_map[monsters.getById(SKELETON_ID)]        = 14;
+            id_map[monsters.getById(ROGUE_ID)]           = 15;
         }
 
         dngMapFile = fopen("dngmap.sav", "wb");
@@ -399,14 +399,15 @@ int gameSave() {
         for (z = 0; z < c->location->map->levels; z++) {
             for (y = 0; y < c->location->map->height; y++) {
                 for (x = 0; x < c->location->map->width; x++) {
-                    MapTile tile = mapGetTileFromData(c->location->map, MapCoords(x, y, z));
-                    Object *obj = mapObjectAt(c->location->map, MapCoords(x, y, z));
+                    MapTile tile = c->location->map->getTileFromData(MapCoords(x, y, z));
+                    Object *obj = c->location->map->objectAt(MapCoords(x, y, z));
 
                     /**
                      * Add the monster to the tile
                      */ 
                     if (obj && obj->getType() == OBJECT_MONSTER) {
-                        DngMonsterIdMap::iterator m_id = id_map.find(obj->monster);
+                        const Monster *m = dynamic_cast<Monster*>(obj);
+                        DngMonsterIdMap::iterator m_id = id_map.find(m);
                         if (m_id != id_map.end())
                             tile |= m_id->second;                        
                     }
@@ -430,7 +431,7 @@ int gameSave() {
         }
         
         /* fix monster animations so they are compatible with u4dos */
-        mapResetObjectAnimations(c->location->prev->map);
+        c->location->prev->map->resetObjectAnimations();
 
         if (!saveGameMonstersWrite(c->location->prev->map->objects, monstersFile)) {
             screenMessage("Error opening %s\n", OUTMONST_SAV_BASE_FILENAME);
@@ -479,7 +480,6 @@ void gameSetMap(Map *map, int saveLocation, const Portal *portal) {
     LocationContext context;
     FinishTurnCallback finishTurn = &gameFinishTurn;
     MoveCallback move = &gameMoveAvatar;
-    TileAt tileAt = &mapTileAt;
     Tileset *tileset = tilesetGetByType(TILESET_BASE);
     int activePlayer = (c->location) ? c->location->activePlayer : -1;
     MapCoords coords;
@@ -515,31 +515,19 @@ void gameSetMap(Map *map, int saveLocation, const Portal *portal) {
         move = &combatMovePartyMember;
         activePlayer = -1; /* different active player for combat, defaults to 'None' */
         break;
-    case MAPTYPE_TOWN:
-    case MAPTYPE_VILLAGE:
-    case MAPTYPE_CASTLE:
-    case MAPTYPE_RUIN:
+    case MAPTYPE_CITY:    
     default:
         context = CTX_CITY;
         viewMode = VIEW_NORMAL;
         break;
     }
     
-    c->location = locationNew(coords, map, viewMode, context, finishTurn, move, tileAt, tileset, c->location);    
+    c->location = locationNew(coords, map, viewMode, context, finishTurn, move, tileset, c->location);    
     c->location->activePlayer = activePlayer;
 
-    if ((map->type == MAPTYPE_TOWN ||
-         map->type == MAPTYPE_VILLAGE ||
-         map->type == MAPTYPE_CASTLE ||
-         map->type == MAPTYPE_RUIN) &&
-         map->objects.empty()) {
-        PersonList::iterator current;
-        for (current = map->city->persons.begin(); current != map->city->persons.end(); current++) {
-            Person *p = *current;
-            if ((p->tile0 != 0) && 
-                !(playerCanPersonJoin(p->name, NULL) && playerIsPersonJoined(p->name)))
-                mapAddPersonObject(map, p);
-        }        
+    if (isCity(map)) {
+        City *city = dynamic_cast<City*>(map);
+        city->addPeople();        
     }
 }
 
@@ -561,7 +549,7 @@ int gameExitToParentMap() {
         /* free map info only if previous location was on a different map */
         if (c->location->prev->map != c->location->map) {
             c->location->map->annotations->clear();
-            mapClearObjects(c->location->map);
+            c->location->map->clearObjects();
         }
         locationFree(&c->location);       
         
@@ -576,7 +564,7 @@ int gameExitToParentMap() {
  * moves, etc.
  */
 void gameFinishTurn() {
-    Object *attacker = NULL;    
+    Monster *attacker = NULL;    
 
     while (1) {
         /* adjust food and moves */
@@ -601,10 +589,10 @@ void gameFinishTurn() {
         if (c->location->context == CTX_DUNGEON || (!c->saveGame->balloonstate)) {
 
             // apply effects from tile avatar is standing on 
-            playerApplyEffect(tileGetEffect((*c->location->tileAt)(c->location->map, c->location->coords, WITH_GROUND_OBJECTS)), ALL_PLAYERS);
+            playerApplyEffect(tileGetEffect(c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS)), ALL_PLAYERS);
 
             // Move monsters and see if something is attacking the avatar
-            attacker = mapMoveObjects(c->location->map, c->location->coords);        
+            attacker = c->location->map->moveObjects(c->location->coords);        
 
             // Something's attacking!  Start combat!
             if (attacker) {
@@ -777,7 +765,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         
         /* Do they want to board something? */
         if (c->transportContext == TRANSPORT_FOOT) {
-            obj = mapObjectAt(c->location->map, c->location->coords);
+            obj = c->location->map->objectAt(c->location->coords);
             if (obj && (tileIsShip(obj->getTile()) || tileIsHorse(obj->getTile()) ||
                 tileIsBalloon(obj->getTile()))) key = 'b';
         }
@@ -791,23 +779,23 @@ bool gameBaseKeyHandler(int key, void *data) {
         else key = 'x';        
         
         /* Klimb? */
-        if ((mapPortalAt(c->location->map, c->location->coords, ACTION_KLIMB) != NULL) || 
+        if ((c->location->map->portalAt(c->location->coords, ACTION_KLIMB) != NULL) || 
                 (c->location->context == CTX_DUNGEON &&
                 dungeonLadderUpAt(c->location->map, c->location->coords)))
             key = 'k';
         /* Descend? */
-        else if ((mapPortalAt(c->location->map, c->location->coords, ACTION_DESCEND) != NULL) ||
+        else if ((c->location->map->portalAt(c->location->coords, ACTION_DESCEND) != NULL) ||
                 (c->location->context == CTX_DUNGEON &&
                 dungeonLadderDownAt(c->location->map, c->location->coords)))
             key = 'd';        
         /* Enter? */
-        else if (mapPortalAt(c->location->map, c->location->coords, ACTION_ENTER) != NULL)
+        else if (c->location->map->portalAt(c->location->coords, ACTION_ENTER) != NULL)
             key = 'e';
         
         /* Get Chest? */
         if ((c->location->context == CTX_DUNGEON) || 
             (!c->saveGame->balloonstate)) {
-            tile = (*c->location->tileAt)(c->location->map, c->location->coords, WITH_GROUND_OBJECTS);                            
+            tile = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
     
             if (tileIsChest(tile)) key = 'g';
         }
@@ -966,7 +954,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'b':
 
-        obj = mapObjectAt(c->location->map, c->location->coords);
+        obj = c->location->map->objectAt(c->location->coords);
 
         if (c->transportContext != TRANSPORT_FOOT)
             screenMessage("Board: Can't!\n");
@@ -986,7 +974,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
             if (validTransport) {
                 gameSetTransport(obj->getTile());
-                mapRemoveObject(c->location->map, obj);
+                c->location->map->removeObject(obj);
             }
             else screenMessage("Board What?\n");
         }
@@ -1004,7 +992,7 @@ bool gameBaseKeyHandler(int key, void *data) {
                 screenMessage("Land Balloon\n");
                 if (c->saveGame->balloonstate == 0)
                     screenMessage("Already Landed!\n");
-                else if (tileCanLandBalloon((*c->location->tileAt)(c->location->map, c->location->coords, WITH_OBJECTS))) {
+                else if (tileCanLandBalloon(c->location->map->tileAt(c->location->coords, WITH_OBJECTS))) {
                     c->saveGame->balloonstate = 0;
                     c->opacity = 1;
                 }
@@ -1017,7 +1005,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'e':
         if (!usePortalAt(c->location, c->location->coords, ACTION_ENTER)) {
-            if (!mapPortalAt(c->location->map, c->location->coords, ACTION_ENTER))
+            if (!c->location->map->portalAt(c->location->coords, ACTION_ENTER))
                 screenMessage("Enter what?\n");
         }
         else endTurn = 0; /* entering a portal doesn't end the turn */
@@ -1051,7 +1039,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         if ((c->location->context != CTX_DUNGEON) && c->saveGame->balloonstate)        
             screenMessage("Drift only!\n");
         else {
-            tile = (*c->location->tileAt)(c->location->map, c->location->coords, WITH_GROUND_OBJECTS);
+            tile = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
     
             if (tileIsChest(tile))
             {
@@ -1255,7 +1243,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'x':
         if ((c->transportContext != TRANSPORT_FOOT) && c->saveGame->balloonstate == 0) {
-            Object *obj = mapAddObject(c->location->map, (MapTile)c->saveGame->transport, (MapTile)c->saveGame->transport, c->location->coords);
+            Object *obj = c->location->map->addObject((MapTile)c->saveGame->transport, (MapTile)c->saveGame->transport, c->location->coords);
             if (c->transportContext == TRANSPORT_SHIP)
                 c->lastShip = obj;
 
@@ -1286,7 +1274,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'c' + U4_ALT:
-        if (settings.debug && mapIsWorldMap(c->location->map)) {
+        if (settings.debug && c->location->map->isWorldMap()) {
             /* first teleport to the abyss */
             c->location->coords.x = 0xe9;
             c->location->coords.y = 0xe9;
@@ -1784,7 +1772,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
     case '8':
         screenMessage("Gate %d!\n", key - '0');
 
-        if (mapIsWorldMap(c->location->map)) {            
+        if (c->location->map->isWorldMap()) {
             moongate = moongateGetGateCoordsForPhase(key - '1');
             if (moongate)
                 c->location->coords = *moongate;                
@@ -1877,10 +1865,10 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         break;
 
     case 'l':
-        if (mapIsWorldMap(c->location->map))
+        if (c->location->map->isWorldMap())
             screenMessage("\nLocation:\n%s\nx: %d\ny: %d\n", "World Map", c->location->coords.x, c->location->coords.y);
         else
-            screenMessage("\nLocation:\n%s\nx: %d\ny: %d\nz: %d\n", c->location->map->fname.c_str(), c->location->coords.x, c->location->coords.y, c->location->coords.z);
+            screenMessage("\nLocation:\n%s\nx: %d\ny: %d\nz: %d\n", c->location->map->getName().c_str(), c->location->coords.x, c->location->coords.y, c->location->coords.z);
         screenPrompt();
         break;
 
@@ -1920,10 +1908,10 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         return true;
 
     case 't':
-        if (mapIsWorldMap(c->location->map)) {
-            mapAddObject(c->location->map, tileGetHorseBase(), tileGetHorseBase(), MapCoords(84, 106));
-            mapAddObject(c->location->map, tileGetShipBase(), tileGetShipBase(), MapCoords(88, 109));
-            mapAddObject(c->location->map, tileGetBalloonBase(), tileGetBalloonBase(), MapCoords(85, 105));
+        if (c->location->map->isWorldMap()) {
+            c->location->map->addObject(tileGetHorseBase(), tileGetHorseBase(), MapCoords(84, 106));
+            c->location->map->addObject(tileGetShipBase(), tileGetShipBase(), MapCoords(88, 109));
+            c->location->map->addObject(tileGetBalloonBase(), tileGetBalloonBase(), MapCoords(85, 105));
             screenMessage("Transports: Ship, Horse and Balloon created!\n");
             screenPrompt();
         }
@@ -2093,9 +2081,9 @@ bool helpPage3KeyHandler(int key, void *data) {
  * creature is present at that point, zero is returned.
  */
 bool attackAtCoord(MapCoords coords, int distance, void *data) {
-    Object *obj, *under;
+    Object *under;
     MapTile ground;    
-    const Monster *m;
+    Monster *m;
 
     /* attack failed: finish up */
     if (coords.x == -1 && coords.y == -1) {        
@@ -2104,35 +2092,31 @@ bool attackAtCoord(MapCoords coords, int distance, void *data) {
         return false;
     }
 
-    obj = mapObjectAt(c->location->map, coords);
+    m = dynamic_cast<Monster*>(c->location->map->objectAt(coords));
     /* nothing attackable: move on to next tile */
-    if (obj == NULL ||
-        (obj->getType() == OBJECT_UNKNOWN) ||
-        (obj->getType() == OBJECT_MONSTER && !monsterIsAttackable(obj->monster)) ||
-        (obj->getType() == OBJECT_PERSON && !monsterForTile(obj->getTile())) || 
+    if ((m == NULL) || 
         /* can't attack horse transport */
-        (tileIsHorse(obj->getTile()) && obj->getMovementBehavior() == MOVEMENT_FIXED)) {
+        (tileIsHorse(m->getTile()) && m->getMovementBehavior() == MOVEMENT_FIXED)) {
         return false;
     }
 
     /* attack successful */
-    ground = (*c->location->tileAt)(c->location->map, c->location->coords, WITHOUT_OBJECTS);
-    if ((under = mapObjectAt(c->location->map, c->location->coords)) &&
+    ground = c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS);
+    if ((under = c->location->map->objectAt(c->location->coords)) &&
         tileIsShip(under->getTile()))
         ground = under->getTile();
 
     /* You're attacking a townsperson!  Alert the guards! */
-    if ((obj->getType() != OBJECT_MONSTER) && (obj->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))
+    if ((m->getType() == OBJECT_PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))
         gameAlertTheGuards(c->location->map);        
 
-    /* not good karma to be killing the innocent.  Bad avatar! */
-    m = monsterForTile(obj->getTile());
-    if (monsterIsGood(m) || /* attacking a good monster */
+    /* not good karma to be killing the innocent.  Bad avatar! */    
+    if (m->isGood() || /* attacking a good monster */
         /* attacking a docile (although possibly evil) person in town */
-        ((obj->getType() != OBJECT_MONSTER) && (obj->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))) 
+        ((m->getType() == OBJECT_PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))) 
         playerAdjustKarma(KA_ATTACKED_GOOD);
 
-    combatInit(m, obj, combatMapForTile(ground, (MapTile)c->saveGame->transport, obj));
+    combatInit(m, combatMapForTile(ground, (MapTile)c->saveGame->transport, m));
     combatBegin();
     return true;
 }
@@ -2259,12 +2243,12 @@ int castForPlayerGetEnergyDir(Direction dir) {
 }
 
 bool destroyAtCoord(MapCoords coords, int distance, void *data) {
-    Object *obj = mapObjectAt(c->location->map, coords);
+    Object *obj = c->location->map->objectAt(coords);
 
     screenPrompt();
 
     if (obj) {
-        mapRemoveObject(c->location->map, obj);
+        c->location->map->removeObject(obj);
         return true;
     }
     return false;
@@ -2298,12 +2282,13 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
     else {
         Object *obj = NULL;
 
-        obj = mapObjectAt(c->location->map, coords);
+        obj = c->location->map->objectAt(coords);
+        Monster *m = dynamic_cast<Monster*>(obj);
                 
         /* FIXME: there's got to be a better way make whirlpools and storms impervious to cannon fire */
-        if (obj && (obj->getType() == OBJECT_MONSTER) &&
-                (obj->monster->id != WHIRLPOOL_ID) && (obj->monster->id != STORM_ID))
-            validObject = 1;
+        if (obj && (obj->getType() == OBJECT_MONSTER) && 
+            (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID))
+            validObject = 1;        
         /* See if it's an object to be destroyed (the avatar cannot destroy the balloon) */
         else if (obj && (obj->getType() == OBJECT_UNKNOWN) && !(tileIsBalloon(obj->getTile()) && originAvatar))
             validObject = 1;
@@ -2329,14 +2314,14 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
             /* inanimate objects get destroyed instantly, while monsters get a chance */
             else if (obj->getType() == OBJECT_UNKNOWN) {
                 attackFlash(coords, HITFLASH_TILE, 5);
-                mapRemoveObject(c->location->map, obj);
+                c->location->map->removeObject(obj);
             }
             
             /* only the avatar can hurt other monsters with cannon fire */
             else if (originAvatar) {
                 attackFlash(coords, HITFLASH_TILE, 5);
                 if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
-                    mapRemoveObject(c->location->map, obj);
+                    c->location->map->removeObject(obj);
             }
             
             if (originAvatar)
@@ -2366,17 +2351,17 @@ bool gameGetChest(int player) {
     MapCoords coords;    
     
     locationGetCurrentPosition(c->location, &coords);
-    tile = (*c->location->tileAt)(c->location->map, coords, WITH_GROUND_OBJECTS);
+    tile = c->location->map->tileAt(coords, WITH_GROUND_OBJECTS);
     newTile = locationGetReplacementTile(c->location, coords);    
     
     /* get the object for the chest, if it is indeed an object */
-    obj = mapObjectAt(c->location->map, coords);
+    obj = c->location->map->objectAt(coords);
     if (obj && !tileIsChest(obj->getTile()))
         obj = NULL;
     
     if (tileIsChest(tile)) {
         if (obj)
-            mapRemoveObject(c->location->map, obj);
+            c->location->map->removeObject(obj);
         else
             c->location->map->annotations->add(coords, newTile);
         
@@ -2386,7 +2371,7 @@ bool gameGetChest(int player) {
 
         statsUpdate();
         
-        if (((c->location->context & CTX_NON_COMBAT) == c->location->context) && obj == NULL)
+        if (isCity(c->location->map) && obj == NULL)
             playerAdjustKarma(KA_STOLE_CHEST);
     }    
     else
@@ -2473,7 +2458,7 @@ MoveReturnValue gameMoveAvatar(Direction dir, int userEvent) {
                 MapTile tile;
                 
                 new_coords.move(dir, c->location->map);                
-                tile = (*c->location->tileAt)(c->location->map, new_coords, WITH_OBJECTS);
+                tile = c->location->map->tileAt(new_coords, WITH_OBJECTS);
 
                 if (tileIsDoor(tile)) {
                     openAtCoord(new_coords, 1, NULL);
@@ -2588,7 +2573,7 @@ bool jimmyAtCoord(MapCoords coords, int distance, void *data) {
         return false;
     }
 
-    tile = (*c->location->tileAt)(c->location->map, coords, WITH_OBJECTS);
+    tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
     if (!tileIsLockedDoor(tile))
         return false;
@@ -2837,7 +2822,7 @@ bool openAtCoord(MapCoords coords, int distance, void *data) {
         return false;
     }
 
-    tile = (*c->location->tileAt)(c->location->map, coords, WITH_OBJECTS);
+    tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
     if (!tileIsDoor(tile) && !tileIsLockedDoor(tile))
         return false;
@@ -2936,19 +2921,20 @@ int peerCityHandleChoice(int choice) {
 bool talkAtCoord(MapCoords coords, int distance, void *data) {
     const Person *talker;
     extern int personIsVendor(const Person *person);
+    City *city = dynamic_cast<City*>(c->location->map);
 
     if (coords.x == -1 && coords.y == -1) {
         screenMessage("Funny, no\nresponse!\n");
-        (*c->location->finishTurn)();        
+        (*c->location->finishTurn)();
         return false;
     }
 
-    c->conversation.talker = mapPersonAt(c->location->map, coords);
+    c->conversation.talker = city->personAt(coords);
 
     /* some persons in some towns exists as a 'person' object, but they
        really are not someone you can talk to.  These persons have mostly null fields */
     if (c->conversation.talker == NULL || 
-        ((c->conversation.talker->name == NULL) && (c->conversation.talker->npcType <= NPC_TALKER_COMPANION)))
+        (c->conversation.talker->name.empty() && c->conversation.talker->npcType <= NPC_TALKER_COMPANION))
         return false;
 
     /* if we're talking to Lord British and the avatar is dead, LB resurrects them! */
@@ -3193,7 +3179,7 @@ void gameTimer(void *data) {
 
         gameUpdateMoons(1);
 
-        mapAnimateObjects(c->location->map);
+        c->location->map->animateObjects();
 
         screenCycle();
 
@@ -3230,7 +3216,7 @@ void gameUpdateMoons(int showmoongates)
         trammelSubphase;        
     const MapCoords *gate;
 
-    if (mapIsWorldMap(c->location->map) && c->location->viewMode == VIEW_NORMAL) {        
+    if (c->location->map->isWorldMap() && c->location->viewMode == VIEW_NORMAL) {        
         oldTrammel = c->saveGame->trammelphase;
 
         if (++c->moonPhase >= MOON_PHASES * MOON_SECONDS_PER_PHASE * 4)
@@ -3335,17 +3321,17 @@ void gameInitMoons()
  * Handles trolls under bridges
  */
 void gameCheckBridgeTrolls() {
-    Object *obj;
+    Monster *m;
 
-    if (!mapIsWorldMap(c->location->map) ||
-        (*c->location->tileAt)(c->location->map, c->location->coords, WITHOUT_OBJECTS) != BRIDGE_TILE ||
+    if (!c->location->map->isWorldMap() ||
+        c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS) != BRIDGE_TILE ||
         xu4_random(8) != 0)
         return;
 
     screenMessage("\nBridge Trolls!\n");
     
-    obj = mapAddMonsterObject(c->location->map, monsterById(TROLL_ID), c->location->coords);
-    combatInit(obj->monster, obj, MAP_BRIDGE_CON);
+    m = c->location->map->addMonster(monsters.getById(TROLL_ID), c->location->coords);
+    combatInit(m, MAP_BRIDGE_CON);
     combatBegin();
 }
 
@@ -3403,7 +3389,7 @@ void gameCheckSpecialMonsters(Direction dir) {
         c->location->coords.x == 0xdd &&
         c->location->coords.y == 0xe0) {
         for (i = 0; i < 8; i++) {        
-            obj = mapAddMonsterObject(c->location->map, monsterById(PIRATE_ID), MapCoords(pirateInfo[i].x, pirateInfo[i].y));
+            obj = c->location->map->addMonster(monsters.getById(PIRATE_ID), MapCoords(pirateInfo[i].x, pirateInfo[i].y));
             obj->setDirection(pirateInfo[i].dir);            
         }
     }
@@ -3419,7 +3405,7 @@ void gameCheckSpecialMonsters(Direction dir) {
         c->location->coords.y < 217 &&
         c->aura != AURA_HORN) {
         for (i = 0; i < 8; i++)            
-            obj = mapAddMonsterObject(c->location->map, monsterById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));                    
+            obj = c->location->map->addMonster(monsters.getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));                    
     }
 }
 
@@ -3439,17 +3425,17 @@ int gameCheckMoongates(void) {
         }
 
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
-            Map *shrine_spirituality_map;
+            Shrine *shrine_spirituality;
 
-            shrine_spirituality_map = mapMgrGetById(MAP_SHRINE_SPIRITUALITY);
+            shrine_spirituality = dynamic_cast<Shrine*>(mapMgrGetById(MAP_SHRINE_SPIRITUALITY));
 
-            if (!playerCanEnterShrine(shrine_spirituality_map->shrine->virtue))
+            if (!playerCanEnterShrine(VIRT_SPIRITUALITY))
                 return 1;
             
-            gameSetMap(shrine_spirituality_map, 1, NULL);
+            gameSetMap(shrine_spirituality, 1, NULL);
             musicPlay();
 
-            shrineEnter(shrine_spirituality_map->shrine);            
+            shrine_spirituality->enter();
         }
 
         return 1;
@@ -3462,7 +3448,7 @@ int gameCheckMoongates(void) {
  * Checks monster conditions and spawns new monsters if necessary
  */
 void gameCheckRandomMonsters() {
-    int canSpawnHere = mapIsWorldMap(c->location->map) || c->location->context & CTX_DUNGEON;
+    int canSpawnHere = c->location->map->isWorldMap() || c->location->context & CTX_DUNGEON;
     int spawnDivisor = c->location->context & CTX_DUNGEON ? (32 - (c->location->coords.z << 2)) : 32;
 
     /* remove monsters that are too far away from the avatar */
@@ -3471,7 +3457,7 @@ void gameCheckRandomMonsters() {
     /* If there are too many monsters already,
        or we're not on the world map, don't worry about it! */
     if (!canSpawnHere ||
-        mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS_ON_MAP ||
+        c->location->map->getNumberOfMonsters() >= MAX_MONSTERS_ON_MAP ||
         xu4_random(spawnDivisor) != 0)
         return;
     
@@ -3490,21 +3476,13 @@ void gameFixupMonsters(Map *map) {
         obj = *i;
 
         /* translate unknown objects into monster objects if necessary */
-        if (obj->getType() == OBJECT_UNKNOWN && monsterForTile(obj->getTile()) != NULL &&
+        if (obj->getType() == OBJECT_UNKNOWN && monsters.getByTile(obj->getTile()) != NULL &&
             obj->getMovementBehavior() != MOVEMENT_FIXED) {
-            obj->setType(OBJECT_MONSTER);
-            obj->monster = monsterForTile(obj->getTile());
+            /* replace the object with a monster object */
+            map->addMonster(monsters.getByTile(obj->getTile()), obj->getCoords());            
+            i = map->removeObject(i);
         }
-
-        /* fix monster behaviors */
-        if (obj->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR) {
-            const Monster *m = monsterForTile(obj->getTile());
-            if (m && monsterWanders(m))
-                obj->setMovementBehavior(MOVEMENT_WANDER);
-            else if (m && monsterIsStationary(m))
-                obj->setMovementBehavior(MOVEMENT_FIXED);
-        }
-    }
+    }    
 }
 
 long gameTimeSinceLastCommand() {
@@ -3514,18 +3492,18 @@ long gameTimeSinceLastCommand() {
 /**
  * Handles what happens when a monster attacks you
  */
-void gameMonsterAttack(Object *obj) {
+void gameMonsterAttack(Monster *m) {
     Object *under;
     MapTile ground;    
     
-    screenMessage("\nAttacked by %s\n", monsterForTile(obj->getTile())->name);
+    screenMessage("\nAttacked by %s\n", m->name.c_str());
 
-    ground = (*c->location->tileAt)(c->location->map, c->location->coords, WITHOUT_OBJECTS);
-    if ((under = mapObjectAt(c->location->map, c->location->coords)) &&
+    ground = c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS);
+    if ((under = c->location->map->objectAt(c->location->coords)) &&
         tileIsShip(under->getTile()))
         ground = under->getTile();
     
-    combatInit(monsterForTile(obj->getTile()), obj, combatMapForTile(ground, (MapTile)c->saveGame->transport, obj));
+    combatInit(m, combatMapForTile(ground, (MapTile)c->saveGame->transport, m));
     combatBegin();
 }
 
@@ -3535,16 +3513,14 @@ void gameMonsterAttack(Object *obj) {
 bool monsterRangeAttack(MapCoords coords, int distance, void *data) {
     CoordActionInfo* info = (CoordActionInfo*)data;
     MapCoords old = info->prev;
-    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;   
-    Object *obj;
-    const Monster *m;
+    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;       
+    Monster *m;
     MapTile tile;
 
     info->prev = coords;
 
     /* Find the monster that made the range attack */
-    obj = mapObjectAt(c->location->map, info->origin);
-    m = (obj && obj->getType() == OBJECT_MONSTER) ? obj->monster : NULL;
+    m = dynamic_cast<Monster*>(c->location->map->objectAt(info->origin));    
 
     /* Figure out what the ranged attack should look like */
     tile = (m && (m->worldrangedtile > 0)) ? m->worldrangedtile : HITFLASH_TILE;
@@ -3562,7 +3538,8 @@ bool monsterRangeAttack(MapCoords coords, int distance, void *data) {
     else {
         Object *obj = NULL;
 
-        obj = mapObjectAt(c->location->map, coords);        
+        obj = c->location->map->objectAt(coords);        
+        m = dynamic_cast<Monster*>(obj);
         
         /* Does the attack hit the avatar? */
         if (coords == c->location->coords) {
@@ -3579,11 +3556,11 @@ bool monsterRangeAttack(MapCoords coords, int distance, void *data) {
         /* Destroy objects that were hit */
         else if (obj) {
             if (((obj->getType() == OBJECT_MONSTER) &&
-                (obj->monster->id != WHIRLPOOL_ID) && (obj->monster->id != STORM_ID)) ||
+                (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID)) ||
                 obj->getType() == OBJECT_UNKNOWN) {
                 
                 attackFlash(coords, tile, 3);
-                mapRemoveObject(c->location->map, obj);
+                c->location->map->removeObject(obj);
 
                 return true;
             }            
@@ -3638,7 +3615,7 @@ int gameDirectionalAction(CoordActionInfo *info) {
                 if (MAP_IS_OOB(c->location->map, t_c))
                     break;
 
-                tile = (*c->location->tileAt)(c->location->map, t_c, WITH_GROUND_OBJECTS);
+                tile = c->location->map->tileAt(t_c, WITH_GROUND_OBJECTS);
 
                 /* should we see if the action is blocked before trying it? */
                 if (info->blockBefore && info->blockedPredicate &&
@@ -3728,7 +3705,7 @@ void gameMonsterCleanup(void) {
              o_coords.distance(c->location->coords, c->location->map) > MAX_MONSTER_DISTANCE) {
             
             /* delete the object and remove it from the map */
-            i = mapRemoveObject(map, i);            
+            i = map->removeObject(i);            
         }
         else i++;
     }
@@ -3778,10 +3755,9 @@ void gameLordBritishCheckLevels(void) {
  * as the monster's name, or the monster's id.  Once it finds the
  * monster to be summoned, it calls gameSpawnMonster() to spawn it.
  */
-int gameSummonMonster(string *monsterName) {
-    extern Monster monsters[];
-    extern unsigned int numMonsters;
-    unsigned int i, id;
+int gameSummonMonster(string *monsterName) {    
+    unsigned int id;
+    const Monster *m;
 
     eventHandlerPopKeyHandler();
 
@@ -3792,27 +3768,17 @@ int gameSummonMonster(string *monsterName) {
     
     /* find the monster by its id and spawn it */
     id = atoi(monsterName->c_str());
-    if (id > 0) {
-        for (i = 0; i < numMonsters; i++) {
-            if (monsters[i].id == id) {
-                screenMessage("\n%s summoned!\n", monsters[i].name);
-                screenPrompt();
-                gameSpawnMonster(&monsters[i]);
-                return 1;
-            }                
-        }
-    }
+    m = monsters.getById(id);
+    if (!m)
+        m = monsters.getByName(*monsterName);
 
-    /* find the monster by its name and spawn it */
-    for (i = 0; i < numMonsters; i++) {        
-        if (strcasecmp(monsterName->c_str(), monsters[i].name) == 0) {        
-            screenMessage("\n%s summoned!\n", monsters[i].name);
-            screenPrompt();
-            gameSpawnMonster(&monsters[i]);
-            return 1;
-        }
+    if (m) {
+        screenMessage("\n%s summoned!\n", m->name.c_str());
+        screenPrompt();
+        gameSpawnMonster(m);
+        return 1;
     }
-
+    
     screenMessage("\n%s not found\n", monsterName->c_str());
     screenPrompt();
     return 0;
@@ -3833,7 +3799,7 @@ void gameSpawnMonster(const Monster *m) {
         
         for (i = 0; i < 0x20; i++) {
             coords = MapCoords(xu4_random(c->location->map->width), xu4_random(c->location->map->height), c->location->coords.z);
-            tile = (*c->location->tileAt)(c->location->map, coords, WITH_OBJECTS);
+            tile = c->location->map->tileAt(coords, WITH_OBJECTS);
             if (tileIsMonsterWalkable(tile)) {
                 found = 1;
                 break;
@@ -3867,11 +3833,11 @@ void gameSpawnMonster(const Monster *m) {
     if (m)
         monster = m;
     else if (c->location->context & CTX_DUNGEON)
-        monster = monsterForDungeon(c->location->coords.z);
+        monster = monsters.randomForDungeon(c->location->coords.z);
     else
-        monster = monsterRandomForTile((*c->location->tileAt)(c->location->map, coords, WITHOUT_OBJECTS));
+        monster = monsters.randomForTile(c->location->map->tileAt(coords, WITHOUT_OBJECTS));
 
-    if (monster) mapAddMonsterObject(c->location->map, monster, coords);    
+    if (monster) c->location->map->addMonster(monster, coords);    
 }
 
 /**
@@ -3883,7 +3849,7 @@ void gameAlertTheGuards(Map *map) {
 
     /* switch all the guards to attack mode */
     for (i = map->objects.begin(); i != map->objects.end(); i++) {
-        m = monsterForTile((*i)->getTile());
+        m = monsters.getByTile((*i)->getTile());
         if (m && (m->id == GUARD_ID || m->id == LORDBRITISH_ID))
             (*i)->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
     }
@@ -3900,11 +3866,18 @@ void gameDestroyAllMonsters(void) {
     if (c->location->context & CTX_COMBAT) {
         /* destroy all monsters in combat */
         for (i = 0; i < AREA_MONSTERS; i++) {
-            if (combatInfo.monsters[i].obj && 
-                combatInfo.monsters[i].obj->monster->id != LORDBRITISH_ID) {
-                mapRemoveObject(c->location->map, combatInfo.monsters[i].obj);
-                combatInfo.monsters[i].obj = NULL;
-            }
+            CombatObjectMap::iterator obj;            
+            for (obj = combatInfo.monsters.begin(); obj != combatInfo.monsters.end();) {
+                if (obj->second->id != LORDBRITISH_ID) {
+                    /* FIXME: This is a crappy way of doing things, but
+                       when the combat is setup the way it should be, this 
+                       should work out */
+                    c->location->map->removeObject(obj->second);
+                    /* this, however, is a BAD way of doing it, but necessary for now */
+                    combatInfo.monsters.clear();
+                }
+                else obj++;
+            }            
         }
     }    
     else {
@@ -3913,13 +3886,12 @@ void gameDestroyAllMonsters(void) {
         Map *map = c->location->map;
         
         for (current = map->objects.begin(); current != map->objects.end();) {
-            Object *obj = *current;
+            Monster *m = dynamic_cast<Monster*>(*current);
 
-            if (obj->getType() != OBJECT_UNKNOWN) {
-                const Monster *m = (obj->getType() == OBJECT_MONSTER) ? obj->monster : monsterForTile(obj->getTile());
+            if (m) {                
                 /* the skull does not destroy Lord British */
-                if (m && m->id != LORDBRITISH_ID)
-                    current = mapRemoveObject(map, current);                
+                if (m->id != LORDBRITISH_ID)
+                    current = map->removeObject(current);                
                 else current++;
             }
             else current++;
@@ -3941,6 +3913,6 @@ bool gameCreateBalloon(Map *map) {
         if (tileIsBalloon((*i)->getTile()))
             return false;
 
-    mapAddObject(map, BALLOON_TILE, BALLOON_TILE, MapCoords(233, 242, -1));
+    map->addObject(BALLOON_TILE, BALLOON_TILE, MapCoords(233, 242, -1));
     return true;
 }

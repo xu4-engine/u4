@@ -9,8 +9,8 @@
 
 #include "maploader.h"
 
-#include "area.h"
 #include "city.h"
+#include "combat.h"
 #include "debug.h"
 #include "dungeon.h"
 #include "error.h"
@@ -20,9 +20,9 @@
 #include "portal.h"
 #include "u4file.h"
 
-int mapLoadCity(Map *map);
+int mapLoadCity(City *map);
 int mapLoadCon(Map *map);
-int mapLoadDng(Map *map);
+int mapLoadDng(Dungeon *map);
 int mapLoadWorld(Map *map);
 int mapLoadData(Map *map, U4FILE *f);
 
@@ -36,11 +36,8 @@ int mapLoad(Map *map) {
         return mapLoadWorld(map);
         break;
 
-    case MAPTYPE_TOWN:
-    case MAPTYPE_VILLAGE:
-    case MAPTYPE_CASTLE:
-    case MAPTYPE_RUIN:
-        return mapLoadCity(map);
+    case MAPTYPE_CITY:
+        return mapLoadCity(dynamic_cast<City*>(map));
         break;
 
     case MAPTYPE_SHRINE:
@@ -49,7 +46,7 @@ int mapLoad(Map *map) {
         break;
 
     case MAPTYPE_DUNGEON:
-        return mapLoadDng(map);
+        return mapLoadDng(dynamic_cast<Dungeon*>(map));
         break;
     }
 
@@ -59,39 +56,44 @@ int mapLoad(Map *map) {
 /**
  * Load city data from 'ult' and 'tlk' files.
  */
-int mapLoadCity(Map *map) {
+int mapLoadCity(City *city) {
     U4FILE *ult, *tlk;
     unsigned char conv_idx[CITY_MAX_PERSONS];
     unsigned char c;
     unsigned int i, j;
     char tlk_buffer[288];
-    Person *people = new Person[CITY_MAX_PERSONS];
+    Person *people[CITY_MAX_PERSONS];
+    MapTile tiles[CITY_MAX_PERSONS];
 
-    ult = u4fopen(map->fname.c_str());
-    tlk = u4fopen(map->city->tlk_fname.c_str());
+    ult = u4fopen(city->fname.c_str());
+    tlk = u4fopen(city->tlk_fname.c_str());
     if (!ult || !tlk)
         errorFatal("unable to load map data");
 
     /* the map must be 32x32 to be read from an .ULT file */
-    ASSERT(map->width == CITY_WIDTH, "map width is %d, should be %d", map->width, CITY_WIDTH);
-    ASSERT(map->height == CITY_HEIGHT, "map height is %d, should be %d", map->height, CITY_HEIGHT);
+    ASSERT(city->width == CITY_WIDTH, "map width is %d, should be %d", city->width, CITY_WIDTH);
+    ASSERT(city->height == CITY_HEIGHT, "map height is %d, should be %d", city->height, CITY_HEIGHT);
 
-    if (!mapLoadData(map, ult))
+    if (!mapLoadData(dynamic_cast<Map*>(city), ult))
         return 0;    
-    
-    memset(people, 0, sizeof(Person) * CITY_MAX_PERSONS);
 
+    /* first, get all the tiles for the townspeople */
     for (i = 0; i < CITY_MAX_PERSONS; i++)        
-        people[i].tile0 = u4fgetc(ult);
+        tiles[i] = u4fgetc(ult);
+    
+    /* then, use those tiles to properly construct the Person
+       object for each person */
+    for (i = 0; i < CITY_MAX_PERSONS; i++)
+        people[i] = new Person(tiles[i]);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i].startx = u4fgetc(ult);
+        people[i]->start.x = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i].starty = u4fgetc(ult);
+        people[i]->start.y = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i].tile1 = u4fgetc(ult);
+        people[i]->setPrevTile(u4fgetc(ult));
 
     for (i = 0; i < CITY_MAX_PERSONS * 2; i++)
         u4fgetc(ult);           /* read redundant startx/starty */
@@ -99,24 +101,22 @@ int mapLoadCity(Map *map) {
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         c = u4fgetc(ult);
         if (c == 0)
-            people[i].movement_behavior = MOVEMENT_FIXED;
+            people[i]->setMovementBehavior(MOVEMENT_FIXED);
         else if (c == 1)
-            people[i].movement_behavior = MOVEMENT_WANDER;
+            people[i]->setMovementBehavior(MOVEMENT_WANDER);
         else if (c == 0x80)
-            people[i].movement_behavior = MOVEMENT_FOLLOW_AVATAR;
+            people[i]->setMovementBehavior(MOVEMENT_FOLLOW_AVATAR);
         else if (c == 0xFF)
-            people[i].movement_behavior = MOVEMENT_ATTACK_AVATAR;
+            people[i]->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
         else
-            return 0;
-
-        people[i].permanent = 1; /* permanent residents (i.e. memory is allocated here and automatically freed) */
+            return 0;        
     }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
         conv_idx[i] = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        people[i].startz = 0;
+        people[i]->start.z = 0;        
     }
 
     for (i = 0; ; i++) {
@@ -129,42 +129,44 @@ int mapLoadCity(Map *map) {
              * we'll fill in the empty spaces with this conversation 
              * (such as Isaac the Ghost in Skara Brae)
              */
-            if (conv_idx[j] == i+1 || (conv_idx[j] == 0 && people[j].tile0 == 0)) {
+            if (conv_idx[j] == i+1 || (conv_idx[j] == 0 && people[j]->getTile() == 0)) {
                 char *ptr = tlk_buffer + 3;
 
-                people[j].questionTrigger = (PersonQuestionTrigger) tlk_buffer[0];
-                people[j].questionType = (PersonQuestionType) tlk_buffer[1];
-                people[j].turnAwayProb = tlk_buffer[2];
+                people[j]->questionTrigger = (PersonQuestionTrigger) tlk_buffer[0];
+                people[j]->questionType = (PersonQuestionType) tlk_buffer[1];
+                people[j]->turnAwayProb = tlk_buffer[2];
 
-                people[j].name = strdup(ptr);
+                people[j]->name = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                people[j].pronoun = strdup(ptr);
+                people[j]->pronoun = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                people[j].description = strdup(ptr);
+                people[j]->description = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                people[j].job = strdup(ptr);
+                people[j]->job = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                people[j].health = strdup(ptr);
+                people[j]->health = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                people[j].response1 = strdup(ptr);
+                people[j]->response1 = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                people[j].response2 = strdup(ptr);
+                people[j]->response2 = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                people[j].question = strdup(ptr);
+                people[j]->question = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                people[j].yesresp = strdup(ptr);
+                people[j]->yesresp = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                people[j].noresp = strdup(ptr);
+                people[j]->noresp = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                people[j].keyword1 = strdup(ptr);
+                people[j]->keyword1 = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                people[j].keyword2 = strdup(ptr);
+                people[j]->keyword2 = strdup(ptr);
 
                 /* trim whitespace on keywords */
-                if (strchr(people[j].keyword1, ' '))
-                    *strchr(people[j].keyword1, ' ') = '\0';
-                if (strchr(people[j].keyword2, ' '))
-                    *strchr(people[j].keyword2, ' ') = '\0';
+                /* FIXME: need to trim whitespace on keywords
+                   using std::string */
+                /*if (strchr(people[j]->keyword1, ' '))
+                    *strchr(people[j]->keyword1, ' ') = '\0';
+                if (strchr(people[j]->keyword2, ' '))
+                    *strchr(people[j]->keyword2, ' ') = '\0';*/
             }
         }
     }    
@@ -175,17 +177,17 @@ int mapLoadCity(Map *map) {
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         PersonRoleList::iterator current;
         
-        people[i].npcType = NPC_EMPTY;
-        if (people[i].name)
-            people[i].npcType = NPC_TALKER;
-        if (people[i].tile0 == 88 || people[i].tile0 == 89)
-            people[i].npcType = NPC_TALKER_BEGGAR;
-        if (people[i].tile0 == 80 || people[i].tile0 == 81)
-            people[i].npcType = NPC_TALKER_GUARD;
+        people[i]->npcType = NPC_EMPTY;
+        if (!people[i]->name.empty())
+            people[i]->npcType = NPC_TALKER;
+        if (people[i]->getTile() == 88 || people[i]->getTile() == 89)
+            people[i]->npcType = NPC_TALKER_BEGGAR;
+        if (people[i]->getTile() == 80 || people[i]->getTile() == 81)
+            people[i]->npcType = NPC_TALKER_GUARD;
         
-        for (current = map->city->personroles.begin(); current != map->city->personroles.end(); current++) {
+        for (current = city->personroles.begin(); current != city->personroles.end(); current++) {
             if ((unsigned)(*current)->id == (i + 1))
-                people[i].npcType = (PersonNpcType)(*current)->role;
+                people[i]->npcType = (PersonNpcType)(*current)->role;
         }
     }
 
@@ -193,8 +195,8 @@ int mapLoadCity(Map *map) {
      * Add the people to the city structure
      */ 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (people[i].tile0 != 0)
-            map->city->persons.push_back(people + i);
+        if (people[i]->getTile() != 0)            
+            city->persons.push_back(people[i]);        
     }
 
     u4fclose(ult);
@@ -219,19 +221,19 @@ int mapLoadCon(Map *map) {
     ASSERT(map->height == CON_HEIGHT, "map height is %d, should be %d", map->height, CON_HEIGHT);
 
     if (map->type != MAPTYPE_SHRINE) {
-        map->area = new Area;
-        
-        for (i = 0; i < AREA_MONSTERS; i++)
-            map->area->monster_start[i] = MapCoords(u4fgetc(con));        
+        CombatMap *cm = dynamic_cast<CombatMap*>(map);
 
         for (i = 0; i < AREA_MONSTERS; i++)
-            map->area->monster_start[i].y = u4fgetc(con);
+            cm->monster_start[i] = MapCoords(u4fgetc(con));        
+
+        for (i = 0; i < AREA_MONSTERS; i++)
+            cm->monster_start[i].y = u4fgetc(con);
 
         for (i = 0; i < AREA_PLAYERS; i++)
-            map->area->player_start[i] = MapCoords(u4fgetc(con));
+            cm->player_start[i] = MapCoords(u4fgetc(con));
 
         for (i = 0; i < AREA_PLAYERS; i++)
-            map->area->player_start[i].y = u4fgetc(con);
+            cm->player_start[i].y = u4fgetc(con);
 
         u4fseek(con, 16L, SEEK_CUR);
     }
@@ -247,26 +249,26 @@ int mapLoadCon(Map *map) {
 /**
  * Loads a dungeon map from the 'dng' file
  */
-int mapLoadDng(Map *map) {
+int mapLoadDng(Dungeon *dungeon) {
     U4FILE *dng;
     unsigned int i;
 
-    dng = u4fopen(map->fname.c_str());
+    dng = u4fopen(dungeon->fname.c_str());
     if (!dng)
         errorFatal("unable to load map data");
 
     /* the map must be 11x11 to be read from an .CON file */
-    ASSERT(map->width == DNG_WIDTH, "map width is %d, should be %d", map->width, DNG_WIDTH);
-    ASSERT(map->height == DNG_HEIGHT, "map height is %d, should be %d", map->height, DNG_HEIGHT);
+    ASSERT(dungeon->width == DNG_WIDTH, "map width is %d, should be %d", dungeon->width, DNG_WIDTH);
+    ASSERT(dungeon->height == DNG_HEIGHT, "map height is %d, should be %d", dungeon->height, DNG_HEIGHT);
 
-    for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * map->levels); i++)
-        map->data.push_back(MapTile(u4fgetc(dng)));
+    for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * dungeon->levels); i++)
+        dungeon->data.push_back(MapTile(u4fgetc(dng)));
 
-    map->dungeon->room = NULL;
+    dungeon->room = NULL;
     /* read in the dungeon rooms */
     /* FIXME: needs a cleanup function to free this memory later */
-    map->dungeon->rooms = new DngRoom[map->dungeon->n_rooms];
-    u4fread(map->dungeon->rooms, sizeof(DngRoom) * map->dungeon->n_rooms, 1, dng);
+    dungeon->rooms = new DngRoom[dungeon->n_rooms];
+    u4fread(dungeon->rooms, sizeof(DngRoom) * dungeon->n_rooms, 1, dng);
 
     u4fclose(dng);
 

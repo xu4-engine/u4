@@ -87,7 +87,7 @@ void deathTimer(void *data) {
 }
 
 void deathRevive() {
-    while(!mapIsWorldMap(c->location->map) && c->location->prev != NULL) {
+    while(!c->location->map->isWorldMap() && c->location->prev != NULL) {
         gameExitToParentMap();        
     }
     

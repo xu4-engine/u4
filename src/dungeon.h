@@ -5,8 +5,7 @@
 #ifndef DUNGEON_H
 #define DUNGEON_H
 
-struct _Map;
-
+#include "combat.h"
 #include "map.h"
 #include "types.h"
 
@@ -44,15 +43,23 @@ typedef struct _DngRoom {
     unsigned char buffer[7];
 } DngRoom;
 
-typedef struct _Dungeon {
+class Dungeon : public Map {
+public:
+    Dungeon() {}
+
+    // Members
+    virtual string getName();
+
+    // Properties
+
     string name;
     int n_rooms;
-    struct _Map *room;
+    CombatMap *room;
     struct _DngRoom *rooms;
     struct _DngRoom *currentRoom;
     unsigned char party_startx[8];
     unsigned char party_starty[8];
-} Dungeon;
+};
 
 /**
  * Dungeon tokens
@@ -104,14 +111,16 @@ DungeonToken dungeonTokenForTile(MapTile tile);
 unsigned char dungeonSubTokenForTile(MapTile tile);
 DungeonToken dungeonCurrentToken();
 unsigned char dungeonCurrentSubToken();
-DungeonToken dungeonTokenAt(struct _Map *map, MapCoords coords);
-unsigned char dungeonSubTokenAt(struct _Map *map, MapCoords coords);
+DungeonToken dungeonTokenAt(Map *map, MapCoords coords);
+unsigned char dungeonSubTokenAt(Map *map, MapCoords coords);
 bool dungeonLoadRoom(Dungeon *dng, int room);
 void dungeonSearch(void);
 bool dungeonDrinkFountain(int player);
 bool dungeonTouchOrb(int player);
 bool dungeonHandleTrap(TrapType trap);
-bool dungeonLadderUpAt(struct _Map *map, MapCoords coords);
-bool dungeonLadderDownAt(struct _Map *map, MapCoords coords);
+bool dungeonLadderUpAt(Map *map, MapCoords coords);
+bool dungeonLadderDownAt(Map *map, MapCoords coords);
+
+bool isDungeon(Map *punknown);
 
 #endif

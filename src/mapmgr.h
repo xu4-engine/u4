@@ -12,7 +12,7 @@
  * various maps.
  */
 
-typedef xu4_map<int, Map, std::less<int> > MapList; // Contains a list of maps searchable by map id
+typedef xu4_map<int, Map*, std::less<int> > MapList; // Contains a list of maps searchable by map id
 
 #define MAP_NONE 255
 #define MAP_WORLD 0
@@ -72,8 +72,8 @@ typedef xu4_map<int, Map, std::less<int> > MapList; // Contains a list of maps s
 #define MAP_SHORSHIP_CON 54
 
 void mapMgrInit();
-struct _Map *mapMgrInitMap(void);
-void mapMgrRegister(struct _Map *map);
-struct _Map *mapMgrGetById(MapId id);
+Map *mapMgrInitMap(MapType type);
+void mapMgrRegister(Map *map);
+Map *mapMgrGetById(MapId id);
 
 #endif /* MAPMGR_H */
