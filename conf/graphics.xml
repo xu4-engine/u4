@@ -104,5 +104,46 @@
         <viewport x="8" y="8" width="44" height="44"/>
     </layout>
 
+    <tileanimset name="EGA">
+        <tileanim name="cityflag">
+            <transform type="invert" x="5" y="2" width="4" height="4"/>
+        </tileanim>
+        <tileanim name="lcbflag">
+            <transform type="invert" x="4" y="0" width="4" height="4"/>
+        </tileanim>
+        <tileanim name="castleflag">
+            <transform type="invert" x="4" y="0" width="4" height="4"/>
+        </tileanim>
+        <tileanim name="shipflagwest">
+            <transform type="invert" x="6" y="1" width="3" height="4"/>
+        </tileanim>
+        <tileanim name="shipflageast">
+            <transform type="invert" x="7" y="1" width="3" height="4"/>
+        </tileanim>
+        <tileanim name="fire">
+        </tileanim>
+    </tileanimset>
+
+    <tileanimset name="VGA">
+        <tileanim name="cityflag">
+            <transform type="invert" x="5" y="2" width="5" height="4"/>
+        </tileanim>
+        <tileanim name="lcbflag">
+            <transform type="invert" x="5" y="0" width="7" height="4"/>
+        </tileanim>
+        <tileanim name="castleflag">
+            <transform type="invert" x="5" y="0" width="4" height="4"/>
+        </tileanim>
+        <tileanim name="shipflagwest">
+            <transform type="invert" x="10" y="1" width="5" height="4"/>
+        </tileanim>
+        <tileanim name="shipflageast">
+            <transform type="invert" x="7" y="2" width="5" height="2"/>
+        </tileanim>
+        <tileanim name="fire">
+        </tileanim>
+    </tileanimset>
+
+
 </graphics>
    

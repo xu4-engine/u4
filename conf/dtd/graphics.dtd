@@ -4,8 +4,9 @@
 <!ENTITY % filetype '( raw | rle | lzw )'>
 <!ENTITY % fixup '( none | intro | introExtended | abyss )'>
 <!ENTITY % layouttype '( standard | gem )'>
+<!ENTITY % transformtype '( invert )'>
 
-<!ELEMENT graphics ( imageset | layout )+ >
+<!ELEMENT graphics ( imageset | layout | tileanimset )+ >
 
 <!ELEMENT imageset ( image+ ) >
 <!ATTLIST imageset name           NMTOKEN  #REQUIRED
@@ -38,3 +39,16 @@
                    y              NMTOKEN  #REQUIRED
                    width          NMTOKEN  #REQUIRED
                    height         NMTOKEN  #REQUIRED>
+
+<!ELEMENT tileanimset ( tileanim+ ) >
+<!ATTLIST tileanimset name        NMTOKEN  #REQUIRED>
+
+<!ELEMENT tileanim ( transform+ ) >
+<!ATTLIST tileanim name           NMTOKEN  #REQUIRED>
+
+<!ELEMENT transform EMPTY >
+<!ATTLIST transform type          %transformtype; #REQUIRED
+                    x             NMTOKEN  #IMPLIED
+                    y             NMTOKEN  #IMPLIED
+                    width         NMTOKEN  #IMPLIED
+                    height        NMTOKEN  #IMPLIED>
