@@ -21,7 +21,7 @@
     <monster id="13" name="Jester" tile="86" frames="2" basehp="48" level="9" good="true" wontattack="true"/>
     <monster id="14" name="Beggar" tile="88" frames="2" basehp="96" level="13" good="true" wontattack="true"/>
     <monster id="15" name="Child" tile="90" frames="2" basehp="48" level="10" good="true" wontattack="true"/>
-    <monster id="16" name="Bull" tile="92" frames="2" basehp="192" level="11" good="true"/>
+    <monster id="16" name="Bull" tile="92" frames="2" basehp="192" level="10" good="true"/>
     <monster id="17" name="Lord British" tile="94" frames="2" basehp="255" level="16" ranged="true" rangedhittile="magic" rangedmisstile="magic" good="true" wontattack="true"/>
 
     <!-- Water monsters -->
