@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include "error.h"
+
 #if defined(_WIN32)
     #define vsnprintf _vsnprintf
 #endif
