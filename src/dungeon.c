@@ -19,6 +19,36 @@
 #include "u4.h"
 
 /**
+ * Returns the dungeon token associated with the given dungeon tile
+ */
+DungeonToken dungeonTokenForTile(unsigned char tile) {
+    return (DungeonToken)(tile & 0xF0);
+}
+
+/**
+ * Return the dungeon sub-token associated with the given dungeon tile.
+ * For instance, for tile 0x91, returns FOUNTAIN_HEALING
+ * NOTE: This function will always need type-casting to the token type necessary
+ */
+unsigned char dungeonSubTokenForTile(unsigned char tile) {
+    return (tile & 0xF);
+}
+
+/**
+ * Returns the dungeon token for the current location
+ */
+DungeonToken dungeonCurrentToken() {
+    return dungeonTokenForTile(mapGetTileFromData(c->location->map, c->location->x, c->location->y, c->location->z));
+}
+
+/**
+ * Returns the dungeon sub-token for the current location
+ */
+unsigned char dungeonCurrentSubToken() {
+    return dungeonSubTokenForTile(mapGetTileFromData(c->location->map, c->location->x, c->location->y, c->location->z));
+}
+
+/**
  * Loads a dungeon room into map->dungeon->room
  */
 int dungeonLoadRoom(Dungeon *dng, int room) {
@@ -43,19 +73,19 @@ int dungeonLoadRoom(Dungeon *dng, int room) {
  * Handles 's'earching while in dungeons
  */
 void dungeonSearch(void) {
-    unsigned char dngTile = mapGetTileFromData(c->location->map, c->location->x, c->location->y, c->location->z);
+    DungeonToken token = dungeonCurrentToken();    
     const Annotation *a = annotationAt(c->location->x, c->location->y, c->location->z, c->location->map->id);
     const ItemLocation *item;
     if (a) 
-        dngTile = 0;
+        token = DUNGEON_CORRIDOR;
 
-    switch (dngTile & 0xF0) {
-    case 0x70: /* magic orb */
+    switch (token) {
+    case DUNGEON_MAGIC_ORB: /* magic orb */
         screenMessage("You find a Magical Ball...\nWho touches? ");
         gameGetPlayerForCommand(&dungeonTouchOrb, 0);
         break;
 
-    case 0x90: /* fountains */
+    case DUNGEON_FOUNTAIN: /* fountains */
         screenMessage("You find a Fountain.\nWho drinks? ");
         gameGetPlayerForCommand(&dungeonDrinkFountain, 0);
         break;
@@ -85,33 +115,43 @@ void dungeonSearch(void) {
  */
 int dungeonDrinkFountain(int player) {
     int retval = 1;
-    unsigned char dngTile = mapGetTileFromData(c->location->map, c->location->x, c->location->y, c->location->z);
+    FountainType type = (FountainType)dungeonCurrentSubToken();    
 
-    switch(dngTile & 0xF) {
-    case 0: /* plain fountain */
+    switch(type) {
+    /* plain fountain */
+    case FOUNTAIN_NORMAL: 
         screenMessage("\nHmmm--No Effect!\n");
         break;
-    case 1: /* healing fountain */
+
+    /* healing fountain */
+    case FOUNTAIN_HEALING: 
         if (playerHeal(c->saveGame, HT_FULLHEAL, player))
             screenMessage("\nAhh-Refreshing!\n");
         else screenMessage("\nHmmm--No Effect!\n");
         break;
-    case 2: /* acid fountain */
+    
+    /* acid fountain */
+    case FOUNTAIN_ACID:
         playerApplyDamage(&c->saveGame->players[player], 100); /* 100 damage to drinker */
         screenMessage("\nBleck--Nasty!\n");
         break;
-    case 3: /* cure fountain */
+
+    /* cure fountain */
+    case FOUNTAIN_CURE:
         if (playerHeal(c->saveGame, HT_CURE, player))
             screenMessage("\nHmmm--Delicious!\n");
         else screenMessage("\nHmmm--No Effect!\n");
         break;
-    case 4: /* poison fountain */
+
+    /* poison fountain */
+    case FOUNTAIN_POISON: 
         if (c->saveGame->players[player].status != STAT_POISONED) {
             playerApplyEffect(c->saveGame, EFFECT_POISON, player);
             screenMessage("\nArgh-Choke-Gasp!\n");
         }
         else screenMessage("\nHmm--No Effect!\n");
         break;
+
     default:
         ASSERT(0, "Invalid call to dungeonDrinkFountain: no fountain at current location");
         retval = 0;

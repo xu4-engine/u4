@@ -2131,8 +2131,8 @@ MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
 
     /* check to see if we're entering a dungeon room */
     if (retval & MOVE_SUCCEEDED) {
-        if ((mapGetTileFromData(c->location->map, c->location->x, c->location->y, c->location->z) & 0xF0) == 0xD0) {
-            int room = mapGetTileFromData(c->location->map, c->location->x, c->location->y, c->location->z) & 0xF;
+        if (dungeonCurrentToken() == DUNGEON_ROOM) {            
+            int room = (int)dungeonCurrentSubToken(); /* get room number */
         
             /**
              * recalculate room for the abyss -- there are 16 rooms for every 2 levels, 

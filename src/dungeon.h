@@ -51,6 +51,48 @@ typedef struct _Dungeon {
     unsigned char party_starty[8];
 } Dungeon;
 
+typedef enum _DungeonToken {
+    DUNGEON_CORRIDOR            = 0x00,
+    DUNGEON_LADDER_UP           = 0x10,
+    DUNGEON_LADDER_DOWN         = 0x20,
+    DUNGEON_LADDER_UPDOWN       = 0x30,
+    DUNGEON_CHEST               = 0x40,
+    DUNGEON_CEILING_HOLE        = 0x50,
+    DUNGEON_FLOOR_HOLE          = 0x60,    
+    DUNGEON_MAGIC_ORB           = 0x70,
+    DUNGEON_TRAP                = 0x80,
+    DUNGEON_FOUNTAIN            = 0x90,    
+    DUNGEON_FIELD               = 0xA0,
+    DUNGEON_ALTAR               = 0xB0,
+    DUNGEON_DOOR                = 0xC0,
+    DUNGEON_ROOM                = 0xD0,
+    DUNGEON_SECRET_DOOR         = 0xE0,
+    DUNGEON_WALL                = 0xF0,
+} DungeonToken;
+
+typedef enum _TrapType {
+    TRAP_WINDS                  = 0x0,
+    TRAP_FALLING_ROCK           = 0x1,
+    TRAP_PIT                    = 0xe
+} TrapType;
+
+typedef enum _FountainType {
+    FOUNTAIN_NORMAL             = 0x0,
+    FOUNTAIN_HEALING            = 0x1,
+    FOUNTAIN_ACID               = 0x2,
+    FOUNTAIN_CURE               = 0x3,
+    FOUNTAIN_POISON             = 0x4
+} FountainType;
+
+typedef enum _FieldType {
+    FIELD_POISON                = 0x0,
+    FIELD_ENERGY                = 0x1,
+    FIELD_FIRE                  = 0x2,
+    FIELD_SLEEP                 = 0x3
+} FieldType;
+
+DungeonToken dungeonCurrentToken();
+unsigned char dungeonCurrentSubToken();
 int dungeonLoadRoom(Dungeon *dng, int room);
 void dungeonSearch(void);
 int dungeonDrinkFountain(int player);
