@@ -9,22 +9,22 @@ void setEgaPalette(png_color *palette) {
         palette[i].red = r; \
         palette[i].green = g; \
         palette[i].blue = b;
-    setpalentry(0, 0x00, 0x00, 0x00);
-    setpalentry(1, 0x00, 0x00, 0x80);
-    setpalentry(2, 0x00, 0x80, 0x00);
-    setpalentry(3, 0x00, 0x80, 0x80);
-    setpalentry(4, 0x80, 0x00, 0x00);
-    setpalentry(5, 0x80, 0x00, 0x80);
-    setpalentry(6, 0x80, 0x80, 0x00);
-    setpalentry(7, 0xc3, 0xc3, 0xc3);
-    setpalentry(8, 0xa0, 0xa0, 0xa0);
-    setpalentry(9, 0x00, 0x00, 0xFF);
-    setpalentry(10, 0x00, 0xFF, 0x00);
-    setpalentry(11, 0x00, 0xFF, 0xFF);
-    setpalentry(12, 0xFF, 0x00, 0x00);
-    setpalentry(13, 0xFF, 0x00, 0xFF);
-    setpalentry(14, 0xFF, 0xFF, 0x00);
-    setpalentry(15, 0xFF, 0xFF, 0xFF);
+    setpalentry(0,  0,   0,   0);
+    setpalentry(1,  0,   0,   162);
+    setpalentry(2,  0,   162, 0);
+    setpalentry(3,  0,   162, 162);
+    setpalentry(4,  162, 0,   0);
+    setpalentry(5,  162, 0,   162);
+    setpalentry(6,  170, 85,  0);
+    setpalentry(7,  168, 168, 168);
+    setpalentry(8,  82,  82,  82);
+    setpalentry(9,  80,  80,  255);
+    setpalentry(10, 80,  255, 80);
+    setpalentry(11, 80,  255, 255);
+    setpalentry(12, 255, 80,  80);
+    setpalentry(13, 255, 80,  255);
+    setpalentry(14, 255, 255, 80);
+    setpalentry(15, 255, 255, 255);
     #undef setpalentry
 }
 
