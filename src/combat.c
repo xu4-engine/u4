@@ -60,8 +60,7 @@ void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned c
     combatInfo.placeParty = 1;
     combatInfo.camping = 0;
     combatInfo.winOrLose = 1;
-    combatInfo.dungeonRoom = 0;
-    combatInfo.newContext = 0;
+    combatInfo.dungeonRoom = 0;    
 
     /* new map for combat */
     if (mapid > 0) {
@@ -130,8 +129,8 @@ void combatInitCamping(void) {
  * Initializes dungeon room combat
  */
 void combatInitDungeonRoom(int room, Direction from) {
-    int offset, i;
-    combatInit(NULL, NULL, 0, 0);
+    int offset, i;    
+    combatInit(NULL, NULL, 0, 0);    
     
     if (c->location->context & CTX_DUNGEON) {
         Dungeon *dng = c->location->map->dungeon;
@@ -140,15 +139,12 @@ void combatInitDungeonRoom(int room, Direction from) {
             *party_y = &dng->rooms[room].party_north_start_y[0];
 
         /* load the dungeon room */
-        mapLoadDungeonRoom(dng, room);
+        dungeonLoadRoom(dng, room);
         combatInfo.newCombatMap = dng->room;
         combatInfo.winOrLose = 0;
         combatInfo.dungeonRoom = 0xD0 | room;
         combatInfo.exitDir = DIR_NONE;
         
-        /* maintain our dungeon context (don't display moons or wind direction) */
-        combatInfo.newContext = CTX_COMBAT | CTX_DUNGEON;
-
         /* load in monsters and monster start coordinates */
         for (i = 0; i < AREA_MONSTERS; i++) {
             if (dng->rooms[room].monster_tiles[i] > 0)
@@ -186,9 +182,6 @@ void combatBegin() {
     /* set the new combat map if a new map was provided */
     if (combatInfo.newCombatMap != NULL) {
         gameSetMap(c, combatInfo.newCombatMap, 1, NULL);
-        
-        if (combatInfo.newContext)
-            c->location->context = combatInfo.newContext;
     }
     
     /* place party members on the map */

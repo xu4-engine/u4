@@ -332,21 +332,6 @@ unsigned char mapGroundTileAt(const Map *map, int x, int y, int z) {
     return tile;
 }
 
-int mapLoadDungeonRoom(struct _Dungeon *dng, int room) {    
-    if (dng->room != NULL)
-        free(dng->room);
-    
-    dng->room = mapMgrInitMap();
-
-    dng->room->border_behavior = BORDER_FIXED;
-    dng->room->width = dng->room->height = 11;
-    dng->room->data = (dng->rooms + room)->map_data;
-    dng->room->music = MUSIC_COMBAT;        
-    dng->room->type = MAPTYPE_COMBAT;    
-    dng->room->flags |= NO_LINE_OF_SIGHT;    
-    return 1;
-}
-
 unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z) {
     unsigned char tile = mapGetTileFromData(map, x, y, z);
     unsigned char real = mapTileAt(map, x, y, z);

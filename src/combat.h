@@ -57,7 +57,6 @@ typedef struct _CombatInfo {
     unsigned char winOrLose;
     Direction exitDir;
     struct _Map *newCombatMap;
-    int newContext;    
 } CombatInfo;
 
 void attackFlash(int x, int y, unsigned char tile, int timeFactor);

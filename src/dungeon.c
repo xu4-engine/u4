@@ -15,6 +15,24 @@
 #include "stats.h"
 
 /**
+ * Loads a dungeon room into map->dungeon->room
+ */
+int dungeonLoadRoom(Dungeon *dng, int room) {
+    if (dng->room != NULL)
+        free(dng->room);    
+    
+    dng->room = mapMgrInitMap();
+
+    dng->room->border_behavior = BORDER_FIXED;
+    dng->room->width = dng->room->height = 11;
+    dng->room->data = dng->rooms[room].map_data;
+    dng->room->music = MUSIC_COMBAT;
+    dng->room->type = MAPTYPE_COMBAT;
+    dng->room->flags |= NO_LINE_OF_SIGHT;
+    return 1;
+}
+
+/**
  * Handles 's'earching while in dungeons
  */
 void dungeonSearch(void) {

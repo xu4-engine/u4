@@ -50,6 +50,7 @@ typedef struct _Dungeon {
     unsigned char party_starty[8];
 } Dungeon;
 
+int dungeonLoadRoom(Dungeon *dng, int room);
 void dungeonSearch(void);
 int dungeonDrinkFountain(int player);
 int dungeonTouchOrb(int player);

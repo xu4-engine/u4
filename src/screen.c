@@ -189,12 +189,12 @@ void screenUpdateMoons() {
     int trammelChar, feluccaChar;
 
     /* show "L?" for the dungeon level */
-    if (c->location->context & CTX_DUNGEON) {
+    if (c->location->context == CTX_DUNGEON) {
         screenShowChar('L', 11, 0);
-        screenShowChar('1'+c->location->z, 12, 0);
+        screenShowChar('1'+c->location->z, 12, 0);        
     }
-    /* show the current moons */
-    else {
+    /* show the current moons (non-combat) */
+    else if (c->location->context & CTX_NON_COMBAT) {
         trammelChar = (c->saveGame->trammelphase == 0) ?
             MOON_CHAR + 7 :
             MOON_CHAR + c->saveGame->trammelphase - 1;
@@ -203,22 +203,25 @@ void screenUpdateMoons() {
             MOON_CHAR + c->saveGame->feluccaphase - 1;
 
         screenShowChar(trammelChar, 11, 0);
-        screenShowChar(feluccaChar, 12, 0);
+        screenShowChar(feluccaChar, 12, 0);        
     }
+
     screenRedrawTextArea(11, 0, 2, 1);
 }
 
-void screenUpdateWind() {
-    screenEraseTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
+void screenUpdateWind() {   
     
     /* show the direction we're facing in the dungeon */
-    if (c->location->context & CTX_DUNGEON)
-        screenTextAt(WIND_AREA_X, WIND_AREA_Y, "Dir: %5s", getDirectionName(c->saveGame->orientation));
+    if (c->location->context == CTX_DUNGEON) {
+        screenEraseTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
+        screenTextAt(WIND_AREA_X, WIND_AREA_Y, "Dir: %5s", getDirectionName(c->saveGame->orientation));        
+    }
     /* show the wind direction */
-    else         
+    else if (c->location->context & CTX_NON_COMBAT) {
+        screenEraseTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
         screenTextAt(WIND_AREA_X, WIND_AREA_Y, "Wind %5s", getDirectionName((Direction) c->windDirection));
-        
-    screenRedrawTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);    
+    }
+    screenRedrawTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
 }
 
 void screenShowCursor() {
