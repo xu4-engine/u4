@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
     unsigned int i;
     FILE *saveGameFile, *monstersFile;
     char *scale = "2";
+    int fullScreen = 0;
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-scale") == 0 && argc > i + 1) {
@@ -38,11 +39,13 @@ int main(int argc, char *argv[]) {
         }
         else if (strcmp(argv[i], "-v") == 0)
             verbose++;
+        else if (strcmp(argv[i], "-f") == 0)
+            fullScreen = 1;
     }
 
     srand(time(NULL));
 
-    screenInit(scale);
+    screenInit(scale, fullScreen);
     musicInit();
 
     eventHandlerInit();

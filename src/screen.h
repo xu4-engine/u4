@@ -18,7 +18,7 @@ typedef enum {
     BKGD_MAX
 } BackgroundType;
 
-void screenInit(const char *screenScale);
+void screenInit(const char *screenScale, int fullScreen);
 void screenFixIntroScreen(const unsigned char *sigData);
 int screenLoadIntroAnimations();
 void screenFreeIntroAnimations();

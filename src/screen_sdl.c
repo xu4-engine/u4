@@ -46,6 +46,7 @@ int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const ch
 SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter);
 SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n);
+SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N);
 Uint32 getPixel(SDL_Surface *s, int x, int y);
 void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel);
 
@@ -60,7 +61,7 @@ extern int verbose;
 
 #define RLE_RUNSTART 02
 
-void screenInit(const char *screenScale) {
+void screenInit(const char *screenScale, int fullScreen) {
 
     /* set up scaling parameters */
     if (strcmp(screenScale, "2xBi") == 0) {
@@ -68,6 +69,11 @@ void screenInit(const char *screenScale) {
             printf("using 2xBi scaler\n");
         scale = 2;
         filterScaler = &screenScale2xBilinear;
+    } else if (strcmp(screenScale, "2xSaI") == 0) {
+        if (verbose)
+            printf("using 2xBi scaler\n");
+        scale = 2;
+        filterScaler = &screenScale2xSaI;
     } else {
         if (verbose)
             printf("using default scaler\n");
@@ -87,7 +93,7 @@ void screenInit(const char *screenScale) {
     }
     atexit(SDL_Quit);
 
-    screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT);
+    screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (fullScreen ? SDL_FULLSCREEN : 0));
     if (!screen) {
 	fprintf(stderr, "Unable to set video: %s\n", SDL_GetError());
 	exit(1);
@@ -889,7 +895,7 @@ SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n) {
 }
 
 SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
-    int i, x, y;
+    int i, x, y, xoff, yoff;
     SDL_Color a, b, c, d;
     SDL_Surface *dest;
     Uint32 rmask, gmask, bmask, amask;
@@ -914,46 +920,252 @@ SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
     if (!dest)
         return NULL;
 
+    /*
+     * Each pixel in the source image is translated into four in the
+     * destination.  The destination pixels are dependant on the pixel
+     * itself, and the three surrounding pixels (A is the original
+     * pixel):
+     * A B
+     * C D
+     * The four destination pixels mapping to A are calculated as
+     * follows:
+     * [   A   ] [  (A+B)/2  ]
+     * [(A+C)/2] [(A+B+C+D)/4]
+     */
+
     for (i = 0; i < n; i++) {
-        for (y = (src->h / n) * i; y < (src->h / n) * (i + 1) - 1; y++) {
-            for (x = 0; x < src->w - 1; x++) {
+        for (y = (src->h / n) * i; y < (src->h / n) * (i + 1); y++) {
+            if (y == (src->h / n) * (i + 1) - 1)
+                yoff = 0;
+            else
+                yoff = 1;
+
+            for (x = 0; x < src->w; x++) {
+                if (x == src->w - 1)
+                    xoff = 0;
+                else
+                    xoff = 1;
+
                 a = src->format->palette->colors[getPixel(src, x, y)];
-                b = src->format->palette->colors[getPixel(src, x + 1, y)];
-                c = src->format->palette->colors[getPixel(src, x, y + 1)];
-                d = src->format->palette->colors[getPixel(src, x + 1, y + 1)];
+                b = src->format->palette->colors[getPixel(src, x + xoff, y)];
+                c = src->format->palette->colors[getPixel(src, x, y + yoff)];
+                d = src->format->palette->colors[getPixel(src, x + xoff, y + yoff)];
 
                 putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
                 putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1));
                 putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1));
                 putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2));
             }
-            a = src->format->palette->colors[getPixel(src, x, y)];
-            b = src->format->palette->colors[getPixel(src, x, y)];
-            c = src->format->palette->colors[getPixel(src, x, y + 1)];
-            d = src->format->palette->colors[getPixel(src, x, y + 1)];
-            putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
-            putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1));
-            putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1));
-            putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2));
         }
-        for (x = 0; x < src->w - 1; x++) {
-            a = src->format->palette->colors[getPixel(src, x, y)];
-            b = src->format->palette->colors[getPixel(src, x + 1, y)];
-            c = src->format->palette->colors[getPixel(src, x, y)];
-            d = src->format->palette->colors[getPixel(src, x + 1, y)];
-            putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
-            putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1));
-            putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1));
-            putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2));
+    }
+
+    return dest;
+}
+
+int colorEqual(SDL_Color a, SDL_Color b) {
+    return 
+        a.r == b.r &&
+        a.g == b.g &&
+        a.b == b.b;
+}
+
+int _2xSaI_GetResult1(SDL_Color a, SDL_Color b, SDL_Color c, SDL_Color d) {
+    int x = 0;
+    int y = 0;
+    int r = 0;
+    if (colorEqual(a, c)) x++; else if (colorEqual(b, c)) y++;
+    if (colorEqual(a, d)) x++; else if (colorEqual(b, d)) y++;
+    if (x <= 1) r++; 
+    if (y <= 1) r--;
+    return r;
+}
+
+int _2xSaI_GetResult2(SDL_Color a, SDL_Color b, SDL_Color c, SDL_Color d) {
+    int x = 0; 
+    int y = 0;
+    int r = 0;
+    if (colorEqual(a, c)) x++; else if (colorEqual(b, c)) y++;
+    if (colorEqual(a, d)) x++; else if (colorEqual(b, d)) y++;
+    if (x <= 1) r--;
+    if (y <= 1) r++;
+    return r;
+}
+
+SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
+    int ii, x, y, xoff0, xoff1, xoff2, yoff0, yoff1, yoff2;
+    SDL_Color a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;
+    Uint32 prod0, prod1, prod2;
+    SDL_Surface *dest;
+    Uint32 rmask, gmask, bmask, amask;
+
+    /* this bilinear scaler works only with 8-bit source images, scaled by 2x */
+    assert(src->format->palette);
+    assert(scale == 2);
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+#else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+#endif
+
+    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, 32, rmask, gmask, bmask, amask);
+    if (!dest)
+        return NULL;
+
+    /*
+     * Each pixel in the source image is translated into four in the
+     * destination.  The destination pixels are dependant on the pixel
+     * itself, and the three surrounding pixels (A is the original
+     * pixel):
+     * A B
+     * C D
+     * The four destination pixels mapping to A are calculated as
+     * follows:
+     * [   A   ] [  (A+B)/2  ]
+     * [(A+C)/2] [(A+B+C+D)/4]
+     */
+
+    for (ii = 0; ii < N; ii++) {
+        for (y = (src->h / N) * ii; y < (src->h / N) * (ii + 1); y++) {
+            if (y == 0)
+                yoff0 = 0;
+            else
+                yoff0 = -1;
+            if (y == (src->h / N) * (ii + 1) - 1) {
+                yoff1 = 0;
+                yoff2 = 0;
+            }
+            else if (y == (src->h / N) * (ii + 1) - 2) {
+                yoff1 = 1;
+                yoff2 = 1;
+            }
+            else {
+                yoff1 = 1;
+                yoff2 = 2;
+            }
+                
+
+            for (x = 0; x < src->w; x++) {
+                if (x == 0)
+                    xoff0 = 0;
+                else
+                    xoff0 = -1;
+                if (x == src->w - 1) {
+                    xoff1 = 0;
+                    xoff2 = 0;
+                }
+                else if (x == src->w - 2) {
+                    xoff1 = 1;
+                    xoff2 = 1;
+                }
+                else {
+                    xoff1 = 1;
+                    xoff2 = 2;
+                }
+                
+
+                a = src->format->palette->colors[getPixel(src, x, y)];
+                b = src->format->palette->colors[getPixel(src, x + xoff1, y)];
+                c = src->format->palette->colors[getPixel(src, x, y + yoff1)];
+                d = src->format->palette->colors[getPixel(src, x + xoff1, y + yoff1)];
+
+                e = src->format->palette->colors[getPixel(src, x, y + yoff0)];
+                f = src->format->palette->colors[getPixel(src, x + xoff1, y + yoff0)];
+                g = src->format->palette->colors[getPixel(src, x + xoff0, y)];
+                h = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff1)];
+                
+                i = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff0)];
+                j = src->format->palette->colors[getPixel(src, x + xoff2, y + yoff0)];
+                k = src->format->palette->colors[getPixel(src, x + xoff0, y)];
+                l = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff1)];
+
+                m = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff2)];
+                n = src->format->palette->colors[getPixel(src, x, y + yoff2)];
+                o = src->format->palette->colors[getPixel(src, x + xoff1, y + yoff2)];
+                p = src->format->palette->colors[getPixel(src, x + xoff2, y + yoff2)];
+
+                if (colorEqual(a, d) && !colorEqual(b, c)) {
+                    if ((colorEqual(a, e) && colorEqual(b, l)) ||
+                        (colorEqual(a, c) && colorEqual(a, f) && !colorEqual(b, e) && colorEqual(b, j)))
+                        prod0 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                    else
+                        prod0 = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
+                    if ((colorEqual(a, g) && colorEqual(c, o)) ||
+                        (colorEqual(a, b) && colorEqual(a, h) && !colorEqual(g, c) && colorEqual(c, m)))
+                        prod1 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                    else
+                        prod1 = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+                    
+                    prod2 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                }
+                else if (colorEqual(b, c) && !colorEqual(a, d)) {
+                    if ((colorEqual(b, f) && colorEqual(a, h)) ||
+                        (colorEqual(b, e) && colorEqual(b, d) && !colorEqual(a, f) && colorEqual(a, i)))
+                        prod0 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
+                    else
+                        prod0 = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
+                    if ((colorEqual(c, h) && colorEqual(a, f)) ||
+                        (colorEqual(c, g) && colorEqual(c, d) && !colorEqual(a, h) && colorEqual(a, i)))
+                        prod1 = SDL_MapRGB(dest->format, c.r, c.g, c.b);
+                    else
+                        prod1 = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+                    prod2 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
+                }
+                else if (colorEqual(a, d) && colorEqual(b, c)) {
+                    if (colorEqual(a, b)) {
+                        prod0 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                        prod1 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                        prod2 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                    }
+                    else {
+                        int r = 0;
+                        prod0 = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
+                        prod1 = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+
+                        r += _2xSaI_GetResult1(a, b, g, e);
+                        r += _2xSaI_GetResult2(b, a, k, f);
+                        r += _2xSaI_GetResult2(b, a, h, n);
+                        r += _2xSaI_GetResult1(a, b, l, o);
+
+                        if (r > 0)
+                            prod2 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                        else if (r < 0)
+                            prod2 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
+                        else
+                            prod2 = SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2);
+                    }
+                }
+                else {
+                    if (colorEqual(a, c) && colorEqual(a, f) && !colorEqual(b, e) && colorEqual(b, j))
+                        prod0 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                    else if (colorEqual(b, e) && colorEqual(b, d) && !colorEqual(a, f) && colorEqual(a, i))
+                        prod0 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
+                    else
+                        prod0 = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
+
+                    if (colorEqual(a, b) && colorEqual(a, h) && !colorEqual(g, c) && colorEqual(c, m))
+                        prod1 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                    else if (colorEqual(c, g) && colorEqual(c, d) && !colorEqual(a, h) && colorEqual(a, i))
+                        prod1 = SDL_MapRGB(dest->format, c.r, c.g, c.b);
+                    else
+                        prod1 = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+
+                    prod2 = SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2);
+                }
+
+
+                putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
+                putPixel(dest, x * 2 + 1, y * 2, prod0);
+                putPixel(dest, x * 2, y * 2 + 1, prod1);
+                putPixel(dest, x * 2 + 1, y * 2 + 1, prod2);
+            }
         }
-        a = src->format->palette->colors[getPixel(src, x, y)];
-        b = src->format->palette->colors[getPixel(src, x, y)];
-        c = src->format->palette->colors[getPixel(src, x, y)];
-        d = src->format->palette->colors[getPixel(src, x, y)];
-        putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
-        putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1));
-        putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1));
-        putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2));
     }
 
     return dest;
