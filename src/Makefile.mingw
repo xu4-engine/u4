@@ -36,8 +36,6 @@ install: u4.exe
 	cp ../conf/dtd/*.dtd $(U4PATH)/dtd/
 	cp SDL/lib/SDL.dll $(U4PATH)
 	cp SDL/lib/SDL_mixer.dll $(U4PATH)
-	cp /mingw/bin/iconv.dll $(U4PATH)
-	cp /mingw/bin/libxml2.dll $(U4PATH)
 
 tools: utils
 	mkdir -p $(U4PATH)
@@ -48,7 +46,6 @@ tools: utils
 	strip rleenc.exe -o $(U4PATH)/tools/rleenc.exe
 	strip rledec.exe -o $(U4PATH)/tools/rledec.exe
 	strip tlkconv.exe -o $(U4PATH)/tools/tlkconv.exe
-	cp /mingw/bin/libxml2.dll $(U4PATH)/tools
 
 dist:  install tools
 	cp ../AUTHORS $(U4PATH)/AUTHORS.txt

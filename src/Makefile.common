@@ -78,7 +78,7 @@ rledec$(EXEEXT) : util/rledec.o rle.o util/pngconv.o
 	$(CC) $(CFLAGS) -o rledec util/rledec.o rle.o util/pngconv.o -lpng -lz
 
 tlkconv$(EXEEXT) : util/tlkconv.o
-	$(CC) $(CFLAGS) -o tlkconv util/tlkconv.o -lxml2
+	$(CC) $(CFLAGS) -o tlkconv util/tlkconv.o $(shell xml2-config --libs)
 
 clean:: cleanutil
 	rm -rf *~ */*~ $(OBJS) $(MAIN)
