@@ -39,6 +39,7 @@
 #include "person.h"
 #include "player.h"
 #include "portal.h"
+#include "progress_bar.h"
 #include "savegame.h"
 #include "screen.h"
 #include "settings.h"
@@ -248,8 +249,17 @@ int AlphaActionController::get(char lastValidLetter, const string &prompt, Event
 
 void gameInit() {
     FILE *saveGameFile, *monstersFile;    
+    Image *screen = imageMgr->get("screen")->image;
 
     TRACE(gameDbg, "gameInit() running.");
+
+    screen->fillRect(0, 0, screen->width(), screen->height(), 0, 0, 0);
+    screenTextAt(13, 11, "Loading Game...");    
+    screenRedrawScreen();    
+    ProgressBar pb((320/2) - (200/2), (200/2), 200, 20, 0, 4);
+    pb.setBorderColor(240, 240, 240);
+    pb.setBorderWidth(1);
+    pb.setColor(0, 0, 128);
 
     /* initialize the global game context */
     c = new Context;
@@ -270,12 +280,12 @@ void gameInit() {
     c->opacity = 1;
     c->lastCommandTime = time(NULL);
     c->lastShip = NULL;
-    
+
     /* set the map to the world map by default */
     gameSetMap(mapMgr->get(MAP_WORLD), 0, NULL);  
     c->location->map->clearObjects();
 
-    TRACE_LOCAL(gameDbg, "World map set.");
+    TRACE_LOCAL(gameDbg, "World map set."); pb++;
 
     /* load in the save game */
     saveGameFile = saveGameOpenForReading();
@@ -285,7 +295,7 @@ void gameInit() {
     } else
         errorFatal("no savegame found!");
 
-    TRACE_LOCAL(gameDbg, "Save game loaded.");
+    TRACE_LOCAL(gameDbg, "Save game loaded."); pb++;
 
     /* initialize our party */
     c->party = new Party(c->saveGame);    
@@ -323,7 +333,7 @@ void gameInit() {
     if (MAP_IS_OOB(c->location->map, c->location->coords))
         c->location->coords.putInBounds(c->location->map);    
 
-    TRACE_LOCAL(gameDbg, "Loading monsters.");
+    TRACE_LOCAL(gameDbg, "Loading monsters."); pb++;
 
     /* load in creatures.sav */
     monstersFile = saveGameMonstersOpenForReading(MONSTERS_SAV_BASE_FILENAME);
@@ -352,6 +362,8 @@ void gameInit() {
     playerSetPartyStarvingCallback(&gamePartyStarving);    
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
 
+    pb++;
+
     musicMgr->play();
     imageMgr->get(BKGD_BORDERS)->image->draw(0, 0);
     c->stats->update(); /* draw the party stats */
@@ -359,7 +371,7 @@ void gameInit() {
     screenMessage("Press Alt-h for help\n");    
     screenPrompt();    
 
-    TRACE_LOCAL(gameDbg, "Settings up reagent menu.");
+    TRACE_LOCAL(gameDbg, "Settings up reagent menu."); 
 
     /* reagents menu */    
     spellMixMenu.add(0, getReagentName((Reagent)0), STATS_AREA_X+2, 0);
@@ -391,7 +403,7 @@ void gameInit() {
     script->addProvider("party", c->party);
     script->addProvider("context", c);
 
-    TRACE(gameDbg, "gameInit() completed successfully.");
+    TRACE(gameDbg, "gameInit() completed successfully."); 
 }
 
 /**

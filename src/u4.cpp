@@ -22,6 +22,7 @@
 #include "intro.h"
 #include "music.h"
 #include "person.h"
+#include "progress_bar.h"
 #include "screen.h"
 #include "settings.h"
 #include "sound.h"
@@ -41,7 +42,7 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
     unsigned int i;
-    int skipIntro = 0;
+    int skipIntro = 0;    
 
 #if defined(MACOSX)
     osxInit(argv[0]);
@@ -76,28 +77,39 @@ int main(int argc, char *argv[]) {
 
     perf.start();    
     screenInit();
-    screenTextAt(15, 12, "Loading...");
+    ProgressBar pb((320/2) - (200/2), (200/2), 200, 20, 0, 4);
+    pb.setBorderColor(240, 240, 240);
+    pb.setColor(0, 0, 128);
+    pb.setBorderWidth(1);    
+
+    screenTextAt(15, 11, "Loading...");
     screenRedrawScreen();
     perf.end("Screen Initialization");
+    ++pb;
+
+    intro = new IntroController();    
 
     perf.start();
     soundInit();    
     perf.end("Misc Initialization");
+    ++pb;
 
     perf.start();
     Tileset::loadAll();
     perf.end("Tileset::loadAll()");
+    ++pb;
 
     perf.start();
     creatures.loadInfoFromXml();
     perf.end("CreatureMgr::loadInfoFromXml()");
+    ++pb;
 
     intro = new IntroController();
     if (!skipIntro) {
         /* do the intro */
         perf.start();
         intro->init();
-        perf.end("introInit()");
+        perf.end("introInit()");        
         
         /* give a performance report */
         if (settings.debug)
