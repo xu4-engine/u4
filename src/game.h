@@ -59,5 +59,6 @@ int fireAtCoord(int x, int y, int distance, void *data);
 int gameDirectionalAction(Direction dir, CoordActionInfo *info);
 void gameDamageParty(int minDamage, int maxDamage);
 void gameDamageShip(int minDamage, int maxDamage);
+void gameMonsterCleanup(void);
 
 #endif

@@ -447,7 +447,7 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
            just a normal, docile person in town or an inanimate object */
         if ((obj->objType != OBJECT_UNKNOWN) && 
            ((obj->objType != OBJECT_MONSTER) || monsterWillAttack(obj->monster)) &&
-           ((obj->objType != OBJECT_PERSON) || (obj->person->movement_behavior == MOVEMENT_ATTACK_AVATAR))) {
+           ((obj->objType != OBJECT_PERSON) || (obj->movement_behavior == MOVEMENT_ATTACK_AVATAR))) {
             
             if (mapMovementDistance(obj->x, obj->y, avatarx, avatary) == 1) {
                 attacker = obj;

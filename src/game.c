@@ -463,6 +463,9 @@ int gameBaseKeyHandler(int key, void *data) {
     case U4_LEFT:
     case U4_RIGHT:
         moveAvatar(keyToDirection(key), 1);
+        /* horse doubles speed */
+        if (tileIsHorse(c->saveGame->transport) && c->horseSpeed)
+            moveAvatar(keyToDirection(key), 0);
         break;
 
     case 3:                     /* ctrl-C */
@@ -1133,7 +1136,9 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
  */
 int attackAtCoord(int x, int y, int distance, void *data) {
     Object *obj, *under;    
-    unsigned char ground;   
+    unsigned char ground;
+    Object *temp;
+    Monster *m;
 
     /* attack failed: finish up */
     if (x == -1 && y == -1) {
@@ -1157,6 +1162,20 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
+
+    /* You're attacking a townsperson!  Alert the guards! */
+    if ((obj->objType != OBJECT_MONSTER) && (obj->movement_behavior != MOVEMENT_ATTACK_AVATAR)) {
+        
+        /* switch all the guards to attack mode */
+        for (temp = c->location->map->objects; temp; temp = temp->next) {            
+            m = monsterForTile(temp->tile);
+            if (m && (m->id == GUARD_ID))
+                temp->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+        }
+
+        /* FIXME: I'm sure there are karma implications here */
+    }
+
     combatBegin(ground, c->saveGame->transport, obj);
     return 1;
 }
@@ -1958,7 +1977,7 @@ int moveAvatar(Direction dir, int userEvent) {
 
     dirMove(dir, &newx, &newy);
 
-    if (!settings->filterMoveMessages) {
+    if (!settings->filterMoveMessages && userEvent) {
         if (tileIsShip(c->saveGame->transport))
             screenMessage("Sail %s!\n", getDirectionName(dir));
         else if (!tileIsBalloon(c->saveGame->transport))
@@ -2270,17 +2289,10 @@ void gameCheckMoongates() {
 
 void gameCheckRandomMonsters() {
     int x, y, dx, dy, t;
-    const Monster *monster;
-    Object *obj;
+    const Monster *monster;    
 
     /* remove monsters that are too far away from the avatar */
-
-    for (obj = c->location->map->objects; obj; obj = obj->next)
-    {
-        if ((obj->objType == OBJECT_MONSTER) && (obj->z == c->location->z) &&
-            mapDistance(obj->x, obj->y, c->location->x, c->location->y) > MAX_MONSTER_DISTANCE)
-            mapRemoveObject(c->location->map, obj);            
-    }
+    gameMonsterCleanup();
     
     /* If there are too many monsters already,
        or we're not on the world map, don't worry about it! */
@@ -2311,7 +2323,7 @@ void gameCheckRandomMonsters() {
     if ((monster = monsterRandomForTile(mapTileAt(c->location->map, x, y, c->location->z))) == 0)
         return;
 
-    obj = mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);    
+    mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);
 }
 
 void gameFixupMonsters() {
@@ -2433,5 +2445,20 @@ void gameDamageShip(int minDamage, int maxDamage) {
             c->saveGame->shiphull = 0;
         statsUpdate();
         gameCheckHullIntegrity();
+    }
+}
+
+void gameMonsterCleanup(void) {
+    Object *obj, *prev;
+    
+    for (obj = c->location->map->objects, prev = obj; obj != NULL; prev = obj)
+    {
+        if ((obj->objType == OBJECT_MONSTER) && (obj->z == c->location->z) &&
+            mapDistance(obj->x, obj->y, c->location->x, c->location->y) > MAX_MONSTER_DISTANCE) {
+            /* make sure our pointer doesn't get destroyed by mapRemoveObject */
+            obj = obj->next;
+            mapRemoveObject(c->location->map, obj);
+        }
+        else obj = obj->next;
     }
 }

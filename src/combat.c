@@ -61,7 +61,7 @@ void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);
 int combatAttackAtCoord(int x, int y, int distance, void *data);
 int combatReturnWeaponToOwner(int x, int y, int distance, void *data);
-int combatInitialNumberOfMonsters(unsigned char monster);
+int combatInitialNumberOfMonsters(Monster *monster);
 int combatIsWon(void);
 int combatIsLost(void);
 void combatEnd(void);
@@ -72,6 +72,7 @@ int movePartyMember(Direction dir, int member);
 void combatBegin(unsigned char partytile, unsigned short transport, Object *monster) {
     int i, j;
     int nmonsters;
+    Monster *m = (monster->objType == OBJECT_MONSTER) ? monster->monster : monsterForTile(monster->tile);
 
     monsterObj = monster;
 
@@ -98,7 +99,7 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
     focus = i;
     party[i]->hasFocus = 1;
 
-    nmonsters = combatInitialNumberOfMonsters(monster->tile);
+    nmonsters = combatInitialNumberOfMonsters(m);
     for (i = 0; i < AREA_MONSTERS; i++)
         combat_monsters[i] = NULL;
     for (i = 0; i < nmonsters; i++) {
@@ -511,10 +512,10 @@ int combatReturnWeaponToOwner(int x, int y, int distance, void *data) {
 /**
  * Generate the number of monsters in a group.
  */
-int combatInitialNumberOfMonsters(unsigned char monster) {
+int combatInitialNumberOfMonsters(Monster *monster) {
     int nmonsters;
 
-    if (mapIsWorldMap(c->location->prev->map)) {
+    if (mapIsWorldMap(c->location->map)) {
         nmonsters = (rand() % 8) + 1;
         if (nmonsters == 1) {
             /* file offset 116DDh, 36 bytes, indexed by monster number */
@@ -525,10 +526,8 @@ int combatInitialNumberOfMonsters(unsigned char monster) {
         while (nmonsters > 2 * c->saveGame->members) {
             nmonsters = (rand() % 16) + 1;
         }
-    }
-
-    else {
-        if (monster == GUARD_TILE)
+    } else {
+        if (monster->id == GUARD_ID)
             nmonsters = c->saveGame->members * 2;
         else
             nmonsters = 1;
