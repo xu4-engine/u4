@@ -61,6 +61,7 @@ typedef struct _Context {
     Aura aura;
     int auraDuration;
     int horseSpeed;
+    long lastCommandTime;
 } Context;
 
 extern Context *c;
