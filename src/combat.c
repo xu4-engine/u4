@@ -1398,9 +1398,9 @@ int movePartyMember(Direction dir, int userEvent) {
             /* see if we're on a trigger */
             if (triggers[i].x == newx && triggers[i].y == newy) {
                 /* change the tiles! */
-                if (triggers[i].change_x1 && triggers[i].change_y1)
+                if (triggers[i].change_x1 || triggers[i].change_y1)
                     mapSetTileData(c->location->map, triggers[i].change_x1, triggers[i].change_y1, c->location->z, triggers[i].tile);                                    
-                if (triggers[i].change_x2 && triggers[i].change_y2) 
+                if (triggers[i].change_x2 || triggers[i].change_y2) 
                     mapSetTileData(c->location->map, triggers[i].change_x2, triggers[i].change_y2, c->location->z, triggers[i].tile);
             }
         }
