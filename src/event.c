@@ -207,6 +207,23 @@ void *eventHandlerGetKeyHandlerData() {
 }
 
 /**
+ * Returns true if the key or key combination is always ignored by xu4
+ */
+int eventHandlerIsKeyIgnored(int key) {
+    switch(key) {
+    case U4_RIGHT_SHIFT:
+    case U4_LEFT_SHIFT:
+    case U4_RIGHT_CTRL:
+    case U4_LEFT_CTRL:    
+    case U4_RIGHT_ALT:
+    case U4_LEFT_ALT:
+    case U4_TAB:
+        return 1;
+    default: return 0;
+    }
+}
+
+/**
  * A base key handler that should be valid everywhere.
  */
 int keyHandlerDefault(int key, void *data) {

@@ -5,16 +5,23 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#define U4_UP '['
-#define U4_DOWN '/'
-#define U4_LEFT ';'
-#define U4_RIGHT '\''
-#define U4_BACKSPACE 8
-#define U4_SPACE ' '
-#define U4_ESC 27
-#define U4_ENTER 13
-#define U4_ALT 128
-#define U4_FKEY 282
+#define U4_UP           '['
+#define U4_DOWN         '/'
+#define U4_LEFT         ';'
+#define U4_RIGHT        '\''
+#define U4_BACKSPACE    8
+#define U4_TAB          9
+#define U4_SPACE        ' '
+#define U4_ESC          27
+#define U4_ENTER        13
+#define U4_ALT          128
+#define U4_FKEY         282
+#define U4_RIGHT_SHIFT  303
+#define U4_LEFT_SHIFT   304
+#define U4_RIGHT_CTRL   305
+#define U4_LEFT_CTRL    306
+#define U4_RIGHT_ALT    307
+#define U4_LEFT_ALT     308
 
 extern int eventTimerGranularity;
 
@@ -59,6 +66,7 @@ void eventHandlerPopKeyHandler();
 void eventHandlerSetKeyHandler(KeyHandler kh);
 KeyHandler eventHandlerGetKeyHandler();
 void *eventHandlerGetKeyHandlerData();
+int eventHandlerIsKeyIgnored(int key);
 int eventKeyboardSetKeyRepeat(int delay, int interval);
 
 int keyHandlerDefault(int key, void *data);
