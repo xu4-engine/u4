@@ -64,7 +64,7 @@ void imageSetPaletteFromImage(Image *im, Image *src) {
 }
 
 void imagePutPixel(Image *im, int x, int y, int r, int g, int b) {
-    imagePutPixelIndex(im, x, y, SDL_MapRGB(im->surface->format, r, g, b));
+    imagePutPixelIndex(im, x, y, SDL_MapRGB(im->surface->format, (Uint8)r, (Uint8)g, (Uint8)b));
 }
 
 void imagePutPixelIndex(Image *im, int x, int y, unsigned int index) {
@@ -156,7 +156,7 @@ void imageFillRect(Image *im, int x, int y, int w, int h, int r, int g, int b) {
     SDL_Rect dest;
     Uint32 pixel;
 
-    pixel = SDL_MapRGB(im->surface->format, r, g, b);
+    pixel = SDL_MapRGB(im->surface->format, (Uint8)r, (Uint8)g, (Uint8)b);
     dest.x = x;
     dest.y = y;
     dest.w = w;
