@@ -164,6 +164,23 @@ TileAnimationStyle tileGetAnimationStyle(unsigned char tile) {
     return ANIM_NONE;
 }
 
+void tileAdvanceFrame(unsigned char *tile) {
+    TileAnimationStyle style = tileGetAnimationStyle(*tile);
+
+    if (style == ANIM_TWOFRAMES) {
+        if ((*tile) % 2)
+            (*tile)--;
+        else
+            (*tile)++;
+    }
+    else if (style == ANIM_FOURFRAMES) {
+        if ((*tile) % 4 == 3)
+            (*tile) &= ~(0x3);
+        else
+            (*tile)++;
+    }
+}
+
 int tileIsOpaque(unsigned char tile) {
     if (tile == 6 ||            /* forest */
         tile == 8 ||            /* mountains */

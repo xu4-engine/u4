@@ -49,6 +49,7 @@ void tileSetDirection(unsigned short *tile, unsigned int dir);
 int tileCanTalkOver(unsigned char tile);
 TileEffect tileGetEffect(unsigned char tile);
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile);
+void tileAdvanceFrame(unsigned char *tile);
 int tileIsOpaque(unsigned char tile);
 
 #endif
