@@ -247,10 +247,10 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         z = 0;
     }
 
-    /* If we don't want to save the location, then just pop the current location,
+    /* If we don't want to save the location, then just return to the previous location,
        as there may still be ones in the stack we want to keep */
     if (!saveLocation)
-        locationFree(&ct->location);
+        gameExitToParentMap(ct);
     
     switch (map->type) {
     case MAP_DUNGEON:
@@ -1843,9 +1843,9 @@ int gamePeerCity(int city, void *data) {
 /**
  * Wait for space bar to return from gem mode and returns map to normal
  */
-int peerCityHandleChoice(char choice) {    
+int peerCityHandleChoice(char choice) {
     eventHandlerPopKeyHandler();
-    locationFree(&c->location);
+    gameExitToParentMap(c);    
 
     c->location->viewMode = VIEW_NORMAL; 
     (*c->location->finishTurn)();
