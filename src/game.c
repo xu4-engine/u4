@@ -932,7 +932,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'n':
-        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &newOrderForPlayer);
+        gameGetPlayerForCommand(&newOrderForPlayer, 1);
         screenMessage("New Order!\nExchange # ");
         break;
 
@@ -2439,6 +2439,8 @@ int newOrderTemp;
  * use for the second player number.
  */
 int newOrderForPlayer(int player) {
+    GetPlayerInfo *playerInfo;
+
     if (player == 0) {
         screenMessage("%s, You must lead!\n", c->saveGame->players[0].name);
         (*c->location->finishTurn)();
@@ -2448,7 +2450,10 @@ int newOrderForPlayer(int player) {
     screenMessage("    with # ");
 
     newOrderTemp = player;
-    eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &newOrderForPlayer2);
+    playerInfo = (GetPlayerInfo *) malloc(sizeof(GetPlayerInfo));
+    playerInfo->canBeDisabled = 1;
+    playerInfo->command = newOrderForPlayer2;
+    eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, playerInfo);
 
     return 1;
 }
