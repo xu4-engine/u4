@@ -17,61 +17,108 @@
 #include "error.h"
 #include "filesystem.h"
 #include "map.h"
+#include "maploader.h"
 #include "object.h"
 #include "person.h"
 #include "portal.h"
-#include "screen.h"
 #include "tilemap.h"
 #include "tileset.h"
 #include "u4file.h"
 #include "utils.h"
 
-int mapLoadCity(City *map);
-int mapLoadCon(Map *map);
-int mapLoadDng(Dungeon *map);
-int mapLoadWorld(Map *map);
-int mapLoadData(Map *map, U4FILE *f);
+std::map<MapType, MapLoader *> *MapLoader::loaderMap = NULL;
 
-/**
- * Load map data from into map object.  The metadata in the map must
- * already be set.
- */
-int mapLoad(Map *map) {
-    switch (map->type) {
-    case MAPTYPE_WORLD:
-        return mapLoadWorld(map);
-        break;
+MapLoader *CityMapLoader::instance = MapLoader::registerLoader(new CityMapLoader, MAPTYPE_CITY);
+MapLoader *ConMapLoader::instance = MapLoader::registerLoader(MapLoader::registerLoader(new ConMapLoader, MAPTYPE_COMBAT), MAPTYPE_SHRINE);
+MapLoader *DngMapLoader::instance = MapLoader::registerLoader(new DngMapLoader, MAPTYPE_DUNGEON);
+MapLoader *WorldMapLoader::instance = MapLoader::registerLoader(new WorldMapLoader, MAPTYPE_WORLD);
 
-    case MAPTYPE_CITY:
-        return mapLoadCity(dynamic_cast<City*>(map));
-        break;
+MapLoader *MapLoader::getLoader(MapType type) {
+    ASSERT(loaderMap != NULL, "loaderMap not initialized");
+    if (loaderMap->find(type) == loaderMap->end())
+        return NULL;
+    return (*loaderMap)[type];
+}
 
-    case MAPTYPE_SHRINE:
-    case MAPTYPE_COMBAT:
-        return mapLoadCon(map);
-        break;
+MapLoader *MapLoader::registerLoader(MapLoader *loader, MapType type) {
+    if (loaderMap == NULL) {
+        loaderMap = new std::map<MapType, MapLoader *>;
+    }
+    (*loaderMap)[type] = loader;
+    return loader;
+}
 
-    case MAPTYPE_DUNGEON:
-        return mapLoadDng(dynamic_cast<Dungeon*>(map));
-        break;
+
+int MapLoader::loadData(Map *map, U4FILE *f) {
+    unsigned int x, xch, y, ych;
+
+    TileIndexMap* tileMap = TileMap::get("base");
+    
+    /* allocate the space we need for the map data */
+    map->data.resize(map->height * map->width);
+
+    if (map->chunk_height == 0)
+        map->chunk_height = map->height;
+    if (map->chunk_width == 0)
+        map->chunk_width = map->width;
+
+    clock_t total = 0;
+    clock_t start = clock();
+    for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
+        for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
+            for(y = 0; y < map->chunk_height; ++y) {
+                for(x = 0; x < map->chunk_width; ++x) {
+
+                    if (isChunkCompressed(map, ych * map->chunk_width + xch))
+                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = Tileset::findTileByName("water")->id;
+
+                    else {
+                        int c = u4fgetc(f);
+                        if (c == EOF)
+                            return 0;
+                      
+                        clock_t s = clock();
+                        MapTile mt = (*tileMap)[c];
+                        total += clock() - s;
+
+                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt;
+                    }
+                }
+            }
+        }
+    }
+    clock_t end = clock();
+    
+    FILE *file = FileSystem::openFile("debug/mapLoadData.txt", "wt");
+    if (file) {
+        fprintf(file, "%d msecs total\n%d msecs used by Tile::translate()", int(end - start), int(total));
+        fclose(file);
     }
 
+    return 1;
+}
+
+int MapLoader::isChunkCompressed(Map *map, int chunk) {
+    CompressedChunkList::iterator i;    
+
+    for (i = map->compressed_chunks.begin(); i != map->compressed_chunks.end(); i++) {
+        if (chunk == *i)
+            return 1;
+    }
     return 0;
 }
 
 /**
  * Load city data from 'ult' and 'tlk' files.
  */
-int mapLoadCity(City *city) {
-    U4FILE *ult, *tlk;
-    unsigned char conv_idx[CITY_MAX_PERSONS];
-    unsigned char c;
+int CityMapLoader::load(Map *map) {
+    City *city = dynamic_cast<City*>(map);
+
     unsigned int i, j;
-    char tlk_buffer[288];
     Person *people[CITY_MAX_PERSONS];    
 
-    ult = u4fopen(city->fname);
-    tlk = u4fopen(city->tlk_fname);
+    U4FILE *ult = u4fopen(city->fname);
+    U4FILE *tlk = u4fopen(city->tlk_fname);
     if (!ult || !tlk)
         errorFatal("unable to load map data");
 
@@ -79,7 +126,7 @@ int mapLoadCity(City *city) {
     ASSERT(city->width == CITY_WIDTH, "map width is %d, should be %d", city->width, CITY_WIDTH);
     ASSERT(city->height == CITY_HEIGHT, "map height is %d, should be %d", city->height, CITY_HEIGHT);
 
-    if (!mapLoadData(dynamic_cast<Map*>(city), ult))
+    if (!loadData(city, ult))
         return 0;
 
     /* Properly construct people for the city */       
@@ -99,7 +146,7 @@ int mapLoadCity(City *city) {
         u4fgetc(ult);           /* read redundant startx/starty */
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        c = u4fgetc(ult);
+        unsigned char c = u4fgetc(ult);
         if (c == 0)
             people[i]->setMovementBehavior(MOVEMENT_FIXED);
         else if (c == 1)
@@ -112,6 +159,7 @@ int mapLoadCity(City *city) {
             return 0;        
     }
 
+    unsigned char conv_idx[CITY_MAX_PERSONS];
     for (i = 0; i < CITY_MAX_PERSONS; i++)
         conv_idx[i] = u4fgetc(ult);
 
@@ -120,6 +168,7 @@ int mapLoadCity(City *city) {
     }
 
     for (i = 0; ; i++) {
+        char tlk_buffer[288];
         if (u4fread(tlk_buffer, 1, sizeof(tlk_buffer), tlk) != sizeof(tlk_buffer))
             break;
         for (j = 0; j < CITY_MAX_PERSONS; j++) {
@@ -204,11 +253,10 @@ int mapLoadCity(City *city) {
 /**
  * Loads a combat map from the 'con' file
  */
-int mapLoadCon(Map *map) {
-    U4FILE *con;
+int ConMapLoader::load(Map *map) {
     int i;
 
-    con = u4fopen(map->fname);
+    U4FILE *con = u4fopen(map->fname);
     if (!con)
         errorFatal("unable to load map data");
 
@@ -234,7 +282,7 @@ int mapLoadCon(Map *map) {
         u4fseek(con, 16L, SEEK_CUR);
     }
 
-    if (!mapLoadData(map, con))
+    if (!loadData(map, con))
         return 0;
 
     u4fclose(con);
@@ -245,11 +293,10 @@ int mapLoadCon(Map *map) {
 /**
  * Loads a dungeon map from the 'dng' file
  */
-int mapLoadDng(Dungeon *dungeon) {
-    U4FILE *dng;
-    unsigned int i, j;
+int DngMapLoader::load(Map *map) {
+    Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
 
-    dng = u4fopen(dungeon->fname);
+    U4FILE *dng = u4fopen(dungeon->fname);
     if (!dng)
         errorFatal("unable to load map data");
 
@@ -258,6 +305,7 @@ int mapLoadDng(Dungeon *dungeon) {
     ASSERT(dungeon->height == DNG_HEIGHT, "map height is %d, should be %d", dungeon->height, DNG_HEIGHT);
 
     /* load the dungeon map */
+    unsigned int i, j;
     for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * dungeon->levels); i++) {
         unsigned char mapData = u4fgetc(dng);
         MapTile tile = Tile::translate(mapData, "dungeon");
@@ -324,80 +372,19 @@ int mapLoadDng(Dungeon *dungeon) {
     return 1;
 }
 
-int mapIsChunkCompressed(Map *map, int chunk) {
-    CompressedChunkList::iterator i;    
-
-    for (i = map->compressed_chunks.begin(); i != map->compressed_chunks.end(); i++) {
-        if (chunk == *i)
-            return 1;
-    }
-    return 0;
-}
-
 /**
  * Loads the world map data in from the 'world' file.
  */
-int mapLoadWorld(Map *map) {
-    U4FILE *world;    
-    
-    world = u4fopen(map->fname);
+int WorldMapLoader::load(Map *map) {
+    U4FILE *world = u4fopen(map->fname);
     if (!world)
         errorFatal("unable to load map data");
 
-    if (!mapLoadData(map, world))
+    if (!loadData(map, world))
         return 0;
 
     u4fclose(world);
 
     return 1;
-}
-
-int mapLoadData(Map *map, U4FILE *f) {
-    unsigned int x, xch, y, ych;
-
-    TileIndexMap* tileMap = TileMap::get("base");
     
-    /* allocate the space we need for the map data */
-    map->data.resize(map->height * map->width);
-
-    if (map->chunk_height == 0)
-        map->chunk_height = map->height;
-    if (map->chunk_width == 0)
-        map->chunk_width = map->width;
-
-    clock_t total = 0;
-    clock_t start = clock();
-    for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
-        for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
-            for(y = 0; y < map->chunk_height; ++y) {
-                for(x = 0; x < map->chunk_width; ++x) {
-
-                    if (mapIsChunkCompressed(map, ych * map->chunk_width + xch))
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = Tileset::findTileByName("water")->id;
-
-                    else {
-                        int c;                        
-                        c = u4fgetc(f);
-                        if (c == EOF)
-                            return 0;
-                      
-                        clock_t s = clock();
-                        MapTile mt = (*tileMap)[c];
-                        total += clock() - s;
-
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt;
-                    }
-                }
-            }
-        }
-    }
-    clock_t end = clock();
-    
-    FILE *file = FileSystem::openFile("debug/mapLoadData.txt", "wt");
-    if (file) {
-        fprintf(file, "%d msecs total\n%d msecs used by Tile::translate()", int(end - start), int(total));
-        fclose(file);
-    }
-
-    return 1;
 }
