@@ -11,6 +11,7 @@
 #define U4_RIGHT '\''
 #define U4_BACKSPACE 8
 #define U4_ESC 27
+#define U4_ALT 128
 
 typedef int (*KeyHandler)(int, void *);
 typedef void (*TimerCallback)(void *);
