@@ -410,7 +410,7 @@ void mapRemovePerson(Map *map, const Person *person) {
 
 Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
     int newx, newy;
-    int distance, slow;
+    int slow;
     Object *obj = map->objects, *attacker = NULL;
     const Monster *m;
 
@@ -420,6 +420,18 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
 
         m = monsterForTile(obj->tile);
 
+        /* check if the object is an attacking monster */
+        if (m && (m->mattr & MATTR_NOATTACK) == 0) {
+            int distance;
+            distance = (newx - avatarx) * (newx - avatarx);
+            distance += (newy - avatary) * (newy - avatary);
+            if (distance == 1) {
+                attacker = obj;
+                continue;
+            }
+        }
+
+        /* otherwise, move it according to its movement behavior */
         switch (obj->movement_behavior) {
         case MOVEMENT_FIXED:
             break;
@@ -429,16 +441,8 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
                 dirMove(dirRandomDir(mapGetValidMoves(map, newx, newy, z, obj->tile)), &newx, &newy);
             break;
                 
-        case MOVEMENT_ATTACK_AVATAR:
-            distance = (newx - avatarx) * (newx - avatarx);
-            distance += (newy - avatary) * (newy - avatary);
-            if (distance == 1)
-                attacker = obj;
-            else
-                dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, z, obj->tile)), &newx, &newy);
-            break;
-
         case MOVEMENT_FOLLOW_AVATAR:
+        case MOVEMENT_ATTACK_AVATAR:
             dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, z, obj->tile)), &newx, &newy);
             break;
         }
