@@ -7,7 +7,7 @@
 
 #include <list>
 #include "coords.h"
-#include "map.h"
+#include "types.h"
 
 class Annotation;
 
@@ -23,8 +23,7 @@ typedef std::list<Annotation> AnnotationList;
  */
 class Annotation {
 public:    
-    Annotation();
-    Annotation(Coords coords, MapTile tile, bool visual = false);        
+    Annotation(const Coords &coords, MapTile tile, bool visual = false);        
 
     void             debug_output() const;
     const Coords&    getCoords() const;
