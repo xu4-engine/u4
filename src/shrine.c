@@ -120,7 +120,7 @@ int shrineHandleCycles(int choice) {
 
     screenMessage("%c\n\n", cycles + '0');
 
-    if (strcasecmp(virtueBuffer, getVirtueName(shrine->virtue)) != 0 || cycles == 0) {
+    if (strncasecmp(virtueBuffer, getVirtueName(shrine->virtue), 6) != 0 || cycles == 0) {
         screenMessage("Thou art unable to focus thy thoughts on this subject!\n");
         shrineEject();
     } else {
