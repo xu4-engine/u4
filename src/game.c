@@ -310,8 +310,7 @@ void gameFinishTurn() {
     Object *attacker;
 
     /* apply effects from tile avatar is standing on */
-    if (c->saveGame->transport == AVATAR_TILE)
-        playerApplyEffect(c->saveGame, tileGetEffect(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
+    playerApplyEffect(c->saveGame, tileGetEffect(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
 
     while (1) {
         /* adjust food and moves */
