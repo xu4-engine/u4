@@ -102,6 +102,24 @@ const char *getVirtueName(Virtue virtue) {
         return "???";
 }
 
+const char *getVirtueAdjective(Virtue virtue) {
+    static const char * const virtueAdjectives[] = {
+        "honest",
+        "compassionate",
+        "valiant",
+        "just",
+        "sacrificial",
+        "honorable",
+        "spiritual",
+        "humble"
+    };
+
+    if (virtue < 8)
+        return virtueAdjectives[virtue - VIRT_HONESTY];
+    else
+        return "???";
+}
+
 const char *getStoneName(Virtue virtue) {
     static const char * const virtueNames[] = {
         "Blue", "Yellow", "Red", 
