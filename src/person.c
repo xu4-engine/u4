@@ -14,9 +14,15 @@
 #include "u4file.h"
 #include "names.h"
 
+#define N_WEAPON_VENDORS 6
+#define WEAPON_VENDOR_INVENTORY_SIZE 4
+
 char **hawkwindText;
 char **lbKeywords;
 char **lbText;
+char **weaponVendorText;
+char **weaponVendorText2;
+WeaponType weaponVendorItems[N_WEAPON_VENDORS][WEAPON_VENDOR_INVENTORY_SIZE];
 
 #define HW_WELCOME 43
 #define HW_GREETING1 44
@@ -34,7 +40,12 @@ int personGetHWIntroduction(const Person *p, char **intro);
 int personGetLBResponse(const Person *p, const char *inquiry, char **reply, int *askq);
 int personGetHWResponse(const Person *p, const char *inquiry, char **reply, int *askq);
 
+/**
+ * Loads in conversation data for special cases and vendors from
+ * avatar.exe.
+ */
 int personInit() {
+    int i, j;
     FILE *avatar;
 
     avatar = u4fopen("avatar.exe");
@@ -46,11 +57,21 @@ int personInit() {
 
     hawkwindText = u4read_stringtable(avatar, 74729, 53);
 
+    weaponVendorText = u4read_stringtable(avatar, 78883, 28);
+
+    fseek(avatar, 80181, SEEK_SET);
+    for (i = 0; i < N_WEAPON_VENDORS; i++) {
+        for (j = 0; j < WEAPON_VENDOR_INVENTORY_SIZE; j++) {
+            weaponVendorItems[i][j] = fgetc(avatar);
+        }
+    }
+
+    weaponVendorText2 = u4read_stringtable(avatar, 80282, 17);
+    
     u4fclose(avatar);
 
     return 1;
 }
-
 
 /**
  * Get the introductory description and dialog shown when a
