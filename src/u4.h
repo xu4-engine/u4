@@ -36,6 +36,13 @@
 #define CHAR_WIDTH 8
 #define CHAR_HEIGHT 8
 
+/* some character defines */
+#define CHARSET_COPYRIGHT '\011'
+#define CHARSET_REGISTERED '\012'
+#define CHARSET_MALE '\013'
+#define CHARSET_FEMALE '\014'
+#define CHARSET_PROMPT '\020'
+
 /* map viewport size (in tiles) */
 #define VIEWPORT_W 11
 #define VIEWPORT_H 11
