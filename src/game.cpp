@@ -494,7 +494,18 @@ int gameSave() {
             id_map[creatures.getById(ROGUE_ID)]           = 15;
         }
 
+#ifdef MACOSX
+        // Mac OS X savegame files go in a set directory
+        char *home = getenv("HOME");
+        if (home && home[0]) {
+            string dngmapfname = home;
+            dngmapfname += MACOSX_USER_FILES_PATH;
+            dngmapfname += "/dngmap.sav";
+            dngMapFile = fopen(dngmapfname.c_str(), "wb");
+        } else dngMapFile = NULL;
+#else
         dngMapFile = fopen("dngmap.sav", "wb");
+#endif
         if (!dngMapFile) {
             screenMessage("Error opening dngmap.sav\n");
             return 0;
