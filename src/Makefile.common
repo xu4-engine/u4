@@ -35,6 +35,7 @@ SRCS=\
         settings.c \
         monster.c \
         rle.c \
+        error.c \
         maps/cities.c \
         maps/castles.c \
         maps/worldmap.c \
@@ -47,7 +48,9 @@ SRCS=\
 
 OBJS += $(SRCS:.c=.o)
 
-all:: $(MAIN) dumpsavegame$(EXEEXT)
+all:: $(MAIN) utils
+
+utils::  dumpsavegame$(EXEEXT) lzwenc$(EXEEXT) lzwdec$(EXEEXT) rleenc$(EXEEXT) rledec$(EXEEXT)
 
 $(MAIN): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
@@ -61,8 +64,14 @@ lzwenc$(EXEEXT) : util/lzwenc.o lzw/hash.o util/pngconv.o
 lzwdec$(EXEEXT) : util/lzwdec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o util/pngconv.o
 	$(CC) $(CFLAGS) -o lzwdec util/lzwdec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o util/pngconv.o -lpng -lz
 
+rleenc$(EXEEXT) : util/rleenc.o util/pngconv.o
+	$(CC) $(CFLAGS) -o rleenc util/rleenc.o util/pngconv.o -lpng -lz
+
+rledec$(EXEEXT) : util/rledec.o rle.o util/pngconv.o
+	$(CC) $(CFLAGS) -o rledec util/rledec.o rle.o util/pngconv.o -lpng -lz
+
 clean:: cleanutil
 	rm -rf *~ */*~ $(OBJS) $(MAIN) 
 
 cleanutil::
-	rm -rf util/dumpsavegame.o dumpsavegame$(EXEEXT) util/lzwenc.o util/lzwenc$(EXEEXT) util/lzwdec.o util/lzwdec$(EXEEXT) util/pngconv.o
+	rm -rf util/dumpsavegame.o dumpsavegame$(EXEEXT) util/lzwenc.o lzwenc$(EXEEXT) util/lzwdec.o lzwdec$(EXEEXT) util/pngconv.o util/rleenc.o rleenc$(EXEEXT) util/rledec.o rledec$(EXEEXT)
