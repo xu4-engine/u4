@@ -367,6 +367,26 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
         cnv->state = CONV_DONE;
     }
 
+    /*
+     * Check the talker's custom keywords before the standard keywords
+     * like HEAL and JOB.  This behavior differs from u4dos, but fixes
+     * a couple conversation files which have keywords that conflict
+     * with the standard ones (e.g. Calabrini in Moonglow has HEAL for
+     * healer, which is unreachable in u4dos, but clearly more useful
+     * than "Fine." for health).
+     */
+    else if (strncasecmp(inquiry, cnv->talker->keyword1, testLen) == 0) {
+        reply = strdup(cnv->talker->response1);
+        if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD1)
+            cnv->state = CONV_ASK;
+    }
+
+    else if (strncasecmp(inquiry, cnv->talker->keyword2, testLen) == 0) {
+        reply = strdup(cnv->talker->response2);
+        if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD2)
+            cnv->state = CONV_ASK;
+    }
+
     else if (strncasecmp(inquiry, "look", 4) == 0) {
         reply = concat("You see ", cnv->talker->description, NULL);
         if (isupper(reply[8]))
@@ -385,18 +405,6 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     else if (strncasecmp(inquiry, "heal", 4) == 0) {
         reply = strdup(cnv->talker->health);
         if (cnv->talker->questionTrigger == QTRIGGER_HEALTH)
-            cnv->state = CONV_ASK;
-    }
-
-    else if (strncasecmp(inquiry, cnv->talker->keyword1, testLen) == 0) {
-        reply = strdup(cnv->talker->response1);
-        if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD1)
-            cnv->state = CONV_ASK;
-    }
-
-    else if (strncasecmp(inquiry, cnv->talker->keyword2, testLen) == 0) {
-        reply = strdup(cnv->talker->response2);
-        if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD2)
             cnv->state = CONV_ASK;
     }
 
