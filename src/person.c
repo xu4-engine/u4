@@ -48,7 +48,7 @@ char *beggarGetPrompt(const Conversation *cnv);
 char *beggarGetQuantityResponse(Conversation *cnv, const char *response);
 char *lordBritishGetIntro(Conversation *cnv);
 char *lordBritishGetResponse(Conversation *cnv, const char *inquiry);
-char *lordBritishGetQuestionResponse(Conversation *cnv, const char *inquiry);
+char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer);
 char *lordBritishGetPrompt(const Conversation *cnv);
 char *hawkwindGetIntro(Conversation *cnv);
 char *hawkwindGetResponse(Conversation *cnv, const char *inquiry);
@@ -344,13 +344,13 @@ char *talkerGetQuestionResponse(Conversation *cnv, const char *answer) {
 
     cnv->state = CONV_TALK;
 
-    if (answer[0] == 'y' || answer[0] == 'Y') {
+    if (tolower(answer[0]) == 'y') {
         reply = strdup(cnv->talker->yesresp);
         if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
             gameLostEighth(playerAdjustKarma(c->saveGame, KA_BRAGGED));
     }
 
-    else if (answer[0] == 'n' || answer[0] == 'N') {
+    else if (tolower(answer[0]) == 'n') {
         reply = strdup(cnv->talker->noresp);
         if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
             gameLostEighth(playerAdjustKarma(c->saveGame, KA_HUMBLE));
@@ -405,26 +405,42 @@ char *beggarGetQuantityResponse(Conversation *cnv, const char *response) {
     return reply;
 }
 
-char *lordBritishGetIntro(Conversation *cnv) {
+char *lordBritishCheckLevels(Conversation *cnv) {
     int i;
-    const char *lbFmt = "Lord British\nsays:  Welcome\n%s and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n";
-    char *intro;
+    char buffer[10];
+    char *msg, *tmp;
 
-    musicLordBritish();
-
+    msg = strdup("");
     for (i = 0; i < c->saveGame->members; i++) {
         if (playerGetRealLevel(&c->saveGame->players[i]) < playerGetMaxLevel(&c->saveGame->players[i])) {
             playerAdvanceLevel(&c->saveGame->players[i]);
-            /*screenMessage("%s Thou art now Level %d\n", c->saveGame->players[i].name, playerGetRealLevel(&c->saveGame->players[i]));*/
+            tmp = msg;
+            sprintf(buffer, "%d", playerGetRealLevel(&c->saveGame->players[i]));
+            msg = concat(tmp, c->saveGame->players[i].name, " Thou art now Level ", buffer, "\n", NULL);
             statsUpdate();
         }
     }
 
-    if (c->saveGame->lbintro) {
-        intro = (char *) malloc(strlen(lbFmt) - 2 + strlen(c->saveGame->players[0].name) + 1);
-        sprintf(intro, lbFmt, c->saveGame->players[0].name);
-    } else {
-        intro = strdup("Lord British rises and says: At long last!\n thou hast come!  We have waited such a long, long time...\n");
+    return msg;
+}
+
+char *lordBritishGetIntro(Conversation *cnv) {
+    char *leveled, *intro;
+
+    musicLordBritish();
+
+    leveled = lordBritishCheckLevels(cnv);
+
+    if (c->saveGame->lbintro)
+        intro = concat(leveled, 
+                       "Lord British\nsays:  Welcome\n",
+                       c->saveGame->players[0].name,
+                       "and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n",
+                       NULL);
+    else {
+        intro = concat(leveled, 
+                       "Lord British rises and says: At long last!\n thou hast come!  We have waited such a long, long time...\n",
+                       NULL);
         c->saveGame->lbintro = 1;
     }
     cnv->state = CONV_TALK;
@@ -444,7 +460,6 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, "heal", 4) == 0) {
-        /* FIXME: should ask/heal party */
         reply = strdup("He says: I am\nwell, thank ye.");
         cnv->state = CONV_ASK;
     }
@@ -460,19 +475,37 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
     return reply;
 }
 
-char *lordBritishGetQuestionResponse(Conversation *cnv, const char *inquiry) {
+char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
+    int i;
+    char *reply;
     cnv->state = CONV_TALK;
 
-    return strdup("foo\n");
+
+    if (tolower(answer[0]) == 'y') {
+        reply = strdup("\nHe says: That is good.\n");
+    }
+
+    else if (tolower(answer[0]) == 'n') {
+        reply = strdup("\nHe says: Let me heal thy wounds!\n");
+        /* FIXME: special effect here */
+        for (i = 0; i < c->saveGame->members; i++) {
+            if (c->saveGame->players[i].status != STAT_DEAD)
+                c->saveGame->players[i].hp = c->saveGame->players[i].hpMax;
+        }
+        statsUpdate();
+    }
+
+    else
+        reply = strdup("That I cannot\nhelp thee with.");
+
+    return reply;
 }
 
 char *lordBritishGetPrompt(const Conversation *cnv) {
     char *prompt;
 
-    if (cnv->state == CONV_ASK) {
-        /* FIXME: art thou well? */
-        personGetQuestion(cnv->talker, &prompt);
-    }
+    if (cnv->state == CONV_ASK)
+        prompt = strdup("\n\nHe asks: Art thou well?");
     else
         prompt = strdup("What else?\n");
 
