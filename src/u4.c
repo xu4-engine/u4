@@ -22,12 +22,20 @@
 #include "settings.h"
 #include "sound.h"
 
+#if defined(MACOSX)
+#include "macosx/osxinit.h"
+#endif
+
 int verbose = 0;
 int quit = 0;
 
 int main(int argc, char *argv[]) {
     unsigned int i;
     int skipIntro = 0;
+
+#if defined(MACOSX)
+    osxInit(argv[0]);
+#endif
 
     settingsRead();
 

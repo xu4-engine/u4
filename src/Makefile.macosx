@@ -5,48 +5,62 @@
 BUNDLE_CONTENTS=xu4.app/Contents
 
 UI=sdl
-UILIBS=-L$(HOME)/Library/Frameworks \
-       -framework SDL \
-       -framework SDL_mixer \
-       -framework libiconv \
-       -framework libxml \
-       -framework AppKit \
-       -framework Foundation \
-       -lobjc -lz.1
-UIFLAGS=-F$(HOME)/Library/Frameworks/ \
-	-I$(HOME)/Library/Frameworks/libxml.framework/Headers \
-	-I$(HOME)/Library/Frameworks/libiconv.framework/Headers \
-	-I$(HOME)/Library/Frameworks/SDL.framework/Headers \
-	-I$(HOME)/Library/Frameworks/SDL_mixer.framework/Headers
-
+UIFLAGS=$(shell sdl-config --cflags)
 FEATURES=-DHAVE_BACKTRACE=0 -DHAVE_VARIADIC_MACROS=1
 DEBUGCFLAGS=-ggdb
-CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
-LIBS=$(UILIBS) 
+
+#
+# Uncomment only *1* of the following three sections:
+#
+# 1. Dynamically linked version suitable for Panther, or Jaguar with
+#    libxml2 and libiconv installed in /usr/local
+#UILIBS=$(shell sdl-config --libs) -lSDL_mixer
+#XML2FLAGS=$(shell xml2-config --cflags)
+#LIBS=$(UILIBS) $(shell xml2-config --libs)
+#
+# 2. Statically linked version for either Panther or Jaguar, where
+#    libxml2 and libiconv are installed in /usr/local
+#    This will build a stand-alone application bundle that should run on
+#    standard Panther and Jaguar systems.
+UILIBS=/usr/local/lib/libSDLmain.a /usr/local/lib/libSDL_mixer.a /usr/local/lib/libSDL.a /usr/local/lib/libvorbisfile.a /usr/local/lib/libvorbis.a /usr/local/lib/libogg.a 
+XML2FLAGS=-I/usr/local/include/libxml2 -I/usr/local/include
+FWRKS=-framework Cocoa -framework OpenGL -framework Carbon -framework IOKit -framework QuickTime
+LIBS=$(UILIBS) /usr/local/lib/libxml2.a /usr/local/lib/libiconv.a $(FWRKS) -lz -lm
+#
+# 3. Statically linked version for Panther only. 
+#    This will build a stand-alone application bundle that should run on
+#    standard Panther systems but will not run on Jaguar systems.
+#UILIBS=/usr/local/lib/libSDLmain.a /usr/local/lib/libSDL_mixer.a /usr/local/lib/libSDL.a /usr/local/lib/libvorbisfile.a /usr/local/lib/libvorbis.a /usr/local/lib/libogg.a 
+#XML2FLAGS=$(shell xml2-config --cflags)
+#FWRKS=-framework Cocoa -framework OpenGL -framework Carbon -framework IOKit -framework QuickTime
+#LIBS=$(UILIBS) $(shell xml2-config --libs) $(FWRKS) -lz -lm
+
+CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(XML2FLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
+
 INSTALL=install
 
-OBJS=macosx/SDLMain.o macosx/osxerror.o
+OBJS=macosx/osxinit.o macosx/osxerror.o
 
 include Makefile.common
-
-SDLMain.o: macosx/SDLMain.m macosx/SDLMain.h
-	$(CC) $(CFLAGS) -c -o macosx/SDLMain.o macosx/SDLMain.m 
 
 osxerror.o: macosx/osxerror.m
 	$(CC) $(CFLAGS) -c -o macosx/osxerror.o macosx/osxerror.m 
 
-mactlkconv: util/tlkconv.o
-	$(CC) $(CFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks -framework libxml -framework libiconv
+osxinit.o: macosx/osxinit.c
+	$(CC) $(CFLAGS) -c -o macosx/osxinit.o macosx/osxinit.c 
 
 install: u4
 	mkdir -p $(BUNDLE_CONTENTS)/MacOS
 	mkdir -p $(BUNDLE_CONTENTS)/Resources
+	mkdir -p $(BUNDLE_CONTENTS)/Resources/dtd
 	echo "APPL????" > $(BUNDLE_CONTENTS)/PkgInfo
 	cp ../mid/*.mid $(BUNDLE_CONTENTS)/Resources
 	cp ../conf/*.xml $(BUNDLE_CONTENTS)/Resources
+	cp ../conf/dtd/*.dtd $(BUNDLE_CONTENTS)/Resources/dtd
 	cp ../icons/xu4.icns $(BUNDLE_CONTENTS)/Resources
 	cp macosx/Info.plist $(BUNDLE_CONTENTS)
 	$(INSTALL) $< $(BUNDLE_CONTENTS)/MacOS
+	strip $(BUNDLE_CONTENTS)/MacOS/u4
 
 -include .depends
 
