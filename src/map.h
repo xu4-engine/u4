@@ -12,6 +12,7 @@ struct _Shrine;
 struct _Area;
 struct _Object;
 struct _Person;
+struct _Monster;
 struct _Portal;
 
 #include "music.h"
@@ -72,6 +73,7 @@ unsigned char mapGroundTileAt(const Map *map, int x, int y, int z);
 unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus);
 int mapIsWorldMap(const Map *map);
 struct _Object *mapAddPersonObject(Map *map, const struct _Person *person);
+struct _Object *mapAddMonsterObject(Map *map, const struct _Monster *monster, unsigned short x, unsigned short y, unsigned short z);
 struct _Object *mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned short x, unsigned short y, unsigned short z);
 void mapRemoveObject(Map *map, struct _Object *obj);
 void mapRemovePerson(Map *map, const struct _Person *person);

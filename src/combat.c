@@ -114,6 +114,8 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
 
 Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     int i;
+    const Monster *m;
+
     static const struct {
         unsigned char tile;
         Map *map;
@@ -137,9 +139,15 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
         { MOONGATE2_TILE, &grass_map },
         { MOONGATE3_TILE, &grass_map }
     };
+
+    /* We can fight monsters and townsfolk -- let's
+       figure out which one we're dealing with */
+    if (monsterObj->objType == OBJECT_MONSTER)
+        m = monsterObj->monster;
+    else m = monsterForTile(monsterObj->tile);
     
     /* check if monster is aquatic */
-    if (monsterForTile(monsterObj->tile)->mattr & MATTR_WATER) {
+    if (m->mattr & MATTR_WATER) {
         if (tileIsPirateShip(monsterObj->tile)) {
             if (tileIsShip(transport) || tileIsShip(partytile))
                 return &shipship_map;
@@ -188,9 +196,8 @@ void combatCreateMonster(int index, int canbeleader) {
             /* normal */
             ;
     }
-    monsters[index] = mapAddObject(c->location->map, mtile, mtile, c->location->map->area->monster_start[index].x, c->location->map->area->monster_start[index].y, c->location->z);
-
-    monsterHp[index] = monsterGetInitialHp(monsterForTile(monsters[index]->tile));
+    monsters[index] = mapAddMonsterObject(c->location->map, monsterForTile(mtile), c->location->map->area->monster_start[index].x, c->location->map->area->monster_start[index].y, c->location->z);
+    monsterHp[index] = monsterGetInitialHp(monsters[index]->monster);
 }
 
 void combatFinishTurn() {
@@ -459,7 +466,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
         eventHandlerSleep((attackdelay + 2)*40);
 
     } else {
-        m = monsterForTile(monsters[monster]->tile);
+        m = monsters[monster]->monster;
 
         /* show the 'hit' tile */
         annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, hittile), (attackdelay + 8)/8));
@@ -575,7 +582,7 @@ void combatEnd() {
     if (combatIsWon()) {
 
         /* added chest or captured ship object */
-        if ((monsterForTile(monsterObj->tile)->mattr & MATTR_WATER) == 0)
+        if ((monsterObj->monster->mattr & MATTR_WATER) == 0)
             mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), monsterObj->x, monsterObj->y, c->location->z);
         else if (tileIsPirateShip(monsterObj->tile)) {
             unsigned short ship = tileGetShipBase();
@@ -607,7 +614,7 @@ void combatMoveMonsters() {
     for (i = 0; i < AREA_MONSTERS; i++) {
         if (!monsters[i])
             continue;
-        m = monsterForTile(monsters[i]->tile);
+        m = monsters[i]->monster;
 
         if (m->mattr & MATTR_NEGATE) {
             c->aura = AURA_NEGATE;

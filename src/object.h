@@ -6,6 +6,7 @@
 #define OBJECT_H
 
 struct _Person;
+struct _Monster;
 
 typedef enum {
     MOVEMENT_FIXED,
@@ -14,12 +15,22 @@ typedef enum {
     MOVEMENT_ATTACK_AVATAR
 } ObjectMovementBehavior;
 
+typedef enum {
+    OBJECT_UNKNOWN,
+    OBJECT_PERSON,
+    OBJECT_MONSTER    
+} ObjectType;
+
 typedef struct _Object {
     unsigned char tile, prevtile;
     unsigned short x, y, z;
     unsigned short prevx, prevy;
     ObjectMovementBehavior movement_behavior;
-    const struct _Person *person;
+    union {
+        const struct _Person *person;
+        const struct _Monster *monster;
+    };
+    int objType;
     int hasFocus;
     struct _Object *next;
 } Object;

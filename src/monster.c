@@ -221,8 +221,7 @@ int monsterSpecialAction(const Monster *monster) {
 }
 
 void monsterSpecialEffect(Object *obj) {
-    Object *o;
-    Monster *m;
+    Object *o;    
 
     switch(obj->tile) {
     case STORM_TILE:
@@ -290,11 +289,9 @@ void monsterSpecialEffect(Object *obj) {
                     o->x == obj->x &&
                     o->y == obj->y &&
                     o->z == obj->z) {                    
-
-                    m = monsterForTile(o->tile);
                     
                     /* Make sure the object isn't a flying monster or object */
-                    if (!tileIsBalloon(o->tile) && (!m || !(m->mattr & MATTR_FLIES)))
+                    if (!tileIsBalloon(o->tile) && (!(o->objType == OBJECT_MONSTER) || !(o->monster->mattr & MATTR_FLIES)))
                         mapRemoveObject(c->location->map, o); /* Destroy the object it met with */
                     break;
                 }

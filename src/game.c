@@ -1181,8 +1181,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
  * creature is present at that point, zero is returned.
  */
 int attackAtCoord(int x, int y, int distance, void *data) {
-    Object *obj, *under;
-    const Monster *m;
+    Object *obj, *under;    
     unsigned char ground;   
 
     /* attack failed: finish up */
@@ -1192,17 +1191,18 @@ int attackAtCoord(int x, int y, int distance, void *data) {
         return 0;
     }
 
+    obj = mapObjectAt(c->location->map, x, y, c->location->z);
     /* nothing attackable: move on to next tile */
-    if ((obj = mapObjectAt(c->location->map, x, y, c->location->z)) == NULL ||
-        (m = monsterForTile(obj->tile)) == NULL ||
-        (m->mattr & MATTR_NONATTACKABLE) ||
+    if (obj == NULL ||
+        (obj->objType == OBJECT_UNKNOWN) ||
+        (obj->objType == OBJECT_MONSTER && obj->monster->mattr & MATTR_NONATTACKABLE) ||
         /* can't attack horse transport */
         (tileIsHorse(obj->tile) && obj->movement_behavior == MOVEMENT_FIXED)) {
         return 0;
     }
 
     /* attack successful */
-    ground = mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
+    ground = mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
@@ -1319,17 +1319,13 @@ int fireAtCoord(int x, int y, int distance, void *data) {
         gameFinishTurn();
         return 1;
     }
-    else {
-        const Monster *m = NULL;
+    else {        
         Object *obj = NULL;
 
         obj = mapObjectAt(c->location->map, x, y, c->location->z);
-        if (obj)
-            m = monsterForTile(obj->tile);
-
-        if (m) {
+        if (obj->objType == OBJECT_MONSTER) {           
             if (rand() % 2 == 0)
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE), 2));                
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE), 2));
             else {
                 annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, HITFLASH_TILE), 2));
                 if (rand() % 2 == 0)
@@ -1341,7 +1337,6 @@ int fireAtCoord(int x, int y, int distance, void *data) {
             
             gameFinishTurn();
             return 1;
-
         }
         
         annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE));
@@ -1382,6 +1377,8 @@ int getChest(int player) {
         
         if (obj == NULL)
             playerAdjustKarma(c->saveGame, KA_STOLE_CHEST);
+
+        gameFinishTurn();
     }
     
     else
@@ -2203,7 +2200,7 @@ void gameCheckBridgeTrolls() {
     screenMessage("\nBridge Trolls!\n");
 
     combatBegin(mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z), c->saveGame->transport,
-                mapAddObject(c->location->map, TROLL_TILE, TROLL_TILE, c->location->x, c->location->y, c->location->z));
+                mapAddMonsterObject(c->location->map, monsterForTile(TROLL_TILE), c->location->x, c->location->y, c->location->z));
 }
 
 void gameCheckHullIntegrity() {
@@ -2230,6 +2227,7 @@ void gameCheckHullIntegrity() {
 void gameCheckSpecialMonsters(Direction dir) {
     int i;
     Object *obj;
+    const Monster *m;
     static const struct {
         int x, y;
         Direction dir;
@@ -2252,10 +2250,17 @@ void gameCheckSpecialMonsters(Direction dir) {
         c->location->x == 0xdd &&
         c->location->y == 0xe0) {
         for (i = 0; i < 8; i++) {
-            unsigned short tile = PIRATE_TILE;
-            tileSetDirection(&tile, pirateInfo[i].dir);
-            obj = mapAddObject(c->location->map, tile, tile, pirateInfo[i].x, pirateInfo[i].y, c->location->z);
-            obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+            /* FIXME: add function like monsterSetDirection()
+               to set a monster's current tile */
+
+            /*unsigned short tile = PIRATE_TILE;
+            tileSetDirection(&tile, pirateInfo[i].dir);*/
+
+            m = monsterForTile(PIRATE_TILE);
+            obj = mapAddMonsterObject(c->location->map, m, pirateInfo[i].x, pirateInfo[i].y, c->location->z);
+
+            /*obj = mapAddObject(c->location->map, tile, tile, pirateInfo[i].x, pirateInfo[i].y, c->location->z);
+            obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;*/
         }
     }
 
@@ -2270,8 +2275,8 @@ void gameCheckSpecialMonsters(Direction dir) {
         c->location->y < 217 &&
         c->aura != AURA_HORN) {
         for (i = 0; i < 8; i++) {
-            obj = mapAddObject(c->location->map, DAEMON_TILE, DAEMON_TILE, 231, c->location->y + 1, c->location->z);
-            obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+            m = monsterForTile(DAEMON_TILE);
+            obj = mapAddMonsterObject(c->location->map, m, 231, c->location->y + 1, c->location->z);            
         }
     }
 }
@@ -2311,11 +2316,9 @@ void gameCheckRandomMonsters() {
 
     for (obj = c->location->map->objects; obj; obj = obj->next)
     {
-        const Monster *m = monsterForTile(obj->tile);
-                
-        if (m && (obj->z == c->location->z) && 
+        if ((obj->objType == OBJECT_MONSTER) && (obj->z == c->location->z) &&
             mapDistance(obj->x, obj->y, c->location->x, c->location->y) > MAX_MONSTER_DISTANCE)
-            mapRemoveObject(c->location->map, obj);    
+            mapRemoveObject(c->location->map, obj);            
     }
     
     /* If there are too many monsters already,
@@ -2344,13 +2347,7 @@ void gameCheckRandomMonsters() {
     if ((monster = monsterRandomForTile(mapTileAt(c->location->map, x, y, c->location->z))) == 0)
         return;
 
-    obj = mapAddObject(c->location->map, monster->tile, monster->tile, x, y, c->location->z);
-    if (monster->mattr & MATTR_WANDERS)
-        obj->movement_behavior = MOVEMENT_WANDER;
-    else if (monster->mattr & MATTR_STATIONARY)
-        obj->movement_behavior = MOVEMENT_FIXED;
-    else
-        obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+    obj = mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);    
 }
 
 void gameFixupMonstersBehavior() {
@@ -2386,12 +2383,9 @@ int gameWindSlowsShip(Direction shipdir) {
 
 void gameMonsterAttack(Object *obj) {
     Object *under;
-    unsigned char ground;
-    const Monster *m;
-
-    m = monsterForTile(obj->tile);
-
-    screenMessage("\nAttacked by %s\n", m->name);
+    unsigned char ground;    
+    
+    screenMessage("\nAttacked by %s\n", monsterForTile(obj->tile)->name);
 
     ground = mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&

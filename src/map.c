@@ -357,19 +357,26 @@ int mapIsWorldMap(const Map *map) {
 }
 
 Object *mapAddPersonObject(Map *map, const Person *person) {
-    Object *obj = (Object *) malloc(sizeof(Object));
+    Object *obj = mapAddObject(map, person->tile0, person->tile1, person->startx, person->starty, person->startz);
 
-    obj->tile = person->tile0;
-    obj->prevtile = person->tile1;
-    obj->x = person->startx;
-    obj->y = person->starty;
-    obj->z = person->startz;
     obj->movement_behavior = person->movement_behavior;
     obj->person = person;
-    obj->hasFocus = 0;
-    obj->next = map->objects;
+    obj->objType = OBJECT_PERSON;
 
-    map->objects = obj;
+    return obj;
+}
+
+Object *mapAddMonsterObject(Map *map, const Monster *monster, unsigned short x, unsigned short y, unsigned short z) {
+    Object *obj = mapAddObject(map, monster->tile, monster->tile, x, y, z);
+
+    if (monster->mattr & MATTR_WANDERS)
+        obj->movement_behavior = MOVEMENT_WANDER;
+    else if (monster->mattr & MATTR_STATIONARY)
+        obj->movement_behavior = MOVEMENT_FIXED;
+    else obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+
+    obj->monster = monster;
+    obj->objType = OBJECT_MONSTER;
 
     return obj;
 }
@@ -385,7 +392,7 @@ Object *mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigne
     obj->prevx = x;
     obj->prevy = y;
     obj->movement_behavior = MOVEMENT_FIXED;
-    obj->person = NULL;
+    obj->objType = OBJECT_UNKNOWN;
     obj->hasFocus = 0;
     obj->next = map->objects;
 
@@ -417,7 +424,7 @@ void mapRemovePerson(Map *map, const Person *person) {
 
     prev = NULL;
     while (obj) {
-        if (obj->person == person) {
+        if ((obj->objType == OBJECT_PERSON) && (obj->person == person)) {
             if (prev)
                 prev->next = obj->next;
             else
@@ -433,21 +440,17 @@ void mapRemovePerson(Map *map, const Person *person) {
 Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {    
     int newx, newy;
     int slow;
-    Object *obj = map->objects, *attacker = NULL;
-    const Monster *m;
+    Object *obj = map->objects, *attacker = NULL;    
 
     for (obj = map->objects; obj; obj = obj->next) {
         newx = obj->x;
-        newy = obj->y;
-
-        m = monsterForTile(obj->tile);        
+        newy = obj->y;        
         
-        /* check if the object is an attacking monster */
-        if (m && ((m->mattr & MATTR_NOATTACK) == 0) &&
-            /* See if the object is a normal monster,
-               or just a docile creature in town */
-            ((obj->person == NULL) || 
-             (obj->person->movement_behavior == MOVEMENT_ATTACK_AVATAR))) {           
+        /* check if the object is an attacking monster and not
+           just a normal, docile person in town or an inanimate object */
+        if ((obj->objType != OBJECT_UNKNOWN) &&
+           ((obj->objType != OBJECT_MONSTER) || (obj->monster->mattr & MATTR_NOATTACK) == 0) &&
+           ((obj->objType != OBJECT_PERSON) || (obj->person->movement_behavior == MOVEMENT_ATTACK_AVATAR))) {
             
             if (mapMovementDistance(newx, newy, avatarx, avatary) == 1) {
                 attacker = obj;
@@ -456,7 +459,7 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
         }
 
         /* monster performed a special action that takes place of movement */
-        if (m && monsterSpecialAction(m))
+        if (obj->objType == OBJECT_MONSTER && monsterSpecialAction(obj->monster))
             continue;        
 
         /* otherwise, move it according to its movement behavior */
@@ -491,7 +494,7 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
         }
         
         /* If the creature doesn't fly, then it can be slowed */
-        if (slow && (m && (m->mattr & MATTR_FLIES)==0))
+        if (slow && (obj->objType == OBJECT_MONSTER && (obj->monster->mattr & MATTR_FLIES)==0))
             continue;
 
         if ((newx != obj->x || newy != obj->y) &&
@@ -508,7 +511,7 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
         }
 
         /* Affect any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
-        if (m) monsterSpecialEffect(obj);
+        if (obj->objType == OBJECT_MONSTER) monsterSpecialEffect(obj);
     }
 
     return attacker;
@@ -546,10 +549,13 @@ int mapNumberOfMonsters(const Map *map) {
 
     n = 0;
     while (obj) {
-        m = monsterForTile(obj->tile);
+        /*m = monsterForTile(obj->tile);
         if (obj->movement_behavior == MOVEMENT_ATTACK_AVATAR)
             n++;
         else if (m && (m->tile == WHIRLPOOL_TILE || m->tile == STORM_TILE))
+            n++;*/
+
+        if (obj->objType == OBJECT_MONSTER)
             n++;
 
         obj = obj->next;
