@@ -10,6 +10,7 @@
 #include <map>
 #include <SDL.h>
 
+#include "config.h"
 #include "cursors.h"
 #include "debug.h"
 #include "error.h"
@@ -28,7 +29,6 @@
 #include "u4_sdl.h"
 #include "u4file.h"
 #include "utils.h"
-#include "xml.h"
 #include "lzw/u4decode.h"
 
 using std::vector;
@@ -74,9 +74,9 @@ struct ImageInfo {
     int prescale;
     CompressionType filetype;
     int tiles;                  /* used to scale the without bleeding colors between adjacent tiles */
-    int introOnly;              /* whether can be freed after the intro */
+    bool introOnly;             /* whether can be freed after the intro */
     int transparentIndex;       /* color index to consider transparent */
-    int xu4Graphic;             /* an original xu4 graphic not part of u4dos or the VGA upgrade */
+    bool xu4Graphic;            /* an original xu4 graphic not part of u4dos or the VGA upgrade */
     ImageFixup fixup;           /* a routine to do miscellaneous fixes to the image */
     Image *image;
     map<string, SubImage *> subImages;
@@ -181,11 +181,11 @@ const struct {
 
 };
 
-void screenLoadGraphicsFromXml(void);
-ImageSet *screenLoadImageSetFromXml(xmlNodePtr node);
-ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node);
-SubImage *screenLoadSubImageFromXml(xmlNodePtr node);
-Layout *screenLoadLayoutFromXml(xmlNodePtr node);
+void screenLoadGraphicsFromConf(void);
+ImageSet *screenLoadImageSetFromConf(const ConfigElement &conf);
+ImageInfo *screenLoadImageInfoFromConf(const ConfigElement &conf);
+SubImage *screenLoadSubImageFromConf(const ConfigElement &conf);
+Layout *screenLoadLayoutFromConf(const ConfigElement &conf);
 ImageInfo *screenLoadImage(const string &name);
 void screenDrawSubImage(const string &name, int x, int y);
 SDL_Cursor *screenInitCursor(char *xpm[]);
@@ -209,7 +209,7 @@ void screenInit() {
     tilesInfo = NULL;
     gemTilesInfo = NULL;
 
-    screenLoadGraphicsFromXml();
+    screenLoadGraphicsFromConf();
 
     /* set up scaling parameters */
     scale = settings.scale;
@@ -303,27 +303,20 @@ const vector<string> &screenGetGemLayoutNames() {
     return gemLayoutNames;
 }
 
-void screenLoadGraphicsFromXml() {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;
+void screenLoadGraphicsFromConf() {
+    const Config *config = Config::getInstance();
 
-    doc = xmlParse("graphics.xml");
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "graphics") != 0)
-        errorFatal("malformed .xml");
+    vector<ConfigElement> graphicsConf = config->getElement("/config/graphics").getChildren();
+    for (std::vector<ConfigElement>::iterator i = graphicsConf.begin(); i != graphicsConf.end(); i++) {
 
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node))
-            continue;
-
-        if (xmlStrcmp(node->name, (const xmlChar *) "imageset") == 0) {
-            ImageSet *set = screenLoadImageSetFromXml(node);
+        if (i->getName() == "imageset") {
+            ImageSet *set = screenLoadImageSetFromConf(*i);
             imageSets[set->name] = set;
         }
-        else if (xmlStrcmp(node->name, (const xmlChar *) "layout") == 0)
-            layouts.push_back(screenLoadLayoutFromXml(node));
-        else if (xmlStrcmp(node->name, (const xmlChar *) "tileanimset") == 0)
-            tileanimSets.push_back(tileAnimSetLoadFromXml(node));
+        else if (i->getName() == "layout")
+            layouts.push_back(screenLoadLayoutFromConf(*i));
+        else if (i->getName() == "tileanimset")
+            tileanimSets.push_back(new TileAnimSet(*i));
     }
 
     imageSetNames.clear();
@@ -354,21 +347,18 @@ void screenLoadGraphicsFromXml() {
         errorFatal("no gem layout named %s found!\n", settings.gemLayout.c_str());
 }
 
-ImageSet *screenLoadImageSetFromXml(xmlNodePtr node) {
+ImageSet *screenLoadImageSetFromConf(const ConfigElement &conf) {
     ImageSet *set;
-    xmlNodePtr child;
 
     set = new ImageSet;
-    set->name = xmlGetPropAsString(node, "name");
-    set->location = xmlGetPropAsString(node, "location");
-    set->extends = xmlGetPropAsString(node, "extends");
+    set->name = conf.getString("name");
+    set->location = conf.getString("location");
+    set->extends = conf.getString("extends");
 
-    for (child = node->xmlChildrenNode; child; child = child->next) {
-        if (xmlNodeIsText(child))
-            continue;
-
-        if (xmlStrcmp(child->name, (const xmlChar *) "image") == 0) {
-            ImageInfo *info = screenLoadImageInfoFromXml(child);
+    vector<ConfigElement> children = conf.getChildren();
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+        if (i->getName() == "image") {
+            ImageInfo *info = screenLoadImageInfoFromConf(*i);
             set->info[info->name] = info;
         }
     }
@@ -376,36 +366,31 @@ ImageSet *screenLoadImageSetFromXml(xmlNodePtr node) {
     return set;
 }
 
-ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node) {
+ImageInfo *screenLoadImageInfoFromConf(const ConfigElement &conf) {
     ImageInfo *info;
-    xmlNodePtr child;
     static const char *filetypeEnumStrings[] = { "raw", "rle", "lzw", NULL };
     static const char *fixupEnumStrings[] = { "none", "intro", "introExtended", "abyss", "abacus", NULL };
 
     info = new ImageInfo;
-    info->name = xmlGetPropAsString(node, "name");
-    info->filename = xmlGetPropAsString(node, "filename");
-    info->width = xmlGetPropAsInt(node, "width");
-    info->height = xmlGetPropAsInt(node, "height");
-    info->depth = xmlGetPropAsInt(node, "depth");
-    info->prescale = xmlGetPropAsInt(node, "prescale");
-    info->filetype = (CompressionType) xmlGetPropAsEnum(node, "filetype", filetypeEnumStrings);
-    info->tiles = xmlGetPropAsInt(node, "tiles");
-    info->introOnly = xmlGetPropAsBool(node, "introOnly");
-    if (xmlPropExists(node, "transparentIndex"))
-        info->transparentIndex = xmlGetPropAsInt(node, "transparentIndex");
-    else
-        info->transparentIndex = -1;
-    info->xu4Graphic = xmlGetPropAsBool(node, "xu4Graphic");
-    info->fixup = (ImageFixup) xmlGetPropAsEnum(node, "fixup", fixupEnumStrings);
+    info->name = conf.getString("name");
+    info->filename = conf.getString("filename");
+    info->width = conf.getInt("width");
+    info->height = conf.getInt("height");
+    info->depth = conf.getInt("depth");
+    info->prescale = conf.getInt("prescale");
+    info->filetype = static_cast<CompressionType>(conf.getEnum("filetype", filetypeEnumStrings));
+    info->tiles = conf.getInt("tiles");
+    info->introOnly = conf.getBool("introOnly");
+    info->transparentIndex = conf.getInt("transparentIndex", -1);
+
+    info->xu4Graphic = conf.getBool("xu4Graphic");
+    info->fixup = static_cast<ImageFixup>(conf.getEnum("fixup", fixupEnumStrings));
     info->image = NULL;
 
-    for (child = node->xmlChildrenNode; child; child = child->next) {
-        if (xmlNodeIsText(child))
-            continue;
-
-        if (xmlStrcmp(child->name, (const xmlChar *) "subimage") == 0) {
-            SubImage *subimage = screenLoadSubImageFromXml(child);
+    vector<ConfigElement> children = conf.getChildren();
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+        if (i->getName() == "subimage") {
+            SubImage *subimage = screenLoadSubImageFromConf(*i);
             subimage->srcImageName = info->name;
             info->subImages[subimage->name] = subimage;
         }
@@ -414,41 +399,38 @@ ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node) {
     return info;
 }
 
-SubImage *screenLoadSubImageFromXml(xmlNodePtr node) {
+SubImage *screenLoadSubImageFromConf(const ConfigElement &conf) {
     SubImage *subimage;
 
     subimage = new SubImage;
-    subimage->name = xmlGetPropAsString(node, "name");
-    subimage->x = xmlGetPropAsInt(node, "x");
-    subimage->y = xmlGetPropAsInt(node, "y");
-    subimage->width = xmlGetPropAsInt(node, "width");
-    subimage->height = xmlGetPropAsInt(node, "height");
+    subimage->name = conf.getString("name");
+    subimage->x = conf.getInt("x");
+    subimage->y = conf.getInt("y");
+    subimage->width = conf.getInt("width");
+    subimage->height = conf.getInt("height");
 
     return subimage;
 }
 
-Layout *screenLoadLayoutFromXml(xmlNodePtr node) {
+Layout *screenLoadLayoutFromConf(const ConfigElement &conf) {
     Layout *layout;
-    xmlNodePtr child;
     static const char *typeEnumStrings[] = { "standard", "gem", NULL };
 
     layout = new Layout;
-    layout->name = xmlGetPropAsString(node, "name");
-    layout->type = (LayoutType) xmlGetPropAsEnum(node, "type", typeEnumStrings);
+    layout->name = conf.getString("name");
+    layout->type = static_cast<LayoutType>(conf.getEnum("type", typeEnumStrings));
 
-    for (child = node->xmlChildrenNode; child; child = child->next) {
-        if (xmlNodeIsText(child))
-            continue;
-
-        if (xmlStrcmp(child->name, (const xmlChar *) "tileshape") == 0) {
-            layout->tileshape.width = xmlGetPropAsInt(child, "width");
-            layout->tileshape.height = xmlGetPropAsInt(child, "height");
+    vector<ConfigElement> children = conf.getChildren();
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+        if (i->getName() == "tileshape") {
+            layout->tileshape.width = i->getInt("width");
+            layout->tileshape.height = i->getInt("height");
         }
-        else if (xmlStrcmp(child->name, (const xmlChar *) "viewport") == 0) {
-            layout->viewport.x = xmlGetPropAsInt(child, "x");
-            layout->viewport.y = xmlGetPropAsInt(child, "y");
-            layout->viewport.width = xmlGetPropAsInt(child, "width");
-            layout->viewport.height = xmlGetPropAsInt(child, "height");
+        else if (i->getName() == "viewport") {
+            layout->viewport.x = i->getInt("x");
+            layout->viewport.y = i->getInt("y");
+            layout->viewport.width = i->getInt("width");
+            layout->viewport.height = i->getInt("height");
         }
     }
 
@@ -679,7 +661,7 @@ ImageInfo *screenLoadImage(const string &name) {
         return NULL;
 
     if (info->xu4Graphic) {
-        string pathname(u4find_graphics(filename.c_str()));
+        string pathname(u4find_graphics(filename));
 
         if (!pathname.empty())
             file = u4fopen_stdio(pathname);
@@ -775,25 +757,20 @@ void screenFreeIntroBackgrounds() {
  * Loads the basic EGA palette from egaPalette.xml
  */
 int screenLoadPaletteEga() {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;    
-    int i = 0;
+    int index = 0;
+    const Config *config = Config::getInstance();
 
-    doc = xmlParse("egaPalette.xml");
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "egaPalette") != 0)
-        errorFatal("malformed egaPalette.xml");
-    
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) ||
-            xmlStrcmp(node->name, (const xmlChar *) "color") != 0)
+    vector<ConfigElement> paletteConf = config->getElement("/config/egaPalette").getChildren();
+    for (std::vector<ConfigElement>::iterator i = paletteConf.begin(); i != paletteConf.end(); i++) {
+
+        if (i->getName() != "color")
             continue;
         
-        egaPalette[i].r = xmlGetPropAsInt(node, "r");
-        egaPalette[i].g = xmlGetPropAsInt(node, "g");
-        egaPalette[i].b = xmlGetPropAsInt(node, "b");
+        egaPalette[index].r = i->getInt("red");
+        egaPalette[index].g = i->getInt("green");
+        egaPalette[index].b = i->getInt("blue");
 
-        i++;
+        index++;
     }
 
     return 1;
