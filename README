@@ -41,8 +41,9 @@ STATUS
 
 New in v0.6
  - many bug fixes
+ - lots of code reorganization
+ - better pathfinding code
  - all vendors, healers, taverns and inns now work
- - added data file tools documentation (doc/tools.txt)
 
 New in v0.5
  - lots of combat refinements, random monsters
