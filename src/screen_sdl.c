@@ -589,6 +589,9 @@ ImageSet *screenGetImageSet(const char *setname) {
     
     ASSERT(imageSets != NULL, "imageSets isn't initialized");
 
+    if (!setname)
+        return NULL;
+
     for (setNode = imageSets; setNode != NULL; setNode = setNode->next) {
         if (strcmp(((ImageSet *)setNode->data)->name, setname) == 0)
             return (ImageSet *) setNode->data;
@@ -646,16 +649,18 @@ SubImage *screenGetSubImage(const char *name) {
         setname = settings->videoType;
 
     set = screenGetImageSet(setname);
-    if (!set)
-        return NULL;
 
-    for (infoNode = set->info; infoNode != NULL; infoNode = infoNode->next) {
-        ImageInfo *info = (ImageInfo *) infoNode->data;
-        for (subimageNode = info->subImages; subimageNode != NULL; subimageNode = subimageNode->next) {
-            SubImage *subimage = (SubImage *) subimageNode->data;
-            if (strcmp(subimage->name, name) == 0)
-                return subimage;
+    while (set != NULL) {
+        for (infoNode = set->info; infoNode != NULL; infoNode = infoNode->next) {
+            ImageInfo *info = (ImageInfo *) infoNode->data;
+            for (subimageNode = info->subImages; subimageNode != NULL; subimageNode = subimageNode->next) {
+                SubImage *subimage = (SubImage *) subimageNode->data;
+                if (strcmp(subimage->name, name) == 0)
+                    return subimage;
+            }
         }
+
+        set = screenGetImageSet(set->extends);
     }
         
     return NULL;
