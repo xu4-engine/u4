@@ -20,7 +20,9 @@ typedef enum {
     ANIM_CASTLEFLAG,
     ANIM_WESTSHIPFLAG,
     ANIM_EASTSHIPFLAG,
-    ANIM_LCBFLAG
+    ANIM_LCBFLAG,
+    ANIM_TWOFRAMES,
+    ANIM_FOURFRAMES
 } TileAnimationStyle;
 
 int tileIsWalkable(unsigned char tile);

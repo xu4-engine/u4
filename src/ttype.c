@@ -120,7 +120,13 @@ TileAnimationStyle tileGetAnimationStyle(unsigned char tile) {
         return ANIM_EASTSHIPFLAG;
     else if (tile == 14)
         return ANIM_LCBFLAG;
-    
+    else if ((tile >= 32 && tile < 48) ||
+             (tile >= 80 && tile < 96) ||
+             (tile >= 132 && tile < 144))
+        return ANIM_TWOFRAMES;
+    else if (tile >= 144)
+        return ANIM_FOURFRAMES;
+
     return ANIM_NONE;
 }
 
