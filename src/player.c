@@ -11,6 +11,25 @@
 #include "map.h"
 
 /**
+ * Applies damage to a player, and changes status to dead if hit
+ * points drop to zero or below.
+ */
+void playerApplyDamage(SaveGamePlayerRecord *player, int damage) {
+    int newHp = player->hp;
+
+    if (newHp == 0 || player->status == STAT_DEAD)
+        return;
+
+    newHp -= damage;
+
+    if (newHp <= 0) {
+        player->status = STAT_DEAD;
+        newHp = 0;
+    }
+    player->hp = newHp;
+}
+
+/**
  * Determine what level a character has.
  */
 int playerGetRealLevel(const SaveGamePlayerRecord *player) {
@@ -241,3 +260,90 @@ void playerJoin(SaveGame *saveGame, const char *name) {
         }
     }
 }
+
+void playerEndTurn(SaveGame *saveGame) {
+    int i;
+
+    saveGame->moves++;
+    saveGame->food -= saveGame->members;
+    if (saveGame->food < 0) {
+        /* FIXME: handle starving */
+        saveGame->food = 0;
+    }
+
+    for (i = 0; i < saveGame->members; i++) {
+        switch (saveGame->players[i].status) {
+        case STAT_SLEEPING:
+            if (rand() % 5 == 0)
+                saveGame->players[i].status = STAT_GOOD;
+            break;
+
+        case STAT_POISONED:
+            playerApplyDamage(&saveGame->players[i], 2);
+            break;
+
+        default:
+            break;
+        }
+    }
+}
+
+void playerApplyEffect(SaveGame *saveGame, TileEffect effect) {
+    int i;
+
+    for (i = 0; i < saveGame->members; i++) {
+
+        if (saveGame->players[i].status == STAT_DEAD)
+            continue;
+
+        switch (effect) {
+        case EFFECT_NONE:
+            break;
+        case EFFECT_FIRE:
+            break;
+        case EFFECT_SLEEP:
+            if (rand() % 5 == 0)
+                saveGame->players[i].status = STAT_SLEEPING;
+            break;
+        case EFFECT_POISON:
+            if (rand() % 5 == 0)
+                saveGame->players[i].status = STAT_POISONED;
+            break;
+        default:
+            assert(0);
+        }
+    }
+
+}
+
+/**
+ * Whether or not the party can make an action.
+ */
+int playerPartyImmobilized(const SaveGame *saveGame) {
+    int i, immobile = 1;
+
+    for (i = 0; i < saveGame->members; i++) {
+        if (saveGame->players[i].status == STAT_GOOD ||
+            saveGame->players[i].status == STAT_POISONED) {
+            immobile = 0;
+        }
+    }
+
+    return immobile;
+}
+
+/**
+ * Whether or not all the party members are dead.
+ */
+int playerPartyDead(const SaveGame *saveGame) {
+    int i, dead = 1;
+
+    for (i = 0; i < saveGame->members; i++) {
+        if (saveGame->players[i].status != STAT_DEAD) {
+            dead = 0;
+        }
+    }
+
+    return dead;
+}
+

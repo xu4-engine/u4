@@ -6,6 +6,7 @@
 #define PLAYER_H
 
 #include "savegame.h"
+#include "ttype.h"
 
 typedef enum {
     KA_FOUND_ITEM,
@@ -21,6 +22,7 @@ typedef enum {
     KA_DIDNT_DONATE_BLOOD
 } KarmaAction;
 
+void playerApplyDamage(SaveGamePlayerRecord *player, int damage);
 int playerGetRealLevel(const SaveGamePlayerRecord *player);
 int playerGetMaxLevel(const SaveGamePlayerRecord *player);
 void playerAdvanceLevel(SaveGamePlayerRecord *player);
@@ -33,5 +35,9 @@ int playerAttemptElevation(SaveGame *saveGame, Virtue virtue);
 void playerGetChest(SaveGame *saveGame);
 int playerDonate(SaveGame *saveGame, int quantity);
 void playerJoin(SaveGame *saveGame, const char *name);
+void playerEndTurn(SaveGame *saveGame);
+void playerApplyEffect(SaveGame *saveGame, TileEffect effect);
+int playerPartyImmobilized(const SaveGame *saveGame);
+int playerPartyDead(const SaveGame *saveGame);
 
 #endif
