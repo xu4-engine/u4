@@ -160,6 +160,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
     case CONV_VENDORQUESTION:
     case CONV_BUY_ITEM:
     case CONV_SELL_ITEM:
+    case CONV_CONFIRMATION:
     case CONV_CONTINUEQUESTION:
         return CONVINPUT_CHARACTER;
         
@@ -184,6 +185,7 @@ const char *personGetChoices(const struct _Conversation *cnv) {
     case CONV_SELL_ITEM:
         return "abcdefghijklmnopqrstuvwxyz\033";
 
+    case CONV_CONFIRMATION:
     case CONV_CONTINUEQUESTION:
         return "ny\033";
 
