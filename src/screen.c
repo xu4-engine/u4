@@ -124,28 +124,30 @@ ScreenTileInfo screenViewportTile(int width, int height, int x, int y) {
     }
 }
 
-void screenUpdate(int showmap) {
+void screenUpdate(int showmap, int blackout) {
     ScreenTileInfo tileInfo;
     int y, x;
 
     assert(c != NULL);
 
-    if (showmap)
-        screenFindLineOfSight();
+    if (showmap) {
+        if (!blackout)
+            screenFindLineOfSight();
 
-    for (y = 0; y < VIEWPORT_H; y++) {
-        for (x = 0; x < VIEWPORT_W; x++) {
-            if (showmap && screenLos[x][y]) {
-                tileInfo = screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y);
-                screenShowTile(&tileInfo, x, y);
-            } else {
-                tileInfo.hasFocus = 0;
-                tileInfo.tile = BLACK_TILE;
-                screenShowTile(&tileInfo, x, y);
+        for (y = 0; y < VIEWPORT_H; y++) {
+            for (x = 0; x < VIEWPORT_W; x++) {
+                if (!blackout && screenLos[x][y]) {
+                    tileInfo = screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y);
+                    screenShowTile(&tileInfo, x, y);
+                } else {
+                    tileInfo.hasFocus = 0;
+                    tileInfo.tile = BLACK_TILE;
+                    screenShowTile(&tileInfo, x, y);
+                }
             }
         }
+        screenRedrawMapArea();
     }
-    screenRedrawMapArea();
 
     screenUpdateCursor();
     screenUpdateMoons();

@@ -62,20 +62,47 @@ const struct {
     int filter;
     int introAnim;
 } backgroundInfo[] = {
-    { "title.ega",   0, COMP_LZW, 1, 1 },
-    { "start.ega",   1, COMP_RLE, 1, 0 },
-    { "tree.ega",    0, COMP_LZW, 1, 1 },
-    { "portal.ega",  0, COMP_LZW, 1, 1  },
-    { "outside.ega", 0, COMP_LZW, 1, 1  },
-    { "inside.ega",  0, COMP_LZW, 1, 1  },
-    { "wagon.ega",   0, COMP_LZW, 1, 1  },
-    { "gypsy.ega",   0, COMP_LZW, 1, 1  },
-    { "abacus.ega",  0, COMP_LZW, 1, 1  },
-    { "honcom.ega",  0, COMP_LZW, 1, 1  },
-    { "valjus.ega",  0, COMP_LZW, 1, 1  },
-    { "sachonor.ega", 0, COMP_LZW, 1, 1  },
-    { "spirhum.ega", 0, COMP_LZW, 1, 1  },
-    { "animate.ega", 0, COMP_LZW, 1, 1  }
+    /* main game borders */
+    { "start.ega",    1, COMP_RLE, 1, 0 },
+
+    /* introduction screen images */
+    { "title.ega",    0, COMP_LZW, 1, 1 },
+    { "tree.ega",     0, COMP_LZW, 1, 1 },
+    { "portal.ega",   0, COMP_LZW, 1, 1 },
+    { "outside.ega",  0, COMP_LZW, 1, 1 },
+    { "inside.ega",   0, COMP_LZW, 1, 1 },
+    { "wagon.ega",    0, COMP_LZW, 1, 1 },
+    { "gypsy.ega",    0, COMP_LZW, 1, 1 },
+    { "abacus.ega",   0, COMP_LZW, 1, 1 },
+    { "honcom.ega",   0, COMP_LZW, 1, 1 },
+    { "valjus.ega",   0, COMP_LZW, 1, 1 },
+    { "sachonor.ega", 0, COMP_LZW, 1, 1 },
+    { "spirhum.ega",  0, COMP_LZW, 1, 1 },
+    { "animate.ega",  0, COMP_LZW, 1, 1 },
+
+    /* abyss vision images */
+    { "compassn.ega", 1, COMP_RLE, 1, 0 },
+    { "courage.ega",  1, COMP_RLE, 1, 0 },
+    { "honesty.ega",  1, COMP_RLE, 1, 0 },
+    { "honor.ega",    1, COMP_RLE, 1, 0 },
+    { "humility.ega", 1, COMP_RLE, 1, 0 },
+    { "justice.ega",  1, COMP_RLE, 1, 0 },
+    { "love.ega",     1, COMP_RLE, 1, 0 },
+    { "sacrific.ega", 1, COMP_RLE, 1, 0 },
+    { "spirit.ega",   1, COMP_RLE, 1, 0 },
+    { "truth.ega",    1, COMP_RLE, 1, 0 },
+    { "valor.ega",    1, COMP_RLE, 1, 0 },
+
+    /* shrine vision images */
+    { "rune_0.ega",   1, COMP_RLE, 1, 0 },
+    { "rune_1.ega",   1, COMP_RLE, 1, 0 },
+    { "rune_2.ega",   1, COMP_RLE, 1, 0 },
+    { "rune_3.ega",   1, COMP_RLE, 1, 0 },
+    { "rune_4.ega",   1, COMP_RLE, 1, 0 },
+    { "rune_5.ega",   1, COMP_RLE, 1, 0 },
+    { "rune_6.ega",   1, COMP_RLE, 1, 0 },
+    { "rune_7.ega",   1, COMP_RLE, 1, 0 },
+    { "rune_8.ega",   1, COMP_RLE, 1, 0 }
 };
 
 extern int verbose;
@@ -240,11 +267,49 @@ int screenLoadBackground(BackgroundType bkgd) {
                                  320, 200, 
                                  backgroundInfo[bkgd].filename, 
                                  backgroundInfo[bkgd].comp);
-    if (!ret && !forceVga)
+    if (!ret && !forceVga) {
+        BackgroundType egaBkgd;
+
+        /*
+         * The original EGA rune image files are mapped to the virtues
+         * differently than those provided with the VGA upgrade.  We
+         * must map the VGA rune screens (0 = INF, 1 = Honesty, 2 =
+         * Compassion, etc.) to their EGA equivalents (12012134 for
+         * the virtues, and 5 for infinity).
+         */
+        switch (bkgd) {
+        case BKGD_RUNE_INF:
+            egaBkgd = BKGD_RUNE_INF + 5;
+            break;
+        case BKGD_SHRINE_HON:
+        case BKGD_SHRINE_JUS:
+        case BKGD_SHRINE_HNR:
+            egaBkgd = BKGD_RUNE_INF + 1;
+            break;
+        case BKGD_SHRINE_COM:
+        case BKGD_SHRINE_SAC:
+            egaBkgd = BKGD_RUNE_INF + 2;
+            break;
+        case BKGD_SHRINE_VAL:
+            egaBkgd = BKGD_RUNE_INF + 0;
+            break;
+        case BKGD_SHRINE_SPI:
+            egaBkgd = BKGD_RUNE_INF + 3;
+            break;
+        case BKGD_SHRINE_HUM:
+            egaBkgd = BKGD_RUNE_INF + 4;
+            break;
+        default:
+            egaBkgd = bkgd;
+            break;
+        }
+
         ret = screenLoadImageEga(&unscaled, 
                                  320, 200, 
-                                 backgroundInfo[bkgd].filename, 
-                                 backgroundInfo[bkgd].comp);
+                                 backgroundInfo[egaBkgd].filename, 
+                                 backgroundInfo[egaBkgd].comp);
+    }
+
     if (!ret)
         return 0;
 
@@ -358,7 +423,7 @@ int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char 
     FILE *in;
     SDL_Surface *img;
     int x, y;
-    unsigned char *data;
+    unsigned char *data = NULL;
     long decompResult;
 
     in = u4fopen(filename);
@@ -382,6 +447,8 @@ int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char 
     }
 
     if (decompResult == -1) {
+        if (data)
+            free(data);
         u4fclose(in);
         return 0;
     }
@@ -415,7 +482,7 @@ int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char 
     FILE *in;
     SDL_Surface *img;
     int x, y;
-    unsigned char *data;
+    unsigned char *data = NULL;
     long decompResult;
 
     in = u4fopen(filename);
@@ -440,6 +507,8 @@ int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char 
 
     if (decompResult == -1 ||
         decompResult != (width * height)) {
+        if (data)
+            free(data);
         u4fclose(in);
         return 0;
     }
@@ -483,6 +552,26 @@ void screenDrawBackground(BackgroundType bkgd) {
     r.y = 0;
     r.w = 320 * scale;
     r.h = 200 * scale;
+    SDL_BlitSurface(bkgds[bkgd], &r, screen, &r);
+}
+
+void screenDrawBackgroundInMapArea(BackgroundType bkgd) {
+    SDL_Rect r;
+
+    assert(bkgd < BKGD_MAX);
+
+    if (bkgds[bkgd] == NULL) {
+        if (!screenLoadBackground(bkgd)) {
+            fprintf(stderr, "Unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/\n");
+            exit(1);
+        }
+    }
+
+    r.x = BORDER_WIDTH * scale;
+    r.y = BORDER_HEIGHT * scale;
+    r.w = VIEWPORT_W * TILE_WIDTH * scale;
+    r.h = VIEWPORT_W * TILE_WIDTH * scale;
+
     SDL_BlitSurface(bkgds[bkgd], &r, screen, &r);
 }
 
@@ -751,7 +840,7 @@ void screenShowCard(int pos, int card) {
     SDL_BlitSurface(bkgds[card / 2 + BKGD_HONCOM], &src, screen, &dest);
 }
 
-void screenShowBeastie(int beast, int frame) {
+void screenShowBeastie(int beast, int vertoffset, int frame) {
     SDL_Rect src, dest;
     int col, row, destx;
     
@@ -778,7 +867,7 @@ void screenShowBeastie(int beast, int frame) {
     destx = beast ? (320 - 48) : 0;
 
     dest.x = destx * scale;
-    dest.y = 0 * scale;
+    dest.y = vertoffset * scale;
     dest.w = src.w;
     dest.h = src.h;
 
@@ -866,8 +955,7 @@ SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
     SDL_Surface *dest;
     Uint32 rmask, gmask, bmask, amask;
 
-    /* this bilinear scaler works only with 8-bit source images, scaled by 2x */
-    assert(src->format->palette);
+    /* this scaler works only with images scaled by 2x */
     assert(scale == 2);
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN

@@ -6,8 +6,8 @@
 #define SCREEN_H
 
 typedef enum {
-    BKGD_INTRO,
     BKGD_BORDERS,
+    BKGD_INTRO,
     BKGD_TREE,
     BKGD_PORTAL,
     BKGD_OUTSIDE,
@@ -20,6 +20,26 @@ typedef enum {
     BKGD_SACHONOR,
     BKGD_SPIRHUM,
     BKGD_ANIMATE,
+    BKGD_COMPASSN,
+    BKGD_COURAGE,
+    BKGD_HONESTY,
+    BKGD_HONOR,
+    BKGD_HUMILITY,
+    BKGD_JUSTICE,
+    BKGD_LOVE,
+    BKGD_SACRIFIC,
+    BKGD_SPIRIT,
+    BKGD_TRUTH,
+    BKGD_VALOR,
+    BKGD_RUNE_INF,
+    BKGD_SHRINE_HON,
+    BKGD_SHRINE_COM,
+    BKGD_SHRINE_VAL,
+    BKGD_SHRINE_JUS,
+    BKGD_SHRINE_SAC,
+    BKGD_SHRINE_HNR,
+    BKGD_SHRINE_SPI,
+    BKGD_SHRINE_HUM,
     BKGD_MAX
 } BackgroundType;
 
@@ -34,6 +54,7 @@ void screenFixIntroScreen(const unsigned char *sigData);
 void screenFreeIntroAnimations();
 void screenFreeIntroBackgrounds();
 void screenDrawBackground(BackgroundType bkgd);
+void screenDrawBackgroundInMapArea(BackgroundType bkgd);
 void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y);
 void screenShowGemTile(const ScreenTileInfo *tileInfo, int x, int y);
 void screenShowChar(int chr, int x, int y);
@@ -42,7 +63,7 @@ void screenTextAt(int x, int y, char *fmt, ...);
 void screenMessage(const char *fmt, ...);
 void screenScrollMessageArea(void);
 ScreenTileInfo screenViewportTile(int width, int height, int x, int y);
-void screenUpdate(int showmap);
+void screenUpdate(int showmap, int blackout);
 void screenGemUpdate(void);
 void screenRedrawScreen(void);
 void screenRedrawMapArea(void);
@@ -50,7 +71,7 @@ void screenRedrawTextArea(int x, int y, int width, int height);
 void screenAnimateIntro(int frame);
 void screenEraseTextArea(int x, int y, int width, int height);
 void screenShowCard(int pos, int card);
-void screenShowBeastie(int beast, int frame);
+void screenShowBeastie(int beast, int vertoffset, int frame);
 void screenCycle(void);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);
