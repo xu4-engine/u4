@@ -49,7 +49,7 @@ extern Map shore_map;
 extern Map shorship_map;
 
 Map *oldmap;
-int olddngx, olddngy;
+int olddngx, olddngy, oldlevel;
 Object *monsterObj;
 int focus;
 Object *party[8];
@@ -78,7 +78,12 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
     oldmap = c->map;
     olddngx = c->saveGame->dngx;
     olddngy = c->saveGame->dngy;
-    gameSetMap(c, getCombatMapForTile(partytile, transport), 1);
+    oldlevel = c->saveGame->dnglevel;
+    gameSetMap(c, getCombatMapForTile(partytile, transport), 0, NULL);
+    c->saveGame->dngx = c->saveGame->x;
+    c->saveGame->dngy = c->saveGame->y;
+    c->saveGame->x = 5;
+    c->saveGame->y = 5;
 
     musicPlay();
 
@@ -111,6 +116,7 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
     screenMessage("\n**** COMBAT ****\n\n");
 
     screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, getWeaponName(c->saveGame->players[focus].weapon));
+    statsHighlightCharacter(focus);
 }
 
 
@@ -247,6 +253,7 @@ void combatFinishTurn() {
 
     screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, getWeaponName(c->saveGame->players[focus].weapon));
     statsUpdate();
+    statsHighlightCharacter(focus);
 }
 
 int combatBaseKeyHandler(int key, void *data) {
@@ -480,6 +487,7 @@ void combatEnd() {
     c->map = oldmap;
     c->saveGame->x = c->saveGame->dngx;
     c->saveGame->y = c->saveGame->dngy;
+    c->saveGame->dnglevel = oldlevel;
     c->saveGame->dngx = olddngx;
     c->saveGame->dngy = olddngy;
     c->col = 0;
