@@ -5,6 +5,8 @@
 #ifndef TTYPE_H
 #define TTYPE_H
 
+#define AVATAR_TILE 0x1f
+
 typedef enum {
     DIR_WEST,
     DIR_NORTH,
