@@ -53,10 +53,10 @@ bool isCombatMap(Map *punknown) {
  * is not a combat map.
  */
 CombatMap *getCombatMap(Map *punknown) {
-	Map *m = punknown ? punknown : c->location->map;
-	if (!isCombatMap(m))
-		return NULL;
-	else return dynamic_cast<CombatMap*>(m);
+    Map *m = punknown ? punknown : c->location->map;
+    if (!isCombatMap(m))
+        return NULL;
+    else return dynamic_cast<CombatMap*>(m);
 }
 
 /**
@@ -95,9 +95,9 @@ void CombatController::showCombatMessage(bool show)         { showMessage = show
 void CombatController::init(class Creature *m) {
     int i;
     
-    creature = m;	
+    creature = m;    
     placeCreaturesOnMap = (m == NULL) ? false : true;
-	placePartyOnMap = true;	
+    placePartyOnMap = true;    
     winOrLose = true;
     map->setDungeonRoom(false);
     map->setAltarRoom(VIRT_NONE);
@@ -161,9 +161,9 @@ void CombatController::initDungeonRoom(int room, Direction from) {
         /* load in creatures and creature start coordinates */
         for (i = 0; i < AREA_CREATURES; i++) {
             if (dng->rooms[room].creature_tiles[i] > 0) {
-				placeCreaturesOnMap = true;
+                placeCreaturesOnMap = true;
                 creatureTable[i] = ::creatures.getByTile(dng->rooms[room].creature_tiles[i]);
-			}
+            }
             map->creature_start[i].x = dng->rooms[room].creature_start_x[i];
             map->creature_start[i].y = dng->rooms[room].creature_start_y[i];            
         }
@@ -208,8 +208,8 @@ void CombatController::begin() {
     int i;
     bool partyIsReadyToFight = false;    
     
-    /* place party members on the map */	
-	if (placePartyOnMap)        
+    /* place party members on the map */    
+    if (placePartyOnMap)        
         placePartyMembers();    
 
     /* place creatures on the map */
@@ -279,8 +279,8 @@ void CombatController::end(bool adjustKarma) {
                     c->location->map->addObject(ship, ship, coords);
                 }
             }
-			
-			screenMessage("\nVictory!\n");
+            
+            screenMessage("\nVictory!\n");
         }
         else if (!c->party->isDead()) {
             /* minus points for fleeing from evil creatures */
@@ -426,9 +426,9 @@ bool CombatController::isWon() const {
  * Returns true if the player has lost.
  */
 bool CombatController::isLost() const {
-	PartyMemberVector party = map->getPartyMembers();
+    PartyMemberVector party = map->getPartyMembers();
     if (party.size())
-		return false;
+        return false;
     return true;
 }
 
@@ -466,7 +466,7 @@ void CombatController::placePartyMembers() {
     int i;
     party.clear();
     
-	for (i = 0; i < c->party->size(); i++) {
+    for (i = 0; i < c->party->size(); i++) {
         PartyMember *p = c->party->member(i);        
         p->setFocus(false); // take the focus off of everyone        
 
@@ -488,15 +488,14 @@ bool CombatController::setActivePlayer(int player) {
     PartyMember *p = party[player];
     
     if (p && !p->isDisabled()) {        
-		if (party[focus])
-			party[focus]->setFocus(false);        
+        if (party[focus])
+            party[focus]->setFocus(false);        
 
         p->setFocus();
         focus = player;
 
-        screenMessage("%s with %s\n\020", p->getName().c_str(), Weapon::get(p->getWeapon())->getName().c_str());
-        statsUpdate(); /* If a character was awakened inbetween world view and combat, this fixes stats info */
-        statsHighlightCharacter(focus);
+        screenMessage("%s with %s\n\020", p->getName().c_str(), Weapon::get(p->getWeapon())->getName().c_str());        
+        c->stats->highlightPlayer(focus);        
         return true;
     }
     
@@ -518,7 +517,7 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
     Coords old = info->prev;    
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
     MapTile groundTile;    
-	Creature *creature;
+    Creature *creature;
 
     info->prev = coords;    
 
@@ -540,7 +539,7 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
 
         /* show the 'miss' tile */
         attackFlash(old, misstile, 3);
-		soundPlay(SOUND_MISSED, false);
+        soundPlay(SOUND_MISSED, false);
 
         /* This goes here so messages are shown in the original order */
         screenMessage("Missed!\n");
@@ -581,15 +580,15 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
         
             /* show the 'miss' tile */
             attackFlash(coords, misstile, 3);
-			soundPlay(SOUND_MISSED, false);
+            soundPlay(SOUND_MISSED, false);
 
         } else { /* The weapon hit! */
 
             /* show the 'hit' tile */
-            attackFlash(coords, hittile, 3);			
+            attackFlash(coords, hittile, 3);            
 
             /* apply the damage to the creature */
-			if (!attacker->dealDamage(creature, attacker->getDamage()))
+            if (!attacker->dealDamage(creature, attacker->getDamage()))
                 creature = NULL;
 
             /* creature is still alive and has the chance to divide - xu4 enhancement */
@@ -639,9 +638,9 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
         target = isCreature(attacker) ? cm->partyMemberAt(coords) : cm->creatureAt(coords);
 
         /* If we haven't hit something valid, stop now */
-        if (!target) {			
-            cm->annotations->add(coords, misstile, true);			
-            gameUpdateScreen();			
+        if (!target) {            
+            cm->annotations->add(coords, misstile, true);            
+            gameUpdateScreen();            
     
             /* Based on attack speed setting in setting struct, make a delay for
                the attack annotation */
@@ -656,8 +655,8 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
   
         /* Monster's ranged attacks never miss */
 
-		/* show the 'hit' tile */
-        attackFlash(coords, hittile, 4);		
+        /* show the 'hit' tile */
+        attackFlash(coords, hittile, 4);        
 
         /* These effects happen whether or not the opponent was hit */
         switch(effect) {
@@ -676,15 +675,15 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
             /* see if the player is poisoned */
             if ((xu4_random(2) == 0) && (target->getStatus() != STAT_POISONED)) {
                 target->addStatus(STAT_POISONED);
-				soundPlay(SOUND_PLAYERHIT, false);
-			}
+                soundPlay(SOUND_PLAYERHIT, false);
+            }
             else screenMessage("Failed.\n");
             break;
         
         case EFFECT_SLEEP:
 
             screenMessage("\n%s Slept!\n", target->getName().c_str());
-			soundPlay(SOUND_PLAYERHIT, false);
+            soundPlay(SOUND_PLAYERHIT, false);
 
             /* see if the player is put to sleep */
             if (xu4_random(2) == 0)
@@ -711,7 +710,7 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
 
     }
     else {
-		soundPlay(SOUND_MISSED, false);
+        soundPlay(SOUND_MISSED, false);
 
         /* If the creature leaves a tile behind, do it here! (lava lizard, etc) */
         groundTile = cm->tileAt(old, WITH_GROUND_OBJECTS);
@@ -728,7 +727,7 @@ bool CombatController::returnWeaponToOwner(MapCoords coords, int distance, void 
     int i;
     MapTile misstile;
     CoordActionInfo* info = (CoordActionInfo*)data;
-	const Weapon *weapon = Weapon::get(c->combat->party[info->player]->getWeapon());
+    const Weapon *weapon = Weapon::get(c->combat->party[info->player]->getWeapon());
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
     MapCoords new_coords = coords;
     
@@ -782,8 +781,7 @@ void CombatController::finishTurn(void) {
     int quick;
 
     /* return to party overview */
-    c->statsView = STATS_PARTY_OVERVIEW;
-    statsUpdate();
+    c->stats->showPartyView();    
 
     if (ct->isWon() && ct->winOrLose) {
         eventHandlerPopKeyHandler();
@@ -797,7 +795,7 @@ void CombatController::finishTurn(void) {
         player->applyEffect(tileGetEffect(c->location->map->tileAt(player->getCoords(), WITH_GROUND_OBJECTS)));
     }
 
-    quick = (c->aura == AURA_QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;
+    quick = (*c->aura == AURA_QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;
 
     /* check to see if the player gets to go again (and is still alive) */
     if (!quick || player->isDisabled()){    
@@ -808,10 +806,8 @@ void CombatController::finishTurn(void) {
             /* put a sleeping person in place of the player,
                or restore an awakened member to their original state */            
             if (player) {                
-                if (player->getStatus() == STAT_SLEEPING && (xu4_random(8) == 0)) {
-                    player->wakeUp();                    
-                    statsUpdate();
-                }
+                if (player->getStatus() == STAT_SLEEPING && (xu4_random(8) == 0))
+                    player->wakeUp();                
 
                 /* remove focus from the current party member */
                 player->setFocus(false);
@@ -837,11 +833,8 @@ void CombatController::finishTurn(void) {
                 /* adjust moves */
                 c->party->endTurn();
 
-                /* check if aura has expired */
-                if (c->auraDuration > 0) {
-                    if (--c->auraDuration == 0)
-                        c->aura = AURA_NONE;
-                }                
+                /* count down our aura (if we have one) */
+                c->aura->passTurn();                
 
                 /** 
                  * ====================
@@ -856,7 +849,7 @@ void CombatController::finishTurn(void) {
                 ct->applyCreatureTileEffects();                
 
                 /* check to see if combat is over */
-                if (ct->isLost()) {					
+                if (ct->isLost()) {                    
                     eventHandlerPopKeyHandler();
                     ct->end(true);
                     return;
@@ -1003,8 +996,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
 
     case 'r':
         {
-            c->statsView = STATS_WEAPONS;
-            statsUpdate();
+            c->stats->showWeapons();
 
             alphaInfo = new AlphaActionInfo;
             alphaInfo->lastValidLetter = WEAP_MAX + 'a' - 1;
@@ -1046,8 +1038,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
             screenMessage("Use which item:\n");
             gameGetInput(&useItem, &itemNameBuffer);
 
-            c->statsView = STATS_ITEMS;
-            statsUpdate();
+            c->stats->showItems();            
 
             return true;
         }
@@ -1065,8 +1056,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
 
     case 'z': 
         {            
-            c->statsView = static_cast<StatsView>(STATS_CHAR1 + ct->getFocus());
-            statsUpdate();
+            c->stats->showPlayerDetails(ct->getFocus());            
 
             /* reset the spell mix menu and un-highlight the current item,
                and hide reagents that you don't have */            
@@ -1108,7 +1098,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
     case '8':
     case '9':
         if (settings.enhancements && settings.enhancementsOptions.activePlayer)
-			gameSetActivePlayer(key - '1');            
+            gameSetActivePlayer(key - '1');            
         else screenMessage("Bad command\n");
 
         break;    

@@ -114,7 +114,6 @@ int campHeal(HealType heal_type) {
         if ((m->getHp() < m->getMaxHp()) && m->heal(heal_type))
             healed = true;
     }
-    statsUpdate();
 
     return healed;
 }
@@ -180,7 +179,7 @@ void innTimer(void *data) {
         delete c->combat;
         c->combat = new CombatController(mapid);        
         c->combat->init(creature);
-		c->combat->setInn(true);
+        c->combat->setInn(true);
         c->combat->showCombatMessage(showMessage);  
         c->combat->begin();
     }

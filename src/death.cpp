@@ -109,8 +109,7 @@ void deathRevive() {
     c->location->coords.y = REVIVE_CASTLE_Y;
     c->location->coords.z = 0;
 
-    c->aura = AURA_NONE;
-    c->auraDuration = 0;
+    c->aura->set();
     c->horseSpeed = 0;
     c->lastCommandTime = time(NULL);    
     musicPlay();
@@ -119,7 +118,6 @@ void deathRevive() {
 
     screenEnableCursor();
     screenShowCursor();
-    c->statsView = STATS_PARTY_OVERVIEW;
-    statsUpdate();
+    c->stats->showPartyView();    
     screenRedrawScreen();
 }

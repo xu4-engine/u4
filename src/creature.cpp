@@ -13,10 +13,10 @@
 #include "debug.h"
 #include "error.h"
 #include "event.h"
-#include "game.h"	/* required by specialAction and specialEffect functions */
+#include "game.h"    /* required by specialAction and specialEffect functions */
 #include "location.h"
 #include "map.h"
-#include "player.h"	/* required by specialAction and specialEffect functions */
+#include "player.h"    /* required by specialAction and specialEffect functions */
 #include "savegame.h"
 #include "screen.h" /* FIXME: remove dependence on this */
 #include "settings.h"
@@ -312,11 +312,8 @@ void Creature::act() {
     if (getStatus() == STAT_SLEEPING)
         return;
 
-    if (negates()) {
-        c->aura = AURA_NEGATE;
-        c->auraDuration = 2;
-        statsUpdate();
-    }
+    if (negates())
+        c->aura->set(AURA_NEGATE, 2);
 
     /* default action */
     action = CA_ATTACK;        
@@ -329,10 +326,10 @@ void Creature::act() {
         /* creatures who ranged attack do so 1/4 of the time.
            make sure their ranged attack is not negated! */
         else if (ranged != 0 && xu4_random(4) == 0 && 
-                 ((rangedhittile != MAGICFLASH_TILE) || (c->aura != AURA_NEGATE)))
+                 ((rangedhittile != MAGICFLASH_TILE) || (*c->aura != AURA_NEGATE)))
             action = CA_RANGED;
         /* creatures who cast sleep do so 1/4 of the time they don't ranged attack */
-        else if (castsSleep() && (c->aura != AURA_NEGATE) && (xu4_random(4) == 0))
+        else if (castsSleep() && (*c->aura != AURA_NEGATE) && (xu4_random(4) == 0))
             action = CA_CAST_SLEEP;
     
         else if (getState() == MSTAT_FLEEING)
@@ -353,7 +350,7 @@ void Creature::act() {
     switch(action) {
     case CA_ATTACK:
         if (attackHit(target)) {            
-            CombatController::attackFlash(target->getCoords(), HITFLASH_TILE, 3);			
+            CombatController::attackFlash(target->getCoords(), HITFLASH_TILE, 3);            
             if (!dealDamage(target, getDamage()))
                 target = NULL;
 
@@ -465,9 +462,7 @@ void Creature::act() {
         }
         
         break;
-    }        
-    statsUpdate();
-    screenRedrawScreen();
+    }    
 }
 
 void Creature::addStatus(StatusType s) {
@@ -564,7 +559,7 @@ Creature *Creature::nearestOpponent(int *dist, bool ranged) {
     Creature *opponent = NULL;
     int d, leastDist = 0xFFFF;    
     ObjectDeque::iterator i;
-    bool opp = (c->aura == AURA_JINX) ? false : true;
+    bool opp = (*c->aura == AURA_JINX) ? false : true;
 
     for (i = map->objects.begin(); i < map->objects.end(); i++) {
         bool player = isPartyMember(this);
@@ -626,19 +621,19 @@ void Creature::wakeUp() {
  * Returns true if the creature still exists after the damage has been applied
  * or false, if the creature was destroyed
  */
-bool Creature::applyDamage(int damage) {	
-	/* deal the damage */
-	if (id != LORDBRITISH_ID)
-		AdjustValueMin(hp, -damage, 0);	
+bool Creature::applyDamage(int damage) {    
+    /* deal the damage */
+    if (id != LORDBRITISH_ID)
+        AdjustValueMin(hp, -damage, 0);    
 
     switch (getState()) {
 
     case MSTAT_DEAD:        
         screenMessage("%s Killed!\nExp. %d\n", name.c_str(), xp);
-		
-		// Remove yourself from the map
+        
+        // Remove yourself from the map
         if (map) {
-		    map->removeObject(this);
+            map->removeObject(this);
             return false;
         }
         break;
@@ -667,8 +662,8 @@ bool Creature::applyDamage(int damage) {
 }
 
 bool Creature::dealDamage(Creature *m, int damage) {
-	soundPlay(SOUND_CREATUREATTACK, false);
-	return m->applyDamage(damage);
+    soundPlay(SOUND_CREATUREATTACK, false);
+    return m->applyDamage(damage);
 }
 
 /**

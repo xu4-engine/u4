@@ -48,9 +48,9 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
     /* if you're on ship, you must turn first! */
     if (c->transportContext == TRANSPORT_SHIP) {
         if (tileGetDirection((MapTile)c->saveGame->transport) != dir) {
-	        temp = (MapTile)c->saveGame->transport;
+            temp = (MapTile)c->saveGame->transport;
             tileSetDirection(&temp, dir);
-	        c->saveGame->transport = temp;
+            c->saveGame->transport = temp;
             return (MoveReturnValue)(MOVE_TURNED | MOVE_END_TURN);
         }
     }
@@ -59,9 +59,9 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
     if (c->transportContext == TRANSPORT_HORSE) {
         if ((dir == DIR_WEST || dir == DIR_EAST) &&
             tileGetDirection((MapTile)c->saveGame->transport) != dir) {
-	    temp = (MapTile)c->saveGame->transport;
+        temp = (MapTile)c->saveGame->transport;
             tileSetDirection(&temp, dir);
-	    c->saveGame->transport = temp;
+        c->saveGame->transport = temp;
         }
     }
 

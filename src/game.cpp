@@ -167,12 +167,11 @@ void gameInit() {
     c->conversation.script = new Script();
     c->line = TEXT_AREA_H - 1;
     c->col = 0;
-    c->statsView = STATS_PARTY_OVERVIEW;
+    c->stats = new StatsArea();
     c->moonPhase = 0;
     c->windDirection = DIR_NORTH;
     c->windCounter = 0;
-    c->aura = AURA_NONE;
-    c->auraDuration = 0;
+    c->aura = new Aura();    
     c->horseSpeed = 0;
     c->opacity = 1;
     c->lastCommandTime = time(NULL);
@@ -187,7 +186,11 @@ void gameInit() {
         errorFatal("no savegame found!");
 
     /* initialize our party */
-    c->party = new Party(c->saveGame);
+    c->party = new Party(c->saveGame);    
+
+    /* add some observers */
+    c->aura->addObserver(c->stats);
+    c->party->addObserver(c->stats);
 
     c->combat = new CombatController();
 
@@ -252,7 +255,6 @@ void gameInit() {
 
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
-    playerSetItemStatsChangedCallback(&statsUpdate);
     playerSetSpellEffectCallback(&gameSpellEffect);
     playerSetPartyStarvingCallback(&gamePartyStarving);
     playerSetSetTransportCallback(&gameSetTransport);
@@ -260,9 +262,10 @@ void gameInit() {
 
     musicPlay();
     screenDrawImage(BKGD_BORDERS);
-    statsUpdate();
+    c->stats->update(); /* draw the party stats */
+
     screenMessage("Press Alt-h for help\n");
-    screenPrompt();    
+    screenPrompt();
 
     /* reagents menu */    
     spellMixMenu.add(0, getReagentName((Reagent)0), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
@@ -275,7 +278,7 @@ void gameInit() {
     spellMixMenu.add(7, getReagentName((Reagent)7), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
     gameResetSpellMixing();
 
-    eventHandlerPushMouseAreaSet(mouseAreas);
+    eventHandlerPushMouseAreaSet(mouseAreas);    
 }
 
 /**
@@ -575,17 +578,13 @@ void gameFinishTurn() {
         /* adjust food and moves */
         c->party->endTurn();
 
-        /* check if aura has expired */
-        if (c->auraDuration > 0) {
-            if (--c->auraDuration == 0)
-                c->aura = AURA_NONE;
-        }
+        /* count down the aura, if there is one */
+        c->aura->passTurn();        
 
         gameCheckHullIntegrity();
 
         /* update party stats */
-        c->statsView = STATS_PARTY_OVERVIEW;
-        statsUpdate();
+        c->stats->showPartyView();        
 
         /* Creatures cannot spawn, move or attack while the avatar is on the balloon */
         /* FIXME: balloonstate is causing problems when mixed with torchduration --
@@ -650,7 +649,6 @@ void gameFinishTurn() {
  */
 void gameLostEighth(Virtue virtue) {
     screenMessage("\n Thou hast lost\n  an eighth!\n");
-    statsUpdate();
 }
 
 void gameAdvanceLevel(PartyMember *player) {
@@ -675,7 +673,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
     SpellEffect effect = SPELLEFFECT_INVERT;
         
     if (player >= 0)
-        statsHighlightCharacter(player);
+        c->stats->highlightPlayer(player);
 
     /* recalculate spell speed - based on 5/sec */
     time = settings.spellEffectSpeed * 200;
@@ -722,8 +720,6 @@ void gameSpellEffect(int spell, int player, Sound sound) {
 
         break;
     }
-    
-    statsUpdate();
 }
 
 void gameCastSpell(unsigned int spell, int caster, int param) {
@@ -1122,8 +1118,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         screenMessage("%s", alphaInfo->prompt.c_str());
         eventHandlerPushKeyHandlerWithData(&gameGetAlphaChoiceKeyHandler, alphaInfo);        
 
-        c->statsView = STATS_MIXTURES;
-        statsUpdate();
+        c->stats->showMixtures();
         break;
 
     case 'n':
@@ -1223,8 +1218,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
         if (settings.enhancements) {
             /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
-            c->statsView = STATS_ITEMS;
-            statsUpdate();
+            c->stats->showItems();
         }
         break;
 
@@ -1340,9 +1334,7 @@ bool gameBaseKeyHandler(int key, void *data) {
     }
     else if (!endTurn) {
         /* if our turn did not end, then manually redraw the text prompt */    
-        screenPrompt();
-        screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);    
-        statsUpdate();
+        screenPrompt();        
     }
 
     return valid || keyHandlerDefault(key, NULL);
@@ -1608,8 +1600,7 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
         {
             screenHideCursor();
             eventHandlerPopKeyHandler();
-            c->statsView = STATS_MIXTURES;
-            statsUpdate();
+            c->stats->showMixtures();
          
             screenMessage("How many? ");
             
@@ -1620,8 +1611,7 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
         else {
             eventHandlerPopKeyHandler();
             eventHandlerPopKeyHandlerData();
-            c->statsView = STATS_PARTY_OVERVIEW;
-            statsUpdate();
+            c->stats->showPartyView();
             screenEnableCursor();
             (*c->location->finishTurn)();
         }
@@ -1635,8 +1625,7 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
         mixtureDelete(mix);
 
         screenHideCursor();
-        c->statsView = STATS_PARTY_OVERVIEW;
-        statsUpdate();
+        c->stats->showPartyView();
         screenMessage("\n");
         
         screenEnableCursor();
@@ -1644,8 +1633,7 @@ bool gameSpellMixMenuKeyHandler(int key, void *data) {
     default:
         return false;
     }
-    
-    statsUpdate();
+
     return true;
 }
 
@@ -1730,19 +1718,17 @@ bool gameZtatsKeyHandler(int key, void *data) {
     switch (key) {
     case U4_UP:
     case U4_LEFT:
-        statsPrevItem();
+        c->stats->prevItem();
         break;
     case U4_DOWN:
     case U4_RIGHT:
-        statsNextItem();
+        c->stats->nextItem();
         break;
     default:
         eventHandlerPopKeyHandler();
         (*c->location->finishTurn)();
         break;
     }
-
-    statsUpdate();
 
     return true;
 }
@@ -1837,7 +1823,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         c->saveGame->runes = 0xff;
         c->saveGame->food = 999900;
         c->saveGame->gold = 9999;
-        statsUpdate();
+        c->stats->update();
         break;
 
     case 'k':
@@ -1912,7 +1898,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         screenMessage("\nFull Virtues!\n");
         for (i = 0; i < 8; i++)
             c->saveGame->karma[i] = 0;
-        statsUpdate();
+        c->stats->update();
         screenPrompt();
         break;
 
@@ -1965,7 +1951,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
             c->saveGame->karma[key - U4_FKEY] += 10;
         if (c->saveGame->karma[key - U4_FKEY] > 99)
             c->saveGame->karma[key - U4_FKEY] = 99;
-        statsUpdate();
+        c->stats->update();
         screenPrompt();
         break;
 
@@ -2022,7 +2008,7 @@ bool windCmdKeyHandler(int key, void *data) {
     }
 
     eventHandlerPopKeyHandler();
-    statsUpdate();
+    c->stats->update();
     screenPrompt();
 
     return true;
@@ -2124,8 +2110,7 @@ bool gameCastForPlayer(int player) {
         return false;
     }
 
-    c->statsView = STATS_MIXTURES;
-    statsUpdate();
+    c->stats->showMixtures();
 
     info = new AlphaActionInfo;
     info->lastValidLetter = 'z';
@@ -2145,8 +2130,7 @@ bool castForPlayer2(int spell, void *data) {
 
     screenMessage("%s!\n", spellGetName(spell));    
 
-    c->statsView = STATS_PARTY_OVERVIEW;
-    statsUpdate();
+    c->stats->showPartyView();
 
     /* If we can't really cast this spell, skip the extra parameters */
     if ((spellGetRequiredMP(spell) > c->party->member(castPlayer)->getMp()) || /* not enough mp */
@@ -2362,8 +2346,7 @@ bool gameGetChest(int player) {
         getChestTrapHandler(player);
         screenMessage("The Chest Holds: %d Gold\n", c->party->getChest());
 
-        statsUpdate();
-		screenPrompt();
+        screenPrompt();
         
         if (isCity(c->location->map) && obj == NULL)
             c->party->adjustKarma(KA_STOLE_CHEST);
@@ -2380,14 +2363,13 @@ bool gameGetChest(int player) {
 bool getChestTrapHandler(int player) {            
     TileEffect trapType;
     int dex = c->saveGame->players[player].dex;
-    int randNum = xu4_random(4);
-    int member = player;
+    int randNum = xu4_random(4);    
     
     /* Do we use u4dos's way of trap-determination, or the original intended way? */
     int passTest = (settings.enhancements && settings.enhancementsOptions.c64chestTraps) ?
         (xu4_random(2) == 0) : /* xu4-enhanced */
         ((randNum & 1) == 0); /* u4dos original way (only allows even numbers through, so only acid and poison show) */
-
+    
     /* Chest is trapped! 50/50 chance */
     if (passTest)
     {   
@@ -2407,16 +2389,15 @@ bool getChestTrapHandler(int player) {
             screenMessage("Poison Trap!\n");            
         else if (trapType == EFFECT_SLEEP)
             screenMessage("Sleep Trap!\n");            
-        else if (trapType == EFFECT_LAVA) {
-            screenMessage("Bomb Trap!\n");
-            member = ALL_PLAYERS;            
-        }
+        else if (trapType == EFFECT_LAVA)
+            screenMessage("Bomb Trap!\n");        
 
         /* See if the trap was evaded! */           
         if ((dex + 25) < xu4_random(100) &&         /* test player's dex */            
-            (player >= 0)) {                        /* player is < 0 during the 'O'pen spell (immune to traps) */                         
-            c->party->member(member)->applyEffect(trapType);
-            statsUpdate();
+            (player >= 0)) {                        /* player is < 0 during the 'O'pen spell (immune to traps) */
+            if (trapType == EFFECT_LAVA) /* bomb trap */
+                c->party->applyEffect(trapType);
+            else c->party->member(player)->applyEffect(trapType);
         }
         else screenMessage("Evaded!\n");
 
@@ -2598,8 +2579,7 @@ bool jimmyAtCoord(MapCoords coords, int distance, void *data) {
 bool readyForPlayer(int player) {
     AlphaActionInfo *info;
 
-    c->statsView = STATS_WEAPONS;
-    statsUpdate();
+    c->stats->showWeapons();
 
     info = new AlphaActionInfo;    
     info->lastValidLetter = WEAP_MAX + 'a' - 1;
@@ -2620,8 +2600,7 @@ bool readyForPlayer2(int w, void *data) {
     PartyMember *p = c->party->member(player);
 
     // Return view to party overview
-    c->statsView = STATS_PARTY_OVERVIEW;
-    statsUpdate();
+    c->stats->showPartyView();
 
     if (weapon->getType() != WEAP_HANDS && c->saveGame->weapons[weapon->getType()] < 1) {
         screenMessage("None left!\n");
@@ -2691,8 +2670,7 @@ bool mixReagentsForSpell(int spell, void *data) {
         eventHandlerPushKeyHandlerWithData(&keyHandlerGetChoice, info);
     }
 
-    c->statsView = STATS_REAGENTS;
-    statsUpdate();
+    c->stats->showReagents();
 
     return 0;
 }
@@ -2723,8 +2701,7 @@ int mixReagentsForSpell2(int choice) {
         screenMessage("%s", alphaInfo->prompt.c_str());
         eventHandlerPushKeyHandlerWithData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
 
-        c->statsView = STATS_MIXTURES;
-        statsUpdate();
+        c->stats->showMixtures();
 
         return 1;
     }
@@ -2743,7 +2720,7 @@ int mixReagentsForSpell2(int choice) {
         screenMessage("%c\n", toupper(choice));
 
         if (mixtureAddReagent(mix, (Reagent)(choice - 'a')))
-            statsUpdate();
+            c->stats->update();
         else
             screenMessage("None Left!\n");
 
@@ -2807,8 +2784,6 @@ bool newOrderForPlayer2(int player2) {
     /* re-build the party */
     delete c->party;
     c->party = new Party(c->saveGame);
-
-    statsUpdate();
 
     return true;
 }
@@ -3040,7 +3015,6 @@ void talkShowReply(int showPrompt) {
         }        
         (*spellEffectCallback)('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
 
-        statsUpdate();
         c->conversation.state = CONV_TALK;
     }
     /* When Lord British checks and advances each party member's level */
@@ -3091,8 +3065,7 @@ int useItem(string *itemName) {
 bool wearForPlayer(int player) {
     AlphaActionInfo *info;
 
-    c->statsView = STATS_ARMOR;
-    statsUpdate();
+    c->stats->showArmor();
 
     info = new AlphaActionInfo;
     info->lastValidLetter = ARMR_MAX + 'a' - 1;
@@ -3146,8 +3119,7 @@ bool ztatsFor(int player) {
        and hide reagents that you don't have */
     gameResetSpellMixing();
 
-    c->statsView = (StatsView) (STATS_CHAR1 + player);
-    statsUpdate();    
+    c->stats->showPlayerDetails(player);
 
     eventHandlerPushKeyHandler(&gameZtatsKeyHandler);    
     return true;
@@ -3167,7 +3139,7 @@ void gameTimer(void *data) {
     }
     
     if (!paused && !pausedTimer) {
-        Direction dir = DIR_WEST;  
+        Direction dir = DIR_WEST;
 
         if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
             if (xu4_random(4) == 1 && !windLock)
@@ -3180,8 +3152,8 @@ void gameTimer(void *data) {
             c->saveGame->balloonstate) {
             dir = dirReverse((Direction) c->windDirection);
             gameMoveAvatar(dir, 0);            
-        }
-
+        }        
+        
         gameUpdateMoons(1);
 
         c->location->map->animateObjects();
@@ -3359,7 +3331,6 @@ void gameCheckHullIntegrity() {
             c->party->member(i)->setHp(0);
             c->party->member(i)->setStatus(STAT_DEAD);            
         }
-        statsUpdate();   
 
         screenRedrawScreen();        
         deathStart(5);
@@ -3410,7 +3381,7 @@ void gameCheckSpecialCreatures(Direction dir) {
         c->location->coords.x < 234 &&
         c->location->coords.y >= 212 &&
         c->location->coords.y < 217 &&
-        c->aura != AURA_HORN) {
+        *c->aura != AURA_HORN) {
         for (i = 0; i < 8; i++)            
             obj = c->location->map->addCreature(creatures.getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));                    
     }
@@ -3487,10 +3458,10 @@ void gameFixupCreatures(Map *map) {
             obj->getMovementBehavior() != MOVEMENT_FIXED) {
             /* replace the object with a creature object */
             map->addCreature(creatures.getByTile(obj->getTile()), obj->getCoords());
-			obj->setMap(map);
+            obj->setMap(map);
             i = map->removeObject(i);
         }
-		else obj->setMap(map);
+        else obj->setMap(map);
     }    
 }
 
@@ -3668,12 +3639,11 @@ void gameDamageParty(int minDamage, int maxDamage) {
                 xu4_random((maxDamage + 1) - minDamage) + minDamage :
                 maxDamage;
             c->party->member(i)->applyDamage(damage);            
-            statsHighlightCharacter(i);            
+            c->stats->highlightPlayer(i);            
         }
     }
     
     eventHandlerSleep(100);
-    statsUpdate();    
     screenShake(1);
 }
 
@@ -3695,7 +3665,6 @@ void gameDamageShip(int minDamage, int maxDamage) {
         c->saveGame->shiphull -= damage;
         if ((short)c->saveGame->shiphull < 0)
             c->saveGame->shiphull = 0;
-        statsUpdate();
         gameCheckHullIntegrity();        
     }
 }
@@ -3704,14 +3673,14 @@ void gameDamageShip(int minDamage, int maxDamage) {
  * Sets (or unsets) the active player
  */
 void gameSetActivePlayer(int player) {
-	if (player == -1) {
+    if (player == -1) {
         c->location->activePlayer = -1;
         screenMessage("Set Active Player: None!\n");
     }
     else if (player < c->party->size()) {
-		screenMessage("Set Active Player: %s!\n", c->party->member(player)->getName().c_str());
-		if (c->party->member(player)->isDisabled())
-			screenMessage("Disabled!\n");
+        screenMessage("Set Active Player: %s!\n", c->party->member(player)->getName().c_str());
+        if (c->party->member(player)->isDisabled())
+            screenMessage("Disabled!\n");
         else c->location->activePlayer = player;
     }
 }

@@ -199,7 +199,6 @@ bool dungeonDrinkFountain(int player) {
         retval = false;
     }
 
-    statsUpdate();
     return retval;
 }
 
@@ -247,7 +246,6 @@ bool dungeonTouchOrb(int player) {
     /* remove the orb from the map */
     c->location->map->annotations->add(c->location->coords, replacementTile);
 
-    statsUpdate();
     return true;
 }
 

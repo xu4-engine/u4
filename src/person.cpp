@@ -529,7 +529,6 @@ string talkerGetResponse(Conversation *cnv, const char *inquiry) {
             if (join == JOIN_SUCCEEDED) {
                 City *city = dynamic_cast<City*>(c->location->map);
                 reply += "I am honored to join thee!";
-                statsUpdate();
                 city->removeObject(cnv->talker);
                 cnv->state = CONV_DONE;
             } else {
@@ -850,7 +849,7 @@ string hawkwindGetResponse(Conversation *cnv, const char *inquiry) {
             virtueLevel = c->saveGame->karma[v];
         }
     }
-    if (virtue != -1) {		
+    if (virtue != -1) {
         reply = "\n\n";
         if (virtueLevel == 0)            
             reply += hawkwindText[HW_ALREADYAVATAR] + "\n";        

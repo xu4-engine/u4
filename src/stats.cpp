@@ -19,54 +19,53 @@
 #include "tile.h"
 #include "weapon.h"
 
-void statsAreaSetTitle(const char *title);
-void statsShowCharDetails(int charNo);
-void statsShowWeapons();
-void statsShowArmor();
-void statsShowEquipment();
-void statsShowItems();
-void statsShowReagents();
-void statsShowMixtures();
-
+/**
+ * StatsArea class implementation
+ */
+StatsArea::StatsArea() : view(STATS_PARTY_OVERVIEW) {}
+ 
 /**
  * Sets the stats item to the previous in sequence.
  */
-void statsPrevItem() {
-    c->statsView = (StatsView) (c->statsView - 1);
-    if (c->statsView < STATS_CHAR1)
-        c->statsView = STATS_MIXTURES;
-    if (c->statsView <= STATS_CHAR8 &&
-        (c->statsView - STATS_CHAR1 + 1) > c->saveGame->members)
-        c->statsView = (StatsView) (STATS_CHAR1 - 1 + c->saveGame->members);
+void StatsArea::prevItem() {
+    view = (StatsView)(view - 1);
+    if (view < STATS_CHAR1)
+        view = STATS_MIXTURES;
+    if (view <= STATS_CHAR8 && (view - STATS_CHAR1 + 1) > c->party->size())
+        view = (StatsView) (STATS_CHAR1 - 1 + c->party->size());
+    update();
 }
 
 /**
  * Sets the stats item to the next in sequence.
  */
-void statsNextItem() {
-    c->statsView = (StatsView) (c->statsView + 1);
-    if (c->statsView > STATS_MIXTURES)
-        c->statsView = STATS_CHAR1;
-    if (c->statsView <= STATS_CHAR8 &&
-            (c->statsView - STATS_CHAR1 + 1) > c->saveGame->members)
-            c->statsView = STATS_WEAPONS;
+void StatsArea::nextItem() {
+    view = (StatsView)(view + 1);    
+    if (view > STATS_MIXTURES)
+        view = STATS_CHAR1;
+    if (view <= STATS_CHAR8 && (view - STATS_CHAR1 + 1) > c->party->size())
+        view = STATS_WEAPONS;
+    update();
 }
 
 /**
  * Update the stats (ztats) box on the upper right of the screen.
  */
-void statsUpdate() {
+void StatsArea::update(Observable<string> *o, string arg) {
     int i;
     unsigned char mask;
 
-    statsAreaClear();
+    if (!arg.empty())
+        fprintf(stdout, "Observer updated: Stats area redrawn from function %s()\n", arg.c_str());
+
+    clear();
 
     /*
      * update the upper stats box
      */
-    switch(c->statsView) {
+    switch(view) {
     case STATS_PARTY_OVERVIEW:
-        statsShowPartyView(-1);
+        showPartyView();
         break;
     case STATS_CHAR1:
     case STATS_CHAR2:
@@ -76,25 +75,25 @@ void statsUpdate() {
     case STATS_CHAR6:
     case STATS_CHAR7:
     case STATS_CHAR8:
-        statsShowCharDetails(c->statsView - STATS_CHAR1);
+        showPlayerDetails(view - STATS_CHAR1);
         break;
     case STATS_WEAPONS:
-        statsShowWeapons();
+        showWeapons();
         break;
     case STATS_ARMOR:
-        statsShowArmor();
+        showArmor();
         break;
     case STATS_EQUIPMENT:
-        statsShowEquipment();
+        showEquipment();
         break;
     case STATS_ITEMS:
-        statsShowItems();
+        showItems();
         break;
     case STATS_REAGENTS:
-        statsShowReagents();
+        showReagents();
         break;
     case STATS_MIXTURES:
-        statsShowMixtures();
+        showMixtures();
         break;
     }
 
@@ -112,7 +111,7 @@ void statsUpdate() {
             mask &= ~(1 << i);
     }
 
-    switch (c->aura) {
+    switch (c->aura->getType()) {
     case AURA_NONE:
         screenShowCharMasked(0, STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1, mask);
         break;
@@ -131,16 +130,18 @@ void statsUpdate() {
     case AURA_QUICKNESS:
         screenShowChar('Q', STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1);
         break;
-    }
+    }    
+
+    redraw();
 }
 
-void statsHighlightCharacter(int player) {
-    ASSERT(player < c->saveGame->members, "player number out of range: %d", player);
+void StatsArea::highlightPlayer(int player) {
+    ASSERT(player < c->party->size(), "player number out of range: %d", player);
     screenInvertRect(STATS_AREA_X * CHAR_WIDTH, (STATS_AREA_Y + player) * CHAR_HEIGHT, 
                      STATS_AREA_WIDTH * CHAR_WIDTH, CHAR_HEIGHT);
 }
 
-void statsAreaClear() {
+void StatsArea::clear() {
     int i;
 
     for (i = 0; i < STATS_AREA_WIDTH; i++)
@@ -150,61 +151,83 @@ void statsAreaClear() {
 }
 
 /**
+ * Redraws the entire stats area
+ */
+void StatsArea::redraw() {
+    screenRedrawTextArea(STATS_AREA_X-1, STATS_AREA_Y-1, STATS_AREA_WIDTH+2, STATS_AREA_HEIGHT+3);
+}
+
+/**
  * Sets the title of the stats area.
  */
-void statsAreaSetTitle(const char *title) {
+void StatsArea::setTitle(string title) {
     int titleStart;
 
-    titleStart = (STATS_AREA_WIDTH / 2) - ((strlen(title) + 2) / 2);
-    screenTextAt(STATS_AREA_X + titleStart, 0, "%c%s%c", 16, title, 17);
+    titleStart = (STATS_AREA_WIDTH / 2) - ((strlen(title.c_str()) + 2) / 2);
+    screenTextAt(STATS_AREA_X + titleStart, 0, "%c%s%c", 16, title.c_str(), 17);
 }
 
 /**
  * The basic party view.
  */
-void statsShowPartyView(int member) {
+void StatsArea::showPartyView(int member) {
     int i;
     char *format = "%d%c%-9.8s%3d%c";
+    PartyMember *p = NULL;
+    view = STATS_PARTY_OVERVIEW;
+    int activePlayer = c->location ? c->location->activePlayer : -1;
 
-    ASSERT(c->saveGame->members <= 8, "party members out of range: %d", c->saveGame->members);
+    clear();
+
+    ASSERT(c->party->size() <= 8, "party members out of range: %d", c->party->size());
     ASSERT(member <= 8, "party member out of range: %d", member);
 
     if (member == -1) {
-        for (i = 0; i < c->saveGame->members; i++)
-            screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, format, i+1, (i==c->location->activePlayer) ? CHARSET_BULLET : '-', c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
+        for (i = 0; i < c->party->size(); i++) {
+            p = c->party->member(i);
+            screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, format, i+1, (i==activePlayer) ? CHARSET_BULLET : '-', p->getName().c_str(), p->getHp(), p->getStatus());
+        }
     }
-    else screenTextAt(STATS_AREA_X, STATS_AREA_Y+member, format, member+1, (member==c->location->activePlayer) ? CHARSET_BULLET : '-', c->saveGame->players[member].name, c->saveGame->players[member].hp, c->saveGame->players[member].status);
+    else {        
+        p = c->party->member(member);
+        screenTextAt(STATS_AREA_X, STATS_AREA_Y+member, format, member+1, (member==activePlayer) ? CHARSET_BULLET : '-', p->getName().c_str(), p->getHp(), p->getStatus());
+    }
 }
 
 /**
  * The individual character view.
  */
-void statsShowCharDetails(int charNo) {
-    const char *classString;
+void StatsArea::showPlayerDetails(int player) {
+    string classStr;
     int classStart;
+    PartyMember *p;
+    view = static_cast<StatsView>(STATS_CHAR1 + player);
+    clear();
 
-    ASSERT(charNo < 8, "character number out of range: %d", charNo);
+    ASSERT(player < 8, "character number out of range: %d", player);
 
-    statsAreaSetTitle(c->saveGame->players[charNo].name);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+0, "%c             %c", c->saveGame->players[charNo].sex, c->saveGame->players[charNo].status);
-    classString = getClassName(c->saveGame->players[charNo].klass);
-    classStart = (STATS_AREA_WIDTH / 2) - (strlen(classString) / 2);
-    screenTextAt(STATS_AREA_X + classStart, STATS_AREA_Y, "%s", classString);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+2, " MP:%02d  LV:%d", c->saveGame->players[charNo].mp, c->party->member(charNo)->getRealLevel());
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+3, "STR:%02d  HP:%04d", c->saveGame->players[charNo].str, c->saveGame->players[charNo].hp);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+4, "DEX:%02d  HM:%04d", c->saveGame->players[charNo].dex, c->saveGame->players[charNo].hpMax);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+5, "INT:%02d  EX:%04d", c->saveGame->players[charNo].intel, c->saveGame->players[charNo].xp);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+6, "W:%s", Weapon::get(c->saveGame->players[charNo].weapon)->getName().c_str());
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+7, "A:%s", Armor::get(c->saveGame->players[charNo].armor)->getName().c_str());
+    p = c->party->member(player);
+    setTitle(p->getName());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+0, "%c             %c", p->getSex(), p->getStatus());
+    classStr = getClassName(p->getClass());
+    classStart = (STATS_AREA_WIDTH / 2) - (classStr.length() / 2);
+    screenTextAt(STATS_AREA_X + classStart, STATS_AREA_Y, "%s", classStr.c_str());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+2, " MP:%02d  LV:%d", p->getMp(), p->getRealLevel());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+3, "STR:%02d  HP:%04d", p->getStr(), p->getHp());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+4, "DEX:%02d  HM:%04d", p->getDex(), p->getMaxHp());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+5, "INT:%02d  EX:%04d", p->getInt(), p->getExp());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+6, "W:%s", Weapon::get(p->getWeapon())->getName().c_str());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+7, "A:%s", Armor::get(p->getArmor())->getName().c_str());
 }
 
 /**
  * Weapons in inventory.
  */
-void statsShowWeapons() {
+void StatsArea::showWeapons() {
     int w, line, col;
+    view = STATS_WEAPONS;
 
-    statsAreaSetTitle("Weapons");
+    setTitle("Weapons");
 
     line = STATS_AREA_Y;
     col = 0;
@@ -222,16 +245,17 @@ void statsShowWeapons() {
                 col += 8;
             }
         }
-    }
+    }    
 }
 
 /**
  * Armor in inventory.
  */
-void statsShowArmor() {
+void StatsArea::showArmor() {
     int a, line;
+    view = STATS_ARMOR;
 
-    statsAreaSetTitle("Armour");
+    setTitle("Armour");
 
     line = STATS_AREA_Y;
     screenTextAt(STATS_AREA_X, line++, "A  -No Armour");
@@ -247,28 +271,30 @@ void statsShowArmor() {
 /**
  * Equipment: touches, gems, keys, and sextants.
  */
-void statsShowEquipment() {
+void StatsArea::showEquipment() {
     int line;
+    view = STATS_EQUIPMENT;
 
-    statsAreaSetTitle("Equipment");
+    setTitle("Equipment");
 
     line = STATS_AREA_Y;
     screenTextAt(STATS_AREA_X, line++, "%2d Torches", c->saveGame->torches);
     screenTextAt(STATS_AREA_X, line++, "%2d Gems", c->saveGame->gems);
     screenTextAt(STATS_AREA_X, line++, "%2d Keys", c->saveGame->keys);
     if (c->saveGame->sextants > 0)
-        screenTextAt(STATS_AREA_X, line++, "%2d Sextants", c->saveGame->sextants);
+        screenTextAt(STATS_AREA_X, line++, "%2d Sextants", c->saveGame->sextants);    
 }
 
 /**
  * Items: runes, stones, and other miscellaneous quest items.
  */
-void statsShowItems() {
+void StatsArea::showItems() {
     int i, j;
     int line;
     char buffer[17];
+    view = STATS_ITEMS;
 
-    statsAreaSetTitle("Items");
+    setTitle("Items");
 
     line = STATS_AREA_Y;
     if (c->saveGame->stones != 0) {
@@ -321,17 +347,18 @@ void statsShowItems() {
     if (c->saveGame->items & ITEM_WHEEL)
         screenTextAt(STATS_AREA_X, line++, "%s", getItemName(ITEM_WHEEL));
     if (c->saveGame->items & ITEM_SKULL)
-        screenTextAt(STATS_AREA_X, line++, "%s", getItemName(ITEM_SKULL));
+        screenTextAt(STATS_AREA_X, line++, "%s", getItemName(ITEM_SKULL));    
 }
 
 /**
  * Unmixed reagents in inventory.
  */
-void statsShowReagents() {
+void StatsArea::showReagents() {
     int r, line;    
     extern Menu spellMixMenu;
+    view = STATS_REAGENTS;
 
-    statsAreaSetTitle("Reagents");    
+    setTitle("Reagents");    
     
     line = STATS_AREA_Y;
     for (r = REAG_ASH; r < REAG_MAX; r++) {
@@ -346,16 +373,17 @@ void statsShowReagents() {
         }
     }
 
-    spellMixMenu.show();
+    spellMixMenu.show();    
 }
 
 /**
  * Mixed reagents in inventory.
  */
-void statsShowMixtures() {
+void StatsArea::showMixtures() {
     int s, line, col;
+    view = STATS_MIXTURES;
 
-    statsAreaSetTitle("Mixtures");
+    setTitle("Mixtures");
 
     line = STATS_AREA_Y;
     col = 0;
@@ -374,4 +402,3 @@ void statsShowMixtures() {
         }
     }
 }
-

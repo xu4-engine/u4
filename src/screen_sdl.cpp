@@ -331,7 +331,7 @@ void screenLoadGraphicsFromXml() {
         imageSetNames.push_back(set->first);
 
     gemLayoutNames.clear();
-	std::vector<Layout *>::const_iterator i;
+    std::vector<Layout *>::const_iterator i;
     for (i = layouts.begin(); i != layouts.end(); i++) {
         Layout *layout = *i;
         if (layout->type == LAYOUT_GEM) {
@@ -569,7 +569,7 @@ void fixupAbacus(Image *im, int prescale) {
  * Returns information for the given image set.
  */
 ImageSet *screenGetImageSet(const string &setname) {
-	std::map<string, ImageSet *>::iterator i = imageSets.find(setname);
+    std::map<string, ImageSet *>::iterator i = imageSets.find(setname);
     if (i != imageSets.end())
         return i->second;
     else

@@ -34,7 +34,7 @@ void screenTextAt(int x, int y, const char *fmt, ...) {
     char buffer[1024];
     unsigned int i;
 
-	va_list args;
+    va_list args;
     va_start(args, fmt);
     vsprintf(buffer, fmt, args);
     va_end(args);

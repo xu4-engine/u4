@@ -276,7 +276,7 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
     }    
 
     /* If there's a negate magic aura, spells fail! */
-    if (c->aura != AURA_NEGATE) {    
+    if (*c->aura != AURA_NEGATE) {    
 
         /* subtract the mp needed for the spell */
         p->adjustMp(-spells[spell].mp);
@@ -302,7 +302,7 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
 MapTile spellMagicAttackTile;
 int spellMagicAttackDamage;
 
-void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage) {	
+void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage) {    
     CoordActionInfo *info;
     PartyMemberVector *party = c->combat->getParty();
 
@@ -334,7 +334,7 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
     CoordActionInfo* info = (CoordActionInfo*)data;
     MapCoords old = info->prev;
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
-	CombatMap *cm = getCombatMap();
+    CombatMap *cm = getCombatMap();
     
     info->prev = coords;
 
@@ -363,7 +363,7 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
             CombatController::attackFlash(coords, spellMagicAttackTile, 3);
 
             /* apply the damage to the creature */
-			c->combat->getCurrentPlayer()->dealDamage(creature, spellMagicAttackDamage);
+            c->combat->getCurrentPlayer()->dealDamage(creature, spellMagicAttackDamage);
         }
     }
 
@@ -561,8 +561,7 @@ static int spellIceball(int dir) {
 }
 
 static int spellJinx(int unused) {
-    c->aura = AURA_JINX;
-    c->auraDuration = 10;
+    c->aura->set(AURA_JINX, 10);    
     return 1;
 }
 
@@ -582,8 +581,7 @@ static int spellMMissle(int dir) {
 }
 
 static int spellNegate(int unused) {
-    c->aura = AURA_NEGATE;
-    c->auraDuration = 10;
+    c->aura->set(AURA_NEGATE, 10);    
     return 1;
 }
 
@@ -593,8 +591,7 @@ static int spellOpen(int unused) {
 }
 
 static int spellProtect(int unused) {
-    c->aura = AURA_PROTECTION;
-    c->auraDuration = 10;
+    c->aura->set(AURA_PROTECTION, 10);    
     return 1;
 }
 
@@ -605,12 +602,11 @@ static int spellRez(int player) {
 }
 
 static int spellQuick(int unused) {
-    c->aura = AURA_QUICKNESS;
-    c->auraDuration = 10;
+    c->aura->set(AURA_QUICKNESS, 10);    
     return 1;
 }
 
-static int spellSleep(int unused) {	
+static int spellSleep(int unused) {    
     CombatMap *cm = getCombatMap();
     CreatureVector creatures = cm->getCreatures();
     CreatureVector::iterator i;
@@ -628,7 +624,7 @@ static int spellSleep(int unused) {
 }
 
 static int spellTremor(int unused) {
-    CombatController *ct = c->combat;	
+    CombatController *ct = c->combat;    
     CreatureVector creatures = ct->getMap()->getCreatures();
     CreatureVector::iterator i;
 
@@ -643,7 +639,7 @@ static int spellTremor(int unused) {
 
             /* Deal maximum damage to creature */
             if (xu4_random(2) == 0) {
-				ct->getCurrentPlayer()->dealDamage(m, 0xFF);                
+                ct->getCurrentPlayer()->dealDamage(m, 0xFF);                
                 CombatController::attackFlash(coords, HITFLASH_TILE, 1);
             }
             /* Deal enough damage to creature to make it flee */
@@ -659,7 +655,7 @@ static int spellTremor(int unused) {
 }
 
 static int spellUndead(int unused) {    
-    CombatController *ct = c->combat;	
+    CombatController *ct = c->combat;
     CreatureVector creatures = ct->getMap()->getCreatures();
     CreatureVector::iterator i;
 

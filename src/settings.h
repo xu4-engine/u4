@@ -85,7 +85,7 @@ typedef struct _MouseOptions {
  */ 
 class Translator {
     typedef std::map<string, int, std::less<string> >    T_s;    
-    typedef std::map<int, string, std::less<int> >		 T_t;
+    typedef std::map<int, string, std::less<int> >       T_t;
 public:
     Translator() {}
     Translator(const string values[]) {

@@ -5,6 +5,7 @@
 #ifndef OBSERVABLE_H
 #define OBSERVABLE_H
 
+#include <algorithm>
 #include <vector>
 
 #include "observer.h"
@@ -20,7 +21,7 @@ public:
 
     void addObserver(Observer<T> *o) {
         typename std::vector< Observer<T> *>::iterator i;
-        i = find(observers.begin(), observers.end(), o);
+        i = std::find(observers.begin(), observers.end(), o);
         if (i == observers.end())
             observers.push_back(o);
     }
@@ -31,7 +32,7 @@ public:
 
     void deleteObserver(Observer<T> *o) {
         typename std::vector< Observer<T> *>::iterator i;
-        i = find(observers.begin(), observers.end(), o);
+        i = std::find(observers.begin(), observers.end(), o);
         if (i != observers.end())
             observers.erase(i);
     }

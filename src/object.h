@@ -27,7 +27,7 @@ typedef enum {
 
 class Object {
 public:
-    Object(ObjectType type = OBJECT_UNKNOWN) :	  
+    Object(ObjectType type = OBJECT_UNKNOWN) :      
       movement_behavior(MOVEMENT_FIXED),
       objType(type),
       map(NULL),
@@ -36,7 +36,7 @@ public:
       animated(true)
     {}
     
-    virtual ~Object() {}	
+    virtual ~Object() {}    
 
     // Methods
     const MapTile& getTile() const          { return tile; }
@@ -48,7 +48,7 @@ public:
     bool hasFocus() const                   { return focused; }
     bool isVisible() const                  { return visible; }
     bool isAnimated() const                 { return animated; }
-	class Map* getMap() const				{ return map; }
+    class Map* getMap() const                { return map; }
 
     void setTile(MapTile t)                 { tile = t; }
     void setPrevTile(MapTile t)             { prevTile = t; }
@@ -59,7 +59,7 @@ public:
     void setFocus(bool f = true)            { focused = f; }
     void setVisible(bool v = true)          { visible = v; }
     void setAnimated(bool a = true)         { animated = a; }
-	void setMap(class Map *m)				{ map = m; }
+    void setMap(class Map *m)                { map = m; }
 
     bool setDirection(Direction d);
     void advanceFrame();
@@ -70,7 +70,7 @@ protected:
     Coords coords, prevCoords;
     ObjectMovementBehavior movement_behavior;
     ObjectType objType;
-	class Map *map;
+    class Map *map;
     
     bool focused;
     bool visible;

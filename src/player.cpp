@@ -20,7 +20,6 @@
 
 LostEighthCallback lostEighthCallback = NULL;
 AdvanceLevelCallback advanceLevelCallback = NULL;
-ItemStatsChangedCallback itemStatsChangedCallback = NULL;
 PartyStarvingCallback partyStarvingCallback = NULL;
 SetTransportCallback setTransportCallback = NULL;
 
@@ -34,10 +33,6 @@ void playerSetLostEighthCallback(LostEighthCallback callback) {
 
 void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback) {
     advanceLevelCallback = callback;
-}
-
-void playerSetItemStatsChangedCallback(ItemStatsChangedCallback callback) {
-    itemStatsChangedCallback = callback;
 }
 
 void playerSetPartyStarvingCallback(PartyStarvingCallback callback) {
@@ -68,6 +63,16 @@ PartyMember::PartyMember(class Party *p, SaveGamePlayerRecord *pr) :
     setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
     this->ranged = Weapon::get(pr->weapon)->getRange() ? 1 : 0;
     setStatus(pr->status);
+}
+
+/**
+ * Notify the party that this player has changed somehow
+ */
+void PartyMember::notifyOfChange(string arg) {
+    if (party) {
+        party->setChanged();
+        party->notifyObservers(arg);
+    }
 }
 
 /**
@@ -183,6 +188,26 @@ StatusType PartyMember::getStatus() {
     return status.back();
 }
 
+SexType PartyMember::getSex() const {
+    return player->sex;
+}
+
+int PartyMember::getStr() const {
+    return player->str;
+}
+
+int PartyMember::getDex() const {
+    return player->dex;
+}
+
+int PartyMember::getInt() const {
+    return player->intel;
+}
+
+int PartyMember::getExp() const {
+    return player->xp;
+}
+
 MapTile PartyMember::getHitTile() const {
     return Weapon::get(getWeapon())->getHitTile();
 }
@@ -221,10 +246,12 @@ bool PartyMember::isDisabled() {
 void PartyMember::addStatus(StatusType s) {
     status.push_back(s);
     player->status = status.back();
+    notifyOfChange("PartyMember::addStatus");
 }
 
 void PartyMember::adjustMp(int pts) {
     AdjustValueMax(player->mp, pts, getMaxMp());
+    notifyOfChange("PartyMember::adjustMp");
 }
 
 /**
@@ -248,6 +275,8 @@ void PartyMember::advanceLevel() {
 
     if (advanceLevelCallback)
         (*advanceLevelCallback)(this);
+
+    notifyOfChange("PartyMember::advanceLevel");
 }
 
 /**
@@ -266,7 +295,9 @@ bool PartyMember::applyDamage(int damage) {
         setStatus(STAT_DEAD);
         newHp = 0;
     }
+    
     player->hp = newHp;
+    notifyOfChange("PartyMember::applyDamage");
 
     if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();                    
@@ -305,32 +336,36 @@ void PartyMember::applyEffect(TileEffect effect) {
     case EFFECT_NONE:
         break;
     case EFFECT_LAVA:
-    case EFFECT_FIRE:        
+    case EFFECT_FIRE:
         applyDamage(16 + (xu4_random(32)));
 
         /*else if (player == ALL_PLAYERS && xu4_random(2) == 0)
             playerApplyDamage(&(c->saveGame->players[i]), 10 + (xu4_random(25)));*/
         break;
-    case EFFECT_SLEEP:
-        if (xu4_random(5) == 0)
-            putToSleep();
+    case EFFECT_SLEEP:        
+        putToSleep();
         break;
     case EFFECT_POISONFIELD:
     case EFFECT_POISON:
-        if (xu4_random(5) == 0)
-            addStatus(STAT_POISONED);
+        addStatus(STAT_POISONED);
         break;
     case EFFECT_ELECTRICITY: break;
     default:
         ASSERT(0, "invalid effect: %d", effect);
-    }    
+    }
+
+    if (party && effect != EFFECT_NONE) {
+        party->setChanged();
+        party->notifyObservers("PartyMember::applyEffect");
+    }
 }
 
 /**
  * Award a player experience points.  Maxs out the players xp at 9999.
  */
 void PartyMember::awardXp(int xp) {
-    AdjustValueMax(player->xp, xp, 9999);    
+    AdjustValueMax(player->xp, xp, 9999);
+    notifyOfChange("PartyMember::awardXp");
 }
 
 bool PartyMember::heal(HealType type) {
@@ -387,6 +422,8 @@ bool PartyMember::heal(HealType type) {
     if (player->hp > player->hpMax)
         player->hp = player->hpMax;
     
+    notifyOfChange("PartyMember::heal");
+    
     return true;
 }
 
@@ -397,6 +434,9 @@ bool PartyMember::heal(HealType type) {
  */
 int PartyMember::loseWeapon() {
     int weapon = player->weapon;
+    
+    notifyOfChange("PartyMember::loseWeapon");
+
     if (party->saveGame->weapons[weapon] > 0)
         return (--party->saveGame->weapons[weapon]) + 1;
     else {
@@ -418,26 +458,31 @@ void PartyMember::putToSleep() {
 void PartyMember::removeStatus(StatusType s) {
     Creature::removeStatus(s);
     player->status = status.back();
+    notifyOfChange("PartyMember::removeStatus");
 }
 
 void PartyMember::setHp(int hp) {
     player->hp = hp;
+    notifyOfChange("PartyMember::setHp");
 }
 
 void PartyMember::setMp(int mp) {
     player->mp = mp;
+    notifyOfChange("PartyMember::setMp");
 }
 
 void PartyMember::setArmor(ArmorType a) {
     player->armor = a;
+    notifyOfChange("PartyMember::setArmor");
 }
 
 void PartyMember::setWeapon(WeaponType w) {
     player->weapon = w;
+    notifyOfChange("PartyMember::setWeapon");
 }
 
 void PartyMember::wakeUp() {
-    removeStatus(STAT_SLEEPING);
+    removeStatus(STAT_SLEEPING);    
     setTile(tileForClass(getClass()));
 }
 
@@ -450,15 +495,22 @@ Party::Party(SaveGame *s) : saveGame(s) {
     for (int i = 0; i < saveGame->members; i++) {
         // add the members to the party
         members.push_back(new PartyMember(this, &saveGame->players[i]));
-    }
+    }    
 }
 
 void Party::adjustFood(int food) {
-    AdjustValue(saveGame->food, food, 999900, 0);    
+    int oldFood = saveGame->food;    
+    AdjustValue(saveGame->food, food, 999900, 0);
+    if ((saveGame->food / 100) != (oldFood / 100)) {
+        setChanged();
+        notifyObservers("adjustFood");
+    }
 }
 
 void Party::adjustGold(int gold) {
     AdjustValue(saveGame->gold, gold, 9999, 0);    
+    setChanged();
+    notifyObservers("adjustGold");
 }
 
 /**
@@ -565,6 +617,10 @@ void Party::adjustKarma(KarmaAction action) {
             return;
     }
 
+    /* something changed */
+    setChanged();
+    notifyObservers("adjustKarma");
+
     /*
      * return to u4dos compatibility and handle losing of eighths
      */
@@ -585,14 +641,28 @@ void Party::applyEffect(TileEffect effect) {
     int i;
 
     for (i = 0; i < size(); i++) {
-        if (xu4_random(2) == 0)
-            members[i]->applyEffect(effect);        
+        switch(effect) {
+        case EFFECT_NONE:
+        case EFFECT_ELECTRICITY:
+            members[i]->applyEffect(effect);
+        case EFFECT_LAVA:
+        case EFFECT_FIRE:        
+        case EFFECT_SLEEP:
+            if (xu4_random(2) == 0)
+                members[i]->applyEffect(effect);
+        case EFFECT_POISONFIELD:
+        case EFFECT_POISON:
+            if (xu4_random(5) == 0)
+                members[i]->applyEffect(effect);
+        }        
     }
 }
 
 bool Party::attemptElevation(Virtue virtue) {
     if (saveGame->karma[virtue] == 99) {
         saveGame->karma[virtue] = 0;
+        setChanged();
+        notifyObservers("attemptElevation");
         return true;
     } else
         return false;
@@ -627,9 +697,6 @@ bool Party::donate(int quantity) {
 
     adjustGold(-quantity);
     adjustKarma(KA_GAVE_TO_BEGGAR);
-
-    if (itemStatsChangedCallback)
-        (*itemStatsChangedCallback)();
 
     return true;
 }
@@ -748,6 +815,8 @@ CannotJoinError Party::join(string name) {
             saveGame->players[saveGame->members] = saveGame->players[i];
             saveGame->players[i] = tmp;
             saveGame->members++;
+            setChanged();
+            notifyObservers("join");
 
             members.push_back(new PartyMember(this, &saveGame->players[saveGame->members]));
 
@@ -766,6 +835,8 @@ void Party::reviveParty() {
         saveGame->players[i].hp = saveGame->players[i].hpMax;
     }
 
+    setChanged();
+    notifyObservers("reviveParty");
     saveGame->food = 20099;
     saveGame->gold = 200;
     (*setTransportCallback)(AVATAR_TILE);

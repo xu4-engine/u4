@@ -1230,14 +1230,14 @@ void introInitPlayers(SaveGame *saveGame) {
     }
 
     PartyMember player(NULL, &saveGame->players[0]);
-	saveGame->players[0].hp = saveGame->players[0].hpMax = player.getMaxLevel() * 100;
+    saveGame->players[0].hp = saveGame->players[0].hpMax = player.getMaxLevel() * 100;
     saveGame->players[0].mp = player.getMaxMp();
 
     p = 1;
     for (i = 0; i < VIRT_MAX; i++) {
         /* Setup the initial virtue levels according to the avatar's class */
         saveGame->karma[i] = initValuesForClass[saveGame->players[0].klass].virtues[i];
-		player = PartyMember(NULL, &saveGame->players[i]);
+        player = PartyMember(NULL, &saveGame->players[i]);
 
         /* Initial setup for party members that aren't in your group yet... */
         if (i != saveGame->players[0].klass) {

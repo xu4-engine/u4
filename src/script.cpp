@@ -1,7 +1,7 @@
 /**
  * $Id$
  */
-
+    
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include <map>
@@ -661,8 +661,6 @@ void Script::translate(string *text) {
                         prop = (p->getHp() < p->getMaxHp()) ? "true" : "false";
                     else if (item4 == "resurrect") /* party:member:needs:resurrect */
                         prop = (p->getStatus() == STAT_DEAD) ? "true" : "false";
-
-                    statsUpdate();
                 }
                 /* party:member#:hp */
                 else if (item3 == "hp") {
@@ -1063,7 +1061,6 @@ ScriptReturnCode Script::pay(xmlNodePtr script, xmlNodePtr current) {
     if (debug)
         fprintf(debug, "\n\tBalance:     %d\n", c->saveGame->gold);
 
-    statsUpdate();
     return SCRIPT_RET_OK;
 }
 
@@ -1187,9 +1184,8 @@ ScriptReturnCode Script::add(xmlNodePtr script, xmlNodePtr current) {
     }
 
     if (debug)
-        fprintf(debug, "(x%d)", quant);            
+        fprintf(debug, "(x%d)", quant);
 
-    statsUpdate(); 
     return SCRIPT_RET_OK;
 }
 
@@ -1232,7 +1228,6 @@ ScriptReturnCode Script::heal(xmlNodePtr script, xmlNodePtr current) {
     else if (type == "resurrect")
         p->heal(HT_RESURRECT);
 
-    statsUpdate();
     return SCRIPT_RET_OK;
 }
 
@@ -1433,12 +1428,12 @@ ScriptReturnCode Script::ztats(xmlNodePtr script, xmlNodePtr current) {
          */ 
         view = view_map.find(screen);
         if (view != view_map.end()) 
-            c->statsView = view->second; /* change it! */
+            c->stats->view = view->second; /* change it! */
         else if (debug)
             fprintf(debug, " <FAILED - view could not be found>");
+        c->stats->update();
     }
-    else c->statsView = STATS_PARTY_OVERVIEW;
-    statsUpdate();
+    else c->stats->showPartyView();
 
     return SCRIPT_RET_OK;
 }

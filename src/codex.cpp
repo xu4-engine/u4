@@ -85,8 +85,8 @@ void codexStart() {
     /**
      * make the avatar alone
      */
-    statsAreaClear();
-    statsShowPartyView(0); /* show just the avatar */
+    c->stats->clear();
+    c->stats->showPartyView(0); /* show just the avatar */    
     screenRedrawScreen();
 
     /**

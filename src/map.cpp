@@ -343,7 +343,7 @@ Creature *Map::addCreature(const Creature *creature, Coords coords) {
     m->setInitialHp();
     m->setStatus(STAT_GOOD);    
     m->setCoords(coords);
-	m->setMap(this);
+    m->setMap(this);
     
     /* initialize the creature before placing it */
     if (m->wanders())
@@ -371,7 +371,7 @@ Object *Map::addObject(MapTile tile, MapTile prevtile, Coords coords) {
     obj->setPrevTile(prevtile);
     obj->setCoords(coords);    
     obj->setPrevCoords(coords);
-	obj->setMap(this);
+    obj->setMap(this);
     
     objects.push_front(obj);    
 

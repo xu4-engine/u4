@@ -5,8 +5,10 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+#include <string>
 #include "person.h"
 #include "types.h"
+#include "observable.h"
 #include "savegame.h"
 
 class CombatController;
@@ -15,26 +17,9 @@ class Object;
 class Party;
 class Person;
 class Script;
+class StatsArea;
 
 #define CONV_BUFFERLEN 16
-
-typedef enum {
-    STATS_PARTY_OVERVIEW,
-    STATS_CHAR1,
-    STATS_CHAR2,
-    STATS_CHAR3,
-    STATS_CHAR4,
-    STATS_CHAR5,
-    STATS_CHAR6,
-    STATS_CHAR7,
-    STATS_CHAR8,
-    STATS_WEAPONS,
-    STATS_ARMOR,
-    STATS_EQUIPMENT,
-    STATS_ITEMS,
-    STATS_REAGENTS,
-    STATS_MIXTURES
-} StatsView;
 
 typedef enum {
     AURA_NONE,
@@ -43,7 +28,7 @@ typedef enum {
     AURA_NEGATE,
     AURA_PROTECTION,
     AURA_QUICKNESS
-} Aura;
+} AuraType;
 
 typedef enum {
     TRANSPORT_FOOT      = 0x1,
@@ -67,6 +52,52 @@ typedef struct _Conversation {
     int price;
 } Conversation;
 
+/**
+ * Aura class
+ */
+class Aura : public Observable<string> {
+public:
+    Aura() : type(AURA_NONE), duration(0) {}
+
+    int getDuration() const            { return duration; }
+    AuraType getType() const        { return type; }
+    bool isActive() const            { return duration > 0; }
+
+    void setDuration(int d) {
+        duration = d;
+        setChanged();
+        notifyObservers("Aura::setDuration");
+    }
+
+    void set(AuraType t = AURA_NONE, int d = 0) {
+        type = t;
+        duration = d;
+        setChanged();
+        notifyObservers("Aura::set");
+    }
+
+    void setType(AuraType t) {
+        type = t;
+        setChanged();
+        notifyObservers("Aura::setType");
+    }
+
+    bool operator==(const AuraType &t) const    { return type == t; }
+    bool operator!=(const AuraType &t) const    { return !operator==(t); }
+
+    void passTurn() {
+        if (--duration < 0)
+            duration = 0;
+    }    
+
+private:
+    AuraType type;
+    int duration;
+};
+
+/**
+ * Context class
+ */
 class Context {
 public:
     Context() : saveGame(NULL), location(NULL) {}
@@ -77,12 +108,11 @@ public:
     struct _Location *location;
     Conversation conversation;
     int line, col;
-    StatsView statsView;
+    StatsArea *stats;
     int moonPhase;
     int windDirection;
     int windCounter;
-    Aura aura;
-    int auraDuration;
+    Aura *aura;    
     int horseSpeed;
     int opacity;
     TransportContext transportContext;

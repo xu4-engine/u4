@@ -178,7 +178,7 @@ public:
     bool specialAction();
     bool specialEffect();
 
-	/* combat methods */
+    /* combat methods */
     void act();
     virtual void addStatus(StatusType status);
     void applyTileEffect(TileEffect effect);
@@ -194,8 +194,8 @@ public:
     virtual void setStatus(StatusType status);
     virtual void wakeUp();
 
-	virtual bool applyDamage(int damage);
-	virtual bool dealDamage(Creature *m, int damage);
+    virtual bool applyDamage(int damage);
+    virtual bool dealDamage(Creature *m, int damage);
 
     // Properties
 protected:

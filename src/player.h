@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include "creature.h"
+#include "observable.h"
 #include "savegame.h"
 #include "tile.h"
 #include "types.h"
@@ -74,6 +75,8 @@ class PartyMember : public Creature {
 public:
     PartyMember(class Party *p, SaveGamePlayerRecord *pr);
 
+    void notifyOfChange(string arg);
+    
     virtual bool attackHit(Creature *m);
     ClassType getClass();
     int getDamage();
@@ -85,6 +88,11 @@ public:
     int getMaxLevel();
     virtual string getName() const;
     StatusType getStatus();
+    SexType getSex() const;
+    int getStr() const;
+    int getDex() const;
+    int getInt() const;
+    int getExp() const;
     virtual MapTile getHitTile() const;
     virtual MapTile getMissTile() const;
     ArmorType getArmor() const;
@@ -121,10 +129,11 @@ protected:
  */ 
 typedef std::vector<PartyMember *> PartyMemberVector;
 
-class Party {
+class Party : public Observable<string> {
+    friend class PartyMember;
 public:
     Party(SaveGame *saveGame);
-
+    
     void adjustFood(int food);
     void adjustGold(int gold);
     void adjustKarma(KarmaAction action);
@@ -133,32 +142,30 @@ public:
     bool canEnterShrine(Virtue virtue);    
     bool canPersonJoin(string name, Virtue *v);
     bool donate(int quantity);
-    void endTurn();
+    void endTurn();    
     int  getChest();
     bool isImmobilized();
     bool isDead();
     bool isPersonJoined(string name);
     CannotJoinError join(string name);
-    void reviveParty();
+    void reviveParty();    
 
     int size() const;
-    PartyMember *member(int index) const;
+    PartyMember *member(int index) const;    
     
 //protected:
 public:
     PartyMemberVector members;
-    SaveGame *saveGame;
+    SaveGame *saveGame;    
 };
 
 typedef void (*LostEighthCallback)(Virtue);
 typedef void (*AdvanceLevelCallback)(PartyMember *player);
-typedef void (*ItemStatsChangedCallback)(void);
 typedef void (*PartyStarvingCallback)(void);
 typedef void (*SetTransportCallback)(MapTile tile);
 
 void playerSetLostEighthCallback(LostEighthCallback callback);
 void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback);
-void playerSetItemStatsChangedCallback(ItemStatsChangedCallback callback);
 void playerSetPartyStarvingCallback(PartyStarvingCallback callback);
 void playerSetSetTransportCallback(SetTransportCallback callback);
 
