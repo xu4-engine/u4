@@ -111,3 +111,29 @@ int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon) {
 
     assert(0);                  /* shouldn't happen */
 }
+
+/**
+ * Adjusts the avatar's karma level for the given virtue.  Returns
+ * non-zero if the adjustment results in the avatar losing an eigth of
+ * his avatarhood.
+ */
+int playerAdjustKarma(SaveGame *saveGame, Virtue virt, int adj) {
+    int k = saveGame->karma[virt];
+
+    if (k == 0) {               /* already an avatar */
+        if (adj < 0) {
+            saveGame->karma[virt] = 100 + adj;
+            return 1;
+        } else
+            return 0;
+    }
+
+    k += adj;
+    if (k <= 0)
+        k = 1;
+    if (k >= 99)
+        k = 99;
+    saveGame->karma[virt] = k;
+
+    return 0;
+}
