@@ -31,6 +31,7 @@
 #include "shrine.h"
 #include "death.h"
 #include "combat.h"
+#include "camp.h"
 
 void gameCastSpell(unsigned int spell, int caster, int param);
 int gameCheckPlayerDisabled(int player);
@@ -40,8 +41,10 @@ int attackAtCoord(int x, int y);
 int castForPlayer(int player);
 int castForPlayer2(int spell, void *data);
 int castForPlayerGetDestPlayer(int player);
+int castForPlayerGetDestDir(Direction dir);
 int jimmyAtCoord(int x, int y);
 int mixReagentsForSpell(int spell, void *data);
+int mixReagentsForSpell2(int spell, void *data);
 int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y);
@@ -384,7 +387,11 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'h':
-        screenMessage("Hole up & camp!\n");
+        screenMessage("Hole up & Camp!\n");
+        if (mapIsWorldMap(c->map))
+            campBegin();
+        else 
+            screenMessage("Not here!\n");
         break;
 
     case 'i':
@@ -439,6 +446,8 @@ int gameBaseKeyHandler(int key, void *data) {
         screenMessage("%s", alphaInfo->prompt);
         eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
 
+        c->statsItem = STATS_MIXTURES;
+        statsUpdate();
         break;
 
     case 'n':
@@ -606,6 +615,39 @@ int gameGetAlphaChoiceKeyHandler(int key, void *data) {
         valid = 0;
         screenMessage("\n%s", info->prompt);
         screenRedrawScreen();
+    }
+
+    return valid || keyHandlerDefault(key, NULL);
+}
+
+int gameGetDirectionKeyHandler(int key, void *data) {
+    int (*handleDirection)(Direction dir) = (int(*)(Direction))data;
+    int valid = 1;
+    Direction dir;
+
+    switch (key) {
+    case U4_UP:
+        dir = DIR_NORTH;
+        break;
+    case U4_DOWN:
+        dir = DIR_SOUTH;
+        break;
+    case U4_LEFT:
+        dir = DIR_WEST;
+        break;
+    case U4_RIGHT:
+        dir = DIR_EAST;
+        break;
+    default:
+        valid = 0;
+        break;
+    }
+
+    if (valid) {
+        eventHandlerPopKeyHandler();
+
+        screenMessage("%s\n", getDirectionName(dir));
+        (*handleDirection)(dir);
     }
 
     return valid || keyHandlerDefault(key, NULL);
@@ -793,7 +835,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         break;
     case 'm':
         screenMessage("Mixtures!\n\020");
-        for (i = 0; i < 26; i++)
+        for (i = 0; i < SPELL_MAX; i++)
             c->saveGame->mixtures[i] = 99;
         break;
     case 'r':
@@ -902,10 +944,12 @@ int castForPlayer2(int spell, void *data) {
         break;
     case SPELLPRM_DIR:
     case SPELLPRM_TYPEDIR:
+        screenMessage("Dir: ");
+        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, &castForPlayerGetDestDir);
+        break;
     case SPELLPRM_FROMDIR:
-        /* FIXME */
-        gameCastSpell(castSpell, castPlayer, 0);
-        gameFinishTurn();
+        screenMessage("From Dir: ");
+        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, &castForPlayerGetDestDir);
         break;
     }
 
@@ -918,7 +962,9 @@ int castForPlayerGetDestPlayer(int player) {
     return 1;
 }
 
-int castForPlayerGetDestDir(int dir) {
+int castForPlayerGetDestDir(Direction dir) {
+    gameCastSpell(castSpell, castPlayer, (int) dir);
+    gameFinishTurn();
     return 1;
 }
 
@@ -993,11 +1039,45 @@ int readyForPlayer2(int weapon, void *data) {
     return 1;
 }
 
+/* FIXME */
+Mixture *mix;
+int mixSpell;
+
 /**
  * Mixes reagents for a spell.  Prompts for reagents.
  */
 int mixReagentsForSpell(int spell, void *data) {
+    AlphaActionInfo *info;
+
+    mixSpell = spell;
+    mix = mixtureNew();
+
     screenMessage("%s!\n", spellGetName(spell));
+
+    c->statsItem = STATS_REAGENTS;
+    statsUpdate();
+
+    info = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
+    info->lastValidLetter = REAG_MAX + 'a' - 1;
+    info->handleAlpha = mixReagentsForSpell2;
+    info->prompt = "Reagent: ";
+    info->data = (void *) spell;
+
+    eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, info);
+
+    return 0;
+}
+
+int mixReagentsForSpell2(int spell, void *data) {
+    AlphaActionInfo *info;
+
+    info = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
+    info->lastValidLetter = REAG_MAX + 'a' - 1;
+    info->handleAlpha = mixReagentsForSpell2;
+    info->prompt = "Reagent: ";
+    info->data = (void *) spell;
+
+    eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, info);
 
     gameFinishTurn();
     return 0;

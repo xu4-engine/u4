@@ -34,6 +34,7 @@ void gameSetMap(struct _Context *ct, struct _Map *map, int setStartPos);
 int gameBaseKeyHandler(int key, void *data);
 int gameGetPlayerNoKeyHandler(int key, void *data);
 int gameGetAlphaChoiceKeyHandler(int key, void *data);
+int gameGetDirectionKeyHandler(int key, void *data);
 int gameGetCoordinateKeyHandler(int key, void *data);
 int gameZtatsKeyHandler(int key, void *data);
 int gameZtatsKeyHandler2(int key, void *data);
