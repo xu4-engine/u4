@@ -382,7 +382,10 @@ void playerEndTurn(SaveGame *saveGame) {
     int i;
 
     saveGame->moves++;
-    saveGame->food -= saveGame->members;
+    for (i = 0; i < saveGame->members; i++) {
+        if (saveGame->players[i].status != STAT_DEAD)
+            saveGame->food--;
+    }
     if (saveGame->food < 0) {
         /* FIXME: handle starving */
         saveGame->food = 0;
@@ -411,10 +414,13 @@ void playerEndTurn(SaveGame *saveGame) {
     }
 }
 
-void playerApplyEffect(SaveGame *saveGame, TileEffect effect) {
+void playerApplyEffect(SaveGame *saveGame, TileEffect effect, int player) {
     int i;
 
     for (i = 0; i < saveGame->members; i++) {
+
+        if (i != player && player != ALL_PLAYERS)
+            continue;
 
         if (saveGame->players[i].status == STAT_DEAD)
             continue;
@@ -423,13 +429,15 @@ void playerApplyEffect(SaveGame *saveGame, TileEffect effect) {
         case EFFECT_NONE:
             break;
         case EFFECT_FIRE:
+            if (i == player || /* FIXME */ 0)
+                playerApplyDamage(&(saveGame->players[i]), 16 + (rand() % 32));
             break;
         case EFFECT_SLEEP:
-            if (rand() % 5 == 0)
+            if (i == player || rand() % 5 == 0)
                 saveGame->players[i].status = STAT_SLEEPING;
             break;
         case EFFECT_POISON:
-            if (rand() % 5 == 0)
+            if (i == player || rand() % 5 == 0)
                 saveGame->players[i].status = STAT_POISONED;
             break;
         default:

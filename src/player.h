@@ -8,6 +8,8 @@
 #include "savegame.h"
 #include "ttype.h"
 
+#define ALL_PLAYERS -1
+
 typedef enum {
     KA_FOUND_ITEM,
     KA_STOLE_CHEST,
@@ -69,7 +71,7 @@ int playerCanPersonJoin(SaveGame *saveGame, const char *name, Virtue *v);
 int playerIsPersonJoined(SaveGame *saveGame, const char *name);
 int playerJoin(SaveGame *saveGame, const char *name);
 void playerEndTurn(SaveGame *saveGame);
-void playerApplyEffect(SaveGame *saveGame, TileEffect effect);
+void playerApplyEffect(SaveGame *saveGame, TileEffect effect, int player);
 int playerPartyImmobilized(const SaveGame *saveGame);
 int playerPartyDead(const SaveGame *saveGame);
 void playerApplySleepSpell(SaveGame *saveGame);
