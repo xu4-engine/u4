@@ -15,6 +15,7 @@
 #include "person.h"
 #include "ttype.h"
 #include "context.h"
+#include "savegame.h"
 
 const extern Map world_map;
 Context *c;
@@ -22,16 +23,36 @@ Context *c;
 void move(int dx, int dy);
 
 int main(int argc, char *argv[]) {
+    FILE *saveGameFile;
+
     screenInit();
 
     c = (Context *) malloc(sizeof(Context));
+    c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
     c->parent = NULL;
     c->map = &world_map;
-    c->x = c->map->startx;
-    c->y = c->map->starty;
     c->state = STATE_NORMAL;
     c->line = 0;
     c->col = 0;
+
+    saveGameFile = fopen("party.sav", "r");
+    if (saveGameFile) {
+        saveGameRead(c->saveGame, saveGameFile);
+		fclose(saveGameFile);
+    } else {
+        SaveGamePlayerRecord avatar;
+        saveGamePlayerRecordInit(&avatar);
+        strcpy(avatar.name, "Avatar");
+        avatar.hp = 100;
+        avatar.hpMax = 100;
+        avatar.str = 20;
+        avatar.dex = 20;
+        avatar.intel = 20;
+        saveGameInit(c->saveGame, 86, 109, &avatar);
+    }
+
+    c->x = c->saveGame->x;
+    c->y = c->saveGame->y;
 
     screenDrawBorders();
     screenUpdate(c);
