@@ -37,6 +37,7 @@ SRCS=\
         rle.c \
         error.c \
         debug.c \
+        dngview.c \
         maps/cities.c \
         maps/castles.c \
         maps/worldmap.c \
