@@ -1130,11 +1130,11 @@ void screenShowTile(MapTile mapTile, int focus, int x, int y) {
     case ANIM_LCBFLAG:
         anim = tileAnimSetGetAnimByName(tileanims, "lcbflag");
         break;
-    case ANIM_WESTSHIPFLAG:
-        anim = tileAnimSetGetAnimByName(tileanims, "shipflagwest");
-        break;
-    case ANIM_EASTSHIPFLAG:
-        anim = tileAnimSetGetAnimByName(tileanims, "shipflageast");
+    case ANIM_SHIPFLAG:
+        if (mapTile.getDirection() == DIR_WEST)
+            anim = tileAnimSetGetAnimByName(tileanims, "shipflagwest");
+        else if (mapTile.getDirection() == DIR_EAST)        
+            anim = tileAnimSetGetAnimByName(tileanims, "shipflageast");
         break;
     case ANIM_CAMPFIRE:
         anim = tileAnimSetGetAnimByName(tileanims, "fire");

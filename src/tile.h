@@ -48,7 +48,7 @@ public:
     string name;    
     int index;
     int frames;
-    bool animated; /* FIXME: this will be changed to 'animation' of type TileAnimationStyle */
+    TileAnimationStyle animation;    
     bool opaque;
     TileRule *rule;
 };

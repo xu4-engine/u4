@@ -2,7 +2,7 @@
 
 <!ENTITY % bool '( true | false )'>
 <!ENTITY % comp '( none | rle | lzw )'>
-<!ENTITY % anim '( scroll | frames | rowswap | none )'>
+<!ENTITY % anim '( scroll | frames | cityflag | castleflag | lcbflag | shipflag | campfire | none )'>
 
 <!ELEMENT tiles ( tile+ ) >
 
@@ -11,8 +11,6 @@
                 rule               CDATA    #IMPLIED
                 frames             NMTOKEN  #IMPLIED
                 directions         CDATA    #IMPLIED
-                animated           %bool;   #IMPLIED
+                animation          %anim;   #IMPLIED 
                 rowtoswap          NMTOKEN  #IMPLIED
                 opaque             %bool;   #IMPLIED>
-
-<!-- animation          %anim;   #IMPLIED -->

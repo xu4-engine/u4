@@ -23,13 +23,34 @@
 void Tile::loadProperties(Tile *tile, void *xmlNode) {
     xmlNodePtr node = (xmlNodePtr)xmlNode;
 
-    /* ignore 'text' nodes */        
+    static std::map<string, TileAnimationStyle> animStyles;
+    if (!animStyles.size()) {
+        animStyles["none"] = ANIM_NONE;
+        animStyles["scroll"] = ANIM_SCROLL;
+        animStyles["campfire"] = ANIM_CAMPFIRE;
+        animStyles["cityflag"] = ANIM_CITYFLAG;
+        animStyles["castleflag"] = ANIM_CASTLEFLAG;
+        animStyles["shipflag"] = ANIM_SHIPFLAG;
+        animStyles["lcbflag"] = ANIM_LCBFLAG;
+        animStyles["frames"] = ANIM_FRAMES;
+    }
+
+    /* ignore 'text' nodes */
     if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
         return;
             
     tile->name = xmlGetPropAsStr(node, "name"); /* get the name of the tile */    
     tile->frames = 1;
-    tile->animated = xmlGetPropAsBool(node, "animated"); /* see if the tile is animated */
+
+    if (xmlPropExists(node, "animation")) {
+        string animation = xmlGetPropAsStr(node, "animation");
+        if (animStyles.find(animation) == animStyles.end())
+            errorWarning("Warning: animation style '%s' not found", animation.c_str());
+
+        tile->animation = animStyles[animation]; /* get the animation style of the tile, if any */    
+    }
+    else tile->animation = ANIM_NONE;
+
     tile->opaque = xmlGetPropAsBool(node, "opaque"); /* see if the tile is opaque */
 
     /* find the rule that applies to the current tile, if there is one.
@@ -119,7 +140,7 @@ bool MapTile::setDirection(Direction d) {
 
 void MapTile::advanceFrame() {
     if (++frame >= Tileset::tiles[id]->frames)
-        frame = 0;    
+        frame = 0;
 }
 
 void MapTile::reverseFrame() {
@@ -225,29 +246,7 @@ TileEffect MapTile::getEffect() const {
 }
 
 TileAnimationStyle MapTile::getAnimationStyle() const {
-    unsigned int tile = getIndex();
-    if (Tileset::tiles[id]->animated)
-        return ANIM_SCROLL;
-    else if (tile == 75)
-        return ANIM_CAMPFIRE;
-    else if (tile == 10)
-        return ANIM_CITYFLAG;
-    else if (tile == 11)
-        return ANIM_CASTLEFLAG;
-    else if (tile == 16)
-        return ANIM_WESTSHIPFLAG;
-    else if (tile == 18)
-        return ANIM_EASTSHIPFLAG;
-    else if (tile == 14)
-        return ANIM_LCBFLAG;
-    else if ((tile >= 32 && tile < 48) ||
-             (tile >= 80 && tile < 96) ||
-             (tile >= 132 && tile < 144))
-        return ANIM_TWOFRAMES;
-    else if (tile >= 144)
-        return ANIM_FOURFRAMES;
-
-    return ANIM_NONE;
+    return Tileset::tiles[id]->animation;
 }
 
 bool MapTile::isOpaque() const {

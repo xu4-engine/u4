@@ -455,8 +455,8 @@ void Map::animateObjects() {
     ObjectDeque::iterator i;
     
     for (i = objects.begin(); i != objects.end(); i++) {
-        if ((*i)->isAnimated() && ((*i)->getTile().getAnimationStyle() != ANIM_NONE) && xu4_random(2))
-            (*i)->advanceFrame();        
+        if ((*i)->isAnimated() && ((*i)->getTile().getAnimationStyle() == ANIM_FRAMES) && xu4_random(2))
+            (*i)->advanceFrame();
     }
 }
 

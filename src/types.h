@@ -34,11 +34,9 @@ typedef enum {
     ANIM_CAMPFIRE,
     ANIM_CITYFLAG,
     ANIM_CASTLEFLAG,
-    ANIM_WESTSHIPFLAG,
-    ANIM_EASTSHIPFLAG,
+    ANIM_SHIPFLAG,    
     ANIM_LCBFLAG,
-    ANIM_TWOFRAMES,
-    ANIM_FOURFRAMES
+    ANIM_FRAMES
 } TileAnimationStyle;
 
 class MapTile {
