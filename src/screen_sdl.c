@@ -655,7 +655,7 @@ void screenShowTile(int tile, int x, int y) {
     int offset;
     SDL_Rect src, dest;
 
-    if (tileIsAnimated(tile))
+    if (tileGetAnimationStyle(tile) == ANIM_SCROLL)
         offset = screenCurrentCycle * scale;
     else
         offset = 0;
