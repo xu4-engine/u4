@@ -18,9 +18,9 @@ void xu4_srandom() {
 
 /**
  * Generate a random number between 0 and (upperRange - 1).  This
- * routine uses the upper bits of random number provided by rand() to
- * compensate for older generators that have low entropy in the lower
- * bits (e.g. MacOS X).
+ * routine uses the upper bits of the random number provided by rand()
+ * to compensate for older generators that have low entropy in the
+ * lower bits (e.g. MacOS X).
  */
 int xu4_random(int upperRange) {
     int r = rand();
