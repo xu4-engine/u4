@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 
+#include "event.h"
 #include "direction.h"
 #include "debug.h"
 
@@ -175,4 +176,25 @@ Direction dirRandomDir(int valid_directions_mask) {
         return DIR_NONE;
 
     return d[rand() % n];
+}
+
+Direction keyToDirection(int key) {        
+    switch (key) {
+    case U4_UP: return DIR_NORTH;        
+    case U4_DOWN: return DIR_SOUTH;
+    case U4_LEFT: return DIR_WEST;        
+    case U4_RIGHT: return DIR_EAST;     
+    }
+
+    return DIR_NONE;
+}
+
+int directionToKey(Direction dir) {
+    switch(dir) {    
+    case DIR_WEST: return U4_LEFT;
+    case DIR_NORTH: return U4_UP;
+    case DIR_EAST: return U4_RIGHT;
+    case DIR_SOUTH: return U4_DOWN;
+    }
+    return 0;
 }

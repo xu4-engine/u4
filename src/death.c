@@ -92,8 +92,10 @@ void deathTimer(void *data) {
 
 void deathRevive() {
     while(!mapIsWorldMap(c->location->map) && c->location->prev != NULL) {
-        gameExitToParentMap(c);
+        gameExitToParentMap(c);        
     }
+    
+    gameSetViewMode(VIEW_NORMAL);
 
     eventHandlerSetKeyHandler(&keyHandlerDefault);
     eventHandlerPushKeyHandler(&gameBaseKeyHandler);
@@ -113,8 +115,7 @@ void deathRevive() {
     c->aura = AURA_NONE;
     c->auraDuration = 0;
     c->horseSpeed = 0;
-    c->lastCommandTime = time(NULL);
-    gameSetViewMode(VIEW_NORMAL);
+    c->lastCommandTime = time(NULL);    
     musicPlay();
 
     playerReviveParty(c->saveGame);

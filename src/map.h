@@ -86,5 +86,6 @@ int mapDistance(int x1, int y1, int x2, int y2);
 int mapMovementDistance(int x1, int y1, int x2, int y2);
 int mapDirMove(const Map *map, Direction dir, int *x, int *y);
 int mapWrapCoordinates(const Map *map, int *x, int *y);
+int mapIsObstructed(const Map *map, int x, int y, int z, Direction dir, int distance);
 
 #endif

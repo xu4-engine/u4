@@ -296,24 +296,80 @@ MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
         return MSTAT_BARELYWOUNDED;
 }
 
-int monsterSpecialAction(const Monster *monster) {
-    switch(monster->tile) {
-    case PIRATE_TILE:
-        /* fire cannon */
-        break;
+int monsterSpecialAction(Object *obj) {
+    int broadsidesDirs, dx, dy, dirx, diry;
+    Monster *m = NULL;
+    CoordActionInfo *info;
+    int retval = 0;
 
-    case GIANT_SQUID_TILE: /* ranged */
-    case SEA_SERPENT_TILE: /* ranged */
-    case DRAGON_TILE: /* ranged */
+    if (obj->objType == OBJECT_MONSTER) {
+
+        m = obj->monster;
+
+        broadsidesDirs = DIR_REMOVE_FROM_MASK(tileGetDirection(obj->tile), MASK_DIR_ALL);
+        broadsidesDirs = DIR_REMOVE_FROM_MASK(dirReverse(tileGetDirection(obj->tile)), broadsidesDirs);
+
+        dx = c->location->x - obj->x;
+        dy = c->location->y - obj->y;
+        
+        /* Find out if the avatar is east or west of the object */
+        if (dx < 0) {
+            dx *= -1;
+            dirx = DIR_WEST;
+        } else dirx = DIR_EAST;
+
+        /* Find out if the avatar is north or south of the object */
+        if (dy < 0) {            
+            dy *= -1;
+            diry = DIR_NORTH;
+        } else diry = DIR_SOUTH;
+
+        switch(m->id) {
+        case PIRATE_ID:
+            /** 
+             * Fire cannon: Pirates only fire broadsides and only when they can hit you :)
+             */
+            retval = 1;
+
+            info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
+            info->handleAtCoord = &fireAtCoord;
+            info->origin_x = obj->x;
+            info->origin_y = obj->y;
+            info->prev_x = info->prev_y = -1;
+            info->range = 3;
+            info->validDirections = broadsidesDirs;
+            info->player = -1;
+            info->blockedPredicate = &tileCanAttackOver;
+            info->blockBefore = 1;            
+            
+            if ((dy == 0) && (dx <= 3) && DIR_IN_MASK(dirx, broadsidesDirs) &&
+                !mapIsObstructed(c->location->map, obj->x, obj->y, obj->z, dirx, dx-1)) {
+                /* Fire cannon in 'dirx' direction */
+                gameDirectionalAction(dirx, info);
+            }
+            else if ((dx == 0) && (dy <= 3) && DIR_IN_MASK(diry, broadsidesDirs) &&
+                !mapIsObstructed(c->location->map, obj->x, obj->y, obj->z, diry, dy-1)) {
+                /* Fire cannon in 'diry' direction */
+                gameDirectionalAction(diry, info);
+            }
+            else retval = 0;
+
+            free(info);
+            break;
+
+        case GIANT_SQUID_ID: /* ranged */
+        case SEA_SERPENT_ID: /* ranged */
+        case DRAGON_ID: /* ranged */
     
-        /* FIXME: add ranged monster's behavior here */
+            /* FIXME: add ranged monster's behavior here */
 
-        /* Other ranged monsters here too, whoever you are! */
+            /* Other ranged monsters here too, whoever you are! */
 
-    default: break;
+        default: break;
+        }
     }
 
-    return 0;
+    return retval;
 }
 
 void monsterSpecialEffect(Object *obj) {
@@ -333,19 +389,11 @@ void monsterSpecialEffect(Object *obj) {
                     if (tileIsShip(c->saveGame->transport)) {
                         /* FIXME: Check actual damage from u4dos
                            Screen should shake here */
-                        c->saveGame->shiphull -= (11 + rand()%20);
-                        if (c->saveGame->shiphull > 99)
-                        {
-                            c->saveGame->shiphull = 0;
-                            gameCheckHullIntegrity();
-                        }
+                        gameDamageShip(10, 30);                        
                     }
                     else {
                         /* FIXME: formula for twister damage is guesstimated from u4dos */
-                        int i;
-
-                        for (i = 0; i < c->saveGame->members; i++)
-                            playerApplyDamage(&c->saveGame->players[i], rand() % 75);
+                        gameDamageParty(0, 75);                        
                     }
                     break;
                 }
@@ -371,8 +419,7 @@ void monsterSpecialEffect(Object *obj) {
                     obj->z == c->location->z && tileIsShip(c->saveGame->transport)) {                    
                 
                     /* FIXME: Screen should shake here */
-                    c->saveGame->shiphull -= 10;
-                    gameCheckHullIntegrity();
+                    gameDamageShip(-1, 10);
 
                     c->location->x = 127;
                     c->location->y = 78;

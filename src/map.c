@@ -456,14 +456,14 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
         }
 
         /* monster performed a special action that takes place of movement */
-        if (obj->objType == OBJECT_MONSTER && monsterSpecialAction(obj->monster))
+        if (monsterSpecialAction(obj))
             continue;
 
         /* Now, move the object according to its movement behavior */
         moveObject(map, obj, avatarx, avatary);
         
         /* Enact any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
-        if (obj->objType == OBJECT_MONSTER) monsterSpecialEffect(obj);
+        monsterSpecialEffect(obj);
     }
 
     return attacker;
@@ -656,6 +656,25 @@ int mapWrapCoordinates(const Map *map, int *x, int *y) {
         if (*y < 0) *y += map->height;
         if (*y >= (int)map->height) *y -= map->height;
         return 1;
+    }
+    return 0;
+}
+
+int mapIsObstructed(const Map *map, int x, int y, int z, Direction dir, int distance) {
+    int i;
+    int t_x = x,
+        t_y = y;
+    Object *obj;
+
+    for (i = 0; i < distance; i++) {
+        mapDirMove(map, dir, &t_x, &t_y);
+        obj = mapObjectAt(map, t_x, t_y, z);
+
+        if (obj)
+            return 1;
+        /* FIXME: function declaration will need to change for type of movement
+           (walking, swimming, sailing, flying, etc).  Then, we can test here
+           whether or not the path is obstructed */
     }
     return 0;
 }

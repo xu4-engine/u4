@@ -53,5 +53,9 @@ int readyForPlayer2(int weapon, void *data);
 void gameCheckHullIntegrity(void);
 void gameTimer(void *data);
 void gameFinishTurn(void);
+int fireAtCoord(int x, int y, int distance, void *data);
+int gameDirectionalAction(int dir, CoordActionInfo *info);
+void gameDamageParty(int minDamage, int maxDamage);
+void gameDamageShip(int minDamage, int maxDamage);
 
 #endif

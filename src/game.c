@@ -55,7 +55,6 @@ int castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
 int castForPlayerGetPhase(int phase);
 int destroyAtCoord(int x, int y, int distance, void *data);
-int fireAtCoord(int x, int y, int distance, void *data);
 int getChest(int player);
 int getChestTrapHandler(int player);
 int jimmyAtCoord(int x, int y, int distance, void *data);
@@ -83,7 +82,6 @@ void gameInitMoons();
 void gameCheckRandomMonsters(void);
 void gameFixupMonsters(void);
 long gameTimeSinceLastCommand(void);
-int gameWindSlowsShip(Direction shipdir);
 void gameMonsterAttack(Object *obj);
 
 extern Map world_map;
@@ -461,19 +459,10 @@ int gameBaseKeyHandler(int key, void *data) {
     switch (key) {
 
     case U4_UP:
-        moveAvatar(DIR_NORTH, 1);
-        break;
-
     case U4_DOWN:
-        moveAvatar(DIR_SOUTH, 1);
-        break;
-
     case U4_LEFT:
-        moveAvatar(DIR_WEST, 1);
-        break;
-
     case U4_RIGHT:
-        moveAvatar(DIR_EAST, 1);
+        moveAvatar(keyToDirection(key), 1);
         break;
 
     case 3:                     /* ctrl-C */
@@ -959,27 +948,9 @@ int gameGetAlphaChoiceKeyHandler(int key, void *data) {
 }
 
 int gameGetDirectionKeyHandler(int key, void *data) {
-    int (*handleDirection)(Direction dir) = (int(*)(Direction))data;
-    int valid = 1;
-    Direction dir;
-
-    switch (key) {
-    case U4_UP:
-        dir = DIR_NORTH;
-        break;
-    case U4_DOWN:
-        dir = DIR_SOUTH;
-        break;
-    case U4_LEFT:
-        dir = DIR_WEST;
-        break;
-    case U4_RIGHT:
-        dir = DIR_EAST;
-        break;
-    default:
-        valid = 0;
-        break;
-    }
+    int (*handleDirection)(Direction dir) = (int(*)(Direction))data;    
+    Direction dir = keyToDirection(key);    
+    int valid = (dir != DIR_NONE);
 
     if (valid) {
         eventHandlerPopKeyHandler();
@@ -1015,66 +986,18 @@ int gameGetPhaseKeyHandler(int key, void *data) {
  * specific routine.
  */
 int gameGetCoordinateKeyHandler(int key, void *data) {
-    CoordActionInfo *info = (CoordActionInfo *) data;
-    int valid = 1;
+    CoordActionInfo *info = (CoordActionInfo *) data;    
     int distance = 0;
-    Direction dir;
-    int t_x = info->origin_x, t_y = info->origin_y;    
-    int tile;
+    Direction dir = keyToDirection(key);
+    int valid = (dir != DIR_NONE);
 
-    eventHandlerPopKeyHandler();
+    eventHandlerPopKeyHandler();    
 
-    switch (key) {
-    case U4_UP:
-        dir = DIR_NORTH;
-        break;
-    case U4_DOWN:
-        dir = DIR_SOUTH;
-        break;
-    case U4_LEFT:
-        dir = DIR_WEST;
-        break;
-    case U4_RIGHT:
-        dir = DIR_EAST;
-        break;
-    default:
-        valid = 0;
-        break;
+    if (valid) {
+        screenMessage("%s\n", getDirectionName(dir));
+        gameDirectionalAction(dir, info);
     }
 
-    if (!valid || !DIR_IN_MASK(dir,info->validDirections))
-        goto failure;
-
-    screenMessage("%s\n", getDirectionName(dir));
-
-    /*
-     * try every tile in the given direction, up to the given range.
-     * Stop when the command handler succeeds, the range is exceeded,
-     * or the action is blocked.
-     */
-    for (distance = 1; distance <= info->range; distance++) {
-        dirMove(dir, &t_x, &t_y);
-
-        tile = mapGroundTileAt(c->location->map, t_x, t_y, c->location->z);
-
-        /* should we see if the action is blocked before trying it? */       
-        if (info->blockBefore && info->blockedPredicate &&
-            !(*(info->blockedPredicate))(tile))
-            break;
-
-        if ((*(info->handleAtCoord))(t_x, t_y, distance, info))
-            goto success;
-
-        /* see if the action was blocked only if it did not succeed */
-        if (!info->blockBefore && info->blockedPredicate &&
-            !(*(info->blockedPredicate))(tile))
-            break;
-    }
-
- failure:
-    (*info->handleAtCoord)(-1, -1, distance, info);
-
- success:
     free(info);
 
     return valid || keyHandlerDefault(key, NULL);
@@ -1335,6 +1258,8 @@ int fireAtCoord(int x, int y, int distance, void *data) {
         oldy = info->prev_y;  
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
     int validObject = 0;
+    int hitsAvatar = 0;
+    int originAvatar = (info->origin_x == c->location->x && info->origin_y == c->location->y);
     
     info->prev_x = x;
     info->prev_y = y;
@@ -1347,7 +1272,10 @@ int fireAtCoord(int x, int y, int distance, void *data) {
         if (distance == 0)
             screenMessage("Broadsides Only!\n");
 
-        (*c->location->finishTurn)();
+        /* The avatar's ship was firing */
+        if (originAvatar)
+            (*c->location->finishTurn)();
+
         return 1;
     }
     else {
@@ -1361,17 +1289,31 @@ int fireAtCoord(int x, int y, int distance, void *data) {
             validObject = 1;
         else if (obj && (obj->objType == OBJECT_UNKNOWN))
             validObject = 1;
+        
+        /* Does the cannon hit the avatar? */
+        if (x == c->location->x && y == c->location->y) {
+            validObject = 1;
+            hitsAvatar = 1;
+        }        
 
-        if (validObject)       
+        if (validObject)
         {
-            /* always displays as a 'hit', though the monster may not be destroyed */
+            /* always displays as a 'hit' though the object may not be destroyed */
             attackFlash(x, y, HITFLASH_TILE, 2);            
             
-            /* inanimate objects get destroyed instantly */
-            if ((obj->objType == OBJECT_UNKNOWN) || (rand() % 2 == 0))
+            /* Is is a pirate ship firing at US? */
+            if (hitsAvatar) {                
+                if (tileIsShip(c->saveGame->transport))
+                    gameDamageShip(-1, 10);
+                else gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */
+            }          
+            /* inanimate objects get destroyed instantly, while monsters get a chance */
+            else if ((obj->objType == OBJECT_UNKNOWN) || (rand() % 2 == 0))
                 mapRemoveObject(c->location->map, obj);            
             
-            (*c->location->finishTurn)();
+            if (originAvatar)
+                (*c->location->finishTurn)();
+
             return 1;
         }
         
@@ -2392,19 +2334,6 @@ long gameTimeSinceLastCommand() {
     return time(NULL) - c->lastCommandTime;
 }
 
-/**
- * Check whether a ship movement in a given direction is slowed down
- * by the wind.
- */
-int gameWindSlowsShip(Direction shipdir) {
-    if (shipdir == (Direction) c->windDirection)
-        return (c->saveGame->moves % 4) != 3;
-    else if (shipdir == dirReverse((Direction) c->windDirection))
-        return (c->saveGame->moves % 4) == 0;
-    else
-        return 0;
-}
-
 void gameMonsterAttack(Object *obj) {
     Object *under;
     unsigned char ground;    
@@ -2416,4 +2345,88 @@ void gameMonsterAttack(Object *obj) {
         tileIsShip(under->tile))
         ground = under->tile;
     combatBegin(ground, c->saveGame->transport, obj);
+}
+
+int gameDirectionalAction(Direction dir, CoordActionInfo *info) {
+    int distance, tile;
+    int t_x = info->origin_x,
+        t_y = info->origin_y,
+        succeeded = 0;
+
+    /*
+     * try every tile in the given direction, up to the given range.
+     * Stop when the command handler succeeds, the range is exceeded,
+     * or the action is blocked.
+     */
+
+    if (DIR_IN_MASK(dir, info->validDirections)) {
+        for (distance = 1; distance <= info->range; distance++) {
+            dirMove(dir, &t_x, &t_y);
+
+            tile = mapGroundTileAt(c->location->map, t_x, t_y, c->location->z);
+
+            /* should we see if the action is blocked before trying it? */       
+            if (info->blockBefore && info->blockedPredicate &&
+                !(*(info->blockedPredicate))(tile))
+                break;
+
+            if ((*(info->handleAtCoord))(t_x, t_y, distance, info)) {
+                succeeded = 1;
+                break;
+            }                
+
+            /* see if the action was blocked only if it did not succeed */
+            if (!info->blockBefore && info->blockedPredicate &&
+                !(*(info->blockedPredicate))(tile))
+                break;
+        }
+    }
+
+    if (!succeeded)
+        (*info->handleAtCoord)(-1, -1, distance, info);
+
+    return 0;
+}
+
+/**
+ * Deals an amount of damage between 'minDamage' and 'maxDamage'
+ * to each party member, with a 50% chance for each member to 
+ * avoid the damage.  If (minDamage == -1) or (minDamage >= maxDamage),
+ * deals 'maxDamage' damage to each member.
+ */
+
+void gameDamageParty(int minDamage, int maxDamage) {
+    int i;
+    int damage;
+
+    for (i = 0; i < c->saveGame->members; i++) {
+        if (rand() % 2 == 0) {
+            damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
+                rand() % (maxDamage - minDamage) + minDamage :
+                maxDamage;
+            playerApplyDamage(&c->saveGame->players[i], damage);
+        }
+    }
+}
+
+/**
+ * Deals an amount of damage between 'minDamage' and 'maxDamage'
+ * to the ship.  If (minDamage == -1) or (minDamage >= maxDamage),
+ * deals 'maxDamage' damage to the ship.
+ */
+
+void gameDamageShip(int minDamage, int maxDamage) {
+    int damage;
+
+    if (tileIsShip(c->saveGame->transport)) {
+        damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
+            rand() % (maxDamage - minDamage) + minDamage :
+            maxDamage;
+
+        c->saveGame->shiphull -= damage;
+        if ((short)c->saveGame->shiphull < 0)
+            c->saveGame->shiphull = 0;
+        statsUpdate();
+        gameCheckHullIntegrity();
+    }
 }

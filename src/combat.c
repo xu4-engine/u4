@@ -265,19 +265,10 @@ int combatBaseKeyHandler(int key, void *data) {
 
     switch (key) {
     case U4_UP:
-        movePartyMember(DIR_NORTH, focus);
-        break;
-
     case U4_DOWN:
-        movePartyMember(DIR_SOUTH, focus);
-        break;
-
     case U4_LEFT:
-        movePartyMember(DIR_WEST, focus);
-        break;
-
     case U4_RIGHT:
-        movePartyMember(DIR_EAST, focus);
+        movePartyMember(keyToDirection(key), focus);
         break;
 
     case U4_ESC:
