@@ -193,6 +193,14 @@ SOURCE=..\src\context.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\controller.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\controller.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\conversation.cpp
 # End Source File
 # Begin Source File
