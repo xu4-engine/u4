@@ -83,23 +83,7 @@ void deathTimer(void *data) {
 
 void deathRevive() {
     while(!mapIsWorldMap(c->map) && c->parent != NULL) {
-        Context *t = c;
-        annotationClear(c->map->id);
-        mapClearObjects(c->map);
-        c->parent->saveGame->x = c->saveGame->dngx;
-        c->parent->saveGame->y = c->saveGame->dngy;
-        c->parent->annotation = c->annotation;
-        c->parent->line = c->line;
-        c->parent->moonPhase = c->moonPhase;
-        c->parent->windDirection = c->windDirection;
-        c->parent->windCounter = c->windCounter;
-        c->parent->aura = c->aura;
-        c->parent->auraDuration = c->auraDuration;
-        c->parent->horseSpeed = c->horseSpeed;
-        c->parent->lastCommandTime = time(NULL);
-        c = c->parent;
-        c->col = 0;
-        free(t);
+        gameExitToParentMap(c);
     }
 
     c->saveGame->x = REVIVE_WORLD_X;

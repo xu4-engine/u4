@@ -171,25 +171,7 @@ int shrineEjectOnKey(int key, void *data) {
 
 void shrineEject() {
     if (c->parent != NULL) {
-        Context *t = c;
-        annotationClear(c->map->id);
-        mapClearObjects(c->map);
-        c->parent->saveGame->x = c->saveGame->dngx;
-        c->parent->saveGame->y = c->saveGame->dngy;
-        c->parent->saveGame->dnglevel = -1;
-        c->parent->annotation = c->annotation;
-        c->parent->line = c->line;
-        c->parent->moonPhase = c->moonPhase;
-        c->parent->windDirection = c->windDirection;
-        c->parent->windCounter = c->windCounter;
-        c->parent->aura = c->aura;
-        c->parent->auraDuration = c->auraDuration;
-        c->parent->horseSpeed = c->horseSpeed;
-        c = c->parent;
-        c->col = 0;
-        free(t);
-                
-        musicPlay();
+        gameExitToParentMap(c);
     }
 
     gameFinishTurn();
