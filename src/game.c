@@ -1924,11 +1924,11 @@ int ztatsFor(int player) {
  */
 int moveAvatar(Direction dir, int userEvent) {
     int result = 1;
-    int newx, newy;
-    int slowedParam;
-    SlowedCallback slowedCallback = (tileIsShip(c->saveGame->transport)) ?
-        &slowedHandlerWind :
-        &slowedHandlerDefault;
+    int newx, newy;  
+    int slowed = 0;
+    SlowedType slowedType = (tileIsShip(c->saveGame->transport)) ?
+        SLOWED_BY_WIND :
+        SLOWED_BY_TILE;
 
     /*musicPlayEffect();*/
 
@@ -2009,11 +2009,19 @@ int moveAvatar(Direction dir, int userEvent) {
         }
 
         /* Are we slowed by terrain or by wind direction? */
-        slowedParam = tileIsShip(c->saveGame->transport) ? 
-            dir :
-            mapTileAt(c->location->map, newx, newy, c->location->z);
-
-        if ((*slowedCallback)(slowedParam)) {
+        switch(slowedType) {
+        case SLOWED_BY_TILE:
+            slowed = slowedByTile(mapTileAt(c->location->map, newx, newy, c->location->z));
+            break;
+        case SLOWED_BY_WIND:
+            slowed = slowedByWind(dir);
+            break;
+        case SLOWED_BY_NOTHING:
+        default:
+            break;
+        }
+        
+        if (slowed) {
             if (!settings->filterMoveMessages)
                 screenMessage("Slow progress!\n");
             result = 0;

@@ -27,8 +27,8 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
         z = obj->z,
         dirmask = DIR_NONE,
         oldtile = obj->tile;
-    SlowedCallback slowedCallback;
-    int slowedParam;
+    SlowedType slowedType = SLOWED_BY_TILE;
+    int slowed = 0;
 
     obj->prevx = obj->x;
     obj->prevy = obj->y;
@@ -64,17 +64,22 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
     else
         return 0;
 
-    /* figure out what method to use to tell if the object is getting slowed */
-    slowedCallback = &slowedHandlerDefault;
-    slowedParam = mapTileAt(map, newx, newy, obj->z);
-
-    if (obj->objType == OBJECT_MONSTER) {
-        if (monsterFlies(obj->monster))
-            slowedCallback = &slowedHandlerNone;
-        else if (tileIsPirateShip(obj->monster->tile)) {
-            slowedCallback = &slowedHandlerWind;
-            slowedParam = tileGetDirection(obj->tile);
-        }
+    /* figure out what method to use to tell if the object is getting slowed */    
+    
+    if (obj->objType == OBJECT_MONSTER)
+        slowedType = obj->monster->slowedType;
+    
+    /* is the object slowed by terrain or by wind direction? */
+    switch(slowedType) {
+    case SLOWED_BY_TILE:
+        slowed = slowedByTile(mapTileAt(map, newx, newy, obj->z));
+        break;
+    case SLOWED_BY_WIND:
+        slowed = slowedByWind(tileGetDirection(obj->tile));
+        break;
+    case SLOWED_BY_NOTHING:
+    default:
+        break;
     }
     
     /* see if the object needed to turn */
@@ -84,7 +89,7 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
     }
     
     /* was the object slowed? */
-    if ((*slowedCallback)(slowedParam))
+    if (slowed)
         return 0;
 
     if ((newx != obj->x || newy != obj->y) &&
@@ -113,9 +118,8 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
         valid_dirs = mapGetValidMoves(c->location->map, newx, newy, c->location->z, obj->tile),
         dir = DIR_NONE;
     CombatAction action = (CombatAction)act;
-    
-    SlowedCallback slowedCallback;
-    int slowedParam;
+    SlowedType slowedType = SLOWED_BY_TILE;
+    int slowed = 0;
 
     if (action == CA_FLEE)
         dir = dirFindPathToEdge(newx, newy, c->location->map->width, c->location->map->height, valid_dirs);
@@ -137,14 +141,23 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
     if (dir)
         dirMove(dir, &newx, &newy);
     else
-        return 0;
+        return 0;    
 
-    slowedCallback = &slowedHandlerDefault;
-    slowedParam = mapTileAt(c->location->map, newx, newy, c->location->z);
-    if (obj->objType == OBJECT_MONSTER && monsterFlies(obj->monster))
-        slowedCallback = &slowedHandlerNone;
+    /* is the object slowed by terrain or by wind direction? */
+    switch(slowedType) {
+    case SLOWED_BY_TILE:
+        slowed = slowedByTile(mapTileAt(c->location->map, newx, newy, c->location->z));
+        break;
+    case SLOWED_BY_WIND:
+        slowed = slowedByWind(tileGetDirection(obj->tile));
+        break;
+    case SLOWED_BY_NOTHING:
+    default:
+        break;
+    }
 
-    if (!(*slowedCallback)(slowedParam)) {
+    /* if the object wan't slowed... */
+    if (!slowed) {
         if (newx != obj->x ||
             newy != obj->y) {
             obj->prevx = obj->x;
@@ -164,7 +177,7 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
  * Returns 1 if slowed, 0 if not slowed
  */
 
-int slowedHandlerDefault(int tile) {
+int slowedByTile(int tile) {
     int slow;
     
     switch (tileGetSpeed(tile)) {    
@@ -187,19 +200,11 @@ int slowedHandlerDefault(int tile) {
 }
 
 /**
- * For objects that cannot be slowed (flying monsters, etc.)
- */
-
-int slowedHandlerNone(int unused) {
-    return 0;
-}
-
-/**
  * Slowed depending on the direction of object with respect to wind direction
  * Returns 1 if slowed, 0 if not slowed
  */
 
-int slowedHandlerWind(int direction) {
+int slowedByWind(int direction) {
     /* 1 of 4 moves while trying to move into the wind succeeds */
     if (direction == c->windDirection)
         return (c->saveGame->moves % 4) != 0;

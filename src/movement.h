@@ -10,13 +10,15 @@
 struct _Object;
 struct _Map;
 
-/* To handle being 'slowed' during movement */
-typedef int (*SlowedCallback)(int);
+typedef enum {
+    SLOWED_BY_NOTHING,
+    SLOWED_BY_TILE,
+    SLOWED_BY_WIND
+} SlowedType;
 
 int moveObject(struct _Map *map, struct _Object *obj, int avatarx, int avatary);
 int moveCombatObject(int action, struct _Map *map, struct _Object *obj, int targetx, int targety);
-int slowedHandlerDefault(int tile);
-int slowedHandlerNone(int unused);
-int slowedHandlerWind(int direction);
+int slowedByTile(int tile);
+int slowedByWind(Direction dir);
 
 #endif

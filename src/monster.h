@@ -6,6 +6,7 @@
 #define MONSTER_H
 
 #include "object.h"
+#include "movement.h"
 
 #define MAX_MONSTERS 128
 #define MAX_MONSTERS_ON_MAP 4
@@ -163,6 +164,7 @@ typedef struct _Monster {
     unsigned short level;
     unsigned char ranged;
     MonsterAttrib mattr;
+    SlowedType slowedType;
 } Monster;
 
 const Monster *monsterForTile(unsigned char tile);

@@ -114,6 +114,7 @@ void monsterLoadInfoFromXml() {
             (const xmlChar *) "true") == 0);
         monsters[monster].tile = (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"tile"));
         monsters[monster].mattr = 0;
+        monsters[monster].slowedType = SLOWED_BY_TILE;
 
         /* Load monster attributes */
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
@@ -147,6 +148,12 @@ void monsterLoadInfoFromXml() {
             }
         }
 
+        /* Figure out which 'slowed' function to use */
+        if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"sails"), (const xmlChar *)"true") == 0)
+            monsters[monster].slowedType = SLOWED_BY_WIND;
+        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"flies"), (const xmlChar *)"true") == 0)
+            monsters[monster].slowedType = SLOWED_BY_NOTHING;
+            
         monster++;
         numMonsters++;
     }
@@ -262,7 +269,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
     
-    return monsterById((era & rand() & rand()) + ORC_ID);
+    return monsterById((era & rand() & rand()) + ORC_ID);    
 }
 
 int monsterGetInitialHp(const Monster *monster) {
