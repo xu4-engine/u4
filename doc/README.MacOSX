@@ -1,5 +1,11 @@
 Xu4 instructions for MacOSX:
 
+IMPORTANT NOTE: Monday, 28 July 2003: I'm almost there with a new build 
+procedure that will eliminate the need for FINK and hopefully reduce the
+complexity of these instructions immensely. Please check back in a day or
+two.
+	- Steve Saunders <s_j_nevets@yahoo.com.au>
+
 Installing XU4
 --------------
 
