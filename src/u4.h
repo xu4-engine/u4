@@ -11,7 +11,7 @@ extern "C" {
 
 /* Microsoft VC port */
 #if defined(_MSC_VER)
-    #define VERSION "1.0beta1"
+    #define VERSION "1.1cvs"
 #endif
 
 /* info for loading city data from *.ult and *.tlk */
