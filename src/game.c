@@ -46,55 +46,78 @@
 #include "vendor.h"
 #include "weapon.h"
 
-int gameSave(void);
-void gameLostEighth(Virtue virtue);
+/*-----------------*/
+/* Functions BEGIN */
+
+/* main game functions */
 void gameAdvanceLevel(const SaveGamePlayerRecord *player);
-void gamePartyStarving(void);
-void gameSpellEffect(unsigned int spell, int player, int hzSound);
-void gameCastSpell(unsigned int spell, int caster, int param);
+void gameInitMoons();
 void gameInnHandler(void);
-int gameCheckPlayerDisabled(int player);
-void gameGetPlayerForCommand(int (*commandFn)(int player));
-int gameSpellMixHowMany(const char *message);
-int moveAvatar(Direction dir, int userEvent);
-int attackAtCoord(int x, int y, int distance, void *data);
-int castForPlayer2(int spell, void *data);
+void gameLostEighth(Virtue virtue);
+void gamePartyStarving(void);
+long gameTimeSinceLastCommand(void);
+int gameSave(void);
+
+/* key handlers */
+int cmdHandleAnyKey(int key, void *data);
+int windCmdKeyHandler(int key, void *data);
+
+/* map and screen functions */
+void gameUpdateMoons(int showmoongates);
+int gemHandleChoice(int choice);
+int peerCityHandleChoice(int choice);
+
+/* spell functions */
 int castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
 int castForPlayerGetPhase(int phase);
-int destroyAtCoord(int x, int y, int distance, void *data);
-int getChestTrapHandler(int player);
-int jimmyAtCoord(int x, int y, int distance, void *data);
+int castForPlayer2(int spell, void *data);
+void gameCastSpell(unsigned int spell, int caster, int param);
+void gameSpellEffect(unsigned int spell, int player, int hzSound);
+int gameSpellMixHowMany(const char *message);
 int mixReagentsForSpell(int spell, void *data);
 int mixReagentsForSpell2(int choice);
-int newOrderForPlayer(int player);
-int newOrderForPlayer2(int player2);
-int openAtCoord(int x, int y, int distance, void *data);
-int gemHandleChoice(int choice);
-int peerCityHandleChoice(int choice);
-int readyForPlayer(int player);
+
+/* conversation functions */
 int talkAtCoord(int x, int y, int distance, void *data);
 int talkHandleBuffer(const char *message);
 int talkHandleChoice(int choice);
 void talkShowReply(int showPrompt);
+
+/* action functions */
+int attackAtCoord(int x, int y, int distance, void *data);
+int destroyAtCoord(int x, int y, int distance, void *data);
+int getChestTrapHandler(int player);
+int jimmyAtCoord(int x, int y, int distance, void *data);
+int moveAvatar(Direction dir, int userEvent);
+int newOrderForPlayer(int player);
+int newOrderForPlayer2(int player2);
+int openAtCoord(int x, int y, int distance, void *data);
+int readyForPlayer(int player);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 int ztatsFor(int player);
-int cmdHandleAnyKey(int key, void *data);
-int windCmdKeyHandler(int key, void *data);
+
+/* checking functions */
 void gameCheckBridgeTrolls(void);
-void gameCheckSpecialMonsters(Direction dir);
 int gameCheckMoongates(void);
-void gameUpdateMoons(int showmoongates);
-void gameInitMoons();
+int gameCheckPlayerDisabled(int player);
 void gameCheckRandomMonsters(void);
-void gameFixupMonsters(void);
-long gameTimeSinceLastCommand(void);
-void gameMonsterAttack(Object *obj);
+void gameCheckSpecialMonsters(Direction dir);
 void gameLordBritishCheckLevels(void);
+
+/* monster functions */
+void gameDestroyAllMonsters(void);
+void gameFixupMonsters(void);
+void gameMonsterAttack(Object *obj);
 int gameSummonMonster(const char *monsterName);
-void gameDestroyAllCreatures(void);
+
+/* etc */
 int gameCreateBalloon(Map *map);
+void gameGetPlayerForCommand(int (*commandFn)(int player));
+
+/* Functions END */
+/*---------------*/
 
 extern Object *party[8];
 Context *c = NULL;
@@ -169,7 +192,7 @@ void gameInit() {
     playerSetSpellEffectCallback(&gameSpellEffect);
     playerSetPartyStarvingCallback(&gamePartyStarving);
     playerSetSetTransportCallback(&gameSetTransport);
-    itemSetDestroyAllMonstersCallback(&gameDestroyAllCreatures);
+    itemSetDestroyAllMonstersCallback(&gameDestroyAllMonsters);
     vendorSetInnHandlerCallback(&innBegin);
 
     musicPlay();
@@ -1929,8 +1952,7 @@ int readyForPlayer(int player) {
     c->statsItem = STATS_WEAPONS;
     statsUpdate();
 
-    info = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
-    //info->lastValidLetter = WEAP_MAX + 'a' - 1;
+    info = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));    
     info->lastValidLetter = numWeapons + 'a' - 1;
     info->handleAlpha = readyForPlayer2;
     info->prompt = "Weapon: ";
@@ -3295,7 +3317,7 @@ void gameSpawnMonster(const Monster *m) {
 /**
  * Destroys all creatures on the current map.
  */
-void gameDestroyAllCreatures(void) {
+void gameDestroyAllMonsters(void) {
     int i;
     extern CombatInfo combatInfo;
     

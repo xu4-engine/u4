@@ -61,6 +61,16 @@ int menuShow(Menu menu) {
     return 0;
 }
 
+/**
+ * Checks the menu to ensure that there is at least 1 visible
+ * item in the list.  Returns 1 if there is at least 1 visible
+ * item, 0 if nothing is visible.
+ *
+ * If the menu has the possibility of being completely invisible,
+ * then this function must be called before nearly all menu 
+ * functions to ensure they will function correctly.  Most notably,
+ * menuGetNextItem and menuGetPreviousItem.
+ */
 int menuCheckVisible(Menu menu) {
     Menu current = menuGetRoot(menu);
     int visible = 0;
