@@ -1241,11 +1241,17 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         statsUpdate();
         break;
 
-    case 'k':
-        screenMessage("Karma:\nH C V J S H S H\n%02x%02x%02x%02x%02x%02x%02x%02x\n",
-                      c->saveGame->karma[0], c->saveGame->karma[1], c->saveGame->karma[2], c->saveGame->karma[3],
-                      c->saveGame->karma[4], c->saveGame->karma[5], c->saveGame->karma[6], c->saveGame->karma[7]);
+    case 'k':        
+        screenMessage("Karma!\n\n");
+        for (i = 0; i < 8; i++) {
+            int j;
+            screenMessage("%s:", getVirtueName(i));
+            for (j = 12; j > strlen(getVirtueName(i)); j--)
+                screenMessage(" ");
+            screenMessage("%d\n", (c->saveGame->karma[i] > 0) ? c->saveGame->karma[i] : 100);
+        }
         screenPrompt();
+
         break;
 
     case 'l':

@@ -606,13 +606,15 @@ void monsterSpecialEffect(Object *obj) {
                     obj->y == c->location->y &&
                     obj->z == c->location->z) {
 
+                    /* damage the ship */
                     if (c->transportContext == TRANSPORT_SHIP) {
                         /* FIXME: Check actual damage from u4dos */                           
                         gameDamageShip(10, 30);                        
                     }
-                    else {
+                    /* anything else but balloon damages the party */
+                    else if (c->transportContext != TRANSPORT_BALLOON) {
                         /* FIXME: formula for twister damage is guesstimated from u4dos */
-                        gameDamageParty(0, 75);                        
+                        gameDamageParty(0, 75);
                     }
                     break;
                 }
