@@ -56,7 +56,7 @@ void campTimer(void *data) {
     screenEnableCursor();
 
     /* Is the party ambushed during their rest? */
-    if (rand() % 8 >= 0) {
+    if (rand() % 8 == 0) {
 
         extern CombatInfo combatInfo;
         const Monster *m;
