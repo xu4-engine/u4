@@ -39,6 +39,7 @@
 
 void gameLostEighth(Virtue virtue);
 void gameAdvanceLevel(const SaveGamePlayerRecord *player);
+void gameHeal(HealType type, int player);
 void gameCastSpell(unsigned int spell, int caster, int param);
 int gameCheckPlayerDisabled(int player);
 void gameGetPlayerForCommand(int (*commandFn)(int player));
@@ -122,6 +123,7 @@ void gameInit() {
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
     playerSetItemStatsChangedCallback(&statsUpdate);
+    playerSetHealCallback(&gameHeal);
 
     musicPlay();
     screenDrawBackground(BKGD_BORDERS);
@@ -250,6 +252,14 @@ void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
     screenMessage("%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
 
     /* FIXME: special effect here */
+    statsUpdate();
+}
+
+void gameHeal(HealType type, int player) {
+    statsHighlightCharacter(player);
+    screenRedrawScreen();
+    eventHandlerSleep(1000);
+
     statsUpdate();
 }
 
