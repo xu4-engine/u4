@@ -18,7 +18,7 @@ Map brick_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/brick.con", /* ult_fname */
+    "brick.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -33,7 +33,7 @@ Map bridge_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/bridge.con", /* ult_fname */
+    "bridge.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -48,7 +48,7 @@ Map brush_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/brush.con", /* ult_fname */
+    "brush.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -63,7 +63,7 @@ Map camp_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/camp.con", /* ult_fname */
+    "camp.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -78,7 +78,7 @@ Map dng0_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/dng0.con", /* ult_fname */
+    "dng0.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -93,7 +93,7 @@ Map dng1_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/dng1.con", /* ult_fname */
+    "dng1.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -108,7 +108,7 @@ Map dng2_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/dng2.con", /* ult_fname */
+    "dng2.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -123,7 +123,7 @@ Map dng3_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/dng3.con", /* ult_fname */
+    "dng3.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -138,7 +138,7 @@ Map dng4_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/dng4.con", /* ult_fname */
+    "dng4.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -153,7 +153,7 @@ Map dng5_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/dng5.con", /* ult_fname */
+    "dng5.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -168,7 +168,7 @@ Map dng6_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/dng6.con", /* ult_fname */
+    "dng6.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -183,7 +183,7 @@ Map dungeon_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/dungeon.con", /* ult_fname */
+    "dungeon.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -198,7 +198,7 @@ Map forest_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/forest.con", /* ult_fname */
+    "forest.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -213,7 +213,7 @@ Map grass_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/grass.con", /* ult_fname */
+    "grass.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -228,7 +228,7 @@ Map hill_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/hill.con", /* ult_fname */
+    "hill.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -243,7 +243,7 @@ Map inn_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/inn.con", /* ult_fname */
+    "inn.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -258,7 +258,7 @@ Map marsh_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/marsh.con", /* ult_fname */
+    "marsh.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -273,7 +273,7 @@ Map shipsea_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/shipsea.con", /* ult_fname */
+    "shipsea.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -288,7 +288,7 @@ Map shipship_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/shipship.con", /* ult_fname */
+    "shipship.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -303,7 +303,7 @@ Map shipshor_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/shipshor.con", /* ult_fname */
+    "shipshor.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -318,7 +318,7 @@ Map shore_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/shore.con", /* ult_fname */
+    "shore.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -333,7 +333,7 @@ Map shorship_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/shorship.con", /* ult_fname */
+    "shorship.con", /* ult_fname */
     NULL /* tlk_fname */
 };
 
@@ -348,6 +348,6 @@ Map shrine_map = {
     NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "./ultima4/shrine.con", /* ult_fname */
+    "shrine.con", /* ult_fname */
     NULL /* tlk_fname */
 };

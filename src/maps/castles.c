@@ -18,8 +18,8 @@ Map empath_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/empath.ult", /* ult_fname */
-    "./ultima4/empath.tlk" /* tlk_fname */
+    "empath.ult", /* ult_fname */
+    "empath.tlk" /* tlk_fname */
 };
 
 Map lycaeum_map = {
@@ -33,8 +33,8 @@ Map lycaeum_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/lycaeum.ult", /* ult_fname */
-    "./ultima4/lycaeum.tlk" /* tlk_fname */
+    "lycaeum.ult", /* ult_fname */
+    "lycaeum.tlk" /* tlk_fname */
 };
 
 Map serpent_map = {
@@ -48,8 +48,8 @@ Map serpent_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/serpent.ult", /* ult_fname */
-    "./ultima4/serpent.tlk" /* tlk_fname */
+    "serpent.ult", /* ult_fname */
+    "serpent.tlk" /* tlk_fname */
 };
 
 Map lcb_2_map;
@@ -70,8 +70,8 @@ Map lcb_1_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/lcb_1.ult", /* ult_fname */
-    "./ultima4/lcb.tlk" /* tlk_fname */
+    "lcb_1.ult", /* ult_fname */
+    "lcb.tlk" /* tlk_fname */
 };
 
 const Portal lcb_2_portals[] = {
@@ -90,6 +90,6 @@ Map lcb_2_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/lcb_2.ult", /* ult_fname */
-    "./ultima4/lcb.tlk" /* tlk_fname */
+    "lcb_2.ult", /* ult_fname */
+    "lcb.tlk" /* tlk_fname */
 };

@@ -18,8 +18,8 @@ Map britain_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/britain.ult", /* ult_fname */
-    "./ultima4/britain.tlk" /* tlk_fname */
+    "britain.ult", /* ult_fname */
+    "britain.tlk" /* tlk_fname */
 };
 
 Map cove_map = {
@@ -33,8 +33,8 @@ Map cove_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/cove.ult", /* ult_fname */
-    "./ultima4/cove.tlk" /* tlk_fname */
+    "cove.ult", /* ult_fname */
+    "cove.tlk" /* tlk_fname */
 };
 
 Map den_map = {
@@ -48,8 +48,8 @@ Map den_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/den.ult", /* ult_fname */
-    "./ultima4/den.tlk" /* tlk_fname */
+    "den.ult", /* ult_fname */
+    "den.tlk" /* tlk_fname */
 };
 
 Map jhelom_map = {
@@ -63,8 +63,8 @@ Map jhelom_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/jhelom.ult", /* ult_fname */
-    "./ultima4/jhelom.tlk" /* tlk_fname */
+    "jhelom.ult", /* ult_fname */
+    "jhelom.tlk" /* tlk_fname */
 };
 
 Map magincia_map = {
@@ -78,8 +78,8 @@ Map magincia_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/magincia.ult", /* ult_fname */
-    "./ultima4/magincia.tlk" /* tlk_fname */
+    "magincia.ult", /* ult_fname */
+    "magincia.tlk" /* tlk_fname */
 };
 
 Map minoc_map = {
@@ -93,8 +93,8 @@ Map minoc_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/minoc.ult", /* ult_fname */
-    "./ultima4/minoc.tlk" /* tlk_fname */
+    "minoc.ult", /* ult_fname */
+    "minoc.tlk" /* tlk_fname */
 };
 
 Map moonglow_map = {
@@ -108,8 +108,8 @@ Map moonglow_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/moonglow.ult", /* ult_fname */
-    "./ultima4/moonglow.tlk" /* tlk_fname */
+    "moonglow.ult", /* ult_fname */
+    "moonglow.tlk" /* tlk_fname */
 };
 
 Map paws_map = {
@@ -123,8 +123,8 @@ Map paws_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/paws.ult", /* ult_fname */
-    "./ultima4/paws.tlk" /* tlk_fname */
+    "paws.ult", /* ult_fname */
+    "paws.tlk" /* tlk_fname */
 };
 
 Map skara_map = {
@@ -138,8 +138,8 @@ Map skara_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/skara.ult", /* ult_fname */
-    "./ultima4/skara.tlk" /* tlk_fname */
+    "skara.ult", /* ult_fname */
+    "skara.tlk" /* tlk_fname */
 };
 
 Map trinsic_map = {
@@ -153,8 +153,8 @@ Map trinsic_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/trinsic.ult", /* ult_fname */
-    "./ultima4/trinsic.tlk" /* tlk_fname */
+    "trinsic.ult", /* ult_fname */
+    "trinsic.tlk" /* tlk_fname */
 };
 
 Map vesper_map = {
@@ -168,8 +168,8 @@ Map vesper_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/vesper.ult", /* ult_fname */
-    "./ultima4/vesper.tlk" /* tlk_fname */
+    "vesper.ult", /* ult_fname */
+    "vesper.tlk" /* tlk_fname */
 };
 
 Map yew_map = {
@@ -183,6 +183,6 @@ Map yew_map = {
     NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "./ultima4/yew.ult", /* ult_fname */
-    "./ultima4/yew.tlk" /* tlk_fname */
+    "yew.ult", /* ult_fname */
+    "yew.tlk" /* tlk_fname */
 };
