@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <ctype.h>
 #include <assert.h>
 
@@ -16,20 +17,26 @@
 #include "names.h"
 #include "io.h"
 
-#define N_WEAPON_VENDORS 6
-#define WEAPON_VENDOR_INVENTORY_SIZE 4
+#define N_ARMS_VENDORS 6
+#define ARMS_VENDOR_INVENTORY_SIZE 4
 
-typedef struct WeaponVendorInfo {
-    WeaponType vendorInventory[N_WEAPON_VENDORS][WEAPON_VENDOR_INVENTORY_SIZE];
+typedef struct ArmsVendorInfo {
+    unsigned char vendorInventory[N_ARMS_VENDORS][ARMS_VENDOR_INVENTORY_SIZE];
     unsigned short prices[WEAP_MAX];
-} WeaponVendorInfo;
+} ArmsVendorInfo;
+
+#define N_REAG_VENDORS 4
 
 char **hawkwindText;
 char **lbKeywords;
 char **lbText;
 char **weaponVendorText;
 char **weaponVendorText2;
-WeaponVendorInfo weaponVendorInfo;
+char **armorVendorText;
+char **armorVendorText2;
+ArmsVendorInfo weaponVendorInfo;
+ArmsVendorInfo armorVendorInfo;
+unsigned char reagPrices[N_REAG_VENDORS][REAG_MAX];
 
 #define HW_WELCOME 43
 #define HW_GREETING1 44
@@ -43,11 +50,16 @@ WeaponVendorInfo weaponVendorInfo;
 #define WV_SHOPNAME 0
 #define WV_VENDORNAME 6
 
+#define AV_SHOPNAME 0
+#define AV_VENDORNAME 5
+
 #define WV_VERYGOOD 0
 #define WV_WEHAVE 1
-#define WV_WELCOME 17
-#define WV_SPACER 18
-#define WV_BUYORSELL 19
+#define WV_YOURINTEREST 2
+#define WV_WELCOME 23
+#define WV_SPACER 24
+#define WV_BUYORSELL 25
+#define WV_BYE 26
 
 void personGetIntroduction(Conversation *cnv, char **intro);
 void personGetResponse(Conversation *cnv, const char *inquiry, char **reply);
@@ -56,13 +68,15 @@ void personGetHWResponse(const Person *p, const char *inquiry, char **reply, int
 void personGetQuestionResponse(Conversation *cnv, const char *response, char **reply);
 void personGetQuestion(const Person *p, char **question);
 void personGetBuySellResponse(Conversation *cnv, const char *response, char **reply);
-int weaponVendorInfoRead(WeaponVendorInfo *info, FILE *f);
+int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, FILE *f);
+char *concat(const char *str, ...);
 
 /**
  * Loads in conversation data for special cases and vendors from
  * avatar.exe.
  */
 int personInit() {
+    int i, j;
     FILE *avatar;
 
     avatar = u4fopen("avatar.exe");
@@ -74,13 +88,31 @@ int personInit() {
 
     hawkwindText = u4read_stringtable(avatar, 74729, 53);
 
+    fseek(avatar, 78859, SEEK_SET);
+    for (i = 0; i < N_REAG_VENDORS; i++) {
+        for (j = 0; j < REAG_MAX - 2; j++) {
+            if (!readChar(&(reagPrices[i][j]), avatar))
+                return 0;
+        }
+        reagPrices[i][REAG_NIGHTSHADE] = 0;
+        reagPrices[i][REAG_MANDRAKE] = 0;
+    }
+
     weaponVendorText = u4read_stringtable(avatar, 78883, 28);
 
     fseek(avatar, 80181, SEEK_SET);
-    if (!weaponVendorInfoRead(&weaponVendorInfo, avatar))
+    if (!armsVendorInfoRead(&weaponVendorInfo, WEAP_MAX, avatar))
         return 0;
 
-    weaponVendorText2 = u4read_stringtable(avatar, 80282, 20);
+    weaponVendorText2 = u4read_stringtable(avatar, 80282, 27);
+
+    armorVendorText = u4read_stringtable(avatar, 80803, 19);
+
+    fseek(avatar, 81471, SEEK_SET);
+    if (!armsVendorInfoRead(&armorVendorInfo, ARMR_MAX, avatar))
+        return 0;
+
+    armorVendorText2 = u4read_stringtable(avatar, 81540, 27);
 
     u4fclose(avatar);
 
@@ -117,7 +149,6 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
  */
 void personGetIntroduction(Conversation *cnv, char **intro) {
     const char *lbFmt = "Lord British\nsays:  Welcome\n%s and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n";
-    const char *hwFmt = "%s%s%s%s";
     const char *fmt = "You meet\n%s\n\n%s says: I am %s\n\n%s";
     char *prompt;
 
@@ -129,20 +160,23 @@ void personGetIntroduction(Conversation *cnv, char **intro) {
         break;
 
     case NPC_VENDOR_WEAPONS:
-        *intro = malloc(strlen(weaponVendorText2[WV_WELCOME]) + strlen(weaponVendorText[WV_SHOPNAME + cnv->talker->vendorIndex]) + 
-                        strlen(weaponVendorText2[WV_SPACER]) + strlen(weaponVendorText[WV_VENDORNAME + cnv->talker->vendorIndex]) + 
-                        strlen(weaponVendorText2[WV_BUYORSELL]) + 1);
-        strcpy(*intro, weaponVendorText2[WV_WELCOME]);
-        strcat(*intro, weaponVendorText[WV_SHOPNAME + cnv->talker->vendorIndex]);
-        strcat(*intro, weaponVendorText2[WV_SPACER]);
-        strcat(*intro, weaponVendorText[WV_VENDORNAME + cnv->talker->vendorIndex]);
-        strcat(*intro, weaponVendorText2[WV_BUYORSELL]);
+        *intro = concat(weaponVendorText2[WV_WELCOME],
+                        weaponVendorText[WV_SHOPNAME + cnv->talker->vendorIndex],
+                        weaponVendorText2[WV_SPACER],
+                        weaponVendorText[WV_VENDORNAME + cnv->talker->vendorIndex],
+                        weaponVendorText2[WV_BUYORSELL],
+                        NULL);
         cnv->state = CONV_BUYSELL;
         break;
 
     case NPC_VENDOR_ARMOR:
-        *intro = strdup("I am an armor vendor!\n");
-        cnv->state = CONV_DONE;
+        *intro = concat(armorVendorText2[WV_WELCOME],
+                        armorVendorText[AV_SHOPNAME + cnv->talker->vendorIndex],
+                        armorVendorText2[WV_SPACER],
+                        armorVendorText[AV_VENDORNAME + cnv->talker->vendorIndex],
+                        armorVendorText2[WV_BUYORSELL],
+                        NULL);
+        cnv->state = CONV_BUYSELL;
         break;
 
     case NPC_VENDOR_FOOD:
@@ -201,9 +235,11 @@ void personGetIntroduction(Conversation *cnv, char **intro) {
         break;
 
     case NPC_HAWKWIND:
-        *intro = malloc(strlen(hwFmt) - 8 + strlen(hawkwindText[HW_WELCOME]) + strlen(c->saveGame->players[0].name) + 
-                        strlen(hawkwindText[HW_GREETING1]) + strlen(hawkwindText[HW_GREETING2]) + 1);
-        sprintf(*intro, hwFmt, hawkwindText[HW_WELCOME], c->saveGame->players[0].name, hawkwindText[HW_GREETING1], hawkwindText[HW_GREETING2]);
+        *intro = concat(hawkwindText[HW_WELCOME], 
+                        c->saveGame->players[0].name,
+                        hawkwindText[HW_GREETING1], 
+                        hawkwindText[HW_GREETING2],
+                        NULL);
         cnv->state = CONV_TALK;
         break;
 
@@ -226,7 +262,10 @@ void personGetPrompt(const Conversation *cnv, char **prompt) {
     case CONV_BUYSELL:
         switch (cnv->talker->npcType) {
         case NPC_VENDOR_WEAPONS:
-            *prompt = strdup("Your\nInterest?");
+            *prompt = strdup(weaponVendorText2[WV_YOURINTEREST]);
+            break;
+        case NPC_VENDOR_ARMOR:
+            *prompt = strdup(armorVendorText2[WV_YOURINTEREST]);
             break;
         default:
             assert(0);
@@ -324,10 +363,7 @@ void personGetResponse(Conversation *cnv, const char *inquiry, char **reply) {
 void personGetQuestion(const Person *p, char **question) {
     const char *prompt = "\n\nYou say: ";
 
-    *question = malloc(strlen(p->question) + strlen(prompt) + 1);
-
-    strcpy(*question, p->question);
-    strcat(*question, prompt);
+    *question = concat(p->question, prompt, NULL);
 }
 
 void personGetQuestionResponse(Conversation *cnv, const char *response, char **reply) {
@@ -398,11 +434,9 @@ void personGetHWResponse(const Person *p, const char *inquiry, char **reply, int
             *reply = strdup(hawkwindText[2 * 8 + virtue]);
         else if (virtueLevel < 99)
             *reply = strdup(hawkwindText[3 * 8 + virtue]);
-        else /* virtueLevel >= 99 */ {
-            *reply = malloc(strlen(hawkwindText[4 * 8 + virtue]) + strlen(hawkwindText[HW_GOTOSHRINE]) + 1);
-            strcpy(*reply, hawkwindText[4 * 8 + virtue]);
-            strcat(*reply, hawkwindText[HW_GOTOSHRINE]);
-        }
+        else /* virtueLevel >= 99 */
+            *reply = concat(hawkwindText[4 * 8 + virtue], hawkwindText[HW_GOTOSHRINE], NULL);
+
         return;
     }
 
@@ -413,38 +447,109 @@ void personGetBuySellResponse(Conversation *cnv, const char *response, char **re
     const char *fmt = "%s%s%c-%s\n%c-%s\n%c-%s\n%c-%s\n";
 
     if (tolower(response[0]) == 'b') {
-        *reply = malloc(strlen(fmt) + strlen(weaponVendorText2[WV_VERYGOOD]) + strlen(weaponVendorText2[WV_WEHAVE]) +
-                        strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][0])) +
-                        strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][1])) +
-                        strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][2])) +
-                        strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][3])));
+        switch (cnv->talker->npcType) {
+        case NPC_VENDOR_WEAPONS:
+            *reply = malloc(strlen(fmt) + strlen(weaponVendorText2[WV_VERYGOOD]) + strlen(weaponVendorText2[WV_WEHAVE]) +
+                            strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][0])) +
+                            strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][1])) +
+                            strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][2])) +
+                            strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][3])));
 
-        sprintf(*reply, fmt, weaponVendorText2[WV_VERYGOOD], weaponVendorText2[WV_WEHAVE], 
-                'A' + weaponVendorInfo.vendorInventory[0][0], getWeaponName(weaponVendorInfo.vendorInventory[0][0]),
-                'A' + weaponVendorInfo.vendorInventory[0][1], getWeaponName(weaponVendorInfo.vendorInventory[0][1]),
-                'A' + weaponVendorInfo.vendorInventory[0][2], getWeaponName(weaponVendorInfo.vendorInventory[0][2]),
-                'A' + weaponVendorInfo.vendorInventory[0][3], getWeaponName(weaponVendorInfo.vendorInventory[0][3]));
+            sprintf(*reply, fmt, weaponVendorText2[WV_VERYGOOD], weaponVendorText2[WV_WEHAVE], 
+                    'A' + weaponVendorInfo.vendorInventory[0][0], getWeaponName(weaponVendorInfo.vendorInventory[0][0]),
+                    'A' + weaponVendorInfo.vendorInventory[0][1], getWeaponName(weaponVendorInfo.vendorInventory[0][1]),
+                    'A' + weaponVendorInfo.vendorInventory[0][2], getWeaponName(weaponVendorInfo.vendorInventory[0][2]),
+                    'A' + weaponVendorInfo.vendorInventory[0][3], getWeaponName(weaponVendorInfo.vendorInventory[0][3]));
+            break;
 
-        cnv->state = CONV_BUY;
+        case NPC_VENDOR_ARMOR:
+            *reply = malloc(strlen(fmt) + strlen(armorVendorText2[WV_VERYGOOD]) + strlen(armorVendorText2[WV_WEHAVE]) +
+                            strlen(getWeaponName(armorVendorInfo.vendorInventory[0][0])) +
+                            strlen(getWeaponName(armorVendorInfo.vendorInventory[0][1])) +
+                            strlen(getWeaponName(armorVendorInfo.vendorInventory[0][2])) +
+                            strlen(getWeaponName(armorVendorInfo.vendorInventory[0][3])));
+
+            sprintf(*reply, fmt, armorVendorText2[WV_VERYGOOD], armorVendorText2[WV_WEHAVE], 
+                    'A' + armorVendorInfo.vendorInventory[0][0], getArmorName(armorVendorInfo.vendorInventory[0][0]),
+                    'A' + armorVendorInfo.vendorInventory[0][1], getArmorName(armorVendorInfo.vendorInventory[0][1]),
+                    'A' + armorVendorInfo.vendorInventory[0][2], getArmorName(armorVendorInfo.vendorInventory[0][2]),
+                    'A' + armorVendorInfo.vendorInventory[0][3], getArmorName(armorVendorInfo.vendorInventory[0][3]));
+            break;
+            
+        default:
+            assert(0);          /* shouldn't happen */
+        }
+
+        /*cnv->state = CONV_BUY;*/
+        cnv->state = CONV_DONE;
     }
 }
 
-int weaponVendorInfoRead(WeaponVendorInfo *info, FILE *f) {
+int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, FILE *f) {
     int i, j;
-    char c;
 
-    for (i = 0; i < N_WEAPON_VENDORS; i++) {
-        for (j = 0; j < WEAPON_VENDOR_INVENTORY_SIZE; j++) {
-            if (!readChar(&c, f))
+    for (i = 0; i < N_ARMS_VENDORS; i++) {
+        for (j = 0; j < ARMS_VENDOR_INVENTORY_SIZE; j++) {
+            if (!readChar(&(info->vendorInventory[i][j]), f))
                 return 0;
-            info->vendorInventory[i][j] = c;
         }
     }
 
-    for (i = 0; i < WEAP_MAX; i++) {
+    for (i = 0; i < nprices; i++) {
         if (!readShort(&(info->prices[i]), f))
             return 0;
     }
-    
+
     return 1;
+}
+
+/**
+ * Utility function to concatenate a NULL terminated list of strings
+ * together into a newly allocated string.  Derived from glibc
+ * documention, "Copying and Concatenation" section.
+ */
+char *concat(const char *str, ...) {
+    va_list ap;
+    unsigned int allocated = 1;
+    char *result, *p;
+
+    result = malloc(allocated);
+    if (allocated) {
+        const char *s;
+        char *newp;
+
+        va_start(ap, str);
+
+        p = result;
+        for (s = str; s; s = va_arg(ap, const char *)) {
+            unsigned int len = strlen(s);
+
+            /* resize the allocated memory if necessary.  */
+            if (p + len + 1 > result + allocated) {
+                allocated = (allocated + len) * 2;
+                newp = realloc(result, allocated);
+                if (!newp) {
+                    free(result);
+                    return NULL;
+                }
+                p = newp + (p - result);
+                result = newp;
+            }
+
+            memcpy(p, s, len);
+            p += len;
+        }
+
+        /* terminate the result */
+        *p++ = '\0';
+
+        /* resize memory to the optimal size.  */
+        newp = realloc(result, p - result);
+        if (newp)
+            result = newp;
+
+        va_end (ap);
+    }
+
+    return result;
 }
