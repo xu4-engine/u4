@@ -7,7 +7,7 @@ SRCS=\
         annotation.c \
         armor.c \
         camp.c \
-        combat.c \        
+        combat.c \
         death.c \
         debug.c \
         direction.c \
@@ -19,7 +19,7 @@ SRCS=\
         io.c \
         intro.c \
         item.c \
-        location.c \        
+        location.c \
         map.c \
         mapinit.c \
         monster.c \
@@ -31,7 +31,7 @@ SRCS=\
         player.c \
         portal.c \
         rle.c \
-        savegame.c \        
+        savegame.c \
         screen.c \
         screen_$(UI).c \
         settings.c \
@@ -40,11 +40,11 @@ SRCS=\
         spell.c \
         stats.c \
         ttype.c \
-        u4.c \        
+        u4.c \
         u4file.c \
         unzip.c \
         vendor.c \
-        weapon.c \       
+        weapon.c \
         maps/cities.c \
         maps/castles.c \
         maps/worldmap.c \
