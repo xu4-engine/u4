@@ -5,20 +5,20 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-/*
+/**
  * Define XU4_FUNCTION as the function name.  Most compilers define
  * __FUNCTION__.  GCC provides __FUNCTION__ as a variable, not as a
  * macro, so detecting with #if __FUNCTION__ doesn't work.
  */
 #if __GNUC__ || __FUNCTION__
-# define XU4_FUNCTION __FUNCTION__
+#   define XU4_FUNCTION __FUNCTION__
 #else
-# define XU4_FUNCTION ""
+#   define XU4_FUNCTION ""
 #endif
 
 #undef TRACE
-#define TRACE(dbg, msg) (dbg).trace(msg, getFilename(__FILE__), XU4_FUNCTION, __LINE__)
-#define TRACE_LOCAL(dbg, msg) (dbg).trace(msg, getFilename(__FILE__), XU4_FUNCTION, __LINE__, false);
+#define TRACE(dbg, msg) (dbg).trace(msg, __FILE__, XU4_FUNCTION, __LINE__)
+#define TRACE_LOCAL(dbg, msg) (dbg).trace(msg, __FILE__, XU4_FUNCTION, __LINE__, false);
 
 #include <string>
 #include <cstdio>
@@ -55,10 +55,6 @@ void print_trace(FILE *file);
 void ASSERT(int exp, const char *desc, ...);
 
 #endif /* if HAVE_VARIADIC_MACROS */
-
-
-
-string getFilename(const string &path);
 
 /**
  * Provides trace functionality to debug apps.

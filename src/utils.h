@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "filesystem.h"
+
 using std::string;
 
 #define AdjustValueMax(var, val, max) ((var) += (val)); if ((var) > (max)) (var) = (max)
@@ -29,9 +31,12 @@ public:
         init(s);
     }
 
-    void init(const string &s) {
-        filename = s;
-        log = fopen(s.c_str(), "wt");
+    void init(const string &s) {        
+        Path path(s);
+        FileSystem::createDirectory(path);
+
+        filename = path.getPath();
+        log = fopen(filename.c_str(), "wt");
         if (!log)
             // FIXME: throw exception
             return;

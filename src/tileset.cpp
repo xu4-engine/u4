@@ -164,7 +164,7 @@ Tileset*            Tileset::current = NULL;
 void Tileset::loadAll(string filename) {
     xmlDocPtr doc;
     xmlNodePtr root, node;
-    Debug dbg("debug_tileset.txt", "Tileset");
+    Debug dbg("debug/tileset.txt", "Tileset");
 
     TRACE(dbg, "Unloading all tilesets");    
     unloadAll();

@@ -51,7 +51,7 @@ std::vector<string> split(const string &s, const string &separators) {
         if (separators.find(s[i]) != string::npos) {
             if (current.length() > 0)
                 result.push_back(current);
-            current.clear();
+            current.erase();
         } else
             current += s[i];
     }

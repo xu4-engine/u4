@@ -15,6 +15,7 @@
 #include "debug.h"
 #include "dungeon.h"
 #include "error.h"
+#include "filesystem.h"
 #include "map.h"
 #include "object.h"
 #include "person.h"
@@ -391,10 +392,12 @@ int mapLoadData(Map *map, U4FILE *f) {
         }
     }
     clock_t end = clock();
-
-    FILE *file = fopen("mapLoadData.txt", "wt");
-    fprintf(file, "%d msecs total\n%d msecs used by Tile::translate()", int(end - start), int(total));
-    fclose(file);
+    
+    FILE *file = FileSystem::openFile("debug/mapLoadData.txt", "wt");
+    if (file) {
+        fprintf(file, "%d msecs total\n%d msecs used by Tile::translate()", int(end - start), int(total));
+        fclose(file);
+    }
 
     return 1;
 }

@@ -26,6 +26,7 @@ CXXSRCS=\
         error.cpp \
         event.cpp \
         event_$(UI).cpp \
+        filesystem.cpp \
         game.cpp \
         io.cpp \
         image_$(UI).cpp \

@@ -36,7 +36,7 @@
 bool verbose = false;
 bool quit = false;
 
-Performance perf("performance.txt");
+Performance perf("debug/performance.txt");
 
 using namespace std;
 
@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     osxInit(argv[0]);
 #endif
 
-    Debug::initGlobal("debug_global.txt");
+    Debug::initGlobal("debug/global.txt");
 
     for (i = 1; i < (unsigned int)argc; i++) {
         if (strcmp(argv[i], "-filter") == 0 && (unsigned int)argc > i + 1) {

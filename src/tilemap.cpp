@@ -11,7 +11,7 @@
 #include "tileset.h"
 #include "xml.h"
 
-Debug dbg("debug_tilemap.txt", "TileMap");
+Debug dbg("debug/tilemap.txt", "TileMap");
 
 /**
  * Static variables
