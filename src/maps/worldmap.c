@@ -24,7 +24,13 @@ extern Map empath_map;
 extern Map lycaeum_map;
 extern Map serpent_map;
 extern Map lcb_1_map;
-extern Map shrine_map;
+extern Map shrine_honesty_map;
+extern Map shrine_compassion_map;
+extern Map shrine_valor_map;
+extern Map shrine_justice_map;
+extern Map shrine_sacrifice_map;
+extern Map shrine_honor_map;
+extern Map shrine_humility_map;
 
 const Portal world_portals[] = {
     { 82, 106, &britain_map, ACTION_ENTER },
@@ -43,13 +49,13 @@ const Portal world_portals[] = {
     { 218, 107, &lycaeum_map, ACTION_ENTER },
     { 146, 241, &serpent_map, ACTION_ENTER },
     { 86, 107, &lcb_1_map, ACTION_ENTER },
-    { 128, 92, &shrine_map, ACTION_ENTER },
-    { 73, 11, &shrine_map, ACTION_ENTER },
-    { 205, 45, &shrine_map, ACTION_ENTER },
-    { 233, 66, &shrine_map, ACTION_ENTER },
-    { 231, 216, &shrine_map, ACTION_ENTER },
-    { 81, 207, &shrine_map, ACTION_ENTER },
-    { 36, 229, &shrine_map, ACTION_ENTER }
+    { 233, 66, &shrine_honesty_map, ACTION_ENTER },
+    { 128, 92, &shrine_compassion_map, ACTION_ENTER },
+    { 36, 229, &shrine_valor_map, ACTION_ENTER },
+    { 73, 11, &shrine_justice_map, ACTION_ENTER },
+    { 205, 45, &shrine_sacrifice_map, ACTION_ENTER },
+    { 81, 207, &shrine_honor_map, ACTION_ENTER },
+    { 231, 216, &shrine_humility_map, ACTION_ENTER }
 };
 
 Map world_map = {
@@ -63,5 +69,5 @@ Map world_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_OUTSIDE, /* music */
     NULL, /* data */
-    NULL /* city */
+    { NULL } /* city */
 };
