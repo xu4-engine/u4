@@ -168,6 +168,10 @@ int tileIsShip(unsigned char tile) {
     return tileTestBit(tile, MASK_SHIP, 0);
 }
 
+unsigned char tileGetShipBase() {
+    return baseShip;
+}
+
 int tileIsPirateShip(unsigned char tile) {
     if (tile >= PIRATE_TILE && tile < (PIRATE_TILE + 4))
         return 1;
@@ -178,8 +182,16 @@ int tileIsHorse(unsigned char tile) {
     return tileTestBit(tile, MASK_HORSE, 0);
 }
 
+unsigned char tileGetHorseBase() {
+    return baseHorse;
+}
+
 int tileIsBalloon(unsigned char tile) {
     return tileTestBit(tile, MASK_BALLOON, 0);
+}
+
+unsigned char tileGetBalloonBase() {
+    return baseBalloon;
 }
 
 int tileCanDispel(unsigned char tile) {
@@ -199,11 +211,11 @@ Direction tileGetDirection(unsigned char tile) {
 
 void tileSetDirection(unsigned short *tile, Direction dir) {
     if (tileIsShip(*tile))
-        *tile = 16 + dir - DIR_WEST;
+        *tile = baseShip + dir - DIR_WEST;
     else if (tileIsPirateShip(*tile))
         *tile = PIRATE_TILE + dir - DIR_WEST;
     else if (tileIsHorse(*tile))
-        *tile = (dir == DIR_WEST ? 20 : 21);
+        *tile = (dir == DIR_WEST ? baseHorse : baseHorse + 1);
 }
 
 int tileCanTalkOver(unsigned char tile) {
