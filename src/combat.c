@@ -21,6 +21,8 @@
 #include "screen.h"
 #include "names.h"
 #include "player.h"
+#include "death.h"
+#include "stats.h"
 
 extern Map brick_map;
 extern Map bridge_map;
@@ -57,7 +59,7 @@ int combatIsWon(void);
 int combatIsLost(void);
 void combatEnd(void);
 void combatMoveMonsters(void);
-Object *combatFindTargetForMonster(const Object *monster);
+int combatFindTargetForMonster(const Object *monster, int *distance);
 int movePartyMember(Direction dir, int member);
 
 void combatBegin(unsigned char partytile, unsigned short transport, unsigned char monster) {
@@ -131,15 +133,6 @@ void combatEndTurn() {
         combatEnd();
         return;
     }
-    else if (combatIsLost()) {
-        /* FIXME: assume for now the party fled, not died */
-        playerAdjustKarma(c->saveGame, KA_FLED);
-
-        eventHandlerPopKeyHandler();
-        combatEnd();
-        return;
-    }
-
     if (party[focus])
         party[focus]->hasFocus = 0;
     do {
@@ -147,6 +140,15 @@ void combatEndTurn() {
         if (focus >= c->saveGame->members) {
             combatMoveMonsters();
             focus = 0;
+            if (combatIsLost()) {
+                if (!playerPartyDead(c->saveGame))
+                    playerAdjustKarma(c->saveGame, KA_FLED);
+                eventHandlerPopKeyHandler();
+                combatEnd();
+                if (playerPartyDead(c->saveGame))
+                    deathStart();
+                return;
+            }
         }
     } while (!party[focus]);
     party[focus]->hasFocus = 1;
@@ -305,50 +307,86 @@ void combatEnd() {
         musicPlay();
     }
     
-    gameFinishTurn();
+    if (!playerPartyDead(c->saveGame))
+        gameFinishTurn();
 }
 
 void combatMoveMonsters() {
-    int i, newx, newy, valid_dirs;
+    int i, newx, newy, valid_dirs, target, distance;
     unsigned char tile;
-    Object *target, *other;
+    Object *other;
+    CombatAction action;
+    const Monster *m;
 
     for (i = 0; i < AREA_MONSTERS; i++) {
         if (!monsters[i])
             continue;
+        m = monsterForTile(monsters[i]->tile);
 
-        target = combatFindTargetForMonster(monsters[i]);
+        target = combatFindTargetForMonster(monsters[i], &distance);
+        if (target == -1)
+            continue;
 
-        newx = monsters[i]->x;
-        newy = monsters[i]->y;
-        valid_dirs = mapGetValidMoves(c->map, newx, newy, AVATAR_TILE);
-        dirMove(dirFindPath(newx, newy, target->x, target->y, valid_dirs), &newx, &newy);
+        if (monsterCastSleep(m))
+            action = CA_CAST_SLEEP;
+        else if (distance == 1)
+            action = CA_ATTACK;
+        else
+            action = CA_ADVANCE;
 
-        if (newx >= 0 && newx < c->map->width &&
-            newy >= 0 && newy < c->map->height) {
-            if ((other = mapObjectAt(c->map, newx, newy)) != NULL)
-                tile = other->tile;
-            else
-                tile = mapTileAt(c->map, newx, newy);
-            if (tileIsWalkable(tile)) {
-                if (newx != monsters[i]->x ||
-                    newy != monsters[i]->y) {
-                    monsters[i]->prevx = monsters[i]->x;
-                    monsters[i]->prevy = monsters[i]->y;
+        switch(action) {
+        case CA_ATTACK:
+            if (1) {
+                playerApplyDamage(&c->saveGame->players[target], monsterGetDamage(m));
+                if (c->saveGame->players[target].hp == 0) {
+                    mapRemoveObject(c->map, party[target]);
+                    party[target] = NULL;
                 }
-                monsters[i]->x = newx;
-                monsters[i]->y = newy;
+                statsUpdate();
             }
+            break;
+
+        case CA_CAST_SLEEP:
+            screenMessage("Sleep!\n");
+            break;
+
+        case CA_FLEE:
+            /* FIXME */
+            break;
+
+        case CA_ADVANCE:
+            newx = monsters[i]->x;
+            newy = monsters[i]->y;
+            valid_dirs = mapGetValidMoves(c->map, newx, newy, AVATAR_TILE);
+            dirMove(dirFindPath(newx, newy, party[target]->x, party[target]->y, valid_dirs), &newx, &newy);
+
+            if (newx >= 0 && newx < c->map->width &&
+                newy >= 0 && newy < c->map->height) {
+                if ((other = mapObjectAt(c->map, newx, newy)) != NULL)
+                    tile = other->tile;
+                else
+                    tile = mapTileAt(c->map, newx, newy);
+                if (tileIsWalkable(tile)) {
+                    if (newx != monsters[i]->x ||
+                        newy != monsters[i]->y) {
+                        monsters[i]->prevx = monsters[i]->x;
+                        monsters[i]->prevy = monsters[i]->y;
+                    }
+                    monsters[i]->x = newx;
+                    monsters[i]->y = newy;
+                }
+            }
+            break;
         }
     }
 }
 
-Object *combatFindTargetForMonster(const Object *monster) {
-    int i, dx, dy, distance;
-    Object *closest;
+int combatFindTargetForMonster(const Object *monster, int *distance) {
+    int i, dx, dy;
+    int closest;
 
-    distance = 1000;
-    closest = NULL;
+    *distance = 1000;
+    closest = -1;
     for (i = 0; i < c->saveGame->members; i++) {
         if (!party[i])
             continue;
@@ -358,10 +396,10 @@ Object *combatFindTargetForMonster(const Object *monster) {
         dy = abs(monster->y - party[i]->y);
         dy *= dy;
 
-        if (dx + dy < distance ||
-            (dx + dy == distance && (rand() % 2) == 0)) {
-            distance = dx + dy;
-            closest = party[i];
+        if (dx + dy < (*distance) ||
+            (dx + dy == (*distance) && (rand() % 2) == 0)) {
+            (*distance) = dx + dy;
+            closest = i;
         }
     }
 
