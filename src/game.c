@@ -1129,9 +1129,9 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
                       "i - Items\n"
                       "k - Show Karma\n"
                       "l - Location\n"
-                      "m - Mixtures\n"
-                      "n - Negate\n"
+                      "m - Mixtures\n"                      
                       "o - Opacity\n"
+                      "p - Peer\n"
                       "(more)");
         eventHandlerPopKeyHandler();
         eventHandlerPushKeyHandler(&cmdHandleAnyKey);
@@ -1172,15 +1172,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         screenPrompt();
         for (i = 0; i < SPELL_MAX; i++)
             c->saveGame->mixtures[i] = 99;
-        break;
-
-    case 'n':
-        screenMessage("Negate magic\n");
-        screenPrompt();
-        c->aura = AURA_NEGATE;
-        c->auraDuration = 10;
-        statsUpdate();
-        break;
+        break;    
 
     case 'o':
         c->opacity = !c->opacity;
@@ -1247,8 +1239,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
 int cmdHandleAnyKey(int key, void *data) {
     eventHandlerPopKeyHandler();
 
-    screenMessage("\n"
-                  "p - Peer\n"
+    screenMessage("\n"                  
                   "r - Reagents\n"
                   "t - Transports\n"
                   "w - Change Wind\n"
