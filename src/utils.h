@@ -45,10 +45,13 @@ class Performance {
     typedef std::map<string, clock_t> TimeMap;
 public:
     Performance(const string &s) {
+#ifndef NPERF
         init(s);
+#endif
     }
 
     void init(const string &s) {        
+#ifndef NPERF
         Path path(s);
         FileSystem::createDirectory(path);
 
@@ -57,27 +60,35 @@ public:
         if (!log)
             // FIXME: throw exception
             return;
+#endif
     }
 
     void reset() {
+#ifndef NPERF
         if (!log) {
             log = fopen(filename.c_str(), "at");
             if (!log)
                 // FIXME: throw exception
                 return;
         }
+#endif
     }
 
     void start() {
+#ifndef NPERF
         s = clock();
+#endif
     }
 
     void end(const string &funcName) {        
+#ifndef NPERF
         e = clock();
         times[funcName] = e - s;
+#endif
     }
 
     void report(const char *pre = NULL) {
+#ifndef NPERF
         static const double msec = double(CLOCKS_PER_SEC) / double(1000);        
         TimeMap::const_iterator i;
         clock_t total = 0;
@@ -106,6 +117,7 @@ public:
         fclose(log);
         log = NULL;
         times.clear();
+#endif
     }
 
 private:
