@@ -8,6 +8,9 @@
 #include "rle.h"
 #include "util/pngconv.h"
 
+#define WIDTH 320
+#define HEIGHT 200
+
 /**
  * A simple command line interface to the U4 RLE decompressor.
  */
@@ -55,7 +58,7 @@ int main(int argc, char *argv[]) {
 
     rleDecompress(indata, inlen, outdata, outlen);
 
-    writePngFromEga(outdata, 200, 320, outlen * 8 / (200 * 320), fname);
+    writePngFromEga(outdata, HEIGHT, WIDTH, outlen * 8 / (HEIGHT * WIDTH), fname);
 
     return 0;
 }
