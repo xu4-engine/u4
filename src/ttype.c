@@ -3,6 +3,7 @@
  */
 
 #include <stddef.h>
+#include <assert.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
@@ -24,10 +25,11 @@
 #define MASK_BALLOON   0x1000
 #define MASK_CANDISPEL 0x2000
 #define MASK_MONSTER_UNWALKABLE 0x4000
+#define MASK_CANTALKOVER 0x8000
 
-/* tile values 0-79 */
+/* tile values 0-127 */
 int tileInfoLoaded = 0;
-unsigned short _ttype_info[80];
+unsigned short _ttype_info[128];
 int baseShip = -1;
 int baseHorse = -1;
 int baseBalloon = -1;
@@ -115,8 +117,14 @@ void tileLoadInfoFromXml() {
         if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "monsterunwalkable"), (const xmlChar *) "true") == 0)
             _ttype_info[tile] |= MASK_MONSTER_UNWALKABLE;
 
+        if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "cantalkover"), (const xmlChar *) "true") == 0)
+            _ttype_info[tile] |= MASK_CANTALKOVER;
+
         tile++;
     }
+
+    /* ensure information for all non-monster tiles was loaded */
+    assert(tile == 128);
 
     if (baseShip == -1 ||
         !tileIsShip(baseShip + 1) ||
@@ -145,18 +153,34 @@ int tileTestBit(unsigned char tile, unsigned short mask, int defaultVal) {
 
 
 int tileIsWalkable(unsigned char tile) {
+    if (tile >= STORM_TILE &&
+        tile <= (STORM_TILE + 1))
+        return 1;
+
     return !tileTestBit(tile, MASK_UNWALKABLE, 1);
 }
 
 int tileIsMonsterWalkable(unsigned char tile) {
+    if (tile >= STORM_TILE &&
+        tile <= (STORM_TILE + 1))
+        return 1;
+
     return !(tileTestBit(tile, MASK_UNWALKABLE, 1) || tileTestBit(tile, MASK_MONSTER_UNWALKABLE, 1));
 }
 
 int tileIsSwimable(unsigned char tile) {
+    if (tile >= WHIRLPOOL_TILE &&
+        tile <= (STORM_TILE + 1))
+        return 1;
+
     return tileTestBit(tile, MASK_SWIMABLE, 0);
 }
 
 int tileIsSailable(unsigned char tile) {
+    if (tile >= WHIRLPOOL_TILE &&
+        tile <= (STORM_TILE + 1))
+        return 1;
+
     return tileTestBit(tile, MASK_SAILABLE, 0);
 }
 
@@ -227,7 +251,7 @@ void tileSetDirection(unsigned short *tile, Direction dir) {
 }
 
 int tileCanTalkOver(unsigned char tile) {
-    return tile >= 96 && tile <= 122;
+    return tileTestBit(tile, MASK_CANTALKOVER, 0);
 }
 
 TileSpeed tileGetSpeed(unsigned char tile) {
@@ -295,9 +319,7 @@ void tileAdvanceFrame(unsigned char *tile) {
 }
 
 int tileIsOpaque(unsigned char tile) {
-    return 
-        tileTestBit(tile, MASK_OPAQUE, 0) || 
-        tile == 127;            /* brick wall */
+    return tileTestBit(tile, MASK_OPAQUE, 0);
 }
 
 unsigned char tileForClass(int klass) {
