@@ -15,7 +15,8 @@ typedef enum {
     MUSIC_FANFARE,
     MUSIC_DUNGEON,
     MUSIC_COMBAT,
-    MUSIC_CASTLES
+    MUSIC_CASTLES,
+    MUSIC_MAX
 } Music;
 
 int musicInit(void);
