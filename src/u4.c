@@ -28,6 +28,7 @@ Context *c;
 extern Map world_map;
 int verbose = 0;
 int quit = 0;
+int germanKbd = 0;
 
 int main(int argc, char *argv[]) {
     unsigned int i;
@@ -51,6 +52,8 @@ int main(int argc, char *argv[]) {
         }
         else if (strcmp(argv[i], "-i") == 0)
             skipIntro = 1;
+        else if (strcmp(argv[i], "-g") == 0)
+            germanKbd = 1;
         else if (strcmp(argv[i], "-v") == 0)
             verbose++;
         else if (strcmp(argv[i], "-f") == 0)

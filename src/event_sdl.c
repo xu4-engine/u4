@@ -13,6 +13,7 @@
 
 int eventDone;
 SDL_TimerID timer;
+extern int germanKbd;
 
 Uint32 eventCallback(Uint32 interval, void *param) {
     SDL_Event event;
@@ -53,6 +54,13 @@ void eventHandlerMain(void (*updateScreen)(void)) {
 
             if (event.key.keysym.sym >= SDLK_a &&
                 event.key.keysym.sym <= SDLK_z) {
+
+                if (germanKbd) {
+                    if (event.key.keysym.sym == SDLK_z)
+                        event.key.keysym.sym = SDLK_y;
+                    else if (event.key.keysym.sym == SDLK_y)
+                        event.key.keysym.sym = SDLK_z;
+                }
 
                 key = event.key.keysym.sym - SDLK_a + 'a';
                 if (event.key.keysym.mod & KMOD_SHIFT)
