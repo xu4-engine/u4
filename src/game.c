@@ -87,8 +87,8 @@ void talkShowReply(int showPrompt);
 /* action functions */
 int attackAtCoord(int x, int y, int distance, void *data);
 int destroyAtCoord(int x, int y, int distance, void *data);
-int gameMoveAvatar(Direction dir, int userEvent);
-int gameMoveAvatarInDungeon(Direction dir, int userEvent);
+MoveReturnValue gameMoveAvatar(Direction dir, int userEvent);
+MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent);
 int getChestTrapHandler(int player);
 int jimmyAtCoord(int x, int y, int distance, void *data);
 int newOrderForPlayer(int player);
