@@ -512,8 +512,6 @@ void IntroController::updateScreen() {
     case INTRO_ABOUT:
     case INTRO_INIT:
     case INTRO_CONFIG:
-        break;
-
     default:
         ASSERT(0, "bad mode in updateScreen");
     }
@@ -570,6 +568,8 @@ void IntroController::initiateNewGame() {
 
 void IntroController::showStory() {
     ReadChoiceController pauseController("");
+
+    beastiesVisible = false;
 
     for (int storyInd = 0; storyInd < 24; storyInd++) {
         if (storyInd == 0)
