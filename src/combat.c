@@ -180,6 +180,7 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, Obje
         { TOWN_TILE,    &grass_map },
         { LCB2_TILE,    &grass_map },
         { BRIDGE_TILE,  &bridge_map },
+        { BALLOON_TILE, &grass_map },
         { NORTHBRIDGE_TILE, &bridge_map },
         { SOUTHBRIDGE_TILE, &bridge_map },
         { SHRINE_TILE,  &grass_map },

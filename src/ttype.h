@@ -20,6 +20,7 @@
 #define LCB2_TILE 0xe
 #define LCB3_TILE 0xf
 #define BRIDGE_TILE 0x17
+#define BALLOON_TILE 0x18
 #define NORTHBRIDGE_TILE 0x19
 #define SOUTHBRIDGE_TILE 0x1a
 #define SHRINE_TILE 0x1e
