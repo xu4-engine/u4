@@ -379,7 +379,7 @@ int combatBaseKeyHandler(int key, void *data) {
         break;
         
     case ' ':
-        screenMessage("Pass!\n");
+        screenMessage("Pass\n");
         break;
 
     case 'a':

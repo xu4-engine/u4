@@ -775,7 +775,7 @@ int gameBaseKeyHandler(int key, void *data) {
         } else if (c->transportContext == TRANSPORT_BALLOON) {
             c->saveGame->balloonstate = 1;
             c->opacity = 0;
-            screenMessage("Klimb Altitude!\n");            
+            screenMessage("Klimb altitude\n");            
         } else
             screenMessage("Klimb what?\n");
         break;
