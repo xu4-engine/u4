@@ -102,12 +102,12 @@ public:
     // Member functions
     virtual string getName();
     
-    class Object *objectAt(MapCoords coords);    
-    const Portal *portalAt(MapCoords coords, int actionFlags);
-    MapTile* getTileFromData(Coords coords);
-    MapTile* tileAt(Coords coords, int withObjects);
+    class Object *objectAt(const Coords &coords);    
+    const Portal *portalAt(const Coords &coords, int actionFlags);
+    MapTile* getTileFromData(const Coords &coords);
+    MapTile* tileAt(const Coords &coords, int withObjects);
     bool isWorldMap();
-    bool isEnclosed(Coords party);
+    bool isEnclosed(const Coords &party);
     class Creature *addCreature(const class Creature *m, Coords coords);
     class Object *addObject(MapTile tile, MapTile prevTile, Coords coords);
     class Object *addObject(Object *obj, Coords coords);

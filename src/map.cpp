@@ -27,7 +27,7 @@
 
 /**
  * MapCoords Class Implementation
- */ 
+ */
 
 bool MapCoords::operator==(const MapCoords &a) const {        
     return ((x == a.x) && (y == a.y) && (z == a.z)) ? true : false;        
@@ -256,7 +256,7 @@ string Map::getName() {
  * Returns the object at the given (x,y,z) coords, if one exists.
  * Otherwise, returns NULL.
  */
-Object *Map::objectAt(MapCoords coords) {
+Object *Map::objectAt(const Coords &coords) {
     /* FIXME: return a list instead of one object */
     ObjectDeque::const_iterator i;        
     Object *objAt = NULL;    
@@ -283,7 +283,7 @@ Object *Map::objectAt(MapCoords coords) {
  * If there is no portal that corresponds to the actions flagged
  * by 'actionFlags' at the given (x,y,z) coords, it returns NULL.
  */
-const Portal *Map::portalAt(MapCoords coords, int actionFlags) {
+const Portal *Map::portalAt(const Coords &coords, int actionFlags) {
     PortalList::const_iterator i;    
 
     for(i = portals.begin(); i != portals.end(); i++) {
@@ -297,7 +297,7 @@ const Portal *Map::portalAt(MapCoords coords, int actionFlags) {
 /**
  * Returns the raw tile for the given (x,y,z) coords for the given map
  */
-MapTile* Map::getTileFromData(Coords coords) {
+MapTile* Map::getTileFromData(const Coords &coords) {
     int index;
     static MapTile blank;
 
@@ -313,7 +313,7 @@ MapTile* Map::getTileFromData(Coords coords) {
  * annotations like moongates and attack icons are ignored.  Any walkable tiles
  * are taken into account (treasure chests, ships, balloon, etc.)
  */
-MapTile* Map::tileAt(Coords coords, int withObjects) {    
+MapTile* Map::tileAt(const Coords &coords, int withObjects) {
     /* FIXME: this should return a list of tiles, with the most visible at the front */
     MapTile *tile;
     Annotation::List a = annotations->allAt(coords);
@@ -349,7 +349,7 @@ bool Map::isWorldMap() {
 /**
  * Returns true if the map is enclosed (to see if gem layouts should cut themselves off)
  */ 
-bool Map::isEnclosed(Coords party) {    
+bool Map::isEnclosed(const Coords &party) {
     unsigned int x, y;
     int *path_data;
 
