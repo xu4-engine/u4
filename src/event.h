@@ -38,7 +38,7 @@ void eventHandlerInit(void);
 void eventHandlerMain(void (*updateScreen)(void));
 void eventHandlerSetExitFlag(int flag);
 int eventHandlerGetExitFlag();
-void eventHandlerAddTimerCallback(void (*callback)());
+void eventHandlerAddTimerCallback(void (*callback)(), int interval);
 void eventHandlerRemoveTimerCallback(void (*callback)());
 void eventHandlerCallTimerCallbacks();
 void eventHandlerPushKeyHandler(KeyHandler kh);

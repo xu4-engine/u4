@@ -17,6 +17,8 @@
 
 typedef struct TimerCallbackNode {
     void (*callback)();
+    int interval;
+    int current;
     struct TimerCallbackNode *next;
 } TimerCallbackNode;
 
@@ -41,12 +43,19 @@ int eventHandlerGetExitFlag() {
 }
 
 /**
- * Adds a new timer callback to the timer callback list.
+ * Adds a new timer callback to the timer callback list.  The interval
+ * value determines how many cycles (1/4 second intervals) between
+ * calls; a value of 1 generates 4 callbacks per second, a value of 4
+ * generates 1 callback per second, etc.
  */
-void eventHandlerAddTimerCallback(void (*callback)()) {
+void eventHandlerAddTimerCallback(void (*callback)(), int interval) {
     TimerCallbackNode *n = malloc(sizeof(TimerCallbackNode));
+
+    assert(interval > 0);
     if (n) {
         n->callback = callback;
+        n->interval = interval;
+        n->current = interval - 1;
         n->next = timerCallbackHead;
         timerCallbackHead = n;
     }
@@ -92,7 +101,12 @@ void eventHandlerCallTimerCallbacks() {
     timerCallbackListLocked = 1;
 
     for (n = timerCallbackHead; n != NULL; n = n->next) {
-        (*n->callback)();
+        if (n->current == 0) {
+            (*n->callback)();
+            n->current = n->interval - 1;
+        } else {
+            n->current--;
+        }
     }
 
     timerCallbackListLocked = 0;
