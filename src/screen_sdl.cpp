@@ -546,7 +546,8 @@ void Tile::drawInDungeon(MapTile *mapTile, int distance, Direction orientation, 
         scaled->width(),
         scaled->height());
         
-    delete scaled, tmp;
+    delete scaled;
+    delete tmp;
 }
 
 /**

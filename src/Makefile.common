@@ -54,6 +54,7 @@ CXXSRCS=\
         person.cpp \
         player.cpp \
         portal.cpp \
+        progress_bar.cpp \
         rle.cpp \
         savegame.cpp \
         scale.cpp \
