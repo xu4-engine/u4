@@ -223,8 +223,11 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                         ReadPlayerController getPlayerCtrl;
                         eventHandler->pushController(&getPlayerCtrl);
                         int player = getPlayerCtrl.waitFor();
-                        string player_str = to_string(player);
-                        script->setVar(script->getInputName(), player_str);
+                        if (player != -1) {                            
+                            string player_str = to_string(player+1);
+                            script->setVar(script->getInputName(), player_str);
+                        }
+                        else script->setVar(script->getInputName(), "nothing");
                     } break;
 
                     default: break;

@@ -250,7 +250,6 @@ void Script::unload() {
  * Executes the subscript 'script' of the main script
  */ 
 Script::ReturnCode Script::execute(xmlNodePtr script, xmlNodePtr currentItem, string *output) {
-    xmlNodePtr node = this->scriptNode;
     xmlNodePtr current;    
     Script::ReturnCode retval = RET_OK;
     

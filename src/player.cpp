@@ -62,6 +62,9 @@ PartyMember::PartyMember(class Party *p, SaveGamePlayerRecord *pr) :
     setStatus(pr->status);
 }
 
+PartyMember::~PartyMember() {
+}
+
 /**
  * Notify the party that this player has changed somehow
  */
@@ -543,6 +546,10 @@ Party::Party(SaveGame *s) : saveGame(s), torchduration(0) {
     }    
 }
 
+Party::~Party() {
+
+}
+
 string Party::translate(std::vector<string>& parts) {        
     if (parts.size() == 0)
         return "";
@@ -589,9 +596,28 @@ string Party::translate(std::vector<string>& parts) {
 
             // Find the member we'll be working with
             string str = parts[0];
-            str = str.substr(str.find_first_of("member"));
-            int p_member = (int)strtol(str.c_str(), NULL, 10);
-            return member(p_member - 1)->translate(parts);
+            unsigned int pos = str.find_first_of("1234567890");
+            if (pos != string::npos) {
+                str = str.substr(pos);
+                int p_member = (int)strtol(str.c_str(), NULL, 10);
+
+                // Make the party member translate its own stuff
+                if (p_member > 0)
+                    return member(p_member - 1)->translate(new_parts);
+            }
+        }
+
+        else if (parts.size() == 2) {
+            if (parts[0] == "weapon") {
+                const Weapon *w = Weapon::get(parts[1]);
+                if (w)
+                    return to_string(saveGame->weapons[w->getType()]);                
+            }
+            else if (parts[0] == "armor") {
+                const Armor *a = Armor::get(parts[1]);
+                if (a)
+                    return to_string(saveGame->armor[a->getType()]);                
+            }
         }
     }    
     return "";

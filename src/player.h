@@ -76,6 +76,7 @@ typedef enum {
 class PartyMember : public Creature, public Script::Provider {
 public:
     PartyMember(class Party *p, SaveGamePlayerRecord *pr);
+    virtual ~PartyMember();
 
     void notifyOfChange(string arg);
 
@@ -139,6 +140,7 @@ class Party : public Observable<string>, public Script::Provider {
     friend class PartyMember;
 public:
     Party(SaveGame *saveGame);
+    virtual ~Party();
 
     // Used to translate script values into something useful
     virtual string translate(std::vector<string>& parts);

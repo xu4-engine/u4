@@ -197,6 +197,7 @@
         <!-- buy the weapon -->
         <buy choice="nothing" redirect="toobad"/>
         <buy>
+            <if test="{$quantity}==0" redirect="anything_else_buy"/>
             <if test="{party:gold}&lt;{math({$quantity}*{price})}" redirect="not_enough_money"/>
             <pay price="{$cost}" quantity="{$quantity}" cantpay="check_money"/>
             <add type="weapon" subtype="{$weapon}" quantity="{$quantity}"/>
@@ -237,8 +238,8 @@
             <context name="weapon"/> <!-- Add the weapon we're talking about to the translation context -->
             <var name="weapon" value="{$choice}"/>
             <var name="price" value="{math({price}/2)}"/>
-            <if test="{quantity:weapons:{name}}==0" redirect="you_sell"/>            
-            <if test="{quantity:weapons:{name}}&gt;1" redirect="sell_many"/>
+            <if test="{party:weapon:{name}}==0" redirect="you_sell"/>            
+            <if test="{party:weapon:{name}}&gt;1" redirect="sell_many"/>
             <redirect target="sell_one"/>
         </sell_weapon>
 
@@ -258,7 +259,8 @@
         
         <sell_many_offer choice="nothing" redirect="bye"/>
         <sell_many_offer>
-            <if test="{$quantity}&gt;{quantity:weapons:{name}}" redirect="dont_have_that_many"/>
+            <if test="{$quantity}==0" redirect="sell" choice="n"/>
+            <if test="{$quantity}&gt;{party:weapon:{name}}" redirect="dont_have_that_many"/>
             I will give you {math({$price}*{$quantity})}gp for them.
             Deal? <input type="choice" options="yn" target="sell"/>
         </sell_many_offer>
@@ -471,6 +473,7 @@
         <!-- buy the armor -->
         <buy choice="nothing" redirect="toobad"/>
         <buy>
+            <if test="{$quantity}==0" redirect="anything_else_buy"/>
             <if test="{party:gold}&lt;{math({$quantity}*{price})}" redirect="not_enough_money"/>
             <pay price="{price}" quantity="{$quantity}" cantpay="check_money"/>
             <add type="armor" subtype="{$armor}" quantity="{$quantity}"/>
@@ -510,19 +513,19 @@
             <var name="armor" value="{$choice}"/>
             <var name="price" value="{math({price}/2)}"/>
 
-            <if test="{quantity:armor:{name}}==0">
+            <if test="{party:armor:{name}}==0">
                 Come on, you
                 don't own any.<redirect target="you_sell"/>
             </if>
     
-            <if test="{quantity:armor:{name}}&gt;1" redirect="sell_many"/>
+            <if test="{party:armor:{name}}&gt;1" redirect="sell_many"/>
             <redirect target="sell_one"/>
         </sell_armor>
 
         <!-- sell just one item -->
         <sell_one>
             <var name="quantity" value="1"/>
-            I will give you {current_price}gp for that {name}.
+            I will give you {$price}gp for that {name}.
             Deal? <input type="choice" options="yn" target="sell"/>
         </sell_one>
 
@@ -535,8 +538,9 @@
 
         <sell_many_offer choice="nothing" redirect="bye"/>
         <sell_many_offer>
+            <if test="{$quantity}==0" redirect="sell" choice="n"/>
             <var name="price" value="{math({$price}*{$quantity})}"/>
-            <if test="{$quantity}&gt;{quantity:armor:{name}}" redirect="dont_have_that_many"/>            
+            <if test="{$quantity}&gt;{party:armor:{name}}" redirect="dont_have_that_many"/>            
             I will give you {$price}gp for them.
             Deal? <input type="choice" options="yn" target="sell"/>
         </sell_many_offer>
@@ -549,6 +553,7 @@
         <sell default="true" redirect="bye"/>
         <sell choice="n">
             <unset_context/>
+
             Harumph. What else would <redirect target="you_sell"/>
         </sell>
         <sell choice="y">
@@ -1058,12 +1063,12 @@
         <who_needs>
             <context name="service"/>
             <var name="service" value="{$choice}"/>
-            <var name="player" value="1"/>
+            <var name="choice" value="1"/>
                         
             <if test="{party:members}==1" redirect="will_pay"/>            
             {healer} asks:
             Who is in
-            need? <input name="player" type="player" target="will_pay"/>
+            need? <input name="choice" type="player" target="will_pay"/>
         </who_needs>
 
         <will_pay choice="nothing">
@@ -1071,7 +1076,8 @@
         </will_pay>
 
         <will_pay>
-            <if test="!{party:member{$player}:needs:{type}}">                
+            <var name="player" value="{$choice}"/>
+            <if test="!{party:member{$player}:needs:{type}}">
                 <include script="dont_need" choice="{$service}"/>
                 <redirect target="more_help"/>
             </if>
@@ -1171,7 +1177,7 @@
     <script id="Inn" noun="room">
         <intro>
             <music type="shopping"/>
-            The Innkeeper says: <if test="{transport}=horse" redirect="nohorse"/>Welcome to {name}
+            The Innkeeper says: <if test="{party:transport}=horse" redirect="nohorse"/>Welcome to {name}
         
             I am {innkeeper}.
         
@@ -1206,7 +1212,7 @@
         </no_better_deal>
         <stay>
             <context name="room"/>
-            <pay price="{$cost}" quantity="{$quantity}" cantpay="cantpay"/>
+            <pay price="{price}" quantity="1" cantpay="cantpay"/>
             <cursor enable="false"/>            
             
             Very good. Have
