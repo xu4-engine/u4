@@ -103,7 +103,7 @@ void statsShowPartyView() {
     assert(c->saveGame->members <= 8);
 
     for (i = 0; i < c->saveGame->members; i++)
-        screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, "%d-%-9s%03d%c", i+1, c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
+        screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, "%d-%-9s%3d%c", i+1, c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
 
     if (tileIsShip(c->saveGame->transport))
         screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   SHP:%02d", c->saveGame->food / 100, c->saveGame->shiphull);
