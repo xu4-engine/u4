@@ -493,7 +493,7 @@ int gameBaseKeyHandler(int key, void *data) {
             tile = obj->tile;
         else
             tile = mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
-        if (tile == CHEST_TILE) {
+        if (tileIsChest(tile)) {
             if (obj)
                 mapRemoveObject(c->map, obj);
             else
@@ -1986,8 +1986,10 @@ void gameCheckRandomMonsters() {
         return;
 
     obj = mapAddObject(c->map, monster->tile, monster->tile, x, y, c->saveGame->dnglevel);
-    if (monster->mattr & MATTR_NONATTACKABLE)
+    if (monster->mattr & MATTR_WANDERS)
         obj->movement_behavior = MOVEMENT_WANDER;
+    else if (monster->mattr & MATTR_STATIONARY)
+        obj->movement_behavior = MOVEMENT_FIXED;
     else
         obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
 }
