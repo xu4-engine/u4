@@ -38,11 +38,6 @@ int main(int argc, char *argv[]) {
 
     screenInit(scale);
 
-    if (!initializeMaps()) {
-        fprintf(stderr, "error initializing maps: is Ultima 4 for DOS installed?\n");
-        exit(1);
-    }
-
     eventHandlerInit();
 
     /* do the intro */
@@ -54,6 +49,12 @@ int main(int argc, char *argv[]) {
     eventHandlerRemoveTimerCallback(&introTimer);
     eventHandlerPopKeyHandler();
     introDelete();
+
+    /* load in the maps */
+    if (!initializeMaps()) {
+        fprintf(stderr, "error initializing maps: is Ultima 4 for DOS installed?\n");
+        exit(1);
+    }
 
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
