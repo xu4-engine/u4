@@ -60,7 +60,7 @@ const Portal lcb_1_portals[] = {
 };
 
 Map lcb_1_map = {
-    "Castle of Lord British", /* name */
+    "Britannia", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -80,7 +80,7 @@ const Portal lcb_2_portals[] = {
 };
 
 Map lcb_2_map = {
-    "Castle of Lord British", /* name */
+    "Britannia", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
