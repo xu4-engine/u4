@@ -447,6 +447,7 @@ void playerApplyEffect(SaveGame *saveGame, TileEffect effect, int player) {
             if (i == player || rand() % 5 == 0)
                 saveGame->players[i].status = STAT_POISONED;
             break;
+        case EFFECT_ELECTRICITY: break;
         default:
             ASSERT(0, "invalid effect: %d", effect);
         }
