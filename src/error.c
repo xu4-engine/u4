@@ -22,7 +22,7 @@ void errorFatal(const char *fmt, ...) {
     vsnprintf(buffer, sizeof(buffer), fmt, args);
     va_end(args);
 
-    MessageBox(NULL, buffer, "XU4 Error", MB_OK | MB_ICONERROR)
+    MessageBox(NULL, buffer, "XU4 Error", MB_OK | MB_ICONERROR);
 
     exit(1);
 }
@@ -35,7 +35,7 @@ void errorWarning(const char *fmt, ...) {
     vsnprintf(buffer, sizeof(buffer), fmt, args);
     va_end(args);
 
-    MessageBox(NULL, buffer, "XU4 Warning", MB_OK | MB_ICONWARNING)
+    MessageBox(NULL, buffer, "XU4 Warning", MB_OK | MB_ICONWARNING);
 }
 
 #else
