@@ -168,6 +168,17 @@ void eventHandlerMain(void (*updateScreen)(void)) {
             eventHandlerCallTimerCallbacks();
             break;
 
+        case SDL_ACTIVEEVENT:
+            if (event.active.state & SDL_APPACTIVE) {            
+                // application was previously iconified and is now being restored
+                if (event.active.gain) {
+                    if (updateScreen)
+                        (*updateScreen)();
+                    screenRedrawScreen();
+                }                
+            }
+            break;
+
         case SDL_QUIT:
             exit(0);
             break;
