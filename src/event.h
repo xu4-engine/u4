@@ -5,26 +5,22 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-typedef enum _State {
-    STATE_NORMAL,
-    STATE_TALK,
-    STATE_TALKING,
-    STATE_QUIT
-} State;
+#define U4_UP '['
+#define U4_DOWN '/'
+#define U4_LEFT ';'
+#define U4_RIGHT '\''
 
 typedef int (*KeyHandler)(int);
 
 typedef struct KeyHandlerNode {
-    KeyHandler *kh;
+    KeyHandler kh;
     struct KeyHandlerNode *next;
 } KeyHandlerNode;
 
-KeyHandlerNode *head;
-
 void eventHandlerMain();
-void eventHandlerPushKeyHandler(KeyHandler *kh);
+void eventHandlerPushKeyHandler(KeyHandler kh);
 void eventHandlerPopKeyHandler();
-KeyHandler *eventHandlerGetKeyHandler();
+KeyHandler eventHandlerGetKeyHandler();
 
 int keyHandlerDefault(int key);
 int keyHandlerNormal(int key);

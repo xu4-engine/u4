@@ -2,11 +2,11 @@
  * $Id$
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
-#include <SDL/SDL.h>
 
 #include "u4.h"
 #include "screen.h"
@@ -17,66 +17,13 @@
 #include "context.h"
 #include "savegame.h"
 
+void moveAvatar(int dx, int dy);
+
+KeyHandlerNode *head = NULL;
 char talkBuffer[5];
 
-#define UP '['
-#define DOWN '/'
-#define LEFT ';'
-#define RIGHT '\''
 
-void eventHandlerMain() {
-    screenMessage("\020");
-    while (1) {
-        int processed = 0;
-        SDL_Event event;
-
-        SDL_WaitEvent(&event);
-
-        switch (event.type) {
-        case SDL_KEYDOWN: {
-            int key;
-
-            if (event.key.keysym.sym >= SDLK_a &&
-                event.key.keysym.sym <= SDLK_z)
-                key = event.key.keysym.sym - SDLK_a + 'a';
-            else if (event.key.keysym.sym == SDLK_UP)
-                key = UP;
-            else if (event.key.keysym.sym == SDLK_DOWN)
-                key = DOWN;
-            else if (event.key.keysym.sym == SDLK_LEFT)
-                key = LEFT;
-            else if (event.key.keysym.sym == SDLK_RIGHT)
-                key = RIGHT;
-            else
-                key = event.key.keysym.sym;
-
-            switch (c->state) {
-            case STATE_NORMAL:
-                processed = keyHandlerNormal(key);
-                break;
-            case STATE_TALK:
-                processed = keyHandlerTalk(key);
-                break;
-            case STATE_TALKING:
-                processed = keyHandlerTalking(key);
-                break;
-            case STATE_QUIT:
-                processed = keyHandlerQuit(key);
-                break;
-            }
-
-            screenUpdate(c);
-            screenForceRedraw();
-            break;
-        }
-        case SDL_QUIT:
-            exit(0);
-            break;
-        }
-    }
-}
-
-void eventHandlerPushKeyHandler(KeyHandler *kh) {
+void eventHandlerPushKeyHandler(KeyHandler kh) {
     KeyHandlerNode *n = malloc(sizeof(KeyHandlerNode));
     if (n) {
         n->kh = kh;
@@ -93,7 +40,7 @@ void eventHandlerPopKeyHandler() {
     }
 }
 
-KeyHandler *eventHandlerGetKeyHandler() {
+KeyHandler eventHandlerGetKeyHandler() {
     return head->kh;
 }
 
@@ -121,19 +68,19 @@ int keyHandlerNormal(int key) {
 
     switch (key) {
 
-    case UP:
+    case U4_UP:
         moveAvatar(0, -1);
         break;
 
-    case DOWN:
+    case U4_DOWN:
         moveAvatar(0, 1);
         break;
 
-    case LEFT:
+    case U4_LEFT:
         moveAvatar(-1, 0);
         break;
 
-    case RIGHT:
+    case U4_RIGHT:
         moveAvatar(1, 0);
         break;
 
@@ -147,7 +94,6 @@ int keyHandlerNormal(int key) {
             new->map = portal->destination;
             new->saveGame->x = new->map->startx;
             new->saveGame->y = new->map->starty;
-            new->state = STATE_NORMAL;
             new->line = new->parent->line;
             c = new;
 
@@ -157,7 +103,7 @@ int keyHandlerNormal(int key) {
         break;
 
     case 't':
-        c->state = STATE_TALK;
+        eventHandlerPushKeyHandler(&keyHandlerTalk);
         screenMessage("Talk\nDir: ");
         break;
 
@@ -165,7 +111,7 @@ int keyHandlerNormal(int key) {
         if (strcmp(c->map->name, "World") != 0) {
             screenMessage("Quit & save\nNot Here!\n");
         } else {
-            c->state = STATE_QUIT;
+            eventHandlerPushKeyHandler(&keyHandlerQuit);
             screenMessage("Quit & save\nExit (Y/N)? ");
         }
         break;
@@ -184,22 +130,22 @@ int keyHandlerTalk(int key) {
     int t_x = -1, t_y = -1;
 
     switch (key) {
-    case UP:
+    case U4_UP:
         screenMessage("North\n");
         t_x = c->saveGame->x;
         t_y = c->saveGame->y - 1;
         break;
-    case DOWN:
+    case U4_DOWN:
         screenMessage("South\n");
         t_x = c->saveGame->x;
         t_y = c->saveGame->y + 1;
         break;
-    case LEFT:
+    case U4_LEFT:
         screenMessage("West\n");
         t_x = c->saveGame->x - 1;
         t_y = c->saveGame->y;
         break;
-    case RIGHT:
+    case U4_RIGHT:
         screenMessage("East\n");
         t_x = c->saveGame->x + 1;
         t_y = c->saveGame->y;
@@ -214,7 +160,7 @@ int keyHandlerTalk(int key) {
         p = mapPersonAt(c->map, t_x, t_y);
         if (p == NULL) {
             screenMessage("Funny, no\nresponse!\n");
-            c->state = STATE_NORMAL;
+            eventHandlerPopKeyHandler();
         }
         else {
             char buffer[100];
@@ -225,7 +171,8 @@ int keyHandlerTalk(int key) {
             sprintf(buffer, "%s says: I am %s\n\n", p->pronoun, p->name);
             screenMessage(buffer);
             talkBuffer[0] = '\0';
-            c->state = STATE_TALKING;
+            eventHandlerPopKeyHandler();
+            eventHandlerPushKeyHandler(&keyHandlerTalking);
         }
     }
 
@@ -251,7 +198,7 @@ int keyHandlerTalking(int key) {
 
         screenMessage("\n");
         screenMessage("%s\n", talkBuffer);
-        c->state = STATE_NORMAL;
+        eventHandlerPopKeyHandler();        
             
     } else {
         valid = 0;
@@ -289,10 +236,54 @@ int keyHandlerQuit(int key) {
             exit(0);
         else if (answer == 'n') {
             screenMessage("%c\n", key);
-            c->state = STATE_NORMAL;
+            eventHandlerPopKeyHandler();            
         }
     }
 
     return keyHandlerDefault(key) || valid;
 }
 
+void moveAvatar(int dx, int dy) {
+    int newx, newy;
+
+    newx = c->saveGame->x + dx;
+    newy = c->saveGame->y + dy;
+
+    if (MAP_IS_OOB(c->map, newx, newy)) {
+	switch (c->map->border_behavior) {
+	case BORDER_WRAP:
+	    if (newx < 0)
+		newx += c->map->width;
+	    if (newy < 0)
+		newy += c->map->height;
+	    if (newx >= c->map->width)
+		newx -= c->map->width;
+	    if (newy >= c->map->height)
+		newy -= c->map->height;
+	    break;
+
+	case BORDER_EXIT2PARENT:
+	    if (c->parent != NULL) {
+		Context *t = c;
+                c->parent->line = c->line;
+		c = c->parent;
+                free(t->saveGame);
+		free(t);
+	    }
+	    return;
+	    
+	case BORDER_FIXED:
+	    if (newx < 0 || newx >= c->map->width)
+		newx = c->saveGame->x;
+	    if (newy < 0 || newy >= c->map->height)
+		newy = c->saveGame->y;
+	    break;
+	}
+    }
+
+    if (/*iswalkable(MAP_TILE_AT(c->map, newx, newy)) &&*/
+        !mapPersonAt(c->map, newx, newy)) {
+	c->saveGame->x = newx;
+	c->saveGame->y = newy;
+    }
+}
