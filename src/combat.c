@@ -221,6 +221,10 @@ void combatBegin() {
     /* Use the combat key handler */
     eventHandlerPushKeyHandler(&combatBaseKeyHandler);
  
+    /* if there are monsters around, start combat! */    
+    if (combatInfo.showCombatMessage && combatInfo.placeMonsters && combatInfo.winOrLose)
+        screenMessage("\n**** COMBAT ****\n\n");
+    
     /* FIXME: there should be a better way to accomplish this */
     if (!combatInfo.camping) {
         musicPlay();
@@ -232,11 +236,7 @@ void combatBegin() {
             partyIsReadyToFight = 1;
             break;
         }
-    }
-
-    /* if there are monsters around, start combat! */    
-    if (combatInfo.showCombatMessage && combatInfo.placeMonsters && combatInfo.winOrLose)
-        screenMessage("\n**** COMBAT ****\n\n");    
+    }    
 
     if (!combatInfo.camping && !partyIsReadyToFight)
         (*c->location->finishTurn)();
