@@ -171,8 +171,13 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
     /*
      * a convsation with a vendor
      */
-    if (personIsVendor(cnv->talker))
+    if (personIsVendor(cnv->talker)) {
+        if (cnv->state == CONV_INTRO)
+            musicShopping();
         vendorGetConversationText(cnv, inquiry, &text);
+        if (cnv->state == CONV_DONE)
+            musicPlay();
+    }
 
     /*
      * a conversation with a non-vendor
@@ -187,7 +192,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
             else if (cnv->talker->npcType == NPC_HAWKWIND)
                 text = hawkwindGetIntro(cnv);
             else
-                text = talkerGetIntro(cnv);            
+                text = talkerGetIntro(cnv);
 
             break;
 
