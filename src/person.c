@@ -2,6 +2,8 @@
  * $Id$
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include "u4.h"
 
