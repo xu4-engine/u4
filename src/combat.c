@@ -200,7 +200,6 @@ void combatCreateMonster(int index, int canbeleader) {
 
 void combatFinishTurn() {
     if (combatIsWon()) {
-
         eventHandlerPopKeyHandler();
         combatEnd();
         return;
@@ -228,6 +227,12 @@ void combatFinishTurn() {
             if (combatIsLost()) {
                 if (!playerPartyDead(c->saveGame))
                     playerAdjustKarma(c->saveGame, KA_FLED);
+                eventHandlerPopKeyHandler();
+                combatEnd();
+                return;
+            }
+            /* End combat immediately if the enemy has fled */
+            else if (combatIsWon()) {
                 eventHandlerPopKeyHandler();
                 combatEnd();
                 return;
@@ -358,7 +363,7 @@ int combatAttackAtCoord(int x, int y, int distance) {
     }
 
     if (monster == -1) {
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, MISSFLASH_TILE), 2));
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, MISSFLASH_TILE), 2));        
         combatFinishTurn();
         return 1;
     }
@@ -410,7 +415,7 @@ int combatAttackAtCoord(int x, int y, int distance) {
         }
 
     }
-
+    
     combatFinishTurn();
 
     return 1;
@@ -487,7 +492,7 @@ void combatEnd() {
     c->saveGame->dngx = olddngx;
     c->saveGame->dngy = olddngy;
     c->col = 0;
-                
+
     musicPlay();
 
     if (combatIsWon()) {
@@ -623,7 +628,7 @@ void combatMoveMonsters() {
                 if (MAP_IS_OOB(c->map, newx, newy)) {
                     screenMessage("\n%s Flees!\n", m->name);
                     mapRemoveObject(c->map, monsters[i]);
-                    monsters[i] = NULL;
+                    monsters[i] = NULL;                    
                 }
             }
             break;
