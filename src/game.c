@@ -1934,6 +1934,7 @@ void gameCheckRandomMonsters() {
     Object *obj;
 
     if (!mapIsWorldMap(c->map) ||
+        mapNumberOfMonsters(c->map) >= 4 ||
         (rand() % 16) != 0)
         return;
 
