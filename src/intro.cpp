@@ -2,6 +2,7 @@
  * $Id$
  */
 
+#include <vector>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -22,6 +23,8 @@
 #include "tileset.h"
 #include "u4file.h"
 #include "utils.h"
+
+using std::vector;
 
 extern bool quit;
 
@@ -646,7 +649,7 @@ void introUpdateScreen() {
 
     switch (mode) {
     case INTRO_MAP:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         introDrawMap();
         introDrawBeasties();
         break;
@@ -655,7 +658,7 @@ void introUpdateScreen() {
         screenSetCursorPos(24, 16);
         screenShowCursor();
 
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(2, 14, "In another world, in a time to come.");
         screenTextAt(15, 16, "Options:");
         screenTextAt(11, 17, "Return to the view");
@@ -669,14 +672,14 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(9, 14, "-- xu4 Configuration --");
         mainOptions.show();
         introDrawBeasties();
         break;
 
     case INTRO_CONFIG_VIDEO:
-        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenDrawImage(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Video Options:");
         screenTextAt(24, 5, "%s", settingsChanged.videoType.c_str());
         screenTextAt(24, 6, "%s", settingsChanged.gemLayout.c_str());
@@ -688,7 +691,7 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG_SOUND:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(2, 14, "Sound Options:");
         screenTextAt(26, 16, "%s", settingsChanged.musicVol ? "On" : "Off");
         screenTextAt(26, 17, "%s", settingsChanged.soundVol ? "On" : "Off");
@@ -698,7 +701,7 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG_GAMEPLAY:
-        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenDrawImage(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Gameplay Options:");
         screenTextAt(32, 5, "%s", settingsChanged.enhancements ? "On" : "Off");        
         screenTextAt(6, 8, "  (Open, Jimmy, etc.)     %s", settingsChanged.shortcutCommands ? "On" : "Off");        
@@ -708,14 +711,14 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG_ADVANCED:
-        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenDrawImage(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Advanced Options:");
         screenTextAt(34, 8,  "%s", settingsChanged.debug ? "On" : "Off");        
         advancedOptions.show();
         break;
 
     case INTRO_CONFIG_KEYBOARD:
-        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenDrawImage(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Keyboard Settings:");
         screenTextAt(34, 5, "%s", settingsChanged.germanKbd ? "Yes" : "No"); 
         screenTextAt(34, 6,  "%d", settingsChanged.keydelay);
@@ -726,7 +729,7 @@ void introUpdateScreen() {
     case INTRO_CONFIG_SPEED:
         {
             char msg[16] = {0};
-            screenDrawBackground(BKGD_INTRO_EXTENDED);
+            screenDrawImage(BKGD_INTRO_EXTENDED);
             screenTextAt(2, 3, "Speed Settings:");           
 
             sprintf(msg, "%d", settingsChanged.gameCyclesPerSecond);
@@ -757,7 +760,7 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG_ENHANCEMENT_OPTIONS:
-        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenDrawImage(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Game Enhancement Options:");        
         screenTextAt(31, 5,  "%s", settingsChanged.enhancementsOptions.activePlayer ? "On" : "Off");
         screenTextAt(31, 6,  "%s", settingsChanged.enhancementsOptions.u5spellMixing ? "On" : "Off");
@@ -769,7 +772,7 @@ void introUpdateScreen() {
         break;    
 
     case INTRO_ABOUT:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(15, 14, "XU4 %s", VERSION);
         screenTextAt(2, 16, "xu4 is free software; you can redist-");
         screenTextAt(2, 17, "ribute it and/or modify it under the");
@@ -781,46 +784,46 @@ void introUpdateScreen() {
         break;
 
     case INTRO_INIT_NAME:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(4, 16, "By what name shalt thou be known");
         screenTextAt(4, 17, "in this world and time?");
         introDrawBeasties();
         break;
 
     case INTRO_INIT_SEX:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(4, 16, "Art thou Male or Female?");
         introDrawBeasties();
         break;
 
     case INTRO_INIT_STORY:
         if (storyInd == 0)
-            screenDrawBackground(BKGD_TREE);
+            screenDrawImage(BKGD_TREE);
         else if (storyInd == 3)
-            screenAnimateIntro(0);
+            screenAnimateIntro("moongate");
         else if (storyInd == 5)
-            screenAnimateIntro(1);
+            screenAnimateIntro("items");
         else if (storyInd == 6)
-            screenDrawBackground(BKGD_PORTAL);
+            screenDrawImage(BKGD_PORTAL);
         else if (storyInd == 11)
-            screenDrawBackground(BKGD_TREE);
+            screenDrawImage(BKGD_TREE);
         else if (storyInd == 15)
-            screenDrawBackground(BKGD_OUTSIDE);
+            screenDrawImage(BKGD_OUTSIDE);
         else if (storyInd == 17)
-            screenDrawBackground(BKGD_INSIDE);
+            screenDrawImage(BKGD_INSIDE);
         else if (storyInd == 20)
-            screenDrawBackground(BKGD_WAGON);
+            screenDrawImage(BKGD_WAGON);
         else if (storyInd == 21)
-            screenDrawBackground(BKGD_GYPSY);
+            screenDrawImage(BKGD_GYPSY);
         else if (storyInd == 23)
-            screenDrawBackground(BKGD_ABACUS);
+            screenDrawImage(BKGD_ABACUS);
         introShowText(introText[storyInd]);
         break;
 
     case INTRO_INIT_QUESTIONS:
         if (introAskToggle == 0) {
             if (questionRound == 0)
-                screenDrawBackground(BKGD_ABACUS);
+                screenDrawImage(BKGD_ABACUS);
             screenShowCard(0, questionTree[questionRound * 2]);
             screenShowCard(1, questionTree[questionRound * 2 + 1]);
 
@@ -1321,9 +1324,6 @@ void introMainOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action)
 
 /* video options menu handler */
 void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    extern ImageSetMap imageSets;
-    extern LayoutMap gemLayouts;
-
     switch(menuItem->id) {
     case 0:
         if (action != ACTIVATE_DECREMENT) {
@@ -1359,47 +1359,49 @@ void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 
     case 4:
         {   
-            ImageSetMap::iterator set = imageSets.find(settingsChanged.videoType);
-            if (set == imageSets.end())
-                errorFatal("Error: image set '%s' not found", settingsChanged.videoType.c_str());            
+            const vector<string> &imageSetNames = screenGetImageSetNames();
+            vector<string>::const_iterator set = find(imageSetNames.begin(), imageSetNames.end(), settingsChanged.videoType);
+            if (set == imageSetNames.end())
+                errorFatal("Error: image set '%s' not found", settingsChanged.videoType.c_str());
             
             if (action != ACTIVATE_DECREMENT) {
                 /* move to the next set, wrapping if necessary */
                 set++;
-                if (set == imageSets.end())
-                    set = imageSets.begin();    
+                if (set == imageSetNames.end())
+                    set = imageSetNames.begin();    
                 
             } else {
                 /* move back one, wrapping if necessary */
-                if (set == imageSets.begin())
-                    set = imageSets.end();                
+                if (set == imageSetNames.begin())
+                    set = imageSetNames.end();                
                 set--;
             }
 
-            settingsChanged.videoType = set->second->name;
+            settingsChanged.videoType = *set;
         }
         break;
 
     case 5:
         {
-            LayoutMap::iterator layout = gemLayouts.find(settingsChanged.gemLayout);
-            if (layout == gemLayouts.end())
-                errorFatal("Error: gem layout '%s' not found", settingsChanged.gemLayout.c_str());        
+            const vector<string> &layoutNames = screenGetGemLayoutNames();
+            vector<string>::const_iterator layout = find(layoutNames.begin(), layoutNames.end(), settingsChanged.gemLayout);
+            if (layout == layoutNames.end())
+                errorFatal("Error: gem layout '%s' not found", settingsChanged.gemLayout.c_str());
        
             if (action != ACTIVATE_DECREMENT) {
                 /* move to the next layout, wrapping if necessary */
                 layout++;
-                if (layout == gemLayouts.end())
-                    layout = gemLayouts.begin();
+                if (layout == layoutNames.end())
+                    layout = layoutNames.begin();
             
             } else {
                 /* move back one, wrapping if necessary */
-                if (layout == gemLayouts.begin())
-                    layout = gemLayouts.end();
+                if (layout == layoutNames.begin())
+                    layout = layoutNames.end();
                 layout--;
             }
 
-            settingsChanged.gemLayout = layout->second->name;
+            settingsChanged.gemLayout = *layout;
         }
         break;        
 
