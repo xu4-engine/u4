@@ -12,6 +12,7 @@
 #include "event.h"
 #include "screen.h"
 #include "settings.h"
+#include "u4_sdl.h"
 
 SDL_TimerID timer;
 
@@ -33,18 +34,16 @@ void eventHandlerInit() {
     if (timer != NULL)
         SDL_RemoveTimer(timer);
 
-    /* start the SDL timer */
-    if (!SDL_WasInit(SDL_INIT_TIMER)) {
-        if (SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
-            errorFatal("unable to init SDL: %s", SDL_GetError());
-    }
+    /* start the SDL timer */    
+    if (u4_SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
+        errorFatal("unable to init SDL: %s", SDL_GetError());    
     
     timer = SDL_AddTimer(eventTimerGranularity, &eventCallback, NULL);
 }
 
 void eventHandlerDelete() {
     SDL_RemoveTimer(timer);
-    SDL_QuitSubSystem(SDL_INIT_TIMER);
+    u4_SDL_QuitSubSystem(SDL_INIT_TIMER);
 }
 
 void eventHandlerSleep(int usec) {    

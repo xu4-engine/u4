@@ -12,7 +12,6 @@
 #include "event.h"
 #include "image.h"
 #include "intro.h"
-#include "music.h"    /* FIXME: this can be removed when musicInit and musicDelete are removed */
 #include "rle.h"
 #include "savegame.h"
 #include "settings.h"
@@ -21,6 +20,7 @@
 #include "ttype.h"
 #include "dngview.h"
 #include "u4.h"
+#include "u4_sdl.h"
 #include "u4file.h"
 #include "xml.h"
 
@@ -169,12 +169,10 @@ void screenInit() {
 
     if (scale < 1 || scale > 5)
         scale = 2;
-
+    
     /* start SDL */
-    if (!SDL_WasInit(SDL_INIT_VIDEO)) {
-        if (SDL_Init(SDL_INIT_VIDEO) < 0)
-            errorFatal("unable to init SDL: %s", SDL_GetError());
-    }
+    if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
+        errorFatal("unable to init SDL: %s", SDL_GetError());    
 
     screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (settings->fullscreen ? SDL_FULLSCREEN : 0));
     if (!screen)
@@ -209,23 +207,18 @@ void screenDelete() {
     screenFreeBackgrounds();
     imageDelete(tiles);
     imageDelete(charset);
-    SDL_Quit();
+    u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
 /**
- * FIXME: re-load images here
+ * Re-initializes the screen and implements any changes made in settings
  */
 void screenReInit() {    
-    /* FIXME: much of this re-initialization does not need to happen:
-       move SDL_Init functions to SDLInit() and SDLDelete() and then
-       have each subsystem initialize itself */
-    musicDelete();
     introDelete();  /* delete intro stuff */
     screenDelete(); /* delete screen stuff */
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
-    introInit();    /* re-fix the backgrounds loaded and scale images, etc. */
-    musicInit();
-    eventHandlerResetTimerCallbacks(); /* re-init the SDL_TIMER as well (because it gets killed by screenDelete()) */
+    introInit();    /* re-fix the backgrounds loaded and scale images, etc. */    
+    //eventHandlerResetTimerCallbacks(); /* re-init the SDL_TIMER as well (because it gets killed by screenDelete()) */
 }
 
 /**

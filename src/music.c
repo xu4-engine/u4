@@ -2,6 +2,8 @@
  * $Id$
  */
 
+/* FIXME: should this file have all SDL-related stuff extracted and put in music_sdl.c? */
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -17,6 +19,7 @@
 #include "error.h"
 #include "location.h"
 #include "settings.h"
+#include "u4_sdl.h"
 #include "u4file.h"
 #include "xml.h"
 
@@ -123,7 +126,7 @@ int musicInit() {
         int audio_channels = 2;
         int audio_buffers = 4096;
 
-        if (SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
+        if (u4_SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
             errorWarning("unable to init SDL audio subsystem: %s", SDL_GetError());
             return 1;
         }
@@ -149,7 +152,7 @@ void musicDelete() {
     }
     
     Mix_CloseAudio();
-    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+    u4_SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
 /**

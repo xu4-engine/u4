@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     }
 
     srand(time(NULL));
-
+    
     screenInit();
     musicInit();
     soundInit();
@@ -106,10 +106,7 @@ int main(int argc, char *argv[]) {
     eventHandlerDelete();
     soundDelete();
     musicDelete();
-    screenDelete();
-
-    /* write settings just before exiting */
-    settingsWrite();
+    screenDelete();    
 
     return 0;
 }
