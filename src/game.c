@@ -276,7 +276,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case ' ':
-        screenMessage("Pass!\n");
+        screenMessage("Pass\n");
         break;
 
     case 'a':
@@ -333,7 +333,7 @@ int gameBaseKeyHandler(int key, void *data) {
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_DESCEND) {
             gameSetMap(c, portal->destination, 0);
-            screenMessage("Descend!\n\n");
+            screenMessage("Descend to first floor!\n");
         } else if (tileIsBalloon(c->saveGame->transport)) {
             screenMessage("Land Balloon\n");
             if (c->saveGame->balloonstate == 0)
@@ -451,7 +451,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 screenMessage("Klimb\nOnly on foot!\n");
             else {
                 gameSetMap(c, portal->destination, 0);
-                screenMessage("Klimb!\n\n");
+                screenMessage("Klimb to second floor!\n");
             }
         } else if (tileIsBalloon(c->saveGame->transport)) {
             c->saveGame->balloonstate = 1;
