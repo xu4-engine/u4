@@ -56,7 +56,7 @@ int monsterHp[AREA_MONSTERS];
 
 int combatBaseKeyHandler(int key, void *data);
 void combatFinishTurn(void);
-int combatAttackAtCoord(int x, int y);
+int combatAttackAtCoord(int x, int y, int distance);
 int combatInitialNumberOfMonsters(unsigned char monster);
 int combatIsWon(void);
 int combatIsLost(void);
@@ -250,8 +250,8 @@ int combatBaseKeyHandler(int key, void *data) {
         info->origin_x = party[focus]->x;
         info->origin_y = party[focus]->y;
         info->range = 1;
+        info->validDirections = MASK_DIR_ALL;
         info->blockedPredicate = NULL;
-        info->failedMessage = "FIXME";
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Dir: ");
         break;
@@ -273,13 +273,15 @@ int combatBaseKeyHandler(int key, void *data) {
     return valid;
 }
 
-int combatAttackAtCoord(int x, int y) {
+int combatAttackAtCoord(int x, int y, int distance) {
     int monster;
     const Monster *m;
     int i, xp;
 
-    if (x == -1 && y == -1)
+    if (x == -1 && y == -1) {
+        screenMessage("Missed!\n");
         return 0;
+    }
 
     monster = -1;
     for (i = 0; i < AREA_MONSTERS; i++) {
@@ -289,7 +291,10 @@ int combatAttackAtCoord(int x, int y) {
             monster = i;
     }
 
-    if (monster == -1 || !playerAttackHit(&c->saveGame->players[focus])) {
+    if (monster == -1)
+        return 0;
+
+    if (!playerAttackHit(&c->saveGame->players[focus])) {
         screenMessage("Missed!\n");
 
         annotationSetTimeDuration(annotationAdd(x, y, MISSFLASH_TILE), 2);

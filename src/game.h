@@ -23,11 +23,11 @@ typedef struct AlphaActionInfo {
 } AlphaActionInfo;
 
 typedef struct CoordActionInfo {
-    int (*handleAtCoord)(int, int);
+    int (*handleAtCoord)(int, int, int);
     int origin_x, origin_y;
     int range;
+    int validDirections;
     int (*blockedPredicate)(unsigned char tile);
-    const char *failedMessage;
 } CoordActionInfo;
 
 void gameInit(void);
