@@ -136,6 +136,10 @@ void eventHandlerMain(void (*updateScreen)(void)) {
 
         case SDL_MOUSEBUTTONDOWN: {
             int button = event.button.button - 1;
+
+            if (!settings->mouseOptions.enabled)
+                break;
+
             if (button > 2)
                 button = 0;
             area = eventMouseAreaForPoint(event.button.x, event.button.y);
@@ -149,6 +153,9 @@ void eventHandlerMain(void (*updateScreen)(void)) {
         }
 
         case SDL_MOUSEMOTION:
+            if (!settings->mouseOptions.enabled)
+                break;
+
             area = eventMouseAreaForPoint(event.button.x, event.button.y);
             if (area)
                 screenSetMouseCursor(area->cursor);
