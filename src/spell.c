@@ -237,12 +237,13 @@ static int spellCure(int player) {
 }
 
 static int spellDispel(int dir) {
-    int x, y;
+    int x, y, z;
     unsigned char tile;
     const Annotation *a;
 
     x = c->saveGame->x;
     y = c->saveGame->y;
+    z = c->saveGame->dnglevel;
     dirMove((Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->map, x, y))
         return 0;
@@ -250,9 +251,9 @@ static int spellDispel(int dir) {
     /*
      * if there is a field annotation, remove it
      */
-    a = annotationAt(x, y);
+    a = annotationAt(x, y, z, c->map->id);
     if (a && tileCanDispel(a->tile)) {
-        annotationRemove(x, y, a->tile);
+        annotationRemove(x, y, z, c->map->id, a->tile);
         return 1;
     }
 
@@ -260,26 +261,27 @@ static int spellDispel(int dir) {
      * if the map tile itself is a field, overlay it with a brick
      * annotation
      */
-    tile = mapTileAt(c->map, x, y);
+    tile = mapTileAt(c->map, x, y, z);
     
     if (!tileCanDispel(tile))
         return 0;
 
-    annotationAdd(x, y, BRICKFLOOR_TILE);
+    annotationAdd(x, y, z, c->map->id, BRICKFLOOR_TILE);
 
     return 1;
 }
 
 static int spellEField(int dir) {
-    int x, y;
+    int x, y, z;
 
     x = c->saveGame->x;
     y = c->saveGame->y;
+    z = c->saveGame->dnglevel;
     dirMove((Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->map, x, y))
         return 0;
 
-    annotationAdd(x, y, LIGHTNINGFIELD_TILE);
+    annotationAdd(x, y, z, c->map->id, LIGHTNINGFIELD_TILE);
 
     return 1;
 }
