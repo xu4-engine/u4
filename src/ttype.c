@@ -1,3 +1,11 @@
+/*
+ * $Id$
+ */
+
+#include <stddef.h>
+
+#include "ttype.h"
+
 #define MASK_WALKABLE 0x03
 #define MASK_POISON   0x04
 #define MASK_SAILABLE 0x08
@@ -86,12 +94,24 @@ int tileCanTalkOver(unsigned char tile) {
     return tile >= 96 && tile <= 122;
 }
 
-int tileIsAnimated(unsigned char tile) {
-    if (tile < 32)
-	return (_ttype_info1[tile] & MASK_ANIMATED) != 0;
-    else if (tile < 56)
-	return 0;
-    else if (tile < 79)
-	return (_ttype_info2[tile - 56] & MASK_ANIMATED) != 0;
-    return 0;
+AnimationStyle tileGetAnimationStyle(unsigned char tile) {
+    if (tile < 32 && (_ttype_info1[tile] & MASK_ANIMATED) != 0)
+        return ANIM_SCROLL;
+    else if (tile >= 56 && tile < 79 && (_ttype_info2[tile - 56] & MASK_ANIMATED) != 0)
+	return ANIM_SCROLL;
+    else if (tile == 75)
+        return ANIM_CAMPFIRE;
+    else if (tile == 10)
+        return ANIM_CITYFLAG;
+    else if (tile == 11)
+        return ANIM_CASTLEFLAG;
+    else if (tile == 16)
+        return ANIM_WESTSHIPFLAG;
+    else if (tile == 18)
+        return ANIM_EASTSHIPFLAG;
+    else if (tile == 14)
+        return ANIM_LCBFLAG;
+    
+    return ANIM_NONE;
 }
+
