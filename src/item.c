@@ -119,7 +119,8 @@ int isReagentInInventory(void *reag) {
 }
 
 void putReagentInInventory(void *reag) {
-    c->saveGame->reagents[(int)reag] += 1;
+    playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
+    c->saveGame->reagents[(int)reag] += rand() % 8 + 2;
 }
 
 /**
