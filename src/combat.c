@@ -18,6 +18,8 @@
 #include "game.h"
 #include "area.h"
 #include "monster.h"
+#include "screen.h"
+#include "names.h"
 
 extern Map brick_map;
 extern Map bridge_map;
@@ -42,15 +44,18 @@ extern Map shipshor_map;
 extern Map shore_map;
 extern Map shorship_map;
 
+int focus;
 Object *party[8];
-Object *monsters[16];
+Object *monsters[AREA_MONSTERS];
 
-int combatHandleChoice(char choice);
+int combatBaseKeyHandler(int key, void *data);
+int combatIsWon(void);
+int combatIsLost(void);
 void combatEnd(void);
+int movePartyMember(Direction dir, int member);
 
 void combatBegin(unsigned char partytile, unsigned short transport) {
     int i;
-    GetChoiceActionInfo *info;
     int nmonsters;
 
     annotationClear();
@@ -64,18 +69,16 @@ void combatBegin(unsigned char partytile, unsigned short transport) {
         party[i] = mapAddObject(c->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->map->area->player_start[i].x, c->map->area->player_start[i].y);
     for (; i < 8; i++)
         party[i] = NULL;
-    party[0]->hasFocus = 1;
+    focus = 0;
+    party[focus]->hasFocus = 1;
 
-    nmonsters = (rand() % 15) + 1;
+    nmonsters = (rand() % (AREA_MONSTERS - 1)) + 1;
     for (i = 0; i < nmonsters; i++)
         monsters[i] = mapAddObject(c->map, ORC_TILE, ORC_TILE + 1, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
-    for (; i < 16; i++)
+    for (; i < AREA_MONSTERS; i++)
         monsters[i] = NULL;
 
-    info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-    info->choices = " \033";
-    info->handleChoice = &combatHandleChoice;
-    eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
+    eventHandlerPushKeyHandler(&combatBaseKeyHandler);
 }
 
 
@@ -109,12 +112,82 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     return &brick_map;
 }
 
-int combatHandleChoice(char choice) {
-    eventHandlerPopKeyHandler();
+int combatBaseKeyHandler(int key, void *data) {
+    int valid = 1;
 
-    combatEnd();
+    switch (key) {
+    case U4_UP:
+        movePartyMember(DIR_NORTH, focus);
+        break;
 
-    return 1;
+    case U4_DOWN:
+        movePartyMember(DIR_SOUTH, focus);
+        break;
+
+    case U4_LEFT:
+        movePartyMember(DIR_WEST, focus);
+        break;
+
+    case U4_RIGHT:
+        movePartyMember(DIR_EAST, focus);
+        break;
+
+    case U4_ESC:
+        eventHandlerPopKeyHandler();
+        combatEnd();
+        break;
+        
+    default:
+        valid = 0;
+        break;
+    }
+
+    if (combatIsWon() || combatIsLost()) {
+        eventHandlerPopKeyHandler();
+        combatEnd();
+    }
+    else if (valid) {
+        if (party[focus])
+            party[focus]->hasFocus = 0;
+        do {
+            focus++;
+            if (focus >= c->saveGame->members)
+                focus = 0;
+        } while (!party[focus]);
+        party[focus]->hasFocus = 1;
+    }
+
+    return valid;
+}
+
+/**
+ * Returns true if the player has won.
+ */
+int combatIsWon() {
+    int i, activeMonsters;
+
+    activeMonsters = 0;
+    for (i = 0; i < AREA_MONSTERS; i++) {
+        if (monsters[i])
+            activeMonsters++;
+    }
+
+    return activeMonsters == 0;
+}
+
+/**
+ * Returns true if the player has lost.
+ */
+int combatIsLost() {
+    int i, activePlayers;
+
+    activePlayers = 0;
+    for (i = 0; i < c->saveGame->members; i++) {
+        if (party[i])
+            activePlayers++;
+    }
+
+    return activePlayers == 0;
 }
 
 void combatEnd() {
@@ -136,4 +209,36 @@ void combatEnd() {
     }
     
     gameFinishTurn();
+}
+
+int movePartyMember(Direction dir, int member) {
+    int result = 1;
+    int newx, newy;
+
+    newx = party[member]->x;
+    newy = party[member]->y;
+    dirMove(dir, &newx, &newy);
+
+    screenMessage("%s\n", getDirectionName(dir));
+
+    if (MAP_IS_OOB(c->map, newx, newy)) {
+        mapRemoveObject(c->map, party[member]);
+        party[member] = NULL;
+        return result;
+    }
+
+#if 0
+    if (!gameCanMoveOntoTile(c->map, newx, newy)) {
+        screenMessage("Blocked!\n");
+        result = 0;
+        goto done;
+    }
+#endif
+
+    party[member]->x = newx;
+    party[member]->y = newy;
+
+ done:
+
+    return result;
 }
