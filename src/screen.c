@@ -177,6 +177,7 @@ void screenUpdate(int showmap, int blackout) {
                 }
             }
         }
+        screenRedrawMapArea();
     }
 
     else if (showmap) {
