@@ -17,7 +17,7 @@ typedef enum {
 /* flags */
 #define SHOW_AVATAR (1 << 0)
 
-typedef struct MapTag {
+typedef struct _Map {
     char *name;
     unsigned int width, height;
     unsigned int startx, starty;
