@@ -418,10 +418,15 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
         newx = obj->x;
         newy = obj->y;
 
-        m = monsterForTile(obj->tile);
-
+        m = monsterForTile(obj->tile);        
+        
         /* check if the object is an attacking monster */
-        if (m && (m->mattr & MATTR_NOATTACK) == 0) {
+        if (m && ((m->mattr & MATTR_NOATTACK) == 0) &&
+            /* See if the object is a normal monster,
+               or just a docile creature in town */
+            ((obj->person == NULL) || 
+             (obj->person->movement_behavior == MOVEMENT_ATTACK_AVATAR))) {
+
             int distance;
             distance = (newx - avatarx) * (newx - avatarx);
             distance += (newy - avatary) * (newy - avatary);
