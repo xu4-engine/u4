@@ -584,8 +584,8 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         else if ((obj = mapObjectAt(map, x, y, z)) != NULL && (obj->objType != OBJECT_UNKNOWN))
             ontoMonster = 1;
             
-        tile = mapGroundTileAt(map, x, y, z);
-        prev_tile = mapGroundTileAt(map, from_x, from_y, z);        
+        tile = mapTileAt(map, x, y, z);
+        prev_tile = mapTileAt(map, from_x, from_y, z);        
 
         m = monsterForTile(transport);
 
