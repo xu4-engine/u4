@@ -10,6 +10,8 @@
 
 #include "error.h"
 
+using namespace std;
+
 #if defined(_WIN32) || defined(__CYGWIN__)
 
 /*
