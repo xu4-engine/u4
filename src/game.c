@@ -116,6 +116,7 @@ void gameInit() {
 
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
+    playerSetItemStatsChangedCallback(&statsUpdate);
 
     musicPlay();
     screenDrawBackground(BKGD_BORDERS);
