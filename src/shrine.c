@@ -173,6 +173,5 @@ void shrineEject() {
         musicPlay();
     }
 
-    mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
     gameFinishTurn();
 }

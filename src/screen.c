@@ -33,7 +33,7 @@ void screenTextAt(int x, int y, char *fmt, ...) {
     va_end(args);
 
     for (i = 0; i < strlen(buffer); i++)
-	screenShowChar(buffer[i], x + i, y);
+        screenShowChar(buffer[i], x + i, y);
 }
 
 void screenMessage(const char *fmt, ...) {
@@ -64,7 +64,7 @@ void screenMessage(const char *fmt, ...) {
             screenMessage(buffer + i);
             return;
         }
-	screenShowChar(buffer[i], TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+        screenShowChar(buffer[i], TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
         c->col++;
     }
 
@@ -93,14 +93,14 @@ ScreenTileInfo screenViewportTile(int width, int height, int x, int y) {
     /* off the edge of the map: wrap or pad with grass tiles */
     if (MAP_IS_OOB(c->map, tx, ty)) {
         if (c->map->border_behavior == BORDER_WRAP) {
-	    if (tx < 0)
-		tx += c->map->width;
-	    if (ty < 0)
-		ty += c->map->height;
-	    if (tx >= c->map->width)
-		tx -= c->map->width;
-	    if (ty >= c->map->height)
-		ty -= c->map->height;
+            if (tx < 0)
+                tx += c->map->width;
+            if (ty < 0)
+                ty += c->map->height;
+            if (tx >= c->map->width)
+                tx -= c->map->width;
+            if (ty >= c->map->height)
+                ty -= c->map->height;
         }
         else {
             retval.tile = GRASS_TILE;
@@ -108,8 +108,12 @@ ScreenTileInfo screenViewportTile(int width, int height, int x, int y) {
         }
     }
 
-    if ((obj = mapObjectAt(c->map, tx, ty, 0)) &&
-        (!obj->isAvatar || (c->map->flags & SHOW_AVATAR))) {
+    if ((c->map->flags & SHOW_AVATAR) && c->saveGame->x == tx && c->saveGame->y == ty) {
+        retval.hasFocus = 0;
+        retval.tile = c->saveGame->transport;
+        return retval;
+    }
+    else if ((obj = mapObjectAt(c->map, tx, ty))) {
         retval.hasFocus = obj->hasFocus;
         retval.tile = obj->tile;
         return retval;
@@ -130,7 +134,7 @@ void screenUpdate(int showmap) {
         screenFindLineOfSight();
 
     for (y = 0; y < VIEWPORT_H; y++) {
-	for (x = 0; x < VIEWPORT_W; x++) {
+        for (x = 0; x < VIEWPORT_W; x++) {
             if (showmap && screenLos[x][y]) {
                 tileInfo = screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y);
                 screenShowTile(&tileInfo, x, y);

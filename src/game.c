@@ -264,7 +264,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'b':
-        obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, 1);
+        obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y);
         if (obj) {
             if (tileIsShip(obj->tile)) {
                 if (c->saveGame->transport != AVATAR_TILE)
@@ -292,8 +292,6 @@ int gameBaseKeyHandler(int key, void *data) {
                     screenMessage("Board Balloon!\n");
                 }
             }
-            mapRemoveAvatarObject(c->map);
-            mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
         } else
             screenMessage("Board What?\n");
         break;
@@ -306,9 +304,7 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'd':
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_DESCEND) {
-            mapRemoveAvatarObject(c->map);
             gameSetMap(c, portal->destination, 0);
-            mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
             screenMessage("Descend!\n\n");
         } else if (tileIsBalloon(c->saveGame->transport)) {
             screenMessage("Land Balloon\n");
@@ -355,13 +351,11 @@ int gameBaseKeyHandler(int key, void *data) {
                 }
             }
 
-            mapRemoveAvatarObject(c->map);
             annotationClear();  /* clear out world map annotations */
 
             c = gameCloneContext(c);
 
             gameSetMap(c, portal->destination, 1);
-            mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
             musicPlay();
 
         } else
@@ -370,7 +364,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'g':
         screenMessage("Get Chest!\n");
-        if ((obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, 1)) != NULL)
+        if ((obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y)) != NULL)
             tile = obj->tile;
         else
             tile = mapTileAt(c->map, c->saveGame->x, c->saveGame->y);
@@ -414,9 +408,7 @@ int gameBaseKeyHandler(int key, void *data) {
             if (c->saveGame->transport != AVATAR_TILE)
                 screenMessage("Klimb\nOnly on foot!\n");
             else {
-                mapRemoveAvatarObject(c->map);
                 gameSetMap(c, portal->destination, 0);
-                mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
                 screenMessage("Klimb!\n\n");
             }
         } else if (tileIsBalloon(c->saveGame->transport)) {
@@ -535,8 +527,6 @@ int gameBaseKeyHandler(int key, void *data) {
         if (c->saveGame->transport != AVATAR_TILE && c->saveGame->balloonstate == 0) {
             mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
             c->saveGame->transport = AVATAR_TILE;
-            mapRemoveAvatarObject(c->map);
-            mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
             screenMessage("X-it\n");
         } else
             screenMessage("X-it What?\n");
@@ -790,11 +780,9 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     case '5':
     case '6':
     case '7':
-        mapRemoveAvatarObject(c->map);
         moongate = moongateGetGateForPhase(key - '0');
         c->saveGame->x = moongate->x;
         c->saveGame->y = moongate->y;
-        mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
         screenMessage("Gate %d!\n", key - '0');
         break;
         
@@ -1391,7 +1379,9 @@ int gameCanMoveOntoTile(const Map *map, int x, int y) {
     Object *obj;
 
     /* if an object is on the map tile in question, check it instead */
-    if ((obj = mapObjectAt(map, x, y, 0)) != NULL)
+    if (c->saveGame->x == x && c->saveGame->y == y)
+        tile = c->saveGame->transport;
+    else if ((obj = mapObjectAt(map, x, y)) != NULL)
         tile = obj->tile;
     else
         tile = mapTileAt(map, x, y);
@@ -1419,8 +1409,6 @@ int gameCanMoveOntoTile(const Map *map, int x, int y) {
 int moveAvatar(Direction dir, int userEvent) {
     int result = 1;
     int newx, newy;
-
-    mapRemoveAvatarObject(c->map);
 
     if (tileIsBalloon(c->saveGame->transport) && userEvent) {
         screenMessage("Drift Only!\n");
@@ -1522,7 +1510,6 @@ int moveAvatar(Direction dir, int userEvent) {
 
  done:
 
-    mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
     return result;
 }
 
@@ -1624,13 +1611,11 @@ void gameCheckMoongates() {
             else
                 shrineEnter(shrine_spirituality_map.shrine);
 
-            mapRemoveAvatarObject(c->map);
             annotationClear();  /* clear out world map annotations */
 
             c = gameCloneContext(c);
 
             gameSetMap(c, &shrine_spirituality_map, 1);
-            mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
             musicPlay();
         }
     }

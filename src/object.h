@@ -20,7 +20,6 @@ typedef struct _Object {
     unsigned short prevx, prevy;
     ObjectMovementBehavior movement_behavior;
     const struct _Person *person;
-    int isAvatar;
     int hasFocus;
     struct _Object *next;
 } Object;

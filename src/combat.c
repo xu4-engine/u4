@@ -47,7 +47,6 @@ void combatBegin(unsigned char partytile, unsigned short transport) {
     int i;
     GetChoiceActionInfo *info;
 
-    mapRemoveAvatarObject(c->map);
     annotationClear();
 
     c = gameCloneContext(c);
@@ -121,7 +120,5 @@ void combatEnd() {
         musicPlay();
     }
     
-    mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
-
     gameFinishTurn();
 }

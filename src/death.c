@@ -54,7 +54,6 @@ void deathStart() {
     timerCount = 0;
     timerMsg = 0;
 
-    mapRemoveAvatarObject(c->map);
     gameSetViewMode(VIEW_DEAD);
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
@@ -109,7 +108,6 @@ void deathRevive() {
     c->saveGame->y = REVIVE_CASTLE_Y;
     c->saveGame->dngx = REVIVE_WORLD_X;
     c->saveGame->dngy = REVIVE_WORLD_Y;
-    mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
     gameSetViewMode(VIEW_NORMAL);
     musicPlay();
 

@@ -29,7 +29,6 @@ void campEnd(void);
 void campBegin() {
     int i;
 
-    mapRemoveAvatarObject(c->map);
     annotationClear();
 
     c = gameCloneContext(c);
@@ -73,7 +72,6 @@ void campEnd() {
         musicPlay();
     }
 
-    mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
     gameFinishTurn();
 }
 

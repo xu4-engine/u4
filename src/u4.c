@@ -113,7 +113,6 @@ int main(int argc, char *argv[]) {
     }
 
     /* play the game! */
-    mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
     musicPlay();
     screenDrawBackground(BKGD_BORDERS);
     statsUpdate();

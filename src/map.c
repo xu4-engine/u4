@@ -18,6 +18,8 @@
 #include "annotation.h"
 #include "ttype.h"
 #include "area.h"
+#include "context.h"
+#include "savegame.h"
 
 #define MAP_TILE_AT(mapptr, x, y) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 
@@ -218,12 +220,11 @@ int mapReadWorld(Map *map, FILE *world) {
     return 1;
 }
 
-Object *mapObjectAt(const Map *map, int x, int y, int ignoreAvatar) {
+Object *mapObjectAt(const Map *map, int x, int y) {
     Object *obj;
 
     for(obj = map->objects; obj; obj = obj->next) {
-        if (obj->x == x && obj->y == y &&
-            (!ignoreAvatar || !obj->isAvatar))
+        if (obj->x == x && obj->y == y)
             return obj;
     }
     return NULL;
@@ -232,7 +233,7 @@ Object *mapObjectAt(const Map *map, int x, int y, int ignoreAvatar) {
 const Person *mapPersonAt(const Map *map, int x, int y) {
     Object *obj;
 
-    obj = mapObjectAt(map, x, y, 1);
+    obj = mapObjectAt(map, x, y);
     if (obj)
         return obj->person;
     else
@@ -268,7 +269,7 @@ int mapIsWorldMap(const Map *map) {
         map->height == MAP_HEIGHT;
 }
 
-void mapAddPersonObject(Map *map, const Person *person) {
+Object *mapAddPersonObject(Map *map, const Person *person) {
     Object *obj = (Object *) malloc(sizeof(Object));
 
     obj->tile = person->tile0;
@@ -277,14 +278,15 @@ void mapAddPersonObject(Map *map, const Person *person) {
     obj->y = person->starty;
     obj->movement_behavior = person->movement_behavior;
     obj->person = person;
-    obj->isAvatar = 0;
     obj->hasFocus = 0;
     obj->next = map->objects;
 
     map->objects = obj;
+
+    return obj;
 }
 
-void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned short x, unsigned short y) {
+Object *mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned short x, unsigned short y) {
     Object *obj = (Object *) malloc(sizeof(Object));
 
     obj->tile = tile;
@@ -295,29 +297,12 @@ void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned s
     obj->prevy = y;
     obj->movement_behavior = MOVEMENT_FIXED;
     obj->person = NULL;
-    obj->isAvatar = 0;
     obj->hasFocus = 0;
     obj->next = map->objects;
 
     map->objects = obj;
-}
 
-void mapAddAvatarObject(Map *map, unsigned int tile, unsigned short x, unsigned short y) {
-    Object *obj = (Object *) malloc(sizeof(Object));
-
-    obj->tile = tile;
-    obj->prevtile = tile;
-    obj->x = x;
-    obj->y = y;
-    obj->prevx = x;
-    obj->prevy = y;
-    obj->movement_behavior = MOVEMENT_FIXED;
-    obj->person = NULL;
-    obj->isAvatar = 1;
-    obj->hasFocus = 0;
-    obj->next = map->objects;
-
-    map->objects = obj;
+    return obj;
 }
 
 void mapRemoveObject(Map *map, Object *rem) {
@@ -326,24 +311,6 @@ void mapRemoveObject(Map *map, Object *rem) {
     prev = NULL;
     while (obj) {
         if (obj == rem) {
-            if (prev)
-                prev->next = obj->next;
-            else
-                map->objects = obj->next;
-            free(obj);
-            return;
-        }
-        prev = obj;
-        obj = obj->next;
-    }
-}
-
-void mapRemoveAvatarObject(Map *map) {
-    Object *obj = map->objects, *prev;
-
-    prev = NULL;
-    while (obj) {
-        if (obj->isAvatar) {
             if (prev)
                 prev->next = obj->next;
             else
@@ -424,7 +391,9 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
         if ((newx != obj->x || newy != obj->y) &&
             newx >= 0 && newx < map->width &&
             newy >= 0 && newy < map->height) {
-            if ((other = mapObjectAt(map, newx, newy, 0)) != NULL)
+            if (c->saveGame->x == newx && c->saveGame->y == newy)
+                tile = c->saveGame->transport;
+            else if ((other = mapObjectAt(map, newx, newy)) != NULL)
                 tile = obj->tile;
             else
                 tile = mapTileAt(map, newx, newy);
