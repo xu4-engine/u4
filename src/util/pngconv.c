@@ -61,16 +61,18 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
         palette_size = 16;
     else if (bits == 8)
         palette_size = 256;
-    else
-        abort();
+    else 
+        palette_size = 0;
 
-    palette = malloc(sizeof(png_color) * palette_size);        
+    if (palette_size != 0) {
+        palette = malloc(sizeof(png_color) * palette_size);        
 
-    printf("palette size = %d\n", palette_size);
-    if (palette_size == 16)
-        setEgaPalette(palette);
-    else
-        setVgaPalette(palette);
+        printf("palette size = %d\n", palette_size);
+        if (palette_size == 16)
+            setEgaPalette(palette);
+        else
+            setVgaPalette(palette);
+    }
 
     row_pointers = malloc(height * sizeof(png_byte *));
     for (i = 0; i < height; i++) {
@@ -111,15 +113,32 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
 
     png_init_io(png_ptr, fp);
 
-    bit_depth = bits;
-    color_type = PNG_COLOR_TYPE_PALETTE;
+    switch (bits) {
+    case 4:
+    case 8:
+        bit_depth = bits;
+        color_type = PNG_COLOR_TYPE_PALETTE;
+        break;
+    case 24:
+        bit_depth = bits / 3;
+        color_type = PNG_COLOR_TYPE_RGB;
+        break;
+    case 32:
+        bit_depth = bits / 4;
+        color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+        break;
+    default:
+        abort();
+    }
     interlace_type = PNG_INTERLACE_NONE;
     compression_type = PNG_COMPRESSION_TYPE_DEFAULT;
     filter_method = PNG_FILTER_TYPE_DEFAULT;
     png_set_IHDR(png_ptr, info_ptr, (png_uint_32) width, (png_uint_32) height, bit_depth, 
                  color_type, interlace_type, compression_type, filter_method);
 
-    png_set_PLTE(png_ptr, info_ptr, palette, palette_size);
+    if (palette_size != 0)
+        png_set_PLTE(png_ptr, info_ptr, palette, palette_size);
+
     png_set_rows(png_ptr, info_ptr, row_pointers);
 
     png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
@@ -191,17 +210,23 @@ int readEgaFromPng(unsigned char **data, int *height, int *width, int *bits, con
     *height = pheight;
     *width = pwidth;
 
+    if (color_type == PNG_COLOR_TYPE_PALETTE)
+        *bits = bit_depth;
+    else if (color_type == PNG_COLOR_TYPE_RGB)
+        *bits = bit_depth * 3;
+    else if (color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+        *bits = bit_depth * 4;
+
     row_pointers = png_get_rows(png_ptr, info_ptr);
 
-    *data = (unsigned char *) malloc(pwidth * pheight * bit_depth / 8);
+    *data = (unsigned char *) malloc(pwidth * pheight * (*bits) / 8);
 
     p = *data;
     for (i = 0; i < pheight; i++) {
-        for (j = 0; j < pwidth * bit_depth / 8; j++) {
+        for (j = 0; j < pwidth * (*bits) / 8; j++) {
             *p++ = row_pointers[i][j];
         }
     }
-    *bits = bit_depth;
 
     fclose(fp);
 
