@@ -26,6 +26,10 @@ typedef enum {
     SPELLPRM_FROMDIR            /* direction from required (winds) */
 } SpellParam;
 
+typedef struct _Mixture {
+    unsigned short reagents[REAG_MAX];
+} Mixture;
+
 typedef struct _Spell {
     const char *name;
     int components;
@@ -35,8 +39,11 @@ typedef struct _Spell {
     int mp;
 } Spell;
 
+Mixture *mixtureNew();
+void mixtureDelete(Mixture *mix);
+void mixtureAddReagent(Mixture *mix, Reagent reagent);
 const char *spellGetName(unsigned int spell);
-int spellMix(unsigned int spell, int n_regs, int *regs);
+int spellMix(unsigned int spell, const Mixture *mix);
 SpellParam spellGetParamType(unsigned int spell);
 int spellCast(unsigned int spell, int character, int param, SpellCastError *error);
 

@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "u4.h"
@@ -92,6 +93,23 @@ const Spell spells[] = {
 
 #define N_SPELLS (sizeof(spells) / sizeof(spells[0]))
 
+Mixture *mixtureNew() {
+    Mixture *mix = malloc(sizeof(Mixture));
+    memset(mix, 0, sizeof(Mixture));
+    return mix;
+}
+
+void mixtureDelete(Mixture *mix) {
+    memset(mix, 0, sizeof(Mixture));
+    free(mix);
+}
+
+void mixtureAddReagent(Mixture *mix, Reagent reagent) {
+    assert(reagent < REAG_MAX);
+    c->saveGame->reagents[reagent]--;
+    mix->reagents[reagent]++;
+}
+
 const char *spellGetName(unsigned int spell) {
     assert(spell < N_SPELLS);
 
@@ -102,17 +120,15 @@ const char *spellGetName(unsigned int spell) {
  * Mix reagents for a spell.  Fails and returns false if the reagents
  * selected were not correct.
  */
-int spellMix(unsigned int spell, int n_regs, int *regs) {
-    int regmask, i;
+int spellMix(unsigned int spell, const Mixture *mix) {
+    int regmask, reg;
 
     assert(spell < N_SPELLS);
 
     regmask = 0;
-    for (i = 0; i < n_regs; i++) {
-        assert(regs[i] < REAG_MAX);
-        regmask |= (1 << regs[i]);
-        assert(c->saveGame->reagents[regs[i]] > 0);
-        c->saveGame->reagents[regs[i]]--;
+    for (reg = 0; reg < REAG_MAX; reg++) {
+        if (mix->reagents[reg] > 0)
+            regmask |= (1 << reg);
     }
 
     if (regmask != spells[spell].components)
@@ -233,6 +249,16 @@ static int spellDispel(int dir) {
 }
 
 static int spellEField(int dir) {
+    int x, y;
+
+    x = c->saveGame->x;
+    y = c->saveGame->y;
+    dirMove(dir, &x, &y);
+    if (MAP_IS_OOB(c->map, x, y))
+        return 0;
+
+    annotationAdd(x, y, -1, LIGHTNINGFIELD_TILE);
+
     return 1;
 }
 
@@ -321,6 +347,7 @@ static int spellView(int unsued) {
 }
 
 static int spellWinds(int fromdir) {
+    c->windDirection = fromdir;
     return 1;
 }
 
