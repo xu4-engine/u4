@@ -242,7 +242,8 @@ int u4fgetc(U4FILE *f) {
 }
 
 int u4fgetshort(U4FILE *f) {
-    return u4fgetc(f) | (u4fgetc(f) << 8);
+    int byteLow = u4fgetc(f);
+    return byteLow | (u4fgetc(f) << 8);
 }
 
 int u4fputc(int c, U4FILE *f) {
