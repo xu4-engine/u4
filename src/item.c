@@ -159,6 +159,9 @@ void putItemInInventory(void *item) {
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
+/**
+ * Use bell, book, or candle on the entrance to the Abyss
+ */
 void useBBC(void *item) {
     /* on top of the Abyss entrance */
     if (c->location->x == 0xe9 && c->location->y == 0xe9) {
@@ -183,12 +186,18 @@ void useBBC(void *item) {
     else screenMessage("\nHmm...No effect!\n");
 }
 
+/**
+ * Uses the silver horn
+ */
 void useHorn(void *item) {
     screenMessage("\nThe Horn sounds an eerie tone!\n");
     c->aura = AURA_HORN;
     c->auraDuration = 10;
 }
 
+/**
+ * Uses the wheel (if on board a ship)
+ */
 void useWheel(void *item) {
     if ((c->transportContext == TRANSPORT_SHIP) && (c->saveGame->shiphull == 50)) {
         screenMessage("\nOnce mounted, the Wheel glows with a blue light!\n");
@@ -197,6 +206,9 @@ void useWheel(void *item) {
     else screenMessage("\nHmm...No effect!\n");    
 }
 
+/**
+ * Uses or destroys the skull of Mondain
+ */
 void useSkull(void *item) {
     
     /* destroy the skull! pat yourself on the back */
@@ -220,6 +232,9 @@ void useSkull(void *item) {
     }
 }
 
+/**
+ * Handles using the virtue stones in dungeon altar rooms and on dungeon altars
+ */
 void useStone(void *item) {
     int x, y, z;
     static int needStoneNames = 0;
@@ -373,6 +388,9 @@ void putReagentInInventory(void *reag) {
     }
 }
 
+/**
+ * Returns true if the specified conditions are met to be able to get the item
+ */
 int itemConditionsMet(unsigned char conditions) {
     int i;
 
@@ -411,6 +429,9 @@ const ItemLocation *itemAtLocation(const Map *map, int x, int y, int z) {
     return NULL;
 }
 
+/**
+ * Uses the item indicated by 'shortname'
+ */
 void itemUse(const char *shortname) {
     int i;
     const ItemLocation *item = NULL;
@@ -443,6 +464,9 @@ void itemUse(const char *shortname) {
         screenMessage("\nNot a Usable item!\n");
 }
 
+/**
+ * Checks to see if the abyss was opened
+ */
 int isAbyssOpened(const Portal *p) {
     /* make sure the bell, book and candle have all been used */
     int items = c->saveGame->items;
@@ -453,6 +477,9 @@ int isAbyssOpened(const Portal *p) {
     return isopened;
 }
 
+/**
+ * handles naming of stones when used
+ */
 int nameStones(const char *color) {
     int i;
     int found = 0;
@@ -469,8 +496,9 @@ int nameStones(const char *color) {
     
     if (!found) {
         screenMessage("\nNone owned!\n");
+        eventHandlerPopKeyHandler();
         (*c->location->finishTurn)();
     }
-
+    
     return 1;
 }

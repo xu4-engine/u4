@@ -605,6 +605,16 @@ int combatBaseKeyHandler(int key, void *data) {
         screenMessage("Pass\n");
         break;
 
+    case U4_FKEY:
+        {
+            extern void gameDestroyAllMonsters();
+
+            if (settings->debug)
+                gameDestroyAllMonsters();
+            else valid = 0;
+            break;
+        }
+
     case 'a':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &combatAttackAtCoord;
