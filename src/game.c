@@ -1158,12 +1158,12 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         break;
     case 'w':
         c->windDirection++;
-        if (c->windDirection >= DIR_SOUTH)
+        if (c->windDirection > DIR_SOUTH)
             c->windDirection = DIR_WEST;
         screenMessage("Change Wind Direction\n");
         break;
 
-    case ' ': 
+    case ' ':
         screenMessage("Nothing\n");
         break;
 
