@@ -1,4 +1,4 @@
-<!ELEMENT config ( armors, egaPalette, graphics, maps, music, sound, weapons ) >
+<!ELEMENT config ( armors, tileRules, tilesets, egaPalette, graphics, maps, music, sound, weapons ) >
 
 <!ELEMENT sound ( track+ ) >
 

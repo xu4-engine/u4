@@ -17,7 +17,7 @@ class TileMap {
 public:
     typedef std::map<string, TileIndexMap*> TileIndexMapMap;
     
-    static void loadAll(string filename);
+    static void loadAll();
     static void unloadAll();
     static void load(string filename);
     static TileIndexMap* get(string name);

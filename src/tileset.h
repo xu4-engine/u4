@@ -45,14 +45,13 @@ public:
     typedef std::map<TileId, Tile*> TileIdMap;
     typedef std::map<string, Tile*> TileStrMap;
 
-    static void loadAll(string filename);
+    static void loadAll();
     static void unloadAll();
     static Tileset* get(string name);
     static TileId getNextTileId();
     static Tile* findTileByName(string name);        
     static Tileset* get(void);
-    static void set(Tileset*);
-    static ImageInfo* getImageInfo();
+    static void set(Tileset*);    
 
 public:
     void load(string filename);
@@ -61,14 +60,12 @@ public:
     Tile* getByName(string name);
     string getImageName() const;
     unsigned int numTiles() const;
-    unsigned int numFrames() const;
-    void loadImage();
+    unsigned int numFrames() const;    
     
 private:
     static TilesetMap tilesets;
     static TileId currentId;    
-    static Tileset* current;
-    static ImageInfo *tilesInfo;
+    static Tileset* current;    
 
     string name;
     TileIdMap tiles;

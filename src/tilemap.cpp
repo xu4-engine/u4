@@ -4,12 +4,17 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <vector>
+
 #include "tilemap.h"
 
+#include "config.h"
 #include "debug.h"
 #include "error.h"
 #include "tileset.h"
 #include "xml.h"
+
+using std::vector;
 
 Debug dbg("debug/tilemap.txt", "TileMap");
 
@@ -21,29 +26,29 @@ TileMap::TileIndexMapMap TileMap::tileMaps;
 /**
  * Load all tilemaps from the specified xml file
  */
-void TileMap::loadAll(string filename) {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;    
+void TileMap::loadAll() {
+    const Config *config = Config::getInstance();    
+    vector<ConfigElement> conf;
+
+    /* FIXME: make sure tilesets are loaded by now */    
 
     TRACE_LOCAL(dbg, "Unloading all tilemaps");
     unloadAll();
 
     /* open the filename for the tileset and parse it! */
-    TRACE_LOCAL(dbg, string("Parsing ") + filename);
-    doc = xmlParse(filename.c_str());
-    root = xmlDocGetRootElement(doc);    
+    TRACE_LOCAL(dbg, "Loading tilemaps from config");
+    conf = config->getElement("/config/tilesets").getChildren();    
     
     /* load all of the tilemaps */
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tilemap") != 0)            
-            continue;            
-     
-        /* get filename of the tilemap */
-        string tilemapFilename = xmlGetPropAsStr(node, "file");
+    for (std::vector<ConfigElement>::iterator i = conf.begin(); i != conf.end(); i++) {
+        if (i->getName() == "tilemap") {
+            /* get filename of the tilemap */
+            string tilemapFilename = i->getString("file");
         
-        /* load the tilemap ! */
-        TRACE(dbg, string("Loading tilemap: ") + tilemapFilename);
-        load(tilemapFilename);        
+            /* load the tilemap ! */
+            TRACE(dbg, string("Loading tilemap: ") + tilemapFilename);
+            load(tilemapFilename);
+        }
     }
 }
  

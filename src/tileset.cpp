@@ -150,47 +150,42 @@ bool TileRule::initFromConf(const ConfigElement &conf) {
 TileId              Tileset::currentId = 0;
 Tileset::TilesetMap Tileset::tilesets;    
 Tileset*            Tileset::current = NULL;
-ImageInfo*          Tileset::tilesInfo = NULL;
 
 /**
  * Loads all tilesets using the filename
  * indicated by 'filename' as a definition
  */
-void Tileset::loadAll(string filename) {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;
+void Tileset::loadAll() {    
     Debug dbg("debug/tileset.txt", "Tileset");
+    const Config *config = Config::getInstance();    
+    vector<ConfigElement> conf;
 
     TRACE(dbg, "Unloading all tilesets");    
     unloadAll();
 
     /* open the filename for the tileset and parse it! */
-    TRACE_LOCAL(dbg, string("Parsing ") + filename);
-    doc = xmlParse(filename.c_str());
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "tilesets") != 0)
-        errorFatal("malformed %s", filename.c_str());
-
+    TRACE_LOCAL(dbg, "Loading tilesets info from config");
+    conf = config->getElement("/config/tilesets").getChildren();
+    
     /* load tile rules from xml */
     TRACE_LOCAL(dbg, "Loading tile rules");
     if (!TileRule::rules.size())
         TileRule::load();
 
     /* load all of the tilesets */
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tileset") != 0)            
-            continue;
+    for (std::vector<ConfigElement>::iterator i = conf.begin(); i != conf.end(); i++) {
+        if (i->getName() == "tileset") {
+            Tileset *tileset = new Tileset;
 
-        Tileset *tileset = new Tileset;
-        
-        /* get filename of each tileset */
-        string tilesetFilename = xmlGetPropAsStr(node, "file");
-        /* load the tileset! */
+            /* get filename of each tileset */
+            string tilesetFilename = i->getString("file");
 
-        TRACE_LOCAL(dbg, string("Loading tileset: ") + tilesetFilename);
-        tileset->load(tilesetFilename);
+            /* load the tileset! */
+            TRACE_LOCAL(dbg, string("Loading tileset: ") + tilesetFilename);
+            tileset->load(tilesetFilename);
 
-        tilesets[tileset->name] = tileset;
+            tilesets[tileset->name] = tileset;
+        }
     }
 
     /* make the current tileset the first one encountered */
@@ -200,7 +195,7 @@ void Tileset::loadAll(string filename) {
     /* load tile maps from xml, including translations from index to id */
     TRACE_LOCAL(dbg, "Loading tilemaps");
     if (!TileMap::size())
-        TileMap::loadAll(filename);
+        TileMap::loadAll();
 
     TRACE(dbg, "Successfully Loaded Tilesets");
 }
@@ -214,11 +209,6 @@ void Tileset::unloadAll() {
     // unload all tilemaps
     TileMap::unloadAll();
     
-    // This doesn't unload the tiles info -- that happens elsewhere
-    // This simply ensures that we have a valid pointer if the game images
-    // are reloaded for some reason.
-    tilesInfo = NULL;
-
     for (i = tilesets.begin(); i != tilesets.end(); i++) {
         i->second->unload();
         delete i->second;
@@ -270,13 +260,6 @@ Tileset* Tileset::get(void) {
  */ 
 void Tileset::set(Tileset* t) {
     current = t;
-}
-
-/**
- * Returns a pointer to the current image info
- */ 
-ImageInfo* Tileset::getImageInfo() {
-    return tilesInfo;
 }
 
 /**

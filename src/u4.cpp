@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     perf.end("Misc Initialization");
 
     perf.start();
-    Tileset::loadAll("tilesets.xml");
+    Tileset::loadAll();
     perf.end("Tileset::loadAll()");
 
     perf.start();
