@@ -15,6 +15,7 @@
 #include "u4file.h"
 #include "savegame.h"
 #include "player.h"
+#include "music.h"
 
 #define INTRO_TEXT_OFFSET 17445
 #define INTRO_MAP_OFFSET 30339
@@ -202,6 +203,8 @@ int introInit() {
 
     introUpdateScreen();
 
+    musicIntro();
+
     return 1;
 }
 
@@ -286,6 +289,17 @@ int introKeyHandler(int key, void *data) {
         case 'q':
             quit = 1;
             eventHandlerSetExitFlag(1);
+            break;
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            musicIntroSwitch(key - '0');
             break;
         default:
             valid = 0;
