@@ -709,7 +709,7 @@ void IntroController::initiateNewGame() {
     screenRedrawScreen();
 
     ReadStringController nameCont(12, 12, 20);
-    eventHandler.pushController(&nameCont);
+    eventHandler->pushController(&nameCont);
     nameBuffer = nameCont.waitFor();
 
     if (nameBuffer[0] == '\0') {
@@ -726,7 +726,7 @@ void IntroController::initiateNewGame() {
     screenShowCursor();
 
     ReadChoiceController sexCont("mf");
-    eventHandler.pushController(&sexCont);
+    eventHandler->pushController(&sexCont);
     int sexChoice = sexCont.waitFor();
 
     if (sexChoice == 'm')
@@ -766,7 +766,7 @@ void IntroController::showStory() {
             screenDrawImage(BKGD_ABACUS);
         showText(introText[storyInd]);
     
-        eventHandler.pushController(&pauseController);
+        eventHandler->pushController(&pauseController);
         pauseController.waitFor();
     }
     startQuestions();
@@ -800,12 +800,12 @@ void IntroController::startQuestions() {
         screenTextAt(0, 22, "\"Consider this:\"");
         screenSetCursorPos(16, 22);
 
-        eventHandler.pushController(&pauseController);
+        eventHandler->pushController(&pauseController);
         pauseController.waitFor();
 
         showText(getQuestion(questionTree[questionRound * 2], questionTree[questionRound * 2 + 1]));
 
-        eventHandler.pushController(&questionController);
+        eventHandler->pushController(&questionController);
         int choice = questionController.waitFor();
 
         if (doQuestion(choice == 'a' ? 0 : 1)) {
@@ -841,12 +841,12 @@ void IntroController::startQuestions() {
             // show the text thats segues into the main game
             showText(introGypsy[GYP_SEGUE1]);
 
-            eventHandler.pushController(&pauseController);
+            eventHandler->pushController(&pauseController);
             pauseController.waitFor();
 
             showText(introGypsy[GYP_SEGUE2]);
 
-            eventHandler.pushController(&pauseController);
+            eventHandler->pushController(&pauseController);
             pauseController.waitFor();
 
             // done: exit intro and let game begin
@@ -916,7 +916,7 @@ void IntroController::about() {
     screenHideCursor();
 
     ReadChoiceController pauseController("");
-    eventHandler.pushController(&pauseController);
+    eventHandler->pushController(&pauseController);
     pauseController.waitFor();
 
     mode = INTRO_MENU;
@@ -1566,7 +1566,7 @@ void IntroController::introSpeedOptionsMenuItemActivate(MenuItem *menuItem, Acti
     
         /* re-initialize events */
         eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
-        eventHandler.getTimer()->reset(eventTimerGranularity);            
+        eventHandler->getTimer()->reset(eventTimerGranularity);            
         
         intro->mode = INTRO_CONFIG_ADVANCED;
         break;

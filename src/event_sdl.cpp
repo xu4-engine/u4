@@ -7,10 +7,11 @@
 #include <SDL.h>
 #include "u4.h"
 
+#include "event.h"
+
 #include "context.h"
 #include "debug.h"
 #include "error.h"
-#include "event.h"
 #include "screen.h"
 #include "settings.h"
 #include "u4_sdl.h"
@@ -210,7 +211,7 @@ void EventHandler::sleep(unsigned int usec) {
     SDL_Delay(usec);
 }
 
-void EventHandler::main() {
+void EventHandler::run() {
     if (updateScreen)
         (*updateScreen)();
     screenRedrawScreen();
@@ -279,7 +280,7 @@ void EventHandler::main() {
 
             if (button > 2)
                 button = 0;
-            area = eventHandler.mouseAreaForPoint(event.button.x, event.button.y);
+            area = eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
             if (!area || area->command[button] == 0)
                 break;
             controller->keyPressed(area->command[button]);            
@@ -289,22 +290,24 @@ void EventHandler::main() {
             break;
         }
 
-        case SDL_MOUSEMOTION:
+        case SDL_MOUSEMOTION: {
             if (!settings.mouseOptions.enabled)
                 break;
 
-            area = eventHandler.mouseAreaForPoint(event.button.x, event.button.y);
+            area = eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
             if (area)
                 screenSetMouseCursor(area->cursor);
             else
                 screenSetMouseCursor(MC_DEFAULT);
             break;
+        }
 
-        case SDL_USEREVENT:
-            eventHandler.getTimer()->tick();            
+        case SDL_USEREVENT: {
+            eventHandler->getTimer()->tick();            
             break;
+        }
 
-        case SDL_ACTIVEEVENT:
+        case SDL_ACTIVEEVENT: {
             if (event.active.state & SDL_APPACTIVE) {            
                 // application was previously iconified and is now being restored
                 if (event.active.gain) {
@@ -314,6 +317,7 @@ void EventHandler::main() {
                 }                
             }
             break;
+        }
 
         case SDL_QUIT:
             ::exit(0);

@@ -49,16 +49,16 @@ void campBegin(void) {
     c->combat->initCamping();
     c->combat->begin();    
     
-    eventHandler.pushKeyHandler(&KeyHandler::ignoreKeys);
-    eventHandler.getTimer()->add(&campTimer, settings.gameCyclesPerSecond * settings.campTime);
+    eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
+    eventHandler->getTimer()->add(&campTimer, settings.gameCyclesPerSecond * settings.campTime);
 
     screenMessage("Resting...\n");
     screenDisableCursor();
 }
 
 void campTimer(void *data) {
-    eventHandler.getTimer()->remove(&campTimer);
-    eventHandler.popKeyHandler();
+    eventHandler->getTimer()->remove(&campTimer);
+    eventHandler->popKeyHandler();
     screenEnableCursor();
 
     /* Is the party ambushed during their rest? */
@@ -84,7 +84,7 @@ void campTimer(void *data) {
 void campEnd(void) {
     int i, healed = 0;    
 
-    eventHandler.popKeyHandler();
+    eventHandler->popKeyHandler();
     gameExitToParentMap();
     musicFadeIn(CAMP_FADE_IN_TIME, 1);
     
@@ -134,21 +134,21 @@ void innBegin(void) {
     c->party->setTransport(Tileset::findTileByName("corpse")->id);
     gameUpdateScreen();
 
-    eventHandler.pushKeyHandler(&KeyHandler::ignoreKeys);
-    eventHandler.getTimer()->add(&innTimer, settings.gameCyclesPerSecond * settings.innTime);
+    eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
+    eventHandler->getTimer()->add(&innTimer, settings.gameCyclesPerSecond * settings.innTime);
 
     screenDisableCursor();
 }
 
 void innTimer(void *data) {
-    eventHandler.getTimer()->remove(&innTimer);    
+    eventHandler->getTimer()->remove(&innTimer);    
 
     /**
      * FIXME: normally we would "pop" the key handler
      * here, but for some reason the "ignore key"
      * handler doesn't pop every time.  Weird...
      **/
-    eventHandler.setKeyHandler(&gameBaseKeyHandler);
+    eventHandler->setKeyHandler(&gameBaseKeyHandler);
     screenEnableCursor();
 
     /* restore the avatar to normal */

@@ -205,7 +205,7 @@ int codexHandleWOP(string *word) {
     static int tries = 1;
     int i;
 
-    eventHandler.popKeyHandler();    
+    eventHandler->popKeyHandler();    
 
     /* slight pause before continuing */
     screenMessage("\n");    
@@ -270,7 +270,7 @@ int codexHandleVirtues(string *virtue) {
     static int current = 0;
     static int tries = 1;
 
-    eventHandler.popKeyHandler();
+    eventHandler->popKeyHandler();
 
     /* slight pause before continuing */    
     screenMessage("\n");
@@ -326,7 +326,7 @@ int codexHandleVirtues(string *virtue) {
             EventHandler::sleep(3000);
             screenEnableCursor();
             screenMessage("\nAbove the din, the voice asks:\n\nIf all eight virtues of the Avatar combine into and are derived from the Three Principles of Truth, Love and Courage...");
-            eventHandler.pushKeyHandler(&codexHandleInfinityAnyKey);
+            eventHandler->pushKeyHandler(&codexHandleInfinityAnyKey);
         }
     }
     
@@ -350,7 +350,7 @@ int codexHandleVirtues(string *virtue) {
 }
 
 bool codexHandleInfinityAnyKey(int key, void *data) {
-    eventHandler.popKeyHandler();
+    eventHandler->popKeyHandler();
 
     screenMessage("\n\nThen what is the one thing which encompasses and is the whole of all undeniable Truth, unending Love, and unyielding Courage?\n\n");
     gameGetInput(&codexHandleInfinity, &codexInputBuffer);
@@ -360,7 +360,7 @@ bool codexHandleInfinityAnyKey(int key, void *data) {
 int codexHandleInfinity(string *answer) {
     static int tries = 1;
 
-    eventHandler.popKeyHandler();
+    eventHandler->popKeyHandler();
 
     /* slight pause before continuing */    
     screenMessage("\n");
@@ -373,12 +373,12 @@ int codexHandleInfinity(string *answer) {
         
         screenEnableCursor();
         screenMessage("\n%s", codexEndgameText1[0].c_str());
-        eventHandler.pushKeyHandler(&codexHandleEndgameAnyKey); 
+        eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey); 
     }
     else if (tries++ < 3) {
         codexImpureThoughts();
         screenMessage("\nAbove the din, the voice asks:\n\nIf all eight virtues of the Avatar combine into and are derived from the Three Principles of Truth, Love and Courage...");
-        eventHandler.pushKeyHandler(&codexHandleInfinityAnyKey);
+        eventHandler->pushKeyHandler(&codexHandleInfinityAnyKey);
     }
     else codexEject(CODEX_EJECT_BAD_INFINITY);
 
@@ -388,7 +388,7 @@ int codexHandleInfinity(string *answer) {
 bool codexHandleEndgameAnyKey(int key, void *data) {
     static int index = 1;
 
-    eventHandler.popKeyHandler();
+    eventHandler->popKeyHandler();
 
     if (index < 10) {
 
@@ -408,13 +408,13 @@ bool codexHandleEndgameAnyKey(int key, void *data) {
             screenMessage(codexEndgameText2[index-7].c_str());
     
         index++;
-        eventHandler.pushKeyHandler(&codexHandleEndgameAnyKey);
+        eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey);
     }
     else {
         /* CONGRATULATIONS!... you have completed the game in x turns */    
         screenDisableCursor();
         screenMessage("%s%d%s", codexEndgameText2[index-7].c_str(), c->saveGame->moves, codexEndgameText2[index-6].c_str());
-        eventHandler.pushKeyHandler(&KeyHandler::ignoreKeys);        
+        eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);        
     }
 
     return true;

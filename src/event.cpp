@@ -17,11 +17,17 @@
 #include "settings.h"
 
 int eventTimerGranularity = 250;
-EventHandler eventHandler;
 
 extern bool quit;
 bool EventHandler::exit = false;
 unsigned int TimedEventMgr::instances = 0;
+
+EventHandler *EventHandler::instance = NULL;
+EventHandler *EventHandler::getInstance() {
+    if (instance == NULL) 
+        instance = new EventHandler();
+    return instance;
+}
 
 void EventHandler::setExitFlag(bool xit) { exit = xit; }     /**< Sets the global exit flag for the event handler */
 bool EventHandler::getExitFlag()         { return exit; }    /**< Returns the current value of the global exit flag */
@@ -129,7 +135,7 @@ bool keyHandlerGetChoice(int key, void *data) {
 
     if (info->choices.find_first_of(key) < info->choices.length()) {
         if ((*info->handleChoice)(key))
-            //eventHandler.popKeyHandlerData();
+            //eventHandler->popKeyHandlerData();
 
         return true;
     }    
@@ -172,7 +178,7 @@ bool keyHandlerReadBuffer(int key, void *data) {
 
     } else if (key == '\n' || key == '\r') {
         if ((*info->handleBuffer)(info->buffer))
-            ;//eventHandler.popKeyHandlerData();
+            ;//eventHandler->popKeyHandlerData();
         else
             info->screenX -= info->buffer->length();
     }    
@@ -238,7 +244,7 @@ bool ReadStringController::keyPressed(int key) {
 
     } else if (key == '\n' || key == '\r') {
         if (exitWhenDone)
-            eventHandler.setExitFlag(true);
+            eventHandler->setExitFlag(true);
     }    
     else {
         valid = false;
@@ -253,9 +259,9 @@ string ReadStringController::getString() {
 
 string ReadStringController::waitFor() {
     exitWhenDone = true;
-    eventHandler.main();
-    eventHandler.setExitFlag(false);
-    eventHandler.popController();
+    eventHandler->run();
+    eventHandler->setExitFlag(false);
+    eventHandler->popController();
     return value;
 }
 
@@ -272,7 +278,7 @@ bool ReadChoiceController::keyPressed(int key) {
 
     if (choices.empty() || choices.find_first_of(choice) < choices.length()) {
         if (exitWhenDone)
-            eventHandler.setExitFlag(true);
+            eventHandler->setExitFlag(true);
         return true;
     }
 
@@ -284,9 +290,9 @@ int ReadChoiceController::getChoice() {
 }
 
 int ReadChoiceController::waitFor() {
-    exitWhenDone = true;
-    eventHandler.main();
-    eventHandler.setExitFlag(false);
-    eventHandler.popController();
+    exitWhenDone = true;    
+    eventHandler->run();
+    eventHandler->setExitFlag(false);
+    eventHandler->popController();
     return choice;
 }

@@ -104,13 +104,13 @@ int main(int argc, char *argv[]) {
         if (settings.debug)
             perf.report();
 
-        eventHandler.pushController(intro);
-        eventHandler.main();
-        eventHandler.popController();
+        eventHandler->pushController(intro);
+        eventHandler->run();
+        eventHandler->popController();
         intro->deleteIntro();
     }
 
-    eventHandler.setExitFlag(false);
+    eventHandler->setExitFlag(false);
     if (quit)
         return 0;
 
@@ -131,14 +131,14 @@ int main(int argc, char *argv[]) {
     if (settings.debug)
         perf.report("\n===============================\n\n");
 
-    eventHandler.getTimer()->add(&gameTimer, 1);
-    eventHandler.pushKeyHandler(&gameBaseKeyHandler);
-    eventHandler.setScreenUpdate(&gameUpdateScreen);
-    eventHandler.main();
+    eventHandler->getTimer()->add(&gameTimer, 1);
+    eventHandler->pushKeyHandler(&gameBaseKeyHandler);
+    eventHandler->setScreenUpdate(&gameUpdateScreen);
+    eventHandler->run();
 
     /* main event handler returned - cleanup and exit! */
-    eventHandler.getTimer()->remove(&gameTimer);
-    eventHandler.popKeyHandler();
+    eventHandler->getTimer()->remove(&gameTimer);
+    eventHandler->popKeyHandler();
 
     Tileset::unloadAll();
     

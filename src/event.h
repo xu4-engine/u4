@@ -14,6 +14,8 @@
 
 using std::string;
 
+#define eventHandler (EventHandler::getInstance())
+
 #define U4_UP           '['
 #define U4_DOWN         '/'
 #define U4_LEFT         ';'
@@ -206,6 +208,7 @@ public:
     EventHandler();    
 
     /* Static functions */    
+    static EventHandler *getInstance();
     static void sleep(unsigned int usec);    
     static void setExitFlag(bool exit = true);
     static bool getExitFlag();
@@ -214,8 +217,8 @@ public:
     /* Member functions */
     TimedEventMgr* getTimer();
 
-    /* Event functions */
-    void main();
+    /* Event functions */    
+    void run();
     void setScreenUpdate(void (*updateScreen)(void));
 
     /* Controller functions */
@@ -242,11 +245,12 @@ protected:
     std::vector<Controller *> controllers;
     MouseAreaList mouseAreaSets;
     void (*updateScreen)(void);
+
+private:
+    static EventHandler *instance;
 };
 
 bool keyHandlerGetChoice(int key, void *data);
 bool keyHandlerReadBuffer(int key, void *data);
-
-extern EventHandler eventHandler;
 
 #endif
