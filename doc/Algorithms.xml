@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="Algorithms.xsl"?>
+<algorithms>
+    <intro>        
+        The following are the algorithms used by xu4.  Most of them are exact matches
+        to the original Ultima IV, while others are simply guessed. Algorithms have a
+        certain level of accuracy to the original Ultima IV, which is indicated by the
+        "Accuracy" column.
+        
+        Values are:
+                exact   - Exact emulation of the original Ultima IV behavior
+                near    - Near-exact emulation
+                unknown - Level of accuracy unknown        
+    </intro>
+    
+    <section name="Camping">
+        <algorithm desc="Ambushed during rest?" prec="exact">
+            <line>random(8) == 0</line>
+        </algorithm>
+        <algorithm desc="Healed after camping?" prec="exact">
+            <line>(((moves/100) >= 0x10000) || (((moves/100) &amp; 0xffff) != lastcamp))</line>
+            <line>lastcamp = (moves/100) &amp; 0xffff</line>
+        </algorithm>
+        <algorithm desc="Ambushed by rats at inn?" prec="unknown">
+            <line>random(4) == 0</line>
+        </algorithm>
+        <algorithm desc="Visited by Isaac the Ghost?" prec="unknown">
+            <line>(map == Skara Brae) &amp;&amp; (random(4) == 0)</line>
+        </algorithm>
+    </section>
+
+    <section name="Combat">
+        <algorithm desc="Place monster's leader's leader" prec="exact">
+            <line>random(32) == 0</line>
+        </algorithm>
+        <algorithm desc="Place monster's leader" prec="exact">
+            <line>!placedLeadersLeader &amp;&amp; (random(8) == 0)</line>
+        </algorithm>
+        <algorithm desc="# of creatures (town)" prec="exact">
+            <line>if (guard)<line>ncreatures = numPartyMembers * 2</line></line>
+            <line>else<line>ncreatures = 1</line></line>
+        </algorithm>
+        <algorithm desc="# of creatures (normal)" prec="near">
+            <line>ncreatures = random(8) + 1</line>
+            <line>if (ncreatures == 1) {
+                <line>if (creature->encountersize == 0)
+                    <line>ncreatures = random(creature->encountersize) + creature->encountersize + 1</line></line>
+                <line>else ncreatures = 8</line>
+            </line>
+            <line>}</line>
+            <line>while (ncreatures > (2 * numPartyMembers))
+                <line>ncreatures = random(16) + 1</line>
+            </line>
+            </algorithm>
+        <algorithm desc="Does player get an extra turn?" prec="near">
+            <line>(aura == quick) &amp;&amp; playerIsNotDisabled &amp;&amp; (random(2) == 0)</line>
+        </algorithm>
+        <algorithm desc="Does player wake up?" prec="exact">
+            <line>random(8) == 0</line>
+        </algorithm>
+    </section>
+</algorithms>
