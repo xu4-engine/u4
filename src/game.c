@@ -304,7 +304,8 @@ void gameFinishTurn() {
     Object *attacker;
 
     /* apply effects from tile avatar is standing on */
-    playerApplyEffect(c->saveGame, tileGetEffect(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
+    if (c->saveGame->transport == AVATAR_TILE)
+        playerApplyEffect(c->saveGame, tileGetEffect(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
 
     while (1) {
         /* adjust food and moves */
@@ -318,19 +319,22 @@ void gameFinishTurn() {
 
         gameCheckHullIntegrity();
 
-        attacker = mapMoveObjects(c->location->map, c->location->x, c->location->y, c->location->z);        
+        /* Monsters cannot spawn, move or attack while the avatar is on the balloon */
+        if (!c->saveGame->balloonstate) {
+            attacker = mapMoveObjects(c->location->map, c->location->x, c->location->y, c->location->z);        
 
-        if (attacker) {
-            gameMonsterAttack(attacker);
-            return;
+            if (attacker) {
+                gameMonsterAttack(attacker);
+                return;
+            }       
+
+            gameCheckRandomMonsters();
         }
 
         /* update map annotations and the party stats */
         annotationCycle();
         c->statsItem = STATS_PARTY_OVERVIEW;
         statsUpdate();
-
-        gameCheckRandomMonsters();
 
         if (!playerPartyImmobilized(c->saveGame))
             break;
@@ -466,10 +470,17 @@ int gameBaseKeyHandler(int key, void *data) {
     case U4_DOWN:
     case U4_LEFT:
     case U4_RIGHT:
-        moveAvatar(keyToDirection(key), 1);
-        /* horse doubles speed */
-        if (tileIsHorse(c->saveGame->transport) && c->horseSpeed)
-            moveAvatar(keyToDirection(key), 0);
+        /* Check to see if we're on the balloon */
+        if (!c->saveGame->balloonstate) {
+            moveAvatar(keyToDirection(key), 1);
+            /* horse doubles speed */
+            if (tileIsHorse(c->saveGame->transport) && c->horseSpeed) {
+                gameUpdateScreen(); /* to give it a smooth look of movement */
+                moveAvatar(keyToDirection(key), 0);
+            }
+        } else {
+            screenMessage("Drift Only!\n");
+        }
         break;
 
     case 3:                     /* ctrl-C */
@@ -2044,10 +2055,11 @@ int moveAvatar(Direction dir, int userEvent) {
 
     /*musicPlayEffect();*/
 
+    /*
     if (tileIsBalloon(c->saveGame->transport) && userEvent) {
         screenMessage("Drift Only!\n");
         return result;
-    }
+    }*/
 
     if (tileIsShip(c->saveGame->transport)) {
         if (tileGetDirection(c->saveGame->transport) != dir) {
