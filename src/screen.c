@@ -79,13 +79,6 @@ unsigned char screenViewportTile(int width, int height, int x, int y) {
     if (MAP_IS_OOB(c->map, x + c->saveGame->x - (width / 2), y + c->saveGame->y - (height / 2)))
         return (mapIsWorldMap(c->map) ? SEA_TILE : GRASS_TILE);
 
-    /* put the avatar in the center of the viewport */
-    else if ((c->map->flags & SHOW_AVATAR) &&
-             x == (width / 2) &&
-             y == (height / 2))
-        return c->saveGame->transport;
-	  
-    
     else if ((obj = mapObjectAt(c->map, x + c->saveGame->x - (width / 2), y + c->saveGame->y - (height / 2)))) 
         return obj->tile;
 
@@ -106,7 +99,7 @@ void screenUpdate() {
             if (screenLos[x][y])
                 screenShowTile(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y), x, y);
             else
-                screenShowTile(126, x, y);
+                screenShowTile(BLACK_TILE, x, y);
         }
     }
 
