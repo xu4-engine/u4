@@ -47,7 +47,7 @@ unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
         while (y >= (int)c->location->map->height)
             y -= c->location->map->height;
     }
-    tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z);
+    tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS);
 
     printf("tile (%d, %d) = %d\n", fwd, side, tile);
 

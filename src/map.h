@@ -40,6 +40,10 @@ typedef enum {
 #define NO_LINE_OF_SIGHT (1 << 1)
 #define FIRST_PERSON (1 << 2)
 
+/* mapTileAt flags */
+#define WITH_OBJECTS 1
+#define WITHOUT_OBJECTS 0
+
 typedef struct _Map {
     unsigned char id;
     const char *fname;
@@ -72,8 +76,8 @@ const struct _Person *mapPersonAt(const Map *map, int x, int y, int z);
 const struct _Portal *mapPortalAt(const Map *map, int x, int y, int z, int actionFlags);
 unsigned char mapGetTileFromData(const Map *map, int x, int y, int z);
 void mapSetTileData(const Map *map, int x, int y, int z, unsigned char tile);
-unsigned char mapTileAt(const Map *map, int x, int y, int z);
-unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z);
+unsigned char mapTileAt(const Map *map, int x, int y, int z, int withObjects);
+unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z, int withObjects);
 int mapIsWorldMap(const Map *map);
 struct _Object *mapAddPersonObject(Map *map, const struct _Person *person);
 struct _Object *mapAddMonsterObject(Map *map, const struct _Monster *monster, int x, int y, int z);

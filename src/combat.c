@@ -433,7 +433,7 @@ unsigned char combatMapForTile(unsigned char groundTile, unsigned char transport
 
     /* We can fight monsters and townsfolk */       
     if (obj->objType != OBJECT_UNKNOWN) {
-        unsigned char tileUnderneath = (*c->location->tileAt)(c->location->map, obj->x, obj->y, obj->z);
+        unsigned char tileUnderneath = (*c->location->tileAt)(c->location->map, obj->x, obj->y, obj->z, WITHOUT_OBJECTS);
 
         if (toShip)
             return MAP_SHORSHIP_CON;
@@ -469,7 +469,7 @@ void combatFinishTurn() {
     /* make sure the player with the focus is still in battle (hasn't fled or died) */
     if (party[FOCUS].obj) {
         /* apply effects from tile player is standing on */
-        playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, party[FOCUS].obj->x, party[FOCUS].obj->y, c->location->z)), FOCUS);
+        playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, party[FOCUS].obj->x, party[FOCUS].obj->y, c->location->z, WITH_OBJECTS)), FOCUS);
     }
 
     /* check to see if the player gets to go again (and is still alive) */
@@ -849,7 +849,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
         combatReturnWeaponToOwner(x, y, distance, data);
 
     /* If the weapon leaves a tile behind, do it here! (flaming oil, etc) */
-    groundTile = (*c->location->tileAt)(c->location->map, x, y, c->location->z);
+    groundTile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITHOUT_OBJECTS);
     if (!wrongRange && (weaponLeavesTile(weapon) && tileIsWalkable(groundTile)))
         annotationAdd(x, y, c->location->z, c->location->map->id, weaponLeavesTile(weapon));    
     
@@ -974,7 +974,7 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
         m = mapObjectAt(c->location->map, info->origin_x, info->origin_y, c->location->z)->monster;
 
         /* If the monster leaves a tile behind, do it here! (lava lizard, etc) */
-        groundTile = (*c->location->tileAt)(c->location->map, oldx, oldy, c->location->z);
+        groundTile = (*c->location->tileAt)(c->location->map, oldx, oldy, c->location->z, WITH_OBJECTS);
         if (monsterLeavesTile(m) && tileIsWalkable(groundTile))
             annotationAdd(oldx, oldy, c->location->z, c->location->map->id, hittile);
     }
@@ -1091,7 +1091,7 @@ void combatEnd(int adjustKarma) {
                 x = combatInfo.monsterObj->x;
                 y = combatInfo.monsterObj->y;
                 z = combatInfo.monsterObj->z;
-                ground = (*c->location->tileAt)(c->location->map, x, y, z);
+                ground = (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS);
 
                 /* add a chest, if the monster leaves one */
                 if (monsterLeavesChest(combatInfo.monster) && 
@@ -1256,17 +1256,13 @@ void combatMoveMonsters() {
                 int newx, newy,
                     valid = 0,
                     firstTry = 1;
-                unsigned char tile;
-                Object *obj;
+                unsigned char tile;                
             
                 while (!valid) {
                     newx = rand() % c->location->map->width,
                     newy = rand() % c->location->map->height;
                     
-                    tile = (*c->location->tileAt)(c->location->map, newx, newy, c->location->z);
-                    obj = mapObjectAt(c->location->map, newx, newy, c->location->z);
-                    if (obj)
-                        tile = obj->tile;
+                    tile = (*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS);
                 
                     if (tileIsMonsterWalkable(tile) && tileIsWalkable(tile)) {
                         /* If the tile would slow me down, try again! */
@@ -1580,7 +1576,7 @@ void combatApplyMonsterTileEffects(void) {
     for (i = 0; i < AREA_MONSTERS; i++) {
         if (combatInfo.monsters[i].obj) {
             TileEffect effect;
-            effect = tileGetEffect((*c->location->tileAt)(c->location->map, combatInfo.monsters[i].obj->x, combatInfo.monsters[i].obj->y, c->location->z));
+            effect = tileGetEffect((*c->location->tileAt)(c->location->map, combatInfo.monsters[i].obj->x, combatInfo.monsters[i].obj->y, c->location->z, WITH_OBJECTS));
 
             if (effect != EFFECT_NONE) {
 

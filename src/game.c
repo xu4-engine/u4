@@ -411,7 +411,7 @@ void gameFinishTurn() {
         if (!c->saveGame->balloonstate) {
 
             /* apply effects from tile avatar is standing on */
-            playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
+            playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_OBJECTS)), ALL_PLAYERS);
 
             /* Move monsters and see if something is attacking the avatar */
             attacker = mapMoveObjects(c->location->map, c->location->x, c->location->y, c->location->z);        
@@ -720,7 +720,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 screenMessage("Land Balloon\n");
                 if (c->saveGame->balloonstate == 0)
                     screenMessage("Already Landed!\n");
-                else if (tileCanLandBalloon((*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z))) {
+                else if (tileCanLandBalloon((*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_OBJECTS))) {
                     c->saveGame->balloonstate = 0;
                     c->opacity = 1;
                 }
@@ -767,10 +767,7 @@ int gameBaseKeyHandler(int key, void *data) {
         if (c->saveGame->balloonstate)
             screenMessage("Drift only!\n");
         else {
-            if ((obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) != NULL)
-                tile = obj->tile;
-            else
-                tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z);
+            tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_OBJECTS);                            
     
             if (tileIsChest(tile))
             {
@@ -1651,7 +1648,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     }
 
     /* attack successful */
-    ground = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z);
+    ground = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITHOUT_OBJECTS);
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
@@ -1883,22 +1880,29 @@ int fireAtCoord(int x, int y, int distance, void *data) {
 /**
  * Get the chest at the current x,y of the current context for player 'player'
  */
-
 int gameGetChest(int player) {
     Object *obj;
     unsigned char tile, newTile;
-    int x, y, z;
+    int x, y, z, tx, ty;
+    Direction d;
     
-    locationGetCurrentPosition(c->location, &x, &y, &z);    
+    locationGetCurrentPosition(c->location, &x, &y, &z);
+        
+    /* figure out the tile that will replace the treasure chest */    
+    for (d = DIR_WEST; d <= DIR_SOUTH; d++) {
+        tx = x;
+        ty = y;
+        mapDirMove(c->location->map, d, &tx, &ty);        
+        newTile = (*c->location->tileAt)(c->location->map, tx, ty, c->location->z, WITHOUT_OBJECTS);
 
-    /* FIXME: figure out the tile that will replace the treasure chest */
-    //newTile = (*c->location->tileAt)(c->location->map, x, y, z);
-    newTile = BRICKFLOOR_TILE;    
+        if (tileIsChest(newTile) || !tileIsWalkable(newTile) || !tileIsMonsterWalkable(newTile))
+            newTile = 0;
+    }            
+    if (newTile == 0)
+        newTile = BRICKFLOOR_TILE;
 
-    if ((obj = mapObjectAt(c->location->map, x, y, z)) != NULL)
-        tile = obj->tile;
-    else
-        tile = (*c->location->tileAt)(c->location->map, x, y, z);
+    tile = (*c->location->tileAt)(c->location->map, x, y, z, WITH_OBJECTS);
+    obj = mapObjectAt(c->location->map, x, y, z);
     
     if (tileIsChest(tile)) {
         if (obj)
@@ -1988,7 +1992,7 @@ int jimmyAtCoord(int x, int y, int distance, void *data) {
         return 0;
     }
 
-    if (!tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z)))
+    if (!tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS)))
         return 0;
         
     if (c->saveGame->keys) {
@@ -2228,11 +2232,11 @@ int openAtCoord(int x, int y, int distance, void *data) {
         return 0;
     }
 
-    if (!tileIsDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z)) &&
-        !tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z)))
+    if (!tileIsDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS)) &&
+        !tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS)))
         return 0;
 
-    if (tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z))) {
+    if (tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS))) {
         screenMessage("Can't!\n");
         (*c->location->finishTurn)();
         return 1;
@@ -2646,10 +2650,10 @@ int moveAvatar(Direction dir, int userEvent) {
         if (!DIR_IN_MASK(dir, movementMask)) {
 
             if (settings->shortcutCommands) {
-                if (tileIsDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z))) {
+                if (tileIsDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS))) {
                     openAtCoord(newx, newy, 1, NULL);
                     return result;
-                } else if (tileIsLockedDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z))) {
+                } else if (tileIsLockedDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS))) {
                     jimmyAtCoord(newx, newy, 1, NULL);
                     return result;
                 } /*else if (mapPersonAt(c->location->map, newx, newy, c->location->z) != NULL) {
@@ -2665,7 +2669,7 @@ int moveAvatar(Direction dir, int userEvent) {
         /* Are we slowed by terrain or by wind direction? */
         switch(slowedType) {
         case SLOWED_BY_TILE:
-            slowed = slowedByTile((*c->location->tileAt)(c->location->map, newx, newy, c->location->z));
+            slowed = slowedByTile((*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITHOUT_OBJECTS));
             break;
         case SLOWED_BY_WIND:
             slowed = slowedByWind(dir);
@@ -2953,7 +2957,7 @@ void gameCheckBridgeTrolls() {
     Object *obj;
 
     if (!mapIsWorldMap(c->location->map) ||
-        (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z) != BRIDGE_TILE ||
+        (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITHOUT_OBJECTS) != BRIDGE_TILE ||
         (rand() % 8) != 0)
         return;
 
@@ -3135,7 +3139,7 @@ void gameMonsterAttack(Object *obj) {
     
     screenMessage("\nAttacked by %s\n", monsterForTile(obj->tile)->name);
 
-    ground = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z);
+    ground = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITHOUT_OBJECTS);
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
@@ -3258,7 +3262,7 @@ int gameDirectionalAction(CoordActionInfo *info) {
                 if (MAP_IS_OOB(c->location->map, t_x, t_y))
                     break;
 
-                tile = (*c->location->tileAt)(c->location->map, t_x, t_y, c->location->z);
+                tile = (*c->location->tileAt)(c->location->map, t_x, t_y, c->location->z, WITH_OBJECTS);
 
                 /* should we see if the action is blocked before trying it? */       
                 if (info->blockBefore && info->blockedPredicate &&
@@ -3469,7 +3473,7 @@ void gameSpawnMonster(const Monster *m) {
     if (m)
         monster = m;
     else
-        monster = monsterRandomForTile((*c->location->tileAt)(c->location->map, x, y, c->location->z));
+        monster = monsterRandomForTile((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITHOUT_OBJECTS));
 
     if (monster) mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);    
 }

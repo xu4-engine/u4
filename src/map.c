@@ -300,7 +300,7 @@ unsigned char mapGetTileFromData(const Map *map, int x, int y, int z) {
  * annotations like moongates and attack icons are ignored.  Any walkable tiles
  * are taken into account (treasure chests, ships, balloon, etc.)
  */
-unsigned char mapTileAt(const Map *map, int x, int y, int z) {
+unsigned char mapTileAt(const Map *map, int x, int y, int z, int withObjects) {
     unsigned char tile;
     const Annotation *a = annotationAt(x, y, z, map->id);
     Object *obj = mapObjectAt(map, x, y, z);
@@ -308,7 +308,7 @@ unsigned char mapTileAt(const Map *map, int x, int y, int z) {
     tile = mapGetTileFromData(map, x, y, z);
     if ((a != NULL) && !a->visual)
         tile = a->tile;
-    else if (obj && tileIsWalkable(obj->tile))
+    else if (withObjects && obj && tileIsWalkable(obj->tile))
         tile = obj->tile;
     
     return tile;
@@ -317,9 +317,9 @@ unsigned char mapTileAt(const Map *map, int x, int y, int z) {
 /**
  * Functions the same as mapTileAt, but for dungeons
  */
-unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z) {
+unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z, int withObjects) {
     unsigned char tile = mapGetTileFromData(map, x, y, z);
-    unsigned char real = mapTileAt(map, x, y, z);
+    unsigned char real = mapTileAt(map, x, y, z, withObjects);
 
     /* get any annotation or walkable objects first */
     if (real != tile)
@@ -568,7 +568,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         ontoAvatar = 0;
         ontoMonster = 0;
         x = from_x;
-        y = from_y;        
+        y = from_y;
 
         dirMove(d, &x, &y);
         
@@ -579,7 +579,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         
         /* in dungeons, everything but walls are walkable */
         if (c->location->context == CTX_DUNGEON) {            
-            tile = (*c->location->tileAt)(map, x, y, z);
+            tile = (*c->location->tileAt)(map, x, y, z, WITH_OBJECTS);
             if (tileIsDungeonWalkable(tile)) {
                 retval = DIR_ADD_TO_MASK(d, retval);
                 continue;
@@ -601,16 +601,16 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         /* get the destination tile */
         if (ontoAvatar)
             tile = (unsigned char)c->saveGame->transport;
-        else if (obj)
+        else if (ontoMonster)
             tile = obj->tile;
         else 
-            tile = (*c->location->tileAt)(map, x, y, z);
+            tile = (*c->location->tileAt)(map, x, y, z, WITH_OBJECTS);        
 
-        prev_tile = (*c->location->tileAt)(map, from_x, from_y, z);
+        prev_tile = (*c->location->tileAt)(map, from_x, from_y, z, WITHOUT_OBJECTS);
 
         /* get the monster object, if it exists (the one that's moving) */
         m = monsterForTile(transport);
-        /* get the other monster object, if it exists (the one that's being moved onto) */
+        /* get the other monster object, if it exists (the one that's being moved onto) */        
         to_m = (obj) ? monsterForTile(obj->tile) : NULL;
 
         /* move on if unable to move onto the avatar or another monster */

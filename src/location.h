@@ -9,7 +9,7 @@
 
 /*typedef void (*MapSetTile)(Map *map, int x, int y, int z, unsigned char tile);
 typedef void (*MapGetTile)(Map *map, int x, int y, int z);*/
-typedef unsigned char (*TileAt)(const Map *map, int x, int y, int z);
+typedef unsigned char (*TileAt)(const Map *map, int x, int y, int z, int withObjects);
 
 typedef enum {
     CTX_WORLDMAP    = 0x0001,

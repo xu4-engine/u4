@@ -66,12 +66,7 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
         location->x == x && location->y == y) {
         *focus = 0;
         tile = (unsigned char)c->saveGame->transport;
-    }
-    /* then permanent annotations */
-    else if (a) {
-        *focus = 0;
-        tile = a->tile;
-    }
+    }    
     /* then camouflaged monsters that have a disguise */
     else if (obj && (obj->objType == OBJECT_MONSTER) && !obj->isVisible && (obj->monster->camouflageTile > 0)) {
         *focus = obj->hasFocus;
@@ -91,6 +86,11 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
     else if ((location->map->flags & SHOW_AVATAR) && location->x == x && location->y == y) {
         *focus = 0;
         tile = (unsigned char)c->saveGame->transport;
+    }
+    /* then permanent annotations */
+    else if (a) {
+        *focus = 0;
+        tile = a->tile;
     }
     /* then the base tile */
     else {

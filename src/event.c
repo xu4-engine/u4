@@ -245,7 +245,7 @@ int keyHandlerDefault(int key, void *data) {
     switch (key) {
     case '`':
         if (c && c->location)
-            printf("x = %d, y = %d, level = %d, tile = %d\n", c->location->x, c->location->y, c->location->z, (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z));
+            printf("x = %d, y = %d, level = %d, tile = %d\n", c->location->x, c->location->y, c->location->z, (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_OBJECTS));
         break;
     default:
         valid = 0;

@@ -417,10 +417,10 @@ static int spellBlink(int dir) {
     
     i = distance;   
     /* begin walking backward until you find a valid spot */
-    while ((i-- > 0) && !tileIsWalkable((*c->location->tileAt)(c->location->map, x, y, c->location->z)))
+    while ((i-- > 0) && !tileIsWalkable((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS)))
         mapDirMove(c->location->map, reverseDir, &x, &y);
     
-    if (tileIsWalkable((*c->location->tileAt)(c->location->map, x, y, c->location->z))) {
+    if (tileIsWalkable((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS))) {
         /* we didn't move! */
         if (c->location->x == x && c->location->y == y)
             failed = 1;
@@ -451,7 +451,7 @@ static int spellDispel(int dir) {
     /*
      * get the ground tile underneath the avatar/player
      */
-    newTile = (*c->location->tileAt)(c->location->map, x, y, z);
+    newTile = (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS);
 
     mapDirMove(c->location->map, (Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->location->map, x, y))
@@ -470,7 +470,7 @@ static int spellDispel(int dir) {
      * if the map tile itself is a field, overlay it with the tile
      * that the avatar/player is standing on
      */
-    tile = (*c->location->tileAt)(c->location->map, x, y, z);    
+    tile = (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS);    
     if (!tileCanDispel(tile))
         return 0;   
     
@@ -650,7 +650,7 @@ static int spellXit(int unused) {
 }
 
 static int spellYup(int unused) {
-    unsigned char tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z - 1);
+    unsigned char tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z - 1, WITH_OBJECTS);
 
     if (c->location->z > 0) {
         if (tileIsDungeonWalkable(tile))
@@ -666,7 +666,7 @@ static int spellYup(int unused) {
 }
 
 static int spellZdown(int unused) {
-    unsigned char tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z + 1);
+    unsigned char tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z + 1, WITH_OBJECTS);
 
     if (c->location->z < 7) {
         if (tileIsDungeonWalkable(tile))

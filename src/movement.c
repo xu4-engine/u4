@@ -74,7 +74,7 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {
     case SLOWED_BY_TILE:
-        slowed = slowedByTile((*c->location->tileAt)(map, newx, newy, obj->z));
+        slowed = slowedByTile((*c->location->tileAt)(map, newx, newy, obj->z, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
         slowed = slowedByWind(tileGetDirection(obj->tile));
@@ -153,7 +153,7 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {
     case SLOWED_BY_TILE:
-        slowed = slowedByTile((*c->location->tileAt)(map, newx, newy, c->location->z));
+        slowed = slowedByTile((*c->location->tileAt)(map, newx, newy, c->location->z, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
         slowed = slowedByWind(tileGetDirection(obj->tile));
