@@ -764,7 +764,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'h':
-        if (!(c->location->context && (CTX_WORLDMAP | CTX_DUNGEON))) {
+        if (!(c->location->context & (CTX_WORLDMAP | CTX_DUNGEON))) {
             screenMessage("Hole up & Camp\nNot here!\n");
             break;
         }
