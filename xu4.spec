@@ -1,11 +1,12 @@
 Summary: xu4 - Ultima IV Recreated
 Name: xu4
-Version: 0.08
+Version: 0.09
 Release: 1
 URL: http://xu4.sourceforge.net/
 Source0: http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
 License: GPL
 Group: Amusements/Games
+BuildRequires: SDL-devel
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
@@ -53,6 +54,9 @@ rm -rf $RPM_BUILD_ROOT
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Mon Dec 12 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added SDL-devel to build dependancies
+
 * Mon Sep 25 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added quiet flag (-q) to %setup rule to reduce visual clutter
 
