@@ -89,7 +89,6 @@ public:
     bool canTalkOver() const;
     TileSpeed getSpeed() const;
     TileEffect getEffect() const;
-    TileAnimationStyle getAnimationStyle() const;
     bool isOpaque() const;
 
     static bool canTalkOverTile(MapTile tile);
