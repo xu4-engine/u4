@@ -43,11 +43,13 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
 
     screenInit(scale);
+    init_music();
 
     eventHandlerInit();
 
     /* do the intro */
     introInit();
+    intro_music();
     introUpdateScreen();
     eventHandlerAddTimerCallback(&introTimer);
     eventHandlerPushKeyHandler(&introKeyHandler);
@@ -92,6 +94,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* play the game! */
+    play_music();
     screenDrawBackground(BKGD_BORDERS);
     screenUpdate();
     statsUpdate();
