@@ -250,7 +250,7 @@ offset len  notes
 0x10   2    weapon
 0x12   2    armor
 0x14   16   name
-0x24   1    sex (0xb-female, 0xd-male)
+0x24   1    sex (0xb-male, 0xc-female)
 0x25   1    class
 0x26   1    status ('G'-good, 'P'-poisoned, 'S'-sleeping, 'D'-dead)
 
