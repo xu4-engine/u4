@@ -13,6 +13,7 @@
 #include "screen.h"
 #include "u4file.h"
 #include "savegame.h"
+#include "player.h"
 
 #define INTRO_TEXT_OFFSET 17445
 #define INTRO_MAP_OFFSET 30339
@@ -64,6 +65,7 @@ void introInitQuestionTree();
 const char *introGetQuestion(int v1, int v2);
 int introDoQuestion(int answer);
 int introHandleQuestionChoice(char choice);
+void introInitAvatar(SaveGamePlayerRecord *avatar, int *initX, int *initY);
 
 int introInit() {
     unsigned char screenFixData[533];
@@ -75,7 +77,7 @@ int introInit() {
     if (!title)
         return 0;
 
-    fseek(title, 17445, SEEK_SET);
+    fseek(title, INTRO_TEXT_OFFSET, SEEK_SET);
     for (i = 0; i < sizeof(introQuestions) / sizeof(introQuestions[0]); i++) {
         for (j = 0; j < sizeof(buffer) - 1; j++) {
             buffer[j] = fgetc(title);
@@ -108,7 +110,7 @@ int introInit() {
     fseek(title, INTRO_FIXUPDATA_OFFSET, SEEK_SET);
     fread(screenFixData, 1, sizeof(screenFixData), title);
 
-    fseek(title, 30339, SEEK_SET);
+    fseek(title, INTRO_MAP_OFFSET, SEEK_SET);
     introMap[0] = (unsigned char *) malloc(INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT);
     for (i = 0; i < INTRO_MAP_HEIGHT; i++) {
         introMap[i] = introMap[0] + INTRO_MAP_WIDTH * i;
@@ -360,7 +362,7 @@ int introHandleSexChoice(char choice) {
 
     eventHandlerPopKeyHandler();
     mode = INTRO_INIT_STORY;
-    storyInd = 23;
+    storyInd = 0;
 
     introUpdateScreen();
     screenForceRedraw();
@@ -467,6 +469,8 @@ int introDoQuestion(int answer) {
 int introHandleQuestionChoice(char choice) {
     FILE *saveGameFile;
     SaveGame saveGame;
+    int x, y;
+
     eventHandlerPopKeyHandler();
 
     if (introDoQuestion(choice == 'a' ? 0 : 1)) {
@@ -477,17 +481,11 @@ int introHandleQuestionChoice(char choice) {
         if (saveGameFile) {
             SaveGamePlayerRecord avatar;
             saveGamePlayerRecordInit(&avatar);
-            strcpy(avatar.name, nameBuffer);
-            avatar.hp = 100;
-            avatar.hpMax = 100;
-            avatar.xp = 0;
-            avatar.str = 20;
-            avatar.dex = 20;
-            avatar.intel = 20;
-            avatar.mp = 20;
-            avatar.sex = sex;
-            avatar.klass = questionTree[14];
-            saveGameInit(&saveGame, 86, 109, &avatar);
+            introInitAvatar(&avatar, &x, &y);
+            saveGameInit(&saveGame, x, y, &avatar);
+            saveGame.reagents[REAG_GINSENG] = 3;
+            saveGame.reagents[REAG_GARLIC] = 4;
+            saveGame.torches = 2;
             saveGameWrite(&saveGame, saveGameFile);
             fclose(saveGameFile);
         }
@@ -498,4 +496,123 @@ int introHandleQuestionChoice(char choice) {
     introUpdateScreen();
 
     return 1;
+}
+
+/**
+ * Build the initial avatar player record from the answers to the
+ * gypsy's questions.
+ */
+void introInitAvatar(SaveGamePlayerRecord *avatar, int *initX, int *initY) {
+    int i;
+
+    strcpy(avatar->name, nameBuffer);
+    avatar->sex = sex;
+    avatar->klass = questionTree[14];
+
+    switch (avatar->klass) {
+    case CLASS_MAGE:
+        avatar->weapon = WEAP_STAFF;
+        avatar->armor = ARMR_CLOTH;
+        avatar->xp = 125;
+        *initX = 231;
+        *initY = 136;
+        break;
+
+    case CLASS_BARD:
+        avatar->weapon = WEAP_SLING;
+        avatar->armor = ARMR_CLOTH;
+        avatar->xp = 240;
+        *initX = 83;
+        *initY = 105;
+        break;
+
+    case CLASS_FIGHTER:
+        avatar->weapon = WEAP_AXE;
+        avatar->armor = ARMR_LEATHER;
+        avatar->xp = 205;
+        *initX = 35;
+        *initY = 221;
+        break;
+
+    case CLASS_DRUID:
+        avatar->weapon = WEAP_DAGGER;
+        avatar->armor = ARMR_CLOTH;
+        avatar->xp = 175;
+        *initX = 59;
+        *initY = 44;
+        break;
+
+    case CLASS_TINKER:
+        avatar->weapon = WEAP_MACE;
+        avatar->armor = ARMR_LEATHER;
+        avatar->xp = 110;
+        *initX = 158;
+        *initY = 21;
+        break;
+
+    case CLASS_PALADIN:
+        avatar->weapon = WEAP_SWORD;
+        avatar->armor = ARMR_CHAIN;
+        avatar->xp = 325;
+        *initX = 105;
+        *initY = 183;
+        break;
+
+    case CLASS_RANGER:
+        avatar->weapon = WEAP_SWORD;
+        avatar->armor = ARMR_LEATHER;
+        avatar->xp = 150;
+        *initX = 23;
+        *initY = 129;
+        break;
+
+    case CLASS_SHEPHERD:
+        avatar->weapon = WEAP_STAFF;
+        avatar->armor = ARMR_CLOTH;
+        avatar->xp = 5;
+        *initX = 186;
+        *initY = 171;
+        break;
+    }
+
+    avatar->str = 15;
+    avatar->dex = 15;
+    avatar->intel = 15;
+
+    for (i = 8; i < 15; i++) {
+        switch (questionTree[i]) {
+        case VIRT_HONESTY:
+            avatar->intel += 3;
+            break;
+        case VIRT_COMPASSION:
+            avatar->dex += 3;
+            break;
+        case VIRT_VALOR:
+            avatar->str += 3;
+            break;
+        case VIRT_JUSTICE:
+            avatar->intel++;
+            avatar->dex++;
+            break;
+        case VIRT_SACRIFICE:
+            avatar->intel++;
+            avatar->str++;
+            break;
+        case VIRT_HONOR:
+            avatar->dex++;
+            avatar->str++;
+            break;
+        case VIRT_SPIRITUALITY:
+            avatar->intel++;
+            avatar->dex++;
+            avatar->str++;
+            break;
+        case VIRT_HUMILITY:
+            /* no stats for you! */
+            break;
+        }
+    }
+
+    avatar->hp = avatar->hpMax = playerGetLevel(avatar) * 100;
+    avatar->mp = playerGetMaxMp(avatar);;
 }
