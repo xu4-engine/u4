@@ -490,7 +490,7 @@ void introUpdateScreen() {
         assert(0);
     }
 
-    screenForceRedraw();
+    screenRedrawScreen();
 }
 
 /**
@@ -505,7 +505,7 @@ void introInitiateNewGame() {
     introUpdateScreen();
     screenSetCursorPos(12, 20);
     screenEnableCursor();
-    screenForceRedraw();
+    screenRedrawScreen();
 
     info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
     info->handleBuffer = &introHandleName;
@@ -557,7 +557,7 @@ int introHandleName(const char *message) {
         eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
     }
 
-    screenForceRedraw();
+    screenRedrawScreen();
 
     return 1;
 }
@@ -577,7 +577,7 @@ int introHandleSexChoice(char choice) {
     storyInd = 0;
 
     introUpdateScreen();
-    screenForceRedraw();
+    screenRedrawScreen();
 
     return 1;
 }
@@ -614,7 +614,7 @@ void introJourneyOnward() {
     if (!saveGameFile) {
         introErrorMessage = "Initiate game first!";
         introUpdateScreen();
-        screenForceRedraw();
+        screenRedrawScreen();
         return;
     }
 
@@ -658,7 +658,7 @@ void introTimer() {
     if (mode == INTRO_MAP || mode == INTRO_MENU || 
         mode == INTRO_INIT_NAME || mode == INTRO_INIT_SEX)
         introDrawBeasties();
-    screenForceRedraw();
+    screenRedrawScreen();
 
     if ((rand() % 2) && ++beastie1Cycle >= BEASTIE1_FRAMES)
         beastie1Cycle = 0;

@@ -34,7 +34,7 @@ void eventHandlerMain(void (*updateScreen)(void)) {
 
     if (updateScreen)
         (*updateScreen)();
-    screenForceRedraw();
+    screenRedrawScreen();
 
     while (!eventHandlerGetExitFlag()) {
         int processed = 0;
@@ -73,7 +73,7 @@ void eventHandlerMain(void (*updateScreen)(void)) {
             if (processed) {
                 if (updateScreen)
                     (*updateScreen)();
-                screenForceRedraw();
+                screenRedrawScreen();
             }
             break;
         }
