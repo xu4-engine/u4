@@ -138,6 +138,12 @@ void statsUpdate() {
     }
 }
 
+void statsHighlightCharacter(int player) {
+    ASSERT(player < c->saveGame->members, "player number out of range: %d", player);
+    screenInvertRect(STATS_AREA_X * CHAR_WIDTH, (STATS_AREA_Y + player) * CHAR_HEIGHT, 
+                     STATS_AREA_WIDTH * CHAR_WIDTH, CHAR_HEIGHT);
+}
+
 void statsAreaClear() {
     int i;
 
