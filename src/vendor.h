@@ -19,6 +19,7 @@ char *vendorGetIntro(Conversation *cnv);
 char *vendorGetArmsVendorQuestionResponse(Conversation *cnv, const char *response);
 char *vendorGetTavernVendorQuestionResponse(Conversation *cnv, const char *response);
 char *vendorGetInnVendorQuestionResponse(Conversation *cnv, const char *response);
+char *vendorGetHealerGiveBloodResponse(Conversation *cnv, const char *response);
 char *vendorGetArmsBuyItemResponse(Conversation *cnv, const char *response);
 char *vendorGetReagentsBuyItemResponse(Conversation *cnv, const char *response);
 char *vendorGetHealerBuyItemResponse(Conversation *cnv, const char *response);
@@ -36,5 +37,7 @@ char *vendorGetStableConfirmationResponse(Conversation *cnv, const char *respons
 char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer);
 char *vendorGetTavernTopicResponse(Conversation *cnv, const char *response);
 char *vendorGetHealerPlayerResponse(Conversation *cnv, const char *response);
+
+char *vendorHealerAskForBlood(Conversation *cnv);
 
 #endif

@@ -263,7 +263,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv, in
         {
             *bufferlen = 3;
             return CONVINPUT_STRING;
-        }
+        }    
 
     case CONV_ASK:
     case CONV_ASKYESNO:
@@ -271,7 +271,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv, in
             *bufferlen = 4;
             return CONVINPUT_STRING;
         }                 
-    
+
     case CONV_VENDORQUESTION:
     case CONV_BUY_ITEM:
     case CONV_SELL_ITEM:
@@ -484,7 +484,7 @@ char *talkerGetPrompt(const Conversation *cnv) {
     if (cnv->state == CONV_ASK)
         personGetQuestion(cnv->talker, &prompt);
     else if (cnv->state == CONV_GIVEBEGGAR)
-        prompt = strdup("How much? ");
+        prompt = strdup("How much? ");        
     else if (cnv->state != CONV_ASKYESNO)
         prompt = strdup("\nYour Interest:\n");
 

@@ -172,88 +172,90 @@ int playerCanEnterShrine(const SaveGame *saveGame, Virtue virtue) {
  */
 void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
     int timeLimited = 0;
-    int v, newKarma[VIRT_MAX];
+    int v, newKarma[VIRT_MAX], maxVal[VIRT_MAX];
 
     /*
      * make a local copy of all virtues, and adjust it according to
      * the game rules
      */
-    for (v = 0; v < VIRT_MAX; v++)
-        newKarma[v] = saveGame->karma[v];
+    for (v = 0; v < VIRT_MAX; v++) {
+        newKarma[v] = saveGame->karma[v] == 0 ? 100 : saveGame->karma[v];
+        maxVal[v] = saveGame->karma[v] == 0 ? 100 : 99;
+    }
 
     switch (action) {
     case KA_FOUND_ITEM:
-        newKarma[VIRT_HONOR] += 5;
+        AdjustValueMax(newKarma[VIRT_HONOR], 5, maxVal[VIRT_HONOR]);
         break;
     case KA_STOLE_CHEST:
-        newKarma[VIRT_HONESTY]--;
-        newKarma[VIRT_JUSTICE]--;
-        newKarma[VIRT_HONOR]--;
+        AdjustValueMin(newKarma[VIRT_HONESTY], -1, 1);
+        AdjustValueMin(newKarma[VIRT_JUSTICE], -1, 1);
+        AdjustValueMin(newKarma[VIRT_HONOR], -1, 1);
         break;
     case KA_GAVE_TO_BEGGAR:
         timeLimited = 1;
-        newKarma[VIRT_COMPASSION] += 2;
-        newKarma[VIRT_HONOR] += 3; /* FIXME: verify if honor goes up */
+        AdjustValueMax(newKarma[VIRT_COMPASSION], 2, maxVal[VIRT_COMPASSION]);
+        AdjustValueMax(newKarma[VIRT_HONOR], 3, maxVal[VIRT_HONOR]); /* FIXME: verify if honor goes up */
         break;
     case KA_BRAGGED:
-        newKarma[VIRT_HUMILITY] -= 5;
+        AdjustValueMin(newKarma[VIRT_HUMILITY], -5, 1);
         break;
     case KA_HUMBLE:
         timeLimited = 1;
-        newKarma[VIRT_HUMILITY] += 10;
+        AdjustValueMax(newKarma[VIRT_HUMILITY], 10, maxVal[VIRT_HUMILITY]);
         break;
     case KA_HAWKWIND:
     case KA_MEDITATION:
-        newKarma[VIRT_SPIRITUALITY] += 3;
+        AdjustValueMax(newKarma[VIRT_SPIRITUALITY], 3, maxVal[VIRT_SPIRITUALITY]);
         break;
     case KA_BAD_MANTRA:
-        newKarma[VIRT_SPIRITUALITY] -= 3;
+        AdjustValueMin(newKarma[VIRT_SPIRITUALITY], -3, 1);
         break;
     case KA_ATTACKED_GOOD:
-        newKarma[VIRT_COMPASSION] -= 5;
-        newKarma[VIRT_JUSTICE] -= 5;
-        newKarma[VIRT_HONOR] -= 5;
+        AdjustValueMin(newKarma[VIRT_COMPASSION], -5, 1);
+        AdjustValueMin(newKarma[VIRT_JUSTICE], -5, 1);
+        AdjustValueMin(newKarma[VIRT_HONOR], -5, 1);
         break;
     case KA_FLED_EVIL:
-        newKarma[VIRT_VALOR] -= 2;        
+        AdjustValueMin(newKarma[VIRT_VALOR], -2, 1);
         break;
     case KA_HEALTHY_FLED_EVIL:
-        newKarma[VIRT_VALOR] -= 2;
-        newKarma[VIRT_SACRIFICE] -= 2;
+        AdjustValueMin(newKarma[VIRT_VALOR], -2, 1);
+        AdjustValueMin(newKarma[VIRT_SACRIFICE], -2, 1);
         break;
     case KA_KILLED_EVIL:
-        newKarma[VIRT_VALOR] += rand() % 2; /* gain one valor half the time, zero the rest */
+        AdjustValueMax(newKarma[VIRT_VALOR], rand() % 2, maxVal[VIRT_VALOR]); /* gain one valor half the time, zero the rest */
         break;
     case KA_SPARED_GOOD:        
-        newKarma[VIRT_COMPASSION]++;
-        newKarma[VIRT_JUSTICE]++;
+        AdjustValueMax(newKarma[VIRT_COMPASSION], 1, maxVal[VIRT_COMPASSION]);
+        AdjustValueMax(newKarma[VIRT_JUSTICE], 1, maxVal[VIRT_JUSTICE]);
         break;    
     case KA_DONATED_BLOOD:
-        newKarma[VIRT_SACRIFICE] += 5;
+        AdjustValueMax(newKarma[VIRT_SACRIFICE], 5, maxVal[VIRT_SACRIFICE]);
         break;
     case KA_DIDNT_DONATE_BLOOD:
-        newKarma[VIRT_SACRIFICE] -= 5;
+        AdjustValueMin(newKarma[VIRT_SACRIFICE], -5, 1);
         break;
     case KA_CHEAT_REAGENTS:
-        newKarma[VIRT_HONESTY] -= 10;
-        newKarma[VIRT_JUSTICE] -= 10;
-        newKarma[VIRT_HONOR] -= 10;
+        AdjustValueMin(newKarma[VIRT_HONESTY], -10, 1);
+        AdjustValueMin(newKarma[VIRT_JUSTICE], -10, 1);
+        AdjustValueMin(newKarma[VIRT_HONOR], -10, 1);
         break;
     case KA_DIDNT_CHEAT_REAGENTS:
         timeLimited = 1;
-        newKarma[VIRT_HONESTY] += 2;
-        newKarma[VIRT_JUSTICE] += 2;
-        newKarma[VIRT_HONOR] += 2;
+        AdjustValueMax(newKarma[VIRT_HONESTY], 2, maxVal[VIRT_HONESTY]);
+        AdjustValueMax(newKarma[VIRT_JUSTICE], 2, maxVal[VIRT_JUSTICE]);
+        AdjustValueMax(newKarma[VIRT_HONOR], 2, maxVal[VIRT_HONOR]);
         break;
     case KA_USED_SKULL:
         /* using the skull is very, very bad... */
         for (v = 0; v < VIRT_MAX; v++)
-            newKarma[v] -= 5;
+            AdjustValueMin(newKarma[v], -5, -1);
         break;
     case KA_DESTROYED_SKULL:
         /* ...but destroying it is very, very good */
         for (v = 0; v < VIRT_MAX; v++)
-            newKarma[v] += 10;
+            AdjustValueMax(newKarma[v], 10, maxVal[v]);
         break;
     }
 
@@ -269,23 +271,18 @@ void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
     }
 
     /*
-     * update the real virtues and handle min/maxing at 1 and 99 along
-     * with losing of eighths
+     * return to u4dos compatibility and handle losing of eighths
      */
     for (v = 0; v < VIRT_MAX; v++) {
-        if (saveGame->karma[v] == 0) {               /* already an avatar */
-            if (newKarma[v] < 0) {
-                saveGame->karma[v] = newKarma[v] + 99; /* first, karma is brought back to 99, then dropped */
+        if (maxVal[v] == 100) { /* already an avatar */
+            if (newKarma[v] < 100) { /* but lost it */
                 if (lostEighthCallback)
                     (*lostEighthCallback)(v);
+                c->saveGame->karma[v] = newKarma[v];
             }
-        } else {
-            if (newKarma[v] <= 0)
-                newKarma[v] = 1;
-            if (newKarma[v] >= 99)
-                newKarma[v] = 99;
-            saveGame->karma[v] = newKarma[v];
+            else c->saveGame->karma[v] = 0; /* return to u4dos compatibility */
         }
+        else c->saveGame->karma[v] = newKarma[v];
     }
 }
 
@@ -585,27 +582,27 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
         /* nothing */
         break;
     case INV_WEAPON:
-        AdjustValue(saveGame->weapons[type], quantity, 99);        
+        AdjustValueMax(saveGame->weapons[type], quantity, 99);        
         break;
     case INV_ARMOR:
-        AdjustValue(saveGame->armor[type], quantity, 99);        
+        AdjustValueMax(saveGame->armor[type], quantity, 99);        
         break;
     case INV_FOOD:
         playerAdjustFood(saveGame, quantity * 100);        
         break;
     case INV_REAGENT:
-        AdjustValue(saveGame->reagents[type], quantity, 99);
+        AdjustValueMax(saveGame->reagents[type], quantity, 99);
         gameResetSpellMixing();
         break;
     case INV_GUILDITEM:
         if (type == 0)
-            AdjustValue(saveGame->torches, quantity, 99);            
+            AdjustValueMax(saveGame->torches, quantity, 99);            
         else if (type == 1)
-            AdjustValue(saveGame->gems, quantity, 99);            
+            AdjustValueMax(saveGame->gems, quantity, 99);            
         else if (type == 2)
-            AdjustValue(saveGame->keys, quantity, 99);            
+            AdjustValueMax(saveGame->keys, quantity, 99);            
         else if (type == 3)
-            AdjustValue(saveGame->sextants, quantity, 99);            
+            AdjustValueMax(saveGame->sextants, quantity, 99);            
         break;
     case INV_HORSE:
         (*setTransportCallback)(tileGetHorseBase());

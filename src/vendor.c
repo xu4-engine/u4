@@ -76,10 +76,10 @@ const struct {
       &vendorGetBuyQuantityResponse, NULL, &vendorGetReagentsBuyPriceResponse,
       NULL, &vendorGetContinueQuestionResponse, 
       NULL, NULL, NULL }, /* NPC_VENDOR_REAGENTS */
-    { &vendorGetIntro, NULL, &vendorGetHealerBuyItemResponse, NULL,
+    { &vendorGetIntro, &vendorGetHealerGiveBloodResponse, &vendorGetHealerBuyItemResponse, NULL,
       NULL, NULL, NULL, 
       &vendorGetHealerConfirmationResponse, &vendorGetContinueQuestionResponse,
-      NULL, &vendorGetHealerPlayerResponse, NULL }, /* NPC_VENDOR_HEALER */
+      NULL, &vendorGetHealerPlayerResponse, "yn\015 \033" }, /* NPC_VENDOR_HEALER */
     { &vendorGetIntro, &vendorGetInnVendorQuestionResponse, NULL, NULL,
       NULL, NULL, NULL,
       &vendorGetInnConfirmationResponse, &vendorGetContinueQuestionResponse, 
@@ -259,12 +259,18 @@ VendorTypeInfo **vendorTypeInfo;
 #define HV_NOONE 2
 #define HV_WILLPAY 100
 #define HV_CANNOTAID 101
+#define HV_NOTPOISONED 102
 #define HV_CURINGCOSTS 103
 #define HV_CANTAFFORDCURE 104
 #define HV_FORFREE 105
+#define HV_ALREADYHEALTHY 106
 #define HV_HEALINGCOSTS 107
 #define HV_CANTAFFORD 108
+#define HV_NOTDEAD 109
 #define HV_REZCOSTS 110
+#define HV_NOTENOUGHGOLD 111
+#define HV_GIVEBLOOD 112
+#define HV_GAVEBLOOD 113
 #define HV_WELCOME 114
 #define HV_NEEDHELP 115
 #define HV_CANPERFORM 116
@@ -318,8 +324,6 @@ char *vendorDoBuyTransaction(Conversation *cnv);
 char *vendorDoSellTransaction(Conversation *cnv);
 int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, U4FILE *f);
 int innVendorInfoRead(InnVendorInfo *info, U4FILE *f);
-
-
 
 void vendorSetInnHandlerCallback(InnHandlerCallback callback) {
     innHandlerCallback = callback;
@@ -437,7 +441,7 @@ char *vendorGetPrompt(const Conversation *cnv) {
 
     switch (cnv->state) {
 
-    case CONV_VENDORQUESTION:
+    case CONV_VENDORQUESTION:        
     case CONV_SELL_QUANTITY:
     case CONV_BUY_PRICE:
     case CONV_CONFIRMATION:
@@ -761,6 +765,31 @@ char *vendorGetInnVendorQuestionResponse(Conversation *cnv, const char *response
     return vendorDoBuyTransaction(cnv);
 }
 
+char *vendorGetHealerGiveBloodResponse(Conversation *cnv, const char *response) {
+    cnv->state = CONV_DONE;
+    
+    if (tolower(response[0]) == 'y') {
+        c->saveGame->players[0].hp -= 100;
+        playerAdjustKarma(c->saveGame, KA_DONATED_BLOOD);
+        return concat("\n", vendorGetText(cnv->talker, HV_GAVEBLOOD), "\n", vendorGetFarewell(cnv, NULL), NULL);
+    }
+    else if (tolower(response[0]) == 'n')
+        playerAdjustKarma(c->saveGame, KA_DIDNT_DONATE_BLOOD);    
+    
+    return strdup(vendorGetFarewell(cnv, "\n"));
+}
+
+char *vendorHealerAskForBlood(Conversation *cnv) {
+    if (c->saveGame->players[0].hp >= 400) {
+        cnv->state = CONV_VENDORQUESTION;
+        return concat("\n", vendorGetText(cnv->talker, HV_GIVEBLOOD), NULL);
+    }
+    else {
+        cnv->state = CONV_DONE;
+        return vendorGetFarewell(cnv, "\n\n");
+    }
+}
+
 char *vendorGetArmsBuyItemResponse(Conversation *cnv, const char *response) {
     char *reply;
     int i;
@@ -842,14 +871,12 @@ char *vendorGetHealerBuyItemResponse(Conversation *cnv, const char *response) {
     cnv->itemSubtype = -1;
 
     if (response[0] == '\033' || response[0] == '\015' || response[0] == ' ') {
-        cnv->state = CONV_DONE;
-        return vendorGetFarewell(cnv, NULL);
+        return vendorHealerAskForBlood(cnv);        
     }
 
     cnv->itemSubtype = tolower(response[0]) - 'a' + HT_CURE;
-    if (cnv->itemSubtype < HT_CURE || cnv->itemSubtype > HT_RESURRECT) {
-        reply = strdup("");
-        cnv->state = CONV_DONE;
+    if (cnv->itemSubtype < HT_CURE || cnv->itemSubtype > HT_RESURRECT) {        
+        reply = vendorHealerAskForBlood(cnv);
     }
     else {
         int msg;
@@ -1224,6 +1251,7 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
                            vendorGetText(cnv->talker, HV_MOREHELP), 
                            NULL);
         }
+        statsUpdate();
         break;
 
     case NPC_VENDOR_INN:
@@ -1347,8 +1375,7 @@ char *vendorGetHealerConfirmationResponse(Conversation *cnv, const char *respons
         cnv->state = CONV_CONTINUEQUESTION;
     } 
     else {
-        reply = strdup("");
-        cnv->state = CONV_DONE;
+        reply = vendorHealerAskForBlood(cnv);
     }
 
     return reply;
@@ -1411,18 +1438,17 @@ char *vendorGetStableConfirmationResponse(Conversation *cnv, const char *respons
 }
 
 char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
-    char buffer[10];
+    char buffer[10];    
     char *reply;
-    char *menu;
+    char *menu;    
     
-    if (tolower(answer[0]) == 'n') {
+    if (tolower(answer[0]) != 'y') {
         cnv->state = CONV_DONE;
-        return vendorGetFarewell(cnv, NULL);
-    }
-    else if (tolower(answer[0]) != 'y') {
-        cnv->state = CONV_DONE;
-        return strdup("");
-    }
+        
+        if (cnv->talker->npcType == NPC_VENDOR_HEALER)
+            return vendorHealerAskForBlood(cnv);        
+        else return vendorGetFarewell(cnv, "\n");
+    }    
 
     /* response was 'y' */
 
@@ -1461,7 +1487,7 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
         break;
 
     case NPC_VENDOR_HEALER:
-        reply = concat(vendorGetName(cnv->talker),
+        reply = concat("\n\n", vendorGetName(cnv->talker),
                        vendorGetText(cnv->talker, HV_CANPERFORM),
                        vendorGetText(cnv->talker, HV_YOURNEED),
                        NULL);
@@ -1564,7 +1590,8 @@ char *vendorGetTavernTopicResponse(Conversation *cnv, const char *response) {
 }
 
 char *vendorGetHealerPlayerResponse(Conversation *cnv, const char *response) {
-    int msg;
+    int msg;    
+
     if (response[0] < '1' || response[0] > '8') {
         cnv->state = CONV_CONTINUEQUESTION;
         return concat(vendorGetText(cnv->talker, HV_NOONE),
@@ -1574,6 +1601,30 @@ char *vendorGetHealerPlayerResponse(Conversation *cnv, const char *response) {
     }
 
     cnv->player = response[0] - '1';
+
+    if (cnv->itemSubtype == HT_CURE && c->saveGame->players[cnv->player].status != STAT_POISONED) {
+        cnv->state = CONV_CONTINUEQUESTION;
+        return concat(vendorGetText(cnv->talker, HV_NOTPOISONED), "\n",
+                      vendorGetName(cnv->talker), 
+                      vendorGetText(cnv->talker, HV_MOREHELP),
+                      NULL);
+    }
+    else if (cnv->itemSubtype == HT_FULLHEAL && c->saveGame->players[cnv->player].hp == c->saveGame->players[cnv->player].hpMax) {
+        cnv->state = CONV_CONTINUEQUESTION;        
+        return concat(vendorGetText(cnv->talker, HV_ALREADYHEALTHY), "\n",
+                      vendorGetName(cnv->talker), 
+                      vendorGetText(cnv->talker, HV_MOREHELP),
+                      NULL);
+    }
+    else if (cnv->itemSubtype == HT_RESURRECT && c->saveGame->players[cnv->player].status != STAT_DEAD) {
+        cnv->state = CONV_CONTINUEQUESTION;
+        return concat(vendorGetText(cnv->talker, HV_NOTDEAD), "\n",
+                      vendorGetName(cnv->talker), 
+                      vendorGetText(cnv->talker, HV_MOREHELP),
+                      NULL);
+    }
+
+
     cnv->state = CONV_CONFIRMATION;
 
     if (cnv->itemSubtype == HT_CURE)
