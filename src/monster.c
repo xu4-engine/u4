@@ -458,8 +458,7 @@ void monsterSpecialEffect(Object *obj) {
                     obj->z == c->location->z) {
 
                     if (tileIsShip(c->saveGame->transport)) {
-                        /* FIXME: Check actual damage from u4dos
-                           Screen should shake here */
+                        /* FIXME: Check actual damage from u4dos */                           
                         gameDamageShip(10, 30);                        
                     }
                     else {
@@ -488,8 +487,7 @@ void monsterSpecialEffect(Object *obj) {
                 if (obj->x == c->location->x &&
                     obj->y == c->location->y &&
                     obj->z == c->location->z && tileIsShip(c->saveGame->transport)) {                    
-                
-                    /* FIXME: Screen should shake here */
+                                    
                     gameDamageShip(-1, 10);
 
                     c->location->x = 127;

@@ -467,29 +467,24 @@ static int spellSleep(int unused) {
 
 static int spellTremor(int unused) {
     extern CombatInfo combatInfo;
-    int i, 
-        lastx = -1,
-        lasty = -1;
+    int i, x, y;        
 
     for (i = 0; i < AREA_MONSTERS; i++) {
-        if (combatInfo.monsters[i] && (rand() % 2 == 0)) {
-            if ((lastx >= 0) && (lasty >= 0))
-                annotationRemove(lastx, lasty, c->location->z, c->location->map->id, HITFLASH_TILE);
+        if (combatInfo.monsters[i] && (rand() % 2 == 0)) {               
 
-            lastx = combatInfo.monsters[i]->x;
-            lasty = combatInfo.monsters[i]->y;
-            annotationSetVisual(annotationAddTemporary(lastx, lasty, c->location->z, c->location->map->id, HITFLASH_TILE));
+            x = combatInfo.monsters[i]->x;
+            y = combatInfo.monsters[i]->y;
+            annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, HITFLASH_TILE));
             
             eventHandlerSleep(250);
             gameUpdateScreen();
 
             combatApplyDamageToMonster(i, rand() % 0xFF);
             screenMessage("\n");
+
+            annotationRemove(x, y, c->location->z, c->location->map->id, HITFLASH_TILE);
         }
     }
-
-    if ((lastx >= 0) && (lasty >= 0))
-        annotationRemove(lastx, lasty, c->location->z, c->location->map->id, HITFLASH_TILE);
     
     return 1;
 }

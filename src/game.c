@@ -420,7 +420,7 @@ void gameSpellEffect(unsigned int spell, int player) {
         effect = SPELLEFFECT_INVERT;
         break;
     case 't': // tremor
-        time = 1000;
+        time = 2000;
         effect = SPELLEFFECT_TREMOR;        
         break;
     default:
