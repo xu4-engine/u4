@@ -65,6 +65,8 @@ void combatBegin();
 void combatFillMonsterTable(const struct _Monster *monster);
 int combatSetActivePlayer(int player);
 int combatPutPlayerToSleep(int player);
+int combatPartyMemberAt(int x, int y, int z);
+int combatMonsterAt(int x, int y, int z);
 void combatPlacePartyMembers(void);
 void combatPlaceMonsters(void);
 void combatFinishTurn(void);

@@ -57,8 +57,7 @@ void campTimer(void *data) {
 
     /* Is the party ambushed during their rest? */
     if (rand() % 8 >= 0) {
-        
-        int i, j, numAmbushingMonsters;
+
         extern CombatInfo combatInfo;
         const Monster *m;
 
