@@ -14,24 +14,25 @@
 #include "mapinit.h"
 
 extern Map world_map;
+
+extern Map lcb_1_map;
+extern Map lcb_2_map;
+extern Map lycaeum_map;
+extern Map empath_map;
+extern Map serpent_map;
+
+extern Map moonglow_map;
 extern Map britain_map;
+extern Map jhelom_map;
 extern Map yew_map;
 extern Map minoc_map;
 extern Map trinsic_map;
-extern Map jhelom_map;
 extern Map skara_map;
 extern Map magincia_map;
-extern Map moonglow_map;
 extern Map paws_map;
-extern Map vesper_map;
 extern Map den_map;
+extern Map vesper_map;
 extern Map cove_map;
-
-extern Map empath_map;
-extern Map lycaeum_map;
-extern Map serpent_map;
-extern Map lcb_1_map;
-extern Map lcb_2_map;
 
 extern Map brick_map;
 extern Map bridge_map;
@@ -58,15 +59,15 @@ extern Map shorship_map;
 extern Map shrine_map;
 
 Map *cities[] = {
-    &britain_map, &yew_map,
+    &lcb_1_map, &lcb_2_map,
+    &lycaeum_map, &empath_map,
+    &serpent_map,
+    &moonglow_map, &britain_map,
+    &jhelom_map, &yew_map,
     &minoc_map, &trinsic_map,
-    &jhelom_map, &skara_map,
-    &magincia_map, &moonglow_map,
-    &paws_map, &vesper_map,
-    &den_map, &cove_map,
-    &empath_map, &lycaeum_map,
-    &serpent_map, &lcb_1_map,
-    &lcb_2_map
+    &skara_map, &magincia_map,
+    &paws_map, &den_map,
+    &vesper_map, &cove_map
 };
 
 Map *areas[] = {
