@@ -75,6 +75,7 @@ int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 int ztatsFor(int player);
 int cmdHandleAnyKey(int key, void *data);
+int windCmdKeyHandler(int key, void *data);
 void gameCheckBridgeTrolls(void);
 void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
@@ -1122,6 +1123,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         for (i = 0; i < REAG_MAX; i++)
             c->saveGame->reagents[i] = 99;
         break;
+
     case 't':
         if (mapIsWorldMap(c->location->map)) {
             mapAddObject(c->location->map, tileGetHorseBase(), tileGetHorseBase(), 84, 106, -1);
@@ -1131,18 +1133,15 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             screenPrompt();
         }
         break;
+
     case 'w':
         c->windDirection++;
         if (c->windDirection > DIR_SOUTH)
             c->windDirection = DIR_WEST;
-        screenMessage("Change Wind Direction\n");
-        screenPrompt();
-        break;
-    case 'W':
-        windLock = !windLock;
-        screenMessage("Wind direction is %slocked!\n", windLock ? "" : "un");
-        screenPrompt();
-        break;
+        screenMessage("Wind Dir ('l' to lock):\n");
+        eventHandlerPopKeyHandler();
+        eventHandlerPushKeyHandler(&windCmdKeyHandler);
+        return 1;
 
     case ' ':
         screenMessage("Nothing\n");
@@ -1166,9 +1165,33 @@ int cmdHandleAnyKey(int key, void *data) {
     screenMessage("\n"
                   "r - Reagents\n"
                   "t - Transports\n"
-                  "w - Change Wind\n"
-                  "W - Lock wind\n");
+                  "w - Change Wind\n");
     screenPrompt();
+    return 1;
+}
+
+int windCmdKeyHandler(int key, void *data) {
+    Direction dir;
+
+    switch (key) {
+    case U4_UP:
+    case U4_LEFT:
+    case U4_DOWN:
+    case U4_RIGHT:
+        c->windDirection = keyToDirection(key);
+        screenMessage("Wind %s!\n", getDirectionName(c->windDirection));
+        break;
+
+    case 'l':
+        windLock = !windLock;
+        screenMessage("Wind direction is %slocked!\n", windLock ? "" : "un");
+        break;
+    }
+
+    eventHandlerPopKeyHandler();
+    statsUpdate();
+    screenPrompt();
+
     return 1;
 }
 
@@ -1177,7 +1200,7 @@ int cmdHandleAnyKey(int key, void *data) {
  * creature is present at that point, zero is returned.
  */
 int attackAtCoord(int x, int y, int distance, void *data) {
-    Object *obj, *under;    
+    Object *obj, *under;
     unsigned char ground;
     Object *temp;
     Monster *m;
