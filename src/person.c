@@ -162,6 +162,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
     case CONV_SELL_ITEM:
     case CONV_CONFIRMATION:
     case CONV_CONTINUEQUESTION:
+    case CONV_PLAYER:
         return CONVINPUT_CHARACTER;
         
     case CONV_DONE:
@@ -188,6 +189,9 @@ const char *personGetChoices(const struct _Conversation *cnv) {
     case CONV_CONFIRMATION:
     case CONV_CONTINUEQUESTION:
         return "ny\033";
+
+    case CONV_PLAYER:
+        return "012345678\033";
 
     default:
         ASSERT(0, "invalid state: %d", cnv->state);

@@ -55,6 +55,7 @@ typedef enum {
     CONV_CONFIRMATION,
     CONV_CONTINUEQUESTION,
     CONV_TOPIC,
+    CONV_PLAYER,
     CONV_DONE
 } ConversationState;
 
