@@ -152,6 +152,14 @@ SOURCE=..\src\city.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\codex.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\codex.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\combat.c
 # End Source File
 # Begin Source File
