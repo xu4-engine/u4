@@ -38,10 +38,10 @@ int isReagentInInventory(void *reag);
 void putReagentInInventory(void *reag);
 
 static const ItemLocation items[] = {
-    { "Mandrake Root", 182, 54, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS },
-    { "Mandrake Root", 100, 165, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS },
-    { "Nightshade", 46, 149, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS },
-    { "Nightshade", 205, 44, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS },
+    { "Mandrake Root", 182, 54, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
+    { "Mandrake Root", 100, 165, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
+    { "Nightshade", 46, 149, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY},
+    { "Nightshade", 205, 44, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY },
     { "the Bell of Courage", 176, 208, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_BELL, 0 },
     { "A Silver Horn", 45, 173, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_HORN, 0 },
     { "the Wheel from the H.M.S. Cape", 96, 215, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_WHEEL, 0 },
@@ -71,6 +71,7 @@ void putRuneInInventory(void *virt) {
     c->saveGame->players[0].xp += 100;
     playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     c->saveGame->runes |= (int)virt;
+    c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
 int isStoneInInventory(void *virt) {
@@ -81,6 +82,7 @@ void putStoneInInventory(void *virt) {
     c->saveGame->players[0].xp += 200;
     playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     c->saveGame->stones |= (int)virt;
+    c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
 int isItemInInventory(void *item) {
@@ -91,6 +93,7 @@ void putItemInInventory(void *item) {
     c->saveGame->players[0].xp += 400;
     playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     c->saveGame->items |= (int)item;
+    c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
 int isMysticInInventory(void *mystic) {
@@ -106,12 +109,14 @@ int isMysticInInventory(void *mystic) {
 
 void putMysticInInventory(void *mystic) {
     c->saveGame->players[0].xp += 400;
+    playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     if (((int)mystic) == WEAP_MYSTICSWORD)
         c->saveGame->weapons[WEAP_MYSTICSWORD] += 8;
     else if (((int)mystic) == ARMR_MYSTICROBES)
         c->saveGame->armor[ARMR_MYSTICROBES] += 8;
     else
         assert(0);
+    c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
 int isReagentInInventory(void *reag) {
@@ -121,21 +126,26 @@ int isReagentInInventory(void *reag) {
 void putReagentInInventory(void *reag) {
     playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     c->saveGame->reagents[(int)reag] += rand() % 8 + 2;
+    c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
 int itemConditionsMet(unsigned char conditions) {
     int i;
 
-    if (conditions == SC_NEWMOONS &&
+    if ((conditions & SC_NEWMOONS) &&
         !(c->saveGame->trammelphase == 7 && c->saveGame->feluccaphase == 7))
         return 0;
 
-    if (conditions == SC_FULLAVATAR) {
+    if (conditions & SC_FULLAVATAR) {
         for (i = 0; i < VIRT_MAX; i++) {
             if (c->saveGame->karma[i] != 0)
                 return 0;
         }
     }
+
+    if ((conditions & SC_REAGENTDELAY) &&
+        (c->saveGame->moves & 0xF0) == c->saveGame->lastreagent)
+        return 0;
 
     return 1;
 }

@@ -6,9 +6,10 @@
 #define ITEM_H
 
 typedef enum {
-    SC_NONE,
-    SC_NEWMOONS,
-    SC_FULLAVATAR
+    SC_NONE         = 0x00,
+    SC_NEWMOONS     = 0x01,
+    SC_FULLAVATAR   = 0x02,
+    SC_REAGENTDELAY = 0x04
 } SearchCondition;
 
 typedef struct _ItemLocation {
