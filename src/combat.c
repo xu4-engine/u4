@@ -11,11 +11,13 @@
 #include "context.h"
 #include "ttype.h"
 #include "map.h"
+#include "object.h"
 #include "annotation.h"
 #include "event.h"
 #include "savegame.h"
 #include "game.h"
 #include "area.h"
+#include "monster.h"
 
 extern Map brick_map;
 extern Map bridge_map;
@@ -40,12 +42,16 @@ extern Map shipshor_map;
 extern Map shore_map;
 extern Map shorship_map;
 
+Object *party[8];
+Object *monsters[16];
+
 int combatHandleChoice(char choice);
 void combatEnd(void);
 
 void combatBegin(unsigned char partytile, unsigned short transport) {
     int i;
     GetChoiceActionInfo *info;
+    int nmonsters;
 
     annotationClear();
 
@@ -55,7 +61,16 @@ void combatBegin(unsigned char partytile, unsigned short transport) {
     musicPlay();
 
     for (i = 0; i < c->saveGame->members; i++)
-        mapAddObject(c->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->map->area->player_start[i].x, c->map->area->player_start[i].y);
+        party[i] = mapAddObject(c->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->map->area->player_start[i].x, c->map->area->player_start[i].y);
+    for (; i < 8; i++)
+        party[i] = NULL;
+    party[0]->hasFocus = 1;
+
+    nmonsters = (rand() % 15) + 1;
+    for (i = 0; i < nmonsters; i++)
+        monsters[i] = mapAddObject(c->map, ORC_TILE, ORC_TILE + 1, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
+    for (; i < 16; i++)
+        monsters[i] = NULL;
 
     info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
     info->choices = " \033";
