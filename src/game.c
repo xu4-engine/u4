@@ -1422,7 +1422,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
 
             screenMessage("Advance Moons!\n");
             while (c->saveGame->trammelphase != newTrammelphase)
-                gameUpdateMoons(0);
+                gameUpdateMoons(1);
 
             screenPrompt();
         }
