@@ -29,6 +29,7 @@ const char * const musicFilenames[] = {
     "Castles.mid"
 };
 
+int soundDisabled;
 int toggle = 1;
 Mix_Music *playing = NULL;
 
@@ -38,7 +39,7 @@ void musicPlayMid(Music music) {
 
     assert(music < sizeof(musicFilenames) / sizeof(musicFilenames[0]));
 
-    if (current == music)
+    if (soundDisabled || current == music)
         return;
 
     if (playing) {
@@ -64,10 +65,13 @@ void musicPlayMid(Music music) {
 
 int musicToggle() {
     toggle = !toggle;
-    if (!toggle)
-        Mix_FadeOutMusic(1000);
-    else if (playing)
-        Mix_FadeInMusic(playing, -1, 1000);
+
+    if (!soundDisabled) {
+        if (!toggle)
+            Mix_FadeOutMusic(1000);
+        else if (playing)
+            Mix_FadeInMusic(playing, -1, 1000);
+    }
 
     return toggle;
 }
@@ -84,28 +88,33 @@ void musicPlay(void) {  /* Main music loop. */
     musicPlayMid(c->map->music);
 }
 
-int musicInit(void) {
+int musicInit(int sound) {
 
-   int audio_rate = 22050;
-   Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
-   int audio_channels = 2;
-   int audio_buffers = 4096;
+    soundDisabled = !sound;
 
-   if (SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
-       fprintf(stderr, "Unable to init SDL audio subsystem: %s\n", SDL_GetError());
-       return 1;
-   }
+    if (sound) {
+        int audio_rate = 22050;
+        Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
+        int audio_channels = 2;
+        int audio_buffers = 4096;
+
+        if (SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
+            fprintf(stderr, "Unable to init SDL audio subsystem: %s\n", SDL_GetError());
+            return 1;
+        }
 
 #ifdef WIN32			
-   SDL_AudioInit("waveout");
+        SDL_AudioInit("waveout");
 #endif
 
-   if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
-       fprintf(stderr, "Unable to open audio!\n");
-       return 1;
-   }
+        if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
+            fprintf(stderr, "Unable to open audio!\n");
+            return 1;
+        }
 
-   Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
-   return 0;
+        Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
+    }
+
+    return 0;
 }
 

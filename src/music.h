@@ -18,7 +18,7 @@ typedef enum {
     MUSIC_CASTLES
 } Music;
 
-int musicInit();
+int musicInit(int sound);
 void musicPlay(void);
 void musicLordBritish(void);
 void musicIntro(void);
