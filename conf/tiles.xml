@@ -6,10 +6,10 @@
     <tile cantwalkon="all" swimable="true" sailable="true" animated="true"/> <!-- water -->
     <tile cantwalkon="all" swimable="true" animated="true"/> <!-- shallows -->
     <tile speed="slow" effect="poison"/> <!-- swamp -->
-    <tile canlandballoon="true"/> <!-- grass -->
-    <tile speed="vslow"/> <!-- brush -->
-    <tile speed="vslow" opaque="true"/> <!-- forest -->
-    <tile speed="vvslow"/> <!-- hills -->
+    <tile canlandballoon="true" replacement="true"/> <!-- grass -->
+    <tile speed="vslow" replacement="true"/> <!-- brush -->
+    <tile speed="vslow" opaque="true" replacement="true"/> <!-- forest -->
+    <tile speed="vvslow" replacement="true"/> <!-- hills -->
     <tile cantwalkon="all" opaque="true" unflyable="true" monsterunwalkable="true"/> <!-- mountains -->
     <tile/> <!-- dungeon -->
     <tile/> <!-- city -->
@@ -64,8 +64,8 @@
     <tile cantwalkon="all" door="true"/> <!-- door -->
     <tile chest="true"/> <!-- chest -->
     <tile cantwalkon="all"/> <!-- ankh -->
-    <tile/> <!-- brickfloor -->
-    <tile/> <!-- woodfloor -->
+    <tile replacement="true"/> <!-- brickfloor -->
+    <tile replacement="true"/> <!-- woodfloor -->
     <tile cantwalkon="all"/> <!-- mgate0 -->
     <tile cantwalkon="all"/> <!-- mgate1 -->
     <tile cantwalkon="all"/> <!-- mgate2 -->

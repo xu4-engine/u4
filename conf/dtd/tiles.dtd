@@ -23,6 +23,7 @@
                monsterunwalkable  %bool;   #IMPLIED
                dungeonunwalkable  %bool;   #IMPLIED
                opaque             %bool;   #IMPLIED
+               replacement        %bool;   #IMPLIED
                sailable           %bool;   #IMPLIED
                ship               %bool;   #IMPLIED
                speed              %speed;  #IMPLIED
