@@ -56,7 +56,7 @@ const Weapon *Weapon::get(const string &name) {
     return NULL;
 }
 
-void Weapon::loadConf() {
+Weapon::Weapon(const ConfigElement &conf) {
     static const struct {
         const char *name;
         unsigned int mask;        
@@ -70,7 +70,6 @@ void Weapon::loadConf() {
         { "returns", MASK_RETURNS },
         { "dontshowtravel", MASK_DONTSHOWTRAVEL }
     };
-
     static const struct {
         const char *name;
         unsigned int tile;
@@ -81,6 +80,87 @@ void Weapon::loadConf() {
         { "magic", MAGICFLASH_TILE }
     };
 
+    type = static_cast<WeaponType>(weapons.size());
+    name = conf.getString("name");
+    abbr = conf.getString("abbr");
+    canuse = 0xFF;
+    damage = conf.getInt("damage");
+    hittile = HITFLASH_TILE;
+    misstile = MISSFLASH_TILE;
+    leavetile = 0;
+    mask = 0;
+
+    /* Get the range of the weapon, whether it is absolute or normal range */
+    string range = conf.getString("range");
+    if (range.empty()) {
+        range = conf.getString("absolute_range");
+        if (!range.empty())
+            mask |= MASK_ABSOLUTERANGE;
+    }
+    if (range.empty())
+        errorFatal("malformed weapons.xml file: range or absolute_range not found for weapon %s", name.c_str());
+
+    range = atoi(range.c_str());
+
+    /* Load weapon attributes */
+    for (unsigned at = 0; at < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); at++) {
+        if (conf.getBool(booleanAttributes[at].name)) {
+            mask |= booleanAttributes[at].mask;
+        }
+    }
+
+    /* Load hit tiles */
+    for (unsigned ht = 0; ht < sizeof(tiles) / sizeof(tiles[0]); ht++) {
+        if (conf.getString("hittile") == tiles[ht].name) {
+            hittile = tiles[ht].tile;
+            break;
+        }
+    }
+
+    /* Load miss tiles */
+    for (unsigned mt = 0; mt < sizeof(tiles) / sizeof(tiles[0]); mt++) {
+        if (conf.getString("misstile") == tiles[mt].name) {
+            misstile = tiles[mt].tile;
+            break;
+        }
+    }
+
+    /* Load leave tiles */
+    for (unsigned lt = 0; lt < sizeof(tiles) / sizeof(tiles[0]); lt++) {
+        if (conf.getString("leavetile") == tiles[lt].name) {
+            mask |= MASK_LEAVETILE;
+            leavetile = tiles[lt].tile;
+            break;
+        }
+    }
+
+    vector<ConfigElement> contraintConfs = conf.getChildren();
+    for (std::vector<ConfigElement>::iterator i = contraintConfs.begin(); i != contraintConfs.end(); i++) {
+        unsigned char mask = 0;
+
+        if (i->getName() != "constraint")
+            continue;
+
+        for (int cl = 0; cl < 8; cl++) {
+            if (strcasecmp(i->getString("class").c_str(), getClassName(static_cast<ClassType>(cl))) == 0)
+                mask = (1 << cl);
+        }
+        if (mask == 0 && strcasecmp(i->getString("class").c_str(), "all") == 0)
+            mask = 0xFF;
+        if (mask == 0) {
+            errorFatal("malformed weapons.xml file: constraint has unknown class %s", 
+                       i->getString("class").c_str());
+        }
+        if (i->getBool("canuse"))
+            canuse |= mask;
+        else
+            canuse &= ~mask;
+    }
+
+    
+}
+
+void Weapon::loadConf() {
     if (!confLoaded)
         confLoaded = true;
     else
@@ -93,85 +173,7 @@ void Weapon::loadConf() {
         if (i->getName() != "weapon")
             continue;
 
-        Weapon *weapon = new Weapon;
-        weapon->type = static_cast<WeaponType>(weapons.size());
-        weapon->name = i->getString("name");
-        weapon->abbr = i->getString("abbr");
-        weapon->canuse = 0xFF;
-        weapon->damage = i->getInt("damage");
-        weapon->hittile = HITFLASH_TILE;
-        weapon->misstile = MISSFLASH_TILE;
-        weapon->leavetile = 0;
-        weapon->mask = 0;
-
-        /* Get the range of the weapon, whether it is absolute or normal range */
-        string range = i->getString("range");
-        if (range.empty()) {
-            range = i->getString("absolute_range");
-            if (!range.empty())
-                weapon->mask |= MASK_ABSOLUTERANGE;
-        }
-        if (range.empty())
-            errorFatal("malformed weapons.xml file: range or absolute_range not found for weapon %s", weapon->name.c_str());
-
-        weapon->range = atoi(range.c_str());
-
-        /* Load weapon attributes */
-        for (unsigned at = 0; at < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); at++) {
-            if (i->getBool(booleanAttributes[at].name)) {
-                weapon->mask |= booleanAttributes[at].mask;
-            }
-        }
-
-        /* Load hit tiles */
-        for (unsigned ht = 0; ht < sizeof(tiles) / sizeof(tiles[0]); ht++) {
-            if (i->getString("hittile") == tiles[ht].name) {
-                weapon->hittile = tiles[ht].tile;
-                break;
-            }
-        }
-
-        /* Load miss tiles */
-        for (unsigned mt = 0; mt < sizeof(tiles) / sizeof(tiles[0]); mt++) {
-            if (i->getString("misstile") == tiles[mt].name) {
-                weapon->misstile = tiles[mt].tile;
-                break;
-            }
-        }
-
-        /* Load leave tiles */
-        for (unsigned lt = 0; lt < sizeof(tiles) / sizeof(tiles[0]); lt++) {
-            if (i->getString("leavetile") == tiles[lt].name) {
-                weapon->mask |= MASK_LEAVETILE;
-                weapon->leavetile = tiles[lt].tile;
-                break;
-            }
-        }
-
-        vector<ConfigElement> contraintConfs = i->getChildren();
-        for (std::vector<ConfigElement>::iterator j = contraintConfs.begin(); j != contraintConfs.end(); j++) {
-            unsigned char mask = 0;
-
-            if (j->getName() != "constraint")
-                continue;
-
-            for (int cl = 0; cl < 8; cl++) {
-                if (strcasecmp(j->getString("class").c_str(), getClassName(static_cast<ClassType>(cl))) == 0)
-                    mask = (1 << cl);
-            }
-            if (mask == 0 && strcasecmp(j->getString("class").c_str(), "all") == 0)
-                mask = 0xFF;
-            if (mask == 0) {
-                errorFatal("malformed weapons.xml file: constraint has unknown class %s", 
-                           j->getString("class").c_str());
-            }
-            if (j->getBool("canuse"))
-                weapon->canuse |= mask;
-            else
-                weapon->canuse &= ~mask;
-        }
-
-        weapons.push_back(weapon);
+        weapons.push_back(new Weapon(*i));
     }
 }
 

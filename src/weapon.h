@@ -9,6 +9,8 @@
 #include <vector>
 #include "savegame.h"
 
+class ConfigElement;
+
 class Weapon {
 public:
     static const Weapon *get(WeaponType w);
@@ -34,7 +36,7 @@ public:
     bool showTravel() const;
 
 private:
-    Weapon() {}
+    Weapon(const ConfigElement &conf);
 
     static void loadConf();
     static bool confLoaded;

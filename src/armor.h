@@ -9,6 +9,8 @@
 #include <vector>
 #include "savegame.h"
 
+class ConfigElement;
+
 class Armor {
 public:
     static const Armor *get(ArmorType a);
@@ -20,7 +22,7 @@ public:
     bool canWear(ClassType klass) const;
 
 private:
-    Armor() {}
+    Armor(const ConfigElement &conf);
 
     static void loadConf();
     static bool confLoaded;

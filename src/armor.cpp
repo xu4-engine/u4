@@ -45,6 +45,37 @@ const Armor *Armor::get(const string &name) {
     return NULL;
 }
 
+Armor::Armor(const ConfigElement &conf) {
+    type = static_cast<ArmorType>(armors.size());
+    name = conf.getString("name");
+    canuse = 0xFF;
+    defense = conf.getInt("defense");
+    mask = 0;
+
+    vector<ConfigElement> contraintConfs = conf.getChildren();
+    for (std::vector<ConfigElement>::iterator i = contraintConfs.begin(); i != contraintConfs.end(); i++) {
+        unsigned char mask = 0;
+
+        if (i->getName() != "constraint")
+            continue;
+
+        for (int cl = 0; cl < 8; cl++) {
+            if (strcasecmp(i->getString("class").c_str(), getClassName(static_cast<ClassType>(cl))) == 0)
+                mask = (1 << cl);
+        }
+        if (mask == 0 && strcasecmp(i->getString("class").c_str(), "all") == 0)
+            mask = 0xFF;
+        if (mask == 0) {
+            errorFatal("malformed armor.xml file: constraint has unknown class %s", 
+                       i->getString("class").c_str());
+        }
+        if (i->getBool("canuse"))
+            canuse |= mask;
+        else
+            canuse &= ~mask;
+    }
+}
+
 void Armor::loadConf() {
     if (!confLoaded)
         confLoaded = true;
@@ -58,37 +89,7 @@ void Armor::loadConf() {
         if (i->getName() != "armor")
             continue;
 
-        Armor *armor = new Armor;
-        armor->type = static_cast<ArmorType>(armors.size());
-        armor->name = i->getString("name");
-        armor->canuse = 0xFF;
-        armor->defense = i->getInt("defense");
-        armor->mask = 0;
-
-        vector<ConfigElement> contraintConfs = i->getChildren();
-        for (std::vector<ConfigElement>::iterator j = contraintConfs.begin(); j != contraintConfs.end(); j++) {
-            unsigned char mask = 0;
-
-            if (j->getName() != "constraint")
-                continue;
-
-            for (int cl = 0; cl < 8; cl++) {
-                if (strcasecmp(j->getString("class").c_str(), getClassName(static_cast<ClassType>(cl))) == 0)
-                    mask = (1 << cl);
-            }
-            if (mask == 0 && strcasecmp(j->getString("class").c_str(), "all") == 0)
-                mask = 0xFF;
-            if (mask == 0) {
-                errorFatal("malformed armor.xml file: constraint has unknown class %s", 
-                           j->getString("class").c_str());
-            }
-            if (j->getBool("canuse"))
-                armor->canuse |= mask;
-            else
-                armor->canuse &= ~mask;
-        }
-
-        armors.push_back(armor);
+        armors.push_back(new Armor(*i));
     }
 }
 
