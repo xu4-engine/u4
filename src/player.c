@@ -539,8 +539,7 @@ void playerReviveParty(SaveGame *saveGame) {
     }
 
     saveGame->food = 20099;
-    saveGame->gold = 200;
-    gameSetTransport(AVATAR_TILE);
+    saveGame->gold = 200;    
 }
 
 /**

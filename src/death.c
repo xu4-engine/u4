@@ -120,6 +120,7 @@ void deathRevive() {
     musicPlay();
 
     playerReviveParty(c->saveGame);
+    gameSetTransport(AVATAR_TILE);
 
     screenEnableCursor();
     screenShowCursor();
