@@ -59,7 +59,7 @@
     <tile cantwalkon="all"/> <!-- shipwheel -->
     <tile cantwalkon="all"/> <!-- rocks -->
     <tile cantwalkon="all"/> <!-- corpse -->
-    <tile cantwalkon="all"/> <!-- stonewall -->
+    <tile cantwalkon="all" unflyable="true"/> <!-- stonewall -->
     <tile cantwalkon="all" lockeddoor="true"/> <!-- ldoor -->
     <tile cantwalkon="all" door="true"/> <!-- door -->
     <tile chest="true"/> <!-- chest -->
@@ -129,5 +129,5 @@
     <tile cantwalkon="all"/> <!-- left -->
     <tile cantwalkon="all"/> <!-- window -->
     <tile cantwalkon="all"/> <!-- blank -->
-    <tile cantwalkon="all" opaque="true" dungeonunwalkable="true"/> <!-- brickwall -->
+    <tile cantwalkon="all" opaque="true" dungeonunwalkable="true" unflyable="true"/> <!-- brickwall -->
 </tiles>
