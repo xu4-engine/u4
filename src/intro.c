@@ -303,7 +303,7 @@ int introInit() {
         menusLoaded = 1;
     }
 
-    memcpy(settingsChanged, settings, sizeof(Settings));
+    settingsCopy(settingsChanged, settings);
 
     introUpdateScreen();
 
@@ -323,6 +323,7 @@ unsigned char *introGetSigData() {
 void introDelete(int freeMenus) {
     int i;
 
+    free(settingsChanged->videoType);
     free(settingsChanged);
 
     for (i = 0; i < 28; i++)
@@ -400,7 +401,7 @@ int introKeyHandler(int key, void *data) {
             introErrorMessage = NULL;
             mode = INTRO_CONFIG;
             mainOptions = menuReset(mainOptions);            
-            memcpy(settingsChanged, settings, sizeof(Settings));
+            settingsCopy(settingsChanged, settings);
             introUpdateScreen();
             break;
         case 'a':
@@ -706,7 +707,7 @@ void introUpdateScreen() {
     case INTRO_CONFIG_VIDEO:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Video Options:");
-        screenTextAt(24, 5, "%s", settingsVideoTypeToString(settingsChanged->videoType));
+        screenTextAt(24, 5, "%s", settingsChanged->videoType);
         screenTextAt(24, 6, "x%d", settingsChanged->scale);
         screenTextAt(24, 7, "%s", settingsChanged->fullscreen ? "Fullscreen" : "Window");
         screenTextAt(24, 8, "%s", settingsFilterToString(settingsChanged->filter));
@@ -1376,21 +1377,30 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
 
     case 4:
+        ASSERT(screenGetImageSetNames()[0], "at least one image set needed");
         if (action != ACTIVATE_DECREMENT) {
-            settingsChanged->videoType++;
-            if (settingsChanged->videoType == VIDEO_MAX)
-                settingsChanged->videoType = (VideoType)(VIDEO_MIN+1);
+            int i = 0;
+            while(screenGetImageSetNames()[i] && strcmp(settingsChanged->videoType, screenGetImageSetNames()[i]) != 0)
+                i++;
+            if (!screenGetImageSetNames()[i] || !screenGetImageSetNames()[i+1])
+                i = 0;
+            else
+                i++;
+            free(settingsChanged->videoType);
+            settingsChanged->videoType = strdup(screenGetImageSetNames()[i]);
         } else {
-            settingsChanged->videoType--;
-            if (settingsChanged->videoType == VIDEO_MIN)
-                settingsChanged->videoType = (VideoType)(VIDEO_MAX-1);
+            int i = 1;
+            while(screenGetImageSetNames()[i] && strcmp(settingsChanged->videoType, screenGetImageSetNames()[i]) != 0)
+                i++;
+            free(settingsChanged->videoType);
+            settingsChanged->videoType = strdup(screenGetImageSetNames()[i-1]);
         }
         break;
 
     case 0xFE:
         /* save settings (if necessary) */
-        if (memcmp(settings, settingsChanged, sizeof(Settings)) != 0) {
-            memcpy(settings, settingsChanged, sizeof(Settings));
+        if (settingsCompare(settings, settingsChanged) != 0) {
+            settingsCopy(settings, settingsChanged);
             settingsWrite();
 
             /* FIXME: resize images, etc. */
@@ -1402,7 +1412,7 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
     case 0xFF:
         /* discard settings */
-        memcpy(settingsChanged, settings, sizeof(Settings));
+        settingsCopy(settingsChanged, settings);
         mode = INTRO_CONFIG;
         break;
         
@@ -1422,7 +1432,7 @@ void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
     case 0xFE:
         /* save settings */
-        memcpy(settings, settingsChanged, sizeof(Settings));
+        settingsCopy(settings, settingsChanged);
         settingsWrite();
         
         musicIntro();
@@ -1431,7 +1441,7 @@ void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
     case 0xFF:
         /* discard settings */
-        memcpy(settingsChanged, settings, sizeof(Settings));
+        settingsCopy(settingsChanged, settings);
         mode = INTRO_CONFIG;
         break;
     
@@ -1471,14 +1481,14 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
 
     case 0xFE:
         /* save settings */
-        memcpy(settings, settingsChanged, sizeof(Settings));
+        settingsCopy(settings, settingsChanged);
         settingsWrite();        
     
         mode = INTRO_CONFIG;        
         break;
     case 0xFF:
         /* discard settings */
-        memcpy(settingsChanged, settings, sizeof(Settings));
+        settingsCopy(settingsChanged, settings);
         mode = INTRO_CONFIG;
         break;
     default: break;
@@ -1506,14 +1516,14 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;    
     case 0xFE:
         /* save settings */
-        memcpy(settings, settingsChanged, sizeof(Settings));
+        settingsCopy(settings, settingsChanged);
         settingsWrite();        
     
         mode = INTRO_CONFIG_GAMEPLAY;        
         break;
     case 0xFF:
         /* discard settings */
-        memcpy(settingsChanged, settings, sizeof(Settings));
+        settingsCopy(settingsChanged, settings);
         mode = INTRO_CONFIG_GAMEPLAY;
         break;
     default: break;
@@ -1551,7 +1561,7 @@ void introKeyboardOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
     case 0xFE:
         /* save settings */
-        memcpy(settings, settingsChanged, sizeof(Settings));
+        settingsCopy(settings, settingsChanged);
         settingsWrite();        
 
         /* re-initialize keyboard */
@@ -1561,7 +1571,7 @@ void introKeyboardOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
     case 0xFF:
         /* discard settings */
-        memcpy(settingsChanged, settings, sizeof(Settings));
+        settingsCopy(settingsChanged, settings);
         mode = INTRO_CONFIG_ADVANCED;
         break;
     default: break;
@@ -1653,7 +1663,7 @@ void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
 
     case 0xFE:
         /* save settings */
-        memcpy(settings, settingsChanged, sizeof(Settings));
+        settingsCopy(settings, settingsChanged);
         settingsWrite();        
     
         /* re-initialize events */
@@ -1663,7 +1673,7 @@ void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
     case 0xFF:
         /* discard settings */
-        memcpy(settingsChanged, settings, sizeof(Settings));
+        settingsCopy(settingsChanged, settings);
         mode = INTRO_CONFIG_ADVANCED;
         break;
     default: break;
@@ -1694,14 +1704,14 @@ void introEnhancementOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
     case 0xFE:        
         /* save settings */
-        memcpy(settings, settingsChanged, sizeof(Settings));
+        settingsCopy(settings, settingsChanged);
         settingsWrite();        
     
         mode = INTRO_CONFIG_ADVANCED;
         break;
     case 0xFF:        
         /* discard settings */
-        memcpy(settingsChanged, settings, sizeof(Settings));
+        settingsCopy(settingsChanged, settings);
         mode = INTRO_CONFIG_ADVANCED;
         break;
     
