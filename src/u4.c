@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
     /* do the intro */
     introInit();
     musicIntro();
-    eventHandlerAddTimerCallback(&introTimer);
+    eventHandlerAddTimerCallback(&introTimer, 1);
     eventHandlerPushKeyHandler(&introKeyHandler);
     eventHandlerMain(NULL);
     eventHandlerRemoveTimerCallback(&introTimer);
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
     statsUpdate();
     screenMessage("\020");
 
-    eventHandlerAddTimerCallback(&gameTimer);
+    eventHandlerAddTimerCallback(&gameTimer, 1);
     eventHandlerPushKeyHandler(&gameBaseKeyHandler);
     eventHandlerMain(&gameUpdateScreen);
 
