@@ -27,7 +27,7 @@ http://www.mingw.org/
 3. Install WinCVS
 - during installation, WinCVS will ask you to fill in the WinCVS preferences.
 -- "General" tab:
-Enter the CVSROOT = pserver:anonymous@cvs.xu4.sourceforge.net:/cvsroot/xu4
+Enter the CVSROOT = :pserver:anonymous@cvs.xu4.sourceforge.net:/cvsroot/xu4
 Authentication = "passwd" file on the cvs server
 -- "Globals" tab:
 Uncheck "Checkout read-only"
