@@ -268,7 +268,7 @@ void CombatController::end(bool adjustKarma) {
 
                 /* FIXME: move to separate function */
                 /* add a chest, if the creature leaves one */
-                if (creature->leavesChest() && 
+                if (!inn && creature->leavesChest() && 
                     tileIsCreatureWalkable(ground) && tileIsWalkable(ground)) {                    
                     c->location->map->addObject(tileGetChestBase(), tileGetChestBase(), coords);
                 }

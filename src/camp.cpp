@@ -178,9 +178,9 @@ void innTimer(void *data) {
         }
 
         delete c->combat;
-        c->combat = new CombatController(mapid);
-        c->combat->setInn(true);
+        c->combat = new CombatController(mapid);        
         c->combat->init(creature);
+		c->combat->setInn(true);
         c->combat->showCombatMessage(showMessage);  
         c->combat->begin();
     }
