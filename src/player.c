@@ -179,8 +179,13 @@ int playerCanEnterShrine(const SaveGame *saveGame, Virtue virtue) {
  * the lost eighth callback if the player has lost avatarhood.
  */
 void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
+    int timeLimited = 0;
     int v, newKarma[VIRT_MAX];
 
+    /*
+     * make a local copy of all virtues, and adjust it according to
+     * the game rules
+     */
     for (v = 0; v < VIRT_MAX; v++)
         newKarma[v] = saveGame->karma[v];
 
@@ -194,13 +199,15 @@ void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
         newKarma[VIRT_HONOR]--;
         break;
     case KA_GAVE_TO_BEGGAR:
+        timeLimited = 1;
         newKarma[VIRT_COMPASSION] += 2;
-        newKarma[VIRT_HONOR] += 3;
+        newKarma[VIRT_HONOR] += 3; /* FIXME: verify if honor goes up */
         break;
     case KA_BRAGGED:
         newKarma[VIRT_HUMILITY] -= 5;
         break;
     case KA_HUMBLE:
+        timeLimited = 1;
         newKarma[VIRT_HUMILITY] += 10;
         break;
     case KA_HAWKWIND:
@@ -232,6 +239,16 @@ void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
     case KA_DIDNT_DONATE_BLOOD:
         newKarma[VIRT_SACRIFICE] -= 5;
         break;
+    case KA_CHEAT_REAGENTS:
+        newKarma[VIRT_HONESTY] -= 10;
+        newKarma[VIRT_JUSTICE] -= 10;
+        newKarma[VIRT_HONOR] -= 10;
+        break;
+    case KA_DIDNT_CHEAT_REAGENTS:
+        newKarma[VIRT_HONESTY] += 2;
+        newKarma[VIRT_JUSTICE] += 2;
+        newKarma[VIRT_HONOR] += 2;
+        break;
     case KA_USED_SKULL:
         /* using the skull is very, very bad... */
         for (v = 0; v < VIRT_MAX; v++)
@@ -244,6 +261,21 @@ void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
         break;
     }
 
+    /*
+     * check if enough time has passed since last virtue award if
+     * action is time limited -- if not, throw away new values
+     */
+    if (timeLimited) {
+        if (((saveGame->moves / 16) & 0xFFFF) != saveGame->lastvirtue)
+            saveGame->lastvirtue = (saveGame->moves / 16) & 0xFFFF;
+        else
+            return;
+    }
+
+    /*
+     * update the real virtues and handle min/maxing at 1 and 99 along
+     * with losing of eighths
+     */
     for (v = 0; v < VIRT_MAX; v++) {
         if (saveGame->karma[v] == 0) {               /* already an avatar */
             if (newKarma[v] < 0) {
@@ -441,7 +473,40 @@ void playerApplySleepSpell(SaveGame *saveGame) {
     }
 }
 
-void playerRevive(SaveGame *saveGame) {
+int playerHeal(SaveGame *saveGame, HealType type, int player) {
+    if (player >= saveGame->members)
+        return 0;
+
+    switch(type) {
+
+    case HT_NONE:
+        return 1;
+
+    case HT_CURE:
+        if (saveGame->players[player].status != STAT_POISONED)
+            return 0;
+        saveGame->players[player].status = STAT_GOOD;
+        return 1;
+
+    case HT_HEAL:
+        if (saveGame->players[player].status == STAT_DEAD ||
+            saveGame->players[player].hp == saveGame->players[player].hpMax)
+            return 0;
+        saveGame->players[player].hp = saveGame->players[player].hpMax;
+        return 1;
+
+    case HT_RESURRECT:
+        if (saveGame->players[player].status != STAT_DEAD)
+            return 0;
+        saveGame->players[player].status = STAT_GOOD;
+        saveGame->players[player].hp = STAT_GOOD;
+        return 1;
+    }
+
+    return 0;
+}
+
+void playerReviveParty(SaveGame *saveGame) {
     int i;
 
     for (i = 0; i < saveGame->members; i++) {
@@ -467,6 +532,9 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
     saveGame->gold -= price;
 
     switch (item) {
+    case INV_NONE:
+        assert(0);              /* shouldn't happen */
+        break;
     case INV_WEAPON:
         saveGame->weapons[type] += quantity;
         break;
@@ -505,6 +573,9 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
 int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price) {
 
     switch (item) {
+    case INV_NONE:
+        assert(0);              /* shouldn't happen */
+        break;
     case INV_WEAPON:
         if (saveGame->weapons[type] < quantity)
             return 0;

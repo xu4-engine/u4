@@ -23,11 +23,21 @@ typedef enum {
     KA_SPARED_NONEVIL,
     KA_DONATED_BLOOD,
     KA_DIDNT_DONATE_BLOOD,
+    KA_CHEAT_REAGENTS,
+    KA_DIDNT_CHEAT_REAGENTS,
     KA_USED_SKULL,
     KA_DESTROYED_SKULL
 } KarmaAction;
 
 typedef enum {
+    HT_NONE,
+    HT_CURE,
+    HT_HEAL,
+    HT_RESURRECT
+} HealType;
+
+typedef enum {
+    INV_NONE,
     INV_WEAPON,
     INV_ARMOR,
     INV_FOOD,
@@ -61,7 +71,8 @@ void playerApplyEffect(SaveGame *saveGame, TileEffect effect);
 int playerPartyImmobilized(const SaveGame *saveGame);
 int playerPartyDead(const SaveGame *saveGame);
 void playerApplySleepSpell(SaveGame *saveGame);
-void playerRevive(SaveGame *saveGame);
+int playerHeal(SaveGame *saveGame, HealType type, int player);
+void playerReviveParty(SaveGame *saveGame);
 int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
 int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
 int playerAttackHit(const SaveGamePlayerRecord *player);
