@@ -245,7 +245,7 @@ int saveGamePlayerRecordWrite(const SaveGamePlayerRecord *record, FILE *f) {
     }
 
     if (!writeChar((unsigned char)record->sex, f) ||
-        !writeChar(record->class, f) ||
+        !writeChar((unsigned char)record->klass, f) ||
         !writeChar((unsigned char)record->status, f))
         return 0;
 
@@ -282,8 +282,9 @@ int saveGamePlayerRecordRead(SaveGamePlayerRecord *record, FILE *f) {
     if (!readChar(&ch, f))
         return 0;
     record->sex = ch;
-    if (!readChar(&(record->class), f))
-        return 0;
+    if (!readChar(&ch, f))
+      return 0;
+    record->klass = ch;
     if (!readChar(&ch, f))
         return 0;
     record->status = ch;
@@ -309,6 +310,6 @@ void saveGamePlayerRecordInit(SaveGamePlayerRecord *record) {
       record->name[i] = '\0';
 
     record->sex = SEX_MALE;
-    record->class = 0;
+    record->klass = CLASS_MAGE;
     record->status = STAT_GOOD;
 }

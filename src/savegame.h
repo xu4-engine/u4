@@ -43,6 +43,17 @@ typedef enum {
 } SexType;
 
 typedef enum {
+    CLASS_MAGE,
+    CLASS_BARD,
+    CLASS_FIGHTER,
+    CLASS_DRUID,
+    CLASS_TINKER,
+    CLASS_PALADIN,
+    CLASS_RANGER,
+    CLASS_SHEPHERD
+} ClassType;
+
+typedef enum {
     STAT_GOOD = 'G',
     STAT_POISONED = 'P',
     STAT_SLEEPING = 'S',
@@ -83,14 +94,14 @@ typedef enum {
 } Item;
 
 typedef enum {
-    STON_BLUE   = 0x01,
-    STON_YELLOW = 0x02,
-    STON_RED    = 0x04,
-    STON_GREEN  = 0x08,
-    STON_ORANGE = 0x10,
-    STON_PURPLE = 0x20,
-    STON_WHITE  = 0x40,
-    STON_BLACK  = 0x80
+    STONE_BLUE   = 0x01,
+    STONE_YELLOW = 0x02,
+    STONE_RED    = 0x04,
+    STONE_GREEN  = 0x08,
+    STONE_ORANGE = 0x10,
+    STONE_PURPLE = 0x20,
+    STONE_WHITE  = 0x40,
+    STONE_BLACK  = 0x80
 } Stone;
 
 typedef enum {
@@ -115,7 +126,7 @@ typedef struct {
     ArmorType armor;
     char name[16];
     SexType sex;
-    unsigned char class;
+    ClassType klass;
     StatusType status;
 } SaveGamePlayerRecord;
 
