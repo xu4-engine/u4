@@ -18,13 +18,12 @@ XU4
    conflict, where the ultimate challenge -- the self -- awaits..."
      -- Back cover of Ultima IV box
    
-XU4 is a recreation of the classic computer game Ultima IV. The
-purpose of the project is to make it easy and convenient to play on
-modern operating systems.  xu4 is primarily inspired by the much more
-ambitious project Exult.  Linux is the primary development platform
-but it gets ported to Windows regularly and is rumored to work on Mac
-OS X, too.  It should be trivial to port to any system with SDL
-support.
+XU4 is a remake of the computer game Ultima IV.  The goal is to make
+it easy and convenient to play this classic on modern operating
+systems.  XU4 is primarily inspired by the much more ambitious project
+Exult.  Linux is the primary development platform but it gets ported
+to Windows and MacOS X regularly. It should be trivial to port to any
+system with SDL support.
 
 XU4 isn't a new game based on the Ultima IV story -- it is a faithful
 recreation of the old game, right up to the crappy graphics.  If you
@@ -39,6 +38,11 @@ and vice versa, at least in theory.
 
 STATUS
 ------
+
+New in v0.6
+ - many bug fixes
+ - all vendors, healers, taverns and inns now work
+ - added data file tools documentation (doc/tools.txt)
 
 New in v0.5
  - lots of combat refinements, random monsters
@@ -119,22 +123,27 @@ that a copy of Ultima 4 for DOS must be present at runtime.
 Fortunately, Ultima IV is available as closed-source freeware on the
 internet (legally).  A copy is mirrored at xu4.sourceforge.net.
 
-It is also available from
-http://www.zip.com.au/~mfleming/ultima/u4download.html,
-http://members.tripod.com/~hardwire1/ultima4.zip, 
-http://www.members.aol.com/tommage/UltimaPage/ultima4.zip, or
-http://www.nightfall.org/~deep/ultima/main.html among many other
-sites.
-
 Once downloaded, it must be unzipped in one of four places:
  - the current directory when u4 is run
  - a subdirectory named "ultima4" of the current directory
  - "/usr/lib/u4/ultima4/"
  - "/usr/local/lib/u4/ultima4/"
 
-As of version 0.02, xu4 can handle uppercase or lowercase filenames.
+xu4 can handle uppercase or lowercase filenames even on case-sensitive
+filesystems, so it doesn't matter whether the files are named
+AVATAR.EXE or avater.exe or even Avatar.exe.
 
-xu4 accepts the following command line options:
+The Ultima IV VGA upgrade is supported; apply the upgrade to Ultima IV
+for DOS as per the directions included with the upgrade and it should
+just work.  Any problems with avpatch.exe can be safely ignored; just
+run switch.bat if it fails.
+
+At the title screen, a configuration menu can be accessed by pressing
+'c'.  Here, the screen scale, filter, volume and other settings can be
+modified.  Note: the game must be restarted for the new settings to
+take effect.  These settings are stored in the file $HOME/.xu4rc.
+
+xu4 also accepts the following command line options:
  -f        - fullscreen mode
  -g        - german keyboard - swap y & z
  -i        - skip the intro, go directly into the game

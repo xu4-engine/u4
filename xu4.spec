@@ -1,12 +1,13 @@
 Summary: xu4 - Ultima IV Recreated
 Name: xu4
-Version: 0.5
+Version: 0.6
 Release: 1
 URL: http://xu4.sourceforge.net/
 Source0: http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
 License: GPL
 Group: Amusements/Games
-BuildRequires: SDL-devel
+BuildRequires: SDL-devel SDL_mixer-devel libxml2-devel
+
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
 %description
@@ -26,7 +27,7 @@ spirit of the original game will be added.
 %setup -n u4 -q
 
 %build
-cd src && make datadir=%{_datadir} libdir=%{_libdir}
+cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir}
 
 %install
 cd src && %{makeinstall} desktopdir=$RPM_BUILD_ROOT/etc/X11/applnk
@@ -55,10 +56,15 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/lzwdec
 %{_libdir}/u4/rleenc
 %{_libdir}/u4/rledec
+%{_libdir}/u4/tlkconv
 %{_libdir}/u4/tiles.xml
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Mon Apr  7 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added tlkconv tool
+- added SDL_mixer-devel to build dependancies
+
 * Tue Feb 25 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - install config file plus encoding and decoding tools
 
