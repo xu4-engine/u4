@@ -4,7 +4,7 @@
 <graphics>
     <imageset name="EGA">
         <!-- tiles, charset, and game border -->
-        <image id="0"  filename="shapes.ega"   width="16" height="4096" depth="4" filetype="raw" tiles="256"/>
+        <image id="0"  filename="shapes.ega" width="16" height="4096" depth="4" filetype="raw" tiles="256"/>
         <image id="1"  filename="charset.ega"  width="8"  height="2048" depth="4" filetype="raw" tiles="256"/>
         <image id="2"  filename="start.ega"    width="320" height="200" depth="4" filetype="rle"/>
 
@@ -24,19 +24,19 @@
         <image id="15" filename="spirhum.ega"  width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
         <image id="16" filename="animate.ega"  width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
 
-        <!-- abyss vision images -->
+        <!-- abyss vision images: codex symbol images are overlaid on top of each other, so color 0 (black) is set to be transparent -->
         <image id="17" filename="key7.ega"     width="320" height="200" depth="4" filetype="rle"/>
-        <image id="18" filename="honesty.ega"  width="320" height="200" depth="4" filetype="rle" fixup="abyss"/>
-        <image id="19" filename="compassn.ega" width="320" height="200" depth="4" filetype="rle" fixup="abyss"/>
-        <image id="20" filename="valor.ega"    width="320" height="200" depth="4" filetype="rle" fixup="abyss"/>
-        <image id="21" filename="justice.ega"  width="320" height="200" depth="4" filetype="rle" fixup="abyss"/>
-        <image id="22" filename="sacrific.ega" width="320" height="200" depth="4" filetype="rle" fixup="abyss"/>
-        <image id="23" filename="honor.ega"    width="320" height="200" depth="4" filetype="rle" fixup="abyss"/>
-        <image id="24" filename="spirit.ega"   width="320" height="200" depth="4" filetype="rle" fixup="abyss"/>
-        <image id="25" filename="humility.ega" width="320" height="200" depth="4" filetype="rle" fixup="abyss"/>
-        <image id="26" filename="truth.ega"    width="320" height="200" depth="4" filetype="rle" fixup="abyss"/>
-        <image id="27" filename="love.ega"     width="320" height="200" depth="4" filetype="rle" fixup="abyss"/>
-        <image id="28" filename="courage.ega"  width="320" height="200" depth="4" filetype="rle" fixup="abyss"/>
+        <image id="18" filename="honesty.ega"  width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image id="19" filename="compassn.ega" width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image id="20" filename="valor.ega"    width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image id="21" filename="justice.ega"  width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image id="22" filename="sacrific.ega" width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image id="23" filename="honor.ega"    width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image id="24" filename="spirit.ega"   width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image id="25" filename="humility.ega" width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image id="26" filename="truth.ega"    width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image id="27" filename="love.ega"     width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image id="28" filename="courage.ega"  width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
         <image id="29" filename="stoncrcl.ega" width="320" height="200" depth="4" filetype="rle"/>
 
         <!-- shrine vision images -->
