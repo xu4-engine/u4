@@ -848,12 +848,11 @@ CannotJoinError Party::join(string name) {
 
             tmp = saveGame->players[saveGame->members];
             saveGame->players[saveGame->members] = saveGame->players[i];
-            saveGame->players[i] = tmp;
-            saveGame->members++;
+            saveGame->players[i] = tmp;            
             setChanged();
             notifyObservers("Party::join");
 
-            members.push_back(new PartyMember(this, &saveGame->players[saveGame->members]));
+            members.push_back(new PartyMember(this, &saveGame->players[saveGame->members++]));
 
             return JOIN_SUCCEEDED;
         }
