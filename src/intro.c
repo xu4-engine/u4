@@ -64,13 +64,17 @@ int answerInd;
 int questionRound;
 int introAskToggle;
 int questionTree[15];
+int beastie1Cycle;
+int beastie2Cycle;
 
-void introInitiateNewGame();
-void introStartQuestions();
+void introInitiateNewGame(void);
+void introDrawMap(void);
+void introDrawBeasties(void);
+void introStartQuestions(void);
 int introHandleName(const char *message);
 int introHandleSexChoice(char choice);
 void introShowText(const char *text);
-void introInitQuestionTree();
+void introInitQuestionTree(void);
 const char *introGetQuestion(int v1, int v2);
 int introDoQuestion(int answer);
 int introHandleQuestionChoice(char choice);
@@ -87,6 +91,8 @@ int introInit() {
 
     mode = INTRO_MAP;
     introAskToggle = 0;
+    beastie1Cycle = 0;
+    beastie2Cycle = 0;
 
     title = u4fopen("title.exe");
     if (!title)
@@ -110,7 +116,7 @@ int introInit() {
 
     u4fclose(title);
 
-    screenLoadCards();
+    screenLoadIntroAnimations();
     screenFixIntroScreen(screenFixData);
 
     return 1;
@@ -137,7 +143,7 @@ void introDelete() {
 
     free(introMap[0]);
 
-    screenFreeCards();
+    screenFreeIntroAnimations();
     screenFreeIntroBackgrounds();
 }
 
@@ -223,11 +229,17 @@ void introDrawMap() {
     }
 }
 
+void introDrawBeasties() {
+    screenShowBeastie(0, beastie1Cycle);
+    screenShowBeastie(1, beastie2Cycle);
+}
+
 void introUpdateScreen() {
     switch (mode) {
     case INTRO_MAP:
         screenDrawBackground(BKGD_INTRO);
         introDrawMap();
+        introDrawBeasties();
         break;
 
     case INTRO_MENU:
@@ -239,6 +251,7 @@ void introUpdateScreen() {
         screenTextAt(11, 19, "Initiate New Game");
         screenTextAt(3, 21, "xu4 is free software, see COPYING");
         screenTextAt(5, 22, "\011 Copyright 1987 Lord British");
+        introDrawBeasties();
         break;
 
     case INTRO_INIT_NAME:
@@ -435,7 +448,14 @@ void introTimer() {
     screenUpdateCursor();
     if (mode == INTRO_MAP)
         introDrawMap();
+    if (mode == INTRO_MAP || mode == INTRO_MENU)
+        introDrawBeasties();
     screenForceRedraw();
+
+    if ((rand() % 2) && ++beastie1Cycle >= 18)
+        beastie1Cycle = 0;
+    if ((rand() % 2) && ++beastie2Cycle >= 18)
+        beastie2Cycle = 0;
 }
 
 void introInitQuestionTree() {
