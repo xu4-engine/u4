@@ -9,13 +9,6 @@
 #include <string>
 #include <vector>
 
-enum CompressionType {
-    COMP_NONE,
-    COMP_RLE,
-    COMP_LZW,
-    COMP_MAX
-};
-
 /**
  * An abstract interface for file access.
  */
@@ -50,7 +43,6 @@ std::string u4find_sound(const std::string &fname);
 std::string u4find_conf(const std::string &fname);
 std::string u4find_graphics(const std::string &fname);
 std::string u4upgrade_translate_filename(const std::string &fname);
-CompressionType u4GetCompTypeByStr(const char *comp);
 
 extern int u4zipExists;
 extern int u4upgradeZipExists;

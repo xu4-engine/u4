@@ -514,15 +514,3 @@ string u4upgrade_translate_filename(const string &fname) {
     }
     return fname;
 }
-
-CompressionType u4GetCompTypeByStr(const char *comp) {
-    const char *types[] = { "none", "rle", "lzw" };
-    int i;
-
-    for (i = COMP_NONE; i < COMP_MAX; i++) {
-        if (strcasecmp(types[i], comp) == 0)
-            return (CompressionType)i;
-    }
-
-    return COMP_NONE;
-}
