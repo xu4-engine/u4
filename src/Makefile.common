@@ -33,6 +33,7 @@ SRCS=\
         movement.cpp \
         music.cpp \
         names.cpp \
+        object.cpp \
         person.cpp \
         player.cpp \
         portal.cpp \
