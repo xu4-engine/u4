@@ -99,5 +99,6 @@ int playerIsHitByAttack(const SaveGamePlayerRecord *player);
 int playerLoseWeapon(SaveGame *saveGame, int player);
 void playerAdjustGold(SaveGame *saveGame, int gold);
 void playerAdjustFood(SaveGame *saveGame, int food);
+int playerIsDisabled(const SaveGame *saveGame, int player);
 
 #endif

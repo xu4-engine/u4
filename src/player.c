@@ -403,8 +403,7 @@ void playerEndTurn(void) {
         }
 
         /* regenerate magic points */
-        if ((saveGame->players[i].status == STAT_GOOD || 
-             saveGame->players[i].status == STAT_POISONED) &&
+        if (!playerIsDisabled(saveGame, i) &&        
             saveGame->players[i].mp < playerGetMaxMp(&(saveGame->players[i])))
             saveGame->players[i].mp++;        
     }
@@ -461,10 +460,8 @@ int playerPartyImmobilized(const SaveGame *saveGame) {
     int i, immobile = 1;
 
     for (i = 0; i < saveGame->members; i++) {
-        if (saveGame->players[i].status == STAT_GOOD ||
-            saveGame->players[i].status == STAT_POISONED) {
-            immobile = 0;
-        }
+        if (!playerIsDisabled(saveGame, i))        
+            immobile = 0;        
     }
 
     return immobile;
@@ -723,4 +720,9 @@ void playerAdjustFood(SaveGame *saveGame, int food) {
     saveGame->food += food;
     if (saveGame->food > 999900)
         saveGame->food = (food > 0) ? 999900 : 0;
+}
+
+int playerIsDisabled(const SaveGame *saveGame, int player) {
+    return (saveGame->players[player].status == STAT_GOOD ||
+        saveGame->players[player].status == STAT_POISONED) ? 0 : 1;
 }

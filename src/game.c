@@ -1665,7 +1665,7 @@ int gameGetChest(int player) {
     Object *obj;
     unsigned char tile;
     
-    if ((player >= 0) && (c->saveGame->players[player].status != STAT_GOOD)) {
+    if ((player >= 0) && playerIsDisabled(c->saveGame, player)) {
         screenMessage("Disabled!\n");
         (*c->location->finishTurn)();
         return 0;
