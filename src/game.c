@@ -2327,7 +2327,7 @@ void gameCheckRandomMonsters() {
        or we're not on the world map, don't worry about it! */
     if (!mapIsWorldMap(c->location->map) ||
         mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS_ON_MAP ||
-        (rand() % 16) != 0)
+        (rand() % 20) != 0)
         return;
 
     dx = 7;
@@ -2345,7 +2345,10 @@ void gameCheckRandomMonsters() {
 
     x = c->location->x + dx;
     y = c->location->y + dy;
-
+    
+    /* wrap the coordinates around the map if necessary */
+    mapWrapCoordinates(c->location->map, &x, &y);
+    
     if ((monster = monsterRandomForTile(mapTileAt(c->location->map, x, y, c->location->z))) == 0)
         return;
 

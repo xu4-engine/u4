@@ -15,6 +15,7 @@ struct _Portal;
 
 #include "u4file.h"
 #include "music.h"
+#include "direction.h"
 
 typedef enum {
     MAP_WORLD,
@@ -83,5 +84,7 @@ int mapNumberOfMonsters(const Map *map);
 int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned char transport);
 int mapDistance(int x1, int y1, int x2, int y2);
 int mapMovementDistance(int x1, int y1, int x2, int y2);
+int mapDirMove(const Map *map, Direction dir, int *x, int *y);
+int mapWrapCoordinates(const Map *map, int *x, int *y);
 
 #endif

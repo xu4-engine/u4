@@ -571,22 +571,10 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         y = from_y;
 
         dirMove(d, &x, &y);
-
-        if (MAP_IS_OOB(map, x, y)) {
-            if (map->border_behavior == BORDER_WRAP) {
-                if (x < 0)
-                    x += map->width;
-                if (y < 0)
-                    y += map->height;
-                if (x >= (int) map->width)
-                    x -= map->width;
-                if (y >= (int) map->height)
-                    y -= map->height;
-            }
-            else {
-                retval = DIR_ADD_TO_MASK(d, retval);
-                continue;
-            }
+        
+        if (MAP_IS_OOB(map, x, y) && !mapWrapCoordinates(map, &x, &y)) {        
+            retval = DIR_ADD_TO_MASK(d, retval);
+            continue;            
         }
 
         if ((map->flags & SHOW_AVATAR) &&
@@ -677,4 +665,45 @@ int mapMovementDistance(int x1, int y1, int x2, int y2) {
     if (dx < 0) dx *= -1;
     if (dy < 0) dy *= -1;
     return (dx + dy);
+}
+
+/**
+ * Moves x and y in 'dir' direction on the map, wrapping if necessary
+ * Returns 1 if succeeded, 0 if map doesn't wrap and x or y was moved
+ * beyond the borders of the map
+ */
+
+int mapDirMove(const Map *map, Direction dir, int *x, int *y) {
+    int newx = *x,
+        newy = *y,
+        wraps = map->border_behavior == BORDER_WRAP;
+
+    dirMove(dir, &newx, &newy);
+    if (MAP_IS_OOB(map, newx, newy)) {
+        
+        if (!wraps)
+            return 0;
+        else mapWrapCoordinates(map, &newx, &newy);
+    }
+
+    *x = newx;
+    *y = newy;
+
+    return 1;
+}
+
+/**
+ * Wraps x,y coordinates on a map if necessary and possible
+ * Returns 1 if succeeded, 0 if not needed or not possible
+ */
+
+int mapWrapCoordinates(const Map *map, int *x, int *y) {
+    if (map->border_behavior == BORDER_WRAP && MAP_IS_OOB(map, *x, *y)) {
+        if (*x < 0) *x += map->width;
+        if (*x >= (int)map->width) *x -= map->width;
+        if (*y < 0) *y += map->height;
+        if (*y >= (int)map->height) *y -= map->height;
+        return 1;
+    }
+    return 0;
 }

@@ -200,13 +200,19 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
     c->saveGame->mixtures[spell]--;
     c->saveGame->players[character].mp -= spells[spell].mp;
 
-    if (spellEffect)
-        (*spellCallback)(spell + 'a', player);
+    /* If there's a negate magic aura, spells fail! */
+    if (c->aura != AURA_NEGATE) {    
+        if (spellEffect)
+            (*spellCallback)(spell + 'a', player);
     
-    if (!(*spells[spell].spellFunc)(param)) {
+        if (!(*spells[spell].spellFunc)(param)) {
+            *error = CASTERR_FAILED;
+            return 0;
+        }    
+    } else {
         *error = CASTERR_FAILED;
         return 0;
-    }    
+    }
 
     return 1;
 }
@@ -232,14 +238,46 @@ static int spellAwaken(int player) {
 }
 
 static int spellBlink(int dir) {
-    /* blink doesn't work in lower right corner of map */
-    if (c->location->x >= 192 ||
-        c->location->y >= 192)
-        return 0;
+    int i,
+        x = c->location->x,
+        y = c->location->y,
+        width = c->location->map->width,
+        height = c->location->map->height,
+        wraps = (c->location->map->border_behavior == BORDER_WRAP),
+        distance = rand() % 5 + 15,
+        failed = 0;
+    
+    /* pick a random distance, test it, and see if it works */
+    for (i = 0; i < distance; i++) {
+        mapDirMove(c->location->map, dir, &x, &y);        
+    }
 
-    /* FIXME */
+    if (!tileIsWalkable(mapGroundTileAt(c->location->map, x, y, c->location->z))) {
+        x = c->location->x;
+        y = c->location->y;
 
-    return 1;
+        failed = 1;
+
+        for (i = 0; i < 15; i++)
+            mapDirMove(c->location->map, dir, &x, &y);
+
+        for (i = 15; i < 25; i++) {
+            mapDirMove(c->location->map, dir, &x, &y);            
+
+            if (tileIsWalkable(mapGroundTileAt(c->location->map, x, y, c->location->z))) { 
+                failed = 0;
+                break;
+            }
+        }       
+    }
+
+    if (!failed) {
+        c->location->x = x;
+        c->location->y = y;
+        return 1;
+    }
+    
+    return 0;    
 }
 
 static int spellCure(int player) {
