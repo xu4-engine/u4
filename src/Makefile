@@ -24,10 +24,10 @@ $(MAIN): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
 
 dumpsavegame: util/dumpsavegame.o savegame.o io.o
-	$(CC) $(CFLAGS) -o dumpsavegame util/dumpsavegame.o savegame.o io.o
+	$(CC) $(CFLAGS) -o dumpsavegame util/dumpsavegame.o savegame.o io.o names.o
 
 clean::
-	rm -rf *~ */*~ $(OBJS) $(MAIN)
+	rm -rf *~ */*~ $(OBJS) $(MAIN) util/dumpsavegame.o dumpsavegame
 
 install::
 	install -D $(MAIN) $(bindir)/$(MAIN)
