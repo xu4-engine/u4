@@ -201,3 +201,19 @@ bool Debug::loggingEnabled(const string &name) {
 
     return false;
 }
+
+#if defined(_WIN32)
+#include <windows.h>
+
+class ExceptionHandler
+{
+	public:
+	
+	ExceptionHandler()
+	{
+		LoadLibrary("exchndl.dll");
+	}
+};
+
+static ExceptionHandler gExceptionHandler;	//  global instance of class
+#endif

@@ -18,7 +18,7 @@ UI=sdl
 
 CXX=g++
 CC=gcc
-CXXFLAGS=-Wall -I. $(SDL_CXXFLAGS) $(XML_CXXFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
+CXXFLAGS=-Wall -g -I. $(SDL_CXXFLAGS) $(XML_CXXFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
 CFLAGS=$(CXXFLAGS)
 LIBS=-lmingw32 $(SDL_LIBS) $(XML_LIBS) -lpng -mwindows
 EXEEXT	:=.exe
@@ -40,7 +40,7 @@ install: u4.exe
 	mkdir -p $(U4PATH)/graphics/vga
 	mkdir -p $(U4PATH)/mid
 	mkdir -p $(U4PATH)/sound
-	strip $(MAIN) -o $(U4PATH)/$(MAIN)
+	cp $(MAIN) $(U4PATH)
 	cp ../conf/*.xml $(U4PATH)/conf
 	cp ../conf/dtd/*.dtd $(U4PATH)/dtd/
 	cp ../conf/tileset/*.xml $(U4PATH)/conf/tileset
