@@ -58,6 +58,7 @@ int monsterHp[AREA_MONSTERS];
 void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);
 int combatZtatsKeyHandler(int key, void *data);
+int combatReadyForPlayer(int weapon, void *data);
 void combatFinishTurn(void);
 int combatAttackAtCoord(int x, int y, int distance, void *data);
 int combatInitialNumberOfMonsters(unsigned char monster);
@@ -253,6 +254,7 @@ void combatFinishTurn() {
 int combatBaseKeyHandler(int key, void *data) {
     int valid = 1;
     CoordActionInfo *info;
+    AlphaActionInfo *alphaInfo;
 
     switch (key) {
     case U4_UP:
@@ -291,6 +293,21 @@ int combatBaseKeyHandler(int key, void *data) {
         info->blockedPredicate = &tileCanAttackOver;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Dir: ");        
+        break;
+
+    case 'r':
+        c->statsItem = STATS_WEAPONS;
+        statsUpdate();
+
+        alphaInfo = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
+        alphaInfo->lastValidLetter = WEAP_MAX + 'a' - 1;
+        alphaInfo->handleAlpha = combatReadyForPlayer;
+        alphaInfo->prompt = "Weapon: ";
+        alphaInfo->data = (void *) focus;
+
+        screenMessage(alphaInfo->prompt);
+
+        eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
         break;
 
     case 'z':
@@ -340,6 +357,40 @@ int combatZtatsKeyHandler(int key, void *data) {
     statsUpdate();
 
     return 1;
+}
+
+int combatReadyForPlayer(int w, void *data) {    
+    int player = (int) data;
+    WeaponType weapon = (WeaponType) w, oldWeapon;
+
+    // Return view to party overview
+    c->statsItem = STATS_PARTY_OVERVIEW;
+    statsUpdate();
+
+    if (weapon != WEAP_HANDS && c->saveGame->weapons[weapon] < 1) {
+        screenMessage("None left!\n");
+        combatFinishTurn();
+        return 0;
+    }    
+
+    if (!weaponCanReady(weapon, getClassName(c->saveGame->players[player].klass))) {
+        screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), weaponGetName(weapon));
+        combatFinishTurn();
+        return 0;
+    }
+
+    oldWeapon = c->saveGame->players[player].weapon;
+    if (oldWeapon != WEAP_HANDS)
+        c->saveGame->weapons[oldWeapon]++;
+    if (weapon != WEAP_HANDS)
+        c->saveGame->weapons[weapon]--;
+    c->saveGame->players[player].weapon = weapon;
+
+    screenMessage("%s\n", weaponGetName(weapon));
+
+    combatFinishTurn();
+
+    return 1;    
 }
 
 int combatAttackAtCoord(int x, int y, int distance, void *data) {
