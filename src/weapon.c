@@ -119,8 +119,7 @@ void weaponLoadInfoFromXml() {
  * Returns the name of the weapon
  */
 
-char *weaponGetName(int weapon)
-{
+char *weaponGetName(int weapon) {
     weaponLoadInfoFromXml();
 
     return (char *)weapons[weapon].name;
@@ -130,8 +129,7 @@ char *weaponGetName(int weapon)
  * Returns the abbreviation for the weapon
  */
 
-char *weaponGetAbbrev(int weapon)
-{
+char *weaponGetAbbrev(int weapon) {
     weaponLoadInfoFromXml();
 
     return (char *)weapons[weapon].abbr;
@@ -141,8 +139,7 @@ char *weaponGetAbbrev(int weapon)
  * Return the range of the weapon
  */
 
-int weaponGetRange(int weapon)
-{
+int weaponGetRange(int weapon) {
     weaponLoadInfoFromXml();
 
     return weapons[weapon].range;
@@ -152,8 +149,7 @@ int weaponGetRange(int weapon)
  * Return the damage for the specified weapon
  */ 
 
-int weaponGetDamage(int weapon)
-{
+int weaponGetDamage(int weapon) {
     weaponLoadInfoFromXml();
 
     return weapons[weapon].damage;
@@ -163,8 +159,7 @@ int weaponGetDamage(int weapon)
  * Return the hit tile for the specified weapon
  */ 
 
-int weaponGetHitTile(int weapon)
-{
+int weaponGetHitTile(int weapon) {
     weaponLoadInfoFromXml();
 
     return weapons[weapon].hittile;
@@ -174,8 +169,7 @@ int weaponGetHitTile(int weapon)
  * Return the miss tile for the specified weapon
  */ 
 
-int weaponGetMissTile(int weapon)
-{
+int weaponGetMissTile(int weapon) {
     weaponLoadInfoFromXml();
 
     return weapons[weapon].misstile;
@@ -185,8 +179,7 @@ int weaponGetMissTile(int weapon)
  * Returns true if the weapon always hits it's target
  */
 
-int weaponAlwaysHit(int weapon)
-{
+int weaponAlwaysHit(int weapon) {
     weaponLoadInfoFromXml();
 
     return weapons[weapon].mask & MASK_ALWAYSHIT;
@@ -197,8 +190,7 @@ int weaponAlwaysHit(int weapon)
  * returns the # of the tile the weapon leaves
  */
 
-int weaponLeavesTile(int weapon)
-{
+int weaponLeavesTile(int weapon) {
     weaponLoadInfoFromXml();
 
     return (weapons[weapon].mask & MASK_LEAVETILE) ? weapons[weapon].leavetile : 0;
@@ -208,8 +200,7 @@ int weaponLeavesTile(int weapon)
  * Returns true if the class given can ready the weapon
  */
 
-int weaponCanReady(int weapon, const char *className)
-{
+int weaponCanReady(int weapon, const char *className) {
     char *klass;
     int allCanReady = 1;    
     int retval = 0;
