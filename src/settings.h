@@ -21,7 +21,7 @@
 #define DEFAULT_FILTER_MOVE_MESSAGES    0
 #define DEFAULT_BATTLE_SPEED            5
 #define DEFAULT_MINOR_ENHANCEMENTS      1
-#define DEFAULT_CYCLES_PER_SECOND       5
+#define DEFAULT_CYCLES_PER_SECOND       4
 #define DEFAULT_DEBUG                   0
 
 typedef enum {
