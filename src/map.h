@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 struct _City;
+struct _Shrine;
 struct _Object;
 struct _Person;
 struct _Portal;
@@ -45,7 +46,10 @@ typedef struct _Map {
     int flags;
     Music music;
     unsigned char *data;
-    struct _City *city;
+    union {
+        struct _City *city;
+        struct _Shrine *shrine;
+    };
     struct _Annotation *annotation;
     struct _Object *objects;
 } Map;
