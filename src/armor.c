@@ -10,6 +10,7 @@
 #include "armor.h"
 
 #include "error.h"
+#include "names.h"
 #include "ttype.h"
 #include "xml.h"
 
@@ -18,8 +19,8 @@ Armor armors[MAX_ARMORS];
 
 void armorLoadInfoFromXml() {
     xmlDocPtr doc;
-    xmlNodePtr root, node;
-    int armor; //, i;
+    xmlNodePtr root, node, child;
+    int armor, i;
 
     if (!armorInfoLoaded)
         armorInfoLoaded = 1;
@@ -37,8 +38,7 @@ void armorLoadInfoFromXml() {
             continue;
 
         armors[armor].name = (char *)xmlGetProp(node, (const xmlChar *)"name");
-        armors[armor].canwear = (char *)xmlGetProp(node, (const xmlChar *)"canwear");
-        armors[armor].cantwear = (char *)xmlGetProp(node, (const xmlChar *)"cantwear");
+        armors[armor].canuse = 0xFF;
         armors[armor].defense = xmlGetPropAsInt(node, (const xmlChar *)"defense");
         armors[armor].mask = 0;
 
@@ -48,6 +48,29 @@ void armorLoadInfoFromXml() {
                 weapons[weapon].mask |= booleanAttributes[i].mask;
             }
         } */
+
+        for (child = node->xmlChildrenNode; child; child = child->next) {
+            unsigned char mask = 0;
+
+            if (xmlNodeIsText(child) ||
+                xmlStrcmp(child->name, (const xmlChar *) "constraint") != 0)
+                continue;
+
+            for (i = 0; i < 8; i++) {
+                if (xmlPropCaseCmp(child, (const xmlChar *) "class", getClassName((ClassType)i)) == 0)
+                    mask = (1 << i);
+            }
+            if (mask == 0 && xmlPropCaseCmp(child, (const xmlChar *) "class", "all") == 0)
+                mask = 0xFF;
+            if (mask == 0) {
+                errorFatal("malformed armor.xml file: constraint has unknown class %s", 
+                           xmlGetProp(child, (const xmlChar *) "class"));
+            }
+            if (xmlGetPropAsBool(child, (const xmlChar *) "canuse"))
+                armors[armor].canuse |= mask;
+            else
+                armors[armor].canuse &= ~mask;
+        }
 
         armor++;
     }
@@ -79,31 +102,9 @@ int armorGetDefense(int armor) {
  * Returns true if the class given can wear the armor
  */
 
-int armorCanWear(int armor, const char *className) {
-    char *klass;
-    int allCanWear = 1;
-    int retval = 0;
-    int i;
-
-    klass = strdup(className);
-    for (i = 0; klass[i] != '\0'; i++) {
-        klass[i] = tolower(klass[i]);
-    }
-
+int armorCanWear(int armor, ClassType klass) {
     // Load in XML if it hasn't been already
     armorLoadInfoFromXml();
 
-    if (armors[armor].canwear)
-        allCanWear = 0;
-
-    if (allCanWear)
-    {
-        if (!(armors[armor].cantwear && strstr(armors[armor].cantwear, klass)))
-            retval = 1;
-    }
-    else if (armors[armor].canwear && strstr(armors[armor].canwear, klass))
-        retval = 1;
-
-    free(klass);
-    return retval;
+    return (armors[armor].canuse & (1 << klass)) != 0;
 }

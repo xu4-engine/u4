@@ -32,7 +32,7 @@ Weapon weapons[MAX_WEAPONS];
 void weaponLoadInfoFromXml() {
     char *range;
     xmlDocPtr doc;
-    xmlNodePtr root, node;
+    xmlNodePtr root, node, child;
     int weapon, i;    
     static const struct {
         const char *name;
@@ -77,8 +77,7 @@ void weaponLoadInfoFromXml() {
 
         weapons[weapon].name = (char *)xmlGetProp(node, (const xmlChar *)"name");        
         weapons[weapon].abbr = (char *)xmlGetProp(node, (const xmlChar *)"abbr");
-        weapons[weapon].canready = (char *)xmlGetProp(node, (const xmlChar *)"canready");
-        weapons[weapon].cantready = (char *)xmlGetProp(node, (const xmlChar *)"cantready");
+        weapons[weapon].canuse = 0xFF;
         weapons[weapon].damage = xmlGetPropAsInt(node, (const xmlChar *)"damage");
         weapons[weapon].hittile = HITFLASH_TILE;
         weapons[weapon].misstile = MISSFLASH_TILE;
@@ -124,6 +123,29 @@ void weaponLoadInfoFromXml() {
                 weapons[weapon].mask |= MASK_LEAVETILE;
                 weapons[weapon].leavetile = tiles[i].tile;
             }
+        }
+
+        for (child = node->xmlChildrenNode; child; child = child->next) {
+            unsigned char mask = 0;
+
+            if (xmlNodeIsText(child) ||
+                xmlStrcmp(child->name, (const xmlChar *) "constraint") != 0)
+                continue;
+
+            for (i = 0; i < 8; i++) {
+                if (xmlPropCaseCmp(child, (const xmlChar *) "class", getClassName((ClassType)i)) == 0)
+                    mask = (1 << i);
+            }
+            if (mask == 0 && xmlPropCaseCmp(child, (const xmlChar *) "class", "all") == 0)
+                mask = 0xFF;
+            if (mask == 0) {
+                errorFatal("malformed weapons.xml file: constraint has unknown class %s", 
+                           xmlGetProp(child, (const xmlChar *) "class"));
+            }
+            if (xmlGetPropAsBool(child, (const xmlChar *) "canuse"))
+                weapons[weapon].canuse |= mask;
+            else
+                weapons[weapon].canuse &= ~mask;
         }
 
         weapon++;
@@ -209,33 +231,11 @@ unsigned char weaponLeavesTile(int weapon) {
 /**
  * Returns true if the class given can ready the weapon
  */
-int weaponCanReady(int weapon, const char *className) {
-    char *klass;
-    int allCanReady = 1;
-    int retval = 0;
-    int i;
-
-    klass = strdup(className);
-    for (i = 0; klass[i] != '\0'; i++) {
-        klass[i] = tolower(klass[i]);
-    }
-
+int weaponCanReady(int weapon, ClassType klass) {
     // Load in XML if it hasn't been already
     weaponLoadInfoFromXml();
 
-    if (weapons[weapon].canready)
-        allCanReady = 0;
-
-    if (allCanReady)
-    {
-        if (!(weapons[weapon].cantready && strstr(weapons[weapon].cantready, klass)))
-            retval = 1;
-    }
-    else if (weapons[weapon].canready && strstr(weapons[weapon].canready, klass))
-        retval = 1;
-
-    free(klass);
-    return retval;
+    return (weapons[weapon].canuse & (1 << klass)) != 0;
 }
 
 /**
