@@ -13,6 +13,10 @@ extern "C" {
 
 struct _Object;
 
+/**
+ * The list of all weapons.  These values are used in both the
+ * inventory fields and character records of the savegame.
+ */
 typedef enum {
     WEAP_HANDS,
     WEAP_STAFF, 
@@ -33,6 +37,10 @@ typedef enum {
     WEAP_MAX
 } WeaponType;
 
+/**
+ * The list of all armor types.  These values are used in both the
+ * inventory fields and character records of the savegame.
+ */
 typedef enum {
     ARMR_NONE,
     ARMR_CLOTH,
@@ -45,11 +53,18 @@ typedef enum {
     ARMR_MAX
 } ArmorType;
 
+/**
+ * The list of sex values for the savegame character records.  The
+ * values match the male and female symbols in the character set.
+ */
 typedef enum {
     SEX_MALE = 0xb,
     SEX_FEMALE = 0xc
 } SexType;
 
+/**
+ * The list of class types for the savegame character records.
+ */
 typedef enum {
     CLASS_MAGE,
     CLASS_BARD,
@@ -61,6 +76,10 @@ typedef enum {
     CLASS_SHEPHERD
 } ClassType;
 
+/**
+ * The list of status values for the savegame character records.  The
+ * values match the letter thats appear in the ztats area.
+ */
 typedef enum {
     STAT_GOOD = 'G',
     STAT_POISONED = 'P',
@@ -138,6 +157,9 @@ typedef enum {
     RUNE_HUMILITY     = 0x80
 } Rune;
 
+/**
+ * The for Ultima IV savegame player record data.  
+ */
 typedef struct {
     unsigned short hp;
     unsigned short hpMax;
@@ -153,7 +175,10 @@ typedef struct {
     StatusType status;
 } SaveGamePlayerRecord;
 
-
+/**
+ * Ultima IV savegame data.  This structure approximately mirrors the
+ * disk structure of PARTY.SAV.
+ */
 typedef struct _SaveGame {
     unsigned int unknown1;
     unsigned int moves;
