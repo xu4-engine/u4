@@ -58,7 +58,7 @@ void combatEnd(void);
 void combatMoveMonsters();
 int movePartyMember(Direction dir, int member);
 
-void combatBegin(unsigned char partytile, unsigned short transport) {
+void combatBegin(unsigned char partytile, unsigned short transport, unsigned char monster) {
     int i;
     int nmonsters;
 
@@ -78,14 +78,15 @@ void combatBegin(unsigned char partytile, unsigned short transport) {
 
     nmonsters = (rand() % (AREA_MONSTERS - 1)) + 1;
     for (i = 0; i < nmonsters; i++)
-        monsters[i] = mapAddObject(c->map, ORC_TILE, ORC_TILE + 1, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
+        monsters[i] = mapAddObject(c->map, monster, monster, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
     for (; i < AREA_MONSTERS; i++)
         monsters[i] = NULL;
 
     eventHandlerPushKeyHandler(&combatBaseKeyHandler);
 
     screenMessage("\n**** COMBAT ****\n\n");
-    combatEndTurn();
+
+    screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, getWeaponName(c->saveGame->players[focus].weapon));
 }
 
 
@@ -202,6 +203,7 @@ int combatBaseKeyHandler(int key, void *data) {
 
 int combatAttackAtCoord(int x, int y) {
     int monster;
+    const Monster *m;
     int i;
 
     if (x == -1 && y == -1)
@@ -218,10 +220,14 @@ int combatAttackAtCoord(int x, int y) {
     if (monster == -1) {
         screenMessage("Missed!\n");
     } else {
+        m = monsterForTile(monsters[monster]->tile);
         screenMessage("Hit!\n");
 
         /* FIXME: every hit is fatal for now */
-        if (monsterIsEvil(monsterForTile(monsters[monster]->tile)))
+        
+        screenMessage("%s Killed!\nExp. %d\n", m->name, m->xp);
+        c->saveGame->players[focus].xp += m->xp;
+        if (monsterIsEvil(m))
             gameLostEighth(playerAdjustKarma(c->saveGame, KA_KILLED_EVIL));
         mapRemoveObject(c->map, monsters[monster]);
         monsters[monster] = NULL;
