@@ -102,6 +102,10 @@ Direction MapTile::getDirection() const {
 
 bool MapTile::setDirection(Direction d) {
     bool changed = true;
+    
+    /* if we're already pointing the right direction, do nothing! */
+    if (getDirection() == d)
+        return false;
 
     if (isShip() || isPirateShip())
         frame = d - DIR_WEST;
