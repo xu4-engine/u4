@@ -130,6 +130,7 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
     /* portal just exits to parent map */
     if (portal->exitPortal) {        
         gameExitToParentMap(c);
+        musicPlay();
         return 1;
     }
     else if (portal->destid == location->map->id) {

@@ -61,6 +61,7 @@ void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned c
     combatInfo.camping = 0;
     combatInfo.winOrLose = 1;
     combatInfo.dungeonRoom = 0;
+    combatInfo.newContext = 0;
 
     /* new map for combat */
     if (mapid > 0) {
@@ -144,6 +145,9 @@ void combatInitDungeonRoom(int room, Direction from) {
         combatInfo.winOrLose = 0;
         combatInfo.dungeonRoom = 0xD0 | room;
         combatInfo.exitDir = DIR_NONE;
+        
+        /* maintain our dungeon context (don't display moons or wind direction) */
+        combatInfo.newContext = CTX_COMBAT | CTX_DUNGEON;
 
         /* load in monsters and monster start coordinates */
         for (i = 0; i < AREA_MONSTERS; i++) {
@@ -180,8 +184,12 @@ void combatBegin() {
     SaveGamePlayerRecord* players   = c->saveGame->players;
     
     /* set the new combat map if a new map was provided */
-    if (combatInfo.newCombatMap != NULL)
-        gameSetMap(c, combatInfo.newCombatMap, 1, NULL);    
+    if (combatInfo.newCombatMap != NULL) {
+        gameSetMap(c, combatInfo.newCombatMap, 1, NULL);
+        
+        if (combatInfo.newContext)
+            c->location->context = combatInfo.newContext;
+    }
     
     /* place party members on the map */
     if (combatInfo.placeParty)        
@@ -200,10 +208,13 @@ void combatBegin() {
     /* Use the combat key handler */
     eventHandlerPushKeyHandler(&combatBaseKeyHandler);
 
-    /* if there are monsters around, start combat! */
-    /* FIXME: there should probably be another way to check to display this message */
+    /* if there are monsters around, start combat! */    
     if (combatInfo.placeMonsters && combatInfo.winOrLose) {
-        screenMessage("\n**** COMBAT ****\n\n");
+        screenMessage("\n**** COMBAT ****\n\n");        
+    }
+
+    /* FIXME: there should be a better way to accomplish this */
+    if (!combatInfo.camping) {
         musicPlay();
     }
 

@@ -593,22 +593,6 @@ int gameBaseKeyHandler(int key, void *data) {
         
         break;
 
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-        if (c->location->context & CTX_DUNGEON) {            
-            combatInitDungeonRoom(key - '0', dirReverse(c->saveGame->orientation));
-            combatBegin();            
-        }
-        break;
-
     case 3:                     /* ctrl-C */
         if (settings->debug) {
             screenMessage("Cmd (h = help):");
