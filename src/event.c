@@ -19,14 +19,24 @@
 #include "savegame.h"
 
 void moveAvatar(int dx, int dy);
-void attackAtCoord(int x, int y);
-void jimmyAtCoord(int x, int y);
-void openAtCoord(int x, int y);
-void talkAtCoord(int x, int y);
+int attackAtCoord(int x, int y);
+int jimmyAtCoord(int x, int y);
+int openAtCoord(int x, int y);
+int talkAtCoord(int x, int y);
 
 KeyHandlerNode *head = NULL;
 
+typedef struct DirectedActionInfo {
+    int (*handleAtCoord)(int, int);
+    int range;
+    int (*blockedPredicate)(unsigned char tile);
+    const char *failedMessage;
+} DirectedActionInfo;
 
+
+/**
+ * Push a key handler onto the top of the keyhandler stack.
+ */
 void eventHandlerPushKeyHandler(KeyHandler kh) {
     KeyHandlerNode *n = malloc(sizeof(KeyHandlerNode));
     if (n) {
@@ -37,6 +47,10 @@ void eventHandlerPushKeyHandler(KeyHandler kh) {
     }
 }
 
+/**
+ * Push a key handler onto the top of the key handler stack, and
+ * provide specific data to pass to the handler.
+ */
 void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data) {
     KeyHandlerNode *n = malloc(sizeof(KeyHandlerNode));
     if (n) {
@@ -47,6 +61,9 @@ void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data) {
     }
 }
 
+/**
+ * Pop the top key handler off.
+ */
 void eventHandlerPopKeyHandler() {
     KeyHandlerNode *n = head;
     if (n) {
@@ -55,10 +72,17 @@ void eventHandlerPopKeyHandler() {
     }
 }
 
+/**
+ * Get the currently active key handler of the top of the key handler
+ * stack.
+ */
 KeyHandler eventHandlerGetKeyHandler() {
     return head->kh;
 }
 
+/**
+ * Get the call data associated with the currently active key handler.
+ */
 void *eventHandlerGetKeyHandlerData() {
     return head->data;
 }
@@ -84,6 +108,7 @@ int keyHandlerDefault(int key, void *data) {
 int keyHandlerNormal(int key, void *data) {
     int valid = 1;
     const Portal *portal;
+    DirectedActionInfo *info;
 
     switch (key) {
 
@@ -104,7 +129,12 @@ int keyHandlerNormal(int key, void *data) {
         break;
 
     case 'a':
-        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, &attackAtCoord);
+        info = (DirectedActionInfo *) malloc(sizeof(DirectedActionInfo));
+        info->handleAtCoord = &attackAtCoord;
+        info->range = 1;
+        info->blockedPredicate = NULL;
+        info->failedMessage = "FIXME";
+        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, info);
         screenMessage("Attack\nDir: ");
         break;
 
@@ -138,7 +168,12 @@ int keyHandlerNormal(int key, void *data) {
         break;
 
     case 'j':
-        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, &jimmyAtCoord);
+        info = (DirectedActionInfo *) malloc(sizeof(DirectedActionInfo));
+        info->handleAtCoord = &jimmyAtCoord;
+        info->range = 1;
+        info->blockedPredicate = NULL;
+        info->failedMessage = "Jimmy what?";
+        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, info);
         screenMessage("Jimmy\nDir: ");
         break;
         
@@ -153,7 +188,12 @@ int keyHandlerNormal(int key, void *data) {
         break;
 
     case 'o':
-        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, &openAtCoord);
+        info = (DirectedActionInfo *) malloc(sizeof(DirectedActionInfo));
+        info->handleAtCoord = &openAtCoord;
+        info->range = 1;
+        info->blockedPredicate = NULL;
+        info->failedMessage = "Open what?";
+        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, info);
         screenMessage("Open\nDir: ");
         break;
 
@@ -167,7 +207,12 @@ int keyHandlerNormal(int key, void *data) {
         break;
 
     case 't':
-        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, &talkAtCoord);
+        info = (DirectedActionInfo *) malloc(sizeof(DirectedActionInfo));
+        info->handleAtCoord = &talkAtCoord;
+        info->range = 2;
+        info->blockedPredicate = &canTalkOver;
+        info->failedMessage = "Funny, no\nresponse!";
+        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, info);
         screenMessage("Talk\nDir: ");
         break;
 
@@ -183,42 +228,80 @@ int keyHandlerNormal(int key, void *data) {
     return valid || keyHandlerDefault(key, NULL);
 }
 
+/**
+ * Handles key presses when a command that requires a direction
+ * argument is invoked.  Once an arrow key is pressed, control is
+ * handed off to a command specific routine.
+ */
 int keyHandlerGetDirection(int key, void *data) {
-    void (*handleDir)(int, int) = (void (*)(int, int)) data;
+    DirectedActionInfo *info = (DirectedActionInfo *) data;
     int valid = 1;
-    int t_x = -1, t_y = -1;
+    int i;
+    int t_x = c->saveGame->x, t_y = c->saveGame->y;
+
+    eventHandlerPopKeyHandler();
 
     switch (key) {
     case U4_UP:
         screenMessage("North\n");
-        t_x = c->saveGame->x;
-        t_y = c->saveGame->y - 1;
         break;
     case U4_DOWN:
         screenMessage("South\n");
-        t_x = c->saveGame->x;
-        t_y = c->saveGame->y + 1;
         break;
     case U4_LEFT:
         screenMessage("West\n");
-        t_x = c->saveGame->x - 1;
-        t_y = c->saveGame->y;
         break;
     case U4_RIGHT:
         screenMessage("East\n");
-        t_x = c->saveGame->x + 1;
-        t_y = c->saveGame->y;
-        break;
-    default:
-        valid = 0;
         break;
     }
 
-    (*handleDir)(t_x, t_y);
+    /* 
+     * try every tile in the given direction, up to the given range.
+     * Stop when the command handler succeeds, the range is exceeded,
+     * or the action is blocked.
+     */
+    for (i = 1; i <= info->range; i++) {
+        switch (key) {
+        case U4_UP:
+            t_y--;
+            break;
+        case U4_DOWN:
+            t_y++;
+            break;
+        case U4_LEFT:
+            t_x--;
+            break;
+        case U4_RIGHT:
+            t_x++;
+            break;
+        default:
+            t_x = -1;
+            t_y = -1;
+            valid = 0;
+            break;
+        }
+
+        if ((*(info->handleAtCoord))(t_x, t_y))
+            goto success;
+        if (info->blockedPredicate &&
+            !(*(info->blockedPredicate))(mapTileAt(c->map, t_x, t_y)))
+            break;
+    }
+
+    screenMessage("%s\n", info->failedMessage);
+
+ success:
+    free(info);
 
     return valid || keyHandlerDefault(key, NULL);
 }
 
+/**
+ * Handles key presses when a conversation is active.  The keystrokes
+ * are buffered up into a word rather than invoking the usual
+ * commands.
+ */
 int keyHandlerTalking(int key, void *data) {
     int valid = 1;
 
@@ -253,7 +336,7 @@ int keyHandlerTalking(int key, void *data) {
         else if (done)
             eventHandlerPopKeyHandler();
         else
-            screenMessage("Your Interest:\n");
+            screenMessage("\nYour Interest:\n");
 
     } else {
         valid = 0;
@@ -262,6 +345,9 @@ int keyHandlerTalking(int key, void *data) {
     return valid || keyHandlerDefault(key, NULL);
 }
 
+/**
+ * Handles key presses when the Exit (Y/N) prompt is active.
+ */
 int keyHandlerQuit(int key, void *data) {
     FILE *saveGameFile;
     int valid = 1;
@@ -298,59 +384,67 @@ int keyHandlerQuit(int key, void *data) {
     return valid || keyHandlerDefault(key, NULL);
 }
 
-void attackAtCoord(int x, int y) {
+/**
+ * Attempts to attack a creature at map coordinates x,y.  If no
+ * creature is present at that point, zero is returned.
+ */
+int attackAtCoord(int x, int y) {
     if (x == -1 && y == -1)
-        return;
-
-    eventHandlerPopKeyHandler();
+        return 0;
 
     screenMessage("attack at %d, %d\n(not implemented)\n", x, y);
+
+    return 1;
 }
 
-void jimmyAtCoord(int x, int y) {
-    if (x == -1 && y == -1)
-        return;
+/**
+ * Attempts to jimmy a locked door at map coordinates x,y.  If no
+ * locked door is present at that point, zero is returned.  The locked
+ * door is replaced by a permanent annotation of an unlocked door
+ * tile.
+ */
+int jimmyAtCoord(int x, int y) {
+    if ((x == -1 && y == -1) ||
+        !islockeddoor(mapTileAt(c->map, x, y)))
+        return 0;
 
-    eventHandlerPopKeyHandler();
 
-    if (!islockeddoor(mapTileAt(c->map, x, y))) {
-        screenMessage("Jimmy what?\n");
-        return;
-    }
-
-    screenMessage("door at %d, %d, unlocked!\n", x, y);
+    screenMessage("door at %d, %d unlocked!\n", x, y);
     annotationAdd(x, y, -1, 0x3b);
+
+    return 1;
 }
 
-void openAtCoord(int x, int y) {
-    if (x == -1 && y == -1)
-        return;
-
-    eventHandlerPopKeyHandler();
-
-    if (!isdoor(mapTileAt(c->map, x, y))) {
-        screenMessage("Open what?\n");
-        return;
-    }
+/**
+ * Attempts to open a door at map coordinates x,y.  If no door is
+ * present at that point, zero is returned.  The door is replaced by a
+ * temporary annotation of a floor tile for 4 turns.
+ */
+int openAtCoord(int x, int y) {
+    if ((x == -1 && y == -1) ||
+        !isdoor(mapTileAt(c->map, x, y)))
+        return 0;
 
     screenMessage("door at %d, %d, opened!\n", x, y);
     annotationAdd(x, y, 4, 0x3e);
+
+    return 1;
 }
 
-void talkAtCoord(int x, int y) {
+/**
+ * Begins a conversation with the NPC at map coordinates x,y.  If no
+ * NPC is present at that point, zero is returned.
+ */
+int talkAtCoord(int x, int y) {
     char buffer[100];
     const Person *talker;
 
     if (x == -1 && y == -1)
-        return;
-
-    eventHandlerPopKeyHandler();
+        return 0;
 
     c->conversation.talker = mapPersonAt(c->map, x, y);
-    if (c->conversation.talker == NULL) {
-        screenMessage("Funny, no\nresponse!\n");
-        return;
-    }
+    if (c->conversation.talker == NULL)
+        return 0;
 
     talker = c->conversation.talker;
     c->conversation.question = 0;
@@ -361,8 +455,15 @@ void talkAtCoord(int x, int y) {
     screenMessage("%s says: I am %s\n\n:", talker->pronoun, talker->name);
     c->conversation.buffer[0] = '\0';
     eventHandlerPushKeyHandler(&keyHandlerTalking);
+
+    return 1;
 }
 
+/**
+ * Attempt to move the avatar.  The number of tiles to move is given
+ * by dx (horizontally) and dy (vertically); negative indicates
+ * right/down, positive indicates left/up.
+ */
 void moveAvatar(int dx, int dy) {
     int newx, newy;
 
