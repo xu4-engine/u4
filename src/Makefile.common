@@ -12,5 +12,5 @@ dumpsavegame$(EXEEXT) : util/dumpsavegame.o savegame.o io.o
 	$(CC) $(CFLAGS) -o dumpsavegame util/dumpsavegame.o savegame.o io.o names.o
 
 clean::
-	rm -rf *~ */*~ $(OBJS) $(MAIN) util/dumpsavegame.o dumpsavegame
+	rm -rf *~ */*~ $(OBJS) $(MAIN) util/dumpsavegame.o dumpsavegame$(EXEEXT)
 
