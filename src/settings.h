@@ -100,7 +100,9 @@ typedef struct _Settings {
     int innTime;
     int shrineTime;
     int shakeInterval;
-    SettingsEnhancementOptions enhancementsOptions;    
+    SettingsEnhancementOptions enhancementsOptions;
+    int innAlwaysCombat;
+    int campingAlwaysCombat;
 } Settings;
 
 char *settingsFilename(void);

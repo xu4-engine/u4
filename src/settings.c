@@ -92,6 +92,9 @@ void settingsRead() {
     settings->enhancementsOptions.smartEnterKey    = 1;
     settings->enhancementsOptions.u5combat         = 0;
 
+    settings->innAlwaysCombat = 0;
+    settings->campingAlwaysCombat = 0;
+
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
     free(settingsFname);
@@ -181,6 +184,10 @@ void settingsRead() {
         /* major enhancement options */
         else if (strstr(buffer, "u5combat=") == buffer)
             settings->enhancementsOptions.u5combat = (int) strtoul(buffer + strlen("u5combat="), NULL, 0);
+        else if (strstr(buffer, "innAlwaysCombat=") == buffer)
+            settings->innAlwaysCombat = (int) strtoul(buffer + strlen("innAlwaysCombat="), NULL, 0);
+        else if (strstr(buffer, "campingAlwaysCombat=") == buffer)
+            settings->campingAlwaysCombat = (int) strtoul(buffer + strlen("campingAlwaysCombat="), NULL, 0);    
 
         /**
          * FIXME: this is just to avoid an error for those who have not written
@@ -251,7 +258,9 @@ void settingsWrite() {
             "slimeDivides=%d\n"
             "c64chestTraps=%d\n"            
             "smartEnterKey=%d\n"
-            "u5combat=%d\n",
+            "u5combat=%d\n"
+            "innAlwaysCombat=%d\n"
+            "campingAlwaysCombat=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
@@ -281,7 +290,9 @@ void settingsWrite() {
             settings->enhancementsOptions.slimeDivides,
             settings->enhancementsOptions.c64chestTraps,            
             settings->enhancementsOptions.smartEnterKey,
-            settings->enhancementsOptions.u5combat);
+            settings->enhancementsOptions.u5combat,
+            settings->innAlwaysCombat,
+            settings->campingAlwaysCombat);
 
     fclose(settingsFile);
 }

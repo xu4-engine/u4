@@ -56,7 +56,7 @@ void campTimer(void *data) {
     screenEnableCursor();
 
     /* Is the party ambushed during their rest? */
-    if (rand() % 8 == 0) {
+    if (settings->campingAlwaysCombat || (rand() % 8 == 0)) {
         const Monster *m;
 
         m = monsterGetAmbushingMonster();
@@ -156,7 +156,7 @@ void innTimer(void *data) {
     campHeal();
 
     /* Is there a special encounter during your stay? */
-    if (rand() % 8 == 0) {
+    if (settings->innAlwaysCombat || (rand() % 8 == 0)) {
         unsigned char mapid;
         Object *monsterObj;        
         int showMessage = 1;
