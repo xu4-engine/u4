@@ -56,6 +56,12 @@ Installing XU4
 
 	./MacOSXSwitch.bat
 
+4) If you wish to use the tlkconv command-line tool, you will need to
+   install the libxml and libiconv frameworks.  Download gnome-combo.dmg.gz
+   from:
+	http://www.zveno.com/open_source/libxml2xslt.html
+   Open it, and drag-copy libxml.framework and libiconv.framework into
+   your home directory's Library/Frameworks folder
 
 Removing Xu4
 ------------
