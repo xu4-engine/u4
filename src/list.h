@@ -5,6 +5,13 @@
 #ifndef LIST_H
 #define LIST_H
 
+/**
+ * A generic linked list data type.  By convention, an empty list is
+ * represented by a NULL pointer and a non-empty list is represented
+ * by a pointer to its first ListNode.  Note that most of the list
+ * functions return a ListNode which in most cases should be assigned
+ * to the list variable.  
+ */
 typedef struct _ListNode {
     void *data;
     struct _ListNode *next;
