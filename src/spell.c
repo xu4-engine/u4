@@ -442,16 +442,29 @@ static int spellDispel(int dir) {
     int x, y, z;
     unsigned char tile, newTile;    
     const Annotation *a;
+    Direction d;
 
     /* 
      * get the location of the avatar (or current party member, if in battle)
      */
     locationGetCurrentPosition(c->location, &x, &y, &z);    
 
-    /*
-     * get the ground tile underneath the avatar/player
-     */
-    newTile = (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS);
+    /* FIXME: move this to its own function */
+    /* figure out the tile that will replace the field */
+    for (d = DIR_WEST; d <= DIR_SOUTH; d++) {
+        int tx = x,
+            ty = y;
+        mapDirMove(c->location->map, d, &tx, &ty);        
+        newTile = (*c->location->tileAt)(c->location->map, tx, ty, c->location->z, WITHOUT_OBJECTS);
+
+        /* make sure the tile we found is a valid replacement */
+        if (tileIsReplacement(newTile))
+            break;
+        else newTile = 0;
+    }            
+    /* couldn't find a tile to replace with -- take a guess! */
+    if (newTile == 0)
+        newTile = (c->location->context & CTX_COMBAT) ? BRICKFLOOR_1_TILE : BRICKFLOOR_TILE;    
 
     mapDirMove(c->location->map, (Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->location->map, x, y))
