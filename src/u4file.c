@@ -20,6 +20,15 @@ const char *paths[] = {
     "/usr/local/lib/u4/ultima4/"
 };
 
+/* the possible paths where u4 for the music files */
+const char *music_paths[] = {
+    "./",
+    "./ultima4/",
+    "../mid/",
+    "/usr/lib/u4/music/",
+    "/usr/local/lib/u4/music/"
+};
+
 
 /**
  * Open a data file from the Ultima 4 for DOS installation.  This
@@ -123,4 +132,29 @@ char **u4read_stringtable(FILE *f, long offset, int nstrings) {
     }
 
     return strs;
+}
+
+char *u4find_music(const char *fname) {
+    FILE *f = NULL;
+    unsigned int i;
+    char pathname[128];
+
+    for (i = 0; i < sizeof(music_paths) / sizeof(music_paths[0]); i++) {
+        snprintf(pathname, sizeof(pathname), "%s%s", music_paths[i], fname);
+
+        if (verbose)
+            printf("trying to open %s\n", pathname);
+
+        if ((f = fopen(pathname, "rb")) != NULL)
+            break;
+    }
+
+    if (verbose && f != NULL)
+        printf("%s successfully found\n", pathname);
+
+    if (f) {
+        fclose(f);
+        return strdup(pathname);
+    } else
+        return NULL;
 }
