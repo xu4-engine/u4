@@ -51,6 +51,7 @@ typedef enum {
     CONV_INTRO,
     CONV_TALK,
     CONV_ASK,
+    CONV_ASKYESNO,
     CONV_VENDORQUESTION,
     CONV_BUY_ITEM,
     CONV_SELL_ITEM,

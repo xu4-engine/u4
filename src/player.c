@@ -540,7 +540,7 @@ void playerReviveParty(SaveGame *saveGame) {
 
     saveGame->food = 20099;
     saveGame->gold = 200;
-    saveGame->transport = AVATAR_TILE;
+    gameSetTransport(AVATAR_TILE);
 }
 
 /**
@@ -591,7 +591,7 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
             saveGame->sextants += quantity;
         break;
     case INV_HORSE:
-        saveGame->transport = tileGetHorseBase();
+        gameSetTransport(tileGetHorseBase());
         break;
     }
 

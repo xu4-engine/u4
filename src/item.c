@@ -141,7 +141,7 @@ void useHorn(void *item) {
 }
 
 void useWheel(void *item) {
-    if (c->saveGame->shiphull == 50) {
+    if (tileIsShip(c->saveGame->transport) && c->saveGame->shiphull == 50) {
         screenMessage("\nOnce mounted, the Wheel glows with a blue light!\n");
         c->saveGame->shiphull = 99;        
     }

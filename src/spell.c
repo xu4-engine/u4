@@ -77,40 +77,41 @@ static const struct {
     { CASTERR_WRONGCONTEXT, "Not here!\n" },
     { CASTERR_COMBATONLY, "Combat only!\nFailed!\n" },
     { CASTERR_DUNGEONONLY, "Dungeon only!\nFailed!\n" },
-    { CASTERR_WORLDMAPONLY, "World map only!\nFailed!\n" }
+    { CASTERR_WORLDMAPONLY, "Outdoors only!\nFailed!\n" }
 };
 
 const Spell spells[] = {
-    { "Awaken",       GINSENG | GARLIC,         CTX_ANY,      &spellAwaken,  SPELLPRM_PLAYER,  5 },
-    { "Blink",        SILK | MOSS,              CTX_WORLDMAP, &spellBlink,   SPELLPRM_DIR,     15 },
-    { "Cure",         GINSENG | GARLIC,         CTX_ANY,      &spellCure,    SPELLPRM_PLAYER,  5 },
-    { "Dispel",       ASH | GARLIC | PEARL,     CTX_ANY,      &spellDispel,  SPELLPRM_DIR,     20 },
+    { "Awaken",       GINSENG | GARLIC,         CTX_ANY,        TRANSPORT_ANY,  &spellAwaken,  SPELLPRM_PLAYER,  5 },
+    { "Blink",        SILK | MOSS,              CTX_WORLDMAP,   TRANSPORT_FOOT_OR_HORSE,
+                                                                                &spellBlink,   SPELLPRM_DIR,     15 },
+    { "Cure",         GINSENG | GARLIC,         CTX_ANY,        TRANSPORT_ANY,  &spellCure,    SPELLPRM_PLAYER,  5 },
+    { "Dispel",       ASH | GARLIC | PEARL,     CTX_ANY,        TRANSPORT_ANY,  &spellDispel,  SPELLPRM_DIR,     20 },
     { "Energy Field", ASH | SILK | PEARL,       CTX_COMBAT | CTX_DUNGEON,
-                                                              &spellEField,  SPELLPRM_TYPEDIR, 10 },
-    { "Fireball",     ASH | PEARL,              CTX_COMBAT,   &spellFireball,SPELLPRM_DIR,     15 },
-    { "Gate",         ASH | PEARL | MANDRAKE,   CTX_WORLDMAP, &spellGate,    SPELLPRM_PHASE,   40 },
-    { "Heal",         GINSENG | SILK,           CTX_ANY,      &spellHeal,    SPELLPRM_PLAYER,  10 },
-    { "Iceball",      PEARL | MANDRAKE,         CTX_COMBAT,   &spellIceball, SPELLPRM_DIR,     20 },
+                                                                TRANSPORT_ANY,  &spellEField,  SPELLPRM_TYPEDIR, 10 },
+    { "Fireball",     ASH | PEARL,              CTX_COMBAT,     TRANSPORT_ANY,  &spellFireball,SPELLPRM_DIR,     15 },
+    { "Gate",         ASH | PEARL | MANDRAKE,   CTX_WORLDMAP,   TRANSPORT_FOOT_OR_HORSE,
+                                                                                &spellGate,    SPELLPRM_PHASE,   40 },
+    { "Heal",         GINSENG | SILK,           CTX_ANY,        TRANSPORT_ANY,  &spellHeal,    SPELLPRM_PLAYER,  10 },
+    { "Iceball",      PEARL | MANDRAKE,         CTX_COMBAT,     TRANSPORT_ANY,  &spellIceball, SPELLPRM_DIR,     20 },
     { "Jinx",         PEARL | NIGHTSHADE | MANDRAKE,
-                                                CTX_COMBAT,   &spellJinx,    SPELLPRM_NONE,    30 },
-    { "Kill",         PEARL | NIGHTSHADE,       CTX_COMBAT,   &spellKill,    SPELLPRM_DIR,     25 },
-    { "Light",        ASH,                      CTX_DUNGEON,  &spellLight,   SPELLPRM_NONE,    5 },
-    { "Magic missile", ASH | PEARL,             CTX_COMBAT,   &spellMMissle, SPELLPRM_DIR,     5 },
-    { "Negate",       ASH | GARLIC | MANDRAKE,  CTX_ANY,      &spellNegate,  SPELLPRM_NONE,    20 },
-    { "Open",         ASH | MOSS,               CTX_ANY,      &spellOpen,    SPELLPRM_NONE,    5 },
-    { "Protection",   ASH | GINSENG | GARLIC,   CTX_ANY,      &spellProtect, SPELLPRM_NONE,    15 },
-    { "Quickness",    ASH | GINSENG | MOSS,     CTX_ANY,      &spellQuick,   SPELLPRM_NONE,    20 },
+                                                CTX_COMBAT,     TRANSPORT_ANY,  &spellJinx,    SPELLPRM_NONE,    30 },
+    { "Kill",         PEARL | NIGHTSHADE,       CTX_COMBAT,     TRANSPORT_ANY,  &spellKill,    SPELLPRM_DIR,     25 },
+    { "Light",        ASH,                      CTX_DUNGEON,    TRANSPORT_ANY,  &spellLight,   SPELLPRM_NONE,    5 },
+    { "Magic missile", ASH | PEARL,             CTX_COMBAT,     TRANSPORT_ANY,  &spellMMissle, SPELLPRM_DIR,     5 },
+    { "Negate",       ASH | GARLIC | MANDRAKE,  CTX_ANY,        TRANSPORT_ANY,  &spellNegate,  SPELLPRM_NONE,    20 },
+    { "Open",         ASH | MOSS,               CTX_ANY,        TRANSPORT_ANY,  &spellOpen,    SPELLPRM_NONE,    5 },
+    { "Protection",   ASH | GINSENG | GARLIC,   CTX_ANY,        TRANSPORT_ANY,  &spellProtect, SPELLPRM_NONE,    15 },
+    { "Quickness",    ASH | GINSENG | MOSS,     CTX_ANY,        TRANSPORT_ANY,  &spellQuick,   SPELLPRM_NONE,    20 },
     { "Resurrect",    ASH | GINSENG | GARLIC | SILK | MOSS | MANDRAKE, 
-                                                CTX_ANY,      &spellRez,     SPELLPRM_PLAYER,  45 },
-    { "Sleep",        SILK | GINSENG,           CTX_COMBAT,   &spellSleep,   SPELLPRM_NONE,    15 },
-    { "Tremor",       ASH | MOSS | MANDRAKE,    CTX_COMBAT,   &spellTremor,  SPELLPRM_NONE,    30 },
-    { "Undead",       ASH | GARLIC,             CTX_ANY,      &spellUndead,  SPELLPRM_NONE,    15 },
-    { "View",         NIGHTSHADE | MANDRAKE,    CTX_NON_COMBAT, 
-                                                              &spellView,    SPELLPRM_NONE,    15 },
-    { "Winds",        ASH | MOSS,               CTX_WORLDMAP, &spellWinds,   SPELLPRM_FROMDIR, 10 },
-    { "X-it",         ASH | SILK | MOSS,        CTX_DUNGEON,  &spellXit,     SPELLPRM_NONE,    15 },
-    { "Y-up",         SILK | MOSS,              CTX_DUNGEON,  &spellYup,     SPELLPRM_NONE,    10 },
-    { "Z-down",       SILK | MOSS,              CTX_DUNGEON,  &spellZdown,   SPELLPRM_NONE,    5 }
+                                                CTX_ANY,        TRANSPORT_ANY,  &spellRez,     SPELLPRM_PLAYER,  45 },
+    { "Sleep",        SILK | GINSENG,           CTX_COMBAT,     TRANSPORT_ANY,  &spellSleep,   SPELLPRM_NONE,    15 },
+    { "Tremor",       ASH | MOSS | MANDRAKE,    CTX_COMBAT,     TRANSPORT_ANY,  &spellTremor,  SPELLPRM_NONE,    30 },
+    { "Undead",       ASH | GARLIC,             CTX_COMBAT,     TRANSPORT_ANY,  &spellUndead,  SPELLPRM_NONE,    15 },
+    { "View",         NIGHTSHADE | MANDRAKE,    CTX_NON_COMBAT, TRANSPORT_ANY,  &spellView,    SPELLPRM_NONE,    15 },
+    { "Winds",        ASH | MOSS,               CTX_WORLDMAP,   TRANSPORT_ANY,  &spellWinds,   SPELLPRM_FROMDIR, 10 },
+    { "X-it",         ASH | SILK | MOSS,        CTX_DUNGEON,    TRANSPORT_ANY,  &spellXit,     SPELLPRM_NONE,    15 },
+    { "Y-up",         SILK | MOSS,              CTX_DUNGEON,    TRANSPORT_ANY,  &spellYup,     SPELLPRM_NONE,    10 },
+    { "Z-down",       SILK | MOSS,              CTX_DUNGEON,    TRANSPORT_ANY,  &spellZdown,   SPELLPRM_NONE,    5 }
 };
 
 #define N_SPELLS (sizeof(spells) / sizeof(spells[0]))
@@ -160,10 +161,16 @@ int spellGetRequiredMP(unsigned int spell) {
     return spells[spell].mp;
 }
 
-int spellGetContext(unsigned int spell) {
+LocationContext spellGetContext(unsigned int spell) {
     ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
 
     return spells[spell].context;
+}
+
+TransportContext spellGetTransportContext(unsigned int spell) {
+    ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
+
+    return spells[spell].transportContext;
 }
 
 const char *spellGetErrorMessage(unsigned int spell, SpellCastError error) {
@@ -241,6 +248,11 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
         
     if ((c->location->context & spells[spell].context) == 0) {
         *error = CASTERR_WRONGCONTEXT;        
+        return 0;
+    }
+
+    if ((c->transportContext & spells[spell].transportContext) == 0) {
+        *error = CASTERR_FAILED;
         return 0;
     }
 

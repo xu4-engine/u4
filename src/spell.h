@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "context.h"
 #include "savegame.h"
 
 typedef enum {
@@ -43,7 +44,8 @@ typedef struct _Mixture {
 typedef struct _Spell {
     const char *name;
     int components;
-    int context;
+    LocationContext context;
+    TransportContext transportContext;
     int (*spellFunc)(int);
     SpellParam paramType;
     int mp;
@@ -59,7 +61,8 @@ int mixtureAddReagent(Mixture *mix, Reagent reagent);
 void mixtureRevert(Mixture *mix);
 const char *spellGetName(unsigned int spell);
 int spellGetRequiredMP(unsigned int spell);
-int spellGetContext(unsigned int spell);
+LocationContext spellGetContext(unsigned int spell);
+TransportContext spellGetTransportContext(unsigned int spell);
 const char *spellGetErrorMessage(unsigned int spell, SpellCastError error);
 int spellMix(unsigned int spell, const Mixture *mix);
 SpellParam spellGetParamType(unsigned int spell);

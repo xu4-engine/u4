@@ -43,6 +43,16 @@ typedef enum {
     AURA_QUICKNESS
 } Aura;
 
+typedef enum {
+    TRANSPORT_FOOT      = 0x1,
+    TRANSPORT_HORSE     = 0x2,
+    TRANSPORT_SHIP      = 0x4,
+    TRANSPORT_BALLOON   = 0x8
+} TransportContext;
+
+#define TRANSPORT_ANY               (0xFFFF)
+#define TRANSPORT_FOOT_OR_HORSE     (TRANSPORT_FOOT | TRANSPORT_HORSE)
+
 typedef struct _Conversation {
     const struct _Person *talker;
     int state;
@@ -58,7 +68,7 @@ typedef struct _Conversation {
 } Conversation;
 
 typedef struct _Context {
-    struct _SaveGame *saveGame;    
+    struct _SaveGame *saveGame;
     struct _Annotation *annotation;    
     struct _Location *location;
     Conversation conversation;
@@ -71,6 +81,7 @@ typedef struct _Context {
     int auraDuration;
     int horseSpeed;
     int opacity;
+    TransportContext transportContext;
     long lastCommandTime;
     struct _Object *lastShip;
 } Context;

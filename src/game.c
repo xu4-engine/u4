@@ -122,7 +122,7 @@ void gameInit() {
     c->horseSpeed = 0;
     c->opacity = 1;
     c->lastCommandTime = time(NULL);
-    c->lastShip = NULL;
+    c->lastShip = NULL;    
 
     /* load in the save game */
     saveGameFile = saveGameOpenForReading();
@@ -158,6 +158,8 @@ void gameInit() {
     screenDrawBackground(BKGD_BORDERS);
     statsUpdate();
     screenPrompt();	
+
+    gameSetTransport(c->saveGame->transport); /* setup transport context */
 }
 
 /**
@@ -561,7 +563,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 if (c->saveGame->transport != AVATAR_TILE)
                     screenMessage("Board: Can't!\n");
                 else {
-                    c->saveGame->transport = obj->tile;
+                    gameSetTransport(obj->tile);
                     if (c->lastShip != obj)
                         c->saveGame->shiphull = 50;
                     mapRemoveObject(c->location->map, obj);
@@ -571,7 +573,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 if (c->saveGame->transport != AVATAR_TILE)
                     screenMessage("Board: Can't!\n");
                 else {
-                    c->saveGame->transport = obj->tile;
+                    gameSetTransport(obj->tile);
                     mapRemoveObject(c->location->map, obj);
                     screenMessage("Mount Horse!\n");
                 }
@@ -579,7 +581,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 if (c->saveGame->transport != AVATAR_TILE)
                     screenMessage("Board: Can't!\n");
                 else {
-                    c->saveGame->transport = obj->tile;
+                    gameSetTransport(obj->tile);
                     mapRemoveObject(c->location->map, obj);
                     screenMessage("Board Balloon!\n");
                 }
@@ -881,7 +883,7 @@ int gameBaseKeyHandler(int key, void *data) {
             if (tileIsShip(c->saveGame->transport))
                 c->lastShip = obj; 
 
-            c->saveGame->transport = AVATAR_TILE;
+            gameSetTransport(AVATAR_TILE);
             c->horseSpeed = 0;
             screenMessage("X-it\n");
         } else
@@ -1129,10 +1131,13 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     case '6':
     case '7':
     case '8':
-        moongate = moongateGetGateForPhase(key - '1');
-        c->location->x = moongate->x;
-        c->location->y = moongate->y;
-        screenMessage("Gate %d!\n", key - '0');
+        if (mapIsWorldMap(c->location->map)) {
+            moongate = moongateGetGateForPhase(key - '1');
+            c->location->x = moongate->x;
+            c->location->y = moongate->y;
+            screenMessage("Gate %d!\n", key - '0');
+        }
+        else screenMessage("Not here!\n");
         break;
 
     case 'c':
@@ -1402,7 +1407,9 @@ int castForPlayer2(int spell, void *data) {
     /* If we can't really cast this spell, skip the extra parameters */
     if ((spellGetRequiredMP(spell) > c->saveGame->players[castPlayer].mp) || /* not enough mp */
         ((spellGetContext(spell) & c->location->context) == 0) ||            /* wrong context */
-        (c->saveGame->mixtures[spell] == 0)) {                               /* none mixed! */
+        (c->saveGame->mixtures[spell] == 0) ||                               /* none mixed! */
+        ((spellGetTransportContext(spell) & c->transportContext) == 0)) {    /* invalid transportation for spell */
+        
         gameCastSpell(castSpell, castPlayer, 0);
         (*c->location->finishTurn)();
         return 1;
@@ -1415,11 +1422,11 @@ int castForPlayer2(int spell, void *data) {
         (*c->location->finishTurn)();
         break;
     case SPELLPRM_PHASE:
-        screenMessage("Phase: ");
+        screenMessage("To Phase: ");
         eventHandlerPushKeyHandlerData(&gameGetPhaseKeyHandler, (void *) &castForPlayerGetPhase);        
         break;
     case SPELLPRM_PLAYER:
-        screenMessage("Player: ");
+        screenMessage("Who: ");
         gameGetPlayerForCommand(&castForPlayerGetDestPlayer);        
         break;
     case SPELLPRM_DIR:
@@ -2831,4 +2838,21 @@ void gameMonsterCleanup(void) {
         }
         else obj = obj->next;        
     }
+}
+
+/**
+ * Sets the transport for the avatar
+ */
+
+void gameSetTransport(unsigned char tile) {       
+    
+    if (tileIsHorse(tile))
+        c->transportContext = TRANSPORT_HORSE;
+    else if (tileIsShip(tile))
+        c->transportContext = TRANSPORT_SHIP;
+    else if (tileIsBalloon(tile))
+        c->transportContext = TRANSPORT_BALLOON;
+    else c->transportContext = TRANSPORT_FOOT;
+
+    c->saveGame->transport = tile;
 }

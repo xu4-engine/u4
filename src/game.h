@@ -66,5 +66,6 @@ int gameDirectionalAction(CoordActionInfo *info);
 void gameDamageParty(int minDamage, int maxDamage);
 void gameDamageShip(int minDamage, int maxDamage);
 void gameMonsterCleanup(void);
+void gameSetTransport(unsigned char tile);
 
 #endif

@@ -211,8 +211,9 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
             break;
 
         case CONV_ASK:
+        case CONV_ASKYESNO:
             ASSERT(cnv->talker->npcType != NPC_HAWKWIND, "invalid state for hawkwind conversation");            
-            text = concat("\n\n", talkerGetQuestionResponse(cnv, inquiry), "\n", NULL);
+            text = concat("\n", talkerGetQuestionResponse(cnv, inquiry), "\n", NULL);
             break;
 
         case CONV_BUY_QUANTITY:
@@ -248,6 +249,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
     switch (cnv->state) {
     case CONV_TALK:
     case CONV_ASK:
+    case CONV_ASKYESNO:
     case CONV_BUY_QUANTITY:
     case CONV_SELL_QUANTITY:
     case CONV_BUY_PRICE:
@@ -419,31 +421,33 @@ char *talkerGetQuestionResponse(Conversation *cnv, const char *answer) {
     cnv->state = CONV_TALK;
 
     if (tolower(answer[0]) == 'y') {
-        reply = strdup(cnv->talker->yesresp);
+        reply = concat("\n", strdup(cnv->talker->yesresp), NULL);
         if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
             playerAdjustKarma(c->saveGame, KA_BRAGGED);
     }
 
     else if (tolower(answer[0]) == 'n') {
-        reply = strdup(cnv->talker->noresp);
+        reply = concat("\n", strdup(cnv->talker->noresp), NULL);
         if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
             playerAdjustKarma(c->saveGame, KA_HUMBLE);
     }
 
-    else
-        reply = strdup("That I cannot\nhelp thee with.");
+    else {
+        reply = strdup("Yes or no!");
+        cnv->state = CONV_ASKYESNO;
+    }
 
     return reply;
 }
 
 char *talkerGetPrompt(const Conversation *cnv) {
-    char *prompt;
+    char *prompt = NULL;
 
     if (cnv->state == CONV_ASK)
         personGetQuestion(cnv->talker, &prompt);
     else if (cnv->state == CONV_BUY_QUANTITY)
         prompt = strdup("\nHow much? ");
-    else
+    else if (cnv->state != CONV_ASKYESNO)
         prompt = strdup("\nYour Interest:\n");
 
     return prompt;
