@@ -129,7 +129,7 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     static const struct {
         unsigned char tile;
         Map *map;
-    } tileToMap[] = {
+    } tileToMap[] = {        
         { SWAMP_TILE,   &marsh_map },
         { GRASS_TILE,   &grass_map },
         { BRUSH_TILE,   &brush_map },
@@ -143,6 +143,7 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
         { BRIDGE_TILE,  &bridge_map },
         { NORTHBRIDGE_TILE, &bridge_map },
         { SOUTHBRIDGE_TILE, &bridge_map },
+        { CHEST_TILE,   &grass_map },
         { BRICKFLOOR_TILE, &brick_map },
         { MOONGATE0_TILE, &grass_map },
         { MOONGATE1_TILE, &grass_map },

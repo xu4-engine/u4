@@ -2500,7 +2500,7 @@ void gameMonsterAttack(Object *obj) {
     
     screenMessage("\nAttacked by %s\n", monsterForTile(obj->tile)->name);
 
-    ground = mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
+    ground = mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
@@ -2543,9 +2543,10 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
             /* always displays as a 'hit' */
             attackFlash(x, y, hittile, 2);
 
+            /* FIXME: check actual damage from u4dos -- values here are guessed */
             if (tileIsShip(c->saveGame->transport))
                 gameDamageShip(-1, 10);
-            else gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */            
+            else gameDamageParty(10, 25);
 
             return 1;
         }

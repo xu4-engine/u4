@@ -23,6 +23,7 @@
 #define NORTHBRIDGE_TILE 0x19
 #define SOUTHBRIDGE_TILE 0x1a
 #define AVATAR_TILE 0x1f
+#define CHEST_TILE 0x3c
 #define BOULDER_TILE 0x37
 #define CORPSE_TILE 0x38
 #define BRICKFLOOR_TILE 0x3e
