@@ -869,15 +869,16 @@ void introInitPlayers(SaveGame *saveGame) {
         WeaponType weapon;
         ArmorType armor;
         int xp, x, y;
+		int virtues[8];
     } initValuesForClass[] = {
-        { WEAP_STAFF,  ARMR_CLOTH,   125, 231, 136 }, /* CLASS_MAGE */
-        { WEAP_SLING,  ARMR_CLOTH,   240,  83, 105 }, /* CLASS_BARD */
-        { WEAP_AXE,    ARMR_LEATHER, 205,  35, 221 }, /* CLASS_FIGHTER */
-        { WEAP_DAGGER, ARMR_CLOTH,   175,  59,  44 }, /* CLASS_DRUID */
-        { WEAP_MACE,   ARMR_LEATHER, 110, 158,  21 }, /* CLASS_TINKER */
-        { WEAP_SWORD,  ARMR_CHAIN,   325, 105, 183 }, /* CLASS_PALADIN */
-        { WEAP_SWORD,  ARMR_LEATHER, 150,  23, 129 }, /* CLASS_RANGER */
-        { WEAP_STAFF,  ARMR_CLOTH,     5, 186, 171 }  /* CLASS_SHEPHERD */
+        { WEAP_STAFF,  ARMR_CLOTH,   125, 231, 136, 65, 50, 60, 50, 50, 55, 55, 50 }, /* CLASS_MAGE */
+        { WEAP_SLING,  ARMR_CLOTH,   240,  83, 105, 50, 65, 55, 55, 50, 60, 50, 50 }, /* CLASS_BARD */
+        { WEAP_AXE,    ARMR_LEATHER, 205,  35, 221, 50, 55, 65, 50, 55, 50, 60, 50 }, /* CLASS_FIGHTER */
+        { WEAP_DAGGER, ARMR_CLOTH,   175,  59,  44, 55, 50, 50, 65, 50, 60, 55, 50 }, /* CLASS_DRUID */
+        { WEAP_MACE,   ARMR_LEATHER, 110, 158,  21, 50, 50, 60, 50, 65, 55, 55, 50 }, /* CLASS_TINKER */
+        { WEAP_SWORD,  ARMR_CHAIN,   325, 105, 183, 50, 50, 50, 55, 60, 65, 50, 55 }, /* CLASS_PALADIN */
+        { WEAP_SWORD,  ARMR_LEATHER, 150,  23, 129, 50, 50, 50, 55, 55, 60, 65, 50 }, /* CLASS_RANGER */
+        { WEAP_STAFF,  ARMR_CLOTH,     5, 186, 171, 50, 50, 60, 50, 50, 55, 55, 65 }  /* CLASS_SHEPHERD */
     };
     static const struct {
         const char *name;
@@ -949,6 +950,10 @@ void introInitPlayers(SaveGame *saveGame) {
 
     p = 1;
     for (i = 0; i < VIRT_MAX; i++) {
+		/* Setup the initial virtue levels according to the avatar's class */
+		saveGame->karma[i] = initValuesForClass[saveGame->players[0].klass].virtues[i];
+
+		/* Initial setup for party members that aren't in your group yet... */
         if (i != saveGame->players[0].klass) {
             saveGame->players[p].klass = (ClassType) i;
             saveGame->players[p].xp = initValuesForClass[i].xp;
