@@ -55,18 +55,22 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case U4_UP:
         moveAvatar(0, -1);
+        screenMessage("North\n");
         break;
 
     case U4_DOWN:
         moveAvatar(0, 1);
+        screenMessage("South\n");
         break;
 
     case U4_LEFT:
         moveAvatar(-1, 0);
+        screenMessage("West\n");
         break;
 
     case U4_RIGHT:
         moveAvatar(1, 0);
+        screenMessage("East\n");
         break;
 
     case 3:                     /* ctrl-C */
@@ -93,10 +97,10 @@ int gameBaseKeyHandler(int key, void *data) {
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_DESCEND) {
             c->map = portal->destination;
-            screenMessage("Descend!\n\n\020");
+            screenMessage("Descend!\n\n");
         }
         else
-            screenMessage("Descend what?\n\020");
+            screenMessage("Descend what?\n");
         break;
 
     case 'e':
@@ -118,9 +122,9 @@ int gameBaseKeyHandler(int key, void *data) {
             new->moonPhase = new->parent->moonPhase;
             c = new;
 
-            screenMessage("Enter towne!\n\n%s\n\n\020", c->map->name);
+            screenMessage("Enter towne!\n\n%s\n\n", c->map->name);
         } else
-            screenMessage("Enter what?\n\020");
+            screenMessage("Enter what?\n");
         break;
 
     case 'j':
@@ -137,19 +141,19 @@ int gameBaseKeyHandler(int key, void *data) {
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_KLIMB) {
             c->map = portal->destination;
-            screenMessage("Klimb!\n\n\020");
+            screenMessage("Klimb!\n\n");
         }
         else
-            screenMessage("Klimb what?\n\020");
+            screenMessage("Klimb what?\n");
         break;
 
     case 'l':
         if (c->saveGame->sextants >= 1)
-            screenMessage("Locate position\nwith sextant\n Latitude: %c'%c\"\nLongitude: %c'%c\"\n\020",
+            screenMessage("Locate position\nwith sextant\n Latitude: %c'%c\"\nLongitude: %c'%c\"\n",
                           c->saveGame->y / 16 + 'A', c->saveGame->y % 16 + 'A',
                           c->saveGame->x / 16 + 'A', c->saveGame->x % 16 + 'A');
         else
-            screenMessage("Locate position\nwith what?\n\020");
+            screenMessage("Locate position\nwith what?\n");
         break;
 
     case 'n':
@@ -214,14 +218,17 @@ int gameBaseKeyHandler(int key, void *data) {
     }
 
     if (valid) {
-        c->saveGame->moves++;
-        c->saveGame->food -= c->saveGame->members;
-        if (c->saveGame->food < 0) {
-            /* FIXME: handle starving */
-            c->saveGame->food = 0;
+        if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler) {
+            c->saveGame->moves++;
+            c->saveGame->food -= c->saveGame->members;
+            if (c->saveGame->food < 0) {
+                /* FIXME: handle starving */
+                c->saveGame->food = 0;
+            }
+            screenMessage("\020");
+            annotationCycle();
         }
         statsUpdate();
-        annotationCycle();
     }
 
     return valid || keyHandlerDefault(key, NULL);
@@ -746,6 +753,7 @@ int talkHandleBuffer(const char *message) {
 
     if (done) {
         screenMessage("\020");
+        return 1;
     }
 
     else if (askq) {
