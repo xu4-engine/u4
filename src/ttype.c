@@ -16,6 +16,7 @@
 #define MASK_SHIP      0x0200
 #define MASK_HORSE     0x0400
 #define MASK_BALLOON   0x0800
+#define MASK_CANDISPEL 0x1000     
 
 #define WALKABLE       0x0000
 #define SLOW           0x0001
@@ -87,10 +88,10 @@ static const short _ttype_info[] = {
     0,                                          /* mgate1 */
     0,                                          /* mgate2 */
     0,                                          /* mgate3 */
-    EFFECT_POISON | MASK_ANIMATED,              /* poison field */
-    UNWALKABLE | MASK_ANIMATED,                 /* energy field */
-    EFFECT_FIRE | MASK_ANIMATED,                /* fire field */
-    EFFECT_SLEEP | MASK_ANIMATED,               /* sleep field */
+    EFFECT_POISON | MASK_ANIMATED | MASK_CANDISPEL, /* poison field */
+    UNWALKABLE | MASK_ANIMATED | MASK_CANDISPEL, /* energy field */
+    EFFECT_FIRE | MASK_ANIMATED | MASK_CANDISPEL, /* fire field */
+    EFFECT_SLEEP | MASK_ANIMATED | MASK_CANDISPEL, /* sleep field */
     UNWALKABLE,                                 /* solid */
     MASK_OPAQUE,                                /* secret door */
     0,                                          /* altar */
@@ -154,6 +155,12 @@ int tileIsHorse(unsigned char tile) {
 int tileIsBalloon(unsigned char tile) {
     if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
 	return (_ttype_info[tile] & MASK_BALLOON) != 0;
+    return 0;
+}
+
+int tileCanDispel(unsigned char tile) {
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_CANDISPEL) != 0;
     return 0;
 }
 

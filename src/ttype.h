@@ -52,6 +52,7 @@ int tileIsLockedDoor(unsigned char tile);
 int tileIsShip(unsigned char tile);
 int tileIsHorse(unsigned char tile);
 int tileIsBalloon(unsigned char tile);
+int tileCanDispel(unsigned char tile);
 unsigned int tileGetDirection(unsigned char tile);
 void tileSetDirection(unsigned short *tile, unsigned int dir);
 int tileCanTalkOver(unsigned char tile);
