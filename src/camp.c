@@ -21,6 +21,7 @@
 #include "player.h"
 #include "area.h"
 #include "ttype.h"
+#include "stats.h"
 
 extern Map camp_map;
 

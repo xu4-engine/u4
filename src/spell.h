@@ -56,6 +56,6 @@ void mixtureRevert(Mixture *mix);
 const char *spellGetName(unsigned int spell);
 int spellMix(unsigned int spell, const Mixture *mix);
 SpellParam spellGetParamType(unsigned int spell);
-int spellCast(unsigned int spell, int character, int param, SpellCastError *error);
+int spellCast(unsigned int spell, int character, int param, SpellCastError *error, int spellEffect);
 
 #endif
