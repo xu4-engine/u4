@@ -1,65 +1,65 @@
 <?xml version="1.0"?>
 <!-- $Id$ -->
 <monsters>
-	<monster id="0" name="Horse" tile="20" level="9" good="true" wontattack="true"/>
-	<monster id="1" name="Horse" tile="21" level="9" good="true" wontattack="true"/>
+	<monster id="0" name="Horse" tile="20" basehp="255" level="9" good="true" wontattack="true"/>
+	<monster id="1" name="Horse" tile="21" basehp="255" level="9" good="true" wontattack="true"/>
 
 	<!-- Classes -->
-	<monster id="2" name="Mage" tile="32" level="8" good="true" wontattack="true"/>
-	<monster id="3" name="Bard" tile="34" level="9" good="true" wontattack="true"/>
-	<monster id="4" name="Fighter" tile="36" level="7" good="true" wontattack="true"/>
-	<monster id="5" name="Druid" tile="38" level="10" good="true" wontattack="true"/>
-	<monster id="6" name="Tinker" tile="40" level="9" good="true" wontattack="true"/>
-	<monster id="7" name="Paladin" tile="42" level="4" good="true" wontattack="true"/>
-	<monster id="8" name="Ranger" tile="44" level="3" good="true" wontattack="true"/>
-	<monster id="9" name="Shepherd" tile="46" level="9" good="true" wontattack="true"/>
+	<monster id="2" name="Mage" tile="32" basehp="255" level="8" good="true" wontattack="true"/>
+	<monster id="3" name="Bard" tile="34" basehp="64" level="9" good="true" wontattack="true"/>
+	<monster id="4" name="Fighter" tile="36" basehp="96" level="7" good="true" wontattack="true"/>
+	<monster id="5" name="Druid" tile="38" basehp="128" level="10" good="true" wontattack="true"/>
+	<monster id="6" name="Tinker" tile="40" basehp="96" level="9" good="true" wontattack="true"/>
+	<monster id="7" name="Paladin" tile="42" basehp="255" level="4" good="true" wontattack="true"/>
+	<monster id="8" name="Ranger" tile="44" basehp="255" level="3" good="true" wontattack="true"/>
+	<monster id="9" name="Shepherd" tile="46" basehp="48" level="9" good="true" wontattack="true"/>
 	
 	<!-- Misc town creatures -->
-	<monster id="10" name="Guard" tile="80" level="13" good="true" wontattack="true"/>
-	<monster id="11" name="Villager" tile="82" level="13" good="true" wontattack="true"/>
-	<monster id="12" name="Bard" tile="84" level="9" good="true" wontattack="true"/>
-	<monster id="13" name="Jester" tile="86" level="9" good="true" wontattack="true"/>
-	<monster id="14" name="Beggar" tile="88" level="13" good="true" wontattack="true"/>
-	<monster id="15" name="Child" tile="90" level="10" good="true" wontattack="true"/>
-	<monster id="16" name="Bull" tile="92" level="11" good="true"/>
-	<monster id="17" name="Lord British" tile="94" level="16" ranged="true" good="true" wontattack="true"/>	
+	<monster id="10" name="Guard" tile="80" basehp="48" level="13" good="true" wontattack="true"/>
+	<monster id="11" name="Villager" tile="82" basehp="64" level="13" good="true" wontattack="true"/>
+	<monster id="12" name="Bard" tile="84" basehp="80" level="9" good="true" wontattack="true"/>
+	<monster id="13" name="Jester" tile="86" basehp="48" level="9" good="true" wontattack="true"/>
+	<monster id="14" name="Beggar" tile="88" basehp="96" level="13" good="true" wontattack="true"/>
+	<monster id="15" name="Child" tile="90" basehp="48" level="10" good="true" wontattack="true"/>
+	<monster id="16" name="Bull" tile="92" basehp="192" level="11" good="true"/>
+	<monster id="17" name="Lord British" tile="94" basehp="255" level="16" ranged="true" good="true" wontattack="true"/>	
 
 	<!-- Water monsters -->
-	<monster id="18" name="Pirate Ship" tile="128" level="16" sails="true"/>
-	<monster id="19" name="Nixie" tile="132" level="4" ranged="true" swims="true" leader="22"/>
-	<monster id="20" name="Giant Squid" tile="134" level="6" ranged="true" swims="true" leader="21"/>
-	<monster id="21" name="Sea Serpent" tile="136" level="8" ranged="true" swims="true" leader="20"/>
-	<monster id="22" name="Seahorse" tile="138" level="8" ranged="true" swims="true" leader="19"/>
-	<monster id="23" name="Whirlpool" tile="140" level="16" swims="true" wanders="true" movement="wanders" cantattack="true" wontattack="true"/>	
-	<monster id="24" name="Storm" tile="142" level="16" flies="true" wanders="true" movement="wanders" cantattack="true" wontattack="true"/>
+	<monster id="18" encounterSize="1" name="Pirate Ship" tile="128" level="16" sails="true"/>
+	<monster id="19" encounterSize="12" name="Nixie" tile="132" basehp="240" level="4" ranged="true" swims="true" leader="22"/>
+	<monster id="20" encounterSize="4" name="Giant Squid" tile="134" basehp="128" level="6" ranged="true" swims="true" leader="21"/>
+	<monster id="21" encounterSize="4" name="Sea Serpent" tile="136" basehp="80" level="8" ranged="true" swims="true" leader="20"/>
+	<monster id="22" encounterSize="8" name="Seahorse" tile="138" basehp="48" level="8" ranged="true" swims="true" leader="19"/>
+	<monster id="23" encounterSize="1" name="Whirlpool" tile="140" level="16" swims="true" wanders="true" movement="wanders" cantattack="true" wontattack="true"/>	
+	<monster id="24" encounterSize="1" name="Storm" tile="142" level="16" flies="true" wanders="true" movement="wanders" cantattack="true" wontattack="true"/>
 
 	<!-- Main monsters -->
-	<monster id="25" name="Rat" tile="144" level="3" wanders="true" movement="wanders" good="true" leader="38"/>
-	<monster id="26" name="Bat" tile="148" level="3" flies="true" wanders="true" movement="wanders" good="true" leader="47"/>
-	<monster id="27" name="Giant Spider" tile="152" level="4" ranged="true" spawns="true" spawntile="3" wanders="true" movement="wanders" good="true" poisons="true" leader="25"/>
-	<monster id="28" name="Ghost" tile="156" level="5" undead="true" leader="46"/>
-	<monster id="29" name="Slime" tile="160" level="3"/>
-	<monster id="30" name="Troll" tile="164" level="6" ranged="true" leader="41"/>
-	<monster id="31" name="Gremlin" tile="168" level="3" steals="food"/>
-	<monster id="32" name="Mimic" tile="172" level="12" ranged="true" movement="none" camouflage="true"/>
-	<monster id="33" name="Reaper" tile="176" level="16" ranged="true" movement="none" casts="sleep"/>
-	<monster id="34" name="Insect Swarm" tile="180" level="3" good="true" wanders="true" movement="wanders" leader="25"/>
-	<monster id="35" name="Gazer" tile="184" level="15" ranged="true" leader="36"/>
-	<monster id="36" name="Phantom" tile="188" level="8" undead="true" leader="28"/>
-	<monster id="37" name="Orc" tile="192" level="5" spawns="true" leader="30"/>
-	<monster id="38" name="Skeleton" tile="196" level="3" spawns="true" leader="45"/>
-	<monster id="39" name="Rogue" tile="200" level="5" spawns="true" steals="gold"/>	
-	<monster id="40" name="Python" tile="204" level="3" spawns="true" ranged="true" good="true" wanders="true" movement="wanders" leader="25"/>
-	<monster id="41" name="Ettin" tile="208" level="7" spawns="false" ranged="true" leader="49"/>		
-	<monster id="42" name="Headless" tile="212" spawns="true" level="4" leader="35"/>
-	<monster id="43" name="Cyclops" tile="216" spawns="false" level="8" ranged="true" leader="48"/>	
-	<monster id="44" name="Wisp" tile="220" level="4" spawns="false" teleports="true" leader="36"/>	
-	<monster id="45" name="Mage" tile="224" level="11" spawns="false" ranged="true" leader="49"/>	
-	<monster id="46" name="Lich" tile="228" level="12" spawns="false" undead="true" leader="49"/>	
-	<monster id="47" name="Lava Lizard" tile="232" level="5" spawns="false" ranged="true" resists="fire" leader="50"/>	
-	<monster id="48" name="Zorn" tile="236" level="15" spawns="false" casts="negate" leader="35"/>	
-	<monster id="49" name="Daemon" tile="240" level="7" spawns="false" ranged="true" resists="fire" leader="52"/>
-	<monster id="50" name="Hydra" tile="244" level="13" spawns="false" ranged="true" resists="fire" leader="51"/>	
-	<monster id="51" name="Dragon" tile="248" level="14" spawns="false" ranged="true" flies="true" resists="fire" leader="52"/>	
-	<monster id="52" name="Balron" tile="252" level="16" spawns="false" ranged="true" casts="sleep" resists="fire"/>	
+	<monster id="25" encounterSize="12" name="Rat" tile="144" basehp="112" level="3" wanders="true" movement="wanders" good="true" leader="38"/>
+	<monster id="26" encounterSize="12" name="Bat" tile="148" basehp="64" level="3" flies="true" wanders="true" movement="wanders" good="true" leader="47"/>
+	<monster id="27" encounterSize="6" name="Giant Spider" tile="152" basehp="128" level="4" ranged="true" spawntile="3" wanders="true" movement="wanders" good="true" poisons="true" leader="25"/>
+	<monster id="28" encounterSize="4" name="Ghost" tile="156" basehp="64" level="5" undead="true" leader="46"/>
+	<monster id="29" encounterSize="15" name="Slime" tile="160" basehp="176" level="3"/>
+	<monster id="30" encounterSize="6" name="Troll" tile="164" basehp="192" level="6" ranged="true" leader="41"/>
+	<monster id="31" encounterSize="15" name="Gremlin" tile="168" basehp="96" level="3" steals="food"/>
+	<monster id="32" encounterSize="1" name="Mimic" tile="172" basehp="240" level="12" ranged="true" movement="none" camouflage="true"/>
+	<monster id="33" encounterSize="1" name="Reaper" tile="176" basehp="112" level="16" ranged="true" movement="none" casts="sleep"/>
+	<monster id="34" encounterSize="15" name="Insect Swarm" tile="180" basehp="208" level="3" good="true" wanders="true" movement="wanders" leader="25"/>
+	<monster id="35" encounterSize="4" name="Gazer" tile="184" basehp="224" level="15" ranged="true" leader="36"/>
+	<monster id="36" encounterSize="8" name="Phantom" tile="188" basehp="255" level="8" undead="true" leader="28"/>
+	<monster id="37" encounterSize="10" name="Orc" tile="192" basehp="112" level="5" leader="30"/>
+	<monster id="38" encounterSize="12" name="Skeleton" tile="196" basehp="48" level="3" leader="45"/>
+	<monster id="39" encounterSize="10" name="Rogue" tile="200" basehp="96" level="5" steals="gold"/>	
+	<monster id="40" encounterSize="12" name="Python" tile="204" basehp="64" level="3" ranged="true" good="true" wanders="true" movement="wanders" leader="25"/>
+	<monster id="41" encounterSize="6" name="Ettin" tile="208" basehp="96" level="7" ranged="true" leader="49"/>		
+	<monster id="42" encounterSize="8" name="Headless" tile="212" basehp="128" level="4" leader="35"/>
+	<monster id="43" encounterSize="6" name="Cyclops" tile="216" basehp="144" level="8" ranged="true" leader="48"/>	
+	<monster id="44" encounterSize="12" name="Wisp" tile="220" basehp="48" level="4" teleports="true" leader="36"/>	
+	<monster id="45" encounterSize="6" name="Mage" tile="224" basehp="128" level="11" ranged="true" leader="49"/>	
+	<monster id="46" encounterSize="4" name="Lich" tile="228" basehp="48" level="12" undead="true" leader="49"/>	
+	<monster id="47" encounterSize="8" name="Lava Lizard" tile="232" basehp="48" level="5" ranged="true" resists="fire" leader="50"/>	
+	<monster id="48" encounterSize="4" name="Zorn" tile="236" basehp="48" level="15" casts="negate" leader="35"/>	
+	<monster id="49" encounterSize="6" name="Daemon" tile="240" basehp="32" level="7" ranged="true" resists="fire" leader="52"/>
+	<monster id="50" encounterSize="4" name="Hydra" tile="244" basehp="32" level="13" ranged="true" resists="fire" leader="51"/>	
+	<monster id="51" encounterSize="4" name="Dragon" tile="248" basehp="128" level="14" ranged="true" flies="true" resists="fire" leader="52"/>	
+	<monster id="52" encounterSize="1" name="Balron" tile="252" basehp="255" level="16" ranged="true" casts="sleep" resists="fire"/>	
 </monsters>
