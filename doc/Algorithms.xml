@@ -21,7 +21,10 @@
             <line>(((moves/100) >= 0x10000) or (((moves/100) &amp; 0xffff) != lastcamp))</line>
             <line>lastcamp = (moves/100) &amp; 0xffff</line>
         </algorithm>
-        <algorithm desc="Ambushed by rats at inn?" prec="unknown">
+        <algorithm desc="Ambushed by rogues at inn?" prec="exact">
+            <line>random(8) == 0</line>
+        </algorithm>
+        <algorithm desc="Innkeeper warns about rats?" prec="exact">
             <line>random(4) == 0</line>
         </algorithm>
         <algorithm desc="Visited by Isaac the Ghost?" prec="exact">
