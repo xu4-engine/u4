@@ -634,7 +634,12 @@ offset  len   notes
 0x0fbc1 37    zero terminated list of tiles that are walkable
 0x0fbe6 149   14 zero-terminated navigation strings ("North", "Sail
               North", etc.)
-0x0fc7b 1884  ???
+0x0fc7b 539   Chamber of the Codex virtue questions
+0x0fe96 78    ???
+0x0fee4 647   Chamber of the Codex dialog strings
+0x1016b 28    ???
+0x10187 509   Chamber of the Codex dialog strings
+0x10384 83    ???
 0x103d7 1280  abyss question dialog strings
 0x108d7 22    11 two-byte offsets to abyss question answers (value +
               62141 gives file offset)
