@@ -83,14 +83,16 @@ Direction dirFindPath(int from_x, int from_y, int to_x, int to_y, int valid_dire
      */
     if (dx == 0) {
         if (DIR_IN_MASK(DIR_NORTH, valid_directions_mask) ||
-            DIR_IN_MASK(DIR_SOUTH, valid_directions_mask)) {
+            DIR_IN_MASK(DIR_SOUTH, valid_directions_mask) ||
+            dy == 1 || dy == -1) {
             valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_EAST, valid_directions_mask);
             valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_WEST, valid_directions_mask);
         }
     }
     if (dy == 0) {
         if (DIR_IN_MASK(DIR_EAST, valid_directions_mask) ||
-            DIR_IN_MASK(DIR_WEST, valid_directions_mask)) {
+            DIR_IN_MASK(DIR_WEST, valid_directions_mask) ||
+            dx == 1 || dx == -1) {
             valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_NORTH, valid_directions_mask);
             valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_SOUTH, valid_directions_mask);
         }
