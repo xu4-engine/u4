@@ -2310,56 +2310,61 @@ int getChestTrapHandler(int player) {
  * Handles moving the avatar during normal 3rd-person view 
  */
 MoveReturnValue gameMoveAvatar(Direction dir, int userEvent) {       
-
     MoveReturnValue retval = moveAvatar(dir, userEvent);  /* move the avatar */
 
-    /*musicPlayEffect();*/
+    if (userEvent) {
 
-    if (!settings->filterMoveMessages) {
-
-        if (userEvent) {
+        if (!settings->filterMoveMessages) {
             if (retval & MOVE_TURNED)
                 screenMessage("Turn %s!\n", getDirectionName(dir));
             else if (c->transportContext == TRANSPORT_SHIP)
                 screenMessage("Sail %s!\n", getDirectionName(dir));    
             else if (c->transportContext != TRANSPORT_BALLOON)
                 screenMessage("%s\n", getDirectionName(dir));    
+        }
 
-            /* movement was blocked */
-            if (retval & MOVE_BLOCKED) {
+        /* movement was blocked */
+        if (retval & MOVE_BLOCKED) {
 
-                /* if shortcuts are enabled, try them! */
-                if (settings->shortcutCommands) {
-                    int newx, newy;
-                    unsigned char tile;
+            /* if shortcuts are enabled, try them! */
+            if (settings->shortcutCommands) {
+                int newx, newy;
+                unsigned char tile;
 
-                    newx = c->location->x;
-                    newy = c->location->y;
-                    mapDirMove(c->location->map, dir, &newx, &newy);
-                    tile = (*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS);
+                newx = c->location->x;
+                newy = c->location->y;
+                mapDirMove(c->location->map, dir, &newx, &newy);
+                tile = (*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS);
 
-                    if (tileIsDoor(tile)) {
-                        openAtCoord(newx, newy, 1, NULL);
-                        retval = MOVE_SUCCEEDED | MOVE_END_TURN;                    
-                    } else if (tileIsLockedDoor(tile)) {
-                        jimmyAtCoord(newx, newy, 1, NULL);
-                        retval = MOVE_SUCCEEDED | MOVE_END_TURN;
-                    } /*else if (mapPersonAt(c->location->map, newx, newy, c->location->z) != NULL) {
-                        talkAtCoord(newx, newy, 1, NULL);
-                        retval = MOVE_SUCCEEDED | MOVE_END_TURN;
-                        }*/                
-                }
+                if (tileIsDoor(tile)) {
+                    openAtCoord(newx, newy, 1, NULL);
+                    retval = MOVE_SUCCEEDED | MOVE_END_TURN;
+                } else if (tileIsLockedDoor(tile)) {
+                    jimmyAtCoord(newx, newy, 1, NULL);
+                    retval = MOVE_SUCCEEDED | MOVE_END_TURN;
+                } /*else if (mapPersonAt(c->location->map, newx, newy, c->location->z) != NULL) {
+                    talkAtCoord(newx, newy, 1, NULL);
+                    retval = MOVE_SUCCEEDED | MOVE_END_TURN;
+                    }*/
+            }
 
-                /* if we're still blocked */
-                if (retval & MOVE_BLOCKED)
-                    screenMessage("Blocked!\n");
+            /* if we're still blocked */
+            if ((retval & MOVE_BLOCKED) && !settings->filterMoveMessages) {
+                screenMessage("Blocked!\n");
             }
         }
 
-        /* movement was slowed */
-        if (retval & MOVE_SLOWED)
-            screenMessage("Slow progress!\n");        
+        /* play an approriate sound effect */
+        if (retval & MOVE_BLOCKED)
+            soundPlay(SOUND_BLOCKED);
+        else if (c->transportContext == TRANSPORT_FOOT || c->transportContext == TRANSPORT_HORSE)
+            soundPlay(SOUND_WALK);
     }
+
+
+    /* movement was slowed */
+    if (retval & MOVE_SLOWED)
+        screenMessage("Slow progress!\n");        
 
     /* exited map */
     if (retval & MOVE_EXIT_TO_PARENT) {
