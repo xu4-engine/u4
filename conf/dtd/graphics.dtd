@@ -20,5 +20,6 @@
                 filetype          %filetype; #REQUIRED
                 tiles             NMTOKEN  #IMPLIED
                 introOnly         %bool;   #IMPLIED
+                transparentIndex  NMTOKEN  #IMPLIED
                 fixup             %fixup;  #IMPLIED>
 
