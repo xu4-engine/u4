@@ -808,6 +808,7 @@ int combatIsLost() {
 }
 
 void combatEnd() {
+    int i;
     
     gameExitToParentMap(c);
     musicPlay();
@@ -830,6 +831,14 @@ void combatEnd() {
 
     else if (!playerPartyDead(c->saveGame))
         screenMessage("Battle is lost!\n");
+
+    /* If we were camping and were ambushed, wake everyone up! */
+    if (combatInfo.isCamping) {
+        for (i = 0; i < c->saveGame->members; i++) {
+            if (c->saveGame->players[i].status == STAT_SLEEPING)
+                c->saveGame->players[i].status = combatInfo.party_status[i];
+        }
+    }
 
     if (combatInfo.monsterObj)
         mapRemoveObject(c->location->map, combatInfo.monsterObj);
