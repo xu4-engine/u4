@@ -28,11 +28,11 @@ public:
     virtual void draw(Tile *tile, MapTile *mapTile) = 0;
     virtual ~TileAnimTransform() {}
     virtual bool drawsTile() const = 0;
+    
+    // Properties
+    int random;
 
-    bool isRandom() const { return random; }        
-
-private:
-    bool random;
+private:    
     bool replaces;
 };
 
@@ -163,11 +163,9 @@ public:
     std::vector<TileAnimContext *> contexts;
 
     /* returns the frame to set the mapTile to (only relevent if persistent) */
-    void draw(Tile *tile, MapTile *mapTile, Direction dir);    
-    bool isRandom() const;    
+    void draw(Tile *tile, MapTile *mapTile, Direction dir);     
 
-private:    
-    bool random;   /* true if the tile animation occurs randomely (50% of the time) */    
+    int random;   /* true if the tile animation occurs randomely */
 };
 
 /**

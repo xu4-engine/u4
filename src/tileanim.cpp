@@ -78,8 +78,8 @@ TileAnimTransform *TileAnimTransform::create(const ConfigElement &conf) {
      * See if the transform is performed randomely
      */
     if (conf.exists("random"))
-        transform->random = conf.getBool("random");
-    else transform->random = false;
+        transform->random = conf.getInt("random");
+    else transform->random = 0;
 
     return transform;
 }
@@ -282,10 +282,10 @@ TileAnim *TileAnimSet::getByName(const std::string &name) {
     return i->second;
 }
 
-TileAnim::TileAnim(const ConfigElement &conf) : random(false) {
+TileAnim::TileAnim(const ConfigElement &conf) : random(0) {
     name = conf.getString("name");
     if (conf.exists("random"))
-        random = conf.getBool("random");
+        random = conf.getInt("random");
        
     vector<ConfigElement> children = conf.getChildren();
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
@@ -312,7 +312,7 @@ void TileAnim::draw(Tile *tile, MapTile *mapTile, Direction dir) {
         tile->loadImage();    
     
     /* nothing to do, draw the tile and return! */
-    if ((this->random && xu4_random(2) == 0) || (!transforms.size() && !contexts.size())) {
+    if ((random && xu4_random(100) > random) || (!transforms.size() && !contexts.size())) {
         tile->image->drawSubRectOn(tile->animated, 0, 0, 0, mapTile->frame * tile->h, tile->w, tile->h);
         return;
     }
@@ -323,7 +323,7 @@ void TileAnim::draw(Tile *tile, MapTile *mapTile, Direction dir) {
     for (t = transforms.begin(); t != transforms.end(); t++) {
         TileAnimTransform *transform = *t;
         
-        if (!transform->isRandom() || xu4_random(2) == 0) {
+        if (!transform->random || xu4_random(100) < transform->random) {
             if (!transform->drawsTile() && !drawn)
                 tile->image->drawSubRectOn(tile->animated, 0, 0, 0, mapTile->frame * tile->h, tile->w, tile->h);
             transform->draw(tile, mapTile);
@@ -340,7 +340,7 @@ void TileAnim::draw(Tile *tile, MapTile *mapTile, Direction dir) {
             for (t = ctx_transforms.begin(); t != ctx_transforms.end(); t++) {
                 TileAnimTransform *transform = *t;
 
-                if (!transform->isRandom() || xu4_random(2) == 0) {
+                if (!transform->random || xu4_random(100) < transform->random) {
                     if (!transform->drawsTile() && !drawn)
                         tile->image->drawSubRectOn(tile->animated, 0, 0, 0, mapTile->frame * tile->h, tile->w, tile->h);
                     transform->draw(tile, mapTile);
@@ -349,12 +349,4 @@ void TileAnim::draw(Tile *tile, MapTile *mapTile, Direction dir) {
             }
         }
     }
-}
-
-/**
- * Returns true if the tile animation
- * is only enacted randomely (50%)
- */ 
-bool TileAnim::isRandom() const {
-    return random;
 }
