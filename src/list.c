@@ -64,6 +64,9 @@ ListNode *listFind(ListNode *list, void *data, ListComparator compare) {
 ListNode *listRemove(ListNode *list, ListNode *node) {
     ListNode *prev, *n;
 
+    if (list == NULL || node == NULL)
+        return list;
+
     prev = NULL;
     n = list;
     while (n && n != node) {
@@ -76,7 +79,8 @@ ListNode *listRemove(ListNode *list, ListNode *node) {
 
     if (prev == NULL) {
         n = n->next;
-        n->prev = NULL;
+        if (n)
+            n->prev = NULL;
         free(node);
         return n;
     }
