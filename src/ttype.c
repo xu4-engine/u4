@@ -11,98 +11,105 @@
 #define MASK_SPEED     0x0006
 #define MASK_EFFECT    0x0018
 #define MASK_OPAQUE    0x0020
-#define MASK_SAILABLE  0x0040
-#define MASK_ANIMATED  0x0080
-#define MASK_UNFLYABLE 0x0100
-#define MASK_SHIP      0x0200
-#define MASK_HORSE     0x0400
-#define MASK_BALLOON   0x0800
-#define MASK_CANDISPEL 0x1000
+#define MASK_SWIMABLE  0x0040
+#define MASK_SAILABLE  0x0080
+#define MASK_ANIMATED  0x0100
+#define MASK_UNFLYABLE 0x0200
+#define MASK_SHIP      0x0400
+#define MASK_HORSE     0x0800
+#define MASK_BALLOON   0x1000
+#define MASK_CANDISPEL 0x2000
 
 #define UNWALKABLE 0x0001
 
 /* tile values 0-79 */
 static const short _ttype_info[] = {
-    UNWALKABLE | MASK_SAILABLE | MASK_ANIMATED, /* sea */
-    UNWALKABLE | MASK_SAILABLE | MASK_ANIMATED, /* water */
-    UNWALKABLE | MASK_ANIMATED,                 /* shallows */
-    SLOW | EFFECT_POISON,                       /* swamp */
-    0,                                          /* grass */
-    VSLOW,                                      /* brush */
-    VSLOW | MASK_OPAQUE,                        /* forest */
-    VVSLOW,                                     /* hills */
-    UNWALKABLE | MASK_OPAQUE | MASK_UNFLYABLE,  /* mountains */
-    0, 0, 0, 0,                                 /* dungeon, city, castle, town */
-    UNWALKABLE,                                 /* lcb1 */
-    0,                                          /* lcb2 */
-    UNWALKABLE,                                 /* lcb3 */
-    MASK_SHIP,                                  /* west ship */
-    MASK_SHIP,                                  /* north ship */
-    MASK_SHIP,                                  /* east ship */
-    MASK_SHIP,                                  /* south ship */
-    MASK_HORSE,                                 /* west horse */
-    MASK_HORSE,                                 /* east horse */
-    0,                                          /* hex */
-    0,                                          /* bridge */
-    MASK_BALLOON,                               /* balloon */
-    0, 0,                                       /* nbridge, sbridge */
-    0, 0,                                       /* uladder, dladder */
-    0,                                          /* ruins */
-    0,                                          /* shrine */
-    UNWALKABLE,                                 /* avatar */
-    UNWALKABLE,                                 /* mage1 */
-    UNWALKABLE,                                 /* mage2 */
-    UNWALKABLE,                                 /* bard1 */
-    UNWALKABLE,                                 /* bard2 */
-    UNWALKABLE,                                 /* fighter1 */
-    UNWALKABLE,                                 /* fighter2 */
-    UNWALKABLE,                                 /* druid1 */
-    UNWALKABLE,                                 /* druid2 */
-    UNWALKABLE,                                 /* tinker1 */
-    UNWALKABLE,                                 /* tinker2 */
-    UNWALKABLE,                                 /* paladin1 */
-    UNWALKABLE,                                 /* paladin2 */
-    UNWALKABLE,                                 /* ranger1 */
-    UNWALKABLE,                                 /* ranger2 */
-    UNWALKABLE,                                 /* shepherd1 */
-    UNWALKABLE,                                 /* shepherd2 */
-    UNWALKABLE,                                 /* column */
-    UNWALKABLE,                                 /* solid SW */
-    UNWALKABLE,                                 /* solid SE */
-    UNWALKABLE,                                 /* solid NW */
-    UNWALKABLE,                                 /* solid NE */
-    UNWALKABLE,                                 /* shipmast */
-    UNWALKABLE,                                 /* shipwheel */
-    UNWALKABLE,                                 /* rocks */
-    UNWALKABLE,                                 /* corpse */
-    UNWALKABLE | MASK_OPAQUE,                   /* stonewall */
-    UNWALKABLE,                                 /* ldoor */
-    UNWALKABLE,                                 /* door */
-    0,                                          /* chest */
-    UNWALKABLE,                                 /* ankh */
-    0,                                          /* brickfloor */
-    0,                                          /* woodfloor */
-    0,                                          /* mgate0 */
-    0,                                          /* mgate1 */
-    0,                                          /* mgate2 */
-    0,                                          /* mgate3 */
-    EFFECT_POISON | MASK_ANIMATED | MASK_CANDISPEL, /* poison field */
-    UNWALKABLE | MASK_ANIMATED | MASK_CANDISPEL, /* energy field */
-    VVSLOW | EFFECT_FIRE | MASK_ANIMATED | MASK_CANDISPEL, /* fire field */
-    EFFECT_SLEEP | MASK_ANIMATED | MASK_CANDISPEL, /* sleep field */
-    UNWALKABLE,                                 /* solid */
-    MASK_OPAQUE,                                /* secret door */
-    0,                                          /* altar */
-    UNWALKABLE,                                 /* roast */
-    UNWALKABLE | MASK_ANIMATED,                 /* lava */
-    0,                                          /* miss flash */
-    0,                                          /* magic flash */
-    0                                           /* hit flash */
+    UNWALKABLE | MASK_SWIMABLE | MASK_SAILABLE | MASK_ANIMATED, /* sea */
+    UNWALKABLE | MASK_SWIMABLE | MASK_SAILABLE | MASK_ANIMATED, /* water */
+    UNWALKABLE | MASK_SWIMABLE | MASK_ANIMATED,                 /* shallows */
+    SLOW | EFFECT_POISON,                                       /* swamp */
+    0,                                                          /* grass */
+    VSLOW,                                                      /* brush */
+    VSLOW | MASK_OPAQUE,                                        /* forest */
+    VVSLOW,                                                     /* hills */
+    UNWALKABLE | MASK_OPAQUE | MASK_UNFLYABLE,                  /* mountains */
+    0, 0, 0, 0,                                                 /* dungeon, city, castle, town */
+    UNWALKABLE,                                                 /* lcb1 */
+    0,                                                          /* lcb2 */
+    UNWALKABLE,                                                 /* lcb3 */
+    MASK_SHIP,                                                  /* west ship */
+    MASK_SHIP,                                                  /* north ship */
+    MASK_SHIP,                                                  /* east ship */
+    MASK_SHIP,                                                  /* south ship */
+    MASK_HORSE,                                                 /* west horse */
+    MASK_HORSE,                                                 /* east horse */
+    0,                                                          /* hex */
+    0,                                                          /* bridge */
+    MASK_BALLOON,                                               /* balloon */
+    0, 0,                                                       /* nbridge, sbridge */
+    0, 0,                                                       /* uladder, dladder */
+    0,                                                          /* ruins */
+    0,                                                          /* shrine */
+    UNWALKABLE,                                                 /* avatar */
+    UNWALKABLE,                                                 /* mage1 */
+    UNWALKABLE,                                                 /* mage2 */
+    UNWALKABLE,                                                 /* bard1 */
+    UNWALKABLE,                                                 /* bard2 */
+    UNWALKABLE,                                                 /* fighter1 */
+    UNWALKABLE,                                                 /* fighter2 */
+    UNWALKABLE,                                                 /* druid1 */
+    UNWALKABLE,                                                 /* druid2 */
+    UNWALKABLE,                                                 /* tinker1 */
+    UNWALKABLE,                                                 /* tinker2 */
+    UNWALKABLE,                                                 /* paladin1 */
+    UNWALKABLE,                                                 /* paladin2 */
+    UNWALKABLE,                                                 /* ranger1 */
+    UNWALKABLE,                                                 /* ranger2 */
+    UNWALKABLE,                                                 /* shepherd1 */
+    UNWALKABLE,                                                 /* shepherd2 */
+    UNWALKABLE,                                                 /* column */
+    UNWALKABLE,                                                 /* solid SW */
+    UNWALKABLE,                                                 /* solid SE */
+    UNWALKABLE,                                                 /* solid NW */
+    UNWALKABLE,                                                 /* solid NE */
+    UNWALKABLE,                                                 /* shipmast */
+    UNWALKABLE,                                                 /* shipwheel */
+    UNWALKABLE,                                                 /* rocks */
+    UNWALKABLE,                                                 /* corpse */
+    UNWALKABLE | MASK_OPAQUE,                                   /* stonewall */
+    UNWALKABLE,                                                 /* ldoor */
+    UNWALKABLE,                                                 /* door */
+    0,                                                          /* chest */
+    UNWALKABLE,                                                 /* ankh */
+    0,                                                          /* brickfloor */
+    0,                                                          /* woodfloor */
+    0,                                                          /* mgate0 */
+    0,                                                          /* mgate1 */
+    0,                                                          /* mgate2 */
+    0,                                                          /* mgate3 */
+    EFFECT_POISON | MASK_ANIMATED | MASK_CANDISPEL,             /* poison field */
+    UNWALKABLE | MASK_ANIMATED | MASK_CANDISPEL,                /* energy field */
+    VVSLOW | EFFECT_FIRE | MASK_ANIMATED | MASK_CANDISPEL,      /* fire field */
+    EFFECT_SLEEP | MASK_ANIMATED | MASK_CANDISPEL,              /* sleep field */
+    UNWALKABLE,                                                 /* solid */
+    MASK_OPAQUE,                                                /* secret door */
+    0,                                                          /* altar */
+    UNWALKABLE,                                                 /* roast */
+    UNWALKABLE | MASK_ANIMATED,                                 /* lava */
+    0,                                                          /* miss flash */
+    0,                                                          /* magic flash */
+    0                                                           /* hit flash */
 };
 
 int tileIsWalkable(unsigned char tile) {
     if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
 	return (_ttype_info[tile] & MASK_UNWALKABLE) == 0;
+    return 0;
+}
+
+int tileIsSwimable(unsigned char tile) {
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_SWIMABLE) != 0;
     return 0;
 }
 
