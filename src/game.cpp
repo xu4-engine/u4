@@ -2796,6 +2796,7 @@ void newOrder() {
     /* re-build the party */
     delete c->party;
     c->party = new Party(c->saveGame);
+    c->party->setTransport(Tile::translate(c->saveGame->transport));
 }
 
 /**
