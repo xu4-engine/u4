@@ -974,7 +974,7 @@ int gameBaseKeyHandler(int key, void *data) {
         screenMessage("Quit & Save...\n%d moves\n", c->saveGame->moves);
         if (c->location->context & CTX_CAN_SAVE_GAME) {        
             gameSave();
-            screenMessage("Press Alt-x to quit\n", c->saveGame->moves);
+            screenMessage("Press Alt-x to quit\n");
         }
         else screenMessage("Not here!\n");
         
