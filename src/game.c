@@ -833,7 +833,7 @@ int gameBaseKeyHandler(int key, void *data) {
                               c->location->y / 16 + 'A', c->location->y % 16 + 'A',
                               c->location->x / 16 + 'A', c->location->x % 16 + 'A');
             else
-                screenMessage("Locate position\nwith what?\n");
+                screenMessage("Locate position with What?\n");
         }
         else screenMessage("Not here!\n");
         break;
