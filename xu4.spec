@@ -1,6 +1,6 @@
 Summary: xu4 - Ultima IV Recreated
 Name: xu4
-Version: 0.05
+Version: 0.06
 Release: 1
 URL: http://xu4.sourceforge.net/
 Source0: http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
@@ -48,9 +48,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/music/Shrines.mid
 %{_libdir}/u4/music/Towns.mid
 %{_libdir}/u4/music/Wanderer.mid
+%{_libdir}/u4/dumpsavegame
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Mon Jun  4 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added dumpsavegame binary
+
 * Mon Jun  4 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added music files
 
