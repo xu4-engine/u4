@@ -30,6 +30,8 @@ void dirMove(Direction dir, int *x, int *y) {
     case DIR_SOUTH:
         (*y)++;
         break;
+    case DIR_ADVANCE:
+    case DIR_RETREAT:
     default:
         ASSERT(0, "invalid direction: %d", dir);
     }
@@ -50,6 +52,9 @@ Direction dirReverse(Direction dir) {
         return DIR_WEST;
     case DIR_SOUTH:
         return DIR_NORTH;
+    case DIR_ADVANCE:
+    case DIR_RETREAT:
+    default: break;
     }
 
     ASSERT(0, "invalid direction: %d", dir);
@@ -214,7 +219,13 @@ int directionToKey(Direction dir) {
     case DIR_NORTH: return U4_UP;
     case DIR_EAST: return U4_RIGHT;
     case DIR_SOUTH: return U4_DOWN;
+    
     case DIR_NONE:
-    default: return 0;
+    case DIR_ADVANCE:
+    case DIR_RETREAT:
+    default: break;        
     }    
+
+    ASSERT(0, "Invalid diration passed to directionToKey()");
+    return 0;
 }

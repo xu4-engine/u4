@@ -581,10 +581,10 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         x = from_x;
         y = from_y;
 
-        dirMove(d, &x, &y);
+        mapDirMove(map, d, &x, &y);
         
         /* you can always walk off the edge of the map */
-        if (isAvatar && MAP_IS_OOB(map, x, y) && !mapWrapCoordinates(map, &x, &y)) {        
+        if (isAvatar && MAP_IS_OOB(map, x, y)) {
             retval = DIR_ADD_TO_MASK(d, retval);
             continue;
         }        

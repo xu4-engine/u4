@@ -8,6 +8,7 @@
 #include "dngview.h"
 
 #include "context.h"
+#include "debug.h"
 #include "dungeon.h"
 #include "location.h"
 #include "savegame.h"
@@ -37,6 +38,11 @@ unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
         x = c->location->x - side;
         y = c->location->y + fwd;
         break;
+    
+    case DIR_ADVANCE:
+    case DIR_RETREAT:
+    default:
+        ASSERT(0, "Invalid dungeon orientation");        
     }
     if (MAP_IS_OOB(c->location->map, x, y)) {        
         while (x < 0)

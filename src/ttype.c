@@ -238,6 +238,10 @@ int tileLoadProperties(Tile *tileset, int index, xmlNodePtr node) {
         tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, tileset[index].walkonDirs);
     else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "south") == 0)
         tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, tileset[index].walkonDirs);
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "advance") == 0)
+        tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_ADVANCE, tileset[index].walkonDirs);
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "retreat") == 0)
+        tileset[index].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_RETREAT, tileset[index].walkonDirs);
 
     if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "all") == 0)
         tileset[index].walkoffDirs = 0;
@@ -249,6 +253,10 @@ int tileLoadProperties(Tile *tileset, int index, xmlNodePtr node) {
         tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, tileset[index].walkoffDirs);
     else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "south") == 0)
         tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, tileset[index].walkoffDirs);
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "advance") == 0)
+        tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_ADVANCE, tileset[index].walkoffDirs);
+    else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "retreat") == 0)
+        tileset[index].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_RETREAT, tileset[index].walkoffDirs);
 
     if (xmlPropCmp(node, (const xmlChar *) "speed", "slow") == 0)
         tileset[index].speed = SLOW;

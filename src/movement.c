@@ -67,14 +67,10 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
     newx = c->location->x;
     newy = c->location->y;
 
-    dirMove(dir, &newx, &newy);    
+    mapDirMove(c->location->map, dir, &newx, &newy);    
 
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
-        switch (c->location->map->border_behavior) {        
-        case BORDER_WRAP:
-            mapWrapCoordinates(c->location->map, &newx, &newy);
-            break;
-
+        switch (c->location->map->border_behavior) {
         case BORDER_EXIT2PARENT:            
             return MOVE_MAP_CHANGE | MOVE_EXIT_TO_PARENT | MOVE_SUCCEEDED;
 
@@ -129,16 +125,17 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
  */
 MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {    
     int newx, newy;    
-    Direction realDir = dirNormalize(c->saveGame->orientation, dir); /* get our real direction */    
+    Direction realDir = dirNormalize(c->saveGame->orientation, dir); /* get our real direction */  
+    int advancing = realDir == c->saveGame->orientation,
+        retreating = realDir == dirReverse(c->saveGame->orientation);
+    unsigned char tile;
     
     /* we're not in a dungeon, failed! */
     if (c->location->context != CTX_DUNGEON)
         return 0;
         
     /* you must turn first! */
-    if (c->saveGame->orientation != realDir &&
-        c->saveGame->orientation != dirReverse(realDir)) {        
-        
+    if (!advancing && !retreating) {        
         c->saveGame->orientation = realDir;
         return MOVE_TURNED;
     }
@@ -147,7 +144,8 @@ MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {
     newx = c->location->x;
     newy = c->location->y;
 
-    dirMove(realDir, &newx, &newy);    
+    mapDirMove(c->location->map, realDir, &newx, &newy);    
+    tile = (*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS);
 
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
         switch (c->location->map->border_behavior) {        
@@ -168,10 +166,16 @@ MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {
     }
 
     if (!collisionOverride) {
-        int movementMask;
+        int movementMask;        
+        
+        movementMask = mapGetValidMoves(c->location->map, c->location->x, c->location->y, c->location->z, (unsigned char)c->saveGame->transport);        
 
-        movementMask = mapGetValidMoves(c->location->map, c->location->x, c->location->y, c->location->z, (unsigned char)c->saveGame->transport);
-        if (!DIR_IN_MASK(realDir, movementMask))            
+        if (advancing && !tileCanWalkOn(tile, DIR_ADVANCE))
+            movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
+        else if (retreating && !tileCanWalkOn(tile, DIR_RETREAT))
+            movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
+
+        if (!DIR_IN_MASK(realDir, movementMask))
             return MOVE_BLOCKED | MOVE_END_TURN;        
     }
 
@@ -230,7 +234,7 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
     
     /* now, get a new x and y for the object */
     if (dir)
-        dirMove(dir, &newx, &newy);
+        mapDirMove(c->location->map, dir, &newx, &newy);
     else
         return 0;
 
@@ -313,7 +317,7 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
     }
 
     if (dir)
-        dirMove(dir, &newx, &newy);
+        mapDirMove(c->location->map, dir, &newx, &newy);
     else
         return 0;
 
@@ -362,7 +366,7 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
     /* find our new location */
     newx = combatInfo.party[member].obj->x;
     newy = combatInfo.party[member].obj->y;
-    dirMove(dir, &newx, &newy);    
+    mapDirMove(c->location->map, dir, &newx, &newy);    
 
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
         int sameExit = (!combatInfo.dungeonRoom || (combatInfo.exitDir == DIR_NONE) || (dir == combatInfo.exitDir));

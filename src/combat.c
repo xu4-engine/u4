@@ -172,7 +172,10 @@ void combatInitDungeonRoom(int room, Direction from) {
         case DIR_NORTH: offset = 0; break;
         case DIR_EAST: offset = 1; break;
         case DIR_SOUTH: offset = 2; break;
-        default: break;
+        case DIR_ADVANCE:
+        case DIR_RETREAT:
+        default: 
+            ASSERT(0, "Invalid 'from' direction passed to combatInitDungeonRoom()");
         }
 
         for (i = 0; i < AREA_PLAYERS; i++) {
@@ -1175,8 +1178,10 @@ void combatEnd(int adjustKarma) {
             case DIR_NORTH: action = ACTION_EXIT_NORTH; break;
             case DIR_EAST:  action = ACTION_EXIT_EAST; break;
             case DIR_SOUTH: action = ACTION_EXIT_SOUTH; break;
-            case DIR_WEST:  action = ACTION_EXIT_WEST; break;
+            case DIR_WEST:  action = ACTION_EXIT_WEST; break;            
             case DIR_NONE:  break;
+            case DIR_ADVANCE:
+            case DIR_RETREAT:
             default: ASSERT(0, "Invalid exit dir %d", combatInfo.exitDir); break;
             }
 
@@ -1655,7 +1660,7 @@ int combatDivideMonster(const Object *obj) {
                 /* find a spot to put our new monster */
                 x = obj->x;
                 y = obj->y;
-                dirMove(d, &x, &y);
+                mapDirMove(c->location->map, d, &x, &y);
 
                 /* create our new monster! */
                 combatInfo.monsters[index].obj = mapAddMonsterObject(c->location->map, obj->monster, x, y, c->location->z);
