@@ -3390,8 +3390,10 @@ int gameSummonMonster(const char *monsterName) {
 
     eventHandlerPopKeyHandler();
 
-    if (monsterName == NULL)
+    if (monsterName == NULL || !strlen(monsterName)) {
+        screenPrompt();
         return 0;
+    }
     
     /* find the monster by its id and spawn it */
     id = atoi(monsterName);
@@ -3416,7 +3418,7 @@ int gameSummonMonster(const char *monsterName) {
         }
 
         if (match) {
-            screenMessage("\n%s summoned!\n", monsterName);
+            screenMessage("\n%s summoned!\n", monsters[i].name);
             screenPrompt();
             gameSpawnMonster(&monsters[i]);
             return 1;
