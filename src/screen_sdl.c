@@ -57,52 +57,53 @@ ScreenScaler filterScaler;
 
 const struct {
     const char *filename;
+    int width, height;
     int hasVga;             
     CompressionType comp;
     int filter;
     int introAnim;
 } backgroundInfo[] = {
     /* main game borders */
-    { "start.ega",    1, COMP_RLE, 1, 0 },
+    { "start.ega",    320, 200, 1, COMP_RLE, 1, 0 },
 
     /* introduction screen images */
-    { "title.ega",    0, COMP_LZW, 1, 1 },
-    { "tree.ega",     0, COMP_LZW, 1, 1 },
-    { "portal.ega",   0, COMP_LZW, 1, 1 },
-    { "outside.ega",  0, COMP_LZW, 1, 1 },
-    { "inside.ega",   0, COMP_LZW, 1, 1 },
-    { "wagon.ega",    0, COMP_LZW, 1, 1 },
-    { "gypsy.ega",    0, COMP_LZW, 1, 1 },
-    { "abacus.ega",   0, COMP_LZW, 1, 1 },
-    { "honcom.ega",   0, COMP_LZW, 1, 1 },
-    { "valjus.ega",   0, COMP_LZW, 1, 1 },
-    { "sachonor.ega", 0, COMP_LZW, 1, 1 },
-    { "spirhum.ega",  0, COMP_LZW, 1, 1 },
-    { "animate.ega",  0, COMP_LZW, 1, 1 },
+    { "title.ega",    320, 200, 0, COMP_LZW, 1, 1 },
+    { "tree.ega",     320, 200, 0, COMP_LZW, 1, 1 },
+    { "portal.ega",   320, 200, 0, COMP_LZW, 1, 1 },
+    { "outside.ega",  320, 200, 0, COMP_LZW, 1, 1 },
+    { "inside.ega",   320, 200, 0, COMP_LZW, 1, 1 },
+    { "wagon.ega",    320, 200, 0, COMP_LZW, 1, 1 },
+    { "gypsy.ega",    320, 200, 0, COMP_LZW, 1, 1 },
+    { "abacus.ega",   320, 200, 0, COMP_LZW, 1, 1 },
+    { "honcom.ega",   320, 200, 0, COMP_LZW, 1, 1 },
+    { "valjus.ega",   320, 200, 0, COMP_LZW, 1, 1 },
+    { "sachonor.ega", 320, 200, 0, COMP_LZW, 1, 1 },
+    { "spirhum.ega",  320, 200, 0, COMP_LZW, 1, 1 },
+    { "animate.ega",  320, 200, 0, COMP_LZW, 1, 1 },
 
     /* abyss vision images */
-    { "compassn.ega", 1, COMP_RLE, 1, 0 },
-    { "courage.ega",  1, COMP_RLE, 1, 0 },
-    { "honesty.ega",  1, COMP_RLE, 1, 0 },
-    { "honor.ega",    1, COMP_RLE, 1, 0 },
-    { "humility.ega", 1, COMP_RLE, 1, 0 },
-    { "justice.ega",  1, COMP_RLE, 1, 0 },
-    { "love.ega",     1, COMP_RLE, 1, 0 },
-    { "sacrific.ega", 1, COMP_RLE, 1, 0 },
-    { "spirit.ega",   1, COMP_RLE, 1, 0 },
-    { "truth.ega",    1, COMP_RLE, 1, 0 },
-    { "valor.ega",    1, COMP_RLE, 1, 0 },
+    { "compassn.ega", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "courage.ega",  320, 200, 1, COMP_RLE, 1, 0 },
+    { "honesty.ega",  320, 200, 1, COMP_RLE, 1, 0 },
+    { "honor.ega",    320, 200, 1, COMP_RLE, 1, 0 },
+    { "humility.ega", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "justice.ega",  320, 200, 1, COMP_RLE, 1, 0 },
+    { "love.ega",     320, 200, 1, COMP_RLE, 1, 0 },
+    { "sacrific.ega", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "spirit.ega",   320, 200, 1, COMP_RLE, 1, 0 },
+    { "truth.ega",    320, 200, 1, COMP_RLE, 1, 0 },
+    { "valor.ega",    320, 200, 1, COMP_RLE, 1, 0 },
 
     /* shrine vision images */
-    { "rune_0.ega",   1, COMP_RLE, 1, 0 },
-    { "rune_1.ega",   1, COMP_RLE, 1, 0 },
-    { "rune_2.ega",   1, COMP_RLE, 1, 0 },
-    { "rune_3.ega",   1, COMP_RLE, 1, 0 },
-    { "rune_4.ega",   1, COMP_RLE, 1, 0 },
-    { "rune_5.ega",   1, COMP_RLE, 1, 0 },
-    { "rune_6.ega",   1, COMP_RLE, 1, 0 },
-    { "rune_7.ega",   1, COMP_RLE, 1, 0 },
-    { "rune_8.ega",   1, COMP_RLE, 1, 0 }
+    { "rune_0.ega",   320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_1.ega",   320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_2.ega",   320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_3.ega",   320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_4.ega",   320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_5.ega",   320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_6.ega",   320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_7.ega",   320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_8.ega",   320, 200, 1, COMP_RLE, 1, 0 }
 };
 
 extern int verbose;
@@ -259,7 +260,8 @@ int screenLoadBackground(BackgroundType bkgd) {
     ret = 0;
     if (!forceEga && backgroundInfo[bkgd].hasVga)
         ret = screenLoadImageVga(&unscaled, 
-                                 320, 200, 
+                                 backgroundInfo[bkgd].width, 
+                                 backgroundInfo[bkgd].height, 
                                  backgroundInfo[bkgd].filename, 
                                  backgroundInfo[bkgd].comp);
     if (!ret && !forceVga) {
@@ -300,7 +302,8 @@ int screenLoadBackground(BackgroundType bkgd) {
         }
 
         ret = screenLoadImageEga(&unscaled, 
-                                 320, 200, 
+                                 backgroundInfo[bkgd].width, 
+                                 backgroundInfo[bkgd].height, 
                                  backgroundInfo[egaBkgd].filename, 
                                  backgroundInfo[egaBkgd].comp);
     }
@@ -543,8 +546,8 @@ void screenDrawBackground(BackgroundType bkgd) {
 
     r.x = 0;
     r.y = 0;
-    r.w = 320 * scale;
-    r.h = 200 * scale;
+    r.w = backgroundInfo[bkgd].width * scale;
+    r.h = backgroundInfo[bkgd].height * scale;
     SDL_BlitSurface(bkgds[bkgd], &r, screen, &r);
 }
 
