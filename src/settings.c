@@ -96,6 +96,9 @@ void settingsRead() {
     settings->innAlwaysCombat = 0;
     settings->campingAlwaysCombat = 0;
 
+    /* mouse defaults to on */
+    settings->mouseOptions.enabled = 1;
+
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
     free(settingsFname);
@@ -187,6 +190,10 @@ void settingsRead() {
         else if (strstr(buffer, "campingAlwaysCombat=") == buffer)
             settings->campingAlwaysCombat = (int) strtoul(buffer + strlen("campingAlwaysCombat="), NULL, 0);    
 
+        /* mouse options */
+        else if (strstr(buffer, "mouseEnabled=") == buffer)
+            settings->mouseOptions.enabled = (int) strtoul(buffer + strlen("mouseEnabled="), NULL, 0);
+
         /**
          * FIXME: this is just to avoid an error for those who have not written
          * a new xu4.cfg file since these items were removed.  Remove them after a reasonable
@@ -259,7 +266,8 @@ void settingsWrite() {
             "smartEnterKey=%d\n"
             "u5combat=%d\n"
             "innAlwaysCombat=%d\n"
-            "campingAlwaysCombat=%d\n",
+            "campingAlwaysCombat=%d\n"
+            "mouseEnabled=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
@@ -292,7 +300,8 @@ void settingsWrite() {
             settings->enhancementsOptions.smartEnterKey,
             settings->enhancementsOptions.u5combat,
             settings->innAlwaysCombat,
-            settings->campingAlwaysCombat);
+            settings->campingAlwaysCombat,
+            settings->mouseOptions.enabled);
 
     fclose(settingsFile);
 }

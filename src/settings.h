@@ -69,6 +69,10 @@ typedef struct _SettingsEnhancementOptions {
     int smartEnterKey;
 } SettingsEnhancementOptions;
 
+typedef struct _MouseOptions {
+    int enabled;
+} MouseOptions;
+
 typedef struct _Settings {
     unsigned int scale;
     int fullscreen;
@@ -97,6 +101,7 @@ typedef struct _Settings {
     SettingsEnhancementOptions enhancementsOptions;
     int innAlwaysCombat;
     int campingAlwaysCombat;
+    MouseOptions mouseOptions;
 } Settings;
 
 char *settingsFilename(void);
