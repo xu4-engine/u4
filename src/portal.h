@@ -11,7 +11,7 @@ typedef enum {
     ACTION_DESCEND
 } PortalTriggerAction;
 
-typedef struct {
+typedef struct _Portal {
     unsigned int x, y;
     const struct _Map *destination;
     PortalTriggerAction trigger_action;
