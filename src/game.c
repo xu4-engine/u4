@@ -173,8 +173,21 @@ int gameBaseKeyHandler(int key, void *data) {
             new->moonPhase = new->parent->moonPhase;
             c = new;
 
-            if (c->map->city)
-                screenMessage("Enter towne!\n\n%s\n\n", c->map->city->name);
+            if (c->map->city) {
+                const char *type = NULL;
+                switch (c->map->city->type) {
+                case CITY_TOWN:
+                    type = "towne";
+                    break;
+                case CITY_VILLAGE:
+                    type = "village";
+                    break;
+                case CITY_CASTLE:
+                    type = "castle";
+                    break;
+                }
+                screenMessage("Enter %s!\n\n%s\n\n", type, c->map->city->name);
+            }
 
             play_music();
             

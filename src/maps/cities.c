@@ -25,6 +25,7 @@ Map britain_map = {
 
 City britain_city  = {
     "Britain", /* name */
+    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 29, 28, 27, 26, 0, 31, 25, 0, 0, 0, 0 }, /* person_types */
@@ -49,6 +50,7 @@ Map cove_map = {
 
 City cove_city  = {
     "Cove", /* name */
+    CITY_VILLAGE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0, 0 }, /* person_types */
@@ -73,6 +75,7 @@ Map den_map = {
 
 City den_city  = {
     "Buccaneers Den", /* name */
+    CITY_VILLAGE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 28, 27, 0, 25, 30, 0, 0, 29, 0, 0, 0 }, /* person_types */
@@ -97,6 +100,7 @@ Map jhelom_map = {
 
 City jhelom_city  = {
     "Jhelom", /* name */
+    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 29, 28, 0, 30, 0, 25, 31, 0, 0, 0, 0 }, /* person_types */
@@ -121,6 +125,7 @@ Map magincia_map = {
 
 City magincia_city  = {
     "Magincia", /* name */
+    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
@@ -145,6 +150,7 @@ Map minoc_map = {
 
 City minoc_city  = {
     "Minoc", /* name */
+    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 30, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0 }, /* person_types */
@@ -169,6 +175,7 @@ Map moonglow_map = {
 
 City moonglow_city  = {
     "Moonglow", /* name */
+    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 0, 0, 26, 24, 25, 30, 0, 0, 0, 0, 0 }, /* person_types */
@@ -193,6 +200,7 @@ Map paws_map = {
 
 City paws_city  = {
     "Paws", /* name */
+    CITY_VILLAGE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
@@ -217,6 +225,7 @@ Map skara_map = {
 
 City skara_city  = {
     "Skara Brae", /* name */
+    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 0, 0, 28, 0, 30, 31, 29, 0, 0, 0, 0 }, /* person_types */
@@ -241,6 +250,7 @@ Map trinsic_map = {
 
 City trinsic_city  = {
     "Trinsic", /* name */
+    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 29, 28, 0, 31, 0, 0, 29, 0, 0, 0, 0 }, /* person_types */
@@ -265,6 +275,7 @@ Map vesper_map = {
 
 City vesper_city  = {
     "Vesper", /* name */
+    CITY_VILLAGE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 25, 0, 0, 23, 0, 0, 26, 23, 0, 0, 0 }, /* person_types */
@@ -289,6 +300,7 @@ Map yew_map = {
 
 City yew_city  = {
     "Yew", /* name */
+    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 0, 0, 26, 0, 0, 26, 0, 0, 0, 0, 0 }, /* person_types */

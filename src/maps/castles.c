@@ -26,6 +26,7 @@ Map empath_map = {
 
 City empath_city  = {
     "Empath Abbey", /* name */
+    CITY_CASTLE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
@@ -50,6 +51,7 @@ Map lycaeum_map = {
 
 City lycaeum_city  = {
     "Lycaeum", /* name */
+    CITY_CASTLE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
@@ -74,6 +76,7 @@ Map serpent_map = {
 
 City serpent_city  = {
     "Serpents Hold", /* name */
+    CITY_CASTLE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
@@ -105,6 +108,7 @@ Map lcb_1_map = {
 
 City lcb_1_city  = {
     "Britannia", /* name */
+    CITY_CASTLE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30 }, /* person_types */
@@ -134,6 +138,7 @@ Map lcb_2_map = {
 
 City lcb_2_city  = {
     "Britannia", /* name */
+    CITY_CASTLE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0 }, /* person_types */
