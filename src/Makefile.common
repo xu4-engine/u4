@@ -25,6 +25,7 @@ SRCS=\
         list.c \
         location.c \
         map.c \
+        maploader.c \
         mapmgr.c \
         menu.c \
         monster.c \
