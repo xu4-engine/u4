@@ -597,21 +597,24 @@ static int spellSleep(int unused) {
 static int spellTremor(int unused) {
     int i, x, y;        
 
-    for (i = 0; i < AREA_MONSTERS; i++) {
-        /* FIXME: monster selection (50/50) guessed */
-        if (combatInfo.monsters[i].obj && (rand() % 2 != 0)) {               
-
+    for (i = 0; i < AREA_MONSTERS; i++) {        
+        if (!combatInfo.monsters[i].obj)
+            continue;
+        else if (combatInfo.monsters[i].hp > 192)
+            continue;
+        else {
             x = combatInfo.monsters[i].obj->x;
             y = combatInfo.monsters[i].obj->y;
-            annotationSetVisual(annotationAdd(x, y, c->location->z, c->location->map->id, HITFLASH_TILE));
-            
-            eventHandlerSleep(50);
-            gameUpdateScreen();
 
-            /* FIXME: damage guessed */
-            combatApplyDamageToMonster(i, rand() % 0xFF, FOCUS);
-
-            annotationRemove(x, y, c->location->z, c->location->map->id, HITFLASH_TILE);
+            if (rand() % 2 == 0) {
+                combatApplyDamageToMonster(i, 0xFF, FOCUS);
+                attackFlash(x, y, HITFLASH_TILE, 1);
+            }
+            else if (rand() % 2 == 0) {
+                if (combatInfo.monsters[i].hp > 23)
+                    combatApplyDamageToMonster(i, combatInfo.monsters[i].hp-23, FOCUS);                
+                attackFlash(x, y, HITFLASH_TILE, 1);
+            }
         }
     }
     
