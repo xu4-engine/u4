@@ -23,10 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-long decompress_u4_file(FILE *in, long filesize, void **out);
-long getFilesize(FILE *input_file);
-unsigned char mightBeValidCompressedFile(FILE *compressed_file);
-long decompress_u4_file(FILE *in, long filesize, void **out);
+#include "u4decode.h"
 
 /*
  * Loads a file, decompresses it (from memory to memory), and writes the decompressed data to another file
