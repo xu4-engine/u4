@@ -1362,7 +1362,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
 
 int getChest(int player) {
     Object *obj;
-    unsigned char tile;
+    unsigned char tile;    
 
     if ((obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) != NULL)
         tile = obj->tile;
@@ -1397,13 +1397,12 @@ int getChest(int player) {
 int getChestTrapHandler(int player)
 {            
     int trapType = 0;
+    int dex = c->saveGame->players[player].dex;
+    int randNum = rand()%50;
 
     /** 
-     * FIXME: Formulas for how often chest is trapped
-     *        and how often it's evaded, etc. are 
-     *        only guesses.
-     *
-     *        Also, damage done by an acid trap is a
+     * FIXME: formulas are guessed and
+     *        damage done by an acid trap is a
      *        vague guess. (Same as damage taken from
      *        EFFECT_FIRE)
      **/
@@ -1416,7 +1415,10 @@ int getChestTrapHandler(int player)
     
         screenMessage(trapType ? "Poison Trap!\n" : "Acid Trap!\n");
 
-        if (rand()%2 == 1)
+        /* See of the player evaded the trap!
+           There's always a chance the played botched
+           and triggered the trap */
+        if (randNum > dex || randNum < 5)
         {
             switch(trapType)
             {
