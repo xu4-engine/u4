@@ -149,11 +149,11 @@ void CombatController::initDungeonRoom(int room, Direction from) {
         exitDir = DIR_NONE;
         
         /* FIXME: this probably isn't right way to see if you're entering an altar room... but maybe it is */
-        if ((c->location->map->id != MAP_ABYSS) && (room == 0xF)) {            
+        if ((c->location->prev->map->id != MAP_ABYSS) && (room == 0xF)) {            
             /* figure out which dungeon room they're entering */
-            if (c->location->coords.x == 3)
+            if (c->location->prev->coords.x == 3)
                 map->setAltarRoom(VIRT_LOVE);
-            else if (c->location->coords.x <= 2)
+            else if (c->location->prev->coords.x <= 2)
                 map->setAltarRoom(VIRT_TRUTH);
             else map->setAltarRoom(VIRT_COURAGE);
         }        
