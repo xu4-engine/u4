@@ -43,7 +43,8 @@ typedef enum {
    NPC_VENDOR_GUILD,
    NPC_VENDOR_STABLE,
    NPC_LORD_BRITISH,
-   NPC_HAWKWIND
+   NPC_HAWKWIND,
+   NPC_MAX
 } PersonNpcType;
 
 typedef enum {
@@ -53,8 +54,20 @@ typedef enum {
     CONV_BUYSELL,
     CONV_BUY,
     CONV_SELL,
+    CONV_QUANTITY,
     CONV_DONE
 } ConversationState;
+
+typedef struct _PersonType {
+    char *(*getIntro)(struct _Conversation *cnv);
+    char *(*getResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getQuestionResponse)(struct _Conversation *cnv, const char *answer);
+    char *(*getBuySellResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getBuyResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getSellResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getPrompt)(const struct _Conversation *cnv);
+} PersonType;
 
 typedef struct _Person {
     char *name;
@@ -82,5 +95,6 @@ typedef struct _Person {
 int personInit(void);
 void personGetConversationText(struct _Conversation *cnv, const char *inquiry, char **response);
 void personGetPrompt(const struct _Conversation *cnv, char **prompt);
+char *concat(const char *str, ...);
 
 #endif
