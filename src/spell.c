@@ -554,8 +554,10 @@ static int spellGate(int phase) {
     const Moongate *moongate;
 
     moongate = moongateGetGateForPhase(phase);
-    c->location->x = moongate->x;
-    c->location->y = moongate->y;        
+    if (moongate) {
+        c->location->x = moongate->x;
+        c->location->y = moongate->y; 
+    }
 
     return 1;    
 }
