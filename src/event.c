@@ -25,9 +25,20 @@ void moveAvatar(int dx, int dy);
 int attackAtCoord(int x, int y);
 int jimmyAtCoord(int x, int y);
 int openAtCoord(int x, int y);
+int readyForPlayer(int player);
+int readyForPlayer2(int weapon, void *data);
 int talkAtCoord(int x, int y);
+int wearForPlayer(int player);
+int wearForPlayer2(int armor, void *data);
 
 KeyHandlerNode *head = NULL;
+
+typedef struct AlphaActionInfo {
+    char lastValidLetter;
+    int (*handleAlpha)(int, void *);
+    const char *prompt;
+    void *data;
+} AlphaActionInfo;
 
 typedef struct DirectedActionInfo {
     int (*handleAtCoord)(int, int);
@@ -188,7 +199,7 @@ int keyHandlerNormal(int key, void *data) {
             new->line = new->parent->line;
             c = new;
 
-            screenMessage("Enter towne!\n\n%s\n\020", c->map->name);
+            screenMessage("Enter towne!\n\n%s\n\n\020", c->map->name);
         } else
             screenMessage("Enter what?\n\020");
         break;
@@ -232,6 +243,11 @@ int keyHandlerNormal(int key, void *data) {
         }
         break;
 
+    case 'r':
+        eventHandlerPushKeyHandlerData(&keyHandlerGetPlayerNo, &readyForPlayer);
+        screenMessage("Ready a weapon\nfor: ");
+        break;
+
     case 't':
         info = (DirectedActionInfo *) malloc(sizeof(DirectedActionInfo));
         info->handleAtCoord = &talkAtCoord;
@@ -240,6 +256,11 @@ int keyHandlerNormal(int key, void *data) {
         info->failedMessage = "Funny, no\nresponse!";
         eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, info);
         screenMessage("Talk\nDir: ");
+        break;
+
+    case 'w':
+        eventHandlerPushKeyHandlerData(&keyHandlerGetPlayerNo, &wearForPlayer);
+        screenMessage("Wear Armor\nfor: ");
         break;
 
     case 'y':
@@ -254,6 +275,59 @@ int keyHandlerNormal(int key, void *data) {
     default:
         valid = 0;
         break;
+    }
+
+    return valid || keyHandlerDefault(key, NULL);
+}
+
+/**
+ * Handles key presses when a command that requires a player number
+ * argument is invoked.  Once a number key is pressed, control is
+ * handed off to a command specific routine.
+ */
+int keyHandlerGetPlayerNo(int key, void *data) {
+    int (*handlePlayerNo)(int player) = (int(*)(int))data;
+    int valid = 1;
+
+    eventHandlerPopKeyHandler();
+
+    if (key >= '1' &&
+        key <= ('0' + c->saveGame->members)) {
+        screenMessage("%c\n", key);
+        handlePlayerNo(key - '1');
+    } else {
+        screenMessage("None\n");
+        valid = 0;
+    }
+
+    return valid || keyHandlerDefault(key, NULL);
+}
+
+int keyHandlerGetAlphaChoice(int key, void *data) {
+    AlphaActionInfo *info = (AlphaActionInfo *) data;
+    int valid = 1;
+
+
+    if (isupper(key))
+        key = tolower(key);
+
+    if (key >= 'a' && key <= info->lastValidLetter) {
+        screenMessage("%c\n", key);
+        (*(info->handleAlpha))(key - 'a', info->data);
+        eventHandlerPopKeyHandler();
+        free(info);
+        c->statsItem = STATS_PARTY_OVERVIEW;
+        statsUpdate();
+    } else if (key == ' ' || key == U4_ESC) {
+        eventHandlerPopKeyHandler();
+        free(info);
+        screenMessage("\n\020");
+        c->statsItem = STATS_PARTY_OVERVIEW;
+        statsUpdate();
+    } else {
+        valid = 0;
+        screenMessage("\n%s", info->prompt);
+        screenForceRedraw();
     }
 
     return valid || keyHandlerDefault(key, NULL);
@@ -321,6 +395,8 @@ int keyHandlerGetDirection(int key, void *data) {
     }
 
     screenMessage("%s\n", info->failedMessage);
+    c->statsItem = STATS_PARTY_OVERVIEW;
+    statsUpdate();
 
  success:
     free(info);
@@ -513,6 +589,46 @@ int jimmyAtCoord(int x, int y) {
     return 1;
 }
 
+int readyForPlayer(int player) {
+    AlphaActionInfo *info;
+
+    c->statsItem = STATS_WEAPONS;
+    statsUpdate();
+
+    info = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
+    info->lastValidLetter = WEAP_MAX + 'a' - 1;
+    info->handleAlpha = readyForPlayer2;
+    info->prompt = "Weapon: ";
+    info->data = (void *) player;
+
+    screenMessage("%s", info->prompt);
+
+    eventHandlerPushKeyHandlerData(&keyHandlerGetAlphaChoice, info);
+
+    return 1;
+}
+
+int readyForPlayer2(int weapon, void *data) {
+    int player = (int) data;
+    int oldWeapon;
+
+    if (weapon != WEAP_HANDS && c->saveGame->weapons[weapon] < 1) {
+        screenMessage("None left!\n\020");
+        return 0;
+    }
+
+    oldWeapon = c->saveGame->players[player].weapon;
+    if (oldWeapon != WEAP_HANDS)
+        c->saveGame->weapons[oldWeapon]++;
+    if (weapon != WEAP_HANDS)
+        c->saveGame->weapons[weapon]--;
+    c->saveGame->players[player].weapon = weapon;
+
+    screenMessage("player %d, weapon %c\n\020", player, weapon + 'a');
+
+    return 1;
+}
+
 /**
  * Attempts to open a door at map coordinates x,y.  If no door is
  * present at that point, zero is returned.  The door is replaced by a
@@ -553,6 +669,46 @@ int talkAtCoord(int x, int y) {
     screenMessage("%s says: I am %s\n\n:", talker->pronoun, talker->name);
     c->conversation.buffer[0] = '\0';
     eventHandlerPushKeyHandler(&keyHandlerTalking);
+
+    return 1;
+}
+
+int wearForPlayer(int player) {
+    AlphaActionInfo *info;
+
+    c->statsItem = STATS_ARMOR;
+    statsUpdate();
+
+    info = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
+    info->lastValidLetter = ARMR_MAX + 'a' - 1;
+    info->handleAlpha = wearForPlayer2;
+    info->prompt = "Armour: ";
+    info->data = (void *) player;
+
+    screenMessage("%s", info->prompt);
+
+    eventHandlerPushKeyHandlerData(&keyHandlerGetAlphaChoice, info);
+
+    return 1;
+}
+
+int wearForPlayer2(int armor, void *data) {
+    int player = (int) data;
+    int oldArmor;
+
+    if (armor != ARMR_NONE && c->saveGame->armor[armor] < 1) {
+        screenMessage("None left!\n\020");
+        return 0;
+    }
+
+    oldArmor = c->saveGame->players[player].armor;
+    if (oldArmor != ARMR_NONE)
+        c->saveGame->armor[oldArmor]++;
+    if (armor != ARMR_NONE)
+        c->saveGame->armor[armor]--;
+    c->saveGame->players[player].armor = armor;
+
+    screenMessage("player %d, armor %c\n\020", player, armor + 'a');
 
     return 1;
 }

@@ -10,6 +10,7 @@
 #define U4_LEFT ';'
 #define U4_RIGHT '\''
 #define U4_BACKSPACE 8
+#define U4_ESC 27
 
 typedef int (*KeyHandler)(int, void *);
 
@@ -28,6 +29,7 @@ void *eventHandlerGetKeyHandlerData();
 
 int keyHandlerDefault(int key, void *data);
 int keyHandlerNormal(int key, void *data);
+int keyHandlerGetPlayerNo(int key, void *data);
 int keyHandlerGetDirection(int key, void *data);
 int keyHandlerTalking(int key, void *data);
 int keyHandlerQuit(int key, void *data);
