@@ -84,6 +84,7 @@ void campTimer(void *data) {
                     if (numAmbushingMonsters == randMonster) {
 
                         musicPlay();
+                        musicFadeIn(0);
                         screenMessage("Ambushed!\n");
                         
                         /* assign the monster object for combat */
@@ -157,6 +158,8 @@ int campHeal(void) {
 }
 
 void innBegin(void) {
+    musicFadeOut(2000); /* Fade volume out to ease into rest */
+
     /* first, show the avatar before sleeping */
     gameUpdateScreen();
     eventHandlerSleep(500);
@@ -166,7 +169,7 @@ void innBegin(void) {
     gameUpdateScreen();
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&innTimer, 5 * 4);
+    eventHandlerAddTimerCallback(&innTimer, 8 * 4);
 
     screenDisableCursor();
 }
@@ -196,10 +199,10 @@ void innTimer(void *data) {
             map = &inn_map;
             monsterObj = mapAddMonsterObject(c->location->map, monsterById(ROGUE_ID), c->location->x, c->location->y, c->location->z);
             screenMessage("\nIn the middle of the night while out on a stroll...\n\n");
-        }
+        }        
 
         /* begin combat! */
-        combatBegin(map, monsterObj, 0);
+        combatBegin(map, monsterObj, 0);        
     }
     
     else {
@@ -256,6 +259,9 @@ void innTimer(void *data) {
             mapAddPersonObject(c->location->map, Isaac);
         }
     }
+
+    musicFadeIn(0);
+    musicPlay();
 }
 
 void innEnd(void) {

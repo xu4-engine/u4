@@ -110,11 +110,13 @@ void musicStop(void) {
 }
 
 void musicFadeOut(int msecs) {
-    Mix_FadeOutMusic(msecs);
+    if (!soundDisabled)
+        Mix_FadeOutMusic(msecs);
 }
 
 void musicFadeIn(int msecs) {
-    Mix_FadeInMusic(playing, -1, msecs);
+    if (!soundDisabled && toggle)
+        Mix_FadeInMusic(playing, -1, msecs);
 }
 
 int musicInit() {

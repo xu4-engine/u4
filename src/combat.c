@@ -79,8 +79,7 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
     combatInfo.isNormalCombat = isNormalCombat;
     combatInfo.isCamping = (!isNormalCombat && !monster);
 
-    gameSetMap(c, map, 1, NULL);
-    musicPlay();
+    gameSetMap(c, map, 1, NULL);    
         
     /* place party members on the map */
     for (i = 0; i < c->saveGame->members; i++) {     
@@ -139,8 +138,10 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
     eventHandlerPushKeyHandler(&combatBaseKeyHandler);
 
     /* if the combat is a normal combat situation, treat it as such. */
-    if (isNormalCombat)
+    if (isNormalCombat) {
         screenMessage("\n**** COMBAT ****\n\n");    
+        musicPlay();
+    }
 
     /* if the party is ready to fight, show info for the first active player */
     if (partyIsReadyToFight) {
