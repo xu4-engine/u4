@@ -389,7 +389,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 mapRemoveObject(c->map, obj);
             else
                 annotationAdd(c->saveGame->x, c->saveGame->y, BRICKFLOOR_TILE);
-            playerGetChest(c->saveGame);
+            screenMessage("The Chest Holds: %d Gold\n", playerGetChest(c->saveGame));
             if (obj == NULL)
                 gameLostEighth(playerAdjustKarma(c->saveGame, KA_STOLE_CHEST));
         } else
