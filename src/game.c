@@ -1717,7 +1717,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         statsUpdate();
         break;
 
-    case 'k':        
+    case 'k':
         screenMessage("Karma!\n\n");
         for (i = 0; i < 8; i++) {
             unsigned int j;
@@ -1726,7 +1726,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
                 screenMessage(" ");
             if (c->saveGame->karma[i] > 0)                
                 screenMessage("%.2d\n", c->saveGame->karma[i]);            
-            else screenMessage("--");
+            else screenMessage("--\n");
         }
         screenPrompt();
 
