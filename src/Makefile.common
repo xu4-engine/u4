@@ -17,6 +17,7 @@ CXXSRCS=\
         codex.cpp \
         combat.cpp \
         config.cpp \
+        controller.cpp \
         creature.cpp \
         death.cpp \
         debug.cpp \
