@@ -5,6 +5,11 @@
 #ifndef U4_H
 #define U4_H
 
+/* Windows port */
+#if defined(_WIN32)
+    #define VERSION "0.8cvs"
+#endif
+
 /* info for loading world map from world.map */
 #define MAP_WIDTH 256
 #define MAP_HEIGHT 256
