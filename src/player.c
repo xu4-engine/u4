@@ -503,8 +503,7 @@ int playerHeal(SaveGame *saveGame, HealType type, int player) {
     case HT_RESURRECT:
         if (saveGame->players[player].status != STAT_DEAD)
             return 0;
-        saveGame->players[player].status = STAT_GOOD;
-        saveGame->players[player].hp = STAT_GOOD;
+        saveGame->players[player].status = STAT_GOOD;        
         break;
 
     case HT_HEAL:
