@@ -299,6 +299,28 @@ unsigned char mapTileAt(const Map *map, int x, int y, int z) {
 }
 
 /**
+ * Returns the current ground tile at the given point on a map.  Monster
+ * objects, moongates, attack icons are ignored.  Any walkable tiles
+ * are taken into account (treasure chests, ships, balloon, etc.)
+ */
+unsigned char mapGroundTileAt(const Map *map, int x, int y, int z) {
+    unsigned char tile;
+    const Annotation *a;
+    Object *obj;
+
+    tile = MAP_TILE_AT(map, x, y, z);
+    a = annotationAt(x, y, z, map->id);
+    obj = mapObjectAt(map, x, y, z);
+
+    if (a && a->permanent && tileIsWalkable(a->tile)) 
+        tile = a->tile;
+    else if (obj && tileIsWalkable(obj->tile))
+        tile = obj->tile;
+
+    return tile;
+}
+
+/**
  * Returns the visible tile at the given point on a map.  This
  * includes visual-only annotations like moongates and attack icons.
  */
