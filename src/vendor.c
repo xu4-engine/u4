@@ -231,6 +231,7 @@ VendorTypeInfo **vendorTypeInfo;
 #define TV_WHATINFO 104
 #define TV_DONTKNOW 105
 #define TV_MOREGOLD 106
+#define TV_SORRY 107
 #define TV_SAYS 110
 #define TV_ANYTHINGELSE 111
 #define TV_WELCOME 112
@@ -1120,19 +1121,24 @@ char *vendorGetTavernBuyPriceResponse(Conversation *cnv, const char *response) {
 
     cnv->price = (int) strtol(response, NULL, 10);
 
-    if (playerCanAfford(c->saveGame, cnv->price) == 0) {
+    if (playerCanAfford(c->saveGame, cnv->price) < 1) {
         reply = concat("\n", vendorGetText(cnv->talker, TV_NOTENOUGH), "\n", vendorGetFarewell(cnv, NULL), NULL);
         cnv->state = CONV_DONE;
     }
-
-    if (cnv->price < 2) {
+    else if (cnv->price == 0) {
+        reply = concat("\n", vendorGetText(cnv->talker, TV_SORRY), "\n", vendorGetFarewell(cnv, NULL), NULL);
+        cnv->state = CONV_DONE;
+    }
+    else if (cnv->price < 2) {
         reply = concat("\n", vendorGetText(cnv->talker, TV_WONTPAY), "\n", vendorGetFarewell(cnv, NULL), NULL);
         cnv->state = CONV_DONE;
-    } else if (cnv->price == 2) {
+    }
+    else if (cnv->price == 2) {
         reply = concat("\n", vendorGetText(cnv->talker, TV_ANYTHINGELSE), NULL);
         cnv->state = CONV_CONTINUEQUESTION;
         playerPurchase(c->saveGame, INV_NONE, 0, 0, cnv->price);
-    } else {
+    }
+    else {
         reply = concat("\n", vendorGetText(cnv->talker, TV_WHATINFO), NULL);
         cnv->state = CONV_TOPIC;
         playerPurchase(c->saveGame, INV_NONE, 0, 0, cnv->price);
@@ -1579,14 +1585,22 @@ char *vendorGetTavernTopicResponse(Conversation *cnv, const char *response) {
      * 6   nightshade
      */
 
-    /* FIXME: check price */
     for (i = 0; i < N_TAVERN_TOPICS; i++) {
-        if (strcasecmp(response, tavernTopics[i]) == 0)
-            reply = concat("\n", vendorGetName(cnv->talker), 
-                           vendorGetText(cnv->talker, TV_SAYS), 
-                           tavernInfo[i], 
-                           vendorGetText(cnv->talker, TV_ANYTHINGELSE), 
-                           NULL);
+        if (strcasecmp(response, tavernTopics[i]) == 0) {
+
+            if (cnv->price < tavernInfoPrices[i]) {
+                reply = concat("\n", vendorGetText(cnv->talker, TV_MOREGOLD), NULL);
+                cnv->state = CONV_BUY_PRICE;
+                return reply;
+            }
+                
+            else
+                reply = concat("\n", vendorGetName(cnv->talker), 
+                               vendorGetText(cnv->talker, TV_SAYS), 
+                               tavernInfo[i], 
+                               vendorGetText(cnv->talker, TV_ANYTHINGELSE), 
+                               NULL);
+        }
     }
     if (!reply)
         reply = concat("\n", vendorGetText(cnv->talker, TV_DONTKNOW),
