@@ -18,6 +18,7 @@ SRCS=\
         event_$(UI).c \
         game.c \
         io.c \
+        image_$(UI).c \
         intro.c \
         item.c \
         list.c \
@@ -57,9 +58,9 @@ SRCS=\
 
 OBJS += $(SRCS:.c=.o)
 
-all:: $(MAIN) utils
+all:: $(MAIN) mkutils
 
-utils::  dumpsavegame$(EXEEXT) lzwenc$(EXEEXT) lzwdec$(EXEEXT) rleenc$(EXEEXT) rledec$(EXEEXT) tlkconv$(EXEEXT)
+mkutils::  dumpsavegame$(EXEEXT) lzwenc$(EXEEXT) lzwdec$(EXEEXT) rleenc$(EXEEXT) rledec$(EXEEXT) tlkconv$(EXEEXT)
 
 $(MAIN): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
