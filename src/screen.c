@@ -36,6 +36,7 @@ void screenTextAt(int x, int y, char *fmt, ...) {
 void screenMessage(char *fmt, ...) {
     char buffer[1024];
     int i;
+    int wordlen;
 
     va_list args;
     va_start(args, fmt);
@@ -51,8 +52,9 @@ void screenMessage(char *fmt, ...) {
     }
 
     for (i = 0; i < strlen(buffer); i++) {
-        if (buffer[i] == '\n' || c->col == 16) {
-            if (buffer[i] == '\n')
+        wordlen = strcspn(buffer + i, " \t\n");
+        if ((c->col + wordlen > 16) || buffer[i] == '\n' || c->col == 16) {
+            if (buffer[i] == '\n' || buffer[i] == ' ')
                 i++;
             c->line++;
             c->col = 0;
