@@ -1404,11 +1404,12 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'q' + U4_ALT:
         {             
+            // Quit to the main menu
             extern bool quit;
             endTurn = false;
 
             screenMessage("Quit to menu?");            
-            char choice = ReadChoiceController::get("yn \015\033");            
+            char choice = ReadChoiceController::get("yn \n\033");
             screenMessage("%c", choice);
             if (choice != 'y') {
                 screenMessage("\n");
@@ -1432,6 +1433,14 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'v' + U4_ALT:
         screenMessage("XU4 %s\n", VERSION);        
+        break;
+
+    // Turn sound effects on/off    
+    case 's' + U4_ALT:
+        // FIXME: there's probably a more intuitive key combination for this
+        settings.soundVol = !settings.soundVol;
+        screenMessage("Sound FX %s!\n", settings.soundVol ? "on" : "off");        
+        endTurn = false;
         break;
         
     case '0':        
