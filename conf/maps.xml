@@ -37,7 +37,7 @@
         <portal x="36"  y="229" z="-1" destmapid="27" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
         <portal x="73"  y="11"  z="-1" destmapid="28" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
         <portal x="205" y="45"  z="-1" destmapid="29" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
-        <portal x="8"   y="207" z="-1" destmapid="30" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
+        <portal x="81"  y="207" z="-1" destmapid="30" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
         <portal x="231" y="216" z="-1" destmapid="32" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
     </map>
 
