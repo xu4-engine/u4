@@ -11,12 +11,10 @@
     </weapon>
     <weapon name="Axe" abbr="AXE" range="1" damage="48">
         <constraint canuse="false" class="mage"/>
-        <constraint canuse="false" class="shepherd"/>
         <constraint canuse="false" class="druid"/>
     </weapon>
     <weapon name="Sword" abbr="SWD" range="1" damage="64">
         <constraint canuse="false" class="mage"/>
-        <constraint canuse="false" class="shepherd"/>
         <constraint canuse="false" class="druid"/>
     </weapon>
     <weapon name="Bow" abbr="BOW" range="10" damage="40">
