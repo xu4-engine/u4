@@ -2536,7 +2536,7 @@ void gameDamageParty(int minDamage, int maxDamage) {
     for (i = 0; i < c->saveGame->members; i++) {
         if (rand() % 2 == 0) {
             damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
-                rand() % (maxDamage - minDamage) + minDamage :
+                rand() % ((maxDamage + 1) - minDamage) + minDamage :
                 maxDamage;
             playerApplyDamage(&c->saveGame->players[i], damage);
         }
@@ -2553,7 +2553,7 @@ void gameDamageShip(int minDamage, int maxDamage) {
 
     if (tileIsShip(c->saveGame->transport)) {
         damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
-            rand() % (maxDamage - minDamage) + minDamage :
+            rand() % ((maxDamage + 1) - minDamage) + minDamage :
             maxDamage;
 
         c->saveGame->shiphull -= damage;
