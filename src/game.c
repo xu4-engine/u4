@@ -1601,6 +1601,7 @@ int moveAvatar(Direction dir, int userEvent) {
                 c->col = 0;
 		free(t);
                 
+                screenMessage("Leaving...\n");
                 musicPlay();
 	    }
             goto done;
