@@ -7,6 +7,8 @@
 
 #include "imageloader.h"
 
+struct RGBA;
+
 /**
  * Loader for U4 raw images.  Raw images are just an uncompressed
  * stream of pixel data with no palette information (e.g. shapes.ega,
@@ -47,6 +49,15 @@ class U4LzwImageLoader : public ImageLoader {
 public:
     virtual Image *load(U4FILE *file);
     
+};
+
+class U4PaletteLoader {
+    static RGBA *egaPalette;
+    static RGBA *vgaPalette;
+
+public:
+    RGBA *loadEgaPalette();
+    RGBA *loadVgaPalette();
 };
 
 #endif /* IMAGELOADER_U4_H */
