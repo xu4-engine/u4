@@ -15,6 +15,7 @@
 #include "textview.h"
 
 struct IntroObjectState;
+class Tile;
 
 /**
  * Controls the intro sequence, including the traditional animated map
@@ -88,10 +89,10 @@ private:
     TextView questionArea;
 
     /* data loaded in from title.exe */
-    unsigned char **introMap;
+    MapTile *introMap;
     unsigned char *sigData;
     unsigned char *scriptTable;
-    unsigned char *baseTileTable;
+    Tile **baseTileTable;
     unsigned char *beastie1FrameTable;
     unsigned char *beastie2FrameTable;
     std::vector<std::string> introText;

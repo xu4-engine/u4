@@ -59,7 +59,7 @@ IntroController *intro = NULL;
 
 struct IntroObjectState {
     int x, y;
-    unsigned char tile;  /* base tile + tile frame */
+    MapTile tile; /* base tile + tile frame */    
 };
 
 /* menus */
@@ -95,7 +95,7 @@ IntroController::IntroController() :
  */
 bool IntroController::init() {
     U4FILE *title;
-    int i, j;
+    int i;
 
     mode = INTRO_MAP;
     beastie1Cycle = 0;
@@ -122,15 +122,10 @@ bool IntroController::init() {
     u4fread(sigData, 1, 533, title);
 
     u4fseek(title, INTRO_MAP_OFFSET, SEEK_SET);
-    introMap = new unsigned char *[INTRO_MAP_HEIGHT];
-    introMap[0] = new unsigned char[INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT];
-    for (i = 0; i < INTRO_MAP_HEIGHT; i++) {
-        introMap[i] = introMap[0] + INTRO_MAP_WIDTH * i;
-        for (j = 0; j < INTRO_MAP_WIDTH; j++) {
-            introMap[i][j] = static_cast<unsigned char>(u4fgetc(title));
-        }
-    }
-
+    introMap = new MapTile[(INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT) + 1];    
+    for (i = 0; i < INTRO_MAP_HEIGHT * INTRO_MAP_WIDTH; i++)        
+        introMap[i] = Tile::translate(u4fgetc(title));
+        
     sleepCycles = 0;
     scrPos = 0;
 
@@ -140,9 +135,11 @@ bool IntroController::init() {
         scriptTable[i] = u4fgetc(title);
 
     u4fseek(title, INTRO_BASETILE_TABLE_OFFSET, SEEK_SET);
-    baseTileTable = new unsigned char[INTRO_BASETILE_TABLE_SIZE];
-    for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++)
-        baseTileTable[i] = u4fgetc(title);
+    baseTileTable = new Tile*[INTRO_BASETILE_TABLE_SIZE];
+    for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
+        MapTile tile = Tile::translate(u4fgetc(title));
+        baseTileTable[i] = Tileset::get()->get(tile.id);
+    }
 
     objectStateTable = new IntroObjectState[INTRO_BASETILE_TABLE_SIZE];
     memset(objectStateTable, 0, sizeof(IntroObjectState) * INTRO_BASETILE_TABLE_SIZE);
@@ -397,7 +394,18 @@ void IntroController::drawMap() {
                 dataNibble = scriptTable[scrPos] & 0xf;
                 objectStateTable[dataNibble].x = scriptTable[scrPos+1] & 0x1f;
                 objectStateTable[dataNibble].y = commandNibble;
-                objectStateTable[dataNibble].tile = baseTileTable[dataNibble] + (scriptTable[scrPos+1] >> 5);
+                
+                // See if the tile id needs to be recalculated 
+                if ((scriptTable[scrPos+1] >> 5) >= baseTileTable[dataNibble]->frames) {
+                    int frame = (scriptTable[scrPos+1] >> 5) - baseTileTable[dataNibble]->frames;
+                    objectStateTable[dataNibble].tile = baseTileTable[dataNibble]->id + 1;
+                    objectStateTable[dataNibble].tile.frame = frame;
+                }
+                else {
+                    objectStateTable[dataNibble].tile = baseTileTable[dataNibble]->id;
+                    objectStateTable[dataNibble].tile.frame = (scriptTable[scrPos+1] >> 5);
+                }
+                
                 scrPos += 2;
                 break;
             case 7:
@@ -444,19 +452,14 @@ void IntroController::drawMapAnimated() {
     int x, y, i;    
 
     /* draw unmodified map */
-    for (y = 0; y < INTRO_MAP_HEIGHT; y++) {
-        for (x = 0; x < INTRO_MAP_WIDTH; x++) {
-            MapTile tile = Tile::translate(introMap[y][x]);
-            screenShowTile(&tile, false, x, y + 6);
-        }
-    }
-
+    for (y = 0; y < INTRO_MAP_HEIGHT; y++)
+        for (x = 0; x < INTRO_MAP_WIDTH; x++)            
+            screenShowTile(&introMap[x + (y * INTRO_MAP_WIDTH)], false, x, y + 6);
+        
     /* draw animated objects */
     for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
-        if (objectStateTable[i].tile != 0) {
-            MapTile tile = Tile::translate(objectStateTable[i].tile);
-            screenShowTile(&tile, false, objectStateTable[i].x, objectStateTable[i].y + 6);
-        }
+        if (objectStateTable[i].tile != 0)            
+            screenShowTile(&objectStateTable[i].tile, false, objectStateTable[i].x, objectStateTable[i].y + 6);        
     }
 }
 
@@ -474,7 +477,6 @@ void IntroController::drawBeasties() {
  * Paints the screen.
  */
 void IntroController::updateScreen() {
-
     screenHideCursor();
 
     switch (mode) {
