@@ -213,14 +213,14 @@ void gameInit() {
     screenPrompt();    
 
     /* reagents menu */
-    spellMixMenu = menuAddItem(spellMixMenu, 0, "Ash", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu = menuAddItem(spellMixMenu, 1, "Ginseng", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu = menuAddItem(spellMixMenu, 2, "Garlic", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu = menuAddItem(spellMixMenu, 3, "Silk", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu = menuAddItem(spellMixMenu, 4, "Moss", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu = menuAddItem(spellMixMenu, 5, "Pearl", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu = menuAddItem(spellMixMenu, 6, "Nightshade", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu = menuAddItem(spellMixMenu, 7, "Mandrake", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 0, getReagentName(0), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 1, getReagentName(1), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 2, getReagentName(2), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 3, getReagentName(3), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 4, getReagentName(4), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 5, getReagentName(5), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 6, getReagentName(6), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 7, getReagentName(7), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
     gameResetSpellMixing();    
 }
 
