@@ -33,7 +33,7 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
     obj->prevx = obj->x;
     obj->prevy = obj->y;
     
-    /* determine a direction depending on its movement behavior */
+    /* determine a direction depending on the object's movement behavior */
     dir = DIR_NONE;
     switch (obj->movement_behavior) {
     case MOVEMENT_FIXED:
@@ -54,10 +54,10 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
            try to move, not turn again */
         if (tileIsPirateShip(obj->tile) && DIR_IN_MASK(tileGetDirection(obj->tile), dirmask) &&
             (obj->tile != obj->prevtile) && (obj->prevx == obj->x) && (obj->prevy == obj->y))
-            if ((dir = dirFindPath(newx, newy, avatarx, avatary, 1 << tileGetDirection(obj->tile))))
+            if ((dir = dirFindPathToTarget(newx, newy, avatarx, avatary, 1 << tileGetDirection(obj->tile))))
                 break;
 
-        dir = dirFindPath(newx, newy, avatarx, avatary, dirmask);
+        dir = dirFindPathToTarget(newx, newy, avatarx, avatary, dirmask);
         break;
     }
     
@@ -67,8 +67,7 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
     else
         return 0;
 
-    /* figure out what method to use to tell if the object is getting slowed */    
-    
+    /* figure out what method to use to tell if the object is getting slowed */   
     if (obj->objType == OBJECT_MONSTER)
         slowedType = obj->monster->slowedType;
     
@@ -85,7 +84,7 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
         break;
     }
     
-    /* see if the object needed to turn */
+    /* see if the object needed to turn instead of move */
     if (tileSetDirection(&obj->tile, dir)) {
         obj->prevtile = oldtile;
         return 0;
@@ -128,7 +127,9 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
         return 0;
 
     if (action == CA_FLEE)
-        dir = dirFindPathToEdge(newx, newy, c->location->map->width, c->location->map->height, valid_dirs);
+        /* run away from our target instead! */
+        dir = dirFindPathAwayFromTarget(newx, newy, targetx, targety, valid_dirs);
+    
     else if (action == CA_ADVANCE)
     {
         // If they're not fleeing, make sure they don't flee on accident
@@ -141,7 +142,7 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
         else if (newy >= c->location->map->height - 1)
             valid_dirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, valid_dirs);        
 
-        dir = dirFindPath(newx, newy, targetx, targety, valid_dirs);
+        dir = dirFindPathToTarget(newx, newy, targetx, targety, valid_dirs);
     }
 
     if (dir)

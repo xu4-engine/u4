@@ -9,6 +9,8 @@
 #include "debug.h"
 #include "event.h"
 
+Direction dirFindPath(int from_x, int from_y, int to_x, int to_y, int valid_directions_mask, int towards);
+
 /**
  * Adjusts the given coordinates one unit in the given direction.
  */
@@ -123,11 +125,13 @@ Direction dirGetBroadsidesDirs(Direction dir) {
  * another.  This algorithm will avoid getting trapped behind simple
  * obstacles, but still fails with anything mildly complicated.
  */
-Direction dirFindPath(int from_x, int from_y, int to_x, int to_y, int valid_directions_mask) {
+Direction dirFindPath(int from_x, int from_y, int to_x, int to_y, int valid_directions_mask, int towards) {
     int directionsToObject;
     
     /* find the directions that lead to our target */
-    directionsToObject = dirGetRelativeDirection(from_x, from_y, to_x, to_y);
+    directionsToObject = towards ?
+        dirGetRelativeDirection(from_x, from_y, to_x, to_y) :
+        ~dirGetRelativeDirection(from_x, from_y, to_x, to_y);
     
     /* make sure we eliminate impossible options */
     directionsToObject &= valid_directions_mask;
@@ -140,44 +144,12 @@ Direction dirFindPath(int from_x, int from_y, int to_x, int to_y, int valid_dire
     else return dirRandomDir(valid_directions_mask);
 }
 
-Direction dirFindPathToEdge(int from_x, int from_y, int width, int height, int valid_directions_mask) {
-    int edge_mask = MASK_DIR_ALL;
-    int to_x, to_y;
+Direction dirFindPathToTarget(int from_x, int from_y, int target_x, int target_y, int valid_directions_mask) {
+    return dirFindPath(from_x, from_y, target_x, target_y, valid_directions_mask, 1);
+}
 
-    if (from_x < (width - from_x - 1))
-        edge_mask = DIR_REMOVE_FROM_MASK(DIR_EAST, edge_mask);
-    else if (from_x > (width - from_x - 1))
-        edge_mask = DIR_REMOVE_FROM_MASK(DIR_WEST, edge_mask);
-    
-    if (from_y < (height - from_y - 1))
-        edge_mask = DIR_REMOVE_FROM_MASK(DIR_NORTH, edge_mask);
-    else if (from_y > (height - from_y - 1))
-        edge_mask = DIR_REMOVE_FROM_MASK(DIR_SOUTH, edge_mask);
-
-    ASSERT(edge_mask != 0, "edge_mask should have at least one valid direction");
-
-    to_x = from_x;
-    to_y = from_y;
-
-    switch(dirRandomDir(edge_mask)) {
-    case DIR_NONE:
-        ASSERT(0, "DIR_NONE returned by dirRandomDir");
-        break;
-    case DIR_WEST:
-        to_x = -1;
-        break;
-    case DIR_NORTH:
-        to_y = -1;
-        break;
-    case DIR_EAST:
-        to_x = width;
-        break;
-    case DIR_SOUTH:
-        to_y = height;
-        break;
-    }
-
-    return dirFindPath(from_x, from_y, to_x, to_y, valid_directions_mask);
+Direction dirFindPathAwayFromTarget(int from_x, int from_y, int target_x, int target_y, int valid_directions_mask) {
+    return dirFindPath(from_x, from_y, target_x, target_y, valid_directions_mask, 0);
 }
 
 /**

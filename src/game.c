@@ -484,7 +484,7 @@ int gameBaseKeyHandler(int key, void *data) {
     Object *obj;
     const Portal *portal;
     CoordActionInfo *info;
-    GetChoiceActionInfo *choiceInfo;
+    /*GetChoiceActionInfo *choiceInfo;*/
     AlphaActionInfo *alphaInfo;
     ReadBufferActionInfo *readBufferInfo;
     const ItemLocation *item;
@@ -1872,7 +1872,7 @@ int gamePeerCity(int city, void *data) {
 /**
  * Peers at a gem
  */
-int gamePeerGem(void) {
+void gamePeerGem(void) {
     GetChoiceActionInfo *choiceInfo;
 
     paused = 1;    
