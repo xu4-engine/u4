@@ -86,11 +86,14 @@ City serpent_city  = {
 
 Map lcb_2_map;
 extern Map hythloth_map;
+extern Map world_map;
+
+PortalDestination hythloth_entrance = { 239, 240, 65535, &world_map };
 
 const Portal lcb_1_portals[] = {
-    { 3, 3, 0, &lcb_2_map, 3, 3, 1,  ACTION_KLIMB, NULL },
-    { 27, 3, 0, &lcb_2_map, 27, 3, 1, ACTION_KLIMB, NULL },
-    { 7, 2, 0, &hythloth_map, 0, 0, 0, ACTION_DESCEND, NULL }
+    { 3, 3, 0, &lcb_2_map, 3, 3, 1,  ACTION_KLIMB, NULL, NULL, 0, "Klimb to second floor!\n" },
+    { 27, 3, 0, &lcb_2_map, 27, 3, 1, ACTION_KLIMB, NULL, NULL, 0, "Klimb to second floor!\n" },
+    { 7, 2, 0, &hythloth_map, 0, 0, 0, ACTION_DESCEND, NULL, &hythloth_entrance, 0, "Descend to the depths!\n" }
 };
 
 City lcb_1_city;
@@ -101,7 +104,7 @@ Map lcb_1_map = {
     MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, 2, /* width, height, levels */
     BORDER_EXIT2PARENT, /* border_behavior */
-    2, /* n_portals */
+    3, /* n_portals */
     lcb_1_portals, /* portals */
     SHOW_AVATAR, /* flags */
     MUSIC_RULEBRIT, /* music */
@@ -119,8 +122,8 @@ City lcb_1_city  = {
 };
 
 const Portal lcb_2_portals[] = {
-    { 3, 3, 1, &lcb_1_map,  3, 3, 0,  ACTION_DESCEND, NULL },
-    { 27, 3, 1, &lcb_1_map, 27, 3, 0, ACTION_DESCEND, NULL }
+    { 3, 3, 1, &lcb_1_map,  3, 3, 0,  ACTION_DESCEND, NULL, NULL, 0, "Descend to first floor!\n" },
+    { 27, 3, 1, &lcb_1_map, 27, 3, 0, ACTION_DESCEND, NULL, NULL, 0, "Descend to first floor!\n" }
 };
 
 City lcb_2_city;
