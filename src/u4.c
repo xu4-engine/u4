@@ -46,12 +46,14 @@ int main(int argc, char *argv[]) {
     eventHandlerInit();
 
     /* do the intro */
+    introInit();
     introUpdateScreen();
     eventHandlerAddTimerCallback(&introTimer);
     eventHandlerPushKeyHandler(&introKeyHandler);
     eventHandlerMain();
     eventHandlerRemoveTimerCallback(&introTimer);
     eventHandlerPopKeyHandler();
+    introDelete();
 
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
@@ -66,6 +68,7 @@ int main(int argc, char *argv[]) {
     c->statsItem = STATS_PARTY_OVERVIEW;
     c->moonPhase = 0;
 
+    /* load in the save game */
     saveGameFile = fopen("party.sav", "rb");
     if (saveGameFile) {
         saveGameRead(c->saveGame, saveGameFile);
@@ -82,6 +85,7 @@ int main(int argc, char *argv[]) {
         saveGameInit(c->saveGame, 86, 109, &avatar);
     }
 
+    /* play the game! */
     screenDrawBackground(BKGD_BORDERS);
     screenUpdate();
     statsUpdate();
