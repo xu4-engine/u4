@@ -7,8 +7,9 @@
 #include "ttype.h"
 #include "monster.h"
 
-#define MASK_WALKABLE  0x0003
-#define MASK_EFFECT    0x000C
+#define MASK_UNWALKABLE 0x0001
+#define MASK_SPEED     0x0006
+#define MASK_EFFECT    0x0018
 #define MASK_OPAQUE    0x0020
 #define MASK_SAILABLE  0x0040
 #define MASK_ANIMATED  0x0080
@@ -18,21 +19,18 @@
 #define MASK_BALLOON   0x0800
 #define MASK_CANDISPEL 0x1000
 
-#define WALKABLE       0x0000
-#define SLOW           0x0001
-#define VSLOW          0x0002
-#define UNWALKABLE     0x0003
+#define UNWALKABLE 0x0001
 
 /* tile values 0-79 */
 static const short _ttype_info[] = {
     UNWALKABLE | MASK_SAILABLE | MASK_ANIMATED, /* sea */
     UNWALKABLE | MASK_SAILABLE | MASK_ANIMATED, /* water */
     UNWALKABLE | MASK_ANIMATED,                 /* shallows */
-    EFFECT_POISON,                              /* swamp */
+    SLOW | EFFECT_POISON,                       /* swamp */
     0,                                          /* grass */
-    SLOW,                                       /* brush */
+    VSLOW,                                      /* brush */
     VSLOW | MASK_OPAQUE,                        /* forest */
-    VSLOW,                                      /* hills */
+    VVSLOW,                                     /* hills */
     UNWALKABLE | MASK_OPAQUE | MASK_UNFLYABLE,  /* mountains */
     0, 0, 0, 0,                                 /* dungeon, city, castle, town */
     UNWALKABLE,                                 /* lcb1 */
@@ -90,7 +88,7 @@ static const short _ttype_info[] = {
     0,                                          /* mgate3 */
     EFFECT_POISON | MASK_ANIMATED | MASK_CANDISPEL, /* poison field */
     UNWALKABLE | MASK_ANIMATED | MASK_CANDISPEL, /* energy field */
-    EFFECT_FIRE | MASK_ANIMATED | MASK_CANDISPEL, /* fire field */
+    VVSLOW | EFFECT_FIRE | MASK_ANIMATED | MASK_CANDISPEL, /* fire field */
     EFFECT_SLEEP | MASK_ANIMATED | MASK_CANDISPEL, /* sleep field */
     UNWALKABLE,                                 /* solid */
     MASK_OPAQUE,                                /* secret door */
@@ -104,19 +102,7 @@ static const short _ttype_info[] = {
 
 int tileIsWalkable(unsigned char tile) {
     if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
-	return (_ttype_info[tile] & MASK_WALKABLE) != 0x03;
-    return 0;
-}
-
-int tileIsSlow(unsigned char tile) {
-    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
-	return (_ttype_info[tile] & MASK_WALKABLE) == 0x01;
-    return 0;
-}
-
-int tileIsVslow(unsigned char tile) {
-    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
-	return (_ttype_info[tile] & MASK_WALKABLE) == 0x02;
+	return (_ttype_info[tile] & MASK_UNWALKABLE) == 0;
     return 0;
 }
 
@@ -192,6 +178,12 @@ void tileSetDirection(unsigned short *tile, Direction dir) {
 
 int tileCanTalkOver(unsigned char tile) {
     return tile >= 96 && tile <= 122;
+}
+
+TileSpeed tileGetSpeed(unsigned char tile) {
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (TileSpeed) (_ttype_info[tile] & MASK_SPEED);
+    return (TileSpeed) 0;
 }
 
 TileEffect tileGetEffect(unsigned char tile) {

@@ -32,10 +32,17 @@
 #define BLACK_TILE 0x7e
 
 typedef enum {
+    FAST = 0x00,
+    SLOW = 0x02,
+    VSLOW = 0x04,
+    VVSLOW = 0x06
+} TileSpeed;
+
+typedef enum {
     EFFECT_NONE = 0x00,
-    EFFECT_FIRE = 0x04,
-    EFFECT_SLEEP = 0x08,
-    EFFECT_POISON = 0x0C
+    EFFECT_FIRE = 0x08,
+    EFFECT_SLEEP = 0x10,
+    EFFECT_POISON = 0x18
 } TileEffect;
 
 typedef enum {
@@ -52,8 +59,6 @@ typedef enum {
 } TileAnimationStyle;
 
 int tileIsWalkable(unsigned char tile);
-int tileIsSlow(unsigned char tile);
-int tileIsVslow(unsigned char tile);
 int tileIsSailable(unsigned char tile);
 int tileIsFlyable(unsigned char tile);
 int tileIsDoor(unsigned char tile);
@@ -66,6 +71,7 @@ int tileCanDispel(unsigned char tile);
 Direction tileGetDirection(unsigned char tile);
 void tileSetDirection(unsigned short *tile, Direction dir);
 int tileCanTalkOver(unsigned char tile);
+TileSpeed tileGetSpeed(unsigned char tile);
 TileEffect tileGetEffect(unsigned char tile);
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile);
 void tileAdvanceFrame(unsigned char *tile);
