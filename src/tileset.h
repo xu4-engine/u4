@@ -39,7 +39,7 @@ public:
 class Tileset {
 public:
     typedef std::map<string, Tileset*> TilesetMap;
-    typedef std::map<TileId, Tile*> TileMap;
+    typedef std::map<TileId, Tile*> TileIdMap;
     typedef std::map<string, Tile*> TileStrMap;
 
     static void loadAll(string filename);
@@ -65,7 +65,7 @@ private:
     static Tileset* current;
 
     string name;
-    TileMap tiles;
+    TileIdMap tiles;
     unsigned int totalFrames;
     string imageName;
     Tileset* extends;

@@ -317,7 +317,7 @@ void Tileset::load(string filename) {
  * Unload the current tileset
  */
 void Tileset::unload() {
-    Tileset::TileMap::iterator i;    
+    Tileset::TileIdMap::iterator i;    
         
     /* free all the memory for the tiles */
     for (i = tiles.begin(); i != tiles.end(); i++)
