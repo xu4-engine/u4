@@ -234,8 +234,10 @@ int keyHandlerGetChoice(int key, void *data) {
     if (strchr(info->choices, key)) {
         if ((*info->handleChoice)(key))
             free(info);
-    }
-    return 1;
+
+        return 1;
+    }    
+    return 0;
 }
 
 /**

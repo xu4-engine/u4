@@ -205,13 +205,14 @@ void statsShowCharDetails(int charNo) {
  */
 void statsShowWeapons() {
     int w, line, col;
+    extern int numWeapons;
 
     statsAreaSetTitle("Weapons");
 
     line = STATS_AREA_Y;
     col = 0;
     screenTextAt(STATS_AREA_X, line++, "A-%s", weaponGetName(WEAP_HANDS));
-    for (w = WEAP_HANDS + 1; w < WEAP_MAX; w++) {
+    for (w = WEAP_HANDS + 1; w < numWeapons; w++) {
         int n = c->saveGame->weapons[w];
         if (n >= 100)
             n = 99;

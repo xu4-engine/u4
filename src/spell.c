@@ -235,6 +235,9 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
         *error = CASTERR_NOMIX;
         return 0;
     }
+
+    /* subtract the mixture for even trying to cast the spell */
+    c->saveGame->mixtures[spell]--;
         
     if ((c->location->context & spells[spell].context) == 0) {
         *error = CASTERR_WRONGCONTEXT;        
@@ -250,13 +253,14 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
     if (spell == ('o'-'a') && !tileIsChest(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z))) {
         *error = CASTERR_WRONGCONTEXT;
         return 0;
-    }
-
-    c->saveGame->mixtures[spell]--;
-    c->saveGame->players[character].mp -= spells[spell].mp;
+    }    
 
     /* If there's a negate magic aura, spells fail! */
     if (c->aura != AURA_NEGATE) {    
+
+        /* subtract the mp needed for the spell */
+        c->saveGame->players[character].mp -= spells[spell].mp;
+
         if (spellEffect)
             (*spellCallback)(spell + 'a', player);
     
@@ -384,37 +388,36 @@ static int spellBlink(int dir) {
     int i,
         x = c->location->x,
         y = c->location->y,        
-        distance = rand() % 5 + 15,
+        distance = 0x10,
         failed = 0;
+    Direction reverseDir = dirReverse(dir);
     
-    /* pick a random distance, test it, and see if it works */
+    /* FIXME: blink to white stone breaks all the rules -- figure out why and how */
+    
+    /*if (mapIsWorldMap(c->location->map) && (c->location->y == 80) && (dir == DIR_WEST) && 
+        (c->location->x <= 90 && c->location->x >= 69)) {
+        c->location->x = 64;
+        return 1;
+    }*/
+    
+    /* test our distance, and see if it works */
     for (i = 0; i < distance; i++) {
         mapDirMove(c->location->map, dir, &x, &y);        
     }
+    
+    i = distance;   
+    /* begin walking backward until you find a valid spot */
+    while ((i-- > 0) && !tileIsWalkable(mapGroundTileAt(c->location->map, x, y, c->location->z)))
+        mapDirMove(c->location->map, reverseDir, &x, &y);
+    
+    if (tileIsWalkable(mapGroundTileAt(c->location->map, x, y, c->location->z))) {
+        /* we didn't move! */
+        if (c->location->x == x && c->location->y == y)
+            failed = 1;
 
-    if (!tileIsWalkable(mapGroundTileAt(c->location->map, x, y, c->location->z))) {
-        x = c->location->x;
-        y = c->location->y;
-
-        failed = 1;
-
-        for (i = 0; i < 15; i++)
-            mapDirMove(c->location->map, dir, &x, &y);
-
-        for (i = 15; i < 25; i++) {
-            mapDirMove(c->location->map, dir, &x, &y);            
-
-            if (tileIsWalkable(mapGroundTileAt(c->location->map, x, y, c->location->z))) { 
-                failed = 0;
-                break;
-            }
-        }       
-    }
-
-    if (!failed) {
         c->location->x = x;
-        c->location->y = y;        
-    }
+        c->location->y = y;
+    } else failed = 1;    
 
     return (failed ? 0 : 1);
 }
@@ -586,13 +589,13 @@ static int spellTremor(int unused) {
 
     for (i = 0; i < AREA_MONSTERS; i++) {
         /* FIXME: monster selection (50/50) guessed */
-        if (combatInfo.monsters[i] && (rand() % 2 == 0)) {               
+        if (combatInfo.monsters[i] && (rand() % 2 != 0)) {               
 
             x = combatInfo.monsters[i]->x;
             y = combatInfo.monsters[i]->y;
             annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, HITFLASH_TILE));
             
-            eventHandlerSleep(350);
+            eventHandlerSleep(50);
             gameUpdateScreen();
 
             /* FIXME: damage guessed */

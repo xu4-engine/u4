@@ -391,6 +391,10 @@ int monsterGetInitialHp(const Monster *monster) {
     basehp = monster->basehp;
 
     hp = (rand() % basehp) | (basehp / 2);
+    
+    /* make sure the monster doesn't flee initially */
+    if (hp < 24) hp = 24;
+
     return hp;
 }
 

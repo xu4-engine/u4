@@ -1142,14 +1142,19 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         break;
 
     case 'e':
-        screenMessage("Equipment!\n");
-        screenPrompt();
-        for (i = ARMR_NONE + 1; i < ARMR_MAX; i++)
-            c->saveGame->armor[i] = 8;
-        for (i = WEAP_HANDS + 1; i < WEAP_MAX; i++)
-            if (weaponLoseWhenUsed(i) || weaponLoseWhenRanged(i))
-                c->saveGame->weapons[i] = 99;
-            else c->saveGame->weapons[i] = 8;
+        {
+            extern int numWeapons;            
+
+            screenMessage("Equipment!\n");
+            screenPrompt();
+            for (i = ARMR_NONE + 1; i < ARMR_MAX; i++)
+                c->saveGame->armor[i] = 8;
+            for (i = WEAP_HANDS + 1; i < numWeapons; i++) {
+                if (weaponLoseWhenUsed(i) || weaponLoseWhenRanged(i))
+                    c->saveGame->weapons[i] = 99;
+                else c->saveGame->weapons[i] = 8;
+            }
+        }
         break;
 
     case 'h':
@@ -1325,6 +1330,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     if (obj == NULL ||
         (obj->objType == OBJECT_UNKNOWN) ||
         (obj->objType == OBJECT_MONSTER && !monsterIsAttackable(obj->monster)) ||
+        (obj->objType == OBJECT_PERSON && !monsterForTile(obj->tile)) || 
         /* can't attack horse transport */
         (tileIsHorse(obj->tile) && obj->movement_behavior == MOVEMENT_FIXED)) {
         return 0;
@@ -1666,12 +1672,14 @@ int jimmyAtCoord(int x, int y, int distance, void *data) {
  */
 int readyForPlayer(int player) {
     AlphaActionInfo *info;
+    extern int numWeapons;
 
     c->statsItem = STATS_WEAPONS;
     statsUpdate();
 
     info = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
-    info->lastValidLetter = WEAP_MAX + 'a' - 1;
+    //info->lastValidLetter = WEAP_MAX + 'a' - 1;
+    info->lastValidLetter = numWeapons + 'a' - 1;
     info->handleAlpha = readyForPlayer2;
     info->prompt = "Weapon: ";
     info->data = (void *) player;

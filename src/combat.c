@@ -403,18 +403,22 @@ int combatBaseKeyHandler(int key, void *data) {
         break;
 
     case 'r':
-        c->statsItem = STATS_WEAPONS;
-        statsUpdate();
+        {
+            extern int numWeapons;
 
-        alphaInfo = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
-        alphaInfo->lastValidLetter = WEAP_MAX + 'a' - 1;
-        alphaInfo->handleAlpha = readyForPlayer2;
-        alphaInfo->prompt = "Weapon: ";
-        alphaInfo->data = (void *)focus;
+            c->statsItem = STATS_WEAPONS;
+            statsUpdate();
 
-        screenMessage(alphaInfo->prompt);
+            alphaInfo = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
+            alphaInfo->lastValidLetter = numWeapons + 'a' - 1;
+            alphaInfo->handleAlpha = readyForPlayer2;
+            alphaInfo->prompt = "Weapon: ";
+            alphaInfo->data = (void *)focus;
 
-        eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
+            screenMessage(alphaInfo->prompt);
+
+            eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
+        }
         break;
 
     case 'z':

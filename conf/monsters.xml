@@ -6,22 +6,22 @@
 
     <!-- Classes -->
     <monster id="2" name="Mage" tile="32" frames="2" basehp="112" exp="8" ranged="true" rangedhittile="magic" rangedmisstile="magic" good="true" wontattack="true"/>
-    <monster id="3" name="Bard" tile="34" frames="2" basehp="96" exp="7" good="true" wontattack="true"/>
+    <monster id="3" name="Bard" tile="34" frames="2" basehp="48" exp="7" good="true" wontattack="true"/>
     <monster id="4" name="Fighter" tile="36" frames="2" basehp="96" exp="7" good="true" wontattack="true"/>
-    <monster id="5" name="Druid" tile="38" frames="2" basehp="144" exp="10" good="true" wontattack="true"/>
-    <monster id="6" name="Tinker" tile="40" frames="2" basehp="128" exp="9" good="true" wontattack="true"/>
-    <monster id="7" name="Paladin" tile="42" frames="2" basehp="48" exp="4" good="true" wontattack="true"/>
-    <monster id="8" name="Ranger" tile="44" frames="2" basehp="32" exp="3" good="true" wontattack="true"/>
-    <monster id="9" name="Shepherd" tile="46" frames="2" basehp="128" exp="9" good="true" wontattack="true"/>
+    <monster id="5" name="Druid" tile="38" frames="2" basehp="64" exp="10" good="true" wontattack="true"/>
+    <monster id="6" name="Tinker" tile="40" frames="2" basehp="96" exp="9" good="true" wontattack="true"/>
+    <monster id="7" name="Paladin" tile="42" frames="2" basehp="128" exp="4" good="true" wontattack="true"/>
+    <monster id="8" name="Ranger" tile="44" frames="2" basehp="144" exp="3" good="true" wontattack="true"/>
+    <monster id="9" name="Shepherd" tile="46" frames="2" basehp="48" exp="9" good="true" wontattack="true"/>
 	
     <!-- Misc town creatures -->
-    <monster id="10" name="Guard" tile="80" frames="2" basehp="192" exp="13" good="true" wontattack="true"/>
-    <monster id="11" name="Merchant" tile="82" frames="2" basehp="128" exp="9" good="true" wontattack="true"/>
-    <monster id="12" name="Bard" tile="84" frames="2" basehp="128" exp="9" good="true" wontattack="true"/>
-    <monster id="13" name="Jester" tile="86" frames="2" basehp="128" exp="9" good="true" wontattack="true"/>
-    <monster id="14" name="Beggar" tile="88" frames="2" basehp="192" exp="13" good="true" wontattack="true"/>
-    <monster id="15" name="Child" tile="90" frames="2" basehp="144" exp="10" good="true" wontattack="true"/>
-    <monster id="16" name="Bull" tile="92" frames="2" basehp="160" exp="11" good="true"/>
+    <monster id="10" name="Guard" tile="80" frames="2" basehp="128" exp="13" good="true" wontattack="true"/>
+    <monster id="11" name="Merchant" tile="82" frames="2" basehp="48" exp="9" good="true" wontattack="true"/>
+    <monster id="12" name="Bard" tile="84" frames="2" basehp="48" exp="9" good="true" wontattack="true"/>
+    <monster id="13" name="Jester" tile="86" frames="2" basehp="48" exp="9" good="true" wontattack="true"/>
+    <monster id="14" name="Beggar" tile="88" frames="2" basehp="32" exp="13" good="true" wontattack="true"/>
+    <monster id="15" name="Child" tile="90" frames="2" basehp="32" exp="10" good="true" wontattack="true"/>
+    <monster id="16" name="Bull" tile="92" frames="2" basehp="128" exp="11" good="true"/>
     <monster id="17" name="Lord British" tile="94" frames="2" basehp="255" exp="16" ranged="true" rangedhittile="magic" rangedmisstile="magic" good="true" wontattack="true"/>
 
     <!-- Water monsters -->

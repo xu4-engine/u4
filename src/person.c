@@ -205,12 +205,14 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                 text = concat("\n\n", talkerGetResponse(cnv, inquiry), "\n", NULL);
             break;
 
+        case CONV_CONFIRMATION:
+            ASSERT(cnv->talker->npcType == NPC_LORD_BRITISH, "invalid state: %d", cnv->state);
+            text = lordBritishGetQuestionResponse(cnv, inquiry);
+            break;
+
         case CONV_ASK:
-            ASSERT(cnv->talker->npcType != NPC_HAWKWIND, "invalid state for hawkwind conversation");
-            if (cnv->talker->npcType == NPC_LORD_BRITISH)
-                text = lordBritishGetQuestionResponse(cnv, inquiry);
-            else
-                text = concat("\n\n", talkerGetQuestionResponse(cnv, inquiry), "\n", NULL);
+            ASSERT(cnv->talker->npcType != NPC_HAWKWIND, "invalid state for hawkwind conversation");            
+            text = concat("\n\n", talkerGetQuestionResponse(cnv, inquiry), "\n", NULL);
             break;
 
         case CONV_BUY_QUANTITY:
@@ -251,7 +253,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
     case CONV_BUY_PRICE:
     case CONV_TOPIC:
         return CONVINPUT_STRING;
-
+    
     case CONV_VENDORQUESTION:
     case CONV_BUY_ITEM:
     case CONV_SELL_ITEM:
@@ -527,8 +529,8 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, "heal", 4) == 0) {
-        reply = strdup("\n\n\n\n\n\nHe says: I am\nwell, thank ye.");
-        cnv->state = CONV_ASK;
+        reply = strdup("\n\n\n\n\n\nHe says: I am\nwell, thank ye.");        
+        cnv->state = CONV_CONFIRMATION;
     }
 
     else if (strncasecmp(inquiry, "help", 4) == 0) {
@@ -575,8 +577,8 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
 
 char *lordBritishGetPrompt(const Conversation *cnv) {
     char *prompt;
-
-    if (cnv->state == CONV_ASK)
+    
+    if (cnv->state == CONV_CONFIRMATION)
         prompt = strdup("\n\nHe asks: Art thou well?");
     else
         prompt = strdup("\nWhat else?\n");
