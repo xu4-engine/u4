@@ -7,83 +7,131 @@
 #include "ttype.h"
 #include "u4.h"
 
-#define MASK_WALKABLE 0x03
-#define MASK_EFFECT   0x0C
-#define MASK_FLYABLE  0x10
-#define MASK_OPAQUE   0x20
-#define MASK_SAILABLE 0x40
-#define MASK_ANIMATED 0x80
+#define MASK_WALKABLE  0x0003
+#define MASK_EFFECT    0x000C
+#define MASK_FLYABLE   0x0010
+#define MASK_OPAQUE    0x0020
+#define MASK_SAILABLE  0x0040
+#define MASK_ANIMATED  0x0080
+#define MASK_ANIMATED  0x0080
+#define MASK_OPAQUE    0x0100
+#define MASK_UNFLYABLE 0x0200
+#define MASK_SHIP      0x0400
+#define MASK_HORSE     0x0800
+#define MASK_BALLOON   0x1000
 
-#define WALKABLE      0x00
-#define SLOW          0x01
-#define VSLOW         0x02
-#define UNWALKABLE    0x03
+#define WALKABLE       0x0000
+#define SLOW           0x0001
+#define VSLOW          0x0002
+#define UNWALKABLE     0x0003
 
-/* tile values 0-31 */
-static const char _ttype_info1[] = {
-/* sea,  water, shallows, swamp, grass, brush, forest, hills, mountain, */
-   0xC3, 0xC3,  0x83,     0x0C,  0x00,  0x01,  0x02,   0x02,  0x03,
-/* dungeon, city, castle, town, lcb1, lcb2, lcb3, wship, nship, eship, sship */
-   0x00,    0x00, 0x00,   0x00, 0x03, 0x00, 0x03, 0x00,  0x00,  0x00,  0x00,
-/* whorse, ehorse, hex,  bridge, baloon, nbridge, sbridge, uladder, dladder */
-   0x00,   0x00,   0x00, 0x00,   0x00,   0x00,    0x00,    0x00,    0x00,
-/* ruins, shrine, avatar */
-   0x00,  0x00,   0x03
+/* tile values 0-79 */
+static const short _ttype_info[] = {
+    UNWALKABLE | MASK_SAILABLE | MASK_ANIMATED, /* sea */
+    UNWALKABLE | MASK_SAILABLE | MASK_ANIMATED, /* water */
+    UNWALKABLE | MASK_ANIMATED,                 /* shallows */
+    EFFECT_POISON,                              /* swamp */
+    0,                                          /* grass */
+    SLOW,                                       /* brush */
+    VSLOW | MASK_OPAQUE,                        /* forest */
+    VSLOW,                                      /* hills */
+    UNWALKABLE | MASK_OPAQUE | MASK_UNFLYABLE,  /* mountains */
+    0, 0, 0, 0,                                 /* dungeon, city, castle, town */
+    UNWALKABLE,                                 /* lcb1 */
+    0,                                          /* lcb2 */
+    UNWALKABLE,                                 /* lcb3 */
+    MASK_SHIP,                                  /* west ship */
+    MASK_SHIP,                                  /* north ship */
+    MASK_SHIP,                                  /* east ship */
+    MASK_SHIP,                                  /* south ship */
+    MASK_HORSE,                                 /* west horse */
+    MASK_HORSE,                                 /* east horse */
+    0,                                          /* hex */
+    0,                                          /* bridge */
+    MASK_BALLOON,                               /* balloon */
+    0, 0,                                       /* nbridge, sbridge */
+    0, 0,                                       /* uladder, dladder */
+    0,                                          /* ruins */
+    0,                                          /* shrine */
+    UNWALKABLE,                                 /* avatar */
+    UNWALKABLE,                                 /* mage1 */
+    UNWALKABLE,                                 /* mage2 */
+    UNWALKABLE,                                 /* bard1 */
+    UNWALKABLE,                                 /* bard2 */
+    UNWALKABLE,                                 /* fighter1 */
+    UNWALKABLE,                                 /* fighter2 */
+    UNWALKABLE,                                 /* druid1 */
+    UNWALKABLE,                                 /* druid2 */
+    UNWALKABLE,                                 /* tinker1 */
+    UNWALKABLE,                                 /* tinker2 */
+    UNWALKABLE,                                 /* paladin1 */
+    UNWALKABLE,                                 /* paladin2 */
+    UNWALKABLE,                                 /* ranger1 */
+    UNWALKABLE,                                 /* ranger2 */
+    UNWALKABLE,                                 /* shepherd1 */
+    UNWALKABLE,                                 /* shepherd2 */
+    UNWALKABLE,                                 /* column */
+    UNWALKABLE,                                 /* solid SW */
+    UNWALKABLE,                                 /* solid SE */
+    UNWALKABLE,                                 /* solid NW */
+    UNWALKABLE,                                 /* solid NE */
+    UNWALKABLE,                                 /* shipmast */
+    UNWALKABLE,                                 /* shipwheel */
+    UNWALKABLE,                                 /* rocks */
+    UNWALKABLE,                                 /* corpse */
+    UNWALKABLE | MASK_OPAQUE,                   /* stonewall */
+    UNWALKABLE,                                 /* ldoor */
+    UNWALKABLE,                                 /* door */
+    0,                                          /* chest */
+    UNWALKABLE,                                 /* ankh */
+    0,                                          /* brickfloor */
+    0,                                          /* woodfloor */
+    0,                                          /* mgate0 */
+    0,                                          /* mgate1 */
+    0,                                          /* mgate2 */
+    0,                                          /* mgate3 */
+    EFFECT_POISON | MASK_ANIMATED,              /* poison field */
+    UNWALKABLE | MASK_ANIMATED,                 /* energy field */
+    EFFECT_FIRE | MASK_ANIMATED,                /* fire field */
+    EFFECT_SLEEP | MASK_ANIMATED,               /* sleep field */
+    UNWALKABLE,                                 /* solid */
+    MASK_OPAQUE,                                /* secret door */
+    0,                                          /* altar */
+    UNWALKABLE,                                 /* roast */
+    UNWALKABLE,                                 /* lava */
+    0,                                          /* stone */
+    0,                                          /* orb1 */
+    0                                           /* orb2 */
 };
-
-/* tile values 56-79 */
-static const char _ttype_info2[] = {
-/* corpse, stonewall, ldoor, door, chest, anhk, brick, wood */
-   0x03,   0x03,      0x03,  0x03, 0x00,  0x03, 0x00,  0x00,
-/* mgate0, mgate1, mgate2, mgate3, posion field, energy field, fire field, sleep field */
-   0x00,   0x00,   0x00,   0x00,   0x8C,         0x83,         0x84,       0x88,
-/* solid, sdoor, altar, roast, lava, stone, orb1, orb2 */
-   0x03,  0x00,  0x00,  0x03,  0x84, 0x00,  0x00, 0x00
-};
-
 
 int tileIsWalkable(unsigned char tile) {
-    if (tile < 32)
-	return (_ttype_info1[tile] & MASK_WALKABLE) != 0x03;
-    else if (tile < 56)
-	return 0;
-    else if (tile < 79)
-	return (_ttype_info2[tile - 56] & MASK_WALKABLE) != 0x03;
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_WALKABLE) != 0x03;
     return 0;
 }
 
 int tileIsSlow(unsigned char tile) {
-    if (tile < sizeof(_ttype_info1))
-	return (_ttype_info1[tile] & MASK_WALKABLE) == 0x01;
-    else if (tile < 56)
-	return 0;
-    else if (tile < 79)
-	return (_ttype_info2[tile - 56] & MASK_WALKABLE) == 0x01;
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_WALKABLE) == 0x01;
     return 0;
 }
 
 int tileIsVslow(unsigned char tile) {
-    if (tile < sizeof(_ttype_info1))
-	return (_ttype_info1[tile] & MASK_WALKABLE) == 0x02;
-    else if (tile < 56)
-	return 0;
-    else if (tile < 79)
-	return (_ttype_info2[tile - 56] & MASK_WALKABLE) == 0x02;
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_WALKABLE) == 0x02;
     return 0;
 }
 
 int tileIsSailable(unsigned char tile) {
-    if (tile < 32)
-	return (_ttype_info1[tile] & MASK_SAILABLE) != 0;
-    else if (tile < 56)
-	return 0;
-    else if (tile < 79)
-	return (_ttype_info2[tile - 56] & MASK_SAILABLE) != 0;
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_SAILABLE) != 0;
     return 0;
 }
 
 int tileIsFlyable(unsigned char tile) {
-    return tile != 8;
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_UNFLYABLE) == 0;
+    return 1;
 }
 
 int tileIsDoor(unsigned char tile) {
@@ -95,17 +143,22 @@ int tileIsLockedDoor(unsigned char tile) {
 }
 
 int tileIsShip(unsigned char tile) {
-    return tile >= 16 && tile < 20;
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_SHIP) != 0;
+    return 0;
 }
 
 int tileIsHorse(unsigned char tile) {
-    return tile >= 20 && tile < 22;
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_HORSE) != 0;
+    return 0;
 }
 
 int tileIsBalloon(unsigned char tile) {
-    return tile == 24;
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_BALLOON) != 0;
+    return 0;
 }
-
 
 unsigned int tileGetDirection(unsigned char tile) {
     if (tileIsShip(tile))
@@ -128,20 +181,15 @@ int tileCanTalkOver(unsigned char tile) {
 }
 
 TileEffect tileGetEffect(unsigned char tile) {
-    if (tile < 32)
-	return (_ttype_info1[tile] & MASK_EFFECT);
-    else if (tile < 56)
-	return 0;
-    else if (tile < 79)
-	return (_ttype_info2[tile - 56] & MASK_EFFECT);
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_EFFECT);
     return 0;
 }
 
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile) {
-    if (tile < 32 && (_ttype_info1[tile] & MASK_ANIMATED) != 0)
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])) &&
+        (_ttype_info[tile] & MASK_ANIMATED) != 0)
         return ANIM_SCROLL;
-    else if (tile >= 56 && tile < 79 && (_ttype_info2[tile - 56] & MASK_ANIMATED) != 0)
-	return ANIM_SCROLL;
     else if (tile == 75)
         return ANIM_CAMPFIRE;
     else if (tile == 10)
@@ -182,11 +230,7 @@ void tileAdvanceFrame(unsigned char *tile) {
 }
 
 int tileIsOpaque(unsigned char tile) {
-    if (tile == 6 ||            /* forest */
-        tile == 8 ||            /* mountains */
-        tile == 57 ||           /* stone wall */
-        tile == 73 ||           /* secret door */
-        tile == 127)            /* brick wall */
-        return 1;
-    return 0;
+    if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
+	return (_ttype_info[tile] & MASK_OPAQUE) != 0;
+    return tile == 127;         /* brick wall */
 }

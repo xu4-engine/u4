@@ -5,9 +5,10 @@
 #ifndef TTYPE_H
 #define TTYPE_H
 
-#define SEA_TILE 0x0
 #define GRASS_TILE 0x4
 #define AVATAR_TILE 0x1f
+#define CHEST_TILE 0x3c
+#define BRICKFLOOR_TILE 0x3e
 #define MOONGATE0_TILE 0x40
 #define MOONGATE1_TILE 0x41
 #define MOONGATE2_TILE 0x42
