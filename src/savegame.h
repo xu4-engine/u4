@@ -38,8 +38,8 @@ typedef enum {
 } ArmorType;
 
 typedef enum {
-    SEX_MALE = 0xd,
-    SEX_FEMALE = 0xd
+    SEX_MALE = 0xb,
+    SEX_FEMALE = 0xc
 } SexType;
 
 typedef enum {
