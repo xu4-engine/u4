@@ -65,6 +65,7 @@
 #define MAP_SHIPSHIP_CON 51
 #define MAP_SHIPSHOR_CON 52
 #define MAP_SHORE_CON 53
+#define MAP_SHORSHIP_CON 54
 
 struct _Map;
 

@@ -434,7 +434,7 @@ unsigned char combatMapForTile(unsigned char groundTile, unsigned char transport
         unsigned char tileUnderneath = mapTileAt(c->location->map, obj->x, obj->y, obj->z);
 
         if (toShip)
-            return MAP_SHIPSHOR_CON;
+            return MAP_SHORSHIP_CON;
         else if (fromShip && tileIsWater(tileUnderneath))
             return MAP_SHIPSEA_CON;
         else if (tileIsWater(tileUnderneath))
