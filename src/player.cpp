@@ -861,8 +861,10 @@ void Party::reviveParty() {
 }
 
 void Party::adjustReagent(int reagent, int amt) {
-    if (c->saveGame->reagents[reagent] >= amt) {
-        AdjustValue(c->saveGame->reagents[reagent], amt, 99, 0);
+    int oldVal = c->saveGame->reagents[reagent];
+    AdjustValue(c->saveGame->reagents[reagent], amt, 99, 0);
+
+    if (oldVal != c->saveGame->reagents[reagent]) {        
         setChanged();
         notifyObservers("Party::adjustReagent");
     }

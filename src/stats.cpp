@@ -362,17 +362,14 @@ void StatsArea::showReagents() {
     
     clear();
     setTitle("Reagents");    
-    
-    line = STATS_AREA_Y;
-    for (r = REAG_ASH; r < REAG_MAX; r++) {
-        int n = c->saveGame->reagents[r];
-        if (n >= 100)
-            n = 99;
 
-        /* show the quantity for the item */
-        if (n > 0) {          
+    line = STATS_AREA_Y;
+    Menu::MenuItemList::iterator i;
+    for (i = spellMixMenu.begin(), r = REAG_ASH; i != spellMixMenu.end(); i++, r++) {
+        if (i->isVisible()) {
+            /* show the quantity of reagents */
             screenTextAt(STATS_AREA_X, line, "%c-", r+'A');
-            screenTextAt(STATS_AREA_X+13, line++, "%2d", n);
+            screenTextAt(STATS_AREA_X+13, line++, "%2d", c->party->reagents(r - REAG_ASH));
         }
     }
     
