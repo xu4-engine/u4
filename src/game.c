@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include "u4.h"
+#include "direction.h"
 #include "game.h"
 #include "screen.h"
 #include "event.h"
@@ -31,11 +32,14 @@
 #include "death.h"
 #include "combat.h"
 
+void gameCastSpell(unsigned int spell, int caster, int param);
+int gameCheckPlayerDisabled(int player);
 int gameCanMoveOntoTile(const Map *map, int x, int y);
 int moveAvatar(Direction dir, int userEvent);
 int attackAtCoord(int x, int y);
 int castForPlayer(int player);
 int castForPlayer2(int spell, void *data);
+int castForPlayerGetDestPlayer(int player);
 int jimmyAtCoord(int x, int y);
 int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
@@ -169,6 +173,44 @@ Context *gameCloneContext(Context *ctx) {
 
     return new;
 }
+
+void gameCastSpell(unsigned int spell, int caster, int param) {
+    SpellCastError spellError;
+
+    if (!spellCast(spell, caster, param, &spellError)) {
+        switch(spellError) {
+        case CASTERR_NOMIX:
+            screenMessage("None Mixed!\n");
+            break;
+        case CASTERR_WRONGCONTEXT:
+            screenMessage("Can't Cast Here!\n");
+            break;
+        case CASTERR_MPTOOLOW:
+            screenMessage("Not Enough MP!\n");
+            break;
+        case CASTERR_FAILED:
+            screenMessage("Failed!\n");
+            break;
+        case CASTERR_NOERROR:
+        default:
+            /* should never happen */
+            assert(0);
+        }
+    }
+}
+
+int gameCheckPlayerDisabled(int player) {
+    assert(player < c->saveGame->members);
+
+    if (c->saveGame->players[player].status == STAT_DEAD ||
+        c->saveGame->players[player].status == STAT_SLEEPING) {
+        screenMessage("Disabled!\n");
+        return 1;
+    }
+
+    return 0;
+}
+
 
 /**
  * The main key handler for the game.  Interpretes each key as a
@@ -529,8 +571,8 @@ int gameGetAlphaChoiceKeyHandler(int key, void *data) {
 
     if (key >= 'a' && key <= info->lastValidLetter) {
         screenMessage("%c\n", key);
-        (*(info->handleAlpha))(key - 'a', info->data);
         eventHandlerPopKeyHandler();
+        (*(info->handleAlpha))(key - 'a', info->data);
         free(info);
     } else if (key == ' ' || key == U4_ESC) {
         screenMessage("\n");
@@ -798,8 +840,18 @@ int attackAtCoord(int x, int y) {
     return 1;
 }
 
+int castPlayer;
+unsigned int castSpell;
+
 int castForPlayer(int player) {
     AlphaActionInfo *info;
+
+    castPlayer = player;
+
+    if (gameCheckPlayerDisabled(player)) {
+        gameFinishTurn();
+        return 0;
+    }
 
     c->statsItem = STATS_MIXTURES;
     statsUpdate();
@@ -808,7 +860,7 @@ int castForPlayer(int player) {
     info->lastValidLetter = 'z';
     info->handleAlpha = castForPlayer2;
     info->prompt = "Spell: ";
-    info->data = (void *) player;
+    info->data = NULL;
 
     screenMessage("%s", info->prompt);
 
@@ -818,28 +870,40 @@ int castForPlayer(int player) {
 }
 
 int castForPlayer2(int spell, void *data) {
-    int player = (int) data;
-    SpellCastError spellError;
+    castSpell = spell;
 
-    if (!spellCast(spell, player, &spellError)) {
-        switch(spellError) {
-        case CASTERR_NOMIX:
-            screenMessage("None Mixed!\n");
-            break;
-        case CASTERR_WRONGCONTEXT:
-            screenMessage("Can't Cast Here!\n");
-            break;
-        case CASTERR_MPTOOLOW:
-            screenMessage("Not Enough MP!\n");
-            break;
-        case CASTERR_NOERROR:
-        default:
-            /* should never happen */
-            assert(0);
-        }
+    screenMessage("%s!\n", spellGetName(spell));
+
+    c->statsItem = STATS_PARTY_OVERVIEW;
+    statsUpdate();
+
+    switch (spellGetParamType(spell)) {
+    case SPELLPRM_NONE:
+    case SPELLPRM_PHASE:
+        gameCastSpell(castSpell, castPlayer, 0);
+        gameFinishTurn();
+        break;
+    case SPELLPRM_PLAYER:
+        screenMessage("Player: ");
+        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, &castForPlayerGetDestPlayer);
+        break;
+    case SPELLPRM_DIR:
+    case SPELLPRM_FROMDIR:
+        /* FIXME */
+        gameFinishTurn();
+        break;
     }
-    gameFinishTurn();
 
+    return 1;
+}
+
+int castForPlayerGetDestPlayer(int player) {
+    gameCastSpell(castSpell, castPlayer, player);
+    gameFinishTurn();
+    return 1;
+}
+
+int castForPlayerGetDestDir(int dir) {
     return 1;
 }
 
@@ -1288,20 +1352,7 @@ int moveAvatar(Direction dir, int userEvent) {
 
     newx = c->saveGame->x;
     newy = c->saveGame->y;
-    switch (dir) {
-    case DIR_WEST:
-        newx--;
-        break;
-    case DIR_NORTH:
-        newy--;
-        break;
-    case DIR_EAST:
-        newx++;
-        break;
-    case DIR_SOUTH:
-        newy++;
-        break;
-    }
+    dirMove(dir, &newx, &newy);
 
     if (tileIsShip(c->saveGame->transport))
         screenMessage("Sail %s!\n", getDirectionName(dir));
@@ -1397,20 +1448,7 @@ void gameTimer() {
         c->windCounter = 0;
         if (tileIsBalloon(c->saveGame->transport) &&
             c->saveGame->balloonstate) {
-            switch (c->windDirection) {
-            case DIR_WEST:
-                dir = DIR_EAST;
-                break;
-            case DIR_NORTH:
-                dir = DIR_SOUTH;
-                break;
-            case DIR_EAST:
-                dir = DIR_WEST;
-                break;
-            case DIR_SOUTH:
-                dir = DIR_NORTH;
-                break;
-            }
+            dir = dirReverse(c->windDirection);
             moveAvatar(dir, 0);
         }
     }
