@@ -42,6 +42,7 @@ extern "C" {
 #define CHARSET_REGISTERED '\012'
 #define CHARSET_MALE '\013'
 #define CHARSET_FEMALE '\014'
+#define CHARSET_HORIZBAR '\015'
 #define CHARSET_PROMPT '\020'
 
 /* map viewport size (in tiles) */
