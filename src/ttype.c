@@ -31,13 +31,7 @@
 
 /* tile values 0-127 */
 int tileInfoLoaded = 0;
-struct {
-    unsigned short mask;
-    TileSpeed speed;
-    TileEffect effect;
-    int walkonDirs;
-    int walkoffDirs;
-} _ttype_info[256];
+Tile _ttype_info[256];
 int baseChest = -1;
 int baseShip = -1;
 int baseHorse = -1;

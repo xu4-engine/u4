@@ -255,10 +255,10 @@ int keyHandlerReadBuffer(int key, void *data) {
 
         len = strlen(info->buffer);
         if (len < info->bufferLen - 1) {
-            screenDisableCursor();
+            screenHideCursor();
             screenTextAt(info->screenX + len, info->screenY, "%c", key);
             screenSetCursorPos(info->screenX + len + 1, info->screenY);
-            screenEnableCursor();
+            screenShowCursor();
             info->buffer[len] = key;
             info->buffer[len + 1] = '\0';
         }
@@ -268,10 +268,10 @@ int keyHandlerReadBuffer(int key, void *data) {
 
         len = strlen(info->buffer);
         if (len > 0) {
-            screenDisableCursor();
+            screenHideCursor();
             screenTextAt(info->screenX + len - 1, info->screenY, " ");
             screenSetCursorPos(info->screenX + len - 1, info->screenY);
-            screenEnableCursor();
+            screenShowCursor();
             info->buffer[len - 1] = '\0';
         }
 

@@ -147,7 +147,8 @@ typedef enum {
     MATTR_CAMOUFLAGE  = 0x800,
     MATTR_WANDERS     = 0x1000,
     MATTR_NOATTACK    = 0x2000,
-    MATTR_FLIES       = 0x4000
+    MATTR_FLIES       = 0x4000,
+    MATTR_AMBUSHES    = 0x8000
 } MonsterAttrib;
 
 typedef enum {
@@ -187,6 +188,7 @@ int monsterIsAttackable(const Monster *monster);
 int monsterWillAttack(const Monster *monster);
 int monsterStealsGold(const Monster *monster);
 int monsterStealsFood(const Monster *monster);
+int monsterAmbushes(const Monster *monster);
 int monsterGetXp(const Monster *monster);
 int monsterCastSleep(const Monster *monster);
 int monsterGetDamage(const Monster *monster);

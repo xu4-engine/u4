@@ -304,6 +304,8 @@ VendorTypeInfo **vendorTypeInfo;
 #define SV_NOTENOUGH 5
 #define SV_BESTBREED 6
 
+InnHandlerCallback innHandlerCallback;
+
 char *vendorGetFarewell(const Conversation *cnv, const char *prefix);
 VendorTypeInfo *vendorLoadTypeInfo(U4FILE *avatar, const VendorTypeDesc *desc);
 const char *vendorGetName(const Person *v);
@@ -315,6 +317,12 @@ char *vendorDoBuyTransaction(Conversation *cnv);
 char *vendorDoSellTransaction(Conversation *cnv);
 int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, U4FILE *f);
 int innVendorInfoRead(InnVendorInfo *info, U4FILE *f);
+
+
+
+void vendorSetInnHandlerCallback(InnHandlerCallback callback) {
+    innHandlerCallback = callback;
+}
 
 /**
  * Loads in prices and conversation data for vendors from avatar.exe.
@@ -1248,6 +1256,8 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
             else 
                 reply = strdup(vendorGetText(cnv->talker, IV_GOODNIGHT));
             cnv->state = CONV_DONE;
+
+            (*innHandlerCallback)();
         }
         else {
             reply = strdup(vendorGetText(cnv->talker, IV_CANTPAY));

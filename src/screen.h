@@ -73,6 +73,8 @@ void screenCycle(void);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);
 void screenUpdateWind(void);
+void screenShowCursor(void);
+void screenHideCursor(void);
 void screenEnableCursor(void);
 void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);

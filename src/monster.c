@@ -23,8 +23,6 @@
 #include "ttype.h"
 #include "error.h"
 
-#define UNKNOWN 0
-
 int monsterInfoLoaded = 0;
 int numMonsters = 0;
 Monster monsters[MAX_MONSTERS];
@@ -51,7 +49,8 @@ void monsterLoadInfoFromXml() {
         { "teleports", MATTR_TELEPORT },
         { "camouflage", MATTR_CAMOUFLAGE }, 
         { "wontattack", MATTR_NOATTACK },
-        { "flies", MATTR_FLIES }
+        { "flies", MATTR_FLIES },
+        { "ambushes", MATTR_AMBUSHES }
     };    
     
     /* steals="" */
@@ -137,7 +136,7 @@ void monsterLoadInfoFromXml() {
         monsters[monster].mattr = 0;
         monsters[monster].slowedType = SLOWED_BY_TILE;
         monsters[monster].basehp = 0;
-        monsters[monster].encounterSize = 0;
+        monsters[monster].encounterSize = 0;        
 
         /* get the encounter size */
         if (xmlGetProp(node, (const xmlChar *)"encounterSize") != NULL) {
@@ -268,6 +267,10 @@ int monsterStealsGold(const Monster *monster) {
 
 int monsterStealsFood(const Monster *monster) {
     return (monster->mattr & MATTR_STEALFOOD) ? 1 : 0;
+}
+
+int monsterAmbushes(const Monster *monster) {
+    return (monster->mattr & MATTR_AMBUSHES) ? 1 : 0;
 }
 
 int monsterGetXp(const Monster *monster) {

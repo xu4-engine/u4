@@ -8,6 +8,6 @@
 #define CAMP_HEAL_INTERVAL 100   /* Number of moves before camping will heal the party */
 
 void campBegin();
-int campHeal();
+void innBegin();
 
 #endif

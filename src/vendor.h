@@ -7,6 +7,10 @@
 
 #include "context.h"
 
+typedef void (*InnHandlerCallback)(void);
+
+void vendorSetInnHandlerCallback(InnHandlerCallback callback);
+
 int vendorInit(void);
 void vendorGetConversationText(Conversation *cnv, const char *inquiry, char **response);
 char *vendorGetPrompt(const Conversation *cnv);

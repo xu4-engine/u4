@@ -473,7 +473,7 @@ void introDrawBeasties() {
  */
 void introUpdateScreen() {
 
-    screenDisableCursor();
+    screenHideCursor();
 
     switch (mode) {
     case INTRO_MAP:
@@ -484,7 +484,7 @@ void introUpdateScreen() {
 
     case INTRO_MENU:        
         screenSetCursorPos(24, 16);
-        screenEnableCursor();
+        screenShowCursor();
 
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(2, 14, "In another world, in a time to come.");
@@ -605,7 +605,7 @@ void introInitiateNewGame() {
     mode = INTRO_INIT_NAME;
     introUpdateScreen();    
     screenSetCursorPos(12, 20);
-    screenEnableCursor();
+    screenShowCursor();
     screenRedrawScreen();
 
     info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
@@ -649,7 +649,7 @@ int introHandleName(const char *message) {
 
         introUpdateScreen();
         screenSetCursorPos(29, 16);
-        screenEnableCursor();
+        screenShowCursor();
 
         info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
         info->choices = "mf";
@@ -849,7 +849,7 @@ int introHandleQuestionChoice(char choice) {
             SaveGamePlayerRecord avatar;
             saveGamePlayerRecordInit(&avatar);
             saveGameInit(&saveGame, &avatar);
-            screenDisableCursor();
+            screenHideCursor();
             introInitPlayers(&saveGame);
             saveGame.food = 30000;
             saveGame.gold = 200;

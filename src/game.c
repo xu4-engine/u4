@@ -45,6 +45,7 @@ void gameLostEighth(Virtue virtue);
 void gameAdvanceLevel(const SaveGamePlayerRecord *player);
 void gameSpellEffect(unsigned int spell, int player);
 void gameCastSpell(unsigned int spell, int caster, int param);
+void gameInnHandler(void);
 int gameCheckPlayerDisabled(int player);
 void gameGetPlayerForCommand(int (*commandFn)(int player));
 int moveAvatar(Direction dir, int userEvent);
@@ -144,7 +145,8 @@ void gameInit() {
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
     playerSetItemStatsChangedCallback(&statsUpdate);
-    playerSetSpellCallback(&gameSpellEffect);    
+    playerSetSpellCallback(&gameSpellEffect);
+    vendorSetInnHandlerCallback(&innBegin);
 
     musicPlay();
     screenDrawBackground(BKGD_BORDERS);
@@ -2337,8 +2339,7 @@ void gameCheckHullIntegrity() {
         }
         statsUpdate();   
 
-        screenRedrawScreen();
-        eventHandlerSleep(5000);        
+        screenRedrawScreen();        
         deathStart(5);
     }
 }

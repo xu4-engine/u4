@@ -23,6 +23,7 @@ int screenCurrentCycle = 0;
 int screenCursorX = 0;
 int screenCursorY = 0;
 int screenCursorStatus = 0;
+int screenCursorEnabled = 1;
 int screenLos[VIEWPORT_W][VIEWPORT_H];
 
 void screenTextAt(int x, int y, char *fmt, ...) {
@@ -39,7 +40,7 @@ void screenTextAt(int x, int y, char *fmt, ...) {
 }
 
 void screenPrompt() {
-    if (screenNeedPrompt) {
+    if (screenNeedPrompt && screenCursorEnabled) {
         screenMessage("%c", CHARSET_PROMPT);
         screenNeedPrompt = 0;
     }
@@ -55,7 +56,7 @@ void screenMessage(const char *fmt, ...) {
     vsprintf(buffer, fmt, args);
     va_end(args);
 
-    screenDisableCursor();
+    screenHideCursor();
 
     // scroll the message area, if necessary
     if (c->line == 12) {
@@ -78,7 +79,7 @@ void screenMessage(const char *fmt, ...) {
     }
 
     screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
-    screenEnableCursor();
+    screenShowCursor();
 
     screenNeedPrompt = 1;
 }
@@ -200,17 +201,26 @@ void screenUpdateWind() {
     screenRedrawTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
 }
 
-void screenEnableCursor() {
-    if (!screenCursorStatus) {
+void screenShowCursor() {
+    if (!screenCursorStatus && screenCursorEnabled) {
         screenCursorStatus = 1;
         screenUpdateCursor();
     }
 }
 
-void screenDisableCursor() {
+void screenHideCursor() {
     if (screenCursorStatus)
         screenEraseTextArea(screenCursorX, screenCursorY, 1, 1);        
     screenCursorStatus = 0;
+}
+
+void screenEnableCursor(void) {
+    screenCursorEnabled = 1;
+}
+
+void screenDisableCursor(void) {
+    screenCursorEnabled = 0;
+    screenHideCursor();
 }
 
 void screenSetCursorPos(int x, int y) {
