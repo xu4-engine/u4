@@ -169,6 +169,10 @@ char *talkerGetIntro(Conversation *cnv) {
     const char *fmt = "You meet\n%s\n\n%s says: I am %s\n\n%s";
     char *prompt, *intro;
 
+    /* DEBUG */
+    printf("person %s has PersonQuestionType = %d\n", cnv->talker->name, cnv->talker->questionType);
+    /* DEBUG */
+
     personGetPrompt(cnv, &prompt);
     intro = malloc(strlen(fmt) - 8 + strlen(cnv->talker->description) + strlen(cnv->talker->pronoun) + strlen(cnv->talker->name) + strlen(prompt) + 1);
 
@@ -314,7 +318,7 @@ char *lordBritishGetIntro(Conversation *cnv) {
     const char *lbFmt = "Lord British\nsays:  Welcome\n%s and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n";
     char *intro;
 
-    lb_music();
+    musicLordBritish();
 
     for (i = 0; i < c->saveGame->members; i++) {
         if (playerGetRealLevel(&c->saveGame->players[i]) < playerGetMaxLevel(&c->saveGame->players[i])) {
@@ -344,7 +348,7 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
         strcasecmp(inquiry, "bye") == 0) {
         reply = strdup("Lord British\nsays: Fare thee\nwell my friends!");
         cnv->state = CONV_DONE;
-        play_music();
+        musicPlay();
     }
 
     else if (strncasecmp(inquiry, "heal", 4) == 0) {

@@ -72,26 +72,29 @@ int musicToggle() {
     return toggle;
 }
 
-void intro_music(void){    /* Intro Music on title loadup */
+void musicIntro(void){    /* Intro Music on title loadup */
     musicPlayMid(MUSIC_TOWNS);
 }
 
-void lb_music(void){  /* Music when you talk to LB */
+void musicLordBritish(void){  /* Music when you talk to LB */
     musicPlayMid(MUSIC_FANFARE);
 }
 
-void play_music(void) {  /* Main music loop. */
+void musicPlay(void) {  /* Main music loop. */
     musicPlayMid(c->map->music);
 }
 
-int init_music(void) {
+int musicInit(void) {
 
    int audio_rate = 22050;
    Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
    int audio_channels = 2;
    int audio_buffers = 4096;
 
-   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+   if (SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
+       fprintf(stderr, "Unable to init SDL audio subsystem: %s\n", SDL_GetError());
+       return 1;
+   }
 
 #ifdef WIN32			
    SDL_AudioInit("waveout");

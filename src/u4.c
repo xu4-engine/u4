@@ -43,13 +43,13 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
 
     screenInit(scale);
-    init_music();
+    musicInit();
 
     eventHandlerInit();
 
     /* do the intro */
     introInit();
-    intro_music();
+    musicIntro();
     eventHandlerAddTimerCallback(&introTimer);
     eventHandlerPushKeyHandler(&introKeyHandler);
     eventHandlerMain(NULL);
@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
 
     /* play the game! */
     mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
-    play_music();
+    musicPlay();
     screenDrawBackground(BKGD_BORDERS);
     statsUpdate();
     screenMessage("\020");

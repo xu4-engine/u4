@@ -265,7 +265,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
             mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
 
-            play_music();
+            musicPlay();
 
         } else
             screenMessage("Enter what?\n");
@@ -1248,7 +1248,7 @@ int moveAvatar(Direction dir, int userEvent) {
                 c->col = 0;
 		free(t);
                 
-                play_music();
+                musicPlay();
 	    }
             goto done;
 	    
