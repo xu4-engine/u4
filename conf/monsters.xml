@@ -58,8 +58,8 @@
     <monster id="46" encounterSize="4" name="Liche" tile="228" frames="4" basehp="48" level="12" ranged="true" rangedhittile="magic" rangedmisstile="magic" undead="true" resists="sleep" leader="49"/>
     <monster id="47" encounterSize="8" name="Lava Lizard" tile="232" frames="4" basehp="48" level="5" ranged="true" worldrangedtile="fireblast" rangedhittile="lava" rangedmisstile="lava" resists="fire" leader="50" leavestile="true"/>
     <monster id="48" encounterSize="4" name="Zorn" tile="236" frames="4" basehp="48" level="15" casts="negate" leader="35"/>
-    <monster id="49" encounterSize="6" name="Daemon" tile="240" frames="4" basehp="32" level="7" ranged="true" rangedhittile="magic" rangedmisstile="magic" resists="fire" leader="52"/>
+    <monster id="49" encounterSize="6" name="Daemon" tile="240" frames="4" basehp="32" level="7" ranged="true" rangedhittile="magic" rangedmisstile="magic" flies="true" resists="fire" leader="52"/>
     <monster id="50" encounterSize="4" name="Hydra" tile="244" frames="4" basehp="32" level="13" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" resists="fire" leader="51"/>
     <monster id="51" encounterSize="4" name="Dragon" tile="248" frames="4" basehp="128" level="14" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" flies="true" resists="fire" leader="52"/>
-    <monster id="52" encounterSize="1" name="Balron" tile="252" frames="4" basehp="255" level="16" ranged="true" rangedhittile="random" rangedmisstile="random" casts="sleep" resists="fire"/>
+    <monster id="52" encounterSize="1" name="Balron" tile="252" frames="4" basehp="255" level="16" ranged="true" rangedhittile="random" rangedmisstile="random" flies="true" casts="sleep" resists="fire"/>
 </monsters>
