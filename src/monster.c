@@ -1,4 +1,4 @@
-/*
+/**
  * $Id$
  */
 
@@ -17,6 +17,7 @@
 
 #include "game.h"	/* required by monsterSpecial functions */
 #include "player.h"	/* required by monsterSpecial functions */
+#include "u4file.h"
 #include "context.h"
 #include "savegame.h"
 #include "ttype.h"
@@ -39,7 +40,7 @@ void monsterLoadInfoFromXml() {
     int monster, i;
     static const struct {
         const char *name;
-        unsigned int mask;        
+        unsigned int mask;
     } booleanAttributes[] = {
         { "undead", MATTR_UNDEAD },
         { "good", MATTR_GOOD },
@@ -51,8 +52,8 @@ void monsterLoadInfoFromXml() {
         { "camouflage", MATTR_CAMOUFLAGE }, 
         { "wontattack", MATTR_NOATTACK },
         { "flies", MATTR_FLIES }
-    };
-
+    };    
+    
     /* steals="" */
     static const struct {
         const char *name;
@@ -78,7 +79,7 @@ void monsterLoadInfoFromXml() {
     } movement[] = {
         { "none", MATTR_STATIONARY },
         { "wanders", MATTR_WANDERS }
-    };
+    };    
 
     if (!monsterInfoLoaded)
         monsterInfoLoaded = 1;
@@ -115,6 +116,20 @@ void monsterLoadInfoFromXml() {
         monsters[monster].tile = (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"tile"));
         monsters[monster].mattr = 0;
         monsters[monster].slowedType = SLOWED_BY_TILE;
+        monsters[monster].basehp = 0;
+        monsters[monster].encounterSize = 0;
+
+        /* get the encounter size */
+        if (xmlGetProp(node, (const xmlChar *)"encounterSize") != NULL) {
+            monsters[monster].encounterSize = 
+                (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"encounterSize"));             
+        }
+
+        /* get the base hp */
+        if (xmlGetProp(node, (const xmlChar *)"basehp") != NULL) {
+            monsters[monster].basehp =
+                (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"basehp"));
+        }
 
         /* Load monster attributes */
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
@@ -161,14 +176,12 @@ void monsterLoadInfoFromXml() {
     xmlFreeDoc(doc);
 }
 
-
 const Monster *monsterForTile(unsigned char tile) {
     int i, n;
 
     monsterLoadInfoFromXml();
 
-    for (i = 0; i < numMonsters; i++) {
-            
+    for (i = 0; i < numMonsters; i++) {            
 
         switch (tileGetAnimationStyle(monsters[i].tile)) {
         case ANIM_TWOFRAMES:
@@ -193,7 +206,7 @@ const Monster *monsterForTile(unsigned char tile) {
 }
 
 int monsterIsGood(const Monster *monster) {
-    return (monster->mattr & MATTR_GOOD);
+    return (monster->mattr & MATTR_GOOD) ? 1 : 0;
 }
 
 int monsterIsEvil(const Monster *monster) {
@@ -201,34 +214,31 @@ int monsterIsEvil(const Monster *monster) {
 }
 
 int monsterIsUndead(const Monster *monster) {
-    return (monster->mattr & MATTR_UNDEAD);
+    return (monster->mattr & MATTR_UNDEAD) ? 1 : 0;
 }
 
 int monsterIsAquatic(const Monster *monster) {
-    return (monster->mattr & MATTR_WATER);
+    return (monster->mattr & MATTR_WATER) ? 1 : 0;
 }
 
 int monsterFlies(const Monster *monster) {
-    return (monster->mattr & MATTR_FLIES);
+    return (monster->mattr & MATTR_FLIES) ? 1 : 0;
 }
 
 int monsterTeleports(const Monster *monster) {
-    return (monster->mattr & MATTR_TELEPORT);
+    return (monster->mattr & MATTR_TELEPORT) ? 1 : 0;
 }
 
 int monsterIsAttackable(const Monster *monster) {
-    return (monster->mattr & MATTR_NONATTACKABLE);
+    return (monster->mattr & MATTR_NONATTACKABLE) ? 0 : 1;
 }
 
 int monsterWillAttack(const Monster *monster) {
-    return !(monster->mattr & MATTR_NOATTACK);
+    return (monster->mattr & MATTR_NOATTACK) ? 0 : 1;
 }
 
 int monsterGetXp(const Monster *monster) {
-    if (monster->level == 16)
-        return 16;
-    else
-        return monster->level + 1;
+    return (monster->level == 16) ? 16 : monster->level + 1;    
 }
 
 int monsterGetDamage(const Monster *monster) {
@@ -275,9 +285,11 @@ const Monster *monsterRandomForTile(unsigned char tile) {
 int monsterGetInitialHp(const Monster *monster) {
     int basehp, hp;
 
-    basehp = monster->level == 16 ? 255 : (monster->level << 4);
-    hp = (basehp % rand()) + (basehp / 2);
+    basehp = (monster->basehp > 0) ? 
+        monster->basehp :
+        monster->level == 16 ? 255 : (monster->level << 4);
 
+    hp = (rand() % basehp) + (basehp / 2);
     return hp;
 }
 

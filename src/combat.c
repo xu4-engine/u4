@@ -517,12 +517,14 @@ int combatReturnWeaponToOwner(int x, int y, int distance, void *data) {
 int combatInitialNumberOfMonsters(Monster *monster) {
     int nmonsters;
 
-    if (mapIsWorldMap(c->location->map)) {
-        nmonsters = (rand() % 8) + 1;
-        if (nmonsters == 1) {
-            /* file offset 116DDh, 36 bytes, indexed by monster number */
-            /*nmonsters = rand() % EncounterSize(monster encountered) + EncounterSize(monster encountered) + 1*/
-            nmonsters = 8;
+    if (mapIsWorldMap(c->location->prev->map)) {
+        nmonsters = (rand() % 8) + 1;        
+        
+        if (nmonsters == 1) {            
+            if (monster->encounterSize > 0)
+                nmonsters = (rand() % monster->encounterSize) + monster->encounterSize + 1;
+            else
+                nmonsters = 8;
         }
 
         while (nmonsters > 2 * c->saveGame->members) {

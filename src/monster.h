@@ -1,4 +1,4 @@
-/*
+/**
  * $Id$
  */
 
@@ -9,6 +9,9 @@
 #include "movement.h"
 
 #define MAX_MONSTERS 128
+
+/* Monsters on world map */
+
 #define MAX_MONSTERS_ON_MAP 4
 #define MAX_MONSTER_DISTANCE 30
 
@@ -160,11 +163,13 @@ typedef struct _Monster {
     const char *name;
     unsigned short id;
     unsigned char tile;
-    unsigned char leader;    
+    unsigned char leader;
+    unsigned char basehp;
     unsigned short level;
     unsigned char ranged;
     MonsterAttrib mattr;
     SlowedType slowedType;
+    unsigned char encounterSize;
 } Monster;
 
 const Monster *monsterForTile(unsigned char tile);
