@@ -62,8 +62,6 @@ int playerGetMaxLevel(const SaveGamePlayerRecord *player);
 void playerAdvanceLevel(SaveGamePlayerRecord *player);
 void playerAwardXp(SaveGamePlayerRecord *player, int xp);
 int playerGetMaxMp(const SaveGamePlayerRecord *player);
-int playerCanWear(const SaveGamePlayerRecord *player, ArmorType armor);
-int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon);
 int playerCanEnterShrine(const SaveGame *saveGame, Virtue virtue);
 void playerAdjustKarma(SaveGame *saveGame, KarmaAction action);
 int playerAttemptElevation(SaveGame *saveGame, Virtue virtue);

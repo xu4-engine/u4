@@ -5,6 +5,7 @@
 #include "ttype.h"
 #include "u4file.h"
 #include "weapon.h"
+#include "names.h"
 #include "error.h"
 
 #define MASK_LOSE               0x0001
@@ -66,6 +67,8 @@ void weaponLoadInfoFromXml() {
 
         weapons[weapon].name = (char *)xmlGetProp(node, (const xmlChar *)"name");        
         weapons[weapon].abbr = (char *)xmlGetProp(node, (const xmlChar *)"abbr");
+        weapons[weapon].canready = (char *)xmlGetProp(node, (const xmlChar *)"canready");
+        weapons[weapon].cantready = (char *)xmlGetProp(node, (const xmlChar *)"cantready");
         weapons[weapon].range = atoi(xmlGetProp(node, (const xmlChar *)"range"));
         weapons[weapon].damage = atoi(xmlGetProp(node, (const xmlChar *)"damage"));
         weapons[weapon].hittile = HITFLASH_TILE;
@@ -199,4 +202,34 @@ int weaponLeavesTile(int weapon)
     weaponLoadInfoFromXml();
 
     return (weapons[weapon].mask & MASK_LEAVETILE) ? weapons[weapon].leavetile : 0;
+}
+
+/**
+ * Returns true if the class given can ready the weapon
+ */
+
+int weaponCanReady(int weapon, const char *className)
+{
+    char *klass;
+    int allCanReady = 1;    
+    int retval = 0;
+
+    klass = (char *)strlwr(strdup(className));
+    
+    // Load in XML if it hasn't been already
+    weaponLoadInfoFromXml();
+
+    if (weapons[weapon].canready)
+        allCanReady = 0;
+    
+    if (allCanReady)
+    {
+        if (!(weapons[weapon].cantready && strstr(weapons[weapon].cantready, klass)))
+            retval = 1;
+    }
+    else if (weapons[weapon].canready && strstr(weapons[weapon].canready, klass))
+        retval = 1;
+
+    free(klass);
+    return retval;
 }

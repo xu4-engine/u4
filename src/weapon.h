@@ -6,6 +6,8 @@
 typedef struct _Weapon {
     const char *name;
     const char *abbr;
+    const char *canready;
+    const char *cantready;
     int range;
     int damage;
     int hittile;
@@ -22,5 +24,6 @@ int weaponGetHitTile(int weapon);
 int weaponGetMissTile(int weapon);
 int weaponAlwaysHit(int weapon);
 int weaponLeavesTile(int weapon);
+int weaponCanReady(int weapon, const char *className);
 
 #endif

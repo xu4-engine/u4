@@ -1456,9 +1456,9 @@ int readyForPlayer2(int w, void *data) {
         screenMessage("None left!\n");
         gameFinishTurn();
         return 0;
-    }
+    }    
 
-    if (!playerCanReady(&(c->saveGame->players[player]), weapon)) {
+    if (!weaponCanReady(weapon, getClassName(c->saveGame->players[player].klass))) {
         screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), weaponGetName(weapon));
         gameFinishTurn();
         return 0;
@@ -1875,7 +1875,7 @@ int wearForPlayer2(int a, void *data) {
         return 0;
     }
 
-    if (!playerCanWear(&(c->saveGame->players[player]), armor)) {
+    if (!armorCanWear(armor, getClassName(c->saveGame->players[player].klass))) {
         screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), armorGetName(armor));
         gameFinishTurn();
         return 0;

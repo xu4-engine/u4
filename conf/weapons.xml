@@ -1,20 +1,26 @@
 <?xml version="1.0"?>
 <!-- $Id -->
 <weapons>
-    <weapon name="Hands" range="1" damage="8"/>
-	<weapon name="Staff" range="1" damage="16"/>
-	<weapon name="Dagger" range="11" damage="24" losewhenranged="true"/>
-	<weapon name="Sling" range="11" damage="32"/>
-	<weapon name="Mace" range="1" damage="40"/>
-	<weapon name="Axe" range="1" damage="48"/>
-	<weapon name="Sword" range="1" damage="64"/>
-	<weapon name="Bow" range="11" damage="40"/>
-	<weapon name="Crossbow" range="11" damage="56"/>
-	<weapon name="Oil" range="11" damage="64" lose="true" choosedistance="true" leavetile="fire" hittile="fire"/>
-	<weapon name="Halberd" range="1" damage="96"/>
-	<weapon name="Magic Axe" range="1" damage="96" magic="true" hittile="magic" misstile="magic"/>
-	<weapon name="Magic Sword" range="1" damage="128" magic="true" hittile="magic" misstile="magic"/>
-	<weapon name="Magic Bow" range="11" damage="80" magic="true" hittile="magic" misstile="magic"/>	
-	<weapon name="Magic Wand" range="11" damage="160" magic="true" hittile="magic" misstile="magic"/>	
-	<weapon name="Mystic Sword" range="1" damage="255" magic="true" hittile="magic" misstile="magic"/>
+    <weapon name="Hands" abbr="HND" range="1" damage="8"/>
+	<weapon name="Staff" abbr="STF" range="1" damage="16"/>
+	<weapon name="Dagger" abbr="DAG" range="11" damage="24" losewhenranged="true"/>
+	<weapon name="Sling" abbr="SLN" range="11" damage="32"/>
+	<weapon name="Mace" abbr="MAC" range="1" damage="40" cantready="mage"/>
+	<weapon name="Axe" abbr="AXE" range="1" damage="48" cantready="mage, shepherd, druid"/>
+	<weapon name="Sword" abbr="SWD" range="1" damage="64" cantready="mage, shepherd, druid"/>
+	<weapon name="Bow" abbr="BOW" range="11" damage="40" cantready="mage, shepherd"/>
+	<weapon name="Crossbow" abbr="XBO" range="11" damage="56" cantready="mage, shepherd"/>
+	<weapon name="Oil" abbr="OIL" range="11" damage="64" lose="true" choosedistance="true"
+			leavetile="fire" hittile="fire"/>
+	<weapon name="Halberd" abbr="HAL" range="1" damage="96" canready="fighter, tinker, paladin"/>
+	<weapon name="Magic Axe" abbr="+AX" range="1" damage="96" magic="true" hittile="magic"
+			misstile="magic" canready="tinker, paladin"/>
+	<weapon name="Magic Sword" abbr="+SW" range="1" damage="128" magic="true" hittile="magic"
+			misstile="magic" canready="fighter, tinker, paladin, ranger"/>
+	<weapon name="Magic Bow" abbr="+BO" range="11" damage="80" magic="true" hittile="magic"
+			misstile="magic" cantready="mage, fighter, shepherd"/>
+	<weapon name="Magic Wand" abbr="WND" range="11" damage="160" magic="true" hittile="magic"
+			misstile="magic" canready="mage, bard, druid"/>	
+	<weapon name="Mystic Sword" abbr="^SW" range="1" damage="255" magic="true" hittile="magic"
+			misstile="magic"/>
 </weapons>

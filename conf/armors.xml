@@ -3,10 +3,10 @@
 <armors>
     <armor name="Skin" defense="96"/>	
 	<armor name="Cloth" defense="128"/>	
-	<armor name="Leather" defense="144"/>	
-	<armor name="Chain Mail" defense="160"/>	
-	<armor name="Plate Mail" defense="176"/>
-	<armor name="Magic Chain" defense="192"/>	
-	<armor name="Magic Plate" defense="208"/>	
+	<armor name="Leather" defense="144" cantwear="mage, bard, druid, shepherd"/>	
+	<armor name="Chain Mail" defense="160" canwear="tinker, fighter, paladin"/>	
+	<armor name="Plate Mail" defense="176" canwear="tinker, fighter, paladin"/>
+	<armor name="Magic Chain" defense="192" canwear="tinker, fighter, paladin"/>	
+	<armor name="Magic Plate" defense="208" canwear="tinker, fighter, paladin"/>	
 	<armor name="Mystic Robe" defense="248"/>	
 </armors>

@@ -37,7 +37,9 @@ void armorLoadInfoFromXml() {
             xmlStrcmp(node->name, (const xmlChar *) "armor") != 0)
             continue;
 
-        armors[armor].name = (char *)xmlGetProp(node, (const xmlChar *)"name");        
+        armors[armor].name = (char *)xmlGetProp(node, (const xmlChar *)"name");
+        armors[armor].canwear = (char *)xmlGetProp(node, (const xmlChar *)"canwear");
+        armors[armor].cantwear = (char *)xmlGetProp(node, (const xmlChar *)"cantwear");
         armors[armor].defense = atoi(xmlGetProp(node, (const xmlChar *)"defense"));
         armors[armor].mask = 0;
 
@@ -75,4 +77,34 @@ int armorGetDefense(int armor)
     armorLoadInfoFromXml();
 
     return armors[armor].defense;
+}
+
+/**
+ * Returns true if the class given can wear the armor
+ */
+
+int armorCanWear(int armor, const char *className)
+{
+    char *klass;
+    int allCanWear = 1;
+    int retval = 0;
+
+    klass = (char *)strlwr(strdup(className));
+    
+    // Load in XML if it hasn't been already
+    armorLoadInfoFromXml();
+
+    if (armors[armor].canwear)
+        allCanWear = 0;
+    
+    if (allCanWear)
+    {
+        if (!(armors[armor].cantwear && strstr(armors[armor].cantwear, klass)))
+            retval = 1;
+    }
+    else if (armors[armor].canwear && strstr(armors[armor].canwear, klass))
+        retval = 1;
+
+    free(klass);
+    return retval;
 }
