@@ -19,6 +19,7 @@
 #include "stats.h"
 #include "vendor.h"
 #include "music.h"
+#include "player.h"
 
 char **hawkwindText;
 char **lbKeywords;
@@ -34,13 +35,15 @@ char **lbText;
 #define HW_BYE 52
 
 void personGetQuestion(const Person *p, char **question);
-void personGetQuantityResponse(Conversation *cnv, const char *response, char **reply);
 
 char *emptyGetIntro(Conversation *cnv);
 char *talkerGetIntro(Conversation *cnv);
 char *talkerGetResponse(Conversation *cnv, const char *inquiry);
+char *beggarGetResponse(Conversation *cnv, const char *inquiry);
 char *talkerGetQuestionResponse(Conversation *cnv, const char *inquiry);
 char *talkerGetPrompt(const Conversation *cnv);
+char *beggarGetPrompt(const Conversation *cnv);
+char *beggarGetQuantityResponse(Conversation *cnv, const char *response);
 char *lordBritishGetIntro(Conversation *cnv);
 char *lordBritishGetResponse(Conversation *cnv, const char *inquiry);
 char *lordBritishGetQuestionResponse(Conversation *cnv, const char *inquiry);
@@ -52,7 +55,7 @@ char *hawkwindGetPrompt(const Conversation *cnv);
 const PersonType personType[NPC_MAX] = {
     { &emptyGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL }, /* NPC_EMPTY */
     { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER_BEGGAR */
+    { &talkerGetIntro, &beggarGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, &beggarGetQuantityResponse, &beggarGetPrompt }, /* NPC_TALKER_BEGGAR */
     { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER_GUARD */
     { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER_COMPANION */
     { &vendorGetIntro, NULL, NULL, &vendorGetBuySellResponse, &vendorGetBuyResponse, NULL, &vendorGetQuantityResponse, &vendorGetPrompt }, /* NPC_VENDOR_WEAPONS */
@@ -221,8 +224,27 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
             cnv->state = CONV_ASK;
     }
 
+    else if (strncasecmp(inquiry, "give", 4) == 0) {
+        reply = concat(cnv->talker->pronoun, 
+                       " says: I do not need thy gold.  Keep it!",
+                       NULL);
+    }
+
     else
         reply = strdup("That I cannot\nhelp thee with.");
+
+    return reply;
+}
+
+char *beggarGetResponse(Conversation *cnv, const char *inquiry) {
+    char *reply;
+
+    if (strncasecmp(inquiry, "give", 4) == 0) {
+        reply = strdup("");
+        cnv->state = CONV_QUANTITY;
+    }
+    else
+        reply = talkerGetResponse(cnv, inquiry);
 
     return reply;
 }
@@ -255,15 +277,61 @@ char *talkerGetPrompt(const Conversation *cnv) {
     return prompt;
 }
 
+char *beggarGetPrompt(const Conversation *cnv) {
+    char *prompt;
+
+    if (cnv->state == CONV_QUANTITY)
+        prompt = strdup("How much? ");
+    else
+        prompt = talkerGetPrompt(cnv);
+
+    return prompt;
+}
+
+char *beggarGetQuantityResponse(Conversation *cnv, const char *response) {
+    char *reply;
+
+    cnv->quant = (int) strtol(response, NULL, 10);
+    cnv->state = CONV_TALK;
+
+    if (cnv->quant > 0) {
+        if (playerDonate(c->saveGame, cnv->quant)) {
+            reply = concat(cnv->talker->pronoun, 
+                           " says: Oh Thank thee! I shall never forget thy kindness!",
+                           NULL);
+            statsUpdate();
+        }
+        
+        else
+            reply = strdup("Thou hast not that much gold!\n");
+    }
+
+    return reply;
+}
+
 char *lordBritishGetIntro(Conversation *cnv) {
+    int i;
     const char *lbFmt = "Lord British\nsays:  Welcome\n%s and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n";
     char *intro;
 
-    intro = malloc(strlen(lbFmt) - 2 + strlen(c->saveGame->players[0].name) + 1);
-    sprintf(intro, lbFmt, c->saveGame->players[0].name);
-    cnv->state = CONV_TALK;
-
     lb_music();
+
+    for (i = 0; i < c->saveGame->members; i++) {
+        if (playerGetRealLevel(&c->saveGame->players[i]) < playerGetMaxLevel(&c->saveGame->players[i])) {
+            playerAdvanceLevel(&c->saveGame->players[i]);
+            /*screenMessage("%s Thou art now Level %d\n", c->saveGame->players[i].name, playerGetRealLevel(&c->saveGame->players[i]));*/
+            statsUpdate();
+        }
+    }
+
+    if (c->saveGame->lbintro) {
+        intro = malloc(strlen(lbFmt) - 2 + strlen(c->saveGame->players[0].name) + 1);
+        sprintf(intro, lbFmt, c->saveGame->players[0].name);
+    } else {
+        intro = strdup("Lord British rises and says: At long last!\n thou hast come!  We have waited such a long, long time...\n");
+        c->saveGame->lbintro = 1;
+    }
+    cnv->state = CONV_TALK;
 
     return intro;
 }
@@ -305,8 +373,10 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *inquiry) {
 char *lordBritishGetPrompt(const Conversation *cnv) {
     char *prompt;
 
-    if (cnv->state == CONV_ASK)
+    if (cnv->state == CONV_ASK) {
+        /* FIXME: art thou well? */
         personGetQuestion(cnv->talker, &prompt);
+    }
     else
         prompt = strdup("What else?\n");
 
@@ -315,6 +385,8 @@ char *lordBritishGetPrompt(const Conversation *cnv) {
 
 char *hawkwindGetIntro(Conversation *cnv) {
     char *intro;
+
+    playerAdjustKarma(c->saveGame, KA_HAWKWIND);
 
     intro = concat(hawkwindText[HW_WELCOME], 
                    c->saveGame->players[0].name,
