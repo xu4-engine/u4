@@ -2,6 +2,8 @@
  * $Id$
  */
 
+#include <stdlib.h>
+
 #include "dungeon.h"
 
 #include "annotation.h"
