@@ -40,17 +40,17 @@
 #define BLACK_TILE 0x7e
 
 typedef enum {
-    FAST = 0x00,
-    SLOW = 0x02,
-    VSLOW = 0x04,
-    VVSLOW = 0x06
+    FAST,
+    SLOW,
+    VSLOW,
+    VVSLOW
 } TileSpeed;
 
 typedef enum {
-    EFFECT_NONE = 0x00,
-    EFFECT_FIRE = 0x08,
-    EFFECT_SLEEP = 0x10,
-    EFFECT_POISON = 0x18
+    EFFECT_NONE,
+    EFFECT_FIRE,
+    EFFECT_SLEEP,
+    EFFECT_POISON
 } TileEffect;
 
 typedef enum {
