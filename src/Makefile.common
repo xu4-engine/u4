@@ -36,6 +36,7 @@ SRCS=\
         portal.c \
         rle.c \
         savegame.c \
+        scale.c \
         screen.c \
         screen_$(UI).c \
         settings.c \
