@@ -26,10 +26,10 @@ static const Monster monsters[] = {
 
     { GUARD_TILE,       UNKNOWN,       "Guard",        13 },
     { VILLAGER_TILE,    UNKNOWN,       "Villager",     13 },
+    { SINGINGBARD_TILE, UNKNOWN,       "Bard",         9 },
     { JESTER_TILE,      UNKNOWN,       "Jester",       9 },
     { BEGGAR_TILE,      UNKNOWN,       "Beggar",       13 },
     { CHILD_TILE,       UNKNOWN,       "Child",        10 },
-    { BULL_TILE,        UNKNOWN,       "Bull",         11 },
     { BULL_TILE,        UNKNOWN,       "Bull",         11 },
     { LORDBRITISH_TILE, UNKNOWN,       "Lord British", UNKNOWN },
 
