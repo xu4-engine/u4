@@ -497,6 +497,7 @@ int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const ch
             p += ((*surface)->pitch) - (width * scale);
         }
     }
+    free(data);
 
     u4fclose(in);
 
