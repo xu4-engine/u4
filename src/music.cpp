@@ -72,7 +72,7 @@ int musicLoad(Music music) {
             return 1;
     }
 
-    string pathname(u4find_music(musicFilenames[music].c_str()));
+    string pathname(u4find_music(musicFilenames[music]));
     if (!pathname.empty()) {
         
         if (playing) {

@@ -56,7 +56,7 @@ void soundPlay(Sound sound, bool onlyOnce) {
         return;
 
     if (soundChunk[sound] == NULL) {
-        string pathname(u4find_sound(soundFilenames[sound].c_str()));
+        string pathname(u4find_sound(soundFilenames[sound]));
         if (!pathname.empty()) {
             soundChunk[sound] = Mix_LoadWAV(pathname.c_str());
             if (!soundChunk[sound]) {
