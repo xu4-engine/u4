@@ -25,6 +25,7 @@ Context *c;
 
 extern Map world_map;
 int verbose = 0;
+int quit = 0;
 
 int main(int argc, char *argv[]) {
     unsigned int i;
@@ -61,6 +62,9 @@ int main(int argc, char *argv[]) {
     eventHandlerRemoveTimerCallback(&introTimer);
     eventHandlerPopKeyHandler();
     introDelete();
+
+    if (quit)
+        return 0;
 
     /* load in the maps */
     if (!initializeMaps()) {
@@ -114,6 +118,7 @@ int main(int argc, char *argv[]) {
     eventHandlerAddTimerCallback(&gameTimer);
     eventHandlerPushKeyHandler(&gameBaseKeyHandler);
     eventHandlerMain(&gameUpdateScreen);
+
     eventHandlerRemoveTimerCallback(&gameTimer);
     eventHandlerPopKeyHandler();
 
