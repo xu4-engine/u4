@@ -717,3 +717,37 @@ void screenScrollMessageArea() {
 void screenForceRedraw() {
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
+
+void screenAnimateIntro(int frame) {
+    SDL_Rect src, dest;
+
+    if (frame == 0) {
+        src.x = 0 * scale;
+        src.y = 152 * scale;
+    } else if (frame == 1) {
+        src.x = 24 * scale;
+        src.y = 152 * scale;
+    } else
+        assert(0);
+        
+    src.w = 24 * scale;
+    src.h = 24 * scale;
+
+    dest.x = 72 * scale;
+    dest.y = 68 * scale;
+    dest.w = 24 * scale;
+    dest.h = 24 * scale;
+
+    SDL_BlitSurface(bkgds[BKGD_TREE], &src, screen, &dest);
+}
+
+void screenEraseIntroText() {
+    SDL_Rect dest;
+
+    dest.x = 0 * scale;
+    dest.y = 152 * scale;
+    dest.w = 320 * scale;
+    dest.h = 48 * scale;
+
+    SDL_FillRect(screen, &dest, 0);
+}

@@ -27,6 +27,8 @@ void screenMessage(char *fmt, ...);
 void screenScrollMessageArea(void);
 void screenUpdate(void);
 void screenForceRedraw(void);
+void screenAnimateIntro(int frame);
+void screenEraseIntroText();
 void screenCycle(void);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);
