@@ -15,7 +15,7 @@ typedef enum {
     CTX_COMBAT      = 0x0002,
     CTX_CITY        = 0x0004,
     CTX_DUNGEON     = 0x0008,
-    CTX_ALTAR_ROOM  = 0x0010  /* FIXME: implement */
+    CTX_ALTAR_ROOM  = 0x0010
 } LocationContext;
 
 #define CTX_ANY             (0xffff)
