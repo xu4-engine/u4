@@ -81,22 +81,24 @@ static const char * const graphics_paths[] = {
 int u4isUpgradeInstalled(void) {
     U4FILE *u4f = NULL;
     long int filelength;
+    int result = 0;
 
     /* FIXME: Is there a better way to determine this? */
     u4f = u4fopen("ega.drv");
-    if (!u4f)
-        return 0;
+    if (u4f) {
 
-    filelength = u4flength(u4f);
-    u4fclose(u4f);
+        filelength = u4flength(u4f);
+        u4fclose(u4f);
 
-    /* see if (ega.drv > 5k).  If so, the upgrade is installed */
-    if (filelength > (5 * 1024))
-        return 1;
-    else 
-        return 0;
+        /* see if (ega.drv > 5k).  If so, the upgrade is installed */
+        if (filelength > (5 * 1024))
+            result = 1;
+    }
 
-    return 0;
+    if (verbose)
+        printf("u4isUpgradeInstalled %d\n", result);
+
+    return result;
 }
 
 /**
