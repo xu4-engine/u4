@@ -32,6 +32,7 @@ int openAtCoord(int x, int y);
 int readyForPlayer(int player);
 int readyForPlayer2(int weapon, void *data);
 int talkAtCoord(int x, int y);
+int talkHandleBuffer(const char *message);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 
@@ -39,20 +40,6 @@ typedef struct TimerCallbackNode {
     void (*callback)();
     struct TimerCallbackNode *next;
 } TimerCallbackNode;
-
-typedef struct AlphaActionInfo {
-    char lastValidLetter;
-    int (*handleAlpha)(int, void *);
-    const char *prompt;
-    void *data;
-} AlphaActionInfo;
-
-typedef struct DirectedActionInfo {
-    int (*handleAtCoord)(int, int);
-    int range;
-    int (*blockedPredicate)(unsigned char tile);
-    const char *failedMessage;
-} DirectedActionInfo;
 
 TimerCallbackNode *timerCallbackHead = NULL;
 KeyHandlerNode *keyHandlerHead = NULL;
@@ -235,6 +222,7 @@ int keyHandlerNormal(int key, void *data) {
             new->saveGame->dngy = new->parent->saveGame->y;
             new->saveGame->x = new->map->startx;
             new->saveGame->y = new->map->starty;
+            new->col = new->parent->col;
             new->line = new->parent->line;
             new->statsItem = new->parent->statsItem;
             new->moonPhase = new->parent->moonPhase;
@@ -463,60 +451,47 @@ int keyHandlerGetDirection(int key, void *data) {
 }
 
 /**
- * Handles key presses when a conversation is active.  The keystrokes
- * are buffered up into a word rather than invoking the usual
- * commands.
+ * Handles key presses when a buffer is being read, such as when a
+ * conversation is active.  The keystrokes are buffered up into a word
+ * rather than invoking the usual commands.
  */
-int keyHandlerTalking(int key, void *data) {
+int keyHandlerReadBuffer(int key, void *data) {
+    ReadBufferActionInfo *info = (ReadBufferActionInfo *) data;
     int valid = 1;
 
-    if ((key >= 'a' && key <= 'z') || key == ' ') {
+    if ((key >= 'a' && key <= 'z') || 
+        (key >= 'A' && key <= 'Z') ||
+        key == ' ') {
         int len;
 
-        len = strlen(c->conversation.buffer);
-        if (len < CONV_BUFFERLEN - 1) {
-            screenMessage("%c", key);
-            c->conversation.buffer[len] = key;
-            c->conversation.buffer[len + 1] = '\0';
+        len = strlen(info->buffer);
+        if (len < info->bufferLen - 1) {
+            screenDisableCursor();
+            screenTextAt(info->screenX + len, info->screenY, "%c", key);
+            screenSetCursorPos(info->screenX + len + 1, info->screenY);
+            screenEnableCursor();
+            info->buffer[len] = key;
+            info->buffer[len + 1] = '\0';
         }
 
     } else if (key == U4_BACKSPACE) {
         int len;
 
-        len = strlen(c->conversation.buffer);
-        c->conversation.buffer[len - 1] = '\0';
-        c->col = 0;
-        screenMessage("%s ", c->conversation.buffer);
+
+        len = strlen(info->buffer);
+        if (len > 0) {
+            screenDisableCursor();
+            screenTextAt(info->screenX + len - 1, info->screenY, " ");
+            screenSetCursorPos(info->screenX + len - 1, info->screenY);
+            screenEnableCursor();
+            info->buffer[len - 1] = '\0';
+        }
 
     } else if (key == '\n' || key == '\r') {
-        int done;
-        char *reply, *prompt;
-        int askq;
-
-        screenMessage("\n");
-
-        if (c->conversation.question)
-            done = personGetQuestionResponse(c->conversation.talker, c->conversation.buffer, &reply, &askq);
+        if ((*info->handleBuffer)(info->buffer))
+            free(info);
         else
-            done = personGetResponse(c->conversation.talker, c->conversation.buffer, &reply, &askq);
-        screenMessage("\n%s\n", reply);
-        free(reply);
-        
-        c->conversation.question = askq;
-        c->conversation.buffer[0] = '\0';
-
-        if (done) {
-            eventHandlerPopKeyHandler();
-            screenMessage("\020");
-        } else if (askq) {
-            personGetQuestion(c->conversation.talker, &prompt);
-            screenMessage("%s", prompt);
-            free(prompt);
-        } else {
-            personGetPrompt(c->conversation.talker, &prompt);
-            screenMessage("\n%s\n", prompt);
-            free(prompt);
-        }
+            info->screenX -= strlen(info->buffer);
 
     } else {
         valid = 0;
@@ -808,6 +783,7 @@ int openAtCoord(int x, int y) {
 int talkAtCoord(int x, int y) {
     const Person *talker;
     char *intro;
+    ReadBufferActionInfo *info;
 
     if (x == -1 && y == -1)
         return 0;
@@ -821,11 +797,57 @@ int talkAtCoord(int x, int y) {
     c->conversation.buffer[0] = '\0';
     
     personGetIntroduction(c->conversation.talker, &intro);
-    screenMessage("\n\n%s", intro);
+    screenMessage("\n\n%s\n", intro);
     free(intro);
-    eventHandlerPushKeyHandler(&keyHandlerTalking);
+
+    info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+    info->buffer = c->conversation.buffer;
+    info->bufferLen = CONV_BUFFERLEN;
+    info->handleBuffer = &talkHandleBuffer;
+    info->screenX = TEXT_AREA_X + c->col;
+    info->screenY = TEXT_AREA_Y + c->line;
+
+    eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
 
     return 1;
+}
+
+/**
+ * Handles a query while talking to an NPC.
+ */
+int talkHandleBuffer(const char *message) {
+    int done;
+    char *reply, *prompt;
+    int askq;
+
+    screenMessage("\n");
+
+    if (c->conversation.question)
+        done = personGetQuestionResponse(c->conversation.talker, message, &reply, &askq);
+    else
+        done = personGetResponse(c->conversation.talker, message, &reply, &askq);
+
+    screenMessage("\n%s\n", reply);
+    free(reply);
+        
+    c->conversation.question = askq;
+    c->conversation.buffer[0] = '\0';
+
+    if (done) {
+        eventHandlerPopKeyHandler();
+        screenMessage("\020");
+        return 1;
+    } else if (askq) {
+        personGetQuestion(c->conversation.talker, &prompt);
+        screenMessage("%s", prompt);
+        free(prompt);
+    } else {
+        personGetPrompt(c->conversation.talker, &prompt);
+        screenMessage("\n%s\n", prompt);
+        free(prompt);
+    }
+
+    return 0;
 }
 
 /**
