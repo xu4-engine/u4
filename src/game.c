@@ -2607,8 +2607,8 @@ int moveAvatar(Direction dir, int userEvent) {
     Object *destObj;
 
     /* Check to see if we're on the balloon */
-    if (c->transportContext == TRANSPORT_BALLOON) {
-        if (!settings->filterMoveMessages && userEvent)
+    if (c->transportContext == TRANSPORT_BALLOON && userEvent) {
+        if (!settings->filterMoveMessages)
             screenMessage("Drift Only!\n");
         return 0;
     }            
