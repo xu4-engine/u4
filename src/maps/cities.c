@@ -211,7 +211,7 @@ City paws_city  = {
     "Paws", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    { 0, 0, 27, 31, 0, 28, 0, 0, 0, 18, 0, 0 }, /* person_types */
     "paws.tlk", /* tlk_fname */
     &paws_map /* map */
 };
