@@ -21,6 +21,7 @@ typedef struct KeyHandlerNode {
 } KeyHandlerNode;
 
 void eventHandlerMain();
+void eventTimer();
 void eventHandlerPushKeyHandler(KeyHandler kh);
 void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data);
 void eventHandlerPopKeyHandler();

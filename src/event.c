@@ -49,6 +49,17 @@ typedef struct DirectedActionInfo {
 
 
 /**
+ * This function is called every quarter second.
+ */
+void eventTimer() {
+    screenAnimate();
+
+    if (++c->moonPhase >= (MOON_SECONDS_PER_PHASE * 4 * MOON_PHASES))
+        c->moonPhase = 0;
+}
+
+
+/**
  * Push a key handler onto the top of the keyhandler stack.
  */
 void eventHandlerPushKeyHandler(KeyHandler kh) {
@@ -191,12 +202,16 @@ int keyHandlerNormal(int key, void *data) {
 
             Context *new = (Context *) malloc(sizeof(Context));
             new->parent = c;
-            new->saveGame = (SaveGame *) memcpy(malloc(sizeof(SaveGame)), c->saveGame, sizeof(SaveGame));
+            new->saveGame = c->saveGame;
             new->map = portal->destination;
             new->annotation = NULL;
+            new->saveGame->dngx = new->parent->saveGame->x;
+            new->saveGame->dngy = new->parent->saveGame->y;
             new->saveGame->x = new->map->startx;
             new->saveGame->y = new->map->starty;
             new->line = new->parent->line;
+            new->statsItem = new->parent->statsItem;
+            new->moonPhase = new->parent->moonPhase;
             c = new;
 
             screenMessage("Enter towne!\n\n%s\n\n\020", c->map->name);
@@ -252,7 +267,7 @@ int keyHandlerNormal(int key, void *data) {
         info = (DirectedActionInfo *) malloc(sizeof(DirectedActionInfo));
         info->handleAtCoord = &talkAtCoord;
         info->range = 2;
-        info->blockedPredicate = &canTalkOver;
+        info->blockedPredicate = &tileCanTalkOver;
         info->failedMessage = "Funny, no\nresponse!";
         eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, info);
         screenMessage("Talk\nDir: ");
@@ -448,8 +463,10 @@ int keyHandlerTalking(int key, void *data) {
 
         if (askq)
             screenMessage("%s\n\nYou say: ", c->conversation.talker->question);
-        else if (done)
+        else if (done) {
             eventHandlerPopKeyHandler();
+            screenMessage("\020");
+        }
         else
             screenMessage("\nYour Interest:\n");
 
@@ -589,6 +606,10 @@ int jimmyAtCoord(int x, int y) {
     return 1;
 }
 
+/**
+ * Readies a weapon for the given player.  Prompts the use for a
+ * weapon.
+ */
 int readyForPlayer(int player) {
     AlphaActionInfo *info;
 
@@ -673,6 +694,9 @@ int talkAtCoord(int x, int y) {
     return 1;
 }
 
+/**
+ * Changes armor for the given player.  Prompts the use for the armor.
+ */
 int wearForPlayer(int player) {
     AlphaActionInfo *info;
 
@@ -740,9 +764,11 @@ void moveAvatar(int dx, int dy) {
 	case BORDER_EXIT2PARENT:
 	    if (c->parent != NULL) {
 		Context *t = c;
+                c->parent->saveGame->x = c->saveGame->dngx;
+                c->parent->saveGame->y = c->saveGame->dngy;
                 c->parent->line = c->line;
+                c->parent->moonPhase = c->moonPhase;
 		c = c->parent;
-                free(t->saveGame);
 		free(t);
 	    }
 	    return;

@@ -11,8 +11,22 @@
 #include "context.h"
 #include "annotation.h"
 
+Uint32 eventCallback(Uint32 interval, void *param) {
+    SDL_Event event;
+
+    event.type = SDL_USEREVENT;
+    event.user.code = 0;
+    event.user.data1 = NULL;
+    event.user.data2 = NULL;
+    SDL_PushEvent(&event);
+
+    return interval;
+}
+
 void eventHandlerMain() {
     eventHandlerPushKeyHandler(&keyHandlerNormal);
+
+    SDL_AddTimer(250, &eventCallback, NULL);
 
     screenMessage("\020");
     while (1) {
@@ -51,9 +65,14 @@ void eventHandlerMain() {
             }
             break;
         }
+        case SDL_USEREVENT:
+            eventTimer();
+            break;
+
         case SDL_QUIT:
             exit(0);
             break;
         }
     }
 }
+
