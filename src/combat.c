@@ -305,7 +305,7 @@ void combatFinishTurn() {
                  */
             
                 /* FIXME: apply tile effects to monsters */
-                combatMoveMonsters();
+                combatMoveMonsters();                
 
                 combatInfo.focus = focus = 0;
                 if (combatIsLost()) {
@@ -848,7 +848,11 @@ void combatMoveMonsters() {
                     /* save the original status for the party member, we'll need it later! */
                     if (c->saveGame->players[i].status != STAT_SLEEPING)
                         combatInfo.party_status[i] = c->saveGame->players[i].status;
-                    playerApplySleepSpell(&c->saveGame->players[i]);
+
+                    playerApplySleepSpell(&c->saveGame->players[i]);                
+                    /* display a sleeping person if they were put to sleep */
+                    if (c->saveGame->players[i].status == STAT_SLEEPING)
+                        combatInfo.party[i]->tile = CORPSE_TILE;                
                 }
             }
 
