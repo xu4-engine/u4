@@ -13,7 +13,7 @@
 /**
  * MenuItem class
  */
-MenuItem::MenuItem(class Menu *m, MenuId i, string t, short xpos, short ypos, ActivateMenuItem af, ActivateAction ao, int sc) :
+MenuItem::MenuItem(class Menu *m, MenuId i, string t, short xpos, short ypos, int sc) :
     menu(m),
     id(i),
     x(xpos),
@@ -22,21 +22,9 @@ MenuItem::MenuItem(class Menu *m, MenuId i, string t, short xpos, short ypos, Ac
     highlighted(false),
     selected(false),
     visible(true),
-    activateMenuItem(af),
-    activateOn(ao),
     closesMenu(false)
 {    
     addShortcutKey(sc);
-}
-
-/**
- * Notifies the containing menu that the menu item has changed
- */
-void MenuItem::notifyOfChange(string arg) {
-    if (menu) {
-        menu->setChanged();
-        menu->notifyObservers(arg);
-    }
 }
 
 MenuId MenuItem::getId() const                      { return id; }
@@ -46,93 +34,52 @@ string MenuItem::getText() const                    { return text; }
 bool MenuItem::isHighlighted() const                { return highlighted; }
 bool MenuItem::isSelected() const                   { return selected; }
 bool MenuItem::isVisible() const                    { return visible; }
-ActivateMenuItem MenuItem::getActivateFunc() const  { return activateMenuItem; }
-ActivateAction MenuItem::getActivateAction() const  { return activateOn; }
 const set<int> &MenuItem::getShortcutKeys() const   { return shortcutKeys; }
 bool MenuItem::getClosesMenu() const                { return closesMenu; }
 
 void MenuItem::setId(MenuId i) {
-    if (id != i) {
-        id = i;
-        notifyOfChange("MenuItem::setId");
-    }
+    id = i;
 }
 
 void MenuItem::setX(int xpos) {
-    if (xpos != x) {
-        x = xpos;
-        notifyOfChange("MenuItem::setX");
-    }
+    x = xpos;
 }
 
 void MenuItem::setY(int ypos) {
-    if (ypos != y) {
-        y = ypos;
-        notifyOfChange("MenuItem::setY");
-    }
+    y = ypos;
 }
 
 void MenuItem::setText(string t) {
     text = t;
-    notifyOfChange("MenuItem::setText");
 }
 
 void MenuItem::setHighlighted(bool h) {
-    if (h != highlighted) {
-        highlighted = h;
-        notifyOfChange("MenuItem::setHighlighted");
-    }
+    highlighted = h;
 }
 
 void MenuItem::setSelected(bool s) {
-    if (s != selected) {
-        selected = s;
-        notifyOfChange("MenuItem::setSelected");
-    }
+    selected = s;
 }
 
 void MenuItem::setVisible(bool v) {
-    if (v != visible) {
-        visible = v;
-        notifyOfChange("MenuItem::setVisible");
-    }
-}
-
-void MenuItem::setActivateFunc(ActivateMenuItem ami) {
-    if (ami != activateMenuItem) {
-        activateMenuItem = ami;
-        notifyOfChange("MenuItem::setActivateFunc");
-    }
-}
-
-void MenuItem::setActivateAction(ActivateAction aa) {
-    if (aa != activateOn) {
-        activateOn = aa;
-        notifyOfChange("MenuItem::setActivateAction");
-    }
+    visible = v;
 }
 
 void MenuItem::addShortcutKey(int sc) {
     shortcutKeys.insert(sc);
-    notifyOfChange("MenuItem::addShortcutKey");
 }
 
 void MenuItem::setClosesMenu(bool closesMenu) {
-    if (closesMenu != this->closesMenu) {
-        this->closesMenu = closesMenu;
-        notifyOfChange("MenuItem::setClosesMenu");
-    }
+    this->closesMenu = closesMenu;
 }
 
 /**
  * Adds an item to the menu list and returns the menu
  */
-void Menu::add(MenuId id, string text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn, int sc) {
-    MenuItem menuItem(this, id, text, x, y, activate, activateOn, sc);
+void Menu::add(MenuId id, string text, short x, short y, int sc) {
+    MenuItem menuItem(this, id, text, x, y, sc);
 
     items.push_back(menuItem);
-    setChanged();
-    notifyObservers("Menu::add");
 }
 
 void Menu::addShortcutKey(MenuId id, int shortcutKey) {
@@ -166,14 +113,14 @@ Menu::MenuItemList::iterator Menu::getCurrent() {
 void Menu::setCurrent(MenuItemList::iterator i) {
     selected = i;
     highlight(&(*selected));
+
+    MenuEvent event(this, MenuEvent::SELECT);
     setChanged();
-    notifyObservers("Menu::setCurrent");
+    notifyObservers(event);
 }
 
 void Menu::setCurrent(MenuId id) {
-    selected = getById(id);
-    setChanged();
-    notifyObservers("Menu::setCurrent");
+    setCurrent(getById(id));
 }
 
 /**
@@ -217,39 +164,36 @@ bool Menu::isVisible() {
  * Sets the selected iterator to the next visible menu item and highlights it
  */
 void Menu::next() {
-    if (isVisible()) {        
-        if (++selected == items.end())
-            selected = items.begin();
-        while (!selected->isVisible()) {
-            if (++selected == items.end())
-                selected = items.begin();            
+    MenuItemList::iterator i = selected;
+    if (isVisible()) {
+        if (++i == items.end())
+            i = items.begin();
+        while (!i->isVisible()) {
+            if (++i == items.end())
+                i = items.begin();            
         }
     }
 
-    highlight(&(*selected));
-    setChanged();
-    notifyObservers("Menu::next");
+    setCurrent(i);
 }
 
 /**
  * Sets the selected iterator to the previous visible menu item and highlights it
  */
 void Menu::prev() {
+    MenuItemList::iterator i = selected;
     if (isVisible()) {        
-        if (selected == items.begin())
-            selected = items.end();
-        
-        selected--;
-        while (!selected->isVisible()) {
-            if (selected == items.begin())
-                selected = items.end();
-            selected--;
+        if (i == items.begin())
+            i = items.end();
+        i--;
+        while (!i->isVisible()) {
+            if (i == items.begin())
+                i = items.end();
+            i--;
         }
     }
 
-    highlight(&(*selected));
-    setChanged();
-    notifyObservers("Menu::prev");
+    setCurrent(i);
 }
 
 /**
@@ -260,9 +204,6 @@ void Menu::highlight(MenuItem *item) {
         current->highlighted = false;
     if (item)
         item->highlighted = true;
-    
-    setChanged();
-    notifyObservers("Menu::highlight");
 }
 
 /**
@@ -315,8 +256,9 @@ void Menu::reset(bool highlightFirst) {
     if (highlightFirst)
         highlight(&(*selected));  
 
+    MenuEvent event(this, MenuEvent::RESET);
     setChanged();
-    notifyObservers("Menu::reset");
+    notifyObservers(event);
 }
 
 /**
@@ -350,7 +292,7 @@ MenuItem *Menu::getItemById(MenuId id) {
  * the menu item given by 'menu' and highlights the new menu
  * item that was found for 'id'.
  */
-void Menu::activateItem(MenuId id, ActivateAction action) {    
+void Menu::activateItem(MenuId id, MenuEvent::Type action) {
     MenuItem *mi;
     
     /* find the given menu item by id */
@@ -363,22 +305,19 @@ void Menu::activateItem(MenuId id, ActivateAction action) {
         errorFatal("Error: Unable to find menu item with id '%d'", id);
 
     /* make sure the action given will activate the menu item */
-    if ((mi->activateOn & action) && mi->activateMenuItem)
-        (*mi->activateMenuItem)(mi, action);    
-
     if (mi->getClosesMenu())
         setClosed(true);
 
+    MenuEvent event(this, (MenuEvent::Type) action, mi);
     setChanged();
-    notifyObservers("Menu::activateItem");
-
+    notifyObservers(event);
 }
 
 /**
  * Activates a menu item by it's shortcut key.  True is returned if a
  * menu item get activated, false otherwise.
  */
-bool Menu::activateItemByShortcut(int key, ActivateAction action) {
+bool Menu::activateItemByShortcut(int key, MenuEvent::Type action) {
     for (MenuItemList::iterator i = items.begin(); i != items.end(); i++) {
         const set<int> &shortcuts = i->getShortcutKeys();
         if (shortcuts.find(key) != shortcuts.end()) {
@@ -422,20 +361,17 @@ bool MenuController::keyPressed(int key) {
     case U4_RIGHT:
     case U4_ENTER:
         {
-            MenuItem *menuItem = &(*menu->getCurrent());
-            ActivateAction action = ACTIVATE_NORMAL;
-            
-            if (menuItem->getActivateFunc()) {
-                if (key == U4_LEFT)
-                    action = ACTIVATE_DECREMENT;
-                else if (key == U4_RIGHT)
-                    action = ACTIVATE_INCREMENT;
-                menu->activateItem(-1, action);
-            }
+            MenuEvent::Type action = MenuEvent::ACTIVATE;
+
+            if (key == U4_LEFT)
+                action = MenuEvent::DECREMENT;
+            else if (key == U4_RIGHT)
+                action = MenuEvent::INCREMENT;
+            menu->activateItem(-1, action);
         }
         break;
     default:
-        handled = menu->activateItemByShortcut(key, ACTIVATE_NORMAL);
+        handled = menu->activateItemByShortcut(key, MenuEvent::ACTIVATE);
     }    
 
     screenHideCursor();

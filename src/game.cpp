@@ -337,14 +337,14 @@ void gameInit() {
     TRACE_LOCAL(gameDbg, "Settings up reagent menu.");
 
     /* reagents menu */    
-    spellMixMenu.add(0, getReagentName((Reagent)0), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu.add(1, getReagentName((Reagent)1), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu.add(2, getReagentName((Reagent)2), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu.add(3, getReagentName((Reagent)3), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu.add(4, getReagentName((Reagent)4), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu.add(5, getReagentName((Reagent)5), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu.add(6, getReagentName((Reagent)6), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
-    spellMixMenu.add(7, getReagentName((Reagent)7), STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu.add(0, getReagentName((Reagent)0), STATS_AREA_X+2, 0);
+    spellMixMenu.add(1, getReagentName((Reagent)1), STATS_AREA_X+2, 0);
+    spellMixMenu.add(2, getReagentName((Reagent)2), STATS_AREA_X+2, 0);
+    spellMixMenu.add(3, getReagentName((Reagent)3), STATS_AREA_X+2, 0);
+    spellMixMenu.add(4, getReagentName((Reagent)4), STATS_AREA_X+2, 0);
+    spellMixMenu.add(5, getReagentName((Reagent)5), STATS_AREA_X+2, 0);
+    spellMixMenu.add(6, getReagentName((Reagent)6), STATS_AREA_X+2, 0);
+    spellMixMenu.add(7, getReagentName((Reagent)7), STATS_AREA_X+2, 0);
     gameResetSpellMixing();
 
     eventHandler->pushMouseAreaSet(mouseAreas); 
@@ -3180,12 +3180,14 @@ void gameTimer(void *data) {
         /*
          * force pass if no commands within last 20 seconds
          */
-        KeyHandler *keyHandler = eventHandler->getKeyHandler();
-        if (keyHandler != NULL && (*keyHandler == &gameBaseKeyHandler || eventHandler->getController() == c->combat) &&
+        Controller *controller = eventHandler->getController();
+        KeyHandlerController *keyHandlerController = dynamic_cast<KeyHandlerController *>(controller);
+        bool baseKeyHandlerActive = (keyHandlerController != NULL) && (*keyHandlerController->getKeyHandler()) == &gameBaseKeyHandler;
+        if (controller != NULL && (baseKeyHandlerActive || eventHandler->getController() == c->combat) &&
              gameTimeSinceLastCommand() > 20) {
          
             /* pass the turn, and redraw the text area so the prompt is shown */
-            keyHandler->handle(U4_SPACE);
+            controller->keyPressed(U4_SPACE);
             screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
         }
     }

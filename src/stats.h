@@ -10,13 +10,14 @@
 #include "observer.h"
 
 struct SaveGame;
+class MenuEvent;
 
 #define STATS_AREA_WIDTH 15
 #define STATS_AREA_HEIGHT 8
 #define STATS_AREA_X TEXT_AREA_X
 #define STATS_AREA_Y 1
 
-typedef enum {
+enum StatsView {
     STATS_PARTY_OVERVIEW,
     STATS_CHAR1,
     STATS_CHAR2,
@@ -32,9 +33,9 @@ typedef enum {
     STATS_ITEMS,
     STATS_REAGENTS,
     STATS_MIXTURES
-} StatsView;
+};
 
-class StatsArea : public Observer<std::string>, public Observable<std::string> {
+class StatsArea : public Observer<std::string>, public Observer<MenuEvent &>, public Observable<std::string> {
 public:
     StatsArea();
 
@@ -43,6 +44,7 @@ public:
     void prevItem();
     void nextItem();
     virtual void update(Observable<std::string> *o = NULL, std::string arg = "");
+    virtual void update(Observable<MenuEvent &> *o, MenuEvent &event);
     void highlightPlayer(int player);
     void redraw();
     void showPartyView(int player = -1);    

@@ -137,6 +137,11 @@ void StatsArea::update(Observable<string> *o, string arg) {
     redraw();
 }
 
+void StatsArea::update(Observable<MenuEvent &> *o, MenuEvent &event) {
+    update();
+}
+
+
 void StatsArea::highlightPlayer(int player) {
     ASSERT(player < c->party->size(), "player number out of range: %d", player);
     screenInvertRect(STATS_AREA_X * CHAR_WIDTH, (STATS_AREA_Y + player) * CHAR_HEIGHT, 

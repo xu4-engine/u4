@@ -15,18 +15,36 @@
 using std::string;
 using std::set;
 
-typedef enum {
-    ACTIVATE_NORMAL     = 0x1,
-    ACTIVATE_INCREMENT  = 0x2,
-    ACTIVATE_DECREMENT  = 0x4
-} ActivateAction;
-
-#define ACTIVATE_ANY    (ActivateAction)(0xFFFF)
-
+class Menu;
 class MenuItem;
 
 typedef short MenuId;
-typedef void (*ActivateMenuItem)(MenuItem*, ActivateAction);
+
+class MenuEvent {
+public:
+    enum Type {
+        ACTIVATE,
+        INCREMENT,
+        DECREMENT,
+        SELECT,
+        RESET
+    };
+
+    MenuEvent(const Menu *menu, Type type, const MenuItem *item = NULL) {
+        this->menu = menu;
+        this->type = type;
+        this->item = item;
+    }
+
+    const Menu *getMenu() { return menu; }
+    Type getType() { return type; }
+    const MenuItem *getMenuItem() { return item; }
+
+private:
+    const Menu *menu;
+    Type type;
+    const MenuItem *item;
+};
 
 class MenuItem {
     /* we want our menu to be able to modify us
@@ -35,9 +53,7 @@ class MenuItem {
     friend class Menu;
 
 public:
-    MenuItem(class Menu *m, MenuId id, string text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn, int shortcutKey = 0);
-
-    void notifyOfChange(string arg);
+    MenuItem(class Menu *m, MenuId id, string text, short x, short y, int shortcutKey = 0);
 
     // Accessor Methods
     MenuId getId() const;
@@ -47,8 +63,6 @@ public:
     bool isHighlighted() const;
     bool isSelected() const;
     bool isVisible() const;
-    ActivateMenuItem getActivateFunc() const;
-    ActivateAction getActivateAction() const;
     const set<int> &getShortcutKeys() const;
     bool getClosesMenu() const;
 
@@ -59,8 +73,6 @@ public:
     void setHighlighted(bool h = true);
     void setSelected(bool s = true);
     void setVisible(bool v = true);
-    void setActivateFunc(ActivateMenuItem ami);
-    void setActivateAction(ActivateAction aa);
     void addShortcutKey(int shortcutKey);
     void setClosesMenu(bool closesMenu);
     
@@ -72,8 +84,6 @@ private:
     bool highlighted;
     bool selected;
     bool visible;    
-    ActivateMenuItem activateMenuItem;
-    ActivateAction activateOn;
     set<int> shortcutKeys;
     bool closesMenu;
 };
@@ -81,15 +91,14 @@ private:
 /**
  * Menu class definition
  */
-class Menu : public Observable<string> {
-    friend class MenuItem;
+class Menu : public Observable<MenuEvent &> {
 public:
     typedef std::list<MenuItem> MenuItemList;
 
 public:
     Menu() : closed(false) {}
 
-    void                    add(MenuId id, string text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn, int shortcutKey = 0);
+    void                    add(MenuId id, string text, short x, short y, int shortcutKey = 0);
     void                    addShortcutKey(MenuId id, int shortcutKey);
     void                    setClosesMenu(MenuId id);
     MenuItemList::iterator  getCurrent();
@@ -106,8 +115,8 @@ public:
     void                    reset(bool highlightFirst = true);
     MenuItemList::iterator  getById(MenuId id);
     MenuItem*               getItemById(MenuId id);
-    void                    activateItem(MenuId id, ActivateAction action);
-    bool                    activateItemByShortcut(int key, ActivateAction action);
+    void                    activateItem(MenuId id, MenuEvent::Type action);
+    bool                    activateItemByShortcut(int key, MenuEvent::Type action);
     bool                    getClosed() const;
     void                    setClosed(bool closed);
 

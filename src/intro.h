@@ -14,7 +14,7 @@
 
 struct IntroObjectState;
 
-class IntroController : public Controller, public Observer<std::string> {
+class IntroController : public Controller, public Observer<MenuEvent &> {
 public:
     IntroController();
 
@@ -25,7 +25,15 @@ public:
     void updateScreen();
     void timerFired();
 
-    void update(Observable<std::string> *o, std::string arg);
+    void update(Observable<MenuEvent &> *o, MenuEvent &event);
+    void updateMainOptions(MenuEvent &event);
+    void updateVideoOptions(MenuEvent &event);
+    void updateSoundOptions(MenuEvent &event);
+    void updateGameplayOptions(MenuEvent &event);
+    void updateAdvancedOptions(MenuEvent &event);
+    void updateEnhancementOptions(MenuEvent &event);
+    void updateKeyboardOptions(MenuEvent &event);
+    void updateSpeedOptions(MenuEvent &event);
 
 private:
     void drawMap();
@@ -46,15 +54,6 @@ private:
     void showText(const string &text);
 
     void runMenu(Menu *menu, bool withBeasties);
-
-    static void introMainOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-    static void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-    static void introSoundOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-    static void introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-    static void introAdvancedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-    static void introKeyboardOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-    static void introSpeedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
-    static void introEnhancementOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
 
     /**
      * The states of the intro.

@@ -177,85 +177,85 @@ int IntroController::init() {
 
     /* load our menus, checking to see if they're already loaded first */
     if (!menusLoaded) {
-        mainOptions.add(0, "Video Options", 13, 16, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL, 'v');
-        mainOptions.add(1, "Sound Options", 13, 17, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL, 's');
-        mainOptions.add(2, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL, 'g');
-        mainOptions.add(0xFF, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL, 'm');
+        mainOptions.add(0, "Video Options", 13, 16, 'v');
+        mainOptions.add(1, "Sound Options", 13, 17, 's');
+        mainOptions.add(2, "Gameplay Options", 13, 18, 'g');
+        mainOptions.add(0xFF, "Main Menu", 13, 21, 'm');
         mainOptions.addShortcutKey(0xFF, ' ');
         mainOptions.setClosesMenu(0xFF);
     
-        videoOptions.add(4, "Graphics", 6, 5, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 'g');
-        videoOptions.add(5, "Gem Layout", 6, 6, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-        videoOptions.add(0, "Scale", 6, 7, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 's');
-        videoOptions.add(1, "Mode", 6, 8, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 'm');
-        videoOptions.add(2, "Filter", 6, 9, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 'f');
-        videoOptions.add(3, "Screen Shaking", 6, 10, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 'k');
-        videoOptions.add(0xFE, "Use These Settings", 6, 20, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
-        videoOptions.add(0xFF, "Cancel", 6, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        videoOptions.add(4, "Graphics", 6, 5, 'g');
+        videoOptions.add(5, "Gem Layout", 6, 6);
+        videoOptions.add(0, "Scale", 6, 7, 's');
+        videoOptions.add(1, "Mode", 6, 8, 'm');
+        videoOptions.add(2, "Filter", 6, 9, 'f');
+        videoOptions.add(3, "Screen Shaking", 6, 10, 'k');
+        videoOptions.add(0xFE, "Use These Settings", 6, 20, 'u');
+        videoOptions.add(0xFF, "Cancel", 6, 21, 'c');
         videoOptions.addShortcutKey(0xFF, ' ');
         videoOptions.setClosesMenu(0xFE);
         videoOptions.setClosesMenu(0xFF);
     
-        soundOptions.add(0, "Volume", 11, 16, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY, 'v');
-        soundOptions.add(1, "Sound Effects", 11, 17, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY, 's');
-        soundOptions.add(2, "Fading", 11, 18, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY, 'f');
-        soundOptions.add(0xFE, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
-        soundOptions.add(0xFF, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        soundOptions.add(0, "Volume", 11, 16, 'v');
+        soundOptions.add(1, "Sound Effects", 11, 17, 's');
+        soundOptions.add(2, "Fading", 11, 18, 'f');
+        soundOptions.add(0xFE, "Use These Settings", 11, 20, 'u');
+        soundOptions.add(0xFF, "Cancel", 11, 21, 'c');
         soundOptions.addShortcutKey(0xFF, ' ');
         soundOptions.setClosesMenu(0xFE);
         soundOptions.setClosesMenu(0xFF);
     
-        gameplayOptions.add(0, "Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY, 'g');
-        gameplayOptions.add(1, "Automatic Actions", 6, 7, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY, 'a');
-        gameplayOptions.add(3, "Battle Difficulty", 6, 10, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY, 'b');
-        gameplayOptions.add(4, "Mouse", 6, 12, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
-        gameplayOptions.add(2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL, 'o');
-        gameplayOptions.add(0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
-        gameplayOptions.add(0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        gameplayOptions.add(0, "Game Enhancements", 6, 5, 'g');
+        gameplayOptions.add(1, "Automatic Actions", 6, 7, 'a');
+        gameplayOptions.add(3, "Battle Difficulty", 6, 10, 'b');
+        gameplayOptions.add(4, "Mouse", 6, 12);
+        gameplayOptions.add(2, "\010 Advanced Options", 6, 18, 'o');
+        gameplayOptions.add(0xFE, "Use These Settings", 6, 20, 'u');
+        gameplayOptions.add(0xFF, "Cancel", 6, 21, 'c');
         gameplayOptions.addShortcutKey(0xFF, ' ');
         gameplayOptions.setClosesMenu(0xFE);
         gameplayOptions.setClosesMenu(0xFF);
     
-        advancedOptions.add(3, "\010 Speed Settings", 4, 5, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 's');
-        advancedOptions.add(2, "\010 Keyboard Settings", 4, 6, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'k');
-        advancedOptions.add(1, "Debug Mode (Cheats)", 4, 8, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY, 'd');        
-        advancedOptions.add(0, "\010 Game Enhancement Options", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'g');    
-        advancedOptions.add(0xFE, "Use These Settings", 4, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
-        advancedOptions.add(0xFF, "Cancel", 4, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        advancedOptions.add(3, "\010 Speed Settings", 4, 5, 's');
+        advancedOptions.add(2, "\010 Keyboard Settings", 4, 6, 'k');
+        advancedOptions.add(1, "Debug Mode (Cheats)", 4, 8, 'd');        
+        advancedOptions.add(0, "\010 Game Enhancement Options", 4, 18, 'g');    
+        advancedOptions.add(0xFE, "Use These Settings", 4, 20, 'u');
+        advancedOptions.add(0xFF, "Cancel", 4, 21, 'c');
         advancedOptions.addShortcutKey(0xFF, ' ');
         advancedOptions.setClosesMenu(0xFE);
         advancedOptions.setClosesMenu(0xFF);
     
-        keyboardOptions.add(1, "Repeat Delay (in msecs)", 5, 5, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
-        keyboardOptions.add(2, "Repeat Interval (in msecs)", 5, 6, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
-        keyboardOptions.add(0xFE, "Use These Settings", 5, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
-        keyboardOptions.add(0xFF, "Cancel", 5, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        keyboardOptions.add(1, "Repeat Delay (in msecs)", 5, 5);
+        keyboardOptions.add(2, "Repeat Interval (in msecs)", 5, 6);
+        keyboardOptions.add(0xFE, "Use These Settings", 5, 20, 'u');
+        keyboardOptions.add(0xFF, "Cancel", 5, 21, 'c');
         keyboardOptions.addShortcutKey(0xFF, ' ');
         keyboardOptions.setClosesMenu(0xFE);
         keyboardOptions.setClosesMenu(0xFF);
     
-        speedOptions.add(0, "Game Cycles Per Second", 4, 5, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-        speedOptions.add(1, "Battle Speed", 4, 6, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-        speedOptions.add(2, "Spell Effect Length", 4, 7, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-        speedOptions.add(3, "Camping length", 4, 8, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-        speedOptions.add(4, "Inn rest length", 4, 9, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-        speedOptions.add(5, "Shrine Meditation length", 4, 10, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-        speedOptions.add(6, "Screen Shake Interval", 4, 11, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-        speedOptions.add(0xFE, "Use These Settings", 4, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
-        speedOptions.add(0xFF, "Cancel", 4, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        speedOptions.add(0, "Game Cycles Per Second", 4, 5);
+        speedOptions.add(1, "Battle Speed", 4, 6);
+        speedOptions.add(2, "Spell Effect Length", 4, 7);
+        speedOptions.add(3, "Camping length", 4, 8);
+        speedOptions.add(4, "Inn rest length", 4, 9);
+        speedOptions.add(5, "Shrine Meditation length", 4, 10);
+        speedOptions.add(6, "Screen Shake Interval", 4, 11);
+        speedOptions.add(0xFE, "Use These Settings", 4, 20);
+        speedOptions.add(0xFF, "Cancel", 4, 21, 'c');
         speedOptions.addShortcutKey(0xFF, ' ');
         speedOptions.setClosesMenu(0xFE);
         speedOptions.setClosesMenu(0xFF);
     
-        enhancementOptions.add(6, "Set Active Player", 7, 5, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-        enhancementOptions.add(4, "Ultima V Spell Mixing", 7, 6, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-        enhancementOptions.add(0, "Ultima V Shrines", 7, 7, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);    
-        enhancementOptions.add(1, "Slime Divides", 7, 8, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-        enhancementOptions.add(2, "Fixed Chest Traps", 7, 9, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-        enhancementOptions.add(5, "Smart 'Enter' Key", 7, 10, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-        enhancementOptions.add(7, "Gem View Shows Objects", 7, 11, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-        enhancementOptions.add(0xFE, "Use These Settings", 7, 20, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
-        enhancementOptions.add(0xFF, "Cancel", 7, 21, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        enhancementOptions.add(6, "Set Active Player", 7, 5);
+        enhancementOptions.add(4, "Ultima V Spell Mixing", 7, 6);
+        enhancementOptions.add(0, "Ultima V Shrines", 7, 7);
+        enhancementOptions.add(1, "Slime Divides", 7, 8);
+        enhancementOptions.add(2, "Fixed Chest Traps", 7, 9);
+        enhancementOptions.add(5, "Smart 'Enter' Key", 7, 10);
+        enhancementOptions.add(7, "Gem View Shows Objects", 7, 11);
+        enhancementOptions.add(0xFE, "Use These Settings", 7, 20, 'u');
+        enhancementOptions.add(0xFF, "Cancel", 7, 21, 'c');
         enhancementOptions.addShortcutKey(0xFF, ' ');
         enhancementOptions.setClosesMenu(0xFE);
         enhancementOptions.setClosesMenu(0xFF);
@@ -834,100 +834,542 @@ void IntroController::timerFired() {
  * Update the screen when an observed menu is reset or has an item
  * activated.
  */
-void IntroController::update(Observable<std::string> *o, std::string arg) {
-    Menu *menu = static_cast<Menu *>(o);
+void IntroController::update(Observable<MenuEvent &> *o, MenuEvent &event) {
+    const Menu *menu = event.getMenu();
 
-    if (arg != "Menu::activateItem" &&
-        arg != "Menu::reset")
-        return;
+    if (menu == &mainOptions)
+        updateMainOptions(event);
+    else if (menu == &videoOptions)
+        updateVideoOptions(event);
+    else if (menu == &soundOptions)
+        updateSoundOptions(event);
+    else if (menu == &gameplayOptions)
+        updateGameplayOptions(event);
+    else if (menu == &advancedOptions)
+        updateAdvancedOptions(event);
+    else if (menu == &enhancementOptions)
+        updateEnhancementOptions(event);
+    else if (menu == &keyboardOptions)
+        updateKeyboardOptions(event);
+    else if (menu == &speedOptions)
+        updateSpeedOptions(event);
 
-    if (menu == &mainOptions) {
-        screenDrawImage(BKGD_INTRO);
-        screenTextAt(9, 14, "-- xu4 Configuration --");
+    if (beastiesVisible)
+        drawBeasties();
+}
+
+void IntroController::updateMainOptions(MenuEvent &event) {
+    if (event.getType() == MenuEvent::ACTIVATE ||
+        event.getType() == MenuEvent::INCREMENT ||
+        event.getType() == MenuEvent::DECREMENT) {
+
+        switch(event.getMenuItem()->getId()) {
+        case 0:
+            beastiesVisible = false;
+            runMenu(&videoOptions, false);
+            beastiesVisible = true;
+            break;
+        case 1:
+            runMenu(&soundOptions, true);
+            break;
+        case 2:
+            beastiesVisible = false;
+            runMenu(&gameplayOptions, false);
+            beastiesVisible = true;
+            break;
+        case 0xFF:
+        default:
+            break;
+        }
     }
 
-    else if (menu == &videoOptions) {
-        screenDrawImage(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3, "Video Options:");
-        screenTextAt(24, 5, "%s", settingsChanged.videoType.c_str());
-        screenTextAt(24, 6, "%s", settingsChanged.gemLayout.c_str());
-        screenTextAt(24, 7, "x%d", settingsChanged.scale);
-        screenTextAt(24, 8, "%s", settingsChanged.fullscreen ? "Fullscreen" : "Window");
-        screenTextAt(24, 9, "%s", settings.filters.getName(settingsChanged.filter).c_str());
-        screenTextAt(24, 10, "%s", settingsChanged.screenShakes ? "On" : "Off");
+    screenDrawImage(BKGD_INTRO);
+    screenTextAt(9, 14, "-- xu4 Configuration --");
+}
+
+void IntroController::updateVideoOptions(MenuEvent &event) {
+    if (event.getType() == MenuEvent::ACTIVATE ||
+        event.getType() == MenuEvent::INCREMENT ||
+        event.getType() == MenuEvent::DECREMENT) {
+
+        switch(event.getMenuItem()->getId()) {
+        case 0:
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.scale++;
+                if (settingsChanged.scale > 5)
+                    settingsChanged.scale = 1;
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.scale--;
+                if (settingsChanged.scale <= 0)
+                    settingsChanged.scale = 5;
+            }
+            break;
+        
+        case 1:
+            if (event.getType() == MenuEvent::ACTIVATE)
+                settingsChanged.fullscreen = settingsChanged.fullscreen ? 0 : 1;
+            break;
+
+        case 2:
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.filter = static_cast<FilterType>(settingsChanged.filter + 1);
+                if (settingsChanged.filter == SCL_MAX)
+                    settingsChanged.filter = static_cast<FilterType>(SCL_MIN+1);
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.filter = static_cast<FilterType>(settingsChanged.filter - 1);
+                if (settingsChanged.filter == SCL_MIN)
+                    settingsChanged.filter = static_cast<FilterType>(SCL_MAX-1);
+            }
+            break;
+
+        case 3:
+            if (event.getType() == MenuEvent::ACTIVATE)
+                settingsChanged.screenShakes = settingsChanged.screenShakes ? 0 : 1;
+            break;
+
+        case 4:
+            {   
+                const vector<string> &imageSetNames = screenGetImageSetNames();
+                vector<string>::const_iterator set = find(imageSetNames.begin(), imageSetNames.end(), settingsChanged.videoType);
+                if (set == imageSetNames.end())
+                    errorFatal("Error: image set '%s' not found", settingsChanged.videoType.c_str());
+            
+                if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                    /* move to the next set, wrapping if necessary */
+                    set++;
+                    if (set == imageSetNames.end())
+                        set = imageSetNames.begin();    
+                
+                } else if (event.getType() == MenuEvent::DECREMENT) {
+                    /* move back one, wrapping if necessary */
+                    if (set == imageSetNames.begin())
+                        set = imageSetNames.end();                
+                    set--;
+                }
+
+                settingsChanged.videoType = *set;
+            }
+            break;
+
+        case 5:
+            {
+                const vector<string> &layoutNames = screenGetGemLayoutNames();
+                vector<string>::const_iterator layout = find(layoutNames.begin(), layoutNames.end(), settingsChanged.gemLayout);
+                if (layout == layoutNames.end())
+                    errorFatal("Error: gem layout '%s' not found", settingsChanged.gemLayout.c_str());
+       
+                if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                    /* move to the next layout, wrapping if necessary */
+                    layout++;
+                    if (layout == layoutNames.end())
+                        layout = layoutNames.begin();
+            
+                } else if (event.getType() == MenuEvent::DECREMENT) {
+                    /* move back one, wrapping if necessary */
+                    if (layout == layoutNames.begin())
+                        layout = layoutNames.end();
+                    layout--;
+                }
+
+                settingsChanged.gemLayout = *layout;
+            }
+            break;        
+
+        case 0xFE:
+            /* save settings (if necessary) */
+            if (settings != settingsChanged) {
+                settings.setData(settingsChanged);
+                settings.write();
+
+                /* FIXME: resize images, etc. */
+                screenReInit();
+            
+                // Fix the menu since it was obliterated
+                mode = INTRO_MENU; 
+                runMenu(&mainOptions, true);            
+            }        
+            break;
+        case 0xFF:
+            /* discard settings */
+            settingsChanged = settings;
+            break;
+        
+        default: break;
+        }
     }
 
-    else if (menu == &soundOptions) {
-        screenDrawImage(BKGD_INTRO);
-        screenTextAt(2, 14, "Sound Options:");
-        screenTextAt(26, 16, "%s", settingsChanged.musicVol ? "On" : "Off");
-        screenTextAt(26, 17, "%s", settingsChanged.soundVol ? "On" : "Off");
-        screenTextAt(26, 18, "%s", settingsChanged.volumeFades ? "On" : "Off");
+    screenDrawImage(BKGD_INTRO_EXTENDED);
+    screenTextAt(2, 3, "Video Options:");
+    screenTextAt(24, 5, "%s", settingsChanged.videoType.c_str());
+    screenTextAt(24, 6, "%s", settingsChanged.gemLayout.c_str());
+    screenTextAt(24, 7, "x%d", settingsChanged.scale);
+    screenTextAt(24, 8, "%s", settingsChanged.fullscreen ? "Fullscreen" : "Window");
+    screenTextAt(24, 9, "%s", settings.filters.getName(settingsChanged.filter).c_str());
+    screenTextAt(24, 10, "%s", settingsChanged.screenShakes ? "On" : "Off");
+}
+
+void IntroController::updateSoundOptions(MenuEvent &event) {
+    if (event.getType() == MenuEvent::ACTIVATE ||
+        event.getType() == MenuEvent::INCREMENT ||
+        event.getType() == MenuEvent::DECREMENT) {
+
+        switch(event.getMenuItem()->getId()) {
+        case 0: 
+            settingsChanged.musicVol = settingsChanged.musicVol ? 0 : 1;
+            break;
+        case 1:
+            settingsChanged.soundVol = settingsChanged.soundVol ? 0 : 1;
+            break;
+        case 2:
+            settingsChanged.volumeFades = settingsChanged.volumeFades ? 0 : 1;
+            break;
+        case 0xFE:
+            /* save settings */
+            settings.setData(settingsChanged);
+            settings.write();
+        
+            musicMgr->intro();
+
+            break;
+        case 0xFF:
+            /* discard settings */
+            settingsChanged = settings;
+            break;
+    
+        default: break;
+        }
     }
 
-    else if (menu == &gameplayOptions) {
-        screenDrawImage(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3, "Gameplay Options:");
-        screenTextAt(32, 5, "%s", settingsChanged.enhancements ? "On" : "Off");        
-        screenTextAt(6, 8, "  (Open, Jimmy, etc.)     %s", settingsChanged.shortcutCommands ? "On" : "Off");        
-        screenTextAt(32, 10, "%s", settings.battleDiffs.getName(settingsChanged.battleDiff).c_str());
-        screenTextAt(32, 12, "%s", settingsChanged.mouseOptions.enabled ? "On" : "Off");
+    screenDrawImage(BKGD_INTRO);
+    screenTextAt(2, 14, "Sound Options:");
+    screenTextAt(26, 16, "%s", settingsChanged.musicVol ? "On" : "Off");
+    screenTextAt(26, 17, "%s", settingsChanged.soundVol ? "On" : "Off");
+    screenTextAt(26, 18, "%s", settingsChanged.volumeFades ? "On" : "Off");
+}
+
+void IntroController::updateGameplayOptions(MenuEvent &event) {
+    if (event.getType() == MenuEvent::ACTIVATE ||
+        event.getType() == MenuEvent::INCREMENT ||
+        event.getType() == MenuEvent::DECREMENT) {
+
+        switch(event.getMenuItem()->getId()) {
+        case 0:
+            settingsChanged.enhancements = settingsChanged.enhancements ? 0 : 1;        
+            break;
+        case 1:
+            settingsChanged.shortcutCommands = settingsChanged.shortcutCommands ? 0 : 1;
+            break;
+        case 3:
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.battleDiff = static_cast<BattleDifficulty>(settingsChanged.battleDiff + 1);
+                if (settingsChanged.battleDiff == DIFF_MAX)
+                    settingsChanged.battleDiff = static_cast<BattleDifficulty>(DIFF_MIN+1);
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.battleDiff = static_cast<BattleDifficulty>(settingsChanged.battleDiff - 1);
+                if (settingsChanged.battleDiff == DIFF_MIN)
+                    settingsChanged.battleDiff = static_cast<BattleDifficulty>(DIFF_MAX-1);
+            }
+            break;
+        case 2:
+            // show or hide game enhancement options if enhancements are enabled/disabled
+            advancedOptions.getItemById(0)->setVisible(settingsChanged.enhancements);
+
+            runMenu(&advancedOptions, false);
+            break;
+        case 4:
+            settingsChanged.mouseOptions.enabled = !settingsChanged.mouseOptions.enabled;
+            break;
+        case 0xFE:
+            /* save settings */
+            settings.setData(settingsChanged);
+            settings.write();
+            break;
+        case 0xFF:
+            /* discard settings */
+            settingsChanged = settings;
+            break;
+        default: break;
+        }
     }
 
-    else if (menu == &advancedOptions) {
-        screenDrawImage(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3,   "Advanced Options:");
-        screenTextAt(34, 8,  "%s", settingsChanged.debug ? "On" : "Off");        
+    screenDrawImage(BKGD_INTRO_EXTENDED);
+    screenTextAt(2, 3, "Gameplay Options:");
+    screenTextAt(32, 5, "%s", settingsChanged.enhancements ? "On" : "Off");        
+    screenTextAt(6, 8, "  (Open, Jimmy, etc.)     %s", settingsChanged.shortcutCommands ? "On" : "Off");        
+    screenTextAt(32, 10, "%s", settings.battleDiffs.getName(settingsChanged.battleDiff).c_str());
+    screenTextAt(32, 12, "%s", settingsChanged.mouseOptions.enabled ? "On" : "Off");
+}
+
+void IntroController::updateAdvancedOptions(MenuEvent &event) {
+    if (event.getType() == MenuEvent::ACTIVATE ||
+        event.getType() == MenuEvent::INCREMENT ||
+        event.getType() == MenuEvent::DECREMENT) {
+
+        switch(event.getMenuItem()->getId()) {
+        case 1:
+            settingsChanged.debug = settingsChanged.debug ? 0 : 1;
+            break;
+        case 0:
+            runMenu(&enhancementOptions, false);
+            break;
+        case 2:
+            runMenu(&keyboardOptions, false);
+            break;
+        case 3:
+            runMenu(&speedOptions, false);
+            break;
+        case 0xFE:
+            /* save settings */
+            settings.setData(settingsChanged);
+            settings.write();
+            break;
+        case 0xFF:
+            /* discard settings */
+            settingsChanged = settings;
+            break;
+        default: break;
+        }
     }
 
-    else if (menu == &enhancementOptions) {
-        screenDrawImage(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3,   "Game Enhancement Options:");        
-        screenTextAt(31, 5,  "%s", settingsChanged.enhancementsOptions.activePlayer ? "On" : "Off");
-        screenTextAt(31, 6,  "%s", settingsChanged.enhancementsOptions.u5spellMixing ? "On" : "Off");
-        screenTextAt(31, 7,  "%s", settingsChanged.enhancementsOptions.u5shrines ? "On" : "Off");
-        screenTextAt(31, 8,  "%s", settingsChanged.enhancementsOptions.slimeDivides ? "On" : "Off");
-        screenTextAt(31, 9,  "%s", settingsChanged.enhancementsOptions.c64chestTraps ? "On" : "Off");
-        screenTextAt(31, 10,  "%s", settingsChanged.enhancementsOptions.smartEnterKey ? "On" : "Off");
-        screenTextAt(31, 11,  "%s", settingsChanged.enhancementsOptions.peerShowsObjects ? "On" : "Off");
+    screenDrawImage(BKGD_INTRO_EXTENDED);
+    screenTextAt(2, 3,   "Advanced Options:");
+    screenTextAt(34, 8,  "%s", settingsChanged.debug ? "On" : "Off");
+}
+
+void IntroController::updateEnhancementOptions(MenuEvent &event) {
+    if (event.getType() == MenuEvent::ACTIVATE ||
+        event.getType() == MenuEvent::INCREMENT ||
+        event.getType() == MenuEvent::DECREMENT) {
+
+        switch(event.getMenuItem()->getId()) {
+        case 0: 
+            settingsChanged.enhancementsOptions.u5shrines = settingsChanged.enhancementsOptions.u5shrines ? 0 : 1;
+            break;
+        case 1: 
+            settingsChanged.enhancementsOptions.slimeDivides = settingsChanged.enhancementsOptions.slimeDivides ? 0 : 1;
+            break;
+        case 2: 
+            settingsChanged.enhancementsOptions.c64chestTraps = settingsChanged.enhancementsOptions.c64chestTraps ? 0 : 1;
+            break;    
+        case 4:
+            settingsChanged.enhancementsOptions.u5spellMixing = settingsChanged.enhancementsOptions.u5spellMixing ? 0 : 1;
+            break;
+        case 5:
+            settingsChanged.enhancementsOptions.smartEnterKey = settingsChanged.enhancementsOptions.smartEnterKey ? 0 : 1;
+            break;
+        case 6:
+            settingsChanged.enhancementsOptions.activePlayer = settingsChanged.enhancementsOptions.activePlayer ? 0 : 1;
+            break;
+        case 7:
+            settingsChanged.enhancementsOptions.peerShowsObjects = settingsChanged.enhancementsOptions.peerShowsObjects ? 0 : 1;
+            break;
+        case 0xFE:        
+            /* save settings */
+            settings.setData(settingsChanged);
+            settings.write();        
+            break;
+        case 0xFF:        
+            /* discard settings */
+            settingsChanged = settings;
+            break;
+    
+        default: break;
+        }
     }
 
-    else if (menu == &keyboardOptions) {
-        screenDrawImage(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3, "Keyboard Settings:");
-        screenTextAt(34, 5,  "%d", settingsChanged.keydelay);
-        screenTextAt(34, 6,  "%d", settingsChanged.keyinterval);
-    } 
+    screenDrawImage(BKGD_INTRO_EXTENDED);
+    screenTextAt(2, 3,   "Game Enhancement Options:");        
+    screenTextAt(31, 5,  "%s", settingsChanged.enhancementsOptions.activePlayer ? "On" : "Off");
+    screenTextAt(31, 6,  "%s", settingsChanged.enhancementsOptions.u5spellMixing ? "On" : "Off");
+    screenTextAt(31, 7,  "%s", settingsChanged.enhancementsOptions.u5shrines ? "On" : "Off");
+    screenTextAt(31, 8,  "%s", settingsChanged.enhancementsOptions.slimeDivides ? "On" : "Off");
+    screenTextAt(31, 9,  "%s", settingsChanged.enhancementsOptions.c64chestTraps ? "On" : "Off");
+    screenTextAt(31, 10,  "%s", settingsChanged.enhancementsOptions.smartEnterKey ? "On" : "Off");
+    screenTextAt(31, 11,  "%s", settingsChanged.enhancementsOptions.peerShowsObjects ? "On" : "Off");
+}
 
-    else if (menu == &speedOptions) {
-        char msg[16] = {0};
-        screenDrawImage(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3, "Speed Settings:");           
+void IntroController::updateKeyboardOptions(MenuEvent &event) {
+    if (event.getType() == MenuEvent::ACTIVATE ||
+        event.getType() == MenuEvent::INCREMENT ||
+        event.getType() == MenuEvent::DECREMENT) {
 
-        sprintf(msg, "%d", settingsChanged.gameCyclesPerSecond);
-        screenTextAt(33 - strlen(msg), 5, msg);
+        switch(event.getMenuItem()->getId()) {
+        case 1:
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.keydelay += 100;
+                if (settingsChanged.keydelay > MAX_KEY_DELAY)
+                    settingsChanged.keydelay = 100;
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.keydelay -= 100;
+                if (settingsChanged.keydelay < 100)
+                    settingsChanged.keydelay = MAX_KEY_DELAY;
+            }
+            break;
+        case 2:
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.keyinterval += 10;
+                if (settingsChanged.keyinterval > MAX_KEY_INTERVAL)
+                    settingsChanged.keyinterval = 10;
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.keyinterval -= 10;
+                if (settingsChanged.keyinterval < 10)
+                    settingsChanged.keyinterval = MAX_KEY_INTERVAL;
+            }
+            break;
+        case 0xFE:
+            /* save settings */
+            settings.setData(settingsChanged);
+            settings.write();
 
-        sprintf(msg, "%d", settingsChanged.battleSpeed);
-        screenTextAt(33 - strlen(msg), 6, msg);
-
-        sprintf(msg, "%0.*f sec",
-                (settingsChanged.spellEffectSpeed % 5 == 0) ? 0 : 1,
-                static_cast<double>(settingsChanged.spellEffectSpeed) / 5);        
-        screenTextAt(37 - strlen(msg), 7, msg);
-
-        sprintf(msg, "%d sec", settingsChanged.campTime);
-        screenTextAt(37 - strlen(msg), 8, msg);
-
-        sprintf(msg, "%d sec", settingsChanged.innTime);
-        screenTextAt(37 - strlen(msg), 9, msg);
-
-        sprintf(msg, "%d sec", settingsChanged.shrineTime);
-        screenTextAt(37 - strlen(msg), 10, msg);
-
-        sprintf(msg, "%d msec", settingsChanged.shakeInterval);
-        screenTextAt(38 - strlen(msg), 11, msg);
+            /* re-initialize keyboard */
+            KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
+    
+            break;
+        case 0xFF:
+            /* discard settings */
+            settingsChanged = settings;
+            break;
+        default: break;
+        }    
     }
 
+    screenDrawImage(BKGD_INTRO_EXTENDED);
+    screenTextAt(2, 3, "Keyboard Settings:");
+    screenTextAt(34, 5,  "%d", settingsChanged.keydelay);
+    screenTextAt(34, 6,  "%d", settingsChanged.keyinterval);
+
+
+}
+
+void IntroController::updateSpeedOptions(MenuEvent &event) {
+    if (event.getType() == MenuEvent::ACTIVATE ||
+        event.getType() == MenuEvent::INCREMENT ||
+        event.getType() == MenuEvent::DECREMENT) {
+
+        switch(event.getMenuItem()->getId()) {
+        case 0:
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.gameCyclesPerSecond++;
+                if (settingsChanged.gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
+                    settingsChanged.gameCyclesPerSecond = 1;
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.gameCyclesPerSecond--;
+                if (settingsChanged.gameCyclesPerSecond < 1)
+                    settingsChanged.gameCyclesPerSecond = MAX_CYCLES_PER_SECOND;
+            }
+            break;
+        case 1:
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.battleSpeed++;
+                if (settingsChanged.battleSpeed > MAX_BATTLE_SPEED)
+                    settingsChanged.battleSpeed = 1;
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.battleSpeed--;
+                if (settingsChanged.battleSpeed < 1)
+                    settingsChanged.battleSpeed = MAX_BATTLE_SPEED;
+            }
+            break;
+        case 2:
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.spellEffectSpeed++;
+                if (settingsChanged.spellEffectSpeed > MAX_SPELL_EFFECT_SPEED)
+                    settingsChanged.spellEffectSpeed = 1;
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.spellEffectSpeed--;
+                if (settingsChanged.spellEffectSpeed < 1)
+                    settingsChanged.spellEffectSpeed = MAX_SPELL_EFFECT_SPEED;
+            }
+            break;
+        case 3:
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.campTime++;
+                if (settingsChanged.campTime > MAX_CAMP_TIME)
+                    settingsChanged.campTime = 1;
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.campTime--;
+                if (settingsChanged.campTime < 1)
+                    settingsChanged.campTime = MAX_CAMP_TIME;
+            }
+            break;
+        case 4:
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.innTime++;
+                if (settingsChanged.innTime > MAX_INN_TIME)
+                    settingsChanged.innTime = 1;
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.innTime--;
+                if (settingsChanged.innTime < 1)
+                    settingsChanged.innTime = MAX_INN_TIME;
+            }
+            break;
+        case 5:
+            /* make sure that the setting we're trying for is even possible */
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.shrineTime++;
+                if (settingsChanged.shrineTime > MAX_SHRINE_TIME)
+                    settingsChanged.shrineTime = MEDITATION_MANTRAS_PER_CYCLE / settingsChanged.gameCyclesPerSecond;
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.shrineTime--;
+                if (settingsChanged.shrineTime < (MEDITATION_MANTRAS_PER_CYCLE / settingsChanged.gameCyclesPerSecond))
+                    settingsChanged.shrineTime = MAX_SHRINE_TIME;
+            }
+            break;
+        case 6:
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.shakeInterval += 10;
+                if (settingsChanged.shakeInterval > MAX_SHAKE_INTERVAL)
+                    settingsChanged.shakeInterval = MIN_SHAKE_INTERVAL;
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.shakeInterval -= 10;
+                if (settingsChanged.shakeInterval < MIN_SHAKE_INTERVAL)
+                    settingsChanged.shakeInterval = MAX_SHAKE_INTERVAL;
+            }
+            break;
+
+        case 0xFE:
+            /* save settings */
+            settings.setData(settingsChanged);
+            settings.write();
+    
+            /* re-initialize events */
+            eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
+            eventHandler->getTimer()->reset(eventTimerGranularity);            
+        
+            break;
+        case 0xFF:
+            /* discard settings */
+            settingsChanged = settings;
+            break;
+        default: break;
+        }
+    }
+
+    char msg[16] = {0};
+    screenDrawImage(BKGD_INTRO_EXTENDED);
+    screenTextAt(2, 3, "Speed Settings:");           
+
+    sprintf(msg, "%d", settingsChanged.gameCyclesPerSecond);
+    screenTextAt(33 - strlen(msg), 5, msg);
+
+    sprintf(msg, "%d", settingsChanged.battleSpeed);
+    screenTextAt(33 - strlen(msg), 6, msg);
+
+    sprintf(msg, "%0.*f sec",
+            (settingsChanged.spellEffectSpeed % 5 == 0) ? 0 : 1,
+            static_cast<double>(settingsChanged.spellEffectSpeed) / 5);        
+    screenTextAt(37 - strlen(msg), 7, msg);
+
+    sprintf(msg, "%d sec", settingsChanged.campTime);
+    screenTextAt(37 - strlen(msg), 8, msg);
+
+    sprintf(msg, "%d sec", settingsChanged.innTime);
+    screenTextAt(37 - strlen(msg), 9, msg);
+
+    sprintf(msg, "%d sec", settingsChanged.shrineTime);
+    screenTextAt(37 - strlen(msg), 10, msg);
+
+    sprintf(msg, "%d msec", settingsChanged.shakeInterval);
+    screenTextAt(38 - strlen(msg), 11, msg);
 }
 
 
@@ -1098,416 +1540,5 @@ void IntroController::initPlayers(SaveGame *saveGame) {
             saveGame->players[p].mp = player.getMaxMp();
             p++;
         }
-    }
-
-}
-
-/* main options menu handler */
-void IntroController::introMainOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {
-    if (action != ACTIVATE_NORMAL)
-        return;
-
-    switch(menuItem->getId()) {
-    case 0:
-        intro->beastiesVisible = false;
-        intro->runMenu(&videoOptions, false);
-        intro->beastiesVisible = true;
-        break;
-    case 1:
-        intro->runMenu(&soundOptions, true);
-        break;
-    case 2:
-        intro->beastiesVisible = false;
-        intro->runMenu(&gameplayOptions, false);
-        intro->beastiesVisible = true;
-        break;
-    case 0xFF:
-    default: 
-        break;
-    }
-}
-
-/* video options menu handler */
-void IntroController::introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->getId()) {
-    case 0:
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.scale++;
-            if (settingsChanged.scale > 5)
-                settingsChanged.scale = 1;
-        } else {
-            settingsChanged.scale--;
-            if (settingsChanged.scale <= 0)
-                settingsChanged.scale = 5;
-        }
-        break;
-        
-    case 1:
-        settingsChanged.fullscreen = settingsChanged.fullscreen ? 0 : 1;
-        break;
-
-    case 2:
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.filter = static_cast<FilterType>(settingsChanged.filter + 1);
-            if (settingsChanged.filter == SCL_MAX)
-                settingsChanged.filter = static_cast<FilterType>(SCL_MIN+1);
-        } else {
-            settingsChanged.filter = static_cast<FilterType>(settingsChanged.filter - 1);
-            if (settingsChanged.filter == SCL_MIN)
-                settingsChanged.filter = static_cast<FilterType>(SCL_MAX-1);
-        }
-        break;
-
-    case 3:
-        settingsChanged.screenShakes = settingsChanged.screenShakes ? 0 : 1;
-        break;
-
-    case 4:
-        {   
-            const vector<string> &imageSetNames = screenGetImageSetNames();
-            vector<string>::const_iterator set = find(imageSetNames.begin(), imageSetNames.end(), settingsChanged.videoType);
-            if (set == imageSetNames.end())
-                errorFatal("Error: image set '%s' not found", settingsChanged.videoType.c_str());
-            
-            if (action != ACTIVATE_DECREMENT) {
-                /* move to the next set, wrapping if necessary */
-                set++;
-                if (set == imageSetNames.end())
-                    set = imageSetNames.begin();    
-                
-            } else {
-                /* move back one, wrapping if necessary */
-                if (set == imageSetNames.begin())
-                    set = imageSetNames.end();                
-                set--;
-            }
-
-            settingsChanged.videoType = *set;
-        }
-        break;
-
-    case 5:
-        {
-            const vector<string> &layoutNames = screenGetGemLayoutNames();
-            vector<string>::const_iterator layout = find(layoutNames.begin(), layoutNames.end(), settingsChanged.gemLayout);
-            if (layout == layoutNames.end())
-                errorFatal("Error: gem layout '%s' not found", settingsChanged.gemLayout.c_str());
-       
-            if (action != ACTIVATE_DECREMENT) {
-                /* move to the next layout, wrapping if necessary */
-                layout++;
-                if (layout == layoutNames.end())
-                    layout = layoutNames.begin();
-            
-            } else {
-                /* move back one, wrapping if necessary */
-                if (layout == layoutNames.begin())
-                    layout = layoutNames.end();
-                layout--;
-            }
-
-            settingsChanged.gemLayout = *layout;
-        }
-        break;        
-
-    case 0xFE:
-        /* save settings (if necessary) */
-        if (settings != settingsChanged) {
-            settings.setData(settingsChanged);
-            settings.write();
-
-            /* FIXME: resize images, etc. */
-            screenReInit();
-            
-            // Fix the menu since it was obliterated
-            intro->mode = INTRO_MENU; 
-            intro->runMenu(&mainOptions, true);            
-        }        
-        break;
-    case 0xFF:
-        /* discard settings */
-        settingsChanged = settings;
-        break;
-        
-    default: break;
-    }
-}
-
-/* sound options menu handler */
-void IntroController::introSoundOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->getId()) {
-    case 0: 
-        settingsChanged.musicVol = settingsChanged.musicVol ? 0 : 1;
-        break;
-    case 1:
-        settingsChanged.soundVol = settingsChanged.soundVol ? 0 : 1;
-        break;
-    case 2:
-        settingsChanged.volumeFades = settingsChanged.volumeFades ? 0 : 1;
-        break;
-    case 0xFE:
-        /* save settings */
-        settings.setData(settingsChanged);
-        settings.write();
-        
-        musicMgr->intro();
-
-        break;
-    case 0xFF:
-        /* discard settings */
-        settingsChanged = settings;
-        break;
-    
-    default: break;
-    }
-}
-
-/* gameplay options menu handler */
-void IntroController::introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->getId()) {
-    case 0:
-        settingsChanged.enhancements = settingsChanged.enhancements ? 0 : 1;        
-        break;    
-    case 1:
-        settingsChanged.shortcutCommands = settingsChanged.shortcutCommands ? 0 : 1;
-        break;
-    case 3:
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.battleDiff = static_cast<BattleDifficulty>(settingsChanged.battleDiff + 1);
-            if (settingsChanged.battleDiff == DIFF_MAX)
-                settingsChanged.battleDiff = static_cast<BattleDifficulty>(DIFF_MIN+1);
-        } else {
-            settingsChanged.battleDiff = static_cast<BattleDifficulty>(settingsChanged.battleDiff - 1);
-            if (settingsChanged.battleDiff == DIFF_MIN)
-                settingsChanged.battleDiff = static_cast<BattleDifficulty>(DIFF_MAX-1);
-        }
-        break;
-    case 2:
-        // show or hide game enhancement options if enhancements are enabled/disabled
-        advancedOptions.getItemById(0)->setVisible(settingsChanged.enhancements);
-
-        intro->runMenu(&advancedOptions, false);
-        break;
-    case 4:
-        settingsChanged.mouseOptions.enabled = !settingsChanged.mouseOptions.enabled;
-        break;
-    case 0xFE:
-        /* save settings */
-        settings.setData(settingsChanged);
-        settings.write();
-        break;
-    case 0xFF:
-        /* discard settings */
-        settingsChanged = settings;
-        break;
-    default: break;
-    }
-}
-
-/* advanced options menu handler */
-void IntroController::introAdvancedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->getId()) {
-    case 1:
-        settingsChanged.debug = settingsChanged.debug ? 0 : 1;
-        break;
-    case 0:
-        intro->runMenu(&enhancementOptions, false);
-        break;
-    case 2:
-        intro->runMenu(&keyboardOptions, false);
-        break;
-    case 3:
-        intro->runMenu(&speedOptions, false);
-        break;
-    case 0xFE:
-        /* save settings */
-        settings.setData(settingsChanged);
-        settings.write();
-        break;
-    case 0xFF:
-        /* discard settings */
-        settingsChanged = settings;
-        break;
-    default: break;
-    }
-}
-
-/* keyboard options menu handler */
-void IntroController::introKeyboardOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->getId()) {
-    case 1:
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.keydelay += 100;
-            if (settingsChanged.keydelay > MAX_KEY_DELAY)
-                settingsChanged.keydelay = 100;
-        } else {
-            settingsChanged.keydelay -= 100;
-            if (settingsChanged.keydelay < 100)
-                settingsChanged.keydelay = MAX_KEY_DELAY;
-        }
-        break;
-    case 2:
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.keyinterval += 10;
-            if (settingsChanged.keyinterval > MAX_KEY_INTERVAL)
-                settingsChanged.keyinterval = 10;
-        } else {
-            settingsChanged.keyinterval -= 10;
-            if (settingsChanged.keyinterval < 10)
-                settingsChanged.keyinterval = MAX_KEY_INTERVAL;
-        }
-        break;
-    case 0xFE:
-        /* save settings */
-        settings.setData(settingsChanged);
-        settings.write();
-
-        /* re-initialize keyboard */
-        KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
-    
-        break;
-    case 0xFF:
-        /* discard settings */
-        settingsChanged = settings;
-        break;
-    default: break;
-    }    
-}
-
-/* speed options menu handler */
-void IntroController::introSpeedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {    
-    switch(menuItem->getId()) {
-    case 0:
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.gameCyclesPerSecond++;
-            if (settingsChanged.gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
-                settingsChanged.gameCyclesPerSecond = 1;
-        } else {
-            settingsChanged.gameCyclesPerSecond--;
-            if (settingsChanged.gameCyclesPerSecond < 1)
-                settingsChanged.gameCyclesPerSecond = MAX_CYCLES_PER_SECOND;
-        }
-        break;
-    case 1:
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.battleSpeed++;
-            if (settingsChanged.battleSpeed > MAX_BATTLE_SPEED)
-                settingsChanged.battleSpeed = 1;
-        } else {
-            settingsChanged.battleSpeed--;
-            if (settingsChanged.battleSpeed < 1)
-                settingsChanged.battleSpeed = MAX_BATTLE_SPEED;
-        }
-        break;
-    case 2:
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.spellEffectSpeed++;
-            if (settingsChanged.spellEffectSpeed > MAX_SPELL_EFFECT_SPEED)
-                settingsChanged.spellEffectSpeed = 1;
-        } else {
-            settingsChanged.spellEffectSpeed--;
-            if (settingsChanged.spellEffectSpeed < 1)
-                settingsChanged.spellEffectSpeed = MAX_SPELL_EFFECT_SPEED;
-        }
-        break;
-    case 3:
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.campTime++;
-            if (settingsChanged.campTime > MAX_CAMP_TIME)
-                settingsChanged.campTime = 1;
-        } else {
-            settingsChanged.campTime--;
-            if (settingsChanged.campTime < 1)
-                settingsChanged.campTime = MAX_CAMP_TIME;
-        }
-        break;
-    case 4:
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.innTime++;
-            if (settingsChanged.innTime > MAX_INN_TIME)
-                settingsChanged.innTime = 1;
-        } else {
-            settingsChanged.innTime--;
-            if (settingsChanged.innTime < 1)
-                settingsChanged.innTime = MAX_INN_TIME;
-        }
-        break;
-    case 5:
-        /* make sure that the setting we're trying for is even possible */
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.shrineTime++;
-            if (settingsChanged.shrineTime > MAX_SHRINE_TIME)
-                settingsChanged.shrineTime = MEDITATION_MANTRAS_PER_CYCLE / settingsChanged.gameCyclesPerSecond;
-        } else {
-            settingsChanged.shrineTime--;
-            if (settingsChanged.shrineTime < (MEDITATION_MANTRAS_PER_CYCLE / settingsChanged.gameCyclesPerSecond))
-                settingsChanged.shrineTime = MAX_SHRINE_TIME;
-        }
-        break;
-    case 6:
-        if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.shakeInterval += 10;
-            if (settingsChanged.shakeInterval > MAX_SHAKE_INTERVAL)
-                settingsChanged.shakeInterval = MIN_SHAKE_INTERVAL;
-        } else {
-            settingsChanged.shakeInterval -= 10;
-            if (settingsChanged.shakeInterval < MIN_SHAKE_INTERVAL)
-                settingsChanged.shakeInterval = MAX_SHAKE_INTERVAL;
-        }
-        break;
-
-    case 0xFE:
-        /* save settings */
-        settings.setData(settingsChanged);
-        settings.write();
-    
-        /* re-initialize events */
-        eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
-        eventHandler->getTimer()->reset(eventTimerGranularity);            
-        
-        break;
-    case 0xFF:
-        /* discard settings */
-        settingsChanged = settings;
-        break;
-    default: break;
-    }
-}
-
-/* minor enhancement options menu handler */
-void IntroController::introEnhancementOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {
-    switch(menuItem->getId()) {
-    case 0: 
-        settingsChanged.enhancementsOptions.u5shrines = settingsChanged.enhancementsOptions.u5shrines ? 0 : 1;
-        break;
-    case 1: 
-        settingsChanged.enhancementsOptions.slimeDivides = settingsChanged.enhancementsOptions.slimeDivides ? 0 : 1;
-        break;
-    case 2: 
-        settingsChanged.enhancementsOptions.c64chestTraps = settingsChanged.enhancementsOptions.c64chestTraps ? 0 : 1;
-        break;    
-    case 4:
-        settingsChanged.enhancementsOptions.u5spellMixing = settingsChanged.enhancementsOptions.u5spellMixing ? 0 : 1;
-        break;
-    case 5:
-        settingsChanged.enhancementsOptions.smartEnterKey = settingsChanged.enhancementsOptions.smartEnterKey ? 0 : 1;
-        break;
-    case 6:
-        settingsChanged.enhancementsOptions.activePlayer = settingsChanged.enhancementsOptions.activePlayer ? 0 : 1;
-        break;
-    case 7:
-        settingsChanged.enhancementsOptions.peerShowsObjects = settingsChanged.enhancementsOptions.peerShowsObjects ? 0 : 1;
-        break;
-    case 0xFE:        
-        /* save settings */
-        settings.setData(settingsChanged);
-        settings.write();        
-        break;
-    case 0xFF:        
-        /* discard settings */
-        settingsChanged = settings;
-        break;
-    
-    default: break;
     }
 }
