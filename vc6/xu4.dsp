@@ -464,6 +464,14 @@ SOURCE=..\src\u4.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\u4_sdl.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\u4_sdl.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\u4file.c
 # End Source File
 # Begin Source File
