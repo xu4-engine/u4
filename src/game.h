@@ -6,6 +6,7 @@
 #define GAME_H
 
 struct _Context;
+struct _Map;
 
 typedef struct AlphaActionInfo {
     char lastValidLetter;
@@ -22,6 +23,7 @@ typedef struct DirectedActionInfo {
 } DirectedActionInfo;
 
 void gameUpdateScreen(void);
+void gameSetMap(struct _Context *ct, struct _Map *map, int setStartPos);
 int gameBaseKeyHandler(int key, void *data);
 int gameGetPlayerNoKeyHandler(int key, void *data);
 int gameGetDirectionKeyHandler(int key, void *data);

@@ -28,6 +28,7 @@
 #include "music.h"
 #include "item.h"
 #include "shrine.h"
+#include "death.h"
 #include "combat.h"
 
 int gameCanMoveOntoTile(const Map *map, int x, int y);
@@ -111,9 +112,8 @@ void gameFinishTurn() {
             break;
 
         if (playerPartyDead(c->saveGame)) {
-            screenMessage("Party is dead!\nReviving...\n");
-            c->saveGame->players[0].status = STAT_GOOD;
-            c->saveGame->players[0].hp = c->saveGame->players[0].hpMax;
+            deathStart();
+            return;
         } else {
             screenMessage("Zzzzzz\n");
         }
