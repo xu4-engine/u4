@@ -1614,21 +1614,6 @@ int moveAvatar(Direction dir, int userEvent) {
             goto done;
         }
 
-        /* 
-         * special cases for tile 0x0e: the center tile of the castle
-         * of lord british, which is walkable from the south only
-         */
-        if (mapTileAt(c->map, newx, newy) == 0x0e && dir == DIR_SOUTH) {
-            screenMessage("Blocked!\n");
-            result = 0;
-            goto done;
-        }
-        if (mapTileAt(c->map, c->saveGame->x, c->saveGame->y) == 0x0e && dir == DIR_NORTH) {
-            screenMessage("Blocked!\n");
-            result = 0;
-            goto done;
-        }
-
         switch (tileGetSpeed(mapTileAt(c->map, newx, newy))) {
         case FAST:
             slow = 0;
