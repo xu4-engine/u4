@@ -53,13 +53,29 @@ int wearForPlayer2(int armor, void *data);
 void gameCheckMoongates(void);
 
 int collisionOverride = 0;
-int gemMode = 0;
+ViewMode viewMode = VIEW_NORMAL;
+
+/**
+ * Sets the view mode.
+ */
+void gameSetViewMode(ViewMode newMode) {
+    viewMode = newMode;
+}
 
 void gameUpdateScreen() {
-    if (gemMode)
+    switch (viewMode) {
+    case VIEW_NORMAL:
+        screenUpdate(1);
+        break;
+    case VIEW_GEM:
         screenGemUpdate();
-    else
-        screenUpdate();
+        break;
+    case VIEW_DEAD:
+        screenUpdate(0);
+        break;
+    default:
+        assert(0);              /* shouldn't happen */
+    }
 }
 
 void gameSetMap(Context *ct, Map *map, int setStartPos) {
@@ -378,7 +394,7 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'p':
         if (c->saveGame->gems) {
             c->saveGame->gems--;
-            gemMode = 1;
+            viewMode = VIEW_GEM;
             choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
             choiceInfo->choices = " \033";
             choiceInfo->handleChoice = &gemHandleChoice;
@@ -971,7 +987,7 @@ int openAtCoord(int x, int y) {
 int gemHandleChoice(char choice) {
     eventHandlerPopKeyHandler();
 
-    gemMode = 0;
+    viewMode = VIEW_NORMAL;
     gameFinishTurn();
 
     return 1;

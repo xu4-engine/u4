@@ -8,6 +8,12 @@
 struct _Context;
 struct _Map;
 
+typedef enum {
+    VIEW_NORMAL,
+    VIEW_GEM,
+    VIEW_DEAD
+} ViewMode;
+
 typedef struct AlphaActionInfo {
     char lastValidLetter;
     int (*handleAlpha)(int, void *);
@@ -22,6 +28,7 @@ typedef struct DirectedActionInfo {
     const char *failedMessage;
 } DirectedActionInfo;
 
+void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
 void gameSetMap(struct _Context *ct, struct _Map *map, int setStartPos);
 int gameBaseKeyHandler(int key, void *data);
