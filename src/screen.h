@@ -12,8 +12,7 @@
  * areas of the screen.
  *
  * @todo
- *  <ul>
- *      <li>Create a View class</li>
+ *  <ul> 
  *      <li>Create a TextView and MapView class as subclasses of the View class</li>
  *      <li>Create game-specific U4GameView and U4IntroView classes</li>
  *      <li>make an ImageMgr class to store images and retrieve by name</li>
