@@ -101,7 +101,10 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
         mtile = monster->tile;
         if (tileIsPirateShip(mtile))
             mtile = ROGUE_TILE;
-        monsters[i] = mapAddObject(c->map, mtile, mtile, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
+        if ((rand() % 8) == 0 && monsterForTile(mtile)->leader)
+            monsters[i] = mapAddObject(c->map, monsterForTile(mtile)->leader, monsterForTile(mtile)->leader, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
+        else
+            monsters[i] = mapAddObject(c->map, mtile, mtile, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
         monsterHp[i] = monsterGetInitialHp(monsterForTile(monsters[i]->tile));
     }
     for (; i < AREA_MONSTERS; i++)
@@ -291,8 +294,11 @@ int combatAttackAtCoord(int x, int y, int distance) {
             monster = i;
     }
 
-    if (monster == -1)
-        return 0;
+    if (monster == -1) {
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, MISSFLASH_TILE), 2));
+        combatFinishTurn();
+        return 1;
+    }
 
     if (!playerAttackHit(&c->saveGame->players[focus])) {
         screenMessage("Missed!\n");
@@ -352,7 +358,7 @@ int combatInitialNumberOfMonsters(unsigned char monster) {
         !mapIsWorldMap(c->parent->map))
         return 1;
 
-    return (rand() % (AREA_MONSTERS - 1)) + 1;
+    return ((rand() % (c->saveGame->members * 2))) + 1;
 }
 
 /**
