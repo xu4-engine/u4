@@ -322,6 +322,7 @@ int combatBaseKeyHandler(int key, void *data) {
             NULL :
             &tileCanAttackOver;
         info->blockBefore = 1;
+        info->firstValidDistance = 0;
         
         eventHandlerPushKeyHandlerData(&combatChooseWeaponDir, info);        
 

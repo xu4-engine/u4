@@ -359,7 +359,8 @@ int monsterSpecialAction(Object *obj) {
             info->validDirections = broadsidesDirs;
             info->player = -1;
             info->blockedPredicate = &tileCanAttackOver;
-            info->blockBefore = 1;            
+            info->blockBefore = 1; 
+            info->firstValidDistance = 1;
             
             if ((dy == 0) && (dx <= 3) && DIR_IN_MASK(dirx, broadsidesDirs)) {
                 /* Fire cannon in 'dirx' direction */

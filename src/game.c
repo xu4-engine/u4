@@ -487,6 +487,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->validDirections = MASK_DIR_ALL;
         info->blockedPredicate = NULL;
         info->blockBefore = 0;
+        info->firstValidDistance = 1;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Destroy Object\nDir: ");
         break;
@@ -506,6 +507,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->validDirections = MASK_DIR_ALL;
         info->blockedPredicate = NULL;
         info->blockBefore = 0;
+        info->firstValidDistance = 1;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Attack\nDir: ");
         break;
@@ -626,6 +628,7 @@ int gameBaseKeyHandler(int key, void *data) {
             info->player = -1;
             info->blockedPredicate = &tileCanAttackOver;
             info->blockBefore = 1;
+            info->firstValidDistance = 1;
             eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
 
             printf("validDirs = %d\n", validDirs);
@@ -681,6 +684,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->player = -1;
         info->blockedPredicate = NULL;
         info->blockBefore = 0;
+        info->firstValidDistance = 1;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Jimmy\nDir: ");
         break;
@@ -743,6 +747,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->player = -1;
         info->blockedPredicate = NULL;
         info->blockBefore = 0;
+        info->firstValidDistance = 1;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Open\nDir: ");
         break;
@@ -803,6 +808,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->player = -1;
         info->blockedPredicate = &tileCanTalkOver;
         info->blockBefore = 0;
+        info->firstValidDistance = 1;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Talk\nDir: ");
         break;
@@ -2507,30 +2513,31 @@ int gameDirectionalAction(Direction dir, CoordActionInfo *info) {
      */
 
     if (DIR_IN_MASK(dir, info->validDirections)) {
-        for (distance = 1; distance <= info->range; distance++) {
-            dirMove(dir, &t_x, &t_y);
-            mapWrapCoordinates(c->location->map, &t_x, &t_y);
+        for (distance = 0; distance <= info->range; distance++, dirMove(dir, &t_x, &t_y)) {
+            if (distance >= info->firstValidDistance) {
+                mapWrapCoordinates(c->location->map, &t_x, &t_y);
             
-            /* make sure our action isn't taking us off the map */
-            if (MAP_IS_OOB(c->location->map, t_x, t_y))
-                break;
+                /* make sure our action isn't taking us off the map */
+                if (MAP_IS_OOB(c->location->map, t_x, t_y))
+                    break;
 
-            tile = mapGroundTileAt(c->location->map, t_x, t_y, c->location->z);
+                tile = mapGroundTileAt(c->location->map, t_x, t_y, c->location->z);
 
-            /* should we see if the action is blocked before trying it? */       
-            if (info->blockBefore && info->blockedPredicate &&
-                !(*(info->blockedPredicate))(tile))
-                break;
+                /* should we see if the action is blocked before trying it? */       
+                if (info->blockBefore && info->blockedPredicate &&
+                    !(*(info->blockedPredicate))(tile))
+                    break;
 
-            if ((*(info->handleAtCoord))(t_x, t_y, distance, info)) {
-                succeeded = 1;
-                break;
-            }                
+                if ((*(info->handleAtCoord))(t_x, t_y, distance, info)) {
+                    succeeded = 1;
+                    break;
+                }                
 
-            /* see if the action was blocked only if it did not succeed */
-            if (!info->blockBefore && info->blockedPredicate &&
-                !(*(info->blockedPredicate))(tile))
-                break;
+                /* see if the action was blocked only if it did not succeed */
+                if (!info->blockBefore && info->blockedPredicate &&
+                    !(*(info->blockedPredicate))(tile))
+                    break;
+            }
         }
     }
 
