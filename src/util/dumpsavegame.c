@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     FILE *in;
 
     if (argc != 2) {
-        fprintf(stderr, "usage: %s party.sav", argv[0]);
+        fprintf(stderr, "usage: %s party.sav\n", argv[0]);
         exit(1);
     }
 
