@@ -37,6 +37,15 @@ typedef enum {
     STATS_MIXTURES
 } StatsItem;
 
+typedef enum {
+    AURA_NONE,
+    AURA_HORN,
+    AURA_JINX,
+    AURA_NEGATE,
+    AURA_PROTECTION,
+    AURA_QUICKNESS
+} Aura;
+
 typedef struct _Context {
     struct _SaveGame *saveGame;
     struct _Context *parent;
@@ -47,6 +56,8 @@ typedef struct _Context {
     int moonPhase;
     int windDirection;
     int windCounter;
+    Aura aura;
+    int auraDuration;
 } Context;
 
 extern Context *c;
