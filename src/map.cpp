@@ -242,7 +242,11 @@ Map::Map() {
     id = 0;
 }
 
-Map::~Map() {}
+Map::~Map() {
+    for (PortalList::iterator i = portals.begin(); i != portals.end(); i++)
+        delete *i;
+    delete annotations;
+}
 
 string Map::getName() {
     return baseSource.fname;
