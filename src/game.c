@@ -69,6 +69,7 @@ void talkShowReply(int showPrompt);
 int useItem(const char *itemName);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
+int ztatsFor(int player);
 void gameCheckBridgeTrolls(void);
 void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
@@ -775,9 +776,9 @@ int gameBaseKeyHandler(int key, void *data) {
             screenMessage("what?\n");
         break;
 
-    case 'z':
-        eventHandlerPushKeyHandler(&gameZtatsKeyHandler);
+    case 'z':        
         screenMessage("Ztats for: ");
+        gameGetPlayerForCommand(&ztatsFor);
         break;
 
     case 'v' + U4_ALT:
@@ -841,7 +842,6 @@ int gameGetPlayerNoKeyHandler(int key, void *data) {
 int gameGetAlphaChoiceKeyHandler(int key, void *data) {
     AlphaActionInfo *info = (AlphaActionInfo *) data;
     int valid = 1;
-
 
     if (isupper(key))
         key = tolower(key);
@@ -960,38 +960,9 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
 }
 
 /**
- * Handles key presses when the Ztats prompt is active.
- */
-int gameZtatsKeyHandler(int key, void *data) {
-    int valid = 1;
-
-    if (key == '0')
-        c->statsItem = STATS_WEAPONS;
-    else if (key >= '1' && key <= '8' && (key - '1' + 1) <= c->saveGame->members)
-        c->statsItem = (StatsItem) (STATS_CHAR1 + (key - '1'));
-    else if (key == '\033') {
-        screenMessage("\n");
-        eventHandlerPopKeyHandler();
-        gameFinishTurn();
-        return 1;
-    }
-    else
-        valid = 0;
-
-    if (valid) {
-        screenMessage("%c\n", key);
-        statsUpdate();
-        eventHandlerPopKeyHandler();
-        eventHandlerPushKeyHandler(&gameZtatsKeyHandler2);
-    }
-
-    return valid || keyHandlerDefault(key, NULL);
-}
-
-/**
  * Handles key presses while Ztats are being displayed.
  */
-int gameZtatsKeyHandler2(int key, void *data) {
+int gameZtatsKeyHandler(int key, void *data) {
     switch (key) {
     case U4_UP:
     case U4_LEFT:
@@ -1180,7 +1151,7 @@ int castForPlayer2(int spell, void *data) {
         break;
     case SPELLPRM_PLAYER:
         screenMessage("Player: ");
-        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &castForPlayerGetDestPlayer);
+        gameGetPlayerForCommand(&castForPlayerGetDestPlayer);        
         break;
     case SPELLPRM_DIR:
     case SPELLPRM_TYPEDIR:
@@ -1720,6 +1691,16 @@ int wearForPlayer2(int a, void *data) {
     gameFinishTurn();
 
     return 1;
+}
+
+/**
+ * Called when the player selects a party member for ztats
+ */
+int ztatsFor(int player) {
+    c->statsItem = (StatsItem) (STATS_CHAR1 + player);
+    statsUpdate();
+
+    eventHandlerPushKeyHandler(&gameZtatsKeyHandler);    
 }
 
 /**
