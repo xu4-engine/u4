@@ -1055,7 +1055,9 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         for (i = ARMR_NONE + 1; i < ARMR_MAX; i++)
             c->saveGame->armor[i] = 8;
         for (i = WEAP_HANDS + 1; i < WEAP_MAX; i++)
-            c->saveGame->weapons[i] = 8;
+            if (weaponLoseWhenUsed(i) || weaponLoseWhenRanged(i))
+                c->saveGame->weapons[i] = 99;
+            else c->saveGame->weapons[i] = 8;
         break;
     case 'h':
         screenMessage("Help:\n"
