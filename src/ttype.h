@@ -8,6 +8,10 @@
 #define SEA_TILE 0x0
 #define GRASS_TILE 0x4
 #define AVATAR_TILE 0x1f
+#define MOONGATE0_TILE 0x40
+#define MOONGATE1_TILE 0x41
+#define MOONGATE2_TILE 0x42
+#define MOONGATE3_TILE 0x43
 #define BLACK_TILE 0x7e
 
 typedef enum {
