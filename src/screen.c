@@ -32,7 +32,7 @@ void screenUpdate() {
 		tile = p->tile0;
 
 	    else
-		tile = MAP_TILE_AT(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2));
+		tile = mapTileAt(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2));
 
 	    screenShowTile(tile, x, y);
 	}
