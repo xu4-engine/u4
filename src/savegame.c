@@ -435,6 +435,7 @@ int saveGameMonstersRead(Object **objs, FILE *f) {
             obj->tile = monsterTable[i].tile;
             obj->x = monsterTable[i].x;
             obj->y = monsterTable[i].y;
+            obj->z = -1;
             obj->prevtile = monsterTable[i].prevtile;
             obj->prevx = monsterTable[i].prevx;
             obj->prevy = monsterTable[i].prevy;
