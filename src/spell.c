@@ -449,6 +449,7 @@ static int spellDispel(int dir) {
     const Annotation *a;
     extern CombatInfo combatInfo;
     
+    /* FIXME: this should be moved to its own function in location.c */
     /* get the current location, based on context */
     if (c->location->context & CTX_COMBAT) {
         basex = x = combatInfo.party[FOCUS].obj->x;

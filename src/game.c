@@ -3475,7 +3475,7 @@ void gameDestroyAllMonsters(void) {
     
     (*spellEffectCallback)('t', -1, 0); /* same effect as tremor */
     
-    if (c->location->context == CTX_COMBAT) {
+    if (c->location->context & CTX_COMBAT) {
         /* destroy all monsters in combat */
         for (i = 0; i < AREA_MONSTERS; i++) {
             mapRemoveObject(c->location->map, combatInfo.monsters[i].obj);

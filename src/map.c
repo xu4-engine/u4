@@ -689,17 +689,17 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
                     retval = DIR_ADD_TO_MASK(d, retval);
                 if (monsterSails(m) && tileIsSailable(tile))
                     retval = DIR_ADD_TO_MASK(d, retval);
-            }            
+            }
+            else if (monsterIsIncorporeal(m)) {
+                /* can move anywhere but onto water, unless of course the monster can swim */
+                if (!(tileIsSwimable(tile) || tileIsSailable(tile)))
+                    retval = DIR_ADD_TO_MASK(d, retval);
+            }
             /* walking monsters */
             else if (monsterWalks(m)) {
                 if (tileCanWalkOn(tile, d) &&
                     tileCanWalkOff(prev_tile, d) &&
                     tileIsMonsterWalkable(tile))
-                    retval = DIR_ADD_TO_MASK(d, retval);
-            }
-            else if (monsterIsIncorporeal(m)) {
-                /* can move anywhere but onto water, unless of course the monster can swim */
-                if (!(tileIsSwimable(tile) || tileIsSailable(tile)))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }            
         } 
