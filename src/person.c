@@ -26,6 +26,9 @@ char **hawkwindText;
 char **lbKeywords;
 char **lbText;
 
+#define HW_SPEAKONLYWITH 40
+#define HW_RETURNWHEN 41
+#define HW_ISREVIVED 42
 #define HW_WELCOME 43
 #define HW_GREETING1 44
 #define HW_GREETING2 45
@@ -51,16 +54,47 @@ char *hawkwindGetIntro(Conversation *cnv);
 char *hawkwindGetResponse(Conversation *cnv, const char *inquiry);
 char *hawkwindGetPrompt(const Conversation *cnv);
 
+typedef struct _VendorType {
+    char *(*getIntro)(struct _Conversation *cnv);
+    char *(*getVendorQuestionResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getBuyItemResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getSellItemResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getBuyQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getSellQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getBuyPriceResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getContinueQuestionResponse)(struct _Conversation *cnv, const char *answer);
+    char *(*getPrompt)(const struct _Conversation *cnv);
+    const char *vendorQuestionChoices;
+} VendorType;
+
 const VendorType vendorType[] = {
-    { &vendorGetIntro, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_WEAPONS */
-    { &vendorGetIntro, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_ARMOR */
-    { &vendorGetIntro, NULL, NULL, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_FOOD */
-    { &vendorGetIntro, &vendorGetVendorQuestionResponse, NULL, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "af\033" }, /* NPC_VENDOR_TAVERN */
-    { &vendorGetIntro, NULL, &vendorGetBuyItemResponse, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_REAGENTS */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_HEALER */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_INN */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_GUILD */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_STABLE */
+    { &vendorGetIntro, &vendorGetArmsVendorQuestionResponse, &vendorGetArmsBuyItemResponse, &vendorGetSellItemResponse, 
+      &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, NULL, 
+      &vendorGetContinueQuestionResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_WEAPONS */
+    { &vendorGetIntro, &vendorGetArmsVendorQuestionResponse, &vendorGetArmsBuyItemResponse, &vendorGetSellItemResponse, 
+      &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, NULL, &vendorGetContinueQuestionResponse,
+      &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_ARMOR */
+    { &vendorGetIntro, NULL, NULL, NULL, 
+      &vendorGetBuyQuantityResponse, NULL, NULL, 
+      &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_FOOD */
+    { &vendorGetIntro, &vendorGetTavernVendorQuestionResponse, NULL, NULL, 
+      &vendorGetBuyQuantityResponse, NULL, NULL,
+      &vendorGetContinueQuestionResponse, &vendorGetPrompt, "af\033" }, /* NPC_VENDOR_TAVERN */
+    { &vendorGetIntro, NULL, &vendorGetReagentsBuyItemResponse, NULL,
+      &vendorGetBuyQuantityResponse, NULL, &vendorGetBuyPriceResponse,
+      &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_REAGENTS */
+    { &vendorGetIntro, &vendorGetHealerVendorQuestionResponse, &vendorGetHealerBuyItemResponse, NULL,
+      NULL, NULL, NULL, 
+      &vendorGetContinueQuestionResponse, &vendorGetPrompt, "ny\033" }, /* NPC_VENDOR_HEALER */
+    { &vendorGetIntro, NULL, NULL, NULL,
+      NULL, NULL, NULL,
+      &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_INN */
+    { &vendorGetIntro, NULL, NULL, NULL,
+      NULL, NULL, NULL, 
+      NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_GUILD */
+    { &vendorGetIntro, NULL, NULL, NULL,
+      NULL, NULL, NULL, 
+      NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_STABLE */
 };
 
 /**
@@ -114,6 +148,9 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
             return;
         case CONV_SELL_QUANTITY:
             *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getSellQuantityResponse)(cnv, inquiry);
+            return;
+        case CONV_BUY_PRICE:
+            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getBuyPriceResponse)(cnv, inquiry);
             return;
         case CONV_CONTINUEQUESTION:
             *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getContinueQuestionResponse)(cnv, inquiry);
@@ -188,6 +225,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
     case CONV_ASK:
     case CONV_BUY_QUANTITY:
     case CONV_SELL_QUANTITY:
+    case CONV_BUY_PRICE:
         return CONVINPUT_STRING;
     
     case CONV_VENDORQUESTION:
@@ -475,8 +513,7 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
         reply = strdup("\nHe says: Let me heal thy wounds!\n");
         /* FIXME: special effect here */
         for (i = 0; i < c->saveGame->members; i++) {
-            if (c->saveGame->players[i].status != STAT_DEAD)
-                c->saveGame->players[i].hp = c->saveGame->players[i].hpMax;
+            playerHeal(c->saveGame, HT_HEAL, i);
         }
         statsUpdate();
     }
@@ -501,14 +538,27 @@ char *lordBritishGetPrompt(const Conversation *cnv) {
 char *hawkwindGetIntro(Conversation *cnv) {
     char *intro;
 
-    playerAdjustKarma(c->saveGame, KA_HAWKWIND);
+    if (c->saveGame->players[0].status == STAT_SLEEPING ||
+        c->saveGame->players[0].status == STAT_DEAD) {
+        intro = concat(hawkwindText[HW_SPEAKONLYWITH],
+                       c->saveGame->players[0].name,
+                       hawkwindText[HW_RETURNWHEN],
+                       c->saveGame->players[0].name,
+                       hawkwindText[HW_ISREVIVED],
+                       NULL);
+        cnv->state = CONV_DONE;
+    }
 
-    intro = concat(hawkwindText[HW_WELCOME], 
-                   c->saveGame->players[0].name,
-                   hawkwindText[HW_GREETING1], 
-                   hawkwindText[HW_GREETING2],
-                   NULL);
-    cnv->state = CONV_TALK;
+    else {
+        playerAdjustKarma(c->saveGame, KA_HAWKWIND);
+
+        intro = concat(hawkwindText[HW_WELCOME], 
+                       c->saveGame->players[0].name,
+                       hawkwindText[HW_GREETING1], 
+                       hawkwindText[HW_GREETING2],
+                       NULL);
+        cnv->state = CONV_TALK;
+    }
 
     return intro;
 }

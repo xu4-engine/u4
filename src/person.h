@@ -51,7 +51,7 @@ typedef enum {
     CONV_SELL_ITEM,
     CONV_BUY_QUANTITY,
     CONV_SELL_QUANTITY,
-    CONV_SELL_OFFER,
+    CONV_BUY_PRICE,
     CONV_CONTINUEQUESTION,
     CONV_DONE
 } ConversationState;
@@ -61,18 +61,6 @@ typedef enum {
     CONVINPUT_CHARACTER,
     CONVINPUT_NONE
 } ConversationInputType;
-
-typedef struct _VendorType {
-    char *(*getIntro)(struct _Conversation *cnv);
-    char *(*getVendorQuestionResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getBuyItemResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getSellItemResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getBuyQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getSellQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getContinueQuestionResponse)(struct _Conversation *cnv, const char *answer);
-    char *(*getPrompt)(const struct _Conversation *cnv);
-    const char *vendorQuestionChoices;
-} VendorType;
 
 typedef struct _Person {
     char *name;
