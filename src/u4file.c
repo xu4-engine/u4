@@ -41,6 +41,15 @@ FILE *u4fopen(const char *fname) {
         if ((f = fopen(pathname, "rb")) != NULL)
             break;
 
+        if (islower(pathname[strlen(paths[i])]))
+            pathname[strlen(paths[i])] = toupper(pathname[strlen(paths[i])]);
+        
+        if (verbose)
+            printf("trying to open %s\n", pathname);
+
+        if ((f = fopen(pathname, "rb")) != NULL)
+            break;
+
         for (j = strlen(paths[i]); pathname[j] != '\0'; j++) {
             if (islower(pathname[j]))
                 pathname[j] = toupper(pathname[j]);
