@@ -15,6 +15,7 @@
 #include "event.h"
 #include "game.h"
 #include "location.h"
+#include "monster.h"
 #include "music.h"
 #include "names.h"
 #include "player.h"
@@ -42,6 +43,7 @@ char **shrineAdvice = NULL;
 void shrineEnter(const Shrine *s) {
     ReadBufferActionInfo *info;
     U4FILE *avatar;
+    Object *obj;
 
     if (!shrineAdvice) {
         avatar = u4fopen("avatar.exe");
@@ -52,7 +54,32 @@ void shrineEnter(const Shrine *s) {
     }
 
     shrine = s;
-    screenMessage("You enter the ancient shrine and sit before the altar...\nUpon which virtue dost thou meditate?\n");
+
+    /* FIXME: make this optional */
+    /* Add-on shrine sequence START */
+    if (1) {       
+        /* replace the 'static' avatar tile with grass */
+        annotationSetVisual(annotationAdd(5, 6, c->location->z, c->location->map->id, GRASS_TILE));
+
+        screenMessage("You approach\nthe ancient\nshrine...\n\n");
+        gameUpdateScreen(); eventHandlerSleep(1000);
+        
+        obj = mapAddMonsterObject(c->location->map, monsterById(BEGGAR_ID), 5, 10, c->location->z);
+        obj->tile = AVATAR_TILE;
+
+        gameUpdateScreen(); eventHandlerSleep(400);
+        obj->y--; gameUpdateScreen(); eventHandlerSleep(400);
+        obj->y--; gameUpdateScreen(); eventHandlerSleep(400);
+        obj->y--; gameUpdateScreen(); eventHandlerSleep(400);
+        annotationRemove(5, 6, c->location->z, c->location->map->id, GRASS_TILE);
+        obj->y--; gameUpdateScreen(); eventHandlerSleep(700);
+        obj->tile = monsterById(BEGGAR_ID)->tile; gameUpdateScreen(); 
+
+        screenMessage("...and kneel before the altar.\n\nUpon which virtue dost thou meditate?\n");
+    }
+    /* Add-on shrine sequence END */
+    else  
+        screenMessage("You enter the ancient shrine and sit before the altar...\nUpon which virtue dost thou meditate?\n");
 
     virtueBuffer[0] = '\0';
     info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));

@@ -665,12 +665,15 @@ int gameBaseKeyHandler(int key, void *data) {
                         screenMessage("Thou dost not bear the rune of entry!  A strange force keeps you out!\n");
                         break;
                     } else {
+                        gameSetMap(c, portal->destination, 1, portal);            
+                        musicPlay();
                         shrineEnter(portal->destination->shrine);
                     }
                 }
-
-                gameSetMap(c, portal->destination, 1, portal);            
-                musicPlay();
+                else {
+                    gameSetMap(c, portal->destination, 1, portal);            
+                    musicPlay();
+                }
             }
             /* failed conditions of entering the portal */
             else screenMessage("Enter Can't!\n");
@@ -2679,13 +2682,13 @@ void gameCheckMoongates() {
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
             if (!playerCanEnterShrine(c->saveGame, shrine_spirituality_map.shrine->virtue))
                 return;
-            else
-                shrineEnter(shrine_spirituality_map.shrine);
-
-            annotationClear(c->location->map->id);  /* clear out world map annotations */
-
+            
             gameSetMap(c, &shrine_spirituality_map, 1, NULL);
             musicPlay();
+
+            shrineEnter(shrine_spirituality_map.shrine);
+
+            annotationClear(c->location->map->id);  /* clear out world map annotations */            
         }
     }
 }
