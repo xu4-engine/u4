@@ -143,6 +143,8 @@ public:
     Party(SaveGame *saveGame);
     virtual ~Party();
 
+    void notifyOfChange(string arg);
+    
     // Used to translate script values into something useful
     virtual string translate(std::vector<string>& parts);
     

@@ -550,6 +550,14 @@ Party::~Party() {
 
 }
 
+/**
+ * Notify the party that something about it has changed
+ */
+void Party::notifyOfChange(string arg) {
+    setChanged();
+    notifyObservers(arg);
+}
+
 string Party::translate(std::vector<string>& parts) {        
     if (parts.size() == 0)
         return "";
