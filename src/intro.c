@@ -1129,24 +1129,31 @@ int introHandleQuestionChoice(int choice) {
     eventHandlerPopKeyHandler();
 
     if (introDoQuestion(choice == 'a' ? 0 : 1)) {
+        SaveGamePlayerRecord avatar;
+
         mode = INTRO_INIT_SEGTOGAME;
         segueInd = 0;
 
         saveGameFile = saveGameOpenForWriting();
-        if (saveGameFile) {
-            SaveGamePlayerRecord avatar;
-            saveGamePlayerRecordInit(&avatar);
-            saveGameInit(&saveGame, &avatar);
-            screenHideCursor();
-            introInitPlayers(&saveGame);
-            saveGame.food = 30000;
-            saveGame.gold = 200;
-            saveGame.reagents[REAG_GINSENG] = 3;
-            saveGame.reagents[REAG_GARLIC] = 4;
-            saveGame.torches = 2;
-            saveGameWrite(&saveGame, saveGameFile);
-            fclose(saveGameFile);
+        if (!saveGameFile) {
+            mode = INTRO_MENU;
+            introErrorMessage = "Unable to create save game!";
+            introUpdateScreen();
+            return 1;
         }
+
+        saveGamePlayerRecordInit(&avatar);
+        saveGameInit(&saveGame, &avatar);
+        screenHideCursor();
+        introInitPlayers(&saveGame);
+        saveGame.food = 30000;
+        saveGame.gold = 200;
+        saveGame.reagents[REAG_GINSENG] = 3;
+        saveGame.reagents[REAG_GARLIC] = 4;
+        saveGame.torches = 2;
+        saveGameWrite(&saveGame, saveGameFile);
+        fclose(saveGameFile);
+
         saveGameFile = saveGameMonstersOpenForWriting();
         if (saveGameFile) {
             saveGameMonstersWrite(NULL, saveGameFile);
