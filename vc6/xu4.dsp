@@ -85,9 +85,8 @@ LINK32=link.exe
 # SUBTRACT LINK32 /map
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PreLink_Cmds=set U4ZIPFILE=ultima4.zip
-PostBuild_Desc====Installation===
-PostBuild_Cmds=@ECHO OFF	set U4PATH=c:\xu4	echo Install directory set to %U4PATH%	@ECHO ON	xcopy ..\lib\*.dll %U4PATH%\. /T /E /Y	xcopy ..\conf\*.xml %U4PATH%\conf\. /T /E /Y	xcopy ..\conf\dtd\*.dtd %U4PATH%\conf\dtd\. /T /E /Y	xcopy ..\graphics %U4PATH%\graphics\. /T /E /Y	xcopy ..\mid %U4PATH%\mid\. /T /E /Y	xcopy ..\sound %U4PATH%\sound\. /T /E /Y
+PostBuild_Desc==== Installation ===
+PostBuild_Cmds=@ECHO OFF	set U4PATH=c:\xu4	echo Install directory set to %U4PATH%	IF NOT EXIST %U4PATH% mkdir %U4PATH%	IF NOT EXIST %U4PATH% mkdir %U4PATH%\conf	IF NOT EXIST %U4PATH% mkdir %U4PATH%\conf\dtd	IF NOT EXIST %U4PATH% mkdir %U4PATH%\graphics	IF NOT EXIST %U4PATH% mkdir %U4PATH%\mid	IF NOT EXIST %U4PATH% mkdir %U4PATH%\sound	@ECHO ON	xcopy ..\lib\*.dll %U4PATH%\. /E /Y	xcopy ..\conf\*.xml %U4PATH%\conf\. /E /Y	xcopy ..\conf\dtd\*.dtd %U4PATH%\conf\dtd\. /E /Y	xcopy ..\graphics %U4PATH%\graphics\. /E /Y	xcopy ..\mid %U4PATH%\mid\. /E /Y	xcopy ..\sound %U4PATH%\sound\. /E /Y
 # End Special Build Tool
 
 !ENDIF 
