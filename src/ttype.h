@@ -25,7 +25,6 @@
 #define AVATAR_TILE 0x1f
 #define BOULDER_TILE 0x37
 #define CORPSE_TILE 0x38
-#define CHEST_TILE 0x3c
 #define BRICKFLOOR_TILE 0x3e
 #define MOONGATE0_TILE 0x40
 #define MOONGATE1_TILE 0x41
@@ -76,6 +75,8 @@ int tileIsSailable(unsigned char tile);
 int tileIsFlyable(unsigned char tile);
 int tileIsDoor(unsigned char tile);
 int tileIsLockedDoor(unsigned char tile);
+int tileIsChest(unsigned char tile);
+unsigned char tileGetChestBase();
 int tileIsShip(unsigned char tile);
 unsigned char tileGetShipBase();
 int tileIsPirateShip(unsigned char tile);
