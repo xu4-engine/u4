@@ -2542,8 +2542,9 @@ bool jimmyAtCoord(MapCoords coords, int distance, void *data) {
         return false;
         
     if (c->saveGame->keys) {
+        static const MapTile door = *Tileset::get()->getByName("door");
         c->saveGame->keys--;
-        c->location->map->annotations->add(coords, 0x3b);
+        c->location->map->annotations->add(coords, door);
         screenMessage("\nUnlocked!\n");
     } else
         screenMessage("No keys left!\n");
