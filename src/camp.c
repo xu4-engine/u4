@@ -33,7 +33,7 @@
 
 void campTimer(void *data);
 void campEnd(void);
-int campHeal(void);
+int campHeal(HealType heal_type);
 void innTimer(void *data);
 
 void campBegin(void) {    
@@ -92,7 +92,7 @@ void campEnd(void) {
 
     /* Make sure we've waited long enough for camping to be effective */
     if (((c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff) != c->saveGame->lastcamp)  
-        healed = campHeal();
+        healed = campHeal(HT_CAMPHEAL);
 
     screenMessage(healed ? "Party Healed!\n" : "No effect.\n");
     c->saveGame->lastcamp = (c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff;
@@ -101,16 +101,16 @@ void campEnd(void) {
     (*c->location->finishTurn)();
 }
 
-int campHeal(void) {
+int campHeal(HealType heal_type) {
     int i, healed;
 
     healed = 0;
 
-    /* restore each party member to max mp, and heal between 75 and 225 hp */
+    /* restore each party member to max mp, and restore some hp */
     for (i = 0; i < c->saveGame->members; i++) {
         c->saveGame->players[i].mp = playerGetMaxMp(&c->saveGame->players[i]);
         if ((c->saveGame->players[i].hp < c->saveGame->players[i].hpMax) &&
-            (playerHeal(c->saveGame, HT_RESTHEAL, i)))            
+            (playerHeal(c->saveGame, heal_type, i)))
             healed = 1;
     }
     statsUpdate();
@@ -154,7 +154,7 @@ void innTimer(void *data) {
     gameUpdateScreen();
 
     /* the party is always healed */
-    campHeal();
+    campHeal(HT_INNHEAL);
 
     /* Is there a special encounter during your stay? */
     if (settings->innAlwaysCombat || (rand() % 8 == 0)) {
