@@ -5,6 +5,7 @@
 #ifndef PERSON_H
 #define PERSON_H
 
+#include "savegame.h"
 #include "object.h"
 
 struct _Conversation;
@@ -100,7 +101,7 @@ typedef struct _Person {
 } Person;
 
 int personInit(void);
-int personIsJoinable(const Person *p);
+int personIsJoinable(const Person *p, Virtue *v);
 int personIsJoined(const Person *p);
 void personGetConversationText(struct _Conversation *cnv, const char *inquiry, char **response);
 void personGetPrompt(const struct _Conversation *cnv, char **prompt);

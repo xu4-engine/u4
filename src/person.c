@@ -94,14 +94,18 @@ int personInit() {
     return vendorInit();
 }
 
-int personIsJoinable(const Person *p) {
+int personIsJoinable(const Person *p, Virtue *v) {
     int i;
 
     if (!p || !p->name)
         return 0;
     for (i = 1; i < 8; i++) {
-        if (strcmp(c->saveGame->players[i].name, p->name) == 0)
+        if (strcmp(c->saveGame->players[i].name, p->name) == 0) {
+            if (v)
+                *v = (Virtue) c->saveGame->players[i].klass;
             return 1;
+        }
+            
     }
     return 0;
 }
@@ -319,12 +323,18 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, "join", 4) == 0) {
-        if (personIsJoinable(cnv->talker)) {
-            playerJoin(c->saveGame, cnv->talker->name);
-            reply = strdup("I am honored to join thee!");
-            statsUpdate();
-            mapRemovePerson(c->map, cnv->talker);
-            cnv->state = CONV_DONE;
+        Virtue v;
+        if (personIsJoinable(cnv->talker, &v)) {
+            if (playerJoin(c->saveGame, cnv->talker->name)) {
+                reply = strdup("I am honored to join thee!");
+                statsUpdate();
+                mapRemovePerson(c->map, cnv->talker);
+                cnv->state = CONV_DONE;
+            } else
+                reply = concat("Thou art not ",
+                               getVirtueAdjective(v), /* fixme */
+                               " enough for me to join thee.\n",
+                               NULL);
         } else 
             reply = concat(cnv->talker->pronoun, 
                            " says: I cannot join thee.",
