@@ -59,7 +59,7 @@ public:
     void             clear();
     void             passTurn();
     void             remove(Coords pos, MapTile tile);
-    void             remove(Annotation *);
+    void             remove(Annotation&);
     void             remove(Annotation::List);
     int              size();
 

@@ -479,7 +479,7 @@ static int spellDispel(int dir) {
         Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {            
             if (i->getTile().canDispel()) {
-                c->location->map->annotations->remove(&*i);
+                c->location->map->annotations->remove(*i);
                 c->location->map->annotations->add(field, newTile);
                 break;
             }                
@@ -541,7 +541,7 @@ static int spellEField(int param) {
             Annotation::List::iterator i;
             for (i = a.begin(); i != a.end(); i++) {                
                 if (i->getTile().canDispel())
-                    c->location->map->annotations->remove(&*i);
+                    c->location->map->annotations->remove(*i);
             }
         }     
             
