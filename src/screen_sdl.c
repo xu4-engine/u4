@@ -238,7 +238,7 @@ void screenFreeIntroBackgrounds() {
     int i;
 
     for (i = 0; i < BKGD_MAX; i++) {
-        if (i == BKGD_BORDERS)
+        if (i == BKGD_BORDERS || bkgds[i] == NULL)
             continue;
         SDL_FreeSurface(bkgds[i]);
         bkgds[i] = NULL;
@@ -720,6 +720,14 @@ void screenShowTile(unsigned char tile, int x, int y) {
 }
 
 /**
+ * Draw a tile graphic on the screen.
+ */
+void screenShowGemTile(unsigned char tile, int x, int y) {
+    /* FIXME: show gem tile rather than some random color rectangle */
+    screenFillRect(screen, GEMAREA_X + (x * GEMTILE_W), GEMAREA_Y + (y * GEMTILE_H), GEMTILE_W, GEMTILE_H, tile);
+}
+
+/**
  * Scroll the text in the message area up one position.
  */
 void screenScrollMessageArea() {
@@ -837,4 +845,20 @@ void screenShowBeastie(int beast, int frame) {
     dest.h = src.h;
 
     SDL_BlitSurface(introAnimations[ANIM_ANIMATE], &src, screen, &dest);
+}
+
+void screenShowGem() {
+    int x, y;
+
+    screenFillRect(screen, 8, 8, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0);
+
+    for (x = 0; x < GEMAREA_W; x++) {
+        for (y = 0; y < GEMAREA_H; y++) {
+            screenShowGemTile(screenViewportTile(GEMAREA_W, GEMAREA_H, x, y), x, y);
+        }
+    }
+
+    screenForceRedraw();
+
+    sleep(3);
 }

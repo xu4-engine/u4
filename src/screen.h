@@ -25,6 +25,7 @@ void screenFreeIntroAnimations();
 void screenFreeIntroBackgrounds();
 void screenDrawBackground(BackgroundType bkgd);
 void screenShowTile(unsigned char tile, int x, int y);
+void screenShowGemTile(unsigned char tile, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenTextAt(int x, int y, char *fmt, ...);
 void screenMessage(const char *fmt, ...);
