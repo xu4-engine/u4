@@ -407,7 +407,7 @@ void combatEnd() {
         if ((monsterForTile(monsterObj->tile)->mattr & MATTR_WATER) == 0)
             mapAddObject(c->map, CHEST_TILE, CHEST_TILE, monsterObj->x, monsterObj->y);
         else if (tileIsPirateShip(monsterObj->tile)) {
-            unsigned short ship = 16;
+            unsigned short ship = tileGetShipBase();
             tileSetDirection(&ship, tileGetDirection(monsterObj->tile));
             mapAddObject(c->map, ship, ship, monsterObj->x, monsterObj->y);
         }
