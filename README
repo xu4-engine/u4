@@ -13,6 +13,10 @@ spirit of the original game will be added.
 STATUS
 ------
 
+New in v0.04:
+ - the initiate new game sequence and character creation mostly complete
+ - lots of minor fixes and code reorganization behind the scenes
+
 New in v0.03:
  - support for the VGA upgrade patch
  - "Wear Armour", "Ready Weapon", "New Order", "Locate Position" commands work
