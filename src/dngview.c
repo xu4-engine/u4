@@ -49,8 +49,17 @@ unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
     }
     tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS);
 
-    printf("tile (%d, %d) = %d\n", fwd, side, tile);
-
     return tile;
 }
 
+DungeonGraphicType dungeonViewTileToGraphic(unsigned char tile) {
+    switch (tile) {
+    case WALL_TILE:
+        return DNGGRAPHIC_WALL;
+    case 59:
+    case 72:
+        return DNGGRAPHIC_DOOR;
+    }
+
+    return DNGGRAPHIC_NONE;
+}
