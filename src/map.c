@@ -20,6 +20,7 @@
 #include "area.h"
 #include "context.h"
 #include "savegame.h"
+#include "monster.h"
 
 #define MAP_TILE_AT(mapptr, x, y) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 
@@ -342,11 +343,16 @@ void mapRemovePerson(Map *map, const Person *person) {
 void mapMoveObjects(Map *map, int avatarx, int avatary) {
     int newx, newy;
     unsigned char tile;
+    int slow;
     Object *obj = map->objects, *other;
+    const Monster *m;
 
-    while (obj) {
+    for (obj = map->objects; obj; obj = obj->next) {
         newx = obj->x;
         newy = obj->y;
+
+        m = monsterForTile(obj->tile);
+
         switch (obj->movement_behavior) {
         case MOVEMENT_FIXED:
             break;
@@ -358,32 +364,54 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
                 
         case MOVEMENT_ATTACK_AVATAR:
         case MOVEMENT_FOLLOW_AVATAR:
-            if (rand() % 2)
-                dirMove(dirFindPath(newx, newy, avatarx, avatary, MASK_DIR_ALL), &newx, &newy);
+            dirMove(dirFindPath(newx, newy, avatarx, avatary, MASK_DIR_ALL), &newx, &newy);
             break;
         }
+
+        switch (tileGetSpeed(mapTileAt(map, newx, newy))) {
+        case FAST:
+            slow = 0;
+            break;
+        case SLOW:
+            slow = (rand() % 8) == 0;
+            break;
+        case VSLOW:
+            slow = (rand() % 4) == 0;
+            break;
+        case VVSLOW:
+            slow = (rand() % 2) == 0;
+            break;
+        }
+        if (slow)
+            continue;
 
         if ((newx != obj->x || newy != obj->y) &&
             newx >= 0 && newx < map->width &&
             newy >= 0 && newy < map->height) {
+
             if (c->saveGame->x == newx && c->saveGame->y == newy)
                 tile = c->saveGame->transport;
             else if ((other = mapObjectAt(map, newx, newy)) != NULL)
                 tile = other->tile;
             else
                 tile = mapTileAt(map, newx, newy);
-            if (tileIsWalkable(tile)) {
-                if (newx != obj->x ||
-                    newy != obj->y) {
-                    obj->prevx = obj->x;
-                    obj->prevy = obj->y;
-                }
-                obj->x = newx;
-                obj->y = newy;
-            }
-        }
 
-        obj = obj->next;
+            if (m && (m->mattr & MATTR_WATER) != 0) {
+                if (!tileIsSailable(tile))
+                    continue;
+            }
+
+            else if (!tileIsWalkable(tile))
+                continue;
+
+            if (newx != obj->x ||
+                newy != obj->y) {
+                obj->prevx = obj->x;
+                obj->prevy = obj->y;
+            }
+            obj->x = newx;
+            obj->y = newy;
+        }
     }
 }
 
