@@ -26,12 +26,12 @@ void dungeonSearch(void) {
     switch (dngTile & 0xF0) {
     case 0x70: /* magic orb */
         screenMessage("You find a Magical Ball...\nWho touches? ");
-        gameGetPlayerForCommand(&dungeonTouchOrb);
+        gameGetPlayerForCommand(&dungeonTouchOrb, 0);
         break;
 
     case 0x90: /* fountains */
         screenMessage("You find a Fountain.\nWho drinks? ");
-        gameGetPlayerForCommand(&dungeonDrinkFountain);
+        gameGetPlayerForCommand(&dungeonDrinkFountain, 0);
         break;
 
     default: 

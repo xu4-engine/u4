@@ -707,7 +707,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'c':
         screenMessage("Cast Spell!\nPlayer: ");
-        gameGetPlayerForCommand(&gameCastForPlayer);
+        gameGetPlayerForCommand(&gameCastForPlayer, 0);
         break;
 
     case 'd':        
@@ -771,7 +771,7 @@ int gameBaseKeyHandler(int key, void *data) {
             if (tileIsChest(tile))
             {
                 screenMessage("Who opens? ");
-                gameGetPlayerForCommand(&gameGetChest);
+                gameGetPlayerForCommand(&gameGetChest, 0);
             }
             else
                 screenMessage("Not here!\n");
@@ -895,7 +895,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'r':
         screenMessage("Ready a weapon\nfor: ");
-        gameGetPlayerForCommand(&readyForPlayer);
+        gameGetPlayerForCommand(&readyForPlayer, 1);
         break;
 
     case 's':
@@ -968,7 +968,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'w':
         screenMessage("Wear Armour\nfor: ");
-        gameGetPlayerForCommand(&wearForPlayer);
+        gameGetPlayerForCommand(&wearForPlayer, 1);
         break;
 
     case 'x':
@@ -1000,7 +1000,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'z':        
         screenMessage("Ztats for: ");
-        gameGetPlayerForCommand(&ztatsFor);
+        gameGetPlayerForCommand(&ztatsFor, 1);
         break;
 
     case 'v' + U4_ALT:
@@ -1025,12 +1025,18 @@ int gameBaseKeyHandler(int key, void *data) {
     return valid || keyHandlerDefault(key, NULL);
 }
 
-void gameGetPlayerForCommand(int (*commandFn)(int player)) {
+void gameGetPlayerForCommand(int (*commandFn)(int player), int canBeDisabled) {
     if (c->saveGame->members <= 1) {
         screenMessage("1\n");
         (*commandFn)(0);
-    } else
-        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) commandFn);
+    }
+    else {
+        GetPlayerInfo *info = (GetPlayerInfo *)malloc(sizeof(GetPlayerInfo));
+        info->canBeDisabled = canBeDisabled;
+        info->command = commandFn;
+
+        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *)info);
+    }
 }
 
 /**
@@ -1039,7 +1045,7 @@ void gameGetPlayerForCommand(int (*commandFn)(int player)) {
  * command specific routine.
  */
 int gameGetPlayerNoKeyHandler(int key, void *data) {
-    int (*handlePlayerNo)(int player) = (int(*)(int))data;
+    GetPlayerInfo *info = (GetPlayerInfo*)data;    
     int valid = 1;
 
     eventHandlerPopKeyHandler();
@@ -1047,15 +1053,16 @@ int gameGetPlayerNoKeyHandler(int key, void *data) {
     if (key >= '1' &&
         key <= ('0' + c->saveGame->members)) {
         screenMessage("%c\n", key);
-        if (playerIsDisabled(c->saveGame, key - '1'))
+        if (!info->canBeDisabled && playerIsDisabled(c->saveGame, key - '1'))
             screenMessage("\nDisabled!\n");
-        else (*handlePlayerNo)(key - '1');
+        else (*info->command)(key - '1');
     } else {
         screenMessage("None\n");
         (*c->location->finishTurn)();
         valid = 0;
     }
 
+    free(info);
     return valid || keyHandlerDefault(key, NULL);
 }
 
@@ -1729,7 +1736,7 @@ int castForPlayer2(int spell, void *data) {
         break;
     case SPELLPRM_PLAYER:
         screenMessage("Who: ");
-        gameGetPlayerForCommand(&castForPlayerGetDestPlayer);        
+        gameGetPlayerForCommand(&castForPlayerGetDestPlayer, 1);        
         break;
     case SPELLPRM_DIR:
     case SPELLPRM_TYPEDIR:
