@@ -1058,8 +1058,10 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
         anim = tileAnimSetGetAnimByName(tileanims, "lcbflag");
         break;
     case ANIM_WESTSHIPFLAG:
+        anim = tileAnimSetGetAnimByName(tileanims, "shipflagwest");
+        break;
     case ANIM_EASTSHIPFLAG:
-        anim = tileAnimSetGetAnimByName(tileanims, "shipflag");
+        anim = tileAnimSetGetAnimByName(tileanims, "shipflageast");
         break;
     default:
         anim = NULL;
