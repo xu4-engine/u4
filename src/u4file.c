@@ -54,6 +54,9 @@ FILE *u4fopen(const char *fname) {
     if (pathname)
         free(pathname);
 
+    if (!f)
+        fprintf(stderr, "warning: couldn't find Ultima 4 data file '%s'\n", fname);
+
     return f;
 }
 
