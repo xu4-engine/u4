@@ -537,6 +537,15 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
         reply = lordBritishGetHelp(cnv);
     }
 
+    /* since the original game files are a bit sketchy on the 'abyss' keyword,
+       let's handle it here just to be safe :) */
+    else if (strncasecmp(inquiry, "abys", 4) == 0) {
+        reply = strdup("\n\n\n\n\nHe says:\nThe Great Stygian Abyss is the darkest pocket of evil "
+                    "remaining in Britannia!\n\n\n\n\nIt is said that in the deepest recesses of "
+                    "the Abyss is the Chamber of the Codex!\n\n\n\nIt is also said that only one "
+                    "of highest Virtue may enter this Chamber, one such as an Avatar!!!\n");
+    }
+
     else {
         for (i = 0; i < 24; i++) {
             if (strncasecmp(inquiry, lbKeywords[i], 4) == 0)

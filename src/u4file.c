@@ -293,10 +293,10 @@ char **u4read_stringtable(U4FILE *f, long offset, int nstrings) {
         u4fseek(f, offset, SEEK_SET);
     for (i = 0; i < nstrings; i++) {
         for (j = 0; j < sizeof(buffer) - 1; j++) {
-            buffer[j] = u4fgetc(f);
-            if (buffer[j] == '\0' &&
-                (j < 2 || !(buffer[j - 2] == 10 && buffer[j - 1] == 8))) /* needed to handle weird characters in lb's abyss response */
-                break;
+            buffer[j] = u4fgetc(f);            
+            
+            if (buffer[j] == '\0')                
+                break;            
         }
         while(j > 0 && !(isprint(buffer[j - 1]) || isspace(buffer[j - 1])))
             j--;
