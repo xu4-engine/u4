@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "u4.h"
 #include "screen.h"
@@ -18,6 +19,7 @@
 #include "annotation.h"
 #include "savegame.h"
 #include "stats.h"
+#include "spell.h"
 
 void moveAvatar(int dx, int dy);
 int attackAtCoord(int x, int y);
@@ -110,6 +112,7 @@ int keyHandlerNormal(int key, void *data) {
     int valid = 1;
     const Portal *portal;
     DirectedActionInfo *info;
+    SpellCastError spellError;
 
     switch (key) {
 
@@ -137,6 +140,28 @@ int keyHandlerNormal(int key, void *data) {
         info->failedMessage = "FIXME";
         eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, info);
         screenMessage("Attack\nDir: ");
+        break;
+
+    case 'c':
+        if (!spellCast(1, 0, &spellError)) {
+            switch(spellError) {
+            case CASTERR_NOMIX:
+                screenMessage("None Mixed!\n");
+                break;
+            case CASTERR_WRONGCONTEXT:
+                screenMessage("Can't Cast Here!\n");
+                break;
+            case CASTERR_MPTOOLOW:
+                screenMessage("Not Enough MP!\n");
+                break;
+            case CASTERR_NOERROR:
+            default:
+                /* should never happen */
+                assert(0);
+            }
+            break;
+        }
+        screenMessage("spell cast - not implemented yet!");
         break;
 
     case 'd':
