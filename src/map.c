@@ -291,8 +291,7 @@ unsigned char mapGetTileFromData(const Map *map, int x, int y, int z) {
     index = x + (y * map->width);
     if ((short)z >= 0)
         index += (map->width * map->height * z);
-    return map->data[index];
-    //#define MAP_TILE_AT(mapptr, x, y, z) ((mapptr)->data[(x) + ((y) * (mapptr)->width) + (((int)(z))!=-1 ? (mapptr)->width * (mapptr)->height * (z) : 0)])
+    return map->data[index];    
 }
 
 /**
@@ -345,8 +344,6 @@ int mapLoadDungeonRoom(struct _Dungeon *dng, int room) {
     dng->room->music = MUSIC_COMBAT;        
     dng->room->type = MAPTYPE_COMBAT;    
     dng->room->flags |= NO_LINE_OF_SIGHT;    
-    memcpy(dng->party_startx, dng->rooms->party_west_start_x, 8);
-    memcpy(dng->party_starty, dng->rooms->party_west_start_y, 8);
     return 1;
 }
 

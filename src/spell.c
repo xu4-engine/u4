@@ -443,21 +443,22 @@ static int spellCure(int player) {
 }
 
 static int spellDispel(int dir) {
-    int x, y, z;
+    int basex, basey, basez, x, y, z;
     unsigned char tile;
+    unsigned char newGroundTile;
     const Annotation *a;
     extern CombatInfo combatInfo;
     
     /* get the current location, based on context */
     if (c->location->context == CTX_COMBAT) {
-        x = combatInfo.party[FOCUS].obj->x;
-        y = combatInfo.party[FOCUS].obj->y;
-        z = combatInfo.party[FOCUS].obj->z;
+        basex = x = combatInfo.party[FOCUS].obj->x;
+        basey = y = combatInfo.party[FOCUS].obj->y;
+        basez = z = combatInfo.party[FOCUS].obj->z;
     }
     else {
-        x = c->location->x;
-        y = c->location->y;
-        z = c->location->z;
+        basex = x = c->location->x;
+        basey = y = c->location->y;
+        basez = z = c->location->z;
     }
 
     mapDirMove(c->location->map, (Direction) dir, &x, &y);
@@ -474,17 +475,24 @@ static int spellDispel(int dir) {
     }
 
     /*
-     * if the map tile itself is a field, overlay it with a brick
-     * annotation
+     * if the map tile itself is a field, overlay it with the tile
+     * that the avatar/player is standing on
      */
-    tile = (c->location->context & ~CTX_DUNGEON) ?
-        mapTileAt(c->location->map, x, y, z) :
-        mapDungeonTileAt(c->location->map, x, y, z);
+    tile = (c->location->context == CTX_DUNGEON) ?        
+        mapDungeonTileAt(c->location->map, x, y, z) :
+        mapTileAt(c->location->map, x, y, z);
     
     if (!tileCanDispel(tile))
         return 0;
     
-    annotationAdd(x, y, z, c->location->map->id, BRICKFLOOR_TILE);
+    /*
+     * get the ground tile underneath the avatar/player
+     */
+    newGroundTile = (c->location->context == CTX_DUNGEON) ?
+        mapDungeonTileAt(c->location->map, basex, basey, basez) :
+        mapGroundTileAt(c->location->map, basex, basey, basez);
+    
+    annotationAdd(x, y, z, c->location->map->id, newGroundTile);
 
     return 1;
 }
