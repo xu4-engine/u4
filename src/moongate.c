@@ -9,7 +9,7 @@
 #include "moongate.h"
 
 static const Moongate gates[] = {
-    { 224, 133 },                /* moonglow: I'F" O'A" */
+    { 224, 133 },               /* moonglow: I'F" O'A" */
     {  96, 103 },               /* britain: G'H" G'A" */
     {  38, 224 },               /* jhelom: O'A" C'G" */
     {  50,  37 },               /* yew: C'F" D'C" */
@@ -41,6 +41,6 @@ int moongateFindActiveGateAt(int trammel, int felucca, int x, int y, int *destx,
 
 int moongateIsEntryToShrineOfSpirituality(int trammel, int felucca) {
     return 
-        trammel == 3 && 
-        felucca == 3;
+        trammel == 4 && 
+        felucca == 4;
 }
