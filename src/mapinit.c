@@ -112,7 +112,7 @@ int initializeMaps() {
         con = u4fopen(areas[i]->fname);
         if (!con)
             return 0;
-        mapReadCon(areas[i], con, 1);
+        mapReadCon(areas[i], con, areas[i] != &shrine_map);
         u4fclose(con);
     }
 
