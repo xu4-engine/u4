@@ -125,6 +125,24 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
         { MOONGATE3_TILE, &grass_map }
     };
     
+    /* check if monster is aquatic */
+    if (monsterForTile(monsterObj->tile)->mattr & MATTR_WATER) {
+        if (tileIsPirateShip(monsterObj->tile)) {
+            if (tileIsShip(transport))
+                return &shipship_map;
+            else
+                return &shorship_map;
+        }
+
+        if (tileIsShip(transport))
+            return &shipsea_map;
+        else
+            return &shore_map;
+    }
+
+    if (tileIsShip(transport))
+        return &shipshor_map;
+
     for (i = 0; i < sizeof(tileToMap) / sizeof(tileToMap[0]); i++) {
         if (tileToMap[i].tile == partytile)
             return tileToMap[i].map;
