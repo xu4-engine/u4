@@ -125,7 +125,7 @@ Map magincia_map = {
 
 City magincia_city  = {
     "Magincia", /* name */
-    CITY_TOWN, /* type */
+    CITY_RUIN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */

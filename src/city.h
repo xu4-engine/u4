@@ -11,7 +11,8 @@ struct _Map;
 typedef enum {
     CITY_TOWN,
     CITY_VILLAGE,
-    CITY_CASTLE
+    CITY_CASTLE,
+    CITY_RUIN
 } CityType;
 
 typedef struct _City {

@@ -185,6 +185,9 @@ int gameBaseKeyHandler(int key, void *data) {
                 case CITY_CASTLE:
                     type = "castle";
                     break;
+                case CITY_RUIN:
+                    type = "ruin";
+                    break;
                 }
                 screenMessage("Enter %s!\n\n%s\n\n", type, c->map->city->name);
             }
