@@ -2442,13 +2442,11 @@ int newOrderForPlayer(int player) {
     GetPlayerInfo *playerInfo;
 
     if (player == 0) {
-        fprintf(stdout,"one player, player# == %d\n", player);
         screenMessage("%s, You must lead!\n", c->saveGame->players[0].name);
         (*c->location->finishTurn)();
         return 0;
     }
 
-    fprintf(stdout,"many players, player# == %d\n", player);
     screenMessage("    with # ");
 
     newOrderTemp = player;
