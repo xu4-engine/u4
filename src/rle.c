@@ -11,7 +11,7 @@
  * Decompress an RLE encoded file.
  */
 long rleDecompressFile(FILE *in, long inlen, void **out) {
-    unsigned char *indata, *outdata;
+    void *indata;
     long outlen;
 
     /* input file should be longer than 0 bytes */
@@ -19,8 +19,25 @@ long rleDecompressFile(FILE *in, long inlen, void **out) {
         return -1;
 
     /* load compressed file into memory */
-    indata = (unsigned char *) malloc(inlen);
+    indata = malloc(inlen);
     fread(indata, 1, inlen, in);
+
+    outlen = rleDecompressMemory(indata, inlen, out);
+
+    free(indata);
+
+    return outlen;
+}
+
+long rleDecompressMemory(void *in, long inlen, void **out) {
+    unsigned char *indata, *outdata;
+    long outlen;
+
+    /* input should be longer than 0 bytes */
+    if (inlen <= 0)
+        return -1;
+
+    indata = in;
 
     /* determine decompressed file size */
     outlen = rleGetDecompressedSize(indata, inlen);
@@ -31,8 +48,6 @@ long rleDecompressFile(FILE *in, long inlen, void **out) {
     /* decompress file from inlen to outlen */
     outdata = (unsigned char *) malloc(outlen);
     rleDecompress(indata, inlen, outdata, outlen);
-
-    free(indata);
 
     *out = outdata;
 
