@@ -839,6 +839,11 @@ int introHandleQuestionChoice(char choice) {
             saveGameWrite(&saveGame, saveGameFile);
             fclose(saveGameFile);
         }
+        saveGameFile = fopen("monsters.sav", "wb");
+        if (saveGameFile) {
+            saveGameMonstersWrite(NULL, saveGameFile);
+            fclose(saveGameFile);
+        }
     } else {
         introAskToggle = 0;
     }
