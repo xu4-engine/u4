@@ -16,9 +16,30 @@
 #include "names.h"
 #include "io.h"
 #include "stats.h"
+#include "map.h"
 
 #define N_ARMS_VENDORS 6
 #define ARMS_VENDOR_INVENTORY_SIZE 4
+
+#define VCM_SIZE 16
+
+typedef struct VendorTypeDesc {
+    long cityMapOffset;
+    unsigned char n_shops;
+    long shopNamesOffset;
+    long shopkeeperNamesOffset;
+    unsigned char n_items;
+    long itemDescriptionsOffset;
+} VendorTypeDesc;
+
+typedef struct _VendorTypeInfo {
+    unsigned char cityMap[VCM_SIZE];
+    int n_shops;
+    char **shopNames;
+    char **shopkeeperNames;
+    int n_items;
+    char **itemDescriptions;
+} VendorTypeInfo;
 
 typedef struct ArmsVendorInfo {
     unsigned char vendorInventory[N_ARMS_VENDORS][ARMS_VENDOR_INVENTORY_SIZE];
@@ -35,17 +56,8 @@ ArmsVendorInfo weaponVendorInfo;
 ArmsVendorInfo armorVendorInfo;
 unsigned char reagPrices[N_REAG_VENDORS][REAG_MAX];
 
-#define WV_SHOPNAME 0
-#define WV_VENDORNAME 6
-#define WV_ITEMDESC 12
-#define WV_NOTENOUGH 26
-#define WV_FINECHOICE 27
-
-#define AV_SHOPNAME 0
-#define AV_VENDORNAME 5
-#define AV_ITEMDESC 11
-#define AV_NOTENOUGH 17
-#define AV_FINECHOICE 18
+#define WV_NOTENOUGH 0
+#define WV_FINECHOICE 1
 
 #define WV_VERYGOOD 0
 #define WV_WEHAVE 1
@@ -62,9 +74,25 @@ unsigned char reagPrices[N_REAG_VENDORS][REAG_MAX];
 #define WV_BUYORSELL 25
 #define WV_BYE 26
 
+VendorTypeInfo *vendorLoadTypeInfo(FILE *avatar, const VendorTypeDesc *desc);
 const char *vendorGetName(const Person *v);
 const char *vendorGetShop(const Person *v);
 int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, FILE *f);
+
+const VendorTypeDesc vendorTypeDesc[] = {
+    { 80237, 6, 78883, -1, 14, 79015 },    /* weapons */
+    { 81511, 5, 80803, -1, 6, 80920 },     /* armor */
+    { 87519, 5, 87063, -1, 0, 0 },         /* food */
+    { 86363, 6, 85385, -1, 0, 0 },         /* tavern */
+    { 78827, 4, 78295, -1, 0, 0 },         /* reagents */
+    { 84475, 10, 84209, -1, 0, 0 },        /* healer */
+    { 83703, 7, 83001, -1, 0, 0 }          /* inn */
+};
+
+#define N_VENDOR_TYPE_DESCS (sizeof(vendorTypeDesc) / sizeof(vendorTypeDesc[0]))
+
+VendorTypeInfo **vendorTypeInfo;
+
 
 /**
  * Loads in conversation data for special cases and vendors from
@@ -88,7 +116,7 @@ int vendorInit() {
         reagPrices[i][REAG_MANDRAKE] = 0;
     }
 
-    weaponVendorText = u4read_stringtable(avatar, 78883, 28);
+    weaponVendorText = u4read_stringtable(avatar, 80077, 2);
 
     fseek(avatar, 80181, SEEK_SET);
     if (!armsVendorInfoRead(&weaponVendorInfo, WEAP_MAX, avatar))
@@ -96,7 +124,7 @@ int vendorInit() {
 
     weaponVendorText2 = u4read_stringtable(avatar, 80282, 27);
 
-    armorVendorText = u4read_stringtable(avatar, 80803, 19);
+    armorVendorText = u4read_stringtable(avatar, 81374, 2);
 
     fseek(avatar, 81471, SEEK_SET);
     if (!armsVendorInfoRead(&armorVendorInfo, ARMR_MAX, avatar))
@@ -104,37 +132,50 @@ int vendorInit() {
 
     armorVendorText2 = u4read_stringtable(avatar, 81540, 27);
 
+    vendorTypeInfo = (VendorTypeInfo **) malloc(sizeof(VendorTypeInfo *) * N_VENDOR_TYPE_DESCS);
+    for (i = 0; i < N_VENDOR_TYPE_DESCS; i++)
+        vendorTypeInfo[i] = vendorLoadTypeInfo(avatar, &(vendorTypeDesc[i]));
+
     u4fclose(avatar);
 
     return 1;
 }
 
+int vendorGetVendorNo(const Person *v) {
+    int type;
+
+    if (v->npcType < NPC_VENDOR_WEAPONS ||
+        v->npcType > NPC_VENDOR_INN)
+        return 0;
+
+    type = v->npcType - NPC_VENDOR_WEAPONS;
+
+    assert((c->map->id - 1) < VCM_SIZE);
+    assert(vendorTypeInfo[type]->cityMap[c->map->id - 1] != 0);
+
+    return vendorTypeInfo[type]->cityMap[c->map->id - 1] - 1;
+}
+
 const char *vendorGetName(const Person *v) {
-    switch (v->npcType) {
-    case NPC_VENDOR_WEAPONS:
-        return weaponVendorText[WV_VENDORNAME + v->vendorIndex];
-        break;
-    case NPC_VENDOR_ARMOR:
-        return armorVendorText[AV_VENDORNAME + v->vendorIndex];
-        break;
-    default:
-        assert(0);          /* shouldn't happen */
-        return NULL;
-    }
+    int type;
+    if (v->npcType < NPC_VENDOR_WEAPONS ||
+        v->npcType > NPC_VENDOR_INN)
+        assert(0);              /* shouldn't happen */
+
+    type = v->npcType - NPC_VENDOR_WEAPONS;
+
+    return vendorTypeInfo[type]->shopkeeperNames[vendorGetVendorNo(v)];
 }
 
 const char *vendorGetShop(const Person *v) {
-    switch (v->npcType) {
-    case NPC_VENDOR_WEAPONS:
-        return weaponVendorText[WV_SHOPNAME + v->vendorIndex];
-        break;
-    case NPC_VENDOR_ARMOR:
-        return armorVendorText[AV_SHOPNAME + v->vendorIndex];
-        break;
-    default:
-        assert(0);          /* shouldn't happen */
-        return NULL;
-    }
+    int type;
+    if (v->npcType < NPC_VENDOR_WEAPONS ||
+        v->npcType > NPC_VENDOR_INN)
+        assert(0);              /* shouldn't happen */
+
+    type = v->npcType - NPC_VENDOR_WEAPONS;
+
+    return vendorTypeInfo[type]->shopNames[vendorGetVendorNo(v)];
 }
 
 char *vendorGetIntro(Conversation *cnv) {
@@ -160,27 +201,11 @@ char *vendorGetIntro(Conversation *cnv) {
         break;
 
     case NPC_VENDOR_FOOD:
-        intro = strdup("I am a food vendor!\n");
-        cnv->state = CONV_DONE;
-        break;
-
     case NPC_VENDOR_TAVERN:
-        intro = strdup("I am a tavern keeper!\n");
-        cnv->state = CONV_DONE;
-        break;
-
     case NPC_VENDOR_REAGENTS:
-        intro = strdup("I am a reagent vendor!\n");
-        cnv->state = CONV_DONE;
-        break;
-
     case NPC_VENDOR_HEALER:
-        intro = strdup("I am a healer!\n");
-        cnv->state = CONV_DONE;
-        break;
-
     case NPC_VENDOR_INN:
-        intro = strdup("I am a inn keeper!\n");
+        intro = concat("name: ", vendorGetName(cnv->talker), ", shop: ", vendorGetShop(cnv->talker), "\n", NULL);
         cnv->state = CONV_DONE;
         break;
 
@@ -254,15 +279,15 @@ char *vendorGetBuySellResponse(Conversation *cnv, const char *response) {
         reply = concat(vendorText[WV_VERYGOOD], vendorText[WV_WEHAVE], NULL);
         for (i = 0; i < ARMS_VENDOR_INVENTORY_SIZE; i++) {
             char *newreply, buffer[17];
-            if (info->vendorInventory[cnv->talker->vendorIndex][i] != 0) {
+            if (info->vendorInventory[vendorGetVendorNo(cnv->talker)][i] != 0) {
                 const char *name;
 
                 if (cnv->talker->npcType == NPC_VENDOR_WEAPONS)
-                    name = getWeaponName((WeaponType) info->vendorInventory[cnv->talker->vendorIndex][i]);
+                    name = getWeaponName((WeaponType) info->vendorInventory[vendorGetVendorNo(cnv->talker)][i]);
                 else
-                    name = getArmorName((ArmorType) info->vendorInventory[cnv->talker->vendorIndex][i]);
+                    name = getArmorName((ArmorType) info->vendorInventory[vendorGetVendorNo(cnv->talker)][i]);
 
-                snprintf(buffer, sizeof(buffer), "%c-%s\n", 'A' + info->vendorInventory[cnv->talker->vendorIndex][i], name);
+                snprintf(buffer, sizeof(buffer), "%c-%s\n", 'A' + info->vendorInventory[vendorGetVendorNo(cnv->talker)][i], name);
                 newreply = concat(reply, buffer, NULL);
                 free(reply);
                 reply = newreply;
@@ -303,24 +328,16 @@ char *vendorGetBuyItemResponse(Conversation *cnv, const char *response) {
     }
 
     for (i = 0; i < ARMS_VENDOR_INVENTORY_SIZE; i++) {
-        if (info->vendorInventory[cnv->talker->vendorIndex][i] != 0 &&
-            (tolower(response[0]) - 'a') == info->vendorInventory[cnv->talker->vendorIndex][i])
-            cnv->item = info->vendorInventory[cnv->talker->vendorIndex][i];
+        if (info->vendorInventory[vendorGetVendorNo(cnv->talker)][i] != 0 &&
+            (tolower(response[0]) - 'a') == info->vendorInventory[vendorGetVendorNo(cnv->talker)][i])
+            cnv->item = info->vendorInventory[vendorGetVendorNo(cnv->talker)][i];
     }
 
     if (cnv->item == -1)
         reply = strdup("");
     else {
-        switch (cnv->talker->npcType) {
-        case NPC_VENDOR_WEAPONS:
-            reply = strdup(weaponVendorText[WV_ITEMDESC + cnv->item - 1]);
-            break;
-        case NPC_VENDOR_ARMOR:
-            reply = strdup(armorVendorText[AV_ITEMDESC + cnv->item - 1]);
-            break;
-        default:
-            assert(0);              /* shouldn't happen */
-        }
+        int type = cnv->talker->npcType - NPC_VENDOR_WEAPONS;
+        reply = strdup(vendorTypeInfo[type]->itemDescriptions[cnv->item - 1]);
         cnv->state = CONV_BUY_QUANTITY;
     }
 
@@ -398,7 +415,7 @@ char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response) {
 
     case NPC_VENDOR_WEAPONS:
         if (success) {
-            reply = concat(weaponVendorText[WV_VENDORNAME + cnv->talker->vendorIndex], weaponVendorText[WV_FINECHOICE], NULL);
+            reply = concat(vendorGetName(cnv->talker), weaponVendorText[WV_FINECHOICE], NULL);
             c->saveGame->weapons[cnv->item] += cnv->quant;
             statsUpdate();
         } else
@@ -409,11 +426,11 @@ char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response) {
 
     case NPC_VENDOR_ARMOR:
         if (success) {
-            reply = concat(armorVendorText[AV_VENDORNAME + cnv->talker->vendorIndex], armorVendorText[AV_FINECHOICE], NULL);
+            reply = concat(vendorGetName(cnv->talker), armorVendorText[WV_FINECHOICE], NULL);
             c->saveGame->armor[cnv->item] += cnv->quant;
             statsUpdate();
         } else
-            reply = strdup(armorVendorText[AV_NOTENOUGH]);
+            reply = strdup(armorVendorText[WV_NOTENOUGH]);
         cnv->state = CONV_DONE;
         break;
         
@@ -453,7 +470,7 @@ char *vendorGetSellQuantityResponse(Conversation *cnv, const char *response) {
 
     case NPC_VENDOR_WEAPONS:
         if (success) {
-            reply = concat(weaponVendorText[WV_VENDORNAME + cnv->talker->vendorIndex], weaponVendorText[WV_FINECHOICE], NULL);
+            reply = concat(vendorGetName(cnv->talker), weaponVendorText[WV_FINECHOICE], NULL);
             c->saveGame->weapons[cnv->item] -= cnv->quant;
             statsUpdate();
         } else
@@ -464,7 +481,7 @@ char *vendorGetSellQuantityResponse(Conversation *cnv, const char *response) {
 
     case NPC_VENDOR_ARMOR:
         if (success) {
-            reply = concat(armorVendorText[AV_VENDORNAME + cnv->talker->vendorIndex], armorVendorText[AV_FINECHOICE], NULL);
+            reply = concat(vendorGetName(cnv->talker), armorVendorText[WV_FINECHOICE], NULL);
             c->saveGame->armor[cnv->item] -= cnv->quant;
             statsUpdate();
         } else
@@ -496,4 +513,30 @@ int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, FILE *f) {
     }
 
     return 1;
+}
+
+VendorTypeInfo *vendorLoadTypeInfo(FILE *avatar, const VendorTypeDesc *desc) {
+    int i;
+    VendorTypeInfo *info = (VendorTypeInfo *) malloc(sizeof(VendorTypeInfo));
+
+    memset(info, 0, sizeof(VendorTypeInfo));
+
+    fseek(avatar, desc->cityMapOffset, SEEK_SET);
+    for (i = 0; i < VCM_SIZE; i++) {
+        if (!readChar(&(info->cityMap[i]), avatar))
+            return NULL;
+    }
+
+    info->n_shops = desc->n_shops;
+    if (info->n_shops) {
+        info->shopNames = u4read_stringtable(avatar, desc->shopNamesOffset, info->n_shops);
+        info->shopkeeperNames = u4read_stringtable(avatar, desc->shopkeeperNamesOffset, info->n_shops);
+    }
+
+    info->n_items = desc->n_items;
+    if (info->n_items) {
+        info->itemDescriptions = u4read_stringtable(avatar, desc->itemDescriptionsOffset, info->n_items);
+    }
+
+    return info;
 }
