@@ -66,9 +66,12 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
     
     screenInit();
+    screenTextAt(15, 12, "Loading...");
+    screenRedrawScreen();
+
     musicInit();
     soundInit();
-    eventHandlerInit();
+    eventHandlerInit();    
 
     tilesetLoadAllTilesetsFromXml("tilesets.xml");
 
