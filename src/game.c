@@ -42,7 +42,6 @@ void gameAdvanceLevel(const SaveGamePlayerRecord *player);
 void gameCastSpell(unsigned int spell, int caster, int param);
 int gameCheckPlayerDisabled(int player);
 void gameGetPlayerForCommand(int (*commandFn)(int player));
-int gameCanMoveOntoTile(const Map *map, int x, int y);
 int moveAvatar(Direction dir, int userEvent);
 int attackAtCoord(int x, int y, int distance);
 int castForPlayer(int player);
@@ -1620,38 +1619,6 @@ int wearForPlayer2(int a, void *data) {
     screenMessage("%s\n", getArmorName(armor));
 
     gameFinishTurn();
-
-    return 1;
-}
-
-/**
- * Returns true if moving onto the given coordinate is possible,
- * taking into account the current party transport (on foot, ship,
- * horse, etc.). 
- */
-int gameCanMoveOntoTile(const Map *map, int x, int y) {
-    unsigned char tile;
-    Object *obj;
-
-    /* if an object is on the map tile in question, check it instead */
-    if (c->saveGame->x == x && c->saveGame->y == y)
-        tile = c->saveGame->transport;
-    else if ((obj = mapObjectAt(map, x, y)) != NULL)
-        tile = obj->tile;
-    else
-        tile = mapTileAt(map, x, y);
-
-    /* if the party in is a ship, check sailable, otherwise walkable */
-    if (tileIsShip(c->saveGame->transport)) {
-        if (!tileIsSailable(tile))
-            return 0;
-    }
-    else if (tileIsBalloon(c->saveGame->transport)) {
-        if (!tileIsFlyable(tile))
-            return 0;
-    }
-    else if (!tileIsWalkable(tile))
-        return 0;
 
     return 1;
 }
