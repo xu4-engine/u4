@@ -3,9 +3,9 @@
  */
 
 #include <stdlib.h>
-#include <assert.h>
 
 #include "direction.h"
+#include "debug.h"
 
 /**
  * Adjusts the given coordinates one unit in the given direction.
@@ -27,7 +27,7 @@ void dirMove(Direction dir, int *x, int *y) {
         (*y)++;
         break;
     default:
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "invalid direction: %d", dir);
     }
 }
 
@@ -48,7 +48,7 @@ Direction dirReverse(Direction dir) {
         return DIR_NORTH;
     }
 
-    assert(0);                  /* shouldn't happen */
+    ASSERT(0, "invalid direction: %d", dir);
     return DIR_NONE;
 }
 

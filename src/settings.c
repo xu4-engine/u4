@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 
 #include "settings.h"
 #include "error.h"
+#include "debug.h"
 
 Settings *settings = NULL;
 
@@ -119,8 +119,7 @@ const char *settingsFilterToString(FilterType filter) {
         "point", "2xBi", "2xSaI", "Scale2x"
     };
 
-    if (filter >= SCL_MAX)
-        assert(0);              /* shouldn't happen */
+    ASSERT(filter < SCL_MAX, "invalid filter value %d\n", filter);
 
     return filterNames[filter];
 }

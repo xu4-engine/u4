@@ -3,7 +3,6 @@
  */
 
 #include <stddef.h>
-#include <assert.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
@@ -142,7 +141,8 @@ void tileLoadInfoFromXml() {
     }
 
     /* ensure information for all non-monster tiles was loaded */
-    assert(tile == 128);
+    if (tile != 128)
+        errorFatal("tiles.xml contained %d entries (must be 128)\n", tile);
 
     if (baseChest == -1)
         errorFatal("tile attributes: a tile must have the \"chest\" attribute");

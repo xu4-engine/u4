@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 #include <time.h>
 
 #include "u4.h"
@@ -36,6 +35,7 @@
 #include "camp.h"
 #include "settings.h"
 #include "error.h"
+#include "debug.h"
 
 void gameLostEighth(Virtue virtue);
 void gameAdvanceLevel(const SaveGamePlayerRecord *player);
@@ -149,7 +149,7 @@ void gameUpdateScreen() {
         screenUpdate(1, 1);
         break;
     default:
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "invalid view mode: %d", viewMode);
     }
 }
 
@@ -288,7 +288,7 @@ void gameCastSpell(unsigned int spell, int caster, int param) {
 }
 
 int gameCheckPlayerDisabled(int player) {
-    assert(player < c->saveGame->members);
+    ASSERT(player < c->saveGame->members, "player %d, but only %d members\n", player, c->saveGame->members);
 
     if (c->saveGame->players[player].status == STAT_DEAD ||
         c->saveGame->players[player].status == STAT_SLEEPING) {
@@ -1425,7 +1425,7 @@ int quitHandleChoice(char choice) {
         gameFinishTurn();
         break;
     default:
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "invalid choice: %d", choice);
     }
 
     return 1;
