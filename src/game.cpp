@@ -91,8 +91,6 @@ void talkRunConversation(bool showPrompt);
 /* action functions */
 bool attackAtCoord(MapCoords coords, int distance, void *data);
 bool destroyAtCoord(MapCoords coords, int distance, void *data);
-MoveReturnValue gameMoveAvatar(Direction dir, int userEvent);
-MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent);
 bool getChestTrapHandler(int player);
 bool jimmyAtCoord(MapCoords coords, int distance, void *data);
 bool openAtCoord(MapCoords coords, int distance, void *data);
@@ -230,7 +228,7 @@ void GameController::init() {
     c->lastShip = NULL;
 
     /* set the map to the world map by default */
-    gameSetMap(mapMgr->get(MAP_WORLD), 0, NULL);  
+    setMap(mapMgr->get(MAP_WORLD), 0, NULL);  
     c->location->map->clearObjects();
 
     TRACE_LOCAL(gameDbg, "World map set."); ++pb;
@@ -261,7 +259,7 @@ void GameController::init() {
     
     /* if our map is not the world map, then load our map */
     if (map->type != Map::WORLD)
-        gameSetMap(map, 1, NULL);    
+        setMap(map, 1, NULL);    
 
     /**
      * Translate info from the savegame to something we can use
@@ -513,12 +511,11 @@ void gameUpdateScreen() {
     }
 }
 
-void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
+void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn = &GameController::finishTurn;
     Tileset *tileset = Tileset::get("base");
-    MoveCallback move = &gameMoveAvatar;        
     int activePlayer = (c->location) ? c->location->activePlayer : -1;
     MapCoords coords;
 
@@ -530,7 +527,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
     /* If we don't want to save the location, then just return to the previous location,
        as there may still be ones in the stack we want to keep */
     if (!saveLocation)
-        gameExitToParentMap();
+        exitToParentMap();
     
     switch (map->type) {
     case Map::WORLD:
@@ -543,14 +540,12 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         if (portal)
             c->saveGame->orientation = DIR_EAST;
         tileset = Tileset::get("dungeon");
-        move = &gameMoveAvatarInDungeon;        
         break;
     case Map::COMBAT:
         coords = MapCoords(-1, -1); /* set these to -1 just to be safe; we don't need them */
         context = CTX_COMBAT;
         viewMode = VIEW_NORMAL;
         finishTurn = &CombatController::finishTurn;
-        move = &CombatController::movePartyMember;
         activePlayer = -1; /* different active player for combat, defaults to 'None' */
         break;
     case Map::CITY:    
@@ -560,7 +555,8 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         break;
     }    
     
-    c->location = new Location(coords, map, viewMode, context, finishTurn, tileset, move, c->location);    
+    c->location = new Location(coords, map, viewMode, context, finishTurn, tileset, c->location);
+    c->location->addObserver(this);
     c->location->activePlayer = activePlayer;
 
     /* now, actually set our new tileset */
@@ -578,7 +574,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
  * such as the map, map position, etc. (such as exiting a city)
  **/
 
-int gameExitToParentMap() {
+int GameController::exitToParentMap() {
     if (!c->location)
         return 0;
 
@@ -677,6 +673,9 @@ void GameController::finishTurn() {
     c->lastCommandTime = time(NULL);
 }
 
+/**
+ * Provide feedback to user after a party event happens.
+ */
 void GameController::update(Party *party, PartyEvent &event) {
     int i;
     
@@ -700,6 +699,23 @@ void GameController::update(Party *party, PartyEvent &event) {
     default:
         break;
     }
+}
+
+/**
+ * Provide feedback to user after a movement event happens.
+ */
+void GameController::update(Location *location, MoveEvent &event) {
+    switch (location->map->type) {
+    case Map::DUNGEON:
+        avatarMovedInDungeon(event);
+        break;
+    case Map::COMBAT:
+        CombatController::movePartyMember(event);
+        break;
+    default:
+        avatarMoved(event);
+        break;
+    }    
 }
 
 void gameSpellEffect(int spell, int player, Sound sound) {
@@ -839,13 +855,13 @@ bool GameController::keyPressed(int key) {
     case U4_RIGHT:        
         {
             /* move the avatar */
-            MoveReturnValue retval = (*c->location->move)(keyToDirection(key), 1);
+            MoveResult retval = c->location->move(keyToDirection(key), true);
         
             /* horse doubles speed (make sure we're on the same map as the previous move first) */
             if (retval & (MOVE_SUCCEEDED | MOVE_SLOWED) && 
                 (c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
                 gameUpdateScreen(); /* to give it a smooth look of movement */
-                (*c->location->move)(keyToDirection(key), 0);
+                c->location->move(keyToDirection(key), false);
             }
 
             endTurn = (retval & MOVE_END_TURN); /* let the movement handler decide to end the turn */
@@ -872,7 +888,7 @@ bool GameController::keyPressed(int key) {
 
     case U4_FKEY+8:
         if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-            gameSetMap(mapMgr->get(MAP_DECEIT), 1, NULL);
+            setMap(mapMgr->get(MAP_DECEIT), 1, NULL);
             c->location->coords = MapCoords(1, 0, 7);            
             c->saveGame->orientation = DIR_SOUTH;
         }
@@ -881,7 +897,7 @@ bool GameController::keyPressed(int key) {
 
     case U4_FKEY+9:
         if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-            gameSetMap(mapMgr->get(MAP_DESPISE), 1, NULL);
+            setMap(mapMgr->get(MAP_DESPISE), 1, NULL);
             c->location->coords = MapCoords(3, 2, 7);
             c->saveGame->orientation = DIR_SOUTH;
         }
@@ -890,7 +906,7 @@ bool GameController::keyPressed(int key) {
 
     case U4_FKEY+10:
         if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-            gameSetMap(mapMgr->get(MAP_DESTARD), 1, NULL);
+            setMap(mapMgr->get(MAP_DESTARD), 1, NULL);
             c->location->coords = MapCoords(7, 6, 7);            
             c->saveGame->orientation = DIR_SOUTH;
         }
@@ -936,7 +952,7 @@ bool GameController::keyPressed(int key) {
             screenPrompt();
             
             /* Help! send me to Lord British (who conveniently is right around where you are)! */
-            gameSetMap(mapMgr->get(100), 1, NULL);
+            setMap(mapMgr->get(100), 1, NULL);
             c->location->coords.x = 19;
             c->location->coords.y = 8;
             c->location->coords.z = 0;
@@ -1313,7 +1329,7 @@ bool GameController::keyPressed(int key) {
             /* first teleport to the abyss */
             c->location->coords.x = 0xe9;
             c->location->coords.y = 0xe9;
-            gameSetMap(mapMgr->get(MAP_ABYSS), 1, NULL);
+            setMap(mapMgr->get(MAP_ABYSS), 1, NULL);
             /* then to the final altar */
             c->location->coords.x = 7;
             c->location->coords.y = 7;
@@ -1898,7 +1914,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
 
     case 'x':
         screenMessage("\nX-it!\n");        
-        if (!gameExitToParentMap())
+        if (!game->exitToParentMap())
             screenMessage("Not Here!\n");
         musicMgr->play();
         screenPrompt();
@@ -1910,7 +1926,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
             c->location->coords.z--;
         else {
             screenMessage("Leaving...\n");
-            gameExitToParentMap();
+            game->exitToParentMap();
             musicMgr->play();
         }
         screenPrompt();
@@ -2357,92 +2373,86 @@ bool getChestTrapHandler(int player) {
 }
 
 /**
- * Handles moving the avatar during normal 3rd-person view 
+ * Handles feedback after avatar moved during normal 3rd-person view.
  */
-MoveReturnValue gameMoveAvatar(Direction dir, int userEvent) {       
-    MoveReturnValue retval = moveAvatar(dir, userEvent);  /* move the avatar */
-
-    if (userEvent) {
+void GameController::avatarMoved(MoveEvent &event) {       
+    if (event.userEvent) {
 
         if (!settings.filterMoveMessages) {
-            if (retval & MOVE_TURNED)
-                screenMessage("Turn %s!\n", getDirectionName(dir));
+            if (event.result & MOVE_TURNED)
+                screenMessage("Turn %s!\n", getDirectionName(event.dir));
             else if (c->transportContext == TRANSPORT_SHIP)
-                screenMessage("Sail %s!\n", getDirectionName(dir));    
+                screenMessage("Sail %s!\n", getDirectionName(event.dir));    
             else if (c->transportContext != TRANSPORT_BALLOON)
-                screenMessage("%s\n", getDirectionName(dir));    
+                screenMessage("%s\n", getDirectionName(event.dir));
         }
 
         /* movement was blocked */
-        if (retval & MOVE_BLOCKED) {
+        if (event.result & MOVE_BLOCKED) {
 
             /* if shortcuts are enabled, try them! */
             if (settings.shortcutCommands) {
                 MapCoords new_coords = c->location->coords;
                 MapTile *tile;
                 
-                new_coords.move(dir, c->location->map);                
+                new_coords.move(event.dir, c->location->map);
                 tile = c->location->map->tileAt(new_coords, WITH_OBJECTS);
 
                 if (tile->isDoor()) {
                     openAtCoord(new_coords, 1, NULL);
-                    retval = (MoveReturnValue)(MOVE_SUCCEEDED | MOVE_END_TURN);
+                    event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);
                 } else if (tile->isLockedDoor()) {
                     jimmyAtCoord(new_coords, 1, NULL);
-                    retval = (MoveReturnValue)(MOVE_SUCCEEDED | MOVE_END_TURN);
+                    event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);
                 } /*else if (mapPersonAt(c->location->map, new_coords) != NULL) {
                     talkAtCoord(newx, newy, 1, NULL);
-                    retval = MOVE_SUCCEEDED | MOVE_END_TURN;
+                    event.result = MOVE_SUCCEEDED | MOVE_END_TURN;
                     }*/
             }
 
             /* if we're still blocked */
-            if ((retval & MOVE_BLOCKED) && !settings.filterMoveMessages) {
+            if ((event.result & MOVE_BLOCKED) && !settings.filterMoveMessages) {
                 screenMessage("Blocked!\n");
             }
         }
 
         /* play an approriate sound effect */
-        if (retval & MOVE_BLOCKED)
+        if (event.result & MOVE_BLOCKED)
             soundPlay(SOUND_BLOCKED);
         else if (c->transportContext == TRANSPORT_FOOT || c->transportContext == TRANSPORT_HORSE)
             soundPlay(SOUND_WALK);
     }
 
     /* movement was slowed */
-    if (retval & MOVE_SLOWED)
+    if (event.result & MOVE_SLOWED)
         screenMessage("Slow progress!\n");        
 
     /* exited map */
-    if (retval & MOVE_EXIT_TO_PARENT) {
+    if (event.result & MOVE_EXIT_TO_PARENT) {
         screenMessage("Leaving...\n");
-        gameExitToParentMap();
+        exitToParentMap();
         musicMgr->play();
     }
 
     /* things that happen while not on board the balloon */
     if (c->transportContext & ~TRANSPORT_BALLOON)
-        gameCheckSpecialCreatures(dir);
+        gameCheckSpecialCreatures(event.dir);
     /* things that happen while on foot or horseback */
     if (c->transportContext & TRANSPORT_FOOT_OR_HORSE) {
         if (gameCheckMoongates())
-            retval = (MoveReturnValue)(MOVE_MAP_CHANGE | MOVE_END_TURN);
+            event.result = (MoveResult)(MOVE_MAP_CHANGE | MOVE_END_TURN);
     }
-
-    return retval;
 }
 
 /**
- * Handles moving the avatar in the 3-d dungeon view
+ * Handles feedback after moving the avatar in the 3-d dungeon view.
  */
-MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
-
-    MoveReturnValue retval = moveAvatarInDungeon(dir, userEvent);  /* move the avatar */
-    Direction realDir = dirNormalize((Direction)c->saveGame->orientation, dir);
+void GameController::avatarMovedInDungeon(MoveEvent &event) {
+    Direction realDir = dirNormalize((Direction)c->saveGame->orientation, event.dir);
 
     if (!settings.filterMoveMessages) {
-        if (userEvent) {
-            if (retval & MOVE_TURNED) {
+        if (event.userEvent) {
+            if (event.result & MOVE_TURNED) {
                 if (dirRotateCCW((Direction)c->saveGame->orientation) == realDir)
                     screenMessage("Turn Left\n");
                 else screenMessage("Turn Right\n");
@@ -2451,19 +2461,19 @@ MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
             else screenMessage("%s\n", realDir == c->saveGame->orientation ? "Advance" : "Retreat");
         }
 
-        if (retval & MOVE_BLOCKED)
+        if (event.result & MOVE_BLOCKED)
             screenMessage("Blocked!\n");       
     }
 
     /* if we're exiting the map, do this */
-    if (retval & MOVE_EXIT_TO_PARENT) {
+    if (event.result & MOVE_EXIT_TO_PARENT) {
         screenMessage("Leaving...\n");
-        gameExitToParentMap();
+        exitToParentMap();
         musicMgr->play();
     }
 
     /* check to see if we're entering a dungeon room */
-    if (retval & MOVE_SUCCEEDED) {
+    if (event.result & MOVE_SUCCEEDED) {
         if (dungeonCurrentToken() == DUNGEON_ROOM) {            
             int room = (int)dungeonCurrentSubToken(); /* get room number */
         
@@ -2485,8 +2495,6 @@ MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
             c->combat->begin();
         }
     }
-
-    return retval;
 }
 
 /**
@@ -2762,7 +2770,7 @@ bool gamePeerCity(int city, void *data) {
     peerMap = mapMgr->get((MapId)(city+1));
 
     if (peerMap != NULL) {
-        gameSetMap(peerMap, 1, NULL);
+        game->setMap(peerMap, 1, NULL);
         c->location->viewMode = VIEW_GEM;
         game->paused = true;
         game->pausedTimer = 0;
@@ -2771,7 +2779,7 @@ bool gamePeerCity(int city, void *data) {
             
         ReadChoiceController::get("\015 \033");
 
-        gameExitToParentMap();
+        game->exitToParentMap();
         screenEnableCursor();
         game->paused = false;
     
@@ -3029,8 +3037,6 @@ void GameController::timerFired() {
     }
     
     if (!paused && !pausedTimer) {
-        Direction dir = DIR_WEST;
-
         if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
             if (xu4_random(4) == 1 && !windLock)
                 c->windDirection = dirRandomDir(MASK_DIR_ALL);
@@ -3040,8 +3046,7 @@ void GameController::timerFired() {
         /* balloon moves about 4 times per second */
         if ((c->transportContext == TRANSPORT_BALLOON) &&
             c->party->isFlying()) {
-            dir = dirReverse((Direction) c->windDirection);
-            gameMoveAvatar(dir, 0);            
+            c->location->move(dirReverse((Direction) c->windDirection), false);
         }        
         
         gameUpdateMoons(1);
@@ -3299,7 +3304,7 @@ bool gameCheckMoongates(void) {
             if (!c->party->canEnterShrine(VIRT_SPIRITUALITY))
                 return true;
             
-            gameSetMap(shrine_spirituality, 1, NULL);
+            game->setMap(shrine_spirituality, 1, NULL);
             musicMgr->play();
 
             shrine_spirituality->enter();

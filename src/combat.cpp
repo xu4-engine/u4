@@ -67,12 +67,12 @@ CombatController::CombatController() {
 }
 CombatController::CombatController(CombatMap *m) {
     map = m;
-    gameSetMap(map, true, NULL);    
+    game->setMap(map, true, NULL);    
     c->party->addObserver(this);
 }
 CombatController::CombatController(MapId id) {
     map = getCombatMap(mapMgr->get(id));
-    gameSetMap(map, true, NULL);
+    game->setMap(map, true, NULL);
     c->party->addObserver(this);
 }
 
@@ -279,7 +279,7 @@ void CombatController::end(bool adjustKarma) {
     /* need to get this here because when we exit to the parent map, all the monsters are cleared */
     bool won = isWon();    
     
-    gameExitToParentMap();
+    game->exitToParentMap();
     musicMgr->play();
     
     if (winOrLose) {
@@ -340,7 +340,7 @@ void CombatController::end(bool adjustKarma) {
 
         if (exitDir != DIR_NONE) {
             c->saveGame->orientation = exitDir;  /* face the direction exiting the room */
-            (*c->location->move)(DIR_NORTH, 0);  /* advance 1 space outside of the room */
+            c->location->move(DIR_NORTH, false);  /* advance 1 space outside of the room */
         }
     }
 
@@ -904,13 +904,12 @@ void CombatController::finishTurn(void) {
 /**
  * Move a party member during combat and display the appropriate messages
  */
-MoveReturnValue CombatController::movePartyMember(Direction dir, int userEvent) {
+void CombatController::movePartyMember(MoveEvent &event) {
     CombatController *ct = c->combat;    
-    MoveReturnValue retval = ::movePartyMember(dir, userEvent);
     int i;
 
     /* active player left/fled combat */
-    if ((retval & MOVE_EXIT_TO_PARENT) && (c->location->activePlayer == ct->focus)) {
+    if ((event.result & MOVE_EXIT_TO_PARENT) && (c->location->activePlayer == ct->focus)) {
         c->location->activePlayer = -1;
         /* assign active player to next available party member */
         for (i = 0; i < c->party->size(); i++) {
@@ -921,17 +920,15 @@ MoveReturnValue CombatController::movePartyMember(Direction dir, int userEvent) 
         }
     }
 
-    screenMessage("%s\n", getDirectionName(dir));
-    if (retval & MOVE_MUST_USE_SAME_EXIT)
+    screenMessage("%s\n", getDirectionName(event.dir));
+    if (event.result & MOVE_MUST_USE_SAME_EXIT)
         screenMessage("All must use same exit!\n");
-    else if (retval & MOVE_BLOCKED)
+    else if (event.result & MOVE_BLOCKED)
         screenMessage("Blocked!\n");
-    else if (retval & MOVE_SLOWED)
+    else if (event.result & MOVE_SLOWED)
         screenMessage("Slow progress!\n"); 
-    else if (ct->winOrLose && ct->getCreature()->isEvil() && (retval & (MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE)))
+    else if (ct->winOrLose && ct->getCreature()->isEvil() && (event.result & (MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE)))
         soundPlay(SOUND_FLEE);
-
-    return retval;
 }
 
 // Key handlers
@@ -946,8 +943,8 @@ bool CombatController::keyPressed(int key) {
     case U4_UP:
     case U4_DOWN:
     case U4_LEFT:
-    case U4_RIGHT:        
-        (*c->location->move)(keyToDirection(key), 1);
+    case U4_RIGHT:
+        c->location->move(keyToDirection(key), true);
         break;
 
     case U4_ESC:

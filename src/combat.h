@@ -87,7 +87,7 @@ public:
 
     static void attackFlash(Coords coords, MapTile tile, int timeFactor);
     static void finishTurn(void);
-    static MoveReturnValue movePartyMember(Direction dir, int userEvent);
+    static void movePartyMember(MoveEvent &event);
 
     // Key handlers
     virtual bool keyPressed(int key);

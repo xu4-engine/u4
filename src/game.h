@@ -17,6 +17,7 @@
 class Map;
 struct Portal;
 class Creature;
+class Location;
 class Party;
 class PartyEvent;
 class PartyMember;
@@ -74,8 +75,13 @@ private:
 
 /**
  * The main game controller that handles basic game flow and keypresses.
+ *
+ * @todo
+ *  <ul> 
+ *      <li>separate the dungeon specific stuff into another class (subclass?)</li>
+ *  </ul>
  */
-class GameController : public Controller, public Observer<Party *, PartyEvent &> {
+class GameController : public Controller, public Observer<Party *, PartyEvent &>, public Observer<Location *, MoveEvent &> {
 public:
     GameController();
 
@@ -84,14 +90,21 @@ public:
     virtual void timerFired();
 
     /* main game functions */
-    void init(void);    
-    static void finishTurn(void);
+    void init();
+    void setMap(Map *map, bool saveLocation, const Portal *portal);
+    int exitToParentMap();
+    static void finishTurn();
 
     virtual void update(Party *party, PartyEvent &event);
+    virtual void update(Location *location, MoveEvent &event);
 
     TileView mapArea;
     bool paused;
     int pausedTimer;
+
+private:
+    void avatarMoved(MoveEvent &event);
+    void avatarMovedInDungeon(MoveEvent &event);
 };
 
 extern GameController *game;
@@ -107,8 +120,6 @@ bool gameZtatsKeyHandler(int key, void *data);
 /* map and screen functions */
 void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
-void gameSetMap(class Map *map, bool saveLocation, const Portal *portal);
-int gameExitToParentMap();
 
 /* spell functions */
 bool gameCastForPlayer(int player);
