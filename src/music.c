@@ -43,7 +43,7 @@ Mix_Music *playing = NULL;
  */
 void musicPlayMid(Music music) {    
 
-    if (settings->vol == 0) {        
+    if (settings->musicVol == 0) {        
         musicFadeOut(1000);
         return;
     }    
@@ -201,7 +201,7 @@ void musicFadeOut(int msecs) {
  * Fade in the music
  */
 void musicFadeIn(int msecs, int loadFromMap) {
-    if (!musicIsPlaying() && settings->vol) {
+    if (!musicIsPlaying() && settings->musicVol) {
 
         /* make sure we've got something loaded to play */
         if (loadFromMap || !playing)
@@ -266,12 +266,12 @@ void musicIntroSwitch(int n) {
  * Toggle the music on/off (usually by pressing 'v')
  */
 int musicToggle() {
-    settings->vol = settings->vol ? 0 : 1;
+    settings->musicVol = settings->musicVol ? 0 : 1;
 
-    if (!settings->vol)
+    if (!settings->musicVol)
         musicFadeOut(1000);
     else
         musicFadeIn(1000, 1);    
 
-    return settings->vol;
+    return settings->musicVol;
 }

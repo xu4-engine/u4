@@ -59,8 +59,10 @@ int main(int argc, char *argv[]) {
             verbose++;
         else if (strcmp(argv[i], "-f") == 0)
             settings->fullscreen = 1;
-        else if (strcmp(argv[i], "-q") == 0)
-            settings->vol = 0;
+        else if (strcmp(argv[i], "-q") == 0) {
+            settings->musicVol = 0;
+            settings->soundVol = 0;
+        }
     }
 
     xu4_srandom();

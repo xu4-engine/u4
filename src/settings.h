@@ -23,7 +23,8 @@
 #define DEFAULT_VIDEO_TYPE              "VGA"
 #define DEFAULT_GEM_LAYOUT              "Standard"
 #define DEFAULT_SCREEN_SHAKES           1
-#define DEFAULT_VOLUME                  1
+#define DEFAULT_MUSIC_VOLUME            1
+#define DEFAULT_SOUND_VOLUME            1
 #define DEFAULT_VOLUME_FADES            1
 #define DEFAULT_GERMAN_KEYBOARD         0
 #define DEFAULT_SHORTCUT_COMMANDS       0
@@ -80,7 +81,8 @@ typedef struct _Settings {
     char *videoType;
     char *gemLayout;
     int screenShakes;
-    int vol;
+    int musicVol;
+    int soundVol;
     int volumeFades;
     int germanKbd;
     int shortcutCommands;

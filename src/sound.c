@@ -56,10 +56,9 @@ void soundPlay(Sound sound) {
     char *pathname;
 
     assert(sound < SOUND_MAX);
-
-    /* FIXME: control music seperate from sounds
-    if (!settings->vol)
-      return;*/
+    
+    if (!settings->soundVol)
+        return;
 
     if (soundChunk[sound] == NULL) {
         pathname = u4find_sound(soundFilenames[sound]);

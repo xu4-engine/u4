@@ -11,6 +11,7 @@
 
 #include "debug.h"
 #include "error.h"
+#include "utils.h"
 
 Settings *settings = NULL;
 
@@ -65,7 +66,8 @@ void settingsRead() {
     settings->videoType             = strdup(DEFAULT_VIDEO_TYPE);
     settings->gemLayout             = strdup(DEFAULT_GEM_LAYOUT);
     settings->screenShakes          = DEFAULT_SCREEN_SHAKES;
-    settings->vol                   = DEFAULT_VOLUME;
+    settings->musicVol              = DEFAULT_MUSIC_VOLUME;
+    settings->soundVol              = DEFAULT_SOUND_VOLUME;
     settings->volumeFades           = DEFAULT_VOLUME_FADES;
     settings->germanKbd             = DEFAULT_GERMAN_KEYBOARD;
     settings->shortcutCommands      = DEFAULT_SHORTCUT_COMMANDS;
@@ -125,9 +127,11 @@ void settingsRead() {
         else if (strstr(buffer, "gemLayout=") == buffer)
             settings->gemLayout = strdup(buffer + strlen("gemLayout="));
         else if (strstr(buffer, "screenShakes=") == buffer)
-            settings->screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);
-        else if (strstr(buffer, "vol=") == buffer)
-            settings->vol = (int) strtoul(buffer + strlen("vol="), NULL, 0);
+            settings->screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);        
+        else if (strstr(buffer, "musicVol=") == buffer)
+            settings->musicVol = (int) strtoul(buffer + strlen("musicVol="), NULL, 0);
+        else if (strstr(buffer, "soundVol=") == buffer)
+            settings->soundVol = (int) strtoul(buffer + strlen("soundVol="), NULL, 0);
         else if (strstr(buffer, "volumeFades=") == buffer)
             settings->volumeFades = (int) strtoul(buffer + strlen("volumeFades="), NULL, 0);        
         else if (strstr(buffer, "germanKbd=") == buffer)
@@ -199,13 +203,15 @@ void settingsRead() {
          * a new xu4.cfg file since these items were removed.  Remove them after a reasonable
          * amount of time 
          *
-         * remove:  attackspeed, minorEnhancements, majorEnhancements        
+         * remove:  attackspeed, minorEnhancements, majorEnhancements, vol
          */
         
         else if (strstr(buffer, "attackspeed=") == buffer);
         else if (strstr(buffer, "minorEnhancements=") == buffer)
             settings->enhancements = (int)strtoul(buffer + strlen("minorEnhancements="), NULL, 0);
         else if (strstr(buffer, "majorEnhancements=") == buffer);
+        else if (strstr(buffer, "vol=") == buffer)
+            settings->musicVol = settings->soundVol = (int) strtoul(buffer + strlen("vol="), NULL, 0);        
         
         /***/
 
@@ -240,7 +246,8 @@ void settingsWrite() {
             "video=%s\n"
             "gemLayout=%s\n"
             "screenShakes=%d\n"
-            "vol=%d\n"
+            "musicVol=%d\n"
+            "soundVol=%d\n"
             "volumeFades=%d\n"
             "germanKbd=%d\n"
             "shortcutCommands=%d\n"
@@ -274,7 +281,8 @@ void settingsWrite() {
             settings->videoType,
             settings->gemLayout,
             settings->screenShakes,
-            settings->vol,
+            settings->musicVol,
+            settings->soundVol,
             settings->volumeFades,
             settings->germanKbd,
             settings->shortcutCommands,
@@ -327,7 +335,7 @@ void settingsCopy(Settings *to, const Settings *from) {
 int settingsCompare(const Settings *s1, const Settings *s2) {
     int r;
 
-    r = memcmp(s1, s2, (void *) &(s1->videoType) - (void *) &(s1->scale));
+    r = memcmp(s1, s2, XU4_OFFSETOF(Settings, videoType));
     if (r != 0)
         return r;
 
@@ -338,7 +346,7 @@ int settingsCompare(const Settings *s1, const Settings *s2) {
     if (r != 0)
         return r;
 
-    r = memcmp(&(s1->screenShakes), &(s2->screenShakes), sizeof(Settings) - ((void *) &(s1->screenShakes) - (void *) &(s1->scale)));
+    r = memcmp(&(s1->screenShakes), &(s2->screenShakes), sizeof(Settings) - XU4_OFFSETOF(Settings, screenShakes));
     if (r != 0)
         return r;
 

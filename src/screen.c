@@ -488,8 +488,10 @@ int screenPointInMouseArea(int x, int y, MouseArea *area) {
 
     /* two points define a rectangle */
     if (area->npoints == 2) {
-        if (x >= (area->point[0].x * settings->scale) && y >= (area->point[0].y * settings->scale) &&
-            x < (area->point[1].x * settings->scale) && y < (area->point[1].y * settings->scale)) {
+        if (x >= (int)(area->point[0].x * settings->scale) &&
+            y >= (int)(area->point[0].y * settings->scale) &&
+            x < (int)(area->point[1].x * settings->scale) &&
+            y < (int)(area->point[1].y * settings->scale)) {
             return 1;
         }
     }

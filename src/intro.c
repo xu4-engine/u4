@@ -258,7 +258,8 @@ int introInit() {
         videoOptions = menuAddItem(videoOptions, 0xFF, "Cancel", 6, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
         soundOptions = menuAddItem(soundOptions, 0, "Volume", 11, 16, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
-        soundOptions = menuAddItem(soundOptions, 1, "Fading", 11, 17, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
+        soundOptions = menuAddItem(soundOptions, 1, "Sound Effects", 11, 17, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
+        soundOptions = menuAddItem(soundOptions, 2, "Fading", 11, 18, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
         soundOptions = menuAddItem(soundOptions, 0xFE, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
         soundOptions = menuAddItem(soundOptions, 0xFF, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
@@ -473,6 +474,8 @@ int introKeyHandler(int key, void *data) {
             /* navigate to the item and activate it! */
             switch (key) {
             case 'v': soundOptions = menuActivateItem(soundOptions, 0, ACTIVATE_NORMAL); break;
+            case 's': soundOptions = menuActivateItem(soundOptions, 1, ACTIVATE_NORMAL); break;
+            case 'f': soundOptions = menuActivateItem(soundOptions, 2, ACTIVATE_NORMAL); break;
             default: break;
             }
         }
@@ -723,8 +726,9 @@ void introUpdateScreen() {
     case INTRO_CONFIG_SOUND:
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(2, 14, "Sound Options:");
-        screenTextAt(24, 16, "%s", settingsChanged->vol ? "On" : "Off");        
-        screenTextAt(24, 17, "%s", settingsChanged->volumeFades ? "On" : "Off");        
+        screenTextAt(26, 16, "%s", settingsChanged->musicVol ? "On" : "Off");
+        screenTextAt(26, 17, "%s", settingsChanged->soundVol ? "On" : "Off");
+        screenTextAt(26, 18, "%s", settingsChanged->volumeFades ? "On" : "Off");        
         menuShow(menuGetRoot(soundOptions));
         introDrawBeasties();
         break;
@@ -1390,7 +1394,7 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
 
     case 4:
-        ASSERT(screenGetImageSetNames()[0], "at least one image set needed");
+        ASSERT(screenGetImageSetNames()[0] != NULL, "at least one image set needed");
         if (action != ACTIVATE_DECREMENT) {
             int i = 0;
             while(screenGetImageSetNames()[i] && strcmp(settingsChanged->videoType, screenGetImageSetNames()[i]) != 0)
@@ -1411,7 +1415,7 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
 
     case 5:
-        ASSERT(screenGetImageSetNames()[0], "at least one gem layout set needed");
+        ASSERT(screenGetImageSetNames()[0] != NULL, "at least one gem layout set needed");
         if (action != ACTIVATE_DECREMENT) {
             int i = 0;
             while(screenGetGemLayoutNames()[i] && strcmp(settingsChanged->gemLayout, screenGetGemLayoutNames()[i]) != 0)
@@ -1460,9 +1464,12 @@ void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0: 
-        settingsChanged->vol = settingsChanged->vol ? 0 : 1;
+        settingsChanged->musicVol = settingsChanged->musicVol ? 0 : 1;
         break;
     case 1:
+        settingsChanged->soundVol = settingsChanged->soundVol ? 0 : 1;
+        break;
+    case 2:
         settingsChanged->volumeFades = settingsChanged->volumeFades ? 0 : 1;
         break;
     case 0xFE:
