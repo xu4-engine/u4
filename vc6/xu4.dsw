@@ -3,6 +3,18 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
+Project: "dumpsavegame"=".\dumpsavegame\dumpsavegame.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "xu4"=".\xu4.dsp" - Package Owner=<4>
 
 Package=<5>
