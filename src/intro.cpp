@@ -1218,6 +1218,10 @@ void IntroController::introVideoOptionsMenuItemActivate(MenuItem *menuItem, Acti
 
             /* FIXME: resize images, etc. */
             screenReInit();
+            
+            // Fix the menu since it was obliterated
+            intro->mode = INTRO_MENU; 
+            intro->runMenu(&mainOptions, true);            
         }        
         break;
     case 0xFF:
