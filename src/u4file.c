@@ -21,6 +21,13 @@ static const char * const paths[] = {
     "/usr/local/lib/u4/ultima4/"
 };
 
+/* the possible paths where the u4 zipfiles can be installed */
+static const char * const zip_paths[] = {
+    "./",
+    "/usr/lib/u4/",
+    "/usr/local/lib/u4/"
+};
+
 /* the possible paths where the u4 music files can be installed */
 static const char * const music_paths[] = {
     "./",
@@ -50,62 +57,63 @@ static const char * const conf_paths[] = {
  * performance, but could be getting excessive.
  */
 U4FILE *u4fopen(const char *fname) {
-    U4FILE *u4f;
-    char *pathname = NULL;
+    U4FILE *u4f = NULL;
+    FILE *f = NULL;
+    char *fname_copy, *pathname;
+    unsigned int i;
 
-    u4f = (U4FILE *) malloc(sizeof(U4FILE));
-    if (!u4f)
-        return NULL;
-
-    if (getenv("U4ZIPFILE")) {
-        unzFile f;
-
-        f = unzOpen(getenv("U4ZIPFILE"));
-        if (!f)
-            return NULL;
-
-        pathname = malloc(strlen("ultima4/") + strlen(fname) + 1);
-        strcpy(pathname, "ultima4/");
-        strcat(pathname, fname);
-
-        unzLocateFile(f, pathname, 2);
-        unzOpenCurrentFile(f);
-
-        u4f->type = ZIP_FILE;
-        u4f->zfile = f;
+    /*
+     * search for file within ultima4.zip or u4upgrad.zip
+     */
+    pathname = u4find_path("ultima4.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0]));
+    if (pathname) {
+        char *upg_pathname;
+        upg_pathname = u4find_path("u4upgrad.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0]));
+        if (upg_pathname) {
+            u4f = u4fopen_zip(fname, upg_pathname, "", 1);
+            free(upg_pathname);
+            if (u4f)
+                return u4f;
+        }
+        u4f = u4fopen_zip(fname, pathname, "ultima4/", 0);
+        free(pathname);
+        if (u4f)
+            return u4f;
     }
-    else {
-        FILE *f = NULL;
-        unsigned int i;
-        char *fname_copy;
 
-        fname_copy = strdup(fname);
+    /*
+     * file not in a zipfile; check if it has been unzipped
+     */
+    fname_copy = strdup(fname);
 
-        pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
-        if (!pathname) {
-            if (islower(fname_copy[0])) {
-                fname_copy[0] = toupper(fname_copy[0]);
-                pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
-            }
-
-            if (!pathname) {
-                for (i = 0; fname_copy[i] != '\0'; i++) {
-                    if (islower(fname_copy[i]))
-                        fname_copy[i] = toupper(fname_copy[i]);
-                }
-                pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
-            }
+    pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
+    if (!pathname) {
+        if (islower(fname_copy[0])) {
+            fname_copy[0] = toupper(fname_copy[0]);
+            pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
         }
 
-        if (pathname)
-            f = fopen(pathname, "rb");
-        else 
-	    return NULL;
+        if (!pathname) {
+            for (i = 0; fname_copy[i] != '\0'; i++) {
+                if (islower(fname_copy[i]))
+                    fname_copy[i] = toupper(fname_copy[i]);
+            }
+            pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
+        }
+    }
 
-        if (verbose && f != NULL)
-            printf("%s successfully opened\n", pathname);
+    if (pathname)
+        f = fopen(pathname, "rb");
 
-        free(fname_copy);
+    if (verbose && f != NULL)
+        printf("%s successfully opened\n", pathname);
+
+    free(fname_copy);
+
+    if (f) {
+        u4f = (U4FILE *) malloc(sizeof(U4FILE));
+        if (!u4f)
+            return NULL;
 
         u4f->type = STDIO_FILE;
         u4f->file = f;
@@ -113,6 +121,43 @@ U4FILE *u4fopen(const char *fname) {
 
     if (pathname)
         free(pathname);
+
+    return u4f;
+}
+
+U4FILE *u4fopen_zip(const char *fname, const char *zipfile, const char *zippath, int translate) {
+    U4FILE *u4f;
+    unzFile f;
+    char *pathname;
+
+    f = unzOpen(zipfile);
+    if (!f)
+        return NULL;
+
+    if (translate)
+        fname = u4upgrade_translate_filename(fname);
+    pathname = malloc(strlen(zippath) + strlen(fname) + 1);
+    strcpy(pathname, zippath);
+    strcat(pathname, fname);
+
+    if (unzLocateFile(f, pathname, 2) == UNZ_END_OF_LIST_OF_FILE) {
+        free(pathname);
+        unzClose(f);
+        return NULL;
+    }
+    unzOpenCurrentFile(f);
+
+    u4f = (U4FILE *) malloc(sizeof(U4FILE));
+    if (!u4f) {
+        free(pathname);
+        unzClose(f);
+        return NULL;
+    }
+
+    u4f->type = ZIP_FILE;
+    u4f->zfile = f;
+
+    free(pathname);
 
     return u4f;
 }
@@ -293,4 +338,47 @@ char *u4find_music(const char *fname) {
 
 char *u4find_conf(const char *fname) {
     return u4find_path(fname, conf_paths, sizeof(conf_paths) / sizeof(conf_paths[0]));
+}
+
+const char *u4upgrade_translate_filename(const char *fname) {
+    int i;
+    const static struct {
+        char *name;
+        char *translation;
+    } translations[] = {
+        { "compassn.ega", "compassn.old" },
+        { "courage.ega", "courage.old" },
+        { "courage.ega", "courage.old" },
+        { "cove.tlk", "cove.old" },
+        { "ega.drv", "ega.old" }, /* not actually used */
+        { "honesty.ega", "honesty.old" },
+        { "honor.ega", "honor.old" },
+        { "humility.ega", "humility.old" },
+        { "key7.ega", "key7.old" },
+        { "lcb.tlk", "lcb.old" },
+        { "love.ega", "love.old" },
+        { "love.ega", "love.old" },
+        { "minoc.tlk", "minoc.old" },
+        { "rune_0.ega", "rune_0.old" },
+        { "rune_1.ega", "rune_1.old" },
+        { "rune_2.ega", "rune_2.old" },
+        { "rune_3.ega", "rune_3.old" },
+        { "rune_4.ega", "rune_4.old" },
+        { "rune_5.ega", "rune_5.old" },
+        { "sacrific.ega", "sacrific.old" },
+        { "skara.tlk", "skara.old" },
+        { "spirit.ega", "spirit.old" },
+        { "start.ega", "start.old" },
+        { "stoncrcl.ega", "stoncrcl.old" },
+        { "truth.ega", "truth.old" },
+        { "ultima.com", "ultima.old" }, /* not actually used */
+        { "valor.ega", "valor.old" },
+        { "yew.tlk", "yew.old" }
+    };
+
+    for (i = 0; i < sizeof(translations) / sizeof(translations[0]); i++) {
+        if (strcasecmp(translations[i].name, fname) == 0)
+            return translations[i].translation;
+    }
+    return fname;
 }
