@@ -52,7 +52,7 @@ void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel);
 
 SDL_Surface *screen;
 SDL_Surface *bkgds[BKGD_MAX];
-SDL_Surface *dngGraphic[24];
+SDL_Surface *dngGraphic[36];
 SDL_Surface *tiles, *charset;
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
@@ -150,6 +150,13 @@ const struct {
     { "dung3l_door.rle", 88,  16,  4, 0,   80,  COMP_RLE },
     { "dung3m_door.rle", 176, 16,  4, 0,   80,  COMP_RLE },
     { "dung3r_door.rle", 88,  16,  4, 88,  80,  COMP_RLE },
+
+    { "ladderup0.rle",   88,  87,  4, 45,  0,   COMP_RLE },
+    { "ladderup1.rle",   50,  48,  4, 64,  40,  COMP_RLE },
+    { "ladderup2.rle",   22,  19,  4, 77,  68,  COMP_RLE },
+    { "ladderup3.rle",   8,   6,   4, 84,  82,  COMP_RLE },
+
+    { "ladderdown0.rle", 88,  89,  4, 45,  87,  COMP_RLE }
 
 };
 
@@ -972,6 +979,12 @@ int screenDungeonGraphicIndex(int xoffset, int distance, DungeonGraphicType type
     int index;
 
     index = 0;
+
+    if (type == DNGGRAPHIC_LADDERUP && xoffset == 0)
+        return 24 + distance;
+
+    if (type == DNGGRAPHIC_LADDERDOWN && xoffset == 0 && distance == 0)
+        return 28 + distance;
 
     /* FIXME */
     if (type != DNGGRAPHIC_WALL && type != DNGGRAPHIC_DOOR)
