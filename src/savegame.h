@@ -14,7 +14,11 @@
 
 class Object;
 
-typedef enum {
+/**
+ * The list of all weapons.  These values are used in both the
+ * inventory fields and character records of the savegame.
+ */
+enum WeaponType {
     WEAP_HANDS,
     WEAP_STAFF, 
     WEAP_DAGGER,
@@ -32,9 +36,13 @@ typedef enum {
     WEAP_MAGICWAND,
     WEAP_MYSTICSWORD,
     WEAP_MAX
-} WeaponType;
+};
 
-typedef enum {
+/**
+ * The list of all armor types.  These values are used in both the
+ * inventory fields and character records of the savegame.
+ */
+enum ArmorType {
     ARMR_NONE,
     ARMR_CLOTH,
     ARMR_LEATHER,
@@ -44,14 +52,21 @@ typedef enum {
     ARMR_MAGICPLATE,
     ARMR_MYSTICROBES,
     ARMR_MAX
-} ArmorType;
+};
 
-typedef enum {
+/**
+ * The list of sex values for the savegame character records.  The
+ * values match the male and female symbols in the character set.
+ */
+enum SexType {
     SEX_MALE = 0xb,
     SEX_FEMALE = 0xc
-} SexType;
+};
 
-typedef enum {
+/**
+ * The list of class types for the savegame character records.
+ */
+enum ClassType {
     CLASS_MAGE,
     CLASS_BARD,
     CLASS_FIGHTER,
@@ -60,16 +75,20 @@ typedef enum {
     CLASS_PALADIN,
     CLASS_RANGER,
     CLASS_SHEPHERD
-} ClassType;
+};
 
-typedef enum {
+/**
+ * The list of status values for the savegame character records.  The
+ * values match the letter thats appear in the ztats area.
+ */
+enum StatusType {
     STAT_GOOD = 'G',
     STAT_POISONED = 'P',
     STAT_SLEEPING = 'S',
     STAT_DEAD = 'D'
-} StatusType;
+};
 
-typedef enum {
+enum Virtue {
     VIRT_HONESTY,
     VIRT_COMPASSION,
     VIRT_VALOR,
@@ -79,15 +98,15 @@ typedef enum {
     VIRT_SPIRITUALITY,
     VIRT_HUMILITY,
     VIRT_MAX
-} Virtue;
+};
 
-typedef enum {
+enum BaseVirtue {
     VIRT_TRUTH      = 0x01,
     VIRT_LOVE       = 0x02,
     VIRT_COURAGE    = 0x04
-} BaseVirtue;
+};
 
-typedef enum {
+enum Reagent {
     REAG_ASH,
     REAG_GINSENG,
     REAG_GARLIC,
@@ -97,11 +116,11 @@ typedef enum {
     REAG_NIGHTSHADE,
     REAG_MANDRAKE,
     REAG_MAX
-} Reagent;
+};
 
 #define SPELL_MAX 26
 
-typedef enum {
+enum Item {
     ITEM_SKULL  = 0x01,
     ITEM_SKULL_DESTROYED = 0x02,
     ITEM_CANDLE = 0x04,
@@ -115,9 +134,9 @@ typedef enum {
     ITEM_CANDLE_USED = 0x400,
     ITEM_BOOK_USED = 0x800,
     ITEM_BELL_USED = 0x1000
-} Item;
+};
 
-typedef enum {
+enum Stone {
     STONE_BLUE   = 0x01,
     STONE_YELLOW = 0x02,
     STONE_RED    = 0x04,
@@ -126,9 +145,9 @@ typedef enum {
     STONE_PURPLE = 0x20,
     STONE_WHITE  = 0x40,
     STONE_BLACK  = 0x80
-} Stone;
+};
 
-typedef enum {
+enum Rune {
     RUNE_HONESTY      = 0x01,
     RUNE_COMPASSION   = 0x02,
     RUNE_VALOR        = 0x04,
@@ -137,9 +156,12 @@ typedef enum {
     RUNE_HONOR        = 0x20,
     RUNE_SPIRITUALITY = 0x40,
     RUNE_HUMILITY     = 0x80
-} Rune;
+};
 
-typedef struct {
+/**
+ * The Ultima IV savegame player record data.  
+ */
+struct SaveGamePlayerRecord {
     unsigned short hp;
     unsigned short hpMax;
     unsigned short xp;
@@ -152,10 +174,12 @@ typedef struct {
     SexType sex;
     ClassType klass;
     StatusType status;
-} SaveGamePlayerRecord;
+};
 
-
-typedef struct _SaveGame {
+/**
+ * Represents the on-disk contents of PARTY.SAV.
+ */
+struct SaveGame {
     unsigned int unknown1;
     unsigned int moves;
     SaveGamePlayerRecord players[8];
@@ -192,7 +216,7 @@ typedef struct _SaveGame {
     unsigned short orientation;
     unsigned short dnglevel;
     unsigned short location;
-} SaveGame;
+};
 
 char *partySavFilename(void);
 char *monstersSavFilename(void);
