@@ -8,6 +8,7 @@
 #include "../map.h"
 
 Map empath_map = {
+    3, /* id */
     "Empath Abbey", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */
@@ -23,6 +24,7 @@ Map empath_map = {
 };
 
 Map lycaeum_map = {
+    2, /* id */
     "Lycaeum", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */
@@ -38,6 +40,7 @@ Map lycaeum_map = {
 };
 
 Map serpent_map = {
+    4, /* id */
     "serpent", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */
@@ -60,6 +63,7 @@ const Portal lcb_1_portals[] = {
 };
 
 Map lcb_1_map = {
+    1, /* id */
     "Britannia", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */
@@ -80,6 +84,7 @@ const Portal lcb_2_portals[] = {
 };
 
 Map lcb_2_map = {
+    1, /* id */
     "Britannia", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */

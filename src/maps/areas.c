@@ -8,6 +8,7 @@
 #include "../map.h"
 
 Map brick_map = {
+    0, /* id */
     "brick", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -23,6 +24,7 @@ Map brick_map = {
 };
 
 Map bridge_map = {
+    0, /* id */
     "bridge", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -38,6 +40,7 @@ Map bridge_map = {
 };
 
 Map brush_map = {
+    0, /* id */
     "brush", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -53,6 +56,7 @@ Map brush_map = {
 };
 
 Map camp_map = {
+    0, /* id */
     "camp", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -68,6 +72,7 @@ Map camp_map = {
 };
 
 Map dng0_map = {
+    0, /* id */
     "dng0", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -83,6 +88,7 @@ Map dng0_map = {
 };
 
 Map dng1_map = {
+    0, /* id */
     "dng1", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -98,6 +104,7 @@ Map dng1_map = {
 };
 
 Map dng2_map = {
+    0, /* id */
     "dng2", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -113,6 +120,7 @@ Map dng2_map = {
 };
 
 Map dng3_map = {
+    0, /* id */
     "dng3", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -128,6 +136,7 @@ Map dng3_map = {
 };
 
 Map dng4_map = {
+    0, /* id */
     "dng4", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -143,6 +152,7 @@ Map dng4_map = {
 };
 
 Map dng5_map = {
+    0, /* id */
     "dng5", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -158,6 +168,7 @@ Map dng5_map = {
 };
 
 Map dng6_map = {
+    0, /* id */
     "dng6", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -173,6 +184,7 @@ Map dng6_map = {
 };
 
 Map dungeon_map = {
+    0, /* id */
     "dungeon", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -188,6 +200,7 @@ Map dungeon_map = {
 };
 
 Map forest_map = {
+    0, /* id */
     "forest", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -203,6 +216,7 @@ Map forest_map = {
 };
 
 Map grass_map = {
+    0, /* id */
     "grass", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -218,6 +232,7 @@ Map grass_map = {
 };
 
 Map hill_map = {
+    0, /* id */
     "hill", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -233,6 +248,7 @@ Map hill_map = {
 };
 
 Map inn_map = {
+    0, /* id */
     "inn", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -248,6 +264,7 @@ Map inn_map = {
 };
 
 Map marsh_map = {
+    0, /* id */
     "marsh", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -263,6 +280,7 @@ Map marsh_map = {
 };
 
 Map shipsea_map = {
+    0, /* id */
     "shipsea", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -278,6 +296,7 @@ Map shipsea_map = {
 };
 
 Map shipship_map = {
+    0, /* id */
     "shipship", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -293,6 +312,7 @@ Map shipship_map = {
 };
 
 Map shipshor_map = {
+    0, /* id */
     "shipshor", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -308,6 +328,7 @@ Map shipshor_map = {
 };
 
 Map shore_map = {
+    0, /* id */
     "shore", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -323,6 +344,7 @@ Map shore_map = {
 };
 
 Map shorship_map = {
+    0, /* id */
     "shorship", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
@@ -338,6 +360,7 @@ Map shorship_map = {
 };
 
 Map shrine_map = {
+    0, /* id */
     "shrine", /* name */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */

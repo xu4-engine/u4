@@ -8,6 +8,7 @@
 #include "../map.h"
 
 Map britain_map = {
+    6, /* id */
     "Britain", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
@@ -23,6 +24,7 @@ Map britain_map = {
 };
 
 Map cove_map = {
+    10, /* id */
     "Cove", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
@@ -38,6 +40,7 @@ Map cove_map = {
 };
 
 Map den_map = {
+    14, /* id */
     "Buccaneers Den", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
@@ -53,6 +56,7 @@ Map den_map = {
 };
 
 Map jhelom_map = {
+    7, /* id */
     "Jhelom", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
@@ -68,6 +72,7 @@ Map jhelom_map = {
 };
 
 Map magincia_map = {
+    12, /* id */
     "Magincia", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
@@ -83,6 +88,7 @@ Map magincia_map = {
 };
 
 Map minoc_map = {
+    9, /* id */
     "Minoc", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
@@ -98,6 +104,7 @@ Map minoc_map = {
 };
 
 Map moonglow_map = {
+    5, /* id */
     "Moonglow", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
@@ -113,6 +120,7 @@ Map moonglow_map = {
 };
 
 Map paws_map = {
+    13, /* id */
     "Paws", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
@@ -128,6 +136,7 @@ Map paws_map = {
 };
 
 Map skara_map = {
+    11, /* id */
     "Skara Brae", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
@@ -143,6 +152,7 @@ Map skara_map = {
 };
 
 Map trinsic_map = {
+    10, /* id */
     "Trinsic", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
@@ -158,6 +168,7 @@ Map trinsic_map = {
 };
 
 Map vesper_map = {
+    15, /* id */
     "Vesper", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
@@ -173,6 +184,7 @@ Map vesper_map = {
 };
 
 Map yew_map = {
+    8, /* id */
     "Yew", /* name */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
