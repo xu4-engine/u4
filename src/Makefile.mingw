@@ -17,8 +17,8 @@ CFLAGS=-Wall -I. -Dsnprintf=_snprintf $(SDL_CFLAGS)
 
 LIBS=-lmingw32 $(SDL_LIBS) -mwindows
 MAIN=u4.exe
-SRCS=u4.c map.c ttype.c screen.c screen_sdl.c event.c event_sdl.c person.c annotation.c io.c savegame.c \
-     u4file.c mapinit.c cities.c castles.c worldmap.c areas.c stats.o spell.o intro.c lzw.c u4decode.c xu4ico.o
+SRCS=u4.c map.c ttype.c screen.c screen_sdl.c event.c event_sdl.c person.c annotation.c io.c savegame.c game.c \
+     u4file.c mapinit.c cities.c castles.c worldmap.c areas.c stats.o spell.o intro.c lzw.c u4decode.c xu4ico.c
 OBJS=$(SRCS:.c=.o)
 
 xu4ico.o: xu4.ico xu4.rc
