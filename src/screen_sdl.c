@@ -847,6 +847,7 @@ void screenShowBeastie(int beast, int frame) {
     SDL_BlitSurface(introAnimations[ANIM_ANIMATE], &src, screen, &dest);
 }
 
+#if 0
 void screenShowGem() {
     int x, y;
 
@@ -862,3 +863,4 @@ void screenShowGem() {
 
     sleep(3);
 }
+#endif

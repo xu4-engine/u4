@@ -30,6 +30,7 @@ void screenShowChar(int chr, int x, int y);
 void screenTextAt(int x, int y, char *fmt, ...);
 void screenMessage(const char *fmt, ...);
 void screenScrollMessageArea(void);
+unsigned char screenViewportTile(int width, int height, int x, int y);
 void screenUpdate(void);
 void screenForceRedraw(void);
 void screenAnimateIntro(int frame);
