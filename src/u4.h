@@ -5,6 +5,13 @@
 #ifndef U4_H
 #define U4_H
 
+typedef enum {
+    DIR_WEST,
+    DIR_NORTH,
+    DIR_EAST,
+    DIR_SOUTH
+} Direction;
+
 /* info for loading world map from world.map */
 #define MAP_WIDTH 256
 #define MAP_HEIGHT 256
@@ -50,5 +57,12 @@
 #define MOON_PHASES 24
 #define MOON_SECONDS_PER_PHASE 1
 #define MOON_CHAR 20
+
+/* wind */
+#define WIND_AREA_X 7
+#define WIND_AREA_Y 23
+#define WIND_AREA_W 10
+#define WIND_AREA_H 1
+#define WIND_SECONDS_PER_PHASE 1
 
 #endif
