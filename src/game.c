@@ -1323,11 +1323,11 @@ int fireAtCoord(int x, int y, int distance, void *data) {
         Object *obj = NULL;
 
         obj = mapObjectAt(c->location->map, x, y, c->location->z);
-        if (obj->objType == OBJECT_MONSTER) {           
+        if (obj && obj->objType == OBJECT_MONSTER) {           
             if (rand() % 2 == 0)
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE), 2));
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE), (attackdelay + 8)/8));
             else {
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, HITFLASH_TILE), 2));
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, HITFLASH_TILE), (attackdelay + 8)/8));
                 if (rand() % 2 == 0)
                     mapRemoveObject(c->location->map, obj);                
             }
