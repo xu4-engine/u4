@@ -157,7 +157,8 @@ typedef enum {
     MATTR_FLIES             = 0x10,
     MATTR_TELEPORT          = 0x20,
     MATTR_CANMOVEMONSTERS   = 0x40,
-    MATTR_CANMOVEAVATAR     = 0x80
+    MATTR_CANMOVEAVATAR     = 0x80,
+    MATTR_CANMOVEON         = 0x100
 } MonsterMovementAttrib;
 
 typedef enum {
@@ -206,6 +207,7 @@ int monsterSails(const Monster *monster);
 int monsterWalks(const Monster *monster);
 int monsterCanMoveOntoMonsters(const Monster *monster);
 int monsterCanMoveOntoAvatar(const Monster *monster);
+int monsterCanMoveOnto(const Monster *monster);
 int monsterIsAttackable(const Monster *monster);
 int monsterWillAttack(const Monster *monster);
 int monsterStealsGold(const Monster *monster);

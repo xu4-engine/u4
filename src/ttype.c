@@ -157,15 +157,7 @@ void tileLoadInfoFromXml() {
         _ttype_info[tile].effect = EFFECT_NONE;
         _ttype_info[tile].walkonDirs = 0;
         _ttype_info[tile].walkoffDirs = MASK_DIR_ALL;
-    }
-
-    /* special cases for storms and whirlpools */
-    _ttype_info[STORM_TILE].walkonDirs = MASK_DIR_ALL;
-    _ttype_info[STORM_TILE + 1].walkonDirs = MASK_DIR_ALL;
-    _ttype_info[STORM_TILE].mask |= MASK_SWIMABLE | MASK_SAILABLE;
-    _ttype_info[STORM_TILE + 1].mask |= MASK_SWIMABLE | MASK_SAILABLE;
-    _ttype_info[WHIRLPOOL_TILE].mask |= MASK_SWIMABLE | MASK_SAILABLE;
-    _ttype_info[WHIRLPOOL_TILE + 1].mask |= MASK_SWIMABLE | MASK_SAILABLE;
+    }    
 
     if (baseChest == -1)
         errorFatal("tile attributes: a tile must have the \"chest\" attribute");

@@ -501,6 +501,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
     int x, y;
     const Monster *m;
     int ontoAvatar, ontoMonster;
+    int isAvatar = (from_x == c->location->x && from_y == c->location->y && z == c->location->z);
 
     retval = 0;
     for (d = DIR_WEST; d <= DIR_SOUTH; d++) {
@@ -516,12 +517,16 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
             continue;
         }
 
-        /* see if it's trying to move onto the avatar or onto a person or monster */
+        obj = mapObjectAt(map, x, y, z);
+
+        /* see if it's trying to move onto the avatar */
         if ((map->flags & SHOW_AVATAR) &&
             x == c->location->x && 
-            y == c->location->y)
+            y == c->location->y) {
             ontoAvatar = 1;
-        else if ((obj = mapObjectAt(map, x, y, z)) != NULL && (obj->objType != OBJECT_UNKNOWN))
+        }
+        /* see if it's trying to move onto a person or monster */
+        else if (obj && (obj->objType != OBJECT_UNKNOWN))                 
             ontoMonster = 1;
             
         /* get the destination tile */
@@ -538,13 +543,20 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         m = monsterForTile(transport);
 
         /* move on if unable to move onto the avatar or another monster */
-        if ((ontoAvatar && m && !monsterCanMoveOntoAvatar(m)) ||
-            (ontoMonster && m && !monsterCanMoveOntoMonsters(m)))
+        if (m && !isAvatar) { /* some monsters/persons have the same tile as the avatar, so we have to adjust */
+            if ((ontoAvatar && !monsterCanMoveOntoAvatar(m)) ||
+                (ontoMonster && !monsterCanMoveOntoMonsters(m) && !monsterCanMoveOnto(obj->monster)))
+                continue;
+        }
+        /* this really only happens with the avatar */
+        else if (ontoMonster && monsterCanMoveOnto(obj->monster)) {
+            retval = DIR_ADD_TO_MASK(d, retval);
             continue;
+        }
 
         /* if the transport is a ship, check sailable */
         if (tileIsShip(transport) && tileIsSailable(tile))            
-            retval = DIR_ADD_TO_MASK(d, retval);        
+            retval = DIR_ADD_TO_MASK(d, retval);
         /* if it is a balloon or flying monster, check flyable */
         else if (tileIsBalloon(transport) && tileIsFlyable(tile))
             retval = DIR_ADD_TO_MASK(d, retval);        

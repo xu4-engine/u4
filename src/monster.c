@@ -90,7 +90,8 @@ void monsterLoadInfoFromXml() {
         { "flies", MATTR_FLIES },
         { "teleports", MATTR_TELEPORT },
         { "canMoveOntoMonsters", MATTR_CANMOVEMONSTERS },
-        { "canMoveOntoAvatar", MATTR_CANMOVEAVATAR }
+        { "canMoveOntoAvatar", MATTR_CANMOVEAVATAR },
+        { "canMoveOn", MATTR_CANMOVEON }
     };
 
     /* hit and miss tiles */
@@ -356,6 +357,10 @@ int monsterCanMoveOntoMonsters(const Monster *monster) {
 
 int monsterCanMoveOntoAvatar(const Monster *monster) {
     return (monster->movementAttr & MATTR_CANMOVEAVATAR) ? 1 : 0;
+}
+
+int monsterCanMoveOnto(const Monster *monster) {
+    return (monster->movementAttr & MATTR_CANMOVEON) ? 1 : 0;
 }
 
 int monsterIsAttackable(const Monster *monster) {
