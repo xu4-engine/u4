@@ -5,6 +5,8 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#define MAX_ATTACK_SPEED        10
+
 typedef enum {
     SCL_POINT,
     SCL_2xBi,
@@ -12,7 +14,6 @@ typedef enum {
     SCL_Scale2x,
     SCL_MAX
 } FilterType;
-
 
 typedef struct _Settings {
     unsigned int scale;
@@ -24,6 +25,7 @@ typedef struct _Settings {
     int keydelay;
     int keyinterval;
     int filterMoveMessages;
+    int attackdelay;
 } Settings;
 
 char *settingsFilename(void);

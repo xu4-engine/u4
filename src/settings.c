@@ -54,6 +54,7 @@ void settingsRead() {
     settings->keydelay = 500;
     settings->keyinterval = 30;
     settings->filterMoveMessages = 0;
+    settings->attackdelay = 3;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -88,6 +89,8 @@ void settingsRead() {
             settings->keyinterval = (int) strtoul(buffer + strlen("keyinterval="), NULL, 0);
         else if (strstr(buffer, "filterMoveMessages=") == buffer)
             settings->filterMoveMessages = (int) strtoul(buffer + strlen("filterMoveMessages="), NULL, 0);
+        else if (strstr(buffer, "attackspeed=") == buffer)
+            settings->attackdelay = MAX_ATTACK_SPEED - (int) strtoul(buffer + strlen("attackspeed="), NULL, 0);
         else
             errorWarning("invalid line in settings file %s", buffer);
     }
@@ -108,7 +111,7 @@ void settingsWrite() {
     if (!settingsFile) {
         errorWarning("can't write settings file");
         return;
-    }
+    }   
 
     fprintf(settingsFile, 
             "scale=%d\n"
@@ -119,7 +122,8 @@ void settingsWrite() {
             "shortcutCommands=%d\n"
             "keydelay=%d\n"
             "keyinterval=%d\n"
-            "filterMoveMessages=%d\n",
+            "filterMoveMessages=%d\n"
+            "attackspeed=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
@@ -128,7 +132,8 @@ void settingsWrite() {
             settings->shortcutCommands,
             settings->keydelay,
             settings->keyinterval,
-            settings->filterMoveMessages);
+            settings->filterMoveMessages,
+            MAX_ATTACK_SPEED - settings->attackdelay);
 
     fclose(settingsFile);
 }

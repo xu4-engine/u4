@@ -25,6 +25,7 @@
 #include "stats.h"
 #include "weapon.h"
 #include "debug.h"
+#include "settings.h"
 
 extern Map brick_map;
 extern Map bridge_map;
@@ -254,7 +255,7 @@ void combatFinishTurn() {
 int combatBaseKeyHandler(int key, void *data) {
     int valid = 1;
     CoordActionInfo *info;
-    AlphaActionInfo *alphaInfo;
+    AlphaActionInfo *alphaInfo;    
 
     switch (key) {
     case U4_UP:
@@ -287,6 +288,7 @@ int combatBaseKeyHandler(int key, void *data) {
         info->handleAtCoord = &combatAttackAtCoord;
         info->origin_x = party[focus]->x;
         info->origin_y = party[focus]->y;
+        info->prev_x = info->prev_y = -1;
         info->range = weaponGetRange(c->saveGame->players[focus].weapon);
         info->validDirections = MASK_DIR_ALL;
         info->player = focus;        
@@ -399,14 +401,25 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     int monster;
     const Monster *m;
     int i, xp, hittile, misstile;
-    CoordActionInfo* info = (CoordActionInfo*)data;
+    CoordActionInfo* info = (CoordActionInfo*)data;    
     int weapon = c->saveGame->players[info->player].weapon;    
-    int wrongRange = (weaponRangeAbsolute(weapon) && (distance != weaponGetRange(weapon))) ? 1 : 0;
+    int wrongRange = weaponRangeAbsolute(weapon) && (distance != weaponGetRange(weapon));
+    int oldx = info->prev_x,
+        oldy = info->prev_y;  
+    int attackdelay = settings->attackdelay;
+    
+    info->prev_x = x;
+    info->prev_y = y;
 
     hittile = weaponGetHitTile(weapon);
     misstile = weaponGetMissTile(weapon);    
 
-    if (x == -1 && y == -1) {        
+    /* Remove the last weapon annotation left behind */
+    if ((distance > 1) && (oldx >= 0) && (oldy >= 0))
+        annotationRemove(oldx, oldy, c->location->z, c->location->map->id, misstile);
+
+    /* Missed */
+    if (x == -1 && y == -1) {
         combatFinishTurn();
         return 1;
     }
@@ -417,14 +430,20 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
             monsters[i]->x == x &&
             monsters[i]->y == y)
             monster = i;
-    }
+    }    
 
     /* If the weapon's range is absolute and we're testing the wrong range, stop now! */ 
     if (wrongRange) {
         return 0;
     }
     else if (monster == -1) {
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, misstile), 1));
+        annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, misstile));
+        gameUpdateScreen();
+        
+        /* Based on attack speed setting in setting struct, make a delay for
+           the attack annotation */
+        if (attackdelay > 0)
+            eventHandlerSleep(attackdelay * 2);
         return 0;
     }    
     /* If the weapon leaves a tile behind, do it here! (flaming oil) */
@@ -434,12 +453,18 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     if (!playerAttackHit(&c->saveGame->players[focus])) {
         screenMessage("Missed!\n");
 
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, misstile), 2));
+        /* show the 'miss' tile */
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, misstile), (attackdelay + 8)/8));
+        gameUpdateScreen();
+        eventHandlerSleep((attackdelay + 2)*40);
 
     } else {
         m = monsterForTile(monsters[monster]->tile);
 
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, hittile), 2));
+        /* show the 'hit' tile */
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, hittile), (attackdelay + 8)/8));
+        gameUpdateScreen();
+        eventHandlerSleep((attackdelay + 2)*40);
 
         if (m->tile != LORDBRITISH_TILE)
             monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);

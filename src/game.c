@@ -472,6 +472,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->handleAtCoord = &attackAtCoord;
         info->origin_x = c->location->x;
         info->origin_y = c->location->y;
+        info->prev_x = info->prev_y = -1;
         info->range = 1;
         info->validDirections = MASK_DIR_ALL;
         info->blockedPredicate = NULL;
@@ -587,6 +588,7 @@ int gameBaseKeyHandler(int key, void *data) {
             info->handleAtCoord = &fireAtCoord;
             info->origin_x = c->location->x;
             info->origin_y = c->location->y;
+            info->prev_x = info->prev_y = -1;
             info->range = 3;
             info->validDirections = validDirs;
             info->player = -1;
@@ -640,6 +642,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->handleAtCoord = &jimmyAtCoord;
         info->origin_x = c->location->x;
         info->origin_y = c->location->y;
+        info->prev_x = info->prev_y = -1;
         info->range = 1;
         info->validDirections = MASK_DIR_ALL;
         info->player = -1;
@@ -699,6 +702,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->handleAtCoord = &openAtCoord;
         info->origin_x = c->location->x;
         info->origin_y = c->location->y;
+        info->prev_x = info->prev_y = -1;
         info->range = 1;
         info->validDirections = MASK_DIR_ALL;
         info->player = -1;
@@ -757,6 +761,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->handleAtCoord = &talkAtCoord;
         info->origin_x = c->location->x;
         info->origin_y = c->location->y;
+        info->prev_x = info->prev_y = -1;
         info->range = 2;
         info->validDirections = MASK_DIR_ALL;
         info->player = -1;
