@@ -193,15 +193,37 @@ int playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
     case KA_BAD_MANTRA:
         newKarma[VIRT_SPIRITUALITY] -= 3;
         break;
+    case KA_ATTACKED_NONEVIL:
+        newKarma[VIRT_COMPASSION] -= 5;
+        newKarma[VIRT_JUSTICE] -= 3;
+        newKarma[VIRT_HONOR] -= 3;
+        break;
     case KA_FLED:
         newKarma[VIRT_VALOR] -= 2;
         newKarma[VIRT_SACRIFICE] -= 2;
+        break;
+    case KA_KILLED_EVIL:
+        newKarma[VIRT_VALOR] += rand() % 2; /* gain one valor half the time, zero the rest */
+        break;
+    case KA_SPARED_NONEVIL:
+        newKarma[VIRT_COMPASSION]++;
+        newKarma[VIRT_JUSTICE]++;
         break;
     case KA_DONATED_BLOOD:
         newKarma[VIRT_SACRIFICE] += 5;
         break;
     case KA_DIDNT_DONATE_BLOOD:
         newKarma[VIRT_SACRIFICE] -= 5;
+        break;
+    case KA_USED_SKULL:
+        /* using the skull is very, very bad... */
+        for (v = 0; v < VIRT_MAX; v++)
+            newKarma[v] -= 5;
+        break;
+    case KA_DESTROYED_SKULL:
+        /* ...but destroying it is very, very good */
+        for (v = 0; v < VIRT_MAX; v++)
+            newKarma[v] += 10;
         break;
     }
 

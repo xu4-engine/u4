@@ -17,9 +17,14 @@ typedef enum {
     KA_HAWKWIND,
     KA_MEDITATION,
     KA_BAD_MANTRA,
+    KA_ATTACKED_NONEVIL,
     KA_FLED,
+    KA_KILLED_EVIL,
+    KA_SPARED_NONEVIL,
     KA_DONATED_BLOOD,
-    KA_DIDNT_DONATE_BLOOD
+    KA_DIDNT_DONATE_BLOOD,
+    KA_USED_SKULL,
+    KA_DESTROYED_SKULL
 } KarmaAction;
 
 void playerApplyDamage(SaveGamePlayerRecord *player, int damage);
