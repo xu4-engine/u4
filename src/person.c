@@ -198,8 +198,8 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                 text = concat("\n", lordBritishGetResponse(cnv, inquiry), NULL);
             else if (cnv->talker->npcType == NPC_HAWKWIND)
                 text = hawkwindGetResponse(cnv, inquiry);
-            else
-                text = concat("\n\n", talkerGetResponse(cnv, inquiry), "\n", NULL);
+            else                
+                text = concat("\n\n", talkerGetResponse(cnv, inquiry), "\n", NULL);            
             break;
 
         case CONV_CONFIRMATION:
@@ -213,7 +213,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
             text = concat("\n", talkerGetQuestionResponse(cnv, inquiry), "\n", NULL);
             break;
 
-        case CONV_BUY_QUANTITY:
+        case CONV_GIVEBEGGAR:
             ASSERT(cnv->talker->npcType == NPC_TALKER_BEGGAR, "invalid npc type: %d", cnv->talker->npcType);
             text = beggarGetQuantityResponse(cnv, inquiry);
             break;
@@ -247,16 +247,30 @@ char *personGetPrompt(const Conversation *cnv) {
         return talkerGetPrompt(cnv);
 }
 
-ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
+ConversationInputType personGetInputRequired(const struct _Conversation *cnv, int *bufferlen) {
     switch (cnv->state) {
-    case CONV_TALK:
-    case CONV_ASK:
-    case CONV_ASKYESNO:
+    case CONV_TALK:    
     case CONV_BUY_QUANTITY:
     case CONV_SELL_QUANTITY:
     case CONV_BUY_PRICE:
     case CONV_TOPIC:
-        return CONVINPUT_STRING;
+        {
+            *bufferlen = CONV_BUFFERLEN;
+            return CONVINPUT_STRING;
+        }
+
+    case CONV_GIVEBEGGAR:
+        {
+            *bufferlen = 3;
+            return CONVINPUT_STRING;
+        }
+
+    case CONV_ASK:
+    case CONV_ASKYESNO:
+        {
+            *bufferlen = 4;
+            return CONVINPUT_STRING;
+        }                 
     
     case CONV_VENDORQUESTION:
     case CONV_BUY_ITEM:
@@ -388,8 +402,8 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
 
     else if (strncasecmp(inquiry, "give", 4) == 0) {
         if (cnv->talker->npcType == NPC_TALKER_BEGGAR) {
-            reply = strdup("");
-            cnv->state = CONV_BUY_QUANTITY;
+            reply = NULL;
+            cnv->state = CONV_GIVEBEGGAR;
         } else
             reply = concat(cnv->talker->pronoun, " says: I do not need thy gold.  Keep it!", NULL);
     }
@@ -452,8 +466,8 @@ char *talkerGetPrompt(const Conversation *cnv) {
 
     if (cnv->state == CONV_ASK)
         personGetQuestion(cnv->talker, &prompt);
-    else if (cnv->state == CONV_BUY_QUANTITY)
-        prompt = strdup("\nHow much? ");
+    else if (cnv->state == CONV_GIVEBEGGAR)
+        prompt = strdup("How much? ");
     else if (cnv->state != CONV_ASKYESNO)
         prompt = strdup("\nYour Interest:\n");
 
@@ -468,7 +482,7 @@ char *beggarGetQuantityResponse(Conversation *cnv, const char *response) {
 
     if (cnv->quant > 0) {
         if (playerDonate(c->saveGame, cnv->quant)) {
-            reply = concat("\n\n", cnv->talker->pronoun,
+            reply = concat("\n", cnv->talker->pronoun,
                            " says: Oh Thank thee! I shall never forget thy kindness!\n",
                            NULL);
         }

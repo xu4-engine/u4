@@ -2175,6 +2175,7 @@ void talkShowReply(int showPrompt) {
     char *prompt;
     ReadBufferActionInfo *rbInfo;
     GetChoiceActionInfo *gcInfo;
+    int bufferlen;
 
     screenMessage("%s", c->conversation.reply->chunk[c->conversation.replyLine]);
     c->conversation.replyLine++;
@@ -2219,11 +2220,11 @@ void talkShowReply(int showPrompt) {
         free(prompt);
     }
 
-    switch (personGetInputRequired(&c->conversation)) {
+    switch (personGetInputRequired(&c->conversation, &bufferlen)) {
     case CONVINPUT_STRING:
         rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
         rbInfo->buffer = c->conversation.playerInquiryBuffer;
-        rbInfo->bufferLen = CONV_BUFFERLEN;
+        rbInfo->bufferLen = bufferlen;
         rbInfo->handleBuffer = &talkHandleBuffer;
         rbInfo->screenX = TEXT_AREA_X + c->col;
         rbInfo->screenY = TEXT_AREA_Y + c->line;

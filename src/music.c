@@ -32,8 +32,9 @@ Mix_Music *playing = NULL;
  */
 void musicPlayMid(Music music) {    
 
-    if (settings->vol == 0 && musicIsPlaying()) {        
-        musicFadeOut(1000);
+    if (settings->vol == 0) {        
+        if (musicIsPlaying())
+            musicFadeOut(1000);
         return;
     }    
 

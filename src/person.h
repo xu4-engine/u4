@@ -64,6 +64,7 @@ typedef enum {
     CONV_PLAYER,
     CONV_FULLHEAL,
     CONV_ADVANCELEVELS,
+    CONV_GIVEBEGGAR,
     CONV_DONE
 } ConversationState;
 
@@ -102,7 +103,7 @@ void replyDelete(Reply *reply);
 int personInit(void);
 Reply *personGetConversationText(struct _Conversation *cnv, const char *inquiry);
 char *personGetPrompt(const struct _Conversation *cnv);
-ConversationInputType personGetInputRequired(const struct _Conversation *cnv);
+ConversationInputType personGetInputRequired(const struct _Conversation *cnv, int *bufferlen);
 const char *personGetChoices(const struct _Conversation *cnv);
 char *concat(const char *str, ...);
 
