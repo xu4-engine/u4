@@ -535,24 +535,27 @@ int saveGameMonstersRead(Object **objs, FILE *f) {
     }
 
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        obj = (Object *) malloc(sizeof(Object));
-        obj->tile = monsterTable[i].tile;
-        obj->x = monsterTable[i].x;
-        obj->y = monsterTable[i].y;
-        obj->z = -1;
-        obj->prevtile = monsterTable[i].prevtile;
-        obj->prevx = monsterTable[i].prevx;
-        obj->prevy = monsterTable[i].prevy;
+        /* check to see if this is a non-empty entry */
+        if (monsterTable[i].prevtile != 0) {
+            obj = (Object *) malloc(sizeof(Object));
+            obj->tile = monsterTable[i].tile;
+            obj->x = monsterTable[i].x;
+            obj->y = monsterTable[i].y;
+            obj->z = -1;
+            obj->prevtile = monsterTable[i].prevtile;
+            obj->prevx = monsterTable[i].prevx;
+            obj->prevy = monsterTable[i].prevy;
 
-        if (i < MONSTERTABLE_MONSTERS_SIZE)
-            obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
-        else
-            obj->movement_behavior = MOVEMENT_FIXED;
+            if (i < MONSTERTABLE_MONSTERS_SIZE)
+                obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+            else
+                obj->movement_behavior = MOVEMENT_FIXED;
 
-        obj->objType = OBJECT_UNKNOWN;
-        obj->hasFocus = 0;
-        obj->next = *objs;
-        *objs = obj;
+            obj->objType = OBJECT_UNKNOWN;
+            obj->hasFocus = 0;
+            obj->next = *objs;
+            *objs = obj;
+        }
     }    
     
     return 1;

@@ -187,6 +187,9 @@ int gameSave() {
         return 0;
     }
 
+    /* fix monster animations so they are compatible with u4dos */
+    mapResetObjectAnimations(c->location->map);
+
     if (!saveGameMonstersWrite(c->location->map->objects, monstersFile)) {
         screenMessage("Error opening monsters.sav\n");
         fclose(monstersFile);

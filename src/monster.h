@@ -163,6 +163,7 @@ typedef struct _Monster {
     const char *name;
     unsigned short id;
     unsigned char tile;
+    unsigned char frames;
     unsigned char leader;
     unsigned char basehp;
     unsigned short level;

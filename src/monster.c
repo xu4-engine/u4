@@ -129,6 +129,7 @@ void monsterLoadInfoFromXml() {
         monsters[monster].ranged = (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"ranged"), 
             (const xmlChar *) "true") == 0);
         monsters[monster].tile = (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"tile"));
+        monsters[monster].frames = 1;
 
         monsters[monster].rangedhittile = HITFLASH_TILE;
         monsters[monster].rangedmisstile = MISSFLASH_TILE;
@@ -164,6 +165,12 @@ void monsterLoadInfoFromXml() {
                           (const xmlChar *)tiles[i].name) == 0) {
                 monsters[monster].rangedmisstile = tiles[i].tile;
             }
+        }
+
+        /* get the number of frames for animation */
+        if (xmlGetProp(node, (const xmlChar *)"frames") != NULL) {
+            monsters[monster].frames =
+                (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"frames"));
         }
 
         /* Load monster attributes */
@@ -212,28 +219,11 @@ void monsterLoadInfoFromXml() {
 }
 
 const Monster *monsterForTile(unsigned char tile) {
-    int i, n;
-
+    int i;
     monsterLoadInfoFromXml();
 
-    for (i = 0; i < numMonsters; i++) {            
-
-        switch (tileGetAnimationStyle(monsters[i].tile)) {
-        case ANIM_TWOFRAMES:
-            n = 2;
-            break;
-        case ANIM_FOURFRAMES:
-            n = 4;
-            break;
-        default:
-            if (tileIsPirateShip(tile))
-                n = 4;
-            else
-                n = 1;
-            break;
-        }
-
-        if (tile >= monsters[i].tile && tile < monsters[i].tile + n)
+    for (i = 0; i < numMonsters; i++) {        
+        if (tile >= monsters[i].tile && tile < monsters[i].tile + monsters[i].frames)
             return &(monsters[i]);
     }
 

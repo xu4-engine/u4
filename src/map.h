@@ -80,6 +80,7 @@ void mapRemovePerson(Map *map, const struct _Person *person);
 void mapClearObjects(Map *map);
 struct _Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z);
 void mapAnimateObjects(Map *map);
+void mapResetObjectAnimations(Map *map);
 int mapNumberOfMonsters(const Map *map);
 int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned char transport);
 int mapDistance(int x1, int y1, int x2, int y2);

@@ -488,8 +488,24 @@ void mapAnimateObjects(Map *map) {
 
     while (obj) {
         if (rand() % 2) {
-            obj->prevtile = obj->tile;
+            obj->prevtile = obj->tile;   
             tileAdvanceFrame(&obj->tile);
+        }
+
+        obj = obj->next;
+    }
+}
+
+void mapResetObjectAnimations(Map *map) {
+    Object *obj = map->objects;        
+
+    while (obj) {
+        if (obj->objType == OBJECT_PERSON) {
+            obj->tile = obj->person->tile0;
+            obj->prevtile = obj->person->tile1;
+        } else if (obj->objType == OBJECT_MONSTER) {
+            obj->tile = obj->monster->tile;
+            obj->prevtile = obj->monster->tile;
         }
 
         obj = obj->next;
