@@ -68,13 +68,14 @@ int MapLoader::loadData(Map *map, U4FILE *f) {
     clock_t start = clock();
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
         for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
-            for(y = 0; y < map->chunk_height; ++y) {
-                for(x = 0; x < map->chunk_width; ++x) {
-
-                    if (isChunkCompressed(map, ych * map->chunk_width + xch))
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = Tileset::findTileByName("water")->id;
-
-                    else {
+			if (isChunkCompressed(map, ych * map->chunk_width + xch)) {
+				for(y = 0; y < map->chunk_height; ++y)
+					for(x = 0; x < map->chunk_width; ++x)
+						map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = Tileset::findTileByName("water")->id;
+			}
+			else {
+				for(y = 0; y < map->chunk_height; ++y) {
+					for(x = 0; x < map->chunk_width; ++x) {                    
                         int c = u4fgetc(f);
                         if (c == EOF)
                             return 0;
