@@ -290,7 +290,11 @@ void mapMgrRegister(Map *map) {
 
 Map *mapMgrGetById(MapId id) {    
     /* if the map hasn't been loaded yet, load it! */
-    if (!mapList[id]->data.size())
-        mapLoad(mapList[id]);
+    if (!mapList[id]->data.size()) {
+        MapLoader *loader = MapLoader::getLoader(mapList[id]->type);
+        if (loader == NULL)
+            errorFatal("can't load map of type \"%d\"", mapList[id]->type);
+        loader->load(mapList[id]);
+    }
     return mapList[id];
 }
