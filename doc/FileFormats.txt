@@ -209,11 +209,11 @@ offset len  notes
 0x0    64   level 1 8x8 map matrix
 0x40   64   level 2 8x8 map matrix
 0x80   64   level 3 8x8 map matrix
-0xA0   64   level 4 8x8 map matrix
+0xC0   64   level 4 8x8 map matrix
 0x100  64   level 5 8x8 map matrix
 0x140  64   level 6 8x8 map matrix
 0x180  64   level 7 8x8 map matrix
-0x1A0  64   level 8 8x8 map matrix
+0x1C0  64   level 8 8x8 map matrix
 0x200  256  room 0 data
 0x300  256  room 1 data
 0x400  256  room 2 data
