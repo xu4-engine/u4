@@ -63,15 +63,18 @@
 #define BALRON_TILE 252
 
 typedef enum {
-    MATTR_STEALFOOD = 0x01,
-    MATTR_STEALGOLD = 0x02,
+    MATTR_STEALFOOD   = 0x01,
+    MATTR_STEALGOLD   = 0x02,
     MATTR_CASTS_SLEEP = 0x04,
-    MATTR_UNDEAD    = 0x08,
-    MATTR_GOOD      = 0x10,
-    MATTR_WATER     = 0x20,
-    MATTR_STATIONARY = 0x40,
+    MATTR_UNDEAD      = 0x08,
+    MATTR_GOOD        = 0x10,
+    MATTR_WATER       = 0x20,
+    MATTR_STATIONARY  = 0x40,
     MATTR_NONATTACKABLE = 0x80,
-    MATTR_NEGATE = 0x100
+    MATTR_NEGATE      = 0x100,
+    MATTR_TELEPORT    = 0x200,
+    MATTR_FIRERESISTANT = 0x400,
+    MATTR_CAMOUFLAGE  = 0x800
 } MonsterAttrib;
 
 typedef enum {
@@ -88,6 +91,7 @@ typedef struct _Monster {
     unsigned char leader;
     const char *name;
     unsigned short level;
+    unsigned char ranged;
     MonsterAttrib mattr;
 } Monster;
 
