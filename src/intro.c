@@ -278,13 +278,14 @@ int introInit() {
     keyboardOptions = menuAddItem(keyboardOptions, 0xFE, "Use These Settings", 5, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
     keyboardOptions = menuAddItem(keyboardOptions, 0xFF, "Cancel", 5, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
-    speedOptions = menuAddItem(speedOptions, 0, "Game Cycles Per Second", 7, 5, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 1, "Battle Speed", 7, 6, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 2, "Spell Effect Length", 7, 7, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 3, "Camping length", 7, 8, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 4, "Inn rest length", 7, 9, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 7, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 7, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    speedOptions = menuAddItem(speedOptions, 0, "Game Cycles Per Second", 6, 5, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 1, "Battle Speed", 6, 6, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 2, "Spell Effect Length", 6, 7, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 3, "Camping length", 6, 8, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 4, "Inn rest length", 6, 9, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 5, "Shrine Meditation length", 6, 10, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 6, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 6, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
     minorOptions = menuAddItem(minorOptions, 4, "Ultima V Spell Mixing", 7, 5, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
     minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 7, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
@@ -750,6 +751,9 @@ void introUpdateScreen() {
 
             sprintf(msg, "%d sec", settings->innTime);
             screenTextAt(37 - strlen(msg), 9, msg);
+
+            sprintf(msg, "%d sec", settings->shrineTime);
+            screenTextAt(37 - strlen(msg), 10, msg);
 
             menuShow(menuGetRoot(speedOptions));
         }
@@ -1256,7 +1260,7 @@ int introBaseMenuKeyHandler(int key, void *data) {
     char saveKey = (mode == INTRO_CONFIG) ? '\0' : 'u';
 
     if (key == cancelKey)
-        return introBaseMenuKeyHandler(U4_ESC, menu);
+        return introBaseMenuKeyHandler(' ', menu);
     else if (key == saveKey)
         return introBaseMenuKeyHandler(0, menu);
     
@@ -1284,14 +1288,16 @@ int introBaseMenuKeyHandler(int key, void *data) {
         }
         break;
     case ' ':    
-    case U4_ESC:
         /* activate the 'cancel' menu item */
         menuActivateItem(*menu, 0xFF, ACTIVATE_NORMAL);
-        break;
+        break;    
     case 0:
         /* activate the 'save' menu item */
         menuActivateItem(*menu, 0xFE, ACTIVATE_NORMAL);        
         break;
+    case U4_ESC:
+        /* go back to the main screen */
+        mode = INTRO_MENU; break;
     default:
         return 0;
     }
@@ -1570,6 +1576,17 @@ void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
             settings->innTime--;
             if (settings->innTime < 1)
                 settings->innTime = MAX_INN_TIME;
+        }
+        break;
+    case 5:
+        if (action != ACTIVATE_DECREMENT) {
+            settings->shrineTime++;
+            if (settings->shrineTime > MAX_SHRINE_TIME)
+                settings->shrineTime = 1;
+        } else {
+            settings->shrineTime--;
+            if (settings->shrineTime < 1)
+                settings->shrineTime = MAX_SHRINE_TIME;
         }
         break;
 

@@ -12,6 +12,7 @@
 #define MAX_SPELL_EFFECT_SPEED          10
 #define MAX_CAMP_TIME                   10
 #define MAX_INN_TIME                    10
+#define MAX_SHRINE_TIME                 20
 
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
@@ -34,6 +35,7 @@
 #define DEFAULT_SPELL_EFFECT_SPEED      5
 #define DEFAULT_CAMP_TIME               10
 #define DEFAULT_INN_TIME                8
+#define DEFAULT_SHRINE_TIME             16
 
 typedef enum {
     SCL_MIN,
@@ -85,6 +87,7 @@ typedef struct _Settings {
     int spellEffectSpeed;
     int campTime;
     int innTime;
+    int shrineTime;
     SettingsMinorOptions minorEnhancementsOptions;
     SettingsMajorOptions majorEnhancementsOptions;
 } Settings;

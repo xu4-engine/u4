@@ -32,8 +32,6 @@ int shrineVision(int key, void *data);
 int shrineEjectOnKey(int key, void *data);
 void shrineEject();
 
-#define MEDITATION_CYCLES_PER_MANTRA 16
-
 const Shrine *shrine;
 char virtueBuffer[20];
 int cycles, completedCycles;
@@ -99,7 +97,7 @@ void shrineEnter(const Shrine *s) {
     info->buffer = virtueBuffer;
     info->bufferLen = sizeof(virtueBuffer);
     info->handleBuffer = &shrineHandleVirtue;
-    info->screenX = TEXT_AREA_X + c->col;
+    info->screenX = TEXT_AREA_X + c->col + 1;
     info->screenY = TEXT_AREA_Y + c->line;
     eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
 }
@@ -148,19 +146,25 @@ int shrineHandleCycles(int choice) {
 }
 
 void shrineMeditationCycle() {
+    /* find our interval for meditation */
+    int interval = (settings->shrineTime * 1000) / MEDITATION_MANTRAS_PER_CYCLE;
+    interval -= (interval % eventTimerGranularity);
+    if (interval < eventTimerGranularity)
+        interval = eventTimerGranularity;
+
     reps = 0;
 
     c->saveGame->lastmeditation = (c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff;
 
     screenDisableCursor();
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&shrineTimer, eventTimerGranularity * settings->gameCyclesPerSecond);
+    eventHandlerAddTimerCallback(&shrineTimer, interval);
 }
 
 void shrineTimer(void *data) {
     ReadBufferActionInfo *info;
 
-    if (reps++ >= MEDITATION_CYCLES_PER_MANTRA) {
+    if (reps++ >= MEDITATION_MANTRAS_PER_CYCLE) {
         eventHandlerRemoveTimerCallback(&shrineTimer);
         eventHandlerPopKeyHandler();
 

@@ -80,6 +80,7 @@ void settingsRead() {
     settings->spellEffectSpeed      = DEFAULT_SPELL_EFFECT_SPEED;
     settings->campTime              = DEFAULT_CAMP_TIME;
     settings->innTime               = DEFAULT_INN_TIME;
+    settings->shrineTime       = DEFAULT_SHRINE_TIME;
 
     /* all specific minor and major enhancements default to "on" */
     settings->minorEnhancementsOptions.u5shrines        = 1;
@@ -155,6 +156,8 @@ void settingsRead() {
             settings->campTime = (int) strtoul(buffer + strlen("campTime="), NULL, 0);
         else if (strstr(buffer, "innTime=") == buffer)
             settings->innTime = (int) strtoul(buffer + strlen("innTime="), NULL, 0);
+        else if (strstr(buffer, "shrineTime=") == buffer)
+            settings->shrineTime = (int) strtoul(buffer + strlen("shrineTime="), NULL, 0);
         
         /* minor enhancement options */
         else if (strstr(buffer, "u5shrines=") == buffer)
@@ -216,6 +219,7 @@ void settingsWrite() {
             "spellEffectSpeed=%d\n"
             "campTime=%d\n"
             "innTime=%d\n"
+            "shrineTime=%d\n"
             "u5shrines=%d\n"
             "slimeDivides=%d\n"
             "c64chestTraps=%d\n"            
@@ -242,6 +246,7 @@ void settingsWrite() {
             settings->spellEffectSpeed,
             settings->campTime,
             settings->innTime,
+            settings->shrineTime,
             settings->minorEnhancementsOptions.u5shrines,
             settings->minorEnhancementsOptions.slimeDivides,
             settings->minorEnhancementsOptions.c64chestTraps,            

@@ -9,6 +9,7 @@
 #include "portal.h"
 
 #define SHRINE_MEDITATION_INTERVAL  100
+#define MEDITATION_MANTRAS_PER_CYCLE 16
 
 typedef struct _Shrine {
     Virtue virtue;
