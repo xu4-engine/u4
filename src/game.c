@@ -663,7 +663,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'v' + U4_ALT:
-        screenTextAt(15, 14, "XU4 %s\n", VERSION);
+        screenMessage("XU4 %s\n", VERSION);
         break;
 
     case 'x' + U4_ALT:
