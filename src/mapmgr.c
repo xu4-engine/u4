@@ -98,11 +98,8 @@ void mapMgrInit() {
     xmlFreeDoc(doc);
 }
 
-Map *mapMgrInitMapFromXml(xmlNodePtr node) {
+Map *mapMgrInitMap(void) {
     Map *map;
-    char *prop;
-    xmlNodePtr child;
-    ListNode *portals = NULL;
 
     map = malloc(sizeof(Map));
     if (!map)
@@ -113,7 +110,24 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
     map->init = NULL;
     map->objects = NULL;
     map->flags = 0;
-    
+    map->width = 0;
+    map->height = 0;
+    map->levels = 1;
+    map->id = 0;
+
+    return map;
+}
+
+Map *mapMgrInitMapFromXml(xmlNodePtr node) {
+    Map *map;
+    char *prop;
+    xmlNodePtr child;
+    ListNode *portals = NULL;
+
+    map = mapMgrInitMap();
+    if (!map)
+        return NULL;
+
     map->id = (unsigned char)xmlGetPropAsInt(node, (const xmlChar *) "id");
 
     prop = xmlGetPropAsStr(node, (const xmlChar *) "type");
@@ -348,7 +362,7 @@ Dungeon *mapMgrInitDungeonFromXml(xmlNodePtr node) {
     dungeon = malloc(sizeof(Dungeon));
     if (!dungeon)
         return NULL;
-    dungeon->n_rooms = 0;
+    dungeon->n_rooms = xmlGetPropAsInt(node, (const xmlChar *) "rooms");
     dungeon->rooms = NULL;
 
     prop = xmlGetPropAsStr(node, (const xmlChar *) "name");

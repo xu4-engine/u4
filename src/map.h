@@ -12,6 +12,7 @@ struct _Object;
 struct _Person;
 struct _Monster;
 struct _Portal;
+struct _Dungeon;
 
 #include "u4file.h"
 #include "music.h"
@@ -60,6 +61,34 @@ typedef struct _Map {
     struct _Object *objects;
 } Map;
 
+typedef struct _Trigger {
+    unsigned char tile;
+    unsigned char
+        x : 4,
+        y : 4,
+        change_x1 : 4,
+        change_y1 : 4,
+        change_x2 : 4,
+        change_y2 : 4;
+} Trigger;
+
+typedef struct _DngRoom {
+    Trigger triggers[4];
+    unsigned char monster_tiles[16];
+    unsigned char monster_start_x[16];
+    unsigned char monster_start_y[16];
+    unsigned char party_north_start_x[8];
+    unsigned char party_north_start_y[8];
+    unsigned char party_east_start_x[8];
+    unsigned char party_east_start_y[8];
+    unsigned char party_south_start_x[8];
+    unsigned char party_south_start_y[8];
+    unsigned char party_west_start_x[8];
+    unsigned char party_west_start_y[8];
+    unsigned char map_data[121];
+    unsigned char buffer[7];
+} DngRoom;
+
 #define MAP_IS_OOB(mapptr, x, y) ((x) < 0 || (x) >= ((int)(mapptr)->width) || (y) < 0 || (y) >= ((int)(mapptr)->height))
 
 int mapRead(struct _City *city, U4FILE *ult, U4FILE *tlk);
@@ -73,6 +102,7 @@ unsigned char mapGetTileFromData(const Map *map, int x, int y, int z);
 unsigned char mapTileAt(const Map *map, int x, int y, int z);
 unsigned char mapGroundTileAt(const Map *map, int x, int y, int z);
 unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z);
+int mapLoadDungeonRoom(struct _Dungeon *dng, int room);
 int mapIsWorldMap(const Map *map);
 struct _Object *mapAddPersonObject(Map *map, const struct _Person *person);
 struct _Object *mapAddMonsterObject(Map *map, const struct _Monster *monster, int x, int y, int z);

@@ -69,6 +69,7 @@
 struct _Map;
 
 void mapMgrInit();
+struct _Map *mapMgrInitMap(void);
 void mapMgrRegister(struct _Map *map);
 struct _Map *mapMgrGetById(unsigned char id);
 

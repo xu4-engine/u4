@@ -15,6 +15,8 @@
 #include "context.h"
 #include "debug.h"
 #include "direction.h"
+#include "dungeon.h"
+#include "mapmgr.h"
 #include "monster.h"
 #include "movement.h"
 #include "object.h"
@@ -195,6 +197,11 @@ int mapReadDng(Map *map, U4FILE *dng) {
     for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * map->levels); i++)
         map->data[i] = u4fgetc(dng);
 
+    map->dungeon->room = NULL;
+    /* read in the dungeon rooms */    
+    map->dungeon->rooms = (DngRoom *)malloc(sizeof(DngRoom) * map->dungeon->n_rooms);
+    u4fread(map->dungeon->rooms, sizeof(DngRoom) * map->dungeon->n_rooms, 1, dng);
+
     return 1;
 }
 
@@ -315,6 +322,23 @@ unsigned char mapGroundTileAt(const Map *map, int x, int y, int z) {
         tile = obj->tile;
 
     return tile;
+}
+
+int mapLoadDungeonRoom(struct _Dungeon *dng, int room) {    
+    if (dng->room != NULL)
+        free(dng->room);
+    
+    dng->room = mapMgrInitMap();
+
+    dng->room->border_behavior = BORDER_FIXED;
+    dng->room->width = dng->room->height = 11;
+    dng->room->data = (dng->rooms + room)->map_data;
+    dng->room->music = MUSIC_COMBAT;        
+    dng->room->type = MAPTYPE_COMBAT;    
+    dng->room->flags |= NO_LINE_OF_SIGHT;    
+    memcpy(dng->party_startx, dng->rooms->party_west_start_x, 8);
+    memcpy(dng->party_starty, dng->rooms->party_west_start_y, 8);
+    return 1;
 }
 
 unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z) {
