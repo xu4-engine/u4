@@ -1,0 +1,42 @@
+#
+# $Id$
+#
+
+# Where is xu4 will be installed
+U4PATH=C:/xu4
+
+SRC=.
+VPATH=$(SRC):$(SRC)/maps:$(SRC)/util
+
+### Modify these paths
+SDL_CFLAGS=-I$(SRC)/sdl/include
+SDL_LIBS=-L$(SRC)/sdl/lib -lSDLmain -lSDL
+
+CC=gcc
+CFLAGS=-Wall -I. $(SDL_CFLAGS)
+
+LIBS=-lmingw32 $(SDL_LIBS) -mwindows
+MAIN=u4.exe
+SRCS=u4.c map.c ttype.c screen.c screen_sdl.c event.c event_sdl.c person.c annotation.c io.c savegame.c cities.c castles.c worldmap.c areas.c
+OBJS=$(SRCS:.c=.o)
+
+all:: $(MAIN) dumpsavegame.exe
+
+dumpsavegame.exe : dumpsavegame.o savegame.o io.o
+	$(CC) $(CFLAGS) -o $@ $+ -mconsole
+
+$(MAIN): $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS) -mwindows
+
+clean:
+	rm -fr $(OBJS) $(MAIN) dumpsavegame.exe dumpsavegame.o
+
+install: $(MAIN) dumpsavegame.exe
+	strip dumpsavegame.exe -o $(U4PATH)/dumpsavegame.exe
+	strip $(MAIN) -o $(U4PATH)/$(MAIN)
+	cp ../README $(U4PATH)/readme.txt
+
+dist:  install
+	cp SDL/README-SDL.txt $(U4PATH)
+	cp SDL/lib/SDL.dll $(U4PATH)
+	u2d $(U4PATH)/readme.txt
