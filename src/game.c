@@ -2516,14 +2516,15 @@ void gameDamageShip(int minDamage, int maxDamage) {
 void gameMonsterCleanup(void) {
     Object *obj, *prev;
     
-    for (obj = c->location->map->objects, prev = obj; obj != NULL; prev = obj)
-    {
+    for (obj = c->location->map->objects; obj != NULL; prev = obj)
+    {        
         if ((obj->objType == OBJECT_MONSTER) && (obj->z == c->location->z) &&
-            mapDistance(obj->x, obj->y, c->location->x, c->location->y) > MAX_MONSTER_DISTANCE) {
+             mapDistance(obj->x, obj->y, c->location->x, c->location->y) > MAX_MONSTER_DISTANCE) {                
+            
             /* make sure our pointer doesn't get destroyed by mapRemoveObject */
             obj = obj->next;
-            mapRemoveObject(c->location->map, obj);
+            mapRemoveObject(c->location->map, prev);                
         }
-        else obj = obj->next;
+        else obj = obj->next;        
     }
 }
