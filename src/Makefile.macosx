@@ -2,21 +2,22 @@
 # $Id$
 #
 
-BUNDLE_CONTENTS=../xu4.app/Contents
+BUNDLE_CONTENTS=../../xu4.app/Contents
 
 CC=gcc
 CXX=g++
 UI=sdl
+LIBPNGDIR=../../libpng
 UILIBS=-L$(HOME)/Library/Frameworks \
 	-framework Cocoa \
 	-framework SDL \
 	-framework SDL_mixer \
-	-framework libxml \
-	-lobjc -lz
+	-framework libxml 
 UIFLAGS=-F$(HOME)/Library/Frameworks \
 	-I$(HOME)/Library/Frameworks/libxml.framework/Headers \
 	-I$(HOME)/Library/Frameworks/SDL.framework/Headers \
-	-I$(HOME)/Library/Frameworks/SDL_mixer.framework/Headers
+	-I$(HOME)/Library/Frameworks/SDL_mixer.framework/Headers \
+	-I$(LIBPNGDIR)
 
 FEATURES=-DHAVE_BACKTRACE=0 -DHAVE_VARIADIC_MACROS=1
 
@@ -25,9 +26,9 @@ DEBUGCXXFLAGS=-ggdb
 # Optimising
 #DEBUGCXXFLAGS=-O2 -faltivec -mdynamic-no-pic
 
-CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
+CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp -L$(LIBPNGDIR)
 CFLAGS=$(CXXFLAGS)
-LIBS=$(UILIBS) -lpng
+LIBS=$(LIBPNGDIR)/libpng.a $(UILIBS) -lobjc -lz
 INSTALL=install
 
 OBJS=macosx/SDLMain.o macosx/osxinit.o macosx/osxerror.o
@@ -65,8 +66,10 @@ install: u4
 	cp ../conf/dtd/*.dtd $(BUNDLE_CONTENTS)/Resources/dtd
 	cp ../icons/xu4.icns $(BUNDLE_CONTENTS)/Resources
 	cp ../graphics/ega/*.rle $(BUNDLE_CONTENTS)/Resources/ega
-	cp ../ultima4.zip $(BUNDLE_CONTENTS)/Resources
-	cp ../u4upgrad.zip $(BUNDLE_CONTENTS)/Resources
+	cp ../graphics/ega/*.png $(BUNDLE_CONTENTS)/Resources/ega
+	cp ../graphics/vga/*.png $(BUNDLE_CONTENTS)/Resources/vga
+	cp ../../ultima4.zip $(BUNDLE_CONTENTS)/Resources
+	cp ../../u4upgrad.zip $(BUNDLE_CONTENTS)/Resources
 	$(INSTALL) $< $(BUNDLE_CONTENTS)/MacOS
 
 -include .depends
