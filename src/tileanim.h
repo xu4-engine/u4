@@ -11,6 +11,7 @@
 
 #include "xml.h"
 
+class ConfigElement;
 class Image;
 struct RGBA;
 
@@ -19,6 +20,8 @@ struct RGBA;
  */
 class  TileAnimTransform {
 public:
+    static TileAnimTransform *create(const ConfigElement &config);
+
     virtual void draw(Image *tiles, int tile, int scale, int x, int y) = 0;
     virtual ~TileAnimTransform() {}
 };
@@ -57,6 +60,8 @@ public:
  */
 class TileAnim {
 public:
+    TileAnim(const ConfigElement &conf);
+
     std::string name;
     std::vector<TileAnimTransform *> transforms;
 
@@ -67,16 +72,16 @@ public:
  * A set of tile animations.  Tile animations are associated with a
  * specific image set which shares the same name.
  */
-struct TileAnimSet {
+class TileAnimSet {
+public:
+    TileAnimSet(const ConfigElement &conf);
+
     std::string name;
     std::map<std::string, TileAnim *> tileanims;
 };
 
 
-TileAnimSet *tileAnimSetLoadFromXml(xmlNodePtr node);
-TileAnim *tileAnimLoadFromXml(xmlNodePtr node);
-TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node);
 TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const std::string &name);
-RGBA *tileAnimColorLoadFromXml(xmlNodePtr node);
+RGBA *tileAnimColorLoadFromConf(const ConfigElement &conf);
 
 #endif

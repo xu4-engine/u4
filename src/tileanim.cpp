@@ -4,80 +4,64 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <vector>
+
+#include "config.h"
 #include "image.h"
 #include "screen.h"
 #include "tileanim.h"
-#include "xml.h"
 #include "u4.h"
 #include "utils.h"
 
 using std::string;
+using std::vector;
 
-TileAnimSet *tileAnimSetLoadFromXml(xmlNodePtr node) {
-    TileAnimSet *set;
-    xmlNodePtr child;
+TileAnimSet::TileAnimSet(const ConfigElement &conf) {
+    name = conf.getString("name");
 
-    set = new TileAnimSet;
-    set->name = xmlGetPropAsString(node, "name");
-
-    for (child = node->xmlChildrenNode; child; child = child->next) {
-        if (xmlNodeIsText(child))
-            continue;
-
-        if (xmlStrcmp(child->name, (const xmlChar *) "tileanim") == 0) {
-            TileAnim *anim = tileAnimLoadFromXml(child);
-            set->tileanims[anim->name] = anim;
+    vector<ConfigElement> children = conf.getChildren();
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+        if (i->getName() == "tileanim") {
+            TileAnim *anim = new TileAnim(*i);
+            tileanims[anim->name] = anim;
         }
     }
-
-    return set;
 }
 
-TileAnim *tileAnimLoadFromXml(xmlNodePtr node) {
-    TileAnim *anim;
-    xmlNodePtr child;
+TileAnim::TileAnim(const ConfigElement &conf) {
+    name = conf.getString("name");
 
-    anim = new TileAnim;    
-    anim->name = xmlGetPropAsString(node, "name");
-
-    for (child = node->xmlChildrenNode; child; child = child->next) {
-        if (xmlNodeIsText(child))
-            continue;
-
-        if (xmlStrcmp(child->name, (const xmlChar *) "transform") == 0) {
-            TileAnimTransform *transform = tileAnimTransformLoadFromXml(child);
-            anim->transforms.push_back(transform);            
+    vector<ConfigElement> children = conf.getChildren();
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+        if (i->getName() == "transform") {
+            TileAnimTransform *transform = TileAnimTransform::create(*i);
+            transforms.push_back(transform);
         }
     }
-
-    return anim;
 }
 
-TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node) {
+TileAnimTransform *TileAnimTransform::create(const ConfigElement &conf) {
     TileAnimTransform *transform;
-    xmlNodePtr child;
     static const char *transformTypeEnumStrings[] = { "invert", "pixel", NULL };
 
-    int type = xmlGetPropAsEnum(node, "type", transformTypeEnumStrings);
+    int type = conf.getEnum("type", transformTypeEnumStrings);
 
     switch (type) {
     case 0:
-        transform = new TileAnimInvertTransform(xmlGetPropAsInt(node, "x"),
-                                                xmlGetPropAsInt(node, "y"),
-                                                xmlGetPropAsInt(node, "width"),
-                                                xmlGetPropAsInt(node, "height"));
+        transform = new TileAnimInvertTransform(conf.getInt("x"),
+                                                conf.getInt("y"),
+                                                conf.getInt("width"),
+                                                conf.getInt("height"));
         break;
 
     case 1:
-        transform = new TileAnimPixelTransform(xmlGetPropAsInt(node, "x"),
-                                               xmlGetPropAsInt(node, "y"));
+        transform = new TileAnimPixelTransform(conf.getInt("x"),
+                                               conf.getInt("y"));
 
-        for (child = node->xmlChildrenNode; child; child = child->next) {
-            if (xmlNodeIsText(child))
-                continue;
-
-            if (xmlStrcmp(child->name, (const xmlChar *) "color") == 0) {
-                RGBA *rgba = tileAnimColorLoadFromXml(child);
+        vector<ConfigElement> children = conf.getChildren();
+        for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+            if (i->getName() == "color") {
+                RGBA *rgba = tileAnimColorLoadFromConf(*i);
                 ((TileAnimPixelTransform *)transform)->colors.push_back(rgba);
             }
         }
@@ -88,13 +72,13 @@ TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node) {
     return transform;
 }
 
-RGBA *tileAnimColorLoadFromXml(xmlNodePtr node) {
+RGBA *tileAnimColorLoadFromConf(const ConfigElement &conf) {
     RGBA *rgba;
     
     rgba = new RGBA;
-    rgba->r = xmlGetPropAsInt(node, "red");
-    rgba->g = xmlGetPropAsInt(node, "green");
-    rgba->b = xmlGetPropAsInt(node, "blue");
+    rgba->r = conf.getInt("red");
+    rgba->g = conf.getInt("green");
+    rgba->b = conf.getInt("blue");
     rgba->a = IM_OPAQUE;
 
     return rgba;
