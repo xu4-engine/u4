@@ -185,7 +185,7 @@ City moonglow_city  = {
     "Moonglow", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 32, 0, 0, 26, 24, 25, 30, 0, 0, 0, 0, 0 }, /* person_types */
+    { 32, 0, 0, 26, 0, 24, 25, 30, 0, 0, 0, 0 }, /* person_types */
     "moonglow.tlk", /* tlk_fname */
     &moonglow_map /* map */
 };
@@ -289,7 +289,7 @@ City vesper_city  = {
     "Vesper", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 0, 25, 0, 0, 23, 0, 0, 26, 23, 0, 0, 0 }, /* person_types */
+    { 0, 25, 0, 0, 23, 0, 0, 26, 24, 0, 0, 0 }, /* person_types */
     "vesper.tlk", /* tlk_fname */
     &vesper_map /* map */
 };
