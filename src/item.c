@@ -123,6 +123,23 @@ void putReagentInInventory(void *reag) {
     c->saveGame->reagents[(int)reag] += rand() % 8 + 2;
 }
 
+int itemConditionsMet(unsigned char conditions) {
+    int i;
+
+    if (conditions == SC_NEWMOONS &&
+        !(c->saveGame->trammelphase == 7 && c->saveGame->feluccaphase == 7))
+        return 0;
+
+    if (conditions == SC_FULLAVATAR) {
+        for (i = 0; i < VIRT_MAX; i++) {
+            if (c->saveGame->karma[i] != 0)
+                return 0;
+        }
+    }
+
+    return 1;
+}
+
 /**
  * Returns an item location record if a searchable object exists at
  * the given location. NULL is returned if nothing is there.
@@ -132,7 +149,8 @@ const ItemLocation *itemAtLocation(const Map *map, unsigned char x, unsigned cha
     for (i = 0; i < sizeof(items) / sizeof(items[0]); i++) {
         if (items[i].map == map && 
             items[i].x == x && 
-            items[i].y == y)
+            items[i].y == y &&
+            itemConditionsMet(items[i].conditions))
             return &(items[i]);
     }
     return NULL;
