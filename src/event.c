@@ -87,7 +87,7 @@ void eventHandlerAddTimerCallback(void (*callback)()) {
 void eventHandlerCallTimerCallbacks() {
     TimerCallbackNode *n;    
 
-    for (n = timerCallbackHead; timerCallbackHead != NULL; timerCallbackHead = timerCallbackHead->next) {
+    for (n = timerCallbackHead; n != NULL; n = n->next) {
         (*timerCallbackHead->callback)();
     }
 }
