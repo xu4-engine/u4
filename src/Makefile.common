@@ -47,6 +47,7 @@ SRCS=\
         unzip.c \
         vendor.c \
         weapon.c \
+        xml.c \
         lzw/hash.c \
         lzw/lzw.c \
         lzw/u4decode.c \
