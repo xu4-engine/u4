@@ -2721,6 +2721,18 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
 
             return 1;
         }
+        /* Destroy objects that were hit */
+        else if (obj) {
+            if (((obj->objType == OBJECT_MONSTER) &&
+                (obj->monster->id != WHIRLPOOL_ID) && (obj->monster->id != STORM_ID)) ||
+                obj->objType == OBJECT_UNKNOWN) {
+                
+                attackFlash(x, y, tile, 2);
+                mapRemoveObject(c->location->map, obj);
+
+                return 1;
+            }            
+        }
         
         /* Show the attack annotation */
         annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, tile));

@@ -487,9 +487,8 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
         /* Enact any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
         monsterSpecialEffect(obj);
 
-        /* monster performed a special action that takes place of movement */
-        if (monsterSpecialAction(obj))
-            continue;
+        /* Perform any special actions */
+        monsterSpecialAction(obj);            
 
         /* Now, move the object according to its movement behavior */
         moveObject(map, obj, avatarx, avatary);        
