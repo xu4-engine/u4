@@ -9,7 +9,6 @@
 #include "savegame.h"
 #include "io.h"
 #include "object.h"
-#include "monster.h"
 
 #define MONSTERTABLE_SIZE 32
 
@@ -539,9 +538,8 @@ int saveGameMonstersRead(Object **objs, FILE *f) {
             obj->prevtile = monsterTable[i].prevtile;
             obj->prevx = monsterTable[i].prevx;
             obj->prevy = monsterTable[i].prevy;
-            obj->movement_behavior = inanim ? MOVEMENT_FIXED : MOVEMENT_ATTACK_AVATAR;
-            obj->monster = monsterForTile(obj->tile);
-            obj->objType = obj->monster ? OBJECT_MONSTER : OBJECT_UNKNOWN;            
+            obj->movement_behavior = inanim ? MOVEMENT_FIXED : MOVEMENT_ATTACK_AVATAR;            
+            obj->objType = OBJECT_UNKNOWN;            
             obj->hasFocus = 0;
             obj->next = *objs;
             *objs = obj;

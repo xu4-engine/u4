@@ -154,7 +154,6 @@ void monsterLoadInfoFromXml() {
     xmlFreeDoc(doc);
 }
 
-//-------------------------------------------------------------------------------------------------
 
 const Monster *monsterForTile(unsigned char tile) {
     int i, n;

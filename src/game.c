@@ -81,7 +81,7 @@ void gameCheckMoongates(void);
 void gameUpdateMoons(int showmoongates);
 void gameInitMoons();
 void gameCheckRandomMonsters(void);
-void gameFixupMonstersBehavior(void);
+void gameFixupMonsters(void);
 long gameTimeSinceLastCommand(void);
 int gameWindSlowsShip(Direction shipdir);
 void gameMonsterAttack(Object *obj);
@@ -138,7 +138,7 @@ void gameInit() {
         saveGameMonstersRead(&c->location->map->objects, monstersFile);
         fclose(monstersFile);
     }
-    gameFixupMonstersBehavior();
+    gameFixupMonsters();
 
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
@@ -476,6 +476,12 @@ int gameBaseKeyHandler(int key, void *data) {
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Destroy Object\nDir: ");        
         break;
+
+    case 14:
+        screenMessage("Negate magic!\n");
+        c->aura = AURA_NEGATE;
+        c->auraDuration = 10;
+        statsUpdate();
 
     case ' ':
         gameCheckBridgeTrolls();
@@ -987,9 +993,8 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
     int valid = 1;
     int distance = 0;
     Direction dir;
-    int t_x = info->origin_x, t_y = info->origin_y;
-    Object *obj;
-    int tile, i;
+    int t_x = info->origin_x, t_y = info->origin_y;    
+    int tile;
 
     eventHandlerPopKeyHandler();
 
@@ -2347,10 +2352,17 @@ void gameCheckRandomMonsters() {
     obj = mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);    
 }
 
-void gameFixupMonstersBehavior() {
+void gameFixupMonsters() {
     Object *obj;
 
     for (obj = c->location->map->objects; obj; obj = obj->next) {
+        /* translate unknown objects into monster objects if necessary */
+        if (obj->objType == OBJECT_UNKNOWN && monsterForTile(obj->tile) != NULL) {
+            obj->objType = OBJECT_MONSTER;
+            obj->monster = monsterForTile(obj->tile);
+        }
+
+        /* fix monster behaviors */
         if (obj->movement_behavior == MOVEMENT_ATTACK_AVATAR) {
             const Monster *m = monsterForTile(obj->tile);
             if (m && m->mattr & MATTR_WANDERS)
