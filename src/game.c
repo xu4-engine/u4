@@ -130,7 +130,7 @@ void gameInit() {
     musicPlay();
     screenDrawBackground(BKGD_BORDERS);
     statsUpdate();
-    screenPrompt();
+    screenPrompt();	
 }
 
 /**
@@ -286,7 +286,7 @@ void gameLostEighth(Virtue virtue) {
 }
 
 void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
-    screenMessage("%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
+    screenMessage("\n\n%s\nThou art now Level %d", player->name, playerGetRealLevel(player));
 
     /* FIXME: special effect here */
     statsUpdate();
