@@ -778,7 +778,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'q':
         if (!mapIsWorldMap(c->location->map)) {
-            screenMessage("Quit & save\nNot Here!\n");
+            screenMessage("Quit & save\n%d moves\nNot Here!\n", c->saveGame->moves);
         } else {
             screenMessage("Quit & Save...\n");
             if (gameSave())
