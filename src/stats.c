@@ -30,6 +30,7 @@ const char *statsClassName(ClassType klass);
 const char *statsWeaponName(WeaponType weapon);
 const char *statsWeaponAbbrev(WeaponType weapon);
 const char *statsArmorName(ArmorType armor);
+const char *statsReagentName(Reagent reagent);
 
 /**
  * Update the stats (ztats) box on the upper right of the screen.
@@ -141,8 +142,16 @@ void statsShowWeapons() {
     col = 0;
     screenTextAt(STATS_AREA_X, line++, "A-%s", statsWeaponName(WEAP_HANDS));
     for (w = WEAP_HANDS + 1; w < WEAP_MAX; w++) {
-        if (c->saveGame->weapons[w] > 0)
-            screenTextAt(STATS_AREA_X + col, line++, "%c-%d-%s", w - WEAP_HANDS + 'A', c->saveGame->weapons[w], statsWeaponAbbrev(w));
+        int n = c->saveGame->weapons[w];
+        if (n >= 100)
+            n = 99;
+        if (n >= 1) {
+            screenTextAt(STATS_AREA_X + col, line++, "%c-%d-%s", w - WEAP_HANDS + 'A', n, statsWeaponAbbrev(w));
+            if (line >= 9) {
+                line = 1;
+                col += 8;
+            }
+        }
     }
 }
 
@@ -162,6 +171,9 @@ void statsShowArmor() {
     }
 }
 
+/**
+ * Equipment: touches, gems, keys, and sextants.
+ */
 void statsShowEquipment() {
     int line;
 
@@ -175,19 +187,58 @@ void statsShowEquipment() {
         screenTextAt(STATS_AREA_X, line++, "%2d-Sextants", c->saveGame->sextants);
 }
 
+/**
+ * Items: runes, stones, and other miscellaneous quest items.
+ */
 void statsShowItems() {
     statsAreaSetTitle("Items");
     /* FIXME */
 }
 
+/**
+ * Unmixed reagents in inventory.
+ */
 void statsShowReagents() {
+    int r, line;
+
     statsAreaSetTitle("Reagents");
-    /* FIXME */
+
+    line = 1;
+    for (r = REAG_ASH; r < REAG_MAX; r++) {
+        int n = c->saveGame->reagents[r];
+        if (n >= 100)
+            n = 99;
+        if (n >= 10)
+            screenTextAt(STATS_AREA_X, line++, "%c%d-%s", r - REAG_ASH + 'A', n, statsReagentName(r));
+        else if (n >= 1)
+            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", r - REAG_ASH + 'A', n, statsReagentName(r));
+    }
 }
 
+/**
+ * Mixed reagents in inventory.
+ */
 void statsShowMixtures() {
+    int s, line, col;
+
     statsAreaSetTitle("Mixtures");
-    /* FIXME */
+    
+    line = 1;
+    col = 0;
+    for (s = 0; s < 26; s++) {
+        int n = c->saveGame->mixtures[s];
+        if (n >= 100)
+            n = 99;
+        if (n >= 1) {
+            screenTextAt(STATS_AREA_X + col, line++, "%c-%02d", s + 'A', n);
+            if (line >= 9) {
+                if (col >= 10)
+                    break;
+                line = 1;
+                col += 5;
+            }
+        }
+    }
 }
 
 const char *statsClassName(ClassType klass) {
@@ -254,6 +305,19 @@ const char *statsArmorName(ArmorType armor) {
 
     if (armor >= ARMR_NONE && armor < ARMR_MAX)
         return armorNames[armor - ARMR_NONE];
+    else
+        return "???";
+}
+
+const char *statsReagentName(Reagent reagent) {
+    static const char *reagentNames[] = {
+        "Sulfur Ash", "Ginseng", "Garlic", 
+        "Spider Silk", "Blood Moss", "Black Pearl", 
+        "Nightshade", "Mandrake"
+    };
+
+    if (reagent >= REAG_ASH && reagent < REAG_MAX)
+        return reagentNames[reagent - REAG_ASH];
     else
         return "???";
 }
