@@ -707,14 +707,27 @@ string IntroController::getQuestion(int v1, int v2) {
  * Starts the game.
  */
 void IntroController::journeyOnward() {
-    FILE *saveGameFile;
+    FILE *saveGameFile;    
+    bool validSave = false;
 
     /*
      * ensure a party.sav file exists, otherwise require user to
      * initiate game
      */
     saveGameFile = saveGameOpenForReading();
-    if (!saveGameFile) {
+    if (saveGameFile) {
+        SaveGame *saveGame = new SaveGame;
+
+        // Make sure there are players in party.sav --
+        // In the Ultima Collection CD, party.sav exists, but does
+        // not contain valid info to journey onward        
+        saveGame->read(saveGameFile);        
+        if (saveGame->members > 0)
+            validSave = true;
+        delete saveGame;
+    }
+    
+    if (!validSave) {
         errorMessage = "Initiate game first!";
         updateScreen();
         screenRedrawScreen();
