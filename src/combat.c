@@ -329,6 +329,10 @@ int combatZtatsKeyHandler(int key, void *data) {
         break;
     default:
         eventHandlerPopKeyHandler();
+                
+        c->statsItem = STATS_PARTY_OVERVIEW;
+        statsUpdate();
+
         combatFinishTurn();
         break;
     }
