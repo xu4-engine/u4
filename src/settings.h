@@ -10,11 +10,6 @@
 #include "observable.h"
 #include "types.h"
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-#include <windows.h>
-#include <shlobj.h>
-#endif
-
 using std::string;
 
 #define MIN_SHAKE_INTERVAL              50

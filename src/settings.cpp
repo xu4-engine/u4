@@ -12,6 +12,11 @@
 #include "filesystem.h"
 #include "utils.h"
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+#include <windows.h>
+#include <shlobj.h>
+#endif
+
 /**
  * Initialize static members
  */ 
@@ -68,7 +73,7 @@ Settings::Settings() {
         userPath += "/";
     } else
         userPath = "./";
-#elif 0 /*defined(_WIN32) || defined(__CYGWIN__)*/
+#elif defined(_WIN32) || defined(__CYGWIN__)
     userPath = "./";
     LPMALLOC pMalloc = NULL;
     if (SHGetMalloc(&pMalloc) == S_OK) {
