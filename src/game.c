@@ -591,8 +591,11 @@ int gameBaseKeyHandler(int key, void *data) {
         else if (obj) {
             int valid = 1;
             
-            if (tileIsShip(obj->tile))
+            if (tileIsShip(obj->tile)) {
                 screenMessage("Board Frigate!\n");
+                if (c->lastShip != obj)
+                    c->saveGame->shiphull = 50;
+            }
             else if (tileIsHorse(obj->tile))
                 screenMessage("Mount Horse!\n");
             else if (tileIsBalloon(obj->tile))
@@ -875,7 +878,7 @@ int gameBaseKeyHandler(int key, void *data) {
         if ((c->transportContext != TRANSPORT_FOOT) && c->saveGame->balloonstate == 0) {
             Object *obj = mapAddObject(c->location->map, (unsigned char)c->saveGame->transport, (unsigned char)c->saveGame->transport, c->location->x, c->location->y, c->location->z);
             if (c->transportContext == TRANSPORT_SHIP)
-                c->lastShip = obj; 
+                c->lastShip = obj;
 
             gameSetTransport(AVATAR_TILE);
             c->horseSpeed = 0;
