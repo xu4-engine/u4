@@ -40,7 +40,6 @@ int combatIsLost(void);
 void combatEnd(int adjustKarma);
 void combatMoveMonsters(void);
 int combatFindTargetForMonster(const Object *monster, int *distance, int ranged);
-int movePartyMember(Direction dir, int member);
 int combatChooseWeaponDir(int key, void *data);
 int combatChooseWeaponRange(int key, void *data);
 void combatApplyMonsterTileEffects(void);
@@ -142,9 +141,11 @@ void combatInitDungeonRoom(int room, Direction from) {
         mapLoadDungeonRoom(dng, room);
         combatInfo.newCombatMap = dng->room;
         combatInfo.winOrLose = 0;
-        
-        /* figure out monster start coordinates */
+
+        /* load in monsters and monster start coordinates */
         for (i = 0; i < AREA_MONSTERS; i++) {
+            if (dng->rooms[room].monster_tiles[i] > 0)
+                combatInfo.monsterTable[i] = monsterForTile(dng->rooms[room].monster_tiles[i]);
             combatInfo.monsterStartCoords[i].x = dng->rooms[room].monster_start_x[i];
             combatInfo.monsterStartCoords[i].y = dng->rooms[room].monster_start_y[i];
         }
@@ -430,6 +431,10 @@ unsigned char combatMapForTile(unsigned char groundTile, unsigned char transport
 
 void combatFinishTurn() {    
     PartyCombatInfo *party = combatInfo.party;    
+
+    /* return to party overview */
+    c->statsItem = STATS_PARTY_OVERVIEW;
+    statsUpdate();
 
     if (combatIsWon() && combatInfo.winOrLose) {
         eventHandlerPopKeyHandler();
@@ -1334,10 +1339,11 @@ int combatFindTargetForMonster(const Object *monster, int *distance, int ranged)
     return closest;
 }
 
-int movePartyMember(Direction dir, int member) {
+int movePartyMember(Direction dir, int userEvent) {
     int result = 1;
     int newx, newy;
     int movementMask;
+    int member = combatInfo.partyFocus;
 
     newx = combatInfo.party[member].obj->x;
     newy = combatInfo.party[member].obj->y;

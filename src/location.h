@@ -22,6 +22,7 @@ typedef enum {
 #define CTX_CAN_SAVE_GAME   (CTX_WORLDMAP)
 
 typedef void (*FinishTurnCallback)(void);
+typedef int (*MoveCallback)(Direction, int);
 
 typedef struct _Location {
     int x;
@@ -31,10 +32,11 @@ typedef struct _Location {
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn;
+    MoveCallback move;
     struct _Location *prev;
 } Location;
 
-Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback callback, Location *prev);
+Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, Location *prev);
 unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int *focus);
 void locationFree(Location **stack);
 

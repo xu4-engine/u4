@@ -74,6 +74,7 @@ int combatInitialNumberOfMonsters(const struct _Monster *monster);
 unsigned char combatMapForTile(unsigned char groundTile, unsigned char transport, struct _Object *obj);
 void combatApplyDamageToMonster(int monster, int damage, int player);
 int combatBaseKeyHandler(int key, void *data);
+int movePartyMember(Direction dir, int userEvent);
 
 extern CombatInfo combatInfo;
 

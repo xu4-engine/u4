@@ -21,7 +21,7 @@ Location *locationPop(Location **stack);
  * start a new stack if 'prev' is NULL
  */
 
-Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback callback, Location *prev) {
+Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, Location *prev) {
     Location *newLoc = (Location *)malloc(sizeof(Location));
 
     newLoc->x = x;
@@ -30,7 +30,8 @@ Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationConte
     newLoc->map = map;
     newLoc->viewMode = viewmode;
     newLoc->context = ctx;
-    newLoc->finishTurn = callback;
+    newLoc->finishTurn = finishTurnCallback;
+    newLoc->move = moveCallback;
     
     return locationPush(prev, newLoc);    
 }

@@ -90,6 +90,7 @@ int destroyAtCoord(int x, int y, int distance, void *data);
 int getChestTrapHandler(int player);
 int jimmyAtCoord(int x, int y, int distance, void *data);
 int moveAvatar(Direction dir, int userEvent);
+int moveAvatarInDungeon(Direction dir, int userEvent);
 int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y, int distance, void *data);
@@ -141,7 +142,7 @@ void gameInit() {
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));    
     c->annotation = NULL;    
-    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, &gameFinishTurn, NULL);
+    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, &gameFinishTurn, &moveAvatar, NULL);
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.playerInquiryBuffer[0] = '\0';
@@ -300,7 +301,8 @@ void gameUpdateScreen() {
 void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     int i, x, y, z, viewMode;    
     LocationContext context;
-    FinishTurnCallback finishTurn = &gameFinishTurn;    
+    FinishTurnCallback finishTurn = &gameFinishTurn;
+    MoveCallback move = &moveAvatar;
 
     if (portal) {
         x = portal->startx;
@@ -322,11 +324,13 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         context = CTX_DUNGEON;
         viewMode = VIEW_DUNGEON;
         c->saveGame->orientation = DIR_EAST;
+        move = &moveAvatarInDungeon;
         break;
-    case MAPTYPE_COMBAT:        
+    case MAPTYPE_COMBAT:
         context = CTX_COMBAT;
         viewMode = VIEW_NORMAL;
         finishTurn = &combatFinishTurn;
+        move = &movePartyMember;
         break;
     case MAPTYPE_TOWN:
     case MAPTYPE_VILLAGE:
@@ -338,7 +342,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         break;
     }
     
-    ct->location = locationNew(x, y, z, map, viewMode, context, finishTurn, ct->location);    
+    ct->location = locationNew(x, y, z, map, viewMode, context, finishTurn, move, ct->location);    
 
     if ((map->type == MAPTYPE_TOWN ||
          map->type == MAPTYPE_VILLAGE ||
@@ -2695,6 +2699,74 @@ int moveAvatar(Direction dir, int userEvent) {
         if (gameCheckMoongates())
             return (result = 0);
     }
+
+    return result;
+}
+
+int moveAvatarInDungeon(Direction dir, int userEvent) {
+    int result = 1;
+    int newx, newy;    
+    Direction realDir = dir,
+              temp = c->saveGame->orientation;
+    
+    /*musicPlayEffect();*/
+    if (c->location->context != CTX_DUNGEON)
+        return (result = 0);
+
+    /* you must turn first! */
+    /* figure out what our real direction is */   
+
+    while (temp != DIR_NORTH) {
+        temp = dirRotateCW(temp);
+        realDir = dirRotateCCW(realDir);
+    }
+        
+    /* right/left turn the avatar, up advanced and down retreats */
+    if (c->saveGame->orientation != realDir &&
+        c->saveGame->orientation != dirReverse(realDir)) {            
+        
+        if (!settings->filterMoveMessages) {
+            if (dirRotateCCW(c->saveGame->orientation) == realDir)
+                screenMessage("Turn Left\n");
+            else screenMessage("Turn Right\n");
+        }
+        c->saveGame->orientation = realDir;
+        return result;
+    }
+    
+    newx = c->location->x;
+    newy = c->location->y;
+
+    dirMove(realDir, &newx, &newy);
+
+    if (!settings->filterMoveMessages && userEvent) 
+        /* show 'Advance' or 'Retreat' in dungeons */
+        screenMessage("%s\n", realDir == c->saveGame->orientation ? "Advance" : "Retreat");
+    
+
+    if (MAP_IS_OOB(c->location->map, newx, newy)) {
+        switch (c->location->map->border_behavior) {        
+        case BORDER_WRAP:
+            mapWrapCoordinates(c->location->map, &newx, &newy);
+            break;
+
+        case BORDER_EXIT2PARENT:
+            screenMessage("Leaving...\n");
+            gameExitToParentMap(c);
+            musicPlay();
+            return (result = 0);
+
+        case BORDER_FIXED:
+            if (newx < 0 || newx >= (int) c->location->map->width)
+                newx = c->location->x;
+            if (newy < 0 || newy >= (int) c->location->map->height)
+                newy = c->location->y;
+            break;
+        }
+    }
+    
+    c->location->x = newx;
+    c->location->y = newy;
 
     return result;
 }
