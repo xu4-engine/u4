@@ -1005,7 +1005,7 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
         obj = mapObjectAt(c->location->map, t_x, t_y, c->location->z);
         if (obj != NULL) {
             for (i = 0; i < c->saveGame->members; i++) {                
-                if ((obj->x == party[i]->x) && (obj->y == party[i]->y) && (obj->z == party[i]->z)) {
+                if (party[i] && (obj->x == party[i]->x) && (obj->y == party[i]->y) && (obj->z == party[i]->z)) {
                     obj = NULL;
                     break;
                 }
@@ -1088,9 +1088,9 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         break;
     case 'h':
         screenMessage("Help:\n"
-                      "0-7 - gate to city\n"
+                      "1-8 - gate\n"
                       "c - Collision\ne - Equipment\nh - Help\ni - Items\nk - Show Karma\n"
-                      "m - Mixtures\nr - Reagents\nt - Transports\nw - Winds\n"
+                      "l - Location\nm - Mixtures\nr - Reagents\nt - Transports\nw - Winds\n"
                       "\020");
         break;
     case 'i':
@@ -1110,6 +1110,12 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         screenMessage("Karma:\nH C V J S H S H\n%02x%02x%02x%02x%02x%02x%02x%02x\n\020", c->saveGame->karma[0], c->saveGame->karma[1], c->saveGame->karma[2],
                       c->saveGame->karma[3], c->saveGame->karma[4], c->saveGame->karma[5], c->saveGame->karma[6], c->saveGame->karma[7]);
         break;
+    case 'l':
+        if (mapIsWorldMap(c->location->map))
+            screenMessage("\nLocation:\n%s\nx: %d\ny: %d\n", "World Map", c->location->x, c->location->y);
+        else screenMessage("\nLocation:\n%s\nx: %d\ny: %d\nz: %d\n", c->location->map->fname, c->location->x, c->location->y, c->location->z);
+        break;
+
     case 'm':
         screenMessage("Mixtures!\n\020");
         for (i = 0; i < SPELL_MAX; i++)
@@ -1135,6 +1141,10 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         screenMessage("Change Wind Direction\n");
         break;
 
+    case ' ': 
+        screenMessage("Nothing\n");
+        break;
+
     default:
         valid = 0;
         break;
@@ -1153,7 +1163,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
 int attackAtCoord(int x, int y, int distance, void *data) {
     Object *obj, *under;
     const Monster *m;
-    unsigned char ground;    
+    unsigned char ground;   
 
     /* attack failed: finish up */
     if (x == -1 && y == -1) {
