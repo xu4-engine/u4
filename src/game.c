@@ -117,7 +117,7 @@ void gameInit() {
     c->lastCommandTime = time(NULL);
 
     /* load in the save game */
-    saveGameFile = fopen("party.sav", "rb");
+    saveGameFile = saveGameOpenForReading();
     if (saveGameFile) {
         saveGameRead(c->saveGame, saveGameFile);
         fclose(saveGameFile);
@@ -132,7 +132,7 @@ void gameInit() {
     gameInitMoons();
 
     /* load in monsters.sav */
-    monstersFile = fopen("monsters.sav", "rb");
+    monstersFile = saveGameMonstersOpenForReading();
     if (monstersFile) {
         saveGameMonstersRead(&c->location->map->objects, monstersFile);
         fclose(monstersFile);
@@ -166,7 +166,7 @@ int gameSave() {
     /* Done making sure the savegame struct is accurate */
     /****************************************************/
 
-    saveGameFile = fopen("party.sav", "wb");
+    saveGameFile = saveGameOpenForWriting();
     if (!saveGameFile) {
         screenMessage("Error opening party.sav\n");
         return 0;
@@ -179,7 +179,7 @@ int gameSave() {
     }
     fclose(saveGameFile);
 
-    monstersFile = fopen("monsters.sav", "wb");
+    monstersFile = saveGameMonstersOpenForWriting();
     if (!monstersFile) {
         screenMessage("Error opening monsters.sav\n");
         return 0;

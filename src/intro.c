@@ -709,7 +709,7 @@ void introJourneyOnward() {
      * ensure a party.sav file exists, otherwise require user to
      * initiate game
      */
-    saveGameFile = fopen("party.sav", "rb");
+    saveGameFile = saveGameOpenForReading();
     if (!saveGameFile) {
         introErrorMessage = "Initiate game first!";
         introUpdateScreen();
@@ -839,8 +839,8 @@ int introHandleQuestionChoice(char choice) {
         mode = INTRO_INIT_SEGTOGAME;
         segueInd = 0;
 
-        saveGameFile = fopen("party.sav", "wb");
-        if (saveGameFile) {            
+        saveGameFile = saveGameOpenForWriting();
+        if (saveGameFile) {
             SaveGamePlayerRecord avatar;
             saveGamePlayerRecordInit(&avatar);
             saveGameInit(&saveGame, &avatar);
@@ -854,7 +854,7 @@ int introHandleQuestionChoice(char choice) {
             saveGameWrite(&saveGame, saveGameFile);
             fclose(saveGameFile);
         }
-        saveGameFile = fopen("monsters.sav", "wb");
+        saveGameFile = saveGameMonstersOpenForWriting();
         if (saveGameFile) {
             saveGameMonstersWrite(NULL, saveGameFile);
             fclose(saveGameFile);

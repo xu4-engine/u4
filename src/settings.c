@@ -7,6 +7,14 @@
 #include <string.h>
 #include <ctype.h>
 
+#if defined(MACOSX)
+/* Includes needed by some extra MacOSX specific code in
+ * settingsRead() */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+#endif
+
 #include "settings.h"
 #include "error.h"
 #include "debug.h"
@@ -16,7 +24,11 @@ Settings *settings = NULL;
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define SETTINGS_BASE_FILENAME "xu4.cfg"
 #else
+#if defined(MACOSX)
+#define SETTINGS_BASE_FILENAME "xu4rc"
+#else
 #define SETTINGS_BASE_FILENAME ".xu4rc"
+#endif
 #endif
 
 char *settingsFilename() {
@@ -24,8 +36,16 @@ char *settingsFilename() {
 
     home = getenv("HOME");
     if (home && home[0]) {
+#if defined(MACOSX)
+        fname = (char *) malloc(strlen(home) + 
+strlen(MACOSX_USER_FILES_PATH) +
+strlen(SETTINGS_BASE_FILENAME) + 2);
+        strcpy(fname, home);
+        strcat(fname, MACOSX_USER_FILES_PATH);
+#else
         fname = (char *) malloc(strlen(home) + strlen(SETTINGS_BASE_FILENAME) + 2);
         strcpy(fname, home);
+#endif
         strcat(fname, "/");
         strcat(fname, SETTINGS_BASE_FILENAME);
     } else
@@ -41,6 +61,37 @@ void settingsRead() {
     char buffer[256];
     char *settingsFname;
     FILE *settingsFile;
+    
+#if defined(MACOSX)
+    /**
+     * On the first run, the directory for user files must be created.
+     * This code checks if it has been created, and creates it if not.
+     */
+    struct stat sb;
+    mode_t mask;
+    char *dirname, *home;
+    int result;
+    
+    home = getenv("HOME");
+    if (home && home[0]) {
+        dirname = (char *) malloc(strlen(home) + 
+strlen(MACOSX_USER_FILES_PATH) + 1);
+        strcpy(dirname, home);
+        strcat(dirname, MACOSX_USER_FILES_PATH);
+        
+        /* Check if directory exists */
+        result = stat(dirname, &sb);
+        if ((result != 0) && (errno == ENOENT)) {
+            /* Doesn't exist. Create it */
+            mask = umask(0); /* Get current umask */
+            umask(mask); /* Restore old umask */
+            mkdir(dirname, S_IRWXU | mask);
+        }
+        
+        free(dirname);
+    }
+    
+#endif
 
     settings = (Settings *) malloc(sizeof(Settings));
 

@@ -12,6 +12,101 @@
 
 #define MONSTERTABLE_SIZE 32
 
+#define PARTY_SAV_BASE_FILENAME "party.sav"
+#define MONSTERS_SAV_BASE_FILENAME "monsters.sav"
+
+char *partySavFilename() {
+    char *fname;
+    
+#if defined(MACOSX)
+    char *home;
+
+    home = getenv("HOME");
+    if (home && home[0]) {
+        fname = (char *) malloc(strlen(home) + 
+strlen(MACOSX_USER_FILES_PATH) +
+strlen(PARTY_SAV_BASE_FILENAME) + 2);
+        strcpy(fname, home);
+        strcat(fname, MACOSX_USER_FILES_PATH);
+        strcat(fname, "/");
+        strcat(fname, PARTY_SAV_BASE_FILENAME);
+    } else
+        fname = strdup(PARTY_SAV_BASE_FILENAME);
+#else
+    fname = strdup(PARTY_SAV_BASE_FILENAME);
+#endif
+    
+    return fname;
+}
+
+char *monstersSavFilename() {
+    char *fname;
+    
+#if defined(MACOSX)
+    char *home;
+
+    home = getenv("HOME");
+    if (home && home[0]) {
+        fname = (char *) malloc(strlen(home) + 
+strlen(MACOSX_USER_FILES_PATH) +
+strlen(MONSTERS_SAV_BASE_FILENAME) + 2);
+        strcpy(fname, home);
+        strcat(fname, MACOSX_USER_FILES_PATH);
+        strcat(fname, "/");
+        strcat(fname, MONSTERS_SAV_BASE_FILENAME);
+    } else
+        fname = strdup(MONSTERS_SAV_BASE_FILENAME);
+#else
+    fname = strdup(MONSTERS_SAV_BASE_FILENAME);
+#endif
+    
+    return fname;
+}
+    
+FILE *saveGameOpenForWriting() {
+    char *fname;
+    FILE *f;
+    
+    fname = partySavFilename();
+    f = fopen(fname, "wb");
+    free(fname);
+
+    return f;
+}
+
+FILE *saveGameOpenForReading() {
+    char *fname;
+    FILE *f;
+    
+    fname = partySavFilename();
+    f = fopen(fname, "rb");
+    free(fname);
+
+    return f;
+}
+
+FILE *saveGameMonstersOpenForWriting() {
+    char *fname;
+    FILE *f;
+    
+    fname = monstersSavFilename();
+    f = fopen(fname, "wb");
+    free(fname);
+
+    return f;
+}
+
+FILE *saveGameMonstersOpenForReading() {
+    char *fname;
+    FILE *f;
+    
+    fname = monstersSavFilename();
+    f = fopen(fname, "rb");
+    free(fname);
+
+    return f;
+}
+
 int saveGameWrite(const SaveGame *save, FILE *f) {
     int i;
 

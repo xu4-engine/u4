@@ -181,6 +181,12 @@ typedef struct _SaveGame {
     unsigned short location;
 } SaveGame;
 
+char *partySavFilename(void);
+char *monstersSavFilename(void);
+FILE *saveGameOpenForWriting(void);
+FILE *saveGameOpenForReading(void);
+FILE *saveGameMonstersOpenForWriting(void);
+FILE *saveGameMonstersOpenForReading(void);
 int saveGameWrite(const SaveGame *save, FILE *f);
 int saveGameRead(SaveGame *save, FILE *f);
 void saveGameInit(SaveGame *save, const SaveGamePlayerRecord *avatarInfo);
