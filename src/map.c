@@ -318,7 +318,9 @@ unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus) 
     unsigned char tile;
     const Annotation *a = annotationAt(x, y, z, map->id);
     const Object *obj = mapObjectAt(c->location->map, x, y, z);
-     
+    
+    /* FIXME: do not return objects for VIEW_GEM mode */
+    
     /* draw annotations first */
     if (a && a->visual) {
         *focus = 0;
