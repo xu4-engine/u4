@@ -38,6 +38,21 @@ int isReagentInInventory(void *reag);
 void putReagentInInventory(void *reag);
 
 static const ItemLocation items[] = {
+    { "Mandrake Root", 182, 54, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS },
+    { "Mandrake Root", 100, 165, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS },
+    { "Nightshade", 46, 149, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS },
+    { "Nightshade", 205, 44, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS },
+    { "the Bell of Courage", 176, 208, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_BELL, 0 },
+    { "A Silver Horn", 45, 173, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_HORN, 0 },
+    { "the Wheel from the H.M.S. Cape", 96, 215, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_WHEEL, 0 },
+    { "the Skull of Modain the Wizard", 197, 245, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_SKULL, SC_NEWMOONS },
+    { "the Black Stone", 224, 133, &world_map, &isStoneInInventory, &putStoneInInventory, (void *) STONE_BLACK, SC_NEWMOONS },
+    { "the White Stone", 64, 80, &world_map, &isStoneInInventory, &putStoneInInventory, (void *) STONE_WHITE, 0 },
+    { "the Book of Truth", 6, 6, &lycaeum_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_BOOK, 0 },
+    { "the Candle of Love", 22, 1, &cove_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_CANDLE, 0 },
+    /* FIXME: object at 22, 3 in the lycaeum */
+    { "Mystic Armor", 22, 4, &empath_map, &isMysticInInventory, &putMysticInInventory, (void *) ARMR_MYSTICROBES, SC_FULLAVATAR },
+    { "Mystic Swords", 8, 15, &serpent_map, &isMysticInInventory, &putMysticInInventory, (void *) WEAP_MYSTICSWORD, SC_FULLAVATAR },
     { "the rune of Honesty", 8, 6, &moonglow_map, &isRuneInInventory, &putRuneInInventory, (void *) RUNE_HONESTY, 0 },
     { "the rune of Compassion", 25, 1, &britain_map, &isRuneInInventory, &putRuneInInventory, (void *) RUNE_COMPASSION, 0 },
     { "the rune of Valor", 30, 30, &jhelom_map, &isRuneInInventory, &putRuneInInventory, (void *) RUNE_VALOR, 0 },
@@ -45,21 +60,7 @@ static const ItemLocation items[] = {
     { "the rune of Sacrifice", 28, 30, &minoc_map, &isRuneInInventory, &putRuneInInventory, (void *) RUNE_SACRIFICE, 0 },
     { "the rune of Honor", 2, 29, &trinsic_map, &isRuneInInventory, &putRuneInInventory, (void *) RUNE_HONOR, 0 },
     { "the rune of Spirituality", 17, 8, &lcb_1_map, &isRuneInInventory, &putRuneInInventory, (void *) RUNE_SPIRITUALITY, 0 },
-    { "the rune of Humility", 29, 29, &paws_map, &isRuneInInventory, &putRuneInInventory, (void *) RUNE_HUMILITY, 0 },
-    { "the White Stone", 64, 80, &world_map, &isStoneInInventory, &putStoneInInventory, (void *) STONE_WHITE, 0 },
-    { "the Black Stone", 224, 133, &world_map, &isStoneInInventory, &putStoneInInventory, (void *) STONE_BLACK, SC_NEWMOONS },
-    { "the Skull of Modain the Wizard", 197, 245, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_SKULL, SC_NEWMOONS },
-    { "the Candle of Love", 22, 1, &cove_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_CANDLE, 0 },
-    { "the Book of Truth", 6, 6, &lycaeum_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_BOOK, 0 },
-    { "the Bell of Courage", 176, 208, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_BELL, 0 },
-    { "A Silver Horn", 45, 173, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_HORN, 0 },
-    { "the Wheel from the H.M.S. Cape", 96, 215, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_WHEEL, 0 },
-    { "Mystic Armor", 22, 4, &empath_map, &isMysticInInventory, &putMysticInInventory, (void *) ARMR_MYSTICROBES, SC_FULLAVATAR },
-    { "Mystic Swords", 8, 15, &serpent_map, &isMysticInInventory, &putMysticInInventory, (void *) WEAP_MYSTICSWORD, SC_FULLAVATAR },
-    { "Mandrake Root", 182, 54, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS },
-    { "Mandrake Root", 100, 165, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS },
-    { "Nightshade", 46, 149, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS },
-    { "Nightshade", 205, 44, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS }
+    { "the rune of Humility", 29, 29, &paws_map, &isRuneInInventory, &putRuneInInventory, (void *) RUNE_HUMILITY, 0 }
 };
 
 int isRuneInInventory(void *virt) {
