@@ -5,7 +5,11 @@
 #ifndef TTYPE_H
 #define TTYPE_H
 
+#define SWAMP_TILE 0x3
 #define GRASS_TILE 0x4
+#define BRUSH_TILE 0x5
+#define FOREST_TILE 0x6
+#define HILLS_TILE 0x7
 #define AVATAR_TILE 0x1f
 #define CHEST_TILE 0x3c
 #define BRICKFLOOR_TILE 0x3e
