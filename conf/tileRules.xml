@@ -9,23 +9,23 @@
     <rule name="grass" canlandballoon="true" replacement="true"/>
     <rule name="brush" speed="vslow" replacement="true"/>
     <rule name="hills" speed="vvslow" replacement="true"/>
-    <rule name="mountains" cantwalkon="all" unflyable="true" monsterunwalkable="true"/>
-    <rule name="lcb" cantwalkon="all" monsterunwalkable="true"/>
-    <rule name="lcb_entrance" cantwalkon="south" cantwalkoff="north" monsterunwalkable="true"/>
-    <rule name="ship" ship="true" monsterunwalkable="true"/>
-    <rule name="horse" horse="true" monsterunwalkable="true"/>
+    <rule name="mountains" cantwalkon="all" unflyable="true" creatureunwalkable="true"/>
+    <rule name="lcb" cantwalkon="all" creatureunwalkable="true"/>
+    <rule name="lcb_entrance" cantwalkon="south" cantwalkoff="north" creatureunwalkable="true"/>
+    <rule name="ship" ship="true" creatureunwalkable="true"/>
+    <rule name="horse" horse="true" creatureunwalkable="true"/>
     <rule name="floors" replacement="true"/>
-    <rule name="balloon" balloon="true" monsterunwalkable="true"/>
+    <rule name="balloon" balloon="true" creatureunwalkable="true"/>
     <rule name="person" cantwalkon="all"/>
     <rule name="solid" cantwalkon="all"/>
     <rule name="solid_attackover" cantwalkon="all" canattackover="true"/>
     <rule name="walls" cantwalkon="all" unflyable="true"/>
     <rule name="locked_door" cantwalkon="all" lockeddoor="true"/>
     <rule name="door" cantwalkon="all" door="true"/>
-    <rule name="secret_door" monsterunwalkable="true"/>
+    <rule name="secret_door" creatureunwalkable="true"/>
     <rule name="chest" chest="true"/>
     <rule name="poison_field" effect="poisonField" dispel="true"/>
-    <rule name="energy_field" cantwalkon="all" effect="electricity" monsterunwalkable="true" unflyable="true" dispel="true"/>
+    <rule name="energy_field" cantwalkon="all" effect="electricity" creatureunwalkable="true" unflyable="true" dispel="true"/>
     <rule name="fire_field" speed="vvslow" effect="fire" dispel="true"/>
     <rule name="sleep_field" effect="sleep" dispel="true"/>
     <rule name="lava" effect="lava"/>
@@ -34,7 +34,7 @@
     <rule name="monster" cantwalkon="all"/>    
 
     <!-- Dungeon tile rules -->
-    <rule name="dng_altar" monsterunwalkable="true"/>
+    <rule name="dng_altar" creatureunwalkable="true"/>
     <rule name="dng_door" cantwalkon="retreat"/>
-    <rule name="dng_room" monsterunwalkable="true" cantwalkon="retreat"/>
+    <rule name="dng_room" creatureunwalkable="true" cantwalkon="retreat"/>
 </tileRules>
