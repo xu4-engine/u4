@@ -11,12 +11,13 @@
 #include "person.h"
 #include "ttype.h"
 #include "context.h"
+#include "savegame.h"
 
 void eventHandlerMain() {
     screenMessage("\020");
     while (1) {
         int processed = 0;
-	SDL_Event event;
+        SDL_Event event;
 
         SDL_WaitEvent(&event);
 
@@ -29,6 +30,9 @@ void eventHandlerMain() {
             break;
         case STATE_TALKING:
             processed = eventHandlerTalking(&event);
+            break;
+        case STATE_QUIT:
+            processed = eventHandlerQuit(&event);
             break;
         }
     }
@@ -114,7 +118,13 @@ int eventHandlerNormal(SDL_Event *event) {
             break;
 
         case SDLK_q:
-            exit(0);
+            if (strcmp(c->map->name, "World") != 0) {
+                screenMessage("Quit & save\nNot Here!\n");
+            } else {
+                c->state = STATE_QUIT;
+                screenMessage("Quit & save\nExit (Y/N)? ");
+            }
+            break;
 
         default:
             processed = 0;
@@ -219,3 +229,52 @@ int eventHandlerTalking(SDL_Event *event) {
 
     return eventHandlerDefault(event) || processed;
 }
+
+int eventHandlerQuit(SDL_Event *event) {
+    FILE *saveGameFile;
+    int processed = 1;
+    char answer = '?';
+
+    switch (event->type) {
+    case SDL_KEYDOWN:
+        switch (event->key.keysym.sym) {
+        case SDLK_y:
+            answer = 'y';
+            break;
+        case SDLK_n:
+            answer = 'n';
+            break;
+        default:
+            processed = 0;
+            break;
+        }
+        break;
+
+    default:
+        processed = 0;
+        break;
+    }
+
+    if (answer == 'y' || answer == 'n') {
+        saveGameFile = fopen("party.sav", "w");
+        if (saveGameFile) {
+            c->saveGame->x = c->x;
+            c->saveGame->y = c->y;
+            saveGameWrite(c->saveGame, saveGameFile);
+            fclose(saveGameFile);
+        } else {
+            screenMessage("Error writing to\nparty.sav\n");
+            answer = '?';
+        }
+
+        if (answer == 'y')
+            exit(0);
+        else if (answer == 'n') {
+            screenMessage("%c\n", event->key.keysym.sym - SDLK_a + 'a');
+            c->state = STATE_NORMAL;
+        }
+    }
+        
+    return eventHandlerDefault(event) || processed;
+}
+
