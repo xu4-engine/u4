@@ -15,8 +15,9 @@ typedef enum {
 } ObjectMovementBehavior;
 
 typedef struct _Object {
-    unsigned int tile, prevtile;
+    unsigned char tile, prevtile;
     unsigned int x, y;
+    unsigned int prevx, prevy;
     ObjectMovementBehavior movement_behavior;
     const struct _Person *person;
     struct _Object *next;
