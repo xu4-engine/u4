@@ -76,7 +76,7 @@ void introUpdateScreen() {
         screenTextAt(11, 17, "Return to the view");
         screenTextAt(11, 18, "Journey Onward");
         screenTextAt(11, 19, "Initiate New Game");
-        screenTextAt(3, 21, "Conversion by James Van Artsdalen");
+        screenTextAt(3, 21, "xu4 is free software, see COPYING");
         screenTextAt(5, 22, "\011 Copyright 1987 Lord British");
     }
 
