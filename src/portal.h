@@ -5,6 +5,8 @@
 #ifndef PORTAL_H
 #define PORTAL_H
 
+#include "context.h"
+
 struct _Map;
 struct _Portal;
 struct _Location;
@@ -32,6 +34,7 @@ typedef struct _Portal {
     struct _PortalDestination *retroActiveDest;
     int saveLocation;
     const char *message;
+    TransportContext portalTransportRequisites;
 } Portal;
 
 int usePortalAt(struct _Location *location, int x, int y, int z, PortalTriggerAction action);

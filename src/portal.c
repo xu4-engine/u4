@@ -28,10 +28,14 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
     /* conditions not met for portal to work */
     else if (portal && portal->portalConditionsMet && !(*portal->portalConditionsMet)(portal))
         return 0;
+    /* must klimb or descend on foot! */
+    else if (c->transportContext & ~TRANSPORT_FOOT && (action == ACTION_KLIMB || action == ACTION_DESCEND)) {
+        screenMessage("%sOnly on foot!\n", action == ACTION_KLIMB ? "Klimb\n" : "");
+        return 1;
+    }
     
-    if (portal->message)
-        screenMessage("%s", portal->message);
-    else {
+    if (!portal->message) {
+
         switch(action) {
         case ACTION_DESCEND:    msg = "Descend to first floor!\n"; break;
         case ACTION_KLIMB:      msg = "Klimb to second floor!\n"; break;
@@ -64,12 +68,14 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
         }
     }
 
-    /* must use portals on foot or on horse */
-    if ((c->transportContext & ~TRANSPORT_FOOT_OR_HORSE) ||
-        (portal->destination->type == MAP_DUNGEON && c->transportContext & ~TRANSPORT_FOOT)) {  
+    /* check the transportation requisites of the portal */
+    if (c->transportContext & ~portal->portalTransportRequisites) {
         screenMessage("Only on foot!\n");
         return 1;
     }
+    /* ok, we know the portal is going to work -- now display the custom message, if any */
+    else if (portal->message)
+        screenMessage("%s", portal->message);
     
     gameSetMap(c, portal->destination, portal->saveLocation, portal);
     musicPlay();
