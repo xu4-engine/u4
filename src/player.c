@@ -383,7 +383,7 @@ void playerRevive(SaveGame *saveGame) {
         saveGame->players[i].hp = saveGame->players[i].hpMax;
     }
 
-    saveGame->food = 20000;
+    saveGame->food = 20099;
     saveGame->gold = 200;
 }
 
