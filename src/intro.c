@@ -303,6 +303,7 @@ int introInit() {
         menusLoaded = 1;
     }
 
+    memset(settingsChanged, 0, sizeof(Settings));
     settingsCopy(settingsChanged, settings);
 
     introUpdateScreen();
