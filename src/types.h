@@ -16,6 +16,8 @@
 class Object;
 class MovingObject;
 
+typedef unsigned char MapTile;
+
 #define YesNo(i)    ((i) ? "Yes" : "No")
 #define Loading(i)  "\n====== %s loading ======\n", (i)
 
