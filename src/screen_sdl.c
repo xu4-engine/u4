@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "error.h"
 #include "event.h"
+#include "image.h"
 #include "rle.h"
 #include "savegame.h"
 #include "settings.h"
@@ -26,34 +27,31 @@ typedef enum {
     COMP_LZW
 } CompressionType;
 
-typedef SDL_Surface *(*ScreenScaler)(SDL_Surface *src, int scale, int n);
+typedef Image *(*ScreenScaler)(Image *src, int scale, int n);
 
 long decompress_u4_file(FILE *in, long filesize, void **out);
 long decompress_u4_memory(void *in, long inlen, void **out);
 
 void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b);
 void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h);
-void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, int r, int g, int b);
 int screenLoadBackground(BackgroundType bkgd);
 void screenFreeIntroBackground();
 int screenLoadTiles();
 int screenLoadCharSet();
 int screenLoadPaletteEga();
 int screenLoadPaletteVga(const char *filename);
-int screenLoadImageEga(SDL_Surface **surface, int width, int height, U4FILE *file, CompressionType comp);
-int screenLoadImageVga(SDL_Surface **surface, int width, int height, U4FILE *file, CompressionType comp);
-SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter);
-SDL_Surface *screenScalePoint(SDL_Surface *src, int scale, int n);
-SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n);
-SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N);
-SDL_Surface *screenScaleScale2x(SDL_Surface *src, int scale, int N);
-Uint32 getPixel(SDL_Surface *s, int x, int y);
-void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel);
+int screenLoadImageEga(Image **image, int width, int height, U4FILE *file, CompressionType comp);
+int screenLoadImageVga(Image **image, int width, int height, U4FILE *file, CompressionType comp);
+Image *screenScale(Image *src, int scale, int n, int filter);
+Image *screenScalePoint(Image *src, int scale, int n);
+Image *screenScale2xBilinear(Image *src, int scale, int n);
+Image *screenScale2xSaI(Image *src, int scale, int N);
+Image *screenScaleScale2x(Image *src, int scale, int N);
 
 SDL_Surface *screen;
-SDL_Surface *bkgds[BKGD_MAX];
-SDL_Surface *dngGraphic[36];
-SDL_Surface *tiles, *charset;
+Image *bkgds[BKGD_MAX];
+Image *dngGraphic[36];
+Image *tiles, *charset;
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
 int scale, forceEga, forceVga;
@@ -221,9 +219,9 @@ void screenInit() {
 
 void screenDelete() {
     if (bkgds[BKGD_BORDERS])
-        SDL_FreeSurface(bkgds[BKGD_BORDERS]);
-    SDL_FreeSurface(tiles);
-    SDL_FreeSurface(charset);
+        imageDelete(bkgds[BKGD_BORDERS]);
+    imageDelete(tiles);
+    imageDelete(charset);
     SDL_Quit();
 }
 
@@ -265,17 +263,6 @@ void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int des
         errorWarning("screenCopyRect: SDL_BlitSurface failed\n%s", SDL_GetError());
 }
 
-void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, int r, int g, int b) {
-    int xs, ys;
-
-
-    for (xs = 0; xs < scale; xs++) {
-        for (ys = 0; ys < scale; ys++) {
-            putPixel(surface, x*scale + xs, y*scale+ys, SDL_MapRGB(surface->format, (Uint8)r, (Uint8)g, (Uint8)b));
-        }
-    }
-}
-
 void screenFixIntroScreen(BackgroundType bkgd, const unsigned char *sigData) {
     int i, x, y;
     SDL_Rect src, dest;
@@ -289,14 +276,14 @@ void screenFixIntroScreen(BackgroundType bkgd, const unsigned char *sigData) {
     /* we're working with an unscaled surface, so we can't use screenCopyRect, etc. */
     src.x = 136;  src.y = 0;   src.w = 55;  src.h = 5;
     dest.x = 136; dest.y = 33; dest.w = 55;  dest.h = 5;
-    SDL_BlitSurface(bkgds[bkgd], &src, bkgds[bkgd], &dest);    
+    SDL_BlitSurface(bkgds[bkgd]->surface, &src, bkgds[bkgd]->surface, &dest);    
 
     /* ----------------------------
      * erase the original "present"
      * ---------------------------- */
 
     dest.x = 136; dest.y = 0; dest.w = 55; dest.h = 5;
-    SDL_FillRect(bkgds[bkgd], &dest, SDL_MapRGB(bkgds[bkgd]->format, 0, 0, 0));    
+    imageFillRect(bkgds[bkgd], 136, 0, 55, 5, 0, 0, 0);
 
     /* -----------------------------
      * draw "Lord British" signature
@@ -306,8 +293,8 @@ void screenFixIntroScreen(BackgroundType bkgd, const unsigned char *sigData) {
         /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
         x = sigData[i] + 0x14;
         y = 0xBF - sigData[i+1]; 
-        putPixel(bkgds[bkgd], x, y, SDL_MapRGB(bkgds[bkgd]->format, 0, 255, 255));   /* cyan */
-        putPixel(bkgds[bkgd], x+1, y, SDL_MapRGB(bkgds[bkgd]->format, 0, 255, 255)); /* cyan */
+        imagePutPixel(bkgds[bkgd], x, y, 0, 255, 255); /* cyan */
+        imagePutPixel(bkgds[bkgd], x+1, y, 0, 255, 255); /* cyan */
         i += 2;
     }
 
@@ -316,15 +303,15 @@ void screenFixIntroScreen(BackgroundType bkgd, const unsigned char *sigData) {
      * -------------------------------------------------------------- */
     /* we're still working with an unscaled surface */
     for (i = 86; i < 239; i++)
-        putPixel(bkgds[bkgd], i, 31, SDL_MapRGB(bkgds[bkgd]->format, 128, 0, 0)); /* red */    
+        imagePutPixel(bkgds[bkgd], i, 31, 128, 0, 0); /* red */    
 
     /* scale and filter images now that we've completed them */
-    bkgds[bkgd] = screenScale(bkgds[bkgd], scale, 1, backgroundInfo[bkgd].filter);    
+    bkgds[bkgd] = screenScale(bkgds[bkgd], scale, 1, backgroundInfo[bkgd].filter);
 }
 
 void screenFixIntroScreenExtended(BackgroundType bkgd) {
-    screenCopyRect(bkgds[bkgd], 0, 95, 0, 10, 320, 50);
-    screenCopyRect(bkgds[bkgd], 0, 105, 0, 60, 320, 45);
+    screenCopyRect(bkgds[bkgd]->surface, 0, 95, 0, 10, 320, 50);
+    screenCopyRect(bkgds[bkgd]->surface, 0, 105, 0, 60, 320, 45);
 }
 
 /**
@@ -332,7 +319,7 @@ void screenFixIntroScreenExtended(BackgroundType bkgd) {
  */
 int screenLoadBackground(BackgroundType bkgd) {
     int ret;
-    SDL_Surface *unscaled;
+    Image *unscaled;
     U4FILE *file;
 
     //const char *vgaFilename = usingZipFiles ? backgroundInfo[bkgd].filenameOld : backgroundInfo[bkgd].filename;
@@ -430,7 +417,7 @@ void screenFreeIntroBackgrounds() {
     for (i = 0; i < BKGD_MAX; i++) {
         if ((!backgroundInfo[i].introAnim) || bkgds[i] == NULL)
             continue;
-        SDL_FreeSurface(bkgds[i]);
+        imageDelete(bkgds[i]);
         bkgds[i] = NULL;
     }
 }
@@ -544,8 +531,8 @@ int screenLoadPaletteVga(const char *filename) {
 /**
  * Load an image from an ".ega" image file.
  */
-int screenLoadImageEga(SDL_Surface **surface, int width, int height, U4FILE *file, CompressionType comp) {
-    SDL_Surface *img;
+int screenLoadImageEga(Image **image, int width, int height, U4FILE *file, CompressionType comp) {
+    Image *img;
     int x, y;
     unsigned char *compressed_data, *decompressed_data = NULL;
     long inlen, decompResult;
@@ -577,24 +564,24 @@ int screenLoadImageEga(SDL_Surface **surface, int width, int height, U4FILE *fil
         return 0;
     }
 
-    img = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+    img = imageNew(width, height, 1, 1, IMTYPE_HW);
     if (!img) {
         if (decompressed_data)
             free(decompressed_data);
         return 0;
     }
 
-    SDL_SetColors(img, egaPalette, 0, 16);
+    SDL_SetColors(img->surface, egaPalette, 0, 16);
 
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x+=2) {
-            putPixel(img, x, y, decompressed_data[(y * width + x) / 2] >> 4);
-            putPixel(img, x + 1, y, decompressed_data[(y * width + x) / 2] & 0x0f);
+            imagePutPixelIndex(img, x, y, decompressed_data[(y * width + x) / 2] >> 4);
+            imagePutPixelIndex(img, x + 1, y, decompressed_data[(y * width + x) / 2] & 0x0f);
         }
     }
     free(decompressed_data);
 
-    (*surface) = img;
+    (*image) = img;
 
     return 1;
 }
@@ -602,8 +589,8 @@ int screenLoadImageEga(SDL_Surface **surface, int width, int height, U4FILE *fil
 /**
  * Load an image from a ".vga" or ".ega" image file from the U4 VGA upgrade.
  */
-int screenLoadImageVga(SDL_Surface **surface, int width, int height, U4FILE *file, CompressionType comp) {
-    SDL_Surface *img;
+int screenLoadImageVga(Image **image, int width, int height, U4FILE *file, CompressionType comp) {
+    Image *img;
     int x, y;
     unsigned char *compressed_data, *decompressed_data = NULL;
     long inlen, decompResult;
@@ -636,22 +623,22 @@ int screenLoadImageVga(SDL_Surface **surface, int width, int height, U4FILE *fil
         return 0;
     }
 
-    img = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
+    img = imageNew(width, height, 1, 1, IMTYPE_HW);
     if (!img) {
         if (decompressed_data)
             free(decompressed_data);
         return 0;
     }
 
-    SDL_SetColors(img, vgaPalette, 0, 256);
+    SDL_SetColors(img->surface, vgaPalette, 0, 256);
 
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++)
-            putPixel(img, x, y, decompressed_data[y * width + x]);
+            imagePutPixelIndex(img, x, y, decompressed_data[y * width + x]);
     }
     free(decompressed_data);
 
-    (*surface) = img;
+    (*image) = img;
 
     return 1;
 }
@@ -660,8 +647,6 @@ int screenLoadImageVga(SDL_Surface **surface, int width, int height, U4FILE *fil
  * Draw the surrounding borders on the screen.
  */
 void screenDrawBackground(BackgroundType bkgd) {
-    SDL_Rect r;
-
     ASSERT(bkgd < BKGD_MAX, "bkgd out of range: %d", bkgd);
 
     if (bkgds[bkgd] == NULL) {
@@ -669,11 +654,7 @@ void screenDrawBackground(BackgroundType bkgd) {
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
-    r.x = 0;
-    r.y = 0;
-    r.w = backgroundInfo[bkgd].width * scale;
-    r.h = backgroundInfo[bkgd].height * scale;
-    SDL_BlitSurface(bkgds[bkgd], &r, screen, &r);
+    imageDraw(bkgds[bkgd], 0, 0);
 }
 
 void screenDrawBackgroundInMapArea(BackgroundType bkgd) {
@@ -681,7 +662,7 @@ void screenDrawBackgroundInMapArea(BackgroundType bkgd) {
 
     ASSERT(bkgd < BKGD_MAX, "bkgd out of range: %d", bkgd);
 
-    if (bkgds[bkgd] == NULL) {
+    if (bkgds[bkgd]->surface == NULL) {
         if (!screenLoadBackground(bkgd))
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
@@ -691,7 +672,7 @@ void screenDrawBackgroundInMapArea(BackgroundType bkgd) {
     r.w = VIEWPORT_W * TILE_WIDTH * scale;
     r.h = VIEWPORT_W * TILE_WIDTH * scale;
 
-    SDL_BlitSurface(bkgds[bkgd], &r, screen, &r);
+    SDL_BlitSurface(bkgds[bkgd]->surface, &r, screen, &r);
 }
 
 /**
@@ -708,7 +689,7 @@ void screenShowChar(int chr, int x, int y) {
     dest.y = y * (charset->h / N_CHARS);
     dest.w = charset->w;
     dest.h = charset->h / N_CHARS;
-    SDL_BlitSurface(charset, &src, screen, &dest);
+    SDL_BlitSurface(charset->surface, &src, screen, &dest);
 }
 
 /**
@@ -762,17 +743,17 @@ void screenShowTile(unsigned char tile, int focus, int x, int y) {
     if (tileGetAnimationStyle(tile) == ANIM_CAMPFIRE) {
         for (i = 0; i < tiles->w; i++) {
             for (j = (tile * (tiles->h / N_TILES)); j < (tile + 1) * (tiles->h / N_TILES); j++) {
-                Uint8 r, g, b;
-                SDL_GetRGB(getPixel(tiles, i, j), tiles->format, &r, &g, &b);                
+                int r, g, b;
+                imageGetPixel(tiles, i, j, &r, &g, &b);
                 if ((r > 128) && (g + b + 256 < (r << 1)))
-                    putPixel(tiles, i, j, SDL_MapRGB(tiles->format, (Uint8)((rand()%64) + 192), (Uint8)((rand()%64)+48), (Uint8)(rand()%32)));
+                    imagePutPixel(tiles, i, j, (rand()%64) + 192, (rand()%64)+48, rand()%32);
             }
-            //putPixel(tiles, rand()%tiles->w, (tile * (tiles->h / N_TILES)) + (rand()%(tiles->h / N_TILES)), SDL_MapRGB(tiles->format, (Uint8)((rand()%128) + 128), (Uint8)(rand()%64), (Uint8)(rand()%64)));
-            //screenWriteScaledPixel(tiles, rand()%16, ((tile * (tiles->h / N_TILES)) / scale) + rand()%16, rand()%255, rand()%64, rand()%32);  
+            //imagePutPixel(tiles, rand()%tiles->w, (tile * (tiles->h / N_TILES)) + (rand()%(tiles->h / N_TILES)), (rand()%128) + 128, rand()%64, rand()%64);
+            //imagePutPixelScaled(tiles, rand()%16, ((tile * (tiles->h / N_TILES)) / scale) + rand()%16, rand()%255, rand()%64, rand()%32);  
         }            
     }
 
-    SDL_BlitSurface(tiles, &src, screen, &dest);    
+    SDL_BlitSurface(tiles->surface, &src, screen, &dest);    
 
     if (offset != 0) {
 
@@ -785,7 +766,7 @@ void screenShowTile(unsigned char tile, int focus, int x, int y) {
         dest.w = tiles->w;
         dest.h = tiles->h / N_TILES;
 
-        SDL_BlitSurface(tiles, &src, screen, &dest);
+        SDL_BlitSurface(tiles->surface, &src, screen, &dest);
     }
 
     /*
@@ -820,7 +801,7 @@ void screenShowTile(unsigned char tile, int focus, int x, int y) {
             dest.w = tiles->w - (scale * 5);
             dest.h = 1;
 
-            SDL_BlitSurface(tiles, &src, screen, &dest);            
+            SDL_BlitSurface(tiles->surface, &src, screen, &dest);            
         }
     }
 
@@ -874,7 +855,7 @@ void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
     dest.w = GEMTILE_W * scale;
     dest.h = GEMTILE_H * scale;
 
-    SDL_BlitSurface(tiles, &src, screen, &dest);
+    SDL_BlitSurface(tiles->surface, &src, screen, &dest);
 }
 
 /**
@@ -907,9 +888,8 @@ void screenScrollMessageArea() {
  */
 void screenInvertRect(int x, int y, int w, int h) {
     SDL_Rect src;
-    SDL_Surface *tmp;
-    Uint32 rmask, gmask, bmask, amask;
-    SDL_Color c;
+    Image *tmp;
+    RGB c;
     int i, j;
 
     src.x = x * scale;
@@ -917,33 +897,21 @@ void screenInvertRect(int x, int y, int w, int h) {
     src.w = w * scale;
     src.h = h * scale;
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xff000000;
-    gmask = 0x00ff0000;
-    bmask = 0x0000ff00;
-    amask = 0x000000ff;
-#else
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-
-    tmp = SDL_CreateRGBSurface(SDL_SWSURFACE, src.w, src.h, 32, rmask, gmask, bmask, amask);
+    tmp = imageNew(src.w, src.h, 1, 0, IMTYPE_SW);
     if (!tmp)
         return;
 
-    SDL_BlitSurface(screen, &src, tmp, NULL);
+    SDL_BlitSurface(screen, &src, tmp->surface, NULL);
 
     for (i = 0; i < src.h; i++) {
         for (j = 0; j < src.w; j++) {
-            SDL_GetRGB(getPixel(tmp, j, i), tmp->format, &c.r, &c.g, &c.b);
-            putPixel(tmp, j, i, SDL_MapRGB(tmp->format, (Uint8)(0xff - c.r), (Uint8)(0xff - c.g), (Uint8)(0xff - c.b)));
+            imageGetPixel(tmp, j, i, &c.r, &c.g, &c.b);
+            imagePutPixel(tmp, j, i, 0xff - c.r, 0xff - c.g, 0xff - c.b);
         }
     }
 
-    SDL_BlitSurface(tmp, NULL, screen, &src);
-    SDL_FreeSurface(tmp);
+    SDL_BlitSurface(tmp->surface, NULL, screen, &src);
+    imageDelete(tmp);
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
@@ -1008,7 +976,7 @@ int screenDungeonLoadGraphic(int xoffset, int distance, DungeonGraphicType type)
     char *pathname;
     U4FILE *file;
     int index, ret;
-    SDL_Surface *unscaled;
+    Image *unscaled;
 
     ret = 0;
     index = screenDungeonGraphicIndex(xoffset, distance, type);
@@ -1042,14 +1010,13 @@ int screenDungeonLoadGraphic(int xoffset, int distance, DungeonGraphicType type)
         return 0;
 
     dngGraphic[index] = screenScale(unscaled, scale, 1, 1);
-    dngGraphic[index]->format->colorkey = 0;
-    dngGraphic[index]->flags |= SDL_SRCCOLORKEY;
+    dngGraphic[index]->surface->format->colorkey = 0;
+    dngGraphic[index]->surface->flags |= SDL_SRCCOLORKEY;
     
     return 1;
 }
 
 void screenDungeonDrawWall(int xoffset, int distance, DungeonGraphicType type) {
-    SDL_Rect dest;
     int index;
 
     index = screenDungeonGraphicIndex(xoffset, distance, type);
@@ -1061,12 +1028,7 @@ void screenDungeonDrawWall(int xoffset, int distance, DungeonGraphicType type) {
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
-    dest.x = (8 + dngGraphicInfo[index].x) * scale;
-    dest.y = (8 + dngGraphicInfo[index].y) * scale;
-    dest.w = dngGraphicInfo[index].width * scale;
-    dest.h = dngGraphicInfo[index].height * scale;
-
-    SDL_BlitSurface(dngGraphic[index], NULL, screen, &dest);
+    imageDraw(dngGraphic[index], (8 + dngGraphicInfo[index].x) * scale, (8 + dngGraphicInfo[index].y) * scale);
 }
 
 /**
@@ -1109,7 +1071,7 @@ void screenAnimateIntro(int frame) {
     dest.w = 24 * scale;
     dest.h = 24 * scale;
 
-    SDL_BlitSurface(bkgds[BKGD_TREE], &src, screen, &dest);
+    SDL_BlitSurface(bkgds[BKGD_TREE]->surface, &src, screen, &dest);
 }
 
 void screenEraseMapArea() {
@@ -1161,7 +1123,7 @@ void screenShowCard(int pos, int card) {
     dest.w = 90 * scale;
     dest.h = 124 * scale;
 
-    SDL_BlitSurface(bkgds[card / 2 + BKGD_HONCOM], &src, screen, &dest);
+    SDL_BlitSurface(bkgds[card / 2 + BKGD_HONCOM]->surface, &src, screen, &dest);
 }
 
 /**
@@ -1202,7 +1164,7 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
     dest.w = src.w;
     dest.h = src.h;
 
-    SDL_BlitSurface(bkgds[BKGD_ANIMATE], &src, screen, &dest);
+    SDL_BlitSurface(bkgds[BKGD_ANIMATE]->surface, &src, screen, &dest);
 }
 
 void screenGemUpdate() {
@@ -1224,27 +1186,27 @@ void screenGemUpdate() {
     screenUpdateWind();
 }
 
-SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter) {
-    SDL_Surface *dest;
+Image *screenScale(Image *src, int scale, int n, int filter) {
+    Image *dest;
 
     dest = src;
 
     while (filter && filterScaler && (scale % 2 == 0)) {
         dest = (*filterScaler)(src, 2, n);
         scale /= 2;
-        SDL_FreeSurface(src);
+        imageDelete(src);
         src = dest;
     }
     if (scale == 3 && filterScaler == &screenScaleScale2x) {
         dest = (*filterScaler)(src, 3, n);
         scale /= 3;
-        SDL_FreeSurface(src);
+        imageDelete(src);
         src = dest;
     }
 
     if (scale != 1) {
         dest = screenScalePoint(src, scale, n);
-        SDL_FreeSurface(src);
+        imageDelete(src);
     }
 
     return dest;
@@ -1253,22 +1215,25 @@ SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter) {
 /**
  * A simple row and column duplicating scaler.
  */
-SDL_Surface *screenScalePoint(SDL_Surface *src, int scale, int n) {
+Image *screenScalePoint(Image *src, int scale, int n) {
     int x, y, i, j;
-    SDL_Surface *dest;
+    Image *dest;
 
-    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
+    dest = imageNew(src->w * scale, src->h * scale, src->scale * scale, src->indexed, IMTYPE_HW);
     if (!dest)
         return NULL;
 
-    if (dest->format->palette)
-        memcpy(dest->format->palette->colors, src->format->palette->colors, sizeof(SDL_Color) * src->format->palette->ncolors);
+    if (dest->indexed)
+        imageSetPaletteFromImage(dest, src);
 
     for (y = 0; y < src->h; y++) {
         for (x = 0; x < src->w; x++) {
             for (i = 0; i < scale; i++) {
-                for (j = 0; j < scale; j++)
-                    putPixel(dest, x * scale + j, y * scale + i, getPixel(src, x, y));
+                for (j = 0; j < scale; j++) {
+                    unsigned int index;
+                    imageGetPixelIndex(src, x, y, &index);                
+                    imagePutPixelIndex(dest, x * scale + j, y * scale + i, index);
+                }
             }
         }
     }
@@ -1280,28 +1245,15 @@ SDL_Surface *screenScalePoint(SDL_Surface *src, int scale, int n) {
  * A scaler that interpolates each intervening pixel from it's two
  * neighbors.
  */
-SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
+Image *screenScale2xBilinear(Image *src, int scale, int n) {
     int i, x, y, xoff, yoff;
-    SDL_Color a, b, c, d;
-    SDL_Surface *dest;
-    Uint32 rmask, gmask, bmask, amask;
+    RGB a, b, c, d;
+    Image *dest;
 
     /* this scaler works only with images scaled by 2x */
     ASSERT(scale == 2, "invalid scale: %d", scale);
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xff000000;
-    gmask = 0x00ff0000;
-    bmask = 0x0000ff00;
-    amask = 0x000000ff;
-#else
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-
-    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, 32, rmask, gmask, bmask, amask);
+    dest = imageNew(src->w * scale, src->h * scale, src->scale * scale, 0, IMTYPE_HW);
     if (!dest)
         return NULL;
 
@@ -1331,15 +1283,15 @@ SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
                 else
                     xoff = 1;
 
-                SDL_GetRGB(getPixel(src, x, y), src->format, &a.r, &a.g, &a.b);
-                SDL_GetRGB(getPixel(src, x + xoff, y), src->format, &b.r, &b.g, &b.b);
-                SDL_GetRGB(getPixel(src, x, y + yoff), src->format, &c.r, &c.g, &c.b);
-                SDL_GetRGB(getPixel(src, x + xoff, y + yoff), src->format, &d.r, &d.g, &d.b);
+                imageGetPixel(src, x, y, &a.r, &a.g, &a.b);
+                imageGetPixel(src, x + xoff, y, &b.r, &b.g, &b.b);
+                imageGetPixel(src, x, y + yoff, &c.r, &c.g, &c.b);
+                imageGetPixel(src, x + xoff, y + yoff, &d.r, &d.g, &d.b);
 
-                putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
-                putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (Uint8)((a.r + b.r) >> 1), (Uint8)((a.g + b.g) >> 1), (Uint8)((a.b + b.b) >> 1)));
-                putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, (Uint8)((a.r + c.r) >> 1), (Uint8)((a.g + c.g) >> 1), (Uint8)((a.b + c.b) >> 1)));
-                putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, (Uint8)((a.r + b.r + c.r + d.r) >> 2), (Uint8)((a.g + b.g + c.g + d.g) >> 2), (Uint8)((a.b + b.b + c.b + d.b) >> 2)));
+                imagePutPixel(dest, x * 2, y * 2, a.r, a.g, a.b);
+                imagePutPixel(dest, x * 2 + 1, y * 2, (Uint8)((a.r + b.r) >> 1), (Uint8)((a.g + b.g) >> 1), (Uint8)((a.b + b.b) >> 1));
+                imagePutPixel(dest, x * 2, y * 2 + 1, (Uint8)((a.r + c.r) >> 1), (Uint8)((a.g + c.g) >> 1), (Uint8)((a.b + c.b) >> 1));
+                imagePutPixel(dest, x * 2 + 1, y * 2 + 1, (Uint8)((a.r + b.r + c.r + d.r) >> 2), (Uint8)((a.g + b.g + c.g + d.g) >> 2), (Uint8)((a.b + b.b + c.b + d.b) >> 2));
             }
         }
     }
@@ -1347,14 +1299,22 @@ SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
     return dest;
 }
 
-int colorEqual(SDL_Color a, SDL_Color b) {
+int colorEqual(RGB a, RGB b) {
     return
         a.r == b.r &&
         a.g == b.g &&
         a.b == b.b;
 }
 
-int _2xSaI_GetResult1(SDL_Color a, SDL_Color b, SDL_Color c, SDL_Color d) {
+RGB colorAverage(RGB a, RGB b) {
+    RGB result;
+    result.r = (a.r + b.r) >> 1;
+    result.g = (a.g + b.g) >> 1;
+    result.b = (a.b + b.b) >> 1;
+    return result;
+}
+
+int _2xSaI_GetResult1(RGB a, RGB b, RGB c, RGB d) {
     int x = 0;
     int y = 0;
     int r = 0;
@@ -1365,7 +1325,7 @@ int _2xSaI_GetResult1(SDL_Color a, SDL_Color b, SDL_Color c, SDL_Color d) {
     return r;
 }
 
-int _2xSaI_GetResult2(SDL_Color a, SDL_Color b, SDL_Color c, SDL_Color d) {
+int _2xSaI_GetResult2(RGB a, RGB b, RGB c, RGB d) {
     int x = 0;
     int y = 0;
     int r = 0;
@@ -1380,29 +1340,16 @@ int _2xSaI_GetResult2(SDL_Color a, SDL_Color b, SDL_Color c, SDL_Color d) {
  * A more sophisticated scaler that interpolates each new pixel the
  * surrounding pixels.
  */
-SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
+Image *screenScale2xSaI(Image *src, int scale, int N) {
     int ii, x, y, xoff0, xoff1, xoff2, yoff0, yoff1, yoff2;
-    SDL_Color a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;
-    Uint32 prod0, prod1, prod2;
-    SDL_Surface *dest;
-    Uint32 rmask, gmask, bmask, amask;
+    RGB a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;
+    RGB prod0, prod1, prod2;
+    Image *dest;
 
     /* this scaler works only with images scaled by 2x */
     ASSERT(scale == 2, "invalid scale: %d", scale);
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xff000000;
-    gmask = 0x00ff0000;
-    bmask = 0x0000ff00;
-    amask = 0x000000ff;
-#else
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-
-    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, 32, rmask, gmask, bmask, amask);
+    dest = imageNew(src->w * scale, src->h * scale, src->scale * scale, 0, IMTYPE_HW);
     if (!dest)
         return NULL;
 
@@ -1456,63 +1403,66 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
                 }
                 
 
-                SDL_GetRGB(getPixel(src, x, y), src->format, &a.r, &a.g, &a.b);
-                SDL_GetRGB(getPixel(src, x + xoff1, y), src->format, &b.r, &b.g, &b.b);
-                SDL_GetRGB(getPixel(src, x, y + yoff1), src->format, &c.r, &c.g, &c.b);
-                SDL_GetRGB(getPixel(src, x + xoff1, y + yoff1), src->format, &d.r, &d.g, &d.b);
+                imageGetPixel(src, x, y, &a.r, &a.g, &a.b);
+                imageGetPixel(src, x + xoff1, y, &b.r, &b.g, &b.b);
+                imageGetPixel(src, x, y + yoff1, &c.r, &c.g, &c.b);
+                imageGetPixel(src, x + xoff1, y + yoff1, &d.r, &d.g, &d.b);
 
-                SDL_GetRGB(getPixel(src, x, y + yoff0), src->format, &e.r, &e.g, &e.b);
-                SDL_GetRGB(getPixel(src, x + xoff1, y + yoff0), src->format, &f.r, &f.g, &f.b);
-                SDL_GetRGB(getPixel(src, x + xoff0, y), src->format, &g.r, &g.g, &g.b);
-                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff1), src->format, &h.r, &h.g, &h.b);
+                imageGetPixel(src, x, y + yoff0, &e.r, &e.g, &e.b);
+                imageGetPixel(src, x + xoff1, y + yoff0, &f.r, &f.g, &f.b);
+                imageGetPixel(src, x + xoff0, y, &g.r, &g.g, &g.b);
+                imageGetPixel(src, x + xoff0, y + yoff1, &h.r, &h.g, &h.b);
                 
-                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff0), src->format, &i.r, &i.g, &i.b);
-                SDL_GetRGB(getPixel(src, x + xoff2, y + yoff0), src->format, &j.r, &j.g, &j.b);
-                SDL_GetRGB(getPixel(src, x + xoff0, y), src->format, &k.r, &k.g, &k.b);
-                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff1), src->format, &l.r, &l.g, &l.b);
+                imageGetPixel(src, x + xoff0, y + yoff0, &i.r, &i.g, &i.b);
+                imageGetPixel(src, x + xoff2, y + yoff0, &j.r, &j.g, &j.b);
+                imageGetPixel(src, x + xoff0, y, &k.r, &k.g, &k.b);
+                imageGetPixel(src, x + xoff0, y + yoff1, &l.r, &l.g, &l.b);
 
-                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff2), src->format, &m.r, &m.g, &m.b);
-                SDL_GetRGB(getPixel(src, x, y + yoff2), src->format, &n.r, &n.g, &n.b);
-                SDL_GetRGB(getPixel(src, x + xoff1, y + yoff2), src->format, &o.r, &o.g, &o.b);
-                SDL_GetRGB(getPixel(src, x + xoff2, y + yoff2), src->format, &p.r, &p.g, &p.b);
+                imageGetPixel(src, x + xoff0, y + yoff2, &m.r, &m.g, &m.b);
+                imageGetPixel(src, x, y + yoff2, &n.r, &n.g, &n.b);
+                imageGetPixel(src, x + xoff1, y + yoff2, &o.r, &o.g, &o.b);
+                imageGetPixel(src, x + xoff2, y + yoff2, &p.r, &p.g, &p.b);
 
                 if (colorEqual(a, d) && !colorEqual(b, c)) {
                     if ((colorEqual(a, e) && colorEqual(b, l)) ||
                         (colorEqual(a, c) && colorEqual(a, f) && !colorEqual(b, e) && colorEqual(b, j)))
-                        prod0 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                        prod0 = a;
                     else
-                        prod0 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r) >> 1), (Uint8)((a.g + b.g) >> 1), (Uint8)((a.b + b.b) >> 1));
+                        prod0 = colorAverage(a, b);
+
                     if ((colorEqual(a, g) && colorEqual(c, o)) ||
                         (colorEqual(a, b) && colorEqual(a, h) && !colorEqual(g, c) && colorEqual(c, m)))
-                        prod1 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                        prod1 = a;
                     else
-                        prod1 = SDL_MapRGB(dest->format, (Uint8)((a.r + c.r) >> 1), (Uint8)((a.g + c.g) >> 1), (Uint8)((a.b + c.b) >> 1));
+                        prod1 = colorAverage(a, c);
                     
-                    prod2 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                    prod2 = a;
                 }
                 else if (colorEqual(b, c) && !colorEqual(a, d)) {
                     if ((colorEqual(b, f) && colorEqual(a, h)) ||
                         (colorEqual(b, e) && colorEqual(b, d) && !colorEqual(a, f) && colorEqual(a, i)))
-                        prod0 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
+                        prod0 = b;
                     else
-                        prod0 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r) >> 1), (Uint8)((a.g + b.g) >> 1), (Uint8)((a.b + b.b) >> 1));
+                        prod0 = colorAverage(a, b);
+
                     if ((colorEqual(c, h) && colorEqual(a, f)) ||
                         (colorEqual(c, g) && colorEqual(c, d) && !colorEqual(a, h) && colorEqual(a, i)))
-                        prod1 = SDL_MapRGB(dest->format, c.r, c.g, c.b);
+                        prod1 = c;
                     else
-                        prod1 = SDL_MapRGB(dest->format, (Uint8)((a.r + c.r) >> 1), (Uint8)((a.g + c.g) >> 1), (Uint8)((a.b + c.b) >> 1));
-                    prod2 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
+                        prod1 = colorAverage(a, c);
+
+                    prod2 = b;
                 }
                 else if (colorEqual(a, d) && colorEqual(b, c)) {
                     if (colorEqual(a, b)) {
-                        prod0 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
-                        prod1 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
-                        prod2 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                        prod0 = a;
+                        prod1 = a;
+                        prod2 = a;
                     }
                     else {
                         int r = 0;
-                        prod0 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r) >> 1), (Uint8)((a.g + b.g) >> 1), (Uint8)((a.b + b.b) >> 1));
-                        prod1 = SDL_MapRGB(dest->format, (Uint8)((a.r + c.r) >> 1), (Uint8)((a.g + c.g) >> 1), (Uint8)((a.b + c.b) >> 1));
+                        prod0 = colorAverage(a, b);
+                        prod1 = colorAverage(a, c);
 
                         r += _2xSaI_GetResult1(a, b, g, e);
                         r += _2xSaI_GetResult2(b, a, k, f);
@@ -1520,36 +1470,41 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
                         r += _2xSaI_GetResult1(a, b, l, o);
 
                         if (r > 0)
-                            prod2 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                            prod2 = a;
                         else if (r < 0)
-                            prod2 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
-                        else
-                            prod2 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r + c.r + d.r) >> 2), (Uint8)((a.g + b.g + c.g + d.g) >> 2), (Uint8)((a.b + b.b + c.b + d.b) >> 2));
+                            prod2 = b;
+                        else {
+                            prod2.r = (a.r + b.r + c.r + d.r) >> 2;
+                            prod2.g = (a.g + b.g + c.g + d.g) >> 2;
+                            prod2.b = (a.b + b.b + c.b + d.b) >> 2;
+                        }
                     }
                 }
                 else {
                     if (colorEqual(a, c) && colorEqual(a, f) && !colorEqual(b, e) && colorEqual(b, j))
-                        prod0 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                        prod0 = a;
                     else if (colorEqual(b, e) && colorEqual(b, d) && !colorEqual(a, f) && colorEqual(a, i))
-                        prod0 = SDL_MapRGB(dest->format, b.r, b.g, b.b);
+                        prod0 = b;
                     else
-                        prod0 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r) >> 1), (Uint8)((a.g + b.g) >> 1), (Uint8)((a.b + b.b) >> 1));
+                        prod0 = colorAverage(a, b);
 
                     if (colorEqual(a, b) && colorEqual(a, h) && !colorEqual(g, c) && colorEqual(c, m))
-                        prod1 = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+                        prod1 = a;
                     else if (colorEqual(c, g) && colorEqual(c, d) && !colorEqual(a, h) && colorEqual(a, i))
-                        prod1 = SDL_MapRGB(dest->format, c.r, c.g, c.b);
+                        prod1 = c;
                     else
-                        prod1 = SDL_MapRGB(dest->format, (Uint8)((a.r + c.r) >> 1), (Uint8)((a.g + c.g) >> 1), (Uint8)((a.b + c.b) >> 1));
+                        prod1 = colorAverage(a, c);
 
-                    prod2 = SDL_MapRGB(dest->format, (Uint8)((a.r + b.r + c.r + d.r) >> 2), (Uint8)((a.g + b.g + c.g + d.g) >> 2), (Uint8)((a.b + b.b + c.b + d.b) >> 2));
+                    prod2.r = (a.r + b.r + c.r + d.r) >> 2;
+                    prod2.g = (a.g + b.g + c.g + d.g) >> 2;
+                    prod2.b = (a.b + b.b + c.b + d.b) >> 2;
                 }
 
 
-                putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
-                putPixel(dest, x * 2 + 1, y * 2, prod0);
-                putPixel(dest, x * 2, y * 2 + 1, prod1);
-                putPixel(dest, x * 2 + 1, y * 2 + 1, prod2);
+                imagePutPixel(dest, x * 2, y * 2, a.r, a.g, a.b);
+                imagePutPixel(dest, x * 2 + 1, y * 2, prod0.r, prod0.g, prod0.b);
+                imagePutPixel(dest, x * 2, y * 2 + 1, prod1.r, prod1.g, prod1.g);
+                imagePutPixel(dest, x * 2 + 1, y * 2 + 1, prod2.r, prod2.g, prod2.b);
             }
         }
     }
@@ -1561,34 +1516,21 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
  * A more sophisticated scaler that doesn't interpolate, but avoids
  * the stair step effect by detecting angles.
  */
-SDL_Surface *screenScaleScale2x(SDL_Surface *src, int scale, int n) {
+Image *screenScaleScale2x(Image *src, int scale, int n) {
     int ii, x, y, xoff0, xoff1, yoff0, yoff1;
-    SDL_Color a, b, c, d, e, f, g, h, i;
-    SDL_Color e0, e1, e2, e3;
-    SDL_Surface *dest;
-    Uint32 rmask, gmask, bmask, amask;
+    RGB a, b, c, d, e, f, g, h, i;
+    RGB e0, e1, e2, e3;
+    Image *dest;
 
     /* this scaler works only with images scaled by 2x or 3x */
     ASSERT(scale == 2 || scale == 3, "invalid scale: %d", scale);
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xff000000;
-    gmask = 0x00ff0000;
-    bmask = 0x0000ff00;
-    amask = 0x000000ff;
-#else
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-
-    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
+    dest = imageNew(src->w * scale, src->h * scale, src->scale * scale, src->indexed, IMTYPE_HW);
     if (!dest)
         return NULL;
 
-    if (dest->format->palette)
-        memcpy(dest->format->palette->colors, src->format->palette->colors, sizeof(SDL_Color) * src->format->palette->ncolors);
+    if (dest->indexed)
+        imageSetPaletteFromImage(dest, src);
 
     /*
      * Each pixel in the source image is translated into four (or
@@ -1622,17 +1564,17 @@ SDL_Surface *screenScaleScale2x(SDL_Surface *src, int scale, int n) {
                 else
                     xoff1 = 1;
 
-                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff0), src->format, &a.r, &a.g, &a.b);
-                SDL_GetRGB(getPixel(src, x, y + yoff0), src->format, &b.r, &b.g, &b.b);
-                SDL_GetRGB(getPixel(src, x + xoff1, y + yoff0), src->format, &c.r, &c.g, &c.b);
+                imageGetPixel(src, x + xoff0, y + yoff0, &a.r, &a.g, &a.b);
+                imageGetPixel(src, x, y + yoff0, &b.r, &b.g, &b.b);
+                imageGetPixel(src, x + xoff1, y + yoff0, &c.r, &c.g, &c.b);
 
-                SDL_GetRGB(getPixel(src, x + xoff0, y), src->format, &d.r, &d.g, &d.b);
-                SDL_GetRGB(getPixel(src, x, y), src->format, &e.r, &e.g, &e.b);
-                SDL_GetRGB(getPixel(src, x + xoff1, y), src->format, &f.r, &f.g, &f.b);
+                imageGetPixel(src, x + xoff0, y, &d.r, &d.g, &d.b);
+                imageGetPixel(src, x, y, &e.r, &e.g, &e.b);
+                imageGetPixel(src, x + xoff1, y, &f.r, &f.g, &f.b);
 
-                SDL_GetRGB(getPixel(src, x + xoff0, y + yoff1), src->format, &g.r, &g.g, &g.b);
-                SDL_GetRGB(getPixel(src, x, y + yoff1), src->format, &h.r, &h.g, &h.b);
-                SDL_GetRGB(getPixel(src, x + xoff1, y + yoff1), src->format, &i.r, &i.g, &i.b);
+                imageGetPixel(src, x + xoff0, y + yoff1, &g.r, &g.g, &g.b);
+                imageGetPixel(src, x, y + yoff1, &h.r, &h.g, &h.b);
+                imageGetPixel(src, x + xoff1, y + yoff1, &i.r, &i.g, &i.b);
 
                 e0 = colorEqual(d, b) && (!colorEqual(b, f)) && (!colorEqual(d, h)) ? d : e;
                 e1 = colorEqual(b, f) && (!colorEqual(b, d)) && (!colorEqual(f, h)) ? f : e;
@@ -1640,82 +1582,24 @@ SDL_Surface *screenScaleScale2x(SDL_Surface *src, int scale, int n) {
                 e3 = colorEqual(h, f) && (!colorEqual(d, h)) && (!colorEqual(b, f)) ? f : e;
                 
                 if (scale == 2) {
-                    putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, e0.r, e0.g, e0.b));
-                    putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
-                    putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, e2.r, e2.g, e2.b));
-                    putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, e3.r, e3.g, e3.b));
+                    imagePutPixel(dest, x * 2, y * 2, e0.r, e0.g, e0.b);
+                    imagePutPixel(dest, x * 2 + 1, y * 2, e1.r, e1.g, e1.b);
+                    imagePutPixel(dest, x * 2, y * 2 + 1, e2.r, e2.g, e2.b);
+                    imagePutPixel(dest, x * 2 + 1, y * 2 + 1, e3.r, e3.g, e3.b);
                 } else if (scale == 3) {
-                    putPixel(dest, x * 3, y * 3, SDL_MapRGB(dest->format, e0.r, e0.g, e0.b));
-                    putPixel(dest, x * 3 + 1, y * 3, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
-                    putPixel(dest, x * 3 + 2, y * 3, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
-                    putPixel(dest, x * 3, y * 3 + 1, SDL_MapRGB(dest->format, e0.r, e0.g, e0.b));
-                    putPixel(dest, x * 3 + 1, y * 3 + 1, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
-                    putPixel(dest, x * 3 + 2, y * 3 + 1, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
-                    putPixel(dest, x * 3, y * 3 + 2, SDL_MapRGB(dest->format, e2.r, e2.g, e2.b));
-                    putPixel(dest, x * 3 + 1, y * 3 + 2, SDL_MapRGB(dest->format, e3.r, e3.g, e3.b));
-                    putPixel(dest, x * 3 + 2, y * 3 + 2, SDL_MapRGB(dest->format, e3.r, e3.g, e3.b));
+                    imagePutPixel(dest, x * 3, y * 3, e0.r, e0.g, e0.b);
+                    imagePutPixel(dest, x * 3 + 1, y * 3, e1.r, e1.g, e1.b);
+                    imagePutPixel(dest, x * 3 + 2, y * 3, e1.r, e1.g, e1.b);
+                    imagePutPixel(dest, x * 3, y * 3 + 1, e0.r, e0.g, e0.b);
+                    imagePutPixel(dest, x * 3 + 1, y * 3 + 1, e1.r, e1.g, e1.b);
+                    imagePutPixel(dest, x * 3 + 2, y * 3 + 1, e1.r, e1.g, e1.b);
+                    imagePutPixel(dest, x * 3, y * 3 + 2, e2.r, e2.g, e2.b);
+                    imagePutPixel(dest, x * 3 + 1, y * 3 + 2, e3.r, e3.g, e3.b);
+                    imagePutPixel(dest, x * 3 + 2, y * 3 + 2, e3.r, e3.g, e3.b);
                 }
             }
         }
     }
 
     return dest;
-}
-
-Uint32 getPixel(SDL_Surface *s, int x, int y) {
-    int bpp = s->format->BytesPerPixel;
-
-    Uint8 *p = (Uint8 *) s->pixels + y * s->pitch + x * bpp;
-
-    switch(bpp) {
-    case 1:
-        return *p;
-
-    case 2:
-        return *(Uint16 *)p;
-
-    case 3:
-        if(SDL_BYTEORDER == SDL_BIG_ENDIAN)
-            return p[0] << 16 | p[1] << 8 | p[2];
-        else
-            return p[0] | p[1] << 8 | p[2] << 16;
-
-    case 4:
-        return *(Uint32 *)p;
-
-    default:
-        return 0;
-    }
-}
-
-void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel) {
-    int bpp = s->format->BytesPerPixel;
-
-    Uint8 *p = (Uint8 *)s->pixels + y * s->pitch + x * bpp;
-
-    switch(bpp) {
-    case 1:
-        *p = pixel;
-        break;
-
-    case 2:
-        *(Uint16 *)p = pixel;
-        break;
-
-    case 3:
-        if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-            p[0] = (pixel >> 16) & 0xff;
-            p[1] = (pixel >> 8) & 0xff;
-            p[2] = pixel & 0xff;
-        } else {
-            p[0] = pixel & 0xff;
-            p[1] = (pixel >> 8) & 0xff;
-            p[2] = (pixel >> 16) & 0xff;
-        }
-        break;
-
-    case 4:
-        *(Uint32 *)p = pixel;
-        break;
-    }
 }
