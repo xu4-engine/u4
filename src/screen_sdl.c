@@ -15,6 +15,7 @@
 #include "settings.h"
 #include "screen.h"
 #include "ttype.h"
+#include "dngview.h"
 #include "u4.h"
 #include "u4file.h"
 
@@ -38,8 +39,8 @@ int screenLoadTiles();
 int screenLoadCharSet();
 int screenLoadPaletteEga();
 int screenLoadPaletteVga(const char *filename);
-int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp);
-int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp);
+int screenLoadImageEga(SDL_Surface **surface, int width, int height, U4FILE *file, CompressionType comp);
+int screenLoadImageVga(SDL_Surface **surface, int width, int height, U4FILE *file, CompressionType comp);
 SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter);
 SDL_Surface *screenScalePoint(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n);
@@ -50,6 +51,7 @@ void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel);
 
 SDL_Surface *screen;
 SDL_Surface *bkgds[BKGD_MAX];
+SDL_Surface *dngGraphic[24];
 SDL_Surface *tiles, *charset;
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
@@ -107,6 +109,47 @@ const struct {
     { "rune_6.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 },
     { "rune_7.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 },
     { "rune_8.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 }
+};
+
+const struct {
+    const char *filename;
+    int width, height;
+    int depth;
+    int x, y;
+    CompressionType comp;
+} dngGraphicInfo[] = {
+    { "dung0l.rle", 32,  176, 4, 0,   0,   COMP_RLE },
+    { "dung0m.rle", 176, 176, 4, 0,   0,   COMP_RLE },
+    { "dung0r.rle", 32,  176, 4, 144, 0,   COMP_RLE },
+
+    { "dung1l.rle", 64,  112, 4, 0,   32,  COMP_RLE },
+    { "dung1m.rle", 176, 112, 4, 0,   32,  COMP_RLE },
+    { "dung1r.rle", 64,  112, 4, 112, 32,  COMP_RLE },
+
+    { "dung2l.rle", 80,  48,  4, 0,   64,  COMP_RLE },
+    { "dung2m.rle", 176, 48,  4, 0,   64,  COMP_RLE },
+    { "dung2r.rle", 80,  48,  4, 96,  64,  COMP_RLE },
+
+    { "dung3l.rle", 88,  16,  4, 0,   80,  COMP_RLE },
+    { "dung3m.rle", 176, 16,  4, 0,   80,  COMP_RLE },
+    { "dung3r.rle", 88,  16,  4, 88,  80,  COMP_RLE },
+
+    { },
+    { },
+    { },
+
+    { },
+    { "dung1m_door.rle", 176, 112, 4, 0,   32,  COMP_RLE },
+    { },
+
+    { },
+    { "dung2m_door.rle", 176, 48,  4, 0,   64,  COMP_RLE },
+    { },
+
+    { },
+    { "dung3m_door.rle", 176, 16,  4, 0,   80,  COMP_RLE },
+    { }
+
 };
 
 extern int verbose;
@@ -280,14 +323,21 @@ void screenFixIntroScreenExtended(BackgroundType bkgd) {
 int screenLoadBackground(BackgroundType bkgd) {
     int ret;
     SDL_Surface *unscaled;
+    U4FILE *file;
 
     ret = 0;
-    if (!forceEga && backgroundInfo[bkgd].hasVga)
-        ret = screenLoadImageVga(&unscaled, 
-                                 backgroundInfo[bkgd].width, 
-                                 backgroundInfo[bkgd].height, 
-                                 backgroundInfo[bkgd].filename, 
-                                 backgroundInfo[bkgd].comp);    
+    if (!forceEga && backgroundInfo[bkgd].hasVga) {
+        file = u4fopen(backgroundInfo[bkgd].filename);
+    
+        if (file) {
+            ret = screenLoadImageVga(&unscaled,
+                                     backgroundInfo[bkgd].width,
+                                     backgroundInfo[bkgd].height,
+                                     file,
+                                     backgroundInfo[bkgd].comp);
+            u4fclose(file);
+        }
+    }
     if (!ret && (!forceVga || !backgroundInfo[bkgd].hasVga)) {
         BackgroundType egaBkgd;
 
@@ -325,11 +375,16 @@ int screenLoadBackground(BackgroundType bkgd) {
             break;
         }
 
-        ret = screenLoadImageEga(&unscaled, 
-                                 backgroundInfo[bkgd].width, 
-                                 backgroundInfo[bkgd].height, 
-                                 backgroundInfo[egaBkgd].filename, 
-                                 backgroundInfo[egaBkgd].comp);
+        file = u4fopen(backgroundInfo[egaBkgd].filename);
+
+        if (file) {
+            ret = screenLoadImageEga(&unscaled,
+                                     backgroundInfo[bkgd].width,
+                                     backgroundInfo[bkgd].height,
+                                     file,
+                                     backgroundInfo[egaBkgd].comp);
+            u4fclose(file);
+        }
     }
 
     if (!ret)
@@ -366,13 +421,24 @@ void screenFreeIntroBackgrounds() {
  * Load the tiles graphics from the "shapes.ega" or "shapes.vga" file.
  */
 int screenLoadTiles() {
+    U4FILE *file;
     int ret = 0;
 
-    if (!forceEga)
-        ret = screenLoadImageVga(&tiles, TILE_WIDTH, TILE_HEIGHT * N_TILES, "shapes.vga", COMP_NONE);
+    if (!forceEga) {
+        file = u4fopen("shapes.vga");
+        if (file) {
+            ret = screenLoadImageVga(&tiles, TILE_WIDTH, TILE_HEIGHT * N_TILES, file, COMP_NONE);
+            u4fclose(file);
+        }
+    }
 
-    if (!ret && !forceVga)
-        ret = screenLoadImageEga(&tiles, TILE_WIDTH, TILE_HEIGHT * N_TILES, "shapes.ega", COMP_NONE);
+    if (!ret && !forceVga) {
+        file = u4fopen("shapes.ega");
+        if (file) {
+            ret = screenLoadImageEga(&tiles, TILE_WIDTH, TILE_HEIGHT * N_TILES, file, COMP_NONE);
+            u4fclose(file);
+        }
+    }
 
     tiles = screenScale(tiles, scale, N_TILES, 1);
 
@@ -383,13 +449,25 @@ int screenLoadTiles() {
  * Load the character set graphics from the "charset.ega" or "charset.vga" file.
  */
 int screenLoadCharSet() {
+    U4FILE *file;
     int ret = 0;
 
-    if (!forceEga)
-        ret = screenLoadImageVga(&charset, CHAR_WIDTH, CHAR_HEIGHT * N_CHARS, "charset.vga", COMP_NONE);
 
-    if (!ret && !forceVga)
-        ret = screenLoadImageEga(&charset, CHAR_WIDTH, CHAR_HEIGHT * N_CHARS, "charset.ega", COMP_NONE);
+    if (!forceEga) {
+        file = u4fopen("charset.vga");
+        if (file) {
+            ret = screenLoadImageVga(&charset, CHAR_WIDTH, CHAR_HEIGHT * N_CHARS, file, COMP_NONE);
+            u4fclose(file);
+        }
+    }
+
+    if (!ret && !forceVga) {
+        file = u4fopen("charset.ega");
+        if (file) {
+            ret = screenLoadImageEga(&charset, CHAR_WIDTH, CHAR_HEIGHT * N_CHARS, file, COMP_NONE);
+            u4fclose(file);
+        }
+    }
 
     charset = screenScale(charset, scale, N_CHARS, 1);
 
@@ -449,21 +527,15 @@ int screenLoadPaletteVga(const char *filename) {
 /**
  * Load an image from an ".ega" image file.
  */
-int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp) {
-    U4FILE *in;
+int screenLoadImageEga(SDL_Surface **surface, int width, int height, U4FILE *file, CompressionType comp) {
     SDL_Surface *img;
     int x, y;
     unsigned char *compressed_data, *decompressed_data = NULL;
     long inlen, decompResult;
 
-    in = u4fopen(filename);
-    if (!in)
-        return 0;
-
-    inlen = u4flength(in);
+    inlen = u4flength(file);
     compressed_data = (Uint8 *) malloc(inlen);
-    u4fread(compressed_data, 1, inlen, in);
-    u4fclose(in);
+    u4fread(compressed_data, 1, inlen, file);
 
     switch(comp) {
     case COMP_NONE:
@@ -513,21 +585,15 @@ int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char 
 /**
  * Load an image from a ".vga" or ".ega" image file from the U4 VGA upgrade.
  */
-int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp) {
-    U4FILE *in;
+int screenLoadImageVga(SDL_Surface **surface, int width, int height, U4FILE *file, CompressionType comp) {
     SDL_Surface *img;
     int x, y;
     unsigned char *compressed_data, *decompressed_data = NULL;
     long inlen, decompResult;
 
-    in = u4fopen(filename);
-    if (!in)
-        return 0;
-
-    inlen = u4flength(in);
+    inlen = u4flength(file);
     compressed_data = (Uint8 *) malloc(inlen);
-    u4fread(compressed_data, 1, inlen, in);
-    u4fclose(in);
+    u4fread(compressed_data, 1, inlen, file);
 
     switch(comp) {
     case COMP_NONE:
@@ -896,6 +962,89 @@ void screenShake(int iterations) {
     }
 }
 
+int screenDungeonGraphicIndex(int xoffset, int distance, DungeonGraphicType type) {
+    int index;
+
+    index = 0;
+
+    /* FIXME */
+    if (type != DNGGRAPHIC_WALL && type != DNGGRAPHIC_DOOR)
+        return -1;
+
+    if (xoffset == 0 && type == DNGGRAPHIC_DOOR)
+        index += 12;
+
+    index += xoffset + 1;
+
+    index += distance * 3;
+
+    return index;
+}
+
+int screenDungeonLoadGraphic(int xoffset, int distance, DungeonGraphicType type) {
+    char *pathname;
+    U4FILE *file;
+    int index, ret;
+    SDL_Surface *unscaled;
+
+    ret = 0;
+    index = screenDungeonGraphicIndex(xoffset, distance, type);
+    ASSERT(index != -1, "invalid graphic paramters provided");
+
+    pathname = u4find_graphics(dngGraphicInfo[index].filename);
+    if (!pathname)
+        return 0;
+
+    file = u4fopen_stdio(pathname);
+    free(pathname);
+    if (!file)
+        return 0;
+
+    if (dngGraphicInfo[index].depth == 8)
+        ret = screenLoadImageVga(&unscaled, 
+                                 dngGraphicInfo[index].width, 
+                                 dngGraphicInfo[index].height, 
+                                 file, 
+                                 dngGraphicInfo[index].comp);
+    else {
+        ret = screenLoadImageEga(&unscaled, 
+                                 dngGraphicInfo[index].width, 
+                                 dngGraphicInfo[index].height, 
+                                 file, 
+                                 dngGraphicInfo[index].comp);
+    }
+    u4fclose(file);
+
+    if (!ret)
+        return 0;
+
+    dngGraphic[index] = screenScale(unscaled, scale, 1, 1);
+    dngGraphic[index]->format->colorkey = 0;
+    dngGraphic[index]->flags |= SDL_SRCCOLORKEY;
+    
+    return 1;
+}
+
+void screenDungeonDrawWall(int xoffset, int distance, DungeonGraphicType type) {
+    SDL_Rect dest;
+    int index;
+
+    index = screenDungeonGraphicIndex(xoffset, distance, type);
+    if (index == -1)
+        return;
+
+    if (dngGraphic[index] == NULL) {
+        if (!screenDungeonLoadGraphic(xoffset, distance, type))
+            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+    }
+
+    dest.x = (8 + dngGraphicInfo[index].x) * scale;
+    dest.y = (8 + dngGraphicInfo[index].y) * scale;
+    dest.w = dngGraphicInfo[index].width * scale;
+    dest.h = dngGraphicInfo[index].height * scale;
+
+    SDL_BlitSurface(dngGraphic[index], NULL, screen, &dest);
+}
 
 /**
  * Force a redraw.
@@ -938,6 +1087,17 @@ void screenAnimateIntro(int frame) {
     dest.h = 24 * scale;
 
     SDL_BlitSurface(bkgds[BKGD_TREE], &src, screen, &dest);
+}
+
+void screenEraseMapArea() {
+    SDL_Rect dest;
+
+    dest.x = BORDER_WIDTH * scale;
+    dest.y = BORDER_WIDTH * scale;
+    dest.w = VIEWPORT_W * TILE_WIDTH * scale;
+    dest.h = VIEWPORT_H * TILE_HEIGHT * scale;
+
+    SDL_FillRect(screen, &dest, 0);
 }
 
 void screenEraseTextArea(int x, int y, int width, int height) {
