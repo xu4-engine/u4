@@ -724,9 +724,12 @@ int talkAtCoord(int x, int y) {
  * Handles a query while talking to an NPC.
  */
 int talkHandleBuffer(const char *message) {
+    ReadBufferActionInfo *info;
     int done;
     char *reply, *prompt;
     int askq;
+
+    eventHandlerPopKeyHandler();
 
     screenMessage("\n");
 
@@ -742,20 +745,38 @@ int talkHandleBuffer(const char *message) {
     c->conversation.buffer[0] = '\0';
 
     if (done) {
-        eventHandlerPopKeyHandler();
         screenMessage("\020");
-        return 1;
-    } else if (askq) {
+    }
+
+    else if (askq) {
         personGetQuestion(c->conversation.talker, &prompt);
         screenMessage("%s", prompt);
         free(prompt);
-    } else {
+
+        info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+        info->buffer = c->conversation.buffer;
+        info->bufferLen = CONV_BUFFERLEN;
+        info->handleBuffer = &talkHandleBuffer;
+        info->screenX = TEXT_AREA_X + c->col;
+        info->screenY = TEXT_AREA_Y + c->line;
+        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
+    }
+
+    else {
         personGetPrompt(c->conversation.talker, &prompt);
         screenMessage("\n%s", prompt);
         free(prompt);
+
+        info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+        info->buffer = c->conversation.buffer;
+        info->bufferLen = CONV_BUFFERLEN;
+        info->handleBuffer = &talkHandleBuffer;
+        info->screenX = TEXT_AREA_X + c->col;
+        info->screenY = TEXT_AREA_Y + c->line;
+        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
     }
 
-    return 0;
+    return 1;
 }
 
 /**
