@@ -670,7 +670,7 @@ int gameBaseKeyHandler(int key, void *data) {
             info->range = 3;
             info->validDirections = broadsidesDirs; /* can only fire broadsides! */
             info->player = -1;
-            info->blockedPredicate = &tileCanAttackOver;
+            info->blockedPredicate = NULL; /* nothing (not even mountains!) can block cannonballs */
             info->blockBefore = 1;
             info->firstValidDistance = 1;
             eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
@@ -1132,11 +1132,12 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     case '6':
     case '7':
     case '8':
+        screenMessage("Gate %d!\n", key - '0');
+
         if (mapIsWorldMap(c->location->map)) {
             moongate = moongateGetGateForPhase(key - '1');
             c->location->x = moongate->x;
-            c->location->y = moongate->y;
-            screenMessage("Gate %d!\n", key - '0');
+            c->location->y = moongate->y;            
         }
         else screenMessage("Not here!\n");
         break;
@@ -1246,10 +1247,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         }
         break;
 
-    case 'w':
-        c->windDirection++;
-        if (c->windDirection > DIR_SOUTH)
-            c->windDirection = DIR_WEST;
+    case 'w':        
         screenMessage("Wind Dir ('l' to lock):\n");
         eventHandlerPopKeyHandler();
         eventHandlerPushKeyHandler(&windCmdKeyHandler);
@@ -1361,7 +1359,9 @@ int attackAtCoord(int x, int y, int distance, void *data) {
 
     /* not good karma to be killing the innocent.  Bad avatar! */
     m = monsterForTile(obj->tile);
-    if (monsterIsGood(m))
+    if (monsterIsGood(m) || /* attacking a good monster */
+        /* attacking a docile (although possibly evil) person in town */
+        ((obj->objType != OBJECT_MONSTER) && (obj->movement_behavior != MOVEMENT_ATTACK_AVATAR))) 
         playerAdjustKarma(c->saveGame, KA_ATTACKED_GOOD);
 
     combatBegin(getCombatMapForTile(ground, c->saveGame->transport, m), obj, 1);
@@ -1507,7 +1507,8 @@ int fireAtCoord(int x, int y, int distance, void *data) {
         if (obj && (obj->objType == OBJECT_MONSTER) &&
                 (obj->monster->id != WHIRLPOOL_ID) && (obj->monster->id != STORM_ID))
             validObject = 1;
-        else if (obj && (obj->objType == OBJECT_UNKNOWN))
+        /* See if it's an object to be destroyed (the avatar cannot destroy the balloon) */
+        else if (obj && (obj->objType == OBJECT_UNKNOWN) && !(tileIsBalloon(obj->tile) && originAvatar))
             validObject = 1;
         
         /* Does the cannon hit the avatar? */
