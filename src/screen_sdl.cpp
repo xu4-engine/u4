@@ -261,12 +261,12 @@ void screenDelete() {
  * Re-initializes the screen and implements any changes made in settings
  */
 void screenReInit() {        
-    introDelete(DONT_FREE_MENUS);  /* delete intro stuff */
+    intro->deleteIntro();       /* delete intro stuff */
     Tileset::unloadAll(); /* unload tilesets */
     screenDelete(); /* delete screen stuff */            
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */    
     Tileset::loadAll("tilesets.xml"); /* re-load tilesets */
-    introInit();    /* re-fix the backgrounds loaded and scale images, etc. */            
+    intro->init();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
 
 /**
@@ -430,7 +430,7 @@ void fixupIntro(Image *im, int prescale) {
     const unsigned char *sigData;
     int i, x, y;
 
-    sigData = introGetSigData();
+    sigData = intro->getSigData();
 
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"

@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
     }
 
     xu4_srandom();    
+    intro = new IntroController();
 
     perf.start();    
     screenInit();
@@ -96,19 +97,17 @@ int main(int argc, char *argv[]) {
     if (!skipIntro) {
         /* do the intro */
         perf.start();
-        introInit();
+        intro->init();
         perf.end("introInit()");
         
         /* give a performance report */
         if (settings.debug)
             perf.report();
 
-        eventHandler.getTimer()->add(&introTimer, 1);
-        eventHandler.pushKeyHandler(&introKeyHandler);
-        eventHandler.main(NULL);
-        eventHandler.getTimer()->remove(&introTimer);
-        eventHandler.popKeyHandler();
-        introDelete(FREE_MENUS);
+        eventHandler.pushController(intro);
+        eventHandler.main();
+        eventHandler.popController();
+        intro->deleteIntro();
     }
 
     eventHandler.setExitFlag(false);
@@ -134,7 +133,8 @@ int main(int argc, char *argv[]) {
 
     eventHandler.getTimer()->add(&gameTimer, 1);
     eventHandler.pushKeyHandler(&gameBaseKeyHandler);
-    eventHandler.main(&gameUpdateScreen);
+    eventHandler.setScreenUpdate(&gameUpdateScreen);
+    eventHandler.main();
 
     /* main event handler returned - cleanup and exit! */
     eventHandler.getTimer()->remove(&gameTimer);
