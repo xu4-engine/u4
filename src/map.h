@@ -54,6 +54,7 @@ void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned s
 void mapAddAvatarObject(Map *map, unsigned int tile, unsigned short x, unsigned short y);
 void mapRemoveObject(Map *map, struct _Object *obj);
 void mapRemoveAvatarObject(Map *map);
+void mapRemovePerson(Map *map, const struct _Person *person);
 void mapClearObjects(Map *map);
 void mapMoveObjects(Map *map, int avatarx, int avatary);
 void mapAnimateObjects(Map *map);

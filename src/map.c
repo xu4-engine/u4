@@ -339,6 +339,24 @@ void mapRemoveAvatarObject(Map *map) {
     }
 }
 
+void mapRemovePerson(Map *map, const Person *person) {
+    Object *obj = map->objects, *prev;
+
+    prev = NULL;
+    while (obj) {
+        if (obj->person == person) {
+            if (prev)
+                prev->next = obj->next;
+            else
+                map->objects = obj->next;
+            free(obj);
+            return;
+        }
+        prev = obj;
+        obj = obj->next;
+    }
+}
+
 void mapMoveObjects(Map *map, int avatarx, int avatary) {
     int dx, dy, newx, newy;
     unsigned char tile;
