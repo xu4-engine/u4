@@ -36,7 +36,7 @@ Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext 
     newLoc->viewMode = viewmode;
     newLoc->context = ctx;
     newLoc->finishTurn = finishTurnCallback;
-	newLoc->tileset = tileset;
+    newLoc->tileset = tileset;
     newLoc->move = moveCallback;        
     newLoc->activePlayer = -1;
 

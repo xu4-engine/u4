@@ -36,7 +36,7 @@ typedef struct _Location {
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn;
-	Tileset *tileset;
+    Tileset *tileset;
     MoveCallback move;    
     int activePlayer;
     struct _Location *prev;

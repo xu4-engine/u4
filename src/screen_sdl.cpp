@@ -1092,7 +1092,7 @@ void Tile::draw(int x, int y, int frame, bool focused) {
  * Draw a focus rectangle around the tile
  */
 void Tile::drawFocus(int x, int y) const {
-	/**
+    /**
      * draw the focus rectangle around the tile
      */
     if ((screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2) {
@@ -1147,9 +1147,9 @@ void screenShowTile(MapTile *mapTile, int focus, int x, int y) {
     }
     else tile->draw(x, y, mapTile->frame);
     
-	/* draw the focus around the tile if it has the focus */
-	if (focus)
-		tile->drawFocus(x, y);
+    /* draw the focus around the tile if it has the focus */
+    if (focus)
+        tile->drawFocus(x, y);
 }
 
 /**

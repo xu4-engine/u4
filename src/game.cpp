@@ -327,7 +327,7 @@ int gameSave() {
 
     /* fix creature animations so they are compatible with u4dos */
     c->location->map->resetObjectAnimations();
-	c->location->map->fillMonsterTable(); /* fill the monster table so we can save it */
+    c->location->map->fillMonsterTable(); /* fill the monster table so we can save it */
 
     if (!saveGameMonstersWrite(c->location->map->monsterTable, monstersFile)) {
         screenMessage("Error opening creatures.sav\n");
@@ -408,7 +408,7 @@ int gameSave() {
         
         /* fix creature animations so they are compatible with u4dos */
         c->location->prev->map->resetObjectAnimations();
-		c->location->prev->map->fillMonsterTable(); /* fill the monster table so we can save it */
+        c->location->prev->map->fillMonsterTable(); /* fill the monster table so we can save it */
 
         if (!saveGameMonstersWrite(c->location->prev->map->monsterTable, monstersFile)) {
             screenMessage("Error opening %s\n", OUTMONST_SAV_BASE_FILENAME);
@@ -456,8 +456,8 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn = &gameFinishTurn;
-	Tileset *tileset = Tileset::get("base");
-    MoveCallback move = &gameMoveAvatar;    	
+    Tileset *tileset = Tileset::get("base");
+    MoveCallback move = &gameMoveAvatar;        
     int activePlayer = (c->location) ? c->location->activePlayer : -1;
     MapCoords coords;
 
@@ -481,7 +481,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         viewMode = VIEW_DUNGEON;
         if (portal)
             c->saveGame->orientation = DIR_EAST;
-		tileset = Tileset::get("dungeon");
+        tileset = Tileset::get("dungeon");
         move = &gameMoveAvatarInDungeon;        
         break;
     case MAPTYPE_COMBAT:
@@ -3428,31 +3428,31 @@ void gameFixupObjects(Map *map) {
     int i;
     Object *obj;
 
-	/* add stuff from the monster table to the map */
-	for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-		SaveGameMonsterRecord *monster = &map->monsterTable[i];
-		if (monster->prevTile != 0) {
-			Coords c(monster->x, monster->y);
-			MapTile tile = Tile::translate(monster->tile),
-				oldTile = Tile::translate(monster->prevTile);
-			
+    /* add stuff from the monster table to the map */
+    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
+        SaveGameMonsterRecord *monster = &map->monsterTable[i];
+        if (monster->prevTile != 0) {
+            Coords c(monster->x, monster->y);
+            MapTile tile = Tile::translate(monster->tile),
+                oldTile = Tile::translate(monster->prevTile);
+            
             if (i < MONSTERTABLE_CREATURES_SIZE) {
                 const Creature *creature = creatures.getByTile(tile);
                 /* make sure we really have a creature */
                 if (creature)
-				    obj = map->addCreature(creature, c);
+                    obj = map->addCreature(creature, c);
                 else {
                     fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", ::c->location->tileset->get(tile.id)->name.c_str());
                     obj = map->addObject(tile, oldTile, c);
                 }
             }
-			else
-				obj = map->addObject(tile, oldTile, c);
+            else
+                obj = map->addObject(tile, oldTile, c);
 
-			/* set the map for our object */
-			obj->setMap(map);
-		}
-	}    
+            /* set the map for our object */
+            obj->setMap(map);
+        }
+    }    
 }
 
 long gameTimeSinceLastCommand() {
@@ -3811,8 +3811,8 @@ void gameSpawnCreature(const Creature *m) {
         creature = creatures.randomForTile(*c->location->map->tileAt(coords, WITHOUT_OBJECTS));
 
     if (c->location->context & ~CTX_DUNGEON)
-		if (creature)
-			c->location->map->addCreature(creature, coords);    
+        if (creature)
+            c->location->map->addCreature(creature, coords);    
 }
 
 /**

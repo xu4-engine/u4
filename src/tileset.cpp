@@ -235,14 +235,14 @@ TileId Tileset::getNextTileId() {
  * Returns the tile that has the given name from any tileset, if there is one
  */
 Tile* Tileset::findTileByName(string name) {
-	TilesetMap::iterator i;
-	for (i = tilesets.begin(); i != tilesets.end(); i++) {
-		Tile *t = i->second->getByName(name);
-		if (t)
-			return t;		
-	}
+    TilesetMap::iterator i;
+    for (i = tilesets.begin(); i != tilesets.end(); i++) {
+        Tile *t = i->second->getByName(name);
+        if (t)
+            return t;        
+    }
 
-	return NULL;
+    return NULL;
 }
 
 /**
@@ -304,7 +304,7 @@ void Tileset::load(string filename) {
 
         /* add the tile to our tileset */
         tiles[tile->id] = tile;
-		nameMap[tile->name] = tile;
+        nameMap[tile->name] = tile;
         
         index += tile->frames;
     }
@@ -332,30 +332,30 @@ void Tileset::unload() {
  * Returns the tile with the given id in the tileset
  */
 Tile* Tileset::get(TileId id) {
-	if (tiles.find(id) != tiles.end())
-		return tiles[id];
-	else if (extends)
-		return extends->get(id);
-	return NULL;    
+    if (tiles.find(id) != tiles.end())
+        return tiles[id];
+    else if (extends)
+        return extends->get(id);
+    return NULL;    
 }
 
 /**
  * Returns the tile with the given name from the tileset, if it exists
  */
 Tile* Tileset::getByName(string name) {
-	if (nameMap.find(name) != nameMap.end())
-		return nameMap[name];
-	else if (extends)
-		return extends->getByName(name);
-	else return NULL;
+    if (nameMap.find(name) != nameMap.end())
+        return nameMap[name];
+    else if (extends)
+        return extends->getByName(name);
+    else return NULL;
 }
 
 /**
  * Returns the image name for the tileset, if it exists
  */
 string Tileset::getImageName() const {
-	if (imageName.empty() && extends)
-		return extends->getImageName();
+    if (imageName.empty() && extends)
+        return extends->getImageName();
     else return imageName;
 }
 

@@ -45,7 +45,7 @@ struct ImageInfo {
     bool xu4Graphic;            /* an original xu4 graphic not part of u4dos or the VGA upgrade */
     ImageFixup fixup;           /* a routine to do miscellaneous fixes to the image */
     Image *image;
-	std::map<string, SubImage *> subImages;
+    std::map<string, SubImage *> subImages;
 };
 
 #define IM_OPAQUE 255

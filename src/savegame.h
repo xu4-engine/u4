@@ -12,9 +12,9 @@
 #define MONSTERS_SAV_BASE_FILENAME      "monsters.sav"
 #define OUTMONST_SAV_BASE_FILENAME      "outmonst.sav"
 
-#define MONSTERTABLE_SIZE				32
-#define MONSTERTABLE_CREATURES_SIZE		8
-#define MONSTERTABLE_OBJECTS_SIZE		(MONSTERTABLE_SIZE - MONSTERTABLE_CREATURES_SIZE)
+#define MONSTERTABLE_SIZE                32
+#define MONSTERTABLE_CREATURES_SIZE        8
+#define MONSTERTABLE_OBJECTS_SIZE        (MONSTERTABLE_SIZE - MONSTERTABLE_CREATURES_SIZE)
 
 class Object;
 
@@ -189,16 +189,16 @@ struct SaveGamePlayerRecord {
  * How Ultima IV stores monster information
  */
 typedef struct _SaveGameMonsterRecord {
-	int write(FILE *f) const;
-	int read(FILE *f);
-	unsigned char prevTile;
-	unsigned char x;
-	unsigned char y;
-	unsigned char tile;
-	unsigned char prevx;
-	unsigned char prevy;
-	unsigned char unused1;
-	unsigned char unused2;
+    int write(FILE *f) const;
+    int read(FILE *f);
+    unsigned char prevTile;
+    unsigned char x;
+    unsigned char y;
+    unsigned char tile;
+    unsigned char prevx;
+    unsigned char prevy;
+    unsigned char unused1;
+    unsigned char unused2;
 } SaveGameMonsterRecord;
 
 /**

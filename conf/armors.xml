@@ -8,8 +8,8 @@
 
 <!-- $Id$ -->
 <armors>
-    <armor name="Skin" defense="96"/>	
-    <armor name="Cloth" defense="128"/>	
+    <armor name="Skin" defense="96"/>    
+    <armor name="Cloth" defense="128"/>    
     <armor name="Leather" defense="144">
         <constraint canuse="false" class="mage"/>
     </armor>
@@ -34,5 +34,5 @@
         <constraint canuse="false" class="all"/>
         <constraint canuse="true" class="paladin"/>
     </armor>
-    <armor name="Mystic Robe" defense="248"/>	
+    <armor name="Mystic Robe" defense="248"/>    
 </armors>

@@ -48,8 +48,8 @@ public:
     static MapTile translate(int index, string tileMap = "base");
     static unsigned int getIndex(TileId id);
 
-	void draw(int x, int y, int frame, bool focused = false);	
-	void drawFocus(int x, int y) const;
+    void draw(int x, int y, int frame, bool focused = false);    
+    void drawFocus(int x, int y) const;
     Image *getImage();
 
     string name;        /* The name of this tile */
@@ -60,7 +60,7 @@ public:
     //TileAnimationStyle animation;   /* The animation style of this tile */
     bool opaque;        /* Is this tile opaque? */
     TileRule *rule;     /* The rules that govern the behavior of this tile */
-	Image *image;       /* The actual image for this tile (with all of its frames) */
+    Image *image;       /* The actual image for this tile (with all of its frames) */
     Tileset *tileset;   /* The tileset this tile belongs to */
     string looks_like;  /* The name of the tile that this tile looks exactly like (if any) */    
 };

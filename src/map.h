@@ -109,8 +109,8 @@ public:
     int getValidMoves(MapCoords from, MapTile transport);
     bool move(Object *obj, Direction d);
 
-	// u4dos compatibility
-	bool fillMonsterTable();
+    // u4dos compatibility
+    bool fillMonsterTable();
 
 public:
     MapId           id;
@@ -132,8 +132,8 @@ public:
     MapData         data;
     ObjectDeque     objects;
 
-	// u4dos compatibility
-	SaveGameMonsterRecord monsterTable[MONSTERTABLE_SIZE];
+    // u4dos compatibility
+    SaveGameMonsterRecord monsterTable[MONSTERTABLE_SIZE];
 };
 
 #endif

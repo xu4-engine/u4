@@ -5,9 +5,9 @@
 /* XPM */
 static char * n_xpm[] = {
 "32 32 3 1",
-" 	c None",
-".	c #FFFFFF",
-"X	c #000000",
+"     c None",
+".    c #FFFFFF",
+"X    c #000000",
 "      XX                        ",
 "     X..X                       ",
 "     X..X                       ",
@@ -45,9 +45,9 @@ static char * n_xpm[] = {
 /* XPM */
 static char * e_xpm[] = {
 "32 32 3 1",
-" 	c None",
-".	c #FFFFFF",
-"X	c #000000",
+"     c None",
+".    c #FFFFFF",
+"X    c #000000",
 "      XX                        ",
 "      X.XX                      ",
 "      X...XX                    ",
@@ -85,9 +85,9 @@ static char * e_xpm[] = {
 /* XPM */
 static char * s_xpm[] = {
 "32 32 3 1",
-" 	c None",
-".	c #FFFFFF",
-"X	c #000000",
+"     c None",
+".    c #FFFFFF",
+"X    c #000000",
 "     XXXX                       ",
 "     X..X                       ",
 "     X..X                       ",
@@ -125,9 +125,9 @@ static char * s_xpm[] = {
 /* XPM */
 static char * w_xpm[] = {
 "32 32 3 1",
-" 	c None",
-".	c #FFFFFF",
-"X	c #000000",
+"     c None",
+".    c #FFFFFF",
+"X    c #000000",
 "           XX                   ",
 "         XX.X                   ",
 "       XX...X                   ",
