@@ -72,8 +72,7 @@ void settingsRead() {
     settings->keyinterval           = DEFAULT_KEY_INTERVAL;
     settings->filterMoveMessages    = DEFAULT_FILTER_MOVE_MESSAGES;
     settings->battleSpeed           = DEFAULT_BATTLE_SPEED;
-    settings->minorEnhancements     = DEFAULT_MINOR_ENHANCEMENTS;
-    settings->majorEnhancements     = DEFAULT_MAJOR_ENHANCEMENTS;
+    settings->enhancements          = DEFAULT_ENHANCEMENTS;    
     settings->gameCyclesPerSecond   = DEFAULT_CYCLES_PER_SECOND;
     settings->debug                 = DEFAULT_DEBUG;
     settings->battleDiff            = DEFAULT_BATTLE_DIFFICULTY;
@@ -84,15 +83,14 @@ void settingsRead() {
     settings->shrineTime            = DEFAULT_SHRINE_TIME;
     settings->shakeInterval         = DEFAULT_SHAKE_INTERVAL;
 
-    /* all specific minor and major enhancements default to "on" */
-    settings->minorEnhancementsOptions.activePlayer     = 1;
-    settings->minorEnhancementsOptions.u5spellMixing    = 1;
-    settings->minorEnhancementsOptions.u5shrines        = 1;
-    settings->minorEnhancementsOptions.slimeDivides     = 1;
-    settings->minorEnhancementsOptions.c64chestTraps    = 1;    
-    settings->minorEnhancementsOptions.smartEnterKey    = 1;    
-
-    settings->majorEnhancementsOptions.u5combat         = 1;
+    /* all specific minor enhancements default to "on", any major enhancements default to "off" */
+    settings->enhancementsOptions.activePlayer     = 1;
+    settings->enhancementsOptions.u5spellMixing    = 1;
+    settings->enhancementsOptions.u5shrines        = 1;
+    settings->enhancementsOptions.slimeDivides     = 1;
+    settings->enhancementsOptions.c64chestTraps    = 1;    
+    settings->enhancementsOptions.smartEnterKey    = 1;
+    settings->enhancementsOptions.u5combat         = 0;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -140,15 +138,8 @@ void settingsRead() {
             settings->filterMoveMessages = (int) strtoul(buffer + strlen("filterMoveMessages="), NULL, 0);
         else if (strstr(buffer, "battlespeed=") == buffer)
             settings->battleSpeed = (int) strtoul(buffer + strlen("battlespeed="), NULL, 0);
-        /* FIXME: this is just to avoid an error for those who have not written
-           a new xu4.cfg file since attackspeed was removed.  Remove it after a reasonable
-           amount of time */
-        else if (strstr(buffer, "attackspeed=") == buffer)
-            ;
-        else if (strstr(buffer, "minorEnhancements=") == buffer)
-            settings->minorEnhancements = (int) strtoul(buffer + strlen("minorEnhancements="), NULL, 0);
-        else if (strstr(buffer, "majorEnhancements=") == buffer)
-            settings->majorEnhancements = (int) strtoul(buffer + strlen("majorEnhancements="), NULL, 0);
+        else if (strstr(buffer, "enhancements=") == buffer)
+            settings->enhancements = (int) strtoul(buffer + strlen("enhancements="), NULL, 0);        
         else if (strstr(buffer, "gameCyclesPerSecond=") == buffer)
             settings->gameCyclesPerSecond = (int) strtoul(buffer + strlen("gameCyclesPerSecond="), NULL, 0);
         else if (strstr(buffer, "debug=") == buffer)
@@ -175,21 +166,36 @@ void settingsRead() {
         
         /* minor enhancement options */
         else if (strstr(buffer, "activePlayer=") == buffer)
-            settings->minorEnhancementsOptions.activePlayer = (int) strtoul(buffer + strlen("activePlayer="), NULL, 0);
+            settings->enhancementsOptions.activePlayer = (int) strtoul(buffer + strlen("activePlayer="), NULL, 0);
         else if (strstr(buffer, "u5spellMixing=") == buffer)
-            settings->minorEnhancementsOptions.u5spellMixing = (int) strtoul(buffer + strlen("u5spellMixing="), NULL, 0);
+            settings->enhancementsOptions.u5spellMixing = (int) strtoul(buffer + strlen("u5spellMixing="), NULL, 0);
         else if (strstr(buffer, "u5shrines=") == buffer)
-            settings->minorEnhancementsOptions.u5shrines = (int) strtoul(buffer + strlen("u5shrines="), NULL, 0);
+            settings->enhancementsOptions.u5shrines = (int) strtoul(buffer + strlen("u5shrines="), NULL, 0);
         else if (strstr(buffer, "slimeDivides=") == buffer)
-            settings->minorEnhancementsOptions.slimeDivides = (int) strtoul(buffer + strlen("slimeDivides="), NULL, 0);
+            settings->enhancementsOptions.slimeDivides = (int) strtoul(buffer + strlen("slimeDivides="), NULL, 0);
         else if (strstr(buffer, "c64chestTraps=") == buffer)
-            settings->minorEnhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);                
+            settings->enhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);                
         else if (strstr(buffer, "smartEnterKey=") == buffer)
-            settings->minorEnhancementsOptions.smartEnterKey = (int) strtoul(buffer + strlen("smartEnterKey="), NULL, 0);
+            settings->enhancementsOptions.smartEnterKey = (int) strtoul(buffer + strlen("smartEnterKey="), NULL, 0);
         
         /* major enhancement options */
         else if (strstr(buffer, "u5combat=") == buffer)
-            settings->majorEnhancementsOptions.u5combat = (int) strtoul(buffer + strlen("u5combat="), NULL, 0);
+            settings->enhancementsOptions.u5combat = (int) strtoul(buffer + strlen("u5combat="), NULL, 0);
+
+        /**
+         * FIXME: this is just to avoid an error for those who have not written
+         * a new xu4.cfg file since these items were removed.  Remove them after a reasonable
+         * amount of time 
+         *
+         * remove:  attackspeed, minorEnhancements, majorEnhancements        
+         */
+        
+        else if (strstr(buffer, "attackspeed=") == buffer);
+        else if (strstr(buffer, "minorEnhancements=") == buffer)
+            settings->enhancements = (int)strtoul(buffer + strlen("minorEnhancements="), NULL, 0);
+        else if (strstr(buffer, "majorEnhancements=") == buffer);
+        
+        /***/
 
         else
             errorWarning("invalid line in settings file %s", buffer);
@@ -229,8 +235,7 @@ void settingsWrite() {
             "keyinterval=%d\n"
             "filterMoveMessages=%d\n"
             "battlespeed=%d\n"
-            "minorEnhancements=%d\n"
-            "majorEnhancements=%d\n"
+            "enhancements=%d\n"            
             "gameCyclesPerSecond=%d\n"
             "debug=%d\n"
             "battleDiff=%s\n"
@@ -260,8 +265,7 @@ void settingsWrite() {
             settings->keyinterval,
             settings->filterMoveMessages,
             settings->battleSpeed,
-            settings->minorEnhancements,
-            settings->majorEnhancements,
+            settings->enhancements,            
             settings->gameCyclesPerSecond,
             settings->debug,
             settingsBattleDiffToString(settings->battleDiff),            
@@ -271,13 +275,13 @@ void settingsWrite() {
             settings->innTime,
             settings->shrineTime,
             settings->shakeInterval,
-            settings->minorEnhancementsOptions.activePlayer,
-            settings->minorEnhancementsOptions.u5spellMixing,
-            settings->minorEnhancementsOptions.u5shrines,
-            settings->minorEnhancementsOptions.slimeDivides,
-            settings->minorEnhancementsOptions.c64chestTraps,            
-            settings->minorEnhancementsOptions.smartEnterKey,
-            settings->majorEnhancementsOptions.u5combat);
+            settings->enhancementsOptions.activePlayer,
+            settings->enhancementsOptions.u5spellMixing,
+            settings->enhancementsOptions.u5shrines,
+            settings->enhancementsOptions.slimeDivides,
+            settings->enhancementsOptions.c64chestTraps,            
+            settings->enhancementsOptions.smartEnterKey,
+            settings->enhancementsOptions.u5combat);
 
     fclose(settingsFile);
 }

@@ -46,23 +46,22 @@ extern int quit;
  * The states of the intro.
  */
 typedef enum {
-    INTRO_MAP,                  /* displaying the animated intro map */
-    INTRO_MENU,                 /* displaying the main menu: journey onward, etc. */
-    INTRO_CONFIG,               /* the configuration screen */
-    INTRO_CONFIG_VIDEO,         /* video configuration */
-    INTRO_CONFIG_SOUND,         /* sound configuration */
-    INTRO_CONFIG_GAMEPLAY,      /* gameplay configuration */
-    INTRO_CONFIG_ADVANCED,      /* advanced gameplay config */
-    INTRO_CONFIG_KEYBOARD,      /* keyboard config */
-    INTRO_CONFIG_SPEED,         /* speed config */
-    INTRO_CONFIG_MINOR_OPTIONS, /* minor enhancement options */
-    INTRO_CONFIG_MAJOR_OPTIONS, /* major enhancement options */
-    INTRO_ABOUT,                /* about xu4 screen */
-    INTRO_INIT_NAME,            /* prompting for character name */
-    INTRO_INIT_SEX,             /* prompting for character sex */
-    INTRO_INIT_STORY,           /* displaying the intro story leading up the gypsy */
-    INTRO_INIT_QUESTIONS,       /* prompting for the questions that determine class */
-    INTRO_INIT_SEGTOGAME,       /* displaying the text that segues to the game */
+    INTRO_MAP,                          /* displaying the animated intro map */
+    INTRO_MENU,                         /* displaying the main menu: journey onward, etc. */
+    INTRO_CONFIG,                       /* the configuration screen */
+    INTRO_CONFIG_VIDEO,                 /* video configuration */
+    INTRO_CONFIG_SOUND,                 /* sound configuration */
+    INTRO_CONFIG_GAMEPLAY,              /* gameplay configuration */
+    INTRO_CONFIG_ADVANCED,              /* advanced gameplay config */
+    INTRO_CONFIG_KEYBOARD,              /* keyboard config */
+    INTRO_CONFIG_SPEED,                 /* speed config */
+    INTRO_CONFIG_ENHANCEMENT_OPTIONS,   /* game enhancement options */    
+    INTRO_ABOUT,                        /* about xu4 screen */
+    INTRO_INIT_NAME,                    /* prompting for character name */
+    INTRO_INIT_SEX,                     /* prompting for character sex */
+    INTRO_INIT_STORY,                   /* displaying the intro story leading up the gypsy */
+    INTRO_INIT_QUESTIONS,               /* prompting for the questions that determine class */
+    INTRO_INIT_SEGTOGAME,               /* displaying the text that segues to the game */
     INTRO_DONE
 } IntroMode;
 
@@ -117,8 +116,7 @@ Menu gameplayOptions;
 Menu advancedOptions;
 Menu keyboardOptions;
 Menu speedOptions;
-Menu minorOptions;
-Menu majorOptions;
+Menu enhancementOptions;
 
 /* temporary place-holder for settings changes */
 Settings *settingsChanged;
@@ -145,8 +143,7 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action);
 void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action);
 void introKeyboardOptionsMenuItemActivate(Menu menu, ActivateAction action);
 void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action);
-void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action);
-void introMajorOptionsMenuItemActivate(Menu menu, ActivateAction action);
+void introEnhancementOptionsMenuItemActivate(Menu menu, ActivateAction action);
 
 /**
  * Initializes intro state and loads in introduction graphics, text
@@ -259,19 +256,17 @@ int introInit() {
     soundOptions = menuAddItem(soundOptions, 0xFE, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
     soundOptions = menuAddItem(soundOptions, 0xFF, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
-    gameplayOptions = menuAddItem(gameplayOptions, 0, "Minor Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
-    gameplayOptions = menuAddItem(gameplayOptions, 3, "Major Game Enhancements", 6, 6, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
-    gameplayOptions = menuAddItem(gameplayOptions, 1, "Automatic Actions", 6, 8, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
-    gameplayOptions = menuAddItem(gameplayOptions, 4, "Battle Difficulty", 6, 10, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
+    gameplayOptions = menuAddItem(gameplayOptions, 0, "Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
+    gameplayOptions = menuAddItem(gameplayOptions, 1, "Automatic Actions", 6, 7, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
+    gameplayOptions = menuAddItem(gameplayOptions, 3, "Battle Difficulty", 6, 10, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
     gameplayOptions = menuAddItem(gameplayOptions, 2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     gameplayOptions = menuAddItem(gameplayOptions, 0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     gameplayOptions = menuAddItem(gameplayOptions, 0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
-    advancedOptions = menuAddItem(advancedOptions, 4, "\010 Speed Settings", 4, 5, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    advancedOptions = menuAddItem(advancedOptions, 3, "\010 Keyboard Settings", 4, 6, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    advancedOptions = menuAddItem(advancedOptions, 2, "Debug Mode (Cheats)", 4, 8, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);        
-    advancedOptions = menuAddItem(advancedOptions, 0, "\010 Minor Enhancement Options", 4, 17, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    advancedOptions = menuAddItem(advancedOptions, 1, "\010 Major Enhancement Options", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);    
+    advancedOptions = menuAddItem(advancedOptions, 3, "\010 Speed Settings", 4, 5, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    advancedOptions = menuAddItem(advancedOptions, 2, "\010 Keyboard Settings", 4, 6, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    advancedOptions = menuAddItem(advancedOptions, 1, "Debug Mode (Cheats)", 4, 8, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);        
+    advancedOptions = menuAddItem(advancedOptions, 0, "\010 Game Enhancement Options", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);    
     advancedOptions = menuAddItem(advancedOptions, 0xFE, "Use These Settings", 4, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
     advancedOptions = menuAddItem(advancedOptions, 0xFF, "Cancel", 4, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
@@ -291,18 +286,14 @@ int introInit() {
     speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 4, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
     speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 4, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
-    minorOptions = menuAddItem(minorOptions, 6, "Set Active Player", 7, 5, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
-    minorOptions = menuAddItem(minorOptions, 4, "Ultima V Spell Mixing", 7, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
-    minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 7, 7, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
-    minorOptions = menuAddItem(minorOptions, 1, "Slime Divides", 7, 8, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
-    minorOptions = menuAddItem(minorOptions, 2, "Fixed Chest Traps", 7, 9, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
-    minorOptions = menuAddItem(minorOptions, 5, "Smart 'Enter' Key", 7, 10, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
-    minorOptions = menuAddItem(minorOptions, 0xFE, "Use These Settings", 7, 20, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    minorOptions = menuAddItem(minorOptions, 0xFF, "Cancel", 7, 21, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
-
-    //majorOptions = menuAddItem(majorOptions, 0, "Ultima V Combat", 7, 5, &introMajorOptionsMenuItemActivate, ACTIVATE_ANY);
-    majorOptions = menuAddItem(majorOptions, 0xFE, "Use These Settings", 7, 20, &introMajorOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    majorOptions = menuAddItem(majorOptions, 0xFF, "Cancel", 7, 21, &introMajorOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    enhancementOptions = menuAddItem(enhancementOptions, 6, "Set Active Player", 7, 5, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+    enhancementOptions = menuAddItem(enhancementOptions, 4, "Ultima V Spell Mixing", 7, 6, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+    enhancementOptions = menuAddItem(enhancementOptions, 0, "Ultima V Shrines", 7, 7, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);    
+    enhancementOptions = menuAddItem(enhancementOptions, 1, "Slime Divides", 7, 8, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+    enhancementOptions = menuAddItem(enhancementOptions, 2, "Fixed Chest Traps", 7, 9, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+    enhancementOptions = menuAddItem(enhancementOptions, 5, "Smart 'Enter' Key", 7, 10, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+    enhancementOptions = menuAddItem(enhancementOptions, 0xFE, "Use These Settings", 7, 20, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    enhancementOptions = menuAddItem(enhancementOptions, 0xFF, "Cancel", 7, 21, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
     memcpy(settingsChanged, settings, sizeof(Settings));
 
@@ -361,8 +352,7 @@ void introDelete() {
     menuDelete(&advancedOptions);
     menuDelete(&keyboardOptions);
     menuDelete(&speedOptions);
-    menuDelete(&minorOptions);
-    menuDelete(&majorOptions);
+    menuDelete(&enhancementOptions);    
 }
 
 /**
@@ -479,8 +469,8 @@ int introKeyHandler(int key, void *data) {
             /* navigate to the item and activate it! */
             switch(key) {
             case 'g': gameplayOptions = menuActivateItem(gameplayOptions, 0, ACTIVATE_NORMAL); break;                
-            case 'm': gameplayOptions = menuActivateItem(gameplayOptions, 1, ACTIVATE_NORMAL); break;                
-            case 'a': gameplayOptions = menuActivateItem(gameplayOptions, 2, ACTIVATE_NORMAL); break;
+            case 'a': gameplayOptions = menuActivateItem(gameplayOptions, 1, ACTIVATE_NORMAL); break;                
+            case 'o': gameplayOptions = menuActivateItem(gameplayOptions, 2, ACTIVATE_NORMAL); break;
             case 'b': gameplayOptions = menuActivateItem(gameplayOptions, 4, ACTIVATE_NORMAL); break;
             default: break;
             }            
@@ -496,8 +486,7 @@ int introKeyHandler(int key, void *data) {
             case 'd': advancedOptions = menuActivateItem(advancedOptions, 2, ACTIVATE_NORMAL); break;            
             case 'k': advancedOptions = menuActivateItem(advancedOptions, 3, ACTIVATE_NORMAL); break;
             case 's': advancedOptions = menuActivateItem(advancedOptions, 4, ACTIVATE_NORMAL); break;
-            case 'n': advancedOptions = menuActivateItem(advancedOptions, 0, ACTIVATE_NORMAL); break;
-            case 'j': advancedOptions = menuActivateItem(advancedOptions, 1, ACTIVATE_NORMAL); break;
+            case 'g': advancedOptions = menuActivateItem(advancedOptions, 0, ACTIVATE_NORMAL); break;            
             default: break;
             }
         }
@@ -517,14 +506,8 @@ int introKeyHandler(int key, void *data) {
         introUpdateScreen();
         return 1;
         
-    case INTRO_CONFIG_MINOR_OPTIONS:
-        introBaseMenuKeyHandler(key, &minorOptions);
-
-        introUpdateScreen();
-        return 1;
-
-    case INTRO_CONFIG_MAJOR_OPTIONS:
-        introBaseMenuKeyHandler(key, &majorOptions);
+    case INTRO_CONFIG_ENHANCEMENT_OPTIONS:
+        introBaseMenuKeyHandler(key, &enhancementOptions);
 
         introUpdateScreen();
         return 1;
@@ -730,9 +713,8 @@ void introUpdateScreen() {
     case INTRO_CONFIG_GAMEPLAY:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Gameplay Options:");
-        screenTextAt(32, 5, "%s", settingsChanged->minorEnhancements ? "On" : "Off");
-        screenTextAt(32, 6, "%s", settingsChanged->majorEnhancements ? "On" : "Off");
-        screenTextAt(6, 9, "  (Open, Jimmy, etc.)     %s", settingsChanged->shortcutCommands ? "On" : "Off");        
+        screenTextAt(32, 5, "%s", settingsChanged->enhancements ? "On" : "Off");        
+        screenTextAt(6, 8, "  (Open, Jimmy, etc.)     %s", settingsChanged->shortcutCommands ? "On" : "Off");        
         screenTextAt(32, 10, "%s", settingsBattleDiffToString(settingsChanged->battleDiff));
         menuShow(menuGetRoot(gameplayOptions));
         break;
@@ -786,24 +768,17 @@ void introUpdateScreen() {
         }
         break;
 
-    case INTRO_CONFIG_MINOR_OPTIONS:
+    case INTRO_CONFIG_ENHANCEMENT_OPTIONS:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3,   "Minor Game Enhancement Options:");        
-        screenTextAt(31, 5,  "%s", settingsChanged->minorEnhancementsOptions.activePlayer ? "On" : "Off");
-        screenTextAt(31, 6,  "%s", settingsChanged->minorEnhancementsOptions.u5spellMixing ? "On" : "Off");
-        screenTextAt(31, 7,  "%s", settingsChanged->minorEnhancementsOptions.u5shrines ? "On" : "Off");
-        screenTextAt(31, 8,  "%s", settingsChanged->minorEnhancementsOptions.slimeDivides ? "On" : "Off");
-        screenTextAt(31, 9,  "%s", settingsChanged->minorEnhancementsOptions.c64chestTraps ? "On" : "Off");
-        screenTextAt(31, 10,  "%s", settingsChanged->minorEnhancementsOptions.smartEnterKey ? "On" : "Off");
-        menuShow(menuGetRoot(minorOptions));
-        break;
-
-    case INTRO_CONFIG_MAJOR_OPTIONS:
-        screenDrawBackground(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3,   "Major Game Enhancement Options:");
-        //screenTextAt(31, 5,  "%s", settingsChanged->majorEnhancementsOptions.u5combat ? "On" : "Off");
-        menuShow(menuGetRoot(majorOptions));
-        break;
+        screenTextAt(2, 3,   "Game Enhancement Options:");        
+        screenTextAt(31, 5,  "%s", settingsChanged->enhancementsOptions.activePlayer ? "On" : "Off");
+        screenTextAt(31, 6,  "%s", settingsChanged->enhancementsOptions.u5spellMixing ? "On" : "Off");
+        screenTextAt(31, 7,  "%s", settingsChanged->enhancementsOptions.u5shrines ? "On" : "Off");
+        screenTextAt(31, 8,  "%s", settingsChanged->enhancementsOptions.slimeDivides ? "On" : "Off");
+        screenTextAt(31, 9,  "%s", settingsChanged->enhancementsOptions.c64chestTraps ? "On" : "Off");
+        screenTextAt(31, 10,  "%s", settingsChanged->enhancementsOptions.smartEnterKey ? "On" : "Off");
+        menuShow(menuGetRoot(enhancementOptions));
+        break;    
 
     case INTRO_ABOUT:
         screenDrawBackground(BKGD_INTRO);
@@ -1456,15 +1431,12 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0:
-        settingsChanged->minorEnhancements = settingsChanged->minorEnhancements ? 0 : 1;        
-        break;
-    case 3:
-        settingsChanged->majorEnhancements = settingsChanged->majorEnhancements ? 0 : 1;
-        break;
+        settingsChanged->enhancements = settingsChanged->enhancements ? 0 : 1;        
+        break;    
     case 1:
         settingsChanged->shortcutCommands = settingsChanged->shortcutCommands ? 0 : 1;
         break;
-    case 4:
+    case 3:
         if (action != ACTIVATE_DECREMENT) {
             settingsChanged->battleDiff++;
             if (settingsChanged->battleDiff == DIFF_MAX)
@@ -1479,9 +1451,8 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         mode = INTRO_CONFIG_ADVANCED;        
         advancedOptions = menuReset(advancedOptions);        
 
-        /* show or hide minor/major options if they are enabled/disabled */
-        menuItemSetVisible(menuGetItemById(advancedOptions, 0), settingsChanged->minorEnhancements);
-        menuItemSetVisible(menuGetItemById(advancedOptions, 1), settingsChanged->majorEnhancements);
+        /* show or hide game enhancement options if enhancements are enabled/disabled */
+        menuItemSetVisible(menuGetItemById(advancedOptions, 0), settingsChanged->enhancements);        
 
         break;    
 
@@ -1505,22 +1476,18 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
 void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
-    case 2:
+    case 1:
         settingsChanged->debug = settingsChanged->debug ? 0 : 1;
         break;
     case 0:
-        mode = INTRO_CONFIG_MINOR_OPTIONS;
-        minorOptions = menuReset(minorOptions);
-        break;
-    case 1:
-        mode = INTRO_CONFIG_MAJOR_OPTIONS;
-        majorOptions = menuReset(majorOptions);
-        break;
-    case 3:
+        mode = INTRO_CONFIG_ENHANCEMENT_OPTIONS;
+        enhancementOptions = menuReset(enhancementOptions);
+        break;    
+    case 2:
         mode = INTRO_CONFIG_KEYBOARD;
         keyboardOptions = menuReset(keyboardOptions);
         break;
-    case 4:
+    case 3:
         mode = INTRO_CONFIG_SPEED;
         speedOptions = menuReset(speedOptions);
         break;    
@@ -1691,26 +1658,26 @@ void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
 }
 
 /* minor enhancement options menu handler */
-void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
+void introEnhancementOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0: 
-        settingsChanged->minorEnhancementsOptions.u5shrines = settingsChanged->minorEnhancementsOptions.u5shrines ? 0 : 1;
+        settingsChanged->enhancementsOptions.u5shrines = settingsChanged->enhancementsOptions.u5shrines ? 0 : 1;
         break;
     case 1: 
-        settingsChanged->minorEnhancementsOptions.slimeDivides = settingsChanged->minorEnhancementsOptions.slimeDivides ? 0 : 1;
+        settingsChanged->enhancementsOptions.slimeDivides = settingsChanged->enhancementsOptions.slimeDivides ? 0 : 1;
         break;
     case 2: 
-        settingsChanged->minorEnhancementsOptions.c64chestTraps = settingsChanged->minorEnhancementsOptions.c64chestTraps ? 0 : 1;
+        settingsChanged->enhancementsOptions.c64chestTraps = settingsChanged->enhancementsOptions.c64chestTraps ? 0 : 1;
         break;    
     case 4:
-        settingsChanged->minorEnhancementsOptions.u5spellMixing = settingsChanged->minorEnhancementsOptions.u5spellMixing ? 0 : 1;
+        settingsChanged->enhancementsOptions.u5spellMixing = settingsChanged->enhancementsOptions.u5spellMixing ? 0 : 1;
         break;
     case 5:
-        settingsChanged->minorEnhancementsOptions.smartEnterKey = settingsChanged->minorEnhancementsOptions.smartEnterKey ? 0 : 1;
+        settingsChanged->enhancementsOptions.smartEnterKey = settingsChanged->enhancementsOptions.smartEnterKey ? 0 : 1;
         break;
     case 6:
-        settingsChanged->minorEnhancementsOptions.activePlayer = settingsChanged->minorEnhancementsOptions.activePlayer ? 0 : 1;
+        settingsChanged->enhancementsOptions.activePlayer = settingsChanged->enhancementsOptions.activePlayer ? 0 : 1;
         break;
     case 0xFE:        
         /* save settings */
@@ -1720,30 +1687,6 @@ void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         mode = INTRO_CONFIG_ADVANCED;
         break;
     case 0xFF:        
-        /* discard settings */
-        memcpy(settingsChanged, settings, sizeof(Settings));
-        mode = INTRO_CONFIG_ADVANCED;
-        break;
-    
-    default: break;
-    }
-}
-
-/* major enhancement options menu handler */
-void introMajorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
-    MenuItem *menuItem = (MenuItem *)menu->data;
-    switch(menuItem->id) {
-    case 0: 
-        settingsChanged->majorEnhancementsOptions.u5combat = settingsChanged->majorEnhancementsOptions.u5combat ? 0 : 1;
-        break;
-    case 0xFE:        
-        /* save settings */
-        memcpy(settings, settingsChanged, sizeof(Settings));
-        settingsWrite();
-    
-        mode = INTRO_CONFIG_ADVANCED;        
-        break;
-    case 0xFF:
         /* discard settings */
         memcpy(settingsChanged, settings, sizeof(Settings));
         mode = INTRO_CONFIG_ADVANCED;

@@ -123,7 +123,7 @@ void innBegin(void) {
     gameUpdateScreen();
 
     /* in the original, the vendor music plays straight through sleeping */
-    if (settings->minorEnhancements)
+    if (settings->enhancements)
         musicFadeOut(INN_FADE_OUT_TIME); /* Fade volume out to ease into rest */
 
     eventHandlerSleep(INN_FADE_OUT_TIME);

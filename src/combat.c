@@ -772,7 +772,7 @@ int combatBaseKeyHandler(int key, void *data) {
     case '7':
     case '8':
     case '9':
-        if (settings->minorEnhancements && settings->minorEnhancementsOptions.activePlayer) {
+        if (settings->enhancements && settings->enhancementsOptions.activePlayer) {
             if (key == '0') {             
                 c->location->activePlayer = -1;
                 screenMessage("Set Active Player: None!\n");
@@ -1650,7 +1650,7 @@ int combatDivideMonster(const Object *obj) {
     Direction d = dirRandomDir(dirmask);
 
     /* this is a game enhancement, make sure it's turned on! */
-    if (!settings->minorEnhancements || !settings->minorEnhancementsOptions.slimeDivides)
+    if (!settings->enhancements || !settings->enhancementsOptions.slimeDivides)
         return 0;
     
     /* make sure there's a place to put the divided monster! */

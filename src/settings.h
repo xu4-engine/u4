@@ -30,8 +30,7 @@
 #define DEFAULT_KEY_INTERVAL            30
 #define DEFAULT_FILTER_MOVE_MESSAGES    0
 #define DEFAULT_BATTLE_SPEED            5
-#define DEFAULT_MINOR_ENHANCEMENTS      1
-#define DEFAULT_MAJOR_ENHANCEMENTS      0
+#define DEFAULT_ENHANCEMENTS            1
 #define DEFAULT_CYCLES_PER_SECOND       4
 #define DEFAULT_DEBUG                   0
 #define DEFAULT_VALIDATE_XML            1
@@ -67,18 +66,15 @@ typedef enum {
     DIFF_MAX
 } BattleDifficulty;
 
-typedef struct _SettingsMinorOptions {
+typedef struct _SettingsEnhancementOptions {
     int activePlayer;
     int u5spellMixing;
     int u5shrines;
+    int u5combat;
     int slimeDivides;
     int c64chestTraps;    
     int smartEnterKey;
-} SettingsMinorOptions;
-
-typedef struct _SettingsMajorOptions {
-    int u5combat;
-} SettingsMajorOptions;
+} SettingsEnhancementOptions;
 
 typedef struct _Settings {
     unsigned int scale;
@@ -94,8 +90,7 @@ typedef struct _Settings {
     int keyinterval;
     int filterMoveMessages;
     int battleSpeed;
-    int minorEnhancements;
-    int majorEnhancements;
+    int enhancements;    
     int gameCyclesPerSecond;
     int debug;
     BattleDifficulty battleDiff;
@@ -105,8 +100,7 @@ typedef struct _Settings {
     int innTime;
     int shrineTime;
     int shakeInterval;
-    SettingsMinorOptions minorEnhancementsOptions;
-    SettingsMajorOptions majorEnhancementsOptions;
+    SettingsEnhancementOptions enhancementsOptions;    
 } Settings;
 
 char *settingsFilename(void);

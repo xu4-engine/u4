@@ -614,7 +614,7 @@ int gameBaseKeyHandler(int key, void *data) {
     unsigned char tile;
 
     /* Translate context-sensitive action key into a useful command */
-    if (key == U4_ENTER && settings->minorEnhancements && settings->minorEnhancementsOptions.smartEnterKey) {
+    if (key == U4_ENTER && settings->enhancements && settings->enhancementsOptions.smartEnterKey) {
         /* Attempt to guess based on the character's surroundings etc, what
            action they want */        
         
@@ -1096,7 +1096,7 @@ int gameBaseKeyHandler(int key, void *data) {
         screenMessage("Use which item:\n");
         gameGetInput(&useItem, itemNameBuffer, sizeof(itemNameBuffer), 0, 0);;
 
-        if (settings->minorEnhancements) {
+        if (settings->enhancements) {
             /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
             c->statsItem = STATS_ITEMS;
             statsUpdate();
@@ -1196,7 +1196,7 @@ int gameBaseKeyHandler(int key, void *data) {
     case '7':
     case '8':
     case '9':        
-        if (settings->minorEnhancements && settings->minorEnhancementsOptions.activePlayer) {
+        if (settings->enhancements && settings->enhancementsOptions.activePlayer) {
             if (key == '0') {             
                 c->location->activePlayer = -1;
                 screenMessage("Set Active Player: None!\n");
@@ -2243,7 +2243,7 @@ int getChestTrapHandler(int player) {
     int member = player;
     
     /* Do we use u4dos's way of trap-determination, or the original intended way? */
-    int passTest = (settings->minorEnhancements && settings->minorEnhancementsOptions.c64chestTraps) ?
+    int passTest = (settings->enhancements && settings->enhancementsOptions.c64chestTraps) ?
         ((rand() % 2) == 0) : /* xu4-enhanced */
         ((randNum & 1) == 0); /* u4dos original way (only allows even numbers through, so only acid and poison show) */
 
@@ -2520,7 +2520,7 @@ int mixReagentsForSpell(int spell, void *data) {
     mix = mixtureNew();    
     
     /* do we use the Ultima V menu system? */
-    if (settings->minorEnhancements && settings->minorEnhancementsOptions.u5spellMixing) {
+    if (settings->enhancements && settings->enhancementsOptions.u5spellMixing) {
         screenMessage("%s\n", spellGetName(spell));
         screenDisableCursor();
         gameResetSpellMixing();

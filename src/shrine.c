@@ -63,7 +63,7 @@ void shrineEnter(const Shrine *s) {
     shrine = s;    
 
     /* Add-on shrine sequence START */
-    if (settings->minorEnhancements && settings->minorEnhancementsOptions.u5shrines) {
+    if (settings->enhancements && settings->enhancementsOptions.u5shrines) {
         /* replace the 'static' avatar tile with grass */        
         annotationSetVisual(annotationAdd(5, 6, c->location->z, c->location->map->id, GRASS_TILE));
 
