@@ -970,7 +970,6 @@ Creature *CreatureMgr::randomForTile(MapTile tile) {
  * Creates a random creature based on the dungeon level given
  */ 
 Creature *CreatureMgr::randomForDungeon(int dngLevel) {
-    int era;
     static std::vector<CreatureId> id_list;
     if (id_list.size() == 0) {
         id_list.push_back(RAT_ID);
@@ -990,8 +989,8 @@ Creature *CreatureMgr::randomForDungeon(int dngLevel) {
         id_list.push_back(ROGUE_ID);
     }
     
-    era = 9 + dngLevel;
-    return getById(era & xu4_random(0x100) & xu4_random(0x100));
+    /* FIXME: how does u4dos do it? */
+    return getById(id_list[xu4_random(id_list.size())]);
 }
 
 /**

@@ -3812,7 +3812,7 @@ int gameSummonCreature(string *creatureName) {
  * If (m==NULL) then it finds its own creature to spawn and spawns it.
  */
 void gameSpawnCreature(const Creature *m) {
-    int dx, dy, t, i;
+    int t, i;
     const Creature *creature;
     MapCoords coords = c->location->coords;
 
@@ -3820,26 +3820,26 @@ void gameSpawnCreature(const Creature *m) {
         /* FIXME: for some reason dungeon monsters aren't spawning correctly */
 
         MapTile *tile;
-        int found = 0;        
+        bool found = false;
+        MapCoords new_coords;
         
         for (i = 0; i < 0x20; i++) {
-            coords = MapCoords(xu4_random(c->location->map->width), xu4_random(c->location->map->height), c->location->coords.z);
-            tile = c->location->map->tileAt(coords, WITH_OBJECTS);
+            new_coords = MapCoords(xu4_random(c->location->map->width), xu4_random(c->location->map->height), coords.z);
+            tile = c->location->map->tileAt(new_coords, WITH_OBJECTS);
             if (tile->isCreatureWalkable()) {
-                found = 1;
+                found = true;
                 break;
             }
         }
 
         if (!found)
-            return;
+            return;        
         
-        dx = coords.x - c->location->coords.x;
-        dy = coords.y - c->location->coords.y;
+        coords = new_coords;
     }    
     else {    
-        dx = 7;
-        dy = xu4_random(7);
+        int dx = 7,
+            dy = xu4_random(7);
 
         if (xu4_random(2))
             dx = -dx;
@@ -3850,9 +3850,9 @@ void gameSpawnCreature(const Creature *m) {
             dx = dy;
             dy = t;
         }
-    }
 
-    coords.move(dx, dy, c->location->map);   
+        coords.move(dx, dy, c->location->map);
+    }       
     
     /* figure out what creature to spawn */
     if (m)
@@ -3862,9 +3862,8 @@ void gameSpawnCreature(const Creature *m) {
     else
         creature = creatures.randomForTile(*c->location->map->tileAt(coords, WITHOUT_OBJECTS));
 
-    if (c->location->context & ~CTX_DUNGEON)
-        if (creature)
-            c->location->map->addCreature(creature, coords);    
+    if (creature)
+        c->location->map->addCreature(creature, coords);    
 }
 
 /**
