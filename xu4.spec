@@ -6,7 +6,7 @@ URL: http://xu4.sourceforge.net/
 Source0: http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
 License: GPL
 Group: Amusements/Games
-BuildRequires: SDL-devel SDL_mixer-devel libxml2-devel
+BuildRequires: SDL-devel SDL_mixer-devel libxml2-devel zlib-devel
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 
@@ -58,6 +58,9 @@ rm -rf $RPM_BUILD_ROOT
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Thu Nov 12 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added zlib-devel to build dependencies
+
 * Thu Oct 23 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added ultima 4 zipfile to project
 
@@ -75,13 +78,13 @@ rm -rf $RPM_BUILD_ROOT
 
 * Mon Apr  7 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added tlkconv tool
-- added SDL_mixer-devel to build dependancies
+- added SDL_mixer-devel to build dependencies
 
 * Tue Feb 25 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - install config file plus encoding and decoding tools
 
 * Mon Dec 12 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
-- added SDL-devel to build dependancies
+- added SDL-devel to build dependencies
 
 * Mon Sep 25 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added quiet flag (-q) to %setup rule to reduce visual clutter
