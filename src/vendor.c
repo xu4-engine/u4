@@ -658,10 +658,16 @@ char *vendorGetIntro(Conversation *cnv) {
         break;
 
     case NPC_VENDOR_INN:
-        intro = concat(vendorGetText(cnv->talker, IV_WELCOME), vendorGetShop(cnv->talker), 
-                       vendorGetText(cnv->talker, IV_IAM), vendorGetName(cnv->talker), 
-                       vendorGetText(cnv->talker, IV_NEEDLODGING), NULL);
-        cnv->state = CONV_CONTINUEQUESTION;
+        if (c->transportContext & TRANSPORT_HORSE) {
+            intro = strdup("The Innkeeper says: Get that horse out of here!!!\n");
+            cnv->state = CONV_DONE;
+        }
+        else {
+            intro = concat(vendorGetText(cnv->talker, IV_WELCOME), vendorGetShop(cnv->talker), 
+                           vendorGetText(cnv->talker, IV_IAM), vendorGetName(cnv->talker), 
+                           vendorGetText(cnv->talker, IV_NEEDLODGING), NULL);
+            cnv->state = CONV_CONTINUEQUESTION;
+        }
         break;
 
     case NPC_VENDOR_GUILD:
