@@ -8,7 +8,14 @@ libdir=$(prefix)/lib
 
 UI=sdl
 #UILIBS=$(shell sdl-config --libs) -lSDL_mixer
-UILIBS=-L$(HOME)/Library/Frameworks -framework SDL -framework SDL_mixer -framework libiconv -framework libxml -lobjc
+UILIBS=-L$(HOME)/Library/Frameworks \
+       -framework SDL \
+       -framework SDL_mixer \
+       -framework libiconv \
+       -framework libxml \
+       -framework AppKit \
+       -framework Foundation \
+       -lobjc
 #UIFLAGS=$(shell sdl-config --cflags)
 UIFLAGS=-F$(HOME)/Library/Frameworks/ \
 	-I$(HOME)/Library/Frameworks/libxml.framework/Headers \
@@ -19,7 +26,7 @@ UIFLAGS=-F$(HOME)/Library/Frameworks/ \
 FEATURES=-DHAVE_BACKTRACE=0 -DHAVE_VARIADIC_MACROS=1
 #DEBUGCFLAGS=-ggdb -rdynamic
 CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
-LIBS=$(UILIBS) 
+LIBS=SDLMain.o $(UILIBS) 
 INSTALL=install -D
 
 include Makefile.common

@@ -2,7 +2,68 @@
 How to Compile xu4 from CVS in MacOSX
 =====================================
 
-Monday 28 July 2003: I'm almost there with some build products that will
-enable fink-less building of XU4. Check back in a day or two.
-	- Steve Saunders <s_j_nevets@yahoo.com.au>
+These instructions let you build xu4 from CVS without having to install
+FINK to get the various libraries. You will not be able to build some
+of the utils, as they are dependant on libpng, for which there is currently
+no MacOSX framework binary. You will be able to build xu4 itself however.
+
+-------------------------------
+Things you only have to do once
+-------------------------------
+
+1. Download and install the MacOSX developer tools from:
+   http://developer.apple.com/
+   (Be sure to the get the Dec2002gccUpdater as well.)
+
+2. Download and install SDL-devel-1.2.5.pkg.tar.gz from:
+   http://www.libsdl.org
+   (This should install into your HOME directory's Library/Frameworks folder)
+
+3. Download and install SDL_mixer-devel-1.2.5.pkg.tar.gz from:
+   http://www.libsdl.org/projects/SDL_mixer/
+   (This should install into your HOME directory's Library/Frameworks folder)
+
+4. Download gnome-combo.dmg.gz from:
+   http://www.zveno.com/open_source/libxml2xslt.html
+   Open it, and drag-copy libxml.framework and libiconv.framework into
+   your home directory's Library/Frameworks folder
+
+5. Start the Terminal app (usually in /Applications/Utilities)
+
+6. Change to the directory where you want XU4 cvs
+   e.g. cd ~/
+
+7. Check out the current xu4 cvs source code
+   cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 login
+   Just press enter when it asks for password
+   cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 co u4
+
+8. Change to the src directory of the XU4 source code
+   i.e. cd u4/src
+
+9. Now you need to create a necessary build file. Run this command:
+   gcc -I$HOME/Library/Frameworks/SDL.framework/Headers -c -o SDLMain.o /Developer/ProjectBuilder\ Extras/Project\ Templates/Application/SDL\ Application/SDLMain.m
+
+10. Compile xu4
+    make -f Makefile.macosx u4
+
+------------------------------------------------------------
+Things you have to do every time the xu4 source code changes
+------------------------------------------------------------
+
+1. Start the Terminal app
+
+2. Change to the xu4 directory
+   e.g. cd u4
+
+3. Checkout the latest changes from CVS
+   cvs update -d
+
+4. Change to the source directory
+   cd src
+
+5. Compile xu4
+   make -f Makefile.macosx clean
+   make -f Makefile.macosx u4
+
 
