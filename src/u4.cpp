@@ -28,15 +28,19 @@
 bool verbose = false;
 bool quit = false;
 
+Performance perf("performance.txt");
+
+using namespace std;
+
 int main(int argc, char *argv[]) {
     unsigned int i;
     int skipIntro = 0;
 
 #if defined(MACOSX)
     osxInit(argv[0]);
-#endif    
+#endif
 
-    /* Read the game settings from file */
+    /* Read the game settings from file */    
     settings.read();    
 
     for (i = 1; i < (unsigned int)argc; i++) {
@@ -62,22 +66,38 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    xu4_srandom();
-    
+    xu4_srandom();    
+
+    perf.start();    
     screenInit();
     screenTextAt(15, 12, "Loading...");
     screenRedrawScreen();
+    perf.end("Screen Initialization");
 
+    perf.start();
     musicInit();
     soundInit();
     eventHandlerInit();    
+    perf.end("Misc Initialization");
 
+    perf.start();
     Tileset::loadAll("tilesets.xml");
+    perf.end("Tileset::loadAll()");
+
+    perf.start();
     creatures.loadInfoFromXml();
+    perf.end("CreatureMgr::loadInfoFromXml()");
 
     if (!skipIntro) {
         /* do the intro */
+        perf.start();
         introInit();
+        perf.end("introInit()");
+        
+        /* give a performance report */
+        if (settings.debug)
+            perf.report();
+
         eventHandlerAddTimerCallback(&introTimer, eventTimerGranularity);
         eventHandlerPushKeyHandler(&introKeyHandler);
         eventHandlerMain(NULL);
@@ -90,14 +110,25 @@ int main(int argc, char *argv[]) {
         return 0;
 
     /* load in the maps */
+    perf.reset();
+    perf.start();
     mapMgrInit();
+    perf.end("mapMgrInit()");
 
     /* initialize person data */
+    perf.start();
     if (!personInit())
         errorFatal("unable to load person data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+    perf.end("personInit()");
 
     /* play the game! */
+    perf.start();
     gameInit();
+    perf.end("gameInit()");
+    
+    /* give a performance report */
+    if (settings.debug)
+        perf.report("\n===============================\n\n");
 
     eventHandlerAddTimerCallback(&gameTimer, eventTimerGranularity);
     eventHandlerPushKeyHandler(&gameBaseKeyHandler);
@@ -112,7 +143,7 @@ int main(int argc, char *argv[]) {
     eventHandlerDelete();
     soundDelete();
     musicDelete();
-    screenDelete();    
+    screenDelete();
 
     return 0;
 }

@@ -1358,7 +1358,7 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
 void screenDungeonDrawTile(int distance, MapTile *mapTile) {
     Tileset *t = Tileset::get();    
     Tile *tile = t->get(mapTile->id);
-    //TileAnim *anim = tile->anim;
+    TileAnim *anim = tile->anim;
     
     /**
      * Draw the tile to the screen

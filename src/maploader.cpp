@@ -4,6 +4,7 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <ctime>
 #include <string>
 #include "u4.h"
 
@@ -335,8 +336,8 @@ int mapIsChunkCompressed(Map *map, int chunk) {
  * Loads the world map data in from the 'world' file.
  */
 int mapLoadWorld(Map *map) {
-    U4FILE *world;
-
+    U4FILE *world;    
+    
     world = u4fopen(map->fname);
     if (!world)
         errorFatal("unable to load map data");
@@ -360,6 +361,8 @@ int mapLoadData(Map *map, U4FILE *f) {
     if (map->chunk_width == 0)
         map->chunk_width = map->width;
 
+    clock_t total = 0;
+    clock_t start = clock();    
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
         for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
             for(y = 0; y < map->chunk_height; ++y) {
@@ -373,14 +376,22 @@ int mapLoadData(Map *map, U4FILE *f) {
                         c = u4fgetc(f);
                         if (c == EOF)
                             return 0;
-                        
+                      
+                        clock_t s = clock();
                         MapTile mt = Tile::translate(c);
+                        total += clock() - s;
+
                         map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt;
                     }
                 }
             }
         }
     }
+    clock_t end = clock();
+
+    FILE *file = fopen("mapLoadData.txt", "wt");
+    fprintf(file, "%d msecs total\n%d msecs used by Tile::translate()", end - start, total);
+    fclose(file);
 
     return 1;
 }

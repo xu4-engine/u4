@@ -14,6 +14,7 @@
 #include "location.h"
 #include "tilemap.h"
 #include "tileset.h"
+#include "utils.h"
 #include "xml.h"
 
 /**
@@ -72,7 +73,7 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
  */ 
 MapTile Tile::translate(int index, string tileMap) {
     TileIndexMap* im = TileMap::get(tileMap);    
-    if (im) {        
+    if (im) {
         string name = (*im)[index];
         int base = index;
         
@@ -86,10 +87,11 @@ MapTile Tile::translate(int index, string tileMap) {
 
         int frame = index - base;
         if (frame > tile->frames - 1)
-            frame = tile->frames - 1;
+            frame = tile->frames - 1;        
         
         return MapTile(tile->id, frame);
-    }
+    }    
+
     return MapTile();
 }
 
