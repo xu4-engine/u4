@@ -2,21 +2,21 @@
  * $Id$
  */
 
-#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+#include <cctype>
 
 #include "u4file.h"
 #include "unzip.h"
-
 #include "debug.h"
 
 using std::string;
+using std::vector;
 
 /**
  * A specialization of U4FILE that uses C stdio internally.
  */
 class U4FILE_stdio : public U4FILE {
 public:
-    static U4FILE *create(const char *fname);
+    static U4FILE *create(const string &fname);
 
     virtual void close();
     virtual int seek(long offset, int whence);
@@ -35,7 +35,7 @@ private:
  */
 class U4FILE_zip : public U4FILE {
 public:
-    static U4FILE *create(const char *fname, const char *zipfile, const char *zippath, int translate);
+    static U4FILE *create(const string &fname, const string &zipfile, const string &zippath, int translate);
 
     virtual void close();
     virtual int seek(long offset, int whence);
@@ -143,11 +143,11 @@ int U4FILE::getshort() {
     return byteLow | (getc() << 8);
 }
 
-U4FILE *U4FILE_stdio::create(const char *fname) {
+U4FILE *U4FILE_stdio::create(const string &fname) {
     U4FILE_stdio *u4f;
     FILE *f;
 
-    f = fopen(fname, "rb");
+    f = fopen(fname.c_str(), "rb");
     if (!f)
         return NULL;
 
@@ -195,23 +195,21 @@ long U4FILE_stdio::length() {
  * non-zero, some special case translation is done to the filenames to
  * match up with the names in u4upgrad.zip.
  */
-U4FILE *U4FILE_zip::create(const char *fname, const char *zipfile, const char *zippath, int translate) {
+U4FILE *U4FILE_zip::create(const string &fname, const string &zipfile, const string &zippath, int translate) {
     U4FILE_zip *u4f;
     unzFile f;
-    char *pathname;
 
-    f = unzOpen(zipfile);
+    f = unzOpen(zipfile.c_str());
     if (!f)
         return NULL;
 
+    string pathname(zippath);
     if (translate)
-        fname = u4upgrade_translate_filename(fname);
-    pathname = new char[strlen(zippath) + strlen(fname) + 1];
-    strcpy(pathname, zippath);
-    strcat(pathname, fname);
+        pathname += u4upgrade_translate_filename(fname);
+    else
+        pathname += fname;
 
-    if (unzLocateFile(f, pathname, 2) == UNZ_END_OF_LIST_OF_FILE) {
-        delete pathname;
+    if (unzLocateFile(f, pathname.c_str(), 2) == UNZ_END_OF_LIST_OF_FILE) {
         unzClose(f);
         return NULL;
     }
@@ -219,8 +217,6 @@ U4FILE *U4FILE_zip::create(const char *fname, const char *zipfile, const char *z
 
     u4f = new U4FILE_zip;
     u4f->zfile = f;
-
-    delete pathname;
 
     return u4f;
 }
@@ -297,75 +293,64 @@ long U4FILE_zip::length() {
  * getting excessive.  The presence of the zipfiles should probably be
  * cached.
  */
-U4FILE *u4fopen(const char *fname) {
+U4FILE *u4fopen(const string &fname) {
     U4FILE *u4f = NULL;
-    char *fname_copy, *pathname;
     unsigned int i;
 
     if (verbose)
-        printf("looking for %s\n", fname);
+        printf("looking for %s\n", fname.c_str());
 
     /**
      * search for file within ultima4.zip or u4upgrad.zip
      */
-    pathname = u4find_path("ultima4.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0]));
-    if (pathname) {
-        char *upg_pathname;
-        
+    string pathname(u4find_path("ultima4.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0])));
+    if (!pathname.empty()) {
         /* original u4 zip is present */
         u4zipExists = 1;
         
-        upg_pathname = u4find_path("u4upgrad.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0]));
+        string upg_pathname(u4find_path("u4upgrad.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0])));
         /* both zip files are present */
-        if (upg_pathname)
+        if (!upg_pathname.empty())
             u4upgradeZipExists = 1;        
 
         /* look for the file in ultima4.zip */
         u4f = U4FILE_zip::create(fname, pathname, "ultima4/", 0);
-        if (u4f) {
-            delete pathname;
-            delete upg_pathname;
+        if (u4f)
             return u4f; /* file was found, return it! */
-        }
 
         /* look for the file in u4upgrad.zip */
         if (u4upgradeZipExists) {
             u4f = U4FILE_zip::create(fname, upg_pathname, "", 1);
-            delete upg_pathname;
-            if (u4f) {
-                delete pathname; 
+            if (u4f)
                 return u4f; /* file was found, return it! */ 
-            }
         }
     }
 
     /*
      * file not in a zipfile; check if it has been unzipped
      */
-    fname_copy = strdup(fname);
+    string fname_copy(fname);
 
-    pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
-    if (!pathname) {
-        if (islower(fname_copy[0])) {
-            fname_copy[0] = toupper(fname_copy[0]);
-            pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
+    pathname = u4find_path(fname_copy.c_str(), paths, sizeof(paths) / sizeof(paths[0]));
+    if (pathname.empty()) {
+        if (std::islower(fname_copy[0])) {
+            fname_copy[0] = std::toupper(fname_copy[0]);
+            pathname = u4find_path(fname_copy.c_str(), paths, sizeof(paths) / sizeof(paths[0]));
         }
 
-        if (!pathname) {
+        if (pathname.empty()) {
             for (i = 0; fname_copy[i] != '\0'; i++) {
-                if (islower(fname_copy[i]))
-                    fname_copy[i] = toupper(fname_copy[i]);
+                if (std::islower(fname_copy[i]))
+                    fname_copy[i] = std::toupper(fname_copy[i]);
             }
-            pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
+            pathname = u4find_path(fname_copy.c_str(), paths, sizeof(paths) / sizeof(paths[0]));
         }
     }
-    delete fname_copy;
 
-    if (pathname) {
+    if (!pathname.empty()) {
         u4f = U4FILE_stdio::create(pathname);
         if (verbose && u4f != NULL)
-            printf("%s successfully opened\n", pathname);
-        delete pathname;
+            printf("%s successfully opened\n", pathname.c_str());
     }
 
     return u4f;
@@ -375,7 +360,7 @@ U4FILE *u4fopen(const char *fname) {
  * Opens a file with the standard C stdio facilities and wrap it in a
  * U4FILE struct.
  */
-U4FILE *u4fopen_stdio(const char *fname) {
+U4FILE *u4fopen_stdio(const string &fname) {
     return U4FILE_stdio::create(fname);
 }
 
@@ -419,10 +404,10 @@ long u4flength(U4FILE *f) {
  * are read from the given offset, or the current file position if
  * offset is -1.
  */
-string *u4read_stringtable(U4FILE *f, long offset, int nstrings) {    
+vector<string> u4read_stringtable(U4FILE *f, long offset, int nstrings) {
     string buffer;
     int i;
-    string *strs = new string[nstrings];    
+    vector<string> strs;
 
     ASSERT(offset < u4flength(f), "offset begins beyond end of file");
 
@@ -430,18 +415,18 @@ string *u4read_stringtable(U4FILE *f, long offset, int nstrings) {
         f->seek(offset, SEEK_SET);
     for (i = 0; i < nstrings; i++) {
         char c;
-        buffer.erase();
+        buffer.clear();
 
         while ((c = f->getc()) != '\0')
             buffer += c;
         
-        strs[i] = buffer;
+        strs.push_back(buffer);
     }
 
     return strs;
 }
 
-char *u4find_path(const char *fname, const char * const *pathent, unsigned int npathents) {
+string u4find_path(const char *fname, const char * const *pathent, unsigned int npathents) {
     FILE *f = NULL;
     unsigned int i;
     char pathname[128];
@@ -465,28 +450,28 @@ char *u4find_path(const char *fname, const char * const *pathent, unsigned int n
 
     if (f) {
         fclose(f);
-        return strdup(pathname);
+        return pathname;
     } else
-        return NULL;
+        return "";
 }
 
-char *u4find_music(const char *fname) {
+string u4find_music(const char *fname) {
     return u4find_path(fname, music_paths, sizeof(music_paths) / sizeof(music_paths[0]));
 }
 
-char *u4find_sound(const char *fname) {
+string u4find_sound(const char *fname) {
     return u4find_path(fname, sound_paths, sizeof(sound_paths) / sizeof(sound_paths[0]));
 }
 
-char *u4find_conf(const char *fname) {
+string u4find_conf(const char *fname) {
     return u4find_path(fname, conf_paths, sizeof(conf_paths) / sizeof(conf_paths[0]));
 }
 
-char *u4find_graphics(const char *fname) {
+string u4find_graphics(const char *fname) {
     return u4find_path(fname, graphics_paths, sizeof(graphics_paths) / sizeof(graphics_paths[0]));
 }
 
-const char *u4upgrade_translate_filename(const char *fname) {
+string u4upgrade_translate_filename(const string &fname) {
     unsigned int i;
     const static struct {
         char *name;
@@ -522,7 +507,7 @@ const char *u4upgrade_translate_filename(const char *fname) {
     };
 
     for (i = 0; i < sizeof(translations) / sizeof(translations[0]); i++) {
-        if (strcasecmp(translations[i].name, fname) == 0)
+        if (strcasecmp(translations[i].name, fname.c_str()) == 0)
             return translations[i].translation;
     }
     return fname;

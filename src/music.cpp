@@ -6,6 +6,7 @@
 
 /* FIXME: should this file have all SDL-related stuff extracted and put in music_sdl.c? */
 
+#include <string>
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <libxml/xmlmemory.h>
@@ -22,6 +23,8 @@
 #include "u4_sdl.h"
 #include "u4file.h"
 #include "xml.h"
+
+using std::string;
 
 /* A bug in SDL_mixer 1.2.5 for MacOSX causes it to crash looping music */
 #if defined(MACOSX)
@@ -55,7 +58,6 @@ void musicPlayMid(Music music) {
 
 int musicLoad(Music music) {
     static Music current = MUSIC_NONE;
-    char *pathname;
 
     ASSERT(music < MUSIC_MAX, "Attempted to load an invalid piece of music in musicLoad()");
 
@@ -69,21 +71,20 @@ int musicLoad(Music music) {
             return 1;
     }
 
-    pathname = u4find_music(musicFilenames[music]);
-    if (pathname) {
+    string pathname(u4find_music(musicFilenames[music]));
+    if (!pathname.empty()) {
         
         if (playing) {
             Mix_FreeMusic(playing);
             playing = NULL;
         }
 
-        playing = Mix_LoadMUS(pathname);
+        playing = Mix_LoadMUS(pathname.c_str());
         if (!playing) {
-            errorWarning("unable to load music file %s: %s", pathname, Mix_GetError());
+            errorWarning("unable to load music file %s: %s", pathname.c_str(), Mix_GetError());
             return 0;
         }
         
-        delete pathname;
         current = music;
         return 1;
     }

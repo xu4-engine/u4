@@ -4,6 +4,9 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <string>
+#include <vector>
+
 #include "u4.h"
 
 #include "shrine.h"
@@ -22,6 +25,9 @@
 #include "screen.h"
 #include "settings.h"
 #include "types.h"
+
+using std::string;
+using std::vector;
 
 int shrineHandleVirtue(string *message);
 int shrineHandleCycles(int choice);
@@ -42,7 +48,7 @@ int cycles, completedCycles;
 int elevated;
 string mantraBuffer;
 int reps;
-string *shrineAdvice = NULL;
+vector<string> shrineAdvice;
 
 /**
  * Returns true if the player can use the portal to the shrine
@@ -92,7 +98,7 @@ void Shrine::enter() {
     U4FILE *avatar;
     Object *obj;
 
-    if (!shrineAdvice) {
+    if (shrineAdvice.empty()) {
         avatar = u4fopen("avatar.exe");
         if (!avatar)
             return;

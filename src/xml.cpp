@@ -26,16 +26,14 @@ int ioRegistered = 0;
 
 void *xmlXu4FileOpen (const char *filename) {
     void *result;
-    char *pathname = u4find_conf(filename);
+    string pathname(u4find_conf(filename));
 
-    if (!pathname)
+    if (pathname.empty())
         return NULL;
-    result = xmlFileOpen(pathname);
+    result = xmlFileOpen(pathname.c_str());
 
     if (verbose)
-        printf("xml parser opened %s: %s\n", pathname, result ? "success" : "failed");
-
-    delete pathname;
+        printf("xml parser opened %s: %s\n", pathname.c_str(), result ? "success" : "failed");
 
     return result;
 }

@@ -4,6 +4,9 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <string>
+#include <vector>
+
 #include "codex.h"
 
 #include "context.h"
@@ -17,6 +20,8 @@
 #include "u4.h"
 #include "u4file.h"
 #include "utils.h"
+
+using namespace std;
 
 int codexInit();
 void codexDelete();
@@ -33,9 +38,9 @@ bool codexHandleInfinityAnyKey(int key, void *data);
 bool codexHandleEndgameAnyKey(int key, void *data);
 
 string codexInputBuffer;
-string *codexVirtueQuestions;
-string *codexEndgameText1;
-string *codexEndgameText2;
+vector<string> codexVirtueQuestions;
+vector<string> codexEndgameText1;
+vector<string> codexEndgameText2;
 
 /**
  * Initializes the Chamber of the Codex sequence (runs from codexStart())
@@ -60,9 +65,9 @@ int codexInit() {
  * Frees all memory associated with the Codex sequence
  */
 void codexDelete() {
-    delete codexVirtueQuestions;
-    delete codexEndgameText1;
-    delete codexEndgameText2;
+    codexVirtueQuestions.clear();
+    codexEndgameText1.clear();
+    codexEndgameText2.clear();
 }
 
 /**

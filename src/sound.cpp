@@ -54,7 +54,6 @@ void soundDelete() {
 }
 
 void soundPlay(Sound sound) {
-    char *pathname;
 
     ASSERT(sound < SOUND_MAX, "Attempted to play an invalid sound in soundPlay()");
     
@@ -62,10 +61,9 @@ void soundPlay(Sound sound) {
         return;
 
     if (soundChunk[sound] == NULL) {
-        pathname = u4find_sound(soundFilenames[sound]);
-        if (pathname) {
-            soundChunk[sound] = Mix_LoadWAV(pathname);
-            delete pathname;
+        string pathname(u4find_sound(soundFilenames[sound]));
+        if (!pathname.empty()) {
+            soundChunk[sound] = Mix_LoadWAV(pathname.c_str());
             if (!soundChunk[sound]) {
                 errorWarning("unable to load sound effect file %s: %s", soundFilenames[sound], Mix_GetError());
                 return;

@@ -24,6 +24,8 @@
 #include "u4file.h"
 #include "utils.h"
 
+using namespace std;
+
 extern bool quit;
 
 #define INTRO_TEXT_OFFSET 17445
@@ -86,9 +88,9 @@ IntroMode mode;
 
 /* data loaded in from title.exe */
 unsigned char *introMap[INTRO_MAP_HEIGHT];
-string *introText;
-string *introQuestions;
-string *introGypsy;
+vector<string> introText;
+vector<string> introQuestions;
+vector<string> introGypsy;
 unsigned char *sigData = NULL;
 unsigned char *scriptTable = NULL;
 unsigned char *baseTileTable = NULL;
@@ -323,6 +325,10 @@ unsigned char *introGetSigData() {
  */
 void introDelete(int freeMenus) {
     delete introMap[0];
+
+    introQuestions.clear();
+    introText.clear();
+    introGypsy.clear();
 
     delete scriptTable;
     scriptTable = NULL;
@@ -1355,8 +1361,8 @@ void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 
     case 4:
         {   
-            const std::vector<string> &imageSetNames = screenGetImageSetNames();
-            std::vector<string>::const_iterator set = std::find(imageSetNames.begin(), imageSetNames.end(), settingsChanged.videoType);
+            const vector<string> &imageSetNames = screenGetImageSetNames();
+            vector<string>::const_iterator set = find(imageSetNames.begin(), imageSetNames.end(), settingsChanged.videoType);
             if (set == imageSetNames.end())
                 errorFatal("Error: image set '%s' not found", settingsChanged.videoType.c_str());
             
@@ -1379,8 +1385,8 @@ void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 
     case 5:
         {
-            const std::vector<string> &layoutNames = screenGetGemLayoutNames();
-            std::vector<string>::const_iterator layout = std::find(layoutNames.begin(), layoutNames.end(), settingsChanged.gemLayout);
+            const vector<string> &layoutNames = screenGetGemLayoutNames();
+            vector<string>::const_iterator layout = find(layoutNames.begin(), layoutNames.end(), settingsChanged.gemLayout);
             if (layout == layoutNames.end())
                 errorFatal("Error: gem layout '%s' not found", settingsChanged.gemLayout.c_str());
        

@@ -5,7 +5,9 @@
 #ifndef U4FILE_H
 #define U4FILE_H
 
+#include "vc6.h"
 #include <string>
+#include <vector>
 
 enum CompressionType {
     COMP_NONE,
@@ -32,8 +34,8 @@ public:
 };
 
 int u4isUpgradeInstalled(void);
-U4FILE *u4fopen(const char *fname);
-U4FILE *u4fopen_stdio(const char *fname);
+U4FILE *u4fopen(const std::string &fname);
+U4FILE *u4fopen_stdio(const std::string &fname);
 void u4fclose(U4FILE *f);
 int u4fseek(U4FILE *f, long offset, int whence);
 size_t u4fread(void *ptr, size_t size, size_t nmemb, U4FILE *f);
@@ -41,13 +43,13 @@ int u4fgetc(U4FILE *f);
 int u4fgetshort(U4FILE *f);
 int u4fputc(int c, U4FILE *f);
 long u4flength(U4FILE *f);
-std::string *u4read_stringtable(U4FILE *f, long offset, int nstrings);
-char *u4find_path(const char *fname, const char * const *pathent, unsigned int npathents);
-char *u4find_music(const char *fname);
-char *u4find_sound(const char *fname);
-char *u4find_conf(const char *fname);
-char *u4find_graphics(const char *fname);
-const char *u4upgrade_translate_filename(const char *fname);
+std::vector<std::string> u4read_stringtable(U4FILE *f, long offset, int nstrings);
+std::string u4find_path(const char *fname, const char * const *pathent, unsigned int npathents);
+std::string u4find_music(const char *fname);
+std::string u4find_sound(const char *fname);
+std::string u4find_conf(const char *fname);
+std::string u4find_graphics(const char *fname);
+std::string u4upgrade_translate_filename(const std::string &fname);
 CompressionType u4GetCompTypeByStr(const char *comp);
 
 extern int u4zipExists;

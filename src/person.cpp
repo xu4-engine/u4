@@ -4,6 +4,9 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <vector>
+#include <string>
+
 #include "u4.h"
 
 #include "person.h"
@@ -23,9 +26,12 @@
 #include "utils.h"
 #include "script.h"
 
-string *hawkwindText;
-string *lbKeywords;
-string *lbText;
+using std::string;
+using std::vector;
+
+vector<string> hawkwindText;
+vector<string> lbKeywords;
+vector<string> lbText;
 
 /* Hawkwind text indexes */
 #define HW_SPEAKONLYWITH 40

@@ -679,16 +679,13 @@ ImageInfo *screenLoadImage(const string &name) {
         return NULL;
 
     if (info->xu4Graphic) {
-        char *pathname;
+        string pathname(u4find_graphics(filename.c_str()));
 
-        pathname = u4find_graphics(filename.c_str());
-        if (pathname) {
+        if (!pathname.empty())
             file = u4fopen_stdio(pathname);
-            free(pathname);
-        }
     } 
     else {
-        file = u4fopen(filename.c_str());
+        file = u4fopen(filename);
     }
     
     ret = 0;
@@ -1346,7 +1343,6 @@ int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, 
 }
 
 int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
-    char *pathname;
     U4FILE *file;
     int index, ret;
     Image *unscaled;
@@ -1355,12 +1351,11 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
     index = screenDungeonGraphicIndex(xoffset, distance, orientation, type);
     ASSERT(index != -1, "invalid graphic paramters provided");
 
-    pathname = u4find_graphics(dngGraphicInfo[index].filename);
-    if (!pathname)
+    string pathname(u4find_graphics(dngGraphicInfo[index].filename));
+    if (pathname.empty())
         return 0;
 
     file = u4fopen_stdio(pathname);
-    free(pathname);
     if (!file)
         return 0;
 

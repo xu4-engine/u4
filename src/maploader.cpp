@@ -64,8 +64,8 @@ int mapLoadCity(City *city) {
     Person *people[CITY_MAX_PERSONS];
     MapTile tiles[CITY_MAX_PERSONS];
 
-    ult = u4fopen(city->fname.c_str());
-    tlk = u4fopen(city->tlk_fname.c_str());
+    ult = u4fopen(city->fname);
+    tlk = u4fopen(city->tlk_fname);
     if (!ult || !tlk)
         errorFatal("unable to load map data");
 
@@ -211,7 +211,7 @@ int mapLoadCon(Map *map) {
     U4FILE *con;
     int i;
 
-    con = u4fopen(map->fname.c_str());
+    con = u4fopen(map->fname);
     if (!con)
         errorFatal("unable to load map data");
 
@@ -252,7 +252,7 @@ int mapLoadDng(Dungeon *dungeon) {
     U4FILE *dng;
     unsigned int i, j;
 
-    dng = u4fopen(dungeon->fname.c_str());
+    dng = u4fopen(dungeon->fname);
     if (!dng)
         errorFatal("unable to load map data");
 
@@ -328,7 +328,7 @@ int mapIsChunkCompressed(Map *map, int chunk) {
 int mapLoadWorld(Map *map) {
     U4FILE *world;
 
-    world = u4fopen(map->fname.c_str());
+    world = u4fopen(map->fname);
     if (!world)
         errorFatal("unable to load map data");
 
