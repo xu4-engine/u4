@@ -12,6 +12,7 @@ typedef enum {
     CA_ATTACK,
     CA_CAST_SLEEP,
     CA_ADVANCE,
+    CA_RANGED,
     CA_FLEE
 } CombatAction;
 

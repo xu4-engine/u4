@@ -66,7 +66,7 @@ int combatIsWon(void);
 int combatIsLost(void);
 void combatEnd(void);
 void combatMoveMonsters(void);
-int combatFindTargetForMonster(const Object *monster, int *distance);
+int combatFindTargetForMonster(const Object *monster, int *distance, int ranged);
 int movePartyMember(Direction dir, int member);
 
 void combatBegin(unsigned char partytile, unsigned short transport, Object *monster) {
@@ -530,15 +530,18 @@ void combatMoveMonsters() {
             statsUpdate();
         }
 
-        target = combatFindTargetForMonster(monsters[i], &distance);
+        if (m->ranged != 0 && (rand() % 4) == 0)
+            action = CA_RANGED;
+        else if (monsterCastSleep(m) && (rand() % 4) == 0)
+            action = CA_CAST_SLEEP;
+        else
+            action = CA_ATTACK;
+
+        target = combatFindTargetForMonster(monsters[i], &distance, action == CA_RANGED);
         if (target == -1)
             continue;
 
-        if (monsterCastSleep(m))
-            action = CA_CAST_SLEEP;
-        else if (distance == 1)
-            action = CA_ATTACK;
-        else
+        if (action == CA_ATTACK && distance > 1)
             action = CA_ADVANCE;
 
         switch(action) {
@@ -567,6 +570,11 @@ void combatMoveMonsters() {
             screenMessage("Sleep!\n");
             playerApplySleepSpell(c->saveGame);
             statsUpdate();
+            break;
+
+        case CA_RANGED:
+            printf("%s does a ranged attack!\n", m->name);
+            /* FIXME */
             break;
 
         case CA_FLEE:
@@ -607,7 +615,7 @@ void combatMoveMonsters() {
     }
 }
 
-int combatFindTargetForMonster(const Object *monster, int *distance) {
+int combatFindTargetForMonster(const Object *monster, int *distance, int ranged) {
     int i, dx, dy;
     int closest;
 
@@ -622,11 +630,18 @@ int combatFindTargetForMonster(const Object *monster, int *distance) {
         dy = monster->y - party[i]->y;
         dy *= dy;
 
-        if (dx + dy < (*distance) ||
-            (dx + dy == (*distance) && (rand() % 2) == 0)) {
-            (*distance) = dx + dy;
-            closest = i;
-        }
+        /* skip target if further than current target */
+        if (dx + dy > (*distance))
+            continue;
+        /* skip target 50% of time if same distance */
+        if (dx + dy == (*distance) && (rand() % 2) == 0)
+            continue;
+        /* skip target if ranged attack and column or row not shared */
+        if (ranged && dx != 0 && dy != 0)
+            continue;
+
+        (*distance) = dx + dy;
+        closest = i;
     }
 
     return closest;
