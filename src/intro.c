@@ -101,7 +101,7 @@ void introInitQuestionTree(void);
 const char *introGetQuestion(int v1, int v2);
 int introDoQuestion(int answer);
 int introHandleQuestionChoice(char choice);
-void introInitAvatar(SaveGamePlayerRecord *avatar, int *initX, int *initY);
+void introInitPlayers(SaveGame *saveGame);
 
 /**
  * Initializes intro state and loads in introduction graphics, text
@@ -698,7 +698,6 @@ int introDoQuestion(int answer) {
 int introHandleQuestionChoice(char choice) {
     FILE *saveGameFile;
     SaveGame saveGame;
-    int x, y;
 
     eventHandlerPopKeyHandler();
 
@@ -710,8 +709,10 @@ int introHandleQuestionChoice(char choice) {
         if (saveGameFile) {
             SaveGamePlayerRecord avatar;
             saveGamePlayerRecordInit(&avatar);
-            introInitAvatar(&avatar, &x, &y);
-            saveGameInit(&saveGame, x, y, &avatar);
+            saveGameInit(&saveGame, &avatar);
+            introInitPlayers(&saveGame);
+            saveGame.food = 30000;
+            saveGame.gold = 200;
             saveGame.reagents[REAG_GINSENG] = 3;
             saveGame.reagents[REAG_GARLIC] = 4;
             saveGame.torches = 2;
@@ -731,8 +732,8 @@ int introHandleQuestionChoice(char choice) {
  * Build the initial avatar player record from the answers to the
  * gypsy's questions.
  */
-void introInitAvatar(SaveGamePlayerRecord *avatar, int *initX, int *initY) {
-    int i;
+void introInitPlayers(SaveGame *saveGame) {
+    int i, p;
     static const struct {
         WeaponType weapon;
         ArmorType armor;
@@ -745,52 +746,66 @@ void introInitAvatar(SaveGamePlayerRecord *avatar, int *initX, int *initY) {
         { WEAP_MACE,   ARMR_LEATHER, 110, 158,  21 }, /* CLASS_TINKER */
         { WEAP_SWORD,  ARMR_CHAIN,   325, 105, 183 }, /* CLASS_PALADIN */
         { WEAP_SWORD,  ARMR_LEATHER, 150,  23, 129 }, /* CLASS_RANGER */
-        { WEAP_STAFF,  ARMR_CLOTH,     5, 186, 171 }, /* CLASS_SHEPHERD */
+        { WEAP_STAFF,  ARMR_CLOTH,     5, 186, 171 }  /* CLASS_SHEPHERD */
+    };
+    static const struct {
+        const char *name;
+        int str, dex, intel;
+        SexType sex;
+    } initValuesForNpcClass[] = {
+        { "Mariah",    9, 12, 20, SEX_FEMALE }, /* CLASS_MAGE */
+        { "Iolo",     16, 19, 13, SEX_MALE },   /* CLASS_BARD */
+        { "Geoffrey", 20, 15, 11, SEX_MALE },   /* CLASS_FIGHTER */
+        { "Jaana",    17, 16, 13, SEX_FEMALE }, /* CLASS_DRUID */
+        { "Julia",    15, 16, 12, SEX_FEMALE }, /* CLASS_TINKER */
+        { "Dupre",    17, 14, 17, SEX_MALE },   /* CLASS_PALADIN */
+        { "Shamino",  16, 15, 15, SEX_MALE },   /* CLASS_RANGER */
+        { "Katrina",  11, 12, 10, SEX_FEMALE }  /* CLASS_SHEPHERD */
     };
 
-    strcpy(avatar->name, nameBuffer);
-    avatar->sex = sex;
-    avatar->klass = questionTree[14];
+    strcpy(saveGame->players[0].name, nameBuffer);
+    saveGame->players[0].sex = sex;
+    saveGame->players[0].klass = questionTree[14];
 
-    assert(avatar->klass < 8);
+    assert(saveGame->players[0].klass < 8);
     
-    avatar->weapon = initValuesForClass[avatar->klass].weapon;
-    avatar->armor = initValuesForClass[avatar->klass].armor;
-    avatar->xp = initValuesForClass[avatar->klass].xp;
-    *initX = initValuesForClass[avatar->klass].x;
-    *initY = initValuesForClass[avatar->klass].y;
+    saveGame->players[0].weapon = initValuesForClass[saveGame->players[0].klass].weapon;
+    saveGame->players[0].armor = initValuesForClass[saveGame->players[0].klass].armor;
+    saveGame->players[0].xp = initValuesForClass[saveGame->players[0].klass].xp;
+    saveGame->x = initValuesForClass[saveGame->players[0].klass].x;
+    saveGame->y = initValuesForClass[saveGame->players[0].klass].y;
     
-    avatar->str = 15;
-    avatar->dex = 15;
-    avatar->intel = 15;
+    saveGame->players[0].str = 15;
+    saveGame->players[0].dex = 15;
+    saveGame->players[0].intel = 15;
 
     for (i = 8; i < 15; i++) {
         switch (questionTree[i]) {
         case VIRT_HONESTY:
-            avatar->intel += 3;
+            saveGame->players[0].intel += 3;
             break;
         case VIRT_COMPASSION:
-            avatar->dex += 3;
+            saveGame->players[0].dex += 3;
             break;
         case VIRT_VALOR:
-            avatar->str += 3;
+            saveGame->players[0].str += 3;
             break;
         case VIRT_JUSTICE:
-            avatar->intel++;
-            avatar->dex++;
+            saveGame->players[0].intel++;
+            saveGame->players[0].dex++;
             break;
         case VIRT_SACRIFICE:
-            avatar->intel++;
-            avatar->str++;
+            saveGame->players[0].intel++;
+            saveGame->players[0].str++;
             break;
         case VIRT_HONOR:
-            avatar->dex++;
-            avatar->str++;
+            saveGame->players[0].dex++;
+            saveGame->players[0].str++;
             break;
         case VIRT_SPIRITUALITY:
-            avatar->intel++;
-            avatar->dex++;
-            avatar->str++;
+            saveGame->players[0].intel++;
+            saveGame->players[0].dex++;
+            saveGame->players[0].str++;
             break;
         case VIRT_HUMILITY:
             /* no stats for you! */
@@ -798,6 +813,25 @@ void introInitAvatar(SaveGamePlayerRecord *avatar, int *initX, int *initY) {
         }
     }
 
-    avatar->hp = avatar->hpMax = playerGetMaxLevel(avatar) * 100;
-    avatar->mp = playerGetMaxMp(avatar);
+    saveGame->players[0].hp = saveGame->players[0].hpMax = playerGetMaxLevel(&saveGame->players[0]) * 100;
+    saveGame->players[0].mp = playerGetMaxMp(&saveGame->players[0]);
+
+    p = 1;
+    for (i = 0; i < VIRT_MAX; i++) {
+        if (i != saveGame->players[0].klass) {
+            saveGame->players[p].klass = i;
+            saveGame->players[p].xp = initValuesForClass[i].xp;
+            saveGame->players[p].str = initValuesForNpcClass[i].str;
+            saveGame->players[p].dex = initValuesForNpcClass[i].dex;
+            saveGame->players[p].intel = initValuesForNpcClass[i].intel;
+            saveGame->players[p].weapon = initValuesForClass[i].weapon;
+            saveGame->players[p].armor = initValuesForClass[i].armor;
+            strcpy(saveGame->players[p].name, initValuesForNpcClass[i].name);
+            saveGame->players[p].sex = initValuesForNpcClass[i].sex;
+            saveGame->players[p].hp = saveGame->players[p].hpMax = playerGetMaxLevel(&saveGame->players[p]) * 100;
+            saveGame->players[p].mp = playerGetMaxMp(&saveGame->players[p]);
+            p++;
+        }
+    }
+
 }
