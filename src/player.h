@@ -24,8 +24,9 @@ typedef std::vector<class PartyMember *> PartyMemberVector;
 
 typedef enum {
     KA_FOUND_ITEM,
-    KA_STOLE_CHEST,
+    KA_STOLE_CHEST,    
     KA_GAVE_TO_BEGGAR,
+    KA_GAVE_ALL_TO_BEGGAR,
     KA_BRAGGED,
     KA_HUMBLE,
     KA_HAWKWIND,

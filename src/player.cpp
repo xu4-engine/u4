@@ -664,6 +664,9 @@ void Party::adjustKarma(KarmaAction action) {
         AdjustValueMin(newKarma[VIRT_JUSTICE], -1, 1);
         AdjustValueMin(newKarma[VIRT_HONOR], -1, 1);
         break;
+    /* FIXME: is this accurate to the original? */
+    case KA_GAVE_ALL_TO_BEGGAR:
+        AdjustValueMax(newKarma[VIRT_SACRIFICE], 5, maxVal[VIRT_SACRIFICE]);
     case KA_GAVE_TO_BEGGAR:
         timeLimited = 1;
         AdjustValueMax(newKarma[VIRT_COMPASSION], 2, maxVal[VIRT_COMPASSION]);
@@ -864,7 +867,9 @@ bool Party::donate(int quantity) {
         return false;
 
     adjustGold(-quantity);
-    adjustKarma(KA_GAVE_TO_BEGGAR);
+    if (saveGame->gold > 0)
+        adjustKarma(KA_GAVE_TO_BEGGAR);
+    else adjustKarma(KA_GAVE_ALL_TO_BEGGAR);
 
     return true;
 }
