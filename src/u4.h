@@ -55,7 +55,7 @@ typedef enum {
 
 /* moons/moongates */
 #define MOON_PHASES 24
-#define MOON_SECONDS_PER_PHASE 1
+#define MOON_SECONDS_PER_PHASE 2
 #define MOON_CHAR 20
 
 /* wind */
