@@ -57,6 +57,7 @@ DungeonGraphicType dungeonViewTileToGraphic(unsigned char tile) {
     DungeonToken token = dungeonTokenForTile(tile);    
 
     switch (token) {
+    case DUNGEON_TRAP:
     case DUNGEON_CORRIDOR:
         return DNGGRAPHIC_NONE;
     case DUNGEON_WALL:
@@ -69,8 +70,8 @@ DungeonGraphicType dungeonViewTileToGraphic(unsigned char tile) {
         return DNGGRAPHIC_LADDERUP;
     case DUNGEON_LADDER_DOWN:
         return DNGGRAPHIC_LADDERDOWN;
-
-    default: 
+    
+    default:
         return DNGGRAPHIC_TILE;
     }
 }

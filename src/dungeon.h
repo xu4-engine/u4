@@ -107,6 +107,7 @@ int dungeonLoadRoom(Dungeon *dng, int room);
 void dungeonSearch(void);
 int dungeonDrinkFountain(int player);
 int dungeonTouchOrb(int player);
+int dungeonHandleTrap(TrapType trap);
 int dungeonLadderUpAt(struct _Map *map, int x, int y, int z);
 int dungeonLadderDownAt(struct _Map *map, int x, int y, int z);
 

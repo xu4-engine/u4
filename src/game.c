@@ -460,6 +460,10 @@ void gameFinishTurn() {
         if (c->saveGame->torchduration <= 0)
             screenMessage("It's Dark!\n");
         else c->saveGame->torchduration--;
+
+        /* handle dungeon traps */
+        if (dungeonCurrentToken() == DUNGEON_TRAP)
+            dungeonHandleTrap((TrapType)dungeonCurrentSubToken());
     }
     /* since torchduration and balloon state share the same variable, make sure our torch
        isn't still lit (screwing all sorts of things up) */

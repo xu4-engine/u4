@@ -229,6 +229,23 @@ int dungeonTouchOrb(int player) {
 }
 
 /**
+ * Handles dungeon traps
+ */
+int dungeonHandleTrap(TrapType trap) {
+    switch((TrapType)dungeonCurrentSubToken()) {
+    case TRAP_WINDS:
+        screenMessage("\nWinds!\n");
+        c->saveGame->torchduration = 0;
+        break;
+    case TRAP_FALLING_ROCK:
+    case TRAP_PIT:
+    default: break;
+    }
+
+    return 1;
+}
+
+/**
  * Returns true if a ladder-up is found at the given coordinates
  */
 int dungeonLadderUpAt(struct _Map *map, int x, int y, int z) {

@@ -568,7 +568,7 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, "help", 4) == 0) {
-        reply = lordBritishGetHelp(cnv);
+        reply = concat("He says: ", lordBritishGetHelp(cnv), NULL);
     }
 
     /* since the original game files are a bit sketchy on the 'abyss' keyword,
