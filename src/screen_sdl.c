@@ -17,7 +17,8 @@
 #include "ttype.h"
 
 SDL_Surface *screen;
-SDL_Surface *intro, *border, *tiles, *charset;
+SDL_Surface *bkgds[BKGD_MAX];
+SDL_Surface *tiles, *charset;
 int scale, forceEga, forceVga;
 
 long decompress_u4_file(FILE *in, long filesize, void **out);
@@ -26,8 +27,7 @@ void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int color)
 void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h);
 void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, Uint8 color);
 void screenFixIntroScreen();
-int screenLoadIntroBackground();
-int screenLoadBorders();
+int screenLoadBackgrounds();
 void screenFreeIntroBackground();
 int screenLoadTiles();
 int screenLoadCharSet();
@@ -58,9 +58,11 @@ void screenInit(int screenScale) {
 	exit(1);
     }
     SDL_WM_SetCaption("Ultima IV", NULL);
+#ifdef ICON_FILE
+    SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
+#endif
 
-    if (!screenLoadIntroBackground() || 
-        !screenLoadBorders() ||
+    if (!screenLoadBackgrounds() || 
         !screenLoadTiles() ||
         !screenLoadCharSet()) {
         fprintf(stderr, "Unable to load data files\n");
@@ -128,12 +130,12 @@ void screenFixIntroScreen() {
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
      * ----------------------------------------------------------------------------- */
-    screenCopyRect(intro,136,0,136,0x21,54,5);
+    screenCopyRect(bkgds[BKGD_INTRO],136,0,136,0x21,54,5);
     
     /* ----------------------------
      * erase the original "present"
      * ---------------------------- */
-    screenFillRect(intro,136,0,54,5,0);
+    screenFillRect(bkgds[BKGD_INTRO],136,0,54,5,0);
 
     /* -----------------------------
      * draw "Lord British" signature
@@ -150,8 +152,8 @@ void screenFixIntroScreen() {
             /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
             x = sigData[i] + 0x14;
             y = 0xBF - sigData[i+1];
-            screenWriteScaledPixel(intro,x,y,sigColor);
-            screenWriteScaledPixel(intro,x+1,y,sigColor);
+            screenWriteScaledPixel(bkgds[BKGD_INTRO],x,y,sigColor);
+            screenWriteScaledPixel(bkgds[BKGD_INTRO],x+1,y,sigColor);
             i += 2;
         }
     }
@@ -162,44 +164,51 @@ void screenFixIntroScreen() {
      * draw the red line between "Origin Systems, Inc." and "present"
      * -------------------------------------------------------------- */
     /* (x/y) are unscaled coordinates */
-    screenFillRect(intro, 0x56, 0x1F, 0xEE - 0x56, 1, lineColor);
+    screenFillRect(bkgds[BKGD_INTRO], 0x56, 0x1F, 0xEE - 0x56, 1, lineColor);
 }
 
 /**
- * Load the intro background image from the "title.ega" file.
+ * Load in the background images from the "*.ega" files.
  */
-int screenLoadIntroBackground() {
-    int ret = 0;
+int screenLoadBackgrounds() {
+    int ret, i;
+    const struct {
+        BackgroundType bkgd;
+        const char *filename;
+    } lzwBkgdInfo[] = {
+        { BKGD_INTRO, "title.ega" },
+        { BKGD_TREE, "tree.ega" },
+        { BKGD_PORTAL, "portal.ega" },
+        { BKGD_OUTSIDE, "outside.ega" },
+        { BKGD_INSIDE, "inside.ega" },
+        { BKGD_WAGON, "wagon.ega" },
+        { BKGD_GYPSY, "gypsy.ega" },
+        { BKGD_ABACUS, "abacus.ega" }
+    };
 
-    ret = screenLoadLzwImageEga(&intro, 320, 200, "title.ega");
+    for (i = 0; i < sizeof(lzwBkgdInfo) / sizeof(lzwBkgdInfo[0]); i++) {
+        /* no vga version of lzw files... yet */
+        ret = screenLoadLzwImageEga(&bkgds[lzwBkgdInfo[i].bkgd], 320, 200, lzwBkgdInfo[i].filename);
+        if (!ret)
+            return 0;
+    }
+    screenFixIntroScreen();
 
-    if (ret)
-        screenFixIntroScreen();
+    if (!forceEga)
+        ret = screenLoadRleImageVga(&bkgds[BKGD_BORDERS], 320, 200, "start.ega", "u4vga.pal");
+    if (!ret && !forceVga)
+        ret = screenLoadRleImageEga(&bkgds[BKGD_BORDERS], 320, 200, "start.ega");
+    if (!ret)
+        return 0;
 
-    /* no vga version... yet */
 
-    return ret;
+    return 1;
 }
 
 void screenFreeIntroBackground() {
-    if (intro)
-        SDL_FreeSurface(intro);
-    intro = NULL;
-}
-
-/**
- * Load the background borders image from the "start.ega" file.
- */
-int screenLoadBorders() {
-    int ret = 0;
-
-    if (!forceEga)
-        ret = screenLoadRleImageVga(&border, 320, 200, "start.ega", "u4vga.pal");
-
-    if (!ret && !forceVga)
-        ret = screenLoadRleImageEga(&border, 320, 200, "start.ega");
-
-    return ret;
+    if (bkgds[BKGD_INTRO])
+        SDL_FreeSurface(bkgds[BKGD_INTRO]);
+    bkgds[BKGD_INTRO] = NULL;
 }
 
 /**
@@ -611,25 +620,14 @@ int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const ch
  */
 void screenDrawBackground(BackgroundType bkgd) {
     SDL_Rect r;
-    SDL_Surface *surface;
 
-    switch (bkgd) {
-    case BKGD_INTRO:
-        surface = intro;
-        break;
-    case BKGD_BORDERS:
-        surface = border;
-        break;
-    default:
-        return;
-            
-    }
+    assert(bkgd >= 0 && bkgd < BKGD_MAX);
 
     r.x = 0;
     r.y = 0;
     r.w = 320 * scale;
     r.h = 200 * scale;
-    SDL_BlitSurface(surface, &r, screen, &r);
+    SDL_BlitSurface(bkgds[bkgd], &r, screen, &r);
     screenForceRedraw();
 }
 
