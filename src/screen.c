@@ -129,8 +129,8 @@ void screenUpdateMoons() {
     assert(trammelPhase >= 0 && trammelPhase < 8);
     assert(feluccaPhase >= 0 && feluccaPhase < 8);
 
-    screenShowChar(20 + trammelPhase, 11, 0);
-    screenShowChar(20 + feluccaPhase, 12, 0);
+    screenShowChar(MOON_CHAR + trammelPhase, 11, 0);
+    screenShowChar(MOON_CHAR + feluccaPhase, 12, 0);
 }
 
 void screenEnableCursor() {
