@@ -390,7 +390,13 @@ void gameSpellEffect(unsigned int spell, int player) {
     if (player >= 0)
         statsHighlightCharacter(player);
 
-    /* special effect FIXME: needs sound */
+    /**
+     * special effect FIXME: needs sound
+     * This should only have an initial "random-Hertz pre-spell sound effect"
+     * with known spells -- if it is the default effect, leave it off! :)
+     * The sound that goes along with the screen inversion, etc. is good everywhere, though.
+     */
+    
 
     switch(spell)
     {
@@ -403,7 +409,8 @@ void gameSpellEffect(unsigned int spell, int player) {
         effect = SPELLEFFECT_TREMOR;        
         break;
     default:
-        time = 1000;
+        /* default spell effect */
+        time = 2000;
         effect = SPELLEFFECT_INVERT;
         break;
     }
@@ -2414,12 +2421,12 @@ void gameCheckMoongates() {
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase,
                                  c->location->x, c->location->y, &destx, &desty)) {
 
-        (*spellCallback)('g', -1); // Same effect as 'gate' spell
+        (*spellCallback)(-1, -1); // Default spell effect (screen inversion without 'spell' sound effects)
         
         c->location->x = destx;
         c->location->y = desty;
 
-        (*spellCallback)('g', -1); // Again, after arriving
+        (*spellCallback)(-1, -1); // Again, after arriving
 
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
             if (!playerCanEnterShrine(c->saveGame, shrine_spirituality_map.shrine->virtue))
