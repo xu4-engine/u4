@@ -36,6 +36,15 @@ spirit of the original game will be added.
 STATUS
 ------
 
+New in v0.08:
+ - 2xSaI scaler (now the default)
+ - fullscreen mode (-f on the command line)
+ - skip intro mode (-i on the command line)
+ - shrines and meditation, more actions affect karma
+ - sleep fields and poison now work
+ - if the party dies, they are now resurrected by Lord British
+ - spell casting improvements: Awaken, Cure, Heal, Dispel, Resurrect work
+
 New in v0.07:
  - items searchable (runes, white & black stones, bell, book, candle,
    etc.)
@@ -102,7 +111,6 @@ To do, in no particular order:
  - karma
  - monsters, combat
  - spells
- - shrines and meditation
  - autoconf, automake
  - everything else :)
 
@@ -120,9 +128,9 @@ COMPILING
 ---------
 
 Note that you need SDL, the SDL development libraries & headers, and
-the SDL_mixer library to compile.  Assuming they are present, type
-make in the src directory to build it.  An executable called u4 is
-created.
+the SDL_mixer library to compile.  TiMidity++ may be necessary on some
+platforms, too.  Assuming they are present, type make in the src
+directory to build it.  An executable called u4 is created.
 
 
 RUNNING
@@ -131,9 +139,12 @@ RUNNING
 The actual data files from Ultima 4 are loaded at runtime, which means
 that a copy of Ultima 4 for DOS must be present at runtime.
 Fortunately, Ultima IV is available as closed-source freeware on the
-internet (legally). It is available at
+internet (legally).  A copy is mirrored at xu4.sourceforge.net.
+
+It is also available from
 http://www.zip.com.au/~mfleming/ultima/u4download.html,
-http://members.tripod.com/~hardwire1/ultima4.zip, or
+http://members.tripod.com/~hardwire1/ultima4.zip, 
+http://www.members.aol.com/tommage/UltimaPage/ultima4.zip, or
 http://www.nightfall.org/~deep/ultima/main.html among many other
 sites.
 
@@ -144,6 +155,15 @@ Once downloaded, it must be unzipped in one of four places:
  - "/usr/local/lib/u4/ultima4/"
 
 As of version 0.02, xu4 can handle uppercase or lowercase filenames.
+
+xu4 accepts the following command line options:
+ -f       - fullscreen mode
+ -i       - skip the intro, go directly into the game
+ -q       - quiet mode - no music
+ -scale n - scale the original graphics by a factor of n; two special
+            scalers called 2xSaI and 2xBi can also be specified
+ -v       - verbose output; prints out information useful for
+            troubleshooting
 
 
 ULTIMA 4 DOCUMENTATION
@@ -168,10 +188,8 @@ http://www.dengler.net/xedragon/hrump/
 MISC
 ----
 
-Here are a few interesting Ultima IV links:
-http://www.gamespy.com/legacy/halloffame/u4.shtm
-http://www.uo.com/archive/ultima4/walk/
-http://www.game-revolution.com/games/codes/pc/ultima4_walk.htm
+See http://xu4.sourceforge.net/links.html for some other interesting
+Ultima IV related links.
 
 Please send me a mail at andrewtaylor@users.sourceforge.net if you are
 interested in helping.
