@@ -2,157 +2,157 @@
 <!DOCTYPE tiles SYSTEM "dtd/tiles.dtd">
 <!-- $Id$ -->
 <tiles>
-    <tile cantwalkon="all" swimable="true" sailable="true" animated="true"/> <!-- sea -->
-    <tile cantwalkon="all" swimable="true" sailable="true" animated="true"/> <!-- water -->
-    <tile cantwalkon="all" swimable="true" animated="true"/> <!-- shallows -->
-    <tile speed="slow" effect="poison"/> <!-- swamp -->
-    <tile canlandballoon="true" replacement="true"/> <!-- grass -->
-    <tile speed="vslow" replacement="true"/> <!-- brush -->
-    <tile speed="vslow" opaque="true" replacement="true"/> <!-- forest -->
-    <tile speed="vvslow" replacement="true"/> <!-- hills -->
-    <tile cantwalkon="all" opaque="true" unflyable="true" monsterunwalkable="true"/> <!-- mountains -->
+    <tile rule="water" animated="true"/> <!-- sea -->
+    <tile rule="water" animated="true"/> <!-- water -->
+    <tile rule="shallows" animated="true"/> <!-- shallows -->
+    <tile rule="swamp"/> <!-- swamp -->
+    <tile rule="grass"/> <!-- grass -->
+    <tile rule="brush"/> <!-- brush -->
+    <tile rule="brush"/> <!-- forest -->
+    <tile rule="hills"/> <!-- hills -->
+    <tile rule="mountains"/> <!-- mountains -->
     <tile/> <!-- dungeon -->
     <tile/> <!-- city -->
     <tile/> <!-- castle -->
     <tile/> <!-- town -->
-    <tile cantwalkon="all" monsterunwalkable="true"/> <!-- lcb1 -->
-    <tile cantwalkon="south" cantwalkoff="north" monsterunwalkable="true"/> <!-- lcb2 -->
-    <tile cantwalkon="all" monsterunwalkable="true"/> <!-- lcb3 -->
-    <tile ship="true" monsterunwalkable="true"/> <!-- west ship -->
-    <tile ship="true" monsterunwalkable="true"/> <!-- north ship -->
-    <tile ship="true" monsterunwalkable="true"/> <!-- east ship -->
-    <tile ship="true" monsterunwalkable="true"/> <!-- south ship -->
-    <tile horse="true" monsterunwalkable="true"/> <!-- west horse -->
-    <tile horse="true" monsterunwalkable="true"/> <!-- east horse -->
-    <tile replacement="true"/> <!-- hex -->
+    <tile rule="lcb"/> <!-- lcb1 -->
+    <tile rule="lcb_entrance"/> <!-- lcb2 -->
+    <tile rule="lcb"/> <!-- lcb3 -->
+    <tile rule="ship"/> <!-- west ship -->
+    <tile rule="ship"/> <!-- north ship -->
+    <tile rule="ship"/> <!-- east ship -->
+    <tile rule="ship"/> <!-- south ship -->
+    <tile rule="horse"/> <!-- west horse -->
+    <tile rule="horse"/> <!-- east horse -->
+    <tile rule="floors"/> <!-- dungeon floor -->
     <tile/> <!-- bridge -->
-    <tile balloon="true" monsterunwalkable="true"/> <!-- balloon -->
+    <tile rule="balloon"/> <!-- balloon -->
     <tile/> <!-- nbridge -->
     <tile/> <!-- sbridge -->
     <tile/> <!-- uladder -->
     <tile/> <!-- dladder -->
     <tile/> <!-- ruins -->
     <tile/> <!-- shrine -->
-    <tile cantwalkon="all"/> <!-- avatar -->
-    <tile cantwalkon="all"/> <!-- mage1 -->
-    <tile cantwalkon="all"/> <!-- mage2 -->
-    <tile cantwalkon="all"/> <!-- bard1 -->
-    <tile cantwalkon="all"/> <!-- bard2 -->
-    <tile cantwalkon="all"/> <!-- fighter1 -->
-    <tile cantwalkon="all"/> <!-- fighter2 -->
-    <tile cantwalkon="all"/> <!-- druid1 -->
-    <tile cantwalkon="all"/> <!-- druid2 -->
-    <tile cantwalkon="all"/> <!-- tinker1 -->
-    <tile cantwalkon="all"/> <!-- tinker2 -->
-    <tile cantwalkon="all"/> <!-- paladin1 -->
-    <tile cantwalkon="all"/> <!-- paladin2 -->
-    <tile cantwalkon="all"/> <!-- ranger1 -->
-    <tile cantwalkon="all"/> <!-- ranger2 -->
-    <tile cantwalkon="all"/> <!-- shepherd1 -->
-    <tile cantwalkon="all"/> <!-- shepherd2 -->
-    <tile cantwalkon="all"/> <!-- column -->
-    <tile cantwalkon="all" canattackover="true"/> <!-- solid SW -->
-    <tile cantwalkon="all" canattackover="true"/> <!-- solid SE -->
-    <tile cantwalkon="all" canattackover="true"/> <!-- solid NW -->
-    <tile cantwalkon="all" canattackover="true"/> <!-- solid NE -->
-    <tile cantwalkon="all"/> <!-- shipmast -->
-    <tile cantwalkon="all"/> <!-- shipwheel -->
-    <tile cantwalkon="all"/> <!-- rocks -->
-    <tile cantwalkon="all"/> <!-- corpse -->
-    <tile cantwalkon="all" unflyable="true"/> <!-- stonewall -->
-    <tile cantwalkon="all" lockeddoor="true"/> <!-- ldoor -->
-    <tile cantwalkon="all" door="true"/> <!-- door -->
-    <tile chest="true"/> <!-- chest -->
-    <tile cantwalkon="all"/> <!-- ankh -->
-    <tile replacement="true"/> <!-- brickfloor -->
-    <tile replacement="true"/> <!-- woodfloor -->
-    <tile cantwalkon="all"/> <!-- mgate0 -->
-    <tile cantwalkon="all"/> <!-- mgate1 -->
-    <tile cantwalkon="all"/> <!-- mgate2 -->
+    <tile rule="person"/> <!-- avatar -->
+    <tile rule="person"/> <!-- mage1 -->
+    <tile rule="person"/> <!-- mage2 -->
+    <tile rule="person"/> <!-- bard1 -->
+    <tile rule="person"/> <!-- bard2 -->
+    <tile rule="person"/> <!-- fighter1 -->
+    <tile rule="person"/> <!-- fighter2 -->
+    <tile rule="person"/> <!-- druid1 -->
+    <tile rule="person"/> <!-- druid2 -->
+    <tile rule="person"/> <!-- tinker1 -->
+    <tile rule="person"/> <!-- tinker2 -->
+    <tile rule="person"/> <!-- paladin1 -->
+    <tile rule="person"/> <!-- paladin2 -->
+    <tile rule="person"/> <!-- ranger1 -->
+    <tile rule="person"/> <!-- ranger2 -->
+    <tile rule="person"/> <!-- shepherd1 -->
+    <tile rule="person"/> <!-- shepherd2 -->
+    <tile rule="solid"/> <!-- column -->
+    <tile rule="solid_attackover"/> <!-- solid SW -->
+    <tile rule="solid_attackover"/> <!-- solid SE -->
+    <tile rule="solid_attackover"/> <!-- solid NW -->
+    <tile rule="solid_attackover"/> <!-- solid NE -->
+    <tile rule="solid"/> <!-- shipmast -->
+    <tile rule="solid"/> <!-- shipwheel -->
+    <tile rule="solid"/> <!-- rocks -->
+    <tile rule="solid"/> <!-- corpse -->
+    <tile rule="walls"/> <!-- stonewall -->
+    <tile rule="locked_door"/> <!-- ldoor -->
+    <tile rule="door"/> <!-- door -->
+    <tile rule="chest"/> <!-- chest -->
+    <tile rule="solid"/> <!-- ankh -->
+    <tile rule="floors"/> <!-- brickfloor -->
+    <tile rule="floors"/> <!-- woodfloor -->
+    <tile rule="solid"/> <!-- mgate0 -->
+    <tile rule="solid"/> <!-- mgate1 -->
+    <tile rule="solid"/> <!-- mgate2 -->
     <tile/> <!-- mgate3 -->
-    <tile effect="poisonField" animated="true" dispel="true"/> <!-- poison field -->
-    <tile cantwalkon="all" effect="electricity" monsterunwalkable="true" unflyable="true" animated="true" dispel="true"/> <!-- energy field -->
-    <tile speed="vvslow" effect="fire" animated="true" dispel="true"/> <!-- fire field -->
-    <tile effect="sleep" animated="true" dispel="true"/> <!-- sleep field -->
-    <tile cantwalkon="all" canattackover="true"/> <!-- solid -->
+    <tile rule="poison_field" animated="true"/> <!-- poison field -->
+    <tile rule="energy_field" animated="true"/> <!-- energy field -->
+    <tile rule="fire_field" animated="true"/> <!-- fire field -->
+    <tile rule="sleep_field" animated="true"/> <!-- sleep field -->
+    <tile rule="solid_attackover"/> <!-- solid -->
     <tile opaque="true"/> <!-- secret door -->
     <tile/> <!-- altar -->
-    <tile cantwalkon="all"/> <!-- roast -->
-    <tile animated="true" effect="lava"/> <!-- lava -->
+    <tile rule="solid"/> <!-- roast -->
+    <tile rule="lava"/> <!-- lava -->
     <tile/> <!-- miss flash -->
     <tile/> <!-- magic flash -->
     <tile/> <!-- hit flash -->
-    <tile cantwalkon="all"/> <!-- guard1 -->
-    <tile cantwalkon="all"/> <!-- guard2 -->
-    <tile cantwalkon="all"/> <!-- villager1 -->
-    <tile cantwalkon="all"/> <!-- villager2 -->
-    <tile cantwalkon="all"/> <!-- bard1 -->
-    <tile cantwalkon="all"/> <!-- bard2 -->
-    <tile cantwalkon="all"/> <!-- bard1 -->
-    <tile cantwalkon="all"/> <!-- bard2 -->
-    <tile cantwalkon="all"/> <!-- jester1 -->
-    <tile cantwalkon="all"/> <!-- jester2 -->
-    <tile cantwalkon="all"/> <!-- beggar1 -->
-    <tile cantwalkon="all"/> <!-- beggar2 -->
-    <tile cantwalkon="all"/> <!-- bull1 -->
-    <tile cantwalkon="all"/> <!-- bull2 -->
-    <tile cantwalkon="all"/> <!-- lordbritish1 -->
-    <tile cantwalkon="all"/> <!-- lordbritish2 -->
-    <tile cantwalkon="all" talkover="true"/> <!-- A -->
-    <tile cantwalkon="all" talkover="true"/> <!-- B -->
-    <tile cantwalkon="all" talkover="true"/> <!-- C -->
-    <tile cantwalkon="all" talkover="true"/> <!-- D -->
-    <tile cantwalkon="all" talkover="true"/> <!-- E -->
-    <tile cantwalkon="all" talkover="true"/> <!-- F -->
-    <tile cantwalkon="all" talkover="true"/> <!-- G -->
-    <tile cantwalkon="all" talkover="true"/> <!-- H -->
-    <tile cantwalkon="all" talkover="true"/> <!-- I -->
-    <tile cantwalkon="all" talkover="true"/> <!-- J -->
-    <tile cantwalkon="all" talkover="true"/> <!-- K -->
-    <tile cantwalkon="all" talkover="true"/> <!-- L -->
-    <tile cantwalkon="all" talkover="true"/> <!-- M -->
-    <tile cantwalkon="all" talkover="true"/> <!-- N -->
-    <tile cantwalkon="all" talkover="true"/> <!-- O -->
-    <tile cantwalkon="all" talkover="true"/> <!-- P -->
-    <tile cantwalkon="all" talkover="true"/> <!-- Q -->
-    <tile cantwalkon="all" talkover="true"/> <!-- R -->
-    <tile cantwalkon="all" talkover="true"/> <!-- S -->
-    <tile cantwalkon="all" talkover="true"/> <!-- T -->
-    <tile cantwalkon="all" talkover="true"/> <!-- U -->
-    <tile cantwalkon="all" talkover="true"/> <!-- V -->
-    <tile cantwalkon="all" talkover="true"/> <!-- W -->
-    <tile cantwalkon="all" talkover="true"/> <!-- X -->
-    <tile cantwalkon="all" talkover="true"/> <!-- Y -->
-    <tile cantwalkon="all" talkover="true"/> <!-- Z -->
-    <tile cantwalkon="all" talkover="true"/> <!-- space -->
-    <tile cantwalkon="all"/> <!-- right -->
-    <tile cantwalkon="all"/> <!-- left -->
-    <tile cantwalkon="all"/> <!-- window -->
-    <tile cantwalkon="all"/> <!-- blank -->
-    <tile cantwalkon="all" opaque="true" unflyable="true"/> <!-- brickwall -->
+    <tile rule="person"/> <!-- guard1 -->
+    <tile rule="person"/> <!-- guard2 -->
+    <tile rule="person"/> <!-- villager1 -->
+    <tile rule="person"/> <!-- villager2 -->
+    <tile rule="person"/> <!-- bard1 -->
+    <tile rule="person"/> <!-- bard2 -->
+    <tile rule="person"/> <!-- bard1 -->
+    <tile rule="person"/> <!-- bard2 -->
+    <tile rule="person"/> <!-- jester1 -->
+    <tile rule="person"/> <!-- jester2 -->
+    <tile rule="person"/> <!-- beggar1 -->
+    <tile rule="person"/> <!-- beggar2 -->
+    <tile rule="person"/> <!-- bull1 -->
+    <tile rule="person"/> <!-- bull2 -->
+    <tile rule="person"/> <!-- lordbritish1 -->
+    <tile rule="person"/> <!-- lordbritish2 -->
+    <tile rule="signs"/> <!-- A -->
+    <tile rule="signs"/> <!-- B -->
+    <tile rule="signs"/> <!-- C -->
+    <tile rule="signs"/> <!-- D -->
+    <tile rule="signs"/> <!-- E -->
+    <tile rule="signs"/> <!-- F -->
+    <tile rule="signs"/> <!-- G -->
+    <tile rule="signs"/> <!-- H -->
+    <tile rule="signs"/> <!-- I -->
+    <tile rule="signs"/> <!-- J -->
+    <tile rule="signs"/> <!-- K -->
+    <tile rule="signs"/> <!-- L -->
+    <tile rule="signs"/> <!-- M -->
+    <tile rule="signs"/> <!-- N -->
+    <tile rule="signs"/> <!-- O -->
+    <tile rule="signs"/> <!-- P -->
+    <tile rule="signs"/> <!-- Q -->
+    <tile rule="signs"/> <!-- R -->
+    <tile rule="signs"/> <!-- S -->
+    <tile rule="signs"/> <!-- T -->
+    <tile rule="signs"/> <!-- U -->
+    <tile rule="signs"/> <!-- V -->
+    <tile rule="signs"/> <!-- W -->
+    <tile rule="signs"/> <!-- X -->
+    <tile rule="signs"/> <!-- Y -->
+    <tile rule="signs"/> <!-- Z -->
+    <tile rule="signs"/> <!-- space -->
+    <tile rule="spacers"/> <!-- right -->
+    <tile rule="spacers"/> <!-- left -->
+    <tile rule="spacers"/> <!-- window -->
+    <tile rule="spacers"/> <!-- blank -->
+    <tile rule="walls" opaque="true"/> <!-- brickwall -->
 
     <!-- Dungeon tiles: * == 0-F -->
-    <dngTile displayTile="62" replacement="true"/> <!-- corridor (0x00) -->
+    <dngTile displayTile="62" rule="floors"/> <!-- corridor (0x00) -->
     <dngTile displayTile="27"/> <!-- ladder up (0x10) -->
     <dngTile displayTile="28"/> <!-- ladder down (0x20) -->
     <dngTile displayTile="27"/> <!-- ladder up/down (0x30) -->
-    <dngTile displayTile="60" chest="true"/> <!-- chest (0x40) -->
+    <dngTile displayTile="60" rule="chest"/> <!-- chest (0x40) -->
     <dngTile displayTile="62"/> <!-- hole (ceiling) (0x50) -->
     <dngTile displayTile="62"/> <!-- hole (floor) (0x60) -->
     <dngTile displayTile="78"/> <!-- magic orb (0x70) -->
     <dngTile displayTile="62"/> <!-- trap (0x8*) -->
     <dngTile displayTile="0"/> <!-- fountain (0x9*) -->
     
-    <dngTile displayTile="68" dispel="true" effect="poisonField"> <!-- magic field     (0xA*) -->
-        <dngTile displayTile="68" dispel="true" effect="poisonField"/> <!-- poison field (0xA0) -->
-        <dngTile displayTile="69" dispel="true" effect="electricity" cantwalkon="all"/> <!-- energy field (0xA1) -->
-        <dngTile displayTile="70" dispel="true" effect="fire"/> <!-- fire field (0xA2) -->
-        <dngTile displayTile="71" dispel="true" effect="sleep"/> <!-- sleep field (0xA3) -->
+    <dngTile displayTile="68"> <!-- magic field     (0xA*) -->
+        <dngTile displayTile="68" rule="poison_field"/> <!-- poison field (0xA0) -->
+        <dngTile displayTile="69" rule="energy_field"/> <!-- energy field (0xA1) -->
+        <dngTile displayTile="70" rule="fire_field"/> <!-- fire field (0xA2) -->
+        <dngTile displayTile="71" rule="sleep_field"/> <!-- sleep field (0xA3) -->
     </dngTile>
 
-    <dngTile displayTile="74" monsterunwalkable="true"/> <!-- altar (0xB0) -->
-    <dngTile displayTile="59" cantwalkon="retreat"/> <!-- door (0xC0) -->
-    <dngTile displayTile="72" monsterunwalkable="true" cantwalkon="retreat"/> <!-- dungeon room (0xD*) -->    
+    <dngTile displayTile="74" rule="dng_altar"/> <!-- altar (0xB0) -->
+    <dngTile displayTile="59" rule="dng_door"/> <!-- door (0xC0) -->
+    <dngTile displayTile="72" rule="dng_room"/> <!-- dungeon room (0xD*) -->    
     <dngTile displayTile="73"/> <!-- secret door (0xE0) -->
-    <dngTile displayTile="127" monsterunwalkable="true" cantwalkon="all"/> <!-- wall (0xF0) -->
+    <dngTile displayTile="127" rule="walls"/> <!-- wall (0xF0) -->
 </tiles>

@@ -86,14 +86,21 @@ typedef enum {
     ANIM_FOURFRAMES
 } TileAnimationStyle;
 
-typedef struct _Tile {
-    unsigned short mask;
+typedef struct _TileRule {
+    const char *name;
+    unsigned short mask;    
     unsigned short movementMask;
     TileSpeed speed;
     TileEffect effect;
     int walkonDirs;
     int walkoffDirs;
+} TileRule;
+
+typedef struct _Tile {    
     unsigned char displayTile;
+    unsigned char animated;
+    unsigned char opaque;
+    TileRule *rule;
 } Tile;
 
 int tileCanWalkOn(unsigned char tile, Direction d);
