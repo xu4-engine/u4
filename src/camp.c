@@ -181,7 +181,7 @@ void innTimer(void *data) {
     /* Is there a special encounter during your stay? */
     if (rand() % 8 == 0) {
         
-        const Map *map;
+        Map *map;
         Object *monsterObj;        
                 
         /* Rats seem much more rare than meeting rogues in the streets */

@@ -411,7 +411,7 @@ void mapRemoveObject(Map *map, Object *rem) {
  
             /* free the memory used by a non-standard person object */
             if (obj->objType == OBJECT_PERSON && !obj->person->permanent)
-                free(obj->person);            
+                free((Person *)obj->person);            
 
             free(obj);
             return;

@@ -17,7 +17,7 @@ typedef enum {
     CA_FLEE
 } CombatAction;
 
-void combatBegin(const struct _Map *map, struct _Object *monster);
+void combatBegin(struct _Map *map, struct _Object *monster, int isNormal);
 void combatFinishTurn(void);
 void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);

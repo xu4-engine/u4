@@ -71,7 +71,7 @@ int movePartyMember(Direction dir, int member);
 int combatChooseWeaponDir(int key, void *data);
 int combatChooseWeaponRange(int key, void *data);
 
-void combatBegin(const Map *map, Object *monster, int isNormal) {
+void combatBegin(Map *map, Object *monster, int isNormal) {
     int i, j;
     int nmonsters;
     const Monster *m = NULL;
