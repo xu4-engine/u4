@@ -12,7 +12,6 @@
 #include "context.h"
 #include "settings.h"
 
-int eventDone;
 SDL_TimerID timer;
 
 Uint32 eventCallback(Uint32 interval, void *param) {
@@ -35,8 +34,8 @@ void eventHandlerDelete() {
     SDL_RemoveTimer(timer);
 }
 
-void eventHandlerSleep(int usec) {
-    SDL_Delay(usec);
+void eventHandlerSleep(int usec) {    
+    SDL_Delay(usec);    
 }
 
 void eventHandlerMain(void (*updateScreen)(void)) {

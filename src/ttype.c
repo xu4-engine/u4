@@ -12,21 +12,22 @@
 #include "u4file.h"
 #include "context.h"
 
-#define MASK_OPAQUE      0x0001
-#define MASK_SWIMABLE    0x0002
-#define MASK_SAILABLE    0x0004
-#define MASK_ANIMATED    0x0008
-#define MASK_UNFLYABLE   0x0010
-#define MASK_SHIP        0x0020
-#define MASK_HORSE       0x0040
-#define MASK_BALLOON     0x0080
-#define MASK_DISPEL      0x0100
+#define MASK_OPAQUE             0x0001
+#define MASK_SWIMABLE           0x0002
+#define MASK_SAILABLE           0x0004
+#define MASK_ANIMATED           0x0008
+#define MASK_UNFLYABLE          0x0010
+#define MASK_SHIP               0x0020
+#define MASK_HORSE              0x0040
+#define MASK_BALLOON            0x0080
+#define MASK_DISPEL             0x0100
 #define MASK_MONSTER_UNWALKABLE 0x0200
-#define MASK_TALKOVER    0x0400
-#define MASK_DOOR        0x0800
-#define MASK_LOCKEDDOOR  0x1000
-#define MASK_CHEST       0x2000
-#define MASK_ATTACKOVER  0x4000
+#define MASK_TALKOVER           0x0400
+#define MASK_DOOR               0x0800
+#define MASK_LOCKEDDOOR         0x1000
+#define MASK_CHEST              0x2000
+#define MASK_ATTACKOVER         0x4000
+#define MASK_CANLANDBALLOON     0x8000
 
 /* tile values 0-127 */
 int tileInfoLoaded = 0;
@@ -66,7 +67,8 @@ void tileLoadInfoFromXml() {
         { "ship", MASK_SHIP, &baseShip },
         { "horse", MASK_HORSE, &baseHorse },
         { "balloon", MASK_BALLOON, &baseBalloon },
-        { "canattackover", MASK_ATTACKOVER, NULL }
+        { "canattackover", MASK_ATTACKOVER, NULL },
+        { "canlandballoon", MASK_CANLANDBALLOON, NULL }
     };
 
     tileInfoLoaded = 1;
@@ -204,6 +206,10 @@ int tileCanAttackOver(unsigned char tile) {
        All others must declare themselves */
     return tileIsWalkable(tile) || tileIsSwimable(tile) || tileIsSailable(tile) ||       
         tileTestBit(tile, MASK_ATTACKOVER);
+}
+
+int tileCanLandBalloon(unsigned char tile) {
+    return tileTestBit(tile, MASK_CANLANDBALLOON);
 }
 
 int tileIsWalkable(unsigned char tile) {

@@ -10,7 +10,9 @@
 #include "io.h"
 #include "object.h"
 
-#define MONSTERTABLE_SIZE 32
+#define MONSTERTABLE_SIZE           32
+#define MONSTERTABLE_MONSTERS_SIZE  8
+#define MONSTERTABLE_OBJECTS_SIZE   (MONSTERTABLE_SIZE - MONSTERTABLE_MONSTERS_SIZE)
 
 #define PARTY_SAV_BASE_FILENAME "party.sav"
 #define MONSTERS_SAV_BASE_FILENAME "monsters.sav"
@@ -406,24 +408,23 @@ void saveGamePlayerRecordInit(SaveGamePlayerRecord *record) {
 int saveGameMonstersWrite(const Object *objs, FILE *f) {
     const Object *obj;
     const Object *monsterTable[MONSTERTABLE_SIZE];
-    int anim, inanim;
-    int i;
-    int r;
+    
+    int nMonsters = 0;
+    int nObjects = 0;    
+    int i, r;
 
     memset((void *)monsterTable, 0, MONSTERTABLE_SIZE * sizeof(Object *));
-    anim = 0;
-    inanim = MONSTERTABLE_SIZE;
-    obj = objs;
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (obj) {
-            if (obj->tile >= 0x80)
-                monsterTable[anim++] = obj;
-            else
-                monsterTable[--inanim] = obj;
-            obj = obj->next;
-        }
-    }
 
+    for (obj = objs; obj != NULL; obj = obj->next) {
+        /* Read in the monsters first */
+        if ((obj->objType == OBJECT_MONSTER) && (nMonsters < MONSTERTABLE_MONSTERS_SIZE))
+            monsterTable[nMonsters++] = obj;
+        /* Add inanimate objects after the monster block in save file */
+        else if ((obj->objType == OBJECT_UNKNOWN) && (nObjects < MONSTERTABLE_OBJECTS_SIZE))
+            monsterTable[MONSTERTABLE_MONSTERS_SIZE + nObjects++] = obj;
+    }    
+
+    /* tile for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
             r = writeChar(monsterTable[i]->tile, f);
@@ -432,6 +433,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
         if (!r) return 0;
     }
         
+    /* x location for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
             r = writeChar(monsterTable[i]->x, f);
@@ -440,6 +442,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
         if (!r) return 0;
     }
         
+    /* y location for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
             r = writeChar(monsterTable[i]->y, f);
@@ -448,6 +451,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
         if (!r) return 0;
     }
         
+    /* previous tile for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
             r = writeChar(monsterTable[i]->prevtile, f);
@@ -456,6 +460,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
         if (!r) return 0;
     }
         
+    /* previous x location for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
             r = writeChar(monsterTable[i]->prevx, f);
@@ -464,6 +469,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
         if (!r) return 0;
     }
         
+    /* previous y location for each object */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (monsterTable[i])
             r = writeChar(monsterTable[i]->prevy, f);
@@ -472,12 +478,13 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
         if (!r) return 0;
     }
         
+    /* unused space */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (!writeChar(0, f))
             return 0;
-    }
+    }   
 
-    obj = objs;
+    /* unused space, part II */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (!writeChar(0, f))
             return 0;
@@ -489,7 +496,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
 int saveGameMonstersRead(Object **objs, FILE *f) {
     Object *obj;
     Object monsterTable[MONSTERTABLE_SIZE];
-    int i, inanim;
+    int i;
     unsigned char ch;
 
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
@@ -526,26 +533,26 @@ int saveGameMonstersRead(Object **objs, FILE *f) {
         monsterTable[i].prevy = ch;
     }
 
-    inanim = 1;
-    for (i = MONSTERTABLE_SIZE - 1; i >= 0; i--) {
-        if (monsterTable[i].tile != 0 &&
-            monsterTable[i].prevtile != 0) {
-            obj = (Object *) malloc(sizeof(Object));
-            obj->tile = monsterTable[i].tile;
-            obj->x = monsterTable[i].x;
-            obj->y = monsterTable[i].y;
-            obj->z = -1;
-            obj->prevtile = monsterTable[i].prevtile;
-            obj->prevx = monsterTable[i].prevx;
-            obj->prevy = monsterTable[i].prevy;
-            obj->movement_behavior = inanim ? MOVEMENT_FIXED : MOVEMENT_ATTACK_AVATAR;            
-            obj->objType = OBJECT_UNKNOWN;            
-            obj->hasFocus = 0;
-            obj->next = *objs;
-            *objs = obj;
-        } else
-            inanim = 0;
-    }
+    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
+        obj = (Object *) malloc(sizeof(Object));
+        obj->tile = monsterTable[i].tile;
+        obj->x = monsterTable[i].x;
+        obj->y = monsterTable[i].y;
+        obj->z = -1;
+        obj->prevtile = monsterTable[i].prevtile;
+        obj->prevx = monsterTable[i].prevx;
+        obj->prevy = monsterTable[i].prevy;
 
+        if (i < MONSTERTABLE_MONSTERS_SIZE)
+            obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+        else
+            obj->movement_behavior = MOVEMENT_FIXED;
+
+        obj->objType = OBJECT_UNKNOWN;
+        obj->hasFocus = 0;
+        obj->next = *objs;
+        *objs = obj;
+    }    
+    
     return 1;
 }

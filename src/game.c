@@ -558,8 +558,10 @@ int gameBaseKeyHandler(int key, void *data) {
             screenMessage("Land Balloon\n");
             if (c->saveGame->balloonstate == 0)
                 screenMessage("Already Landed!\n");
-            c->saveGame->balloonstate = 0;
-            c->opacity = 1;
+            else if (tileCanLandBalloon(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z))) {
+                c->saveGame->balloonstate = 0;
+                c->opacity = 1;
+            } else screenMessage("Not Here!\n");
         } else
             screenMessage("Descend what?\n");
         break;
@@ -1173,8 +1175,6 @@ int cmdHandleAnyKey(int key, void *data) {
 }
 
 int windCmdKeyHandler(int key, void *data) {
-    Direction dir;
-
     switch (key) {
     case U4_UP:
     case U4_LEFT:
@@ -1205,7 +1205,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     Object *obj, *under;
     unsigned char ground;
     Object *temp;
-    Monster *m;
+    const Monster *m;
 
     /* attack failed: finish up */
     if (x == -1 && y == -1) {
@@ -2132,8 +2132,9 @@ int moveAvatar(Direction dir, int userEvent) {
  * This function is called every quarter second.
  */
 void gameTimer(void *data) {
+    
+    Direction dir = DIR_WEST;  
 
-    Direction dir = DIR_WEST;
     if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
         if ((rand() % 4) == 1 && !windLock)
             c->windDirection = dirRandomDir(MASK_DIR_ALL);

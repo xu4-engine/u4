@@ -70,6 +70,7 @@ typedef enum {
 int tileCanWalkOn(unsigned char tile, Direction d);
 int tileCanWalkOff(unsigned char tile, Direction d);
 int tileCanAttackOver(unsigned char tile);
+int tileCanLandBalloon(unsigned char tile);
 int tileIsWalkable(unsigned char tile);
 int tileIsMonsterWalkable(unsigned char tile);
 int tileIsSwimable(unsigned char tile);
