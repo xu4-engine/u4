@@ -75,7 +75,10 @@ enum ImageFixup {
 /**
  * Image meta info.
  */
-struct ImageInfo {
+class ImageInfo {
+public:
+    ~ImageInfo();
+
     std::string name;
     std::string filename;
     int width, height, depth;
@@ -96,11 +99,11 @@ struct ImageInfo {
 class ImageMgr : Observer<Settings *> {
 public:
     static ImageMgr *getInstance();
+    static void destroy();
 
     ImageInfo *get(const std::string &name);
     SubImage *ImageMgr::getSubImage(const std::string &name);
     void freeIntroBackgrounds();
-    void freeAll();
     const std::vector<std::string> &getSetNames();
 
 private:
@@ -125,7 +128,6 @@ private:
     void update(Observable<Settings *> *o, Settings *newSettings);
 
     static ImageMgr *instance;
-    bool initialized;
     std::map<std::string, ImageSet *> imageSets;
     std::vector<std::string> imageSetNames;
     ImageSet *baseSet;

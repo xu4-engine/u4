@@ -85,12 +85,14 @@ class Shrine;
 class MapMgr {
 public:
     static MapMgr *getInstance();
+    static void destroy();
 
     Map *get(MapId id);
     Map *initMap(Map::Type type);
 
 private:
     MapMgr();
+    ~MapMgr();
 
     void registerMap(Map *map);
 

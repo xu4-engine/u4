@@ -38,6 +38,13 @@ MapMgr *MapMgr::getInstance() {
     return instance;
 }
 
+void MapMgr::destroy() {
+    if (instance != NULL) {
+        delete instance;
+        instance = NULL;
+    }
+}
+
 MapMgr::MapMgr() {
     logger = new Debug("debug/mapmgr.txt", "MapMgr"); 
     TRACE(*logger, "creating MapMgr");
@@ -52,6 +59,13 @@ MapMgr::MapMgr() {
         /* map actually gets loaded later, when it's needed */        
         registerMap(map);
     }
+}
+
+MapMgr::~MapMgr() {
+    for (vector<Map *>::iterator i = mapList.begin(); i != mapList.end(); i++)
+        delete *i;
+
+    delete logger;
 }
 
 Map *MapMgr::initMap(Map::Type type) {

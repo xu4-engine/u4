@@ -22,7 +22,10 @@ using std::vector;
 
 Image *screenScale(Image *src, int scale, int n, int filter);
 
-struct ImageSet {
+class ImageSet {
+public:
+    ~ImageSet();
+
     string name;
     string location;
     string extends;
@@ -32,11 +35,18 @@ struct ImageSet {
 ImageMgr *ImageMgr::instance = NULL;
 
 ImageMgr *ImageMgr::getInstance() {
-    if (instance == NULL)
+    if (instance == NULL) {
         instance = new ImageMgr();
-    if (!instance->initialized)
         instance->init();
+    }
     return instance;
+}
+
+void ImageMgr::destroy() {
+    if (instance != NULL) {
+        delete instance;
+        instance = NULL;
+    }
 }
 
 ImageMgr::ImageMgr() {
@@ -44,12 +54,15 @@ ImageMgr::ImageMgr() {
     TRACE(*logger, "creating ImageMgr");
 
     settings.addObserver(this);
-
-    initialized = false;
 }
 
 ImageMgr::~ImageMgr() {
     settings.deleteObserver(this);
+
+    for (map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++)
+        delete i->second;
+
+    delete logger;
 }
 
 void ImageMgr::init() {
@@ -95,7 +108,6 @@ void ImageMgr::init() {
         imageSetNames.push_back(set->first);
 
     update(NULL, &settings);
-    initialized = true;
 }
 
 ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
@@ -487,23 +499,6 @@ void ImageMgr::freeIntroBackgrounds() {
     }
 }
 
-/**
- * Free up all images
- */
-void ImageMgr::freeAll() {
-    for (std::map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++) {
-        ImageSet *set = i->second;
-        for (std::map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
-            ImageInfo *info = j->second;
-            if (info->image != NULL) {
-                delete info->image;                
-                info->image = NULL;
-            }
-        }
-    }
-    initialized = false;
-}
-
 const vector<string> &ImageMgr::getSetNames() {
     return imageSetNames;
 }
@@ -524,3 +519,17 @@ void ImageMgr::update(Observable<Settings *> *o, Settings *newSettings) {
     baseSet = getSet(setname);
 }
 
+ImageSet::~ImageSet() {
+    for (map<string, ImageInfo *>::iterator i = info.begin(); i != info.end(); i++) {
+        ImageInfo *imageInfo = i->second;
+        if (imageInfo->name != "screen")
+            delete imageInfo;
+    }
+}
+
+ImageInfo::~ImageInfo() {
+    for (map<string, SubImage *>::iterator i = subImages.begin(); i != subImages.end(); i++)
+        delete i->second;
+    if (image != NULL)
+        delete image;
+}
