@@ -5,6 +5,8 @@
 #ifndef TTYPE_H
 #define TTYPE_H
 
+#define SEA_TILE 0x0
+#define GRASS_TILE 0x4
 #define AVATAR_TILE 0x1f
 
 typedef enum {
