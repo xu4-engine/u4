@@ -1893,6 +1893,20 @@ int fireAtCoord(int x, int y, int distance, void *data) {
 int gameGetChest(int player) {
     Object *obj;
     unsigned char tile;
+    int basex, basey, x, y, z;
+    extern CombatInfo combatInfo;
+
+    /* FIXME: move to function */
+    if (c->location->context & CTX_COMBAT) {
+        basex = x = combatInfo.party[FOCUS].obj->x;
+        basey = y = combatInfo.party[FOCUS].obj->y;
+        z = combatInfo.party[FOCUS].obj->z;
+    }
+    else {
+        basex = x = c->location->x;
+        basey = y = c->location->y;
+        z = c->location->z;
+    }
     
     if ((player >= 0) && playerIsDisabled(c->saveGame, player)) {
         screenMessage("Disabled!\n");
@@ -1900,16 +1914,16 @@ int gameGetChest(int player) {
         return 0;
     }
 
-    if ((obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) != NULL)
+    if ((obj = mapObjectAt(c->location->map, x, y, z)) != NULL)
         tile = obj->tile;
     else
-        tile = mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
+        tile = mapTileAt(c->location->map, x, y, z);
     
     if (tileIsChest(tile)) {
         if (obj)
             mapRemoveObject(c->location->map, obj);
         else
-            annotationAdd(c->location->x, c->location->y, c->location->z, c->location->map->id, BRICKFLOOR_TILE);        
+            annotationAdd(x, y, z, c->location->map->id, BRICKFLOOR_TILE); 
         
         getChestTrapHandler(player);
         screenMessage("The Chest Holds: %d Gold\n", playerGetChest(c->saveGame));

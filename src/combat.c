@@ -44,6 +44,8 @@ int combatChooseWeaponDir(int key, void *data);
 int combatChooseWeaponRange(int key, void *data);
 void combatApplyMonsterTileEffects(void);
 int combatDivideMonster(const Object *monster);
+int combatNearestPartyMember(const Object *obj, int *dist);
+int combatHideOrShowCamouflageMonster(Object *monster);
 
 /**
  * Initializes the CombatInfo structure with combat information
@@ -670,6 +672,10 @@ int combatBaseKeyHandler(int key, void *data) {
         }
         break;
 
+    case 'g':
+        gameGetChest(FOCUS);
+        break;
+
     case 'l':
         if (settings->debug) {
             screenMessage("\nLocation:\nx:%d\ny:%d\nz:%d\n", 
@@ -705,8 +711,7 @@ int combatBaseKeyHandler(int key, void *data) {
     case 'b':
     case 'e':
     case 'd':
-    case 'f':
-    case 'g':
+    case 'f':    
     case 'h':
     case 'i':
     case 'j':
@@ -1173,31 +1178,7 @@ void combatMoveMonsters() {
         }
 
         /* default action */
-        action = CA_ATTACK;
-
-        /* let's see if the monster blends into the background, or if he appears... */
-        if (monsterCamouflages(m)) {            
-            int member, nearest = 0, dist, leastDist = 0xFFFF;
-
-            /* find the nearest party member */
-            /* FIXME: move to function */
-            for (member = 0; member < c->saveGame->members; member++) {
-                if (party[member].obj) {
-                    dist = mapMovementDistance(monsters[i].obj->x, monsters[i].obj->y,
-                                               party[member].obj->x, party[member].obj->y);
-                    if (dist < leastDist) {
-                        nearest = member;
-                        leastDist = dist;
-                    }
-                }
-            }
-
-            /* ok, now we've got the nearest party member.  Now, see if they're close enough */
-            if ((leastDist <= 5) && !monsters[i].obj->isVisible)
-                action = CA_SHOW; /* show yourself! */           
-            else if (leastDist > 5)
-                action = CA_HIDE; /* hide and take no action! */
-        }
+        action = CA_ATTACK;        
 
         /* if the monster doesn't have something specific to do yet, let's try to find something! */
         if (action == CA_ATTACK) {
@@ -1227,6 +1208,10 @@ void combatMoveMonsters() {
 
         if (action == CA_ATTACK && distance > 1)
             action = CA_ADVANCE;
+
+        /* let's see if the monster blends into the background, or if he appears... */
+        if (monsterCamouflages(m) && !combatHideOrShowCamouflageMonster(monsters[i].obj))
+            continue; /* monster is hidden -- no action! */
 
         switch(action) {
         case CA_ATTACK:
@@ -1684,4 +1669,48 @@ int combatDivideMonster(const Object *obj) {
         }        
     }
     return 0;
+}
+
+/**
+ * Returns the id of the nearest party member (0-8)
+ * and fills 'dist' with the distance
+ */
+int combatNearestPartyMember(const Object *obj, int *dist) {
+    int member, nearest = -1, d, leastDist = 0xFFFF;
+    PartyCombatInfo *party = combatInfo.party;
+
+    for (member = 0; member < c->saveGame->members; member++) {
+        if (party[member].obj) {
+            d = mapMovementDistance(obj->x, obj->y, party[member].obj->x, party[member].obj->y);
+            if (d < leastDist) {
+                nearest = member;
+                leastDist = d;
+            }
+        }
+    }
+
+    if (nearest >= 0)
+        *dist = leastDist;
+
+    return nearest;
+}
+
+/**
+ * Hides or shows a camouflaged monster, depending on its distance from
+ * the nearest party member
+ */
+int combatHideOrShowCamouflageMonster(Object *monster) {
+    /* find the nearest party member */
+    int dist;
+    int nearestMember = combatNearestPartyMember(monster, &dist);
+
+    /* ok, now we've got the nearest party member.  Now, see if they're close enough */
+    if (nearestMember >= 0) {
+        if ((dist < 5) && !monster->isVisible)
+            monster->isVisible = 1; /* show yourself */
+        else if (dist >= 5)
+            monster->isVisible = 0; /* hide and take no action! */
+    }
+
+    return monster->isVisible;
 }
