@@ -60,14 +60,26 @@ void screenMessage(const char *fmt, ...) {
 
     screenHideCursor();
 
-    // scroll the message area, if necessary
+    /* scroll the message area, if necessary */
     if (c->line == 12) {
         screenScrollMessageArea();
         c->line--;
     }
 
     for (i = 0; i < strlen(buffer); i++) {
-        wordlen = strcspn(buffer + i, " \t\n");
+        wordlen = strcspn(buffer + i, " \b\t\n");
+
+        /* backspace */
+        if (buffer[i] == '\b') {
+            c->col--;
+            if (c->col < 0) {
+                c->col += 16;
+                c->line--;
+            }
+            continue;
+        }
+
+        /* check for word wrap */
         if ((c->col + wordlen > 16) || buffer[i] == '\n' || c->col == 16) {
             if (buffer[i] == '\n' || buffer[i] == ' ')
                 i++;
@@ -76,6 +88,13 @@ void screenMessage(const char *fmt, ...) {
             screenMessage(buffer + i);
             return;
         }
+
+        /* code for move cursor right */
+        if (buffer[i] == 0x12) {
+            c->col++;
+            continue;
+        }
+        
         screenShowChar(buffer[i], TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
         c->col++;
     }
