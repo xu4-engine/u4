@@ -10,6 +10,9 @@
 #define BRUSH_TILE 0x5
 #define FOREST_TILE 0x6
 #define HILLS_TILE 0x7
+#define BRIDGE_TILE 0x17
+#define NORTHBRIDGE_TILE 0x19
+#define SOUTHBRIDGE_TILE 0x1a
 #define AVATAR_TILE 0x1f
 #define CHEST_TILE 0x3c
 #define BRICKFLOOR_TILE 0x3e
