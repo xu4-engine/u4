@@ -83,23 +83,6 @@ int personInit() {
     return 1;
 }
 
-void personInitType(Person *p) {
-    p->vendorIndex = 0;
-
-    if (p->tile0 == 94 && p->startx == 19 && p->starty == 7)
-        p->npcType = NPC_LORD_BRITISH;
-    else if (p->name == NULL && p->tile0 == 82 && p->startx == 9 && p->starty == 27)
-        p->npcType = NPC_HAWKWIND;
-    else if (p->name == NULL && p->tile0 == 83 && p->startx == 5 && p->starty == 2) {
-        p->npcType = NPC_VENDOR_WEAPONS;
-        p->vendorIndex = 0;
-    }
-    else if (p->name != NULL)
-        p->npcType = NPC_TALKER;
-    else
-        p->npcType = NPC_EMPTY;
-}
-
 void personGetConversationText(Conversation *cnv, const char *inquiry, char **response) {
     switch (cnv->state) {
     case CONV_INTRO:
@@ -136,17 +119,9 @@ void personGetIntroduction(Conversation *cnv, char **intro) {
 
     switch (cnv->talker->npcType) {
 
-    case NPC_LORD_BRITISH:
-        *intro = malloc(strlen(lbFmt) - 2 + strlen(c->saveGame->players[0].name) + 1);
-        sprintf(*intro, lbFmt, c->saveGame->players[0].name);
-        cnv->state = CONV_TALK;
-        break;
-
-    case NPC_HAWKWIND:
-        *intro = malloc(strlen(hwFmt) - 8 + strlen(hawkwindText[HW_WELCOME]) + strlen(c->saveGame->players[0].name) + 
-                        strlen(hawkwindText[HW_GREETING1]) + strlen(hawkwindText[HW_GREETING2]) + 1);
-        sprintf(*intro, hwFmt, hawkwindText[HW_WELCOME], c->saveGame->players[0].name, hawkwindText[HW_GREETING1], hawkwindText[HW_GREETING2]);
-        cnv->state = CONV_TALK;
+    case NPC_EMPTY:
+        *intro = strdup("Funny, no response!");
+        cnv->state = CONV_DONE;
         break;
 
     case NPC_VENDOR_WEAPONS:
@@ -161,15 +136,50 @@ void personGetIntroduction(Conversation *cnv, char **intro) {
         cnv->state = CONV_BUYSELL;
         break;
 
-    case NPC_EMPTY:
-        *intro = strdup("");
+    case NPC_VENDOR_ARMOR:
+        *intro = strdup("I am an armor vendor!\n");
         cnv->state = CONV_DONE;
         break;
 
+    case NPC_VENDOR_FOOD:
+        *intro = strdup("I am a food vendor!\n");
+        cnv->state = CONV_DONE;
+        break;
+
+    case NPC_VENDOR_TAVERN:
+        *intro = strdup("I am a tavern keeper!\n");
+        cnv->state = CONV_DONE;
+        break;
+
+    case NPC_VENDOR_REAGENTS:
+        *intro = strdup("I am a reagent vendor!\n");
+        cnv->state = CONV_DONE;
+        break;
+
+    case NPC_VENDOR_HEALER:
+        *intro = strdup("I am a healer!\n");
+        cnv->state = CONV_DONE;
+        break;
+
+    case NPC_VENDOR_INN:
+        *intro = strdup("I am a inn keeper!\n");
+        cnv->state = CONV_DONE;
+        break;
+
+    case NPC_VENDOR_GUILD:
+        *intro = strdup("I am a guild vendor!\n");
+        cnv->state = CONV_DONE;
+        break;
+
+    case NPC_VENDOR_STABLE:
+        *intro = strdup("I am a horse vendor!\n");
+        cnv->state = CONV_DONE;
+        break;
 
     case NPC_TALKER:
-    case NPC_TALKER_COMPANION:
     case NPC_TALKER_BEGGAR:
+    case NPC_TALKER_GUARD:
+    case NPC_TALKER_COMPANION:
         personGetPrompt(cnv, &prompt);
         *intro = malloc(strlen(fmt) - 8 + strlen(cnv->talker->description) + strlen(cnv->talker->pronoun) + strlen(cnv->talker->name) + strlen(prompt) + 1);
 
@@ -177,6 +187,19 @@ void personGetIntroduction(Conversation *cnv, char **intro) {
         if (isupper((*intro)[9]))
             (*intro)[9] = tolower((*intro)[9]);
         free(prompt);
+        cnv->state = CONV_TALK;
+        break;
+
+    case NPC_LORD_BRITISH:
+        *intro = malloc(strlen(lbFmt) - 2 + strlen(c->saveGame->players[0].name) + 1);
+        sprintf(*intro, lbFmt, c->saveGame->players[0].name);
+        cnv->state = CONV_TALK;
+        break;
+
+    case NPC_HAWKWIND:
+        *intro = malloc(strlen(hwFmt) - 8 + strlen(hawkwindText[HW_WELCOME]) + strlen(c->saveGame->players[0].name) + 
+                        strlen(hawkwindText[HW_GREETING1]) + strlen(hawkwindText[HW_GREETING2]) + 1);
+        sprintf(*intro, hwFmt, hawkwindText[HW_WELCOME], c->saveGame->players[0].name, hawkwindText[HW_GREETING1], hawkwindText[HW_GREETING2]);
         cnv->state = CONV_TALK;
         break;
 
