@@ -12,6 +12,7 @@
 #include "event.h"
 #include "image.h"
 #include "intro.h"
+#include "list.h"
 #include "rle.h"
 #include "savegame.h"
 #include "settings.h"
@@ -35,7 +36,6 @@ void fixupAbyssVision(Image *im);
 void screenFreeIntroBackground();
 int screenLoadTiles();
 int screenLoadGemTiles();
-int screenLoadCharSet();
 int screenLoadPaletteEga();
 int screenLoadPaletteVga(const char *filename);
 Image *screenScaleDown(Image *src, int scale);
@@ -43,66 +43,35 @@ Image *screenScaleDown(Image *src, int scale);
 SDL_Surface *screen;
 Image *bkgds[BKGD_MAX];
 Image *dngGraphic[56];
-Image *tiles, *charset, *gemtiles;
+Image *tiles, *gemtiles;
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
 int scale;
 Scaler filterScaler;
 
-const struct {
-    const char *filename, *filenameOld;
-    int width, height;
-    int hasVga;
-    CompressionType comp;
-    int filter;
-    int introAnim;
-    void (*fixup)(Image *);     /* can do any needed fixups before image gets scaled and filtered */
-} backgroundInfo[] = {
-    /* main game borders */
-    { "start.ega",    "start.old", 320, 200, 1, COMP_RLE, 1, 0 },
+typedef enum {
+    FIXUP_NONE,
+    FIXUP_INTRO,
+    FIXUP_INTRO_EXTENDED,
+    FIXUP_ABYSS
+} ImageFixup;
 
-    /* introduction screen images */
-    { "title.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, &fixupIntro },
-    { "title.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, &fixupIntroExtended },
-    { "tree.ega",     NULL, 320, 200, 0, COMP_LZW, 1, 1 },
-    { "portal.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1 },
-    { "outside.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1 },
-    { "inside.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1 },
-    { "wagon.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1 },
-    { "gypsy.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1 },
-    { "abacus.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1 },
-    { "honcom.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1 },
-    { "valjus.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1 },
-    { "sachonor.ega", NULL, 320, 200, 0, COMP_LZW, 1, 1 },
-    { "spirhum.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1 },
-    { "animate.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+typedef struct {
+    int id;
+    const char *filename;
+    int width, height, depth;
+    CompressionType filetype;
+    int tiles;
+    int introOnly;
+    ImageFixup fixup;
+} ImageInfo;
 
-    /* abyss vision images */
-    { "key7.ega",     "key7.old",     320, 200, 1, COMP_RLE, 1, 0 },
-    { "honesty.ega",  "honesty.old",  320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
-    { "compassn.ega", "compassn.old", 320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
-    { "valor.ega",    "valor.old",    320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
-    { "justice.ega",  "justice.old",  320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
-    { "sacrific.ega", "sacrific.old", 320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
-    { "honor.ega",    "honor.old",    320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
-    { "spirit.ega",   "spirit.old",   320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
-    { "humility.ega", "humility.old", 320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
-    { "truth.ega",    "truth.old",    320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
-    { "love.ega",     "love.old",     320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
-    { "courage.ega",  "courage.old",  320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
-    { "stoncrcl.ega", "stoncrcl.old", 320, 200, 1, COMP_RLE, 1, 0 },
-
-    /* shrine vision images */
-    { "rune_0.ega",   "rune_0.old", 320, 200, 1, COMP_RLE, 1, 0 },
-    { "rune_1.ega",   "rune_1.old", 320, 200, 1, COMP_RLE, 1, 0 },
-    { "rune_2.ega",   "rune_2.old", 320, 200, 1, COMP_RLE, 1, 0 },
-    { "rune_3.ega",   "rune_3.old", 320, 200, 1, COMP_RLE, 1, 0 },
-    { "rune_4.ega",   "rune_4.old", 320, 200, 1, COMP_RLE, 1, 0 },
-    { "rune_5.ega",   "rune_5.old", 320, 200, 1, COMP_RLE, 1, 0 },
-    { "rune_6.ega",   "rune_6.ega", 320, 200, 1, COMP_RLE, 1, 0 },
-    { "rune_7.ega",   "rune_7.ega", 320, 200, 1, COMP_RLE, 1, 0 },
-    { "rune_8.ega",   "rune_8.ega", 320, 200, 1, COMP_RLE, 1, 0 }
-};
+typedef struct {
+    const char *name;
+    const char *location;
+    const char *extends;
+    ImageInfo *image[BKGD_MAX];
+} ImageSet;
 
 const struct {
     const char *filename;
@@ -179,9 +148,16 @@ const struct {
 
 };
 
+void screenLoadGraphicsFromXml(void);
+ImageSet *screenLoadImageSetFromXml(xmlNodePtr node);
+ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node);
+ListNode *imageSets = NULL;
+
 extern int verbose;
 
 void screenInit() {
+
+    screenLoadGraphicsFromXml();
 
     /* set up scaling parameters */
     scale = settings->scale;
@@ -216,8 +192,7 @@ void screenInit() {
         settings->videoType = VIDEO_EGA;
 
     if (!screenLoadTiles() ||
-        !screenLoadGemTiles() ||
-        !screenLoadCharSet())
+        !screenLoadGemTiles())
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
     if (verbose)
@@ -229,7 +204,6 @@ void screenInit() {
 
 void screenDelete() {
     screenFreeBackgrounds();    
-    imageDelete(charset);
     u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
     if (verbose)
@@ -247,6 +221,70 @@ void screenReInit() {
     tilesetLoadAllTilesetsFromXml("tilesets.xml"); /* re-load tilesets */
     introInit();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
+
+void screenLoadGraphicsFromXml() {
+    xmlDocPtr doc;
+    xmlNodePtr root, node;
+
+    doc = xmlParse("graphics.xml");
+    root = xmlDocGetRootElement(doc);
+    if (xmlStrcmp(root->name, (const xmlChar *) "graphics") != 0)
+        errorFatal("malformed .xml");
+
+    for (node = root->xmlChildrenNode; node; node = node->next) {
+        if (xmlNodeIsText(node) ||
+            xmlStrcmp(node->name, (const xmlChar *) "imageset") != 0)
+            continue;
+
+        imageSets = listAppend(imageSets, screenLoadImageSetFromXml(node));
+    }
+}
+
+ImageSet *screenLoadImageSetFromXml(xmlNodePtr node) {
+    ImageSet *set;
+    xmlNodePtr child;
+
+    set = (ImageSet *) malloc(sizeof(ImageSet));
+    memset(set, 0, sizeof(ImageSet));
+    set->name = xmlGetPropAsStr(node, "name");
+    set->location = xmlGetPropAsStr(node, "location");
+    set->extends = xmlGetPropAsStr(node, "extends");
+
+    for (child = node->xmlChildrenNode; child; child = child->next) {
+        if (xmlNodeIsText(child))
+            continue;
+
+        if (xmlStrcmp(child->name, (const xmlChar *) "image") == 0) {
+            ImageInfo *image = screenLoadImageInfoFromXml(child);
+            if (image->id >= BKGD_MAX)
+                errorWarning("image id out of range: %d (%s)", image->id, image->filename);
+            else
+                set->image[image->id] = image;
+        }
+    }
+
+    return set;
+}
+
+ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node) {
+    ImageInfo *image;
+    static const char *filetypeEnumStrings[] = { "raw", "rle", "lzw", NULL };
+    static const char *fixupEnumStrings[] = { "none", "intro", "introExtended", "abyss", NULL };
+
+    image = (ImageInfo *) malloc(sizeof(ImageInfo));
+    image->id = xmlGetPropAsInt(node, "id");
+    image->filename = xmlGetPropAsStr(node, "filename");
+    image->width = xmlGetPropAsInt(node, "width");
+    image->height = xmlGetPropAsInt(node, "height");
+    image->depth = xmlGetPropAsInt(node, "depth");
+    image->filetype = xmlGetPropAsEnum(node, "filetype", filetypeEnumStrings);
+    image->tiles = xmlGetPropAsInt(node, "tiles");
+    image->introOnly = xmlGetPropAsBool(node, "introOnly");
+    image->fixup = xmlGetPropAsEnum(node, "fixup", fixupEnumStrings);
+
+    return image;
+}
+
 
 /**
  *  Fills a rectangular screen area with the specified color.  The x,
@@ -349,34 +387,46 @@ void fixupAbyssVision(Image *im) {
 }
 
 /**
- * Returns the filename that contains the Vga image for the background
+ * Returns image information for the given image set.
  */
-const char *screenGetVgaFilename(BackgroundType bkgd) {
-    const char *filename = NULL;
+ImageInfo *screenGetImageInfoFromSet(BackgroundType bkgd, const char *setname) {
+    ListNode *setNode;
+    ImageSet *set;
     
-    /* find the correct VGA file to use */    
-    if (backgroundInfo[bkgd].hasVga && u4upgradeExists && settings->videoType == VIDEO_VGA) {
-        /* get the VGA filename for the file we're trying to load */
-        if (u4upgradeInstalled)
-            filename = backgroundInfo[bkgd].filename;            
-        else filename = backgroundInfo[bkgd].filenameOld;
-    }
+    ASSERT(imageSets != NULL, "imageSets isn't initialized");
 
-    return filename;
+    /* find the correct image set */
+    setNode = imageSets;
+    while(strcmp(((ImageSet *)setNode->data)->name, setname) != 0) {
+        setNode = setNode->next;
+        if (!setNode)
+            return NULL;
+    }
+    set = setNode->data;
+
+    /* 
+     * if the image set contains the image we want, we are done;
+     * otherwise, if this image set extends another, check the base
+     * image set.
+     */
+    if (set->image[bkgd])
+        return set->image[bkgd];
+
+    if (set->extends)
+        return screenGetImageInfoFromSet(bkgd, set->extends);
+
+    return NULL;
 }
 
-/**
- * Returns the filename that contains the Ega image for the background
- */
-const char *screenGetEgaFilename(BackgroundType bkgd) {
-    const char *filename = NULL;
+ImageInfo *screenGetImageInfo(BackgroundType bkgd) {
+    const char *setname;
+    
+    if (!u4upgradeExists || settings->videoType == VIDEO_EGA)
+        setname = "EGA";
+    else
+        setname = "VGA";
 
-    /* find the correct EGA file to use */
-    if (u4upgradeInstalled && backgroundInfo[bkgd].filenameOld)
-        filename = backgroundInfo[bkgd].filenameOld;
-    else filename = backgroundInfo[bkgd].filename;
-
-    return filename;
+    return screenGetImageInfoFromSet(bkgd, setname);
 }
 
 /**
@@ -384,77 +434,41 @@ const char *screenGetEgaFilename(BackgroundType bkgd) {
  */
 int screenLoadBackground(BackgroundType bkgd) {
     int ret;
+    ImageInfo *info;
+    const char *filename;
     Image *unscaled;
     U4FILE *file;
 
-    const char *vgaFilename = screenGetVgaFilename(bkgd),
-               *egaFilename = screenGetEgaFilename(bkgd);   
+    info = screenGetImageInfo(bkgd);
+    filename = info->filename;
+    if ((!u4upgradeExists || settings->videoType == VIDEO_EGA) && u4upgradeInstalled)
+        filename = screenGetImageInfoFromSet(bkgd, "VGA")->filename;
 
     ret = 0;
     /* try to load the image in VGA first */
-    if (vgaFilename && backgroundInfo[bkgd].hasVga) {
-        file = u4fopen(vgaFilename);
+    if (filename && info->depth == 8) {
+        file = u4fopen(filename);
     
         if (file) {
             ret = screenLoadImageVga(&unscaled,
-                                     backgroundInfo[bkgd].width,
-                                     backgroundInfo[bkgd].height,
+                                     info->width,
+                                     info->height,
                                      file,
-                                     backgroundInfo[bkgd].comp);
+                                     info->filetype);
             u4fclose(file);
         }
     }
     /* failed to load VGA image, try EGA instead */
     if (!ret) {
-        BackgroundType egaBkgd;
-
-        /*
-         * The original EGA rune image files are mapped to the virtues
-         * differently than those provided with the VGA upgrade.  We
-         * must map the VGA rune screens (0 = INF, 1 = Honesty, 2 =
-         * Compassion, etc.) to their EGA equivalents (12012134 for
-         * the virtues, and 5 for infinity).
-         */
-        switch (bkgd) {
-        case BKGD_RUNE_INF:
-            egaBkgd = BKGD_RUNE_INF + 5;
-            break;
-        case BKGD_SHRINE_HON:
-        case BKGD_SHRINE_JUS:
-        case BKGD_SHRINE_HNR:
-            egaBkgd = BKGD_RUNE_INF + 1;
-            break;
-        case BKGD_SHRINE_COM:
-        case BKGD_SHRINE_SAC:
-            egaBkgd = BKGD_RUNE_INF + 2;
-            break;
-        case BKGD_SHRINE_VAL:
-            egaBkgd = BKGD_RUNE_INF + 0;
-            break;
-        case BKGD_SHRINE_SPI:
-            egaBkgd = BKGD_RUNE_INF + 3;
-            break;
-        case BKGD_SHRINE_HUM:
-            egaBkgd = BKGD_RUNE_INF + 4;
-            break;
-        default:
-            egaBkgd = bkgd;
-            break;
-        }
-
-        /* if we have a new file, recalculate the filename for it */
-        if (egaBkgd != bkgd)
-            egaFilename = screenGetEgaFilename(egaBkgd);
-
         /* open the file */
-        file = u4fopen(egaFilename);
+        file = u4fopen(filename);
 
         if (file) {
             ret = screenLoadImageEga(&unscaled,
-                                     backgroundInfo[egaBkgd].width,
-                                     backgroundInfo[egaBkgd].height,
+                                     info->width,
+                                     info->height,
                                      file,
-                                     backgroundInfo[egaBkgd].comp);
+                                     info->filetype);
             u4fclose(file);
         }
     }
@@ -465,10 +479,21 @@ int screenLoadBackground(BackgroundType bkgd) {
     /*
      * fixup the image before scaling it
      */
-    if (backgroundInfo[bkgd].fixup)
-        (*backgroundInfo[bkgd].fixup)(unscaled);
+    switch (info->fixup) {
+    case FIXUP_NONE:
+        break;
+    case FIXUP_INTRO:
+        fixupIntro(unscaled);
+        break;
+    case FIXUP_INTRO_EXTENDED:
+        fixupIntroExtended(unscaled);
+        break;
+    case FIXUP_ABYSS:
+        fixupAbyssVision(unscaled);
+        break;
+    }
 
-    bkgds[bkgd] = screenScale(unscaled, scale, 1, backgroundInfo[bkgd].filter);
+    bkgds[bkgd] = screenScale(unscaled, scale, info->tiles, 1);
 
     return 1;
 }
@@ -491,10 +516,12 @@ void screenFreeBackgrounds() {
  * Free up any background images used only in the animations.
  */
 void screenFreeIntroBackgrounds() {
+    ImageInfo *info;
     int i;
 
     for (i = 0; i < BKGD_MAX; i++) {
-        if ((!backgroundInfo[i].introAnim) || bkgds[i] == NULL)
+        info = screenGetImageInfo(i);
+        if (bkgds[i] == NULL || !info || !info->introOnly)
             continue;
         imageDelete(bkgds[i]);
         bkgds[i] = NULL;
@@ -569,36 +596,6 @@ int screenLoadGemTiles() {
 
     if (gemtiles)
         gemtiles = screenScale(gemtiles, scale, 128, 1);
-
-    return ret;
-}
-
-/**
- * Load the character set graphics from the "charset.ega" or "charset.vga" file.
- */
-int screenLoadCharSet() {
-    U4FILE *file;
-    int ret = 0;
-
-    /* load vga charset */
-    if (settings->videoType == VIDEO_VGA) {
-        file = u4fopen("charset.vga");
-        if (file) {
-            ret = screenLoadImageVga(&charset, CHAR_WIDTH, CHAR_HEIGHT * N_CHARS, file, COMP_NONE);
-            u4fclose(file);
-        }
-    }
-
-    /* load ega charset (also loads if vga load fails) */
-    if (!ret || settings->videoType == VIDEO_EGA) {
-        file = u4fopen("charset.ega");
-        if (file) {
-            ret = screenLoadImageEga(&charset, CHAR_WIDTH, CHAR_HEIGHT * N_CHARS, file, COMP_NONE);
-            u4fclose(file);
-        }
-    }
-
-    charset = screenScale(charset, scale, N_CHARS, 1);
 
     return ret;
 }
@@ -892,9 +889,16 @@ void screenDrawBackgroundInMapArea(BackgroundType bkgd) {
  * Draw a character from the charset onto the screen.
  */
 void screenShowChar(int chr, int x, int y) {
-    imageDrawSubRect(charset, x * charset->w, y * (charset->h / N_CHARS),
-                     0, chr * (charset->h / N_CHARS),
-                     charset->w, charset->h / N_CHARS);
+    Image *charset;
+
+    if (bkgds[BKGD_CHARSET] == NULL) {
+        if (!screenLoadBackground(BKGD_CHARSET))
+            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+    }
+    charset = bkgds[BKGD_CHARSET];
+    imageDrawSubRect(charset, x * charset->w, y * (CHAR_HEIGHT * scale),
+                     0, chr * (CHAR_HEIGHT * scale),
+                     charset->w, CHAR_HEIGHT * scale);
 }
 
 /**
@@ -908,12 +912,12 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
     int i;
 
     screenShowChar(chr, x, y);
-    dest.x = x * charset->w;
-    dest.w = charset->w;
+    dest.x = x * bkgds[BKGD_CHARSET]->w;
+    dest.w = bkgds[BKGD_CHARSET]->w;
     dest.h = scale;
     for (i = 0; i < 8; i++) {
         if (mask & (1 << i)) {
-            dest.y = y * (charset->h / N_CHARS) + (i * scale);
+            dest.y = y * (CHAR_HEIGHT * scale) + (i * scale);
             SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0, 0, 0));
         }
     }
@@ -1068,20 +1072,22 @@ void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
 void screenScrollMessageArea() {
     SDL_Rect src, dest;
         
-    src.x = TEXT_AREA_X * charset->w;
-    src.y = (TEXT_AREA_Y + 1) * (charset->h / N_CHARS);
-    src.w = TEXT_AREA_W * charset->w;
-    src.h = (TEXT_AREA_H - 1) * charset->h / N_CHARS;
+    ASSERT(bkgds[BKGD_CHARSET] != NULL, "charset not initialized!");
+
+    src.x = TEXT_AREA_X * bkgds[BKGD_CHARSET]->w;
+    src.y = (TEXT_AREA_Y + 1) * CHAR_HEIGHT * scale;
+    src.w = TEXT_AREA_W * bkgds[BKGD_CHARSET]->w;
+    src.h = (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale;
 
     dest.x = src.x;
-    dest.y = src.y - (charset->h / N_CHARS);
+    dest.y = src.y - CHAR_HEIGHT * scale;
     dest.w = src.w;
     dest.h = src.h;
 
     SDL_BlitSurface(screen, &src, screen, &dest);
 
     dest.y += dest.h;
-    dest.h = (charset->h / N_CHARS);
+    dest.h = CHAR_HEIGHT * scale;
 
     SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0, 0, 0));
     SDL_UpdateRect(screen, 0, 0, 0, 0);
@@ -1516,6 +1522,9 @@ void screenGemUpdate() {
 Image *screenScale(Image *src, int scale, int n, int filter) {
     Image *dest;
     int transparent;
+
+    if (n == 0)
+        n = 1;
 
     transparent = (src->surface->flags & SDL_SRCCOLORKEY) != 0;
 
