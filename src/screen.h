@@ -71,12 +71,6 @@ int screenLoadBackground(BackgroundType bkgd);
 void screenDrawBackground(BackgroundType bkgd);
 void screenDrawBackgroundInMapArea(BackgroundType bkgd);
 void screenFreeBackgrounds();
-const char *screenGetVgaFilename(BackgroundType bkgd);
-const char *screenGetEgaFilename(BackgroundType bkgd);
-
-int screenLoadImageEga(struct _Image **image, int width, int height, U4FILE *file, CompressionType comp);
-int screenLoadImageVga(struct _Image **image, int width, int height, U4FILE *file, CompressionType comp);
-struct _Image *screenScale(struct _Image *src, int scale, int n, int filter);
 
 void screenCycle(void);
 void screenEraseMapArea(void);

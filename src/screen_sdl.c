@@ -34,7 +34,8 @@ void fixupIntro(Image *im);
 void fixupIntroExtended(Image *im);
 void fixupAbyssVision(Image *im);
 void screenFreeIntroBackground();
-int screenLoadTiles();
+int screenLoadImage(struct _Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp);
+Image *screenScale(Image *src, int scale, int n, int filter);
 int screenLoadGemTiles();
 int screenLoadPaletteEga();
 int screenLoadPaletteVga(const char *filename);
@@ -43,7 +44,7 @@ Image *screenScaleDown(Image *src, int scale);
 SDL_Surface *screen;
 Image *bkgds[BKGD_MAX];
 Image *dngGraphic[56];
-Image *tiles, *gemtiles;
+Image *gemtiles;
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
 int scale;
@@ -60,6 +61,7 @@ typedef struct {
     int id;
     const char *filename;
     int width, height, depth;
+    int prescale;
     CompressionType filetype;
     int tiles;
     int introOnly;
@@ -191,8 +193,7 @@ void screenInit() {
     if (!u4upgradeExists && settings->videoType == VIDEO_VGA)
         settings->videoType = VIDEO_EGA;
 
-    if (!screenLoadTiles() ||
-        !screenLoadGemTiles())
+    if (!screenLoadGemTiles())
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
     if (verbose)
@@ -277,6 +278,7 @@ ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node) {
     image->width = xmlGetPropAsInt(node, "width");
     image->height = xmlGetPropAsInt(node, "height");
     image->depth = xmlGetPropAsInt(node, "depth");
+    image->prescale = xmlGetPropAsInt(node, "prescale");
     image->filetype = xmlGetPropAsEnum(node, "filetype", filetypeEnumStrings);
     image->tiles = xmlGetPropAsInt(node, "tiles");
     image->introOnly = xmlGetPropAsBool(node, "introOnly");
@@ -433,7 +435,7 @@ ImageInfo *screenGetImageInfo(BackgroundType bkgd) {
  * Load in a background image from a ".ega" file.
  */
 int screenLoadBackground(BackgroundType bkgd) {
-    int ret;
+    int ret, imageScale;
     ImageInfo *info;
     const char *filename;
     Image *unscaled;
@@ -446,33 +448,19 @@ int screenLoadBackground(BackgroundType bkgd) {
 
     ret = 0;
     /* try to load the image in VGA first */
-    if (filename && info->depth == 8) {
+    if (filename) {
         file = u4fopen(filename);
     
         if (file) {
-            ret = screenLoadImageVga(&unscaled,
-                                     info->width,
-                                     info->height,
-                                     file,
-                                     info->filetype);
+            ret = screenLoadImage(&unscaled,
+                                  info->width,
+                                  info->height,
+                                  info->depth,
+                                  file,
+                                  info->filetype);
             u4fclose(file);
         }
     }
-    /* failed to load VGA image, try EGA instead */
-    if (!ret) {
-        /* open the file */
-        file = u4fopen(filename);
-
-        if (file) {
-            ret = screenLoadImageEga(&unscaled,
-                                     info->width,
-                                     info->height,
-                                     file,
-                                     info->filetype);
-            u4fclose(file);
-        }
-    }
-
     if (!ret)
         return 0;
 
@@ -493,7 +481,14 @@ int screenLoadBackground(BackgroundType bkgd) {
         break;
     }
 
-    bkgds[bkgd] = screenScale(unscaled, scale, info->tiles, 1);
+    imageScale = scale;
+    if (info->prescale != 0) {
+        if ((scale % info->prescale) != 0)
+            errorFatal("image %s is prescaled to an incompatible size: %d\n", filename, info->prescale);
+        imageScale /= info->prescale;
+    }
+        
+    bkgds[bkgd] = screenScale(unscaled, imageScale, info->tiles, 1);
 
     return 1;
 }
@@ -529,37 +524,6 @@ void screenFreeIntroBackgrounds() {
 }
 
 /**
- * Load the tiles graphics from the "shapes.ega" or "shapes.vga" file.
- */
-int screenLoadTiles() {
-    U4FILE *file;
-    int ret = 0;
-
-    /* load vga tiles */
-    if (settings->videoType == VIDEO_VGA) {
-        file = u4fopen("shapes.vga");
-        if (file) {
-            ret = screenLoadImageVga(&tiles, TILE_WIDTH, TILE_HEIGHT * N_TILES, file, COMP_NONE);
-            u4fclose(file);
-        }
-    }
-
-    /* load ega tiles (also loads if vga load fails) */
-    if (!ret || settings->videoType == VIDEO_EGA) {
-        file = u4fopen("shapes.ega");
-        if (file) {
-            ret = screenLoadImageEga(&tiles, TILE_WIDTH, TILE_HEIGHT * N_TILES, file, COMP_NONE);
-            u4fclose(file);
-        }
-    }
-
-    if (tiles)
-        tiles = screenScale(tiles, scale, N_TILES, 1);
-
-    return ret;
-}
-
-/**
  * Load the gem tile graphics from the "gem.ega.rle" or "gem.vga.rle"
  * file.  Note this file is not part of Ultima IV for DOS.
  */
@@ -575,7 +539,7 @@ int screenLoadGemTiles() {
             file = u4fopen_stdio(pathname);
             free(pathname);
             if (file) {
-                ret = screenLoadImageVga(&gemtiles, GEMTILE_W, GEMTILE_H * 128, file, COMP_RLE);
+                ret = screenLoadImage(&gemtiles, GEMTILE_W, GEMTILE_H * 128, 8, file, COMP_RLE);
                 u4fclose(file);
             }
         }
@@ -588,7 +552,7 @@ int screenLoadGemTiles() {
             file = u4fopen_stdio(pathname);
             free(pathname);
             if (file) {
-                ret = screenLoadImageEga(&gemtiles, GEMTILE_W, GEMTILE_H * 128, file, COMP_RLE);
+                ret = screenLoadImage(&gemtiles, GEMTILE_W, GEMTILE_H * 128, 4, file, COMP_RLE);
                 u4fclose(file);
             }
         }
@@ -743,71 +707,16 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
 }
 
 /**
- * Load an image from an ".ega" image file.
+ * Load an image from a ".vga" or ".ega" image file.  Both 4-bpp
+ * (original) or 8-bpp (VGA upgrade) images are supported.
  */
-int screenLoadImageEga(Image **image, int width, int height, U4FILE *file, CompressionType comp) {
+int screenLoadImage(Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp) {
     Image *img;
     int x, y;
     unsigned char *compressed_data, *decompressed_data = NULL;
     long inlen, decompResult;
 
-    inlen = u4flength(file);
-    compressed_data = (Uint8 *) malloc(inlen);
-    u4fread(compressed_data, 1, inlen, file);
-
-    switch(comp) {
-    case COMP_NONE:
-        decompressed_data = compressed_data;
-        decompResult = inlen;
-        break;
-    case COMP_RLE:
-        decompResult = rleDecompressMemory(compressed_data, inlen, (void **) &decompressed_data);
-        free(compressed_data);
-        break;
-    case COMP_LZW:
-        decompResult = decompress_u4_memory(compressed_data, inlen, (void **) &decompressed_data);
-        free(compressed_data);
-        break;
-    default:
-        ASSERT(0, "invalid compression type %d", comp);
-    }
-
-    if (decompResult == -1) {
-        if (decompressed_data)
-            free(decompressed_data);
-        return 0;
-    }
-
-    img = imageNew(width, height, 1, 1, IMTYPE_HW);
-    if (!img) {
-        if (decompressed_data)
-            free(decompressed_data);
-        return 0;
-    }
-
-    SDL_SetColors(img->surface, egaPalette, 0, 16);
-
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x+=2) {
-            imagePutPixelIndex(img, x, y, decompressed_data[(y * width + x) / 2] >> 4);
-            imagePutPixelIndex(img, x + 1, y, decompressed_data[(y * width + x) / 2] & 0x0f);
-        }
-    }
-    free(decompressed_data);
-
-    (*image) = img;
-
-    return 1;
-}
-
-/**
- * Load an image from a ".vga" or ".ega" image file from the U4 VGA upgrade.
- */
-int screenLoadImageVga(Image **image, int width, int height, U4FILE *file, CompressionType comp) {
-    Image *img;
-    int x, y;
-    unsigned char *compressed_data, *decompressed_data = NULL;
-    long inlen, decompResult;
+    ASSERT(bpp == 4 || bpp == 8, "invalid bpp passed to screenLoadImage: %d", bpp);
 
     inlen = u4flength(file);
     compressed_data = (Uint8 *) malloc(inlen);
@@ -831,7 +740,7 @@ int screenLoadImageVga(Image **image, int width, int height, U4FILE *file, Compr
     }
 
     if (decompResult == -1 ||
-        decompResult != (width * height)) {
+        decompResult != (width * height * bpp / 8)) {
         if (decompressed_data)
             free(decompressed_data);
         return 0;
@@ -844,12 +753,26 @@ int screenLoadImageVga(Image **image, int width, int height, U4FILE *file, Compr
         return 0;
     }
 
-    SDL_SetColors(img->surface, vgaPalette, 0, 256);
+    if (bpp == 8) {
+        SDL_SetColors(img->surface, vgaPalette, 0, 256);
 
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++)
-            imagePutPixelIndex(img, x, y, decompressed_data[y * width + x]);
+        for (y = 0; y < height; y++) {
+            for (x = 0; x < width; x++)
+                imagePutPixelIndex(img, x, y, decompressed_data[y * width + x]);
+        }
+    } 
+
+    else if (bpp == 4) {
+        SDL_SetColors(img->surface, egaPalette, 0, 16);
+
+        for (y = 0; y < height; y++) {
+            for (x = 0; x < width; x+=2) {
+                imagePutPixelIndex(img, x, y, decompressed_data[(y * width + x) / 2] >> 4);
+                imagePutPixelIndex(img, x + 1, y, decompressed_data[(y * width + x) / 2] & 0x0f);
+            }
+        }
     }
+
     free(decompressed_data);
 
     (*image) = img;
@@ -930,8 +853,13 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
     int offset, i, swaprow;
     SDL_Rect src, dest;
     int unscaled_x, unscaled_y;
-    /* FIXME: remove global "Image *tiles" definition entirely */
-    Image *tiles = tileset->tileGraphic; /* get the graphic to use for the tile */
+    Image *tiles;
+
+    if (bkgds[tileset->imageId] == NULL) {
+        if (!screenLoadBackground(tileset->imageId))
+            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+    }
+    tiles = bkgds[tileset->imageId];
 
     if (tileGetAnimationStyle(tile) == ANIM_SCROLL)
         offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale;
@@ -1204,19 +1132,12 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
     if (!file)
         return 0;
 
-    if (dngGraphicInfo[index].depth == 8)
-        ret = screenLoadImageVga(&unscaled, 
-                                 dngGraphicInfo[index].width, 
-                                 dngGraphicInfo[index].height, 
-                                 file, 
-                                 dngGraphicInfo[index].comp);
-    else {
-        ret = screenLoadImageEga(&unscaled, 
-                                 dngGraphicInfo[index].width, 
-                                 dngGraphicInfo[index].height, 
-                                 file, 
-                                 dngGraphicInfo[index].comp);
-    }
+    ret = screenLoadImage(&unscaled, 
+                          dngGraphicInfo[index].width, 
+                          dngGraphicInfo[index].height, 
+                          dngGraphicInfo[index].depth,
+                          file, 
+                          dngGraphicInfo[index].comp);
     u4fclose(file);
 
     if (!ret)
@@ -1235,26 +1156,26 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
     int offset;
     int savedflags;
 
-    tmp = imageNew(tiles->w, tiles->h / N_TILES, 1, tiles->indexed, IMTYPE_SW);
-    if (tiles->indexed)
-        imageSetPaletteFromImage(tmp, tiles);
+    tmp = imageNew(bkgds[BKGD_SHAPES]->w, bkgds[BKGD_SHAPES]->h / N_TILES, 1, bkgds[BKGD_SHAPES]->indexed, IMTYPE_SW);
+    if (bkgds[BKGD_SHAPES]->indexed)
+        imageSetPaletteFromImage(tmp, bkgds[BKGD_SHAPES]);
 
     src.x = 0;
-    src.y = tile * (tiles->h / N_TILES);
-    src.w = tiles->w;
-    src.h = tiles->h / N_TILES;
+    src.y = tile * (bkgds[BKGD_SHAPES]->h / N_TILES);
+    src.w = bkgds[BKGD_SHAPES]->w;
+    src.h = bkgds[BKGD_SHAPES]->h / N_TILES;
     dest.x = 0;
     dest.y = 0;
-    dest.w = tiles->w;
-    dest.h = tiles->h / N_TILES;
+    dest.w = bkgds[BKGD_SHAPES]->w;
+    dest.h = bkgds[BKGD_SHAPES]->h / N_TILES;
 
     /* have to turn off alpha on tiles before blitting: why? */
-    savedflags = tiles->surface->flags;
-    tiles->surface->flags &= ~SDL_SRCALPHA;
+    savedflags = bkgds[BKGD_SHAPES]->surface->flags;
+    bkgds[BKGD_SHAPES]->surface->flags &= ~SDL_SRCALPHA;
 
-    SDL_BlitSurface(tiles->surface, &src, tmp->surface, &dest);
+    SDL_BlitSurface(bkgds[BKGD_SHAPES]->surface, &src, tmp->surface, &dest);
 
-    tiles->surface->flags = savedflags;
+    bkgds[BKGD_SHAPES]->surface->flags = savedflags;
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
     if (dscale[distance] == 1)
@@ -1272,7 +1193,7 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
     src.y = 0;
     src.w = scaled->w;
     src.h = scaled->h - offset;
-    dest.x = (VIEWPORT_W * tiles->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
+    dest.x = (VIEWPORT_W * bkgds[BKGD_SHAPES]->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
     dest.y = ((doffset[distance] + BORDER_HEIGHT) * scale) + offset;
     dest.w = scaled->w;
     dest.h = scaled->h;
@@ -1285,7 +1206,7 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
         src.y = scaled->h - offset;
         src.w = scaled->w;
         src.h = offset;
-        dest.x = (VIEWPORT_W * tiles->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
+        dest.x = (VIEWPORT_W * bkgds[BKGD_SHAPES]->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
         dest.y = ((doffset[distance] + BORDER_HEIGHT) * scale);
         dest.w = scaled->w;
         dest.h = scaled->h;
