@@ -10,6 +10,7 @@
 #include "context.h"
 #include "debug.h"
 #include "game.h"
+#include "item.h"
 #include "location.h"
 #include "mapmgr.h"
 #include "player.h"
@@ -44,6 +45,7 @@ int dungeonLoadRoom(Dungeon *dng, int room) {
 void dungeonSearch(void) {
     unsigned char dngTile = mapGetTileFromData(c->location->map, c->location->x, c->location->y, c->location->z);
     const Annotation *a = annotationAt(c->location->x, c->location->y, c->location->z, c->location->map->id);
+    const ItemLocation *item;
     if (a) 
         dngTile = 0;
 
@@ -59,7 +61,21 @@ void dungeonSearch(void) {
         break;
 
     default: 
-        screenMessage("Nothing Here!\n");
+        {
+            /* see if there is an item at the current location (stones on altars, etc.) */
+            item = itemAtLocation(c->location->map, c->location->x, c->location->y, c->location->z);
+            if (item) {
+                if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
+                    screenMessage("Nothing Here!\n");
+                else {                
+                    if (item->name)
+                        screenMessage("You find...\n%s!\n", item->name);
+                    (*item->putItemInInventory)(item->data);
+                }
+            } else
+                screenMessage("Nothing Here!\n");
+        }
+        
         break;
     }
 }
