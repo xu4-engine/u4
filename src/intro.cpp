@@ -181,6 +181,7 @@ int IntroController::init() {
         mainOptions.add(1, "Sound Options", 13, 17, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL, 's');
         mainOptions.add(2, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL, 'g');
         mainOptions.add(0xFF, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL, 'm');
+        mainOptions.addShortcutKey(0xFF, ' ');
         mainOptions.setClosesMenu(0xFF);
     
         videoOptions.add(4, "Graphics", 6, 5, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 'g');
@@ -191,6 +192,7 @@ int IntroController::init() {
         videoOptions.add(3, "Screen Shaking", 6, 10, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 'k');
         videoOptions.add(0xFE, "Use These Settings", 6, 20, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
         videoOptions.add(0xFF, "Cancel", 6, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        videoOptions.addShortcutKey(0xFF, ' ');
         videoOptions.setClosesMenu(0xFE);
         videoOptions.setClosesMenu(0xFF);
     
@@ -199,6 +201,7 @@ int IntroController::init() {
         soundOptions.add(2, "Fading", 11, 18, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY, 'f');
         soundOptions.add(0xFE, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
         soundOptions.add(0xFF, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        soundOptions.addShortcutKey(0xFF, ' ');
         soundOptions.setClosesMenu(0xFE);
         soundOptions.setClosesMenu(0xFF);
     
@@ -209,6 +212,7 @@ int IntroController::init() {
         gameplayOptions.add(2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL, 'o');
         gameplayOptions.add(0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
         gameplayOptions.add(0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        gameplayOptions.addShortcutKey(0xFF, ' ');
         gameplayOptions.setClosesMenu(0xFE);
         gameplayOptions.setClosesMenu(0xFF);
     
@@ -218,6 +222,7 @@ int IntroController::init() {
         advancedOptions.add(0, "\010 Game Enhancement Options", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'g');    
         advancedOptions.add(0xFE, "Use These Settings", 4, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
         advancedOptions.add(0xFF, "Cancel", 4, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        advancedOptions.addShortcutKey(0xFF, ' ');
         advancedOptions.setClosesMenu(0xFE);
         advancedOptions.setClosesMenu(0xFF);
     
@@ -225,6 +230,7 @@ int IntroController::init() {
         keyboardOptions.add(2, "Repeat Interval (in msecs)", 5, 6, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
         keyboardOptions.add(0xFE, "Use These Settings", 5, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
         keyboardOptions.add(0xFF, "Cancel", 5, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        keyboardOptions.addShortcutKey(0xFF, ' ');
         keyboardOptions.setClosesMenu(0xFE);
         keyboardOptions.setClosesMenu(0xFF);
     
@@ -237,6 +243,7 @@ int IntroController::init() {
         speedOptions.add(6, "Screen Shake Interval", 4, 11, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
         speedOptions.add(0xFE, "Use These Settings", 4, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
         speedOptions.add(0xFF, "Cancel", 4, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        speedOptions.addShortcutKey(0xFF, ' ');
         speedOptions.setClosesMenu(0xFE);
         speedOptions.setClosesMenu(0xFF);
     
@@ -249,6 +256,7 @@ int IntroController::init() {
         enhancementOptions.add(7, "Gem View Shows Objects", 7, 11, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
         enhancementOptions.add(0xFE, "Use These Settings", 7, 20, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
         enhancementOptions.add(0xFF, "Cancel", 7, 21, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        enhancementOptions.addShortcutKey(0xFF, ' ');
         enhancementOptions.setClosesMenu(0xFE);
         enhancementOptions.setClosesMenu(0xFF);
 
@@ -798,7 +806,7 @@ void IntroController::runMenu(Menu *menu, bool withBeasties) {
     if (withBeasties)
         drawBeasties();
 
-    IntroMenuController menuController(menu);
+    MenuController menuController(menu);
     eventHandler->pushController(&menuController);
     menuController.waitFor();
 
@@ -1511,67 +1519,3 @@ void IntroController::introEnhancementOptionsMenuItemActivate(MenuItem *menuItem
     default: break;
     }
 }
-
-IntroMenuController::IntroMenuController(Menu *menu) {
-    this->menu = menu;
-    exitWhenDone = false;
-}
-
-bool IntroMenuController::keyPressed(int key) {
-    bool handled = true;
-
-    switch(key) {
-    case U4_UP:
-        menu->prev();        
-        break;
-    case U4_DOWN:
-        menu->next();
-        break;
-    case U4_LEFT:
-    case U4_RIGHT:
-    case U4_ENTER:
-        {
-            MenuItem *menuItem = &(*menu->getCurrent());
-            ActivateAction action = ACTIVATE_NORMAL;
-            
-            if (menuItem->getActivateFunc()) {
-                if (key == U4_LEFT)
-                    action = ACTIVATE_DECREMENT;
-                else if (key == U4_RIGHT)
-                    action = ACTIVATE_INCREMENT;
-                menu->activateItem(-1, action);
-            }
-        }
-        break;
-    case ' ':    
-        /* activate the 'cancel' menu item */
-        menu->activateItem(0xFF, ACTIVATE_NORMAL);
-        break;    
-#if 0
-    case U4_ESC:
-        /* go back to the main screen */
-        intro->mode = IntroController::INTRO_MENU; break;
-        break;
-#endif
-    default:
-        handled = menu->activateItemByShortcut(key, ACTIVATE_NORMAL);
-    }    
-
-    screenHideCursor();
-    menu->show();
-    screenUpdateCursor();
-    screenRedrawScreen();
-
-    if (exitWhenDone && menu->getClosed())
-        eventHandler->setControllerDone();
-
-    return handled;
-}
-
-void IntroMenuController::waitFor() {
-    exitWhenDone = true;
-    eventHandler->run();
-    eventHandler->setControllerDone(false);
-    eventHandler->popController();
-}
-

@@ -92,20 +92,6 @@ private:
     int sleepCycles;
     int scrPos;  /* current position in the script table */
     IntroObjectState *objectStateTable;
-
-    friend class IntroMenuController;
-};
-
-class IntroMenuController : public Controller {
-public:
-    IntroMenuController(Menu *menu);
-    bool keyPressed(int key);
-
-    void waitFor();
-
-private:
-    Menu *menu;
-    bool exitWhenDone;
 };
 
 extern IntroController *intro;

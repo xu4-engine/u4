@@ -7,6 +7,7 @@
 #include "menu.h"
 
 #include "error.h"
+#include "event.h"
 #include "screen.h"
 
 /**
@@ -23,9 +24,9 @@ MenuItem::MenuItem(class Menu *m, MenuId i, string t, short xpos, short ypos, Ac
     visible(true),
     activateMenuItem(af),
     activateOn(ao),
-    shortcutKey(sc),
     closesMenu(false)
 {    
+    addShortcutKey(sc);
 }
 
 /**
@@ -47,7 +48,7 @@ bool MenuItem::isSelected() const                   { return selected; }
 bool MenuItem::isVisible() const                    { return visible; }
 ActivateMenuItem MenuItem::getActivateFunc() const  { return activateMenuItem; }
 ActivateAction MenuItem::getActivateAction() const  { return activateOn; }
-int MenuItem::getShortcutKey() const                { return shortcutKey; }
+const set<int> &MenuItem::getShortcutKeys() const   { return shortcutKeys; }
 bool MenuItem::getClosesMenu() const                { return closesMenu; }
 
 void MenuItem::setId(MenuId i) {
@@ -111,11 +112,9 @@ void MenuItem::setActivateAction(ActivateAction aa) {
     }
 }
 
-void MenuItem::setShortcutKey(int sc) {
-    if (sc != shortcutKey) {
-        shortcutKey = sc;
-        notifyOfChange("MenuItem::setShortcutKey");
-    }
+void MenuItem::addShortcutKey(int sc) {
+    shortcutKeys.insert(sc);
+    notifyOfChange("MenuItem::addShortcutKey");
 }
 
 void MenuItem::setClosesMenu(bool closesMenu) {
@@ -134,6 +133,15 @@ void Menu::add(MenuId id, string text, short x, short y, ActivateMenuItem activa
     items.push_back(menuItem);
     setChanged();
     notifyObservers("Menu::add");
+}
+
+void Menu::addShortcutKey(MenuId id, int shortcutKey) {
+    for (MenuItemList::iterator i = items.begin(); i != items.end(); i++) {
+        if (i->getId() == id) {
+            i->addShortcutKey(shortcutKey);
+            break;
+        }
+    }    
 }
 
 void Menu::setClosesMenu(MenuId id) {
@@ -372,7 +380,8 @@ void Menu::activateItem(MenuId id, ActivateAction action) {
  */
 bool Menu::activateItemByShortcut(int key, ActivateAction action) {
     for (MenuItemList::iterator i = items.begin(); i != items.end(); i++) {
-        if (i->getShortcutKey() == key) {
+        const set<int> &shortcuts = i->getShortcutKeys();
+        if (shortcuts.find(key) != shortcuts.end()) {
             activateItem(i->getId(), action);
             return true;
         }
@@ -393,3 +402,57 @@ bool Menu::getClosed() const {
 void Menu::setClosed(bool closed) {
     this->closed = closed;
 }
+
+MenuController::MenuController(Menu *menu) {
+    this->menu = menu;
+    exitWhenDone = false;
+}
+
+bool MenuController::keyPressed(int key) {
+    bool handled = true;
+
+    switch(key) {
+    case U4_UP:
+        menu->prev();        
+        break;
+    case U4_DOWN:
+        menu->next();
+        break;
+    case U4_LEFT:
+    case U4_RIGHT:
+    case U4_ENTER:
+        {
+            MenuItem *menuItem = &(*menu->getCurrent());
+            ActivateAction action = ACTIVATE_NORMAL;
+            
+            if (menuItem->getActivateFunc()) {
+                if (key == U4_LEFT)
+                    action = ACTIVATE_DECREMENT;
+                else if (key == U4_RIGHT)
+                    action = ACTIVATE_INCREMENT;
+                menu->activateItem(-1, action);
+            }
+        }
+        break;
+    default:
+        handled = menu->activateItemByShortcut(key, ACTIVATE_NORMAL);
+    }    
+
+    screenHideCursor();
+    menu->show();
+    screenUpdateCursor();
+    screenRedrawScreen();
+
+    if (exitWhenDone && menu->getClosed())
+        eventHandler->setControllerDone();
+
+    return handled;
+}
+
+void MenuController::waitFor() {
+    exitWhenDone = true;
+    eventHandler->run();
+    eventHandler->setControllerDone(false);
+    eventHandler->popController();
+}
+

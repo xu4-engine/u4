@@ -6,11 +6,14 @@
 #define MENU_H
 
 #include <list>
+#include <set>
 #include <string>
+#include "controller.h"
 #include "observable.h"
 #include "types.h"
 
 using std::string;
+using std::set;
 
 typedef enum {
     ACTIVATE_NORMAL     = 0x1,
@@ -46,7 +49,7 @@ public:
     bool isVisible() const;
     ActivateMenuItem getActivateFunc() const;
     ActivateAction getActivateAction() const;
-    int getShortcutKey() const;
+    const set<int> &getShortcutKeys() const;
     bool getClosesMenu() const;
 
     void setId(MenuId id);
@@ -58,7 +61,7 @@ public:
     void setVisible(bool v = true);
     void setActivateFunc(ActivateMenuItem ami);
     void setActivateAction(ActivateAction aa);
-    void setShortcutKey(int shortcutKey);
+    void addShortcutKey(int shortcutKey);
     void setClosesMenu(bool closesMenu);
     
 private:
@@ -71,7 +74,7 @@ private:
     bool visible;    
     ActivateMenuItem activateMenuItem;
     ActivateAction activateOn;
-    int shortcutKey;
+    set<int> shortcutKeys;
     bool closesMenu;
 };
 
@@ -87,6 +90,7 @@ public:
     Menu() : closed(false) {}
 
     void                    add(MenuId id, string text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn, int shortcutKey = 0);
+    void                    addShortcutKey(MenuId id, int shortcutKey);
     void                    setClosesMenu(MenuId id);
     MenuItemList::iterator  getCurrent();
     void                    setCurrent(MenuItemList::iterator i);
@@ -112,6 +116,21 @@ private:
     MenuItemList::iterator current;
     MenuItemList::iterator selected;
     bool closed;
+};
+
+/**
+ * This class controls a menu.
+ */
+class MenuController : public Controller {
+public:
+    MenuController(Menu *menu);
+    bool keyPressed(int key);
+
+    void waitFor();
+
+protected:
+    Menu *menu;
+    bool exitWhenDone;
 };
 
 #endif
