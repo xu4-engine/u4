@@ -634,7 +634,8 @@ offset  len   notes
               weapon)
 0x115f7 8     mask of which classes can use each type of armor (one byte
               per armor type)
-0x115ff 186   ???
+0x115ff 134   ???
+0x11685 52    monster hp table
 0x116b9 36    monster leader types (one byte per monster type)
 0x116dd 36    monster encounter size table (one byte per monster type)
 0x11701 2     ???
