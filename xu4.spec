@@ -34,8 +34,8 @@ cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir} all.stati
 
 %install
 cd src && %{makeinstall}
-wget http://aleron.dl.sourceforge.net/sourceforge/xu4/ultima4-1.01.zip -O %{buildroot}/%{_libdir}/u4/ultima4.zip
-wget http://www.moongates.com/u4/upgrade/files/u4upgrad.zip -O %{buildroot}/%{_libdir}/u4/u4upgrad.zip
+wget http://aleron.dl.sourceforge.net/sourceforge/xu4/ultima4-1.01.zip -O %{buildroot}/%{_libdir}/u4/ultima4-1.01.zip
+wget http://aleron.dl.sourceforge.net/sourceforge/xu4/u4upgrad.zip -O %{buildroot}/%{_libdir}/u4/u4upgrad.zip
 
 %clean
 rm -rf %{buildroot}
@@ -63,16 +63,14 @@ rm -rf %{buildroot}
 %{_libdir}/u4/u4upgrad.zip
 
 %changelog
+* Sun Nov 28 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- flatten conf directory
+- download u4 upgrade from sourceforge instead of www.moongates.com
+
 * Thu Nov 25 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - kill libstdc++ for all executables
-
-* Thu Nov 25 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added xml files in subdirectories to files section
-
-* Thu Nov 25 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - fixed to build utils again
-
-* Thu Nov 25 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - updated for 1.0beta1, kill libstdc++ dependency
 
 * Sat Feb 28 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
