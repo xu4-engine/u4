@@ -50,6 +50,7 @@ char *lordBritishGetIntro(Conversation *cnv);
 char *lordBritishGetResponse(Conversation *cnv, const char *inquiry);
 char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer);
 char *lordBritishGetPrompt(const Conversation *cnv);
+char *lordBritishGetHelp(const Conversation *cnv);
 char *hawkwindGetIntro(Conversation *cnv);
 char *hawkwindGetResponse(Conversation *cnv, const char *inquiry);
 char *hawkwindGetPrompt(const Conversation *cnv);
@@ -494,6 +495,10 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
         cnv->state = CONV_ASK;
     }
 
+    else if (strncasecmp(inquiry, "help", 4) == 0) {
+        reply = lordBritishGetHelp(cnv);
+    }
+
     else {
         for (i = 0; i < 24; i++) {
             if (strncasecmp(inquiry, lbKeywords[i], 4) == 0)
@@ -539,6 +544,80 @@ char *lordBritishGetPrompt(const Conversation *cnv) {
         prompt = strdup("\nWhat else?\n");
 
     return prompt;
+}
+
+/**
+ * Generate the appropriate response when the player asks Lord British
+ * for help.  The help text depends on the current party status; when
+ * one quest item is complete, Lord British provides some direction to
+ * the next one.
+ */
+char *lordBritishGetHelp(const Conversation *cnv) {
+    int v;
+    int fullAvatar, partialAvatar;
+
+    /*
+     * check whether player is full avatar (in all virtues) or partial
+     * avatar (in at least one virtue)
+     */
+    fullAvatar = 1;
+    partialAvatar = 0;
+    for (v = 0; v < VIRT_MAX; v++) {
+        fullAvatar &= (c->saveGame->karma[v] == 0);
+        partialAvatar |= (c->saveGame->karma[v] == 0);
+    }
+
+    if (c->saveGame->moves <= 1000) {
+        return strdup("To survive in this hostile land thou must first know thyself! Seek ye to master thy weapons and thy magical ability!\n"
+                      "\nTake great care in these thy first travels in Britannia.\n"
+                      "\nUntil thou dost well know thyself, travel not far from the safety of the townes!\n");
+    }
+
+    else if (c->saveGame->members == 1) {
+        return strdup("Travel not the open lands alone. There are many worthy people in the diverse townes whom it would be wise to ask to Join thee!\n"
+                      "\nBuild thy party unto eight travellers, for only a true leader can win the Quest!\n");
+    }
+
+    else if (c->saveGame->runes == 0) {
+        return strdup("Learn ye the paths of virtue. Seek to gain entry unto the eight shrines!\n"
+                      "\nFind ye the Runes, needed for entry into each shrine, and learn each chant or \"Mantra\" used to focus thy meditations.\n"
+                      "\nWithin the Shrines thou shalt learn of the deeds which show thy inner virtue or vice!\n"
+                      "\nChoose thy path wisely for all thy deeds of good and evil are remembered and can return to hinder thee!\n");
+    }
+
+    else if (!partialAvatar) {
+        return strdup("Visit the Seer Hawkwind often and use his wisdom to help thee prove thy virtue.\n"
+                      "\nWhen thou art ready, Hawkwind will advise thee to seek the Elevation unto partial Avatarhood in a virtue.\n"
+                      "\nSeek ye to become a partial Avatar in all eight virtues, for only then shalt thou be ready to seek the codex!\n");
+    }
+
+    else if (c->saveGame->stones == 0) {
+        return strdup("Go ye now into the depths of the dungeons. Therein recover the 8 colored stones from the altar pedestals in the halls of the dungeons.\n"
+                      "\nFind the uses of these stones for they can help thee in the Abyss!\n");
+    }
+
+    else if (!fullAvatar) {
+        return strdup("Thou art doing very well indeed on the path to Avatarhood! Strive ye to achieve the Elevation in all eight virtues!\n");
+    }
+
+    else if ((c->saveGame->items & ITEM_BELL) == 0 ||
+             (c->saveGame->items & ITEM_BOOK) == 0 ||
+             (c->saveGame->items & ITEM_CANDLE) == 0) {
+        return strdup("Find ye the Bell, Book and Candle!  With these three things, one may enter the Great Stygian Abyss!\n");
+    }
+
+    else if ((c->saveGame->items & ITEM_KEY_C) == 0 ||
+             (c->saveGame->items & ITEM_KEY_L) == 0 ||
+             (c->saveGame->items & ITEM_KEY_T) == 0) {
+        return strdup("Before thou dost enter the Abyss thou shalt need the Key of Three Parts, and the Word of Passage.\n"
+                      "\nThen might thou enter the Chamber of the Codex of Ultimate Wisdom!\n");
+    }
+
+    else {
+        return strdup("Thou dost now seem ready to make the final journey into the dark Abyss! Go only with a party of eight!\n"
+                      "\nGood Luck, and may the powers of good watch over thee on this thy most perilous endeavor!\n"
+                      "\nThe hearts and souls of all Britannia go with thee now. Take care, my friend.\n");
+    }
 }
 
 char *hawkwindGetIntro(Conversation *cnv) {
