@@ -20,6 +20,7 @@
               showavatar          %bool;   #IMPLIED
               nolineofsight       %bool;   #IMPLIED
               firstperson         %bool;   #IMPLIED
+              contextual          %bool;   #IMPLIED
               music               NMTOKEN  #REQUIRED>
 
 <!-- city-map specific information -->
