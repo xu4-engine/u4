@@ -23,6 +23,13 @@
 #include "u4file.h"
 #include "xml.h"
 
+/* A bug in SDL_mixer 1.2.5 for MacOSX causes it to crash looping music */
+#if defined(MACOSX)
+#define NLOOPS 1
+#else
+#define NLOOPS -1
+#endif
+
 void musicPlayMid(Music music);
 int musicLoad(Music music);
 
@@ -43,7 +50,7 @@ void musicPlayMid(Music music) {
 
     /* loaded a new piece of music */
     if (musicLoad(music))
-        Mix_PlayMusic(playing, -1);
+        Mix_PlayMusic(playing, NLOOPS);
 }
 
 int musicLoad(Music music) {
@@ -201,9 +208,9 @@ void musicFadeIn(int msecs, int loadFromMap) {
             musicLoad(c->location->map->music);        
 
         if (!settings->volumeFades)
-            Mix_PlayMusic(playing, -1);
+            Mix_PlayMusic(playing, NLOOPS);
         else {        
-            if(Mix_FadeInMusic(playing, -1, msecs) == -1)
+            if(Mix_FadeInMusic(playing, NLOOPS, msecs) == -1)
                 errorWarning("Mix_FadeInMusic: %s\n", Mix_GetError());
         }
     }
