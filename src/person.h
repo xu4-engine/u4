@@ -80,7 +80,7 @@ typedef struct _Person {
     PersonQuestionTrigger questionTrigger;
     PersonQuestionType questionType;
     int turnAwayProb;
-    unsigned int tile0, tile1;
+    unsigned char tile0, tile1;
     unsigned int startx, starty;
     ObjectMovementBehavior movement_behavior;
     PersonNpcType npcType;
