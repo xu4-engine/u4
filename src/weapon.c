@@ -23,6 +23,7 @@
 #define MASK_ATTACKTHROUGHOBJECTS   0x0040
 #define MASK_ABSOLUTERANGE          0x0080
 #define MASK_RETURNS                0x0100
+#define MASK_DONTSHOWTRAVEL         0x0200
 
 int weaponInfoLoaded = 0;
 int numWeapons = 0;
@@ -39,11 +40,12 @@ void weaponLoadInfoFromXml() {
     } booleanAttributes[] = {
         { "lose", MASK_LOSE },
         { "losewhenranged", MASK_LOSEWHENRANGED },
-        { "choosedistance", MASK_CHOOSEDISTANCE | MASK_ABSOLUTERANGE },        
+        { "choosedistance", MASK_CHOOSEDISTANCE },
         { "alwayshits", MASK_ALWAYSHITS },
         { "magic", MASK_MAGIC },
         { "attackthroughobjects", MASK_ATTACKTHROUGHOBJECTS },
-        { "returns", MASK_RETURNS }
+        { "returns", MASK_RETURNS },
+        { "dontshowtravel", MASK_DONTSHOWTRAVEL }
     };
 
     static const struct {
@@ -306,11 +308,22 @@ int weaponLoseWhenRanged(int weapon) {
 }
 
 /**
- * Return true if the weapon allows you to choose the distance
+ * Returns true if the weapon allows you to choose the distance
  */
 
 int weaponCanChooseDistance(int weapon) {
     weaponLoadInfoFromXml();
 
     return (weapons[weapon].mask & MASK_CHOOSEDISTANCE);
+}
+
+/**
+ * Returns true if the weapon displays a tile while it travels
+ * to give the appearance of 'flying' to its target
+ */
+
+int weaponShowTravel(int weapon) {
+    weaponLoadInfoFromXml();
+
+    return (weapons[weapon].mask & MASK_DONTSHOWTRAVEL) ? 0 : 1;
 }

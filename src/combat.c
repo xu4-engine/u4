@@ -62,13 +62,15 @@ void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);
 int combatAttackAtCoord(int x, int y, int distance, void *data);
 int combatReturnWeaponToOwner(int x, int y, int distance, void *data);
-int combatInitialNumberOfMonsters(Monster *monster);
+int combatInitialNumberOfMonsters(const Monster *monster);
 int combatIsWon(void);
 int combatIsLost(void);
 void combatEnd(void);
 void combatMoveMonsters(void);
 int combatFindTargetForMonster(const Object *monster, int *distance, int ranged);
 int movePartyMember(Direction dir, int member);
+int combatChooseWeaponDir(int key, void *data);
+int combatChooseWeaponRange(int key, void *data);
 
 void combatBegin(unsigned char partytile, unsigned short transport, Object *monster) {
     int i, j;
@@ -208,7 +210,7 @@ void combatCreateMonster(int index, int canbeleader) {
 }
 
 void combatFinishTurn() {
-    int i;
+    int i;    
 
     if (combatIsWon()) {
         eventHandlerPopKeyHandler();
@@ -279,6 +281,7 @@ void combatFinishTurn() {
     party[focus]->hasFocus = 1;
 
     screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, weaponGetName(c->saveGame->players[focus].weapon));
+    c->statsItem = STATS_PARTY_OVERVIEW;
     statsUpdate();
     statsHighlightCharacter(focus);    
 }
@@ -286,7 +289,8 @@ void combatFinishTurn() {
 int combatBaseKeyHandler(int key, void *data) {
     int valid = 1;
     CoordActionInfo *info;
-    AlphaActionInfo *alphaInfo;    
+    AlphaActionInfo *alphaInfo; 
+    int weapon = c->saveGame->players[focus].weapon;
 
     switch (key) {
     case U4_UP:
@@ -311,14 +315,16 @@ int combatBaseKeyHandler(int key, void *data) {
         info->origin_x = party[focus]->x;
         info->origin_y = party[focus]->y;
         info->prev_x = info->prev_y = -1;
-        info->range = weaponGetRange(c->saveGame->players[focus].weapon);
+        info->range = weaponGetRange(weapon);
         info->validDirections = MASK_DIR_ALL;
         info->player = focus;        
-        info->blockedPredicate = weaponCanAttackThroughObjects(c->saveGame->players[focus].weapon) ?
+        info->blockedPredicate = weaponCanAttackThroughObjects(weapon) ?
             NULL :
             &tileCanAttackOver;
         info->blockBefore = 1;
-        eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
+        
+        eventHandlerPushKeyHandlerData(&combatChooseWeaponDir, info);        
+
         screenMessage("Dir: ");        
         break;
 
@@ -373,7 +379,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     int i, xp, hittile, misstile;
     CoordActionInfo* info = (CoordActionInfo*)data;    
     int weapon = c->saveGame->players[info->player].weapon;    
-    int wrongRange = weaponRangeAbsolute(weapon) && (distance != weaponGetRange(weapon));
+    int wrongRange = weaponRangeAbsolute(weapon) && (distance != info->range);
     int oldx = info->prev_x,
         oldy = info->prev_y;  
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
@@ -391,11 +397,16 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
 
     /* Missed */
     if (x == -1 && y == -1) {
-        (*c->location->finishTurn)();
         if (weaponReturns(weapon))
             combatReturnWeaponToOwner(oldx, oldy, distance-1, data);
+        /* If the weapon leaves a tile behind, do it here! (flaming oil, etc) */
+        if (!wrongRange && (weaponLeavesTile(weapon) && tileIsWalkable(groundTile)))
+            annotationAdd(oldx, oldy, c->location->z, c->location->map->id, weaponLeavesTile(weapon));
+
         if ((distance > 1 && weaponLoseWhenRanged(weapon)) || weaponLoseWhenUsed(weapon))
             playerLoseWeapon(c->saveGame, info->player);
+
+        (*c->location->finishTurn)();
 
         return 1;
     }
@@ -406,27 +417,26 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
             combat_monsters[i]->x == x &&
             combat_monsters[i]->y == y)
             monster = i;
-    }    
+    }   
 
-    /* If the weapon's range is absolute and we're testing the wrong range, stop now! */ 
-    if (wrongRange) {
+    /* If we haven't hit a monster, or the weapon's range is absolute
+       and we're testing the wrong range, stop now! */
+    if (monster == -1 || wrongRange) {
+        
+        /* If the weapon is shown as it travels, show it now */
+        if (weaponShowTravel(weapon)) {
+            annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, misstile));
+            gameUpdateScreen();
+        
+            /* Based on attack speed setting in setting struct, make a delay for
+               the attack annotation */
+            if (attackdelay > 0)
+                eventHandlerSleep(attackdelay * 2);
+        }
         return 0;
     }
-    else if (monster == -1) {
-        annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, misstile));
-        gameUpdateScreen();
-        
-        /* Based on attack speed setting in setting struct, make a delay for
-           the attack annotation */
-        if (attackdelay > 0)
-            eventHandlerSleep(attackdelay * 2);
-        return 0;
-    }    
-    /* If the weapon leaves a tile behind, do it here! (flaming oil) */
-    else if (weaponLeavesTile(weapon) && tileIsWalkable(groundTile))
-        annotationAdd(x, y, c->location->z, c->location->map->id, weaponLeavesTile(weapon));       
-
-    if (!playerAttackHit(&c->saveGame->players[focus])) {
+    
+    else if (!playerAttackHit(&c->saveGame->players[focus])) {
         screenMessage("Missed!\n");
         
         /* show the 'miss' tile */
@@ -478,6 +488,11 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
 
     if (weaponReturns(weapon))
         combatReturnWeaponToOwner(x, y, distance, data);
+
+    /* If the weapon leaves a tile behind, do it here! (flaming oil, etc) */
+    if (!wrongRange && (weaponLeavesTile(weapon) && tileIsWalkable(groundTile)))
+        annotationAdd(x, y, c->location->z, c->location->map->id, weaponLeavesTile(weapon));
+
     if ((distance > 1 && weaponLoseWhenRanged(weapon)) || weaponLoseWhenUsed(weapon))
         playerLoseWeapon(c->saveGame, info->player);
     
@@ -525,7 +540,7 @@ int combatReturnWeaponToOwner(int x, int y, int distance, void *data) {
 /**
  * Generate the number of monsters in a group.
  */
-int combatInitialNumberOfMonsters(Monster *monster) {
+int combatInitialNumberOfMonsters(const Monster *monster) {
     int nmonsters;
 
     if (mapIsWorldMap(c->location->prev->map)) {
@@ -731,7 +746,6 @@ int combatFindTargetForMonster(const Object *monster, int *distance, int ranged)
     return closest;
 }
 
-
 int movePartyMember(Direction dir, int member) {
     int result = 1;
     int newx, newy;
@@ -777,4 +791,51 @@ void attackFlash(int x, int y, int tile, int timeFactor) {
     annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, tile), (attackdelay + divisor)/divisor));
     gameUpdateScreen();
     eventHandlerSleep((attackdelay+2) * mult);
+}
+
+/**
+ * Key handler for choosing an attack direction
+ */
+int combatChooseWeaponDir(int key, void *data) {
+    CoordActionInfo *info = (CoordActionInfo *) data;    
+    Direction dir = keyToDirection(key);
+    int valid = (dir != DIR_NONE);
+    int weapon = c->saveGame->players[info->player].weapon;
+
+    eventHandlerPopKeyHandler();
+    info->dir = dir;
+
+    if (valid) {
+        screenMessage("%s\n", getDirectionName(dir));
+        if (weaponCanChooseDistance(weapon)) {
+            screenMessage("Range: ");
+            eventHandlerPushKeyHandlerData(&combatChooseWeaponRange, info);
+        }
+        else {
+            gameDirectionalAction(dir, info);
+            free(info);
+        }
+    } else free(info);
+
+    return valid || keyHandlerDefault(key, NULL);
+}
+
+/**
+ * Key handler for choosing the range of a wepaon
+ */
+int combatChooseWeaponRange(int key, void *data) {    
+    CoordActionInfo *info = (CoordActionInfo *) data;
+    int weapon = c->saveGame->players[info->player].weapon;    
+
+    if ((key >= '0') && (key <= (info->range + '0'))) {
+        info->range = key - '0';
+        gameDirectionalAction(info->dir, info);
+
+        eventHandlerPopKeyHandler();
+        free(info);
+
+        return 1;
+    }
+    
+    return 0;
 }

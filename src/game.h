@@ -31,8 +31,9 @@ typedef struct CoordActionInfo {
     int origin_x, origin_y;
     int prev_x, prev_y;
     int range;
-    int validDirections;
+    int validDirections;    
     int player;
+    Direction dir;
     int (*blockedPredicate)(unsigned char tile);
     int blockBefore; /* try the action first, or test to see if it was blocked first? */
 } CoordActionInfo;

@@ -2497,6 +2497,11 @@ int gameDirectionalAction(Direction dir, CoordActionInfo *info) {
     if (DIR_IN_MASK(dir, info->validDirections)) {
         for (distance = 1; distance <= info->range; distance++) {
             dirMove(dir, &t_x, &t_y);
+            mapWrapCoordinates(c->location->map, &t_x, &t_y);
+            
+            /* make sure our action isn't taking us off the map */
+            if (MAP_IS_OOB(c->location->map, t_x, t_y))
+                break;
 
             tile = mapGroundTileAt(c->location->map, t_x, t_y, c->location->z);
 
