@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "image.h"
+#include "observer.h"
 
 class ConfigElement;
 class Debug;
 class ImageSet;
+class Settings;
 
 /*
  * The image manager is responsible for loading and keeping track of
@@ -91,7 +93,7 @@ struct ImageInfo {
 /**
  * The image manager singleton that keeps track of all the images.
  */
-class ImageMgr {
+class ImageMgr : Observer<Settings *> {
 public:
     static ImageMgr *getInstance();
 
@@ -103,6 +105,7 @@ public:
 
 private:
     ImageMgr();
+    ~ImageMgr();
     void init();
 
     ImageSet *loadImageSetFromConf(const ConfigElement &conf);
@@ -111,7 +114,7 @@ private:
 
     ImageSet *getSet(const std::string &setname);
     ImageInfo *getInfo(const std::string &name);
-    ImageInfo *getInfoFromSet(const std::string &name, const std::string &setname);
+    ImageInfo *getInfoFromSet(const string &name, ImageSet *set);
 
     void fixupIntro(Image *im, int prescale);
     void fixupIntroExtended(Image *im, int prescale);
@@ -119,10 +122,13 @@ private:
     void fixupAbacus(Image *im, int prescale);
     void fixupDungNS(Image *im, int prescale);
 
+    void update(Observable<Settings *> *o, Settings *newSettings);
+
     static ImageMgr *instance;
     bool initialized;
     std::map<std::string, ImageSet *> imageSets;
     std::vector<std::string> imageSetNames;
+    ImageSet *baseSet;
 
     Debug *logger;
 };

@@ -43,7 +43,13 @@ ImageMgr::ImageMgr() {
     logger = new Debug("debug/imagemgr.txt", "ImageMgr");
     TRACE(*logger, "creating ImageMgr");
 
+    settings.addObserver(this);
+
     initialized = false;
+}
+
+ImageMgr::~ImageMgr() {
+    settings.deleteObserver(this);
 }
 
 void ImageMgr::init() {
@@ -88,6 +94,7 @@ void ImageMgr::init() {
     for (std::map<string, ImageSet *>::const_iterator set = imageSets.begin(); set != imageSets.end(); set++)
         imageSetNames.push_back(set->first);
 
+    update(NULL, &settings);
     initialized = true;
 }
 
@@ -322,23 +329,13 @@ ImageSet *ImageMgr::getSet(const string &setname) {
  * Returns image information for the current image set.
  */
 ImageInfo *ImageMgr::getInfo(const string &name) {
-    string setname;
-
-    if (!u4isUpgradeAvailable())
-        setname = "EGA";
-    else
-        setname = settings.videoType;
-
-    return getInfoFromSet(name, setname);
+    return getInfoFromSet(name, baseSet);
 }
 
 /**
  * Returns information for the given image set.
  */
-ImageInfo *ImageMgr::getInfoFromSet(const string &name, const string &setname) {
-    ImageSet *set;
-    
-    set = getSet(setname);
+ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *set) {
     if (!set)
         return NULL;
 
@@ -348,8 +345,10 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, const string &setname) {
         return i->second;
 
     /* otherwise if this image set extends another, check the base image set */
-    if (set->extends != "")
-        return getInfoFromSet(name, set->extends);
+    if (set->extends != "") {
+        set = getSet(set->extends);
+        return getInfoFromSet(name, set);
+    }
 
     return NULL;
 }
@@ -374,11 +373,11 @@ ImageInfo *ImageMgr::get(const string &name) {
      * and are not renamed in the upgrade installation process
      */
     string filename = info->filename;
-    if (u4isUpgradeInstalled() && getInfoFromSet(name, "VGA")->filename.find(".old") != string::npos) {
+    if (u4isUpgradeInstalled() && getInfoFromSet(name, getSet("VGA"))->filename.find(".old") != string::npos) {
         if (settings.videoType == "EGA")
-            filename = getInfoFromSet(name, "VGA")->filename;
+            filename = getInfoFromSet(name, getSet("VGA"))->filename;
         else
-            filename = getInfoFromSet(name, "EGA")->filename;
+            filename = getInfoFromSet(name, getSet("EGA"))->filename;
     }
 
     if (filename == "")
@@ -458,12 +457,7 @@ ImageInfo *ImageMgr::get(const string &name) {
 SubImage *ImageMgr::getSubImage(const string &name) {
     string setname;
 
-    if (!u4isUpgradeAvailable())
-        setname = "EGA";
-    else
-        setname = settings.videoType;
-
-    ImageSet *set = getSet(setname);
+    ImageSet *set = baseSet;
 
     while (set != NULL) {
         for (std::map<string, ImageInfo *>::iterator i = set->info.begin(); i != set->info.end(); i++) {
@@ -514,5 +508,21 @@ void ImageMgr::freeAll() {
 
 const vector<string> &ImageMgr::getSetNames() {
     return imageSetNames;
+}
+
+/**
+ * Find the new base image set when settings have changed.
+ */
+void ImageMgr::update(Observable<Settings *> *o, Settings *newSettings) {
+    string setname;
+
+    if (!u4isUpgradeAvailable())
+        setname = "EGA";
+    else
+        setname = newSettings->videoType;
+
+    TRACE(*logger, string("base image set is '") + setname + string("'"));
+
+    baseSet = getSet(setname);
 }
 
