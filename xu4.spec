@@ -25,10 +25,11 @@ spirit of the original game will be added.
 %setup -n u4
 
 %build
-cd src && make
+cd src && make datadir=%{_datadir}
 
 %install
-cd src && %{makeinstall}
+cd src && %{makeinstall} desktopdir=$RPM_BUILD_ROOT/etc/X11/applnk
+
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -37,8 +38,14 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %doc README doc/FileFormats.txt
 %{_bindir}/u4
+%{_datadir}/pixmaps/u4.bmp
+%{_datadir}/pixmaps/u4.png
+/etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Mon May  6 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added pixmaps, desktop entry
+
 * Mon Apr 23 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - updated description
 
