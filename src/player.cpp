@@ -349,11 +349,13 @@ bool PartyMember::applyDamage(int damage) {
 
     if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();                    
+        Map *map = getMap();
+
         screenMessage("%s is Killed!\n", getName().c_str());
         map->annotations->add(p, Tileset::findTileByName("corpse")->id)->setTTL(party->size());
 
         /* remove yourself from the map */
-        map->removeObject(this);        
+        remove();        
         return false;
     }
 

@@ -91,16 +91,16 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
             break;
         case ACTION_ENTER:
             switch (destination->type) {
-            case MAPTYPE_CITY: 
+            case Map::CITY: 
                 {
                     City *city = dynamic_cast<City*>(destination);
                     screenMessage("Enter %s!\n\n%s\n\n", city->type.c_str(), city->getName().c_str());
                 }
                 break;            
-            case MAPTYPE_SHRINE:
+            case Map::SHRINE:
                 screenMessage("Enter the %s!\n\n", destination->getName().c_str());
                 break;
-            case MAPTYPE_DUNGEON:
+            case Map::DUNGEON:
                 screenMessage("Enter dungeon!\n\n%s\n\n", destination->getName().c_str());
                 break;
             default:
@@ -141,7 +141,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         location->prev->map = mapMgr->get(portal->retroActiveDest->mapid);
     }
 
-    if (destination->type == MAPTYPE_SHRINE) {
+    if (destination->type == Map::SHRINE) {
         Shrine *shrine = dynamic_cast<Shrine*>(destination);
         shrine->enter();
     }
