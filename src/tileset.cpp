@@ -171,14 +171,14 @@ void Tileset::loadAll(string filename) {
     unloadAll();
 
     /* open the filename for the tileset and parse it! */
-    TRACE(dbg, string("Parsing ") + filename);
+    TRACE_LOCAL(dbg, string("Parsing ") + filename);
     doc = xmlParse(filename.c_str());
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "tilesets") != 0)
         errorFatal("malformed %s", filename.c_str());
 
     /* load tile rules from xml */
-    TRACE(dbg, "Loading tile rules");
+    TRACE_LOCAL(dbg, "Loading tile rules");
     if (!TileRule::rules.size())
         TileRule::load("tileRules.xml");    
 
@@ -193,18 +193,18 @@ void Tileset::loadAll(string filename) {
         string tilesetFilename = xmlGetPropAsStr(node, "file");
         /* load the tileset! */
 
-        TRACE(dbg, string("Loading tileset: ") + tilesetFilename);
+        TRACE_LOCAL(dbg, string("Loading tileset: ") + tilesetFilename);
         tileset->load(tilesetFilename);
 
         tilesets[tileset->name] = tileset;
     }
 
     /* make the current tileset the first one encountered */
-    TRACE(dbg, "Setting default tileset");
+    TRACE_LOCAL(dbg, "Setting default tileset");
     set(tilesets.begin()->second);
 
     /* load tile maps from xml, including translations from index to id */
-    TRACE(dbg, "Loading tilemaps");
+    TRACE_LOCAL(dbg, "Loading tilemaps");
     if (!TileMap::size())
         TileMap::loadAll(filename);
 

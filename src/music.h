@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "debug.h"
+
 #define musicMgr   (Music::getInstance())
 
 #define CAMP_FADE_OUT_TIME          1000
@@ -34,7 +36,7 @@ public:
     Music();
     ~Music();
 
-    static Music *getInstance();
+    static Music *getInstance();    
     static void callback(void *);    
     static bool isPlaying();
 
@@ -48,7 +50,7 @@ public:
     void shopping();
     void intro();
     void introSwitch(int n);
-    bool toggle();    
+    bool toggle();
 
 private:
     void playMid(Type music);
@@ -62,18 +64,22 @@ private:
     static bool fading;
     static bool on;
 
+public:
+    static bool functional;
+
     /*
      * Properties
      */
 
     std::vector<std::string> filenames;
-    Type introMid;
+    Type introMid;    
 
 #ifndef _MIXER_H_
     struct Mix_Music { int dummy; };
 #endif 
 
-    Mix_Music* playing;    
+    Mix_Music* playing;
+    Debug *logger;
 };
 
 #endif

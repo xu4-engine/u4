@@ -136,7 +136,8 @@ int main(int argc, char *argv[]) {
     eventHandler->popKeyHandler();
 
     Tileset::unloadAll();
-    
+
+    delete musicMgr;
     soundDelete();
     screenDelete();
 

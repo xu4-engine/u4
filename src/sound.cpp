@@ -15,6 +15,7 @@
 #include "config.h"
 #include "debug.h"
 #include "error.h"
+#include "music.h"
 #include "settings.h"
 #include "u4file.h"
 
@@ -52,7 +53,8 @@ void soundPlay(Sound sound, bool onlyOnce) {
 
     ASSERT(sound < SOUND_MAX, "Attempted to play an invalid sound in soundPlay()");
     
-    if (!settings.soundVol)
+    // If music didn't initialize correctly, then we can't play it anyway
+    if (!Music::functional || !settings.soundVol)
         return;
 
     if (soundChunk[sound] == NULL) {

@@ -9,6 +9,7 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -41,7 +42,11 @@ using std::vector;
 Music *Music::instance = NULL;
 bool Music::fading = false;
 bool Music::on = false;
+bool Music::functional = true;
 
+/**
+ * Returns an instance of the Music class
+ */
 Music *Music::getInstance() {
     if (!instance)
         instance = new Music();
@@ -55,13 +60,17 @@ Music *Music::getInstance() {
 /**
  * Initiliaze the music
  */
-Music::Music() : introMid(TOWNS), playing(NULL) {
+Music::Music() : introMid(TOWNS), playing(NULL), logger(new Debug("debug/music.txt", "Music")) {
     filenames.push_back("");    // filename for MUSIC_NONE;
+
+    TRACE(*logger, "Initializing music");
 
     /*
      * load music track filenames from xml config file
      */
     const Config *config = Config::getInstance();
+
+    TRACE_LOCAL(*logger, "Loading music tracks");
 
     vector<ConfigElement> musicConfs = config->getElement("/config/music").getChildren();
     for (std::vector<ConfigElement>::iterator i = musicConfs.begin(); i != musicConfs.end(); i++) {
@@ -70,6 +79,7 @@ Music::Music() : introMid(TOWNS), playing(NULL) {
             continue;
 
         filenames.push_back(i->getString("file"));
+        TRACE_LOCAL(*logger, string("\tTrack file: ") + filenames.back());
 
     }
     filenames.resize(MAX, "");
@@ -77,7 +87,9 @@ Music::Music() : introMid(TOWNS), playing(NULL) {
     /*
      * initialize sound subsystem
      */
-    {        
+    {
+        TRACE_LOCAL(*logger, "Initializing SDL sound subsystem");
+        
         int audio_rate = 22050;
         Uint16 audio_format = AUDIO_S16LSB; /* 16-bit stereo */
         int audio_channels = 2;
@@ -85,39 +97,57 @@ Music::Music() : introMid(TOWNS), playing(NULL) {
 
         if (u4_SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
             errorWarning("unable to init SDL audio subsystem: %s", SDL_GetError());
+            functional = false;
             return;
         }
 
-        if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
-            errorWarning("unable to open audio!");
+        TRACE_LOCAL(*logger, "Opening audio");
+
+        if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {            
+            fprintf(stderr, "Unable to open audio!\n");
+            functional = false;
             return;
         }
+
+        TRACE_LOCAL(*logger, "Allocating channels");
 
         Mix_AllocateChannels(16);
     }
 
-    on = settings.musicVol;    
+    on = settings.musicVol;
+    TRACE(*logger, string("Music initialized: volume is ") + (on ? "on" : "off"));
 }
 
 /**
  * Stop playing the music and cleanup
  */
 Music::~Music() {
+    TRACE(*logger, "Uninitializing music");
     eventHandler->getTimer()->remove(&Music::callback);
 
     if (playing) {
+        TRACE_LOCAL(*logger, "Stopping currently playing music");
         Mix_FreeMusic(playing);
         playing = NULL;
     }
-    
+
+    TRACE_LOCAL(*logger, "Closing audio");    
     Mix_CloseAudio();
+
+    TRACE_LOCAL(*logger, "Quitting SDL audio subsystem");
     u4_SDL_QuitSubSystem(SDL_INIT_AUDIO);
+
+    TRACE(*logger, "Music uninitialized");
+    delete logger;
 }
 
 /**
  * Play a midi file
  */
 void Music::playMid(Type music) {
+    if (!functional)
+        return;
+
     if (!settings.musicVol) {
         musicMgr->fadeOut(1000);
         return;    
@@ -203,6 +233,9 @@ void Music::stop() {
  * Fade out the music
  */
 void Music::fadeOut(int msecs) {
+    if (!functional)
+        return;
+
     if (isPlaying()) {        
         if (!settings.volumeFades)
             stop();
@@ -217,6 +250,9 @@ void Music::fadeOut(int msecs) {
  * Fade in the music
  */
 void Music::fadeIn(int msecs, bool loadFromMap) {
+    if (!functional)
+        return;
+
     if (!isPlaying() && settings.musicVol) {
         /* make sure we've got something loaded to play */
         if (loadFromMap || !playing)
