@@ -382,17 +382,26 @@ void introDrawMap() {
 }
 
 void introDrawMapAnimated() {
+    ScreenTileInfo tileInfo;
     int x, y, i;
 
+    tileInfo.hasFocus = 0;
+
     /* draw unmodified map */
-    for (y = 0; y < INTRO_MAP_HEIGHT; y++)
-        for (x = 0; x < INTRO_MAP_WIDTH; x++)
-            screenShowTile(introMap[y][x], x, y + 6);
+    for (y = 0; y < INTRO_MAP_HEIGHT; y++) {
+        for (x = 0; x < INTRO_MAP_WIDTH; x++) {
+            tileInfo.tile = introMap[y][x];
+            screenShowTile(&tileInfo, x, y + 6);
+        }
+    }
 
     /* draw animated objects */
-    for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++)
-        if (objectStateTable[i].tile != 0)
-            screenShowTile(objectStateTable[i].tile, objectStateTable[i].x, objectStateTable[i].y + 6);
+    for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
+        if (objectStateTable[i].tile != 0) {
+            tileInfo.tile = objectStateTable[i].tile;
+            screenShowTile(&tileInfo, objectStateTable[i].x, objectStateTable[i].y + 6);
+        }
+    }
 }
 
 /**
