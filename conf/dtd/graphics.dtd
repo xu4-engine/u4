@@ -1,0 +1,23 @@
+<!-- $Id$ -->
+
+<!ENTITY % bool '( true | false )'>
+<!ENTITY % filetype '( raw | rle | lzw )'>
+<!ENTITY % fixup '( none | intro | introExtended | abyss )'>
+
+<!ELEMENT graphics ( imageset+ ) >
+
+<!ELEMENT imageset ( image+ ) >
+<!ATTLIST imageset name           NMTOKEN  #REQUIRED
+                   extends        NMTOKEN  #IMPLIED>
+
+<!ELEMENT image EMPTY >
+<!ATTLIST image id                NMTOKEN  #REQUIRED
+                filename          NMTOKEN  #REQUIRED
+                width             NMTOKEN  #REQUIRED
+                height            NMTOKEN  #REQUIRED
+                depth             NMTOKEN  #REQUIRED
+                filetype          %filetype; #REQUIRED
+                tiles             NMTOKEN  #IMPLIED
+                introOnly         %bool;   #IMPLIED
+                fixup             %fixup;  #IMPLIED>
+
