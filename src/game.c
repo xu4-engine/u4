@@ -2582,8 +2582,9 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
  * by the tile it passes over.
  */
 int gameDirectionalAction(CoordActionInfo *info) {
-    int distance, tile;
-    int t_x = info->origin_x,
+    int distance = 0,
+        tile,
+        t_x = info->origin_x,
         t_y = info->origin_y,
         succeeded = 0,
         dirx = DIR_NONE,
@@ -2599,8 +2600,8 @@ int gameDirectionalAction(CoordActionInfo *info) {
      * try every tile in the given direction, up to the given range.
      * Stop when the command handler succeeds, the range is exceeded,
      * or the action is blocked.
-     */
-
+     */    
+    
     if ((dirx <= 0 || DIR_IN_MASK(dirx, info->validDirections)) && 
         (diry <= 0 || DIR_IN_MASK(diry, info->validDirections))) {
         for (distance = 0; distance <= info->range;
