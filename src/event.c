@@ -15,9 +15,14 @@
 #include "person.h"
 #include "ttype.h"
 #include "context.h"
+#include "annotation.h"
 #include "savegame.h"
 
 void moveAvatar(int dx, int dy);
+void attackAtCoord(int x, int y);
+void jimmyAtCoord(int x, int y);
+void openAtCoord(int x, int y);
+void talkAtCoord(int x, int y);
 
 KeyHandlerNode *head = NULL;
 
@@ -26,6 +31,17 @@ void eventHandlerPushKeyHandler(KeyHandler kh) {
     KeyHandlerNode *n = malloc(sizeof(KeyHandlerNode));
     if (n) {
         n->kh = kh;
+        n->data = NULL;
+        n->next = head;
+        head = n;
+    }
+}
+
+void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data) {
+    KeyHandlerNode *n = malloc(sizeof(KeyHandlerNode));
+    if (n) {
+        n->kh = kh;
+        n->data = data;
         n->next = head;
         head = n;
     }
@@ -43,12 +59,16 @@ KeyHandler eventHandlerGetKeyHandler() {
     return head->kh;
 }
 
-int keyHandlerDefault(int key) {
+void *eventHandlerGetKeyHandlerData() {
+    return head->data;
+}
+
+int keyHandlerDefault(int key, void *data) {
     int valid = 1;
 
     switch (key) {
     case '`':
-        printf("x = %d, y = %d, tile = %d\n", c->saveGame->x, c->saveGame->y, MAP_TILE_AT(c->map, c->saveGame->x, c->saveGame->y));
+        printf("x = %d, y = %d, tile = %d\n", c->saveGame->x, c->saveGame->y, mapTileAt(c->map, c->saveGame->x, c->saveGame->y));
         break;
     case 'm':
         screenMessage("0123456789012345\n");
@@ -61,7 +81,7 @@ int keyHandlerDefault(int key) {
     return valid;
 }
 
-int keyHandlerNormal(int key) {
+int keyHandlerNormal(int key, void *data) {
     int valid = 1;
     const Portal *portal;
 
@@ -83,6 +103,21 @@ int keyHandlerNormal(int key) {
         moveAvatar(1, 0);
         break;
 
+    case 'a':
+        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, &attackAtCoord);
+        screenMessage("Attack\nDir: ");
+        break;
+
+    case 'd':
+        portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
+        if (portal && portal->trigger_action == ACTION_DESCEND) {
+            c->map = portal->destination;
+            screenMessage("Descend!\n\n\020");
+        }
+        else
+            screenMessage("Descend what?\n\020");
+        break;
+
     case 'e':
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_ENTER) {
@@ -91,6 +126,7 @@ int keyHandlerNormal(int key) {
             new->parent = c;
             new->saveGame = (SaveGame *) memcpy(malloc(sizeof(SaveGame)), c->saveGame, sizeof(SaveGame));
             new->map = portal->destination;
+            new->annotation = NULL;
             new->saveGame->x = new->map->startx;
             new->saveGame->y = new->map->starty;
             new->line = new->parent->line;
@@ -101,24 +137,24 @@ int keyHandlerNormal(int key) {
             screenMessage("Enter what?\n\020");
         break;
 
+    case 'j':
+        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, &jimmyAtCoord);
+        screenMessage("Jimmy\nDir: ");
+        break;
+        
     case 'k':
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_KLIMB) {
-
-            Context *new = (Context *) malloc(sizeof(Context));
-            new->parent = c;
-            new->saveGame = (SaveGame *) memcpy(malloc(sizeof(SaveGame)), c->saveGame, sizeof(SaveGame));
-            new->map = portal->destination;
-            c = new;
-
+            c->map = portal->destination;
             screenMessage("Klimb!\n\n\020");
-        } else
+        }
+        else
             screenMessage("Klimb what?\n\020");
         break;
 
-    case 't':
-        eventHandlerPushKeyHandler(&keyHandlerTalk);
-        screenMessage("Talk\nDir: ");
+    case 'o':
+        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, &openAtCoord);
+        screenMessage("Open\nDir: ");
         break;
 
     case 'q':
@@ -130,15 +166,25 @@ int keyHandlerNormal(int key) {
         }
         break;
 
+    case 't':
+        eventHandlerPushKeyHandlerData(&keyHandlerGetDirection, &talkAtCoord);
+        screenMessage("Talk\nDir: ");
+        break;
+
+    case 'z':
+        screenMessage("Z-stats\n\n");
+        break;
+
     default:
         valid = 0;
         break;
     }
 
-    return valid || keyHandlerDefault(key);
+    return valid || keyHandlerDefault(key, NULL);
 }
 
-int keyHandlerTalk(int key) {
+int keyHandlerGetDirection(int key, void *data) {
+    void (*handleDir)(int, int) = (void (*)(int, int)) data;
     int valid = 1;
     int t_x = -1, t_y = -1;
 
@@ -168,33 +214,12 @@ int keyHandlerTalk(int key) {
         break;
     }
 
-    if (t_x != -1 ||
-        t_y != -1) {
-        c->conversation.talker = mapPersonAt(c->map, t_x, t_y);
-        if (c->conversation.talker == NULL) {
-            screenMessage("Funny, no\nresponse!\n");
-            eventHandlerPopKeyHandler();
-        }
-        else {
-            const Person *talker = c->conversation.talker;
-            char buffer[100];
+    (*handleDir)(t_x, t_y);
 
-            c->conversation.question = 0;
-            sprintf(buffer, "\nYou meet\n%s\n\n", talker->description);
-            if (isupper(buffer[9]))
-                buffer[9] = tolower(buffer[9]);
-            screenMessage(buffer);
-            screenMessage("%s says: I am %s\n\n:", talker->pronoun, talker->name);
-            c->conversation.buffer[0] = '\0';
-            eventHandlerPopKeyHandler();
-            eventHandlerPushKeyHandler(&keyHandlerTalking);
-        }
-    }
-
-    return valid || keyHandlerDefault(key);
+    return valid || keyHandlerDefault(key, NULL);
 }
 
-int keyHandlerTalking(int key) {
+int keyHandlerTalking(int key, void *data) {
     int valid = 1;
 
     if ((key >= 'a' && key <= 'z') || key == ' ') {
@@ -234,10 +259,10 @@ int keyHandlerTalking(int key) {
         valid = 0;
     }
 
-    return valid || keyHandlerDefault(key);
+    return valid || keyHandlerDefault(key, NULL);
 }
 
-int keyHandlerQuit(int key) {
+int keyHandlerQuit(int key, void *data) {
     FILE *saveGameFile;
     int valid = 1;
     char answer = '?';
@@ -270,7 +295,72 @@ int keyHandlerQuit(int key) {
         }
     }
 
-    return valid || keyHandlerDefault(key);
+    return valid || keyHandlerDefault(key, NULL);
+}
+
+void attackAtCoord(int x, int y) {
+    if (x == -1 && y == -1)
+        return;
+
+    eventHandlerPopKeyHandler();
+
+    screenMessage("attack at %d, %d\n(not implemented)\n", x, y);
+}
+
+void jimmyAtCoord(int x, int y) {
+    if (x == -1 && y == -1)
+        return;
+
+    eventHandlerPopKeyHandler();
+
+    if (!islockeddoor(mapTileAt(c->map, x, y))) {
+        screenMessage("Jimmy what?\n");
+        return;
+    }
+
+    screenMessage("door at %d, %d, unlocked!\n", x, y);
+    annotationAdd(x, y, -1, 0x3b);
+}
+
+void openAtCoord(int x, int y) {
+    if (x == -1 && y == -1)
+        return;
+
+    eventHandlerPopKeyHandler();
+
+    if (!isdoor(mapTileAt(c->map, x, y))) {
+        screenMessage("Open what?\n");
+        return;
+    }
+
+    screenMessage("door at %d, %d, opened!\n", x, y);
+    annotationAdd(x, y, 4, 0x3e);
+}
+
+void talkAtCoord(int x, int y) {
+    char buffer[100];
+    const Person *talker;
+
+    if (x == -1 && y == -1)
+        return;
+
+    eventHandlerPopKeyHandler();
+
+    c->conversation.talker = mapPersonAt(c->map, x, y);
+    if (c->conversation.talker == NULL) {
+        screenMessage("Funny, no\nresponse!\n");
+        return;
+    }
+
+    talker = c->conversation.talker;
+    c->conversation.question = 0;
+    sprintf(buffer, "\nYou meet\n%s\n\n", talker->description);
+    if (isupper(buffer[9]))
+        buffer[9] = tolower(buffer[9]);
+    screenMessage(buffer);
+    screenMessage("%s says: I am %s\n\n:", talker->pronoun, talker->name);
+    c->conversation.buffer[0] = '\0';
+    eventHandlerPushKeyHandler(&keyHandlerTalking);
 }
 
 void moveAvatar(int dx, int dy) {
@@ -311,7 +401,7 @@ void moveAvatar(int dx, int dy) {
 	}
     }
 
-    if (/*iswalkable(MAP_TILE_AT(c->map, newx, newy)) &&*/
+    if (iswalkable(mapTileAt(c->map, newx, newy)) &&
         !mapPersonAt(c->map, newx, newy)) {
 	c->saveGame->x = newx;
 	c->saveGame->y = newy;

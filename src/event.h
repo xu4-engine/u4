@@ -11,22 +11,25 @@
 #define U4_RIGHT '\''
 #define U4_BACKSPACE 8
 
-typedef int (*KeyHandler)(int);
+typedef int (*KeyHandler)(int, void *);
 
 typedef struct KeyHandlerNode {
     KeyHandler kh;
+    void *data;
     struct KeyHandlerNode *next;
 } KeyHandlerNode;
 
 void eventHandlerMain();
 void eventHandlerPushKeyHandler(KeyHandler kh);
+void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data);
 void eventHandlerPopKeyHandler();
 KeyHandler eventHandlerGetKeyHandler();
+void *eventHandlerGetKeyHandlerData();
 
-int keyHandlerDefault(int key);
-int keyHandlerNormal(int key);
-int keyHandlerTalk(int key);
-int keyHandlerTalking(int key);
-int keyHandlerQuit(int key);
+int keyHandlerDefault(int key, void *data);
+int keyHandlerNormal(int key, void *data);
+int keyHandlerGetDirection(int key, void *data);
+int keyHandlerTalking(int key, void *data);
+int keyHandlerQuit(int key, void *data);
 
 #endif
