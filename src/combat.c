@@ -56,7 +56,8 @@ int combatAttackAtCoord(int x, int y);
 int combatIsWon(void);
 int combatIsLost(void);
 void combatEnd(void);
-void combatMoveMonsters();
+void combatMoveMonsters(void);
+Object *combatFindTargetForMonster(const Object *monster);
 int movePartyMember(Direction dir, int member);
 
 void combatBegin(unsigned char partytile, unsigned short transport, unsigned char monster) {
@@ -226,9 +227,14 @@ int combatAttackAtCoord(int x, int y) {
 
     if (monster == -1) {
         screenMessage("Missed!\n");
+
+        annotationSetTimeDuration(annotationAdd(x, y, MISSFLASH_TILE), 2);
+
     } else {
         m = monsterForTile(monsters[monster]->tile);
         screenMessage("Hit!\n");
+
+        annotationSetTimeDuration(annotationAdd(x, y, HITFLASH_TILE), 2);
 
         /* FIXME: every hit is fatal for now */
         
@@ -303,14 +309,11 @@ void combatMoveMonsters() {
     unsigned char tile;
     Object *target, *other;
 
-    i = 0;
-    do {
-        target = party[i++];
-    } while (!target);
-
     for (i = 0; i < AREA_MONSTERS; i++) {
         if (!monsters[i])
             continue;
+
+        target = combatFindTargetForMonster(monsters[i]);
 
         newx = monsters[i]->x;
         newy = monsters[i]->y;
@@ -334,6 +337,31 @@ void combatMoveMonsters() {
             }
         }
     }
+}
+
+Object *combatFindTargetForMonster(const Object *monster) {
+    int i, dx, dy, distance;
+    Object *closest;
+
+    distance = 1000;
+    closest = NULL;
+    for (i = 0; i < c->saveGame->members; i++) {
+        if (!party[i])
+            continue;
+
+        dx = abs(monster->x - party[i]->x);
+        dx *= dx;
+        dy = abs(monster->y - party[i]->y);
+        dy *= dy;
+
+        if (dx + dy < distance ||
+            (dx + dy == distance && (rand() % 2) == 0)) {
+            distance = dx + dy;
+            closest = party[i];
+        }
+    }
+
+    return closest;
 }
 
 
