@@ -136,7 +136,6 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
         { BRIDGE_TILE,  &bridge_map },
         { NORTHBRIDGE_TILE, &bridge_map },
         { SOUTHBRIDGE_TILE, &bridge_map },
-        { CHEST_TILE,   &brick_map },
         { BRICKFLOOR_TILE, &brick_map },
         { MOONGATE0_TILE, &grass_map },
         { MOONGATE1_TILE, &grass_map },
@@ -495,7 +494,7 @@ void combatEnd() {
 
         /* added chest or captured ship object */
         if ((monsterForTile(monsterObj->tile)->mattr & MATTR_WATER) == 0)
-            mapAddObject(c->map, CHEST_TILE, CHEST_TILE, monsterObj->x, monsterObj->y, c->saveGame->dnglevel);
+            mapAddObject(c->map, tileGetChestBase(), tileGetChestBase(), monsterObj->x, monsterObj->y, c->saveGame->dnglevel);
         else if (tileIsPirateShip(monsterObj->tile)) {
             unsigned short ship = tileGetShipBase();
             tileSetDirection(&ship, tileGetDirection(monsterObj->tile));
@@ -544,6 +543,10 @@ void combatMoveMonsters() {
             action = CA_ATTACK;
 
         target = combatFindTargetForMonster(monsters[i], &distance, action == CA_RANGED);
+        if (target == -1 && action == CA_RANGED) {
+            action = CA_ADVANCE;
+            combatFindTargetForMonster(monsters[i], &distance, action == CA_RANGED);
+        }
         if (target == -1)
             continue;
 
