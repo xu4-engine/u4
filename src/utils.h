@@ -2,13 +2,14 @@
  * $Id$
  */
 
-#ifndef UTILS_C
-#define UTILS_C
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <cstdio>
 #include <ctime>
 #include <map>
 #include <string>
+#include <vector>
 
 using std::string;
 
@@ -19,6 +20,7 @@ using std::string;
 void xu4_srandom(void);
 int xu4_random(int upperval);
 void trim(string *val);
+std::vector<string> split(const string &s, const string &separators);
 
 class Performance {
     typedef std::map<string, clock_t> TimeMap;
