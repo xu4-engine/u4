@@ -23,6 +23,7 @@
 #include "ttype.h"
 
 extern Map camp_map;
+Map *oldmap;
 
 void campTimer(void *data);
 void campEnd(void);
@@ -30,15 +31,13 @@ void campEnd(void);
 void campBegin() {
     int i;
 
-    annotationClear();
-
-    c = gameCloneContext(c);
-
+    oldmap = c->map;
     gameSetMap(c, &camp_map, 1);
+
     musicPlay();
 
     for (i = 0; i < c->saveGame->members; i++)
-        mapAddObject(c->map, CORPSE_TILE, CORPSE_TILE, c->map->area->player_start[i].x, c->map->area->player_start[i].y);
+        mapAddObject(c->map, CORPSE_TILE, CORPSE_TILE, c->map->area->player_start[i].x, c->map->area->player_start[i].y, c->saveGame->dnglevel);
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
     eventHandlerAddTimerCallback(&campTimer, 4 * 10);
@@ -56,26 +55,15 @@ void campTimer(void *data) {
 }
 
 void campEnd() {
-    if (c->parent != NULL) {
-        Context *t = c;
-        annotationClear();
-        mapClearObjects(c->map);
-        c->parent->saveGame->x = c->saveGame->dngx;
-        c->parent->saveGame->y = c->saveGame->dngy;
-        c->parent->line = c->line;
-        c->parent->moonPhase = c->moonPhase;
-        c->parent->windDirection = c->windDirection;
-        c->parent->windCounter = c->windCounter;
-        c->parent->aura = c->aura;
-        c->parent->auraDuration = c->auraDuration;
-        c->parent->horseSpeed = c->horseSpeed;
-        c->parent->lastCommandTime = time(NULL);
-        c = c->parent;
-        c->col = 0;
-        free(t);
+    annotationClear(c->map->id);
+    mapClearObjects(c->map);
+
+    c->map = oldmap;
+    c->saveGame->x = c->saveGame->dngx;
+    c->saveGame->y = c->saveGame->dngy;
+    c->col = 0;
                 
-        musicPlay();
-    }
+    musicPlay();
 
     gameFinishTurn();
 }
