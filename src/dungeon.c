@@ -251,9 +251,16 @@ int dungeonHandleTrap(TrapType trap) {
  * Returns true if a ladder-up is found at the given coordinates
  */
 int dungeonLadderUpAt(struct _Map *map, int x, int y, int z) {
+    const Annotation *a;
+
     if (dungeonTokenAt(map, x, y, z) == DUNGEON_LADDER_UP ||
         dungeonTokenAt(map, x, y, z) == DUNGEON_LADDER_UPDOWN)
         return 1;
+
+    a = annotationAt(x, y, z, map->id);
+    if (a && (a->tile == LADDERUP_TILE))
+        return 1;
+
     return 0;
 }
 
@@ -261,8 +268,15 @@ int dungeonLadderUpAt(struct _Map *map, int x, int y, int z) {
  * Returns true if a ladder-down is found at the given coordinates
  */
 int dungeonLadderDownAt(struct _Map *map, int x, int y, int z) {
+    const Annotation *a;
+
     if (dungeonTokenAt(map, x, y, z) == DUNGEON_LADDER_DOWN ||
         dungeonTokenAt(map, x, y, z) == DUNGEON_LADDER_UPDOWN)
         return 1;
+
+    a = annotationAt(x, y, z, map->id);
+    if (a && (a->tile == LADDERDOWN_TILE))
+        return 1;
+
     return 0;
 }
