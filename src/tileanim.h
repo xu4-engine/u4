@@ -13,14 +13,28 @@ extern "C" {
 
 struct _ListNode;
 struct _Image;
+struct _RGBA;
 
 typedef enum {
-    TRANSFORM_INVERT
+    TRANSFORM_INVERT,
+    TRANSFORM_PIXEL
 } TileAnimTransformType;
 
 typedef struct {
-    TileAnimTransformType type;
     int x, y, w, h;
+} TileAnimInvertTransform;
+
+typedef struct {
+    int x, y;
+    struct _ListNode *colors;
+} TileAnimPixelTransform;
+
+typedef struct {
+    TileAnimTransformType type;
+    union {
+        TileAnimInvertTransform invert;
+        TileAnimPixelTransform pixel;
+    };
 } TileAnimTransform;
 
 typedef struct {
@@ -36,6 +50,7 @@ typedef struct {
 TileAnimSet *tileAnimSetLoadFromXml(xmlNodePtr node);
 TileAnim *tileAnimLoadFromXml(xmlNodePtr node);
 TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node);
+struct _RGBA *tileAnimColorLoadFromXml(xmlNodePtr node);
 TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const char *name);
 void tileAnimDraw(TileAnim *anim, struct _Image *tiles, int tile, int scale, int x, int y);
 

@@ -8,6 +8,7 @@
 #include "image.h"
 #include "list.h"
 #include "tileanim.h"
+#include "screen.h"
 #include "xml.h"
 #include "u4.h"
 #include "utils.h"
@@ -56,17 +57,50 @@ TileAnim *tileAnimLoadFromXml(xmlNodePtr node) {
 
 TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node) {
     TileAnimTransform *transform;
-    static const char *transformTypeEnumStrings[] = { "invert", NULL };
+    xmlNodePtr child;
+    static const char *transformTypeEnumStrings[] = { "invert", "pixel", NULL };
 
     transform = (TileAnimTransform *) malloc(sizeof(TileAnimTransform));
     memset(transform, 0, sizeof(TileAnimTransform));
     transform->type = xmlGetPropAsEnum(node, "type", transformTypeEnumStrings);
-    transform->x = xmlGetPropAsInt(node, "x");
-    transform->y = xmlGetPropAsInt(node, "y");
-    transform->w = xmlGetPropAsInt(node, "width");
-    transform->h = xmlGetPropAsInt(node, "height");
+
+    switch (transform->type) {
+    case TRANSFORM_INVERT:
+        transform->invert.x = xmlGetPropAsInt(node, "x");
+        transform->invert.y = xmlGetPropAsInt(node, "y");
+        transform->invert.w = xmlGetPropAsInt(node, "width");
+        transform->invert.h = xmlGetPropAsInt(node, "height");
+        break;
+    case TRANSFORM_PIXEL:
+        transform->pixel.x = xmlGetPropAsInt(node, "x");
+        transform->pixel.y = xmlGetPropAsInt(node, "y");
+
+        for (child = node->xmlChildrenNode; child; child = child->next) {
+            if (xmlNodeIsText(child))
+                continue;
+
+            if (xmlStrcmp(child->name, (const xmlChar *) "color") == 0) {
+                RGBA *rgba = tileAnimColorLoadFromXml(child);
+                transform->pixel.colors = listAppend(transform->pixel.colors, rgba);
+            }
+        }
+
+        break;
+    }
 
     return transform;
+}
+
+RGBA *tileAnimColorLoadFromXml(xmlNodePtr node) {
+    RGBA *rgba;
+    
+    rgba = (RGBA *) malloc(sizeof(RGBA));
+    rgba->r = xmlGetPropAsInt(node, "red");
+    rgba->g = xmlGetPropAsInt(node, "green");
+    rgba->b = xmlGetPropAsInt(node, "blue");
+    rgba->a = IM_OPAQUE;
+
+    return rgba;
 }
 
 TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const char *name) {
@@ -81,7 +115,9 @@ TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const char *name) {
 }
 
 void tileAnimDraw(TileAnim *anim, Image *tiles, int tile, int scale, int x, int y) {
-    ListNode *node;
+    ListNode *node, *colorNode;
+    RGBA *color;
+    int i;
 
     if (xu4_random(2) == 0)
         return;
@@ -91,9 +127,19 @@ void tileAnimDraw(TileAnim *anim, Image *tiles, int tile, int scale, int x, int 
 
         switch (transform->type) {
         case TRANSFORM_INVERT:
-            imageDrawSubRectInverted(tiles, x + scale * transform->x, y + scale * transform->y,
-                                     scale * transform->x, tile * (tiles->h / N_TILES) + scale * transform->y, 
-                                     scale * transform->w, scale * transform->h);
+            imageDrawSubRectInverted(tiles, scale * (x + transform->invert.x), scale * (y + transform->invert.y),
+                                     scale * transform->invert.x, tile * (tiles->h / N_TILES) + scale * transform->invert.y, 
+                                     scale * transform->invert.w, scale * transform->invert.h);
+            break;
+
+        case TRANSFORM_PIXEL:
+            colorNode = transform->pixel.colors;
+            for (i = xu4_random(listLength(transform->pixel.colors)); i > 0; i--)
+                colorNode = colorNode->next;
+            color = (RGBA *) colorNode->data;
+
+            screenFillRect(transform->pixel.x + x, transform->pixel.y + y, 1, 1, color->r, color->g, color->b);
+            break;
         }
     }
 }
