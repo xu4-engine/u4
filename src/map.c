@@ -204,11 +204,12 @@ int mapReadWorld(Map *map, FILE *world) {
     return 1;
 }
 
-Object *mapObjectAt(const Map *map, int x, int y) {
+Object *mapObjectAt(const Map *map, int x, int y, int ignoreAvatar) {
     Object *obj;
 
     for(obj = map->objects; obj; obj = obj->next) {
-        if (obj->x == x && obj->y == y)
+        if (obj->x == x && obj->y == y &&
+            (!ignoreAvatar || !obj->isAvatar))
             return obj;
     }
     return NULL;
@@ -217,7 +218,7 @@ Object *mapObjectAt(const Map *map, int x, int y) {
 const Person *mapPersonAt(const Map *map, int x, int y) {
     Object *obj;
 
-    obj = mapObjectAt(map, x, y);
+    obj = mapObjectAt(map, x, y, 1);
     if (obj)
         return obj->person;
     else
@@ -262,12 +263,13 @@ void mapAddPersonObject(Map *map, const Person *person) {
     obj->y = person->starty;
     obj->movement_behavior = person->movement_behavior;
     obj->person = person;
+    obj->isAvatar = 0;
     obj->next = map->objects;
 
     map->objects = obj;
 }
 
-void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned int x, unsigned int y) {
+void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned short x, unsigned short y) {
     Object *obj = (Object *) malloc(sizeof(Object));
 
     obj->tile = tile;
@@ -278,6 +280,24 @@ void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned i
     obj->prevy = y;
     obj->movement_behavior = MOVEMENT_FIXED;
     obj->person = NULL;
+    obj->isAvatar = 0;
+    obj->next = map->objects;
+
+    map->objects = obj;
+}
+
+void mapAddAvatarObject(Map *map, unsigned int tile, unsigned short x, unsigned short y) {
+    Object *obj = (Object *) malloc(sizeof(Object));
+
+    obj->tile = tile;
+    obj->prevtile = tile;
+    obj->x = x;
+    obj->y = y;
+    obj->prevx = x;
+    obj->prevy = y;
+    obj->movement_behavior = MOVEMENT_FIXED;
+    obj->person = NULL;
+    obj->isAvatar = 1;
     obj->next = map->objects;
 
     map->objects = obj;
@@ -301,14 +321,12 @@ void mapRemoveObject(Map *map, Object *rem) {
     }
 }
 
-void mapRemoveObjectAtPosition(Map *map, unsigned char tile, unsigned short x, unsigned short y) {
+void mapRemoveAvatarObject(Map *map) {
     Object *obj = map->objects, *prev;
 
     prev = NULL;
     while (obj) {
-        if (obj->tile == tile &&
-            obj->x == x &&
-            obj->y == y) {
+        if (obj->isAvatar) {
             if (prev)
                 prev->next = obj->next;
             else
@@ -352,6 +370,7 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
             }
             break;
                 
+        case MOVEMENT_ATTACK_AVATAR:
         case MOVEMENT_FOLLOW_AVATAR:
             if (rand() % 2) {
                 if (newx > avatarx)
@@ -379,14 +398,12 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
                 }
             }
             break;
-
-        case MOVEMENT_ATTACK_AVATAR:
-            break;
         }
 
-        if (newx >= 0 && newx < map->width &&
+        if ((newx != obj->x || newy != obj->y) &&
+            newx >= 0 && newx < map->width &&
 	    newy >= 0 && newy < map->height) {
-            if ((other = mapObjectAt(map, newx, newy)) != NULL)
+            if ((other = mapObjectAt(map, newx, newy, 0)) != NULL)
                 tile = obj->tile;
             else
                 tile = mapTileAt(map, newx, newy);

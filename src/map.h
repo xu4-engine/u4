@@ -44,15 +44,18 @@ typedef struct _Map {
 int mapRead(struct _City *city, FILE *ult, FILE *tlk);
 int mapReadCon(Map *map, FILE *con, int header);
 int mapReadWorld(Map *map, FILE *world);
-struct _Object *mapObjectAt(const Map *map, int x, int y);
+struct _Object *mapObjectAt(const Map *map, int x, int y, int ignoreAvatar);
 const struct _Person *mapPersonAt(const Map *map, int x, int y);
 const struct _Portal *mapPortalAt(const Map *map, int x, int y);
 unsigned char mapTileAt(const Map *map, int x, int y);
 int mapIsWorldMap(const Map *map);
 void mapAddPersonObject(Map *map, const struct _Person *person);
-void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned int x, unsigned int y);
+void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned short x, unsigned short y);
+void mapAddAvatarObject(Map *map, unsigned int tile, unsigned short x, unsigned short y);
 void mapRemoveObject(Map *map, struct _Object *obj);
-void mapRemoveObjectAtPosition(Map *map, unsigned char tile, unsigned short x, unsigned short y);
+void mapRemoveAvatarObject(Map *map);
 void mapClearObjects(Map *map);
+void mapMoveObjects(Map *map, int avatarx, int avatary);
+void mapAnimateObjects(Map *map);
 
 #endif
