@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!DOCTYPE armors SYSTEM "dtd/armors.dtd">
 <!-- $Id$ -->
 <armors>
     <armor name="Skin" defense="96"/>	

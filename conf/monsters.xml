@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!DOCTYPE monsters SYSTEM "dtd/monsters.dtd">
 <!-- $Id$ -->
 <monsters>
     <monster id="0" name="Horse" tile="20" basehp="255" exp="10" good="true" wontattack="true"/>

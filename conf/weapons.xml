@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!DOCTYPE weapons SYSTEM "dtd/weapons.dtd">
 <!-- $Id$ -->
 <weapons>
     <weapon name="Hands" abbr="HND" range="1" damage="8"/>

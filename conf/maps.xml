@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
+<!DOCTYPE maps SYSTEM "dtd/maps.dtd">
 <!-- $Id$ -->
 <maps>
     <!-- world map -->
-    <map id="0" type="world" fname="" width="256" height="256" levels="1" borderbehavior="wrap" showavatar="true" music="1">
+    <map id="0" type="world" fname="world.map" width="256" height="256" levels="1" borderbehavior="wrap" showavatar="true" music="1">
         <portal x="86"  y="107" z="-1" destmapid="1"  startx="15" starty="30" startlevel="0" action="enter" savelocation="true" transport="footorhorse"/>
         <portal x="218" y="107" z="-1" destmapid="2"  startx="15" starty="30" startlevel="0" action="enter" savelocation="true" transport="footorhorse"/>
         <portal x="28"  y="50"  z="-1" destmapid="3"  startx="15" starty="30" startlevel="0" action="enter" savelocation="true" transport="footorhorse"/>
@@ -31,13 +32,13 @@
         <portal x="239" y="240" z="-1" destmapid="23" startx="0" starty="0" startlevel="0" action="enter" savelocation="true" transport="foot"/>
         <portal x="233" y="233" z="-1" destmapid="24" startx="0" starty="0" startlevel="0" action="enter" condition="abyss" savelocation="true" transport="foot"/>
 
-        <portal x="233" y="66"  z="-1" destmapid="25" startx="" starty="" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
-        <portal x="128" y="92"  z="-1" destmapid="26" startx="" starty="" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
-        <portal x="36"  y="229" z="-1" destmapid="27" startx="" starty="" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
-        <portal x="73"  y="11"  z="-1" destmapid="28" startx="" starty="" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
-        <portal x="205" y="45"  z="-1" destmapid="29" startx="" starty="" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
-        <portal x="8,"  y="207" z="-1" destmapid="30" startx="" starty="" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
-        <portal x="231" y="216" z="-1" destmapid="32" startx="" starty="" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
+        <portal x="233" y="66"  z="-1" destmapid="25" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
+        <portal x="128" y="92"  z="-1" destmapid="26" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
+        <portal x="36"  y="229" z="-1" destmapid="27" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
+        <portal x="73"  y="11"  z="-1" destmapid="28" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
+        <portal x="205" y="45"  z="-1" destmapid="29" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
+        <portal x="8"  y="207" z="-1" destmapid="30" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
+        <portal x="231" y="216" z="-1" destmapid="32" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
     </map>
 
     <!-- castles -->

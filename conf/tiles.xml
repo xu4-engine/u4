@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!DOCTYPE tiles SYSTEM "dtd/tiles.dtd">
 <!-- $Id$ -->
 <tiles>
     <tile cantwalkon="all" swimable="true" sailable="true" animated="true"/> <!-- sea -->
