@@ -153,7 +153,7 @@ void shrineMeditationCycle() {
 
     screenDisableCursor();
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&shrineTimer, 1000);
+    eventHandlerAddTimerCallback(&shrineTimer, eventTimerGranularity * settings->gameCyclesPerSecond);
 }
 
 void shrineTimer(void *data) {

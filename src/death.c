@@ -22,6 +22,7 @@
 #include "player.h"
 #include "portal.h"
 #include "screen.h"
+#include "settings.h"
 #include "stats.h"
 
 #define REVIVE_WORLD_X 86
@@ -69,7 +70,7 @@ void deathStart(int delay) {
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
     screenDisableCursor();
 
-    eventHandlerAddTimerCallback(&deathTimer, 1000);
+    eventHandlerAddTimerCallback(&deathTimer, eventTimerGranularity * settings->gameCyclesPerSecond);
 }
 
 void deathTimer(void *data) {
