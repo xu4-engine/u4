@@ -255,9 +255,11 @@ void combatFinishTurn() {
             /* put a sleeping person in place of the player,
                or restore an awakened member to their original state */
             for (i = 0; i < c->saveGame->members; i++) {                
-                if (c->saveGame->players[i].status == STAT_SLEEPING)
-                    party[i]->tile = CORPSE_TILE;
-                else party[i]->tile = tileForClass(c->saveGame->players[i].klass);
+                if (party[i]) {
+                    if (c->saveGame->players[i].status == STAT_SLEEPING)
+                        party[i]->tile = CORPSE_TILE;
+                    else party[i]->tile = tileForClass(c->saveGame->players[i].klass);
+                }
             }
 
             /* check if aura has expired */
