@@ -11,6 +11,9 @@
         <intro>            
             <ztats screen="weapons"/>
             <music type="shopping"/>
+
+
+
             Welcome to
             {name}
 
@@ -28,8 +31,7 @@
         <bye>
 
             {owner} says:
-            Fare thee well!            
-            <end/>
+            Fare thee well!<end/>
         </bye>        
 
         <!--
@@ -73,6 +75,8 @@
         </buy_more>
 
         <buy_sell choice="b">
+
+
 
             Very Good!
 
@@ -246,6 +250,7 @@
         <!-- sell just one item -->
         <sell_one>
             <var name="quantity" value="1"/>
+
             I will give you {$price}gp for that {name}.
             Deal? <input type="choice" options="yn" target="sell"/>
         </sell_one>
@@ -337,6 +342,9 @@
         <intro>
             <ztats screen="armor"/>
             <music type="shopping"/>
+
+
+
             Welcome to
             {name}
 
@@ -354,8 +362,7 @@
         <bye>
 
             {owner} says:
-            Good Bye.
-            <end/>
+            Good Bye.<end/>
         </bye>
 
        <!--
@@ -392,9 +399,10 @@
 
         <buy_sell choice="b">
 
-            Very Good!
+            
 
-            We Have:
+            Well then,
+            We've got:
             {show_inventory:show_item}
             
             What'll it
@@ -514,8 +522,9 @@
             <var name="price" value="{math({price}/2)}"/>
 
             <if test="{party:armor:{name}}==0">
+
                 Come on, you
-                don't own any.<redirect target="you_sell"/>
+                don't own any.<redirect target="bye"/>
             </if>
     
             <if test="{party:armor:{name}}&gt;1" redirect="sell_many"/>
@@ -703,6 +712,7 @@
 
         <food_buy choice="null" redirect="bye"/>
         <food_buy>
+            <if test="{$quantity}==0" redirect="bye"/>
             <pay price="{spec_price}" quantity="{$quantity}" cantpay="cantpay_food"/>
 
             Here ye arr.
