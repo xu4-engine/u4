@@ -38,6 +38,8 @@ void eventHandlerInit() {
     if (u4_SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
         errorFatal("unable to init SDL: %s", SDL_GetError());    
     
+    SDL_EnableUNICODE(1);
+
     timer = SDL_AddTimer(eventTimerGranularity, &eventCallback, NULL);
 }
 
@@ -83,28 +85,17 @@ void eventHandlerMain(void (*updateScreen)(void)) {
         case SDL_KEYDOWN: {
             int key;
 
-            if (event.key.keysym.sym >= SDLK_a &&
-                event.key.keysym.sym <= SDLK_z) {
+            if (event.key.keysym.unicode != 0)
+                key = event.key.keysym.unicode & 0x7F;
+            else
+                key = event.key.keysym.sym;
 
-                if (settings.germanKbd) {
-                    if (event.key.keysym.sym == SDLK_z)
-                        event.key.keysym.sym = SDLK_y;
-                    else if (event.key.keysym.sym == SDLK_y)
-                        event.key.keysym.sym = SDLK_z;
-                }
+            if (event.key.keysym.mod & KMOD_ALT)
+                key += U4_ALT;
+            if (event.key.keysym.mod & KMOD_META)
+                key += U4_META;
 
-                key = event.key.keysym.sym - SDLK_a + 'a';
-                if (event.key.keysym.mod & KMOD_SHIFT)
-                    key = toupper(key);
-                else if (event.key.keysym.mod & KMOD_CTRL)
-                    key = event.key.keysym.sym - SDLK_a + 1;
-                else if (event.key.keysym.mod & KMOD_ALT)
-                    key = event.key.keysym.sym - SDLK_a + 'a' + U4_ALT;
-                else if (event.key.keysym.mod & KMOD_META)
-                    key = event.key.keysym.sym - SDLK_a + 'a' + U4_META;
-            }
-
-            else if (event.key.keysym.sym == SDLK_UP)
+            if (event.key.keysym.sym == SDLK_UP)
                 key = U4_UP;
             else if (event.key.keysym.sym == SDLK_DOWN)
                 key = U4_DOWN;
@@ -115,8 +106,6 @@ void eventHandlerMain(void (*updateScreen)(void)) {
             else if (event.key.keysym.sym == SDLK_BACKSPACE ||
                      event.key.keysym.sym == SDLK_DELETE)
                 key = U4_BACKSPACE;
-            else
-                key = event.key.keysym.sym;
 
             /* see if the key was ignored */
             if (!eventHandlerIsKeyIgnored(key)) {

@@ -32,7 +32,6 @@ using std::string;
 #define DEFAULT_MUSIC_VOLUME            1
 #define DEFAULT_SOUND_VOLUME            1
 #define DEFAULT_VOLUME_FADES            1
-#define DEFAULT_GERMAN_KEYBOARD         0
 #define DEFAULT_SHORTCUT_COMMANDS       0
 #define DEFAULT_KEY_DELAY               500
 #define DEFAULT_KEY_INTERVAL            30
@@ -151,7 +150,6 @@ public:
     bool                filterMoveMessages;
     bool                fullscreen;
     int                 gameCyclesPerSecond;    
-    bool                germanKbd;
     bool                innAlwaysCombat;
     int                 innTime;
     int                 keydelay;

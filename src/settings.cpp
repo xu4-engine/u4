@@ -74,7 +74,6 @@ bool Settings::read() {
     musicVol              = DEFAULT_MUSIC_VOLUME;
     soundVol              = DEFAULT_SOUND_VOLUME;
     volumeFades           = DEFAULT_VOLUME_FADES;
-    germanKbd             = DEFAULT_GERMAN_KEYBOARD;
     shortcutCommands      = DEFAULT_SHORTCUT_COMMANDS;
     keydelay              = DEFAULT_KEY_DELAY;
     keyinterval           = DEFAULT_KEY_INTERVAL;
@@ -137,8 +136,6 @@ bool Settings::read() {
             soundVol = (int) strtoul(buffer + strlen("soundVol="), NULL, 0);
         else if (strstr(buffer, "volumeFades=") == buffer)
             volumeFades = (int) strtoul(buffer + strlen("volumeFades="), NULL, 0);        
-        else if (strstr(buffer, "germanKbd=") == buffer)
-            germanKbd = (int) strtoul(buffer + strlen("germanKbd="), NULL, 0);
         else if (strstr(buffer, "shortcutCommands=") == buffer)
             shortcutCommands = (int) strtoul(buffer + strlen("shortcutCommands="), NULL, 0);
         else if (strstr(buffer, "keydelay=") == buffer)
@@ -250,7 +247,6 @@ bool Settings::write() {
             "musicVol=%d\n"
             "soundVol=%d\n"
             "volumeFades=%d\n"
-            "germanKbd=%d\n"
             "shortcutCommands=%d\n"
             "keydelay=%d\n"
             "keyinterval=%d\n"
@@ -285,7 +281,6 @@ bool Settings::write() {
             musicVol,
             soundVol,
             volumeFades,
-            germanKbd,
             shortcutCommands,
             keydelay,
             keyinterval,
