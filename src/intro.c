@@ -278,9 +278,8 @@ int introInit() {
         advancedOptions = menuAddItem(advancedOptions, 0xFE, "Use These Settings", 4, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
         advancedOptions = menuAddItem(advancedOptions, 0xFF, "Cancel", 4, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
-        keyboardOptions = menuAddItem(keyboardOptions, 0, "German Keyboard", 5, 5, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
-        keyboardOptions = menuAddItem(keyboardOptions, 1, "Repeat Delay (in msecs)", 5, 6, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
-        keyboardOptions = menuAddItem(keyboardOptions, 2, "Repeat Interval (in msecs)", 5, 7, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
+        keyboardOptions = menuAddItem(keyboardOptions, 1, "Repeat Delay (in msecs)", 5, 5, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
+        keyboardOptions = menuAddItem(keyboardOptions, 2, "Repeat Interval (in msecs)", 5, 6, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
         keyboardOptions = menuAddItem(keyboardOptions, 0xFE, "Use These Settings", 5, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
         keyboardOptions = menuAddItem(keyboardOptions, 0xFF, "Cancel", 5, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
@@ -753,9 +752,8 @@ void introUpdateScreen() {
     case INTRO_CONFIG_KEYBOARD:
         screenDrawImage(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Keyboard Settings:");
-        screenTextAt(34, 5, "%s", settingsChanged->germanKbd ? "Yes" : "No"); 
-        screenTextAt(34, 6,  "%d", settingsChanged->keydelay);
-        screenTextAt(34, 7,  "%d", settingsChanged->keyinterval);
+        screenTextAt(34, 5,  "%d", settingsChanged->keydelay);
+        screenTextAt(34, 6,  "%d", settingsChanged->keyinterval);
         menuShow(menuGetRoot(keyboardOptions));        
         break;
 
@@ -1580,9 +1578,6 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
 void introKeyboardOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
-    case 0:
-        settingsChanged->germanKbd = settingsChanged->germanKbd ? 0 : 1;
-        break;
     case 1:
         if (action != ACTIVATE_DECREMENT) {
             settingsChanged->keydelay += 100;

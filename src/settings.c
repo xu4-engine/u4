@@ -69,7 +69,6 @@ void settingsRead() {
     settings->musicVol              = DEFAULT_MUSIC_VOLUME;
     settings->soundVol              = DEFAULT_SOUND_VOLUME;
     settings->volumeFades           = DEFAULT_VOLUME_FADES;
-    settings->germanKbd             = DEFAULT_GERMAN_KEYBOARD;
     settings->shortcutCommands      = DEFAULT_SHORTCUT_COMMANDS;
     settings->keydelay              = DEFAULT_KEY_DELAY;
     settings->keyinterval           = DEFAULT_KEY_INTERVAL;
@@ -134,8 +133,6 @@ void settingsRead() {
             settings->soundVol = (int) strtoul(buffer + strlen("soundVol="), NULL, 0);
         else if (strstr(buffer, "volumeFades=") == buffer)
             settings->volumeFades = (int) strtoul(buffer + strlen("volumeFades="), NULL, 0);        
-        else if (strstr(buffer, "germanKbd=") == buffer)
-            settings->germanKbd = (int) strtoul(buffer + strlen("germanKbd="), NULL, 0);
         else if (strstr(buffer, "shortcutCommands=") == buffer)
             settings->shortcutCommands = (int) strtoul(buffer + strlen("shortcutCommands="), NULL, 0);
         else if (strstr(buffer, "keydelay=") == buffer)
@@ -249,7 +246,6 @@ void settingsWrite() {
             "musicVol=%d\n"
             "soundVol=%d\n"
             "volumeFades=%d\n"
-            "germanKbd=%d\n"
             "shortcutCommands=%d\n"
             "keydelay=%d\n"
             "keyinterval=%d\n"
@@ -284,7 +280,6 @@ void settingsWrite() {
             settings->musicVol,
             settings->soundVol,
             settings->volumeFades,
-            settings->germanKbd,
             settings->shortcutCommands,
             settings->keydelay,
             settings->keyinterval,

@@ -53,8 +53,6 @@ int main(int argc, char *argv[]) {
         }
         else if (strcmp(argv[i], "-i") == 0)
             skipIntro = 1;
-        else if (strcmp(argv[i], "-g") == 0)
-            settings->germanKbd = 1;
         else if (strcmp(argv[i], "-v") == 0)
             verbose++;
         else if (strcmp(argv[i], "-f") == 0)

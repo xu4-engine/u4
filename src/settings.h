@@ -30,7 +30,6 @@ extern "C" {
 #define DEFAULT_MUSIC_VOLUME            1
 #define DEFAULT_SOUND_VOLUME            1
 #define DEFAULT_VOLUME_FADES            1
-#define DEFAULT_GERMAN_KEYBOARD         0
 #define DEFAULT_SHORTCUT_COMMANDS       0
 #define DEFAULT_KEY_DELAY               500
 #define DEFAULT_KEY_INTERVAL            30
@@ -88,7 +87,6 @@ typedef struct _Settings {
     int musicVol;
     int soundVol;
     int volumeFades;
-    int germanKbd;
     int shortcutCommands;
     int keydelay;
     int keyinterval;
