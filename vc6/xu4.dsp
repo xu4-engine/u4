@@ -156,6 +156,10 @@ SOURCE=..\src\annotation.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\area.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\armor.c
 # End Source File
 # Begin Source File
