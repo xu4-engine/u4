@@ -31,6 +31,7 @@
 #include "shrine.h"
 #include "death.h"
 #include "combat.h"
+#include "monster.h"
 #include "camp.h"
 
 void gameCastSpell(unsigned int spell, int caster, int param);
@@ -180,26 +181,27 @@ Context *gameCloneContext(Context *ctx) {
 
 void gameCastSpell(unsigned int spell, int caster, int param) {
     SpellCastError spellError;
+    int i;
+    const char *msg = NULL;
+    static const struct {
+        SpellCastError err;
+        const char *msg;
+    } errorMsgs[] = {
+        { CASTERR_NOMIX, "None Mixed!\n" },
+        { CASTERR_WRONGCONTEXT, "Can't Cast Here!\n" },
+        { CASTERR_MPTOOLOW, "Not Enough MP!\n" },
+        { CASTERR_FAILED, "Failed!\n" }
+    };
 
     if (!spellCast(spell, caster, param, &spellError)) {
-        switch(spellError) {
-        case CASTERR_NOMIX:
-            screenMessage("None Mixed!\n");
-            break;
-        case CASTERR_WRONGCONTEXT:
-            screenMessage("Can't Cast Here!\n");
-            break;
-        case CASTERR_MPTOOLOW:
-            screenMessage("Not Enough MP!\n");
-            break;
-        case CASTERR_FAILED:
-            screenMessage("Failed!\n");
-            break;
-        case CASTERR_NOERROR:
-        default:
-            /* should never happen */
-            assert(0);
+        for (i = 0; i < sizeof(errorMsgs) / sizeof(errorMsgs[0]); i++) {
+            if (spellError == errorMsgs[i].err) {
+                msg = errorMsgs[i].msg;
+                break;
+            }
         }
+        if (msg)
+            screenMessage(msg);
     }
 }
 
@@ -870,10 +872,16 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
  * creature is present at that point, zero is returned.
  */
 int attackAtCoord(int x, int y) {
+    Object *obj;
+
     if (x == -1 && y == -1)
         return 0;
 
-    combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport);
+    if ((obj = mapObjectAt(c->map, x, y)) != NULL &&
+        monsterForTile(obj->tile) != NULL)
+        combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport, obj->tile);
+    else
+        screenMessage("Attack What?\n");
 
     return 1;
 }
@@ -1492,12 +1500,6 @@ int moveAvatar(Direction dir, int userEvent) {
         int movementMask;
 
         movementMask = mapGetValidMoves(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->transport);
-        printf(" %c\n%cA%c\n %c\n", 
-               DIR_IN_MASK(DIR_NORTH, movementMask), 
-               DIR_IN_MASK(DIR_WEST, movementMask), 
-               DIR_IN_MASK(DIR_EAST, movementMask), 
-               DIR_IN_MASK(DIR_SOUTH, movementMask));
-
         if (!DIR_IN_MASK(dir, movementMask)) {
             screenMessage("Blocked!\n");
             result = 0;
