@@ -892,8 +892,10 @@ int attackAtCoord(int x, int y) {
     if ((obj = mapObjectAt(c->map, x, y)) != NULL &&
         monsterForTile(obj->tile) != NULL)
         combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport, obj->tile);
-    else
+    else {
         screenMessage("Attack What?\n");
+        gameFinishTurn();
+    }
 
     return 1;
 }
