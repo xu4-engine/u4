@@ -2,6 +2,8 @@
  * $Id$
  */
 
+#include <string.h>
+
 #include "portal.h"
 
 #include "city.h"
