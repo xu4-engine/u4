@@ -1265,11 +1265,11 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         readBufferInfo->handleBuffer = &gameSummonMonster;
         readBufferInfo->buffer = monsterNameBuffer;
         readBufferInfo->bufferLen = sizeof(monsterNameBuffer);
-        readBufferInfo->screenX = TEXT_AREA_X + c->col + 6;
+        readBufferInfo->screenX = TEXT_AREA_X + c->col;
         readBufferInfo->screenY = TEXT_AREA_Y + c->line;
         monsterNameBuffer[0] = '\0';
         eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
-        screenMessage("What? ");
+        screenMessage("What?\n");
         return 1;
 
     case 't':
