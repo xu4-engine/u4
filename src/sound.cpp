@@ -57,7 +57,8 @@ void soundPlay(Sound sound, bool onlyOnce) {
 
     if (soundChunk[sound] == NULL) {
         string pathname(u4find_sound(soundFilenames[sound]));
-        if (!pathname.empty()) {
+        string basename = pathname.substr(pathname.find_last_of("/") + 1);
+        if (!basename.empty()) {
             soundChunk[sound] = Mix_LoadWAV(pathname.c_str());
             if (!soundChunk[sound]) {
                 errorWarning("unable to load sound effect file %s: %s", soundFilenames[sound].c_str(), Mix_GetError());
