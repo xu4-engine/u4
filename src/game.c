@@ -1079,7 +1079,6 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     int valid = 1;
 
     switch (key) {
-    case '0':
     case '1':
     case '2':
     case '3':
@@ -1087,7 +1086,8 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     case '5':
     case '6':
     case '7':
-        moongate = moongateGetGateForPhase(key - '0');
+    case '8':
+        moongate = moongateGetGateForPhase(key - '1');
         c->saveGame->x = moongate->x;
         c->saveGame->y = moongate->y;
         screenMessage("Gate %d!\n", key - '0');
