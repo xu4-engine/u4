@@ -404,6 +404,8 @@ void combatEnd() {
     }
     
     if (combatIsWon()) {
+
+        /* added chest or captured ship object */
         if ((monsterForTile(monsterObj->tile)->mattr & MATTR_WATER) == 0)
             mapAddObject(c->map, CHEST_TILE, CHEST_TILE, monsterObj->x, monsterObj->y);
         else if (tileIsPirateShip(monsterObj->tile)) {
@@ -411,7 +413,13 @@ void combatEnd() {
             tileSetDirection(&ship, tileGetDirection(monsterObj->tile));
             mapAddObject(c->map, ship, ship, monsterObj->x, monsterObj->y);
         }
-    }   
+
+        screenMessage("\nVictory!\n");
+    }
+
+    else if (!playerPartyDead(c->saveGame))
+        screenMessage("Battle is lost!\n");
+
     mapRemoveObject(c->map, monsterObj);
     
     if (!playerPartyDead(c->saveGame))
@@ -447,6 +455,7 @@ void combatMoveMonsters() {
                 if (c->saveGame->players[target].hp == 0) {
                     mapRemoveObject(c->map, party[target]);
                     party[target] = NULL;
+                    screenMessage("%s is Killed!\n", c->saveGame->players[target].name);
                 }
                 statsUpdate();
             }
