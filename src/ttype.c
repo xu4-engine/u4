@@ -99,6 +99,9 @@ void tileLoadRulesFromXml() {
             ruleLoadProperties(&tile_rules[i++], node);
         }
     }
+
+    if (ruleFindByName("default") == NULL)
+        errorFatal("no 'default' rule found in tileRules.xml");
 }
 
 /**
