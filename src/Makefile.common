@@ -46,6 +46,7 @@ SRCS=\
         stats.c \
         ttype.c \
         u4.c \
+        u4_$(UI).c \
         u4file.c \
         utils.c \
         unzip.c \
