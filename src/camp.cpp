@@ -85,7 +85,7 @@ void campEnd(void) {
     int i, healed = 0;    
 
     eventHandler->popKeyHandler();
-    gameExitToParentMap();
+    game->exitToParentMap();
     musicMgr->fadeIn(CAMP_FADE_IN_TIME, true);
     
     /* Wake everyone up! */    
