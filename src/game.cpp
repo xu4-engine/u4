@@ -364,6 +364,7 @@ void gameInit() {
 
     Script *script = c->conversation->script;
     script->addProvider("party", c->party);
+    script->addProvider("context", c);
 
     TRACE(gameDbg, "gameInit() completed successfully.");
 }

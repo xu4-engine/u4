@@ -5,8 +5,12 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+#include <vector>
+
 #include "aura.h"
+#include "names.h"
 #include "person.h"
+#include "script.h"
 #include "types.h"
 #include "savegame.h"
 
@@ -32,7 +36,7 @@ typedef enum {
 /**
  * Context class
  */
-class Context {
+class Context : public Script::Provider {
 public:
     Context() : saveGame(NULL), location(NULL) {}
 
@@ -52,6 +56,17 @@ public:
     TransportContext transportContext;
     long lastCommandTime;
     class Object *lastShip;
+
+    /**
+     * Provides scripts with information
+     */
+    virtual string translate(std::vector<string>& parts) {
+        if (parts.size() == 1) {
+            if (parts[0] == "wind")
+                return getDirectionName(static_cast<Direction>(windDirection));
+        }
+        return "";
+    }
 };
 
 extern Context *c;

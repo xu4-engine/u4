@@ -199,7 +199,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                         // Get choice
                         char val = ReadChoiceController::get(script->getChoices());
                         if (isspace(val))
-                            script->setVar(script->getInputName(), "nothing");
+                            script->unsetVar(script->getInputName());
                         else {
                             string s_val;
                             s_val.resize(1);
@@ -213,14 +213,17 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                         break;
                         
                     case Script::INPUT_NUMBER: {
-                        int val = ReadIntController::get(script->getInputMaxLen(), TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
-                        script->setVar(script->getInputName(), val);                        
+                        int val = ReadIntController::get(script->getInputMaxLen(), TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);                        
+                        script->setVar(script->getInputName(), val);
                     } break;
 
                     case Script::INPUT_STRING: {
                         string str = ReadStringController::get(script->getInputMaxLen(), TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
-                        lowercase(str);
-                        script->setVar(script->getInputName(), str);
+                        if (str.size()) {
+                            lowercase(str);                        
+                            script->setVar(script->getInputName(), str);
+                        }
+                        else script->unsetVar(script->getInputName());
                     } break;                    
                     
                     case Script::INPUT_PLAYER: {
@@ -231,7 +234,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                             string player_str = to_string(player+1);
                             script->setVar(script->getInputName(), player_str);
                         }
-                        else script->setVar(script->getInputName(), "nothing");
+                        else script->unsetVar(script->getInputName());
                     } break;
 
                     default: break;

@@ -34,12 +34,13 @@ using std::string;
 /*
  * Script::Variable class
  */
-Script::Variable::Variable(const string &v) {
+Script::Variable::Variable() : i_val(0), s_val(""), set(false) {}
+Script::Variable::Variable(const string &v) : set(true) {
     i_val = static_cast<int>(strtol(v.c_str(), NULL, 10));
     s_val = v;
 }
 
-Script::Variable::Variable(const int &v) {
+Script::Variable::Variable(const int &v) : set(true) {
     i_val = v;
     s_val = to_string(v);
 }
@@ -49,9 +50,11 @@ string& Script::Variable::getString()   { return s_val; }
 
 void    Script::Variable::setValue(const int &v)    { i_val = v; }
 void    Script::Variable::setValue(const string &v) { s_val = v; }
+void    Script::Variable::unset()                   { set = false; i_val = 0; s_val = ""; }
 
 bool    Script::Variable::isInt() const             { return i_val > 0; }
 bool    Script::Variable::isString() const          { return i_val == 0; }
+bool    Script::Variable::isSet() const             { return set; }
 
 /*
  * Static member variables 
@@ -235,8 +238,11 @@ void Script::unload() {
     xmlNodePtr scriptNode;
     string search_id;
     
-    if (variables.find(idPropName) != variables.end())
-        search_id = variables[idPropName]->getString();
+    if (variables.find(idPropName) != variables.end()) {
+        if (variables[idPropName]->isSet())
+            search_id = variables[idPropName]->getString();
+        else search_id = "null";
+    }
     
     scriptNode = find(this->scriptNode, script, search_id);
 
@@ -379,6 +385,7 @@ void Script::setTarget(string val)      { target = val; }
 void Script::setChoices(string val)     { choices = val; }
 void Script::setVar(string name, string val)    { variables[name] = new Variable(val); }
 void Script::setVar(string name, int val)       { variables[name] = new Variable(val); }
+void Script::unsetVar(string name)              { variables[name]->unset(); }
 
 Script::State Script::getState()        { return state; }
 string Script::getTarget()              { return target; }
@@ -731,10 +738,13 @@ Script::ReturnCode Script::pushContext(xmlNodePtr script, xmlNodePtr current) {
     string nodeName = getPropAsStr(current, "name");
     string search_id;
 
-    if (xmlPropExists(current, idPropName.c_str()))
+    if (xmlPropExists(current, idPropName.c_str()))         
         search_id = getPropAsStr(current, idPropName);
-    else if (variables.find(idPropName) != variables.end())
-        search_id = variables[idPropName]->getString();    
+    else if (variables.find(idPropName) != variables.end()) {
+        if (variables[idPropName]->isSet())
+            search_id = variables[idPropName]->getString();
+        else search_id = "null";
+    }
 
     // When looking for a new context, start from within our old one
     translationContext.push_back(find(translationContext.back(), nodeName, search_id));
@@ -813,10 +823,10 @@ Script::ReturnCode Script::redirect(xmlNodePtr script, xmlNodePtr current) {
         errorFatal("Error: redirect failed -- could not find target script '%s' with %s=\"%s\"", target.c_str(), idPropName.c_str(), search_id.c_str());
 
     if (debug) {
-        fprintf(debug, "\nRedirected to '%s", target.c_str());
+        fprintf(debug, "\nRedirected to <%s", target.c_str());
         if (search_id.length())
-            fprintf(debug, ":%s", search_id.c_str());
-        fprintf(debug, "'");
+            fprintf(debug, " %s=\"%s\"", idPropName.c_str(), search_id.c_str());
+        fprintf(debug, " .../>");
     }
     
     execute(newScript);

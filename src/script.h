@@ -35,7 +35,7 @@ public:
      * translate qualifiers and identifiers in a script to another value.
      * Each provider is assigned a qualifier that the script uses to
      * select a provider.  The provider then uses the rest of the information
-     * provided for translation.
+     * to translate the information to something useful.
      */
     class Provider {
     public:
@@ -48,6 +48,7 @@ private:
      */ 
     class Variable {
     public:
+        Variable();
         Variable(const string &v);
         Variable(const int &v);
 
@@ -56,13 +57,16 @@ private:
         
         void    setValue(const int &v);
         void    setValue(const string &v);
+        void    unset();
 
         bool    isInt() const;
         bool    isString() const;
+        bool    isSet() const;
     
     private:
         int i_val;
         string s_val;
+        bool set;
     };
 
 public:
@@ -146,6 +150,7 @@ public:
     void setChoices(string val); 
     void setVar(string name, string val);
     void setVar(string name, int val);    
+    void unsetVar(string name);
     
     string getTarget();
     InputType getInputType();
