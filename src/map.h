@@ -110,6 +110,7 @@ public:
     bool isEnclosed(Coords party);
     class Creature *addCreature(const class Creature *m, Coords coords);
     class Object *addObject(MapTile tile, MapTile prevTile, Coords coords);
+    class Object *addObject(Object *obj, Coords coords);
     void removeObject(const class Object *rem, bool deleteObject = true);
     ObjectDeque::iterator removeObject(ObjectDeque::iterator rem, bool deleteObject = true);    
     void clearObjects();

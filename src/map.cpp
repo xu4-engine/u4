@@ -427,6 +427,11 @@ Creature *Map::addCreature(const Creature *creature, Coords coords) {
 /**
  * Adds an object to the given map
  */
+Object *Map::addObject(Object *obj, Coords coords) {
+    objects.push_front(obj);
+    return obj;
+}
+
 Object *Map::addObject(MapTile tile, MapTile prevtile, Coords coords) {
     Object *obj = new Object;
 

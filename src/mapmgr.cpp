@@ -127,7 +127,12 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
     map->levels = mapConf.getInt("levels");
     map->chunk_width = mapConf.getInt("chunkwidth");
     map->chunk_height = mapConf.getInt("chunkheight");
-    map->border_behavior = static_cast<Map::BorderBehavior>(mapConf.getEnum("borderbehavior", borderBehaviorEnumStrings));
+    map->border_behavior = static_cast<Map::BorderBehavior>(mapConf.getEnum("borderbehavior", borderBehaviorEnumStrings));    
+    
+    if (isCombatMap(map)) {
+        CombatMap *cm = dynamic_cast<CombatMap*>(map);
+        cm->setContextual(mapConf.getBool("contextual"));
+    }
 
     TRACE_LOCAL(*logger, string("loading configuration for map \'") + map->fname + "\'");
 
