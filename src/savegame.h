@@ -141,7 +141,7 @@ typedef struct _SaveGame {
     unsigned char runes;
     unsigned short members;
     unsigned char partytile;
-    char unknown2[32];
+    char unknown2[27];
 } SaveGame;
 
 int saveGameWrite(const SaveGame *save, FILE *f);
