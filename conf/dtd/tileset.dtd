@@ -2,7 +2,7 @@
 
 <!ENTITY % bool '( true | false )'>
 <!ENTITY % comp '( none | rle | lzw )'>
-<!ENTITY % anim '( scroll | frame | cityflag | castleflag | lcbflag | shipflag | pirateflag | campfire | none )'>
+<!ENTITY % anim '( scroll | frame | slow_frame | cityflag | castleflag | lcbflag | shipflag | pirateflag | campfire | none )'>
 
 <!ELEMENT tileset ( tile+ ) >
 <!ATTLIST tileset name               CDATA    #REQUIRED
@@ -11,13 +11,13 @@
 
 <!ELEMENT tile EMPTY >
 <!ATTLIST tile  name               CDATA    #REQUIRED
+                image              CDATA    #IMPLIED
                 rule               CDATA    #IMPLIED
                 index              NMTOKEN  #IMPLIED
                 frames             NMTOKEN  #IMPLIED
                 directions         CDATA    #IMPLIED
                 animation          %anim;   #IMPLIED 
                 rowtoswap          NMTOKEN  #IMPLIED
-                opaque             %bool;   #IMPLIED
-                looks_like         CDATA    #IMPLIED
+                opaque             %bool;   #IMPLIED                
                 frame              NMTOKEN  #IMPLIED
                 large              %bool;   #IMPLIED>
