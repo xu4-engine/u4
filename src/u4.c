@@ -27,16 +27,16 @@ extern Map world_map;
 int verbose = 0;
 
 int main(int argc, char *argv[]) {
-    unsigned int i, scale = 2;
+    unsigned int i;
     FILE *saveGameFile, *monstersFile;
+    char *scale = "2";
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-scale") == 0 && argc > i + 1) {
-            scale = strtoul(argv[i+1], NULL, 0);
-            if (scale < 1 || scale > 5)
-                scale = 2;
+            scale = argv[i+1];
+            i++;
         }
-        if (strcmp(argv[i], "-v") == 0)
+        else if (strcmp(argv[i], "-v") == 0)
             verbose++;
     }
 
