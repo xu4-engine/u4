@@ -542,6 +542,9 @@ void combatFinishTurn() {
     }
     else annotationCycle();
 
+    /* FIXME: there is probably a cleaner way to do this:
+       make sure the active player is back to their normal self before acting */
+    party[FOCUS].obj->tile = tileForClass(party[FOCUS].player->klass);
     combatSetActivePlayer(FOCUS);    
 }
 
