@@ -1,6 +1,6 @@
 <!-- $Id$ -->
 
-<!ELEMENT tilesets ( tileset+ | (tilemap*, tileset*) ) >
+<!ELEMENT tilesets (tilemap*, tileset*) >
 
 <!ELEMENT tileset EMPTY >
 <!ATTLIST tileset file             CDATA    #REQUIRED>
