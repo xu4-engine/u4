@@ -1136,38 +1136,47 @@ int combatChooseWeaponRange(int key, void *data) {
  * Apply tile effects to all monsters depending on what they're standing on
  */
 void combatApplyMonsterTileEffects(void) {
-    int i;
+    int i, affected = 0;
 
     for (i = 0; i < AREA_MONSTERS; i++) {
         if (combatInfo.monsters[i]) {
             TileEffect effect;
             effect = tileGetEffect(mapTileAt(c->location->map, combatInfo.monsters[i]->x, combatInfo.monsters[i]->y, c->location->z));
 
-            switch(effect) {
-            case EFFECT_SLEEP:
-                /* monster fell asleep! */
-                if ((combatInfo.monsters[i]->monster->resists != EFFECT_SLEEP) &&
-                    ((rand() % 0xFF) >= combatInfo.monsterHp[i])) {
-                    combatInfo.monster_status[i] = STAT_SLEEPING;
-                    combatInfo.monsters[i]->canAnimate = 0; /* freeze monster */
+            if (effect != EFFECT_NONE) {
+
+                /* give a slight pause before enacting the tile effect */
+                if (!affected) {
+                    gameUpdateScreen();
+                    eventHandlerSleep(100);
+                    affected = 1;
                 }
-                break;
 
-            case EFFECT_FIRE:
-                /* deal 0 - 127 damage to the monster if it is not immune to fire damage */
-                if (combatInfo.monsters[i]->monster->resists != EFFECT_FIRE)
-                    combatApplyDamageToMonster(i, rand() % 0x7F, -1);
-                break;
+                switch(effect) {
+                case EFFECT_SLEEP:
+                    /* monster fell asleep! */
+                    if ((combatInfo.monsters[i]->monster->resists != EFFECT_SLEEP) &&
+                        ((rand() % 0xFF) >= combatInfo.monsterHp[i])) {
+                        combatInfo.monster_status[i] = STAT_SLEEPING;
+                        combatInfo.monsters[i]->canAnimate = 0; /* freeze monster */
+                    }
+                    break;
 
-            case EFFECT_POISONFIELD:
-                /* deal 0 - 127 damage to the monster if it is not immune to poison field damage */
-                if (combatInfo.monsters[i]->monster->resists != EFFECT_POISONFIELD)
-                    combatApplyDamageToMonster(i, rand() % 0x7F, -1);
-                break;
+                case EFFECT_FIRE:
+                    /* deal 0 - 127 damage to the monster if it is not immune to fire damage */
+                    if (combatInfo.monsters[i]->monster->resists != EFFECT_FIRE)
+                        combatApplyDamageToMonster(i, rand() % 0x7F, -1);
+                    break;
 
-            case EFFECT_POISON:
-            case EFFECT_NONE:
-            default: break;
+                case EFFECT_POISONFIELD:
+                    /* deal 0 - 127 damage to the monster if it is not immune to poison field damage */
+                    if (combatInfo.monsters[i]->monster->resists != EFFECT_POISONFIELD)
+                        combatApplyDamageToMonster(i, rand() % 0x7F, -1);
+                    break;
+
+                case EFFECT_POISON:
+                default: break;
+                }
             }
         }
     }
