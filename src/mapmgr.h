@@ -14,8 +14,6 @@
  * various maps.
  */
 
-typedef std::map<int, Map*, std::less<int> > MapList; // Contains a list of maps searchable by map id
-
 #define MAP_NONE 255
 #define MAP_WORLD 0
 #define MAP_CASTLE_OF_LORD_BRITISH 1

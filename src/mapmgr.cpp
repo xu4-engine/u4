@@ -4,7 +4,7 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
-#include <libxml/xmlmemory.h>
+#include <vector>
 
 #include "u4.h"
 
@@ -23,43 +23,34 @@
 #include "shrine.h"
 #include "types.h"
 #include "u4file.h"
-#include "xml.h"
+#include "config.h"
+
+using std::vector;
 
 extern bool isAbyssOpened(const Portal *p);
 extern bool shrineCanEnter(const Portal *p);
 
-Map *mapMgrInitMapFromXml(xmlNodePtr node);
-void mapMgrInitCityFromXml(xmlNodePtr node, City *city);
-PersonRole *mapMgrInitPersonRoleFromXml(xmlNodePtr node);
-Portal *mapMgrInitPortalFromXml(xmlNodePtr node);
-void mapMgrInitShrineFromXml(xmlNodePtr node, Shrine *shrine);
-void mapMgrInitDungeonFromXml(xmlNodePtr node, Dungeon *dungeon);
-void mapMgrCreateMoongateFromXml(xmlNodePtr node);
-int mapMgrInitCompressedChunkFromXml(xmlNodePtr node);
+Map *mapMgrInitMapFromConf(const ConfigElement &mapConf);
+void mapMgrInitCityFromConf(const ConfigElement &cityConf, City *city);
+PersonRole *mapMgrInitPersonRoleFromConf(const ConfigElement &cityConf);
+Portal *mapMgrInitPortalFromConf(const ConfigElement &portalConf);
+void mapMgrInitShrineFromConf(const ConfigElement &shrineConf, Shrine *shrine);
+void mapMgrInitDungeonFromConf(const ConfigElement &dungeonConf, Dungeon *dungeon);
+void mapMgrCreateMoongateFromConf(const ConfigElement &moongateConf);
+int mapMgrInitCompressedChunkFromConf(const ConfigElement &compressedChunkConf);
 
-MapList mapList;
+vector<Map *> mapList;
 
 void mapMgrInit() {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;
+    const Config *config = Config::getInstance();
     Map *map;
 
-    doc = xmlParse("maps.xml");
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "maps") != 0)
-        errorFatal("malformed maps.xml");
-
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) ||
-            xmlStrcmp(node->name, (const xmlChar *) "map") != 0)
-            continue;
-
-        map = mapMgrInitMapFromXml(node);
+    vector<ConfigElement> maps = config->getElement("/config/maps").getChildren();
+    for (vector<ConfigElement>::iterator i = maps.begin(); i != maps.end(); i++) {
+        map = mapMgrInitMapFromConf(*i);
         mapLoad(map);
         mapMgrRegister(map);
     }
-
-    xmlFreeDoc(doc);
 }
 
 Map *mapMgrInitMap(MapType type) {
@@ -105,251 +96,198 @@ Map *mapMgrInitMap(MapType type) {
     return map;
 }
 
-Map *mapMgrInitMapFromXml(xmlNodePtr node) {
+Map *mapMgrInitMapFromConf(const ConfigElement &mapConf) {
     Map *map;
-    xmlNodePtr child;    
     static const char *mapTypeEnumStrings[] = { "world", "city", "shrine", "combat", "dungeon", NULL };
     static const char *borderBehaviorEnumStrings[] = { "wrap", "exit", "fixed", NULL };
 
-    map = mapMgrInitMap((MapType)xmlGetPropAsEnum(node, "type", mapTypeEnumStrings));
+    map = mapMgrInitMap(static_cast<MapType>(mapConf.getEnum("type", mapTypeEnumStrings)));
     if (!map)
         return NULL;
 
-    map->id = (MapId)xmlGetPropAsInt(node, "id");
-    map->type = (MapType)xmlGetPropAsEnum(node, "type", mapTypeEnumStrings);
-    map->fname = xmlGetPropAsStr(node, "fname");
-    map->width = xmlGetPropAsInt(node, "width");
-    map->height = xmlGetPropAsInt(node, "height");
-    map->levels = xmlGetPropAsInt(node, "levels");
-    map->chunk_width = xmlGetPropAsInt(node, "chunkwidth");
-    map->chunk_height = xmlGetPropAsInt(node, "chunkheight");
-    map->border_behavior = (MapBorderBehavior)xmlGetPropAsEnum(node, "borderbehavior", borderBehaviorEnumStrings);
+    map->id = static_cast<MapId>(mapConf.getInt("id"));
+    map->type = static_cast<MapType>(mapConf.getEnum("type", mapTypeEnumStrings));
+    map->fname = mapConf.getString("fname");
+    map->width = mapConf.getInt("width");
+    map->height = mapConf.getInt("height");
+    map->levels = mapConf.getInt("levels");
+    map->chunk_width = mapConf.getInt("chunkwidth");
+    map->chunk_height = mapConf.getInt("chunkheight");
+    map->border_behavior = static_cast<MapBorderBehavior>(mapConf.getEnum("borderbehavior", borderBehaviorEnumStrings));
 
-    if (xmlGetPropAsBool(node, "showavatar"))
+    if (mapConf.getBool("showavatar"))
         map->flags |= SHOW_AVATAR;
 
-    if (xmlGetPropAsBool(node, "nolineofsight"))
+    if (mapConf.getBool("nolineofsight"))
         map->flags |= NO_LINE_OF_SIGHT;
     
-    if (xmlGetPropAsBool(node, "firstperson"))
+    if (mapConf.getBool("firstperson"))
         map->flags |= FIRST_PERSON;
 
-    map->music = (Music)xmlGetPropAsInt(node, "music");
+    map->music = static_cast<Music>(mapConf.getInt("music"));
 
-    for (child = node->xmlChildrenNode; child; child = child->next) {
-        if (xmlNodeIsText(child))
-            continue;
-
-        if (xmlStrcmp(child->name, (const xmlChar *) "city") == 0) {
+    vector<ConfigElement> children = mapConf.getChildren();
+    for (vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+        if (i->getName() == "city") {
             City *city = dynamic_cast<City*>(map);
-            mapMgrInitCityFromXml(child, city);            
+            mapMgrInitCityFromConf(*i, city);            
         }
-        else if (xmlStrcmp(child->name, (const xmlChar *) "shrine") == 0) {
+        else if (i->getName() == "shrine") {
             Shrine *shrine = dynamic_cast<Shrine*>(map);
-            mapMgrInitShrineFromXml(child, shrine);
+            mapMgrInitShrineFromConf(*i, shrine);
         }            
-        else if (xmlStrcmp(child->name, (const xmlChar *) "dungeon") == 0) {
+        else if (i->getName() == "dungeon") {
             Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
-            mapMgrInitDungeonFromXml(child, dungeon);
+            mapMgrInitDungeonFromConf(*i, dungeon);
         }
-        else if (xmlStrcmp(child->name, (const xmlChar *) "portal") == 0)
-            map->portals.push_back(mapMgrInitPortalFromXml(child));
-        else if (xmlStrcmp(child->name, (const xmlChar *) "moongate") == 0)
-            mapMgrCreateMoongateFromXml(child);
-        else if (xmlStrcmp(child->name, (const xmlChar *) "compressedchunk") == 0)
-            map->compressed_chunks.push_back(mapMgrInitCompressedChunkFromXml(child));
+        else if (i->getName() == "portal")
+            map->portals.push_back(mapMgrInitPortalFromConf(*i));
+        else if (i->getName() == "moongate")
+            mapMgrCreateMoongateFromConf(*i);
+        else if (i->getName() == "compressedchunk")
+            map->compressed_chunks.push_back(mapMgrInitCompressedChunkFromConf(*i));
     }
     
     return map;
 }
 
-void mapMgrInitCityFromXml(xmlNodePtr node, City *city) {    
-    xmlNodePtr child;    
+void mapMgrInitCityFromConf(const ConfigElement &cityConf, City *city) {
+    city->name = cityConf.getString("name");
+    city->type = cityConf.getString("type");
+    city->tlk_fname = cityConf.getString("tlk_fname");
 
-    city->name = xmlGetPropAsStr(node, "name");
-    city->type = xmlGetPropAsStr(node, "type");
-    city->tlk_fname = xmlGetPropAsStr(node, "tlk_fname");
-
-    for (child = node->xmlChildrenNode; child; child = child->next) {
-        if (xmlNodeIsText(child))
-            continue;
-
-        if (xmlStrcmp(child->name, (const xmlChar *) "personrole") == 0)
-            city->personroles.push_back(mapMgrInitPersonRoleFromXml(child));
+    vector<ConfigElement> children = cityConf.getChildren();
+    for (vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+        if (i->getName() == "personrole")
+            city->personroles.push_back(mapMgrInitPersonRoleFromConf(*i));
     }    
 }
 
-PersonRole *mapMgrInitPersonRoleFromXml(xmlNodePtr node) {
+PersonRole *mapMgrInitPersonRoleFromConf(const ConfigElement &personRoleConf) {
     PersonRole *personrole;
     static const char *roleEnumStrings[] = { "companion", "weaponsvendor", "armorvendor", "foodvendor", "tavernkeeper",
                                              "reagentsvendor", "healer", "innkeeper", "guildvendor", "horsevendor",
                                              "lordbritish", "hawkwind", NULL };
 
-
     personrole = new PersonRole;
-    if (!personrole)
-        return NULL;
 
-    personrole->role = xmlGetPropAsEnum(node, "role", roleEnumStrings) + NPC_TALKER_COMPANION;
-    personrole->id = xmlGetPropAsInt(node, "id");
+    personrole->role = personRoleConf.getEnum("role", roleEnumStrings) + NPC_TALKER_COMPANION;
+    personrole->id = personRoleConf.getInt("id");
 
     return personrole;
 }
 
-Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
-    xmlNodePtr child;
+Portal *mapMgrInitPortalFromConf(const ConfigElement &portalConf) {
     Portal *portal;
-    char *prop;
 
     portal = new Portal;
-    if (!portal)
-        return NULL;
+
     portal->portalConditionsMet = NULL;
-    portal->message = NULL;
     portal->retroActiveDest = NULL;
  
     portal->coords = MapCoords(
-        xmlGetPropAsInt(node, "x"),
-        xmlGetPropAsInt(node, "y"),
-        xmlGetPropAsInt(node, "z"));
-    portal->destid = (MapId) xmlGetPropAsInt(node, "destmapid");
+        portalConf.getInt("x"),
+        portalConf.getInt("y"),
+        portalConf.getInt("z"));
+    portal->destid = static_cast<MapId>(portalConf.getInt("destmapid"));
     
-    if (xmlPropExists(node, "startx"))
-        portal->start.x = (unsigned short) xmlGetPropAsInt(node, "startx");    
+    portal->start.x = static_cast<unsigned short>(portalConf.getInt("startx"));
+    portal->start.y = static_cast<unsigned short>(portalConf.getInt("starty"));
+    portal->start.z = static_cast<unsigned short>(portalConf.getInt("startlevel"));
 
-    if (xmlPropExists(node, "starty"))
-        portal->start.y = (unsigned short) xmlGetPropAsInt(node, "starty");    
-
-    portal->start.z = (unsigned short) xmlGetPropAsInt(node, "startlevel");
-
-    prop = xmlGetPropAsStr(node, "action");
-    if (strcmp(prop, "none") == 0)
+    string prop = portalConf.getString("action");
+    if (prop == "none")
         portal->trigger_action = ACTION_NONE;
-    else if (strcmp(prop, "enter") == 0)
+    else if (prop == "enter")
         portal->trigger_action = ACTION_ENTER;
-    else if (strcmp(prop, "klimb") == 0)
+    else if (prop == "klimb")
         portal->trigger_action = ACTION_KLIMB;
-    else if (strcmp(prop, "descend") == 0)
+    else if (prop == "descend")
         portal->trigger_action = ACTION_DESCEND;
-    else if (strcmp(prop, "exit_north") == 0)
+    else if (prop == "exit_north")
         portal->trigger_action = ACTION_EXIT_NORTH;
-    else if (strcmp(prop, "exit_east") == 0)
+    else if (prop == "exit_east")
         portal->trigger_action = ACTION_EXIT_EAST;
-    else if (strcmp(prop, "exit_south") == 0)
+    else if (prop == "exit_south")
         portal->trigger_action = ACTION_EXIT_SOUTH;
-    else if (strcmp(prop, "exit_west") == 0)
+    else if (prop == "exit_west")
         portal->trigger_action = ACTION_EXIT_WEST;
     else
-        errorFatal("unknown trigger_action: %s", prop);
-    xmlFree(prop);
+        errorFatal("unknown trigger_action: %s", prop.c_str());
     
-    prop = xmlGetPropAsStr(node, "condition");
-    if (prop) {
-        if (strcmp(prop, "shrine") == 0)
+    prop = portalConf.getString("condition");
+    if (!prop.empty()) {
+        if (prop == "shrine")
             portal->portalConditionsMet = &shrineCanEnter;
-        else if (strcmp(prop, "abyss") == 0)
+        else if (prop == "abyss")
             portal->portalConditionsMet = &isAbyssOpened;
         else
-            errorFatal("unknown portalConditionsMet: %s", prop);
-        xmlFree(prop);
+            errorFatal("unknown portalConditionsMet: %s", prop.c_str());
     }
 
-    if (xmlPropExists(node, "savelocation"))    
-        portal->saveLocation = xmlGetPropAsBool(node, "savelocation");
-    else portal->saveLocation = 0;
+    portal->saveLocation = portalConf.getBool("savelocation");
 
-    prop = xmlGetPropAsStr(node, "message");
-    if (prop) {
-        portal->message = strdup(prop);
-        xmlFree(prop);
-    }
+    portal->message = portalConf.getString("message");
 
-    prop = xmlGetPropAsStr(node, "transport");
-    if (strcmp(prop, "foot") == 0)
+    prop = portalConf.getString("transport");
+    if (prop == "foot")
         portal->portalTransportRequisites = TRANSPORT_FOOT;
-    else if (strcmp(prop, "footorhorse") == 0)
+    else if (prop == "footorhorse")
         portal->portalTransportRequisites = TRANSPORT_FOOT_OR_HORSE;
     else
-        errorFatal("unknown transport: %s", prop);
-    xmlFree(prop);
+        errorFatal("unknown transport: %s", prop.c_str());
 
-    if (xmlGetPropAsBool(node, "exits"))
-        portal->exitPortal = 1;
-    else portal->exitPortal = 0;
+    portal->exitPortal = portalConf.getBool("exits");
 
-    for (child = node->xmlChildrenNode; child; child = child->next) {
-        if (xmlNodeIsText(child))
-            continue;
-
-        if (xmlStrcmp(child->name, (const xmlChar *) "retroActiveDest") == 0) {
+    vector<ConfigElement> children = portalConf.getChildren();
+    for (vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+        if (i->getName() == "retroActiveDest") {
             portal->retroActiveDest = new PortalDestination;
             
             portal->retroActiveDest->coords = MapCoords(
-                xmlGetPropAsInt(child, "x"),
-                xmlGetPropAsInt(child, "y"),
-                xmlGetPropAsInt(child, "z"));
-            portal->retroActiveDest->mapid = (MapId) xmlGetPropAsInt(child, "mapid");
+                i->getInt("x"),
+                i->getInt("y"),
+                i->getInt("z"));
+            portal->retroActiveDest->mapid = static_cast<MapId>(i->getInt("mapid"));
         }
     }
     return portal;
 }
 
-void mapMgrInitShrineFromXml(xmlNodePtr node, Shrine *shrine) {    
-    char *prop;
-
+void mapMgrInitShrineFromConf(const ConfigElement &shrineConf, Shrine *shrine) {    
     static const char *virtues[] = {"Honesty", "Compassion", "Valor", "Justice", "Sacrifice", "Honor", "Spirituality", "Humility", NULL};
 
-    shrine->setVirtue((Virtue)xmlGetPropAsEnum(node, "virtue", virtues));
-
-    prop = xmlGetPropAsStr(node, "mantra");
-    shrine->setMantra(prop);
-    xmlFree(prop);
+    shrine->setVirtue(static_cast<Virtue>(shrineConf.getEnum("virtue", virtues)));
+    shrine->setMantra(shrineConf.getString("mantra"));
 }
 
-void mapMgrInitDungeonFromXml(xmlNodePtr node, Dungeon *dungeon) {
-    dungeon->n_rooms = xmlGetPropAsInt(node, "rooms");
+void mapMgrInitDungeonFromConf(const ConfigElement &dungeonConf, Dungeon *dungeon) {
+    dungeon->n_rooms = dungeonConf.getInt("rooms");
     dungeon->rooms = NULL;
-
-    dungeon->name = xmlGetPropAsStr(node, "name");
+    dungeon->name = dungeonConf.getString("name");
 }
 
-void mapMgrCreateMoongateFromXml(xmlNodePtr node) {
-    int phase;
-    MapCoords coords;
-
-    phase = xmlGetPropAsInt(node, "phase");
-    coords = MapCoords(xmlGetPropAsInt(node, "x"), xmlGetPropAsInt(node, "y"));
+void mapMgrCreateMoongateFromConf(const ConfigElement &moongateConf) {
+    int phase = moongateConf.getInt("phase");
+    Coords coords(moongateConf.getInt("x"), moongateConf.getInt("y"));
 
     moongateAdd(phase, coords);
 }
 
-int mapMgrInitCompressedChunkFromXml(xmlNodePtr node) {
-    return xmlGetPropAsInt(node, "index");
+int mapMgrInitCompressedChunkFromConf(const ConfigElement &compressedChunkConf) {
+    return compressedChunkConf.getInt("index");
 }
 
 void mapMgrRegister(Map *map) {
-    if (mapList.find(map->id) != mapList.end())
+    if (mapList.size() <= map->id)
+        mapList.resize(map->id + 1, NULL);
+
+    if (mapList[map->id] != NULL)
         errorFatal("Error: A map with id '%d' already exists", map->id);
 
-    /**
-     * Add the appropriate type of pointer to the list
-     * We do this so virtual functions (such as getName()) will
-     * work correctly without having to dynamic_cast later
-     */      
-    switch(map->type) {
-    case MAPTYPE_CITY:      mapList[map->id] = dynamic_cast<City*>(map); break;
-    case MAPTYPE_DUNGEON:   mapList[map->id] = dynamic_cast<Dungeon*>(map); break;
-    case MAPTYPE_SHRINE:    mapList[map->id] = dynamic_cast<Shrine*>(map); break;
-    case MAPTYPE_COMBAT:    mapList[map->id] = dynamic_cast<CombatMap*>(map); break;
-    default:                mapList[map->id] = map; break;
-    }       
+    mapList[map->id] = map;
 }
 
 Map *mapMgrGetById(MapId id) {    
-    MapList::iterator current;
-
-    current = mapList.find(id);
-    if (current != mapList.end())
-        return current->second;
-    else return NULL;
+    return mapList[id];
 }
