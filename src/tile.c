@@ -17,8 +17,8 @@
 /**
  * 
  */
-Tile *tileCurrentTilesetInfo() {
-    return (c && c->location) ? c->location->tileset->tiles : tilesetGetByType(TILESET_BASE)->tiles;
+Tileset *tilesetGetCurrent() {
+    return (c && c->location) ? c->location->tileset : tilesetGetByType(TILESET_BASE);
 }
 
 /**
@@ -69,42 +69,39 @@ int tileLoadTileInfo(Tile** tiles, int index, void *xmlNode) {
 }
 
 Tile *tileFindByName(const char *name) {
-    /* FIXME: rewrite for new system */
-    Tile *tiles = tileCurrentTilesetInfo();
+    /* FIXME: rewrite for new system */    
+    Tileset *tileset = tilesetGetCurrent();
     int i;
 
     if (!name)
         return NULL;
 
+    /* FIXME: instead of 256, use real number of tiles in tileset */
     for (i = 0; i < 256; i++) {
-        if (tiles[i].name == NULL)
+        if (tileset->tiles[i].name == NULL)
             errorFatal("Error: not all tiles have a \"name\" attribute");
             
-        if (strcasecmp(name, tiles[i].name) == 0)
-            return &tiles[i];
+        if (strcasecmp(name, tileset->tiles[i].name) == 0)
+            return &tileset->tiles[i];
     }
 
     return NULL;
 }
 
-int tileTestBit(unsigned char tile, unsigned short mask) {
-    Tile *tiles = tileCurrentTilesetInfo();
-    return (tiles[tile].rule->mask & mask) != 0;
+int tileTestBit(unsigned char tile, unsigned short mask) {    
+    return (tilesetGetCurrent()->tiles[tile].rule->mask & mask) != 0;
 }
 
-int tileTestMovementBit(unsigned char tile, unsigned short mask) {
-    Tile *tiles = tileCurrentTilesetInfo();
-    return (tiles[tile].rule->movementMask & mask) != 0;
+int tileTestMovementBit(unsigned char tile, unsigned short mask) {    
+    return (tilesetGetCurrent()->tiles[tile].rule->movementMask & mask) != 0;
 }
 
-int tileCanWalkOn(unsigned char tile, Direction d) {
-    Tile *tiles = tileCurrentTilesetInfo();
-    return DIR_IN_MASK(d, tiles[tile].rule->walkonDirs);
+int tileCanWalkOn(unsigned char tile, Direction d) {    
+    return DIR_IN_MASK(d, tilesetGetCurrent()->tiles[tile].rule->walkonDirs);
 }
 
-int tileCanWalkOff(unsigned char tile, Direction d) {
-    Tile *tiles = tileCurrentTilesetInfo();
-    return DIR_IN_MASK(d, tiles[tile].rule->walkoffDirs);
+int tileCanWalkOff(unsigned char tile, Direction d) {    
+    return DIR_IN_MASK(d, tilesetGetCurrent()->tiles[tile].rule->walkoffDirs);
 }
 
 int tileCanAttackOver(unsigned char tile) {    
@@ -122,9 +119,8 @@ int tileIsReplacement(unsigned char tile) {
     return tileTestBit(tile, MASK_REPLACEMENT);
 }
 
-int tileIsWalkable(unsigned char tile) {
-    Tile *tiles = tileCurrentTilesetInfo();
-    return tiles[tile].rule->walkonDirs > 0;
+int tileIsWalkable(unsigned char tile) {    
+    return tilesetGetCurrent()->tiles[tile].rule->walkonDirs > 0;
 }
 
 int tileIsMonsterWalkable(unsigned char tile) {
@@ -235,20 +231,16 @@ int tileCanTalkOver(unsigned char tile) {
     return tileTestBit(tile, MASK_TALKOVER);
 }
 
-TileSpeed tileGetSpeed(unsigned char tile) {
-    Tile *tiles = tileCurrentTilesetInfo();
-    return tiles[tile].rule->speed;
+TileSpeed tileGetSpeed(unsigned char tile) {    
+    return tilesetGetCurrent()->tiles[tile].rule->speed;
 }
 
-TileEffect tileGetEffect(unsigned char tile) {
-    Tile *tiles = tileCurrentTilesetInfo();
-    return tiles[tile].rule->effect;
+TileEffect tileGetEffect(unsigned char tile) {    
+    return tilesetGetCurrent()->tiles[tile].rule->effect;
 }
 
-TileAnimationStyle tileGetAnimationStyle(unsigned char tile) {
-    Tile *tiles = tileCurrentTilesetInfo();
-   
-    if (tiles[tile].animated)
+TileAnimationStyle tileGetAnimationStyle(unsigned char tile) {   
+    if (tilesetGetCurrent()->tiles[tile].animated)
         return ANIM_SCROLL;
     else if (tile == 75)
         return ANIM_CAMPFIRE;
@@ -290,11 +282,10 @@ void tileAdvanceFrame(unsigned char *tile) {
 }
 
 int tileIsOpaque(unsigned char tile) {
-    extern Context *c;
-    Tile *tiles = tileCurrentTilesetInfo();
+    extern Context *c;    
 
     if (c->opacity)
-        return tiles[tile].opaque ? 1 : 0;
+        return tilesetGetCurrent()->tiles[tile].opaque ? 1 : 0;
     else return 0;
 }
 
