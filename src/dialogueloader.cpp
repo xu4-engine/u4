@@ -5,6 +5,7 @@
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include "debug.h"
+#include "conversation.h"
 #include "dialogueloader.h"
 
 std::map<std::string, DialogueLoader *> *DialogueLoader::loaderMap = NULL;

@@ -5,9 +5,10 @@
 #ifndef DIALOGUELOADER_H
 #define DIALOGUELOADER_H
 
+#include <map>
 #include <string>
 
-#include "conversation.h"
+class Dialogue;
 
 /**
  * The generic dialogue loader interface.  Different dialogue
