@@ -29,7 +29,9 @@ int main(int argc, char *argv[]) {
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
     c->parent = NULL;
     c->map = &world_map;
-    c->talker = NULL;
+    c->conversation.talker = NULL;
+    c->conversation.question = 0;
+    c->conversation.buffer[0] = '\0';
     c->line = 0;
     c->col = 0;
 
