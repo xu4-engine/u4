@@ -248,7 +248,12 @@ void gameUpdateScreen() {
 void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     int i, x, y, z, viewMode;    
     LocationContext context;
-    FinishTurnCallback finishTurn = &gameFinishTurn;    
+    FinishTurnCallback finishTurn = &gameFinishTurn;
+
+    if (map->type == MAP_DUNGEON && c->transportContext != TRANSPORT_FOOT) {
+        screenMessage("Only on foot!\n");
+        return;
+    }
 
     if (portal) {
         x = portal->startx;
@@ -273,7 +278,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     case MAP_COMBAT:        
         context = CTX_COMBAT;
         viewMode = VIEW_NORMAL;
-        finishTurn = &combatFinishTurn;        
+        finishTurn = &combatFinishTurn;
         break;
     case MAP_TOWN:
     case MAP_VILLAGE:
@@ -629,6 +634,10 @@ int gameBaseKeyHandler(int key, void *data) {
                 break;
             case MAP_SHRINE:
                 screenMessage("Enter the Shrine of %s!\n\n", getVirtueName(portal->destination->shrine->virtue));
+                break;
+            case MAP_DUNGEON:
+                /* FIXME: add dungeon names */
+                screenMessage("Enter dungeon!\n\n%s\n\n", portal->destination->fname);
                 break;
             default:
                 break;
