@@ -76,7 +76,7 @@ TileAnimTransform *TileAnimTransform::create(const ConfigElement &conf) {
 
     /**
      * See if the transform is performed randomely
-     */ 
+     */
     if (conf.exists("random"))
         transform->random = conf.getBool("random");
     else transform->random = false;
@@ -174,15 +174,15 @@ void TileAnimPixelColorTransform::draw(Tile *tile, MapTile *mapTile) {
     tile->loadImage();    
     Image *tileImage = tile->getImage();
 
-    for (int j = y * scale; j < (y * scale) + h; j++) {
-        for (int i = x * scale; i < (x * scale) + w; i++) {
+    for (int j = y * scale; j < (y * scale) + (h * scale); j++) {
+        for (int i = x * scale; i < (x * scale) + (w * scale); i++) {
             RGBA pixelAt;
             
             tileImage->getPixel(i, j + (mapTile->frame * tile->h), pixelAt.r, pixelAt.g, pixelAt.b, pixelAt.a);
             if (pixelAt.r >= start->r && pixelAt.r <= end->r &&
                 pixelAt.g >= start->g && pixelAt.g <= end->g &&
                 pixelAt.b >= start->b && pixelAt.b <= end->b) {
-                tile->animated->putPixel((x * scale) + i, (y * scale) + j, start->r + xu4_random(diff.r), start->g + xu4_random(diff.g), start->b + xu4_random(diff.b), pixelAt.a);
+                tile->animated->putPixel(i, j, start->r + xu4_random(diff.r), start->g + xu4_random(diff.g), start->b + xu4_random(diff.b), pixelAt.a);
             }
         }
     }
