@@ -13,7 +13,7 @@ City britain_city;
 Map britain_map = {
     "britain.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -23,12 +23,12 @@ Map britain_map = {
 };
 
 City britain_city  = {
-    "Britain",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Britain", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 32, 29, 28, 27, 26, 0, 31, 25, 0, 0, 0, 0 }, /* person_types */
     "britain.tlk", /* tlk_fname */
-    &britain_map
+    &britain_map /* map */
 };
 
 City cove_city;
@@ -36,7 +36,7 @@ City cove_city;
 Map cove_map = {
     "cove.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -46,12 +46,12 @@ Map cove_map = {
 };
 
 City cove_city  = {
-    "Cove",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Cove", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 0, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0, 0 }, /* person_types */
     "cove.tlk", /* tlk_fname */
-    &cove_map
+    &cove_map /* map */
 };
 
 City den_city;
@@ -59,7 +59,7 @@ City den_city;
 Map den_map = {
     "den.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -69,12 +69,12 @@ Map den_map = {
 };
 
 City den_city  = {
-    "Buccaneers Den",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Buccaneers Den", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 0, 28, 27, 0, 25, 30, 0, 0, 29, 0, 0, 0 }, /* person_types */
     "den.tlk", /* tlk_fname */
-    &den_map
+    &den_map /* map */
 };
 
 City jhelom_city;
@@ -82,7 +82,7 @@ City jhelom_city;
 Map jhelom_map = {
     "jhelom.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -92,12 +92,12 @@ Map jhelom_map = {
 };
 
 City jhelom_city  = {
-    "Jhelom",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Jhelom", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 32, 29, 28, 0, 30, 0, 25, 31, 0, 0, 0, 0 }, /* person_types */
     "jhelom.tlk", /* tlk_fname */
-    &jhelom_map
+    &jhelom_map /* map */
 };
 
 City magincia_city;
@@ -105,7 +105,7 @@ City magincia_city;
 Map magincia_map = {
     "magincia.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -115,12 +115,12 @@ Map magincia_map = {
 };
 
 City magincia_city  = {
-    "Magincia",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Magincia", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
     "magincia.tlk", /* tlk_fname */
-    &magincia_map
+    &magincia_map /* map */
 };
 
 City minoc_city;
@@ -128,7 +128,7 @@ City minoc_city;
 Map minoc_map = {
     "minoc.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -138,12 +138,12 @@ Map minoc_map = {
 };
 
 City minoc_city  = {
-    "Minoc",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Minoc", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 32, 30, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0 }, /* person_types */
     "minoc.tlk", /* tlk_fname */
-    &minoc_map
+    &minoc_map /* map */
 };
 
 City moonglow_city;
@@ -151,7 +151,7 @@ City moonglow_city;
 Map moonglow_map = {
     "moonglow.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -161,12 +161,12 @@ Map moonglow_map = {
 };
 
 City moonglow_city  = {
-    "Moonglow",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Moonglow", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 32, 0, 0, 26, 24, 25, 30, 0, 0, 0, 0, 0 }, /* person_types */
     "moonglow.tlk", /* tlk_fname */
-    &moonglow_map
+    &moonglow_map /* map */
 };
 
 City paws_city;
@@ -174,7 +174,7 @@ City paws_city;
 Map paws_map = {
     "paws.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -184,12 +184,12 @@ Map paws_map = {
 };
 
 City paws_city  = {
-    "Paws",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Paws", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
     "paws.tlk", /* tlk_fname */
-    &paws_map
+    &paws_map /* map */
 };
 
 City skara_city;
@@ -197,7 +197,7 @@ City skara_city;
 Map skara_map = {
     "skara.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -207,12 +207,12 @@ Map skara_map = {
 };
 
 City skara_city  = {
-    "Skara Brae",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Skara Brae", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 32, 0, 0, 28, 0, 30, 31, 29, 0, 0, 0, 0 }, /* person_types */
     "skara.tlk", /* tlk_fname */
-    &skara_map
+    &skara_map /* map */
 };
 
 City trinsic_city;
@@ -220,7 +220,7 @@ City trinsic_city;
 Map trinsic_map = {
     "trinsic.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -230,12 +230,12 @@ Map trinsic_map = {
 };
 
 City trinsic_city  = {
-    "Trinsic",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Trinsic", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 32, 29, 28, 0, 31, 0, 0, 29, 0, 0, 0, 0 }, /* person_types */
     "trinsic.tlk", /* tlk_fname */
-    &trinsic_map
+    &trinsic_map /* map */
 };
 
 City vesper_city;
@@ -243,7 +243,7 @@ City vesper_city;
 Map vesper_map = {
     "vesper.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -253,12 +253,12 @@ Map vesper_map = {
 };
 
 City vesper_city  = {
-    "Vesper",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Vesper", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 0, 25, 0, 0, 23, 0, 0, 26, 23, 0, 0, 0 }, /* person_types */
     "vesper.tlk", /* tlk_fname */
-    &vesper_map
+    &vesper_map /* map */
 };
 
 City yew_city;
@@ -266,7 +266,7 @@ City yew_city;
 Map yew_map = {
     "yew.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    0, 15, /* startx, starty */
+    1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -276,10 +276,10 @@ Map yew_map = {
 };
 
 City yew_city  = {
-    "Yew",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Yew", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 32, 0, 0, 26, 0, 0, 26, 0, 0, 0, 0, 0 }, /* person_types */
     "yew.tlk", /* tlk_fname */
-    &yew_map
+    &yew_map /* map */
 };

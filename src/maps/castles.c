@@ -24,12 +24,12 @@ Map empath_map = {
 };
 
 City empath_city  = {
-    "Empath Abbey",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Empath Abbey", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
     "empath.tlk", /* tlk_fname */
-    &empath_map
+    &empath_map /* map */
 };
 
 City lycaeum_city;
@@ -47,12 +47,12 @@ Map lycaeum_map = {
 };
 
 City lycaeum_city  = {
-    "Lycaeum",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Lycaeum", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
     "lycaeum.tlk", /* tlk_fname */
-    &lycaeum_map
+    &lycaeum_map /* map */
 };
 
 City serpent_city;
@@ -70,12 +70,12 @@ Map serpent_map = {
 };
 
 City serpent_city  = {
-    "Serpents Hold",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Serpents Hold", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
     "serpent.tlk", /* tlk_fname */
-    &serpent_map
+    &serpent_map /* map */
 };
 
 Map lcb_2_map;
@@ -100,12 +100,12 @@ Map lcb_1_map = {
 };
 
 City lcb_1_city  = {
-    "Britannia",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Britannia", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 }, /* person_types */
     "lcb.tlk", /* tlk_fname */
-    &lcb_1_map
+    &lcb_1_map /* map */
 };
 
 const Portal lcb_2_portals[] = {
@@ -128,10 +128,10 @@ Map lcb_2_map = {
 };
 
 City lcb_2_city  = {
-    "Britannia",
-    0,
-    NULL,
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "Britannia", /* name */
+    0, /* n_persons */
+    NULL, /* persons */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0 }, /* person_types */
     "lcb.tlk", /* tlk_fname */
-    &lcb_2_map
+    &lcb_2_map /* map */
 };
