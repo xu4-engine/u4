@@ -3479,7 +3479,7 @@ int gameDirectionalAction(CoordActionInfo *info) {
                 if (MAP_IS_OOB(c->location->map, t_x, t_y))
                     break;
 
-                tile = (*c->location->tileAt)(c->location->map, t_x, t_y, c->location->z, WITH_OBJECTS);
+                tile = (*c->location->tileAt)(c->location->map, t_x, t_y, c->location->z, WITH_GROUND_OBJECTS);
 
                 /* should we see if the action is blocked before trying it? */       
                 if (info->blockBefore && info->blockedPredicate &&
