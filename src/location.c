@@ -49,7 +49,7 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
         *focus = 0;
         if ((location->map->flags & SHOW_AVATAR) && location->x == x && location->y == y)            
             return (unsigned char)c->saveGame->transport;        
-        else return MAP_TILE_AT(location->map, x, y, z);
+        else return mapGetTileFromData(location->map, x, y, z);
     }
     
     /* draw objects -- temporary annotations go first */
@@ -91,7 +91,7 @@ unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int
     /* then the base tile */
     else {
         *focus = 0;
-        tile = MAP_TILE_AT(location->map, x, y, z);
+        tile = mapGetTileFromData(location->map, x, y, z);
         if (a)
             tile = a->tile;
     }

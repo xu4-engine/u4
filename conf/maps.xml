@@ -22,8 +22,7 @@
         <portal x="136" y="158" z="-1" destmapid="14" startx="1" starty="15" startlevel="0" action="enter" savelocation="true" transport="footorhorse"/>
         <portal x="201" y="59"  z="-1" destmapid="15" startx="1" starty="15" startlevel="0" action="enter" savelocation="true" transport="footorhorse"/>
         <portal x="136" y="90"  z="-1" destmapid="16" startx="1" starty="15" startlevel="0" action="enter" savelocation="true" transport="footorhorse"/>
-
-        <!-- FIXME: Add orientation to portals -->
+        
         <portal x="240" y="73"  z="-1" destmapid="17" startx="1" starty="1" startlevel="0" action="enter" savelocation="true" transport="foot"/>
         <portal x="91"  y="67"  z="-1" destmapid="18" startx="1" starty="1" startlevel="0" action="enter" savelocation="true" transport="foot"/>
         <portal x="72"  y="168" z="-1" destmapid="19" startx="1" starty="1" startlevel="0" action="enter" savelocation="true" transport="foot"/>
@@ -45,8 +44,8 @@
     <!-- castles -->
     <map id="1" type="castle" fname="lcb_1.ult" width="32" height="32" levels="1" borderbehavior="exit" showavatar="true" music="5">
         <city name="Britannia" tlk_fname="lcb.tlk" healer="29" hawkwind="30"/>
-        <portal x="3" y="3" z="0" destmapid="100" startx="3" starty="3" startlevel="1" action="klimb" savelocation="false" message="Klimb to second floor!&#xA;" transport="foot"/>
-        <portal x="27" y="3" z="0" destmapid="100" startx="27" starty="3" startlevel="1" action="klimb" savelocation="false" message="Klimb to second floor!&#xA;" transport="foot"/>
+        <portal x="3" y="3" z="0" destmapid="100" startx="3" starty="3" startlevel="0" action="klimb" savelocation="false" message="Klimb to second floor!&#xA;" transport="foot"/>
+        <portal x="27" y="3" z="0" destmapid="100" startx="27" starty="3" startlevel="0" action="klimb" savelocation="false" message="Klimb to second floor!&#xA;" transport="foot"/>
         <portal x="7" y="2" z="0" destmapid="23" startx="5" starty="5" startlevel="0" action="descend" savelocation="false" message="Descend to the depths!&#xA;" transport="foot">
             <retroActiveDest x="239" y="240" z="65535" mapid="0"/>
         </portal>
@@ -116,6 +115,9 @@
         <dungeon name="Despise"/>
         <portal x="1" y="1" z="0" action="klimb" transport="foot" exits="true"/>
         <portal x="5" y="5" z="0" destmapid="18" startlevel="1" action="descend" savelocation="false" transport="foot"/>
+        <portal x="5" y="5" z="1" destmapid="18" startlevel="0" action="klimb" savelocation="false" transport="foot"/>
+        <portal x="3" y="1" z="1" destmapid="18" startlevel="2" action="descend" savelocation="false" transport="foot"/>
+        <portal x="3" y="1" z="2" destmapid="18" startlevel="1" action="klimb" savelocation="false" transport="foot"/>
     </map>
     <map id="19" type="dungeon" fname="destard.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
         <dungeon name="Destard"/>

@@ -271,6 +271,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     case MAPTYPE_DUNGEON:
         context = CTX_DUNGEON;
         viewMode = VIEW_DUNGEON;
+        c->saveGame->orientation = DIR_EAST;
         break;
     case MAPTYPE_COMBAT:        
         context = CTX_COMBAT;
@@ -818,7 +819,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'q':        
         screenMessage("Quit & Save...\n%d moves\n", c->saveGame->moves);
-        if (mapIsWorldMap(c->location->map)) {
+        if (c->location->context & CTX_CAN_SAVE_GAME) {        
             gameSave();
             screenMessage("Press Alt-x to quit\n", c->saveGame->moves);
         }

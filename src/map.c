@@ -80,10 +80,7 @@ int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
         conv_idx[i] = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (city->map->id == 100) /* FIXME: level is hardcoded for lcb2 */
-            city->persons[i].startz = 1;
-        else
-            city->persons[i].startz = 0;
+        city->persons[i].startz = 0;
     }
 
     for (i = 0; ; i++) {
@@ -272,6 +269,16 @@ const Portal *mapPortalAt(const Map *map, int x, int y, int z, int actionFlags) 
     return NULL;
 }
 
+unsigned char mapGetTileFromData(const Map *map, int x, int y, int z) {
+    int index;
+
+    index = x + (y * map->width);
+    if ((short)z >= 0)
+        index += (map->width * map->height * z);
+    return map->data[index];
+    //#define MAP_TILE_AT(mapptr, x, y, z) ((mapptr)->data[(x) + ((y) * (mapptr)->width) + (((int)(z))!=-1 ? (mapptr)->width * (mapptr)->height * (z) : 0)])
+}
+
 /**
  * Returns the real tile at the given point on a map.  Visual-only
  * annotations like moongates and attack icons are ignored.
@@ -280,7 +287,7 @@ unsigned char mapTileAt(const Map *map, int x, int y, int z) {
     unsigned char tile;
     const Annotation *a;
  
-    tile = MAP_TILE_AT(map, x, y, z);
+    tile = mapGetTileFromData(map, x, y, z);
     if ((a = annotationAt(x, y, z, map->id)) != NULL &&
         !a->visual)
         tile = a->tile;
@@ -298,7 +305,7 @@ unsigned char mapGroundTileAt(const Map *map, int x, int y, int z) {
     const Annotation *a;
     Object *obj;
 
-    tile = MAP_TILE_AT(map, x, y, z);
+    tile = mapGetTileFromData(map, x, y, z);
     a = annotationAt(x, y, z, map->id);
     obj = mapObjectAt(map, x, y, z);
 

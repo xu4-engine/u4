@@ -14,9 +14,12 @@ typedef enum {
     CTX_DUNGEON     = 0x0008
 } LocationContext;
 
-#define CTX_ANY         (0xffff)
-#define CTX_NORMAL      (CTX_WORLDMAP | CTX_CITY)
-#define CTX_NON_COMBAT  (CTX_ANY & ~CTX_COMBAT)
+#define CTX_ANY             (0xffff)
+#define CTX_NORMAL          (CTX_WORLDMAP | CTX_CITY)
+#define CTX_NON_COMBAT      (CTX_ANY & ~CTX_COMBAT)
+/* FIXME: need to be able to save in dungeons */
+//#define CTX_CAN_SAVE_GAME   (CTX_WORLDMAP | CTX_DUNGEON)
+#define CTX_CAN_SAVE_GAME   (CTX_WORLDMAP)
 
 typedef void (*FinishTurnCallback)(void);
 
