@@ -141,6 +141,14 @@ SOURCE=..\src\armor.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\aura.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\aura.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\camp.cpp
 # End Source File
 # Begin Source File
@@ -185,6 +193,14 @@ SOURCE=..\src\context.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\conversation.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\conversation.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\coords.h
 # End Source File
 # Begin Source File
@@ -210,6 +226,22 @@ SOURCE=..\src\debug.cpp
 # Begin Source File
 
 SOURCE=..\src\debug.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\dialogueloader.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\dialogueloader.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\dialogueloader_tlk.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\dialogueloader_tlk.h
 # End Source File
 # Begin Source File
 
