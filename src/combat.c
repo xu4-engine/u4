@@ -475,7 +475,8 @@ unsigned char combatMapForTile(unsigned char groundTile, unsigned char transport
 }
 
 void combatFinishTurn() {    
-    PartyCombatInfo *party = combatInfo.party;    
+    PartyCombatInfo *party = combatInfo.party;
+    int quick;
 
     /* return to party overview */
     c->statsItem = STATS_PARTY_OVERVIEW;
@@ -493,8 +494,10 @@ void combatFinishTurn() {
         playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, party[FOCUS].obj->x, party[FOCUS].obj->y, c->location->z, WITH_OBJECTS)), FOCUS);
     }
 
+    quick = (c->aura == AURA_QUICKNESS) && (party[FOCUS].obj != NULL) && (rand() % 2 == 0) ? 1 : 0;
+
     /* check to see if the player gets to go again (and is still alive) */
-    if ((c->aura != AURA_QUICKNESS) || (rand() % 2 == 0) || (c->saveGame->players[FOCUS].hp <= 0)){    
+    if (!quick || (c->saveGame->players[FOCUS].hp <= 0)){    
 
         do {            
             annotationCycle();
