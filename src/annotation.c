@@ -4,20 +4,22 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "context.h"
 #include "map.h"
 #include "annotation.h"
 #include "event.h"
 #include "error.h"
+#include "debug.h"
 
 void annotationTimer(void *data);
 
-Annotation *annotationAdd(int x, int y, unsigned char tile) {
+Annotation *annotationAdd(int x, int y, int z, unsigned char mapid, unsigned char tile) {
     Annotation *a = (Annotation *) malloc(sizeof(Annotation));
     a->x = x;
     a->y = y;
+    a->z = z;
+    a->mapid = mapid;
     a->time_to_live = -1;
     a->tile = tile;
     a->visual = 0;
@@ -61,7 +63,7 @@ void annotationTimer(void *data) {
     errorWarning("couldn't remove annotation %d", (int) data);
 }
 
-void annotationRemove(int x, int y, unsigned char tile) {
+void annotationRemove(int x, int y, int z, unsigned char mapid, unsigned char tile) {
     int found = 0, count;
     Annotation *annotation = c->map->annotation, **prev;
 
@@ -71,6 +73,8 @@ void annotationRemove(int x, int y, unsigned char tile) {
     while (annotation) {
         if (annotation->x == x &&
             annotation->y == y &&
+            annotation->z == z &&
+            annotation->mapid == mapid &&
             annotation->tile == tile) {
             found = 1;
             break;
@@ -82,16 +86,18 @@ void annotationRemove(int x, int y, unsigned char tile) {
     if (found) {
         *prev = annotation->next;
         free(annotation);
-        assert(annotationCount() == (count - 1));
+        ASSERT(annotationCount() == (count - 1), "annotation table corrupted on remove");
     }
 }
 
-const Annotation *annotationAt(int x, int y) {
+const Annotation *annotationAt(int x, int y, int z, unsigned char mapid) {
     Annotation *annotation = c->map->annotation;
 
     while (annotation) {
         if (annotation->x == x &&
-            annotation->y == y)
+            annotation->y == y &&
+            annotation->z == z &&
+            annotation->mapid == mapid)
             return annotation;
 
         annotation = annotation->next;
@@ -119,16 +125,21 @@ void annotationCycle(void) {
     }
 }
 
-void annotationClear(void) {
-    Annotation *annotation = c->map->annotation, *tmp;
+void annotationClear(unsigned char mapid) {
+    Annotation *annotation = c->map->annotation, **prev;
     
+    prev = &(c->map->annotation);
     while (annotation) {
-        eventHandlerRemoveTimerCallbackData(&annotationTimer, (void *)annotation);
-        tmp = annotation->next;
-        free(annotation);
-        annotation = tmp;
+        if (annotation->mapid == mapid) {
+            eventHandlerRemoveTimerCallbackData(&annotationTimer, (void *)annotation);
+            *prev = annotation->next;
+            free(annotation);
+            annotation = *prev;
+        } else {
+            prev = &(annotation->next);
+            annotation = annotation->next;
+        }
     }
-    c->map->annotation = NULL;
 }
 
 int annotationCount(void) {

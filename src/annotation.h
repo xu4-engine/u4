@@ -15,21 +15,22 @@
  */
 
 typedef struct _Annotation {
-    int x, y;
+    int x, y, z;
+    unsigned char mapid;
     int time_to_live;
     unsigned char tile;
     int visual;
     struct _Annotation *next;
 } Annotation;
 
-Annotation *annotationAdd(int x, int y, unsigned char tile);
+Annotation *annotationAdd(int x, int y, int z, unsigned char mapid, unsigned char tile);
 Annotation *annotationSetVisual(Annotation *a);
 Annotation *annotationSetTurnDuration(Annotation *a, int ttl);
 Annotation *annotationSetTimeDuration(Annotation *a, int interval);
-void annotationRemove(int x, int y, unsigned char tile);
-const Annotation *annotationAt(int x, int y);
+void annotationRemove(int x, int y, int z, unsigned char mapid, unsigned char tile);
+const Annotation *annotationAt(int x, int y, int z, unsigned char mapid);
 void annotationCycle(void);
-void annotationClear(void);
+void annotationClear(unsigned char mapid);
 int annotationCount(void);
 
 #endif
