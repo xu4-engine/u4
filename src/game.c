@@ -74,6 +74,7 @@ int useItem(const char *itemName);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 int ztatsFor(int player);
+int cmdHandleAnyKey(int key, void *data);
 void gameCheckBridgeTrolls(void);
 void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
@@ -88,6 +89,7 @@ extern Map world_map;
 extern Object *party[8];
 Context *c = NULL;
 int collisionOverride = 0;
+int windLock = 0;
 int opacityCheck = 1;
 char itemNameBuffer[16];
 
@@ -469,11 +471,11 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 3:                     /* ctrl-C */
-        screenMessage("Cmd: ");
+        screenMessage("Cmd (h = help):");
         eventHandlerPushKeyHandler(&gameSpecialCmdKeyHandler);
         break;
 
-    case 4:                     /* ctrl-D */        
+    case 4:                     /* ctrl-D */
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &destroyAtCoord;
         info->origin_x = c->location->x;
@@ -484,21 +486,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->blockedPredicate = NULL;
         info->blockBefore = 0;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
-        screenMessage("Destroy Object\nDir: ");        
-        break;
-
-    case 14:
-        screenMessage("Negate magic!\n");
-        c->aura = AURA_NEGATE;
-        c->auraDuration = 10;
-        statsUpdate();
-        break;
-
-    case 15:
-        opacityCheck = !opacityCheck;
-        if (opacityCheck)
-            screenMessage("Opacity On!\n");
-        else screenMessage("Opacity Off!\n");
+        screenMessage("Destroy Object\nDir: ");
         break;
 
     case ' ':
@@ -1051,10 +1039,12 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         break;
     case 'c':
         collisionOverride = !collisionOverride;
-        screenMessage("Collision detection %s!\n\020", collisionOverride ? "off" : "on");
+        screenMessage("Collision detection %s!\n", collisionOverride ? "off" : "on");
+        screenPrompt();
         break;
     case 'e':
-        screenMessage("Equipment!\n\020");
+        screenMessage("Equipment!\n");
+        screenPrompt();
         for (i = ARMR_NONE + 1; i < ARMR_MAX; i++)
             c->saveGame->armor[i] = 8;
         for (i = WEAP_HANDS + 1; i < WEAP_MAX; i++)
@@ -1063,12 +1053,23 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     case 'h':
         screenMessage("Help:\n"
                       "1-8 - gate\n"
-                      "c - Collision\ne - Equipment\nh - Help\ni - Items\nk - Show Karma\n"
-                      "l - Location\nm - Mixtures\nr - Reagents\nt - Transports\nw - Winds\n"
-                      "\020");
-        break;
+                      "c - Collision\n"
+                      "e - Equipment\n"
+                      "h - Help\n"
+                      "i - Items\n"
+                      "k - Show Karma\n"
+                      "l - Location\n"
+                      "m - Mixtures\n"
+                      "n - Negate\n"
+                      "o - Opacity\n"
+                      "(more)");
+        eventHandlerPopKeyHandler();
+        eventHandlerPushKeyHandler(&cmdHandleAnyKey);
+        return 1;
+
     case 'i':
-        screenMessage("Items!\n\020");
+        screenMessage("Items!\n");
+        screenPrompt();
         c->saveGame->torches = 99;
         c->saveGame->gems = 99;
         c->saveGame->keys = 99;
@@ -1081,22 +1082,43 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         statsUpdate();
         break;
     case 'k':
-        screenMessage("Karma:\nH C V J S H S H\n%02x%02x%02x%02x%02x%02x%02x%02x\n\020", c->saveGame->karma[0], c->saveGame->karma[1], c->saveGame->karma[2],
-                      c->saveGame->karma[3], c->saveGame->karma[4], c->saveGame->karma[5], c->saveGame->karma[6], c->saveGame->karma[7]);
+        screenMessage("Karma:\nH C V J S H S H\n%02x%02x%02x%02x%02x%02x%02x%02x\n",
+                      c->saveGame->karma[0], c->saveGame->karma[1], c->saveGame->karma[2], c->saveGame->karma[3],
+                      c->saveGame->karma[4], c->saveGame->karma[5], c->saveGame->karma[6], c->saveGame->karma[7]);
+        screenPrompt();
         break;
     case 'l':
         if (mapIsWorldMap(c->location->map))
             screenMessage("\nLocation:\n%s\nx: %d\ny: %d\n", "World Map", c->location->x, c->location->y);
-        else screenMessage("\nLocation:\n%s\nx: %d\ny: %d\nz: %d\n", c->location->map->fname, c->location->x, c->location->y, c->location->z);
+        else
+            screenMessage("\nLocation:\n%s\nx: %d\ny: %d\nz: %d\n", c->location->map->fname, c->location->x, c->location->y, c->location->z);
+        screenPrompt();
         break;
 
     case 'm':
-        screenMessage("Mixtures!\n\020");
+        screenMessage("Mixtures!\n");
+        screenPrompt();
         for (i = 0; i < SPELL_MAX; i++)
             c->saveGame->mixtures[i] = 99;
         break;
+
+    case 'n':
+        screenMessage("Negate magic\n");
+        screenPrompt();
+        c->aura = AURA_NEGATE;
+        c->auraDuration = 10;
+        statsUpdate();
+        break;
+
+    case 'o':
+        opacityCheck = !opacityCheck;
+        screenMessage("Opacity %s!\n", opacityCheck ? "on" : "off");
+        screenPrompt();
+        break;
+
     case 'r':
-        screenMessage("Reagents!\n\020");
+        screenMessage("Reagents!\n");
+        screenPrompt();
         for (i = 0; i < REAG_MAX; i++)
             c->saveGame->reagents[i] = 99;
         break;
@@ -1105,7 +1127,8 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             mapAddObject(c->location->map, tileGetHorseBase(), tileGetHorseBase(), 84, 106, -1);
             mapAddObject(c->location->map, tileGetShipBase(), tileGetShipBase(), 88, 109, -1);
             mapAddObject(c->location->map, tileGetBalloonBase(), tileGetBalloonBase(), 85, 105, -1);
-            screenMessage("Transports: Ship, Horse and Balloon created!\n\020");
+            screenMessage("Transports: Ship, Horse and Balloon created!\n");
+            screenPrompt();
         }
         break;
     case 'w':
@@ -1113,10 +1136,17 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         if (c->windDirection > DIR_SOUTH)
             c->windDirection = DIR_WEST;
         screenMessage("Change Wind Direction\n");
+        screenPrompt();
+        break;
+    case 'W':
+        windLock = !windLock;
+        screenMessage("Wind direction is %slocked!\n", windLock ? "" : "un");
+        screenPrompt();
         break;
 
     case ' ':
         screenMessage("Nothing\n");
+        screenPrompt();
         break;
 
     default:
@@ -1128,6 +1158,18 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         eventHandlerPopKeyHandler();
 
     return valid || keyHandlerDefault(key, NULL);
+}
+
+int cmdHandleAnyKey(int key, void *data) {
+    eventHandlerPopKeyHandler();
+
+    screenMessage("\n"
+                  "r - Reagents\n"
+                  "t - Transports\n"
+                  "w - Change Wind\n"
+                  "W - Lock wind\n");
+    screenPrompt();
+    return 1;
 }
 
 /**
@@ -2061,11 +2103,11 @@ int moveAvatar(Direction dir, int userEvent) {
 /**
  * This function is called every quarter second.
  */
-void gameTimer(void *data) {  
+void gameTimer(void *data) {
 
     Direction dir = DIR_WEST;
     if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
-        if ((rand() % 4) == 1)
+        if ((rand() % 4) == 1 && !windLock)
             c->windDirection = dirRandomDir(MASK_DIR_ALL);
         c->windCounter = 0;
         if (tileIsBalloon(c->saveGame->transport) &&
@@ -2073,7 +2115,7 @@ void gameTimer(void *data) {
             dir = dirReverse((Direction) c->windDirection);
             moveAvatar(dir, 0);
         }
-    }   
+    }
 
     gameUpdateMoons(1);
 
