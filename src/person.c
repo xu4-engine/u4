@@ -140,7 +140,7 @@ void replyDelete(Reply *reply) {
  * avatar.exe.
  */
 int personInit() {
-    FILE *avatar;
+    U4FILE *avatar;
 
     avatar = u4fopen("avatar.exe");
     if (!avatar)

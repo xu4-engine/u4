@@ -5,8 +5,6 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include <stdio.h>
-
 struct _City;
 struct _Shrine;
 struct _Area;
@@ -15,6 +13,7 @@ struct _Person;
 struct _Monster;
 struct _Portal;
 
+#include "u4file.h"
 #include "music.h"
 
 typedef enum {
@@ -61,10 +60,10 @@ typedef struct _Map {
 
 #define MAP_IS_OOB(mapptr, x, y) ((x) < 0 || (x) >= ((int)(mapptr)->width) || (y) < 0 || (y) >= ((int)(mapptr)->height))
 
-int mapRead(struct _City *city, FILE *ult, FILE *tlk);
-int mapReadCon(Map *map, FILE *con);
-int mapReadDng(Map *map, FILE *dng);
-int mapReadWorld(Map *map, FILE *world);
+int mapRead(struct _City *city, U4FILE *ult, U4FILE *tlk);
+int mapReadCon(Map *map, U4FILE *con);
+int mapReadDng(Map *map, U4FILE *dng);
+int mapReadWorld(Map *map, U4FILE *world);
 struct _Object *mapObjectAt(const Map *map, int x, int y, int z);
 const struct _Person *mapPersonAt(const Map *map, int x, int y, int z);
 const struct _Portal *mapPortalAt(const Map *map, int x, int y, int z);

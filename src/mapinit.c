@@ -114,7 +114,7 @@ Map * const dungeons[] = {
 
 int initializeMaps() {
     unsigned int i;
-    FILE *world;
+    U4FILE *world;
 
     world = u4fopen("world.map");
     if (!world)
@@ -123,7 +123,7 @@ int initializeMaps() {
     u4fclose(world);
 
     for (i = 0; i < sizeof(cities) / sizeof(cities[0]); i++) {
-        FILE *ult, *tlk;
+        U4FILE *ult, *tlk;
         ult = u4fopen(cities[i]->map->fname);
         tlk = u4fopen(cities[i]->tlk_fname);
         if (!ult || !tlk)
@@ -134,7 +134,7 @@ int initializeMaps() {
     }
 
     for (i = 0; i < sizeof(areas) / sizeof(areas[0]); i++) {
-        FILE *con;
+        U4FILE *con;
         con = u4fopen(areas[i]->fname);
         if (!con)
             return 0;
@@ -143,7 +143,7 @@ int initializeMaps() {
     }
 
     for (i = 0; i < sizeof(dungeons) / sizeof(dungeons[0]); i++) {
-        FILE *dng;
+        U4FILE *dng;
         dng = u4fopen(dungeons[i]->fname);
         if (!dng)
             return 0;

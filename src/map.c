@@ -26,7 +26,7 @@
 
 extern City lcb_2_city;
 
-int mapRead(City *city, FILE *ult, FILE *tlk) {
+int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
     unsigned char conv_idx[CITY_MAX_PERSONS];
     unsigned char c;
     int i, j;
@@ -105,7 +105,7 @@ int mapRead(City *city, FILE *ult, FILE *tlk) {
     }
 
     for (i = 0; ; i++) {
-        if (fread(tlk_buffer, 1, sizeof(tlk_buffer), tlk) != sizeof(tlk_buffer))
+        if (u4fread(tlk_buffer, 1, sizeof(tlk_buffer), tlk) != sizeof(tlk_buffer))
             break;
         for (j = 0; j < CITY_MAX_PERSONS; j++) {
             if (conv_idx[j] == i+1) {
@@ -161,7 +161,7 @@ int mapRead(City *city, FILE *ult, FILE *tlk) {
     return 1;
 }
 
-int mapReadCon(Map *map, FILE *con) {
+int mapReadCon(Map *map, U4FILE *con) {
     int i;
 
     /* the map must be 11x11 to be read from an .CON file */
@@ -190,7 +190,7 @@ int mapReadCon(Map *map, FILE *con) {
             if (!readChar(&(map->area->player_start[i].y), con))
                 return 0;
         }
-        fseek(con, 16L, SEEK_CUR);
+        u4fseek(con, 16L, SEEK_CUR);
     }
 
     for (i = 0; i < (CON_HEIGHT * CON_WIDTH); i++) {
@@ -201,7 +201,7 @@ int mapReadCon(Map *map, FILE *con) {
     return 1;
 }
 
-int mapReadDng(Map *map, FILE *dng) {
+int mapReadDng(Map *map, U4FILE *dng) {
     int i;
 
     /* the map must be 11x11 to be read from an .CON file */
@@ -220,7 +220,7 @@ int mapReadDng(Map *map, FILE *dng) {
     return 1;
 }
 
-int mapReadWorld(Map *map, FILE *world) {
+int mapReadWorld(Map *map, U4FILE *world) {
     int x, xch, y, ych;
 
     /* the map must be 256x256 to be read from the world map file */
@@ -471,7 +471,7 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
             if (rand() % 2 == 0)
                 dirMove(dirRandomDir(mapGetValidMoves(map, newx, newy, z, obj->tile)), &newx, &newy);
             break;
-                
+
         case MOVEMENT_FOLLOW_AVATAR:
         case MOVEMENT_ATTACK_AVATAR:
             dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, z, obj->tile)), &newx, &newy);
@@ -628,13 +628,13 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
             if (tileCanWalkOn(tile, d) &&
                 tileCanWalkOff(prev_tile, d))
                 retval = DIR_ADD_TO_MASK(d, retval);
-        } 
+        }
         /* other: check monster walkable */
         else if (tileCanWalkOn(tile, d) &&
                  tileCanWalkOff(prev_tile, d) &&
                  tileIsMonsterWalkable(tile))
             retval = DIR_ADD_TO_MASK(d, retval);
-            
+
     }
 
     return retval;
@@ -647,7 +647,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
 
 int mapDistance(int x1, int y1, int x2, int y2) {
     int dist, lowx, highx, lowy, highy;
-    
+
     dist = 0;
     lowx = (x1 < x2) ? x1 : x2;
     lowy = (y1 < y2) ? y1 : y2;

@@ -2,7 +2,6 @@
  * $Id$
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -118,7 +117,7 @@ void introInitPlayers(SaveGame *saveGame);
  */
 int introInit() {
     unsigned char screenFixData[533];
-    FILE *title;
+    U4FILE *title;
     int i, j;
 
     mode = INTRO_MAP;
@@ -143,30 +142,30 @@ int introInit() {
     }
 
 
-    fseek(title, INTRO_FIXUPDATA_OFFSET, SEEK_SET);
-    fread(screenFixData, 1, sizeof(screenFixData), title);
+    u4fseek(title, INTRO_FIXUPDATA_OFFSET, SEEK_SET);
+    u4fread(screenFixData, 1, sizeof(screenFixData), title);
 
-    fseek(title, INTRO_MAP_OFFSET, SEEK_SET);
+    u4fseek(title, INTRO_MAP_OFFSET, SEEK_SET);
     introMap[0] = (unsigned char *) malloc(INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT);
     for (i = 0; i < INTRO_MAP_HEIGHT; i++) {
         introMap[i] = introMap[0] + INTRO_MAP_WIDTH * i;
         for (j = 0; j < INTRO_MAP_WIDTH; j++) {
-            introMap[i][j] = (unsigned char) fgetc(title);
+            introMap[i][j] = (unsigned char) u4fgetc(title);
         }
     }
 
     sleepCycles = 0;
     scrPos = 0;
 
-    fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
+    u4fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
     scriptTable = (unsigned char *) malloc(INTRO_SCRIPT_TABLE_SIZE);
     for (i = 0; i < INTRO_SCRIPT_TABLE_SIZE; i++)
-        scriptTable[i] = fgetc(title);
+        scriptTable[i] = u4fgetc(title);
 
-    fseek(title, INTRO_BASETILE_TABLE_OFFSET, SEEK_SET);
+    u4fseek(title, INTRO_BASETILE_TABLE_OFFSET, SEEK_SET);
     baseTileTable = (unsigned char *) malloc(INTRO_BASETILE_TABLE_SIZE);
     for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++)
-        baseTileTable[i] = fgetc(title);
+        baseTileTable[i] = u4fgetc(title);
 
     objectStateTable = (IntroObjectState *) malloc(sizeof(IntroObjectState) * INTRO_BASETILE_TABLE_SIZE);
     memset(objectStateTable, 0, sizeof(IntroObjectState) * INTRO_BASETILE_TABLE_SIZE);
@@ -179,9 +178,9 @@ int introInit() {
         u4fclose(title);
         return(0);
     }
-    fseek(title, BEASTIE_FRAME_TABLE_OFFSET + BEASTIE1_FRAMES_OFFSET, SEEK_SET);
+    u4fseek(title, BEASTIE_FRAME_TABLE_OFFSET + BEASTIE1_FRAMES_OFFSET, SEEK_SET);
     for (i = 0; i < BEASTIE1_FRAMES; i++) {
-        beastie1FrameTable[i] = fgetc(title);
+        beastie1FrameTable[i] = u4fgetc(title);
     }
 
     /* --------------------------
@@ -192,9 +191,9 @@ int introInit() {
         u4fclose(title);
         return(0);
     }
-    fseek(title, BEASTIE_FRAME_TABLE_OFFSET + BEASTIE2_FRAMES_OFFSET, SEEK_SET);
+    u4fseek(title, BEASTIE_FRAME_TABLE_OFFSET + BEASTIE2_FRAMES_OFFSET, SEEK_SET);
     for (i = 0; i < BEASTIE2_FRAMES; i++) {
-        beastie2FrameTable[i] = fgetc(title);
+        beastie2FrameTable[i] = u4fgetc(title);
     }
 
     u4fclose(title);

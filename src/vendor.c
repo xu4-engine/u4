@@ -305,7 +305,7 @@ VendorTypeInfo **vendorTypeInfo;
 #define SV_BESTBREED 6
 
 char *vendorGetFarewell(const Conversation *cnv, const char *prefix);
-VendorTypeInfo *vendorLoadTypeInfo(FILE *avatar, const VendorTypeDesc *desc);
+VendorTypeInfo *vendorLoadTypeInfo(U4FILE *avatar, const VendorTypeDesc *desc);
 const char *vendorGetName(const Person *v);
 const char *vendorGetShop(const Person *v);
 const char *vendorGetText(const Person *v, int textId);
@@ -313,21 +313,21 @@ const VendorTypeInfo *vendorGetInfo(const Person *v);
 char *vendorGetArmsVendorMenu(const Person *v);
 char *vendorDoBuyTransaction(Conversation *cnv);
 char *vendorDoSellTransaction(Conversation *cnv);
-int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, FILE *f);
-int innVendorInfoRead(InnVendorInfo *info, FILE *f);
+int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, U4FILE *f);
+int innVendorInfoRead(InnVendorInfo *info, U4FILE *f);
 
 /**
  * Loads in prices and conversation data for vendors from avatar.exe.
  */
 int vendorInit() {
     int i, j;
-    FILE *avatar;
+    U4FILE *avatar;
 
     avatar = u4fopen("avatar.exe");
     if (!avatar)
         return 0;
 
-    fseek(avatar, 78859, SEEK_SET);
+    u4fseek(avatar, 78859, SEEK_SET);
     for (i = 0; i < N_REAG_VENDORS; i++) {
         for (j = 0; j < REAG_MAX - 2; j++) {
             if (!readChar(&(reagPrices[i][j]), avatar))
@@ -337,7 +337,7 @@ int vendorInit() {
         reagPrices[i][REAG_MANDRAKE] = 0;
     }
 
-    fseek(avatar, 87535, SEEK_SET);
+    u4fseek(avatar, 87535, SEEK_SET);
     for (i = 0; i < N_FOOD_VENDORS; i++) {
         if (!readShort(&(foodPrices[i]), avatar))
             return 0;
@@ -347,39 +347,39 @@ int vendorInit() {
     tavernTopics = u4read_stringtable(avatar, 85599, N_TAVERN_TOPICS);
     tavernInfo = u4read_stringtable(avatar, 85671, N_TAVERN_TOPICS);
 
-    fseek(avatar, 86379, SEEK_SET);
+    u4fseek(avatar, 86379, SEEK_SET);
     for (i = 0; i < N_TAVERN_TOPICS; i++) {
         if (!readShort(&(tavernInfoPrices[i]), avatar))
             return 0;
     }
 
-    fseek(avatar, 86427, SEEK_SET);
+    u4fseek(avatar, 86427, SEEK_SET);
     for (i = 0; i < N_TAVERN_VENDORS; i++) {
         if (!readShort(&(tavernFoodPrices[i]), avatar))
             return 0;
     }
 
-    fseek(avatar, 83719, SEEK_SET);
+    u4fseek(avatar, 83719, SEEK_SET);
     if (!innVendorInfoRead(&(innVendorInfo[0]), avatar))
         return 0;
 
-    fseek(avatar, 82969, SEEK_SET);
+    u4fseek(avatar, 82969, SEEK_SET);
     for (i = 0; i < N_GUILD_ITEMS; i++) {
         if (!readShort(&(guildItemPrices[i]), avatar))
             return 0;
     }
 
-    fseek(avatar, 82977, SEEK_SET);
+    u4fseek(avatar, 82977, SEEK_SET);
     for (i = 0; i < N_GUILD_ITEMS; i++) {
         if (!readShort(&(guildItemQuantities[i]), avatar))
             return 0;
     }
 
-    fseek(avatar, 80181, SEEK_SET);
+    u4fseek(avatar, 80181, SEEK_SET);
     if (!armsVendorInfoRead(&weaponVendorInfo, WEAP_MAX, avatar))
         return 0;
 
-    fseek(avatar, 81471, SEEK_SET);
+    u4fseek(avatar, 81471, SEEK_SET);
     if (!armsVendorInfoRead(&armorVendorInfo, ARMR_MAX, avatar))
         return 0;
 
@@ -1554,7 +1554,7 @@ char *vendorGetHealerPlayerResponse(Conversation *cnv, const char *response) {
                   NULL);
 }
 
-int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, FILE *f) {
+int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, U4FILE *f) {
     int i, j;
 
     for (i = 0; i < N_ARMS_VENDORS; i++) {
@@ -1572,7 +1572,7 @@ int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, FILE *f) {
     return 1;
 }
 
-int innVendorInfoRead(InnVendorInfo *info, FILE *f) {
+int innVendorInfoRead(InnVendorInfo *info, U4FILE *f) {
     unsigned char pad;
     int i;
 
@@ -1582,14 +1582,14 @@ int innVendorInfoRead(InnVendorInfo *info, FILE *f) {
     }
     if (!readChar(&pad, f))
         return 0;
-        
+
     for (i = 0; i < N_INN_VENDORS; i++) {
         if (!readChar(&(info[i].room_y), f))
             return 0;
     }
     if (!readChar(&pad, f))
         return 0;
-        
+
     for (i = 0; i < N_INN_VENDORS; i++) {
         if (!readChar(&(info[i].price), f))
             return 0;
@@ -1598,7 +1598,7 @@ int innVendorInfoRead(InnVendorInfo *info, FILE *f) {
     return 1;
 }
 
-VendorTypeInfo *vendorLoadTypeInfo(FILE *avatar, const VendorTypeDesc *desc) {
+VendorTypeInfo *vendorLoadTypeInfo(U4FILE *avatar, const VendorTypeDesc *desc) {
     int i;
     VendorTypeInfo *info = (VendorTypeInfo *) malloc(sizeof(VendorTypeInfo));
 
@@ -1607,7 +1607,7 @@ VendorTypeInfo *vendorLoadTypeInfo(FILE *avatar, const VendorTypeDesc *desc) {
     info->item = desc->item;
 
     if (desc->cityMapOffset != -1) {
-        fseek(avatar, desc->cityMapOffset, SEEK_SET);
+        u4fseek(avatar, desc->cityMapOffset, SEEK_SET);
         for (i = 0; i < VCM_SIZE; i++) {
             if (!readChar(&(info->cityMap[i]), avatar))
                 return NULL;
