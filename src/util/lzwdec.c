@@ -3,8 +3,9 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "lzw.h"
+#include "lzw/lzw.h"
 
 /**
  * A simple command line interface to the U4 LZW decompressor.

@@ -3,6 +3,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 /**
  * LZW "encode" a file.  This routine doesn't actually compress the
