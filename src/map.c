@@ -128,6 +128,20 @@ int mapRead(City *city, FILE *ult, FILE *tlk) {
     }
 
     city->n_persons = CITY_MAX_PERSONS;
+ 
+    for (i = 0; i < CITY_MAX_PERSONS; i++) {
+        city->persons[i].npcType = NPC_EMPTY;
+        if (city->persons[i].name)
+            city->persons[i].npcType = NPC_TALKER;
+        if (city->persons[i].tile0 == 88 || city->persons[i].tile0 == 89)
+            city->persons[i].npcType = NPC_TALKER_BEGGAR;
+        if (city->persons[i].tile0 == 80 || city->persons[i].tile0 == 81)
+            city->persons[i].npcType = NPC_TALKER_GUARD;
+        for (j = 0; j < 12; j++) {
+            if (city->person_types[j] == (i + 1))
+                city->persons[i].npcType = j + NPC_TALKER_COMPANION;
+        }
+    }
 
     return 1;
 }
