@@ -584,7 +584,19 @@ void combatMoveMonsters() {
             if (action == CA_FLEE)
                 dir = dirFindPathToEdge(newx, newy, c->map->width, c->map->height, valid_dirs);
             else
+            {
+                // If they're not fleeing, make sure they don't flee on accident
+                if (newx == 0)
+                    valid_dirs = DIR_REMOVE_FROM_MASK(DIR_WEST, valid_dirs);
+                if (newx == c->map->width - 1)
+                    valid_dirs = DIR_REMOVE_FROM_MASK(DIR_EAST, valid_dirs);
+                if (newy == 0)
+                    valid_dirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, valid_dirs);
+                if (newy == c->map->height - 1)
+                    valid_dirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, valid_dirs);
+
                 dir = dirFindPath(newx, newy, party[target]->x, party[target]->y, valid_dirs);
+            }
             dirMove(dir, &newx, &newy);
 
             switch (tileGetSpeed(mapTileAt(c->map, newx, newy, c->saveGame->dnglevel))) {
