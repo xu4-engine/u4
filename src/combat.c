@@ -289,8 +289,10 @@ int combatBaseKeyHandler(int key, void *data) {
         info->origin_y = party[focus]->y;
         info->range = weaponGetRange(c->saveGame->players[focus].weapon);
         info->validDirections = MASK_DIR_ALL;
-        info->player = focus;
-        info->blockedPredicate = &tileCanAttackOver;
+        info->player = focus;        
+        info->blockedPredicate = weaponCanAttackThroughObjects(c->saveGame->players[focus].weapon) ?
+            NULL :
+            &tileCanAttackOver;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Dir: ");        
         break;
@@ -399,6 +401,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     int i, xp, hittile, misstile;
     CoordActionInfo* info = (CoordActionInfo*)data;
     int weapon = c->saveGame->players[info->player].weapon;    
+    int wrongRange = (weaponRangeAbsolute(weapon) && (distance != weaponGetRange(weapon))) ? 1 : 0;
 
     hittile = weaponGetHitTile(weapon);
     misstile = weaponGetMissTile(weapon);    
@@ -416,10 +419,14 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
             monster = i;
     }
 
-    if (monster == -1) {
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, misstile), 1));
+    /* If the weapon's range is absolute and we're testing the wrong range, stop now! */ 
+    if (wrongRange) {
         return 0;
     }
+    else if (monster == -1) {
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, misstile), 1));
+        return 0;
+    }    
     /* If the weapon leaves a tile behind, do it here! (flaming oil) */
     else if (weaponLeavesTile(weapon))
         annotationAdd(x, y, c->location->z, c->location->map->id, weaponLeavesTile(weapon));       

@@ -1005,7 +1005,7 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
 
         // Make sure the object we're testing isn't a party member
         obj = mapObjectAt(c->location->map, t_x, t_y, c->location->z);
-        if (obj != NULL) {
+        if (obj != NULL && party[0] != NULL) {
             for (i = 0; i < c->saveGame->members; i++) {                
                 if (party[i] && (obj->x == party[i]->x) && (obj->y == party[i]->y) && (obj->z == party[i]->z)) {
                     obj = NULL;

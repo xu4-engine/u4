@@ -14,12 +14,14 @@
 #include "names.h"
 #include "error.h"
 
-#define MASK_LOSE               0x0001
-#define MASK_LOSEWHENRANGED     0x0002
-#define MASK_CHOOSEDISTANCE     0x0004
-#define MASK_ALWAYSHITS         0x0008
-#define MASK_MAGIC              0x0010
-#define MASK_LEAVETILE          0x0020
+#define MASK_LOSE                   0x0001
+#define MASK_LOSEWHENRANGED         0x0002
+#define MASK_CHOOSEDISTANCE         0x0004
+#define MASK_ALWAYSHITS             0x0008
+#define MASK_MAGIC                  0x0010
+#define MASK_LEAVETILE              0x0020
+#define MASK_ATTACKTHROUGHOBJECTS   0x0040
+#define MASK_ABSOLUTERANGE          0x0080
 
 int weaponInfoLoaded = 0;
 Weapon weapons[MAX_WEAPONS];
@@ -37,7 +39,8 @@ void weaponLoadInfoFromXml() {
         { "losewhenranged", MASK_LOSEWHENRANGED },
         { "choosedistance", MASK_CHOOSEDISTANCE },
         { "alwayshits", MASK_ALWAYSHITS },
-        { "magic", MASK_MAGIC }        
+        { "magic", MASK_MAGIC },
+        { "attackthroughobjects", MASK_ATTACKTHROUGHOBJECTS }
     };
 
     static const struct {
@@ -80,7 +83,12 @@ void weaponLoadInfoFromXml() {
         weapons[weapon].hittile = HITFLASH_TILE;
         weapons[weapon].misstile = MISSFLASH_TILE;
         weapons[weapon].leavetile = 0;
-        weapons[weapon].mask = 0;          
+        weapons[weapon].mask = 0;
+        
+        if (!weapons[weapon].range) { 
+            weapons[weapon].range = atoi(xmlGetProp(node, (const xmlChar *)"absolute_range"));
+            weapons[weapon].mask |= MASK_ABSOLUTERANGE;
+        }
 
         /* Load weapon attributes */
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
@@ -233,4 +241,20 @@ int weaponCanReady(int weapon, const char *className) {
 
     free(klass);
     return retval;
+}
+
+/**
+ * Returns true if the weapon can attack through solid objects
+ */
+
+int weaponCanAttackThroughObjects(int weapon) {
+    return (weapons[weapon].mask & MASK_ATTACKTHROUGHOBJECTS);
+}
+
+/**
+ * Returns true if the weapon's range is absolute (only works at specific distance)
+ */
+
+int weaponRangeAbsolute(int weapon) {
+    return (weapons[weapon].mask & MASK_ABSOLUTERANGE);
 }
