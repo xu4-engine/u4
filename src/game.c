@@ -1687,7 +1687,8 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
 
     case 'h':
         screenMessage("Help:\n"
-                      "1-8 - gate\n"
+                      "1-8   - Gate\n"
+                      "F1-F8 - +Virtue\n"
                       "a - Adv. Moons\n"
                       "c - Collision\n"
                       "e - Equipment\n"
@@ -1696,7 +1697,6 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
                       "k - Show Karma\n"
                       "l - Location\n"
                       "m - Mixtures\n"                      
-                      "o - Opacity\n"                      
                       "(more)");
         eventHandlerPopKeyHandler();
         eventHandlerPushKeyHandler(&cmdHandleAnyKey);
@@ -1819,6 +1819,25 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         screenPrompt();
         break;
 
+    case U4_FKEY+0:
+    case U4_FKEY+1:
+    case U4_FKEY+2:
+    case U4_FKEY+3:
+    case U4_FKEY+4:
+    case U4_FKEY+5:
+    case U4_FKEY+6:
+    case U4_FKEY+7:
+        screenMessage("Improve %s!\n", getVirtueName(key - U4_FKEY));
+        if (c->saveGame->karma[key - U4_FKEY] == 99)
+            c->saveGame->karma[key - U4_FKEY] = 0;
+        else if (c->saveGame->karma[key - U4_FKEY] != 0)
+            c->saveGame->karma[key - U4_FKEY] += 10;
+        if (c->saveGame->karma[key - U4_FKEY] > 99)
+            c->saveGame->karma[key - U4_FKEY] = 99;
+        statsUpdate();
+        screenPrompt();
+        break;
+
     case U4_ESC:
     case U4_ENTER:
     case U4_SPACE:
@@ -1841,6 +1860,7 @@ int cmdHandleAnyKey(int key, void *data) {
     eventHandlerPopKeyHandler();
 
     screenMessage("\n"
+                  "o - Opacity\n"
                   "p - Peer\n"
                   "r - Reagents\n"
                   "s - Summon\n"
