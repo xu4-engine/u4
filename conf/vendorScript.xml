@@ -752,7 +752,7 @@
         <reply choice="sextant">
             
             {owner} says: For navigation a Sextant is vital... Ask for item "D" in the Guild shops!
-            <redirect tagert="something_else"/>
+            <redirect target="something_else"/>
         </reply>
 
         <reply choice="white stone">
