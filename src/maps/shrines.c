@@ -14,8 +14,8 @@ Map shrine_honesty_map = {
     25,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
-    CON_WIDTH, CON_HEIGHT, /* width, height */
-    5, 5, /* startx, starty */
+    CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
+    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -36,8 +36,8 @@ Map shrine_compassion_map = {
     26,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
-    CON_WIDTH, CON_HEIGHT, /* width, height */
-    5, 5, /* startx, starty */
+    CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
+    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -58,8 +58,8 @@ Map shrine_valor_map = {
     27,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
-    CON_WIDTH, CON_HEIGHT, /* width, height */
-    5, 5, /* startx, starty */
+    CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
+    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -80,8 +80,8 @@ Map shrine_justice_map = {
     28,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
-    CON_WIDTH, CON_HEIGHT, /* width, height */
-    5, 5, /* startx, starty */
+    CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
+    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -102,8 +102,8 @@ Map shrine_sacrifice_map = {
     29,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
-    CON_WIDTH, CON_HEIGHT, /* width, height */
-    5, 5, /* startx, starty */
+    CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
+    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -124,8 +124,8 @@ Map shrine_honor_map = {
     30,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
-    CON_WIDTH, CON_HEIGHT, /* width, height */
-    5, 5, /* startx, starty */
+    CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
+    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -146,8 +146,8 @@ Map shrine_spirituality_map = {
     31,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
-    CON_WIDTH, CON_HEIGHT, /* width, height */
-    5, 5, /* startx, starty */
+    CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
+    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -168,8 +168,8 @@ Map shrine_humility_map = {
     32,
     "shrine.con", /* fname */
     MAP_SHRINE, /* type */
-    CON_WIDTH, CON_HEIGHT, /* width, height */
-    5, 5, /* startx, starty */
+    CON_WIDTH, CON_HEIGHT, 1, /* width, height, levels */
+    5, 5, 0, /* startx, starty, startlevel */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
