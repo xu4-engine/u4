@@ -41,7 +41,7 @@ install: u4.exe
 	cp SDL/lib/SDL.dll $(U4PATH)
 	cp SDL/lib/SDL_mixer.dll $(U4PATH)
 
-tools: utils
+tools: mkutils
 	mkdir -p $(U4PATH)
 	mkdir -p $(U4PATH)/tools
 	strip dumpsavegame.exe -o $(U4PATH)/tools/dumpsavegame.exe
