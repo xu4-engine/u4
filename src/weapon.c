@@ -77,15 +77,16 @@ void weaponLoadInfoFromXml() {
         weapons[weapon].name = (char *)xmlGetProp(node, (const xmlChar *)"name");        
         weapons[weapon].abbr = (char *)xmlGetProp(node, (const xmlChar *)"abbr");
         weapons[weapon].canready = (char *)xmlGetProp(node, (const xmlChar *)"canready");
-        weapons[weapon].cantready = (char *)xmlGetProp(node, (const xmlChar *)"cantready");
-        weapons[weapon].range = atoi(xmlGetProp(node, (const xmlChar *)"range"));
+        weapons[weapon].cantready = (char *)xmlGetProp(node, (const xmlChar *)"cantready");        
         weapons[weapon].damage = atoi(xmlGetProp(node, (const xmlChar *)"damage"));
         weapons[weapon].hittile = HITFLASH_TILE;
         weapons[weapon].misstile = MISSFLASH_TILE;
         weapons[weapon].leavetile = 0;
         weapons[weapon].mask = 0;
         
-        if (!weapons[weapon].range) { 
+        if (xmlGetProp(node, (const xmlChar *)"range") != NULL) { 
+            weapons[weapon].range = atoi(xmlGetProp(node, (const xmlChar *)"range"));            
+        } else {
             weapons[weapon].range = atoi(xmlGetProp(node, (const xmlChar *)"absolute_range"));
             weapons[weapon].mask |= MASK_ABSOLUTERANGE;
         }
