@@ -39,7 +39,7 @@ install::
 	mkdir -p $(libdir)/u4/graphics/ega
 	mkdir -p $(libdir)/u4/graphics/vga
 	$(INSTALL) ../graphics/ega/*.rle $(libdir)/u4/graphics/ega
-	$(INSTALL) ../graphics/vga/*.rle $(libdir)/u4/graphics/ega
+	$(INSTALL) ../graphics/vga/*.rle $(libdir)/u4/graphics/vga
 	$(INSTALL) -D ../u4.desktop $(desktopdir)/Games/u4.desktop
 
 -include .depends
