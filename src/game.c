@@ -128,7 +128,7 @@ void gameInit() {
     musicPlay();
     screenDrawBackground(BKGD_BORDERS);
     statsUpdate();
-    screenMessage("\020");
+    screenPrompt();
 }
 
 /**
@@ -174,14 +174,14 @@ void gameSetMap(Context *ct, Map *map, int saveOldPos, const Portal *portal) {
         ct->saveGame->y = map->height / 2;
     }
 
-    if ((map->type == MAP_TOWN || 
+    if ((map->type == MAP_TOWN ||
          map->type == MAP_VILLAGE ||
          map->type == MAP_CASTLE ||
-         map->type == MAP_RUIN) && 
+         map->type == MAP_RUIN) &&
         map->objects == NULL) {
         for (i = 0; i < map->city->n_persons; i++) {
             if (map->city->persons[i].tile0 != 0 &&
-                !(playerCanPersonJoin(c->saveGame, map->city->persons[i].name, NULL) && 
+                !(playerCanPersonJoin(c->saveGame, map->city->persons[i].name, NULL) &&
                   playerIsPersonJoined(c->saveGame, map->city->persons[i].name)))
                 mapAddPersonObject(map, &(map->city->persons[i]));
         }
@@ -234,7 +234,7 @@ void gameFinishTurn() {
     }
 
     /* draw a prompt */
-    screenMessage("\020");
+    screenPrompt();
     screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
 
     c->lastCommandTime = time(NULL);
@@ -545,7 +545,7 @@ int gameBaseKeyHandler(int key, void *data) {
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Jimmy\nDir: ");
         break;
-        
+
     case 'k':
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
         if (portal && portal->trigger_action == ACTION_KLIMB) {
@@ -865,10 +865,10 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
 
     if (!valid || !DIR_IN_MASK(dir,info->validDirections))
         goto failure;
-        
+
     screenMessage("%s\n", getDirectionName(dir));
 
-    /* 
+    /*
      * try every tile in the given direction, up to the given range.
      * Stop when the command handler succeeds, the range is exceeded,
      * or the action is blocked.
@@ -964,7 +964,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         c->saveGame->y = moongate->y;
         screenMessage("Gate %d!\n", key - '0');
         break;
-        
+
     case 'c':
         collisionOverride = !collisionOverride;
         screenMessage("Collision detection %s!\n\020", collisionOverride ? "off" : "on");
@@ -1150,7 +1150,7 @@ int fireAtCoord(int x, int y, int distance) {
         gameFinishTurn();
         return 0;
     }
-    
+
     screenMessage("Boom!\n");
 
     gameFinishTurn();
@@ -1169,7 +1169,7 @@ int jimmyAtCoord(int x, int y, int distance) {
         gameFinishTurn();
         return 0;
     }
-    
+
     if (!tileIsLockedDoor(mapTileAt(c->map, x, y, c->saveGame->dnglevel)))
         return 0;
 
@@ -1294,7 +1294,7 @@ int mixReagentsForSpell2(char choice) {
         statsUpdate();
 
         return 1;
-    } 
+    }
 
     else if (choice == '\033') {
 
@@ -1304,7 +1304,7 @@ int mixReagentsForSpell2(char choice) {
         screenMessage("\n\n");
         gameFinishTurn();
         return 1;
-    } 
+    }
 
     else {
         screenMessage("%c\n", toupper(choice));
@@ -1392,7 +1392,7 @@ int openAtCoord(int x, int y, int distance) {
     }
 
     annotationSetTurnDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, BRICKFLOOR_TILE), 4);
-    
+
     screenMessage("\nOpened!\n");
     gameFinishTurn();
 
@@ -1458,7 +1458,8 @@ int quitHandleChoice(char choice) {
  */
 int talkAtCoord(int x, int y, int distance) {
     const Person *talker;
-    char *text;
+    char **text;
+    int i;
 
     if (x == -1 && y == -1) {
         screenMessage("Funny, no\nresponse!\n");
@@ -1474,10 +1475,12 @@ int talkAtCoord(int x, int y, int distance) {
     talker = c->conversation.talker;
     c->conversation.state = CONV_INTRO;
     c->conversation.buffer[0] = '\0';
-    
-    personGetConversationText(&c->conversation, "", &text);
-    screenMessage("\n\n%s", text);
-    free(text);
+
+    text = personGetConversationText(&c->conversation, "");
+    for(i = 0; text[i]; i++)
+        screenMessage("\n\n%s", text[i]);
+    personFreeConversationText(text);
+
     if (c->conversation.state == CONV_DONE)
         gameFinishTurn();
     else
@@ -1503,7 +1506,7 @@ void talkSetHandler(const Conversation *cnv) {
         rbInfo->screenY = TEXT_AREA_Y + c->line;
         eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, rbInfo);
         break;
-    
+
     case CONVINPUT_CHARACTER:
         gcInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
         gcInfo->choices = personGetChoices(cnv);
@@ -1521,14 +1524,16 @@ void talkSetHandler(const Conversation *cnv) {
  * Handles a query while talking to an NPC.
  */
 int talkHandleBuffer(const char *message) {
-    char *reply, *prompt;
+    char **reply, *prompt;
+    int i;
 
     eventHandlerPopKeyHandler();
 
-    personGetConversationText(&c->conversation, message, &reply);
-    screenMessage("%s", reply);
-    free(reply);
-        
+    reply = personGetConversationText(&c->conversation, message);
+    for (i = 0; reply[i]; i++)
+        screenMessage("%s", reply[i]);
+    personFreeConversationText(reply);
+
     c->conversation.buffer[0] = '\0';
 
     if (c->conversation.state == CONV_DONE) {
@@ -1536,7 +1541,7 @@ int talkHandleBuffer(const char *message) {
         return 1;
     }
 
-    personGetPrompt(&c->conversation, &prompt);
+    prompt = personGetPrompt(&c->conversation);
     if (prompt) {
         screenMessage("%s", prompt);
         free(prompt);
@@ -1549,17 +1554,19 @@ int talkHandleBuffer(const char *message) {
 
 int talkHandleChoice(char choice) {
     char message[2];
-    char *reply, *prompt;
+    char **reply, *prompt;
+    int i;
 
     eventHandlerPopKeyHandler();
 
     message[0] = choice;
     message[1] = '\0';
 
-    personGetConversationText(&c->conversation, message, &reply);
-    screenMessage("\n\n%s\n", reply);
-    free(reply);
-        
+    reply = personGetConversationText(&c->conversation, message);
+    for (i = 0; reply[i]; i++)
+        screenMessage("\n\n%s\n", reply[i]);
+    personFreeConversationText(reply);
+
     c->conversation.buffer[0] = '\0';
 
     if (c->conversation.state == CONV_DONE) {
@@ -1567,7 +1574,7 @@ int talkHandleChoice(char choice) {
         return 1;
     }
 
-    personGetPrompt(&c->conversation, &prompt);
+    prompt = personGetPrompt(&c->conversation);
     if (prompt) {
         screenMessage("%s", prompt);
         free(prompt);
@@ -1684,21 +1691,21 @@ int moveAvatar(Direction dir, int userEvent) {
     }
 
     if (MAP_IS_OOB(c->map, newx, newy)) {
-	switch (c->map->border_behavior) {
-	case BORDER_WRAP:
-	    if (newx < 0)
-		newx += c->map->width;
-	    if (newy < 0)
-		newy += c->map->height;
-	    if (newx >= (int) c->map->width)
-		newx -= c->map->width;
-	    if (newy >= (int) c->map->height)
-		newy -= c->map->height;
-	    break;
+        switch (c->map->border_behavior) {
+        case BORDER_WRAP:
+            if (newx < 0)
+                newx += c->map->width;
+            if (newy < 0)
+                newy += c->map->height;
+            if (newx >= (int) c->map->width)
+                newx -= c->map->width;
+            if (newy >= (int) c->map->height)
+                newy -= c->map->height;
+            break;
 
-	case BORDER_EXIT2PARENT:
-	    if (c->parent != NULL) {
-		Context *t = c;
+        case BORDER_EXIT2PARENT:
+            if (c->parent != NULL) {
+                Context *t = c;
                 annotationClear(c->map->id);
                 mapClearObjects(c->map);
                 c->parent->saveGame->x = c->saveGame->dngx;
@@ -1711,24 +1718,24 @@ int moveAvatar(Direction dir, int userEvent) {
                 c->parent->aura = c->aura;
                 c->parent->auraDuration = c->auraDuration;
                 c->parent->horseSpeed = c->horseSpeed;
-		c = c->parent;
+                c = c->parent;
                 c->col = 0;
-		free(t);
-                
+                free(t);
+
                 screenMessage("Leaving...\n");
                 if (mapIsWorldMap(c->map))
                     c->saveGame->dnglevel = -1;
                 musicPlay();
-	    }
+            }
             goto done;
-	    
-	case BORDER_FIXED:
-	    if (newx < 0 || newx >= (int) c->map->width)
-		newx = c->saveGame->x;
-	    if (newy < 0 || newy >= (int) c->map->height)
-		newy = c->saveGame->y;
-	    break;
-	}
+
+        case BORDER_FIXED:
+            if (newx < 0 || newx >= (int) c->map->width)
+                newx = c->saveGame->x;
+            if (newy < 0 || newy >= (int) c->map->height)
+                newy = c->saveGame->y;
+            break;
+        }
     }
 
     if (!collisionOverride) {
@@ -1870,7 +1877,7 @@ void gameTimer(void *data) {
 
     screenCycle();
 
-    /* 
+    /*
      * refresh the screen only if the timer queue is empty --
      * i.e. drop a frame if another timer event is about to be fired
      */
@@ -1883,7 +1890,7 @@ void gameTimer(void *data) {
     if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler &&
         gameTimeSinceLastCommand() > 20)
         gameBaseKeyHandler(' ', NULL);
-        
+
 }
 
 void gameCheckBridgeTrolls() {
@@ -1942,10 +1949,10 @@ void gameCheckSpecialMonsters(Direction dir) {
 void gameCheckMoongates() {
     int destx, desty;
     extern Map shrine_spirituality_map;
-    
-    if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, 
+
+    if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase,
                                  c->saveGame->x, c->saveGame->y, &destx, &desty)) {
-        
+
         /* special effect FIXME: needs sound */
         gameUpdateScreen();
         screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
@@ -1966,7 +1973,7 @@ void gameCheckMoongates() {
             c = gameCloneContext(c);
 
             gameSetMap(c, &shrine_spirituality_map, 1, NULL);
-            
+
             musicPlay();
         }
     }
@@ -2053,7 +2060,7 @@ void gameMonsterAttack(Object *obj) {
     ground = mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
     if ((under = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel)) &&
         tileIsShip(under->tile))
-        ground = under->tile; 
+        ground = under->tile;
     combatBegin(ground, c->saveGame->transport, obj);
 
 }
