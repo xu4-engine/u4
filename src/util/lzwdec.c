@@ -6,55 +6,56 @@
 #include <stdlib.h>
 
 #include "lzw/lzw.h"
+#include "util/pngconv.h"
 
 /**
  * A simple command line interface to the U4 LZW decompressor.
  */
 int main(int argc, char *argv[]) {
-    FILE *in, *out;
+    FILE *infile;
+    void *indata, *outdata;
     long inlen, outlen;
-    void *outdata;
+    char *fname;
 
     if (argc != 2 && argc != 3) {
-        fprintf(stderr, "usage: lzwdec infile [outfile]\n");
+        fprintf(stderr, "usage: lzwdec infile outfile\n");
         exit(1);
     }
 
-    in = fopen(argv[1], "rb");
-    if (!in) {
+    infile = fopen(argv[1], "rb");
+    if (!infile) {
         perror(argv[1]);
         exit(1);
     }
 
-    if (argc < 3)
-        out = stdout;
-    else
-        out = fopen(argv[2], "wb");
-    if (!out) {
-        perror(argc < 3 ? "(stdout)" : argv[2]);
-        exit(1);
-    }
+    fname = argv[2];
 
-    if (!mightBeValidCompressedFile(in)) {
-        fprintf(stderr, "not a valid compressed file\n");
-        exit(1);
-    }
-
-    if (fseek(in, 0L, SEEK_END)) {
+    if (fseek(infile, 0L, SEEK_END)) {
         perror(argv[1]);
         exit(1);
     }
-    inlen = ftell(in);
-    fseek(in, 0L, SEEK_SET);
+    inlen = ftell(infile);
+    fseek(infile, 0L, SEEK_SET);
         
-    outlen = decompress_u4_file(in, inlen, &outdata);
-    if (outlen == -1) {
-        fprintf(stderr, "an error occured\n");
+    indata = malloc(inlen);
+    if (!indata) {
+        perror("malloc");
         exit(1);
     }
-        
-    
-    fwrite(outdata, 1, outlen, out);
+
+    fread(indata, 1, inlen, infile);
+
+    outlen = lzwGetDecompressedSize(indata, inlen);
+
+    outdata = malloc(outlen);
+    if (!outdata) {
+        perror("malloc");
+        exit(1);
+    }
+
+    lzwDecompress(indata, outdata, inlen);
+
+    writePngFromEga(outdata, fname);
 
     return 0;
 }
