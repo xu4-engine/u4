@@ -253,10 +253,11 @@ int playerAttemptElevation(SaveGame *saveGame, Virtue virtue) {
         return 0;
 }
 
-void playerGetChest(SaveGame *saveGame) {
-    saveGame->gold += rand() % 32;
-    saveGame->gold += rand() % 32;
-    saveGame->gold += rand() % 32;
+int playerGetChest(SaveGame *saveGame) {
+    int gold = (rand() % 50) + (rand() % 8) + 10;
+    saveGame->gold += gold;
+
+    return gold;
 }
 
 int playerDonate(SaveGame *saveGame, int quantity) {
@@ -455,4 +456,41 @@ int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, i
     saveGame->gold += price;
 
     return 1;
+}
+
+/**
+ * Determine whether a players attack hits or not.
+ */
+int playerAttackHit(const SaveGamePlayerRecord *player) {
+    if (player->dex >= 40)
+        return 1;
+
+    if ((player->dex + 128) >= (rand() & 0xff))
+        return 1;
+    else
+        return 0;
+}
+
+/**
+ * Calculate damage for an attack.
+ */
+int playerGetDamage(const SaveGamePlayerRecord *player) {
+    static int weaponDamage[] = {
+	8, 16,                  /* hands, staff */
+	24, 32,                 /* dagger, sling */
+	40, 48,                 /* mace, axe */
+	64, 40,                 /* sword, bow */
+	56, 64,                 /* crossbow, oil */
+	96, 96,                 /* halberd, magic axe */
+	128, 80,                /* magic sword, magic bow */
+	160, 255,               /* magic wand, mystic sword */
+    };
+    int maxDamage;
+
+    maxDamage = weaponDamage[player->weapon];
+    maxDamage += player->str;
+    if (maxDamage > 255)
+        maxDamage = 255;
+    
+    return rand() % maxDamage;
 }

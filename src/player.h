@@ -46,7 +46,7 @@ int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon);
 int playerCanEnterShrine(const SaveGame *saveGame, Virtue virtue);
 int playerAdjustKarma(SaveGame *saveGame, KarmaAction action);
 int playerAttemptElevation(SaveGame *saveGame, Virtue virtue);
-void playerGetChest(SaveGame *saveGame);
+int playerGetChest(SaveGame *saveGame);
 int playerDonate(SaveGame *saveGame, int quantity);
 void playerJoin(SaveGame *saveGame, const char *name);
 void playerEndTurn(SaveGame *saveGame);
@@ -56,5 +56,7 @@ int playerPartyDead(const SaveGame *saveGame);
 void playerRevive(SaveGame *saveGame);
 int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
 int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
+int playerAttackHit(const SaveGamePlayerRecord *player);
+int playerGetDamage(const SaveGamePlayerRecord *player);
 
 #endif
