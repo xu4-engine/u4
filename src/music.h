@@ -17,6 +17,10 @@
 #define INN_FADE_OUT_TIME           1000
 #define INN_FADE_IN_TIME            5000
 
+#if !defined(_MIXER_H_) && !defined(_SDL_MIXER_H)
+    struct Mix_Music { int dummy; };
+#endif 
+
 class Music {
 public:
     enum Type {
@@ -73,10 +77,6 @@ public:
 
     std::vector<std::string> filenames;
     Type introMid;    
-
-#ifndef _MIXER_H_
-    struct Mix_Music { int dummy; };
-#endif 
 
     Mix_Music* playing;
     Debug *logger;
