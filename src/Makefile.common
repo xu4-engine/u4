@@ -12,6 +12,7 @@ SRCS=\
         debug.c \
         direction.c \
         dngview.c \
+        dungeon.c \
         error.c \
         event.c \
         event_$(UI).c \
