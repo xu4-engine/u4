@@ -2704,7 +2704,9 @@ int useItem(const char *itemName) {
 
     itemUse(itemName);
 
-    (*c->location->finishTurn)();
+    if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler ||
+        eventHandlerGetKeyHandler() == &combatBaseKeyHandler)
+        (*c->location->finishTurn)();
 
     return 1;
 }

@@ -9,15 +9,18 @@
 
 #include "item.h"
 
+#include "combat.h"
 #include "context.h"
+#include "debug.h"
 #include "event.h"
 #include "game.h"
 #include "location.h"
+#include "mapmgr.h"
 #include "player.h"
 #include "portal.h"
 #include "savegame.h"
 #include "screen.h"
-#include "mapmgr.h"
+#include "u4.h"
 
 DestroyAllMonstersCallback destroyAllMonstersCallback;
 
@@ -43,6 +46,7 @@ void useTelescope(void *notused);
 int isReagentInInventory(void *reag);
 void putReagentInInventory(void *reag);
 int isAbyssOpened(const Portal *p);
+int nameStones(const char *color);
 
 static const ItemLocation items[] = {
     { "Mandrake Root", NULL, 182, 54, -1, MAP_WORLD,
@@ -65,22 +69,22 @@ static const ItemLocation items[] = {
       &isItemInInventory, &putItemInInventory, &useWheel, (void *) ITEM_WHEEL, 0 },
     { "the Skull of Modain the Wizard", "skull", 197, 245, -1, MAP_WORLD, 
       &isItemInInventory, &putItemInInventory, &useSkull, (void *) ITEM_SKULL, SC_NEWMOONS },
-    { "the Red Stone", NULL, 3, 7, 6, MAP_DESTARD,
-      &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_RED, 0 },
-    { "the Orange Stone", NULL, 7, 1, 6, MAP_COVETOUS,
-      &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_ORANGE, 0 },
-    { "the Yellow Stone", NULL, 3, 5, 4, MAP_DESPISE,
-      &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_YELLOW, 0 },
-    { "the Green Stone", NULL, 6, 3, 7, MAP_WRONG,
-      &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_GREEN, 0 },
-    { "the Blue Stone", NULL, 1, 7, 6, MAP_DECEIT,
-      &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_BLUE, 0 },
-    { "the Purple Stone", NULL, 7, 7, 1, MAP_SHAME,
-      &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_PURPLE, 0 },
-    { "the Black Stone", NULL, 224, 133, -1, MAP_WORLD, 
-      &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_BLACK, SC_NEWMOONS },
-    { "the White Stone", NULL, 64, 80, -1, MAP_WORLD, 
-      &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_WHITE, 0 },
+    { "the Red Stone", "red", 3, 7, 6, MAP_DESTARD,
+      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_RED, 0 },
+    { "the Orange Stone", "orange", 7, 1, 6, MAP_COVETOUS,
+      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_ORANGE, 0 },
+    { "the Yellow Stone", "yellow", 3, 5, 4, MAP_DESPISE,
+      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_YELLOW, 0 },
+    { "the Green Stone", "green", 6, 3, 7, MAP_WRONG,
+      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_GREEN, 0 },
+    { "the Blue Stone", "blue", 1, 7, 6, MAP_DECEIT,
+      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_BLUE, 0 },
+    { "the Purple Stone", "purple", 7, 7, 1, MAP_SHAME,
+      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_PURPLE, 0 },
+    { "the Black Stone", "black", 224, 133, -1, MAP_WORLD, 
+      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_BLACK, SC_NEWMOONS },
+    { "the White Stone", "white", 64, 80, -1, MAP_WORLD, 
+      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_WHITE, 0 },
 
     /* handlers for using generic objects */
     { NULL, "stone", -1, -1, 0, MAP_NONE, &isStoneInInventory, NULL, &useStone, NULL, 0 },
@@ -217,7 +221,101 @@ void useSkull(void *item) {
 }
 
 void useStone(void *item) {
-    screenMessage("\nNo place to Use them!\nHmm...No effect!\n");
+    int x, y, z;
+    static int needStoneNames = 0;
+    ReadBufferActionInfo *readBufferInfo;
+    extern char itemNameBuffer[16];
+    static unsigned char stoneMask = 0;
+    unsigned char stone = (unsigned char)item;
+    
+    unsigned char truth   = STONE_WHITE | STONE_PURPLE | STONE_GREEN  | STONE_BLUE;
+    unsigned char love    = STONE_WHITE | STONE_YELLOW | STONE_GREEN  | STONE_ORANGE;
+    unsigned char courage = STONE_WHITE | STONE_RED    | STONE_PURPLE | STONE_ORANGE;
+    unsigned char *attr   = NULL;
+    
+    locationGetCurrentPosition(c->location, &x, &y, &z);
+
+    if (item != NULL) {
+        if (needStoneNames) {
+            needStoneNames--;
+
+            switch(combatInfo.altarRoom) {
+            case VIRT_TRUTH: attr = &truth; break;
+            case VIRT_LOVE: attr = &love; break;
+            case VIRT_COURAGE: attr = &courage; break;
+            default: break;
+            }
+
+            /* we need to use the stone, and we haven't used it yet */
+            if (attr && (*attr & stone) && (stone & ~stoneMask))
+                stoneMask |= stone;
+            else if (attr && (stone & stoneMask)) {
+                screenMessage("\nAlready used!\n");
+                needStoneNames = 0;
+                stoneMask = 0; /* reset the mask so you can try again */                
+                return;
+            }
+            else ASSERT(0, "Not in an altar room!");
+
+            /* see if we have the right stones and have them all */
+            if (attr && needStoneNames) {
+                screenMessage("\n%c:", 'E'-needStoneNames);
+                readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+                readBufferInfo->handleBuffer = &nameStones;
+                readBufferInfo->buffer = itemNameBuffer;
+                readBufferInfo->bufferLen = sizeof(itemNameBuffer);
+                readBufferInfo->screenX = TEXT_AREA_X + c->col;
+                readBufferInfo->screenY = TEXT_AREA_Y + c->line;
+                itemNameBuffer[0] = '\0';
+                eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+            }
+            /* all the stones have been entered, check them out! */
+            else {
+                unsigned short key = 0xFFFF;
+                switch(combatInfo.altarRoom) {
+                    case VIRT_TRUTH:    key = ITEM_KEY_T; break;
+                    case VIRT_LOVE:     key = ITEM_KEY_L; break;
+                    case VIRT_COURAGE:  key = ITEM_KEY_C; break;
+                    default: break;
+                }
+
+                /* in an altar room, named all of the stones, and don't have the key yet... */
+                if (attr && (stoneMask == *attr) && !(c->saveGame->items & key)) {
+                    screenMessage("\nThou doth find one third of the Three Part Key!\n");
+                    c->saveGame->items |= key;
+                }
+                else screenMessage("\nHmm...No effect!\n");
+
+                stoneMask = 0; /* reset the mask so you can try again */                
+            }
+        }
+        else {
+            screenMessage("\nNot a Usable Item!\n");            
+            stoneMask = 0; /* reset the mask so you can try again */            
+        }
+    }
+    /* in the abyss, on an altar to place the stones */
+    else if (c->location->context == CTX_DUNGEON && 
+        (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS) == ALTAR_TILE &&
+        c->location->map->id == MAP_ABYSS) {
+        screenMessage("Used stone on altar!\n");
+    }
+    /* in a dungeon altar room, on the altar */
+    else if (c->location->context & (CTX_COMBAT | CTX_ALTAR_ROOM) &&
+            (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS) == ALTAR_TILE) {
+        needStoneNames = 4;
+        screenMessage("\n\nThere are holes for 4 stones.\nWhat colors:\nA:");        
+
+        readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+        readBufferInfo->handleBuffer = &nameStones; 
+        readBufferInfo->buffer = itemNameBuffer;
+        readBufferInfo->bufferLen = sizeof(itemNameBuffer);
+        readBufferInfo->screenX = TEXT_AREA_X + c->col;
+        readBufferInfo->screenY = TEXT_AREA_Y + c->line;
+        itemNameBuffer[0] = '\0';
+        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+    }
+    else screenMessage("\nNo place to Use them!\nHmm...No effect!\n");
 }
 
 void useKey(void *item) {
@@ -353,4 +451,26 @@ int isAbyssOpened(const Portal *p) {
     if (!isopened)
         screenMessage("Enter Can't!\n");
     return isopened;
+}
+
+int nameStones(const char *color) {
+    int i;
+    int found = 0;
+    const char *colors[] = {
+        "red", "orange", "yellow", "green", "blue", "purple", "white", "black"
+    };    
+
+    for (i = 0; i < 8; i++) {
+        if (stricmp(color, colors[i]) == 0) {
+            found = 1;
+            useItem(color);
+        }
+    }
+    
+    if (!found) {
+        screenMessage("\nNone owned!\n");
+        (*c->location->finishTurn)();
+    }
+
+    return 1;
 }
