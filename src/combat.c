@@ -745,7 +745,15 @@ void combatMoveMonsters() {
         switch(action) {
         case CA_ATTACK:
             if (playerIsHitByAttack(&c->saveGame->players[target])) {
-
+                
+                /* steal gold if the monster steals gold */
+                if (monsterStealsGold(m) && (rand() % 4 == 0))
+                    playerAdjustGold(c->saveGame, -(rand() % 0x3f));
+                
+                /* steal food if the monster steals food */
+                if (monsterStealsFood(m)) {
+                    playerAdjustFood(c->saveGame, -2500);
+                               
                 attackFlash(party[target]->x, party[target]->y, HITFLASH_TILE, 1);
 
                 playerApplyDamage(&c->saveGame->players[target], monsterGetDamage(m));

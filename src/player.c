@@ -280,9 +280,7 @@ int playerAttemptElevation(SaveGame *saveGame, Virtue virtue) {
 
 int playerGetChest(SaveGame *saveGame) {
     int gold = (rand() % 50) + (rand() % 8) + 10;
-    saveGame->gold += gold;
-    if (saveGame->gold > 9999)
-        saveGame->gold = 9999;
+    playerAdjustGold(saveGame, gold);    
 
     return gold;
 }
@@ -291,7 +289,7 @@ int playerDonate(SaveGame *saveGame, int quantity) {
     if (quantity > saveGame->gold)
         return 0;
 
-    saveGame->gold -= quantity;
+    playerAdjustGold(saveGame, -quantity);
     playerAdjustKarma(saveGame, KA_GAVE_TO_BEGGAR);
 
     if (itemStatsChangedCallback)
@@ -547,7 +545,7 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
     if (price > saveGame->gold)
         return 0;
         
-    saveGame->gold -= price;
+    playerAdjustGold(saveGame, -price);
 
     switch (item) {
     case INV_NONE:
@@ -560,9 +558,7 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
         saveGame->armor[type] += quantity;
         break;
     case INV_FOOD:
-        saveGame->food += quantity * 100;
-        if (saveGame->food > 999900)
-            saveGame->food = 999900;
+        playerAdjustFood(saveGame, quantity * 100);        
         break;
     case INV_REAGENT:
         saveGame->reagents[type] += quantity;
@@ -626,7 +622,7 @@ int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, i
         return 0;
     }
 
-    saveGame->gold += price;
+    playerAdjustGold(saveGame, price);    
 
     if (itemStatsChangedCallback)
         (*itemStatsChangedCallback)();
@@ -682,4 +678,16 @@ int playerLoseWeapon(SaveGame *saveGame, int player) {
         saveGame->players[player].weapon = WEAP_HANDS;    
         return 0;
     }
+}
+
+void playerAdjustGold(SaveGame *saveGame, int gold) {
+    saveGame->gold += gold;
+    if (saveGame->gold > 9999)
+        saveGame->gold = (gold > 0) ? 9999 : 0;    
+}
+
+void playerAdjustFood(SaveGame *saveGame, int food) {
+    saveGame->food += food;
+    if (saveGame->food > 999900)
+        saveGame->food = (food > 0) ? 999900 : 0;
 }

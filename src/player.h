@@ -86,5 +86,7 @@ int playerAttackHit(const SaveGamePlayerRecord *player);
 int playerGetDamage(const SaveGamePlayerRecord *player);
 int playerIsHitByAttack(const SaveGamePlayerRecord *player);
 int playerLoseWeapon(SaveGame *saveGame, int player);
+void playerAdjustGold(SaveGame *saveGame, int gold);
+void playerAdjustFood(SaveGame *saveGame, int food);
 
 #endif

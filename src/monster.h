@@ -184,6 +184,8 @@ int monsterFlies(const Monster *monster);
 int monsterTeleports(const Monster *monster);
 int monsterIsAttackable(const Monster *monster);
 int monsterWillAttack(const Monster *monster);
+int monsterStealsGold(const Monster *monster);
+int monsterStealsFood(const Monster *monster);
 int monsterGetXp(const Monster *monster);
 int monsterCastSleep(const Monster *monster);
 int monsterGetDamage(const Monster *monster);

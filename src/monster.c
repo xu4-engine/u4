@@ -272,6 +272,14 @@ int monsterWillAttack(const Monster *monster) {
     return (monster->mattr & MATTR_NOATTACK) ? 0 : 1;
 }
 
+int monsterStealsGold(const Monster *monster) {
+    return (monster->mattr & MATTR_STEALGOLD) ? 1 : 0;
+}
+
+int monsterStealsFood(const Monster *monster) {
+    return (monster->mattr & MATTR_STEALFOOD) ? 1 : 0;
+}
+
 int monsterGetXp(const Monster *monster) {
     return (monster->level == 16) ? 16 : monster->level + 1;    
 }
