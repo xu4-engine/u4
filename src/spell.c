@@ -219,7 +219,13 @@ static int spellAwaken(int player) {
 }
 
 static int spellBlink(int dir) {
+    /* blink doesn't work in lower right corner of map */
+    if (c->saveGame->x >= 192 ||
+        c->saveGame->y >= 192)
+        return 0;
+
     /* FIXME */
+
     return 1;
 }
 
@@ -322,7 +328,7 @@ static int spellKill(int dir) {
 }
 
 static int spellLight(int unused) {
-    /* FIXME */
+    c->saveGame->torchduration += 100;
     return 1;
 }
 
