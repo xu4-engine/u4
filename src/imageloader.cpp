@@ -18,6 +18,10 @@ void ImageLoader::setDimensions(int width, int height, int bpp) {
     this->bpp = bpp;
 }
 
+/**
+ * This class method returns the registered concrete subclass
+ * appropriate for loading images of a type given by fileType.
+ */
 ImageLoader *ImageLoader::getLoader(const std::string &fileType) {
     ASSERT(loaderMap != NULL, "loaderMap not initialized");
     if (loaderMap->find(fileType) == loaderMap->end())
@@ -25,6 +29,11 @@ ImageLoader *ImageLoader::getLoader(const std::string &fileType) {
     return (*loaderMap)[fileType];
 }
 
+/**
+ * Register an image loader.  Concrete subclasses should register an
+ * instance at startup.  This method is safe to call from a global
+ * object constructor or static initializer.
+ */
 ImageLoader *ImageLoader::registerLoader(ImageLoader *loader, const std::string &type) {
     if (loaderMap == NULL) {
         loaderMap = new std::map<std::string, ImageLoader *>;
@@ -33,6 +42,9 @@ ImageLoader *ImageLoader::registerLoader(ImageLoader *loader, const std::string 
     return loader;
 }
 
+/**
+ * Fill in the image pixel data from an uncompressed string of bytes.
+ */
 void ImageLoader::setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData) {
     int x, y;
 

@@ -26,6 +26,9 @@ static void png_read_xu4(png_structp png_ptr, png_bytep data, png_size_t length)
       png_error(png_ptr, "Read Error");
 }
 
+/**
+ * Loads in the PNG with the libpng library.
+ */
 Image *PngImageLoader::load(U4FILE *file) {
     char header[8];
     file->read(header, 1, sizeof(header));
@@ -110,8 +113,6 @@ Image *PngImageLoader::load(U4FILE *file) {
 
     delete raw;
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-
-    printf("loaded png!\n");
 
     return image;
 }

@@ -23,6 +23,10 @@ ImageLoader *U4LzwImageLoader::instance = ImageLoader::registerLoader(new U4LzwI
 RGBA *U4PaletteLoader::egaPalette = NULL;
 RGBA *U4PaletteLoader::vgaPalette = NULL;
 
+/**
+ * Loads in the raw image and apply the standard U4 16 or 256 color
+ * palette.
+ */
 Image *U4RawImageLoader::load(U4FILE *file) {
     ASSERT(width != -1 && height != -1 && bpp != -1, "dimensions not set");
     ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp: %d", bpp);
@@ -57,6 +61,10 @@ Image *U4RawImageLoader::load(U4FILE *file) {
     return image;
 }
 
+/**
+ * Loads in the rle-compressed image and apply the standard U4 16 or
+ * 256 color palette.
+ */
 Image *U4RleImageLoader::load(U4FILE *file) {
     ASSERT(width != -1 && height != -1 && bpp != -1, "dimensions not set");
     ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp: %d", bpp);
@@ -95,6 +103,10 @@ Image *U4RleImageLoader::load(U4FILE *file) {
     return image;
 }
 
+/**
+ * Loads in the lzw-compressed image and apply the standard U4 16 or
+ * 256 color palette.
+ */
 Image *U4LzwImageLoader::load(U4FILE *file) {
     ASSERT(width != -1 && height != -1 && bpp != -1, "dimensions not set");
     ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp: %d", bpp);
