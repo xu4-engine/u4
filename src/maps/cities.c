@@ -78,7 +78,7 @@ City den_city  = {
     "Buccaneers Den", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 0, 28, 27, 0, 25, 30, 0, 0, 29, 0, 0, 0 }, /* person_types */
+    { 0, 28, 27, 0, 26, 30, 0, 0, 29, 0, 0, 0 }, /* person_types */
     "den.tlk", /* tlk_fname */
     &den_map /* map */
 };
