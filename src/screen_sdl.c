@@ -682,6 +682,28 @@ void screenShowChar(int chr, int x, int y) {
 }
 
 /**
+ * Draw a character from the charset onto the screen, but mask it with
+ * horizontal lines.  This is used for the avatar symbol in the
+ * statistics area, where a line is masked out for each virtue in
+ * which the player is not an avatar.
+ */
+void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
+    SDL_Rect dest;
+    int i;
+
+    screenShowChar(chr, x, y);
+    dest.x = x * charset->w;
+    dest.w = charset->w;
+    dest.h = scale;
+    for (i = 0; i < 8; i++) {
+        if (mask & (1 << i)) {
+            dest.y = y * (charset->h / N_CHARS) + (i * scale);
+            SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0, 0, 0));
+        }
+    }
+}
+
+/**
  * Draw a tile graphic on the screen.
  */
 void screenShowTile(unsigned char tile, int x, int y) {

@@ -27,6 +27,7 @@ void screenDrawBackground(BackgroundType bkgd);
 void screenShowTile(unsigned char tile, int x, int y);
 void screenShowGemTile(unsigned char tile, int x, int y);
 void screenShowChar(int chr, int x, int y);
+void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, char *fmt, ...);
 void screenMessage(const char *fmt, ...);
 void screenScrollMessageArea(void);

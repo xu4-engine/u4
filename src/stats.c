@@ -97,6 +97,7 @@ void statsAreaSetTitle(const char *title) {
  */
 void statsShowPartyView() {
     int i;
+    unsigned char mask;
 
     assert(c->saveGame->members <= 8);
 
@@ -107,6 +108,13 @@ void statsShowPartyView() {
         screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   SHP:%02d", c->saveGame->food / 100, c->saveGame->shiphull);
     else
         screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
+
+    mask = 0xff;
+    for (i = 0; i < VIRT_MAX; i++) {
+        if (c->saveGame->karma[i] == 0)
+            mask &= ~(1 << i);
+    }
+    screenShowCharMasked(0, STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1, mask);
 }
 
 /**
