@@ -8,13 +8,13 @@
 #include <string>
 #include <list>
 
-#include "conversation.h"
 #include "creature.h"
 #include "types.h"
 
 typedef std::list<const char *> Reply;
 
 class Conversation;
+class Dialogue;
 
 typedef enum {
    NPC_EMPTY,
