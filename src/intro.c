@@ -655,8 +655,8 @@ void introUpdateScreen() {
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Gameplay Options:");        
         screenTextAt(8, 5, "Game Enhancements       %s", settings->minorEnhancements ? "On" : "Off");
-        screenTextAt(8, 6, "Shortcut Commands");
-        screenTextAt(8, 7, "  (Open, Jimmy, etc.)   %s", settings->shortcutCommands ? "On" : "Off");
+        screenTextAt(8, 7, "Shortcut Commands");
+        screenTextAt(8, 8, "  (Open, Jimmy, etc.)   %s", settings->shortcutCommands ? "On" : "Off");
         screenTextAt(8, 18,"Advanced Options");
         screenTextAt(8, 20, "Use These Settings");
         screenTextAt(8, 21, "Cancel");        
@@ -665,13 +665,13 @@ void introUpdateScreen() {
     case INTRO_CONFIG_ADVANCED:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,  "Advanced Options:");
-        screenTextAt(6, 5,  "Keyboard Options (msecs)");
-        screenTextAt(6, 6,  "   Repeat 'D'elay         %d", settings->keydelay);
-        screenTextAt(6, 7,  "   Repeat 'I'nterval      %d", settings->keyinterval);
-        screenTextAt(6, 8,  "   German 'K'eyboard      %s", settings->germanKbd ? "Yes" : "No"); 
-        screenTextAt(6, 10, "Speed Options");
-        screenTextAt(6, 11, "'G'ame Cycles Per Second  %d", settings->gameCyclesPerSecond);
-        screenTextAt(6, 12, "'B'attle Speed            %d", settings->battleSpeed);
+        screenTextAt(3, 5,  "Keyboard Options (msecs)");
+        screenTextAt(6, 6,  "Repeat 'D'elay              %d", settings->keydelay);
+        screenTextAt(6, 7,  "Repeat 'I'nterval           %d", settings->keyinterval);
+        screenTextAt(6, 8,  "German 'K'eyboard           %s", settings->germanKbd ? "Yes" : "No"); 
+        screenTextAt(3, 10, "Speed Options");
+        screenTextAt(6, 11, "'G'ame Cycles Per Second    %d", settings->gameCyclesPerSecond);
+        screenTextAt(6, 12, "'B'attle Speed              %d", settings->battleSpeed);
         screenTextAt(6, 20, "Use These Settings");
         screenTextAt(6, 21, "Cancel");
         break;
