@@ -75,11 +75,6 @@ int main(int argc, char *argv[]) {
     Tileset::load("tilesets.xml");
     creatures.loadInfoFromXml();
 
-    TileVector::iterator tile;
-    for (tile = Tileset::tiles.begin(); tile != Tileset::tiles.end(); tile++) {
-        Tile *t = *tile;
-    }
-
     if (!skipIntro) {
         /* do the intro */
         introInit();

@@ -420,8 +420,9 @@ int saveGameMonstersWrite(std::deque<Object *> &objs, FILE *f) {
 
         /* moving objects first */
         if ((obj->getType() == OBJECT_CREATURE) && (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
+            int tile = obj->getTile(). getIndex();
             /* whirlpools and storms are separated from other moving objects */
-            if ((obj->getTile() == 140) || (obj->getTile() == 142))
+            if ((tile == 140) || (tile == 142))
                 whirlpools_storms.push_back(obj);
             else other_creatures.push_back(obj);
         }
