@@ -344,6 +344,8 @@ int combatAttackAtCoord(int x, int y, int distance) {
             xp = monsterGetXp(m);
             screenMessage("%s Killed!\nExp. %d\n", m->name, xp);
             c->saveGame->players[focus].xp += xp;
+            if (c->saveGame->players[focus].xp > 9999)
+                c->saveGame->players[focus].xp = 9999;
             if (monsterIsEvil(m))
                 playerAdjustKarma(c->saveGame, KA_KILLED_EVIL);
             mapRemoveObject(c->map, monsters[monster]);
