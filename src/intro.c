@@ -43,6 +43,7 @@ typedef enum {
     INTRO_MAP,                  /* displaying the animated intro map */
     INTRO_MENU,                 /* displaying the main menu: journey onward, etc. */
     INTRO_CONFIG,               /* the configuration screen */
+    INTRO_ABOUT,                /* about xu4 screen */
     INTRO_INIT_NAME,            /* prompting for character name */
     INTRO_INIT_SEX,             /* prompting for character sex */
     INTRO_INIT_STORY,           /* displaying the intro story leading up the gypsy */
@@ -241,6 +242,7 @@ int introKeyHandler(int key, void *data) {
     switch (mode) {
 
     case INTRO_MAP:
+    case INTRO_ABOUT:
         mode = INTRO_MENU;
         introUpdateScreen();
         return 1;
@@ -262,6 +264,11 @@ int introKeyHandler(int key, void *data) {
         case 'c':
             introErrorMessage = NULL;
             mode = INTRO_CONFIG;
+            introUpdateScreen();
+            break;
+        case 'a':
+            introErrorMessage = NULL;
+            mode = INTRO_ABOUT;
             introUpdateScreen();
             break;
         case 'q':
@@ -467,12 +474,10 @@ void introUpdateScreen() {
         screenTextAt(11, 17, "Return to the view");
         screenTextAt(11, 18, "Journey Onward");
         screenTextAt(11, 19, "Initiate New Game");
+        screenTextAt(11, 20, "Configure");
+        screenTextAt(11, 21, "About");
         if (introErrorMessage)
-            screenTextAt(11, 21, introErrorMessage);
-        else {
-            screenTextAt(3, 21, "xu4 is free software, see COPYING");
-            screenTextAt(5, 22, "\011 Copyright 1987 Lord British");
-        }
+            screenTextAt(11, 22, introErrorMessage);
         introDrawBeasties();
         break;
 
@@ -485,6 +490,18 @@ void introUpdateScreen() {
         screenTextAt(11, 18, "Volume      %s", settings->vol ? "On" : "Off");
         screenTextAt(11, 19, "Use These Settings");
         screenTextAt(11, 20, "Cancel");
+        introDrawBeasties();
+        break;
+
+    case INTRO_ABOUT:
+        screenDrawBackground(BKGD_INTRO);
+        screenTextAt(15, 14, "XU4 %s", "0.09");
+        screenTextAt(2, 16, "xu4 is free software; you can redist-");
+        screenTextAt(2, 17, "ribute it and/or modify it under the");
+        screenTextAt(2, 18, "terms of the GNU GPL as published by");
+        screenTextAt(2, 19, "the FSF.  See COPYING.");
+        screenTextAt(2, 21, "\011 Copyright 2002 xu4 team");
+        screenTextAt(2, 22, "\011 Copyright 1987 Lord British");
         introDrawBeasties();
         break;
 
@@ -719,7 +736,7 @@ void introTimer() {
     screenUpdateCursor();
     if (mode == INTRO_MAP)
         introDrawMap();
-    if (mode == INTRO_MAP || mode == INTRO_MENU || 
+    if (mode == INTRO_MAP || mode == INTRO_MENU || mode == INTRO_CONFIG || mode == INTRO_ABOUT ||
         mode == INTRO_INIT_NAME || mode == INTRO_INIT_SEX)
         introDrawBeasties();
 
