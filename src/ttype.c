@@ -25,6 +25,7 @@
 #define MASK_DOOR        0x0800
 #define MASK_LOCKEDDOOR  0x1000
 #define MASK_CHEST       0x2000
+#define MASK_ATTACKOVER  0x4000
 
 /* tile values 0-127 */
 int tileInfoLoaded = 0;
@@ -63,7 +64,8 @@ void tileLoadInfoFromXml() {
         { "chest", MASK_CHEST, &baseChest },
         { "ship", MASK_SHIP, &baseShip },
         { "horse", MASK_HORSE, &baseHorse },
-        { "balloon", MASK_BALLOON, &baseBalloon }
+        { "balloon", MASK_BALLOON, &baseBalloon },
+        { "canattackover", MASK_ATTACKOVER, NULL }
     };
 
     tileInfoLoaded = 1;
@@ -196,10 +198,11 @@ int tileCanWalkOff(unsigned char tile, Direction d) {
     return DIR_IN_MASK(d, _ttype_info[tile].walkoffDirs);
 }
 
-int tileCanAttackOver(unsigned char tile) {
-    /* FIXME: add parameters to the tiles.xml file to handle 'attackOver' on tiles */
+int tileCanAttackOver(unsigned char tile) {    
+    /* All tiles that you can walk, swim, or sail on, can be attacked over.
+       All others must declare themselves */
     return tileIsWalkable(tile) || tileIsSwimable(tile) || tileIsSailable(tile) ||       
-        tile == 72; /* Ship hull tile */
+        tileTestBit(tile, MASK_ATTACKOVER);
 }
 
 int tileIsWalkable(unsigned char tile) {

@@ -50,10 +50,10 @@
     <tile cantwalkon="all"/> <!-- shepherd1 -->
     <tile cantwalkon="all"/> <!-- shepherd2 -->
     <tile cantwalkon="all"/> <!-- column -->
-    <tile cantwalkon="all"/> <!-- solid SW -->
-    <tile cantwalkon="all"/> <!-- solid SE -->
-    <tile cantwalkon="all"/> <!-- solid NW -->
-    <tile cantwalkon="all"/> <!-- solid NE -->
+    <tile cantwalkon="all" canattackover="true"/> <!-- solid SW -->
+    <tile cantwalkon="all" canattackover="true"/> <!-- solid SE -->
+    <tile cantwalkon="all" canattackover="true"/> <!-- solid NW -->
+    <tile cantwalkon="all" canattackover="true"/> <!-- solid NE -->
     <tile cantwalkon="all"/> <!-- shipmast -->
     <tile cantwalkon="all"/> <!-- shipwheel -->
     <tile cantwalkon="all"/> <!-- rocks -->
@@ -73,7 +73,7 @@
     <tile cantwalkon="all" animated="true" dispel="true"/> <!-- energy field -->
     <tile speed="vvslow" effect="fire" animated="true" dispel="true"/> <!-- fire field -->
     <tile effect="sleep" animated="true" candispel="true"/> <!-- sleep field -->
-    <tile cantwalkon="all"/> <!-- solid -->
+    <tile cantwalkon="all" canattackover="true"/> <!-- solid -->
     <tile opaque="true"/> <!-- secret door -->
     <tile/> <!-- altar -->
     <tile cantwalkon="all"/> <!-- roast -->
