@@ -70,6 +70,7 @@ typedef struct {
     int xu4Graphic;             /* an original xu4 graphic not part of u4dos or the VGA upgrade */
     ImageFixup fixup;           /* a routine to do miscellaneous fixes to the image */
     Image *image;
+    ListNode *subImages;
 } ImageInfo;
 
 typedef struct {
@@ -182,14 +183,14 @@ ImageSet *screenLoadImageSetFromXml(xmlNodePtr node);
 ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node);
 SubImage *screenLoadSubImageFromXml(xmlNodePtr node);
 Layout *screenLoadLayoutFromXml(xmlNodePtr node);
-ImageInfo *screenLoadBackground(const char *name);
+ImageInfo *screenLoadImage(const char *name);
+void screenDrawSubImage(const char *name, int x, int y);
 SDL_Cursor *screenInitCursor(char *xpm[]);
 int imageInfoByName(void *info1, void *info2);
 
 ListNode *imageSets = NULL;
 ListNode *layouts = NULL;
 ListNode *tileanimSets = NULL;
-ListNode *subImages = NULL;
 char **imageSetNames = NULL;
 char **gemLayoutNames = NULL;
 Layout *gemlayout = NULL;
@@ -272,7 +273,7 @@ void screenInit() {
 }
 
 void screenDelete() {
-    screenFreeBackgrounds();    
+    screenFreeImages();
     u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
     if (verbose)
@@ -411,6 +412,7 @@ ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node) {
         info->transparentIndex = -1;
     info->xu4Graphic = xmlGetPropAsBool(node, "xu4Graphic");
     info->fixup = xmlGetPropAsEnum(node, "fixup", fixupEnumStrings);
+    info->subImages = NULL;
     info->image = NULL;
 
     for (child = node->xmlChildrenNode; child; child = child->next) {
@@ -420,7 +422,7 @@ ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node) {
         if (xmlStrcmp(child->name, (const xmlChar *) "subimage") == 0) {
             SubImage *subimage = screenLoadSubImageFromXml(child);
             subimage->srcImageName = strdup(info->name);
-            subImages = listAppend(subImages, subimage);
+            info->subImages = listAppend(info->subImages, subimage);
         }
     }
 
@@ -580,37 +582,45 @@ void fixupAbacus(Image *im, int prescale) {
 }
 
 /**
- * Returns image information for the given image set.
+ * Returns information for the given image set.
  */
-ImageInfo *screenGetImageInfoFromSet(const char *name, const char *setname) {
-    ListNode *setNode, *infoNode;
-    ImageSet *set;
+ImageSet *screenGetImageSet(const char *setname) {
+    ListNode *setNode;
     
     ASSERT(imageSets != NULL, "imageSets isn't initialized");
 
-    /* find the correct image set */
-    setNode = imageSets;
-    while(strcmp(((ImageSet *)setNode->data)->name, setname) != 0) {
-        setNode = setNode->next;
-        if (!setNode)
-            return NULL;
+    for (setNode = imageSets; setNode != NULL; setNode = setNode->next) {
+        if (strcmp(((ImageSet *)setNode->data)->name, setname) == 0)
+            return (ImageSet *) setNode->data;
     }
-    set = setNode->data;
+    return NULL;
+}
 
-    /* 
-     * if the image set contains the image we want, we are done;
-     * otherwise, if this image set extends another, check the base
-     * image set.
-     */
+/**
+ * Returns information for the given image set.
+ */
+ImageInfo *screenGetImageInfoFromSet(const char *name, const char *setname) {
+    ListNode *infoNode;
+    ImageSet *set;
+    
+    set = screenGetImageSet(setname);
+    if (!set)
+        return NULL;
+
+    /* if the image set contains the image we want, we are done */
     if ((infoNode = listFind(set->info, (void *) name, imageInfoByName)) != NULL)
         return (ImageInfo *) infoNode->data;
 
+    /* otherwise if this image set extends another, check the base image set */
     if (set->extends)
         return screenGetImageInfoFromSet(name, set->extends);
 
     return NULL;
 }
 
+/**
+ * Returns image information for the current image set.
+ */
 ImageInfo *screenGetImageInfo(const char *name) {
     const char *setname;
     
@@ -623,9 +633,39 @@ ImageInfo *screenGetImageInfo(const char *name) {
 }
 
 /**
+ * Returns information for the given image set.
+ */
+SubImage *screenGetSubImage(const char *name) {
+    const char *setname;
+    ImageSet *set;
+    ListNode *infoNode, *subimageNode;
+    
+    if (!u4upgradeExists)
+        setname = "EGA";
+    else
+        setname = settings->videoType;
+
+    set = screenGetImageSet(setname);
+    if (!set)
+        return NULL;
+
+    for (infoNode = set->info; infoNode != NULL; infoNode = infoNode->next) {
+        ImageInfo *info = (ImageInfo *) infoNode->data;
+        for (subimageNode = info->subImages; subimageNode != NULL; subimageNode = subimageNode->next) {
+            SubImage *subimage = (SubImage *) subimageNode->data;
+            if (strcmp(subimage->name, name) == 0)
+                return subimage;
+        }
+    }
+        
+    return NULL;
+}
+
+
+/**
  * Load in a background image from a ".ega" file.
  */
-ImageInfo *screenLoadBackground(const char *name) {
+ImageInfo *screenLoadImage(const char *name) {
     int ret, imageScale;
     ImageInfo *info;
     const char *filename;
@@ -634,7 +674,7 @@ ImageInfo *screenLoadBackground(const char *name) {
 
     info = screenGetImageInfo(name);
     if (!info)
-        errorFatal("no information on image %s in graphics.xml", name);
+        return NULL;
 
     /* return if already loaded */
     if (info->image != NULL)
@@ -723,9 +763,9 @@ ImageInfo *screenLoadBackground(const char *name) {
 }
 
 /**
- * Free up all background images
+ * Free up all images
  */
-void screenFreeBackgrounds() {
+void screenFreeImages() {
     ListNode *setNode, *infoNode;
 
     for (setNode = imageSets; setNode; setNode = setNode->next) {
@@ -998,22 +1038,24 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
 }
 
 /**
- * Draw the surrounding borders on the screen.
+ * Draw an image or subimage on the screen.
  */
-void screenDrawBackground(const char *name) {
+void screenDrawImage(const char *name) {
     ImageInfo *info;
 
-    info = screenLoadBackground(name);
-    if (!info)
-        errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+    info = screenLoadImage(name);
+    if (info) {
+        imageDraw(info->image, 0, 0);
+        return;
+    }
 
-    imageDraw(info->image, 0, 0);
+    errorFatal("unable to load image \"%s\": is Ultima IV installed?  See http://xu4.sourceforge.net/", name);
 }
 
-void screenDrawBackgroundInMapArea(const char *name) {
+void screenDrawImageInMapArea(const char *name) {
     ImageInfo *info;
 
-    info = screenLoadBackground(name);
+    info = screenLoadImage(name);
     if (!info)
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
@@ -1023,12 +1065,35 @@ void screenDrawBackgroundInMapArea(const char *name) {
                      VIEWPORT_H * TILE_HEIGHT * scale);
 }
 
+
+void screenDrawSubImage(const char *name, int x, int y) {
+    SubImage *subimage;
+    ImageInfo *info;
+
+    subimage = screenGetSubImage(name);
+    if (subimage) {
+        info = screenLoadImage(subimage->srcImageName);
+        
+        if (info) {
+            imageDrawSubRect(info->image, x, y, 
+                             subimage->x * (scale / info->prescale),
+                             subimage->y * (scale / info->prescale),
+                             subimage->width * (scale / info->prescale),
+                             subimage->height * (scale / info->prescale));
+            return;
+        }
+    }
+
+    errorFatal("unable to load subimage \"%s\": is Ultima IV installed?  See http://xu4.sourceforge.net/", name);
+
+}
+
 /**
  * Draw a character from the charset onto the screen.
  */
 void screenShowChar(int chr, int x, int y) {
     if (charsetInfo == NULL) {
-        charsetInfo = screenLoadBackground(BKGD_CHARSET);
+        charsetInfo = screenLoadImage(BKGD_CHARSET);
         if (!charsetInfo)
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
@@ -1071,7 +1136,7 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
     TileAnim *anim = NULL;
 
     if (tilesInfo == NULL || strcmp(tilesInfo->name, tileset->imageName) != 0) {
-        tilesInfo = screenLoadBackground(tileset->imageName);
+        tilesInfo = screenLoadImage(tileset->imageName);
         if (!tilesInfo)
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
@@ -1181,7 +1246,7 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
  */
 void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
     if (gemTilesInfo == NULL) {
-        gemTilesInfo = screenLoadBackground(BKGD_GEMTILES);
+        gemTilesInfo = screenLoadImage(BKGD_GEMTILES);
         if (!gemTilesInfo)
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
@@ -1455,32 +1520,6 @@ void screenRedrawMapArea() {
     SDL_UpdateRect(screen, BORDER_WIDTH * scale, BORDER_HEIGHT * scale, VIEWPORT_W * TILE_WIDTH * scale, VIEWPORT_H * TILE_HEIGHT * scale);
 }
 
-void screenSubImageDraw(const char *name, int x, int y) {
-    SubImage *subimage = NULL;
-    ListNode *node;
-    ImageInfo *info;
-
-    for (node = subImages; node; node = node->next) {
-        if (strcmp(name, ((SubImage *) node->data)->name) == 0) {
-            subimage = (SubImage *) node->data;
-            break;
-        }
-    }
-
-    if (!subimage)
-        errorFatal("unable to find subimage \"%s\" in graphics.xml", name);
-
-    info = screenLoadBackground(subimage->srcImageName);
-    if (!info)
-        errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
-
-    imageDrawSubRect(info->image, x, y, 
-                     subimage->x * (scale / info->prescale),
-                     subimage->y * (scale / info->prescale),
-                     subimage->width * (scale / info->prescale),
-                     subimage->height * (scale / info->prescale));
-}
-
 /**
  * Animates the moongate in the intro.  The tree intro image has two
  * overlays in the part of the image normally covered by the text.  If
@@ -1490,7 +1529,7 @@ void screenSubImageDraw(const char *name, int x, int y) {
  * representing the anhk and history book.
  */
 void screenAnimateIntro(const char *frame) {
-    screenSubImageDraw(frame, 72 * scale, 68 * scale);
+    screenDrawSubImage(frame, 72 * scale, 68 * scale);
 }
 
 void screenEraseMapArea() {
@@ -1525,14 +1564,14 @@ void screenRedrawTextArea(int x, int y, int width, int height) {
  */
 void screenShowCard(int pos, int card) {
     static const char *subImageNames[] = { 
-        "honestycard", "compassioncard", "valorcard", "justicecard", 
+        "honestycard", "compassioncard", "valorcard", "justicecard",
         "sacrificecard", "honorcard", "spiritualitycard", "humilitycard" 
     };
 
     ASSERT(pos == 0 || pos == 1, "invalid pos: %d", pos);
     ASSERT(card < 8, "invalid card: %d", card);
 
-    screenSubImageDraw(subImageNames[card], (pos ? 218 : 12) * scale, 12 * scale);
+    screenDrawSubImage(subImageNames[card], (pos ? 218 : 12) * scale, 12 * scale);
 }
 
 /**
@@ -1543,8 +1582,8 @@ void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
     ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
     ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
     
-    screenSubImageDraw("whitebead", (128 + (selectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
-    screenSubImageDraw("blackbead", (128 + (rejectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
+    screenDrawSubImage("whitebead", (128 + (selectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
+    screenDrawSubImage("blackbead", (128 + (rejectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
 }
 
 /**
@@ -1563,7 +1602,7 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
     sprintf(buffer, "beast%dframe%02d", beast, frame);
 
     destx = beast ? (320 - 48) : 0;
-    screenSubImageDraw(buffer, destx * scale, vertoffset * scale);
+    screenDrawSubImage(buffer, destx * scale, vertoffset * scale);
 }
 
 void screenGemUpdate() {

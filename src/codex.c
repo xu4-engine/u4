@@ -98,7 +98,7 @@ void codexStart() {
         return;
     }
 
-    screenDrawBackgroundInMapArea(BKGD_KEY);
+    screenDrawImageInMapArea(BKGD_KEY);
     screenRedrawMapArea();
 
     screenMessage("\nYou use your key of Three Parts.\n");
@@ -274,7 +274,7 @@ int codexHandleVirtues(const char *virtue) {
     if ((current < VIRT_MAX) && 
         (strcasecmp(virtue, getVirtueName((Virtue)current)) == 0)) {
 
-        screenDrawBackgroundInMapArea(codexImageNames[current]);
+        screenDrawImageInMapArea(codexImageNames[current]);
         screenRedrawMapArea();
 
         current++;
@@ -299,7 +299,7 @@ int codexHandleVirtues(const char *virtue) {
     else if ((current >= VIRT_MAX) &&
              (strcasecmp(virtue, getPrincipleName((Principle)(1 << (current - VIRT_MAX)))) == 0)) {
 
-        screenDrawBackgroundInMapArea(codexImageNames[current]);
+        screenDrawImageInMapArea(codexImageNames[current]);
         screenRedrawMapArea();
 
         current++;
@@ -394,7 +394,7 @@ int codexHandleEndgameAnyKey(int key, void *data) {
             screenMessage(codexEndgameText1[index]);
         } 
         else if (index == 7) {
-            screenDrawBackgroundInMapArea(BKGD_STONCRCL);
+            screenDrawImageInMapArea(BKGD_STONCRCL);
             screenRedrawMapArea();
             screenMessage("\n\n%s", codexEndgameText2[index-7]);
         }

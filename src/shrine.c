@@ -211,7 +211,7 @@ int shrineVision(int key, void *data) {
     if (elevated) {
         screenMessage("Thou art granted a vision!\n");
         gameSetViewMode(VIEW_RUNE);
-        screenDrawBackgroundInMapArea(visionImageNames[shrine->virtue]);
+        screenDrawImageInMapArea(visionImageNames[shrine->virtue]);
     }
     else {
         screenMessage("\n%s", shrineAdvice[shrine->virtue * 3 + completedCycles - 1]);

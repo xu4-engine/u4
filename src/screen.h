@@ -89,9 +89,9 @@ void screenReInit(void);
 char **screenGetImageSetNames(void);
 char **screenGetGemLayoutNames(void);
 
-void screenDrawBackground(const char *bkgd);
-void screenDrawBackgroundInMapArea(const char *bkgd);
-void screenFreeBackgrounds();
+void screenDrawImage(const char *bkgd);
+void screenDrawImageInMapArea(const char *bkgd);
+void screenFreeImages();
 
 void screenCycle(void);
 void screenFillRect(int x, int y, int w, int h, int r, int g, int b);

@@ -682,7 +682,7 @@ void introUpdateScreen() {
 
     switch (mode) {
     case INTRO_MAP:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         introDrawMap();
         introDrawBeasties();
         break;
@@ -691,7 +691,7 @@ void introUpdateScreen() {
         screenSetCursorPos(24, 16);
         screenShowCursor();
 
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(2, 14, "In another world, in a time to come.");
         screenTextAt(15, 16, "Options:");
         screenTextAt(11, 17, "Return to the view");
@@ -705,14 +705,14 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(9, 14, "-- xu4 Configuration --");
         menuShow(menuGetRoot(mainOptions));
         introDrawBeasties();
         break;
 
     case INTRO_CONFIG_VIDEO:
-        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenDrawImage(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Video Options:");
         screenTextAt(24, 5, "%s", settingsChanged->videoType);
         screenTextAt(24, 6, "%s", settingsChanged->gemLayout);
@@ -724,7 +724,7 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG_SOUND:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(2, 14, "Sound Options:");
         screenTextAt(26, 16, "%s", settingsChanged->musicVol ? "On" : "Off");
         screenTextAt(26, 17, "%s", settingsChanged->soundVol ? "On" : "Off");
@@ -734,7 +734,7 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG_GAMEPLAY:
-        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenDrawImage(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Gameplay Options:");
         screenTextAt(32, 5, "%s", settingsChanged->enhancements ? "On" : "Off");        
         screenTextAt(6, 8, "  (Open, Jimmy, etc.)     %s", settingsChanged->shortcutCommands ? "On" : "Off");        
@@ -744,14 +744,14 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG_ADVANCED:
-        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenDrawImage(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Advanced Options:");
         screenTextAt(34, 8,  "%s", settingsChanged->debug ? "On" : "Off");        
         menuShow(menuGetRoot(advancedOptions));
         break;
 
     case INTRO_CONFIG_KEYBOARD:
-        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenDrawImage(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Keyboard Settings:");
         screenTextAt(34, 5, "%s", settingsChanged->germanKbd ? "Yes" : "No"); 
         screenTextAt(34, 6,  "%d", settingsChanged->keydelay);
@@ -762,7 +762,7 @@ void introUpdateScreen() {
     case INTRO_CONFIG_SPEED:
         {
             char msg[16] = {0};
-            screenDrawBackground(BKGD_INTRO_EXTENDED);
+            screenDrawImage(BKGD_INTRO_EXTENDED);
             screenTextAt(2, 3, "Speed Settings:");           
 
             sprintf(msg, "%d", settingsChanged->gameCyclesPerSecond);
@@ -793,7 +793,7 @@ void introUpdateScreen() {
         break;
 
     case INTRO_CONFIG_ENHANCEMENT_OPTIONS:
-        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenDrawImage(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Game Enhancement Options:");        
         screenTextAt(31, 5,  "%s", settingsChanged->enhancementsOptions.activePlayer ? "On" : "Off");
         screenTextAt(31, 6,  "%s", settingsChanged->enhancementsOptions.u5spellMixing ? "On" : "Off");
@@ -805,7 +805,7 @@ void introUpdateScreen() {
         break;    
 
     case INTRO_ABOUT:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(15, 14, "XU4 %s", VERSION);
         screenTextAt(2, 16, "xu4 is free software; you can redist-");
         screenTextAt(2, 17, "ribute it and/or modify it under the");
@@ -817,46 +817,46 @@ void introUpdateScreen() {
         break;
 
     case INTRO_INIT_NAME:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(4, 16, "By what name shalt thou be known");
         screenTextAt(4, 17, "in this world and time?");
         introDrawBeasties();
         break;
 
     case INTRO_INIT_SEX:
-        screenDrawBackground(BKGD_INTRO);
+        screenDrawImage(BKGD_INTRO);
         screenTextAt(4, 16, "Art thou Male or Female?");
         introDrawBeasties();
         break;
 
     case INTRO_INIT_STORY:
         if (storyInd == 0)
-            screenDrawBackground(BKGD_TREE);
+            screenDrawImage(BKGD_TREE);
         else if (storyInd == 3)
             screenAnimateIntro("moongate");
         else if (storyInd == 5)
             screenAnimateIntro("items");
         else if (storyInd == 6)
-            screenDrawBackground(BKGD_PORTAL);
+            screenDrawImage(BKGD_PORTAL);
         else if (storyInd == 11)
-            screenDrawBackground(BKGD_TREE);
+            screenDrawImage(BKGD_TREE);
         else if (storyInd == 15)
-            screenDrawBackground(BKGD_OUTSIDE);
+            screenDrawImage(BKGD_OUTSIDE);
         else if (storyInd == 17)
-            screenDrawBackground(BKGD_INSIDE);
+            screenDrawImage(BKGD_INSIDE);
         else if (storyInd == 20)
-            screenDrawBackground(BKGD_WAGON);
+            screenDrawImage(BKGD_WAGON);
         else if (storyInd == 21)
-            screenDrawBackground(BKGD_GYPSY);
+            screenDrawImage(BKGD_GYPSY);
         else if (storyInd == 23)
-            screenDrawBackground(BKGD_ABACUS);
+            screenDrawImage(BKGD_ABACUS);
         introShowText(introText[storyInd]);
         break;
 
     case INTRO_INIT_QUESTIONS:
         if (introAskToggle == 0) {
             if (questionRound == 0)
-                screenDrawBackground(BKGD_ABACUS);
+                screenDrawImage(BKGD_ABACUS);
             screenShowCard(0, questionTree[questionRound * 2]);
             screenShowCard(1, questionTree[questionRound * 2 + 1]);
 
