@@ -102,9 +102,20 @@ Debug::Debug(const string &fn, const string &nm, bool append) : disabled(false),
         return;
     }
 
+#ifdef MACOSX
+    /* In Mac OS X store debug files in a user-specific location */
+    char *home = getenv("HOME");
+    if (home && home[0]) {
+        filename = home;
+        filename += MACOSX_USER_FILES_PATH;
+        filename += "/";
+        filename += fn;
+    }
+#endif
+
     if (append)
-        file = FileSystem::openFile(fn, "at");
-    else file = FileSystem::openFile(fn, "wt");
+        file = FileSystem::openFile(filename, "at");
+    else file = FileSystem::openFile(filename, "wt");
 
     if (!file) {} // FIXME: throw exception here
     else if (!name.empty())
@@ -124,7 +135,22 @@ void Debug::initGlobal(const string &filename) {
     if (global)
         fclose(global);
 
-    global = FileSystem::openFile(filename, "wt");    
+#ifdef MACOSX
+    /* In Mac OS X store debug files in a user-specific location */
+    char *home = getenv("HOME");
+    if (home && home[0]) {
+        string osxfname = home;
+        osxfname += MACOSX_USER_FILES_PATH;
+        osxfname += "/";
+        osxfname += filename;
+        global = FileSystem::openFile(osxfname, "wt");
+    } else {
+        global = NULL;
+    }
+#else
+    global = FileSystem::openFile(filename, "wt");
+#endif
+
     if (!global) {} // FIXME: throw exception here
 }
 
