@@ -413,12 +413,16 @@ int monsterCastSleep(const Monster *monster) {
 
 const Monster *monsterRandomForTile(unsigned char tile) {
     int era;
-    unsigned char randTile;
-    
-    if (tileIsSailable(tile) || tileIsSwimable(tile)) {
+    unsigned char randTile;    
+
+    if (tileIsSailable(tile)) {
         randTile = ((rand() & 7) << 1) + monsterById(PIRATE_ID)->tile;
         return monsterForTile(randTile);        
-    }    
+    }
+    else if (tileIsSwimable(tile)) {
+        randTile = ((rand() % 5) << 1) + monsterById(NIXIE_ID)->tile;
+        return monsterForTile(randTile);
+    }
 
     if (!tileIsMonsterWalkable(tile))
         return 0;
