@@ -308,12 +308,20 @@ int keyHandlerTalking(int key, void *data) {
     if ((key >= 'a' && key <= 'z') || key == ' ') {
         int len;
 
-        screenMessage("%c", key);
         len = strlen(c->conversation.buffer);
-        if (len < 4) {
+        if (len < CONV_BUFFERLEN - 1) {
+            screenMessage("%c", key);
             c->conversation.buffer[len] = key;
             c->conversation.buffer[len + 1] = '\0';
         }
+
+    } else if (key == U4_BACKSPACE) {
+        int len;
+
+        len = strlen(c->conversation.buffer);
+        c->conversation.buffer[len - 1] = '\0';
+        c->col = 0;
+        screenMessage("%s ", c->conversation.buffer);
 
     } else if (key == '\n' || key == '\r') {
         int done;
