@@ -170,6 +170,17 @@ void eventHandlerPopKeyHandler() {
 }
 
 /**
+ * Eliminate all key handlers and begin stack with new handler
+ */
+
+void eventHandlerSetKeyHandler(KeyHandler kh) {
+    while (keyHandlerHead)
+        eventHandlerPopKeyHandler();
+
+    eventHandlerPushKeyHandler(kh);
+}
+
+/**
  * Get the currently active key handler of the top of the key handler
  * stack.
  */

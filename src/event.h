@@ -51,6 +51,7 @@ void eventHandlerCallTimerCallbacks();
 void eventHandlerPushKeyHandler(KeyHandler kh);
 void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data);
 void eventHandlerPopKeyHandler();
+void eventHandlerSetKeyHandler(KeyHandler kh);
 KeyHandler eventHandlerGetKeyHandler();
 void *eventHandlerGetKeyHandlerData();
 

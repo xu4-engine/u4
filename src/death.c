@@ -30,7 +30,6 @@
 
 int timerCount;
 int timerMsg;
-extern Portal world_portals[];
 
 void deathTimer(void *data);
 void deathDelayTimer(void *data);
@@ -86,7 +85,6 @@ void deathTimer(void *data) {
 
         if (timerMsg >= N_MSGS) {
             eventHandlerRemoveTimerCallback(&deathTimer);
-            eventHandlerPopKeyHandler();
             deathRevive();
         }
     }
@@ -95,12 +93,15 @@ void deathTimer(void *data) {
 void deathRevive() {
     while(!mapIsWorldMap(c->location->map) && c->location->prev != NULL) {
         gameExitToParentMap(c);
-    }    
+    }
+
+    eventHandlerSetKeyHandler(&keyHandlerDefault);
+    eventHandlerPushKeyHandler(&gameBaseKeyHandler);
 
     /* Move our world map location to Lord British's Castle */
-    c->location->x = world_portals[0].x;
-    c->location->y = world_portals[0].y;
-    c->location->z = world_portals[0].z;    
+    c->location->x = c->location->map->portals[0].x;
+    c->location->y = c->location->map->portals[0].y;
+    c->location->z = c->location->map->portals[0].z;    
     
     /* Now, move the avatar into the castle and put them
        in front of Lord British */
