@@ -317,7 +317,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
     obj = objs;
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (obj) {
-            if (obj->tile == 0x1f)
+            if (obj->isAvatar)
                 /* skip */;
             else if (/* is animate */ 0)
                 monsterTable[anim++] = obj;
