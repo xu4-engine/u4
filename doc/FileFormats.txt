@@ -605,22 +605,48 @@ offset  len   notes
 0x10d9c 129   weapon names; 16 zero terminated strings
 0x10e1d 77    armor names; 8 zero terminated strings
 0x10e6a 64    weapon abbreviations; 16 zero terminated strings
-0x10eaa 55    class names; 8 zero terminated strings
+0x10eaa 55    character class names; 8 zero terminated strings
 0x10ee1 58    npc type names; 8 zero terminated strings
 0x10f1b 81    reagent names; 8 zero terminated strings
 0x10f6c 434   spell names; 26 zero terminated strings
 0x1101e 292   castle/city/town/dungeon/shrine names; 32 zero terminated
               strings
-0x11142 509   ???
+0x11142 11    ???
+0x1114d 72    36 two-byte offsets to monster names (value + 62131 gives
+              file offset)
+0x11195 32    16 two-byte offsets to weapon names (value + 62131 gives
+              file offset)
+0x111b5 16    8 two-byte offsets to armor names (value + 62131 gives
+              file offset)
+0x111c5 32    16 two-byte offsets to weapon abbreviations (value + 62131
+              gives file offset)
+0x111e5 16    8 two-byte offsets to character class names (value + 62131
+              gives file offset)
+0x111f5 330   ???
 0x1133f 26    mp required for each spell (one byte per spell)
 0x11359 654   ???
 0x115e7 16    mask of which clases can use each weapon (one byte per
               weapon)
 0x115f7 8     mask of which clases can use each type of armor (one byte
               per armor type)
-0x115ff 1066  ???
+0x115ff 186   ???
+0x116b9 36    monster leader types (one byte per monster type)
+0x116dd 38    ???
+0x11703 16    weapon value list (one byte per weapon type)
+0x11713 8     armor value list (one byte per armor type)
+0x1171b 16    weapon type list (one byte per weapon type; 0 = melee, 0xff
+              = missile)
+0x1172b 154   .CON filenames; 14 zero terminated strings
+0x117c5 28    14 two-byte offsets to .CON filenames (value + 62131 gives
+              file offset)
+0x117e1 64    dungeon .CON filenames; 7 zero terminated strings
+0x11821 322   ???
+0x11963 8     ambush monster types
+0x1196b 190   miscellaneous text strings
 0x11a29 26    spell reagent masks (one byte per spell)
-0x11a43 392   ???
+0x11a43 364   miscellaneous text strings
+0x11baf 16    city/runemask pairs (city id, cooresponding rune bitmask)
+0x11bbf 12    miscellaneous text string
 0x11bcb 120   24 five-byte item location records (see below)
 0x11c43 288   ???
 0x11d63 250   companion dialog text
