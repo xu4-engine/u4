@@ -17,14 +17,27 @@
 #include "io.h"
 #include "stats.h"
 #include "map.h"
+#include "player.h"
+
+/*
+ * Warning -- this is not the nicest code; vendors are (so far) the
+ * most complicated part of xu4, with lots of special cases.  Also,
+ * I'm figuring out how they work as I go along which doesn't help.
+ * It is slowly getting better.
+ */
 
 #define N_ARMS_VENDORS 6
 #define ARMS_VENDOR_INVENTORY_SIZE 4
 
 #define VCM_SIZE 16
 
+/*
+ * This structure hold information about each vendor type.  The
+ * offsets are byte offsets into the AVATAR.EXE file where the vendor
+ * dialog strings and other data are stored.
+ */
 typedef struct VendorTypeDesc {
-    long cityMapOffset;
+    long cityMapOffset;        
     unsigned char n_shops;
     long shopNamesOffset;
     long shopkeeperNamesOffset;
@@ -36,15 +49,21 @@ typedef struct VendorTypeDesc {
     long text2Offset;
 } VendorTypeDesc;
 
+/*
+ * This structure hold the information loading in from AVATAR.EXE for
+ * each vendor type.  Each VendorTypeInfo is loaded from a
+ * VendorTypeDesc.
+ */
 typedef struct _VendorTypeInfo {
-    unsigned char cityMap[VCM_SIZE];
-    int n_shops;
-    char **shopNames;
-    char **shopkeeperNames;
-    int n_items;
-    char **itemDescriptions;
-    int n_text;
-    char **text;
+    unsigned char cityMap[VCM_SIZE]; /* a byte for each city with the index
+                                        (starting at 1) of the vendor */
+    int n_shops;                /* number of shops of this vendor type */
+    char **shopNames;           /* the name of each shop */
+    char **shopkeeperNames;     /* the name of each shopkeeper */
+    int n_items;                /* the number of items each vendor sells */
+    char **itemDescriptions;    /* a description of each item */
+    int n_text;                 /* text and text2 are arrays of the */
+    char **text;                /* remaining dialog strings */
     int n_text2;
     char **text2;
 } VendorTypeInfo;
@@ -55,10 +74,12 @@ typedef struct ArmsVendorInfo {
 } ArmsVendorInfo;
 
 #define N_REAG_VENDORS 4
+#define N_FOOD_VENDORS 5
 
 ArmsVendorInfo weaponVendorInfo;
 ArmsVendorInfo armorVendorInfo;
 unsigned char reagPrices[N_REAG_VENDORS][REAG_MAX];
+unsigned short foodPrices[N_FOOD_VENDORS];
 
 #define WV_NOTENOUGH 0
 #define WV_FINECHOICE 1
@@ -142,6 +163,12 @@ int vendorInit() {
         }
         reagPrices[i][REAG_NIGHTSHADE] = 0;
         reagPrices[i][REAG_MANDRAKE] = 0;
+    }
+
+    fseek(avatar, 87535, SEEK_SET);
+    for (i = 0; i < N_FOOD_VENDORS; i++) {
+        if (!readShort(&(foodPrices[i]), avatar))
+            return 0;
     }
 
     fseek(avatar, 80181, SEEK_SET);
@@ -342,6 +369,7 @@ char *vendorGetPrompt(const Conversation *cnv) {
 }
 
 char *vendorGetVendorQuestionResponse(Conversation *cnv, const char *response) {
+    char buffer[10];
     char *reply;
     int type;
     
@@ -377,7 +405,8 @@ char *vendorGetVendorQuestionResponse(Conversation *cnv, const char *response) {
 
     case NPC_VENDOR_FOOD:
         if (tolower(response[0]) == 'y') {
-            reply = concat(vendorTypeInfo[type]->text[FV_PRICE1], "20",
+            sprintf(buffer, "%d", foodPrices[vendorGetVendorNo(cnv->talker)]);
+            reply = concat(vendorTypeInfo[type]->text[FV_PRICE1], buffer,
                            vendorTypeInfo[type]->text[FV_PRICE2], 
                            vendorTypeInfo[type]->text[FV_HOWMANY],
                            NULL);
@@ -483,58 +512,80 @@ char *vendorGetSellItemResponse(Conversation *cnv, const char *response) {
 char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response) {
     char *reply;
     int type, totalprice, success;
-    const ArmsVendorInfo *info;
-
+    InventoryItem item;
+    
     type = cnv->talker->npcType - NPC_VENDOR_WEAPONS;
-
-    if (cnv->talker->npcType == NPC_VENDOR_FOOD) {
-        reply = strdup(vendorTypeInfo[type]->text[FV_ANYMORE]);
-        cnv->state = CONV_VENDORQUESTION;
-        return reply;
-    }
-
-    if (cnv->talker->npcType == NPC_VENDOR_WEAPONS)
-        info = &weaponVendorInfo;
-    else
-        info = &armorVendorInfo;
 
     cnv->quant = (int) strtol(response, NULL, 10);
 
-    totalprice = cnv->quant * info->prices[cnv->item];
-    if (totalprice <= c->saveGame->gold) {
-        success = 1;
-        c->saveGame->gold -= totalprice;
-    } else
-        success = 0;
-
     switch (cnv->talker->npcType) {
-
     case NPC_VENDOR_WEAPONS:
-        if (success) {
-            reply = concat(vendorGetName(cnv->talker), vendorTypeInfo[type]->text[WV_FINECHOICE], NULL);
-            c->saveGame->weapons[cnv->item] += cnv->quant;
-            statsUpdate();
-        } else
-            reply = strdup(vendorTypeInfo[type]->text[WV_NOTENOUGH]);
-
-        cnv->state = CONV_DONE;
+        totalprice = weaponVendorInfo.prices[cnv->item] * cnv->quant;
+        item = INV_WEAPON;
         break;
-
     case NPC_VENDOR_ARMOR:
-        if (success) {
-            reply = concat(vendorGetName(cnv->talker), vendorTypeInfo[type]->text[WV_FINECHOICE], NULL);
-            c->saveGame->armor[cnv->item] += cnv->quant;
-            statsUpdate();
-        } else
-            reply = strdup(vendorTypeInfo[type]->text[WV_NOTENOUGH]);
-
-        cnv->state = CONV_DONE;
+        totalprice = armorVendorInfo.prices[cnv->item] * cnv->quant;
+        item = INV_ARMOR;
         break;
-        
+    case NPC_VENDOR_FOOD:
+        totalprice = foodPrices[vendorGetVendorNo(cnv->talker)] * cnv->quant;
+        cnv->quant *= 25;
+        item = INV_FOOD;
+        cnv->item = 0;
+        break;
     default:
         assert(0);              /* shouldn't happen */
     }
 
+    success = playerPurchase(c->saveGame, item, cnv->item, cnv->quant, totalprice);
+
+    switch (cnv->talker->npcType) {
+
+    case NPC_VENDOR_WEAPONS:
+        if (success)
+            reply = concat(vendorGetName(cnv->talker), vendorTypeInfo[type]->text[WV_FINECHOICE], NULL);
+        else
+            reply = strdup(vendorTypeInfo[type]->text[WV_NOTENOUGH]);
+        cnv->state = CONV_DONE;
+        break;
+
+    case NPC_VENDOR_ARMOR:
+        if (success)
+            reply = concat(vendorGetName(cnv->talker), vendorTypeInfo[type]->text[WV_FINECHOICE], NULL);
+        else
+            reply = strdup(vendorTypeInfo[type]->text[WV_NOTENOUGH]);
+        cnv->state = CONV_DONE;
+        break;
+        
+    case NPC_VENDOR_FOOD:
+        if (success) {
+            reply = concat(vendorTypeInfo[type]->text[FV_ANYMORE], NULL);
+            cnv->state = CONV_VENDORQUESTION;
+        } else {
+            char buffer[10];
+
+            if (c->saveGame->gold / foodPrices[vendorGetVendorNo(cnv->talker)] == 0) {
+                reply = concat(vendorTypeInfo[type]->text[FV_CANTAFFORD], 
+                               vendorTypeInfo[type]->text[FV_BYE], 
+                               NULL);
+                cnv->state = CONV_DONE;
+            } else {
+                sprintf(buffer, "%d", foodPrices[vendorGetVendorNo(cnv->talker)]);
+                reply = concat(vendorTypeInfo[type]->text[FV_AFFORDONLY1], 
+                               buffer,
+                               vendorTypeInfo[type]->text[FV_AFFORDONLY2],
+                               vendorTypeInfo[type]->text[FV_HOWMANY],
+                               NULL);
+                cnv->state = CONV_BUY_QUANTITY;
+            }
+        }
+        break;
+
+    default:
+        assert(0);              /* shouldn't happen */
+    }
+
+    statsUpdate();
     return reply;
 }
 
