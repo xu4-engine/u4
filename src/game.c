@@ -74,7 +74,8 @@ void gameSetMap(Context *ct, Map *map, int setStartPos) {
 
     if (map->city && map->objects == NULL) {
         for (i = 0; i < map->city->n_persons; i++) {
-            if (map->city->persons[i].tile0 != 0)
+            if (map->city->persons[i].tile0 != 0 &&
+                !(personIsJoinable(&(map->city->persons[i])) && personIsJoined(&(map->city->persons[i]))))
                 mapAddPersonObject(map, &(map->city->persons[i]));
         }
     }
