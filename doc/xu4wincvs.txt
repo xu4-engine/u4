@@ -29,7 +29,7 @@ Things you only have to do once
 4. Check out the current xu4 cvs source code
    cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 login
    Just press enter when it asks for password
-   cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 co modulename
+   cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 co u4
 
 5. Extract SDL binaries & headers to src directory of xu4 source code
 
