@@ -9,7 +9,7 @@
 #include "moongate.h"
 
 static const Moongate gates[] = {
-    {  95, 103 },               /* britain: G'H" F'P" */
+    {  96, 103 },               /* britain: G'H" G'A" */
     {  38, 224 },               /* jhelom: O'A" C'G" */
     {  50,  37 },               /* yew: C'F" D'C" */
     { 166,  19 },               /* minoc: B'A" K'G" */
