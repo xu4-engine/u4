@@ -106,7 +106,7 @@ void shrineTimer(void *data) {
         screenMessage("Mantra: ");
 
         screenEnableCursor();
-        screenDisplayCursor();
+        screenShowCursor();
 
         mantraBuffer[0] = '\0';
         info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
