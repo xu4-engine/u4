@@ -45,7 +45,24 @@ void print_trace(FILE *file) {
 
 #if !HAVE_VARIADIC_MACROS
 
-void ASSERT(int exp, ...) {
+#include <stdarg.h>
+
+/**
+ * Stub for systems without variadic macros.  Unfortunately, this
+ * assert won't be very useful.
+ */
+void ASSERT(int exp, const char *desc, ...) {
+    va_list args;
+    va_start(args, desc);
+
+    if (!exp) {
+        fprintf(stderr, "Assertion failed: ");
+        vfprintf(stderr, desc, args);
+        fprintf(stderr, "\n");
+        abort();
+    }
+
+    va_end(args);
 }
 
 #endif

@@ -40,7 +40,7 @@ void print_trace(FILE *file);
 
 #else
 
-void ASSERT(int exp, ...);
+void ASSERT(int exp, const char *desc, ...);
 
 #endif /* if HAVE_VARIADIC_MACROS */
 
