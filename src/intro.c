@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <assert.h>
 
 #include "u4.h"
@@ -134,6 +135,13 @@ int introInit() {
     introQuestions = u4read_stringtable(title, INTRO_TEXT_OFFSET, 28);
     introText = u4read_stringtable(title, -1, 24);
     introGypsy = u4read_stringtable(title, -1, 15);
+
+    /* clean up stray newlines at end of strings */
+    for (i = 0; i < 15; i++) {
+        while (isspace(introGypsy[i][strlen(introGypsy[i]) - 1]))
+            introGypsy[i][strlen(introGypsy[i]) - 1] = '\0';
+    }
+
 
     fseek(title, INTRO_FIXUPDATA_OFFSET, SEEK_SET);
     fread(screenFixData, 1, sizeof(screenFixData), title);
