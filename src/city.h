@@ -5,14 +5,16 @@
 #ifndef CITY_H
 #define CITY_H
 
-#include "map.h"
-#include "person.h"
+struct _Person;
+struct _Map;
 
-typedef struct {
-    char *name;
+typedef struct _City {
+    const char *name;
     int n_persons;
-    Person *persons;
-    Map *map;
+    struct _Person *persons;
+    const unsigned char person_types[13];
+    const char *tlk_fname;
+    struct _Map *map;
 } City;
 
 #endif
