@@ -20,8 +20,6 @@
 const extern Map world_map;
 Context *c;
 
-void moveAvatar(int dx, int dy);
-
 int main(int argc, char *argv[]) {
     FILE *saveGameFile;
 
@@ -31,7 +29,6 @@ int main(int argc, char *argv[]) {
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
     c->parent = NULL;
     c->map = &world_map;
-    c->state = STATE_NORMAL;
     c->line = 0;
     c->col = 0;
 
@@ -58,49 +55,4 @@ int main(int argc, char *argv[]) {
     eventHandlerMain();
 
     return 0;
-}
-
-void moveAvatar(int dx, int dy) {
-    int newx, newy;
-
-    newx = c->saveGame->x + dx;
-    newy = c->saveGame->y + dy;
-
-    if (MAP_IS_OOB(c->map, newx, newy)) {
-	switch (c->map->border_behavior) {
-	case BORDER_WRAP:
-	    if (newx < 0)
-		newx += c->map->width;
-	    if (newy < 0)
-		newy += c->map->height;
-	    if (newx >= c->map->width)
-		newx -= c->map->width;
-	    if (newy >= c->map->height)
-		newy -= c->map->height;
-	    break;
-
-	case BORDER_EXIT2PARENT:
-	    if (c->parent != NULL) {
-		Context *t = c;
-                c->parent->line = c->line;
-		c = c->parent;
-                free(t->saveGame);
-		free(t);
-	    }
-	    return;
-	    
-	case BORDER_FIXED:
-	    if (newx < 0 || newx >= c->map->width)
-		newx = c->saveGame->x;
-	    if (newy < 0 || newy >= c->map->height)
-		newy = c->saveGame->y;
-	    break;
-	}
-    }
-
-    if (/*iswalkable(MAP_TILE_AT(c->map, newx, newy)) &&*/
-        !mapPersonAt(c->map, newx, newy)) {
-	c->saveGame->x = newx;
-	c->saveGame->y = newy;
-    }
 }
