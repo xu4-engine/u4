@@ -31,5 +31,6 @@ char *vendorGetGuildConfirmationResponse(Conversation *cnv, const char *response
 char *vendorGetStableConfirmationResponse(Conversation *cnv, const char *response);
 char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer);
 char *vendorGetTavernTopicResponse(Conversation *cnv, const char *response);
+char *vendorGetHealerPlayerResponse(Conversation *cnv, const char *response);
 
 #endif
