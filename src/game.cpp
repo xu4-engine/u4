@@ -757,7 +757,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
     case Spell::SFX_TREMOR:
     case Spell::SFX_INVERT:
         gameUpdateScreen();
-        screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
+        game->mapArea.highlight(0, 0, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
         screenRedrawScreen();
         
         EventHandler::sleep(time);
@@ -3072,7 +3072,6 @@ void GameController::timerFired() {
          * force pass if no commands within last 20 seconds
          */
         Controller *controller = eventHandler->getController();
-        KeyHandlerController *keyHandlerController = dynamic_cast<KeyHandlerController *>(controller);
         if (controller != NULL && (eventHandler->getController() == game || eventHandler->getController() == c->combat) &&
              gameTimeSinceLastCommand() > 20) {
          

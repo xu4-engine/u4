@@ -528,34 +528,6 @@ void screenScrollMessageArea() {
 }
 
 /**
- * Inverts the colors of a screen area.
- */
-void screenInvertRect(int x, int y, int w, int h) {
-    Image *tmp;
-    RGBA c;
-    int i, j;
-    Image *screen = imageMgr->get("screen")->image;
-
-    tmp = Image::create(w * scale, h * scale, false, Image::SOFTWARE);
-    if (!tmp)
-        return;
-
-    screen->drawSubRectOn(tmp, 0, 0, x * scale, y * scale, w * scale, h * scale);
-
-    for (i = 0; i < h * scale; i++) {
-        for (j = 0; j < w * scale; j++) {
-            tmp->getPixel(j, i, c.r, c.g, c.b, c.a);
-            tmp->putPixel(j, i, 0xff - c.r, 0xff - c.g, 0xff - c.b, c.a);
-        }
-    }
-
-    tmp->draw(x * scale, y * scale);
-    delete tmp;
-
-    screenRedrawScreen();
-}
-
-/**
  * Do the tremor spell effect where the screen shakes.
  */
 void screenShake(int iterations) {

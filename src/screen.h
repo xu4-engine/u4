@@ -11,11 +11,13 @@
  * declared, as well as functions to draw pixels and rectangles and to update
  * areas of the screen.
  *
+ * Most of the functions here are obsolete and are slowly being
+ * migrated to the xxxView classes.
+ *
  * @todo
  *  <ul> 
- *      <li>Create a TextView and MapView class as subclasses of the View class</li>
- *      <li>Create game-specific U4GameView and U4IntroView classes</li>
- *      <li>make an ImageMgr class to store images and retrieve by name</li>
+ *      <li>migrate rest of text output logic to TextView</li>
+ *      <li>migrate rest of dungeon drawing logic to DungeonView</li>
  *  </ul>
  */
 
@@ -72,7 +74,7 @@ void screenCycle(void);
 void screenEraseMapArea(void);
 void screenEraseTextArea(int x, int y, int width, int height);
 void screenGemUpdate(void);
-void screenInvertRect(int x, int y, int w, int h);
+
 void screenMessage(const char *fmt, ...) PRINTF_LIKE(1, 2);
 void screenPrompt(void);
 void screenRedrawMapArea(void);
