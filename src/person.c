@@ -139,6 +139,7 @@ void replyDelete(Reply *reply) {
  * avatar.exe.
  */
 int personInit() {
+    /* FIXME: needs a personDelete() function to cleanup allocated memory */
     U4FILE *avatar;
 
     avatar = u4fopen("avatar.exe");

@@ -594,7 +594,6 @@ int gameBaseKeyHandler(int key, void *data) {
     Object *obj;
     CoordActionInfo *info;    
     AlphaActionInfo *alphaInfo;
-    ReadBufferActionInfo *readBufferInfo;
     const ItemLocation *item;
     unsigned char tile;
 
@@ -1026,14 +1025,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'u':
         screenMessage("Use which item:\n");
-        readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-        readBufferInfo->handleBuffer = &useItem;
-        readBufferInfo->buffer = itemNameBuffer;
-        readBufferInfo->bufferLen = sizeof(itemNameBuffer);
-        readBufferInfo->screenX = TEXT_AREA_X + c->col;
-        readBufferInfo->screenY = TEXT_AREA_Y + c->line;
-        itemNameBuffer[0] = '\0';
-        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+        gameGetInput(&useItem, itemNameBuffer, sizeof(itemNameBuffer), 0, 0);;
 
         if (settings->minorEnhancements) {
             /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
@@ -1115,6 +1107,23 @@ int gameBaseKeyHandler(int key, void *data) {
     }
 
     return valid || keyHandlerDefault(key, NULL);
+}
+
+void gameGetInput(int (*handleBuffer)(const char *), char *buffer, int bufferLen, int xoffset, int yoffset) {
+    ReadBufferActionInfo *readBufferInfo;
+
+    screenEnableCursor();
+    screenShowCursor();
+
+    readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+    readBufferInfo->handleBuffer = handleBuffer; 
+    readBufferInfo->buffer = buffer;
+    readBufferInfo->bufferLen = bufferLen;
+    readBufferInfo->screenX = TEXT_AREA_X + c->col + xoffset;
+    readBufferInfo->screenY = TEXT_AREA_Y + c->line + yoffset;
+    buffer[0] = '\0';
+
+    eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
 }
 
 void gameGetPlayerForCommand(int (*commandFn)(int player), int canBeDisabled) {
@@ -1344,22 +1353,15 @@ int gameSpellMixMenuKeyHandler(int key, void *data) {
         /* you have reagents! */
         if (menuCheckVisible(*menu))
         {
-            ReadBufferActionInfo *rbInfo;
-
             screenHideCursor();
             eventHandlerPopKeyHandler();
             c->statsItem = STATS_MIXTURES;
             statsUpdate();
          
-            memset(howmany, 0, sizeof(howmany));
-            rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-            rbInfo->buffer = howmany;
-            rbInfo->bufferLen = sizeof(howmany);
-            rbInfo->handleBuffer = &gameSpellMixHowMany;
-            rbInfo->screenX = TEXT_AREA_X + c->col + 10;
-            rbInfo->screenY = TEXT_AREA_Y + c->line;
-            eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, rbInfo);
             screenMessage("How many? ");
+            
+            memset(howmany, 0, sizeof(howmany));            
+            gameGetInput(&gameSpellMixHowMany, howmany, sizeof(howmany), 0, 0);
         }
         /* you don't have any reagents */
         else {
@@ -1379,7 +1381,7 @@ int gameSpellMixMenuKeyHandler(int key, void *data) {
         screenHideCursor();
         c->statsItem = STATS_PARTY_OVERVIEW;
         statsUpdate();
-        screenMessage("\n");        
+        screenMessage("\n");
         
         screenEnableCursor();
         (*c->location->finishTurn)();
@@ -1489,7 +1491,6 @@ int gameZtatsKeyHandler(int key, void *data) {
 
 int gameSpecialCmdKeyHandler(int key, void *data) {
     int i;
-    ReadBufferActionInfo *readBufferInfo;
     const Moongate *moongate;
     int valid = 1;
 
@@ -1634,15 +1635,9 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         screenMessage("Summon!\n");
         eventHandlerPopKeyHandler();
 
-        readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-        readBufferInfo->handleBuffer = &gameSummonMonster;
-        readBufferInfo->buffer = monsterNameBuffer;
-        readBufferInfo->bufferLen = sizeof(monsterNameBuffer);
-        readBufferInfo->screenX = TEXT_AREA_X + c->col;
-        readBufferInfo->screenY = TEXT_AREA_Y + c->line;
-        monsterNameBuffer[0] = '\0';
-        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
         screenMessage("What?\n");
+        gameGetInput(&gameSummonMonster, monsterNameBuffer, sizeof(monsterNameBuffer), 0, 0);
+        
         return 1;
 
     case 't':
@@ -2673,8 +2668,7 @@ int talkHandleAnyKey(int key, void *data) {
  * the current conversation state.
  */
 void talkShowReply(int showPrompt) {
-    char *prompt;
-    ReadBufferActionInfo *rbInfo;
+    char *prompt;    
     GetChoiceActionInfo *gcInfo;
     int bufferlen;
 
@@ -2723,13 +2717,7 @@ void talkShowReply(int showPrompt) {
 
     switch (personGetInputRequired(&c->conversation, &bufferlen)) {
     case CONVINPUT_STRING:
-        rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-        rbInfo->buffer = c->conversation.playerInquiryBuffer;
-        rbInfo->bufferLen = bufferlen;
-        rbInfo->handleBuffer = &talkHandleBuffer;
-        rbInfo->screenX = TEXT_AREA_X + c->col;
-        rbInfo->screenY = TEXT_AREA_Y + c->line;
-        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, rbInfo);
+        gameGetInput(&talkHandleBuffer, c->conversation.playerInquiryBuffer, bufferlen, 0, 0);        
         break;
 
     case CONVINPUT_CHARACTER:
@@ -3453,7 +3441,7 @@ int gameSummonMonster(const char *monsterName) {
 
     /* find the monster by its name and spawn it */
     for (i = 0; i < numMonsters; i++) {        
-        if (strcmp_i(monsterName, monsters[i].name) == 0) {        
+        if (strcasecmp(monsterName, monsters[i].name) == 0) {        
             screenMessage("\n%s summoned!\n", monsters[i].name);
             screenPrompt();
             gameSpawnMonster(&monsters[i]);

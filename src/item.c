@@ -52,8 +52,8 @@ void useTelescope(void *notused);
 int isReagentInInventory(void *reag);
 void putReagentInInventory(void *reag);
 int isAbyssOpened(const Portal *p);
-int nameStones(const char *color);
-int nameVirtue(const char *virtue);
+int itemHandleStones(const char *color);
+int itemHandleVirtues(const char *virtue);
 
 static const ItemLocation items[] = {
     { "Mandrake Root", NULL, 182, 54, -1, MAP_WORLD,
@@ -243,8 +243,7 @@ void useSkull(void *item) {
  * Handles using the virtue stones in dungeon altar rooms and on dungeon altars
  */
 void useStone(void *item) {
-    int x, y, z;    
-    ReadBufferActionInfo *readBufferInfo;
+    int x, y, z;
     extern char itemNameBuffer[16];
     static unsigned char stoneMask = 0;
     unsigned char stone = (unsigned char)item;
@@ -286,14 +285,7 @@ void useStone(void *item) {
                 /* see if we have all the stones, if not, get more names! */
                 if (attr && needStoneNames) {
                     screenMessage("\n%c:", 'E'-needStoneNames);
-                    readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-                    readBufferInfo->handleBuffer = &nameStones;
-                    readBufferInfo->buffer = itemNameBuffer;
-                    readBufferInfo->bufferLen = sizeof(itemNameBuffer);
-                    readBufferInfo->screenX = TEXT_AREA_X + c->col;
-                    readBufferInfo->screenY = TEXT_AREA_Y + c->line;
-                    itemNameBuffer[0] = '\0';
-                    eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+                    gameGetInput(&itemHandleStones, itemNameBuffer, sizeof(itemNameBuffer), 0, 0);
                 }
                 /* all the stones have been entered, check them out! */
                 else {
@@ -353,14 +345,7 @@ void useStone(void *item) {
             screenMessage("\n\nAs thou doth approach, a voice rings out: What virtue dost stem from %s?\n\n", getBaseVirtueName(virtueMask));
         else screenMessage("\n\nA voice rings out:  What virtue exists independently of Truth, Love, and Courage?\n\n");
 
-        readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-        readBufferInfo->handleBuffer = &nameVirtue;
-        readBufferInfo->buffer = itemNameBuffer;
-        readBufferInfo->bufferLen = sizeof(itemNameBuffer);
-        readBufferInfo->screenX = TEXT_AREA_X + c->col;
-        readBufferInfo->screenY = TEXT_AREA_Y + c->line;
-        itemNameBuffer[0] = '\0';
-        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+        gameGetInput(&itemHandleVirtues, itemNameBuffer, sizeof(itemNameBuffer), 0, 0);
     }
 
     /**
@@ -371,14 +356,7 @@ void useStone(void *item) {
         needStoneNames = 4;
         screenMessage("\n\nThere are holes for 4 stones.\nWhat colors:\nA:");        
 
-        readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-        readBufferInfo->handleBuffer = &nameStones; 
-        readBufferInfo->buffer = itemNameBuffer;
-        readBufferInfo->bufferLen = sizeof(itemNameBuffer);
-        readBufferInfo->screenX = TEXT_AREA_X + c->col;
-        readBufferInfo->screenY = TEXT_AREA_Y + c->line;
-        itemNameBuffer[0] = '\0';
-        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+        gameGetInput(&itemHandleStones, itemNameBuffer, sizeof(itemNameBuffer), 0, 0);
     }
     else screenMessage("\nNo place to Use them!\nHmm...No effect!\n");
 }
@@ -532,7 +510,7 @@ int isAbyssOpened(const Portal *p) {
 /**
  * Handles naming of stones when used
  */
-int nameStones(const char *color) {
+int itemHandleStones(const char *color) {
     int i;
     int found = 0;
     const char *colors[] = {
@@ -540,7 +518,7 @@ int nameStones(const char *color) {
     };    
 
     for (i = 0; i < 8; i++) {        
-        if (strcmp_i(color, colors[i]) == 0) {
+        if (strcasecmp(color, colors[i]) == 0) {
             found = 1;
             useItem(color);
         }
@@ -558,27 +536,18 @@ int nameStones(const char *color) {
 /**
  * Handles naming of virtues when you use a stone on an altar in the Abyss
  */
-int nameVirtue(const char *virtue) {    
-    int found = 0;
-    ReadBufferActionInfo *readBufferInfo;
+int itemHandleVirtues(const char *virtue) {
+    int found = 0;    
     extern char itemNameBuffer[16];
 
     eventHandlerPopKeyHandler();
         
-    if (strcmp_i(virtue, getVirtueName((Virtue)c->location->z)) == 0) {
+    if (strncasecmp(virtue, getVirtueName((Virtue)c->location->z), 6) == 0) {
         /* now ask for stone */
         screenMessage("\n\nThe Voice says: Use thy Stone.\n\nColor:\n");
-
         needStoneNames = 1;
 
-        readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-        readBufferInfo->handleBuffer = &nameStones; 
-        readBufferInfo->buffer = itemNameBuffer;
-        readBufferInfo->bufferLen = sizeof(itemNameBuffer);
-        readBufferInfo->screenX = TEXT_AREA_X + c->col;
-        readBufferInfo->screenY = TEXT_AREA_Y + c->line;
-        itemNameBuffer[0] = '\0';
-        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);        
+        gameGetInput(&itemHandleStones, itemNameBuffer, sizeof(itemNameBuffer), 0, 0);        
     }
     else {
         screenMessage("\nHmm...No effect!\n");        

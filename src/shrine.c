@@ -49,7 +49,6 @@ int shrineCanEnter(const Portal *p) {
 }
 
 void shrineEnter(const Shrine *s) {
-    ReadBufferActionInfo *info;
     U4FILE *avatar;
     Object *obj;
 
@@ -90,16 +89,9 @@ void shrineEnter(const Shrine *s) {
     }
     /* Add-on shrine sequence END */
     else  
-        screenMessage("You enter the ancient shrine and sit before the altar...\nUpon which virtue dost thou meditate?\n");    
+        screenMessage("You enter the ancient shrine and sit before the altar...\nUpon which virtue dost thou meditate?\n");
 
-    virtueBuffer[0] = '\0';
-    info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-    info->buffer = virtueBuffer;
-    info->bufferLen = sizeof(virtueBuffer);
-    info->handleBuffer = &shrineHandleVirtue;
-    info->screenX = TEXT_AREA_X + c->col + 1;
-    info->screenY = TEXT_AREA_Y + c->line;
-    eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
+    gameGetInput(&shrineHandleVirtue, virtueBuffer, sizeof(virtueBuffer), 0, 0);    
 }
 
 int shrineHandleVirtue(const char *message) {
@@ -162,25 +154,13 @@ void shrineMeditationCycle() {
 }
 
 void shrineTimer(void *data) {
-    ReadBufferActionInfo *info;
-
     if (reps++ >= MEDITATION_MANTRAS_PER_CYCLE) {
         eventHandlerRemoveTimerCallback(&shrineTimer);
         eventHandlerPopKeyHandler();
 
         screenMessage("\nMantra: ");
 
-        screenEnableCursor();
-        screenShowCursor();
-
-        mantraBuffer[0] = '\0';
-        info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-        info->buffer = mantraBuffer;
-        info->bufferLen = sizeof(mantraBuffer);
-        info->handleBuffer = &shrineHandleMantra;
-        info->screenX = TEXT_AREA_X + c->col;
-        info->screenY = TEXT_AREA_Y + c->line;
-        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
+        gameGetInput(&shrineHandleMantra, mantraBuffer, sizeof(mantraBuffer), 0, 0);        
         screenRedrawScreen();
     }
     else {

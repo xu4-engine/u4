@@ -7,7 +7,8 @@
 
 typedef enum _CodexEjectCode {
     CODEX_EJECT_NO_3_PART_KEY,
-    CODEX_EJECT_NO_FULL_AVATAR
+    CODEX_EJECT_BAD_WOP,
+    CODEX_EJECT_NO_FULL_AVATAR    
 } CodexEjectCode;
 
 void codexStart();

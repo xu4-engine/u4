@@ -583,7 +583,6 @@ int combatBaseKeyHandler(int key, void *data) {
     int valid = 1;
     CoordActionInfo *info;
     AlphaActionInfo *alphaInfo;
-    ReadBufferActionInfo *readBufferInfo;    
     int weapon = c->saveGame->players[FOCUS].weapon;    
 
     switch (key) {
@@ -703,14 +702,7 @@ int combatBaseKeyHandler(int key, void *data) {
         {
             extern char itemNameBuffer[16];
             screenMessage("Use which item:\n");
-            readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-            readBufferInfo->handleBuffer = &useItem;
-            readBufferInfo->buffer = itemNameBuffer;
-            readBufferInfo->bufferLen = sizeof(itemNameBuffer);
-            readBufferInfo->screenX = TEXT_AREA_X + c->col;
-            readBufferInfo->screenY = TEXT_AREA_Y + c->line;
-            itemNameBuffer[0] = '\0';
-            eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+            gameGetInput(&useItem, itemNameBuffer, sizeof(itemNameBuffer), 0, 0);            
 
             c->statsItem = STATS_ITEMS;
             statsUpdate();

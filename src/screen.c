@@ -258,8 +258,10 @@ void screenShowCursor() {
 }
 
 void screenHideCursor() {
-    if (screenCursorStatus)
-        screenEraseTextArea(screenCursorX, screenCursorY, 1, 1);        
+    if (screenCursorStatus) {
+        screenEraseTextArea(screenCursorX, screenCursorY, 1, 1);    
+        screenRedrawTextArea(screenCursorX, screenCursorY, 1, 1);
+    }
     screenCursorStatus = 0;
 }
 
@@ -268,8 +270,8 @@ void screenEnableCursor(void) {
 }
 
 void screenDisableCursor(void) {
-    screenCursorEnabled = 0;
     screenHideCursor();
+    screenCursorEnabled = 0;
 }
 
 void screenSetCursorPos(int x, int y) {

@@ -60,21 +60,3 @@ char *concat(const char *str, ...) {
 
     return result;
 }
-
-/**
- * Does a case-insensitive string comparison
- * Returns:
- *     0 if the strings are equal,
- *     1 if str1 is greater than str2 and
- *    -1 if str2 is greater than str1
- */ 
-int strcmp_i(const char *str1, const char *str2) {
-    for (;; str1++, str2++) {
-       int c1, c2;
-       c1 = tolower(*str1);
-       c2 = tolower(*str2);
-       if (c1 == '\0' || c1 != c2)
-           return c1 - c2;
-    }
-    return 0;
-}
