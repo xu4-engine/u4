@@ -14,6 +14,7 @@
 #include "context.h"
 #include "debug.h"
 #include "location.h"
+#include "music.h"
 #include "names.h"
 #include "person.h"
 #include "player.h"
@@ -688,6 +689,9 @@ char *vendorGetIntro(Conversation *cnv) {
     default:
         ASSERT(0, "invalid npc type: %d", cnv->talker->npcType);
     }
+
+    if (cnv->state != CONV_DONE)
+        musicShopping();
 
     statsUpdate();
     return intro;

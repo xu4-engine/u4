@@ -169,12 +169,11 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
     /*
      * a convsation with a vendor
      */
-    if (personIsVendor(cnv->talker)) {
-        if (cnv->state == CONV_INTRO)
-            musicShopping();
-        vendorGetConversationText(cnv, inquiry, &text);
-        if (cnv->state == CONV_DONE)
-            musicPlay();
+    if (personIsVendor(cnv->talker)) {      
+        vendorGetConversationText(cnv, inquiry, &text); 
+        /* let the inn handle its own music */
+        if (cnv->state == CONV_DONE && cnv->talker->npcType != NPC_VENDOR_INN)
+            musicPlay();            
     }
 
     /*

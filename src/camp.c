@@ -26,6 +26,7 @@
 #include "person.h"
 #include "player.h"
 #include "screen.h"
+#include "settings.h"
 #include "stats.h"
 #include "ttype.h"
 
@@ -41,8 +42,9 @@ void innTimer(void *data);
 void campBegin(void) {
     
     /* go to camp music and wait a bit to change to camp view */
-    musicCamp();
-    eventHandlerSleep(1000);
+    //musicCamp();
+    musicFadeOut(CAMP_FADE_OUT_TIME);
+    eventHandlerSleep(CAMP_FADE_OUT_TIME);
     
     /* setup camp (possible, but not for-sure combat situation */
     combatBegin(&camp_map, NULL, 0);
@@ -68,8 +70,7 @@ void campTimer(void *data) {
 
         m = monsterGetAmbushingMonster();
                 
-        musicPlay();
-        musicFadeIn(0);
+        musicPlay();        
         screenMessage("Ambushed!\n");
         
         /* assign the monster object for combat */
@@ -98,11 +99,10 @@ void campTimer(void *data) {
 void campEnd(void) {
     int i, healed = 0;
     extern CombatInfo combatInfo;
-    musicFadeIn(0); /* Return volume to normal */
 
     eventHandlerPopKeyHandler();
     gameExitToParentMap(c);
-    musicPlay();
+    musicFadeIn(CAMP_FADE_IN_TIME, 1);    
     
     /* Wake everyone up! */
     for (i = 0; i < c->saveGame->members; i++) {
@@ -141,9 +141,12 @@ void innBegin(void) {
 
     /* first, show the avatar before sleeping */
     gameUpdateScreen();
-    musicFadeOut(1000); /* Fade volume out to ease into rest */
 
-    eventHandlerSleep(1000);
+    /* in the original, the vendor music plays straight through sleeping */
+    if (settings->minorEnhancements)
+        musicFadeOut(INN_FADE_OUT_TIME); /* Fade volume out to ease into rest */
+
+    eventHandlerSleep(INN_FADE_OUT_TIME);
 
     /* show the sleeping avatar */
     gameSetTransport(CORPSE_TILE);    
@@ -242,8 +245,7 @@ void innTimer(void *data) {
             /* Add Isaac near the Avatar */
             mapAddPersonObject(c->location->map, Isaac);
         }
-    }
-
-    musicFadeIn(0);
-    musicPlay();
+    }    
+    
+    musicFadeIn(INN_FADE_IN_TIME, 1);
 }

@@ -20,6 +20,7 @@
 #include "u4file.h"
 
 void musicPlayMid(Music music);
+int musicLoad(Music music);
 
 char *musicFilenames[MUSIC_MAX];
 
@@ -29,34 +30,45 @@ Mix_Music *playing = NULL;
 /**
  * Play a midi file
  */
-void musicPlayMid(Music music) {
+void musicPlayMid(Music music) {    
+
+    if (settings->vol == 0 && musicIsPlaying()) {        
+        musicFadeOut(1000);
+        return;
+    }    
+
+    musicLoad(music);
+    Mix_PlayMusic(playing, -1);
+}
+
+int musicLoad(Music music) {
     static Music current = MUSIC_NONE;
     char *pathname;
 
     assert(music < MUSIC_MAX);
 
-    if (settings->vol == 0 || music == MUSIC_NONE) {
-        if (musicIsPlaying())
-            musicFadeOut(1000);
-        return;
-    }
-
-    if (playing) {
-        Mix_FreeMusic(playing);
-        playing = NULL;
-    }
-
-    current = music;
+    if (music == current)
+        return 1;
 
     pathname = u4find_music(musicFilenames[music]);
     if (pathname) {
-        playing = Mix_LoadMUS(pathname);
-        if (!playing)
-            errorWarning("unable to load music file %s: %s", pathname, Mix_GetError());
         
-        Mix_PlayMusic(playing, -1);            
+        if (playing) {
+            Mix_FreeMusic(playing);
+            playing = NULL;
+        }
+
+        playing = Mix_LoadMUS(pathname);
+        if (!playing) {
+            errorWarning("unable to load music file %s: %s", pathname, Mix_GetError());
+            return 0;
+        }
+        
         free(pathname);
+        current = music;
+        return 1;
     }
+    else return 0;
 }
 
 /**
@@ -172,11 +184,11 @@ void musicFadeOut(int msecs) {
 /**
  * Fade in the music
  */
-void musicFadeIn(int msecs) {
+void musicFadeIn(int msecs, int loadFromMap) {
     if (!musicIsPlaying()) {
         /* make sure we've got something loaded to play */
-        if (!playing)
-            musicPlay();        
+        if (loadFromMap || !playing)
+            musicLoad(c->location->map->music);        
         
         if(Mix_FadeInMusic(playing, -1, msecs) == -1)
             errorWarning("Mix_FadeInMusic: %s\n", Mix_GetError());
@@ -238,7 +250,7 @@ int musicToggle() {
     if (!settings->vol)
         musicFadeOut(1000);
     else
-        musicFadeIn(1000);    
+        musicFadeIn(1000, 1);    
 
     return settings->vol;
 }

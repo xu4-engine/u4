@@ -5,6 +5,11 @@
 #ifndef MUSIC_H
 #define MUSIC_H
 
+#define CAMP_FADE_OUT_TIME          1000
+#define CAMP_FADE_IN_TIME           0
+#define INN_FADE_OUT_TIME           1000
+#define INN_FADE_IN_TIME            5000
+
 typedef enum {
     MUSIC_NONE,
     MUSIC_OUTSIDE,
@@ -25,7 +30,7 @@ int musicIsPlaying(void);
 void musicPlay(void);
 void musicStop(void);
 void musicFadeOut(int msecs);
-void musicFadeIn(int msecs);
+void musicFadeIn(int msecs, int loadFromMap);
 void musicLordBritish(void);
 void musicHawkwind(void);
 void musicCamp(void);

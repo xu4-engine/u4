@@ -553,7 +553,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->firstValidDistance = 1;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Destroy Object\nDir: ");
-        break;
+        break;    
 
     case ' ':
         screenMessage("Pass\n");        
@@ -1705,21 +1705,21 @@ int getChestTrapHandler(int player)
 {            
     TileEffect trapType;
     int dex = c->saveGame->players[player].dex;
-    int randNum = rand()%100;
+    int randNum = rand() & 3;
+    int member = player;
+    int evadable = 1;
 
-    switch(rand() % 4) {
-    case 0: trapType = EFFECT_FIRE; break;   /* acid trap */
-    case 1: trapType = EFFECT_POISON; break; /* poison trap */
-    case 2: trapType = EFFECT_SLEEP; break;  /* sleep trap */
-    case 3: trapType = EFFECT_LAVA; break;   /* bomb trap; special case */
-    default: trapType = EFFECT_FIRE; break;
-    }
-
-    /* Chest is trapped! */
-    if (rand() % 2 == 1)
+    /* Chest is trapped! 50/50 chance */
+    if ((randNum & 1) == 0)
     {   
-        int member = player;
-        int evadable = 1;
+        /* Figure out which trap the chest has */
+        switch(randNum & rand()) {
+        case 0: trapType = EFFECT_FIRE; break;   /* acid trap (56% chance - 9/16) */
+        case 1: trapType = EFFECT_POISON; break; /* poison trap (19% chance - 3/16) */
+        case 2: trapType = EFFECT_SLEEP; break;  /* sleep trap (19% chance - 3/16) */
+        case 3: trapType = EFFECT_LAVA; break;   /* bomb trap (6% chance - 1/16) */
+        default: trapType = EFFECT_FIRE; break;
+        }
 
         /* apply the effects from the trap */
         if (trapType == EFFECT_FIRE)
@@ -1735,11 +1735,11 @@ int getChestTrapHandler(int player)
         }
 
         /* See of the player evaded the trap! */           
-        if (((randNum > (dex * 2)) || /* test the player's dexterity */
-            (randNum < 5) ||          /* there's always a 5% chance of failure */
-            !evadable) &&             /* see if the trap is unevadable */
-            (player >= 0)) {          /* player is < 0 during the 'O'pen spell (immune to traps) */                         
+        if (((dex + 25) < ((rand() & 0xFF) % 100) || /* test player's dex */
+            !evadable) &&                            /* see if the trap is unevadable */
+            (player >= 0)) {                         /* player is < 0 during the 'O'pen spell (immune to traps) */                         
             playerApplyEffect(c->saveGame, trapType, member);
+            statsUpdate();
         }
         else screenMessage("Evaded!\n");
 
