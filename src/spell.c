@@ -283,6 +283,10 @@ static int spellAwaken(int player) {
             c->saveGame->players[player].status = combatInfo.party_status[player];
         else c->saveGame->players[player].status = STAT_GOOD;
 
+        /* wake the member up! */
+        if (combatInfo.party[player])
+            combatInfo.party[player]->tile = tileForClass(c->saveGame->players[player].klass);        
+
         return 1;
     }
 
@@ -386,7 +390,7 @@ static int spellEField(int dir) {
 }
 
 static int spellFireball(int dir) {
-    spellMagicAttack(HITFLASH_TILE, 128, 24);
+    spellMagicAttack(HITFLASH_TILE, 24, 128);
     screenMessage("\nNot implemented yet!\n\n");
     return 1;
 }
@@ -411,7 +415,7 @@ static int spellHeal(int player) {
 }
 
 static int spellIceball(int dir) {
-    spellMagicAttack(MAGICFLASH_TILE, 224, 32);
+    spellMagicAttack(MAGICFLASH_TILE, 32, 224);
     screenMessage("\nNot implemented yet!\n\n");
     return 1;
 }

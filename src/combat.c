@@ -285,14 +285,7 @@ void combatFinishTurn() {
                 playerAdjustFood(c->saveGame, -1);                
 
             /* put the focus on the next party member */
-            combatInfo.focus++; focus++;
-            
-            /* display a sleeping person or an awake person for those who were awakened by alternate means */
-            if (combatInfo.party[focus]) {
-                if (c->saveGame->players[focus].status == STAT_SLEEPING)
-                    combatInfo.party[focus]->tile = CORPSE_TILE;
-                else combatInfo.party[focus]->tile = tileForClass(c->saveGame->players[focus].klass);
-            }
+            combatInfo.focus++; focus++;           
 
             /* move monsters and wrap around at end */
             if (focus >= c->saveGame->members) {            
