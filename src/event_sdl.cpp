@@ -420,6 +420,7 @@ KeyHandler *EventHandler::getKeyHandler() const {
         return NULL;
 
     KeyHandlerController *khc = dynamic_cast<KeyHandlerController *>(controllers.back());
+    ASSERT(khc != NULL, "EventHandler::getKeyHandler called when controller wasn't a keyhandler");
     if (khc == NULL)
         return NULL;
 

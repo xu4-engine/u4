@@ -66,6 +66,7 @@ Image *Image::createScreenImage() {
     Image *screen = new Image();
 
     screen->surface = SDL_GetVideoSurface();
+    ASSERT(screen->surface != NULL, "SDL_GetVideoSurface() returned a NULL screen surface!");
     screen->w = screen->surface->w;
     screen->h = screen->surface->h;
     screen->indexed = screen->surface->format->palette != NULL;
