@@ -1930,7 +1930,7 @@ void gameCheckMoongates() {
 
 void gameCheckRandomMonsters() {
     int x, y, dx, dy, t;
-    unsigned char monster;
+    const Monster *monster;
     Object *obj;
 
     if (!mapIsWorldMap(c->map) ||
@@ -1957,6 +1957,9 @@ void gameCheckRandomMonsters() {
     if ((monster = monsterRandomForTile(mapTileAt(c->map, x, y))) == 0)
         return;
 
-    obj = mapAddObject(c->map, monster, monster, x, y);
-    obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+    obj = mapAddObject(c->map, monster->tile, monster->tile, x, y);
+    if (monster->mattr & MATTR_NONATTACKABLE)
+        obj->movement_behavior = MOVEMENT_WANDER;
+    else
+        obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
 }
