@@ -51,12 +51,13 @@ MapTileList dungeonViewGetTiles(int fwd, int side) {
     return locationTilesAt(c->location, coords, &focus);
 }
 
-DungeonGraphicType dungeonViewTilesToGraphic(MapTileList tiles) {
+DungeonGraphicType dungeonViewTilesToGraphic(const MapTileList &tiles) {
     MapTile *tile = tiles->front();
     DungeonToken token;
 
     static const MapTile up_ladder = Tileset::findTileByName("up_ladder")->id;
     static const MapTile down_ladder = Tileset::findTileByName("down_ladder")->id;
+    static const MapTile updown_ladder = Tileset::findTileByName("up_down_ladder")->id;
 
     /* 
      * check if the dungeon tile has an annotation or object on top
@@ -67,6 +68,9 @@ DungeonGraphicType dungeonViewTilesToGraphic(MapTileList tiles) {
             return DNGGRAPHIC_LADDERUP;
         else if (tile->id == down_ladder.id)
             return DNGGRAPHIC_LADDERDOWN;
+        else if (tile->id == updown_ladder.id)
+            return DNGGRAPHIC_LADDERUP;
+            //return DNGGRAPHIC_LADDERUPDOWN;
         else
             return DNGGRAPHIC_BASETILE;        
     }
@@ -91,6 +95,9 @@ DungeonGraphicType dungeonViewTilesToGraphic(MapTileList tiles) {
         return DNGGRAPHIC_LADDERUP;
     case DUNGEON_LADDER_DOWN:
         return DNGGRAPHIC_LADDERDOWN;
+    case DUNGEON_LADDER_UPDOWN:
+        return DNGGRAPHIC_LADDERUP;
+        //return DNGGRAPHIC_LADDERUPDOWN;
     
     default:
         return DNGGRAPHIC_DNGTILE;

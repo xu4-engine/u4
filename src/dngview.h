@@ -20,6 +20,6 @@ typedef enum {
 } DungeonGraphicType;
 
 MapTileList dungeonViewGetTiles(int fwd, int side);
-DungeonGraphicType dungeonViewTilesToGraphic(MapTileList tiles);
+DungeonGraphicType dungeonViewTilesToGraphic(const MapTileList &tiles);
 
 #endif
