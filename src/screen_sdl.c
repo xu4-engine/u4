@@ -812,27 +812,27 @@ void screenShowBeastie(int beast, int frame) {
     
     assert(beast == 0 || beast == 1);
 
-    if (beast == 0)
-        col = 0;
-    else
-        col = 3;
-
     row = frame % 6;
-    col += frame / 6;
+    col = frame / 6;
 
-    src.x = col * 56 * scale;
+    if (beast == 0) {
+        src.x = col * 56 * scale;
+        src.w = 56 * scale;
+    }
+    else {
+        src.x = (176 + col * 48) * scale;
+        src.w = 48 * scale;
+    }
+
     src.y = row * 32 * scale;
-    src.w = 56 * scale;
     src.h = 32 * scale;
 
-    destx = beast ? (320 - 56) : 0;
-    if (col >= 4)
-        destx += 8 * (col - 3);
+    destx = beast ? (320 - 48) : 0;
 
     dest.x = destx * scale;
     dest.y = 0 * scale;
-    dest.w = 56 * scale;
-    dest.h = 32 * scale;
+    dest.w = src.w;
+    dest.h = src.h;
 
     SDL_BlitSurface(introAnimations[ANIM_ANIMATE], &src, screen, &dest);
 }
