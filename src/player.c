@@ -13,6 +13,8 @@
 #include "debug.h"
 #include "weapon.h"
 
+#define AdjustValue(var, val, max) ((var) += (val)); if ((var) > (max)) (var) = (max)
+
 LostEighthCallback lostEighthCallback = NULL;
 AdvanceLevelCallback advanceLevelCallback = NULL;
 ItemStatsChangedCallback itemStatsChangedCallback = NULL;
@@ -576,26 +578,26 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
         /* nothing */
         break;
     case INV_WEAPON:
-        saveGame->weapons[type] += quantity;
+        AdjustValue(saveGame->weapons[type], quantity, 99);        
         break;
     case INV_ARMOR:
-        saveGame->armor[type] += quantity;
+        AdjustValue(saveGame->armor[type], quantity, 99);        
         break;
     case INV_FOOD:
         playerAdjustFood(saveGame, quantity * 100);        
         break;
     case INV_REAGENT:
-        saveGame->reagents[type] += quantity;
+        AdjustValue(saveGame->reagents[type], quantity, 99);        
         break;
     case INV_GUILDITEM:
         if (type == 0)
-            saveGame->torches += quantity;
+            AdjustValue(saveGame->torches, quantity, 99);            
         else if (type == 1)
-            saveGame->gems += quantity;
+            AdjustValue(saveGame->gems, quantity, 99);            
         else if (type == 2)
-            saveGame->keys += quantity;
+            AdjustValue(saveGame->keys, quantity, 99);            
         else if (type == 3)
-            saveGame->sextants += quantity;
+            AdjustValue(saveGame->sextants, quantity, 99);            
         break;
     case INV_HORSE:
         (*setTransportCallback)(tileGetHorseBase());
