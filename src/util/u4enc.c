@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
                 count = 1;
             }
         }
-        if (count >= threshold) {
+        if (count >= threshold || val == RLE_RUNSTART) {
             putc(RLE_RUNSTART, out);
             putc(count, out);
             putc(val, out);
