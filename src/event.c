@@ -66,7 +66,7 @@ void eventHandlerMain() {
             }
 
             screenUpdate(c);
-            SDL_UpdateRect(screen, 0, 0, 0, 0);
+            screenForceRedraw();
             break;
         }
         case SDL_QUIT:
@@ -122,19 +122,19 @@ int keyHandlerNormal(int key) {
     switch (key) {
 
     case UP:
-        move(0, -1);
+        moveAvatar(0, -1);
         break;
 
     case DOWN:
-        move(0, 1);
+        moveAvatar(0, 1);
         break;
 
     case LEFT:
-        move(-1, 0);
+        moveAvatar(-1, 0);
         break;
 
     case RIGHT:
-        move(1, 0);
+        moveAvatar(1, 0);
         break;
 
     case 'e':

@@ -2,11 +2,11 @@
  * $Id$
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
-#include <SDL/SDL.h>
 
 #include "u4.h"
 #include "screen.h"
@@ -20,7 +20,7 @@
 const extern Map world_map;
 Context *c;
 
-void move(int dx, int dy);
+void moveAvatar(int dx, int dy);
 
 int main(int argc, char *argv[]) {
     FILE *saveGameFile;
@@ -53,14 +53,14 @@ int main(int argc, char *argv[]) {
 
     screenDrawBorders();
     screenUpdate(c);
-    SDL_UpdateRect(screen, 0, 0, 0, 0);
+    screenForceRedraw();
 
     eventHandlerMain();
 
     return 0;
 }
 
-void move(int dx, int dy) {
+void moveAvatar(int dx, int dy) {
     int newx, newy;
 
     newx = c->saveGame->x + dx;

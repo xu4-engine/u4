@@ -212,3 +212,7 @@ void screenUpdate() {
 	}
     }
 }
+
+void screenForceRedraw() {
+    SDL_UpdateRect(screen, 0, 0, 0, 0);
+}
