@@ -76,7 +76,7 @@ typedef struct _MouseArea {
         int x, y;
     } point[4];
     MouseCursor cursor;
-    int command;
+    int command[3];
 } MouseArea;
 
 #define SCR_CYCLE_PER_SECOND 4
@@ -135,8 +135,6 @@ void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, Dun
 
 void screenSetMouseCursor(MouseCursor cursor);
 int screenPointInMouseArea(int x, int y, MouseArea *area);
-Direction screenViewportDirectionFromPoint(int x, int y);
-void screenSetCursorFromMousePosition(int x, int y);
 
 extern int screenCurrentCycle;
 
