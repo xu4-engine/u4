@@ -236,7 +236,7 @@ void combatBegin() {
         }
     }
 
-    if (!partyIsReadyToFight)
+    if (!combatInfo.camping && !partyIsReadyToFight)
         (*c->location->finishTurn)();
 }
 
