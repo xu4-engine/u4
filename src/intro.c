@@ -471,7 +471,7 @@ int introKeyHandler(int key, void *data) {
             case 'g': gameplayOptions = menuActivateItem(gameplayOptions, 0, ACTIVATE_NORMAL); break;                
             case 'a': gameplayOptions = menuActivateItem(gameplayOptions, 1, ACTIVATE_NORMAL); break;                
             case 'o': gameplayOptions = menuActivateItem(gameplayOptions, 2, ACTIVATE_NORMAL); break;
-            case 'b': gameplayOptions = menuActivateItem(gameplayOptions, 4, ACTIVATE_NORMAL); break;
+            case 'b': gameplayOptions = menuActivateItem(gameplayOptions, 3, ACTIVATE_NORMAL); break;
             default: break;
             }            
         }
@@ -483,9 +483,9 @@ int introKeyHandler(int key, void *data) {
         if (!introBaseMenuKeyHandler(key, &advancedOptions)) {
             /* navigate to the item and activate it! */
             switch(key) {
-            case 'd': advancedOptions = menuActivateItem(advancedOptions, 2, ACTIVATE_NORMAL); break;            
-            case 'k': advancedOptions = menuActivateItem(advancedOptions, 3, ACTIVATE_NORMAL); break;
-            case 's': advancedOptions = menuActivateItem(advancedOptions, 4, ACTIVATE_NORMAL); break;
+            case 'd': advancedOptions = menuActivateItem(advancedOptions, 1, ACTIVATE_NORMAL); break;            
+            case 'k': advancedOptions = menuActivateItem(advancedOptions, 2, ACTIVATE_NORMAL); break;
+            case 's': advancedOptions = menuActivateItem(advancedOptions, 3, ACTIVATE_NORMAL); break;
             case 'g': advancedOptions = menuActivateItem(advancedOptions, 0, ACTIVATE_NORMAL); break;            
             default: break;
             }

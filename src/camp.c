@@ -140,7 +140,12 @@ void innBegin(void) {
 
 void innTimer(void *data) {
     eventHandlerRemoveTimerCallback(&innTimer);
-    eventHandlerPopKeyHandler();
+    /**
+     * FIXME: normally we would "pop" the key handler
+     * here, but for some reason the "ignore key"
+     * handler doesn't pop every time.  Weird...
+     **/
+    eventHandlerSetKeyHandler(&gameBaseKeyHandler);
     screenEnableCursor();
 
     /* restore the avatar to normal */
