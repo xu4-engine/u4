@@ -263,6 +263,8 @@ ScriptReturnCode Script::execute(xmlNodePtr script, xmlNodePtr currentItem, stri
             if (debug && content.length())
                 fprintf(debug, "\nOutput: \n====================\n%s\n====================", content.c_str());
         }
+        /* skip comments */
+        else if (current->type == XML_COMMENT_NODE) {}
         else {
             /**
              * Search for the corresponding action and execute it!
