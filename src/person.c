@@ -248,10 +248,15 @@ char *personGetPrompt(const Conversation *cnv) {
 }
 
 ConversationInputType personGetInputRequired(const struct _Conversation *cnv, int *bufferlen) {
-    switch (cnv->state) {
-    case CONV_TALK:    
+    switch (cnv->state) {    
     case CONV_BUY_QUANTITY:
     case CONV_SELL_QUANTITY:
+        {
+            *bufferlen = 3;
+            return CONVINPUT_STRING;
+        }
+
+    case CONV_TALK:       
     case CONV_BUY_PRICE:
     case CONV_TOPIC:
         {

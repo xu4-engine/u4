@@ -435,6 +435,30 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     return monsterForTile(randTile);
 }
 
+const Monster *monsterForDungeon(int dngLevel) {
+    int era;
+    const Monster *monsters[] =
+    {
+        monsterById(RAT_ID),
+        monsterById(BAT_ID),
+        monsterById(GIANT_SPIDER_ID),
+        monsterById(GHOST_ID),
+        monsterById(SLIME_ID),
+        monsterById(TROLL_ID),
+        monsterById(GREMLIN_ID),
+        monsterById(MIMIC_ID),
+        monsterById(REAPER_ID),
+        monsterById(INSECT_SWARM_ID),
+        monsterById(GAZER_ID),
+        monsterById(PHANTOM_ID),
+        monsterById(ORC_ID),
+        monsterById(SKELETON_ID),
+        monsterById(ROGUE_ID)
+    };
+
+    era = 9 + dngLevel;
+    return monsters[era & rand() & rand()];
+}
 
 int monsterGetInitialHp(const Monster *monster) {
     int basehp, hp;

@@ -167,6 +167,7 @@ int monsterGetDamage(const Monster *monster);
 int monsterGetCamouflageTile(const Monster *monster);
 void monsterSetRandomRangedWeapon(Monster *monster);
 const Monster *monsterRandomForTile(unsigned char tile);
+const Monster *monsterForDungeon(int dngLevel);
 int monsterGetInitialHp(const Monster *monster);
 MonsterStatus monsterGetStatus(const Monster *monster, int hp);
 const Monster *monsterGetAmbushingMonster(void);

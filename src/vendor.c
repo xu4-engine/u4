@@ -453,15 +453,15 @@ char *vendorGetPrompt(const Conversation *cnv) {
         break;
 
     case CONV_BUY_ITEM:
-        return strdup(vendorGetText(cnv->talker, WV_YOURINTEREST));
+        return concat("\n", vendorGetText(cnv->talker, WV_YOURINTEREST), NULL);
         break;
         
     case CONV_SELL_ITEM:
-        return strdup(vendorGetText(cnv->talker, WV_YOUSELL));
+        return concat("\n", vendorGetText(cnv->talker, WV_YOUSELL), NULL);
         break;
 
     case CONV_BUY_QUANTITY:
-        return strdup(vendorGetText(cnv->talker, WV_HOWMANYTOBUY));
+        return concat("\n", vendorGetText(cnv->talker, WV_HOWMANYTOBUY), NULL);
         break;
 
     default:
@@ -624,7 +624,7 @@ char *vendorGetIntro(Conversation *cnv) {
     case NPC_VENDOR_WEAPONS:
     case NPC_VENDOR_ARMOR:
         c->statsItem = cnv->talker->npcType == NPC_VENDOR_WEAPONS ? STATS_WEAPONS : STATS_ARMOR;
-        intro = concat(vendorGetText(cnv->talker, WV_WELCOME), vendorGetShop(cnv->talker),
+        intro = concat("\n", vendorGetText(cnv->talker, WV_WELCOME), vendorGetShop(cnv->talker),
                        vendorGetText(cnv->talker, WV_SPACER), vendorGetName(cnv->talker),
                        vendorGetText(cnv->talker, WV_BUYORSELL),
                        NULL);
@@ -632,7 +632,7 @@ char *vendorGetIntro(Conversation *cnv) {
         break;
 
     case NPC_VENDOR_FOOD:
-        intro = concat(vendorGetText(cnv->talker, FV_WELCOME), vendorGetShop(cnv->talker),
+        intro = concat("\n", vendorGetText(cnv->talker, FV_WELCOME), vendorGetShop(cnv->talker),
                        vendorGetText(cnv->talker, FV_SPACER), vendorGetName(cnv->talker),
                        vendorGetText(cnv->talker, FV_GOODDAY),
                        NULL);
@@ -640,7 +640,7 @@ char *vendorGetIntro(Conversation *cnv) {
         break;
 
     case NPC_VENDOR_TAVERN:
-        intro = concat(vendorGetName(cnv->talker), vendorGetText(cnv->talker, TV_WELCOME), 
+        intro = concat("\n", vendorGetName(cnv->talker), vendorGetText(cnv->talker, TV_WELCOME), 
                        vendorGetShop(cnv->talker), "\n", vendorGetName(cnv->talker), 
                        vendorGetText(cnv->talker, TV_FOODORALE), 
                        NULL);
@@ -649,7 +649,7 @@ char *vendorGetIntro(Conversation *cnv) {
 
     case NPC_VENDOR_REAGENTS:
         c->statsItem = STATS_REAGENTS;
-        intro = concat(vendorGetText(cnv->talker, RV_WELCOME), vendorGetShop(cnv->talker),
+        intro = concat("\n", vendorGetText(cnv->talker, RV_WELCOME), vendorGetShop(cnv->talker),
                        vendorGetText(cnv->talker, RV_IAM), vendorGetName(cnv->talker),
                        vendorGetText(cnv->talker, RV_NEEDREAGENTS),
                        NULL);
@@ -657,7 +657,7 @@ char *vendorGetIntro(Conversation *cnv) {
         break;
 
     case NPC_VENDOR_HEALER:
-        intro = concat(vendorGetText(cnv->talker, HV_WELCOME), vendorGetShop(cnv->talker), "\n",
+        intro = concat("\n", vendorGetText(cnv->talker, HV_WELCOME), vendorGetShop(cnv->talker), "\n",
                        vendorGetName(cnv->talker), vendorGetText(cnv->talker, HV_NEEDHELP),
                        NULL);
         cnv->state = CONV_CONTINUEQUESTION;
@@ -665,11 +665,11 @@ char *vendorGetIntro(Conversation *cnv) {
 
     case NPC_VENDOR_INN:
         if (c->transportContext & TRANSPORT_HORSE) {
-            intro = strdup("The Innkeeper says: Get that horse out of here!!!\n");
+            intro = strdup("\nThe Innkeeper says: Get that horse out of here!!!\n");
             cnv->state = CONV_DONE;
         }
         else {
-            intro = concat(vendorGetText(cnv->talker, IV_WELCOME), vendorGetShop(cnv->talker), 
+            intro = concat("\n", vendorGetText(cnv->talker, IV_WELCOME), vendorGetShop(cnv->talker), 
                            vendorGetText(cnv->talker, IV_IAM), vendorGetName(cnv->talker), 
                            vendorGetText(cnv->talker, IV_NEEDLODGING), NULL);
             cnv->state = CONV_CONTINUEQUESTION;
@@ -678,7 +678,7 @@ char *vendorGetIntro(Conversation *cnv) {
 
     case NPC_VENDOR_GUILD:
         c->statsItem = STATS_EQUIPMENT;
-        intro = concat(vendorGetName(cnv->talker),
+        intro = concat("\n", vendorGetName(cnv->talker),
                        vendorGetText(cnv->talker, GV_WELCOMETO),
                        vendorGetShop(cnv->talker),
                        vendorGetText(cnv->talker, GV_SEEGOODS),
@@ -687,7 +687,7 @@ char *vendorGetIntro(Conversation *cnv) {
         break;
 
     case NPC_VENDOR_STABLE:
-        intro = strdup(vendorGetText(cnv->talker, SV_NEEDHORSE));
+        intro = concat("\n", vendorGetText(cnv->talker, SV_NEEDHORSE), NULL);
         cnv->state = CONV_CONTINUEQUESTION;
         break;
 
@@ -708,7 +708,7 @@ char *vendorGetArmsVendorQuestionResponse(Conversation *cnv, const char *respons
     if (tolower(response[0]) == 'b') {
         char *menu;
         menu = vendorGetArmsVendorMenu(cnv->talker);
-        reply = concat(vendorGetText(cnv->talker, WV_VERYGOOD),
+        reply = concat("\n", vendorGetText(cnv->talker, WV_VERYGOOD),
                        vendorGetText(cnv->talker, WV_WEHAVE),
                        menu, 
                        NULL);
@@ -718,7 +718,7 @@ char *vendorGetArmsVendorQuestionResponse(Conversation *cnv, const char *respons
     }    
 
     else if (tolower(response[0]) == 's') {
-        reply = strdup(vendorGetText(cnv->talker, WV_WHATWILL));
+        reply = concat("\n", vendorGetText(cnv->talker, WV_WHATWILL), NULL);
         cnv->state = CONV_SELL_ITEM;
     }
 
@@ -735,15 +735,15 @@ char *vendorGetTavernVendorQuestionResponse(Conversation *cnv, const char *respo
     char *reply;
     
     if (tolower(response[0]) == 'f') {
-        snprintf(buffer, sizeof(buffer), "%d", tavernFoodPrices[vendorGetVendorNo(cnv->talker)]);
-        reply = concat(vendorGetText(cnv->talker, TV_SPECIALTY), tavernSpecialties[vendorGetVendorNo(cnv->talker)],
+        snprintf(buffer, sizeof(buffer), "%d\n", tavernFoodPrices[vendorGetVendorNo(cnv->talker)]);
+        reply = concat("\n", vendorGetText(cnv->talker, TV_SPECIALTY), tavernSpecialties[vendorGetVendorNo(cnv->talker)],
                        vendorGetText(cnv->talker, TV_COSTS), buffer,
                        vendorGetText(cnv->talker, TV_HOWMANY),
                        NULL);
         cnv->state = CONV_BUY_QUANTITY;
     }
     else if (tolower(response[0]) == 'a') {
-        reply = strdup(vendorGetText(cnv->talker, TV_BESTMUG));
+        reply = concat("\n", vendorGetText(cnv->talker, TV_BESTMUG), NULL);
         cnv->state = CONV_BUY_PRICE;
     } 
     else {
@@ -777,7 +777,7 @@ char *vendorGetHealerGiveBloodResponse(Conversation *cnv, const char *response) 
     else if (tolower(response[0]) == 'n')
         playerAdjustKarma(c->saveGame, KA_DIDNT_DONATE_BLOOD);    
     
-    return strdup(vendorGetFarewell(cnv, "\n"));
+    return concat("\n", vendorGetFarewell(cnv, "\n"), NULL);
 }
 
 char *vendorHealerAskForBlood(Conversation *cnv) {
@@ -821,13 +821,13 @@ char *vendorGetArmsBuyItemResponse(Conversation *cnv, const char *response) {
         cnv->state = CONV_DONE;
     }
     else if (playerCanAfford(c->saveGame, info->prices[cnv->itemSubtype]) == 0) {
-        reply = concat(vendorGetText(cnv->talker, WV_CANTAFFORDONE), 
+        reply = concat("\n", vendorGetText(cnv->talker, WV_CANTAFFORDONE), 
                        vendorGetText(cnv->talker, WV_ANYTHINGELSE), 
                        NULL);
         cnv->state = CONV_CONTINUEQUESTION;
     } 
     else {
-        reply = strdup(vendorGetInfo(cnv->talker)->itemDescriptions[cnv->itemSubtype - 1]);
+        reply = concat("\n", vendorGetInfo(cnv->talker)->itemDescriptions[cnv->itemSubtype - 1], NULL);
         cnv->state = CONV_BUY_QUANTITY;
     }
 
@@ -854,7 +854,7 @@ char *vendorGetReagentsBuyItemResponse(Conversation *cnv, const char *response) 
         char buffer[10];
 
         snprintf(buffer, sizeof(buffer), "%d", reagPrices[vendorGetVendorNo(cnv->talker)][cnv->itemSubtype]);
-        reply = concat(vendorGetText(cnv->talker, RV_WESELL), 
+        reply = concat("\n", vendorGetText(cnv->talker, RV_WESELL), 
                        getReagentName(cnv->itemSubtype),
                        vendorGetText(cnv->talker, RV_FOR), 
                        buffer,
@@ -895,12 +895,12 @@ char *vendorGetHealerBuyItemResponse(Conversation *cnv, const char *response) {
         }
         if (c->saveGame->members == 1) {
             cnv->player = 0;
-            reply = concat(vendorGetText(cnv->talker, msg), 
+            reply = concat("\n", vendorGetText(cnv->talker, msg), 
                            vendorGetText(cnv->talker, HV_WILLPAY), 
                            NULL);
             cnv->state = CONV_CONFIRMATION;
         } else {
-            reply = concat(vendorGetName(cnv->talker),
+            reply = concat("\n", vendorGetName(cnv->talker),
                            vendorGetText(cnv->talker, HV_ASKS), 
                            vendorGetText(cnv->talker, HV_WHONEEDS), 
                            NULL);
@@ -929,7 +929,7 @@ char *vendorGetGuildBuyItemResponse(Conversation *cnv, const char *response) {
     else {
         cnv->quant = guildItemQuantities[cnv->itemSubtype];
         cnv->price = guildItemPrices[cnv->itemSubtype];
-        reply = concat(vendorGetInfo(cnv->talker)->itemDescriptions[cnv->itemSubtype],
+        reply = concat("\n", vendorGetInfo(cnv->talker)->itemDescriptions[cnv->itemSubtype],
                        vendorGetText(cnv->talker, GV_WILLYABUY),
                        NULL);
         cnv->state = CONV_CONFIRMATION;
@@ -967,7 +967,7 @@ char *vendorGetSellItemResponse(Conversation *cnv, const char *response) {
 
 
     if (cnv->itemSubtype == 0 || owned < 1) {
-        reply = strdup(vendorGetText(cnv->talker, WV_DONTOWN));
+        reply = concat("\n", vendorGetText(cnv->talker, WV_DONTOWN), NULL);
         return reply;
     }
 
@@ -984,7 +984,7 @@ char *vendorGetSellItemResponse(Conversation *cnv, const char *response) {
         cnv->quant = 1;
 
         snprintf(buffer, sizeof(buffer), "%d", cnv->price);
-        reply = concat(vendorGetText(cnv->talker, WV_ILLGIVEYA2),
+        reply = concat("\n", vendorGetText(cnv->talker, WV_ILLGIVEYA2),
                        buffer,
                        vendorGetText(cnv->talker, WV_GPFOR2),
                        itemName,
@@ -994,7 +994,7 @@ char *vendorGetSellItemResponse(Conversation *cnv, const char *response) {
     }
 
     else {
-        reply = concat(vendorGetText(cnv->talker, WV_HOWMANY),
+        reply = concat("\n", vendorGetText(cnv->talker, WV_HOWMANY),
                        itemName,
                        vendorGetText(cnv->talker, WV_TOSELL),
                        NULL);
@@ -1015,7 +1015,7 @@ char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response) {
         case NPC_VENDOR_WEAPONS:
         case NPC_VENDOR_ARMOR:
             cnv->state = CONV_CONTINUEQUESTION;
-            return concat(vendorGetText(cnv->talker, WV_TOOBAD),
+            return concat("\n", vendorGetText(cnv->talker, WV_TOOBAD),
                           vendorGetText(cnv->talker, WV_ANYTHINGELSE), 
                           NULL);
         case NPC_VENDOR_FOOD:
@@ -1028,7 +1028,7 @@ char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response) {
 
         case NPC_VENDOR_REAGENTS:
             cnv->state = CONV_CONTINUEQUESTION;
-            return concat(vendorGetText(cnv->talker, RV_ISEE),
+            return concat("\n", vendorGetText(cnv->talker, RV_ISEE),
                           vendorGetText(cnv->talker, RV_ANYTHINGELSE), 
                           NULL);
 
@@ -1060,7 +1060,7 @@ char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response) {
     case NPC_VENDOR_REAGENTS:
         cnv->state = CONV_BUY_PRICE;
         snprintf(buffer, sizeof(buffer), "%d", reagPrices[vendorGetVendorNo(cnv->talker)][cnv->itemSubtype] * cnv->quant);
-        return concat(vendorGetText(cnv->talker, RV_THATWILLBE),
+        return concat("\n", vendorGetText(cnv->talker, RV_THATWILLBE),
                       buffer,
                       vendorGetText(cnv->talker, RV_YOUPAY), 
                       NULL);
@@ -1084,7 +1084,7 @@ char *vendorGetSellQuantityResponse(Conversation *cnv, const char *response) {
     /* zero: say too bad and ask again */
     if (cnv->quant == 0) {
         cnv->state = CONV_CONTINUEQUESTION;
-        return concat(vendorGetText(cnv->talker, WV_TOOBAD2), 
+        return concat("\n", vendorGetText(cnv->talker, WV_TOOBAD2), 
                       vendorGetText(cnv->talker, WV_ANYTHINGELSE), NULL);
     }
 
@@ -1098,7 +1098,7 @@ char *vendorGetSellQuantityResponse(Conversation *cnv, const char *response) {
     cnv->price *= cnv->quant;
 
     snprintf(buffer, sizeof(buffer), "%d", cnv->price);
-    reply = concat(vendorGetText(cnv->talker, WV_ILLGIVEYA),
+    reply = concat("\n", vendorGetText(cnv->talker, WV_ILLGIVEYA),
                    buffer,
                    vendorGetText(cnv->talker, WV_GPFOR),
                    cnv->quant == 1 ? vendorGetText(cnv->talker, WV_IT) : vendorGetText(cnv->talker, WV_THEM),
@@ -1115,19 +1115,19 @@ char *vendorGetTavernBuyPriceResponse(Conversation *cnv, const char *response) {
     cnv->price = (int) strtol(response, NULL, 10);
 
     if (playerCanAfford(c->saveGame, cnv->price) == 0) {
-        reply = vendorGetFarewell(cnv, vendorGetText(cnv->talker, TV_NOTENOUGH));
+        reply = concat("\n", vendorGetText(cnv->talker, TV_NOTENOUGH), "\n", vendorGetFarewell(cnv, NULL), NULL);
         cnv->state = CONV_DONE;
     }
 
     if (cnv->price < 2) {
-        reply = vendorGetFarewell(cnv, vendorGetText(cnv->talker, TV_WONTPAY));
+        reply = concat("\n", vendorGetText(cnv->talker, TV_WONTPAY), "\n", vendorGetFarewell(cnv, NULL), NULL);
         cnv->state = CONV_DONE;
     } else if (cnv->price == 2) {
-        reply = strdup(vendorGetText(cnv->talker, TV_ANYTHINGELSE));
+        reply = concat("\n", vendorGetText(cnv->talker, TV_ANYTHINGELSE), NULL);
         cnv->state = CONV_CONTINUEQUESTION;
         playerPurchase(c->saveGame, INV_NONE, 0, 0, cnv->price);
     } else {
-        reply = strdup(vendorGetText(cnv->talker, TV_WHATINFO));
+        reply = concat("\n", vendorGetText(cnv->talker, TV_WHATINFO), NULL);
         cnv->state = CONV_TOPIC;
         playerPurchase(c->saveGame, INV_NONE, 0, 0, cnv->price);
     }
@@ -1159,19 +1159,19 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
     case NPC_VENDOR_WEAPONS:
     case NPC_VENDOR_ARMOR:
         if (success)
-            reply = concat(vendorGetName(cnv->talker), 
+            reply = concat("\n", vendorGetName(cnv->talker), 
                            vendorGetText(cnv->talker, WV_FINECHOICE), 
                            vendorGetText(cnv->talker, WV_ANYTHINGELSE), 
                            NULL);
         else
-            reply = concat(vendorGetText(cnv->talker, WV_NOTENOUGH),
+            reply = concat("\n", vendorGetText(cnv->talker, WV_NOTENOUGH),
                            vendorGetText(cnv->talker, WV_ANYTHINGELSE), 
                            NULL);
         break;
 
     case NPC_VENDOR_FOOD:
         if (success)
-            reply = strdup(vendorGetText(cnv->talker, FV_ANYMORE));
+            reply = concat("\n", vendorGetText(cnv->talker, FV_ANYMORE), NULL);
 
         else {
             char buffer[10];
@@ -1183,7 +1183,7 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
                 cnv->state = CONV_DONE;
             } else {
                 snprintf(buffer, sizeof(buffer), "%d", afford);
-                reply = concat(vendorGetText(cnv->talker, FV_AFFORDONLY1),
+                reply = concat("\n", vendorGetText(cnv->talker, FV_AFFORDONLY1),
                                buffer,
                                vendorGetText(cnv->talker, FV_AFFORDONLY2),
                                vendorGetText(cnv->talker, FV_HOWMANY),
@@ -1195,7 +1195,7 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
 
     case NPC_VENDOR_TAVERN:
         if (success)
-            reply = strdup(vendorGetText(cnv->talker, TV_HEREYOUARE));
+            reply = concat("\n", vendorGetText(cnv->talker, TV_HEREYOUARE), NULL);
 
         else {
             char buffer[10];
@@ -1203,12 +1203,12 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
 
             afford = playerCanAfford(c->saveGame, tavernFoodPrices[vendorGetVendorNo(cnv->talker)]);
             if (afford == 0) {
-                reply = concat(vendorGetText(cnv->talker, TV_CANTAFFORD), 
+                reply = concat("\n", vendorGetText(cnv->talker, TV_CANTAFFORD), 
                                vendorGetText(cnv->talker, TV_HEREYOUARE),
                                NULL);
             } else {
                 snprintf(buffer, sizeof(buffer), "%d", afford);
-                reply = concat(vendorGetText(cnv->talker, TV_AFFORDONLY1),
+                reply = concat("\n", vendorGetText(cnv->talker, TV_AFFORDONLY1),
                                buffer,
                                vendorGetText(cnv->talker, TV_AFFORDONLY2), "s.\n",
                                vendorGetText(cnv->talker, TV_HEREYOUARE),
@@ -1220,13 +1220,13 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
     case NPC_VENDOR_REAGENTS:
         if (success) {
             if (cnv->price >= (reagPrices[vendorGetVendorNo(cnv->talker)][cnv->itemSubtype] * cnv->quant)) {
-                reply = concat(vendorGetText(cnv->talker, RV_VERYGOOD),
+                reply = concat("\n", vendorGetText(cnv->talker, RV_VERYGOOD),
                                vendorGetText(cnv->talker, RV_ANYTHINGELSE),
                                NULL);
                 playerAdjustKarma(c->saveGame, KA_DIDNT_CHEAT_REAGENTS);                
             }
             else {
-                reply = concat(vendorGetText(cnv->talker, RV_ISEE),
+                reply = concat("\n", vendorGetText(cnv->talker, RV_ISEE),
                                vendorGetText(cnv->talker, RV_ANYTHINGELSE),
                                NULL);
                 playerAdjustKarma(c->saveGame, KA_CHEAT_REAGENTS);                
@@ -1234,7 +1234,7 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
                 
         }
         else
-            reply = concat(vendorGetText(cnv->talker, RV_CANTAFFORD),
+            reply = concat("\n", vendorGetText(cnv->talker, RV_CANTAFFORD),
                            vendorGetText(cnv->talker, RV_ANYTHINGELSE),
                            NULL);
         break;
@@ -1244,12 +1244,12 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
             playerHeal(c->saveGame, cnv->itemSubtype, cnv->player);
             /* spell flash */
             (*spellEffectCallback)(cnv->itemSubtype == HT_RESURRECT ? 'r' : -1, -1, 0);
-            reply = concat(vendorGetName(cnv->talker), 
+            reply = concat("\n", vendorGetName(cnv->talker), 
                            vendorGetText(cnv->talker, HV_MOREHELP),
                            NULL);
         }
         else {
-            reply = concat(vendorGetText(cnv->talker, HV_CANTAFFORD),
+            reply = concat("\n", vendorGetText(cnv->talker, HV_CANTAFFORD),
                            vendorGetName(cnv->talker), 
                            vendorGetText(cnv->talker, HV_MOREHELP), 
                            NULL);
@@ -1280,39 +1280,39 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
                 c->location->y = innVendorInfo[vendorGetVendorNo(cnv->talker)].room_y;
             }
             if ((rand() % 4) == 0)
-                reply = concat(vendorGetText(cnv->talker, IV_GOODNIGHT), 
+                reply = concat("\n", vendorGetText(cnv->talker, IV_GOODNIGHT), 
                                vendorGetText(cnv->talker, IV_RATS),
                                NULL);
             else 
-                reply = strdup(vendorGetText(cnv->talker, IV_GOODNIGHT));
+                reply = concat("\n", vendorGetText(cnv->talker, IV_GOODNIGHT), NULL);
             cnv->state = CONV_DONE;
 
             (*innHandlerCallback)();
         }
         else {
-            reply = strdup(vendorGetText(cnv->talker, IV_CANTPAY));
+            reply = concat("\n", vendorGetText(cnv->talker, IV_CANTPAY), NULL);
             cnv->state = CONV_DONE;
         }
         break;
 
     case NPC_VENDOR_GUILD:
         if (success)
-            reply = concat(vendorGetText(cnv->talker, GV_FINEFINE),
+            reply = concat("\n", vendorGetText(cnv->talker, GV_FINEFINE),
                            vendorGetName(cnv->talker),
                            vendorGetText(cnv->talker, GV_SEEMORE),
                            NULL);
         else {
-            reply = strdup(vendorGetText(cnv->talker, GV_BUZZOFF));
+            reply = concat("\n", vendorGetText(cnv->talker, GV_BUZZOFF), NULL);
             cnv->state = CONV_DONE;
         }
         break;
 
     case NPC_VENDOR_STABLE:
         if (success) {
-            reply = strdup(vendorGetText(cnv->talker, SV_BESTBREED));
+            reply = concat("\n", vendorGetText(cnv->talker, SV_BESTBREED), NULL);
             cnv->state = CONV_DONE;
         } else {
-            reply = strdup(vendorGetText(cnv->talker, SV_NOTENOUGH));
+            reply = concat("\n", vendorGetText(cnv->talker, SV_NOTENOUGH), NULL);
             cnv->state = CONV_DONE;
         }
         break;
@@ -1335,7 +1335,7 @@ char *vendorDoSellTransaction(Conversation *cnv) {
     success = playerSell(c->saveGame, cnv->itemType, cnv->itemSubtype, cnv->quant, cnv->price);
 
     if (success) {
-        reply = strdup(vendorGetText(cnv->talker, WV_FINE));
+        reply = concat("\n", vendorGetText(cnv->talker, WV_FINE), NULL);
         cnv->state = CONV_SELL_ITEM;
     }
     else {
@@ -1353,7 +1353,7 @@ char *vendorGetArmsConfirmationResponse(Conversation *cnv, const char *response)
         return vendorDoSellTransaction(cnv);
     }
     else if (tolower(response[0]) == 'n') {
-        reply = strdup(vendorGetText(cnv->talker, WV_HMMPH));
+        reply = concat("\n", vendorGetText(cnv->talker, WV_HMMPH), NULL);
         cnv->state = CONV_SELL_ITEM;
     }
     else {
@@ -1371,7 +1371,7 @@ char *vendorGetHealerConfirmationResponse(Conversation *cnv, const char *respons
         return vendorDoBuyTransaction(cnv);
     }
     else if (tolower(response[0]) == 'n') {
-        reply = concat(vendorGetText(cnv->talker, HV_CANNOTAID), 
+        reply = concat("\n", vendorGetText(cnv->talker, HV_CANNOTAID), 
                        vendorGetName(cnv->talker), 
                        vendorGetText(cnv->talker, HV_MOREHELP), 
                        NULL);
@@ -1393,7 +1393,7 @@ char *vendorGetInnConfirmationResponse(Conversation *cnv, const char *response) 
         return vendorDoBuyTransaction(cnv);
     }
     else if (tolower(response[0]) == 'n') {
-        reply = strdup(vendorGetText(cnv->talker, IV_NOBETTERDEAL));
+        reply = concat("\n", vendorGetText(cnv->talker, IV_NOBETTERDEAL), NULL);
         cnv->state = CONV_DONE;
     } 
     else {
@@ -1460,7 +1460,7 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
     case NPC_VENDOR_WEAPONS:
     case NPC_VENDOR_ARMOR:
         menu = vendorGetArmsVendorMenu(cnv->talker);
-        reply = concat(vendorGetText(cnv->talker, WV_WEHAVE),
+        reply = concat("\n", vendorGetText(cnv->talker, WV_WEHAVE),
                        menu, 
                        NULL);
         free(menu);
@@ -1469,7 +1469,7 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
 
     case NPC_VENDOR_FOOD:
         snprintf(buffer, sizeof(buffer), "%d", foodPrices[vendorGetVendorNo(cnv->talker)]);
-        reply = concat(vendorGetText(cnv->talker, FV_PRICE1), buffer,
+        reply = concat("\n", vendorGetText(cnv->talker, FV_PRICE1), buffer,
                        vendorGetText(cnv->talker, FV_PRICE2), 
                        vendorGetText(cnv->talker, FV_HOWMANY),
                        NULL);
@@ -1477,12 +1477,12 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
         break;
 
     case NPC_VENDOR_TAVERN:
-        reply = concat(vendorGetName(cnv->talker), vendorGetText(cnv->talker, TV_FOODORALE), NULL);
+        reply = concat("\n", vendorGetName(cnv->talker), vendorGetText(cnv->talker, TV_FOODORALE), NULL);
         cnv->state = CONV_VENDORQUESTION;
         break;
 
     case NPC_VENDOR_REAGENTS:
-        reply = concat(vendorGetText(cnv->talker, RV_VERYWELL),
+        reply = concat("\n", vendorGetText(cnv->talker, RV_VERYWELL),
                        vendorGetText(cnv->talker, RV_MENU),
                        vendorGetText(cnv->talker, RV_YOURINTEREST),
                        NULL);
@@ -1500,14 +1500,14 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
     case NPC_VENDOR_INN:
         /* vendor #3 in minoc is special; gives the choice of 1, 2, or 3 beds */
         if (vendorGetVendorNo(cnv->talker) == 3) {
-            reply = concat(vendorGetText(cnv->talker, IV_WEHAVE + vendorGetVendorNo(cnv->talker)), 
+            reply = concat("\n", vendorGetText(cnv->talker, IV_WEHAVE + vendorGetVendorNo(cnv->talker)), 
                            "\n",
                            vendorGetText(cnv->talker, IV_BEDS),
                            NULL);
             cnv->state = CONV_VENDORQUESTION;
         }
         else {
-            reply = concat(vendorGetText(cnv->talker, IV_WEHAVE + vendorGetVendorNo(cnv->talker)), 
+            reply = concat("\n", vendorGetText(cnv->talker, IV_WEHAVE + vendorGetVendorNo(cnv->talker)), 
                            vendorGetText(cnv->talker, IV_TAKEIT),
                            NULL);
             cnv->state = CONV_CONFIRMATION;
@@ -1515,7 +1515,7 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
         break;
 
     case NPC_VENDOR_GUILD:
-        reply = concat(vendorGetName(cnv->talker),
+        reply = concat("\n", vendorGetName(cnv->talker),
                        vendorGetText(cnv->talker, GV_IGOT), 
                        vendorGetText(cnv->talker, GV_WHATLLITBE),
                        NULL);
@@ -1525,7 +1525,7 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
     case NPC_VENDOR_STABLE:
         cnv->price = c->saveGame->members * 100;
         snprintf(buffer, sizeof(buffer), "%d", c->saveGame->members);
-        reply = concat(vendorGetText(cnv->talker, SV_FORONLY), 
+        reply = concat("\n", vendorGetText(cnv->talker, SV_FORONLY), 
                        buffer,
                        vendorGetText(cnv->talker, SV_WILLBUY),
                        NULL);
@@ -1576,14 +1576,14 @@ char *vendorGetTavernTopicResponse(Conversation *cnv, const char *response) {
     /* FIXME: check price */
     for (i = 0; i < N_TAVERN_TOPICS; i++) {
         if (strcasecmp(response, tavernTopics[i]) == 0)
-            reply = concat(vendorGetName(cnv->talker), 
+            reply = concat("\n", vendorGetName(cnv->talker), 
                            vendorGetText(cnv->talker, TV_SAYS), 
                            tavernInfo[i], 
                            vendorGetText(cnv->talker, TV_ANYTHINGELSE), 
                            NULL);
     }
     if (!reply)
-        reply = concat(vendorGetText(cnv->talker, TV_DONTKNOW),
+        reply = concat("\n", vendorGetText(cnv->talker, TV_DONTKNOW),
                        vendorGetText(cnv->talker, TV_ANYTHINGELSE),
                        NULL);
 
@@ -1597,7 +1597,7 @@ char *vendorGetHealerPlayerResponse(Conversation *cnv, const char *response) {
 
     if (response[0] < '1' || response[0] > '8') {
         cnv->state = CONV_CONTINUEQUESTION;
-        return concat(vendorGetText(cnv->talker, HV_NOONE),
+        return concat("\n", vendorGetText(cnv->talker, HV_NOONE),
                       vendorGetName(cnv->talker), 
                       vendorGetText(cnv->talker, HV_MOREHELP),
                       NULL);
@@ -1607,21 +1607,21 @@ char *vendorGetHealerPlayerResponse(Conversation *cnv, const char *response) {
 
     if (cnv->itemSubtype == HT_CURE && c->saveGame->players[cnv->player].status != STAT_POISONED) {
         cnv->state = CONV_CONTINUEQUESTION;
-        return concat(vendorGetText(cnv->talker, HV_NOTPOISONED), "\n",
+        return concat("\n", vendorGetText(cnv->talker, HV_NOTPOISONED), "\n",
                       vendorGetName(cnv->talker), 
                       vendorGetText(cnv->talker, HV_MOREHELP),
                       NULL);
     }
     else if (cnv->itemSubtype == HT_FULLHEAL && c->saveGame->players[cnv->player].hp == c->saveGame->players[cnv->player].hpMax) {
         cnv->state = CONV_CONTINUEQUESTION;        
-        return concat(vendorGetText(cnv->talker, HV_ALREADYHEALTHY), "\n",
+        return concat("\n", vendorGetText(cnv->talker, HV_ALREADYHEALTHY), "\n",
                       vendorGetName(cnv->talker), 
                       vendorGetText(cnv->talker, HV_MOREHELP),
                       NULL);
     }
     else if (cnv->itemSubtype == HT_RESURRECT && c->saveGame->players[cnv->player].status != STAT_DEAD) {
         cnv->state = CONV_CONTINUEQUESTION;
-        return concat(vendorGetText(cnv->talker, HV_NOTDEAD), "\n",
+        return concat("\n", vendorGetText(cnv->talker, HV_NOTDEAD), "\n",
                       vendorGetName(cnv->talker), 
                       vendorGetText(cnv->talker, HV_MOREHELP),
                       NULL);
@@ -1636,7 +1636,7 @@ char *vendorGetHealerPlayerResponse(Conversation *cnv, const char *response) {
         msg = HV_HEALINGCOSTS;
     else if (cnv->itemSubtype == HT_RESURRECT)
         msg = HV_REZCOSTS;
-    return concat(vendorGetText(cnv->talker, msg), 
+    return concat("\n", vendorGetText(cnv->talker, msg), 
                   vendorGetText(cnv->talker, HV_WILLPAY), 
                   NULL);
 }

@@ -906,7 +906,7 @@ int gameBaseKeyHandler(int key, void *data) {
         if ((c->location->context != CTX_DUNGEON) && c->saveGame->balloonstate)        
             screenMessage("Drift only!\n");
         else {
-            tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_OBJECTS);                            
+            tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_OBJECTS);
     
             if (tileIsChest(tile))
             {
@@ -3274,14 +3274,17 @@ int gameCheckMoongates(void) {
  * Checks monster conditions and spawns new monsters if necessary
  */
 void gameCheckRandomMonsters() {
+    int canSpawnHere = mapIsWorldMap(c->location->map) || c->location->context & CTX_DUNGEON;
+    int spawnDivisor = c->location->context & CTX_DUNGEON ? (32 - (c->location->z << 2)) : 32;
+
     /* remove monsters that are too far away from the avatar */
     gameMonsterCleanup();
     
     /* If there are too many monsters already,
        or we're not on the world map, don't worry about it! */
-    if (!mapIsWorldMap(c->location->map) ||
-        mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS_ON_MAP ||        
-        (rand() % 32) != 0)
+    if (!canSpawnHere ||
+        mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS_ON_MAP ||
+        (rand() % spawnDivisor) != 0)
         return;
     
     gameSpawnMonster(NULL);
@@ -3631,20 +3634,42 @@ int gameSummonMonster(const char *monsterName) {
  * If (m==NULL) then it finds its own monster to spawn and spawns it.
  */
 void gameSpawnMonster(const Monster *m) {
-    int x, y, dx, dy, t;
+    int x, y, dx, dy, t, i;
     const Monster *monster;
 
-    dx = 7;
-    dy = rand() % 7;
+    if (c->location->context & CTX_DUNGEON) {
+        unsigned char tile;
+        int found = 0;
+        x = rand() % c->location->map->width;
+        y = rand() % c->location->map->height;
+        
+        for (i = 0; i < 0x20; i++) {
+            tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS);
+            if (tileIsMonsterWalkable(tile)) {
+                found = 1;
+                break;
+            }
+        }
 
-    if (rand() % 2)
-        dx = -dx;
-    if (rand() % 2)
-        dy = -dy;
-    if (rand() % 2) {
-        t = dx;
-        dx = dy;
-        dy = t;
+        if (!found)
+            return;
+        
+        dx = x - c->location->x;
+        dy = y - c->location->y;
+    }    
+    else {    
+        dx = 7;
+        dy = rand() % 7;
+
+        if (rand() % 2)
+            dx = -dx;
+        if (rand() % 2)
+            dy = -dy;
+        if (rand() % 2) {
+            t = dx;
+            dx = dy;
+            dy = t;
+        }
     }
 
     x = c->location->x + dx;
@@ -3652,10 +3677,12 @@ void gameSpawnMonster(const Monster *m) {
     
     /* wrap the coordinates around the map if necessary */
     mapWrapCoordinates(c->location->map, &x, &y);    
-
+    
     /* figure out what monster to spawn */
     if (m)
         monster = m;
+    else if (c->location->context & CTX_DUNGEON)
+        monster = monsterForDungeon(c->location->z);
     else
         monster = monsterRandomForTile((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITHOUT_OBJECTS));
 

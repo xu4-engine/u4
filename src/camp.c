@@ -44,7 +44,7 @@ void campBegin(void) {
     combatBegin();
     
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&campTimer, eventTimerGranularity * settings->gameCyclesPerSecond * settings->campTime);
+    eventHandlerAddTimerCallback(&campTimer, (eventTimerGranularity * settings->gameCyclesPerSecond) * settings->campTime);
 
     screenMessage("Resting...\n");
     screenDisableCursor();
@@ -133,7 +133,7 @@ void innBegin(void) {
     gameUpdateScreen();
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&innTimer, eventTimerGranularity * settings->gameCyclesPerSecond * settings->innTime);
+    eventHandlerAddTimerCallback(&innTimer, (eventTimerGranularity * settings->gameCyclesPerSecond) * settings->innTime);
 
     screenDisableCursor();
 }
@@ -174,7 +174,9 @@ void innTimer(void *data) {
     }
     
     else {
-        screenMessage("\nMorning!\n");        
+        screenMessage("\nMorning!\n");
+        screenPrompt();
+        screenRedrawScreen();
 
         /* Does Isaac the Ghost pay a visit to the Avatar? */
         if (c->location->map->id == 11 && (rand() % 4 == 0)) {

@@ -1073,7 +1073,7 @@ int combatInitialNumberOfMonsters(const Monster *monster) {
 
     /* if in an unusual combat situation, generally we stick to normal encounter sizes,
        (such as encounters from sleeping in an inn, etc.) */
-    if (combatInfo.camping || mapIsWorldMap(c->location->map)) {
+    if (combatInfo.camping || mapIsWorldMap(c->location->map) || (c->location->context & CTX_DUNGEON)) {
         nmonsters = (rand() % 8) + 1;
         
         if (nmonsters == 1) {            
@@ -1142,10 +1142,14 @@ void combatEnd(int adjustKarma) {
                 z = combatInfo.monsterObj->z;
                 ground = (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS);
 
+                /* FIXME: move to separate function */
                 /* add a chest, if the monster leaves one */
                 if (monsterLeavesChest(combatInfo.monster) && 
-                    tileIsMonsterWalkable(ground) && tileIsWalkable(ground))
-                    mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), x, y, z);
+                    tileIsMonsterWalkable(ground) && tileIsWalkable(ground)) {
+                    if (c->location->context & CTX_DUNGEON)
+                        mapAddObject(c->location->map, DUNGEON_CHEST, DUNGEON_CHEST, x, y, z);
+                    else mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), x, y, z);
+                }
                 /* add a ship if you just defeated a pirate ship */
                 else if (tileIsPirateShip(combatInfo.monsterObj->tile)) {
                     unsigned char ship = tileGetShipBase();
