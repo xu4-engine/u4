@@ -5,14 +5,9 @@
 #ifndef PERSON_H
 #define PERSON_H
 
-struct _Conversation;
+#include "object.h"
 
-typedef enum {
-    MOVEMENT_FIXED,
-    MOVEMENT_WANDER,
-    MOVEMENT_FOLLOW_AVATAR,
-    MOVEMENT_ATTACK_AVATAR
-} PersonMovementBehavior;
+struct _Conversation;
 
 typedef enum {
     QTRIGGER_NONE = 0,
@@ -87,7 +82,7 @@ typedef struct _Person {
     int turnAwayProb;
     unsigned int tile0, tile1;
     unsigned int startx, starty;
-    PersonMovementBehavior movement_behavior;
+    ObjectMovementBehavior movement_behavior;
     PersonNpcType npcType;
     int vendorIndex;
 } Person;
