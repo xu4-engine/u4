@@ -18,8 +18,8 @@ typedef enum {
 } PersonQuestionTrigger;
 
 typedef enum {
-    QUESTION_SHOULDSAYYES,
-    QUESTION_SHOULDSAYNO
+    QUESTION_NORMAL,
+    QUESTION_HUMILITY_TEST
 } PersonQuestionType;
 
 typedef enum {
@@ -47,9 +47,11 @@ typedef enum {
     CONV_TALK,
     CONV_ASK,
     CONV_BUYSELL,
-    CONV_BUY,
-    CONV_SELL,
-    CONV_QUANTITY,
+    CONV_BUY_ITEM,
+    CONV_SELL_ITEM,
+    CONV_BUY_QUANTITY,
+    CONV_SELL_QUANTITY,
+    CONV_SELL_OFFER,
     CONV_DONE
 } ConversationState;
 
@@ -58,9 +60,10 @@ typedef struct _PersonType {
     char *(*getResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getQuestionResponse)(struct _Conversation *cnv, const char *answer);
     char *(*getBuySellResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getBuyResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getSellResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getBuyItemResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getSellItemResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getBuyQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getSellQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getPrompt)(const struct _Conversation *cnv);
 } PersonType;
 

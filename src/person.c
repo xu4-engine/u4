@@ -54,21 +54,21 @@ char *hawkwindGetPrompt(const Conversation *cnv);
 
 const PersonType personType[NPC_MAX] = {
     { &emptyGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL }, /* NPC_EMPTY */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER */
-    { &talkerGetIntro, &beggarGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, &beggarGetQuantityResponse, &beggarGetPrompt }, /* NPC_TALKER_BEGGAR */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER_GUARD */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER_COMPANION */
-    { &vendorGetIntro, NULL, NULL, &vendorGetBuySellResponse, &vendorGetBuyResponse, NULL, &vendorGetQuantityResponse, &vendorGetPrompt }, /* NPC_VENDOR_WEAPONS */
-    { &vendorGetIntro, NULL, NULL, &vendorGetBuySellResponse, &vendorGetBuyResponse, NULL, &vendorGetQuantityResponse, &vendorGetPrompt }, /* NPC_VENDOR_ARMOR */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_FOOD */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_TAVERN */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_REAGENTS */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_HEALER */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_INN */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_GUILD */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_STABLE */
-    { &lordBritishGetIntro, &lordBritishGetResponse, &lordBritishGetQuestionResponse, NULL, NULL, NULL, NULL, &lordBritishGetPrompt }, /* NPC_LORD_BRITISH */
-    { &hawkwindGetIntro, &hawkwindGetResponse, NULL, NULL, NULL, NULL, NULL, &hawkwindGetPrompt } /* NPC_HAWKWIND */
+    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER */
+    { &talkerGetIntro, &beggarGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, &beggarGetQuantityResponse, NULL, &beggarGetPrompt }, /* NPC_TALKER_BEGGAR */
+    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER_GUARD */
+    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER_COMPANION */
+    { &vendorGetIntro, NULL, NULL, &vendorGetBuySellResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetPrompt }, /* NPC_VENDOR_WEAPONS */
+    { &vendorGetIntro, NULL, NULL, &vendorGetBuySellResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetPrompt }, /* NPC_VENDOR_ARMOR */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_FOOD */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_TAVERN */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_REAGENTS */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_HEALER */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_INN */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_GUILD */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_STABLE */
+    { &lordBritishGetIntro, &lordBritishGetResponse, &lordBritishGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &lordBritishGetPrompt }, /* NPC_LORD_BRITISH */
+    { &hawkwindGetIntro, &hawkwindGetResponse, NULL, NULL, NULL, NULL, NULL, NULL, &hawkwindGetPrompt } /* NPC_HAWKWIND */
 };
 
 /**
@@ -122,23 +122,30 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
             *response = strdup("BUG!!");
         break;
 
-    case CONV_BUY:
-        if (personType[cnv->talker->npcType].getBuyResponse)
-            *response = (*personType[cnv->talker->npcType].getBuyResponse)(cnv, inquiry);
+    case CONV_BUY_ITEM:
+        if (personType[cnv->talker->npcType].getBuyItemResponse)
+            *response = (*personType[cnv->talker->npcType].getBuyItemResponse)(cnv, inquiry);
         else
             *response = strdup("BUG!!");
         break;
 
-    case CONV_SELL:
-        if (personType[cnv->talker->npcType].getSellResponse)
-            *response = (*personType[cnv->talker->npcType].getSellResponse)(cnv, inquiry);
+    case CONV_SELL_ITEM:
+        if (personType[cnv->talker->npcType].getSellItemResponse)
+            *response = (*personType[cnv->talker->npcType].getSellItemResponse)(cnv, inquiry);
         else
             *response = strdup("BUG!!");
         break;
 
-    case CONV_QUANTITY:
-        if (personType[cnv->talker->npcType].getQuantityResponse)
-            *response = (*personType[cnv->talker->npcType].getQuantityResponse)(cnv, inquiry);
+    case CONV_BUY_QUANTITY:
+        if (personType[cnv->talker->npcType].getBuyQuantityResponse)
+            *response = (*personType[cnv->talker->npcType].getBuyQuantityResponse)(cnv, inquiry);
+        else
+            *response = strdup("BUG!!");
+        break;
+
+    case CONV_SELL_QUANTITY:
+        if (personType[cnv->talker->npcType].getSellQuantityResponse)
+            *response = (*personType[cnv->talker->npcType].getSellQuantityResponse)(cnv, inquiry);
         else
             *response = strdup("BUG!!");
         break;
@@ -168,10 +175,6 @@ char *emptyGetIntro(Conversation *cnv) {
 char *talkerGetIntro(Conversation *cnv) {
     const char *fmt = "You meet\n%s\n\n%s says: I am %s\n\n%s";
     char *prompt, *intro;
-
-    /* DEBUG */
-    printf("person %s has PersonQuestionType = %d\n", cnv->talker->name, cnv->talker->questionType);
-    /* DEBUG */
 
     personGetPrompt(cnv, &prompt);
     intro = malloc(strlen(fmt) - 8 + strlen(cnv->talker->description) + strlen(cnv->talker->pronoun) + strlen(cnv->talker->name) + strlen(prompt) + 1);
@@ -245,7 +248,7 @@ char *beggarGetResponse(Conversation *cnv, const char *inquiry) {
 
     if (strncasecmp(inquiry, "give", 4) == 0) {
         reply = strdup("");
-        cnv->state = CONV_QUANTITY;
+        cnv->state = CONV_BUY_QUANTITY;
     }
     else
         reply = talkerGetResponse(cnv, inquiry);
@@ -258,11 +261,17 @@ char *talkerGetQuestionResponse(Conversation *cnv, const char *answer) {
 
     cnv->state = CONV_TALK;
 
-    if (answer[0] == 'y' || answer[0] == 'Y')
+    if (answer[0] == 'y' || answer[0] == 'Y') {
         reply = strdup(cnv->talker->yesresp);
+        if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
+            playerAdjustKarma(c->saveGame, KA_BRAGGED);
+    }
 
-    else if (answer[0] == 'n' || answer[0] == 'N')
+    else if (answer[0] == 'n' || answer[0] == 'N') {
         reply = strdup(cnv->talker->noresp);
+        if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
+            playerAdjustKarma(c->saveGame, KA_HUMBLE);
+    }
 
     else
         reply = strdup("That I cannot\nhelp thee with.");
@@ -284,7 +293,7 @@ char *talkerGetPrompt(const Conversation *cnv) {
 char *beggarGetPrompt(const Conversation *cnv) {
     char *prompt;
 
-    if (cnv->state == CONV_QUANTITY)
+    if (cnv->state == CONV_BUY_QUANTITY)
         prompt = strdup("How much? ");
     else
         prompt = talkerGetPrompt(cnv);
