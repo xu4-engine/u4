@@ -5,8 +5,6 @@
 #ifndef U4_H
 #define U4_H
 
-#define SCALE 2
-
 // info for building map.c from u4/world.map
 #define MAP_WIDTH 256
 #define MAP_HEIGHT 256
