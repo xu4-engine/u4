@@ -24,6 +24,7 @@
 
 extern Map camp_map;
 Map *oldmap;
+int olddngx, olddngy, oldlevel;
 
 void campTimer(void *data);
 void campEnd(void);
@@ -32,7 +33,15 @@ void campBegin() {
     int i;
 
     oldmap = c->map;
-    gameSetMap(c, &camp_map, 1);
+    olddngx = c->saveGame->dngx;
+    olddngy = c->saveGame->dngy;
+    oldlevel = c->saveGame->dnglevel;
+    gameSetMap(c, &camp_map, 0, NULL);
+    c->saveGame->dngx = c->saveGame->x;
+    c->saveGame->dngy = c->saveGame->y;
+    c->saveGame->x = 5;
+    c->saveGame->y = 5;
+    c->saveGame->dnglevel = 0;
 
     musicPlay();
 
@@ -61,6 +70,7 @@ void campEnd() {
     c->map = oldmap;
     c->saveGame->x = c->saveGame->dngx;
     c->saveGame->y = c->saveGame->dngy;
+    c->saveGame->dnglevel = oldlevel;
     c->col = 0;
                 
     musicPlay();

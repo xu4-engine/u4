@@ -106,7 +106,7 @@ void deathRevive() {
     c->saveGame->y = REVIVE_WORLD_Y;
 
     c = gameCloneContext(c);
-    gameSetMap(c, lcb_2_city.map, 0);
+    gameSetMap(c, lcb_2_city.map, 0, NULL);
     c->saveGame->x = REVIVE_CASTLE_X;
     c->saveGame->y = REVIVE_CASTLE_Y;
     c->saveGame->dngx = REVIVE_WORLD_X;
