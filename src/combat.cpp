@@ -255,13 +255,16 @@ void CombatController::begin() {
 void CombatController::end(bool adjustKarma) {
     int i;
     Coords coords;    
-    MapTile ground;
+    MapTile ground;    
+    
+    /* need to get this here because when we exit to the parent map, all the monsters are cleared */
+    bool won = isWon();
     
     gameExitToParentMap();
     musicPlay();
     
     if (winOrLose) {
-        if (isWon()) {
+        if (won) {
             if (creature) {
                 coords = creature->getCoords();
                 ground = c->location->map->tileAt(coords, WITHOUT_OBJECTS);
