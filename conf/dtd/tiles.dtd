@@ -6,7 +6,7 @@
 <!ENTITY % effect '( fire | sleep | poison | poisonField | electricity | lava )'>
 <!ENTITY % speed '( slow | vslow | vvslow )'>
 
-<!ELEMENT tiles ( tile+ | dngTile+ ) >
+<!ELEMENT tiles ( tile* | dngTile* ) >
 
 <!ELEMENT tile EMPTY >
 <!ATTLIST tile animated           %bool;   #IMPLIED
@@ -31,7 +31,7 @@
                talkover           %bool;   #IMPLIED
                unflyable          %bool;   #IMPLIED>
 
-<!ELEMENT dngTile ( dngTile+ ) >
+<!ELEMENT dngTile ( dngTile* ) >
 <!ATTLIST dngTile displayTile           NMTOKEN       #REQUIRED
                   cantwalkon            %dngMove;     #IMPLIED
                   chest                 %bool;        #IMPLIED
