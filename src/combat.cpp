@@ -350,7 +350,9 @@ void CombatController::end(bool adjustKarma) {
     camping = false;
     inn = false;
     
-    (*c->location->finishTurn)();
+    /* Make sure finishturn only happens if a new combat has not begun */
+    if (eventHandler->getController() != this)
+        (*c->location->finishTurn)();
 }
 
 /**
@@ -928,6 +930,7 @@ MoveReturnValue CombatController::movePartyMember(Direction dir, int userEvent) 
 bool CombatController::keyPressed(int key) {
     CombatController *ct = c->combat;
     bool valid = true;
+    bool endTurn = true;
     CoordActionInfo *info;
     WeaponType weapon = c->combat->getCurrentPlayer()->getWeapon();
 
@@ -1009,6 +1012,7 @@ bool CombatController::keyPressed(int key) {
     case 'c':
         screenMessage("Cast Spell!\n");
         gameCastForPlayer(ct->focus);
+        endTurn = false; /* gameCastForPlayer calls finishTurn() */
         break;
 
     case 'g':
@@ -1129,7 +1133,7 @@ bool CombatController::keyPressed(int key) {
 
     if (valid) {
         c->lastCommandTime = time(NULL);
-        if (eventHandler->getController() == this)
+        if (endTurn && (eventHandler->getController() == this))
             (*c->location->finishTurn)();
     }
 
