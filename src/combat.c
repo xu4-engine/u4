@@ -378,11 +378,6 @@ int combatBaseKeyHandler(int key, void *data) {
         eventHandlerPopKeyHandler();
         combatEnd(0); /* don't adjust karma */
         break;
-
-    /* ALT key by itself; ignore it */
-    case 308:
-        valid = 0;
-        break;
         
     case ' ':
         screenMessage("Pass\n");
@@ -483,15 +478,29 @@ int combatBaseKeyHandler(int key, void *data) {
     case 'p':
     case 'q':
     case 's':
-    case 't':    
+    case 't':
+    case 'v':
     case 'w':
     case 'x':   
     case 'y':
         screenMessage("Not here!\n");
         break;
 
-    default:
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':    
         screenMessage("Bad command\n");        
+        break;
+
+    default:
+        valid = 0;
         break;
     }
 
