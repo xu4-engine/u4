@@ -51,7 +51,7 @@ typedef struct _Spell {
     int mp;
 } Spell;
 
-typedef void (*SpellCallback)(unsigned int spell, int player);
+typedef void (*SpellCallback)(unsigned int spell, int player, int hzSound);
 extern SpellCallback spellCallback;
 
 void playerSetSpellCallback(SpellCallback callback);

@@ -268,7 +268,7 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
         c->saveGame->players[character].mp -= spells[spell].mp;
 
         if (spellEffect)
-            (*spellCallback)(spell + 'a', player);
+            (*spellCallback)(spell + 'a', player, 1);
     
         if (!(*spells[spell].spellFunc)(param)) {
             *error = CASTERR_FAILED;

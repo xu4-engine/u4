@@ -868,7 +868,9 @@ void screenShake(int iterations) {
         SDL_UpdateRect(screen, 0, 0, 0, 0);
         eventHandlerSleep(100);
     }
-    screenDrawBackground(BKGD_BORDERS);
+    /* FIXME: remove next line? doesn't seem necessary,
+       just adds another screen refresh (which is visible on my screen)... */
+    //screenDrawBackground(BKGD_BORDERS);
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 

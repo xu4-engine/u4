@@ -9,7 +9,7 @@
 #define MAX_KEY_DELAY                   1000
 #define MAX_KEY_INTERVAL                100
 #define MAX_CYCLES_PER_SECOND           20
-#define MAX_SPELL_EFFECT_SPEED          5
+#define MAX_SPELL_EFFECT_SPEED          10
 
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
@@ -26,7 +26,7 @@
 #define DEFAULT_CYCLES_PER_SECOND       4
 #define DEFAULT_DEBUG                   0
 #define DEFAULT_VALIDATE_XML            1
-#define DEFAULT_SPELL_EFFECT_SPEED      4
+#define DEFAULT_SPELL_EFFECT_SPEED      5
 
 typedef enum {
     SCL_POINT,
@@ -40,6 +40,7 @@ typedef struct _SettingsMinorOptions {
     int u5shrines;
     int slimeDivides;
     int c64chestTraps;
+    int screenShakes;
 } SettingsMinorOptions;
 
 typedef struct _SettingsMajorOptions {

@@ -49,7 +49,7 @@ int gameSave(void);
 void gameLostEighth(Virtue virtue);
 void gameAdvanceLevel(const SaveGamePlayerRecord *player);
 void gamePartyStarving(void);
-void gameSpellEffect(unsigned int spell, int player);
+void gameSpellEffect(unsigned int spell, int player, int hzSound);
 void gameCastSpell(unsigned int spell, int caster, int param);
 void gameInnHandler(void);
 int gameCheckPlayerDisabled(int player);
@@ -401,7 +401,7 @@ void gameLostEighth(Virtue virtue) {
 void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
     screenMessage("\n%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
 
-    (*spellCallback)(-1, -1); // Default spell effect (invert screen)
+    (*spellCallback)('r', -1, 0); // Same as resurrect spell
 }
 
 void gamePartyStarving(void) {
@@ -415,7 +415,7 @@ void gamePartyStarving(void) {
         playerApplyDamage(&c->saveGame->players[i], 2);    
 }
 
-void gameSpellEffect(unsigned int spell, int player) {
+void gameSpellEffect(unsigned int spell, int player, int hzSound) {
     int time;
     SpellEffect effect = SPELLEFFECT_INVERT;
         
@@ -426,11 +426,14 @@ void gameSpellEffect(unsigned int spell, int player) {
     time = settings->spellEffectSpeed * 200;
 
     /**
-     * special effect FIXME: needs sound
-     * This should only have an initial "random-Hertz pre-spell sound effect"
-     * with known spells -- if it is the default effect, leave it off! :)
-     * The sound that goes along with the screen inversion, etc. is good everywhere, though.
+     * special effect FIXME: needs sound     
      */
+
+    /* I'm not sure if this is how this will be done in the end...
+       just showing why hzSound is included... :) */
+    
+    /*if (hzSound)
+        soundPlay(SOUND_MAGIC_HZ);*/
 
     soundPlay(SOUND_MAGIC);
 
@@ -438,10 +441,10 @@ void gameSpellEffect(unsigned int spell, int player) {
     {
     case 'g': /* gate */
     case 'r': /* resurrection */
-        time <<= 1;        
+        time = (time * 3) / 2;
         break;
     case 't': /* tremor */
-        time <<= 1;
+        time = (time * 3) / 2;
         effect = SPELLEFFECT_TREMOR;        
         break;
     default:
@@ -468,9 +471,11 @@ void gameSpellEffect(unsigned int spell, int player) {
         eventHandlerSleep(time);
 
         if (effect == SPELLEFFECT_TREMOR) {
-            screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
-            screenRedrawScreen();
-            screenShake(10);
+            /* screen shaking is an xu4 enhancement -- make sure it's turned on! */
+            if (settings->minorEnhancements && settings->minorEnhancementsOptions.screenShakes) {
+                gameUpdateScreen();
+                screenShake(10);
+            }
         }
 
         break;
@@ -2168,7 +2173,7 @@ void talkShowReply(int showPrompt) {
             playerHeal(c->saveGame, HT_CURE, i);        // cure the party
             playerHeal(c->saveGame, HT_FULLHEAL, i);    // heal the party
         }        
-        (*spellCallback)(-1, -1); // Default spell effect
+        (*spellCallback)('r', -1, 0); // same spell effect as 'r'esurrect
 
         statsUpdate();
         c->conversation.state = CONV_TALK;
@@ -2668,14 +2673,14 @@ int gameCheckMoongates(void) {
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase,
                                  c->location->x, c->location->y, &destx, &desty)) {
 
-        (*spellCallback)(-1, -1); // Default spell effect (screen inversion without 'spell' sound effects)
+        (*spellCallback)(-1, -1, 0); // Default spell effect (screen inversion without 'spell' sound effects)
         
         if ((c->location->x != destx) && 
             (c->location->y != desty)) {
             
             c->location->x = destx;    
             c->location->y = desty;
-            (*spellCallback)(-1, -1); // Again, after arriving
+            (*spellCallback)(-1, -1, 0); // Again, after arriving
         }
 
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
@@ -3083,7 +3088,7 @@ void gameDestroyAllCreatures(void) {
     int i;
     extern CombatInfo combatInfo;
     
-    (*spellCallback)(-1, -1);
+    (*spellCallback)('t', -1, 0); /* same effect as tremor */
     
     if (c->location->context == CTX_COMBAT) {
         /* destroy all monsters in combat */
