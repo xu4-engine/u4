@@ -102,7 +102,7 @@ const struct {
  */
 typedef struct VendorTypeDesc {
     InventoryItem item;
-    long cityMapOffset;        
+    long cityMapOffset;
     unsigned char n_shops;
     long shopNamesOffset;
     long shopkeeperNamesOffset;
@@ -336,6 +336,7 @@ void vendorSetInnHandlerCallback(InnHandlerCallback callback) {
 int vendorInit() {
     int i, j;
     U4FILE *avatar;
+    char *p;
 
     avatar = u4fopen("avatar.exe");
     if (!avatar)
@@ -390,6 +391,11 @@ int vendorInit() {
     for (i = 0; i < N_VENDOR_TYPE_DESCS; i++)
         vendorTypeInfo[i] = vendorLoadTypeInfo(avatar, &(vendorTypeDesc[i]));
 
+    /* fixup for strange 0xA5 in guild vendor string */
+    p = strchr(vendorTypeInfo[NPC_VENDOR_GUILD - NPC_VENDOR_WEAPONS]->text[GV_SEEYA], 0xA5);
+    if (p)
+        *p = '\0';
+
     u4fclose(avatar);
 
     return 1;
@@ -442,7 +448,7 @@ char *vendorGetPrompt(const Conversation *cnv) {
 
     switch (cnv->state) {
 
-    case CONV_VENDORQUESTION:        
+    case CONV_VENDORQUESTION:
     case CONV_SELL_QUANTITY:
     case CONV_BUY_PRICE:
     case CONV_CONFIRMATION:
@@ -455,7 +461,7 @@ char *vendorGetPrompt(const Conversation *cnv) {
     case CONV_BUY_ITEM:
         return concat("\n", vendorGetText(cnv->talker, WV_YOURINTEREST), NULL);
         break;
-        
+
     case CONV_SELL_ITEM:
         return concat("\n", vendorGetText(cnv->talker, WV_YOUSELL), NULL);
         break;
@@ -704,7 +710,7 @@ char *vendorGetIntro(Conversation *cnv) {
 
 char *vendorGetArmsVendorQuestionResponse(Conversation *cnv, const char *response) {
     char *reply;
-    
+
     if (tolower(response[0]) == 'b') {
         char *menu;
         menu = vendorGetArmsVendorMenu(cnv->talker);
@@ -715,7 +721,7 @@ char *vendorGetArmsVendorQuestionResponse(Conversation *cnv, const char *respons
         free(menu);
 
         cnv->state = CONV_BUY_ITEM;
-    }    
+    }
 
     else if (tolower(response[0]) == 's') {
         reply = concat("\n", vendorGetText(cnv->talker, WV_WHATWILL), NULL);
@@ -733,7 +739,7 @@ char *vendorGetArmsVendorQuestionResponse(Conversation *cnv, const char *respons
 char *vendorGetTavernVendorQuestionResponse(Conversation *cnv, const char *response) {
     char buffer[10];
     char *reply;
-    
+
     if (tolower(response[0]) == 'f') {
         snprintf(buffer, sizeof(buffer), "%d\n", tavernFoodPrices[vendorGetVendorNo(cnv->talker)]);
         reply = concat("\n", vendorGetText(cnv->talker, TV_SPECIALTY), tavernSpecialties[vendorGetVendorNo(cnv->talker)],
@@ -768,15 +774,15 @@ char *vendorGetInnVendorQuestionResponse(Conversation *cnv, const char *response
 
 char *vendorGetHealerGiveBloodResponse(Conversation *cnv, const char *response) {
     cnv->state = CONV_DONE;
-    
+
     if (tolower(response[0]) == 'y') {
         c->saveGame->players[0].hp -= 100;
         playerAdjustKarma(c->saveGame, KA_DONATED_BLOOD);
         return concat("\n", vendorGetText(cnv->talker, HV_GAVEBLOOD), "\n", vendorGetFarewell(cnv, NULL), NULL);
     }
     else if (tolower(response[0]) == 'n')
-        playerAdjustKarma(c->saveGame, KA_DIDNT_DONATE_BLOOD);    
-    
+        playerAdjustKarma(c->saveGame, KA_DIDNT_DONATE_BLOOD);
+
     return concat("\n", vendorGetFarewell(cnv, "\n"), NULL);
 }
 
@@ -872,11 +878,11 @@ char *vendorGetHealerBuyItemResponse(Conversation *cnv, const char *response) {
     cnv->itemSubtype = -1;
 
     if (response[0] == '\033' || response[0] == '\015' || response[0] == ' ') {
-        return vendorHealerAskForBlood(cnv);        
+        return vendorHealerAskForBlood(cnv);
     }
 
     cnv->itemSubtype = tolower(response[0]) - 'a' + HT_CURE;
-    if (cnv->itemSubtype < HT_CURE || cnv->itemSubtype > HT_RESURRECT) {        
+    if (cnv->itemSubtype < HT_CURE || cnv->itemSubtype > HT_RESURRECT) {
         reply = vendorHealerAskForBlood(cnv);
     }
     else {
@@ -1021,7 +1027,7 @@ char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response) {
         case NPC_VENDOR_FOOD:
             cnv->state = CONV_DONE;
             return vendorGetFarewell(cnv, vendorGetText(cnv->talker, FV_TOOBAD));
-            
+
         case NPC_VENDOR_TAVERN:
             cnv->state = CONV_DONE;
             return vendorGetFarewell(cnv, NULL);
@@ -1111,7 +1117,7 @@ char *vendorGetSellQuantityResponse(Conversation *cnv, const char *response) {
 
 char *vendorGetTavernBuyPriceResponse(Conversation *cnv, const char *response) {
     char *reply;
-    
+
     cnv->price = (int) strtol(response, NULL, 10);
 
     if (playerCanAfford(c->saveGame, cnv->price) == 0) {
@@ -1223,15 +1229,15 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
                 reply = concat("\n", vendorGetText(cnv->talker, RV_VERYGOOD),
                                vendorGetText(cnv->talker, RV_ANYTHINGELSE),
                                NULL);
-                playerAdjustKarma(c->saveGame, KA_DIDNT_CHEAT_REAGENTS);                
+                playerAdjustKarma(c->saveGame, KA_DIDNT_CHEAT_REAGENTS);
             }
             else {
                 reply = concat("\n", vendorGetText(cnv->talker, RV_ISEE),
                                vendorGetText(cnv->talker, RV_ANYTHINGELSE),
                                NULL);
-                playerAdjustKarma(c->saveGame, KA_CHEAT_REAGENTS);                
+                playerAdjustKarma(c->saveGame, KA_CHEAT_REAGENTS);
             }
-                
+
         }
         else
             reply = concat("\n", vendorGetText(cnv->talker, RV_CANTAFFORD),
@@ -1366,7 +1372,7 @@ char *vendorGetArmsConfirmationResponse(Conversation *cnv, const char *response)
 
 char *vendorGetHealerConfirmationResponse(Conversation *cnv, const char *response) {
     char *reply;
-    
+
     if (tolower(response[0]) == 'y') {
         return vendorDoBuyTransaction(cnv);
     }
@@ -1386,7 +1392,7 @@ char *vendorGetHealerConfirmationResponse(Conversation *cnv, const char *respons
 
 char *vendorGetInnConfirmationResponse(Conversation *cnv, const char *response) {
     char *reply;
-    
+
     if (tolower(response[0]) == 'y') {
         cnv->price = innVendorInfo[vendorGetVendorNo(cnv->talker)].price;
         cnv->quant = 1;
@@ -1406,7 +1412,7 @@ char *vendorGetInnConfirmationResponse(Conversation *cnv, const char *response) 
 
 char *vendorGetGuildConfirmationResponse(Conversation *cnv, const char *response) {
     char *reply;
-    
+
     if (tolower(response[0]) == 'y') {
         return vendorDoBuyTransaction(cnv);
     }
@@ -1424,7 +1430,7 @@ char *vendorGetGuildConfirmationResponse(Conversation *cnv, const char *response
 
 char *vendorGetStableConfirmationResponse(Conversation *cnv, const char *response) {
     char *reply;
-    
+
     if (tolower(response[0]) == 'y') {
         return vendorDoBuyTransaction(cnv);
     }
@@ -1441,13 +1447,13 @@ char *vendorGetStableConfirmationResponse(Conversation *cnv, const char *respons
 }
 
 char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
-    char buffer[10];    
+    char buffer[10];
     char *reply;
-    char *menu;    
-    
+    char *menu;
+
     if (tolower(answer[0]) != 'y') {
         cnv->state = CONV_DONE;
-        
+
         if (cnv->talker->npcType == NPC_VENDOR_HEALER)
             return vendorHealerAskForBlood(cnv);        
         else return vendorGetFarewell(cnv, "\n");
