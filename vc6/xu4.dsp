@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MD /W3 /Gm /GX /ZI /Od /I "C:\Documents and Settings\Main\Desktop\xu4_old\zlib" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D strncasecmp=strnicmp /D strcasecmp=stricmp /D snprintf=_snprintf /D vsnprintf=_vsnprintf /FD /GZ /c
+# ADD CPP /nologo /MD /W3 /Gm /GR /GX /ZI /Od /I "C:\Documents and Settings\Main\Desktop\xu4_old\zlib" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D strncasecmp=strnicmp /D strcasecmp=stricmp /D snprintf=_snprintf /D vsnprintf=_vsnprintf /FD /GZ /c
 # SUBTRACT CPP /WX /Fr /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -132,10 +132,6 @@ SOURCE=..\src\annotation.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\area.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\armor.cpp
 # End Source File
 # Begin Source File
@@ -149,6 +145,10 @@ SOURCE=..\src\camp.cpp
 # Begin Source File
 
 SOURCE=..\src\camp.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\city.cpp
 # End Source File
 # Begin Source File
 
