@@ -73,6 +73,7 @@ unsigned char *scriptTable;
 unsigned char *baseTileTable;
 unsigned char *beastie1FrameTable;
 unsigned char *beastie2FrameTable;
+char *introErrorMessage;
 
 /* additional introduction state data */
 char nameBuffer[16];
@@ -96,6 +97,7 @@ void introDrawBeasties(void);
 void introStartQuestions(void);
 int introHandleName(const char *message);
 int introHandleSexChoice(char choice);
+void introJourneyOnward();
 void introShowText(const char *text);
 void introInitQuestionTree(void);
 const char *introGetQuestion(int v1, int v2);
@@ -116,6 +118,7 @@ int introInit() {
     introAskToggle = 0;
     beastie1Cycle = 0;
     beastie2Cycle = 0;
+    introErrorMessage = NULL;
 
     title = u4fopen("title.exe");
     if (!title)
@@ -241,12 +244,14 @@ int introKeyHandler(int key, void *data) {
     case INTRO_MENU:
         switch (key) {
         case 'i':
+            introErrorMessage = NULL;
             introInitiateNewGame();
             break;
         case 'j':
-            eventHandlerSetExitFlag(1);
+            introJourneyOnward();
             break;
         case 'r':
+            introErrorMessage = NULL;
             mode = INTRO_MAP;
             introUpdateScreen();
             break;
@@ -410,8 +415,12 @@ void introUpdateScreen() {
         screenTextAt(11, 17, "Return to the view");
         screenTextAt(11, 18, "Journey Onward");
         screenTextAt(11, 19, "Initiate New Game");
-        screenTextAt(3, 21, "xu4 is free software, see COPYING");
-        screenTextAt(5, 22, "\011 Copyright 1987 Lord British");
+        if (introErrorMessage)
+            screenTextAt(11, 21, introErrorMessage);
+        else {
+            screenTextAt(3, 21, "xu4 is free software, see COPYING");
+            screenTextAt(5, 22, "\011 Copyright 1987 Lord British");
+        }
         introDrawBeasties();
         break;
 
@@ -593,6 +602,24 @@ const char *introGetQuestion(int v1, int v2) {
     assert((i + v2 - 1) < 28);
 
     return introQuestions[i + v2 - 1];
+}
+
+/**
+ * Starts the game.
+ */
+void introJourneyOnward() {
+    FILE *saveGameFile;
+
+    saveGameFile = fopen("party.sav", "rb");
+    if (!saveGameFile) {
+        introErrorMessage = "Initiate game first!";
+        introUpdateScreen();
+        screenForceRedraw();
+        return;
+    }
+
+    fclose(saveGameFile);
+    eventHandlerSetExitFlag(1);
 }
 
 /**
