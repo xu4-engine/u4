@@ -375,15 +375,15 @@ void GameController::init() {
 
     TRACE_LOCAL(gameDbg, "Settings up reagent menu."); 
 
-    /* reagents menu */    
-    spellMixMenu.add(0, getReagentName((Reagent)0), STATS_AREA_X+2, 0);
-    spellMixMenu.add(1, getReagentName((Reagent)1), STATS_AREA_X+2, 0);
-    spellMixMenu.add(2, getReagentName((Reagent)2), STATS_AREA_X+2, 0);
-    spellMixMenu.add(3, getReagentName((Reagent)3), STATS_AREA_X+2, 0);
-    spellMixMenu.add(4, getReagentName((Reagent)4), STATS_AREA_X+2, 0);
-    spellMixMenu.add(5, getReagentName((Reagent)5), STATS_AREA_X+2, 0);
-    spellMixMenu.add(6, getReagentName((Reagent)6), STATS_AREA_X+2, 0);
-    spellMixMenu.add(7, getReagentName((Reagent)7), STATS_AREA_X+2, 0);
+    /* reagents menu (y values for menuitems filled in later) */
+    spellMixMenu.add(0, getReagentName((Reagent)0), 2, 0);
+    spellMixMenu.add(1, getReagentName((Reagent)1), 2, 0);
+    spellMixMenu.add(2, getReagentName((Reagent)2), 2, 0);
+    spellMixMenu.add(3, getReagentName((Reagent)3), 2, 0);
+    spellMixMenu.add(4, getReagentName((Reagent)4), 2, 0);
+    spellMixMenu.add(5, getReagentName((Reagent)5), 2, 0);
+    spellMixMenu.add(6, getReagentName((Reagent)6), 2, 0);
+    spellMixMenu.add(7, getReagentName((Reagent)7), 2, 0);
     gameResetSpellMixing();
 
     eventHandler->pushMouseAreaSet(mouseAreas); 
@@ -702,7 +702,7 @@ void GameController::finishTurn() {
         gameCheckHullIntegrity();
 
         /* update party stats */
-        c->stats->showPartyView();        
+        c->stats->setView(STATS_PARTY_OVERVIEW);
 
         /* Creatures cannot spawn, move or attack while the avatar is on the balloon */        
         if (!c->party->isFlying()) {
@@ -1335,7 +1335,7 @@ bool GameController::keyPressed(int key) {
         screenMessage("Use which item:\n");
         if (settings.enhancements) {
             /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
-            c->stats->showItems();
+            c->stats->setView(STATS_ITEMS);
         }
         itemUse(gameGetInput().c_str());
         break;
@@ -1449,6 +1449,7 @@ bool GameController::keyPressed(int key) {
 
     case 'q' + U4_ALT:
         {             
+            // TODO - implement loop in main() and let quit fall back to there
             // Quit to the main menu
             extern bool quit;
             endTurn = false;
@@ -1686,7 +1687,7 @@ void gameResetSpellMixing(void) {
     for (current = spellMixMenu.begin(); current != spellMixMenu.end(); current++) {    
         if (c->saveGame->reagents[i++] > 0) {
             current->setVisible(true);
-            current->setY(STATS_AREA_Y + row);
+            current->setY(row);
             row++;
         }
         else current->setVisible(false);
@@ -2148,14 +2149,14 @@ bool gameCastForPlayer(int player) {
     }
 
     // get the spell to cast
-    c->stats->showMixtures();
+    c->stats->setView(STATS_MIXTURES);
     screenMessage("Spell: ");
     int spell = AlphaActionController::get('z', "Spell: ");
     if (spell == -1)
         return true;
     screenMessage("%s!\n", spellGetName(spell));
 
-    c->stats->showPartyView();
+    c->stats->setView(STATS_PARTY_OVERVIEW);
     castPlayer = player;
     castSpell = spell;
     
@@ -2629,10 +2630,10 @@ void readyWeapon(int player, WeaponType weapon) {
 
     // get the weapon to use if not provided
     if (weapon == WEAP_MAX) {
-        c->stats->showWeapons();
+        c->stats->setView(STATS_WEAPONS);
         screenMessage("Weapon: ");
         weapon = (WeaponType) AlphaActionController::get(WEAP_MAX + 'a' - 1, "Weapon: ");
-        c->stats->showPartyView();
+        c->stats->setView(STATS_PARTY_OVERVIEW);
         if (weapon == -1)
             return;
     }
@@ -2686,7 +2687,7 @@ void mixReagents() {
     while (!done) {
         screenMessage("Mix reagents\n");
         screenMessage("For Spell: ");
-        c->stats->showMixtures();
+        c->stats->setView(STATS_MIXTURES);
 
         int choice = ReadChoiceController::get("abcdefghijklmnopqrstuvwxyz \033\n\r");
         if (choice == ' ' || choice == '\033' || choice == '\n' || choice == '\r')
@@ -2709,20 +2710,20 @@ bool mixReagentsForSpell(int spell) {
 
     if (c->saveGame->mixtures[spell] == 99) {
         screenMessage("\nYou cannot mix any more of that spell!\n");
-        c->stats->showPartyView();
+        c->stats->setView(STATS_PARTY_OVERVIEW);
         (*c->location->finishTurn)();
         return true;
     }
 
     /* do we use the Ultima V menu system? */
     if (settings.enhancements && settings.enhancementsOptions.u5spellMixing) {
-        c->stats->showReagents();
+        c->stats->setView(STATS_REAGENTS);
 
         screenDisableCursor();
         gameResetSpellMixing();
         spellMixMenu.reset(); /* reset the menu, highlighting the first item */
 
-        ReagentsMenuController getReagentsController(&spellMixMenu, &ingredients);
+        ReagentsMenuController getReagentsController(&spellMixMenu, &ingredients, c->stats->getMainArea());
         eventHandler->pushController(&getReagentsController);
         getReagentsController.waitFor();
 
@@ -2735,7 +2736,7 @@ bool mixReagentsForSpell(int spell) {
     /* traditional Ultima 4 mixing */
     else {
         screenMessage("Reagent: ");
-        c->stats->showReagents();
+        c->stats->setView(STATS_REAGENTS);
 
         while (1) {
             int choice = ReadChoiceController::get("abcdefgh\n\r \033");
@@ -3062,10 +3063,10 @@ void wearArmor(int player, ArmorType armor) {
     }
 
     if (armor == ARMR_MAX) {
-        c->stats->showArmor();
+        c->stats->setView(STATS_ARMOR);
         screenMessage("Armour: ");
         armor = (ArmorType) AlphaActionController::get(ARMR_MAX + 'a' - 1, "Armour: ");
-        c->stats->showPartyView();
+        c->stats->setView(STATS_PARTY_OVERVIEW);
         if (armor == -1)
             return;
     }
@@ -3101,7 +3102,7 @@ bool ztatsFor(int player) {
        and hide reagents that you don't have */
     gameResetSpellMixing();
 
-    c->stats->showPlayerDetails(player);
+    c->stats->setView(StatsView(STATS_CHAR1 + player));
 
     eventHandler->pushKeyHandler(&gameZtatsKeyHandler);    
     return true;

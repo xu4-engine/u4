@@ -61,7 +61,7 @@ public:
  */
 class ReagentsMenuController : public MenuController {
 public:
-    ReagentsMenuController(Menu *menu, Ingredients *i) : MenuController(menu), ingredients(i) { }
+    ReagentsMenuController(Menu *menu, Ingredients *i, TextView *view) : MenuController(menu, view), ingredients(i) { }
 
     bool keyPressed(int key);
 
