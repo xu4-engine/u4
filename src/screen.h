@@ -53,7 +53,7 @@ void screenDrawBackground(BackgroundType bkgd);
 void screenDrawBackgroundInMapArea(BackgroundType bkgd);
 
 void screenCycle(void);
-void screenEraseMapArea();
+void screenEraseMapArea(void);
 void screenEraseTextArea(int x, int y, int width, int height);
 void screenFindLineOfSight(void);
 void screenGemUpdate(void);

@@ -974,7 +974,7 @@ int screenDungeonGraphicIndex(int xoffset, int distance, DungeonGraphicType type
     if (type != DNGGRAPHIC_WALL && type != DNGGRAPHIC_DOOR)
         return -1;
 
-    if (xoffset == 0 && type == DNGGRAPHIC_DOOR)
+    if (xoffset == 0 && distance != 0 && type == DNGGRAPHIC_DOOR)
         index += 12;
 
     index += xoffset + 1;
