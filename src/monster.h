@@ -63,20 +63,25 @@
 #define BALRON_TILE 252
 
 typedef enum {
-    ATTACKMOD_STEALFOOD = 0x01,
-    ATTACKMOD_STEALGOLD = 0x02
-} AttackMod;
+    MATTR_STEALFOOD = 0x01,
+    MATTR_STEALGOLD = 0x02,
+    MATTR_CASTS_SLEEP = 0x04,
+    MATTR_UNDEAD    = 0x08,
+    MATTR_GOOD      = 0x10
+} MonsterAttrib;
 
 typedef struct _Monster {
     unsigned char tile;
     unsigned char leader;
     const char *name;
     unsigned short level;
-    AttackMod attackMod;    
+    MonsterAttrib mattr;
 } Monster;
 
 const Monster *monsterForTile(unsigned char tile);
 int monsterIsEvil(const Monster *monster);
 int monsterGetXp(const Monster *monster);
+int monsterCastSleep(const Monster *monster);
+int monsterGetDamage(const Monster *monster);
 
 #endif
