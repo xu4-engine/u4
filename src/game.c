@@ -553,18 +553,23 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'a':
-        info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
-        info->handleAtCoord = &attackAtCoord;
-        info->origin_x = c->location->x;
-        info->origin_y = c->location->y;
-        info->prev_x = info->prev_y = -1;
-        info->range = 1;
-        info->validDirections = MASK_DIR_ALL;
-        info->blockedPredicate = NULL;
-        info->blockBefore = 0;
-        info->firstValidDistance = 1;
-        eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Attack: ");
+
+        if (c->saveGame->balloonstate)
+            screenMessage("\nDrift only!\n");
+        else {
+            info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
+            info->handleAtCoord = &attackAtCoord;
+            info->origin_x = c->location->x;
+            info->origin_y = c->location->y;
+            info->prev_x = info->prev_y = -1;
+            info->range = 1;
+            info->validDirections = MASK_DIR_ALL;
+            info->blockedPredicate = NULL;
+            info->blockBefore = 0;
+            info->firstValidDistance = 1;
+            eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);            
+        }
         break;
 
     case 'b':
@@ -691,18 +696,22 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'g':
         screenMessage("Get Chest!\n");
 
-        if ((obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) != NULL)
-            tile = obj->tile;
-        else
-            tile = mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
+        if (c->saveGame->balloonstate)
+            screenMessage("Drift only!\n");
+        else {
+            if ((obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) != NULL)
+                tile = obj->tile;
+            else
+                tile = mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z);
     
-        if (tileIsChest(tile))
-        {
-            screenMessage("Who opens? ");
-            gameGetPlayerForCommand(&gameGetChest);
+            if (tileIsChest(tile))
+            {
+                screenMessage("Who opens? ");
+                gameGetPlayerForCommand(&gameGetChest);
+            }
+            else
+                screenMessage("Not here!\n");
         }
-        else
-            screenMessage("Not here!\n");
         
         break;
 
@@ -788,19 +797,23 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'o':
-        info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
-        info->handleAtCoord = &openAtCoord;
-        info->origin_x = c->location->x;
-        info->origin_y = c->location->y;
-        info->prev_x = info->prev_y = -1;
-        info->range = 1;
-        info->validDirections = MASK_DIR_ALL;
-        info->player = -1;
-        info->blockedPredicate = NULL;
-        info->blockBefore = 0;
-        info->firstValidDistance = 1;
-        eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
-        screenMessage("Open\nDir: ");
+        if (c->saveGame->balloonstate)
+            screenMessage("Open; Not Here!\n");
+        else {
+            info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
+            info->handleAtCoord = &openAtCoord;
+            info->origin_x = c->location->x;
+            info->origin_y = c->location->y;
+            info->prev_x = info->prev_y = -1;
+            info->range = 1;
+            info->validDirections = MASK_DIR_ALL;
+            info->player = -1;
+            info->blockedPredicate = NULL;
+            info->blockBefore = 0;
+            info->firstValidDistance = 1;
+            eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
+            screenMessage("Open\nDir: ");
+        }
         break;
 
     case 'p':
@@ -831,34 +844,42 @@ int gameBaseKeyHandler(int key, void *data) {
     case 's':
         screenMessage("Searching...\n");
 
-        item = itemAtLocation(c->location->map, c->location->x, c->location->y, c->location->z);
-        if (item) {
-            if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
-                screenMessage("Nothing Here!\n");
-            else {                
-                if (item->name)
-                    screenMessage("You find...\n%s!\n", item->name);
-                (*item->putItemInInventory)(item->data);
-            }
-        } else
-            screenMessage("Nothing Here!\n");  
+        if (c->saveGame->balloonstate)
+            screenMessage("Drift only!\n");
+        else {
+            item = itemAtLocation(c->location->map, c->location->x, c->location->y, c->location->z);
+            if (item) {
+                if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
+                    screenMessage("Nothing Here!\n");
+                else {                
+                    if (item->name)
+                        screenMessage("You find...\n%s!\n", item->name);
+                    (*item->putItemInInventory)(item->data);
+                }
+            } else
+                screenMessage("Nothing Here!\n");  
+        }
 
         break;
 
     case 't':
-        info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
-        info->handleAtCoord = &talkAtCoord;
-        info->origin_x = c->location->x;
-        info->origin_y = c->location->y;
-        info->prev_x = info->prev_y = -1;
-        info->range = 2;
-        info->validDirections = MASK_DIR_ALL;
-        info->player = -1;
-        info->blockedPredicate = &tileCanTalkOver;
-        info->blockBefore = 0;
-        info->firstValidDistance = 1;
-        eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
-        screenMessage("Talk\nDir: ");
+        if (c->saveGame->balloonstate)
+            screenMessage("Talk\nDrift only!\n");
+        else {
+            info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
+            info->handleAtCoord = &talkAtCoord;
+            info->origin_x = c->location->x;
+            info->origin_y = c->location->y;
+            info->prev_x = info->prev_y = -1;
+            info->range = 2;
+            info->validDirections = MASK_DIR_ALL;
+            info->player = -1;
+            info->blockedPredicate = &tileCanTalkOver;
+            info->blockBefore = 0;
+            info->firstValidDistance = 1;
+            eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
+            screenMessage("Talk\nDir: ");
+        }
         break;
 
     case 'u':
@@ -2357,9 +2378,15 @@ int moveAvatar(Direction dir, int userEvent) {
     if (destObj && destObj->objType == OBJECT_MONSTER)
         monsterSpecialEffect(destObj);
 
-    gameCheckBridgeTrolls();
-    gameCheckSpecialMonsters(dir);
-    gameCheckMoongates(); 
+    /* things that happen while on foot or horseback */
+    if (c->transportContext & TRANSPORT_FOOT_OR_HORSE) {
+        gameCheckBridgeTrolls();
+        gameCheckMoongates();
+    }
+
+    /* things that happen while not on board the balloon */    
+    if (c->transportContext & ~TRANSPORT_BALLOON)
+        gameCheckSpecialMonsters(dir);    
 
     return result;
 }
@@ -2611,8 +2638,8 @@ void gameCheckSpecialMonsters(Direction dir) {
  */
 void gameCheckMoongates() {
     int destx, desty;
-    extern Map shrine_spirituality_map;
-
+    extern Map shrine_spirituality_map;    
+    
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase,
                                  c->location->x, c->location->y, &destx, &desty)) {
 
