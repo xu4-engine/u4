@@ -23,10 +23,12 @@ const Shrine *shrine;
 char virtueBuffer[20];
 int cycles, completedCycles;
 char mantraBuffer[20];
+int reps;
 
 int shrineHandleVirtue(const char *message);
 int shrineHandleCycles(char choice);
 void shrineMeditationCycle();
+void shrineTimer();
 int shrineHandleMantra(const char *message);
 void shrineEject();
 
@@ -84,23 +86,44 @@ int shrineHandleCycles(char choice) {
 }
 
 void shrineMeditationCycle() {
+    reps = 0;
+
+    screenDisableCursor();
+    eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
+    eventHandlerAddTimerCallback(&shrineTimer);
+}
+
+void shrineTimer() {
     ReadBufferActionInfo *info;
 
-    screenMessage("................\n");
-    screenMessage("Mantra: \n");
+    reps++;
+    if (reps > (16 * 4)) {
+        eventHandlerRemoveTimerCallback(&shrineTimer);
+        eventHandlerPopKeyHandler();
 
-    mantraBuffer[0] = '\0';
-    info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-    info->buffer = mantraBuffer;
-    info->bufferLen = sizeof(mantraBuffer);
-    info->handleBuffer = &shrineHandleMantra;
-    info->screenX = TEXT_AREA_X + c->col;
-    info->screenY = TEXT_AREA_Y + c->line;
-    eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
+        screenMessage("Mantra: ");
+
+        mantraBuffer[0] = '\0';
+        info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+        info->buffer = mantraBuffer;
+        info->bufferLen = sizeof(mantraBuffer);
+        info->handleBuffer = &shrineHandleMantra;
+        info->screenX = TEXT_AREA_X + c->col;
+        info->screenY = TEXT_AREA_Y + c->line;
+        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
+        screenRedrawScreen();
+    } 
+    else if ((reps % 4) == 0) {
+        screenMessage(".");
+        screenDisableCursor();
+        screenRedrawScreen();
+    }
 }
 
 int shrineHandleMantra(const char *message) {
     eventHandlerPopKeyHandler();
+
+    screenMessage("\n");
 
     if (strcasecmp(mantraBuffer, shrine->mantra) != 0) {
         gameLostEighth(playerAdjustKarma(c->saveGame, KA_BAD_MANTRA));
