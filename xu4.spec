@@ -1,5 +1,5 @@
 Name:      xu4
-Version:   0.8
+Version:   0.9
 Release:   1
 Epoch:     0
 Summary:   xu4 - Ultima IV Recreated
@@ -8,7 +8,7 @@ Group:     Amusements/Games
 License:   GPL
 URL:       http://xu4.sourceforge.net/
 Source0:   http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
-BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Prefix:    /usr
 
 BuildRequires: SDL-devel SDL_mixer-devel libxml2-devel zlib-devel
@@ -27,18 +27,18 @@ it -- yet.  New features that improve the gameplay and keep with the
 spirit of the original game will be added.
 
 %prep
-%setup -n u4 -q
+%setup -n u4
 
 %build
 cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir}
 
 %install
 cd src && %{makeinstall}
-wget http://aleron.dl.sourceforge.net/sourceforge/xu4/ultima4-1.01.zip -O $RPM_BUILD_ROOT/%{_libdir}/u4/ultima4.zip
-wget http://www.moongates.com/u4/upgrade/files/u4upgrad.zip -O $RPM_BUILD_ROOT/%{_libdir}/u4/u4upgrad.zip
+wget http://aleron.dl.sourceforge.net/sourceforge/xu4/ultima4-1.01.zip -O %{buildroot}/%{_libdir}/u4/ultima4.zip
+wget http://www.moongates.com/u4/upgrade/files/u4upgrad.zip -O %{buildroot}/%{_libdir}/u4/u4upgrad.zip
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
@@ -49,6 +49,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/applications/u4.desktop
 %{_libdir}/u4/music/*.mid
 %{_libdir}/u4/sound/*.wav
+%{_libdir}/u4/sound/*.ogg
 %{_libdir}/u4/dumpsavegame
 %{_libdir}/u4/lzwenc
 %{_libdir}/u4/lzwdec
@@ -63,6 +64,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/u4upgrad.zip
 
 %changelog
+* Tue Feb 23 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- updated for v0.9, minor cleanup
+
 * Tue Jan 27 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added sound files to files
 
