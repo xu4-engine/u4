@@ -9,6 +9,7 @@
 #include "event.h"
 #include "map.h"
 #include "movement.h"
+#include "observer.h"
 #include "sound.h"
 #include "tileview.h"
 #include "types.h"
@@ -17,6 +18,7 @@ class Map;
 struct Portal;
 class Creature;
 class Party;
+class PartyEvent;
 class PartyMember;
 
 typedef enum {
@@ -73,7 +75,7 @@ private:
 /**
  * The main game controller that handles basic game flow and keypresses.
  */
-class GameController : public Controller {
+class GameController : public Controller, public Observer<Party *, PartyEvent &> {
 public:
     GameController();
 
@@ -84,6 +86,8 @@ public:
     /* main game functions */
     void init(void);    
     static void finishTurn(void);
+
+    virtual void update(Party *party, PartyEvent &event);
 
     TileView mapArea;
 };
@@ -106,6 +110,7 @@ int gameExitToParentMap();
 
 /* spell functions */
 bool gameCastForPlayer(int player);
+void gameSpellEffect(int spell, int player, Sound sound);
 
 /* action functions */
 bool gameGetChest(int player);

@@ -78,7 +78,6 @@ int castForPlayerGetDestDir(Direction dir);
 int castForPlayerGetEnergyType(int fieldType);
 int castForPlayerGetEnergyDir(Direction dir);
 void gameCastSpell(unsigned int spell, int caster, int param);
-void gameSpellEffect(int spell, int player, Sound sound);
 int gameSpellMixHowMany(int spell, int num, Ingredients *ingredients);
 
 void mixReagents();
@@ -249,7 +248,8 @@ void GameController::init() {
     TRACE_LOCAL(gameDbg, "Save game loaded."); ++pb;
 
     /* initialize our party */
-    c->party = new Party(c->saveGame);    
+    c->party = new Party(c->saveGame);
+    c->party->addObserver(this);
 
     /* initialize our combat controller */
     c->combat = new CombatController();
@@ -307,10 +307,7 @@ void GameController::init() {
     /* set the party's transport */
     c->party->setTransport(Tile::translate(c->saveGame->transport));
 
-    playerSetLostEighthCallback(&gameLostEighth);
-    playerSetAdvanceLevelCallback(&gameAdvanceLevel);
-    playerSetSpellEffectCallback(&gameSpellEffect);
-    playerSetPartyStarvingCallback(&gamePartyStarving);    
+    spellSetEffectCallback(&gameSpellEffect);
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
 
     ++pb;
@@ -693,28 +690,29 @@ void GameController::finishTurn() {
     c->lastCommandTime = time(NULL);
 }
 
-/**
- * Inform a player he has lost zero or more eighths of avatarhood.
- */
-void gameLostEighth(Virtue virtue) {
-    screenMessage("\n Thou hast lost\n  an eighth!\n");
-}
-
-void gameAdvanceLevel(PartyMember *player) {
-    screenMessage("\n%s\nThou art now Level %d\n", player->getName().c_str(), player->getRealLevel());
-
-    (*spellEffectCallback)('r', -1, SOUND_MAGIC); // Same as resurrect spell
-}
-
-void gamePartyStarving(void) {
+void GameController::update(Party *party, PartyEvent &event) {
     int i;
     
-    screenMessage("\nStarving!!!\n");
-    /* FIXME: add sound effect here */
+    switch (event.type) {
+    case PartyEvent::LOST_EIGHTH:
+        // inform a player he has lost zero or more eighths of avatarhood.
+        screenMessage("\n Thou hast lost\n  an eighth!\n");
+        break;
+    case PartyEvent::ADVANCED_LEVEL:
+        screenMessage("\n%s\nThou art now Level %d\n", event.player->getName().c_str(), event.player->getRealLevel());
+        gameSpellEffect('r', -1, SOUND_MAGIC); // Same as resurrect spell
+        break;
+    case PartyEvent::STARVING:
+        screenMessage("\nStarving!!!\n");
+        /* FIXME: add sound effect here */
 
-    /* Do 2 damage to each party member for starving! */
-    for (i = 0; i < c->saveGame->members; i++)
-        c->party->member(i)->applyDamage(2);
+        // 2 damage to each party member for starving!
+        for (i = 0; i < c->saveGame->members; i++)
+            c->party->member(i)->applyDamage(2);
+        break;
+    default:
+        break;
+    }
 }
 
 void gameSpellEffect(int spell, int player, Sound sound) {
@@ -1138,8 +1136,10 @@ bool GameController::keyPressed(int key) {
 
     case 'i':
         screenMessage("Ignite torch!\n");
-        if (c->location->context == CTX_DUNGEON)
-            c->party->lightTorch();            
+        if (c->location->context == CTX_DUNGEON) {
+            if (!c->party->lightTorch())
+                screenMessage("None left!\n");
+        }
         else screenMessage("Not here!\n");
         break;
 
@@ -2858,7 +2858,7 @@ bool talkAtCoord(MapCoords coords, int distance, void *data) {
         
         c->party->member(0)->setStatus(STAT_GOOD);
         c->party->member(0)->heal(HT_FULLHEAL);
-        (*spellEffectCallback)('r', -1, SOUND_LBHEAL);
+        gameSpellEffect('r', -1, SOUND_LBHEAL);
     }
     
     c->conversation->state = Conversation::INTRO;
@@ -2908,7 +2908,7 @@ void talkRunConversation(bool showPrompt) {
                 c->party->member(i)->heal(HT_CURE);        // cure the party
                 c->party->member(i)->heal(HT_FULLHEAL);    // heal the party
             }
-            (*spellEffectCallback)('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
+            gameSpellEffect('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
 
             c->conversation->state = Conversation::TALK;
         }
@@ -3297,11 +3297,11 @@ bool gameCheckMoongates(void) {
     
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, c->location->coords, dest)) {
 
-        (*spellEffectCallback)(-1, -1, SOUND_MOONGATE); // Default spell effect (screen inversion without 'spell' sound effects)
+        gameSpellEffect(-1, -1, SOUND_MOONGATE); // Default spell effect (screen inversion without 'spell' sound effects)
         
         if (c->location->coords != dest) {
             c->location->coords = dest;            
-            (*spellEffectCallback)(-1, -1, SOUND_MOONGATE); // Again, after arriving
+            gameSpellEffect(-1, -1, SOUND_MOONGATE); // Again, after arriving
         }
 
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
@@ -3799,7 +3799,7 @@ void gameAlertTheGuards(Map *map) {
 void gameDestroyAllCreatures(void) {
     int i;
     
-    (*spellEffectCallback)('t', -1, SOUND_MAGIC); /* same effect as tremor */
+    gameSpellEffect('t', -1, SOUND_MAGIC); /* same effect as tremor */
     
     if (c->location->context & CTX_COMBAT) {
         /* destroy all creatures in combat */
