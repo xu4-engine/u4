@@ -48,7 +48,7 @@ bool KeyHandler::globalHandler(int key) {
     case U4_ALT + U4_FKEY + 3:
 #endif
         quit = true;
-        EventHandler::setExitFlag();
+        EventHandler::end();
         return true;
     default: return false;
     }
@@ -216,7 +216,7 @@ void EventHandler::run() {
         (*updateScreen)();
     screenRedrawScreen();
 
-    while (!exit) {
+    while (!ended && !controllerDone) {
         int processed = 0;
         SDL_Event event;
         MouseArea *area;

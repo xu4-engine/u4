@@ -209,9 +209,10 @@ public:
 
     /* Static functions */    
     static EventHandler *getInstance();
-    static void sleep(unsigned int usec);    
-    static void setExitFlag(bool exit = true);
-    static bool getExitFlag();
+    static void sleep(unsigned int usec);
+    static void setControllerDone(bool exit = true);
+    static bool getControllerDone();
+    static void end();
     static bool timerQueueEmpty();
 
     /* Member functions */
@@ -240,7 +241,8 @@ public:
     _MouseArea* mouseAreaForPoint(int x, int y);
 
 protected:    
-    static bool exit;
+    static bool controllerDone;
+    static bool ended;
     TimedEventMgr timer;
     std::vector<Controller *> controllers;
     MouseAreaList mouseAreaSets;

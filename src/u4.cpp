@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
         intro->deleteIntro();
     }
 
-    eventHandler->setExitFlag(false);
+    eventHandler->setControllerDone(false);
     if (quit)
         return 0;
 

@@ -19,7 +19,8 @@
 int eventTimerGranularity = 250;
 
 extern bool quit;
-bool EventHandler::exit = false;
+bool EventHandler::controllerDone = false;
+bool EventHandler::ended = false;
 unsigned int TimedEventMgr::instances = 0;
 
 EventHandler *EventHandler::instance = NULL;
@@ -29,8 +30,9 @@ EventHandler *EventHandler::getInstance() {
     return instance;
 }
 
-void EventHandler::setExitFlag(bool xit) { exit = xit; }     /**< Sets the global exit flag for the event handler */
-bool EventHandler::getExitFlag()         { return exit; }    /**< Returns the current value of the global exit flag */
+void EventHandler::setControllerDone(bool done) { controllerDone = done; }     /**< Sets the controller exit flag for the event handler */
+bool EventHandler::getControllerDone()         { return controllerDone; }      /**< Returns the current value of the global exit flag */
+void EventHandler::end() { ended = true; }                                     /**< End all event processing */
 TimedEventMgr* EventHandler::getTimer()  { return &timer;}
 
 /* TimedEvent functions */
@@ -244,7 +246,7 @@ bool ReadStringController::keyPressed(int key) {
 
     } else if (key == '\n' || key == '\r') {
         if (exitWhenDone)
-            eventHandler->setExitFlag(true);
+            eventHandler->setControllerDone();
     }    
     else {
         valid = false;
@@ -260,7 +262,7 @@ string ReadStringController::getString() {
 string ReadStringController::waitFor() {
     exitWhenDone = true;
     eventHandler->run();
-    eventHandler->setExitFlag(false);
+    eventHandler->setControllerDone(false);
     eventHandler->popController();
     return value;
 }
@@ -278,7 +280,7 @@ bool ReadChoiceController::keyPressed(int key) {
 
     if (choices.empty() || choices.find_first_of(choice) < choices.length()) {
         if (exitWhenDone)
-            eventHandler->setExitFlag(true);
+            eventHandler->setControllerDone();
         return true;
     }
 
@@ -292,7 +294,7 @@ int ReadChoiceController::getChoice() {
 int ReadChoiceController::waitFor() {
     exitWhenDone = true;    
     eventHandler->run();
-    eventHandler->setExitFlag(false);
+    eventHandler->setControllerDone(false);
     eventHandler->popController();
     return choice;
 }
