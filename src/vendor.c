@@ -199,6 +199,11 @@ unsigned short guildItemQuantities[N_GUILD_ITEMS];
 #define GV_SEEMORE 10
 #define GV_SEEYA 11 
 
+#define SV_NEEDHORSE 0
+#define SV_ASHAME 1
+#define SV_FORONLY 2
+#define SV_WILLBUY 3
+
 VendorTypeInfo *vendorLoadTypeInfo(FILE *avatar, const VendorTypeDesc *desc);
 const char *vendorGetName(const Person *v);
 const char *vendorGetShop(const Person *v);
@@ -464,8 +469,8 @@ char *vendorGetIntro(Conversation *cnv) {
         break;
 
     case NPC_VENDOR_STABLE:
-        intro = strdup("I am a horse vendor!\n");
-        cnv->state = CONV_DONE;
+        intro = strdup(vendorGetText(cnv->talker, SV_NEEDHORSE));
+        cnv->state = CONV_CONTINUEQUESTION;
         break;
 
     default:
@@ -1020,13 +1025,16 @@ char *vendorDoSellTransaction(Conversation *cnv) {
 
     success = playerSell(c->saveGame, cnv->itemType, cnv->itemSubtype, cnv->quant, cnv->price);
 
-    if (success)
+    if (success) {
         reply = concat(vendorGetName(cnv->talker), vendorGetText(cnv->talker, WV_FINECHOICE), 
                        vendorGetText(cnv->talker, WV_ANYTHINGELSE), NULL);
-    else
-        reply = concat(vendorGetText(cnv->talker, WV_DONTOWNENOUGH));
-
-    cnv->state = CONV_CONTINUEQUESTION;
+        cnv->state = CONV_CONTINUEQUESTION;
+    }
+    else {
+        reply = concat(vendorGetText(cnv->talker, WV_DONTOWNENOUGH), 
+                       vendorGetText(cnv->talker, WV_BYE), NULL);
+        cnv->state = CONV_DONE;
+    }
 
     statsUpdate();
     return reply;
@@ -1150,6 +1158,19 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
             reply = concat(vendorGetName(cnv->talker),
                            vendorGetText(cnv->talker, GV_SEEYA), 
                            NULL);
+            cnv->state = CONV_DONE;
+        }
+        break;
+
+    case NPC_VENDOR_STABLE:
+        if (cont) {
+            reply = concat(vendorGetText(cnv->talker, SV_FORONLY), 
+                           "1", /* FIXME */
+                           vendorGetText(cnv->talker, SV_WILLBUY),
+                           NULL);
+            cnv->state = CONV_DONE;
+        } else {
+            reply = strdup(vendorGetText(cnv->talker, SV_ASHAME));
             cnv->state = CONV_DONE;
         }
         break;
