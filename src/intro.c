@@ -722,7 +722,13 @@ void introTimer() {
     if (mode == INTRO_MAP || mode == INTRO_MENU || 
         mode == INTRO_INIT_NAME || mode == INTRO_INIT_SEX)
         introDrawBeasties();
-    screenRedrawScreen();
+
+    /* 
+     * refresh the screen only if the timer queue is empty --
+     * i.e. drop a frame if another timer event is about to be fired
+     */
+    if (eventHandlerTimerQueueEmpty())
+        screenRedrawScreen();
 
     if ((rand() % 2) && ++beastie1Cycle >= BEASTIE1_FRAMES)
         beastie1Cycle = 0;

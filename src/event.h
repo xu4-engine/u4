@@ -37,6 +37,7 @@ typedef struct GetChoiceActionInfo {
 void eventHandlerInit(void);
 void eventHandlerDelete(void);
 void eventHandlerMain(void (*updateScreen)(void));
+int eventHandlerTimerQueueEmpty(void);
 void eventHandlerSetExitFlag(int flag);
 int eventHandlerGetExitFlag();
 void eventHandlerAddTimerCallback(void (*callback)(), int interval);

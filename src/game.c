@@ -1591,7 +1591,13 @@ void gameTimer() {
     mapAnimateObjects(c->map);
 
     screenCycle();
-    gameUpdateScreen();
+
+    /* 
+     * refresh the screen only if the timer queue is empty --
+     * i.e. drop a frame if another timer event is about to be fired
+     */
+    if (eventHandlerTimerQueueEmpty())
+        gameUpdateScreen();
 }
 
 void gameCheckMoongates() {

@@ -93,3 +93,15 @@ void eventHandlerMain(void (*updateScreen)(void)) {
     }
 }
 
+/**
+ * Returns true if there are no more timer messages currently in the
+ * event queue.
+ */
+int eventHandlerTimerQueueEmpty() {
+    SDL_Event event;
+
+    if (SDL_PeepEvents(&event, 1, SDL_PEEKEVENT, SDL_EVENTMASK(SDL_USEREVENT)))
+        return 0;
+    else
+        return 1;
+}
