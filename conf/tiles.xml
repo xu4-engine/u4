@@ -17,15 +17,15 @@
     <tile unwalkable="true"/> <!-- lcb1 -->
     <tile/> <!-- lcb2 -->
     <tile unwalkable="true"/> <!-- lcb3 -->
-    <tile ship="true"/> <!-- west ship -->
-    <tile ship="true"/> <!-- north ship -->
-    <tile ship="true"/> <!-- east ship -->
-    <tile ship="true"/> <!-- south ship -->
-    <tile horse="true"/> <!-- west horse -->
-    <tile horse="true"/> <!-- east horse -->
+    <tile ship="true" monsterunwalkable="true"/> <!-- west ship -->
+    <tile ship="true" monsterunwalkable="true"/> <!-- north ship -->
+    <tile ship="true" monsterunwalkable="true"/> <!-- east ship -->
+    <tile ship="true" monsterunwalkable="true"/> <!-- south ship -->
+    <tile horse="true" monsterunwalkable="true"/> <!-- west horse -->
+    <tile horse="true" monsterunwalkable="true"/> <!-- east horse -->
     <tile/> <!-- hex -->
     <tile/> <!-- bridge -->
-    <tile balloon="true"/> <!-- balloon -->
+    <tile balloon="true" monsterunwalkable="true"/> <!-- balloon -->
     <tile/> <!-- nbridge -->
     <tile/> <!-- sbridge -->
     <tile/> <!-- uladder -->
@@ -61,7 +61,7 @@
     <tile unwalkable="true" opaque="true"/> <!-- stonewall -->
     <tile unwalkable="true"/> <!-- ldoor -->
     <tile unwalkable="true"/> <!-- door -->
-    <tile/> <!-- chest -->
+    <tile monsterunwalkable="true"/> <!-- chest -->
     <tile unwalkable="true"/> <!-- ankh -->
     <tile/> <!-- brickfloor -->
     <tile/> <!-- woodfloor -->
