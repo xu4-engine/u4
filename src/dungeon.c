@@ -23,6 +23,7 @@ int dungeonLoadRoom(Dungeon *dng, int room) {
     
     dng->room = mapMgrInitMap();
 
+    dng->room->id = 0;
     dng->room->border_behavior = BORDER_FIXED;
     dng->room->width = dng->room->height = 11;
     dng->room->data = dng->rooms[room].map_data;

@@ -1436,11 +1436,11 @@ int movePartyMember(Direction dir, int userEvent) {
                 /* change the tiles! */
                 if (triggers[i].change_x1 || triggers[i].change_y1) {                    
                     /*if (m) combatAddMonster(m, triggers[i].change_x1, triggers[i].change_y1, c->location->z);
-                    else*/ mapSetTileData(c->location->map, triggers[i].change_x1, triggers[i].change_y1, c->location->z, triggers[i].tile);                
+                    else*/ annotationAdd(triggers[i].change_x1, triggers[i].change_y1, c->location->z, 0, triggers[i].tile);
                 }
                 if (triggers[i].change_x2 || triggers[i].change_y2) {
                     /*if (m) combatAddMonster(m, triggers[i].change_x2, triggers[i].change_y2, c->location->z);
-                    else*/ mapSetTileData(c->location->map, triggers[i].change_x2, triggers[i].change_y2, c->location->z, triggers[i].tile);
+                    else*/ annotationAdd(triggers[i].change_x2, triggers[i].change_y2, c->location->z, 0, triggers[i].tile);
                 }
             }
         }
