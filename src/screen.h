@@ -92,8 +92,6 @@ void screenUpdateWind(void);
 unsigned char screenViewportTile(unsigned int width, unsigned int height, int x, int y, int *focus);
 
 void screenAnimateIntro(int frame);
-void screenFixIntroScreen(BackgroundType bkgd, const unsigned char *sigData);
-void screenFixIntroScreenExtended(BackgroundType bkgd);
 void screenFreeIntroAnimations();
 void screenFreeIntroBackgrounds();
 void screenShowCard(int pos, int card);

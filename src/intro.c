@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 #include "u4.h"
 
 #include "intro.h"
 
+#include "debug.h"
 #include "event.h"
 #include "menu.h"
 #include "music.h"
@@ -86,10 +86,11 @@ unsigned char *introMap[INTRO_MAP_HEIGHT];
 char **introText;
 char **introQuestions;
 char **introGypsy;
-unsigned char *scriptTable;
-unsigned char *baseTileTable;
-unsigned char *beastie1FrameTable;
-unsigned char *beastie2FrameTable;
+unsigned char *sigData = NULL;
+unsigned char *scriptTable = NULL;
+unsigned char *baseTileTable = NULL;
+unsigned char *beastie1FrameTable = NULL;
+unsigned char *beastie2FrameTable = NULL;
 char *introErrorMessage;
 
 /* additional introduction state data */
@@ -152,7 +153,6 @@ void introMajorOptionsMenuItemActivate(Menu menu, ActivateAction action);
  * and map data from title.exe.
  */
 int introInit() {
-    unsigned char screenFixData[533];
     U4FILE *title;
     int i, j;
 
@@ -180,9 +180,11 @@ int introInit() {
             introGypsy[i][strlen(introGypsy[i]) - 1] = '\0';
     }
 
-
+    if (sigData)
+        free(sigData);
+    sigData = malloc(533);
     u4fseek(title, INTRO_FIXUPDATA_OFFSET, SEEK_SET);
-    u4fread(screenFixData, 1, sizeof(screenFixData), title);
+    u4fread(sigData, 1, 533, title);
 
     u4fseek(title, INTRO_MAP_OFFSET, SEEK_SET);
     introMap[0] = (unsigned char *) malloc(INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT);
@@ -236,12 +238,6 @@ int introInit() {
     }
 
     u4fclose(title);
-
-    screenFixIntroScreen(BKGD_INTRO, screenFixData);
-
-    /* redraw some of the intro screen to allow for additional options */
-    screenFixIntroScreen(BKGD_INTRO_EXTENDED, screenFixData);    
-    screenFixIntroScreenExtended(BKGD_INTRO_EXTENDED);
 
     /* load our menus */
     
@@ -314,6 +310,11 @@ int introInit() {
     musicIntro();
 
     return 1;
+}
+
+unsigned char *introGetSigData() {
+    ASSERT(sigData != NULL, "intro sig data not loaded");
+    return sigData;
 }
 
 /**
@@ -528,7 +529,7 @@ int introKeyHandler(int key, void *data) {
 
     case INTRO_INIT_NAME:
     case INTRO_INIT_SEX:
-        assert(0);              /* shouldn't happen */
+        ASSERT(0, "key handler called in wrong mode");
         return 1;
 
     case INTRO_INIT_STORY:
@@ -876,7 +877,7 @@ void introUpdateScreen() {
         break;
 
     default:
-        assert(0);
+        ASSERT(0, "bad mode in introUpdateScreen");
     }
 
     screenUpdateCursor();
@@ -979,7 +980,7 @@ const char *introGetQuestion(int v1, int v2) {
     int i = 0;
     int d = 7;
 
-    assert (v1 < v2);
+    ASSERT(v1 < v2, "first virtue must be smaller (v1 = %d, v2 = %d)", v1, v2);
 
     while (v1 > 0) {
         i += d;
@@ -988,7 +989,7 @@ const char *introGetQuestion(int v1, int v2) {
         v2--;
     }
 
-    assert((i + v2 - 1) < 28);
+    ASSERT((i + v2 - 1) < 28, "calculation failed");
 
     return introQuestions[i + v2 - 1];
 }
@@ -1204,7 +1205,7 @@ void introInitPlayers(SaveGame *saveGame) {
     saveGame->players[0].sex = sex;
     saveGame->players[0].klass = (ClassType) questionTree[14];
 
-    assert(saveGame->players[0].klass < 8);
+    ASSERT(saveGame->players[0].klass < 8, "bad class: %d", saveGame->players[0].klass);
 
     saveGame->players[0].weapon = initValuesForClass[saveGame->players[0].klass].weapon;
     saveGame->players[0].armor = initValuesForClass[saveGame->players[0].klass].armor;

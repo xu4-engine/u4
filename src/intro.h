@@ -7,6 +7,7 @@
 
 int introInit(void);
 void introDelete(void);
+unsigned char *introGetSigData();
 int introKeyHandler(int key, void *data);
 void introUpdateScreen(void);
 void introTimer(void *data);

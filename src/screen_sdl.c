@@ -34,7 +34,8 @@ long decompress_u4_file(FILE *in, long filesize, void **out);
 long decompress_u4_memory(void *in, long inlen, void **out);
 
 void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b);
-void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h);
+void fixupIntro(Image *im);
+void fixupIntroExtended(Image *im);
 void screenFreeIntroBackground();
 int screenLoadTiles();
 int screenLoadGemTiles();
@@ -61,51 +62,51 @@ const struct {
     CompressionType comp;
     int filter;
     int introAnim;
-    int scaleOnLoad;
+    void (*fixup)(Image *);     /* can do any needed fixups before image gets scaled and filtered */
 } backgroundInfo[] = {
     /* main game borders */
-    { "start.ega",    "start.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "start.ega",    "start.old", 320, 200, 1, COMP_RLE, 1, 0 },
 
     /* introduction screen images */
-    { "title.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, 0 },
-    { "title.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, 0 },
-    { "tree.ega",     NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "portal.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "outside.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "inside.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "wagon.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "gypsy.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "abacus.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "honcom.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "valjus.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "sachonor.ega", NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "spirhum.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "animate.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "title.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, &fixupIntro },
+    { "title.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, &fixupIntroExtended },
+    { "tree.ega",     NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+    { "portal.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+    { "outside.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+    { "inside.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+    { "wagon.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+    { "gypsy.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+    { "abacus.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+    { "honcom.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+    { "valjus.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+    { "sachonor.ega", NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+    { "spirhum.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1 },
+    { "animate.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1 },
 
     /* abyss vision images */
-    { "key7.ega",     "key7.old",     320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "honesty.ega",  "honesty.old",  320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "compassn.ega", "compassn.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "valor.ega",    "valor.old",    320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "justice.ega",  "justice.old",  320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "sacrific.ega", "sacrific.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "honor.ega",    "honor.old",    320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "spirit.ega",   "spirit.old",   320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "humility.ega", "humility.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "truth.ega",    "truth.old",    320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "love.ega",     "love.old",     320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "courage.ega",  "courage.old",  320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "key7.ega",     "key7.old",     320, 200, 1, COMP_RLE, 1, 0 },
+    { "honesty.ega",  "honesty.old",  320, 200, 1, COMP_RLE, 1, 0 },
+    { "compassn.ega", "compassn.old", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "valor.ega",    "valor.old",    320, 200, 1, COMP_RLE, 1, 0 },
+    { "justice.ega",  "justice.old",  320, 200, 1, COMP_RLE, 1, 0 },
+    { "sacrific.ega", "sacrific.old", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "honor.ega",    "honor.old",    320, 200, 1, COMP_RLE, 1, 0 },
+    { "spirit.ega",   "spirit.old",   320, 200, 1, COMP_RLE, 1, 0 },
+    { "humility.ega", "humility.old", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "truth.ega",    "truth.old",    320, 200, 1, COMP_RLE, 1, 0 },
+    { "love.ega",     "love.old",     320, 200, 1, COMP_RLE, 1, 0 },
+    { "courage.ega",  "courage.old",  320, 200, 1, COMP_RLE, 1, 0 },
 
     /* shrine vision images */
-    { "rune_0.ega",   "rune_0.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_1.ega",   "rune_1.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_2.ega",   "rune_2.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_3.ega",   "rune_3.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_4.ega",   "rune_4.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_5.ega",   "rune_5.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_6.ega",   "rune_6.ega", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_7.ega",   "rune_7.ega", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_8.ega",   "rune_8.ega", 320, 200, 1, COMP_RLE, 1, 0, 1 }
+    { "rune_0.ega",   "rune_0.old", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_1.ega",   "rune_1.old", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_2.ega",   "rune_2.old", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_3.ega",   "rune_3.old", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_4.ega",   "rune_4.old", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_5.ega",   "rune_5.old", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_6.ega",   "rune_6.ega", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_7.ega",   "rune_7.ega", 320, 200, 1, COMP_RLE, 1, 0 },
+    { "rune_8.ega",   "rune_8.ega", 320, 200, 1, COMP_RLE, 1, 0 }
 };
 
 const struct {
@@ -218,9 +219,7 @@ void screenInit() {
     if (!upgradeExists && settings->videoType == VIDEO_VGA)
         settings->videoType = VIDEO_EGA;
 
-    if (!screenLoadBackground(BKGD_INTRO) ||
-        !screenLoadBackground(BKGD_INTRO_EXTENDED) || 
-        !screenLoadTiles() ||
+    if (!screenLoadTiles() ||
         !screenLoadGemTiles() ||
         !screenLoadCharSet())
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
@@ -268,33 +267,12 @@ void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int
         errorWarning("screenFillRect: SDL_FillRect failed\n%s", SDL_GetError());
 }
 
-/**
- *  Copies a rectangular screen area.  I don't know what happens if
- *  the source and destination overlap ;-) The parameters are
- *  unscaled, i.e. for 320x200.
- */
-void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h) {
-    SDL_Rect src, dest;
-
-    src.x = srcX * scale;
-    src.y = srcY * scale;
-    src.w = w * scale;
-    src.h = h * scale;
-
-    dest.x = destX * scale;
-    dest.y = destY * scale;
-    dest.w = w * scale;
-    dest.h = h * scale;
-
-    if (SDL_BlitSurface(surface, &src, surface, &dest) != 0)
-        errorWarning("screenCopyRect: SDL_BlitSurface failed\n%s", SDL_GetError());
-}
-
-void screenFixIntroScreen(BackgroundType bkgd, const unsigned char *sigData) {
+void fixupIntro(Image *im) {
+    const unsigned char *sigData;
     int i, x, y;
     SDL_Rect src, dest;
 
-    ASSERT(bkgds[bkgd] != NULL, "intro background must be loaded before fixing");
+    sigData = introGetSigData();
 
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
@@ -303,14 +281,13 @@ void screenFixIntroScreen(BackgroundType bkgd, const unsigned char *sigData) {
     /* we're working with an unscaled surface, so we can't use screenCopyRect, etc. */
     src.x = 136;  src.y = 0;   src.w = 55;  src.h = 5;
     dest.x = 136; dest.y = 33; dest.w = 55;  dest.h = 5;
-    SDL_BlitSurface(bkgds[bkgd]->surface, &src, bkgds[bkgd]->surface, &dest);    
+    SDL_BlitSurface(im->surface, &src, im->surface, &dest);    
 
     /* ----------------------------
      * erase the original "present"
      * ---------------------------- */
 
-    dest.x = 136; dest.y = 0; dest.w = 55; dest.h = 5;
-    imageFillRect(bkgds[bkgd], 136, 0, 55, 5, 0, 0, 0);
+    imageFillRect(im, 136, 0, 55, 5, 0, 0, 0);
 
     /* -----------------------------
      * draw "Lord British" signature
@@ -320,8 +297,8 @@ void screenFixIntroScreen(BackgroundType bkgd, const unsigned char *sigData) {
         /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
         x = sigData[i] + 0x14;
         y = 0xBF - sigData[i+1]; 
-        imagePutPixel(bkgds[bkgd], x, y, 0, 255, 255); /* cyan */
-        imagePutPixel(bkgds[bkgd], x+1, y, 0, 255, 255); /* cyan */
+        imagePutPixel(im, x, y, 0, 255, 255); /* cyan */
+        imagePutPixel(im, x+1, y, 0, 255, 255); /* cyan */
         i += 2;
     }
 
@@ -330,15 +307,21 @@ void screenFixIntroScreen(BackgroundType bkgd, const unsigned char *sigData) {
      * -------------------------------------------------------------- */
     /* we're still working with an unscaled surface */
     for (i = 86; i < 239; i++)
-        imagePutPixel(bkgds[bkgd], i, 31, 128, 0, 0); /* red */    
-
-    /* scale and filter images now that we've completed them */
-    bkgds[bkgd] = screenScale(bkgds[bkgd], scale, 1, backgroundInfo[bkgd].filter);
+        imagePutPixel(im, i, 31, 128, 0, 0); /* red */    
 }
 
-void screenFixIntroScreenExtended(BackgroundType bkgd) {
-    screenCopyRect(bkgds[bkgd]->surface, 0, 95, 0, 10, 320, 50);
-    screenCopyRect(bkgds[bkgd]->surface, 0, 105, 0, 60, 320, 45);
+void fixupIntroExtended(Image *im) {
+    SDL_Rect src, dest;
+
+    fixupIntro(im);
+
+    src.x = 0;  src.y = 95;  src.w = 320;  src.h = 50;
+    dest.x = 0; dest.y = 10; dest.w = 320;  dest.h = 50;
+    SDL_BlitSurface(im->surface, &src, im->surface, &dest);    
+
+    src.x = 0;  src.y = 105;  src.w = 320;  src.h = 45;
+    dest.x = 0; dest.y = 60; dest.w = 320;  dest.h = 45;
+    SDL_BlitSurface(im->surface, &src, im->surface, &dest);    
 }
 
 /**
@@ -455,16 +438,14 @@ int screenLoadBackground(BackgroundType bkgd) {
     if (!ret)
         return 0;
 
-    /** 
-     * wait to scale images that don't want to be scaled 
-     * (like BKGD_INTRO, because we still have to fix it
-     *  before filtering and scaling it)
+    /*
+     * fixup the image before scaling it
      */
-    if (backgroundInfo[bkgd].scaleOnLoad)
-        bkgds[bkgd] = screenScale(unscaled, scale, 1, backgroundInfo[bkgd].filter);
-    else
-        bkgds[bkgd] = unscaled;
-    
+    if (backgroundInfo[bkgd].fixup)
+        (*backgroundInfo[bkgd].fixup)(unscaled);
+
+    bkgds[bkgd] = screenScale(unscaled, scale, 1, backgroundInfo[bkgd].filter);
+
     return 1;
 }
 
