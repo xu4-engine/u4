@@ -65,8 +65,6 @@ public:
     
     Direction getDirection() const;
     bool setDirection(Direction d);
-    void advanceFrame();
-    void reverseFrame();
 
     bool canWalkOn(Direction d) const;
     bool canWalkOff(Direction d) const;

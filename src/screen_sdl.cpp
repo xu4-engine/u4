@@ -46,6 +46,7 @@ void fixupAbyssVision(Image *im, int prescale);
 void fixupAbacus(Image *im, int prescale);
 void fixupDungNS(Image *im, int prescale);
 void screenFreeIntroBackground();
+
 Image *screenScale(Image *src, int scale, int n, int filter);
 Image *screenScaleDown(Image *src, int scale);
 
@@ -169,14 +170,12 @@ vector<string> gemLayoutNames;
 Layout *gemlayout = NULL;
 TileAnimSet *tileanims = NULL;
 ImageInfo *charsetInfo = NULL;
-ImageInfo *tilesInfo = NULL;
 ImageInfo *gemTilesInfo = NULL;
 
 extern bool verbose;
 
 void screenInit() {
-    charsetInfo = NULL;
-    tilesInfo = NULL;
+    charsetInfo = NULL;    
     gemTilesInfo = NULL;
 
     screenLoadGraphicsFromConf();
@@ -709,6 +708,7 @@ ImageInfo *screenLoadImage(const string &name) {
         
     info->image = screenScale(unscaled, imageScale, info->tiles, 1);
 
+    delete unscaled;
     return info;
 }
 
@@ -721,7 +721,7 @@ void screenFreeImages() {
         for (std::map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
             ImageInfo *info = j->second;
             if (info->image != NULL) {
-                delete info->image;
+                delete info->image;                
                 info->image = NULL;
             }
         }
@@ -919,24 +919,44 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
 /**
  * Draws a tile to the screen
  */
-void Tile::draw(int x, int y, int frame, bool focused) {
-    /* FIXME: maybe we should load tiles somewhere else for better performance? */
+void Tile::draw(MapTile *mapTile, int x, int y) {
+    int scale = ::scale;
+
     if (image == NULL)
         loadImage();
-    
-    image->drawSubRect(x * w + (BORDER_WIDTH * scale), y * h + (BORDER_HEIGHT * scale),
-        0, frame * h, w, h);    
+
+    if (anim) {
+        // First, create our animated version of the tile
+        anim->draw(this, mapTile, DIR_NONE);        
+
+        // Then draw it to the screen
+        animated->drawSubRect(x * w + (BORDER_WIDTH * scale),
+            y * h + (BORDER_HEIGHT * scale),
+            0, 0, w, h);
+    }
+    else {
+        image->drawSubRect(x * w + (BORDER_WIDTH * scale), y * h + (BORDER_HEIGHT * scale),
+            0, mapTile->frame * h, w, h);    
+    }
 }
 
-void Tile::drawInDungeon(int distance, int frame) {    
+void Tile::drawInDungeon(MapTile *mapTile, int distance, Direction orientation, bool large) {    
     Image *tmp, *scaled;
-    const static int dscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
+    const static int nscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
+    const static int lscale[] = { 22, 14, 6, 2 };
+    const int *dscale = large ? lscale : nscale;
+    int scale = ::scale;
 
     if (image == NULL)
-        loadImage();    
+        loadImage();
 
-    tmp = Image::duplicate(image);
-    
+    // create our animated version of the tile
+    if (anim) {
+        anim->draw(this, mapTile, orientation);
+        tmp = Image::duplicate(animated);
+    }
+    else tmp = Image::duplicate(image);
+
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
     if (dscale[distance] == 1)
         scaled = screenScaleDown(tmp, 2);
@@ -944,19 +964,21 @@ void Tile::drawInDungeon(int distance, int frame) {
         scaled = screenScale(tmp, dscale[distance] / 2, 1, 1);
 
     scaled->drawSubRect((VIEWPORT_W * w / 2) + (BORDER_WIDTH * scale) - (scaled->width() / 2),
-                        ((doffset[distance] + BORDER_HEIGHT) * scale),
-                        0,
-                        0,
-                        scaled->width(),
-                        scaled->height());
-    
-    delete scaled;
+        large ? (VIEWPORT_H * h / 2) + (BORDER_HEIGHT * scale) - (scaled->height() / 2) :
+        (doffset[distance] + BORDER_HEIGHT) * scale,
+        0,
+        0,
+        scaled->width(),
+        scaled->height());
+        
+    delete scaled, tmp;
 }
 
 /**
  * Draw a focus rectangle around the tile
  */
 void Tile::drawFocus(int x, int y) const {
+    int scale = ::scale;
     /**
      * draw the focus rectangle around the tile
      */
@@ -991,37 +1013,60 @@ void Tile::drawFocus(int x, int y) const {
     }
 }
 
+/**
+ * Loads the tileset image into the global tileset image info
+ */ 
+void Tileset::loadImage() {
+    if (tilesInfo == NULL || tilesInfo->name != getImageName()) {
+        tilesInfo = screenLoadImage(getImageName());
+                    
+        tilesInfo->image->alphaOff(); /* turn alpha off here to preserve it */            
+
+        if (!tilesInfo)
+            errorFatal("unable to load tileset images: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+    }
+}
+
+/**
+ * Loads the tile image
+ */ 
 void Tile::loadImage() {
     if (!image) {
-        if (!looks_like.empty()) {            
+        Tile *tile = NULL;
+
+        if (!looks_like.empty()) {
             // load the tile that looks just like ours
-            Tile *tile = Tileset::findTileByName(looks_like);            
+            tile = Tileset::findTileByName(looks_like);
             tile->loadImage();
-            
-            image = tile->getImage();            
-            w = image->width();
-            h = image->height();
-            return;
         }
         
-        // load the image
-        else if (tilesInfo == NULL || tilesInfo->name != tileset->getImageName()) {
-            tilesInfo = screenLoadImage(tileset->getImageName());            
-            tilesInfo->image->alphaOff(); /* turn alpha off here */
+        /* make sure the tileset image is loaded */
+        tileset->loadImage();
 
-            if (!tilesInfo)
-                errorFatal("unable to load tileset images: is Ultima IV installed?  See http://xu4.sourceforge.net/");            
+        Image* tiles = Tileset::getImageInfo()->image;
+        scale = ::scale;
+
+        /* load the tile that this looks like */
+        if (tile) {
+            w = tile->w;
+            h = tile->h;
+            image = Image::duplicate(tile->image);
+            animated = Image::create(w, h, false, Image::HARDWARE);
+        }
+        else {
+            /* create the image for our tile */
+            w = tiles->width();
+            h = tiles->height() / tileset->numFrames();
+            image = Image::create(w, frames * h, false, Image::HARDWARE);
+            animated = Image::create(w, h, false, Image::HARDWARE);
+
+            /* draw the tile from the main image to our tile */
+            tiles->drawSubRectOn(image, 0, 0, 0, index * h, w, image->height());
         }
 
-        Image* tiles = tilesInfo->image;
-        
-        /* create the image for our tile */
-        w = tiles->width();
-        h = tiles->height() / tileset->numFrames();
-        image = Image::create(w, frames * h, false, Image::HARDWARE);
-
-        /* draw the tile from the main image to our tile */
-        tiles->drawSubRectOn(image, 0, 0, 0, index * h, w, image->height());        
+        /* if we have animations, we always used 'animated' to draw from */
+        if (anim)
+            image->alphaOff();        
 
         if (image == NULL)
             errorFatal("Error: not all tile images loaded correctly, aborting...");
@@ -1033,21 +1078,12 @@ void Tile::loadImage() {
  */
 void screenShowTile(MapTile *mapTile, bool focus, int x, int y) {
     Tileset *t = Tileset::get();    
-    Tile *tile = t->get(mapTile->id);
-    TileAnim *anim = tile->anim;    
+    Tile *tile = t->get(mapTile->id);    
     
     /**
      * Draw the tile to the screen
      */
-    if (anim) {
-        /*
-         * animate flags and camp fires
-         */    
-        if (!anim->isControlling())
-            tile->draw(x, y, mapTile->frame);
-        anim->draw(tile, mapTile, scale, x, y);
-    }
-    else tile->draw(x, y, mapTile->frame);
+    tile->draw(mapTile, x, y);    
     
     /* draw the focus around the tile if it has the focus */
     if (focus)
@@ -1198,17 +1234,12 @@ int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, 
     return index;
 }
 
-void screenDungeonDrawTile(int distance, MapTile *mapTile) {
+void screenDungeonDrawTile(MapTile *mapTile, int distance, Direction orientation) {
     Tileset *t = Tileset::get();    
     Tile *tile = t->get(mapTile->id);
-    //TileAnim *anim = tile->anim;
     
-    /**
-     * Draw the tile to the screen
-     */
-    tile->drawInDungeon(distance, mapTile->frame);
-
-    /* FIXME: add animation capability here */
+    // Draw the tile to the screen
+    tile->drawInDungeon(mapTile, distance, orientation, tile->isLarge());
 }
 
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
@@ -1341,57 +1372,63 @@ void screenGemUpdate() {
 
 /**
  * Scale an image up.  The resulting image will be scale * the
- * original dimensions.  The original image is deleted.  n is the
- * number of tiles in the image; each tile is filtered seperately.
- * filter determines whether or not to filter the resulting image.
+ * original dimensions.  The original image is no longer deleted.
+ * n is the number of tiles in the image; each tile is filtered 
+ * seperately. filter determines whether or not to filter the 
+ * resulting image.
  */
 Image *screenScale(Image *src, int scale, int n, int filter) {
-    Image *dest;
+    Image *dest = NULL;
     bool isTransparent;
     unsigned int transparentIndex;
+    bool alpha = src->isAlphaOn();
 
     if (n == 0)
-        n = 1;
+        n = 1;    
 
-    isTransparent = src->getTransparentIndex(transparentIndex);
-
-    dest = src;
+    isTransparent = src->getTransparentIndex(transparentIndex);    
+    src->alphaOff();
 
     while (filter && filterScaler && (scale % 2 == 0)) {
         dest = (*filterScaler)(src, 2, n);
-        scale /= 2;
-        delete src;
         src = dest;
+        scale /= 2;                
     }
     if (scale == 3 && scaler3x(settings.filter)) {
         dest = (*filterScaler)(src, 3, n);
-        scale /= 3;
-        delete src;
         src = dest;
+        scale /= 3;
     }
 
-    if (scale != 1) {
+    if (scale != 1)
         dest = (*scalerGet(SCL_POINT))(src, scale, n);
-        delete src;
-    }
+
+    if (!dest)
+        dest = Image::duplicate(src);
 
     if (isTransparent)
         dest->setTransparentIndex(transparentIndex);
+
+    if (alpha)
+        src->alphaOn();
 
     return dest;
 }
 
 /**
  * Scale an image down.  The resulting image will be 1/scale * the
- * original dimensions.  The original image is deleted.
+ * original dimensions.  The original image is no longer deleted.
  */
 Image *screenScaleDown(Image *src, int scale) {
     int x, y;
     Image *dest;
     bool isTransparent;
     unsigned int transparentIndex;
+    bool alpha = src->isAlphaOn();
 
     isTransparent = src->getTransparentIndex(transparentIndex);
+
+    src->alphaOff();
 
     dest = Image::create(src->width() / scale, src->height() / scale, src->isIndexed(), Image::HARDWARE);
     if (!dest)
@@ -1406,11 +1443,13 @@ Image *screenScaleDown(Image *src, int scale) {
             src->getPixelIndex(x, y, index);                
             dest->putPixelIndex(x / scale, y / scale, index);
         }
-    }
-    delete src;
+    }    
 
     if (isTransparent)
         dest->setTransparentIndex(transparentIndex);
+
+    if (alpha)
+        src->alphaOn();
 
     return dest;
 }

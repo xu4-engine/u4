@@ -65,7 +65,6 @@ public:
     void setMap(class Map *m)                { map = m; }
 
     bool setDirection(Direction d);
-    void advanceFrame();
         
     // Properties
 protected:

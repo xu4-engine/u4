@@ -66,6 +66,10 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
     if (xmlPropExists(node, "index"))
         tile->index = xmlGetPropAsInt(node, "index");
     else tile->index = -1;
+
+    if (xmlPropExists(node, "large"))
+        tile->large = xmlGetPropAsBool(node, "large");
+    else tile->large = false;
 }
 
 /**
@@ -83,9 +87,8 @@ unsigned int Tile::getIndex(TileId id) {
     return c && c->location ? c->location->tileset->get(id)->index : Tileset::get("base")->get(id)->index;    
 }
 
-Image *Tile::getImage() {
-    return image;
-}
+Image *Tile::getImage()     { return image; }
+bool Tile::isLarge() const  { return large; }
 
 /**
  * MapTile Class Implementation
@@ -118,18 +121,6 @@ bool MapTile::setDirection(Direction d) {
         changed = false;
 
     return changed;
-}
-
-void MapTile::advanceFrame() {
-    Tileset *t = Tileset::get();
-    if (++frame >= t->get(id)->frames)
-        frame = 0;
-}
-
-void MapTile::reverseFrame() {
-    Tileset *t = Tileset::get();
-    if (frame-- == 0)
-        frame = t->get(id)->frames - 1;    
 }
 
 #define TESTBIT(against)     (t->get(id)->rule->mask & (against))

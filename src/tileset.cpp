@@ -156,6 +156,7 @@ bool TileRule::loadProperties(TileRule *rule, void *xmlNode) {
 TileId              Tileset::currentId = 0;
 Tileset::TilesetMap Tileset::tilesets;    
 Tileset*            Tileset::current = NULL;
+ImageInfo*          Tileset::tilesInfo = NULL;
 
 /**
  * Loads all tilesets using the filename
@@ -218,6 +219,11 @@ void Tileset::unloadAll() {
     
     // unload all tilemaps
     TileMap::unloadAll();
+    
+    // This doesn't unload the tiles info -- that happens elsewhere
+    // This simply ensures that we have a valid pointer if the game images
+    // are reloaded for some reason.
+    tilesInfo = NULL;
 
     for (i = tilesets.begin(); i != tilesets.end(); i++) {
         i->second->unload();
@@ -273,11 +279,21 @@ void Tileset::set(Tileset* t) {
 }
 
 /**
+ * Returns a pointer to the current image info
+ */ 
+ImageInfo* Tileset::getImageInfo() {
+    return tilesInfo;
+}
+
+/**
  * Loads a tileset from the .xml file indicated by 'filename'
  */
 void Tileset::load(string filename) {
     xmlDocPtr doc;
-    xmlNodePtr root, node;        
+    xmlNodePtr root, node;
+    Debug dbg("debug/tileset.txt", "Tileset", true);
+    
+    TRACE_LOCAL(dbg, string("\tParsing ") + filename);
     
     /* open the filename for the group and parse it! */
     doc = xmlParse(filename.c_str());
@@ -285,12 +301,16 @@ void Tileset::load(string filename) {
     if (xmlStrcmp(root->name, (const xmlChar *) "tileset") != 0)
         errorFatal("malformed %s", filename.c_str());
 
+    TRACE_LOCAL(dbg, string("\tRetreiving global tileset info...") + filename);
+
     name = xmlGetPropAsStr(root, "name");
     if (xmlPropExists(root, "imageName"))
         imageName = xmlGetPropAsStr(root, "imageName");
     if (xmlPropExists(root, "extends"))
         extends = Tileset::get(xmlGetPropAsStr(root, "extends"));
-    else extends = NULL;    
+    else extends = NULL;
+
+    TRACE_LOCAL(dbg, "\tLoading Tiles...");
 
     int index = 0;
     for (node = root->xmlChildrenNode; node; node = node->next) {
@@ -314,6 +334,8 @@ void Tileset::load(string filename) {
 
         /* the tiles will load their own images when needed */
         tile->image = NULL;
+
+        TRACE_LOCAL(dbg, string("\t\tLoaded '") + tile->name + "'");
 
         /* add the tile to our tileset */
         tiles[tile->id] = tile;
@@ -385,4 +407,3 @@ unsigned int Tileset::numTiles() const {
 unsigned int Tileset::numFrames() const {
     return totalFrames;
 }
-

@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 
+#include "direction.h"
 #include "xml.h"
 
 class ConfigElement;
@@ -23,14 +24,16 @@ class  TileAnimTransform {
 public:
     static TileAnimTransform *create(const ConfigElement &config);    
     static RGBA *loadColorFromConf(const ConfigElement &conf);
-
-    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y) = 0;
+    
+    virtual void draw(Tile *tile, MapTile *mapTile) = 0;
     virtual ~TileAnimTransform() {}
+    virtual bool drawsTile() const = 0;
 
-    bool isRandom() const { return random; }
+    bool isRandom() const { return random; }        
 
 private:
     bool random;
+    bool replaces;
 };
 
 /**
@@ -40,7 +43,8 @@ private:
 class TileAnimInvertTransform : public TileAnimTransform {
 public:
     TileAnimInvertTransform(int x, int y, int w, int h);
-    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
+    virtual void draw(Tile *tile, MapTile *mapTile);
+    virtual bool drawsTile() const;
     
 private:
     int x, y, w, h;
@@ -54,7 +58,8 @@ private:
 class TileAnimPixelTransform : public TileAnimTransform {
 public:
     TileAnimPixelTransform(int x, int y);
-    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
+    virtual void draw(Tile *tile, MapTile *mapTile);
+    virtual bool drawsTile() const;
 
     int x, y;
     std::vector<RGBA *> colors;
@@ -66,7 +71,11 @@ public:
  */ 
 class TileAnimScrollTransform : public TileAnimTransform {
 public:    
-    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);    
+    TileAnimScrollTransform(int increment);
+    virtual void draw(Tile *tile, MapTile *mapTile);    
+    virtual bool drawsTile() const;
+private:
+    int increment, current, lastOffset;
 };
 
 /**
@@ -75,7 +84,8 @@ public:
  */ 
 class TileAnimFrameTransform : public TileAnimTransform {
 public:
-    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
+    virtual void draw(Tile *tile, MapTile *mapTile);
+    virtual bool drawsTile() const;
 };
 
 /**
@@ -86,7 +96,8 @@ public:
 class TileAnimPixelColorTransform : public TileAnimTransform {
 public:
     TileAnimPixelColorTransform(int x, int y, int w, int h);
-    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
+    virtual void draw(Tile *tile, MapTile *mapTile);
+    virtual bool drawsTile() const;
 
     int x, y, w, h;
     RGBA *start, *end;
@@ -99,13 +110,14 @@ class TileAnimContext {
 public:
     typedef std::vector<TileAnimTransform *> TileAnimTransformList;
     typedef enum {
-        FRAME        
+        FRAME,
+        DIR
     } Type;
 
     static TileAnimContext* create(const ConfigElement &config);
     
     void add(TileAnimTransform*);
-    virtual bool isInContext(Tile *t, MapTile *mapTile);
+    virtual bool isInContext(Tile *t, MapTile *mapTile, Direction d) = 0;
     TileAnimTransformList& getTransforms();
     virtual ~TileAnimContext() {}
 private:    
@@ -119,10 +131,22 @@ private:
 class TileAnimFrameContext : public TileAnimContext {
 public:
     TileAnimFrameContext(int frame);    
-    virtual bool isInContext(Tile *t, MapTile *mapTile);
+    virtual bool isInContext(Tile *t, MapTile *mapTile, Direction d);
 
 private:
     int frame;
+};
+
+/**
+ * An animation context which changes the animation based on the player's current facing direction
+ */ 
+class TileAnimPlayerDirContext : public TileAnimContext {
+public:
+    TileAnimPlayerDirContext(Direction dir);
+    virtual bool isInContext(Tile *t, MapTile *mapTile, Direction d);
+
+private:
+    Direction dir;
 };
 
 /**
@@ -139,13 +163,11 @@ public:
     std::vector<TileAnimContext *> contexts;
 
     /* returns the frame to set the mapTile to (only relevent if persistent) */
-    void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y); 
-    bool isControlling() const;
-    bool isRandom() const;
+    void draw(Tile *tile, MapTile *mapTile, Direction dir);    
+    bool isRandom() const;    
 
-private:
-    bool controls; /* true if the tile animation in is charge of drawing the tile itself */
-    bool random;   /* true if the tile animation occurs randomely (50% of the time) */
+private:    
+    bool random;   /* true if the tile animation occurs randomely (50% of the time) */    
 };
 
 /**

@@ -49,6 +49,7 @@ public:
     static Tile* findTileByName(string name);        
     static Tileset* get(void);
     static void set(Tileset*);
+    static ImageInfo* getImageInfo();
 
 public:
     void load(string filename);
@@ -58,11 +59,13 @@ public:
     string getImageName() const;
     unsigned int numTiles() const;
     unsigned int numFrames() const;
+    void loadImage();
     
 private:
     static TilesetMap tilesets;
     static TileId currentId;    
     static Tileset* current;
+    static ImageInfo *tilesInfo;
 
     string name;
     TileIdMap tiles;

@@ -129,7 +129,7 @@ void screenEnableCursor(void);
 void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);
 
-void screenDungeonDrawTile(int distance, MapTile *tile);
+void screenDungeonDrawTile(MapTile *tile, int distance, Direction orientation);
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
 
 void screenSetMouseCursor(MouseCursor cursor);

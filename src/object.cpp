@@ -8,7 +8,3 @@
 bool Object::setDirection(Direction d) {
     return tile.setDirection(d);
 }
-
-void Object::advanceFrame() {
-    tile.advanceFrame();
-}

@@ -41,30 +41,37 @@ class TileRule;
  */
 class Tile : public MapTile {
 public:
-    Tile() : w(0), h(0), index(0), frames(0), anim(NULL), opaque(false), rule(NULL), image(NULL),
-        tileset(NULL) {}
+    friend class TileAnim;
+
+    Tile() : w(0), h(0), index(0), frames(0), scale(1), anim(NULL), opaque(false), rule(NULL), 
+        image(NULL), animated(NULL), tileset(NULL) {}
 
     static void loadProperties(Tile *tile, void *xmlNode);    
     static MapTile translate(int index, string tileMap = "base");    
     static unsigned int getIndex(TileId id);
 
-    void draw(int x, int y, int frame, bool focused = false);    
-    void drawInDungeon(int distance, int frame);
+    void draw(MapTile *mapTile, int x, int y);
+    void drawInDungeon(MapTile *mapTile, int distance, Direction orientation, bool large = false);
     void drawFocus(int x, int y) const;
     void loadImage();
-    Image *getImage();
+    Image *getImage();    
+    bool isLarge() const;
 
     string name;        /* The name of this tile */
     int w, h;           /* width and height of the tile */
     int index;          /* The physical tile index of this tile on its parent image (the whole tileset image) */
     int frames;         /* The number of frames this tile has */
-    TileAnim *anim;     /* The tile animation for this tile */
-    //TileAnimationStyle animation;   /* The animation style of this tile */
+    int scale;          /* The scale of the tile */
+    TileAnim *anim;     /* The tile animation for this tile */    
     bool opaque;        /* Is this tile opaque? */
     TileRule *rule;     /* The rules that govern the behavior of this tile */
-    Image *image;       /* The actual image for this tile (with all of its frames) */
+    Image *image;       /* The original image for this tile (with all of its frames) */
+    Image *animated;    /* The resulting image from animating the tile */
     Tileset *tileset;   /* The tileset this tile belongs to */
     string looks_like;  /* The name of the tile that this tile looks exactly like (if any) */    
+
+private:
+    bool large;
 };
 
 #endif
