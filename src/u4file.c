@@ -385,7 +385,11 @@ char **u4read_stringtable(U4FILE *f, long offset, int nstrings) {
         for (j = 0; j < sizeof(buffer) - 1; j++) {
             buffer[j] = u4fgetc(f);            
             
-            if (buffer[j] == '\0')                
+            if ((buffer[j] == '\0') 
+                /* These extra checks catch the null in the middle of
+                 * LB's response about the Abyss 
+                 */
+                && (!((buffer[j-1] == 8) && (buffer[j-2] == 10))))                
                 break;            
         }
         buffer[j] = '\0';
