@@ -101,20 +101,16 @@ private:
     KeyHandler *handler;
 };
 
-class ReadStringController : public Controller {
+class ReadStringController : public WaitableController<string> {
 public:
     ReadStringController(int maxlen, int screenX, int screenY, const string &accepted_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 \n\r\010");
     virtual bool keyPressed(int key);
 
     static string get(int maxlen, int screenX, int screenY, EventHandler *eh = NULL);
-    string getString();
-    string waitFor();
 
 protected:
     int maxlen, screenX, screenY;
-    string value;
     string accepted;
-    bool exitWhenDone;
 };
 
 class ReadIntController : public ReadStringController {
@@ -125,32 +121,21 @@ public:
     int getInt() const;
 };
 
-class ReadChoiceController : public Controller {
+class ReadChoiceController : public WaitableController<int> {
 public:
     ReadChoiceController(const string &choices);
     virtual bool keyPressed(int key);
 
     static char get(const string &choices, EventHandler *eh = NULL);
-    int getChoice();
-    int waitFor();
 
 protected:
     string choices;
-    int choice;
-    bool exitWhenDone;
 };
 
-class ReadDirController : public Controller {
+class ReadDirController : public WaitableController<Direction> {
 public:    
     ReadDirController();
     virtual bool keyPressed(int key);    
-
-    Direction getDir();
-    Direction waitFor();
-
-private:
-    Direction dir;
-    bool exitWhenDone;
 };
 
 class ReadPlayerController : public ReadChoiceController {

@@ -8,7 +8,7 @@
 #include <list>
 #include <set>
 #include <string>
-#include "controller.h"
+#include "event.h"
 #include "observable.h"
 #include "types.h"
 
@@ -128,18 +128,16 @@ private:
 };
 
 /**
- * This class controls a menu.
+ * This class controls a menu.  The value field of WaitableController
+ * isn't used.
  */
-class MenuController : public Controller {
+class MenuController : public WaitableController<void *> {
 public:
     MenuController(Menu *menu);
     bool keyPressed(int key);
 
-    void waitFor();
-
 protected:
     Menu *menu;
-    bool exitWhenDone;
 };
 
 #endif

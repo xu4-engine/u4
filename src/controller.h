@@ -28,4 +28,40 @@ private:
     int timerInterval;
 };
 
+// helper functions for the waitable controller; they just avoid
+// having eventhandler dependencies in this header file
+void Controller_startWait();
+void Controller_endWait();
+
+/**
+ * Class template for controllers that can be "waited for".
+ * Subclasses should set the value variable and call doneWaiting when
+ * the controller has completed.
+ */
+template<class T>
+class WaitableController : public Controller {
+public:
+    WaitableController() : exitWhenDone(false) {}
+
+    virtual T getValue() {
+        return value;
+    }
+
+    virtual T waitFor() {
+        exitWhenDone = true;
+        Controller_startWait();
+        return getValue();
+    }
+
+protected:
+    T value;
+    void doneWaiting() {
+        if (exitWhenDone)
+            Controller_endWait();
+    }
+
+private:
+    bool exitWhenDone;
+};
+
 #endif /* CONTROLLER_H */

@@ -47,3 +47,13 @@ void Controller::timerCallback(void *data) {
     Controller *controller = static_cast<Controller *>(data);
     controller->timerFired();
 }
+
+void Controller_startWait() {
+    eventHandler->run();
+    eventHandler->setControllerDone(false);
+    eventHandler->popController();
+}
+
+void Controller_endWait() {
+    eventHandler->setControllerDone();
+}

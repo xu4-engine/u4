@@ -344,7 +344,6 @@ void Menu::setClosed(bool closed) {
 
 MenuController::MenuController(Menu *menu) {
     this->menu = menu;
-    exitWhenDone = false;
 }
 
 bool MenuController::keyPressed(int key) {
@@ -379,16 +378,9 @@ bool MenuController::keyPressed(int key) {
     screenUpdateCursor();
     screenRedrawScreen();
 
-    if (exitWhenDone && menu->getClosed())
-        eventHandler->setControllerDone();
+    if (menu->getClosed())
+        doneWaiting();
 
     return handled;
-}
-
-void MenuController::waitFor() {
-    exitWhenDone = true;
-    eventHandler->run();
-    eventHandler->setControllerDone(false);
-    eventHandler->popController();
 }
 

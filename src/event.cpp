@@ -215,7 +215,6 @@ ReadStringController::ReadStringController(int maxlen, int screenX, int screenY,
     this->screenX = screenX;
     this->screenY = screenY;
     this->accepted = accepted_chars;
-    exitWhenDone = false;
 }
 
 bool ReadStringController::keyPressed(int key) {
@@ -239,8 +238,7 @@ bool ReadStringController::keyPressed(int key) {
             }
         }
         else if (key == '\n' || key == '\r') {
-            if (exitWhenDone)
-                eventHandler->setControllerDone();
+            doneWaiting();
         }
         else if (len < maxlen) {
             /* add a character to the end */
@@ -266,18 +264,6 @@ string ReadStringController::get(int maxlen, int screenX, int screenY, EventHand
     return ctrl.waitFor();
 }
 
-string ReadStringController::getString() {
-    return value;
-}
-
-string ReadStringController::waitFor() {
-    exitWhenDone = true;
-    eventHandler->run();
-    eventHandler->setControllerDone(false);
-    eventHandler->popController();
-    return value;
-}
-
 ReadIntController::ReadIntController(int maxlen, int screenX, int screenY) : ReadStringController(maxlen, screenX, screenY, "0123456789 \n\r\010") {}
 
 int ReadIntController::get(int maxlen, int screenX, int screenY, EventHandler *eh) {
@@ -296,18 +282,16 @@ int ReadIntController::getInt() const {
 
 ReadChoiceController::ReadChoiceController(const string &choices) {
     this->choices = choices;
-    exitWhenDone = false;
 }
 
 bool ReadChoiceController::keyPressed(int key) {
     if (isupper(key))
         key = tolower(key);
 
-    choice = key;
+    value = key;
 
-    if (choices.empty() || choices.find_first_of(choice) < choices.length()) {
-        if (exitWhenDone)
-            eventHandler->setControllerDone();
+    if (choices.empty() || choices.find_first_of(value) < choices.length()) {
+        doneWaiting();
         return true;
     }
 
@@ -323,20 +307,11 @@ char ReadChoiceController::get(const string &choices, EventHandler *eh) {
     return ctrl.waitFor();
 }
 
-int ReadChoiceController::getChoice() {
-    return choice;
+ReadDirController::ReadDirController() {
+    value = DIR_NONE;
 }
 
-int ReadChoiceController::waitFor() {
-    exitWhenDone = true;    
-    eventHandler->run();
-    eventHandler->setControllerDone(false);
-    eventHandler->popController();
-    return choice;
-}
-
-ReadDirController::ReadDirController() : dir(DIR_NONE), exitWhenDone(false) {}
-bool ReadDirController::keyPressed(int key) {    
+bool ReadDirController::keyPressed(int key) {
     Direction d = keyToDirection(key);
     bool valid = (d != DIR_NONE);
     
@@ -344,32 +319,20 @@ bool ReadDirController::keyPressed(int key) {
     case U4_ESC:
     case U4_SPACE:
     case U4_ENTER:
-        dir = DIR_NONE;
-        eventHandler->setControllerDone(true);
+        value = DIR_NONE;
+        doneWaiting();
         return true;
 
     default:
         if (valid) {
-            dir = d;
-            eventHandler->setControllerDone(true);
+            value = d;
+            doneWaiting();
             return true;
         }
         break;
     }    
 
     return false;
-}
-
-Direction ReadDirController::getDir() {
-    return dir;
-}
-
-Direction ReadDirController::waitFor() {
-    exitWhenDone = true;    
-    eventHandler->run();
-    eventHandler->setControllerDone(false);
-    eventHandler->popController();
-    return dir;
 }
 
 WaitController::WaitController(unsigned int c) : Controller(), cycles(c), current(0) {}
