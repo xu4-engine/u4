@@ -38,7 +38,7 @@ static const Monster monsters[] = {
     { JESTER_TILE,      UNKNOWN,       "Jester",       9,  0, MATTR_GOOD | MATTR_NOATTACK },
     { BEGGAR_TILE,      UNKNOWN,       "Beggar",       13, 0, MATTR_GOOD | MATTR_NOATTACK },
     { CHILD_TILE,       UNKNOWN,       "Child",        10, 0, MATTR_GOOD | MATTR_NOATTACK },
-    { BULL_TILE,        UNKNOWN,       "Bull",         11, 0, MATTR_GOOD | MATTR_NOATTACK },
+    { BULL_TILE,        UNKNOWN,       "Bull",         11, 0, MATTR_GOOD },
     { LORDBRITISH_TILE, UNKNOWN,       "Lord British", 16, MAGICFLASH_TILE, MATTR_GOOD | MATTR_NOATTACK },
 
     { PIRATE_TILE,      UNKNOWN,       "Pirate Ship",  16, 0,      MATTR_WATER },
@@ -47,7 +47,7 @@ static const Monster monsters[] = {
     { SEA_SERPENT_TILE, GIANT_SQUID_TILE, "Sea Serpent",  8, FIREFIELD_TILE, MATTR_WATER },
     { SEAHORSE_TILE,    NIXIE_TILE,    "Seahorse",     6,  MAGICFLASH_TILE, MATTR_WATER | MATTR_GOOD },
     { WHIRLPOOL_TILE,   WHIRLPOOL_TILE, "Whirlpool",   16, 0,      MATTR_WATER | MATTR_NONATTACKABLE | MATTR_WANDERS | MATTR_NOATTACK },
-    { STORM_TILE,       STORM_TILE,    "Storm",        16, 0,      MATTR_FLIES | MATTR_NONATTACKABLE | MATTR_WANDERS | MATTR_NOATTACK },    
+    { STORM_TILE,       STORM_TILE,    "Storm",        16, 0,      MATTR_FLIES | MATTR_NONATTACKABLE | MATTR_WANDERS | MATTR_NOATTACK },
     { RAT_TILE,         SKELETON_TILE, "Rat",          3,  0,      MATTR_GOOD | MATTR_WANDERS },
     { BAT_TILE,         LAVA_LIZARD_TILE, "Bat",       3,  0,      MATTR_FLIES | MATTR_GOOD | MATTR_WANDERS },
     { GIANT_SPIDER_TILE, RAT_TILE,     "Giant Spider", 4,  POISONFIELD_TILE, MATTR_GOOD | MATTR_WANDERS },

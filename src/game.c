@@ -1181,7 +1181,9 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     /* nothing attackable: move on to next tile */
     if ((obj = mapObjectAt(c->location->map, x, y, c->location->z)) == NULL ||
         (m = monsterForTile(obj->tile)) == NULL ||
-        (m->mattr & MATTR_NONATTACKABLE)) {
+        (m->mattr & MATTR_NONATTACKABLE) ||
+        /* can't attack horse transport */
+        (tileIsHorse(obj->tile) && obj->movement_behavior == MOVEMENT_FIXED)) {
         return 0;
     }
 
