@@ -14,7 +14,7 @@ SDL_LIBS=-L$(SRC)/sdl/lib -lSDL_mixer -lSDLmain -lSDL
 UI=sdl
 
 CC=gcc
-CFLAGS=-Wall -I. -Dsnprintf=_snprintf $(SDL_CFLAGS) -DVERSION=\"$(VERSION)\"
+CFLAGS=-Wall -I. -Dsnprintf=_snprintf -Dvsnprintf=_vsnprintf $(SDL_CFLAGS) -DVERSION=\"$(VERSION)\"
 LIBS=-lmingw32 $(SDL_LIBS) -mwindows
 EXEEXT	:=.exe
 OBJS= xu4ico.o
@@ -31,6 +31,7 @@ install: $(MAIN) dumpsavegame.exe lzwenc.exe lzwdec.exe
 	strip $(MAIN) -o $(U4PATH)/$(MAIN)
 	cp ../README $(U4PATH)/readme.txt
 	cp ../mid/*.mid $(U4PATH)
+	cp ../conf/*.xml $(U4PATH)
 
 dist:  install
 	cp SDL/README-SDL.txt $(U4PATH)
