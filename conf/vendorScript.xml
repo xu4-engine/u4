@@ -90,6 +90,7 @@
                 You have not the funds for even one!<redirect target="anything_else_buy"/>
             </if>
 
+            <save_choice/>
             <include script="tell_about" choice="{current_choice}"/>
             <if test="{totalgold}&gt;={math({price}*2)}">
                 <redirect target="howmany_buy"/>
@@ -183,8 +184,7 @@
         </tell_about>
 
         <!-- input how many to buy -->
-        <howmany_buy>
-            <save_choice/>
+        <howmany_buy>            
             How many would
             you like? <input type="quantity" target="buy"/>
         </howmany_buy>
@@ -400,6 +400,8 @@
             <if test="{totalgold}&lt;{price}">
                 You have not the funds for even one!<redirect target="anything_else_buy"/>
             </if>            
+
+            <save_choice/>
             <include script="tell_about" choice="{current_choice}"/>
             <if test="{totalgold}&gt;={math({price}*2)}">
                 <redirect target="howmany_buy"/>
@@ -451,8 +453,7 @@
         </tell_about>
 
         <!-- input how many to buy -->
-        <howmany_buy>
-            <save_choice/>
+        <howmany_buy>            
             How many would
             you like? <input type="quantity" target="buy"/>
         </howmany_buy>
