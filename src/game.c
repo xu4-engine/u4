@@ -153,16 +153,21 @@ void gameUpdateScreen() {
     }
 }
 
-void gameSetMap(Context *ct, Map *map, int setStartPos, const Portal *portal) {
+void gameSetMap(Context *ct, Map *map, int saveOldPos, const Portal *portal) {
     int i;
 
     ct->map = map;
-    if (setStartPos) {
+    if (saveOldPos) {
         ct->saveGame->dngx = ct->saveGame->x;
         ct->saveGame->dngy = ct->saveGame->y;
+    }
+    if (portal) {
         ct->saveGame->x = portal->startx;
         ct->saveGame->y = portal->starty;
         ct->saveGame->dnglevel = portal->startlevel;
+    } else {
+        ct->saveGame->x = map->width / 2;
+        ct->saveGame->y = map->height / 2;
     }
 
     if ((map->type == MAP_TOWN || 
@@ -403,7 +408,7 @@ int gameBaseKeyHandler(int key, void *data) {
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
         if (portal && portal->trigger_action == ACTION_DESCEND) {
             annotationClear(c->map->id);
-            gameSetMap(c, portal->destination, 1, portal);
+            gameSetMap(c, portal->destination, 0, portal);
             screenMessage("Descend to first floor!\n");
         } else if (tileIsBalloon(c->saveGame->transport)) {
             screenMessage("Land Balloon\n");
@@ -536,7 +541,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 screenMessage("Klimb\nOnly on foot!\n");
             else {
                 annotationClear(c->map->id);
-                gameSetMap(c, portal->destination, 1, portal);
+                gameSetMap(c, portal->destination, 0, portal);
                 screenMessage("Klimb to second floor!\n");
             }
         } else if (tileIsBalloon(c->saveGame->transport)) {
@@ -1944,11 +1949,7 @@ void gameCheckMoongates() {
 
             c = gameCloneContext(c);
 
-            gameSetMap(c, &shrine_spirituality_map, 0, NULL);
-            c->saveGame->dngx = c->saveGame->x;
-            c->saveGame->dngy = c->saveGame->y;
-            c->saveGame->x = 5;
-            c->saveGame->y = 5;
+            gameSetMap(c, &shrine_spirituality_map, 1, NULL);
             
             musicPlay();
         }

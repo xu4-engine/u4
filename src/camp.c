@@ -36,11 +36,7 @@ void campBegin() {
     olddngx = c->saveGame->dngx;
     olddngy = c->saveGame->dngy;
     oldlevel = c->saveGame->dnglevel;
-    gameSetMap(c, &camp_map, 0, NULL);
-    c->saveGame->dngx = c->saveGame->x;
-    c->saveGame->dngy = c->saveGame->y;
-    c->saveGame->x = 5;
-    c->saveGame->y = 5;
+    gameSetMap(c, &camp_map, 1, NULL);
     c->saveGame->dnglevel = 0;
 
     musicPlay();
