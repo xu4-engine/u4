@@ -56,7 +56,7 @@ Object *party[8];
 Object *monsters[AREA_MONSTERS];
 int monsterHp[AREA_MONSTERS];
 
-void combatCreateMonster(int index);
+void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);
 int combatZtatsKeyHandler(int key, void *data);
 void combatFinishTurn(void);
@@ -103,7 +103,7 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
     for (i = 0; i < nmonsters; i++) {
         /* find a random free slot in the monster table */
         do {j = rand() % AREA_MONSTERS;} while (monsters[j] != NULL);
-        combatCreateMonster(j);
+        combatCreateMonster(j, i != (nmonsters - 1));
     }
 
     eventHandlerPushKeyHandler(&combatBaseKeyHandler);
@@ -167,7 +167,7 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     return &brick_map;
 }
 
-void combatCreateMonster(int index) {
+void combatCreateMonster(int index, int canbeleader) {
     unsigned char mtile;
 
     mtile = monsterObj->tile;
@@ -178,20 +178,18 @@ void combatCreateMonster(int index) {
     /* if mtile < 0x80, the monster can't be a leader */
     if (mtile >= 0x80) {
         /* the monster can be normal, a leader or a leader's leader */
-        if ((rand() % 32) == 0) {
+        if (canbeleader && (rand() % 32) == 0) {
             /* leader's leader */
             mtile = monsterForTile(mtile)->leader;
             mtile = monsterForTile(mtile)->leader;
         }
-        else {
-            /* normal or leader */
-            if ((rand() % 8) == 0)
-                /* leader */
-                mtile = monsterForTile(mtile)->leader;
-            else
-                /* normal */
-                ;
+        else if (canbeleader && (rand() % 8) == 0) {
+            /* leader */
+            mtile = monsterForTile(mtile)->leader;
         }
+        else
+            /* normal */
+            ;
     }
     monsters[index] = mapAddObject(c->map, mtile, mtile, c->map->area->monster_start[index].x, c->map->area->monster_start[index].y, c->saveGame->dnglevel);
 
@@ -205,8 +203,15 @@ void combatFinishTurn() {
         combatEnd();
         return;
     }
-    if (party[focus])
+
+    if (party[focus]) {
+        /* apply effects from tile player is standing on */
+        playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->map, party[focus]->x, party[focus]->y, c->saveGame->dnglevel)), focus);
+
+        /* remove focus */
         party[focus]->hasFocus = 0;
+    }
+
     do {
         /* put the focus on the next party member */
         focus++;
@@ -240,6 +245,7 @@ void combatFinishTurn() {
     party[focus]->hasFocus = 1;
 
     screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, getWeaponName(c->saveGame->players[focus].weapon));
+    statsUpdate();
 }
 
 int combatBaseKeyHandler(int key, void *data) {
@@ -408,12 +414,34 @@ int combatAttackAtCoord(int x, int y, int distance) {
     return 1;
 }
 
+/**
+ * Generate the number of monsters in a group.
+ */
 int combatInitialNumberOfMonsters(unsigned char monster) {
-    if (monster != GUARD_TILE &&
-        !mapIsWorldMap(oldmap))
-        return 1;
+    int nmonsters;
 
-    return ((rand() % (c->saveGame->members * 2))) + 1;
+    if (mapIsWorldMap(oldmap)) {
+        nmonsters = (rand() % 8) + 1;
+        if (nmonsters == 1) {
+            /* file offset 116DDh, 36 bytes, indexed by monster number */
+            /*nmonsters = rand() % EncounterSize(monster encountered) + EncounterSize(monster encountered) + 1*/
+            nmonsters = 8;
+        }
+
+        while (nmonsters > 2 * c->saveGame->members) {
+            nmonsters = (rand() % 16) + 1;
+        }
+    }
+
+    else {
+        if (monster == GUARD_TILE)
+            nmonsters = c->saveGame->members * 2;
+        else
+            nmonsters = 1;
+    }
+
+
+    return nmonsters;
 }
 
 /**
@@ -494,6 +522,12 @@ void combatMoveMonsters() {
         if (!monsters[i])
             continue;
         m = monsterForTile(monsters[i]->tile);
+
+        if (m->mattr & MATTR_NEGATE) {
+            c->aura = AURA_NEGATE;
+            c->auraDuration = 2;
+            statsUpdate();
+        }
 
         target = combatFindTargetForMonster(monsters[i], &distance);
         if (target == -1)
