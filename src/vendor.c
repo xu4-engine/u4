@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "u4.h"
 
 #include "vendor.h"
 
@@ -21,6 +20,7 @@
 #include "savegame.h"
 #include "stats.h"
 #include "u4file.h"
+#include "utils.h"
 #include "weapon.h"
 
 /*
