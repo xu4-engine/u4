@@ -71,7 +71,7 @@
     <tile cantwalkon="all"/> <!-- mgate2 -->
     <tile/> <!-- mgate3 -->
     <tile effect="poisonField" animated="true" dispel="true"/> <!-- poison field -->
-    <tile cantwalkon="all" effect="electricity" monsterunwalkable="true" animated="true" dispel="true"/> <!-- energy field -->
+    <tile cantwalkon="all" effect="electricity" monsterunwalkable="true" dungeonunwalkable="true" animated="true" dispel="true"/> <!-- energy field -->
     <tile speed="vvslow" effect="fire" animated="true" dispel="true"/> <!-- fire field -->
     <tile effect="sleep" animated="true" dispel="true"/> <!-- sleep field -->
     <tile cantwalkon="all" canattackover="true"/> <!-- solid -->
@@ -129,5 +129,5 @@
     <tile cantwalkon="all"/> <!-- left -->
     <tile cantwalkon="all"/> <!-- window -->
     <tile cantwalkon="all"/> <!-- blank -->
-    <tile cantwalkon="all" opaque="true"/> <!-- brickwall -->
+    <tile cantwalkon="all" opaque="true" dungeonunwalkable="true"/> <!-- brickwall -->
 </tiles>

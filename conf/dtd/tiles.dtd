@@ -21,6 +21,7 @@
                horse              %bool;   #IMPLIED
                lockeddoor         %bool;   #IMPLIED
                monsterunwalkable  %bool;   #IMPLIED
+               dungeonunwalkable  %bool;   #IMPLIED
                opaque             %bool;   #IMPLIED
                sailable           %bool;   #IMPLIED
                ship               %bool;   #IMPLIED
