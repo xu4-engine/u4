@@ -10,5 +10,6 @@ void introDelete(void);
 int introKeyHandler(int key, void *data);
 void introUpdateScreen(void);
 void introTimer(void *data);
+int introBaseMenuKeyHandler(int key, void *data);
 
 #endif

@@ -81,7 +81,8 @@ void settingsRead() {
     settings->minorEnhancementsOptions.slimeDivides     = 1;
     settings->minorEnhancementsOptions.c64chestTraps    = 1;    
     settings->minorEnhancementsOptions.screenShakes     = 1;
-    settings->majorEnhancementsOptions.u5combat         = 1;    
+    settings->minorEnhancementsOptions.u5spellMixing    = 1;
+    settings->majorEnhancementsOptions.u5combat         = 1;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -145,6 +146,8 @@ void settingsRead() {
             settings->minorEnhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);
         else if (strstr(buffer, "screenShakes=") == buffer)
             settings->minorEnhancementsOptions.screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);
+        else if (strstr(buffer, "u5spellMixing=") == buffer)
+            settings->minorEnhancementsOptions.u5spellMixing = (int) strtoul(buffer + strlen("u5spellMixing="), NULL, 0);        
         
         /* major enhancement options */
         else if (strstr(buffer, "u5combat=") == buffer)
@@ -195,6 +198,7 @@ void settingsWrite() {
             "slimeDivides=%d\n"
             "c64chestTraps=%d\n"
             "screenShakes=%d\n"
+            "u5spellMixing=%d\n"
             "u5combat=%d\n",
             settings->scale,
             settings->fullscreen,
@@ -216,6 +220,7 @@ void settingsWrite() {
             settings->minorEnhancementsOptions.slimeDivides,
             settings->minorEnhancementsOptions.c64chestTraps,
             settings->minorEnhancementsOptions.screenShakes,
+            settings->minorEnhancementsOptions.u5spellMixing,
             settings->majorEnhancementsOptions.u5combat);
 
     fclose(settingsFile);

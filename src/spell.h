@@ -58,6 +58,7 @@ void playerSetSpellEffectCallback(SpellEffectCallback callback);
 Mixture *mixtureNew();
 void mixtureDelete(Mixture *mix);
 int mixtureAddReagent(Mixture *mix, Reagent reagent);
+int mixtureRemoveReagent(Mixture *mix, Reagent reagent);
 void mixtureRevert(Mixture *mix);
 const char *spellGetName(unsigned int spell);
 int spellGetRequiredMP(unsigned int spell);

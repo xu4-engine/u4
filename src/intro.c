@@ -132,7 +132,6 @@ const char *introGetQuestion(int v1, int v2);
 int introDoQuestion(int answer);
 int introHandleQuestionChoice(int choice);
 void introInitPlayers(SaveGame *saveGame);
-int introBaseMenuKeyHandler(int key, Menu *menu);
 
 void introMainOptionsMenuItemActivate(Menu menu, ActivateAction action);
 void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action);
@@ -282,9 +281,10 @@ int introInit() {
     speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 7, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
     minorOptions = menuAddItem(minorOptions, 3, "Screen Shaking", 7, 5, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
-    minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 7, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
-    minorOptions = menuAddItem(minorOptions, 1, "Slime Divides", 7, 7, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
-    minorOptions = menuAddItem(minorOptions, 2, "Fixed Chest Traps", 7, 8, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
+    minorOptions = menuAddItem(minorOptions, 4, "Ultima V Spell Mixing", 7, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
+    minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 7, 7, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
+    minorOptions = menuAddItem(minorOptions, 1, "Slime Divides", 7, 8, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
+    minorOptions = menuAddItem(minorOptions, 2, "Fixed Chest Traps", 7, 9, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
     minorOptions = menuAddItem(minorOptions, 0xFE, "Use These Settings", 7, 20, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
     minorOptions = menuAddItem(minorOptions, 0xFF, "Cancel", 7, 21, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
@@ -748,9 +748,10 @@ void introUpdateScreen() {
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Minor Game Enhancement Options:");
         screenTextAt(31, 5,  "%s", settings->minorEnhancementsOptions.screenShakes ? "On" : "Off");
-        screenTextAt(31, 6,  "%s", settings->minorEnhancementsOptions.u5shrines ? "On" : "Off");
-        screenTextAt(31, 7,  "%s", settings->minorEnhancementsOptions.slimeDivides ? "On" : "Off");
-        screenTextAt(31, 8,  "%s", settings->minorEnhancementsOptions.c64chestTraps ? "On" : "Off");
+        screenTextAt(31, 6,  "%s", settings->minorEnhancementsOptions.u5spellMixing ? "On" : "Off");
+        screenTextAt(31, 7,  "%s", settings->minorEnhancementsOptions.u5shrines ? "On" : "Off");
+        screenTextAt(31, 8,  "%s", settings->minorEnhancementsOptions.slimeDivides ? "On" : "Off");
+        screenTextAt(31, 9,  "%s", settings->minorEnhancementsOptions.c64chestTraps ? "On" : "Off");
         menuShow(menuGetRoot(minorOptions));
         break;
 
@@ -1240,7 +1241,8 @@ void introInitPlayers(SaveGame *saveGame) {
 /**
  * The base key handler for the configuration menus
  */
-int introBaseMenuKeyHandler(int key, Menu *menu) {
+int introBaseMenuKeyHandler(int key, void *data) {
+    Menu *menu = (Menu *)data;
     char cancelKey = (mode == INTRO_CONFIG) ? 'm' : 'c';
     char saveKey = (mode == INTRO_CONFIG) ? '\0' : 'u';
 
@@ -1550,6 +1552,9 @@ void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
     case 3:
         settings->minorEnhancementsOptions.screenShakes = settings->minorEnhancementsOptions.screenShakes ? 0 : 1;
+        break;
+    case 4:
+        settings->minorEnhancementsOptions.u5spellMixing = settings->minorEnhancementsOptions.u5spellMixing ? 0 : 1;
         break;
     case 0xFE:        
         settingsWrite();        

@@ -19,6 +19,7 @@ Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, Acti
     menuItem->x = x;
     menuItem->y = y;
     menuItem->isHighlighted = 0;
+    menuItem->isSelected = 0;
     menuItem->isVisible = 1;
     menuItem->activateMenuItem = activate;
     menuItem->activateOn = activateOn;
@@ -39,25 +40,46 @@ MenuItem *menuGetItem(Menu current) {
 int menuShow(Menu menu) {
     Menu current;
 
-    for (current = menu; current; current = current->next) {
-        MenuItem *menuItem = menuGetItem(current);
+    if (menuCheckVisible(menu)) {
+        for (current = menu; current; current = current->next) {
+            MenuItem *menuItem = menuGetItem(current);
         
-        if (menuItem->isVisible) {
-            screenTextAt(menuItem->x, menuItem->y, menuItem->text);
-            if (menuItem->isHighlighted) {
-                screenEnableCursor();
-                screenSetCursorPos(menuItem->x - 2, menuItem->y);
-                screenShowCursor();
+            if (menuItem->isVisible) {
+                if (menuItem->isSelected)
+                    screenTextAt(menuItem->x-1, menuItem->y, "*%s", menuItem->text);
+                else screenTextAt(menuItem->x, menuItem->y, menuItem->text);
+
+                if (menuItem->isHighlighted) {
+                    screenEnableCursor();
+                    screenSetCursorPos(menuItem->x - 2, menuItem->y);
+                    screenShowCursor();
+                }            
             }
         }
+        return 1;
     }
-    return 1;
+    return 0;
+}
+
+int menuCheckVisible(Menu menu) {
+    Menu current = menuGetRoot(menu);
+    int visible = 0;
+    
+    while (current) {
+        if (menuGetItem(current)->isVisible)
+            visible = 1;
+        current = current->next;
+    }
+    return visible;
 }
 
 /**
  * Returns the next available menu item
  */
 Menu menuGetNextItem(Menu current) {
+    if (!menuCheckVisible(current))
+        return NULL;
+
     if (current->next != NULL) {
         /* if the item is not visible, skip it! */
         if (menuGetItem(current->next)->isVisible)
@@ -65,13 +87,20 @@ Menu menuGetNextItem(Menu current) {
         return menuGetNextItem(current->next);
     }
     /* wrap around to first node in the list */
-    else return menuGetRoot(current);
+    else {
+        if (menuGetItem(menuGetRoot(current))->isVisible)
+            return menuGetRoot(current);
+        else return menuGetNextItem(menuGetRoot(current));
+    }
 }
 
 /**
  * Returns the previous available menu item
  */
 Menu menuGetPreviousItem(Menu current) {
+    if (!menuCheckVisible(current))
+        return NULL;
+
     if (current->prev != NULL) {
         /* if the item is not visible, skip it! */
         if (menuGetItem(current->prev)->isVisible)
@@ -83,7 +112,9 @@ Menu menuGetPreviousItem(Menu current) {
         Menu m = current;
         while (m->next)
             m = m->next;
-        return m;
+        if (menuGetItem(m)->isVisible)
+            return m;
+        else return menuGetPreviousItem(m);
     }
 }
 
@@ -92,6 +123,9 @@ Menu menuGetPreviousItem(Menu current) {
  */
 Menu menuGetRoot(Menu current) {
     Menu m = current;
+    if (!current)
+        return NULL;
+
     while (m->prev)
         m = m->prev;
     return m;
@@ -137,15 +171,22 @@ void menuDelete(Menu menu) {
  */
 Menu menuReset(Menu current) {
     Menu item,
-         m = menuGetRoot(current);    
+         m = menuGetRoot(current);
 
-    /* un-highlight each menu item */
-    for (item = m; item; item = item->next)
+    /* un-highlight and deselect each menu item */
+    for (item = m; item; item = item->next) {
         menuGetItem(item)->isHighlighted = 0;        
+        menuGetItem(item)->isSelected = 0;
+    }
 
-    /* highlight the first menu item */
-    menuGetItem(m)->isHighlighted = 1;    
-    return m;
+    /* get the first visible menu item */
+    if (m && !menuGetItem(m)->isVisible)
+        m = menuGetNextItem(m);
+
+    /* highlight the first visible menu item */
+    if (m)
+        menuGetItem(m)->isHighlighted = 1;
+    return m ? m : current;
 }
 
 /**

@@ -18,6 +18,7 @@
 #include "game.h"
 #include "location.h"
 #include "mapmgr.h"
+#include "menu.h"
 #include "monster.h"
 #include "movement.h"
 #include "names.h"
@@ -428,12 +429,18 @@ int combatBaseKeyHandler(int key, void *data) {
             return 1;
         }
 
-    case 'z':
-        c->statsItem = (StatsItem) (STATS_CHAR1 + focus);
-        statsUpdate();
+    case 'z': 
+        {            
+            c->statsItem = (StatsItem) (STATS_CHAR1 + focus);
+            statsUpdate();
 
-        eventHandlerPushKeyHandler(&gameZtatsKeyHandler);
-        screenMessage("Ztats\n");        
+            /* reset the spell mix menu and un-highlight the current item,
+               and hide reagents that you don't have */            
+            gameResetSpellMixing();
+
+            eventHandlerPushKeyHandler(&gameZtatsKeyHandler);
+            screenMessage("Ztats\n");        
+        }
         break;
 
     case 'v' + U4_ALT:

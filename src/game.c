@@ -26,6 +26,7 @@
 #include "item.h"
 #include "location.h"
 #include "mapmgr.h"
+#include "menu.h"
 #include "monster.h"
 #include "moongate.h"
 #include "movement.h"
@@ -54,6 +55,7 @@ void gameCastSpell(unsigned int spell, int caster, int param);
 void gameInnHandler(void);
 int gameCheckPlayerDisabled(int player);
 void gameGetPlayerForCommand(int (*commandFn)(int player));
+int gameSpellMixHowMany(const char *message);
 int moveAvatar(Direction dir, int userEvent);
 int attackAtCoord(int x, int y, int distance, void *data);
 int castForPlayer2(int spell, void *data);
@@ -100,8 +102,14 @@ int collisionOverride = 0;
 int windLock = 0;
 char itemNameBuffer[16];
 char monsterNameBuffer[32];
+char howmany[3];
 int paused = 0;
 int pausedTimer = 0;
+
+/* FIXME */
+Mixture *mix;
+int mixSpell;
+Menu spellMixMenu;
 
 void gameInit() {    
     FILE *saveGameFile, *monstersFile;
@@ -167,7 +175,17 @@ void gameInit() {
     musicPlay();
     screenDrawBackground(BKGD_BORDERS);
     statsUpdate();
-    screenPrompt();
+    screenPrompt();    
+
+    spellMixMenu = menuAddItem(spellMixMenu, 0, "Ash", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 1, "Ginseng", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 2, "Garlic", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 3, "Silk", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 4, "Moss", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 5, "Pearl", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 6, "Nightshade", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    spellMixMenu = menuAddItem(spellMixMenu, 7, "Mandrake", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
+    gameResetSpellMixing();    
 }
 
 /**
@@ -769,6 +787,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'm':
         screenMessage("Mix reagents\n");
+        
         alphaInfo = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
         alphaInfo->lastValidLetter = 'z';
         alphaInfo->handleAlpha = mixReagentsForSpell;
@@ -776,7 +795,7 @@ int gameBaseKeyHandler(int key, void *data) {
         alphaInfo->data = NULL;
 
         screenMessage("%s", alphaInfo->prompt);
-        eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
+        eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);        
 
         c->statsItem = STATS_MIXTURES;
         statsUpdate();
@@ -1117,6 +1136,147 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
     }    
 
     return valid || keyHandlerDefault(key, NULL);
+}
+
+/**
+ * Handles spell mixing for the Ultima V-style menu-system
+ */
+int gameSpellMixMenuKeyHandler(int key, void *data) {
+    Menu *menu = (Menu *)data;    
+    
+    switch(key) {
+    case U4_UP:
+        if (menuCheckVisible(*menu))
+            *menu = menuHighlightNew(*menu, menuGetPreviousItem(*menu));
+        break;
+    case U4_DOWN:
+        if (menuCheckVisible(*menu))            
+            *menu = menuHighlightNew(*menu, menuGetNextItem(*menu));
+        break;
+    case U4_LEFT:
+    case U4_RIGHT:
+    case U4_SPACE:
+        if (menuCheckVisible(*menu)) {
+            menuGetItem(*menu)->isSelected = !menuGetItem(*menu)->isSelected;
+            if (menuGetItem(*menu)->isSelected)
+                mixtureAddReagent(mix, menuGetItem(*menu)->id);
+            else mixtureRemoveReagent(mix, menuGetItem(*menu)->id);
+        }
+        break;
+    case U4_ENTER:
+        /* you have reagents! */
+        if (menuCheckVisible(*menu))
+        {
+            ReadBufferActionInfo *rbInfo;
+
+            screenHideCursor();
+            eventHandlerPopKeyHandler();
+            c->statsItem = STATS_MIXTURES;
+            statsUpdate();
+         
+            memset(howmany, 0, sizeof(howmany));
+            rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+            rbInfo->buffer = howmany;
+            rbInfo->bufferLen = sizeof(howmany);
+            rbInfo->handleBuffer = &gameSpellMixHowMany;
+            rbInfo->screenX = TEXT_AREA_X + c->col + 10;
+            rbInfo->screenY = TEXT_AREA_Y + c->line;
+            eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, rbInfo);
+            screenMessage("How many? ");
+        }
+        /* you don't have any reagents */
+        else {
+            eventHandlerPopKeyHandler();
+            c->statsItem = STATS_PARTY_OVERVIEW;
+            statsUpdate();
+            screenEnableCursor();
+            (*c->location->finishTurn)();
+        }
+        return 1;
+    case U4_ESC:
+        eventHandlerPopKeyHandler();
+
+        mixtureRevert(mix);
+        mixtureDelete(mix);
+
+        screenHideCursor();
+        c->statsItem = STATS_PARTY_OVERVIEW;
+        statsUpdate();
+        screenMessage("\n");        
+        
+        screenEnableCursor();
+        (*c->location->finishTurn)();
+    default:
+        return 0;
+    }
+    
+    statsUpdate();
+    return 1;
+}
+
+void gameResetSpellMixing(void) {
+    Menu current;
+    int i, row;   
+
+    current = menuGetRoot(spellMixMenu);
+
+    i = 0;
+    row = 0;
+    while (current) {
+        if (c->saveGame->reagents[i++] > 0) {
+            menuGetItem(current)->isVisible = 1;
+            menuGetItem(current)->y = STATS_AREA_Y + row;
+            row++;
+        }
+        else menuGetItem(current)->isVisible = 0;
+            
+        current = current->next;
+    }
+
+    if (menuCheckVisible(spellMixMenu)) {
+        spellMixMenu = menuReset(spellMixMenu);    
+        menuGetItem(spellMixMenu)->isHighlighted = 0;
+    }
+}
+
+int gameSpellMixHowMany(const char *message) {
+    int i, num;
+    
+    eventHandlerPopKeyHandler();
+
+    num = (int) strtol(message, NULL, 10);
+    screenMessage("\nMixing %d...\n", num);
+
+    for (i = 0; i < REAG_MAX; i++) {
+        /* see if there's enough reagents to mix (-1 because one is being mixed now) */
+        if (mix->reagents[i] > 0 && c->saveGame->reagents[i] < num-1) {
+            screenMessage("\nYou don't have enough reagents to mix %d spells!\n\n", num);
+            mixtureRevert(mix);
+            mixtureDelete(mix);
+            (*c->location->finishTurn)();
+            return 0;
+        }
+    }
+       
+    screenMessage("\nYou mix the Reagents, and...\n");
+    if (spellMix(mixSpell, mix)) {
+        screenMessage("Success!\n\n");
+        /* mix the extra spells */
+        for (i = 0; i < num-1; i++)
+            spellMix(mixSpell, mix);
+        /* subtract the reagents from inventory */
+        for (i = 0; i < REAG_MAX; i++) {
+            if (mix->reagents[i] > 0)
+                c->saveGame->reagents[i] -= num-1;
+        }
+    }
+    else 
+        screenMessage("It Fizzles!\n\n");
+
+    mixtureDelete(mix);
+
+    (*c->location->finishTurn)();
+    return 1;        
 }
 
 /**
@@ -1834,28 +1994,34 @@ int readyForPlayer2(int w, void *data) {
     return 1;
 }
 
-/* FIXME */
-Mixture *mix;
-int mixSpell;
-
 /**
  * Mixes reagents for a spell.  Prompts for reagents.
  */
 int mixReagentsForSpell(int spell, void *data) {
-    GetChoiceActionInfo *info;
+    GetChoiceActionInfo *info;    
 
     mixSpell = spell;
-    mix = mixtureNew();
+    mix = mixtureNew();    
+    
+    /* do we use the Ultima V menu system? */
+    if (settings->minorEnhancements && settings->minorEnhancementsOptions.u5spellMixing) {
+        screenMessage("%s\n", spellGetName(spell));
+        screenDisableCursor();
+        gameResetSpellMixing();
+        menuGetItem(spellMixMenu)->isHighlighted = 1;        
+        eventHandlerPushKeyHandlerData(&gameSpellMixMenuKeyHandler, &spellMixMenu);            
+    }
+    else {
+        screenMessage("%s\nReagent: ", spellGetName(spell));    
 
-    screenMessage("%s\nReagent: ", spellGetName(spell));
+        info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+        info->choices = "abcdefgh\n\r \033";
+        info->handleChoice = &mixReagentsForSpell2;
+        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
+    }
 
     c->statsItem = STATS_REAGENTS;
     statsUpdate();
-
-    info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-    info->choices = "abcdefgh\n\r \033";
-    info->handleChoice = &mixReagentsForSpell2;
-    eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
 
     return 0;
 }
@@ -2287,8 +2453,12 @@ int wearForPlayer2(int a, void *data) {
  * Called when the player selects a party member for ztats
  */
 int ztatsFor(int player) {
+    /* reset the spell mix menu and un-highlight the current item,
+       and hide reagents that you don't have */
+    gameResetSpellMixing();
+
     c->statsItem = (StatsItem) (STATS_CHAR1 + player);
-    statsUpdate();
+    statsUpdate();    
 
     eventHandlerPushKeyHandler(&gameZtatsKeyHandler);    
     return 1;

@@ -12,17 +12,13 @@
 #include "armor.h"
 #include "context.h"
 #include "debug.h"
+#include "menu.h"
 #include "names.h"
 #include "player.h"
 #include "savegame.h"
 #include "screen.h"
 #include "ttype.h"
 #include "weapon.h"
-
-#define STATS_AREA_WIDTH 15
-#define STATS_AREA_HEIGHT 8
-#define STATS_AREA_X TEXT_AREA_X
-#define STATS_AREA_Y 1
 
 void statsAreaClear();
 void statsAreaSetTitle(const char *title);
@@ -331,20 +327,25 @@ void statsShowItems() {
  * Unmixed reagents in inventory.
  */
 void statsShowReagents() {
-    int r, line;
+    int r, line;    
+    extern Menu spellMixMenu;
 
-    statsAreaSetTitle("Reagents");
-
+    statsAreaSetTitle("Reagents");    
+    
     line = STATS_AREA_Y;
     for (r = REAG_ASH; r < REAG_MAX; r++) {
         int n = c->saveGame->reagents[r];
         if (n >= 100)
             n = 99;
-        if (n >= 10)
-            screenTextAt(STATS_AREA_X, line++, "%c%d-%s", r - REAG_ASH + 'A', n, getReagentName((Reagent) r));
-        else if (n >= 1)
-            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", r - REAG_ASH + 'A', n, getReagentName((Reagent) r));
+
+        /* show the quantity for the item */
+        if (n > 0) {          
+            screenTextAt(STATS_AREA_X, line, "%c-", r+'A');
+            screenTextAt(STATS_AREA_X+13, line++, "%2d", n);
+        }
     }
+
+    menuShow(menuGetRoot(spellMixMenu));
 }
 
 /**

@@ -41,6 +41,7 @@ typedef struct _SettingsMinorOptions {
     int slimeDivides;
     int c64chestTraps;
     int screenShakes;
+    int u5spellMixing;
 } SettingsMinorOptions;
 
 typedef struct _SettingsMajorOptions {
