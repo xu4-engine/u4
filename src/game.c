@@ -601,7 +601,7 @@ int gameBaseKeyHandler(int key, void *data) {
     unsigned char tile;
 
     /* Translate context-sensitive action key into a useful command */
-    if (key == U4_ENTER) {
+    if (key == U4_ENTER && settings->minorEnhancements && settings->minorEnhancementsOptions.smartEnterKey) {
         /* Attempt to guess based on the character's surroundings etc, what
            action they want */
         

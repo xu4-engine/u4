@@ -298,6 +298,7 @@ int introInit() {
     minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 7, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
     minorOptions = menuAddItem(minorOptions, 1, "Slime Divides", 7, 7, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
     minorOptions = menuAddItem(minorOptions, 2, "Fixed Chest Traps", 7, 8, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
+    minorOptions = menuAddItem(minorOptions, 5, "Smart 'Enter' Key", 7, 9, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
     minorOptions = menuAddItem(minorOptions, 0xFE, "Use These Settings", 7, 20, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
     minorOptions = menuAddItem(minorOptions, 0xFF, "Cancel", 7, 21, &introMinorOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
@@ -491,6 +492,8 @@ int introKeyHandler(int key, void *data) {
             case 'd': advancedOptions = menuActivateItem(advancedOptions, 2, ACTIVATE_NORMAL); break;            
             case 'k': advancedOptions = menuActivateItem(advancedOptions, 3, ACTIVATE_NORMAL); break;
             case 's': advancedOptions = menuActivateItem(advancedOptions, 4, ACTIVATE_NORMAL); break;
+            case 'n': advancedOptions = menuActivateItem(advancedOptions, 0, ACTIVATE_NORMAL); break;
+            case 'j': advancedOptions = menuActivateItem(advancedOptions, 1, ACTIVATE_NORMAL); break;
             default: break;
             }
         }
@@ -785,6 +788,7 @@ void introUpdateScreen() {
         screenTextAt(31, 6,  "%s", settingsChanged->minorEnhancementsOptions.u5shrines ? "On" : "Off");
         screenTextAt(31, 7,  "%s", settingsChanged->minorEnhancementsOptions.slimeDivides ? "On" : "Off");
         screenTextAt(31, 8,  "%s", settingsChanged->minorEnhancementsOptions.c64chestTraps ? "On" : "Off");
+        screenTextAt(31, 9,  "%s", settingsChanged->minorEnhancementsOptions.smartEnterKey ? "On" : "Off");
         menuShow(menuGetRoot(minorOptions));
         break;
 
@@ -1683,6 +1687,9 @@ void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;    
     case 4:
         settingsChanged->minorEnhancementsOptions.u5spellMixing = settingsChanged->minorEnhancementsOptions.u5spellMixing ? 0 : 1;
+        break;
+    case 5:
+        settingsChanged->minorEnhancementsOptions.smartEnterKey = settingsChanged->minorEnhancementsOptions.smartEnterKey ? 0 : 1;
         break;
     case 0xFE:        
         /* save settings */
