@@ -79,10 +79,15 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
     musicPlay();
 
     for (i = 0; i < c->saveGame->members; i++) {
-        if (c->saveGame->players[i].status != STAT_DEAD)
+        if (c->saveGame->players[i].status != STAT_DEAD) {
             party[i] = mapAddObject(c->location->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->location->map->area->player_start[i].x, c->location->map->area->player_start[i].y, c->location->z);
+            
+            /* Replace the party mamber with a sleeping person if they're asleep */
+            if (c->saveGame->players[i].status == STAT_SLEEPING)
+                party[i]->tile = CORPSE_TILE;
+        }
         else
-            party[i] = NULL;
+            party[i] = NULL;            
     }
     for (; i < 8; i++)
         party[i] = NULL;
@@ -108,6 +113,7 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
 
     screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, weaponGetName(c->saveGame->players[focus].weapon));
     statsHighlightCharacter(focus);
+    statsUpdate(); /* If a character was awakened inbetween world view and combat, this fixes stats info */
 }
 
 
@@ -200,6 +206,8 @@ void combatCreateMonster(int index, int canbeleader) {
 }
 
 void combatFinishTurn() {
+    int i;
+
     if (combatIsWon()) {
         eventHandlerPopKeyHandler();
         combatEnd();
@@ -217,10 +225,11 @@ void combatFinishTurn() {
     do {
         /* put the focus on the next party member */
         focus++;
+
         annotationCycle();
 
         /* move monsters and wrap around at end */
-        if (focus >= c->saveGame->members) {
+        if (focus >= c->saveGame->members) {            
             
             combatMoveMonsters();
 
@@ -242,12 +251,19 @@ void combatFinishTurn() {
             /* adjust food and moves */
             playerEndTurn(c->saveGame);
 
+            /* put a sleeping person in place of the player,
+               or restore an awakened member to their original state */
+            for (i = 0; i < c->saveGame->members; i++) {                
+                if (c->saveGame->players[i].status == STAT_SLEEPING)
+                    party[i]->tile = CORPSE_TILE;
+                else party[i]->tile = tileForClass(c->saveGame->players[i].klass);
+            }
+
             /* check if aura has expired */
             if (c->auraDuration > 0) {
                 if (--c->auraDuration == 0)
                     c->aura = AURA_NONE;
             }
-
         }
     } while (!party[focus] ||    /* dead */
              c->saveGame->players[focus].status == STAT_SLEEPING);
@@ -652,7 +668,7 @@ void combatMoveMonsters() {
         case CA_FLEE:
         case CA_ADVANCE:
             if (moveCombatObject(action, c->location->map, combat_monsters[i], party[target]->x, party[target]->y)) {
-                if (MAP_IS_OOB(c->location->map, combat_monsters[i]->x, combat_monsters[i]->y)) {
+                if (MAP_IS_OOB(c->location->map, (int)combat_monsters[i]->x, (int)combat_monsters[i]->y)) {
                     screenMessage("\n%s Flees!\n", m->name);
                     mapRemoveObject(c->location->map, combat_monsters[i]);
                     combat_monsters[i] = NULL;

@@ -84,7 +84,7 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
     }
     
     /* was the object slowed? */
-    if (!(*slowedCallback)(slowedParam))
+    if ((*slowedCallback)(slowedParam))
         return 0;
 
     if ((newx != obj->x || newy != obj->y) &&
@@ -144,7 +144,7 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
     if (obj->objType == OBJECT_MONSTER && monsterFlies(obj->monster))
         slowedCallback = &slowedHandlerNone;
 
-    if ((*slowedCallback)(slowedParam)) {
+    if (!(*slowedCallback)(slowedParam)) {
         if (newx != obj->x ||
             newy != obj->y) {
             obj->prevx = obj->x;
@@ -161,7 +161,7 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
  
 /**
  * Default handler for slowing movement.
- * Returns 0 if slowed, 1 if not slowed
+ * Returns 1 if slowed, 0 if not slowed
  */
 
 int slowedHandlerDefault(int tile) {
@@ -183,7 +183,7 @@ int slowedHandlerDefault(int tile) {
         break;
     }
 
-    return slow ? 0 : 1;
+    return slow;
 }
 
 /**
@@ -191,21 +191,21 @@ int slowedHandlerDefault(int tile) {
  */
 
 int slowedHandlerNone(int unused) {
-    return 1;
+    return 0;
 }
 
 /**
  * Slowed depending on the direction of object with respect to wind direction
- * Returns 0 if slowed, 1 if not slowed
+ * Returns 1 if slowed, 0 if not slowed
  */
 
 int slowedHandlerWind(int direction) {
     /* 1 of 4 moves while trying to move into the wind succeeds */
     if (direction == c->windDirection)
-        return (c->saveGame->moves % 4) == 0;
+        return (c->saveGame->moves % 4) != 0;
     /* 1 of 4 moves while moving directly away from wind fails */
     else if (direction == dirReverse((Direction) c->windDirection))
-        return (c->saveGame->moves % 4) != 3;    
+        return (c->saveGame->moves % 4) == 3;    
     else
-        return 1;
+        return 0;
 }

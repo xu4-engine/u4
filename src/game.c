@@ -1934,7 +1934,7 @@ int moveAvatar(Direction dir, int userEvent) {
 
     if (tileIsBalloon(c->saveGame->transport) && userEvent) {
         screenMessage("Drift Only!\n");
-        goto done;
+        return result;
     }
 
     if (tileIsShip(c->saveGame->transport)) {
@@ -1942,7 +1942,7 @@ int moveAvatar(Direction dir, int userEvent) {
             tileSetDirection((unsigned char *)&c->saveGame->transport, dir);
             if (!settings->filterMoveMessages)
                 screenMessage("Turn %s!\n", getDirectionName(dir));
-            goto done;
+            return result;
         }
     }
 
@@ -1967,11 +1967,14 @@ int moveAvatar(Direction dir, int userEvent) {
 
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
         switch (c->location->map->border_behavior) {        
+        case BORDER_WRAP:
+            mapWrapCoordinates(c->location->map, &newx, &newy);
+            break;
 
         case BORDER_EXIT2PARENT:
             screenMessage("Leaving...\n");
             gameExitToParentMap(c);
-            goto done;
+            return result;
 
         case BORDER_FIXED:
             if (newx < 0 || newx >= (int) c->location->map->width)
@@ -1980,10 +1983,7 @@ int moveAvatar(Direction dir, int userEvent) {
                 newy = c->location->y;
             break;
         }
-    }
-
-    /* wrap coordinates if we're on a wrapping map */
-    mapWrapCoordinates(c->location->map, &newx, &newy);
+    }   
 
     if (!collisionOverride) {
         int movementMask;
@@ -1994,19 +1994,18 @@ int moveAvatar(Direction dir, int userEvent) {
             if (settings->shortcutCommands) {
                 if (tileIsDoor(mapTileAt(c->location->map, newx, newy, c->location->z))) {
                     openAtCoord(newx, newy, 1, NULL);
-                    goto done;
+                    return result;
                 } else if (tileIsLockedDoor(mapTileAt(c->location->map, newx, newy, c->location->z))) {
                     jimmyAtCoord(newx, newy, 1, NULL);
-                    goto done;
+                    return result;
                 } /*else if (mapPersonAt(c->location->map, newx, newy, c->location->z) != NULL) {
                     talkAtCoord(newx, newy, 1, NULL);
-                    goto done;
+                    return result;
                     }*/
             }
 
-            screenMessage("Blocked!\n");
-            result = 0;
-            goto done;
+            screenMessage("Blocked!\n");            
+            return (result = 0);
         }
 
         /* Are we slowed by terrain or by wind direction? */
@@ -2014,11 +2013,11 @@ int moveAvatar(Direction dir, int userEvent) {
             dir :
             mapTileAt(c->location->map, newx, newy, c->location->z);
 
-        if (!(*slowedCallback)(slowedParam)) {
+        if ((*slowedCallback)(slowedParam)) {
             if (!settings->filterMoveMessages)
                 screenMessage("Slow progress!\n");
             result = 0;
-            goto done;
+            return result;
         }
     }
 
@@ -2027,9 +2026,7 @@ int moveAvatar(Direction dir, int userEvent) {
 
     gameCheckBridgeTrolls();
     gameCheckSpecialMonsters(dir);
-    gameCheckMoongates();
-
- done:
+    gameCheckMoongates(); 
 
     return result;
 }
