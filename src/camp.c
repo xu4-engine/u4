@@ -39,11 +39,14 @@ int campHeal(void);
 void innTimer(void *data);
 
 void campBegin(void) {
+    
+    /* go to camp music and wait a bit to change to camp view */
+    musicCamp();
+    eventHandlerSleep(1000);
+    
     /* setup camp (possible, but not for-sure combat situation */
     combatBegin(&camp_map, NULL, 0);
     
-    musicFadeOut(2000); /* Fade volume out to ease into camp */    
-
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
     eventHandlerAddTimerCallback(&campTimer, 4 * 10);    
 
@@ -59,58 +62,35 @@ void campTimer(void *data) {
     /* Is the party ambushed during their rest? */
     if (rand() % 8 == 0) {
         
-        int i, j,
-            numAmbushingMonsters = 0,
-            randMonster;
-        extern CombatInfo combatInfo;        
-        extern int numMonsters;
-        extern Monster monsters[MAX_MONSTERS];
+        int i, j, numAmbushingMonsters;
+        extern CombatInfo combatInfo;
+        const Monster *m;
 
-        /* first, find out how many monsters exist that might ambush you during camp */
-        for (i = 0; i < numMonsters; i++) {
-            if (monsterAmbushes(&monsters[i]))
-                numAmbushingMonsters++;
-        }
+        m = monsterGetAmbushingMonster();
+                
+        musicPlay();
+        musicFadeIn(0);
+        screenMessage("Ambushed!\n");
         
-        if (numAmbushingMonsters > 0) {
-            /* now, randomely select one of them */
-            randMonster = rand() % numAmbushingMonsters;
-            numAmbushingMonsters = 0;
+        /* assign the monster object for combat */
+        combatInfo.monsterObj = mapAddMonsterObject(c->location->prev->map, m, c->location->prev->x, c->location->prev->y, c->location->prev->z);
+        
+        /* numAmbushingMonsters is the number of creatures we will have in combat */
+        numAmbushingMonsters = combatInitialNumberOfMonsters(m);
 
-            /* now, find the one we selected and create monsters */
-            for (i = 0; i < numMonsters; i++) {
-                if (monsterAmbushes(&monsters[i])) {
-                    if (numAmbushingMonsters == randMonster) {
+        /* create the monsters */
+        for (i = 0; i < numAmbushingMonsters; i++) {
+            /* find a random free slot in the monster table */
+            do {j = rand() % AREA_MONSTERS;} while (combatInfo.monsters[j] != NULL);
+            combatCreateMonster(j, i != (numAmbushingMonsters - 1));
+        }
 
-                        musicPlay();
-                        musicFadeIn(0);
-                        screenMessage("Ambushed!\n");
-                        
-                        /* assign the monster object for combat */
-                        combatInfo.monsterObj = mapAddMonsterObject(c->location->prev->map, &monsters[i], c->location->prev->x, c->location->prev->y, c->location->prev->z);
-                        
-                        /* numAmbushingMonsters now is the number of creatures we will have in combat */
-                        numAmbushingMonsters = combatInitialNumberOfMonsters(&monsters[i]);
+        /* ok, we're done creating monsters, let's destroy this monster object
+           so it won't leave a treasure chest behind */
+        mapRemoveObject(c->location->prev->map, combatInfo.monsterObj);
 
-                        for (i = 0; i < numAmbushingMonsters; i++) {
-                            /* find a random free slot in the monster table */
-                            do {j = rand() % AREA_MONSTERS;} while (combatInfo.monsters[j] != NULL);
-                            combatCreateMonster(j, i != (numAmbushingMonsters - 1));
-                        }
-
-                        /* ok, we're done creating monsters, let's destroy this monster object
-                           so it won't leave a treasure chest behind */
-                        mapRemoveObject(c->location->prev->map, combatInfo.monsterObj);
-
-                        /* monsters go first! */
-                        combatFinishTurn();                        
-
-                        break;
-                    }
-                    else numAmbushingMonsters++;                    
-                }
-            }
-        }        
+        /* monsters go first! */
+        combatFinishTurn();          
     }    
     else campEnd();
 }

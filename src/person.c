@@ -559,10 +559,10 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
     else if (tolower(answer[0]) == 'n') {        
         reply = strdup("\n\nHe says: Let me heal thy wounds!\n");
         for (i = 0; i < c->saveGame->members; i++) {
-            c->saveGame->players[i].status = STAT_GOOD; // res. and cure the party            
-            playerHeal(c->saveGame, HT_FULLHEAL, i); // heal the party
+            playerHeal(c->saveGame, HT_CURE, i);        // cure the party
+            playerHeal(c->saveGame, HT_FULLHEAL, i);    // heal the party
         }        
-        (*spellCallback)('r', -1); // Same effect as resurrection spell
+        (*spellCallback)(-1, -1); // Default spell effect
 
         statsUpdate();
     }

@@ -78,7 +78,7 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
         monster->monster :
         (monster) ? monsterForTile(monster->tile) : NULL;
     combatInfo.isNormalCombat = isNormalCombat;
-    combatInfo.isCamping = (!isNormalCombat && !monster);
+    combatInfo.isCamping = (!isNormalCombat && !monster);    
 
     gameSetMap(c, map, 1, NULL);    
         
@@ -149,8 +149,8 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
     /* if the party is ready to fight, show info for the first active player */
     if (partyIsReadyToFight) {
         screenMessage("%s with %s\n\020", c->saveGame->players[combatInfo.focus].name, weaponGetName(c->saveGame->players[combatInfo.focus].weapon));
-        statsHighlightCharacter(combatInfo.focus);
         statsUpdate(); /* If a character was awakened inbetween world view and combat, this fixes stats info */
+        statsHighlightCharacter(combatInfo.focus);        
     }
 }
 

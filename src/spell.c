@@ -85,7 +85,8 @@ const Spell spells[] = {
     { "Blink",        SILK | MOSS,              CTX_WORLDMAP, &spellBlink,   SPELLPRM_DIR,     15 },
     { "Cure",         GINSENG | GARLIC,         CTX_ANY,      &spellCure,    SPELLPRM_PLAYER,  5 },
     { "Dispel",       ASH | GARLIC | PEARL,     CTX_ANY,      &spellDispel,  SPELLPRM_DIR,     20 },
-    { "Energy Field", ASH | SILK | PEARL, CTX_COMBAT | CTX_DUNGEON, &spellEField, SPELLPRM_TYPEDIR, 10 },
+    { "Energy Field", ASH | SILK | PEARL,       CTX_COMBAT | CTX_DUNGEON,
+                                                              &spellEField,  SPELLPRM_TYPEDIR, 10 },
     { "Fireball",     ASH | PEARL,              CTX_COMBAT,   &spellFireball,SPELLPRM_DIR,     15 },
     { "Gate",         ASH | PEARL | MANDRAKE,   CTX_WORLDMAP, &spellGate,    SPELLPRM_PHASE,   40 },
     { "Heal",         GINSENG | SILK,           CTX_ANY,      &spellHeal,    SPELLPRM_PLAYER,  10 },
@@ -279,7 +280,7 @@ int spellMagicAttackDamage;
 
 void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxDamage) {
     extern CombatInfo combatInfo;    
-    int focus = combatInfo.focus;    
+    int focus = combatInfo.focus;
     CoordActionInfo *info;
 
     spellMagicAttackDamage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
@@ -296,7 +297,7 @@ void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxD
     info->prev_x = info->prev_y = -1;
     info->range = 11;
     info->validDirections = MASK_DIR_ALL;
-    info->player = focus;        
+    info->player = focus;
     info->blockedPredicate = &tileCanAttackOver;
     info->blockBefore = 1;
     info->firstValidDistance = 1;
@@ -307,24 +308,24 @@ void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxD
 }
 
 int spellMagicAttackAtCoord(int x, int y, int distance, void *data) {
-    int monster;    
+    int monster;
     int i;
     extern CombatInfo combatInfo;
-    CoordActionInfo* info = (CoordActionInfo*)data;    
+    CoordActionInfo* info = (CoordActionInfo*)data;
     int oldx = info->prev_x,
         oldy = info->prev_y;
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
-    int focus = combatInfo.focus;    
+    int focus = combatInfo.focus;
     
     info->prev_x = x;
-    info->prev_y = y;   
+    info->prev_y = y;
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (oldx >= 0) && (oldy >= 0))
         annotationRemove(oldx, oldy, c->location->z, c->location->map->id, spellMagicAttackTile);
 
     /* Check to see if we might hit something */
-    if (x != -1 && y != -1) {   
+    if (x != -1 && y != -1) {
 
         monster = -1;
         for (i = 0; i < AREA_MONSTERS; i++) {
@@ -332,7 +333,7 @@ int spellMagicAttackAtCoord(int x, int y, int distance, void *data) {
                 combatInfo.monsters[i]->x == x &&
                 combatInfo.monsters[i]->y == y)
                 monster = i;
-        }   
+        }
 
         if (monster == -1) {
             annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, spellMagicAttackTile));
@@ -518,7 +519,7 @@ static int spellJinx(int unused) {
 }
 
 static int spellKill(int dir) {
-    spellMagicAttack(WHIRLPOOL_TILE, (Direction)dir, 255, 255);
+    spellMagicAttack(WHIRLPOOL_TILE, (Direction)dir, -1, 232);
     return 1;
 }
 
@@ -591,7 +592,7 @@ static int spellTremor(int unused) {
             y = combatInfo.monsters[i]->y;
             annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, HITFLASH_TILE));
             
-            eventHandlerSleep(250);
+            eventHandlerSleep(350);
             gameUpdateScreen();
 
             /* FIXME: damage guessed */
@@ -604,9 +605,16 @@ static int spellTremor(int unused) {
     return 1;
 }
 
-static int spellUndead(int unused) {
-    /* FIXME */
-    screenMessage("\nNot implemented yet!\n\n");
+static int spellUndead(int unused) {    
+    int i;
+    extern CombatInfo combatInfo;
+    
+    for (i = 0; i < AREA_MONSTERS; i++) {
+        /* Deal enough damage to undead to make them flee */
+        if (combatInfo.monsters[i] && monsterIsUndead(combatInfo.monsters[i]->monster) && (rand() % 2 == 0))
+            combatInfo.monsterHp[i] = 23;        
+    }
+    
     return 1;
 }
 
@@ -630,13 +638,26 @@ static int spellXit(int unused) {
 }
 
 static int spellYup(int unused) {
-    /* FIXME */
-    screenMessage("\nNot implemented yet!\n\n");
+
+    if (c->location->z > 0) {
+        if (tileIsWalkable(mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z - 1)))
+            c->location->z--;
+        else return 0;
+    } else {
+        gameExitToParentMap(c);   
+        musicPlay();
+    }    
+    
     return 1;
 }
 
 static int spellZdown(int unused) {
-    /* FIXME */
-    screenMessage("\nNot implemented yet!\n\n");
+
+    if (c->location->z < 8) {
+        if (tileIsWalkable(mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z + 1)))
+            c->location->z++;
+        else return 0;
+    } else return 0;
+    
     return 1;
 }

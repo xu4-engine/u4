@@ -15,6 +15,7 @@
 /* FIXME: should monsterSpecialAction() and monsterSpecialEffect() be placed elsewhere
    to make monster.c as independent as possible? */
 
+#include "combat.h"
 #include "context.h"
 #include "error.h"
 #include "game.h"	/* required by monsterSpecial functions */
@@ -420,6 +421,39 @@ MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
         return MSTAT_LIGHTLYWOUNDED;
     else
         return MSTAT_BARELYWOUNDED;
+}
+
+const Monster *monsterGetAmbushingMonster(void) {
+    int i,
+        numAmbushingMonsters = 0,
+        randMonster;
+    extern CombatInfo combatInfo;
+
+    /* first, find out how many monsters exist that might ambush you */
+    for (i = 0; i < numMonsters; i++) {
+        if (monsterAmbushes(&monsters[i]))
+            numAmbushingMonsters++;
+    }
+    
+    if (numAmbushingMonsters > 0) {
+        /* now, randomely select one of them */
+        randMonster = rand() % numAmbushingMonsters;
+        numAmbushingMonsters = 0;
+
+        /* now, find the one we selected */
+        for (i = 0; i < numMonsters; i++) {
+            if (monsterAmbushes(&monsters[i])) {
+                /* found the monster - return it! */
+                if (numAmbushingMonsters == randMonster)
+                    return &monsters[i];
+                /* move on to the next monster */
+                else numAmbushingMonsters++;
+            }
+        }
+    }
+
+    ASSERT(0, "failed to find an ambushing monster");
+    return NULL;
 }
 
 int monsterSpecialAction(Object *obj) {

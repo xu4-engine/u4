@@ -32,7 +32,7 @@ void musicPlayMid(Music music) {
     assert(music < MUSIC_MAX);
 
     if (settings->vol == 0 || current == music) {
-        if (playing)
+        if (!settings->vol && playing)
             musicFadeOut(1000);
         return;
     }
@@ -90,7 +90,7 @@ void musicLordBritish(void){  /* Music when you talk to LB */
 }
 
 void musicCamp(void){  /* Music when camping */
-    musicPlayMid(MUSIC_SHOPPING);
+    musicFadeOut(1000);    
 }
 
 void musicShopping(void){  /* Music when talking to a vendor */

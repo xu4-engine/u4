@@ -205,6 +205,7 @@ void monsterSetRandomRangedWeapon(Monster *monster);
 const Monster *monsterRandomForTile(unsigned char tile);
 int monsterGetInitialHp(const Monster *monster);
 MonsterStatus monsterGetStatus(const Monster *monster, int hp);
+const Monster *monsterGetAmbushingMonster(void);
 int monsterSpecialAction(Object *obj);
 void monsterSpecialEffect(Object *obj);
 const Monster *monsterById(unsigned short id);
