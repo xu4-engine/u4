@@ -12,7 +12,12 @@
 #include "debug.h"
 
 extern int verbose;
-int usingZipFiles = 0;
+
+/* these are for figuring out where to find files */
+int u4zipExists = 0;
+int u4upgradeZipExists = 0;
+int upgradeExists = 0;
+int upgradeInstalled = 0;
 
 /* the possible paths where u4 for DOS can be installed */
 static const char * const paths[] = {
@@ -70,6 +75,38 @@ static const char * const graphics_paths[] = {
 
 
 /**
+ * Returns true if the upgrade is not only present, but is installed
+ * (switch.bat or setup.bat has been run)
+ */
+int u4isUpgradeInstalled(void) {
+    U4FILE *u4f = NULL;
+    fpos_t filelength;
+
+    /* FIXME: Is there a better way to determine this? */
+    u4f = u4fopen("ega.drv");
+    if (u4f) {
+        if (u4f->type != STDIO_FILE) {
+            u4fclose(u4f);
+            return 0;
+        }
+        else {
+            fseek(u4f->file, 0, SEEK_END);
+            if (fgetpos(u4f->file, &filelength) != 0) {
+                u4fclose(u4f);
+                return 0;
+            }
+            
+            u4fclose(u4f);
+            /* see if (ega.drv > 5k).  If so, the upgrade is installed */
+            if (filelength > (5 * 1024))
+                return 1;
+            else return 0;
+        }
+    }
+    return 0;
+}
+
+/**
  * Open a data file from the Ultima 4 for DOS installation.  This
  * function checks the various places where it can be installed, and
  * maps the filenames to uppercase if necessary.  The files are always
@@ -89,26 +126,30 @@ U4FILE *u4fopen(const char *fname) {
     if (verbose)
         printf("looking for %s\n", fname);
 
-    /*
+    /**
      * search for file within ultima4.zip or u4upgrad.zip
      */
     pathname = u4find_path("ultima4.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0]));
     if (pathname) {
         char *upg_pathname;
+        
+        /* original u4 zip is present */
+        u4zipExists = 1;
+        
         upg_pathname = u4find_path("u4upgrad.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0]));
         /* both zip files are present */
-        if (upg_pathname) 
-            usingZipFiles = 1; 
+        if (upg_pathname)
+            u4upgradeZipExists = 1;        
 
         /* look for the file in ultima4.zip */
-        u4f = u4fopen_zip(fname, pathname, "ultima4/", 0);        
-        if (u4f) { 
+        u4f = u4fopen_zip(fname, pathname, "ultima4/", 0);
+        if (u4f) {
             free(pathname);
-            return u4f; /* file was found, return it! */ 
+            return u4f; /* file was found, return it! */
         }
 
         /* look for the file in u4upgrad.zip */
-        if (upg_pathname) {
+        if (u4upgradeZipExists) {
             u4f = u4fopen_zip(fname, upg_pathname, "", 1);
             free(upg_pathname);
             if (u4f) {

@@ -49,7 +49,7 @@ Image *dngGraphic[36];
 Image *tiles, *charset;
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
-int scale, forceEga, forceVga;
+int scale;
 Scaler filterScaler;
 
 const struct {
@@ -166,9 +166,6 @@ void screenInit() {
     if (scale < 1 || scale > 5)
         scale = 2;
 
-    forceEga = settings->videoType == VIDEO_EGA;
-    forceVga = settings->videoType == VIDEO_VGA;    
-
     /* start SDL */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
         errorFatal("unable to init SDL: %s", SDL_GetError());
@@ -183,11 +180,14 @@ void screenInit() {
 #endif   
 
     screenLoadPaletteEga();        
-    if (!screenLoadPaletteVga("u4vga.pal")) {
-        /* must use Ega graphics */
-        forceEga = 1;
-        forceVga = 0;
-    }
+    /* see if the upgrade exists */
+    if (screenLoadPaletteVga("u4vga.pal"))
+        upgradeExists = 1;
+    upgradeInstalled = u4isUpgradeInstalled();
+
+    /* if we can't use vga, reset to default:ega */
+    if (!upgradeExists && settings->videoType == VIDEO_VGA)
+        settings->videoType = VIDEO_EGA;
 
     if (!screenLoadBackground(BKGD_INTRO) ||
         !screenLoadBackground(BKGD_INTRO_EXTENDED) || 
@@ -304,13 +304,26 @@ int screenLoadBackground(BackgroundType bkgd) {
     Image *unscaled;
     U4FILE *file;
 
-    //const char *vgaFilename = usingZipFiles ? backgroundInfo[bkgd].filenameOld : backgroundInfo[bkgd].filename;
-    //const char *egaFilename = usingZipFiles ? backgroundInfo[bkgd].filename : backgroundInfo[bkgd].filenameOld;
-    const char *vgaFilename = backgroundInfo[bkgd].filename;
-    const char *egaFilename = backgroundInfo[bkgd].filename;
+    const char 
+        *vgaFilename = NULL,
+        *egaFilename = NULL;
+    
+    /* find the correct EGA file to use */
+    if (upgradeInstalled && backgroundInfo[bkgd].filenameOld)
+        egaFilename = backgroundInfo[bkgd].filenameOld;
+    else egaFilename = backgroundInfo[bkgd].filename;
+
+    /* find the correct VGA file to use */    
+    if (upgradeExists && settings->videoType == VIDEO_VGA) {
+        /* get the VGA filename for the file we're trying to load */
+        if (upgradeInstalled)
+            vgaFilename = backgroundInfo[bkgd].filename;            
+        else vgaFilename = backgroundInfo[bkgd].filenameOld;
+    }
 
     ret = 0;
-    if (!forceEga && backgroundInfo[bkgd].hasVga) {
+    /* try to load the image in VGA first */
+    if (vgaFilename && backgroundInfo[bkgd].hasVga) {
         file = u4fopen(vgaFilename);
     
         if (file) {
@@ -322,7 +335,8 @@ int screenLoadBackground(BackgroundType bkgd) {
             u4fclose(file);
         }
     }
-    if (!ret && (!forceVga || !backgroundInfo[bkgd].hasVga)) {
+    /* failed to load VGA image, try EGA instead */
+    if (!ret) {
         BackgroundType egaBkgd;
 
         /*
@@ -411,7 +425,8 @@ int screenLoadTiles() {
     U4FILE *file;
     int ret = 0;
 
-    if (!forceEga) {
+    /* load vga tiles */
+    if (settings->videoType == VIDEO_VGA) {
         file = u4fopen("shapes.vga");
         if (file) {
             ret = screenLoadImageVga(&tiles, TILE_WIDTH, TILE_HEIGHT * N_TILES, file, COMP_NONE);
@@ -419,7 +434,8 @@ int screenLoadTiles() {
         }
     }
 
-    if (!ret && !forceVga) {
+    /* load ega tiles (also loads if vga load fails) */
+    if (!ret || settings->videoType == VIDEO_EGA) {
         file = u4fopen("shapes.ega");
         if (file) {
             ret = screenLoadImageEga(&tiles, TILE_WIDTH, TILE_HEIGHT * N_TILES, file, COMP_NONE);
@@ -439,8 +455,8 @@ int screenLoadCharSet() {
     U4FILE *file;
     int ret = 0;
 
-
-    if (!forceEga) {
+    /* load vga charset */
+    if (settings->videoType == VIDEO_VGA) {
         file = u4fopen("charset.vga");
         if (file) {
             ret = screenLoadImageVga(&charset, CHAR_WIDTH, CHAR_HEIGHT * N_CHARS, file, COMP_NONE);
@@ -448,7 +464,8 @@ int screenLoadCharSet() {
         }
     }
 
-    if (!ret && !forceVga) {
+    /* load ega charset (also loads if vga load fails) */
+    if (!ret || settings->videoType == VIDEO_EGA) {
         file = u4fopen("charset.ega");
         if (file) {
             ret = screenLoadImageEga(&charset, CHAR_WIDTH, CHAR_HEIGHT * N_CHARS, file, COMP_NONE);

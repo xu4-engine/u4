@@ -19,6 +19,7 @@ typedef struct {
     };
 } U4FILE;
 
+int u4isUpgradeInstalled(void);
 U4FILE *u4fopen(const char *fname);
 U4FILE *u4fopen_stdio(const char *fname);
 U4FILE *u4fopen_zip(const char *fname, const char *zipfile, const char *zippath, int translate);
@@ -37,6 +38,9 @@ char *u4find_conf(const char *fname);
 char *u4find_graphics(const char *fname);
 const char *u4upgrade_translate_filename(const char *fname);
 
-extern int usingZipFiles;
+extern int u4zipExists;
+extern int u4upgradeZipExists;
+extern int upgradeExists;
+extern int upgradeInstalled;
 
 #endif
