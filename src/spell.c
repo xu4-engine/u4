@@ -62,10 +62,10 @@ const Spell spells[] = {
  * Mix reagents for a spell.  Fails and returns false if the reagents
  * selected were not correct.
  */
-int spellMix(int spell, int n_regs, int *regs) {
+int spellMix(unsigned int spell, int n_regs, int *regs) {
     int regmask, i;
 
-    assert(spell >= 0 && spell < N_SPELLS);
+    assert(spell < N_SPELLS);
 
     regmask = 0;
     for (i = 0; i < n_regs; i++) {
@@ -88,8 +88,8 @@ int spellMix(int spell, int n_regs, int *regs) {
  * the character doesn't have enough magic points, or the context is
  * invalid.  The error code is updated with the reason for failure.
  */
-int spellCast(int spell, int character, SpellCastError *error) {
-    assert(spell >= 0 && spell < N_SPELLS);
+int spellCast(unsigned int spell, int character, SpellCastError *error) {
+    assert(spell < N_SPELLS);
     assert(character >= 0 && character < c->saveGame->members);
 
     *error = CASTERR_NOERROR;

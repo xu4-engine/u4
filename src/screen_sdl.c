@@ -166,7 +166,8 @@ void screenFixIntroScreen(const unsigned char *sigData) {
  * Load in the background images from the "*.ega" files.
  */
 int screenLoadBackgrounds() {
-    int ret, i;
+    unsigned int i;
+    int ret;
     const struct {
         BackgroundType bkgd;
         const char *filename;
@@ -203,7 +204,8 @@ int screenLoadBackgrounds() {
  * Load in the intro animation images from the "*.ega" files.
  */
 int screenLoadIntroAnimations() {
-    int ret, i;
+    unsigned int i;
+    int ret;
     const struct {
         AnimType anim;
         const char *filename;
@@ -226,7 +228,7 @@ int screenLoadIntroAnimations() {
 }
 
 void screenFreeIntroAnimations() {
-    int i;
+    unsigned int i;
 
     for (i = 0; i < sizeof(introAnimations) / sizeof(introAnimations[0]); i++)
         SDL_FreeSurface(introAnimations[i]);

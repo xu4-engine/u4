@@ -23,7 +23,7 @@ typedef struct _Spell {
     int mp;
 } Spell;
 
-int spellMix(int spell, int n_regs, int *regs);
-int spellCast(int spell, int character, SpellCastError *error);
+int spellMix(unsigned int spell, int n_regs, int *regs);
+int spellCast(unsigned int spell, int character, SpellCastError *error);
 
 #endif
