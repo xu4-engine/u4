@@ -11,16 +11,13 @@
 #include "event.h"
 #include "utils.h"
 
-Settings settings;
-
 /**
  * Initialize static members
  */ 
-const static string filterStrings[]     = {"SCL_MIN", "point", "2xBi", "2xSaI", "Scale2x", ""};
-const static string battleDiffStrings[] = {"DIFF_MIN", "Normal", "Hard", "Expert", ""};
+const static char *filterStrings[]     = {"SCL_MIN", "point", "2xBi", "2xSaI", "Scale2x", ""};
+const static char *battleDiffStrings[] = {"DIFF_MIN", "Normal", "Hard", "Expert", ""};
 
-Settings::FilterTranslator      Settings::filters       = FilterTranslator(filterStrings);
-Settings::BattleDiffTranslator  Settings::battleDiffs   = BattleDiffTranslator(battleDiffStrings);            
+Settings *Settings::instance = NULL;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define SETTINGS_BASE_FILENAME "xu4.cfg"
@@ -32,13 +29,33 @@ Settings::BattleDiffTranslator  Settings::battleDiffs   = BattleDiffTranslator(b
 #endif
 #endif
 
-/**
- * Settings class implementation
- */ 
+bool SettingsData::operator==(const SettingsData &s) const {    
+    long offset = (long)&end_of_bitwise_comparators - (long)this;
+    if (memcmp(this, &s, offset) != 0)
+        return false;
 
-// Constructors
+    if (gemLayout != s.gemLayout)
+        return false;
+    if (videoType != s.videoType)
+        return false;
+    if (logging != s.logging)
+        return false;
+
+    return true;
+}
+
+bool SettingsData::operator!=(const SettingsData &s) const {
+    return !operator==(s);
+}
+
+/**
+ * Default contructor.  Settings is a singleton so this is private.
+ */
 Settings::Settings() {    
     char *home;
+
+    filters = FilterTranslator(filterStrings);
+    battleDiffs = BattleDiffTranslator(battleDiffStrings);
 
     home = getenv("HOME");
     if (home && home[0]) {
@@ -50,11 +67,24 @@ Settings::Settings() {
     }
 
     filename += SETTINGS_BASE_FILENAME;    
+
+    read();
 }
 
 /**
- * Methods
- */ 
+ * Return the global instance of settings.
+ */
+Settings &Settings::getInstance() {
+    if (instance == NULL)
+        instance = new Settings();
+    return *instance;
+    
+}
+
+void Settings::setData(const SettingsData &data) {
+    // bitwise copy is safe
+    *(SettingsData *)this = data;
+}
 
 /**
  * Read settings in from the settings file.
@@ -104,6 +134,8 @@ bool Settings::read() {
 
     /* mouse defaults to on */
     mouseOptions.enabled = 1;
+
+    logging = DEFAULT_LOGGING;
     
     settingsFile = fopen(filename.c_str(), "rt");    
     if (!settingsFile)
@@ -197,6 +229,8 @@ bool Settings::read() {
         /* mouse options */
         else if (strstr(buffer, "mouseEnabled=") == buffer)
             mouseOptions.enabled = (int) strtoul(buffer + strlen("mouseEnabled="), NULL, 0);
+        else if (strstr(buffer, "logging=") == buffer)
+            logging = buffer + strlen("logging=");
 
         /**
          * FIXME: this is just to avoid an error for those who have not written
@@ -271,7 +305,8 @@ bool Settings::write() {
             "u5combat=%d\n"
             "innAlwaysCombat=%d\n"
             "campingAlwaysCombat=%d\n"
-            "mouseEnabled=%d\n",
+            "mouseEnabled=%d\n"
+            "logging=%s\n",
             scale,
             fullscreen,
             Settings::filters.getName(filter).c_str(),            
@@ -305,28 +340,10 @@ bool Settings::write() {
             enhancementsOptions.u5combat,
             innAlwaysCombat,
             campingAlwaysCombat,
-            mouseOptions.enabled);
+            mouseOptions.enabled,
+            logging.c_str());
 
     fclose(settingsFile);
     return true;
 }
 
-/**
- * Operators
- */ 
-bool Settings::operator==(const Settings &s) const {    
-    long offset = (long)&end_of_bitwise_comparators - (long)this;
-    if (memcmp(this, &s, offset) != 0)
-        return false;
-
-    if (gemLayout != s.gemLayout)
-        return false;
-    if (videoType != s.videoType)
-        return false;
-
-    return true;
-}
-
-bool Settings::operator!=(const Settings &s) const {
-    return !operator==(s);
-}

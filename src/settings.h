@@ -47,6 +47,7 @@ using std::string;
 #define DEFAULT_SHRINE_TIME             16
 #define DEFAULT_SHAKE_INTERVAL          100
 #define DEFAULT_BATTLE_DIFFICULTY       DIFF_NORMAL
+#define DEFAULT_LOGGING                 "all"
 
 typedef enum {
     SCL_MIN,
@@ -88,11 +89,11 @@ class Translator {
     typedef std::map<int, string, std::less<int> >       T_t;
 public:
     Translator() {}
-    Translator(const string values[]) {
+    Translator(const char *values[]) {
         /**
          * Initialize the maps
          */ 
-        for (int i = 0; !values[i].empty(); i++) {
+        for (int i = 0; values[i][0] != '\0'; i++) {
             s_map[values[i]] = i;
             t_map[i] = values[i];
         }
@@ -118,26 +119,12 @@ private:
 };
 
 /**
- * Settings class definition
- */ 
-class Settings {
-    typedef Translator FilterTranslator;
-    typedef Translator BattleDiffTranslator;
-    typedef std::map<string, int, std::less<string> > SettingsMap;
-
+ * SettingsData stores all the settings information.
+ */
+class SettingsData {
 public:
-    Settings();
-
-    /* Methods */
-    bool read();
-    bool write();
-
-    bool operator==(const Settings &) const;
-    bool operator!=(const Settings &) const;
-
-    /* Properties */    
-    static FilterTranslator         filters;
-    static BattleDiffTranslator     battleDiffs;    
+    bool operator==(const SettingsData &) const;
+    bool operator!=(const SettingsData &) const;
 
     BattleDifficulty    battleDiff;
     int                 battleSpeed;
@@ -176,12 +163,37 @@ public:
 
     string              gemLayout;
     string              videoType;
+    string              logging;
+};
+
+/**
+ * The settings class is a singleton that holds all the settings
+ * information.  It is dynamically initialized when first accessed.
+ */ 
+class Settings : public SettingsData {
+    typedef Translator FilterTranslator;
+    typedef Translator BattleDiffTranslator;
+    typedef std::map<string, int, std::less<string> > SettingsMap;
+
+public:
+    /* Methods */
+    static Settings &getInstance();
+    void setData(const SettingsData &data);
+    bool read();
+    bool write();
+
+    FilterTranslator filters;
+    BattleDiffTranslator battleDiffs;    
 
 private:
+    Settings();
+
+    static Settings *instance;
+
     string filename;
 };
 
 /* the global settings */
-extern Settings settings;
+#define settings (Settings::getInstance())
 
 #endif

@@ -187,7 +187,7 @@ void screenInit() {
     scale = settings.scale;
     filterScaler = scalerGet(settings.filter);
     if (verbose)
-        printf("using %s scaler\n", Settings::filters.getName(settings.filter).c_str());
+        printf("using %s scaler\n", settings.filters.getName(settings.filter).c_str());
 
     if (scale < 1 || scale > 5)
         scale = 2;

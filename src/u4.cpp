@@ -50,12 +50,9 @@ int main(int argc, char *argv[]) {
 
     Debug::initGlobal("debug_global.txt");
 
-    /* Read the game settings from file */    
-    settings.read();    
-
     for (i = 1; i < (unsigned int)argc; i++) {
         if (strcmp(argv[i], "-filter") == 0 && (unsigned int)argc > i + 1) {
-            settings.filter = (FilterType)Settings::filters.getType(argv[i+1]);
+            settings.filter = (FilterType)settings.filters.getType(argv[i+1]);
             if (settings.filter == -1)
                 errorFatal("%s is not a valid filter", argv[i+1]);
             i++;

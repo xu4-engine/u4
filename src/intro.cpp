@@ -126,7 +126,7 @@ static Menu enhancementOptions;
 bool menusLoaded = false;
 
 /* temporary place-holder for settings changes */
-Settings settingsChanged;
+SettingsData settingsChanged;
 
 void introInitiateNewGame(void);
 void introDrawMap(void);
@@ -193,7 +193,7 @@ int introInit() {
     for (i = 0; i < INTRO_MAP_HEIGHT; i++) {
         introMap[i] = introMap[0] + INTRO_MAP_WIDTH * i;
         for (j = 0; j < INTRO_MAP_WIDTH; j++) {
-            introMap[i][j] = (unsigned char) u4fgetc(title);
+            introMap[i][j] = static_cast<unsigned char>(u4fgetc(title));
         }
     }
 
@@ -691,7 +691,7 @@ void introUpdateScreen() {
         screenTextAt(24, 6, "%s", settingsChanged.gemLayout.c_str());
         screenTextAt(24, 7, "x%d", settingsChanged.scale);
         screenTextAt(24, 8, "%s", settingsChanged.fullscreen ? "Fullscreen" : "Window");
-        screenTextAt(24, 9, "%s", Settings::filters.getName(settingsChanged.filter).c_str());
+        screenTextAt(24, 9, "%s", settings.filters.getName(settingsChanged.filter).c_str());
         screenTextAt(24, 10, "%s", settingsChanged.screenShakes ? "On" : "Off");
         videoOptions.show();        
         break;
@@ -711,7 +711,7 @@ void introUpdateScreen() {
         screenTextAt(2, 3, "Gameplay Options:");
         screenTextAt(32, 5, "%s", settingsChanged.enhancements ? "On" : "Off");        
         screenTextAt(6, 8, "  (Open, Jimmy, etc.)     %s", settingsChanged.shortcutCommands ? "On" : "Off");        
-        screenTextAt(32, 10, "%s", Settings::battleDiffs.getName(settingsChanged.battleDiff).c_str());
+        screenTextAt(32, 10, "%s", settings.battleDiffs.getName(settingsChanged.battleDiff).c_str());
         screenTextAt(32, 12, "%s", settingsChanged.mouseOptions.enabled ? "On" : "Off");
         gameplayOptions.show();
         break;
@@ -745,7 +745,7 @@ void introUpdateScreen() {
             
             sprintf(msg, "%0.*f sec",
                 (settingsChanged.spellEffectSpeed % 5 == 0) ? 0 : 1,
-                (double)settingsChanged.spellEffectSpeed / 5);        
+                static_cast<double>(settingsChanged.spellEffectSpeed) / 5);        
             screenTextAt(37 - strlen(msg), 7, msg);
 
             sprintf(msg, "%d sec", settingsChanged.campTime);
@@ -1183,7 +1183,7 @@ void introInitPlayers(SaveGame *saveGame) {
 
     strcpy(saveGame->players[0].name, nameBuffer.c_str());
     saveGame->players[0].sex = sex;
-    saveGame->players[0].klass = (ClassType) questionTree[14];
+    saveGame->players[0].klass = static_cast<ClassType>(questionTree[14]);
 
     ASSERT(saveGame->players[0].klass < 8, "bad class: %d", saveGame->players[0].klass);
 
@@ -1243,7 +1243,7 @@ void introInitPlayers(SaveGame *saveGame) {
 
         /* Initial setup for party members that aren't in your group yet... */
         if (i != saveGame->players[0].klass) {
-            saveGame->players[p].klass = (ClassType) i;
+            saveGame->players[p].klass = static_cast<ClassType>(i);
             saveGame->players[p].xp = initValuesForClass[i].xp;
             saveGame->players[p].str = initValuesForNpcClass[i].str;
             saveGame->players[p].dex = initValuesForNpcClass[i].dex;
@@ -1264,7 +1264,7 @@ void introInitPlayers(SaveGame *saveGame) {
  * The base key handler for the configuration menus
  */
 int introBaseMenuKeyHandler(int key, void *data) {
-    Menu *menu = (Menu *)data;
+    Menu *menu = static_cast<Menu *>(data);
     char cancelKey = (mode == INTRO_CONFIG) ? 'm' : 'c';
     char saveKey = (mode == INTRO_CONFIG) ? '\0' : 'u';
 
@@ -1349,13 +1349,13 @@ void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 
     case 2:
         if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.filter = (FilterType)(settingsChanged.filter + 1);
+            settingsChanged.filter = static_cast<FilterType>(settingsChanged.filter + 1);
             if (settingsChanged.filter == SCL_MAX)
-                settingsChanged.filter = (FilterType)(SCL_MIN+1);
+                settingsChanged.filter = static_cast<FilterType>(SCL_MIN+1);
         } else {
-            settingsChanged.filter = (FilterType)(settingsChanged.filter - 1);
+            settingsChanged.filter = static_cast<FilterType>(settingsChanged.filter - 1);
             if (settingsChanged.filter == SCL_MIN)
-                settingsChanged.filter = (FilterType)(SCL_MAX-1);
+                settingsChanged.filter = static_cast<FilterType>(SCL_MAX-1);
         }
         break;
 
@@ -1414,7 +1414,7 @@ void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
     case 0xFE:
         /* save settings (if necessary) */
         if (settings != settingsChanged) {
-            settings = settingsChanged;            
+            settings.setData(settingsChanged);
             settings.write();
 
             /* FIXME: resize images, etc. */
@@ -1448,7 +1448,7 @@ void introSoundOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
         break;
     case 0xFE:
         /* save settings */
-        settings = settingsChanged;
+        settings.setData(settingsChanged);
         settings.write();
         
         musicIntro();
@@ -1476,13 +1476,13 @@ void introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
         break;
     case 3:
         if (action != ACTIVATE_DECREMENT) {
-            settingsChanged.battleDiff = (BattleDifficulty)(settingsChanged.battleDiff + 1);
+            settingsChanged.battleDiff = static_cast<BattleDifficulty>(settingsChanged.battleDiff + 1);
             if (settingsChanged.battleDiff == DIFF_MAX)
-                settingsChanged.battleDiff = (BattleDifficulty)(DIFF_MIN+1);
+                settingsChanged.battleDiff = static_cast<BattleDifficulty>(DIFF_MIN+1);
         } else {
-            settingsChanged.battleDiff = (BattleDifficulty)(settingsChanged.battleDiff - 1);
+            settingsChanged.battleDiff = static_cast<BattleDifficulty>(settingsChanged.battleDiff - 1);
             if (settingsChanged.battleDiff == DIFF_MIN)
-                settingsChanged.battleDiff = (BattleDifficulty)(DIFF_MAX-1);
+                settingsChanged.battleDiff = static_cast<BattleDifficulty>(DIFF_MAX-1);
         }
         break;
     case 2:
@@ -1500,7 +1500,7 @@ void introGameplayOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
 
     case 0xFE:
         /* save settings */
-        settings = settingsChanged;
+        settings.setData(settingsChanged);
         settings.write();
     
         mode = INTRO_CONFIG;        
@@ -1534,7 +1534,7 @@ void introAdvancedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
         break;    
     case 0xFE:
         /* save settings */
-        settings = settingsChanged;
+        settings.setData(settingsChanged);
         settings.write();
     
         mode = INTRO_CONFIG_GAMEPLAY;        
@@ -1575,7 +1575,7 @@ void introKeyboardOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction act
         break;
     case 0xFE:
         /* save settings */
-        settings = settingsChanged;
+        settings.setData(settingsChanged);
         settings.write();
 
         /* re-initialize keyboard */
@@ -1676,7 +1676,7 @@ void introSpeedOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 
     case 0xFE:
         /* save settings */
-        settings = settingsChanged;
+        settings.setData(settingsChanged);
         settings.write();
     
         /* re-initialize events */
@@ -1716,7 +1716,7 @@ void introEnhancementOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction 
         break;
     case 0xFE:        
         /* save settings */
-        settings = settingsChanged;
+        settings.setData(settingsChanged);
         settings.write();        
     
         mode = INTRO_CONFIG_ADVANCED;
