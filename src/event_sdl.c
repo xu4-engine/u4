@@ -35,6 +35,9 @@ void eventHandlerMain() {
                 key = U4_LEFT;
             else if (event.key.keysym.sym == SDLK_RIGHT)
                 key = U4_RIGHT;
+            else if (event.key.keysym.sym == SDLK_BACKSPACE ||
+                     event.key.keysym.sym == SDLK_DELETE)
+                key = U4_BACKSPACE;
             else
                 key = event.key.keysym.sym;
 
