@@ -229,11 +229,17 @@ void introDrawMap() {
     }
 }
 
+/**
+ * Draws the animated beasts in the upper corners of the screen.
+ */
 void introDrawBeasties() {
     screenShowBeastie(0, beastie1Cycle);
     screenShowBeastie(1, beastie2Cycle);
 }
 
+/**
+ * Paints the screen.
+ */
 void introUpdateScreen() {
     switch (mode) {
     case INTRO_MAP:
@@ -343,6 +349,10 @@ void introInitiateNewGame() {
     eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
 }
 
+/**
+ * Starts the gypsys questioning that eventually determines the new
+ * characters class.
+ */
 void introStartQuestions() {
     mode = INTRO_INIT_QUESTIONS;
     questionRound = 0;
@@ -350,6 +360,9 @@ void introStartQuestions() {
     introInitQuestionTree();
 }
 
+/**
+ * Callback to receive the read character name.
+ */
 int introHandleName(const char *message) {
     GetChoiceActionInfo *info;
 
@@ -380,6 +393,9 @@ int introHandleName(const char *message) {
     return 1;
 }
 
+/**
+ * Callback to receive the character sex choice.
+ */
 int introHandleSexChoice(char choice) {
 
     if (choice == 'm')
@@ -443,6 +459,10 @@ void introShowText(const char *text) {
     screenSetCursorPos(strlen(line), lineNo - 1);
 }
 
+/**
+ * Timer callback for the intro sequence.  Handles animating the intro
+ * map, the beasties, etc..
+ */
 void introTimer() {
     screenCycle();
     screenUpdateCursor();
@@ -458,6 +478,10 @@ void introTimer() {
         beastie2Cycle = 0;
 }
 
+/**
+ * Initializes the question tree.  The tree starts off with the first
+ * eight entries set to the numbers 0-7 in a random order.
+ */
 void introInitQuestionTree() {
     int i, tmp, r;
 
@@ -480,6 +504,10 @@ void introInitQuestionTree() {
         
 }
 
+/**
+ * Updates the question tree with the given answer, and advances to
+ * the next round.
+ */
 int introDoQuestion(int answer) {
     int tmp;
 
@@ -503,6 +531,9 @@ int introDoQuestion(int answer) {
     return 0;
 }
 
+/**
+ * Callback to receive question answer choice.
+ */
 int introHandleQuestionChoice(char choice) {
     FILE *saveGameFile;
     SaveGame saveGame;

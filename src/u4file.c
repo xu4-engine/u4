@@ -26,6 +26,10 @@ const char *paths[] = {
  * function checks the various places where it can be installed, and
  * maps the filenames to uppercase if necessary.  The files are always
  * opened for reading only.
+ *
+ * Currently, it tries FILENAME, Filename and filename in up to four
+ * paths, meaning up to twelve opens per file.  Seems to be ok for
+ * performance, but could be getting excessive.
  */
 FILE *u4fopen(const char *fname) {
     FILE *f = NULL;
