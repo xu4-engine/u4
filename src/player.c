@@ -9,10 +9,17 @@
 #include "player.h"
 
 /**
+ * Determine what level a character has.
+ */
+int playerGetRealLevel(const SaveGamePlayerRecord *player) {
+    return player->hpMax / 100;
+}
+
+/**
  * Determine the highest level a character could have with the number
  * of experience points he has.
  */
-int playerGetLevel(const SaveGamePlayerRecord *player) {
+int playerGetMaxLevel(const SaveGamePlayerRecord *player) {
     int level = 1;
     int next = 100;
 
@@ -22,6 +29,14 @@ int playerGetLevel(const SaveGamePlayerRecord *player) {
     }
 
     return level;
+}
+
+void playerAdvanceLevel(SaveGamePlayerRecord *player) {
+    if (playerGetRealLevel(player) == playerGetMaxLevel(player))
+        return;
+    player->hpMax = playerGetMaxLevel(player) * 100;
+    player->hp = player->hpMax;
+    /* FIXME: adjust stats */
 }
 
 /**
@@ -113,27 +128,70 @@ int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon) {
 }
 
 /**
- * Adjusts the avatar's karma level for the given virtue.  Returns
- * non-zero if the adjustment results in the avatar losing an eigth of
- * his avatarhood.
+ * Adjusts the avatar's karma level for the given action.  Returns the
+ * number of eighths of avatarhood the player has lost, or zero if
+ * none.
  */
-int playerAdjustKarma(SaveGame *saveGame, Virtue virt, int adj) {
-    int k = saveGame->karma[virt];
+int playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
+    int eighths = 0;
+    int v, newKarma[VIRT_MAX];
 
-    if (k == 0) {               /* already an avatar */
-        if (adj < 0) {
-            saveGame->karma[virt] = 100 + adj;
-            return 1;
-        } else
-            return 0;
+    for (v = 0; v < VIRT_MAX; v++)
+        newKarma[v] = saveGame->karma[v];
+
+    switch (action) {
+    case KA_FOUND_ITEM:
+        newKarma[VIRT_HONOR] += 5;
+        break;
+    case KA_STOLE_CHEST:
+        newKarma[VIRT_HONESTY]--;
+        newKarma[VIRT_JUSTICE]--;
+        newKarma[VIRT_HONOR]--;
+        break;
+    case KA_GAVE_TO_BEGGAR:
+        newKarma[VIRT_COMPASSION] += 2;
+        newKarma[VIRT_HONOR] += 3;
+        break;
+    case KA_BRAGGED:
+        newKarma[VIRT_HUMILITY] -= 5;
+        break;
+    case KA_HUMBLE:
+        newKarma[VIRT_HUMILITY] += 10;
+        break;
+    case KA_HAWKWIND:
+        newKarma[VIRT_SPIRITUALITY] += 3;
+        break;
     }
 
-    k += adj;
-    if (k <= 0)
-        k = 1;
-    if (k >= 99)
-        k = 99;
-    saveGame->karma[virt] = k;
+    for (v = 0; v < VIRT_MAX; v++) {
+        if (saveGame->karma[v] == 0) {               /* already an avatar */
+            if (newKarma[v] < 0) {
+                saveGame->karma[v] = newKarma[v] + 100;
+                eighths++;
+            }
+        } else {
+            if (newKarma[v] <= 0)
+                newKarma[v] = 1;
+            if (newKarma[v] >= 99)
+                newKarma[v] = 99;
+            saveGame->karma[v] = newKarma[v];
+        }
+    }
 
-    return 0;
+    return eighths;
+}
+
+void playerGetChest(SaveGame *saveGame) {
+    saveGame->gold += rand() % 32;
+    saveGame->gold += rand() % 32;
+    saveGame->gold += rand() % 32;
+}
+
+int playerDonate(SaveGame *saveGame, int quantity) {
+    if (quantity > saveGame->gold)
+        return 0;
+
+    saveGame->gold -= quantity;
+    playerAdjustKarma(saveGame, KA_GAVE_TO_BEGGAR);
+    return 1;
 }

@@ -7,12 +7,23 @@
 
 #include "savegame.h"
 
-#define KARMA_ADJ_FOUND_ITEM +5
+typedef enum {
+    KA_FOUND_ITEM,
+    KA_STOLE_CHEST,
+    KA_GAVE_TO_BEGGAR,
+    KA_BRAGGED,
+    KA_HUMBLE,
+    KA_HAWKWIND
+} KarmaAction;
 
-int playerGetLevel(const SaveGamePlayerRecord *player);
+int playerGetRealLevel(const SaveGamePlayerRecord *player);
+int playerGetMaxLevel(const SaveGamePlayerRecord *player);
+void playerAdvanceLevel(SaveGamePlayerRecord *player);
 int playerGetMaxMp(const SaveGamePlayerRecord *player);
 int playerCanWear(const SaveGamePlayerRecord *player, ArmorType armor);
 int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon);
-int playerAdjustKarma(SaveGame *saveGame, Virtue virt, int adj);
+int playerAdjustKarma(SaveGame *saveGame, KarmaAction action);
+void playerGetChest(SaveGame *saveGame);
+int playerDonate(SaveGame *saveGame, int quantity);
 
 #endif
