@@ -1888,21 +1888,26 @@ int gameGetChest(int player) {
     
     locationGetCurrentPosition(c->location, &x, &y, &z);
         
-    /* figure out the tile that will replace the treasure chest */    
+    /* figure out the tile that will replace the treasure chest */
     for (d = DIR_WEST; d <= DIR_SOUTH; d++) {
         tx = x;
         ty = y;
         mapDirMove(c->location->map, d, &tx, &ty);        
         newTile = (*c->location->tileAt)(c->location->map, tx, ty, c->location->z, WITHOUT_OBJECTS);
 
-        if (tileIsChest(newTile) || !tileIsWalkable(newTile) || !tileIsMonsterWalkable(newTile))
-            newTile = 0;
+        if (!tileIsChest(newTile) && tileIsWalkable(newTile) && tileIsMonsterWalkable(newTile))
+            break;
+        else newTile = 0;
     }            
     if (newTile == 0)
         newTile = BRICKFLOOR_TILE;
 
     tile = (*c->location->tileAt)(c->location->map, x, y, z, WITH_OBJECTS);
+    
+    /* get the object for the chest, if it is indeed an object */
     obj = mapObjectAt(c->location->map, x, y, z);
+    if (!tileIsChest(obj->tile))
+        obj = NULL;
     
     if (tileIsChest(tile)) {
         if (obj)

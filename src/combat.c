@@ -611,6 +611,23 @@ int combatBaseKeyHandler(int key, void *data) {
         gameCastForPlayer(FOCUS);
         break;
 
+    case 'g':
+        screenMessage("Get Chest!\n");
+        gameGetChest(FOCUS);
+        valid = 0;
+        break;
+
+    case 'l':
+        if (settings->debug) {
+            screenMessage("\nLocation:\nx:%d\ny:%d\nz:%d\n", 
+                combatInfo.party[FOCUS].obj->x,
+                combatInfo.party[FOCUS].obj->y,
+                combatInfo.party[FOCUS].obj->z);
+            screenPrompt();
+            valid = 0;
+            break;            
+        }
+
     case 'r':
         {
             extern int numWeapons;
@@ -629,6 +646,27 @@ int combatBaseKeyHandler(int key, void *data) {
             eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
         }
         break;
+
+    case 't':
+        if (settings->debug && combatInfo.dungeonRoom) {
+            Trigger *triggers = c->location->prev->map->dungeon->currentRoom->triggers;
+            int i;
+
+            screenMessage("Triggers!\n");
+
+            for (i = 0; i < 4; i++) {
+                screenMessage("%.1d)xy tile xy xy\n", i+1);
+                screenMessage("  %.1X%.1X  %.3d %.1X%.1X %.1X%.1X\n",
+                    triggers[i].x, triggers[i].y,
+                    triggers[i].tile,
+                    triggers[i].change_x1, triggers[i].change_y1,
+                    triggers[i].change_x2, triggers[i].change_y2);                
+            }
+            screenPrompt();
+            valid = 0;
+            
+            break;
+        }
 
     case 'u':
         {
@@ -665,43 +703,7 @@ int combatBaseKeyHandler(int key, void *data) {
             eventHandlerPushKeyHandler(&gameZtatsKeyHandler);
             screenMessage("Ztats\n");        
         }
-        break;
-
-    case 'g':
-        gameGetChest(FOCUS);
-        break;
-
-    case 'l':
-        if (settings->debug) {
-            screenMessage("\nLocation:\nx:%d\ny:%d\nz:%d\n", 
-                combatInfo.party[FOCUS].obj->x,
-                combatInfo.party[FOCUS].obj->y,
-                combatInfo.party[FOCUS].obj->z);
-            screenPrompt();
-            valid = 0;
-            break;            
-        }
-    
-    case 't':
-        if (settings->debug && combatInfo.dungeonRoom) {
-            Trigger *triggers = c->location->prev->map->dungeon->currentRoom->triggers;
-            int i;
-
-            screenMessage("Triggers!\n");
-
-            for (i = 0; i < 4; i++) {
-                screenMessage("%.1d)xy tile xy xy\n", i+1);
-                screenMessage("  %.1X%.1X  %.3d %.1X%.1X %.1X%.1X\n",
-                    triggers[i].x, triggers[i].y,
-                    triggers[i].tile,
-                    triggers[i].change_x1, triggers[i].change_y1,
-                    triggers[i].change_x2, triggers[i].change_y2);                
-            }
-            screenPrompt();
-            valid = 0;
-            
-            break;
-        }    
+        break;    
 
     case 'b':
     case 'e':
