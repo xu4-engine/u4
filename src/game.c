@@ -1659,7 +1659,8 @@ int moveAvatar(Direction dir, int userEvent) {
     if (tileIsShip(c->saveGame->transport)) {
         if (tileGetDirection(c->saveGame->transport) != dir) {
             tileSetDirection(&c->saveGame->transport, dir);
-            screenMessage("Turn %s!\n", getDirectionName(dir));
+            if (!settings->filterMoveMessages)
+                screenMessage("Turn %s!\n", getDirectionName(dir));
             goto done;
         }
     }
@@ -1675,10 +1676,12 @@ int moveAvatar(Direction dir, int userEvent) {
     newy = c->saveGame->y;
     dirMove(dir, &newx, &newy);
 
-    if (tileIsShip(c->saveGame->transport))
-        screenMessage("Sail %s!\n", getDirectionName(dir));
-    else if (!tileIsBalloon(c->saveGame->transport))
-        screenMessage("%s\n", getDirectionName(dir));
+    if (!settings->filterMoveMessages) {
+        if (tileIsShip(c->saveGame->transport))
+            screenMessage("Sail %s!\n", getDirectionName(dir));
+        else if (!tileIsBalloon(c->saveGame->transport))
+            screenMessage("%s\n", getDirectionName(dir));
+    }
 
     if (MAP_IS_OOB(c->map, newx, newy)) {
 	switch (c->map->border_behavior) {
@@ -1769,7 +1772,8 @@ int moveAvatar(Direction dir, int userEvent) {
             slow = 1;
 
         if (slow) {
-            screenMessage("Slow progress!\n");
+            if (!settings->filterMoveMessages)
+                screenMessage("Slow progress!\n");
             result = 0;
             goto done;
         }

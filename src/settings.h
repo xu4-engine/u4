@@ -23,6 +23,7 @@ typedef struct _Settings {
     int shortcutCommands;
     int keydelay;
     int keyinterval;
+    int filterMoveMessages;
 } Settings;
 
 char *settingsFilename(void);
