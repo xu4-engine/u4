@@ -121,12 +121,11 @@ int keyHandlerNormal(int key) {
         break;
     }
 
-    return keyHandlerDefault(key) || valid;
+    return valid || keyHandlerDefault(key);
 }
 
 int keyHandlerTalk(int key) {
     int valid = 1;
-    const Person *p;
     int t_x = -1, t_y = -1;
 
     switch (key) {
@@ -157,34 +156,31 @@ int keyHandlerTalk(int key) {
 
     if (t_x != -1 ||
         t_y != -1) {
-        p = mapPersonAt(c->map, t_x, t_y);
-        if (p == NULL) {
+        c->talker = mapPersonAt(c->map, t_x, t_y);
+        if (c->talker == NULL) {
             screenMessage("Funny, no\nresponse!\n");
             eventHandlerPopKeyHandler();
         }
         else {
             char buffer[100];
-            sprintf(buffer, "You meet\n%s\n\n", p->description);
+            sprintf(buffer, "\nYou meet\n%s\n\n", c->talker->description);
             if (isupper(buffer[9]))
                 buffer[9] = tolower(buffer[9]);
             screenMessage(buffer);
-            sprintf(buffer, "%s says: I am %s\n\n", p->pronoun, p->name);
-            screenMessage(buffer);
+            screenMessage("%s says: I am %s\n\n:", c->talker->pronoun, c->talker->name);
             talkBuffer[0] = '\0';
             eventHandlerPopKeyHandler();
             eventHandlerPushKeyHandler(&keyHandlerTalking);
         }
     }
 
-    return keyHandlerDefault(key) || valid;
+    return valid || keyHandlerDefault(key);
 }
 
 int keyHandlerTalking(int key) {
     int valid = 1;
 
-    if (key >= 'a' &&
-        key <= 'z') {
-
+    if ((key >= 'a' && key <= 'z') || key == ' ') {
         int len;
 
         screenMessage("%c", key);
@@ -194,17 +190,45 @@ int keyHandlerTalking(int key) {
             talkBuffer[len + 1] = '\0';
         }
 
-    } else if (key == '\n') {
+    } else if (key == '\n' || key == '\r') {
 
         screenMessage("\n");
-        screenMessage("%s\n", talkBuffer);
-        eventHandlerPopKeyHandler();        
-            
+        if (talkBuffer[0] == '\0' ||
+            strcasecmp(talkBuffer, "bye") == 0) {
+            eventHandlerPopKeyHandler();
+            screenMessage("Bye.\n");
+            return 1;
+        } else if (strcasecmp(talkBuffer, "look") == 0) {
+            screenMessage("%s says: %s\n", c->talker->pronoun, c->talker->description);
+        } else if (strcasecmp(talkBuffer, "name") == 0) {
+            screenMessage("%s says: I am %s\n", c->talker->pronoun, c->talker->name);
+        } else if (strcasecmp(talkBuffer, "job") == 0) {
+            screenMessage("%s\n", c->talker->job);
+            if (c->talker->questionTrigger == QTRIGGER_JOB)
+                screenMessage("%s\n", c->talker->question);
+        } else if (strcasecmp(talkBuffer, "heal") == 0) {
+            screenMessage("%s\n", c->talker->health);
+            if (c->talker->questionTrigger == QTRIGGER_HEALTH)
+                screenMessage("%s\n", c->talker->question);
+        } else if (strcasecmp(talkBuffer, c->talker->keyword1) == 0) {
+            screenMessage("%s\n", c->talker->response1);
+            if (c->talker->questionTrigger == QTRIGGER_KEYWORD1)
+                screenMessage("%s\n", c->talker->question);
+        } else if (strcasecmp(talkBuffer, c->talker->keyword2) == 0) {
+            screenMessage("%s\n", c->talker->response2);
+            if (c->talker->questionTrigger == QTRIGGER_KEYWORD2)
+                screenMessage("%s\n", c->talker->question);
+        } else {
+            screenMessage("That I cannot\nhelp thee with.\n");
+        }
+
+        screenMessage("\nYour Interest:\n");
+        talkBuffer[0] = '\0';
     } else {
         valid = 0;
     }
 
-    return keyHandlerDefault(key) || valid;
+    return valid || keyHandlerDefault(key);
 }
 
 int keyHandlerQuit(int key) {
@@ -240,7 +264,7 @@ int keyHandlerQuit(int key) {
         }
     }
 
-    return keyHandlerDefault(key) || valid;
+    return valid || keyHandlerDefault(key);
 }
 
 void moveAvatar(int dx, int dy) {
