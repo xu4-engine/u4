@@ -6,16 +6,15 @@
 
 #include <string>
 
-#include <libxml/xmlmemory.h>
-
-using std::string;
-
 #include "weapon.h"
 
+#include "config.h"
 #include "error.h"
 #include "names.h"
 #include "tile.h"
-#include "xml.h"
+
+using std::string;
+using std::vector;
 
 #define MASK_LOSE                   0x0001
 #define MASK_LOSEWHENRANGED         0x0002
@@ -28,16 +27,36 @@ using std::string;
 #define MASK_RETURNS                0x0100
 #define MASK_DONTSHOWTRAVEL         0x0200
 
-int weaponInfoLoaded = 0;
-int numWeapons = 0;
-Weapon weapons[MAX_WEAPONS];
+bool Weapon::confLoaded = false;
+vector<Weapon *> Weapon::weapons;
 
-void weaponLoadInfoFromXml() {
-    char *range;
-    xmlDocPtr doc;
-    xmlNodePtr root, node, child;
-    unsigned int i;
-    int weapon;
+/**
+ * Returns weapon by WeaponType.
+ */ 
+const Weapon *Weapon::get(WeaponType w) {
+    // Load in XML if it hasn't been already
+    loadConf();
+
+    if (static_cast<unsigned>(w) >= weapons.size())
+        return NULL;
+    return weapons[w];
+}
+
+/**
+ * Returns weapon that has the given name
+ */ 
+const Weapon *Weapon::get(const string &name) {
+    // Load in XML if it hasn't been already
+    loadConf();
+
+    for (unsigned i = 0; i < weapons.size(); i++) {
+        if (strcasecmp(name.c_str(), weapons[i]->name.c_str()) == 0)
+            return weapons[i];
+    }
+    return NULL;
+}
+
+void Weapon::loadConf() {
     static const struct {
         const char *name;
         unsigned int mask;        
@@ -62,268 +81,224 @@ void weaponLoadInfoFromXml() {
         { "magic", MAGICFLASH_TILE }
     };
 
-    if (!weaponInfoLoaded)
-        weaponInfoLoaded = 1;
-    else return;
+    if (!confLoaded)
+        confLoaded = true;
+    else
+        return;
 
-    doc = xmlParse("weapons.xml");
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "weapons") != 0)
-        errorFatal("malformed weapons.xml");
+    const Config *config = Config::getInstance();
 
-    weapon = 0;
-    numWeapons = 0;
-
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) ||
-            xmlStrcmp(node->name, (const xmlChar *) "weapon") != 0)
+    vector<ConfigElement> weaponConfs = config->getElement("/config/weapons").getChildren();
+    for (vector<ConfigElement>::iterator i = weaponConfs.begin(); i != weaponConfs.end(); i++) {
+        if (i->getName() != "weapon")
             continue;
 
-        weapons[weapon].name = xmlGetPropAsStr(node, "name");        
-        weapons[weapon].abbr = xmlGetPropAsStr(node, "abbr");
-        weapons[weapon].canuse = 0xFF;
-        weapons[weapon].damage = xmlGetPropAsInt(node, "damage");
-        weapons[weapon].hittile = HITFLASH_TILE;
-        weapons[weapon].misstile = MISSFLASH_TILE;
-        weapons[weapon].leavetile = 0;
-        weapons[weapon].mask = 0;
+        Weapon *weapon = new Weapon;
+        weapon->type = static_cast<WeaponType>(weapons.size());
+        weapon->name = i->getString("name");
+        weapon->abbr = i->getString("abbr");
+        weapon->canuse = 0xFF;
+        weapon->damage = i->getInt("damage");
+        weapon->hittile = HITFLASH_TILE;
+        weapon->misstile = MISSFLASH_TILE;
+        weapon->leavetile = 0;
+        weapon->mask = 0;
 
         /* Get the range of the weapon, whether it is absolute or normal range */
-        range = xmlGetPropAsStr(node, "range");
-        if (range == NULL) {
-            range = xmlGetPropAsStr(node, "absolute_range");
-            if (range != NULL)
-                weapons[weapon].mask |= MASK_ABSOLUTERANGE;
+        string range = i->getString("range");
+        if (range.empty()) {
+            range = i->getString("absolute_range");
+            if (!range.empty())
+                weapon->mask |= MASK_ABSOLUTERANGE;
         }
-        if (range == NULL)
-            errorFatal("malformed weapons.xml file: range or absolute_range not found for weapon %s", weapons[weapon].name.c_str());
+        if (range.empty())
+            errorFatal("malformed weapons.xml file: range or absolute_range not found for weapon %s", weapon->name.c_str());
 
-        weapons[weapon].range = atoi(range);
+        weapon->range = atoi(range.c_str());
 
         /* Load weapon attributes */
-        for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
-            if (xmlGetPropAsBool(node, booleanAttributes[i].name)) {
-                weapons[weapon].mask |= booleanAttributes[i].mask;
+        for (unsigned at = 0; at < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); at++) {
+            if (i->getBool(booleanAttributes[at].name)) {
+                weapon->mask |= booleanAttributes[at].mask;
             }
         }
 
         /* Load hit tiles */
-        for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, "hittile", tiles[i].name) == 0) {
-                weapons[weapon].hittile = tiles[i].tile;
+        for (unsigned ht = 0; ht < sizeof(tiles) / sizeof(tiles[0]); ht++) {
+            if (i->getString("hittile") == tiles[ht].name) {
+                weapon->hittile = tiles[ht].tile;
+                break;
             }
         }
 
         /* Load miss tiles */
-        for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, "misstile", tiles[i].name) == 0) {
-                weapons[weapon].misstile = tiles[i].tile;
+        for (unsigned mt = 0; mt < sizeof(tiles) / sizeof(tiles[0]); mt++) {
+            if (i->getString("misstile") == tiles[mt].name) {
+                weapon->misstile = tiles[mt].tile;
+                break;
             }
         }
 
         /* Load leave tiles */
-        for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlPropCmp(node, "leavetile", tiles[i].name) == 0) {
-                weapons[weapon].mask |= MASK_LEAVETILE;
-                weapons[weapon].leavetile = tiles[i].tile;
+        for (unsigned lt = 0; lt < sizeof(tiles) / sizeof(tiles[0]); lt++) {
+            if (i->getString("leavetile") == tiles[lt].name) {
+                weapon->mask |= MASK_LEAVETILE;
+                weapon->leavetile = tiles[lt].tile;
+                break;
             }
         }
 
-        for (child = node->xmlChildrenNode; child; child = child->next) {
+        vector<ConfigElement> contraintConfs = i->getChildren();
+        for (vector<ConfigElement>::iterator j = contraintConfs.begin(); j != contraintConfs.end(); j++) {
             unsigned char mask = 0;
 
-            if (xmlNodeIsText(child) ||
-                xmlStrcmp(child->name, (const xmlChar *) "constraint") != 0)
+            if (j->getName() != "constraint")
                 continue;
 
-            for (i = 0; i < 8; i++) {
-                if (xmlPropCaseCmp(child, "class", getClassName((ClassType)i)) == 0)
-                    mask = (1 << i);
+            for (int cl = 0; cl < 8; cl++) {
+                if (strcasecmp(j->getString("class").c_str(), getClassName(static_cast<ClassType>(cl))) == 0)
+                    mask = (1 << cl);
             }
-            if (mask == 0 && xmlPropCaseCmp(child, "class", "all") == 0)
+            if (mask == 0 && strcasecmp(j->getString("class").c_str(), "all") == 0)
                 mask = 0xFF;
             if (mask == 0) {
                 errorFatal("malformed weapons.xml file: constraint has unknown class %s", 
-                           xmlGetPropAsStr(child, "class"));
+                           j->getString("class").c_str());
             }
-            if (xmlGetPropAsBool(child, "canuse"))
-                weapons[weapon].canuse |= mask;
+            if (j->getBool("canuse"))
+                weapon->canuse |= mask;
             else
-                weapons[weapon].canuse &= ~mask;
+                weapon->canuse &= ~mask;
         }
 
-        weapon++;
-        numWeapons++;
+        weapons.push_back(weapon);
     }
+}
 
-    xmlFreeDoc(doc);
+/**
+ * Returns the WeaponType of the weapon
+ */
+WeaponType Weapon::getType() const {
+    return type;
 }
 
 /**
  * Returns the name of the weapon
  */
-string *weaponGetName(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return &weapons[weapon].name;
+const string &Weapon::getName() const {
+    return name;
 }
 
 /**
  * Returns the abbreviation for the weapon
  */
-string *weaponGetAbbrev(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return &weapons[weapon].abbr;
+const string &Weapon::getAbbrev() const {
+    return abbr;
 }
 
 /**
  * Return the range of the weapon
  */
-int weaponGetRange(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return weapons[weapon].range;
+int Weapon::getRange() const {
+    return range;
 }
 
 /**
  * Return the damage for the specified weapon
  */
-int weaponGetDamage(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return weapons[weapon].damage;
+int Weapon::getDamage() const {
+    return damage;
 }
 
 /**
  * Return the hit tile for the specified weapon
  */
-int weaponGetHitTile(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return weapons[weapon].hittile;
+int Weapon::getHitTile() const {
+    return hittile;
 }
 
 /**
  * Return the miss tile for the specified weapon
  */
-int weaponGetMissTile(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return weapons[weapon].misstile;
+int Weapon::getMissTile() const {
+    return misstile;
 }
 
 /**
  * Returns true if the weapon always hits it's target
  */
-int weaponAlwaysHits(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return weapons[weapon].mask & MASK_ALWAYSHITS;
+bool Weapon::alwaysHits() const {
+    return mask & MASK_ALWAYSHITS;
 }
 
 /**
  * Returns 0 if the weapon leaves no tile, otherwise it
  * returns the # of the tile the weapon leaves
  */
-unsigned char weaponLeavesTile(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return (weapons[weapon].mask & MASK_LEAVETILE) ? weapons[weapon].leavetile : 0;
+unsigned char Weapon::leavesTile() const {
+    return (mask & MASK_LEAVETILE) ? leavetile : 0;
 }
 
 /**
  * Returns true if the class given can ready the weapon
  */
-int weaponCanReady(int weapon, ClassType klass) {
-    // Load in XML if it hasn't been already
-    weaponLoadInfoFromXml();
-
-    return (weapons[weapon].canuse & (1 << klass)) != 0;
+bool Weapon::canReady(ClassType klass) const {
+    return (canuse & (1 << klass)) != 0;
 }
 
 /**
  * Returns true if the weapon can attack through solid objects
  */
-int weaponCanAttackThroughObjects(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return (weapons[weapon].mask & MASK_ATTACKTHROUGHOBJECTS);
+bool Weapon::canAttackThroughObjects() const {
+    return mask & MASK_ATTACKTHROUGHOBJECTS;
 }
 
 /**
  * Returns true if the weapon's range is absolute (only works at specific distance)
  */
-int weaponRangeAbsolute(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return (weapons[weapon].mask & MASK_ABSOLUTERANGE);
+bool Weapon::rangeAbsolute() const {
+    return mask & MASK_ABSOLUTERANGE;
 }
 
 /**
  * Returns true if the weapon 'returns' to its user after used/thrown
  */
-int weaponReturns(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return (weapons[weapon].mask & MASK_RETURNS);
+bool Weapon::returns() const {
+    return mask & MASK_RETURNS;
 }
 
 /**
  * Return true if the weapon is lost when used
  */
-int weaponLoseWhenUsed(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return (weapons[weapon].mask & MASK_LOSE);
+bool Weapon::loseWhenUsed() const {
+    return mask & MASK_LOSE;
 }
 
 /**
  * Returns true if the weapon is lost if it is a ranged attack
  */
-int weaponLoseWhenRanged(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return (weapons[weapon].mask & MASK_LOSEWHENRANGED);
+bool Weapon::loseWhenRanged() const {
+    return mask & MASK_LOSEWHENRANGED;
 }
 
 /**
  * Returns true if the weapon allows you to choose the distance
  */
-int weaponCanChooseDistance(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return (weapons[weapon].mask & MASK_CHOOSEDISTANCE);
+bool Weapon::canChooseDistance() const {
+    return mask & MASK_CHOOSEDISTANCE;
 }
 
 /**
  * Returns true if the weapon is magical
  */
-int weaponIsMagic(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return (weapons[weapon].mask & MASK_MAGIC);
+bool Weapon::isMagic() const {
+    return mask & MASK_MAGIC;
 }
 
 /**
  * Returns true if the weapon displays a tile while it travels
  * to give the appearance of 'flying' to its target
  */
-int weaponShowTravel(int weapon) {
-    weaponLoadInfoFromXml();
-
-    return (weapons[weapon].mask & MASK_DONTSHOWTRAVEL) ? 0 : 1;
+bool Weapon::showTravel() const {
+    return (mask & MASK_DONTSHOWTRAVEL) ? false : true;
 }
-
-/**
- * Returns the weapon that corresponds to the given name
- */ 
-int weaponGetByName(const char *name) {
-    int i;
-    for (i = 0; i < numWeapons; i++) {
-        if (strcasecmp(name, weapons[i].name.c_str()) == 0)
-            return i;
-    }
-    return -1;
-}
-

@@ -6,20 +6,43 @@
 #define WEAPON_H
 
 #include <string>
+#include <vector>
 #include "savegame.h"
-#include "types.h"
 
-using std::string;
+class Weapon {
+public:
+    static const Weapon *get(WeaponType w);
+    static const Weapon *get(const std::string &name);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    WeaponType getType() const;
+    const std::string &getName() const;
+    const std::string &getAbbrev() const;
+    int getRange() const;
+    int getDamage() const;
+    int getHitTile() const;
+    int getMissTile() const;
+    bool alwaysHits() const;
+    unsigned char leavesTile() const;
+    bool canReady(ClassType klass) const;
+    bool canAttackThroughObjects() const;
+    bool rangeAbsolute() const;
+    bool returns() const;
+    bool loseWhenUsed() const;
+    bool loseWhenRanged() const;
+    bool canChooseDistance() const;
+    bool isMagic() const;
+    bool showTravel() const;
 
-#define MAX_WEAPONS     128
+private:
+    Weapon() {}
 
-typedef struct _Weapon {
-    string name;
-    string abbr;
+    static void loadConf();
+    static bool confLoaded;
+    static std::vector<Weapon *> weapons;
+
+    WeaponType type;
+    std::string name;
+    std::string abbr;
     unsigned char canuse;
     int range;
     int damage;
@@ -27,29 +50,6 @@ typedef struct _Weapon {
     int misstile;
     int leavetile;
     unsigned short mask;
-} Weapon;
-
-string *weaponGetName(int weapon);
-string *weaponGetAbbrev(int weapon);
-int weaponGetRange(int weapon);
-int weaponGetDamage(int weapon);
-int weaponGetHitTile(int weapon);
-int weaponGetMissTile(int weapon);
-int weaponAlwaysHits(int weapon);
-unsigned char weaponLeavesTile(int weapon);
-int weaponCanReady(int weapon, ClassType klass);
-int weaponCanAttackThroughObjects(int weapon);
-int weaponRangeAbsolute(int weapon);
-int weaponReturns(int weapon);
-int weaponLoseWhenUsed(int weapon);
-int weaponLoseWhenRanged(int weapon);
-int weaponCanChooseDistance(int weapon);
-int weaponIsMagic(int weapon);
-int weaponShowTravel(int weapon);
-int weaponGetByName(const char *name);
-
-#ifdef __cplusplus
-}
-#endif
+};
 
 #endif

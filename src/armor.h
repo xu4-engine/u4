@@ -6,30 +6,31 @@
 #define ARMOR_H
 
 #include <string>
+#include <vector>
 #include "savegame.h"
 
-using std::string;
+class Armor {
+public:
+    static const Armor *get(ArmorType a);
+    static const Armor *get(const std::string &name);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    ArmorType getType() const;
+    const std::string &getName() const;
+    int getDefense() const;
+    bool canWear(ClassType klass) const;
 
-#define MAX_ARMORS     128
+private:
+    Armor() {}
 
-typedef struct _Armor {
-    string name;
+    static void loadConf();
+    static bool confLoaded;
+    static std::vector<Armor *> armors;
+
+    ArmorType type;
+    std::string name;
     unsigned char canuse;
     int defense;
     unsigned short mask;
-} Armor;
-
-string *armorGetName(int weapon);
-int armorGetDefense(int armor);
-int armorCanWear(int armor, ClassType klass);
-int armorGetByName(const char *name);
-
-#ifdef __cplusplus
-}
-#endif
+};
 
 #endif
