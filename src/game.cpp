@@ -27,6 +27,7 @@
 #include "event.h"
 #include "intro.h"
 #include "item.h"
+#include "imagemgr.h"
 #include "location.h"
 #include "mapmgr.h"
 #include "menu.h"
@@ -71,7 +72,6 @@ void gameUpdateMoons(int showmoongates);
 
 /* spell functions */
 int castForPlayerGetDestDir(Direction dir);
-int castForPlayerGetPhase(int phase);
 int castForPlayerGetEnergyType(int fieldType);
 int castForPlayerGetEnergyDir(Direction dir);
 void gameCastSpell(unsigned int spell, int caster, int param);
@@ -353,7 +353,7 @@ void gameInit() {
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
 
     musicMgr->play();
-    screenDrawImage(BKGD_BORDERS);
+    imageMgr->get(BKGD_BORDERS)->image->draw(0, 0);
     c->stats->update(); /* draw the party stats */
 
     screenMessage("Press Alt-h for help\n");    
@@ -1622,26 +1622,6 @@ bool gameGetFieldTypeKeyHandler(int key, void *data) {
     return false;
 }
 
-bool gameGetPhaseKeyHandler(int key, void *data) {    
-    int (*handlePhase)(int) = (int(*)(int))data;
-    bool valid = true;
-
-    eventHandler->popKeyHandler();
-
-    if (key >= '1' && key <= '8') {
-        screenMessage("%c\n", key);
-        (*handlePhase)(key - '1');
-    } else {
-        screenMessage("None\n");
-        (*c->location->finishTurn)();
-        valid = false;
-    }
-
-    //eventHandler->popKeyHandlerData();
-
-    return valid || KeyHandler::defaultHandler(key, NULL);
-}
-
 /**
  * Handles key presses for a command requiring a direction argument.
  * Once an arrow key is pressed, control is handed off to a command
@@ -2172,10 +2152,18 @@ bool gameCastForPlayer(int player) {
         gameCastSpell(spell, player, 0);
         (*c->location->finishTurn)();
         break;
-    case Spell::PARAM_PHASE:
+    case Spell::PARAM_PHASE: {
         screenMessage("To Phase: ");
-        eventHandler->pushKeyHandler(KeyHandler(&gameGetPhaseKeyHandler, (void *) &castForPlayerGetPhase));        
+        int choice = ReadChoiceController::get("12345678 \033\n");
+        if (choice < '1' || choice > '8')
+            screenMessage("None\n");
+        else {
+            screenMessage("%c\n", choice);
+            gameCastSpell(spell, player, choice - '1');
+        }
+        (*c->location->finishTurn)();
         break;
+    }
     case Spell::PARAM_PLAYER: {
         screenMessage("Who: ");
         int subject = gameGetPlayer(true, false);
@@ -2207,12 +2195,6 @@ bool gameCastForPlayer(int player) {
 
 int castForPlayerGetDestDir(Direction dir) {
     gameCastSpell(castSpell, castPlayer, (int) dir);
-    (*c->location->finishTurn)();
-    return 1;
-}
-
-int castForPlayerGetPhase(int phase) {
-    gameCastSpell(castSpell, castPlayer, phase);
     (*c->location->finishTurn)();
     return 1;
 }
