@@ -6,6 +6,9 @@
 
 #include "../u4.h"
 #include "../map.h"
+#include "../dungeon.h"
+
+Dungeon deceit_dungeon;
 
 Map deceit_map = {
     17,
@@ -18,8 +21,16 @@ Map deceit_map = {
     FIRST_PERSON, /* flags */
     MUSIC_DUNGEON, /* music */
     NULL, /* data */
-    { NULL } /* dungeon */
+    { &deceit_dungeon } /* dungeon */
 };
+
+Dungeon deceit_dungeon = {
+    "Deceit", /* name */
+    0, /* n_rooms */
+    NULL /* rooms */
+};
+
+Dungeon despise_dungeon;
 
 Map despise_map = {
     18,
@@ -32,8 +43,16 @@ Map despise_map = {
     FIRST_PERSON, /* flags */
     MUSIC_DUNGEON, /* music */
     NULL, /* data */
-    { NULL } /* dungeon */
+    { &despise_dungeon } /* dungeon */
 };
+
+Dungeon despise_dungeon = {
+    "Despise", /* name */
+    0, /* n_rooms */
+    NULL /* rooms */
+};
+
+Dungeon destard_dungeon;
 
 Map destard_map = {
     19,
@@ -46,8 +65,16 @@ Map destard_map = {
     FIRST_PERSON, /* flags */
     MUSIC_DUNGEON, /* music */
     NULL, /* data */
-    { NULL } /* dungeon */
+    { &destard_dungeon } /* dungeon */
 };
+
+Dungeon destard_dungeon = {
+    "Destard", /* name */
+    0, /* n_rooms */
+    NULL /* rooms */
+};
+
+Dungeon wrong_dungeon;
 
 Map wrong_map = {
     20,
@@ -60,8 +87,16 @@ Map wrong_map = {
     FIRST_PERSON, /* flags */
     MUSIC_DUNGEON, /* music */
     NULL, /* data */
-    { NULL } /* dungeon */
+    { &wrong_dungeon } /* dungeon */
 };
+
+Dungeon wrong_dungeon = {
+    "Wrong", /* name */
+    0, /* n_rooms */
+    NULL /* rooms */
+};
+
+Dungeon covetous_dungeon;
 
 Map covetous_map = {
     21,
@@ -74,8 +109,16 @@ Map covetous_map = {
     FIRST_PERSON, /* flags */
     MUSIC_DUNGEON, /* music */
     NULL, /* data */
-    { NULL } /* dungeon */
+    { &covetous_dungeon } /* dungeon */
 };
+
+Dungeon covetous_dungeon = {
+    "Covetous", /* name */
+    0, /* n_rooms */
+    NULL /* rooms */
+};
+
+Dungeon shame_dungeon;
 
 Map shame_map = {
     22,
@@ -88,8 +131,16 @@ Map shame_map = {
     FIRST_PERSON, /* flags */
     MUSIC_DUNGEON, /* music */
     NULL, /* data */
-    { NULL } /* dungeon */
+    { &shame_dungeon } /* dungeon */
 };
+
+Dungeon shame_dungeon = {
+    "Shame", /* name */
+    0, /* n_rooms */
+    NULL /* rooms */
+};
+
+Dungeon hythloth_dungeon;
 
 Map hythloth_map = {
     23,
@@ -102,8 +153,16 @@ Map hythloth_map = {
     FIRST_PERSON, /* flags */
     MUSIC_DUNGEON, /* music */
     NULL, /* data */
-    { NULL } /* dungeon */
+    { &hythloth_dungeon } /* dungeon */
 };
+
+Dungeon hythloth_dungeon = {
+    "Hythloth", /* name */
+    0, /* n_rooms */
+    NULL /* rooms */
+};
+
+Dungeon abyss_dungeon;
 
 Map abyss_map = {
     24,
@@ -116,6 +175,12 @@ Map abyss_map = {
     FIRST_PERSON, /* flags */
     MUSIC_DUNGEON, /* music */
     NULL, /* data */
-    { NULL } /* dungeon */
+    { &abyss_dungeon } /* dungeon */
+};
+
+Dungeon abyss_dungeon = {
+    "The Great Stygian Abyss", /* name */
+    0, /* n_rooms */
+    NULL /* rooms */
 };
 
