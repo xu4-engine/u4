@@ -21,28 +21,33 @@ Things you only have to do once
 4. Download the SDL binaries & headers from:
    http://exult.sourceforge.net/snapshots/exult_sdl_win32.zip
 
-5. Start MSYS
+5. Download the libpng and zlib binaries & headers from:
+   http://exult.sourceforge.net/snapshots/exult_dev_win32.zip
 
-6. Change to the directory where you want xu4 cvs 
+6. Extract libpng and zlib binaries & headers to mingw directory
+
+7. Start MSYS
+
+8. Change to the directory where you want xu4 cvs 
    ie cd C:/
 
-4. Check out the current xu4 cvs source code
+9. Check out the current xu4 cvs source code
    cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 login
    Just press enter when it asks for password
    cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 co u4
 
-5. Extract SDL binaries & headers to src directory of xu4 source code
+10. Extract SDL binaries & headers to src directory of xu4 source code
 
-6. Change to src directory of xu4 source code
+11. Change to src directory of xu4 source code
    ie cd C:/u4/src
 
-7. Open makefile.mingw in a text editor and change C:/xu4 to the directory you want xu4 to be installed to.
+12. Open makefile.mingw in a text editor and change C:/xu4 to the directory you want xu4 to be installed to.
    ie C:/Games/Ultima4
 
-8. Compile xu4
+13. Compile xu4
    make -f makefile.mingw install
 
-9. Exit MSYS and enjoy xu4!
+14. Exit MSYS and enjoy xu4!
 
 ------------------------------------------------------------
 Things you have to do every time the xu4 source code changes

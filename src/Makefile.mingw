@@ -24,8 +24,10 @@ include Makefile.common
 xu4ico.o: xu4.ico xu4.rc
 	windres xu4.rc xu4ico.o
 
-install: $(MAIN) dumpsavegame.exe
+install: $(MAIN) dumpsavegame.exe lzwenc.exe lzwdec.exe
 	strip dumpsavegame.exe -o $(U4PATH)/dumpsavegame.exe
+	strip lzwenc.exe -o $(U4PATH)/lzwenc.exe
+	strip lzwdec.exe -o $(U4PATH)/lzwdec.exe
 	strip $(MAIN) -o $(U4PATH)/$(MAIN)
 	cp ../README $(U4PATH)/readme.txt
 	cp ../mid/*.mid $(U4PATH)
