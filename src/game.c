@@ -1431,6 +1431,15 @@ int gameSpellMixHowMany(const char *message) {
 
     num = (int) strtol(message, NULL, 10);
     
+    /* entered 0 mixtures, don't mix anything! */
+    if (num == 0) {
+        screenMessage("\nNone mixed!\n");
+        mixtureRevert(mix);
+        mixtureDelete(mix);
+        (*c->location->finishTurn)();
+        return 0;
+    }
+    
     /* if they ask for more than will give them 99, only use what they need */
     if (num > 99 - c->saveGame->mixtures[mixSpell]) {
         num = 99 - c->saveGame->mixtures[mixSpell];
