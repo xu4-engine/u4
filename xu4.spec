@@ -51,9 +51,17 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/music/Towns.mid
 %{_libdir}/u4/music/Wanderer.mid
 %{_libdir}/u4/dumpsavegame
+%{_libdir}/u4/lzwenc
+%{_libdir}/u4/lzwdec
+%{_libdir}/u4/rleenc
+%{_libdir}/u4/rledec
+%{_libdir}/u4/tiles.xml
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Tue Feb 25 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- install config file plus encoding and decoding tools
+
 * Mon Dec 12 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added SDL-devel to build dependancies
 
