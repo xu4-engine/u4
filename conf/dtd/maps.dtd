@@ -4,13 +4,15 @@
 
 <!ELEMENT maps ( map+ ) >
 
-<!ELEMENT map ( city | dungeon | portal | shrine )* >
+<!ELEMENT map ( city | dungeon | moongate | portal | shrine )* >
 <!ATTLIST map id                  NMTOKEN  #REQUIRED
               type                ( castle | combat | dungeon | ruins | shrine | town | village | world ) #REQUIRED
               fname               NMTOKEN  #REQUIRED
               width               NMTOKEN  #REQUIRED
               height              NMTOKEN  #REQUIRED
               levels              NMTOKEN  #REQUIRED
+              chunkwidth          NMTOKEN  #IMPLIED
+              chunkheight         NMTOKEN  #IMPLIED
               borderbehavior      ( exit | fixed | wrap ) #REQUIRED
               showavatar          %bool;   #IMPLIED
               nolineofsight       %bool;   #IMPLIED
@@ -40,6 +42,11 @@
 <!ELEMENT shrine EMPTY >
 <!ATTLIST shrine mantra           NMTOKEN  #REQUIRED
                  virtue           NMTOKEN  #REQUIRED>
+
+<!ELEMENT moongate EMPTY >
+<!ATTLIST moongate phase          NMTOKEN  #REQUIRED
+                   x              NMTOKEN  #REQUIRED
+                   y              NMTOKEN  #REQUIRED>
 
 <!ELEMENT portal ( retroActiveDest? ) >
 <!ATTLIST portal x                NMTOKEN  #REQUIRED

@@ -3,7 +3,7 @@
 <!-- $Id$ -->
 <maps>
     <!-- world map -->
-    <map id="0" type="world" fname="world.map" width="256" height="256" levels="1" borderbehavior="wrap" showavatar="true" music="1">        
+    <map id="0" type="world" fname="world.map" width="256" height="256" levels="1" chunkwidth="32" chunkheight="32" borderbehavior="wrap" showavatar="true" music="1">        
         <portal x="86"  y="107" z="-1" destmapid="1"  startx="15" starty="30" startlevel="0" action="enter" savelocation="true" transport="footorhorse"/>
         <portal x="218" y="107" z="-1" destmapid="2"  startx="15" starty="30" startlevel="0" action="enter" savelocation="true" transport="footorhorse"/>
         <portal x="28"  y="50"  z="-1" destmapid="3"  startx="15" starty="30" startlevel="0" action="enter" savelocation="true" transport="footorhorse"/>
@@ -39,6 +39,15 @@
         <portal x="205" y="45"  z="-1" destmapid="29" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
         <portal x="81"  y="207" z="-1" destmapid="30" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
         <portal x="231" y="216" z="-1" destmapid="32" startx="0" starty="0" startlevel="0" action="enter" condition="shrine" savelocation="true" transport="footorhorse"/>
+
+        <moongate phase="0" x="224" y="133"/>
+        <moongate phase="1" x="96" y="102"/>
+        <moongate phase="2" x="38" y="224"/>
+        <moongate phase="3" x="50" y="37"/>
+        <moongate phase="4" x="166" y="19"/>
+        <moongate phase="5" x="104" y="194"/>
+        <moongate phase="6" x="23" y="126"/>
+        <moongate phase="7" x="187" y="167"/>
     </map>
 
     <!-- castles -->
