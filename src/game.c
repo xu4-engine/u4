@@ -635,7 +635,7 @@ int talkAtCoord(int x, int y) {
     c->conversation.buffer[0] = '\0';
     
     personGetIntroduction(c->conversation.talker, &intro);
-    screenMessage("\n\n%s\n", intro);
+    screenMessage("\n\n%s", intro);
     free(intro);
 
     info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
@@ -681,7 +681,7 @@ int talkHandleBuffer(const char *message) {
         free(prompt);
     } else {
         personGetPrompt(c->conversation.talker, &prompt);
-        screenMessage("\n%s\n", prompt);
+        screenMessage("\n%s", prompt);
         free(prompt);
     }
 
