@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <ctype.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
@@ -20,7 +21,7 @@ void armorLoadInfoFromXml() {
     xmlDocPtr doc;
     xmlNodePtr root, node;
     int armor; //, i;
-    
+
     if (!armorInfoLoaded)
         armorInfoLoaded = 1;
     else return;
@@ -90,15 +91,19 @@ int armorCanWear(int armor, const char *className) {
     char *klass;
     int allCanWear = 1;
     int retval = 0;
+    int i;
 
-    klass = (char *)strlwr(strdup(className));
-    
+    klass = strdup(className);
+    for (i = 0; klass[i] != '\0'; i++) {
+        klass[i] = tolower(klass[i]);
+    }
+
     // Load in XML if it hasn't been already
     armorLoadInfoFromXml();
 
     if (armors[armor].canwear)
         allCanWear = 0;
-    
+
     if (allCanWear)
     {
         if (!(armors[armor].cantwear && strstr(armors[armor].cantwear, klass)))

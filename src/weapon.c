@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <ctype.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
@@ -207,17 +208,21 @@ int weaponLeavesTile(int weapon) {
 
 int weaponCanReady(int weapon, const char *className) {
     char *klass;
-    int allCanReady = 1;    
+    int allCanReady = 1;
     int retval = 0;
+    int i;
 
-    klass = (char *)strlwr(strdup(className));
-    
+    klass = strdup(className);
+    for (i = 0; klass[i] != '\0'; i++) {
+        klass[i] = tolower(klass[i]);
+    }
+
     // Load in XML if it hasn't been already
     weaponLoadInfoFromXml();
 
     if (weapons[weapon].canready)
         allCanReady = 0;
-    
+
     if (allCanReady)
     {
         if (!(weapons[weapon].cantready && strstr(weapons[weapon].cantready, klass)))
