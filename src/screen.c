@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <assert.h>
 
 #include "u4.h"
 #include "screen.h"
@@ -106,6 +107,8 @@ void screenCycle() {
 void screenUpdateCursor() {
     int phase = screenCurrentCycle * 4 / SCR_CYCLE_MAX;
 
+    assert(phase >= 0 && phase < 4);
+
     if (screenCursorStatus)
         screenShowChar(31 - phase, screenCursorX, screenCursorY);
 }
@@ -120,6 +123,9 @@ void screenUpdateMoons() {
         trammelPhase = 7;
     if (--feluccaPhase < 0)
         feluccaPhase = 7;
+
+    assert(trammelPhase >= 0 && trammelPhase < 8);
+    assert(feluccaPhase >= 0 && feluccaPhase < 8);
 
     screenShowChar(20 + trammelPhase, 11, 0);
     screenShowChar(20 + feluccaPhase, 12, 0);
