@@ -11,7 +11,7 @@
 #include "u4.h"
 #include "screen.h"
 #include "map.h"
-#include "person.h"
+#include "object.h"
 #include "context.h"
 #include "savegame.h"
 
@@ -71,7 +71,7 @@ void screenMessage(char *fmt, ...) {
 
 void screenUpdate() {
     int y, x, tile;
-    const Person *p;
+    const Object *obj;
 
     if (c == NULL)
         return;
@@ -87,8 +87,8 @@ void screenUpdate() {
 		     y == (VIEWPORT_H / 2))
 		tile = c->saveGame->transport;
 	  
-	    else if ((p = mapPersonAt(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2)))) 
-		tile = p->tile0;
+	    else if ((obj = mapObjectAt(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2)))) 
+		tile = obj->tile;
 
 	    else
 		tile = mapTileAt(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2));
