@@ -203,7 +203,7 @@ void useBBC(void *item) {
  */
 void useHorn(void *item) {
     screenMessage("\nThe Horn sounds an eerie tone!\n");
-    c->aura->set(AURA_HORN, 10);    
+    c->aura->set(Aura::HORN, 10);    
 }
 
 /**
