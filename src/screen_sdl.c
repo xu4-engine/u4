@@ -664,7 +664,7 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
  * Draw a tile graphic on the screen.
  */
 void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y) {
-    int offset;
+    int offset, i, swaprow;
     SDL_Rect src, dest;
 
     if (tileGetAnimationStyle(tileInfo->tile) == ANIM_SCROLL)
@@ -697,6 +697,45 @@ void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y) {
         SDL_BlitSurface(tiles, &src, screen, &dest);
     }
 
+    /*
+     * animate flags
+     */
+    switch (tileGetAnimationStyle(tileInfo->tile)) {
+    case ANIM_CITYFLAG:
+        swaprow = 3;
+        break;
+    case ANIM_CASTLEFLAG:
+    case ANIM_LCBFLAG:
+        swaprow = 1;
+        break;
+    case ANIM_WESTSHIPFLAG:
+    case ANIM_EASTSHIPFLAG:
+        swaprow = 2;
+        break;
+    default:
+        swaprow = -1;
+        break;
+    }
+
+    if (swaprow != -1 && (rand() % 2)) {
+
+        for (i = 0; i < (scale * 2) + 2; i++) {
+            src.x = scale * 5;
+            src.y = tileInfo->tile * (tiles->h / N_TILES) + (swaprow * scale) + i - 1;
+            src.w = tiles->w - (scale * 5);
+            src.h = 1;
+            dest.x = x * tiles->w + (BORDER_WIDTH * scale) + (scale * 5);
+            dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale) + ((swaprow + 2) * scale) - i;
+            dest.w = tiles->w - (scale * 5);
+            dest.h = 1;
+
+            SDL_BlitSurface(tiles, &src, screen, &dest);
+        }
+    }
+
+    /*
+     * finally draw the focus rectangle if the tile has the focus
+     */
     if (tileInfo->hasFocus && (screenCurrentCycle % 2)) {
         dest.x = x * tiles->w + (BORDER_WIDTH * scale);
         dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
@@ -1037,8 +1076,7 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
     SDL_Surface *dest;
     Uint32 rmask, gmask, bmask, amask;
 
-    /* this scaler works only with 8-bit source images, scaled by 2x */
-    assert(src->format->palette);
+    /* this scaler works only with images scaled by 2x */
     assert(scale == 2);
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -1215,8 +1253,7 @@ SDL_Surface *screenAdvanceMAMEScale2x(SDL_Surface *src, int scale, int n) {
     SDL_Surface *dest;
     Uint32 rmask, gmask, bmask, amask;
 
-    /* this scaler works only with 8-bit source images, scaled by 2x */
-    assert(src->format->palette);
+    /* this scaler works only with images scaled by 2x */
     assert(scale == 2);
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
