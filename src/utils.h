@@ -21,10 +21,11 @@ using std::string;
 
 void xu4_srandom(void);
 int xu4_random(int upperval);
-void trim(string *val);
+string& trim(string &val);
+string& lowercase(string &val);
+string& uppercase(string &val);
+string  to_string(int val);
 std::vector<string> split(const string &s, const string &separators);
-void lowercase(string *val);
-void uppercase(string *val);
 
 class Performance {
     typedef std::map<string, clock_t> TimeMap;

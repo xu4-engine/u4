@@ -30,33 +30,45 @@ int xu4_random(int upperRange) {
 /**
  * Trims whitespace from a std::string
  */
-void trim(std::string *val) {
+string& trim(string &val) {
     using namespace std;
     string::iterator i;
-    for (i = val->begin(); (i != val->end()) && isspace(*i); )
-        i = val->erase(i);
-    for (i = val->end()-1; (i != val->begin()) && isspace(*i); )
-        i = val->erase(i)-1;
+    for (i = val.begin(); (i != val.end()) && isspace(*i); )
+        i = val.erase(i);
+    for (i = val.end()-1; (i != val.begin()) && isspace(*i); )
+        i = val.erase(i)-1;
+    return val;
 }
 
 /**
  * Converts the string to lowercase
  */ 
-void lowercase(string *val) {
+string& lowercase(string &val) {
     using namespace std;
     string::iterator i;
-    for (i = val->begin(); i != val->end(); i++)
+    for (i = val.begin(); i != val.end(); i++)
         *i = tolower(*i);
+    return val;
 }
 
 /**
  * Converts the string to uppercase
  */ 
-void uppercase(string *val) {
+string& uppercase(string &val) {
     using namespace std;
     string::iterator i;
-    for (i = val->begin(); i != val->end(); i++)
+    for (i = val.begin(); i != val.end(); i++)
         *i = toupper(*i);
+    return val;
+}
+
+/**
+ * Converts an integer value to a string
+ */ 
+string to_string(int val) {
+    static char buffer[16];    
+    sprintf(buffer, "%d", val);
+    return buffer;
 }
 
 /**
@@ -81,5 +93,3 @@ std::vector<string> split(const string &s, const string &separators) {
 
     return result;
 }
-
-

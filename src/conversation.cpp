@@ -37,8 +37,8 @@ string Dialogue::Question::getResponse(bool yes) {
  */ 
 Dialogue::Keyword::Keyword(const string &kw, const string &resp, Question *q) :
     keyword(kw), response(resp), question(q) {
-    trim(&keyword);
-    lowercase(&keyword);
+    trim(keyword);
+    lowercase(keyword);
 }
 
 bool Dialogue::Keyword::operator==(const string &kw) const {
@@ -87,7 +87,7 @@ Dialogue::Keyword *Dialogue::operator[](const string &kw) {
 }
 
 Dialogue::Action Dialogue::getAction() const { 
-    int prob = xu4_random(0x80);
+    int prob = xu4_random(0x140);
 
     /* Does the person turn away from/attack you? */
     if (prob < turnAwayProb) {
