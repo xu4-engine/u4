@@ -159,11 +159,18 @@ typedef struct _SaveGame {
     unsigned short members;
     unsigned short transport;
     unsigned short balloonstate;
-    char unknown2[6];
-    unsigned char lbintro;
-    char unknown3[9];
+    unsigned short unknown2;
+    unsigned short unknown3;
+    unsigned short unknown4;
+    unsigned short lbintro;
+    unsigned short unknown5;
+    unsigned short unknown6;
+    unsigned short unknown7;
+    unsigned short unknown8;
     unsigned char dngx, dngy;
-    char unknown4[6];
+    unsigned short orientation;
+    unsigned short dnglevel;
+    unsigned short unknown9;
 } SaveGame;
 
 int saveGameWrite(const SaveGame *save, FILE *f);
