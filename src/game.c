@@ -96,6 +96,8 @@ Context *c = NULL;
 int collisionOverride = 0;
 int windLock = 0;
 char itemNameBuffer[16];
+int paused = 0;
+int pausedTimer = 0;
 
 void gameInit() {    
     FILE *saveGameFile, *monstersFile;
@@ -427,7 +429,11 @@ void gameSpellEffect(unsigned int spell, int player) {
         effect = SPELLEFFECT_INVERT;
         break;
     }
-    
+
+    /* pause the game for enough time to complete the spell effect */
+    paused = 1;
+    pausedTimer = ((time * 4) / 1000) + 1;
+
     switch(effect)
     {
     case SPELLEFFECT_NONE: break;
@@ -440,7 +446,7 @@ void gameSpellEffect(unsigned int spell, int player) {
             eventHandlerSleep(time);            
         } break;
     case SPELLEFFECT_TREMOR: break;
-    }    
+    }
     
     statsUpdate();
 }
@@ -448,12 +454,12 @@ void gameSpellEffect(unsigned int spell, int player) {
 void gameCastSpell(unsigned int spell, int caster, int param) {
     SpellCastError spellError;
     const char *msg = NULL;    
-
+    
     if (!spellCast(spell, caster, param, &spellError, 1)) {        
         msg = spellGetErrorMessage(spell, spellError);
         if (msg)
             screenMessage(msg);
-    }
+    }    
 }
 
 int gameCheckPlayerDisabled(int player) {
@@ -491,7 +497,7 @@ int gameBaseKeyHandler(int key, void *data) {
     case U4_LEFT:
     case U4_RIGHT:
         /* Check to see if we're on the balloon */
-        if (!c->saveGame->balloonstate) {
+        if (!tileIsBalloon(c->saveGame->transport)) {
             moveAvatar(keyToDirection(key), 1);
             /* horse doubles speed */
             if (tileIsHorse(c->saveGame->transport) && c->horseSpeed) {
@@ -2194,41 +2200,51 @@ int moveAvatar(Direction dir, int userEvent) {
  * This function is called every quarter second.
  */
 void gameTimer(void *data) {
+
+    if (pausedTimer > 0) {
+        pausedTimer--;
+        if (pausedTimer <= 0) {
+            pausedTimer = 0;
+            paused = 0; /* unpause the game */
+        }
+    }
     
-    Direction dir = DIR_WEST;  
+    if (!paused && !pausedTimer) {
+        Direction dir = DIR_WEST;  
 
-    if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
-        if ((rand() % 4) == 1 && !windLock)
-            c->windDirection = dirRandomDir(MASK_DIR_ALL);
-        c->windCounter = 0;        
+        if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
+            if ((rand() % 4) == 1 && !windLock)
+                c->windDirection = dirRandomDir(MASK_DIR_ALL);
+            c->windCounter = 0;        
+        }
+
+        /* balloon moves about 4 times per second */
+        if (tileIsBalloon(c->saveGame->transport) &&
+            c->saveGame->balloonstate) {
+            dir = dirReverse((Direction) c->windDirection);
+            moveAvatar(dir, 0);
+        }
+
+        gameUpdateMoons(1);
+
+        mapAnimateObjects(c->location->map);
+
+        screenCycle();
+
+        /*
+         * refresh the screen only if the timer queue is empty --
+         * i.e. drop a frame if another timer event is about to be fired
+         */
+        if (eventHandlerTimerQueueEmpty())
+            gameUpdateScreen();
+
+        /*
+         * force pass if no commands within last 20 seconds
+         */
+        if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler &&
+            gameTimeSinceLastCommand() > 20)
+            gameBaseKeyHandler(' ', NULL);
     }
-
-    /* balloon moves about 8 times per second */
-    if (tileIsBalloon(c->saveGame->transport) &&
-        c->saveGame->balloonstate) {
-        dir = dirReverse((Direction) c->windDirection);
-        moveAvatar(dir, 0);
-    }
-
-    gameUpdateMoons(1);
-
-    mapAnimateObjects(c->location->map);
-
-    screenCycle();
-
-    /*
-     * refresh the screen only if the timer queue is empty --
-     * i.e. drop a frame if another timer event is about to be fired
-     */
-    if (eventHandlerTimerQueueEmpty())
-        gameUpdateScreen();
-
-    /*
-     * force pass if no commands within last 20 seconds
-     */
-    if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler &&
-        gameTimeSinceLastCommand() > 20)
-        gameBaseKeyHandler(' ', NULL);
 
 }
 
@@ -2250,7 +2266,7 @@ void gameUpdateMoons(int showmoongates)
             c->moonPhase = 0;
         
         trammelSubphase = c->moonPhase % (MOON_SECONDS_PER_PHASE * 4 * 3);
-        realMoonPhase = (c->moonPhase / (4 * MOON_SECONDS_PER_PHASE));        
+        realMoonPhase = (c->moonPhase / (4 * MOON_SECONDS_PER_PHASE));
 
         c->saveGame->trammelphase = realMoonPhase / 3;
         c->saveGame->feluccaphase = realMoonPhase % 8;
