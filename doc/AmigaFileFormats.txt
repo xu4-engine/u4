@@ -1,0 +1,481 @@
+Ultima 4 File Structures (Amiga version)
+========================================
+
+For many of the data files used in the Amiga version of Ultima 4 the formats
+are identical to those used in the Atari ST version. Information about some
+of the file formats used in the Atari ST version may be found at
+
+http://www.geocities.com/nodling/ultima/text/ultima4/u4atarist.txt
+
+Much of the information in that document has been reproduced below.
+
+There were two releases of Ultima IV for the Amiga, the original Origin
+release and the Microprose re-release both, apparently, in 1988. The
+game came on a single 880k AmigaDos formatted disk. The disk contained
+the following files and directories
+
+avatar          - the main executable
+c               - a directory contain support binaries
+s               - a directory containing a startup script which executes avatar 
+ultmapp         - The Ultima IV game data (described below)
+
+Users were required to create a "play" disk which contained a copy of the
+contents of the ultmapp directory and was used instead of the original disk
+while playing the game.
+
+Many files end in the extension "LWZ" and are compressed using the LZW
+algorithm. Files ending in "BIN" are not compressed. Also, file names may
+be in upper or lower case.
+
+
+Introduction Images
+-------------------
+
+The files FAIR.LWZ, GYPS.LWZ, LOOK.LWZ, PRTL.LWZ, TREE.BIN and WAGN.BIN
+contain images displayed during the introduction sequence.
+
+The raw uncompressed data describes a 16 colour, 320 by 152 image with a
+32 byte colour map. Every 8 bytes represents 16 pixels, with the first two
+bytes representing the least significant bits, and the last two bytes
+representing the most significant bits.
+
+Each of the 16 entries in the colourmap is a 16 bit integer where bits
+0-3 are always 0, bits 4-7 are the red component, bits 8-11 are the green
+component and bits 12-15 are the blue component. Each of the colour
+components contains a decimal value between 0 and 7. The 24 bit RGB
+colour can be calculated by multiplying each components value by 32.
+
+offset  len     notes
+0x0     2       The least significant bits of pixels 0-15
+0x2     2       The second least significant bits of pixels 0-15
+0x4     2       The second most significant bits of pixels 0-15
+0x6     2       The most significant bits of pixels 0-15
+0x8     2       The least significant bits of pixels 16-31
+...
+0x5F00  32      The colour map
+
+
+Tile Data
+---------
+
+The file U4SH.LWZ contains the bitmaps for each tile used in the game.
+Each tile is a 16 colour, 16 by 16 image. A 32 byte colourmap appears at
+the beginning of the file. Every 4 bytes represents 8 pixels with the first
+byte representing the least significant bits and the last byte representing
+the most significant bits.
+
+Each of the 16 entries in the colourmap is a 16 bit integer where bits
+bits 4-7 are the red component, bits 8-11 are the green component and
+bits 12-15 are the blue component. The meaning of bits 0-3 is not yet
+fully understood. Colourmap rotation is used to animate certain tiles
+(e.g. the water tiles) and bits 0-3 may be related to this. Each of the
+colour components contains a decimal value between 0 and 7. The 24 bit RGB
+colour can be calculated by multiplying each components value by 32.
+
+offset  len     notes
+0x0     32      The colourmap
+0x20    1       The least significant bits of pixels 0-7 of tile 0
+0x21    1       The second least significant bits of pixels 0-7 of tile 0
+0x22    1       The second most significant bits of pixels 0-7 of tile 0
+0x23    1       The most significant bits of pixels 0-7 of tile 0
+0x24    1       The least significant bits of pixels 8-15 of tile 0
+...
+0xa0    1       The least significant bits of pixels 0-7 of tile 1
+...
+
+
+World Map
+---------
+
+The file U4MP.LWZ contains the map of Britannia. It is a 256 by 256 matrix
+of one byte tile indices. Unlike the PC version, the Amiga version is not
+broken up into chunks.
+
+offset  len     notes
+0x0     256     The first row of map data
+0x100   256     The second row of map data
+...
+0xFF00  256     The last (256th) row of map data
+
+
+Townes
+------
+
+Each towne is described in a dialog file called TLK?.LWZ and a map file called
+MAP?.LWZ. The ? in the file name is a single character with the following
+meaning
+
+@	Lord British's castle, level 2.
+A	Lord British's castle, level 1.
+B	The Lycaeum
+C	Empath Abbey
+D	Serpent's Hold
+E	Moonglow
+F	Britain
+G	Jhelom
+H	Yew
+I	Minoc
+J	Trinsic
+K	Skara Brae
+L	Magincia
+M	Paws
+N	Buccaneer's Den
+O	Vesper
+P	Cove
+
+
+Towne Dialog
+------------
+
+The files TLKA.LWZ, TLKL.LWZ, TLKN.LWZ, TLKO.LWZ, tlkb.lwz, tlkc.lwz, tlkd.lwz,
+tlke.lwz, tlkf.lwz, tlkg.lwz, tlkh.lwz, tlki.lwz, tlkj.lwz, tlkk.lwz, tlkm.lwz,
+and tlkp.lwz contain the dialog strings. They correspond to the PC verion's
+dialog files LCB.TLK, MAGINCIA.TLK, DEN.TLK, VESPER.TLK, LYCAEUM.TLK,
+EMPATH.TLK, SERPENT.TLK, MOONGLOW.TLK, BRITAIN.TLK, JHELOM.TLK, YEW.TLK,
+MINOC.TLK, TRINSIC.TLK, SKARA.TLK, PAWS.TLK and COVE.TLK respectively. The
+format of the files, however, is a little different.
+
+Note: In the dialog strings a 0x8D byte is used to signify end of line.
+
+offset	len	notes
+0x0	48	???
+0x30	4	NPC 1 keyword 1
+0x34	4	NPC 1 keyword 2
+0x38	1	NPC 1 question flag (0-no question, 3-job triggers, 4-health
+		triggers, 5-keyword 1 triggers, 6-keyword 2 triggers)
+0x39	1	NPC 1 question type (0-should answer yes, 0-should answer no)
+0x40	1	NPC 1 turns away probability
+0x41	var	NPC 1 name (zero terminated)
+var	var	NPC 1 pronoun (zero terminated)
+var	var	NPC 1 description (zero terminated)
+var	var	NPC 1 job (zero terminated)
+var	var	NPC 1 response 1 (zero terminated)
+var	var	NPC 1 response 2 (zero terminated)
+var	var	NPC 1 question (zero terminated)
+var	var	NPC 1 yes answer (zero terminated)
+var	var	NPC 1 no answer (zero terminated)
+var	0 or 1	To ensure the record for the next NPC starts on an even
+		byte boundary, there may be a second zero terminator here.
+var	4	NPC 2 Keyword 1
+...
+
+
+Towne Maps
+----------
+
+The files MAP@.LWZ, MAPA.LWZ, MAPB.LWZ, MAPC.LWZ, MAPD.LWZ, MAPE.LWZ,
+MAPF.LWZ, MAPG.LWZ, MAPH.LWZ, MAPI.LWZ, MAPJ.LWZ, MAPK.LWZ, MAPL.LWZ,
+MAPM.LWZ, MAPN.LWZ, MAPO.LWZ and MAPP.LWZ contain the town maps and
+other information. They correspond, to the PC version's towne files
+LCB_2.ULT, LCB_1.ULT, LYCAEUM.ULT, EMPATH.ULT, SERPENT.ULT, MOONGLOW.ULT,
+BRITAIN.ULT, JHELOM.ULT, YEW.ULT, MINOC.ULT, TRINSIC.ULT, SKARA.ULT,
+MAGINCIA.ULT, PAWS.ULT, DEN.ULT, VESPER.ULT and COVE.ULT respectively.
+Indeed these files are identical to the PC version's files with two
+small exceptions
+
+1. MAPD.LWZ differs from SERPENT.ULT by two bytes in the dialog conversion
+index section. NPC 28 and NPC 29 use dialog entry 1 (Sentri?), while in the
+PC version they use dialog entry 2 (a guard?).
+
+2. MAPJ.LWX differs from TRINSIC.ULT by one byte in the movement behaviour
+section. NPC 30 has movement behavior 0xFF, while in the PC version NPC 30
+has movement behavior 0x01. NPC 30 has a dialog conversion index of 0
+which usually indicates a silent character or merchant.
+
+offset	len	notes
+0x0	1024	32x32 town map matrix
+0x400	32	tile for NPCs 0-31 (unsure of the exact meaning of this tile;
+		could be last tile in animation sequence)
+0x420	32	start_x for NPCs 0-31
+0x440	32	start_y for NPCs 0-31
+0x460	32	tile for NPCs 0-31 (first tile in animation sequence?)
+0x480	32	repitition of 0x420-0x43F
+0x4A0	32	repitition of 0x440-0x45F
+0x4C0	32	movement_behavior for NPCs 0-31 (0x0-fixed, 0x1-wander,
+		0x80-follow, 0xFF-attack)
+0x4E0	32	conversion index (tlk file) for NPCs 0-31 (0x0-silent/merchant,
+		0x01-0x10 index of TLK entry)
+
+
+Dungeons
+--------
+
+Each dungeon is described in a map file called DNG?.BIN and a room file called
+DRM?.LWZ. The ? in the file name is a single character with the following
+meaning
+
+0	Deceit
+1	Despise
+2	Destard
+3	Wrong
+4	Covetous
+5	Shame
+6	Hythloth
+7	The Abyss
+
+
+Dungeon Maps
+------------
+
+The files DNG0.BIN, DNG1.BIN, DNG2.BIN, DNG3.BIN, DNG4.BIN, DNG5.BIN,
+dng6.bin, DNG7.BIN contain the dungeon maps. They correspond to the
+first 512 bytes of the PC version's dungeon files DECEIT.DNG, DESPISE.DNG,
+DESTARD.DNG, WRONG.DNG, COVETOUS.DNG, SHAME.DNG, HYTHLOTH.DNG and ABYSS.DNG
+respectively.
+
+offset	len	notes
+0x0	64	level 1 8x8 map matrix
+0x40	64	level 2 8x8 map matrix
+0x80	64	level 3 8x8 map matrix
+0xC0	64	level 4 8x8 map matrix
+0x100	64	level 5 8x8 map matrix
+0x140	64	level 6 8x8 map matrix
+0x180	64	level 7 8x8 map matrix
+0x1C0	64	level 8 8x8 map matrix
+
+Each byte of the map matrix has the following meaning
+0x0		Nothing/Corridor
+0x10		Ladder up
+0x20		Ladder down
+0x30		Ladder up & down
+0x40		Treasure chest
+0x50		Ceiling hole ?
+0x60		Floor hole ?
+0x70		Magic Orb
+0x80		Winds
+0x81		Falling Rock Trap
+0x8E		Pit Trap
+0x90		Plain Fountain
+0x91		Healing Fountain
+0x92		Acid Fountain
+0x93		Cure Fountain
+0x94		Poison Fountain
+0xA0		Poison Field
+0xA1		Energy Field
+0xA2		Fire Field
+0xA3		Sleep Field
+0xB0		Altar
+0xC0		Door
+0xD0-0xDF	Dungeon Room. Index to room file described below.
+0xE0		Secret Door
+0xF0		Wall
+
+There are two small differences between the Amiga dungeon maps and the
+PC version's dungeon maps.
+
+1. DNG3.BIN differs from WRONG.DNG on level 4, having a 0x10 (ladder up)
+where the PC version has a 0x40 (treasure chest) and, in another place,
+a 0x40 (treasure chest) where the PC version has a 0x10 (ladder up).
+
+2. DNG4.BIN differs from COVETOUS.DNG on level 7, having a 0x00 (nothing
+or corridor) where the PC version has a 0x10 (ladder up).
+
+
+Dungeon Rooms
+-------------
+
+The files DRM0.BIN, DRM1.BIN, DRM2.BIN, DRM3.BIN, DRM4.BIN, DRM5.BIN,
+drm6.bin, DRM7.BIN contain the dungeon room data. They correspond to the
+last 4096 bytes of the PC version's dungeon files DECEIT.DNG, DESPISE.DNG,
+DESTARD.DNG, WRONG.DNG, COVETOUS.DNG, SHAME.DNG, HYTHLOTH.DNG and ABYSS.DNG
+respectively.
+
+There is a small difference between DRM4.LWZ and COVETOUS.DNG in the room 11
+map. DRM4.LWZ has a 0x7F (wall) where PC version has 0x16 (floor) and a 0x16
+(floor) where the PC version has a 0x7F (wall).
+
+offset	len	notes
+0x0	256	room 0 data
+0x100	256	room 1 data
+...
+
+Note: The Abyss has 64 rooms, not the usual 16.
+
+Each room has the following format:
+
+offset	len	notes
+0x0	16	floor triggers (4 bytes each X 4 triggers possible)
+0x10	16	tile for monsters 0-15 (0 means no monster and 0's come FIRST)
+0x20	16	start_x for monsters 0-15
+0x30	16	start_y for monsters 0-15
+0x40	8	start_x for party member 0-7 (north entry)
+0x48	8	start_y for party member 0-7 (north entry)
+0x50	8	start_x for party member 0-7 (east entry)
+0x58	8	start_y for party member 0-7 (east entry)
+0x60	8	start_x for party member 0-7 (south entry)
+0x68	8	start_y for party member 0-7 (south entry)
+0x70	8	start_x for party member 0-7 (west entry)
+0x78	8	start_y for party member 0-7 (west entry)
+0x80	121	11x11 map matrix for room
+0xF9	7	buffer
+
+Trigger format:
+
+offset	len	notes
+0x0	1	tile to be placed (0 means no trigger and 0's come LAST)
+0x1	1	2 nibbles indicating the (x,y) coords of trigger
+0x2	1	2 nibbles indicating the (x,y) coords of 1st tile to change
+0x3	1	2 nibbles indicating the (x,y) coords of 2nd tile to change
+
+
+Files
+-----
+
+The following is a list of all files in the ULTMAPP directory and either a
+short description of their contents or the name of the corresponding
+file in the PC version.
+
+ANIM.LWZ        - Animation frames for intro image.
+		- A 320 x 200 image using the colourmap from U4SH.LWZ
+		- contains 18 frames each for the daemon and dragon
+		- animations on the title screen. Also contains the
+		- border graphics for the virtue cards sequence which
+		- use the colourmap from CRDS.LWZ.
+BGND.LWZ        - Intro. background. Uses colourmap of U4SH.LWZ
+CMPD.BIN        - CAMP.DNG. Dungeon hole up map and hole up combat map.
+CMPO.BIN        - CAMP.CON
+CON0.BIN        - DNG0.CON
+CON1.BIN        - DNG1.CON
+CON2.BIN        - DNG2.CON
+CON3.BIN        - DNG3.CON
+CON4.BIN        - DNG4.CON
+CON5.BIN        - DNG5.CON
+CON6.BIN        - DNG6.CON
+CONA.BIN        - INN.CON
+CONB.BIN        - BRUSH.CON
+CONC.BIN        - BRICK.CON
+COND.BIN        - DUNGEON.CON
+CONE.BIN        - SHIPSHOR.CON
+CONF.BIN        - FOREST.CON
+CONG.BIN        - GRASS.CON
+CONH.BIN        - HILL.CON
+CONI.BIN        - SHORSHIP.CON
+CONO.BIN        - SHORE.CON
+CONP.BIN        - SHIPSEA.CON
+CONR.BIN        - BRIDGE.CON
+CONS.BIN        - MARSH.CON
+CONT.BIN        - SHIPSHIP.CON
+CRDS.LWZ        - Virtue cards.
+                - First four bytes are zeros???
+                - Next 32 bytes are colourmap.
+                - Next 92 bytes are ???
+                - Each card is 80 * 95. Every 8 bytes are 16 pixels.
+                - First two bytes are least significant etc.
+                - Last 1600 bytes are all zero???
+DISK.BIN        - Contains the string "BOOT", or "PLAY" for the play disk
+DLST.BIN        - 256 bytes, all zero? 
+DNG0.BIN        - Dungeon maps. Deceit. (First 512 bytes of DECEIT.DNG)
+DNG1.BIN	- Despise. (First 512 bytes of DESPISE.DNG)
+DNG2.BIN	- Destard.(First 512 bytes of DESTARD.DNG)
+DNG3.BIN	- Wrong. (tiny difference to PC version)
+DNG4.BIN	- Covetous. (tiny difference to PC version)
+DNG5.BIN	- Shame.(First 512 bytes of SHAME.DNG)
+DNG7.BIN	- Abyss(First 512 bytes of ABYSS.DNG)
+DNGP.LWZ        - Image data contain phases of the moon,
+                - border graphics for the main window (using U4SH.LWZ colourmap)
+                - and dungeon graphics. (colourmap unknown)
+DNGT.BIN        - Looks like a Dungeon map???
+DRM0.LWZ        - Dungeon room data. Deceit. (Last 4096 bytes of DECEIT.DNG)
+DRM1.LWZ	- Despise. (Last 4096 bytes of DESPISE.DNG)
+DRM2.LWZ	- Destard. (Last 4096 bytes of DESTARD.DNG)
+DRM3.LWZ	- Wrong. (Last 4096 bytes of WRONG.DNG)
+DRM4.LWZ	- Covetous. (tiny difference to PC version)
+DRM5.LWZ	- Shame. (Last 4096 bytes of SHAME.DNG)
+DRM7.LWZ	- Abyss. (Last 4096 bytes of ABYSS.DNG)
+FAIR.LWZ        - Intro image. The fair.
+GYPS.LWZ        - Intro image. The gypsy.
+LIST.BIN        - ??? 256 bytes, all zeros. (not all zero on play disk)
+LOOK.LWZ        - Intro image. The fair from afar.
+LORD.LWZ        - Lord British's dialog text.
+MAP@.LWZ        - The town maps. LCB_2.ULT
+MAPA.LWZ	- LCB_1.ULT
+MAPB.LWZ	- LYCAEUM.ULT
+MAPC.LWZ	- EMPATH.ULT
+MAPD.LWZ	- SERPENT.ULT (tiny difference in talk conversion section)
+MAPE.LWZ	- MOONGLOW.ULT
+MAPF.LWZ	- BRITAIN.ULT
+MAPG.LWZ	- JHELOM.ULT
+MAPH.LWZ	- YEW.ULT
+MAPI.LWZ	- MINOC.ULT
+MAPJ.LWZ	- TRINSIC.ULT (tiny difference in movement section)
+MAPK.LWZ	- SKARA.ULT
+MAPL.LWZ	- MAGINCIA.ULT
+MAPM.LWZ	- PAWS.ULT
+MAPN.LWZ	- DEN.ULT
+MAPO.LWZ	- VESPER.ULT
+MAPP.LWZ	- COVE.ULT
+NRST.BIN        - ???
+PRTL.LWZ        - Intro image. The circle of stones.
+RUNI.LWZ        - Rune image. Contains a 320 by 200 image (colourmap unknown)
+                - with every 8 bytes representing 16 pixels. The image
+                - consists of 5 runes, each 80 by 60 and arranged in two
+                - rows. The first row contains the runes I, N, F and T.
+                - The second row contains the rune Y.
+SHRI.BIN        - Similar to SHRINE.CON but strangely different
+		- First 121 bytes are an 11 by 11 map of the Shrine.
+TLKA.LWZ        - Dialog strings. Similar to LCB.TLK
+TLKL.LWZ	- Similar to MAGINCIA.TLK
+TLKN.LWZ	- Similar to DEN.TLK
+TLKO.LWZ	- Similar to VESPER.TLK
+TREE.BIN        - Intro image. The tree.
+U4MP.LWZ        - The world map. Unlike the PC version, the map is
+                - not divided into 32*32 chunks. The map is simply a
+                - 256*256 set of indices into the shapes table.
+U4SH.LWZ        - Similar to SHAPES.EGA. Contains 256 tiles, each of which
+                - are 16*16 with 4 bits per pixel. The first 32 bytes of
+                - the file are the colourmap. Evey four bytes represents
+                - eight pixels with the first byte being the lower order
+                - bits, and the last byte being the high order pixels.
+WAGN.BIN        - Intro image. The wagon.
+boot.lwz        - Intro dialog including virtue questions plus other data???
+codx.bin        - ???
+dng6.bin        - Dungeon map. Hythloth. (First 512 bytes of HYTHLOTH.DNG)
+drm6.lwz        - Dungeon room data. Hythloth. (Last 4096 bytes of HYTHLOTH.DNG)
+hole.lwz        - Hole up and camp data???
+musb.bin        - Music???
+musc.bin
+musd.bin
+muso.bin
+must.bin
+prty.bin        - Save game. Format unknown?
+rost.bin        - Save game. Format unknown?
+save.bin        - Save game. Format unknown?
+snds.bin        - Sound effects???
+tlkb.lwz        - Dialog. Similar to LYCAEUM.TLK.
+tlkc.lwz	- Similar to EMPATH.TLK.
+tlkd.lwz	- Similar to SERPENT.TLK.
+tlke.lwz	- Similar to MOONGLOW.TLK.
+tlkf.lwz	- Similar to BRITAIN.TLK.
+tlkg.lwz	- Similar to JHELOM.TLK.
+tlkh.lwz	- Similar to YEW.TLK.
+tlki.lwz	- Similar to MINOC.TLK.
+tlkj.lwz	- Similar to TRINSIC.TLK.
+tlkk.lwz	- Similar to SKARA.TLK.
+tlkm.lwz	- Similar to PAWS.TLK.
+tlkp.lwz	- Similar to COVE.TLK.
+
+
+Major Dialog Differences
+------------------------
+
+While most of the differences between the dialog in the Amiga version
+and the dialog of the PC version is trivial (e.g. capitalisation). Some
+are more significant.
+
+TLKA.LWZ	- Joshua's keywords are INFI and HELP (HELP and RIDD in PC
+		- version). The water has a question trigger of none,
+		- while keyword2 triggers the question in the PC version.
+tlkb.lwz	- Estro's first keyword is RESE (REAS in PC version).
+		- (It should be RESE).
+tlkd.lwz	- Michelle directs the player north to see Sentri and
+		- north to see the healer. (West and east respectively in
+		- the PC version)
+tlkf.lwz	- Thevel's question trigger is keyword 2, which is BEGG.
+		- In the PC version it is keyword 1, and keyword 2 is
+		- MAGI with a different answer.
+tlki.lwz	- Alkerion's question trigger is 0x0A (invalid?), whereas it is
+		- keyword 2 in the PC version.
+tlkk.lwz	- Shamino has a question trigger of none, whereas it is
+		- keyword 2 in the PC version.
+tlkp.lwz	- Charm's question trigger is none whereas it is keyword 2
+		- in the PC version.
