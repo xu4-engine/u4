@@ -34,6 +34,10 @@ int isStoneInInventory(void *virt);
 void putStoneInInventory(void *virt);
 int isItemInInventory(void *item);
 void putItemInInventory(void *item);
+void useBBC(void *item);
+void useHorn(void *item);
+void useWheel(void *item);
+void useSkull(void *item);
 int isMysticInInventory(void *mystic);
 void putMysticInInventory(void *mystic);
 int isReagentInInventory(void *reag);
@@ -41,50 +45,50 @@ void putReagentInInventory(void *reag);
 
 static const ItemLocation items[] = {
     { "Mandrake Root", NULL, 182, 54, -1, &world_map, 
-      &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
+      &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
     { "Mandrake Root", NULL, 100, 165, -1, &world_map, 
-      &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
+      &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
     { "Nightshade", NULL, 46, 149, -1, &world_map, 
-      &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY},
+      &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY},
     { "Nightshade", NULL, 205, 44, -1, &world_map, 
-      &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY },
+      &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY },
     { "the Bell of Courage", "bell", 176, 208, -1, &world_map, 
-      &isItemInInventory, &putItemInInventory, (void *) ITEM_BELL, 0 },
+      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_BELL, 0 },
     { "A Silver Horn", "horn", 45, 173, -1, &world_map, 
-      &isItemInInventory, &putItemInInventory, (void *) ITEM_HORN, 0 },
+      &isItemInInventory, &putItemInInventory, &useHorn, (void *) ITEM_HORN, 0 },
     { "the Wheel from the H.M.S. Cape", "wheel", 96, 215, -1, &world_map, 
-      &isItemInInventory, &putItemInInventory, (void *) ITEM_WHEEL, 0 },
+      &isItemInInventory, &putItemInInventory, &useWheel, (void *) ITEM_WHEEL, 0 },
     { "the Skull of Modain the Wizard", "skull", 197, 245, -1, &world_map, 
-      &isItemInInventory, &putItemInInventory, (void *) ITEM_SKULL, SC_NEWMOONS },
+      &isItemInInventory, &putItemInInventory, &useSkull, (void *) ITEM_SKULL, SC_NEWMOONS },
     { "the Black Stone", NULL, 224, 133, -1, &world_map, 
-      &isStoneInInventory, &putStoneInInventory, (void *) STONE_BLACK, SC_NEWMOONS },
+      &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_BLACK, SC_NEWMOONS },
     { "the White Stone", NULL, 64, 80, -1, &world_map, 
-      &isStoneInInventory, &putStoneInInventory, (void *) STONE_WHITE, 0 },
+      &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_WHITE, 0 },
     { "the Book of Truth", "book", 6, 6, 0, &lycaeum_map, 
-      &isItemInInventory, &putItemInInventory, (void *) ITEM_BOOK, 0 },
+      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_BOOK, 0 },
     { "the Candle of Love", "candle", 22, 1, 0, &cove_map, 
-      &isItemInInventory, &putItemInInventory, (void *) ITEM_CANDLE, 0 },
+      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_CANDLE, 0 },
     /* FIXME: object at 22, 3 in the lycaeum */
     { "Mystic Armor", NULL, 22, 4, 0, &empath_map, 
-      &isMysticInInventory, &putMysticInInventory, (void *) ARMR_MYSTICROBES, SC_FULLAVATAR },
+      &isMysticInInventory, &putMysticInInventory, NULL, (void *) ARMR_MYSTICROBES, SC_FULLAVATAR },
     { "Mystic Swords", NULL, 8, 15, 0, &serpent_map, 
-      &isMysticInInventory, &putMysticInInventory, (void *) WEAP_MYSTICSWORD, SC_FULLAVATAR },
+      &isMysticInInventory, &putMysticInInventory, NULL, (void *) WEAP_MYSTICSWORD, SC_FULLAVATAR },
     { "the rune of Honesty", NULL, 8, 6, 0, &moonglow_map, 
-      &isRuneInInventory, &putRuneInInventory, (void *) RUNE_HONESTY, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_HONESTY, 0 },
     { "the rune of Compassion", NULL, 25, 1, 0, &britain_map, 
-      &isRuneInInventory, &putRuneInInventory, (void *) RUNE_COMPASSION, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_COMPASSION, 0 },
     { "the rune of Valor", NULL, 30, 30, 0, &jhelom_map, 
-      &isRuneInInventory, &putRuneInInventory, (void *) RUNE_VALOR, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_VALOR, 0 },
     { "the rune of Justice", NULL, 13, 6, 0, &yew_map, 
-      &isRuneInInventory, &putRuneInInventory, (void *) RUNE_JUSTICE, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_JUSTICE, 0 },
     { "the rune of Sacrifice", NULL, 28, 30, 0, &minoc_map, 
-      &isRuneInInventory, &putRuneInInventory, (void *) RUNE_SACRIFICE, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_SACRIFICE, 0 },
     { "the rune of Honor", NULL, 2, 29, 0, &trinsic_map, 
-      &isRuneInInventory, &putRuneInInventory, (void *) RUNE_HONOR, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_HONOR, 0 },
     { "the rune of Spirituality", NULL, 17, 8, 0, &lcb_1_map, 
-      &isRuneInInventory, &putRuneInInventory, (void *) RUNE_SPIRITUALITY, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_SPIRITUALITY, 0 },
     { "the rune of Humility", NULL, 29, 29, 0, &paws_map, 
-      &isRuneInInventory, &putRuneInInventory, (void *) RUNE_HUMILITY, 0 }
+      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_HUMILITY, 0 }
 };
 
 #define N_ITEMS (sizeof(items) / sizeof(items[0]))
@@ -94,7 +98,7 @@ int isRuneInInventory(void *virt) {
 }
 
 void putRuneInInventory(void *virt) {
-    c->saveGame->players[0].xp += 100;
+    playerAwardXp(&c->saveGame->players[0], 100);
     playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     c->saveGame->runes |= (int)virt;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
@@ -105,7 +109,7 @@ int isStoneInInventory(void *virt) {
 }
 
 void putStoneInInventory(void *virt) {
-    c->saveGame->players[0].xp += 200;
+    playerAwardXp(&c->saveGame->players[0], 200);
     playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     c->saveGame->stones |= (int)virt;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
@@ -116,10 +120,26 @@ int isItemInInventory(void *item) {
 }
 
 void putItemInInventory(void *item) {
-    c->saveGame->players[0].xp += 400;
+    playerAwardXp(&c->saveGame->players[0], 400);
     playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     c->saveGame->items |= (int)item;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
+}
+
+void useBBC(void *item) {
+    screenMessage("using bell/book/candle\n");
+}
+
+void useHorn(void *item) {
+    screenMessage("using horn\n");
+}
+
+void useWheel(void *item) {
+    screenMessage("using wheel\n");
+}
+
+void useSkull(void *item) {
+    screenMessage("using skull\n");
 }
 
 int isMysticInInventory(void *mystic) {
@@ -134,7 +154,7 @@ int isMysticInInventory(void *mystic) {
 }
 
 void putMysticInInventory(void *mystic) {
-    c->saveGame->players[0].xp += 400;
+    playerAwardXp(&c->saveGame->players[0], 400);
     playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     if (((int)mystic) == WEAP_MYSTICSWORD)
         c->saveGame->weapons[WEAP_MYSTICSWORD] += 8;
@@ -205,6 +225,8 @@ void itemUse(const char *shortname) {
             
     }
 
-    if (!item)
+    if (!item || !item->useItem)
         screenMessage("\nNot a Usable item!\n");
+    else
+        (*item->useItem)(items[i].data);
 }

@@ -19,6 +19,7 @@ typedef struct _ItemLocation {
     const Map* map;
     int (*isItemInInventory)(void *);
     void (*putItemInInventory)(void *);
+    void (*useItem)(void *);
     void *data;
     unsigned char conditions;
 } ItemLocation;
