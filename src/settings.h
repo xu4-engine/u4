@@ -20,6 +20,7 @@ typedef struct _Settings {
     FilterType filter;
     int vol;
     int germanKbd;
+    int shortcutCommands;
 } Settings;
 
 char *settingsFilename(void);

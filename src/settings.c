@@ -43,6 +43,7 @@ void settingsRead() {
     settings->filter = SCL_Scale2x;
     settings->vol = 1;
     settings->germanKbd = 0;
+    settings->shortcutCommands = 0;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -69,6 +70,8 @@ void settingsRead() {
             settings->vol = (int) strtoul(buffer + strlen("vol="), NULL, 0);
         else if (strstr(buffer, "germanKbd=") == buffer)
             settings->germanKbd = (int) strtoul(buffer + strlen("germanKbd="), NULL, 0);
+        else if (strstr(buffer, "shortcutCommands=") == buffer)
+            settings->shortcutCommands = (int) strtoul(buffer + strlen("shortcutCommands="), NULL, 0);
         else
             errorWarning("invalid line in settings file %s", buffer);
     }
@@ -96,12 +99,14 @@ void settingsWrite() {
             "fullscreen=%d\n"
             "filter=%s\n"
             "vol=%d\n"
-            "germanKbd=%d\n",
+            "germanKbd=%d\n"
+            "shortcutCommands=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
             settings->vol,
-            settings->germanKbd);
+            settings->germanKbd,
+            settings->shortcutCommands);
 
     fclose(settingsFile);
 }
