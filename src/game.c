@@ -35,7 +35,9 @@ int quitHandleChoice(char choice);
 int readyForPlayer(int player);
 int readyForPlayer2(int weapon, void *data);
 int talkAtCoord(int x, int y);
+void talkSetHandler(const Conversation *cnv);
 int talkHandleBuffer(const char *message);
+int talkHandleChoice(char choice);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 
@@ -717,8 +719,7 @@ int quitHandleChoice(char choice) {
  */
 int talkAtCoord(int x, int y) {
     const Person *talker;
-    char *intro;
-    ReadBufferActionInfo *info;
+    char *text;
 
     if (x == -1 && y == -1)
         return 0;
@@ -728,81 +729,105 @@ int talkAtCoord(int x, int y) {
         return 0;
 
     talker = c->conversation.talker;
-    c->conversation.question = 0;
+    c->conversation.state = CONV_INTRO;
     c->conversation.buffer[0] = '\0';
     
-    personGetIntroduction(c->conversation.talker, &intro);
-    screenMessage("\n\n%s", intro);
-    free(intro);
-
-    info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-    info->buffer = c->conversation.buffer;
-    info->bufferLen = CONV_BUFFERLEN;
-    info->handleBuffer = &talkHandleBuffer;
-    info->screenX = TEXT_AREA_X + c->col;
-    info->screenY = TEXT_AREA_Y + c->line;
-
-    eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
+    personGetConversationText(&c->conversation, "", &text);
+    screenMessage("\n\n%s", text);
+    free(text);
+    talkSetHandler(&c->conversation);
 
     return 1;
+}
+
+/**
+ * Set up a key handler to handle the current conversation state.
+ */
+void talkSetHandler(const Conversation *cnv) {
+    ReadBufferActionInfo *rbInfo;
+    GetChoiceActionInfo *gcInfo;
+
+    switch (cnv->state) {
+    case CONV_TALK:
+    case CONV_ASK:
+        rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+        rbInfo->buffer = c->conversation.buffer;
+        rbInfo->bufferLen = CONV_BUFFERLEN;
+        rbInfo->handleBuffer = &talkHandleBuffer;
+        rbInfo->screenX = TEXT_AREA_X + c->col;
+        rbInfo->screenY = TEXT_AREA_Y + c->line;
+        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, rbInfo);
+        break;
+    
+    case CONV_BUYSELL:
+        gcInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+        gcInfo->choices = "bs";
+        gcInfo->handleChoice = &talkHandleChoice;
+        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
+        break;
+
+    case CONV_DONE:
+        /* no handler: conversation done! */
+        break;
+
+    default:
+        assert(0);              /* shouldn't happen */
+    }
 }
 
 /**
  * Handles a query while talking to an NPC.
  */
 int talkHandleBuffer(const char *message) {
-    ReadBufferActionInfo *info;
-    int done;
     char *reply, *prompt;
-    int askq;
 
     eventHandlerPopKeyHandler();
 
-    screenMessage("\n");
-
-    if (c->conversation.question)
-        done = personGetQuestionResponse(c->conversation.talker, message, &reply, &askq);
-    else
-        done = personGetResponse(c->conversation.talker, message, &reply, &askq);
-
-    screenMessage("\n%s\n", reply);
+    personGetConversationText(&c->conversation, message, &reply);
+    screenMessage("\n\n%s\n", reply);
     free(reply);
         
-    c->conversation.question = askq;
     c->conversation.buffer[0] = '\0';
 
-    if (done) {
+    if (c->conversation.state == CONV_DONE) {
         screenMessage("\020");
         return 1;
     }
 
-    else if (askq) {
-        personGetQuestion(c->conversation.talker, &prompt);
-        screenMessage("%s", prompt);
-        free(prompt);
+    personGetPrompt(&c->conversation, &prompt);
+    screenMessage("%s", prompt);
+    free(prompt);
 
-        info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-        info->buffer = c->conversation.buffer;
-        info->bufferLen = CONV_BUFFERLEN;
-        info->handleBuffer = &talkHandleBuffer;
-        info->screenX = TEXT_AREA_X + c->col;
-        info->screenY = TEXT_AREA_Y + c->line;
-        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
+    talkSetHandler(&c->conversation);
+
+    return 1;
+}
+
+int talkHandleChoice(char choice) {
+    char message[2];
+    char *reply, *prompt;
+
+    eventHandlerPopKeyHandler();
+
+    message[0] = choice;
+    message[1] = '\0';
+
+    personGetConversationText(&c->conversation, message, &reply);
+    screenMessage("\n\n%s\n", reply);
+    free(reply);
+        
+    c->conversation.buffer[0] = '\0';
+
+    if (c->conversation.state == CONV_DONE) {
+        screenMessage("\020");
+        return 1;
     }
 
-    else {
-        personGetPrompt(c->conversation.talker, &prompt);
-        screenMessage("\n%s", prompt);
-        free(prompt);
+    personGetPrompt(&c->conversation, &prompt);
+    screenMessage("%s", prompt);
+    free(prompt);
 
-        info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-        info->buffer = c->conversation.buffer;
-        info->bufferLen = CONV_BUFFERLEN;
-        info->handleBuffer = &talkHandleBuffer;
-        info->screenX = TEXT_AREA_X + c->col;
-        info->screenY = TEXT_AREA_Y + c->line;
-        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
-    }
+    talkSetHandler(&c->conversation);
 
     return 1;
 }
