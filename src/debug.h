@@ -5,14 +5,20 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#undef TRACE
-#if __FUNCTION__
-#   define TRACE(dbg, msg) (dbg).trace(msg, getFilename(__FILE__), __FUNCTION__, __LINE__)
-#   define TRACE_LOCAL(dbg, msg) (dbg).trace(msg, getFilename(__FILE__), __FUNCTION__, __LINE__, false);
+/*
+ * Define XU4_FUNCTION as the function name.  Most compilers define
+ * __FUNCTION__.  GCC provides __FUNCTION__ as a variable, not as a
+ * macro, so detecting with #if __FUNCTION__ doesn't work.
+ */
+#if __GNUC__ || __FUNCTION__
+# define XU4_FUNCTION __FUNCTION__
 #else
-#   define TRACE(dbg, msg) (dbg).trace(msg, getFilename(__FILE__), "", __LINE__)
-#   define TRACE_LOCAL(dbg, msg) (dbg).trace(msg, getFilename(__FILE__), "", __LINE__, false);
+# define XU4_FUNCTION ""
 #endif
+
+#undef TRACE
+#define TRACE(dbg, msg) (dbg).trace(msg, getFilename(__FILE__), XU4_FUNCTION, __LINE__)
+#define TRACE_LOCAL(dbg, msg) (dbg).trace(msg, getFilename(__FILE__), XU4_FUNCTION, __LINE__, false);
 
 #include <string>
 #include <cstdio>
@@ -36,7 +42,7 @@ void print_trace(FILE *file);
             do {                                                            \
                 if (!(exp)) {                                               \
                     fprintf(stderr, "%s:%s:%d: assertion `%s' failed. ",    \
-                           __FILE__, __FUNCTION__, __LINE__, #exp);         \
+                           __FILE__, XU4_FUNCTION, __LINE__, #exp);         \
                     fprintf(stderr, __VA_ARGS__);                           \
                     fprintf(stderr, "\n\n");                                \
                     print_trace(stderr);                                    \
