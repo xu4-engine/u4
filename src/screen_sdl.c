@@ -27,12 +27,6 @@ typedef enum {
 
 typedef SDL_Surface *(*ScreenScaler)(SDL_Surface *src, int scale, int n);
 
-SDL_Surface *screen;
-SDL_Surface *bkgds[BKGD_MAX];
-SDL_Surface *introAnimations[ANIM_MAX];
-SDL_Surface *tiles, *charset;
-int scale, forceEga, forceVga;
-
 long decompress_u4_file(FILE *in, long filesize, void **out);
 
 void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int color);
@@ -49,12 +43,16 @@ int screenLoadTileSetVga(SDL_Surface **surface, int width, int height, int n, co
 int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const char *filename);
 int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const char *filename, const char *palette_fname);
 int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const char *filename);
+SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter);
 SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n);
 
-ScreenScaler tileScaler = &screenScale2xBilinear;
-ScreenScaler lzwScaler = &screenScaleDefault;
-ScreenScaler rleScaler = &screenScale2xBilinear;
+SDL_Surface *screen;
+SDL_Surface *bkgds[BKGD_MAX];
+SDL_Surface *introAnimations[ANIM_MAX];
+SDL_Surface *tiles, *charset;
+int scale, forceEga, forceVga;
+ScreenScaler filterScaler = &screenScale2xBilinear;
 
 #define RLE_RUNSTART 02
 
@@ -372,8 +370,7 @@ int screenLoadTileSetEga(SDL_Surface **surface, int width, int height, int n, co
 
     u4fclose(in);
 
-    (*surface) = (*tileScaler)(unscaled, scale, n);
-    SDL_FreeSurface(unscaled);
+    (*surface) = screenScale(unscaled, scale, n, 1);
 
     return 1;
 }
@@ -414,8 +411,7 @@ int screenLoadTileSetVga(SDL_Surface **surface, int width, int height, int n, co
 
     u4fclose(in);
 
-    (*surface) = (*tileScaler)(unscaled, scale, n);
-    SDL_FreeSurface(unscaled);
+    (*surface) = screenScale(unscaled, scale, n, 1);
 
     return 1;
 }
@@ -467,8 +463,7 @@ int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const ch
 
     u4fclose(in);
 
-    (*surface) = (*rleScaler)(unscaled, scale, 1);
-    SDL_FreeSurface(unscaled);
+    (*surface) = screenScale(unscaled, scale, 1, 1);
 
     return 1;
 }
@@ -521,8 +516,7 @@ int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const ch
 
     u4fclose(in);
 
-    (*surface) = (*rleScaler)(unscaled, scale, 1);
-    SDL_FreeSurface(unscaled);
+    (*surface) = screenScale(unscaled, scale, 1, 1);
 
     return 1;
 }
@@ -569,8 +563,7 @@ int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const ch
 
     u4fclose(in);
 
-    (*surface) = (*lzwScaler)(unscaled, scale, 1);
-    SDL_FreeSurface(unscaled);
+    (*surface) = screenScale(unscaled, scale, 1, 0);
 
     return 1;
 }
@@ -822,15 +815,36 @@ void screenGemUpdate() {
     screenUpdateWind();
 }
 
+SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter) {
+    SDL_Surface *dest;
+
+    dest = src;
+
+    if (filter && filterScaler && /*(scale % 2) == 0*/ scale == 2) {
+        dest = (*filterScaler)(src, 2, n);
+        scale /= 2;
+        SDL_FreeSurface(src);
+        src = dest;
+    }
+
+    if (scale != 1) {
+        dest = screenScaleDefault(src, scale, n);
+        SDL_FreeSurface(src);
+    }
+
+    return dest;
+}
+
 SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n) {
     int x, y, i, j;
     SDL_Surface *dest;
 
-    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, 8, 0, 0, 0, 0);
+    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
     if (!dest)
         return NULL;
 
-    memcpy(dest->format->palette->colors, src->format->palette->colors, sizeof(SDL_Color) * src->format->palette->ncolors);
+    if (dest->format->palette)
+        memcpy(dest->format->palette->colors, src->format->palette->colors, sizeof(SDL_Color) * src->format->palette->ncolors);
 
     for (y = 0; y < src->h; y++) {
         for (x = 0; x < src->w; x++) {
@@ -850,6 +864,8 @@ SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
     SDL_Surface *dest;
     Uint32 rmask, gmask, bmask, amask;
 
+    /* this bilinear scaler works only with 8-bit source images, scaled by 2x */
+    assert(src->format->palette);
     assert(scale == 2);
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
