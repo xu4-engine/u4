@@ -318,17 +318,27 @@ unsigned char mapGroundTileAt(const Map *map, int x, int y, int z) {
 }
 
 unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z) {
-    unsigned char tile = mapGroundTileAt(map, x, y, z);
+    unsigned char tile = mapGetTileFromData(map, x, y, z);
+    unsigned char real = mapTileAt(map, x, y, z);
 
+    if (real != tile)
+        return real;
+    else {
+        Object *obj = mapObjectAt(map, x, y, z);
+
+        if (obj && obj->objType == OBJECT_MONSTER)    
+            return obj->tile;
+    }
+    
     switch (tile & 0xF0) {
     case 0x00:
     case 0x80:
         return BRICKFLOOR_TILE;
     case 0x10:
-        return 0x1b;
+        return LADDERUP_TILE;
     case 0x20:
     case 0x30:
-        return 0x1c;
+        return LADDERDOWN_TILE;
     case 0x40:
         return tileGetChestBase();
     case 0x50:

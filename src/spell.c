@@ -476,11 +476,13 @@ static int spellDispel(int dir) {
      * if the map tile itself is a field, overlay it with a brick
      * annotation
      */
-    tile = mapTileAt(c->location->map, x, y, z);
+    tile = (c->location->context & ~CTX_DUNGEON) ?
+        mapTileAt(c->location->map, x, y, z) :
+        mapDungeonTileAt(c->location->map, x, y, z);
     
     if (!tileCanDispel(tile))
         return 0;
-
+    
     annotationAdd(x, y, z, c->location->map->id, BRICKFLOOR_TILE);
 
     return 1;
@@ -661,13 +663,15 @@ static int spellXit(int unused) {
 }
 
 static int spellYup(int unused) {
+    int tile = mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z - 1);
 
     if (c->location->z > 0) {
-        if (tileIsWalkable(mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z - 1)))
+        if (tile != WALL_TILE && tile != LIGHTNINGFIELD_TILE)
             c->location->z--;
         else return 0;
     } else {
-        gameExitToParentMap(c);   
+        screenMessage("Leaving...\n");
+        gameExitToParentMap(c);
         musicPlay();
     }    
     
@@ -675,9 +679,10 @@ static int spellYup(int unused) {
 }
 
 static int spellZdown(int unused) {
+    int tile = mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z + 1);
 
-    if (c->location->z < 8) {
-        if (tileIsWalkable(mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z + 1)))
+    if (c->location->z < 7) {
+        if (tile != WALL_TILE && tile != LIGHTNINGFIELD_TILE)
             c->location->z++;
         else return 0;
     } else return 0;

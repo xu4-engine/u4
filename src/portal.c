@@ -14,17 +14,51 @@
 #include "shrine.h"
 #include "mapmgr.h"
 
+void createDngLadder(Location *location, PortalTriggerAction action, Portal *p) {
+    if (!p) return;
+    else {
+        p->destid = location->map->id;
+        if (action == ACTION_KLIMB && location->z == 0) {
+            p->exitPortal = 1;
+            p->destid = 1;
+        }
+        else p->exitPortal = 0;
+        p->message = NULL;
+        p->portalConditionsMet = NULL;
+        p->portalTransportRequisites = TRANSPORT_FOOT_OR_HORSE;
+        p->retroActiveDest = NULL;
+        p->saveLocation = 0;
+        p->startlevel = (action == ACTION_KLIMB) ? location->z - 1 : location->z + 1;
+        p->startx = location->x;
+        p->starty = location->y;        
+    }
+}
+
 int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction action) {
     Map *destination;
-    char *msg = NULL;    
+    char msg[32] = {0};
     
-    const Portal *portal = mapPortalAt(c->location->map, x, y, z, action);
+    const Portal *portal = mapPortalAt(location->map, x, y, z, action);
+    Portal dngLadder;
 
     /* didn't find a portal there */
-    if (!portal)
-        return 0;
+    if (!portal) {
+        
+        /* if it's a dungeon, then ladders are predictable.  Create one! */
+        if (location->context == CTX_DUNGEON) {
+            unsigned char tile = mapGetTileFromData(location->map, x, y, z);
+            if ((action & ACTION_KLIMB) && (tile == 0x10 || tile == 0x30)) 
+                createDngLadder(location, action, &dngLadder);                
+            else if ((action & ACTION_DESCEND) && (tile == 0x20 || tile == 0x30))
+                createDngLadder(location, action, &dngLadder);
+            else return 0;
+            portal = &dngLadder;
+        }
+        else return 0;
+    }
+
     /* conditions not met for portal to work */
-    else if (portal && portal->portalConditionsMet && !(*portal->portalConditionsMet)(portal))
+    if (portal && portal->portalConditionsMet && !(*portal->portalConditionsMet)(portal))
         return 0;
     /* must klimb or descend on foot! */
     else if (c->transportContext & ~TRANSPORT_FOOT && (action == ACTION_KLIMB || action == ACTION_DESCEND)) {
@@ -37,12 +71,10 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
     if (!portal->message) {
 
         switch(action) {
-        case ACTION_DESCEND:
-            msg = (char *)malloc(32);
+        case ACTION_DESCEND:            
             sprintf(msg, "Descend down to level %d\n", portal->startlevel+1);
             break;
-        case ACTION_KLIMB:
-            msg = (char *)malloc(32);
+        case ACTION_KLIMB:            
             if (portal->exitPortal)
                 sprintf(msg, "Klimb up!\nLeaving...\n");
             else sprintf(msg, "Klimb up!\nTo level %d\n", portal->startlevel+1);
@@ -78,30 +110,34 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
 
     /* check the transportation requisites of the portal */
     if (c->transportContext & ~portal->portalTransportRequisites) {
-        screenMessage("Only on foot!\n");
+        screenMessage("Only on foot!\n");        
         return 1;
     }
     /* ok, we know the portal is going to work -- now display the custom message, if any */
-    else if (portal->message || msg) {
-        screenMessage("%s", portal->message ? portal->message : msg);
-        if (msg) free(msg);
-    }
+    else if (portal->message || strlen(msg))
+        screenMessage("%s", portal->message ? portal->message : msg);    
 
     /* portal just exits to parent map */
     if (portal->exitPortal) {        
         gameExitToParentMap(c);
         return 1;
     }
-    
-    gameSetMap(c, destination, portal->saveLocation, portal);
-    musicPlay();
+    else if (portal->destid == location->map->id) {
+        location->x = portal->startx;
+        location->y = portal->starty;
+        location->z = portal->startlevel;
+    }
+    else {
+        gameSetMap(c, destination, portal->saveLocation, portal);
+        musicPlay();
+    }
 
     /* if the portal changes the map retroactively, do it here */
-    if (portal->retroActiveDest && c->location->prev) {
-        c->location->prev->x = portal->retroActiveDest->x;
-        c->location->prev->y = portal->retroActiveDest->y;
-        c->location->prev->z = portal->retroActiveDest->z;
-        c->location->prev->map = mapMgrGetById(portal->retroActiveDest->mapid);
+    if (portal->retroActiveDest && location->prev) {
+        location->prev->x = portal->retroActiveDest->x;
+        location->prev->y = portal->retroActiveDest->y;
+        location->prev->z = portal->retroActiveDest->z;
+        location->prev->map = mapMgrGetById(portal->retroActiveDest->mapid);
     }
 
     if (destination->type == MAPTYPE_SHRINE)        

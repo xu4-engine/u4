@@ -19,6 +19,8 @@
 #define LCB1_TILE 0xd
 #define LCB2_TILE 0xe
 #define LCB3_TILE 0xf
+#define LADDERUP_TILE 0x1b
+#define LADDERDOWN_TILE 0x1c
 #define HORSE1_TILE 0x14
 #define HORSE2_TILE 0x15
 #define BRIDGE_TILE 0x17

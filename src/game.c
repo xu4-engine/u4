@@ -310,7 +310,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
  * such as the map, map position, etc. (such as exiting a city)
  **/
 
-int gameExitToParentMap(struct _Context *ct) {
+int gameExitToParentMap(Context *ct) {
 
     if (ct->location->prev != NULL) {
         if (ct->location->map->id == 23) /* hythloth dungeon */
@@ -1500,8 +1500,14 @@ int castForPlayer2(int spell, void *data) {
         break;
     case SPELLPRM_DIR:
     case SPELLPRM_TYPEDIR:
-        screenMessage("Dir: ");
-        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir);
+        {
+            if (c->location->context & CTX_DUNGEON)
+                gameCastSpell(castSpell, castPlayer, c->saveGame->orientation);
+            else {
+                screenMessage("Dir: ");
+                eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir);
+            }
+        }
         break;
     case SPELLPRM_FROMDIR:
         screenMessage("From Dir: ");
@@ -2740,7 +2746,7 @@ void gameCheckRandomMonsters() {
     if (!mapIsWorldMap(c->location->map) ||
         mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS_ON_MAP ||        
         (rand() % 32) != 0)
-        return;    
+        return;
     
     gameSpawnMonster(NULL);
 }

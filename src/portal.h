@@ -38,6 +38,7 @@ typedef struct _Portal {
     int exitPortal;
 } Portal;
 
+void createDngLadder(struct _Location *location, PortalTriggerAction action, Portal *p);
 int usePortalAt(struct _Location *location, int x, int y, int z, PortalTriggerAction action);
 
 #endif
