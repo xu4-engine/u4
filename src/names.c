@@ -101,3 +101,41 @@ const char *getVirtueName(Virtue virtue) {
     else
         return "???";
 }
+
+const char *getStoneName(Virtue virtue) {
+    static const char *virtueNames[] = {
+        "Blue", "Yellow", "Red", 
+        "Green", "Orange", "Purple", 
+        "White", "Black"
+    };
+
+    if (virtue < 8)
+        return virtueNames[virtue - VIRT_HONESTY];
+    else
+        return "???";
+}
+
+const char *getItemName(Item item) {
+    switch (item) {
+    case ITEM_SKULL:
+        return "Skull";
+    case ITEM_CANDLE:
+        return "Candle";
+    case ITEM_BOOK:
+        return "Book";
+    case ITEM_BELL:
+        return "Bell";
+    case ITEM_KEY_C:
+        return "Courage";
+    case ITEM_KEY_L:
+        return "Love";
+    case ITEM_KEY_T:
+        return "Truth";
+    case ITEM_HORN:
+        return "Horn";
+    case ITEM_WHEEL:
+        return "Wheel";
+    default:
+        return "???";
+    }
+}
