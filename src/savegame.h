@@ -72,6 +72,38 @@ typedef enum {
     REAG_MAX
 } Reagent;
 
+typedef enum {
+    ITEM_SKULL  = 0x01,
+    ITEM_CANDLE = 0x04,
+    ITEM_BOOK   = 0x08,
+    ITEM_BELL   = 0x10,
+    ITEM_KEY_C  = 0x20,
+    ITEM_KEY_L  = 0x40,
+    ITEM_KEY_T  = 0x80
+} Item;
+
+typedef enum {
+    STON_BLUE   = 0x01,
+    STON_YELLOW = 0x02,
+    STON_RED    = 0x04,
+    STON_GREEN  = 0x08,
+    STON_ORANGE = 0x10,
+    STON_PURPLE = 0x20,
+    STON_WHITE  = 0x40,
+    STON_BLACK  = 0x80
+} Stone;
+
+typedef enum {
+    RUNE_HONESTY      = 0x01,
+    RUNE_COMPASSION   = 0x02,
+    RUNE_VALOR        = 0x04,
+    RUNE_JUSTICE      = 0x08,
+    RUNE_SACRIFICE    = 0x10,
+    RUNE_HONOR        = 0x20,
+    RUNE_SPIRITUALITY = 0x40,
+    RUNE_BLACK        = 0x80
+} Rune;
+
 typedef struct {
     unsigned short hp;
     unsigned short hpMax;
@@ -103,9 +135,13 @@ typedef struct _SaveGame {
     unsigned short weapons[WEAP_MAX];
     unsigned short reagents[REAG_MAX];
     unsigned short mixtures[26];
-    unsigned short unknown2;
+    unsigned short items;
     unsigned char x, y;
-    char unknown3[32];
+    unsigned char stones;
+    unsigned char runes;
+    unsigned short members;
+    unsigned char partytile;
+    char unknown2[32];
 } SaveGame;
 
 int saveGameWrite(const SaveGame *save, FILE *f);

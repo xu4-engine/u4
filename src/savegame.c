@@ -98,13 +98,17 @@ int saveGameWrite(const SaveGame *save, FILE *f) {
             return 0;
     }
 
-    if (!writeShort(save->unknown2, f) ||
+    if (!writeShort(save->items, f) ||
         !writeChar(save->x, f) ||
-        !writeChar(save->y, f))
+        !writeChar(save->y, f) ||
+        !writeChar(save->stones, f) ||
+        !writeChar(save->runes, f) ||
+        !writeShort(save->members, f) ||
+        !writeChar(save->partytile, f))
         return 0;
 
-    for (i = 0; i < 32; i++) {
-        if (!writeChar(save->unknown3[i], f))
+    for (i = 0; i < 27; i++) {
+        if (!writeChar(save->unknown2[i], f))
             return 0;
     }
 
@@ -158,13 +162,17 @@ int saveGameRead(SaveGame *save, FILE *f) {
             return 0;
     }
 
-    if (!readShort(&(save->unknown2), f) ||
+    if (!readShort(&(save->items), f) ||
         !readChar(&(save->x), f) ||
-        !readChar(&(save->y), f))
+        !readChar(&(save->y), f) ||
+        !readChar(&(save->stones), f) ||
+        !readChar(&(save->runes), f) ||
+        !readShort(&(save->members), f) ||
+        !readChar(&(save->partytile), f))
         return 0;
 
-    for (i = 0; i < 32; i++) {
-        if (!readChar(&(save->unknown3[i]), f))
+    for (i = 0; i < 27; i++) {
+        if (!readChar(&(save->unknown2[i]), f))
             return 0;
     }
 
@@ -204,12 +212,16 @@ void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avat
     for (i = 0; i < 26; i++)
         save->mixtures[i] = 0;
 
-    save->unknown2 = 0;
+    save->items = 0;
     save->x = x;
     save->y = y;
+    save->stones = 0;
+    save->runes = 0;
+    save->members = 1;
+    save->partytile = 0x1f;
 
-    for (i = 0; i < 32; i++)
-        save->unknown3[i] = 0;
+    for (i = 0; i < 27; i++)
+        save->unknown2[i] = 0;
 }
 
 int saveGamePlayerRecordWrite(const SaveGamePlayerRecord *record, FILE *f) {
