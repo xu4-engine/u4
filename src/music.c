@@ -32,6 +32,7 @@ const char * const musicFilenames[] = {
 
 int soundDisabled;
 int toggle = 1;
+Music introMid = MUSIC_TOWNS;
 Mix_Music *playing = NULL;
 
 void musicPlayMid(Music music) {
@@ -79,12 +80,24 @@ int musicToggle() {
     return toggle;
 }
 
-void musicIntro(void){    /* Intro Music on title loadup */
-    musicPlayMid(MUSIC_TOWNS);
+void musicIntro(void) {         /* Intro Music on title loadup */
+    musicPlayMid(introMid);
+}
+
+void musicIntroSwitch(int n) {
+    if (n > MUSIC_NONE &&
+        n <= MUSIC_CASTLES) {
+        introMid = n;
+        musicIntro();
+    }
 }
 
 void musicLordBritish(void){  /* Music when you talk to LB */
     musicPlayMid(MUSIC_FANFARE);
+}
+
+void musicCamp(void){  /* Music when camping */
+    musicPlayMid(MUSIC_SHOPPING);
 }
 
 void musicPlay(void) {  /* Main music loop. */
@@ -123,7 +136,8 @@ int musicInit() {
             return 1;
         }
 
-        Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
+
+        Mix_AllocateChannels(1);
     }
 
     return 0;

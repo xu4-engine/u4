@@ -25,7 +25,9 @@ void musicStop(void);
 void musicFadeOut(int msecs);
 void musicFadeIn(int msecs);
 void musicLordBritish(void);
+void musicCamp(void);
 void musicIntro(void);
+void musicIntroSwitch(int n);
 int musicToggle(void);
 
 #endif
