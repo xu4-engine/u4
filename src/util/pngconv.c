@@ -2,27 +2,7 @@
 #include <stdlib.h>
 #include <png.h>
 
-int writePngFromEga(unsigned char *data, int height, int width, int bits, const char *fname) {
-    FILE *fp;
-    unsigned char *p;
-    png_structp png_ptr;
-    png_infop info_ptr;
-    int bit_depth, color_type, interlace_type, compression_type, filter_method;
-    png_color palette[16];
-    png_byte *row_pointers[200];
-    int i, j;
-
-    for (i = 0; i < height; i++) {
-        row_pointers[i] = (png_byte *) malloc(width * sizeof (png_byte) * bits / 8);
-    }
-
-    p = data;
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width * bits / 8; j++) {
-            row_pointers[i][j] = *p++;
-        }
-    }
-
+void setEgaPalette(png_color *palette) {
     #define setpalentry(i, r, g, b) \
         palette[i].red = r; \
         palette[i].green = g; \
@@ -44,6 +24,61 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
     setpalentry(14, 0xFF, 0xFF, 0x00);
     setpalentry(15, 0xFF, 0xFF, 0xFF);
     #undef setpalentry
+}
+
+void setVgaPalette(png_color *palette) {
+    FILE *pal;
+    int i;
+
+    pal = fopen("u4vga.pal", "rb");
+    if (!pal) {
+        perror("u4vga.pal");
+        exit(1);
+    }
+
+    for (i = 0; i < 256; i++) {
+        palette[i].red = getc(pal) * 255 / 63;
+        palette[i].green = getc(pal) * 255 / 63;
+        palette[i].blue = getc(pal) * 255 / 63;
+    }
+    fclose(pal);
+}
+
+int writePngFromEga(unsigned char *data, int height, int width, int bits, const char *fname) {
+    FILE *fp;
+    unsigned char *p;
+    png_structp png_ptr;
+    png_infop info_ptr;
+    int bit_depth, color_type, interlace_type, compression_type, filter_method;
+    int palette_size;
+    png_color *palette;
+    png_byte *row_pointers[200];
+    int i, j;
+
+    if (bits == 4)
+        palette_size = 16;
+    else if (bits == 8)
+        palette_size = 256;
+    else
+        abort();
+
+    palette = malloc(sizeof(png_color) * palette_size);        
+
+    printf("ps = %d\n", palette_size);
+    if (palette_size == 16)
+        setEgaPalette(palette);
+    else
+        setVgaPalette(palette);
+
+    for (i = 0; i < height; i++) {
+        row_pointers[i] = (png_byte *) malloc(width * sizeof (png_byte) * bits / 8);
+    }
+
+    p = data;
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width * bits / 8; j++)
+            row_pointers[i][j] = *p++;
+    }
 
     fp = fopen(fname, "wb");
     if (!fp) {
@@ -81,7 +116,7 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
     png_set_IHDR(png_ptr, info_ptr, (png_uint_32) width, (png_uint_32) height, bit_depth, 
                  color_type, interlace_type, compression_type, filter_method);
 
-    png_set_PLTE(png_ptr, info_ptr, palette, 16);
+    png_set_PLTE(png_ptr, info_ptr, palette, palette_size);
     png_set_rows(png_ptr, info_ptr, row_pointers);
 
     png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
