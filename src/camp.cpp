@@ -194,17 +194,15 @@ void innTimer(void *data) {
             City *city = dynamic_cast<City*>(c->location->map);
             Person *Isaac;
             ObjectDeque::iterator i;
-            int x = 27,
-                y = xu4_random(3) + 10,
-                z = c->location->coords.z;
-
+            Coords coords(27, xu4_random(3) + 10, c->location->coords.z);
+            
             /* If Isaac is already around, just bring him back to the inn */
             for (i = c->location->map->objects.begin();
                  i != c->location->map->objects.end();
                  i++) {
                 Person *p = dynamic_cast<Person*>(*i);
                 if (p && p->name == "Isaac") {                
-                    p->setCoords(Coords(x, y, z));
+                    p->setCoords(coords);
                     return;
                 }
             }
@@ -212,7 +210,7 @@ void innTimer(void *data) {
             /**
              * FIXME: Isaac is currently broken
              */ 
-
+            
             /* Otherwise, we need to create Isaac */
             Isaac = new Person;
             Isaac->name = city->persons[10]->name;
@@ -233,7 +231,7 @@ void innTimer(void *data) {
             Isaac->questionType = QUESTION_NORMAL;
             Isaac->start = MapCoords(27, xu4_random(3) + 10, 0);
             Isaac->setTile(creatures.getById(GHOST_ID)->getTile());
-            Isaac->setPrevTile(Isaac->getTile());            
+            Isaac->setPrevTile(Isaac->getTile());
             Isaac->turnAwayProb = 0;
             
             /* Add Isaac near the Avatar */
