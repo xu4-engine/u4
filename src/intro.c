@@ -338,17 +338,28 @@ int introHandleName(const char *message) {
     GetChoiceActionInfo *info;
 
     eventHandlerPopKeyHandler();
-    mode = INTRO_INIT_SEX;
 
-    introUpdateScreen();
-    screenSetCursorPos(29, 16);
-    screenEnableCursor();
+    if (message[0] == '\0') {
+        mode = INTRO_MENU;
+
+        introUpdateScreen();
+        screenDisableCursor();
+    } 
+
+    else {
+        mode = INTRO_INIT_SEX;
+
+        introUpdateScreen();
+        screenSetCursorPos(29, 16);
+        screenEnableCursor();
+
+        info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+        info->choices = "mf";
+        info->handleChoice = &introHandleSexChoice;
+        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
+    }
+
     screenForceRedraw();
-
-    info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-    info->choices = "mf";
-    info->handleChoice = &introHandleSexChoice;
-    eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
 
     return 1;
 }
