@@ -186,8 +186,64 @@ void statsShowEquipment() {
  * Items: runes, stones, and other miscellaneous quest items.
  */
 void statsShowItems() {
+    int i, j;
+    int line;
+    char buffer[17];
+
     statsAreaSetTitle("Items");
-    /* FIXME */
+
+    line = 1;
+    if (c->saveGame->stones != 0) {
+        j = 0;
+        for (i = 0; i < 8; i++) {
+            if (c->saveGame->stones & (1 << i))
+                buffer[j++] = getStoneName(i)[0];
+        }
+        buffer[j] = '\0';
+        screenTextAt(STATS_AREA_X, line++, "Stones:%s", buffer);
+    }
+    if (c->saveGame->runes != 0) {
+        j = 0;
+        for (i = 0; i < 8; i++) {
+            if (c->saveGame->runes & (1 << i))
+                buffer[j++] = getVirtueName(i)[0];
+        }
+        buffer[j] = '\0';
+        screenTextAt(STATS_AREA_X, line++, "Runes:%s", buffer);
+    }
+    if (c->saveGame->items & (ITEM_CANDLE | ITEM_BOOK | ITEM_BELL)) {
+        buffer[0] = '\0';
+        if (c->saveGame->items & ITEM_BELL) {
+            strcat(buffer, getItemName(ITEM_BELL));
+            strcat(buffer, " ");
+        }
+        if (c->saveGame->items & ITEM_BOOK) {
+            strcat(buffer, getItemName(ITEM_BOOK));
+            strcat(buffer, " ");
+        }
+        if (c->saveGame->items & ITEM_CANDLE) {
+            strcat(buffer, getItemName(ITEM_CANDLE));
+            buffer[15] = '\0';
+        }
+        screenTextAt(STATS_AREA_X, line++, "%s", buffer);
+    }
+    if (c->saveGame->items & (ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T)) {
+        j = 0;
+        if (c->saveGame->items & ITEM_KEY_T)
+            buffer[j++] = getItemName(ITEM_KEY_T)[0];
+        if (c->saveGame->items & ITEM_KEY_L)
+            buffer[j++] = getItemName(ITEM_KEY_L)[0];
+        if (c->saveGame->items & ITEM_KEY_C)
+            buffer[j++] = getItemName(ITEM_KEY_C)[0];
+        buffer[j] = '\0';
+        screenTextAt(STATS_AREA_X, line++, "3 Part Key:%s", buffer);
+    }
+    if (c->saveGame->items & ITEM_HORN)
+        screenTextAt(STATS_AREA_X, line++, "%s", getItemName(ITEM_HORN));
+    if (c->saveGame->items & ITEM_WHEEL)
+        screenTextAt(STATS_AREA_X, line++, "%s", getItemName(ITEM_WHEEL));
+    if (c->saveGame->items & ITEM_SKULL)
+        screenTextAt(STATS_AREA_X, line++, "%s", getItemName(ITEM_SKULL));
 }
 
 /**
