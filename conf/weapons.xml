@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- $Id -->
+<!-- $Id$ -->
 <weapons>
     <weapon name="Hands" abbr="HND" range="1" damage="8"/>
 	<weapon name="Staff" abbr="STF" range="1" damage="16"/>
