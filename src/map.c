@@ -129,6 +129,12 @@ int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
                 city->persons[j].keyword1 = strdup(ptr);
                 ptr += strlen(ptr) + 1;
                 city->persons[j].keyword2 = strdup(ptr);
+
+                /* trim whitespace on keywords */
+                if (strchr(city->persons[j].keyword1, ' '))
+                    *strchr(city->persons[j].keyword1, ' ') = '\0';
+                if (strchr(city->persons[j].keyword2, ' '))
+                    *strchr(city->persons[j].keyword2, ' ') = '\0';
             }
         }
     }
@@ -725,11 +731,8 @@ int mapDirMove(const Map *map, Direction dir, int *x, int *y) {
         wraps = map->border_behavior == BORDER_WRAP;
 
     dirMove(dir, &newx, &newy);
-    if (MAP_IS_OOB(map, newx, newy)) {        
-        if (!wraps)
-            return 0;
-        else mapWrapCoordinates(map, &newx, &newy);
-    }
+    if (MAP_IS_OOB(map, newx, newy) && wraps)        
+        mapWrapCoordinates(map, &newx, &newy);    
 
     *x = newx;
     *y = newy;

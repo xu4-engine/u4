@@ -349,7 +349,7 @@ char *talkerGetIntro(Conversation *cnv) {
 
 char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     char *reply;
-    int testLen = 4;
+    unsigned int testLen = 4;
     
     if (strlen(inquiry) < 4)
         testLen = strlen(inquiry);
@@ -375,13 +375,18 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
      * healer, which is unreachable in u4dos, but clearly more useful
      * than "Fine." for health).
      */
-    else if (strncasecmp(inquiry, cnv->talker->keyword1, testLen) == 0) {
+
+    /* minimum 4-character "guessing" */
+    else if ((testLen >= 4 || strlen(cnv->talker->keyword1) == testLen) && 
+             strncasecmp(inquiry, cnv->talker->keyword1, testLen) == 0) {
         reply = strdup(cnv->talker->response1);
         if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD1)
             cnv->state = CONV_ASK;
     }
 
-    else if (strncasecmp(inquiry, cnv->talker->keyword2, testLen) == 0) {
+    /* minimum 4-character "guessing" */
+    else if ((testLen >= 4 || strlen(cnv->talker->keyword2) == testLen) &&
+             strncasecmp(inquiry, cnv->talker->keyword2, testLen) == 0) {
         reply = strdup(cnv->talker->response2);
         if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD2)
             cnv->state = CONV_ASK;
