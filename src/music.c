@@ -8,28 +8,18 @@
 #include <assert.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
+
 #include "u4.h"
-
 #include "music.h"
-
 #include "context.h"
 #include "error.h"
 #include "location.h"
 #include "settings.h"
 #include "u4file.h"
 
-const char * const musicFilenames[] = {
-    NULL,
-    "Wanderer.mid",
-    "Towns.mid",
-    "Shrines.mid",
-    "Shopping.mid",
-    "Rule_Britannia.mid",
-    "Fanfare_Of_Lord_British.mid",
-    "Dungeon.mid",
-    "Combat.mid",
-    "Castles.mid"
-};
+char *musicFilenames[MUSIC_MAX];
 
 int soundDisabled;
 int toggle = 1;
@@ -40,7 +30,7 @@ void musicPlayMid(Music music) {
     static Music current = MUSIC_NONE;
     char *pathname;
 
-    assert(music < sizeof(musicFilenames) / sizeof(musicFilenames[0]));
+    assert(music < MUSIC_MAX);
 
     if (soundDisabled || current == music)
         return;
@@ -87,7 +77,7 @@ void musicIntro(void) {         /* Intro Music on title loadup */
 
 void musicIntroSwitch(int n) {
     if (n > MUSIC_NONE &&
-        n <= MUSIC_CASTLES) {
+        n < MUSIC_MAX) {
         introMid = n;
         musicIntro();
     }
@@ -120,6 +110,47 @@ void musicFadeIn(int msecs) {
 }
 
 int musicInit() {
+    char *fname;
+    Music musicTrack;
+    xmlDocPtr doc;
+    xmlNodePtr root, node;
+
+    /*
+     * load musc track filenames from xml config file
+     */
+
+    fname = u4find_conf("music.xml");
+    if (!fname)
+        errorFatal("unable to open file music.xml");
+    doc = xmlParseFile(fname);
+    if (!doc)
+        errorFatal("error parsing music.xml");
+
+    root = xmlDocGetRootElement(doc);
+    if (xmlStrcmp(root->name, (const xmlChar *) "music") != 0)
+        errorFatal("malformed music.xml");
+
+    musicTrack = MUSIC_NONE;
+    musicFilenames[musicTrack] = NULL;
+    musicTrack++;
+
+    for (node = root->xmlChildrenNode; node; node = node->next) {
+        if (musicTrack >= MUSIC_MAX)
+            break;
+
+        if (xmlNodeIsText(node) ||
+            xmlStrcmp(node->name, (const xmlChar *) "track") != 0)
+            continue;
+
+        musicFilenames[musicTrack] = (char *)xmlGetProp(node, (const xmlChar *) "file");
+        musicTrack++;
+    }
+    xmlFreeDoc(doc);
+    free(fname);
+
+    /*
+     * initialize sound subsystem
+     */
 
     soundDisabled = settings->vol == 0;
 
