@@ -30,11 +30,16 @@ void dump_bmp(char *name, char *tmpfn, FILE *out) {
     FILE *convert;
     int c, first, size, status;
     char cmd[256];
+    char *convertCmd;
 
-    sprintf(cmd, "convert -compress None %s bmp:-", tmpfn);
+    convertCmd = getenv("CONVERT");
+    if (!convertCmd)
+        convertCmd = "convert";
+
+    sprintf(cmd, "%s -compress None %s bmp:-", convertCmd, tmpfn);
     convert = popen(cmd, "r");
     if (!convert) {
-        fprintf(stderr, "ImageMagick convert failed\n");
+        fprintf(stderr, "ImageMagick convert failed: %s\n", cmd);
         exit(1);
     }
     
@@ -59,7 +64,7 @@ const int %s_size = %d;
 
     status = pclose(convert);
     if (status != 0) {
-        fprintf(stderr, "ImageMagick convert failed\n");
+        fprintf(stderr, "ImageMagick convert failed: %s\n", cmd);
         exit(1);
     }
 }
