@@ -119,7 +119,8 @@ void campTimer(void *data) {
 void campEnd(void) {
     int i, healed = 0;
     musicFadeIn(0); /* Return volume to normal */
-    
+
+    eventHandlerPopKeyHandler();
     gameExitToParentMap(c);
 
     /* Wake everyone up! */

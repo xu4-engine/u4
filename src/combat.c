@@ -114,6 +114,7 @@ void combatBegin(Map *map, Object *monster, int isNormal) {
     
     /* camping, make sure everyone's asleep */
     else {
+        partyIsReadyToFight = 0;
         for (i = 0; i < c->saveGame->members; i++) {
             if (c->saveGame->players[i].status != STAT_DEAD) {
                 c->saveGame->players[i].status = STAT_SLEEPING;
@@ -132,7 +133,7 @@ void combatBegin(Map *map, Object *monster, int isNormal) {
             /* find a random free slot in the monster table */
             do {j = rand() % AREA_MONSTERS;} while (combat_monsters[j] != NULL);
             combatCreateMonster(j, i != (nmonsters - 1));
-        }    
+        }
     }
 
     /* Use the combat key handler */

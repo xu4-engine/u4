@@ -242,6 +242,9 @@ Object *mapObjectAt(const Map *map, int x, int y, int z) {
             /* get the most visible object */
             if (objAt && (objAt->objType == OBJECT_UNKNOWN) && (obj->objType != OBJECT_UNKNOWN))
                 objAt = obj;
+            /* give priority to objects that have the focus */
+            else if (objAt && (!objAt->hasFocus) && (obj->hasFocus))
+                objAt = obj;
             else if (!objAt)
                 objAt = obj;
         }            
