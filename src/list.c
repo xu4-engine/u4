@@ -18,6 +18,7 @@ ListNode *listAppend(ListNode *list, void *data) {
     ASSERT(node != NULL, "out of memory error");
     node->data = data;
     node->next = NULL;
+    node->prev = NULL;
 
     if (!list)
         return node;
@@ -25,6 +26,7 @@ ListNode *listAppend(ListNode *list, void *data) {
     while (head->next)
         head = head->next;
     head->next = node;
+    node->prev = head;
 
     return list;
 }
@@ -38,6 +40,7 @@ ListNode *listPrepend(ListNode *list, void *data) {
     ASSERT(node != NULL, "out of memory error");
     node->data = data;
     node->next = list;
+    node->prev = NULL;
 
     return node;
 }
@@ -73,11 +76,13 @@ ListNode *listRemove(ListNode *list, ListNode *node) {
 
     if (prev == NULL) {
         n = n->next;
+        n->prev = NULL;
         free(node);
         return n;
     }
 
     prev->next = n->next;
+    n->next->prev = prev;
     free(n);
 
     return list;

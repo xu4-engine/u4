@@ -8,6 +8,7 @@
 typedef struct _ListNode {
     void *data;
     struct _ListNode *next;
+    struct _ListNode *prev;
 } ListNode;
 
 typedef int (*ListComparator)(void *, void *);

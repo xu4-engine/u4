@@ -11,6 +11,7 @@
 #include "intro.h"
 
 #include "event.h"
+#include "menu.h"
 #include "music.h"
 #include "player.h"
 #include "savegame.h"
@@ -102,6 +103,12 @@ int sleepCycles;
 int scrPos;  /* current position in the script table */
 IntroObjectState *objectStateTable;
 
+Menu mainOptions;
+Menu videoOptions;
+Menu soundOptions;
+Menu gameplayOptions;
+Menu advancedOptions;
+
 void introInitiateNewGame(void);
 void introDrawMap(void);
 void introDrawMapAnimated(void);
@@ -116,6 +123,13 @@ const char *introGetQuestion(int v1, int v2);
 int introDoQuestion(int answer);
 int introHandleQuestionChoice(int choice);
 void introInitPlayers(SaveGame *saveGame);
+int introBaseMenuKeyHandler(int key, IntroMode prevMode, Menu *menu);
+
+void introMainOptionsMenuItemActivate(Menu menu);
+void introVideoOptionsMenuItemActivate(Menu menu);
+void introSoundOptionsMenuItemActivate(Menu menu);
+void introGameplayOptionsMenuItemActivate(Menu menu);
+void introAdvancedOptionsMenuItemActivate(Menu menu);
 
 /**
  * Initializes intro state and loads in introduction graphics, text
@@ -210,6 +224,36 @@ int introInit() {
     screenFixIntroScreen(BKGD_INTRO_EXTENDED, screenFixData);    
     screenFixIntroScreenExtended(BKGD_INTRO_EXTENDED);
 
+    mainOptions = menuAddItem(mainOptions, "Video Options", 13, 16, &introMainOptionsMenuItemActivate);
+    mainOptions = menuAddItem(mainOptions, "Sound Options", 13, 17, &introMainOptionsMenuItemActivate);
+    mainOptions = menuAddItem(mainOptions, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate);
+    mainOptions = menuAddItem(mainOptions, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate);
+
+    videoOptions = menuAddItem(videoOptions, "Scale", 11, 16, &introVideoOptionsMenuItemActivate);
+    videoOptions = menuAddItem(videoOptions, "Mode", 11, 17, &introVideoOptionsMenuItemActivate);
+    videoOptions = menuAddItem(videoOptions, "Filter", 11, 18, &introVideoOptionsMenuItemActivate);
+    videoOptions = menuAddItem(videoOptions, "Use These Settings", 11, 20, &introVideoOptionsMenuItemActivate);
+    videoOptions = menuAddItem(videoOptions, "Cancel", 11, 21, &introVideoOptionsMenuItemActivate);
+
+    soundOptions = menuAddItem(soundOptions, "Volume", 11, 16, &introSoundOptionsMenuItemActivate);
+    soundOptions = menuAddItem(soundOptions, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate);
+    soundOptions = menuAddItem(soundOptions, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate);
+    
+    gameplayOptions = menuAddItem(gameplayOptions, "Game Enhancements", 8, 5, &introGameplayOptionsMenuItemActivate);
+    gameplayOptions = menuAddItem(gameplayOptions, "Shortcut Keys", 8, 7, &introGameplayOptionsMenuItemActivate);
+    gameplayOptions = menuAddItem(gameplayOptions, "Advanced Options", 8, 18, &introGameplayOptionsMenuItemActivate);
+    gameplayOptions = menuAddItem(gameplayOptions, "Use These Settings", 8, 20, &introGameplayOptionsMenuItemActivate);
+    gameplayOptions = menuAddItem(gameplayOptions, "Cancel", 8, 21, &introGameplayOptionsMenuItemActivate);
+    
+    advancedOptions = menuAddItem(advancedOptions, "Debug Mode (Cheats)", 4, 5, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, "Repeat Delay", 7, 8, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, "Repeat Interval", 7, 9, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, "German Keyboard", 7, 10, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, "Game Cycles Per Second", 7, 13, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, "Battle Speed", 7, 14, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, "Use These Settings", 6, 20, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, "Cancel", 6, 21, &introAdvancedOptionsMenuItemActivate);        
+
     introUpdateScreen();
 
     musicIntro();
@@ -249,6 +293,12 @@ void introDelete() {
     free(beastie2FrameTable);
 
     screenFreeIntroBackgrounds();
+
+    menuDelete(mainOptions);
+    menuDelete(videoOptions);
+    menuDelete(soundOptions);
+    menuDelete(gameplayOptions);
+    menuDelete(advancedOptions);
 }
 
 /**
@@ -288,6 +338,7 @@ int introKeyHandler(int key, void *data) {
         case 'c':
             introErrorMessage = NULL;
             mode = INTRO_CONFIG;
+            mainOptions = menuReset(mainOptions);
             introUpdateScreen();
             break;
         case 'a':
@@ -317,139 +368,72 @@ int introKeyHandler(int key, void *data) {
         break;
 
     case INTRO_CONFIG:
-        
-        switch(key) {
-        case 'v': mode = INTRO_CONFIG_VIDEO; break;
-        case 's': mode = INTRO_CONFIG_SOUND; break;
-        case 'g': mode = INTRO_CONFIG_GAMEPLAY; break;
-        case U4_ESC:
-        case ' ':
-        case U4_ENTER:
-        case 'm': mode = INTRO_MENU; break;
-        default: break;
+
+        if (!introBaseMenuKeyHandler(key, INTRO_MENU, &mainOptions)) {
+            switch(key) {
+            case 'v': mode = INTRO_CONFIG_VIDEO; videoOptions = menuReset(videoOptions); break;
+            case 's': mode = INTRO_CONFIG_SOUND; soundOptions = menuReset(soundOptions); break;
+            case 'g': mode = INTRO_CONFIG_GAMEPLAY; gameplayOptions = menuReset(gameplayOptions); break;
+            case 'm': mode = INTRO_MENU;
+            default: break;
+            }
         }
 
         introUpdateScreen();
         return 1;
 
     case INTRO_CONFIG_VIDEO:
-        switch (key) {
-        case 's':
-            settings->scale++;
-            if (settings->scale > 5)
-                settings->scale = 1;
-            break;
-        case 'm':
-            settings->fullscreen = !settings->fullscreen;
-            break;
-        case 'f':
-            settings->filter++;
-            if (settings->filter == SCL_MAX)
-                settings->filter = (FilterType) 0;
-            break;
-        case U4_ESC:
-        case ' ':
-        case U4_ENTER:
-        case 'c':
-            mode = INTRO_CONFIG;
-            break;
-        case 'u':
-            settingsWrite();
-            musicIntro();
-            
-            mode = INTRO_CONFIG;
-            break;
+        
+        if (!introBaseMenuKeyHandler(key, INTRO_CONFIG, &videoOptions)) {
+            switch (key) {
+            case 's':
+                settings->scale++;
+                if (settings->scale > 5)
+                    settings->scale = 1;
+                break;
+            case 'm':
+                settings->fullscreen = !settings->fullscreen;
+                break;
+            case 'f':
+                settings->filter++;
+                if (settings->filter == SCL_MAX)
+                    settings->filter = (FilterType) 0;
+                break;
+            }
         }
+        
         introUpdateScreen();
         return 1;
 
     case INTRO_CONFIG_SOUND:
-        switch (key) {
-        case 'v':
-            settings->vol = !settings->vol;
-            break;
-        case U4_ESC:
-        case ' ':
-        case U4_ENTER:
-        case 'c':
-            mode = INTRO_CONFIG;
-            break;
-        case 'u':
-            settingsWrite();
-            musicIntro();
-            
-            mode = INTRO_CONFIG;
-            break;
+
+        if (!introBaseMenuKeyHandler(key, INTRO_CONFIG, &soundOptions)) {
+            switch (key) {
+            case 'v':
+                settings->vol = !settings->vol;
+                break;
+            }
         }
+        
         introUpdateScreen();
         return 1;
 
     case INTRO_CONFIG_GAMEPLAY:
-        switch (key) {
-        case 'a':
-            mode = INTRO_CONFIG_ADVANCED;
-            break;        
-        case 'g':
-        case 'e':
-            settings->minorEnhancements = !settings->minorEnhancements;
-            break;
-        case 's':
-            settings->shortcutCommands = !settings->shortcutCommands;
-            break;
-        case U4_ESC:
-        case ' ':
-        case U4_ENTER:
-        case 'c':
-            mode = INTRO_CONFIG;
-            break;
-        case 'u':
-            settingsWrite();
-            musicIntro();
-            
-            mode = INTRO_CONFIG;
-            break;
+        
+        if (!introBaseMenuKeyHandler(key, INTRO_CONFIG, &gameplayOptions)) {
+            if (key == 'a') {
+                advancedOptions = menuReset(advancedOptions);                
+                mode = INTRO_CONFIG_ADVANCED;
+            }            
         }
+
         introUpdateScreen();
         return 1;
 
     case INTRO_CONFIG_ADVANCED:
-        switch (key) {
-        case 'b':
-            settings->battleSpeed++;
-            if (settings->battleSpeed > MAX_BATTLE_SPEED)
-                settings->battleSpeed = 1;
-            break;
-        case 'd':
-            settings->keydelay += 100;
-            if (settings->keydelay > MAX_KEY_DELAY)
-                settings->keydelay = 100;
-            break;
-        case 'g':
-            settings->gameCyclesPerSecond++;
-            if (settings->gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
-                settings->gameCyclesPerSecond = 1;
-            break;
-        case 'i':
-            settings->keyinterval += 10;
-            if (settings->keyinterval > MAX_KEY_INTERVAL)
-                settings->keyinterval = 10;
-            break;
-        case 'k':
-            settings->germanKbd = !settings->germanKbd;
-            break;
-        case 'm':
-            settings->debug = ~settings->debug;
-            break;
-        case 'c':
-            mode = INTRO_CONFIG;
-            break;        
-        case 'u':
-            settingsWrite();
-            musicIntro();
-            
-            mode = INTRO_CONFIG;
-            break;
-        }
+        
+        introBaseMenuKeyHandler(key, INTRO_CONFIG, &advancedOptions);
+        
         introUpdateScreen();
         return 1;        
 
@@ -627,57 +611,48 @@ void introUpdateScreen() {
     case INTRO_CONFIG:
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(9, 14, "-- xu4 Configuration --");
-        screenTextAt(13, 16, "Video Options");
-        screenTextAt(13, 17, "Sound Options");
-        screenTextAt(13, 18, "Gameplay Options");
-        screenTextAt(13, 21, "Main Menu");
+        menuShow(menuGetRoot(mainOptions));
         introDrawBeasties();
         break;
 
     case INTRO_CONFIG_VIDEO:
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(2, 14, "Video Options (take effect on restart):");
-        screenTextAt(11, 16, "Scale        x%d", settings->scale);
-        screenTextAt(11, 17, "Mode         %s", settings->fullscreen ? "Fullscreen" : "Window");
-        screenTextAt(11, 18, "Filter       %s", settingsFilterToString(settings->filter));
-        screenTextAt(11, 20, "Use These Settings");
-        screenTextAt(11, 21, "Cancel");
+        screenTextAt(24, 16, "x%d", settings->scale);
+        screenTextAt(24, 17, "%s", settings->fullscreen ? "Fullscreen" : "Window");
+        screenTextAt(24, 18, "%s", settingsFilterToString(settings->filter));
+        menuShow(menuGetRoot(videoOptions));
         introDrawBeasties();
         break;
 
     case INTRO_CONFIG_SOUND:
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(2, 14, "Sound Options:");
-        screenTextAt(11, 16, "Volume       %s", settings->vol ? "On" : "Off");
-        screenTextAt(11, 20, "Use These Settings");
-        screenTextAt(11, 21, "Cancel");
+        screenTextAt(24, 16, "%s", settings->vol ? "On" : "Off");        
+        menuShow(menuGetRoot(soundOptions));
         introDrawBeasties();
         break;
 
     case INTRO_CONFIG_GAMEPLAY:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3, "Gameplay Options:");        
-        screenTextAt(8, 5, "Game Enhancements       %s", settings->minorEnhancements ? "On" : "Off");
-        screenTextAt(8, 7, "Shortcut Commands");
-        screenTextAt(8, 8, "  (Open, Jimmy, etc.)   %s", settings->shortcutCommands ? "On" : "Off");
-        screenTextAt(8, 18,"Advanced Options");
-        screenTextAt(8, 20, "Use These Settings");
-        screenTextAt(8, 21, "Cancel");        
+        screenTextAt(2, 3, "Gameplay Options:");
+        screenTextAt(32, 5, "%s", settings->minorEnhancements ? "On" : "Off");
+        screenTextAt(8, 8, "  (Open, Jimmy, etc.)   %s", settings->shortcutCommands ? "On" : "Off");        
+        menuShow(menuGetRoot(gameplayOptions));
         break;
 
     case INTRO_CONFIG_ADVANCED:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3,  "Advanced Options:");
-        screenTextAt(3, 5,  "Debug `M'ode (Cheats)          %s", settings->debug ? "On" : "Off");
-        screenTextAt(3, 7,  "Keyboard Options (msecs)");
-        screenTextAt(6, 8,     "Repeat `D'elay              %d", settings->keydelay);
-        screenTextAt(6, 9,     "Repeat `I'nterval           %d", settings->keyinterval);
-        screenTextAt(6, 10,    "German `K'eyboard           %s", settings->germanKbd ? "Yes" : "No"); 
-        screenTextAt(3, 12, "Speed Options");
-        screenTextAt(6, 13,    "`G'ame Cycles Per Second    %d", settings->gameCyclesPerSecond);
-        screenTextAt(6, 14,    "`B'attle Speed              %d", settings->battleSpeed);        
-        screenTextAt(6, 20, "Use These Settings");
-        screenTextAt(6, 21, "Cancel");
+        screenTextAt(2, 3,   "Advanced Options:");
+        screenTextAt(34, 5,  "%s", settings->debug ? "On" : "Off");
+        screenTextAt(4, 7,   "Keyboard Options (msecs)");
+        screenTextAt(34, 8,  "%d", settings->keydelay);
+        screenTextAt(34, 9,  "%d", settings->keyinterval);
+        screenTextAt(34, 10, "%s", settings->germanKbd ? "Yes" : "No"); 
+        screenTextAt(4, 12,  "Speed Options");
+        screenTextAt(34, 13, "%d", settings->gameCyclesPerSecond);
+        screenTextAt(34, 14, "%d", settings->battleSpeed);
+        menuShow(menuGetRoot(advancedOptions));
         break;
 
     case INTRO_ABOUT:
@@ -1156,3 +1131,174 @@ void introInitPlayers(SaveGame *saveGame) {
 
 }
 
+
+int introBaseMenuKeyHandler(int key, IntroMode prevMode, Menu *menu) {
+    char cancelKey = (mode == INTRO_CONFIG) ? 'm' : 'c';
+    char saveKey = (mode == INTRO_CONFIG) ? '\0' : 'u';
+
+    if (key == cancelKey)
+        return introBaseMenuKeyHandler(U4_ESC, prevMode, menu);
+    else if (key == saveKey)
+        return introBaseMenuKeyHandler(0, prevMode, menu);
+    
+    switch(key) {
+    case U4_UP:
+        *menu = menuHighlightNew(*menu, menuGetPreviousItem(*menu));
+        break;
+    case U4_DOWN:
+        *menu = menuHighlightNew(*menu, menuGetNextItem(*menu));        
+        break;
+    case U4_ENTER:
+        {
+            MenuItem *menuItem = (MenuItem *)(*menu)->data;
+            if (menuItem->activeMenuItem)
+                (*menuItem->activeMenuItem)(*menu);
+        }
+        break;
+    case ' ':    
+    case U4_ESC:
+        mode = prevMode;
+        break;
+    case 0:
+        settingsWrite();
+        musicIntro();
+
+        mode = prevMode;
+        break;
+    default:
+        return 0;
+    }
+    return 1;
+}
+
+void introMainOptionsMenuItemActivate(Menu menu) {
+    MenuItem *menuItem = (MenuItem *)menu->data;
+    switch(menuItem->id) {
+    case 0: mode = INTRO_CONFIG_VIDEO; videoOptions = menuReset(videoOptions);break;        
+    case 1: mode = INTRO_CONFIG_SOUND; soundOptions = menuReset(soundOptions);break;
+    case 2: mode = INTRO_CONFIG_GAMEPLAY; gameplayOptions = menuReset(gameplayOptions); break;
+    case 3: mode = INTRO_MENU; break;
+    default: break;
+    }
+}
+
+void introVideoOptionsMenuItemActivate(Menu menu) {
+    MenuItem *menuItem = (MenuItem *)menu->data;
+    switch(menuItem->id) {
+    case 0:         
+        settings->scale++;
+        if (settings->scale > 5)
+            settings->scale = 1;
+        break;
+        
+    case 1:
+        settings->fullscreen = !settings->fullscreen;
+        break;
+
+    case 2:
+        settings->filter++;
+        if (settings->filter == SCL_MAX)
+            settings->filter = (FilterType) 0;
+        break;
+
+    case 3:
+        settingsWrite();
+        musicIntro();
+        
+        mode = INTRO_CONFIG;
+        break;
+    case 4:
+        mode = INTRO_CONFIG;
+        break;
+        
+    default: break;
+    }
+}
+
+void introSoundOptionsMenuItemActivate(Menu menu) {
+    MenuItem *menuItem = (MenuItem *)menu->data;
+    switch(menuItem->id) {
+    case 0: 
+        settings->vol = !settings->vol;
+        break;
+    case 1:
+        settingsWrite();
+        musicIntro();
+        
+        mode = INTRO_CONFIG;
+        break;
+    case 2:
+        mode = INTRO_CONFIG;
+        break;
+    
+    default: break;
+    }
+}
+
+void introGameplayOptionsMenuItemActivate(Menu menu) {
+    MenuItem *menuItem = (MenuItem *)menu->data;
+    switch(menuItem->id) {
+    case 0:
+        settings->minorEnhancements = !settings->minorEnhancements;
+        break;
+    case 1:
+        settings->shortcutCommands = !settings->shortcutCommands;
+        break;
+    case 2:
+        mode = INTRO_CONFIG_ADVANCED;
+        advancedOptions = menuReset(advancedOptions);        
+        break;
+    case 3:
+        settingsWrite();
+        musicIntro();
+        
+        mode = INTRO_CONFIG;
+        break;
+    case 4:
+        mode = INTRO_CONFIG;
+        break;
+    default: break;
+    }
+}
+
+void introAdvancedOptionsMenuItemActivate(Menu menu) {
+    MenuItem *menuItem = (MenuItem *)menu->data;
+    switch(menuItem->id) {
+    case 0:
+        settings->debug = ~settings->debug;
+        break;
+    case 1:
+        settings->keydelay += 100;
+        if (settings->keydelay > MAX_KEY_DELAY)
+            settings->keydelay = 100;
+        break;
+    case 2:
+        settings->keyinterval += 10;
+        if (settings->keyinterval > MAX_KEY_INTERVAL)
+            settings->keyinterval = 10;
+        break;
+    case 3:
+        settings->germanKbd = !settings->germanKbd;
+        break;
+    case 4:
+        settings->gameCyclesPerSecond++;
+        if (settings->gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
+            settings->gameCyclesPerSecond = 1;
+        break;
+    case 5:
+        settings->battleSpeed++;
+        if (settings->battleSpeed > MAX_BATTLE_SPEED)
+            settings->battleSpeed = 1;
+        break;
+    case 6:
+        settingsWrite();
+        musicIntro();
+        
+        mode = INTRO_CONFIG;
+        break;
+    case 7:
+        mode = INTRO_CONFIG;
+        break;
+    default: break;
+    }
+}
