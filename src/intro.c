@@ -21,6 +21,11 @@
 #define INTRO_MAP_WIDTH 19
 #define INTRO_FIXUPDATA_OFFSET 29806
 
+#define INTRO_TEXT_X 0
+#define INTRO_TEXT_Y 19
+#define INTRO_TEXT_WIDTH 40
+#define INTRO_TEXT_HEIGHT 6
+
 /**
  * The states of the intro.
  */
@@ -41,20 +46,24 @@ typedef enum {
 #define GYP_SEGUE1 13
 #define GYP_SEGUE2 14
 
-int storyInd;
-int segueInd;
+/* introduction state */
+IntroMode mode;
+
+/* data loaded in from title.exe */
 unsigned char *introMap[INTRO_MAP_HEIGHT];
 char *introText[24];
 char *introQuestions[28];
 char *introGypsy[15];
-int questionRound;
-int answerInd;
-int introAskToggle = 0;
-int questionTree[15];
 
-IntroMode mode = INTRO_MAP;
+/* additional introduction state data */
 char nameBuffer[16];
 char sex;
+int storyInd;
+int segueInd;
+int answerInd;
+int questionRound;
+int introAskToggle;
+int questionTree[15];
 
 void introInitiateNewGame();
 void introStartQuestions();
@@ -67,11 +76,18 @@ int introDoQuestion(int answer);
 int introHandleQuestionChoice(char choice);
 void introInitAvatar(SaveGamePlayerRecord *avatar, int *initX, int *initY);
 
+/**
+ * Initializes intro state and loads in introduction graphics, text
+ * and map data from title.exe.
+ */
 int introInit() {
     unsigned char screenFixData[533];
     FILE *title;
     int i, j;
     char buffer[256];
+
+    mode = INTRO_MAP;
+    introAskToggle = 0;
 
     title = u4fopen("title.exe");
     if (!title)
@@ -127,7 +143,9 @@ int introInit() {
     return 1;
 }
 
-
+/**
+ * Frees up data not needed after introduction.
+ */
 void introDelete() {
     int i;
 
@@ -144,6 +162,9 @@ void introDelete() {
     screenFreeIntroBackgrounds();
 }
 
+/**
+ * Handles keystrokes during the introduction.
+ */
 int introKeyHandler(int key, void *data) {
     int valid = 1;
     GetChoiceActionInfo *info;
@@ -210,6 +231,9 @@ int introKeyHandler(int key, void *data) {
     return valid || keyHandlerDefault(key, NULL);
 }
 
+/**
+ * Draws the small map on the intro screen.
+ */
 void introDrawMap() {
     int x, y;
 
@@ -280,7 +304,7 @@ void introUpdateScreen() {
             screenShowCard(0, questionTree[questionRound * 2]);
             screenShowCard(1, questionTree[questionRound * 2 + 1]);
 
-            screenEraseIntroText();
+            screenEraseTextArea(INTRO_TEXT_X, INTRO_TEXT_Y, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT);
         
             screenTextAt(0, 19, "%s", introGypsy[questionRound == 0 ? GYP_PLACES_FIRST : (questionRound == 6 ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE)]);
             screenTextAt(0, 20, "%s", introGypsy[GYP_UPON_TABLE]);
@@ -403,12 +427,15 @@ const char *introGetQuestion(int v1, int v2) {
     return introQuestions[i + v2 - 1];
 }
 
+/**
+ * Shows text in the lower six lines of the screen.
+ */
 void introShowText(const char *text) {
-    char line[41];
+    char line[INTRO_TEXT_WIDTH + 1];
     const char *p;
-    int len, lineNo = 19;
+    int len, lineNo = INTRO_TEXT_Y;
 
-    screenEraseIntroText();
+    screenEraseTextArea(INTRO_TEXT_X, INTRO_TEXT_Y, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT);
 
     p = text;
     while (*p) {
