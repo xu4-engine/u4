@@ -35,14 +35,24 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    if (!mightBeValidCompressedFile(in)) {
+        fprintf(stderr, "not a valid compressed file\n");
+        exit(1);
+    }
+
     if (fseek(in, 0L, SEEK_END)) {
         perror(argv[1]);
         exit(1);
     }
     inlen = ftell(in);
     fseek(in, 0L, SEEK_SET);
-
+        
     outlen = decompress_u4_file(in, inlen, &outdata);
+    if (outlen == -1) {
+        fprintf(stderr, "an error occured\n");
+        exit(1);
+    }
+        
     
     fwrite(outdata, 1, outlen, out);
 
