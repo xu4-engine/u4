@@ -480,7 +480,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     
         /* Did the weapon miss? */
         if ((c->location->map->id == 24 && !weaponIsMagic(weapon)) || /* non-magical weapon in the Abyss */
-            !playerAttackHit(&c->saveGame->players[focus])) {        /* player naturally missed */
+            !playerAttackHit(&c->saveGame->players[focus])) {         /* player naturally missed */
             screenMessage("Missed!\n");
         
             /* show the 'miss' tile */
