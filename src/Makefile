@@ -29,10 +29,8 @@ install::
 	$(INSTALL) ../sound/*.ogg $(libdir)/u4/sound
 	$(INSTALL) ../sound/*.wav $(libdir)/u4/sound
 	$(INSTALL) -D dumpsavegame $(libdir)/u4/dumpsavegame
-	$(INSTALL) -D lzwenc $(libdir)/u4/lzwenc
-	$(INSTALL) -D lzwdec $(libdir)/u4/lzwdec
-	$(INSTALL) -D rleenc $(libdir)/u4/rleenc
-	$(INSTALL) -D rledec $(libdir)/u4/rledec
+	$(INSTALL) -D u4enc $(libdir)/u4/u4enc
+	$(INSTALL) -D u4dec $(libdir)/u4/u4dec
 	$(INSTALL) -D tlkconv $(libdir)/u4/tlkconv
 	$(INSTALL) ../conf/*.xml $(libdir)/u4
 	mkdir -p $(libdir)/u4/dtd

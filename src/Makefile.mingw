@@ -51,10 +51,8 @@ tools: mkutils
 	mkdir -p $(U4PATH)
 	mkdir -p $(U4PATH)/tools
 	strip dumpsavegame.exe -o $(U4PATH)/tools/dumpsavegame.exe
-	strip lzwenc.exe -o $(U4PATH)/tools/lzwenc.exe
-	strip lzwdec.exe -o $(U4PATH)/tools/lzwdec.exe
-	strip rleenc.exe -o $(U4PATH)/tools/rleenc.exe
-	strip rledec.exe -o $(U4PATH)/tools/rledec.exe
+	strip u4enc.exe -o $(U4PATH)/tools/u4enc.exe
+	strip u4dec.exe -o $(U4PATH)/tools/u4dec.exe
 	strip tlkconv.exe -o $(U4PATH)/tools/tlkconv.exe
 
 dist:  install tools
