@@ -180,9 +180,9 @@ int mapLoadCity(Map *map) {
             map->city->persons[i].npcType = NPC_TALKER_BEGGAR;
         if (map->city->persons[i].tile0 == 80 || map->city->persons[i].tile0 == 81)
             map->city->persons[i].npcType = NPC_TALKER_GUARD;
-        for (j = 0; j < 12; j++) {
-            if (map->city->person_types[j] == (i + 1))
-                map->city->persons[i].npcType = (PersonNpcType) (j + NPC_TALKER_COMPANION);
+        for (j = 0; j < map->city->n_personroles; j++) {
+            if (map->city->personroles[j].id == (i + 1))
+                map->city->persons[i].npcType = map->city->personroles[j].role;
         }
     }
 

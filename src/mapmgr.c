@@ -30,6 +30,7 @@ extern int shrineCanEnter(const Portal *p);
 
 Map *mapMgrInitMapFromXml(xmlNodePtr node);
 City *mapMgrInitCityFromXml(xmlNodePtr node);
+PersonRole *mapMgrInitPersonRoleFromXml(xmlNodePtr node);
 Portal *mapMgrInitPortalFromXml(xmlNodePtr node);
 Shrine *mapMgrInitShrineFromXml(xmlNodePtr node);
 Dungeon *mapMgrInitDungeonFromXml(xmlNodePtr node);
@@ -166,38 +167,58 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
 
 City *mapMgrInitCityFromXml(xmlNodePtr node) {
     City *city;
-    char *prop;
+    xmlNodePtr child;
+    ListNode *personroles = NULL;
 
     city = malloc(sizeof(City));
     if (!city)
         return NULL;
     city->n_persons = 0;
     city->persons = NULL;
-    memset(city->person_types, 0, sizeof(city->person_types));
+    city->n_personroles = 0;
+    city->personroles = NULL;
     city->map = NULL;
 
-    prop = xmlGetPropAsStr(node, "name");
-    city->name = strdup(prop);
-    xmlFree(prop);
+    city->name = xmlGetPropAsStr(node, "name");
+    city->tlk_fname = xmlGetPropAsStr(node, "tlk_fname");
 
-    prop = xmlGetPropAsStr(node, "tlk_fname");
-    city->tlk_fname = strdup(prop);
-    xmlFree(prop);
+    for (child = node->xmlChildrenNode; child; child = child->next) {
+        if (xmlNodeIsText(child))
+            continue;
 
-    city->person_types[NPC_TALKER_COMPANION - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "companion");
-    city->person_types[NPC_VENDOR_WEAPONS - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "weaponsvendor");
-    city->person_types[NPC_VENDOR_ARMOR - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "armorvendor");
-    city->person_types[NPC_VENDOR_FOOD - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "foodvendor");
-    city->person_types[NPC_VENDOR_TAVERN - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "tavernkeeper");
-    city->person_types[NPC_VENDOR_REAGENTS - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "reagentsvendor");
-    city->person_types[NPC_VENDOR_HEALER - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "healer");
-    city->person_types[NPC_VENDOR_INN - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "innkeeper");
-    city->person_types[NPC_VENDOR_GUILD - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "guildvendor");
-    city->person_types[NPC_VENDOR_STABLE - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "horsevendor");
-    city->person_types[NPC_LORD_BRITISH - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "lordbritish");
-    city->person_types[NPC_HAWKWIND - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, "hawkwind");
+        if (xmlStrcmp(child->name, (const xmlChar *) "personrole") == 0)
+            personroles = listAppend(personroles, mapMgrInitPersonRoleFromXml(child));
+    }
+    if (listLength(personroles) > 0) {
+        ListNode *node;
+        int i;
+
+        city->personroles = malloc(listLength(personroles) * sizeof(PersonRole));
+        for (node = personroles, i = 0; node; node = node->next, i++) {
+            city->personroles[i] = *((PersonRole *) node->data);
+        }
+        city->n_personroles = listLength(personroles);
+        listDelete(personroles);
+    }
 
     return city;
+}
+
+PersonRole *mapMgrInitPersonRoleFromXml(xmlNodePtr node) {
+    PersonRole *personrole;
+    static const char *roleEnumStrings[] = { "companion", "weaponsvendor", "armorvendor", "foodvendor", "tavernkeeper",
+                                             "reagentsvendor", "healer", "innkeeper", "guildvendor", "horsevendor",
+                                             "lordbritish", "hawkwind", NULL };
+
+
+    personrole = malloc(sizeof(PersonRole));
+    if (!personrole)
+        return NULL;
+
+    personrole->role = xmlGetPropAsEnum(node, "role", roleEnumStrings) + NPC_TALKER_COMPANION;
+    personrole->id = xmlGetPropAsInt(node, "id");
+
+    return personrole;
 }
 
 Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {

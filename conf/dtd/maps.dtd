@@ -1,10 +1,13 @@
 <!-- $Id$ -->
 
 <!ENTITY % bool '( true | false )'>
+<!ENTITY % role '( armorvendor | companion | foodvendor | guildvendor | hawkwind | healer | 
+                   horsevendor | innkeeper | lordbritish | reagentsvendor | tavernkeeper |
+                   weaponsvendor )'>
 
 <!ELEMENT maps ( map+ ) >
 
-<!ELEMENT map ( city | dungeon | moongate | portal | shrine )* >
+<!ELEMENT map ( city | compressedchunk | dungeon | moongate | portal | shrine )* >
 <!ATTLIST map id                  NMTOKEN  #REQUIRED
               type                ( castle | combat | dungeon | ruins | shrine | town | village | world ) #REQUIRED
               fname               NMTOKEN  #REQUIRED
@@ -19,21 +22,16 @@
               firstperson         %bool;   #IMPLIED
               music               NMTOKEN  #REQUIRED>
 
-<!ELEMENT city EMPTY >
+<!ELEMENT city ( personrole* ) >
 <!ATTLIST city name               CDATA    #REQUIRED
-               tlk_fname          NMTOKEN  #REQUIRED
-               armorvendor        NMTOKEN  #IMPLIED
-               companion          NMTOKEN  #IMPLIED
-               foodvendor         NMTOKEN  #IMPLIED
-               guildvendor        NMTOKEN  #IMPLIED
-               hawkwind           NMTOKEN  #IMPLIED
-               healer             NMTOKEN  #IMPLIED
-               horsevendor        NMTOKEN  #IMPLIED
-               innkeeper          NMTOKEN  #IMPLIED
-               lordbritish        NMTOKEN  #IMPLIED
-               reagentsvendor     NMTOKEN  #IMPLIED
-               tavernkeeper       NMTOKEN  #IMPLIED
-               weaponsvendor      NMTOKEN  #IMPLIED>
+               tlk_fname          NMTOKEN  #REQUIRED>
+
+<!ELEMENT personrole EMPTY >
+<!ATTLIST personrole role         %role;   #REQUIRED
+                     id           NMTOKEN  #REQUIRED>
+
+<!ELEMENT compressedchunk EMPTY >
+<!ATTLIST compressedchunk index    NMTOKEN  #REQUIRED>
 
 <!ELEMENT dungeon EMPTY >
 <!ATTLIST dungeon name            CDATA    #REQUIRED
