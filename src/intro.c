@@ -262,6 +262,7 @@ int introInit() {
     gameplayOptions = menuAddItem(gameplayOptions, 0, "Minor Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
     gameplayOptions = menuAddItem(gameplayOptions, 3, "Major Game Enhancements", 6, 6, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
     gameplayOptions = menuAddItem(gameplayOptions, 1, "Automatic Actions", 6, 8, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
+    gameplayOptions = menuAddItem(gameplayOptions, 4, "Battle Difficulty", 6, 10, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
     gameplayOptions = menuAddItem(gameplayOptions, 2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     gameplayOptions = menuAddItem(gameplayOptions, 0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     gameplayOptions = menuAddItem(gameplayOptions, 0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
@@ -480,6 +481,7 @@ int introKeyHandler(int key, void *data) {
             case 'g': gameplayOptions = menuActivateItem(gameplayOptions, 0, ACTIVATE_NORMAL); break;                
             case 'm': gameplayOptions = menuActivateItem(gameplayOptions, 1, ACTIVATE_NORMAL); break;                
             case 'a': gameplayOptions = menuActivateItem(gameplayOptions, 2, ACTIVATE_NORMAL); break;
+            case 'b': gameplayOptions = menuActivateItem(gameplayOptions, 4, ACTIVATE_NORMAL); break;
             default: break;
             }            
         }
@@ -731,6 +733,7 @@ void introUpdateScreen() {
         screenTextAt(32, 5, "%s", settingsChanged->minorEnhancements ? "On" : "Off");
         screenTextAt(32, 6, "%s", settingsChanged->majorEnhancements ? "On" : "Off");
         screenTextAt(6, 9, "  (Open, Jimmy, etc.)     %s", settingsChanged->shortcutCommands ? "On" : "Off");        
+        screenTextAt(32, 10, "%s", settingsBattleDiffToString(settingsChanged->battleDiff));
         menuShow(menuGetRoot(gameplayOptions));
         break;
 
@@ -1461,6 +1464,17 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     case 1:
         settingsChanged->shortcutCommands = settingsChanged->shortcutCommands ? 0 : 1;
         break;
+    case 4:
+        if (action != ACTIVATE_DECREMENT) {
+            settingsChanged->battleDiff++;
+            if (settingsChanged->battleDiff == DIFF_MAX)
+                settingsChanged->battleDiff = (BattleDifficulty)(DIFF_MIN+1);
+        } else {
+            settingsChanged->battleDiff--;
+            if (settingsChanged->battleDiff == DIFF_MIN)
+                settingsChanged->battleDiff = (BattleDifficulty)(DIFF_MAX-1);
+        }
+        break;
     case 2:
         mode = INTRO_CONFIG_ADVANCED;        
         advancedOptions = menuReset(advancedOptions);        
@@ -1470,6 +1484,7 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         menuItemSetVisible(menuGetItemById(advancedOptions, 1), settingsChanged->majorEnhancements);
 
         break;    
+
     case 0xFE:
         /* save settings */
         memcpy(settings, settingsChanged, sizeof(Settings));

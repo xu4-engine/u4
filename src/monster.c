@@ -20,6 +20,7 @@
 #include "game.h"	/* required by monsterSpecial functions */
 #include "player.h"	/* required by monsterSpecial functions */
 #include "savegame.h"
+#include "settings.h"
 #include "ttype.h"
 #include "xml.h"
 
@@ -167,7 +168,9 @@ void monsterLoadInfoFromXml() {
         /* get the base hp */
         if (xmlPropExists(node, "basehp")) {
             monsters[monster].basehp =
-                (unsigned char)xmlGetPropAsInt(node, "basehp");
+                (unsigned short)xmlGetPropAsInt(node, "basehp");
+            /* adjust basehp according to battle difficulty setting */
+            monsters[monster].basehp <<= (settings->battleDiff - 1);
         }
 
         /* get the camouflaged tile */
@@ -482,8 +485,8 @@ MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
     int basehp, heavy_threshold, light_threshold, crit_threshold;
 
     basehp = monster->basehp;
-    crit_threshold = basehp / 4;
-    heavy_threshold = basehp / 2;
+    crit_threshold = basehp >> 2;  /* (basehp / 4) */
+    heavy_threshold = basehp >> 1; /* (basehp / 2) */
     light_threshold = crit_threshold + heavy_threshold;
 
     if (hp <= 0)

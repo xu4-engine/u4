@@ -40,6 +40,7 @@
 #define DEFAULT_INN_TIME                8
 #define DEFAULT_SHRINE_TIME             16
 #define DEFAULT_SHAKE_INTERVAL          100
+#define DEFAULT_BATTLE_DIFFICULTY       DIFF_NORMAL
 
 typedef enum {
     SCL_MIN,
@@ -57,6 +58,14 @@ typedef enum {
     //VIDEO_CGA,
     VIDEO_MAX
 } VideoType;
+
+typedef enum {
+    DIFF_MIN,
+    DIFF_NORMAL,
+    DIFF_HARD,
+    DIFF_EXPERT,
+    DIFF_MAX
+} BattleDifficulty;
 
 typedef struct _SettingsMinorOptions {
     int activePlayer;
@@ -89,6 +98,7 @@ typedef struct _Settings {
     int majorEnhancements;
     int gameCyclesPerSecond;
     int debug;
+    BattleDifficulty battleDiff;
     int validateXml;
     int spellEffectSpeed;
     int campTime;
@@ -106,6 +116,8 @@ const char *settingsFilterToString(FilterType filter);
 FilterType settingsStringToFilter(const char *str);
 const char *settingsVideoTypeToString(VideoType type);
 VideoType settingsStringToVideoType(const char *str);
+const char *settingsBattleDiffToString(BattleDifficulty diff);
+BattleDifficulty settingsStringToBattleDiff(const char *str);
 
 /* the global settings */
 extern Settings *settings;

@@ -76,6 +76,7 @@ void settingsRead() {
     settings->majorEnhancements     = DEFAULT_MAJOR_ENHANCEMENTS;
     settings->gameCyclesPerSecond   = DEFAULT_CYCLES_PER_SECOND;
     settings->debug                 = DEFAULT_DEBUG;
+    settings->battleDiff            = DEFAULT_BATTLE_DIFFICULTY;
     settings->validateXml           = DEFAULT_VALIDATE_XML;
     settings->spellEffectSpeed      = DEFAULT_SPELL_EFFECT_SPEED;
     settings->campTime              = DEFAULT_CAMP_TIME;
@@ -152,6 +153,13 @@ void settingsRead() {
             settings->gameCyclesPerSecond = (int) strtoul(buffer + strlen("gameCyclesPerSecond="), NULL, 0);
         else if (strstr(buffer, "debug=") == buffer)
             settings->debug = (int) strtoul(buffer + strlen("debug="), NULL, 0);
+        else if (strstr(buffer, "battleDiff=") == buffer) {
+            settings->battleDiff = settingsStringToBattleDiff(buffer + strlen("battleDiff="));
+            if (settings->battleDiff == DIFF_MAX) {
+                errorWarning("invalid difficulty name in settings file: resetting to normal");
+                settings->battleDiff = DIFF_NORMAL;
+            }
+        }
         else if (strstr(buffer, "validateXml=") == buffer)
             settings->validateXml = (int) strtoul(buffer + strlen("validateXml="), NULL, 0);
         else if (strstr(buffer, "spellEffectSpeed=") == buffer)
@@ -225,6 +233,7 @@ void settingsWrite() {
             "majorEnhancements=%d\n"
             "gameCyclesPerSecond=%d\n"
             "debug=%d\n"
+            "battleDiff=%s\n"
             "validateXml=%d\n"
             "spellEffectSpeed=%d\n"
             "campTime=%d\n"
@@ -255,6 +264,7 @@ void settingsWrite() {
             settings->majorEnhancements,
             settings->gameCyclesPerSecond,
             settings->debug,
+            settingsBattleDiffToString(settings->battleDiff),            
             settings->validateXml,
             settings->spellEffectSpeed,
             settings->campTime,
@@ -324,6 +334,35 @@ VideoType settingsStringToVideoType(const char *str) {
     for (v = (VideoType) (VIDEO_MIN+1); v < VIDEO_MAX; v++) {
         if (strcmp(str, settingsVideoTypeToString((VideoType) v)) == 0) {
             result = (VideoType) v;
+            break;
+        }
+    }
+
+    return result;
+}
+
+/**
+ * Covert a battle difficulty enum into a readable string.
+ */
+const char *settingsBattleDiffToString(BattleDifficulty diff) {
+    static const char * const diffNames[] = {
+        "DIFF_MIN", "Normal", "Hard", "Expert"
+    };
+
+    ASSERT(diff < DIFF_MAX, "invalid difficulty %d\n", diff);
+
+    return diffNames[diff];    
+}
+
+/**
+ * Convert a string into a battle difficulty enum
+ */
+BattleDifficulty settingsStringToBattleDiff(const char *str) {
+    int d;
+    BattleDifficulty result = DIFF_MAX;
+    for (d = (BattleDifficulty) (DIFF_MIN+1); d < DIFF_MAX; d++) {
+        if (strcmp(str, settingsBattleDiffToString((BattleDifficulty) d)) == 0) {
+            result = (BattleDifficulty) d;
             break;
         }
     }

@@ -645,18 +645,22 @@ static int spellTremor(int unused) {
     int i, x, y;        
 
     for (i = 0; i < AREA_MONSTERS; i++) {        
+        /* make sure we have a valid monster */
         if (!combatInfo.monsters[i].obj)
             continue;
+        /* monsters with over 192 hp are unaffected */
         else if (combatInfo.monsters[i].hp > 192)
             continue;
         else {
             x = combatInfo.monsters[i].obj->x;
             y = combatInfo.monsters[i].obj->y;
 
+            /* Deal maximum damage to monster */
             if (rand() % 2 == 0) {
                 combatApplyDamageToMonster(i, 0xFF, FOCUS);
                 attackFlash(x, y, HITFLASH_TILE, 1);
             }
+            /* Deal enough damage to monster to make it flee */
             else if (rand() % 2 == 0) {
                 if (combatInfo.monsters[i].hp > 23)
                     combatApplyDamageToMonster(i, combatInfo.monsters[i].hp-23, FOCUS);                

@@ -120,7 +120,7 @@ typedef struct _Monster {
     unsigned char camouflageTile;
     unsigned char frames;
     unsigned short leader;
-    unsigned char basehp;
+    unsigned short basehp;
     unsigned short xp;
     unsigned char ranged;
     unsigned char worldrangedtile;
