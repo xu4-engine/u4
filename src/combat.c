@@ -86,7 +86,9 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
     for (i = 0; i < c->saveGame->members; i++) {     
 
         if (c->saveGame->players[i].status != STAT_DEAD) {
-            combatInfo.party[i] = mapAddObject(c->location->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->location->map->area->player_start[i].x, c->location->map->area->player_start[i].y, c->location->z);
+            /* We'll consider our party members as "monsters" because their rules correspond to the
+               monsters of the corresponding class (Ranger, Bard, Mage, etc) */
+            combatInfo.party[i] = mapAddMonsterObject(c->location->map, monsterForTile(tileForClass(c->saveGame->players[i].klass)), c->location->map->area->player_start[i].x, c->location->map->area->player_start[i].y, c->location->z);            
         
             /* Replace the party mamber with a sleeping person if they're asleep */
             if (c->saveGame->players[i].status == STAT_SLEEPING) {
@@ -817,7 +819,8 @@ void combatEnd() {
 
         /* added chest or captured ship object */        
         if (combatInfo.monster && combatInfo.isNormalCombat) {
-            if (monsterLeavesChest(combatInfo.monster))            
+            if (monsterLeavesChest(combatInfo.monster) && 
+                tileIsMonsterWalkable(mapGroundTileAt(c->location->map, combatInfo.monsterObj->x, combatInfo.monsterObj->y, combatInfo.monsterObj->z)))
                 mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), combatInfo.monsterObj->x, combatInfo.monsterObj->y, c->location->z);
             else if (tileIsPirateShip(combatInfo.monsterObj->tile)) {
                 unsigned char ship = tileGetShipBase();
