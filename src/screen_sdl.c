@@ -1186,10 +1186,16 @@ void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
     ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
     ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
     
-    /* Beads modelled after the Amiga Ultima IV beads, not exactly the same,
-       but close */
+    /* FIXME: Should really be blitting the beads from ABACUS.EGA at 
+       (8, 188) and (24, 188) but there are ugly artifacts if you do
+       this with scaling switched on. Need to get rid of the artifacts
+       somehow. */
+
+    /* For now, here's some code to draw some beads that look something
+       like the beads from the Amiga version of Ultima IV (not exactly
+       the same) */
        
-    // Draw black bead for the virtue that was *not* selected
+    /* Draw black bead for the virtue that was *not* selected */
     x = 128 + (rejectedVirtue * 9);
     y = 24 + (row * 15);
     if (row > 2) y--;
@@ -1204,7 +1210,7 @@ void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
     screenFillRect(screen, x+2, y+2, 1, 8, c, c, c);
     screenFillRect(screen, x+1, y+3, 1, 6, c, c, c);
     
-    // Draw white bead for the virtue that was selected
+    /* Draw white bead for the virtue that was selected */
     x = 128 + (selectedVirtue * 9);
     c = 223;
     screenFillRect(screen, x+3, y, 2, 12, c, c, c);
