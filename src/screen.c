@@ -209,7 +209,7 @@ void screenEnableCursor() {
 
 void screenDisableCursor() {
     if (screenCursorStatus)
-        screenShowChar(' ', screenCursorX, screenCursorY);
+        screenEraseTextArea(screenCursorX, screenCursorY, 1, 1);        
     screenCursorStatus = 0;
 }
 

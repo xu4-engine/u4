@@ -256,8 +256,8 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
 }
 
 /**
- * Exits the current map and context and returns to its parent context
- * This restores all relevant information from the previous context,
+ * Exits the current map and location and returns to its parent location
+ * This restores all relevant information from the previous location,
  * such as the map, map position, etc. (such as exiting a city)
  **/
 
@@ -1103,8 +1103,8 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         c->saveGame->items = ITEM_SKULL | ITEM_CANDLE | ITEM_BOOK | ITEM_BELL | ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T | ITEM_HORN | ITEM_WHEEL;
         c->saveGame->stones = 0xff;
         c->saveGame->runes = 0xff;
-        c->saveGame->food = 99900;
-        c->saveGame->gold = 999;
+        c->saveGame->food = 999900;
+        c->saveGame->gold = 9999;
         statsUpdate();
         break;
     case 'k':

@@ -468,6 +468,9 @@ void introDrawBeasties() {
  * Paints the screen.
  */
 void introUpdateScreen() {
+
+    screenDisableCursor();
+
     switch (mode) {
     case INTRO_MAP:
         screenDrawBackground(BKGD_INTRO);
@@ -475,7 +478,10 @@ void introUpdateScreen() {
         introDrawBeasties();
         break;
 
-    case INTRO_MENU:
+    case INTRO_MENU:        
+        screenSetCursorPos(24, 16);
+        screenEnableCursor();
+
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(2, 14, "In another world, in a time to come.");
         screenTextAt(15, 16, "Options:");
@@ -579,6 +585,7 @@ void introUpdateScreen() {
         assert(0);
     }
 
+    screenUpdateCursor();
     screenRedrawScreen();
 }
 
@@ -591,7 +598,7 @@ void introInitiateNewGame() {
 
     /* display name  prompt and read name from keyboard */
     mode = INTRO_INIT_NAME;
-    introUpdateScreen();
+    introUpdateScreen();    
     screenSetCursorPos(12, 20);
     screenEnableCursor();
     screenRedrawScreen();
@@ -629,8 +636,7 @@ int introHandleName(const char *message) {
     if (message[0] == '\0') {
         mode = INTRO_MENU;
 
-        introUpdateScreen();
-        screenDisableCursor();
+        introUpdateScreen();        
     } 
 
     else {
@@ -832,10 +838,11 @@ int introHandleQuestionChoice(char choice) {
         segueInd = 0;
 
         saveGameFile = fopen("party.sav", "wb");
-        if (saveGameFile) {
+        if (saveGameFile) {            
             SaveGamePlayerRecord avatar;
             saveGamePlayerRecordInit(&avatar);
             saveGameInit(&saveGame, &avatar);
+            screenDisableCursor();
             introInitPlayers(&saveGame);
             saveGame.food = 30000;
             saveGame.gold = 200;
