@@ -18,7 +18,7 @@
     const char Path::delim = '/';
 #endif
 
-#if defined(_WIN32)
+#if !defined(S_IFDIR)
 #define S_IFDIR _S_IFDIR
 #endif
 
