@@ -1389,18 +1389,28 @@ int fireAtCoord(int x, int y, int distance, void *data) {
 
         if (validObject)
         {
-            /* always displays as a 'hit' though the object may not be destroyed */
-            attackFlash(x, y, HITFLASH_TILE, 2);            
+            /* always displays as a 'hit' though the object may not be destroyed */                        
             
             /* Is is a pirate ship firing at US? */
-            if (hitsAvatar) {                
+            if (hitsAvatar) {
+                attackFlash(x, y, HITFLASH_TILE, 2);
+
                 if (tileIsShip(c->saveGame->transport))
                     gameDamageShip(-1, 10);
                 else gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */
             }          
             /* inanimate objects get destroyed instantly, while monsters get a chance */
-            else if ((obj->objType == OBJECT_UNKNOWN) || (rand() % 2 == 0))
-                mapRemoveObject(c->location->map, obj);            
+            else if (obj->objType == OBJECT_UNKNOWN) {
+                attackFlash(x, y, HITFLASH_TILE, 2);
+                mapRemoveObject(c->location->map, obj);
+            }
+            
+            /* only the avatar can hurt other monsters with cannon fire */
+            else if (originAvatar) {
+                attackFlash(x, y, HITFLASH_TILE, 2);
+                if (rand() % 2 == 0)
+                    mapRemoveObject(c->location->map, obj);
+            }
             
             if (originAvatar)
                 (*c->location->finishTurn)();

@@ -361,13 +361,11 @@ int monsterSpecialAction(Object *obj) {
             info->blockedPredicate = &tileCanAttackOver;
             info->blockBefore = 1;            
             
-            if ((dy == 0) && (dx <= 3) && DIR_IN_MASK(dirx, broadsidesDirs) &&
-                !mapIsObstructed(c->location->map, obj->x, obj->y, obj->z, dirx, dx-1)) {
+            if ((dy == 0) && (dx <= 3) && DIR_IN_MASK(dirx, broadsidesDirs)) {
                 /* Fire cannon in 'dirx' direction */
                 gameDirectionalAction(dirx, info);
             }
-            else if ((dx == 0) && (dy <= 3) && DIR_IN_MASK(diry, broadsidesDirs) &&
-                !mapIsObstructed(c->location->map, obj->x, obj->y, obj->z, diry, dy-1)) {
+            else if ((dx == 0) && (dy <= 3) && DIR_IN_MASK(diry, broadsidesDirs)) {
                 /* Fire cannon in 'diry' direction */
                 gameDirectionalAction(diry, info);
             }
