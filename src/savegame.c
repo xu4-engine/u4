@@ -155,6 +155,10 @@ int saveGameRead(SaveGame *save, FILE *f) {
         !readShort(&(save->location), f))
         return 0;
 
+    /* workaround of U4DOS bug to retain savegame compatibility */
+    if (save->location == 0 && save->dnglevel == 0)
+        save->dnglevel = 0xFFFF;
+
     return 1;
 }
 
