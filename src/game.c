@@ -869,7 +869,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'w':
-        screenMessage("Wear Armor\nfor: ");
+        screenMessage("Wear Armour\nfor: ");
         gameGetPlayerForCommand(&wearForPlayer);
         break;
 
@@ -965,15 +965,15 @@ int gameGetAlphaChoiceKeyHandler(int key, void *data) {
     AlphaActionInfo *info = (AlphaActionInfo *) data;
     int valid = 1;
 
-    if (isupper(key))
-        key = tolower(key);
+    if (islower(key))
+        key = toupper(key);
 
-    if (key >= 'a' && key <= info->lastValidLetter) {
+    if (key >= 'A' && key <= toupper(info->lastValidLetter)) {
         screenMessage("%c\n", key);
         eventHandlerPopKeyHandler();
-        (*(info->handleAlpha))(key - 'a', info->data);
+        (*(info->handleAlpha))(key - 'A', info->data);
         free(info);
-    } else if (key == ' ' || key == U4_ESC) {
+    } else if (key == U4_SPACE || key == U4_ESC || key == U4_ENTER) {
         screenMessage("\n");
         eventHandlerPopKeyHandler();
         free(info);
@@ -993,9 +993,9 @@ int gameGetDirectionKeyHandler(int key, void *data) {
     int valid = (dir != DIR_NONE) ? 1 : 0;
     
     switch(key) {
-    case '\033':
-    case ' ':
-    case '\015':
+    case U4_ESC:
+    case U4_SPACE:
+    case U4_ENTER:
         eventHandlerPopKeyHandler();
 
         screenMessage("\n");
@@ -1064,9 +1064,9 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
     info->dir = MASK_DIR(dir);
 
     switch(key) {
-    case '\033':
-    case ' ':
-    case '\015':
+    case U4_ESC:
+    case U4_SPACE:
+    case U4_ENTER:
         eventHandlerPopKeyHandler();
 
         screenMessage("\n");
@@ -1681,6 +1681,7 @@ int readyForPlayer(int player) {
 int readyForPlayer2(int w, void *data) {
     int player = (int) data;
     WeaponType weapon = (WeaponType) w, oldWeapon;
+    char *weaponName = weaponGetName(weapon);    
 
     // Return view to party overview
     c->statsItem = STATS_PARTY_OVERVIEW;
@@ -1693,7 +1694,23 @@ int readyForPlayer2(int w, void *data) {
     }
 
     if (!weaponCanReady(weapon, getClassName(c->saveGame->players[player].klass))) {
-        screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), weaponGetName(weapon));
+        const char *indef_article;
+
+        switch(tolower(weaponName[0])) {
+        case 'a':
+        case 'e':
+        case 'i':
+        case 'o':
+        case 'u':
+        case 'y':
+            indef_article = "an"; break;
+        default: indef_article = "a"; break;
+        }
+
+        screenMessage("\nA %s may NOT use %s\n%s\n",
+            getClassName(c->saveGame->players[player].klass),
+            indef_article,
+            weaponName);
         (*c->location->finishTurn)();
         return 0;
     }
@@ -1705,7 +1722,7 @@ int readyForPlayer2(int w, void *data) {
         c->saveGame->weapons[weapon]--;
     c->saveGame->players[player].weapon = weapon;
 
-    screenMessage("%s\n", weaponGetName(weapon));
+    screenMessage("%s\n", weaponName);
 
     (*c->location->finishTurn)();
 
@@ -2126,7 +2143,7 @@ int wearForPlayer2(int a, void *data) {
     }
 
     if (!armorCanWear(armor, getClassName(c->saveGame->players[player].klass))) {
-        screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), armorGetName(armor));
+        screenMessage("\nA %s may NOT use\n%s\n", getClassName(c->saveGame->players[player].klass), armorGetName(armor));
         (*c->location->finishTurn)();
         return 0;
     }

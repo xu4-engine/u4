@@ -10,7 +10,9 @@
 #define U4_LEFT ';'
 #define U4_RIGHT '\''
 #define U4_BACKSPACE 8
+#define U4_SPACE ' '
 #define U4_ESC 27
+#define U4_ENTER 13
 #define U4_ALT 128
 
 typedef int (*KeyHandler)(int, void *);
