@@ -8,6 +8,7 @@
 #include <string>
 #include "observable.h"
 #include "observer.h"
+#include "textview.h"
 
 struct SaveGame;
 class Aura;
@@ -44,31 +45,35 @@ class StatsArea : public Observer<Aura *>, public Observer<Party *>, public Obse
 public:
     StatsArea();
 
-    // Members
+    void setView(StatsView view);
+
     void clear();
     void prevItem();
     void nextItem();
-    void update();
+    void update(bool avatarOnly = false);
     virtual void update(Aura *aura);
     virtual void update(Party *party);
     virtual void update(Menu *menu, MenuEvent &event);
     void highlightPlayer(int player);
     void redraw();
-    void showPartyView(int player = -1);    
-    void showPlayerDetails(int player);    
+
+    TextView *getMainArea() { return &mainArea; }
+
+private:
+    void showPartyView(bool avatarOnly);
+    void showPlayerDetails();
     void showWeapons();
     void showArmor();
     void showEquipment();
     void showItems();
     void showReagents();
     void showMixtures();
+    void setTitle(const string &s);
 
-private:
-    void setTitle(string title);
+    TextView title;
+    TextView mainArea;
+    TextView summary;
     
-    // Properties
-//private:
-public:
     StatsView view;
 };
 
