@@ -108,7 +108,7 @@ public:
     string getString();
     string waitFor();
 
-private:
+protected:
     int maxlen, screenX, screenY;
     string value;
     bool exitWhenDone;
@@ -122,7 +122,7 @@ public:
     int getChoice();
     int waitFor();
 
-private:
+protected:
     string choices;
     int choice;
     bool exitWhenDone;
