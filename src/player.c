@@ -666,11 +666,11 @@ int playerIsHitByAttack(const SaveGamePlayerRecord *player) {
 }
 
 /**
- * Lose a weapon for the player (flaming oil, ranged daggers, etc.)
+ * Lose the equipped weapon for the player (flaming oil, ranged daggers, etc.)
  */
 
-int playerLoseWeapon(SaveGame *saveGame, int player) {
-    int i, weapon = saveGame->players[player].weapon;
+void playerLoseWeapon(SaveGame *saveGame, int player) {
+    int weapon = saveGame->players[player].weapon;
     if (saveGame->weapons[weapon] > 0)
         saveGame->weapons[weapon]--;
     else saveGame->players[player].weapon = WEAP_HANDS;

@@ -88,7 +88,7 @@ int tileIsBalloon(unsigned char tile);
 unsigned char tileGetBalloonBase();
 int tileCanDispel(unsigned char tile);
 Direction tileGetDirection(unsigned char tile);
-void tileSetDirection(unsigned short *tile, Direction dir);
+int tileSetDirection(unsigned char *tile, Direction dir);
 int tileCanTalkOver(unsigned char tile);
 TileSpeed tileGetSpeed(unsigned char tile);
 TileEffect tileGetEffect(unsigned char tile);

@@ -13,6 +13,7 @@ typedef enum {
     VIEW_NORMAL,
     VIEW_GEM,
     VIEW_RUNE,
+    VIEW_DUNGEON,
     VIEW_DEAD
 } ViewMode;
 

@@ -283,13 +283,27 @@ Direction tileGetDirection(unsigned char tile) {
         return DIR_WEST;        /* some random default */
 }
 
-void tileSetDirection(unsigned short *tile, Direction dir) {
+int tileSetDirection(unsigned char *tile, Direction dir) {
+    int newDir = 1;
+    int oldTile = *tile;
+
+    /* Make sure we even have a direction */
+    if (dir <= DIR_NONE)
+        return 0;
+
     if (tileIsShip(*tile))
         *tile = baseShip + dir - DIR_WEST;
     else if (tileIsPirateShip(*tile))
         *tile = PIRATE_TILE + dir - DIR_WEST;
     else if (tileIsHorse(*tile))
         *tile = (dir == DIR_WEST ? baseHorse : baseHorse + 1);
+    else   
+        newDir = 0;
+
+    if (oldTile == *tile)
+        newDir = 0;
+
+    return newDir;
 }
 
 int tileCanTalkOver(unsigned char tile) {
@@ -356,7 +370,10 @@ void tileAdvanceFrame(unsigned char *tile) {
 }
 
 int tileIsOpaque(unsigned char tile) {
-    return tileTestBit(tile, MASK_OPAQUE);
+    extern int opacityCheck;
+    if (opacityCheck)
+        return tileTestBit(tile, MASK_OPAQUE);
+    else return 0;
 }
 
 unsigned char tileForClass(int klass) {

@@ -16,6 +16,7 @@
 #include "ttype.h"
 #include "screen.h"
 #include "player.h"
+#include "game.h"
 #include "debug.h"
 
 SpellCallback spellCallback = NULL; 
@@ -240,10 +241,7 @@ static int spellAwaken(int player) {
 static int spellBlink(int dir) {
     int i,
         x = c->location->x,
-        y = c->location->y,
-        width = c->location->map->width,
-        height = c->location->map->height,
-        wraps = (c->location->map->border_behavior == BORDER_WRAP),
+        y = c->location->y,        
         distance = rand() % 5 + 15,
         failed = 0;
     
@@ -440,8 +438,11 @@ static int spellWinds(int fromdir) {
 }
 
 static int spellXit(int unused) {
-    /* FIXME */
-    return 1;
+    if (!mapIsWorldMap(c->location->map)) {
+        gameExitToParentMap(c);
+        return 1;
+    }
+    return 0;
 }
 
 static int spellYup(int unused) {

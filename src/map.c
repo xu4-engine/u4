@@ -20,6 +20,7 @@
 #include "context.h"
 #include "savegame.h"
 #include "monster.h"
+#include "movement.h"
 #include "debug.h"
 
 #define MAP_TILE_AT(mapptr, x, y, z) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
@@ -437,14 +438,10 @@ void mapRemovePerson(Map *map, const Person *person) {
     }
 }
 
-Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {    
-    int newx, newy;
-    int slow;
-    Object *obj = map->objects, *attacker = NULL;    
+Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {        
+    Object *obj = map->objects, *attacker = NULL;        
 
-    for (obj = map->objects; obj; obj = obj->next) {
-        newx = obj->x;
-        newy = obj->y;        
+    for (obj = map->objects; obj; obj = obj->next) {                
         
         /* check if the object is an attacking monster and not
            just a normal, docile person in town or an inanimate object */
@@ -452,7 +449,7 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
            ((obj->objType != OBJECT_MONSTER) || monsterWillAttack(obj->monster)) &&
            ((obj->objType != OBJECT_PERSON) || (obj->person->movement_behavior == MOVEMENT_ATTACK_AVATAR))) {
             
-            if (mapMovementDistance(newx, newy, avatarx, avatary) == 1) {
+            if (mapMovementDistance(obj->x, obj->y, avatarx, avatary) == 1) {
                 attacker = obj;
                 continue;
             }
@@ -460,56 +457,11 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
 
         /* monster performed a special action that takes place of movement */
         if (obj->objType == OBJECT_MONSTER && monsterSpecialAction(obj->monster))
-            continue;        
-
-        /* otherwise, move it according to its movement behavior */
-        switch (obj->movement_behavior) {
-        case MOVEMENT_FIXED:
-            break;
-
-        case MOVEMENT_WANDER:
-            if (rand() % 2 == 0)
-                dirMove(dirRandomDir(mapGetValidMoves(map, newx, newy, z, obj->tile)), &newx, &newy);
-            break;
-
-        case MOVEMENT_FOLLOW_AVATAR:
-        case MOVEMENT_ATTACK_AVATAR:
-            dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, z, obj->tile)), &newx, &newy);
-            break;
-        }
-
-        switch (tileGetSpeed(mapTileAt(map, newx, newy, obj->z))) {
-        case FAST:
-            slow = 0;
-            break;
-        case SLOW:
-            slow = (rand() % 8) == 0;
-            break;
-        case VSLOW:
-            slow = (rand() % 4) == 0;
-            break;
-        case VVSLOW:
-            slow = (rand() % 2) == 0;
-            break;
-        }
-        
-        /* If the creature doesn't fly, then it can be slowed */
-        if (slow && (obj->objType == OBJECT_MONSTER && !monsterFlies(obj->monster)))
             continue;
 
-        if ((newx != obj->x || newy != obj->y) &&
-            newx >= 0 && newx < map->width &&
-            newy >= 0 && newy < map->height) {
-
-            if (newx != obj->x ||
-                newy != obj->y) {
-                obj->prevx = obj->x;
-                obj->prevy = obj->y;
-            }
-            obj->x = newx;
-            obj->y = newy;
-        }
-
+        /* Now, move the object according to its movement behavior */
+        moveObject(map, obj, avatarx, avatary);
+        
         /* Enact any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
         if (obj->objType == OBJECT_MONSTER) monsterSpecialEffect(obj);
     }
@@ -698,7 +650,7 @@ int mapDirMove(const Map *map, Direction dir, int *x, int *y) {
  */
 
 int mapWrapCoordinates(const Map *map, int *x, int *y) {
-    if (map->border_behavior == BORDER_WRAP && MAP_IS_OOB(map, *x, *y)) {
+    if (map->border_behavior == BORDER_WRAP) {
         if (*x < 0) *x += map->width;
         if (*x >= (int)map->width) *x -= map->width;
         if (*y < 0) *y += map->height;

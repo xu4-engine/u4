@@ -37,6 +37,7 @@
 #include "error.h"
 #include "weapon.h"
 #include "armor.h"
+#include "movement.h"
 #include "debug.h"
 
 int gameSave(void);
@@ -90,7 +91,7 @@ extern Map world_map;
 extern Object *party[8];
 Context *c = NULL;
 int collisionOverride = 0;
-ViewMode viewMode = VIEW_NORMAL;
+int opacityCheck = 1;
 char itemNameBuffer[16];
 
 void gameInit() {    
@@ -100,7 +101,7 @@ void gameInit() {
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));    
     c->annotation = NULL;    
-    c->location = locationNew(0, 0, 0, &world_map, NULL);
+    c->location = locationNew(0, 0, 0, &world_map, VIEW_NORMAL, NULL);
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.playerInquiryBuffer[0] = '\0';
@@ -200,11 +201,11 @@ int gameSave() {
  * Sets the view mode.
  */
 void gameSetViewMode(ViewMode newMode) {
-    viewMode = newMode;
+    c->location->viewMode = newMode;
 }
 
 void gameUpdateScreen() {
-    switch (viewMode) {
+    switch (c->location->viewMode) {
     case VIEW_NORMAL:
         screenUpdate(1, 0);
         break;
@@ -214,16 +215,17 @@ void gameUpdateScreen() {
     case VIEW_RUNE:
         screenUpdate(0, 0);
         break;
+    case VIEW_DUNGEON:        
     case VIEW_DEAD:
         screenUpdate(1, 1);
         break;
     default:
-        ASSERT(0, "invalid view mode: %d", viewMode);
+        ASSERT(0, "invalid view mode: %d", c->location->viewMode);
     }
 }
 
 void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
-    int i, x, y, z;    
+    int i, x, y, z, viewMode;    
 
     if (portal) {
         x = portal->startx;
@@ -240,7 +242,20 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     if (!saveLocation)
         locationFree(&ct->location);
     
-    ct->location = locationNew(x, y, z, map, ct->location);
+    switch (map->type) {
+    case MAP_DUNGEON:
+        viewMode = VIEW_DUNGEON;
+        break;
+    case MAP_TOWN:
+    case MAP_VILLAGE:
+    case MAP_CASTLE:
+    case MAP_RUIN:
+    default:
+        viewMode = VIEW_NORMAL;
+        break;
+    }
+    
+    ct->location = locationNew(x, y, z, map, viewMode, ct->location);    
 
     if ((map->type == MAP_TOWN ||
          map->type == MAP_VILLAGE ||
@@ -267,7 +282,7 @@ int gameExitToParentMap(struct _Context *ct)
     if (ct->location->prev != NULL) {
         annotationClear(c->location->map->id);
         mapClearObjects(c->location->map);
-        locationFree(&ct->location);        
+        locationFree(&ct->location);
         musicPlay();
         
         return 1;
@@ -482,6 +497,14 @@ int gameBaseKeyHandler(int key, void *data) {
         c->aura = AURA_NEGATE;
         c->auraDuration = 10;
         statsUpdate();
+        break;
+
+    case 15:
+        opacityCheck = !opacityCheck;
+        if (opacityCheck)
+            screenMessage("Opacity On!\n");
+        else screenMessage("Opacity Off!\n");
+        break;
 
     case ' ':
         gameCheckBridgeTrolls();
@@ -738,7 +761,7 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'p':
         if (c->saveGame->gems) {
             c->saveGame->gems--;
-            viewMode = VIEW_GEM;
+            c->location->viewMode = VIEW_GEM;
             choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
             choiceInfo->choices = " \033";
             choiceInfo->handleChoice = &gemHandleChoice;
@@ -1251,6 +1274,8 @@ int castForPlayer2(int spell, void *data) {
 
     switch (spellGetParamType(spell)) {
     case SPELLPRM_NONE:
+        gameCastSpell(castSpell, castPlayer, 0);
+        break;
     case SPELLPRM_PHASE:
         screenMessage("Phase: ");
         eventHandlerPushKeyHandlerData(&gameGetPhaseKeyHandler, (void *) &castForPlayerGetPhase);        
@@ -1689,7 +1714,7 @@ int openAtCoord(int x, int y, int distance, void *data) {
 int gemHandleChoice(char choice) {
     eventHandlerPopKeyHandler();
 
-    viewMode = VIEW_NORMAL;
+    c->location->viewMode = VIEW_NORMAL;
     gameFinishTurn();
 
     return 1;
@@ -1716,7 +1741,7 @@ int gamePeerCity(int city, void *data) {
 
     if (peerCity)
     {
-        viewMode = VIEW_GEM;
+        c->location->viewMode = VIEW_GEM;
 
         gameSetMap(c, peerCity->map, 1, NULL);    
             
@@ -1737,7 +1762,7 @@ int peerCityHandleChoice(char choice) {
     eventHandlerPopKeyHandler();
     locationFree(&c->location);    
 
-    viewMode = VIEW_NORMAL; 
+    c->location->viewMode = VIEW_NORMAL; 
     gameFinishTurn();
 
     return 1;
@@ -1952,6 +1977,10 @@ int ztatsFor(int player) {
 int moveAvatar(Direction dir, int userEvent) {
     int result = 1;
     int newx, newy;
+    int slowedParam;
+    SlowedCallback slowedCallback = (tileIsShip(c->saveGame->transport)) ?
+        &slowedHandlerWind :
+        &slowedHandlerDefault;
 
     /*musicPlayEffect();*/
 
@@ -1962,7 +1991,7 @@ int moveAvatar(Direction dir, int userEvent) {
 
     if (tileIsShip(c->saveGame->transport)) {
         if (tileGetDirection(c->saveGame->transport) != dir) {
-            tileSetDirection(&c->saveGame->transport, dir);
+            tileSetDirection((unsigned char *)&c->saveGame->transport, dir);
             if (!settings->filterMoveMessages)
                 screenMessage("Turn %s!\n", getDirectionName(dir));
             goto done;
@@ -1972,7 +2001,7 @@ int moveAvatar(Direction dir, int userEvent) {
     if (tileIsHorse(c->saveGame->transport)) {
         if ((dir == DIR_WEST || dir == DIR_EAST) &&
             tileGetDirection(c->saveGame->transport) != dir) {
-            tileSetDirection(&c->saveGame->transport, dir);
+            tileSetDirection((unsigned char *)&c->saveGame->transport, dir);
         }
     }
 
@@ -1986,20 +2015,10 @@ int moveAvatar(Direction dir, int userEvent) {
             screenMessage("Sail %s!\n", getDirectionName(dir));
         else if (!tileIsBalloon(c->saveGame->transport))
             screenMessage("%s\n", getDirectionName(dir));
-    }
+    }    
 
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
-        switch (c->location->map->border_behavior) {
-        case BORDER_WRAP:
-            if (newx < 0)
-                newx += c->location->map->width;
-            if (newy < 0)
-                newy += c->location->map->height;
-            if (newx >= (int) c->location->map->width)
-                newx -= c->location->map->width;
-            if (newy >= (int) c->location->map->height)
-                newy -= c->location->map->height;
-            break;
+        switch (c->location->map->border_behavior) {        
 
         case BORDER_EXIT2PARENT:
             screenMessage("Leaving...\n");
@@ -2015,9 +2034,11 @@ int moveAvatar(Direction dir, int userEvent) {
         }
     }
 
+    /* wrap coordinates if we're on a wrapping map */
+    mapWrapCoordinates(c->location->map, &newx, &newy);
+
     if (!collisionOverride) {
         int movementMask;
-        int slow;
 
         movementMask = mapGetValidMoves(c->location->map, c->location->x, c->location->y, c->location->z, c->saveGame->transport);
         if (!DIR_IN_MASK(dir, movementMask)) {
@@ -2040,25 +2061,12 @@ int moveAvatar(Direction dir, int userEvent) {
             goto done;
         }
 
-        switch (tileGetSpeed(mapTileAt(c->location->map, newx, newy, c->location->z))) {
-        case FAST:
-            slow = 0;
-            break;
-        case SLOW:
-            slow = (rand() % 8) == 0;
-            break;
-        case VSLOW:
-            slow = (rand() % 4) == 0;
-            break;
-        case VVSLOW:
-            slow = (rand() % 2) == 0;
-            break;
-        }
+        /* Are we slowed by terrain or by wind direction? */
+        slowedParam = tileIsShip(c->saveGame->transport) ? 
+            dir :
+            mapTileAt(c->location->map, newx, newy, c->location->z);
 
-        if (tileIsShip(c->saveGame->transport) && gameWindSlowsShip(dir))
-            slow = 1;
-
-        if (slow) {
+        if (!(*slowedCallback)(slowedParam)) {
             if (!settings->filterMoveMessages)
                 screenMessage("Slow progress!\n");
             result = 0;
@@ -2124,7 +2132,7 @@ void gameUpdateMoons(int showmoongates)
         trammelSubphase;        
     const Moongate *gate;
 
-    if (mapIsWorldMap(c->location->map) && viewMode == VIEW_NORMAL) {        
+    if (mapIsWorldMap(c->location->map) && c->location->viewMode == VIEW_NORMAL) {        
         oldTrammel = c->saveGame->trammelphase;
 
         if (++c->moonPhase >= MOON_PHASES * MOON_SECONDS_PER_PHASE * 4)
@@ -2189,7 +2197,7 @@ void gameInitMoons()
 
     ASSERT(c != NULL, "Game context doesn't exist!");
     ASSERT(c->saveGame != NULL, "Savegame doesn't exist!");
-    ASSERT(mapIsWorldMap(c->location->map) && viewMode == VIEW_NORMAL, "Can only call gameInitMoons() from the world map!");
+    ASSERT(mapIsWorldMap(c->location->map) && c->location->viewMode == VIEW_NORMAL, "Can only call gameInitMoons() from the world map!");
 
     c->saveGame->trammelphase = c->saveGame->feluccaphase = 0;
     c->moonPhase = 0;
@@ -2257,18 +2265,10 @@ void gameCheckSpecialMonsters(Direction dir) {
     if (dir == DIR_EAST &&
         c->location->x == 0xdd &&
         c->location->y == 0xe0) {
-        for (i = 0; i < 8; i++) {
-            /* FIXME: add function like monsterSetDirection()
-               to set a monster's current tile */
-
-            /*unsigned short tile = PIRATE_TILE;
-            tileSetDirection(&tile, pirateInfo[i].dir);*/
-
+        for (i = 0; i < 8; i++) {            
             m = monsterForTile(PIRATE_TILE);
             obj = mapAddMonsterObject(c->location->map, m, pirateInfo[i].x, pirateInfo[i].y, c->location->z);
-
-            /*obj = mapAddObject(c->location->map, tile, tile, pirateInfo[i].x, pirateInfo[i].y, c->location->z);
-            obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;*/
+            tileSetDirection(&obj->tile, pirateInfo[i].dir);            
         }
     }
 

@@ -14,13 +14,14 @@ Location *locationPop(Location **stack);
  * start a new stack if 'prev' is NULL
  */
 
-Location *locationNew(int x, int y, int z, Map *map, Location *prev) {
+Location *locationNew(int x, int y, int z, Map *map, int viewmode, Location *prev) {
     Location *newLoc = (Location *)malloc(sizeof(Location));
 
     newLoc->x = x;
     newLoc->y = y;
     newLoc->z = z;
     newLoc->map = map;
+    newLoc->viewMode = viewmode;
     
     return locationPush(prev, newLoc);    
 }

@@ -12,10 +12,11 @@ typedef struct _Location {
     int y;
     int z;	
 	Map *map;
+    int viewMode;
     struct _Location *prev;
 } Location;
 
-Location *locationNew(int x, int y, int z, Map *map, Location *prev);
+Location *locationNew(int x, int y, int z, Map *map, int viewmode, Location *prev);
 void locationFree(Location **stack);
 
 #endif

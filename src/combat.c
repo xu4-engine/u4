@@ -26,6 +26,7 @@
 #include "weapon.h"
 #include "debug.h"
 #include "settings.h"
+#include "movement.h"
 
 extern Map brick_map;
 extern Map bridge_map;
@@ -629,7 +630,7 @@ void combatEnd() {
         if ((monsterObj->monster->mattr & MATTR_WATER) == 0)
             mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), monsterObj->x, monsterObj->y, c->location->z);
         else if (tileIsPirateShip(monsterObj->tile)) {
-            unsigned short ship = tileGetShipBase();
+            unsigned char ship = tileGetShipBase();
             tileSetDirection(&ship, tileGetDirection(monsterObj->tile));
             mapAddObject(c->location->map, ship, ship, monsterObj->x, monsterObj->y, c->location->z);
         }
@@ -649,11 +650,9 @@ void combatEnd() {
 }
 
 void combatMoveMonsters() {
-    int i, newx, newy, valid_dirs, target, distance;
+    int i, target, distance;
     CombatAction action;
-    const Monster *m;
-    Direction dir;
-    int slow;
+    const Monster *m;    
 
     for (i = 0; i < AREA_MONSTERS; i++) {
         if (!combat_monsters[i])
@@ -721,56 +720,14 @@ void combatMoveMonsters() {
 
         case CA_FLEE:
         case CA_ADVANCE:
-            newx = combat_monsters[i]->x;
-            newy = combat_monsters[i]->y;
-            valid_dirs = mapGetValidMoves(c->location->map, newx, newy, c->location->z, combat_monsters[i]->tile);
-            if (action == CA_FLEE)
-                dir = dirFindPathToEdge(newx, newy, c->location->map->width, c->location->map->height, valid_dirs);
-            else
-            {
-                // If they're not fleeing, make sure they don't flee on accident
-                if (newx == 0)
-                    valid_dirs = DIR_REMOVE_FROM_MASK(DIR_WEST, valid_dirs);
-                if (newx == c->location->map->width - 1)
-                    valid_dirs = DIR_REMOVE_FROM_MASK(DIR_EAST, valid_dirs);
-                if (newy == 0)
-                    valid_dirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, valid_dirs);
-                if (newy == c->location->map->height - 1)
-                    valid_dirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, valid_dirs);
-
-                dir = dirFindPath(newx, newy, party[target]->x, party[target]->y, valid_dirs);
-            }
-            dirMove(dir, &newx, &newy);
-
-            switch (tileGetSpeed(mapTileAt(c->location->map, newx, newy, c->location->z))) {
-            case FAST:
-                slow = 0;
-                break;
-            case SLOW:
-                slow = (rand() % 8) == 0;
-                break;
-            case VSLOW:
-                slow = (rand() % 4) == 0;
-                break;
-            case VVSLOW:
-                slow = (rand() % 2) == 0;
-                break;
-            }
-            if (!slow) {
-                if (newx != combat_monsters[i]->x ||
-                    newy != combat_monsters[i]->y) {
-                    combat_monsters[i]->prevx = combat_monsters[i]->x;
-                    combat_monsters[i]->prevy = combat_monsters[i]->y;
-                }
-                combat_monsters[i]->x = newx;
-                combat_monsters[i]->y = newy;
-
-                if (MAP_IS_OOB(c->location->map, newx, newy)) {
+            if (moveCombatObject(action, c->location->map, combat_monsters[i], party[target]->x, party[target]->y)) {
+                if (MAP_IS_OOB(c->location->map, combat_monsters[i]->x, combat_monsters[i]->y)) {
                     screenMessage("\n%s Flees!\n", m->name);
                     mapRemoveObject(c->location->map, combat_monsters[i]);
-                    combat_monsters[i] = NULL;                    
+                    combat_monsters[i] = NULL;
                 }
             }
+            
             break;
         }
     }
@@ -843,9 +800,9 @@ int movePartyMember(Direction dir, int member) {
 void attackFlash(int x, int y, int tile, int timeFactor) {
     int attackdelay = settings->attackdelay;
     int divisor = 8 * timeFactor;
-    int mult = 10 * timeFactor;
+    int mult = 10 * timeFactor;    
 
     annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, tile), (attackdelay + divisor)/divisor));
     gameUpdateScreen();
-    eventHandlerSleep(attackdelay * mult);    
+    eventHandlerSleep(attackdelay * mult);
 }

@@ -246,9 +246,9 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     int era;    
     
     if (tileIsSailable(tile)) {        
-        return monsterById((rand() % 7) + PIRATE_ID);
+        return monsterById((rand() % 7) + PIRATE_ID);        
     }
-    else if (tileIsSwimable(tile)) {
+    else if (tileIsSwimable(tile)) {        
         return monsterById((rand() % 6) + NIXIE_ID);
     }
 
@@ -318,9 +318,10 @@ int monsterSpecialAction(const Monster *monster) {
 
 void monsterSpecialEffect(Object *obj) {
     Object *o;
-    Monster *m = (obj->objType == OBJECT_MONSTER) ? obj->monster : NULL;
+    Monster *m = NULL;        
 
-    if (m) {
+    if (obj->objType == OBJECT_MONSTER) {
+        m = obj->monster;
         switch(m->id) {        
         
         case STORM_ID:
