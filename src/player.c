@@ -376,6 +376,19 @@ int playerPartyDead(const SaveGame *saveGame) {
     return dead;
 }
 
+/**
+ * Applies a sleep spell to the party.
+ */
+void playerApplySleepSpell(SaveGame *saveGame) {
+    int i;
+
+    for (i = 0; i < saveGame->members; i++) {
+        if (saveGame->players[i].status == STAT_GOOD &&
+            (rand() % 2) == 0)
+            saveGame->players[i].status = STAT_SLEEPING;
+    }
+}
+
 void playerRevive(SaveGame *saveGame) {
     int i;
 
