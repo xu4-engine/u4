@@ -14,7 +14,7 @@ UIFLAGS=$(shell sdl-config --cflags)
 
 FEATURES=-DHAVE_BACKTRACE=0 -DHAVE_VARIADIC_MACROS=1
 #DEBUGCFLAGS=-ggdb -rdynamic
-CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\" -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS) -no-cpp-precomp -L/sw/lib
+CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS) -no-cpp-precomp -L/sw/lib
 LIBS=$(UILIBS) $(shell xml2-config --libs)
 INSTALL=install -D
 
