@@ -12,7 +12,6 @@
 LostEighthCallback lostEighthCallback = NULL;
 AdvanceLevelCallback advanceLevelCallback = NULL;
 ItemStatsChangedCallback itemStatsChangedCallback = NULL;
-HealCallback healCallback = NULL;
 
 /**
  * Sets up a callback to handle player losing an eighth of his or her
@@ -28,10 +27,6 @@ void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback) {
 
 void playerSetItemStatsChangedCallback(ItemStatsChangedCallback callback) {
     itemStatsChangedCallback = callback;
-}
-
-void playerSetHealCallback(HealCallback callback) {
-    healCallback = callback;
 }
 
 /**
@@ -520,7 +515,7 @@ int playerHeal(SaveGame *saveGame, HealType type, int player) {
         saveGame->players[player].status = STAT_GOOD;
         break;
 
-    case HT_HEAL:
+    case HT_FULLHEAL:
         if (saveGame->players[player].status == STAT_DEAD ||
             saveGame->players[player].hp == saveGame->players[player].hpMax)
             return 0;
@@ -534,11 +529,19 @@ int playerHeal(SaveGame *saveGame, HealType type, int player) {
         saveGame->players[player].hp = STAT_GOOD;
         break;
 
+    case HT_HEAL:
+        if (saveGame->players[player].status == STAT_DEAD ||
+            saveGame->players[player].hp == saveGame->players[player].hpMax)
+            return 0;
+        saveGame->players[player].hp += 75 + (rand() % 0x18);
+        if (saveGame->players[player].hp > saveGame->players[player].hpMax)
+            saveGame->players[player].hp = saveGame->players[player].hpMax;
+        break;
+
     default:
         return 0;
     }
-
-    (*healCallback)(type, player);
+    
     return 1;
 }
 

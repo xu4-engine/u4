@@ -11,11 +11,14 @@
 #include "direction.h"
 #include "context.h"
 #include "map.h"
+#include "moongate.h"
 #include "annotation.h"
 #include "ttype.h"
 #include "screen.h"
 #include "player.h"
 #include "debug.h"
+
+SpellCallback spellCallback = NULL; 
 
 static int spellAwaken(int player);
 static int spellBlink(int dir);
@@ -67,7 +70,7 @@ const Spell spells[] = {
     { "Dispel",       ASH | GARLIC | PEARL,     SC_ANY,      &spellDispel,  SPELLPRM_DIR,     20 },
     { "Energy Field", ASH | SILK | PEARL,       SC_ANY,      &spellEField,  SPELLPRM_TYPEDIR, 10 },
     { "Fireball",     ASH | PEARL,              SC_COMBAT,   &spellFireball,SPELLPRM_DIR,     15 },
-    { "Gate",         ASH | PEARL | MANDRAKE,   SC_NORMAL,   &spellGate,    SPELLPRM_PHASE,   40 },
+    { "Gate",         ASH | PEARL | MANDRAKE,   SC_NORMAL,   &spellGate,    SPELLPRM_PHASE,   /*40*/ 1 },
     { "Heal",         GINSENG | SILK,           SC_ANY,      &spellHeal,    SPELLPRM_PLAYER,  10 },
     { "Iceball",      PEARL | MANDRAKE,         SC_COMBAT,   &spellIceball, SPELLPRM_DIR,     20 },
     { "Jinx",         PEARL | NIGHTSHADE | MANDRAKE,
@@ -93,6 +96,10 @@ const Spell spells[] = {
 };
 
 #define N_SPELLS (sizeof(spells) / sizeof(spells[0]))
+
+void playerSetSpellCallback(SpellCallback callback) {
+    spellCallback = callback;    
+}
 
 Mixture *mixtureNew() {
     Mixture *mix = (Mixture *) malloc(sizeof(Mixture));
@@ -163,7 +170,9 @@ SpellParam spellGetParamType(unsigned int spell) {
  * the character doesn't have enough magic points, or the context is
  * invalid.  The error code is updated with the reason for failure.
  */
-int spellCast(unsigned int spell, int character, int param, SpellCastError *error) {
+int spellCast(unsigned int spell, int character, int param, SpellCastError *error, int spellEffect) {
+    int player = (spells[spell].paramType == SPELLPRM_PLAYER) ? param : -1;
+    
     ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
     ASSERT(character >= 0 && character < c->saveGame->members, "character out of range: %d", character);
 
@@ -191,10 +200,13 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
     c->saveGame->mixtures[spell]--;
     c->saveGame->players[character].mp -= spells[spell].mp;
 
+    if (spellEffect)
+        (*spellCallback)(spell + 'a', player);
+    
     if (!(*spells[spell].spellFunc)(param)) {
         *error = CASTERR_FAILED;
         return 0;
-    }
+    }    
 
     return 1;
 }
@@ -292,7 +304,11 @@ static int spellFireball(int dir) {
 }
 
 static int spellGate(int phase) {
-    /* FIXME */
+    const Moongate *moongate;
+
+    moongate = moongateGetGateForPhase(phase);
+    c->saveGame->x = moongate->x;
+    c->saveGame->y = moongate->y;    
     return 1;
 }
 

@@ -848,7 +848,7 @@ char *vendorGetHealerBuyItemResponse(Conversation *cnv, const char *response) {
             msg = HV_CURINGCOSTS;
             cnv->price = 100;
         }
-        else if (cnv->itemSubtype == HT_HEAL) {
+        else if (cnv->itemSubtype == HT_FULLHEAL) {
             msg = HV_HEALINGCOSTS;
             cnv->price = 200;
         }
@@ -1205,7 +1205,7 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
         if (success) {
             playerHeal(c->saveGame, cnv->itemSubtype, cnv->player);
             reply = concat(vendorGetName(cnv->talker), 
-                           vendorGetText(cnv->talker, HV_MOREHELP), 
+                           vendorGetText(cnv->talker, HV_MOREHELP),
                            NULL);
         }
         else {
@@ -1542,7 +1542,7 @@ char *vendorGetHealerPlayerResponse(Conversation *cnv, const char *response) {
 
     if (cnv->itemSubtype == HT_CURE)
         msg = HV_CURINGCOSTS;
-    else if (cnv->itemSubtype == HT_HEAL)
+    else if (cnv->itemSubtype == HT_FULLHEAL)
         msg = HV_HEALINGCOSTS;
     else if (cnv->itemSubtype == HT_RESURRECT)
         msg = HV_REZCOSTS;

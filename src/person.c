@@ -19,6 +19,7 @@
 #include "vendor.h"
 #include "music.h"
 #include "player.h"
+#include "spell.h"
 #include "map.h"
 #include "debug.h"
 #include "screen.h"
@@ -544,12 +545,13 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
         reply = strdup("\n\nHe says: That is good.\n");
     }
 
-    else if (tolower(answer[0]) == 'n') {
+    else if (tolower(answer[0]) == 'n') {        
         reply = strdup("\n\nHe says: Let me heal thy wounds!\n");
-        /* FIXME: special effect here */
         for (i = 0; i < c->saveGame->members; i++) {
-            playerHeal(c->saveGame, HT_HEAL, i);
-        }
+            playerHeal(c->saveGame, HT_FULLHEAL, i);
+        }        
+        (*spellCallback)('r', -1); // Same effect as resurrection spell
+
         statsUpdate();
     }
 

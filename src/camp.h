@@ -6,5 +6,6 @@
 #define CAMP_H
 
 void campBegin();
+void campHeal();
 
 #endif

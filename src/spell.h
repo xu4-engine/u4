@@ -26,6 +26,12 @@ typedef enum {
     SPELLPRM_FROMDIR            /* direction from required (winds) */
 } SpellParam;
 
+typedef enum {
+    SPELLEFFECT_NONE,           /* none */
+    SPELLEFFECT_INVERT,         /* invert the screen (moongates, most normal spells) */
+    SPELLEFFECT_TREMOR          /* tremor spell */
+} SpellEffect;
+
 typedef struct _Mixture {
     unsigned short reagents[REAG_MAX];
 } Mixture;
@@ -39,6 +45,10 @@ typedef struct _Spell {
     int mp;
 } Spell;
 
+typedef void (*SpellCallback)(unsigned int spell, int player);
+extern SpellCallback spellCallback;
+
+void playerSetSpellCallback(SpellCallback callback);
 Mixture *mixtureNew();
 void mixtureDelete(Mixture *mix);
 int mixtureAddReagent(Mixture *mix, Reagent reagent);

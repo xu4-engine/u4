@@ -23,8 +23,6 @@
 #include "ttype.h"
 
 extern Map camp_map;
-Map *oldmap;
-int olddngx, olddngy, oldlevel;
 
 void campTimer(void *data);
 void campEnd(void);
@@ -32,10 +30,8 @@ void campEnd(void);
 void campBegin() {
     int i;
 
-    oldmap = c->map;
-    olddngx = c->saveGame->dngx;
-    olddngy = c->saveGame->dngy;
-    oldlevel = c->saveGame->dnglevel;
+    c = gameCloneContext(c);
+
     gameSetMap(c, &camp_map, 1, NULL);
     c->saveGame->dnglevel = 0;
 
@@ -60,17 +56,21 @@ void campTimer(void *data) {
 }
 
 void campEnd() {
-    annotationClear(c->map->id);
-    mapClearObjects(c->map);
-
-    c->map = oldmap;
-    c->saveGame->x = c->saveGame->dngx;
-    c->saveGame->y = c->saveGame->dngy;
-    c->saveGame->dnglevel = oldlevel;
-    c->col = 0;
-                
-    musicPlay();
+    gameExitToParentMap(c);
+    campHeal();   
 
     gameFinishTurn();
 }
+
+void campHeal() {
+    int i;
+
+    for (i = 0; i < c->saveGame->members; i++) {
+        c->saveGame->players[i].mp = playerGetMaxMp(&c->saveGame->players[i]);
+        playerHeal(c->saveGame, HT_HEAL, i);
+    }
+    statsUpdate();
+    screenMessage("Party Healed!\n");
+}
+
 
