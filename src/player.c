@@ -47,10 +47,9 @@ int playerGetMaxMp(const SaveGamePlayerRecord *player) {
     case CLASS_FIGHTER:
     case CLASS_SHEPHERD:
         return 0;
-
-    default:
-        assert(0);              /* shouldn't happen */
     }
+
+    assert(0);                  /* shouldn't happen */
 }
 
 /**
@@ -79,10 +78,9 @@ int playerCanWear(const SaveGamePlayerRecord *player, ArmorType armor) {
 
     case CLASS_PALADIN:
         return 1;
-
-    default:
-        assert(0);              /* shoudn't happen */
     }
+
+    assert(0);                  /* shoudn't happen */
 }
 
 /**
@@ -111,6 +109,5 @@ int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon) {
     if (weapon < WEAP_MAX)
         return ((weapMask[weapon] & (1 << player->klass)) != 0);
 
-    assert(0);
-    return 0;
+    assert(0);                  /* shouldn't happen */
 }

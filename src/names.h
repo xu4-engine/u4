@@ -7,6 +7,12 @@
 
 #include "savegame.h"
 
+/*
+ * These routines convert the various enumerations for weapons,
+ * classes, armor, etc. into the textual representations used in the
+ * game.
+ */
+
 const char *getClassName(ClassType klass);
 const char *getWeaponName(WeaponType weapon);
 const char *getWeaponAbbrev(WeaponType weapon);
