@@ -125,13 +125,13 @@ long generalizedDecompress(WRITE_DECOMP outFunc, unsigned char* compressedMem, u
     unsigned char unknownCodeword;
 
     /* initialize the dictionary and the stack */
-    lzwDictionaryEntry *lzwDictionary = (lzwDictionaryEntry *) malloc(sizeof(lzwDictionaryEntry[lzwDictionarySize]));
+    lzwDictionaryEntry *lzwDictionary = (lzwDictionaryEntry *) malloc(sizeof(lzwDictionaryEntry) * lzwDictionarySize);
     int codewordsInDictionary = 0;
-    unsigned char *lzwStack = (unsigned char *) malloc(sizeof(unsigned char[lzwStackSize]));
+    unsigned char *lzwStack = (unsigned char *) malloc(sizeof(unsigned char) * lzwStackSize);
     int elementsInStack = 0;
 
     /* clear the dictionary */
-    memset(lzwDictionary, 0, sizeof(lzwDictionaryEntry[lzwDictionarySize]));
+    memset(lzwDictionary, 0, sizeof(lzwDictionaryEntry) * lzwDictionarySize);
     for (i = 0; i < 0x100; i++)
     {
         lzwDictionary[i].occupied = 1;
@@ -205,7 +205,7 @@ long generalizedDecompress(WRITE_DECOMP outFunc, unsigned char* compressedMem, u
             {
                 /* wipe dictionary */
                 codewordsInDictionary = 0;
-                memset(lzwDictionary, 0, sizeof(lzwDictionaryEntry[lzwDictionarySize]));
+                memset(lzwDictionary, 0, sizeof(lzwDictionaryEntry) * lzwDictionarySize);
                 for (i = 0; i < 0x100; i++)
                 {
                     lzwDictionary[i].occupied = 1;
