@@ -80,6 +80,9 @@ Image *Image::duplicate(Image *image) {
     bool alphaOn = image->isAlphaOn();
     Image *im = create(image->width(), image->height(), image->isIndexed(), image->surface->flags & SDL_HWSURFACE ? HARDWARE : SOFTWARE);
     
+    if (image->isIndexed())
+        im->setPaletteFromImage(image);
+
     /* Turn alpha off before blitting to non-screen surfaces */
     if (alphaOn)
         image->alphaOff();
