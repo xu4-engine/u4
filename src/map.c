@@ -256,7 +256,7 @@ const Person *mapPersonAt(const Map *map, int x, int y, int z) {
     Object *obj;
 
     obj = mapObjectAt(map, x, y, z);
-    if (obj)
+    if (obj && obj->objType == OBJECT_PERSON)
         return obj->person;
     else
         return NULL;
