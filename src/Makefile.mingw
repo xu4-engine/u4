@@ -16,7 +16,7 @@ XML_LIBS=$(shell xml2-config --libs)
 
 UI=sdl
 
-CC=g++
+CPP=g++
 CPPFLAGS=-Wall -I. $(SDL_CPPFLAGS) $(XML_CPPFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
 LIBS=-lmingw32 $(SDL_LIBS) $(XML_LIBS) -mwindows
 EXEEXT	:=.exe
