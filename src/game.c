@@ -28,7 +28,7 @@
 
 void gameFinishTurn(void);
 int gameCanMoveOntoTile(const Map *map, int x, int y);
-int moveAvatar(int dx, int dy);
+int moveAvatar(Direction dir, int userEvent);
 int attackAtCoord(int x, int y);
 int castForPlayer(int player);
 int castForPlayer2(int spell, void *data);
@@ -48,17 +48,19 @@ int wearForPlayer2(int armor, void *data);
 
 int collisionOverride = 0;
 
-void gameSetMap(Context *ct, Map *map) {
+void gameSetMap(Context *ct, Map *map, int setStartPos) {
     int i;
 
     ct->map = map;
     ct->map->annotation = NULL;
-    ct->saveGame->dngx = ct->parent->saveGame->x;
-    ct->saveGame->dngy = ct->parent->saveGame->y;
-    ct->saveGame->x = map->startx;
-    ct->saveGame->y = map->starty;
+    if (setStartPos) {
+        ct->saveGame->dngx = ct->parent->saveGame->x;
+        ct->saveGame->dngy = ct->parent->saveGame->y;
+        ct->saveGame->x = map->startx;
+        ct->saveGame->y = map->starty;
+    }
 
-    if (map->city) {
+    if (map->city && map->objects == NULL) {
         for (i = 0; i < map->city->n_persons; i++) {
             if (map->city->persons[i].tile0 != 0)
                 mapAddPersonObject(map, &(map->city->persons[i]));
@@ -121,19 +123,19 @@ int gameBaseKeyHandler(int key, void *data) {
     switch (key) {
 
     case U4_UP:
-        moveAvatar(0, -1);
+        moveAvatar(DIR_NORTH, 1);
         break;
 
     case U4_DOWN:
-        moveAvatar(0, 1);
+        moveAvatar(DIR_SOUTH, 1);
         break;
 
     case U4_LEFT:
-        moveAvatar(-1, 0);
+        moveAvatar(DIR_WEST, 1);
         break;
 
     case U4_RIGHT:
-        moveAvatar(1, 0);
+        moveAvatar(DIR_EAST, 1);
         break;
 
     case 3:                     /* ctrl-C */
@@ -170,6 +172,14 @@ int gameBaseKeyHandler(int key, void *data) {
                 mapRemoveObject(c->map, obj);
                 screenMessage("Mount Horse!\n");
             }
+        } else if (obj && tileIsBalloon(obj->tile)) {
+            if (c->saveGame->transport != AVATAR_TILE)
+                screenMessage("Board: Can't!\n");
+            else {
+                c->saveGame->transport = obj->tile;
+                mapRemoveObject(c->map, obj);
+                screenMessage("Board Balloon!\n");
+            }
         } else
             screenMessage("Board What?\n");
         break;
@@ -182,10 +192,14 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'd':
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_DESCEND) {
-            c->map = portal->destination;
+            gameSetMap(c, portal->destination, 0);
             screenMessage("Descend!\n\n");
-        }
-        else
+        } else if (tileIsBalloon(c->saveGame->transport)) {
+            screenMessage("Land Balloon\n");
+            if (c->saveGame->balloonstate == 0)
+                screenMessage("Already Landed!\n");
+            c->saveGame->balloonstate = 0;
+        } else
             screenMessage("Descend what?\n");
         break;
 
@@ -200,7 +214,11 @@ int gameBaseKeyHandler(int key, void *data) {
             new->line = new->parent->line;
             new->statsItem = new->parent->statsItem;
             new->moonPhase = new->parent->moonPhase;
-            gameSetMap(new, portal->destination);
+            new->windDirection = new->parent->windDirection;
+            new->windCounter = new->parent->windCounter;
+            new->moonPhase = new->parent->moonPhase;
+            
+            gameSetMap(new, portal->destination, 1);
             c = new;
 
             if (c->map->city) {
@@ -244,11 +262,13 @@ int gameBaseKeyHandler(int key, void *data) {
             if (c->saveGame->transport != AVATAR_TILE)
                 screenMessage("Klimb\nOnly on foot!\n");
             else {
-                c->map = portal->destination;
+                gameSetMap(c, portal->destination, 0);
                 screenMessage("Klimb!\n\n");
             }
-        }
-        else
+        } else if (tileIsBalloon(c->saveGame->transport)) {
+            c->saveGame->balloonstate = 1;
+            screenMessage("Klimb Altitude!\n");
+        } else
             screenMessage("Klimb what?\n");
         break;
 
@@ -316,7 +336,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'x':
-        if (tileIsShip(c->saveGame->transport) || tileIsHorse(c->saveGame->transport)) {
+        if (c->saveGame->transport != AVATAR_TILE && c->saveGame->balloonstate == 0) {
             mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
             c->saveGame->transport = AVATAR_TILE;
             screenMessage("X-it\n");
@@ -535,12 +555,6 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     int valid = 1;
 
     switch (key) {
-    case 'b':
-        if (mapIsWorldMap(c->map)) {
-            mapAddObject(c->map, 16, 16, 88, 109);
-            screenMessage("Boat created!\n\020");
-        }
-        break;
     case 'c':
         collisionOverride = !collisionOverride;
         screenMessage("Collision detection %s!\n\020", collisionOverride ? "off" : "on");
@@ -553,7 +567,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             c->saveGame->weapons[i] = 8;
         break;
     case 'h':
-        screenMessage("Help:\nb - Boat\nc - Collision\ne - Equipment\nh - Help\ni - Items\nk - Show Karma\nm - Mixtures\no - Horse\nr - Reagents\n\020");
+        screenMessage("Help:\nc - Collision\ne - Equipment\nh - Help\ni - Items\nk - Show Karma\nm - Mixtures\nr - Reagents\nt - Transports\nw - Winds\n\020");
         break;
     case 'i':
         screenMessage("Items!\n\020");
@@ -576,18 +590,26 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         for (i = 0; i < 26; i++)
             c->saveGame->mixtures[i] = 99;
         break;
-    case 'o':
-        if (mapIsWorldMap(c->map)) {
-            mapAddObject(c->map, 20, 20, 84, 106);
-            screenMessage("Horse created!\n\020");
-        }
-        break;
-
     case 'r':
         screenMessage("Reagents!\n\020");
         for (i = 0; i < REAG_MAX; i++)
             c->saveGame->reagents[i] = 99;
         break;
+    case 't':
+        if (mapIsWorldMap(c->map)) {
+            mapAddObject(c->map, 20, 20, 84, 106);
+            mapAddObject(c->map, 16, 16, 88, 109);
+            mapAddObject(c->map, 24, 24, 85, 105);
+            screenMessage("Transports: Ship, Horse and Balloon created!\n\020");
+        }
+        break;
+    case 'w':
+        c->windDirection++;
+        if (c->windDirection >= 4)
+            c->windDirection = 0;
+        screenMessage("Change Wind Direction\n");
+        break;
+
     default:
         valid = 0;
         break;
@@ -1042,6 +1064,10 @@ int gameCanMoveOntoTile(const Map *map, int x, int y) {
         if (!tileIsSailable(tile))
             return 0;
     }
+    else if (tileIsBalloon(c->saveGame->transport)) {
+        if (!tileIsFlyable(tile))
+            return 0;
+    }
     else if (!tileIsWalkable(tile))
         return 0;
 
@@ -1049,62 +1075,54 @@ int gameCanMoveOntoTile(const Map *map, int x, int y) {
 }
 
 /**
- * Attempt to move the avatar.  The number of tiles to move is given
- * by dx (horizontally) and dy (vertically); negative indicates
- * right/down, positive indicates left/up.  Returns zero if the avatar
- * is blocked.
+ * Attempt to move the avatar in the given direction.  User event
+ * should be set if the avatar is being moved in response to a
+ * keystroke.  Returns zero if the avatar is blocked.
  */
-int moveAvatar(int dx, int dy) {
-    const char *fmt;
+int moveAvatar(Direction dir, int userEvent) {
     int newx, newy;
 
+    if (tileIsBalloon(c->saveGame->transport) && userEvent) {
+        screenMessage("Drift Only!\n");
+        return 1;
+    }
+
     if (tileIsShip(c->saveGame->transport)) {
-        if (dx < 0 && tileGetDirection(c->saveGame->transport) != DIR_WEST) {
-            tileSetDirection(&c->saveGame->transport, DIR_WEST);
-            screenMessage("Turn West!\n");
-            return 1;
-        }
-        if (dx > 0 && tileGetDirection(c->saveGame->transport) != DIR_EAST) {
-            tileSetDirection(&c->saveGame->transport, DIR_EAST);
-            screenMessage("Turn East!\n");
-            return 1;
-        }
-        if (dy < 0 && tileGetDirection(c->saveGame->transport) != DIR_NORTH) {
-            tileSetDirection(&c->saveGame->transport, DIR_NORTH);
-            screenMessage("Turn North!\n");
-            return 1;
-        }
-        if (dy > 0 && tileGetDirection(c->saveGame->transport) != DIR_SOUTH) {
-            tileSetDirection(&c->saveGame->transport, DIR_SOUTH);
-            screenMessage("Turn South!\n");
+        if (tileGetDirection(c->saveGame->transport) != dir) {
+            tileSetDirection(&c->saveGame->transport, dir);
+            screenMessage("Turn %s!\n", getDirectionName(dir));
             return 1;
         }
     }
 
     if (tileIsHorse(c->saveGame->transport)) {
-        if (dx < 0 && tileGetDirection(c->saveGame->transport) != DIR_WEST) {
-            tileSetDirection(&c->saveGame->transport, DIR_WEST);
-        }
-        if (dx > 0 && tileGetDirection(c->saveGame->transport) != DIR_EAST) {
-            tileSetDirection(&c->saveGame->transport, DIR_EAST);
+        if ((dir == DIR_WEST || dir == DIR_EAST) &&
+            tileGetDirection(c->saveGame->transport) != dir) {
+            tileSetDirection(&c->saveGame->transport, dir);
         }
     }
 
-    newx = c->saveGame->x + dx;
-    newy = c->saveGame->y + dy;
+    newx = c->saveGame->x;
+    newy = c->saveGame->y;
+    switch (dir) {
+    case DIR_WEST:
+        newx--;
+        break;
+    case DIR_NORTH:
+        newy--;
+        break;
+    case DIR_EAST:
+        newx++;
+        break;
+    case DIR_SOUTH:
+        newy++;
+        break;
+    }
 
     if (tileIsShip(c->saveGame->transport))
-        fmt = "Sail %s!\n";
-    else
-        fmt = "%s\n";
-    if (newx < c->saveGame->x)
-        screenMessage(fmt, "West");
-    else if (newx > c->saveGame->x)
-        screenMessage(fmt, "East");
-    else if (newy < c->saveGame->y)
-        screenMessage(fmt, "North");
-    else if (newy > c->saveGame->y)
-        screenMessage(fmt, "South");
+        screenMessage("Sail %s!\n", getDirectionName(dir));
+    else if (!tileIsBalloon(c->saveGame->transport))
+        screenMessage("%s\n", getDirectionName(dir));
 
     if (MAP_IS_OOB(c->map, newx, newy)) {
 	switch (c->map->border_behavior) {
@@ -1128,6 +1146,8 @@ int moveAvatar(int dx, int dy) {
                 c->parent->saveGame->y = c->saveGame->dngy;
                 c->parent->line = c->line;
                 c->parent->moonPhase = c->moonPhase;
+                c->parent->windDirection = c->windDirection;
+                c->parent->windCounter = c->windCounter;
 		c = c->parent;
 		free(t);
                 
@@ -1154,11 +1174,11 @@ int moveAvatar(int dx, int dy) {
          * special cases for tile 0x0e: the center tile of the castle
          * of lord british, which is walkable from the south only
          */
-        if (mapTileAt(c->map, newx, newy) == 0x0e && dy == 1) {
+        if (mapTileAt(c->map, newx, newy) == 0x0e && dir == DIR_SOUTH) {
             screenMessage("Blocked!\n");
             return 0;
         }
-        if (mapTileAt(c->map, c->saveGame->x, c->saveGame->y) == 0x0e && dy == -1) {
+        if (mapTileAt(c->map, c->saveGame->x, c->saveGame->y) == 0x0e && dir == DIR_NORTH) {
             screenMessage("Blocked!\n");
             return 0;
         }
@@ -1173,6 +1193,31 @@ int moveAvatar(int dx, int dy) {
  * This function is called every quarter second.
  */
 void gameTimer() {
+    Direction dir = DIR_WEST;
+    if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
+        if ((rand() % 4) == 1)
+            c->windDirection = rand() % 4;
+        c->windCounter = 0;
+        if (tileIsBalloon(c->saveGame->transport) &&
+            c->saveGame->balloonstate) {
+            switch (c->windDirection) {
+            case DIR_WEST:
+                dir = DIR_EAST;
+                break;
+            case DIR_NORTH:
+                dir = DIR_SOUTH;
+                break;
+            case DIR_EAST:
+                dir = DIR_WEST;
+                break;
+            case DIR_SOUTH:
+                dir = DIR_NORTH;
+                break;
+            }
+            moveAvatar(dir, 0);
+        }
+    }
+
     screenCycle();
     screenUpdate();
     screenForceRedraw();
@@ -1180,5 +1225,3 @@ void gameTimer() {
     if (++c->moonPhase >= (MOON_SECONDS_PER_PHASE * 4 * MOON_PHASES))
         c->moonPhase = 0;
 }
-
-
