@@ -6,39 +6,34 @@
 #define U4FILE_H
 
 #include <string>
-#include <cstdio>
-#include "unzip.h"
 
-using std::string;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef enum {
+enum CompressionType {
     COMP_NONE,
     COMP_RLE,
     COMP_LZW,
     COMP_MAX
-} CompressionType;
+};
 
-typedef enum {
-    STDIO_FILE,
-    ZIP_FILE
-} FileInputType;
+/**
+ * An abstract interface for file access.
+ */
+class U4FILE {
+public:
+    virtual ~U4FILE() {}
 
-typedef struct {
-    FileInputType type;
-    union {
-        FILE *file;
-        unzFile zfile;
-    };
-} U4FILE;
+    virtual void close() = 0;
+    virtual int seek(long offset, int whence) = 0;
+    virtual size_t read(void *ptr, size_t size, size_t nmemb) = 0;
+    virtual int getc() = 0;
+    virtual int putc(int c) = 0;
+    virtual long length() = 0;
+
+    int getshort();
+};
 
 int u4isUpgradeInstalled(void);
 U4FILE *u4fopen(const char *fname);
 U4FILE *u4fopen_stdio(const char *fname);
-U4FILE *u4fopen_zip(const char *fname, const char *zipfile, const char *zippath, int translate);
 void u4fclose(U4FILE *f);
 int u4fseek(U4FILE *f, long offset, int whence);
 size_t u4fread(void *ptr, size_t size, size_t nmemb, U4FILE *f);
@@ -46,7 +41,7 @@ int u4fgetc(U4FILE *f);
 int u4fgetshort(U4FILE *f);
 int u4fputc(int c, U4FILE *f);
 long u4flength(U4FILE *f);
-string *u4read_stringtable(U4FILE *f, long offset, int nstrings);
+std::string *u4read_stringtable(U4FILE *f, long offset, int nstrings);
 char *u4find_path(const char *fname, const char * const *pathent, unsigned int npathents);
 char *u4find_music(const char *fname);
 char *u4find_sound(const char *fname);
@@ -59,9 +54,5 @@ extern int u4zipExists;
 extern int u4upgradeZipExists;
 extern int u4upgradeExists;
 extern int u4upgradeInstalled;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

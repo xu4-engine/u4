@@ -1758,7 +1758,7 @@ bool gameZtatsKeyHandler(int key, void *data) {
 
 bool gameSpecialCmdKeyHandler(int key, void *data) {
     int i;
-    const MapCoords *moongate;
+    const Coords *moongate;
     bool valid = true;
 
     switch (key) {
@@ -3224,7 +3224,7 @@ void gameUpdateMoons(int showmoongates)
     int realMoonPhase,
         oldTrammel,
         trammelSubphase;        
-    const MapCoords *gate;
+    const Coords *gate;
 
     if (c->location->map->isWorldMap() && c->location->viewMode == VIEW_NORMAL) {        
         oldTrammel = c->saveGame->trammelphase;
@@ -3425,12 +3425,12 @@ void gameCheckSpecialMonsters(Direction dir) {
  * Checks for and handles when the avatar steps on a moongate
  */
 int gameCheckMoongates(void) {
-    MapCoords dest;
+    Coords dest;
     
-    if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, c->location->coords, &dest)) {
+    if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, c->location->coords, dest)) {
 
         (*spellEffectCallback)(-1, -1, SOUND_MOONGATE); // Default spell effect (screen inversion without 'spell' sound effects)
-        
+
         if (c->location->coords != dest) {
             c->location->coords = dest;            
             (*spellEffectCallback)(-1, -1, SOUND_MOONGATE); // Again, after arriving
