@@ -1537,7 +1537,7 @@ void gameTimer() {
     Direction dir = DIR_WEST;
     if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
         if ((rand() % 4) == 1)
-            c->windDirection = (rand() % 4) + DIR_WEST;
+            c->windDirection = dirRandomDir(MASK_DIR_ALL);
         c->windCounter = 0;
         if (tileIsBalloon(c->saveGame->transport) &&
             c->saveGame->balloonstate) {
