@@ -37,6 +37,15 @@ typedef enum {
     SPELLEFFECT_TREMOR          /* tremor spell */
 } SpellEffect;
 
+/* Field types for the Energy field spell */
+typedef enum {
+    ENERGYFIELD_NONE,
+    ENERGYFIELD_FIRE,
+    ENERGYFIELD_LIGHTNING,
+    ENERGYFIELD_POISON,
+    ENERGYFIELD_SLEEP
+} EnergyFieldType;
+
 typedef struct _Mixture {
     unsigned short reagents[REAG_MAX];
 } Mixture;

@@ -33,7 +33,7 @@ static int spellAwaken(int player);
 static int spellBlink(int dir);
 static int spellCure(int player);
 static int spellDispel(int dir);
-static int spellEField(int dir);
+static int spellEField(int param);
 static int spellFireball(int dir);
 static int spellGate(int phase);
 static int spellHeal(int player);
@@ -495,9 +495,27 @@ static int spellDispel(int dir) {
     return 1;
 }
 
-static int spellEField(int dir) {
+static int spellEField(int param) {
     int x, y, z;
-
+    int fieldTile;
+    int fieldType;
+    int dir;
+    unsigned char tile;
+    const Annotation *a;
+    
+    /* Unpack fieldType and direction */
+    fieldType = param >> 4;
+    dir = param & 0xF;
+    
+    /* Make sure params valid */
+    switch (fieldType) {
+        case ENERGYFIELD_FIRE: fieldTile = FIREFIELD_TILE; break;
+        case ENERGYFIELD_LIGHTNING: fieldTile = LIGHTNINGFIELD_TILE; break;
+        case ENERGYFIELD_POISON: fieldTile = POISONFIELD_TILE; break;
+        case ENERGYFIELD_SLEEP: fieldTile = SLEEPFIELD_TILE; break;
+        default: return 0; break;
+    }
+        
     z = c->location->z;
 
     if (c->location->context == CTX_DUNGEON) {
@@ -511,8 +529,25 @@ static int spellEField(int dir) {
     dirMove((Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->location->map, x, y))
         return 0;
-    
-    annotationAdd(x, y, z, c->location->map->id, LIGHTNINGFIELD_TILE);
+    else {
+        /*
+         * Observed behaviour on Amiga version of Ultima IV:
+         * Field cast on other field: Works, unless original field is lightning
+         * in which case it doesn't.
+         * Field cast on monster: Works, monster remains the visible tile
+         * Field cast on top of field and then dispel = no fields left
+         * The code below seems to produce this behaviour.
+         */
+        tile = (*c->location->tileAt)(c->location->map, x, y, z, WITH_OBJECTS);
+        if (!tileIsWalkable(tile)) return 0;
+        
+        /* Get rid of old field, if any */
+        a = annotationAt(x, y, z, c->location->map->id);
+        if (a && tileCanDispel(a->tile))
+            annotationRemove(x, y, z, c->location->map->id, a->tile);
+            
+        annotationAdd(x, y, z, c->location->map->id, fieldTile);
+    }
 
     return 1;
 }

@@ -71,6 +71,8 @@ int peerCityHandleChoice(int choice);
 int castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
 int castForPlayerGetPhase(int phase);
+int castForPlayerGetEnergyType(int fieldType);
+int castForPlayerGetEnergyDir(Direction dir);
 int castForPlayer2(int spell, void *data);
 void gameCastSpell(unsigned int spell, int caster, int param);
 void gameSpellEffect(unsigned int spell, int player, int hzSound);
@@ -127,6 +129,9 @@ char monsterNameBuffer[32];
 char howmany[3];
 int paused = 0;
 int pausedTimer = 0;
+int castPlayer;
+unsigned int castSpell;
+EnergyFieldType fieldType;
 
 /* FIXME */
 Mixture *mix;
@@ -1169,22 +1174,35 @@ int gameGetDirectionKeyHandler(int key, void *data) {
 
 int gameGetFieldTypeKeyHandler(int key, void *data) {
     int (*handleFieldType)(int field) = (int(*)(int))data;    
-    int fieldTile = 0;
+    fieldType = ENERGYFIELD_NONE;
 
+    eventHandlerPopKeyHandler();
+    
     switch(tolower(key)) {
-    case 'f': fieldTile = FIREFIELD_TILE; break;
-    case 'l': fieldTile = LIGHTNINGFIELD_TILE; break;
-    case 'p': fieldTile = POISONFIELD_TILE; break;
-    case 's': fieldTile = SLEEPFIELD_TILE; break;
+    case 'f': fieldType = ENERGYFIELD_FIRE; break;
+    case 'l': fieldType = ENERGYFIELD_LIGHTNING; break;
+    case 'p': fieldType = ENERGYFIELD_POISON; break;
+    case 's': fieldType = ENERGYFIELD_SLEEP; break;
     default: break;
     }
-
-    if (fieldTile > 0) {
-        (*handleFieldType)(fieldTile);
+    
+    if (fieldType != ENERGYFIELD_NONE) {
+        screenMessage("%c\n", toupper(key));
+        (*handleFieldType)((int)fieldType);
         return 1;
+    } else {
+        /* Invalid input here = spell failure */
+        screenMessage("Failed!\n");
+        /* 
+         * Confirmed both mixture loss and mp loss in this situation in the 
+         * original Ultima IV (at least, in the Amiga version.) 
+         */
+        c->saveGame->mixtures[castSpell]--;
+        c->saveGame->players[castPlayer].mp -= spellGetRequiredMP(castSpell);
+        (*c->location->finishTurn)();
     }
-
-    return 0;    
+    
+    return 0;
 }
 
 int gameGetPhaseKeyHandler(int key, void *data) {    
@@ -1719,9 +1737,6 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     return 1;
 }
 
-int castPlayer;
-unsigned int castSpell;
-
 int gameCastForPlayer(int player) {
     AlphaActionInfo *info;
 
@@ -1782,15 +1797,16 @@ int castForPlayer2(int spell, void *data) {
         gameGetPlayerForCommand(&castForPlayerGetDestPlayer, 1);        
         break;
     case SPELLPRM_DIR:
-    case SPELLPRM_TYPEDIR:
-        {
-            if (c->location->context == CTX_DUNGEON)
-                gameCastSpell(castSpell, castPlayer, c->saveGame->orientation);
-            else {
-                screenMessage("Dir: ");
-                eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir);
-            }
+        if (c->location->context == CTX_DUNGEON)
+            gameCastSpell(castSpell, castPlayer, c->saveGame->orientation);
+        else {
+            screenMessage("Dir: ");
+            eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir);
         }
+        break;
+    case SPELLPRM_TYPEDIR:
+        screenMessage("Energy type? ");
+        eventHandlerPushKeyHandlerData(&gameGetFieldTypeKeyHandler, (void *) &castForPlayerGetEnergyType);
         break;
     case SPELLPRM_FROMDIR:
         screenMessage("From Dir: ");
@@ -1815,6 +1831,29 @@ int castForPlayerGetDestDir(Direction dir) {
 
 int castForPlayerGetPhase(int phase) {
     gameCastSpell(castSpell, castPlayer, phase);
+    (*c->location->finishTurn)();
+    return 1;
+}
+
+int castForPlayerGetEnergyType(int fieldType) {
+    /* Need a direction */
+    if (c->location->context == CTX_DUNGEON)
+        castForPlayerGetEnergyDir((Direction)c->saveGame->orientation);
+    else {
+        screenMessage("Dir: ");
+        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetEnergyDir);
+    }
+    return 1;
+}
+
+int castForPlayerGetEnergyDir(Direction dir) {
+    int param;
+    
+    /* Need to pack both dir and fieldType into param */
+    param = fieldType << 4;
+    param |= (int) dir;
+    
+    gameCastSpell(castSpell, castPlayer, param);
     (*c->location->finishTurn)();
     return 1;
 }
