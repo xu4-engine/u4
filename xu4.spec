@@ -38,7 +38,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc README AUTHORS COPYING doc/FileFormats.txt
+%doc README AUTHORS COPYING doc/FileFormats.txt doc/tools.txt
 %{_bindir}/u4
 %{_datadir}/pixmaps/u4.bmp
 %{_datadir}/pixmaps/u4.png
@@ -61,6 +61,9 @@ rm -rf $RPM_BUILD_ROOT
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Tue Apr 29 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added tools.txt to documentation
+
 * Mon Apr  7 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added tlkconv tool
 - added SDL_mixer-devel to build dependancies
