@@ -5,8 +5,48 @@
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include "u4file.h"
+#include "unzip.h"
 
 #include "debug.h"
+
+using std::string;
+
+/**
+ * A specialization of U4FILE that uses C stdio internally.
+ */
+class U4FILE_stdio : public U4FILE {
+public:
+    static U4FILE *create(const char *fname);
+
+    virtual void close();
+    virtual int seek(long offset, int whence);
+    virtual size_t read(void *ptr, size_t size, size_t nmemb);
+    virtual int getc();
+    virtual int putc(int c);
+    virtual long length();
+
+private:
+    FILE *file;
+};
+
+/**
+ * A specialization of U4FILE that reads files out of zip archives
+ * automatically.
+ */
+class U4FILE_zip : public U4FILE {
+public:
+    static U4FILE *create(const char *fname, const char *zipfile, const char *zippath, int translate);
+
+    virtual void close();
+    virtual int seek(long offset, int whence);
+    virtual size_t read(void *ptr, size_t size, size_t nmemb);
+    virtual int getc();
+    virtual int putc(int c);
+    virtual long length();
+
+private:
+    unzFile zfile;
+};
 
 extern bool verbose;
 
@@ -84,7 +124,7 @@ int u4isUpgradeInstalled(void) {
     u4f = u4fopen("ega.drv");
     if (u4f) {
 
-        filelength = u4flength(u4f);
+        filelength = u4f->length();
         u4fclose(u4f);
 
         /* see if (ega.drv > 5k).  If so, the upgrade is installed */
@@ -96,6 +136,153 @@ int u4isUpgradeInstalled(void) {
         printf("u4isUpgradeInstalled %d\n", result);
 
     return result;
+}
+
+int U4FILE::getshort() {
+    int byteLow = getc();
+    return byteLow | (getc() << 8);
+}
+
+U4FILE *U4FILE_stdio::create(const char *fname) {
+    U4FILE_stdio *u4f;
+    FILE *f;
+
+    f = fopen(fname, "rb");
+    if (!f)
+        return NULL;
+
+    u4f = new U4FILE_stdio;
+    u4f->file = f;
+    
+    return u4f;
+}
+
+void U4FILE_stdio::close() {
+    fclose(file);
+}
+
+int U4FILE_stdio::seek(long offset, int whence) {
+    return fseek(file, offset, whence);
+}
+
+size_t U4FILE_stdio::read(void *ptr, size_t size, size_t nmemb) {
+    return fread(ptr, size, nmemb, file);
+}
+
+int U4FILE_stdio::getc() {
+    return fgetc(file);
+}
+
+int U4FILE_stdio::putc(int c) {
+    return fputc(c, file);
+}
+
+long U4FILE_stdio::length() {
+    long curr, len;
+
+    curr = ftell(file);
+    fseek(file, 0L, SEEK_END);
+    len = ftell(file);
+    fseek(file, curr, SEEK_SET);
+
+    return len;
+}
+
+/**
+ * Opens a file from within a zip archive.  fname is the filename
+ * being searched for, zipfile is the name of the zip archive, zippath
+ * is a path prefix prepended to each filename.  If translate is
+ * non-zero, some special case translation is done to the filenames to
+ * match up with the names in u4upgrad.zip.
+ */
+U4FILE *U4FILE_zip::create(const char *fname, const char *zipfile, const char *zippath, int translate) {
+    U4FILE_zip *u4f;
+    unzFile f;
+    char *pathname;
+
+    f = unzOpen(zipfile);
+    if (!f)
+        return NULL;
+
+    if (translate)
+        fname = u4upgrade_translate_filename(fname);
+    pathname = new char[strlen(zippath) + strlen(fname) + 1];
+    strcpy(pathname, zippath);
+    strcat(pathname, fname);
+
+    if (unzLocateFile(f, pathname, 2) == UNZ_END_OF_LIST_OF_FILE) {
+        delete pathname;
+        unzClose(f);
+        return NULL;
+    }
+    unzOpenCurrentFile(f);
+
+    u4f = new U4FILE_zip;
+    u4f->zfile = f;
+
+    delete pathname;
+
+    return u4f;
+}
+
+void U4FILE_zip::close() {
+    unzClose(zfile);
+}
+
+int U4FILE_zip::seek(long offset, int whence) {
+    char *buf;
+    long pos;
+
+    ASSERT(whence != SEEK_END, "seeking with whence == SEEK_END not allowed with zipfiles");
+    pos = unztell(zfile);
+    if (whence == SEEK_CUR)
+        offset = pos + offset;
+    if (offset == pos)
+        return 0;
+    if (offset < pos) {
+        unzCloseCurrentFile(zfile);
+        unzOpenCurrentFile(zfile);
+        pos = 0;
+    }
+    ASSERT(offset - pos > 0, "error in U4FILE_zip::seek");
+    buf = new char[offset - pos];
+    unzReadCurrentFile(zfile, buf, offset - pos);
+    delete buf;
+    return 0;
+}
+
+size_t U4FILE_zip::read(void *ptr, size_t size, size_t nmemb) {
+    size_t retval = unzReadCurrentFile(zfile, ptr, size * nmemb);
+    if (retval > 0)
+        retval = retval / size;
+
+    return retval;
+}
+
+int U4FILE_zip::getc() {
+    int retval;
+    unsigned char c;
+
+    if (unzReadCurrentFile(zfile, &c, 1) > 0)
+        retval = c;
+    else
+        retval = EOF;
+
+    return retval;
+}
+
+int U4FILE_zip::putc(int c) {
+    ASSERT(0, "zipfiles must be read-only!");
+}
+
+long U4FILE_zip::length() {
+    unz_file_info fileinfo;
+
+    unzGetCurrentFileInfo(zfile, &fileinfo,
+                          NULL, 0,
+                          NULL, 0,
+                          NULL, 0);
+    return fileinfo.uncompressed_size;
 }
 
 /**
@@ -134,7 +321,7 @@ U4FILE *u4fopen(const char *fname) {
             u4upgradeZipExists = 1;        
 
         /* look for the file in ultima4.zip */
-        u4f = u4fopen_zip(fname, pathname, "ultima4/", 0);
+        u4f = U4FILE_zip::create(fname, pathname, "ultima4/", 0);
         if (u4f) {
             delete pathname;
             delete upg_pathname;
@@ -143,7 +330,7 @@ U4FILE *u4fopen(const char *fname) {
 
         /* look for the file in u4upgrad.zip */
         if (u4upgradeZipExists) {
-            u4f = u4fopen_zip(fname, upg_pathname, "", 1);
+            u4f = U4FILE_zip::create(fname, upg_pathname, "", 1);
             delete upg_pathname;
             if (u4f) {
                 delete pathname; 
@@ -175,7 +362,7 @@ U4FILE *u4fopen(const char *fname) {
     delete fname_copy;
 
     if (pathname) {
-        u4f = u4fopen_stdio(pathname);
+        u4f = U4FILE_stdio::create(pathname);
         if (verbose && u4f != NULL)
             printf("%s successfully opened\n", pathname);
         delete pathname;
@@ -189,179 +376,42 @@ U4FILE *u4fopen(const char *fname) {
  * U4FILE struct.
  */
 U4FILE *u4fopen_stdio(const char *fname) {
-    U4FILE *u4f;
-    FILE *f;
-
-    f = fopen(fname, "rb");
-    if (!f)
-        return NULL;
-
-    u4f = new U4FILE;
-    if (!u4f)
-        return NULL;
-
-    u4f->type = STDIO_FILE;
-    u4f->file = f;
-    
-    return u4f;
-}
-
-/**
- * Opens a file from within a zip archive.  fname is the filename
- * being searched for, zipfile is the name of the zip archive, zippath
- * is a path prefix prepended to each filename.  If translate is
- * non-zero, some special case translation is done to the filenames to
- * match up with the names in u4upgrad.zip.
- */
-U4FILE *u4fopen_zip(const char *fname, const char *zipfile, const char *zippath, int translate) {
-    U4FILE *u4f;
-    unzFile f;
-    char *pathname;
-
-    f = unzOpen(zipfile);
-    if (!f)
-        return NULL;
-
-    if (translate)
-        fname = u4upgrade_translate_filename(fname);
-    pathname = new char[strlen(zippath) + strlen(fname) + 1];
-    strcpy(pathname, zippath);
-    strcat(pathname, fname);
-
-    if (unzLocateFile(f, pathname, 2) == UNZ_END_OF_LIST_OF_FILE) {
-        delete pathname;
-        unzClose(f);
-        return NULL;
-    }
-    unzOpenCurrentFile(f);
-
-    u4f = new U4FILE;
-    if (!u4f) {
-        delete pathname;
-        unzClose(f);
-        return NULL;
-    }
-
-    u4f->type = ZIP_FILE;
-    u4f->zfile = f;
-
-    delete pathname;
-
-    return u4f;
+    return U4FILE_stdio::create(fname);
 }
 
 /**
  * Closes a data file from the Ultima 4 for DOS installation.
  */
 void u4fclose(U4FILE *f) {
-    switch (f->type) {
-    case STDIO_FILE:
-        fclose(f->file);
-        break;
-    case ZIP_FILE:
-        unzClose(f->zfile);
-        break;
-    }
+    f->close();
     delete f;
 }
 
 int u4fseek(U4FILE *f, long offset, int whence) {
-    char *buf;
-    long pos;
-
-    switch (f->type) {
-    case STDIO_FILE:
-        return fseek(f->file, offset, whence);
-    case ZIP_FILE:
-        ASSERT(whence != SEEK_END, "seeking with whence == SEEK_END not allowed with zipfiles");
-        pos = unztell(f->zfile);
-        if (whence == SEEK_CUR)
-            offset = pos + offset;
-        if (offset == pos)
-            return 0;
-        if (offset < pos) {
-            unzCloseCurrentFile(f->zfile);
-            unzOpenCurrentFile(f->zfile);
-            pos = 0;
-        }
-        ASSERT(offset - pos > 0, "error in u4fseek (zipfile)");
-        buf = new char[offset - pos];
-        unzReadCurrentFile(f->zfile, buf, offset - pos);
-        delete buf;
-        return 0;
-    }
-
-    return 0;
+    return f->seek(offset, whence);
 }
 
 size_t u4fread(void *ptr, size_t size, size_t nmemb, U4FILE *f) {
-    size_t retval;
-
-    switch(f->type) {
-    case STDIO_FILE:
-        retval = fread(ptr, size, nmemb, f->file);
-        break;
-    case ZIP_FILE:
-        retval = unzReadCurrentFile(f->zfile, ptr, size * nmemb);
-        if (retval > 0)
-            retval = retval / size;
-        break;
-    }
-    return retval;
+    return f->read(ptr, size, nmemb);
 }
 
 int u4fgetc(U4FILE *f) {
-    int retval;
-    unsigned char c;
-
-    switch(f->type) {
-    case STDIO_FILE:
-        retval = fgetc(f->file);
-        break;
-    case ZIP_FILE:
-        if (unzReadCurrentFile(f->zfile, &c, 1) > 0)
-            retval = c;
-        else
-            retval = EOF;
-        break;
-    }
-
-    return retval;
+    return f->getc();
 }
 
 int u4fgetshort(U4FILE *f) {
-    int byteLow = u4fgetc(f);
-    return byteLow | (u4fgetc(f) << 8);
+    return f->getshort();
 }
 
 int u4fputc(int c, U4FILE *f) {
-    ASSERT(f->type == STDIO_FILE, "zipfiles must be read-only!");
-    return fputc(c, f->file);
+    return f->putc(c);
 }
 
 /**
  * Returns the length in bytes of a file.
  */
 long u4flength(U4FILE *f) {
-    long curr, len;
-    unz_file_info fileinfo;
-
-    switch (f->type) {
-    case STDIO_FILE:
-        curr = ftell(f->file);
-        fseek(f->file, 0L, SEEK_END);
-        len = ftell(f->file);
-        fseek(f->file, curr, SEEK_SET);
-        break;
-    case ZIP_FILE:
-        unzGetCurrentFileInfo(f->zfile, &fileinfo,
-                              NULL, 0,
-                              NULL, 0,
-                              NULL, 0);
-        len = fileinfo.uncompressed_size;
-    }
-
-    return len;
+    return f->length();
 }
 
 /**
@@ -377,12 +427,12 @@ string *u4read_stringtable(U4FILE *f, long offset, int nstrings) {
     ASSERT(offset < u4flength(f), "offset begins beyond end of file");
 
     if (offset != -1)
-        u4fseek(f, offset, SEEK_SET);
+        f->seek(offset, SEEK_SET);
     for (i = 0; i < nstrings; i++) {
         char c;
         buffer.erase();
 
-        while ((c = u4fgetc(f)) != '\0')
+        while ((c = f->getc()) != '\0')
             buffer += c;
         
         strs[i] = buffer;
@@ -443,7 +493,6 @@ const char *u4upgrade_translate_filename(const char *fname) {
         char *translation;
     } translations[] = {
         { "compassn.ega", "compassn.old" },
-        { "courage.ega", "courage.old" },
         { "courage.ega", "courage.old" },
         { "cove.tlk", "cove.old" },
         { "ega.drv", "ega.old" }, /* not actually used */
