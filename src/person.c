@@ -505,7 +505,7 @@ char *lordBritishGetIntro(Conversation *cnv) {
         if (c->saveGame->members == 1)
             intro = concat("\n\n\nLord British\nsays:  Welcome\n", c->saveGame->players[0].name, NULL);
         else if (c->saveGame->members == 2)
-            intro = concat("n\n\nLord British\nsays:  Welcome\n,",
+            intro = concat("n\n\nLord British\nsays:  Welcome\n",
                             c->saveGame->players[0].name,
                             " and thee also ",
                             c->saveGame->players[1].name,
@@ -540,7 +540,7 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
 
     if (inquiry[0] == '\0' ||
         strcasecmp(inquiry, "bye") == 0) {
-        reply = strdup("\nLord British\nsays: Fare thee\nwell my friends!");
+        reply = strdup("\nLord British says: Fare thee well my friends!\n");
         cnv->state = CONV_DONE;
         musicPlay();
     }
