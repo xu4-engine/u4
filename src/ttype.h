@@ -39,10 +39,11 @@ int tileIsLockedDoor(unsigned char tile);
 int tileIsShip(unsigned char tile);
 int tileIsHorse(unsigned char tile);
 int tileIsBalloon(unsigned char tile);
-int tileGetDirection(unsigned char tile);
-void tileSetDirection(unsigned short *tile, int dir);
+unsigned int tileGetDirection(unsigned char tile);
+void tileSetDirection(unsigned short *tile, unsigned int dir);
 int tileCanTalkOver(unsigned char tile);
 TileEffect tileGetEffect(unsigned char tile);
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile);
+int tileIsOpaque(unsigned char tile);
 
 #endif

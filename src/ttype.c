@@ -107,7 +107,7 @@ int tileIsBalloon(unsigned char tile) {
 }
 
 
-int tileGetDirection(unsigned char tile) {
+unsigned int tileGetDirection(unsigned char tile) {
     if (tileIsShip(tile))
         return tile - 16 + DIR_WEST;
     else if (tileIsHorse(tile))
@@ -116,7 +116,7 @@ int tileGetDirection(unsigned char tile) {
         return DIR_WEST;        /* some random default */
 }
 
-void tileSetDirection(unsigned short *tile, int dir) {
+void tileSetDirection(unsigned short *tile, unsigned int dir) {
     if (tileIsShip(*tile))
         *tile = 16 + dir;
     else if (tileIsHorse(*tile))
@@ -164,3 +164,12 @@ TileAnimationStyle tileGetAnimationStyle(unsigned char tile) {
     return ANIM_NONE;
 }
 
+int tileIsOpaque(unsigned char tile) {
+    if (tile == 6 ||            /* forest */
+        tile == 8 ||            /* mountains */
+        tile == 57 ||           /* stone wall */
+        tile == 73 ||           /* secret door */
+        tile == 127)            /* brick wall */
+        return 1;
+    return 0;
+}
