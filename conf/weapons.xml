@@ -53,7 +53,7 @@
         <constraint canuse="false" class="fighter"/>
         <constraint canuse="false" class="shepherd"/>
     </weapon>
-    <weapon name="Magic Wand" abbr="WND" range="10" damage="160" magic="true" hittile="magic">
+    <weapon name="Magic Wand" abbr="WND" range="10" damage="160" magic="true" hittile="magic" misstile="magic">
         <constraint canuse="false" class="all"/>
         <constraint canuse="true" class="mage"/>
         <constraint canuse="true" class="bard"/>
