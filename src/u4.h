@@ -5,13 +5,6 @@
 #ifndef U4_H
 #define U4_H
 
-typedef enum {
-    DIR_WEST,
-    DIR_NORTH,
-    DIR_EAST,
-    DIR_SOUTH
-} Direction;
-
 /* info for loading world map from world.map */
 #define MAP_WIDTH 256
 #define MAP_HEIGHT 256
