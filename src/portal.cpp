@@ -136,9 +136,13 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
     }
 
     /* if the portal changes the map retroactively, do it here */
-    if (portal->retroActiveDest && location->prev) {
-        location->prev->coords = portal->retroActiveDest->coords;        
-        location->prev->map = mapMgr->get(portal->retroActiveDest->mapid);
+    /* 
+     * note that we use c->location instead of location, since
+     * location has probably been invalidated above 
+     */
+    if (portal->retroActiveDest && c->location->prev) {
+        c->location->prev->coords = portal->retroActiveDest->coords;        
+        c->location->prev->map = mapMgr->get(portal->retroActiveDest->mapid);
     }
 
     if (destination->type == Map::SHRINE) {
