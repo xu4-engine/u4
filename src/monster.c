@@ -50,7 +50,8 @@ void monsterLoadInfoFromXml() {
         { "wontattack", MATTR_NOATTACK },        
         { "ambushes", MATTR_AMBUSHES },
         { "incorporeal", MATTR_INCORPOREAL },
-        { "nochest", MATTR_NOCHEST }
+        { "nochest", MATTR_NOCHEST },
+        { "divides", MATTR_DIVIDES }
     };    
     
     /* steals="" */
@@ -349,6 +350,10 @@ int monsterWalks(const Monster *monster) {
     return (monsterFlies(monster) |
             monsterSwims(monster) |
             monsterSails(monster)) ? 0 : 1;
+}
+
+int monsterDivides(const Monster *monster) {
+    return (monster->mattr & MATTR_DIVIDES) ? 1 : 0;
 }
 
 int monsterCanMoveOntoMonsters(const Monster *monster) {

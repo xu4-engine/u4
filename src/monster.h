@@ -88,7 +88,8 @@ typedef enum {
     MATTR_AMBUSHES      = 0x400,
     MATTR_RANDOMRANGED  = 0x800,
     MATTR_INCORPOREAL   = 0x1000,
-    MATTR_NOCHEST       = 0x2000
+    MATTR_NOCHEST       = 0x2000,
+    MATTR_DIVIDES       = 0x4000
 } MonsterAttrib;
 
 typedef enum {
@@ -147,6 +148,7 @@ int monsterTeleports(const Monster *monster);
 int monsterSwims(const Monster *monster);
 int monsterSails(const Monster *monster);
 int monsterWalks(const Monster *monster);
+int monsterDivides(const Monster *monster);
 int monsterCanMoveOntoMonsters(const Monster *monster);
 int monsterCanMoveOntoAvatar(const Monster *monster);
 int monsterCanMoveOnto(const Monster *monster);

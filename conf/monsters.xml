@@ -38,7 +38,7 @@
     <monster id="26" encounterSize="12" name="Bat" tile="148" frames="4" basehp="48" exp="4" flies="true" movement="wanders" good="true" leader="47"/>
     <monster id="27" encounterSize="6" name="Giant Spider" tile="152" frames="4" basehp="64" exp="5" ranged="true" rangedhittile="poison" rangedmisstile="poison" spawntile="3" movement="wanders" good="true" poisons="true" leader="25"/>
     <monster id="28" encounterSize="4" name="Ghost" tile="156" frames="4" basehp="80" exp="6" undead="true" resists="sleep" incorporeal="true" leader="46"/>
-    <monster id="29" encounterSize="15" name="Slime" tile="160" frames="4" ambushes="true" basehp="48" exp="4"/>
+    <monster id="29" encounterSize="15" name="Slime" tile="160" frames="4" ambushes="true" basehp="48" exp="4" divides="true"/>
     <monster id="30" encounterSize="6" name="Troll" tile="164" frames="4" ambushes="true" basehp="96" exp="7" ranged="true" leader="41"/>
     <monster id="31" encounterSize="15" name="Gremlin" tile="168" frames="4" basehp="48" exp="4" steals="food"/>
     <monster id="32" encounterSize="1" name="Mimic" tile="172" frames="4" basehp="192" exp="13" ranged="true" rangedhittile="poison" rangedmisstile="poison" movement="none" camouflage="true" camouflageTile="60"/>

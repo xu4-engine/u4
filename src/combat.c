@@ -66,6 +66,7 @@ int movePartyMember(Direction dir, int member);
 int combatChooseWeaponDir(int key, void *data);
 int combatChooseWeaponRange(int key, void *data);
 void combatApplyMonsterTileEffects(void);
+int combatDivideMonster(const Object *monster);
 
 void combatBegin(Map *map, Object *monster, int isNormalCombat) {
     int i, j;
@@ -606,6 +607,12 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
 
             /* apply the damage to the monster */
             combatApplyDamageToMonster(monster, playerGetDamage(&c->saveGame->players[focus]), focus);
+
+            /* monster is still alive and has the chance to divide - xu4 enhancement */
+            if (settings->minorEnhancements && rand()%2 == 0 &&
+                combatInfo.monsters[monster] && monsterDivides(combatInfo.monsters[monster]->monster)) {                
+                combatDivideMonster(combatInfo.monsters[monster]);                                
+            }
         }
     }
 
@@ -1366,4 +1373,37 @@ void combatApplyMonsterTileEffects(void) {
             }
         }
     }
+}
+
+int combatDivideMonster(const Object *obj) {
+    int dirmask = mapGetValidMoves(c->location->map, obj->x, obj->y, c->location->z, obj->tile);
+    Direction d = dirRandomDir(dirmask);                
+    
+    if (d != DIR_NONE) {                    
+        int index;
+        int found = 0;
+                            
+        /* find the first free slot in the monster table, if it exists */
+        for (index = 0; index < AREA_MONSTERS; index++) {
+            if (combatInfo.monsters[index] == NULL) {
+                int x, y;
+
+                found = 1;
+                screenMessage("%s Divides!\n", obj->monster->name);
+
+                /* find a spot to put our new monster */
+                x = obj->x;
+                y = obj->y;
+                dirMove(d, &x, &y);
+
+                /* create our new monster! */
+                combatInfo.monsters[index] = mapAddMonsterObject(c->location->map, obj->monster, x, y, c->location->z);
+                combatInfo.monsterHp[index] = monsterGetInitialHp(combatInfo.monsters[index]->monster);
+                combatInfo.monster_status[index] = STAT_GOOD;
+                break;
+            }
+        }
+        return found;
+    }
+    return 0;
 }
