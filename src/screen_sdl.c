@@ -59,7 +59,7 @@ int scale, forceEga, forceVga;
 ScreenScaler filterScaler;
 
 const struct {
-    const char *filename, *filenameEga;
+    const char *filename, *filenameOld;
     int width, height;
     int hasVga;
     CompressionType comp;
@@ -325,9 +325,12 @@ int screenLoadBackground(BackgroundType bkgd) {
     SDL_Surface *unscaled;
     U4FILE *file;
 
+    const char *vgaFilename = usingZipFiles ? backgroundInfo[bkgd].filenameOld : backgroundInfo[bkgd].filename;
+    const char *egaFilename = usingZipFiles ? backgroundInfo[bkgd].filename : backgroundInfo[bkgd].filenameOld;
+
     ret = 0;
     if (!forceEga && backgroundInfo[bkgd].hasVga) {
-        file = u4fopen(backgroundInfo[bkgd].filename);
+        file = u4fopen(vgaFilename);
     
         if (file) {
             ret = screenLoadImageVga(&unscaled,
@@ -376,9 +379,9 @@ int screenLoadBackground(BackgroundType bkgd) {
         }
 
         /* open the correct file for what we're trying to do */
-        file = backgroundInfo[egaBkgd].filenameEga ?
-            u4fopen(backgroundInfo[egaBkgd].filenameEga) : /* is there a different file for ega stuff? */
-            u4fopen(backgroundInfo[egaBkgd].filename);     /* no? then use the normal file */
+        file = egaFilename ?
+            u4fopen(egaFilename) : /* is there a different file for ega stuff? */
+            u4fopen(vgaFilename);  /* no? then use the normal file */
 
         if (file) {
             ret = screenLoadImageEga(&unscaled,

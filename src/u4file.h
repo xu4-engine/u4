@@ -37,4 +37,6 @@ char *u4find_conf(const char *fname);
 char *u4find_graphics(const char *fname);
 const char *u4upgrade_translate_filename(const char *fname);
 
+extern int usingZipFiles;
+
 #endif

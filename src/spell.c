@@ -447,7 +447,14 @@ static int spellDispel(int dir) {
     /* 
      * get the location of the avatar (or current party member, if in battle)
      */
-    locationGetCurrentPosition(c->location, &x, &y, &z);    
+    locationGetCurrentPosition(c->location, &x, &y, &z);
+
+    /*
+     * move to where we want to dispel the field
+     */
+    mapDirMove(c->location->map, (Direction) dir, &x, &y);
+    if (MAP_IS_OOB(c->location->map, x, y))
+        return 0;
 
     /* FIXME: move this to its own function */
     /* figure out the tile that will replace the field */
@@ -465,10 +472,6 @@ static int spellDispel(int dir) {
     /* couldn't find a tile to replace with -- take a guess! */
     if (newTile == 0)
         newTile = (c->location->context & CTX_COMBAT) ? BRICKFLOOR_1_TILE : BRICKFLOOR_TILE;    
-
-    mapDirMove(c->location->map, (Direction) dir, &x, &y);
-    if (MAP_IS_OOB(c->location->map, x, y))
-        return 0;
 
     /*
      * if there is a field annotation, remove it

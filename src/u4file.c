@@ -12,6 +12,7 @@
 #include "debug.h"
 
 extern int verbose;
+int usingZipFiles = 0;
 
 /* the possible paths where u4 for DOS can be installed */
 static const char * const paths[] = {
@@ -91,18 +92,26 @@ U4FILE *u4fopen(const char *fname) {
     if (pathname) {
         char *upg_pathname;
         upg_pathname = u4find_path("u4upgrad.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0]));
+        /* both zip files are present */
+        if (upg_pathname) 
+            usingZipFiles = 1; 
+
+        /* look for the file in ultima4.zip */
+        u4f = u4fopen_zip(fname, pathname, "ultima4/", 0);        
+        if (u4f) { 
+            free(pathname);
+            return u4f; /* file was found, return it! */ 
+        }
+
+        /* look for the file in u4upgrad.zip */
         if (upg_pathname) {
             u4f = u4fopen_zip(fname, upg_pathname, "", 1);
             free(upg_pathname);
             if (u4f) {
-                free(pathname);
-                return u4f;
+                free(pathname); 
+                return u4f; /* file was found, return it! */ 
             }
         }
-        u4f = u4fopen_zip(fname, pathname, "ultima4/", 0);
-        free(pathname);
-        if (u4f)
-            return u4f;
     }
 
     /*
@@ -366,6 +375,7 @@ char *u4find_path(const char *fname, const char * const *pathent, unsigned int n
 
     if (verbose && f != NULL)
         printf("%s successfully found\n", pathname);
+    else printf("%s not found\n", fname);
 
     if (f) {
         fclose(f);
