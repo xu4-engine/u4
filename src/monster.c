@@ -144,7 +144,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
         return monsterForTile(mtile);
     }
 
-    if (!tileIsWalkable(tile))
+    if (!tileIsMonsterWalkable(tile))
         return 0;
 
     if (c->saveGame->moves > 100000)
