@@ -621,14 +621,11 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
             if (tileIsFlyable(tile) && monsterFlies(m)) {                
                 retval = DIR_ADD_TO_MASK(d, retval);
             }
-            /* swimming monsters */
-            else if (tileIsSwimable(tile)) {
-                if (monsterSwims(m))
+            /* swimming monsters and sailing monsters */
+            else if (tileIsSwimable(tile) || tileIsSailable(tile)) {
+                if (monsterSwims(m) && tileIsSwimable(tile))
                     retval = DIR_ADD_TO_MASK(d, retval);
-            }
-            /* sailing monsters */
-            else if (tileIsSailable(tile)) {
-                if (monsterSails(m))
+                if (monsterSails(m) && tileIsSailable(tile))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }            
             /* walking monsters */
