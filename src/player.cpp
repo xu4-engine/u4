@@ -31,7 +31,7 @@ bool isPartyMember(Object *punknown) {
 /**
  * PartyMember class implementation
  */ 
-PartyMember::PartyMember(class Party *p, SaveGamePlayerRecord *pr) : 
+PartyMember::PartyMember(Party *p, SaveGamePlayerRecord *pr) : 
     Creature(MapTile::tileForClass(pr->klass)),    
     player(pr),
     party(p)

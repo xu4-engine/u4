@@ -16,6 +16,8 @@
 #include "tile.h"
 #include "types.h"
 
+class Party;
+
 using std::string;
 
 typedef std::vector<class PartyMember *> PartyMemberVector;
@@ -76,7 +78,7 @@ typedef enum {
  */ 
 class PartyMember : public Creature, public Script::Provider {
 public:
-    PartyMember(class Party *p, SaveGamePlayerRecord *pr);
+    PartyMember(Party *p, SaveGamePlayerRecord *pr);
     virtual ~PartyMember();
 
     void notifyOfChange();
