@@ -242,12 +242,6 @@ This file stores the information that is stored when the game is
 saved.  It includes party-wide information like gold and food, plus a
 39 byte record for each character.
 
-Things that might be in here, but haven't been verified:
- - amount of time elapsed since last action (offset 0x0?)
- - which dungeon orbs have been used
- - location of balloon
- - direction of the wind
-
 offset len  notes
 0x0    4    counter (incremented regularly, probably every screen update)
 0x4    2    moves (low word)
@@ -298,14 +292,40 @@ offset len  notes
 0x1DC  2    balloon status (0-on ground, 1-flying)
 0x1DE  2    current phase of left moon (Trammel); range = 0-7
 0x1E0  2    current phase of right moon (Felucca); range = 0-7
-0x1E2  2    ???
-0x1E4  1    introduced to Lord British (0-haven't been introduced, 1-introduced)
-0x1E5  9    ???
+0x1E2  2    hull integrity of currently boarded ship
+            if you x-it a ship, save, restart the game, and board the
+            ship again, you will find that all damage to the ship has
+            been mysteriously repaired.
+0x1E4  2    introduced to Lord British (0-haven't been introduced, 1-introduced)
+0x1E6  2    time of last successful hole up & camp
+            the game stores ((moves / 0x64) & 0xffff) in this field when
+            you successfully hole up & camp. You can only hole up & camp
+            successfully if the current ((moves / 0x64) & 0xffff) is
+            different from the value in this field.
+0x1E8  2    time of last mandrake/nightshade find
+            the game stores (moves & 0xf0) in this field when you find
+            mandrake/nightshade. You can only find mandrake/nightshade
+            if the current (moves & 0xf0) is different from the value
+            in this field.
+0x1EA  2    time of last successful meditation at a shrine
+            the game stores ((moves / 0x64) & 0xffff) in this field when
+            you successfully meditate at a shrine. You can only meditate
+            successfuly if the current ((moves / 0x64) & 0xffff) is
+            different from the value in this field.
+0x1EC  2    time of last virtue-related conversation
+            the game stores ((moves / 0x10) & 0xffff) in this field when
+            one of the following happens:
+            1) you give gold to a beggar
+            2) you answer a yes/no question from an NPC
+            Giving gold to a beggar or answering a virtue-related yes/no
+            question only increases your virtue if the current
+            ((moves / 0x10) & 0xffff) is different from the value in this
+            field.
 0x1EE  2    if the party is in a dungeon: coordinates of this dungeon
             if not: coordinates of the dungeon last entered by the party
 0x1F0  2    orientation in dungeon (0-west, 1-north, 2-east, 3-south)
 0x1F2  2    dungeon level (starting at zero, 0xffff = surface)
-0x1F4  2    current party location
+0x1F4  2    current party location (see below)
 
 The character record format:
 
@@ -363,6 +383,20 @@ hex     location
 1e      Shrine of Honor
 1f      Shrine of Spirituality
 20      Shrine of Humility
+
+
+OUTMONST.SAV, MONSTERS.SAV
+--------------------------
+
+These files probably contains a list of monsters currently outside.
+Probably contains location of player ships and balloon, too.
+
+
+DNGMAP.SAV
+----------
+
+This file probably contains a list of the monsters(?) and objects
+(such as orbs) in the dungeons.
 
 
 TITLE.EXE
