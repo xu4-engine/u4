@@ -67,8 +67,8 @@ void statsUpdate() {
 
     statsAreaClear();
 
-    /* 
-     * update the upper stats box 
+    /*
+     * update the upper stats box
      */
     switch(c->statsItem) {
     case STATS_PARTY_OVERVIEW:
@@ -104,7 +104,7 @@ void statsUpdate() {
         break;
     }
 
-    /* 
+    /*
      * update the lower stats box (food, gold, etc.)
      */
     if (tileIsShip(c->saveGame->transport))
@@ -151,7 +151,7 @@ void statsAreaClear() {
 
     for (i = 0; i < STATS_AREA_WIDTH; i++)
         screenTextAt(STATS_AREA_X + i, 0, "%c", 13);
-    
+
     screenEraseTextArea(STATS_AREA_X, STATS_AREA_Y, STATS_AREA_WIDTH, STATS_AREA_HEIGHT);
 }
 
@@ -252,13 +252,13 @@ void statsShowEquipment() {
     int line;
 
     statsAreaSetTitle("Equipment");
-    
+
     line = STATS_AREA_Y;
-    screenTextAt(STATS_AREA_X, line++, "%2d-Torches", c->saveGame->torches);
-    screenTextAt(STATS_AREA_X, line++, "%2d-Gems", c->saveGame->gems);
-    screenTextAt(STATS_AREA_X, line++, "%2d-Keys", c->saveGame->keys);
+    screenTextAt(STATS_AREA_X, line++, "%2d Torches", c->saveGame->torches);
+    screenTextAt(STATS_AREA_X, line++, "%2d Gems", c->saveGame->gems);
+    screenTextAt(STATS_AREA_X, line++, "%2d Keys", c->saveGame->keys);
     if (c->saveGame->sextants > 0)
-        screenTextAt(STATS_AREA_X, line++, "%2d-Sextants", c->saveGame->sextants);
+        screenTextAt(STATS_AREA_X, line++, "%2d Sextants", c->saveGame->sextants);
 }
 
 /**
@@ -352,7 +352,7 @@ void statsShowMixtures() {
     int s, line, col;
 
     statsAreaSetTitle("Mixtures");
-    
+
     line = STATS_AREA_Y;
     col = 0;
     for (s = 0; s < SPELL_MAX; s++) {
