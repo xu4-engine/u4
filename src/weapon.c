@@ -22,15 +22,17 @@
 #define MASK_LEAVETILE              0x0020
 #define MASK_ATTACKTHROUGHOBJECTS   0x0040
 #define MASK_ABSOLUTERANGE          0x0080
+#define MASK_RETURNS                0x0100
 
 int weaponInfoLoaded = 0;
+int numWeapons = 0;
 Weapon weapons[MAX_WEAPONS];
 
 void weaponLoadInfoFromXml() {
-    char *fname;
+    char *fname, *range;
     xmlDocPtr doc;
     xmlNodePtr root, node;
-    int weapon, i;
+    int weapon, i;    
     static const struct {
         const char *name;
         unsigned int mask;        
@@ -40,7 +42,8 @@ void weaponLoadInfoFromXml() {
         { "choosedistance", MASK_CHOOSEDISTANCE },
         { "alwayshits", MASK_ALWAYSHITS },
         { "magic", MASK_MAGIC },
-        { "attackthroughobjects", MASK_ATTACKTHROUGHOBJECTS }
+        { "attackthroughobjects", MASK_ATTACKTHROUGHOBJECTS },
+        { "returns", MASK_RETURNS }
     };
 
     static const struct {
@@ -69,6 +72,8 @@ void weaponLoadInfoFromXml() {
         errorFatal("malformed weapons.xml");
 
     weapon = 0;
+    numWeapons = 0;
+
     for (node = root->xmlChildrenNode; node; node = node->next) {
         if (xmlNodeIsText(node) ||
             xmlStrcmp(node->name, (const xmlChar *) "weapon") != 0)
@@ -77,19 +82,24 @@ void weaponLoadInfoFromXml() {
         weapons[weapon].name = (char *)xmlGetProp(node, (const xmlChar *)"name");        
         weapons[weapon].abbr = (char *)xmlGetProp(node, (const xmlChar *)"abbr");
         weapons[weapon].canready = (char *)xmlGetProp(node, (const xmlChar *)"canready");
-        weapons[weapon].cantready = (char *)xmlGetProp(node, (const xmlChar *)"cantready");        
+        weapons[weapon].cantready = (char *)xmlGetProp(node, (const xmlChar *)"cantready");
         weapons[weapon].damage = atoi(xmlGetProp(node, (const xmlChar *)"damage"));
         weapons[weapon].hittile = HITFLASH_TILE;
         weapons[weapon].misstile = MISSFLASH_TILE;
         weapons[weapon].leavetile = 0;
         weapons[weapon].mask = 0;
-        
-        if (xmlGetProp(node, (const xmlChar *)"range") != NULL) { 
-            weapons[weapon].range = atoi(xmlGetProp(node, (const xmlChar *)"range"));            
-        } else {
-            weapons[weapon].range = atoi(xmlGetProp(node, (const xmlChar *)"absolute_range"));
-            weapons[weapon].mask |= MASK_ABSOLUTERANGE;
+
+        /* Get the range of the weapon, whether it is absolute or normal range */
+        range = (char *)xmlGetProp(node, (const xmlChar *)"range");
+        if (range == NULL) {
+            range = (char *)xmlGetProp(node, (const xmlChar *)"absolute_range");
+            if (range != NULL)
+                weapons[weapon].mask |= MASK_ABSOLUTERANGE;
         }
+        if (range == NULL)
+            errorFatal("malformed weapons.xml file: range or absolute_range not found for weapon %s", weapons[weapon].name);
+
+        weapons[weapon].range = atoi(range);
 
         /* Load weapon attributes */
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
@@ -125,6 +135,7 @@ void weaponLoadInfoFromXml() {
         }
 
         weapon++;
+        numWeapons++;
     }
 
     xmlFreeDoc(doc);
@@ -258,4 +269,12 @@ int weaponCanAttackThroughObjects(int weapon) {
 
 int weaponRangeAbsolute(int weapon) {
     return (weapons[weapon].mask & MASK_ABSOLUTERANGE);
+}
+
+/**
+ * Returns true if the weapon 'returns' to its user after used/thrown
+ */
+
+int weaponReturns(int weapon) {
+    return (weapons[weapon].mask & MASK_RETURNS);
 }

@@ -62,6 +62,7 @@ int combatZtatsKeyHandler(int key, void *data);
 int combatReadyForPlayer(int weapon, void *data);
 void combatFinishTurn(void);
 int combatAttackAtCoord(int x, int y, int distance, void *data);
+int combatReturnWeaponToOwner(int x, int y, int distance, void *data);
 int combatInitialNumberOfMonsters(unsigned char monster);
 int combatIsWon(void);
 int combatIsLost(void);
@@ -421,7 +422,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     info->prev_y = y;
 
     hittile = weaponGetHitTile(weapon);
-    misstile = weaponGetMissTile(weapon);    
+    misstile = weaponGetMissTile(weapon);
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (oldx >= 0) && (oldy >= 0))
@@ -430,6 +431,9 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     /* Missed */
     if (x == -1 && y == -1) {
         combatFinishTurn();
+        if (weaponReturns(weapon))
+            combatReturnWeaponToOwner(oldx, oldy, distance-1, data);
+
         return 1;
     }
 
@@ -512,8 +516,46 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
         }
 
     }
+
+    if (weaponReturns(weapon))
+        combatReturnWeaponToOwner(x, y, distance, data);
     
     combatFinishTurn();
+
+    return 1;
+}
+
+int combatReturnWeaponToOwner(int x, int y, int distance, void *data) {
+    int i, new_x, new_y, orig_x, orig_y, misstile, dir;
+    CoordActionInfo* info = (CoordActionInfo*)data;
+    int weapon = c->saveGame->players[info->player].weapon;
+    
+    misstile = weaponGetMissTile(weapon);
+
+    new_x = x;
+    new_y = y;
+    orig_x = info->origin_x;
+    orig_y = info->origin_y;
+
+    if (x > orig_x) dir = DIR_WEST;
+    else if (x < orig_x) dir = DIR_EAST;
+    else if (y > orig_y) dir = DIR_NORTH;
+    else dir = DIR_SOUTH;
+
+    for (i = distance; i > 1; i--) {
+        dirMove(dir, &new_x, &new_y);
+        
+        annotationSetVisual(annotationAddTemporary(new_x, new_y, c->location->z, c->location->map->id, misstile));
+        gameUpdateScreen();
+
+        /* Based on attack speed setting in setting struct, make a delay for
+           the attack annotation */
+        if (settings->attackdelay > 0)
+            eventHandlerSleep(settings->attackdelay * 2);
+        
+        annotationRemove(new_x, new_y, c->location->z, c->location->map->id, misstile);
+    }
+    gameUpdateScreen();
 
     return 1;
 }
