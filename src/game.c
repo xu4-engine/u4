@@ -874,8 +874,6 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
  * creature is present at that point, zero is returned.
  */
 int attackAtCoord(int x, int y) {
-    Map *combatMap;
-
     if (x == -1 && y == -1)
         return 0;
 

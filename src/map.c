@@ -190,7 +190,7 @@ int mapReadCon(Map *map, FILE *con) {
 }
 
 int mapReadWorld(Map *map, FILE *world) {
-    int x, xch, y, ych, i;
+    int x, xch, y, ych;
 
     /* the map must be 256x256 to be read from the world map file */
     assert(map->width == MAP_WIDTH);
