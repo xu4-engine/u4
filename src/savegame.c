@@ -317,7 +317,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
     obj = objs;
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (obj) {
-            if (/* is animate */ 0)
+            if (obj->tile >= 0x80)
                 monsterTable[anim++] = obj;
             else
                 monsterTable[--inanim] = obj;
@@ -390,7 +390,7 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
 int saveGameMonstersRead(Object **objs, FILE *f) {
     Object *obj;
     Object monsterTable[MONSTERTABLE_SIZE];
-    int i;
+    int i, inanim;
     unsigned char ch;
 
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
@@ -427,6 +427,7 @@ int saveGameMonstersRead(Object **objs, FILE *f) {
         monsterTable[i].prevy = ch;
     }
 
+    inanim = 1;
     for (i = MONSTERTABLE_SIZE - 1; i >= 0; i--) {
         if (monsterTable[i].tile != 0 &&
             monsterTable[i].prevtile != 0) {
@@ -437,12 +438,13 @@ int saveGameMonstersRead(Object **objs, FILE *f) {
             obj->prevtile = monsterTable[i].prevtile;
             obj->prevx = monsterTable[i].prevx;
             obj->prevy = monsterTable[i].prevy;
-            obj->movement_behavior = MOVEMENT_FIXED; /* FIXME: monsters should be MOVEMENT_ATTACK_AVATAR */
+            obj->movement_behavior = inanim ? MOVEMENT_FIXED : MOVEMENT_ATTACK_AVATAR;
             obj->person = NULL;
             obj->hasFocus = 0;
             obj->next = *objs;
             *objs = obj;
-        }
+        } else
+            inanim = 0;
     }
 
     return 1;
