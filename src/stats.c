@@ -291,7 +291,7 @@ void statsShowMixtures() {
     
     line = STATS_AREA_Y;
     col = 0;
-    for (s = 0; s < 26; s++) {
+    for (s = 0; s < SPELL_MAX; s++) {
         int n = c->saveGame->mixtures[s];
         if (n >= 100)
             n = 99;

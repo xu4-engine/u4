@@ -19,6 +19,8 @@
 #include "game.h"
 #include "player.h"
 
+#define MEDITATION_MANTRAS_PER_CYCLE 16
+
 const Shrine *shrine;
 char virtueBuffer[20];
 int cycles, completedCycles;
@@ -96,7 +98,7 @@ void shrineMeditationCycle() {
 void shrineTimer() {
     ReadBufferActionInfo *info;
 
-    if (reps++ >= 16) {
+    if (reps++ >= MEDITATION_MANTRAS_PER_CYCLE) {
         eventHandlerRemoveTimerCallback(&shrineTimer);
         eventHandlerPopKeyHandler();
 

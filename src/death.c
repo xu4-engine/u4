@@ -33,8 +33,8 @@ void deathTimer(void);
 void deathRevive(void);
 
 const struct {
-    int timeout;
-    const char *text;
+    int timeout;                /* pause in seconds */
+    const char *text;           /* text of message */
 } deathMsgs[] = {
     { 3, "\n\n\nAll is Dark...\n" },
     { 3, "\nBut wait...\n" },
