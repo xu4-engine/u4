@@ -57,42 +57,36 @@ static int spellZdown(int unused);
 #define NIGHTSHADE (1 << REAG_NIGHTSHADE)
 #define MANDRAKE (1 << REAG_MANDRAKE)
 
-/* spell context flags */
-#define SC_NORMAL  (1 << 0)
-#define SC_DUNGEON (1 << 1)
-#define SC_COMBAT  (1 << 2)
-#define SC_ANY (SC_NORMAL | SC_DUNGEON | SC_COMBAT)
-
 const Spell spells[] = {
-    { "Awaken",       GINSENG | GARLIC,         SC_ANY,      &spellAwaken,  SPELLPRM_PLAYER,  5 },
-    { "Blink",        SILK | MOSS,              SC_NORMAL,   &spellBlink,   SPELLPRM_DIR,     15 },
-    { "Cure",         GINSENG | GARLIC,         SC_ANY,      &spellCure,    SPELLPRM_PLAYER,  5 },
-    { "Dispel",       ASH | GARLIC | PEARL,     SC_ANY,      &spellDispel,  SPELLPRM_DIR,     20 },
-    { "Energy Field", ASH | SILK | PEARL,       SC_ANY,      &spellEField,  SPELLPRM_TYPEDIR, 10 },
-    { "Fireball",     ASH | PEARL,              SC_COMBAT,   &spellFireball,SPELLPRM_DIR,     15 },
-    { "Gate",         ASH | PEARL | MANDRAKE,   SC_NORMAL,   &spellGate,    SPELLPRM_PHASE,   40 },
-    { "Heal",         GINSENG | SILK,           SC_ANY,      &spellHeal,    SPELLPRM_PLAYER,  10 },
-    { "Iceball",      PEARL | MANDRAKE,         SC_COMBAT,   &spellIceball, SPELLPRM_DIR,     20 },
+    { "Awaken",       GINSENG | GARLIC,         CTX_ANY,      &spellAwaken,  SPELLPRM_PLAYER,  5 },
+    { "Blink",        SILK | MOSS,              CTX_WORLDMAP, &spellBlink,   SPELLPRM_DIR,     15 },
+    { "Cure",         GINSENG | GARLIC,         CTX_ANY,      &spellCure,    SPELLPRM_PLAYER,  5 },
+    { "Dispel",       ASH | GARLIC | PEARL,     CTX_ANY,      &spellDispel,  SPELLPRM_DIR,     20 },
+    { "Energy Field", ASH | SILK | PEARL,       CTX_ANY,      &spellEField,  SPELLPRM_TYPEDIR, 10 },
+    { "Fireball",     ASH | PEARL,              CTX_COMBAT,   &spellFireball,SPELLPRM_DIR,     15 },
+    { "Gate",         ASH | PEARL | MANDRAKE,   CTX_WORLDMAP, &spellGate,    SPELLPRM_PHASE,   40 },
+    { "Heal",         GINSENG | SILK,           CTX_ANY,      &spellHeal,    SPELLPRM_PLAYER,  10 },
+    { "Iceball",      PEARL | MANDRAKE,         CTX_COMBAT,   &spellIceball, SPELLPRM_DIR,     20 },
     { "Jinx",         PEARL | NIGHTSHADE | MANDRAKE,
-                                                SC_COMBAT,   &spellJinx,    SPELLPRM_NONE,    30 },
-    { "Kill",         PEARL | NIGHTSHADE,       SC_COMBAT,   &spellKill,    SPELLPRM_DIR,     25 },
-    { "Light",        ASH,                      SC_DUNGEON,  &spellLight,   SPELLPRM_NONE,    5 },
-    { "Magic missile", ASH | PEARL,             SC_COMBAT,   &spellMMissle, SPELLPRM_DIR,     5 },
-    { "Negate",       ASH | GARLIC | MANDRAKE,  SC_COMBAT,   &spellNegate,  SPELLPRM_NONE,    20 },
-    { "Open",         ASH | MOSS,               SC_NORMAL,   &spellOpen,    SPELLPRM_NONE,    5 },
-    { "Protection",   ASH | GINSENG | GARLIC,   SC_ANY,      &spellProtect, SPELLPRM_NONE,    15 },
-    { "Quickness",    ASH | GINSENG | MOSS,     SC_ANY,      &spellQuick,   SPELLPRM_NONE,    20 },
+                                                CTX_COMBAT,   &spellJinx,    SPELLPRM_NONE,    30 },
+    { "Kill",         PEARL | NIGHTSHADE,       CTX_COMBAT,   &spellKill,    SPELLPRM_DIR,     25 },
+    { "Light",        ASH,                      CTX_DUNGEON,  &spellLight,   SPELLPRM_NONE,    5 },
+    { "Magic missile", ASH | PEARL,             CTX_COMBAT,   &spellMMissle, SPELLPRM_DIR,     5 },
+    { "Negate",       ASH | GARLIC | MANDRAKE,  CTX_COMBAT,   &spellNegate,  SPELLPRM_NONE,    20 },
+    { "Open",         ASH | MOSS,               CTX_NORMAL,   &spellOpen,    SPELLPRM_NONE,    5 },
+    { "Protection",   ASH | GINSENG | GARLIC,   CTX_ANY,      &spellProtect, SPELLPRM_NONE,    15 },
+    { "Quickness",    ASH | GINSENG | MOSS,     CTX_ANY,      &spellQuick,   SPELLPRM_NONE,    20 },
     { "Resurrect",    ASH | GINSENG | GARLIC | SILK | MOSS | MANDRAKE, 
-                                                SC_ANY,      &spellRez,     SPELLPRM_PLAYER,  45 },
-    { "Sleep",        SILK | GINSENG,           SC_COMBAT,   &spellSleep,   SPELLPRM_NONE,    15 },
-    { "Tremor",       ASH | MOSS | MANDRAKE,    SC_COMBAT,   &spellTremor,  SPELLPRM_NONE,    30 },
-    { "Undead",       ASH | GARLIC,             SC_ANY,      &spellUndead,  SPELLPRM_NONE,    15 },
-    { "View",         NIGHTSHADE | MANDRAKE,    SC_NORMAL | SC_DUNGEON, 
+                                                CTX_ANY,      &spellRez,     SPELLPRM_PLAYER,  45 },
+    { "Sleep",        SILK | GINSENG,           CTX_COMBAT,   &spellSleep,   SPELLPRM_NONE,    15 },
+    { "Tremor",       ASH | MOSS | MANDRAKE,    CTX_COMBAT,   &spellTremor,  SPELLPRM_NONE,    30 },
+    { "Undead",       ASH | GARLIC,             CTX_ANY,      &spellUndead,  SPELLPRM_NONE,    15 },
+    { "View",         NIGHTSHADE | MANDRAKE,    CTX_NON_COMBAT, 
                                                              &spellView,    SPELLPRM_NONE,    15 },
-    { "Winds",        ASH | MOSS,               SC_NORMAL,   &spellWinds,   SPELLPRM_FROMDIR, 10 },
-    { "X-it",         ASH | SILK | MOSS,        SC_DUNGEON,  &spellXit,     SPELLPRM_NONE,    15 },
-    { "Y-up",         SILK | MOSS,              SC_DUNGEON,  &spellYup,     SPELLPRM_NONE,    10 },
-    { "Z-down",       SILK | MOSS,              SC_DUNGEON,  &spellZdown,   SPELLPRM_NONE,    5 }
+    { "Winds",        ASH | MOSS,               CTX_WORLDMAP, &spellWinds,   SPELLPRM_FROMDIR, 10 },
+    { "X-it",         ASH | SILK | MOSS,        CTX_DUNGEON,  &spellXit,     SPELLPRM_NONE,    15 },
+    { "Y-up",         SILK | MOSS,              CTX_DUNGEON,  &spellYup,     SPELLPRM_NONE,    10 },
+    { "Z-down",       SILK | MOSS,              CTX_DUNGEON,  &spellZdown,   SPELLPRM_NONE,    5 }
 };
 
 #define N_SPELLS (sizeof(spells) / sizeof(spells[0]))
@@ -187,7 +181,11 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
      * FIXME: handle dungeon and combat contexts when they are
      * implemented 
      */
-    if ((spells[spell].context | SC_NORMAL) == 0) {
+    /*if ((spells[spell].context & CTX_NORMAL) == 0) {
+        *error = CASTERR_WRONGCONTEXT;
+        return 0;
+    }*/
+    if ((c->location->context & spells[spell].context) == 0) {
         *error = CASTERR_WRONGCONTEXT;
         return 0;
     }

@@ -102,7 +102,7 @@ void gameInit() {
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));    
     c->annotation = NULL;    
-    c->location = locationNew(0, 0, 0, &world_map, VIEW_NORMAL, (FinishTurnCallback)&gameFinishTurn, NULL);
+    c->location = locationNew(0, 0, 0, &world_map, VIEW_NORMAL, CTX_WORLDMAP, (FinishTurnCallback)&gameFinishTurn, NULL);
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.playerInquiryBuffer[0] = '\0';
@@ -234,7 +234,8 @@ void gameUpdateScreen() {
 
 void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     int i, x, y, z, viewMode;    
-    FinishTurnCallback finishTurn = &gameFinishTurn;
+    LocationContext context;
+    FinishTurnCallback finishTurn = &gameFinishTurn;    
 
     if (portal) {
         x = portal->startx;
@@ -253,20 +254,23 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     
     switch (map->type) {
     case MAP_DUNGEON:
+        context = CTX_DUNGEON;
         viewMode = VIEW_DUNGEON;
         break;
     case MAP_COMBAT:
+        context = CTX_COMBAT;
         finishTurn = &combatFinishTurn;
     case MAP_TOWN:
     case MAP_VILLAGE:
     case MAP_CASTLE:
     case MAP_RUIN:
     default:
+        context = CTX_CITY;
         viewMode = VIEW_NORMAL;
         break;
     }
     
-    ct->location = locationNew(x, y, z, map, viewMode, finishTurn, ct->location);    
+    ct->location = locationNew(x, y, z, map, viewMode, context, finishTurn, ct->location);    
 
     if ((map->type == MAP_TOWN ||
          map->type == MAP_VILLAGE ||
@@ -427,14 +431,22 @@ void gameCastSpell(unsigned int spell, int caster, int param) {
         SpellCastError err;
         const char *msg;
     } errorMsgs[] = {
-        { CASTERR_NOMIX, "None Mixed!\n" },
-        { CASTERR_WRONGCONTEXT, "Can't Cast Here!\n" },
+        { CASTERR_NOMIX, "None Mixed!\n" },        
         { CASTERR_MPTOOLOW, "Not Enough MP!\n" },
         { CASTERR_FAILED, "Failed!\n" }
     };
 
     if (!spellCast(spell, caster, param, &spellError, 1)) {
-        for (i = 0; i < sizeof(errorMsgs) / sizeof(errorMsgs[0]); i++) {
+        if (spellError == CASTERR_WRONGCONTEXT) {
+            extern Spell spells[];
+            switch(spells[spell].context) {
+            case CTX_WORLDMAP: screenMessage("World map only!\n"); break;
+            case CTX_COMBAT: screenMessage("Combat only!\n"); break;
+            case CTX_DUNGEON: screenMessage("Dungeon only!\n"); break;
+            default: screenMessage("Not here!\n"); break;
+            }
+        }
+        else for (i = 0; i < sizeof(errorMsgs) / sizeof(errorMsgs[0]); i++) {
             if (spellError == errorMsgs[i].err) {
                 msg = errorMsgs[i].msg;
                 break;
