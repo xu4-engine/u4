@@ -21,7 +21,7 @@ Map shrine_honesty_map = {
     0, /* flags */
     MUSIC_SHRINES, /* music */
     NULL, /* data */
-    { .shrine = &honesty_shrine } /* shrine */
+    { &honesty_shrine } /* shrine */
 };
 
 const Shrine honesty_shrine = {
@@ -42,7 +42,7 @@ Map shrine_compassion_map = {
     0, /* flags */
     MUSIC_SHRINES, /* music */
     NULL, /* data */
-    { .shrine = &compassion_shrine } /* shrine */
+    { &compassion_shrine } /* shrine */
 };
 
 const Shrine compassion_shrine = {
@@ -63,7 +63,7 @@ Map shrine_valor_map = {
     0, /* flags */
     MUSIC_SHRINES, /* music */
     NULL, /* data */
-    { .shrine = &valor_shrine } /* shrine */
+    { &valor_shrine } /* shrine */
 };
 
 const Shrine valor_shrine = {
@@ -84,7 +84,7 @@ Map shrine_justice_map = {
     0, /* flags */
     MUSIC_SHRINES, /* music */
     NULL, /* data */
-    { .shrine = &justice_shrine } /* shrine */
+    { &justice_shrine } /* shrine */
 };
 
 const Shrine justice_shrine = {
@@ -105,7 +105,7 @@ Map shrine_sacrifice_map = {
     0, /* flags */
     MUSIC_SHRINES, /* music */
     NULL, /* data */
-    { .shrine = &sacrifice_shrine } /* shrine */
+    { &sacrifice_shrine } /* shrine */
 };
 
 const Shrine sacrifice_shrine = {
@@ -126,7 +126,7 @@ Map shrine_honor_map = {
     0, /* flags */
     MUSIC_SHRINES, /* music */
     NULL, /* data */
-    { .shrine = &honor_shrine } /* shrine */
+    { &honor_shrine } /* shrine */
 };
 
 const Shrine honor_shrine = {
@@ -147,7 +147,7 @@ Map shrine_spirituality_map = {
     0, /* flags */
     MUSIC_SHRINES, /* music */
     NULL, /* data */
-    { .shrine = &spirituality_shrine } /* shrine */
+    { &spirituality_shrine } /* shrine */
 };
 
 const Shrine spirituality_shrine = {
@@ -168,7 +168,7 @@ Map shrine_humility_map = {
     0, /* flags */
     MUSIC_SHRINES, /* music */
     NULL, /* data */
-    { .shrine = &humility_shrine } /* shrine */
+    { &humility_shrine } /* shrine */
 };
 
 const Shrine humility_shrine = {
