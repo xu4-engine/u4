@@ -59,8 +59,8 @@ void settingsRead() {
         else if (strstr(buffer, "filter=") == buffer) {
             settings->filter = settingsStringToFilter(buffer + strlen("filter="));
             if (settings->filter == SCL_MAX) {
-                fprintf(stderr, "xu4: invalid filter name in settings file: resetting to default\n");
-                settings->filter = SCL_DEFAULT;
+                fprintf(stderr, "xu4: invalid filter name in settings file: resetting to point scaler\n");
+                settings->filter = SCL_POINT;
             }
         }
         else if (strstr(buffer, "vol=") == buffer)
@@ -105,7 +105,7 @@ void settingsWrite() {
  */
 const char *settingsFilterToString(FilterType filter) {
     static const char * const filterNames[] = {
-        "default", "2xBi", "2xSaI", "AdvanceMAME"
+        "point", "2xBi", "2xSaI", "AdvanceMAME"
     };
 
     if (filter >= SCL_MAX)
@@ -121,7 +121,7 @@ const char *settingsFilterToString(FilterType filter) {
 FilterType settingsStringToFilter(const char *str) {
     int f;
     FilterType result = SCL_MAX;
-    for (f = SCL_DEFAULT; f < SCL_MAX; f++) {
+    for (f = (FilterType) 0; f < SCL_MAX; f++) {
         if (strcmp(str, settingsFilterToString((FilterType) f)) == 0) {
             result = (FilterType) f;
             break;

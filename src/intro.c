@@ -292,7 +292,7 @@ int introKeyHandler(int key, void *data) {
         case 'f':
             settings->filter++;
             if (settings->filter == SCL_MAX)
-                settings->filter = SCL_DEFAULT;
+                settings->filter = (FilterType) 0;
             break;
         case 'v':
             settings->vol = !settings->vol;

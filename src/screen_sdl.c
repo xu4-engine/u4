@@ -40,7 +40,7 @@ int screenLoadPaletteVga(const char *filename);
 int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp);
 int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp);
 SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter);
-SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n);
+SDL_Surface *screenScalePoint(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N);
 SDL_Surface *screenAdvanceMAMEScale(SDL_Surface *src, int scale, int N);
@@ -823,14 +823,17 @@ SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter) {
     }
 
     if (scale != 1) {
-        dest = screenScaleDefault(src, scale, n);
+        dest = screenScalePoint(src, scale, n);
         SDL_FreeSurface(src);
     }
 
     return dest;
 }
 
-SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n) {
+/**
+ * A simple row and column duplicating scaler.
+ */
+SDL_Surface *screenScalePoint(SDL_Surface *src, int scale, int n) {
     int x, y, i, j;
     SDL_Surface *dest;
 
@@ -853,6 +856,10 @@ SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n) {
     return dest;
 }
 
+/**
+ * A scaler that interpolates each intervening pixel from it's two
+ * neighbors.
+ */
 SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
     int i, x, y, xoff, yoff;
     SDL_Color a, b, c, d;
@@ -950,6 +957,10 @@ int _2xSaI_GetResult2(SDL_Color a, SDL_Color b, SDL_Color c, SDL_Color d) {
     return r;
 }
 
+/**
+ * A more sophisticated scaler that interpolates each new pixel the
+ * surrounding pixels.
+ */
 SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
     int ii, x, y, xoff0, xoff1, xoff2, yoff0, yoff1, yoff2;
     SDL_Color a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;
@@ -1127,6 +1138,10 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
     return dest;
 }
 
+/**
+ * A more sophisticated scaler that doesn't interpolate, but avoids
+ * the stair step effect by detecting angles.
+ */
 SDL_Surface *screenAdvanceMAMEScale(SDL_Surface *src, int scale, int n) {
     int ii, x, y, xoff0, xoff1, yoff0, yoff1;
     SDL_Color a, b, c, d, e, f, g, h, i;

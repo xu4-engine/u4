@@ -6,7 +6,7 @@
 #define SETTINGS_H
 
 typedef enum {
-    SCL_DEFAULT,
+    SCL_POINT,
     SCL_2xBi,
     SCL_2xSaI,
     SCL_AdvanceMAME,
