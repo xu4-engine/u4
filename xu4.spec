@@ -1,6 +1,6 @@
 Summary: xu4 - Ultima IV Recreated
 Name: xu4
-Version: 0.09
+Version: 0.5
 Release: 1
 URL: http://xu4.sourceforge.net/
 Source0: http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
