@@ -1,0 +1,95 @@
+XU4 DATA FILE TOOLS
+===================
+
+$Id$
+
+The xu4 engine includes a number of tools for converting the various
+Ultima IV data files into easy-to-use formats and back.  With these
+tools, you don't need a detailed understanding of the Ultima IV
+internals to make U4 mods.  Better yet, the mods should work equally
+well with xu4 and the original Ultima IV for DOS.
+
+Rather than create GUI file editors for each type, I've chosen to
+simply write small utilities to convert the data files into standard
+file formats.  After all, there are better image/text/xml editors out
+there than I can possibly hope to write.
+
+
+rleenc & rledec
+---------------
+
+These two tools are used with the background graphics used in the game
+including the borders that surround the main play screen and the
+shrine visions.  They convert the images from the U4 internal image
+format to the .PNG file format, which should be easy to modify in
+paint programs like Photoshop, Paint Shop Pro, or The Gimp.
+
+They work equally well with the original 16 color EGA graphics files
+and the 256 color VGA upgrade files.  The "u4vga.pal" file must be in
+the current directory when converting VGA files.
+
+These tools work with the following files:
+
+start.ega                compassn.ega
+courage.ega              honesty.ega
+honor.ega                humility.ega
+justice.ega              love.ega
+sacrific.ega             spirit.ega
+truth.ega                valor.ega
+rune_0.ega               rune_1.ega
+rune_2.ega               rune_3.ega
+rune_4.ega               rune_5.ega
+
+They also work with these files, found only in the VGA upgrade:
+
+rune_6.ega               rune_7.ega
+rune_8.ega
+
+Example:
+C:\xu4> rledec START.EGA START.PNG      (to convert to PNG)
+C:\xu4> rleenc START.PNG START.EGA      (to convert back to U4 format)
+
+
+lzwenc & lzwdec
+---------------
+
+These two tools are ulike rleenc and rledec, except they work with the
+intro graphics files, such as the stone circle, the gypsy wagon, and
+the card images.  They convert the images from the U4 LZW image format
+to .PNG.
+
+These tools work with the following files:
+
+title.ega                tree.ega
+portal.ega               outside.ega
+inside.ega               wagon.ega
+gypsy.ega                abacus.ega
+honcom.ega               valjus.ega
+sachonor.ega             spirhum.ega
+animate.ega
+
+Example:
+C:\xu4> lzwdec TITLE.EGA TITLE.PNG      (to convert to PNG)
+C:\xu4> lzwenc TITLE.PNG TITLE.EGA      (to convert back to U4 format)
+
+tlkconv
+-------
+
+tlkconv converts the Ultima IV .TLK files into XML and back.  The
+conversation text can be changed, but it must follow the basic Ultima
+IV conversation structure: response for each of the standard questions
+("name", "look", "job", and "health") a pronoun (he, she, it, etc.),
+two addtional four letter keywords and the responses they trigger, and
+finally a question and the responses for yes and no answers.
+Attributes also specify when the question is asked, whether the answer
+to the question will affect the players humility, and how likely the
+talker is to turn away in mid-conversation.
+
+This should also make internationalizing most of the NPC convsations
+easier.  Note that both xu4 and Ultima IV for DOS only support
+US-ASCII characters (xu4 may support ISO-8859-1 or even Unicode in the
+future).
+
+Example:
+C:\xu4> tlkconv --toxml BRITAIN.TLK BRITAIN.XML        (to convert to XML)
+C:\xu4> tlkconv --fromxml BRITAIN.XML BRITAIN.TLK      (to convert back to U4 format)
