@@ -39,6 +39,8 @@ int talkHandleBuffer(const char *message);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 
+int collisionOverride = 0;
+
 /**
  * The main key handler for the game.  Interpretes each key as a
  * command - 'a' for attack, 't' for talk, etc.
@@ -65,6 +67,11 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case U4_RIGHT:
         moveAvatar(1, 0);
+        break;
+
+    case 3:                     /* ctrl-C */
+        screenMessage("Cmd: ");
+        eventHandlerPushKeyHandler(&gameSpecialCmdKeyHandler);
         break;
 
     case 'a':
@@ -168,7 +175,7 @@ int gameBaseKeyHandler(int key, void *data) {
             choiceInfo->choices = "yn";
             choiceInfo->handleChoice = &quitHandleChoice;
             eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
-            screenMessage("Quit & save\nExit (Y/N)? ");
+            screenMessage("Quit & Save...\n%d moves\nExit (Y/N)? ", c->saveGame->moves);
         }
         break;
 
@@ -206,8 +213,16 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
     }
 
-    if (valid)
+    if (valid) {
+        c->saveGame->moves++;
+        c->saveGame->food -= c->saveGame->members;
+        if (c->saveGame->food < 0) {
+            /* FIXME: handle starving */
+            c->saveGame->food = 0;
+        }
+        statsUpdate();
         annotationCycle();
+    }
 
     return valid || keyHandlerDefault(key, NULL);
 }
@@ -398,6 +413,61 @@ int gameZtatsKeyHandler2(int key, void *data) {
     statsUpdate();
 
     return 1;
+}
+
+int gameSpecialCmdKeyHandler(int key, void *data) {
+    int i;
+    int valid = 1;
+
+    eventHandlerPopKeyHandler();
+
+    switch (key) {
+    case 'c':
+        collisionOverride = !collisionOverride;
+        screenMessage("Collision detection %s!\n\020", collisionOverride ? "off" : "on");
+        break;
+    case 'e':
+        screenMessage("Equipment!\n\020");
+        for (i = ARMR_NONE + 1; i < ARMR_MAX; i++)
+            c->saveGame->armor[i] = 8;
+        for (i = WEAP_HANDS + 1; i < WEAP_MAX; i++)
+            c->saveGame->weapons[i] = 8;
+        break;
+    case 'h':
+        screenMessage("Help:\nc - Collision\ne - Equipment\nh - Help\ni - Items\nk - Show Karma\nm - Mixtures\nr - Reagents\n\020");
+        break;
+    case 'i':
+        screenMessage("Items!\n\020");
+        c->saveGame->torches = 99;
+        c->saveGame->gems = 99;
+        c->saveGame->keys = 99;
+        c->saveGame->items = ITEM_SKULL | ITEM_CANDLE | ITEM_BOOK | ITEM_BELL | ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T | ITEM_HORN | ITEM_WHEEL;
+        c->saveGame->stones = 0xff;
+        c->saveGame->runes = 0xff;
+        c->saveGame->food = 99900;
+        c->saveGame->gold = 999;
+        statsUpdate();
+        break;
+    case 'k':
+        screenMessage("Karma:\nH C V J S H S H\n%02x%02x%02x%02x%02x%02x%02x%02x\n\020", c->saveGame->karma[0], c->saveGame->karma[1], c->saveGame->karma[2],
+                      c->saveGame->karma[3], c->saveGame->karma[4], c->saveGame->karma[5], c->saveGame->karma[6], c->saveGame->karma[7]);
+        break;
+    case 'm':
+        screenMessage("Mixtures!\n\020");
+        for (i = 0; i < 26; i++)
+            c->saveGame->mixtures[i] = 99;
+        break;
+    case 'r':
+        screenMessage("Reagents!\n\020");
+        for (i = 0; i < REAG_MAX; i++)
+            c->saveGame->reagents[i] = 99;
+        break;
+    default:
+        valid = 0;
+        break;
+    }
+
+    return valid || keyHandlerDefault(key, NULL);
 }
 
 /**
@@ -605,7 +675,7 @@ int quitHandleChoice(char choice) {
         eventHandlerSetExitFlag(1);
         break;
     case 'n':
-        screenMessage("%c\n", choice);
+        screenMessage("%c\n\020", choice);
         break;
     default:
         assert(0);              /* shouldn't happen */
@@ -781,8 +851,8 @@ void moveAvatar(int dx, int dy) {
 	}
     }
 
-    if (iswalkable(mapTileAt(c->map, newx, newy)) &&
-          !mapPersonAt(c->map, newx, newy)) {
+    if (collisionOverride || 
+        (iswalkable(mapTileAt(c->map, newx, newy)) && !mapPersonAt(c->map, newx, newy))) {
 	c->saveGame->x = newx;
 	c->saveGame->y = newy;
     }
