@@ -44,12 +44,12 @@ int main(int argc, char *argv[]) {
 
     infile = fopen(infname, "rb");
     if (!infile) {
-        perror(argv[1]);
+        perror(infname);
         exit(1);
     }
 
     if (fseek(infile, 0L, SEEK_END)) {
-        perror(argv[1]);
+        perror(infname);
         exit(1);
     }
     inlen = ftell(infile);
