@@ -130,6 +130,28 @@ int mapRead(Map *map, FILE *ult, FILE *tlk) {
     return 1;
 }
 
+int mapReadCon(Map *map, FILE *con, int header) {
+    int i;
+
+    /* the map must be 11x11 to be read from an .CON file */
+    assert(map->width == CON_WIDTH);
+    assert(map->height == CON_HEIGHT);
+
+    map->data = (unsigned char *) malloc(CON_HEIGHT * CON_WIDTH);
+    if (!map->data)
+        return 0;
+
+    if (header)
+        fseek(con, 64L, SEEK_SET);
+
+    for (i = 0; i < (CON_HEIGHT * CON_WIDTH); i++) {
+        if (!readChar(&(map->data[i]), con))
+            return 0;
+    }
+
+    return 1;
+}
+
 int mapReadWorld(Map *map, FILE *world) {
     int x, xch, y, ych, i;
 

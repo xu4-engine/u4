@@ -37,6 +37,7 @@ typedef struct _Map {
 #define MAP_IS_OOB(mapptr, x, y) ((x) < 0 || (x) >= (mapptr)->width || (y) < 0 || (y) >= (mapptr)->height)
 
 int mapRead(Map *map, FILE *ult, FILE *tlk);
+int mapReadCon(Map *map, FILE *con, int header);
 int mapReadWorld(Map *map, FILE *world);
 const Person *mapPersonAt(const Map *map, int x, int y);
 const Portal *mapPortalAt(const Map *map, int x, int y);
