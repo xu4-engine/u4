@@ -88,19 +88,19 @@ all:: $(MAIN) mkutils
 mkutils::  dumpsavegame$(EXEEXT) u4enc$(EXEEXT) u4dec$(EXEEXT) tlkconv$(EXEEXT)
 
 $(MAIN): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LIBS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 dumpsavegame$(EXEEXT) : util/dumpsavegame.o savegame.o io.o names.o
-	$(CXX) $(CXXFLAGS) -o $@ $+
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $+
 
 u4enc$(EXEEXT) : util/u4enc.o lzw/hash.o util/pngconv.o
-	$(CXX) $(CXXFLAGS) -o $@ $+ -lpng -lz
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $+ -lpng -lz
 
 u4dec$(EXEEXT) : util/u4dec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o rle.o util/pngconv.o
-	$(CXX) $(CXXFLAGS) -o $@ $+ -lpng -lz
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $+ -lpng -lz
 
 tlkconv$(EXEEXT) : util/tlkconv.o
-	$(CXX) $(CXXFLAGS) -o $@ $+ $(shell xml2-config --libs)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $+ $(shell xml2-config --libs)
 
 clean:: cleanutil
 	rm -rf *~ */*~ $(OBJS) $(MAIN)
