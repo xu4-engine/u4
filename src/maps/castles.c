@@ -91,7 +91,7 @@ Map lcb_2_map;
 
 const Portal lcb_1_portals[] = {
     { 3, 3, 0, &lcb_2_map, ACTION_KLIMB },
-    { 3, 3, 0, &lcb_2_map, ACTION_DESCEND },
+    { 27, 3, 0, &lcb_2_map, ACTION_KLIMB }
 };
 
 City lcb_1_city;
@@ -121,8 +121,8 @@ City lcb_1_city  = {
 };
 
 const Portal lcb_2_portals[] = {
-    { 3, 3, 0, &lcb_1_map, ACTION_DESCEND },
-    { 27, 3, 0, &lcb_1_map, ACTION_DESCEND }
+    { 3, 3, 1, &lcb_1_map, ACTION_DESCEND },
+    { 27, 3, 1, &lcb_1_map, ACTION_DESCEND }
 };
 
 City lcb_2_city;
