@@ -13,7 +13,8 @@ typedef enum {
     CASTERR_NOERROR,            /* success */
     CASTERR_NOMIX,              /* no mixture available */
     CASTERR_WRONGCONTEXT,       /* e.g. spell must be cast in combat */
-    CASTERR_MPTOOLOW           /* caster doesn't have enough mp */
+    CASTERR_MPTOOLOW,           /* caster doesn't have enough mp */
+    CASTERR_FAILED              /* the spell failed */
 } SpellCastError;
 
 typedef enum {
@@ -28,11 +29,14 @@ typedef struct _Spell {
     const char *name;
     int components;
     int context;
-    SpellParam param;
+    int (*spellFunc)(int);
+    SpellParam paramType;
     int mp;
 } Spell;
 
+const char *spellGetName(unsigned int spell);
 int spellMix(unsigned int spell, int n_regs, int *regs);
-int spellCast(unsigned int spell, int character, SpellCastError *error);
+SpellParam spellGetParamType(unsigned int spell);
+int spellCast(unsigned int spell, int character, int param, SpellCastError *error);
 
 #endif
