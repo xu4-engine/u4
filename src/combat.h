@@ -126,15 +126,18 @@ public:
 
     bool isDungeonRoom() const;
     bool isAltarRoom() const;
+    bool isContextual() const;
     
     BaseVirtue getAltarRoom() const;
     void setAltarRoom(BaseVirtue ar);
     void setDungeonRoom(bool d);    
+    void setContextual(bool c = true);
     
     // Properties
 protected:
     bool dungeonRoom;
     BaseVirtue altarRoom;
+    bool contextual;
 
 public:
     Coords creature_start[AREA_CREATURES];

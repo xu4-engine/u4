@@ -13,6 +13,7 @@
 
 #include "city.h"
 #include "context.h"
+#include "conversation.h"
 #include "debug.h"
 #include "io.h"
 #include "location.h"
@@ -58,13 +59,13 @@ bool isPerson(Object *punknown) {
         return false;
 }
 
-void personGetQuestion(const Person *p, string *question);
+void personGetQuestion(Conversation *cnv, string *question);
 
 string emptyGetIntro(Conversation *cnv);
 string talkerGetIntro(Conversation *cnv);
 string talkerGetResponse(Conversation *cnv, const char *inquiry);
 string talkerGetQuestionResponse(Conversation *cnv, const char *inquiry);
-string talkerGetPrompt(const Conversation *cnv);
+string talkerGetPrompt(Conversation *cnv);
 string beggarGetQuantityResponse(Conversation *cnv, const char *response);
 string lordBritishGetIntro(Conversation *cnv);
 string lordBritishGetResponse(Conversation *cnv, const char *inquiry);
@@ -171,7 +172,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
     /*
      * a convsation with a vendor
      */
-    if (personIsVendor(cnv->talker)) {
+    if (personIsVendor(cnv->getTalker())) {
         static const string ids[] = { 
             "Weapons", "Armor", "Food", "Tavern", "Reagents", "Healer", "Inn", "Guild", "Stable"
         };
@@ -180,23 +181,23 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
         /**
          * We aren't currently running a script, load the appropriate one!
          */ 
-        if (c->conversation.state == CONV_INTRO) {
+        if (c->conversation->state == Conversation::INTRO) {
             // unload the previous script if it wasn't already unloaded
-            if (c->conversation.script->getState() != SCRIPT_STATE_UNLOADED)
-                c->conversation.script->unload();
-            c->conversation.script->load("vendorScript.xml", ids[cnv->talker->npcType - NPC_VENDOR_WEAPONS], "vendor", c->location->map->getName());
-            c->conversation.script->run("intro");
+            if (c->conversation->script->getState() != SCRIPT_STATE_UNLOADED)
+                c->conversation->script->unload();
+            c->conversation->script->load("vendorScript.xml", ids[cnv->getTalker()->npcType - NPC_VENDOR_WEAPONS], "vendor", c->location->map->getName());
+            c->conversation->script->run("intro");
         }
 
         /**
          * We're in the middle of a script, process the input!
          */
         else {
-            switch(c->conversation.script->getState()) {
+            switch(c->conversation->script->getState()) {
             case SCRIPT_STATE_CHOICE:
                 if (isspace(inquiry[0]))
-                    c->conversation.script->setChoice("nothing");
-                else c->conversation.script->setChoice(tolower(inquiry[0]));
+                    c->conversation->script->setChoice("nothing");
+                else c->conversation->script->setChoice(tolower(inquiry[0]));
                 break;
 
             case SCRIPT_STATE_NORMAL:
@@ -205,8 +206,8 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
 
             case SCRIPT_STATE_INPUT_PLAYER:
                 if (isspace(inquiry[0]) || inquiry[0] == '0')
-                    c->conversation.script->setChoice("nothing");
-                c->conversation.script->setPlayer((int)strtol(inquiry, NULL, 10));
+                    c->conversation->script->setChoice("nothing");
+                c->conversation->script->setPlayer((int)strtol(inquiry, NULL, 10));
                 break;
 
             case SCRIPT_STATE_INPUT_TEXT:
@@ -220,23 +221,23 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                         *current = tolower(*current);
                     }
 
-                    c->conversation.script->setChoice(val);
+                    c->conversation->script->setChoice(val);
                 }
                 break;
 
             case SCRIPT_STATE_INPUT_PRICE:
                 {
-                    c->conversation.script->setChoice(inquiry);
-                    c->conversation.script->setPrice((int)strtol(inquiry, NULL, 10));
-                    if (c->conversation.script->getPrice() == 0)
-                        c->conversation.script->setChoice("nothing");
+                    c->conversation->script->setChoice(inquiry);
+                    c->conversation->script->setPrice((int)strtol(inquiry, NULL, 10));
+                    if (c->conversation->script->getPrice() == 0)
+                        c->conversation->script->setChoice("nothing");
                 } break;
 
             case SCRIPT_STATE_INPUT_QUANTITY:            
-                c->conversation.script->setChoice(inquiry);
-                c->conversation.script->setQuantity((int)strtol(inquiry, NULL, 10));
-                if (c->conversation.script->getQuantity() == 0)
-                    c->conversation.script->setChoice("nothing");
+                c->conversation->script->setChoice(inquiry);
+                c->conversation->script->setQuantity((int)strtol(inquiry, NULL, 10));
+                if (c->conversation->script->getQuantity() == 0)
+                    c->conversation->script->setChoice("nothing");
                 break;
             
             default:
@@ -244,23 +245,23 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
             }
             
             // Continue running the script!
-            c->conversation.script->_continue();
+            c->conversation->script->_continue();
         }
 
         /**
          * Set our conversation to gather the correct input for the script
          */
-        switch(c->conversation.script->getState()) {
-        case SCRIPT_STATE_CHOICE:               c->conversation.state = CONV_VENDORQUESTION; break;
-        case SCRIPT_STATE_WAIT_FOR_KEYPRESS:    c->conversation.state = CONV_CONFIRMATION; break;
-        case SCRIPT_STATE_INPUT_QUANTITY:       c->conversation.state = CONV_BUY_QUANTITY; break;
-        case SCRIPT_STATE_INPUT_PRICE:          c->conversation.state = CONV_BUY_PRICE; break;
-        case SCRIPT_STATE_INPUT_TEXT:           c->conversation.state = CONV_TOPIC; break;
-        case SCRIPT_STATE_INPUT_PLAYER:         c->conversation.state = CONV_PLAYER; break;
+        switch(c->conversation->script->getState()) {
+        case SCRIPT_STATE_CHOICE:               c->conversation->state = Conversation::VENDORQUESTION; break;
+        case SCRIPT_STATE_WAIT_FOR_KEYPRESS:    c->conversation->state = Conversation::CONFIRMATION; break;
+        case SCRIPT_STATE_INPUT_QUANTITY:       c->conversation->state = Conversation::BUY_QUANTITY; break;
+        case SCRIPT_STATE_INPUT_PRICE:          c->conversation->state = Conversation::BUY_PRICE; break;
+        case SCRIPT_STATE_INPUT_TEXT:           c->conversation->state = Conversation::TOPIC; break;
+        case SCRIPT_STATE_INPUT_PLAYER:         c->conversation->state = Conversation::PLAYER; break;
         case SCRIPT_STATE_DONE:
             // Unload the script
-            c->conversation.script->unload();
-            c->conversation.state = CONV_DONE;
+            c->conversation->script->unload();
+            c->conversation->state = Conversation::DONE;
             break;
         default: break;
         }        
@@ -271,45 +272,45 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
      */
     else {
         switch (cnv->state) {
-        case CONV_INTRO:
-            if (cnv->talker->npcType == NPC_EMPTY)
+        case Conversation::INTRO:
+            if (cnv->getTalker()->npcType == NPC_EMPTY)
                 text = emptyGetIntro(cnv);
-            else if (cnv->talker->npcType == NPC_LORD_BRITISH)
+            else if (cnv->getTalker()->npcType == NPC_LORD_BRITISH)
                 text = lordBritishGetIntro(cnv);
-            else if (cnv->talker->npcType == NPC_HAWKWIND)
+            else if (cnv->getTalker()->npcType == NPC_HAWKWIND)
                 text = hawkwindGetIntro(cnv);
             else
                 text = talkerGetIntro(cnv);
 
             break;
 
-        case CONV_TALK:
-            if (cnv->talker->npcType == NPC_LORD_BRITISH)
+        case Conversation::TALK:
+            if (cnv->getTalker()->npcType == NPC_LORD_BRITISH)
                 text += lordBritishGetResponse(cnv, inquiry);            
-            else if (cnv->talker->npcType == NPC_HAWKWIND)
+            else if (cnv->getTalker()->npcType == NPC_HAWKWIND)
                 text += hawkwindGetResponse(cnv, inquiry);
             else                
                 text += talkerGetResponse(cnv, inquiry) + "\n";            
             break;
 
-        case CONV_CONFIRMATION:
-            ASSERT(cnv->talker->npcType == NPC_LORD_BRITISH, "invalid state: %d", cnv->state);
+        case Conversation::CONFIRMATION:
+            ASSERT(cnv->getTalker()->npcType == NPC_LORD_BRITISH, "invalid state: %d", cnv->state);
             text += lordBritishGetQuestionResponse(cnv, inquiry);
             break;
 
-        case CONV_ASK:
-        case CONV_ASKYESNO:
-            ASSERT(cnv->talker->npcType != NPC_HAWKWIND, "invalid state for hawkwind conversation");            
+        case Conversation::ASK:
+        case Conversation::ASKYESNO:
+            ASSERT(cnv->getTalker()->npcType != NPC_HAWKWIND, "invalid state for hawkwind conversation");            
             text += talkerGetQuestionResponse(cnv, inquiry) + "\n";
             break;
 
-        case CONV_GIVEBEGGAR:
-            ASSERT(cnv->talker->npcType == NPC_TALKER_BEGGAR, "invalid npc type: %d", cnv->talker->npcType);
+        case Conversation::GIVEBEGGAR:
+            ASSERT(cnv->getTalker()->npcType == NPC_TALKER_BEGGAR, "invalid npc type: %d", cnv->getTalker()->npcType);
             text = beggarGetQuantityResponse(cnv, inquiry);
             break;
 
-        case CONV_FULLHEAL:
-        case CONV_ADVANCELEVELS:
+        case Conversation::FULLHEAL:
+        case Conversation::ADVANCELEVELS:
             /* handled elsewhere */
             break;
 
@@ -325,76 +326,30 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
 /**
  * Get the prompt shown after each reply.
  */
-string personGetPrompt(const Conversation *cnv) {
-    if (cnv->talker->npcType == NPC_LORD_BRITISH)
+string personGetPrompt(Conversation *cnv) {
+    if (cnv->getTalker()->npcType == NPC_LORD_BRITISH)
         return lordBritishGetPrompt(cnv);
-    else if (cnv->talker->npcType == NPC_HAWKWIND)
+    else if (cnv->getTalker()->npcType == NPC_HAWKWIND)
         return hawkwindGetPrompt(cnv);
-    else if (personIsVendor(cnv->talker))
+    else if (personIsVendor(cnv->getTalker()))
         return "";
     else
         return talkerGetPrompt(cnv);
 }
 
-ConversationInputType personGetInputRequired(const struct _Conversation *cnv, int *bufferlen) {
-    switch (cnv->state) {
-    case CONV_BUY_QUANTITY:
-    case CONV_SELL_QUANTITY:
-        {
-            *bufferlen = 2;
-            return CONVINPUT_STRING;
-        }
-
-    case CONV_TALK:
-    case CONV_BUY_PRICE:
-    case CONV_TOPIC:
-        {
-            *bufferlen = CONV_BUFFERLEN;
-            return CONVINPUT_STRING;
-        }
-
-    case CONV_GIVEBEGGAR:
-        {
-            *bufferlen = 2;
-            return CONVINPUT_STRING;
-        }
-
-    case CONV_ASK:
-    case CONV_ASKYESNO:
-        {
-            *bufferlen = 3;
-            return CONVINPUT_STRING;
-        }
-
-    case CONV_VENDORQUESTION:
-    case CONV_BUY_ITEM:
-    case CONV_SELL_ITEM:
-    case CONV_CONFIRMATION:
-    case CONV_CONTINUEQUESTION:
-    case CONV_PLAYER:
-        return CONVINPUT_CHARACTER;
-
-    case CONV_DONE:
-        return CONVINPUT_NONE;
-    }
-
-    ASSERT(0, "invalid state: %d", cnv->state);
-    return CONVINPUT_NONE;
-}
-
 /**
  * Returns the valid keyboard choices for a given conversation.
  */
-const char *personGetChoices(const struct _Conversation *cnv) {
-    if (personIsVendor(cnv->talker))
-        return c->conversation.script->getChoices().c_str();
+const char *personGetChoices(Conversation *cnv) {
+    if (personIsVendor(cnv->getTalker()))
+        return c->conversation->script->getChoices().c_str();
     
     switch (cnv->state) {    
-    case CONV_CONFIRMATION:
-    case CONV_CONTINUEQUESTION:
+    case Conversation::CONFIRMATION:
+    case Conversation::CONTINUEQUESTION:
         return "ny\015 \033";
 
-    case CONV_PLAYER:
+    case Conversation::PLAYER:
         return "012345678\015 \033";
 
     default:
@@ -405,25 +360,26 @@ const char *personGetChoices(const struct _Conversation *cnv) {
 }
 
 string emptyGetIntro(Conversation *cnv) {
-    cnv->state = CONV_DONE;
+    cnv->state = Conversation::DONE;
     return string("Funny, no\nresponse!\n");
 }
 
 string talkerGetIntro(Conversation *cnv) {    
     string prompt, intro;
+    Dialogue *dlg = cnv->getTalker()->dialogue;
 
     prompt = personGetPrompt(cnv);
 
     intro = "\nYou meet\n";
-    intro += cnv->talker->description;
+    intro += dlg->getDesc();
     intro += "\n";
     
     // As far as I can tell, about 50% of the time they tell you their name
     if (xu4_random(2) == 0) {
         intro += "\n";
-        intro += cnv->talker->pronoun;
+        intro += dlg->getPronoun();
         intro += " says: I am ";
-        intro += cnv->talker->name;
+        intro += dlg->getName();
         intro += "\n";
     }
 
@@ -431,90 +387,82 @@ string talkerGetIntro(Conversation *cnv) {
 
     if (isupper(intro[9]))
         intro[9] = tolower(intro[9]);
-    cnv->state = CONV_TALK;
+    cnv->state = Conversation::TALK;
 
     return intro;
 }
 
 string talkerGetResponse(Conversation *cnv, const char *inquiry) {
-    string reply;
-    unsigned int testLen = 4; 
+    string reply;    
+    Dialogue *dlg = cnv->getTalker()->dialogue;
+    Dialogue::Action action = dlg->getAction();
     
     reply = "\n";
-
-    if (strlen(inquiry) < 4)
-        testLen = strlen(inquiry);
-
-    /* Does the person turn away from you? */
-    if (xu4_random(0x100) < cnv->talker->turnAwayProb)
-    {
-        reply = cnv->talker->pronoun;
+    
+    /* Does the person take action during the conversation? */
+    switch(action) {
+    case Dialogue::TURN_AWAY:
+        reply = dlg->getPronoun();
         reply += " turns away!\n";
-        cnv->state = CONV_DONE;
-    }
+        cnv->state = Conversation::DONE;
+        return reply;
 
-    else if (inquiry[0] == '\0' ||
+    case Dialogue::ATTACK:
+        reply = "\n";
+        reply += dlg->getName();
+        reply += " says: On guard! Fool!";
+        cnv->state = Conversation::ATTACK;
+        return reply;
+
+    case Dialogue::NO_ACTION:
+    default:
+        break;
+    }    
+    
+    if (inquiry[0] == '\0' ||
         strcasecmp(inquiry, "bye") == 0) {
         reply += "Bye.";
-        cnv->state = CONV_DONE;
+        cnv->state = Conversation::DONE;
     }
 
     /*
      * Check the talker's custom keywords before the standard keywords
-     * like HEAL and JOB.  This behavior differs from u4dos, but fixes
+     * like HEAL and LOOK.  This behavior differs from u4dos, but fixes
      * a couple conversation files which have keywords that conflict
      * with the standard ones (e.g. Calabrini in Moonglow has HEAL for
      * healer, which is unreachable in u4dos, but clearly more useful
      * than "Fine." for health).
      */
-
-    /* minimum 4-character "guessing" */
-    else if ((testLen >= 4 || cnv->talker->keyword1.length() == testLen) && 
-             strncasecmp(inquiry, cnv->talker->keyword1.c_str(), testLen) == 0) {
-        reply += cnv->talker->response1;
-        if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD1)
-            cnv->state = CONV_ASK;
-    }
-
-    /* minimum 4-character "guessing" */
-    else if ((testLen >= 4 || cnv->talker->keyword2.length() == testLen) &&
-             strncasecmp(inquiry, cnv->talker->keyword2.c_str(), testLen) == 0) {
-        reply += cnv->talker->response2;
-        if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD2)
-            cnv->state = CONV_ASK;
-    }
+    else if ((*dlg)[inquiry]) {        
+        Dialogue::Keyword *kw = (*dlg)[inquiry];
+        reply += kw->getResponse();
+        
+        // If it's a question keyword, then show the question.
+        if (kw->isQuestion()) {            
+            cnv->question = kw->getQuestion();
+            cnv->state = Conversation::ASK;
+        }
+    }    
 
     else if (strncasecmp(inquiry, "look", 4) == 0) {
         reply += "You see ";
-        reply += cnv->talker->description;
+        reply += dlg->getDesc();
         if (isupper(reply[8]))
             reply[8] = tolower(reply[8]);
     }
 
     else if (strncasecmp(inquiry, "name", 4) == 0) {
-        reply += cnv->talker->pronoun;
+        reply += dlg->getPronoun();
         reply += " says: I am ";
-        reply += cnv->talker->name;
-    }
-
-    else if (strncasecmp(inquiry, "job", 4) == 0) {
-        reply += cnv->talker->job;
-        if (cnv->talker->questionTrigger == QTRIGGER_JOB)
-            cnv->state = CONV_ASK;
-    }
-
-    else if (strncasecmp(inquiry, "heal", 4) == 0) {
-        reply += cnv->talker->health;
-        if (cnv->talker->questionTrigger == QTRIGGER_HEALTH)
-            cnv->state = CONV_ASK;
-    }
+        reply += dlg->getName();
+    }        
 
     else if (strncasecmp(inquiry, "give", 4) == 0) {
-        if (cnv->talker->npcType == NPC_TALKER_BEGGAR) {
+        if (cnv->getTalker()->npcType == NPC_TALKER_BEGGAR) {
             reply.erase();
-            cnv->state = CONV_GIVEBEGGAR;
+            cnv->state = Conversation::GIVEBEGGAR;
         } else {
-            reply += cnv->talker->pronoun;
+            reply += dlg->getPronoun();
             reply += " says: I do not need thy gold.  Keep it!";
         }
     }
@@ -522,22 +470,22 @@ string talkerGetResponse(Conversation *cnv, const char *inquiry) {
     else if (strncasecmp(inquiry, "join", 4) == 0) {
         Virtue v;
 
-        if (c->party->canPersonJoin(cnv->talker->name, &v)) {
+        if (c->party->canPersonJoin(cnv->getTalker()->name, &v)) {
 
-            CannotJoinError join = c->party->join(cnv->talker->name);
+            CannotJoinError join = c->party->join(cnv->getTalker()->name);
 
             if (join == JOIN_SUCCEEDED) {
                 City *city = dynamic_cast<City*>(c->location->map);
                 reply += "I am honored to join thee!";
-                city->removeObject(cnv->talker);
-                cnv->state = CONV_DONE;
+                city->removeObject(cnv->getTalker());
+                cnv->state = Conversation::DONE;
             } else {
                 reply += "Thou art not ";
                 reply += (join == JOIN_NOT_VIRTUOUS) ? getVirtueAdjective(v) : "experienced";
                 reply += " enough for me to join thee.";
             }
         } else {
-            reply += cnv->talker->pronoun;
+            reply += dlg->getPronoun();
             reply += " says: I cannot join thee.";
         }
     }
@@ -559,39 +507,39 @@ string talkerGetResponse(Conversation *cnv, const char *inquiry) {
 
 string talkerGetQuestionResponse(Conversation *cnv, const char *answer) {
     string reply;
+    bool valid = false;
+    bool yes;
+    char ans = tolower(answer[0]);
 
-    cnv->state = CONV_TALK;
+    cnv->state = Conversation::TALK;
 
-    if (tolower(answer[0]) == 'y') {
+    if (ans == 'y' || ans == 'n') {
+        valid = true;
+        yes = ans == 'y';
+    }
+
+    if (valid) {
         reply = "\n";
-        reply += cnv->talker->yesresp;
-        if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
+        reply += cnv->question->getResponse(yes);
+        if (cnv->question->getType() == Dialogue::Question::HUMILITY_TEST)
             c->party->adjustKarma(KA_BRAGGED);
     }
-
-    else if (tolower(answer[0]) == 'n') {
-        reply = "\n";
-        reply = cnv->talker->noresp;
-        if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
-            c->party->adjustKarma(KA_HUMBLE);
-    }
-
     else {
         reply = "Yes or no!";
-        cnv->state = CONV_ASKYESNO;
+        cnv->state = Conversation::ASKYESNO;
     }
 
     return reply;
 }
 
-string talkerGetPrompt(const Conversation *cnv) {
+string talkerGetPrompt(Conversation *cnv) {
     string prompt;
 
-    if (cnv->state == CONV_ASK)
-        personGetQuestion(cnv->talker, &prompt);
-    else if (cnv->state == CONV_GIVEBEGGAR)
+    if (cnv->state == Conversation::ASK)
+        personGetQuestion(cnv, &prompt);
+    else if (cnv->state == Conversation::GIVEBEGGAR)
         prompt = "How much? ";
-    else if (cnv->state != CONV_ASKYESNO)
+    else if (cnv->state != Conversation::ASKYESNO)
         prompt = "\nYour Interest:\n";
 
     return prompt;
@@ -601,12 +549,12 @@ string beggarGetQuantityResponse(Conversation *cnv, const char *response) {
     string reply;
 
     cnv->quant = (int) strtol(response, NULL, 10);
-    cnv->state = CONV_TALK;
+    cnv->state = Conversation::TALK;
 
     if (cnv->quant > 0) {
         if (c->party->donate(cnv->quant)) {
             reply = "\n";
-            reply += cnv->talker->pronoun;
+            reply += cnv->getTalker()->dialogue->getPronoun();
             reply += " says: Oh Thank thee! I shall never forget thy kindness!\n";
         }
 
@@ -622,7 +570,7 @@ string lordBritishGetIntro(Conversation *cnv) {
     string intro;
 
     musicLordBritish();
-    cnv->state = CONV_TALK;
+    cnv->state = Conversation::TALK;
 
     if (c->saveGame->lbintro) {
         if (c->saveGame->members == 1) {
@@ -641,7 +589,7 @@ string lordBritishGetIntro(Conversation *cnv) {
         }
 
         // Check levels here, just like the original!
-        cnv->state = CONV_ADVANCELEVELS;
+        cnv->state = Conversation::ADVANCELEVELS;
     }
 
     else {
@@ -664,13 +612,13 @@ string lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
     if (inquiry[0] == '\0' ||
         strcasecmp(inquiry, "bye") == 0) {
         reply = "\nLord British says: Fare thee well my friends!\n";
-        cnv->state = CONV_DONE;
+        cnv->state = Conversation::DONE;
         musicPlay();
     }
 
     else if (strncasecmp(inquiry, "heal", 4) == 0) {
         reply = "\n\n\n\n\n\nHe says: I am\nwell, thank ye.";
-        cnv->state = CONV_CONFIRMATION;
+        cnv->state = Conversation::CONFIRMATION;
     }
 
     else if (strncasecmp(inquiry, "help", 4) == 0) {
@@ -701,7 +649,7 @@ string lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
 string lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
     string reply;
 
-    cnv->state = CONV_TALK;
+    cnv->state = Conversation::TALK;
 
     if (tolower(answer[0]) == 'y') {
         reply = "Y\n\nHe says: That is good.\n";
@@ -709,7 +657,7 @@ string lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
 
     else if (tolower(answer[0]) == 'n') {
         reply = "N\n\nHe says: Let me heal thy wounds!\n";
-        cnv->state = CONV_FULLHEAL;           
+        cnv->state = Conversation::FULLHEAL;           
     }
 
     else
@@ -721,7 +669,7 @@ string lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
 string lordBritishGetPrompt(const Conversation *cnv) {
     string prompt;
     
-    if (cnv->state == CONV_CONFIRMATION)
+    if (cnv->state == Conversation::CONFIRMATION)
         prompt = "\n\nHe asks: Art thou well?";
     else
         prompt = "\nWhat else?\n";
@@ -814,7 +762,7 @@ string hawkwindGetIntro(Conversation *cnv) {
         intro = hawkwindText[HW_SPEAKONLYWITH] + c->party->member(0)->getName();        
         intro += hawkwindText[HW_RETURNWHEN] + c->party->member(0)->getName();
         intro += hawkwindText[HW_ISREVIVED];
-        cnv->state = CONV_DONE;
+        cnv->state = Conversation::DONE;
     }
 
     else {
@@ -822,7 +770,7 @@ string hawkwindGetIntro(Conversation *cnv) {
 
         intro = hawkwindText[HW_WELCOME] + c->party->member(0)->getName();
         intro += hawkwindText[HW_GREETING1] + hawkwindText[HW_GREETING2];
-        cnv->state = CONV_TALK;
+        cnv->state = Conversation::TALK;
 
         musicHawkwind();
     }
@@ -837,7 +785,7 @@ string hawkwindGetResponse(Conversation *cnv, const char *inquiry) {
 
     if (inquiry[0] == '\0' || strcasecmp(inquiry, "bye") == 0) {
         reply = hawkwindText[HW_BYE];
-        cnv->state = CONV_DONE;
+        cnv->state = Conversation::DONE;
         musicPlay();
         return reply;
     }
@@ -873,8 +821,8 @@ string hawkwindGetPrompt(const Conversation *cnv) {
     return hawkwindText[HW_PROMPT];    
 }
 
-void personGetQuestion(const Person *p, string *question) {
-    *question = p->question;
+void personGetQuestion(Conversation *cnv, string *question) {
+    *question = cnv->question->getText();
     *question += "\n\nYou say: ";    
 }
 

@@ -15,6 +15,7 @@
 #include "armor.h"
 #include "camp.h"
 #include "city.h"
+#include "conversation.h"
 #include "debug.h"
 #include "dungeon.h"
 #include "combat.h"
@@ -161,14 +162,11 @@ void gameInit() {
     /* initialize the global game context */
     c = new Context;
     c->saveGame = new SaveGame;
+    c->conversation = new Conversation;
 
     TRACE_LOCAL(gameDbg, "Global context initialized.");
 
-    /* initialize conversation and game state variables */
-    c->conversation.talker = NULL;
-    c->conversation.state = 0;    
-    c->conversation.reply = NULL;
-    c->conversation.script = new Script();
+    /* initialize conversation and game state variables */    
     c->line = TEXT_AREA_H - 1;
     c->col = 0;
     c->stats = new StatsArea();
@@ -210,7 +208,7 @@ void gameInit() {
     gameInitMoons();
     
     /* if our map is not the world map, then load our map */
-    if (map->type != MAPTYPE_WORLD)
+    if (map->type != Map::WORLD)
         gameSetMap(map, 1, NULL);    
 
     /**
@@ -396,7 +394,7 @@ int gameSave() {
                     /**
                      * Add the creature to the tile
                      */ 
-                    if (obj && obj->getType() == OBJECT_CREATURE) {
+                    if (obj && obj->getType() == Object::CREATURE) {
                         const Creature *m = dynamic_cast<Creature*>(obj);
                         DngCreatureIdMap::iterator m_id = id_map.find(m);
                         if (m_id != id_map.end())
@@ -487,11 +485,11 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         gameExitToParentMap();
     
     switch (map->type) {
-    case MAPTYPE_WORLD:
+    case Map::WORLD:
         context = CTX_WORLDMAP;
         viewMode = VIEW_NORMAL;
         break;
-    case MAPTYPE_DUNGEON:
+    case Map::DUNGEON:
         context = CTX_DUNGEON;
         viewMode = VIEW_DUNGEON;
         if (portal)
@@ -499,7 +497,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         tileset = Tileset::get("dungeon");
         move = &gameMoveAvatarInDungeon;        
         break;
-    case MAPTYPE_COMBAT:
+    case Map::COMBAT:
         coords = MapCoords(-1, -1); /* set these to -1 just to be safe; we don't need them */
         context = CTX_COMBAT;
         viewMode = VIEW_NORMAL;
@@ -507,7 +505,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         move = &CombatController::movePartyMember;
         activePlayer = -1; /* different active player for combat, defaults to 'None' */
         break;
-    case MAPTYPE_CITY:    
+    case Map::CITY:    
     default:
         context = CTX_CITY;
         viewMode = VIEW_NORMAL;
@@ -2104,13 +2102,13 @@ bool attackAtCoord(MapCoords coords, int distance, void *data) {
         ground = &under->getTile();
 
     /* You're attacking a townsperson!  Alert the guards! */
-    if ((m->getType() == OBJECT_PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))
+    if ((m->getType() == Object::PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))
         gameAlertTheGuards(c->location->map);        
 
     /* not good karma to be killing the innocent.  Bad avatar! */    
     if (m->isGood() || /* attacking a good creature */
         /* attacking a docile (although possibly evil) person in town */
-        ((m->getType() == OBJECT_PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))) 
+        ((m->getType() == Object::PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))) 
         c->party->adjustKarma(KA_ATTACKED_GOOD);
 
     delete(c->combat);
@@ -2283,11 +2281,11 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
         Creature *m = dynamic_cast<Creature*>(obj);
                 
         /* FIXME: there's got to be a better way make whirlpools and storms impervious to cannon fire */
-        if (obj && (obj->getType() == OBJECT_CREATURE) && 
+        if (obj && (obj->getType() == Object::CREATURE) && 
             (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID))
             validObject = 1;        
         /* See if it's an object to be destroyed (the avatar cannot destroy the balloon) */
-        else if (obj && (obj->getType() == OBJECT_UNKNOWN) && !(obj->getTile().isBalloon() && originAvatar))
+        else if (obj && (obj->getType() == Object::UNKNOWN) && !(obj->getTile().isBalloon() && originAvatar))
             validObject = 1;
         
         /* Does the cannon hit the avatar? */
@@ -2309,7 +2307,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
                 else gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */
             }          
             /* inanimate objects get destroyed instantly, while creatures get a chance */
-            else if (obj->getType() == OBJECT_UNKNOWN) {
+            else if (obj->getType() == Object::UNKNOWN) {
                 CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
                 c->location->map->removeObject(obj);
             }
@@ -2919,7 +2917,6 @@ int peerCityHandleChoice(int choice) {
  * NPC is present at that point, zero is returned.
  */
 bool talkAtCoord(MapCoords coords, int distance, void *data) {
-    const Person *talker;
     extern int personIsVendor(const Person *person);
     City *city;
 
@@ -2937,16 +2934,14 @@ bool talkAtCoord(MapCoords coords, int distance, void *data) {
     }
 
     city = dynamic_cast<City*>(c->location->map);
-    c->conversation.talker = city->personAt(coords);
+    c->conversation->setTalker(city->personAt(coords));
 
-    /* some persons in some towns exists as a 'person' object, but they
-       really are not someone you can talk to.  These persons have mostly null fields */
-    if (c->conversation.talker == NULL || 
-        (c->conversation.talker->name.empty() && c->conversation.talker->npcType <= NPC_TALKER_COMPANION))
+    /* make sure we have someone we can talk with */
+    if (!c->conversation->isValid())
         return false;
 
     /* if we're talking to Lord British and the avatar is dead, LB resurrects them! */
-    if (c->conversation.talker->npcType == NPC_LORD_BRITISH &&
+    if (c->conversation->getTalker()->npcType == NPC_LORD_BRITISH &&
         c->party->member(0)->getStatus() == STAT_DEAD) {
         screenMessage("%s, Thou shalt live again!\n", c->party->member(0)->getName().c_str());
         
@@ -2954,11 +2949,10 @@ bool talkAtCoord(MapCoords coords, int distance, void *data) {
         c->party->member(0)->heal(HT_FULLHEAL);
         (*spellEffectCallback)('r', -1, SOUND_LBHEAL);
     }
-
-    talker = c->conversation.talker;
-    c->conversation.state = CONV_INTRO;
-    c->conversation.reply = personGetConversationText(&c->conversation, "");
-    c->conversation.playerInquiryBuffer.erase();
+    
+    c->conversation->state = Conversation::INTRO;
+    c->conversation->reply = personGetConversationText(c->conversation, "");
+    c->conversation->playerInput.erase();
 
     talkShowReply(0);
 
@@ -2971,8 +2965,8 @@ bool talkAtCoord(MapCoords coords, int distance, void *data) {
 int talkHandleBuffer(string *message) {
     eventHandler.popKeyHandler();
 
-    c->conversation.reply = personGetConversationText(&c->conversation, message->c_str());
-    c->conversation.playerInquiryBuffer.erase();
+    c->conversation->reply = personGetConversationText(c->conversation, message->c_str());
+    c->conversation->playerInput.erase();
 
     talkShowReply(1);
 
@@ -2987,8 +2981,8 @@ int talkHandleChoice(int choice) {
     message[0] = choice;
     message[1] = '\0';
 
-    c->conversation.reply = personGetConversationText(&c->conversation, message);
-    c->conversation.playerInquiryBuffer.erase();
+    c->conversation->reply = personGetConversationText(c->conversation, message);
+    c->conversation->playerInput.erase();
 
     talkShowReply(1);
 
@@ -3014,28 +3008,34 @@ void talkShowReply(int showPrompt) {
     KeyHandler::GetChoice *gcInfo;
     int bufferlen;
     
-    screenMessage("%s", c->conversation.reply->front());
-    int size = c->conversation.reply->size();
-    c->conversation.reply->pop_front();
+    screenMessage("%s", c->conversation->reply->front());
+    int size = c->conversation->reply->size();
+    c->conversation->reply->pop_front();
 
     /* if all chunks haven't been shown, wait for a key and process next chunk*/    
-    size = c->conversation.reply->size();
+    size = c->conversation->reply->size();
     if (size > 0) {    
         eventHandler.pushKeyHandler(KeyHandler(&talkHandleAnyKey, (void *) showPrompt));
         return;
     }
 
     /* otherwise, free current reply and proceed based on conversation state */
-    replyDelete(c->conversation.reply);
-    c->conversation.reply = NULL;
-
-    if (c->conversation.state == CONV_DONE) {
+    replyDelete(c->conversation->reply);
+    c->conversation->reply = NULL;
+    
+    /* they're attacking you! */
+    if (c->conversation->state == Conversation::ATTACK) {
+        c->conversation->state = Conversation::DONE;
+        c->conversation->getTalker()->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
+    }
+    
+    if (c->conversation->state == Conversation::DONE) {
         (*c->location->finishTurn)();
         return;
     }
     
     /* When Lord British heals the party */
-    else if (c->conversation.state == CONV_FULLHEAL) {
+    else if (c->conversation->state == Conversation::FULLHEAL) {
         int i;
         
         for (i = 0; i < c->party->size(); i++) {
@@ -3044,33 +3044,33 @@ void talkShowReply(int showPrompt) {
         }        
         (*spellEffectCallback)('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
 
-        c->conversation.state = CONV_TALK;
+        c->conversation->state = Conversation::TALK;
     }
     /* When Lord British checks and advances each party member's level */
-    else if (c->conversation.state == CONV_ADVANCELEVELS) {
+    else if (c->conversation->state == Conversation::ADVANCELEVELS) {
         gameLordBritishCheckLevels();
-        c->conversation.state = CONV_TALK;
+        c->conversation->state = Conversation::TALK;
     }
 
     if (showPrompt) {        
-        prompt = personGetPrompt(&c->conversation);
+        prompt = personGetPrompt(c->conversation);
         if (!prompt.empty())
             screenMessage("%s", prompt.c_str());        
     }
 
-    switch (personGetInputRequired(&c->conversation, &bufferlen)) {
-    case CONVINPUT_STRING:
-        gameGetInput(&talkHandleBuffer, &c->conversation.playerInquiryBuffer, bufferlen);
+    switch (c->conversation->getInputRequired(&bufferlen)) {
+    case Conversation::INPUT_STRING:
+        gameGetInput(&talkHandleBuffer, &c->conversation->playerInput, bufferlen);
         break;
 
-    case CONVINPUT_CHARACTER:
+    case Conversation::INPUT_CHARACTER:
         gcInfo = new KeyHandler::GetChoice;
-        gcInfo->choices = personGetChoices(&c->conversation);
+        gcInfo->choices = personGetChoices(c->conversation);
         gcInfo->handleChoice = &talkHandleChoice;
         eventHandler.pushKeyHandler(KeyHandler(&keyHandlerGetChoice, gcInfo));
         break;
 
-    case CONVINPUT_NONE:
+    case Conversation::INPUT_NONE:
         /* no handler: conversation done! */
         break;
     }
@@ -3409,7 +3409,7 @@ void gameCheckSpecialCreatures(Direction dir) {
         c->location->coords.x < 234 &&
         c->location->coords.y >= 212 &&
         c->location->coords.y < 217 &&
-        *c->aura != AURA_HORN) {
+        *c->aura != Aura::HORN) {
         for (i = 0; i < 8; i++)            
             obj = c->location->map->addCreature(creatures.getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));                    
     }
@@ -3577,9 +3577,9 @@ bool creatureRangeAttack(MapCoords coords, int distance, void *data) {
         }
         /* Destroy objects that were hit */
         else if (obj) {
-            if (((obj->getType() == OBJECT_CREATURE) &&
+            if (((obj->getType() == Object::CREATURE) &&
                 (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID)) ||
-                obj->getType() == OBJECT_UNKNOWN) {
+                obj->getType() == Object::UNKNOWN) {
                 
                 CombatController::attackFlash(coords, tile, 3);
                 c->location->map->removeObject(obj);
@@ -3739,7 +3739,7 @@ void gameCreatureCleanup(void) {
         obj = *i;
         MapCoords o_coords = obj->getCoords();
 
-        if ((obj->getType() == OBJECT_CREATURE) && (o_coords.z == c->location->coords.z) &&
+        if ((obj->getType() == Object::CREATURE) && (o_coords.z == c->location->coords.z) &&
              o_coords.distance(c->location->coords, c->location->map) > MAX_CREATURE_DISTANCE) {
             
             /* delete the object and remove it from the map */

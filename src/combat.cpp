@@ -65,7 +65,7 @@ CombatMap *getCombatMap(Map *punknown) {
 CombatController::CombatController() {}
 CombatController::CombatController(CombatMap *m) {
     map = m;
-    gameSetMap(map, true, NULL);
+    gameSetMap(map, true, NULL);    
 }
 CombatController::CombatController(MapId id) {
     map = getCombatMap(mapMgr->get(id));
@@ -525,7 +525,7 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
     info->prev = coords;    
 
     hittile = weapon->getHitTile();
-    misstile = weapon->getMissTile();;
+    misstile = weapon->getMissTile();
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
@@ -798,7 +798,7 @@ void CombatController::finishTurn(void) {
         player->applyEffect(c->location->map->tileAt(player->getCoords(), WITH_GROUND_OBJECTS)->getEffect());
     }
 
-    quick = (*c->aura == AURA_QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;
+    quick = (*c->aura == Aura::QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;
 
     /* check to see if the player gets to go again (and is still alive) */
     if (!quick || player->isDisabled()){    
@@ -1197,7 +1197,7 @@ bool CombatController::chooseWeaponDir(int key, void *data) {
 /**
  * CombatMap class implementation
  */ 
-CombatMap::CombatMap() : Map() {}
+CombatMap::CombatMap() : Map(), dungeonRoom(false), altarRoom(VIRT_NONE), contextual(false) {}
 
 /**
  * Returns a vector containing all of the creatures on the map
@@ -1295,7 +1295,7 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
         return MAP_SHIPSHIP_CON;
 
     /* We can fight creatures and townsfolk */       
-    if (obj->getType() != OBJECT_UNKNOWN) {
+    if (obj->getType() != Object::UNKNOWN) {
         MapTile *tileUnderneath = c->location->map->tileAt(obj->getCoords(), WITHOUT_OBJECTS);
 
         if (toShip)
@@ -1322,6 +1322,10 @@ bool CombatMap::isAltarRoom() const {
     return (altarRoom != VIRT_NONE) ? true : false;
 }
 
+bool CombatMap::isContextual() const {
+    return contextual;
+}
+
 BaseVirtue CombatMap::getAltarRoom() const {
     return altarRoom;
 }
@@ -1332,4 +1336,8 @@ void CombatMap::setAltarRoom(BaseVirtue ar) {
 
 void CombatMap::setDungeonRoom(bool d) {
     dungeonRoom = d;
+}
+
+void CombatMap::setContextual(bool c) {
+    contextual = c;
 }

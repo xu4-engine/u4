@@ -8,25 +8,13 @@
 #include <string>
 #include <list>
 
+#include "conversation.h"
 #include "creature.h"
 #include "types.h"
 
-struct _Conversation;
-
 typedef std::list<const char *> Reply;
 
-typedef enum {
-    QTRIGGER_NONE = 0,
-    QTRIGGER_JOB = 3,
-    QTRIGGER_HEALTH = 4,
-    QTRIGGER_KEYWORD1 = 5,
-    QTRIGGER_KEYWORD2 = 6
-} PersonQuestionTrigger;
-
-typedef enum {
-    QUESTION_NORMAL,
-    QUESTION_HUMILITY_TEST
-} PersonQuestionType;
+class Conversation;
 
 typedef enum {
    NPC_EMPTY,
@@ -48,60 +36,16 @@ typedef enum {
    NPC_MAX
 } PersonNpcType;
 
-typedef enum {
-    CONV_INTRO,
-    CONV_TALK,
-    CONV_ASK,
-    CONV_ASKYESNO,
-    CONV_VENDORQUESTION,
-    CONV_BUY_ITEM,
-    CONV_SELL_ITEM,
-    CONV_BUY_QUANTITY,
-    CONV_SELL_QUANTITY,
-    CONV_BUY_PRICE,
-    CONV_CONFIRMATION,
-    CONV_CONTINUEQUESTION,
-    CONV_TOPIC,
-    CONV_PLAYER,
-    CONV_FULLHEAL,
-    CONV_ADVANCELEVELS,
-    CONV_GIVEBEGGAR,
-    CONV_DONE
-} ConversationState;
-
-typedef enum {
-    CONVINPUT_STRING,
-    CONVINPUT_CHARACTER,
-    CONVINPUT_NONE
-} ConversationInputType;
-
 class Person : public Creature {
 public:
     Person(MapTile tile = 0) : Creature(tile) {
-        setType(OBJECT_PERSON);
+        setType(Object::PERSON);
     }
 
 public:
     std::string name;
-    std::string pronoun;
-    std::string description;
-    std::string job;
-    std::string health;
-    std::string response1;
-    std::string response2;
-    std::string question;
-    std::string yesresp;
-    std::string noresp;
-    std::string keyword1;
-    std::string keyword2;
-    PersonQuestionTrigger questionTrigger;
-    PersonQuestionType questionType;
-    union {
-        int turnAwayProb;
-        int attackProb;
-    };     
+    Dialogue* dialogue;
     MapCoords start;    
-    //ObjectMovementBehavior movement_behavior;
     PersonNpcType npcType;
 };
 
@@ -110,9 +54,8 @@ bool isPerson(Object *punknown);
 Reply *replyNew(const std::string &text);
 void replyDelete(Reply *reply);
 int personInit(void);
-Reply *personGetConversationText(struct _Conversation *cnv, const char *inquiry);
-std::string personGetPrompt(const struct _Conversation *cnv);
-ConversationInputType personGetInputRequired(const struct _Conversation *cnv, int *bufferlen);
-const char *personGetChoices(const struct _Conversation *cnv);
+Reply *personGetConversationText(class Conversation *cnv, const char *inquiry);
+std::string personGetPrompt(class Conversation *cnv);
+const char *personGetChoices(class Conversation *cnv);
 
 #endif

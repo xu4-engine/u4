@@ -12,15 +12,19 @@ CSRCS=\
 CXXSRCS=\
         annotation.cpp \
         armor.cpp \
+        aura.cpp \
         camp.cpp \
         city.cpp \
         codex.cpp \
         combat.cpp \
         config.cpp \
         controller.cpp \
+        conversation.cpp \
         creature.cpp \
         death.cpp \
         debug.cpp \
+        dialogueloader.cpp \
+        dialogueloader_tlk.cpp \
         direction.cpp \
         dngview.cpp \
         dungeon.cpp \

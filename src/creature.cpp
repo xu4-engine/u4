@@ -39,7 +39,7 @@ bool isCreature(Object *punknown) {
 /**
  * Creature class implementation
  */ 
-Creature::Creature(MapTile tile) : Object(OBJECT_CREATURE) {
+Creature::Creature(MapTile tile) : Object(Object::CREATURE) {
     const Creature *m = creatures.getByTile(tile);
     if (m)
         *this = *m;
@@ -313,7 +313,7 @@ void Creature::act() {
         return;
 
     if (negates())
-        c->aura->set(AURA_NEGATE, 2);
+        c->aura->set(Aura::NEGATE, 2);
 
     /* default action */
     action = CA_ATTACK;        
@@ -326,10 +326,10 @@ void Creature::act() {
         /* creatures who ranged attack do so 1/4 of the time.
            make sure their ranged attack is not negated! */
         else if (ranged != 0 && xu4_random(4) == 0 && 
-            ((rangedhittile != Tileset::findTileByName("magic_flash")->id) || (*c->aura != AURA_NEGATE)))
+            ((rangedhittile != Tileset::findTileByName("magic_flash")->id) || (*c->aura != Aura::NEGATE)))
             action = CA_RANGED;
         /* creatures who cast sleep do so 1/4 of the time they don't ranged attack */
-        else if (castsSleep() && (*c->aura != AURA_NEGATE) && (xu4_random(4) == 0))
+        else if (castsSleep() && (*c->aura != Aura::NEGATE) && (xu4_random(4) == 0))
             action = CA_CAST_SLEEP;
     
         else if (getState() == MSTAT_FLEEING)
@@ -395,6 +395,7 @@ void Creature::act() {
             MapTile *tile;                
         
             while (!valid) {
+                Map *map = getMap();
                 new_c = Coords(xu4_random(map->width), xu4_random(map->height), c->location->coords.z);
                 
                 tile = map->tileAt(new_c, WITH_OBJECTS);
@@ -447,17 +448,20 @@ void Creature::act() {
 
     case CA_FLEE:
     case CA_ADVANCE:
-        if (moveCombatObject(action, map, this, target->getCoords())) {
-            Coords coords = getCoords();
+        {
+            Map *map = getMap();
+            if (moveCombatObject(action, getMap(), this, target->getCoords())) {
+                Coords coords = getCoords();
 
-            if (MAP_IS_OOB(map, coords)) {
-                screenMessage("\n%s Flees!\n", name.c_str());
+                if (MAP_IS_OOB(map, coords)) {
+                    screenMessage("\n%s Flees!\n", name.c_str());
                 
-                /* Congrats, you have a heart! */
-                if (isGood())
-                    c->party->adjustKarma(KA_SPARED_GOOD);
+                    /* Congrats, you have a heart! */
+                    if (isGood())
+                        c->party->adjustKarma(KA_SPARED_GOOD);
 
-                map->removeObject(this);                
+                    map->removeObject(this);                
+                }
             }
         }
         
@@ -514,6 +518,7 @@ bool Creature::attackHit(Creature *m) {
 }
 
 bool Creature::divide() {
+    Map *map = getMap();
     int dirmask = map->getValidMoves(getCoords(), getTile());
     Direction d = dirRandomDir(dirmask);
 
@@ -568,7 +573,8 @@ Creature *Creature::nearestOpponent(int *dist, bool ranged) {
     Creature *opponent = NULL;
     int d, leastDist = 0xFFFF;    
     ObjectDeque::iterator i;
-    bool opp = (*c->aura == AURA_JINX) ? false : true;
+    bool opp = (*c->aura == Aura::JINX) ? false : true;
+    Map *map = getMap();
 
     for (i = map->objects.begin(); i < map->objects.end(); i++) {
         bool player = isPartyMember(this);
@@ -630,7 +636,7 @@ void Creature::wakeUp() {
  * Returns true if the creature still exists after the damage has been applied
  * or false, if the creature was destroyed
  */
-bool Creature::applyDamage(int damage) {    
+bool Creature::applyDamage(int damage) {
     /* deal the damage */
     if (id != LORDBRITISH_ID)
         AdjustValueMin(hp, -damage, 0);    
@@ -638,14 +644,11 @@ bool Creature::applyDamage(int damage) {
     switch (getState()) {
 
     case MSTAT_DEAD:        
-        screenMessage("%s Killed!\nExp. %d\n", name.c_str(), xp);
+        screenMessage("%s Killed!\nExp. %d\n", name.c_str(), xp);        
         
         // Remove yourself from the map
-        if (map) {
-            map->removeObject(this);
-            return false;
-        }
-        break;
+        remove();
+        return false;        
 
     case MSTAT_FLEEING:
         screenMessage("%s Fleeing!\n", name.c_str());
@@ -953,7 +956,7 @@ Creature *CreatureMgr::randomForTile(MapTile tile) {
     if (!tile.isCreatureWalkable())
         return 0;
 
-    //if (c->saveGame->moves > 100000) // what's 100,000 moves all about?
+    //if (c->saveGame->moves > 100000) // FIXME: what's 100,000 moves all about (if anything)?
     if (c->saveGame->moves > 30000)
         era = 0x0f;
     else if (c->saveGame->moves > 20000)

@@ -12,6 +12,7 @@
 #include "city.h"
 #include "combat.h"
 #include "context.h"
+#include "conversation.h"
 #include "event.h"
 #include "game.h"
 #include "location.h"
@@ -189,14 +190,15 @@ void innTimer(void *data) {
         screenPrompt();
         screenRedrawScreen();
 
-        /* Does Isaac the Ghost pay a visit to the Avatar? */
+        /*
+        // Does Isaac the Ghost pay a visit to the Avatar?
         if (c->location->map->id == 11) {// && (xu4_random(4) == 0)) {
             City *city = dynamic_cast<City*>(c->location->map);
             Person *Isaac;
             ObjectDeque::iterator i;
             Coords coords(27, xu4_random(3) + 10, c->location->coords.z);
             
-            /* If Isaac is already around, just bring him back to the inn */
+            // If Isaac is already around, just bring him back to the inn
             for (i = c->location->map->objects.begin();
                  i != c->location->map->objects.end();
                  i++) {
@@ -207,11 +209,9 @@ void innTimer(void *data) {
                 }
             }
 
-            /**
-             * FIXME: Isaac is currently broken
-             */ 
+            // FIXME: Isaac is currently broken             
             
-            /* Otherwise, we need to create Isaac */
+            // Otherwise, we need to create Isaac
             Isaac = new Person;
             Isaac->name = city->persons[10]->name;
             Isaac->pronoun = city->persons[10]->pronoun;
@@ -225,18 +225,18 @@ void innTimer(void *data) {
             Isaac->noresp = city->persons[10]->noresp;
             Isaac->keyword1 = city->persons[10]->keyword1;
             Isaac->keyword2 = city->persons[10]->keyword2;
-            Isaac->questionTrigger = QTRIGGER_KEYWORD1;
+            Isaac->questionTrigger = Dialogue::Question::TRIGGER_KEYWORD1;
             Isaac->setMovementBehavior(MOVEMENT_WANDER);
             Isaac->npcType = NPC_TALKER;            
-            Isaac->questionType = QUESTION_NORMAL;
+            Isaac->questionType = Dialogue::Question::NORMAL;
             Isaac->start = MapCoords(27, xu4_random(3) + 10, 0);
             Isaac->setTile(creatures.getById(GHOST_ID)->getTile());
             Isaac->setPrevTile(Isaac->getTile());
             Isaac->turnAwayProb = 0;
             
-            /* Add Isaac near the Avatar */
+            // Add Isaac near the Avatar
             city->addPerson(Isaac);
-        }
+        }*/
     }    
     
     musicFadeIn(INN_FADE_IN_TIME, 1);
