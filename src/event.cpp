@@ -210,20 +210,39 @@ MouseArea* EventHandler::getMouseAreaSet() const {
         return NULL;
 }
 
-ReadStringController::ReadStringController(int maxlen, int screenX, int screenY) {
+ReadStringController::ReadStringController(int maxlen, int screenX, int screenY, const string &accepted_chars) {
     this->maxlen = maxlen;
     this->screenX = screenX;
     this->screenY = screenY;
+    this->accepted = accepted_chars;
     exitWhenDone = false;
 }
 
 bool ReadStringController::keyPressed(int key) {
     int valid = true,
-        len = value.length();    
+        len = value.length();
+    unsigned int pos = string::npos;
+    
+    if (key < U4_ALT)
+         pos = accepted.find_first_of(key);
 
-    if ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z') ||
-        (key >= '0' && key <= '9') || key == ' ') {        
-        if (len < maxlen) {
+    if (pos != string::npos) {
+        if (key == U4_BACKSPACE) {
+            if (len > 0) {
+                /* remove the last character */
+                value.erase(len - 1, 1);
+
+                screenHideCursor();
+                screenTextAt(screenX + len - 1, screenY, " ");
+                screenSetCursorPos(screenX + len - 1, screenY);
+                screenShowCursor();
+            }
+        }
+        else if (key == '\n' || key == '\r') {
+            if (exitWhenDone)
+                eventHandler->setControllerDone();
+        }
+        else if (len < maxlen) {
             /* add a character to the end */
             value += key;
 
@@ -232,25 +251,8 @@ bool ReadStringController::keyPressed(int key) {
             screenSetCursorPos(screenX + len + 1, screenY);
             screenShowCursor();            
         }
-
-    } else if (key == U4_BACKSPACE) {
-        if (len > 0) {
-            /* remove the last character */
-            value.erase(len - 1, 1);
-
-            screenHideCursor();
-            screenTextAt(screenX + len - 1, screenY, " ");
-            screenSetCursorPos(screenX + len - 1, screenY);
-            screenShowCursor();
-        }
-
-    } else if (key == '\n' || key == '\r') {
-        if (exitWhenDone)
-            eventHandler->setControllerDone();
-    }    
-    else {
-        valid = false;
     }
+    else valid = false;    
 
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
@@ -274,6 +276,22 @@ string ReadStringController::waitFor() {
     eventHandler->setControllerDone(false);
     eventHandler->popController();
     return value;
+}
+
+ReadIntController::ReadIntController(int maxlen, int screenX, int screenY) : ReadStringController(maxlen, screenX, screenY, "0123456789 \n\r\010") {}
+
+int ReadIntController::get(int maxlen, int screenX, int screenY, EventHandler *eh) {
+    if (!eh)
+        eh = eventHandler;
+
+    ReadIntController ctrl(maxlen, screenX, screenY);
+    eh->pushController(&ctrl);
+    ctrl.waitFor();
+    return ctrl.getInt();
+}
+
+int ReadIntController::getInt() const {
+    return static_cast<int>(strtol(value.c_str(), NULL, 10));
 }
 
 ReadChoiceController::ReadChoiceController(const string &choices) {

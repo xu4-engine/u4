@@ -212,7 +212,11 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                         ReadChoiceController::get(" \015\033");
                         break;
                         
-                    case Script::INPUT_NUMBER:                    
+                    case Script::INPUT_NUMBER: {
+                        int val = ReadIntController::get(script->getInputMaxLen(), TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+                        script->setVar(script->getInputName(), val);                        
+                    } break;
+
                     case Script::INPUT_STRING: {
                         string str = ReadStringController::get(script->getInputMaxLen(), TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
                         lowercase(str);

@@ -2753,8 +2753,8 @@ bool mixReagentsForSpell(int spell) {
 
         screenMessage("How many? ");
 
-        string howmany = ReadStringController::get(2, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);        
-        gameSpellMixHowMany(spell, (int) strtol(howmany.c_str(), NULL, 10), &ingredients);
+        int howmany = ReadIntController::get(2, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+        gameSpellMixHowMany(spell, howmany, &ingredients);
     }
 
     /* traditional Ultima 4 mixing */
@@ -3065,7 +3065,7 @@ int useItem(string *itemName) {
     itemUse(itemName->c_str());
 
     if (*eventHandler->getKeyHandler() == &gameBaseKeyHandler ||
-        *eventHandler->getKeyHandler() == &CombatController::baseKeyHandler)
+        eventHandler->getController() == c->combat)
         (*c->location->finishTurn)();
 
     return 1;
@@ -3181,7 +3181,7 @@ void gameTimer(void *data) {
          * force pass if no commands within last 20 seconds
          */
         KeyHandler *keyHandler = eventHandler->getKeyHandler();
-        if (keyHandler != NULL && (*keyHandler == &gameBaseKeyHandler || *keyHandler == &CombatController::baseKeyHandler) &&
+        if (keyHandler != NULL && (*keyHandler == &gameBaseKeyHandler || eventHandler->getController() == c->combat) &&
              gameTimeSinceLastCommand() > 20) {
          
             /* pass the turn, and redraw the text area so the prompt is shown */

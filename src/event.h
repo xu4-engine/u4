@@ -52,7 +52,7 @@ public:
     typedef bool (*Callback)(int, void*);
 
     /** Additional information to be passed as data param for read buffer key handler */
-    typedef struct ReadBuffer {        
+    typedef struct ReadBuffer {
         int (*handleBuffer)(string*);
         string *buffer;
         int bufferLen;
@@ -103,7 +103,7 @@ private:
 
 class ReadStringController : public Controller {
 public:
-    ReadStringController(int maxlen, int screenX, int screenY);
+    ReadStringController(int maxlen, int screenX, int screenY, const string &accepted_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 \n\r\010");
     virtual bool keyPressed(int key);
 
     static string get(int maxlen, int screenX, int screenY, EventHandler *eh = NULL);
@@ -113,7 +113,16 @@ public:
 protected:
     int maxlen, screenX, screenY;
     string value;
+    string accepted;
     bool exitWhenDone;
+};
+
+class ReadIntController : public ReadStringController {
+public:
+    ReadIntController(int maxlen, int screenX, int screenY);
+
+    static int get(int maxlen, int screenX, int screenY, EventHandler *eh = NULL);
+    int getInt() const;
 };
 
 class ReadChoiceController : public Controller {

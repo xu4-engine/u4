@@ -226,10 +226,7 @@ void CombatController::begin() {
     if (map->isAltarRoom()) {
         screenMessage("\nThe Altar Room of %s\n", getBaseVirtueName(map->getAltarRoom()));    
         c->location->context = static_cast<LocationContext>(c->location->context | CTX_ALTAR_ROOM);
-    }
-
-    /* Use the combat key handler */
-    eventHandler->pushKeyHandler(&CombatController::baseKeyHandler);
+    }    
  
     /* if there are creatures around, start combat! */    
     if (showMessage && placeCreaturesOnMap && winOrLose)
@@ -250,12 +247,16 @@ void CombatController::begin() {
 
     if (!camping && !partyIsReadyToFight)
         (*c->location->finishTurn)();
+
+    eventHandler->pushController(this);
 }
 
 void CombatController::end(bool adjustKarma) {
     int i;
     Coords coords;    
-    MapTile *ground;    
+    MapTile *ground;
+
+    eventHandler->popController();
 
     /* The party is dead -- start the death sequence */
     if (c->party->isDead()) {
@@ -793,8 +794,7 @@ void CombatController::finishTurn(void) {
     /* return to party overview */
     c->stats->showPartyView();    
 
-    if (ct->isWon() && ct->winOrLose) {
-        eventHandler->popKeyHandler();
+    if (ct->isWon() && ct->winOrLose) {        
         ct->end(true);
         return;
     }
@@ -860,14 +860,12 @@ void CombatController::finishTurn(void) {
 
                 /* check to see if combat is over */
                 if (ct->isLost()) {                    
-                    eventHandler->popKeyHandler();
                     ct->end(true);
                     return;
                 }
 
                 /* end combat immediately if the enemy has fled */
-                else if (ct->isWon() && ct->winOrLose) {
-                    eventHandler->popKeyHandler();
+                else if (ct->isWon() && ct->winOrLose) {                    
                     ct->end(true);
                     return;
                 }
@@ -927,7 +925,7 @@ MoveReturnValue CombatController::movePartyMember(Direction dir, int userEvent) 
 }
 
 // Key handlers
-bool CombatController::baseKeyHandler(int key, void *data) {
+bool CombatController::keyPressed(int key) {
     CombatController *ct = c->combat;
     bool valid = true;
     CoordActionInfo *info;
@@ -943,10 +941,8 @@ bool CombatController::baseKeyHandler(int key, void *data) {
         break;
 
     case U4_ESC:
-        if (settings.debug) {
-            eventHandler->popKeyHandler();
-            ct->end(false); /* don't adjust karma */
-        }
+        if (settings.debug)            
+            ct->end(false); /* don't adjust karma */        
         else screenMessage("Bad command\n");        
 
         break;
@@ -1146,8 +1142,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
 
     if (valid) {
         c->lastCommandTime = time(NULL);
-        if (*eventHandler->getKeyHandler() == &CombatController::baseKeyHandler &&
-            c->location->finishTurn == &CombatController::finishTurn)
+        if (eventHandler->getController() == this)
             (*c->location->finishTurn)();
     }
 

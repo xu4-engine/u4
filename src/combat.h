@@ -9,6 +9,7 @@
 
 #include "direction.h"
 #include "map.h"
+#include "controller.h"
 #include "creature.h"
 #include "movement.h"
 #include "object.h"
@@ -34,7 +35,7 @@ typedef enum {
 /**
  * CombatController class
  */ 
-class CombatController {
+class CombatController : public Controller {
 public:
     CombatController();
     CombatController(class CombatMap *m);
@@ -47,7 +48,7 @@ public:
     Direction     getExitDir() const;
     unsigned char getFocus() const;
     CombatMap *   getMap() const;
-    Creature *     getCreature() const;
+    Creature *    getCreature() const;
     PartyMemberVector* getParty();
     PartyMember*  getCurrentPlayer();
     
@@ -87,7 +88,7 @@ public:
     static MoveReturnValue movePartyMember(Direction dir, int userEvent);
 
     // Key handlers
-    static bool baseKeyHandler(int key, void *data);
+    virtual bool keyPressed(int key);
     static bool chooseWeaponRange(int key, void *data);
     static bool chooseWeaponDir(int key, void *data);
 
