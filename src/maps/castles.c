@@ -103,7 +103,7 @@ City lcb_1_city  = {
     "Britannia", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 }, /* person_types */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30 }, /* person_types */
     "lcb.tlk", /* tlk_fname */
     &lcb_1_map /* map */
 };
