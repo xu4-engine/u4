@@ -755,7 +755,8 @@ int gameBaseKeyHandler(int key, void *data) {
         if (!usePortalAt(c->location, c->location->x, c->location->y, c->location->z, ACTION_ENTER)) {
             if (!mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z, ACTION_ENTER))
                 screenMessage("Enter what?\n");
-        }        
+        }
+        else endTurn = 0; /* entering a portal doesn't end the turn */
         break;
 
     case 'f':
@@ -783,11 +784,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'g':
         screenMessage("Get Chest!\n");
-
-         {
-
         
-         }
         if ((c->location->context != CTX_DUNGEON) && c->saveGame->balloonstate)        
             screenMessage("Drift only!\n");
         else {
@@ -1047,6 +1044,12 @@ int gameBaseKeyHandler(int key, void *data) {
     if (valid && endTurn) {
         if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler)
             (*c->location->finishTurn)();
+    }
+    else if (!endTurn) {
+        /* if our turn did not end, then manually redraw the text prompt */    
+        screenPrompt();
+        screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);    
+        statsUpdate();
     }
 
     return valid || keyHandlerDefault(key, NULL);
@@ -2070,7 +2073,7 @@ MoveReturnValue gameMoveAvatar(Direction dir, int userEvent) {
         screenMessage("Leaving...\n");
         gameExitToParentMap(c);
         musicPlay();
-    }
+    }    
 
     /* things that happen while not on board the balloon */
     if (c->transportContext & ~TRANSPORT_BALLOON)
@@ -2107,10 +2110,29 @@ MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
             screenMessage("Blocked!\n");       
     }
 
+    /* if we're exiting the map, do this */
     if (retval & MOVE_EXIT_TO_PARENT) {
         screenMessage("Leaving...\n");
         gameExitToParentMap(c);
         musicPlay();
+    }
+
+    /* check to see if we're entering a dungeon room */
+    if (retval & MOVE_SUCCEEDED) {
+        if ((mapGetTileFromData(c->location->map, c->location->x, c->location->y, c->location->z) & 0xF0) == 0xD0) {
+            int room = mapGetTileFromData(c->location->map, c->location->x, c->location->y, c->location->z) & 0xF;
+        
+            /**
+             * recalculate room for the abyss -- there are 16 rooms for every 2 levels, 
+             * each room marked with 0xD* where (* == room number 0-15).
+             * for levels 1 and 2, there are 16 rooms, levels 3 and 4 there are 16 rooms, etc.
+             */
+            if (c->location->map->id == MAP_ABYSS)
+                room = (0x10 * (c->location->z/2)) + room;
+
+            combatInitDungeonRoom(room, dirReverse(realDir));
+            combatBegin();
+        }
     }
 
     return retval;
