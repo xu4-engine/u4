@@ -543,6 +543,7 @@ void IntroController::initiateNewGame() {
 
     nameBuffer = ReadStringController::get(12, &menuArea);
     if (nameBuffer[0] == '\0') {
+        menuArea.disableCursor();
         mode = INTRO_MENU;
         updateScreen();
         return;
