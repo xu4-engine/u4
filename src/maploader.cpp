@@ -20,6 +20,7 @@
 #include "person.h"
 #include "portal.h"
 #include "screen.h"
+#include "tilemap.h"
 #include "tileset.h"
 #include "u4file.h"
 #include "utils.h"
@@ -352,6 +353,8 @@ int mapLoadWorld(Map *map) {
 
 int mapLoadData(Map *map, U4FILE *f) {
     unsigned int x, xch, y, ych;
+
+    TileIndexMap* tileMap = TileMap::get("base");
     
     /* allocate the space we need for the map data */
     map->data.resize(map->height * map->width);
@@ -362,7 +365,7 @@ int mapLoadData(Map *map, U4FILE *f) {
         map->chunk_width = map->width;
 
     clock_t total = 0;
-    clock_t start = clock();    
+    clock_t start = clock();
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
         for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
             for(y = 0; y < map->chunk_height; ++y) {
@@ -378,7 +381,7 @@ int mapLoadData(Map *map, U4FILE *f) {
                             return 0;
                       
                         clock_t s = clock();
-                        MapTile mt = Tile::translate(c);
+                        MapTile mt = (*tileMap)[c];
                         total += clock() - s;
 
                         map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt;

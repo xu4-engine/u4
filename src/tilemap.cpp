@@ -7,6 +7,7 @@
 #include "tilemap.h"
 
 #include "error.h"
+#include "tileset.h"
 #include "xml.h"
 
 /**
@@ -77,9 +78,17 @@ void TileMap::load(string filename) {
     for (node = root->xmlChildrenNode; node; node = node->next) {
         if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"map") != 0)
             continue;
+
+        /* we assume tiles have already been loaded at this point,
+           so let's do some translations! */
         
         int frames = 1;
         string tile = xmlGetPropAsStr(node, "tile");
+        
+        /* find the tile this references */
+        Tile *t = Tileset::findTileByName(tile);
+        if (!t)
+            errorFatal("Error: tile '%s' from '%s' was not found in any tileset", tile.c_str(), filename.c_str());
         
         if (xmlPropExists(node, "index"))
             index = xmlGetPropAsInt(node, "index");
@@ -87,9 +96,13 @@ void TileMap::load(string filename) {
             frames = xmlGetPropAsInt(node, "frames");
 
         /* insert the tile into the tile map */
-        for (int i = 0; i < frames; i++)
-            (*tileMap)[index+i] = tile;        
-
+        for (int i = 0; i < frames; i++) {
+            if (i < t->frames)
+                (*tileMap)[index+i] = MapTile(t->id, i);
+            /* frame fell out of the scope of the tile -- frame is set to 0 */
+            else (*tileMap)[index+i] = MapTile(t->id, 0);
+        }
+        
         index += frames;
     }
     
@@ -111,17 +124,4 @@ TileIndexMap* TileMap::get(string name) {
  */
 int TileMap::size() {
     return tileMaps.size();
-}
-
-/**
- * Translates a tile into a maptile 
- */
-const string& TileMap::getName(unsigned int tile, string map) {
-    TileIndexMap* im = get(map);
-    static string empty;
-
-    if (im)
-        return (*im)[tile];
-    else
-        return empty;;
 }

@@ -174,11 +174,7 @@ void Tileset::loadAll(string filename) {
 
     /* load tile rules from xml */
     if (!TileRule::rules.size())
-        TileRule::load("tileRules.xml");
-
-    /* load tile maps from xml */
-    if (!TileMap::size())
-        TileMap::loadAll(filename);
+        TileRule::load("tileRules.xml");    
 
     /* load all of the tilesets */
     for (node = root->xmlChildrenNode; node; node = node->next) {
@@ -196,7 +192,11 @@ void Tileset::loadAll(string filename) {
     }
 
     /* make the current tileset the first one encountered */
-    set(tilesets.begin()->second);    
+    set(tilesets.begin()->second);
+
+    /* load tile maps from xml, including translations from index to id */
+    if (!TileMap::size())
+        TileMap::loadAll(filename);
 }
 
 /**
@@ -204,14 +204,16 @@ void Tileset::loadAll(string filename) {
  */
 void Tileset::unloadAll() {
     TilesetMap::iterator i;
+    
+    // unload all tilemaps
+    TileMap::unloadAll();
 
     for (i = tilesets.begin(); i != tilesets.end(); i++) {
         i->second->unload();
         delete i->second;
     }
     tilesets.clear();
-
-    TileMap::unloadAll();
+    
     currentId = 0;
 }
 

@@ -71,26 +71,10 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
 /**
  * Returns the tile at the corresponding index of the current tileset
  */ 
-MapTile Tile::translate(int index, string tileMap) {
-    TileIndexMap* im = TileMap::get(tileMap);    
-    if (im) {
-        string name = (*im)[index];
-        int base = index;
-        
-        /* find the base tile for the index */
-        while (base > 0 && name == (*im)[base-1])
-            base--;
-                   
-        Tile *tile = Tileset::findTileByName((*im)[index]);
-        if (!tile)
-            errorFatal("Error: the tile '%s' was not found in the tileset", name.c_str());        
-
-        int frame = index - base;
-        if (frame > tile->frames - 1)
-            frame = tile->frames - 1;        
-        
-        return MapTile(tile->id, frame);
-    }    
+MapTile Tile::translate(int index, string tileMap) {    
+    TileIndexMap* im = TileMap::get(tileMap);
+    if (im)
+        return (*im)[index];         
 
     return MapTile();
 }

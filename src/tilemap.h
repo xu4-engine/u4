@@ -11,7 +11,7 @@
 
 using std::string;
 
-typedef std::map<unsigned int, string> TileIndexMap;
+typedef std::map<unsigned int, MapTile> TileIndexMap;
 
 class TileMap {
 public:
@@ -22,7 +22,6 @@ public:
     static void load(string filename);
     static TileIndexMap* get(string name);
     static int size();
-    static const string& getName(unsigned int tile, string map = "base");
 
 private:
     static TileIndexMapMap tileMaps;
