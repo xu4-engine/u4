@@ -483,7 +483,7 @@ int mapNumberOfMonsters(const Map *map) {
 int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char transport) {
     int retval;
     Direction d;
-    unsigned char tile;
+    unsigned char tile, prev_tile;
     Object *obj;
     int x, y;
     const Monster *m;
@@ -521,15 +521,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char trans
         else
             tile = mapTileAt(map, x, y);
 
-        /* 
-         * check special cases for tile 0x0e: the center tile of the
-         * castle of lord british, which is walkable from the south
-         * only
-         */
-        if (tile == LCB2_TILE && d == DIR_SOUTH)
-            continue;
-        if (mapTileAt(map, from_x, from_y) == LCB2_TILE && d == DIR_NORTH)
-            continue;
+        prev_tile = mapTileAt(map, from_x, from_y);
 
         /* if the transport is a ship, check sailable */
         if (tileIsShip(transport) || tileIsPirateShip(transport)) {
@@ -550,13 +542,16 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char trans
             if (tileIsFlyable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);
         }
-        /* avatar: check walkable */
-        else if (transport == AVATAR_TILE) {
-            if (tileIsWalkable(tile))
+        /* avatar or horseback: check walkable */
+        else if (transport == AVATAR_TILE || tileIsHorse(transport)) {
+            if (tileCanWalkOn(tile, d) &&
+                tileCanWalkOff(prev_tile, d))
                 retval = DIR_ADD_TO_MASK(d, retval);
         } 
         /* other: check monster walkable */
-        else if (tileIsMonsterWalkable(tile))
+        else if (tileCanWalkOn(tile, d) &&
+                 tileCanWalkOff(prev_tile, d) &&
+                 tileIsMonsterWalkable(tile))
             retval = DIR_ADD_TO_MASK(d, retval);
             
     }

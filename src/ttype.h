@@ -66,7 +66,8 @@ typedef enum {
     ANIM_FOURFRAMES
 } TileAnimationStyle;
 
-int tileIsWalkable(unsigned char tile);
+int tileCanWalkOn(unsigned char tile, Direction d);
+int tileCanWalkOff(unsigned char tile, Direction d);
 int tileIsMonsterWalkable(unsigned char tile);
 int tileIsSwimable(unsigned char tile);
 int tileIsSailable(unsigned char tile);

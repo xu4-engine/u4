@@ -149,12 +149,31 @@ int tileTestBit(unsigned char tile, unsigned int mask, int defaultVal) {
 }
 
 
-int tileIsWalkable(unsigned char tile) {
+int tileCanWalkOn(unsigned char tile, Direction d) {
     if (tile >= STORM_TILE &&
         tile <= (STORM_TILE + 1))
         return 1;
 
+    /* 
+     * special case for tile 0x0e: the center tile of the castle of
+     * lord british, which can't be moved onto heading south
+     */
+    if (tile == LCB2_TILE && d == DIR_SOUTH)
+        return 0;
+
     return !tileTestBit(tile, MASK_UNWALKABLE, 1);
+}
+
+int tileCanWalkOff(unsigned char tile, Direction d) {
+
+    /* 
+     * special case for tile 0x0e: the center tile of the castle of
+     * lord british, which can't be exited to the north
+     */
+    if (tile == LCB2_TILE && d == DIR_NORTH)
+        return 0;
+
+    return 1;
 }
 
 int tileIsMonsterWalkable(unsigned char tile) {
