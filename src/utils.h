@@ -23,6 +23,8 @@ void xu4_srandom(void);
 int xu4_random(int upperval);
 void trim(string *val);
 std::vector<string> split(const string &s, const string &separators);
+void lowercase(string *val);
+void uppercase(string *val);
 
 class Performance {
     typedef std::map<string, clock_t> TimeMap;

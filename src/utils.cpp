@@ -40,6 +40,26 @@ void trim(std::string *val) {
 }
 
 /**
+ * Converts the string to lowercase
+ */ 
+void lowercase(string *val) {
+    using namespace std;
+    string::iterator i;
+    for (i = val->begin(); i != val->end(); i++)
+        *i = tolower(*i);
+}
+
+/**
+ * Converts the string to uppercase
+ */ 
+void uppercase(string *val) {
+    using namespace std;
+    string::iterator i;
+    for (i = val->begin(); i != val->end(); i++)
+        *i = toupper(*i);
+}
+
+/**
  * Splits a string into substrings, divided by the charactars in
  * separators.  Multiple adjacent seperators are treated as one.
  */
