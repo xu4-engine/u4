@@ -232,7 +232,9 @@ offset len  notes
 0x1E4  1    introduced to Lord British (0-haven't been introduced, 1-introduced)
 0x1E5  9    ???
 0x1EE  2    ??? (coordinates of a dungeon)
-0x1F0  7    ???
+0x1F0  2    orientation in dungeon (0-west, 1-north, 2-east, 3-south)
+0x1F2  2    dungeon level (starting at zero)
+0x1F4  2    ???
 
 The character record format:
 
