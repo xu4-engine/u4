@@ -39,7 +39,7 @@ void imageSetTransparentIndex(Image *im, unsigned int index);
 void imagePutPixel(Image *im, int x, int y, int r, int g, int b, int a);
 void imagePutPixelIndex(Image *im, int x, int y, unsigned int index);
 void imagePutPixelScaled(Image *im, int x, int y, int r, int g, int b, int a);
-void imageGetPixel(Image *im, int x, int y, int *r, int *g, int *b, int *a);
+void imageGetPixel(Image *im, int x, int y, unsigned int *r, unsigned int *g, unsigned int *b, unsigned int *a);
 void imageGetPixelIndex(Image *im, int x, int y, unsigned int *index);
 void imageFillRect(Image *im, int x, int y, int w, int h, int r, int g, int b);
 void imageDraw(const Image *im, int x, int y);

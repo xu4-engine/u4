@@ -4,84 +4,84 @@ MAIN=u4$(EXEEXT)
 VERSION=1.0cvs
 
 SRCS=\
-        annotation.c \
-        armor.c \
-        camp.c \
-        codex.c \
-        combat.c \
-        death.c \
-        debug.c \
-        direction.c \
-        dngview.c \
-        dungeon.c \
-        error.c \
-        event.c \
-        event_$(UI).c \
-        game.c \
-        io.c \
-        image_$(UI).c \
-        intro.c \
-        item.c \
-        list.c \
-        location.c \
-        map.c \
-        maploader.c \
-        mapmgr.c \
-        menu.c \
-        monster.c \
-        moongate.c \
-        movement.c \
-        music.c \
-        names.c \
-        person.c \
-        player.c \
-        portal.c \
-        rle.c \
-        savegame.c \
-        scale.c \
-        screen.c \
-        screen_$(UI).c \
-        settings.c \
-        shrine.c \
-        sound.c \
-        spell.c \
-        stats.c \
-        tile.c \
-        tileanim.c \
-        tileset.c \
-        u4.c \
-        u4_$(UI).c \
-        u4file.c \
-        utils.c \
-        unzip.c \
-        vendor.c \
-        weapon.c \
-        xml.c \
-        lzw/hash.c \
-        lzw/lzw.c \
-        lzw/u4decode.c \
+        annotation.cpp \
+        armor.cpp \
+        camp.cpp \
+        codex.cpp \
+        combat.cpp \
+        death.cpp \
+        debug.cpp \
+        direction.cpp \
+        dngview.cpp \
+        dungeon.cpp \
+        error.cpp \
+        event.cpp \
+        event_$(UI).cpp \
+        game.cpp \
+        io.cpp \
+        image_$(UI).cpp \
+        intro.cpp \
+        item.cpp \
+        list.cpp \
+        location.cpp \
+        map.cpp \
+        maploader.cpp \
+        mapmgr.cpp \
+        menu.cpp \
+        monster.cpp \
+        moongate.cpp \
+        movement.cpp \
+        music.cpp \
+        names.cpp \
+        person.cpp \
+        player.cpp \
+        portal.cpp \
+        rle.cpp \
+        savegame.cpp \
+        scale.cpp \
+        script.cpp \
+        screen.cpp \
+        screen_$(UI).cpp \
+        settings.cpp \
+        shrine.cpp \
+        sound.cpp \
+        spell.cpp \
+        stats.cpp \
+        tile.cpp \
+        tileanim.cpp \
+        tileset.cpp \
+        u4.cpp \
+        u4_$(UI).cpp \
+        u4file.cpp \
+        utils.cpp \
+        unzip.cpp \
+        weapon.cpp \
+        xml.cpp \
+        lzw/hash.cpp \
+        lzw/lzw.cpp \
+        lzw/u4decode.cpp \
         $(NULL)
 
-OBJS += $(SRCS:.c=.o)
+OBJS += $(SRCS:.cpp=.o)
 
 all:: $(MAIN) mkutils
 
 mkutils::  dumpsavegame$(EXEEXT) u4enc$(EXEEXT) u4dec$(EXEEXT) tlkconv$(EXEEXT)
 
 $(MAIN): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
+	$(CC) $(CPPFLAGS) -o $@ $(OBJS) $(LIBS)
 
 dumpsavegame$(EXEEXT) : util/dumpsavegame.o savegame.o io.o names.o
-	$(CC) $(CFLAGS) -o dumpsavegame util/dumpsavegame.o savegame.o io.o names.o
+	$(CC) $(CPPFLAGS) -o dumpsavegame util/dumpsavegame.o savegame.o io.o names.o
 
 u4enc$(EXEEXT) : util/u4enc.o lzw/hash.o util/pngconv.o
-	$(CC) $(CFLAGS) -o u4enc util/u4enc.o lzw/hash.o util/pngconv.o -lpng -lz
+	$(CC) $(CPPFLAGS) -o u4enc util/u4enc.o lzw/hash.o util/pngconv.o -lpng -lz
 
 u4dec$(EXEEXT) : util/u4dec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o rle.o util/pngconv.o
-	$(CC) $(CFLAGS) -o u4dec util/u4dec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o rle.o util/pngconv.o -lpng -lz
+	$(CC) $(CPPFLAGS) -o u4dec util/u4dec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o rle.o util/pngconv.o -lpng -lz
 
 tlkconv$(EXEEXT) : util/tlkconv.o
-	$(CC) $(CFLAGS) -o tlkconv util/tlkconv.o $(shell xml2-config --libs)
+	$(CC) $(CPPFLAGS) -o tlkconv util/tlkconv.o $(shell xml2-config --libs)
 
 clean:: cleanutil
 	rm -rf *~ */*~ $(OBJS) $(MAIN)

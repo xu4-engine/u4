@@ -5,40 +5,71 @@
 #ifndef ANNOTATION_H
 #define ANNOTATION_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "map.h"
+#include "types.h"
 
-/*
+
+class Annotation;
+
+typedef xu4_list<Annotation> AnnotationList;
+
+/**
+ * Annotation class
+ * ----------------------------------------------------------------
  * Annotations are updates to a map.  There are three types:
  * - permanent: lasts until annotationClear is called
  * - turn based: lasts a given number of cycles
- * - time based: lasts a given number of time units (1/4 seconds)
- * When one is created, x and y coordinates are provided.  The
- * appropriate duration can then be added.
+ * - time based: lasts a given number of time units (1/4 seconds) 
  */
+class Annotation {
+public:    
+    Annotation();
+    Annotation(MapCoords coords, MapTile tile, bool visual = false);        
 
-typedef struct _Annotation {
-    int x, y, z;
-    unsigned char mapid;
-    int time_to_live;
-    unsigned char tile;
-    int visual;    
-    struct _Annotation *next;
-} Annotation;
+    void             debug_output() const;
+    const MapCoords& getCoords() const;
+    const MapTile&   getTile() const;
+    const bool       isVisualOnly() const;
+    const int        getTTL() const;
+    void             setCoords(const MapCoords &);
+    void             setTile(const MapTile &);
+    void             setVisualOnly(bool visual = true);
+    void             setTTL(int turns);
+    void             passTurn();
 
-Annotation *annotationAdd(int x, int y, int z, unsigned char mapid, unsigned char tile);
-Annotation *annotationSetVisual(Annotation *a);
-Annotation *annotationSetTurnDuration(Annotation *a, int ttl);
-Annotation *annotationSetTimeDuration(Annotation *a, int interval);
-void annotationRemove(int x, int y, int z, unsigned char mapid, unsigned char tile);
-const Annotation *annotationAt(int x, int y, int z, unsigned char mapid);
-void annotationCycle(void);
-void annotationClear(unsigned char mapid);
-int annotationCount(void);
+    bool operator==(const Annotation&) const;    
 
-#ifdef __cplusplus
-}
-#endif
+    // Properties
+private:        
+    MapCoords coords;
+    MapTile tile;        
+    bool visual;
+    int ttl;
+};
+
+/**
+ * AnnotationMgr class
+ * ----------------------------------------------------------------
+ * Manages annotations for the current map.  This includes
+ * adding and removing annotations, as well as finding annotations
+ * and managing their existence.
+ */
+class AnnotationMgr {    
+public:        
+    AnnotationMgr();
+
+    Annotation      *add(MapCoords coords, MapTile tile, bool visual = false);        
+    AnnotationList  allAt(MapCoords pos);
+    void            clear();        
+    void            passTurn();
+    void            remove(MapCoords pos, MapTile tile);
+    void            remove(Annotation *);
+    void            remove(AnnotationList);
+    int             size();
+
+private:        
+    AnnotationList  annotations;
+    AnnotationList::iterator i;
+};
 
 #endif

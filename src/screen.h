@@ -7,6 +7,7 @@
 
 #include "direction.h"
 #include "dngview.h"
+#include "map.h"
 #include "u4file.h"
 
 #ifdef __cplusplus
@@ -21,6 +22,7 @@ extern "C" {
 
 struct _Tileset;
 struct _Image;
+struct _TileAnimSet;
 
 #define BKGD_SHAPES "tiles"
 #define BKGD_CHARSET "charset"
@@ -80,13 +82,60 @@ typedef struct _MouseArea {
     int command[3];
 } MouseArea;
 
+typedef enum {
+    FIXUP_NONE,
+    FIXUP_INTRO,
+    FIXUP_INTRO_EXTENDED,
+    FIXUP_ABYSS
+} ImageFixup;
+
+typedef struct {
+    int id;
+    const char *filename;
+    int width, height, depth;
+    int prescale;
+    CompressionType filetype;
+    int tiles;                  /* used to scale the without bleeding colors between adjacent tiles */
+    int introOnly;              /* whether can be freed after the intro */
+    int transparentIndex;       /* color index to consider transparent */
+    int xu4Graphic;             /* an original xu4 graphic not part of u4dos or the VGA upgrade */
+    ImageFixup fixup;           /* a routine to do miscellaneous fixes to the image */
+} ImageInfo;
+
+typedef struct {
+    const char *name;
+    const char *location;
+    const char *extends;
+    ImageInfo *image[BKGD_MAX];
+} ImageSet;
+
+typedef enum {
+    LAYOUT_STANDARD,
+    LAYOUT_GEM
+} LayoutType;
+
+typedef struct {
+    char *name;
+    LayoutType type;
+    struct {
+        int width, height;
+    } tileshape;
+    struct {
+        int x, y;
+        int width, height;
+    } viewport;
+} Layout;
+
+typedef xu4_map<string, ImageSet*, std::less<string> >      ImageSetMap;
+typedef xu4_map<string, Layout*, std::less<string> >        LayoutMap;
+typedef xu4_map<string, struct _TileAnimSet*, std::less<string> >   TileAnimSetMap;
+
 #define SCR_CYCLE_PER_SECOND 4
 
 void screenInit(void);
 void screenDelete(void);
 void screenReInit(void);
 
-char **screenGetImageSetNames(void);
 char **screenGetGemLayoutNames(void);
 
 void screenDrawImage(const char *bkgd);
@@ -107,8 +156,8 @@ void screenRedrawScreen(void);
 void screenRedrawTextArea(int x, int y, int width, int height);
 void screenScrollMessageArea(void);
 void screenShake(int iterations);
-void screenShowTile(struct _Tileset* tileset, unsigned char tile, int focus, int x, int y);
-void screenShowGemTile(unsigned char tile, int focus, int x, int y);
+void screenShowTile(struct _Tileset* tileset, MapTile tile, int focus, int x, int y);
+void screenShowGemTile(MapTile tile, int focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, const char *fmt, ...) PRINTF_LIKE(3, 4);
@@ -116,7 +165,7 @@ void screenUpdate(int showmap, int blackout);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);
 void screenUpdateWind(void);
-unsigned char screenViewportTile(unsigned int width, unsigned int height, int x, int y, int *focus);
+MapTile screenViewportTile(unsigned int width, unsigned int height, int x, int y, int *focus);
 
 void screenAnimateIntro(const char *frame);
 void screenFreeIntroAnimations();
@@ -131,7 +180,7 @@ void screenEnableCursor(void);
 void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);
 
-void screenDungeonDrawTile(int distance, unsigned char tile);
+void screenDungeonDrawTile(int distance, MapTile tile);
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
 
 void screenSetMouseCursor(MouseCursor cursor);

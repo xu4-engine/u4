@@ -5,9 +5,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "types.h"
 
 #define MIN_SHAKE_INTERVAL              50
 
@@ -77,52 +75,110 @@ typedef struct _MouseOptions {
     int enabled;
 } MouseOptions;
 
-typedef struct _Settings {
-    unsigned int scale;
-    int fullscreen;
-    FilterType filter;
-    char *videoType;
-    char *gemLayout;
-    int screenShakes;
-    int musicVol;
-    int soundVol;
-    int volumeFades;
-    int shortcutCommands;
-    int keydelay;
-    int keyinterval;
-    int filterMoveMessages;
-    int battleSpeed;
-    int enhancements;    
-    int gameCyclesPerSecond;
-    int debug;
-    BattleDifficulty battleDiff;
-    int validateXml;
-    int spellEffectSpeed;
-    int campTime;
-    int innTime;
-    int shrineTime;
-    int shakeInterval;
-    SettingsEnhancementOptions enhancementsOptions;
-    int innAlwaysCombat;
-    int campingAlwaysCombat;
-    MouseOptions mouseOptions;
-} Settings;
+/**
+ * Translator Class -- used to provide translation between
+ * a string value and a type.
+ */ 
+class Translator {
+    typedef xu4_map<string, int, std::less<string> >    T_s;    
+    typedef xu4_map<int, string, std::less<int> >     T_t;
+public:
+    Translator() {}
+    Translator(const string values[]) {
+        /**
+         * Initialize the maps
+         */ 
+        for (int i = 0; !values[i].empty(); i++) {
+            s_map[values[i]] = i;
+            t_map[i] = values[i];
+        }
+    }
 
-char *settingsFilename(void);
-void settingsRead(void);
-void settingsWrite(void);
-void settingsCopy(Settings *to, const Settings *from);
-int settingsCompare(const Settings *s1, const Settings *s2);
-const char *settingsFilterToString(FilterType filter);
-FilterType settingsStringToFilter(const char *str);
-const char *settingsBattleDiffToString(BattleDifficulty diff);
-BattleDifficulty settingsStringToBattleDiff(const char *str);
+    int getType(string name) {
+        T_s::iterator found = s_map.find(name);
+        if (found != s_map.end())
+            return found->second;
+        return -1;
+    }
+    
+    string getName(int type) {
+        T_t::iterator found = t_map.find(type);
+        if (found != t_map.end())
+            return found->second;
+        return "";
+    }
+
+private:
+    T_s s_map;
+    T_t t_map;
+};
+
+/**
+ * Settings class definition
+ */ 
+class Settings {
+    typedef Translator FilterTranslator;
+    typedef Translator BattleDiffTranslator;
+    typedef xu4_map<string, int, std::less<string> > SettingsMap;
+
+public:
+    Settings();
+
+    /* Methods */
+    bool read();
+    bool write();
+
+    bool operator==(const Settings &) const;
+    bool operator!=(const Settings &) const;
+
+    /* Properties */    
+    static FilterTranslator         filters;
+    static BattleDiffTranslator     battleDiffs;    
+
+    BattleDifficulty    battleDiff;
+    int                 battleSpeed;
+    bool                campingAlwaysCombat;
+    int                 campTime;
+    bool                debug;
+    bool                enhancements;
+    SettingsEnhancementOptions enhancementsOptions;    
+    FilterType          filter;
+    bool                filterMoveMessages;
+    bool                fullscreen;
+    int                 gameCyclesPerSecond;    
+    bool                germanKbd;
+    bool                innAlwaysCombat;
+    int                 innTime;
+    int                 keydelay;
+    int                 keyinterval;
+    MouseOptions        mouseOptions;
+    bool                musicVol;
+    unsigned int        scale;
+    bool                screenShakes;
+    int                 shakeInterval;
+    bool                shortcutCommands;
+    int                 shrineTime;
+    bool                soundVol;
+    int                 spellEffectSpeed;
+    bool                validateXml;    
+    bool                volumeFades;
+
+    /**
+     * Strings, classes, and other objects that cannot
+     * be bitwise-compared must be placed here at the
+     * end of the list so that our == and != operators
+     * function correctly
+     */ 
+    long                end_of_bitwise_comparators;
+
+    string              gemLayout;
+    string              videoType;
+
+private:
+    string filename;
+};
 
 /* the global settings */
-extern Settings *settings;
-
-#ifdef __cplusplus
-}
-#endif
+extern Settings settings;
 
 #endif

@@ -5,6 +5,8 @@
 #ifndef AREA_H
 #define AREA_H
 
+#include "map.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -13,12 +15,8 @@ extern "C" {
 #define AREA_PLAYERS 8
 
 typedef struct _Area {
-    struct {
-        unsigned char x, y;
-    } monster_start[AREA_MONSTERS];
-    struct {
-        unsigned char x, y;
-    } player_start[AREA_PLAYERS];
+    MapCoords monster_start[AREA_MONSTERS];
+    MapCoords player_start[AREA_PLAYERS];
 } Area;
 
 #ifdef __cplusplus

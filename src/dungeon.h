@@ -5,13 +5,10 @@
 #ifndef DUNGEON_H
 #define DUNGEON_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 struct _Map;
 
-#define DNGROOM_NTRIGGERS 4
+#include "map.h"
+#include "types.h"
 
 typedef enum {
     STATSBONUS_INT = 0x1,
@@ -21,12 +18,17 @@ typedef enum {
 
 typedef struct _Trigger {
     unsigned char tile;
-    unsigned char x, y;
-    unsigned char change_x1, change_y1, change_x2, change_y2;
+    unsigned char
+        y : 4,
+        x : 4,
+        change_y1 : 4,
+        change_x1 : 4,
+        change_y2 : 4,
+        change_x2 : 4;
 } Trigger;
 
 typedef struct _DngRoom {
-    Trigger triggers[DNGROOM_NTRIGGERS];
+    Trigger triggers[4];
     unsigned char monster_tiles[16];
     unsigned char monster_start_x[16];
     unsigned char monster_start_y[16];
@@ -43,7 +45,7 @@ typedef struct _DngRoom {
 } DngRoom;
 
 typedef struct _Dungeon {
-    const char *name;
+    string name;
     int n_rooms;
     struct _Map *room;
     struct _DngRoom *rooms;
@@ -98,22 +100,18 @@ typedef enum _FieldType {
     FIELD_SLEEP                 = 0x3
 } FieldType;
 
-DungeonToken dungeonTokenForTile(unsigned char tile);
-unsigned char dungeonSubTokenForTile(unsigned char tile);
+DungeonToken dungeonTokenForTile(MapTile tile);
+unsigned char dungeonSubTokenForTile(MapTile tile);
 DungeonToken dungeonCurrentToken();
 unsigned char dungeonCurrentSubToken();
-DungeonToken dungeonTokenAt(struct _Map *map, int x, int y, int z);
-unsigned char dungeonSubTokenAt(struct _Map *map, int x, int y, int z);
-int dungeonLoadRoom(Dungeon *dng, int room);
+DungeonToken dungeonTokenAt(struct _Map *map, MapCoords coords);
+unsigned char dungeonSubTokenAt(struct _Map *map, MapCoords coords);
+bool dungeonLoadRoom(Dungeon *dng, int room);
 void dungeonSearch(void);
-int dungeonDrinkFountain(int player);
-int dungeonTouchOrb(int player);
-int dungeonHandleTrap(TrapType trap);
-int dungeonLadderUpAt(struct _Map *map, int x, int y, int z);
-int dungeonLadderDownAt(struct _Map *map, int x, int y, int z);
-
-#ifdef __cplusplus
-}
-#endif
+bool dungeonDrinkFountain(int player);
+bool dungeonTouchOrb(int player);
+bool dungeonHandleTrap(TrapType trap);
+bool dungeonLadderUpAt(struct _Map *map, MapCoords coords);
+bool dungeonLadderDownAt(struct _Map *map, MapCoords coords);
 
 #endif

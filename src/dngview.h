@@ -5,11 +5,8 @@
 #ifndef DNGVIEW_H
 #define DNGVIEW_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct _ListNode;
+#include "types.h"
+#include "location.h"
 
 typedef enum {
     DNGGRAPHIC_NONE,
@@ -22,11 +19,7 @@ typedef enum {
     DNGGRAPHIC_BASETILE
 } DungeonGraphicType;
 
-struct _ListNode *dungeonViewGetTiles(int fwd, int side);
-DungeonGraphicType dungeonViewTilesToGraphic(struct _ListNode *tiles);
-
-#ifdef __cplusplus
-}
-#endif
+MapTileList dungeonViewGetTiles(int fwd, int side);
+DungeonGraphicType dungeonViewTilesToGraphic(MapTileList tiles);
 
 #endif

@@ -6,12 +6,13 @@
 #define MOVEMENT_H
 
 #include "direction.h"
+#include "map.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct _Object;
+class Object;
 struct _Map;
 
 typedef enum {
@@ -36,10 +37,10 @@ typedef MoveReturnValue (*MoveCallback)(Direction, int);
 
 MoveReturnValue moveAvatar(Direction dir, int userEvent);
 MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent);
-int moveObject(struct _Map *map, struct _Object *obj, int avatarx, int avatary);
-int moveCombatObject(int action, struct _Map *map, struct _Object *obj, int targetx, int targety);
+int moveObject(struct _Map *map, class Object *obj, MapCoords avatar);
+int moveCombatObject(int action, struct _Map *map, class Object *obj, MapCoords target);
 MoveReturnValue movePartyMember(Direction dir, int userEvent);
-int slowedByTile(unsigned char tile);
+int slowedByTile(MapTile tile);
 int slowedByWind(int direction);
 
 extern int collisionOverride;

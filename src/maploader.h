@@ -5,16 +5,8 @@
 #ifndef MAPLOADER_H
 #define MAPLOADER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "map.h"
 
-struct _Map;
-
-int mapLoad(struct _Map *map);
-
-#ifdef __cplusplus
-}
-#endif
+int mapLoad(Map *map);
 
 #endif /* MAPLOADER_H */

@@ -6,11 +6,13 @@
 #define TILE_H
 
 #include "direction.h"
+#include "map.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+struct _Tileset;
 struct _TileRule;
 
 #define DEEP_WATER_TILE 0x0
@@ -116,48 +118,48 @@ typedef struct _Tile {
     int id;
     int index;
     int frames;
-    unsigned char displayTile; /* FIXME: this will go away soon */
+    MapTile displayTile; /* FIXME: this will go away soon */
     unsigned char animated; /* FIXME: this will be changed to 'animation' of type TileAnimationStyle */
     unsigned char opaque;
     struct _TileRule *rule;
 } Tile;
 
-Tile *tileFindByName(const char *name);
-int tileLoadTileInfo(Tile** tiles, int index, void *node);
+Tile *tileFindByName(const char *name, struct _Tileset *t = NULL);
+bool tileLoadTileInfo(Tile** tiles, int index, void *node);
 
-int tileCanWalkOn(unsigned char tile, Direction d);
-int tileCanWalkOff(unsigned char tile, Direction d);
-int tileCanAttackOver(unsigned char tile);
-int tileCanLandBalloon(unsigned char tile);
-int tileIsReplacement(unsigned char tile);
-int tileIsWalkable(unsigned char tile);
-int tileIsMonsterWalkable(unsigned char tile);
-int tileIsDungeonWalkable(unsigned char tile);
-int tileIsSwimable(unsigned char tile);
-int tileIsSailable(unsigned char tile);
-int tileIsWater(unsigned char tile);
-int tileIsFlyable(unsigned char tile);
-int tileIsDoor(unsigned char tile);
-int tileIsLockedDoor(unsigned char tile);
-int tileIsChest(unsigned char tile);
-unsigned char tileGetChestBase();
-int tileIsShip(unsigned char tile);
-unsigned char tileGetShipBase();
-int tileIsPirateShip(unsigned char tile);
-int tileIsHorse(unsigned char tile);
-unsigned char tileGetHorseBase();
-int tileIsBalloon(unsigned char tile);
-unsigned char tileGetBalloonBase();
-int tileCanDispel(unsigned char tile);
-Direction tileGetDirection(unsigned char tile);
-int tileSetDirection(unsigned char *tile, Direction dir);
-int tileCanTalkOver(unsigned char tile);
-TileSpeed tileGetSpeed(unsigned char tile);
-TileEffect tileGetEffect(unsigned char tile);
-TileAnimationStyle tileGetAnimationStyle(unsigned char tile);
-void tileAdvanceFrame(unsigned char *tile);
-int tileIsOpaque(unsigned char tile);
-unsigned char tileForClass(int klass);
+bool tileCanWalkOn(MapTile tile, Direction d);
+bool tileCanWalkOff(MapTile tile, Direction d);
+bool tileCanAttackOver(MapTile tile);
+bool tileCanLandBalloon(MapTile tile);
+bool tileIsReplacement(MapTile tile);
+bool tileIsWalkable(MapTile tile);
+bool tileIsMonsterWalkable(MapTile tile);
+bool tileIsDungeonWalkable(MapTile tile);
+bool tileIsSwimable(MapTile tile);
+bool tileIsSailable(MapTile tile);
+bool tileIsWater(MapTile tile);
+bool tileIsFlyable(MapTile tile);
+bool tileIsDoor(MapTile tile);
+bool tileIsLockedDoor(MapTile tile);
+bool tileIsChest(MapTile tile);
+MapTile tileGetChestBase();
+bool tileIsShip(MapTile tile);
+MapTile tileGetShipBase();
+bool tileIsPirateShip(MapTile tile);
+bool tileIsHorse(MapTile tile);
+MapTile tileGetHorseBase();
+bool tileIsBalloon(MapTile tile);
+MapTile tileGetBalloonBase();
+bool tileCanDispel(MapTile tile);
+Direction tileGetDirection(MapTile tile);
+bool tileSetDirection(MapTile *tile, Direction dir);
+bool tileCanTalkOver(MapTile tile);
+TileSpeed tileGetSpeed(MapTile tile);
+TileEffect tileGetEffect(MapTile tile);
+TileAnimationStyle tileGetAnimationStyle(MapTile tile);
+void tileAdvanceFrame(MapTile *tile);
+bool tileIsOpaque(MapTile tile);
+MapTile tileForClass(int klass);
 
 #ifdef __cplusplus
 }

@@ -6,6 +6,7 @@
 #define PORTAL_H
 
 #include "context.h"
+#include "map.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,14 +30,14 @@ typedef enum {
 typedef int (*PortalConditionsMet)(const struct _Portal *p);
 
 typedef struct _PortalDestination {
-    int x, y, z;
-    unsigned char mapid;
+    MapCoords coords;    
+    MapId mapid;
 } PortalDestination;
 
 typedef struct _Portal {
-    unsigned short x, y, z;
-    unsigned char destid;
-    unsigned short startx, starty, startlevel;
+    MapCoords coords;    
+    MapId destid;
+    MapCoords start;    
     PortalTriggerAction trigger_action;
     PortalConditionsMet portalConditionsMet;
     struct _PortalDestination *retroActiveDest;
@@ -47,7 +48,7 @@ typedef struct _Portal {
 } Portal;
 
 void createDngLadder(struct _Location *location, PortalTriggerAction action, Portal *p);
-int usePortalAt(struct _Location *location, int x, int y, int z, PortalTriggerAction action);
+int usePortalAt(struct _Location *location, MapCoords coords, PortalTriggerAction action);
 
 #ifdef __cplusplus
 }

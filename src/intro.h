@@ -15,10 +15,14 @@ extern "C" {
 int introInit(void);
 void introDelete(int freeMenus);
 unsigned char *introGetSigData();
-int introKeyHandler(int key, void *data);
 void introUpdateScreen(void);
 void introTimer(void *data);
 int introBaseMenuKeyHandler(int key, void *data);
+
+/**
+ * Key handlers
+ */ 
+bool introKeyHandler(int key, void *data);
 
 #ifdef __cplusplus
 }

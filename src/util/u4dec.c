@@ -17,7 +17,7 @@ int isPowerOfTwo(int n);
  */
 int main(int argc, char *argv[]) {
     FILE *infile;
-    void *indata, *outdata;
+    unsigned char *indata, *outdata;
     long inlen, outlen;
     char *alg, *infname, *outfname;
     int width, height;
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     inlen = ftell(infile);
     fseek(infile, 0L, SEEK_SET);
         
-    indata = malloc(inlen);
+    indata = (unsigned char *)malloc(inlen);
     if (!indata) {
         perror("malloc");
         exit(1);
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     if (strcmp(alg, "lzw") == 0) {
         outlen = lzwGetDecompressedSize(indata, inlen);
 
-        outdata = malloc(outlen);
+        outdata = (unsigned char *)malloc(outlen);
         if (!outdata) {
             perror("malloc");
             exit(1);
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
             return(EXIT_FAILURE);
         }
 
-        outdata = malloc(outlen);
+        outdata = (unsigned char *)malloc(outlen);
         if (!outdata) {
             printf("Couldn't allocate outdata.\n");
             return(EXIT_FAILURE);

@@ -35,9 +35,11 @@ typedef struct _Tileset {
     int numTiles;
     Tile *tiles;
     int totalFrames;
-    const char *imageName;
+    string imageName;
     struct _Image *tileGraphic;
 } Tileset;
+
+typedef xu4_map<TilesetType, Tileset*, std::less<TilesetType> > TilesetList;
 
 void tilesetLoadAllTilesetsFromXml(const char *tilesetFilename);
 void tilesetDeleteAllTilesets();

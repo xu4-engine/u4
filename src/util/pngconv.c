@@ -65,7 +65,7 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
         palette_size = 0;
 
     if (palette_size != 0) {
-        palette = malloc(sizeof(png_color) * palette_size);        
+        palette = (png_color*)malloc(sizeof(png_color) * palette_size);        
 
         printf("palette size = %d\n", palette_size);
         if (palette_size == 16)
@@ -74,7 +74,7 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
             setVgaPalette(palette);
     }
 
-    row_pointers = malloc(height * sizeof(png_byte *));
+    row_pointers = (png_byte**)malloc(height * sizeof(png_byte *));
     for (i = 0; i < height; i++) {
         row_pointers[i] = (png_byte *) malloc(width * sizeof (png_byte) * bits / 8);
     }
@@ -158,15 +158,15 @@ int readEgaFromPng(unsigned char **data, int *height, int *width, int *bits, con
     png_uint_32 pwidth, pheight;
     int bit_depth, color_type, interlace_type, compression_type, filter_method;
     png_byte **row_pointers;
-    int i, j;
+    unsigned int i, j;
 
     fp = fopen(fname, "rb");
     if (!fp) {
         perror(fname);
         exit(1);
-    }
+    }    
     fread(header, 1, sizeof(header), fp);
-    if (png_sig_cmp(header, 0, sizeof(header)) != 0) {
+    if (png_sig_cmp((png_byte*)header, 0, sizeof(header)) != 0) {
         fprintf(stderr, "not a PNG\n");
         exit(1);
     }

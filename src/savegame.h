@@ -11,7 +11,11 @@
 extern "C" {
 #endif
 
-struct _Object;
+#define PARTY_SAV_BASE_FILENAME         "party.sav"
+#define MONSTERS_SAV_BASE_FILENAME      "monsters.sav"
+#define OUTMONST_SAV_BASE_FILENAME      "outmonst.sav"
+
+class Object;
 
 /**
  * The list of all weapons.  These values are used in both the
@@ -183,17 +187,17 @@ typedef struct _SaveGame {
     unsigned int unknown1;
     unsigned int moves;
     SaveGamePlayerRecord players[8];
-    unsigned int food;
-    unsigned short gold;
-    unsigned short karma[VIRT_MAX];
-    unsigned short torches;
-    unsigned short gems;
-    unsigned short keys;
-    unsigned short sextants;
-    unsigned short armor[ARMR_MAX];
-    unsigned short weapons[WEAP_MAX];
-    unsigned short reagents[REAG_MAX];
-    unsigned short mixtures[SPELL_MAX];
+    int food;
+    short gold;
+    short karma[VIRT_MAX];
+    short torches;
+    short gems;
+    short keys;
+    short sextants;
+    short armor[ARMR_MAX];
+    short weapons[WEAP_MAX];
+    short reagents[REAG_MAX];
+    short mixtures[SPELL_MAX];
     unsigned short items;
     unsigned char x, y;
     unsigned char stones;
@@ -222,16 +226,16 @@ char *partySavFilename(void);
 char *monstersSavFilename(void);
 FILE *saveGameOpenForWriting(void);
 FILE *saveGameOpenForReading(void);
-FILE *saveGameMonstersOpenForWriting(void);
-FILE *saveGameMonstersOpenForReading(void);
+FILE *saveGameMonstersOpenForWriting(const char *filename);
+FILE *saveGameMonstersOpenForReading(const char *filename);
 int saveGameWrite(const SaveGame *save, FILE *f);
 int saveGameRead(SaveGame *save, FILE *f);
 void saveGameInit(SaveGame *save, const SaveGamePlayerRecord *avatarInfo);
 int saveGamePlayerRecordWrite(const SaveGamePlayerRecord *record, FILE *f);
 int saveGamePlayerRecordRead(SaveGamePlayerRecord *record, FILE *f);
 void saveGamePlayerRecordInit(SaveGamePlayerRecord *record);
-int saveGameMonstersWrite(const struct _Object *objs, FILE *f);
-int saveGameMonstersRead(struct _Object **objs, FILE *f);
+int saveGameMonstersWrite(const class Object *objs, FILE *f);
+int saveGameMonstersRead(class Object **objs, FILE *f);
 
 #ifdef __cplusplus
 }

@@ -5,18 +5,14 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
-#include "location.h"
+#include "person.h"
+#include "types.h"
+#include "savegame.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct _SaveGame;
 struct _Location;
-struct _Reply;
 struct _Person;
-struct _Annotation;
-struct _Object;
+class Object;
+class Script;
 
 #define CONV_BUFFERLEN 16
 
@@ -36,7 +32,7 @@ typedef enum {
     STATS_ITEMS,
     STATS_REAGENTS,
     STATS_MIXTURES
-} StatsItem;
+} StatsView;
 
 typedef enum {
     AURA_NONE,
@@ -54,30 +50,79 @@ typedef enum {
     TRANSPORT_BALLOON   = 0x8
 } TransportContext;
 
-#define TRANSPORT_ANY               (0xFFFF)
-#define TRANSPORT_FOOT_OR_HORSE     (TRANSPORT_FOOT | TRANSPORT_HORSE)
+#define TRANSPORT_ANY               (TransportContext)(0xFFFF)
+#define TRANSPORT_FOOT_OR_HORSE     (TransportContext)(TRANSPORT_FOOT | TRANSPORT_HORSE)
 
 typedef struct _Conversation {
     const struct _Person *talker;
     int state;
-    char playerInquiryBuffer[CONV_BUFFERLEN];
-    struct _Reply *reply;
-    int replyLine;
+    string playerInquiryBuffer;
+    Reply *reply;
     /* for vendor conversations */
-    int itemType;
-    int itemSubtype;
+    class Script *script;
     int quant;
-    int price;
     int player;
+    int price;
 } Conversation;
 
-typedef struct _Context {
+/*class Party {
+    unsigned int moves;
+    unsigned int food;
+    unsigned int gold;
+    unsigned short karma[8];
+    struct {
+        WeaponType weapons[WEAP_MAX];
+        ArmorType armor[ARMR_MAX];
+        int mask;
+    } items;
+
+    struct {
+        unsigned short reagents[REAG_MAX];
+        unsigned short mixtures[SPELL_MAX];
+    } spell;    
+
+    struct {
+        int moonPhase;
+        int windDirection;
+        int windCounter;        
+    } env;
+
+    Aura aura;
+    int auraDuration;
+
+    struct {
+        TransportContext ctx;
+        int state;
+        MapTile tile;
+    } transport;    
+
+    struct {
+        StatsView statsView;
+        bool opacity;
+    } display;
+
+    struct {
+        long lastCmdTime;
+        class Object *lastShip;
+        unsigned short lbintro;
+        unsigned short lastcamp;
+        unsigned short lastreagent;
+        unsigned short lastmeditation;
+        unsigned short lastvirtue;
+    } gameState;
+};*/
+
+class Context {
+public:
+    Context() : saveGame(NULL), location(NULL) {}
+
+    SaveGamePlayerRecord players[8];
+
     struct _SaveGame *saveGame;
-    struct _Annotation *annotation;    
     struct _Location *location;
     Conversation conversation;
     int line, col;
-    StatsItem statsItem;
+    StatsView statsView;
     int moonPhase;
     int windDirection;
     int windCounter;
@@ -87,13 +132,9 @@ typedef struct _Context {
     int opacity;
     TransportContext transportContext;
     long lastCommandTime;
-    struct _Object *lastShip;
-} Context;
+    class Object *lastShip;
+};
 
 extern Context *c;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

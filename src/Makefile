@@ -12,8 +12,8 @@ UILIBS=$(shell sdl-config --libs) -lSDL_mixer
 UIFLAGS=$(shell sdl-config --cflags)
 
 FEATURES=-DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
-DEBUGCFLAGS=-ggdb -rdynamic
-CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\" -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS)
+DEBUGCPPFLAGS=-ggdb -rdynamic
+CPPFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\" -DVERSION=\"$(VERSION)\" $(DEBUGCPPFLAGS)
 LIBS=$(UILIBS) $(shell xml2-config --libs)
 INSTALL=install
 

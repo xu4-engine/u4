@@ -5,14 +5,14 @@
 #ifndef MAPMGR_H
 #define MAPMGR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "map.h"
 
 /*
  * The map manager is responsible for loading and keeping track of the
  * various maps.
  */
+
+typedef xu4_map<int, Map, std::less<int> > MapList; // Contains a list of maps searchable by map id
 
 #define MAP_NONE 255
 #define MAP_WORLD 0
@@ -71,15 +71,9 @@ extern "C" {
 #define MAP_SHORE_CON 53
 #define MAP_SHORSHIP_CON 54
 
-struct _Map;
-
 void mapMgrInit();
 struct _Map *mapMgrInitMap(void);
 void mapMgrRegister(struct _Map *map);
-struct _Map *mapMgrGetById(unsigned char id);
-
-#ifdef __cplusplus
-}
-#endif
+struct _Map *mapMgrGetById(MapId id);
 
 #endif /* MAPMGR_H */

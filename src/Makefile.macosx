@@ -21,11 +21,11 @@ UIFLAGS=-F$(HOME)/Library/Frameworks \
 FEATURES=-DHAVE_BACKTRACE=0 -DHAVE_VARIADIC_MACROS=1
 
 # Debugging
-DEBUGCFLAGS=-ggdb
+DEBUGCPPFLAGS=-ggdb
 # Optimising
-#DEBUGCFLAGS=-O2 -faltivec -mdynamic-no-pic
+#DEBUGCPPFLAGS=-O2 -faltivec -mdynamic-no-pic
 
-CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
+CPPFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCPPFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
 LIBS=$(UILIBS)
 INSTALL=install
 
@@ -34,16 +34,16 @@ OBJS=macosx/SDLMain.o macosx/osxinit.o macosx/osxerror.o
 include Makefile.common
 
 SDLMain.o: macosx/SDLMain.m macosx/SDLMain.h
-	$(CC) $(CFLAGS) -c -o macosx/SDLMain.o macosx/SDLMain.m
+	$(CC) $(CPPFLAGS) -c -o macosx/SDLMain.o macosx/SDLMain.m
 
 osxerror.o: macosx/osxerror.m
-	$(CC) $(CFLAGS) -c -o macosx/osxerror.o macosx/osxerror.m 
+	$(CC) $(CPPFLAGS) -c -o macosx/osxerror.o macosx/osxerror.m 
 
 osxinit.o: macosx/osxinit.c
-	$(CC) $(CFLAGS) -c -o macosx/osxinit.o macosx/osxinit.c 
+	$(CC) $(CPPFLAGS) -c -o macosx/osxinit.o macosx/osxinit.c 
 
 mactlkconv: util/tlkconv.o
-	$(CC) $(CFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks -framework libxml -framework libiconv
+	$(CC) $(CPPFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks -framework libxml -framework libiconv
 
 install: u4
 	mkdir -p $(BUNDLE_CONTENTS)/MacOS

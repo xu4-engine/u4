@@ -8,16 +8,16 @@ U4PATH=C:/xu4
 SRC=.
 
 ### Modify these paths
-SDL_CFLAGS=-I$(SRC)/sdl/include
+SDL_CPPFLAGS=-I$(SRC)/sdl/include
 SDL_LIBS=-L$(SRC)/sdl/lib -lSDL_mixer -lSDLmain -lSDL
 
-XML_CFLAGS=$(shell xml2-config --cflags)
+XML_CPPFLAGS=$(shell xml2-config --cflags)
 XML_LIBS=$(shell xml2-config --libs)
 
 UI=sdl
 
-CC=gcc
-CFLAGS=-Wall -I. $(SDL_CFLAGS) $(XML_CFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
+CC=g++
+CPPFLAGS=-Wall -I. $(SDL_CPPFLAGS) $(XML_CPPFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
 LIBS=-lmingw32 $(SDL_LIBS) $(XML_LIBS) -mwindows
 EXEEXT	:=.exe
 OBJS= xu4ico.o

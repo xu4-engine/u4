@@ -8,12 +8,10 @@
 #include <stddef.h>
 
 #include "context.h"
+#include "location.h"
+#include "map.h"
 #include "savegame.h"
 #include "sound.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef enum {
     CASTERR_NOERROR,            /* success */
@@ -65,7 +63,7 @@ typedef struct _Spell {
     int mp;
 } Spell;
 
-typedef void (*SpellEffectCallback)(unsigned int spell, int player, Sound sound);
+typedef void (*SpellEffectCallback)(int spell, int player, Sound sound);
 extern SpellEffectCallback spellEffectCallback;
 
 void playerSetSpellEffectCallback(SpellEffectCallback callback);
@@ -78,13 +76,9 @@ const char *spellGetName(unsigned int spell);
 int spellGetRequiredMP(unsigned int spell);
 LocationContext spellGetContext(unsigned int spell);
 TransportContext spellGetTransportContext(unsigned int spell);
-const char *spellGetErrorMessage(unsigned int spell, SpellCastError error);
+string spellGetErrorMessage(unsigned int spell, SpellCastError error);
 int spellMix(unsigned int spell, const Mixture *mix);
 SpellParam spellGetParamType(unsigned int spell);
 int spellCast(unsigned int spell, int character, int param, SpellCastError *error, int spellEffect);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

@@ -6,17 +6,11 @@
 #define PERSON_H
 
 #include "object.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "types.h"
 
 struct _Conversation;
 
-typedef struct _Reply {
-    char **chunk;
-    int nchunks;
-} Reply;
+typedef xu4_list<const char *> Reply;
 
 typedef enum {
     QTRIGGER_NONE = 0,
@@ -98,20 +92,15 @@ typedef struct _Person {
     unsigned int startx, starty, startz;
     ObjectMovementBehavior movement_behavior;
     PersonNpcType npcType;
-    int vendorIndex;
     int permanent; /* if the person is naturally part of the map, if not, we need to know */
 } Person;
 
-Reply *replyNew(const char *text);
+Reply *replyNew(string text);
 void replyDelete(Reply *reply);
 int personInit(void);
 Reply *personGetConversationText(struct _Conversation *cnv, const char *inquiry);
-char *personGetPrompt(const struct _Conversation *cnv);
+string personGetPrompt(const struct _Conversation *cnv);
 ConversationInputType personGetInputRequired(const struct _Conversation *cnv, int *bufferlen);
 const char *personGetChoices(const struct _Conversation *cnv);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

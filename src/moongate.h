@@ -5,19 +5,16 @@
 #ifndef MOONGATE_H
 #define MOONGATE_H
 
+#include "map.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct _Moongate {
-    int phase;
-    unsigned char x, y;
-} Moongate;
-
-void moongateAdd(int phase, unsigned char x, unsigned char y);
-const Moongate *moongateGetGateForPhase(int phase);
-int moongateFindActiveGateAt(int trammel, int felucca, int x, int y, int *destx, int *desty);
-int moongateIsEntryToShrineOfSpirituality(int trammel, int felucca);
+void moongateAdd(int phase, MapCoords coords);
+const MapCoords *moongateGetGateCoordsForPhase(int phase);
+bool moongateFindActiveGateAt(int trammel, int felucca, MapCoords src, MapCoords *dest);
+bool moongateIsEntryToShrineOfSpirituality(int trammel, int felucca);
 
 #ifdef __cplusplus
 }

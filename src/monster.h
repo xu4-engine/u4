@@ -6,6 +6,7 @@
 #define MONSTER_H
 
 #include "object.h"
+#include "map.h"
 #include "movement.h"
 
 #ifdef __cplusplus
@@ -120,16 +121,16 @@ typedef enum {
 typedef struct _Monster {
     const char *name;
     unsigned short id;
-    unsigned char tile;
-    unsigned char camouflageTile;
+    MapTile tile;
+    MapTile camouflageTile;
     unsigned char frames;
     unsigned short leader;
     unsigned short basehp;
     unsigned short xp;
     unsigned char ranged;
-    unsigned char worldrangedtile;
-    unsigned char rangedhittile;
-    unsigned char rangedmisstile;
+    MapTile worldrangedtile;
+    MapTile rangedhittile;
+    MapTile rangedmisstile;
     unsigned char leavestile        : 1;
     MonsterAttrib mattr;
     MonsterMovementAttrib movementAttr;
@@ -138,7 +139,7 @@ typedef struct _Monster {
     unsigned char resists;
 } Monster;
 
-const Monster *monsterForTile(unsigned char tile);
+const Monster *monsterForTile(MapTile tile);
 
 int monsterIsGood(const Monster *monster);
 int monsterIsEvil(const Monster *monster);
@@ -170,7 +171,7 @@ int monsterCastSleep(const Monster *monster);
 int monsterGetDamage(const Monster *monster);
 int monsterGetCamouflageTile(const Monster *monster);
 void monsterSetRandomRangedWeapon(Monster *monster);
-const Monster *monsterRandomForTile(unsigned char tile);
+const Monster *monsterRandomForTile(MapTile tile);
 const Monster *monsterForDungeon(int dngLevel);
 int monsterGetInitialHp(const Monster *monster);
 MonsterStatus monsterGetStatus(const Monster *monster, int hp);

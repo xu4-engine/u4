@@ -59,7 +59,7 @@ void initdict() {
 
     for (i = 0; i < 256; i++) {
         lzwdict[i].len = 1;
-        lzwdict[i].data = strdup("");
+        lzwdict[i].data = (unsigned char *)strdup("");
         lzwdict[i].data[0] = i;
         lzwdict[i].occupied = 1;
     }

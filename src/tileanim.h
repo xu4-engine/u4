@@ -5,15 +5,15 @@
 #ifndef TILEANIM_H
 #define TILEANIM_H
 
+#include "types.h"
 #include "xml.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct _ListNode;
 struct _Image;
-struct _RGBA;
+struct _TileAnimTransform;
+struct _TileAnim;
+
+typedef xu4_list<struct _TileAnimTransform*> TileAnimTransformList;
+typedef xu4_map<string, struct _TileAnim*, std::less<string> > TileAnimSetAnimMap;
 
 typedef enum {
     TRANSFORM_INVERT,
@@ -37,25 +37,21 @@ typedef struct {
     };
 } TileAnimTransform;
 
-typedef struct {
-    char *name;
-    struct _ListNode *transforms;
+typedef struct _TileAnim {
+    string name;
+    TileAnimTransformList transforms;
 } TileAnim;
 
-typedef struct {
-    char *name;
-    struct _ListNode *tileanims;
+typedef struct _TileAnimSet {
+    string name;
+    TileAnimSetAnimMap tileanims;
 } TileAnimSet;
 
 TileAnimSet *tileAnimSetLoadFromXml(xmlNodePtr node);
 TileAnim *tileAnimLoadFromXml(xmlNodePtr node);
 TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node);
 struct _RGBA *tileAnimColorLoadFromXml(xmlNodePtr node);
-TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const char *name);
+TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, string name);
 void tileAnimDraw(TileAnim *anim, struct _Image *tiles, int tile, int scale, int x, int y);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

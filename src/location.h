@@ -7,15 +7,13 @@
 
 #include "map.h"
 #include "movement.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "types.h"
 
 struct _Tileset;
-struct _ListNode;
 
-typedef unsigned char (*TileAt)(const Map *map, int x, int y, int z, int withObjects);
+typedef xu4_list<MapTile>* MapTileList;
+
+typedef MapTile (*TileAt)(const Map *map, MapCoords coords, int withObjects);
 
 typedef enum {
     CTX_WORLDMAP    = 0x0001,
@@ -25,19 +23,15 @@ typedef enum {
     CTX_ALTAR_ROOM  = 0x0010
 } LocationContext;
 
-#define CTX_ANY             (0xffff)
-#define CTX_NORMAL          (CTX_WORLDMAP | CTX_CITY)
-#define CTX_NON_COMBAT      (CTX_ANY & ~CTX_COMBAT)
-/* FIXME: need to be able to save in dungeons */
-//#define CTX_CAN_SAVE_GAME   (CTX_WORLDMAP | CTX_DUNGEON)
-#define CTX_CAN_SAVE_GAME   (CTX_WORLDMAP)
+#define CTX_ANY             (LocationContext)(0xffff)
+#define CTX_NORMAL          (LocationContext)(CTX_WORLDMAP | CTX_CITY)
+#define CTX_NON_COMBAT      (LocationContext)(CTX_ANY & ~CTX_COMBAT)
+#define CTX_CAN_SAVE_GAME   (LocationContext)(CTX_WORLDMAP | CTX_DUNGEON)
 
 typedef void (*FinishTurnCallback)(void);
 
 typedef struct _Location {
-    int x;
-    int y;
-    int z;	
+    MapCoords coords;    
     Map *map;
     int viewMode;
     LocationContext context;
@@ -49,15 +43,11 @@ typedef struct _Location {
     struct _Location *prev;
 } Location;
 
-Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, TileAt tileAtCallback, struct _Tileset *tileset, Location *prev);
-unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int *focus);
-struct _ListNode *locationTilesAt(Location *location, int x, int y, int z, int *focus);
-unsigned char locationGetReplacementTile(Location *location, int x, int y, int z);
-int locationGetCurrentPosition(Location *location, int *x, int *y, int *z);
+Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, TileAt tileAtCallback, struct _Tileset *tileset, Location *prev);
+MapTile locationVisibleTileAt(Location *location, MapCoords coords, int *focus);
+MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus);
+MapTile locationGetReplacementTile(Location *location, MapCoords coords);
+int locationGetCurrentPosition(Location *location, MapCoords *coords);
 void locationFree(Location **stack);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

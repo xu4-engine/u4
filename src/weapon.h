@@ -6,6 +6,9 @@
 #define WEAPON_H
 
 #include "savegame.h"
+#include "types.h"
+
+using namespace xu4;
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,8 +17,8 @@ extern "C" {
 #define MAX_WEAPONS     128
 
 typedef struct _Weapon {
-    const char *name;
-    const char *abbr;
+    string name;
+    string abbr;
     unsigned char canuse;
     int range;
     int damage;
@@ -25,8 +28,8 @@ typedef struct _Weapon {
     unsigned short mask;
 } Weapon;
 
-char *weaponGetName(int weapon);
-char *weaponGetAbbrev(int weapon);
+string *weaponGetName(int weapon);
+string *weaponGetAbbrev(int weapon);
 int weaponGetRange(int weapon);
 int weaponGetDamage(int weapon);
 int weaponGetHitTile(int weapon);
@@ -42,6 +45,7 @@ int weaponLoseWhenRanged(int weapon);
 int weaponCanChooseDistance(int weapon);
 int weaponIsMagic(int weapon);
 int weaponShowTravel(int weapon);
+int weaponGetByName(const char *name);
 
 #ifdef __cplusplus
 }

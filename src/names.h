@@ -16,7 +16,6 @@ extern "C" {
  * These routines convert the various enumerations for classes, reagents,
  * etc. into the textual representations used in the game.
  */
-
 const char *getClassName(ClassType klass);
 const char *getReagentName(Reagent reagent);
 const char *getVirtueName(Virtue virtue);

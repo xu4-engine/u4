@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include "unzip.h"
+#include "types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,11 +20,13 @@ typedef enum {
     COMP_MAX
 } CompressionType;
 
+typedef enum {
+    STDIO_FILE,
+    ZIP_FILE
+} FileInputType;
+
 typedef struct {
-    enum {
-        STDIO_FILE,
-        ZIP_FILE
-    } type;
+    FileInputType type;
     union {
         FILE *file;
         unzFile zfile;
@@ -41,7 +44,7 @@ int u4fgetc(U4FILE *f);
 int u4fgetshort(U4FILE *f);
 int u4fputc(int c, U4FILE *f);
 long u4flength(U4FILE *f);
-char **u4read_stringtable(U4FILE *f, long offset, int nstrings);
+string *u4read_stringtable(U4FILE *f, long offset, int nstrings);
 char *u4find_path(const char *fname, const char * const *pathent, unsigned int npathents);
 char *u4find_music(const char *fname);
 char *u4find_sound(const char *fname);

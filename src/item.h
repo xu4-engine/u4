@@ -5,11 +5,12 @@
 #ifndef ITEM_H
 #define ITEM_H
 
+#include "map.h"
+#include "types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-struct _Map;
 
 typedef enum {
     SC_NONE         = 0x00,
@@ -21,8 +22,8 @@ typedef enum {
 typedef struct _ItemLocation {
     const char *name;
     const char *shortname;
-    unsigned short x, y, z;
-    unsigned char mapid;
+    int x, y, z;
+    MapId mapid;
     int (*isItemInInventory)(void *);
     void (*putItemInInventory)(void *);
     void (*useItem)(void *);
@@ -31,12 +32,10 @@ typedef struct _ItemLocation {
 } ItemLocation;
 
 typedef void (*DestroyAllMonstersCallback)(void);
-typedef void (*AlertTheGuardsCallback)(const struct _Map *map);
 
 void itemSetDestroyAllMonstersCallback(DestroyAllMonstersCallback callback);
-void itemSetAlertTheGuardsCallback(AlertTheGuardsCallback callback);
-const ItemLocation *itemAtLocation(const struct _Map *map, int x, int y, int z);
-void itemUse(const char *shortname);
+const ItemLocation *itemAtLocation(const struct _Map *map, MapCoords coords);
+void itemUse(string shortname);
 
 #ifdef __cplusplus
 }
