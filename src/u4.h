@@ -7,7 +7,7 @@
 
 /* Windows port */
 #if defined(_WIN32)
-    #define VERSION "0.8"
+    #define VERSION "0.9cvs"
 #endif
 
 /* info for loading world map from world.map */
