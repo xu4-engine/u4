@@ -10,6 +10,21 @@
 #include "player.h"
 #include "map.h"
 
+LostEighthCallback lostEighthCallback = NULL;
+AdvanceLevelCallback advanceLevelCallback = NULL;
+
+/**
+ * Sets up a callback to handle player losing an eighth of his or her
+ * avatarhood.
+ */
+void playerSetLostEighthCallback(LostEighthCallback callback) {
+    lostEighthCallback = callback;
+}
+
+void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback) {
+    advanceLevelCallback = callback;
+}
+
 /**
  * Applies damage to a player, and changes status to dead if hit
  * points drop to zero or below.
@@ -57,7 +72,11 @@ void playerAdvanceLevel(SaveGamePlayerRecord *player) {
         return;
     player->hpMax = playerGetMaxLevel(player) * 100;
     player->hp = player->hpMax;
+
     /* FIXME: adjust stats */
+
+    if (advanceLevelCallback)
+        (*advanceLevelCallback)(player);
 }
 
 /**
@@ -156,12 +175,10 @@ int playerCanEnterShrine(const SaveGame *saveGame, Virtue virtue) {
 }
 
 /**
- * Adjusts the avatar's karma level for the given action.  Returns the
- * number of eighths of avatarhood the player has lost, or zero if
- * none.
+ * Adjusts the avatar's karma level for the given action.  Activate
+ * the lost eighth callback if the player has lost avatarhood.
  */
-int playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
-    int eighths = 0;
+void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
     int v, newKarma[VIRT_MAX];
 
     for (v = 0; v < VIRT_MAX; v++)
@@ -231,7 +248,8 @@ int playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
         if (saveGame->karma[v] == 0) {               /* already an avatar */
             if (newKarma[v] < 0) {
                 saveGame->karma[v] = newKarma[v] + 100;
-                eighths++;
+                if (lostEighthCallback)
+                    (*lostEighthCallback)(v);
             }
         } else {
             if (newKarma[v] <= 0)
@@ -241,8 +259,6 @@ int playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
             saveGame->karma[v] = newKarma[v];
         }
     }
-
-    return eighths;
 }
 
 int playerAttemptElevation(SaveGame *saveGame, Virtue virtue) {
@@ -267,6 +283,35 @@ int playerDonate(SaveGame *saveGame, int quantity) {
     saveGame->gold -= quantity;
     playerAdjustKarma(saveGame, KA_GAVE_TO_BEGGAR);
     return 1;
+}
+
+int playerCanPersonJoin(SaveGame *saveGame, const char *name, Virtue *v) {
+    int i;
+
+    if (!name)
+        return 0;
+
+    for (i = 1; i < 8; i++) {
+        if (strcmp(saveGame->players[i].name, name) == 0) {
+            if (v)
+                *v = (Virtue) saveGame->players[i].klass;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int playerIsPersonJoined(SaveGame *saveGame, const char *name) {
+    int i;
+
+    if (!name)
+        return 0;
+    
+    for (i = 1; i < saveGame->members; i++) {
+        if (strcmp(saveGame->players[i].name, name) == 0)
+            return 1;
+    }
+    return 0;
 }
 
 int playerJoin(SaveGame *saveGame, const char *name) {

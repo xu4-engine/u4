@@ -36,6 +36,11 @@ typedef enum {
     INV_HORSE
 } InventoryItem;
 
+typedef void (*LostEighthCallback)(Virtue);
+typedef void (*AdvanceLevelCallback)(const SaveGamePlayerRecord *player);
+
+void playerSetLostEighthCallback(LostEighthCallback callback);
+void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback);
 void playerApplyDamage(SaveGamePlayerRecord *player, int damage);
 int playerGetRealLevel(const SaveGamePlayerRecord *player);
 int playerGetMaxLevel(const SaveGamePlayerRecord *player);
@@ -44,10 +49,12 @@ int playerGetMaxMp(const SaveGamePlayerRecord *player);
 int playerCanWear(const SaveGamePlayerRecord *player, ArmorType armor);
 int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon);
 int playerCanEnterShrine(const SaveGame *saveGame, Virtue virtue);
-int playerAdjustKarma(SaveGame *saveGame, KarmaAction action);
+void playerAdjustKarma(SaveGame *saveGame, KarmaAction action);
 int playerAttemptElevation(SaveGame *saveGame, Virtue virtue);
 int playerGetChest(SaveGame *saveGame);
 int playerDonate(SaveGame *saveGame, int quantity);
+int playerCanPersonJoin(SaveGame *saveGame, const char *name, Virtue *v);
+int playerIsPersonJoined(SaveGame *saveGame, const char *name);
 int playerJoin(SaveGame *saveGame, const char *name);
 void playerEndTurn(SaveGame *saveGame);
 void playerApplyEffect(SaveGame *saveGame, TileEffect effect);
