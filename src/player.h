@@ -75,6 +75,7 @@ int playerHeal(SaveGame *saveGame, HealType type, int player);
 void playerReviveParty(SaveGame *saveGame);
 int playerCanAfford(SaveGame *saveGame, int price);
 int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
+int playerCanSell(SaveGame *saveGame, InventoryItem item, int type, int quantity);
 int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
 int playerAttackHit(const SaveGamePlayerRecord *player);
 int playerGetDamage(const SaveGamePlayerRecord *player);

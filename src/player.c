@@ -574,6 +574,19 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
     return 1;
 }
 
+int playerCanSell(SaveGame *saveGame, InventoryItem item, int type, int quantity) {
+    switch (item) {
+    case INV_WEAPON:
+        return (saveGame->weapons[type] >= quantity);
+
+    case INV_ARMOR:
+        return (saveGame->armor[type] >= quantity);
+
+    default:
+        return 0;
+    }
+}
+
 /**
  * Attempt to sell a given quantity of an item for a specified price.
  * If successful, the inventory will be updated and 1 returned.  Zero
