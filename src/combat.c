@@ -598,7 +598,7 @@ int combatBaseKeyHandler(int key, void *data) {
             eventHandlerPopKeyHandler();
             combatEnd(0); /* don't adjust karma */
         }
-        else valid=0;
+        else screenMessage("Bad command\n");        
 
         break;
         
@@ -643,8 +643,7 @@ int combatBaseKeyHandler(int key, void *data) {
 
     case 'g':
         screenMessage("Get Chest!\n");
-        gameGetChest(FOCUS);
-        valid = 0; /* don't end turn here because gameGetChest ends the turn for you */
+        gameGetChest(FOCUS);        
         break;
 
     case 'l':

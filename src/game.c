@@ -635,6 +635,7 @@ int gameBaseKeyHandler(int key, void *data) {
             c->location->y = c->location->map->portals[portal].y;
             c->location->z = c->location->map->portals[portal].z;
         }
+        else valid = 0;
         break;
 
     case U4_FKEY+8:
@@ -645,6 +646,7 @@ int gameBaseKeyHandler(int key, void *data) {
             c->location->z = 7;
             c->saveGame->orientation = DIR_SOUTH;
         }
+        else valid = 0;
         break;
 
     case U4_FKEY+9:
@@ -655,6 +657,7 @@ int gameBaseKeyHandler(int key, void *data) {
             c->location->z = 7;
             c->saveGame->orientation = DIR_SOUTH;
         }
+        else valid = 0;
         break;
 
     case U4_FKEY+10:
@@ -665,6 +668,7 @@ int gameBaseKeyHandler(int key, void *data) {
             c->location->z = 7;
             c->saveGame->orientation = DIR_SOUTH;
         }
+        else valid = 0;
         break;
 
     case U4_FKEY+11:
@@ -672,6 +676,7 @@ int gameBaseKeyHandler(int key, void *data) {
             screenMessage("Torch: %d\n", c->saveGame->torchduration);
             screenPrompt();
         }
+        else valid = 0;
         break;
 
     case 3:                     /* ctrl-C */
@@ -846,7 +851,7 @@ int gameBaseKeyHandler(int key, void *data) {
             if (tileIsChest(tile))
             {
                 screenMessage("Who opens? ");
-                gameGetPlayerForCommand(&gameGetChest, 0);
+                gameGetPlayerForCommand(&gameGetChest, 0);                
             }
             else
                 screenMessage("Not here!\n");
@@ -2052,9 +2057,8 @@ int gameGetChest(int player) {
             playerAdjustKarma(c->saveGame, KA_STOLE_CHEST);
     }    
     else
-        screenMessage("Not Here!\n");        
-
-    (*c->location->finishTurn)();    
+        screenMessage("Not Here!\n");
+    
     return 1;
 }
 
