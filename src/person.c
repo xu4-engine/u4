@@ -95,7 +95,7 @@ const VendorType vendorType[] = {
       &vendorGetContinueQuestionResponse, NULL, &vendorGetPrompt, "ny\033" }, /* NPC_VENDOR_GUILD */
     { &vendorGetIntro, NULL, NULL, NULL,
       NULL, NULL, NULL, 
-      NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_STABLE */
+      &vendorGetContinueQuestionResponse, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_STABLE */
 };
 
 /**
