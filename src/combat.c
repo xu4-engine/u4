@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
 #include "combat.h"
 #include "context.h"
@@ -67,7 +68,7 @@ int combatFindTargetForMonster(const Object *monster, int *distance);
 int movePartyMember(Direction dir, int member);
 
 void combatBegin(unsigned char partytile, unsigned short transport, Object *monster) {
-    int i;
+    int i, j;
     int nmonsters;
 
     monsterObj = monster;
@@ -97,11 +98,13 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
     party[i]->hasFocus = 1;
 
     nmonsters = combatInitialNumberOfMonsters(monster->tile);
-    for (i = 0; i < nmonsters; i++) {
-        combatCreateMonster(i);
-    }
-    for (; i < AREA_MONSTERS; i++)
+    for (i = 0; i < AREA_MONSTERS; i++)
         monsters[i] = NULL;
+    for (i = 0; i < nmonsters; i++) {
+        /* find a random free slot in the monster table */
+        do {j = rand() % AREA_MONSTERS;} while (monsters[j] != NULL);
+        combatCreateMonster(j);
+    }
 
     eventHandlerPushKeyHandler(&combatBaseKeyHandler);
 
@@ -141,19 +144,19 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     /* check if monster is aquatic */
     if (monsterForTile(monsterObj->tile)->mattr & MATTR_WATER) {
         if (tileIsPirateShip(monsterObj->tile)) {
-            if (tileIsShip(transport))
+            if (tileIsShip(transport) || tileIsShip(partytile))
                 return &shipship_map;
             else
                 return &shorship_map;
         }
 
-        if (tileIsShip(transport))
+        if (tileIsShip(transport) || tileIsShip(partytile))
             return &shipsea_map;
         else
             return &shore_map;
     }
 
-    if (tileIsShip(transport))
+    if (tileIsShip(transport) || tileIsShip(partytile))
         return &shipshor_map;
 
     for (i = 0; i < sizeof(tileToMap) / sizeof(tileToMap[0]); i++) {
@@ -219,8 +222,6 @@ void combatFinishTurn() {
                     playerAdjustKarma(c->saveGame, KA_FLED);
                 eventHandlerPopKeyHandler();
                 combatEnd();
-                if (playerPartyDead(c->saveGame))
-                    deathStart();
                 return;
             }
 
@@ -431,6 +432,7 @@ void combatEnd() {
         c->parent->aura = c->aura;
         c->parent->auraDuration = c->auraDuration;
         c->parent->horseSpeed = c->horseSpeed;
+        c->parent->lastCommandTime = time(NULL);
         c = c->parent;
         c->col = 0;
         free(t);
@@ -457,7 +459,9 @@ void combatEnd() {
 
     mapRemoveObject(c->map, monsterObj);
     
-    if (!playerPartyDead(c->saveGame))
+    if (playerPartyDead(c->saveGame))
+        deathStart();
+    else
         gameFinishTurn();
 }
 
