@@ -34,10 +34,11 @@ IntroMode mode = INTRO_MAP;
 char buffer[16];
 
 int introHandleName(const char *message);
-int introHandleSex(const char *message);
+int introHandleSexChoice(char choice);
 void introShowText(int text);
 void introInitQuestionTree();
 int introDoQuestion(int answer);
+int introHandleQuestionChoice(char choice);
 
 int introInit() {
     FILE *title;
@@ -100,6 +101,7 @@ void introDelete() {
 
 int introKeyHandler(int key, void *data) {
     ReadBufferActionInfo *info;
+    GetChoiceActionInfo *choiceInfo;
     int valid = 1;
 
     switch (mode) {
@@ -153,6 +155,10 @@ int introKeyHandler(int key, void *data) {
             mode = INTRO_INIT_QUESTIONS;
             questionRound = 0;
             introInitQuestionTree();
+            choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+            choiceInfo->choices = "ab";
+            choiceInfo->handleChoice = &introHandleQuestionChoice;
+            eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
         }
         introUpdateScreen();
         return 1;
@@ -254,7 +260,7 @@ void introUpdateScreen() {
 }
 
 int introHandleName(const char *message) {
-    ReadBufferActionInfo *info;
+    GetChoiceActionInfo *info;
 
     printf("name = %s\n", message);
 
@@ -266,21 +272,17 @@ int introHandleName(const char *message) {
     screenEnableCursor();
     screenForceRedraw();
 
-    info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-    info->handleBuffer = &introHandleSex;
-    info->buffer = buffer;
-    info->bufferLen = 2;
-    info->screenX = 29;
-    info->screenY = 16;
-    buffer[0] = '\0';
-    eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
+    info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+    info->choices = "mf";
+    info->handleChoice = &introHandleSexChoice;
+    eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
 
     return 1;
 }
 
-int introHandleSex(const char *message) {
+int introHandleSexChoice(char choice) {
 
-    printf("sex = %s\n", message);
+    printf("sex = %c\n", choice);
 
     eventHandlerPopKeyHandler();
     mode = INTRO_INIT_STORY;
@@ -368,4 +370,24 @@ int introDoQuestion(int answer) {
     }
 
     return 0;
+}
+
+int introHandleQuestionChoice(char choice) {
+    GetChoiceActionInfo *choiceInfo;
+
+    eventHandlerPopKeyHandler();
+
+    if (introDoQuestion(choice == 'a' ? 0 : 1)) {
+        screenDisableCursor();
+        mode = INTRO_MENU;
+    } else {
+        choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+        choiceInfo->choices = "ab";
+        choiceInfo->handleChoice = &introHandleQuestionChoice;
+        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
+    }
+
+    introUpdateScreen();
+
+    return 1;
 }
