@@ -279,7 +279,7 @@ int codexHandleVirtues(string *virtue) {
         
     /* answered with the correct one of eight virtues */
     if ((current < VIRT_MAX) && 
-        (strcasecmp(virtue->c_str(), getVirtueName((Virtue)current)) == 0)) {
+        (strcasecmp(virtue->c_str(), getVirtueName(static_cast<Virtue>(current))) == 0)) {
 
         screenDrawImageInMapArea(codexImageNames[current]);
         screenRedrawMapArea();
@@ -303,7 +303,7 @@ int codexHandleVirtues(string *virtue) {
 
     /* answered with the correct base virtue (truth, love, courage) */
     else if ((current >= VIRT_MAX) &&
-             (strcasecmp(virtue->c_str(), getBaseVirtueName((BaseVirtue)(1 << (current - VIRT_MAX)))) == 0)) {
+             (strcasecmp(virtue->c_str(), getBaseVirtueName(static_cast<BaseVirtue>(1 << (current - VIRT_MAX)))) == 0)) {
 
         screenDrawImageInMapArea(codexImageNames[current]);
         screenRedrawMapArea();
@@ -340,7 +340,7 @@ int codexHandleVirtues(string *virtue) {
     
     /* failed 3 times... eject! */
     else {        
-        codexEject((CodexEjectCode)(CODEX_EJECT_HONESTY + current));
+        codexEject(static_cast<CodexEjectCode>(CODEX_EJECT_HONESTY + current));
 
         tries = 1;        
         current = 0;

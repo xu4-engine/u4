@@ -565,7 +565,7 @@ void playerReviveParty() {
  * Determine whether a players attack hits or not.
  */
 int playerAttackHit(const SaveGamePlayerRecord *player) {   
-    if (weaponAlwaysHits(player->weapon) || player->dex >= 40)
+    if (Weapon::get(player->weapon)->alwaysHits() || player->dex >= 40)
         return 1;
 
     if ((player->dex + 128) >= xu4_random(0x100))
@@ -580,7 +580,7 @@ int playerAttackHit(const SaveGamePlayerRecord *player) {
 int playerGetDamage(const SaveGamePlayerRecord *player) {
     int maxDamage;
 
-    maxDamage = weaponGetDamage(player->weapon);
+    maxDamage = Weapon::get(player->weapon)->getDamage();
     maxDamage += player->str;
     if (maxDamage > 255)
         maxDamage = 255;
@@ -592,7 +592,7 @@ int playerGetDamage(const SaveGamePlayerRecord *player) {
  * Determine whether a player is hit by a melee attack.
  */
 int playerIsHitByAttack(const SaveGamePlayerRecord *player) {
-    return xu4_random(0x100) > armorGetDefense(player->armor);
+    return xu4_random(0x100) > Armor::get(player->armor)->getDefense();
 }
 
 /**

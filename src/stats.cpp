@@ -194,8 +194,8 @@ void statsShowCharDetails(int charNo) {
     screenTextAt(STATS_AREA_X, STATS_AREA_Y+3, "STR:%02d  HP:%04d", c->players[charNo].str, c->players[charNo].hp);
     screenTextAt(STATS_AREA_X, STATS_AREA_Y+4, "DEX:%02d  HM:%04d", c->players[charNo].dex, c->players[charNo].hpMax);
     screenTextAt(STATS_AREA_X, STATS_AREA_Y+5, "INT:%02d  EX:%04d", c->players[charNo].intel, c->players[charNo].xp);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+6, "W:%s", weaponGetName(c->players[charNo].weapon)->c_str());
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+7, "A:%s", armorGetName(c->players[charNo].armor)->c_str());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+6, "W:%s", Weapon::get(c->players[charNo].weapon)->getName().c_str());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+7, "A:%s", Armor::get(c->players[charNo].armor)->getName().c_str());
 }
 
 /**
@@ -203,21 +203,20 @@ void statsShowCharDetails(int charNo) {
  */
 void statsShowWeapons() {
     int w, line, col;
-    extern int numWeapons;
 
     statsAreaSetTitle("Weapons");
 
     line = STATS_AREA_Y;
     col = 0;
-    screenTextAt(STATS_AREA_X, line++, "A-%s", weaponGetName(WEAP_HANDS)->c_str());
-    for (w = WEAP_HANDS + 1; w < numWeapons; w++) {
+    screenTextAt(STATS_AREA_X, line++, "A-%s", Weapon::get(WEAP_HANDS)->getName().c_str());
+    for (w = WEAP_HANDS + 1; w < WEAP_MAX; w++) {
         int n = c->saveGame->weapons[w];
         if (n >= 100)
             n = 99;
         if (n >= 1) {
             const char *format = (n >= 10) ? "%c%d-%s" : "%c-%d-%s";
 
-            screenTextAt(STATS_AREA_X + col, line++, format, w - WEAP_HANDS + 'A', n, weaponGetAbbrev((WeaponType) w)->c_str());
+            screenTextAt(STATS_AREA_X + col, line++, format, w - WEAP_HANDS + 'A', n, Weapon::get((WeaponType) w)->getAbbrev().c_str());
             if (line >= (STATS_AREA_Y+STATS_AREA_HEIGHT)) {
                 line = STATS_AREA_Y;
                 col += 8;
@@ -240,7 +239,7 @@ void statsShowArmor() {
         if (c->saveGame->armor[a] > 0) {
             const char *format = (c->saveGame->armor[a] >= 10) ? "%c%d-%s" : "%c-%d-%s";
 
-            screenTextAt(STATS_AREA_X, line++, format, a - ARMR_NONE + 'A', c->saveGame->armor[a], armorGetName((ArmorType) a)->c_str());
+            screenTextAt(STATS_AREA_X, line++, format, a - ARMR_NONE + 'A', c->saveGame->armor[a], Armor::get((ArmorType) a)->getName().c_str());
         }
     }
 }

@@ -475,7 +475,7 @@ void gameUpdateScreen() {
     }
 }
 
-void gameSetMap(Map *map, int saveLocation, const Portal *portal) {
+void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn = &gameFinishTurn;
@@ -1803,16 +1803,16 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
 
     case 'e':
         {
-            extern int numWeapons;            
-
             screenMessage("Equipment!\n");
             screenPrompt();
             for (i = ARMR_NONE + 1; i < ARMR_MAX; i++)
                 c->saveGame->armor[i] = 8;
-            for (i = WEAP_HANDS + 1; i < numWeapons; i++) {
-                if (weaponLoseWhenUsed(i) || weaponLoseWhenRanged(i))
+            for (i = WEAP_HANDS + 1; i < WEAP_MAX; i++) {
+                const Weapon *weapon = Weapon::get(static_cast<WeaponType>(i));
+                if (weapon->loseWhenUsed() || weapon->loseWhenRanged())
                     c->saveGame->weapons[i] = 99;
-                else c->saveGame->weapons[i] = 8;
+                else
+                    c->saveGame->weapons[i] = 8;
             }
         }
         break;
@@ -2606,13 +2606,12 @@ bool jimmyAtCoord(MapCoords coords, int distance, void *data) {
  */
 bool readyForPlayer(int player) {
     AlphaActionInfo *info;
-    extern int numWeapons;
 
     c->statsView = STATS_WEAPONS;
     statsUpdate();
 
     info = new AlphaActionInfo;    
-    info->lastValidLetter = numWeapons + 'a' - 1;
+    info->lastValidLetter = WEAP_MAX + 'a' - 1;
     info->handleAlpha = readyForPlayer2;
     info->prompt = "Weapon: ";
     info->data = (void *) player;
@@ -2626,23 +2625,22 @@ bool readyForPlayer(int player) {
 
 bool readyForPlayer2(int w, void *data) {
     int player = (int) data;
-    WeaponType weapon = (WeaponType) w, oldWeapon;
-    string weaponName = *weaponGetName(weapon);
+    const Weapon *weapon = Weapon::get((WeaponType) w);
 
     // Return view to party overview
     c->statsView = STATS_PARTY_OVERVIEW;
     statsUpdate();
 
-    if (weapon != WEAP_HANDS && c->saveGame->weapons[weapon] < 1) {
+    if (weapon->getType() != WEAP_HANDS && c->saveGame->weapons[weapon->getType()] < 1) {
         screenMessage("None left!\n");
         (*c->location->finishTurn)();
         return false;
     }
 
-    if (!weaponCanReady(weapon, c->players[player].klass)) {
+    if (!weapon->canReady(c->players[player].klass)) {
         string indef_article;
 
-        switch(tolower(weaponName[0])) {
+        switch(tolower(weapon->getName()[0])) {
         case 'a':
         case 'e':
         case 'i':
@@ -2656,19 +2654,19 @@ bool readyForPlayer2(int w, void *data) {
         screenMessage("\nA %s may NOT use %s\n%s\n",
             getClassName(c->players[player].klass),
             indef_article.c_str(),
-            weaponName.c_str());
+            weapon->getName().c_str());
         (*c->location->finishTurn)();
         return false;
     }
 
-    oldWeapon = c->players[player].weapon;
+    WeaponType oldWeapon = c->players[player].weapon;
     if (oldWeapon != WEAP_HANDS)
         c->saveGame->weapons[oldWeapon]++;
-    if (weapon != WEAP_HANDS)
-        c->saveGame->weapons[weapon]--;
-    c->players[player].weapon = weapon;
+    if (weapon->getType() != WEAP_HANDS)
+        c->saveGame->weapons[weapon->getType()]--;
+    c->players[player].weapon = weapon->getType();
 
-    screenMessage("%s\n", weaponName.c_str());
+    screenMessage("%s\n", weapon->getName().c_str());
 
     (*c->location->finishTurn)();
 
@@ -3115,28 +3113,28 @@ bool wearForPlayer(int player) {
 
 bool wearForPlayer2(int a, void *data) {
     int player = (int) data;
-    ArmorType armor = (ArmorType) a, oldArmor;
+    const Armor *armor = Armor::get((ArmorType) a);
 
-    if (armor != ARMR_NONE && c->saveGame->armor[armor] < 1) {
+    if (armor->getType() != ARMR_NONE && c->saveGame->armor[armor->getType()] < 1) {
         screenMessage("None left!\n");
         (*c->location->finishTurn)();
         return false;
     }
 
-    if (!armorCanWear(armor, c->players[player].klass)) {
-        screenMessage("\nA %s may NOT use\n%s\n", getClassName(c->players[player].klass), armorGetName(armor)->c_str());
+    if (!armor->canWear(c->players[player].klass)) {
+        screenMessage("\nA %s may NOT use\n%s\n", getClassName(c->players[player].klass), armor->getName().c_str());
         (*c->location->finishTurn)();
         return false;
     }
 
-    oldArmor = c->players[player].armor;
-    if (oldArmor != ARMR_NONE)
-        c->saveGame->armor[oldArmor]++;
-    if (armor != ARMR_NONE)
-        c->saveGame->armor[armor]--;
-    c->players[player].armor = armor;
+    ArmorType oldArmorType = c->players[player].armor;
+    if (oldArmorType != ARMR_NONE)
+        c->saveGame->armor[oldArmorType]++;
+    if (armor->getType() != ARMR_NONE)
+        c->saveGame->armor[armor->getType()]--;
+    c->players[player].armor = armor->getType();
 
-    screenMessage("%s\n", armorGetName(armor)->c_str());
+    screenMessage("%s\n", armor->getName().c_str());
 
     (*c->location->finishTurn)();
 

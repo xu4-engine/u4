@@ -501,14 +501,14 @@ void Script::translate(string *text) {
                 subItem = subItem.substr(0, pos);                
 
                 if (subItem == "weapons") {
-                    int weapon = weaponGetByName(lastItem.c_str());
-                    if (weapon >= 0)
-                        sprintf(buffer, "%d", c->saveGame->weapons[weapon]);
+                    const Weapon *weapon = Weapon::get(lastItem);
+                    if (weapon != NULL)
+                        sprintf(buffer, "%d", c->saveGame->weapons[weapon->getType()]);
                 }
                 else if (subItem == "armor") {
-                    int armor = armorGetByName(lastItem.c_str());
-                    if (armor >= 0)
-                        sprintf(buffer, "%d", c->saveGame->armor[armor]);                   
+                    const Armor *armor = Armor::get(lastItem);
+                    if (armor != NULL)
+                        sprintf(buffer, "%d", c->saveGame->armor[armor->getType()]);
                 }
             }
 

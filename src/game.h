@@ -66,7 +66,7 @@ bool gameZtatsKeyHandler(int key, void *data);
 /* map and screen functions */
 void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
-void gameSetMap(class Map *map, int saveLocation, const struct _Portal *portal);
+void gameSetMap(class Map *map, bool saveLocation, const struct _Portal *portal);
 int gameExitToParentMap();
 void gameSetTransport(MapTile tile);
 

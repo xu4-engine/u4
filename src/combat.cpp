@@ -192,7 +192,7 @@ void CombatMap::begin() {
     /* if we entered an altar room, show the name */
     if (altarRoom) {
         screenMessage("\nThe Altar Room of %s\n", getBaseVirtueName(altarRoom));    
-        c->location->context = (LocationContext)(c->location->context | CTX_ALTAR_ROOM);
+        c->location->context = static_cast<LocationContext>(c->location->context | CTX_ALTAR_ROOM);
     }
 
     /* Use the combat key handler */
@@ -234,7 +234,7 @@ bool CombatMap::setActivePlayer(int player) {
         p->setFocus();
         focus = player;
 
-        screenMessage("%s with %s\n\020", c->players[focus].name, weaponGetName(c->players[focus].weapon)->c_str());
+        screenMessage("%s with %s\n\020", c->players[focus].name, Weapon::get(c->players[focus].weapon)->getName().c_str());
         statsUpdate(); /* If a character was awakened inbetween world view and combat, this fixes stats info */
         statsHighlightCharacter(focus);
         return true;
@@ -555,7 +555,7 @@ bool combatBaseKeyHandler(int key, void *data) {
     bool valid = true;
     CoordActionInfo *info;
     AlphaActionInfo *alphaInfo;
-    int weapon = c->players[cm->focus].weapon;    
+    WeaponType weapon = c->players[cm->focus].weapon;    
 
     switch (key) {
     case U4_UP:
@@ -593,10 +593,10 @@ bool combatBaseKeyHandler(int key, void *data) {
         info->handleAtCoord = &combatAttackAtCoord;
         info->origin = cm->party[cm->focus]->getCoords();
         info->prev = Coords(-1, -1);        
-        info->range = weaponGetRange(weapon);
+        info->range = Weapon::get(weapon)->getRange();
         info->validDirections = MASK_DIR_ALL;
         info->player = cm->focus;
-        info->blockedPredicate = weaponCanAttackThroughObjects(weapon) ?
+        info->blockedPredicate = Weapon::get(weapon)->canAttackThroughObjects() ?
             NULL :
             &tileCanAttackOver;
         info->blockBefore = 1;
@@ -628,16 +628,14 @@ bool combatBaseKeyHandler(int key, void *data) {
 
     case 'r':
         {
-            extern int numWeapons;
-
             c->statsView = STATS_WEAPONS;
             statsUpdate();
 
             alphaInfo = new AlphaActionInfo;
-            alphaInfo->lastValidLetter = numWeapons + 'a' - 1;
+            alphaInfo->lastValidLetter = WEAP_MAX + 'a' - 1;
             alphaInfo->handleAlpha = readyForPlayer2;
             alphaInfo->prompt = "Weapon: ";
-            alphaInfo->data = (void *)((int)cm->focus);
+            alphaInfo->data = reinterpret_cast<void *>(static_cast<int>(cm->focus));
 
             screenMessage(alphaInfo->prompt.c_str());
 
@@ -692,7 +690,7 @@ bool combatBaseKeyHandler(int key, void *data) {
 
     case 'z': 
         {            
-            c->statsView = (StatsView) (STATS_CHAR1 + cm->focus);
+            c->statsView = static_cast<StatsView>(STATS_CHAR1 + cm->focus);
             statsUpdate();
 
             /* reset the spell mix menu and un-highlight the current item,
@@ -767,17 +765,17 @@ bool combatAttackAtCoord(MapCoords coords, int distance, void *data) {
     CombatMap *cm = getCombatMap();
     int monster;
     MapTile hittile, misstile;
-    CoordActionInfo* info = (CoordActionInfo*)data;    
-    int weapon = c->players[info->player].weapon;    
-    int wrongRange = weaponRangeAbsolute(weapon) && (distance != info->range);
+    CoordActionInfo* info = static_cast<CoordActionInfo *>(data);
+    const Weapon *weapon = Weapon::get(c->players[info->player].weapon);
+    int wrongRange = weapon->rangeAbsolute() && (distance != info->range);
     Coords old = info->prev;    
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
     MapTile groundTile;
 
     info->prev = coords;    
 
-    hittile = weaponGetHitTile(weapon);
-    misstile = weaponGetMissTile(weapon);
+    hittile = weapon->getHitTile();
+    misstile = weapon->getMissTile();
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
@@ -787,7 +785,7 @@ bool combatAttackAtCoord(MapCoords coords, int distance, void *data) {
     if (coords.x == -1 && coords.y == -1) {
 
         /* Check to see if the weapon is lost */
-        if ((distance > 1 && weaponLoseWhenRanged(weapon)) || weaponLoseWhenUsed(weapon)) {
+        if ((distance > 1 && weapon->loseWhenRanged()) || weapon->loseWhenUsed()) {
             if (!playerLoseWeapon(info->player))
                 screenMessage("Last One!\n");
         }
@@ -808,7 +806,7 @@ bool combatAttackAtCoord(MapCoords coords, int distance, void *data) {
         if (monster == -1 || wrongRange) {
         
             /* If the weapon is shown as it travels, show it now */
-            if (weaponShowTravel(weapon)) {
+            if (weapon->showTravel()) {
                 cm->annotations->add(coords, misstile, true);
                 gameUpdateScreen();
         
@@ -822,13 +820,13 @@ bool combatAttackAtCoord(MapCoords coords, int distance, void *data) {
         }
     
         /* Check to see if the weapon is lost */
-        if ((distance > 1 && weaponLoseWhenRanged(weapon)) || weaponLoseWhenUsed(weapon)) {
+        if ((distance > 1 && weapon->loseWhenRanged()) || weapon->loseWhenUsed()) {
             if (!playerLoseWeapon(info->player))
                 screenMessage("Last One!\n");
         }
     
         /* Did the weapon miss? */
-        if ((cm->id == 24 && !weaponIsMagic(weapon)) || /* non-magical weapon in the Abyss */
+        if ((cm->id == 24 && !weapon->isMagic()) ||        /* non-magical weapon in the Abyss */
             !playerAttackHit(&c->players[cm->focus])) {         /* player naturally missed */
             screenMessage("Missed!\n");
         
@@ -850,13 +848,13 @@ bool combatAttackAtCoord(MapCoords coords, int distance, void *data) {
     }
 
     /* Check to see if the weapon returns to its owner */
-    if (weaponReturns(weapon))
+    if (weapon->returns())
         combatReturnWeaponToOwner(coords, distance, data);
 
     /* If the weapon leaves a tile behind, do it here! (flaming oil, etc) */
     groundTile = cm->tileAt(coords, WITHOUT_OBJECTS);
-    if (!wrongRange && (weaponLeavesTile(weapon) && tileIsWalkable(groundTile)))
-        cm->annotations->add(coords, weaponLeavesTile(weapon));    
+    if (!wrongRange && (weapon->leavesTile() && tileIsWalkable(groundTile)))
+        cm->annotations->add(coords, weapon->leavesTile());    
     
     /* only end the turn if we're still in combat */
     if (c->location->finishTurn == &combatFinishTurn)
@@ -870,7 +868,7 @@ bool combatMonsterRangedAttack(MapCoords coords, int distance, void *data) {
     int player;
     Monster *m;
     MapTile hittile, misstile;
-    CoordActionInfo* info = (CoordActionInfo*)data;    
+    CoordActionInfo* info = static_cast<CoordActionInfo*>(data);
     Coords old = info->prev;    
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
     MapTile groundTile;
@@ -992,12 +990,12 @@ bool combatReturnWeaponToOwner(MapCoords coords, int distance, void *data) {
     Direction dir;
     int i;
     MapTile misstile;
-    CoordActionInfo* info = (CoordActionInfo*)data;
-    int weapon = c->players[info->player].weapon;
+    CoordActionInfo* info = static_cast<CoordActionInfo*>(data);
+    const Weapon *weapon = Weapon::get(c->players[info->player].weapon);
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
     MapCoords new_coords = coords;
     
-    misstile = weaponGetMissTile(weapon);
+    misstile = weapon->getMissTile();
 
     /* reverse the direction of the weapon */
     dir = dirReverse(dirFromMask(info->dir));
@@ -1276,7 +1274,7 @@ void CombatMap::moveMonsters() {
         case CA_CAST_SLEEP:
             screenMessage("Sleep!\n");
 
-            (*spellEffectCallback)('s', -1, (Sound)0); /* show the sleep spell effect */
+            (*spellEffectCallback)('s', -1, static_cast<Sound>(0)); /* show the sleep spell effect */
             
             /* Apply the sleep spell to everyone still in combat */
             for (i = 0; i < 8; i++) {
@@ -1497,17 +1495,17 @@ void attackFlash(Coords coords, MapTile tile, int timeFactor) {
  * Key handler for choosing an attack direction
  */
 bool combatChooseWeaponDir(int key, void *data) {
-    CoordActionInfo *info = (CoordActionInfo *)eventHandlerGetKeyHandlerData();
+    CoordActionInfo *info = static_cast<CoordActionInfo *>(eventHandlerGetKeyHandlerData());
     Direction dir = keyToDirection(key);
     bool valid = (dir != DIR_NONE) ? true : false;
-    int weapon = c->players[info->player].weapon;    
+    const Weapon *weapon = Weapon::get(c->players[info->player].weapon);
 
     eventHandlerPopKeyHandler();
     info->dir = MASK_DIR(dir);
 
     if (valid) {
         screenMessage("%s\n", getDirectionName(dir));
-        if (weaponCanChooseDistance(weapon)) {
+        if (weapon->canChooseDistance()) {
             screenMessage("Range: ");
             eventHandlerPushKeyHandlerWithData(&combatChooseWeaponRange, info);
         }
@@ -1523,7 +1521,7 @@ bool combatChooseWeaponDir(int key, void *data) {
  * Key handler for choosing the range of a wepaon
  */
 bool combatChooseWeaponRange(int key, void *data) {    
-    CoordActionInfo *info = (CoordActionInfo *) data;    
+    CoordActionInfo *info = static_cast<CoordActionInfo *>(data);
 
     if ((key >= '0') && (key <= (info->range + '0'))) {
         info->range = key - '0';
