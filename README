@@ -44,6 +44,7 @@ New in v0.8
  - first person view in dungeons
  - improved config menus 
  - config menu navigation with arrow keys
+ - can now switch between VGA/EGA versions of the game
  - ranged monster attacks
  - implemented hole up & camp command
  - implemented inn ghost
