@@ -217,17 +217,21 @@ void screenInit() {
 }
 
 void screenDelete() {
-    imageMgr->freeAll();
-
     std::vector<Layout *>::const_iterator i;
     for (i = layouts.begin(); i != layouts.end(); i++)
         delete(*i);
     layouts.clear();
 
+    SDL_FreeCursor(cursors[1]);
+    SDL_FreeCursor(cursors[2]);
+    SDL_FreeCursor(cursors[3]);
+    SDL_FreeCursor(cursors[4]);
     u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
     if (verbose)
         printf("screen deleted [screenDelete()]\n");
+
+    ImageMgr::destroy();
 }
 
 /**
