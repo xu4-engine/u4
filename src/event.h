@@ -14,6 +14,7 @@
 #define U4_ESC 27
 #define U4_ENTER 13
 #define U4_ALT 128
+#define U4_FKEY 282
 
 extern int eventTimerGranularity;
 

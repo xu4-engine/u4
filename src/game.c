@@ -591,6 +591,24 @@ int gameBaseKeyHandler(int key, void *data) {
             }
         }
         
+        break;    
+
+    case U4_FKEY:
+    case U4_FKEY+1:
+    case U4_FKEY+2:
+    case U4_FKEY+3:
+    case U4_FKEY+4:
+    case U4_FKEY+5:
+    case U4_FKEY+6:
+    case U4_FKEY+7:
+        /* teleport to dungeon entrances! */
+        if (settings->debug && (c->location->context & CTX_WORLDMAP))
+        {            
+            int portal = 16 + (key - U4_FKEY); /* find dungeon portal */
+            c->location->x = c->location->map->portals[portal].x;
+            c->location->y = c->location->map->portals[portal].y;
+            c->location->z = c->location->map->portals[portal].z;
+        }
         break;
 
     case 3:                     /* ctrl-C */
@@ -808,12 +826,16 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'l':
-        if (c->saveGame->sextants >= 1)
-            screenMessage("Locate position\nwith sextant\n Latitude: %c'%c\"\nLongitude: %c'%c\"\n",
-                          c->location->y / 16 + 'A', c->location->y % 16 + 'A',
-                          c->location->x / 16 + 'A', c->location->x % 16 + 'A');
-        else
-            screenMessage("Locate position\nwith what?\n");
+        /* can't use sextant in dungeon or in combat */
+        if (c->location->context & ~(CTX_DUNGEON | CTX_COMBAT)) {
+            if (c->saveGame->sextants >= 1)
+                screenMessage("Locate position\nwith sextant\n Latitude: %c'%c\"\nLongitude: %c'%c\"\n",
+                              c->location->y / 16 + 'A', c->location->y % 16 + 'A',
+                              c->location->x / 16 + 'A', c->location->x % 16 + 'A');
+            else
+                screenMessage("Locate position\nwith what?\n");
+        }
+        else screenMessage("Not here!\n");
         break;
 
     case 'm':
