@@ -37,16 +37,23 @@ int menuShow(Menu menu) {
     return 1;
 }
 
-Menu menuGetNextItem(Menu current) {
-    if (current->next != NULL)
-        return current->next;
-    else return current;
+Menu menuGetNextItem(Menu current) {    
+    if (current->next != NULL)        
+        return current->next;    
+    /* wrap around to first node in the list */
+    else return menuGetRoot(current);
 }
 
 Menu menuGetPreviousItem(Menu current) {
     if (current->prev != NULL)
-        return current->prev;
-    else return current;
+        return current->prev;    
+    else {
+        /* wrap around to last node in the list */
+        Menu m = current;
+        while (m->next)
+            m = m->next;
+        return m;
+    }
 }
 
 Menu menuGetRoot(Menu current) {
