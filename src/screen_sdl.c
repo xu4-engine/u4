@@ -48,7 +48,7 @@ SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter);
 SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N);
-SDL_Surface *screenAdvanceMAMEScale2x(SDL_Surface *src, int scale, int N);
+SDL_Surface *screenAdvanceMAMEScale(SDL_Surface *src, int scale, int N);
 Uint32 getPixel(SDL_Surface *s, int x, int y);
 void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel);
 
@@ -75,7 +75,7 @@ void screenInit() {
         filterScaler = &screenScale2xSaI;
         break;
     case SCL_AdvanceMAME:
-        filterScaler = &screenAdvanceMAMEScale2x;
+        filterScaler = &screenAdvanceMAMEScale;
         break;
     default:
         filterScaler = NULL;
@@ -109,7 +109,7 @@ void screenInit() {
     if (!screenLoadBackgrounds() || 
         !screenLoadTiles() ||
         !screenLoadCharSet()) {
-        fprintf(stderr, "Unable to load data files\n");
+        fprintf(stderr, "Unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/\n");
         exit(1);
     }
 
@@ -940,6 +940,12 @@ SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter) {
         SDL_FreeSurface(src);
         src = dest;
     }
+    if (scale == 3 && filterScaler == &screenAdvanceMAMEScale) {
+        dest = (*filterScaler)(src, 3, n);
+        scale /= 3;
+        SDL_FreeSurface(src);
+        src = dest;
+    }
 
     if (scale != 1) {
         dest = screenScaleDefault(src, scale, n);
@@ -1246,15 +1252,15 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
     return dest;
 }
 
-SDL_Surface *screenAdvanceMAMEScale2x(SDL_Surface *src, int scale, int n) {
+SDL_Surface *screenAdvanceMAMEScale(SDL_Surface *src, int scale, int n) {
     int ii, x, y, xoff0, xoff1, yoff0, yoff1;
     SDL_Color a, b, c, d, e, f, g, h, i;
     SDL_Color e0, e1, e2, e3;
     SDL_Surface *dest;
     Uint32 rmask, gmask, bmask, amask;
 
-    /* this scaler works only with images scaled by 2x */
-    assert(scale == 2);
+    /* this scaler works only with images scaled by 2x or 3x */
+    assert(scale == 2 || scale == 3);
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     rmask = 0xff000000;
@@ -1276,10 +1282,10 @@ SDL_Surface *screenAdvanceMAMEScale2x(SDL_Surface *src, int scale, int n) {
         memcpy(dest->format->palette->colors, src->format->palette->colors, sizeof(SDL_Color) * src->format->palette->ncolors);
 
     /*
-     * Each pixel in the source image is translated into four in the
-     * destination.  The destination pixels are dependant on the pixel
-     * itself, and the eight surrounding pixels (E is the original
-     * pixel):
+     * Each pixel in the source image is translated into four (or
+     * nine) in the destination.  The destination pixels are dependant
+     * on the pixel itself, and the eight surrounding pixels (E is the
+     * original pixel):
      * 
      * A B C
      * D E F
@@ -1324,10 +1330,22 @@ SDL_Surface *screenAdvanceMAMEScale2x(SDL_Surface *src, int scale, int n) {
                 e2 = colorEqual(d, h) && (!colorEqual(d, b)) && (!colorEqual(h, f)) ? d : e;
                 e3 = colorEqual(h, f) && (!colorEqual(d, h)) && (!colorEqual(b, f)) ? f : e;
                 
-                putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, e0.r, e0.g, e0.b));
-                putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
-                putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, e2.r, e2.g, e2.b));
-                putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, e3.r, e3.g, e3.b));
+                if (scale == 2) {
+                    putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, e0.r, e0.g, e0.b));
+                    putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
+                    putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, e2.r, e2.g, e2.b));
+                    putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, e3.r, e3.g, e3.b));
+                } else if (scale == 3) {
+                    putPixel(dest, x * 3, y * 3, SDL_MapRGB(dest->format, e0.r, e0.g, e0.b));
+                    putPixel(dest, x * 3 + 1, y * 3, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
+                    putPixel(dest, x * 3 + 2, y * 3, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
+                    putPixel(dest, x * 3, y * 3 + 1, SDL_MapRGB(dest->format, e0.r, e0.g, e0.b));
+                    putPixel(dest, x * 3 + 1, y * 3 + 1, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
+                    putPixel(dest, x * 3 + 2, y * 3 + 1, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
+                    putPixel(dest, x * 3, y * 3 + 2, SDL_MapRGB(dest->format, e2.r, e2.g, e2.b));
+                    putPixel(dest, x * 3 + 1, y * 3 + 2, SDL_MapRGB(dest->format, e3.r, e3.g, e3.b));
+                    putPixel(dest, x * 3 + 2, y * 3 + 2, SDL_MapRGB(dest->format, e3.r, e3.g, e3.b));
+                }
             }
         }
     }
