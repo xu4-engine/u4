@@ -4,10 +4,10 @@
 <!ENTITY % comp '( none | rle | lzw )'>
 <!ENTITY % anim '( scroll | frames | rowswap | none )'>
 
-<!ELEMENT tiles ( tile* | dngTile* ) >
-<!ATTLIST tiles width              NMTOKEN  #REQUIRED
-                height             NMTOKEN  #REQUIRED
-                bpp                NMTOKEN  #REQUIRED
+<!ELEMENT tiles ( tile+ ) >
+<!ATTLIST tiles width              NMTOKEN  #IMPLIED
+                height             NMTOKEN  #IMPLIED
+                bpp                NMTOKEN  #IMPLIED
                 indexed            %bool;   #IMPLIED
                 vga                CDATA    #IMPLIED
                 ega                CDATA    #IMPLIED
@@ -21,10 +21,9 @@
                 directions         CDATA    #IMPLIED
                 animated           %bool;   #IMPLIED
                 rowtoswap          NMTOKEN  #IMPLIED
-                opaque             %bool;   #IMPLIED>
+                opaque             %bool;   #IMPLIED
+                displayTile        NMTOKEN  #IMPLIED>
+
+<!-- NOTE: displayTile will be removed. For now, however, it keeps the game functional -->
 
 <!-- animation          %anim;   #IMPLIED -->
-
-<!ELEMENT dngTile ( dngTile+ ) >
-<!ATTLIST dngTile displayTile           NMTOKEN       #REQUIRED
-                  rule                  CDATA         #IMPLIED>

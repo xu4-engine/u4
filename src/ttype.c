@@ -48,10 +48,9 @@ int baseShip = -1;
 int baseHorse = -1;
 int baseBalloon = -1;
 int mapTile = 0,
-    dngTile = 0,
-    subTile = 0;
+    dngTile = 0;    
 
-int tileLoadTileInfo(xmlNodePtr node);
+int tileLoadTileInfo(Tile *current, xmlNodePtr node);
 int ruleLoadProperties(TileRule *rule, xmlNodePtr node);
 Tile *tileFindByName(const char *name);
 TileRule *ruleFindByName(const char *name);
@@ -109,7 +108,7 @@ void tileLoadRulesFromXml() {
  */
 void tileLoadInfoFromXml() {
     xmlDocPtr doc;
-    xmlNodePtr root, node, child;
+    xmlNodePtr root, node;
     Tile *tile;
 
     if (tileInfoLoaded)
@@ -126,11 +125,19 @@ void tileLoadInfoFromXml() {
     
     for (node = root->xmlChildrenNode; node; node = node->next) {
         /* load tile info from the xml node */
-        tileLoadTileInfo(node);
-        
-        /* load children info if possible */
-        for (child = node->xmlChildrenNode; child; child = child->next)
-            tileLoadTileInfo(child);
+        tileLoadTileInfo(_ttype_info, node);
+    }
+
+    xmlFreeDoc(doc);
+    
+    doc = xmlParse("dungeonTiles.xml");
+    root = xmlDocGetRootElement(doc);
+    if (xmlStrcmp(root->name, (const xmlChar *) "tiles") != 0)
+        errorFatal("malformed dungeonTiles.xml");
+
+    for (node = root->xmlChildrenNode; node; node = node->next) {
+        /* load tile info from the xml node */
+        tileLoadTileInfo(_dng_ttype_info, node);
     }
 
     /* ensure information for all non-monster tiles was loaded */
@@ -185,87 +192,52 @@ void tileLoadInfoFromXml() {
  * is a valid tile node.  This loads in both <tile> and 
  * <dngTile> nodes.
  */
-int tileLoadTileInfo(xmlNodePtr node) {
-    Tile *current;
-    int *index;
-    int lshift,
-        offset,
-        realIndex,
-        frames;
+int tileLoadTileInfo(Tile* current, xmlNodePtr node) {    
+    int *indexPtr, i;
+    Tile tile, *tilePtr;
 
     /* ignore 'text' nodes */        
-    if (xmlNodeIsText(node))
+    if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
         return 1;
 
     /* a standard map tile */
-    else if (xmlStrcmp(node->name, (const xmlChar *) "tile") == 0) {
-        current = _ttype_info;
-        index = &mapTile;
-        lshift = 0; /* count by 1 */
-        offset = 0;
-    }
-    /* a dungeon tile */
-    else if (xmlStrcmp(node->name, (const xmlChar *) "dngTile") == 0) {
-        current = _dng_ttype_info;
-        index = &dngTile;
-        lshift = 4; /* count by 16, turns 0x1 into 0x10, 0x2 into 0x20, etc */
-        offset = 0;
-
-        /* subtile of dungeon tile (for example, magic fields - poison, energy, fire, sleep) */
-        if (xmlStrcmp(node->parent->name, (const xmlChar *) "dngTile") == 0) {            
-            offset = ((*index) - 1) << lshift; /* offsets to 0x90, 0x91, 0x92, etc */
-            index = &subTile;            
-            lshift = 0;
-        }
-        else subTile = 0; /* reset subtile if this is a normal dngTile */
-    }
-    else return 0;
-
-    /* figure out what our real index is going to be for this tile */
-    realIndex = ((*index) << lshift) + offset;
-
-    current[realIndex].name = xmlGetPropAsStr(node, "name"); /* get the name of the tile */
-    current[realIndex].index = realIndex; /* get the index of the tile */
-    current[realIndex].animated = xmlGetPropAsBool(node, "animated"); /* see if the tile is animated */
-    current[realIndex].opaque = xmlGetPropAsBool(node, "opaque"); /* see if the tile is opaque */
+    if (current == _ttype_info)
+        indexPtr = &mapTile;
+    else if (current = _dng_ttype_info)
+        indexPtr = &dngTile;    
+        
+    tile.name = xmlGetPropAsStr(node, "name"); /* get the name of the tile */
+    tile.index = *indexPtr; /* get the index of the tile */
+    tile.frames = 1;
+    tile.animated = xmlGetPropAsBool(node, "animated"); /* see if the tile is animated */
+    tile.opaque = xmlGetPropAsBool(node, "opaque"); /* see if the tile is opaque */
 
     /* get the tile to display for the current tile */
     if (xmlPropExists(node, "displayTile"))
-        current[realIndex].displayTile = xmlGetPropAsInt(node, "displayTile");
+        tile.displayTile = xmlGetPropAsInt(node, "displayTile");
     else
-        current[realIndex].displayTile = realIndex; /* itself */    
+        tile.displayTile = *indexPtr; /* itself */    
 
     /* find the rule that applies to the current tile, if there is one.
        if there is no rule specified, it defaults to the "default" rule */
     if (xmlPropExists(node, "rule")) {
-        current[realIndex].rule = ruleFindByName(xmlGetPropAsStr(node, "rule"));
-        if (current[realIndex].rule == NULL)
-            current[realIndex].rule = ruleFindByName("default");
+        tile.rule = ruleFindByName(xmlGetPropAsStr(node, "rule"));
+        if (tile.rule == NULL)
+            tile.rule = ruleFindByName("default");
     }
-    else current[realIndex].rule = ruleFindByName("default");
+    else tile.rule = ruleFindByName("default");
 
-    /* for each frame of the tile, duplicate our values */
-    frames = 1;
+    /* for each frame of the tile, duplicate our values */    
     if (xmlPropExists(node, "frames"))
-        frames = xmlGetPropAsInt(node, "frames");
-
-    if (frames > 1) {
-        int i;
-        for (i = 1; i < frames; i++) {
-            memcpy(&current[realIndex + i], &current[realIndex], sizeof(Tile));
-            current[realIndex + i].index += i; /* fix the index */
-            (*index)++;
-        }
+        tile.frames = xmlGetPropAsInt(node, "frames");
+    
+    tilePtr = &current[*indexPtr];    
+    for (i = 0; i < tile.frames; i++) {        
+        memcpy(tilePtr + i, &tile, sizeof(Tile));
+        (tilePtr + i)->index += i; /* fix the index */
+        (*indexPtr)++;
     }
-
-    /* fill in blank values with duplicates of what we just created */
-    if (lshift > 0) {
-        int j;
-        for (j = 0; j < (1<<lshift)-1; j++)
-            memcpy(&current[realIndex]+j+1, &current[realIndex], sizeof(Tile));
-    }            
-
-    (*index)++;
+    
     return 1;
 }
 
@@ -367,6 +339,9 @@ Tile *tileFindByName(const char *name) {
         return NULL;
 
     for (i = 0; i < 256; i++) {
+        if (tileset[i].name == NULL)
+            errorFatal("Error: not all tiles have a \"name\" attribute");
+            
         if (strcasecmp(name, tileset[i].name) == 0)
             return &tileset[i];
     }

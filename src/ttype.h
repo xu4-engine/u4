@@ -99,6 +99,7 @@ typedef struct _TileRule {
 typedef struct _Tile {    
     const char *name;
     int index;
+    int frames;
     unsigned char displayTile;
     unsigned char animated;
     unsigned char opaque;

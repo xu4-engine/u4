@@ -122,30 +122,5 @@
     <tile name="daemon" rule="monster" frames="4"/>
     <tile name="hydra" rule="monster" frames="4"/>
     <tile name="dragon" rule="monster" frames="4"/>
-    <tile name="balron" rule="monster" frames="4"/>
-
-    <!-- Dungeon tiles: * == 0-F -->
-    <dngTile displayTile="62" rule="floors"/> <!-- corridor (0x00) -->
-    <dngTile displayTile="27"/> <!-- ladder up (0x10) -->
-    <dngTile displayTile="28"/> <!-- ladder down (0x20) -->
-    <dngTile displayTile="27"/> <!-- ladder up/down (0x30) -->
-    <dngTile displayTile="60" rule="chest"/> <!-- chest (0x40) -->
-    <dngTile displayTile="62"/> <!-- hole (ceiling) (0x50) -->
-    <dngTile displayTile="62"/> <!-- hole (floor) (0x60) -->
-    <dngTile displayTile="78"/> <!-- magic orb (0x70) -->
-    <dngTile displayTile="62"/> <!-- trap (0x8*) -->
-    <dngTile displayTile="0"/> <!-- fountain (0x9*) -->
-    
-    <dngTile displayTile="68"> <!-- magic field     (0xA*) -->
-        <dngTile displayTile="68" rule="poison_field"/> <!-- poison field (0xA0) -->
-        <dngTile displayTile="69" rule="energy_field"/> <!-- energy field (0xA1) -->
-        <dngTile displayTile="70" rule="fire_field"/> <!-- fire field (0xA2) -->
-        <dngTile displayTile="71" rule="sleep_field"/> <!-- sleep field (0xA3) -->
-    </dngTile>
-
-    <dngTile displayTile="74" rule="dng_altar"/> <!-- altar (0xB0) -->
-    <dngTile displayTile="59" rule="dng_door"/> <!-- door (0xC0) -->
-    <dngTile displayTile="72" rule="dng_room"/> <!-- dungeon room (0xD*) -->    
-    <dngTile displayTile="73"/> <!-- secret door (0xE0) -->
-    <dngTile displayTile="127" rule="walls"/> <!-- wall (0xF0) -->
+    <tile name="balron" rule="monster" frames="4"/>    
 </tiles>

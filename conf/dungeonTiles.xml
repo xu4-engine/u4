@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!DOCTYPE tiles SYSTEM "dtd/tiles.dtd">
+<!-- $Id$ -->
+<tiles>
+    <tile name="dungeon_floor" displayTile="62" rule="floors" frames="16"/>
+    <tile name="up_ladder" displayTile="27" frames="16"/>
+    <tile name="down_ladder" displayTile="28" frames="16"/>
+    <tile name="up_down_ladder" displayTile="27" frames="16"/>
+    <tile name="chest" displayTile="60" rule="chest" frames="16"/>
+    <tile name="ceiling_hole" displayTile="62" frames="16"/>
+    <tile name="floor_hole" displayTile="62" frames="16"/>
+    <tile name="magic_orb" displayTile="78" frames="16"/>
+    <tile name="trap" displayTile="62" frames="16"/>
+    <tile name="fountain" displayTile="0" frames="16"/>    
+    <tile name="poison_field" displayTile="68" rule="poison_field"/>
+    <tile name="energy_field" displayTile="69" rule="energy_field"/>
+    <tile name="fire_field" displayTile="70" rule="fire_field"/>
+    <tile name="sleep_field" displayTile="71" rule="sleep_field"/>
+    <tile name="unused_fields" displayTile="68" frames="12"/>
+    <tile name="altar" displayTile="74" rule="dng_altar" frames="16"/>
+    <tile name="door" displayTile="59" rule="dng_door" frames="16"/>
+    <tile name="room" displayTile="72" rule="dng_room" frames="16"/>
+    <tile name="secret_door" displayTile="127" rule="secret_door" frames="16"/>
+    <tile name="brick_wall" displayTile="127" rule="walls" frames="16"/>    
+</tiles>
