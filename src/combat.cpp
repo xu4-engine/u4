@@ -572,7 +572,7 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
                 /* Based on attack speed setting in setting struct, make a delay for
                    the attack annotation */
                 if (attackdelay > 0)
-                    EventHandler::sleep(attackdelay * 2);
+                    EventHandler::wait_msecs(attackdelay * 2);
             }       
 
             return 0;
@@ -656,7 +656,7 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
             /* Based on attack speed setting in setting struct, make a delay for
                the attack annotation */
             if (attackdelay > 0)
-                EventHandler::sleep(attackdelay * 2);
+                EventHandler::wait_msecs(attackdelay * 2);
 
             return 0;
         }
@@ -756,7 +756,7 @@ bool CombatController::returnWeaponToOwner(MapCoords coords, int distance, void 
         /* Based on attack speed setting in setting struct, make a delay for
            the attack annotation */
         if (attackdelay > 0)
-            EventHandler::sleep(attackdelay * 2);
+            EventHandler::wait_msecs(attackdelay * 2);
         
         cm->annotations->remove(new_coords, misstile);
     }
@@ -781,7 +781,7 @@ void CombatController::attackFlash(Coords coords, MapTile tile, int timeFactor) 
             screenCycle();
 
         gameUpdateScreen();       
-        EventHandler::sleep(eventTimerGranularity/divisor);
+        EventHandler::wait_msecs(eventTimerGranularity/divisor);
     }
     c->location->map->annotations->remove(coords, tile);
 }

@@ -129,21 +129,21 @@ void Shrine::enhancedSequence() {
 
     screenDisableCursor();
     screenMessage("You approach\nthe ancient\nshrine...\n");
-    gameUpdateScreen(); EventHandler::sleep(1000);
+    gameUpdateScreen(); EventHandler::wait_cycles(settings.gameCyclesPerSecond);
         
     Object *obj = addCreature(creatures.getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
     obj->setTile(Tileset::findTileByName("avatar")->id);
 
-    gameUpdateScreen(); EventHandler::sleep(400);        
-    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(400);
-    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(400);
-    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(400);
+    gameUpdateScreen(); EventHandler::wait_msecs(400);        
+    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(400);
+    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(400);
+    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(400);
     annotations->remove(Coords(5, 6, c->location->coords.z), Tileset::findTileByName("grass")->id);
-    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::sleep(800);
+    c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(800);
     obj->setTile(creatures.getById(BEGGAR_ID)->getTile()); gameUpdateScreen();
         
     screenMessage("\n...and kneel before the altar.\n");        
-    EventHandler::sleep(1000);
+    EventHandler::wait_cycles(settings.gameCyclesPerSecond);
     screenEnableCursor();
 }
 

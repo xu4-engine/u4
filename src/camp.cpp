@@ -127,8 +127,8 @@ void innBegin(void) {
     /* in the original, the vendor music plays straight through sleeping */
     if (settings.enhancements)
         musicMgr->fadeOut(INN_FADE_OUT_TIME); /* Fade volume out to ease into rest */
-
-    EventHandler::sleep(INN_FADE_OUT_TIME);
+    
+    EventHandler::wait_msecs(INN_FADE_OUT_TIME);
 
     /* show the sleeping avatar */
     c->party->setTransport(Tileset::findTileByName("corpse")->id);

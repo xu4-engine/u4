@@ -372,7 +372,7 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
             /* Based on attack speed setting in setting struct, make a delay for
                the attack annotation */
             if (attackdelay > 0)
-                EventHandler::sleep(attackdelay * 2);
+                EventHandler::wait_msecs(attackdelay * 2);
 
             return 0;
         }
