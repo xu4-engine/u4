@@ -219,7 +219,7 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, cnv->talker->keyword2, 4) == 0) {
-        reply = strdup(cnv->talker->response1);
+        reply = strdup(cnv->talker->response2);
         if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD2)
             cnv->state = CONV_ASK;
     }
