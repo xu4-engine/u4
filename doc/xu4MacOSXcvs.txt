@@ -17,7 +17,7 @@ Things you only have to do once
    Unpack and install it.
 
 4. Grab xu4_libxml_osx.dmg.gz from
-   http://xu4.sourceforge.net/xu4_libxml_osx.dmg.gz
+   http://xu4.sourceforge.net/download/xu4_libxml_osx.dmg.gz
    Unpack and open the .dmg. Copy the libxml frameworks into
    ~/Library/Frameworks
    If you have older versions of the libxml and libiconv frameworks from
