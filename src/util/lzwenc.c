@@ -8,6 +8,7 @@
 #include <ctype.h>
 
 #include "lzw/hash.h"
+#include "util/pngconv.h"
 
 #define MAX_DICT_CAPACITY 0xCCC
 #define DICT_SIZE 0x1000
@@ -132,20 +133,19 @@ void addcode(unsigned char *str, int len) {
  * LZW encode a file.
  */
 int main(int argc, char *argv[]) {
-    FILE *in, *out;
+    FILE *out;
+    char *fname;
     unsigned char str[4096];
     int idx;
     int c;
+    unsigned char *data, *p;
 
     if (argc != 2 && argc != 3) {
         fprintf(stderr, "usage: lzwenc infile [outfile]\n");
         exit(1);
     }
 
-    if (!(in = fopen(argv[1], "rb"))) {
-        perror(argv[1]);
-        exit(1);
-    }
+    fname = argv[1];
 
     if (argc < 3)
         out = stdout;
@@ -156,14 +156,17 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    readEgaFromPng(&data, fname);
+
     initdict();
 
+    p = data;
     idx = 0;
-    c = getc(in);
+    c = *p++;
     str[idx++] = c;
     while (1) {
-        c = getc(in);
-        if (c == EOF)
+        c = *p++;
+        if (p > (data + (320 * 200 / 2)))
             break;
         str[idx++] = c;
         if (getcode(str, idx) == -1) {
@@ -177,8 +180,8 @@ int main(int argc, char *argv[]) {
             if (dictsize > MAX_DICT_CAPACITY) {
                 initdict();
                 putc_12(c, out);
-                c = getc(in);
-                if (c == EOF)
+                c = *p++;
+                if (p > (data + (320 * 200 / 2)))
                     break;
             }
             idx = 0;
