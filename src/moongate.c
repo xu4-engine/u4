@@ -39,3 +39,8 @@ int moongateFindActiveGateAt(int trammel, int felucca, int x, int y, int *destx,
     return 0;
 }
 
+int moongateIsEntryToShrineOfSpirituality(int trammel, int felucca) {
+    return 
+        trammel == 3 && 
+        felucca == 3;
+}
