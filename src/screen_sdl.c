@@ -16,8 +16,17 @@
 #include "savegame.h"
 #include "ttype.h"
 
+typedef enum {
+    CARD_HONCOM,
+    CARD_VALJUS,
+    CARD_SACHONOR,
+    CARD_SPIRHUM,
+    CARD_MAX
+} CardType;
+
 SDL_Surface *screen;
 SDL_Surface *bkgds[BKGD_MAX];
+SDL_Surface *cards[CARD_MAX];
 SDL_Surface *tiles, *charset;
 int scale, forceEga, forceVga;
 
@@ -205,10 +214,47 @@ int screenLoadBackgrounds() {
     return 1;
 }
 
-void screenFreeIntroBackground() {
-    if (bkgds[BKGD_INTRO])
-        SDL_FreeSurface(bkgds[BKGD_INTRO]);
-    bkgds[BKGD_INTRO] = NULL;
+/**
+ * Load in the card images from the "*.ega" files.
+ */
+int screenLoadCards() {
+    int ret, i;
+    const struct {
+        CardType card;
+        const char *filename;
+    } lzwCardInfo[] = {
+        { CARD_HONCOM, "honcom.ega" },
+        { CARD_VALJUS, "valjus.ega" },
+        { CARD_SACHONOR, "sachonor.ega" },
+        { CARD_SPIRHUM, "spirhum.ega" }
+    };
+
+    for (i = 0; i < sizeof(lzwCardInfo) / sizeof(lzwCardInfo[0]); i++) {
+        /* no vga version of lzw files... yet */
+        ret = screenLoadLzwImageEga(&cards[lzwCardInfo[i].card], 320, 200, lzwCardInfo[i].filename);
+        if (!ret)
+            return 0;
+    }
+
+    return 1;
+}
+
+void screenFreeCards() {
+    int i;
+
+    for (i = 0; i < sizeof(cards) / sizeof(cards[0]); i++)
+        SDL_FreeSurface(cards[i]);
+}
+
+void screenFreeIntroBackgrounds() {
+    int i;
+
+    for (i = 0; i < BKGD_MAX; i++) {
+        if (i == BKGD_BORDERS)
+            continue;
+        SDL_FreeSurface(bkgds[i]);
+        bkgds[i] = NULL;
+    }
 }
 
 /**
@@ -750,4 +796,23 @@ void screenEraseIntroText() {
     dest.h = 48 * scale;
 
     SDL_FillRect(screen, &dest, 0);
+}
+
+void screenShowCard(int pos, int card) {
+    SDL_Rect src, dest;
+
+    assert(pos == 0 || pos == 1);
+    assert(card < 8);
+
+    src.x = ((card % 2) ? 218 : 12) * scale;
+    src.y = 12 * scale;
+    src.w = 90 * scale;
+    src.h = 124 * scale;
+
+    dest.x = (pos ? 218 : 12) * scale;
+    dest.y = 12 * scale;
+    dest.w = 90 * scale;
+    dest.h = 124 * scale;
+
+    SDL_BlitSurface(cards[card / 2], &src, screen, &dest);
 }

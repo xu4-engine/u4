@@ -19,6 +19,9 @@ typedef enum {
 } BackgroundType;
 
 void screenInit(int scale);
+int screenLoadCards();
+void screenFreeCards();
+void screenFreeIntroBackgrounds();
 void screenDrawBackground(BackgroundType bkgd);
 void screenShowTile(int tile, int x, int y);
 void screenShowChar(int chr, int x, int y);
@@ -29,6 +32,7 @@ void screenUpdate(void);
 void screenForceRedraw(void);
 void screenAnimateIntro(int frame);
 void screenEraseIntroText();
+void screenShowCard(int pos, int card);
 void screenCycle(void);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);
