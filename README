@@ -1,6 +1,6 @@
 XU4
 ===
-   
+
    "Prepare yourself for a grand adventure: Ultima IV, sixteen times
    larger than Ultima III, is a milestone in computer gaming.  Lord
    British has produced a game to challenge, not only your physical
@@ -17,7 +17,7 @@ XU4
    Earthly victories over seemingly impossible odds lead to the final
    conflict, where the ultimate challenge -- the self -- awaits..."
      -- Back cover of Ultima IV box
-   
+
 XU4 is a remake of the computer game Ultima IV.  The goal is to make
 it easy and convenient to play this classic on modern operating
 systems.  XU4 is primarily inspired by the much more ambitious project
@@ -38,6 +38,19 @@ and vice versa, at least in theory.
 
 STATUS
 ------
+
+New in v0.7
+ - ranged combat
+ - long responses now pause before scrolling off screen
+ - the telescope in the Lycaeum now works
+ - the silver horn now works
+ - monsters now initiate combat
+ - wind now influences ship movement
+ - fields, lava and poison now work in combat
+ - added player highlighting in stats display during combat
+ - added options to filter move messages and automatically open doors
+ - certain people now "turn away" in conversations
+ - lots more bugs squashed
 
 New in v0.6
  - many bug fixes
@@ -64,7 +77,7 @@ New in v0.09:
  - food vendors now work and buggy weapons/armor vendors are fixed
  - AdvanceMAME scaler (now the default), handles x2, x3, x4
  - configuration menu at startup, settings saved in .xu4rc file
- - drops frames when needed to better handle slow computers or X displays 
+ - drops frames when needed to better handle slow computers or X displays
  - lots of code cleanup and bug fixes
 
 New in v0.08:
@@ -91,7 +104,7 @@ New in v0.07:
    the VGA upgrade)
 
 To do, in no particular order:
- - sound
+ - sound effects
  - dungeons
  - autoconf, automake
  - everything else :)
@@ -105,15 +118,19 @@ Some thoughts for possible improvements:
  - move hardcoded data (tile attributes, starting attributes, etc.)
    into xml config file
  - menu-based interface, like Sega version
+ - improve the scalers:
+   + scale entire screen image rather than individual tiles
+   + correct for aspect ratio
 
 
 COMPILING
 ---------
 
-Note that you need SDL, the SDL development libraries & headers, and
-the SDL_mixer library to compile.  TiMidity++ may be necessary on some
-platforms, too.  Assuming they are present, type make in the src
-directory to build it.  An executable called u4 is created.
+Note that you need libxml2, SDL, the SDL development libraries &
+headers, and the SDL_mixer library to compile.  TiMidity++ may be
+necessary on some platforms, too.  Assuming they are present, type
+make in the src directory to build it.  An executable called u4 is
+created.
 
 
 RUNNING

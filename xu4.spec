@@ -1,6 +1,6 @@
 Summary: xu4 - Ultima IV Recreated
 Name: xu4
-Version: 0.6
+Version: 0.7
 Release: 1
 URL: http://xu4.sourceforge.net/
 Source0: http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
@@ -58,9 +58,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/rledec
 %{_libdir}/u4/tlkconv
 %{_libdir}/u4/tiles.xml
+%{_libdir}/u4/armors.xml
+%{_libdir}/u4/weapons.xml
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Mon Jul 21 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added armors.xml and weapons.xml to files
+
 * Tue Apr 29 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added tools.txt to documentation
 
