@@ -20,6 +20,10 @@
 #define INTRO_MAP_HEIGHT 5
 #define INTRO_MAP_WIDTH 19
 #define INTRO_FIXUPDATA_OFFSET 29806
+#define INTRO_SCRIPT_TABLE_SIZE 548
+#define INTRO_SCRIPT_TABLE_OFFSET 30434
+#define INTRO_BASETILE_TABLE_SIZE 15
+#define INTRO_BASETILE_TABLE_OFFSET 16584
 
 #define INTRO_TEXT_X 0
 #define INTRO_TEXT_Y 19
@@ -39,6 +43,11 @@ typedef enum {
     INTRO_INIT_SEGTOGAME        /* displaying the text that segues to the game */
 } IntroMode;
 
+typedef struct _IntroObjectState {
+    int x, y;
+    unsigned char tile;  /* base tile + tile frame */
+} IntroObjectState;
+
 #define GYP_PLACES_FIRST 0
 #define GYP_PLACES_TWOMORE 1
 #define GYP_PLACES_LAST 2
@@ -54,6 +63,8 @@ unsigned char *introMap[INTRO_MAP_HEIGHT];
 char **introText;
 char **introQuestions;
 char **introGypsy;
+unsigned char *scriptTable;
+unsigned char *baseTileTable;
 
 /* additional introduction state data */
 char nameBuffer[16];
@@ -66,9 +77,13 @@ int introAskToggle;
 int questionTree[15];
 int beastie1Cycle;
 int beastie2Cycle;
+int sleepCycles;
+int scrPos;  /* current position in the script table */
+IntroObjectState *objectStateTable;
 
 void introInitiateNewGame(void);
 void introDrawMap(void);
+void introDrawMapAnimated(void);
 void introDrawBeasties(void);
 void introStartQuestions(void);
 int introHandleName(const char *message);
@@ -114,6 +129,22 @@ int introInit() {
         }
     }
 
+    sleepCycles = 0;
+    scrPos = 0;
+
+    fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
+    scriptTable = malloc(INTRO_SCRIPT_TABLE_SIZE);
+    for (i = 0; i < INTRO_SCRIPT_TABLE_SIZE; i++)
+        scriptTable[i] = fgetc(title);
+
+    fseek(title, INTRO_BASETILE_TABLE_OFFSET, SEEK_SET);
+    baseTileTable = malloc(INTRO_BASETILE_TABLE_SIZE);
+    for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++)
+        baseTileTable[i] = fgetc(title);
+
+    objectStateTable = (IntroObjectState *) malloc(sizeof(IntroObjectState) * INTRO_BASETILE_TABLE_SIZE);
+    memset(objectStateTable, 0, sizeof(IntroObjectState) * INTRO_BASETILE_TABLE_SIZE);
+
     u4fclose(title);
 
     screenLoadIntroAnimations();
@@ -142,6 +173,13 @@ void introDelete() {
     introGypsy = NULL;
 
     free(introMap[0]);
+
+    free(scriptTable);
+    scriptTable = NULL;
+    free(baseTileTable);
+    baseTileTable = NULL;
+    free(objectStateTable);
+    objectStateTable = NULL;
 
     screenFreeIntroAnimations();
     screenFreeIntroBackgrounds();
@@ -217,13 +255,90 @@ int introKeyHandler(int key, void *data) {
  * Draws the small map on the intro screen.
  */
 void introDrawMap() {
-    int x, y;
-
-    for (y = 0; y < INTRO_MAP_HEIGHT; y++) {
-        for (x = 0; x < INTRO_MAP_WIDTH; x++) {
-            screenShowTile(introMap[y][x], x, y + 6);
-        }
+    if (sleepCycles > 0) {
+        introDrawMapAnimated();
+        sleepCycles--;
     }
+    else {
+        unsigned char commandNibble;
+        unsigned char dataNibble;
+
+        do {
+            commandNibble = scriptTable[scrPos] >> 4;
+
+            switch(commandNibble) {
+                /* 0-4 = set object position and tile frame */
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                /* ----------------------------------------------------------
+                   Set object position and tile frame
+                   Format: yi [t(3); x(5)]
+                   i = table index
+                   x = x coordinate (5 least significant bits of second byte)
+                   y = y coordinate
+                   t = tile frame (3 most significant bits of second byte)
+                   ---------------------------------------------------------- */
+                dataNibble = scriptTable[scrPos] & 0xf;
+                objectStateTable[dataNibble].x = scriptTable[scrPos+1] & 0x1f;
+                objectStateTable[dataNibble].y = commandNibble;
+                objectStateTable[dataNibble].tile = baseTileTable[dataNibble] + (scriptTable[scrPos+1] >> 5);
+                scrPos += 2;
+                break;
+            case 7:
+                /* ---------------
+                   Delete object
+                   Format: 7i
+                   i = table index
+                   --------------- */
+                dataNibble = scriptTable[scrPos] & 0xf;
+                objectStateTable[dataNibble].tile = 0;
+                scrPos++;
+                break;
+            case 8:
+                /* ----------------------------------------------
+                   Redraw intro map and objects, then go to sleep
+                   Format: 8c
+                   c = cycles to sleep
+                   ---------------------------------------------- */
+                introDrawMapAnimated();
+
+                /* set sleep cycles */
+                sleepCycles = scriptTable[scrPos] & 0xf;
+                scrPos++;
+                break;
+            case 0xf:
+                /* -------------------------------------
+                   Jump to the start of the script table
+                   Format: f?
+                   ? = doesn't matter
+                   ------------------------------------- */
+                scrPos = 0;
+                break;
+            default:
+                /* invalid command */
+                scrPos++;
+                break;
+            }
+
+        } while (commandNibble != 8);
+    }
+}
+
+void introDrawMapAnimated() {
+    int x, y, i;
+
+    /* draw unmodified map */
+    for (y = 0; y < INTRO_MAP_HEIGHT; y++)
+        for (x = 0; x < INTRO_MAP_WIDTH; x++)
+            screenShowTile(introMap[y][x], x, y + 6);
+
+    /* draw animated objects */
+    for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++)
+        if (objectStateTable[i].tile != 0)
+            screenShowTile(objectStateTable[i].tile, objectStateTable[i].x, objectStateTable[i].y + 6);
 }
 
 /**
