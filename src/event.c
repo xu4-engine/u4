@@ -16,7 +16,8 @@
 #include "savegame.h"
 
 typedef struct TimerCallbackNode {
-    void (*callback)();
+    TimerCallback callback;
+    void *data;
     int interval;
     int current;
     struct TimerCallbackNode *next;
@@ -26,7 +27,7 @@ TimerCallbackNode *timerCallbackHead = NULL;
 KeyHandlerNode *keyHandlerHead = NULL;
 int eventExitFlag = 0;
 int timerCallbackListLocked = 0;
-void (*deferedTimerCallbackRemoval)() = NULL;
+TimerCallbackNode *deferedTimerCallbackRemoval = NULL;
 
 /**
  * Set flag to end eventHandlerMain loop.
@@ -48,7 +49,11 @@ int eventHandlerGetExitFlag() {
  * calls; a value of 1 generates 4 callbacks per second, a value of 4
  * generates 1 callback per second, etc.
  */
-void eventHandlerAddTimerCallback(void (*callback)(), int interval) {
+void eventHandlerAddTimerCallback(TimerCallback callback, int interval) {
+    eventHandlerAddTimerCallbackData(callback, NULL, interval);
+}
+
+void eventHandlerAddTimerCallbackData(TimerCallback callback, void *data, int interval) {
     TimerCallbackNode *n = (TimerCallbackNode *) malloc(sizeof(TimerCallbackNode));
 
     assert(interval > 0);
@@ -56,6 +61,7 @@ void eventHandlerAddTimerCallback(void (*callback)(), int interval) {
         n->callback = callback;
         n->interval = interval;
         n->current = interval - 1;
+        n->data = data;
         n->next = timerCallbackHead;
         timerCallbackHead = n;
     }
@@ -64,20 +70,26 @@ void eventHandlerAddTimerCallback(void (*callback)(), int interval) {
 /**
  * Removes a timer callback from the timer callback list.
  */
-void eventHandlerRemoveTimerCallback(void (*callback)()) {
+void eventHandlerRemoveTimerCallback(TimerCallback callback) {
+    eventHandlerRemoveTimerCallbackData(callback, NULL);
+}
+
+void eventHandlerRemoveTimerCallbackData(TimerCallback callback, void *data) {
     TimerCallbackNode *n, *prev;
 
     if (timerCallbackListLocked) {
-        /* assert if more than one callback removal is defered -- should really be a list */
-        assert(deferedTimerCallbackRemoval == NULL);
-        deferedTimerCallbackRemoval = callback;
+        n = (TimerCallbackNode *) malloc(sizeof(TimerCallbackNode));
+        n->callback = callback;
+        n->data = data;
+        n->next = deferedTimerCallbackRemoval;
+        deferedTimerCallbackRemoval = n;
         return;
     }
 
     n = timerCallbackHead;
     prev = NULL;
     while (n) {
-        if (n->callback != callback) {
+        if (n->callback != callback || n->data != data) {
             prev = n;
             n = n->next;
             continue;
@@ -102,7 +114,7 @@ void eventHandlerCallTimerCallbacks() {
 
     for (n = timerCallbackHead; n != NULL; n = n->next) {
         if (n->current == 0) {
-            (*n->callback)();
+            (*n->callback)(n->data);
             n->current = n->interval - 1;
         } else {
             n->current--;
@@ -111,9 +123,11 @@ void eventHandlerCallTimerCallbacks() {
 
     timerCallbackListLocked = 0;
 
-    if (deferedTimerCallbackRemoval) {
-        eventHandlerRemoveTimerCallback(deferedTimerCallbackRemoval);
-        deferedTimerCallbackRemoval = NULL;
+    while (deferedTimerCallbackRemoval) {
+        eventHandlerRemoveTimerCallbackData(deferedTimerCallbackRemoval->callback, deferedTimerCallbackRemoval->data);
+        n = deferedTimerCallbackRemoval;
+        deferedTimerCallbackRemoval = deferedTimerCallbackRemoval->next;
+        free(n);
     }
 }
 

@@ -13,6 +13,7 @@
 #define U4_ESC 27
 
 typedef int (*KeyHandler)(int, void *);
+typedef void (*TimerCallback)(void *);
 
 typedef struct KeyHandlerNode {
     KeyHandler kh;
@@ -40,8 +41,10 @@ void eventHandlerMain(void (*updateScreen)(void));
 int eventHandlerTimerQueueEmpty(void);
 void eventHandlerSetExitFlag(int flag);
 int eventHandlerGetExitFlag();
-void eventHandlerAddTimerCallback(void (*callback)(), int interval);
-void eventHandlerRemoveTimerCallback(void (*callback)());
+void eventHandlerAddTimerCallback(TimerCallback callback, int interval);
+void eventHandlerAddTimerCallbackData(TimerCallback callback, void *data, int interval);
+void eventHandlerRemoveTimerCallback(TimerCallback callback);
+void eventHandlerRemoveTimerCallbackData(TimerCallback callback, void *data);
 void eventHandlerCallTimerCallbacks();
 void eventHandlerPushKeyHandler(KeyHandler kh);
 void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data);
