@@ -12,11 +12,24 @@ typedef enum _State {
     STATE_QUIT
 } State;
 
+typedef int (*KeyHandler)(int);
+
+typedef struct KeyHandlerNode {
+    KeyHandler *kh;
+    struct KeyHandlerNode *next;
+} KeyHandlerNode;
+
+KeyHandlerNode *head;
+
 void eventHandlerMain();
-int eventHandlerDefault(SDL_Event *event);
-int eventHandlerNormal(SDL_Event *event);
-int eventHandlerTalk(SDL_Event *event);
-int eventHandlerTalking(SDL_Event *event);
-int eventHandlerQuit(SDL_Event *event);
+void eventHandlerPushKeyHandler(KeyHandler *kh);
+void eventHandlerPopKeyHandler();
+KeyHandler *eventHandlerGetKeyHandler();
+
+int keyHandlerDefault(int key);
+int keyHandlerNormal(int key);
+int keyHandlerTalk(int key);
+int keyHandlerTalking(int key);
+int keyHandlerQuit(int key);
 
 #endif

@@ -84,6 +84,7 @@ void move(int dx, int dy) {
 		Context *t = c;
                 c->parent->line = c->line;
 		c = c->parent;
+                free(t->saveGame);
 		free(t);
 	    }
 	    return;
