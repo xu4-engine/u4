@@ -8,6 +8,7 @@
 
 #include "player.h"
 #include "debug.h"
+#include "weapon.h"
 
 LostEighthCallback lostEighthCallback = NULL;
 AdvanceLevelCallback advanceLevelCallback = NULL;
@@ -665,8 +666,8 @@ int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, i
 /**
  * Determine whether a players attack hits or not.
  */
-int playerAttackHit(const SaveGamePlayerRecord *player) {
-    if (player->dex >= 40)
+int playerAttackHit(const SaveGamePlayerRecord *player) {   
+    if (weaponAlwaysHit(player->weapon) || player->dex >= 40)
         return 1;
 
     if ((player->dex + 128) >= (rand() & 0xff))
@@ -679,19 +680,9 @@ int playerAttackHit(const SaveGamePlayerRecord *player) {
  * Calculate damage for an attack.
  */
 int playerGetDamage(const SaveGamePlayerRecord *player) {
-    static int weaponDamage[] = {
-	8, 16,                  /* hands, staff */
-	24, 32,                 /* dagger, sling */
-	40, 48,                 /* mace, axe */
-	64, 40,                 /* sword, bow */
-	56, 64,                 /* crossbow, oil */
-	96, 96,                 /* halberd, magic axe */
-	128, 80,                /* magic sword, magic bow */
-	160, 255,               /* magic wand, mystic sword */
-    };
     int maxDamage;
 
-    maxDamage = weaponDamage[player->weapon];
+    maxDamage = weaponGetDamage(player->weapon);
     maxDamage += player->str;
     if (maxDamage > 255)
         maxDamage = 255;

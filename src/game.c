@@ -45,27 +45,27 @@ void gameCastSpell(unsigned int spell, int caster, int param);
 int gameCheckPlayerDisabled(int player);
 void gameGetPlayerForCommand(int (*commandFn)(int player));
 int moveAvatar(Direction dir, int userEvent);
-int attackAtCoord(int x, int y, int distance);
+int attackAtCoord(int x, int y, int distance, CoordActionInfo *info);
 int castForPlayer(int player);
 int castForPlayer2(int spell, void *data);
 int castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
 int castForPlayerGetPhase(int phase);
-int fireAtCoord(int x, int y, int distance);
+int fireAtCoord(int x, int y, int distance, CoordActionInfo *info);
 int getChest(int player);
 int getChestTrapHandler(int player);
-int jimmyAtCoord(int x, int y, int distance);
+int jimmyAtCoord(int x, int y, int distance, CoordActionInfo *info);
 int mixReagentsForSpell(int spell, void *data);
 int mixReagentsForSpell2(char choice);
 int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
-int openAtCoord(int x, int y, int distance);
+int openAtCoord(int x, int y, int distance, CoordActionInfo *info);
 int gemHandleChoice(char choice);
 int gamePeerCity(int city, void *data);
 int peerCityHandleChoice(char choice);
 int readyForPlayer(int player);
 int readyForPlayer2(int weapon, void *data);
-int talkAtCoord(int x, int y, int distance);
+int talkAtCoord(int x, int y, int distance, CoordActionInfo *info);
 int talkHandleBuffer(const char *message);
 int talkHandleChoice(char choice);
 void talkShowReply(int showPrompt);
@@ -85,6 +85,7 @@ int gameWindSlowsShip(Direction shipdir);
 void gameMonsterAttack(Object *obj);
 
 extern Map world_map;
+extern Object *party[8];
 Context *c = NULL;
 int collisionOverride = 0;
 ViewMode viewMode = VIEW_NORMAL;
@@ -315,7 +316,6 @@ void gameFinishTurn() {
             return;
         } else {            
             screenMessage("Zzzzzz\n");
-            eventHandlerSleep(1000);
         }
     }
 
@@ -606,8 +606,9 @@ int gameBaseKeyHandler(int key, void *data) {
             info->handleAtCoord = &fireAtCoord;
             info->origin_x = c->saveGame->x;
             info->origin_y = c->saveGame->y;
-            info->range = 1;
+            info->range = 3;
             info->validDirections = validDirs;
+            info->player = -1;
             info->blockedPredicate = NULL;
             eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
 
@@ -660,6 +661,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->origin_y = c->saveGame->y;
         info->range = 1;
         info->validDirections = MASK_DIR_ALL;
+        info->player = -1;
         info->blockedPredicate = NULL;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Jimmy\nDir: ");
@@ -718,6 +720,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->origin_y = c->saveGame->y;
         info->range = 1;
         info->validDirections = MASK_DIR_ALL;
+        info->player = -1;
         info->blockedPredicate = NULL;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Open\nDir: ");
@@ -796,6 +799,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->origin_y = c->saveGame->y;
         info->range = 2;
         info->validDirections = MASK_DIR_ALL;
+        info->player = -1;
         info->blockedPredicate = &tileCanTalkOver;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Talk\nDir: ");
@@ -1000,6 +1004,8 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
     int distance = 0;
     Direction dir;
     int t_x = info->origin_x, t_y = info->origin_y;
+    Object *obj, *player;
+    int tile, i;
 
     eventHandlerPopKeyHandler();
 
@@ -1034,15 +1040,32 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
     for (distance = 1; distance <= info->range; distance++) {
         dirMove(dir, &t_x, &t_y);
 
-        if ((*(info->handleAtCoord))(t_x, t_y, distance))
+        if ((*(info->handleAtCoord))(t_x, t_y, distance, info))
             goto success;
+
+        // Make sure the object we're testing isn't a party member
+        obj = mapObjectAt(c->map, t_x, t_y, c->saveGame->dnglevel);
+        if (obj != NULL) {
+            for (i = 0; i < c->saveGame->members; i++) {                
+                if ((obj->x == party[i]->x) && (obj->y == party[i]->y) && (obj->z == party[i]->z)) {
+                    obj = NULL;
+                    break;
+                }
+            }
+        }
+
+        if (obj != NULL)
+            tile = obj->tile;
+        else
+            tile = mapTileAt(c->map, t_x, t_y, c->saveGame->dnglevel);        
+
         if (info->blockedPredicate &&
-            !(*(info->blockedPredicate))(mapTileAt(c->map, t_x, t_y, c->saveGame->dnglevel)))
+            !(*(info->blockedPredicate))(tile))
             break;
     }
 
  failure:
-    (*info->handleAtCoord)(-1, -1, distance);
+    (*info->handleAtCoord)(-1, -1, distance, info);
 
  success:
     free(info);
@@ -1169,7 +1192,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
  * Attempts to attack a creature at map coordinates x,y.  If no
  * creature is present at that point, zero is returned.
  */
-int attackAtCoord(int x, int y, int distance) {
+int attackAtCoord(int x, int y, int distance, CoordActionInfo *info) {
     Object *obj, *under;
     const Monster *m;
     unsigned char ground;
@@ -1276,7 +1299,7 @@ int castForPlayerGetPhase(int phase) {
     return 1;
 }
 
-int fireAtCoord(int x, int y, int distance) {
+int fireAtCoord(int x, int y, int distance, CoordActionInfo *info) {
     if (x == -1 && y == -1) {
         if (distance == 0)
             screenMessage("Broadsides Only!\n");
@@ -1375,7 +1398,7 @@ int getChestTrapHandler(int player)
  * door is replaced by a permanent annotation of an unlocked door
  * tile.
  */
-int jimmyAtCoord(int x, int y, int distance) {
+int jimmyAtCoord(int x, int y, int distance, CoordActionInfo *info) {
     if (x == -1 && y == -1) {
         screenMessage("Jimmy what?\n");
         gameFinishTurn();
@@ -1586,7 +1609,7 @@ int newOrderForPlayer2(int player2) {
  * Attempts to open a door at map coordinates x,y.  The door is
  * replaced by a temporary annotation of a floor tile for 4 turns.
  */
-int openAtCoord(int x, int y, int distance) {
+int openAtCoord(int x, int y, int distance, CoordActionInfo *info) {
     if (x == -1 && y == -1) {
         screenMessage("Not Here!\n");
         gameFinishTurn();
@@ -1681,7 +1704,7 @@ int peerCityHandleChoice(char choice) {
  * Begins a conversation with the NPC at map coordinates x,y.  If no
  * NPC is present at that point, zero is returned.
  */
-int talkAtCoord(int x, int y, int distance) {
+int talkAtCoord(int x, int y, int distance, CoordActionInfo *info) {
     const Person *talker;
 
     if (x == -1 && y == -1) {
@@ -1957,13 +1980,13 @@ int moveAvatar(Direction dir, int userEvent) {
 
             if (settings->shortcutCommands) {
                 if (tileIsDoor(mapTileAt(c->map, newx, newy, c->saveGame->dnglevel))) {
-                    openAtCoord(newx, newy, 1);
+                    openAtCoord(newx, newy, 1, NULL);
                     goto done;
                 } else if (tileIsLockedDoor(mapTileAt(c->map, newx, newy, c->saveGame->dnglevel))) {
-                    jimmyAtCoord(newx, newy, 1);
+                    jimmyAtCoord(newx, newy, 1, NULL);
                     goto done;
                 } /*else if (mapPersonAt(c->map, newx, newy, c->saveGame->dnglevel) != NULL) {
-                    talkAtCoord(newx, newy, 1);
+                    talkAtCoord(newx, newy, 1, NULL);
                     goto done;
                     }*/
             }

@@ -23,6 +23,7 @@
 #include "player.h"
 #include "death.h"
 #include "stats.h"
+#include "weapon.h"
 #include "debug.h"
 
 extern Map brick_map;
@@ -58,7 +59,7 @@ void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);
 int combatZtatsKeyHandler(int key, void *data);
 void combatFinishTurn(void);
-int combatAttackAtCoord(int x, int y, int distance);
+int combatAttackAtCoord(int x, int y, int distance, CoordActionInfo *info);
 int combatInitialNumberOfMonsters(unsigned char monster);
 int combatIsWon(void);
 int combatIsLost(void);
@@ -216,7 +217,7 @@ void combatFinishTurn() {
 
         /* move monsters and wrap around at end */
         if (focus >= c->saveGame->members) {
-
+            
             combatMoveMonsters();
 
             focus = 0;
@@ -250,7 +251,7 @@ void combatFinishTurn() {
 
     screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, getWeaponName(c->saveGame->players[focus].weapon));
     statsUpdate();
-    statsHighlightCharacter(focus);
+    statsHighlightCharacter(focus);    
 }
 
 int combatBaseKeyHandler(int key, void *data) {
@@ -288,11 +289,12 @@ int combatBaseKeyHandler(int key, void *data) {
         info->handleAtCoord = &combatAttackAtCoord;
         info->origin_x = party[focus]->x;
         info->origin_y = party[focus]->y;
-        info->range = 1;
+        info->range = weaponGetRange(c->saveGame->players[focus].weapon);
         info->validDirections = MASK_DIR_ALL;
-        info->blockedPredicate = NULL;
+        info->player = focus;
+        info->blockedPredicate = &tileCanAttackOver;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
-        screenMessage("Dir: ");
+        screenMessage("Dir: ");        
         break;
 
     case 'z':
@@ -340,14 +342,18 @@ int combatZtatsKeyHandler(int key, void *data) {
     return 1;
 }
 
-int combatAttackAtCoord(int x, int y, int distance) {
+int combatAttackAtCoord(int x, int y, int distance, CoordActionInfo* info) {
     int monster;
     const Monster *m;
-    int i, xp;
+    int i, xp, hittile, misstile;
+    int weapon = c->saveGame->players[info->player].weapon;
 
-    if (x == -1 && y == -1) {
-        screenMessage("Missed!\n");
-        return 0;
+    hittile = weaponGetHitTile(weapon);
+    misstile = weaponGetMissTile(weapon);    
+
+    if (x == -1 && y == -1) {        
+        combatFinishTurn();
+        return 1;
     }
 
     monster = -1;
@@ -359,20 +365,22 @@ int combatAttackAtCoord(int x, int y, int distance) {
     }
 
     if (monster == -1) {
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, MISSFLASH_TILE), 2));        
-        combatFinishTurn();
-        return 1;
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, misstile), 1));
+        return 0;
     }
+    /* If the weapon leaves a tile behind, do it here! (flaming oil) */
+    else if (weaponLeavesTile(weapon))
+        annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, weaponLeavesTile(weapon));       
 
     if (!playerAttackHit(&c->saveGame->players[focus])) {
         screenMessage("Missed!\n");
 
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, MISSFLASH_TILE), 2));
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, misstile), 2));
 
     } else {
         m = monsterForTile(monsters[monster]->tile);
 
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, HITFLASH_TILE), 2));
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, hittile), 2));
 
         if (m->tile != LORDBRITISH_TILE)
             monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);

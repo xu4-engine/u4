@@ -196,6 +196,14 @@ int tileCanWalkOff(unsigned char tile, Direction d) {
     return DIR_IN_MASK(d, _ttype_info[tile].walkoffDirs);
 }
 
+int tileCanAttackOver(unsigned char tile) {
+    return tileIsWalkable(tile) || tileIsSwimable(tile) || tileIsSailable(tile);
+}
+
+int tileIsWalkable(unsigned char tile) {
+    return _ttype_info[tile].walkonDirs > 0;
+}
+
 int tileIsMonsterWalkable(unsigned char tile) {
     return !tileTestBit(tile, MASK_MONSTER_UNWALKABLE);
 }

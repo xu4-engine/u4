@@ -28,6 +28,7 @@ typedef struct CoordActionInfo {
     int origin_x, origin_y;
     int range;
     int validDirections;
+    int player;
     int (*blockedPredicate)(unsigned char tile);
 } CoordActionInfo;
 
