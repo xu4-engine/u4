@@ -47,6 +47,8 @@ void eventHandlerMain() {
                 key = event.key.keysym.sym - SDLK_a + 'a';
                 if (event.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
                     key = toupper(key);
+                else if (event.key.keysym.mod & (KMOD_LCTRL | KMOD_RCTRL))
+                    key = event.key.keysym.sym - SDLK_a + 1;
             }
             else if (event.key.keysym.sym == SDLK_UP)
                 key = U4_UP;
