@@ -16,6 +16,7 @@
 #include "event.h"
 #include "player.h"
 #include "context.h"
+#include "portal.h"
 #include "annotation.h"
 #include "location.h"
 #include "city.h"
@@ -29,8 +30,10 @@
 
 int timerCount;
 int timerMsg;
+extern Portal world_portals[];
 
 void deathTimer(void *data);
+void deathDelayTimer(void *data);
 void deathRevive(void);
 
 const struct {
@@ -51,15 +54,23 @@ extern City lcb_2_city;
 
 #define N_MSGS (sizeof(deathMsgs) / sizeof(deathMsgs[0]))
 
-void deathStart() {
+void deathStart(int delay) {
     timerCount = 0;
-    timerMsg = 0;
+    timerMsg = 0;    
 
-    gameSetViewMode(VIEW_DEAD);
+    gameSetViewMode(VIEW_DEAD);    
+    
+    if (delay > 0)
+        eventHandlerAddTimerCallback(&deathDelayTimer, delay * 4);
+    else eventHandlerAddTimerCallback(&deathTimer, 4);
 
-    eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&deathTimer, 4);
+    eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);    
     screenDisableCursor();
+}
+
+void deathDelayTimer(void *data) {
+    eventHandlerRemoveTimerCallback(&deathDelayTimer);
+    eventHandlerAddTimerCallback(&deathTimer, 4);
 }
 
 void deathTimer(void *data) {
@@ -85,7 +96,17 @@ void deathRevive() {
     while(!mapIsWorldMap(c->location->map) && c->location->prev != NULL) {
         gameExitToParentMap(c);
     }
+
+    /* Move our world map location to Lord British's Castle */
+    c->location->x = world_portals[0].x;
+    c->location->y = world_portals[0].y;
+    c->location->z = world_portals[0].z;
+
+    /* Stop ignoring keys */
+    eventHandlerPopKeyHandler();
     
+    /* Now, move the avatar into the castle and put them
+       in front of Lord British */
     gameSetMap(c, lcb_2_city.map, 1, NULL);
     c->location->x = REVIVE_CASTLE_X;
     c->location->y = REVIVE_CASTLE_Y;

@@ -509,7 +509,7 @@ void combatEnd() {
     mapRemoveObject(c->location->map, monsterObj);
     
     if (playerPartyDead(c->saveGame))
-        deathStart();
+        deathStart(0);
     else
         gameFinishTurn();
 }

@@ -75,6 +75,7 @@ int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 int ztatsFor(int player);
 void gameCheckBridgeTrolls(void);
+void gameCheckHullIntegrity(void);
 void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
 void gameUpdateMoons(int showmoongates);
@@ -287,13 +288,15 @@ void gameFinishTurn() {
 
     while (1) {
         /* adjust food and moves */
-        playerEndTurn(c->saveGame);
+        playerEndTurn(c->saveGame);        
 
         /* check if aura has expired */
         if (c->auraDuration > 0) {
             if (--c->auraDuration == 0)
                 c->aura = AURA_NONE;
         }
+
+        gameCheckHullIntegrity();
 
         attacker = mapMoveObjects(c->location->map, c->location->x, c->location->y, c->location->z);        
 
@@ -313,7 +316,7 @@ void gameFinishTurn() {
             break;
 
         if (playerPartyDead(c->saveGame)) {
-            deathStart();
+            deathStart(0);
             return;
         } else {            
             screenMessage("Zzzzzz\n");
@@ -2132,6 +2135,27 @@ void gameCheckBridgeTrolls() {
 
     combatBegin(mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z), c->saveGame->transport,
                 mapAddObject(c->location->map, TROLL_TILE, TROLL_TILE, c->location->x, c->location->y, c->location->z));
+}
+
+void gameCheckHullIntegrity() {
+    int i;
+
+    /* see if the ship has sunk */
+    if (tileIsShip(c->saveGame->transport) && c->saveGame->shiphull <= 0)
+    {
+        screenMessage("\nThy ship sinks!\n\n");
+
+        for (i = 0; i < c->saveGame->members; i++)
+        {
+            c->saveGame->players[i].hp = 0;
+            c->saveGame->players[i].status = 'D';
+        }
+        statsUpdate();   
+
+        screenRedrawScreen();
+        eventHandlerSleep(5000);        
+        deathStart(5);
+    }
 }
 
 void gameCheckSpecialMonsters(Direction dir) {

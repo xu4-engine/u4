@@ -5,6 +5,6 @@
 #ifndef DEATH_H
 #define DEATH_H
 
-void deathStart(void);
+void deathStart(int delay);
 
 #endif
