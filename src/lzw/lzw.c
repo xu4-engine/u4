@@ -33,6 +33,7 @@
  */
 
 #include "lzw.h"
+#include "hash.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -52,9 +53,6 @@ void outputRoot(unsigned char root, unsigned char *destination, long* position);
 
 void getString(int codeword, lzwDictionaryEntry *lzwDictionary, unsigned char* stack, int *elementsInStack);
 int getNewHashCode(unsigned char root, int codeword, lzwDictionaryEntry* dictionary);
-int probe1(unsigned char root, int codeword);
-int probe2(unsigned char root, int codeword);
-int probe3(int hashCode);
 unsigned char hashPosFound(int hashCode, unsigned char root, int codeword, lzwDictionaryEntry* dictionary);
 
 /*
@@ -307,61 +305,6 @@ int getNewHashCode (unsigned char root, int codeword, lzwDictionaryEntry *dictio
     while (! hashPosFound(hashCode, root, codeword, dictionary));
 
     return(hashCode);
-}
-
-int probe1(unsigned char root, int codeword)
-{
-    int newHashCode = ((root << 4) ^ codeword) & 0xfff;
-    return(newHashCode);
-}
-
-/* The secondary probe uses some assembler instructions that aren't easily translated to C. */
-int probe2(unsigned char root, int codeword)
-{
-    /* registers[0] == AX, registers[1] == DX */
-    long registers[2], temp;
-    long carry, oldCarry;
-    int i,j;
-
-    /* the pre-mul part */
-    registers[1] = 0;
-    registers[0] = ((root << 1) + codeword) | 0x800;
-
-    /* the mul part (simulated mul instruction) */
-    /* DX:AX = AX * AX                          */
-    temp = (registers[0] & 0xff) * (registers[0] & 0xff);
-    temp += 2 * (registers[0] & 0xff) * (registers[0] >> 8) * 0x100;
-    registers[1] = (temp >> 16) + (registers[0] >> 8) * (registers[0] >> 8);
-    registers[0] = temp & 0xffff;
-
-    /* if DX != 0, the mul instruction sets the carry flag */
-    if (registers[1] == 00) {carry = 0;}
-    else {carry = 1;}
-
-    /* the rcl part */
-    for (i = 0; i < 2; i++)   /* 2 rcl's */
-    {
-        for (j = 0; j < 2; j++)   /* rotate through 2 registers */
-        {
-            oldCarry = carry;
-            carry = (registers[j] >> 15) & 1;
-            registers[j] = (registers[j] << 1) | oldCarry;
-            registers[j] = registers[j] & 0xffff;   /* make sure register stays 16 bit */
-        }        
-    }
-
-    /* final touches */
-    registers[0] = ((registers[0] >> 8) | (registers[1] << 8)) & 0xfff;
-
-    return((int)registers[0]);
-}
-
-int probe3(int hashCode)
-{
-    const long probeOffset = 0x1fd;   /* I think 0x1fd is prime */
-
-    long newHashCode = (hashCode + probeOffset) & 0xfff;
-    return((int)newHashCode);
 }
 
 unsigned char hashPosFound(int hashCode, unsigned char root, int codeword, lzwDictionaryEntry* dictionary)
