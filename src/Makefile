@@ -40,6 +40,8 @@ install::
 	$(INSTALL) rledec $(libdir)/u4/rledec
 	$(INSTALL) tlkconv $(libdir)/u4/tlkconv
 	$(INSTALL) ../conf/tiles.xml $(libdir)/u4/tiles.xml
+	$(INSTALL) ../conf/armors.xml $(libdir)/u4/armors.xml
+	$(INSTALL) ../conf/weapons.xml $(libdir)/u4/weapons.xml
 	$(INSTALL) ../u4.desktop $(desktopdir)/Games/u4.desktop
 
 -include .depends
