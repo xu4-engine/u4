@@ -304,8 +304,8 @@ offset len  notes
 0x1EE  2    if the party is in a dungeon: coordinates of this dungeon
             if not: coordinates of the dungeon last entered by the party
 0x1F0  2    orientation in dungeon (0-west, 1-north, 2-east, 3-south)
-0x1F2  2    dungeon level (starting at zero)
-0x1F4  2    ???
+0x1F2  2    dungeon level (starting at zero, 0xffff = surface)
+0x1F4  2    current party location
 
 The character record format:
 
@@ -324,6 +324,45 @@ offset len  notes
 0x24   1    sex (0xb-male, 0xc-female)
 0x25   1    class
 0x26   1    status ('G'-good, 'P'-poisoned, 'S'-sleeping, 'D'-dead)
+
+Party location:
+Since you can only save on the surface or in a dungeon, the only valid
+party locations are 0 and 0x11-0x18.
+
+hex     location
+ 0      surface
+ 1      Lord British's castle
+ 2      The Lycaeum
+ 3      Empath Abbey
+ 4      Serpent's Hold
+ 5      Moonglow
+ 6      Britain
+ 7      Jhelom
+ 8      Yew
+ 9      Minoc
+ a      Trinsic
+ b      Skara Brae
+ c      Magincia
+ d      Paws
+ e      Buccaneer's Den
+ f      Vesper
+10      Cove
+11      Deceit
+12      Despise
+13      Destard
+14      Wrong
+15      Covetous
+16      Shame
+17      Hythloth
+18      Abyss
+19      Shrine of Honesty
+1a      Shrine of Compassion
+1b      Shrine of Valor
+1c      Shrine of Justice
+1d      Shrine of Sacrifice
+1e      Shrine of Honor
+1f      Shrine of Spirituality
+20      Shrine of Humility
 
 
 TITLE.EXE
