@@ -265,6 +265,7 @@ int introInit() {
         gameplayOptions = menuAddItem(gameplayOptions, 0, "Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
         gameplayOptions = menuAddItem(gameplayOptions, 1, "Automatic Actions", 6, 7, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
         gameplayOptions = menuAddItem(gameplayOptions, 3, "Battle Difficulty", 6, 10, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
+        gameplayOptions = menuAddItem(gameplayOptions, 4, "Mouse", 6, 12, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
         gameplayOptions = menuAddItem(gameplayOptions, 2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
         gameplayOptions = menuAddItem(gameplayOptions, 0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
         gameplayOptions = menuAddItem(gameplayOptions, 0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
@@ -734,6 +735,7 @@ void introUpdateScreen() {
         screenTextAt(32, 5, "%s", settingsChanged->enhancements ? "On" : "Off");        
         screenTextAt(6, 8, "  (Open, Jimmy, etc.)     %s", settingsChanged->shortcutCommands ? "On" : "Off");        
         screenTextAt(32, 10, "%s", settingsBattleDiffToString(settingsChanged->battleDiff));
+        screenTextAt(32, 12, "%s", settingsChanged->mouseOptions.enabled ? "On" : "Off");
         menuShow(menuGetRoot(gameplayOptions));
         break;
 
@@ -1511,6 +1513,10 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         menuItemSetVisible(menuGetItemById(advancedOptions, 0), settingsChanged->enhancements);        
 
         break;    
+
+    case 4:
+        settingsChanged->mouseOptions.enabled = !settingsChanged->mouseOptions.enabled;
+        break;
 
     case 0xFE:
         /* save settings */
