@@ -5,9 +5,9 @@
 #ifndef U4_H
 #define U4_H
 
-/* Windows port */
-#if defined(_WIN32)
-    #define VERSION "0.9"
+/* Microsoft VC port */
+#if defined(_MSC_VER)
+    #define VERSION "1.0cvs"
 #endif
 
 /* info for loading city data from *.ult and *.tlk */
