@@ -61,6 +61,8 @@ typedef struct _IntroObjectState {
 #define GYP_SEGUE1 13
 #define GYP_SEGUE2 14
 
+extern int quit;
+
 /* introduction state */
 IntroMode mode;
 
@@ -254,6 +256,10 @@ int introKeyHandler(int key, void *data) {
             introErrorMessage = NULL;
             mode = INTRO_MAP;
             introUpdateScreen();
+            break;
+        case 'q':
+            quit = 1;
+            eventHandlerSetExitFlag(1);
             break;
         default:
             valid = 0;
