@@ -454,9 +454,10 @@ int gameGetPlayerNoKeyHandler(int key, void *data) {
     if (key >= '1' &&
         key <= ('0' + c->saveGame->members)) {
         screenMessage("%c\n", key);
-        handlePlayerNo(key - '1');
+        (*handlePlayerNo)(key - '1');
     } else {
         screenMessage("None\n");
+        gameFinishTurn();
         valid = 0;
     }
 
@@ -626,9 +627,26 @@ int gameZtatsKeyHandler2(int key, void *data) {
 
 int gameSpecialCmdKeyHandler(int key, void *data) {
     int i;
+    const Moongate *moongate;
     int valid = 1;
 
     switch (key) {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+        mapRemoveAvatarObject(c->map);
+        moongate = moongateGetGateForPhase(key - '0');
+        c->saveGame->x = moongate->x;
+        c->saveGame->y = moongate->y;
+        mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
+        screenMessage("Gate %d!\n", key - '0');
+        break;
+        
     case 'c':
         collisionOverride = !collisionOverride;
         screenMessage("Collision detection %s!\n\020", collisionOverride ? "off" : "on");
@@ -641,7 +659,11 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             c->saveGame->weapons[i] = 8;
         break;
     case 'h':
-        screenMessage("Help:\nc - Collision\ne - Equipment\nh - Help\ni - Items\nk - Show Karma\nm - Mixtures\nr - Reagents\nt - Transports\nw - Winds\n\020");
+        screenMessage("Help:\n"
+                      "0-7 - gate to city\n"
+                      "c - Collision\ne - Equipment\nh - Help\ni - Items\nk - Show Karma\n"
+                      "m - Mixtures\nr - Reagents\nt - Transports\nw - Winds\n"
+                      "\020");
         break;
     case 'i':
         screenMessage("Items!\n\020");
@@ -990,7 +1012,8 @@ void talkSetHandler(const Conversation *cnv) {
     switch (cnv->state) {
     case CONV_TALK:
     case CONV_ASK:
-    case CONV_QUANTITY:
+    case CONV_BUY_QUANTITY:
+    case CONV_SELL_QUANTITY:
         rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
         rbInfo->buffer = c->conversation.buffer;
         rbInfo->bufferLen = CONV_BUFFERLEN;
@@ -1007,10 +1030,10 @@ void talkSetHandler(const Conversation *cnv) {
         eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
         break;
 
-    case CONV_BUY:
-    case CONV_SELL:
+    case CONV_BUY_ITEM:
+    case CONV_SELL_ITEM:
         gcInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-        gcInfo->choices = "abcdefghijklmnopqrstuvwxyz";
+        gcInfo->choices = "bcdefghijklmnopqrstuvwxyz";
         gcInfo->handleChoice = &talkHandleChoice;
         eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
         break;
