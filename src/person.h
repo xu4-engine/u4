@@ -89,8 +89,9 @@ typedef struct _Person {
 } Person;
 
 int personInit(void);
-void personGetConversationText(struct _Conversation *cnv, const char *inquiry, char **response);
-void personGetPrompt(const struct _Conversation *cnv, char **prompt);
+char **personGetConversationText(struct _Conversation *cnv, const char *inquiry);
+char *personGetPrompt(const struct _Conversation *cnv);
+void personFreeConversationText(char **text);
 ConversationInputType personGetInputRequired(const struct _Conversation *cnv);
 const char *personGetChoices(const struct _Conversation *cnv);
 char *concat(const char *str, ...);

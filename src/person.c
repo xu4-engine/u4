@@ -53,6 +53,7 @@ char *lordBritishGetPrompt(const Conversation *cnv);
 char *hawkwindGetIntro(Conversation *cnv);
 char *hawkwindGetResponse(Conversation *cnv, const char *inquiry);
 char *hawkwindGetPrompt(const Conversation *cnv);
+char **personResponseSplit(char *r);
 
 /**
  * Loads in conversation data for special cases and vendors from
@@ -76,18 +77,19 @@ int personInit() {
 }
 
 int personIsVendor(const Person *person) {
-    return 
+    return
         person->npcType >= NPC_VENDOR_WEAPONS &&
         person->npcType <= NPC_VENDOR_STABLE;
 }
 
-void personGetConversationText(Conversation *cnv, const char *inquiry, char **response) {
+char **personGetConversationText(Conversation *cnv, const char *inquiry) {
+    char *text;
 
     /*
      * a convsation with a vendor
      */
     if (personIsVendor(cnv->talker))
-        vendorGetConversationText(cnv, inquiry, response);
+        vendorGetConversationText(cnv, inquiry, &text);
 
     /*
      * a conversation with a non-vendor
@@ -96,55 +98,68 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
         switch (cnv->state) {
         case CONV_INTRO:
             if (cnv->talker->npcType == NPC_EMPTY)
-                *response = emptyGetIntro(cnv);
+                text = emptyGetIntro(cnv);
             else if (cnv->talker->npcType == NPC_LORD_BRITISH)
-                *response = lordBritishGetIntro(cnv);
+                text = lordBritishGetIntro(cnv);
             else if (cnv->talker->npcType == NPC_HAWKWIND)
-                *response = hawkwindGetIntro(cnv);
-            else 
-                *response = talkerGetIntro(cnv);
-            return;
+                text = hawkwindGetIntro(cnv);
+            else
+                text = talkerGetIntro(cnv);
+            break;
 
         case CONV_TALK:
             if (cnv->talker->npcType == NPC_LORD_BRITISH)
-                *response = lordBritishGetResponse(cnv, inquiry);
+                text = lordBritishGetResponse(cnv, inquiry);
             else if (cnv->talker->npcType == NPC_HAWKWIND)
-                *response = hawkwindGetResponse(cnv, inquiry);
-            else 
-                *response = concat("\n\n", talkerGetResponse(cnv, inquiry), "\n", NULL);
-            return;
+                text = hawkwindGetResponse(cnv, inquiry);
+            else
+                text = concat("\n\n", talkerGetResponse(cnv, inquiry), "\n", NULL);
+            break;
 
         case CONV_ASK:
             ASSERT(cnv->talker->npcType != NPC_HAWKWIND, "invalid state for hawkwind conversation");
             if (cnv->talker->npcType == NPC_LORD_BRITISH)
-                *response = lordBritishGetQuestionResponse(cnv, inquiry);
-            else 
-                *response = concat("\n\n", talkerGetQuestionResponse(cnv, inquiry), "\n", NULL);
-            return;
-    
+                text = lordBritishGetQuestionResponse(cnv, inquiry);
+            else
+                text = concat("\n\n", talkerGetQuestionResponse(cnv, inquiry), "\n", NULL);
+            break;
+
         case CONV_BUY_QUANTITY:
             ASSERT(cnv->talker->npcType == NPC_TALKER_BEGGAR, "invalid npc type: %d", cnv->talker->npcType);
-            *response = beggarGetQuantityResponse(cnv, inquiry);
-            return;
+            text = beggarGetQuantityResponse(cnv, inquiry);
+            break;
 
         default:
             ASSERT(0, "invalid state: %d", cnv->state);
         }
     }
+
+    return personResponseSplit(text);
+}
+
+/**
+ * Frees a string vector as returned by personGetConversationText.
+ */
+void personFreeConversationText(char **text) {
+    int i;
+
+    for (i = 0; text[i]; i++)
+        free(text[i]);
+    free(text);
 }
 
 /**
  * Get the prompt shown after each reply.
  */
-void personGetPrompt(const Conversation *cnv, char **prompt) {
+char *personGetPrompt(const Conversation *cnv) {
     if (cnv->talker->npcType == NPC_LORD_BRITISH)
-        *prompt = lordBritishGetPrompt(cnv);
+        return lordBritishGetPrompt(cnv);
     else if (cnv->talker->npcType == NPC_HAWKWIND)
-        *prompt = hawkwindGetPrompt(cnv);
+        return hawkwindGetPrompt(cnv);
     else if (personIsVendor(cnv->talker))
-        *prompt = vendorGetPrompt(cnv);
-    else 
-        *prompt = talkerGetPrompt(cnv);
+        return vendorGetPrompt(cnv);
+    else
+        return talkerGetPrompt(cnv);
 }
 
 ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
@@ -156,7 +171,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
     case CONV_BUY_PRICE:
     case CONV_TOPIC:
         return CONVINPUT_STRING;
-    
+
     case CONV_VENDORQUESTION:
     case CONV_BUY_ITEM:
     case CONV_SELL_ITEM:
@@ -209,11 +224,11 @@ char *talkerGetIntro(Conversation *cnv) {
     const char *fmt = "You meet\n%s\n\n%s says: I am %s\n\n%s";
     char *prompt, *intro;
 
-    personGetPrompt(cnv, &prompt);
-    intro = (char *) malloc(strlen(fmt) - 8 + 
-                            strlen(cnv->talker->description) + 
-                            strlen(cnv->talker->pronoun) + 
-                            strlen(cnv->talker->name) + 
+    prompt = personGetPrompt(cnv);
+    intro = (char *) malloc(strlen(fmt) - 8 +
+                            strlen(cnv->talker->description) +
+                            strlen(cnv->talker->pronoun) +
+                            strlen(cnv->talker->name) +
                             strlen(prompt) + 1);
 
     sprintf(intro, fmt, cnv->talker->description, cnv->talker->pronoun, cnv->talker->name, prompt);
@@ -395,7 +410,10 @@ char *lordBritishGetIntro(Conversation *cnv) {
             
     }
     else {
-        intro = concat("Lord British rises and says: At long last!\n thou hast come!  We have waited such a long, long time...\n",
+        intro = concat("Lord British rises and says: At long last!\n thou hast come!  We have waited such a long, long time...\n\n",
+                       "Lord British sits and says: A new age is upon Britannia. The great evil Lords are gone but our people lack direction and purpose in their lives...\n\n\n",
+                       "A champion of virtue is called for. Thou may be this champion, but only time shall tell.  I will aid thee any way that I can!\n"
+                       "How may I help thee?\n",
                        NULL);
         c->saveGame->lbintro = 1;
     }
@@ -542,6 +560,19 @@ void personGetQuestion(const Person *p, char **question) {
     const char *prompt = "\n\nYou say: ";
 
     *question = concat(p->question, prompt, NULL);
+}
+
+/**
+ * Splits a response into screen-sized chunks.
+ */
+char **personResponseSplit(char *r) {
+    char **result = (char **) malloc(sizeof(char *) * 2);
+    result[0] = strdup(r);
+    result[1] = NULL;
+
+    free(r);
+
+    return result;
 }
 
 /**
