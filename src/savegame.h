@@ -190,12 +190,10 @@ struct SaveGamePlayerRecord {
  * How Ultima IV stores monster information
  */
 typedef struct _SaveGameMonsterRecord {
-    int write(FILE *f) const;
-    int read(FILE *f);
-    unsigned char prevTile;
+    unsigned char tile;
     unsigned char x;
     unsigned char y;
-    unsigned char tile;
+    unsigned char prevTile;
     unsigned char prevx;
     unsigned char prevy;
     unsigned char unused1;

@@ -754,10 +754,10 @@ bool Map::fillMonsterTable() {
         Coords c = monsters[i]->getCoords(),
                prevc = monsters[i]->getPrevCoords();
 
-        monsterTable[i].prevTile = monsters[i]->getPrevTile().getIndex();        
+        monsterTable[i].tile = monsters[i]->getTile().getIndex();        
         monsterTable[i].x = c.x;
         monsterTable[i].y = c.y;
-        monsterTable[i].tile = monsters[i]->getTile().getIndex();
+        monsterTable[i].prevTile = monsters[i]->getPrevTile().getIndex();
         monsterTable[i].prevx = prevc.x;
         monsterTable[i].prevy = prevc.y;
     }
