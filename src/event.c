@@ -15,6 +15,8 @@
 #include "screen.h"
 #include "debug.h"
 
+int eventTimerGranularity = 200;
+
 typedef struct TimerCallbackNode {
     TimerCallback callback;
     void *data;
@@ -56,7 +58,7 @@ void eventHandlerAddTimerCallback(TimerCallback callback, int interval) {
 void eventHandlerAddTimerCallbackData(TimerCallback callback, void *data, int interval) {
     TimerCallbackNode *n = (TimerCallbackNode *) malloc(sizeof(TimerCallbackNode));
 
-    ASSERT((interval > 0) && (interval % EVENT_TIMER_GRANULARITY == 0), "invalid timer interval: %d", interval);
+    ASSERT((interval > 0) && (interval % eventTimerGranularity == 0), "invalid timer interval: %d", interval);
     if (n) {
         n->callback = callback;
         n->interval = interval;
@@ -113,7 +115,7 @@ void eventHandlerCallTimerCallbacks() {
     timerCallbackListLocked = 1;
 
     for (n = timerCallbackHead; n != NULL; n = n->next) {
-        n->current -= EVENT_TIMER_GRANULARITY;
+        n->current -= eventTimerGranularity;
         if (n->current <= 0) {
             (*n->callback)(n->data);
             n->current = n->interval;

@@ -27,7 +27,8 @@ Uint32 eventCallback(Uint32 interval, void *param) {
 }
 
 void eventHandlerInit() {
-    timer = SDL_AddTimer(EVENT_TIMER_GRANULARITY, &eventCallback, NULL);
+    extern int eventTimerGranularity;
+    timer = SDL_AddTimer(eventTimerGranularity, &eventCallback, NULL);
 }
 
 void eventHandlerDelete() {

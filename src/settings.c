@@ -54,21 +54,23 @@ void settingsRead() {
     char buffer[256];
     char *settingsFname;
     FILE *settingsFile;
+    extern int eventTimerGranularity;
     
     settings = (Settings *) malloc(sizeof(Settings));
 
     /* default settings */
-    settings->scale = 2;
-    settings->fullscreen = 0;
-    settings->filter = SCL_Scale2x;
-    settings->vol = 1;
-    settings->germanKbd = 0;
-    settings->shortcutCommands = 0;
-    settings->keydelay = 500;
-    settings->keyinterval = 30;
-    settings->filterMoveMessages = 0;
-    settings->battleSpeed = 5;
-    settings->minorEnhancements = 1;
+    settings->scale                 = DEFAULT_SCALE;
+    settings->fullscreen            = DEFAULT_FULLSCREEN;
+    settings->filter                = DEFAULT_FILTER;
+    settings->vol                   = DEFAULT_VOLUME;
+    settings->germanKbd             = DEFAULT_GERMAN_KEYBOARD;
+    settings->shortcutCommands      = DEFAULT_SHORTCUT_COMMANDS;
+    settings->keydelay              = DEFAULT_KEY_DELAY;
+    settings->keyinterval           = DEFAULT_KEY_INTERVAL;
+    settings->filterMoveMessages    = DEFAULT_FILTER_MOVE_MESSAGES;
+    settings->battleSpeed           = DEFAULT_BATTLE_SPEED;
+    settings->minorEnhancements     = DEFAULT_MINOR_ENHANCEMENTS;
+    settings->gameCyclesPerSecond   = DEFAULT_CYCLES_PER_SECOND;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -112,11 +114,15 @@ void settingsRead() {
             ;
         else if (strstr(buffer, "minorEnhancements=") == buffer)
             settings->minorEnhancements = (int) strtoul(buffer + strlen("minorEnhancements="), NULL, 0);
+        else if (strstr(buffer, "gameCyclesPerSecond=") == buffer)
+            settings->gameCyclesPerSecond = (int) strtoul(buffer + strlen("gameCyclesPerSecond="), NULL, 0);
         else
             errorWarning("invalid line in settings file %s", buffer);
     }
 
     fclose(settingsFile);
+
+    eventTimerGranularity = (1000 / settings->gameCyclesPerSecond);
 }
 
 /**
@@ -132,7 +138,7 @@ void settingsWrite() {
     if (!settingsFile) {
         errorWarning("can't write settings file");
         return;
-    }   
+    }    
 
     fprintf(settingsFile, 
             "scale=%d\n"
@@ -145,7 +151,8 @@ void settingsWrite() {
             "keyinterval=%d\n"
             "filterMoveMessages=%d\n"
             "battlespeed=%d\n"
-            "minorEnhancements=%d\n",
+            "minorEnhancements=%d\n"
+            "gameCyclesPerSecond=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
@@ -156,7 +163,8 @@ void settingsWrite() {
             settings->keyinterval,
             settings->filterMoveMessages,
             settings->battleSpeed,
-            settings->minorEnhancements);
+            settings->minorEnhancements,
+            settings->gameCyclesPerSecond);
 
     fclose(settingsFile);
 }

@@ -118,9 +118,9 @@ int musicInit() {
     /*
      * initialize sound subsystem
      */
-    {
+    {        
         int audio_rate = 22050;
-        Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
+        Uint16 audio_format = AUDIO_S16LSB; /* 16-bit stereo */
         int audio_channels = 2;
         int audio_buffers = 4096;
 
@@ -134,7 +134,7 @@ int musicInit() {
             return 1;
         }
 
-        Mix_AllocateChannels(16);    
+        Mix_AllocateChannels(16);
     }
 
     return 0;
@@ -148,7 +148,8 @@ void musicDelete() {
         Mix_FreeMusic(playing);
         playing = NULL;
     }
-
+    
+    Mix_CloseAudio();
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
@@ -187,7 +188,7 @@ void musicFadeOut(int msecs) {
  * Fade in the music
  */
 void musicFadeIn(int msecs, int loadFromMap) {
-    if (!musicIsPlaying()) {
+    if (!musicIsPlaying() && settings->vol) {
         /* make sure we've got something loaded to play */
         if (loadFromMap || !playing)
             musicLoad(c->location->map->music);        
