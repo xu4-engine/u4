@@ -16,7 +16,7 @@ Things you only have to do once
    http://www.libsdl.org/projects/SDL_mixer/
    Unpack and install it.
 
-4. Grab gnome-combo-20030923.dmg.gz from
+4. Grab gnome-combo-20031108.dmg.gz from
    http://www.zveno.com/open_source/libxml2xslt.html
    Unpack and open the .dmg. Copy the libiconv and libxml frameworks into
    ~/Library/Frameworks
@@ -42,8 +42,8 @@ Things you only have to do once
 
 10. Download the Ultima IV data files and gfx update (if desired) and copy
     them into the appropriate location:
-    cp (wherever_you_put_ultima4.zip) xu4.app/Contents/Resources
-    cp (wherever_you_put_u4upgrad.zip) xu4.app/Contents/Resources
+    cp (wherever_you_put_ultima4.zip) ../xu4.app/Contents/Resources
+    cp (wherever_you_put_u4upgrad.zip) ../xu4.app/Contents/Resources
 
 ------------------------------------------------------------
 Things you have to do every time the xu4 source code changes
@@ -67,6 +67,6 @@ Things you have to do every time the xu4 source code changes
 6. If you have moved or deleted the old application bundle, it may be
    necessary to copy the Ultima IV data files and update into the bundle
    again:
-   cp (wherever_you_put_ultima4.zip) xu4.app/Contents/Resources
-   cp (wherever_you_put_u4upgrad.zip) xu4.app/Contents/Resources
+   cp (wherever_you_put_ultima4.zip) ../xu4.app/Contents/Resources
+   cp (wherever_you_put_u4upgrad.zip) ../xu4.app/Contents/Resources
 
