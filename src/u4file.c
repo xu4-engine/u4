@@ -49,63 +49,148 @@ static const char * const conf_paths[] = {
  * performance, but could be getting excessive.
  */
 U4FILE *u4fopen(const char *fname) {
-    FILE *f = NULL;
-    unsigned int i, j;
-    char pathname[128];
+    U4FILE *u4f;
+    char *pathname = NULL;
 
-    for (i = 0; i < sizeof(paths) / sizeof(paths[0]); i++) {
-        snprintf(pathname, sizeof(pathname), "%s%s", paths[i], fname);
+    u4f = (U4FILE *) malloc(sizeof(U4FILE));
+    if (!u4f)
+        return NULL;
 
-        if (verbose)
-            printf("trying to open %s\n", pathname);
+    if (getenv("U4ZIPFILE")) {
+        unzFile f;
 
-        if ((f = fopen(pathname, "rb")) != NULL)
-            break;
+        f = unzOpen(getenv("U4ZIPFILE"));
+        if (!f)
+            return NULL;
 
-        if (islower(pathname[strlen(paths[i])]))
-            pathname[strlen(paths[i])] = toupper(pathname[strlen(paths[i])]);
+        pathname = malloc(strlen("ultima4/") + strlen(fname) + 1);
+        strcpy(pathname, "ultima4/");
+        strcat(pathname, fname);
 
-        if (verbose)
-            printf("trying to open %s\n", pathname);
+        unzLocateFile(f, pathname, 2);
+        unzOpenCurrentFile(f);
 
-        if ((f = fopen(pathname, "rb")) != NULL)
-            break;
+        u4f->type = ZIP_FILE;
+        u4f->zfile = f;
+    }
+    else {
+        FILE *f = NULL;
+        unsigned int i;
+        char *fname_copy;
 
-        for (j = strlen(paths[i]); pathname[j] != '\0'; j++) {
-            if (islower(pathname[j]))
-                pathname[j] = toupper(pathname[j]);
+        fname_copy = strdup(fname);
+
+        pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
+        if (!pathname) {
+            if (islower(fname_copy[0])) {
+                fname_copy[0] = toupper(fname_copy[0]);
+                pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
+            }
+
+            if (!pathname) {
+                for (i = 0; fname_copy[i] != '\0'; i++) {
+                    if (islower(fname_copy[i]))
+                        fname_copy[i] = toupper(fname_copy[i]);
+                }
+                pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
+            }
         }
 
-        if (verbose)
-            printf("trying to open %s\n", pathname);
+        if (pathname)
+            f = fopen(pathname, "rb");
 
-        if ((f = fopen(pathname, "rb")) != NULL)
-            break;
+        if (verbose && f != NULL)
+            printf("%s successfully opened\n", pathname);
+
+        free(fname_copy);
+
+        u4f->type = STDIO_FILE;
+        u4f->file = f;
     }
 
-    if (verbose && f != NULL)
-        printf("%s successfully opened\n", pathname);
+    if (pathname)
+        free(pathname);
 
-    return f;
+    return u4f;
 }
 
 /**
  * Closes a data file from the Ultima 4 for DOS installation.
  */
 void u4fclose(U4FILE *f) {
-    fclose(f);
+    switch (f->type) {
+    case STDIO_FILE:
+        fclose(f->file);
+        break;
+    case ZIP_FILE:
+        unzClose(f->zfile);
+        break;
+    }
+    free(f);
 }
 
 int u4fseek(U4FILE *f, long offset, int whence) {
-    return fseek(f, offset, whence);
+    char *buf;
+    long pos;
+
+    switch (f->type) {
+    case STDIO_FILE:
+        return fseek(f->file, offset, whence);
+    case ZIP_FILE:
+        ASSERT(whence != SEEK_END, "seeking with whence == SEEK_END not allowed with zipfiles");
+        pos = unztell(f->zfile);
+        if (whence == SEEK_CUR)
+            offset = pos + offset;
+        if (offset == pos)
+            return 0;
+        if (offset < pos) {
+            unzCloseCurrentFile(f->zfile);
+            unzOpenCurrentFile(f->zfile);
+            pos = 0;
+        }
+        ASSERT(offset - pos > 0, "error in u4fseek (zipfile)");
+        buf = malloc(offset - pos);
+        unzReadCurrentFile(f->zfile, buf, offset - pos);
+        free(buf);
+        return 0;
+    }
+
+    return 0;
 }
 
 size_t u4fread(void *ptr, size_t size, size_t nmemb, U4FILE *f) {
-    return fread(ptr, size, nmemb, f);
+    size_t retval;
+
+    switch(f->type) {
+    case STDIO_FILE:
+        retval = fread(ptr, size, nmemb, f->file);
+        break;
+    case ZIP_FILE:
+        retval = unzReadCurrentFile(f->zfile, ptr, size * nmemb);
+        if (retval > 0)
+            retval = retval / size;
+        break;
+    }
+    return retval;
 }
 
 int u4fgetc(U4FILE *f) {
-    return fgetc(f);
+    int retval;
+    char c;
+
+    switch(f->type) {
+    case STDIO_FILE:
+        retval = fgetc(f->file);
+        break;
+    case ZIP_FILE:
+        if (unzReadCurrentFile(f->zfile, &c, 1) > 0)
+            retval = c;
+        else
+            retval = EOF;
+        break;
+    }
+
+    return retval;
 }
 
 int u4fgetshort(U4FILE *f) {
@@ -113,7 +198,8 @@ int u4fgetshort(U4FILE *f) {
 }
 
 int u4fputc(int c, U4FILE *f) {
-    return fputc(c, f);
+    ASSERT(f->type == STDIO_FILE, "zipfiles must be read-only!");
+    return fputc(c, f->file);
 }
 
 /**
@@ -121,11 +207,22 @@ int u4fputc(int c, U4FILE *f) {
  */
 long u4flength(U4FILE *f) {
     long curr, len;
+    unz_file_info fileinfo;
 
-    curr = ftell(f);
-    fseek(f, 0L, SEEK_END);
-    len = ftell(f);
-    fseek(f, curr, SEEK_SET);
+    switch (f->type) {
+    case STDIO_FILE:
+        curr = ftell(f->file);
+        fseek(f->file, 0L, SEEK_END);
+        len = ftell(f->file);
+        fseek(f->file, curr, SEEK_SET);
+        break;
+    case ZIP_FILE:
+        unzGetCurrentFileInfo(f->zfile, &fileinfo,
+                              NULL, 0,
+                              NULL, 0,
+                              NULL, 0);
+        len = fileinfo.uncompressed_size;
+    }
 
     return len;
 }
@@ -148,7 +245,7 @@ char **u4read_stringtable(U4FILE *f, long offset, int nstrings) {
         u4fseek(f, offset, SEEK_SET);
     for (i = 0; i < nstrings; i++) {
         for (j = 0; j < sizeof(buffer) - 1; j++) {
-            buffer[j] = fgetc(f);
+            buffer[j] = u4fgetc(f);
             if (buffer[j] == '\0' &&
                 (j < 2 || !(buffer[j - 2] == 10 && buffer[j - 1] == 8))) /* needed to handle weird characters in lb's abyss response */
                 break;
