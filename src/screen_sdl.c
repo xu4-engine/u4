@@ -760,6 +760,51 @@ void screenScrollMessageArea() {
 }
 
 /**
+ * Invert an area of the screen.
+ */
+void screenInvertRect(int x, int y, int w, int h) {
+    SDL_Rect src;
+    SDL_Surface *tmp;
+    Uint32 rmask, gmask, bmask, amask;
+    SDL_Color c;
+    int i, j;
+
+    src.x = x * scale;
+    src.y = y * scale;
+    src.w = w * scale;
+    src.h = h * scale;
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+#else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+#endif
+
+    tmp = SDL_CreateRGBSurface(SDL_SWSURFACE, src.w, src.h, 32, rmask, gmask, bmask, amask);
+    if (!tmp)
+        return;
+
+    SDL_BlitSurface(screen, &src, tmp, NULL);
+
+    for (i = 0; i < src.h; i++) {
+        for (j = 0; j < src.w; j++) {
+            SDL_GetRGB(getPixel(tmp, j, i), tmp->format, &c.r, &c.g, &c.b);
+            putPixel(tmp, j, i, SDL_MapRGB(tmp->format, 0xff - c.r, 0xff - c.g, 0xff - c.b));
+        }
+    }
+            
+    SDL_BlitSurface(tmp, NULL, screen, &src);
+    SDL_FreeSurface(tmp);
+}
+
+
+/**
  * Force a redraw.
  */
 void screenRedrawScreen() {

@@ -108,6 +108,11 @@ unsigned char screenViewportTile(int width, int height, int x, int y, int *focus
     return mapVisibleTileAt(c->map, tx, ty, z, focus);
 }
 
+/**
+ * Redraw the screen.  If showmap is set, the normal map is drawn in
+ * the map area.  If blackout is set, the map area is blacked out. If
+ * neither is set, the map area is left untouched.
+ */
 void screenUpdate(int showmap, int blackout) {
     unsigned char tile;
     int focus, x, y;
