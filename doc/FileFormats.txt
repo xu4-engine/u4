@@ -184,7 +184,7 @@ offset len  notes
 0xCB   39   player 5 record
 0xF2   39   player 6 record
 0x119  39   player 7 record
-0x140  4    ??? (food)
+0x140  4    food (in units of hundredths)
 0x144  2    gold
 0x146  16   karma (2 bytes each for honesty, compassion, valor, justice,
             sacrifice, honor, spirituality and humility; 0 - partial avatar)
@@ -192,13 +192,12 @@ offset len  notes
 0x158  2    gems
 0x15A  2    keys
 0x15C  2    sextants
-0x15E  2    ???
-0x160  14   armor (2 bytes each for cloth, leather, chain, plate, magic
-            chain, magic plate, mystic robes)
-0x16E  2    ???
-0x170  30   weapons (2 bytes each for staves, daggers, slings, maces,
-            axes, swords, bows, crossbows, oil, halberds, magic axes,
-            magic swords, magic bows, magic wands, mystic swords)
+0x16E  16   armor (2 bytes each for none (unused), cloth, leather, chain,
+            plate, magic chain, magic plate, mystic robes)
+0x16E  32   weapons (2 bytes each for none (unused), staves, daggers,
+            slings, maces, axes, swords, bows, crossbows, oil, halberds,
+            magic axes, magic swords, magic bows, magic wands, mystic
+            swords)
 0x18E  16   reagents (2 bytes each for sulfurous ash, ginseng, garlic,
             spider silk, blood moss, black pearl, nightshade, mandrake)
 0x19E  52   mixtures (2 bytes each for awaken, blink, cure, dispel,
@@ -215,7 +214,7 @@ offset len  notes
 0x1D7  1    runes (1 bit each for HCVJSHSH)
 0x1D8  2    number of characters in party
 0x1DA  1    tile that represents the party
-0x1DB  27    ???
+0x1DB  27   ???
 
 The character record format:
 
