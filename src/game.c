@@ -608,7 +608,8 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'd':
         portal = mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z);
-        if (portal && portal->trigger_action == ACTION_DESCEND) {
+        if (portal && portal->trigger_action == ACTION_DESCEND &&
+            (!portal->portalConditionsMet || (*portal->portalConditionsMet)())) {
             annotationClear(c->location->map->id);            
             gameSetMap(c, portal->destination, 0, portal);
 
@@ -630,44 +631,49 @@ int gameBaseKeyHandler(int key, void *data) {
         /* must enter on foot or on horse */
         if ((portal && portal->trigger_action == ACTION_ENTER) &&
             (c->transportContext & TRANSPORT_FOOT_OR_HORSE)) {
-            switch (portal->destination->type) {
-            case MAP_TOWN:
-                screenMessage("Enter towne!\n\n%s\n\n", portal->destination->city->name);
-                break;
-            case MAP_VILLAGE:
-                screenMessage("Enter village!\n\n%s\n\n", portal->destination->city->name);
-                break;
-            case MAP_CASTLE:
-                screenMessage("Enter castle!\n\n%s\n\n", portal->destination->city->name);
-                break;
-            case MAP_RUIN:
-                screenMessage("Enter ruin!\n\n%s\n\n", portal->destination->city->name);
-                break;
-            case MAP_SHRINE:
-                screenMessage("Enter the Shrine of %s!\n\n", getVirtueName(portal->destination->shrine->virtue));
-                break;
-            case MAP_DUNGEON:
-                screenMessage("Enter dungeon!\n\n%s\n\n", portal->destination->dungeon->name);
-                break;
-            default:
-                break;
-            }
 
-            /*
-             * if trying to enter a shrine, ensure the player is
-             * allowed in
-             */
-            if (portal->destination->type == MAP_SHRINE) {
-                if (!playerCanEnterShrine(c->saveGame, portal->destination->shrine->virtue)) {
-                    screenMessage("Thou dost not bear the rune of entry!  A strange force keeps you out!\n");
+            if (!portal->portalConditionsMet || (*portal->portalConditionsMet)()) {
+                switch (portal->destination->type) {
+                case MAP_TOWN:
+                    screenMessage("Enter towne!\n\n%s\n\n", portal->destination->city->name);
                     break;
-                } else {
-                    shrineEnter(portal->destination->shrine);
+                case MAP_VILLAGE:
+                    screenMessage("Enter village!\n\n%s\n\n", portal->destination->city->name);
+                    break;
+                case MAP_CASTLE:
+                    screenMessage("Enter castle!\n\n%s\n\n", portal->destination->city->name);
+                    break;
+                case MAP_RUIN:
+                    screenMessage("Enter ruin!\n\n%s\n\n", portal->destination->city->name);
+                    break;
+                case MAP_SHRINE:
+                    screenMessage("Enter the Shrine of %s!\n\n", getVirtueName(portal->destination->shrine->virtue));
+                    break;
+                case MAP_DUNGEON:
+                    screenMessage("Enter dungeon!\n\n%s\n\n", portal->destination->dungeon->name);
+                    break;
+                default:
+                    break;
                 }
-            }
 
-            gameSetMap(c, portal->destination, 1, portal);            
-            musicPlay();
+                /*
+                 * if trying to enter a shrine, ensure the player is
+                 * allowed in
+                 */
+                if (portal->destination->type == MAP_SHRINE) {
+                    if (!playerCanEnterShrine(c->saveGame, portal->destination->shrine->virtue)) {
+                        screenMessage("Thou dost not bear the rune of entry!  A strange force keeps you out!\n");
+                        break;
+                    } else {
+                        shrineEnter(portal->destination->shrine);
+                    }
+                }
+
+                gameSetMap(c, portal->destination, 1, portal);            
+                musicPlay();
+            }
+            /* failed conditions of entering the portal */
+            else screenMessage("Enter Can't!\n");
 
         } else
             screenMessage("Enter what?\n");
@@ -719,7 +725,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'h':
-        if (!mapIsWorldMap(c->location->map)) {
+        if (!(c->location->context && (CTX_WORLDMAP | CTX_DUNGEON))) {
             screenMessage("Hole up & Camp\nNot here!\n");
             break;
         }
@@ -753,7 +759,8 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'k':
         portal = mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z);
-        if (portal && portal->trigger_action == ACTION_KLIMB) {
+        if (portal && portal->trigger_action == ACTION_KLIMB && 
+            (!portal->portalConditionsMet || (*portal->portalConditionsMet)())) {
             if (c->transportContext != TRANSPORT_FOOT)
                 screenMessage("Klimb\nOnly on foot!\n");
             else {

@@ -52,6 +52,7 @@ void putMysticInInventory(void *mystic);
 void useTelescope(void *notused);
 int isReagentInInventory(void *reag);
 void putReagentInInventory(void *reag);
+int isAbyssOpened(void);
 
 static const ItemLocation items[] = {
     { "Mandrake Root", NULL, 182, 54, -1, &world_map, 
@@ -126,7 +127,10 @@ void putStoneInInventory(void *virt) {
 }
 
 int isItemInInventory(void *item) {
-    return c->saveGame->items & (int)item;
+    /* you can't find the skull again once it's destroyed */
+    if (((int)item == ITEM_SKULL) && (c->saveGame->items & ITEM_SKULL_DESTROYED))
+        return 1;
+    else return c->saveGame->items & (int)item;
 }
 
 void putItemInInventory(void *item) {
@@ -137,7 +141,27 @@ void putItemInInventory(void *item) {
 }
 
 void useBBC(void *item) {
-    screenMessage("using bell/book/candle\n");
+    /* on top of the Abyss entrance */
+    if (c->location->x == 0xe9 && c->location->y == 0xe9) {
+        /* must use bell first */
+        if ((int)item == ITEM_BELL) {
+            screenMessage("\nThe Bell rings on and on!\n");
+            c->saveGame->items |= ITEM_BELL_USED;
+        }
+        /* then the book */
+        else if (((int)item == ITEM_BOOK) && (c->saveGame->items & ITEM_BELL_USED)) {
+            screenMessage("\nThe words resonate with the ringing!\n");
+            c->saveGame->items |= ITEM_BOOK_USED;
+        }
+        /* then the candle */
+        else if (((int)item == ITEM_CANDLE) && (c->saveGame->items & ITEM_BOOK_USED)) {
+            screenMessage("\nAs you light the Candle the Earth Trembles!\n");    
+            c->saveGame->items |= ITEM_CANDLE_USED;
+        }
+        else screenMessage("\nHmm...No effect!\n");
+    }
+    /* somewhere else */
+    else screenMessage("\nHmm...No effect!\n");
 }
 
 void useHorn(void *item) {
@@ -154,16 +178,27 @@ void useWheel(void *item) {
     else screenMessage("\nHmm...No effect!\n");    
 }
 
-void useSkull(void *item) {    
+void useSkull(void *item) {
     
-    screenMessage("\n\nYou hold the evil Skull of Mondain the Wizard aloft....\n");
+    /* destroy the skull! pat yourself on the back */
+    if (c->location->x == 0xe9 && c->location->y == 0xe9) {
+        screenMessage("\n\nYou cast the Skull of Mondain into the Abyss!\n");
+
+        c->saveGame->items = (c->saveGame->items & ~ITEM_SKULL) | ITEM_SKULL_DESTROYED;
+        playerAdjustKarma(c->saveGame, KA_DESTROYED_SKULL);
+    }
+
+    /* use the skull... bad, very bad */
+    else {
+        screenMessage("\n\nYou hold the evil Skull of Mondain the Wizard aloft....\n");
     
-    /* destroy all monsters */    
-    (*destroyAllMonstersCallback)();    
+        /* destroy all monsters */    
+        (*destroyAllMonstersCallback)();
     
-    /* destroy the skull */
-    c->saveGame->items = (c->saveGame->items & ~ITEM_SKULL);
-    playerAdjustKarma(c->saveGame, KA_USED_SKULL);
+        /* destroy the skull */
+        c->saveGame->items = (c->saveGame->items & ~ITEM_SKULL);
+        playerAdjustKarma(c->saveGame, KA_USED_SKULL);
+    }
 }
 
 int isMysticInInventory(void *mystic) {
@@ -285,4 +320,10 @@ void itemUse(const char *shortname) {
     /* item was not found */
     if (!item)
         screenMessage("\nNot a Usable item!\n");
+}
+
+int isAbyssOpened(void) {
+    /* make sure the bell, book and candle have all been used */
+    int items = c->saveGame->items;
+    return (items & ITEM_BELL_USED) && (items & ITEM_BOOK_USED) && (items & ITEM_CANDLE_USED);
 }
