@@ -149,7 +149,9 @@ const struct {
     { "ladderup2.rle",   22,  19,  4, 77,  68,  COMP_RLE },
     { "ladderup3.rle",   8,   6,   4, 84,  82,  COMP_RLE },
 
-    { "ladderdown0.rle", 88,  89,  4, 45,  87,  COMP_RLE }
+    { "ladderdown0.rle", 88,  89,  4, 45,  87,  COMP_RLE },
+    { "ladderdown1.rle", 50,  50,  4, 64,  86,  COMP_RLE },
+    { "ladderdown2.rle", 22,  22,  4, 77,  86,  COMP_RLE }
 
 };
 
@@ -961,7 +963,7 @@ int screenDungeonGraphicIndex(int xoffset, int distance, DungeonGraphicType type
     if (type == DNGGRAPHIC_LADDERUP && xoffset == 0)
         return 24 + distance;
 
-    if (type == DNGGRAPHIC_LADDERDOWN && xoffset == 0 && distance == 0)
+    if (type == DNGGRAPHIC_LADDERDOWN && xoffset == 0 && distance < 3)
         return 28 + distance;
 
     /* FIXME */
