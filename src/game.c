@@ -600,6 +600,51 @@ int gameBaseKeyHandler(int key, void *data) {
     const ItemLocation *item;
     unsigned char tile;
 
+    /* Translate context-sensitive action key into a useful command */
+    if (key == U4_ENTER) {
+        /* Attempt to guess based on the character's surroundings etc, what
+           action they want */
+        
+        /* Do they want to board something? */
+        if (c->transportContext == TRANSPORT_FOOT) {
+            obj = mapObjectAt(c->location->map, c->location->x, c->location->y,
+                 c->location->z);
+            if (obj && (tileIsShip(obj->tile) || tileIsHorse(obj->tile) ||
+                tileIsBalloon(obj->tile))) key = 'b';
+        }
+        
+        /* How about descend? */
+        if (((c->transportContext == TRANSPORT_BALLOON) && 
+             (c->saveGame->balloonstate == 1)) || 
+            (mapPortalAt(c->location->map, c->location->x, c->location->y, 
+                c->location->z, ACTION_DESCEND) != NULL)) 
+            key = 'd';
+
+        /* Klimb? */
+        if (((c->transportContext == TRANSPORT_BALLOON) && 
+             (c->saveGame->balloonstate == 0)) ||
+            (mapPortalAt(c->location->map, c->location->x, c->location->y,
+                c->location->z, ACTION_KLIMB) != NULL))
+            key = 'k';
+            
+        /* Enter? */
+        if (mapPortalAt(c->location->map, c->location->x, c->location->y,
+                c->location->z, ACTION_ENTER) != NULL)
+            key = 'e';
+        
+        /* Get Chest? */
+        if ((c->location->context == CTX_DUNGEON) || 
+            (!c->saveGame->balloonstate)) {
+            tile = (*c->location->tileAt)(c->location->map, c->location->x,
+                c->location->y, c->location->z, WITH_OBJECTS);                            
+    
+            if (tileIsChest(tile)) key = 'g';
+        }
+        
+        /* None of these? Default to search */
+        if (key == U4_ENTER) key = 's';
+    }
+    
     switch (key) {
 
     case U4_UP:
