@@ -38,6 +38,7 @@ int jimmyAtCoord(int x, int y);
 int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y);
+int gemHandleChoice(char choice);
 int quitHandleChoice(char choice);
 int readyForPlayer(int player);
 int readyForPlayer2(int weapon, void *data);
@@ -50,6 +51,14 @@ int wearForPlayer2(int armor, void *data);
 void gameCheckMoongates(void);
 
 int collisionOverride = 0;
+int gemMode = 0;
+
+void gameUpdateScreen() {
+    if (gemMode)
+        screenGemUpdate();
+    else
+        screenUpdate();
+}
 
 void gameSetMap(Context *ct, Map *map, int setStartPos) {
     int i;
@@ -125,6 +134,7 @@ int gameBaseKeyHandler(int key, void *data) {
     DirectedActionInfo *info;
     GetChoiceActionInfo *choiceInfo;
     const ItemLocation *item;
+    unsigned char tile;
 
     switch (key) {
 
@@ -160,32 +170,36 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'b':
-        obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y);
-        if (obj && tileIsShip(obj->tile)) {
-            if (c->saveGame->transport != AVATAR_TILE)
-                screenMessage("Board: Can't!\n");
-            else {
-                c->saveGame->transport = obj->tile;
-                c->saveGame->shiphull = 50;
-                mapRemoveObject(c->map, obj);
-                screenMessage("Board Frigate!\n");
+        obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, 1);
+        if (obj) {
+            if (tileIsShip(obj->tile)) {
+                if (c->saveGame->transport != AVATAR_TILE)
+                    screenMessage("Board: Can't!\n");
+                else {
+                    c->saveGame->transport = obj->tile;
+                    c->saveGame->shiphull = 50;
+                    mapRemoveObject(c->map, obj);
+                    screenMessage("Board Frigate!\n");
+                }
+            } else if (tileIsHorse(obj->tile)) {
+                if (c->saveGame->transport != AVATAR_TILE)
+                    screenMessage("Board: Can't!\n");
+                else {
+                    c->saveGame->transport = obj->tile;
+                    mapRemoveObject(c->map, obj);
+                    screenMessage("Mount Horse!\n");
+                }
+            } else if (tileIsBalloon(obj->tile)) {
+                if (c->saveGame->transport != AVATAR_TILE)
+                    screenMessage("Board: Can't!\n");
+                else {
+                    c->saveGame->transport = obj->tile;
+                    mapRemoveObject(c->map, obj);
+                    screenMessage("Board Balloon!\n");
+                }
             }
-        } else if (obj && tileIsHorse(obj->tile)) {
-            if (c->saveGame->transport != AVATAR_TILE)
-                screenMessage("Board: Can't!\n");
-            else {
-                c->saveGame->transport = obj->tile;
-                mapRemoveObject(c->map, obj);
-                screenMessage("Mount Horse!\n");
-            }
-        } else if (obj && tileIsBalloon(obj->tile)) {
-            if (c->saveGame->transport != AVATAR_TILE)
-                screenMessage("Board: Can't!\n");
-            else {
-                c->saveGame->transport = obj->tile;
-                mapRemoveObject(c->map, obj);
-                screenMessage("Board Balloon!\n");
-            }
+            mapRemoveAvatarObject(c->map);
+            mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
         } else
             screenMessage("Board What?\n");
         break;
@@ -223,7 +237,7 @@ int gameBaseKeyHandler(int key, void *data) {
             new->windCounter = new->parent->windCounter;
             new->moonPhase = new->parent->moonPhase;
             
-            mapRemoveObjectAtPosition(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
+            mapRemoveAvatarObject(c->map);
             annotationClear();  /* clear out world map annotations */
             gameSetMap(new, portal->destination, 1);
             c = new;
@@ -247,12 +261,30 @@ int gameBaseKeyHandler(int key, void *data) {
                 screenMessage("Enter %s!\n\n%s\n\n", type, c->map->city->name);
             }
 
-            mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
+            mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
 
             play_music();
             
         } else
             screenMessage("Enter what?\n");
+        break;
+
+    case 'g':
+        screenMessage("Get Chest!\n");
+        if ((obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, 1)) != NULL)
+            tile = obj->tile;
+        else
+            tile = mapTileAt(c->map, c->saveGame->x, c->saveGame->y);
+        if (tile == CHEST_TILE) {
+            if (obj)
+                mapRemoveObject(c->map, obj);
+            else
+                annotationAdd(c->saveGame->x, c->saveGame->y, -1, BRICKFLOOR_TILE);
+            playerGetChest(c->saveGame);
+            if (obj == NULL)
+                playerAdjustKarma(c->saveGame, KA_STOLE_CHEST);
+        } else
+            screenMessage("Not Here!\n");
         break;
 
     case 'j':
@@ -306,7 +338,16 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'p':
-        /* screenShowGem();*/
+        if (c->saveGame->gems) {
+            c->saveGame->gems--;
+            gemMode = 1;
+            choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+            choiceInfo->choices = " \033";
+            choiceInfo->handleChoice = &gemHandleChoice;
+            eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
+            screenMessage("Peer at a Gem!\n");
+        } else
+            screenMessage("Peer at What?\n");
         break;
 
     case 'q':
@@ -366,6 +407,8 @@ int gameBaseKeyHandler(int key, void *data) {
         if (c->saveGame->transport != AVATAR_TILE && c->saveGame->balloonstate == 0) {
             mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
             c->saveGame->transport = AVATAR_TILE;
+            mapRemoveAvatarObject(c->map);
+            mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
             screenMessage("X-it\n");
         } else
             screenMessage("X-it What?\n");
@@ -840,8 +883,20 @@ int openAtCoord(int x, int y) {
     if (!tileIsDoor(mapTileAt(c->map, x, y)))
         return 0;
 
-    annotationAdd(x, y, 4, 0x3e);
+    annotationAdd(x, y, 4, BRICKFLOOR_TILE);
     screenMessage("\nOpened!\n");
+    gameFinishTurn();
+
+    return 1;
+}
+
+/**
+ * Waits for space bar to return from gem mode.
+ */
+int gemHandleChoice(char choice) {
+    eventHandlerPopKeyHandler();
+
+    gemMode = 0;
     gameFinishTurn();
 
     return 1;
@@ -1082,7 +1137,7 @@ int gameCanMoveOntoTile(const Map *map, int x, int y) {
     Object *obj;
 
     /* if an object is on the map tile in question, check it instead */
-    if ((obj = mapObjectAt(map, x, y)) != NULL)
+    if ((obj = mapObjectAt(map, x, y, 0)) != NULL)
         tile = obj->tile;
     else
         tile = mapTileAt(map, x, y);
@@ -1111,7 +1166,7 @@ int moveAvatar(Direction dir, int userEvent) {
     int result = 1;
     int newx, newy;
 
-    mapRemoveObjectAtPosition(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
+    mapRemoveAvatarObject(c->map);
 
     if (tileIsBalloon(c->saveGame->transport) && userEvent) {
         screenMessage("Drift Only!\n");
@@ -1180,6 +1235,7 @@ int moveAvatar(Direction dir, int userEvent) {
                 c->parent->windDirection = c->windDirection;
                 c->parent->windCounter = c->windCounter;
 		c = c->parent;
+                c->col = 0;
 		free(t);
                 
                 play_music();
@@ -1225,7 +1281,7 @@ int moveAvatar(Direction dir, int userEvent) {
 
  done:
 
-    mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
+    mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
     return result;
 }
 
@@ -1320,7 +1376,7 @@ void gameTimer() {
     mapAnimateObjects(c->map);
 
     screenCycle();
-    screenUpdate();
+    gameUpdateScreen();
     screenForceRedraw();
 }
 
@@ -1330,6 +1386,7 @@ void gameCheckMoongates() {
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, 
                                  c->saveGame->x, c->saveGame->y, &destx, &desty)) {
         
+        /* FIXME: special effect here */
         c->saveGame->x = destx;
         c->saveGame->y = desty;
     }

@@ -19,6 +19,7 @@ typedef struct DirectedActionInfo {
     const char *failedMessage;
 } DirectedActionInfo;
 
+void gameUpdateScreen(void);
 int gameBaseKeyHandler(int key, void *data);
 int gameGetPlayerNoKeyHandler(int key, void *data);
 int gameGetDirectionKeyHandler(int key, void *data);
