@@ -317,7 +317,9 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
     obj = objs;
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         if (obj) {
-            if (/* is animate */ 0)
+            if (obj->tile == 0x1f)
+                /* skip */;
+            else if (/* is animate */ 0)
                 monsterTable[anim++] = obj;
             else
                 monsterTable[--inanim] = obj;
