@@ -8,6 +8,7 @@
 #define SEA_TILE 0x0
 #define GRASS_TILE 0x4
 #define AVATAR_TILE 0x1f
+#define BLACK_TILE 0x7e
 
 typedef enum {
     EFFECT_NONE = 0x00,
