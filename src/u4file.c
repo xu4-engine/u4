@@ -312,7 +312,7 @@ size_t u4fread(void *ptr, size_t size, size_t nmemb, U4FILE *f) {
 
 int u4fgetc(U4FILE *f) {
     int retval;
-    char c;
+    unsigned char c;
 
     switch(f->type) {
     case STDIO_FILE:
