@@ -604,8 +604,12 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
 
         // move on if unable to move onto the avatar or another creature
         if (m && !isAvatar) { // some creatures/persons have the same tile as the avatar, so we have to adjust
+            // If moving onto the avatar, the creature must be able to move onto the player
+            // If moving onto another creature, it must be able to move onto other creatures,
+            // and the creature must be able to have others move onto it.  If either of
+            // these conditions are not met, the creature cannot move onto another.
             if ((ontoAvatar && !m->canMoveOntoPlayer()) ||
-                (ontoCreature && !m->canMoveOntoCreatures() && !to_m->canMoveOnto()))
+                (ontoCreature && (!m->canMoveOntoCreatures() || !to_m->canMoveOnto())))
                 continue;
         }
         // this really only happens with the avatar
