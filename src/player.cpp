@@ -737,7 +737,7 @@ void Party::adjustKarma(KarmaAction action) {
     case KA_USED_SKULL:
         /* using the skull is very, very bad... */
         for (v = 0; v < VIRT_MAX; v++)
-            AdjustValueMin(newKarma[v], -5, -1);
+            AdjustValueMin(newKarma[v], -5, 1);
         break;
     case KA_DESTROYED_SKULL:
         /* ...but destroying it is very, very good */
