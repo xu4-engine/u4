@@ -37,6 +37,7 @@ void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int
 void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h);
 void screenFreeIntroBackground();
 int screenLoadTiles();
+int screenLoadGemTiles();
 int screenLoadCharSet();
 int screenLoadPaletteEga();
 int screenLoadPaletteVga(const char *filename);
@@ -47,7 +48,7 @@ Image *screenScale(Image *src, int scale, int n, int filter);
 SDL_Surface *screen;
 Image *bkgds[BKGD_MAX];
 Image *dngGraphic[36];
-Image *tiles, *charset;
+Image *tiles, *charset, *gemtiles;
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
 int scale;
@@ -195,6 +196,7 @@ void screenInit() {
     if (!screenLoadBackground(BKGD_INTRO) ||
         !screenLoadBackground(BKGD_INTRO_EXTENDED) || 
         !screenLoadTiles() ||
+        !screenLoadGemTiles() ||
         !screenLoadCharSet())
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
@@ -495,6 +497,46 @@ int screenLoadTiles() {
     }
 
     tiles = screenScale(tiles, scale, N_TILES, 1);
+
+    return ret;
+}
+
+/**
+ * Load the gem tile graphics from the "gem.ega.rle" or "gem.vga.rle"
+ * file.  Note this file is not part of Ultima IV for DOS.
+ */
+int screenLoadGemTiles() {
+    char *pathname;
+    U4FILE *file;
+    int ret = 0;
+
+    /* load vga gem tiles */
+    if (settings->videoType == VIDEO_VGA) {
+        pathname = u4find_graphics("gem.vga.rle");
+        if (pathname) {
+            file = u4fopen_stdio(pathname);
+            free(pathname);
+            if (file) {
+                ret = screenLoadImageVga(&gemtiles, GEMTILE_W, GEMTILE_H * 128, file, COMP_RLE);
+                u4fclose(file);
+            }
+        }
+    }
+
+    /* load ega gem tiles (also loads if vga load fails) */
+    if (!ret || settings->videoType == VIDEO_EGA) {
+        pathname = u4find_graphics("gem.ega.rle");
+        if (pathname) {
+            file = u4fopen_stdio(pathname);
+            free(pathname);
+            if (file) {
+                ret = screenLoadImageEga(&gemtiles, GEMTILE_W, GEMTILE_H * 128, file, COMP_RLE);
+                u4fclose(file);
+            }
+        }
+    }
+
+    gemtiles = screenScale(gemtiles, scale, 128, 1);
 
     return ret;
 }
@@ -881,19 +923,25 @@ void screenShowTile(unsigned char tile, int focus, int x, int y) {
  * Draw a tile graphic on the screen.
  */
 void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
-    /* FIXME: show gem tile rather than some random color rectangle */
     SDL_Rect src, dest;
 
-    src.x = 0;
-    src.y = tile * (tiles->h / N_TILES);
-    src.w = GEMTILE_W * scale;
-    src.h = GEMTILE_H * scale;
     dest.x = (GEMAREA_X + (x * GEMTILE_W)) * scale;
     dest.y = (GEMAREA_Y + (y * GEMTILE_H)) * scale;
     dest.w = GEMTILE_W * scale;
     dest.h = GEMTILE_H * scale;
 
-    SDL_BlitSurface(tiles->surface, &src, screen, &dest);
+    if (tile < 128) {
+        src.x = 0;
+        src.y = tile * GEMTILE_H * scale;
+        src.w = GEMTILE_W * scale;
+        src.h = GEMTILE_H * scale;
+
+        SDL_BlitSurface(gemtiles->surface, &src, screen, &dest);
+    }
+
+    else {
+        SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0, 0, 0));
+    }
 }
 
 /**
