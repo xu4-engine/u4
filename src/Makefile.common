@@ -36,6 +36,7 @@ SRCS=\
         monster.c \
         rle.c \
         error.c \
+        debug.c \
         maps/cities.c \
         maps/castles.c \
         maps/worldmap.c \
