@@ -5,6 +5,7 @@
 #ifndef PERSON_H
 #define PERSON_H
 
+#include <string>
 #include <list>
 
 #include "monster.h"
@@ -104,18 +105,18 @@ public:
     }
 
 public:
-    string name;
-    string pronoun;
-    string description;
-    string job;
-    string health;
-    string response1;
-    string response2;
-    string question;
-    string yesresp;
-    string noresp;
-    string keyword1;
-    string keyword2;
+    std::string name;
+    std::string pronoun;
+    std::string description;
+    std::string job;
+    std::string health;
+    std::string response1;
+    std::string response2;
+    std::string question;
+    std::string yesresp;
+    std::string noresp;
+    std::string keyword1;
+    std::string keyword2;
     PersonQuestionTrigger questionTrigger;
     PersonQuestionType questionType;
     union {
@@ -129,11 +130,11 @@ public:
 
 bool isPerson(Object *punknown);
 
-Reply *replyNew(string text);
+Reply *replyNew(const std::string &text);
 void replyDelete(Reply *reply);
 int personInit(void);
 Reply *personGetConversationText(struct _Conversation *cnv, const char *inquiry);
-string personGetPrompt(const struct _Conversation *cnv);
+std::string personGetPrompt(const struct _Conversation *cnv);
 ConversationInputType personGetInputRequired(const struct _Conversation *cnv, int *bufferlen);
 const char *personGetChoices(const struct _Conversation *cnv);
 

@@ -81,7 +81,7 @@ int chars_needed(const char *s, int columnmax, int linesdesired, int *real_lines
 /**
  * Splits a piece of response text into screen-sized chunks.
  */
-Reply *replyNew(string text) {    
+Reply *replyNew(const string &text) {
     string str = text;
     int pos, real_lines;
     Reply *reply;
