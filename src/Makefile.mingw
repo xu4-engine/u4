@@ -32,11 +32,14 @@ install: u4.exe
 	mkdir -p $(U4PATH)/conf
 	mkdir -p $(U4PATH)/dtd
 	mkdir -p $(U4PATH)/graphics
+	mkdir -p $(U4PATH)/graphics/ega
+	mkdir -p $(U4PATH)/graphics/vga
 	mkdir -p $(U4PATH)/mid
 	strip $(MAIN) -o $(U4PATH)/$(MAIN)
 	cp ../conf/*.xml $(U4PATH)/conf
 	cp ../conf/dtd/*.dtd $(U4PATH)/dtd/
-	cp ../graphics/*.rle $(U4PATH)/graphics/
+	cp ../graphics/ega/*.rle $(U4PATH)/graphics/ega/
+	cp ../graphics/vga/*.rle $(U4PATH)/graphics/vga/
 	cp ../mid/*.mid $(U4PATH)/mid
 	cp SDL/lib/SDL.dll $(U4PATH)
 	cp SDL/lib/SDL_mixer.dll $(U4PATH)

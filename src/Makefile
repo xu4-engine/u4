@@ -36,7 +36,10 @@ install::
 	mkdir -p $(libdir)/u4/dtd
 	$(INSTALL) ../conf/dtd/*.dtd $(libdir)/u4/dtd
 	mkdir -p $(libdir)/u4/graphics
-	$(INSTALL) ../graphics/*.rle $(libdir)/u4/graphics
+	mkdir -p $(libdir)/u4/graphics/ega
+	mkdir -p $(libdir)/u4/graphics/vga
+	$(INSTALL) ../graphics/ega/*.rle $(libdir)/u4/graphics/ega
+	$(INSTALL) ../graphics/vga/*.rle $(libdir)/u4/graphics/ega
 	$(INSTALL) -D ../u4.desktop $(desktopdir)/Games/u4.desktop
 
 -include .depends

@@ -52,12 +52,16 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/tlkconv
 %{_libdir}/u4/*.xml
 %{_libdir}/u4/dtd/*.dtd
-%{_libdir}/u4/graphics/*.rle
+%{_libdir}/u4/graphics/ega/*.rle
+%{_libdir}/u4/graphics/vga/*.rle
 %{_libdir}/u4/ultima4.zip
 %{_libdir}/u4/u4upgrad.zip
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Thu Dec 10 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- split graphics into ega and vga subdirectories
+
 * Thu Nov 12 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added zlib-devel to build dependencies
 
