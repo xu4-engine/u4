@@ -543,18 +543,11 @@ void mapClearObjects(Map *map) {
 }
 
 int mapNumberOfMonsters(const Map *map) {
-    const Monster *m;
     Object *obj = map->objects;
     int n;
 
     n = 0;
     while (obj) {
-        /*m = monsterForTile(obj->tile);
-        if (obj->movement_behavior == MOVEMENT_ATTACK_AVATAR)
-            n++;
-        else if (m && (m->tile == WHIRLPOOL_TILE || m->tile == STORM_TILE))
-            n++;*/
-
         if (obj->objType == OBJECT_MONSTER)
             n++;
 
