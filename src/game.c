@@ -153,15 +153,16 @@ void gameUpdateScreen() {
     }
 }
 
-void gameSetMap(Context *ct, Map *map, int setStartPos) {
+void gameSetMap(Context *ct, Map *map, int setStartPos, const Portal *portal) {
     int i;
 
     ct->map = map;
     if (setStartPos) {
         ct->saveGame->dngx = ct->saveGame->x;
         ct->saveGame->dngy = ct->saveGame->y;
-        ct->saveGame->x = map->startx;
-        ct->saveGame->y = map->starty;
+        ct->saveGame->x = portal->startx;
+        ct->saveGame->y = portal->starty;
+        ct->saveGame->dnglevel = portal->startlevel;
     }
 
     if ((map->type == MAP_TOWN || 
@@ -184,6 +185,7 @@ void gameSetMap(Context *ct, Map *map, int setStartPos) {
  * moves, etc.
  */
 void gameFinishTurn() {
+    Object *attacker;
 
     /* apply effects from tile avatar is standing on */
     playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel)), ALL_PLAYERS);
@@ -198,7 +200,11 @@ void gameFinishTurn() {
                 c->aura = AURA_NONE;
         }
 
-        mapMoveObjects(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel, &gameMonsterAttack);
+        attacker = mapMoveObjects(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+        if (attacker) {
+            gameMonsterAttack(attacker);
+            return;
+        }
 
         /* update map annotations and the party stats */
         annotationCycle();
@@ -397,8 +403,7 @@ int gameBaseKeyHandler(int key, void *data) {
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
         if (portal && portal->trigger_action == ACTION_DESCEND) {
             annotationClear(c->map->id);
-            gameSetMap(c, portal->destination, 0);
-            c->saveGame->dnglevel--;
+            gameSetMap(c, portal->destination, 1, portal);
             screenMessage("Descend to first floor!\n");
         } else if (tileIsBalloon(c->saveGame->transport)) {
             screenMessage("Land Balloon\n");
@@ -447,8 +452,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
             c = gameCloneContext(c);
 
-            gameSetMap(c, portal->destination, 1);
-            c->saveGame->dnglevel = 0;
+            gameSetMap(c, portal->destination, 1, portal);
             musicPlay();
 
         } else
@@ -532,8 +536,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 screenMessage("Klimb\nOnly on foot!\n");
             else {
                 annotationClear(c->map->id);
-                gameSetMap(c, portal->destination, 0);
-                c->saveGame->dnglevel++;
+                gameSetMap(c, portal->destination, 1, portal);
                 screenMessage("Klimb to second floor!\n");
             }
         } else if (tileIsBalloon(c->saveGame->transport)) {
@@ -1941,7 +1944,12 @@ void gameCheckMoongates() {
 
             c = gameCloneContext(c);
 
-            gameSetMap(c, &shrine_spirituality_map, 1);
+            gameSetMap(c, &shrine_spirituality_map, 0, NULL);
+            c->saveGame->dngx = c->saveGame->x;
+            c->saveGame->dngy = c->saveGame->y;
+            c->saveGame->x = 5;
+            c->saveGame->y = 5;
+            
             musicPlay();
         }
     }
