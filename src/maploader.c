@@ -295,7 +295,7 @@ int mapLoadWorld(Map *map) {
 }
 
 int mapLoadData(Map *map, U4FILE *f) {
-    int x, xch, y, ych;
+    unsigned int x, xch, y, ych;
 
     map->data = (unsigned char *) malloc(map->height * map->width);
     if (!map->data)

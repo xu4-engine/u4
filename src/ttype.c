@@ -17,6 +17,7 @@
 #include "error.h"
 #include "list.h"
 #include "monster.h"
+#include "screen.h"
 #include "settings.h"
 #include "u4file.h"
 #include "xml.h"
