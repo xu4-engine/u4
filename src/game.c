@@ -235,6 +235,7 @@ void gameLostEighth(Virtue virtue) {
 
 void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
     screenMessage("%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
+
     /* FIXME: special effect here */
     statsUpdate();
 }
@@ -1921,7 +1922,12 @@ void gameCheckMoongates() {
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, 
                                  c->saveGame->x, c->saveGame->y, &destx, &desty)) {
         
-        /* FIXME: special effect here */
+        /* special effect FIXME: needs sound */
+        gameUpdateScreen();
+        screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
+        screenRedrawMapArea();
+        eventHandlerSleep(2000);
+
         c->saveGame->x = destx;
         c->saveGame->y = desty;
 
