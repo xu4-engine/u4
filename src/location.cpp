@@ -59,8 +59,8 @@ MapTile *Location::visibleTileAt(MapCoords coords, bool &focus) {
  */
 std::vector<MapTile *> Location::tilesAt(MapCoords coords, bool &focus) {
     std::vector<MapTile *> tiles;
-    AnnotationList a = map->annotations->allAt(coords);    
-    AnnotationList::iterator i;
+    Annotation::List a = map->annotations->allAt(coords);    
+    Annotation::List::iterator i;
     Object *obj = map->objectAt(coords);
     Creature *m = dynamic_cast<Creature *>(obj);
     focus = false;

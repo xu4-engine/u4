@@ -312,13 +312,13 @@ MapTile* Map::getTileFromData(Coords coords) {
 MapTile* Map::tileAt(Coords coords, int withObjects) {    
     /* FIXME: this should return a list of tiles, with the most visible at the front */
     MapTile *tile;
-    AnnotationList a = annotations->allAt(coords);
+    Annotation::List a = annotations->allAt(coords);
     Object *obj = objectAt(coords);    
  
     tile = getTileFromData(coords);
     /* FIXME: this only returns the first valid annotation it can find */
     if (a.size() > 0) {
-        AnnotationList::iterator i;
+        Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
             if (!i->isVisualOnly())            
                 return &i->getTile();

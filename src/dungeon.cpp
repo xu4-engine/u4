@@ -108,7 +108,7 @@ unsigned char dungeonSubTokenAt(Map *map, MapCoords coords) {
  */
 void dungeonSearch(void) {
     DungeonToken token = dungeonCurrentToken(); 
-    AnnotationList a = c->location->map->annotations->allAt(c->location->coords);
+    Annotation::List a = c->location->map->annotations->allAt(c->location->coords);
     const ItemLocation *item;
     if (a.size() > 0)
         token = DUNGEON_CORRIDOR;
@@ -267,14 +267,14 @@ bool dungeonHandleTrap(TrapType trap) {
  * Returns true if a ladder-up is found at the given coordinates
  */
 bool dungeonLadderUpAt(class Map *map, MapCoords coords) {    
-    AnnotationList a = c->location->map->annotations->allAt(coords);
+    Annotation::List a = c->location->map->annotations->allAt(coords);
 
     if (dungeonTokenAt(map, coords) == DUNGEON_LADDER_UP ||
         dungeonTokenAt(map, coords) == DUNGEON_LADDER_UPDOWN)
         return true;
 
     if (a.size() > 0) {
-        AnnotationList::iterator i;
+        Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
             if (i->getTile() == Tileset::findTileByName("up_ladder")->id)
                 return true;
@@ -287,14 +287,14 @@ bool dungeonLadderUpAt(class Map *map, MapCoords coords) {
  * Returns true if a ladder-down is found at the given coordinates
  */
 bool dungeonLadderDownAt(class Map *map, MapCoords coords) {
-    AnnotationList a = c->location->map->annotations->allAt(coords);
+    Annotation::List a = c->location->map->annotations->allAt(coords);
 
     if (dungeonTokenAt(map, coords) == DUNGEON_LADDER_DOWN ||
         dungeonTokenAt(map, coords) == DUNGEON_LADDER_UPDOWN)
         return true;
 
     if (a.size() > 0) {
-        AnnotationList::iterator i;
+        Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
             if (i->getTile() == Tileset::findTileByName("down_ladder")->id)
                 return true;

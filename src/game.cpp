@@ -2258,13 +2258,27 @@ int castForPlayerGetEnergyDir(Direction dir) {
 }
 
 bool destroyAtCoord(MapCoords coords, int distance, void *data) {
-    Object *obj = c->location->map->objectAt(coords);
-
-    screenPrompt();
+    Object *obj = c->location->map->objectAt(coords);    
 
     if (obj) {
+        if (isCreature(obj)) {
+            Creature *c = dynamic_cast<Creature*>(obj);
+            screenMessage("%s Destroyed!\n", c->getName().c_str());
+        }
+        else {
+            Tile *t = Tileset::get()->get(obj->getTile().id);
+            screenMessage("%s Destroyed!\n", t->name.c_str());
+        }
+
         c->location->map->removeObject(obj);
+        screenPrompt();
+        
         return true;
+    }
+    
+    if (coords.x == -1 && coords.y == -1) {
+        screenMessage("Nothing there!\n");
+        screenPrompt();
     }
     return false;
 }

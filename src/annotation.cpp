@@ -77,8 +77,8 @@ Annotation *AnnotationMgr::add(Coords coords, MapTile tile, bool visual) {
 /**
  * Returns all annotations found at the given map coordinates
  */ 
-AnnotationList AnnotationMgr::allAt(Coords coords) {
-    AnnotationList list;
+Annotation::List AnnotationMgr::allAt(Coords coords) {
+    Annotation::List list;
 
     for (i = annotations.begin(); i != annotations.end(); i++) {
         if (i->getCoords() == coords)
@@ -131,8 +131,8 @@ void AnnotationMgr::remove(Annotation *a) {
 /**
  * Removes an entire list of annotations 
  */ 
-void AnnotationMgr::remove(AnnotationList l) {
-    AnnotationList::iterator i;
+void AnnotationMgr::remove(Annotation::List l) {
+    Annotation::List::iterator i;
     for (i = l.begin(); i != l.end(); i++) {
         remove(&*i);
     }

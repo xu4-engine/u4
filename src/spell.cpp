@@ -474,9 +474,9 @@ static int spellDispel(int dir) {
      * (or other unwalkable surface).  So, we need to provide a valid replacement
      * annotation to fill in the gap :)
      */
-    AnnotationList a = c->location->map->annotations->allAt(field);
+    Annotation::List a = c->location->map->annotations->allAt(field);
     if (a.size() > 0) {
-        AnnotationList::iterator i;
+        Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {            
             if (i->getTile().canDispel()) {
                 c->location->map->annotations->remove(&*i);
@@ -536,9 +536,9 @@ static int spellEField(int param) {
         if (!tile->isWalkable()) return 0;
         
         /* Get rid of old field, if any */
-        AnnotationList a = c->location->map->annotations->allAt(coords);
+        Annotation::List a = c->location->map->annotations->allAt(coords);
         if (a.size() > 0) {
-            AnnotationList::iterator i;
+            Annotation::List::iterator i;
             for (i = a.begin(); i != a.end(); i++) {                
                 if (i->getTile().canDispel())
                     c->location->map->annotations->remove(&*i);

@@ -11,8 +11,6 @@
 
 class Annotation;
 
-typedef std::list<Annotation> AnnotationList;
-
 /**
  * Annotation are updates to a map.
  * There are three types of annotations:
@@ -22,6 +20,8 @@ typedef std::list<Annotation> AnnotationList;
  */
 class Annotation {
 public:    
+    typedef std::list<Annotation> List;
+
     Annotation(const Coords &coords, MapTile tile, bool visual = false);        
 
     void             debug_output() const;
@@ -54,18 +54,18 @@ class AnnotationMgr {
 public:        
     AnnotationMgr();
 
-    Annotation      *add(Coords coords, MapTile tile, bool visual = false);
-    AnnotationList  allAt(Coords pos);
-    void            clear();
-    void            passTurn();
-    void            remove(Coords pos, MapTile tile);
-    void            remove(Annotation *);
-    void            remove(AnnotationList);
-    int             size();
+    Annotation       *add(Coords coords, MapTile tile, bool visual = false);
+    Annotation::List allAt(Coords pos);
+    void             clear();
+    void             passTurn();
+    void             remove(Coords pos, MapTile tile);
+    void             remove(Annotation *);
+    void             remove(Annotation::List);
+    int              size();
 
 private:        
-    AnnotationList  annotations;
-    AnnotationList::iterator i;
+    Annotation::List  annotations;
+    Annotation::List::iterator i;
 };
 
 #endif
