@@ -7,30 +7,32 @@
 #include <assert.h>
 
 #include "monster.h"
+#include "ttype.h"
 
 #define UNKNOWN 0
 
-/*
-    Bard         9
-    Beggar      13
-    Bull        11
-    Child       10
-    Druid       10
-    Fighter      7
-    Guard       13
-    Horse        9
-    Jester       9
-    Mage         8
-    Merchant     9
-    Paladin      4
-    Ranger       3
-    Shepherd     9
-    Tinker       9
-    Villager    13
-*/
-
-
 static const Monster monsters[] = {
+    { HORSE1_TILE,      UNKNOWN,       "Horse",        9 },
+    { HORSE2_TILE,      UNKNOWN,       "Horse",        9 },
+
+    { MAGE_TILE,        UNKNOWN,       "Mage",         8 },
+    { BARD_TILE,        UNKNOWN,       "Bard",         9 },
+    { FIGHTER_TILE,     UNKNOWN,       "Fighter",      7 },
+    { DRUID_TILE,       UNKNOWN,       "Druid",        10 },
+    { TINKER_TILE,      UNKNOWN,       "Tinker",       9 },
+    { PALADIN_TILE,     UNKNOWN,       "Paladin",      4 },
+    { RANGER_TILE,      UNKNOWN,       "Ranger",       3 },
+    { SHEPHERD_TILE,    UNKNOWN,       "Shepherd",     9 },
+
+    { GUARD_TILE,       UNKNOWN,       "Guard",        13 },
+    { VILLAGER_TILE,    UNKNOWN,       "Villager",     13 },
+    { JESTER_TILE,      UNKNOWN,       "Jester",       9 },
+    { BEGGAR_TILE,      UNKNOWN,       "Beggar",       13 },
+    { CHILD_TILE,       UNKNOWN,       "Child",        10 },
+    { BULL_TILE,        UNKNOWN,       "Bull",         11 },
+    { BULL_TILE,        UNKNOWN,       "Bull",         11 },
+    { LORDBRITISH_TILE, UNKNOWN,       "Lord British", UNKNOWN },
+
     { PIRATE_TILE,      UNKNOWN,       "Pirate Ship",  UNKNOWN },
     { NIXIE_TILE,       SEAHORSE_TILE, "Nixie",        5 },
     { GIANT_SQUID_TILE, UNKNOWN,       "Giant Squid",  9 },
@@ -51,14 +53,14 @@ static const Monster monsters[] = {
     { GAZER_TILE,       UNKNOWN,       "Gazer",        16 },
     { PHANTOM_TILE,     UNKNOWN,       "Phantom",      9 },
     { ORC_TILE,         TROLL_TILE,    "Orc",          6 },
-    { SKELETON_TILE,    MAGE_TILE,     "Skeleton",     4 },
+    { SKELETON_TILE,    EVILMAGE_TILE, "Skeleton",     4 },
     { ROGUE_TILE,       UNKNOWN,       "Rogue",        6 },
     { PYTHON_TILE,      UNKNOWN,       "Python",       4 },
     { ETTIN_TILE,       UNKNOWN,       "Ettin",        8 },
     { HEADLESS_TILE,    GAZER_TILE,    "Headless",     5 },
     { CYCLOPS_TILE,     UNKNOWN,       "Cyclops",      9 },
     { WISP_TILE,        UNKNOWN,       "Wisp",         5 },
-    { MAGE_TILE,        UNKNOWN,       "Mage",         12 },
+    { EVILMAGE_TILE,    UNKNOWN,       "Mage",         12 },
     { LICH_TILE,        UNKNOWN,       "Lich",         13 },
     { LAVA_LIZARD_TILE, UNKNOWN,       "Lava Lizard",  7 },
     { ZORN_TILE,        UNKNOWN,       "Zorn",         16 },
@@ -71,14 +73,24 @@ static const Monster monsters[] = {
 #define N_MONSTERS (sizeof(monsters) / sizeof(monsters[0]))
 
 const Monster *monsterForTile(unsigned char tile) {
-    int i;
+    int i, n;
 
-    for (i = 0; i < N_MONSTERS - 1; i++) {
-        if (tile >= monsters[i].tile && tile < monsters[i+1].tile)
+    for (i = 0; i < N_MONSTERS; i++) {
+        switch (tileGetAnimationStyle(monsters[i].tile)) {
+        case ANIM_TWOFRAMES:
+            n = 2;
+            break;
+        case ANIM_FOURFRAMES:
+            n = 4;
+            break;
+        default:
+            n = 1;
+            break;
+        }
+
+        if (tile >= monsters[i].tile && tile < monsters[i].tile + n)
             return &(monsters[i]);
     }
-    if (tile >= monsters[N_MONSTERS - 1].tile)
-        return &(monsters[N_MONSTERS - 1]);
 
     return NULL;
 }

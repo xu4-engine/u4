@@ -5,6 +5,27 @@
 #ifndef MONSTER_H
 #define MONSTER_H
 
+#define HORSE1_TILE 20
+#define HORSE2_TILE 21
+
+#define MAGE_TILE 32
+#define BARD_TILE 34
+#define FIGHTER_TILE 36
+#define DRUID_TILE 38
+#define TINKER_TILE 40
+#define PALADIN_TILE 42
+#define RANGER_TILE 44
+#define SHEPHERD_TILE 46
+
+#define GUARD_TILE 80
+#define VILLAGER_TILE 82
+#define SINGINGBARD_TILE 84
+#define JESTER_TILE 86
+#define BEGGAR_TILE 88
+#define CHILD_TILE 90
+#define BULL_TILE 92
+#define LORDBRITISH_TILE 94
+
 #define PIRATE_TILE 128
 #define NIXIE_TILE 132
 #define GIANT_SQUID_TILE 134
@@ -32,7 +53,7 @@
 #define HEADLESS_TILE 212
 #define CYCLOPS_TILE 216
 #define WISP_TILE 220
-#define MAGE_TILE 224
+#define EVILMAGE_TILE 224
 #define LICH_TILE 228
 #define LAVA_LIZARD_TILE 232
 #define ZORN_TILE 236
