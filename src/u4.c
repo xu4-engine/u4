@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <time.h>
 #include <SDL.h>
 
 #include "u4.h"
@@ -35,6 +36,8 @@ int main(int argc, char *argv[]) {
                 scale = 2;
         }
     }
+
+    srand(time(NULL));
 
     screenInit(scale);
 
