@@ -48,6 +48,7 @@ KeyHandler eventHandlerGetKeyHandler();
 void *eventHandlerGetKeyHandlerData();
 
 int keyHandlerDefault(int key, void *data);
+int keyHandlerIgnoreKeys(int key, void *data);
 int keyHandlerReadBuffer(int key, void *data);
 int keyHandlerGetChoice(int key, void *data);
 

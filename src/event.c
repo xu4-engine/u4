@@ -23,6 +23,8 @@ typedef struct TimerCallbackNode {
 TimerCallbackNode *timerCallbackHead = NULL;
 KeyHandlerNode *keyHandlerHead = NULL;
 int eventExitFlag = 0;
+int timerCallbackListLocked = 0;
+void (*deferedTimerCallbackRemoval)() = NULL;
 
 /**
  * Set flag to end eventHandlerMain loop.
@@ -56,6 +58,13 @@ void eventHandlerAddTimerCallback(void (*callback)()) {
 void eventHandlerRemoveTimerCallback(void (*callback)()) {
     TimerCallbackNode *n, *prev;
 
+    if (timerCallbackListLocked) {
+        /* assert if more than one callback removal is defered -- should really be a list */
+        assert(deferedTimerCallbackRemoval == NULL);
+        deferedTimerCallbackRemoval = callback;
+        return;
+    }
+
     n = timerCallbackHead;
     prev = NULL;
     while (n) {
@@ -80,8 +89,17 @@ void eventHandlerRemoveTimerCallback(void (*callback)()) {
 void eventHandlerCallTimerCallbacks() {
     TimerCallbackNode *n;    
 
+    timerCallbackListLocked = 1;
+
     for (n = timerCallbackHead; n != NULL; n = n->next) {
-        (*timerCallbackHead->callback)();
+        (*n->callback)();
+    }
+
+    timerCallbackListLocked = 0;
+
+    if (deferedTimerCallbackRemoval) {
+        eventHandlerRemoveTimerCallback(deferedTimerCallbackRemoval);
+        deferedTimerCallbackRemoval = NULL;
     }
 }
 
@@ -157,6 +175,13 @@ int keyHandlerDefault(int key, void *data) {
     }
 
     return valid;
+}
+
+/**
+ * Generic handler for discarding all keyboard input.
+ */
+int keyHandlerIgnoreKeys(int key, void *data) {
+    return 1;
 }
 
 /**
