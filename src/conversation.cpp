@@ -87,17 +87,17 @@ Dialogue::Keyword *Dialogue::operator[](const string &kw) {
 }
 
 Dialogue::Action Dialogue::getAction() const { 
-    int prob = xu4_random(0x140);
+    int prob = xu4_random(0x100);
 
     /* Does the person turn away from/attack you? */
-    if (prob < turnAwayProb) {
-        /* FIXME: this is a guess. Is this how u4dos does it? */
-        if (attackProb - prob > 0x3f)
+    if (prob >= turnAwayProb)
+        return NO_ACTION;
+    else {
+        if (attackProb - prob < 0x40)
+            return TURN_AWAY;
+        else
             return ATTACK;
-        else return TURN_AWAY;            
     }
-
-    return NO_ACTION;
 }
 
 /*
