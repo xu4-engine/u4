@@ -49,6 +49,7 @@ typedef struct _Map {
     Music music;
     unsigned char *data;
     union {
+        const void *init;
         struct _City *city;
         const struct _Shrine *shrine;
         struct _Area *area;
