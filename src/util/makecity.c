@@ -139,7 +139,9 @@ int main(int argc, char **argv) {
 	persons[i].noresp = "";
 	persons[i].keyword1 = "";
 	persons[i].keyword2 = "";
+	persons[i].questionTrigger = QTRIGGER_NONE;
 	persons[i].questionType = 0;
+	persons[i].turnAwayProb = 0;
     }
 
     for (i = 0; ; i++) {
@@ -148,7 +150,11 @@ int main(int argc, char **argv) {
 	for (j = 0; j < CITY_MAX_PERSONS; j++) {
 	    if (conv_idx[j] == i+1) {
 		char *ptr = tlk_buffer + 3;
+
+		persons[j].questionTrigger = tlk_buffer[0];
 		persons[j].questionType = tlk_buffer[1];
+		persons[j].turnAwayProb = tlk_buffer[2];
+
 		persons[j].name = dup_and_escape(ptr);
 		ptr += strlen(ptr) + 1;
 		persons[j].pronoun = dup_and_escape(ptr);
@@ -257,7 +263,9 @@ const unsigned char %s_data_rle[] = {
 \t \"%s\", /* noresp */
 \t \"%s\", /* keyword1 */
 \t \"%s\", /* keyword2 */
+\t %d, /* questionTrigger */
 \t %d, /* questionType */
+\t %d, /* turnAwayProb */
 \t %d, /* tile0 */
 \t %d, /* tile1 */
 \t %d, /* startx */
@@ -268,9 +276,10 @@ const unsigned char %s_data_rle[] = {
 		    n_persons == 0 ? "" : ",",
 		    persons[i].name, persons[i].pronoun, persons[i].description, 
 		    persons[i].job, persons[i].health, persons[i].response1,
-                    persons[i].response2, persons[i].question, persons[i].yesresp,
-                    persons[i].noresp, persons[i].keyword1, persons[i].keyword2,
-		    persons[i].questionType,
+		    persons[i].response2, persons[i].question, persons[i].yesresp,
+		    persons[i].noresp, persons[i].keyword1, persons[i].keyword2,
+		    persons[i].questionTrigger, persons[i].questionType,
+		    persons[i].turnAwayProb,
                     persons[i].tile0, persons[i].tile1, persons[i].startx, 
                     persons[i].starty, movement);
 	    n_persons++;

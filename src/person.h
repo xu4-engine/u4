@@ -13,6 +13,14 @@ typedef enum {
 } PersonMovementBehavior;
 
 typedef enum {
+    QTRIGGER_NONE = 0,
+    QTRIGGER_JOB = 3,
+    QTRIGGER_HEALTH = 4,
+    QTRIGGER_KEYWORD1 = 5,
+    QTRIGGER_KEYWORD2 = 6
+} PersonQuestionTrigger;
+
+typedef enum {
     QUESTION_SHOULDSAYYES,
     QUESTION_SHOULDSAYNO
 } PersonQuestionType;
@@ -30,7 +38,9 @@ typedef struct {
     char *noresp;
     char *keyword1;
     char *keyword2;
+    PersonQuestionTrigger questionTrigger;
     PersonQuestionType questionType;
+    int turnAwayProb;
     unsigned int tile0, tile1;
     unsigned int startx, starty;
     PersonMovementBehavior movement_behavior;
