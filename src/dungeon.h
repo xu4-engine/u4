@@ -70,7 +70,7 @@ typedef enum _DungeonToken {
     DUNGEON_DOOR                = 0xC0,
     DUNGEON_ROOM                = 0xD0,
     DUNGEON_SECRET_DOOR         = 0xE0,
-    DUNGEON_WALL                = 0xF0,
+    DUNGEON_WALL                = 0xF0
 } DungeonToken;
 
 /**
