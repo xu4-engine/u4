@@ -95,7 +95,7 @@ int monsterIsEvil(const Monster *monster);
 int monsterGetXp(const Monster *monster);
 int monsterCastSleep(const Monster *monster);
 int monsterGetDamage(const Monster *monster);
-unsigned char monsterRandomForTile(unsigned char tile);
+const Monster *monsterRandomForTile(unsigned char tile);
 int monsterGetInitialHp(const Monster *monster);
 MonsterStatus monsterGetStatus(const Monster *monster, int hp);
 

@@ -14,6 +14,9 @@
 #define UNKNOWN 0
 
 static const Monster monsters[] = {
+    { HORSE1_TILE,      UNKNOWN,       "Horse",        9,  0 },
+    { HORSE2_TILE,      UNKNOWN,       "Horse",        9,  0 },
+ 
     { MAGE_TILE,        UNKNOWN,       "Mage",         8,  0 },
     { BARD_TILE,        UNKNOWN,       "Bard",         9,  0 },
     { FIGHTER_TILE,     UNKNOWN,       "Fighter",      7,  0 },
@@ -132,14 +135,13 @@ int monsterCastSleep(const Monster *monster) {
         (rand() % 4) == 0;
 }
 
-unsigned char monsterRandomForTile(unsigned char tile) {
-    unsigned char monster;
+const Monster *monsterRandomForTile(unsigned char tile) {
+    unsigned char mtile;
     int era;
     
     if (tileIsSailable(tile)) {
-        monster = ((rand() % 8) << 1) + PIRATE_TILE;
-        monster = monsterForTile(monster)->tile;
-        return monster;
+        mtile = ((rand() % 8) << 1) + PIRATE_TILE;
+        return monsterForTile(mtile);
     }
 
     if (!tileIsWalkable(tile))
@@ -152,9 +154,9 @@ unsigned char monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
 
-    monster = ((era & rand() & rand()) << 2) + ORC_TILE;
+    mtile = ((era & rand() & rand()) << 2) + ORC_TILE;
 
-    return monster;
+    return monsterForTile(mtile);
 }
 
 int monsterGetInitialHp(const Monster *monster) {
