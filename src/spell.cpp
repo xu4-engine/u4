@@ -687,7 +687,7 @@ static int spellUndead(int unused) {
 }
 
 static int spellView(int unsued) {    
-    gamePeerGem();
+    peer(false);
     return 1;
 }
 

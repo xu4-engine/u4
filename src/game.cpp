@@ -63,14 +63,11 @@ long gameTimeSinceLastCommand(void);
 int gameSave(void);
 
 /* key handlers */
-bool talkHandleAnyKey(int key, void *data);
 bool cmdHandleAnyKey(int key, void *data);
 bool windCmdKeyHandler(int key, void *data);
 
 /* map and screen functions */
 void gameUpdateMoons(int showmoongates);
-int gemHandleChoice(int choice);
-int peerCityHandleChoice(int choice);
 
 /* spell functions */
 bool castForPlayerGetDestPlayer(int player);
@@ -89,9 +86,7 @@ void newOrder();
 
 /* conversation functions */
 bool talkAtCoord(MapCoords coords, int distance, void *data);
-int talkHandleBuffer(string *message);
-int talkHandleChoice(int choice);
-void talkShowReply(int showPrompt);
+void talkRunConversation(bool showPrompt);
 
 /* action functions */
 bool attackAtCoord(MapCoords coords, int distance, void *data);
@@ -108,8 +103,8 @@ bool ztatsFor(int player);
 
 /* checking functions */
 void gameCheckBridgeTrolls(void);
-int gameCheckMoongates(void);
-int gameCheckPlayerDisabled(int player);
+bool gameCheckMoongates(void);
+bool gameCheckPlayerDisabled(int player);
 void gameCheckRandomCreatures(void);
 void gameCheckSpecialCreatures(Direction dir);
 void gameLordBritishCheckLevels(void);
@@ -119,7 +114,7 @@ void gameAlertTheGuards(Map *map);
 void gameDestroyAllCreatures(void);
 void gameFixupObjects(Map *map);
 void gameCreatureAttack(Creature *obj);
-int gameSummonCreature(string *creatureName);
+void gameSummonCreature(const string &creatureName);
 
 /* etc */
 bool gameCreateBalloon(Map *map);
@@ -802,7 +797,7 @@ void gameCastSpell(unsigned int spell, int caster, int param) {
     }    
 }
 
-int gameCheckPlayerDisabled(int player) {
+bool gameCheckPlayerDisabled(int player) {
     ASSERT(player < c->party->size(), "player %d, but only %d members\n", player, c->party->size());
 
     return c->party->member(player)->isDisabled();    
@@ -1230,13 +1225,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'p':
-        if (c->saveGame->gems) {
-            c->saveGame->gems--;
-            
-            gamePeerGem();            
-            screenMessage("Peer at a Gem!\n");
-        } else
-            screenMessage("Peer at What?\n");
+        peer();
         break;
 
     case 'q':        
@@ -1298,12 +1287,11 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'u':
         screenMessage("Use which item:\n");
-        gameGetInput(&useItem, &itemNameBuffer);
-
         if (settings.enhancements) {
             /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
             c->stats->showItems();
         }
+        itemUse(gameGetInput().c_str());
         break;
 
     case 'v':
@@ -1501,6 +1489,13 @@ void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen) {
     readBufferInfo->screenY = TEXT_AREA_Y + c->line;
 
     eventHandler->pushKeyHandler(KeyHandler(&keyHandlerReadBuffer, readBufferInfo));
+}
+
+string gameGetInput(int maxlen) {
+    screenEnableCursor();
+    screenShowCursor();
+
+    return ReadStringController::get(maxlen, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
 }
 
 int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
@@ -1908,7 +1903,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         eventHandler->popKeyHandler();
 
         screenMessage("What?\n");
-        gameGetInput(&gameSummonCreature, &creatureNameBuffer);
+        gameSummonCreature(gameGetInput());
         
         return true;
 
@@ -2866,33 +2861,14 @@ bool openAtCoord(MapCoords coords, int distance, void *data) {
 }
 
 /**
- * Waits for space bar to return from gem mode.
- */
-int gemHandleChoice(int choice) {
-    eventHandler->popKeyHandler();
-
-    screenEnableCursor();    
-    
-    c->location->viewMode = VIEW_NORMAL;
-    (*c->location->finishTurn)();    
-
-    /* unpause the game */
-    paused = 0;
-
-    return 1;
-}
-
-/**
  * Peers at a city from A-P (Lycaeum telescope) and functions like a gem
  */
 bool gamePeerCity(int city, void *data) {
-    KeyHandler::GetChoice *choiceInfo;    
     Map *peerMap;
 
     peerMap = mapMgr->get((MapId)(city+1));
 
-    if (peerMap)
-    {
+    if (peerMap != NULL) {
         gameSetMap(peerMap, 1, NULL);
         c->location->viewMode = VIEW_GEM;
         paused = 1;
@@ -2900,11 +2876,14 @@ bool gamePeerCity(int city, void *data) {
 
         screenDisableCursor();
             
-        // Wait for player to hit a key
-        choiceInfo = new KeyHandler::GetChoice;
-        choiceInfo->choices = "\015 \033";
-        choiceInfo->handleChoice = &peerCityHandleChoice;
-        eventHandler->pushKeyHandler(KeyHandler(&keyHandlerGetChoice, choiceInfo));
+        ReadChoiceController::get("\015 \033");
+
+        gameExitToParentMap();
+        screenEnableCursor();
+        paused = 0;
+    
+        (*c->location->finishTurn)();
+
         return true;
     }
     return false;
@@ -2913,32 +2892,29 @@ bool gamePeerCity(int city, void *data) {
 /**
  * Peers at a gem
  */
-void gamePeerGem(void) {
-    KeyHandler::GetChoice *choiceInfo;
+void peer(bool useGem) {
+
+    if (useGem) {
+        if (c->saveGame->gems <= 0) {
+            screenMessage("Peer at What?\n");
+            return;
+        }
+
+        c->saveGame->gems--;
+        screenMessage("Peer at a Gem!\n");
+    }
 
     paused = 1;
     pausedTimer = 0;
     screenDisableCursor();
     
     c->location->viewMode = VIEW_GEM;
-    choiceInfo = new KeyHandler::GetChoice;
-    choiceInfo->choices = "\015 \033";
-    choiceInfo->handleChoice = &gemHandleChoice;
-    eventHandler->pushKeyHandler(KeyHandler(&keyHandlerGetChoice, choiceInfo));
-}
 
-/**
- * Wait for space bar to return from gem mode and returns map to normal
- */
-int peerCityHandleChoice(int choice) {
-    eventHandler->popKeyHandler();
-    gameExitToParentMap();
-    screenEnableCursor();
+    ReadChoiceController::get("\015 \033");
+
+    screenEnableCursor();    
+    c->location->viewMode = VIEW_NORMAL;
     paused = 0;
-    
-    (*c->location->finishTurn)();
-
-    return 1;
 }
 
 /**
@@ -2983,126 +2959,95 @@ bool talkAtCoord(MapCoords coords, int distance, void *data) {
     c->conversation->reply = personGetConversationText(c->conversation, "");
     c->conversation->playerInput.erase();
 
-    talkShowReply(0);
+    talkRunConversation(false);
 
     return true;
 }
 
 /**
- * Handles a query while talking to an NPC.
+ * Executes the current conversation until it is done.
  */
-int talkHandleBuffer(string *message) {
-    eventHandler->popKeyHandler();
+void talkRunConversation(bool showPrompt) {
 
-    c->conversation->reply = personGetConversationText(c->conversation, message->c_str());
-    c->conversation->playerInput.erase();
+    while (c->conversation->state != Conversation::DONE) {
+        screenMessage("%s", c->conversation->reply->front());
+        int size = c->conversation->reply->size();
+        c->conversation->reply->pop_front();
 
-    talkShowReply(1);
+        /* if all chunks haven't been shown, wait for a key and process next chunk*/    
+        size = c->conversation->reply->size();
+        if (size > 0) {    
+            ReadChoiceController::get("");
+            continue;
+        }
 
-    return 1;
-}
-
-int talkHandleChoice(int choice) {
-    char message[2];
-
-    eventHandler->popKeyHandler();
-
-    message[0] = choice;
-    message[1] = '\0';
-
-    c->conversation->reply = personGetConversationText(c->conversation, message);
-    c->conversation->playerInput.erase();
-
-    talkShowReply(1);
-
-    return 1;
-}
-
-bool talkHandleAnyKey(int key, void *data) {
-    int showPrompt = (int) data;
-
-    eventHandler->popKeyHandler();
-
-    talkShowReply(showPrompt);
-
-    return true;
-}
-
-/**
- * Shows the conversation reply and sets up a key handler to handle
- * the current conversation state.
- */
-void talkShowReply(int showPrompt) {
-    string prompt;
-    KeyHandler::GetChoice *gcInfo;
-    int bufferlen;
+        /* otherwise, free current reply and proceed based on conversation state */
+        replyDelete(c->conversation->reply);
+        c->conversation->reply = NULL;
     
-    screenMessage("%s", c->conversation->reply->front());
-    int size = c->conversation->reply->size();
-    c->conversation->reply->pop_front();
-
-    /* if all chunks haven't been shown, wait for a key and process next chunk*/    
-    size = c->conversation->reply->size();
-    if (size > 0) {    
-        eventHandler->pushKeyHandler(KeyHandler(&talkHandleAnyKey, (void *) showPrompt));
-        return;
-    }
-
-    /* otherwise, free current reply and proceed based on conversation state */
-    replyDelete(c->conversation->reply);
-    c->conversation->reply = NULL;
+        /* they're attacking you! */
+        if (c->conversation->state == Conversation::ATTACK) {
+            c->conversation->state = Conversation::DONE;
+            c->conversation->getTalker()->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
+        }
     
-    /* they're attacking you! */
-    if (c->conversation->state == Conversation::ATTACK) {
-        c->conversation->state = Conversation::DONE;
-        c->conversation->getTalker()->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
-    }
-    
-    if (c->conversation->state == Conversation::DONE) {
-        (*c->location->finishTurn)();
-        return;
-    }
-    
-    /* When Lord British heals the party */
-    else if (c->conversation->state == Conversation::FULLHEAL) {
-        int i;
-        
-        for (i = 0; i < c->party->size(); i++) {
-            c->party->member(i)->heal(HT_CURE);        // cure the party
-            c->party->member(i)->heal(HT_FULLHEAL);    // heal the party
-        }        
-        (*spellEffectCallback)('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
+        if (c->conversation->state == Conversation::DONE)
+            break;
 
-        c->conversation->state = Conversation::TALK;
-    }
-    /* When Lord British checks and advances each party member's level */
-    else if (c->conversation->state == Conversation::ADVANCELEVELS) {
-        gameLordBritishCheckLevels();
-        c->conversation->state = Conversation::TALK;
-    }
+        /* When Lord British heals the party */
+        else if (c->conversation->state == Conversation::FULLHEAL) {
+            int i;
 
-    if (showPrompt) {        
-        prompt = personGetPrompt(c->conversation);
-        if (!prompt.empty())
-            screenMessage("%s", prompt.c_str());        
+            for (i = 0; i < c->party->size(); i++) {
+                c->party->member(i)->heal(HT_CURE);        // cure the party
+                c->party->member(i)->heal(HT_FULLHEAL);    // heal the party
+            }
+            (*spellEffectCallback)('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
+
+            c->conversation->state = Conversation::TALK;
+        }
+        /* When Lord British checks and advances each party member's level */
+        else if (c->conversation->state == Conversation::ADVANCELEVELS) {
+            gameLordBritishCheckLevels();
+            c->conversation->state = Conversation::TALK;
+        }
+
+        if (showPrompt) {
+            string prompt = personGetPrompt(c->conversation);
+            if (!prompt.empty())
+                screenMessage("%s", prompt.c_str());        
+        }
+
+        int maxlen;
+        switch (c->conversation->getInputRequired(&maxlen)) {
+        case Conversation::INPUT_STRING:
+            c->conversation->playerInput = gameGetInput(maxlen);
+            c->conversation->reply = personGetConversationText(c->conversation, c->conversation->playerInput.c_str());
+            c->conversation->playerInput.erase();
+            showPrompt = true;
+            break;
+
+        case Conversation::INPUT_CHARACTER: {
+            char message[2];
+            int choice = ReadChoiceController::get("");
+
+            message[0] = choice;
+            message[1] = '\0';
+
+            c->conversation->reply = personGetConversationText(c->conversation, message);
+            c->conversation->playerInput.erase();
+
+            showPrompt = true;
+            break;
+        }
+
+        case Conversation::INPUT_NONE:
+            c->conversation->state = Conversation::DONE;
+            break;
+        }
     }
-
-    switch (c->conversation->getInputRequired(&bufferlen)) {
-    case Conversation::INPUT_STRING:
-        gameGetInput(&talkHandleBuffer, &c->conversation->playerInput, bufferlen);
-        break;
-
-    case Conversation::INPUT_CHARACTER:
-        gcInfo = new KeyHandler::GetChoice;
-        gcInfo->choices = personGetChoices(c->conversation);
-        gcInfo->handleChoice = &talkHandleChoice;
-        eventHandler->pushKeyHandler(KeyHandler(&keyHandlerGetChoice, gcInfo));
-        break;
-
-    case Conversation::INPUT_NONE:
-        /* no handler: conversation done! */
-        break;
-    }
+    screenMessage("\n");
+    (*c->location->finishTurn)();
 }
 
 int useItem(string *itemName) {
@@ -3447,7 +3392,7 @@ void gameCheckSpecialCreatures(Direction dir) {
 /**
  * Checks for and handles when the avatar steps on a moongate
  */
-int gameCheckMoongates(void) {
+bool gameCheckMoongates(void) {
     Coords dest;
     
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, c->location->coords, dest)) {
@@ -3465,7 +3410,7 @@ int gameCheckMoongates(void) {
             shrine_spirituality = dynamic_cast<Shrine*>(mapMgr->get(MAP_SHRINE_SPIRITUALITY));
 
             if (!c->party->canEnterShrine(VIRT_SPIRITUALITY))
-                return 1;
+                return true;
             
             gameSetMap(shrine_spirituality, 1, NULL);
             musicMgr->play();
@@ -3473,10 +3418,10 @@ int gameCheckMoongates(void) {
             shrine_spirituality->enter();
         }
 
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
 /**
@@ -3807,24 +3752,22 @@ void gameLordBritishCheckLevels(void) {
  * as the creature's name, or the creature's id.  Once it finds the
  * creature to be summoned, it calls gameSpawnCreature() to spawn it.
  */
-int gameSummonCreature(string *creatureName) {    
+void gameSummonCreature(const string &creatureName) {    
     unsigned int id;
     const Creature *m = NULL;
 
-    eventHandler->popKeyHandler();
-
-    if (creatureName->empty()) {
+    if (creatureName.empty()) {
         screenPrompt();
-        return 0;
+        return;
     }
     
     /* find the creature by its id and spawn it */
-    id = atoi(creatureName->c_str());
+    id = atoi(creatureName.c_str());
     if (id > 0)
         m = creatures.getById(id);
 
     if (!m)
-        m = creatures.getByName(*creatureName);
+        m = creatures.getByName(creatureName);
 
     if (m) {
         if (gameSpawnCreature(m))
@@ -3832,12 +3775,11 @@ int gameSummonCreature(string *creatureName) {
         else screenMessage("\n\nNo place to put %s!\n\n", m->getName().c_str());
         screenPrompt();
         
-        return 1;
+        return;
     }
     
-    screenMessage("\n%s not found\n", creatureName->c_str());
+    screenMessage("\n%s not found\n", creatureName.c_str());
     screenPrompt();
-    return 0;
 }
 
 /**

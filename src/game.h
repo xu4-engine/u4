@@ -84,7 +84,7 @@ void gameResetSpellMixing(void);
 /* action functions */
 bool gameGetChest(int player);
 bool gamePeerCity(int city, void *data);
-void gamePeerGem(void);
+void peer(bool useGem = true);
 bool fireAtCoord(MapCoords coords, int distance, void *data);
 int gameDirectionalAction(CoordActionInfo *info);
 bool gameGetDirection(int (*handleDirection)(Direction dir));
@@ -101,6 +101,7 @@ bool gameSpawnCreature(const class Creature *m);
 
 /* etc */
 void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen = 32);
+string gameGetInput(int maxlen = 32);
 int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer);
 void gameGetPlayerForCommand(bool (*commandFn)(int player), bool canBeDisabled, bool canBeActivePlayer);
 void gameDamageParty(int minDamage, int maxDamage);
