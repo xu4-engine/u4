@@ -18,6 +18,10 @@ CFLAGS=$(CXXFLAGS)
 LIBS=$(UILIBS) $(shell xml2-config --libs) -lpng
 INSTALL=install
 
+ifeq ($(STATIC_GCC_LIBS),true)
+    LDFLAGS+=-L. -static-libgcc
+endif
+
 include Makefile.common
 
 install::
@@ -54,9 +58,9 @@ install::
 	$(CXX) $(CXXFLAGS) -MM $(CXXSRCS) >> .depends
 
 # a target to build without dependencies on libstdc++, libgcc_s
-$(MAIN).static_gcc_libs: $(OBJS)
+all.static_gcc_libs:
 	ln -s `$(CXX) -print-file-name=libstdc++.a` .
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LIBS) -L. -static-libgcc
+	$(MAKE) STATIC_GCC_LIBS=true
 	rm -f libstdc++.a
 
 -include .depends
