@@ -217,11 +217,11 @@ int codexHandleWOP(const char *word) {
             }
         }        
         
-        screenEraseMapArea();
-        screenRedrawMapArea();
-
         screenMessage("\nPassage is granted.\n");
         eventHandlerSleep(4000);
+
+        screenEraseMapArea();
+        screenRedrawMapArea();
 
         /* Ask the Virtue questions */
         screenMessage("\n\nThe voice asks:\n");
@@ -379,14 +379,23 @@ int codexHandleEndgameAnyKey(int key, void *data) {
     eventHandlerPopKeyHandler();
 
     if (index < 10) {
-        if (index < 7)
+
+        if (index < 7) {
+            if (index == 6) {
+                screenEraseMapArea();
+                screenRedrawMapArea();
+            }
             screenMessage(codexEndgameText1[index]);
-        else if (index == 7)
+        } 
+        else if (index == 7) {
+            screenDrawBackgroundInMapArea(BKGD_STONCRCL);
+            screenRedrawMapArea();
             screenMessage("\n\n%s", codexEndgameText2[index-7]);
+        }
         else if (index > 7)
             screenMessage(codexEndgameText2[index-7]);        
     
-        index++;       
+        index++;
         eventHandlerPushKeyHandler(&codexHandleEndgameAnyKey);
     }
     else {
