@@ -501,6 +501,7 @@ static int spellTremor(int unused) {
     int i, x, y;        
 
     for (i = 0; i < AREA_MONSTERS; i++) {
+        /* FIXME: monster selection (50/50) guessed */
         if (combatInfo.monsters[i] && (rand() % 2 == 0)) {               
 
             x = combatInfo.monsters[i]->x;
@@ -510,6 +511,7 @@ static int spellTremor(int unused) {
             eventHandlerSleep(250);
             gameUpdateScreen();
 
+            /* FIXME: damage guessed */
             combatApplyDamageToMonster(i, rand() % 0xFF, combatInfo.focus);
 
             annotationRemove(x, y, c->location->z, c->location->map->id, HITFLASH_TILE);
