@@ -239,6 +239,11 @@ int introKeyHandler(int key, void *data) {
     int valid = 1;
     GetChoiceActionInfo *info;
 
+    if (key == 'x' + U4_ALT) {
+        quit = 1;
+        eventHandlerSetExitFlag(1);
+    }
+
     switch (mode) {
 
     case INTRO_MAP:
