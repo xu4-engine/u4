@@ -52,6 +52,7 @@ typedef enum {
     CONV_BUY_QUANTITY,
     CONV_SELL_QUANTITY,
     CONV_SELL_OFFER,
+    CONV_CONTINUEQUESTION,
     CONV_DONE
 } ConversationState;
 
@@ -70,6 +71,7 @@ typedef struct _PersonType {
     char *(*getSellItemResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getBuyQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getSellQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getContinueQuestionResponse)(struct _Conversation *cnv, const char *answer);
     char *(*getPrompt)(const struct _Conversation *cnv);
     const char *vendorQuestionChoices;
 } PersonType;

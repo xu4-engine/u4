@@ -55,22 +55,22 @@ char *hawkwindGetResponse(Conversation *cnv, const char *inquiry);
 char *hawkwindGetPrompt(const Conversation *cnv);
 
 const PersonType personType[NPC_MAX] = {
-    { &emptyGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }, /* NPC_EMPTY */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER */
-    { &talkerGetIntro, &beggarGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, &beggarGetQuantityResponse, NULL, &beggarGetPrompt, NULL }, /* NPC_TALKER_BEGGAR */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER_GUARD */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER_COMPANION */
-    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_WEAPONS */
-    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_ARMOR */
-    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetPrompt, "yn\033" }, /* NPC_VENDOR_FOOD */
-    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, NULL, NULL, &vendorGetPrompt, "af\033" }, /* NPC_VENDOR_TAVERN */
-    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, NULL, NULL, &vendorGetPrompt, "yn\033" }, /* NPC_VENDOR_REAGENTS */
-    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, NULL, NULL, &vendorGetPrompt, "yn\033" }, /* NPC_VENDOR_HEALER */
-    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, NULL, NULL, &vendorGetPrompt, "yn\033" }, /* NPC_VENDOR_INN */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_GUILD */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_STABLE */
-    { &lordBritishGetIntro, &lordBritishGetResponse, &lordBritishGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &lordBritishGetPrompt, NULL }, /* NPC_LORD_BRITISH */
-    { &hawkwindGetIntro, &hawkwindGetResponse, NULL, NULL, NULL, NULL, NULL, NULL, &hawkwindGetPrompt, NULL } /* NPC_HAWKWIND */
+    { &emptyGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }, /* NPC_EMPTY */
+    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER */
+    { &talkerGetIntro, &beggarGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, &beggarGetQuantityResponse, NULL, NULL, &beggarGetPrompt, NULL }, /* NPC_TALKER_BEGGAR */
+    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER_GUARD */
+    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER_COMPANION */
+    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_WEAPONS */
+    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_ARMOR */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_FOOD */
+    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "af\033" }, /* NPC_VENDOR_TAVERN */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_REAGENTS */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_HEALER */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_INN */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_GUILD */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_STABLE */
+    { &lordBritishGetIntro, &lordBritishGetResponse, &lordBritishGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, NULL, &lordBritishGetPrompt, NULL }, /* NPC_LORD_BRITISH */
+    { &hawkwindGetIntro, &hawkwindGetResponse, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &hawkwindGetPrompt, NULL } /* NPC_HAWKWIND */
 };
 
 /**
@@ -176,6 +176,13 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
             *response = strdup("BUG: no sell quantity response handler for npc");
         break;
 
+    case CONV_CONTINUEQUESTION:
+        if (personType[cnv->talker->npcType].getContinueQuestionResponse)
+            *response = (*personType[cnv->talker->npcType].getContinueQuestionResponse)(cnv, inquiry);
+        else
+            *response = strdup("BUG: no continue question response handler for npc");
+        break;
+
     case CONV_DONE:
     default:
         assert(0);              /* shouldn't happen */
@@ -204,6 +211,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
     case CONV_VENDORQUESTION:
     case CONV_BUY_ITEM:
     case CONV_SELL_ITEM:
+    case CONV_CONTINUEQUESTION:
         return CONVINPUT_CHARACTER;
         
     case CONV_DONE:
@@ -225,6 +233,9 @@ const char *personGetChoices(const struct _Conversation *cnv) {
     case CONV_BUY_ITEM:
     case CONV_SELL_ITEM:
         return "bcdefghijklmnopqrstuvwxyz\033";
+
+    case CONV_CONTINUEQUESTION:
+        return "ny\033";
 
     default:
         assert(0);              /* shouldn't happen */

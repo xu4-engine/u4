@@ -14,6 +14,7 @@ char *vendorGetBuyItemResponse(Conversation *cnv, const char *response);
 char *vendorGetSellItemResponse(Conversation *cnv, const char *response);
 char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response);
 char *vendorGetSellQuantityResponse(Conversation *cnv, const char *response);
+char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer);
 char *vendorGetPrompt(const Conversation *cnv);
 
 #endif
