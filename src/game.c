@@ -398,6 +398,10 @@ void gameFinishTurn() {
 
         gameCheckHullIntegrity();
 
+        /* update party stats */
+        c->statsItem = STATS_PARTY_OVERVIEW;
+        statsUpdate();
+
         /* Monsters cannot spawn, move or attack while the avatar is on the balloon */
         if (!c->saveGame->balloonstate) {
 
@@ -418,10 +422,8 @@ void gameFinishTurn() {
             gameCheckBridgeTrolls();
         }
 
-        /* update map annotations and the party stats */
-        annotationCycle();
-        c->statsItem = STATS_PARTY_OVERVIEW;
-        statsUpdate();
+        /* update map annotations */
+        annotationCycle();        
 
         if (!playerPartyImmobilized(c->saveGame))
             break;
@@ -2554,12 +2556,18 @@ int moveAvatar(Direction dir, int userEvent) {
         while (temp != DIR_NORTH) {
             temp = dirRotateCW(temp);
             realDir = dirRotateCCW(realDir);
-        }       
+        }
         
-        if (c->saveGame->orientation != realDir) {
+        /* right/left turn the avatar, up advanced and down retreats */
+        if (c->saveGame->orientation != realDir &&
+            c->saveGame->orientation != dirReverse(realDir)) {            
+            
+            if (!settings->filterMoveMessages) {
+                if (dirRotateCCW(c->saveGame->orientation) == realDir)
+                    screenMessage("Turn Left\n");
+                else screenMessage("Turn Right\n");
+            }
             c->saveGame->orientation = realDir;
-            if (!settings->filterMoveMessages)
-                screenMessage("Turn %s!\n", getDirectionName(realDir));
             return result;
         }
 
@@ -2583,6 +2591,9 @@ int moveAvatar(Direction dir, int userEvent) {
     if (!settings->filterMoveMessages && userEvent) {
         if (c->transportContext == TRANSPORT_SHIP)
             screenMessage("Sail %s!\n", getDirectionName(dir));
+        /* show 'Advance' or 'Retreat' in dungeons */
+        else if (c->location->context & CTX_DUNGEON)
+            screenMessage("%s\n", dir == c->saveGame->orientation ? "Advance" : "Retreat");
         else if (c->transportContext != TRANSPORT_BALLOON)
             screenMessage("%s\n", getDirectionName(dir));
     }

@@ -81,7 +81,8 @@ typedef enum {
 } TileAnimationStyle;
 
 typedef struct _Tile {
-    unsigned short mask;    
+    unsigned short mask;
+    unsigned short movementMask;
     TileSpeed speed;
     TileEffect effect;
     int walkonDirs;
@@ -94,6 +95,7 @@ int tileCanAttackOver(unsigned char tile);
 int tileCanLandBalloon(unsigned char tile);
 int tileIsWalkable(unsigned char tile);
 int tileIsMonsterWalkable(unsigned char tile);
+int tileIsDungeonWalkable(unsigned char tile);
 int tileIsSwimable(unsigned char tile);
 int tileIsSailable(unsigned char tile);
 int tileIsWater(unsigned char tile);

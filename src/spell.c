@@ -675,7 +675,7 @@ static int spellYup(int unused) {
     int tile = mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z - 1);
 
     if (c->location->z > 0) {
-        if (tile != WALL_TILE && tile != LIGHTNINGFIELD_TILE)
+        if (tileIsDungeonWalkable(tile))
             c->location->z--;
         else return 0;
     } else {
@@ -691,7 +691,7 @@ static int spellZdown(int unused) {
     int tile = mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z + 1);
 
     if (c->location->z < 7) {
-        if (tile != WALL_TILE && tile != LIGHTNINGFIELD_TILE)
+        if (tileIsDungeonWalkable(tile))
             c->location->z++;
         else return 0;
     } else return 0;

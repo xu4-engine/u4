@@ -349,7 +349,15 @@ unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z) {
     case 0x90:
         return 0;
     case 0xA0:
-        return LIGHTNINGFIELD_TILE;
+        {
+            switch(tile & 0xF) {
+            case 0: return POISONFIELD_TILE;
+            case 1: return LIGHTNINGFIELD_TILE;
+            case 2: return FIREFIELD_TILE;
+            case 3: return SLEEPFIELD_TILE;
+            default: return BRICKFLOOR_TILE;
+            }        
+        }
     case 0xB0: /* altar */
         return 0x4a; 
     case 0xC0: /* door */
@@ -577,7 +585,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         /* in dungeons, everything but walls are walkable */
         if (c->location->context == CTX_DUNGEON) {            
             tile = mapDungeonTileAt(map, x, y, z);
-            if (tile != WALL_TILE) {
+            if (tileIsDungeonWalkable(tile)) {
                 retval = DIR_ADD_TO_MASK(d, retval);
                 continue;
             }

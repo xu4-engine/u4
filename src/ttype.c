@@ -12,22 +12,26 @@
 #include "monster.h"
 #include "xml.h"
 
+/* attr masks */
 #define MASK_OPAQUE             0x0001
-#define MASK_SWIMABLE           0x0002
-#define MASK_SAILABLE           0x0004
-#define MASK_ANIMATED           0x0008
-#define MASK_UNFLYABLE          0x0010
-#define MASK_SHIP               0x0020
-#define MASK_HORSE              0x0040
-#define MASK_BALLOON            0x0080
-#define MASK_DISPEL             0x0100
-#define MASK_MONSTER_UNWALKABLE 0x0200
-#define MASK_TALKOVER           0x0400
-#define MASK_DOOR               0x0800
-#define MASK_LOCKEDDOOR         0x1000
-#define MASK_CHEST              0x2000
-#define MASK_ATTACKOVER         0x4000
-#define MASK_CANLANDBALLOON     0x8000
+#define MASK_ANIMATED           0x0002
+#define MASK_SHIP               0x0004
+#define MASK_HORSE              0x0008
+#define MASK_BALLOON            0x0010
+#define MASK_DISPEL             0x0020
+#define MASK_TALKOVER           0x0040
+#define MASK_DOOR               0x0080
+#define MASK_LOCKEDDOOR         0x0100
+#define MASK_CHEST              0x0200
+#define MASK_ATTACKOVER         0x0400
+#define MASK_CANLANDBALLOON     0x0800
+
+/* movement masks */
+#define MASK_SWIMABLE           0x0001
+#define MASK_SAILABLE           0x0002
+#define MASK_UNFLYABLE          0x0004
+#define MASK_MONSTER_UNWALKABLE 0x0008
+#define MASK_DUNGEON_UNWALKABLE 0x0010
 
 /* tile values 0-127 */
 int tileInfoLoaded = 0;
@@ -46,13 +50,9 @@ void tileLoadInfoFromXml() {
         unsigned int mask;
         int *base;
     } booleanAttributes[] = {
-        { "opaque", MASK_OPAQUE, NULL },
-        { "swimable", MASK_SWIMABLE, NULL },
-        { "sailable", MASK_SAILABLE, NULL },
-        { "animated", MASK_ANIMATED, NULL },
-        { "unflyable", MASK_UNFLYABLE, NULL },
-        { "dispel", MASK_DISPEL, NULL },
-        { "monsterunwalkable", MASK_MONSTER_UNWALKABLE, NULL },
+        { "opaque", MASK_OPAQUE, NULL },        
+        { "animated", MASK_ANIMATED, NULL },        
+        { "dispel", MASK_DISPEL, NULL },        
         { "talkover", MASK_TALKOVER, NULL },
         { "door", MASK_DOOR, NULL },
         { "lockeddoor", MASK_LOCKEDDOOR, NULL },
@@ -63,6 +63,17 @@ void tileLoadInfoFromXml() {
         { "canattackover", MASK_ATTACKOVER, NULL },
         { "canlandballoon", MASK_CANLANDBALLOON, NULL }
     };
+
+    static const struct {
+        const char *name;
+        unsigned int mask;      
+    } movementBooleanAttr[] = {        
+        { "swimable", MASK_SWIMABLE },
+        { "sailable", MASK_SAILABLE },        
+        { "unflyable", MASK_UNFLYABLE },        
+        { "monsterunwalkable", MASK_MONSTER_UNWALKABLE },
+        { "dungeonunwalkable", MASK_DUNGEON_UNWALKABLE },        
+    };    
 
     tileInfoLoaded = 1;
 
@@ -78,6 +89,7 @@ void tileLoadInfoFromXml() {
             continue;
 
         _ttype_info[tile].mask = 0;
+        _ttype_info[tile].movementMask = 0;
         _ttype_info[tile].speed = FAST;
         _ttype_info[tile].effect = EFFECT_NONE;
         _ttype_info[tile].walkonDirs = MASK_DIR_ALL;
@@ -90,6 +102,11 @@ void tileLoadInfoFromXml() {
                     (*booleanAttributes[i].base) == -1)
                     (*booleanAttributes[i].base) = tile;
             }
+        }
+
+        for (i = 0; i < sizeof(movementBooleanAttr) / sizeof(movementBooleanAttr[0]); i++) {
+            if (xmlGetPropAsBool(node, (const xmlChar *) movementBooleanAttr[i].name))
+                _ttype_info[tile].movementMask |= movementBooleanAttr[i].mask;
         }
 
         if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "all") == 0)
@@ -144,6 +161,7 @@ void tileLoadInfoFromXml() {
     /* initialize the values for the monster tiles */
     for ( ; tile < sizeof(_ttype_info) / sizeof(_ttype_info[0]); tile++) {
         _ttype_info[tile].mask = 0;
+        _ttype_info[tile].movementMask = 0;
         _ttype_info[tile].speed = FAST;
         _ttype_info[tile].effect = EFFECT_NONE;
         _ttype_info[tile].walkonDirs = 0;
@@ -176,6 +194,12 @@ int tileTestBit(unsigned char tile, unsigned short mask) {
     return (_ttype_info[tile].mask & mask) != 0;
 }
 
+int tileTestMovementBit(unsigned char tile, unsigned short mask) {
+    if (!tileInfoLoaded)
+        tileLoadInfoFromXml();
+
+    return (_ttype_info[tile].movementMask & mask) != 0;
+}
 
 int tileCanWalkOn(unsigned char tile, Direction d) {
     return DIR_IN_MASK(d, _ttype_info[tile].walkonDirs);
@@ -201,15 +225,19 @@ int tileIsWalkable(unsigned char tile) {
 }
 
 int tileIsMonsterWalkable(unsigned char tile) {
-    return !tileTestBit(tile, MASK_MONSTER_UNWALKABLE);
+    return !tileTestMovementBit(tile, MASK_MONSTER_UNWALKABLE);
+}
+
+int tileIsDungeonWalkable(unsigned char tile) {
+    return !tileTestMovementBit(tile, MASK_DUNGEON_UNWALKABLE);
 }
 
 int tileIsSwimable(unsigned char tile) {
-    return tileTestBit(tile, MASK_SWIMABLE);
+    return tileTestMovementBit(tile, MASK_SWIMABLE);
 }
 
 int tileIsSailable(unsigned char tile) {
-    return tileTestBit(tile, MASK_SAILABLE);
+    return tileTestMovementBit(tile, MASK_SAILABLE);
 }
 
 int tileIsWater(unsigned char tile) {
@@ -217,7 +245,7 @@ int tileIsWater(unsigned char tile) {
 }
 
 int tileIsFlyable(unsigned char tile) {
-    return !tileTestBit(tile, MASK_UNFLYABLE);
+    return !tileTestMovementBit(tile, MASK_UNFLYABLE);
 }
 
 int tileIsDoor(unsigned char tile) {
