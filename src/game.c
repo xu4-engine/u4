@@ -593,7 +593,6 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'f':
         if (tileIsShip(c->saveGame->transport)) {
-
             int validDirs;
             validDirs = DIR_REMOVE_FROM_MASK(tileGetDirection(c->saveGame->transport), MASK_DIR_ALL);
             validDirs = DIR_REMOVE_FROM_MASK(dirReverse(tileGetDirection(c->saveGame->transport)), validDirs);
@@ -606,7 +605,7 @@ int gameBaseKeyHandler(int key, void *data) {
             info->range = 3;
             info->validDirections = validDirs;
             info->player = -1;
-            info->blockedPredicate = NULL;
+            info->blockedPredicate = &tileCanAttackOver;
             eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
 
             printf("validDirs = %d\n", validDirs);
@@ -1195,7 +1194,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     /* nothing attackable: move on to next tile */
     if (obj == NULL ||
         (obj->objType == OBJECT_UNKNOWN) ||
-        (obj->objType == OBJECT_MONSTER && obj->monster->mattr & MATTR_NONATTACKABLE) ||
+        (obj->objType == OBJECT_MONSTER && !monsterIsAttackable(obj->monster)) ||
         /* can't attack horse transport */
         (tileIsHorse(obj->tile) && obj->movement_behavior == MOVEMENT_FIXED)) {
         return 0;
@@ -1323,7 +1322,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
         Object *obj = NULL;
 
         obj = mapObjectAt(c->location->map, x, y, c->location->z);
-        if (obj && obj->objType == OBJECT_MONSTER) {           
+        if (obj && (obj->objType == OBJECT_MONSTER || obj->objType == OBJECT_UNKNOWN)) {
             if (rand() % 2 == 0)
                 annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE), (attackdelay + 8)/8));
             else {
@@ -2324,7 +2323,7 @@ void gameCheckRandomMonsters() {
     /* If there are too many monsters already,
        or we're not on the world map, don't worry about it! */
     if (!mapIsWorldMap(c->location->map) ||
-        mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS ||
+        mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS_ON_MAP ||
         (rand() % 16) != 0)
         return;
 

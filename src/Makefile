@@ -42,6 +42,7 @@ install::
 	$(INSTALL) ../conf/tiles.xml $(libdir)/u4/tiles.xml
 	$(INSTALL) ../conf/armors.xml $(libdir)/u4/armors.xml
 	$(INSTALL) ../conf/weapons.xml $(libdir)/u4/weapons.xml
+	$(INSTALL) ../conf/monsters.xml $(libdir)/u4/monsters.xml
 	$(INSTALL) ../u4.desktop $(desktopdir)/Games/u4.desktop
 
 -include .depends

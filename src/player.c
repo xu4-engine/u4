@@ -86,7 +86,11 @@ void playerAdvanceLevel(SaveGamePlayerRecord *player) {
     */
     player->str   += (rand() % 8) + 1;
     player->dex   += (rand() % 8) + 1;
-    player->intel += (rand() % 8) + 1;    
+    player->intel += (rand() % 8) + 1;
+
+    if (player->str > 50) player->str = 50;
+    if (player->dex > 50) player->dex = 50;
+    if (player->intel > 50) player->intel = 50;
 
     if (advanceLevelCallback)
         (*advanceLevelCallback)(player);
@@ -336,7 +340,8 @@ int playerJoin(SaveGame *saveGame, const char *name) {
         if (strcmp(saveGame->players[i].name, name) == 0) {
 
             /* ensure character has enough karma */
-            if (saveGame->karma[saveGame->players[i].klass] < 40)
+            if ((saveGame->karma[saveGame->players[i].klass] > 0) &&
+                (saveGame->karma[saveGame->players[i].klass] < 40))
                 return 0;
 
             tmp = saveGame->players[saveGame->members];

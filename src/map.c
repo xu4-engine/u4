@@ -448,8 +448,8 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
         
         /* check if the object is an attacking monster and not
            just a normal, docile person in town or an inanimate object */
-        if ((obj->objType != OBJECT_UNKNOWN) &&
-           ((obj->objType != OBJECT_MONSTER) || (obj->monster->mattr & MATTR_NOATTACK) == 0) &&
+        if ((obj->objType != OBJECT_UNKNOWN) && 
+           ((obj->objType != OBJECT_MONSTER) || monsterWillAttack(obj->monster)) &&
            ((obj->objType != OBJECT_PERSON) || (obj->person->movement_behavior == MOVEMENT_ATTACK_AVATAR))) {
             
             if (mapMovementDistance(newx, newy, avatarx, avatary) == 1) {
@@ -494,7 +494,7 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
         }
         
         /* If the creature doesn't fly, then it can be slowed */
-        if (slow && (obj->objType == OBJECT_MONSTER && (obj->monster->mattr & MATTR_FLIES)==0))
+        if (slow && (obj->objType == OBJECT_MONSTER && !monsterFlies(obj->monster)))
             continue;
 
         if ((newx != obj->x || newy != obj->y) &&
@@ -510,7 +510,7 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
             obj->y = newy;
         }
 
-        /* Affect any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
+        /* Enact any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
         if (obj->objType == OBJECT_MONSTER) monsterSpecialEffect(obj);
     }
 
@@ -600,22 +600,23 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
 
         prev_tile = mapTileAt(map, from_x, from_y, z);
 
+        m = monsterForTile(transport);
         /* if the transport is a ship, check sailable */
         if (tileIsShip(transport) || tileIsPirateShip(transport)) {
             if (tileIsSailable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);
         }
         /* aquatic monster */
-        else if ((m = monsterForTile(transport)) && (m->mattr & MATTR_WATER)) {
+        else if (m && monsterIsAquatic(m)) {
             if (tileIsSwimable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);
         }
         /* ghost monster */
-        else if ((m = monsterForTile(transport)) && (m->tile == GHOST_TILE)) {
+        else if (m && (m->id == GHOST_ID)) {
             retval = DIR_ADD_TO_MASK(d, retval);
         }
         /* if it is a balloon or flying monster, check flyable */
-        else if (tileIsBalloon(transport) || ((m = monsterForTile(transport)) && (m->mattr & MATTR_FLIES))) {
+        else if (tileIsBalloon(transport) || (m && monsterFlies(m))) {
             /* Monster movement */
             if (m && (!monsterForTile(tile)) && tileIsFlyable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);           

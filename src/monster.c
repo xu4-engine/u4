@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <ctype.h>
+#include <string.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
 
 #include "monster.h"
 
@@ -19,71 +23,144 @@
 
 #define UNKNOWN 0
 
-static const Monster monsters[] = {
-    { HORSE1_TILE,      UNKNOWN,       "Horse",        9,  0, MATTR_GOOD | MATTR_NOATTACK },
-    { HORSE2_TILE,      UNKNOWN,       "Horse",        9,  0, MATTR_GOOD | MATTR_NOATTACK },
- 
-    { MAGE_TILE,        UNKNOWN,       "Mage",         8,  MAGICFLASH_TILE, MATTR_GOOD | MATTR_NOATTACK },
-    { BARD_TILE,        UNKNOWN,       "Bard",         9,  0, MATTR_GOOD | MATTR_NOATTACK },
-    { FIGHTER_TILE,     UNKNOWN,       "Fighter",      7,  0, MATTR_GOOD | MATTR_NOATTACK },
-    { DRUID_TILE,       UNKNOWN,       "Druid",        10, 0, MATTR_GOOD | MATTR_NOATTACK },
-    { TINKER_TILE,      UNKNOWN,       "Tinker",       9,  0, MATTR_GOOD | MATTR_NOATTACK },
-    { PALADIN_TILE,     UNKNOWN,       "Paladin",      4,  0, MATTR_GOOD | MATTR_NOATTACK },
-    { RANGER_TILE,      UNKNOWN,       "Ranger",       3,  0, MATTR_GOOD | MATTR_NOATTACK },
-    { SHEPHERD_TILE,    UNKNOWN,       "Shepherd",     9,  0, MATTR_GOOD | MATTR_NOATTACK },
+int monsterInfoLoaded = 0;
+int numMonsters = 0;
+Monster monsters[MAX_MONSTERS];
 
-    { GUARD_TILE,       UNKNOWN,       "Guard",        13, 0, MATTR_GOOD | MATTR_NOATTACK },
-    { VILLAGER_TILE,    UNKNOWN,       "Villager",     13, 0, MATTR_GOOD | MATTR_NOATTACK },
-    { SINGINGBARD_TILE, UNKNOWN,       "Bard",         9,  0, MATTR_GOOD | MATTR_NOATTACK },
-    { JESTER_TILE,      UNKNOWN,       "Jester",       9,  0, MATTR_GOOD | MATTR_NOATTACK },
-    { BEGGAR_TILE,      UNKNOWN,       "Beggar",       13, 0, MATTR_GOOD | MATTR_NOATTACK },
-    { CHILD_TILE,       UNKNOWN,       "Child",        10, 0, MATTR_GOOD | MATTR_NOATTACK },
-    { BULL_TILE,        UNKNOWN,       "Bull",         11, 0, MATTR_GOOD },
-    { LORDBRITISH_TILE, UNKNOWN,       "Lord British", 16, MAGICFLASH_TILE, MATTR_GOOD | MATTR_NOATTACK },
+/**
+ * Load monster information from monsters.xml
+ */
 
-    { PIRATE_TILE,      UNKNOWN,       "Pirate Ship",  16, 0,      MATTR_WATER },
-    { NIXIE_TILE,       SEAHORSE_TILE, "Nixie",        4,  MISSFLASH_TILE, MATTR_WATER },
-    { GIANT_SQUID_TILE, SEA_SERPENT_TILE, "Giant Squid",  6, LIGHTNINGFIELD_TILE, MATTR_WATER },
-    { SEA_SERPENT_TILE, GIANT_SQUID_TILE, "Sea Serpent",  8, FIREFIELD_TILE, MATTR_WATER },
-    { SEAHORSE_TILE,    NIXIE_TILE,    "Seahorse",     6,  MAGICFLASH_TILE, MATTR_WATER | MATTR_GOOD },
-    { WHIRLPOOL_TILE,   WHIRLPOOL_TILE, "Whirlpool",   16, 0,      MATTR_WATER | MATTR_NONATTACKABLE | MATTR_WANDERS | MATTR_NOATTACK },
-    { STORM_TILE,       STORM_TILE,    "Storm",        16, 0,      MATTR_FLIES | MATTR_NONATTACKABLE | MATTR_WANDERS | MATTR_NOATTACK },
-    { RAT_TILE,         SKELETON_TILE, "Rat",          3,  0,      MATTR_GOOD | MATTR_WANDERS },
-    { BAT_TILE,         LAVA_LIZARD_TILE, "Bat",       3,  0,      MATTR_FLIES | MATTR_GOOD | MATTR_WANDERS },
-    { GIANT_SPIDER_TILE, RAT_TILE,     "Giant Spider", 4,  POISONFIELD_TILE, MATTR_GOOD | MATTR_WANDERS },
-    { GHOST_TILE,       LICH_TILE,     "Ghost",        5,  0,      MATTR_UNDEAD },
-    { SLIME_TILE,       SLIME_TILE,    "Slime",        3,  0,      0 },
-    { TROLL_TILE,       ETTIN_TILE,    "Troll",        6,  MISSFLASH_TILE, 0 },
-    { GREMLIN_TILE,     GREMLIN_TILE,  "Gremlin",      3,  0,      MATTR_STEALFOOD },
-    { MIMIC_TILE,       MIMIC_TILE,    "Mimic",        12, POISONFIELD_TILE, MATTR_STATIONARY | MATTR_CAMOUFLAGE },
-    { REAPER_TILE,      REAPER_TILE,   "Reaper",       16, 0xFF,   MATTR_CASTS_SLEEP | MATTR_STATIONARY },
-    { INSECT_SWARM_TILE, RAT_TILE,     "Insect Swarm", 3,  0,      MATTR_GOOD | MATTR_WANDERS },
-    { GAZER_TILE,       PHANTOM_TILE,  "Gazer",        15, SLEEPFIELD_TILE, 0 },
-    { PHANTOM_TILE,     GHOST_TILE,    "Phantom",      8,  0,      MATTR_UNDEAD },
-    { ORC_TILE,         TROLL_TILE,    "Orc",          5,  0,      0 },
-    { SKELETON_TILE,    EVILMAGE_TILE, "Skeleton",     3,  0,      MATTR_UNDEAD },
-    { ROGUE_TILE,       ROGUE_TILE,    "Rogue",        5,  0,      MATTR_STEALGOLD },
-    { PYTHON_TILE,      RAT_TILE,      "Python",       3,  POISONFIELD_TILE, MATTR_GOOD | MATTR_WANDERS },
-    { ETTIN_TILE,       DAEMON_TILE,   "Ettin",        7,  BOULDER_TILE, 0 },
-    { HEADLESS_TILE,    GAZER_TILE,    "Headless",     4,  0,      0 },
-    { CYCLOPS_TILE,     ZORN_TILE,     "Cyclops",      8,  BOULDER_TILE, 0 },
-    { WISP_TILE,        PHANTOM_TILE,  "Wisp",         4,  0,      MATTR_TELEPORT },
-    { EVILMAGE_TILE,    DAEMON_TILE,   "Mage",         11, MAGICFLASH_TILE, 0 },
-    { LICH_TILE,        DAEMON_TILE,   "Lich",         12, MAGICFLASH_TILE, MATTR_UNDEAD },
-    { LAVA_LIZARD_TILE, HYDRA_TILE,    "Lava Lizard",  5,  LAVA_TILE, MATTR_FIRERESISTANT },
-    { ZORN_TILE,        GAZER_TILE,    "Zorn",         15, 0,      MATTR_NEGATE },
-    { DAEMON_TILE,      BALRON_TILE,   "Daemon",       7,  MAGICFLASH_TILE, MATTR_FIRERESISTANT },
-    { HYDRA_TILE,       DRAGON_TILE,   "Hydra",        13, FIREFIELD_TILE, MATTR_FIRERESISTANT },
-    { DRAGON_TILE,      BALRON_TILE,   "Dragon",       14, FIREFIELD_TILE, MATTR_FLIES | MATTR_FIRERESISTANT },
-    { BALRON_TILE,      BALRON_TILE,   "Balron",       16, 0xFF,   MATTR_CASTS_SLEEP | MATTR_FIRERESISTANT }
-};
+void monsterLoadInfoFromXml() {
+    char *fname;
+    xmlDocPtr doc;
+    xmlNodePtr root, node;
+    int monster, i;
+    static const struct {
+        const char *name;
+        unsigned int mask;        
+    } booleanAttributes[] = {
+        { "undead", MATTR_UNDEAD },
+        { "good", MATTR_GOOD },
+        { "swims", MATTR_WATER },
+        { "sails", MATTR_WATER },
+        { "stationary", MATTR_STATIONARY },
+        { "cantattack", MATTR_NONATTACKABLE },
+        { "teleports", MATTR_TELEPORT },
+        { "camouflage", MATTR_CAMOUFLAGE }, 
+        { "wontattack", MATTR_NOATTACK },
+        { "flies", MATTR_FLIES }
+    };
 
-#define N_MONSTERS (sizeof(monsters) / sizeof(monsters[0]))
+    /* steals="" */
+    static const struct {
+        const char *name;
+        unsigned int mask;
+    } steals[] = {
+        { "food", MATTR_STEALFOOD },
+        { "gold", MATTR_STEALGOLD }
+    };
+
+    /* casts="" */
+    static const struct {
+        const char *name;
+        unsigned int mask;
+    } casts[] = {
+        { "sleep", MATTR_CASTS_SLEEP },
+        { "negate", MATTR_NEGATE }
+    };
+
+    /* movement="" */
+    static const struct {
+        const char *name;
+        unsigned int mask;
+    } movement[] = {
+        { "none", MATTR_STATIONARY },
+        { "wanders", MATTR_WANDERS }
+    };
+
+    if (!monsterInfoLoaded)
+        monsterInfoLoaded = 1;
+    else return;
+
+    fname = u4find_conf("monsters.xml");
+    if (!fname)
+        errorFatal("unable to open file monsters.xml");
+    doc = xmlParseFile(fname);
+    if (!doc)
+        errorFatal("error parsing monsters.xml");
+
+    root = xmlDocGetRootElement(doc);
+    if (xmlStrcmp(root->name, (const xmlChar *) "monsters") != 0)
+        errorFatal("malformed monsters.xml");
+
+    monster = 0;
+    for (node = root->xmlChildrenNode; node; node = node->next) {
+        if (xmlNodeIsText(node) ||
+            xmlStrcmp(node->name, (const xmlChar *) "monster") != 0)
+            continue;
+
+        monsters[monster].name = (char *)xmlGetProp(node, (const xmlChar *)"name");
+        monsters[monster].id = (unsigned short)atoi((char *)xmlGetProp(node, (const xmlChar *)"id"));
+        
+        /* Get the leader if it's been included, otherwise the leader is itself */
+        if (xmlGetProp(node, (const xmlChar *)"leader") != NULL)
+            monsters[monster].leader = (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"leader"));
+        else monsters[monster].leader = monsters[monster].id;
+
+        monsters[monster].level = (unsigned short)atoi((char *)xmlGetProp(node, (const xmlChar *)"level"));
+        monsters[monster].ranged = (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"ranged"), 
+            (const xmlChar *) "true") == 0);
+        monsters[monster].tile = (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"tile"));
+        monsters[monster].mattr = 0;
+
+        /* Load monster attributes */
+        for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
+            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) booleanAttributes[i].name), 
+                          (const xmlChar *) "true") == 0) {
+                monsters[monster].mattr |= booleanAttributes[i].mask;
+            }
+        }
+
+        /* steals="" */
+        for (i = 0; i < sizeof(steals) / sizeof(steals[0]); i++) {
+            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"steals"), 
+                          (const xmlChar *)steals[i].name) == 0) {
+                monsters[monster].mattr |= steals[i].mask;
+            }
+        }
+
+        /* casts="" */
+        for (i = 0; i < sizeof(casts) / sizeof(casts[0]); i++) {
+            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"casts"), 
+                          (const xmlChar *)casts[i].name) == 0) {
+                monsters[monster].mattr |= casts[i].mask;
+            }
+        }
+
+        /* movement="" */
+        for (i = 0; i < sizeof(movement) / sizeof(movement[0]); i++) {
+            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"movement"), 
+                          (const xmlChar *)movement[i].name) == 0) {
+                monsters[monster].mattr |= movement[i].mask;
+            }
+        }
+
+        monster++;
+        numMonsters++;
+    }
+
+    xmlFreeDoc(doc);
+}
+
+//-------------------------------------------------------------------------------------------------
 
 const Monster *monsterForTile(unsigned char tile) {
     int i, n;
 
-    for (i = 0; i < N_MONSTERS; i++) {
+    monsterLoadInfoFromXml();
+
+    for (i = 0; i < numMonsters; i++) {
             
 
         switch (tileGetAnimationStyle(monsters[i].tile)) {
@@ -108,12 +185,36 @@ const Monster *monsterForTile(unsigned char tile) {
     return NULL;
 }
 
+int monsterIsGood(const Monster *monster) {
+    return (monster->mattr & MATTR_GOOD);
+}
+
 int monsterIsEvil(const Monster *monster) {
-    return (monster->mattr & MATTR_GOOD) == 0;
+    return !monsterIsGood(monster);
 }
 
 int monsterIsUndead(const Monster *monster) {
-    return (monster->mattr & MATTR_UNDEAD) != 0;
+    return (monster->mattr & MATTR_UNDEAD);
+}
+
+int monsterIsAquatic(const Monster *monster) {
+    return (monster->mattr & MATTR_WATER);
+}
+
+int monsterFlies(const Monster *monster) {
+    return (monster->mattr & MATTR_FLIES);
+}
+
+int monsterTeleports(const Monster *monster) {
+    return (monster->mattr & MATTR_TELEPORT);
+}
+
+int monsterIsAttackable(const Monster *monster) {
+    return (monster->mattr & MATTR_NONATTACKABLE);
+}
+
+int monsterWillAttack(const Monster *monster) {
+    return !(monster->mattr & MATTR_NOATTACK);
 }
 
 int monsterGetXp(const Monster *monster) {
@@ -142,16 +243,13 @@ int monsterCastSleep(const Monster *monster) {
 }
 
 const Monster *monsterRandomForTile(unsigned char tile) {
-    unsigned char mtile;
-    int era;
+    int era;    
     
-    if (tileIsSailable(tile)) {
-        mtile = ((rand() % 8) << 1) + PIRATE_TILE;
-        return monsterForTile(mtile);
+    if (tileIsSailable(tile)) {        
+        return monsterById((rand() % 7) + PIRATE_ID);
     }
     else if (tileIsSwimable(tile)) {
-        mtile = ((rand() % 7) << 1) + NIXIE_TILE;        
-        return monsterForTile(mtile);
+        return monsterById((rand() % 6) + NIXIE_ID);
     }
 
     if (!tileIsMonsterWalkable(tile))
@@ -163,10 +261,8 @@ const Monster *monsterRandomForTile(unsigned char tile) {
         era = 0x07;
     else
         era = 0x03;
-
-    mtile = ((era & rand() & rand()) << 2) + ORC_TILE;    
-
-    return monsterForTile(mtile);
+    
+    return monsterById((era & rand() & rand()) + ORC_ID);
 }
 
 int monsterGetInitialHp(const Monster *monster) {
@@ -221,83 +317,105 @@ int monsterSpecialAction(const Monster *monster) {
 }
 
 void monsterSpecialEffect(Object *obj) {
-    Object *o;    
+    Object *o;
+    Monster *m = (obj->objType == OBJECT_MONSTER) ? obj->monster : NULL;
 
-    switch(obj->tile) {
-    case STORM_TILE:
-    case STORM_TILE+1:
-        {
-            if (obj->x == c->location->x &&
+    if (m) {
+        switch(m->id) {        
+        
+        case STORM_ID:
+            {
+                if (obj->x == c->location->x &&
                     obj->y == c->location->y &&
                     obj->z == c->location->z) {
 
-                if (tileIsShip(c->saveGame->transport)) {
-                    /* FIXME: Check actual damage from u4dos
-                       Screen should shake here */
-                    c->saveGame->shiphull -= (11 + rand()%20);
-                    if (c->saveGame->shiphull > 99)
-                    {
-                        c->saveGame->shiphull = 0;
-                        gameCheckHullIntegrity();
+                    if (tileIsShip(c->saveGame->transport)) {
+                        /* FIXME: Check actual damage from u4dos
+                           Screen should shake here */
+                        c->saveGame->shiphull -= (11 + rand()%20);
+                        if (c->saveGame->shiphull > 99)
+                        {
+                            c->saveGame->shiphull = 0;
+                            gameCheckHullIntegrity();
+                        }
+                    }
+                    else {
+                        /* FIXME: formula for twister damage is guesstimated from u4dos */
+                        int i;
+
+                        for (i = 0; i < c->saveGame->members; i++)
+                            playerApplyDamage(&c->saveGame->players[i], rand() % 75);
+                    }
+                    break;
+                }
+
+                /* See if the storm is on top of any objects and destroy them! */
+                for (o = c->location->map->objects; o; o = o->next) {                
+                    if (o != obj && 
+                        o->x == obj->x &&
+                        o->y == obj->y &&
+                        o->z == obj->z) {
+                        /* Converged with an object, destroy the object! */
+                        mapRemoveObject(c->location->map, o);
+                        break;
                     }
                 }
-                else {
-                    /* FIXME: formula for twister damage is guesstimated from u4dos */
-                    int i;
-
-                    for (i = 0; i < c->saveGame->members; i++)
-                        playerApplyDamage(&c->saveGame->players[i], rand() % 75);
-                }
-                break;
-            }
-
-            /* See if the storm is on top of any objects and destroy them! */
-            for (o = c->location->map->objects; o; o = o->next) {                
-                if (o != obj && 
-                    o->x == obj->x &&
-                    o->y == obj->y &&
-                    o->z == obj->z) {
-                    /* Converged with an object, destroy the object! */
-                    mapRemoveObject(c->location->map, o);
-                    break;
-                }
-            }
-        }      
-        break;
-
-    case WHIRLPOOL_TILE:
-    case WHIRLPOOL_TILE+1:
-        {
-            if (obj->x == c->location->x &&
-                obj->y == c->location->y &&
-                obj->z == c->location->z && tileIsShip(c->saveGame->transport)) {
+            }      
+            break;
+        
+        case WHIRLPOOL_ID:        
+            {
+                if (obj->x == c->location->x &&
+                    obj->y == c->location->y &&
+                    obj->z == c->location->z && tileIsShip(c->saveGame->transport)) {                    
                 
-                /* FIXME: Screen should shake here */
-                c->saveGame->shiphull -= 10;
-                gameCheckHullIntegrity();
+                    /* FIXME: Screen should shake here */
+                    c->saveGame->shiphull -= 10;
+                    gameCheckHullIntegrity();
 
-                c->location->x = 127;
-                c->location->y = 78;
+                    c->location->x = 127;
+                    c->location->y = 78;
 
-                mapRemoveObject(c->location->map, obj);
-                break;
-            }
-            
-            /* See if the whirlpool is on top of any objects and destroy them! */
-            for (o = c->location->map->objects; o; o = o->next) {
-                if (o != obj && 
-                    o->x == obj->x &&
-                    o->y == obj->y &&
-                    o->z == obj->z) {                    
-                    
-                    /* Make sure the object isn't a flying monster or object */
-                    if (!tileIsBalloon(o->tile) && (!(o->objType == OBJECT_MONSTER) || !(o->monster->mattr & MATTR_FLIES)))
-                        mapRemoveObject(c->location->map, o); /* Destroy the object it met with */
+                    /* Destroy the whirlpool that sent you there */
+                    mapRemoveObject(c->location->map, obj);
                     break;
                 }
-            }            
-        }
+            
+                /* See if the whirlpool is on top of any objects and destroy them! */
+                for (o = c->location->map->objects; o; o = o->next) {
+                    if (o != obj && 
+                        o->x == obj->x &&
+                        o->y == obj->y &&
+                        o->z == obj->z) {                    
+                    
+                        /* Make sure the object isn't a flying monster or object */
+                        if (!tileIsBalloon(o->tile) && ((o->objType != OBJECT_MONSTER) || !monsterFlies(o->monster)))
+                            /* Destroy the object it met with */
+                            mapRemoveObject(c->location->map, o);
+                        break;
+                    }
+                }            
+            }
 
-    default: break;
+        default: break;
+        }
     }
+}
+
+/**
+ * Returns a pointer to the monster with the corresponding 'id'
+ */
+
+const Monster *monsterById(unsigned short id) {
+    int i;
+
+    /* make sure monster info has been loaded */
+    monsterLoadInfoFromXml();
+
+    for (i = 0; i < numMonsters; i++) {
+        if (monsters[i].id == id)
+            return &monsters[i];
+    }
+
+    return NULL;
 }

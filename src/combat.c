@@ -53,7 +53,7 @@ extern Map shorship_map;
 Object *monsterObj;
 int focus;
 Object *party[8];
-Object *monsters[AREA_MONSTERS];
+Object *combat_monsters[AREA_MONSTERS];
 int monsterHp[AREA_MONSTERS];
 
 void combatCreateMonster(int index, int canbeleader);
@@ -96,10 +96,10 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
 
     nmonsters = combatInitialNumberOfMonsters(monster->tile);
     for (i = 0; i < AREA_MONSTERS; i++)
-        monsters[i] = NULL;
+        combat_monsters[i] = NULL;
     for (i = 0; i < nmonsters; i++) {
         /* find a random free slot in the monster table */
-        do {j = rand() % AREA_MONSTERS;} while (monsters[j] != NULL);
+        do {j = rand() % AREA_MONSTERS;} while (combat_monsters[j] != NULL);
         combatCreateMonster(j, i != (nmonsters - 1));
     }
 
@@ -147,7 +147,7 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     else m = monsterForTile(monsterObj->tile);
     
     /* check if monster is aquatic */
-    if (m->mattr & MATTR_WATER) {
+    if (monsterIsAquatic(m)) {
         if (tileIsPirateShip(monsterObj->tile)) {
             if (tileIsShip(transport) || tileIsShip(partytile))
                 return &shipship_map;
@@ -172,8 +172,8 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     return &brick_map;
 }
 
-void combatCreateMonster(int index, int canbeleader) {
-    unsigned char mtile;
+void combatCreateMonster(int index, int canbeleader) {    
+    unsigned char mtile;    
 
     mtile = monsterObj->tile;
 
@@ -185,19 +185,19 @@ void combatCreateMonster(int index, int canbeleader) {
         /* the monster can be normal, a leader or a leader's leader */
         if (canbeleader && (rand() % 32) == 0) {
             /* leader's leader */
-            mtile = monsterForTile(mtile)->leader;
-            mtile = monsterForTile(mtile)->leader;
+            mtile = monsterById(monsterForTile(mtile)->leader)->tile;
+            mtile = monsterById(monsterForTile(mtile)->leader)->tile;
         }
         else if (canbeleader && (rand() % 8) == 0) {
             /* leader */
-            mtile = monsterForTile(mtile)->leader;
+            mtile = monsterById(monsterForTile(mtile)->leader)->tile;
         }
         else
             /* normal */
             ;
     }
-    monsters[index] = mapAddMonsterObject(c->location->map, monsterForTile(mtile), c->location->map->area->monster_start[index].x, c->location->map->area->monster_start[index].y, c->location->z);
-    monsterHp[index] = monsterGetInitialHp(monsters[index]->monster);
+    combat_monsters[index] = mapAddMonsterObject(c->location->map, monsterForTile(mtile), c->location->map->area->monster_start[index].x, c->location->map->area->monster_start[index].y, c->location->z);
+    monsterHp[index] = monsterGetInitialHp(combat_monsters[index]->monster);
 }
 
 void combatFinishTurn() {
@@ -434,9 +434,9 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
 
     monster = -1;
     for (i = 0; i < AREA_MONSTERS; i++) {
-        if (monsters[i] &&
-            monsters[i]->x == x &&
-            monsters[i]->y == y)
+        if (combat_monsters[i] &&
+            combat_monsters[i]->x == x &&
+            combat_monsters[i]->y == y)
             monster = i;
     }    
 
@@ -467,7 +467,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
         eventHandlerSleep((attackdelay + 2)*40);
 
     } else {
-        m = monsters[monster]->monster;
+        m = combat_monsters[monster]->monster;
 
         /* show the 'hit' tile */
         annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, hittile), (attackdelay + 8)/8));
@@ -485,8 +485,8 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
             playerAwardXp(&c->saveGame->players[focus], xp);
             if (monsterIsEvil(m))
                 playerAdjustKarma(c->saveGame, KA_KILLED_EVIL);
-            mapRemoveObject(c->location->map, monsters[monster]);
-            monsters[monster] = NULL;
+            mapRemoveObject(c->location->map, combat_monsters[monster]);
+            combat_monsters[monster] = NULL;
             break;
 
         case MSTAT_FLEEING:
@@ -555,7 +555,7 @@ int combatIsWon() {
 
     activeMonsters = 0;
     for (i = 0; i < AREA_MONSTERS; i++) {
-        if (monsters[i])
+        if (combat_monsters[i])
             activeMonsters++;
     }
 
@@ -613,9 +613,9 @@ void combatMoveMonsters() {
     int slow;
 
     for (i = 0; i < AREA_MONSTERS; i++) {
-        if (!monsters[i])
+        if (!combat_monsters[i])
             continue;
-        m = monsters[i]->monster;
+        m = combat_monsters[i]->monster;
 
         if (m->mattr & MATTR_NEGATE) {
             c->aura = AURA_NEGATE;
@@ -632,10 +632,10 @@ void combatMoveMonsters() {
         else
             action = CA_ATTACK;
 
-        target = combatFindTargetForMonster(monsters[i], &distance, action == CA_RANGED);
+        target = combatFindTargetForMonster(combat_monsters[i], &distance, action == CA_RANGED);
         if (target == -1 && action == CA_RANGED) {
             action = CA_ADVANCE;
-            combatFindTargetForMonster(monsters[i], &distance, action == CA_RANGED);
+            combatFindTargetForMonster(combat_monsters[i], &distance, action == CA_RANGED);
         }
         if (target == -1)
             continue;
@@ -678,9 +678,9 @@ void combatMoveMonsters() {
 
         case CA_FLEE:
         case CA_ADVANCE:
-            newx = monsters[i]->x;
-            newy = monsters[i]->y;
-            valid_dirs = mapGetValidMoves(c->location->map, newx, newy, c->location->z, monsters[i]->tile);
+            newx = combat_monsters[i]->x;
+            newy = combat_monsters[i]->y;
+            valid_dirs = mapGetValidMoves(c->location->map, newx, newy, c->location->z, combat_monsters[i]->tile);
             if (action == CA_FLEE)
                 dir = dirFindPathToEdge(newx, newy, c->location->map->width, c->location->map->height, valid_dirs);
             else
@@ -714,18 +714,18 @@ void combatMoveMonsters() {
                 break;
             }
             if (!slow) {
-                if (newx != monsters[i]->x ||
-                    newy != monsters[i]->y) {
-                    monsters[i]->prevx = monsters[i]->x;
-                    monsters[i]->prevy = monsters[i]->y;
+                if (newx != combat_monsters[i]->x ||
+                    newy != combat_monsters[i]->y) {
+                    combat_monsters[i]->prevx = combat_monsters[i]->x;
+                    combat_monsters[i]->prevy = combat_monsters[i]->y;
                 }
-                monsters[i]->x = newx;
-                monsters[i]->y = newy;
+                combat_monsters[i]->x = newx;
+                combat_monsters[i]->y = newy;
 
                 if (MAP_IS_OOB(c->location->map, newx, newy)) {
                     screenMessage("\n%s Flees!\n", m->name);
-                    mapRemoveObject(c->location->map, monsters[i]);
-                    monsters[i] = NULL;                    
+                    mapRemoveObject(c->location->map, combat_monsters[i]);
+                    combat_monsters[i] = NULL;                    
                 }
             }
             break;
