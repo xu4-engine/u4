@@ -404,8 +404,8 @@ U4FILE *u4fopen(const string &fname) {
      * search for file within zipfiles (ultima4.zip, u4upgrad.zip, etc.)
      */
     const vector<U4ZipPackage *> &packages = U4ZipPackageMgr::getInstance()->getPackages(); 
-    for (std::vector<U4ZipPackage *>::const_reverse_iterator i = packages.rbegin(); i != packages.rend(); i++) {
-        u4f = U4FILE_zip::open(fname, *i);
+    for (std::vector<U4ZipPackage *>::const_reverse_iterator j = packages.rbegin(); j != packages.rend(); j++) {
+        u4f = U4FILE_zip::open(fname, *j);
         if (u4f)
             return u4f; /* file was found, return it! */
     }

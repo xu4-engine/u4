@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
     if (settings.debug)
         perf.report("\n===============================\n\n");
     
-    eventHandler->run();
+    eventHandler->run();    
 
     /* main event handler returned - cleanup and exit! */
     eventHandler->getTimer()->remove(&gameTimer);
