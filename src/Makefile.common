@@ -54,14 +54,14 @@ $(MAIN): $(OBJS)
 dumpsavegame$(EXEEXT) : util/dumpsavegame.o savegame.o io.o names.o
 	$(CC) $(CFLAGS) -o dumpsavegame util/dumpsavegame.o savegame.o io.o names.o
 
-lzwenc$(EXEEXT) : util/lzwenc.o lzw/hash.o
-	$(CC) $(CFLAGS) -o lzwenc util/lzwenc.o lzw/hash.o
+lzwenc$(EXEEXT) : util/lzwenc.o lzw/hash.o util/pngconv.o
+	$(CC) $(CFLAGS) -o lzwenc util/lzwenc.o lzw/hash.o util/pngconv.o -lpng
 
-lzwdec$(EXEEXT) : util/lzwdec.o lzw/lzw.o lzw/u4decode.o
-	$(CC) $(CFLAGS) -o lzwdec util/lzwdec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o
+lzwdec$(EXEEXT) : util/lzwdec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o util/pngconv.o
+	$(CC) $(CFLAGS) -o lzwdec util/lzwdec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o util/pngconv.o -lpng
 
 clean:: cleanutil
 	rm -rf *~ */*~ $(OBJS) $(MAIN) 
 
 cleanutil::
-	rm -rf util/dumpsavegame.o dumpsavegame$(EXEEXT) util/lzwenc.o util/lzwenc$(EXEEXT) util/lzwdec.o util/lzwdec$(EXEEXT)
+	rm -rf util/dumpsavegame.o dumpsavegame$(EXEEXT) util/lzwenc.o util/lzwenc$(EXEEXT) util/lzwdec.o util/lzwdec$(EXEEXT) util/pngconv.o
