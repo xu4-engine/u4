@@ -482,7 +482,6 @@ int gameGetAlphaChoiceKeyHandler(int key, void *data) {
         (*(info->handleAlpha))(key - 'a', info->data);
         eventHandlerPopKeyHandler();
         free(info);
-        gameFinishTurn();
     } else if (key == ' ' || key == U4_ESC) {
         screenMessage("\n");
         eventHandlerPopKeyHandler();
@@ -491,7 +490,7 @@ int gameGetAlphaChoiceKeyHandler(int key, void *data) {
     } else {
         valid = 0;
         screenMessage("\n%s", info->prompt);
-        screenForceRedraw();
+        screenRedrawScreen();
     }
 
     return valid || keyHandlerDefault(key, NULL);
@@ -573,16 +572,21 @@ int gameGetDirectionKeyHandler(int key, void *data) {
 int gameZtatsKeyHandler(int key, void *data) {
     int valid = 1;
 
-    screenMessage("%c\n", key);
-
     if (key == '0')
         c->statsItem = STATS_WEAPONS;
     else if (key >= '1' && key <= '8' && (key - '1' + 1) <= c->saveGame->members)
         c->statsItem = STATS_CHAR1 + (key - '1');
+    else if (key == '\033') {
+        screenMessage("\n");
+        eventHandlerPopKeyHandler();
+        gameFinishTurn();
+        return 1;
+    }
     else
         valid = 0;
 
     if (valid) {
+        screenMessage("%c\n", key);
         statsUpdate();
         eventHandlerPopKeyHandler();
         eventHandlerPushKeyHandler(&gameZtatsKeyHandler2);
@@ -983,7 +987,6 @@ int talkAtCoord(int x, int y) {
 
     c->conversation.talker = mapPersonAt(c->map, x, y);
     if (c->conversation.talker == NULL) {
-        gameFinishTurn();
         return 0;
     }
 
@@ -1033,7 +1036,7 @@ void talkSetHandler(const Conversation *cnv) {
     case CONV_BUY_ITEM:
     case CONV_SELL_ITEM:
         gcInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-        gcInfo->choices = "bcdefghijklmnopqrstuvwxyz";
+        gcInfo->choices = "bcdefghijklmnopqrstuvwxyz\033";
         gcInfo->handleChoice = &talkHandleChoice;
         eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
         break;
@@ -1410,7 +1413,6 @@ void gameTimer() {
 
     screenCycle();
     gameUpdateScreen();
-    screenForceRedraw();
 }
 
 void gameCheckMoongates() {
