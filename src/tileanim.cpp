@@ -109,7 +109,7 @@ TileAnimInvertTransform::TileAnimInvertTransform(int x, int y, int w, int h) {
 
 void TileAnimInvertTransform::draw(Image *tiles, int tile, int scale, int x, int y) {
     tiles->drawSubRectInverted(scale * (x + this->x), scale * (y + this->y),
-                               scale * this->x, tile * (tiles->h / N_TILES) + scale * this->y, 
+                               scale * this->x, tile * (tiles->height() / N_TILES) + scale * this->y, 
                                scale * w, scale * h);
 }
 

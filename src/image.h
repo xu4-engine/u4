@@ -24,7 +24,7 @@ public:
         SOFTWARE
     };
 
-    static Image *create(int w, int h, int scale, bool indexed, Type type);
+    static Image *create(int w, int h, bool indexed, Type type);
     static Image *createScreenImage();
     ~Image();
 
@@ -37,7 +37,6 @@ public:
     /* writing to image */
     void putPixel(int x, int y, int r, int g, int b, int a);
     void putPixelIndex(int x, int y, unsigned int index);
-    void putPixelScaled(int x, int y, int r, int g, int b, int a);
     void fillRect(int x, int y, int w, int h, int r, int g, int b);
 
     /* reading from image */
@@ -54,10 +53,14 @@ public:
     void drawSubRectOn(Image *d, int x, int y, int rx, int ry, int rw, int rh) const;
     void drawSubRectInvertedOn(Image *d, int x, int y, int rx, int ry, int rw, int rh) const;
 
-    int w, h, scale;
-    bool indexed;
+    int width() const { return w; }
+    int height() const { return h; }
+    bool isIndexed() const { return indexed; }
 
 private:
+    int w, h;
+    bool indexed;
+
     Image();                    /* use create method to construct images */
 
 #ifndef _SDL_video_h

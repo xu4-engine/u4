@@ -892,7 +892,7 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
 
     screenDeinterlaceCga(decompressed_data, width, height, tiles, 0);
 
-    img = Image::create(width, height, 1, 1, Image::HARDWARE);
+    img = Image::create(width, height, true, Image::HARDWARE);
     if (!img) {
         if (decompressed_data)
             free(decompressed_data);
@@ -957,7 +957,7 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
     }
 
     indexed = (bpp == 4 || bpp == 8);
-    img = Image::create(width, height, 1, indexed, Image::HARDWARE);
+    img = Image::create(width, height, indexed, Image::HARDWARE);
     if (!img) {
         if (decompressed_data)
             free(decompressed_data);
@@ -1074,9 +1074,9 @@ void screenShowChar(int chr, int x, int y) {
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
-    charsetInfo->image->drawSubRect(x * charsetInfo->image->w, y * (CHAR_HEIGHT * scale),
+    charsetInfo->image->drawSubRect(x * charsetInfo->image->width(), y * (CHAR_HEIGHT * scale),
                                     0, chr * (CHAR_HEIGHT * scale),
-                                    charsetInfo->image->w, CHAR_HEIGHT * scale);
+                                    charsetInfo->image->width(), CHAR_HEIGHT * scale);
 }
 
 /**
@@ -1091,9 +1091,9 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
     screenShowChar(chr, x, y);
     for (i = 0; i < 8; i++) {
         if (mask & (1 << i)) {
-            screen->fillRect(x * charsetInfo->image->w,
+            screen->fillRect(x * charsetInfo->image->width(),
                              y * (CHAR_HEIGHT * scale) + (i * scale),
-                             charsetInfo->image->w,
+                             charsetInfo->image->width(),
                              scale,
                              0, 0, 0);
         }
@@ -1122,23 +1122,23 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
     else
         offset = 0;
     
-    unscaled_x = x * (tiles->w / scale) + BORDER_WIDTH;
-    unscaled_y = y * ((tiles->h / scale) / N_TILES) + BORDER_HEIGHT;
+    unscaled_x = x * (tiles->width() / scale) + BORDER_WIDTH;
+    unscaled_y = y * ((tiles->height() / scale) / N_TILES) + BORDER_HEIGHT;
 
-    tiles->drawSubRect(x * tiles->w + (BORDER_WIDTH * scale),
-                       y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale) + offset,
+    tiles->drawSubRect(x * tiles->width() + (BORDER_WIDTH * scale),
+                       y * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale) + offset,
                        0,
-                       tile * (tiles->h / N_TILES),
-                       tiles->w,
-                       tiles->h / N_TILES - offset);
+                       tile * (tiles->height() / N_TILES),
+                       tiles->width(),
+                       tiles->height() / N_TILES - offset);
 
     if (offset != 0) {
 
-        tiles->drawSubRect(x * tiles->w + (BORDER_WIDTH * scale),
-                           y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale),
+        tiles->drawSubRect(x * tiles->width() + (BORDER_WIDTH * scale),
+                           y * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale),
                            0,
-                           (tile + 1) * (tiles->h / N_TILES) - offset,
-                           tiles->w,
+                           (tile + 1) * (tiles->height() / N_TILES) - offset,
+                           tiles->width(),
                            offset);
     }
 
@@ -1170,37 +1170,39 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
     }
 
     if (anim)
-        anim->draw(tiles, tile, scale, x * tiles->w / scale + BORDER_WIDTH, y * tiles->h / N_TILES / scale + BORDER_HEIGHT);
+        anim->draw(tiles, tile, scale, 
+                   x * tiles->width() / scale + BORDER_WIDTH, 
+                   y * tiles->height() / N_TILES / scale + BORDER_HEIGHT);
 
     /*
      * finally draw the focus rectangle if the tile has the focus
      */
     if (focus && ((screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2)) {
         /* left edge */
-        screen->fillRect(x * tiles->w + (BORDER_WIDTH * scale),
-                         y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale),
+        screen->fillRect(x * tiles->width() + (BORDER_WIDTH * scale),
+                         y * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale),
                          2 * scale,
-                         tiles->h / N_TILES, 
+                         tiles->height() / N_TILES, 
                          0xff, 0xff, 0xff);
 
         /* top edge */
-        screen->fillRect(x * tiles->w + (BORDER_WIDTH * scale),
-                         y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale),
-                         tiles->w,
+        screen->fillRect(x * tiles->width() + (BORDER_WIDTH * scale),
+                         y * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale),
+                         tiles->width(),
                          2 * scale,
                          0xff, 0xff, 0xff);
 
         /* right edge */
-        screen->fillRect((x + 1) * tiles->w + (BORDER_WIDTH * scale) - (2 * scale),
-                         y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale),
+        screen->fillRect((x + 1) * tiles->width() + (BORDER_WIDTH * scale) - (2 * scale),
+                         y * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale),
                          2 * scale,
-                         tiles->h / N_TILES,
+                         tiles->height() / N_TILES,
                          0xff, 0xff, 0xff);
 
         /* bottom edge */
-        screen->fillRect(x * tiles->w + (BORDER_WIDTH * scale),
-                         (y + 1) * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale) - (2 * scale),
-                         tiles->w,
+        screen->fillRect(x * tiles->width() + (BORDER_WIDTH * scale),
+                         (y + 1) * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale) - (2 * scale),
+                         tiles->width(),
                          2 * scale,
                          0xff, 0xff, 0xff);
     }
@@ -1239,17 +1241,17 @@ void screenScrollMessageArea() {
     ASSERT(charsetInfo != NULL && charsetInfo->image != NULL, "charset not initialized!");
 
     screen->drawSubRectOn(screen, 
-                          TEXT_AREA_X * charsetInfo->image->w, 
+                          TEXT_AREA_X * charsetInfo->image->width(), 
                           TEXT_AREA_Y * CHAR_HEIGHT * scale,
-                          TEXT_AREA_X * charsetInfo->image->w,
+                          TEXT_AREA_X * charsetInfo->image->width(),
                           (TEXT_AREA_Y + 1) * CHAR_HEIGHT * scale,
-                          TEXT_AREA_W * charsetInfo->image->w,
+                          TEXT_AREA_W * charsetInfo->image->width(),
                           (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale);
 
 
-    screen->fillRect(TEXT_AREA_X * charsetInfo->image->w,
+    screen->fillRect(TEXT_AREA_X * charsetInfo->image->width(),
                      TEXT_AREA_Y * CHAR_HEIGHT * scale + (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale,
-                     TEXT_AREA_W * charsetInfo->image->w,
+                     TEXT_AREA_W * charsetInfo->image->width(),
                      CHAR_HEIGHT * scale,
                      0, 0, 0);
                      
@@ -1264,7 +1266,7 @@ void screenInvertRect(int x, int y, int w, int h) {
     RGBA c;
     int i, j;
 
-    tmp = Image::create(w * scale, h * scale, 1, false, Image::SOFTWARE);
+    tmp = Image::create(w * scale, h * scale, false, Image::SOFTWARE);
     if (!tmp)
         return;
 
@@ -1386,7 +1388,7 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
     int offset;
     int savedflags;
 
-    tmp = Image::create(tilesInfo->image->w, tilesInfo->image->h / N_TILES, 1, tilesInfo->image->indexed, Image::SOFTWARE);
+    tmp = Image::create(tilesInfo->image->w, tilesInfo->image->h / N_TILES, tilesInfo->image->isIndexed(), Image::SOFTWARE);
     if (tilesInfo->image->indexed)
         tmp->setPaletteFromImage(tilesInfo->image);
 
@@ -1622,15 +1624,15 @@ Image *screenScaleDown(Image *src, int scale) {
 
     isTransparent = src->getTransparentIndex(transparentIndex);
 
-    dest = Image::create(src->w / scale, src->h / scale, 1, src->indexed, Image::HARDWARE);
+    dest = Image::create(src->width() / scale, src->height() / scale, src->isIndexed(), Image::HARDWARE);
     if (!dest)
         return NULL;
 
-    if (dest->indexed)
+    if (dest->isIndexed())
         dest->setPaletteFromImage(src);
 
-    for (y = 0; y < src->h; y+=scale) {
-        for (x = 0; x < src->w; x+=scale) {
+    for (y = 0; y < src->height(); y+=scale) {
+        for (x = 0; x < src->width(); x+=scale) {
             unsigned int index;
             src->getPixelIndex(x, y, index);                
             dest->putPixelIndex(x / scale, y / scale, index);

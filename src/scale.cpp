@@ -46,15 +46,15 @@ Image *scalePoint(Image *src, int scale, int n) {
     int x, y, i, j;
     Image *dest;
 
-    dest = Image::create(src->w * scale, src->h * scale, src->scale * scale, src->indexed, Image::HARDWARE);
+    dest = Image::create(src->width() * scale, src->height() * scale, src->isIndexed(), Image::HARDWARE);
     if (!dest)
         return NULL;
 
-    if (dest->indexed)
+    if (dest->isIndexed())
         dest->setPaletteFromImage(src);
 
-    for (y = 0; y < src->h; y++) {
-        for (x = 0; x < src->w; x++) {
+    for (y = 0; y < src->height(); y++) {
+        for (x = 0; x < src->width(); x++) {
             for (i = 0; i < scale; i++) {
                 for (j = 0; j < scale; j++) {
                     unsigned int index;
@@ -80,7 +80,7 @@ Image *scale2xBilinear(Image *src, int scale, int n) {
     /* this scaler works only with images scaled by 2x */
     ASSERT(scale == 2, "invalid scale: %d", scale);
 
-    dest = Image::create(src->w * scale, src->h * scale, src->scale * scale, 0, Image::HARDWARE);
+    dest = Image::create(src->width() * scale, src->height() * scale, false, Image::HARDWARE);
     if (!dest)
         return NULL;
 
@@ -98,14 +98,14 @@ Image *scale2xBilinear(Image *src, int scale, int n) {
      */
 
     for (i = 0; i < n; i++) {
-        for (y = (src->h / n) * i; y < (src->h / n) * (i + 1); y++) {
-            if (y == (src->h / n) * (i + 1) - 1)
+        for (y = (src->height() / n) * i; y < (src->height() / n) * (i + 1); y++) {
+            if (y == (src->height() / n) * (i + 1) - 1)
                 yoff = 0;
             else
                 yoff = 1;
 
-            for (x = 0; x < src->w; x++) {
-                if (x == src->w - 1)
+            for (x = 0; x < src->width(); x++) {
+                if (x == src->width() - 1)
                     xoff = 0;
                 else
                     xoff = 1;
@@ -178,7 +178,7 @@ Image *scale2xSaI(Image *src, int scale, int N) {
     /* this scaler works only with images scaled by 2x */
     ASSERT(scale == 2, "invalid scale: %d", scale);
 
-    dest = Image::create(src->w * scale, src->h * scale, src->scale * scale, 0, Image::HARDWARE);
+    dest = Image::create(src->width() * scale, src->height() * scale, 0, Image::HARDWARE);
     if (!dest)
         return NULL;
 
@@ -194,16 +194,16 @@ Image *scale2xSaI(Image *src, int scale, int N) {
      */
 
     for (ii = 0; ii < N; ii++) {
-        for (y = (src->h / N) * ii; y < (src->h / N) * (ii + 1); y++) {
+        for (y = (src->height() / N) * ii; y < (src->height() / N) * (ii + 1); y++) {
             if (y == 0)
                 yoff0 = 0;
             else
                 yoff0 = -1;
-            if (y == (src->h / N) * (ii + 1) - 1) {
+            if (y == (src->height() / N) * (ii + 1) - 1) {
                 yoff1 = 0;
                 yoff2 = 0;
             }
-            else if (y == (src->h / N) * (ii + 1) - 2) {
+            else if (y == (src->height() / N) * (ii + 1) - 2) {
                 yoff1 = 1;
                 yoff2 = 1;
             }
@@ -213,16 +213,16 @@ Image *scale2xSaI(Image *src, int scale, int N) {
             }
 
 
-            for (x = 0; x < src->w; x++) {
+            for (x = 0; x < src->width(); x++) {
                 if (x == 0)
                     xoff0 = 0;
                 else
                     xoff0 = -1;
-                if (x == src->w - 1) {
+                if (x == src->width() - 1) {
                     xoff1 = 0;
                     xoff2 = 0;
                 }
-                else if (x == src->w - 2) {
+                else if (x == src->width() - 2) {
                     xoff1 = 1;
                     xoff2 = 1;
                 }
@@ -350,11 +350,11 @@ Image *scaleScale2x(Image *src, int scale, int n) {
     /* this scaler works only with images scaled by 2x or 3x */
     ASSERT(scale == 2 || scale == 3, "invalid scale: %d", scale);
 
-    dest = Image::create(src->w * scale, src->h * scale, src->scale * scale, src->indexed, Image::HARDWARE);
+    dest = Image::create(src->width() * scale, src->height() * scale, src->isIndexed(), Image::HARDWARE);
     if (!dest)
         return NULL;
 
-    if (dest->indexed)
+    if (dest->isIndexed())
         dest->setPaletteFromImage(src);
 
     /*
@@ -369,22 +369,22 @@ Image *scaleScale2x(Image *src, int scale, int n) {
      */
 
     for (ii = 0; ii < n; ii++) {
-        for (y = (src->h / n) * ii; y < (src->h / n) * (ii + 1); y++) {
+        for (y = (src->height() / n) * ii; y < (src->height() / n) * (ii + 1); y++) {
             if (y == 0)
                 yoff0 = 0;
             else
                 yoff0 = -1;
-            if (y == (src->h / n) * (ii + 1) - 1)
+            if (y == (src->height() / n) * (ii + 1) - 1)
                 yoff1 = 0;
             else
                 yoff1 = 1;
 
-            for (x = 0; x < src->w; x++) {
+            for (x = 0; x < src->width(); x++) {
                 if (x == 0)
                     xoff0 = 0;
                 else
                     xoff0 = -1;
-                if (x == src->w - 1)
+                if (x == src->width() - 1)
                     xoff1 = 0;
                 else
                     xoff1 = 1;

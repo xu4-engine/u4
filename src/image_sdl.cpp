@@ -20,14 +20,13 @@ Image::Image() {
  * Image type determines whether to create a hardware (i.e. video ram)
  * or software (i.e. normal ram) image.
  */
-Image *Image::create(int w, int h, int scale, bool indexed, Image::Type type) {
+Image *Image::create(int w, int h, bool indexed, Image::Type type) {
     Uint32 rmask, gmask, bmask, amask;
     Uint32 flags;
     Image *im = new Image;
 
     im->w = w;
     im->h = h;
-    im->scale = scale;
     im->indexed = indexed;
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -69,7 +68,6 @@ Image *Image::createScreenImage() {
     screen->surface = SDL_GetVideoSurface();
     screen->w = screen->surface->w;
     screen->h = screen->surface->h;
-    screen->scale = 1;
     screen->indexed = screen->surface->format->palette != NULL;
 
     return screen;
@@ -187,20 +185,6 @@ void Image::putPixelIndex(int x, int y, unsigned int index) {
     case 4:
         *(Uint32 *)p = index;
         break;
-    }
-}
-
-/**
- * Sets the color of a "U4" scale pixel, which may be more than one
- * actual pixel.
- */
-void Image::putPixelScaled(int x, int y, int r, int g, int b, int a) {
-    int xs, ys;
-
-    for (xs = 0; xs < scale; xs++) {
-        for (ys = 0; ys < scale; ys++) {
-            putPixel(x * scale + xs, y * scale + ys, r, g, b, a);
-        }
     }
 }
 
