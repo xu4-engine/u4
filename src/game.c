@@ -1082,9 +1082,13 @@ int gameBaseKeyHandler(int key, void *data) {
         screenMessage("XU4 %s\n", VERSION);        
         break;
 
-    case 'a' + U4_ALT:
-        if (settings->debug) {
+    case 'c' + U4_ALT:
+        if (settings->debug && mapIsWorldMap(c->location->map)) {
+            /* first teleport to the abyss */
+            c->location->x = 0xe9;
+            c->location->y = 0xe9;
             gameSetMap(c, mapMgrGetById(MAP_ABYSS), 1, NULL);
+            /* then to the final altar */
             c->location->x = 7;
             c->location->y = 7;
             c->location->z = 7;            

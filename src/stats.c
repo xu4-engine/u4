@@ -20,9 +20,7 @@
 #include "ttype.h"
 #include "weapon.h"
 
-void statsAreaClear();
 void statsAreaSetTitle(const char *title);
-void statsShowPartyView();
 void statsShowCharDetails(int charNo);
 void statsShowWeapons();
 void statsShowArmor();
@@ -69,7 +67,7 @@ void statsUpdate() {
      */
     switch(c->statsItem) {
     case STATS_PARTY_OVERVIEW:
-        statsShowPartyView();
+        statsShowPartyView(-1);
         break;
     case STATS_CHAR1:
     case STATS_CHAR2:
@@ -165,13 +163,17 @@ void statsAreaSetTitle(const char *title) {
 /**
  * The basic party view.
  */
-void statsShowPartyView() {
+void statsShowPartyView(int member) {
     int i;
 
     ASSERT(c->saveGame->members <= 8, "party members out of range: %d", c->saveGame->members);
+    ASSERT(member <= 8, "party member out of range: %d", member);
 
-    for (i = 0; i < c->saveGame->members; i++)
-        screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, "%d-%-9.8s%3d%c", i+1, c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
+    if (member == -1) {
+        for (i = 0; i < c->saveGame->members; i++)
+            screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, "%d-%-9.8s%3d%c", i+1, c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
+    }
+    else screenTextAt(STATS_AREA_X, STATS_AREA_Y+member, "%d-%-9.8s%3d%c", member+1, c->saveGame->players[member].name, c->saveGame->players[member].hp, c->saveGame->players[member].status);
 }
 
 /**

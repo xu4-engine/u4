@@ -50,6 +50,7 @@ void screenInit(void);
 void screenDelete(void);
 void screenReInit(void);
 
+int screenLoadBackground(BackgroundType bkgd);
 void screenDrawBackground(BackgroundType bkgd);
 void screenDrawBackgroundInMapArea(BackgroundType bkgd);
 void screenFreeBackgrounds();

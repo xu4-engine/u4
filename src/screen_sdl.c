@@ -35,7 +35,6 @@ long decompress_u4_memory(void *in, long inlen, void **out);
 
 void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b);
 void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h);
-int screenLoadBackground(BackgroundType bkgd);
 void screenFreeIntroBackground();
 int screenLoadTiles();
 int screenLoadCharSet();
