@@ -5,7 +5,7 @@
 #ifndef ANNOTATION_H
 #define ANNOTATION_H
 
-#include "map.h"
+#include "coords.h"
 #include "types.h"
 
 
@@ -24,14 +24,14 @@ typedef xu4_list<Annotation> AnnotationList;
 class Annotation {
 public:    
     Annotation();
-    Annotation(MapCoords coords, MapTile tile, bool visual = false);        
+    Annotation(Coords coords, MapTile tile, bool visual = false);        
 
     void             debug_output() const;
-    const MapCoords& getCoords() const;
+    const Coords&    getCoords() const;
     const MapTile&   getTile() const;
     const bool       isVisualOnly() const;
     const int        getTTL() const;
-    void             setCoords(const MapCoords &);
+    void             setCoords(const Coords &);
     void             setTile(const MapTile &);
     void             setVisualOnly(bool visual = true);
     void             setTTL(int turns);
@@ -41,7 +41,7 @@ public:
 
     // Properties
 private:        
-    MapCoords coords;
+    Coords coords;
     MapTile tile;        
     bool visual;
     int ttl;
@@ -58,11 +58,11 @@ class AnnotationMgr {
 public:        
     AnnotationMgr();
 
-    Annotation      *add(MapCoords coords, MapTile tile, bool visual = false);        
-    AnnotationList  allAt(MapCoords pos);
-    void            clear();        
+    Annotation      *add(Coords coords, MapTile tile, bool visual = false);
+    AnnotationList  allAt(Coords pos);
+    void            clear();
     void            passTurn();
-    void            remove(MapCoords pos, MapTile tile);
+    void            remove(Coords pos, MapTile tile);
     void            remove(Annotation *);
     void            remove(AnnotationList);
     int             size();

@@ -201,7 +201,7 @@ void innTimer(void *data) {
                  i++) {
                 Person *p = dynamic_cast<Person*>(*i);
                 if (p && p->name == "Isaac") {                
-                    p->setCoords(MapCoords(x, y, z));
+                    p->setCoords(Coords(x, y, z));
                     return;
                 }
             }

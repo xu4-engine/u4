@@ -148,7 +148,8 @@ bool Monster::specialAction() {
     info->firstValidDistance = 1;
 
     /* find out which direction the avatar is in relation to the monster */
-    info->dir = coords.getRelativeDirection(c->location->coords, c->location->map);
+    MapCoords mapcoords(coords);
+    info->dir = mapcoords.getRelativeDirection(c->location->coords, c->location->map);
    
     switch(id) {
     

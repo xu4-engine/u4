@@ -26,9 +26,6 @@
  * MapCoords Class Implementation
  */ 
 
-MapCoords::MapCoords(int initx, int inity, int initz) : 
-    x(initx), y(inity), z(initz) {}
-
 bool MapCoords::operator==(const MapCoords &a) const {        
     return ((x == a.x) && (y == a.y) && (z == a.z)) ? true : false;        
 }
@@ -283,7 +280,7 @@ const Portal *Map::portalAt(MapCoords coords, int actionFlags) {
 /**
  * Returns the raw tile for the given (x,y,z) coords for the given map
  */
-MapTile Map::getTileFromData(MapCoords coords) {
+MapTile Map::getTileFromData(Coords coords) {
     int index;
 
     if (MAP_IS_OOB(this, coords))
@@ -298,7 +295,7 @@ MapTile Map::getTileFromData(MapCoords coords) {
  * annotations like moongates and attack icons are ignored.  Any walkable tiles
  * are taken into account (treasure chests, ships, balloon, etc.)
  */
-MapTile Map::tileAt(MapCoords coords, int withObjects) {    
+MapTile Map::tileAt(Coords coords, int withObjects) {    
     /* FIXME: this should return a list of tiles, with the most visible at the front */
     MapTile tile;
     AnnotationList a = annotations->allAt(coords);
@@ -332,7 +329,7 @@ bool Map::isWorldMap() {
 /**
  * Adds a monster object to the given map
  */
-Monster *Map::addMonster(const Monster *monster, MapCoords coords) {
+Monster *Map::addMonster(const Monster *monster, Coords coords) {
     Monster *m = new Monster;
     
     /* make a copy of the monster before placing it */
@@ -361,7 +358,7 @@ Monster *Map::addMonster(const Monster *monster, MapCoords coords) {
 /**
  * Adds an object to the given map
  */
-Object *Map::addObject(MapTile tile, MapTile prevtile, MapCoords coords) {
+Object *Map::addObject(MapTile tile, MapTile prevtile, Coords coords) {
     Object *obj = new Object;
 
     obj->setTile(tile);
@@ -605,4 +602,13 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
     }
 
     return retval;
+}
+
+bool Map::move(Object *obj, Direction d) {
+    MapCoords new_coords = obj->getCoords();
+    if (new_coords.move(d) != obj->getCoords()) {
+        obj->setCoords(new_coords);
+        return true;
+    }
+    return false;
 }

@@ -10,6 +10,9 @@
 
 #include "io.h"
 #include "object.h"
+#include "types.h"
+
+using std::list;
 
 #define MONSTERTABLE_SIZE           32
 #define MONSTERTABLE_MONSTERS_SIZE  8
@@ -399,13 +402,13 @@ void saveGamePlayerRecordInit(SaveGamePlayerRecord *record) {
     record->status = STAT_GOOD;
 }
 
-int saveGameMonstersWrite(ObjectList &objs, FILE *f) {
-    ObjectList::iterator current;
+int saveGameMonstersWrite(list<Object *> &objs, FILE *f) {
+    list<Object *>::iterator current;
     const Object *obj;
     const Object *monsterTable[MONSTERTABLE_SIZE];
-    xu4_list<const Object*> whirlpools_storms;
-    xu4_list<const Object*> other_monsters;
-    xu4_list<const Object*> inanimate_objects;    
+    list<const Object*> whirlpools_storms;
+    list<const Object*> other_monsters;
+    list<const Object*> inanimate_objects;    
     
     int nMonsters = 0;
     int nObjects = 0;    
@@ -520,12 +523,12 @@ int saveGameMonstersWrite(ObjectList &objs, FILE *f) {
     return 1;
 }
 
-int saveGameMonstersRead(ObjectList *objs, FILE *f) {    
+int saveGameMonstersRead(list<Object *> *objs, FILE *f) {    
     Object *obj;
     Object monsterTable[MONSTERTABLE_SIZE];
     int i;
     unsigned char ch;
-    MapCoords coords[MONSTERTABLE_SIZE];
+    Coords coords[MONSTERTABLE_SIZE];
     bool isEmpty[MONSTERTABLE_SIZE];    
 
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {

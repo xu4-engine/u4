@@ -18,8 +18,8 @@
  * Constructors
  */ 
 Annotation::Annotation() {};
-Annotation::Annotation(MapCoords coords, MapTile tile, bool visual) {
-    this->coords = coords;        
+Annotation::Annotation(Coords coords, MapTile tile, bool visual) {
+    this->coords = coords;
     this->tile = tile;
     this->visual = visual;
     this->ttl = -1;
@@ -36,11 +36,11 @@ void Annotation::debug_output() const {
     printf("visual: %s\n", YesNo(visual));        
 }
 
-const MapCoords& Annotation::getCoords() const      { return coords;      }
+const Coords& Annotation::getCoords() const         { return coords;      }
 const MapTile& Annotation::getTile() const          { return tile;        }
 const bool Annotation::isVisualOnly() const         { return visual;      }
 const int Annotation::getTTL() const                { return ttl;         }
-void Annotation::setCoords(const MapCoords &c)      { coords = c;         }
+void Annotation::setCoords(const Coords &c)         { coords = c;         }
 void Annotation::setTile(const MapTile &t)          { tile = t;           }
 void Annotation::setVisualOnly(bool v)              { visual = v;         }
 void Annotation::setTTL(int turns)                  { ttl = turns;        }
@@ -70,7 +70,7 @@ AnnotationMgr::AnnotationMgr() {}
  *
  * Adds an annotation to the current map
  */
-Annotation *AnnotationMgr::add(MapCoords coords, MapTile tile, bool visual) {
+Annotation *AnnotationMgr::add(Coords coords, MapTile tile, bool visual) {
     /* new annotations go to the front so they're handled "on top" */
     annotations.push_front(Annotation(coords, tile, visual));
     return &annotations.front();
@@ -81,8 +81,8 @@ Annotation *AnnotationMgr::add(MapCoords coords, MapTile tile, bool visual) {
  *
  * Returns all annotations found at the given map coordinates
  */ 
-AnnotationList AnnotationMgr::allAt(MapCoords coords) {
-    AnnotationList list;        
+AnnotationList AnnotationMgr::allAt(Coords coords) {
+    AnnotationList list;
 
     for (i = annotations.begin(); i != annotations.end(); i++) {
         if (i->getCoords() == coords)
@@ -124,7 +124,7 @@ void AnnotationMgr::passTurn() {
  *
  * Removes an annotation from the current map
  */
-void AnnotationMgr::remove(MapCoords coords, MapTile tile) {        
+void AnnotationMgr::remove(Coords coords, MapTile tile) {        
     Annotation look_for(coords, tile);
     remove(&look_for);
 }

@@ -175,7 +175,7 @@ void putItemInInventory(void *item) {
  * Use bell, book, or candle on the entrance to the Abyss
  */
 void useBBC(void *item) {
-    MapCoords abyssEntrance(0xe9, 0xe9);
+    Coords abyssEntrance(0xe9, 0xe9);
     /* on top of the Abyss entrance */
     if (c->location->coords == abyssEntrance) {
         /* must use bell first */
@@ -481,10 +481,10 @@ int itemConditionsMet(unsigned char conditions) {
  * Returns an item location record if a searchable object exists at
  * the given location. NULL is returned if nothing is there.
  */
-const ItemLocation *itemAtLocation(const Map *map, MapCoords coords) {
+const ItemLocation *itemAtLocation(const Map *map, Coords coords) {
     unsigned int i;
     for (i = 0; i < N_ITEMS; i++) {
-        MapCoords item(items[i].x, items[i].y, items[i].z);
+        Coords item(items[i].x, items[i].y, items[i].z);
         if (items[i].mapid == map->id && 
             item == coords &&
             itemConditionsMet(items[i].conditions))

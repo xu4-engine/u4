@@ -5,7 +5,6 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include "map.h"
 #include "tile.h"
 #include "types.h"
 
@@ -37,8 +36,8 @@ public:
     // Methods
     const MapTile& getTile() const          { return tile; }
     const MapTile& getPrevTile() const      { return prevTile; }
-    const MapCoords& getCoords() const      { return coords; }
-    const MapCoords& getPrevCoords() const  { return prevCoords; }    
+    const Coords& getCoords() const         { return coords; }
+    const Coords& getPrevCoords() const     { return prevCoords; }    
     const ObjectMovementBehavior getMovementBehavior() const    { return movement_behavior; }
     const ObjectType getType() const        { return objType; }
     bool hasFocus() const                   { return focused; }
@@ -47,34 +46,21 @@ public:
 
     void setTile(MapTile t)                 { tile = t; }
     void setPrevTile(MapTile t)             { prevTile = t; }
-    void setCoords(MapCoords c)             { prevCoords = coords; coords = c; }
-    void setPrevCoords(MapCoords c)         { prevCoords = c; }    
+    void setCoords(Coords c)                { prevCoords = coords; coords = c; }
+    void setPrevCoords(Coords c)            { prevCoords = c; }    
     void setMovementBehavior(ObjectMovementBehavior b)          { movement_behavior = b; }
     void setType(ObjectType t)              { objType = t; }
     void setFocus(bool f = true)            { focused = f; }
     void setVisible(bool v = true)          { visible = v; }
     void setAnimated(bool a = true)         { animated = a; }
     
-    virtual bool move(Direction d) {
-        MapCoords new_coords = coords;
-        if (new_coords.move(d) != coords) {
-            coords = new_coords;
-            return true;
-        }
-        return false;
-    }
-    
-    bool setDirection(Direction d) {
-        return tileSetDirection(&tile, d);
-    }
-    void advanceFrame() {
-        tileAdvanceFrame(&tile);
-    }
+    bool setDirection(Direction d);
+    void advanceFrame();
         
     // Properties    
 protected:
     MapTile tile, prevTile;
-    MapCoords coords, prevCoords;
+    Coords coords, prevCoords;
     ObjectMovementBehavior movement_behavior;
     ObjectType objType;
     

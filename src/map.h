@@ -5,6 +5,7 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include "coords.h"
 #include "u4file.h"
 #include "music.h"
 #include "direction.h"
@@ -20,7 +21,6 @@ class Monster;
 struct _Portal;
 struct _Dungeon;
 
-typedef unsigned char MapTile;
 typedef unsigned char MapId;
 typedef xu4_vector<struct _Portal*> PortalList;
 typedef xu4_list<int> CompressedChunkList;
@@ -53,12 +53,12 @@ typedef enum {
 /**
  * MapCoords class
  */ 
-class MapCoords {    
+class MapCoords : public Coords {    
 public:
-    int x, y, z;    
+    MapCoords(int initx = 0, int inity = 0, int initz = 0) : Coords(x, y, z) {}
+    MapCoords(const Coords &a) : Coords(a.x, a.y, a.z) {}
     
-    MapCoords(int initx = 0, int inity = 0, int initz = 0);
-    
+    MapCoords &operator=(const Coords &a) { x = a.x; y = a.y; z = a.z; return *this; }
     bool operator==(const MapCoords &a) const;
     bool operator!=(const MapCoords &a) const;
     
@@ -86,11 +86,11 @@ public:
     
     class Object *objectAt(MapCoords coords);    
     const struct _Portal *portalAt(MapCoords coords, int actionFlags);
-    MapTile getTileFromData(MapCoords coords);
-    MapTile tileAt(MapCoords coords, int withObjects);
+    MapTile getTileFromData(Coords coords);
+    MapTile tileAt(Coords coords, int withObjects);
     bool isWorldMap();
-    class Monster *addMonster(const class Monster *m, MapCoords coords);
-    class Object *addObject(MapTile tile, MapTile prevTile, MapCoords coords);    
+    class Monster *addMonster(const class Monster *m, Coords coords);
+    class Object *addObject(MapTile tile, MapTile prevTile, Coords coords);
     void removeObject(const class Object *rem);
     ObjectList::iterator removeObject(ObjectList::iterator rem);    
     void clearObjects();
@@ -99,6 +99,7 @@ public:
     void resetObjectAnimations();
     int getNumberOfMonsters();
     int getValidMoves(MapCoords from, MapTile transport);
+    bool move(Object *obj, Direction d);
 
 public:
     MapId           id;

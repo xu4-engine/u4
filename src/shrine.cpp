@@ -106,21 +106,21 @@ void Shrine::enter() {
     /* Add-on shrine sequence START */
     if (settings.enhancements && settings.enhancementsOptions.u5shrines) {
         /* replace the 'static' avatar tile with grass */        
-        annotations->add(MapCoords(5, 6, c->location->coords.z), GRASS_TILE, true);
+        annotations->add(Coords(5, 6, c->location->coords.z), GRASS_TILE, true);
 
         screenDisableCursor();
         screenMessage("You approach\nthe ancient\nshrine...\n");
         gameUpdateScreen(); eventHandlerSleep(1000);
         
-        obj = addMonster(monsters.getById(BEGGAR_ID), MapCoords(5, 10, c->location->coords.z));
+        obj = addMonster(monsters.getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
         obj->setTile(AVATAR_TILE);
 
         gameUpdateScreen(); eventHandlerSleep(400);        
-        obj->move(DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
-        obj->move(DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
-        obj->move(DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
-        annotations->remove(MapCoords(5, 6, c->location->coords.z), GRASS_TILE);
-        obj->move(DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(800);
+        c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
+        c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
+        c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
+        annotations->remove(Coords(5, 6, c->location->coords.z), GRASS_TILE);
+        c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(800);
         obj->setTile(monsters.getById(BEGGAR_ID)->getTile()); gameUpdateScreen();
         
         screenMessage("\n...and kneel before the altar.\n");        

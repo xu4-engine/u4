@@ -5,12 +5,8 @@
 #ifndef SAVEGAME_H
 #define SAVEGAME_H
 
+#include <list>
 #include <stdio.h>
-#include "types.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define PARTY_SAV_BASE_FILENAME         "party.sav"
 #define MONSTERS_SAV_BASE_FILENAME      "monsters.sav"
@@ -210,11 +206,7 @@ void saveGameInit(SaveGame *save, const SaveGamePlayerRecord *avatarInfo);
 int saveGamePlayerRecordWrite(const SaveGamePlayerRecord *record, FILE *f);
 int saveGamePlayerRecordRead(SaveGamePlayerRecord *record, FILE *f);
 void saveGamePlayerRecordInit(SaveGamePlayerRecord *record);
-int saveGameMonstersWrite(ObjectList &objs, FILE *f);
-int saveGameMonstersRead(ObjectList *objs, FILE *f);
-
-#ifdef __cplusplus
-}
-#endif
+int saveGameMonstersWrite(std::list<Object *> &objs, FILE *f);
+int saveGameMonstersRead(std::list<Object *> *objs, FILE *f);
 
 #endif

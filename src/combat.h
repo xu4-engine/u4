@@ -33,8 +33,8 @@ class CombatMap : public Map {
 public:
     CombatMap() {}
 
-    MapCoords monster_start[AREA_MONSTERS];
-    MapCoords player_start[AREA_PLAYERS];
+    Coords monster_start[AREA_MONSTERS];
+    Coords player_start[AREA_PLAYERS];
 };
 
 typedef struct _CombatInfo {
@@ -60,17 +60,17 @@ typedef struct _CombatInfo {
     CombatMap *newCombatMap;
 } CombatInfo;
 
-void attackFlash(MapCoords coords, MapTile tile, int timeFactor);
+void attackFlash(Coords coords, MapTile tile, int timeFactor);
 void combatInit(class Monster *m, MapId mapid);
 void combatInitCamping(void);
 void combatInitDungeonRoom(int room, Direction from);
 void combatBegin();
-int combatAddMonster(const class Monster *monster, MapCoords coords);
+int combatAddMonster(const class Monster *monster, Coords coords);
 void combatFillMonsterTable(const class Monster *monster);
 int combatSetActivePlayer(int player);
 int combatPutPlayerToSleep(int player);
-int combatPartyMemberAt(MapCoords coords);
-int combatMonsterAt(MapCoords coords);
+int combatPartyMemberAt(Coords coords);
+int combatMonsterAt(Coords coords);
 void combatPlacePartyMembers(void);
 void combatPlaceMonsters(void);
 void combatFinishTurn(void);

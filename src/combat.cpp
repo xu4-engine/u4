@@ -279,7 +279,7 @@ int combatPutPlayerToSleep(int player) {
     return 0;
 }
 
-int combatAddMonster(const Monster *m, MapCoords coords) {
+int combatAddMonster(const Monster *m, Coords coords) {
     int i;
     if (m != NULL) {        
         for (i = 0; i < AREA_MONSTERS; i++) {
@@ -373,7 +373,7 @@ void combatPlaceMonsters(void) {
     }    
 }
 
-int combatPartyMemberAt(MapCoords coords) {
+int combatPartyMemberAt(Coords coords) {
     int i;
     CombatObjectMap *party = &combatInfo.party;
 
@@ -384,7 +384,7 @@ int combatPartyMemberAt(MapCoords coords) {
     return -1;
 }
 
-int combatMonsterAt(MapCoords coords) {
+int combatMonsterAt(Coords coords) {
     int i;
     CombatObjectMap *monsters = &combatInfo.monsters;
 
@@ -613,7 +613,7 @@ bool combatBaseKeyHandler(int key, void *data) {
         info = new CoordActionInfo;
         info->handleAtCoord = &combatAttackAtCoord;
         info->origin = combatInfo.party[FOCUS]->getCoords();
-        info->prev = MapCoords(-1, -1);        
+        info->prev = Coords(-1, -1);        
         info->range = weaponGetRange(weapon);
         info->validDirections = MASK_DIR_ALL;
         info->player = FOCUS;        
@@ -640,7 +640,7 @@ bool combatBaseKeyHandler(int key, void *data) {
 
     case 'l':
         if (settings.debug) {
-            MapCoords coords = combatInfo.party[FOCUS]->getCoords();
+            Coords coords = combatInfo.party[FOCUS]->getCoords();
             screenMessage("\nLocation:\nx:%d\ny:%d\nz:%d\n", coords.x, coords.y, coords.z);
             screenPrompt();
             valid = false;
@@ -790,7 +790,7 @@ bool combatAttackAtCoord(MapCoords coords, int distance, void *data) {
     CoordActionInfo* info = (CoordActionInfo*)data;    
     int weapon = c->players[info->player].weapon;    
     int wrongRange = weaponRangeAbsolute(weapon) && (distance != info->range);
-    MapCoords old = info->prev;    
+    Coords old = info->prev;    
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
     MapTile groundTile;
 
@@ -890,7 +890,7 @@ bool combatMonsterRangedAttack(MapCoords coords, int distance, void *data) {
     Monster *m;
     MapTile hittile, misstile;
     CoordActionInfo* info = (CoordActionInfo*)data;    
-    MapCoords old = info->prev;    
+    Coords old = info->prev;    
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
     MapTile groundTile;
     TileEffect effect;
@@ -1085,7 +1085,7 @@ int combatIsLost() {
 
 void combatEnd(int adjustKarma) {
     int i;
-    MapCoords coords;    
+    Coords coords;    
     MapTile ground;    
     
     gameExitToParentMap();
@@ -1307,13 +1307,13 @@ void combatMoveMonsters() {
             break;
 
         case CA_TELEPORT: {
-                MapCoords new_c;
+                Coords new_c;
                 int valid = 0;
                 bool firstTry = true;                    
                 MapTile tile;                
             
                 while (!valid) {
-                    new_c = MapCoords(xu4_random(c->location->map->width), xu4_random(c->location->map->height), c->location->coords.z);
+                    new_c = Coords(xu4_random(c->location->map->width), xu4_random(c->location->map->height), c->location->coords.z);
                     
                     tile = c->location->map->tileAt(new_c, WITH_OBJECTS);
                 
@@ -1341,7 +1341,7 @@ void combatMoveMonsters() {
                 info = new CoordActionInfo;
                 info->handleAtCoord = &combatMonsterRangedAttack;
                 info->origin = m_coords;
-                info->prev = MapCoords(-1, -1);
+                info->prev = Coords(-1, -1);
                 info->range = 11;
                 info->validDirections = MASK_DIR_ALL;
                 info->player = i;
@@ -1365,7 +1365,7 @@ void combatMoveMonsters() {
         case CA_FLEE:
         case CA_ADVANCE:
             if (moveCombatObject(action, c->location->map, combatInfo.monsters[i], combatInfo.party[target]->getCoords())) {
-                MapCoords coords = combatInfo.monsters[i]->getCoords();
+                Coords coords = combatInfo.monsters[i]->getCoords();
 
                 if (MAP_IS_OOB(c->location->map, coords)) {
                     screenMessage("\n%s Flees!\n", m->name.c_str());
@@ -1486,7 +1486,7 @@ void combatApplyDamageToPlayer(int player, int damage) {
     playerApplyDamage(&c->players[player], damage);
     
     if (c->players[player].status == STAT_DEAD) {
-        MapCoords p = (*party)[player]->getCoords();                    
+        Coords p = (*party)[player]->getCoords();                    
         c->location->map->removeObject((*party)[player]);
         party->erase(party->find(player));                    
         c->location->map->annotations->add(p, CORPSE_TILE)->setTTL(c->saveGame->members);
@@ -1499,7 +1499,7 @@ void combatApplyDamageToPlayer(int player, int damage) {
  * by weapons, cannon fire, spells, etc.
  */
 
-void attackFlash(MapCoords coords, MapTile tile, int timeFactor) {
+void attackFlash(Coords coords, MapTile tile, int timeFactor) {
     int i;
     int divisor = settings.battleSpeed;
     
