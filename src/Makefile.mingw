@@ -14,7 +14,7 @@ SDL_LIBS=-L$(SRC)/sdl/lib -lSDL_mixer -lSDLmain -lSDL
 UI=sdl
 
 CC=gcc
-CFLAGS=-Wall -I. -Dsnprintf=_snprintf $(SDL_CFLAGS)
+CFLAGS=-Wall -I. -Dsnprintf=_snprintf $(SDL_CFLAGS) -DVERSION=\"$(VERSION)\"
 LIBS=-lmingw32 $(SDL_LIBS) -mwindows
 EXEEXT	:=.exe
 OBJS= xu4ico.o

@@ -1,6 +1,8 @@
 NULL=
 MAIN=u4$(EXEEXT)
 
+VERSION=0.09
+
 SRCS=\
         u4.c \
         direction.c \

@@ -12,7 +12,7 @@ UI=sdl
 UILIBS=$(shell sdl-config --libs) -lSDL_mixer
 UIFLAGS=$(shell sdl-config --cflags)
 
-CFLAGS=-Wall -I. $(UIFLAGS) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\"
+CFLAGS=-Wall -I. $(UIFLAGS) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\" -DVERSION=\"$(VERSION)\"
 LIBS=$(UILIBS)
 INSTALL=install -D
 
