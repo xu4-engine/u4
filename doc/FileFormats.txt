@@ -423,21 +423,29 @@ location (surface, dungeon, settlement).
 Surface:
 On the surface, the monster table contains information about monsters
 and inanimate objects (chests, horses, ships, balloon).
-A table entry is free if (currentTile[i] == 0) && (previousTile[i] == 0)
-Newly created monsters are put into the first free entry from the
-beginning of the table.
-Newly created inanimate objects are put into the first free entry
-from the end of the table.
-The balloon is created when you leave Hythloth.
+A table entry is free if (previousTile[i] == 0). However, when u4dos
+deletes and entry, it sets both currentTile[i] and previousTile[i] to 0.
+Slots 0-7 are for monsters, while slots 8-31 are for inanimate objects.
+Non-empty entries don't have to be contiguous.
+Whirlpools and twisters are special cases; they must be placed in slot 0-3,
+or they won't swallow ships / damage the party.
+When you leave Hythloth, u4dos creates the balloon at (233 / 242).
 If there is more than one inanimate object on a tile, objects closer to
 the beginning of the table are drawn on top of those closer to the end.
 Monsters and the party are always drawn on top of inanimate objects.
 The current tile and previous tile values are used during runtime.
-However, for the game to behave properly, when the game is saved, the
-current and previous tile values should be set to the base tile value
-the object.  For instance, for pirate ships (4 frames), the current and
-previous tile values should be set to the base value for pirate ships (0x80)
-when saving the game.
+However, when the game is saved, the previous tile must be set to the
+monster's base tile.
+The current tile can be any of the monster's tiles, except for pirate
+ships, where the current tile determines which direction the pirate ship
+is facing.
+If the previous tile is not set to the monster's base tile, it won't behave
+properly in u4dos: monsters with ranged attacks won't use them in combat,
+twisters and whirlpools will attack the party, and pirates will appear as
+pirate ships in battle.
+For transports with more than one tile (horse, ship), the previous tile
+determines which direction the transport is facing, while the current tile
+can be any of the transport's tiles.
 
 0x0     32      current tile
 0x20    32      current x coordinate
