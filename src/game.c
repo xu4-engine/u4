@@ -20,6 +20,8 @@
 #include "savegame.h"
 #include "stats.h"
 #include "spell.h"
+#include "names.h"
+#include "player.h"
 
 void moveAvatar(int dx, int dy);
 int attackAtCoord(int x, int y);
@@ -506,6 +508,11 @@ int readyForPlayer2(int weapon, void *data) {
         return 0;
     }
 
+    if (!playerCanReady(&(c->saveGame->players[player]), weapon)) {
+        screenMessage("\nA %s may NOT\nuse\n%s\n\020", getClassName(c->saveGame->players[player].klass), getWeaponName(weapon));
+        return 0;
+    }
+
     oldWeapon = c->saveGame->players[player].weapon;
     if (oldWeapon != WEAP_HANDS)
         c->saveGame->weapons[oldWeapon]++;
@@ -513,7 +520,7 @@ int readyForPlayer2(int weapon, void *data) {
         c->saveGame->weapons[weapon]--;
     c->saveGame->players[player].weapon = weapon;
 
-    screenMessage("player %d, weapon %c\n\020", player, weapon + 'a');
+    screenMessage("%s\n\020", getWeaponName(weapon));
 
     return 1;
 }
@@ -712,6 +719,11 @@ int wearForPlayer2(int armor, void *data) {
         return 0;
     }
 
+    if (!playerCanWear(&(c->saveGame->players[player]), armor)) {
+        screenMessage("\nA %s may NOT\nuse\n%s\n\020", getClassName(c->saveGame->players[player].klass), getArmorName(armor));
+        return 0;
+    }
+
     oldArmor = c->saveGame->players[player].armor;
     if (oldArmor != ARMR_NONE)
         c->saveGame->armor[oldArmor]++;
@@ -719,7 +731,7 @@ int wearForPlayer2(int armor, void *data) {
         c->saveGame->armor[armor]--;
     c->saveGame->players[player].armor = armor;
 
-    screenMessage("player %d, armor %c\n\020", player, armor + 'a');
+    screenMessage("%s\n\020", getArmorName(armor));
 
     return 1;
 }
