@@ -7,6 +7,9 @@
 
 #include "direction.h"
 
+#define DEEP_WATER_TILE 0x0
+#define WATER_TILE 0x1
+#define SHALLOW_WATER_TILE 0x2
 #define SWAMP_TILE 0x3
 #define GRASS_TILE 0x4
 #define BRUSH_TILE 0x5

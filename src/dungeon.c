@@ -38,14 +38,28 @@ unsigned char dungeonSubTokenForTile(unsigned char tile) {
  * Returns the dungeon token for the current location
  */
 DungeonToken dungeonCurrentToken() {
-    return dungeonTokenForTile(mapGetTileFromData(c->location->map, c->location->x, c->location->y, c->location->z));
+    return dungeonTokenAt(c->location->map, c->location->x, c->location->y, c->location->z);
 }
 
 /**
  * Returns the dungeon sub-token for the current location
  */
 unsigned char dungeonCurrentSubToken() {
-    return dungeonSubTokenForTile(mapGetTileFromData(c->location->map, c->location->x, c->location->y, c->location->z));
+    return dungeonSubTokenAt(c->location->map, c->location->x, c->location->y, c->location->z);    
+}
+
+/**
+ * Returns the dungeon token for the given coordinates
+ */
+DungeonToken dungeonTokenAt(Map *map, int x, int y, int z) {
+    return dungeonTokenForTile(mapGetTileFromData(map, x, y, z));
+}
+
+/**
+ * Returns the dungeon sub-token for the given coordinates
+ */
+unsigned char dungeonSubTokenAt(Map *map, int x, int y, int z) {
+    return dungeonSubTokenForTile(mapGetTileFromData(map, x, y, z));
 }
 
 /**
@@ -149,6 +163,7 @@ int dungeonDrinkFountain(int player) {
     case FOUNTAIN_POISON: 
         if (c->saveGame->players[player].status != STAT_POISONED) {
             playerApplyEffect(c->saveGame, EFFECT_POISON, player);
+            playerApplyDamage(&c->saveGame->players[player], 100); /* 100 damage to drinker also */
             screenMessage("\nArgh-Choke-Gasp!\n");
         }
         else screenMessage("\nHmm--No Effect!\n");

@@ -100,6 +100,8 @@ typedef enum _FieldType {
 
 DungeonToken dungeonCurrentToken();
 unsigned char dungeonCurrentSubToken();
+DungeonToken dungeonTokenAt(struct _Map *map, int x, int y, int z);
+unsigned char dungeonSubTokenAt(struct _Map *map, int x, int y, int z);
 int dungeonLoadRoom(Dungeon *dng, int room);
 void dungeonSearch(void);
 int dungeonDrinkFountain(int player);

@@ -58,20 +58,24 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
         
         /* if it's a dungeon, then ladders are predictable.  Create one! */
         if (location->context == CTX_DUNGEON) {
-            unsigned char tile = mapGetTileFromData(location->map, x, y, z);
-            /* FIXME: this isn't very clean at all -- there should be another
-               way for annotations to work cleanly with dungeon portals */
-            const Annotation *a = annotationAt(x, y, z, c->location->map->id);
+            DungeonToken token = dungeonTokenAt(location->map, x, y, z);
+            
+            /* FIXME: this isn't very clean, and ignores the possibility
+               of there being an annotation of an UPDOWN ladder.
+               Walkability of dungeon tiles, etc. should probably be based
+               upon the actual dungeon tileset, not a translation thereof
+               to the standard u4 tileset */
+            const Annotation *a = annotationAt(x, y, z, location->map->id);
             if (a) {
                 if (a->tile == LADDERUP_TILE)
-                    tile = 0x10;
+                    token = DUNGEON_LADDER_UP;
                 else if (a->tile == LADDERDOWN_TILE)
-                    tile = 0x20;
+                    token = DUNGEON_LADDER_DOWN;
             }
 
-            if ((action & ACTION_KLIMB) && (tile == 0x10 || tile == 0x30)) 
+            if ((action & ACTION_KLIMB) && (token == DUNGEON_LADDER_UP || token == DUNGEON_LADDER_UPDOWN)) 
                 createDngLadder(location, action, &dngLadder);                
-            else if ((action & ACTION_DESCEND) && (tile == 0x20 || tile == 0x30))
+            else if ((action & ACTION_DESCEND) && (token == DUNGEON_LADDER_DOWN || token == DUNGEON_LADDER_UPDOWN))
                 createDngLadder(location, action, &dngLadder);
             else return 0;
             portal = &dngLadder;

@@ -798,7 +798,7 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
  * Draw a tile graphic on the screen.
  */
 void screenShowTile(unsigned char tile, int focus, int x, int y) {
-    int offset, i, j, swaprow;
+    int offset, i, swaprow;
     SDL_Rect src, dest;
     int unscaled_x, unscaled_y;
 
@@ -819,18 +819,8 @@ void screenShowTile(unsigned char tile, int focus, int x, int y) {
     unscaled_x = x * (tiles->w / scale) + BORDER_WIDTH;
     unscaled_y = y * ((tiles->h / scale) / N_TILES) + BORDER_HEIGHT;
 
-    /* FIXME: sucks */
     if (tileGetAnimationStyle(tile) == ANIM_CAMPFIRE) {
-        for (i = 0; i < tiles->w; i++) {
-            for (j = (tile * (tiles->h / N_TILES)); j < (tile + 1) * (tiles->h / N_TILES); j++) {
-                int r, g, b;
-                imageGetPixel(tiles, i, j, &r, &g, &b);
-                if ((r > 128) && (g + b + 256 < (r << 1)))
-                    imagePutPixel(tiles, i, j, (rand()%64) + 192, (rand()%64)+48, rand()%32);
-            }
-            //imagePutPixel(tiles, rand()%tiles->w, (tile * (tiles->h / N_TILES)) + (rand()%(tiles->h / N_TILES)), (rand()%128) + 128, rand()%64, rand()%64);
-            //imagePutPixelScaled(tiles, rand()%16, ((tile * (tiles->h / N_TILES)) / scale) + rand()%16, rand()%255, rand()%64, rand()%32);  
-        }            
+        /* FIXME: animate campfire */
     }
 
     SDL_BlitSurface(tiles->surface, &src, screen, &dest);    

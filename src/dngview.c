@@ -64,8 +64,10 @@ DungeonGraphicType dungeonViewTileToGraphic(unsigned char tile) {
         return DNGGRAPHIC_LADDERUP;
     case LADDERDOWN_TILE:
         return DNGGRAPHIC_LADDERDOWN;
-    case 74:
-    case 78:
+    case DEEP_WATER_TILE:    
+    case CHEST_TILE:
+    case ALTAR_TILE:
+    case MAGICFLASH_TILE:
         return DNGGRAPHIC_TILE;
     }
 
