@@ -266,6 +266,12 @@ void EventHandler::run() {
                      event.key.keysym.sym == SDLK_DELETE)
                 key = U4_BACKSPACE;
 
+#if defined(MACOSX)
+            // Mac OS X translates function keys weirdly too
+            if ((event.key.keysym.sym >= SDLK_F1) && (event.key.keysym.sym <= SDLK_F15))
+                key = U4_FKEY + (event.key.keysym.sym - SDLK_F1);
+#endif
+
             if (verbose)
                 printf("key event: unicode = %d, sym = %d, mod = %d; translated = %d\n", 
                        event.key.keysym.unicode, 
