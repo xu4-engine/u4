@@ -36,15 +36,15 @@
 
     <!-- Main creatures -->
     <creature id="25" encounterSize="12" name="Rat" tile="rat" basehp="48" exp="4" movement="wanders" good="true" leader="38"/>
-    <creature id="26" encounterSize="12" name="Bat" tile="bat" basehp="48" exp="4" flies="true" movement="wanders" good="true" leader="47"/>
+    <creature id="26" encounterSize="12" name="Bat" tile="bat" basehp="48" exp="4" flies="true" movement="wanders" good="true" leader="47" nochest="true"/>
     <creature id="27" encounterSize="6" name="Giant Spider" tile="spider" basehp="64" exp="5" ranged="true" rangedhittile="poison_field" rangedmisstile="poison_field" spawntile="swamp" movement="wanders" good="true" poisons="true" leader="25"/>
     <creature id="28" encounterSize="4" name="Ghost" tile="ghost" basehp="80" exp="6" undead="true" resists="sleep" incorporeal="true" leader="46"/>
-    <creature id="29" encounterSize="15" name="Slime" tile="slime" ambushes="true" basehp="48" exp="4" divides="true"/>
+    <creature id="29" encounterSize="15" name="Slime" tile="slime" ambushes="true" basehp="48" exp="4" divides="true" nochest="true"/>
     <creature id="30" encounterSize="6" name="Troll" tile="troll" ambushes="true" basehp="96" exp="7" ranged="true" leader="41"/>
     <creature id="31" encounterSize="15" name="Gremlin" tile="gremlin" basehp="48" exp="4" steals="food"/>
     <creature id="32" encounterSize="1" name="Mimic" tile="mimic" basehp="192" exp="13" ranged="true" rangedhittile="poison_field" rangedmisstile="poison_field" movement="none" camouflage="true" camouflageTile="chest"/>
     <creature id="33" encounterSize="1" name="Reaper" tile="reaper" basehp="255" exp="16" ranged="true" rangedhittile="random" rangedmisstile="random" movement="none" casts="sleep"/>
-    <creature id="34" encounterSize="15" name="Insect Swarm" tile="insect_swarm" ambushes="true" basehp="48" exp="4" good="true" movement="wanders" leader="25"/>
+    <creature id="34" encounterSize="15" name="Insect Swarm" tile="insect_swarm" ambushes="true" basehp="48" exp="4" good="true" movement="wanders" leader="25" nochest="true"/>
     <creature id="35" encounterSize="4" name="Gazer" tile="gazer" basehp="240" exp="16" ranged="true" rangedhittile="sleep_field" rangedmisstile="sleep_field" leader="36"/>
     <creature id="36" encounterSize="8" name="Phantom" tile="phantom" basehp="128" exp="9" undead="true" resists="sleep" leader="28"/>
     <creature id="37" encounterSize="10" name="Orc" tile="orc" ambushes="true" basehp="80" exp="6" leader="30"/>
