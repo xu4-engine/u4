@@ -378,6 +378,11 @@ int combatBaseKeyHandler(int key, void *data) {
         eventHandlerPopKeyHandler();
         combatEnd();
         break;
+
+    /* ALT key by itself; ignore it */
+    case 308:
+        valid = 0;
+        break;
         
     case ' ':
         screenMessage("Pass!\n");

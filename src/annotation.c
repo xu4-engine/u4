@@ -48,8 +48,7 @@ Annotation *annotationSetVisual(Annotation *a) {
 }
 
 Annotation *annotationSetTurnDuration(Annotation *a, int ttl) {
-    a->time_to_live = ttl;
-    a->permanent = 0;
+    a->time_to_live = ttl;    
     return a;
 }
 

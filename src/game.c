@@ -89,7 +89,7 @@ long gameTimeSinceLastCommand(void);
 void gameMonsterAttack(Object *obj);
 void gameLordBritishCheckLevels(void);
 int gameSummonMonster(const char *monsterName);
-void gameDestroyAllMonsters(void);
+void gameDestroyAllCreatures(void);
 
 extern Map world_map;
 extern Object *party[8];
@@ -159,7 +159,7 @@ void gameInit() {
     playerSetSpellCallback(&gameSpellEffect);
     playerSetPartyStarvingCallback(&gamePartyStarving);
     playerSetSetTransportCallback(&gameSetTransport);
-    itemSetDestroyAllMonstersCallback(&gameDestroyAllMonsters);
+    itemSetDestroyAllMonstersCallback(&gameDestroyAllCreatures);
     vendorSetInnHandlerCallback(&innBegin);
 
     musicPlay();
@@ -253,7 +253,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     if (map->type == MAP_DUNGEON && c->transportContext != TRANSPORT_FOOT) {
         screenMessage("Only on foot!\n");
         return;
-    }
+    }    
 
     if (portal) {
         x = portal->startx;
@@ -618,7 +618,9 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'e':
         portal = mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z);
-        if (portal && portal->trigger_action == ACTION_ENTER) {
+        /* must enter on foot or on horse */
+        if ((portal && portal->trigger_action == ACTION_ENTER) &&
+            (c->transportContext & TRANSPORT_FOOT_OR_HORSE)) {
             switch (portal->destination->type) {
             case MAP_TOWN:
                 screenMessage("Enter towne!\n\n%s\n\n", portal->destination->city->name);
@@ -3014,7 +3016,7 @@ void gameSpawnMonster(const Monster *m) {
     if (monster) mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);    
 }
 
-void gameDestroyAllMonsters(void) {
+void gameDestroyAllCreatures(void) {
     int i;
     extern CombatInfo combatInfo;
     
@@ -3026,13 +3028,17 @@ void gameDestroyAllMonsters(void) {
             mapRemoveObject(c->location->map, combatInfo.monsters[i]);
             combatInfo.monsters[i] = NULL;
         }
-    }
+    }    
     else {
         /* destroy all monsters on the map */
         Object *obj;
         for (obj = c->location->map->objects; obj; obj = obj->next) {
-            if (obj->objType == OBJECT_MONSTER)
-                mapRemoveObject(c->location->map, obj);
+            if (obj->objType != OBJECT_UNKNOWN) {
+                const Monster *m = (obj->objType == OBJECT_MONSTER) ? obj->monster : monsterForTile(obj->tile);
+                /* the skull does not destroy Lord British */
+                if (m && m->id != LORDBRITISH_ID)
+                    mapRemoveObject(c->location->map, obj);
+            }
         }
     }
 }
