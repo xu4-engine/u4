@@ -299,6 +299,8 @@ static int spellIceball(int dir) {
 }
 
 static int spellJinx(int unused) {
+    c->aura = AURA_JINX;
+    c->auraDuration = 10;
     return 1;
 }
 
@@ -315,6 +317,8 @@ static int spellMMissle(int dir) {
 }
 
 static int spellNegate(int unused) {
+    c->aura = AURA_NEGATE;
+    c->auraDuration = 10;
     return 1;
 }
 
@@ -323,6 +327,8 @@ static int spellOpen(int unused) {
 }
 
 static int spellProtect(int unused) {
+    c->aura = AURA_PROTECTION;
+    c->auraDuration = 10;
     return 1;
 }
 
@@ -339,6 +345,8 @@ static int spellRez(int player) {
 }
 
 static int spellQuick(int unused) {
+    c->aura = AURA_QUICKNESS;
+    c->auraDuration = 10;
     return 1;
 }
 
