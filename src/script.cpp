@@ -1339,12 +1339,11 @@ Script::ReturnCode Script::ztats(xmlNodePtr script, xmlNodePtr current) {
          */ 
         view = view_map.find(screen);
         if (view != view_map.end()) 
-            c->stats->view = view->second; /* change it! */
+            c->stats->setView(view->second); /* change it! */
         else if (debug)
             fprintf(debug, " <FAILED - view could not be found>");
-        c->stats->update();
     }
-    else c->stats->showPartyView();
+    else c->stats->setView(STATS_PARTY_OVERVIEW);
 
     return RET_OK;
 }

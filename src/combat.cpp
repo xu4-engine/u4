@@ -794,7 +794,7 @@ void CombatController::finishTurn(void) {
     int quick;
 
     /* return to party overview */
-    c->stats->showPartyView();    
+    c->stats->setView(STATS_PARTY_OVERVIEW);
 
     if (ct->isWon() && ct->winOrLose) {        
         ct->end(true);
@@ -1061,7 +1061,7 @@ bool CombatController::keyPressed(int key) {
             screenMessage("Use which item:\n");
             gameGetInput(&useItem, &itemNameBuffer);
 
-            c->stats->showItems();            
+            c->stats->setView(STATS_ITEMS);
 
             return true;
         }
@@ -1079,7 +1079,7 @@ bool CombatController::keyPressed(int key) {
 
     case 'z': 
         {            
-            c->stats->showPlayerDetails(ct->getFocus());            
+            c->stats->setView(StatsView(STATS_CHAR1 + ct->getFocus()));
 
             /* reset the spell mix menu and un-highlight the current item,
                and hide reagents that you don't have */            
