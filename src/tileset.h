@@ -5,13 +5,10 @@
 #ifndef TILESET_H
 #define TILESET_H
 
+#include <string>
 #include <map>
 #include "u4file.h"
 #include "tile.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef enum {
     TILESET_BASE,
@@ -36,7 +33,7 @@ typedef struct _Tileset {
     int numTiles;
     Tile *tiles;
     int totalFrames;
-    string imageName;
+    std::string imageName;
 } Tileset;
 
 typedef std::map<TilesetType, Tileset*, std::less<TilesetType> > TilesetList;
@@ -46,9 +43,5 @@ void tilesetDeleteAllTilesets();
 Tileset *tilesetGetByType(TilesetType type);
 TilesetType tilesetGetTypeByStr(const char *type);
 TileRule *tilesetFindRuleByName(const char *name);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
