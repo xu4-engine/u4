@@ -71,6 +71,15 @@ typedef enum {
     MATTR_WATER     = 0x20
 } MonsterAttrib;
 
+typedef enum {
+    MSTAT_DEAD,
+    MSTAT_FLEEING,
+    MSTAT_CRITICAL,
+    MSTAT_HEAVILYWOUNDED,
+    MSTAT_LIGHTLYWOUNDED,
+    MSTAT_BARELYWOUNDED
+} MonsterStatus;
+
 typedef struct _Monster {
     unsigned char tile;
     unsigned char leader;
@@ -85,5 +94,7 @@ int monsterGetXp(const Monster *monster);
 int monsterCastSleep(const Monster *monster);
 int monsterGetDamage(const Monster *monster);
 unsigned char monsterRandomForTile(unsigned char tile);
+int monsterGetInitialHp(const Monster *monster);
+MonsterStatus monsterGetStatus(const Monster *monster, int hp);
 
 #endif

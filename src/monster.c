@@ -159,3 +159,34 @@ unsigned char monsterRandomForTile(unsigned char tile) {
 
     return monster;
 }
+
+int monsterGetInitialHp(const Monster *monster) {
+    int basehp, hp;
+
+    basehp = monster->level == 16 ? 255 : (monster->level << 4);
+    hp = (basehp % rand()) + (basehp / 2);
+
+    return hp;
+}
+
+MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
+    int basehp, heavy_threshold, light_threshold, crit_threshold;
+
+    basehp = monster->level == 16 ? 255 : (monster->level << 4);
+    crit_threshold = basehp / 4;
+    heavy_threshold = basehp / 2;
+    light_threshold = crit_threshold + heavy_threshold;
+
+    if (hp <= 0)
+        return MSTAT_DEAD;
+    else if (hp < 24)
+        return MSTAT_FLEEING;
+    else if (hp < crit_threshold)
+        return MSTAT_CRITICAL;
+    else if (hp < heavy_threshold)
+        return MSTAT_HEAVILYWOUNDED;
+    else if (hp < light_threshold)
+        return MSTAT_LIGHTLYWOUNDED;
+    else
+        return MSTAT_BARELYWOUNDED;
+}

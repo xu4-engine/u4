@@ -52,6 +52,7 @@ int saved_dngx, saved_dngy;
 int focus;
 Object *party[8];
 Object *monsters[AREA_MONSTERS];
+int monsterHp[AREA_MONSTERS];
 
 int combatBaseKeyHandler(int key, void *data);
 void combatFinishTurn(void);
@@ -87,8 +88,10 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
     party[focus]->hasFocus = 1;
 
     nmonsters = combatInitialNumberOfMonsters(monster->tile);
-    for (i = 0; i < nmonsters; i++)
+    for (i = 0; i < nmonsters; i++) {
         monsters[i] = mapAddObject(c->map, monster->tile, monster->tile, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
+        monsterHp[i] = monsterGetInitialHp(monsterForTile(monsters[i]->tile));
+    }
     for (; i < AREA_MONSTERS; i++)
         monsters[i] = NULL;
 
@@ -234,7 +237,7 @@ int combatBaseKeyHandler(int key, void *data) {
 int combatAttackAtCoord(int x, int y) {
     int monster;
     const Monster *m;
-    int i;
+    int i, xp;
 
     if (x == -1 && y == -1)
         return 0;
@@ -254,20 +257,45 @@ int combatAttackAtCoord(int x, int y) {
 
     } else {
         m = monsterForTile(monsters[monster]->tile);
-        screenMessage("Hit!\n");
 
         annotationSetTimeDuration(annotationAdd(x, y, HITFLASH_TILE), 2);
 
-        /* FIXME: every hit is fatal for now */
-        if ( 1 ) {
-            int xp = monsterGetXp(m);
+        if (monsters[monster]->tile != LORDBRITISH_TILE)
+            monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);
+
+        switch (monsterGetStatus(m, monsterHp[monster])) {
+
+        case MSTAT_DEAD:
+            xp = monsterGetXp(m);
             screenMessage("%s Killed!\nExp. %d\n", m->name, xp);
             c->saveGame->players[focus].xp += xp;
             if (monsterIsEvil(m))
                 gameLostEighth(playerAdjustKarma(c->saveGame, KA_KILLED_EVIL));
             mapRemoveObject(c->map, monsters[monster]);
             monsters[monster] = NULL;
+            break;
+
+        case MSTAT_FLEEING:
+            screenMessage("%s Fleeing!\n", m->name);
+            break;
+
+        case MSTAT_CRITICAL:
+            screenMessage("%s Critical!\n", m->name);
+            break;
+
+        case MSTAT_HEAVILYWOUNDED:
+            screenMessage("%s\nHeavily Wounded!\n", m->name);
+            break;
+
+        case MSTAT_LIGHTLYWOUNDED:
+            screenMessage("%s\nLightly Wounded!\n", m->name);
+            break;
+
+        case MSTAT_BARELYWOUNDED:
+            screenMessage("%s\nBarely Wounded!\n", m->name);
+            break;
         }
+
     }
 
     combatFinishTurn();
