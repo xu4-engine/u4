@@ -39,6 +39,7 @@ void putRuneInInventory(void *virt);
 int isStoneInInventory(void *virt);
 void putStoneInInventory(void *virt);
 int isItemInInventory(void *item);
+int isSkullInInventory(void *item);
 void putItemInInventory(void *item);
 void useBBC(void *item);
 void useHorn(void *item);
@@ -77,7 +78,7 @@ static const ItemLocation items[] = {
     { "the Wheel from the H.M.S. Cape", "wheel", 96, 215, 0, MAP_WORLD, 
       &isItemInInventory, &putItemInInventory, &useWheel, (void *) ITEM_WHEEL, 0 },
     { "the Skull of Modain the Wizard", "skull", 197, 245, 0, MAP_WORLD, 
-      &isItemInInventory, &putItemInInventory, &useSkull, (void *) ITEM_SKULL, SC_NEWMOONS },
+      &isSkullInInventory, &putItemInInventory, &useSkull, (void *) ITEM_SKULL, SC_NEWMOONS },
     { "the Red Stone", "red", 3, 7, 6, MAP_DESTARD,
       &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_RED, 0 },
     { "the Orange Stone", "orange", 7, 1, 6, MAP_COVETOUS,
@@ -158,6 +159,10 @@ void putStoneInInventory(void *virt) {
 
 int isItemInInventory(void *item) {
     return c->saveGame->items & (int)item;
+}
+
+int isSkullInInventory(void *) {
+    return (c->saveGame->items & (ITEM_SKULL | ITEM_SKULL_DESTROYED));
 }
 
 void putItemInInventory(void *item) {

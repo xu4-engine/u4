@@ -1301,15 +1301,10 @@ bool GameController::keyPressed(int key) {
             if (item) {
                 if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
                     screenMessage("Nothing Here!\n");
-                else {
-                    if ((((int)item->data) == ITEM_SKULL) && (c->saveGame->items & ITEM_SKULL_DESTROYED)) {
-                        // you can't find the skull again once it's destroyed */
-                        screenMessage("Nothing Here!\n");
-                    } else {
-                        if (item->name)
-                            screenMessage("You find...\n%s!\n", item->name);
-                        (*item->putItemInInventory)(item->data);
-                    }
+                else {                    
+                    if (item->name)
+                        screenMessage("You find...\n%s!\n", item->name);
+                    (*item->putItemInInventory)(item->data);                    
                 }
             } else
                 screenMessage("Nothing Here!\n");
@@ -3638,10 +3633,10 @@ void gameDamageParty(int minDamage, int maxDamage) {
             damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
                 xu4_random((maxDamage + 1) - minDamage) + minDamage :
                 maxDamage;
-            c->party->member(i)->applyDamage(damage);            
+            c->party->member(i)->applyDamage(damage);
             c->stats->highlightPlayer(i);
             lastdmged = i;
-            EventHandler::wait_msecs(100);           
+            EventHandler::wait_msecs(100);
         }
     }
     
