@@ -21,7 +21,7 @@ typedef void (*ActivateMenuItem)(Menu, ActivateAction);
 typedef struct _MenuItem {
     unsigned char id;
     short x, y;
-    char *text;
+    const char *text;
     unsigned char isHighlighted;
     unsigned char isVisible;
     unsigned char isSelected;
@@ -29,7 +29,7 @@ typedef struct _MenuItem {
     ActivateAction activateOn;    
 } MenuItem;
 
-Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn);
+Menu menuAddItem(Menu menu, unsigned char id, const char *text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn);
 MenuItem *menuGetItem(Menu current);
 int menuShow(Menu menu);
 int menuCheckVisible(Menu menu);

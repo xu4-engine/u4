@@ -11,7 +11,7 @@
 /**
  * Adds an item to the menu list and returns the menu
  */
-Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn) {
+Menu menuAddItem(Menu menu, unsigned char id, const char *text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn) {
     MenuItem *menuItem = (MenuItem *)malloc(sizeof(MenuItem));
 
     menuItem->id = id;
