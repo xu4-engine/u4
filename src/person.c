@@ -53,8 +53,54 @@ char *lordBritishGetPrompt(const Conversation *cnv);
 char *hawkwindGetIntro(Conversation *cnv);
 char *hawkwindGetResponse(Conversation *cnv, const char *inquiry);
 char *hawkwindGetPrompt(const Conversation *cnv);
-char **personResponseSplit(char *r);
 int linecount(const char *s, int columnmax);
+
+
+/**
+ * Splits a piece of response text into screen-sized chunks.
+ */
+Reply *replyNew(const char *text) {
+    Reply *reply;
+    char *ptr;
+    int i;
+
+    reply = (Reply *) malloc(sizeof(Reply));
+
+    ptr = strstr(text+2, "\n\n");
+    if (linecount(text, 16) < 12 || ptr == NULL) {
+        reply->nchunks = 1;
+        reply->chunk = (char **) malloc(sizeof(char *) * reply->nchunks);
+        reply->chunk[0] = strdup(text);
+    }
+
+    else {
+        Reply *tmp = replyNew(ptr + 2);
+
+        reply->nchunks = tmp->nchunks + 1;
+        reply->chunk = (char **) malloc(sizeof(char *) * reply->nchunks);
+        reply->chunk[0] = malloc(ptr - text + 2 + 1);
+        strncpy(reply->chunk[0], text, ptr - text + 2);
+        reply->chunk[0][ptr - text + 2] = '\0';
+        for (i = 1; i < reply->nchunks; i++)
+            reply->chunk[i] = tmp->chunk[i - 1];
+        free(tmp->chunk);
+        free(tmp);
+    }
+
+    return reply;
+}
+
+/**
+ * Frees a reply.
+ */
+void replyDelete(Reply *reply) {
+    int i;
+
+    for (i = 0; i < reply->nchunks; i++)
+        free(reply->chunk[i]);
+    free(reply->chunk);
+    free(reply);
+}
 
 /**
  * Loads in conversation data for special cases and vendors from
@@ -83,8 +129,9 @@ int personIsVendor(const Person *person) {
         person->npcType <= NPC_VENDOR_STABLE;
 }
 
-char **personGetConversationText(Conversation *cnv, const char *inquiry) {
+Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
     char *text;
+    Reply *reply;
 
     /*
      * a convsation with a vendor
@@ -135,18 +182,9 @@ char **personGetConversationText(Conversation *cnv, const char *inquiry) {
         }
     }
 
-    return personResponseSplit(text);
-}
-
-/**
- * Frees a string vector as returned by personGetConversationText.
- */
-void personFreeConversationText(char **text) {
-    int i;
-
-    for (i = 0; text[i]; i++)
-        free(text[i]);
+    reply = replyNew(text);
     free(text);
+    return reply;
 }
 
 /**
@@ -392,19 +430,19 @@ char *lordBritishGetIntro(Conversation *cnv) {
 
     if (c->saveGame->lbintro) {
         if (c->saveGame->members == 1)
-            intro = concat("Lord British\nsays:  Welcome\n",
+            intro = concat("\n\n\nLord British\nsays:  Welcome\n",
                            c->saveGame->players[0].name,
                            "\nWhat would thou\nask of me?\n",
                            NULL);
         else if (c->saveGame->members == 2)
-            intro = concat("Lord British\nsays:  Welcome\n",
+            intro = concat("\n\n\nLord British\nsays:  Welcome\n",
                            c->saveGame->players[0].name,
                            " and thee also ",
                            c->saveGame->players[1].name,
                            "!\nWhat would thou\nask of me?\n",
                            NULL);
         else
-            intro = concat("Lord British\nsays:  Welcome\n",
+            intro = concat("\n\n\nLord British\nsays:  Welcome\n",
                            c->saveGame->players[0].name,
                            " and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n",
                            NULL);
@@ -562,52 +600,6 @@ void personGetQuestion(const Person *p, char **question) {
     const char *prompt = "\n\nYou say: ";
 
     *question = concat(p->question, prompt, NULL);
-}
-
-/**
- * Splits a response into screen-sized chunks.
- */
-char **personResponseSplit(char *r) {
-    char **result;
-
-    result = (char **) malloc(sizeof(char *) * 2);
-    result[0] = strdup(r);
-    result[1] = NULL;
-
-    free(r);
-    return result;
-
-#if 0
-    char *ptr;
-    char **result, **tmp;
-    int i;
-
-    ptr = strstr(r+2, "\n\n");
-    if (linecount(r, 16) < 9 || ptr == NULL) {
-        result = (char **) malloc(sizeof(char *) * 2);
-        result[0] = strdup(r);
-        result[1] = NULL;
-    }
-
-    else {
-        result = (char **) malloc(sizeof(char *) * 5);
-        result[0] = (char *) malloc(ptr - r + 2 + 1);
-        strncpy(result[0], r, ptr - r + 2);
-        result[0][ptr - r + 2] = '\0';
-
-        tmp = personResponseSplit(strdup(ptr + 2));
-        for (i = 0; tmp[i]; i++)
-            result[i+1] = tmp[i];
-        result[i + 1] = NULL;
-        free(tmp);
-
-        ASSERT(i < 5, "reply split into too many chunks: %d\n", i);
-    }
-
-    free(r);
-
-    return result;
-#endif
 }
 
 /**

@@ -9,6 +9,11 @@
 
 struct _Conversation;
 
+typedef struct _Reply {
+    char **chunk;
+    int nchunks;
+} Reply;
+
 typedef enum {
     QTRIGGER_NONE = 0,
     QTRIGGER_JOB = 3,
@@ -88,10 +93,11 @@ typedef struct _Person {
     int vendorIndex;
 } Person;
 
+Reply *replyNew(const char *text);
+void replyDelete(Reply *reply);
 int personInit(void);
-char **personGetConversationText(struct _Conversation *cnv, const char *inquiry);
+Reply *personGetConversationText(struct _Conversation *cnv, const char *inquiry);
 char *personGetPrompt(const struct _Conversation *cnv);
-void personFreeConversationText(char **text);
 ConversationInputType personGetInputRequired(const struct _Conversation *cnv);
 const char *personGetChoices(const struct _Conversation *cnv);
 char *concat(const char *str, ...);

@@ -7,6 +7,7 @@
 
 struct _SaveGame;
 struct _Map;
+struct _Reply;
 struct _Person;
 struct _Annotation;
 
@@ -43,7 +44,7 @@ typedef struct _Conversation {
     const struct _Person *talker;
     int state;
     char playerInquiryBuffer[CONV_BUFFERLEN];
-    char **reply;
+    struct _Reply *reply;
     int replyLine;
     /* for vendor conversations */
     int itemType;

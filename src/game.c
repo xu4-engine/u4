@@ -1534,52 +1534,51 @@ void talkShowReply(int showPrompt) {
     ReadBufferActionInfo *rbInfo;
     GetChoiceActionInfo *gcInfo;
 
-    screenMessage("%s", c->conversation.reply[c->conversation.replyLine]);
-
+    screenMessage("%s", c->conversation.reply->chunk[c->conversation.replyLine]);
     c->conversation.replyLine++;
 
-    if (c->conversation.reply[c->conversation.replyLine] == NULL) {
-        personFreeConversationText(c->conversation.reply);
-        c->conversation.reply = NULL;
-
-        if (c->conversation.state == CONV_DONE) {
-            gameFinishTurn();
-            return;
-        }
-
-        if (showPrompt &&
-            (prompt = personGetPrompt(&c->conversation)) != NULL) {
-            screenMessage("%s", prompt);
-            free(prompt);
-        }
-
-        switch (personGetInputRequired(&c->conversation)) {
-        case CONVINPUT_STRING:
-            rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-            rbInfo->buffer = c->conversation.playerInquiryBuffer;
-            rbInfo->bufferLen = CONV_BUFFERLEN;
-            rbInfo->handleBuffer = &talkHandleBuffer;
-            rbInfo->screenX = TEXT_AREA_X + c->col;
-            rbInfo->screenY = TEXT_AREA_Y + c->line;
-            eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, rbInfo);
-            break;
-
-        case CONVINPUT_CHARACTER:
-            gcInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-            gcInfo->choices = personGetChoices(&c->conversation);
-            gcInfo->handleChoice = &talkHandleChoice;
-            eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
-            break;
-
-        case CONVINPUT_NONE:
-            /* no handler: conversation done! */
-            break;
-        }
-
+    /* if all chunks haven't been shown, wait for a key and process next chunk*/
+    if (c->conversation.replyLine < c->conversation.reply->nchunks) {
+        eventHandlerPushKeyHandlerData(&talkHandleAnyKey, (void *) showPrompt);
+        return;
     }
 
-    else {
-        eventHandlerPushKeyHandlerData(&talkHandleAnyKey, (void *) showPrompt);
+    /* otherwise, free current reply and proceed based on conversation state */
+    replyDelete(c->conversation.reply);
+    c->conversation.reply = NULL;
+
+    if (c->conversation.state == CONV_DONE) {
+        gameFinishTurn();
+        return;
+    }
+
+    if (showPrompt &&
+        (prompt = personGetPrompt(&c->conversation)) != NULL) {
+        screenMessage("%s", prompt);
+        free(prompt);
+    }
+
+    switch (personGetInputRequired(&c->conversation)) {
+    case CONVINPUT_STRING:
+        rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+        rbInfo->buffer = c->conversation.playerInquiryBuffer;
+        rbInfo->bufferLen = CONV_BUFFERLEN;
+        rbInfo->handleBuffer = &talkHandleBuffer;
+        rbInfo->screenX = TEXT_AREA_X + c->col;
+        rbInfo->screenY = TEXT_AREA_Y + c->line;
+        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, rbInfo);
+        break;
+
+    case CONVINPUT_CHARACTER:
+        gcInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+        gcInfo->choices = personGetChoices(&c->conversation);
+        gcInfo->handleChoice = &talkHandleChoice;
+        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
+        break;
+
+    case CONVINPUT_NONE:
+        /* no handler: conversation done! */
+        break;
     }
 }
 
