@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MD /W3 /Gm /GR /GX /ZI /Od /I "C:\Documents and Settings\Main\Desktop\xu4_old\zlib" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D strncasecmp=strnicmp /D strcasecmp=stricmp /D snprintf=_snprintf /D vsnprintf=_vsnprintf /FD /GZ /c
+# ADD CPP /nologo /MD /W3 /Gm /GR /GX /ZI /Od /I "..\include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D strncasecmp=strnicmp /D strcasecmp=stricmp /D snprintf=_snprintf /D vsnprintf=_vsnprintf /FD /GZ /c
 # SUBTRACT CPP /WX /Fr /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -81,11 +81,12 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 SDL.lib SDLmain.lib SDL_mixer.lib libxml2.lib zlibstat.lib user32.lib shell32.lib comdlg32.lib gdi32.lib kernel32.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386 /nodefaultlib:"LIBC" /out:"c:\xu4\xu4.exe" /libpath:"C:\Documents and Settings\Main\Desktop\xu4_old\zlib"
+# ADD LINK32 SDL.lib SDLmain.lib SDL_mixer.lib libxml2.lib zdll.lib user32.lib shell32.lib comdlg32.lib gdi32.lib kernel32.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386 /nodefaultlib:"LIBC" /out:"c:\xu4\xu4.exe" /libpath:"..\lib"
 # SUBTRACT LINK32 /map
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
 PreLink_Cmds=set U4ZIPFILE=ultima4.zip
+PostBuild_Cmds=copy ..\bin\*.dll c:\xu4	copy ..\lib\*.dll c:\xu4
 # End Special Build Tool
 
 !ENDIF 
@@ -115,7 +116,7 @@ SOURCE=..\src\lzw\lzw.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\lzw\u4decode.c
+SOURCE=..\src\lzw\u4decode.cpp
 # End Source File
 # Begin Source File
 
@@ -353,6 +354,10 @@ SOURCE=..\src\names.cpp
 # Begin Source File
 
 SOURCE=..\src\names.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\object.cpp
 # End Source File
 # Begin Source File
 
