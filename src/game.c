@@ -1983,7 +1983,7 @@ int gamePeerCity(int city, void *data) {
     GetChoiceActionInfo *choiceInfo;    
     Map *peerMap;
 
-    peerMap = mapMgrGetById(city+1);
+    peerMap = mapMgrGetById((unsigned char)(city+1));
 
     if (peerMap)
     {

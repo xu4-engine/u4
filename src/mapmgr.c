@@ -122,7 +122,7 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
     map->flags = 0;
     
     prop = xmlGetProp(node, (const xmlChar *) "id");
-    map->id = strtoul(prop, NULL, 0);
+    map->id = (unsigned char)strtoul(prop, NULL, 0);
     xmlFree(prop);
 
     prop = xmlGetProp(node, (const xmlChar *) "type");
@@ -251,73 +251,73 @@ City *mapMgrInitCityFromXml(xmlNodePtr node) {
 
     prop = xmlGetProp(node, (const xmlChar *) "companion");
     if (prop) {
-        city->person_types[NPC_TALKER_COMPANION - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_TALKER_COMPANION - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
     prop = xmlGetProp(node, (const xmlChar *) "weaponsvendor");
     if (prop) {
-        city->person_types[NPC_VENDOR_WEAPONS - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_VENDOR_WEAPONS - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
     prop = xmlGetProp(node, (const xmlChar *) "armorvendor");
     if (prop) {
-        city->person_types[NPC_VENDOR_ARMOR - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_VENDOR_ARMOR - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
     prop = xmlGetProp(node, (const xmlChar *) "foodvendor");
     if (prop) {
-        city->person_types[NPC_VENDOR_FOOD - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_VENDOR_FOOD - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
     prop = xmlGetProp(node, (const xmlChar *) "tavernkeeper");
     if (prop) {
-        city->person_types[NPC_VENDOR_TAVERN - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_VENDOR_TAVERN - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
     prop = xmlGetProp(node, (const xmlChar *) "reagentsvendor");
     if (prop) {
-        city->person_types[NPC_VENDOR_REAGENTS - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_VENDOR_REAGENTS - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
     prop = xmlGetProp(node, (const xmlChar *) "healer");
     if (prop) {
-        city->person_types[NPC_VENDOR_HEALER - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_VENDOR_HEALER - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
     prop = xmlGetProp(node, (const xmlChar *) "innkeeper");
     if (prop) {
-        city->person_types[NPC_VENDOR_INN - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_VENDOR_INN - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
     prop = xmlGetProp(node, (const xmlChar *) "guildvendor");
     if (prop) {
-        city->person_types[NPC_VENDOR_GUILD - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_VENDOR_GUILD - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
     prop = xmlGetProp(node, (const xmlChar *) "horsevendor");
     if (prop) {
-        city->person_types[NPC_VENDOR_STABLE - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_VENDOR_STABLE - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
     prop = xmlGetProp(node, (const xmlChar *) "lordbritish");
     if (prop) {
-        city->person_types[NPC_LORD_BRITISH - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_LORD_BRITISH - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
     prop = xmlGetProp(node, (const xmlChar *) "hawkwind");
     if (prop) {
-        city->person_types[NPC_HAWKWIND - NPC_TALKER_COMPANION] = strtoul(prop, NULL, 0);
+        city->person_types[NPC_HAWKWIND - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
         xmlFree(prop);
     }
 
@@ -337,31 +337,31 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
     portal->retroActiveDest = NULL;
  
     prop = xmlGetProp(node, (const xmlChar *) "x");
-    portal->x = strtoul(prop, NULL, 0);
+    portal->x = (unsigned short)strtoul(prop, NULL, 0);
     xmlFree(prop);
 
     prop = xmlGetProp(node, (const xmlChar *) "y");
-    portal->y = strtoul(prop, NULL, 0);
+    portal->y = (unsigned short)strtoul(prop, NULL, 0);
     xmlFree(prop);
 
     prop = xmlGetProp(node, (const xmlChar *) "z");
-    portal->z = strtoul(prop, NULL, 0);
+    portal->z = (unsigned short)strtoul(prop, NULL, 0);
     xmlFree(prop);
 
     prop = xmlGetProp(node, (const xmlChar *) "destmapid");
-    portal->destid = strtoul(prop, NULL, 0);
+    portal->destid = (unsigned char)strtoul(prop, NULL, 0);
     xmlFree(prop);
 
     prop = xmlGetProp(node, (const xmlChar *) "startx");
-    portal->startx = strtoul(prop, NULL, 0);
+    portal->startx = (unsigned short)strtoul(prop, NULL, 0);
     xmlFree(prop);
 
     prop = xmlGetProp(node, (const xmlChar *) "starty");
-    portal->starty = strtoul(prop, NULL, 0);
+    portal->starty = (unsigned short)strtoul(prop, NULL, 0);
     xmlFree(prop);
 
     prop = xmlGetProp(node, (const xmlChar *) "startlevel");
-    portal->startlevel = strtoul(prop, NULL, 0);
+    portal->startlevel = (unsigned short)strtoul(prop, NULL, 0);
     xmlFree(prop);
 
     prop = xmlGetProp(node, (const xmlChar *) "action");
@@ -432,7 +432,7 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
             xmlFree(prop);
 
             prop = xmlGetProp(child, (const xmlChar *) "mapid");
-            portal->retroActiveDest->mapid = strtoul(prop, NULL, 0);
+            portal->retroActiveDest->mapid = (unsigned char)strtoul(prop, NULL, 0);
             xmlFree(prop);
         }
     }

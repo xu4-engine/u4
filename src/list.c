@@ -15,7 +15,7 @@ ListNode *listAppend(ListNode *list, void *data) {
     ListNode *head;
     ListNode *node = malloc(sizeof(ListNode));
 
-    ASSERT(node, "out of memory error");
+    ASSERT(node != NULL, "out of memory error");
     node->data = data;
     node->next = NULL;
 
@@ -35,7 +35,7 @@ ListNode *listAppend(ListNode *list, void *data) {
 ListNode *listPrepend(ListNode *list, void *data) {
     ListNode *node = malloc(sizeof(ListNode));
 
-    ASSERT(node, "out of memory error");
+    ASSERT(node != NULL, "out of memory error");
     node->data = data;
     node->next = list;
 

@@ -1361,16 +1361,15 @@ int combatDivideMonster(const Object *obj) {
     int dirmask = mapGetValidMoves(c->location->map, obj->x, obj->y, c->location->z, obj->tile);
     Direction d = dirRandomDir(dirmask);                
     
+    /* make sure there's a place to put the divided monster! */
     if (d != DIR_NONE) {                    
         int index;
-        int found = 0;
                             
-        /* find the first free slot in the monster table, if it exists */
+        /* find the first free slot in the monster table, if there is one */
         for (index = 0; index < AREA_MONSTERS; index++) {
             if (combatInfo.monsters[index] == NULL) {
                 int x, y;
-
-                found = 1;
+                
                 screenMessage("%s Divides!\n", obj->monster->name);
 
                 /* find a spot to put our new monster */
@@ -1382,10 +1381,9 @@ int combatDivideMonster(const Object *obj) {
                 combatInfo.monsters[index] = mapAddMonsterObject(c->location->map, obj->monster, x, y, c->location->z);
                 combatInfo.monsterHp[index] = monsterGetInitialHp(combatInfo.monsters[index]->monster);
                 combatInfo.monster_status[index] = STAT_GOOD;
-                break;
+                return 1;
             }
-        }
-        return found;
+        }        
     }
     return 0;
 }
