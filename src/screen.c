@@ -15,6 +15,7 @@
 #include "context.h"
 #include "savegame.h"
 #include "names.h"
+#include "ttype.h"
 
 int screenCurrentCycle = 0;
 int screenCursorX = 0;
@@ -81,7 +82,7 @@ void screenUpdate() {
 	for (x = 0; x < VIEWPORT_W; x++) {
 
 	    if (MAP_IS_OOB(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2)))
-		tile = 4;
+		tile = mapIsWorldMap(c->map) ? SEA_TILE : GRASS_TILE;
 
 	    else if ((c->map->flags & SHOW_AVATAR) &&
                      x == (VIEWPORT_W / 2) &&
