@@ -21,10 +21,10 @@ Things you only have to do once
 4. Download the SDL binaries & headers from:
    http://exult.sourceforge.net/snapshots/exult_sdl_win32.zip
 
-5. Download the libpng and zlib binaries & headers from:
-   http://exult.sourceforge.net/snapshots/exult_dev_win32.zip
+5. Download the libpng,libxml, pkgconfig and zlib binaries & headers from:
+   http://xu4.sourceforge.net/xu4_dev_win32.zip
 
-6. Extract libpng and zlib binaries & headers to mingw directory
+6. Extract libpng,libxml, pkgconfig and zlib binaries & headers to mingw directory
 
 7. Start MSYS
 
