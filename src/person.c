@@ -54,50 +54,6 @@ char *hawkwindGetIntro(Conversation *cnv);
 char *hawkwindGetResponse(Conversation *cnv, const char *inquiry);
 char *hawkwindGetPrompt(const Conversation *cnv);
 
-typedef struct _VendorType {
-    char *(*getIntro)(struct _Conversation *cnv);
-    char *(*getVendorQuestionResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getBuyItemResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getSellItemResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getBuyQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getSellQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getBuyPriceResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getContinueQuestionResponse)(struct _Conversation *cnv, const char *answer);
-    char *(*getTopicResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getPrompt)(const struct _Conversation *cnv);
-    const char *vendorQuestionChoices;
-} VendorType;
-
-const VendorType vendorType[] = {
-    { &vendorGetIntro, &vendorGetArmsVendorQuestionResponse, &vendorGetArmsBuyItemResponse, &vendorGetSellItemResponse, 
-      &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, NULL, 
-      &vendorGetContinueQuestionResponse, NULL, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_WEAPONS */
-    { &vendorGetIntro, &vendorGetArmsVendorQuestionResponse, &vendorGetArmsBuyItemResponse, &vendorGetSellItemResponse, 
-      &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, NULL,
-      &vendorGetContinueQuestionResponse, NULL, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_ARMOR */
-    { &vendorGetIntro, NULL, NULL, NULL, 
-      &vendorGetBuyQuantityResponse, NULL, NULL, 
-      &vendorGetContinueQuestionResponse, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_FOOD */
-    { &vendorGetIntro, &vendorGetTavernVendorQuestionResponse, NULL, NULL, 
-      &vendorGetBuyQuantityResponse, NULL, &vendorGetTavernBuyPriceResponse,
-      &vendorGetContinueQuestionResponse, &vendorGetTavernTopicResponse, &vendorGetPrompt, "af\033" }, /* NPC_VENDOR_TAVERN */
-    { &vendorGetIntro, NULL, &vendorGetReagentsBuyItemResponse, NULL,
-      &vendorGetBuyQuantityResponse, NULL, &vendorGetReagentsBuyPriceResponse,
-      &vendorGetContinueQuestionResponse, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_REAGENTS */
-    { &vendorGetIntro, &vendorGetHealerVendorQuestionResponse, &vendorGetHealerBuyItemResponse, NULL,
-      NULL, NULL, NULL, 
-      &vendorGetContinueQuestionResponse, NULL, &vendorGetPrompt, "ny\033" }, /* NPC_VENDOR_HEALER */
-    { &vendorGetIntro, NULL, NULL, NULL,
-      NULL, NULL, NULL,
-      &vendorGetContinueQuestionResponse, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_INN */
-    { &vendorGetIntro, &vendorGetGuildVendorQuestionResponse, &vendorGetGuildBuyItemResponse, NULL,
-      NULL, NULL, NULL, 
-      &vendorGetContinueQuestionResponse, NULL, &vendorGetPrompt, "ny\033" }, /* NPC_VENDOR_GUILD */
-    { &vendorGetIntro, NULL, NULL, NULL,
-      NULL, NULL, NULL, 
-      &vendorGetContinueQuestionResponse, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_STABLE */
-};
-
 /**
  * Loads in conversation data for special cases and vendors from
  * avatar.exe.
@@ -130,40 +86,8 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
     /*
      * a convsation with a vendor
      */
-    if (personIsVendor(cnv->talker)) {
-        switch (cnv->state) {
-        case CONV_INTRO:
-            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getIntro)(cnv);
-            return;
-        case CONV_VENDORQUESTION:
-            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getVendorQuestionResponse)(cnv, inquiry);
-            return;
-        case CONV_BUY_ITEM:
-            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getBuyItemResponse)(cnv, inquiry);
-            return;
-        case CONV_SELL_ITEM:
-            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getSellItemResponse)(cnv, inquiry);
-            return;
-        case CONV_BUY_QUANTITY:
-            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getBuyQuantityResponse)(cnv, inquiry);
-            return;
-        case CONV_SELL_QUANTITY:
-            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getSellQuantityResponse)(cnv, inquiry);
-            return;
-        case CONV_BUY_PRICE:
-            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getBuyPriceResponse)(cnv, inquiry);
-            return;
-        case CONV_CONTINUEQUESTION:
-            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getContinueQuestionResponse)(cnv, inquiry);
-            return;
-        case CONV_TOPIC:
-            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getTopicResponse)(cnv, inquiry);
-            return;
-        default:
-            assert(0);          /* shouldn't happen */
-
-        }
-    } 
+    if (personIsVendor(cnv->talker))
+        vendorGetConversationText(cnv, inquiry, response);
 
     /*
      * a conversation with a non-vendor
@@ -218,7 +142,7 @@ void personGetPrompt(const Conversation *cnv, char **prompt) {
     else if (cnv->talker->npcType == NPC_HAWKWIND)
         *prompt = hawkwindGetPrompt(cnv);
     else if (personIsVendor(cnv->talker))
-        *prompt = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getPrompt)(cnv);
+        *prompt = vendorGetPrompt(cnv);
     else 
         *prompt = talkerGetPrompt(cnv);
 }
@@ -254,7 +178,7 @@ const char *personGetChoices(const struct _Conversation *cnv) {
     switch (cnv->state) {
     case CONV_VENDORQUESTION:
         assert(personIsVendor(cnv->talker));
-        return vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].vendorQuestionChoices;
+        return vendorGetVendorQuestionChoices(cnv);
 
     case CONV_BUY_ITEM:
     case CONV_SELL_ITEM:

@@ -8,6 +8,9 @@
 #include "context.h"
 
 int vendorInit(void);
+void vendorGetConversationText(Conversation *cnv, const char *inquiry, char **response);
+char *vendorGetPrompt(const Conversation *cnv);
+const char *vendorGetVendorQuestionChoices(const Conversation *cnv);
 char *vendorGetIntro(Conversation *cnv);
 char *vendorGetArmsVendorQuestionResponse(Conversation *cnv, const char *response);
 char *vendorGetTavernVendorQuestionResponse(Conversation *cnv, const char *response);
@@ -24,6 +27,5 @@ char *vendorGetTavernBuyPriceResponse(Conversation *cnv, const char *response);
 char *vendorGetReagentsBuyPriceResponse(Conversation *cnv, const char *response);
 char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer);
 char *vendorGetTavernTopicResponse(Conversation *cnv, const char *response);
-char *vendorGetPrompt(const Conversation *cnv);
 
 #endif

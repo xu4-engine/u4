@@ -11,6 +11,7 @@
 #include "u4.h"
 #include "context.h"
 #include "savegame.h"
+#include "vendor.h"
 #include "person.h"
 #include "u4file.h"
 #include "names.h"
@@ -27,9 +28,56 @@
  */
 
 #define N_ARMS_VENDORS 6
+#define N_REAG_VENDORS 4
+#define N_FOOD_VENDORS 5
+#define N_TAVERN_VENDORS 6
+
 #define ARMS_VENDOR_INVENTORY_SIZE 4
+#define N_TAVERN_TOPICS 6 
+#define N_GUILD_ITEMS 4
 
 #define VCM_SIZE 16
+
+const struct {
+    char *(*getIntro)(struct _Conversation *cnv);
+    char *(*getVendorQuestionResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getBuyItemResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getSellItemResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getBuyQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getSellQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getBuyPriceResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getContinueQuestionResponse)(struct _Conversation *cnv, const char *answer);
+    char *(*getTopicResponse)(struct _Conversation *cnv, const char *inquiry);
+    const char *vendorQuestionChoices;
+} vendorType[] = {
+    { &vendorGetIntro, &vendorGetArmsVendorQuestionResponse, &vendorGetArmsBuyItemResponse, &vendorGetSellItemResponse, 
+      &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, NULL, 
+      &vendorGetContinueQuestionResponse, NULL, "bs\033" }, /* NPC_VENDOR_WEAPONS */
+    { &vendorGetIntro, &vendorGetArmsVendorQuestionResponse, &vendorGetArmsBuyItemResponse, &vendorGetSellItemResponse, 
+      &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, NULL,
+      &vendorGetContinueQuestionResponse, NULL, "bs\033" }, /* NPC_VENDOR_ARMOR */
+    { &vendorGetIntro, NULL, NULL, NULL, 
+      &vendorGetBuyQuantityResponse, NULL, NULL, 
+      &vendorGetContinueQuestionResponse, NULL, NULL }, /* NPC_VENDOR_FOOD */
+    { &vendorGetIntro, &vendorGetTavernVendorQuestionResponse, NULL, NULL, 
+      &vendorGetBuyQuantityResponse, NULL, &vendorGetTavernBuyPriceResponse,
+      &vendorGetContinueQuestionResponse, &vendorGetTavernTopicResponse, "af\033" }, /* NPC_VENDOR_TAVERN */
+    { &vendorGetIntro, NULL, &vendorGetReagentsBuyItemResponse, NULL,
+      &vendorGetBuyQuantityResponse, NULL, &vendorGetReagentsBuyPriceResponse,
+      &vendorGetContinueQuestionResponse, NULL, NULL }, /* NPC_VENDOR_REAGENTS */
+    { &vendorGetIntro, &vendorGetHealerVendorQuestionResponse, &vendorGetHealerBuyItemResponse, NULL,
+      NULL, NULL, NULL, 
+      &vendorGetContinueQuestionResponse, NULL, "ny\033" }, /* NPC_VENDOR_HEALER */
+    { &vendorGetIntro, NULL, NULL, NULL,
+      NULL, NULL, NULL,
+      &vendorGetContinueQuestionResponse, NULL, NULL }, /* NPC_VENDOR_INN */
+    { &vendorGetIntro, &vendorGetGuildVendorQuestionResponse, &vendorGetGuildBuyItemResponse, NULL,
+      NULL, NULL, NULL, 
+      &vendorGetContinueQuestionResponse, NULL, "ny\033" }, /* NPC_VENDOR_GUILD */
+    { &vendorGetIntro, NULL, NULL, NULL,
+      NULL, NULL, NULL, 
+      &vendorGetContinueQuestionResponse, NULL, NULL }, /* NPC_VENDOR_STABLE */
+};
 
 /*
  * This structure hold information about each vendor type.  The
@@ -49,6 +97,20 @@ typedef struct VendorTypeDesc {
     int n_text2;
     long text2Offset;
 } VendorTypeDesc;
+
+const VendorTypeDesc vendorTypeDesc[] = {
+    { INV_WEAPON,  80237, 6,  78883, -1, 14, 79015, 2,  80077, 27, 80282 },  /* weapons */
+    { INV_ARMOR,   81511, 5,  80803, -1, 6,  80920, 2,  81374, 27, 81540 },  /* armor */
+    { INV_FOOD,    87519, 5,  87063, -1, 0,  0,     13, 87168, 0,  0 },      /* food */
+    { INV_FOOD,    86363, 6,  85385, -1, 0,  0,     6,  86235, 16, 86465 },  /* tavern */
+    { INV_REAGENT, 78827, 4,  78295, -1, 0,  0,     16, 78377, 0,  0 },      /* reagents */
+    { INV_NONE,    84475, 10, 84209, -1, 0,  0,     3,  84439, 20, 84531 },  /* healer */
+    { INV_NONE,    83703, 7,  83001, -1, 0,  0,     8,  83158, 12, 83785 },  /* inn */
+    { INV_GUILDITEM, -1,  2,  82341, -1, 4,  82403, 12, 82641, 0,  0 },      /* guild */
+    { INV_HORSE,   -1,    0,  0, 0,      0,  0,     7,  82023, 0,  0 }       /* stables */
+};
+
+#define N_VENDOR_TYPE_DESCS (sizeof(vendorTypeDesc) / sizeof(vendorTypeDesc[0]))
 
 /*
  * This structure hold the information loading in from AVATAR.EXE for
@@ -75,12 +137,6 @@ typedef struct ArmsVendorInfo {
     unsigned short prices[WEAP_MAX];
 } ArmsVendorInfo;
 
-#define N_REAG_VENDORS 4
-#define N_FOOD_VENDORS 5
-#define N_TAVERN_VENDORS 6
-#define N_TAVERN_TOPICS 6 
-#define N_GUILD_ITEMS 4
-
 ArmsVendorInfo weaponVendorInfo;
 ArmsVendorInfo armorVendorInfo;
 unsigned char reagPrices[N_REAG_VENDORS][REAG_MAX];
@@ -92,6 +148,8 @@ unsigned short tavernInfoPrices[N_TAVERN_TOPICS];
 unsigned short tavernFoodPrices[N_TAVERN_VENDORS];
 unsigned short guildItemPrices[N_GUILD_ITEMS];
 unsigned short guildItemQuantities[N_GUILD_ITEMS];
+
+VendorTypeInfo **vendorTypeInfo;
 
 #define WV_NOTENOUGH 0
 #define WV_FINECHOICE 1
@@ -214,22 +272,6 @@ char *vendorDoBuyTransaction(Conversation *cnv);
 char *vendorDoSellTransaction(Conversation *cnv);
 int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, FILE *f);
 
-const VendorTypeDesc vendorTypeDesc[] = {
-    { INV_WEAPON,  80237, 6,  78883, -1, 14, 79015, 2,  80077, 27, 80282 },  /* weapons */
-    { INV_ARMOR,   81511, 5,  80803, -1, 6,  80920, 2,  81374, 27, 81540 },  /* armor */
-    { INV_FOOD,    87519, 5,  87063, -1, 0,  0,     13, 87168, 0,  0 },      /* food */
-    { INV_FOOD,    86363, 6,  85385, -1, 0,  0,     6,  86235, 16, 86465 },  /* tavern */
-    { INV_REAGENT, 78827, 4,  78295, -1, 0,  0,     16, 78377, 0,  0 },      /* reagents */
-    { INV_NONE,    84475, 10, 84209, -1, 0,  0,     3,  84439, 20, 84531 },  /* healer */
-    { INV_NONE,    83703, 7,  83001, -1, 0,  0,     8,  83158, 12, 83785 },  /* inn */
-    { INV_GUILDITEM, -1,  2,  82341, -1, 4,  82403, 12, 82641, 0,  0 },      /* guild */
-    { INV_HORSE,   -1,    0,  0, 0,      0,  0,     7,  82023, 0,  0 }       /* stables */
-};
-
-#define N_VENDOR_TYPE_DESCS (sizeof(vendorTypeDesc) / sizeof(vendorTypeDesc[0]))
-
-VendorTypeInfo **vendorTypeInfo;
-
 /**
  * Loads in prices and conversation data for vendors from avatar.exe.
  */
@@ -300,6 +342,93 @@ int vendorInit() {
     u4fclose(avatar);
 
     return 1;
+}
+
+void vendorGetConversationText(Conversation *cnv, const char *inquiry, char **response) {
+    switch (cnv->state) {
+    case CONV_INTRO:
+        *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getIntro)(cnv);
+        return;
+    case CONV_VENDORQUESTION:
+        *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getVendorQuestionResponse)(cnv, inquiry);
+        return;
+    case CONV_BUY_ITEM:
+        *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getBuyItemResponse)(cnv, inquiry);
+        return;
+    case CONV_SELL_ITEM:
+        *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getSellItemResponse)(cnv, inquiry);
+        return;
+    case CONV_BUY_QUANTITY:
+        *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getBuyQuantityResponse)(cnv, inquiry);
+        return;
+    case CONV_SELL_QUANTITY:
+        *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getSellQuantityResponse)(cnv, inquiry);
+        return;
+    case CONV_BUY_PRICE:
+        *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getBuyPriceResponse)(cnv, inquiry);
+        return;
+    case CONV_CONTINUEQUESTION:
+        *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getContinueQuestionResponse)(cnv, inquiry);
+        return;
+    case CONV_TOPIC:
+        *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getTopicResponse)(cnv, inquiry);
+        return;
+    default:
+        assert(0);          /* shouldn't happen */
+
+    }
+}
+
+char *vendorGetPrompt(const Conversation *cnv) {
+    char *prompt;
+
+    switch (cnv->state) {
+
+    case CONV_VENDORQUESTION:
+    case CONV_SELL_QUANTITY:
+    case CONV_BUY_PRICE:
+    case CONV_CONTINUEQUESTION:
+    case CONV_TOPIC:
+        prompt = strdup("");
+        break;
+
+    case CONV_BUY_ITEM:
+        switch (cnv->talker->npcType) {
+        case NPC_VENDOR_WEAPONS:
+        case NPC_VENDOR_ARMOR:
+            prompt = strdup(vendorGetText(cnv->talker, WV_YOURINTEREST));
+            break;
+        default:
+            prompt = strdup("");
+            break;
+        }
+        break;
+        
+    case CONV_SELL_ITEM:
+        prompt = strdup(vendorGetText(cnv->talker, WV_YOUSELL));
+        break;
+
+    case CONV_BUY_QUANTITY:
+        switch (cnv->talker->npcType) {
+        case NPC_VENDOR_WEAPONS:
+        case NPC_VENDOR_ARMOR:
+            prompt = strdup(vendorGetText(cnv->talker, WV_HOWMANYTOBUY));
+            break;
+        default:
+            prompt = strdup("");
+            break;
+        }
+        break;
+
+    default:
+        assert(0);
+    }
+
+    return prompt;
+}
+
+const char *vendorGetVendorQuestionChoices(const Conversation *cnv) {
+    return vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].vendorQuestionChoices;
 }
 
 /**
@@ -479,54 +608,6 @@ char *vendorGetIntro(Conversation *cnv) {
 
     statsUpdate();
     return intro;
-}
-
-char *vendorGetPrompt(const Conversation *cnv) {
-    char *prompt;
-
-    switch (cnv->state) {
-
-    case CONV_VENDORQUESTION:
-    case CONV_SELL_QUANTITY:
-    case CONV_BUY_PRICE:
-    case CONV_CONTINUEQUESTION:
-    case CONV_TOPIC:
-        prompt = strdup("");
-        break;
-
-    case CONV_BUY_ITEM:
-        switch (cnv->talker->npcType) {
-        case NPC_VENDOR_WEAPONS:
-        case NPC_VENDOR_ARMOR:
-            prompt = strdup(vendorGetText(cnv->talker, WV_YOURINTEREST));
-            break;
-        default:
-            prompt = strdup("");
-            break;
-        }
-        break;
-        
-    case CONV_SELL_ITEM:
-        prompt = strdup(vendorGetText(cnv->talker, WV_YOUSELL));
-        break;
-
-    case CONV_BUY_QUANTITY:
-        switch (cnv->talker->npcType) {
-        case NPC_VENDOR_WEAPONS:
-        case NPC_VENDOR_ARMOR:
-            prompt = strdup(vendorGetText(cnv->talker, WV_HOWMANYTOBUY));
-            break;
-        default:
-            prompt = strdup("");
-            break;
-        }
-        break;
-
-    default:
-        assert(0);
-    }
-
-    return prompt;
 }
 
 char *vendorGetArmsVendorQuestionResponse(Conversation *cnv, const char *response) {
