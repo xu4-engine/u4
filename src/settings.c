@@ -77,8 +77,10 @@ void settingsRead() {
     settings->spellEffectSpeed      = DEFAULT_SPELL_EFFECT_SPEED;
 
     /* all specific minor and major enhancements default to "on" */
-    memset(&settings->minorEnhancementsOptions, 1, sizeof(settings->minorEnhancementsOptions));
-    memset(&settings->majorEnhancementsOptions, 1, sizeof(settings->majorEnhancementsOptions));
+    settings->minorEnhancementsOptions.u5shrines        = 1;
+    settings->minorEnhancementsOptions.slimeDivides     = 1;
+    settings->minorEnhancementsOptions.c64chestTraps    = 1;    
+    settings->majorEnhancementsOptions.u5combat         = 1;    
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");

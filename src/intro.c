@@ -1255,7 +1255,7 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
         
     case 1:
-        settings->fullscreen = !settings->fullscreen;
+        settings->fullscreen = settings->fullscreen ? 0 : 1;
         break;
 
     case 2:
@@ -1289,7 +1289,7 @@ void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0: 
-        settings->vol = !settings->vol;
+        settings->vol = settings->vol ? 0 : 1;
         break;
     case 0xFE:        
         settingsWrite();
@@ -1309,17 +1309,17 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0:
-        settings->minorEnhancements = !settings->minorEnhancements;
+        settings->minorEnhancements = settings->minorEnhancements ? 0 : 1;
         break;
     case 1:
-        settings->shortcutCommands = !settings->shortcutCommands;
+        settings->shortcutCommands = settings->shortcutCommands ? 0 : 1;
         break;
     case 2:
         mode = INTRO_CONFIG_ADVANCED;
         advancedOptions = menuReset(advancedOptions);        
         break;
     case 3:
-        settings->majorEnhancements = !settings->majorEnhancements;
+        settings->majorEnhancements = settings->majorEnhancements ? 0 : 1;
         break;
     case 0xFE:        
         settingsWrite();
@@ -1363,7 +1363,7 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         }
         break;
     case 3:
-        settings->germanKbd = !settings->germanKbd;
+        settings->germanKbd = settings->germanKbd ? 0 : 1;
         break;
     case 4:
         if (action != ACTIVATE_DECREMENT) {
@@ -1428,13 +1428,13 @@ void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0: 
-        settings->minorEnhancementsOptions.u5shrines = !settings->minorEnhancementsOptions.u5shrines;
+        settings->minorEnhancementsOptions.u5shrines = settings->minorEnhancementsOptions.u5shrines ? 0 : 1;
         break;
     case 1: 
-        settings->minorEnhancementsOptions.slimeDivides = !settings->minorEnhancementsOptions.slimeDivides;
+        settings->minorEnhancementsOptions.slimeDivides = settings->minorEnhancementsOptions.slimeDivides ? 0 : 1;
         break;
     case 2: 
-        settings->minorEnhancementsOptions.c64chestTraps = !settings->minorEnhancementsOptions.c64chestTraps;
+        settings->minorEnhancementsOptions.c64chestTraps = settings->minorEnhancementsOptions.c64chestTraps ? 0 : 1;
         break;
     case 0xFE:        
         settingsWrite();
@@ -1455,7 +1455,7 @@ void introMajorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0: 
-        settings->majorEnhancementsOptions.u5combat = !settings->majorEnhancementsOptions.u5combat;
+        settings->majorEnhancementsOptions.u5combat = settings->majorEnhancementsOptions.u5combat ? 0 : 1;
         break;
     case 0xFE:        
         settingsWrite();
