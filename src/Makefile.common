@@ -16,6 +16,7 @@ CXXSRCS=\
         city.cpp \
         codex.cpp \
         combat.cpp \
+        config.cpp \
         death.cpp \
         debug.cpp \
         direction.cpp \
