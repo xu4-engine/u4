@@ -72,6 +72,7 @@ void settingsRead() {
     settings->minorEnhancements     = DEFAULT_MINOR_ENHANCEMENTS;
     settings->gameCyclesPerSecond   = DEFAULT_CYCLES_PER_SECOND;
     settings->debug                 = DEFAULT_DEBUG;
+    settings->validateXml           = DEFAULT_VALIDATE_XML;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -119,6 +120,8 @@ void settingsRead() {
             settings->gameCyclesPerSecond = (int) strtoul(buffer + strlen("gameCyclesPerSecond="), NULL, 0);
         else if (strstr(buffer, "debug=") == buffer)
             settings->debug = (int) strtoul(buffer + strlen("debug="), NULL, 0);
+        else if (strstr(buffer, "validateXml=") == buffer)
+            settings->validateXml = (int) strtoul(buffer + strlen("validateXml="), NULL, 0);
         else
             errorWarning("invalid line in settings file %s", buffer);
     }
@@ -156,7 +159,8 @@ void settingsWrite() {
             "battlespeed=%d\n"
             "minorEnhancements=%d\n"
             "gameCyclesPerSecond=%d\n"
-            "debug=%d\n",
+            "debug=%d\n"
+            "validateXml=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
@@ -169,7 +173,8 @@ void settingsWrite() {
             settings->battleSpeed,
             settings->minorEnhancements,
             settings->gameCyclesPerSecond,
-            settings->debug);
+            settings->debug,
+            settings->validateXml);
 
     fclose(settingsFile);
 }

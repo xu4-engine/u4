@@ -23,6 +23,7 @@
 #define DEFAULT_MINOR_ENHANCEMENTS      1
 #define DEFAULT_CYCLES_PER_SECOND       4
 #define DEFAULT_DEBUG                   0
+#define DEFAULT_VALIDATE_XML            1
 
 typedef enum {
     SCL_POINT,
@@ -46,6 +47,7 @@ typedef struct _Settings {
     int minorEnhancements;
     int gameCyclesPerSecond;
     int debug;
+    int validateXml;
 } Settings;
 
 char *settingsFilename(void);
