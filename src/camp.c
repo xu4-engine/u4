@@ -60,11 +60,12 @@ void campEnd() {
     
     gameExitToParentMap(c);    
     
-    if (c->saveGame->moves - c->saveGame->lastcamp > CAMP_HEAL_INTERVAL)
+    /* Make sure we've waited long enough for camping to be effective */
+    if (((c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff) != c->saveGame->lastcamp)    
         healed = campHeal();
 
     screenMessage(healed ? "Party Healed!\n" : "No effect.\n");
-    c->saveGame->lastcamp = c->saveGame->moves;
+    c->saveGame->lastcamp = (c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff;
 
     (*c->location->finishTurn)();
 }
