@@ -216,6 +216,10 @@ void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
     case KA_FLED_EVIL:
         newKarma[VIRT_VALOR] -= 2;        
         break;
+    case KA_HEALTHY_FLED_EVIL:
+        newKarma[VIRT_VALOR] -= 2;
+        newKarma[VIRT_SACRIFICE] -= 2;
+        break;
     case KA_KILLED_EVIL:
         newKarma[VIRT_VALOR] += rand() % 2; /* gain one valor half the time, zero the rest */
         break;

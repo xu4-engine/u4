@@ -1161,6 +1161,12 @@ int movePartyMember(Direction dir, int member) {
     screenMessage("%s\n", getDirectionName(dir));
 
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
+
+        /* A fully-healed party member fled from an evil monster :( */
+        if (combatInfo.monsterObj && monsterIsEvil(combatInfo.monsterObj->monster) && 
+            c->saveGame->players[member].hp == c->saveGame->players[member].hpMax)
+            playerAdjustKarma(c->saveGame, KA_HEALTHY_FLED_EVIL);
+
         mapRemoveObject(c->location->map, combatInfo.party[member]);
         combatInfo.party[member] = NULL;
         return result;
