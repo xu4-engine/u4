@@ -35,7 +35,7 @@ provided the tools to compile xu4 in Visual Studio 6.0.
        http://exult.sourceforge.net/snapshots/exult_sdl_win32.zip
 
     5. Download the libpng,libxml and zlib binaries & headers from:
-       http://xu4.sourceforge.net/xu4_dev_win32.zip
+       http://xu4.sourceforge.net/download/xu4_dev_win32.zip
 
     6. Extract libpng,libxml and zlib binaries & headers to mingw directory
 
