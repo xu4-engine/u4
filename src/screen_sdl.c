@@ -226,12 +226,17 @@ void screenInit() {
 
     eventKeyboardSetKeyRepeat(settings->keydelay, settings->keyinterval);
 
-    SDL_ShowCursor(SDL_ENABLE); /* disable the mouse cursor */
-    cursors[0] = SDL_GetCursor();
-    cursors[1] = screenInitCursor(w_xpm);
-    cursors[2] = screenInitCursor(n_xpm);
-    cursors[3] = screenInitCursor(e_xpm);
-    cursors[4] = screenInitCursor(s_xpm);
+    /* enable or disable the mouse cursor */
+    if (settings->mouseOptions.enabled) {
+        SDL_ShowCursor(SDL_ENABLE);
+        cursors[0] = SDL_GetCursor();
+        cursors[1] = screenInitCursor(w_xpm);
+        cursors[2] = screenInitCursor(n_xpm);
+        cursors[3] = screenInitCursor(e_xpm);
+        cursors[4] = screenInitCursor(s_xpm);
+    } else {
+        SDL_ShowCursor(SDL_DISABLE);
+    }
 }
 
 void screenDelete() {
@@ -1531,7 +1536,7 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
     }
 
     src.y = row * 32 * scale;
-    src.h = 32 * scale;
+    src.h = 31 * scale;
 
     destx = beast ? (320 - 48) : 0;
 
