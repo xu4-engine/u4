@@ -17,13 +17,58 @@
 #include "context.h"
 #include "savegame.h"
 
-const extern Map world_map;
+extern Map world_map;
+extern Map britain_map;
+extern Map yew_map;
+extern Map minoc_map;
+extern Map trinsic_map;
+extern Map jhelom_map;
+extern Map skara_map;
+extern Map magincia_map;
+extern Map moonglow_map;
+extern Map paws_map;
+extern Map vesper_map;
+extern Map den_map;
+extern Map cove_map;
+extern Map empath_map;
+extern Map lycaeum_map;
+extern Map serpent_map;
+extern Map lcb_1_map;
+extern Map lcb_2_map;
+
+Map *cities[] = {
+    &britain_map, &yew_map,
+    &minoc_map, &trinsic_map,
+    &jhelom_map, &skara_map,
+    &magincia_map, &moonglow_map,
+    &paws_map, &vesper_map,
+    &den_map, &cove_map,
+    &empath_map, &lycaeum_map,
+    &serpent_map, &lcb_1_map,
+    &lcb_2_map
+};
+
 Context *c;
 
 int main(int argc, char *argv[]) {
-    FILE *saveGameFile;
+    int i;
+    FILE *world, *saveGameFile;
 
     screenInit();
+
+    world = fopen("./ultima4/world.map", "r");
+    mapReadWorld(&world_map, world);
+    fclose(world);
+
+    for (i = 0; i < sizeof(cities) / sizeof(cities[0]); i++) {
+        FILE *ult, *tlk;
+        ult = fopen(cities[i]->ult_fname, "r");
+        tlk = fopen(cities[i]->tlk_fname, "r");
+        mapRead(cities[i], ult, tlk);
+        fclose(ult);
+        fclose(tlk);
+    }
+    
 
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
