@@ -246,12 +246,6 @@ struct SaveGame {
     unsigned short location;
 };
 
-std::string partySavFilename();
-std::string monstersSavFilename(const char *base);
-FILE *saveGameOpenForWriting(void);
-FILE *saveGameOpenForReading(void);
-FILE *saveGameMonstersOpenForWriting(const char *filename);
-FILE *saveGameMonstersOpenForReading(const char *filename);
 int saveGameMonstersWrite(SaveGameMonsterRecord *monsterTable, FILE *f);
 int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f);
 

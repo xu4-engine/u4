@@ -12,64 +12,6 @@
 
 using std::string;
 
-string partySavFilename() {
-    string fname;
-
-#if defined(MACOSX)
-    char *home;
-
-    home = getenv("HOME");
-    if (home && home[0]) {
-        fname += home;
-        fname += MACOSX_USER_FILES_PATH;
-        fname += "/";
-        fname += PARTY_SAV_BASE_FILENAME;
-    } else
-        fname = PARTY_SAV_BASE_FILENAME;
-#else
-    fname = PARTY_SAV_BASE_FILENAME;
-#endif
-    
-    return fname;
-}
-
-string monstersSavFilename(const char *base) {
-    string fname;
-    
-#if defined(MACOSX)
-    char *home;
-
-    home = getenv("HOME");
-    if (home && home[0]) {
-        fname += home;
-        fname += MACOSX_USER_FILES_PATH;
-        fname += "/";
-        fname += base;
-    } else
-        fname = base;
-#else
-    fname = base;
-#endif
-    
-    return fname;
-}
-    
-FILE *saveGameOpenForWriting() {
-    return fopen(partySavFilename().c_str(), "wb");
-}
-
-FILE *saveGameOpenForReading() {
-    return fopen(partySavFilename().c_str(), "rb");
-}
-
-FILE *saveGameMonstersOpenForWriting(const char *filename) {
-    return fopen(monstersSavFilename(filename).c_str(), "wb");
-}
-
-FILE *saveGameMonstersOpenForReading(const char *filename) {
-    return fopen(monstersSavFilename(filename).c_str(), "rb");
-}
-
 int SaveGame::write(FILE *f) const {
     int i;
 
