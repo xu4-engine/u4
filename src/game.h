@@ -5,6 +5,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+struct _Context;
+
 typedef struct AlphaActionInfo {
     char lastValidLetter;
     int (*handleAlpha)(int, void *);
@@ -28,5 +30,7 @@ int gameZtatsKeyHandler2(int key, void *data);
 int gameSpecialCmdKeyHandler(int key, void *data);
 void gameTimer(void);
 void gameFinishTurn(void);
+void gameLostEighth(int eighths);
+struct _Context *gameCloneContext(struct _Context *ctx);
 
 #endif

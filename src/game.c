@@ -129,6 +129,37 @@ void gameFinishTurn() {
 }
 
 /**
+ * Inform a player he has lost zero or more eighths of avatarhood.
+ */
+void gameLostEighth(int eighths) {
+    int i;
+
+    for (i = 0; i < eighths; i++) {
+        screenMessage("Thou hast lost an eighth!\n");
+    }
+
+    if (eighths)
+        statsUpdate();
+}
+
+Context *gameCloneContext(Context *ctx) {
+    Context *new;
+
+    new = (Context *) malloc(sizeof(Context));
+    new->parent = ctx;
+    new->saveGame = new->parent->saveGame;
+    new->col = new->parent->col;
+    new->line = new->parent->line;
+    new->statsItem = new->parent->statsItem;
+    new->moonPhase = new->parent->moonPhase;
+    new->windDirection = new->parent->windDirection;
+    new->windCounter = new->parent->windCounter;
+    new->moonPhase = new->parent->moonPhase;
+
+    return new;
+}
+
+/**
  * The main key handler for the game.  Interpretes each key as a
  * command - 'a' for attack, 't' for talk, etc.
  */
@@ -233,8 +264,6 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'e':
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_ENTER) {
-            Context *new;
-
             switch (portal->destination->type) {
             case MAP_TOWN:
                 screenMessage("Enter towne!\n\n%s\n\n", portal->destination->city->name);
@@ -268,24 +297,13 @@ int gameBaseKeyHandler(int key, void *data) {
                 }
             }
 
-            new = (Context *) malloc(sizeof(Context));
-            new->parent = c;
-            new->saveGame = c->saveGame;
-            new->col = new->parent->col;
-            new->line = new->parent->line;
-            new->statsItem = new->parent->statsItem;
-            new->moonPhase = new->parent->moonPhase;
-            new->windDirection = new->parent->windDirection;
-            new->windCounter = new->parent->windCounter;
-            new->moonPhase = new->parent->moonPhase;
-            
             mapRemoveAvatarObject(c->map);
             annotationClear();  /* clear out world map annotations */
-            gameSetMap(new, portal->destination, 1);
-            c = new;
 
+            c = gameCloneContext(c);
+
+            gameSetMap(c, portal->destination, 1);
             mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
-
             musicPlay();
 
         } else
@@ -305,7 +323,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 annotationAdd(c->saveGame->x, c->saveGame->y, -1, BRICKFLOOR_TILE);
             playerGetChest(c->saveGame);
             if (obj == NULL)
-                playerAdjustKarma(c->saveGame, KA_STOLE_CHEST);
+                gameLostEighth(playerAdjustKarma(c->saveGame, KA_STOLE_CHEST));
         } else
             screenMessage("Not Here!\n");
         break;
@@ -748,10 +766,22 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
  * creature is present at that point, zero is returned.
  */
 int attackAtCoord(int x, int y) {
+    Map *combatMap;
+
     if (x == -1 && y == -1)
         return 0;
 
-    screenMessage("attack at %d, %d\n(not implemented)\n", x, y);
+    combatMap = getCombatMapForTile(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport);
+
+    mapRemoveAvatarObject(c->map);
+    annotationClear();  /* clear out world map annotations */
+
+    c = gameCloneContext(c);
+
+    gameSetMap(c, combatMap, 1);
+    mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
+    musicPlay();
+
     gameFinishTurn();
 
     return 1;
@@ -1375,20 +1405,20 @@ void gameTimer() {
     }
 
     /* update moon phases */
-    oldTrammel = c->saveGame->trammelphase;
-
-    if (++c->moonPhase >= (MOON_SECONDS_PER_PHASE * 4 * MOON_PHASES))
-        c->moonPhase = 0;
-
-    c->saveGame->trammelphase = c->moonPhase / (MOON_SECONDS_PER_PHASE * 4) / 3;
-    c->saveGame->feluccaphase = c->moonPhase / (MOON_SECONDS_PER_PHASE * 4) % 8;
-
-    if (--c->saveGame->trammelphase > 7)
-        c->saveGame->trammelphase = 7;
-    if (--c->saveGame->feluccaphase > 7)
-        c->saveGame->feluccaphase = 7;
-
     if (mapIsWorldMap(c->map)) {
+        oldTrammel = c->saveGame->trammelphase;
+
+        if (++c->moonPhase >= (MOON_SECONDS_PER_PHASE * 4 * MOON_PHASES))
+            c->moonPhase = 0;
+
+        c->saveGame->trammelphase = c->moonPhase / (MOON_SECONDS_PER_PHASE * 4) / 3;
+        c->saveGame->feluccaphase = c->moonPhase / (MOON_SECONDS_PER_PHASE * 4) % 8;
+
+        if (--c->saveGame->trammelphase > 7)
+            c->saveGame->trammelphase = 7;
+        if (--c->saveGame->feluccaphase > 7)
+            c->saveGame->feluccaphase = 7;
+
         trammelSubphase = c->moonPhase % (MOON_SECONDS_PER_PHASE * 4 * 3);
 
         /* update the moongates if trammel changed */
@@ -1438,6 +1468,7 @@ void gameTimer() {
 
 void gameCheckMoongates() {
     int destx, desty;
+    extern Map shrine_spirituality_map;
     
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, 
                                  c->saveGame->x, c->saveGame->y, &destx, &desty)) {
@@ -1445,5 +1476,21 @@ void gameCheckMoongates() {
         /* FIXME: special effect here */
         c->saveGame->x = destx;
         c->saveGame->y = desty;
+
+        if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
+            if (!playerCanEnterShrine(c->saveGame, shrine_spirituality_map.shrine->virtue))
+                return;
+            else
+                shrineEnter(shrine_spirituality_map.shrine);
+
+            mapRemoveAvatarObject(c->map);
+            annotationClear();  /* clear out world map annotations */
+
+            c = gameCloneContext(c);
+
+            gameSetMap(c, &shrine_spirituality_map, 1);
+            mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
+            musicPlay();
+        }
     }
 }
