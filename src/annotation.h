@@ -14,9 +14,8 @@ class Annotation;
 typedef std::list<Annotation> AnnotationList;
 
 /**
- * Annotation class
- * ----------------------------------------------------------------
- * Annotations are updates to a map.  There are three types:
+ * Annotation are updates to a map.
+ * There are three types of annotations:
  * - permanent: lasts until annotationClear is called
  * - turn based: lasts a given number of cycles
  * - time based: lasts a given number of time units (1/4 seconds) 
@@ -46,9 +45,7 @@ private:
     int ttl;
 };
 
-/**
- * AnnotationMgr class
- * ----------------------------------------------------------------
+/** 
  * Manages annotations for the current map.  This includes
  * adding and removing annotations, as well as finding annotations
  * and managing their existence.

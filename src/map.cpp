@@ -333,6 +333,30 @@ bool Map::isWorldMap() {
     return type == MAPTYPE_WORLD;
 }
 
+
+
+/**
+ * Returns true if the map is enclosed (to see if gem layouts should cut themselves off)
+ */ 
+bool Map::isEnclosed() {
+    unsigned int x, y;    
+
+    if (border_behavior != BORDER_WRAP)
+        return true;    
+
+    for (x = 0; x < width; x++) {
+        if (tileAt(Coords(x, 0), WITHOUT_OBJECTS)->isWalkable()) {
+
+        }
+    }
+
+    for (y = 0; y < width; y++) {
+
+    }
+
+    return true;
+}
+
 /**
  * Adds a creature object to the given map
  */

@@ -36,15 +36,15 @@ void Annotation::debug_output() const {
     printf("visual: %s\n", visual ? "Yes" : "No");
 }
 
-const Coords& Annotation::getCoords() const         { return coords;      }
-MapTile& Annotation::getTile()                      { return tile;        }
-const bool Annotation::isVisualOnly() const         { return visual;      }
-const int Annotation::getTTL() const                { return ttl;         }
-void Annotation::setCoords(const Coords &c)         { coords = c;         }
-void Annotation::setTile(const MapTile &t)          { tile = t;           }
-void Annotation::setVisualOnly(bool v)              { visual = v;         }
-void Annotation::setTTL(int turns)                  { ttl = turns;        }
-void Annotation::passTurn()                         { if (ttl > 0) ttl--; }
+const Coords& Annotation::getCoords() const         { return coords;      } /**< Returns the coordinates of the annotation */
+MapTile& Annotation::getTile()                      { return tile;        } /**< Returns the annotation's tile */
+const bool Annotation::isVisualOnly() const         { return visual;      } /**< Returns true for visual-only annotations */
+const int Annotation::getTTL() const                { return ttl;         } /**< Returns the number of turns the annotation has left to live */
+void Annotation::setCoords(const Coords &c)         { coords = c;         } /**< Sets the coordinates for the annotation */
+void Annotation::setTile(const MapTile &t)          { tile = t;           } /**< Sets the tile for the annotation */
+void Annotation::setVisualOnly(bool v)              { visual = v;         } /**< Sets whether or not the annotation is visual-only */
+void Annotation::setTTL(int turns)                  { ttl = turns;        } /**< Sets the number of turns the annotation will live */
+void Annotation::passTurn()                         { if (ttl > 0) ttl--; } /**< Passes a turn for the annotation */
 
 /**
  * Operators
@@ -66,8 +66,6 @@ AnnotationMgr::AnnotationMgr() {}
  */ 
 
 /**
- * add()
- *
  * Adds an annotation to the current map
  */
 Annotation *AnnotationMgr::add(Coords coords, MapTile tile, bool visual) {
@@ -77,8 +75,6 @@ Annotation *AnnotationMgr::add(Coords coords, MapTile tile, bool visual) {
 }        
 
 /**
- * allAt()
- *
  * Returns all annotations found at the given map coordinates
  */ 
 AnnotationList AnnotationMgr::allAt(Coords coords) {
@@ -93,8 +89,6 @@ AnnotationList AnnotationMgr::allAt(Coords coords) {
 }
 
 /**
- * clear()
- *
  * Removes all annotations on the map 
  */ 
 void AnnotationMgr::clear() {
@@ -102,8 +96,6 @@ void AnnotationMgr::clear() {
 }    
 
 /**
- * passTurn()
- *
  * Passes a turn for annotations and removes any
  * annotations whose TTL has expired
  */ 
@@ -120,8 +112,6 @@ void AnnotationMgr::passTurn() {
 }
 
 /**
- * remove()
- *
  * Removes an annotation from the current map
  */
 void AnnotationMgr::remove(Coords coords, MapTile tile) {        
@@ -139,7 +129,7 @@ void AnnotationMgr::remove(Annotation *a) {
 }
 
 /**
- * Remove an entire list of annotations
+ * Removes an entire list of annotations 
  */ 
 void AnnotationMgr::remove(AnnotationList l) {
     AnnotationList::iterator i;
@@ -149,8 +139,6 @@ void AnnotationMgr::remove(AnnotationList l) {
 }
 
 /**
- * size()
- *
  * Returns the number of annotations on the map
  */ 
 int AnnotationMgr::size() {

@@ -98,6 +98,7 @@ public:
     MapTile* getTileFromData(Coords coords);
     MapTile* tileAt(Coords coords, int withObjects);
     bool isWorldMap();
+    bool isEnclosed();
     class Creature *addCreature(const class Creature *m, Coords coords);
     class Object *addObject(MapTile tile, MapTile prevTile, Coords coords);
     void removeObject(const class Object *rem);

@@ -31,7 +31,7 @@
 using std::string;
 
 /**
- * Constructor
+ * Constructs a script object
  */ 
 Script::Script() : vendorScriptDoc(NULL), debug(NULL), state(SCRIPT_STATE_UNLOADED) {}
 Script::~Script() {
@@ -125,7 +125,7 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
 }
 
 /**
- * Unload the script
+ * Unloads the script
  */ 
 void Script::unload() {
     if (vendorScriptDoc) {
@@ -154,7 +154,7 @@ void Script::unload() {
 }
 
 /**
- * Executes the subscript 'script' of the main script 'node'
+ * Executes the subscript 'script' of the main script
  */ 
 ScriptReturnCode Script::execute(xmlNodePtr script, xmlNodePtr currentItem, string *output) {
     xmlNodePtr node = this->scriptNode;
@@ -846,7 +846,7 @@ string Script::getContent(xmlNodePtr node) {
  */ 
 ScriptReturnCode Script::end(xmlNodePtr script, xmlNodePtr current) {
     /**
-     * See if there's a global <end> node declared for cleanup
+     * See if there's a global 'end' node declared for cleanup
      */
     xmlNodePtr endScript = find(scriptNode, "end");
     if (endScript)

@@ -1478,6 +1478,8 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
 void screenGemUpdate() {
     MapTile *tile;
     int focus, x, y;
+    
+    const static MapTile black = Tileset::get()->getByName("black")->id;
 
     screen->fillRect(BORDER_WIDTH * scale, 
                      BORDER_HEIGHT * scale, 

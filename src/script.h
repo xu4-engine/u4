@@ -60,6 +60,17 @@ typedef enum {
     SCRIPT_ZTATS
 } ScriptAction;
 
+/**
+ * An xml-scripting class. It loads and runs xml scripts that
+ * take information and interact with the game environment itself.
+ * Currently, it is only useful for writing vendor code; however,
+ * with some additions it should be possible to write any kind of
+ * game script that can be run from within the game.
+ *
+ * @todo 
+ *      - Add variable-support and strip vendor-specific code from the script
+ *      - Fill in some of the missing integration with the game
+ */ 
 class Script {
 public:
     Script();

@@ -1,6 +1,13 @@
 /*
  * $Id$
  */
+
+/** \mainpage xu4 Main Page
+ *
+ * \section intro_sec Introduction
+ *
+ * intro stuff goes here...
+ */
  
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
@@ -8,6 +15,7 @@
 
 #include "u4.h"
 
+#include "debug.h"
 #include "error.h"
 #include "event.h"
 #include "game.h"
@@ -39,6 +47,8 @@ int main(int argc, char *argv[]) {
 #if defined(MACOSX)
     osxInit(argv[0]);
 #endif
+
+    Debug::initGlobal("debug_global.txt");
 
     /* Read the game settings from file */    
     settings.read();    

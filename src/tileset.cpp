@@ -8,6 +8,7 @@
 
 #include "tileset.h"
 
+#include "debug.h"
 #include "error.h"
 #include "screen.h"
 #include "settings.h"
@@ -163,16 +164,20 @@ Tileset*            Tileset::current = NULL;
 void Tileset::loadAll(string filename) {
     xmlDocPtr doc;
     xmlNodePtr root, node;
+    Debug dbg("debug_tileset.txt", "Tileset");
 
+    TRACE(dbg, "Unloading all tilesets");    
     unloadAll();
 
     /* open the filename for the tileset and parse it! */
+    TRACE(dbg, string("Parsing ") + filename);
     doc = xmlParse(filename.c_str());
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "tilesets") != 0)
         errorFatal("malformed %s", filename.c_str());
 
     /* load tile rules from xml */
+    TRACE(dbg, "Loading tile rules");
     if (!TileRule::rules.size())
         TileRule::load("tileRules.xml");    
 
@@ -186,17 +191,23 @@ void Tileset::loadAll(string filename) {
         /* get filename of each tileset */
         string tilesetFilename = xmlGetPropAsStr(node, "file");
         /* load the tileset! */
+
+        TRACE(dbg, string("Loading tileset: ") + tilesetFilename);
         tileset->load(tilesetFilename);
 
         tilesets[tileset->name] = tileset;
     }
 
     /* make the current tileset the first one encountered */
+    TRACE(dbg, "Setting default tileset");
     set(tilesets.begin()->second);
 
     /* load tile maps from xml, including translations from index to id */
+    TRACE(dbg, "Loading tilemaps");
     if (!TileMap::size())
         TileMap::loadAll(filename);
+
+    TRACE(dbg, "Successfully Loaded Tilesets");
 }
 
 /**

@@ -6,9 +6,12 @@
 
 #include "tilemap.h"
 
+#include "debug.h"
 #include "error.h"
 #include "tileset.h"
 #include "xml.h"
+
+Debug dbg("debug_tilemap.txt", "TileMap");
 
 /**
  * Static variables
@@ -20,11 +23,13 @@ TileMap::TileIndexMapMap TileMap::tileMaps;
  */
 void TileMap::loadAll(string filename) {
     xmlDocPtr doc;
-    xmlNodePtr root, node;
+    xmlNodePtr root, node;    
 
+    TRACE_LOCAL(dbg, "Unloading all tilemaps");
     unloadAll();
 
     /* open the filename for the tileset and parse it! */
+    TRACE_LOCAL(dbg, string("Parsing ") + filename);
     doc = xmlParse(filename.c_str());
     root = xmlDocGetRootElement(doc);    
     
@@ -35,7 +40,9 @@ void TileMap::loadAll(string filename) {
      
         /* get filename of the tilemap */
         string tilemapFilename = xmlGetPropAsStr(node, "file");
+        
         /* load the tilemap ! */
+        TRACE(dbg, string("Loading tilemap: ") + tilemapFilename);
         load(tilemapFilename);        
     }
 }
@@ -62,9 +69,10 @@ void TileMap::unloadAll() {
  */
 void TileMap::load(string filename) {
     xmlDocPtr doc;
-    xmlNodePtr root, node;        
+    xmlNodePtr root, node;    
     
     /* open the filename for the group and parse it! */
+    TRACE_LOCAL(dbg, string("Parsing ") + filename);
     doc = xmlParse(filename.c_str());
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "tilemap") != 0)
@@ -73,6 +81,7 @@ void TileMap::load(string filename) {
     TileIndexMap* tileMap = new TileIndexMap;
     
     string name = xmlGetPropAsStr(root, "name");    
+    TRACE_LOCAL(dbg, string("Tilemap name is: ") + name);
     
     int index = 0;
     for (node = root->xmlChildrenNode; node; node = node->next) {
@@ -83,7 +92,9 @@ void TileMap::load(string filename) {
            so let's do some translations! */
         
         int frames = 1;
-        string tile = xmlGetPropAsStr(node, "tile");
+        string tile = xmlGetPropAsStr(node, "tile");        
+
+        TRACE_LOCAL(dbg, string("\tLoading '") + tile + "'");
         
         /* find the tile this references */
         Tile *t = Tileset::findTileByName(tile);
@@ -91,9 +102,9 @@ void TileMap::load(string filename) {
             errorFatal("Error: tile '%s' from '%s' was not found in any tileset", tile.c_str(), filename.c_str());
         
         if (xmlPropExists(node, "index"))
-            index = xmlGetPropAsInt(node, "index");
+            index = xmlGetPropAsInt(node, "index");        
         if (xmlPropExists(node, "frames"))
-            frames = xmlGetPropAsInt(node, "frames");
+            frames = xmlGetPropAsInt(node, "frames");        
 
         /* insert the tile into the tile map */
         for (int i = 0; i < frames; i++) {
