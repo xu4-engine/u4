@@ -431,8 +431,10 @@ void gameSpellEffect(unsigned int spell, int player) {
     }
 
     /* pause the game for enough time to complete the spell effect */
-    paused = 1;
-    pausedTimer = ((time * 4) / 1000) + 1;
+    if (!paused) {
+        paused = 1;
+        pausedTimer = ((time * 4) / 1000) + 1;
+    }
 
     switch(effect)
     {
@@ -1897,7 +1899,8 @@ int gamePeerCity(int city, void *data) {
 void gamePeerGem(void) {
     GetChoiceActionInfo *choiceInfo;
 
-    paused = 1;    
+    paused = 1;
+    pausedTimer = 0;
     
     c->location->viewMode = VIEW_GEM;
     choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
