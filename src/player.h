@@ -25,5 +25,6 @@ int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon);
 int playerAdjustKarma(SaveGame *saveGame, KarmaAction action);
 void playerGetChest(SaveGame *saveGame);
 int playerDonate(SaveGame *saveGame, int quantity);
+void playerJoin(SaveGame *saveGame, const char *name);
 
 #endif

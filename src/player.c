@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "player.h"
@@ -194,4 +195,19 @@ int playerDonate(SaveGame *saveGame, int quantity) {
     saveGame->gold -= quantity;
     playerAdjustKarma(saveGame, KA_GAVE_TO_BEGGAR);
     return 1;
+}
+
+void playerJoin(SaveGame *saveGame, const char *name) {
+    int i;
+    SaveGamePlayerRecord tmp;
+
+    for (i = saveGame->members; i < 8; i++) {
+        if (strcmp(saveGame->players[i].name, name) == 0) {
+            tmp = saveGame->players[saveGame->members];
+            saveGame->players[saveGame->members] = saveGame->players[i];
+            saveGame->players[i] = tmp;
+            saveGame->members++;
+            break;
+        }
+    }
 }
