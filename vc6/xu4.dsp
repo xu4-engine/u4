@@ -476,6 +476,14 @@ SOURCE=..\src\weapon.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\xml.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\xml.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\xu4.ico
 # End Source File
 # Begin Source File
