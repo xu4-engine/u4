@@ -91,7 +91,6 @@ extern Object *party[8];
 Context *c = NULL;
 int collisionOverride = 0;
 int windLock = 0;
-int opacityCheck = 1;
 char itemNameBuffer[16];
 
 void gameInit() {    
@@ -116,6 +115,7 @@ void gameInit() {
     c->aura = AURA_NONE;
     c->auraDuration = 0;
     c->horseSpeed = 0;
+    c->opacity = 1;
     c->lastCommandTime = time(NULL);
 
     /* load in the save game */
@@ -559,6 +559,7 @@ int gameBaseKeyHandler(int key, void *data) {
             if (c->saveGame->balloonstate == 0)
                 screenMessage("Already Landed!\n");
             c->saveGame->balloonstate = 0;
+            c->opacity = 1;
         } else
             screenMessage("Descend what?\n");
         break;
@@ -693,7 +694,8 @@ int gameBaseKeyHandler(int key, void *data) {
             }
         } else if (tileIsBalloon(c->saveGame->transport)) {
             c->saveGame->balloonstate = 1;
-            screenMessage("Klimb Altitude!\n");
+            c->opacity = 0;
+            screenMessage("Klimb Altitude!\n");            
         } else
             screenMessage("Klimb what?\n");
         break;
@@ -1112,8 +1114,8 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         break;
 
     case 'o':
-        opacityCheck = !opacityCheck;
-        screenMessage("Opacity %s!\n", opacityCheck ? "on" : "off");
+        c->opacity = !c->opacity;
+        screenMessage("Opacity %s!\n", c->opacity ? "on" : "off");
         screenPrompt();
         break;
 
@@ -2010,9 +2012,12 @@ int moveAvatar(Direction dir, int userEvent) {
     int result = 1;
     int newx, newy;  
     int slowed = 0;
-    SlowedType slowedType = (tileIsShip(c->saveGame->transport)) ?
-        SLOWED_BY_WIND :
-        SLOWED_BY_TILE;
+    SlowedType slowedType = SLOWED_BY_TILE;
+    
+    if (tileIsShip(c->saveGame->transport))
+        slowedType = SLOWED_BY_WIND;
+    else if (tileIsBalloon(c->saveGame->transport))
+        slowedType = SLOWED_BY_NOTHING;
 
     /*musicPlayEffect();*/
 
@@ -2069,7 +2074,7 @@ int moveAvatar(Direction dir, int userEvent) {
         }
     }   
 
-    if (!collisionOverride) {
+    if (!collisionOverride && !c->saveGame->balloonstate) {
         int movementMask;
 
         movementMask = mapGetValidMoves(c->location->map, c->location->x, c->location->y, c->location->z, c->saveGame->transport);
@@ -2132,12 +2137,14 @@ void gameTimer(void *data) {
     if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
         if ((rand() % 4) == 1 && !windLock)
             c->windDirection = dirRandomDir(MASK_DIR_ALL);
-        c->windCounter = 0;
-        if (tileIsBalloon(c->saveGame->transport) &&
-            c->saveGame->balloonstate) {
-            dir = dirReverse((Direction) c->windDirection);
-            moveAvatar(dir, 0);
-        }
+        c->windCounter = 0;        
+    }
+
+    /* balloon moves about 8 times per second */
+    if (tileIsBalloon(c->saveGame->transport) &&
+        c->saveGame->balloonstate) {
+        dir = dirReverse((Direction) c->windDirection);
+        moveAvatar(dir, 0);
     }
 
     gameUpdateMoons(1);

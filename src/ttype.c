@@ -10,6 +10,7 @@
 #include "monster.h"
 #include "error.h"
 #include "u4file.h"
+#include "context.h"
 
 #define MASK_OPAQUE      0x0001
 #define MASK_SWIMABLE    0x0002
@@ -373,8 +374,8 @@ void tileAdvanceFrame(unsigned char *tile) {
 }
 
 int tileIsOpaque(unsigned char tile) {
-    extern int opacityCheck;
-    if (opacityCheck)
+    extern Context *c;
+    if (c->opacity)
         return tileTestBit(tile, MASK_OPAQUE);
     else return 0;
 }

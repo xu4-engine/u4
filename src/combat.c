@@ -572,12 +572,14 @@ int combatIsLost() {
 }
 
 void combatEnd() {
+    
+    Monster *m = (monsterObj->objType == OBJECT_MONSTER) ? monsterObj->monster : monsterForTile(monsterObj->tile);
     gameExitToParentMap(c);
     
     if (combatIsWon()) {
 
         /* added chest or captured ship object */
-        if ((monsterObj->monster->mattr & MATTR_WATER) == 0)
+        if ((m->mattr & MATTR_WATER) == 0)
             mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), monsterObj->x, monsterObj->y, c->location->z);
         else if (tileIsPirateShip(monsterObj->tile)) {
             unsigned char ship = tileGetShipBase();
