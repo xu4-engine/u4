@@ -672,7 +672,7 @@ static int spellXit(int unused) {
 }
 
 static int spellYup(int unused) {
-    int tile = mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z - 1);
+    unsigned char tile = mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z - 1);
 
     if (c->location->z > 0) {
         if (tileIsDungeonWalkable(tile))
@@ -688,7 +688,7 @@ static int spellYup(int unused) {
 }
 
 static int spellZdown(int unused) {
-    int tile = mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z + 1);
+    unsigned char tile = mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z + 1);
 
     if (c->location->z < 7) {
         if (tileIsDungeonWalkable(tile))

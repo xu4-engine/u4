@@ -256,7 +256,8 @@ int introInit() {
     
     gameplayOptions = menuAddItem(gameplayOptions, 0, "Minor Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
     gameplayOptions = menuAddItem(gameplayOptions, 3, "Major Game Enhancements", 6, 6, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
-    gameplayOptions = menuAddItem(gameplayOptions, 1, "Shortcut Keys", 6, 8, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
+    //gameplayOptions = menuAddItem(gameplayOptions, 1, "Shortcut Keys", 6, 8, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
+    gameplayOptions = menuAddItem(gameplayOptions, 1, "Automatic Actions", 6, 8, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
     gameplayOptions = menuAddItem(gameplayOptions, 2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     gameplayOptions = menuAddItem(gameplayOptions, 0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     gameplayOptions = menuAddItem(gameplayOptions, 0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
@@ -461,7 +462,7 @@ int introKeyHandler(int key, void *data) {
             /* navigate to the item and activate it! */
             switch(key) {
             case 'g': gameplayOptions = menuActivateItem(gameplayOptions, 0, ACTIVATE_NORMAL); break;                
-            case 's': gameplayOptions = menuActivateItem(gameplayOptions, 1, ACTIVATE_NORMAL); break;                
+            case 'm': gameplayOptions = menuActivateItem(gameplayOptions, 1, ACTIVATE_NORMAL); break;                
             case 'a': gameplayOptions = menuActivateItem(gameplayOptions, 2, ACTIVATE_NORMAL); break;
             default: break;
             }            
