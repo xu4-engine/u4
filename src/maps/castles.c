@@ -14,7 +14,7 @@ City empath_city;
 Map empath_map = {
     "empath.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    15, 31, /* startx, starty */
+    15, 30, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -39,7 +39,7 @@ City lycaeum_city;
 Map lycaeum_map = {
     "lycaeum.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    15, 31, /* startx, starty */
+    15, 30, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -64,7 +64,7 @@ City serpent_city;
 Map serpent_map = {
     "serpent.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    15, 31, /* startx, starty */
+    15, 30, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
@@ -96,7 +96,7 @@ City lcb_1_city;
 Map lcb_1_map = {
     "lcb_1.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    15, 31, /* startx, starty */
+    15, 30, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     2, /* n_portals */
     lcb_1_portals, /* portals */
@@ -126,7 +126,7 @@ City lcb_2_city;
 Map lcb_2_map = {
     "lcb_2.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
-    15, 31, /* startx, starty */
+    15, 30, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     2, /* n_portals */
     lcb_2_portals, /* portals */
