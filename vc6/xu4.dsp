@@ -253,6 +253,14 @@ SOURCE=..\src\event_sdl.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\filesystem.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\filesystem.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\game.cpp
 # End Source File
 # Begin Source File
