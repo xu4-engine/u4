@@ -1851,18 +1851,20 @@ int peerCityHandleChoice(char choice) {
  * NPC is present at that point, zero is returned.
  */
 int talkAtCoord(int x, int y, int distance, void *data) {
-    const Person *talker;
+    const Person *talker;    
 
     if (x == -1 && y == -1) {
         screenMessage("Funny, no\nresponse!\n");
-        (*c->location->finishTurn)();
+        (*c->location->finishTurn)();        
         return 0;
     }
 
     c->conversation.talker = mapPersonAt(c->location->map, x, y, c->location->z);
-    if (c->conversation.talker == NULL) {
+
+    /* some persons in some towns exists as a 'person' object, but they
+       really are not someone you can talk to.  These persons have mostly null fields */
+    if (c->conversation.talker == NULL || c->conversation.talker->name == NULL)
         return 0;
-    }
 
     talker = c->conversation.talker;
     c->conversation.state = CONV_INTRO;

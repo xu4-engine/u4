@@ -35,7 +35,7 @@ void innTimer(void *data);
 void innEnd(void);
 
 void campBegin() {
-    /* setup camp */
+    /* setup camp (possible, but not for-sure combat situation */
     combatBegin(CORPSE_TILE, AVATAR_TILE, NULL);
     
     musicFadeOut(2000); /* Fade volume out to ease into camp */    
@@ -52,6 +52,7 @@ void campTimer(void *data) {
     eventHandlerPopKeyHandler();
     screenEnableCursor();
 
+    /* Is the party ambushed during their rest? */
     if (rand() % 8 == 0) {        
     
         int i, j,
@@ -108,8 +109,8 @@ void campTimer(void *data) {
                 }
             }
         }        
-    }
-    else campEnd();
+    }    
+    else campEnd();    
 }
 
 void campEnd() {
@@ -139,6 +140,7 @@ int campHeal() {
 
     healed = 0;
 
+    /* restore each party member to max mp, and heal between 75 and 225 hp */
     for (i = 0; i < c->saveGame->members; i++) {
         c->saveGame->players[i].mp = playerGetMaxMp(&c->saveGame->players[i]);
         if ((c->saveGame->players[i].hp < c->saveGame->players[i].hpMax) &&
@@ -171,6 +173,8 @@ void innTimer(void *data) {
     eventHandlerRemoveTimerCallback(&innTimer);
     eventHandlerPopKeyHandler();
     screenEnableCursor();
+
+    /* FIXME: add encounter and special case stuff here */
 
     innEnd();
 }
