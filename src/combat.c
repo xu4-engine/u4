@@ -55,6 +55,7 @@ Object *monsters[AREA_MONSTERS];
 int combatBaseKeyHandler(int key, void *data);
 void combatFinishTurn(void);
 int combatAttackAtCoord(int x, int y);
+int combatInitialNumberOfMonsters(unsigned char monster);
 int combatIsWon(void);
 int combatIsLost(void);
 void combatEnd(void);
@@ -82,7 +83,7 @@ void combatBegin(unsigned char partytile, unsigned short transport, unsigned cha
     focus = 0;
     party[focus]->hasFocus = 1;
 
-    nmonsters = (rand() % (AREA_MONSTERS - 1)) + 1;
+    nmonsters = combatInitialNumberOfMonsters(monster);
     for (i = 0; i < nmonsters; i++)
         monsters[i] = mapAddObject(c->map, monster, monster, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
     for (; i < AREA_MONSTERS; i++)
@@ -271,6 +272,14 @@ int combatAttackAtCoord(int x, int y) {
     return 1;
 }
 
+int combatInitialNumberOfMonsters(unsigned char monster) {
+    if (monster != GUARD_TILE &&
+        !mapIsWorldMap(c->parent->map))
+        return 1;
+
+    return (rand() % (AREA_MONSTERS - 1)) + 1;
+}
+
 /**
  * Returns true if the player has won.
  */
@@ -353,7 +362,7 @@ void combatMoveMonsters() {
 
         switch(action) {
         case CA_ATTACK:
-            if (1) {
+            if (playerIsHitByAttack(&c->saveGame->players[target])) {
                 playerApplyDamage(&c->saveGame->players[target], monsterGetDamage(m));
                 if (c->saveGame->players[target].hp == 0) {
                     mapRemoveObject(c->map, party[target]);
