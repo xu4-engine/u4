@@ -116,12 +116,12 @@ void AnnotationMgr::passTurn() {
  */
 void AnnotationMgr::remove(Coords coords, MapTile tile) {        
     Annotation look_for(coords, tile);
-    remove(&look_for);
+    remove(look_for);
 }
 
-void AnnotationMgr::remove(Annotation *a) {
+void AnnotationMgr::remove(Annotation &a) {
     for (i = annotations.begin(); i != annotations.end(); i++) {
-        if (*i == *a) {
+        if (*i == a) {
             i = annotations.erase(i);
             break;
         }
@@ -134,7 +134,7 @@ void AnnotationMgr::remove(Annotation *a) {
 void AnnotationMgr::remove(Annotation::List l) {
     Annotation::List::iterator i;
     for (i = l.begin(); i != l.end(); i++) {
-        remove(&*i);
+        remove(*i);
     }
 }
 
