@@ -21,6 +21,7 @@
 #include "player.h"
 #include "map.h"
 #include "debug.h"
+#include "screen.h"
 
 char **hawkwindText;
 char **lbKeywords;

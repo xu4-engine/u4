@@ -869,7 +869,7 @@ void introInitPlayers(SaveGame *saveGame) {
         WeaponType weapon;
         ArmorType armor;
         int xp, x, y;
-		int virtues[8];
+	int virtues[8];
     } initValuesForClass[] = {
         { WEAP_STAFF,  ARMR_CLOTH,   125, 231, 136, 65, 50, 60, 50, 50, 55, 55, 50 }, /* CLASS_MAGE */
         { WEAP_SLING,  ARMR_CLOTH,   240,  83, 105, 50, 65, 55, 55, 50, 60, 50, 50 }, /* CLASS_BARD */

@@ -16,6 +16,7 @@
 #include "savegame.h"
 #include "names.h"
 #include "ttype.h"
+#include "dngview.h"
 
 int screenNeedPrompt = 1;
 int screenCurrentCycle = 0;
