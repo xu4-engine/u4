@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "ttype.h"
+#include "monster.h"
 
 #define MASK_WALKABLE  0x0003
 #define MASK_EFFECT    0x000C
@@ -15,7 +16,7 @@
 #define MASK_SHIP      0x0200
 #define MASK_HORSE     0x0400
 #define MASK_BALLOON   0x0800
-#define MASK_CANDISPEL 0x1000     
+#define MASK_CANDISPEL 0x1000
 
 #define WALKABLE       0x0000
 #define SLOW           0x0001
@@ -145,6 +146,12 @@ int tileIsShip(unsigned char tile) {
     return 0;
 }
 
+int tileIsPirateShip(unsigned char tile) {
+    if (tile >= PIRATE_TILE && tile < (PIRATE_TILE + 4))
+        return 1;
+    return 0;
+}
+
 int tileIsHorse(unsigned char tile) {
     if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
 	return (_ttype_info[tile] & MASK_HORSE) != 0;
@@ -166,6 +173,8 @@ int tileCanDispel(unsigned char tile) {
 Direction tileGetDirection(unsigned char tile) {
     if (tileIsShip(tile))
         return (Direction) (tile - 16 + DIR_WEST);
+    if (tileIsPirateShip(tile))
+        return (Direction) (tile - PIRATE_TILE + DIR_WEST);
     else if (tileIsHorse(tile))
         return tile == 20 ? DIR_WEST : DIR_EAST;
     else 
@@ -175,6 +184,8 @@ Direction tileGetDirection(unsigned char tile) {
 void tileSetDirection(unsigned short *tile, Direction dir) {
     if (tileIsShip(*tile))
         *tile = 16 + dir;
+    else if (tileIsPirateShip(*tile))
+        *tile = PIRATE_TILE + dir;
     else if (tileIsHorse(*tile))
         *tile = (dir == DIR_WEST ? 20 : 21);
 }

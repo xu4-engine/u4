@@ -57,6 +57,7 @@ int tileIsFlyable(unsigned char tile);
 int tileIsDoor(unsigned char tile);
 int tileIsLockedDoor(unsigned char tile);
 int tileIsShip(unsigned char tile);
+int tileIsPirateShip(unsigned char tile);
 int tileIsHorse(unsigned char tile);
 int tileIsBalloon(unsigned char tile);
 int tileCanDispel(unsigned char tile);
