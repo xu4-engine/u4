@@ -68,7 +68,7 @@ private:
 
     void showText(const string &text);
 
-    void runMenu(Menu *menu, bool withBeasties);
+    void runMenu(Menu *menu, TextView *view, bool withBeasties);
 
     /**
      * The states of the intro.
@@ -86,6 +86,8 @@ private:
         CANCEL = 0xFF
     };
 
+    TextView menuArea;
+    TextView extendedMenuArea;
     TextView questionArea;
 
     /* data loaded in from title.exe */
