@@ -123,54 +123,45 @@ bool MapTile::setDirection(Direction d) {
     return changed;
 }
 
-#define TESTBIT(against)     (t->get(id)->rule->mask & (against))
-#define TESTMOVEBIT(against) (t->get(id)->rule->movementMask & (against))
-#define GETRULE              (t->get(id)->rule)
+#define TESTBIT(against)     (Tileset::get()->get(id)->rule->mask & (against))
+#define TESTMOVEBIT(against) (Tileset::get()->get(id)->rule->movementMask & (against))
+#define GETRULE              (Tileset::get()->get(id)->rule)
 
-bool MapTile::canWalkOn(Direction d) const {
-    Tileset *t = Tileset::get();
-    return DIR_IN_MASK(d, t->get(id)->rule->walkonDirs) ? true : false;
+bool MapTile::canWalkOn(Direction d) const {    
+    return DIR_IN_MASK(d, GETRULE->walkonDirs) ? true : false;
 }
 
-bool MapTile::canWalkOff(Direction d) const {    
-    Tileset *t = Tileset::get();
-    return DIR_IN_MASK(d, t->get(id)->rule->walkoffDirs) ? true : false;
+bool MapTile::canWalkOff(Direction d) const {        
+    return DIR_IN_MASK(d, GETRULE->walkoffDirs) ? true : false;
 }
 
 bool MapTile::canAttackOver() const {
     /* All tiles that you can walk, swim, or sail on, can be attacked over.
-       All others must declare themselves */
-    Tileset *t = Tileset::get();
+       All others must declare themselves */    
     return isWalkable() || isSwimable() || isSailable() || TESTBIT(MASK_ATTACKOVER);        
 }
 
-bool MapTile::canLandBalloon() const {
-    Tileset *t = Tileset::get();
+bool MapTile::canLandBalloon() const {    
     return TESTBIT(MASK_CANLANDBALLOON);
 }
 
-bool MapTile::isReplacement() const {
-    Tileset *t = Tileset::get();
+bool MapTile::isReplacement() const {    
     return TESTBIT(MASK_REPLACEMENT);
 }
 
-bool MapTile::isWalkable() const {    
-    Tileset *t = Tileset::get();
+bool MapTile::isWalkable() const {        
     return GETRULE->walkonDirs > 0;
 }
 
 bool MapTile::isCreatureWalkable() const {
-    Tileset *t = Tileset::get();
     return canWalkOn(DIR_ADVANCE) && !TESTMOVEBIT(MASK_CREATURE_UNWALKABLE);
 }
 
-bool MapTile::isSwimable() const {
-    Tileset *t = Tileset::get();
+bool MapTile::isSwimable() const {    
     return TESTMOVEBIT(MASK_SWIMABLE);
 }
 
-bool MapTile::isSailable() const {
-    Tileset *t = Tileset::get();
+bool MapTile::isSailable() const {    
     return TESTMOVEBIT(MASK_SAILABLE);
 }
 
@@ -178,28 +169,23 @@ bool MapTile::isWater() const {
     return (isSwimable() || isSailable());
 }
 
-bool MapTile::isFlyable() const {
-    Tileset *t = Tileset::get();
+bool MapTile::isFlyable() const {    
     return !TESTMOVEBIT(MASK_UNFLYABLE);
 }
 
-bool MapTile::isDoor() const {
-    Tileset *t = Tileset::get();
+bool MapTile::isDoor() const {    
     return TESTBIT(MASK_DOOR);
 }
 
-bool MapTile::isLockedDoor() const {
-    Tileset *t = Tileset::get();
+bool MapTile::isLockedDoor() const {    
     return TESTBIT(MASK_LOCKEDDOOR);
 }
 
-bool MapTile::isChest() const {
-    Tileset *t = Tileset::get();
+bool MapTile::isChest() const {    
     return TESTBIT(MASK_CHEST);
 }
 
-bool MapTile::isShip() const {
-    Tileset *t = Tileset::get();
+bool MapTile::isShip() const {    
     return TESTBIT(MASK_SHIP);
 }
 
@@ -210,50 +196,35 @@ bool MapTile::isPirateShip() const {
     return false;
 }
 
-bool MapTile::isHorse() const {
-    Tileset *t = Tileset::get();
+bool MapTile::isHorse() const {    
     return TESTBIT(MASK_HORSE);
 }
 
-bool MapTile::isBalloon() const {
-    Tileset *t = Tileset::get();
+bool MapTile::isBalloon() const {    
     return TESTBIT(MASK_BALLOON);
 }
 
-bool MapTile::canDispel() const {
-    Tileset *t = Tileset::get();
+bool MapTile::canDispel() const {    
     return TESTBIT(MASK_DISPEL);
 }
 
-bool MapTile::canTalkOver() const {
-    Tileset *t = Tileset::get();
+bool MapTile::canTalkOver() const {    
     return TESTBIT(MASK_TALKOVER);
 }
 
-TileSpeed MapTile::getSpeed() const { 
-    Tileset *t = Tileset::get();
+TileSpeed MapTile::getSpeed() const {     
     return GETRULE->speed;
 }
 
-TileEffect MapTile::getEffect() const {
-    Tileset *t = Tileset::get();
+TileEffect MapTile::getEffect() const {    
     return GETRULE->effect;
 }
 
-TileAnimationStyle MapTile::getAnimationStyle() const {
-    Tileset *t = Tileset::get();
-    TileAnim* anim = t->get(id)->anim;
-    if (anim)
-        return anim->name == "framed" ? ANIM_FRAMES : ANIM_NONE;
-    else return ANIM_NONE;
-}
-
 bool MapTile::isOpaque() const {
-    extern Context *c;    
-    Tileset *t = Tileset::get();
+    extern Context *c;
 
     if (c->opacity)
-        return t->get(id)->opaque ? 1 : 0;
+        return Tileset::get()->get(id)->opaque ? 1 : 0;
     else return 0;
 }
 
