@@ -32,6 +32,9 @@ TextView::~TextView() {
     eventHandler->getTimer()->remove(&cursorTimer, this);
 }
 
+/**
+ * Draw a character from the charset onto the view.
+ */
 void TextView::drawChar(int chr, int x, int y) {
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
@@ -43,6 +46,12 @@ void TextView::drawChar(int chr, int x, int y) {
                          SCALED(CHAR_HEIGHT));
 }
 
+/**
+ * Draw a character from the charset onto the view, but mask it with
+ * horizontal lines.  This is used for the avatar symbol in the
+ * statistics area, where a line is masked out for each virtue in
+ * which the player is not an avatar.
+ */
 void TextView::drawCharMasked(int chr, int x, int y, unsigned char mask) {
     drawChar(chr, x, y);
     for (int i = 0; i < 8; i++) {
