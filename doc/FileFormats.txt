@@ -385,18 +385,151 @@ hex     location
 20      Shrine of Humility
 
 
-OUTMONST.SAV, MONSTERS.SAV
---------------------------
+MONSTERS.SAV
+------------
 
-These files probably contains a list of monsters currently outside.
-Probably contains location of player ships and balloon, too.
+Ultima 4 maintains a structure (in memory) that I've decided to call
+the "monster table."
+When you Journey Onward, U4 loads MONSTERS.SAV into the monster table.
+When you Quit & Save, U4 writes the monster table to MONSTERS.SAV.
+The purpose of the monster table fields depends on the current party
+location (surface, dungeon, settlement).
+
+Surface:
+On the surface, the monster table contains information about monsters
+and inanimate objects (chests, horses, ships, balloon).
+A table entry is free if (currentTile[i] == 0) && (previousTile[i] == 0)
+Newly created monsters are put into the first free entry from the
+beginning of the table.
+Newly created inanimate objects are put into the first free entry
+from tbe end of the table.
+The balloon is created when you leave Hythloth.
+If there is more than one inanimate object on a tile, objects closer to
+the beginning of the table are drawn on top of those closer to the end.
+Monsters and the party are always drawn on top of inanimate objects.
+
+0x0     32      current tile
+0x20    32      current x coordinate
+0x40    32      current y coordinate
+0x60    32      tile for previous turn
+0x80    32      x coordinate for previous turn
+0xA0    32      y coordinate for previous turn
+0xC0    32      not used
+0xE0    32      not used
+
+Dungeons:
+In a dungeon, the monster table contains information about the monsters
+in the dungeon.
+A monster stored in the monster table is *also* stored in DNGMAP.SAV.
+Inanimate objects are not stored in the monster table; they are stored
+*only* in DNGMAP.SAV.
+
+0x0     32      not used
+0x20    32      current x coordinate
+0x40    32      current y coordinate
+0x60    32      current tile
+0x80    32      x coordinate for previous turn
+0xA0    32      y coordinate for previous turn
+0xC0    32      dungeon level; range = 0-7
+0xE0    32      not used
+
+Settlements:
+In a castle/town/village, the monster table is loaded from the settlement's
+.ult file, starting at offset 0x400.
+It contains information about the settlement's NPC's.
+
+0x0     32      current tile
+0x20    32      current x coordinate
+0x40    32      current y coordinate
+0x60    32      tile for previous turn
+0x80    32      x coordinate for previous turn
+0xA0    32      y coordinate for previous turn
+0xC0    32      movement behavior for NPCs 0-31 (0x0-fixed, 0x1-wander, 0x80-follow, 0xFF-attack)
+0xE0    32      conversation index (tlk file) for NPCs 0-31
+
+
+OUTMONST.SAV
+------------
+
+OUTMONST.SAV is a backup of the monster table, created when you enter
+a dungeon or settlement.
+When you leave a dungeon or settlement, the monster table is reloaded
+from OUTMONST.SAV.
+
+Exception: when you enter Hythloth though the ladder in LB's castle,
+the game does not write the current monster table to OUTMONST.SAV,
+because it already did that when you entered LB's castle.
 
 
 DNGMAP.SAV
 ----------
 
-This file probably contains a list of the monsters(?) and objects
-(such as orbs) in the dungeons.
+When you Quit & Save in a dungeon, the game saves objects (orbs,
+chests) and monsters in DNGMAP.SAV.
+DNGMAP.SAV contains the 8x8 maps for all 8 levels.
+Every tile is encoded as a byte.
+The upper nibble of a tile determines the tile type (see below).
+The lower nibble encodes the monster standing on the tile, except
+for tiles 0x80 0x90 0xA0 0xD0 (see below).
+
+0x00 = nothing
+0x10 = ladder up
+0x20 = ladder down
+0x30 = ladder up/down
+0x40 = chest
+0x50 = hole (ceiling)
+0x60 = hole (floor)
+0x70 = orb (see below)
+0x80 = trap (magic winds)
+0x81 = trap (falling rocks)
+0x8E = trap (pit)
+0x90 = fountain (no effect)
+0x91 = fountain (healing)
+0x92 = fountain (100 hit points damage)
+0x93 = fountain (cure)
+0x94 = fountain (poison and 100 hit points damage)
+0xA0 = magic field (poison)
+0xA1 = magic field (energy)
+0xA2 = magic field (fire)
+0xA3 = magic field (sleep)
+0xB0 = altar (stone color depends on dungeon)
+0xC0 = door
+0xDn = dungeon room #n
+0xE0 = illusionary wall
+0xF0 = wall
+
+Monsters:
+
+0 = none
+1 = rat
+2 = bat
+3 = spider
+4 = ghost
+5 = slime
+6 = troll
+7 = gremlin
+8 = mimic
+9 = reaper
+A = insects
+B = gazer
+C = phantom
+D = orc
+E = skeleton
+F = rogue
+
+Orbs:
+When a PC touches an orb, one or more attributes are raised by 5
+points each.
+Which attributes are raised depends on the dungeon.
+
+dungeon     attributes
+Deceit      I--
+Despise     -D-
+Destard     --S
+Wrong       ID-
+Covetous    -DS
+Shame       I-S
+Hythloth    IDS
 
 
 TITLE.EXE
