@@ -27,8 +27,8 @@
 #include "moongate.h"
 #include "music.h"
 #include "item.h"
+#include "shrine.h"
 
-void gameFinishTurn(void);
 int gameCanMoveOntoTile(const Map *map, int x, int y);
 int moveAvatar(Direction dir, int userEvent);
 int attackAtCoord(int x, int y);
@@ -72,7 +72,11 @@ void gameSetMap(Context *ct, Map *map, int setStartPos) {
         ct->saveGame->y = map->starty;
     }
 
-    if (map->city && map->objects == NULL) {
+    if ((map->type == MAP_TOWN || 
+         map->type == MAP_VILLAGE ||
+         map->type == MAP_CASTLE ||
+         map->type == MAP_RUIN) && 
+        map->objects == NULL) {
         for (i = 0; i < map->city->n_persons; i++) {
             if (map->city->persons[i].tile0 != 0 &&
                 !(personIsJoinable(&(map->city->persons[i])) && personIsJoined(&(map->city->persons[i]))))
@@ -229,7 +233,42 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'e':
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_ENTER) {
-            Context *new = (Context *) malloc(sizeof(Context));
+            Context *new;
+
+            switch (portal->destination->type) {
+            case MAP_TOWN:
+                screenMessage("Enter towne!\n\n%s\n\n", portal->destination->city->name);
+                break;
+            case MAP_VILLAGE:
+                screenMessage("Enter village!\n\n%s\n\n", portal->destination->city->name);
+                break;
+            case MAP_CASTLE:
+                screenMessage("Enter castle!\n\n%s\n\n", portal->destination->city->name);
+                break;
+            case MAP_RUIN:
+                screenMessage("Enter ruin!\n\n%s\n\n", portal->destination->city->name);
+                break;
+            case MAP_SHRINE:
+                screenMessage("Enter the Shrine of %s!\n\n", getVirtueName(portal->destination->shrine->virtue));
+                break;
+            default:
+                break;
+            }
+
+            /*
+             * if trying to enter a shrine, ensure the player is
+             * allowed in
+             */
+            if (portal->destination->type == MAP_SHRINE) {
+                if (!playerCanEnterShrine(c->saveGame, portal->destination->shrine->virtue)) {
+                    screenMessage("Thou dost not bear the rune of entry!  A strange force keeps you out!\n");
+                    break;
+                } else {
+                    shrineEnter(portal->destination->shrine);
+                }
+            }
+
+            new = (Context *) malloc(sizeof(Context));
             new->parent = c;
             new->saveGame = c->saveGame;
             new->col = new->parent->col;
@@ -244,25 +283,6 @@ int gameBaseKeyHandler(int key, void *data) {
             annotationClear();  /* clear out world map annotations */
             gameSetMap(new, portal->destination, 1);
             c = new;
-
-            if (c->map->city) {
-                const char *type = NULL;
-                switch (c->map->type) {
-                case MAP_TOWN:
-                    type = "towne";
-                    break;
-                case MAP_VILLAGE:
-                    type = "village";
-                    break;
-                case MAP_CASTLE:
-                    type = "castle";
-                    break;
-                case MAP_RUIN:
-                    type = "ruin";
-                    break;
-                }
-                screenMessage("Enter %s!\n\n%s\n\n", type, c->map->city->name);
-            }
 
             mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
 
