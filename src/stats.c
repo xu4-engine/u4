@@ -36,9 +36,14 @@ void statsShowMixtures();
  * Update the stats (ztats) box on the upper right of the screen.
  */
 void statsUpdate() {
+    int i;
+    unsigned char mask;
 
     statsAreaClear();
 
+    /* 
+     * update the upper stats box 
+     */
     switch(c->statsItem) {
     case STATS_PARTY_OVERVIEW:
         statsShowPartyView();
@@ -72,6 +77,21 @@ void statsUpdate() {
         statsShowMixtures();
         break;
     }
+
+    /* 
+     * update the lower stats box (food, gold, etc.)
+     */
+    if (tileIsShip(c->saveGame->transport))
+        screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   SHP:%02d", c->saveGame->food / 100, c->saveGame->shiphull);
+    else
+        screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
+
+    mask = 0xff;
+    for (i = 0; i < VIRT_MAX; i++) {
+        if (c->saveGame->karma[i] == 0)
+            mask &= ~(1 << i);
+    }
+    screenShowCharMasked(0, STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1, mask);
 }
 
 void statsAreaClear() {
@@ -98,24 +118,11 @@ void statsAreaSetTitle(const char *title) {
  */
 void statsShowPartyView() {
     int i;
-    unsigned char mask;
 
     assert(c->saveGame->members <= 8);
 
     for (i = 0; i < c->saveGame->members; i++)
         screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, "%d-%-9s%3d%c", i+1, c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
-
-    if (tileIsShip(c->saveGame->transport))
-        screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   SHP:%02d", c->saveGame->food / 100, c->saveGame->shiphull);
-    else
-        screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
-
-    mask = 0xff;
-    for (i = 0; i < VIRT_MAX; i++) {
-        if (c->saveGame->karma[i] == 0)
-            mask &= ~(1 << i);
-    }
-    screenShowCharMasked(0, STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1, mask);
 }
 
 /**
