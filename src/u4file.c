@@ -55,6 +55,9 @@ void u4fclose(FILE *f) {
     fclose(f);
 }
 
+/**
+ * Returns the length in bytes of a file.
+ */
 long u4flength(FILE *f) {
     long curr, len;
 
@@ -64,4 +67,33 @@ long u4flength(FILE *f) {
     fseek(f, curr, SEEK_SET);
 
     return len;
+}
+
+/**
+ * Read a series of zero terminated strings from a file.  The strings
+ * are read from the given offset, or the current file position if
+ * offset is -1.
+ */
+char **u4read_stringtable(FILE *f, long offset, int nstrings) {
+    char buffer[256];
+    int i, j;
+    char **strs = malloc(nstrings * sizeof(char *));
+    if (!strs)
+        return NULL;
+
+    assert(offset < u4flength(f));
+
+    if (offset != -1)
+        fseek(f, offset, SEEK_SET);
+    for (i = 0; i < nstrings; i++) {
+        for (j = 0; j < sizeof(buffer) - 1; j++) {
+            buffer[j] = fgetc(f);
+            if (buffer[j] == '\0')
+                break;
+        }
+        buffer[j] = '\0';
+        strs[i] = strdup(buffer);
+    }
+
+    return strs;
 }
