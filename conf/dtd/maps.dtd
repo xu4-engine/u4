@@ -44,13 +44,13 @@
 <!ATTLIST portal x                NMTOKEN  #REQUIRED
                  y                NMTOKEN  #REQUIRED
                  z                NMTOKEN  #REQUIRED
-                 destmapid        NMTOKEN  #IMPLIED
-                 startx           NMTOKEN  #IMPLIED
-                 starty           NMTOKEN  #IMPLIED
-                 startlevel       NMTOKEN  #IMPLIED
+                 destmapid        NMTOKEN  #REQUIRED
+                 startx           NMTOKEN  #REQUIRED
+                 starty           NMTOKEN  #REQUIRED
+                 startlevel       NMTOKEN  #REQUIRED
                  action           ( descend | enter | klimb ) #REQUIRED
                  condition        ( shrine | abyss ) #IMPLIED
-                 savelocation     %bool;   #IMPLIED
+                 savelocation     %bool;   #REQUIRED
                  message          CDATA    #IMPLIED
                  transport        ( foot | footorhorse ) #REQUIRED
                  exits            NMTOKEN  #IMPLIED>
