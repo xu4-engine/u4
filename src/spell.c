@@ -450,7 +450,7 @@ static int spellDispel(int dir) {
     extern CombatInfo combatInfo;
     
     /* get the current location, based on context */
-    if (c->location->context == CTX_COMBAT) {
+    if (c->location->context & CTX_COMBAT) {
         basex = x = combatInfo.party[FOCUS].obj->x;
         basey = y = combatInfo.party[FOCUS].obj->y;
         basez = z = combatInfo.party[FOCUS].obj->z;

@@ -1747,7 +1747,7 @@ int castForPlayer2(int spell, void *data) {
     case SPELLPRM_DIR:
     case SPELLPRM_TYPEDIR:
         {
-            if (c->location->context & CTX_DUNGEON)
+            if (c->location->context == CTX_DUNGEON)
                 gameCastSpell(castSpell, castPlayer, c->saveGame->orientation);
             else {
                 screenMessage("Dir: ");
