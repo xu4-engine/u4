@@ -53,7 +53,6 @@ int main(int argc, char *argv[]) {
 
     screenInit(scale, fullScreen);
     musicInit(sound);
-
     eventHandlerInit();
 
     if (!skipIntro) {
@@ -126,6 +125,10 @@ int main(int argc, char *argv[]) {
 
     eventHandlerRemoveTimerCallback(&gameTimer);
     eventHandlerPopKeyHandler();
+
+    eventHandlerDelete();
+    musicDelete();
+    screenDelete();
 
     return 0;
 }
