@@ -1967,8 +1967,10 @@ int openAtCoord(int x, int y, int distance, void *data) {
 int gemHandleChoice(int choice) {
     eventHandlerPopKeyHandler();
 
+    screenEnableCursor();    
+    
     c->location->viewMode = VIEW_NORMAL;
-    (*c->location->finishTurn)();
+    (*c->location->finishTurn)();    
 
     /* unpause the game */
     paused = 0;
@@ -1989,6 +1991,8 @@ int gamePeerCity(int city, void *data) {
     {
         gameSetMap(c, peerMap, 1, NULL);
         c->location->viewMode = VIEW_GEM;
+
+        screenDisableCursor();
             
         // Wait for player to hit a key
         choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
@@ -2008,6 +2012,7 @@ void gamePeerGem(void) {
 
     paused = 1;
     pausedTimer = 0;
+    screenDisableCursor();
     
     c->location->viewMode = VIEW_GEM;
     choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
@@ -2022,6 +2027,7 @@ void gamePeerGem(void) {
 int peerCityHandleChoice(int choice) {
     eventHandlerPopKeyHandler();
     gameExitToParentMap(c);
+    screenEnableCursor();    
     
     (*c->location->finishTurn)();
 
