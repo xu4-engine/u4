@@ -14,6 +14,8 @@
 #include "settings.h"
 #include "u4_sdl.h"
 
+extern bool verbose;
+
 SDL_TimerID timer;
 
 Uint32 eventCallback(Uint32 interval, void *param) {
@@ -106,6 +108,13 @@ void eventHandlerMain(void (*updateScreen)(void)) {
             else if (event.key.keysym.sym == SDLK_BACKSPACE ||
                      event.key.keysym.sym == SDLK_DELETE)
                 key = U4_BACKSPACE;
+
+            if (verbose)
+                printf("key event: unicode = %d, sym = %d, mod = %d; translated = %d\n", 
+                       event.key.keysym.unicode, 
+                       event.key.keysym.sym, 
+                       event.key.keysym.mod, 
+                       key);
 
             /* see if the key was ignored */
             if (!eventHandlerIsKeyIgnored(key)) {
