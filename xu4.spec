@@ -1,6 +1,6 @@
 Summary: xu4 - Ultima IV Recreated
 Name: xu4
-Version: 0.7
+Version: 0.8
 Release: 1
 URL: http://xu4.sourceforge.net/
 Source0: http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
@@ -42,28 +42,21 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/u4
 %{_datadir}/pixmaps/u4.bmp
 %{_datadir}/pixmaps/u4.png
-%{_libdir}/u4/music/Castles.mid
-%{_libdir}/u4/music/Combat.mid
-%{_libdir}/u4/music/Dungeon.mid
-%{_libdir}/u4/music/Fanfare_Of_Lord_British.mid
-%{_libdir}/u4/music/Rule_Britannia.mid
-%{_libdir}/u4/music/Shopping.mid
-%{_libdir}/u4/music/Shrines.mid
-%{_libdir}/u4/music/Towns.mid
-%{_libdir}/u4/music/Wanderer.mid
+%{_libdir}/u4/music/*.mid
 %{_libdir}/u4/dumpsavegame
 %{_libdir}/u4/lzwenc
 %{_libdir}/u4/lzwdec
 %{_libdir}/u4/rleenc
 %{_libdir}/u4/rledec
 %{_libdir}/u4/tlkconv
-%{_libdir}/u4/tiles.xml
-%{_libdir}/u4/armors.xml
-%{_libdir}/u4/weapons.xml
-%{_libdir}/u4/music.xml
+%{_libdir}/u4/*.xml
+%{_libdir}/u4/graphics/*.rle
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Sat Oct 22 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added graphics files, cleanup
+
 * Sat Aug 23 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added music.xml to files
 

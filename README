@@ -39,6 +39,23 @@ and vice versa, at least in theory.
 STATUS
 ------
 
+New in v0.8
+ - dungeon rooms
+ - first person view in dungeons
+ - improved config menus 
+ - config menu navigation with arrow keys
+ - ranged monster attacks
+ - implemented hole up & camp command
+ - implemented inn ghost
+ - xu4 can now load the Ultima IV data files straight out of
+   ultima4.zip and u4upgrad.zip
+ - all music can be previewed at the intro screen with the number keys
+ - many spells now work: awaken, blink, cure, dispel, gate, heal,
+   light, negate, tremor, resurrect, xit
+ - better error reporting under MacOS X
+ - bug fixes galore
+ - lots of code cleanup
+
 New in v0.7
  - ranged combat
  - long responses now pause before scrolling off screen
@@ -105,7 +122,6 @@ New in v0.07:
 
 To do, in no particular order:
  - sound effects
- - dungeons
  - autoconf, automake
  - everything else :)
 
@@ -113,7 +129,6 @@ Some thoughts for possible improvements:
  - Ultima 5 style aiming in combat (i.e. allow angle shots)
  - support for higher-resolution tile sets
  - allow the map view to display more of the world
- - read Ultima 4 for DOS files straight out of zip file
  - automatically fetch Ultima 4 for DOS if not found
  - move hardcoded data (tile attributes, starting attributes, etc.)
    into xml config file
@@ -141,20 +156,21 @@ that a copy of Ultima 4 for DOS must be present at runtime.
 Fortunately, Ultima IV is available as closed-source freeware on the
 internet (legally).  A copy is mirrored at xu4.sourceforge.net.
 
-Once downloaded, it must be unzipped in one of four places:
+Download ultima4.zip and (optionally) u4upgrad.zip, and place them in
+the same directory as the u4 executable.  xu4 will read the Ultima IV
+data files straight out of the zipfile.
+
+xu4 searches for the zipfiles, or the unpacked contents of the
+zipfiles in the following places:
  - the current directory when u4 is run
  - a subdirectory named "ultima4" of the current directory
  - "/usr/lib/u4/ultima4/"
  - "/usr/local/lib/u4/ultima4/"
 
-xu4 can handle uppercase or lowercase filenames even on case-sensitive
-filesystems, so it doesn't matter whether the files are named
-AVATAR.EXE or avater.exe or even Avatar.exe.
-
-The Ultima IV VGA upgrade is supported; apply the upgrade to Ultima IV
-for DOS as per the directions included with the upgrade and it should
-just work.  Any problems with avpatch.exe can be safely ignored; just
-run switch.bat if it fails.
+The zipfile doesn't need to be unpacked, but if it is, xu4 can handle
+uppercase or lowercase filenames even on case-sensitive filesystems,
+so it doesn't matter whether the files are named AVATAR.EXE or
+avater.exe or even Avatar.exe.
 
 At the title screen, a configuration menu can be accessed by pressing
 'c'.  Here, the screen scale, filter, volume and other settings can be
