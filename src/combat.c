@@ -707,6 +707,13 @@ int combatBaseKeyHandler(int key, void *data) {
             return 1;
         }
 
+    case 'v':
+        if (musicToggle())
+            screenMessage("Volume On!\n");
+        else
+            screenMessage("Volume Off!\n");
+        break;
+
     case 'v' + U4_ALT:
         screenMessage("XU4 %s\n", VERSION);        
         break;
@@ -739,7 +746,6 @@ int combatBaseKeyHandler(int key, void *data) {
     case 'p':
     case 'q':
     case 's':    
-    case 'v':
     case 'w':
     case 'x':   
     case 'y':
