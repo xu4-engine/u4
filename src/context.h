@@ -7,6 +7,10 @@
 
 #include "location.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _SaveGame;
 struct _Location;
 struct _Reply;
@@ -87,5 +91,9 @@ typedef struct _Context {
 } Context;
 
 extern Context *c;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -5,6 +5,10 @@
 #ifndef U4_H
 #define U4_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Microsoft VC port */
 #if defined(_MSC_VER)
     #define VERSION "1.0cvs"
@@ -65,5 +69,9 @@
 #define WIND_AREA_W 10
 #define WIND_AREA_H 1
 #define WIND_SECONDS_PER_PHASE 1
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

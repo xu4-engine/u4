@@ -5,6 +5,10 @@
 #ifndef ANNOTATION_H
 #define ANNOTATION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Annotations are updates to a map.  There are three types:
  * - permanent: lasts until annotationClear is called
@@ -32,5 +36,9 @@ const Annotation *annotationAt(int x, int y, int z, unsigned char mapid);
 void annotationCycle(void);
 void annotationClear(unsigned char mapid);
 int annotationCount(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

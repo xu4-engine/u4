@@ -7,6 +7,10 @@
 
 #include "xml.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _ListNode;
 struct _Image;
 
@@ -34,5 +38,9 @@ TileAnim *tileAnimLoadFromXml(xmlNodePtr node);
 TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node);
 TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const char *name);
 void tileAnimDraw(TileAnim *anim, struct _Image *tiles, int tile, int scale, int x, int y);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

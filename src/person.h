@@ -7,6 +7,10 @@
 
 #include "object.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _Conversation;
 
 typedef struct _Reply {
@@ -105,5 +109,9 @@ Reply *personGetConversationText(struct _Conversation *cnv, const char *inquiry)
 char *personGetPrompt(const struct _Conversation *cnv);
 ConversationInputType personGetInputRequired(const struct _Conversation *cnv, int *bufferlen);
 const char *personGetChoices(const struct _Conversation *cnv);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

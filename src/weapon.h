@@ -7,6 +7,10 @@
 
 #include "savegame.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_WEAPONS     128
 
 typedef struct _Weapon {
@@ -38,5 +42,9 @@ int weaponLoseWhenRanged(int weapon);
 int weaponCanChooseDistance(int weapon);
 int weaponIsMagic(int weapon);
 int weaponShowTravel(int weapon);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

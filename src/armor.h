@@ -7,6 +7,10 @@
 
 #include "savegame.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_ARMORS     128
 
 typedef struct _Armor {
@@ -19,5 +23,9 @@ typedef struct _Armor {
 char *armorGetName(int weapon);
 int armorGetDefense(int armor);
 int armorCanWear(int armor, ClassType klass);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

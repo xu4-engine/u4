@@ -7,6 +7,10 @@
 
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _Object;
 
 typedef enum {
@@ -203,5 +207,9 @@ int saveGamePlayerRecordRead(SaveGamePlayerRecord *record, FILE *f);
 void saveGamePlayerRecordInit(SaveGamePlayerRecord *record);
 int saveGameMonstersWrite(const struct _Object *objs, FILE *f);
 int saveGameMonstersRead(struct _Object **objs, FILE *f);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

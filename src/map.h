@@ -5,6 +5,14 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include "u4file.h"
+#include "music.h"
+#include "direction.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _City;
 struct _Shrine;
 struct _Area;
@@ -13,10 +21,6 @@ struct _Person;
 struct _Monster;
 struct _Portal;
 struct _Dungeon;
-
-#include "u4file.h"
-#include "music.h"
-#include "direction.h"
 
 typedef enum {
     MAPTYPE_WORLD,
@@ -93,5 +97,9 @@ int mapDistance(int x1, int y1, int x2, int y2);
 int mapMovementDistance(int x1, int y1, int x2, int y2);
 int mapDirMove(const Map *map, Direction dir, int *x, int *y);
 int mapWrapCoordinates(const Map *map, int *x, int *y);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

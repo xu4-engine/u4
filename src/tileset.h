@@ -8,6 +8,10 @@
 #include "u4file.h"
 #include "tile.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     TILESET_BASE,
     TILESET_DUNGEON,
@@ -40,5 +44,9 @@ void tilesetDeleteAllTilesets();
 Tileset *tilesetGetByType(TilesetType type);
 TilesetType tilesetGetTypeByStr(const char *type);
 TileRule *tilesetFindRuleByName(const char *name);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

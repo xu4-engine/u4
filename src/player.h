@@ -8,6 +8,10 @@
 #include "savegame.h"
 #include "tile.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define ALL_PLAYERS -1
 
 typedef enum {
@@ -101,5 +105,9 @@ int playerLoseWeapon(SaveGame *saveGame, int player);
 void playerAdjustGold(SaveGame *saveGame, int gold);
 void playerAdjustFood(SaveGame *saveGame, int food);
 int playerIsDisabled(const SaveGame *saveGame, int player);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

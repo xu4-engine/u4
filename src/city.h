@@ -5,6 +5,10 @@
 #ifndef CITY_H
 #define CITY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _Person;
 struct _Map;
 
@@ -22,5 +26,9 @@ typedef struct _City {
     PersonRole *personroles;
     struct _Map *map;
 } City;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

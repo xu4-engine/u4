@@ -11,6 +11,10 @@
 #include "savegame.h"
 #include "sound.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     CASTERR_NOERROR,            /* success */
     CASTERR_NOMIX,              /* no mixture available */    
@@ -78,5 +82,9 @@ const char *spellGetErrorMessage(unsigned int spell, SpellCastError error);
 int spellMix(unsigned int spell, const Mixture *mix);
 SpellParam spellGetParamType(unsigned int spell);
 int spellCast(unsigned int spell, int character, int param, SpellCastError *error, int spellEffect);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -5,6 +5,10 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define U4_UP           '['
 #define U4_DOWN         '/'
 #define U4_LEFT         ';'
@@ -83,5 +87,9 @@ int keyHandlerGetChoice(int key, void *data);
 void eventHandlerPushMouseAreaSet(struct _MouseArea *mouseAreas);
 void eventHandlerPopMouseAreaSet(void);
 struct _MouseArea *eventHandlerGetMouseAreaSet(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

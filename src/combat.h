@@ -5,12 +5,16 @@
 #ifndef COMBAT_H
 #define COMBAT_H
 
-#define FOCUS   combatInfo.partyFocus
-
 #include "area.h"
 #include "direction.h"
 #include "movement.h"
 #include "savegame.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define FOCUS   combatInfo.partyFocus
 
 struct _Object;
 struct _Monster;
@@ -82,5 +86,9 @@ int combatBaseKeyHandler(int key, void *data);
 MoveReturnValue combatMovePartyMember(Direction dir, int userEvent);
 
 extern CombatInfo combatInfo;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -5,6 +5,10 @@
 #ifndef MUSIC_H
 #define MUSIC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define CAMP_FADE_OUT_TIME          1000
 #define CAMP_FADE_IN_TIME           0
 #define INN_FADE_OUT_TIME           1000
@@ -38,5 +42,9 @@ void musicShopping(void);
 void musicIntro(void);
 void musicIntroSwitch(int n);
 int musicToggle(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -7,6 +7,10 @@
 
 #include "list.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     ACTIVATE_NORMAL     = 0x1,
     ACTIVATE_INCREMENT  = 0x2,
@@ -43,5 +47,9 @@ Menu menuReset(Menu current);
 Menu menuGetItemById(Menu menu, unsigned char id);
 int menuCompareFindItemById(void *val1, void *val2);
 Menu menuActivateItem(Menu menu, short id, ActivateAction action);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

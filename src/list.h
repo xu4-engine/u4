@@ -5,6 +5,10 @@
 #ifndef LIST_H
 #define LIST_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * A generic linked list data type.  By convention, an empty list is
  * represented by a NULL pointer and a non-empty list is represented
@@ -26,5 +30,9 @@ ListNode *listFind(ListNode *list, void *data, ListComparator compare);
 ListNode *listRemove(ListNode *list, ListNode *node);
 int listLength(ListNode *list);
 void listDelete(ListNode *list);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LIST_H */

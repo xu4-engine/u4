@@ -5,6 +5,10 @@
 #ifndef DUNGEON_H
 #define DUNGEON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _Map;
 
 typedef enum {
@@ -110,5 +114,9 @@ int dungeonTouchOrb(int player);
 int dungeonHandleTrap(TrapType trap);
 int dungeonLadderUpAt(struct _Map *map, int x, int y, int z);
 int dungeonLadderDownAt(struct _Map *map, int x, int y, int z);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

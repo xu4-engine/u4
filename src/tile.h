@@ -7,6 +7,10 @@
 
 #include "direction.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _TileRule;
 
 #define DEEP_WATER_TILE 0x0
@@ -154,5 +158,9 @@ TileAnimationStyle tileGetAnimationStyle(unsigned char tile);
 void tileAdvanceFrame(unsigned char *tile);
 int tileIsOpaque(unsigned char tile);
 unsigned char tileForClass(int klass);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

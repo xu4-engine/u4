@@ -5,6 +5,10 @@
 #ifndef DIRECTION_H
 #define DIRECTION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     DIR_NONE,
     DIR_WEST,
@@ -41,5 +45,9 @@ Direction dirRandomDir(int valid_directions_mask);
 Direction dirNormalize(Direction orientation, Direction dir);
 Direction keyToDirection(int key);
 int directionToKey(Direction dir);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -7,6 +7,10 @@
 
 #include "context.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _Map;
 struct _Portal;
 struct _Location;
@@ -44,5 +48,9 @@ typedef struct _Portal {
 
 void createDngLadder(struct _Location *location, PortalTriggerAction action, Portal *p);
 int usePortalAt(struct _Location *location, int x, int y, int z, PortalTriggerAction action);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

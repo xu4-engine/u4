@@ -5,6 +5,10 @@
 #ifndef GAME_H
 #define GAME_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _Context;
 struct _Map;
 struct _Portal;
@@ -96,5 +100,9 @@ void gameGetInput(int (*handleBuffer)(const char *), char *buffer, int bufferLen
 void gameGetPlayerForCommand(int (*commandFn)(int player), int canBeDisabled, int canBeActivePlayer);
 void gameDamageParty(int minDamage, int maxDamage);
 void gameDamageShip(int minDamage, int maxDamage);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

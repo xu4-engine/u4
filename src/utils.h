@@ -5,6 +5,10 @@
 #ifndef UTILS_C
 #define UTILS_C
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * The following was taken from the Apache httpd core module source code
  * and defines the XU4_OFFSETOF() macro.
@@ -50,5 +54,9 @@ char *concat(const char *str, ...);
 int strcmp_i(const char *str1, const char *str2);
 void xu4_srandom(void);
 int xu4_random(int upperval);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

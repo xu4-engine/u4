@@ -5,6 +5,10 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MIN_SHAKE_INTERVAL              50
 
 #define MAX_BATTLE_SPEED                10
@@ -118,5 +122,9 @@ BattleDifficulty settingsStringToBattleDiff(const char *str);
 
 /* the global settings */
 extern Settings *settings;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -8,6 +8,10 @@
 #include "map.h"
 #include "movement.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _Tileset;
 struct _ListNode;
 
@@ -51,5 +55,9 @@ struct _ListNode *locationTilesAt(Location *location, int x, int y, int z, int *
 unsigned char locationGetReplacementTile(Location *location, int x, int y, int z);
 int locationGetCurrentPosition(Location *location, int *x, int *y, int *z);
 void locationFree(Location **stack);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

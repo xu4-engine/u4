@@ -9,6 +9,10 @@
 #include "dngview.h"
 #include "u4file.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if __GNUC__
 #define PRINTF_LIKE(x,y)  __attribute__ ((format (printf, (x), (y))))
 #else
@@ -139,5 +143,9 @@ int screenPointInMouseArea(int x, int y, MouseArea *area);
 extern int screenCurrentCycle;
 
 #define SCR_CYCLE_MAX 16
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

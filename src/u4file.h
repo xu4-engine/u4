@@ -8,6 +8,10 @@
 #include <stdio.h>
 #include "unzip.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     COMP_NONE,
     COMP_RLE,
@@ -50,5 +54,9 @@ extern int u4zipExists;
 extern int u4upgradeZipExists;
 extern int u4upgradeExists;
 extern int u4upgradeInstalled;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -5,6 +5,10 @@
 #ifndef DNGVIEW_H
 #define DNGVIEW_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _ListNode;
 
 typedef enum {
@@ -20,5 +24,9 @@ typedef enum {
 
 struct _ListNode *dungeonViewGetTiles(int fwd, int side);
 DungeonGraphicType dungeonViewTilesToGraphic(struct _ListNode *tiles);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

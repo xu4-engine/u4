@@ -7,6 +7,10 @@
 
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Derived from XINE_ASSERT in the xine project.  I've updated it to
  * be C99 compliant, to use stderr rather than stdout, and to compile
@@ -44,6 +48,10 @@ void ASSERT(int exp, const char *desc, ...);
 
 #endif /* if HAVE_VARIADIC_MACROS */
 
-#endif /* ifndef DBEUG_H */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ifndef DEBUG_H */
 
 

@@ -5,6 +5,10 @@
 #ifndef ITEM_H
 #define ITEM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _Map;
 
 typedef enum {
@@ -31,5 +35,9 @@ typedef void (*DestroyAllMonstersCallback)(void);
 void itemSetDestroyAllMonstersCallback(DestroyAllMonstersCallback callback);
 const ItemLocation *itemAtLocation(const struct _Map *map, int x, int y, int z);
 void itemUse(const char *shortname);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

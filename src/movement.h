@@ -7,6 +7,10 @@
 
 #include "direction.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _Object;
 struct _Map;
 
@@ -39,5 +43,9 @@ int slowedByTile(unsigned char tile);
 int slowedByWind(int direction);
 
 extern int collisionOverride;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -8,6 +8,10 @@
 #include "object.h"
 #include "movement.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_MONSTERS 128
 
 /* Monsters on world map */
@@ -174,5 +178,9 @@ const Monster *monsterGetAmbushingMonster(void);
 int monsterSpecialAction(Object *obj);
 void monsterSpecialEffect(Object *obj);
 const Monster *monsterById(unsigned short id);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

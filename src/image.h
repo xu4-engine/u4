@@ -5,6 +5,10 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     IMTYPE_HW,
     IMTYPE_SW
@@ -41,5 +45,9 @@ void imageFillRect(Image *im, int x, int y, int w, int h, int r, int g, int b);
 void imageDraw(const Image *im, int x, int y);
 void imageDrawSubRect(const Image *im, int x, int y, int rx, int ry, int rw, int rh);
 void imageDrawSubRectInverted(const Image *im, int x, int y, int rx, int ry, int rw, int rh);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* IMAGE_H */

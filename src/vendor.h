@@ -7,6 +7,10 @@
 
 #include "context.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef void (*InnHandlerCallback)(void);
 
 void vendorSetInnHandlerCallback(InnHandlerCallback callback);
@@ -39,5 +43,9 @@ char *vendorGetTavernTopicResponse(Conversation *cnv, const char *response);
 char *vendorGetHealerPlayerResponse(Conversation *cnv, const char *response);
 
 char *vendorHealerAskForBlood(Conversation *cnv);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -5,6 +5,10 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _Person;
 struct _Monster;
 
@@ -36,5 +40,9 @@ typedef struct _Object {
     int canAnimate;
     struct _Object *next;
 } Object;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -8,6 +8,10 @@
 #include "savegame.h"
 #include "direction.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * These routines convert the various enumerations for classes, reagents,
  * etc. into the textual representations used in the game.
@@ -22,5 +26,9 @@ const char *getVirtueAdjective(Virtue virtue);
 const char *getStoneName(Virtue virtue);
 const char *getItemName(Item item);
 const char *getDirectionName(Direction dir);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
