@@ -62,6 +62,9 @@ void screenUpdate() {
     int y, x, tile;
     const Person *p;
 
+    if (c == NULL)
+        return;
+
     for (y = 0; y < VIEWPORT_H; y++) {
 	for (x = 0; x < VIEWPORT_W; x++) {
 
@@ -92,13 +95,13 @@ void screenAnimate() {
         screenCycle = 0;
 
     if (screenCycle % 2 == 1)
-        screenUpdateCursor();
+        screenUpdateCursor(screenCycle * 4 / SCR_CYCLE_MAX);
     screenUpdate();
     screenForceRedraw();
 }
 
-void screenUpdateCursor() {
-    screenShowChar(31 - (screenCycle * 4 / SCR_CYCLE_MAX), TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+void screenUpdateCursor(int phase) {
+    screenShowChar(31 - phase, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
 }
 
 void screenUpdateMoons() {

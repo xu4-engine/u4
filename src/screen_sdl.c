@@ -17,10 +17,14 @@
 #include "ttype.h"
 
 SDL_Surface *screen;
-SDL_Surface *border, *tiles, *charset;
+SDL_Surface *intro, *border, *tiles, *charset;
 int scale, forceEga, forceVga;
 
+long decompress_u4_file(FILE *in, long filesize, void **out);
+
+int screenLoadIntroBackground();
 int screenLoadBorders();
+void screenFreeIntroBackground();
 int screenLoadTiles();
 int screenLoadCharSet();
 int screenLoadPaletteEga(SDL_Surface *surface);
@@ -29,6 +33,7 @@ int screenLoadTileSetEga(SDL_Surface **surface, int width, int height, int n, co
 int screenLoadTileSetVga(SDL_Surface **surface, int width, int height, int n, const char *filename, const char *palette_fname);
 int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const char *filename);
 int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const char *filename, const char *palette_fname);
+int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const char *filename);
 
 #define RLE_RUNSTART 02
 
@@ -50,7 +55,8 @@ void screenInit(int screenScale) {
     }
     SDL_WM_SetCaption("Ultima IV", NULL);
 
-    if (!screenLoadBorders() ||
+    if (!screenLoadIntroBackground() || 
+        !screenLoadBorders() ||
         !screenLoadTiles() ||
         !screenLoadCharSet()) {
         fprintf(stderr, "Unable to load data files\n");
@@ -61,7 +67,26 @@ void screenInit(int screenScale) {
 }
 
 /**
- * Load the background borders image from the "start" file.
+ * Load the intro background image from the "title.ega" file.
+ */
+int screenLoadIntroBackground() {
+    int ret = 0;
+
+    ret = screenLoadLzwImageEga(&intro, 320, 200, "title.ega");
+
+    /* no vga version... yet */
+
+    return ret;
+}
+
+void screenFreeIntroBackground() {
+    if (intro)
+        SDL_FreeSurface(intro);
+    intro = NULL;
+}
+
+/**
+ * Load the background borders image from the "start.ega" file.
  */
 int screenLoadBorders() {
     int ret = 0;
@@ -76,7 +101,7 @@ int screenLoadBorders() {
 }
 
 /**
- * Load the tiles graphics from the "shapes" file.
+ * Load the tiles graphics from the "shapes.ega" or "shapes.vga" file.
  */
 int screenLoadTiles() {
     int ret = 0;
@@ -91,7 +116,7 @@ int screenLoadTiles() {
 }
 
 /**
- * Load the character set graphics from the "charset" file.
+ * Load the character set graphics from the "charset.ega" or "charset.vga" file.
  */
 int screenLoadCharSet() {
     int ret = 0;
@@ -421,17 +446,87 @@ int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const ch
     return 1;
 }
 
+int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const char *filename) {
+    FILE *in;
+    int x, y, xs, ys;
+    Uint8 *p, *data;
+
+    in = u4fopen(filename);
+    if (!in)
+        return 0;
+
+    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * scale, 8, 0, 0, 0, 0);
+    if (!(*surface)) {
+        u4fclose(in);
+        return 0;
+    }
+
+    if (!screenLoadPaletteEga(*surface)) {
+        SDL_FreeSurface(*surface);
+        u4fclose(in);
+        return 0;
+    }
+
+    if (decompress_u4_file(in, u4flength(in), (void **) &data) == -1) {
+        SDL_FreeSurface(*surface);
+        u4fclose(in);
+        return 0;
+    }
+
+
+    p = (*surface)->pixels;
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width / 2; x++) {
+            for (xs = 0; xs < scale; xs++) {
+                *p = data[y * width / 2 + x] >> 4;
+                p++;
+            }
+            for (xs = 0; xs < scale; xs++) {
+                *p = data[y * width / 2 + x] & 0x0f;
+                p++;
+            }
+        }
+        p += ((*surface)->pitch) - (width * scale);
+        for (ys = 1; ys < scale; ys++) {
+            for (x = 0; x < width; x++) {
+                for (xs = 0; xs < scale; xs++) {
+                    *p = *(p - (*surface)->pitch);
+                    p++;
+                }
+            }
+            p += ((*surface)->pitch) - (width * scale);
+        }
+    }
+
+    u4fclose(in);
+
+    return 1;
+}
+
 /**
  * Draw the surrounding borders on the screen.
  */
-void screenDrawBorders() {
+void screenDrawBackground(BackgroundType bkgd) {
     SDL_Rect r;
+    SDL_Surface *surface;
+
+    switch (bkgd) {
+    case BKGD_INTRO:
+        surface = intro;
+        break;
+    case BKGD_BORDERS:
+        surface = border;
+        break;
+    default:
+        return;
+            
+    }
 
     r.x = 0;
     r.y = 0;
     r.w = 320 * scale;
     r.h = 200 * scale;
-    SDL_BlitSurface(border, &r, screen, &r);
+    SDL_BlitSurface(surface, &r, screen, &r);
     screenForceRedraw();
 }
 

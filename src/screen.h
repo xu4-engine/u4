@@ -5,8 +5,13 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
+typedef enum {
+    BKGD_INTRO,
+    BKGD_BORDERS
+} BackgroundType;
+
 void screenInit(int scale);
-void screenDrawBorders();
+void screenDrawBackground(BackgroundType bkgd);
 void screenShowTile(int tile, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenTextAt(int x, int y, char *fmt, ...);
