@@ -18,6 +18,8 @@ typedef enum {
     SOUND_LBHEAL,
     SOUND_WHIRLPOOL,
     SOUND_STORM,
+    SOUND_MOONGATE,
+    SOUND_FLEE,
     SOUND_MAX
 } Sound;
 
