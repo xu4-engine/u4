@@ -10,6 +10,7 @@
 
 #include "u4.h"
 #include "u4file.h"
+#include "settings.h"
 #include "screen.h"
 #include "map.h"
 #include "context.h"
@@ -56,32 +57,32 @@ SDL_Surface *bkgds[BKGD_MAX];
 SDL_Surface *introAnimations[ANIM_MAX];
 SDL_Surface *tiles, *charset;
 int scale, forceEga, forceVga;
-ScreenScaler filterScaler = NULL;
+ScreenScaler filterScaler;
 
 extern int verbose;
 
 #define RLE_RUNSTART 02
 
-void screenInit(int screenScale, const char *filter, int fullScreen) {
+void screenInit() {
 
     /* set up scaling parameters */
-    scale = screenScale;
-    if (strcmp(filter, "2xBi") == 0) {
-        if (verbose)
-            printf("using 2xBi filter\n");
+    scale = settings->scale;
+    switch (settings->filter) {
+    case SCL_2xBi:
         filterScaler = &screenScale2xBilinear;
-    } else if (strcmp(filter, "2xSaI") == 0) {
-        if (verbose)
-            printf("using 2xSaI scaler\n");
+        break;
+    case SCL_2xSaI:
         filterScaler = &screenScale2xSaI;
-    } else if (strcmp(filter, "AdvanceMAMEScale2x") == 0) {
-        if (verbose)
-            printf("using AdvanceMAMEScale2x scaler\n");
+        break;
+    case SCL_AdvanceMAME:
         filterScaler = &screenAdvanceMAMEScale2x;
-    } else {
-        if (verbose)
-            printf("using default scaler\n");
+        break;
+    default:
+        filterScaler = NULL;
+        break;
     }
+    if (verbose)
+        printf("using %s scaler\n", settingsFilterToString(settings->filter));
 
     if (scale < 1 || scale > 5)
         scale = 2;
@@ -95,7 +96,7 @@ void screenInit(int screenScale, const char *filter, int fullScreen) {
         exit(1);
     }
 
-    screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (fullScreen ? SDL_FULLSCREEN : 0));
+    screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (settings->fullscreen ? SDL_FULLSCREEN : 0));
     if (!screen) {
         fprintf(stderr, "Unable to set video: %s\n", SDL_GetError());
         exit(1);

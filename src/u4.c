@@ -10,6 +10,7 @@
 #include <SDL.h>
 
 #include "u4.h"
+#include "settings.h"
 #include "mapinit.h"
 #include "direction.h"
 #include "screen.h"
@@ -31,16 +32,21 @@ int quit = 0;
 int main(int argc, char *argv[]) {
     unsigned int i;
     FILE *saveGameFile, *monstersFile;
-    char *filter = "2xSaI";
-    int scale = 2, sound = 1, fullScreen = 0, skipIntro = 0;
+    int skipIntro = 0;
+
+    settingsRead();
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-filter") == 0 && argc > i + 1) {
-            filter = argv[i+1];
+            settings->filter = settingsStringToFilter(argv[i+1]);
+            if (settings->filter == SCL_MAX) {
+                fprintf(stderr, "xu4: %s is not a valid filter\n", argv[i+1]);
+                exit(1);
+            }
             i++;
         }
         if (strcmp(argv[i], "-scale") == 0 && argc > i + 1) {
-            scale = strtoul(argv[i+1], NULL, 0);
+            settings->scale = strtoul(argv[i+1], NULL, 0);
             i++;
         }
         else if (strcmp(argv[i], "-i") == 0)
@@ -48,15 +54,15 @@ int main(int argc, char *argv[]) {
         else if (strcmp(argv[i], "-v") == 0)
             verbose++;
         else if (strcmp(argv[i], "-f") == 0)
-            fullScreen = 1;
+            settings->fullscreen = 1;
         else if (strcmp(argv[i], "-q") == 0)
-            sound = 0;
+            settings->vol = 0;
     }
 
     srand(time(NULL));
 
-    screenInit(scale, filter, fullScreen);
-    musicInit(sound);
+    screenInit();
+    musicInit();
     eventHandlerInit();
 
     if (!skipIntro) {

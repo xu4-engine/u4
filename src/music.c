@@ -11,6 +11,7 @@
 #include <SDL_mixer.h>
 
 #include "u4.h"
+#include "settings.h"
 #include "map.h"
 #include "context.h"
 #include "u4file.h"
@@ -90,11 +91,11 @@ void musicPlay(void) {  /* Main music loop. */
     musicPlayMid(c->map->music);
 }
 
-int musicInit(int sound) {
+int musicInit() {
 
-    soundDisabled = !sound;
+    soundDisabled = settings->vol == 0;
 
-    if (sound) {
+    if (!soundDisabled) {
         int audio_rate = 22050;
         Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
         int audio_channels = 2;

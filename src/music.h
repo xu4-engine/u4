@@ -18,11 +18,11 @@ typedef enum {
     MUSIC_CASTLES
 } Music;
 
-int musicInit(int sound);
-void musicDelete();
+int musicInit(void);
+void musicDelete(void);
 void musicPlay(void);
 void musicLordBritish(void);
 void musicIntro(void);
-int musicToggle();
+int musicToggle(void);
 
 #endif
