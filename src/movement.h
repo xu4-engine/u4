@@ -34,7 +34,7 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent);
 MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent);
 int moveObject(struct _Map *map, struct _Object *obj, int avatarx, int avatary);
 int moveCombatObject(int action, struct _Map *map, struct _Object *obj, int targetx, int targety);
-int movePartyMember(Direction dir, int userEvent);
+MoveReturnValue movePartyMember(Direction dir, int userEvent);
 int slowedByTile(unsigned char tile);
 int slowedByWind(int direction);
 

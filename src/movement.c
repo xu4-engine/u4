@@ -353,7 +353,7 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
 /**
  * Moves a party member during combat screens
  */
-int movePartyMember(Direction dir, int userEvent) {
+MoveReturnValue movePartyMember(Direction dir, int userEvent) {
     MoveReturnValue result = MOVE_SUCCEEDED;
     int newx, newy;
     int movementMask;

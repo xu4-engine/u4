@@ -569,8 +569,9 @@ void combatFinishTurn() {
         } while (!party[FOCUS].obj ||    /* dead */
                  (c->saveGame->players[FOCUS].status == STAT_SLEEPING) || /* sleeping */
                  ((c->location->activePlayer >= 0) && /* active player is set */
-                  !playerIsDisabled(c->saveGame, c->location->activePlayer) /* and the active player is not disabled */
-                  && (c->location->activePlayer != FOCUS)));
+                  !playerIsDisabled(c->saveGame, c->location->activePlayer) && /* and the active player is not disabled */
+                  (combatInfo.party[c->location->activePlayer].obj != NULL) && /* and the active player is still in combat */
+                  (c->location->activePlayer != FOCUS)));
     }
     else annotationCycle();
 
@@ -1211,9 +1212,21 @@ void combatEnd(int adjustKarma) {
 /**
  * Move a party member during combat and display the appropriate messages
  */
-MoveReturnValue combatMovePartyMember(Direction dir, int userEvent) {
-    
+MoveReturnValue combatMovePartyMember(Direction dir, int userEvent) {    
     MoveReturnValue retval = movePartyMember(dir, userEvent);
+    int i;
+
+    /* active player left/fled combat */
+    if ((retval & MOVE_EXIT_TO_PARENT) && (c->location->activePlayer == FOCUS)) {
+        c->location->activePlayer = -1;
+        /* assign active player to next available party member */
+        for (i = 0; i < c->saveGame->members; i++) {
+            if (combatInfo.party[i].obj && !playerIsDisabled(c->saveGame, i)) {
+                c->location->activePlayer = i;
+                break;
+            }
+        }
+    }
 
     screenMessage("%s\n", getDirectionName(dir));
     if (retval & MOVE_MUST_USE_SAME_EXIT)
@@ -1221,7 +1234,7 @@ MoveReturnValue combatMovePartyMember(Direction dir, int userEvent) {
     else if (retval & MOVE_BLOCKED)
         screenMessage("Blocked!\n");
     else if (retval & MOVE_SLOWED)
-        screenMessage("Slow progress!\n");
+        screenMessage("Slow progress!\n");    
 
     return retval;
 }
