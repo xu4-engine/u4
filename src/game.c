@@ -1650,8 +1650,8 @@ int getChestTrapHandler(int player)
         /* Figure out which trap the chest has */
         switch(randNum & rand()) {
         case 0: trapType = EFFECT_FIRE; break;   /* acid trap (56% chance - 9/16) */
-        case 1: trapType = EFFECT_POISON; break; /* poison trap (19% chance - 3/16) */
-        case 2: trapType = EFFECT_SLEEP; break;  /* sleep trap (19% chance - 3/16) */
+        case 1: trapType = EFFECT_SLEEP; break;  /* sleep trap (19% chance - 3/16) */
+        case 2: trapType = EFFECT_POISON; break; /* poison trap (19% chance - 3/16) */
         case 3: trapType = EFFECT_LAVA; break;   /* bomb trap (6% chance - 1/16) */
         default: trapType = EFFECT_FIRE; break;
         }
