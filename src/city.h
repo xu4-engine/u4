@@ -29,6 +29,7 @@ public:
     virtual string getName();
     class Person *addPerson(class Person *p);
     void addPeople();
+    void removeAllPeople();
     const class Person *personAt(MapCoords coords);    
 
     // Properties

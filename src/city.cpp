@@ -46,12 +46,28 @@ Person *City::addPerson(Person *person) {
  * Add people to the map
  */ 
 void City::addPeople() {
-    PersonList::iterator current;
+    PersonList::iterator current;    
+    
+    // Make sure the city has no people in it already
+    removeAllPeople();
+
     for (current = persons.begin(); current != persons.end(); current++) {
         Person *p = *current;
         if ((p->getTile() != 0) && 
             !(c->party->canPersonJoin(p->name, NULL) && c->party->isPersonJoined(p->name)))
             addPerson(p);
+    }
+}
+
+/**
+ * Removes all people from the current map
+ */
+void City::removeAllPeople() {
+    ObjectDeque::iterator obj;
+    for (obj = objects.begin(); obj != objects.end();) {
+        if (isPerson(*obj))
+            obj = removeObject(obj);
+        else obj++;
     }
 }
 

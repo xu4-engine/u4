@@ -2875,6 +2875,8 @@ bool gamePeerCity(int city, void *data) {
     {
         gameSetMap(peerMap, 1, NULL);
         c->location->viewMode = VIEW_GEM;
+        paused = 1;
+        pausedTimer = 0;
 
         screenDisableCursor();
             
@@ -2911,7 +2913,8 @@ void gamePeerGem(void) {
 int peerCityHandleChoice(int choice) {
     eventHandler.popKeyHandler();
     gameExitToParentMap();
-    screenEnableCursor();    
+    screenEnableCursor();
+    paused = 0;
     
     (*c->location->finishTurn)();
 
@@ -3216,7 +3219,7 @@ void gameUpdateMoons(int showmoongates)
         trammelSubphase;        
     const Coords *gate;
 
-    if (c->location->map->isWorldMap() && c->location->viewMode == VIEW_NORMAL) {        
+    if (c->location->map->isWorldMap()) {
         oldTrammel = c->saveGame->trammelphase;
 
         if (++c->moonPhase >= MOON_PHASES * MOON_SECONDS_PER_PHASE * 4)
