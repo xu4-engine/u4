@@ -1,6 +1,6 @@
 Summary: xu4 - Ultima IV Recreated
 Name: xu4
-Version: 0.02
+Version: 0.03
 Release: 1
 URL: http://xu4.sourceforge.net/
 Source0: http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
@@ -18,7 +18,8 @@ but it should be trivial to port to any system with SDL support.
 XU4 isn't a new game based on the Ultima IV story -- it is a faithful
 recreation of the old game, right up to the crappy graphics.  If you
 are looking for a game with modern gameplay and graphics, this is not
-it -- sorry.
+it -- yet.  New features that improve the gameplay and keep with the
+spirit of the original game will be added.
 
 %prep
 %setup -n u4
@@ -38,5 +39,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/u4
 
 %changelog
+* Mon Apr 23 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- updated description
+
 * Mon Apr  8 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - initial revision

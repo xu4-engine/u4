@@ -12,6 +12,15 @@ it -- sorry.
 STATUS
 ------
 
+New in v0.03:
+ - support for the VGA upgrade patch
+ - "Wear Armour", "Ready Weapon", "New Order", "Locate Position" commands work
+ - more progress on spells
+ - water, lava, energy fields are all animated
+ - an animated cursor is shown
+ - the moons cycle through their phases
+ - Lord British talks!  Doesn't heal yet, though
+
 New in v0.02:
  - dynamic scaling ("./u4 -scale 1" runs at original resolution,
    "./u4 -scale 2" and twice normal size, etc)
@@ -32,7 +41,6 @@ v0.01 features:
  - unlocking and opening of doors
 
 To do, in no particular order:
- - support the VGA upgrade patch
  - sound, music
  - moongates
  - dungeons
@@ -40,11 +48,16 @@ To do, in no particular order:
  - karma
  - monsters, combat
  - horses, ships, balloons
- - Lord British, Hawkwind
+ - Hawkwind
  - spells
  - autoconf, automake
  - gem viewing
  - everything else :)
+
+Some thoughts for possible improvements:
+ - Ultima 5 style aiming in combat (i.e. allow angle shots)
+ - support for higher-resolution tile sets
+
 
 COMPILING
 ---------
