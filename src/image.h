@@ -5,7 +5,6 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <map>
 #include <string>
 #include "types.h"
 #include "u4file.h"
@@ -19,34 +18,10 @@ bool operator==(const RGBA &lhs, const RGBA &rhs);
 
 class Image;
 
-enum ImageFixup {
-    FIXUP_NONE,
-    FIXUP_INTRO,
-    FIXUP_INTRO_EXTENDED,
-    FIXUP_ABYSS,
-    FIXUP_ABACUS,
-    FIXUP_DUNGNS
-};
-
 struct SubImage {
     string name;
     string srcImageName;
     int x, y, width, height;
-};
-
-struct ImageInfo {
-    string name;
-    string filename;
-    int width, height, depth;
-    int prescale;
-    string filetype;
-    int tiles;                  /* used to scale the without bleeding colors between adjacent tiles */
-    bool introOnly;             /* whether can be freed after the intro */
-    int transparentIndex;       /* color index to consider transparent */
-    bool xu4Graphic;            /* an original xu4 graphic not part of u4dos or the VGA upgrade */
-    ImageFixup fixup;           /* a routine to do miscellaneous fixes to the image */
-    Image *image;               /* the image we're describing */
-    std::map<string, SubImage *> subImages;
 };
 
 #define IM_OPAQUE 255
@@ -55,6 +30,10 @@ struct ImageInfo {
 /**
  * A simple image object that can be drawn and read/written to at the
  * pixel level.
+ * @todo
+ *  <ul>
+ *      <li>drawing methods should be pushed to Drawable subclass</li>
+ *  </ul>
  */
 class Image {
 public:
@@ -113,9 +92,6 @@ private:
 #endif
 
     SDL_Surface *surface;
-
-    /* FIXME: blah -- need to find a better way */
-    friend void fixupAbyssVision(Image *im, int prescale);
 };
 
 #endif /* IMAGE_H */
