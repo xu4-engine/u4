@@ -47,7 +47,8 @@ typedef enum {
     INTRO_CONFIG,               /* the configuration screen */
     INTRO_CONFIG_VIDEO,         /* video configuration */
     INTRO_CONFIG_SOUND,         /* sound configuration */
-    INTRO_CONFIG_OTHER,         /* other configuration */
+    INTRO_CONFIG_GAMEPLAY,      /* gameplay configuration */
+    INTRO_CONFIG_ADVANCED,      /* advanced gameplay config */
     INTRO_ABOUT,                /* about xu4 screen */
     INTRO_INIT_NAME,            /* prompting for character name */
     INTRO_INIT_SEX,             /* prompting for character sex */
@@ -320,7 +321,7 @@ int introKeyHandler(int key, void *data) {
         switch(key) {
         case 'v': mode = INTRO_CONFIG_VIDEO; break;
         case 's': mode = INTRO_CONFIG_SOUND; break;
-        case 'g': mode = INTRO_CONFIG_OTHER; break;
+        case 'g': mode = INTRO_CONFIG_GAMEPLAY; break;
         case U4_ESC:
         case ' ':
         case U4_ENTER:
@@ -383,14 +384,12 @@ int introKeyHandler(int key, void *data) {
         introUpdateScreen();
         return 1;
 
-    case INTRO_CONFIG_OTHER:
+    case INTRO_CONFIG_GAMEPLAY:
         switch (key) {
-        case 'b':
-            settings->battleSpeed++;
-            if (settings->battleSpeed > MAX_BATTLE_SPEED)
-                settings->battleSpeed = 1;
-            break;
-        case 'x':
+        case 'a':
+            mode = INTRO_CONFIG_ADVANCED;
+            break;        
+        case 'g':
         case 'e':
             settings->minorEnhancements = !settings->minorEnhancements;
             break;
@@ -412,6 +411,44 @@ int introKeyHandler(int key, void *data) {
         }
         introUpdateScreen();
         return 1;
+
+    case INTRO_CONFIG_ADVANCED:
+        switch (key) {
+        case 'b':
+            settings->battleSpeed++;
+            if (settings->battleSpeed > MAX_BATTLE_SPEED)
+                settings->battleSpeed = 1;
+            break;
+        case 'd':
+            settings->keydelay += 100;
+            if (settings->keydelay > MAX_KEY_DELAY)
+                settings->keydelay = 100;
+            break;
+        case 'g':
+            settings->gameCyclesPerSecond++;
+            if (settings->gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
+                settings->gameCyclesPerSecond = 1;
+            break;
+        case 'i':
+            settings->keyinterval += 10;
+            if (settings->keyinterval > MAX_KEY_INTERVAL)
+                settings->keyinterval = 10;
+            break;
+        case 'k':
+            settings->germanKbd = !settings->germanKbd;
+            break;
+        case 'c':
+            mode = INTRO_CONFIG;
+            break;        
+        case 'u':
+            settingsWrite();
+            musicIntro();
+            
+            mode = INTRO_CONFIG;
+            break;
+        }
+        introUpdateScreen();
+        return 1;        
 
     case INTRO_INIT_NAME:
     case INTRO_INIT_SEX:
@@ -596,7 +633,7 @@ void introUpdateScreen() {
 
     case INTRO_CONFIG_VIDEO:
         screenDrawBackground(BKGD_INTRO);
-        screenTextAt(2, 14, "Settings (take effect on restart):");
+        screenTextAt(2, 14, "Video Options (take effect on restart):");
         screenTextAt(11, 16, "Scale        x%d", settings->scale);
         screenTextAt(11, 17, "Mode         %s", settings->fullscreen ? "Fullscreen" : "Window");
         screenTextAt(11, 18, "Filter       %s", settingsFilterToString(settings->filter));
@@ -607,21 +644,36 @@ void introUpdateScreen() {
 
     case INTRO_CONFIG_SOUND:
         screenDrawBackground(BKGD_INTRO);
-        screenTextAt(2, 14, "Settings:");
+        screenTextAt(2, 14, "Sound Options:");
         screenTextAt(11, 16, "Volume       %s", settings->vol ? "On" : "Off");
         screenTextAt(11, 20, "Use These Settings");
         screenTextAt(11, 21, "Cancel");
         introDrawBeasties();
         break;
 
-    case INTRO_CONFIG_OTHER:        
+    case INTRO_CONFIG_GAMEPLAY:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 14, "Settings:");
-        screenTextAt(10, 16, "Battle Speed       %d", settings->battleSpeed);
-        screenTextAt(10, 17, "xu4 Enhancements   %s", settings->minorEnhancements ? "On" : "Off");
-        screenTextAt(10, 18, "Shortcut Commands  %s", settings->shortcutCommands ? "On" : "Off");
-        screenTextAt(11, 20, "Use These Settings");
-        screenTextAt(11, 21, "Cancel");        
+        screenTextAt(2, 3, "Gameplay Options:");        
+        screenTextAt(8, 5, "Game Enhancements       %s", settings->minorEnhancements ? "On" : "Off");
+        screenTextAt(8, 6, "Shortcut Commands");
+        screenTextAt(8, 7, "  (Open, Jimmy, etc.)   %s", settings->shortcutCommands ? "On" : "Off");
+        screenTextAt(8, 18,"Advanced Options");
+        screenTextAt(8, 20, "Use These Settings");
+        screenTextAt(8, 21, "Cancel");        
+        break;
+
+    case INTRO_CONFIG_ADVANCED:
+        screenDrawBackground(BKGD_INTRO_EXTENDED);
+        screenTextAt(2, 3,  "Advanced Options:");
+        screenTextAt(6, 5,  "Keyboard Options (msecs)");
+        screenTextAt(6, 6,  "   Repeat 'D'elay         %d", settings->keydelay);
+        screenTextAt(6, 7,  "   Repeat 'I'nterval      %d", settings->keyinterval);
+        screenTextAt(6, 8,  "   German 'K'eyboard      %s", settings->germanKbd ? "Yes" : "No"); 
+        screenTextAt(6, 10, "Speed Options");
+        screenTextAt(6, 11, "'G'ame Cycles Per Second  %d", settings->gameCyclesPerSecond);
+        screenTextAt(6, 12, "'B'attle Speed            %d", settings->battleSpeed);
+        screenTextAt(6, 20, "Use These Settings");
+        screenTextAt(6, 21, "Cancel");
         break;
 
     case INTRO_ABOUT:

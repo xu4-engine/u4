@@ -6,7 +6,9 @@
 #define SETTINGS_H
 
 #define MAX_BATTLE_SPEED                10
-#define MAX_CYCLES_PER_SECOND           50
+#define MAX_KEY_DELAY                   1000
+#define MAX_KEY_INTERVAL                100
+#define MAX_CYCLES_PER_SECOND           20
 
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
