@@ -55,7 +55,7 @@ typedef enum {
  */ 
 class MapCoords : public Coords {    
 public:
-    MapCoords(int initx = 0, int inity = 0, int initz = 0) : Coords(x, y, z) {}
+    MapCoords(int initx = 0, int inity = 0, int initz = 0) : Coords(initx, inity, initz) {}
     MapCoords(const Coords &a) : Coords(a.x, a.y, a.z) {}
     
     MapCoords &operator=(const Coords &a) { x = a.x; y = a.y; z = a.z; return *this; }
