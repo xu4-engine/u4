@@ -8,10 +8,10 @@
 #include <assert.h>
 
 #include "player.h"
-#include "map.h"
 
 LostEighthCallback lostEighthCallback = NULL;
 AdvanceLevelCallback advanceLevelCallback = NULL;
+ItemStatsChangedCallback itemStatsChangedCallback = NULL;
 
 /**
  * Sets up a callback to handle player losing an eighth of his or her
@@ -23,6 +23,10 @@ void playerSetLostEighthCallback(LostEighthCallback callback) {
 
 void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback) {
     advanceLevelCallback = callback;
+}
+
+void playerSetItemStatsChangedCallback(ItemStatsChangedCallback callback) {
+    itemStatsChangedCallback = callback;
 }
 
 /**
@@ -314,6 +318,10 @@ int playerDonate(SaveGame *saveGame, int quantity) {
 
     saveGame->gold -= quantity;
     playerAdjustKarma(saveGame, KA_GAVE_TO_BEGGAR);
+
+    if (itemStatsChangedCallback)
+        (*itemStatsChangedCallback)();
+
     return 1;
 }
 
@@ -571,6 +579,9 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
         break;
     }
 
+    if (itemStatsChangedCallback)
+        (*itemStatsChangedCallback)();
+
     return 1;
 }
 
@@ -613,6 +624,9 @@ int playerSell(SaveGame *saveGame, InventoryItem item, int type, int quantity, i
     }
 
     saveGame->gold += price;
+
+    if (itemStatsChangedCallback)
+        (*itemStatsChangedCallback)();
 
     return 1;
 }
