@@ -75,10 +75,10 @@ void shrineEnter(const Shrine *s) {
         annotationRemove(5, 6, c->location->z, c->location->map->id, GRASS_TILE);
         obj->y--; gameUpdateScreen(); eventHandlerSleep(1000);
         obj->tile = monsterById(BEGGAR_ID)->tile; gameUpdateScreen();
-
-        screenEnableCursor();
+        
         screenMessage("\n...and kneel before the altar.\n");        
         eventHandlerSleep(1000);
+        screenEnableCursor();
         screenMessage("\nUpon which virtue dost thou meditate?\n");        
     }
     /* Add-on shrine sequence END */
