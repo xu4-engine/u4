@@ -12,6 +12,7 @@
 #include "screen.h"
 #include "context.h"
 #include "savegame.h"
+#include "names.h"
 
 #define STATS_AREA_WIDTH 15
 #define STATS_AREA_X TEXT_AREA_X
@@ -26,11 +27,6 @@ void statsShowEquipment();
 void statsShowItems();
 void statsShowReagents();
 void statsShowMixtures();
-const char *statsClassName(ClassType klass);
-const char *statsWeaponName(WeaponType weapon);
-const char *statsWeaponAbbrev(WeaponType weapon);
-const char *statsArmorName(ArmorType armor);
-const char *statsReagentName(Reagent reagent);
 
 /**
  * Update the stats (ztats) box on the upper right of the screen.
@@ -80,8 +76,7 @@ void statsAreaClear() {
     for (i = 0; i < STATS_AREA_WIDTH; i++)
         screenTextAt(STATS_AREA_X + i, 0, "%c", 13);
     
-    for (i = 1; i < 9; i++)
-        screenTextAt(STATS_AREA_X, i, "               ");
+    screenEraseTextArea(STATS_AREA_X, 1, 15, 8);
 }
 
 /**
@@ -119,15 +114,15 @@ void statsShowCharDetails(int charNo) {
 
     statsAreaSetTitle(c->saveGame->players[charNo].name);
     screenTextAt(STATS_AREA_X, 1, "%c             %c", c->saveGame->players[charNo].sex, c->saveGame->players[charNo].status);
-    classString = statsClassName(c->saveGame->players[charNo].klass);
+    classString = getClassName(c->saveGame->players[charNo].klass);
     classStart = (STATS_AREA_WIDTH / 2) - (strlen(classString) / 2);
     screenTextAt(STATS_AREA_X + classStart, 1, "%s", classString);
     screenTextAt(STATS_AREA_X, 3, " MP:%02d  LV:%d", c->saveGame->players[charNo].mp, c->saveGame->players[charNo].hpMax / 100);
     screenTextAt(STATS_AREA_X, 4, "STR:%02d  HP:%04d", c->saveGame->players[charNo].str, c->saveGame->players[charNo].hp);
     screenTextAt(STATS_AREA_X, 5, "DEX:%02d  HM:%04d", c->saveGame->players[charNo].dex, c->saveGame->players[charNo].hpMax);
     screenTextAt(STATS_AREA_X, 6, "INT:%02d  EX:%04d", c->saveGame->players[charNo].intel, c->saveGame->players[charNo].xp);
-    screenTextAt(STATS_AREA_X, 7, "W:%s", statsWeaponName(c->saveGame->players[charNo].weapon));
-    screenTextAt(STATS_AREA_X, 8, "A:%s", statsArmorName(c->saveGame->players[charNo].armor));
+    screenTextAt(STATS_AREA_X, 7, "W:%s", getWeaponName(c->saveGame->players[charNo].weapon));
+    screenTextAt(STATS_AREA_X, 8, "A:%s", getArmorName(c->saveGame->players[charNo].armor));
 }
 
 /**
@@ -140,13 +135,13 @@ void statsShowWeapons() {
 
     line = 1;
     col = 0;
-    screenTextAt(STATS_AREA_X, line++, "A-%s", statsWeaponName(WEAP_HANDS));
+    screenTextAt(STATS_AREA_X, line++, "A-%s", getWeaponName(WEAP_HANDS));
     for (w = WEAP_HANDS + 1; w < WEAP_MAX; w++) {
         int n = c->saveGame->weapons[w];
         if (n >= 100)
             n = 99;
         if (n >= 1) {
-            screenTextAt(STATS_AREA_X + col, line++, "%c-%d-%s", w - WEAP_HANDS + 'A', n, statsWeaponAbbrev(w));
+            screenTextAt(STATS_AREA_X + col, line++, "%c-%d-%s", w - WEAP_HANDS + 'A', n, getWeaponAbbrev(w));
             if (line >= 9) {
                 line = 1;
                 col += 8;
@@ -167,7 +162,7 @@ void statsShowArmor() {
     screenTextAt(STATS_AREA_X, line++, "A  -No Armour");
     for (a = ARMR_NONE + 1; a < ARMR_MAX; a++) {
         if (c->saveGame->armor[a] > 0)
-            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", a - ARMR_NONE + 'A', c->saveGame->armor[a], statsArmorName(a));
+            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", a - ARMR_NONE + 'A', c->saveGame->armor[a], getArmorName(a));
     }
 }
 
@@ -209,9 +204,9 @@ void statsShowReagents() {
         if (n >= 100)
             n = 99;
         if (n >= 10)
-            screenTextAt(STATS_AREA_X, line++, "%c%d-%s", r - REAG_ASH + 'A', n, statsReagentName(r));
+            screenTextAt(STATS_AREA_X, line++, "%c%d-%s", r - REAG_ASH + 'A', n, getReagentName(r));
         else if (n >= 1)
-            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", r - REAG_ASH + 'A', n, statsReagentName(r));
+            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", r - REAG_ASH + 'A', n, getReagentName(r));
     }
 }
 
@@ -241,83 +236,3 @@ void statsShowMixtures() {
     }
 }
 
-const char *statsClassName(ClassType klass) {
-    switch (klass) {
-    case CLASS_MAGE:
-        return "Mage";
-    case CLASS_BARD:
-        return "Bard";
-    case CLASS_FIGHTER:
-        return "Fighter";
-    case CLASS_DRUID:
-        return "Druid";
-    case CLASS_TINKER:
-        return "Tinker";
-    case CLASS_PALADIN:
-        return "Paladin";
-    case CLASS_RANGER:
-        return "Ranger";
-    case CLASS_SHEPHERD:
-        return "Shepherd";
-    default:
-        return "???";
-    }
-}
-
-const char *statsWeaponName(WeaponType weapon) {
-    static const char *weapNames[] = {
-        "Hands", "Staff", "Dagger",
-        "Sling", "Mace", "Axe",
-        "Sword", "Bow", "Crossbow",
-        "Flaming Oil", "Halberd", "Magic Axe",
-        "Magic Sword", "Magic Bow", "Magic Wand",
-        "Mystic Sword"
-    };
-
-    if (weapon < WEAP_MAX)
-        return weapNames[weapon - WEAP_HANDS];
-    else
-        return "???";
-}
-
-const char *statsWeaponAbbrev(WeaponType weapon) {
-    static const char *weapAbbrevs[] = {
-        "HND", "STF", "DAG",
-        "SLN", "MAC", "AXE",
-        "SWD", "BOW", "XBO",
-        "OIL", "HAL", "+AX",
-        "+SW", "+BO", "WND",
-        "^SW"
-    };
-
-    if (weapon < WEAP_MAX)
-        return weapAbbrevs[weapon - WEAP_HANDS];
-    else
-        return "???";
-}
-
-const char *statsArmorName(ArmorType armor) {
-    static const char *armorNames[] = {
-        "Skin", "Cloth", "Leather", 
-        "Chain Mail", "Plate Mail", 
-        "Magic Chain", "Magic Plate", "Mystic Robe"
-    };
-
-    if (armor < ARMR_MAX)
-        return armorNames[armor - ARMR_NONE];
-    else
-        return "???";
-}
-
-const char *statsReagentName(Reagent reagent) {
-    static const char *reagentNames[] = {
-        "Sulfur Ash", "Ginseng", "Garlic", 
-        "Spider Silk", "Blood Moss", "Black Pearl", 
-        "Nightshade", "Mandrake"
-    };
-
-    if (reagent < REAG_MAX)
-        return reagentNames[reagent - REAG_ASH];
-    else
-        return "???";
-}
