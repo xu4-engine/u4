@@ -47,6 +47,7 @@ SRCS=\
         spell.c \
         stats.c \
         tile.c \
+        tileanim.c \
         tileset.c \
         u4.c \
         u4_$(UI).c \
