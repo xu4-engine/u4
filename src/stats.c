@@ -215,7 +215,9 @@ void statsShowWeapons() {
         if (n >= 100)
             n = 99;
         if (n >= 1) {
-            screenTextAt(STATS_AREA_X + col, line++, "%c-%d-%s", w - WEAP_HANDS + 'A', n, weaponGetAbbrev((WeaponType) w));
+            char *format = (n >= 10) ? "%c%d-%s" : "%c-%d-%s";
+
+            screenTextAt(STATS_AREA_X + col, line++, format, w - WEAP_HANDS + 'A', n, weaponGetAbbrev((WeaponType) w));
             if (line >= (STATS_AREA_Y+STATS_AREA_HEIGHT)) {
                 line = STATS_AREA_Y;
                 col += 8;
@@ -235,8 +237,11 @@ void statsShowArmor() {
     line = STATS_AREA_Y;
     screenTextAt(STATS_AREA_X, line++, "A  -No Armour");
     for (a = ARMR_NONE + 1; a < ARMR_MAX; a++) {
-        if (c->saveGame->armor[a] > 0)
-            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", a - ARMR_NONE + 'A', c->saveGame->armor[a], armorGetName((ArmorType) a));
+        if (c->saveGame->armor[a] > 0) {
+            char *format = (c->saveGame->armor[a] >= 10) ? "%c%d-%s" : "%c-%d-%s";
+
+            screenTextAt(STATS_AREA_X, line++, format, a - ARMR_NONE + 'A', c->saveGame->armor[a], armorGetName((ArmorType) a));
+        }
     }
 }
 

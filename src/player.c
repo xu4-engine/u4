@@ -273,6 +273,8 @@ int playerAttemptElevation(SaveGame *saveGame, Virtue virtue) {
 int playerGetChest(SaveGame *saveGame) {
     int gold = (rand() % 50) + (rand() % 8) + 10;
     saveGame->gold += gold;
+    if (saveGame->gold > 9999)
+        saveGame->gold = 9999;
 
     return gold;
 }
@@ -544,6 +546,8 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
         break;
     case INV_FOOD:
         saveGame->food += quantity * 100;
+        if (saveGame->food > 999900)
+            saveGame->food = 999900;
         break;
     case INV_REAGENT:
         saveGame->reagents[type] += quantity;
