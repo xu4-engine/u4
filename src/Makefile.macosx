@@ -4,28 +4,27 @@
 
 BUNDLE_CONTENTS=../xu4.app/Contents
 
+CXX=g++
 UI=sdl
 UILIBS=-L$(HOME)/Library/Frameworks \
 	-framework Cocoa \
 	-framework SDL \
 	-framework SDL_mixer \
-	-framework libiconv \
 	-framework libxml \
 	-lobjc -lz
 UIFLAGS=-F$(HOME)/Library/Frameworks \
 	-I$(HOME)/Library/Frameworks/libxml.framework/Headers \
-	-I$(HOME)/Library/Frameworks/libiconv.framework/Headers \
 	-I$(HOME)/Library/Frameworks/SDL.framework/Headers \
 	-I$(HOME)/Library/Frameworks/SDL_mixer.framework/Headers
 
 FEATURES=-DHAVE_BACKTRACE=0 -DHAVE_VARIADIC_MACROS=1
 
 # Debugging
-DEBUGCPPFLAGS=-ggdb
+DEBUGCXXFLAGS=-ggdb
 # Optimising
-#DEBUGCPPFLAGS=-O2 -faltivec -mdynamic-no-pic
+#DEBUGCXXFLAGS=-O2 -faltivec -mdynamic-no-pic
 
-CPPFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCPPFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
+CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
 LIBS=$(UILIBS)
 INSTALL=install
 
@@ -33,17 +32,17 @@ OBJS=macosx/SDLMain.o macosx/osxinit.o macosx/osxerror.o
 
 include Makefile.common
 
-SDLMain.o: macosx/SDLMain.m macosx/SDLMain.h
-	$(CC) $(CPPFLAGS) -c -o macosx/SDLMain.o macosx/SDLMain.m
+macosx/SDLMain.o: macosx/SDLMain.m macosx/SDLMain.h
+	$(CC) $(CXXFLAGS) -c -o macosx/SDLMain.o macosx/SDLMain.m
 
-osxerror.o: macosx/osxerror.m
-	$(CC) $(CPPFLAGS) -c -o macosx/osxerror.o macosx/osxerror.m 
+macosx/osxerror.o: macosx/osxerror.m
+	$(CC) $(CXXFLAGS) -c -o macosx/osxerror.o macosx/osxerror.m 
 
-osxinit.o: macosx/osxinit.c
-	$(CC) $(CPPFLAGS) -c -o macosx/osxinit.o macosx/osxinit.c 
+macosx/osxinit.o: macosx/osxinit.cpp
+	$(CXX) $(CXXFLAGS) -c -o macosx/osxinit.o macosx/osxinit.cpp
 
 mactlkconv: util/tlkconv.o
-	$(CC) $(CPPFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks -framework libxml -framework libiconv
+	$(CXX) $(CXXFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks -framework libxml
 
 install: u4
 	mkdir -p $(BUNDLE_CONTENTS)/MacOS
@@ -52,6 +51,7 @@ install: u4
 	mkdir -p $(BUNDLE_CONTENTS)/Resources/ega
 	mkdir -p $(BUNDLE_CONTENTS)/Resources/vga
 	echo "APPL????" > $(BUNDLE_CONTENTS)/PkgInfo
+	cp macosx/Info.plist $(BUNDLE_CONTENTS)
 	cp ../mid/*.mid $(BUNDLE_CONTENTS)/Resources
 	cp ../sound/*.wav $(BUNDLE_CONTENTS)/Resources
 	cp ../sound/*.ogg $(BUNDLE_CONTENTS)/Resources
@@ -60,7 +60,8 @@ install: u4
 	cp ../icons/xu4.icns $(BUNDLE_CONTENTS)/Resources
 	cp ../graphics/ega/*.rle $(BUNDLE_CONTENTS)/Resources/ega
 	cp ../graphics/vga/*.rle $(BUNDLE_CONTENTS)/Resources/vga
-	cp macosx/Info.plist $(BUNDLE_CONTENTS)
+	cp ../ultima4.zip $(BUNDLE_CONTENTS)/Resources
+	cp ../u4upgrad.zip $(BUNDLE_CONTENTS)/Resources
 	$(INSTALL) $< $(BUNDLE_CONTENTS)/MacOS
 
 -include .depends
