@@ -200,7 +200,7 @@ void screenUpdate() {
 	    else if ((c->map->flags & SHOW_AVATAR) &&
                      x == (VIEWPORT_W / 2) &&
 		     y == (VIEWPORT_H / 2))
-		tile = c->saveGame->partytile;
+		tile = c->saveGame->transport;
 	  
 	    else if ((p = mapPersonAt(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2)))) 
 		tile = p->tile0;
