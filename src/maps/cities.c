@@ -21,7 +21,7 @@ Map britain_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &britain_city /* city */
+    { &britain_city } /* city */
 };
 
 City britain_city  = {
@@ -46,7 +46,7 @@ Map cove_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &cove_city /* city */
+    { &cove_city } /* city */
 };
 
 City cove_city  = {
@@ -71,7 +71,7 @@ Map den_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &den_city /* city */
+    { &den_city } /* city */
 };
 
 City den_city  = {
@@ -96,7 +96,7 @@ Map jhelom_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &jhelom_city /* city */
+    { &jhelom_city } /* city */
 };
 
 City jhelom_city  = {
@@ -121,7 +121,7 @@ Map magincia_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &magincia_city /* city */
+    { &magincia_city } /* city */
 };
 
 City magincia_city  = {
@@ -146,7 +146,7 @@ Map minoc_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &minoc_city /* city */
+    { &minoc_city } /* city */
 };
 
 City minoc_city  = {
@@ -171,7 +171,7 @@ Map moonglow_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &moonglow_city /* city */
+    { &moonglow_city } /* city */
 };
 
 City moonglow_city  = {
@@ -196,7 +196,7 @@ Map paws_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &paws_city /* city */
+    { &paws_city } /* city */
 };
 
 City paws_city  = {
@@ -221,7 +221,7 @@ Map skara_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &skara_city /* city */
+    { &skara_city } /* city */
 };
 
 City skara_city  = {
@@ -246,7 +246,7 @@ Map trinsic_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &trinsic_city /* city */
+    { &trinsic_city } /* city */
 };
 
 City trinsic_city  = {
@@ -271,7 +271,7 @@ Map vesper_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &vesper_city /* city */
+    { &vesper_city } /* city */
 };
 
 City vesper_city  = {
@@ -296,7 +296,7 @@ Map yew_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_TOWNS, /* music */
     NULL, /* data */
-    &yew_city /* city */
+    { &yew_city } /* city */
 };
 
 City yew_city  = {

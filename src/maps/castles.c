@@ -22,7 +22,7 @@ Map empath_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_CASTLES, /* music */
     NULL, /* data */
-    &empath_city /* city */
+    { &empath_city } /* city */
 };
 
 City empath_city  = {
@@ -47,7 +47,7 @@ Map lycaeum_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_CASTLES, /* music */
     NULL, /* data */
-    &lycaeum_city /* city */
+    { &lycaeum_city } /* city */
 };
 
 City lycaeum_city  = {
@@ -72,7 +72,7 @@ Map serpent_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_CASTLES, /* music */
     NULL, /* data */
-    &serpent_city /* city */
+    { &serpent_city } /* city */
 };
 
 City serpent_city  = {
@@ -104,7 +104,7 @@ Map lcb_1_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_RULEBRIT, /* music */
     NULL, /* data */
-    &lcb_1_city /* city */
+    { &lcb_1_city } /* city */
 };
 
 City lcb_1_city  = {
@@ -134,7 +134,7 @@ Map lcb_2_map = {
     SHOW_AVATAR, /* flags */
     MUSIC_RULEBRIT, /* music */
     NULL, /* data */
-    &lcb_2_city /* city */
+    { &lcb_2_city } /* city */
 };
 
 City lcb_2_city  = {
