@@ -461,8 +461,10 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
             slow = (rand() % 2) == 0;
             break;
         }
-        if (slow)
-            continue;
+        
+        /* If the creature doesn't fly, then it can be slowed */
+        if (slow && ((m->mattr & MATTR_FLIES)==0))
+            continue;        
 
         if ((newx != obj->x || newy != obj->y) &&
             newx >= 0 && newx < map->width &&
@@ -582,9 +584,13 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         else if ((m = monsterForTile(transport)) && (m->tile == GHOST_TILE)) {
             retval = DIR_ADD_TO_MASK(d, retval);
         }
-        /* if it is a balloon, check flyable */
-        else if (tileIsBalloon(transport)) {
-            if (tileIsFlyable(tile))
+        /* if it is a balloon or flying monster, check flyable */
+        else if (tileIsBalloon(transport) || ((m = monsterForTile(transport)) && (m->mattr & MATTR_FLIES))) {
+            /* Monster movement */
+            if (m && (!monsterForTile(tile)) && tileIsFlyable(tile))
+                retval = DIR_ADD_TO_MASK(d, retval);           
+            /* Balloon movement */
+            else if (!m && tileIsFlyable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);
         }
         /* avatar or horseback: check walkable */

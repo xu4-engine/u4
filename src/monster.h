@@ -76,7 +76,8 @@ typedef enum {
     MATTR_FIRERESISTANT = 0x400,
     MATTR_CAMOUFLAGE  = 0x800,
     MATTR_WANDERS     = 0x1000,
-    MATTR_NOATTACK    = 0x2000
+    MATTR_NOATTACK    = 0x2000,
+    MATTR_FLIES       = 0x4000
 } MonsterAttrib;
 
 typedef enum {

@@ -41,9 +41,9 @@ static const Monster monsters[] = {
     { SEA_SERPENT_TILE, GIANT_SQUID_TILE, "Sea Serpent",  8, FIREFIELD_TILE, MATTR_WATER },
     { SEAHORSE_TILE,    NIXIE_TILE,    "Seahorse",     6,  MAGICFLASH_TILE, MATTR_WATER | MATTR_GOOD },
     { WHIRLPOOL_TILE,   WHIRLPOOL_TILE, "Whirlpool",   16, 0,      MATTR_WATER | MATTR_NONATTACKABLE | MATTR_WANDERS | MATTR_NOATTACK },
-    { STORM_TILE,       STORM_TILE,    "Storm",        16, 0,      MATTR_WATER | MATTR_NONATTACKABLE | MATTR_WANDERS | MATTR_NOATTACK },
+    { STORM_TILE,       STORM_TILE,    "Storm",        16, 0,      MATTR_FLIES | MATTR_NONATTACKABLE | MATTR_WANDERS | MATTR_NOATTACK },
     { RAT_TILE,         SKELETON_TILE, "Rat",          3,  0,      MATTR_GOOD | MATTR_WANDERS },
-    { BAT_TILE,         LAVA_LIZARD_TILE, "Bat",       3,  0,      MATTR_GOOD | MATTR_WANDERS },
+    { BAT_TILE,         LAVA_LIZARD_TILE, "Bat",       3,  0,      MATTR_FLIES | MATTR_GOOD | MATTR_WANDERS },
     { GIANT_SPIDER_TILE, RAT_TILE,     "Giant Spider", 4,  POISONFIELD_TILE, MATTR_GOOD | MATTR_WANDERS },
     { GHOST_TILE,       LICH_TILE,     "Ghost",        5,  0,      MATTR_UNDEAD },
     { SLIME_TILE,       SLIME_TILE,    "Slime",        3,  0,      0 },
@@ -68,7 +68,7 @@ static const Monster monsters[] = {
     { ZORN_TILE,        GAZER_TILE,    "Zorn",         15, 0,      MATTR_NEGATE },
     { DAEMON_TILE,      BALRON_TILE,   "Daemon",       7,  MAGICFLASH_TILE, MATTR_FIRERESISTANT },
     { HYDRA_TILE,       DRAGON_TILE,   "Hydra",        13, FIREFIELD_TILE, MATTR_FIRERESISTANT },
-    { DRAGON_TILE,      BALRON_TILE,   "Dragon",       14, FIREFIELD_TILE, MATTR_FIRERESISTANT },
+    { DRAGON_TILE,      BALRON_TILE,   "Dragon",       14, FIREFIELD_TILE, MATTR_FLIES | MATTR_FIRERESISTANT },
     { BALRON_TILE,      BALRON_TILE,   "Balron",       16, 0xFF,   MATTR_CASTS_SLEEP | MATTR_FIRERESISTANT }
 };
 
@@ -154,7 +154,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
 
-    mtile = ((era & rand() & rand()) << 2) + ORC_TILE;
+    mtile = ((era & rand() & rand()) << 2) + ORC_TILE; 
 
     return monsterForTile(mtile);
 }
