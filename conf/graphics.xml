@@ -160,22 +160,33 @@
     </layout>
 
     <tileanimset name="EGA">
-        <tileanim name="cityflag">
+        <tileanim name="scroll" controlling="true">
+            <transform type="scroll"/>
+        </tileanim>
+        <tileanim name="frame" controlling="true" random="true">
+            <transform type="frame"/>
+        </tileanim>
+        <tileanim name="cityflag" random="true">
             <transform type="invert" x="5" y="2" width="4" height="4"/>
         </tileanim>
-        <tileanim name="lcbflag">
+        <tileanim name="lcbflag" random="true">
             <transform type="invert" x="4" y="0" width="4" height="4"/>
         </tileanim>
-        <tileanim name="castleflag">
+        <tileanim name="castleflag" random="true">
             <transform type="invert" x="4" y="0" width="4" height="4"/>
         </tileanim>
-        <tileanim name="shipflagwest">
-            <transform type="invert" x="6" y="1" width="3" height="4"/>
-        </tileanim>
-        <tileanim name="shipflageast">
-            <transform type="invert" x="7" y="1" width="3" height="4"/>
-        </tileanim>
-        <tileanim name="fire">
+        <tileanim name="shipflag" random="true">
+            <context type="frame" frame="0">
+                <transform type="invert" x="6" y="1" width="3" height="4"/>
+            </context>
+            <context type="frame" frame="2">
+                <transform type="invert" x="7" y="1" width="3" height="4"/>                
+            </context>
+        </tileanim>        
+        <tileanim name="pirateflag" random="true">
+            <transform type="invert" x="0" y="1" width="16" height="2"/>
+        </tileanim>  
+        <tileanim name="campfire" controlling="true">
             <transform type="pixel" x="4" y="7">
                 <color red="0" green="0" blue="0"/>
                 <color red="162" green="0" blue="0"/>
@@ -336,23 +347,59 @@
     </tileanimset>
 
     <tileanimset name="VGA">
-        <tileanim name="cityflag">
+        <tileanim name="scroll" controlling="true">
+            <transform type="scroll"/>
+        </tileanim>
+        <tileanim name="frame" controlling="true" random="true">
+            <transform type="frame"/>
+        </tileanim>
+        <tileanim name="cityflag" random="true">
             <transform type="invert" x="5" y="2" width="5" height="4"/>
         </tileanim>
-        <tileanim name="lcbflag">
+        <tileanim name="lcbflag" random="true">
             <transform type="invert" x="5" y="0" width="7" height="4"/>
         </tileanim>
-        <tileanim name="castleflag">
+        <tileanim name="castleflag" random="true">
             <transform type="invert" x="5" y="0" width="4" height="4"/>
         </tileanim>
-        <tileanim name="shipflagwest">
-            <transform type="invert" x="10" y="1" width="5" height="4"/>
+        <tileanim name="shipflag" random="true">
+            <context type="frame" frame="0">
+                <transform type="invert" x="10" y="1" width="5" height="4"/>
+            </context>
+            <context type="frame" frame="1">
+                <transform type="invert" x="6" y="1" width="3" height="3"/>
+            </context>
+            <context type="frame" frame="2">
+                <transform type="invert" x="7" y="2" width="5" height="2"/>
+            </context>
+            <context type="frame" frame="3">
+                <transform type="invert" x="6" y="2" width="2" height="2"/>
+            </context>
         </tileanim>
-        <tileanim name="shipflageast">
-            <transform type="invert" x="7" y="2" width="5" height="2"/>
+        <tileanim name="pirateflag" random="true">
+            <context type="frame" frame="0">
+                <transform type="invert" x="10" y="2" width="6" height="2"/>
+            </context>
+            <context type="frame" frame="1">
+                <transform type="invert" x="6" y="2" width="3" height="2"/>
+            </context>
+            <context type="frame" frame="2">
+                <transform type="invert" x="7" y="2" width="5" height="2"/>
+            </context>
+            <context type="frame" frame="3">
+                <transform type="invert" x="6" y="2" width="2" height="2"/>
+            </context>
         </tileanim>
-        <!-- <tileanim name="fire">
-        </tileanim>-->
+        <tileanim name="campfire">
+            <transform type="pixel_color" x="4" y="7" width="5" height="7">
+                <color red="97" green="0" blue="0"/>
+                <color red="256" green="200" blue="0"/>                
+            </transform>
+            <transform type="pixel_color" x="4" y="7" width="5" height="7">
+                <color red="0" green="0" blue="0"/>
+                <color red="156" green="0" blue="0"/>                
+            </transform>
+        </tileanim>
     </tileanimset>
 
 

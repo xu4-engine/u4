@@ -2,12 +2,12 @@
 
 <!ENTITY % bool '( true | false )'>
 <!ENTITY % comp '( none | rle | lzw )'>
-<!ENTITY % anim '( scroll | frames | cityflag | castleflag | lcbflag | shipflag | campfire | none )'>
+<!ENTITY % anim '( scroll | frame | cityflag | castleflag | lcbflag | shipflag | pirateflag | campfire | none )'>
 
-<!ELEMENT tiles ( tile+ ) >
-<!ATTLIST tiles name               CDATA    #REQUIRED
-                imageName          CDATA    #IMPLIED
-                extends            CDATA    #IMPLIED>
+<!ELEMENT tileset ( tile+ ) >
+<!ATTLIST tileset name               CDATA    #REQUIRED
+                  imageName          CDATA    #IMPLIED
+                  extends            CDATA    #IMPLIED>
 
 <!ELEMENT tile EMPTY >
 <!ATTLIST tile  name               CDATA    #REQUIRED

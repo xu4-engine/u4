@@ -4,9 +4,9 @@
 
 <tilesets>
     <!-- Load some tilemaps -->
-    <tilemap file="tilemap/base.xml"/>
-    <tilemap file="tilemap/dungeon.xml"/>
+    <tilemap file="tileset/tilemap/base.xml"/>
+    <tilemap file="tileset/tilemap/dungeon.xml"/>
 
-    <tileset file="tiles.xml"/>
-    <tileset file="dungeonTiles.xml"/>    
+    <tileset file="tileset/base.xml"/>
+    <tileset file="tileset/dungeon.xml"/>    
 </tilesets>

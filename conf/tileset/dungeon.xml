@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<!DOCTYPE tiles SYSTEM "dtd/tiles.dtd">
+<!DOCTYPE tileset SYSTEM "dtd/tileset.dtd">
 <!-- $Id$ -->
-<tiles name="dungeon" extends="base">
+<tileset name="dungeon" extends="base">
     <tile name="up_down_ladder"/>
     <tile name="ceiling_hole" looks_like="brick_floor"/>
     <tile name="floor_hole" looks_like="brick_floor"/>
@@ -10,4 +10,4 @@
     <tile name="dungeon_room" looks_like="solid" rule="dng_room"/>    
     <tile name="dungeon_door" looks_like="door" rule="dng_door"/>
     <tile name="dungeon_altar" looks_like="altar" rule="dng_altar"/>
-</tiles>
+</tileset>

@@ -3,7 +3,7 @@
 <!-- $Id$ -->
 
 <tilemap name="dungeon">   
-    <map frames="16" tile="dungeon_floor"/>
+    <map frames="16" tile="brick_floor"/>
     <map frames="16" tile="up_ladder"/>
     <map frames="16" tile="down_ladder"/>
     <map frames="16" tile="up_down_ladder"/>
@@ -12,11 +12,11 @@
     <map frames="16" tile="floor_hole"/>
     <map frames="16" tile="magic_orb"/>
     
-    <map frames="16" tile="dungeon_floor"/>
+    <map frames="16" tile="brick_floor"/>
     <!--
     <map tile="wind_trap"/>
     <map tile="falling_rock_trap"/>
-    <map frames="12" tile="dungeon_floor"/>
+    <map frames="12" tile="brick_floor"/>
     <map tile="pit_trap"/>
     <map tile="dungeon_floor"/>
     -->
@@ -28,14 +28,14 @@
     <map tile="fountain_acid"/>
     <map tile="fountain_cure"/>
     <map tile="fountain_poison"/>
-    <map frames="11" tile="dungeon_floor"/>
+    <map frames="11" tile="brick_floor"/>
     -->
 
     <map tile="poison_field"/>
     <map tile="energy_field"/>
     <map tile="fire_field"/>
     <map tile="sleep_field"/>
-    <map frames="12" tile="dungeon_floor"/> <!-- unused fields -->
+    <map frames="12" tile="brick_floor"/> <!-- unused fields -->
     <map frames="16" tile="dungeon_altar"/>
     <map frames="16" tile="dungeon_door"/>
     <map frames="16" tile="dungeon_room"/>
