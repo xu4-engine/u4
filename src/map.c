@@ -15,6 +15,7 @@
 #include "person.h"
 #include "io.h"
 #include "annotation.h"
+#include "ttype.h"
 
 #define MAP_TILE_AT(mapptr, x, y) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 
@@ -296,6 +297,123 @@ void mapRemoveObject(Map *map, Object *rem) {
             return;
         }
         prev = obj;
+        obj = obj->next;
+    }
+}
+
+void mapRemoveObjectAtPosition(Map *map, unsigned char tile, unsigned short x, unsigned short y) {
+    Object *obj = map->objects, *prev;
+
+    prev = NULL;
+    while (obj) {
+        if (obj->tile == tile &&
+            obj->x == x &&
+            obj->y == y) {
+            if (prev)
+                prev->next = obj->next;
+            else
+                map->objects = obj->next;
+            free(obj);
+            return;
+        }
+        prev = obj;
+        obj = obj->next;
+    }
+}
+
+void mapMoveObjects(Map *map, int avatarx, int avatary) {
+    int dx, dy, newx, newy;
+    unsigned char tile;
+    Object *obj = map->objects, *other;
+
+    while (obj) {
+        newx = obj->x;
+        newy = obj->y;
+        switch (obj->movement_behavior) {
+        case MOVEMENT_FIXED:
+            break;
+
+        case MOVEMENT_WANDER:
+            if (rand() % 2 == 0) {
+                switch(rand() % 4) {
+                case 0:
+                    newx--;
+                    break;
+                case 1:
+                    newy--;
+                    break;
+                case 2:
+                    newx++;
+                    break;
+                case 3:
+                    newy++;
+                    break;
+                }
+            }
+            break;
+                
+        case MOVEMENT_FOLLOW_AVATAR:
+            if (rand() % 2) {
+                if (newx > avatarx)
+                    dx = -1;
+                else
+                    dx = 1;
+                if (newy > avatary)
+                    dy = -1;
+                else
+                    dy = 1;
+                if (newx != avatarx &&
+                    newy != avatary) {
+                    switch(rand() % 2) {
+                    case 0:
+                        newx += dx;
+                        break;
+                    case 1:
+                        newy += dy;
+                        break;
+                    }
+                } else if (newx != avatarx) {
+                        newx += dx;
+                } else if (obj->y != avatary) {
+                        newy += dy;
+                }
+            }
+            break;
+
+        case MOVEMENT_ATTACK_AVATAR:
+            break;
+        }
+
+        if (newx >= 0 && newx < map->width &&
+	    newy >= 0 && newy < map->height) {
+            if ((other = mapObjectAt(map, newx, newy)) != NULL)
+                tile = obj->tile;
+            else
+                tile = mapTileAt(map, newx, newy);
+            if (tileIsWalkable(tile)) {
+                if (newx != obj->x ||
+                    newy != obj->y) {
+                    obj->prevx = obj->x;
+                    obj->prevy = obj->y;
+                }
+                obj->x = newx;
+                obj->y = newy;
+            }
+        }
+
+        obj = obj->next;
+    }
+}
+
+void mapAnimateObjects(Map *map) {
+    Object *obj = map->objects;
+
+    while (obj) {
+        if (rand() % 2) {
+            obj->prevtile = obj->tile;
+            tileAdvanceFrame(&obj->tile);
+        }
+
         obj = obj->next;
     }
 }

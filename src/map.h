@@ -52,6 +52,7 @@ int mapIsWorldMap(const Map *map);
 void mapAddPersonObject(Map *map, const struct _Person *person);
 void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned int x, unsigned int y);
 void mapRemoveObject(Map *map, struct _Object *obj);
+void mapRemoveObjectAtPosition(Map *map, unsigned char tile, unsigned short x, unsigned short y);
 void mapClearObjects(Map *map);
 
 #endif
