@@ -388,6 +388,10 @@ void playerEndTurn(SaveGame *saveGame) {
              saveGame->players[i].status == STAT_POISONED) &&
             saveGame->players[i].mp < playerGetMaxMp(&(saveGame->players[i])))
             saveGame->players[i].mp++;
+
+        /* heal ship */
+        if ((saveGame->shiphull < 50) && (rand() % 8 == 0))
+            saveGame->shiphull++;
     }
 }
 
