@@ -4,93 +4,148 @@
 <graphics>
     <imageset name="EGA">
         <!-- tiles, charset, and game border -->
-        <image id="0"  filename="shapes.ega" width="16" height="4096" depth="4" filetype="raw" tiles="256"/>
-        <image id="1"  filename="charset.ega"  width="8"  height="2048" depth="4" filetype="raw" tiles="256"/>
-        <image id="2"  filename="start.ega"    width="320" height="200" depth="4" filetype="rle"/>
+        <image name="tiles"    filename="shapes.ega" width="16" height="4096" depth="4" filetype="raw" tiles="256"/>
+        <image name="charset"  filename="charset.ega"  width="8"  height="2048" depth="4" filetype="raw" tiles="256"/>
+        <image name="borders"  filename="start.ega"    width="320" height="200" depth="4" filetype="rle"/>
 
         <!-- intro screen images -->
-        <image id="3"  filename="title.ega"    width="320" height="200" depth="4" filetype="lzw" introOnly="true" fixup="intro" />
-        <image id="4"  filename="title.ega"    width="320" height="200" depth="4" filetype="lzw" introOnly="true" fixup="introExtended"/>
-        <image id="5"  filename="tree.ega"     width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
-        <image id="6"  filename="portal.ega"   width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
-        <image id="7"  filename="outside.ega"  width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
-        <image id="8"  filename="inside.ega"   width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
-        <image id="9"  filename="wagon.ega"    width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
-        <image id="10"  filename="gypsy.ega"    width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
-        <image id="11"  filename="abacus.ega"   width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
-        <image id="12" filename="honcom.ega"   width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
-        <image id="13" filename="valjus.ega"   width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
-        <image id="14" filename="sachonor.ega" width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
-        <image id="15" filename="spirhum.ega"  width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
-        <image id="16" filename="animate.ega"  width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
+        <image name="title"    filename="title.ega"    width="320" height="200" depth="4" filetype="lzw" introOnly="true" fixup="intro" />
+        <image name="titlex"   filename="title.ega"    width="320" height="200" depth="4" filetype="lzw" introOnly="true" fixup="introExtended"/>
+        <image name="tree"     filename="tree.ega"     width="320" height="200" depth="4" filetype="lzw" introOnly="true">
+            <subimage name="moongate" x="0"   y="152" width="24" height="24"/>
+            <subimage name="items"    x="24"  y="152" width="24" height="24"/>
+        </image>
+        <image name="portal"   filename="portal.ega"   width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
+        <image name="outside"  filename="outside.ega"  width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
+        <image name="inside"   filename="inside.ega"   width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
+        <image name="wagon"    filename="wagon.ega"    width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
+        <image name="gypsy"    filename="gypsy.ega"    width="320" height="200" depth="4" filetype="lzw" introOnly="true"/>
+        <image name="abacus"   filename="abacus.ega"   width="320" height="200" depth="4" filetype="lzw" introOnly="true" fixup="abacus">
+            <subimage name="whitebead"      x="8"   y="187" width="8" height="12"/>
+            <subimage name="blackbead"      x="24"  y="187" width="8" height="12"/>
+        </image>
+        <image name="honcom"   filename="honcom.ega"   width="320" height="200" depth="4" filetype="lzw" introOnly="true">
+            <subimage name="honestycard"    x="12"  y="12" width="90" height="124"/>
+            <subimage name="compassioncard" x="218" y="12" width="90" height="124"/>
+        </image>
+        <image name="valjus"   filename="valjus.ega"   width="320" height="200" depth="4" filetype="lzw" introOnly="true">
+            <subimage name="valorcard"      x="12"  y="12" width="90" height="124"/>
+            <subimage name="justicecard"    x="218" y="12" width="90" height="124"/>
+        </image>
+        <image name="sachonor" filename="sachonor.ega" width="320" height="200" depth="4" filetype="lzw" introOnly="true">
+            <subimage name="sacrificecard"  x="12"  y="12" width="90" height="124"/>
+            <subimage name="honorcard"      x="218" y="12" width="90" height="124"/>
+        </image>
+        <image name="spirhum"  filename="spirhum.ega"  width="320" height="200" depth="4" filetype="lzw" introOnly="true">
+            <subimage name="spiritualitycard" x="12"  y="12" width="90" height="124"/>
+            <subimage name="humilitycard"   x="218" y="12" width="90" height="124"/>
+        </image>
+        <image name="beasties" filename="animate.ega"  width="320" height="200" depth="4" filetype="lzw" introOnly="true">
+            <subimage name="beast0frame00" x="0"   y="0"   width="55" height="31"/>
+            <subimage name="beast0frame01" x="0"   y="32"  width="55" height="31"/>
+            <subimage name="beast0frame02" x="0"   y="64"  width="55" height="31"/>
+            <subimage name="beast0frame03" x="0"   y="96"  width="55" height="31"/>
+            <subimage name="beast0frame04" x="0"   y="128" width="55" height="31"/>
+            <subimage name="beast0frame05" x="0"   y="160" width="55" height="31"/>
+            <subimage name="beast0frame06" x="56"  y="0"   width="55" height="31"/>
+            <subimage name="beast0frame07" x="56"  y="32"  width="55" height="31"/>
+            <subimage name="beast0frame08" x="56"  y="64"  width="55" height="31"/>
+            <subimage name="beast0frame09" x="56"  y="96"  width="55" height="31"/>
+            <subimage name="beast0frame10" x="56"  y="128" width="55" height="31"/>
+            <subimage name="beast0frame11" x="56"  y="160" width="55" height="31"/>
+            <subimage name="beast0frame12" x="112" y="0"   width="55" height="31"/>
+            <subimage name="beast0frame13" x="112" y="32"  width="55" height="31"/>
+            <subimage name="beast0frame14" x="112" y="64"  width="55" height="31"/>
+            <subimage name="beast0frame15" x="112" y="96"  width="55" height="31"/>
+            <subimage name="beast0frame16" x="112" y="128" width="55" height="31"/>
+            <subimage name="beast0frame17" x="112" y="160" width="55" height="31"/>
+            <subimage name="beast1frame00" x="176" y="0"   width="48" height="31"/>
+            <subimage name="beast1frame01" x="176" y="32"  width="48" height="31"/>
+            <subimage name="beast1frame02" x="176" y="64"  width="48" height="31"/>
+            <subimage name="beast1frame03" x="176" y="96"  width="48" height="31"/>
+            <subimage name="beast1frame04" x="176" y="128" width="48" height="31"/>
+            <subimage name="beast1frame05" x="176" y="160" width="48" height="31"/>
+            <subimage name="beast1frame06" x="224" y="0"   width="48" height="31"/>
+            <subimage name="beast1frame07" x="224" y="32"  width="48" height="31"/>
+            <subimage name="beast1frame08" x="224" y="64"  width="48" height="31"/>
+            <subimage name="beast1frame09" x="224" y="96"  width="48" height="31"/>
+            <subimage name="beast1frame10" x="224" y="128" width="48" height="31"/>
+            <subimage name="beast1frame11" x="224" y="160" width="48" height="31"/>
+            <subimage name="beast1frame12" x="272" y="0"   width="48" height="31"/>
+            <subimage name="beast1frame13" x="272" y="32"  width="48" height="31"/>
+            <subimage name="beast1frame14" x="272" y="64"  width="48" height="31"/>
+            <subimage name="beast1frame15" x="272" y="96"  width="48" height="31"/>
+            <subimage name="beast1frame16" x="272" y="128" width="48" height="31"/>
+            <subimage name="beast1frame17" x="272" y="160" width="48" height="31"/>
+        </image>
 
         <!-- abyss vision images: codex symbol images are overlaid on top of each other, so color 0 (black) is set to be transparent -->
-        <image id="17" filename="key7.ega"     width="320" height="200" depth="4" filetype="rle"/>
-        <image id="18" filename="honesty.ega"  width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
-        <image id="19" filename="compassn.ega" width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
-        <image id="20" filename="valor.ega"    width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
-        <image id="21" filename="justice.ega"  width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
-        <image id="22" filename="sacrific.ega" width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
-        <image id="23" filename="honor.ega"    width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
-        <image id="24" filename="spirit.ega"   width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
-        <image id="25" filename="humility.ega" width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
-        <image id="26" filename="truth.ega"    width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
-        <image id="27" filename="love.ega"     width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
-        <image id="28" filename="courage.ega"  width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
-        <image id="29" filename="stoncrcl.ega" width="320" height="200" depth="4" filetype="rle"/>
+        <image name="key"      filename="key7.ega"     width="320" height="200" depth="4" filetype="rle"/>
+        <image name="honesty"  filename="honesty.ega"  width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image name="compassn" filename="compassn.ega" width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image name="valor"    filename="valor.ega"    width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image name="justice"  filename="justice.ega"  width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image name="sacrific" filename="sacrific.ega" width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image name="honor"    filename="honor.ega"    width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image name="spirit"   filename="spirit.ega"   width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image name="humility" filename="humility.ega" width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image name="truth"    filename="truth.ega"    width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image name="love"     filename="love.ega"     width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image name="courage"  filename="courage.ega"  width="320" height="200" depth="4" filetype="rle" transparentIndex="0"/>
+        <image name="stoncrcl" filename="stoncrcl.ega" width="320" height="200" depth="4" filetype="rle"/>
 
         <!-- shrine vision images -->
-        <image id="30" filename="rune_5.ega"   width="320" height="200" depth="4" filetype="rle"/>
-        <image id="31" filename="rune_1.ega"   width="320" height="200" depth="4" filetype="rle"/>
-        <image id="32" filename="rune_2.ega"   width="320" height="200" depth="4" filetype="rle"/>
-        <image id="33" filename="rune_0.ega"   width="320" height="200" depth="4" filetype="rle"/>
-        <image id="34" filename="rune_1.ega"   width="320" height="200" depth="4" filetype="rle"/>
-        <image id="35" filename="rune_2.ega"   width="320" height="200" depth="4" filetype="rle"/>
-        <image id="36" filename="rune_1.ega"   width="320" height="200" depth="4" filetype="rle"/>
-        <image id="37" filename="rune_3.ega"   width="320" height="200" depth="4" filetype="rle"/>
-        <image id="38" filename="rune_4.ega"   width="320" height="200" depth="4" filetype="rle"/>
+        <image name="rune0"    filename="rune_5.ega"   width="320" height="200" depth="4" filetype="rle"/>
+        <image name="rune1"    filename="rune_1.ega"   width="320" height="200" depth="4" filetype="rle"/>
+        <image name="rune2"    filename="rune_2.ega"   width="320" height="200" depth="4" filetype="rle"/>
+        <image name="rune3"    filename="rune_0.ega"   width="320" height="200" depth="4" filetype="rle"/>
+        <image name="rune4"    filename="rune_1.ega"   width="320" height="200" depth="4" filetype="rle"/>
+        <image name="rune5"    filename="rune_2.ega"   width="320" height="200" depth="4" filetype="rle"/>
+        <image name="rune6"    filename="rune_1.ega"   width="320" height="200" depth="4" filetype="rle"/>
+        <image name="rune7"    filename="rune_3.ega"   width="320" height="200" depth="4" filetype="rle"/>
+        <image name="rune8"    filename="rune_4.ega"   width="320" height="200" depth="4" filetype="rle"/>
 
         <!-- gem tiles -->
-        <image id="39" filename="ega/gem.rle"  width="4"   height="512" depth="4" filetype="rle" tiles="128" xu4Graphic="true"/>
+        <image name="gemtiles" filename="ega/gem.rle"  width="4"   height="512" depth="4" filetype="rle" tiles="128" xu4Graphic="true"/>
 
     </imageset>
 
     <imageset name="VGA" extends="EGA">
         <!-- tiles, charset, and game border -->
-        <image id="0"  filename="shapes.vga"   width="16" height="4096" depth="8" filetype="raw" tiles="256"/>
-        <image id="1"  filename="charset.vga"  width="8"  height="1024" depth="8" filetype="raw" tiles="128"/>
-        <image id="2"  filename="start.old"    width="320" height="200" depth="8" filetype="rle"/>
+        <image name="tiles"    filename="shapes.vga"   width="16" height="4096" depth="8" filetype="raw" tiles="256"/>
+        <image name="charset"  filename="charset.vga"  width="8"  height="1024" depth="8" filetype="raw" tiles="128"/>
+        <image name="borders"  filename="start.old"    width="320" height="200" depth="8" filetype="rle"/>
 
         <!-- no intro screen images in VGA upgrade -->
 
         <!-- abyss vision images -->
-        <image id="17" filename="key7.old"     width="320" height="200" depth="8" filetype="rle"/>
-        <image id="18" filename="honesty.old"  width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
-        <image id="19" filename="compassn.old" width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
-        <image id="20" filename="valor.old"    width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
-        <image id="21" filename="justice.old"  width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
-        <image id="22" filename="sacrific.old" width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
-        <image id="23" filename="honor.old"    width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
-        <image id="24" filename="spirit.old"   width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
-        <image id="25" filename="humility.old" width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
-        <image id="26" filename="truth.old"    width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
-        <image id="27" filename="love.old"     width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
-        <image id="28" filename="courage.old"  width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
-        <image id="29" filename="stoncrcl.old" width="320" height="200" depth="8" filetype="rle"/>
+        <image name="key"      filename="key7.old"     width="320" height="200" depth="8" filetype="rle"/>
+        <image name="honesty"  filename="honesty.old"  width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
+        <image name="compassn" filename="compassn.old" width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
+        <image name="valor"    filename="valor.old"    width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
+        <image name="justice"  filename="justice.old"  width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
+        <image name="sacrific" filename="sacrific.old" width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
+        <image name="honor"    filename="honor.old"    width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
+        <image name="spirit"   filename="spirit.old"   width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
+        <image name="humility" filename="humility.old" width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
+        <image name="truth"    filename="truth.old"    width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
+        <image name="love"     filename="love.old"     width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
+        <image name="courage"  filename="courage.old"  width="320" height="200" depth="8" filetype="rle" fixup="abyss"/>
+        <image name="stoncrcl" filename="stoncrcl.old" width="320" height="200" depth="8" filetype="rle"/>
 
         <!-- shrine vision images -->
-        <image id="30" filename="rune_0.old"   width="320" height="200" depth="8" filetype="rle"/>
-        <image id="31" filename="rune_1.old"   width="320" height="200" depth="8" filetype="rle"/>
-        <image id="32" filename="rune_2.old"   width="320" height="200" depth="8" filetype="rle"/>
-        <image id="33" filename="rune_3.old"   width="320" height="200" depth="8" filetype="rle"/>
-        <image id="34" filename="rune_4.old"   width="320" height="200" depth="8" filetype="rle"/>
-        <image id="35" filename="rune_5.old"   width="320" height="200" depth="8" filetype="rle"/>
-        <image id="36" filename="rune_6.ega"   width="320" height="200" depth="8" filetype="rle"/>
-        <image id="37" filename="rune_7.ega"   width="320" height="200" depth="8" filetype="rle"/>
-        <image id="38" filename="rune_8.ega"   width="320" height="200" depth="8" filetype="rle"/>
+        <image name="rune0"    filename="rune_0.old"   width="320" height="200" depth="8" filetype="rle"/>
+        <image name="rune1"    filename="rune_1.old"   width="320" height="200" depth="8" filetype="rle"/>
+        <image name="rune2"    filename="rune_2.old"   width="320" height="200" depth="8" filetype="rle"/>
+        <image name="rune3"    filename="rune_3.old"   width="320" height="200" depth="8" filetype="rle"/>
+        <image name="rune4"    filename="rune_4.old"   width="320" height="200" depth="8" filetype="rle"/>
+        <image name="rune5"    filename="rune_5.old"   width="320" height="200" depth="8" filetype="rle"/>
+        <image name="rune6"    filename="rune_6.ega"   width="320" height="200" depth="8" filetype="rle"/>
+        <image name="rune7"    filename="rune_7.ega"   width="320" height="200" depth="8" filetype="rle"/>
+        <image name="rune8"    filename="rune_8.ega"   width="320" height="200" depth="8" filetype="rle"/>
 
         <!-- gem tiles -->
-        <image id="39" filename="vga/gem.rle"  width="4"   height="512" depth="8" filetype="rle" tiles="128" xu4Graphic="true"/>
+        <image name="gemtiles" filename="vga/gem.rle"  width="4"   height="512" depth="8" filetype="rle" tiles="128" xu4Graphic="true"/>
 
     </imageset>
 

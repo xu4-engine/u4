@@ -2,7 +2,7 @@
 
 <!ENTITY % bool '( true | false )'>
 <!ENTITY % filetype '( raw | rle | lzw )'>
-<!ENTITY % fixup '( none | intro | introExtended | abyss )'>
+<!ENTITY % fixup '( none | intro | introExtended | abyss | abacus )'>
 <!ENTITY % layouttype '( standard | gem )'>
 <!ENTITY % transformtype '( invert | pixel )'>
 
@@ -12,8 +12,8 @@
 <!ATTLIST imageset name           NMTOKEN  #REQUIRED
                    extends        NMTOKEN  #IMPLIED>
 
-<!ELEMENT image EMPTY >
-<!ATTLIST image id                NMTOKEN  #REQUIRED
+<!ELEMENT image ( subimage* ) >
+<!ATTLIST image name              NMTOKEN  #REQUIRED
                 filename          CDATA    #REQUIRED
                 width             NMTOKEN  #REQUIRED
                 height            NMTOKEN  #REQUIRED
@@ -25,6 +25,13 @@
                 transparentIndex  NMTOKEN  #IMPLIED
                 xu4Graphic        %bool;   #IMPLIED
                 fixup             %fixup;  #IMPLIED>
+
+<!ELEMENT subimage EMPTY >
+<!ATTLIST subimage name           NMTOKEN  #REQUIRED
+                   x              NMTOKEN  #REQUIRED
+                   y              NMTOKEN  #REQUIRED
+                   width          NMTOKEN  #REQUIRED
+                   height         NMTOKEN  #REQUIRED>
 
 <!ELEMENT layout ( tileshape, viewport ) >
 <!ATTLIST layout name             CDATA    #REQUIRED
