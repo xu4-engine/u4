@@ -95,8 +95,9 @@ void campEnd(void) {
         healed = campHeal();
 
     screenMessage(healed ? "Party Healed!\n" : "No effect.\n");
-    c->saveGame->lastcamp = (c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff;   
+    c->saveGame->lastcamp = (c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff;
 
+    combatInfo.camping = 0;
     (*c->location->finishTurn)();
 }
 
