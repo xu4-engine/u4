@@ -10,14 +10,6 @@
     #define VERSION "0.9cvs"
 #endif
 
-/* info for loading world map from world.map */
-#define MAP_WIDTH 256
-#define MAP_HEIGHT 256
-#define MAP_CHUNK_WIDTH 32
-#define MAP_CHUNK_HEIGHT 32
-#define MAP_HORIZ_CHUNKS (MAP_WIDTH/MAP_CHUNK_WIDTH)
-#define MAP_VERT_CHUNKS (MAP_HEIGHT/MAP_CHUNK_HEIGHT)
-
 /* info for loading city data from *.ult and *.tlk */
 #define CITY_HEIGHT 32
 #define CITY_WIDTH 32
