@@ -125,11 +125,11 @@ int introHandleQuestionChoice(int choice);
 void introInitPlayers(SaveGame *saveGame);
 int introBaseMenuKeyHandler(int key, IntroMode prevMode, Menu *menu);
 
-void introMainOptionsMenuItemActivate(Menu menu);
-void introVideoOptionsMenuItemActivate(Menu menu);
-void introSoundOptionsMenuItemActivate(Menu menu);
-void introGameplayOptionsMenuItemActivate(Menu menu);
-void introAdvancedOptionsMenuItemActivate(Menu menu);
+void introMainOptionsMenuItemActivate(Menu menu, ActivateAction action);
+void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action);
+void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action);
+void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action);
+void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action);
 
 /**
  * Initializes intro state and loads in introduction graphics, text
@@ -374,19 +374,19 @@ int introKeyHandler(int key, void *data) {
             switch(key) {
             case 'v':                
                 mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 0));
-                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions);
+                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions, ACTIVATE_NORMAL);
                 break;
             case 's':
                 mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 1));
-                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions);
+                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions, ACTIVATE_NORMAL);
                 break;
             case 'g':
                 mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 2));
-                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions);
+                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions, ACTIVATE_NORMAL);
                 break;
             case 'm':
                 mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 0xFF));
-                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions);                
+                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions, ACTIVATE_NORMAL);                
                 break;
             default: break;
             }
@@ -402,15 +402,15 @@ int introKeyHandler(int key, void *data) {
             switch (key) {
             case 's':
                 videoOptions = menuHighlightNew(videoOptions, menuGetItemById(menuGetRoot(videoOptions), 0));
-                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions);
+                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions, ACTIVATE_NORMAL);
                 break;
             case 'm':
                 videoOptions = menuHighlightNew(videoOptions, menuGetItemById(menuGetRoot(videoOptions), 1));
-                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions);
+                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions, ACTIVATE_NORMAL);
                 break;
             case 'f':
                 videoOptions = menuHighlightNew(videoOptions, menuGetItemById(menuGetRoot(videoOptions), 2));
-                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions);
+                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions, ACTIVATE_NORMAL);
                 break;
             }
         }
@@ -425,7 +425,7 @@ int introKeyHandler(int key, void *data) {
             switch (key) {
             case 'v':
                 soundOptions = menuHighlightNew(soundOptions, menuGetItemById(menuGetRoot(soundOptions), 0));
-                (*((MenuItem *)soundOptions->data)->activateMenuItem)(soundOptions);
+                (*((MenuItem *)soundOptions->data)->activateMenuItem)(soundOptions, ACTIVATE_NORMAL);
                 break;
             }
         }
@@ -440,15 +440,15 @@ int introKeyHandler(int key, void *data) {
             switch(key) {
             case 'g':
                 gameplayOptions = menuHighlightNew(gameplayOptions, menuGetItemById(menuGetRoot(gameplayOptions), 0));
-                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions);
+                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions, ACTIVATE_NORMAL);
                 break;
             case 's':
                 gameplayOptions = menuHighlightNew(gameplayOptions, menuGetItemById(menuGetRoot(gameplayOptions), 1));
-                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions);
+                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions, ACTIVATE_NORMAL);
                 break;
             case 'a':
                 gameplayOptions = menuHighlightNew(gameplayOptions, menuGetItemById(menuGetRoot(gameplayOptions), 2));
-                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions);
+                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions, ACTIVATE_NORMAL);
                 break;                
             }            
         }
@@ -1172,13 +1172,22 @@ int introBaseMenuKeyHandler(int key, IntroMode prevMode, Menu *menu) {
         *menu = menuHighlightNew(*menu, menuGetPreviousItem(*menu));
         break;
     case U4_DOWN:
-        *menu = menuHighlightNew(*menu, menuGetNextItem(*menu));        
+        *menu = menuHighlightNew(*menu, menuGetNextItem(*menu));
         break;
+    case U4_LEFT:
+    case U4_RIGHT:
     case U4_ENTER:
         {
             MenuItem *menuItem = (MenuItem *)(*menu)->data;
-            if (menuItem->activateMenuItem)
-                (*menuItem->activateMenuItem)(*menu);
+            ActivateAction action = ACTIVATE_NORMAL;
+            
+            if (menuItem->activateMenuItem) {
+                if (key == U4_LEFT)
+                    action = ACTIVATE_DECREMENT;
+                else if (key == U4_RIGHT)
+                    action = ACTIVATE_INCREMENT;
+                (*menuItem->activateMenuItem)(*menu, action);
+            }
         }
         break;
     case ' ':    
@@ -1197,8 +1206,12 @@ int introBaseMenuKeyHandler(int key, IntroMode prevMode, Menu *menu) {
     return 1;
 }
 
-void introMainOptionsMenuItemActivate(Menu menu) {
+void introMainOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
+
+    if (action != ACTIVATE_NORMAL)
+        return;
+
     switch(menuItem->id) {
     case 0: mode = INTRO_CONFIG_VIDEO; videoOptions = menuReset(videoOptions);break;        
     case 1: mode = INTRO_CONFIG_SOUND; soundOptions = menuReset(soundOptions);break;
@@ -1208,13 +1221,19 @@ void introMainOptionsMenuItemActivate(Menu menu) {
     }
 }
 
-void introVideoOptionsMenuItemActivate(Menu menu) {
+void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
-    case 0:         
-        settings->scale++;
-        if (settings->scale > 5)
-            settings->scale = 1;
+    case 0:
+        if (action != ACTIVATE_DECREMENT) {
+            settings->scale++;
+            if (settings->scale > 5)
+                settings->scale = 1;
+        } else {
+            settings->scale--;
+            if (settings->scale <= 0)
+                settings->scale = 5;
+        }
         break;
         
     case 1:
@@ -1222,46 +1241,58 @@ void introVideoOptionsMenuItemActivate(Menu menu) {
         break;
 
     case 2:
-        settings->filter++;
-        if (settings->filter == SCL_MAX)
-            settings->filter = (FilterType) 0;
+        if (action != ACTIVATE_DECREMENT) {
+            settings->filter++;
+            if (settings->filter == SCL_MAX)
+                settings->filter = (FilterType) 0;
+        } else {
+            settings->filter--;
+            if (settings->filter < (FilterType) 0)
+                settings->filter = (FilterType)(SCL_MAX-1);
+        }
         break;
 
     case 0xFE:
-        settingsWrite();
-        musicIntro();
+        if (action == ACTIVATE_NORMAL) {
+            settingsWrite();
+            musicIntro();
         
-        mode = INTRO_CONFIG;
+            mode = INTRO_CONFIG;
+        }
         break;
     case 0xFF:
-        mode = INTRO_CONFIG;
+        if (action == ACTIVATE_NORMAL)
+            mode = INTRO_CONFIG;
         break;
         
     default: break;
     }
 }
 
-void introSoundOptionsMenuItemActivate(Menu menu) {
+void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0: 
         settings->vol = !settings->vol;
         break;
     case 0xFE:
-        settingsWrite();
-        musicIntro();
+        if (action == ACTIVATE_NORMAL) {
+            settingsWrite();
+            musicIntro();
         
-        mode = INTRO_CONFIG;
+            mode = INTRO_CONFIG;
+        }
         break;
     case 0xFF:
-        mode = INTRO_CONFIG;
+        if (action == ACTIVATE_NORMAL)
+            mode = INTRO_CONFIG;
         break;
     
     default: break;
     }
 }
 
-void introGameplayOptionsMenuItemActivate(Menu menu) {
+void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0:
@@ -1275,55 +1306,85 @@ void introGameplayOptionsMenuItemActivate(Menu menu) {
         advancedOptions = menuReset(advancedOptions);        
         break;
     case 0xFE:
-        settingsWrite();
-        musicIntro();
+        if (action == ACTIVATE_NORMAL) {
+            settingsWrite();
+            musicIntro();
         
-        mode = INTRO_CONFIG;
+            mode = INTRO_CONFIG;
+        }
         break;
     case 0xFF:
-        mode = INTRO_CONFIG;
+        if (action == ACTIVATE_NORMAL)
+            mode = INTRO_CONFIG;
         break;
     default: break;
     }
 }
 
-void introAdvancedOptionsMenuItemActivate(Menu menu) {
+void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0:
         settings->debug = ~settings->debug;
         break;
     case 1:
-        settings->keydelay += 100;
-        if (settings->keydelay > MAX_KEY_DELAY)
-            settings->keydelay = 100;
+        if (action != ACTIVATE_DECREMENT) {
+            settings->keydelay += 100;
+            if (settings->keydelay > MAX_KEY_DELAY)
+                settings->keydelay = 100;
+        } else {
+            settings->keydelay -= 100;
+            if (settings->keydelay < 100)
+                settings->keydelay = MAX_KEY_DELAY;
+        }
         break;
     case 2:
-        settings->keyinterval += 10;
-        if (settings->keyinterval > MAX_KEY_INTERVAL)
-            settings->keyinterval = 10;
+        if (action != ACTIVATE_DECREMENT) {
+            settings->keyinterval += 10;
+            if (settings->keyinterval > MAX_KEY_INTERVAL)
+                settings->keyinterval = 10;
+        } else {
+            settings->keyinterval -= 10;
+            if (settings->keyinterval < 10)
+                settings->keyinterval = MAX_KEY_INTERVAL;
+        }
         break;
     case 3:
         settings->germanKbd = !settings->germanKbd;
         break;
     case 4:
-        settings->gameCyclesPerSecond++;
-        if (settings->gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
-            settings->gameCyclesPerSecond = 1;
+        if (action != ACTIVATE_DECREMENT) {
+            settings->gameCyclesPerSecond++;
+            if (settings->gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
+                settings->gameCyclesPerSecond = 1;
+        } else {
+            settings->gameCyclesPerSecond--;
+            if (settings->gameCyclesPerSecond < 1)
+                settings->gameCyclesPerSecond = MAX_CYCLES_PER_SECOND;
+        }
         break;
     case 5:
-        settings->battleSpeed++;
-        if (settings->battleSpeed > MAX_BATTLE_SPEED)
-            settings->battleSpeed = 1;
+        if (action != ACTIVATE_DECREMENT) {
+            settings->battleSpeed++;
+            if (settings->battleSpeed > MAX_BATTLE_SPEED)
+                settings->battleSpeed = 1;
+        } else {
+            settings->battleSpeed--;
+            if (settings->battleSpeed < 1)
+                settings->battleSpeed = MAX_BATTLE_SPEED;
+        }
         break;
     case 0xFE:
-        settingsWrite();
-        musicIntro();
+        if (action == ACTIVATE_NORMAL) {
+            settingsWrite();
+            musicIntro();
         
-        mode = INTRO_CONFIG;
+            mode = INTRO_CONFIG;
+        }
         break;
     case 0xFF:
-        mode = INTRO_CONFIG;
+        if (action == ACTIVATE_NORMAL)
+            mode = INTRO_CONFIG;
         break;
     default: break;
     }

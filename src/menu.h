@@ -7,8 +7,14 @@
 
 #include "list.h"
 
+typedef enum {
+    ACTIVATE_NORMAL,
+    ACTIVATE_INCREMENT,
+    ACTIVATE_DECREMENT
+} ActivateAction;
+
 typedef ListNode* Menu;
-typedef void (*ActivateMenuItem)(Menu);
+typedef void (*ActivateMenuItem)(Menu, ActivateAction);
 
 typedef struct _MenuItem {
     unsigned char id;
