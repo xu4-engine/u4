@@ -7,16 +7,19 @@
 
 :clean
 
-for %%i IN (., dumpsavegame, tlkconv, u4dec, u4enc) DO (
-    echo === Cleaning %%i ===
-    @del /Q %%i\Debug\* > nul
-    @del /Q %%i\Release\* > nul
-    @del %%i\*.opt > nul
-    @del %%i\*.plg > nul
-    @rmdir /S /Q %%i\Debug > nul
-    @rmdir /S /Q %%i\Release > nul
-    echo.
+for %%i IN (., dumpsavegame, tlkconv, u4dec, u4enc) DO (        
+    (
+        del /Q %%i\Debug\*
+        del /Q %%i\Release\*
+        del %%i\*.opt
+        del %%i\*.plg
+        rmdir /S /Q %%i\Debug
+        rmdir /S /Q %%i\Release        
+    ) 1> nul 2> nul
+    echo Cleaned %%i
 )
+echo.
+
 goto end
 
 :install
@@ -49,7 +52,7 @@ REM Copy all files
     xcopy ..\conf\dtd\*.dtd %U4PATH%\conf\dtd\. /E /Y
     xcopy ..\graphics %U4PATH%\graphics\. /E /D /Y
     xcopy ..\mid %U4PATH%\mid\. /E /D /Y
-    xcopy ..\sound %U4PATH%\sound\. /E /D /Y
+    xcopy ..\sound %U4PATH%\sound\. /E /D /Y    
 ) ELSE (
     echo An error occurred while setting the xu4 installation path.
 )
