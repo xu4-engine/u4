@@ -181,7 +181,8 @@ void gameInit() {
     c->lastShip = NULL;
     
     /* set the map to the world map by default */
-    gameSetMap(mapMgr->get(MAP_WORLD), 0, NULL);    
+    gameSetMap(mapMgr->get(MAP_WORLD), 0, NULL);  
+    c->location->map->clearObjects();
 
     TRACE_LOCAL(gameDbg, "World map set.");
 
@@ -261,7 +262,7 @@ void gameInit() {
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
 
     musicPlay();
-    screenDrawImage(BKGD_BORDERS);    
+    screenDrawImage(BKGD_BORDERS);
     c->stats->update(); /* draw the party stats */
 
     screenMessage("Press Alt-h for help\n");    
@@ -286,6 +287,12 @@ void gameInit() {
     c->aura->addObserver(c->stats);
     c->party->addObserver(c->stats);
     spellMixMenu.addObserver(c->stats);
+
+    TRACE_LOCAL(gameDbg, "Setting up event timer and key handler.");
+
+    eventHandler->getTimer()->add(&gameTimer, 1);
+    eventHandler->setKeyHandler(&gameBaseKeyHandler);
+    eventHandler->setScreenUpdate(&gameUpdateScreen);
 
     TRACE(gameDbg, "gameInit() completed successfully.");
 }
@@ -1349,14 +1356,32 @@ bool gameBaseKeyHandler(int key, void *data) {
     }
 
     case 'q' + U4_ALT:
-        {              
-            /* FIXME: this almost works 
+        {             
+            extern bool quit;
+            endTurn = false;
+
+            screenMessage("Quit to menu?");            
+            ReadChoiceController readChoice("yn \015\033");
+
+            eventHandler->pushController(&readChoice);
+            screenMessage("%c", readChoice.waitFor());
+            if (readChoice.getChoice() != 'y') {
+                screenMessage("\n");
+                break;
+            }
+            
+            eventHandler->setScreenUpdate(NULL);
             eventHandler->pushController(intro);
             intro->init();
+            eventHandler->getTimer()->remove(&gameTimer);
             eventHandler->run();
-            eventHandler->setExitFlag(false);
-            eventHandler->popController();
-            */
+            intro->deleteIntro();
+            if (!quit) {
+                eventHandler->setControllerDone(false);
+                eventHandler->popController();            
+                
+                gameInit();
+            }
         }
         break;
 
@@ -1495,33 +1520,22 @@ bool gameGetAlphaChoiceKeyHandler(int key, void *data) {
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
-bool gameGetDirectionKeyHandler(int key, void *data) {
-    int (*handleDirection)(Direction dir) = (int(*)(Direction))data;    
-    Direction dir = keyToDirection(key);    
-    bool valid = (dir != DIR_NONE) ? true : false;
-    
-    switch(key) {
-    case U4_ESC:
-    case U4_SPACE:
-    case U4_ENTER:
-        eventHandler->popKeyHandler();
-        //eventHandler->popKeyHandlerData();
+bool gameGetDirection(int (*handleDirection)(Direction dir)) {
+    ReadDirController dirController;
 
+    eventHandler->pushController(&dirController);
+    Direction dir = dirController.waitFor();
+
+    if (dir == DIR_NONE) {
         screenMessage("\n");
-        (*c->location->finishTurn)();        
-
-    default:
-        if (valid) {
-            eventHandler->popKeyHandler();
-
-            screenMessage("%s\n", getDirectionName(dir));
-            (*handleDirection)(dir);
-            //eventHandler->popKeyHandlerData();
-        }
-        break;
+        (*c->location->finishTurn)();
+        return false;
+    }
+    else {
+        screenMessage("%s\n", getDirectionName(dir));
+        (*handleDirection)(dir);
+        return true;
     }    
-
-    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 bool gameGetFieldTypeKeyHandler(int key, void *data) {
@@ -1948,13 +1962,63 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
 
     case 't':
         if (c->location->map->isWorldMap()) {
-            MapTile horse = Tileset::findTileByName("horse")->id,
+            ReadChoiceController readChoice("shb \033\015");
+            MapCoords coords = c->location->coords;
+            static MapTile horse = Tileset::findTileByName("horse")->id,
                 ship = Tileset::findTileByName("ship")->id,
                 balloon = Tileset::findTileByName("balloon")->id;
-            c->location->map->addObject(horse, horse, MapCoords(84, 106));
-            c->location->map->addObject(ship, ship, MapCoords(88, 109));
-            c->location->map->addObject(balloon, balloon, MapCoords(85, 105));
-            screenMessage("Transports: Ship, Horse and Balloon created!\n");
+            MapTile *choice; 
+            Tile *tile;
+            
+            screenMessage("Create transport!\nWhich? ");
+            
+            // Get the transport of choice
+            eventHandler->pushController(&readChoice);            
+
+            switch(readChoice.waitFor()) {
+                case 's': choice = &ship; break;
+                case 'h': choice = &horse; break;
+                case 'b': choice = &balloon; break;
+                default:
+                    choice = NULL;
+                    break;
+            }
+
+            if (choice) {
+                ReadDirController readDir;
+                tile = Tileset::get()->get(choice->id);
+
+                screenMessage("%s\n", tile->name.c_str());
+
+                // Get the direction in which to create the transport
+                eventHandler->pushController(&readDir);                
+
+                screenMessage("Dir: ");
+                coords.move(readDir.waitFor(), c->location->map);
+                if (coords != c->location->coords) {            
+                    bool ok = false;
+                    MapTile *ground = c->location->map->tileAt(coords, WITHOUT_OBJECTS);
+
+                    screenMessage("%s\n", getDirectionName(readDir.getDir()));
+
+                    switch(readChoice.getChoice()) {
+                    case 's': ok = ground->isSailable(); break;
+                    case 'h': ok = ground->isWalkable(); break;
+                    case 'b': ok = ground->isWalkable(); break;
+                    default: break;                      
+                    }
+
+                    if (choice && ok) {
+                        c->location->map->addObject(*choice, *choice, coords);                     
+                        screenMessage("%s created!\n", tile->name.c_str());
+                    }
+                    else if (!choice)
+                        screenMessage("Invalid transport!\n");
+                    else screenMessage("Can't place %s there!\n", tile->name.c_str());
+                }
+            }
+            else screenMessage("None!\n");
+            
             screenPrompt();
         }
         break;
@@ -2187,7 +2251,7 @@ bool castForPlayer2(int spell, void *data) {
             gameCastSpell(castSpell, castPlayer, c->saveGame->orientation);
         else {
             screenMessage("Dir: ");
-            eventHandler->pushKeyHandler(KeyHandler(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir));
+            gameGetDirection(&castForPlayerGetDestDir);
         }
         break;
     case Spell::PARAM_TYPEDIR:
@@ -2196,7 +2260,7 @@ bool castForPlayer2(int spell, void *data) {
         break;
     case Spell::PARAM_FROMDIR:
         screenMessage("From Dir: ");
-        eventHandler->pushKeyHandler(KeyHandler(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetDestDir));
+        gameGetDirection(&castForPlayerGetDestDir);
         break;
     }    
 
@@ -2227,7 +2291,7 @@ int castForPlayerGetEnergyType(int fieldType) {
         castForPlayerGetEnergyDir((Direction)c->saveGame->orientation);
     else {
         screenMessage("Dir: ");
-        eventHandler->pushKeyHandler(KeyHandler(&gameGetDirectionKeyHandler, (void *) &castForPlayerGetEnergyDir));
+        gameGetDirection(&castForPlayerGetEnergyDir);        
     }
     return 1;
 }
@@ -2677,25 +2741,33 @@ bool mixReagentsForSpell(int spell, void *data) {
 
     mixSpell = spell;
     mixIngredients = new Ingredients();
-    
-    /* do we use the Ultima V menu system? */
-    if (settings.enhancements && settings.enhancementsOptions.u5spellMixing) {
+
+    if (c->saveGame->mixtures[spell] == 99) {
         screenMessage("%s\n", spellGetName(spell));
-        screenDisableCursor();
-        gameResetSpellMixing();
-        spellMixMenu.reset(); /* reset the menu, highlighting the first item */
-        eventHandler->pushKeyHandler(KeyHandler(&gameSpellMixMenuKeyHandler, &spellMixMenu));
+        screenMessage("\nYou cannot mix any more of that spell!\n");
+        c->stats->showPartyView();
+        (*c->location->finishTurn)();
     }
-    else {
-        screenMessage("%s\nReagent: ", spellGetName(spell));    
+    else {    
+        /* do we use the Ultima V menu system? */
+        if (settings.enhancements && settings.enhancementsOptions.u5spellMixing) {
+            screenMessage("%s\n", spellGetName(spell));
+            screenDisableCursor();
+            gameResetSpellMixing();
+            spellMixMenu.reset(); /* reset the menu, highlighting the first item */
+            eventHandler->pushKeyHandler(KeyHandler(&gameSpellMixMenuKeyHandler, &spellMixMenu));
+        }
+        else {
+            screenMessage("%s\nReagent: ", spellGetName(spell));    
 
-        info = new KeyHandler::GetChoice;
-        info->choices = "abcdefgh\n\r \033";
-        info->handleChoice = &mixReagentsForSpell2;        
-        eventHandler->pushKeyHandler(KeyHandler(&keyHandlerGetChoice, info));
+            info = new KeyHandler::GetChoice;
+            info->choices = "abcdefgh\n\r \033";
+            info->handleChoice = &mixReagentsForSpell2;        
+            eventHandler->pushKeyHandler(KeyHandler(&keyHandlerGetChoice, info));
+        }
+
+        c->stats->showReagents();
     }
-
-    c->stats->showReagents();
 
     return 0;
 }

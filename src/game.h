@@ -56,7 +56,6 @@ void gameFinishTurn(void);
 bool gameBaseKeyHandler(int key, void *data);
 bool gameGetPlayerNoKeyHandler(int key, void *data);
 bool gameGetAlphaChoiceKeyHandler(int key, void *data);
-bool gameGetDirectionKeyHandler(int key, void *data);
 bool gameGetFieldTypeKeyHandler(int key, void *data);
 bool gameGetPhaseKeyHandler(int key, void *data);
 bool gameGetCoordinateKeyHandler(int key, void *data);
@@ -80,6 +79,7 @@ bool gamePeerCity(int city, void *data);
 void gamePeerGem(void);
 bool fireAtCoord(MapCoords coords, int distance, void *data);
 int gameDirectionalAction(CoordActionInfo *info);
+bool gameGetDirection(int (*handleDirection)(Direction dir));
 int useItem(string *itemName);
 bool readyForPlayer2(int weapon, void *data);
 
