@@ -13,7 +13,7 @@
 
 class Tileset;
 
-typedef std::list<MapTile>* MapTileList;
+typedef std::list<MapTile*>* MapTileList;
 
 typedef enum {
     CTX_WORLDMAP    = 0x0001,
@@ -43,7 +43,7 @@ typedef struct _Location {
 } Location;
 
 Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, Tileset* tileset, MoveCallback moveCallback, Location *prev);
-MapTile locationVisibleTileAt(Location *location, MapCoords coords, int *focus);
+MapTile* locationVisibleTileAt(Location *location, MapCoords coords, int *focus);
 MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus);
 MapTile locationGetReplacementTile(Location *location, MapCoords coords);
 int locationGetCurrentPosition(Location *location, MapCoords *coords);

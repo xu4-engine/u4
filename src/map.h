@@ -95,8 +95,8 @@ public:
     
     class Object *objectAt(MapCoords coords);    
     const struct _Portal *portalAt(MapCoords coords, int actionFlags);
-    MapTile getTileFromData(Coords coords);
-    MapTile tileAt(Coords coords, int withObjects);
+    MapTile* getTileFromData(Coords coords);
+    MapTile* tileAt(Coords coords, int withObjects);
     bool isWorldMap();
     class Creature *addCreature(const class Creature *m, Coords coords);
     class Object *addObject(MapTile tile, MapTile prevTile, Coords coords);
@@ -104,7 +104,6 @@ public:
     ObjectDeque::iterator removeObject(ObjectDeque::iterator rem);    
     void clearObjects();
     class Creature *moveObjects(MapCoords avatar);
-    void animateObjects();
     void resetObjectAnimations();
     int getNumberOfCreatures();
     int getValidMoves(MapCoords from, MapTile transport);

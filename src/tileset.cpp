@@ -269,7 +269,7 @@ void Tileset::load(string filename) {
     /* open the filename for the group and parse it! */
     doc = xmlParse(filename.c_str());
     root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "tiles") != 0)
+    if (xmlStrcmp(root->name, (const xmlChar *) "tileset") != 0)
         errorFatal("malformed %s", filename.c_str());
 
     name = xmlGetPropAsStr(root, "name");

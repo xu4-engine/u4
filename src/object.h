@@ -41,8 +41,8 @@ public:
     virtual ~Object() {}    
 
     // Methods
-    const MapTile& getTile() const          { return tile; }
-    const MapTile& getPrevTile() const      { return prevTile; }
+    MapTile& getTile()                      { return tile; }
+    MapTile& getPrevTile()                  { return prevTile; }
     const Coords& getCoords() const         { return coords; }
     const Coords& getPrevCoords() const     { return prevCoords; }    
     const ObjectMovementBehavior getMovementBehavior() const    { return movement_behavior; }
@@ -50,7 +50,7 @@ public:
     bool hasFocus() const                   { return focused; }
     bool isVisible() const                  { return visible; }
     bool isAnimated() const                 { return animated; }
-    class Map* getMap() const                { return map; }
+    class Map* getMap() const               { return map; }
 
     void setTile(MapTile t)                 { tile = t; }
     void setTile(Tile *t)                   { tile = t->id; }

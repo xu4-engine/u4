@@ -9,6 +9,7 @@
 #include <vector>
 #include "direction.h"
 #include "image.h"
+#include "tileanim.h"
 #include "types.h"
 
 using std::string;
@@ -40,18 +41,23 @@ class TileRule;
  */
 class Tile : public MapTile {
 public:
+    Tile() : w(0), h(0), index(0), frames(0), anim(NULL), opaque(false), rule(NULL), image(NULL),
+        tileset(NULL) {}
+
     static void loadProperties(Tile *tile, void *xmlNode);    
     static MapTile translate(int index, string tileMap = "base");
     static unsigned int getIndex(TileId id);
 
-	void draw(int x, int y, int frame);
+	void draw(int x, int y, int frame, bool focused = false);	
+	void drawFocus(int x, int y) const;
     Image *getImage();
 
     string name;        /* The name of this tile */
     int w, h;           /* width and height of the tile */
     int index;          /* The physical tile index of this tile on its parent image (the whole tileset image) */
     int frames;         /* The number of frames this tile has */
-    TileAnimationStyle animation;   /* The animation style of this tile */
+    TileAnim *anim;     /* The tile animation for this tile */
+    //TileAnimationStyle animation;   /* The animation style of this tile */
     bool opaque;        /* Is this tile opaque? */
     TileRule *rule;     /* The rules that govern the behavior of this tile */
 	Image *image;       /* The actual image for this tile (with all of its frames) */

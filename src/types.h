@@ -98,8 +98,6 @@ public:
     static bool canAttackOverTile(MapTile tile);
     static MapTile tileForClass(int klass);
 
-    void draw(int x, int y) const;
-
     // Properties
     TileId id;
     unsigned char frame;

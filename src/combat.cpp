@@ -196,7 +196,7 @@ void CombatController::applyCreatureTileEffects() {
 
     for (i = creatures.begin(); i != creatures.end(); i++) {        
         Creature *m = *i;
-        TileEffect effect = map->tileAt(m->getCoords(), WITH_GROUND_OBJECTS).getEffect();
+        TileEffect effect = map->tileAt(m->getCoords(), WITH_GROUND_OBJECTS)->getEffect();
         m->applyTileEffect(effect);
     }
 }
@@ -255,7 +255,7 @@ void CombatController::begin() {
 void CombatController::end(bool adjustKarma) {
     int i;
     Coords coords;    
-    MapTile ground;    
+    MapTile *ground;    
     
     /* need to get this here because when we exit to the parent map, all the monsters are cleared */
     bool won = isWon();
@@ -271,7 +271,7 @@ void CombatController::end(bool adjustKarma) {
 
                 /* FIXME: move to separate function */
                 /* add a chest, if the creature leaves one */
-                if (!inn && creature->leavesChest() && ground.isCreatureWalkable()) {
+                if (!inn && creature->leavesChest() && ground->isCreatureWalkable()) {
                     MapTile chest = Tileset::findTileByName("chest")->id;
                     c->location->map->addObject(chest, chest, coords);
                 }
@@ -519,7 +519,7 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
     bool wrongRange = weapon->rangeAbsolute() && (distance != info->range);
     Coords old = info->prev;    
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
-    MapTile groundTile;    
+    MapTile *groundTile;    
     Creature *creature;
 
     info->prev = coords;    
@@ -606,7 +606,7 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
 
     /* If the weapon leaves a tile behind, do it here! (flaming oil, etc) */
     groundTile = cm->tileAt(coords, WITHOUT_OBJECTS);
-    if (!wrongRange && (weapon->leavesTile().id > 0 && groundTile.isWalkable()))
+    if (!wrongRange && (weapon->leavesTile().id > 0 && groundTile->isWalkable()))
         cm->annotations->add(coords, weapon->leavesTile());    
     
     /* only end the turn if we're still in combat */
@@ -622,7 +622,7 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
     CoordActionInfo* info = (CoordActionInfo*)data;    
     Coords old = info->prev;    
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
-    MapTile groundTile;
+    MapTile *groundTile;
     TileEffect effect;
     Creature *attacker = dynamic_cast<Creature*>(info->obj),
             *target = NULL;
@@ -717,7 +717,7 @@ bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) 
 
         /* If the creature leaves a tile behind, do it here! (lava lizard, etc) */
         groundTile = cm->tileAt(old, WITH_GROUND_OBJECTS);
-        if (attacker->leavesTile() && groundTile.isWalkable())
+        if (attacker->leavesTile() && groundTile->isWalkable())
             cm->annotations->add(old, hittile);
     }
 
@@ -795,7 +795,7 @@ void CombatController::finishTurn(void) {
     /* make sure the player with the focus is still in battle (hasn't fled or died) */
     if (player) {
         /* apply effects from tile player is standing on */
-        player->applyEffect(c->location->map->tileAt(player->getCoords(), WITH_GROUND_OBJECTS).getEffect());
+        player->applyEffect(c->location->map->tileAt(player->getCoords(), WITH_GROUND_OBJECTS)->getEffect());
     }
 
     quick = (*c->aura == AURA_QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;
@@ -1271,15 +1271,15 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
 
     /* We can fight creatures and townsfolk */       
     if (obj->getType() != OBJECT_UNKNOWN) {
-        MapTile tileUnderneath = c->location->map->tileAt(obj->getCoords(), WITHOUT_OBJECTS);
+        MapTile *tileUnderneath = c->location->map->tileAt(obj->getCoords(), WITHOUT_OBJECTS);
 
         if (toShip)
             return MAP_SHORSHIP_CON;
-        else if (fromShip && tileUnderneath.isWater())
+        else if (fromShip && tileUnderneath->isWater())
             return MAP_SHIPSEA_CON;
-        else if (tileUnderneath.isWater())
+        else if (tileUnderneath->isWater())
             return MAP_SHORE_CON;
-        else if (fromShip && !tileUnderneath.isWater())
+        else if (fromShip && !tileUnderneath->isWater())
             return MAP_SHIPSHOR_CON;        
     }
 

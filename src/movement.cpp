@@ -77,7 +77,7 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
         /* Are we slowed by terrain or by wind direction? */
         switch(slowedType) {
         case SLOWED_BY_TILE:
-            slowed = slowedByTile(c->location->map->tileAt(newCoords, WITHOUT_OBJECTS));
+            slowed = slowedByTile(*c->location->map->tileAt(newCoords, WITHOUT_OBJECTS));
             break;
         case SLOWED_BY_WIND:
             slowed = slowedByWind(dir);
@@ -112,7 +112,7 @@ MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {
     Direction realDir = dirNormalize((Direction)c->saveGame->orientation, dir); /* get our real direction */  
     int advancing = realDir == c->saveGame->orientation,
         retreating = realDir == dirReverse((Direction)c->saveGame->orientation);
-    MapTile tile;
+    MapTile *tile;
     
     /* we're not in a dungeon, failed! */
     ASSERT(c->location->context & CTX_DUNGEON, "moveAvatarInDungeon() called outside of dungeon, failed!");    
@@ -138,9 +138,9 @@ MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {
         
         movementMask = c->location->map->getValidMoves(c->location->coords, c->party->transport);
 
-        if (advancing && !tile.canWalkOn(DIR_ADVANCE))
+        if (advancing && !tile->canWalkOn(DIR_ADVANCE))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
-        else if (retreating && !tile.canWalkOn(DIR_RETREAT))
+        else if (retreating && !tile->canWalkOn(DIR_RETREAT))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
 
         if (!DIR_IN_MASK(realDir, movementMask))
@@ -208,7 +208,7 @@ int moveObject(Map *map, Creature *obj, MapCoords avatar) {
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {
     case SLOWED_BY_TILE:
-        slowed = slowedByTile(map->tileAt(new_coords, WITHOUT_OBJECTS));
+        slowed = slowedByTile(*map->tileAt(new_coords, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
         slowed = slowedByWind(obj->getTile().getDirection());
@@ -284,7 +284,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {
     case SLOWED_BY_TILE:
-        slowed = slowedByTile(map->tileAt(new_coords, WITHOUT_OBJECTS));
+        slowed = slowedByTile(*map->tileAt(new_coords, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
         slowed = slowedByWind(obj->getTile().getDirection());
@@ -345,7 +345,7 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
         return (MoveReturnValue)(MOVE_BLOCKED | MOVE_END_TURN);
 
     /* is the party member slowed? */
-    if (!slowedByTile(c->location->map->tileAt(newCoords, WITHOUT_OBJECTS)))
+    if (!slowedByTile(*c->location->map->tileAt(newCoords, WITHOUT_OBJECTS)))
     {
         /* move succeeded */        
         (*party)[member]->setCoords(newCoords);

@@ -230,12 +230,12 @@ public:
 
     void loadInfoFromXml();
 
-    const Creature *getByTile(MapTile tile) const;
-    const Creature *getById(CreatureId id) const;
-    const Creature *getByName(string name) const;
-    const Creature *randomForTile(MapTile tile) const;
-    const Creature *randomForDungeon(int dnglevel) const;
-    const Creature *randomAmbushing() const;
+    Creature *getByTile(MapTile tile);
+    Creature *getById(CreatureId id);
+    Creature *getByName(string name);
+    Creature *randomForTile(MapTile tile);
+    Creature *randomForDungeon(int dnglevel);
+    Creature *randomAmbushing();
 
 private:    
     CreatureMap creatures;    

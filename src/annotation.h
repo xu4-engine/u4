@@ -27,7 +27,7 @@ public:
 
     void             debug_output() const;
     const Coords&    getCoords() const;
-    const MapTile&   getTile() const;
+    MapTile&         getTile();
     const bool       isVisualOnly() const;
     const int        getTTL() const;
     void             setCoords(const Coords &);

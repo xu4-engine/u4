@@ -85,14 +85,14 @@ unsigned char dungeonCurrentSubToken() {
  * Returns the dungeon token for the given coordinates
  */
 DungeonToken dungeonTokenAt(Map *map, MapCoords coords) {
-    return dungeonTokenForTile(map->getTileFromData(coords));
+    return dungeonTokenForTile(*map->getTileFromData(coords));
 }
 
 /**
  * Returns the dungeon sub-token for the given coordinates
  */
 unsigned char dungeonSubTokenAt(Map *map, MapCoords coords) {
-    return dungeonSubTokenForTile(map->getTileFromData(coords));
+    return dungeonSubTokenForTile(*map->getTileFromData(coords));
 }
 
 /**

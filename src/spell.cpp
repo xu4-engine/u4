@@ -410,10 +410,10 @@ static int spellBlink(int dir) {
     
     i = distance;   
     /* begin walking backward until you find a valid spot */
-    while ((i-- > 0) && !c->location->map->tileAt(coords, WITH_OBJECTS).isWalkable())
+    while ((i-- > 0) && !c->location->map->tileAt(coords, WITH_OBJECTS)->isWalkable())
         coords.move(reverseDir, c->location->map);
     
-    if (c->location->map->tileAt(coords, WITH_OBJECTS).isWalkable()) {
+    if (c->location->map->tileAt(coords, WITH_OBJECTS)->isWalkable()) {
         /* we didn't move! */
         if (c->location->coords == coords)
             failed = 1;
@@ -431,7 +431,7 @@ static int spellCure(int player) {
 }
 
 static int spellDispel(int dir) {    
-    MapTile tile, newTile;    
+    MapTile *tile, newTile;    
     MapCoords field;
 
     /* 
@@ -472,7 +472,7 @@ static int spellDispel(int dir) {
      * if the map tile itself is a field, overlay it with a replacement tile
      */
     tile = c->location->map->tileAt(field, WITHOUT_OBJECTS);    
-    if (!tile.canDispel())
+    if (!tile->canDispel())
         return 0;
     
     c->location->map->annotations->add(field, newTile);
@@ -484,7 +484,7 @@ static int spellEField(int param) {
     MapTile fieldTile;
     int fieldType;
     int dir;
-    MapTile tile;    
+    MapTile *tile;    
     MapCoords coords;
     
     /* Unpack fieldType and direction */
@@ -515,7 +515,7 @@ static int spellEField(int param) {
          * The code below seems to produce this behaviour.
          */
         tile = c->location->map->tileAt(coords, WITH_GROUND_OBJECTS);
-        if (!tile.isWalkable()) return 0;
+        if (!tile->isWalkable()) return 0;
         
         /* Get rid of old field, if any */
         AnnotationList a = c->location->map->annotations->allAt(coords);
@@ -689,7 +689,7 @@ static int spellXit(int unused) {
 }
 
 static int spellYup(int unused) {
-    MapTile tile;
+    MapTile *tile;
     int i;
     MapCoords coords = c->location->coords;
 
@@ -702,7 +702,7 @@ static int spellYup(int unused) {
             coords = MapCoords(xu4_random(8), xu4_random(8), coords.z - 1);
             tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
-            if (dungeonTokenForTile(tile) == DUNGEON_CORRIDOR) {
+            if (dungeonTokenForTile(*tile) == DUNGEON_CORRIDOR) {
                 c->location->coords = coords;
                 return 1;
             }
@@ -720,7 +720,7 @@ static int spellYup(int unused) {
 }
 
 static int spellZdown(int unused) {
-    MapTile tile;
+    MapTile *tile;
     int i;
     MapCoords coords = c->location->coords;
     
@@ -735,7 +735,7 @@ static int spellZdown(int unused) {
             coords = MapCoords(xu4_random(8), xu4_random(8), coords.z + 1);
             tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
-            if (dungeonTokenForTile(tile) == DUNGEON_CORRIDOR) {
+            if (dungeonTokenForTile(*tile) == DUNGEON_CORRIDOR) {
                 c->location->coords = coords;
                 return 1;
             }

@@ -286,14 +286,15 @@ const Portal *Map::portalAt(MapCoords coords, int actionFlags) {
 /**
  * Returns the raw tile for the given (x,y,z) coords for the given map
  */
-MapTile Map::getTileFromData(Coords coords) {
+MapTile* Map::getTileFromData(Coords coords) {
     int index;
+    static MapTile blank;
 
     if (MAP_IS_OOB(this, coords))
-        return MapTile(0);
+        return &blank;
 
     index = coords.x + (coords.y * width) + (width * height * coords.z);    
-    return data[index];
+    return &data[index];
 }
 
 /**
@@ -301,9 +302,9 @@ MapTile Map::getTileFromData(Coords coords) {
  * annotations like moongates and attack icons are ignored.  Any walkable tiles
  * are taken into account (treasure chests, ships, balloon, etc.)
  */
-MapTile Map::tileAt(Coords coords, int withObjects) {    
+MapTile* Map::tileAt(Coords coords, int withObjects) {    
     /* FIXME: this should return a list of tiles, with the most visible at the front */
-    MapTile tile;
+    MapTile *tile;
     AnnotationList a = annotations->allAt(coords);
     Object *obj = objectAt(coords);    
  
@@ -313,14 +314,14 @@ MapTile Map::tileAt(Coords coords, int withObjects) {
         AnnotationList::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
             if (!i->isVisualOnly())            
-                return i->getTile();
+                return &i->getTile();
         }
     }    
     
     if ((withObjects == WITH_OBJECTS) && obj)
-        tile = obj->getTile();
+        tile = &obj->getTile();
     else if ((withObjects == WITH_GROUND_OBJECTS) && obj && obj->getTile().isWalkable())
-        tile = obj->getTile();
+        tile = &obj->getTile();
     
     return tile;
 }
@@ -449,18 +450,6 @@ Creature *Map::moveObjects(MapCoords avatar) {
 }
 
 /**
- * Animates the objects on the given map
- */
-void Map::animateObjects() {
-    ObjectDeque::iterator i;
-    
-    for (i = objects.begin(); i != objects.end(); i++) {
-        if ((*i)->isAnimated() && ((*i)->getTile().getAnimationStyle() == ANIM_FRAMES) && xu4_random(2))
-            (*i)->advanceFrame();
-    }
-}
-
-/**
  * Resets object animations to a value that is acceptable for
  * savegame compatibility with u4dos.
  */
@@ -505,7 +494,7 @@ int Map::getNumberOfCreatures() {
 int Map::getValidMoves(MapCoords from, MapTile transport) {
     int retval;
     Direction d;
-    MapTile tile, prev_tile;
+    MapTile *tile, *prev_tile;
     Object *obj;    
     const Creature *m, *to_m;
     int ontoAvatar, ontoCreature;    
@@ -539,9 +528,9 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             
         // get the destination tile
         if (ontoAvatar)
-            tile = (MapTile)c->party->transport;
+            tile = &c->party->transport;
         else if (ontoCreature)
-            tile = obj->getTile();
+            tile = &obj->getTile();
         else 
             tile = tileAt(coords, WITH_OBJECTS);
 
@@ -567,15 +556,15 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
         // avatar movement
         if (isAvatar) {
             // if the transport is a ship, check sailable
-            if (transport.isShip() && tile.isSailable())
+            if (transport.isShip() && tile->isSailable())
                 retval = DIR_ADD_TO_MASK(d, retval);
             // if it is a balloon, check flyable
-            else if (transport.isBalloon() && tile.isFlyable())
+            else if (transport.isBalloon() && tile->isFlyable())
                 retval = DIR_ADD_TO_MASK(d, retval);        
             // avatar or horseback: check walkable
             else if (transport == Tileset::findTileByName("avatar")->id || transport.isHorse()) {
-                if (tile.canWalkOn(d) &&
-                    prev_tile.canWalkOff(d))
+                if (tile->canWalkOn(d) &&
+                    prev_tile->canWalkOff(d))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
         }
@@ -583,31 +572,31 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
         // creature movement
         else if (m) {
             // flying creatures
-            if (tile.isFlyable() && m->flies()) {  
+            if (tile->isFlyable() && m->flies()) {  
                 // FIXME: flying creatures behave differently on the world map?
                 if (isWorldMap())
                     retval = DIR_ADD_TO_MASK(d, retval);
-                else if (tile.isWalkable() || tile.isSwimable() || tile.isSailable())
+                else if (tile->isWalkable() || tile->isSwimable() || tile->isSailable())
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
             // swimming creatures and sailing creatures
-            else if (tile.isSwimable() || tile.isSailable()) {
-                if (m->swims() && tile.isSwimable())
+            else if (tile->isSwimable() || tile->isSailable()) {
+                if (m->swims() && tile->isSwimable())
                     retval = DIR_ADD_TO_MASK(d, retval);
-                if (m->sails() && tile.isSailable())
+                if (m->sails() && tile->isSailable())
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
             // ghosts and other incorporeal creatures
             else if (m->isIncorporeal()) {
                 // can move anywhere but onto water, unless of course the creature can swim
-                if (!(tile.isSwimable() || tile.isSailable()))
+                if (!(tile->isSwimable() || tile->isSailable()))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
             // walking creatures
             else if (m->walks()) {
-                if (tile.canWalkOn(d) &&
-                    prev_tile.canWalkOff(d) &&
-                    tile.isCreatureWalkable())
+                if (tile->canWalkOn(d) &&
+                    prev_tile->canWalkOff(d) &&
+                    tile->isCreatureWalkable())
                     retval = DIR_ADD_TO_MASK(d, retval);
             }            
         }

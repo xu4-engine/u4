@@ -363,7 +363,7 @@ void useStone(void *item) {
      * in a dungeon altar room, on the altar
      */
     else if ((c->location->context & CTX_ALTAR_ROOM) &&
-        c->location->map->tileAt(coords, WITHOUT_OBJECTS) == Tileset::findTileByName("altar")->id) {
+        c->location->map->tileAt(coords, WITHOUT_OBJECTS)->id == Tileset::findTileByName("altar")->id) {
         needStoneNames = 4;
         screenMessage("\n\nThere are holes for 4 stones.\nWhat colors:\nA:");        
 

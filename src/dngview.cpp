@@ -52,17 +52,20 @@ MapTileList dungeonViewGetTiles(int fwd, int side) {
 }
 
 DungeonGraphicType dungeonViewTilesToGraphic(MapTileList tiles) {
-    MapTile tile = tiles->front();
+    MapTile *tile = tiles->front();
     DungeonToken token;
+
+    static const MapTile up_ladder = Tileset::findTileByName("up_ladder")->id;
+    static const MapTile down_ladder = Tileset::findTileByName("down_ladder")->id;
 
     /* 
      * check if the dungeon tile has an annotation or object on top
      * (always displayed as a tile, unless a ladder)
      */
     if (tiles->size() > 1) {
-        if (tile == Tileset::findTileByName("up_ladder")->id)
+        if (tile->id == up_ladder.id)
             return DNGGRAPHIC_LADDERUP;
-        else if (tile == Tileset::findTileByName("down_ladder")->id)
+        else if (tile->id == down_ladder.id)
             return DNGGRAPHIC_LADDERDOWN;
         else
             return DNGGRAPHIC_BASETILE;        
@@ -72,7 +75,7 @@ DungeonGraphicType dungeonViewTilesToGraphic(MapTileList tiles) {
      * if not an annotation or object, then the tile is a dungeon
      * token 
      */
-    token = dungeonTokenForTile(tile);
+    token = dungeonTokenForTile(*tile);
 
     switch (token) {
     case DUNGEON_TRAP:

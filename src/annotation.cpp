@@ -37,7 +37,7 @@ void Annotation::debug_output() const {
 }
 
 const Coords& Annotation::getCoords() const         { return coords;      }
-const MapTile& Annotation::getTile() const          { return tile;        }
+MapTile& Annotation::getTile()                      { return tile;        }
 const bool Annotation::isVisualOnly() const         { return visual;      }
 const int Annotation::getTTL() const                { return ttl;         }
 void Annotation::setCoords(const Coords &c)         { coords = c;         }
@@ -50,7 +50,7 @@ void Annotation::passTurn()                         { if (ttl > 0) ttl--; }
  * Operators
  */ 
 bool Annotation::operator==(const Annotation &a) const {
-    return ((coords == a.getCoords()) && (tile == a.getTile())) ? true : false;        
+    return ((coords == a.getCoords()) && (tile == a.tile)) ? true : false;        
 }
 
 /**

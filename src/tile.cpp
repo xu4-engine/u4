@@ -22,19 +22,7 @@
  */
 void Tile::loadProperties(Tile *tile, void *xmlNode) {
     xmlNodePtr node = (xmlNodePtr)xmlNode;
-
-    static std::map<string, TileAnimationStyle> animStyles;
-    if (!animStyles.size()) {
-        animStyles["none"] = ANIM_NONE;
-        animStyles["scroll"] = ANIM_SCROLL;
-        animStyles["campfire"] = ANIM_CAMPFIRE;
-        animStyles["cityflag"] = ANIM_CITYFLAG;
-        animStyles["castleflag"] = ANIM_CASTLEFLAG;
-        animStyles["shipflag"] = ANIM_SHIPFLAG;
-        animStyles["lcbflag"] = ANIM_LCBFLAG;
-        animStyles["frames"] = ANIM_FRAMES;
-    }
-
+    
     /* ignore 'text' nodes */
     if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
         return;
@@ -42,16 +30,19 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
     tile->name = xmlGetPropAsStr(node, "name"); /* get the name of the tile */    
     tile->frames = 1;
 
+    /* get the animation for the tile, if one is specified */
     if (xmlPropExists(node, "animation")) {
+        extern TileAnimSet *tileanims;
         string animation = xmlGetPropAsStr(node, "animation");
-        if (animStyles.find(animation) == animStyles.end())
-            errorWarning("Warning: animation style '%s' not found", animation.c_str());
 
-        tile->animation = animStyles[animation]; /* get the animation style of the tile, if any */    
+        tile->anim = tileanims->getByName(animation);
+        if (tile->anim == NULL)
+            errorWarning("Warning: animation style '%s' not found", animation.c_str());        
     }
-    else tile->animation = ANIM_NONE;
+    else tile->anim = NULL;    
 
-    tile->opaque = xmlGetPropAsBool(node, "opaque"); /* see if the tile is opaque */
+    /* see if the tile is opaque */
+    tile->opaque = xmlGetPropAsBool(node, "opaque"); 
 
     /* find the rule that applies to the current tile, if there is one.
        if there is no rule specified, it defaults to the "default" rule */
@@ -274,7 +265,10 @@ TileEffect MapTile::getEffect() const {
 
 TileAnimationStyle MapTile::getAnimationStyle() const {
     Tileset *t = Tileset::get();
-    return t->get(id)->animation;
+    TileAnim* anim = t->get(id)->anim;
+    if (anim)
+        return anim->name == "framed" ? ANIM_FRAMES : ANIM_NONE;
+    else return ANIM_NONE;
 }
 
 bool MapTile::isOpaque() const {

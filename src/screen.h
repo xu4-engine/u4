@@ -103,8 +103,8 @@ void screenRedrawScreen(void);
 void screenRedrawTextArea(int x, int y, int width, int height);
 void screenScrollMessageArea(void);
 void screenShake(int iterations);
-void screenShowTile(MapTile tile, int focus, int x, int y);
-void screenShowGemTile(MapTile tile, int focus, int x, int y);
+void screenShowTile(MapTile* tile, int focus, int x, int y);
+void screenShowGemTile(MapTile* tile, int focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, const char *fmt, ...) PRINTF_LIKE(3, 4);
@@ -112,7 +112,7 @@ void screenUpdate(int showmap, int blackout);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);
 void screenUpdateWind(void);
-MapTile screenViewportTile(unsigned int width, unsigned int height, int x, int y, int *focus);
+MapTile* screenViewportTile(unsigned int width, unsigned int height, int x, int y, int *focus);
 
 void screenAnimateIntro(const string &frame);
 void screenFreeIntroAnimations();
@@ -127,7 +127,7 @@ void screenEnableCursor(void);
 void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);
 
-void screenDungeonDrawTile(int distance, MapTile tile);
+void screenDungeonDrawTile(int distance, MapTile *tile);
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
 
 void screenSetMouseCursor(MouseCursor cursor);

@@ -47,8 +47,8 @@ Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext 
  * Returns the visible tile at the given point on a map.  This
  * includes visual-only annotations like attack icons.
  */
-MapTile locationVisibleTileAt(Location *location, MapCoords coords, int *focus) {
-    MapTile tile;
+MapTile* locationVisibleTileAt(Location *location, MapCoords coords, int *focus) {
+    MapTile* tile;
     MapTileList tiles;
 
     /* get the stack of tiles and take the top tile */
@@ -63,11 +63,11 @@ MapTile locationVisibleTileAt(Location *location, MapCoords coords, int *focus) 
  * Return the entire stack of objects at the given location.
  */
 MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {    
-    MapTileList tiles = new std::list<MapTile>;
+    MapTileList tiles = new std::list<MapTile*>;
     AnnotationList a = location->map->annotations->allAt(coords);    
     AnnotationList::iterator i;
-    const Object *obj = location->map->objectAt(coords);
-    const Creature *m = dynamic_cast<const Creature *>(obj);
+    Object *obj = location->map->objectAt(coords);
+    Creature *m = dynamic_cast<Creature *>(obj);
     *focus = 0;
 
     bool avatar = location->coords == coords;
@@ -75,7 +75,7 @@ MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {
     /* Do not return objects for VIEW_GEM mode, show only the avatar and tiles */
     if (location->viewMode == VIEW_GEM) {
         if ((location->map->flags & SHOW_AVATAR) && avatar)
-            tiles->push_back(c->party->transport);
+            tiles->push_back(&c->party->transport);
         else
             tiles->push_back(location->map->getTileFromData(coords));
         return tiles;
@@ -84,38 +84,38 @@ MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {
     /* Add visual-only annotations to the list */
     for (i = a.begin(); i != a.end(); i++) {
         if (i->isVisualOnly())        
-            tiles->push_back(i->getTile());
+            tiles->push_back(&i->getTile());
     }
 
     /* then the avatar is drawn (unless on a ship) */
     if ((location->map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && avatar)
-        tiles->push_back(c->party->transport);
+        tiles->push_back(&c->party->transport);
 
     /* then camouflaged creatures that have a disguise */
     if (obj && (obj->getType() == OBJECT_CREATURE) && !obj->isVisible() && (m->camouflageTile.id > 0)) {
         *focus = *focus || obj->hasFocus();
-        tiles->push_back(m->camouflageTile);
+        tiles->push_back(&m->camouflageTile);
     }
     /* then visible creatures */
     else if (obj && (obj->getType() != OBJECT_UNKNOWN) && obj->isVisible()) {
         *focus = *focus || obj->hasFocus();
-        tiles->push_back(obj->getTile());
+        tiles->push_back(&obj->getTile());
     }
 
     /* then other visible objects */
      if (obj && obj->isVisible()) {
         *focus = *focus || obj->hasFocus();
-        tiles->push_back(obj->getTile());
+        tiles->push_back(&obj->getTile());
     }
 
     /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */
     if ((location->map->flags & SHOW_AVATAR) && (c->transportContext == TRANSPORT_SHIP) && avatar)
-        tiles->push_back(c->party->transport);
+        tiles->push_back(&c->party->transport);
 
     /* then permanent annotations */
     for (i = a.begin(); i != a.end(); i++) {
         if (!i->isVisualOnly())
-            tiles->push_back(i->getTile());
+            tiles->push_back(&i->getTile());
     }
 
     /* finally the base tile */
@@ -139,7 +139,7 @@ MapTile locationGetReplacementTile(Location *location, MapCoords coords) {
         MapTile newTile;
 
         new_c.move(d, location->map);        
-        newTile = location->map->tileAt(new_c, WITHOUT_OBJECTS);
+        newTile = *location->map->tileAt(new_c, WITHOUT_OBJECTS);
 
         /* make sure the tile we found is a valid replacement */
         if (newTile.isReplacement())

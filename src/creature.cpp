@@ -392,16 +392,16 @@ void Creature::act() {
             Coords new_c;
             bool valid = false;
             bool firstTry = true;                    
-            MapTile tile;                
+            MapTile *tile;                
         
             while (!valid) {
                 new_c = Coords(xu4_random(map->width), xu4_random(map->height), c->location->coords.z);
                 
                 tile = map->tileAt(new_c, WITH_OBJECTS);
             
-                if (tile.isCreatureWalkable()) {
+                if (tile->isCreatureWalkable()) {
                     /* If the tile would slow me down, try again! */
-                    if (firstTry && tile.getSpeed() != FAST)
+                    if (firstTry && tile->getSpeed() != FAST)
                         firstTry = false;
                     /* OK, good enough! */
                     else
@@ -891,7 +891,7 @@ void CreatureMgr::loadInfoFromXml() {
  * Returns a creature using a tile to find which one to create
  * or NULL if a creature with that tile cannot be found
  */ 
-const Creature *CreatureMgr::getByTile(MapTile tile) const {
+Creature *CreatureMgr::getByTile(MapTile tile) {
     CreatureMap::const_iterator i;
 
     for (i = creatures.begin(); i != creatures.end(); i++) {
@@ -911,7 +911,7 @@ const Creature *CreatureMgr::getByTile(MapTile tile) const {
  * or returns NULL if no creature with that id could
  * be found.
  */
-const Creature *CreatureMgr::getById(CreatureId id) const {
+Creature *CreatureMgr::getById(CreatureId id) {
     CreatureMap::const_iterator i = creatures.find(id);
     if (i != creatures.end())
         return i->second;
@@ -923,7 +923,7 @@ const Creature *CreatureMgr::getById(CreatureId id) const {
  * or returns NULL if no creature can be found with
  * that name (case insensitive)
  */ 
-const Creature *CreatureMgr::getByName(string name) const {
+Creature *CreatureMgr::getByName(string name) {
     CreatureMap::const_iterator i;
     for (i = creatures.begin(); i != creatures.end(); i++) {
         if (strcasecmp(i->second->getName().c_str(), name.c_str()) == 0)
@@ -935,7 +935,7 @@ const Creature *CreatureMgr::getByName(string name) const {
 /**
  * Creates a random creature based on the tile given
  */ 
-const Creature *CreatureMgr::randomForTile(MapTile tile) const {
+Creature *CreatureMgr::randomForTile(MapTile tile) {
     /* FIXME: this is too dependent on the tile system, and easily
        broken when tileset changes are made.  Methinks the logic 
        behind this should be moved to monsters.xml or another conf
@@ -974,7 +974,7 @@ const Creature *CreatureMgr::randomForTile(MapTile tile) const {
 /**
  * Creates a random creature based on the dungeon level given
  */ 
-const Creature *CreatureMgr::randomForDungeon(int dngLevel) const {
+Creature *CreatureMgr::randomForDungeon(int dngLevel) {
     int era;
     static std::vector<CreatureId> id_list;
     if (id_list.size() == 0) {
@@ -1002,7 +1002,7 @@ const Creature *CreatureMgr::randomForDungeon(int dngLevel) const {
 /**
  * Creates a random ambushing creature
  */ 
-const Creature *CreatureMgr::randomAmbushing() const {
+Creature *CreatureMgr::randomAmbushing() {
     CreatureMap::const_iterator i;
     int numAmbushingCreatures = 0,
         randCreature;

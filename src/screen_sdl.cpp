@@ -1047,18 +1047,11 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
 }
 
 /**
- * Draws a maptile to the screen
+ * Draws a tile to the screen
  */
-void MapTile::draw(int x, int y) const {
-    Tileset *t = Tileset::get();    
-    Tile *tile = t->get(id);
-
-    tile->draw(x, y, frame);   
-}
-
-void Tile::draw(int x, int y, int frame) {
+void Tile::draw(int x, int y, int frame, bool focused) {
     /* FIXME: maybe we should load tiles somewhere else for better performance? */
-    if (image == NULL) {        
+    if (image == NULL) {
         if (!looks_like.empty()) {            
             // draw the tile that looks just like ours first (to make sure it's loaded)
             Tile *tile = Tileset::findTileByName(looks_like);
@@ -1089,129 +1082,45 @@ void Tile::draw(int x, int y, int frame) {
 
         if (image == NULL)
             errorFatal("Error: not all tile images loaded correctly, aborting...");    
-    }   
-
-    int offset = 0;
-    if (getAnimationStyle() == ANIM_SCROLL)
-        offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale;
-
-    image->drawSubRect(x * w + (BORDER_WIDTH * scale), y * h + (BORDER_HEIGHT * scale) + offset,
-        0, frame * h, w, h - offset);
-    
-    if (offset != 0) {
-        image->drawSubRect(x * w + (BORDER_WIDTH * scale), y * h + (BORDER_HEIGHT * scale),
-            0, (frame + 1) * h - offset, w, offset);                           
     }
+    
+    image->drawSubRect(x * w + (BORDER_WIDTH * scale), y * h + (BORDER_HEIGHT * scale),
+        0, frame * h, w, h);    
 }
 
 /**
- * Draw a tile graphic on the screen.
+ * Draw a focus rectangle around the tile
  */
-void screenShowTile(MapTile mapTile, int focus, int x, int y) {
-    //int offset;
-    //int unscaled_x, unscaled_y;
-    Image *tiles;
-    TileAnim *anim = NULL;
-    
-    mapTile.draw(x, y);
-    
-    unsigned int tile = mapTile.getIndex();
-    Tileset *t = Tileset::get();
-
-    if (tilesInfo == NULL || tilesInfo->name != t->getImageName()) {
-        tilesInfo = screenLoadImage(t->getImageName());
-        if (!tilesInfo)
-            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
-    }
-
-    tiles = tilesInfo->image;
-
-    /*if (mapTile.getAnimationStyle() == ANIM_SCROLL)
-        offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale;
-    else
-        offset = 0;
-    
-    unscaled_x = x * (tiles->width() / scale) + BORDER_WIDTH;
-    unscaled_y = y * ((tiles->height() / scale) / N_TILES) + BORDER_HEIGHT;
-
-    tiles->drawSubRect(x * tiles->width() + (BORDER_WIDTH * scale),
-                       y * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale) + offset,
-                       0,
-                       tile * (tiles->height() / N_TILES),
-                       tiles->width(),
-                       tiles->height() / N_TILES - offset);
-
-    if (offset != 0) {
-
-        tiles->drawSubRect(x * tiles->width() + (BORDER_WIDTH * scale),
-                           y * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale),
-                           0,
-                           (tile + 1) * (tiles->height() / N_TILES) - offset,
-                           tiles->width(),
-                           offset);
-    }
-
-    /*
-     * animate flags and camp fires
+void Tile::drawFocus(int x, int y) const {
+	/**
+     * draw the focus rectangle around the tile
      */
-    switch (mapTile.getAnimationStyle()) {
-    case ANIM_CITYFLAG:
-        anim = tileAnimSetGetAnimByName(tileanims, "cityflag");
-        break;
-    case ANIM_CASTLEFLAG:
-        anim = tileAnimSetGetAnimByName(tileanims, "castleflag");
-        break;
-    case ANIM_LCBFLAG:
-        anim = tileAnimSetGetAnimByName(tileanims, "lcbflag");
-        break;
-    case ANIM_SHIPFLAG:
-        if (mapTile.getDirection() == DIR_WEST)
-            anim = tileAnimSetGetAnimByName(tileanims, "shipflagwest");
-        else if (mapTile.getDirection() == DIR_EAST)        
-            anim = tileAnimSetGetAnimByName(tileanims, "shipflageast");
-        break;
-    case ANIM_CAMPFIRE:
-        anim = tileAnimSetGetAnimByName(tileanims, "fire");
-        break;
-    default:
-        anim = NULL;
-        break;
-    }
-
-    if (anim)
-        anim->draw(tiles, mapTile.id + mapTile.frame, scale, 
-                   x * tiles->width() / scale + BORDER_WIDTH, 
-                   y * tiles->height() / N_TILES / scale + BORDER_HEIGHT);
-
-    /*
-     * finally draw the focus rectangle if the tile has the focus
-     */
-    if (focus && ((screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2)) {
+    if ((screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2) {
         /* left edge */
-        screen->fillRect(x * tiles->width() + (BORDER_WIDTH * scale),
-                         y * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale),
+        screen->fillRect(x * w + (BORDER_WIDTH * scale),
+                         y * h + (BORDER_HEIGHT * scale),
                          2 * scale,
-                         tiles->height() / N_TILES, 
+                         h, 
                          0xff, 0xff, 0xff);
 
         /* top edge */
-        screen->fillRect(x * tiles->width() + (BORDER_WIDTH * scale),
-                         y * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale),
-                         tiles->width(),
+        screen->fillRect(x * w + (BORDER_WIDTH * scale),
+                         y * h + (BORDER_HEIGHT * scale),
+                         w,
                          2 * scale,
                          0xff, 0xff, 0xff);
 
         /* right edge */
-        screen->fillRect((x + 1) * tiles->width() + (BORDER_WIDTH * scale) - (2 * scale),
-                         y * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale),
+        screen->fillRect((x + 1) * w + (BORDER_WIDTH * scale) - (2 * scale),
+                         y * h + (BORDER_HEIGHT * scale),
                          2 * scale,
-                         tiles->height() / N_TILES,
+                         h,
                          0xff, 0xff, 0xff);
 
         /* bottom edge */
-        screen->fillRect(x * tiles->width() + (BORDER_WIDTH * scale),
-                         (y + 1) * (tiles->height() / N_TILES) + (BORDER_HEIGHT * scale) - (2 * scale),
-                         tiles->width(),
+        screen->fillRect(x * w + (BORDER_WIDTH * scale),
+                         (y + 1) * h + (BORDER_HEIGHT * scale) - (2 * scale),
+                         w,
                          2 * scale,
                          0xff, 0xff, 0xff);
     }
@@ -1220,8 +1129,34 @@ void screenShowTile(MapTile mapTile, int focus, int x, int y) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowGemTile(MapTile mapTile, int focus, int x, int y) {
-    unsigned int tile = mapTile.getIndex();    
+void screenShowTile(MapTile *mapTile, int focus, int x, int y) {            
+    Tileset *t = Tileset::get();    
+    Tile *tile = t->get(mapTile->id);
+    TileAnim *anim = tile->anim;    
+    
+    /**
+     * Draw the tile to the screen
+     */
+    if (anim) {
+        /*
+         * animate flags and camp fires
+         */    
+        if (!anim->isControlling())
+            tile->draw(x, y, mapTile->frame);
+        mapTile->frame = anim->draw(tile, mapTile->frame, scale, x, y);
+    }
+    else tile->draw(x, y, mapTile->frame);
+    
+	/* draw the focus around the tile if it has the focus */
+	if (focus)
+		tile->drawFocus(x, y);
+}
+
+/**
+ * Draw a tile graphic on the screen.
+ */
+void screenShowGemTile(MapTile *mapTile, int focus, int x, int y) {
+    unsigned int tile = mapTile->getIndex();    
 
     if (gemTilesInfo == NULL) {
         gemTilesInfo = screenLoadImage(BKGD_GEMTILES);
@@ -1390,13 +1325,13 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
     return 1;
 }
 
-void screenDungeonDrawTile(int distance, MapTile mapTile) {
+void screenDungeonDrawTile(int distance, MapTile *mapTile) {
     SDL_Rect src, dest;
     Image *tmp, *scaled;
     const static int dscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
     int offset;
     int savedflags;
-    unsigned int tile = mapTile.getIndex();
+    unsigned int tile = mapTile->getIndex();
 
     tmp = Image::create(tilesInfo->image->w, tilesInfo->image->h / N_TILES, tilesInfo->image->isIndexed(), Image::SOFTWARE);
     if (tilesInfo->image->indexed)
@@ -1558,7 +1493,7 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
 }
 
 void screenGemUpdate() {
-    MapTile tile;
+    MapTile *tile;
     int focus, x, y;
 
     screen->fillRect(BORDER_WIDTH * scale, 
