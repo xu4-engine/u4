@@ -53,6 +53,14 @@ $(MAIN): $(OBJS)
 dumpsavegame$(EXEEXT) : util/dumpsavegame.o savegame.o io.o names.o
 	$(CC) $(CFLAGS) -o dumpsavegame util/dumpsavegame.o savegame.o io.o names.o
 
-clean::
-	rm -rf *~ */*~ $(OBJS) $(MAIN) util/dumpsavegame.o dumpsavegame$(EXEEXT)
+lzwenc$(EXEEXT) : util/lzwenc.o
+	$(CC) $(CFLAGS) -o lzwenc util/lzwenc.o
 
+lzwdec$(EXEEXT) : util/lzwdec.o lzw/lzw.o lzw/u4decode.o
+	$(CC) $(CFLAGS) -o lzwdec util/lzwdec.o lzw/lzw.o lzw/u4decode.o
+
+clean:: cleanutil
+	rm -rf *~ */*~ $(OBJS) $(MAIN) 
+
+cleanutil::
+	rm -rf util/dumpsavegame.o dumpsavegame$(EXEEXT) util/lzwenc.o util/lzwenc$(EXEEXT) util/lzwdec.o util/lzwdec$(EXEEXT)
