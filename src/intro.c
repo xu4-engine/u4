@@ -668,14 +668,14 @@ void introUpdateScreen() {
     case INTRO_CONFIG_ADVANCED:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,  "Advanced Options:");
-        screenTextAt(3, 5,  "Keyboard Options (msecs)");
-        screenTextAt(6, 6,  "Repeat 'D'elay              %d", settings->keydelay);
-        screenTextAt(6, 7,  "Repeat 'I'nterval           %d", settings->keyinterval);
-        screenTextAt(6, 8,  "German 'K'eyboard           %s", settings->germanKbd ? "Yes" : "No"); 
-        screenTextAt(3, 10, "Speed Options");
-        screenTextAt(6, 11, "'G'ame Cycles Per Second    %d", settings->gameCyclesPerSecond);
-        screenTextAt(6, 12, "'B'attle Speed              %d", settings->battleSpeed);
-        screenTextAt(6, 14, "Debug 'M'ode (Cheats)       %s", settings->debug ? "On" : "Off");
+        screenTextAt(3, 5,  "Debug 'M'ode (Cheats)          %s", settings->debug ? "On" : "Off");
+        screenTextAt(3, 7,  "Keyboard Options (msecs)");
+        screenTextAt(6, 8,     "Repeat 'D'elay              %d", settings->keydelay);
+        screenTextAt(6, 9,     "Repeat 'I'nterval           %d", settings->keyinterval);
+        screenTextAt(6, 10,    "German 'K'eyboard           %s", settings->germanKbd ? "Yes" : "No"); 
+        screenTextAt(3, 12, "Speed Options");
+        screenTextAt(6, 13,    "'G'ame Cycles Per Second    %d", settings->gameCyclesPerSecond);
+        screenTextAt(6, 14,    "'B'attle Speed              %d", settings->battleSpeed);        
         screenTextAt(6, 20, "Use These Settings");
         screenTextAt(6, 21, "Cancel");
         break;
