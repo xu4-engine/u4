@@ -1,0 +1,64 @@
+XU4 is a recreation of the classic computer game Ultima IV. The
+purpose of the project is to make it easy and convenient to play on
+modern operating systems.  xu4 is primarily inspired by the much more
+ambitious project Exult.  Linux is the primary development platform,
+but it should be trivial to port to any system with SDL support.
+
+XU4 isn't a new game based on the Ultima IV story -- it is a faithful
+recreation of the old game, right up to the crappy graphics.  If you
+are looking for a game with modern gameplay and graphics, this is not
+it -- sorry.
+
+STATUS
+------
+
+What works in v0.01:
+ - stunning EGA graphics
+ - walking around the world, entering cities and castles
+ - the ladders between the two floors in the castle of Lord British
+ - conversations with citizens (not merchants, Lord British, or
+   Hawkwind)
+ - saving the game remembers your position
+
+To do, in no particular order:
+ - support the VGA upgrade patch
+ - sound, music
+ - moongates
+ - dungeons
+ - line of sight (shouldn't be able to see through walls)
+ - player stats, inventory, items
+ - karma
+ - monsters, combat
+ - horses, ships, balloons
+ - Lord British, Hawkwind
+ - spells
+ - windows port
+ - autoconf, automake
+ - everything else :)
+
+COMPILING
+---------
+
+Note that you need SDL and the SDL development libraries & headers to
+compile.  Assuming they are present, type make in the src directory to
+build it.  An executable called u4 is created.
+
+RUNNING
+-------
+
+The actual data files from Ultima 4 are loaded at runtime, which means
+that a copy of Ultima 4 for DOS must be present at runtime.
+Fortunately, Ultima IV is available as closed-source freeware on the
+internet (legally). It is available at
+http://www.zip.com.au/~mfleming/ultima/u4download.html, among many
+other sites.
+
+Create a subdirectory called ultima4 under u4/src (or whereever you
+will be running it from), and unzip ultima 4 there.  You may need to
+use "unzip -L" to get the filenames right.
+
+MISC
+----
+
+Please send me a mail at andrewtaylor@users.sourceforge.net if you are
+interested in helping.
