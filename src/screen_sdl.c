@@ -186,9 +186,8 @@ void screenInit() {
     if (scale < 1 || scale > 5)
         scale = 2;
 
-    /* FIXME: shouldn't need to use switch.bat in order to switch between vga/ega */
     forceEga = settings->videoType == VIDEO_EGA;
-    forceVga = settings->videoType == VIDEO_VGA;
+    forceVga = settings->videoType == VIDEO_VGA;    
 
     /* start SDL */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
@@ -203,9 +202,12 @@ void screenInit() {
     SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
 #endif   
 
-    screenLoadPaletteEga();    
-    if (!screenLoadPaletteVga("u4vga.pal"))
+    screenLoadPaletteEga();        
+    if (!screenLoadPaletteVga("u4vga.pal")) {
+        /* must use Ega graphics */
         forceEga = 1;
+        forceVga = 0;
+    }
 
     if (!screenLoadBackground(BKGD_INTRO) ||
         !screenLoadBackground(BKGD_INTRO_EXTENDED) || 
@@ -333,8 +335,10 @@ int screenLoadBackground(BackgroundType bkgd) {
     SDL_Surface *unscaled;
     U4FILE *file;
 
-    const char *vgaFilename = usingZipFiles ? backgroundInfo[bkgd].filenameOld : backgroundInfo[bkgd].filename;
-    const char *egaFilename = usingZipFiles ? backgroundInfo[bkgd].filename : backgroundInfo[bkgd].filenameOld;
+    //const char *vgaFilename = usingZipFiles ? backgroundInfo[bkgd].filenameOld : backgroundInfo[bkgd].filename;
+    //const char *egaFilename = usingZipFiles ? backgroundInfo[bkgd].filename : backgroundInfo[bkgd].filenameOld;
+    const char *vgaFilename = backgroundInfo[bkgd].filename;
+    const char *egaFilename = backgroundInfo[bkgd].filename;
 
     ret = 0;
     if (!forceEga && backgroundInfo[bkgd].hasVga) {

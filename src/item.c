@@ -279,7 +279,7 @@ void useStone(void *item) {
                 }
                 else ASSERT(0, "Not in an altar room!");
 
-                /* see if we have the right stones and have them all */
+                /* see if we have all the stones, if not, get more names! */
                 if (attr && needStoneNames) {
                     screenMessage("\n%c:", 'E'-needStoneNames);
                     readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
@@ -314,7 +314,7 @@ void useStone(void *item) {
 
             /* Otherwise, we're asking for a stone while in the abyss on top of an altar */
             else {
-                /* replace the altar with a down-ladder */
+                /* replace the altar with a down-ladder if it is the stone we're looking for! */
                 if (stone == (1 << c->location->z)) {
                     int x, y, z;
                     screenMessage("\n\nThe altar changes before thyne eyes!\n");
@@ -371,6 +371,8 @@ void useKey(void *item) {
 }
 
 int isMysticInInventory(void *mystic) {
+    /* FIXME: you could feasibly get more mystic weapons and armor if you
+       have 8 party members and equip them all with everything */
     if (((int)mystic) == WEAP_MYSTICSWORD)
         return c->saveGame->weapons[WEAP_MYSTICSWORD] > 0;
     else if (((int)mystic) == ARMR_MYSTICROBES)

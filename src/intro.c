@@ -1369,7 +1369,11 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
 
     case 0xFE:        
-        settingsWrite();        
+        settingsWrite();
+
+        /* FIXME: resize intro stuff, fix 'timer-being-squashed-by-screenInit()' issue */
+        /*screenDelete(); 
+        screenInit();*/
     
         mode = INTRO_CONFIG;
         
