@@ -19,14 +19,6 @@
 #include "game.h"
 #include "player.h"
 
-#define MEDITATION_MANTRAS_PER_CYCLE 16
-
-const Shrine *shrine;
-char virtueBuffer[20];
-int cycles, completedCycles;
-char mantraBuffer[20];
-int reps;
-
 int shrineHandleVirtue(const char *message);
 int shrineHandleCycles(char choice);
 void shrineMeditationCycle();
@@ -34,6 +26,14 @@ void shrineTimer(void *data);
 int shrineHandleMantra(const char *message);
 int shrineEjectOnKey(int key, void *data);
 void shrineEject();
+
+#define MEDITATION_MANTRAS_PER_CYCLE 16
+
+const Shrine *shrine;
+char virtueBuffer[20];
+int cycles, completedCycles;
+char mantraBuffer[20];
+int reps;
 
 void shrineEnter(const Shrine *s) {
     ReadBufferActionInfo *info;
@@ -176,6 +176,7 @@ void shrineEject() {
         mapClearObjects(c->map);
         c->parent->saveGame->x = c->saveGame->dngx;
         c->parent->saveGame->y = c->saveGame->dngy;
+        c->parent->saveGame->dnglevel = -1;
         c->parent->annotation = c->annotation;
         c->parent->line = c->line;
         c->parent->moonPhase = c->moonPhase;
