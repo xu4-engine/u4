@@ -18,6 +18,7 @@
 #include "dngview.h"
 #include "u4.h"
 #include "u4file.h"
+#include "xml.h"
 
 typedef enum {
     COMP_NONE,
@@ -481,31 +482,29 @@ int screenLoadCharSet() {
 }
 
 /**
- * Loads the basic EGA palette.
+ * Loads the basic EGA palette from egaPalette.xml
  */
 int screenLoadPaletteEga() {
-    #define setpalentry(i, red, green, blue) \
-        egaPalette[i].r = red; \
-        egaPalette[i].g = green; \
-        egaPalette[i].b = blue;
-    setpalentry(0, 0x00, 0x00, 0x00);
-    setpalentry(1, 0x00, 0x00, 0x80);
-    setpalentry(2, 0x00, 0x80, 0x00);
-    setpalentry(3, 0x00, 0x80, 0x80);
-    setpalentry(4, 0x80, 0x00, 0x00);
-    setpalentry(5, 0x80, 0x00, 0x80);
-    //setpalentry(6, 0x80, 0x80, 0x00);
-    setpalentry(6, 0xA0, 0x50, 0x20);
-    setpalentry(7, 0xc3, 0xc3, 0xc3);
-    setpalentry(8, 0xa0, 0xa0, 0xa0);
-    setpalentry(9, 0x00, 0x00, 0xFF);
-    setpalentry(10, 0x00, 0xFF, 0x00);
-    setpalentry(11, 0x00, 0xFF, 0xFF);
-    setpalentry(12, 0xFF, 0x00, 0x00);
-    setpalentry(13, 0xFF, 0x00, 0xFF);
-    setpalentry(14, 0xFF, 0xFF, 0x00);
-    setpalentry(15, 0xFF, 0xFF, 0xFF);
-    #undef setpalentry
+    xmlDocPtr doc;
+    xmlNodePtr root, node;    
+    int i = 0;
+
+    doc = xmlParse("egaPalette.xml");
+    root = xmlDocGetRootElement(doc);
+    if (xmlStrcmp(root->name, (const xmlChar *) "egaPalette") != 0)
+        errorFatal("malformed egaPalette.xml");
+    
+    for (node = root->xmlChildrenNode; node; node = node->next) {
+        if (xmlNodeIsText(node) ||
+            xmlStrcmp(node->name, (const xmlChar *) "color") != 0)
+            continue;
+        
+        egaPalette[i].r = xmlGetPropAsInt(node, (const xmlChar *)"r");
+        egaPalette[i].g = xmlGetPropAsInt(node, (const xmlChar *)"g");
+        egaPalette[i].b = xmlGetPropAsInt(node, (const xmlChar *)"b");
+
+        i++;
+    }
 
     return 1;
 }
