@@ -50,6 +50,8 @@ typedef enum {
     INTRO_CONFIG_SOUND,         /* sound configuration */
     INTRO_CONFIG_GAMEPLAY,      /* gameplay configuration */
     INTRO_CONFIG_ADVANCED,      /* advanced gameplay config */
+    INTRO_CONFIG_KEYBOARD,      /* keyboard config */
+    INTRO_CONFIG_SPEED,         /* speed config */
     INTRO_CONFIG_MINOR_OPTIONS, /* minor enhancement options */
     INTRO_CONFIG_MAJOR_OPTIONS, /* major enhancement options */
     INTRO_ABOUT,                /* about xu4 screen */
@@ -110,6 +112,8 @@ Menu videoOptions;
 Menu soundOptions;
 Menu gameplayOptions;
 Menu advancedOptions;
+Menu keyboardOptions;
+Menu speedOptions;
 Menu minorOptions;
 Menu majorOptions;
 
@@ -134,6 +138,8 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action);
 void introSoundOptionsMenuItemActivate(Menu menu, ActivateAction action);
 void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action);
 void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action);
+void introKeyboardOptionsMenuItemActivate(Menu menu, ActivateAction action);
+void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action);
 void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action);
 void introMajorOptionsMenuItemActivate(Menu menu, ActivateAction action);
 
@@ -252,17 +258,25 @@ int introInit() {
     gameplayOptions = menuAddItem(gameplayOptions, 0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     gameplayOptions = menuAddItem(gameplayOptions, 0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
-    advancedOptions = menuAddItem(advancedOptions, 0, "Debug Mode (Cheats)", 4, 5, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);
-    advancedOptions = menuAddItem(advancedOptions, 1, "Repeat Delay", 7, 8, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);
-    advancedOptions = menuAddItem(advancedOptions, 2, "Repeat Interval", 7, 9, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);
-    advancedOptions = menuAddItem(advancedOptions, 3, "German Keyboard", 7, 10, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);
-    advancedOptions = menuAddItem(advancedOptions, 4, "Game Cycles Per Second", 7, 13, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);
-    advancedOptions = menuAddItem(advancedOptions, 5, "Battle Speed", 7, 14, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);
-    advancedOptions = menuAddItem(advancedOptions, 6, "Spell Effect Speed", 7, 15, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);
-    advancedOptions = menuAddItem(advancedOptions, 7, "Minor Enhancement Options", 4, 17, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    advancedOptions = menuAddItem(advancedOptions, 8, "Major Enhancement Options", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    advancedOptions = menuAddItem(advancedOptions, 2, "Debug Mode (Cheats)", 4, 5, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);        
+    advancedOptions = menuAddItem(advancedOptions, 0, "Minor Enhancement Options", 4, 14, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    advancedOptions = menuAddItem(advancedOptions, 1, "Major Enhancement Options", 4, 15, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    advancedOptions = menuAddItem(advancedOptions, 4, "Speed Settings", 4, 17, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    advancedOptions = menuAddItem(advancedOptions, 3, "Keyboard Settings", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
     advancedOptions = menuAddItem(advancedOptions, 0xFE, "Use These Settings", 4, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
     advancedOptions = menuAddItem(advancedOptions, 0xFF, "Cancel", 4, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+
+    keyboardOptions = menuAddItem(keyboardOptions, 0, "German Keyboard", 5, 16, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
+    keyboardOptions = menuAddItem(keyboardOptions, 1, "Repeat Delay (in msecs)", 5, 17, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
+    keyboardOptions = menuAddItem(keyboardOptions, 2, "Repeat Interval (in msecs)", 5, 18, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
+    keyboardOptions = menuAddItem(keyboardOptions, 0xFE, "Use These Settings", 4, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    keyboardOptions = menuAddItem(keyboardOptions, 0xFF, "Cancel", 4, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
+
+    speedOptions = menuAddItem(speedOptions, 0, "Game Cycles Per Second", 7, 16, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 1, "Battle Speed", 7, 17, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 2, "Spell Effect Length", 7, 18, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
+    speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 4, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 4, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
     minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 4, 5, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
     minorOptions = menuAddItem(minorOptions, 1, "Slime divides", 4, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
@@ -319,6 +333,8 @@ void introDelete() {
     menuDelete(soundOptions);
     menuDelete(gameplayOptions);
     menuDelete(advancedOptions);
+    menuDelete(keyboardOptions);
+    menuDelete(speedOptions);
     menuDelete(minorOptions);
     menuDelete(majorOptions);
 }
@@ -450,6 +466,18 @@ int introKeyHandler(int key, void *data) {
 
     case INTRO_CONFIG_ADVANCED:
         introBaseMenuKeyHandler(key, &advancedOptions);
+        
+        introUpdateScreen();
+        return 1;
+
+    case INTRO_CONFIG_KEYBOARD:
+        introBaseMenuKeyHandler(key, &keyboardOptions);
+        
+        introUpdateScreen();
+        return 1;
+
+    case INTRO_CONFIG_SPEED:
+        introBaseMenuKeyHandler(key, &speedOptions);
         
         introUpdateScreen();
         return 1;
@@ -674,16 +702,35 @@ void introUpdateScreen() {
     case INTRO_CONFIG_ADVANCED:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3,   "Advanced Options:");
-        screenTextAt(34, 5,  "%s", settings->debug ? "On" : "Off");
-        screenTextAt(4, 7,   "Keyboard Options (msecs)");
-        screenTextAt(34, 8,  "%d", settings->keydelay);
-        screenTextAt(34, 9,  "%d", settings->keyinterval);
-        screenTextAt(34, 10, "%s", settings->germanKbd ? "Yes" : "No"); 
-        screenTextAt(4, 12,  "Speed Options");
-        screenTextAt(34, 13, "%d", settings->gameCyclesPerSecond);
-        screenTextAt(34, 14, "%d", settings->battleSpeed);
-        screenTextAt(34, 15, "%d", settings->spellEffectSpeed);
+        screenTextAt(34, 5,  "%s", settings->debug ? "On" : "Off");        
         menuShow(menuGetRoot(advancedOptions));
+        break;
+
+    case INTRO_CONFIG_KEYBOARD:
+        screenDrawBackground(BKGD_INTRO);
+        screenTextAt(2, 14, "Keyboard Settings:");
+        screenTextAt(34, 16, "%s", settings->germanKbd ? "Yes" : "No"); 
+        screenTextAt(34, 17,  "%d", settings->keydelay);
+        screenTextAt(34, 18,  "%d", settings->keyinterval);
+        menuShow(menuGetRoot(keyboardOptions));        
+        break;
+
+    case INTRO_CONFIG_SPEED:
+        {
+            char msg[16] = {0};
+            screenDrawBackground(BKGD_INTRO);
+            screenTextAt(2, 14, "Speed Settings:");        
+            screenTextAt(34, 16, "%d", settings->gameCyclesPerSecond);
+            screenTextAt(34, 17, "%d", settings->battleSpeed);
+            
+            sprintf(msg, "%d", settings->spellEffectSpeed / 5);
+            if (settings->spellEffectSpeed % 5 != 0)
+                sprintf(msg + strlen(msg), ".%d", (settings->spellEffectSpeed%5)*2);
+            
+            screenTextAt(33 - strlen(msg), 18, msg);
+            screenTextAt(34, 18, "sec");
+            menuShow(menuGetRoot(speedOptions));
+        }
         break;
 
     case INTRO_CONFIG_MINOR_OPTIONS:
@@ -1271,8 +1318,7 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
 
     case 0xFE:        
-        settingsWrite();
-        musicIntro();
+        settingsWrite();        
     
         mode = INTRO_CONFIG;
         
@@ -1319,16 +1365,15 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         advancedOptions = menuReset(advancedOptions);        
 
         /* show or hide minor/major options if they are enabled/disabled */
-        menuItemSetVisible(menuGetItemById(advancedOptions, 7), settings->minorEnhancements);
-        menuItemSetVisible(menuGetItemById(advancedOptions, 8), settings->majorEnhancements);
+        menuItemSetVisible(menuGetItemById(advancedOptions, 0), settings->minorEnhancements);
+        menuItemSetVisible(menuGetItemById(advancedOptions, 1), settings->majorEnhancements);
 
         break;
     case 3:
         settings->majorEnhancements = settings->majorEnhancements ? 0 : 1;
         break;
     case 0xFE:        
-        settingsWrite();
-        musicIntro();
+        settingsWrite();        
     
         mode = INTRO_CONFIG;        
         break;
@@ -1342,8 +1387,42 @@ void introGameplayOptionsMenuItemActivate(Menu menu, ActivateAction action) {
 void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
-    case 0:
+    case 2:
         settings->debug = settings->debug ? 0 : 1;
+        break;
+    case 3:
+        mode = INTRO_CONFIG_KEYBOARD;
+        keyboardOptions = menuReset(keyboardOptions);
+        break;
+    case 4:
+        mode = INTRO_CONFIG_SPEED;
+        speedOptions = menuReset(speedOptions);
+        break;
+    case 0:
+        mode = INTRO_CONFIG_MINOR_OPTIONS;
+        minorOptions = menuReset(minorOptions);
+        break;
+    case 1:
+        mode = INTRO_CONFIG_MAJOR_OPTIONS;
+        majorOptions = menuReset(majorOptions);
+        break;
+    case 0xFE:        
+        settingsWrite();        
+    
+        mode = INTRO_CONFIG_GAMEPLAY;        
+        break;
+    case 0xFF:        
+        mode = INTRO_CONFIG_GAMEPLAY;
+        break;
+    default: break;
+    }
+}
+
+void introKeyboardOptionsMenuItemActivate(Menu menu, ActivateAction action) {
+    MenuItem *menuItem = (MenuItem *)menu->data;
+    switch(menuItem->id) {
+    case 0:
+        settings->germanKbd = settings->germanKbd ? 0 : 1;
         break;
     case 1:
         if (action != ACTIVATE_DECREMENT) {
@@ -1367,10 +1446,25 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
                 settings->keyinterval = MAX_KEY_INTERVAL;
         }
         break;
-    case 3:
-        settings->germanKbd = settings->germanKbd ? 0 : 1;
+    case 0xFE:        
+        settingsWrite();        
+
+        /* re-initialize keyboard */
+        eventKeyboardSetKeyRepeat(settings->keydelay, settings->keyinterval);
+    
+        mode = INTRO_CONFIG_ADVANCED;
         break;
-    case 4:
+    case 0xFF:        
+        mode = INTRO_CONFIG_ADVANCED;
+        break;
+    default: break;
+    }    
+}
+
+void introSpeedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
+    MenuItem *menuItem = (MenuItem *)menu->data;
+    switch(menuItem->id) {
+    case 0:
         if (action != ACTIVATE_DECREMENT) {
             settings->gameCyclesPerSecond++;
             if (settings->gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
@@ -1381,7 +1475,7 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
                 settings->gameCyclesPerSecond = MAX_CYCLES_PER_SECOND;
         }
         break;
-    case 5:
+    case 1:
         if (action != ACTIVATE_DECREMENT) {
             settings->battleSpeed++;
             if (settings->battleSpeed > MAX_BATTLE_SPEED)
@@ -1392,7 +1486,7 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
                 settings->battleSpeed = MAX_BATTLE_SPEED;
         }
         break;
-    case 6:
+    case 2:
         if (action != ACTIVATE_DECREMENT) {
             settings->spellEffectSpeed++;
             if (settings->spellEffectSpeed > MAX_SPELL_EFFECT_SPEED)
@@ -1403,28 +1497,16 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
                 settings->spellEffectSpeed = MAX_SPELL_EFFECT_SPEED;
         }
         break;
-    case 7:
-        mode = INTRO_CONFIG_MINOR_OPTIONS;
-        minorOptions = menuReset(minorOptions);
-        break;
-    case 8:
-        mode = INTRO_CONFIG_MAJOR_OPTIONS;
-        majorOptions = menuReset(majorOptions);
-        break;
     case 0xFE:        
-        settingsWrite();
-        musicIntro();
-        
-        /* re-initialize keyboard */
-        eventKeyboardSetKeyRepeat(settings->keydelay, settings->keyinterval);            
-        
-        /* re-initialize events */
-        eventHandlerResetTimerCallbacks();            
+        settingsWrite();        
     
-        mode = INTRO_CONFIG_GAMEPLAY;        
+        /* re-initialize events */
+        eventHandlerResetTimerCallbacks();
+        
+        mode = INTRO_CONFIG_ADVANCED;
         break;
-    case 0xFF:        
-        mode = INTRO_CONFIG_GAMEPLAY;
+    case 0xFF:
+        mode = INTRO_CONFIG_ADVANCED;
         break;
     default: break;
     }
@@ -1443,8 +1525,7 @@ void introMinorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         settings->minorEnhancementsOptions.c64chestTraps = settings->minorEnhancementsOptions.c64chestTraps ? 0 : 1;
         break;
     case 0xFE:        
-        settingsWrite();
-        musicIntro();
+        settingsWrite();        
     
         mode = INTRO_CONFIG_ADVANCED;        
         break;
@@ -1464,8 +1545,7 @@ void introMajorOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         settings->majorEnhancementsOptions.u5combat = settings->majorEnhancementsOptions.u5combat ? 0 : 1;
         break;
     case 0xFE:        
-        settingsWrite();
-        musicIntro();
+        settingsWrite();        
     
         mode = INTRO_CONFIG_ADVANCED;        
         break;
