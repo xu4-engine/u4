@@ -555,18 +555,19 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
     cnv->state = CONV_TALK;
 
     if (tolower(answer[0]) == 'y') {
-        reply = strdup("\n\nHe says: That is good.\n");
+        reply = strdup("Y\n\nHe says: That is good.\n");
     }
 
-    else if (tolower(answer[0]) == 'n') {        
-        reply = strdup("\n\nHe says: Let me heal thy wounds!\n");
+    else if (tolower(answer[0]) == 'n') {       
+        
+        reply = strdup("N\n\nHe says: Let me heal thy wounds!\n");
         for (i = 0; i < c->saveGame->members; i++) {
             playerHeal(c->saveGame, HT_CURE, i);        // cure the party
             playerHeal(c->saveGame, HT_FULLHEAL, i);    // heal the party
         }        
         (*spellCallback)(-1, -1); // Default spell effect
 
-        statsUpdate();
+        statsUpdate();        
     }
 
     else

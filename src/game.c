@@ -1348,7 +1348,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
         /* switch all the guards to attack mode */
         for (temp = c->location->map->objects; temp; temp = temp->next) {            
             m = monsterForTile(temp->tile);
-            if (m && (m->id == GUARD_ID))
+            if (m && (m->id == GUARD_ID || m->id == LORDBRITISH_ID))
                 temp->movement_behavior = MOVEMENT_ATTACK_AVATAR;
         }       
     }
