@@ -14,6 +14,7 @@
 #include "event.h"
 #include "map.h"
 #include "person.h"
+#include "game.h"
 #include "intro.h"
 #include "context.h"
 #include "savegame.h"
@@ -46,8 +47,10 @@ int main(int argc, char *argv[]) {
 
     /* do the intro */
     introUpdateScreen();
+    eventHandlerAddTimerCallback(&introTimer);
     eventHandlerPushKeyHandler(&introKeyHandler);
     eventHandlerMain();
+    eventHandlerRemoveTimerCallback(&introTimer);
     eventHandlerPopKeyHandler();
 
     c = (Context *) malloc(sizeof(Context));
@@ -85,9 +88,11 @@ int main(int argc, char *argv[]) {
     screenMessage("\020");
     screenForceRedraw();
 
-    eventHandlerAddTimerCallback(&eventTimer);
-    eventHandlerPushKeyHandler(&keyHandlerNormal);
+    eventHandlerAddTimerCallback(&gameTimer);
+    eventHandlerPushKeyHandler(&gameBaseKeyHandler);
     eventHandlerMain();
+    eventHandlerRemoveTimerCallback(&gameTimer);
+    eventHandlerPopKeyHandler();
 
     return 0;
 }
