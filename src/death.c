@@ -113,6 +113,7 @@ void deathRevive() {
     c->saveGame->dngy = REVIVE_WORLD_Y;
     c->aura = AURA_NONE;
     c->auraDuration = 0;
+    c->horseSpeed = 0;
     gameSetViewMode(VIEW_NORMAL);
     musicPlay();
 
