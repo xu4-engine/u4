@@ -27,7 +27,8 @@ public:
     int getshort();
 };
 
-int u4isUpgradeInstalled(void);
+bool u4isUpgradeAvailable();
+bool u4isUpgradeInstalled();
 U4FILE *u4fopen(const std::string &fname);
 U4FILE *u4fopen_stdio(const std::string &fname);
 void u4fclose(U4FILE *f);
@@ -48,7 +49,5 @@ std::string u4upgrade_translate_filename(const std::string &fname);
 
 extern int u4zipExists;
 extern int u4upgradeZipExists;
-extern int u4upgradeExists;
-extern int u4upgradeInstalled;
 
 #endif

@@ -55,8 +55,6 @@ extern bool verbose;
 /* these are for figuring out where to find files */
 int u4zipExists = 0;
 int u4upgradeZipExists = 0;
-int u4upgradeExists = 0;
-int u4upgradeInstalled = 0;
 
 /* the possible paths where u4 for DOS can be installed */
 static const char * const paths[] = {
@@ -114,13 +112,26 @@ static const char * const graphics_paths[] = {
 
 
 /**
+ * Returns true if the upgrade is present.
+ */
+bool u4isUpgradeAvailable() {
+    bool avail = false;
+    U4FILE *pal;
+    if ((pal = u4fopen("u4vga.pal")) != NULL) {
+        avail = true;
+        u4fclose(pal);
+    }
+    return avail;
+}
+
+/**
  * Returns true if the upgrade is not only present, but is installed
  * (switch.bat or setup.bat has been run)
  */
-int u4isUpgradeInstalled(void) {
+bool u4isUpgradeInstalled() {
     U4FILE *u4f = NULL;
     long int filelength;
-    int result = 0;
+    bool result = false;
 
     /* FIXME: Is there a better way to determine this? */
     u4f = u4fopen("ega.drv");
@@ -131,11 +142,11 @@ int u4isUpgradeInstalled(void) {
 
         /* see if (ega.drv > 5k).  If so, the upgrade is installed */
         if (filelength > (5 * 1024))
-            result = 1;
+            result = true;
     }
 
     if (verbose)
-        printf("u4isUpgradeInstalled %d\n", result);
+        printf("u4isUpgradeInstalled %d\n", (int) result);
 
     return result;
 }
