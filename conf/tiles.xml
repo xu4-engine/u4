@@ -9,14 +9,14 @@
     <tile speed="vslow"/> <!-- brush -->
     <tile speed="vslow" opaque="true"/> <!-- forest -->
     <tile speed="vvslow"/> <!-- hills -->
-    <tile cantwalkon="all" opaque="true" unflyable="true"/> <!-- mountains -->
+    <tile cantwalkon="all" opaque="true" unflyable="true" monsterunwalkable="true"/> <!-- mountains -->
     <tile/> <!-- dungeon -->
     <tile/> <!-- city -->
     <tile/> <!-- castle -->
     <tile/> <!-- town -->
-    <tile cantwalkon="all"/> <!-- lcb1 -->
+    <tile cantwalkon="all" monsterunwalkable="true"/> <!-- lcb1 -->
     <tile cantwalkon="south" cantwalkoff="north"/> <!-- lcb2 -->
-    <tile cantwalkon="all"/> <!-- lcb3 -->
+    <tile cantwalkon="all" monsterunwalkable="true"/> <!-- lcb3 -->
     <tile ship="true" monsterunwalkable="true"/> <!-- west ship -->
     <tile ship="true" monsterunwalkable="true"/> <!-- north ship -->
     <tile ship="true" monsterunwalkable="true"/> <!-- east ship -->
@@ -61,7 +61,7 @@
     <tile cantwalkon="all" opaque="true"/> <!-- stonewall -->
     <tile cantwalkon="all" lockeddoor="true"/> <!-- ldoor -->
     <tile cantwalkon="all" door="true"/> <!-- door -->
-    <tile monsterunwalkable="true" chest="true"/> <!-- chest -->
+    <tile chest="true"/> <!-- chest -->
     <tile cantwalkon="all"/> <!-- ankh -->
     <tile/> <!-- brickfloor -->
     <tile/> <!-- woodfloor -->
