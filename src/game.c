@@ -339,6 +339,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         tileset_info = _dng_ttype_info;
         break;
     case MAPTYPE_COMBAT:
+        x = y = -1; /* set these to -1 just to be safe; we don't need them */
         context = CTX_COMBAT;
         viewMode = VIEW_NORMAL;
         finishTurn = &combatFinishTurn;

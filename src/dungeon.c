@@ -238,7 +238,9 @@ int dungeonHandleTrap(TrapType trap) {
         c->saveGame->torchduration = 0;
         break;
     case TRAP_FALLING_ROCK:
+        /* FIXME: implement */
     case TRAP_PIT:
+        /* FIXME: implement */
     default: break;
     }
 
