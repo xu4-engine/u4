@@ -309,7 +309,7 @@ int combatAttackAtCoord(int x, int y) {
             screenMessage("%s Killed!\nExp. %d\n", m->name, xp);
             c->saveGame->players[focus].xp += xp;
             if (monsterIsEvil(m))
-                gameLostEighth(playerAdjustKarma(c->saveGame, KA_KILLED_EVIL));
+                playerAdjustKarma(c->saveGame, KA_KILLED_EVIL);
             mapRemoveObject(c->map, monsters[monster]);
             monsters[monster] = NULL;
             break;

@@ -128,18 +128,18 @@ int shrineHandleMantra(const char *message) {
     screenMessage("\n");
 
     if (strcasecmp(mantraBuffer, shrine->mantra) != 0) {
-        gameLostEighth(playerAdjustKarma(c->saveGame, KA_BAD_MANTRA));
+        playerAdjustKarma(c->saveGame, KA_BAD_MANTRA);
         screenMessage("Thou art not able to focus thy thoughts with that Mantra!\n");
         shrineEject();
     }
     else if (--cycles > 0) {
         completedCycles++;
-        gameLostEighth(playerAdjustKarma(c->saveGame, KA_MEDITATION));
+        playerAdjustKarma(c->saveGame, KA_MEDITATION);
         shrineMeditationCycle();
     }
     else {
         completedCycles++;
-        gameLostEighth(playerAdjustKarma(c->saveGame, KA_MEDITATION));
+        playerAdjustKarma(c->saveGame, KA_MEDITATION);
 
         if (completedCycles == 3 &&
             playerAttemptElevation(c->saveGame, shrine->virtue)) {
