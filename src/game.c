@@ -427,7 +427,6 @@ void gameSpellEffect(unsigned int spell, int player) {
 
 void gameCastSpell(unsigned int spell, int caster, int param) {
     SpellCastError spellError;
-    int i;
     const char *msg = NULL;    
 
     if (!spellCast(spell, caster, param, &spellError, 1)) {        
@@ -1852,7 +1851,8 @@ int peerCityHandleChoice(char choice) {
  * NPC is present at that point, zero is returned.
  */
 int talkAtCoord(int x, int y, int distance, void *data) {
-    const Person *talker;    
+    const Person *talker;
+    extern int personIsVendor(const Person *person);
 
     if (x == -1 && y == -1) {
         screenMessage("Funny, no\nresponse!\n");

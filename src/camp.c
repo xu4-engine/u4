@@ -153,8 +153,6 @@ int campHeal(void) {
 }
 
 void innBegin(void) {
-    int i;
-
     /* first, show the avatar before sleeping */
     gameUpdateScreen();
     eventHandlerSleep(500);
