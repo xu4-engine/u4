@@ -64,6 +64,7 @@ void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned c
 void combatInitCamping(void);
 void combatInitDungeonRoom(int room, Direction from);
 void combatBegin();
+int combatAddMonster(const struct _Monster *monster, int x, int y, int z);
 void combatFillMonsterTable(const struct _Monster *monster);
 int combatSetActivePlayer(int player);
 int combatPutPlayerToSleep(int player);

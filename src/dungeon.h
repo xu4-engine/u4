@@ -46,6 +46,7 @@ typedef struct _Dungeon {
     int n_rooms;
     struct _Map *room;
     struct _DngRoom *rooms;
+    struct _DngRoom *currentRoom;
     unsigned char party_startx[8];
     unsigned char party_starty[8];
 } Dungeon;

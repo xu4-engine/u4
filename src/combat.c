@@ -255,6 +255,27 @@ int combatPutPlayerToSleep(int player) {
     return 0;
 }
 
+int combatAddMonster(const Monster *m, int x, int y, int z) {
+    int i;
+    MonsterCombatInfo *monsters = combatInfo.monsters;
+
+    if (m != NULL) {
+        for (i = 0; i < AREA_MONSTERS; i++) {
+            /* find a free spot to place the monster */
+            if (monsters[i].obj == NULL) {
+                /* place the monster! */
+                monsters[i].obj = mapAddMonsterObject(c->location->map, m, x, y, z);
+                monsters[i].hp = monsterGetInitialHp(monsters[i].obj->monster);
+                monsters[i].status = STAT_GOOD;
+
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
 /**
  * Fills the combat monster table with the monsters that the party will be facing.
  * The monster table only contains *which* monsters will be encountered and
@@ -325,21 +346,15 @@ void combatPlacePartyMembers(void) {
  * Places monsters on the map from the monster table and from monsterStart_x and monsterStart_y
  */
 void combatPlaceMonsters(void) {
-    int i;
-    MonsterCombatInfo *monsters = combatInfo.monsters;
+    int i;    
 
     for (i = 0; i < AREA_MONSTERS; i++) {
         const Monster *m = combatInfo.monsterTable[i];
         /* make sure there's a monster in this position in the monster table */
-        if (m != NULL) {
-            /* place the monster! */
-            monsters[i].obj = mapAddMonsterObject(c->location->map, m,
-                (int)combatInfo.monsterStartCoords[i].x,
-                (int)combatInfo.monsterStartCoords[i].y,
-                c->location->z);
-            monsters[i].hp = monsterGetInitialHp(monsters[i].obj->monster);
-            monsters[i].status = STAT_GOOD;
-        }
+        combatAddMonster(m, 
+            (int)combatInfo.monsterStartCoords[i].x,
+            (int)combatInfo.monsterStartCoords[i].y,
+            c->location->z);        
     }    
 }
 
@@ -655,6 +670,38 @@ int combatBaseKeyHandler(int key, void *data) {
         }
         break;
 
+    case 'l':
+        if (settings->debug) {
+            screenMessage("\nLocation:\nx:%d\ny:%d\nz:%d\n", 
+                combatInfo.party[FOCUS].obj->x,
+                combatInfo.party[FOCUS].obj->y,
+                combatInfo.party[FOCUS].obj->z);
+            screenPrompt();
+            valid = 0;
+            break;            
+        }
+    
+    case 't':
+        if (settings->debug && combatInfo.dungeonRoom) {
+            Trigger *triggers = c->location->prev->map->dungeon->currentRoom->triggers;
+            int i;
+
+            screenMessage("Triggers!\n");
+
+            for (i = 0; i < 4; i++) {
+                screenMessage("%.1d)xy tile xy xy\n", i+1);
+                screenMessage("  %.1X%.1X  %.3d %.1X%.1X %.1X%.1X\n",
+                    triggers[i].x, triggers[i].y,
+                    triggers[i].tile,
+                    triggers[i].change_x1, triggers[i].change_y1,
+                    triggers[i].change_x2, triggers[i].change_y2);                
+            }
+            screenPrompt();
+            valid = 0;
+            
+            break;
+        }    
+
     case 'b':
     case 'e':
     case 'd':
@@ -664,14 +711,12 @@ int combatBaseKeyHandler(int key, void *data) {
     case 'i':
     case 'j':
     case 'k':
-    case 'l':
-    case 'n':
     case 'm':
+    case 'n':
     case 'o':
     case 'p':
     case 'q':
-    case 's':
-    case 't':
+    case 's':    
     case 'v':
     case 'w':
     case 'x':   
@@ -1409,16 +1454,25 @@ int movePartyMember(Direction dir, int userEvent) {
     /* handle dungeon room triggers */
     if (combatInfo.dungeonRoom) {
         int i;
-        Trigger *triggers = c->location->prev->map->dungeon->rooms[combatInfo.dungeonRoom & 0xF].triggers;
+        Trigger *triggers = c->location->prev->map->dungeon->currentRoom->triggers;            
 
         for (i = 0; i < 4; i++) {
+            const Monster *m = monsterForTile(triggers[i].tile);
+
+            /* FIXME: when a monster is created by a trigger, it can be created over and over and over...
+               how do we fix this? */
+
             /* see if we're on a trigger */
             if (triggers[i].x == newx && triggers[i].y == newy) {
                 /* change the tiles! */
-                if (triggers[i].change_x1 || triggers[i].change_y1)
-                    mapSetTileData(c->location->map, triggers[i].change_x1, triggers[i].change_y1, c->location->z, triggers[i].tile);                                    
-                if (triggers[i].change_x2 || triggers[i].change_y2) 
-                    mapSetTileData(c->location->map, triggers[i].change_x2, triggers[i].change_y2, c->location->z, triggers[i].tile);
+                if (triggers[i].change_x1 || triggers[i].change_y1) {                    
+                    /*if (m) combatAddMonster(m, triggers[i].change_x1, triggers[i].change_y1, c->location->z);
+                    else*/ mapSetTileData(c->location->map, triggers[i].change_x1, triggers[i].change_y1, c->location->z, triggers[i].tile);                
+                }
+                if (triggers[i].change_x2 || triggers[i].change_y2) {
+                    /*if (m) combatAddMonster(m, triggers[i].change_x2, triggers[i].change_y2, c->location->z);
+                    else*/ mapSetTileData(c->location->map, triggers[i].change_x2, triggers[i].change_y2, c->location->z, triggers[i].tile);
+                }
             }
         }
     }    

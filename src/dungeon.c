@@ -29,6 +29,8 @@ int dungeonLoadRoom(Dungeon *dng, int room) {
     dng->room->music = MUSIC_COMBAT;
     dng->room->type = MAPTYPE_COMBAT;
     dng->room->flags |= NO_LINE_OF_SIGHT;
+
+    dng->currentRoom = (dng->rooms + room);
     return 1;
 }
 
