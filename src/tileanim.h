@@ -24,7 +24,7 @@ public:
     static TileAnimTransform *create(const ConfigElement &config);    
     static RGBA *loadColorFromConf(const ConfigElement &conf);
 
-    virtual int draw(Tile *tile, MapTile *mapTile, int scale, int x, int y) = 0;
+    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y) = 0;
     virtual ~TileAnimTransform() {}
 
     bool isRandom() const { return random; }
@@ -40,7 +40,7 @@ private:
 class TileAnimInvertTransform : public TileAnimTransform {
 public:
     TileAnimInvertTransform(int x, int y, int w, int h);
-    virtual int draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
+    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
     
 private:
     int x, y, w, h;
@@ -54,7 +54,7 @@ private:
 class TileAnimPixelTransform : public TileAnimTransform {
 public:
     TileAnimPixelTransform(int x, int y);
-    virtual int draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
+    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
 
     int x, y;
     std::vector<RGBA *> colors;
@@ -66,7 +66,7 @@ public:
  */ 
 class TileAnimScrollTransform : public TileAnimTransform {
 public:    
-    virtual int draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);    
+    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);    
 };
 
 /**
@@ -75,7 +75,7 @@ public:
  */ 
 class TileAnimFrameTransform : public TileAnimTransform {
 public:
-    virtual int draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
+    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
 };
 
 /**
@@ -86,7 +86,7 @@ public:
 class TileAnimPixelColorTransform : public TileAnimTransform {
 public:
     TileAnimPixelColorTransform(int x, int y, int w, int h);
-    virtual int draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
+    virtual void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y);
 
     int x, y, w, h;
     RGBA *start, *end;
@@ -139,7 +139,7 @@ public:
     std::vector<TileAnimContext *> contexts;
 
     /* returns the frame to set the mapTile to (only relevent if persistent) */
-    int draw(Tile *tile, MapTile *mapTile, int scale, int x, int y); 
+    void draw(Tile *tile, MapTile *mapTile, int scale, int x, int y); 
     bool isControlling() const;
     bool isRandom() const;
 

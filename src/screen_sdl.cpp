@@ -1173,7 +1173,7 @@ void screenShowTile(MapTile *mapTile, int focus, int x, int y) {
          */    
         if (!anim->isControlling())
             tile->draw(x, y, mapTile->frame);
-        mapTile->frame = anim->draw(tile, mapTile, scale, x, y);
+        anim->draw(tile, mapTile, scale, x, y);
     }
     else tile->draw(x, y, mapTile->frame);
     
