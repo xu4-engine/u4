@@ -168,9 +168,9 @@ bool IntroController::init() {
         mainOptions.add(0, "Video Options", 13, 16, 'v');
         mainOptions.add(1, "Sound Options", 13, 17, 's');
         mainOptions.add(2, "Gameplay Options", 13, 18, 'g');
-        mainOptions.add(0xFF, "Main Menu", 13, 21, 'm');
-        mainOptions.addShortcutKey(0xFF, ' ');
-        mainOptions.setClosesMenu(0xFF);
+        mainOptions.add(CANCEL, "Main Menu", 13, 21, 'm');
+        mainOptions.addShortcutKey(CANCEL, ' ');
+        mainOptions.setClosesMenu(CANCEL);
     
         videoOptions.add(4, "Graphics", 6, 5, 'g');
         videoOptions.add(5, "Gem Layout", 6, 6);
@@ -178,49 +178,49 @@ bool IntroController::init() {
         videoOptions.add(1, "Mode", 6, 8, 'm');
         videoOptions.add(2, "Filter", 6, 9, 'f');
         videoOptions.add(3, "Screen Shaking", 6, 10, 'k');
-        videoOptions.add(0xFE, "Use These Settings", 6, 20, 'u');
-        videoOptions.add(0xFF, "Cancel", 6, 21, 'c');
-        videoOptions.addShortcutKey(0xFF, ' ');
-        videoOptions.setClosesMenu(0xFE);
-        videoOptions.setClosesMenu(0xFF);
+        videoOptions.add(USE_SETTINGS, "Use These Settings", 6, 20, 'u');
+        videoOptions.add(CANCEL, "Cancel", 6, 21, 'c');
+        videoOptions.addShortcutKey(CANCEL, ' ');
+        videoOptions.setClosesMenu(USE_SETTINGS);
+        videoOptions.setClosesMenu(CANCEL);
     
         soundOptions.add(0, "Volume", 11, 16, 'v');
         soundOptions.add(1, "Sound Effects", 11, 17, 's');
         soundOptions.add(2, "Fading", 11, 18, 'f');
-        soundOptions.add(0xFE, "Use These Settings", 11, 20, 'u');
-        soundOptions.add(0xFF, "Cancel", 11, 21, 'c');
-        soundOptions.addShortcutKey(0xFF, ' ');
-        soundOptions.setClosesMenu(0xFE);
-        soundOptions.setClosesMenu(0xFF);
+        soundOptions.add(USE_SETTINGS, "Use These Settings", 11, 20, 'u');
+        soundOptions.add(CANCEL, "Cancel", 11, 21, 'c');
+        soundOptions.addShortcutKey(CANCEL, ' ');
+        soundOptions.setClosesMenu(USE_SETTINGS);
+        soundOptions.setClosesMenu(CANCEL);
     
         gameplayOptions.add(0, "Game Enhancements", 6, 5, 'g');
         gameplayOptions.add(1, "Automatic Actions", 6, 7, 'a');
         gameplayOptions.add(3, "Battle Difficulty", 6, 10, 'b');
         gameplayOptions.add(4, "Mouse", 6, 12);
         gameplayOptions.add(2, "\010 Advanced Options", 6, 18, 'o');
-        gameplayOptions.add(0xFE, "Use These Settings", 6, 20, 'u');
-        gameplayOptions.add(0xFF, "Cancel", 6, 21, 'c');
-        gameplayOptions.addShortcutKey(0xFF, ' ');
-        gameplayOptions.setClosesMenu(0xFE);
-        gameplayOptions.setClosesMenu(0xFF);
+        gameplayOptions.add(USE_SETTINGS, "Use These Settings", 6, 20, 'u');
+        gameplayOptions.add(CANCEL, "Cancel", 6, 21, 'c');
+        gameplayOptions.addShortcutKey(CANCEL, ' ');
+        gameplayOptions.setClosesMenu(USE_SETTINGS);
+        gameplayOptions.setClosesMenu(CANCEL);
     
         advancedOptions.add(3, "\010 Speed Settings", 4, 5, 's');
         advancedOptions.add(2, "\010 Keyboard Settings", 4, 6, 'k');
         advancedOptions.add(1, "Debug Mode (Cheats)", 4, 8, 'd');        
         advancedOptions.add(0, "\010 Game Enhancement Options", 4, 18, 'g');    
-        advancedOptions.add(0xFE, "Use These Settings", 4, 20, 'u');
-        advancedOptions.add(0xFF, "Cancel", 4, 21, 'c');
-        advancedOptions.addShortcutKey(0xFF, ' ');
-        advancedOptions.setClosesMenu(0xFE);
-        advancedOptions.setClosesMenu(0xFF);
+        advancedOptions.add(USE_SETTINGS, "Use These Settings", 4, 20, 'u');
+        advancedOptions.add(CANCEL, "Cancel", 4, 21, 'c');
+        advancedOptions.addShortcutKey(CANCEL, ' ');
+        advancedOptions.setClosesMenu(USE_SETTINGS);
+        advancedOptions.setClosesMenu(CANCEL);
     
         keyboardOptions.add(1, "Repeat Delay (in msecs)", 5, 5);
         keyboardOptions.add(2, "Repeat Interval (in msecs)", 5, 6);
-        keyboardOptions.add(0xFE, "Use These Settings", 5, 20, 'u');
-        keyboardOptions.add(0xFF, "Cancel", 5, 21, 'c');
-        keyboardOptions.addShortcutKey(0xFF, ' ');
-        keyboardOptions.setClosesMenu(0xFE);
-        keyboardOptions.setClosesMenu(0xFF);
+        keyboardOptions.add(USE_SETTINGS, "Use These Settings", 5, 20, 'u');
+        keyboardOptions.add(CANCEL, "Cancel", 5, 21, 'c');
+        keyboardOptions.addShortcutKey(CANCEL, ' ');
+        keyboardOptions.setClosesMenu(USE_SETTINGS);
+        keyboardOptions.setClosesMenu(CANCEL);
     
         speedOptions.add(0, "Game Cycles Per Second", 4, 5);
         speedOptions.add(1, "Battle Speed", 4, 6);
@@ -229,11 +229,11 @@ bool IntroController::init() {
         speedOptions.add(4, "Inn rest length", 4, 9);
         speedOptions.add(5, "Shrine Meditation length", 4, 10);
         speedOptions.add(6, "Screen Shake Interval", 4, 11);
-        speedOptions.add(0xFE, "Use These Settings", 4, 20);
-        speedOptions.add(0xFF, "Cancel", 4, 21, 'c');
-        speedOptions.addShortcutKey(0xFF, ' ');
-        speedOptions.setClosesMenu(0xFE);
-        speedOptions.setClosesMenu(0xFF);
+        speedOptions.add(USE_SETTINGS, "Use These Settings", 4, 20);
+        speedOptions.add(CANCEL, "Cancel", 4, 21, 'c');
+        speedOptions.addShortcutKey(CANCEL, ' ');
+        speedOptions.setClosesMenu(USE_SETTINGS);
+        speedOptions.setClosesMenu(CANCEL);
     
         enhancementOptions.add(6, "Set Active Player", 7, 5);
         enhancementOptions.add(4, "Ultima V Spell Mixing", 7, 6);
@@ -242,11 +242,11 @@ bool IntroController::init() {
         enhancementOptions.add(2, "Fixed Chest Traps", 7, 9);
         enhancementOptions.add(5, "Smart 'Enter' Key", 7, 10);
         enhancementOptions.add(7, "Gem View Shows Objects", 7, 11);
-        enhancementOptions.add(0xFE, "Use These Settings", 7, 20, 'u');
-        enhancementOptions.add(0xFF, "Cancel", 7, 21, 'c');
-        enhancementOptions.addShortcutKey(0xFF, ' ');
-        enhancementOptions.setClosesMenu(0xFE);
-        enhancementOptions.setClosesMenu(0xFF);
+        enhancementOptions.add(USE_SETTINGS, "Use These Settings", 7, 20, 'u');
+        enhancementOptions.add(CANCEL, "Cancel", 7, 21, 'c');
+        enhancementOptions.addShortcutKey(CANCEL, ' ');
+        enhancementOptions.setClosesMenu(USE_SETTINGS);
+        enhancementOptions.setClosesMenu(CANCEL);
 
         menusLoaded = true;
     }
@@ -865,7 +865,7 @@ void IntroController::updateMainOptions(MenuEvent &event) {
             runMenu(&gameplayOptions, false);
             beastiesVisible = true;
             break;
-        case 0xFF:
+        case CANCEL:
         default:
             break;
         }
@@ -963,7 +963,7 @@ void IntroController::updateVideoOptions(MenuEvent &event) {
             }
             break;        
 
-        case 0xFE:
+        case USE_SETTINGS:
             /* save settings (if necessary) */
             if (settings != settingsChanged) {
                 settings.setData(settingsChanged);
@@ -977,7 +977,7 @@ void IntroController::updateVideoOptions(MenuEvent &event) {
                 runMenu(&mainOptions, true);            
             }        
             break;
-        case 0xFF:
+        case CANCEL:
             /* discard settings */
             settingsChanged = settings;
             break;
@@ -1011,7 +1011,7 @@ void IntroController::updateSoundOptions(MenuEvent &event) {
         case 2:
             settingsChanged.volumeFades = settingsChanged.volumeFades ? 0 : 1;
             break;
-        case 0xFE:
+        case USE_SETTINGS:
             /* save settings */
             settings.setData(settingsChanged);
             settings.write();
@@ -1019,7 +1019,7 @@ void IntroController::updateSoundOptions(MenuEvent &event) {
             musicMgr->intro();
 
             break;
-        case 0xFF:
+        case CANCEL:
             /* discard settings */
             settingsChanged = settings;
             break;
@@ -1067,12 +1067,12 @@ void IntroController::updateGameplayOptions(MenuEvent &event) {
         case 4:
             settingsChanged.mouseOptions.enabled = !settingsChanged.mouseOptions.enabled;
             break;
-        case 0xFE:
+        case USE_SETTINGS:
             /* save settings */
             settings.setData(settingsChanged);
             settings.write();
             break;
-        case 0xFF:
+        case CANCEL:
             /* discard settings */
             settingsChanged = settings;
             break;
@@ -1106,12 +1106,12 @@ void IntroController::updateAdvancedOptions(MenuEvent &event) {
         case 3:
             runMenu(&speedOptions, false);
             break;
-        case 0xFE:
+        case USE_SETTINGS:
             /* save settings */
             settings.setData(settingsChanged);
             settings.write();
             break;
-        case 0xFF:
+        case CANCEL:
             /* discard settings */
             settingsChanged = settings;
             break;
@@ -1151,12 +1151,12 @@ void IntroController::updateEnhancementOptions(MenuEvent &event) {
         case 7:
             settingsChanged.enhancementsOptions.peerShowsObjects = settingsChanged.enhancementsOptions.peerShowsObjects ? 0 : 1;
             break;
-        case 0xFE:        
+        case USE_SETTINGS:        
             /* save settings */
             settings.setData(settingsChanged);
             settings.write();        
             break;
-        case 0xFF:        
+        case CANCEL:        
             /* discard settings */
             settingsChanged = settings;
             break;
@@ -1204,7 +1204,7 @@ void IntroController::updateKeyboardOptions(MenuEvent &event) {
                     settingsChanged.keyinterval = MAX_KEY_INTERVAL;
             }
             break;
-        case 0xFE:
+        case USE_SETTINGS:
             /* save settings */
             settings.setData(settingsChanged);
             settings.write();
@@ -1213,7 +1213,7 @@ void IntroController::updateKeyboardOptions(MenuEvent &event) {
             KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
     
             break;
-        case 0xFF:
+        case CANCEL:
             /* discard settings */
             settingsChanged = settings;
             break;
@@ -1314,7 +1314,7 @@ void IntroController::updateSpeedOptions(MenuEvent &event) {
             }
             break;
 
-        case 0xFE:
+        case USE_SETTINGS:
             /* save settings */
             settings.setData(settingsChanged);
             settings.write();
@@ -1324,7 +1324,7 @@ void IntroController::updateSpeedOptions(MenuEvent &event) {
             eventHandler->getTimer()->reset(eventTimerGranularity);            
         
             break;
-        case 0xFF:
+        case CANCEL:
             /* discard settings */
             settingsChanged = settings;
             break;
@@ -1335,9 +1335,7 @@ void IntroController::updateSpeedOptions(MenuEvent &event) {
     char msg[16] = {0};
     screenDrawImage(BKGD_INTRO_EXTENDED);
     screenTextAt(2, 3, "Speed Settings:");           
-
-    sprintf(msg, "%d", settingsChanged.gameCyclesPerSecond);
-    screenTextAt(33 - strlen(msg), 5, msg);
+    screenTextAt(30, 5, "%3d", settingsChanged.gameCyclesPerSecond);
 
     sprintf(msg, "%d", settingsChanged.battleSpeed);
     screenTextAt(33 - strlen(msg), 6, msg);
@@ -1347,8 +1345,7 @@ void IntroController::updateSpeedOptions(MenuEvent &event) {
             static_cast<double>(settingsChanged.spellEffectSpeed) / 5);        
     screenTextAt(37 - strlen(msg), 7, msg);
 
-    sprintf(msg, "%d sec", settingsChanged.campTime);
-    screenTextAt(37 - strlen(msg), 8, msg);
+    screenTextAt(30, 8, "%3d sec", settingsChanged.campTime);
 
     sprintf(msg, "%d sec", settingsChanged.innTime);
     screenTextAt(37 - strlen(msg), 9, msg);
@@ -1390,8 +1387,9 @@ void IntroController::initQuestionTree() {
 /**
  * Updates the question tree with the given answer, and advances to
  * the next round.
+ * @return true if all questions have been answered, false otherwise
  */
-int IntroController::doQuestion(int answer) {
+bool IntroController::doQuestion(int answer) {
     int tmp;
     
     if (!answer)
@@ -1406,7 +1404,7 @@ int IntroController::doQuestion(int answer) {
     questionRound++;
 
     if (questionRound > 6)
-        return 1;
+        return true;
 
     if (questionTree[questionRound * 2] > questionTree[questionRound * 2 + 1]) {
         tmp = questionTree[questionRound * 2];
@@ -1414,7 +1412,7 @@ int IntroController::doQuestion(int answer) {
         questionTree[questionRound * 2 + 1] = tmp;
     }
 
-    return 0;
+    return false;
 }
 
 /**

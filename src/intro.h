@@ -5,6 +5,7 @@
 #ifndef INTRO_H
 #define INTRO_H
 
+#include <string>
 #include <vector>
 
 #include "controller.h"
@@ -14,6 +15,18 @@
 
 struct IntroObjectState;
 
+/**
+ * Controls the intro sequence, including the traditional animated map
+ * and "Journey Onward" menu, plus the xu4 specific configuration
+ * menu.
+ * @todo
+ * <ul>
+ *      <li>menus need id's instead of magic numbers</li>
+ *      <li>make initial menu a Menu too</li>
+ *      <li>get rid of mode and switch(mode) statements</li>
+ *      <li>get rid global intro instance -- should only need to be accessed from u4.cpp</li>
+ * </ul>
+ */
 class IntroController : public Controller, public Observer<MenuEvent &> {
 public:
     IntroController();
@@ -41,7 +54,7 @@ private:
     void drawBeasties();
 
     void initQuestionTree();
-    int doQuestion(int answer);
+    bool doQuestion(int answer);
     void initPlayers(SaveGame *saveGame);
     std::string getQuestion(int v1, int v2);
 
@@ -65,6 +78,11 @@ private:
         INTRO_ABOUT,                        /* about xu4 screen */
         INTRO_INIT,                         /* initializing a new game */
     } mode;
+
+    enum MenuConstants {
+        USE_SETTINGS = 0xFE,
+        CANCEL = 0xFF
+    };
 
     /* data loaded in from title.exe */
     unsigned char **introMap;
