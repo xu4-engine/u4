@@ -32,7 +32,7 @@ class MenuItem {
     friend class Menu;
 
 public:
-    MenuItem(class Menu *m, MenuId id, string text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn);
+    MenuItem(class Menu *m, MenuId id, string text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn, int shortcutKey = 0);
 
     void notifyOfChange(string arg);
 
@@ -46,6 +46,8 @@ public:
     bool isVisible() const;
     ActivateMenuItem getActivateFunc() const;
     ActivateAction getActivateAction() const;
+    int getShortcutKey() const;
+    bool getClosesMenu() const;
 
     void setId(MenuId id);
     void setX(int xpos);
@@ -56,6 +58,8 @@ public:
     void setVisible(bool v = true);
     void setActivateFunc(ActivateMenuItem ami);
     void setActivateAction(ActivateAction aa);
+    void setShortcutKey(int shortcutKey);
+    void setClosesMenu(bool closesMenu);
     
 private:
     class Menu* menu;
@@ -67,6 +71,8 @@ private:
     bool visible;    
     ActivateMenuItem activateMenuItem;
     ActivateAction activateOn;
+    int shortcutKey;
+    bool closesMenu;
 };
 
 /**
@@ -78,9 +84,10 @@ public:
     typedef std::list<MenuItem> MenuItemList;
 
 public:
-    Menu() {}
+    Menu() : closed(false) {}
 
-    void                    add(MenuId id, string text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn);
+    void                    add(MenuId id, string text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn, int shortcutKey = 0);
+    void                    setClosesMenu(MenuId id);
     MenuItemList::iterator  getCurrent();
     void                    setCurrent(MenuItemList::iterator i);
     void                    setCurrent(MenuId id);
@@ -96,11 +103,15 @@ public:
     MenuItemList::iterator  getById(MenuId id);
     MenuItem*               getItemById(MenuId id);
     void                    activateItem(MenuId id, ActivateAction action);
+    bool                    activateItemByShortcut(int key, ActivateAction action);
+    bool                    getClosed() const;
+    void                    setClosed(bool closed);
 
 private:    
     MenuItemList items;
     MenuItemList::iterator current;
     MenuItemList::iterator selected;
+    bool closed;
 };
 
 #endif

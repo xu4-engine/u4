@@ -12,17 +12,19 @@
 /**
  * MenuItem class
  */
-MenuItem::MenuItem(class Menu *m, MenuId i, string t, short xpos, short ypos, ActivateMenuItem af, ActivateAction ao) :
+MenuItem::MenuItem(class Menu *m, MenuId i, string t, short xpos, short ypos, ActivateMenuItem af, ActivateAction ao, int sc) :
     menu(m),
     id(i),
     x(xpos),
     y(ypos),
-    text(t),    
+    text(t),
     highlighted(false),
     selected(false),
     visible(true),
     activateMenuItem(af),
-    activateOn(ao)
+    activateOn(ao),
+    shortcutKey(sc),
+    closesMenu(false)
 {    
 }
 
@@ -45,6 +47,8 @@ bool MenuItem::isSelected() const                   { return selected; }
 bool MenuItem::isVisible() const                    { return visible; }
 ActivateMenuItem MenuItem::getActivateFunc() const  { return activateMenuItem; }
 ActivateAction MenuItem::getActivateAction() const  { return activateOn; }
+int MenuItem::getShortcutKey() const                { return shortcutKey; }
+bool MenuItem::getClosesMenu() const                { return closesMenu; }
 
 void MenuItem::setId(MenuId i) {
     if (id != i) {
@@ -107,15 +111,38 @@ void MenuItem::setActivateAction(ActivateAction aa) {
     }
 }
 
+void MenuItem::setShortcutKey(int sc) {
+    if (sc != shortcutKey) {
+        shortcutKey = sc;
+        notifyOfChange("MenuItem::setShortcutKey");
+    }
+}
+
+void MenuItem::setClosesMenu(bool closesMenu) {
+    if (closesMenu != this->closesMenu) {
+        this->closesMenu = closesMenu;
+        notifyOfChange("MenuItem::setClosesMenu");
+    }
+}
+
 /**
  * Adds an item to the menu list and returns the menu
  */
-void Menu::add(MenuId id, string text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn) {
-    MenuItem menuItem(this, id, text, x, y, activate, activateOn);
+void Menu::add(MenuId id, string text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn, int sc) {
+    MenuItem menuItem(this, id, text, x, y, activate, activateOn, sc);
 
     items.push_back(menuItem);
     setChanged();
     notifyObservers("Menu::add");
+}
+
+void Menu::setClosesMenu(MenuId id) {
+    for (MenuItemList::iterator i = items.begin(); i != items.end(); i++) {
+        if (i->getId() == id) {
+            i->setClosesMenu(true);
+            break;
+        }
+    }
 }
 
 /**
@@ -265,6 +292,8 @@ Menu::MenuItemList::iterator Menu::begin_visible() {
  *      - selects the first visible menu item
  */
 void Menu::reset(bool highlightFirst) {
+    closed = false;
+
     /* get the first visible menu item */    
     selected = begin_visible();
     
@@ -329,6 +358,38 @@ void Menu::activateItem(MenuId id, ActivateAction action) {
     if ((mi->activateOn & action) && mi->activateMenuItem)
         (*mi->activateMenuItem)(mi, action);    
 
+    if (mi->getClosesMenu())
+        setClosed(true);
+
     setChanged();
     notifyObservers("Menu::activateItem");
+
+}
+
+/**
+ * Activates a menu item by it's shortcut key.  True is returned if a
+ * menu item get activated, false otherwise.
+ */
+bool Menu::activateItemByShortcut(int key, ActivateAction action) {
+    for (MenuItemList::iterator i = items.begin(); i != items.end(); i++) {
+        if (i->getShortcutKey() == key) {
+            activateItem(i->getId(), action);
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Returns true if the menu has been closed.
+ */
+bool Menu::getClosed() const {
+    return closed;
+}
+
+/**
+ * Update whether the menu has been closed.
+ */
+void Menu::setClosed(bool closed) {
+    this->closed = closed;
 }
