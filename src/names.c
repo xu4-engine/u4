@@ -57,6 +57,13 @@ const char *getVirtueName(Virtue virtue) {
         return "???";
 }
 
+const char *getBaseVirtueName(BaseVirtue virtue) {
+    if (virtue == VIRT_TRUTH)           return "Truth";
+    else if (virtue == VIRT_LOVE)       return "Love";
+    else if (virtue == VIRT_COURAGE)    return "Courage";
+    else return "???";
+}
+
 const char *getVirtueAdjective(Virtue virtue) {
     static const char * const virtueAdjectives[] = {
         "honest",

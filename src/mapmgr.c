@@ -284,6 +284,14 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
         portal->trigger_action = ACTION_KLIMB;
     else if (strcmp(prop, "descend") == 0)
         portal->trigger_action = ACTION_DESCEND;
+    else if (strcmp(prop, "exit_north") == 0)
+        portal->trigger_action = ACTION_EXIT_NORTH;
+    else if (strcmp(prop, "exit_east") == 0)
+        portal->trigger_action = ACTION_EXIT_EAST;
+    else if (strcmp(prop, "exit_south") == 0)
+        portal->trigger_action = ACTION_EXIT_SOUTH;
+    else if (strcmp(prop, "exit_west") == 0)
+        portal->trigger_action = ACTION_EXIT_WEST;
     else
         errorFatal("unknown trigger_action: %s", prop);
     xmlFree(prop);

@@ -367,9 +367,6 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
 int gameExitToParentMap(Context *ct) {
 
     if (ct->location->prev != NULL) {
-        if (ct->location->context == CTX_DUNGEON)
-            c->saveGame->torchduration = 0;
-
         /* Create the balloon for Hythloth */
         if (ct->location->map->id == MAP_HYTHLOTH)
             gameCreateBalloon(ct->location->prev->map);            
@@ -449,6 +446,10 @@ void gameFinishTurn() {
             screenMessage("It's Dark!\n");
         else c->saveGame->torchduration--;
     }
+    /* since torchduration and balloon state share the same variable, make sure our torch
+       isn't still lit (screwing all sorts of things up) */
+    else if (c->transportContext != TRANSPORT_BALLOON && c->saveGame->balloonstate)
+        c->saveGame->balloonstate = 0;
 
     /* draw a prompt */
     screenPrompt();
@@ -828,7 +829,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'i':
         screenMessage("Ignite torch!\n");
-        if (c->location->context == CTX_DUNGEON)
+        if (c->location->context == CTX_DUNGEON)            
             c->saveGame->torchduration += 100;
         else screenMessage("Not here!\n");
         break;

@@ -23,6 +23,7 @@
 #include "names.h"
 #include "object.h"
 #include "player.h"
+#include "portal.h"
 #include "screen.h"
 #include "settings.h"
 #include "spell.h"
@@ -63,6 +64,7 @@ void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned c
     combatInfo.camping = 0;
     combatInfo.winOrLose = 1;
     combatInfo.dungeonRoom = 0;    
+    combatInfo.altarRoom = 0;
 
     /* new map for combat */
     if (mapid > 0) {
@@ -133,8 +135,9 @@ void combatInitCamping(void) {
 void combatInitDungeonRoom(int room, Direction from) {
     int offset, i;    
     combatInit(NULL, NULL, 0, 0);    
-    
-    if (c->location->context & CTX_DUNGEON) {
+
+    ASSERT(c->location->context & CTX_DUNGEON, "Error: called combatInitDungeonRoom from non-dungeon context");        
+    {
         Dungeon *dng = c->location->map->dungeon;
         unsigned char 
             *party_x = &dng->rooms[room].party_north_start_x[0], 
@@ -146,6 +149,16 @@ void combatInitDungeonRoom(int room, Direction from) {
         combatInfo.winOrLose = 0;
         combatInfo.dungeonRoom = 0xD0 | room;
         combatInfo.exitDir = DIR_NONE;
+        
+        /* FIXME: this probably isn't right way to see if you're entering an altar room... but maybe it is */
+        if ((c->location->map->id != MAP_ABYSS) && (room == 0xF)) {            
+            /* figure out which dungeon room they're entering */
+            if (c->location->x == 3)
+                combatInfo.altarRoom = VIRT_LOVE;
+            else if (c->location->x <= 2)
+                combatInfo.altarRoom = VIRT_TRUTH;
+            else combatInfo.altarRoom = VIRT_COURAGE;
+        }        
         
         /* load in monsters and monster start coordinates */
         for (i = 0; i < AREA_MONSTERS; i++) {
@@ -180,6 +193,7 @@ void combatBegin() {
     PartyCombatInfo *party          = combatInfo.party;
     MonsterCombatInfo *monsters     = combatInfo.monsters;
     SaveGamePlayerRecord* players   = c->saveGame->players;
+    int isAbyss                     = c->location->map->id == MAP_ABYSS;
     
     /* set the new combat map if a new map was provided */
     if (combatInfo.newCombatMap != NULL) {
@@ -198,7 +212,11 @@ void combatBegin() {
     if (combatInfo.camping) {
         for (i = 0; i < c->saveGame->members; i++)
             combatPutPlayerToSleep(i);        
-    }    
+    }
+
+    /* if we entered an altar room, show the name */
+    if (combatInfo.altarRoom)
+        screenMessage("\nThe Altar Room of %s\n", getBaseVirtueName(combatInfo.altarRoom));    
 
     /* Use the combat key handler */
     eventHandlerPushKeyHandler(&combatBaseKeyHandler);
@@ -213,7 +231,7 @@ void combatBegin() {
         musicPlay();
     }
 
-    /* Set focus to the first activate party member, if there is one */ 
+    /* Set focus to the first active party member, if there is one */ 
     for (i = 0; i < AREA_PLAYERS; i++) {
         if (combatSetActivePlayer(i)) {
             partyIsReadyToFight = 1;
@@ -274,7 +292,6 @@ int combatAddMonster(const Monster *m, int x, int y, int z) {
             }
         }
     }
-
     return 0;
 }
 
@@ -352,11 +369,12 @@ void combatPlaceMonsters(void) {
 
     for (i = 0; i < AREA_MONSTERS; i++) {
         const Monster *m = combatInfo.monsterTable[i];
-        /* make sure there's a monster in this position in the monster table */
-        combatAddMonster(m, 
-            (int)combatInfo.monsterStartCoords[i].x,
-            (int)combatInfo.monsterStartCoords[i].y,
-            c->location->z);        
+        if (m) {
+            combatAddMonster(m, 
+                (int)combatInfo.monsterStartCoords[i].x,
+                (int)combatInfo.monsterStartCoords[i].y,
+                c->location->z);        
+        }
     }    
 }
 
@@ -481,6 +499,7 @@ void combatFinishTurn() {
             /* put a sleeping person in place of the player,
                or restore an awakened member to their original state */            
             if (party[FOCUS].obj) {
+                /* FIXME: move this to its own function, probably combatTryToWakeUp() or something similar */
                 /* wake up! */
                 if (party[FOCUS].player->status == STAT_SLEEPING && (rand() % 8 == 0)) {
                     party[FOCUS].player->status = party[FOCUS].status;                    
@@ -603,7 +622,7 @@ int combatBaseKeyHandler(int key, void *data) {
         
         eventHandlerPushKeyHandlerData(&combatChooseWeaponDir, info);        
 
-        screenMessage("Dir: ");        
+        screenMessage("Dir: ");
         break;
 
     case 'c':
@@ -614,7 +633,7 @@ int combatBaseKeyHandler(int key, void *data) {
     case 'g':
         screenMessage("Get Chest!\n");
         gameGetChest(FOCUS);
-        valid = 0;
+        valid = 0; /* don't end turn here because gameGetChest ends the turn for you */
         break;
 
     case 'l':
@@ -1122,9 +1141,26 @@ void combatEnd(int adjustKarma) {
 
     /* exiting a dungeon room */
     if (combatInfo.dungeonRoom) {
-        screenMessage("Leave Room!\n\n");
+        screenMessage("Leave Room!\n");
+        if (combatInfo.altarRoom) {            
+            PortalTriggerAction action = ACTION_NONE;
+
+            /* when exiting altar rooms, you exit to other dungeons.  Here it goes... */
+            switch(combatInfo.exitDir) {
+            case DIR_NORTH: action = ACTION_EXIT_NORTH; break;
+            case DIR_EAST:  action = ACTION_EXIT_EAST; break;
+            case DIR_SOUTH: action = ACTION_EXIT_SOUTH; break;
+            case DIR_WEST:  action = ACTION_EXIT_WEST; break;
+            default: ASSERT(0, "Invalid exit dir %d", combatInfo.exitDir); break;
+            }
+
+            if (action != ACTION_NONE)
+                usePortalAt(c->location, c->location->x, c->location->y, c->location->z, action);
+        }
+        else screenMessage("\n");
+
         c->saveGame->orientation = combatInfo.exitDir;  /* face the direction exiting the room */
-        (*c->location->move)(DIR_NORTH, 0);             /* advance 1 space outside of the room */
+        (*c->location->move)(DIR_NORTH, 0);             /* advance 1 space outside of the room */        
     }
 
     /* remove the monster */

@@ -77,6 +77,12 @@ typedef enum {
 } Virtue;
 
 typedef enum {
+    VIRT_TRUTH      = 0x01,
+    VIRT_LOVE       = 0x02,
+    VIRT_COURAGE    = 0x04
+} BaseVirtue;
+
+typedef enum {
     REAG_ASH,
     REAG_GINSENG,
     REAG_GARLIC,

@@ -49,7 +49,7 @@
                  startx           NMTOKEN  #REQUIRED
                  starty           NMTOKEN  #REQUIRED
                  startlevel       NMTOKEN  #REQUIRED
-                 action           ( descend | enter | klimb ) #REQUIRED
+                 action           ( descend | enter | klimb | exit_north | exit_east | exit_south | exit_west ) #REQUIRED
                  condition        ( shrine | abyss ) #IMPLIED
                  savelocation     %bool;   #REQUIRED
                  message          CDATA    #IMPLIED

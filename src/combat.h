@@ -50,6 +50,7 @@ typedef struct _CombatInfo {
     struct { unsigned char x, y; } monsterStartCoords[AREA_MONSTERS];
 
     unsigned char dungeonRoom;
+    unsigned char altarRoom;
     unsigned char camping;
     unsigned char placeParty;
     unsigned char placeMonsters;    

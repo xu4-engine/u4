@@ -16,6 +16,7 @@
 const char *getClassName(ClassType klass);
 const char *getReagentName(Reagent reagent);
 const char *getVirtueName(Virtue virtue);
+const char *getBaseVirtueName(BaseVirtue virtue);
 const char *getVirtueAdjective(Virtue virtue);
 const char *getStoneName(Virtue virtue);
 const char *getItemName(Item item);

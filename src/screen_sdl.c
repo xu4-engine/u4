@@ -59,7 +59,7 @@ int scale, forceEga, forceVga;
 ScreenScaler filterScaler;
 
 const struct {
-    const char *filename;
+    const char *filename, *filenameEga;
     int width, height;
     int hasVga;
     CompressionType comp;
@@ -68,47 +68,47 @@ const struct {
     int scaleOnLoad;
 } backgroundInfo[] = {
     /* main game borders */
-    { "start.ega",    320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "start.ega",    "start.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
 
     /* introduction screen images */
-    { "title.ega",    320, 200, 0, COMP_LZW, 1, 1, 0 },
-    { "title.ega",    320, 200, 0, COMP_LZW, 1, 1, 0 },
-    { "tree.ega",     320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "portal.ega",   320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "outside.ega",  320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "inside.ega",   320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "wagon.ega",    320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "gypsy.ega",    320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "abacus.ega",   320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "honcom.ega",   320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "valjus.ega",   320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "sachonor.ega", 320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "spirhum.ega",  320, 200, 0, COMP_LZW, 1, 1, 1 },
-    { "animate.ega",  320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "title.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, 0 },
+    { "title.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, 0 },
+    { "tree.ega",     NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "portal.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "outside.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "inside.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "wagon.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "gypsy.ega",    NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "abacus.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "honcom.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "valjus.ega",   NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "sachonor.ega", NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "spirhum.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
+    { "animate.ega",  NULL, 320, 200, 0, COMP_LZW, 1, 1, 1 },
 
     /* abyss vision images */
-    { "compassn.ega", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "courage.ega",  320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "honesty.ega",  320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "honor.ega",    320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "humility.ega", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "justice.ega",  320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "love.ega",     320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "sacrific.ega", 320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "spirit.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "truth.ega",    320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "valor.ega",    320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "compassn.ega", "compassn.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "courage.ega",  "courage.old",  320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "honesty.ega",  "honesty.old",  320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "honor.ega",    "honor.old",    320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "humility.ega", "humility.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "justice.ega",  "justice.old",  320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "love.ega",     "love.old",     320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "sacrific.ega", "sacrific.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "spirit.ega",   "spirit.old",   320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "truth.ega",    "truth.old",    320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "valor.ega",    "valor.old",    320, 200, 1, COMP_RLE, 1, 0, 1 },
 
     /* shrine vision images */
-    { "rune_0.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_1.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_2.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_3.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_4.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_5.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_6.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_7.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 },
-    { "rune_8.ega",   320, 200, 1, COMP_RLE, 1, 0, 1 }
+    { "rune_0.ega",   "rune_0.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "rune_1.ega",   "rune_1.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "rune_2.ega",   "rune_2.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "rune_3.ega",   "rune_3.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "rune_4.ega",   "rune_4.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "rune_5.ega",   "rune_5.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "rune_6.ega",   "rune_6.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "rune_7.ega",   "rune_7.old", 320, 200, 1, COMP_RLE, 1, 0, 1 },
+    { "rune_8.ega",   "rune_8.old", 320, 200, 1, COMP_RLE, 1, 0, 1 }
 };
 
 const struct {
@@ -375,7 +375,10 @@ int screenLoadBackground(BackgroundType bkgd) {
             break;
         }
 
-        file = u4fopen(backgroundInfo[egaBkgd].filename);
+        /* open the correct file for what we're trying to do */
+        file = backgroundInfo[egaBkgd].filenameEga ?
+            u4fopen(backgroundInfo[egaBkgd].filenameEga) : /* is there a different file for ega stuff? */
+            u4fopen(backgroundInfo[egaBkgd].filename);     /* no? then use the normal file */
 
         if (file) {
             ret = screenLoadImageEga(&unscaled,

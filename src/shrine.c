@@ -164,7 +164,7 @@ void shrineTimer(void *data) {
         eventHandlerRemoveTimerCallback(&shrineTimer);
         eventHandlerPopKeyHandler();
 
-        screenMessage("Mantra: ");
+        screenMessage("\nMantra: ");
 
         screenEnableCursor();
         screenShowCursor();
