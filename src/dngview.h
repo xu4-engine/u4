@@ -11,7 +11,8 @@ typedef enum {
     DNGGRAPHIC_LADDERUP,
     DNGGRAPHIC_LADDERDOWN,
     DNGGRAPHIC_LADDERUPDOWN,
-    DNGGRAPHIC_DOOR
+    DNGGRAPHIC_DOOR,
+    DNGGRAPHIC_TILE
 } DungeonGraphicType;
 
 unsigned char dungeonViewGetVisibleTile(int fwd, int side);

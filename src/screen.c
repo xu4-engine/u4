@@ -148,7 +148,11 @@ void screenUpdate(int showmap, int blackout) {
                     screenDungeonDrawWall(1, y, dungeonViewTileToGraphic(tile));
 
                     tile = dungeonViewGetVisibleTile(y, 0);
-                    screenDungeonDrawWall(0, y, dungeonViewTileToGraphic(tile));
+                    if (dungeonViewTileToGraphic(tile) == DNGGRAPHIC_TILE)
+                        screenDungeonDrawTile(y, tile);
+                    else
+                        screenDungeonDrawWall(0, y, dungeonViewTileToGraphic(tile));
+                        
                 }
             }
         }
@@ -201,7 +205,7 @@ void screenCycle() {
 }
 
 void screenUpdateCursor() {
-    int phase = screenCurrentCycle * 4 / SCR_CYCLE_MAX;
+    int phase = screenCurrentCycle * SCR_CYCLE_PER_SECOND / SCR_CYCLE_MAX;
 
     assert(phase >= 0 && phase < 4);
 

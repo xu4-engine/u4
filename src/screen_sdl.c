@@ -756,7 +756,7 @@ void screenShowTile(unsigned char tile, int focus, int x, int y) {
     int unscaled_x, unscaled_y;
 
     if (tileGetAnimationStyle(tile) == ANIM_SCROLL)
-        offset = screenCurrentCycle * scale;
+        offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale;
     else
         offset = 0;
 
@@ -841,7 +841,7 @@ void screenShowTile(unsigned char tile, int focus, int x, int y) {
     /*
      * finally draw the focus rectangle if the tile has the focus
      */
-    if (focus && (screenCurrentCycle % 2)) {
+    if (focus && ((screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2)) {
         /* left edge */
         dest.x = x * tiles->w + (BORDER_WIDTH * scale);
         dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
@@ -1047,6 +1047,23 @@ int screenDungeonLoadGraphic(int xoffset, int distance, DungeonGraphicType type)
     dngGraphic[index]->surface->flags |= SDL_SRCCOLORKEY;
     
     return 1;
+}
+
+void screenDungeonDrawTile(int distance, unsigned char tile) {
+    SDL_Rect src, dest;
+
+    /* FIXME: scale tile image */
+
+    src.x = 0;
+    src.y = tile * (tiles->h / N_TILES);
+    src.w = tiles->w;
+    src.h = tiles->h / N_TILES;
+    dest.x = 5 * tiles->w + (BORDER_WIDTH * scale);
+    dest.y = 5 * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
+    dest.w = tiles->w;
+    dest.h = tiles->h / N_TILES;
+
+    SDL_BlitSurface(tiles->surface, &src, screen, &dest);
 }
 
 void screenDungeonDrawWall(int xoffset, int distance, DungeonGraphicType type) {

@@ -46,6 +46,8 @@ typedef enum {
     BKGD_MAX
 } BackgroundType;
 
+#define SCR_CYCLE_PER_SECOND 4
+
 void screenInit(void);
 void screenDelete(void);
 void screenReInit(void);
@@ -95,6 +97,7 @@ void screenEnableCursor(void);
 void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);
 
+void screenDungeonDrawTile(int distance, unsigned char tile);
 void screenDungeonDrawWall(int xoffset, int distance, DungeonGraphicType type);
 
 extern int screenCurrentCycle;
