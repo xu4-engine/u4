@@ -2,6 +2,9 @@
  * $Id$
  */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "codex.h"
 
 #include "context.h"
