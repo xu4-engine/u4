@@ -14,6 +14,7 @@ typedef enum {
 typedef struct _Portal {
     unsigned short x, y, z;
     struct _Map *destination;
+    unsigned short startx, starty, startlevel;
     PortalTriggerAction trigger_action;
 } Portal;
 

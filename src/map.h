@@ -43,7 +43,6 @@ typedef struct _Map {
     const char *fname;
     MapType type;
     unsigned int width, height, levels;
-    unsigned int startx, starty, startlevel;
     MapBorderBehavior border_behavior;
     int n_portals;
     const struct _Portal *portals;
@@ -76,7 +75,7 @@ struct _Object *mapAddObject(Map *map, unsigned int tile, unsigned int prevtile,
 void mapRemoveObject(Map *map, struct _Object *obj);
 void mapRemovePerson(Map *map, const struct _Person *person);
 void mapClearObjects(Map *map);
-void mapMoveObjects(Map *map, int avatarx, int avatary, int z, void(*doAttack)(struct _Object *));
+struct _Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z);
 void mapAnimateObjects(Map *map);
 int mapNumberOfMonsters(const Map *map);
 int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned char transport);
