@@ -78,13 +78,16 @@ void gameSetViewMode(ViewMode newMode) {
 void gameUpdateScreen() {
     switch (viewMode) {
     case VIEW_NORMAL:
-        screenUpdate(1);
+        screenUpdate(1, 0);
         break;
     case VIEW_GEM:
         screenGemUpdate();
         break;
+    case VIEW_RUNE:
+        screenUpdate(0, 0);
+        break;
     case VIEW_DEAD:
-        screenUpdate(0);
+        screenUpdate(1, 1);
         break;
     default:
         assert(0);              /* shouldn't happen */
@@ -412,11 +415,16 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'h':
+        if (!mapIsWorldMap(c->map)) {
+            screenMessage("Hole up & Camp\nNot here!\n");
+            break;
+        }
+        if (c->saveGame->transport != AVATAR_TILE) {
+            screenMessage("Hole up & Camp\nOnly on foot!\n");
+            break;
+        }
         screenMessage("Hole up & Camp!\n");
-        if (mapIsWorldMap(c->map))
-            campBegin();
-        else 
-            screenMessage("Not here!\n");
+        campBegin();
         break;
 
     case 'i':
