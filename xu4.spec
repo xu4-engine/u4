@@ -1,15 +1,17 @@
-Summary: xu4 - Ultima IV Recreated
-Name: xu4
-Version: 0.8
-Release: 1
-URL: http://xu4.sourceforge.net/
-Source0: http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
-License: GPL
-Group: Amusements/Games
-Prefix: /usr
-BuildRequires: SDL-devel SDL_mixer-devel libxml2-devel zlib-devel
+Name:      xu4
+Version:   0.8
+Release:   1
+Epoch:     0
+Summary:   xu4 - Ultima IV Recreated
 
+Group:     Amusements/Games
+License:   GPL
+URL:       http://xu4.sourceforge.net/
+Source0:   http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Prefix:    /usr
+
+BuildRequires: SDL-devel SDL_mixer-devel libxml2-devel zlib-devel
 
 %description
 XU4 is a recreation of the classic computer game Ultima IV. The
@@ -46,6 +48,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/pixmaps/u4.png
 %{_datadir}/applications/u4.desktop
 %{_libdir}/u4/music/*.mid
+%{_libdir}/u4/sound/*.wav
 %{_libdir}/u4/dumpsavegame
 %{_libdir}/u4/lzwenc
 %{_libdir}/u4/lzwdec
@@ -60,6 +63,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/u4upgrad.zip
 
 %changelog
+* Tue Jan 27 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added sound files to files
+
 * Thu Jan 08 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - replaced ancient /etc/X11/applnk menu entry with more modern /usr/share/applications entry
 
