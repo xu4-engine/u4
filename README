@@ -1,3 +1,23 @@
+XU4
+===
+   
+   "Prepare yourself for a grand adventure: Ultima IV, sixteen times
+   larger than Ultima III, is a milestone in computer gaming.  Lord
+   British has produced a game to challenge, not only your physical
+   and mental skills, but the true fabric of your character.  The evil
+   triad of Mondain, Minax, and the hellspawn Exodus, have been
+   vanquished and peace reigns throughout the land of Britannia.  Evil
+   yet abounds, but in isolated pockets and in the hearts of men.  A
+   new age awaits the coming of one who can conquer evil on all
+   frontiers through the mastery of both magic and the use of force.
+   Daemons, dragons and long-dead wizards still plague the countryside
+   and must be destroyed.  The seeker on the path of the avatar will
+   faces hostile groups composed of mixed enemy types and will survive
+   such encounters only by strategic use of weapons and terrain.
+   Earthly victories over seemingly impossible odds lead to the final
+   conflict, where the ultimate challenge -- the self -- awaits..."
+     -- Back cover of Ultima IV box
+   
 XU4 is a recreation of the classic computer game Ultima IV. The
 purpose of the project is to make it easy and convenient to play on
 modern operating systems.  xu4 is primarily inspired by the much more
@@ -10,8 +30,17 @@ are looking for a game with modern gameplay and graphics, this is not
 it -- yet.  New features that improve the gameplay and keep with the
 spirit of the original game will be added.
 
+
 STATUS
 ------
+
+New in v0.05:
+ - background music!
+ - Hawkwind dialog
+ - weapons and armor vendors work (partially)
+ - new debug menu available with ctrl-c
+ - intro map is animated, plus other fixes in the intro sequence
+ - lots more minor bug fixes
 
 New in v0.04:
  - the initiate new game sequence and character creation mostly complete
@@ -46,14 +75,13 @@ v0.01 features:
  - unlocking and opening of doors
 
 To do, in no particular order:
- - sound, music
+ - sound
  - moongates
  - dungeons
  - line of sight (shouldn't be able to see through walls)
  - karma
  - monsters, combat
  - horses, ships, balloons
- - Hawkwind
  - spells
  - autoconf, automake
  - gem viewing
@@ -67,9 +95,10 @@ Some thoughts for possible improvements:
 COMPILING
 ---------
 
-Note that you need SDL and the SDL development libraries & headers to
-compile.  Assuming they are present, type make in the src directory to
-build it.  An executable called u4 is created.
+Note that you need SDL, the SDL development libraries & headers, and
+the SDL_mixer library to compile.  Assuming they are present, type
+make in the src directory to build it.  An executable called u4 is
+created.
 
 RUNNING
 -------
@@ -78,8 +107,10 @@ The actual data files from Ultima 4 are loaded at runtime, which means
 that a copy of Ultima 4 for DOS must be present at runtime.
 Fortunately, Ultima IV is available as closed-source freeware on the
 internet (legally). It is available at
-http://www.zip.com.au/~mfleming/ultima/u4download.html, among many
-other sites.
+http://www.zip.com.au/~mfleming/ultima/u4download.html,
+http://members.tripod.com/~hardwire1/ultima4.zip, or
+http://www.nightfall.org/~deep/ultima/main.html among many other
+sites.
 
 Once downloaded, it must be unzipped in one of four places:
  - the current directory when u4 is run
@@ -92,6 +123,11 @@ As of version 0.02, xu4 can handle uppercase or lowercase filenames.
 
 MISC
 ----
+
+Here are a few interesting Ultima IV links:
+http://www.gamespy.com/legacy/halloffame/u4.shtm
+http://www.uo.com/archive/ultima4/walk/
+http://www.game-revolution.com/games/codes/pc/ultima4_walk.htm
 
 Please send me a mail at andrewtaylor@users.sourceforge.net if you are
 interested in helping.
