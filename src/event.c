@@ -219,6 +219,8 @@ int eventHandlerIsKeyIgnored(int key) {
     case U4_LEFT_CTRL:    
     case U4_RIGHT_ALT:
     case U4_LEFT_ALT:
+    case U4_RIGHT_META:
+    case U4_LEFT_META:
     case U4_TAB:
         return 1;
     default: return 0;
@@ -230,6 +232,10 @@ int eventHandlerIsKeyIgnored(int key) {
  */
 int eventHandlerUniversalKeyHandler(int key) {
     switch(key) {
+#if defined(MACOSX)
+    case U4_META + 'q': /* Cmd+q */
+    case U4_META + 'x': /* Cmd+x */
+#endif
     case U4_ALT + 'x': /* Alt+x */
         quit = eventExitFlag = 1;        
         return 1;

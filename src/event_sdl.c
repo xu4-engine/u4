@@ -84,6 +84,8 @@ void eventHandlerMain(void (*updateScreen)(void)) {
                     key = event.key.keysym.sym - SDLK_a + 1;
                 else if (event.key.keysym.mod & KMOD_ALT)
                     key = event.key.keysym.sym - SDLK_a + 'a' + U4_ALT;
+                else if (event.key.keysym.mod & KMOD_META)
+                    key = event.key.keysym.sym - SDLK_a + 'a' + U4_META;
             }
 
             else if (event.key.keysym.sym == SDLK_UP)
