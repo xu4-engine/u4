@@ -412,7 +412,9 @@ void vendorGetConversationText(Conversation *cnv, const char *inquiry, char **re
 }
 
 char *vendorGetPrompt(const Conversation *cnv) {
-    char *prompt;
+    if (cnv->talker->npcType != NPC_VENDOR_WEAPONS &&
+        cnv->talker->npcType != NPC_VENDOR_ARMOR)
+        return strdup("");
 
     switch (cnv->state) {
 
@@ -422,42 +424,26 @@ char *vendorGetPrompt(const Conversation *cnv) {
     case CONV_CONFIRMATION:
     case CONV_CONTINUEQUESTION:
     case CONV_TOPIC:
-        prompt = strdup("");
+        return strdup("");
         break;
 
     case CONV_BUY_ITEM:
-        switch (cnv->talker->npcType) {
-        case NPC_VENDOR_WEAPONS:
-        case NPC_VENDOR_ARMOR:
-            prompt = strdup(vendorGetText(cnv->talker, WV_YOURINTEREST));
-            break;
-        default:
-            prompt = strdup("");
-            break;
-        }
+        return strdup(vendorGetText(cnv->talker, WV_YOURINTEREST));
         break;
         
     case CONV_SELL_ITEM:
-        prompt = strdup(vendorGetText(cnv->talker, WV_YOUSELL));
+        return strdup(vendorGetText(cnv->talker, WV_YOUSELL));
         break;
 
     case CONV_BUY_QUANTITY:
-        switch (cnv->talker->npcType) {
-        case NPC_VENDOR_WEAPONS:
-        case NPC_VENDOR_ARMOR:
-            prompt = strdup(vendorGetText(cnv->talker, WV_HOWMANYTOBUY));
-            break;
-        default:
-            prompt = strdup("");
-            break;
-        }
+        return strdup(vendorGetText(cnv->talker, WV_HOWMANYTOBUY));
         break;
 
     default:
         assert(0);
     }
 
-    return prompt;
+    return strdup("");
 }
 
 char *vendorGetFarewell(const Conversation *cnv, const char *prefix) {
@@ -1072,12 +1058,10 @@ char *vendorGetTavernBuyPriceResponse(Conversation *cnv, const char *response) {
         reply = strdup(vendorGetText(cnv->talker, TV_ANYTHINGELSE));
         cnv->state = CONV_CONTINUEQUESTION;
         playerPurchase(c->saveGame, INV_NONE, 0, 0, cnv->price);
-        statsUpdate();
     } else {
         reply = strdup(vendorGetText(cnv->talker, TV_WHATINFO));
         cnv->state = CONV_TOPIC;
         playerPurchase(c->saveGame, INV_NONE, 0, 0, cnv->price);
-        statsUpdate();
     }
 
     return reply;
@@ -1187,6 +1171,18 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
                            NULL);
         break;
 
+    case NPC_VENDOR_HEALER:
+        if (success) {
+            playerHeal(c->saveGame, cnv->itemSubtype, cnv->player);
+            reply = concat(vendorGetName(cnv->talker), 
+                           vendorGetText(cnv->talker, HV_MOREHELP), 
+                           NULL);
+        }
+        else {
+            reply = strdup(""); /* FIXME */
+        }
+        break;
+
     case NPC_VENDOR_INN:
         if (success) {
             if (vendorGetVendorNo(cnv->talker) == 3) {
@@ -1222,7 +1218,6 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
             cnv->state = CONV_DONE;
         }
         break;
-        
 
     case NPC_VENDOR_GUILD:
         if (success)
@@ -1250,7 +1245,6 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
         assert(0);              /* shouldn't happen */
     }
 
-    statsUpdate();
     return reply;
 }
 
@@ -1272,7 +1266,6 @@ char *vendorDoSellTransaction(Conversation *cnv) {
         cnv->state = CONV_DONE;
     }
 
-    statsUpdate();
     return reply;
 }
 
@@ -1298,12 +1291,8 @@ char *vendorGetHealerConfirmationResponse(Conversation *cnv, const char *respons
     char *reply;
     
     if (tolower(response[0]) == 'y') {
-        playerHeal(c->saveGame, cnv->itemSubtype, 0); /* FIXME: get real player number */
-        statsUpdate();
-        reply = concat(vendorGetName(cnv->talker), 
-                       vendorGetText(cnv->talker, HV_MOREHELP), 
-                       NULL);
-        cnv->state = CONV_CONTINUEQUESTION;
+        cnv->player = 0;        /* FIXME: get real player number */
+        return vendorDoBuyTransaction(cnv);
     }
     else if (tolower(response[0]) == 'n') {
         reply = concat(vendorGetText(cnv->talker, HV_CANNOTAID), 
