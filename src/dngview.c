@@ -8,6 +8,7 @@
 #include "dngview.h"
 
 #include "context.h"
+#include "dungeon.h"
 #include "location.h"
 #include "savegame.h"
 #include "ttype.h"
@@ -53,28 +54,23 @@ unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
 }
 
 DungeonGraphicType dungeonViewTileToGraphic(unsigned char tile) {
-    switch (tile) {
-    case WALL_TILE:
-    case 73: /* secret door */
+    DungeonToken token = dungeonTokenForTile(tile);    
+
+    switch (token) {
+    case DUNGEON_CORRIDOR:
+        return DNGGRAPHIC_NONE;
+    case DUNGEON_WALL:
+    case DUNGEON_SECRET_DOOR:
         return DNGGRAPHIC_WALL;
-    case 59:
-    case 72:
+    case DUNGEON_ROOM:
+    case DUNGEON_DOOR:
         return DNGGRAPHIC_DOOR;
-    case LADDERUP_TILE:
+    case DUNGEON_LADDER_UP:
         return DNGGRAPHIC_LADDERUP;
-    case LADDERDOWN_TILE:
+    case DUNGEON_LADDER_DOWN:
         return DNGGRAPHIC_LADDERDOWN;
-        
-    case DEEP_WATER_TILE:    
-    case CHEST_TILE:
-    case ALTAR_TILE:
-    case MAGICFLASH_TILE:
-    case POISONFIELD_TILE:
-    case LIGHTNINGFIELD_TILE:
-    case FIREFIELD_TILE:
-    case SLEEPFIELD_TILE:
+
+    default: 
         return DNGGRAPHIC_TILE;
     }
-
-    return DNGGRAPHIC_NONE;
 }

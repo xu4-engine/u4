@@ -142,13 +142,13 @@ int mixSpell;
 Menu spellMixMenu;
 
 void gameInit() {
-    FILE *saveGameFile, *monstersFile;
+    FILE *saveGameFile, *monstersFile;    
 
     /* initialize the global game context */
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));    
     c->annotation = NULL;    
-    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, &gameFinishTurn, &gameMoveAvatar, &mapTileAt, NULL);
+    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, &gameFinishTurn, &gameMoveAvatar, &mapTileAt, _ttype_info, NULL);
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.playerInquiryBuffer[0] = '\0';
@@ -313,6 +313,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     FinishTurnCallback finishTurn = &gameFinishTurn;
     MoveCallback move = &gameMoveAvatar;
     TileAt tileAt = &mapTileAt;
+    Tile *tileset_info = _ttype_info;
 
     if (portal) {
         x = portal->startx;
@@ -335,7 +336,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         viewMode = VIEW_DUNGEON;
         c->saveGame->orientation = DIR_EAST;
         move = &gameMoveAvatarInDungeon;
-        tileAt = &mapDungeonTileAt;
+        tileset_info = _dng_ttype_info;
         break;
     case MAPTYPE_COMBAT:
         context = CTX_COMBAT;
@@ -353,7 +354,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         break;
     }
     
-    ct->location = locationNew(x, y, z, map, viewMode, context, finishTurn, move, tileAt, ct->location);    
+    ct->location = locationNew(x, y, z, map, viewMode, context, finishTurn, move, tileAt, tileset_info, ct->location);    
 
     if ((map->type == MAPTYPE_TOWN ||
          map->type == MAPTYPE_VILLAGE ||

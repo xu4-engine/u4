@@ -32,28 +32,40 @@
 #define MASK_SAILABLE           0x0002
 #define MASK_UNFLYABLE          0x0004
 #define MASK_MONSTER_UNWALKABLE 0x0008
-#define MASK_DUNGEON_UNWALKABLE 0x0010
 
 /* tile values 0-127 */
 int tileInfoLoaded = 0;
 Tile _ttype_info[256];
+Tile _dng_ttype_info[256];
 int baseChest = -1;
 int baseShip = -1;
 int baseHorse = -1;
 int baseBalloon = -1;
 
+Tile *tileCurrentTilesetInfo() {
+    return c && c->location ? c->location->tileset_info : _ttype_info;
+}
+
 void tileLoadInfoFromXml() {
     xmlDocPtr doc;
     xmlNodePtr root, node;
-    int tile, i;
+    int mapTile = 0,
+        dngTile = 0,
+        subTile = 0,
+        i;
+    Tile *current;
+    int *index;
+    int lshift;
+    int offset;
+
     static const struct {
         const char *name;
         unsigned int mask;
         int *base;
     } booleanAttributes[] = {
-        { "opaque", MASK_OPAQUE, NULL },        
-        { "animated", MASK_ANIMATED, NULL },        
-        { "dispel", MASK_DISPEL, NULL },        
+        { "opaque", MASK_OPAQUE, NULL },
+        { "animated", MASK_ANIMATED, NULL },
+        { "dispel", MASK_DISPEL, NULL },
         { "talkover", MASK_TALKOVER, NULL },
         { "door", MASK_DOOR, NULL },
         { "lockeddoor", MASK_LOCKEDDOOR, NULL },
@@ -73,8 +85,7 @@ void tileLoadInfoFromXml() {
         { "swimable", MASK_SWIMABLE },
         { "sailable", MASK_SAILABLE },        
         { "unflyable", MASK_UNFLYABLE },        
-        { "monsterunwalkable", MASK_MONSTER_UNWALKABLE },
-        { "dungeonunwalkable", MASK_DUNGEON_UNWALKABLE },        
+        { "monsterunwalkable", MASK_MONSTER_UNWALKABLE }        
     };    
 
     tileInfoLoaded = 1;
@@ -83,91 +94,128 @@ void tileLoadInfoFromXml() {
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "tiles") != 0)
         errorFatal("malformed tiles.xml");
-
-    tile = 0;
+    
     for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) ||
-            xmlStrcmp(node->name, (const xmlChar *) "tile") != 0)
-            continue;
+        int realIndex;
 
-        _ttype_info[tile].mask = 0;
-        _ttype_info[tile].movementMask = 0;
-        _ttype_info[tile].speed = FAST;
-        _ttype_info[tile].effect = EFFECT_NONE;
-        _ttype_info[tile].walkonDirs = MASK_DIR_ALL;
-        _ttype_info[tile].walkoffDirs = MASK_DIR_ALL;
+        if (xmlNodeIsText(node))
+            continue;
+        /* a standard map tile */
+        else if (xmlStrcmp(node->name, (const xmlChar *) "tile") == 0) {
+            current = _ttype_info;
+            index = &mapTile;
+            lshift = 0; /* keep indices the same */
+            offset = 0;
+        }
+        /* a dungeon tile */
+        else if (xmlStrcmp(node->name, (const xmlChar *) "dngTile") == 0) {
+            current = _dng_ttype_info;
+            index = &dngTile;
+            lshift = 4; /* turns 0x1 into 0x10, 0x2 into 0x20, etc */
+            offset = 0;
+
+            /* subtile of dungeon tile (for example, magic fields - poison, energy, fire, sleep) */
+            if (xmlStrcmp(node->parent->name, (const xmlChar *) "dngTile") == 0) {                
+                index = &subTile;
+                offset = ((*index) - 1) << lshift; /* offsets to 0x90, 0x91, 0x92, etc */
+                lshift = 0;
+            }
+            else subTile = 0; /* reset subtile if this is a normal dngTile */
+        }
+        else continue;
+
+        /* figure out what our real index is going to be for this tile */
+        realIndex = ((*index) << lshift) + offset;
+
+        current[realIndex].mask = 0;
+        current[realIndex].movementMask = 0;
+        current[realIndex].speed = FAST;
+        current[realIndex].effect = EFFECT_NONE;
+        current[realIndex].walkonDirs = MASK_DIR_ALL;
+        current[realIndex].walkoffDirs = MASK_DIR_ALL;
+        current[realIndex].displayTile = realIndex; /* itself */
+
+        if (xmlGetPropAsStr(node, (const xmlChar *)"displayTile") != NULL)
+            current[realIndex].displayTile = (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"displayTile");
 
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
             if (xmlGetPropAsBool(node, (const xmlChar *) booleanAttributes[i].name)) {
-                _ttype_info[tile].mask |= booleanAttributes[i].mask;
+                current[realIndex].mask |= booleanAttributes[i].mask;
                 if (booleanAttributes[i].base &&
                     (*booleanAttributes[i].base) == -1)
-                    (*booleanAttributes[i].base) = tile;
+                    (*booleanAttributes[i].base) = realIndex;
             }
         }
 
         for (i = 0; i < sizeof(movementBooleanAttr) / sizeof(movementBooleanAttr[0]); i++) {
             if (xmlGetPropAsBool(node, (const xmlChar *) movementBooleanAttr[i].name))
-                _ttype_info[tile].movementMask |= movementBooleanAttr[i].mask;
+                current[realIndex].movementMask |= movementBooleanAttr[i].mask;
         }
 
         if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "all") == 0)
-            _ttype_info[tile].walkonDirs = 0;
+            current[realIndex].walkonDirs = 0;
         else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "west") == 0)
-            _ttype_info[tile].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, _ttype_info[tile].walkonDirs);
+            current[realIndex].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, current[realIndex].walkonDirs);
         else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "north") == 0)
-            _ttype_info[tile].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, _ttype_info[tile].walkonDirs);
+            current[realIndex].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, current[realIndex].walkonDirs);
         else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "east") == 0)
-            _ttype_info[tile].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, _ttype_info[tile].walkonDirs);
+            current[realIndex].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, current[realIndex].walkonDirs);
         else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "south") == 0)
-            _ttype_info[tile].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, _ttype_info[tile].walkonDirs);
+            current[realIndex].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, current[realIndex].walkonDirs);
 
         if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "all") == 0)
-            _ttype_info[tile].walkoffDirs = 0;
+            current[realIndex].walkoffDirs = 0;
         else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "west") == 0)
-            _ttype_info[tile].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, _ttype_info[tile].walkoffDirs);
+            current[realIndex].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, current[realIndex].walkoffDirs);
         else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "north") == 0)
-            _ttype_info[tile].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, _ttype_info[tile].walkoffDirs);
+            current[realIndex].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, current[realIndex].walkoffDirs);
         else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "east") == 0)
-            _ttype_info[tile].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, _ttype_info[tile].walkoffDirs);
+            current[realIndex].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, current[realIndex].walkoffDirs);
         else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "south") == 0)
-            _ttype_info[tile].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, _ttype_info[tile].walkoffDirs);
+            current[realIndex].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, current[realIndex].walkoffDirs);
 
         if (xmlPropCmp(node, (const xmlChar *) "speed", "slow") == 0)
-            _ttype_info[tile].speed = SLOW;
+            current[realIndex].speed = SLOW;
         else if (xmlPropCmp(node, (const xmlChar *) "speed", "vslow") == 0)
-            _ttype_info[tile].speed = VSLOW;
+            current[realIndex].speed = VSLOW;
         else if (xmlPropCmp(node, (const xmlChar *) "speed", "vvslow") == 0)
-            _ttype_info[tile].speed = VVSLOW;
+            current[realIndex].speed = VVSLOW;
 
         if (xmlPropCmp(node, (const xmlChar *) "effect", "fire") == 0)
-            _ttype_info[tile].effect = EFFECT_FIRE;
+            current[realIndex].effect = EFFECT_FIRE;
         else if (xmlPropCmp(node, (const xmlChar *) "effect", "sleep") == 0)
-            _ttype_info[tile].effect = EFFECT_SLEEP;
+            current[realIndex].effect = EFFECT_SLEEP;
         else if (xmlPropCmp(node, (const xmlChar *) "effect", "poison") == 0)
-            _ttype_info[tile].effect = EFFECT_POISON;
+            current[realIndex].effect = EFFECT_POISON;
         else if (xmlPropCmp(node, (const xmlChar *) "effect", "poisonField") == 0)
-            _ttype_info[tile].effect = EFFECT_POISONFIELD;
+            current[realIndex].effect = EFFECT_POISONFIELD;
         else if (xmlPropCmp(node, (const xmlChar *) "effect", "electricity") == 0)
-            _ttype_info[tile].effect = EFFECT_ELECTRICITY;
+            current[realIndex].effect = EFFECT_ELECTRICITY;
         else if (xmlPropCmp(node, (const xmlChar *) "effect", "lava") == 0)
-            _ttype_info[tile].effect = EFFECT_LAVA;
+            current[realIndex].effect = EFFECT_LAVA;
 
-        tile++;
+        /* fill in blank values with duplicates of what we just created */
+        if (lshift > 0) {
+            int j;
+            for (j = 0; j < (1<<lshift)-1; j++)
+                memcpy(&current[realIndex]+j+1, &current[realIndex], sizeof(Tile));
+        }            
+
+        (*index)++;
     }
 
     /* ensure information for all non-monster tiles was loaded */
-    if (tile != 128)
-        errorFatal("tiles.xml contained %d entries (must be 128)\n", tile);
+    if (mapTile != 128)
+        errorFatal("tiles.xml contained %d entries (must be 128)\n", mapTile);
 
     /* initialize the values for the monster tiles */
-    for ( ; tile < sizeof(_ttype_info) / sizeof(_ttype_info[0]); tile++) {
-        _ttype_info[tile].mask = 0;
-        _ttype_info[tile].movementMask = 0;
-        _ttype_info[tile].speed = FAST;
-        _ttype_info[tile].effect = EFFECT_NONE;
-        _ttype_info[tile].walkonDirs = 0;
-        _ttype_info[tile].walkoffDirs = MASK_DIR_ALL;
+    for ( ; mapTile < sizeof(_ttype_info) / sizeof(_ttype_info[0]); mapTile++) {
+        _ttype_info[mapTile].mask = 0;
+        _ttype_info[mapTile].movementMask = 0;
+        _ttype_info[mapTile].speed = FAST;
+        _ttype_info[mapTile].effect = EFFECT_NONE;
+        _ttype_info[mapTile].walkonDirs = 0;
+        _ttype_info[mapTile].walkoffDirs = MASK_DIR_ALL;
     }    
 
     if (baseChest == -1)
@@ -190,25 +238,29 @@ void tileLoadInfoFromXml() {
 }
 
 int tileTestBit(unsigned char tile, unsigned short mask) {
+    Tile *tileset = tileCurrentTilesetInfo();
     if (!tileInfoLoaded)
-        tileLoadInfoFromXml();
+        tileLoadInfoFromXml();    
 
-    return (_ttype_info[tile].mask & mask) != 0;
+    return (tileset[tile].mask & mask) != 0;
 }
 
 int tileTestMovementBit(unsigned char tile, unsigned short mask) {
+    Tile *tileset = tileCurrentTilesetInfo();
     if (!tileInfoLoaded)
         tileLoadInfoFromXml();
 
-    return (_ttype_info[tile].movementMask & mask) != 0;
+    return (tileset[tile].movementMask & mask) != 0;
 }
 
 int tileCanWalkOn(unsigned char tile, Direction d) {
-    return DIR_IN_MASK(d, _ttype_info[tile].walkonDirs);
+    Tile *tileset = tileCurrentTilesetInfo();
+    return DIR_IN_MASK(d, tileset[tile].walkonDirs);
 }
 
 int tileCanWalkOff(unsigned char tile, Direction d) {
-    return DIR_IN_MASK(d, _ttype_info[tile].walkoffDirs);
+    Tile *tileset = tileCurrentTilesetInfo();
+    return DIR_IN_MASK(d, tileset[tile].walkoffDirs);
 }
 
 int tileCanAttackOver(unsigned char tile) {    
@@ -227,15 +279,12 @@ int tileIsReplacement(unsigned char tile) {
 }
 
 int tileIsWalkable(unsigned char tile) {
-    return _ttype_info[tile].walkonDirs > 0;
+    Tile *tileset = tileCurrentTilesetInfo();
+    return tileset[tile].walkonDirs > 0;
 }
 
 int tileIsMonsterWalkable(unsigned char tile) {
     return !tileTestMovementBit(tile, MASK_MONSTER_UNWALKABLE);
-}
-
-int tileIsDungeonWalkable(unsigned char tile) {
-    return !tileTestMovementBit(tile, MASK_DUNGEON_UNWALKABLE);
 }
 
 int tileIsSwimable(unsigned char tile) {
@@ -343,24 +392,27 @@ int tileCanTalkOver(unsigned char tile) {
 }
 
 TileSpeed tileGetSpeed(unsigned char tile) {
+    Tile *tileset = tileCurrentTilesetInfo();
     if (!tileInfoLoaded)
         tileLoadInfoFromXml();
 
-    return _ttype_info[tile].speed;
+    return tileset[tile].speed;
 }
 
 TileEffect tileGetEffect(unsigned char tile) {
+    Tile *tileset = tileCurrentTilesetInfo();
     if (!tileInfoLoaded)
         tileLoadInfoFromXml();
 
-    return _ttype_info[tile].effect;
+    return tileset[tile].effect;
 }
 
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile) {
+    Tile *tileset = tileCurrentTilesetInfo();
     if (!tileInfoLoaded)
         tileLoadInfoFromXml();
 
-    if (_ttype_info[tile].mask & MASK_ANIMATED)
+    if (tileset[tile].mask & MASK_ANIMATED)
         return ANIM_SCROLL;
     else if (tile == 75)
         return ANIM_CAMPFIRE;

@@ -149,7 +149,7 @@ void screenUpdate(int showmap, int blackout) {
 
                     tile = dungeonViewGetVisibleTile(y, 0);
                     if (dungeonViewTileToGraphic(tile) == DNGGRAPHIC_TILE)
-                        screenDungeonDrawTile(y, tile);
+                        screenDungeonDrawTile(y, c->location->tileset_info[tile].displayTile);
                     else
                         screenDungeonDrawWall(0, y, dungeonViewTileToGraphic(tile));
                         
@@ -162,17 +162,17 @@ void screenUpdate(int showmap, int blackout) {
             for (y = 0; y < VIEWPORT_H; y++) {
                 for (x = 0; x < VIEWPORT_W; x++) {
                     if (x < 2 || y < 2 || x >= 10 || y >= 10)
-                        tile = BLACK_TILE;
-                    else
+                        screenShowTile(BLACK_TILE, 0, x, y);
+                    else {
                         tile = dungeonViewGetVisibleTile((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
-                    /* Only show blackness if there is no light */
-                    if (c->saveGame->torchduration <= 0)
-                        screenShowTile(BLACK_TILE, 0, x, y);
-                    /* FIXME: for now, show the avatar */
-                    else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
-                        screenShowTile(AVATAR_TILE, 0, x, y);
-                    else screenShowTile(tile, 0, x, y);
+                        /* Only show blackness if there is no light */
+                        if (c->saveGame->torchduration <= 0)
+                            screenShowTile(BLACK_TILE, 0, x, y);
+                        else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
+                            screenShowTile(AVATAR_TILE, 0, x, y);
+                        else screenShowTile(c->location->tileset_info[tile].displayTile, 0, x, y);
+                    }
                 }
             }
         }

@@ -314,61 +314,6 @@ unsigned char mapTileAt(const Map *map, int x, int y, int z, int withObjects) {
     return tile;
 }
 
-/**
- * Functions the same as mapTileAt, but for dungeons
- */
-unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z, int withObjects) {
-    unsigned char tile = mapGetTileFromData(map, x, y, z);
-    unsigned char real = mapTileAt(map, x, y, z, withObjects);
-
-    /* get any annotation or walkable objects first */
-    if (real != tile)
-        return real;    
-    
-    switch (tile & 0xF0) {
-    case 0x00:
-    case 0x80:
-        return BRICKFLOOR_TILE;
-    case 0x10:
-        return LADDERUP_TILE;
-    case 0x20:
-    case 0x30:
-        return LADDERDOWN_TILE;
-    case 0x40:
-        return tileGetChestBase();
-    case 0x50:
-    case 0x60: /* floor hole (not used?) */
-        return 0x7c;        
-    case 0x70:
-        return MAGICFLASH_TILE;
-    case 0x90:
-        return 0;
-    case 0xA0:
-        {
-            switch(tile & 0xF) {
-            case 0: return POISONFIELD_TILE;
-            case 1: return LIGHTNINGFIELD_TILE;
-            case 2: return FIREFIELD_TILE;
-            case 3: return SLEEPFIELD_TILE;
-            default: return BRICKFLOOR_TILE;
-            }        
-        }
-    case 0xB0: /* altar */
-        return 0x4a; 
-    case 0xC0: /* door */
-        return 0x3b;
-    case 0xD0: /* dungeon room */
-        return 0x48;
-
-    case 0xE0: /* secret door */
-        return 0x49;
-    case 0xF0:
-        return WALL_TILE;
-    default:
-        return BLACK_TILE;
-    }
-}
-
 int mapIsWorldMap(const Map *map) {
     return map->id == 0;
 }
@@ -580,7 +525,7 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
         /* in dungeons, everything but walls are walkable */
         if (c->location->context == CTX_DUNGEON) {            
             tile = (*c->location->tileAt)(map, x, y, z, WITH_OBJECTS);
-            if (tileIsDungeonWalkable(tile)) {
+            if (tileIsWalkable(tile)) {
                 retval = DIR_ADD_TO_MASK(d, retval);
                 continue;
             }

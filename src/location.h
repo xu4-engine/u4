@@ -8,6 +8,8 @@
 #include "map.h"
 #include "movement.h"
 
+struct _Tile;
+
 typedef unsigned char (*TileAt)(const Map *map, int x, int y, int z, int withObjects);
 
 typedef enum {
@@ -37,10 +39,11 @@ typedef struct _Location {
     FinishTurnCallback finishTurn;
     MoveCallback move;
     TileAt tileAt;
+    struct _Tile *tileset_info;
     struct _Location *prev;
 } Location;
 
-Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, TileAt tileAtCallback, Location *prev);
+Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, TileAt tileAtCallback, struct _Tile *tileset_info, Location *prev);
 unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int *focus);
 unsigned char locationGetReplacementTile(Location *location, int x, int y, int z);
 int locationGetCurrentPosition(Location *location, int *x, int *y, int *z);

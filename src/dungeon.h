@@ -98,6 +98,8 @@ typedef enum _FieldType {
     FIELD_SLEEP                 = 0x3
 } FieldType;
 
+DungeonToken dungeonTokenForTile(unsigned char tile);
+unsigned char dungeonSubTokenForTile(unsigned char tile);
 DungeonToken dungeonCurrentToken();
 unsigned char dungeonCurrentSubToken();
 DungeonToken dungeonTokenAt(struct _Map *map, int x, int y, int z);

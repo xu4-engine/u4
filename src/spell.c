@@ -707,7 +707,7 @@ static int spellYup(int unused) {
             y_new = rand() % 8;
             tile = (*c->location->tileAt)(c->location->map, x_new, y_new, c->location->z - 1, WITH_OBJECTS);
 
-            if (tileIsDungeonWalkable(tile) && (tile == BRICKFLOOR_TILE)) {
+            if (dungeonTokenForTile(tile) == DUNGEON_CORRIDOR) {
                 c->location->x = x_new;
                 c->location->y = y_new;
                 c->location->z--;
@@ -742,7 +742,7 @@ static int spellZdown(int unused) {
             y_new = rand() % 8;
             tile = (*c->location->tileAt)(c->location->map, x_new, y_new, c->location->z + 1, WITH_OBJECTS);
 
-            if (tileIsDungeonWalkable(tile) && (tile == BRICKFLOOR_TILE)) {
+            if (dungeonTokenForTile(tile) == DUNGEON_CORRIDOR) {
                 c->location->x = x_new;
                 c->location->y = y_new;
                 c->location->z++;

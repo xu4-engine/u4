@@ -93,6 +93,7 @@ typedef struct _Tile {
     TileEffect effect;
     int walkonDirs;
     int walkoffDirs;
+    unsigned char displayTile;
 } Tile;
 
 int tileCanWalkOn(unsigned char tile, Direction d);
@@ -128,5 +129,8 @@ TileAnimationStyle tileGetAnimationStyle(unsigned char tile);
 void tileAdvanceFrame(unsigned char *tile);
 int tileIsOpaque(unsigned char tile);
 unsigned char tileForClass(int klass);
+
+extern Tile _ttype_info[256];
+extern Tile _dng_ttype_info[256];
 
 #endif
