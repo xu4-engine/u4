@@ -81,12 +81,12 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 SDL.lib SDLmain.lib SDL_mixer.lib libxml2.lib zlib.lib user32.lib shell32.lib comdlg32.lib gdi32.lib kernel32.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386 /nodefaultlib:"LIBC" /out:"c:\xu4\xu4.exe" /libpath:"..\lib"
+# ADD LINK32 zlib.lib zdll.lib SDL.lib SDLmain.lib SDL_mixer.lib libxml2.lib libpng.lib user32.lib shell32.lib comdlg32.lib gdi32.lib kernel32.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386 /nodefaultlib:"LIBC" /out:"c:\xu4\xu4.exe" /libpath:"..\lib"
 # SUBTRACT LINK32 /map
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
 PostBuild_Desc==== Installation ===
-PostBuild_Cmds=@ECHO OFF	set U4PATH=c:\xu4	IF EXIST %U4PATH% (	echo Install directory set to %U4PATH%	IF NOT EXIST %U4PATH% mkdir %U4PATH%	IF NOT EXIST %U4PATH%\conf mkdir %U4PATH%\conf	IF NOT EXIST %U4PATH%\conf\dtd mkdir %U4PATH%\conf\dtd	IF NOT EXIST %U4PATH%\graphics mkdir %U4PATH%\graphics	IF NOT EXIST %U4PATH%\mid mkdir %U4PATH%\mid	IF NOT EXIST %U4PATH%\sound mkdir %U4PATH%\sound	@ECHO ON	xcopy ..\lib\*.dll %U4PATH%\. /E /D /Y	xcopy ..\conf\*.xml %U4PATH%\conf\. /E /Y	xcopy ..\conf\dtd\*.dtd %U4PATH%\conf\dtd\. /E /Y	xcopy ..\graphics %U4PATH%\graphics\. /E /D /Y	xcopy ..\mid %U4PATH%\mid\. /E /D /Y	xcopy ..\sound %U4PATH%\sound\. /E /D /Y	) ELSE (	echo An error occurred while setting the xu4 installation path.	)
+PostBuild_Cmds=@ECHO OFF	set U4PATH=c:\xu4	IF NOT EXIST %U4PATH% mkdir %U4PATH%	IF EXIST %U4PATH% (	echo Install directory set to %U4PATH%	IF NOT EXIST %U4PATH% mkdir %U4PATH%	IF NOT EXIST %U4PATH%\conf mkdir %U4PATH%\conf	IF NOT EXIST %U4PATH%\conf\dtd mkdir %U4PATH%\conf\dtd	IF NOT EXIST %U4PATH%\graphics mkdir %U4PATH%\graphics	IF NOT EXIST %U4PATH%\mid mkdir %U4PATH%\mid	IF NOT EXIST %U4PATH%\sound mkdir %U4PATH%\sound	@ECHO ON	xcopy ..\lib\*.dll %U4PATH%\. /E /D /Y	xcopy ..\conf\*.xml %U4PATH%\conf\. /E /Y	xcopy ..\conf\dtd\*.dtd %U4PATH%\conf\dtd\. /E /Y	xcopy ..\graphics %U4PATH%\graphics\. /E /D /Y	xcopy ..\mid %U4PATH%\mid\. /E /D /Y	xcopy ..\sound %U4PATH%\sound\. /E /D /Y	) ELSE (	echo An error occurred while setting the xu4 installation path.	)
 # End Special Build Tool
 
 !ENDIF 
@@ -185,6 +185,10 @@ SOURCE=..\src\context.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\coords.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\creature.cpp
 # End Source File
 # Begin Source File
@@ -274,6 +278,30 @@ SOURCE=..\src\image.h
 # Begin Source File
 
 SOURCE=..\src\image_sdl.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\imageloader.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\imageloader.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\imageloader_png.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\imageloader_png.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\imageloader_u4.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\imageloader_u4.h
 # End Source File
 # Begin Source File
 
