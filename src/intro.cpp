@@ -76,6 +76,7 @@ bool menusLoaded = false;
 SettingsData settingsChanged;
 
 IntroController::IntroController() : Controller(1) {
+    beastiesVisible = false;
     introMap = NULL;
     sigData = NULL;
     scriptTable = NULL;
@@ -96,6 +97,7 @@ int IntroController::init() {
     beastie1Cycle = 0;
     beastie2Cycle = 0;
     beastieOffset = -32;    
+    beastiesVisible = true;
 
     title = u4fopen("title.exe");
     if (!title)
@@ -175,45 +177,56 @@ int IntroController::init() {
 
     /* load our menus, checking to see if they're already loaded first */
     if (!menusLoaded) {
-        mainOptions.add(0, "Video Options", 13, 16, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        mainOptions.add(1, "Sound Options", 13, 17, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        mainOptions.add(2, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        mainOptions.add(0xFF, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        mainOptions.add(0, "Video Options", 13, 16, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL, 'v');
+        mainOptions.add(1, "Sound Options", 13, 17, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL, 's');
+        mainOptions.add(2, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL, 'g');
+        mainOptions.add(0xFF, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL, 'm');
+        mainOptions.setClosesMenu(0xFF);
     
-        videoOptions.add(4, "Graphics", 6, 5, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+        videoOptions.add(4, "Graphics", 6, 5, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 'g');
         videoOptions.add(5, "Gem Layout", 6, 6, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-        videoOptions.add(0, "Scale", 6, 7, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-        videoOptions.add(1, "Mode", 6, 8, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-        videoOptions.add(2, "Filter", 6, 9, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-        videoOptions.add(3, "Screen Shaking", 6, 10, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-        videoOptions.add(0xFE, "Use These Settings", 6, 20, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        videoOptions.add(0xFF, "Cancel", 6, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        videoOptions.add(0, "Scale", 6, 7, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 's');
+        videoOptions.add(1, "Mode", 6, 8, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 'm');
+        videoOptions.add(2, "Filter", 6, 9, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 'f');
+        videoOptions.add(3, "Screen Shaking", 6, 10, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY, 'k');
+        videoOptions.add(0xFE, "Use These Settings", 6, 20, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
+        videoOptions.add(0xFF, "Cancel", 6, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        videoOptions.setClosesMenu(0xFE);
+        videoOptions.setClosesMenu(0xFF);
     
-        soundOptions.add(0, "Volume", 11, 16, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
-        soundOptions.add(1, "Sound Effects", 11, 17, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
-        soundOptions.add(2, "Fading", 11, 18, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY);
-        soundOptions.add(0xFE, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        soundOptions.add(0xFF, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        soundOptions.add(0, "Volume", 11, 16, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY, 'v');
+        soundOptions.add(1, "Sound Effects", 11, 17, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY, 's');
+        soundOptions.add(2, "Fading", 11, 18, &introSoundOptionsMenuItemActivate, ACTIVATE_ANY, 'f');
+        soundOptions.add(0xFE, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
+        soundOptions.add(0xFF, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        soundOptions.setClosesMenu(0xFE);
+        soundOptions.setClosesMenu(0xFF);
     
-        gameplayOptions.add(0, "Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
-        gameplayOptions.add(1, "Automatic Actions", 6, 7, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
-        gameplayOptions.add(3, "Battle Difficulty", 6, 10, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
+        gameplayOptions.add(0, "Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY, 'g');
+        gameplayOptions.add(1, "Automatic Actions", 6, 7, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY, 'a');
+        gameplayOptions.add(3, "Battle Difficulty", 6, 10, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY, 'b');
         gameplayOptions.add(4, "Mouse", 6, 12, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
-        gameplayOptions.add(2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        gameplayOptions.add(0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        gameplayOptions.add(0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        gameplayOptions.add(2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL, 'o');
+        gameplayOptions.add(0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
+        gameplayOptions.add(0xFF, "Cancel", 6, 21, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        gameplayOptions.setClosesMenu(0xFE);
+        gameplayOptions.setClosesMenu(0xFF);
     
-        advancedOptions.add(3, "\010 Speed Settings", 4, 5, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        advancedOptions.add(2, "\010 Keyboard Settings", 4, 6, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        advancedOptions.add(1, "Debug Mode (Cheats)", 4, 8, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);        
-        advancedOptions.add(0, "\010 Game Enhancement Options", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);    
-        advancedOptions.add(0xFE, "Use These Settings", 4, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        advancedOptions.add(0xFF, "Cancel", 4, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        advancedOptions.add(3, "\010 Speed Settings", 4, 5, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 's');
+        advancedOptions.add(2, "\010 Keyboard Settings", 4, 6, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'k');
+        advancedOptions.add(1, "Debug Mode (Cheats)", 4, 8, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY, 'd');        
+        advancedOptions.add(0, "\010 Game Enhancement Options", 4, 18, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'g');    
+        advancedOptions.add(0xFE, "Use These Settings", 4, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
+        advancedOptions.add(0xFF, "Cancel", 4, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        advancedOptions.setClosesMenu(0xFE);
+        advancedOptions.setClosesMenu(0xFF);
     
         keyboardOptions.add(1, "Repeat Delay (in msecs)", 5, 5, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
         keyboardOptions.add(2, "Repeat Interval (in msecs)", 5, 6, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
-        keyboardOptions.add(0xFE, "Use These Settings", 5, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        keyboardOptions.add(0xFF, "Cancel", 5, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        keyboardOptions.add(0xFE, "Use These Settings", 5, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
+        keyboardOptions.add(0xFF, "Cancel", 5, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        keyboardOptions.setClosesMenu(0xFE);
+        keyboardOptions.setClosesMenu(0xFF);
     
         speedOptions.add(0, "Game Cycles Per Second", 4, 5, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
         speedOptions.add(1, "Battle Speed", 4, 6, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
@@ -222,8 +235,10 @@ int IntroController::init() {
         speedOptions.add(4, "Inn rest length", 4, 9, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
         speedOptions.add(5, "Shrine Meditation length", 4, 10, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
         speedOptions.add(6, "Screen Shake Interval", 4, 11, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-        speedOptions.add(0xFE, "Use These Settings", 4, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        speedOptions.add(0xFF, "Cancel", 4, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        speedOptions.add(0xFE, "Use These Settings", 4, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
+        speedOptions.add(0xFF, "Cancel", 4, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        speedOptions.setClosesMenu(0xFE);
+        speedOptions.setClosesMenu(0xFF);
     
         enhancementOptions.add(6, "Set Active Player", 7, 5, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
         enhancementOptions.add(4, "Ultima V Spell Mixing", 7, 6, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
@@ -232,8 +247,10 @@ int IntroController::init() {
         enhancementOptions.add(2, "Fixed Chest Traps", 7, 9, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
         enhancementOptions.add(5, "Smart 'Enter' Key", 7, 10, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
         enhancementOptions.add(7, "Gem View Shows Objects", 7, 11, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-        enhancementOptions.add(0xFE, "Use These Settings", 7, 20, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
-        enhancementOptions.add(0xFF, "Cancel", 7, 21, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
+        enhancementOptions.add(0xFE, "Use These Settings", 7, 20, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL, 'u');
+        enhancementOptions.add(0xFF, "Cancel", 7, 21, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL, 'c');
+        enhancementOptions.setClosesMenu(0xFE);
+        enhancementOptions.setClosesMenu(0xFF);
 
         menusLoaded = true;
     }
@@ -303,19 +320,21 @@ bool IntroController::keyPressed(int key) {
             mode = INTRO_MAP;
             updateScreen();
             break;
-        case 'c':
+        case 'c': {
             errorMessage.erase();
-            mode = INTRO_CONFIG;
-            mainOptions.reset();
             settingsChanged = settings;
+            mode = INTRO_CONFIG;
+            runMenu(&mainOptions, true);
+            mode = INTRO_MENU;
             updateScreen();
             break;
+        }
         case 'a':
             errorMessage.erase();
             about();
             break;
         case 'q':
-            EventHandler::setExitFlag();
+            EventHandler::end();
             quit = true;
             break;
         case '1':
@@ -335,106 +354,9 @@ bool IntroController::keyPressed(int key) {
         }
         break;
 
-    case INTRO_CONFIG:
-
-        if (!baseMenuKeyHandler(key, &mainOptions)) {
-            /* navigate to the item and activate it! */
-            switch(key) {
-            case 'v': mainOptions.activateItem(0, ACTIVATE_NORMAL); break;
-            case 's': mainOptions.activateItem(1, ACTIVATE_NORMAL); break;                
-            case 'g': mainOptions.activateItem(2, ACTIVATE_NORMAL); break;                
-            case 'm': mainOptions.activateItem(0xFF, ACTIVATE_NORMAL); break;                
-            default: break;
-            }
-        }
-
-        updateScreen();
-        return true;
-
-    case INTRO_CONFIG_VIDEO:
-        
-        if (!baseMenuKeyHandler(key, &videoOptions)) {
-            /* navigate to the item and activate it! */
-            switch (key) {
-            case 'g': videoOptions.activateItem(4, ACTIVATE_NORMAL); break;
-            case 's': videoOptions.activateItem(0, ACTIVATE_NORMAL); break;
-            case 'm': videoOptions.activateItem(1, ACTIVATE_NORMAL); break;
-            case 'f': videoOptions.activateItem(2, ACTIVATE_NORMAL); break;
-            case 'k': videoOptions.activateItem(3, ACTIVATE_NORMAL); break;
-            default: break;
-            }
-        }
-        
-        updateScreen();
-        return true;
-
-    case INTRO_CONFIG_SOUND:
-        
-        if (!baseMenuKeyHandler(key, &soundOptions)) {
-            /* navigate to the item and activate it! */
-            switch (key) {
-            case 'v': soundOptions.activateItem(0, ACTIVATE_NORMAL); break;
-            case 's': soundOptions.activateItem(1, ACTIVATE_NORMAL); break;
-            case 'f': soundOptions.activateItem(2, ACTIVATE_NORMAL); break;
-            default: break;
-            }
-        }
-        
-        updateScreen();
-        return true;
-
-    case INTRO_CONFIG_GAMEPLAY:
-        
-        if (!baseMenuKeyHandler(key, &gameplayOptions)) {
-            /* navigate to the item and activate it! */
-            switch(key) {
-            case 'g': gameplayOptions.activateItem(0, ACTIVATE_NORMAL); break;                
-            case 'a': gameplayOptions.activateItem(1, ACTIVATE_NORMAL); break;                
-            case 'o': gameplayOptions.activateItem(2, ACTIVATE_NORMAL); break;
-            case 'b': gameplayOptions.activateItem(3, ACTIVATE_NORMAL); break;
-            default: break;
-            }            
-        }
-
-        updateScreen();
-        return true;
-
-    case INTRO_CONFIG_ADVANCED:
-        if (!baseMenuKeyHandler(key, &advancedOptions)) {
-            /* navigate to the item and activate it! */
-            switch(key) {
-            case 'd': advancedOptions.activateItem(1, ACTIVATE_NORMAL); break;            
-            case 'k': advancedOptions.activateItem(2, ACTIVATE_NORMAL); break;
-            case 's': advancedOptions.activateItem(3, ACTIVATE_NORMAL); break;
-            case 'g': advancedOptions.activateItem(0, ACTIVATE_NORMAL); break;            
-            default: break;
-            }
-        }
-        
-        updateScreen();
-        return true;
-
-    case INTRO_CONFIG_KEYBOARD:
-        baseMenuKeyHandler(key, &keyboardOptions);
-        
-        updateScreen();
-        return true;
-
-    case INTRO_CONFIG_SPEED:
-        baseMenuKeyHandler(key, &speedOptions);
-        
-        updateScreen();
-        return true;
-        
-    case INTRO_CONFIG_ENHANCEMENT_OPTIONS:
-        baseMenuKeyHandler(key, &enhancementOptions);
-
-        updateScreen();
-        return true;
-
     case INTRO_ABOUT:
     case INTRO_INIT:
-    case INTRO_INIT_STORY:
+    case INTRO_CONFIG:
         ASSERT(0, "key handler called in wrong mode");
         return true;
     }
@@ -579,109 +501,9 @@ void IntroController::updateScreen() {
         drawBeasties();
         break;
 
-    case INTRO_CONFIG:
-        screenDrawImage(BKGD_INTRO);
-        screenTextAt(9, 14, "-- xu4 Configuration --");
-        mainOptions.show();
-        drawBeasties();
-        break;
-
-    case INTRO_CONFIG_VIDEO:
-        screenDrawImage(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3, "Video Options:");
-        screenTextAt(24, 5, "%s", settingsChanged.videoType.c_str());
-        screenTextAt(24, 6, "%s", settingsChanged.gemLayout.c_str());
-        screenTextAt(24, 7, "x%d", settingsChanged.scale);
-        screenTextAt(24, 8, "%s", settingsChanged.fullscreen ? "Fullscreen" : "Window");
-        screenTextAt(24, 9, "%s", settings.filters.getName(settingsChanged.filter).c_str());
-        screenTextAt(24, 10, "%s", settingsChanged.screenShakes ? "On" : "Off");
-        videoOptions.show();        
-        break;
-
-    case INTRO_CONFIG_SOUND:
-        screenDrawImage(BKGD_INTRO);
-        screenTextAt(2, 14, "Sound Options:");
-        screenTextAt(26, 16, "%s", settingsChanged.musicVol ? "On" : "Off");
-        screenTextAt(26, 17, "%s", settingsChanged.soundVol ? "On" : "Off");
-        screenTextAt(26, 18, "%s", settingsChanged.volumeFades ? "On" : "Off");        
-        soundOptions.show();
-        drawBeasties();
-        break;
-
-    case INTRO_CONFIG_GAMEPLAY:
-        screenDrawImage(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3, "Gameplay Options:");
-        screenTextAt(32, 5, "%s", settingsChanged.enhancements ? "On" : "Off");        
-        screenTextAt(6, 8, "  (Open, Jimmy, etc.)     %s", settingsChanged.shortcutCommands ? "On" : "Off");        
-        screenTextAt(32, 10, "%s", settings.battleDiffs.getName(settingsChanged.battleDiff).c_str());
-        screenTextAt(32, 12, "%s", settingsChanged.mouseOptions.enabled ? "On" : "Off");
-        gameplayOptions.show();
-        break;
-
-    case INTRO_CONFIG_ADVANCED:
-        screenDrawImage(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3,   "Advanced Options:");
-        screenTextAt(34, 8,  "%s", settingsChanged.debug ? "On" : "Off");        
-        advancedOptions.show();
-        break;
-
-    case INTRO_CONFIG_KEYBOARD:
-        screenDrawImage(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3, "Keyboard Settings:");
-        screenTextAt(34, 5,  "%d", settingsChanged.keydelay);
-        screenTextAt(34, 6,  "%d", settingsChanged.keyinterval);
-        keyboardOptions.show();        
-        break;
-
-    case INTRO_CONFIG_SPEED:
-        {
-            char msg[16] = {0};
-            screenDrawImage(BKGD_INTRO_EXTENDED);
-            screenTextAt(2, 3, "Speed Settings:");           
-
-            sprintf(msg, "%d", settingsChanged.gameCyclesPerSecond);
-            screenTextAt(33 - strlen(msg), 5, msg);
-
-            sprintf(msg, "%d", settingsChanged.battleSpeed);
-            screenTextAt(33 - strlen(msg), 6, msg);
-            
-            sprintf(msg, "%0.*f sec",
-                (settingsChanged.spellEffectSpeed % 5 == 0) ? 0 : 1,
-                static_cast<double>(settingsChanged.spellEffectSpeed) / 5);        
-            screenTextAt(37 - strlen(msg), 7, msg);
-
-            sprintf(msg, "%d sec", settingsChanged.campTime);
-            screenTextAt(37 - strlen(msg), 8, msg);
-
-            sprintf(msg, "%d sec", settingsChanged.innTime);
-            screenTextAt(37 - strlen(msg), 9, msg);
-
-            sprintf(msg, "%d sec", settingsChanged.shrineTime);
-            screenTextAt(37 - strlen(msg), 10, msg);
-
-            sprintf(msg, "%d msec", settingsChanged.shakeInterval);
-            screenTextAt(38 - strlen(msg), 11, msg);
-
-            speedOptions.show();
-        }
-        break;
-
-    case INTRO_CONFIG_ENHANCEMENT_OPTIONS:
-        screenDrawImage(BKGD_INTRO_EXTENDED);
-        screenTextAt(2, 3,   "Game Enhancement Options:");        
-        screenTextAt(31, 5,  "%s", settingsChanged.enhancementsOptions.activePlayer ? "On" : "Off");
-        screenTextAt(31, 6,  "%s", settingsChanged.enhancementsOptions.u5spellMixing ? "On" : "Off");
-        screenTextAt(31, 7,  "%s", settingsChanged.enhancementsOptions.u5shrines ? "On" : "Off");
-        screenTextAt(31, 8,  "%s", settingsChanged.enhancementsOptions.slimeDivides ? "On" : "Off");
-        screenTextAt(31, 9,  "%s", settingsChanged.enhancementsOptions.c64chestTraps ? "On" : "Off");
-        screenTextAt(31, 10,  "%s", settingsChanged.enhancementsOptions.smartEnterKey ? "On" : "Off");
-        screenTextAt(31, 11,  "%s", settingsChanged.enhancementsOptions.peerShowsObjects ? "On" : "Off");
-        enhancementOptions.show();
-        break;    
-
     case INTRO_ABOUT:
     case INTRO_INIT:
-    case INTRO_INIT_STORY:
+    case INTRO_CONFIG:
         break;
 
     default:
@@ -741,8 +563,6 @@ void IntroController::initiateNewGame() {
 void IntroController::showStory() {
     ReadChoiceController pauseController("");
 
-    mode = INTRO_INIT_STORY;
-
     for (int storyInd = 0; storyInd < 24; storyInd++) {
         if (storyInd == 0)
             screenDrawImage(BKGD_TREE);
@@ -788,7 +608,7 @@ void IntroController::startQuestions() {
         if (questionRound == 0)
             screenDrawImage(BKGD_ABACUS);
 
-        // draw the cards
+        // draw the cards and show the lead up text
         screenShowCard(0, questionTree[questionRound * 2]);
         screenShowCard(1, questionTree[questionRound * 2 + 1]);
 
@@ -800,14 +620,18 @@ void IntroController::startQuestions() {
         screenTextAt(0, 22, "\"Consider this:\"");
         screenSetCursorPos(16, 22);
 
+        // wait for a key
         eventHandler->pushController(&pauseController);
         pauseController.waitFor();
 
+        // show the question to choose between virtues
         showText(getQuestion(questionTree[questionRound * 2], questionTree[questionRound * 2 + 1]));
 
+        // wait for an answer
         eventHandler->pushController(&questionController);
         int choice = questionController.waitFor();
 
+        // if done, create the savegame and continue on to the game
         if (doQuestion(choice == 'a' ? 0 : 1)) {
             SaveGame saveGame;
             SaveGamePlayerRecord avatar;
@@ -850,7 +674,7 @@ void IntroController::startQuestions() {
             pauseController.waitFor();
 
             // done: exit intro and let game begin
-            EventHandler::setExitFlag();
+            EventHandler::setControllerDone();
 
             return;
         }
@@ -898,9 +722,12 @@ void IntroController::journeyOnward() {
     }
 
     fclose(saveGameFile);
-    EventHandler::setExitFlag();
+    EventHandler::setControllerDone();
 }
 
+/**
+ * Shows an about box.
+ */
 void IntroController::about() {
     mode = INTRO_ABOUT;
 
@@ -948,6 +775,24 @@ void IntroController::showText(const string &text) {
 }
 
 /**
+ * Run a menu and return when the menu has been closed.  Screen
+ * updates are handled by observing the menu.
+ */
+void IntroController::runMenu(Menu *menu, bool withBeasties) {
+    menu->addObserver(this);
+    menu->reset();
+    menu->show();
+    if (withBeasties)
+        drawBeasties();
+
+    IntroMenuController menuController(menu);
+    eventHandler->pushController(&menuController);
+    menuController.waitFor();
+
+    menu->deleteObserver(this);
+}
+
+/**
  * Timer callback for the intro sequence.  Handles animating the intro
  * map, the beasties, etc..
  */
@@ -956,9 +801,7 @@ void IntroController::timerFired() {
     screenUpdateCursor();
     if (mode == INTRO_MAP)
         drawMap();
-    if (mode == INTRO_MAP || mode == INTRO_MENU || mode == INTRO_CONFIG ||
-        mode == INTRO_ABOUT || mode == INTRO_CONFIG_SOUND ||        
-        mode == INTRO_INIT)
+    if (beastiesVisible)
         drawBeasties();
 
     /* 
@@ -973,6 +816,107 @@ void IntroController::timerFired() {
     if (xu4_random(2) && ++beastie2Cycle >= BEASTIE2_FRAMES)
         beastie2Cycle = 0;
 }
+
+/**
+ * Update the screen when an observed menu is reset or has an item
+ * activated.
+ */
+void IntroController::update(Observable<std::string> *o, std::string arg) {
+    Menu *menu = static_cast<Menu *>(o);
+
+    if (arg != "Menu::activateItem" &&
+        arg != "Menu::reset")
+        return;
+
+    if (menu == &mainOptions) {
+        screenDrawImage(BKGD_INTRO);
+        screenTextAt(9, 14, "-- xu4 Configuration --");
+    }
+
+    else if (menu == &videoOptions) {
+        screenDrawImage(BKGD_INTRO_EXTENDED);
+        screenTextAt(2, 3, "Video Options:");
+        screenTextAt(24, 5, "%s", settingsChanged.videoType.c_str());
+        screenTextAt(24, 6, "%s", settingsChanged.gemLayout.c_str());
+        screenTextAt(24, 7, "x%d", settingsChanged.scale);
+        screenTextAt(24, 8, "%s", settingsChanged.fullscreen ? "Fullscreen" : "Window");
+        screenTextAt(24, 9, "%s", settings.filters.getName(settingsChanged.filter).c_str());
+        screenTextAt(24, 10, "%s", settingsChanged.screenShakes ? "On" : "Off");
+    }
+
+    else if (menu == &soundOptions) {
+        screenDrawImage(BKGD_INTRO);
+        screenTextAt(2, 14, "Sound Options:");
+        screenTextAt(26, 16, "%s", settingsChanged.musicVol ? "On" : "Off");
+        screenTextAt(26, 17, "%s", settingsChanged.soundVol ? "On" : "Off");
+        screenTextAt(26, 18, "%s", settingsChanged.volumeFades ? "On" : "Off");
+    }
+
+    else if (menu == &gameplayOptions) {
+        screenDrawImage(BKGD_INTRO_EXTENDED);
+        screenTextAt(2, 3, "Gameplay Options:");
+        screenTextAt(32, 5, "%s", settingsChanged.enhancements ? "On" : "Off");        
+        screenTextAt(6, 8, "  (Open, Jimmy, etc.)     %s", settingsChanged.shortcutCommands ? "On" : "Off");        
+        screenTextAt(32, 10, "%s", settings.battleDiffs.getName(settingsChanged.battleDiff).c_str());
+        screenTextAt(32, 12, "%s", settingsChanged.mouseOptions.enabled ? "On" : "Off");
+    }
+
+    else if (menu == &advancedOptions) {
+        screenDrawImage(BKGD_INTRO_EXTENDED);
+        screenTextAt(2, 3,   "Advanced Options:");
+        screenTextAt(34, 8,  "%s", settingsChanged.debug ? "On" : "Off");        
+    }
+
+    else if (menu == &enhancementOptions) {
+        screenDrawImage(BKGD_INTRO_EXTENDED);
+        screenTextAt(2, 3,   "Game Enhancement Options:");        
+        screenTextAt(31, 5,  "%s", settingsChanged.enhancementsOptions.activePlayer ? "On" : "Off");
+        screenTextAt(31, 6,  "%s", settingsChanged.enhancementsOptions.u5spellMixing ? "On" : "Off");
+        screenTextAt(31, 7,  "%s", settingsChanged.enhancementsOptions.u5shrines ? "On" : "Off");
+        screenTextAt(31, 8,  "%s", settingsChanged.enhancementsOptions.slimeDivides ? "On" : "Off");
+        screenTextAt(31, 9,  "%s", settingsChanged.enhancementsOptions.c64chestTraps ? "On" : "Off");
+        screenTextAt(31, 10,  "%s", settingsChanged.enhancementsOptions.smartEnterKey ? "On" : "Off");
+        screenTextAt(31, 11,  "%s", settingsChanged.enhancementsOptions.peerShowsObjects ? "On" : "Off");
+    }
+
+    else if (menu == &keyboardOptions) {
+        screenDrawImage(BKGD_INTRO_EXTENDED);
+        screenTextAt(2, 3, "Keyboard Settings:");
+        screenTextAt(34, 5,  "%d", settingsChanged.keydelay);
+        screenTextAt(34, 6,  "%d", settingsChanged.keyinterval);
+    } 
+
+    else if (menu == &speedOptions) {
+        char msg[16] = {0};
+        screenDrawImage(BKGD_INTRO_EXTENDED);
+        screenTextAt(2, 3, "Speed Settings:");           
+
+        sprintf(msg, "%d", settingsChanged.gameCyclesPerSecond);
+        screenTextAt(33 - strlen(msg), 5, msg);
+
+        sprintf(msg, "%d", settingsChanged.battleSpeed);
+        screenTextAt(33 - strlen(msg), 6, msg);
+
+        sprintf(msg, "%0.*f sec",
+                (settingsChanged.spellEffectSpeed % 5 == 0) ? 0 : 1,
+                static_cast<double>(settingsChanged.spellEffectSpeed) / 5);        
+        screenTextAt(37 - strlen(msg), 7, msg);
+
+        sprintf(msg, "%d sec", settingsChanged.campTime);
+        screenTextAt(37 - strlen(msg), 8, msg);
+
+        sprintf(msg, "%d sec", settingsChanged.innTime);
+        screenTextAt(37 - strlen(msg), 9, msg);
+
+        sprintf(msg, "%d sec", settingsChanged.shrineTime);
+        screenTextAt(37 - strlen(msg), 10, msg);
+
+        sprintf(msg, "%d msec", settingsChanged.shakeInterval);
+        screenTextAt(38 - strlen(msg), 11, msg);
+    }
+
+}
+
 
 /**
  * Initializes the question tree.  The tree starts off with the first
@@ -1145,71 +1089,28 @@ void IntroController::initPlayers(SaveGame *saveGame) {
 
 }
 
-/**
- * The base key handler for the configuration menus
- */
-int IntroController::baseMenuKeyHandler(int key, void *data) {
-    Menu *menu = static_cast<Menu *>(data);
-    char cancelKey = (mode == INTRO_CONFIG) ? 'm' : 'c';
-    char saveKey = (mode == INTRO_CONFIG) ? '\0' : 'u';
-
-    if (key == cancelKey)
-        return baseMenuKeyHandler(' ', menu);
-    else if (key == saveKey)
-        return baseMenuKeyHandler(0, menu);
-    
-    switch(key) {
-    case U4_UP:
-        menu->prev();        
-        break;
-    case U4_DOWN:
-        menu->next();
-        break;
-    case U4_LEFT:
-    case U4_RIGHT:
-    case U4_ENTER:
-        {
-            MenuItem *menuItem = &(*menu->getCurrent());
-            ActivateAction action = ACTIVATE_NORMAL;
-            
-            if (menuItem->getActivateFunc()) {
-                if (key == U4_LEFT)
-                    action = ACTIVATE_DECREMENT;
-                else if (key == U4_RIGHT)
-                    action = ACTIVATE_INCREMENT;
-                menu->activateItem(-1, action);
-            }
-        }
-        break;
-    case ' ':    
-        /* activate the 'cancel' menu item */
-        menu->activateItem(0xFF, ACTIVATE_NORMAL);
-        break;    
-    case 0:
-        /* activate the 'save' menu item */
-        menu->activateItem(0xFE, ACTIVATE_NORMAL);        
-        break;
-    case U4_ESC:
-        /* go back to the main screen */
-        mode = INTRO_MENU; break;
-    default:
-        return 0;
-    }    
-
-    return 1;
-}
-
 /* main options menu handler */
 void IntroController::introMainOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action) {
     if (action != ACTIVATE_NORMAL)
         return;
 
     switch(menuItem->getId()) {
-    case 0: intro->mode = INTRO_CONFIG_VIDEO; videoOptions.reset(); break;        
-    case 1: intro->mode = INTRO_CONFIG_SOUND; soundOptions.reset(); break;
-    case 2: intro->mode = INTRO_CONFIG_GAMEPLAY; gameplayOptions.reset(); break;
-    case 0xFF: intro->mode = INTRO_MENU; break;
-    default: break;
+    case 0:
+        intro->beastiesVisible = false;
+        intro->runMenu(&videoOptions, false);
+        intro->beastiesVisible = true;
+        break;
+    case 1:
+        intro->runMenu(&soundOptions, true);
+        break;
+    case 2:
+        intro->beastiesVisible = false;
+        intro->runMenu(&gameplayOptions, false);
+        intro->beastiesVisible = true;
+        break;
+    case 0xFF:
+    default: 
+        break;
     }
 }
 
@@ -1305,14 +1206,10 @@ void IntroController::introVideoOptionsMenuItemActivate(MenuItem *menuItem, Acti
             /* FIXME: resize images, etc. */
             screenReInit();
         }        
-    
-        intro->mode = INTRO_CONFIG;
-        
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        intro->mode = INTRO_CONFIG;
         break;
         
     default: break;
@@ -1337,13 +1234,11 @@ void IntroController::introSoundOptionsMenuItemActivate(MenuItem *menuItem, Acti
         settings.write();
         
         musicIntro();
-    
-        intro->mode = INTRO_CONFIG;
+
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        intro->mode = INTRO_CONFIG;
         break;
     
     default: break;
@@ -1371,29 +1266,22 @@ void IntroController::introGameplayOptionsMenuItemActivate(MenuItem *menuItem, A
         }
         break;
     case 2:
-        intro->mode = INTRO_CONFIG_ADVANCED;
-        advancedOptions.reset();
-
-        /* show or hide game enhancement options if enhancements are enabled/disabled */
+        // show or hide game enhancement options if enhancements are enabled/disabled
         advancedOptions.getItemById(0)->setVisible(settingsChanged.enhancements);
 
-        break;    
-
+        intro->runMenu(&advancedOptions, false);
+        break;
     case 4:
         settingsChanged.mouseOptions.enabled = !settingsChanged.mouseOptions.enabled;
         break;
-
     case 0xFE:
         /* save settings */
         settings.setData(settingsChanged);
         settings.write();
-    
-        intro->mode = INTRO_CONFIG;
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        intro->mode = INTRO_CONFIG;
         break;
     default: break;
     }
@@ -1406,28 +1294,22 @@ void IntroController::introAdvancedOptionsMenuItemActivate(MenuItem *menuItem, A
         settingsChanged.debug = settingsChanged.debug ? 0 : 1;
         break;
     case 0:
-        intro->mode = INTRO_CONFIG_ENHANCEMENT_OPTIONS;
-        enhancementOptions.reset();
-        break;    
+        intro->runMenu(&enhancementOptions, false);
+        break;
     case 2:
-        intro->mode = INTRO_CONFIG_KEYBOARD;
-        keyboardOptions.reset();
+        intro->runMenu(&keyboardOptions, false);
         break;
     case 3:
-        intro->mode = INTRO_CONFIG_SPEED;
-        speedOptions.reset();
-        break;    
+        intro->runMenu(&speedOptions, false);
+        break;
     case 0xFE:
         /* save settings */
         settings.setData(settingsChanged);
         settings.write();
-    
-        intro->mode = INTRO_CONFIG_GAMEPLAY;
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        intro->mode = INTRO_CONFIG_GAMEPLAY;
         break;
     default: break;
     }
@@ -1466,12 +1348,10 @@ void IntroController::introKeyboardOptionsMenuItemActivate(MenuItem *menuItem, A
         /* re-initialize keyboard */
         KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
     
-        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     default: break;
     }    
@@ -1568,12 +1448,10 @@ void IntroController::introSpeedOptionsMenuItemActivate(MenuItem *menuItem, Acti
         eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
         eventHandler->getTimer()->reset(eventTimerGranularity);            
         
-        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     case 0xFF:
         /* discard settings */
         settingsChanged = settings;
-        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     default: break;
     }
@@ -1607,15 +1485,76 @@ void IntroController::introEnhancementOptionsMenuItemActivate(MenuItem *menuItem
         /* save settings */
         settings.setData(settingsChanged);
         settings.write();        
-    
-        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     case 0xFF:        
         /* discard settings */
         settingsChanged = settings;
-        intro->mode = INTRO_CONFIG_ADVANCED;
         break;
     
     default: break;
     }
 }
+
+IntroMenuController::IntroMenuController(Menu *menu) {
+    this->menu = menu;
+    exitWhenDone = false;
+}
+
+bool IntroMenuController::keyPressed(int key) {
+    bool handled = true;
+
+    switch(key) {
+    case U4_UP:
+        menu->prev();        
+        break;
+    case U4_DOWN:
+        menu->next();
+        break;
+    case U4_LEFT:
+    case U4_RIGHT:
+    case U4_ENTER:
+        {
+            MenuItem *menuItem = &(*menu->getCurrent());
+            ActivateAction action = ACTIVATE_NORMAL;
+            
+            if (menuItem->getActivateFunc()) {
+                if (key == U4_LEFT)
+                    action = ACTIVATE_DECREMENT;
+                else if (key == U4_RIGHT)
+                    action = ACTIVATE_INCREMENT;
+                menu->activateItem(-1, action);
+            }
+        }
+        break;
+    case ' ':    
+        /* activate the 'cancel' menu item */
+        menu->activateItem(0xFF, ACTIVATE_NORMAL);
+        break;    
+#if 0
+    case U4_ESC:
+        /* go back to the main screen */
+        intro->mode = IntroController::INTRO_MENU; break;
+        break;
+#endif
+    default:
+        handled = menu->activateItemByShortcut(key, ACTIVATE_NORMAL);
+    }    
+
+    screenHideCursor();
+    menu->show();
+    screenUpdateCursor();
+    screenRedrawScreen();
+
+    if (exitWhenDone && menu->getClosed())
+        eventHandler->setControllerDone();
+
+    return handled;
+}
+
+void IntroMenuController::waitFor() {
+    exitWhenDone = true;
+    eventHandler->run();
+    eventHandler->setControllerDone(false);
+    eventHandler->popController();
+}
+

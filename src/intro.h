@@ -9,11 +9,12 @@
 
 #include "controller.h"
 #include "menu.h"
+#include "observer.h"
 #include "savegame.h"
 
 struct IntroObjectState;
 
-class IntroController : public Controller {
+class IntroController : public Controller, public Observer<std::string> {
 public:
     IntroController();
 
@@ -23,6 +24,8 @@ public:
     unsigned char *getSigData();
     void updateScreen();
     void timerFired();
+
+    void update(Observable<std::string> *o, std::string arg);
 
 private:
     void drawMap();
@@ -42,7 +45,7 @@ private:
 
     void showText(const string &text);
 
-    int baseMenuKeyHandler(int key, void *data);
+    void runMenu(Menu *menu, bool withBeasties);
 
     static void introMainOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
     static void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action);
@@ -59,17 +62,9 @@ private:
     enum {
         INTRO_MAP,                          /* displaying the animated intro map */
         INTRO_MENU,                         /* displaying the main menu: journey onward, etc. */
-        INTRO_CONFIG,                       /* the configuration screen */
-        INTRO_CONFIG_VIDEO,                 /* video configuration */
-        INTRO_CONFIG_SOUND,                 /* sound configuration */
-        INTRO_CONFIG_GAMEPLAY,              /* gameplay configuration */
-        INTRO_CONFIG_ADVANCED,              /* advanced gameplay config */
-        INTRO_CONFIG_KEYBOARD,              /* keyboard config */
-        INTRO_CONFIG_SPEED,                 /* speed config */
-        INTRO_CONFIG_ENHANCEMENT_OPTIONS,   /* game enhancement options */    
+        INTRO_CONFIG,                       /* the configuration screens */
         INTRO_ABOUT,                        /* about xu4 screen */
-        INTRO_INIT,                         /* prompting for character name and sex */
-        INTRO_INIT_STORY                    /* displaying the intro story leading up the gypsy */
+        INTRO_INIT,                         /* initializing a new game */
     } mode;
 
     /* data loaded in from title.exe */
@@ -93,9 +88,24 @@ private:
     int beastie1Cycle;
     int beastie2Cycle;
     int beastieOffset;
+    bool beastiesVisible;
     int sleepCycles;
     int scrPos;  /* current position in the script table */
     IntroObjectState *objectStateTable;
+
+    friend class IntroMenuController;
+};
+
+class IntroMenuController : public Controller {
+public:
+    IntroMenuController(Menu *menu);
+    bool keyPressed(int key);
+
+    void waitFor();
+
+private:
+    Menu *menu;
+    bool exitWhenDone;
 };
 
 extern IntroController *intro;
