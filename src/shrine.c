@@ -72,7 +72,7 @@ int shrineHandleVirtue(const char *message) {
     screenMessage("\n\nFor how many Cycles (0-3)? ");
 
     info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-    info->choices = "0123\033";
+    info->choices = "0123\015\033";
     info->handleChoice = &shrineHandleCycles;
     eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
 
@@ -82,7 +82,7 @@ int shrineHandleVirtue(const char *message) {
 int shrineHandleCycles(char choice) {
     eventHandlerPopKeyHandler();
 
-    if (choice == '\033')
+    if (choice == '\033' || choice == '\015')
         cycles = 0;
     else
         cycles = choice - '0';

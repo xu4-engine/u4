@@ -58,11 +58,11 @@ const struct {
     { &vendorGetIntro, &vendorGetArmsVendorQuestionResponse, &vendorGetArmsBuyItemResponse, &vendorGetSellItemResponse, 
       &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, NULL, 
       &vendorGetArmsConfirmationResponse, &vendorGetContinueQuestionResponse, 
-      NULL, NULL, "bs\033" }, /* NPC_VENDOR_WEAPONS */
+      NULL, NULL, "bs\015 \033" }, /* NPC_VENDOR_WEAPONS */
     { &vendorGetIntro, &vendorGetArmsVendorQuestionResponse, &vendorGetArmsBuyItemResponse, &vendorGetSellItemResponse, 
       &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, NULL,
       &vendorGetArmsConfirmationResponse, &vendorGetContinueQuestionResponse, 
-      NULL, NULL, "bs\033" }, /* NPC_VENDOR_ARMOR */
+      NULL, NULL, "bs\015 \033" }, /* NPC_VENDOR_ARMOR */
     { &vendorGetIntro, NULL, NULL, NULL, 
       &vendorGetBuyQuantityResponse, NULL, NULL, 
       NULL, &vendorGetContinueQuestionResponse, 
@@ -70,7 +70,7 @@ const struct {
     { &vendorGetIntro, &vendorGetTavernVendorQuestionResponse, NULL, NULL, 
       &vendorGetBuyQuantityResponse, NULL, &vendorGetTavernBuyPriceResponse,
       NULL, &vendorGetContinueQuestionResponse, 
-      &vendorGetTavernTopicResponse, NULL, "af\033" }, /* NPC_VENDOR_TAVERN */
+      &vendorGetTavernTopicResponse, NULL, "af\015 \033" }, /* NPC_VENDOR_TAVERN */
     { &vendorGetIntro, NULL, &vendorGetReagentsBuyItemResponse, NULL,
       &vendorGetBuyQuantityResponse, NULL, &vendorGetReagentsBuyPriceResponse,
       NULL, &vendorGetContinueQuestionResponse, 
@@ -82,11 +82,11 @@ const struct {
     { &vendorGetIntro, &vendorGetInnVendorQuestionResponse, NULL, NULL,
       NULL, NULL, NULL,
       &vendorGetInnConfirmationResponse, &vendorGetContinueQuestionResponse, 
-      NULL, NULL, "123\033" }, /* NPC_VENDOR_INN */
+      NULL, NULL, "123\015 \033" }, /* NPC_VENDOR_INN */
     { &vendorGetIntro, NULL, &vendorGetGuildBuyItemResponse, NULL,
       NULL, NULL, NULL, 
       &vendorGetGuildConfirmationResponse, &vendorGetContinueQuestionResponse, 
-      NULL, NULL, "ny\033" }, /* NPC_VENDOR_GUILD */
+      NULL, NULL, "ny\015 \033" }, /* NPC_VENDOR_GUILD */
     { &vendorGetIntro, NULL, NULL, NULL,
       NULL, NULL, NULL, 
       &vendorGetStableConfirmationResponse, &vendorGetContinueQuestionResponse, NULL, 
@@ -765,7 +765,7 @@ char *vendorGetArmsBuyItemResponse(Conversation *cnv, const char *response) {
     else
         ASSERT(0, "invalid npc type: %d", cnv->talker->npcType);
 
-    if (response[0] == '\033') {
+    if (response[0] == '\033' || response[0] == '\015' || response[0] == ' ') {
         cnv->state = CONV_DONE;
         return vendorGetFarewell(cnv, NULL);
     }
@@ -799,7 +799,7 @@ char *vendorGetReagentsBuyItemResponse(Conversation *cnv, const char *response) 
 
     cnv->itemSubtype = -1;
 
-    if (response[0] == '\033') {
+    if (response[0] == '\033' || response[0] == '\015' || response[0] == ' ') {
         cnv->state = CONV_DONE;
         return vendorGetFarewell(cnv, NULL);
     }
@@ -831,7 +831,7 @@ char *vendorGetHealerBuyItemResponse(Conversation *cnv, const char *response) {
 
     cnv->itemSubtype = -1;
 
-    if (response[0] == '\033') {
+    if (response[0] == '\033' || response[0] == '\015' || response[0] == ' ') {
         cnv->state = CONV_DONE;
         return vendorGetFarewell(cnv, NULL);
     }
@@ -878,7 +878,7 @@ char *vendorGetGuildBuyItemResponse(Conversation *cnv, const char *response) {
 
     cnv->itemSubtype = -1;
 
-    if (response[0] == '\033') {
+    if (response[0] == '\033' || response[0] == '\015' || response[0] == ' ') {
         cnv->state = CONV_DONE;
         return vendorGetFarewell(cnv, NULL);
     }
@@ -917,7 +917,7 @@ char *vendorGetSellItemResponse(Conversation *cnv, const char *response) {
     if (cnv->itemSubtype >= itemMax) {
         return strdup("");
     } 
-    else if (response[0] == '\033') {
+    else if (response[0] == '\033' || response[0] == '\015' || response[0] == ' ') {
         cnv->state = CONV_DONE;
         return vendorGetFarewell(cnv, NULL);
     }

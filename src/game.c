@@ -1926,7 +1926,7 @@ int gamePeerCity(int city, void *data) {
             
         // Wait for player to hit a key
         choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-        choiceInfo->choices = " \033";
+        choiceInfo->choices = "\015 \033";
         choiceInfo->handleChoice = &peerCityHandleChoice;
         eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
         return 1;
@@ -1945,7 +1945,7 @@ void gamePeerGem(void) {
     
     c->location->viewMode = VIEW_GEM;
     choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-    choiceInfo->choices = " \033";
+    choiceInfo->choices = "\015 \033";
     choiceInfo->handleChoice = &gemHandleChoice;
     eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
 }

@@ -281,14 +281,14 @@ const char *personGetChoices(const struct _Conversation *cnv) {
 
     case CONV_BUY_ITEM:
     case CONV_SELL_ITEM:
-        return "abcdefghijklmnopqrstuvwxyz\033";
+        return "abcdefghijklmnopqrstuvwxyz\015 \033";
 
     case CONV_CONFIRMATION:
     case CONV_CONTINUEQUESTION:
-        return "ny\033";
+        return "ny\015 \033";
 
     case CONV_PLAYER:
-        return "012345678\033";
+        return "012345678\015 \033";
 
     default:
         ASSERT(0, "invalid state: %d", cnv->state);
