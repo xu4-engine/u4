@@ -53,6 +53,7 @@ int castForPlayer2(int spell, void *data);
 int castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
 int castForPlayerGetPhase(int phase);
+int destroyAtCoord(int x, int y, int distance, void *data);
 int fireAtCoord(int x, int y, int distance, void *data);
 int getChest(int player);
 int getChestTrapHandler(int player);
@@ -462,6 +463,19 @@ int gameBaseKeyHandler(int key, void *data) {
         eventHandlerPushKeyHandler(&gameSpecialCmdKeyHandler);
         break;
 
+    case 4:                     /* ctrl-D */        
+        info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
+        info->handleAtCoord = &destroyAtCoord;
+        info->origin_x = c->location->x;
+        info->origin_y = c->location->y;
+        info->prev_x = info->prev_y = -1;
+        info->range = 1;
+        info->validDirections = MASK_DIR_ALL;
+        info->blockedPredicate = NULL;
+        eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
+        screenMessage("Destroy Object\nDir: ");        
+        break;
+
     case ' ':
         gameCheckBridgeTrolls();
         screenMessage("Pass\n");
@@ -832,7 +846,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     default:
-        valid = 0;
+        valid = 0;        
         break;
     }
 
@@ -1273,6 +1287,15 @@ int castForPlayerGetPhase(int phase) {
     gameCastSpell(castSpell, castPlayer, phase);
     gameFinishTurn();
     return 1;
+}
+
+int destroyAtCoord(int x, int y, int distance, void *data) {
+    Object *obj = mapObjectAt(c->location->map, x, y, c->location->z);
+    if (obj) {
+        mapRemoveObject(c->location->map, obj);
+        return 1;
+    }
+    return 0;
 }
 
 int fireAtCoord(int x, int y, int distance, void *data) {

@@ -726,31 +726,29 @@ void combatMoveMonsters() {
 }
 
 int combatFindTargetForMonster(const Object *monster, int *distance, int ranged) {
-    int i, dx, dy;
-    int closest;
-
-    *distance = 1000;
+    int i, curDistance;
+    int closest;    
+    
+    *distance = 20;
     closest = -1;
     for (i = 0; i < c->saveGame->members; i++) {
         if (!party[i])
             continue;
 
-        dx = monster->x - party[i]->x;
-        dx *= dx;
-        dy = monster->y - party[i]->y;
-        dy *= dy;
+        /* find out how many moves it would take to get to the party member */
+        curDistance = mapMovementDistance(monster->x, monster->y, party[i]->x, party[i]->y);        
 
         /* skip target if further than current target */
-        if (dx + dy > (*distance))
+        if (curDistance > (*distance))
             continue;
         /* skip target 50% of time if same distance */
-        if (dx + dy == (*distance) && (rand() % 2) == 0)
+        if (curDistance == (*distance) && (rand() % 2) == 0)
             continue;
         /* skip target if ranged attack and column or row not shared */
-        if (ranged && dx != 0 && dy != 0)
+        if (ranged && (monster->x != party[i]->x) && (monster->y != party[i]->y))
             continue;
-
-        (*distance) = dx + dy;
+        
+        (*distance) = curDistance;
         closest = i;
     }
 

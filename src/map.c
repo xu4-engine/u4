@@ -447,12 +447,9 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
             /* See if the object is a normal monster,
                or just a docile creature in town */
             ((obj->person == NULL) || 
-             (obj->person->movement_behavior == MOVEMENT_ATTACK_AVATAR))) {
-
-            int distance;
-            distance = (newx - avatarx) * (newx - avatarx);
-            distance += (newy - avatary) * (newy - avatary);
-            if (distance == 1) {
+             (obj->person->movement_behavior == MOVEMENT_ATTACK_AVATAR))) {           
+            
+            if (mapMovementDistance(newx, newy, avatarx, avatary) == 1) {
                 attacker = obj;
                 continue;
             }
@@ -666,4 +663,18 @@ int mapDistance(int x1, int y1, int x2, int y2) {
     }
 
     return dist;
+}
+
+/**
+ * Find the number of moves it would take to get
+ * from point a to point b (no diagonals allowed)
+ */
+
+int mapMovementDistance(int x1, int y1, int x2, int y2) {
+    int dx = x1 - x2,
+        dy = y1 - y2;
+
+    if (dx < 0) dx *= -1;
+    if (dy < 0) dy *= -1;
+    return (dx + dy);
 }
