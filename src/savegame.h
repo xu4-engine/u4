@@ -163,7 +163,10 @@ typedef struct _SaveGame {
     unsigned char runes;
     unsigned short members;
     unsigned short transport;
-    unsigned short balloonstate;
+    union {
+        unsigned short balloonstate;
+        unsigned short torchduration;
+    };
     unsigned short trammelphase;
     unsigned short feluccaphase;
     unsigned short shiphull;
