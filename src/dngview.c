@@ -64,10 +64,15 @@ DungeonGraphicType dungeonViewTileToGraphic(unsigned char tile) {
         return DNGGRAPHIC_LADDERUP;
     case LADDERDOWN_TILE:
         return DNGGRAPHIC_LADDERDOWN;
+        
     case DEEP_WATER_TILE:    
     case CHEST_TILE:
     case ALTAR_TILE:
     case MAGICFLASH_TILE:
+    case POISONFIELD_TILE:
+    case LIGHTNINGFIELD_TILE:
+    case FIREFIELD_TILE:
+    case SLEEPFIELD_TILE:
         return DNGGRAPHIC_TILE;
     }
 
