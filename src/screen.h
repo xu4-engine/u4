@@ -42,6 +42,7 @@ void screenUpdateWind(void);
 void screenEnableCursor(void);
 void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);
+void screenFindLineOfSight(void);
 
 extern int screenCurrentCycle;
 

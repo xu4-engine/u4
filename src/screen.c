@@ -21,6 +21,7 @@ int screenCurrentCycle = 0;
 int screenCursorX = 0;
 int screenCursorY = 0;
 int screenCursorStatus = 0;
+int screenLos[VIEWPORT_W][VIEWPORT_H];
 
 void screenTextAt(int x, int y, char *fmt, ...) {
     char buffer[1024];
@@ -71,32 +72,42 @@ void screenMessage(const char *fmt, ...) {
     screenEnableCursor();
 }
 
-void screenUpdate() {
-    int y, x, tile;
+unsigned char screenViewportTile(int x, int y) {
     const Object *obj;
+
+    /* off the edge of the map: show sea (world map) or grass (all other maps) */
+    if (MAP_IS_OOB(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2)))
+        return (mapIsWorldMap(c->map) ? SEA_TILE : GRASS_TILE);
+
+    /* put the avatar in the center of the viewport */
+    else if ((c->map->flags & SHOW_AVATAR) &&
+             x == (VIEWPORT_W / 2) &&
+             y == (VIEWPORT_H / 2))
+        return c->saveGame->transport;
+	  
+    
+    else if ((obj = mapObjectAt(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2)))) 
+        return obj->tile;
+
+    else
+        return mapTileAt(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2));
+}
+
+void screenUpdate() {
+    int y, x;
 
     if (c == NULL)
         return;
 
+    screenFindLineOfSight();
+
     for (y = 0; y < VIEWPORT_H; y++) {
 	for (x = 0; x < VIEWPORT_W; x++) {
-
-	    if (MAP_IS_OOB(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2)))
-		tile = mapIsWorldMap(c->map) ? SEA_TILE : GRASS_TILE;
-
-	    else if ((c->map->flags & SHOW_AVATAR) &&
-                     x == (VIEWPORT_W / 2) &&
-		     y == (VIEWPORT_H / 2))
-		tile = c->saveGame->transport;
-	  
-	    else if ((obj = mapObjectAt(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2)))) 
-		tile = obj->tile;
-
-	    else
-		tile = mapTileAt(c->map, x + c->saveGame->x - (VIEWPORT_W / 2), y + c->saveGame->y - (VIEWPORT_H / 2));
-
-	    screenShowTile(tile, x, y);
-	}
+            if (screenLos[x][y])
+                screenShowTile(screenViewportTile(x, y), x, y);
+            else
+                screenShowTile(126, x, y);
+        }
     }
 
     screenUpdateCursor();
@@ -156,4 +167,93 @@ void screenDisableCursor() {
 void screenSetCursorPos(int x, int y) {
     screenCursorX = x;
     screenCursorY = y;
+}
+
+void screenFindLineOfSight() {
+    int y, x;
+
+    if (c == NULL)
+        return;
+
+    for (y = 0; y < VIEWPORT_H; y++) {
+        for (x = 0; x < VIEWPORT_W; x++) {
+            screenLos[x][y] = 0;
+        }
+    }
+
+    screenLos[VIEWPORT_W / 2][VIEWPORT_H / 2] = 1;
+
+    for (x = VIEWPORT_W / 2 - 1; x >= 0; x--)
+        if (screenLos[x + 1][VIEWPORT_H / 2] &&
+            !tileIsOpaque(screenViewportTile(x + 1, VIEWPORT_H / 2)))
+            screenLos[x][VIEWPORT_H / 2] = 1;
+
+    for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++)
+        if (screenLos[x - 1][VIEWPORT_H / 2] &&
+            !tileIsOpaque(screenViewportTile(x - 1, VIEWPORT_H / 2)))
+            screenLos[x][VIEWPORT_H / 2] = 1;
+
+    for (y = VIEWPORT_H / 2 - 1; y >= 0; y--)
+        if (screenLos[VIEWPORT_W / 2][y + 1] &&
+            !tileIsOpaque(screenViewportTile(VIEWPORT_W / 2, y + 1)))
+            screenLos[VIEWPORT_W / 2][y] = 1;
+
+    for (y = VIEWPORT_H / 2 + 1; y < VIEWPORT_H; y++)
+        if (screenLos[VIEWPORT_W / 2][y - 1] &&
+            !tileIsOpaque(screenViewportTile(VIEWPORT_W / 2, y - 1)))
+            screenLos[VIEWPORT_W / 2][y] = 1;
+
+    for (y = VIEWPORT_H / 2 - 1; y >= 0; y--) {
+        
+        for (x = VIEWPORT_W / 2 - 1; x >= 0; x--) {
+            if (screenLos[x][y + 1] &&
+                !tileIsOpaque(screenViewportTile(x, y + 1)))
+                screenLos[x][y] = 1;
+            else if (screenLos[x + 1][y] &&
+                !tileIsOpaque(screenViewportTile(x + 1, y)))
+                screenLos[x][y] = 1;
+            else if (screenLos[x + 1][y + 1] &&
+                !tileIsOpaque(screenViewportTile(x + 1, y + 1)))
+                screenLos[x][y] = 1;
+        }
+                
+        for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++) {
+            if (screenLos[x][y + 1] &&
+                !tileIsOpaque(screenViewportTile(x, y + 1)))
+                screenLos[x][y] = 1;
+            else if (screenLos[x - 1][y] &&
+                !tileIsOpaque(screenViewportTile(x - 1, y)))
+                screenLos[x][y] = 1;
+            else if (screenLos[x - 1][y + 1] &&
+                !tileIsOpaque(screenViewportTile(x - 1, y + 1)))
+                screenLos[x][y] = 1;
+        }
+    }
+
+    for (y = VIEWPORT_H / 2 + 1; y < VIEWPORT_H; y++) {
+        
+        for (x = VIEWPORT_W / 2 - 1; x >= 0; x--) {
+            if (screenLos[x][y - 1] &&
+                !tileIsOpaque(screenViewportTile(x, y - 1)))
+                screenLos[x][y] = 1;
+            else if (screenLos[x + 1][y] &&
+                !tileIsOpaque(screenViewportTile(x + 1, y)))
+                screenLos[x][y] = 1;
+            else if (screenLos[x + 1][y - 1] &&
+                !tileIsOpaque(screenViewportTile(x + 1, y - 1)))
+                screenLos[x][y] = 1;
+        }
+                
+        for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++) {
+            if (screenLos[x][y - 1] &&
+                !tileIsOpaque(screenViewportTile(x, y - 1)))
+                screenLos[x][y] = 1;
+            else if (screenLos[x - 1][y] &&
+                !tileIsOpaque(screenViewportTile(x - 1, y)))
+                screenLos[x][y] = 1;
+            else if (screenLos[x - 1][y - 1] &&
+                !tileIsOpaque(screenViewportTile(x - 1, y - 1)))
+                screenLos[x][y] = 1;
+        }
+    }
 }
