@@ -9,6 +9,7 @@
 #define U4_DOWN '/'
 #define U4_LEFT ';'
 #define U4_RIGHT '\''
+#define U4_BACKSPACE 8
 
 typedef int (*KeyHandler)(int);
 
