@@ -55,10 +55,15 @@ unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
 DungeonGraphicType dungeonViewTileToGraphic(unsigned char tile) {
     switch (tile) {
     case WALL_TILE:
+    case 73: /* secret door */
         return DNGGRAPHIC_WALL;
     case 59:
     case 72:
         return DNGGRAPHIC_DOOR;
+    case LADDERUP_TILE:
+        return DNGGRAPHIC_LADDERUP;
+    case LADDERDOWN_TILE:
+        return DNGGRAPHIC_LADDERDOWN;
     }
 
     return DNGGRAPHIC_NONE;
