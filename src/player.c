@@ -8,6 +8,7 @@
 #include <assert.h>
 
 #include "player.h"
+#include "map.h"
 
 /**
  * Determine what level a character has.
@@ -128,6 +129,13 @@ int playerCanReady(const SaveGamePlayerRecord *player, WeaponType weapon) {
     assert(0);                  /* shouldn't happen */
 }
 
+int playerCanEnterShrine(const SaveGame *saveGame, Virtue virtue) {
+    if (saveGame->runes & (1 << (int) virtue))
+        return 1;
+    else
+        return 0;
+}
+
 /**
  * Adjusts the avatar's karma level for the given action.  Returns the
  * number of eighths of avatarhood the player has lost, or zero if
@@ -160,7 +168,21 @@ int playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
         newKarma[VIRT_HUMILITY] += 10;
         break;
     case KA_HAWKWIND:
+    case KA_MEDITATION:
         newKarma[VIRT_SPIRITUALITY] += 3;
+        break;
+    case KA_BAD_MANTRA:
+        newKarma[VIRT_SPIRITUALITY] -= 3;
+        break;
+    case KA_FLED:
+        newKarma[VIRT_VALOR] -= 2;
+        newKarma[VIRT_SACRIFICE] -= 2;
+        break;
+    case KA_DONATED_BLOOD:
+        newKarma[VIRT_SACRIFICE] += 5;
+        break;
+    case KA_DIDNT_DONATE_BLOOD:
+        newKarma[VIRT_SACRIFICE] -= 5;
         break;
     }
 
