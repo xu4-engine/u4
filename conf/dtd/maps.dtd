@@ -9,7 +9,7 @@
 
 <!ELEMENT map ( city | compressedchunk | dungeon | moongate | portal | shrine )* >
 <!ATTLIST map id                  NMTOKEN  #REQUIRED
-              type                ( castle | combat | dungeon | ruins | shrine | town | village | world ) #REQUIRED
+              type                ( city | combat | dungeon | shrine | world ) #REQUIRED
               fname               NMTOKEN  #REQUIRED
               width               NMTOKEN  #REQUIRED
               height              NMTOKEN  #REQUIRED
@@ -25,6 +25,7 @@
 <!-- city-map specific information -->
 <!ELEMENT city ( personrole* ) >
 <!ATTLIST city name               CDATA    #REQUIRED
+               type               ( castle | towne | village | ruins ) #REQUIRED
                tlk_fname          NMTOKEN  #REQUIRED>
 
 <!-- special roles for persons in a city: e.g. vendors -->
