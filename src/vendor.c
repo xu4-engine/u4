@@ -31,6 +31,7 @@
 #define N_REAG_VENDORS 4
 #define N_FOOD_VENDORS 5
 #define N_TAVERN_VENDORS 6
+#define N_INN_VENDORS 7
 
 #define ARMS_VENDOR_INVENTORY_SIZE 4
 #define N_TAVERN_TOPICS 6 
@@ -138,6 +139,12 @@ typedef struct ArmsVendorInfo {
     unsigned short prices[WEAP_MAX];
 } ArmsVendorInfo;
 
+typedef struct InnVendorInfo {
+    unsigned char room_x;
+    unsigned char room_y;
+    unsigned char price;
+} InnVendorInfo;
+
 ArmsVendorInfo weaponVendorInfo;
 ArmsVendorInfo armorVendorInfo;
 unsigned char reagPrices[N_REAG_VENDORS][REAG_MAX];
@@ -147,6 +154,7 @@ char **tavernTopics;
 char **tavernInfo;
 unsigned short tavernInfoPrices[N_TAVERN_TOPICS];
 unsigned short tavernFoodPrices[N_TAVERN_VENDORS];
+InnVendorInfo innVendorInfo[N_INN_VENDORS];
 unsigned short guildItemPrices[N_GUILD_ITEMS];
 unsigned short guildItemQuantities[N_GUILD_ITEMS];
 
@@ -166,6 +174,7 @@ VendorTypeInfo **vendorTypeInfo;
 #define WV_DONTOWN 109
 #define WV_HOWMANY 110
 #define WV_TOSELL 111
+#define WV_TOOBAD2 112
 #define WV_DONTOWNENOUGH 113
 #define WV_ILLGIVEYA 114
 #define WV_GPFOR 115
@@ -286,6 +295,7 @@ char *vendorGetArmsVendorMenu(const Person *v);
 char *vendorDoBuyTransaction(Conversation *cnv);
 char *vendorDoSellTransaction(Conversation *cnv);
 int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, FILE *f);
+int innVendorInfoRead(InnVendorInfo *info, FILE *f);
 
 /**
  * Loads in prices and conversation data for vendors from avatar.exe.
@@ -329,6 +339,10 @@ int vendorInit() {
         if (!readShort(&(tavernFoodPrices[i]), avatar))
             return 0;
     }
+
+    fseek(avatar, 83719, SEEK_SET);
+    if (!innVendorInfoRead(&(innVendorInfo[0]), avatar))
+        return 0;
 
     fseek(avatar, 82969, SEEK_SET);
     for (i = 0; i < N_GUILD_ITEMS; i++) {
@@ -721,8 +735,15 @@ char *vendorGetTavernVendorQuestionResponse(Conversation *cnv, const char *respo
 }
 
 char *vendorGetInnVendorQuestionResponse(Conversation *cnv, const char *response) {
-    cnv->state = CONV_DONE;     /* FIXME */
-    return strdup("");
+    if (response[0] < '1' || response[0] > '3') {
+        cnv->state = CONV_DONE;
+        return strdup("");
+    }
+
+    cnv->quant = response[0] - '0';
+    cnv->price = innVendorInfo[vendorGetVendorNo(cnv->talker)].price * cnv->quant;
+
+    return vendorDoBuyTransaction(cnv);
 }
 
 char *vendorGetArmsBuyItemResponse(Conversation *cnv, const char *response) {
@@ -1005,6 +1026,21 @@ char *vendorGetSellQuantityResponse(Conversation *cnv, const char *response) {
             cnv->talker->npcType == NPC_VENDOR_ARMOR);
 
     cnv->quant = (int) strtol(response, NULL, 10);
+
+    /* zero: say too bad and ask again */
+    if (cnv->quant == 0) {
+        cnv->state = CONV_CONTINUEQUESTION;
+        return concat(vendorGetText(cnv->talker, WV_TOOBAD2), 
+                      vendorGetText(cnv->talker, WV_ANYTHINGELSE), NULL);
+    }
+
+    if (!playerCanSell(c->saveGame, cnv->itemType, cnv->itemSubtype, cnv->quant)) {
+        cnv->state = CONV_DONE;
+        return vendorGetFarewell(cnv, vendorGetText(cnv->talker, WV_DONTOWNENOUGH)); 
+    }
+
+    /* user entered a valid quantity */
+
     cnv->price *= cnv->quant;
 
     snprintf(buffer, sizeof(buffer), "%d", cnv->price);
@@ -1151,6 +1187,38 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
                            NULL);
         break;
 
+    case NPC_VENDOR_INN:
+        if (success) {
+            if (vendorGetVendorNo(cnv->talker) == 3) {
+                switch (cnv->quant) {
+                case 1:
+                    c->saveGame->x = 2;
+                    c->saveGame->y = 6;
+                    break;
+                case 2:
+                    c->saveGame->x = 2;
+                    c->saveGame->y = 2;
+                    break;
+                case 3:
+                    c->saveGame->x = 8;
+                    c->saveGame->y = 2;
+                    break;
+                }
+            } 
+            else {
+                c->saveGame->x = innVendorInfo[vendorGetVendorNo(cnv->talker)].room_x;
+                c->saveGame->y = innVendorInfo[vendorGetVendorNo(cnv->talker)].room_y;
+            }
+            reply = strdup(vendorGetText(cnv->talker, IV_GOODNIGHT));
+            cnv->state = CONV_DONE;
+        }
+        else {
+            reply = strdup(vendorGetText(cnv->talker, IV_CANTPAY));
+            cnv->state = CONV_DONE;
+        }
+        break;
+        
+
     case NPC_VENDOR_GUILD:
         if (success)
             reply = concat(vendorGetText(cnv->talker, GV_FINEFINE),
@@ -1191,9 +1259,8 @@ char *vendorDoSellTransaction(Conversation *cnv) {
     success = playerSell(c->saveGame, cnv->itemType, cnv->itemSubtype, cnv->quant, cnv->price);
 
     if (success) {
-        reply = concat(vendorGetName(cnv->talker), vendorGetText(cnv->talker, WV_FINECHOICE), 
-                       vendorGetText(cnv->talker, WV_ANYTHINGELSE), NULL);
-        cnv->state = CONV_CONTINUEQUESTION;
+        reply = strdup(vendorGetText(cnv->talker, WV_FINE));
+        cnv->state = CONV_SELL_ITEM;
     }
     else {
         reply = vendorGetFarewell(cnv, vendorGetText(cnv->talker, WV_DONTOWNENOUGH));
@@ -1252,8 +1319,9 @@ char *vendorGetInnConfirmationResponse(Conversation *cnv, const char *response) 
     char *reply;
     
     if (tolower(response[0]) == 'y') {
-        reply = strdup(vendorGetText(cnv->talker, IV_GOODNIGHT));
-        cnv->state = CONV_DONE;
+        cnv->price = innVendorInfo[vendorGetVendorNo(cnv->talker)].price;
+        cnv->quant = 1;
+        return vendorDoBuyTransaction(cnv);
     }
     else if (tolower(response[0]) == 'n') {
         reply = strdup(vendorGetText(cnv->talker, IV_NOBETTERDEAL));
@@ -1362,10 +1430,20 @@ char *vendorGetContinueQuestionResponse(Conversation *cnv, const char *answer) {
         break;
 
     case NPC_VENDOR_INN:
-        reply = concat(vendorGetText(cnv->talker, IV_WEHAVE + vendorGetVendorNo(cnv->talker)), 
-                       vendorGetText(cnv->talker, IV_TAKEIT),
-                       NULL);
-        cnv->state = CONV_CONFIRMATION;
+        /* vendor #3 in minoc is special; gives the choice of 1, 2, or 3 beds */
+        if (vendorGetVendorNo(cnv->talker) == 3) {
+            reply = concat(vendorGetText(cnv->talker, IV_WEHAVE + vendorGetVendorNo(cnv->talker)), 
+                           "\n",
+                           vendorGetText(cnv->talker, IV_BEDS),
+                           NULL);
+            cnv->state = CONV_VENDORQUESTION;
+        }
+        else {
+            reply = concat(vendorGetText(cnv->talker, IV_WEHAVE + vendorGetVendorNo(cnv->talker)), 
+                           vendorGetText(cnv->talker, IV_TAKEIT),
+                           NULL);
+            cnv->state = CONV_CONFIRMATION;
+        }
         break;
 
     case NPC_VENDOR_GUILD:
@@ -1434,6 +1512,32 @@ int armsVendorInfoRead(ArmsVendorInfo *info, int nprices, FILE *f) {
 
     for (i = 0; i < nprices; i++) {
         if (!readShort(&(info->prices[i]), f))
+            return 0;
+    }
+
+    return 1;
+}
+
+int innVendorInfoRead(InnVendorInfo *info, FILE *f) {
+    unsigned char pad;
+    int i;
+
+    for (i = 0; i < N_INN_VENDORS; i++) {
+        if (!readChar(&(info[i].room_x), f))
+            return 0;
+    }
+    if (!readChar(&pad, f))
+        return 0;
+        
+    for (i = 0; i < N_INN_VENDORS; i++) {
+        if (!readChar(&(info[i].room_y), f))
+            return 0;
+    }
+    if (!readChar(&pad, f))
+        return 0;
+        
+    for (i = 0; i < N_INN_VENDORS; i++) {
+        if (!readChar(&(info[i].price), f))
             return 0;
     }
 
