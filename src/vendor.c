@@ -1520,22 +1520,29 @@ char *vendorGetTavernTopicResponse(Conversation *cnv, const char *response) {
      * happens there are six vendors and six topics.
      */
 
-    /* FIXME: The above statement is incorrect.  There are 6 topics.
-       I'm not sure which topics are which -- to find out check for
-       the bug report which corresponds to this issue, but here is 
-       the pattern:
-               
-               1 2 3 4 5 6
-               x
-               x x
-               x x x
-               x x x x
-               x x x x x
-               x x x x x x
-
-       Where 1-6 are the different taverns, and the x's represent the
-       different topics that they'll discuss.
-    */
+    /**
+     * FIXME: The above statement is incorrect.  There are 6 topics.
+     * For more info, see bug report #832798.
+     * The taverns are sorted by settlement number, in ascending order.
+     * They appear in the same order in avatar.exe.
+     * 
+     * tavern name             settlement      secrets
+     * 
+     * Jolly Spirits           Britain         123456
+     * The Bloody Pub          Jhelom          -23456
+     * The Keg Tap             Trinsic         --3456
+     * Folley Tavern           Paws            ---456
+     * Captain Black Tavern    Buc's Den       ----56
+     * Axe 'n Ale              Vesper          -----6
+     * 
+     * Secrets:
+     * 1   black stone
+     * 2   sextant
+     * 3   white stone
+     * 4   mandrake
+     * 5   skull
+     * 6   nightshade
+     */
 
     /* FIXME: check price */
     for (i = 0; i < N_TAVERN_TOPICS; i++) {
