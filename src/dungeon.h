@@ -9,6 +9,8 @@
 #include "map.h"
 #include "types.h"
 
+#define DNGROOM_NTRIGGERS 4
+
 typedef enum {
     STATSBONUS_INT = 0x1,
     STATSBONUS_DEX = 0x2,
@@ -17,17 +19,12 @@ typedef enum {
 
 typedef struct _Trigger {
     unsigned char tile;
-    unsigned char
-        y : 4,
-        x : 4,
-        change_y1 : 4,
-        change_x1 : 4,
-        change_y2 : 4,
-        change_x2 : 4;
+    unsigned char x, y;
+    unsigned char change_x1, change_y1, change_x2, change_y2;
 } Trigger;
 
 typedef struct _DngRoom {
-    Trigger triggers[4];
+    Trigger triggers[DNGROOM_NTRIGGERS];
     unsigned char monster_tiles[16];
     unsigned char monster_start_x[16];
     unsigned char monster_start_y[16];
@@ -53,7 +50,7 @@ public:
     // Properties
 
     string name;
-    int n_rooms;
+    unsigned int n_rooms;
     CombatMap *room;
     struct _DngRoom *rooms;
     struct _DngRoom *currentRoom;

@@ -250,7 +250,7 @@ int mapLoadCon(Map *map) {
  */
 int mapLoadDng(Dungeon *dungeon) {
     U4FILE *dng;
-    unsigned int i;
+    unsigned int i, j;
 
     dng = u4fopen(dungeon->fname.c_str());
     if (!dng)
@@ -267,8 +267,46 @@ int mapLoadDng(Dungeon *dungeon) {
     /* read in the dungeon rooms */
     /* FIXME: needs a cleanup function to free this memory later */
     dungeon->rooms = new DngRoom[dungeon->n_rooms];
-    u4fread(dungeon->rooms, sizeof(DngRoom) * dungeon->n_rooms, 1, dng);
 
+    for (i = 0; i < dungeon->n_rooms; i++) {
+        for (j = 0; j < DNGROOM_NTRIGGERS; j++) {
+            int tmp;
+
+            dungeon->rooms[i].triggers[j].tile = u4fgetc(dng);
+
+            tmp = u4fgetc(dng);
+            if (tmp == EOF)
+                return 0;
+            dungeon->rooms[i].triggers[j].x = (tmp >> 4) & 0x0F;
+            dungeon->rooms[i].triggers[j].y = tmp & 0x0F;
+
+            tmp = u4fgetc(dng);
+            if (tmp == EOF)
+                return 0;
+            dungeon->rooms[i].triggers[j].change_x1 = (tmp >> 4) & 0x0F;
+            dungeon->rooms[i].triggers[j].change_y1 = tmp & 0x0F;
+            
+            tmp = u4fgetc(dng);
+            if (tmp == EOF)
+                return 0;
+            dungeon->rooms[i].triggers[j].change_x2 = (tmp >> 4) & 0x0F;
+            dungeon->rooms[i].triggers[j].change_y2 = tmp & 0x0F;
+        }
+
+        u4fread(dungeon->rooms[i].monster_tiles, sizeof(dungeon->rooms[i].monster_tiles), 1, dng);
+        u4fread(dungeon->rooms[i].monster_start_x, sizeof(dungeon->rooms[i].monster_start_x), 1, dng);
+        u4fread(dungeon->rooms[i].monster_start_y, sizeof(dungeon->rooms[i].monster_start_y), 1, dng);
+        u4fread(dungeon->rooms[i].party_north_start_x, sizeof(dungeon->rooms[i].party_north_start_x), 1, dng);
+        u4fread(dungeon->rooms[i].party_north_start_y, sizeof(dungeon->rooms[i].party_north_start_y), 1, dng);
+        u4fread(dungeon->rooms[i].party_east_start_x, sizeof(dungeon->rooms[i].party_east_start_x), 1, dng);
+        u4fread(dungeon->rooms[i].party_east_start_y, sizeof(dungeon->rooms[i].party_east_start_y), 1, dng);
+        u4fread(dungeon->rooms[i].party_south_start_x, sizeof(dungeon->rooms[i].party_south_start_x), 1, dng);
+        u4fread(dungeon->rooms[i].party_south_start_y, sizeof(dungeon->rooms[i].party_south_start_y), 1, dng);
+        u4fread(dungeon->rooms[i].party_west_start_x, sizeof(dungeon->rooms[i].party_west_start_x), 1, dng);
+        u4fread(dungeon->rooms[i].party_west_start_y, sizeof(dungeon->rooms[i].party_west_start_y), 1, dng);
+        u4fread(dungeon->rooms[i].map_data, sizeof(dungeon->rooms[i].map_data), 1, dng);
+        u4fread(dungeon->rooms[i].buffer, sizeof(dungeon->rooms[i].buffer), 1, dng);
+    }
     u4fclose(dng);
 
     return 1;
