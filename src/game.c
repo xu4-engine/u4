@@ -2183,7 +2183,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
             /* only the avatar can hurt other monsters with cannon fire */
             else if (originAvatar) {
                 attackFlash(x, y, HITFLASH_TILE, 5);
-                if (rand() % 4 == 0) /* reverse-engineered from u4dos */
+                if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
                     mapRemoveObject(c->location->map, obj);
             }
             
@@ -2249,19 +2249,19 @@ int gameGetChest(int player) {
 int getChestTrapHandler(int player) {            
     TileEffect trapType;
     int dex = c->saveGame->players[player].dex;
-    int randNum = rand() & 3;
+    int randNum = xu4_random(4);
     int member = player;
     
     /* Do we use u4dos's way of trap-determination, or the original intended way? */
     int passTest = (settings->enhancements && settings->enhancementsOptions.c64chestTraps) ?
-        ((rand() % 2) == 0) : /* xu4-enhanced */
+        (xu4_random(2) == 0) : /* xu4-enhanced */
         ((randNum & 1) == 0); /* u4dos original way (only allows even numbers through, so only acid and poison show) */
 
     /* Chest is trapped! 50/50 chance */
     if (passTest)
     {   
         /* Figure out which trap the chest has */
-        switch(randNum & rand()) {
+        switch(randNum & xu4_random(4)) {
         case 0: trapType = EFFECT_FIRE; break;   /* acid trap (56% chance - 9/16) */
         case 1: trapType = EFFECT_SLEEP; break;  /* sleep trap (19% chance - 3/16) */
         case 2: trapType = EFFECT_POISON; break; /* poison trap (19% chance - 3/16) */
@@ -2282,7 +2282,7 @@ int getChestTrapHandler(int player) {
         }
 
         /* See if the trap was evaded! */           
-        if ((dex + 25) < ((rand() & 0xFF) % 100) && /* test player's dex */            
+        if ((dex + 25) < xu4_random(100) &&         /* test player's dex */            
             (player >= 0)) {                        /* player is < 0 during the 'O'pen spell (immune to traps) */                         
             playerApplyEffect(c->saveGame, trapType, member);
             statsUpdate();
@@ -3027,7 +3027,7 @@ void gameTimer(void *data) {
         Direction dir = DIR_WEST;  
 
         if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
-            if ((rand() % 4) == 1 && !windLock)
+            if (xu4_random(4) == 1 && !windLock)
                 c->windDirection = dirRandomDir(MASK_DIR_ALL);
             c->windCounter = 0;        
         }
@@ -3187,7 +3187,7 @@ void gameCheckBridgeTrolls() {
 
     if (!mapIsWorldMap(c->location->map) ||
         (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITHOUT_OBJECTS) != BRIDGE_TILE ||
-        (rand() % 8) != 0)
+        xu4_random(8) != 0)
         return;
 
     screenMessage("\nBridge Trolls!\n");
@@ -3326,7 +3326,7 @@ void gameCheckRandomMonsters() {
        or we're not on the world map, don't worry about it! */
     if (!canSpawnHere ||
         mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS_ON_MAP ||
-        (rand() % spawnDivisor) != 0)
+        xu4_random(spawnDivisor) != 0)
         return;
     
     gameSpawnMonster(NULL);
@@ -3531,9 +3531,9 @@ void gameDamageParty(int minDamage, int maxDamage) {
     int damage;
 
     for (i = 0; i < c->saveGame->members; i++) {
-        if (rand() % 2 == 0) {
+        if (xu4_random(2) == 0) {
             damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
-                rand() % ((maxDamage + 1) - minDamage) + minDamage :
+                xu4_random((maxDamage + 1) - minDamage) + minDamage :
                 maxDamage;            
             playerApplyDamage(&c->saveGame->players[i], damage);
             statsHighlightCharacter(i);            
@@ -3555,7 +3555,7 @@ void gameDamageShip(int minDamage, int maxDamage) {
 
     if (c->transportContext == TRANSPORT_SHIP) {
         damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
-            rand() % ((maxDamage + 1) - minDamage) + minDamage :
+            xu4_random((maxDamage + 1) - minDamage) + minDamage :
             maxDamage;
 
         screenShake(1);
@@ -3682,8 +3682,8 @@ void gameSpawnMonster(const Monster *m) {
     if (c->location->context & CTX_DUNGEON) {
         unsigned char tile;
         int found = 0;
-        x = rand() % c->location->map->width;
-        y = rand() % c->location->map->height;
+        x = xu4_random(c->location->map->width);
+        y = xu4_random(c->location->map->height);
         
         for (i = 0; i < 0x20; i++) {
             tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS);
@@ -3701,13 +3701,13 @@ void gameSpawnMonster(const Monster *m) {
     }    
     else {    
         dx = 7;
-        dy = rand() % 7;
+        dy = xu4_random(7);
 
-        if (rand() % 2)
+        if (xu4_random(2))
             dx = -dx;
-        if (rand() % 2)
+        if (xu4_random(2))
             dy = -dy;
-        if (rand() % 2) {
+        if (xu4_random(2)) {
             t = dx;
             dx = dy;
             dy = t;

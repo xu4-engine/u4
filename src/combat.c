@@ -29,6 +29,7 @@
 #include "spell.h"
 #include "stats.h"
 #include "tile.h"
+#include "utils.h"
 #include "weapon.h"
 
 CombatInfo combatInfo;
@@ -319,15 +320,15 @@ void combatFillMonsterTable(const Monster *monster) {
             current = baseMonster;
 
             /* find a free spot in the monster table */
-            do {j = rand() % AREA_MONSTERS;} while (combatInfo.monsterTable[j] != NULL);
+            do {j = xu4_random(AREA_MONSTERS) ;} while (combatInfo.monsterTable[j] != NULL);
             
             /* see if monster is a leader or leader's leader */
             if (monsterById(baseMonster->leader) != baseMonster && /* leader is a different monster */
                 i != (numMonsters - 1)) { /* must have at least 1 monster of type encountered */
                 
-                if (rand() % 32 == 0)       /* leader's leader */
+                if (xu4_random(32) == 0)       /* leader's leader */
                     current = monsterById(monsterById(baseMonster->leader)->leader);
-                else if (rand() % 8 == 0)   /* leader */
+                else if (xu4_random(8) == 0)   /* leader */
                     current = monsterById(baseMonster->leader);
             }
 
@@ -493,7 +494,7 @@ void combatFinishTurn() {
         playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, party[FOCUS].obj->x, party[FOCUS].obj->y, c->location->z, WITH_GROUND_OBJECTS)), FOCUS);
     }
 
-    quick = (c->aura == AURA_QUICKNESS) && (party[FOCUS].obj != NULL) && (rand() % 2 == 0) ? 1 : 0;
+    quick = (c->aura == AURA_QUICKNESS) && (party[FOCUS].obj != NULL) && (xu4_random(2) == 0) ? 1 : 0;
 
     /* check to see if the player gets to go again (and is still alive) */
     if (!quick || (c->saveGame->players[FOCUS].hp <= 0)){    
@@ -506,7 +507,7 @@ void combatFinishTurn() {
             if (party[FOCUS].obj) {
                 /* FIXME: move this to its own function, probably combatTryToWakeUp() or something similar */
                 /* wake up! */
-                if (party[FOCUS].player->status == STAT_SLEEPING && (rand() % 8 == 0)) {
+                if (party[FOCUS].player->status == STAT_SLEEPING && (xu4_random(8) == 0)) {
                     party[FOCUS].player->status = party[FOCUS].status;                    
                     statsUpdate();
                 }
@@ -888,7 +889,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
             combatApplyDamageToMonster(monster, playerGetDamage(&c->saveGame->players[FOCUS]), FOCUS);
 
             /* monster is still alive and has the chance to divide - xu4 enhancement */
-            if (rand()%2 == 0 && combatInfo.monsters[monster].obj && monsterDivides(combatInfo.monsters[monster].obj->monster))
+            if (xu4_random(2) == 0 && combatInfo.monsters[monster].obj && monsterDivides(combatInfo.monsters[monster].obj->monster))
                 combatDivideMonster(combatInfo.monsters[monster].obj);
         }
     }
@@ -988,7 +989,7 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
             screenMessage("\n%s Poisoned!\n", c->saveGame->players[player].name);
 
             /* see if the player is poisoned */
-            if ((rand() % 2 == 0) && (c->saveGame->players[player].status != STAT_POISONED))
+            if ((xu4_random(2) == 0) && (c->saveGame->players[player].status != STAT_POISONED))
                 c->saveGame->players[player].status = STAT_POISONED;
             else screenMessage("Failed.\n");
             break;
@@ -998,7 +999,7 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
             screenMessage("\n%s Slept!\n", c->saveGame->players[player].name);
 
             /* see if the player is put to sleep */
-            if (rand() % 2 == 0)
+            if (xu4_random(2) == 0)
                 combatPutPlayerToSleep(player);            
             else screenMessage("Failed.\n");
             break;
@@ -1076,17 +1077,17 @@ int combatInitialNumberOfMonsters(const Monster *monster) {
     /* if in an unusual combat situation, generally we stick to normal encounter sizes,
        (such as encounters from sleeping in an inn, etc.) */
     if (combatInfo.camping || combatInfo.inn || mapIsWorldMap(c->location->map) || (c->location->context & CTX_DUNGEON)) {
-        nmonsters = (rand() % 8) + 1;
+        nmonsters = xu4_random(8) + 1;
         
         if (nmonsters == 1) {            
             if (monster && monster->encounterSize > 0)
-                nmonsters = (rand() % monster->encounterSize) + monster->encounterSize + 1;
+                nmonsters = xu4_random(monster->encounterSize) + monster->encounterSize + 1;
             else
                 nmonsters = 8;
         }
 
         while (nmonsters > 2 * c->saveGame->members) {
-            nmonsters = (rand() % 16) + 1;
+            nmonsters = xu4_random(16) + 1;
         }
     } else {
         if (monster && monster->id == GUARD_ID)
@@ -1268,7 +1269,7 @@ void combatMoveMonsters() {
         m = monsters[i].obj->monster;
 
         /* see if monster wakes up if it is asleep */
-        if ((monsters[i].status == STAT_SLEEPING) && (rand() % 8 == 0)) {
+        if ((monsters[i].status == STAT_SLEEPING) && (xu4_random(8) == 0)) {
             monsters[i].status = STAT_GOOD;
             monsters[i].obj->canAnimate = 1;
         }
@@ -1289,15 +1290,15 @@ void combatMoveMonsters() {
         /* if the monster doesn't have something specific to do yet, let's try to find something! */
         if (action == CA_ATTACK) {
             /* monsters who teleport do so 1/8 of the time */
-            if (monsterTeleports(m) && (rand() % 8) == 0)
+            if (monsterTeleports(m) && xu4_random(8) == 0)
                 action = CA_TELEPORT;
             /* monsters who ranged attack do so 1/4 of the time.
                make sure their ranged attack is not negated! */
-            else if (m->ranged != 0 && (rand() % 4) == 0 && 
+            else if (m->ranged != 0 && xu4_random(4) == 0 && 
                      ((m->rangedhittile != MAGICFLASH_TILE) || (c->aura != AURA_NEGATE)))
                 action = CA_RANGED;
             /* monsters who cast sleep do so 1/4 of the time they don't ranged attack */
-            else if (monsterCastSleep(m) && (rand() % 4) == 0)
+            else if (monsterCastSleep(m) && xu4_random(4) == 0)
                 action = CA_CAST_SLEEP;
         
             else if (monsterGetStatus(m, monsters[i].hp) == MSTAT_FLEEING)
@@ -1324,8 +1325,8 @@ void combatMoveMonsters() {
             if (playerIsHitByAttack(&c->saveGame->players[target])) {
                 
                 /* steal gold if the monster steals gold */
-                if (monsterStealsGold(m) && (rand() % 4 == 0))
-                    playerAdjustGold(c->saveGame, -(rand() % 0x3f));
+                if (monsterStealsGold(m) && xu4_random(4) == 0)
+                    playerAdjustGold(c->saveGame, -(xu4_random(0x3f)));
                 
                 /* steal food if the monster steals food */
                 if (monsterStealsFood(m))
@@ -1356,7 +1357,7 @@ void combatMoveMonsters() {
             
             /* Apply the sleep spell to everyone still in combat */
             for (i = 0; i < 8; i++) {
-                if ((party[i].obj != NULL) && (rand()%2 == 0))
+                if ((party[i].obj != NULL) && xu4_random(2) == 0)
                     combatPutPlayerToSleep(i);                
             }
 
@@ -1370,8 +1371,8 @@ void combatMoveMonsters() {
                 unsigned char tile;                
             
                 while (!valid) {
-                    newx = rand() % c->location->map->width,
-                    newy = rand() % c->location->map->height;
+                    newx = xu4_random(c->location->map->width);
+                    newy = xu4_random(c->location->map->height);
                     
                     tile = (*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS);
                 
@@ -1467,7 +1468,7 @@ int combatFindTargetForMonster(const Object *monster, int *distance, int ranged)
         if (curDistance > (*distance))
             continue;
         /* skip target 50% of time if same distance */
-        if (curDistance == (*distance) && (rand() % 2) == 0)
+        if (curDistance == (*distance) && xu4_random(2) == 0)
             continue;
         
         (*distance) = curDistance;
@@ -1621,7 +1622,7 @@ void combatApplyMonsterTileEffects(void) {
                 case EFFECT_SLEEP:
                     /* monster fell asleep! */
                     if ((combatInfo.monsters[i].obj->monster->resists != EFFECT_SLEEP) &&
-                        ((rand() % 0xFF) >= combatInfo.monsters[i].hp)) {
+                        (xu4_random(0xFF) >= combatInfo.monsters[i].hp)) {
                         combatInfo.monsters[i].status = STAT_SLEEPING;
                         combatInfo.monsters[i].obj->canAnimate = 0; /* freeze monster */
                     }
@@ -1631,13 +1632,13 @@ void combatApplyMonsterTileEffects(void) {
                 case EFFECT_FIRE:
                     /* deal 0 - 127 damage to the monster if it is not immune to fire damage */
                     if (!(combatInfo.monsters[i].obj->monster->resists & (EFFECT_FIRE | EFFECT_LAVA)))
-                        combatApplyDamageToMonster(i, rand() % 0x7F, -1);
+                        combatApplyDamageToMonster(i, xu4_random(0x7F), -1);
                     break;
 
                 case EFFECT_POISONFIELD:
                     /* deal 0 - 127 damage to the monster if it is not immune to poison field damage */
                     if (combatInfo.monsters[i].obj->monster->resists != EFFECT_POISONFIELD)
-                        combatApplyDamageToMonster(i, rand() % 0x7F, -1);
+                        combatApplyDamageToMonster(i, xu4_random(0x7F), -1);
                     break;
 
                 case EFFECT_POISON:

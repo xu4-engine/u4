@@ -30,6 +30,7 @@
 #include "settings.h"
 #include "stats.h"
 #include "tile.h"
+#include "utils.h"
 
 void campTimer(void *data);
 void campEnd(void);
@@ -56,7 +57,7 @@ void campTimer(void *data) {
     screenEnableCursor();
 
     /* Is the party ambushed during their rest? */
-    if (settings->campingAlwaysCombat || (rand() % 8 == 0)) {
+    if (settings->campingAlwaysCombat || (xu4_random(8) == 0)) {
         const Monster *m;
 
         m = monsterGetAmbushingMonster();
@@ -157,13 +158,13 @@ void innTimer(void *data) {
     campHeal(HT_INNHEAL);
 
     /* Is there a special encounter during your stay? */
-    if (settings->innAlwaysCombat || (rand() % 8 == 0)) {
+    if (settings->innAlwaysCombat || (xu4_random(8) == 0)) {
         unsigned char mapid;
         Object *monsterObj;        
         int showMessage = 1;
             
         /* Rats seem much more rare than meeting rogues in the streets */
-        if (rand() % 4 == 0) {
+        if (xu4_random(4) == 0) {
             /* Rats! */
             mapid = MAP_BRICK_CON;
             monsterObj = mapAddMonsterObject(c->location->map, monsterById(RAT_ID), c->location->x, c->location->y, c->location->z);
@@ -187,12 +188,12 @@ void innTimer(void *data) {
         screenRedrawScreen();
 
         /* Does Isaac the Ghost pay a visit to the Avatar? */
-        if (c->location->map->id == 11 && (rand() % 4 == 0)) {
+        if (c->location->map->id == 11 && (xu4_random(4) == 0)) {
             City *city = c->location->map->city;
             Person *Isaac;
             Object *obj;
             int x = 27,
-                y = (rand() % 3) + 10,
+                y = xu4_random(3) + 10,
                 z = c->location->z;
 
             /* If Isaac is already around, just bring him back to the inn */
@@ -226,7 +227,7 @@ void innTimer(void *data) {
             Isaac->permanent = 0;
             Isaac->questionType = QUESTION_NORMAL;
             Isaac->startx = 27;
-            Isaac->starty = (rand() % 3) + 10;
+            Isaac->starty = xu4_random(3) + 10;
             Isaac->startz = 0;
             Isaac->tile0 = monsterById(GHOST_ID)->tile;
             Isaac->tile1 = Isaac->tile0 + 1;

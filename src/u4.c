@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <time.h>
 #include <SDL.h>
 
 #include "u4.h"
@@ -22,6 +21,7 @@
 #include "settings.h"
 #include "sound.h"
 #include "tileset.h"
+#include "utils.h"
 
 #if defined(MACOSX)
 #include "macosx/osxinit.h"
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
             settings->vol = 0;
     }
 
-    srand(time(NULL));
+    xu4_srandom();
     
     screenInit();
     screenTextAt(15, 12, "Loading...");

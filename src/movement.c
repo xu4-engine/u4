@@ -19,6 +19,7 @@
 #include "savegame.h"
 #include "settings.h"
 #include "tile.h"
+#include "utils.h"
 
 int collisionOverride = 0;
 
@@ -213,7 +214,7 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
     case MOVEMENT_WANDER:  
         /* World map wandering creatures always move, whereas
            town creatures that wander sometimes stay put */
-        if (mapIsWorldMap(map) || rand() % 2 == 0)
+        if (mapIsWorldMap(map) || xu4_random(2) == 0)
             dir = dirRandomDir(mapGetValidMoves(map, newx, newy, z, obj->tile));                
         break;
 
@@ -404,7 +405,7 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
             Trigger *triggers = c->location->prev->map->dungeon->currentRoom->triggers;            
 
             for (i = 0; i < 4; i++) {
-                const Monster *m = monsterForTile(triggers[i].tile);
+                /*const Monster *m = monsterForTile(triggers[i].tile);*/
 
                 /* FIXME: when a monster is created by a trigger, it can be created over and over and over...
                    how do we fix this? */
@@ -438,13 +439,13 @@ int slowedByTile(unsigned char tile) {
     
     switch (tileGetSpeed(tile)) {    
     case SLOW:
-        slow = (rand() % 8) == 0;
+        slow = xu4_random(8) == 0;
         break;
     case VSLOW:
-        slow = (rand() % 4) == 0;
+        slow = xu4_random(4) == 0;
         break;
     case VVSLOW:
-        slow = (rand() % 2) == 0;
+        slow = xu4_random(2) == 0;
         break;
     case FAST:
     default:

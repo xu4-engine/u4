@@ -340,7 +340,7 @@ char *talkerGetIntro(Conversation *cnv) {
                             strlen(prompt) + 1);
 
     // As far as I can tell, about 50% of the time they tell you their name
-    if (rand()%2==1)
+    if (xu4_random(2) == 0)
         sprintf(intro, fmt1, cnv->talker->description, cnv->talker->pronoun, cnv->talker->name, prompt);
     else sprintf(intro, fmt2, cnv->talker->description, prompt);
 
@@ -360,7 +360,7 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
         testLen = strlen(inquiry);
 
     /* Does the person turn away from you? */
-    if (rand()%0xFF < cnv->talker->turnAwayProb)
+    if (xu4_random(0x100) < cnv->talker->turnAwayProb)
     {
         reply = concat(cnv->talker->pronoun, " turns away!\n", NULL);
         cnv->state = CONV_DONE;

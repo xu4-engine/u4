@@ -25,6 +25,7 @@
 #include "screen.h"
 #include "settings.h"
 #include "tile.h"
+#include "utils.h"
 
 SpellEffectCallback spellEffectCallback = NULL;
 
@@ -303,7 +304,7 @@ void spellMagicAttack(unsigned char tile, Direction dir, int minDamage, int maxD
     CoordActionInfo *info;
 
     spellMagicAttackDamage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
-        rand() % ((maxDamage + 1) - minDamage) + minDamage :
+        xu4_random((maxDamage + 1) - minDamage) + minDamage :
         maxDamage;
 
     spellMagicAttackTile = tile;
@@ -409,7 +410,7 @@ static int spellBlink(int dir) {
     
     /* see if we move another 16 spaces over */
     diff = 0x10 - distance;
-    if ((diff > 0) && (rand() % (diff * diff) > distance))
+    if ((diff > 0) && (xu4_random(diff * diff) > distance))
         distance += 0x10;
 
     /* test our distance, and see if it works */
@@ -631,7 +632,7 @@ static int spellSleep(int unused) {
     for (i = 0; i < AREA_MONSTERS; i++) { 
         if (combatInfo.monsters[i].obj) {
             if ((combatInfo.monsters[i].obj->monster->resists != EFFECT_SLEEP) &&
-                ((rand() % 0xFF) >= combatInfo.monsters[i].hp)) {
+                xu4_random(0xFF) >= combatInfo.monsters[i].hp) {
                 combatInfo.monsters[i].status = STAT_SLEEPING;
                 combatInfo.monsters[i].obj->canAnimate = 0; /* freeze monster */
             }
@@ -656,12 +657,12 @@ static int spellTremor(int unused) {
             y = combatInfo.monsters[i].obj->y;
 
             /* Deal maximum damage to monster */
-            if (rand() % 2 == 0) {
+            if (xu4_random(2) == 0) {
                 combatApplyDamageToMonster(i, 0xFF, FOCUS);
                 attackFlash(x, y, HITFLASH_TILE, 1);
             }
             /* Deal enough damage to monster to make it flee */
-            else if (rand() % 2 == 0) {
+            else if (xu4_random(2) == 0) {
                 if (combatInfo.monsters[i].hp > 23)
                     combatApplyDamageToMonster(i, combatInfo.monsters[i].hp-23, FOCUS);                
                 attackFlash(x, y, HITFLASH_TILE, 1);
@@ -677,7 +678,7 @@ static int spellUndead(int unused) {
     
     for (i = 0; i < AREA_MONSTERS; i++) {
         /* Deal enough damage to undead to make them flee */
-        if (combatInfo.monsters[i].obj && monsterIsUndead(combatInfo.monsters[i].obj->monster) && (rand() % 2 == 0))
+        if (combatInfo.monsters[i].obj && monsterIsUndead(combatInfo.monsters[i].obj->monster) && xu4_random(2) == 0)
             combatInfo.monsters[i].hp = 23;        
     }
     
@@ -714,8 +715,8 @@ static int spellYup(int unused) {
     /* staying in the dungeon */
     else if (c->location->z > 0) {
         for (i = 0; i < 0x20; i++) {
-            x_new = rand() % 8;
-            y_new = rand() % 8;
+            x_new = xu4_random(8);
+            y_new = xu4_random(8);
             tile = (*c->location->tileAt)(c->location->map, x_new, y_new, c->location->z - 1, WITH_OBJECTS);
 
             if (dungeonTokenForTile(tile) == DUNGEON_CORRIDOR) {
@@ -749,8 +750,8 @@ static int spellZdown(int unused) {
         return 0;
     else {
         for (i = 0; i < 0x20; i++) {
-            x_new = rand() % 8;
-            y_new = rand() % 8;
+            x_new = xu4_random(8);
+            y_new = xu4_random(8);
             tile = (*c->location->tileAt)(c->location->map, x_new, y_new, c->location->z + 1, WITH_OBJECTS);
 
             if (dungeonTokenForTile(tile) == DUNGEON_CORRIDOR) {

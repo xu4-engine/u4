@@ -8,6 +8,7 @@
 
 #include "debug.h"
 #include "event.h"
+#include "utils.h"
 
 Direction dirFindPath(int from_x, int from_y, int to_x, int to_y, int valid_directions_mask, int towards);
 
@@ -176,7 +177,7 @@ Direction dirRandomDir(int valid_directions_mask) {
     if (n == 0)
         return DIR_NONE;
 
-    return d[rand() % n];
+    return d[xu4_random(n)];
 }
 
 /**

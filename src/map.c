@@ -19,6 +19,7 @@
 #include "portal.h"
 #include "savegame.h"
 #include "tile.h"
+#include "utils.h"
 
 /**
  * Returns the object at the given (x,y,z) coords, if one exists.
@@ -278,7 +279,7 @@ void mapAnimateObjects(Map *map) {
     Object *obj = map->objects;
 
     while (obj) {
-        if (obj->canAnimate && rand() % 2) {
+        if (obj->canAnimate && xu4_random(2)) {
             obj->prevtile = obj->tile;   
             tileAdvanceFrame(&obj->tile);
         }

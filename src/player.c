@@ -96,9 +96,9 @@ void playerAdvanceLevel(SaveGamePlayerRecord *player) {
     player->hp = player->hpMax;
 
     /* improve stats by 1-8 each */
-    player->str   += (rand() % 8) + 1;
-    player->dex   += (rand() % 8) + 1;
-    player->intel += (rand() % 8) + 1;
+    player->str   += xu4_random(8) + 1;
+    player->dex   += xu4_random(8) + 1;
+    player->intel += xu4_random(8) + 1;
 
     if (player->str > 50) player->str = 50;
     if (player->dex > 50) player->dex = 50;
@@ -224,7 +224,7 @@ void playerAdjustKarma(SaveGame *saveGame, KarmaAction action) {
         AdjustValueMin(newKarma[VIRT_SACRIFICE], -2, 1);
         break;
     case KA_KILLED_EVIL:
-        AdjustValueMax(newKarma[VIRT_VALOR], rand() % 2, maxVal[VIRT_VALOR]); /* gain one valor half the time, zero the rest */
+        AdjustValueMax(newKarma[VIRT_VALOR], xu4_random(2), maxVal[VIRT_VALOR]); /* gain one valor half the time, zero the rest */
         break;
     case KA_SPARED_GOOD:        
         AdjustValueMax(newKarma[VIRT_COMPASSION], 1, maxVal[VIRT_COMPASSION]);
@@ -295,7 +295,7 @@ int playerAttemptElevation(SaveGame *saveGame, Virtue virtue) {
 }
 
 int playerGetChest(SaveGame *saveGame) {
-    int gold = (rand() % 50) + (rand() % 8) + 10;
+    int gold = xu4_random(50) + xu4_random(8) + 10;
     playerAdjustGold(saveGame, gold);    
 
     return gold;
@@ -387,7 +387,7 @@ void playerEndTurn(void) {
 
             switch (saveGame->players[i].status) {
             case STAT_SLEEPING:            
-                if (rand() % 5 == 0)
+                if (xu4_random(5) == 0)
                     saveGame->players[i].status = STAT_GOOD;
                 break;
 
@@ -411,7 +411,7 @@ void playerEndTurn(void) {
         (*partyStarvingCallback)();
     
     /* heal ship (25% chance it is healed each turn) */
-    if ((c->location->context == CTX_WORLDMAP) && (saveGame->shiphull < 50) && (rand() % 4 == 0))
+    if ((c->location->context == CTX_WORLDMAP) && (saveGame->shiphull < 50) && xu4_random(4) == 0)
         saveGame->shiphull++;
 }
 
@@ -432,17 +432,17 @@ void playerApplyEffect(SaveGame *saveGame, TileEffect effect, int player) {
         case EFFECT_LAVA:
         case EFFECT_FIRE:
             if (i == player)
-                playerApplyDamage(&(saveGame->players[i]), 16 + (rand() % 32));                
-            else if (player == ALL_PLAYERS && rand() % 2 == 0)
-                playerApplyDamage(&(saveGame->players[i]), 10 + (rand() % 25));
+                playerApplyDamage(&(saveGame->players[i]), 16 + (xu4_random(32)));                
+            else if (player == ALL_PLAYERS && xu4_random(2) == 0)
+                playerApplyDamage(&(saveGame->players[i]), 10 + (xu4_random(25)));
             break;
         case EFFECT_SLEEP:
-            if (i == player || rand() % 5 == 0)
+            if (i == player || xu4_random(5) == 0)
                 saveGame->players[i].status = STAT_SLEEPING;
             break;
         case EFFECT_POISONFIELD:
         case EFFECT_POISON:
-            if (i == player || rand() % 5 == 0)
+            if (i == player || xu4_random(5) == 0)
                 saveGame->players[i].status = STAT_POISONED;
             break;
         case EFFECT_ELECTRICITY: break;
@@ -485,7 +485,7 @@ int playerPartyDead(const SaveGame *saveGame) {
  * Applies a sleep spell to the party.
  */
 void playerApplySleepSpell(SaveGamePlayerRecord *player) {
-    if (player->status != STAT_DEAD && (rand() % 2) == 0)
+    if (player->status != STAT_DEAD && xu4_random(2) == 0)
         player->status = STAT_SLEEPING;
 }
 
@@ -522,21 +522,21 @@ int playerHeal(SaveGame *saveGame, HealType type, int player) {
             saveGame->players[player].hp == saveGame->players[player].hpMax)
             return 0;        
 
-        saveGame->players[player].hp += 75 + ((rand() & 0xFF) % 0x19);
+        saveGame->players[player].hp += 75 + (xu4_random(0x100) % 0x19);
         break;
 
     case HT_CAMPHEAL:
         if (saveGame->players[player].status == STAT_DEAD ||
             saveGame->players[player].hp == saveGame->players[player].hpMax)
             return 0;        
-        saveGame->players[player].hp += 99 + (rand() & 0x77);
+        saveGame->players[player].hp += 99 + (xu4_random(0x100) & 0x77);
         break;
 
     case HT_INNHEAL:
         if (saveGame->players[player].status == STAT_DEAD ||
             saveGame->players[player].hp == saveGame->players[player].hpMax)
             return 0;        
-        saveGame->players[player].hp += 100 + (((rand() & 0xFF) % 50) * 2);
+        saveGame->players[player].hp += 100 + (xu4_random(50) * 2);
         break;
 
     default:
@@ -676,7 +676,7 @@ int playerAttackHit(const SaveGamePlayerRecord *player) {
     if (weaponAlwaysHits(player->weapon) || player->dex >= 40)
         return 1;
 
-    if ((player->dex + 128) >= (rand() & 0xff))
+    if ((player->dex + 128) >= xu4_random(0x100))
         return 1;
     else
         return 0;
@@ -693,14 +693,14 @@ int playerGetDamage(const SaveGamePlayerRecord *player) {
     if (maxDamage > 255)
         maxDamage = 255;
 
-    return rand() % maxDamage;
+    return xu4_random(maxDamage);
 }
 
 /**
  * Determine whether a player is hit by a melee attack.
  */
 int playerIsHitByAttack(const SaveGamePlayerRecord *player) {
-    return (rand() % 256) > armorGetDefense(player->armor);
+    return xu4_random(0x100) > armorGetDefense(player->armor);
 }
 
 /**

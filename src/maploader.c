@@ -289,9 +289,9 @@ int mapLoadWorld(Map *map) {
     if (!mapLoadData(map, world))
         return 0;
 
-     u4fclose(world);
+    u4fclose(world);
 
-     return 1;
+    return 1;
 }
 
 int mapLoadData(Map *map, U4FILE *f) {

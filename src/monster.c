@@ -22,6 +22,7 @@
 #include "savegame.h"
 #include "settings.h"
 #include "tile.h"
+#include "utils.h"
 #include "xml.h"
 
 int monsterInfoLoaded = 0;
@@ -394,7 +395,7 @@ int monsterLeavesTile(const Monster *monster) {
 int monsterGetDamage(const Monster *monster) {
     int damage, val, x;
     val = monster->basehp;    
-    x = (rand() % (val >> 2));
+    x = xu4_random(val >> 2);
     damage = (x >> 4) + ((x >> 2) & 0xfc);
     damage += x % 10;
     return damage;
@@ -405,14 +406,14 @@ int monsterGetCamouflageTile(const Monster *monster) {
 }
 
 void monsterSetRandomRangedWeapon(Monster *monster) {
-    monster->rangedhittile = monster->rangedmisstile = (rand() % 4) + POISONFIELD_TILE;
+    monster->rangedhittile = monster->rangedmisstile = xu4_random(4) + POISONFIELD_TILE;
 }
 
 int monsterCastSleep(const Monster *monster) {
     return
         (monster->mattr & MATTR_CASTS_SLEEP) &&
         (c->aura != AURA_NEGATE) &&
-        (rand() % 4) == 0;
+        xu4_random(4) == 0;
 }
 
 const Monster *monsterRandomForTile(unsigned char tile) {
@@ -420,11 +421,11 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     unsigned char randTile;    
 
     if (tileIsSailable(tile)) {
-        randTile = ((rand() & 7) << 1) + monsterById(PIRATE_ID)->tile;
+        randTile = (xu4_random(8) << 1) + monsterById(PIRATE_ID)->tile;
         return monsterForTile(randTile);        
     }
     else if (tileIsSwimable(tile)) {
-        randTile = ((rand() % 5) << 1) + monsterById(NIXIE_ID)->tile;
+        randTile = (xu4_random(5) << 1) + monsterById(NIXIE_ID)->tile;
         return monsterForTile(randTile);
     }
 
@@ -439,7 +440,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
 
-    randTile = ((era & rand() & rand()) << 2) + monsterById(ORC_ID)->tile;
+    randTile = ((era & xu4_random(0x10) & xu4_random(0x10)) << 2) + monsterById(ORC_ID)->tile;
     return monsterForTile(randTile);
 }
 
@@ -465,7 +466,7 @@ const Monster *monsterForDungeon(int dngLevel) {
     };
 
     era = 9 + dngLevel;
-    return monsters[era & rand() & rand()];
+    return monsters[era & xu4_random(0x100) & xu4_random(0x100)];
 }
 
 int monsterGetInitialHp(const Monster *monster) {
@@ -473,7 +474,7 @@ int monsterGetInitialHp(const Monster *monster) {
     
     basehp = monster->basehp;
 
-    hp = (rand() % basehp) | (basehp / 2);
+    hp = xu4_random(basehp) | (basehp / 2);
     
     /* make sure the monster doesn't flee initially */
     if (hp < 24) hp = 24;
@@ -516,7 +517,7 @@ const Monster *monsterGetAmbushingMonster(void) {
     
     if (numAmbushingMonsters > 0) {
         /* now, randomely select one of them */
-        randMonster = rand() % numAmbushingMonsters;
+        randMonster = xu4_random(numAmbushingMonsters);
         numAmbushingMonsters = 0;
 
         /* now, find the one we selected */
@@ -577,7 +578,7 @@ int monsterSpecialAction(Object *obj) {
             retval = 1;            
             
             /* A 50/50 chance they try to range attack when you're close enough */
-            if (mapdist <= 3 && (rand() % 2 == 0))                
+            if (mapdist <= 3 && xu4_random(2) == 0)                
                 gameDirectionalAction(info);            
             else retval = 0;
             

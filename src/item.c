@@ -417,7 +417,7 @@ int isReagentInInventory(void *reag) {
 
 void putReagentInInventory(void *reag) {
     playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
-    c->saveGame->reagents[(int)reag] += rand() % 8 + 2;
+    c->saveGame->reagents[(int)reag] += xu4_random(8) + 2;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 
     if (c->saveGame->reagents[(int)reag] > 99) {

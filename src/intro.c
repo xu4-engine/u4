@@ -20,6 +20,7 @@
 #include "shrine.h"
 #include "tileset.h"
 #include "u4file.h"
+#include "utils.h"
 
 extern int quit;
 
@@ -1051,9 +1052,9 @@ void introTimer(void *data) {
     if (eventHandlerTimerQueueEmpty())
         screenRedrawScreen();
 
-    if ((rand() % 2) && ++beastie1Cycle >= BEASTIE1_FRAMES)
+    if (xu4_random(2) && ++beastie1Cycle >= BEASTIE1_FRAMES)
         beastie1Cycle = 0;
-    if ((rand() % 2) && ++beastie2Cycle >= BEASTIE2_FRAMES)
+    if (xu4_random(2) && ++beastie2Cycle >= BEASTIE2_FRAMES)
         beastie2Cycle = 0;
 }
 
@@ -1068,7 +1069,7 @@ void introInitQuestionTree() {
         questionTree[i] = i;
 
     for (i = 0; i < 8; i++) {
-        r = rand() % 8;
+        r = xu4_random(8);
         tmp = questionTree[r];
         questionTree[r] = questionTree[i];
         questionTree[i] = tmp;

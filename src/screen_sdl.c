@@ -22,6 +22,7 @@
 #include "u4.h"
 #include "u4_sdl.h"
 #include "u4file.h"
+#include "utils.h"
 #include "xml.h"
 
 long decompress_u4_file(FILE *in, long filesize, void **out);
@@ -986,7 +987,7 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
         break;
     }
 
-    if (swaprow != -1 && (rand() % 2)) {
+    if (swaprow != -1 && xu4_random(2) == 0) {
 
         for (i = 0; i < (scale * 2) + 2; i++) {
             src.x = scale * 5;

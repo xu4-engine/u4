@@ -1297,7 +1297,7 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
                 c->location->x = innVendorInfo[vendorGetVendorNo(cnv->talker)].room_x;
                 c->location->y = innVendorInfo[vendorGetVendorNo(cnv->talker)].room_y;
             }
-            if ((rand() % 4) == 0)
+            if (xu4_random(4) == 0)
                 reply = concat("\n", vendorGetText(cnv->talker, IV_GOODNIGHT), 
                                vendorGetText(cnv->talker, IV_RATS),
                                NULL);
