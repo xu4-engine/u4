@@ -46,10 +46,9 @@ Direction dirReverse(Direction dir) {
         return DIR_WEST;
     case DIR_SOUTH:
         return DIR_NORTH;
-    default:
-        assert(0);              /* shouldn't happen */
     }
 
+    assert(0);                  /* shouldn't happen */
     return DIR_NONE;
 }
 
@@ -80,4 +79,26 @@ Direction dirFindPath(int from_x, int from_y, int to_x, int to_y, int valid_dire
         return vert_dir;
     else
         return (rand() % 2) ? vert_dir : horiz_dir;
+}
+
+/**
+ * Returns a random direction from a provided mask of available
+ * directions.
+ */
+Direction dirRandomDir(int valid_directions_mask) {
+    int i, n;
+    Direction d[4];
+
+    n = 0;
+    for (i = DIR_WEST; i <= DIR_SOUTH; i++) {
+        if (DIR_IN_MASK(i, valid_directions_mask)) {
+            d[n] = i;
+            n++;
+        }
+    }
+
+    if (n == 0)
+        return DIR_NONE;
+
+    return d[rand() % n];
 }
