@@ -10,10 +10,12 @@ struct _Map;
 struct _Annotation;
 struct _Person;
 
+#define CONV_BUFFERLEN 16
+
 typedef struct {
     const struct _Person *talker;
     int question;
-    char buffer[5];
+    char buffer[CONV_BUFFERLEN];
 } Conversation;
 
 typedef struct _Context {
