@@ -46,6 +46,7 @@ int talkHandleBuffer(const char *message);
 int talkHandleChoice(char choice);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
+void gameCheckMoongates(void);
 
 int collisionOverride = 0;
 
@@ -298,7 +299,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'p':
-        screenShowGem();
+        /* screenShowGem();*/
         break;
 
     case 'q':
