@@ -900,7 +900,7 @@ void IntroController::updateVideoOptions(MenuEvent &event) {
             break;
         
         case 1:
-            if (event.getType() == MenuEvent::ACTIVATE)
+            if (event.getType() == MenuEvent::DECREMENT || event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE)
                 settingsChanged.fullscreen = settingsChanged.fullscreen ? 0 : 1;
             break;
 
@@ -917,7 +917,7 @@ void IntroController::updateVideoOptions(MenuEvent &event) {
             break;
 
         case 3:
-            if (event.getType() == MenuEvent::ACTIVATE)
+            if (event.getType() == MenuEvent::DECREMENT || event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE)
                 settingsChanged.screenShakes = settingsChanged.screenShakes ? 0 : 1;
             break;
 
