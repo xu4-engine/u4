@@ -428,26 +428,27 @@ int monsterCastSleep(const Monster *monster) {
 }
 
 const Monster *monsterRandomForTile(unsigned char tile) {
-    int era;    
+    int era;
+    unsigned char randTile;
     
-    if (tileIsSailable(tile)) {        
-        return monsterById((unsigned short)((rand() % 7) + PIRATE_ID));
-    }
-    else if (tileIsSwimable(tile)) {        
-        return monsterById((unsigned short)((rand() % 6) + NIXIE_ID));
-    }
+    if (tileIsSailable(tile) || tileIsSwimable(tile)) {
+        randTile = ((rand() & 7) << 1) + PIRATE_TILE;
+        return monsterForTile(randTile);        
+    }    
 
     if (!tileIsMonsterWalkable(tile))
         return 0;
 
-    if (c->saveGame->moves > 100000)
+    //if (c->saveGame->moves > 100000) /* what's 100,000 moves all about? */
+    if (c->saveGame->moves > 30000)
         era = 0x0f;
     else if (c->saveGame->moves > 20000)
         era = 0x07;
     else
         era = 0x03;
-    
-    return monsterById((unsigned short)((era & rand() & rand()) + ORC_ID));
+
+    randTile = ((era & rand() & rand()) << 2) + ORC_TILE;
+    return monsterForTile(randTile);    
 }
 
 
