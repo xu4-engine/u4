@@ -7,6 +7,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <time.h>
 
 #include "u4.h"
 #include "direction.h"
@@ -68,6 +69,7 @@ void gameCheckBridgeTrolls(void);
 void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
 void gameCheckRandomMonsters(void);
+long gameTimeSinceLastCommand(void);
 
 extern Map world_map;
 Context *c = NULL;
@@ -96,6 +98,7 @@ void gameInit() {
     c->aura = AURA_NONE;
     c->auraDuration = 0;
     c->horseSpeed = 0;
+    c->lastCommandTime = time(NULL);
 
     /* load in the save game */
     saveGameFile = fopen("party.sav", "rb");
@@ -215,6 +218,8 @@ void gameFinishTurn() {
     /* draw a prompt */
     screenMessage("\020");
     screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
+
+    c->lastCommandTime = time(NULL);
 }
 
 /**
@@ -246,6 +251,7 @@ Context *gameCloneContext(Context *ctx) {
     newContext->moonPhase = newContext->parent->moonPhase;
     newContext->aura = newContext->parent->aura;
     newContext->auraDuration = newContext->parent->auraDuration;
+    newContext->horseSpeed = newContext->parent->horseSpeed;
     newContext->horseSpeed = newContext->parent->horseSpeed;
 
     return newContext;
@@ -1008,8 +1014,9 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
  * creature is present at that point, zero is returned.
  */
 int attackAtCoord(int x, int y, int distance) {
-    Object *obj;
+    Object *obj, *under;
     const Monster *m;
+    unsigned char ground;
 
     /* attack failed: finish up */
     if (x == -1 && y == -1) {
@@ -1026,7 +1033,11 @@ int attackAtCoord(int x, int y, int distance) {
     }
 
     /* attack successful */
-    combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport, obj);
+    ground = mapTileAt(c->map, c->saveGame->x, c->saveGame->y);
+    if ((under = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y)) &&
+        tileIsShip(under->tile))
+        ground = under->tile;
+    combatBegin(ground, c->saveGame->transport, obj);
     return 1;
 }
 
@@ -1127,7 +1138,7 @@ int fireAtCoord(int x, int y, int distance) {
  */
 int jimmyAtCoord(int x, int y, int distance) {
     if (x == -1 && y == -1) {
-        screenMessage("Jimmy what?");
+        screenMessage("Jimmy what?\n");
         gameFinishTurn();
         return 0;
     }
@@ -1488,7 +1499,7 @@ int talkHandleBuffer(const char *message) {
     eventHandlerPopKeyHandler();
 
     personGetConversationText(&c->conversation, message, &reply);
-    screenMessage("\n\n%s\n", reply);
+    screenMessage("%s", reply);
     free(reply);
         
     c->conversation.buffer[0] = '\0';
@@ -1643,6 +1654,8 @@ int moveAvatar(Direction dir, int userEvent) {
     int result = 1;
     int newx, newy;
 
+    /*musicPlayEffect();*/
+
     if (tileIsBalloon(c->saveGame->transport) && userEvent) {
         screenMessage("Drift Only!\n");
         goto done;
@@ -1781,7 +1794,7 @@ void gameTimer(void *data) {
     }
 
     /* update moon phases */
-    if (mapIsWorldMap(c->map)) {
+    if (mapIsWorldMap(c->map) && viewMode == VIEW_NORMAL) {
         oldTrammel = c->saveGame->trammelphase;
 
         if (++c->moonPhase >= (MOON_SECONDS_PER_PHASE * 4 * MOON_PHASES))
@@ -1846,6 +1859,14 @@ void gameTimer(void *data) {
      */
     if (eventHandlerTimerQueueEmpty())
         gameUpdateScreen();
+
+    /*
+     * force pass if no commands within last 20 seconds
+     */
+    if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler &&
+        gameTimeSinceLastCommand() > 20)
+        gameBaseKeyHandler(' ', NULL);
+        
 }
 
 void gameCheckBridgeTrolls() {
@@ -1962,4 +1983,8 @@ void gameCheckRandomMonsters() {
         obj->movement_behavior = MOVEMENT_WANDER;
     else
         obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+}
+
+long gameTimeSinceLastCommand() {
+    return time(NULL) - c->lastCommandTime;
 }
