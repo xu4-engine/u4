@@ -145,7 +145,7 @@ const char *getDirectionName(Direction dir) {
         "West", "North", "East", "South"
     };
 
-    if (dir < 4)
+    if (dir <= DIR_SOUTH)
         return directionNames[dir - DIR_WEST];
     else
         return "???";

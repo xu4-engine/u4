@@ -183,9 +183,9 @@ Direction tileGetDirection(unsigned char tile) {
 
 void tileSetDirection(unsigned short *tile, Direction dir) {
     if (tileIsShip(*tile))
-        *tile = 16 + dir;
+        *tile = 16 + dir - DIR_WEST;
     else if (tileIsPirateShip(*tile))
-        *tile = PIRATE_TILE + dir;
+        *tile = PIRATE_TILE + dir - DIR_WEST;
     else if (tileIsHorse(*tile))
         *tile = (dir == DIR_WEST ? 20 : 21);
 }
