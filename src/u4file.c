@@ -108,6 +108,10 @@ int u4fgetc(U4FILE *f) {
     return fgetc(f);
 }
 
+int u4fgetshort(U4FILE *f) {
+    return u4fgetc(f) | (u4fgetc(f) << 8);
+}
+
 int u4fputc(int c, U4FILE *f) {
     return fputc(c, f);
 }
