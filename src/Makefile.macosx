@@ -12,7 +12,7 @@ UILIBS=-L$(HOME)/Library/Frameworks \
        -framework libxml \
        -framework AppKit \
        -framework Foundation \
-       -lobjc
+       -lobjc -lz.1
 UIFLAGS=-F$(HOME)/Library/Frameworks/ \
 	-I$(HOME)/Library/Frameworks/libxml.framework/Headers \
 	-I$(HOME)/Library/Frameworks/libiconv.framework/Headers \
@@ -25,12 +25,15 @@ CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS) 
 LIBS=$(UILIBS) 
 INSTALL=install
 
-OBJS=macosx/SDLMain.o
+OBJS=macosx/SDLMain.o macosx/osxerror.o
 
 include Makefile.common
 
 SDLMain.o: macosx/SDLMain.m macosx/SDLMain.h
 	$(CC) $(CFLAGS) -c -o macosx/SDLMain.o macosx/SDLMain.m 
+
+osxerror.o: macosx/osxerror.m
+	$(CC) $(CFLAGS) -c -o macosx/osxerror.o macosx/osxerror.m 
 
 mactlkconv: util/tlkconv.o
 	$(CC) $(CFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks -framework libxml -framework libiconv
@@ -38,16 +41,11 @@ mactlkconv: util/tlkconv.o
 install: u4
 	mkdir -p $(BUNDLE_CONTENTS)/MacOS
 	mkdir -p $(BUNDLE_CONTENTS)/Resources
-	mkdir -p $(BUNDLE_CONTENTS)/Frameworks
 	echo "APPL????" > $(BUNDLE_CONTENTS)/PkgInfo
 	cp ../mid/*.mid $(BUNDLE_CONTENTS)/Resources
 	cp ../conf/*.xml $(BUNDLE_CONTENTS)/Resources
 	cp ../icons/xu4.icns $(BUNDLE_CONTENTS)/Resources
 	cp macosx/Info.plist $(BUNDLE_CONTENTS)
-	cp -R $(HOME)/Library/Frameworks/SDL.framework $(BUNDLE_CONTENTS)/Frameworks
-	cp -R $(HOME)/Library/Frameworks/SDL_mixer.framework $(BUNDLE_CONTENTS)/Frameworks
-	cp -R $(HOME)/Library/Frameworks/libxml.framework $(BUNDLE_CONTENTS)/Frameworks
-	cp -R $(HOME)/Library/Frameworks/libiconv.framework $(BUNDLE_CONTENTS)/Frameworks
 	$(INSTALL) $< $(BUNDLE_CONTENTS)/MacOS
 
 -include .depends

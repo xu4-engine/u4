@@ -40,6 +40,14 @@ void errorWarning(const char *fmt, ...) {
 
 #else
 
+#if defined(MACOSX)
+
+/*
+ * MacOS X: errors functios defined in objective-c code elsewhere.
+ */
+
+#else
+
 /*
  * non-MS operating systems: errors go to standard error stream
  */
@@ -66,4 +74,5 @@ void errorWarning(const char *fmt, ...) {
     fprintf(stderr, "\n");
 }
 
+#endif
 #endif
