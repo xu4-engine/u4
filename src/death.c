@@ -76,7 +76,7 @@ void deathDelayTimer(void *data) {
 void deathTimer(void *data) {
 
     timerCount++;
-    if (timerCount > deathMsgs[timerMsg].timeout) {
+    if ((timerMsg < N_MSGS) && (timerCount > deathMsgs[timerMsg].timeout)) {
 
         screenMessage(deathMsgs[timerMsg].text, c->saveGame->players[0].name);
         screenDisableCursor();
@@ -95,15 +95,12 @@ void deathTimer(void *data) {
 void deathRevive() {
     while(!mapIsWorldMap(c->location->map) && c->location->prev != NULL) {
         gameExitToParentMap(c);
-    }
+    }    
 
     /* Move our world map location to Lord British's Castle */
     c->location->x = world_portals[0].x;
     c->location->y = world_portals[0].y;
-    c->location->z = world_portals[0].z;
-
-    /* Stop ignoring keys */
-    eventHandlerPopKeyHandler();
+    c->location->z = world_portals[0].z;    
     
     /* Now, move the avatar into the castle and put them
        in front of Lord British */
