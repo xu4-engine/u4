@@ -45,7 +45,8 @@ typedef enum {
     INTRO_INIT_SEX,             /* prompting for character sex */
     INTRO_INIT_STORY,           /* displaying the intro story leading up the gypsy */
     INTRO_INIT_QUESTIONS,       /* prompting for the questions that determine class */
-    INTRO_INIT_SEGTOGAME        /* displaying the text that segues to the game */
+    INTRO_INIT_SEGTOGAME,       /* displaying the text that segues to the game */
+    INTRO_DONE
 } IntroMode;
 
 typedef struct _IntroObjectState {
@@ -276,13 +277,17 @@ int introKeyHandler(int key, void *data) {
 
     case INTRO_INIT_SEGTOGAME:
         segueInd++;
-        if (segueInd >= 2)
+        if (segueInd >= 2) {
+            mode = INTRO_DONE;
             eventHandlerSetExitFlag(1);
+        }
         else
             introUpdateScreen();
         return 1;
-    }
 
+    case INTRO_DONE:
+        return 0;
+    }
 
     return valid || keyHandlerDefault(key, NULL);
 }
@@ -463,6 +468,9 @@ void introUpdateScreen() {
 
     case INTRO_INIT_SEGTOGAME:
         introShowText(introGypsy[GYP_SEGUE1 + segueInd]);
+        break;
+
+    case INTRO_DONE:
         break;
 
     default:
