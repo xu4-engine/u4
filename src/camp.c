@@ -63,12 +63,11 @@ void campTimer(void *data) {
         int i, j,
             numAmbushingMonsters = 0,
             randMonster;
-        extern Object *monsterObj;
-        extern Object *combat_monsters[AREA_MONSTERS];
+        extern CombatInfo combatInfo;        
         extern int numMonsters;
         extern Monster monsters[MAX_MONSTERS];
 
-        /* first, find out how many ambushing monsters we're dealing with */
+        /* first, find out how many monsters exist that might ambush you during camp */
         for (i = 0; i < numMonsters; i++) {
             if (monsterAmbushes(&monsters[i]))
                 numAmbushingMonsters++;
@@ -88,20 +87,20 @@ void campTimer(void *data) {
                         screenMessage("Ambushed!\n");
                         
                         /* assign the monster object for combat */
-                        monsterObj = mapAddMonsterObject(c->location->prev->map, &monsters[i], c->location->prev->x, c->location->prev->y, c->location->prev->z);
+                        combatInfo.monsterObj = mapAddMonsterObject(c->location->prev->map, &monsters[i], c->location->prev->x, c->location->prev->y, c->location->prev->z);
                         
                         /* numAmbushingMonsters now is the number of creatures we will have in combat */
                         numAmbushingMonsters = combatInitialNumberOfMonsters(&monsters[i]);
 
                         for (i = 0; i < numAmbushingMonsters; i++) {
                             /* find a random free slot in the monster table */
-                            do {j = rand() % AREA_MONSTERS;} while (combat_monsters[j] != NULL);
+                            do {j = rand() % AREA_MONSTERS;} while (combatInfo.monsters[j] != NULL);
                             combatCreateMonster(j, i != (numAmbushingMonsters - 1));
                         }
 
                         /* ok, we're done creating monsters, let's destroy this monster object
                            so it won't leave a treasure chest behind */
-                        mapRemoveObject(c->location->prev->map, monsterObj);
+                        mapRemoveObject(c->location->prev->map, combatInfo.monsterObj);
 
                         /* monsters go first! */
                         combatFinishTurn();                        
@@ -118,17 +117,18 @@ void campTimer(void *data) {
 
 void campEnd(void) {
     int i, healed = 0;
+    extern CombatInfo combatInfo;
     musicFadeIn(0); /* Return volume to normal */
 
     eventHandlerPopKeyHandler();
-    gameExitToParentMap(c);
-
+    gameExitToParentMap(c);    
+    
     /* Wake everyone up! */
     for (i = 0; i < c->saveGame->members; i++) {
         if (c->saveGame->players[i].status == STAT_SLEEPING)
-            c->saveGame->players[i].status = STAT_GOOD;
-    }
-    
+            c->saveGame->players[i].status = combatInfo.party_status[i];
+    }    
+
     /* Make sure we've waited long enough for camping to be effective */
     if (((c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff) != c->saveGame->lastcamp)    
         healed = campHeal();
@@ -166,7 +166,7 @@ void innBegin(void) {
     gameUpdateScreen();
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
-    eventHandlerAddTimerCallback(&innTimer, 5 * 4);    
+    eventHandlerAddTimerCallback(&innTimer, 5 * 4);
 
     screenDisableCursor();
 }
@@ -214,7 +214,7 @@ void innTimer(void *data) {
                 y = (rand() % 3) + 10,
                 z = c->location->z;
 
-            /* If Isaac is already around, just bring him back */
+            /* If Isaac is already around, just bring him back to the inn */
             for (obj = c->location->map->objects; obj; obj = obj->next) {
                 if (obj->objType == OBJECT_PERSON && obj->person->name && 
                     strcmp(obj->person->name, "Isaac") == 0) {

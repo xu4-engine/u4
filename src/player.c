@@ -353,46 +353,50 @@ int playerJoin(SaveGame *saveGame, const char *name) {
 }
 
 void playerEndTurn(void) {
-    int i,
-        context = c->location->context;
+    int i;        
     SaveGame *saveGame = c->saveGame;
-
-    saveGame->moves++;
+    
+    saveGame->moves++;   
+   
     for (i = 0; i < saveGame->members; i++) {
-        if (saveGame->players[i].status != STAT_DEAD)
-            saveGame->food--;
-    }
-    if (saveGame->food < 0) {
-        /* FIXME: handle starving */
-        saveGame->food = 0;
-    }
 
-    for (i = 0; i < saveGame->members; i++) {
-        switch (saveGame->players[i].status) {
-        case STAT_SLEEPING:
-            if (rand() % 5 == 0)
-                saveGame->players[i].status = STAT_GOOD;
-            break;
+        /* Handle player status (only for non-combat turns) */
+        if (c->location->context != CTX_COMBAT) {
+            
+            /* party members eat food (also non-combat) */
+            if (saveGame->players[i].status != STAT_DEAD)
+                saveGame->food--;
 
-        case STAT_POISONED:
-            if (context != CTX_COMBAT)
+            switch (saveGame->players[i].status) {
+            case STAT_SLEEPING:            
+                if (rand() % 5 == 0)
+                    saveGame->players[i].status = STAT_GOOD;
+                break;
+
+            case STAT_POISONED:            
                 playerApplyDamage(&saveGame->players[i], 2);
-            break;
+                break;
 
-        default:
-            break;
+            default:
+                break;
+            }
         }
 
         /* regenerate magic points */
         if ((saveGame->players[i].status == STAT_GOOD || 
              saveGame->players[i].status == STAT_POISONED) &&
             saveGame->players[i].mp < playerGetMaxMp(&(saveGame->players[i])))
-            saveGame->players[i].mp++;
-
-        /* heal ship */
-        if ((saveGame->shiphull < 50) && (rand() % 8 == 0))
-            saveGame->shiphull++;
+            saveGame->players[i].mp++;        
     }
+
+    if (saveGame->food < 0) {
+        /* FIXME: handle starving */
+        saveGame->food = 0;
+    }
+    
+    /* heal ship (25% chance it is healed each turn) */
+    if ((c->location->context == CTX_WORLDMAP) && (saveGame->shiphull < 50) && (rand() % 4 == 0))
+        saveGame->shiphull++;
 }
 
 void playerApplyEffect(SaveGame *saveGame, TileEffect effect, int player) {

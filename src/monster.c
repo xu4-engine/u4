@@ -315,7 +315,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
     
-    return monsterById((era & rand() & rand()) + ORC_ID);    
+    return monsterById((era & rand() & rand()) + ORC_ID);
 }
 
 int monsterGetInitialHp(const Monster *monster) {
@@ -399,7 +399,7 @@ int monsterSpecialAction(Object *obj) {
             info->range = 3;
             info->validDirections = broadsidesDirs;
             info->player = -1;
-            info->blockedPredicate = &tileCanAttackOver;
+            info->blockedPredicate = NULL;
             info->blockBefore = 1; 
             info->firstValidDistance = 1;
             
@@ -419,6 +419,7 @@ int monsterSpecialAction(Object *obj) {
             break;
         
         case SEA_SERPENT_ID: /* ranged */
+        case HYDRA_ID: /* ranged */
         case DRAGON_ID: /* ranged */
 
             retval = 1;
@@ -431,7 +432,7 @@ int monsterSpecialAction(Object *obj) {
             info->range = 3;
             info->validDirections = MASK_DIR_ALL;
             info->player = -1;
-            info->blockedPredicate = &tileCanAttackOver;
+            info->blockedPredicate = NULL;
             info->blockBefore = 1;
             info->firstValidDistance = 1;
 

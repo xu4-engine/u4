@@ -11,7 +11,6 @@
 #include "combat.h"
 
 #include "annotation.h"
-#include "area.h"
 #include "context.h"
 #include "death.h"
 #include "debug.h"
@@ -23,9 +22,9 @@
 #include "names.h"
 #include "object.h"
 #include "player.h"
-#include "savegame.h"
 #include "screen.h"
 #include "settings.h"
+#include "spell.h"
 #include "stats.h"
 #include "ttype.h"
 #include "weapon.h"
@@ -53,12 +52,7 @@ extern Map shipshor_map;
 extern Map shore_map;
 extern Map shorship_map;
 
-Object *monsterObj;
-int focus;
-Object *party[8];
-Object *combat_monsters[AREA_MONSTERS];
-int monsterHp[AREA_MONSTERS];
-int normalCombat;
+CombatInfo combatInfo;
 
 int combatAttackAtCoord(int x, int y, int distance, void *data);
 int combatMonsterRangedAttack(int x, int y, int distance, void *data);
@@ -72,66 +66,71 @@ int movePartyMember(Direction dir, int member);
 int combatChooseWeaponDir(int key, void *data);
 int combatChooseWeaponRange(int key, void *data);
 
-void combatBegin(Map *map, Object *monster, int isNormal) {
+void combatBegin(Map *map, Object *monster, int isNormalCombat) {
     int i, j;
-    int nmonsters;
-    const Monster *m = NULL;
+    int nmonsters;    
     int partyIsReadyToFight = 0;
-    normalCombat = isNormal;    
-
-    monsterObj = monster;
-    if (monster && (monster->objType == OBJECT_MONSTER))
-        m = monster->monster;
-    else if (monster)
-        m = monsterForTile(monster->tile);
+    
+    /* setup the combatInfo struct */
+    combatInfo.monsterObj = monster;
+    combatInfo.monster = (monster && (monster->objType == OBJECT_MONSTER)) ?
+        monster->monster :
+        (monster) ? monsterForTile(monster->tile) : NULL;
+    combatInfo.isNormalCombat = isNormalCombat;
+    combatInfo.isCamping = (!isNormalCombat && !monster);
 
     gameSetMap(c, map, 1, NULL);
     musicPlay();
         
-    for (i = 0; i < c->saveGame->members; i++) {
+    /* place party members on the map */
+    for (i = 0; i < c->saveGame->members; i++) {     
+
         if (c->saveGame->players[i].status != STAT_DEAD) {
-            party[i] = mapAddObject(c->location->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->location->map->area->player_start[i].x, c->location->map->area->player_start[i].y, c->location->z);
+            combatInfo.party[i] = mapAddObject(c->location->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->location->map->area->player_start[i].x, c->location->map->area->player_start[i].y, c->location->z);
         
             /* Replace the party mamber with a sleeping person if they're asleep */
             if (c->saveGame->players[i].status == STAT_SLEEPING)
-                party[i]->tile = CORPSE_TILE;
+                combatInfo.party[i]->tile = CORPSE_TILE;
             else partyIsReadyToFight = 1;
         }
         else
-            party[i] = NULL;
+            combatInfo.party[i] = NULL;
     }
     for (; i < 8; i++)
-        party[i] = NULL;
+        combatInfo.party[i] = NULL;
 
     /* normal combat situation */
-    if (monsterObj) {
+    if (!combatInfo.isCamping) {
         i = 0;
-        while ((party[i] == NULL) && (c->saveGame->players[i].status != STAT_SLEEPING))
+        while ((combatInfo.party[i] == NULL) && (c->saveGame->players[i].status != STAT_SLEEPING))
             i++;
-        focus = i;
-        party[i]->hasFocus = 1;
+        combatInfo.focus = i;
+        combatInfo.party[i]->hasFocus = 1;
     }
     
     /* camping, make sure everyone's asleep */
     else {
         partyIsReadyToFight = 0;
         for (i = 0; i < c->saveGame->members; i++) {
+            /* save their stats before putting them to sleep */
+            combatInfo.party_status[i] = c->saveGame->players[i].status;
+
             if (c->saveGame->players[i].status != STAT_DEAD) {
                 c->saveGame->players[i].status = STAT_SLEEPING;
-                party[i]->tile = CORPSE_TILE;
+                combatInfo.party[i]->tile = CORPSE_TILE;
             }
         }
     }
 
     for (i = 0; i < AREA_MONSTERS; i++)
-        combat_monsters[i] = NULL;
+        combatInfo.monsters[i] = NULL;
 
     /* check if the battlefield has monsters on it.  If we're camping, we don't want this yet */
-    if (m) {
-        nmonsters = combatInitialNumberOfMonsters(m);    
+    if (combatInfo.monster) {
+        nmonsters = combatInitialNumberOfMonsters(combatInfo.monster);    
         for (i = 0; i < nmonsters; i++) {
             /* find a random free slot in the monster table */
-            do {j = rand() % AREA_MONSTERS;} while (combat_monsters[j] != NULL);
+            do {j = rand() % AREA_MONSTERS;} while (combatInfo.monsters[j] != NULL);
             combatCreateMonster(j, i != (nmonsters - 1));
         }
     }
@@ -140,13 +139,13 @@ void combatBegin(Map *map, Object *monster, int isNormal) {
     eventHandlerPushKeyHandler(&combatBaseKeyHandler);
 
     /* if the combat is a normal combat situation, treat it as such. */
-    if (normalCombat)
+    if (isNormalCombat)
         screenMessage("\n**** COMBAT ****\n\n");    
 
     /* if the party is ready to fight, show info for the first active player */
     if (partyIsReadyToFight) {
-        screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, weaponGetName(c->saveGame->players[focus].weapon));
-        statsHighlightCharacter(focus);
+        screenMessage("%s with %s\n\020", c->saveGame->players[combatInfo.focus].name, weaponGetName(c->saveGame->players[combatInfo.focus].weapon));
+        statsHighlightCharacter(combatInfo.focus);
         statsUpdate(); /* If a character was awakened inbetween world view and combat, this fixes stats info */
     }
 }
@@ -214,7 +213,7 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, cons
 void combatCreateMonster(int index, int canbeleader) {    
     unsigned char mtile;
 
-    mtile = monsterObj->tile;
+    mtile = combatInfo.monsterObj->tile;
 
     if (tileIsPirateShip(mtile))
         mtile = ROGUE_TILE;
@@ -235,48 +234,82 @@ void combatCreateMonster(int index, int canbeleader) {
             /* normal */
             ;
     }
-    combat_monsters[index] = mapAddMonsterObject(c->location->map, monsterForTile(mtile), c->location->map->area->monster_start[index].x, c->location->map->area->monster_start[index].y, c->location->z);
-    monsterHp[index] = monsterGetInitialHp(combat_monsters[index]->monster);
+    combatInfo.monsters[index] = mapAddMonsterObject(c->location->map, monsterForTile(mtile), c->location->map->area->monster_start[index].x, c->location->map->area->monster_start[index].y, c->location->z);
+    combatInfo.monsterHp[index] = monsterGetInitialHp(combatInfo.monsters[index]->monster);
 }
 
-void combatFinishTurn() {
-    int i;    
+void combatFinishTurn() {    
+    int focus = combatInfo.focus;
 
     if (combatIsWon()) {
         eventHandlerPopKeyHandler();
         combatEnd();
         return;
     }
-
-    if (party[focus]) {
+    
+    if (combatInfo.party[focus]) {
         /* apply effects from tile player is standing on */
-        playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->location->map, party[focus]->x, party[focus]->y, c->location->z)), focus);
-
-        /* remove focus */
-        party[focus]->hasFocus = 0;
+        playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->location->map, combatInfo.party[focus]->x, combatInfo.party[focus]->y, c->location->z)), focus);
     }
 
     /* check to see if the player gets to go again */
     if ((c->aura != AURA_QUICKNESS) || (rand() % 2 == 0)) {
         do {
-            /* put the focus on the next party member */
-            focus++;
-
             annotationCycle();
+
+            /* put a sleeping person in place of the player,
+               or restore an awakened member to their original state */            
+            if (combatInfo.party[focus]) {
+                /* wake up! */
+                if (c->saveGame->players[focus].status == STAT_SLEEPING && (rand() % 8 == 0)) {
+                    c->saveGame->players[focus].status = combatInfo.party_status[focus];
+                    statsUpdate();
+                }
+
+                /* display a sleeping person or an awake person */                
+                if (c->saveGame->players[focus].status == STAT_SLEEPING)
+                    combatInfo.party[focus]->tile = CORPSE_TILE;
+                else combatInfo.party[focus]->tile = tileForClass(c->saveGame->players[focus].klass);
+
+                /* remove focus from the current party member */
+                combatInfo.party[focus]->hasFocus = 0;
+            }
+
+            /* eat some food */
+            if (c->saveGame->players[focus].status != STAT_DEAD)
+                c->saveGame->food--;
+
+            /* put the focus on the next party member */
+            combatInfo.focus++; focus++;            
 
             /* move monsters and wrap around at end */
             if (focus >= c->saveGame->members) {            
 
                 gameUpdateScreen();
                 eventHandlerSleep(50); /* give a slight pause in case party members are asleep for awhile */
+
+                /* adjust moves */
+                playerEndTurn();
+
+                /* check if aura has expired */
+                if (c->auraDuration > 0) {
+                    if (--c->auraDuration == 0)
+                        c->aura = AURA_NONE;
+                }                
+
+                /** 
+                 * ====================
+                 * HANDLE MONSTER STUFF
+                 * ====================
+                 */
             
                 /* FIXME: apply tile effects to monsters */
-                combatMoveMonsters();                
+                combatMoveMonsters();
 
-                focus = 0;
+                combatInfo.focus = focus = 0;
                 if (combatIsLost()) {
                     if (!playerPartyDead(c->saveGame)) {
-                        if (monsterObj && monsterIsGood(monsterForTile(monsterObj->tile)))
+                        if (combatInfo.monsterObj && monsterIsGood(combatInfo.monster))
                             playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
                         else
                             playerAdjustKarma(c->saveGame, KA_FLED_EVIL);
@@ -291,32 +324,14 @@ void combatFinishTurn() {
                     eventHandlerPopKeyHandler();
                     combatEnd();
                     return;
-                }
-
-                /* adjust food and moves */
-                playerEndTurn();
-
-                /* put a sleeping person in place of the player,
-                   or restore an awakened member to their original state */
-                for (i = 0; i < c->saveGame->members; i++) {                
-                    if (party[i]) {
-                        if (c->saveGame->players[i].status == STAT_SLEEPING)
-                            party[i]->tile = CORPSE_TILE;
-                        else party[i]->tile = tileForClass(c->saveGame->players[i].klass);
-                    }
-                }
-
-                /* check if aura has expired */
-                if (c->auraDuration > 0) {
-                    if (--c->auraDuration == 0)
-                        c->aura = AURA_NONE;
                 }                
             }
-        } while (!party[focus] ||    /* dead */
+        } while (!combatInfo.party[focus] ||    /* dead */
                  c->saveGame->players[focus].status == STAT_SLEEPING);
     }
+    else annotationCycle();
 
-    party[focus]->hasFocus = 1;
+    combatInfo.party[focus]->hasFocus = 1;
 
     screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, weaponGetName(c->saveGame->players[focus].weapon));
     c->statsItem = STATS_PARTY_OVERVIEW;
@@ -328,7 +343,8 @@ int combatBaseKeyHandler(int key, void *data) {
     int valid = 1;
     CoordActionInfo *info;
     AlphaActionInfo *alphaInfo; 
-    int weapon = c->saveGame->players[focus].weapon;
+    int focus = combatInfo.focus;
+    int weapon = c->saveGame->players[focus].weapon;    
 
     switch (key) {
     case U4_UP:
@@ -350,8 +366,8 @@ int combatBaseKeyHandler(int key, void *data) {
     case 'a':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &combatAttackAtCoord;
-        info->origin_x = party[focus]->x;
-        info->origin_y = party[focus]->y;
+        info->origin_x = combatInfo.party[focus]->x;
+        info->origin_y = combatInfo.party[focus]->y;
         info->prev_x = info->prev_y = -1;
         info->range = weaponGetRange(weapon);
         info->validDirections = MASK_DIR_ALL;
@@ -375,7 +391,7 @@ int combatBaseKeyHandler(int key, void *data) {
         alphaInfo->lastValidLetter = WEAP_MAX + 'a' - 1;
         alphaInfo->handleAlpha = readyForPlayer2;
         alphaInfo->prompt = "Weapon: ";
-        alphaInfo->data = (void *) focus;
+        alphaInfo->data = (void *)focus;
 
         screenMessage(alphaInfo->prompt);
 
@@ -422,6 +438,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     int oldx = info->prev_x,
         oldy = info->prev_y;  
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
+    int focus = combatInfo.focus;
     int groundTile;
     
     info->prev_x = x;
@@ -456,9 +473,9 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
 
         monster = -1;
         for (i = 0; i < AREA_MONSTERS; i++) {
-            if (combat_monsters[i] &&
-                combat_monsters[i]->x == x &&
-                combat_monsters[i]->y == y)
+            if (combatInfo.monsters[i] &&
+                combatInfo.monsters[i]->x == x &&
+                combatInfo.monsters[i]->y == y)
                 monster = i;
         }   
 
@@ -495,15 +512,15 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
             attackFlash(x, y, misstile, 1);
 
         } else { /* The weapon hit! */
-            m = combat_monsters[monster]->monster;
+            m = combatInfo.monsters[monster]->monster;
 
             /* show the 'hit' tile */
             attackFlash(x, y, hittile, 1);
 
             if (m->tile != LORDBRITISH_TILE)
-                monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);
+                combatInfo.monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);
 
-            switch (monsterGetStatus(m, monsterHp[monster])) {
+            switch (monsterGetStatus(m, combatInfo.monsterHp[monster])) {
 
             case MSTAT_DEAD:
                 xp = monsterGetXp(m);
@@ -511,8 +528,8 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
                 playerAwardXp(&c->saveGame->players[focus], xp);
                 if (monsterIsEvil(m))
                     playerAdjustKarma(c->saveGame, KA_KILLED_EVIL);
-                mapRemoveObject(c->location->map, combat_monsters[monster]);
-                combat_monsters[monster] = NULL;
+                mapRemoveObject(c->location->map, combatInfo.monsters[monster]);
+                combatInfo.monsters[monster] = NULL;
                 break;
 
             case MSTAT_FLEEING:
@@ -565,8 +582,8 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
     info->prev_x = x;
     info->prev_y = y;
 
-    hittile = combat_monsters[info->player]->monster->rangedhittile;
-    misstile = combat_monsters[info->player]->monster->rangedmisstile;
+    hittile = combatInfo.monsters[info->player]->monster->rangedhittile;
+    misstile = combatInfo.monsters[info->player]->monster->rangedmisstile;
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (oldx >= 0) && (oldy >= 0))
@@ -577,9 +594,9 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
 
         player = -1;
         for (i = 0; i < AREA_PLAYERS; i++) {
-            if (party[i] &&
-                party[i]->x == x &&
-                party[i]->y == y)
+            if (combatInfo.party[i] &&
+                combatInfo.party[i]->x == x &&
+                combatInfo.party[i]->y == y)
                 player = i;
         }   
 
@@ -660,7 +677,7 @@ int combatInitialNumberOfMonsters(const Monster *monster) {
 
     /* if in an unusual combat situation, generally we stick to normal encounter sizes,
        (such as encounters from sleeping in an inn, etc.) */
-    if (!normalCombat || mapIsWorldMap(c->location->prev->map)) {
+    if (!combatInfo.isNormalCombat || mapIsWorldMap(c->location->prev->map)) {
         nmonsters = (rand() % 8) + 1;        
         
         if (nmonsters == 1) {            
@@ -692,7 +709,7 @@ int combatIsWon() {
 
     activeMonsters = 0;
     for (i = 0; i < AREA_MONSTERS; i++) {
-        if (combat_monsters[i])
+        if (combatInfo.monsters[i])
             activeMonsters++;
     }
 
@@ -707,7 +724,7 @@ int combatIsLost() {
 
     activePlayers = 0;
     for (i = 0; i < c->saveGame->members; i++) {
-        if (party[i])
+        if (combatInfo.party[i])
             activePlayers++;
     }
 
@@ -716,23 +733,18 @@ int combatIsLost() {
 
 void combatEnd() {
     
-    const Monster *m = NULL;
-    
-    if (monsterObj) 
-        m = (monsterObj->objType == OBJECT_MONSTER) ? monsterObj->monster : monsterForTile(monsterObj->tile);
-    
-    gameExitToParentMap(c);
+    gameExitToParentMap(c);    
     
     if (combatIsWon()) {
 
         /* added chest or captured ship object */        
-        if (m && normalCombat) {
-            if ((m->mattr & MATTR_WATER) == 0)
-                mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), monsterObj->x, monsterObj->y, c->location->z);
-            else if (tileIsPirateShip(monsterObj->tile)) {
+        if (combatInfo.monster && combatInfo.isNormalCombat) {
+            if (!monsterIsAquatic(combatInfo.monster))
+                mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), combatInfo.monsterObj->x, combatInfo.monsterObj->y, c->location->z);
+            else if (tileIsPirateShip(combatInfo.monsterObj->tile)) {
                 unsigned char ship = tileGetShipBase();
-                tileSetDirection(&ship, tileGetDirection(monsterObj->tile));
-                mapAddObject(c->location->map, ship, ship, monsterObj->x, monsterObj->y, c->location->z);
+                tileSetDirection(&ship, tileGetDirection(combatInfo.monsterObj->tile));
+                mapAddObject(c->location->map, ship, ship, combatInfo.monsterObj->x, combatInfo.monsterObj->y, c->location->z);
             }
         }
 
@@ -742,8 +754,8 @@ void combatEnd() {
     else if (!playerPartyDead(c->saveGame))
         screenMessage("Battle is lost!\n");
 
-    if (monsterObj)
-        mapRemoveObject(c->location->map, monsterObj);
+    if (combatInfo.monsterObj)
+        mapRemoveObject(c->location->map, combatInfo.monsterObj);
     
     if (playerPartyDead(c->saveGame))
         deathStart(0);
@@ -755,12 +767,12 @@ void combatMoveMonsters() {
     int i, target, distance, dx, dy, dirx, diry;
     CombatAction action;
     CoordActionInfo *info;
-    const Monster *m;    
+    const Monster *m;
 
     for (i = 0; i < AREA_MONSTERS; i++) {
-        if (!combat_monsters[i])
+        if (!combatInfo.monsters[i])
             continue;
-        m = combat_monsters[i]->monster;
+        m = combatInfo.monsters[i]->monster;
 
         if (m->mattr & MATTR_NEGATE) {
             c->aura = AURA_NEGATE;
@@ -778,15 +790,15 @@ void combatMoveMonsters() {
         else if (monsterCastSleep(m) && (rand() % 4) == 0)
             action = CA_CAST_SLEEP;
         
-        else if (monsterGetStatus(m, monsterHp[i]) == MSTAT_FLEEING)
+        else if (monsterGetStatus(m, combatInfo.monsterHp[i]) == MSTAT_FLEEING)
             action = CA_FLEE;
         else
             action = CA_ATTACK;
 
-        target = combatFindTargetForMonster(combat_monsters[i], &distance, action == CA_RANGED);
+        target = combatFindTargetForMonster(combatInfo.monsters[i], &distance, action == CA_RANGED);
         if (target == -1 && action == CA_RANGED) {
             action = CA_ADVANCE;
-            combatFindTargetForMonster(combat_monsters[i], &distance, action == CA_RANGED);
+            combatFindTargetForMonster(combatInfo.monsters[i], &distance, 0);
         }
         if (target == -1)
             continue;
@@ -806,31 +818,38 @@ void combatMoveMonsters() {
                 if (monsterStealsFood(m))
                     playerAdjustFood(c->saveGame, -2500);
                                
-                attackFlash(party[target]->x, party[target]->y, HITFLASH_TILE, 1);
+                attackFlash(combatInfo.party[target]->x, combatInfo.party[target]->y, HITFLASH_TILE, 1);
 
                 playerApplyDamage(&c->saveGame->players[target], monsterGetDamage(m));
                 if (c->saveGame->players[target].status == STAT_DEAD) {
                     int px, py;
-                    px = party[target]->x;
-                    py = party[target]->y;
-                    mapRemoveObject(c->location->map, party[target]);
-                    party[target] = NULL;
+                    px = combatInfo.party[target]->x;
+                    py = combatInfo.party[target]->y;
+                    mapRemoveObject(c->location->map, combatInfo.party[target]);
+                    combatInfo.party[target] = NULL;
                     annotationSetVisual(annotationSetTurnDuration(annotationAdd(px, py, c->location->z, c->location->map->id, CORPSE_TILE), c->saveGame->members));
                     screenMessage("%s is Killed!\n", c->saveGame->players[target].name);
                 }
                 statsUpdate();
             } else {
-                attackFlash(party[target]->x, party[target]->y, MISSFLASH_TILE, 1);
+                attackFlash(combatInfo.party[target]->x, combatInfo.party[target]->y, MISSFLASH_TILE, 1);
             }
             break;
 
         case CA_CAST_SLEEP:
             screenMessage("Sleep!\n");
+
+            (*spellCallback)('s', -1); /* show the sleep spell effect */
             
             /* Apply the sleep spell to everyone still on combat */
-            for (i = 0; i < 8; i++)
-                if (party[i] != NULL)
+            for (i = 0; i < 8; i++) {
+                if (combatInfo.party[i] != NULL) {
+                    /* save the original status for the party member, we'll need it later! */
+                    if (c->saveGame->players[i].status != STAT_SLEEPING)
+                        combatInfo.party_status[i] = c->saveGame->players[i].status;
                     playerApplySleepSpell(&c->saveGame->players[i]);
+                }
+            }
 
             statsUpdate();
             break;
@@ -856,8 +875,8 @@ void combatMoveMonsters() {
                 }
             
                 /* Teleport! */
-                combat_monsters[i]->x = newx;
-                combat_monsters[i]->y = newy;
+                combatInfo.monsters[i]->x = newx;
+                combatInfo.monsters[i]->y = newy;
             }
 
             break;
@@ -867,8 +886,8 @@ void combatMoveMonsters() {
             
             info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
             info->handleAtCoord = &combatMonsterRangedAttack;
-            info->origin_x = combat_monsters[i]->x;
-            info->origin_y = combat_monsters[i]->y;
+            info->origin_x = combatInfo.monsters[i]->x;
+            info->origin_y = combatInfo.monsters[i]->y;
             info->prev_x = info->prev_y = -1;
             info->range = 11;
             info->validDirections = MASK_DIR_ALL;
@@ -878,8 +897,8 @@ void combatMoveMonsters() {
             info->firstValidDistance = 0;
 
             /* Figure out which direction to fire the weapon */
-            dx = party[target]->x - combat_monsters[i]->x;
-            dy = party[target]->y - combat_monsters[i]->y;            
+            dx = combatInfo.party[target]->x - combatInfo.monsters[i]->x;
+            dy = combatInfo.party[target]->y - combatInfo.monsters[i]->y;            
 
             dirx = diry = DIR_NONE;
         
@@ -908,16 +927,16 @@ void combatMoveMonsters() {
 
         case CA_FLEE:
         case CA_ADVANCE:
-            if (moveCombatObject(action, c->location->map, combat_monsters[i], party[target]->x, party[target]->y)) {
-                if (MAP_IS_OOB(c->location->map, (int)combat_monsters[i]->x, (int)combat_monsters[i]->y)) {
+            if (moveCombatObject(action, c->location->map, combatInfo.monsters[i], combatInfo.party[target]->x, combatInfo.party[target]->y)) {
+                if (MAP_IS_OOB(c->location->map, (int)combatInfo.monsters[i]->x, (int)combatInfo.monsters[i]->y)) {
                     screenMessage("\n%s Flees!\n", m->name);
                     
                     /* Congrats, you have a heart! */
-                    if (monsterIsGood(combat_monsters[i]->monster))
+                    if (monsterIsGood(combatInfo.monsters[i]->monster))
                         playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
 
-                    mapRemoveObject(c->location->map, combat_monsters[i]);
-                    combat_monsters[i] = NULL;
+                    mapRemoveObject(c->location->map, combatInfo.monsters[i]);
+                    combatInfo.monsters[i] = NULL;
                 }
             }
             
@@ -933,23 +952,23 @@ int combatFindTargetForMonster(const Object *monster, int *distance, int ranged)
     *distance = 20;
     closest = -1;
     for (i = 0; i < c->saveGame->members; i++) {
-        if (!party[i])
+        if (!combatInfo.party[i])
             continue;
 
         /* find out how many moves it would take to get to the party member */
         if (ranged) 
             /* ranged attacks can go diagonally, so find the closest using diagonals */
-            curDistance = mapDistance(monster->x, monster->y, party[i]->x, party[i]->y);
+            curDistance = mapDistance(monster->x, monster->y, combatInfo.party[i]->x, combatInfo.party[i]->y);
         else
             /* normal attacks are n/e/s/w, so find the distance that way */
-            curDistance = mapMovementDistance(monster->x, monster->y, party[i]->x, party[i]->y);        
+            curDistance = mapMovementDistance(monster->x, monster->y, combatInfo.party[i]->x, combatInfo.party[i]->y);        
 
         /* skip target if further than current target */
         if (curDistance > (*distance))
             continue;
         /* skip target 50% of time if same distance */
         if (curDistance == (*distance) && (rand() % 2) == 0)
-            continue;        
+            continue;
         
         (*distance) = curDistance;
         closest = i;
@@ -963,26 +982,26 @@ int movePartyMember(Direction dir, int member) {
     int newx, newy;
     int movementMask;
 
-    newx = party[member]->x;
-    newy = party[member]->y;
+    newx = combatInfo.party[member]->x;
+    newy = combatInfo.party[member]->y;
     dirMove(dir, &newx, &newy);
 
     screenMessage("%s\n", getDirectionName(dir));
 
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
-        mapRemoveObject(c->location->map, party[member]);
-        party[member] = NULL;
+        mapRemoveObject(c->location->map, combatInfo.party[member]);
+        combatInfo.party[member] = NULL;
         return result;
     }
 
-    movementMask = mapGetValidMoves(c->location->map, party[member]->x, party[member]->y, c->location->z, party[member]->tile);
+    movementMask = mapGetValidMoves(c->location->map, combatInfo.party[member]->x, combatInfo.party[member]->y, c->location->z, combatInfo.party[member]->tile);
     if (!DIR_IN_MASK(dir, movementMask)) {
         screenMessage("Blocked!\n");
         return (result = 0);        
     }
 
-    party[member]->x = newx;
-    party[member]->y = newy; 
+    combatInfo.party[member]->x = newx;
+    combatInfo.party[member]->y = newy; 
 
     return result;
 }
