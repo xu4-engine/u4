@@ -184,6 +184,12 @@ int dungeonDrinkFountain(int player) {
 int dungeonTouchOrb(int player) {
     int stats = 0;
     int damage = 0;
+    int x, y, z;
+    unsigned char replacementTile;
+    
+    /* Get current position and find a replacement tile for it */
+    locationGetCurrentPosition(c->location, &x, &y, &z);
+    replacementTile = locationGetReplacementTile(c->location, x, y, z);
 
     switch(c->location->map->id) {
     case MAP_DECEIT:    stats = STATSBONUS_INT; break;
@@ -216,7 +222,7 @@ int dungeonTouchOrb(int player) {
     /* deal damage to the party member who touched the orb */
     playerApplyDamage(&c->saveGame->players[player], damage);
     /* remove the orb from the map */
-    annotationAdd(c->location->x, c->location->y, c->location->z, c->location->map->id, BRICKFLOOR_TILE);
+    annotationAdd(x, y, z, c->location->map->id, replacementTile);
 
     statsUpdate();
     return 1;

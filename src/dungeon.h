@@ -76,7 +76,6 @@ typedef enum _DungeonToken {
 /**
  * Dungeon sub-tokens
  */
-
 typedef enum _TrapType {
     TRAP_WINDS                  = 0x0,
     TRAP_FALLING_ROCK           = 0x1,
