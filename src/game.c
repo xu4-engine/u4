@@ -60,6 +60,7 @@ int talkHandleChoice(char choice);
 int useItem(const char *itemName);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
+void gameCheckBridgeTrolls(void);
 void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
 void gameCheckRandomMonsters(void);
@@ -906,9 +907,9 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         break;
     case 't':
         if (mapIsWorldMap(c->map)) {
-            mapAddObject(c->map, 20, 20, 84, 106);
-            mapAddObject(c->map, 16, 16, 88, 109);
-            mapAddObject(c->map, 24, 24, 85, 105);
+            mapAddObject(c->map, tileGetHorseBase(), tileGetHorseBase(), 84, 106);
+            mapAddObject(c->map, tileGetShipBase(), tileGetShipBase(), 88, 109);
+            mapAddObject(c->map, tileGetBalloonBase(), tileGetBalloonBase(), 85, 105);
             screenMessage("Transports: Ship, Horse and Balloon created!\n\020");
         }
         break;
@@ -1648,6 +1649,7 @@ int moveAvatar(Direction dir, int userEvent) {
     c->saveGame->x = newx;
     c->saveGame->y = newy;
 
+    gameCheckBridgeTrolls();
     gameCheckSpecialMonsters(dir);
     gameCheckMoongates();
 
@@ -1741,6 +1743,18 @@ void gameTimer(void *data) {
      */
     if (eventHandlerTimerQueueEmpty())
         gameUpdateScreen();
+}
+
+void gameCheckBridgeTrolls() {
+    if (!mapIsWorldMap(c->map) ||
+        mapTileAt(c->map, c->saveGame->x, c->saveGame->y) != BRIDGE_TILE ||
+        (rand() % 8) != 0)
+        return;
+
+    screenMessage("\nBridge Trolls!\n");
+
+    combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport, 
+                mapAddObject(c->map, TROLL_TILE, TROLL_TILE, c->saveGame->x, c->saveGame->y));
 }
 
 void gameCheckSpecialMonsters(Direction dir) {
