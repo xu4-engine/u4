@@ -569,7 +569,7 @@ int introHandleQuestionChoice(char choice) {
  */
 void introInitAvatar(SaveGamePlayerRecord *avatar, int *initX, int *initY) {
     int i;
-    struct {
+    static const struct {
         WeaponType weapon;
         ArmorType armor;
         int xp, x, y;

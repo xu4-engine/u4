@@ -168,7 +168,7 @@ void screenFixIntroScreen(const unsigned char *sigData) {
 int screenLoadBackgrounds() {
     unsigned int i;
     int ret;
-    const struct {
+    static const struct {
         BackgroundType bkgd;
         const char *filename;
     } lzwBkgdInfo[] = {
@@ -206,7 +206,7 @@ int screenLoadBackgrounds() {
 int screenLoadIntroAnimations() {
     unsigned int i;
     int ret;
-    const struct {
+    static const struct {
         AnimType anim;
         const char *filename;
     } lzwAnimInfo[] = {
