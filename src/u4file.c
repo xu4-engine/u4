@@ -75,7 +75,7 @@ long u4flength(FILE *f) {
  * offset is -1.
  */
 char **u4read_stringtable(FILE *f, long offset, int nstrings) {
-    char buffer[256];
+    char buffer[384];
     int i, j;
     char **strs = malloc(nstrings * sizeof(char *));
     if (!strs)
@@ -88,7 +88,8 @@ char **u4read_stringtable(FILE *f, long offset, int nstrings) {
     for (i = 0; i < nstrings; i++) {
         for (j = 0; j < sizeof(buffer) - 1; j++) {
             buffer[j] = fgetc(f);
-            if (buffer[j] == '\0')
+            if (buffer[j] == '\0' &&
+                j > 0 && buffer[j - 1] != 8) /* needed to handle weird characters in lb's abyss response */
                 break;
         }
         buffer[j] = '\0';
