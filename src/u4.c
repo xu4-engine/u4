@@ -15,7 +15,7 @@
 #include "event.h"
 #include "game.h"
 #include "intro.h"
-#include "mapinit.h"
+#include "mapmgr.h"
 #include "music.h"
 #include "person.h"
 #include "screen.h"
@@ -76,8 +76,7 @@ int main(int argc, char *argv[]) {
         return 0;
 
     /* load in the maps */
-    if (!initializeMaps())
-        errorFatal("unable to load map files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+    mapMgrInit();
 
     /* initialize person data */
     if (!personInit())

@@ -18,14 +18,14 @@ struct _Portal;
 #include "direction.h"
 
 typedef enum {
-    MAP_WORLD,
-    MAP_TOWN,
-    MAP_VILLAGE,
-    MAP_CASTLE,
-    MAP_RUIN,
-    MAP_SHRINE,
-    MAP_COMBAT,
-    MAP_DUNGEON
+    MAPTYPE_WORLD,
+    MAPTYPE_TOWN,
+    MAPTYPE_VILLAGE,
+    MAPTYPE_CASTLE,
+    MAPTYPE_RUIN,
+    MAPTYPE_SHRINE,
+    MAPTYPE_COMBAT,
+    MAPTYPE_DUNGEON
 } MapType;
 
 typedef enum {
@@ -46,14 +46,14 @@ typedef struct _Map {
     unsigned int width, height, levels;
     MapBorderBehavior border_behavior;
     int n_portals;
-    const struct _Portal *portals;
+    struct _Portal *portals;
     int flags;
     Music music;
     unsigned char *data;
     union {
-        const void *init;
+        void *init;
         struct _City *city;
-        const struct _Shrine *shrine;
+        struct _Shrine *shrine;
         struct _Area *area;
         struct _Dungeon *dungeon;
     };

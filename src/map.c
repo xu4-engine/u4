@@ -23,8 +23,6 @@
 #include "savegame.h"
 #include "ttype.h"
 
-extern City lcb_2_city;
-
 int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
     unsigned char conv_idx[CITY_MAX_PERSONS];
     unsigned char c;
@@ -82,7 +80,7 @@ int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
         conv_idx[i] = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (city == &lcb_2_city) /* FIXME: level is hardcoded for lcb2 */
+        if (city->map->id == 100) /* FIXME: level is hardcoded for lcb2 */
             city->persons[i].startz = 1;
         else
             city->persons[i].startz = 0;
@@ -133,7 +131,7 @@ int mapRead(City *city, U4FILE *ult, U4FILE *tlk) {
     }
 
     city->n_persons = CITY_MAX_PERSONS;
- 
+
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         city->persons[i].npcType = NPC_EMPTY;
         if (city->persons[i].name)
@@ -162,7 +160,7 @@ int mapReadCon(Map *map, U4FILE *con) {
     if (!map->data)
         return 0;
 
-    if (map->type != MAP_SHRINE) {
+    if (map->type != MAPTYPE_SHRINE) {
         map->area = (Area *) malloc(sizeof(Area));
 
         for (i = 0; i < AREA_MONSTERS; i++)
@@ -335,7 +333,7 @@ Object *mapAddMonsterObject(Map *map, const Monster *monster, int x, int y, int 
     else obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
 
     /* hide camouflaged monsters from view during combat */
-    if (monsterCamouflages(monster) && (map->type == MAP_COMBAT))
+    if (monsterCamouflages(monster) && (map->type == MAPTYPE_COMBAT))
         obj->isVisible = 0;
 
     obj->monster = monster;

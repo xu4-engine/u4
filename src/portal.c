@@ -12,8 +12,10 @@
 #include "names.h"
 #include "screen.h"
 #include "shrine.h"
+#include "mapmgr.h"
 
 int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction action) {
+    Map *destination;
     char *msg = NULL;
     
     /* find a portal at the specified location */
@@ -34,30 +36,32 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
         return 1;
     }
     
+    destination = mapMgrGetById(portal->destid);
+
     if (!portal->message) {
 
         switch(action) {
         case ACTION_DESCEND:    msg = "Descend to first floor!\n"; break;
         case ACTION_KLIMB:      msg = "Klimb to second floor!\n"; break;
         case ACTION_ENTER:
-            switch (portal->destination->type) {
-            case MAP_TOWN:
-                screenMessage("Enter towne!\n\n%s\n\n", portal->destination->city->name);
+            switch (destination->type) {
+            case MAPTYPE_TOWN:
+                screenMessage("Enter towne!\n\n%s\n\n", destination->city->name);
                 break;
-            case MAP_VILLAGE:
-                screenMessage("Enter village!\n\n%s\n\n", portal->destination->city->name);
+            case MAPTYPE_VILLAGE:
+                screenMessage("Enter village!\n\n%s\n\n", destination->city->name);
                 break;
-            case MAP_CASTLE:
-                screenMessage("Enter castle!\n\n%s\n\n", portal->destination->city->name);
+            case MAPTYPE_CASTLE:
+                screenMessage("Enter castle!\n\n%s\n\n", destination->city->name);
                 break;
-            case MAP_RUIN:
-                screenMessage("Enter ruin!\n\n%s\n\n", portal->destination->city->name);
+            case MAPTYPE_RUIN:
+                screenMessage("Enter ruin!\n\n%s\n\n", destination->city->name);
                 break;
-            case MAP_SHRINE:
-                screenMessage("Enter the Shrine of %s!\n\n", getVirtueName(portal->destination->shrine->virtue));
+            case MAPTYPE_SHRINE:
+                screenMessage("Enter the Shrine of %s!\n\n", getVirtueName(destination->shrine->virtue));
                 break;
-            case MAP_DUNGEON:
-                screenMessage("Enter dungeon!\n\n%s\n\n", portal->destination->dungeon->name);
+            case MAPTYPE_DUNGEON:
+                screenMessage("Enter dungeon!\n\n%s\n\n", destination->dungeon->name);
                 break;
             default:
                 break;
@@ -77,7 +81,7 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
     else if (portal->message)
         screenMessage("%s", portal->message);
     
-    gameSetMap(c, portal->destination, portal->saveLocation, portal);
+    gameSetMap(c, destination, portal->saveLocation, portal);
     musicPlay();
 
     /* if the portal changes the map retroactively, do it here */
@@ -85,11 +89,11 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
         c->location->prev->x = portal->retroActiveDest->x;
         c->location->prev->y = portal->retroActiveDest->y;
         c->location->prev->z = portal->retroActiveDest->z;
-        c->location->prev->map = portal->retroActiveDest->map;
+        c->location->prev->map = mapMgrGetById(portal->retroActiveDest->mapid);
     }
 
-    if (portal->destination->type == MAP_SHRINE)        
-        shrineEnter(portal->destination->shrine);
+    if (destination->type == MAPTYPE_SHRINE)        
+        shrineEnter(destination->shrine);
 
     return 1;
 }

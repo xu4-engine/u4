@@ -18,6 +18,7 @@
 #include "event.h"
 #include "game.h"
 #include "location.h"
+#include "mapmgr.h"
 #include "music.h"
 #include "player.h"
 #include "portal.h"
@@ -51,8 +52,6 @@ const struct {
     { 5, "\nLord British says: I have pulled thy spirit and some possessions from the void.  Be more careful in the future!\n\n\020" }
 };
     
-extern City lcb_2_city;
-
 #define N_MSGS (sizeof(deathMsgs) / sizeof(deathMsgs[0]))
 
 void deathStart(int delay) {
@@ -109,7 +108,7 @@ void deathRevive() {
     
     /* Now, move the avatar into the castle and put him
        in front of Lord British */
-    gameSetMap(c, lcb_2_city.map, 1, NULL);
+    gameSetMap(c, mapMgrGetById(100), 1, NULL);
     c->location->x = REVIVE_CASTLE_X;
     c->location->y = REVIVE_CASTLE_Y;
     c->location->z = 1;

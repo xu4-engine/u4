@@ -17,20 +17,7 @@
 #include "portal.h"
 #include "savegame.h"
 #include "screen.h"
-
-extern Map world_map;
-extern Map britain_map;
-extern Map yew_map;
-extern Map minoc_map;
-extern Map trinsic_map;
-extern Map jhelom_map;
-extern Map moonglow_map;
-extern Map lcb_1_map;
-extern Map paws_map;
-extern Map cove_map;
-extern Map lycaeum_map;
-extern Map empath_map;
-extern Map serpent_map;
+#include "mapmgr.h"
 
 DestroyAllMonstersCallback destroyAllMonstersCallback;
 
@@ -58,59 +45,59 @@ void putReagentInInventory(void *reag);
 int isAbyssOpened(const Portal *p);
 
 static const ItemLocation items[] = {
-    { "Mandrake Root", NULL, 182, 54, -1, &world_map, 
+    { "Mandrake Root", NULL, 182, 54, -1, MAP_WORLD,
       &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
-    { "Mandrake Root", NULL, 100, 165, -1, &world_map, 
+    { "Mandrake Root", NULL, 100, 165, -1, MAP_WORLD, 
       &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
-    { "Nightshade", NULL, 46, 149, -1, &world_map, 
+    { "Nightshade", NULL, 46, 149, -1, MAP_WORLD, 
       &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY},
-    { "Nightshade", NULL, 205, 44, -1, &world_map, 
+    { "Nightshade", NULL, 205, 44, -1, MAP_WORLD, 
       &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY },    
-    { "the Bell of Courage", "bell", 176, 208, -1, &world_map, 
+    { "the Bell of Courage", "bell", 176, 208, -1, MAP_WORLD, 
       &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_BELL, 0 },
-    { "the Book of Truth", "book", 6, 6, 0, &lycaeum_map, 
+    { "the Book of Truth", "book", 6, 6, 0, MAP_LYCAEUM, 
       &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_BOOK, 0 },
-    { "the Candle of Love", "candle", 22, 1, 0, &cove_map, 
+    { "the Candle of Love", "candle", 22, 1, 0, MAP_COVE, 
       &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_CANDLE, 0 },    
-    { "A Silver Horn", "horn", 45, 173, -1, &world_map, 
+    { "A Silver Horn", "horn", 45, 173, -1, MAP_WORLD, 
       &isItemInInventory, &putItemInInventory, &useHorn, (void *) ITEM_HORN, 0 },
-    { "the Wheel from the H.M.S. Cape", "wheel", 96, 215, -1, &world_map, 
+    { "the Wheel from the H.M.S. Cape", "wheel", 96, 215, -1, MAP_WORLD, 
       &isItemInInventory, &putItemInInventory, &useWheel, (void *) ITEM_WHEEL, 0 },
-    { "the Skull of Modain the Wizard", "skull", 197, 245, -1, &world_map, 
+    { "the Skull of Modain the Wizard", "skull", 197, 245, -1, MAP_WORLD, 
       &isItemInInventory, &putItemInInventory, &useSkull, (void *) ITEM_SKULL, SC_NEWMOONS },
-    { "the Black Stone", NULL, 224, 133, -1, &world_map, 
+    { "the Black Stone", NULL, 224, 133, -1, MAP_WORLD, 
       &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_BLACK, SC_NEWMOONS },
-    { "the White Stone", NULL, 64, 80, -1, &world_map, 
+    { "the White Stone", NULL, 64, 80, -1, MAP_WORLD, 
       &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_WHITE, 0 },
 
     /* handlers for using generic objects */
-    { NULL, "stone", -1, -1, 0, NULL, &isStoneInInventory, NULL, &useStone, NULL, 0 },
-    { NULL, "stones", -1, -1, 0, NULL, &isStoneInInventory, NULL, &useStone, NULL, 0 },
-    { NULL, "key", -1, -1, 0, NULL, &isItemInInventory, NULL, &useKey, (void *)(ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T), 0 },
-    { NULL, "keys", -1, -1, 0, NULL, &isItemInInventory, NULL, &useKey, (void *)(ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T), 0 },    
+    { NULL, "stone", -1, -1, 0, MAP_NONE, &isStoneInInventory, NULL, &useStone, NULL, 0 },
+    { NULL, "stones", -1, -1, 0, MAP_NONE,&isStoneInInventory, NULL, &useStone, NULL, 0 },
+    { NULL, "key", -1, -1, 0, MAP_NONE, &isItemInInventory, NULL, &useKey, (void *)(ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T), 0 },
+    { NULL, "keys", -1, -1, 0, MAP_NONE, &isItemInInventory, NULL, &useKey, (void *)(ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T), 0 },    
     
     /* Lycaeum telescope */
-    { NULL, NULL, 22, 3, 0, &lycaeum_map, NULL, &useTelescope, NULL, NULL, 0 },
+    { NULL, NULL, 22, 3, 0, MAP_LYCAEUM, NULL, &useTelescope, NULL, NULL, 0 },
 
-    { "Mystic Armor", NULL, 22, 4, 0, &empath_map, 
+    { "Mystic Armor", NULL, 22, 4, 0, MAP_EMPATH_ABBEY, 
       &isMysticInInventory, &putMysticInInventory, NULL, (void *) ARMR_MYSTICROBES, SC_FULLAVATAR },
-    { "Mystic Swords", NULL, 8, 15, 0, &serpent_map, 
+    { "Mystic Swords", NULL, 8, 15, 0, MAP_SERPENTS_HOLD, 
       &isMysticInInventory, &putMysticInInventory, NULL, (void *) WEAP_MYSTICSWORD, SC_FULLAVATAR },
-    { "the rune of Honesty", NULL, 8, 6, 0, &moonglow_map, 
+    { "the rune of Honesty", NULL, 8, 6, 0, MAP_MOONGLOW, 
       &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_HONESTY, 0 },
-    { "the rune of Compassion", NULL, 25, 1, 0, &britain_map, 
+    { "the rune of Compassion", NULL, 25, 1, 0, MAP_BRITAIN, 
       &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_COMPASSION, 0 },
-    { "the rune of Valor", NULL, 30, 30, 0, &jhelom_map, 
+    { "the rune of Valor", NULL, 30, 30, 0, MAP_JHELOM, 
       &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_VALOR, 0 },
-    { "the rune of Justice", NULL, 13, 6, 0, &yew_map, 
+    { "the rune of Justice", NULL, 13, 6, 0, MAP_YEW, 
       &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_JUSTICE, 0 },
-    { "the rune of Sacrifice", NULL, 28, 30, 0, &minoc_map, 
+    { "the rune of Sacrifice", NULL, 28, 30, 0, MAP_MINOC, 
       &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_SACRIFICE, 0 },
-    { "the rune of Honor", NULL, 2, 29, 0, &trinsic_map, 
+    { "the rune of Honor", NULL, 2, 29, 0, MAP_TRINSIC, 
       &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_HONOR, 0 },
-    { "the rune of Spirituality", NULL, 17, 8, 0, &lcb_1_map, 
+    { "the rune of Spirituality", NULL, 17, 8, 0, MAP_CASTLE_OF_LORD_BRITISH, 
       &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_SPIRITUALITY, 0 },
-    { "the rune of Humility", NULL, 29, 29, 0, &paws_map, 
+    { "the rune of Humility", NULL, 29, 29, 0, MAP_PAWS, 
       &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_HUMILITY, 0 }
 };
 
@@ -304,10 +291,10 @@ int itemConditionsMet(unsigned char conditions) {
 const ItemLocation *itemAtLocation(const Map *map, int x, int y, int z) {
     int i;
     for (i = 0; i < N_ITEMS; i++) {
-        if (items[i].map == map && 
+        if (items[i].mapid == map->id && 
             items[i].x == x && 
             items[i].y == y &&
-            items[i].z == z &&
+            items[i].z == (unsigned short) z &&
             itemConditionsMet(items[i].conditions))
             return &(items[i]);
     }

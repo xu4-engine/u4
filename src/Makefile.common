@@ -19,9 +19,10 @@ SRCS=\
         io.c \
         intro.c \
         item.c \
+        list.c \
         location.c \
         map.c \
-        mapinit.c \
+        mapmgr.c \
         monster.c \
         moongate.c \
         movement.c \
@@ -45,12 +46,6 @@ SRCS=\
         unzip.c \
         vendor.c \
         weapon.c \
-        maps/cities.c \
-        maps/castles.c \
-        maps/worldmap.c \
-        maps/areas.c \
-        maps/shrines.c \
-        maps/dungeons.c \
         lzw/hash.c \
         lzw/lzw.c \
         lzw/u4decode.c \

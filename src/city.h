@@ -9,11 +9,11 @@ struct _Person;
 struct _Map;
 
 typedef struct _City {
-    const char *name;
+    char *name;
     int n_persons;
     struct _Person *persons;
-    const unsigned char person_types[12];
-    const char *tlk_fname;
+    unsigned char person_types[12];
+    char *tlk_fname;
     struct _Map *map;
 } City;
 

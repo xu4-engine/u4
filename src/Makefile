@@ -44,6 +44,7 @@ install::
 	$(INSTALL) ../conf/weapons.xml $(libdir)/u4/weapons.xml
 	$(INSTALL) ../conf/monsters.xml $(libdir)/u4/monsters.xml
 	$(INSTALL) ../conf/music.xml $(libdir)/u4/music.xml
+	$(INSTALL) ../conf/maps.xml $(libdir)/u4/maps.xml
 	$(INSTALL) ../u4.desktop $(desktopdir)/Games/u4.desktop
 
 -include .depends

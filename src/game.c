@@ -25,6 +25,7 @@
 #include "event.h"
 #include "item.h"
 #include "location.h"
+#include "mapmgr.h"
 #include "monster.h"
 #include "moongate.h"
 #include "movement.h"
@@ -93,7 +94,6 @@ int gameSummonMonster(const char *monsterName);
 void gameDestroyAllCreatures(void);
 int gameCreateBalloon(Map *map);
 
-extern Map world_map;
 extern Object *party[8];
 Context *c = NULL;
 int collisionOverride = 0;
@@ -110,7 +110,7 @@ void gameInit() {
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));    
     c->annotation = NULL;    
-    c->location = locationNew(0, 0, 0, &world_map, VIEW_NORMAL, CTX_WORLDMAP, (FinishTurnCallback)&gameFinishTurn, NULL);
+    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, (FinishTurnCallback)&gameFinishTurn, NULL);
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.playerInquiryBuffer[0] = '\0';
@@ -268,19 +268,19 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         gameExitToParentMap(ct);
     
     switch (map->type) {
-    case MAP_DUNGEON:
+    case MAPTYPE_DUNGEON:
         context = CTX_DUNGEON;
         viewMode = VIEW_DUNGEON;
         break;
-    case MAP_COMBAT:        
+    case MAPTYPE_COMBAT:        
         context = CTX_COMBAT;
         viewMode = VIEW_NORMAL;
         finishTurn = &combatFinishTurn;
         break;
-    case MAP_TOWN:
-    case MAP_VILLAGE:
-    case MAP_CASTLE:
-    case MAP_RUIN:
+    case MAPTYPE_TOWN:
+    case MAPTYPE_VILLAGE:
+    case MAPTYPE_CASTLE:
+    case MAPTYPE_RUIN:
     default:
         context = CTX_CITY;
         viewMode = VIEW_NORMAL;
@@ -289,10 +289,10 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     
     ct->location = locationNew(x, y, z, map, viewMode, context, finishTurn, ct->location);    
 
-    if ((map->type == MAP_TOWN ||
-         map->type == MAP_VILLAGE ||
-         map->type == MAP_CASTLE ||
-         map->type == MAP_RUIN) &&
+    if ((map->type == MAPTYPE_TOWN ||
+         map->type == MAPTYPE_VILLAGE ||
+         map->type == MAPTYPE_CASTLE ||
+         map->type == MAPTYPE_RUIN) &&
         map->objects == NULL) {
         for (i = 0; i < map->city->n_persons; i++) {
             if (map->city->persons[i].tile0 != 0 &&
@@ -1403,7 +1403,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
         ((obj->objType != OBJECT_MONSTER) && (obj->movement_behavior != MOVEMENT_ATTACK_AVATAR))) 
         playerAdjustKarma(c->saveGame, KA_ATTACKED_GOOD);
 
-    combatBegin(getCombatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), obj, 1);
+    combatBegin(combatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), obj, 1);
     return 1;
 }
 
@@ -1981,23 +1981,13 @@ int gemHandleChoice(int choice) {
  */
 int gamePeerCity(int city, void *data) {
     GetChoiceActionInfo *choiceInfo;    
-    City *peerCity = NULL;
-    extern City * const cities[];    
-    int i = 0;
+    Map *peerMap;
 
-    // Find the city we're looking for...
-    for (i=0; i<=16; i++)
-    {
-        if (cities[i]->map->id == city+1)
-        {
-            peerCity = cities[i];   
-            break;
-        }
-    }
+    peerMap = mapMgrGetById(city+1);
 
-    if (peerCity)
+    if (peerMap)
     {
-        gameSetMap(c, peerCity->map, 1, NULL);
+        gameSetMap(c, peerMap, 1, NULL);
         c->location->viewMode = VIEW_GEM;
             
         // Wait for player to hit a key
@@ -2556,8 +2546,6 @@ void gameInitMoons()
  * Handles trolls under bridges
  */
 void gameCheckBridgeTrolls() {
-    extern Map bridge_map;
-
     if (!mapIsWorldMap(c->location->map) ||
         mapTileAt(c->location->map, c->location->x, c->location->y, c->location->z) != BRIDGE_TILE ||
         (rand() % 8) != 0)
@@ -2565,7 +2553,7 @@ void gameCheckBridgeTrolls() {
 
     screenMessage("\nBridge Trolls!\n");
 
-    combatBegin(&bridge_map, mapAddMonsterObject(c->location->map, monsterById(TROLL_ID), c->location->x, c->location->y, c->location->z), 1);
+    combatBegin(MAP_BRIDGE_CON, mapAddMonsterObject(c->location->map, monsterById(TROLL_ID), c->location->x, c->location->y, c->location->z), 1);
 }
 
 /**
@@ -2647,7 +2635,6 @@ void gameCheckSpecialMonsters(Direction dir) {
  */
 int gameCheckMoongates(void) {
     int destx, desty;
-    extern Map shrine_spirituality_map;    
     
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase,
                                  c->location->x, c->location->y, &destx, &desty)) {
@@ -2663,13 +2650,17 @@ int gameCheckMoongates(void) {
         }
 
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
-            if (!playerCanEnterShrine(c->saveGame, shrine_spirituality_map.shrine->virtue))
+            Map *shrine_spirituality_map;
+
+            shrine_spirituality_map = mapMgrGetById(MAP_SHRINE_SPIRITUALITY);
+
+            if (!playerCanEnterShrine(c->saveGame, shrine_spirituality_map->shrine->virtue))
                 return 1;
             
-            gameSetMap(c, &shrine_spirituality_map, 1, NULL);
+            gameSetMap(c, shrine_spirituality_map, 1, NULL);
             musicPlay();
 
-            shrineEnter(shrine_spirituality_map.shrine);
+            shrineEnter(shrine_spirituality_map->shrine);
 
             annotationClear(c->location->map->id);  /* clear out world map annotations */            
         }
@@ -2740,7 +2731,7 @@ void gameMonsterAttack(Object *obj) {
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
-    combatBegin(getCombatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), obj, 1);
+    combatBegin(combatMapForTile(ground, (unsigned char)c->saveGame->transport, obj), obj, 1);
 }
 
 /**

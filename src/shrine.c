@@ -21,6 +21,7 @@
 #include "player.h"
 #include "screen.h"
 #include "settings.h"
+#include "mapmgr.h"
 
 int shrineHandleVirtue(const char *message);
 int shrineHandleCycles(int choice);
@@ -42,7 +43,7 @@ int reps;
 char **shrineAdvice = NULL;
 
 int shrineCanEnter(const Portal *p) {
-    if (!playerCanEnterShrine(c->saveGame, p->destination->shrine->virtue)) {
+    if (!playerCanEnterShrine(c->saveGame, mapMgrGetById(p->destid)->shrine->virtue)) {
         screenMessage("Thou dost not bear the rune of entry!  A strange force keeps you out!\n");
         return 0;
     }

@@ -17,6 +17,7 @@
 #include "event.h"
 #include "game.h"
 #include "location.h"
+#include "mapmgr.h"
 #include "monster.h"
 #include "movement.h"
 #include "names.h"
@@ -28,29 +29,6 @@
 #include "stats.h"
 #include "ttype.h"
 #include "weapon.h"
-
-extern Map brick_map;
-extern Map bridge_map;
-extern Map brush_map;
-extern Map camp_map;
-extern Map dng0_map;
-extern Map dng1_map;
-extern Map dng2_map;
-extern Map dng3_map;
-extern Map dng4_map;
-extern Map dng5_map;
-extern Map dng6_map;
-extern Map dungeon_map;
-extern Map forest_map;
-extern Map grass_map;
-extern Map hill_map;
-extern Map inn_map;
-extern Map marsh_map;
-extern Map shipsea_map;
-extern Map shipship_map;
-extern Map shipshor_map;
-extern Map shore_map;
-extern Map shorship_map;
 
 CombatInfo combatInfo;
 
@@ -68,11 +46,15 @@ int combatChooseWeaponRange(int key, void *data);
 void combatApplyMonsterTileEffects(void);
 int combatDivideMonster(const Object *monster);
 
-void combatBegin(Map *map, Object *monster, int isNormalCombat) {
+void combatBegin(unsigned char mapid, Object *monster, int isNormalCombat) {
     int i, j;
     int nmonsters;    
     int partyIsReadyToFight = 0;
+    Map *map;
     
+    map = mapMgrGetById(mapid);
+    ASSERT(map != NULL, "bad map id: %d", mapid);
+
     /* setup the combatInfo struct */
     combatInfo.monsterObj = monster;
     combatInfo.monster = (monster && (monster->objType == OBJECT_MONSTER)) ?
@@ -161,7 +143,7 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
 }
 
 
-Map *getCombatMapForTile(unsigned char partytile, unsigned char transport, Object *obj) {
+unsigned char combatMapForTile(unsigned char partytile, unsigned char transport, Object *obj) {
     int i;
     int fromShip = 0,
         toShip = 0;
@@ -169,31 +151,31 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned char transport, Objec
 
     static const struct {
         unsigned char tile;
-        Map *map;
+        unsigned char mapid;
     } tileToMap[] = {
-        { HORSE1_TILE,  &grass_map },
-        { HORSE2_TILE,  &grass_map },
-        { SWAMP_TILE,   &marsh_map },
-        { GRASS_TILE,   &grass_map },
-        { BRUSH_TILE,   &brush_map },
-        { FOREST_TILE,  &forest_map },
-        { HILLS_TILE,   &hill_map },
-        { DUNGEON_TILE, &hill_map },
-        { CITY_TILE,    &grass_map },
-        { CASTLE_TILE,  &grass_map },
-        { TOWN_TILE,    &grass_map },
-        { LCB2_TILE,    &grass_map },
-        { BRIDGE_TILE,  &bridge_map },
-        { BALLOON_TILE, &grass_map },
-        { NORTHBRIDGE_TILE, &bridge_map },
-        { SOUTHBRIDGE_TILE, &bridge_map },
-        { SHRINE_TILE,  &grass_map },
-        { CHEST_TILE,   &grass_map },
-        { BRICKFLOOR_TILE, &brick_map },
-        { MOONGATE0_TILE, &grass_map },
-        { MOONGATE1_TILE, &grass_map },
-        { MOONGATE2_TILE, &grass_map },
-        { MOONGATE3_TILE, &grass_map }
+        { HORSE1_TILE,  MAP_GRASS_CON },
+        { HORSE2_TILE,  MAP_GRASS_CON },
+        { SWAMP_TILE,   MAP_MARSH_CON },
+        { GRASS_TILE,   MAP_GRASS_CON },
+        { BRUSH_TILE,   MAP_BRUSH_CON },
+        { FOREST_TILE,  MAP_FOREST_CON },
+        { HILLS_TILE,   MAP_HILL_CON },
+        { DUNGEON_TILE, MAP_HILL_CON },
+        { CITY_TILE,    MAP_GRASS_CON },
+        { CASTLE_TILE,  MAP_GRASS_CON },
+        { TOWN_TILE,    MAP_GRASS_CON },
+        { LCB2_TILE,    MAP_GRASS_CON },
+        { BRIDGE_TILE,  MAP_BRIDGE_CON },
+        { BALLOON_TILE, MAP_GRASS_CON },
+        { NORTHBRIDGE_TILE, MAP_BRIDGE_CON },
+        { SOUTHBRIDGE_TILE, MAP_BRIDGE_CON },
+        { SHRINE_TILE,  MAP_GRASS_CON },
+        { CHEST_TILE,   MAP_GRASS_CON },
+        { BRICKFLOOR_TILE, MAP_BRICK_CON },
+        { MOONGATE0_TILE, MAP_GRASS_CON },
+        { MOONGATE1_TILE, MAP_GRASS_CON },
+        { MOONGATE2_TILE, MAP_GRASS_CON },
+        { MOONGATE3_TILE, MAP_GRASS_CON }
     };
 
     if (tileIsShip(transport) || (objUnder && tileIsShip(objUnder->tile)))
@@ -202,28 +184,28 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned char transport, Objec
         toShip = 1;
 
     if (fromShip && toShip)
-        return &shipship_map;
+        return MAP_SHIPSHIP_CON;
 
     /* We can fight monsters and townsfolk */       
     if (obj->objType != OBJECT_UNKNOWN) {
         unsigned char tileUnderneath = mapTileAt(c->location->map, obj->x, obj->y, obj->z);
 
         if (toShip)
-            return &shorship_map;
+            return MAP_SHIPSHOR_CON;
         else if (fromShip && tileIsWater(tileUnderneath))
-            return &shipsea_map;        
+            return MAP_SHIPSEA_CON;
         else if (tileIsWater(tileUnderneath))
-            return &shore_map;
+            return MAP_SHORE_CON;
         else if (fromShip && !tileIsWater(tileUnderneath))
-            return &shipshor_map;        
+            return MAP_SHIPSHOR_CON;        
     }
 
     for (i = 0; i < sizeof(tileToMap) / sizeof(tileToMap[0]); i++) {
         if (tileToMap[i].tile == partytile)
-            return tileToMap[i].map;
+            return tileToMap[i].mapid;
     }    
 
-    return &brick_map;
+    return MAP_BRICK_CON;
 }
 
 void combatCreateMonster(int index, int canbeleader) {

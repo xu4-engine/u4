@@ -22,18 +22,18 @@ typedef int (*PortalConditionsMet)(const struct _Portal *p);
 
 typedef struct _PortalDestination {
     int x, y, z;
-    struct _Map *map;
+    unsigned char mapid;
 } PortalDestination;
 
 typedef struct _Portal {
     unsigned short x, y, z;
-    struct _Map *destination;
+    unsigned char destid;
     unsigned short startx, starty, startlevel;
     PortalTriggerAction trigger_action;
     PortalConditionsMet portalConditionsMet;
     struct _PortalDestination *retroActiveDest;
     int saveLocation;
-    const char *message;
+    char *message;
     TransportContext portalTransportRequisites;
 } Portal;
 

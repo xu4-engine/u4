@@ -19,6 +19,7 @@
 #include "event.h"
 #include "game.h"
 #include "location.h"
+#include "mapmgr.h"
 #include "monster.h"
 #include "music.h"
 #include "names.h"
@@ -29,10 +30,6 @@
 #include "settings.h"
 #include "stats.h"
 #include "ttype.h"
-
-extern Map camp_map;
-extern Map brick_map;
-extern Map inn_map;
 
 void campTimer(void *data);
 void campEnd(void);
@@ -47,7 +44,7 @@ void campBegin(void) {
     eventHandlerSleep(CAMP_FADE_OUT_TIME);
     
     /* setup camp (possible, but not for-sure combat situation */
-    combatBegin(&camp_map, NULL, 0);
+    combatBegin(MAP_CAMP_CON, NULL, 0);
     
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
     eventHandlerAddTimerCallback(&campTimer, eventTimerGranularity * settings->gameCyclesPerSecond * CAMP_REST_SECONDS);
@@ -173,23 +170,23 @@ void innTimer(void *data) {
     /* Is there a special encounter during your stay? */
     if (rand() % 8 == 0) {
         
-        Map *map;
+        unsigned char mapid;
         Object *monsterObj;        
                 
         /* Rats seem much more rare than meeting rogues in the streets */
         if (rand() % 4 == 0) {
             /* Rats! */
-            map = &brick_map;
+            mapid = MAP_BRICK_CON;
             monsterObj = mapAddMonsterObject(c->location->map, monsterById(RAT_ID), c->location->x, c->location->y, c->location->z);
         } else {
             /* While strolling down the street, attacked by rogues! */
-            map = &inn_map;
+            mapid = MAP_INN_CON;
             monsterObj = mapAddMonsterObject(c->location->map, monsterById(ROGUE_ID), c->location->x, c->location->y, c->location->z);
             screenMessage("\nIn the middle of the night while out on a stroll...\n\n");
         }        
 
         /* begin combat! */
-        combatBegin(map, monsterObj, 0);        
+        combatBegin(mapid, monsterObj, 0);        
     }
     
     else {

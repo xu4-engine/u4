@@ -17,8 +17,8 @@ typedef enum {
 typedef struct _ItemLocation {
     const char *name;
     const char *shortname;
-    int x, y, z;
-    const struct _Map* map;
+    unsigned short x, y, z;
+    unsigned char mapid;
     int (*isItemInInventory)(void *);
     void (*putItemInInventory)(void *);
     void (*useItem)(void *);

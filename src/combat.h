@@ -8,7 +8,6 @@
 #include "savegame.h"
 #include "area.h"
 
-struct _Map;
 struct _Object;
 struct _Monster;
 
@@ -36,12 +35,12 @@ typedef struct _CombatInfo {
     int isCamping       : 1;
 } CombatInfo;
 
-void combatBegin(struct _Map *map, struct _Object *monster, int isNormalCombat);
+void combatBegin(unsigned char mapid, struct _Object *monster, int isNormalCombat);
 void combatFinishTurn(void);
 void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);
 int combatInitialNumberOfMonsters(const struct _Monster *monster);
-struct _Map *getCombatMapForTile(unsigned char partytile, unsigned char transport, struct _Object *obj);
+unsigned char combatMapForTile(unsigned char partytile, unsigned char transport, struct _Object *obj);
 void combatApplyDamageToMonster(int monster, int damage, int player);
 void attackFlash(int x, int y, unsigned char tile, int timeFactor);
 
