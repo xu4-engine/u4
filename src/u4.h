@@ -7,7 +7,7 @@
 
 /* Windows port */
 #if defined(_WIN32)
-    #define VERSION "0.9cvs"
+    #define VERSION "0.9"
 #endif
 
 /* info for loading city data from *.ult and *.tlk */
