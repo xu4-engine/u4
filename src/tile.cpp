@@ -28,13 +28,13 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
     if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
         return;
             
-    tile->name = xmlGetPropAsStr(node, "name"); /* get the name of the tile */    
+    tile->name = xmlGetPropAsString(node, "name"); /* get the name of the tile */    
     tile->frames = 1;
 
     /* get the animation for the tile, if one is specified */
     if (xmlPropExists(node, "animation")) {
         extern TileAnimSet *tileanims;
-        string animation = xmlGetPropAsStr(node, "animation");
+        string animation = xmlGetPropAsString(node, "animation");
 
         tile->anim = tileanims->getByName(animation);
         if (tile->anim == NULL)
@@ -48,7 +48,7 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
     /* find the rule that applies to the current tile, if there is one.
        if there is no rule specified, it defaults to the "default" rule */
     if (xmlPropExists(node, "rule")) {
-        tile->rule = TileRule::findByName(xmlGetPropAsStr(node, "rule"));
+        tile->rule = TileRule::findByName(xmlGetPropAsString(node, "rule"));
         if (tile->rule == NULL)
             tile->rule = TileRule::findByName("default");
     }
@@ -60,7 +60,7 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
 
     /* get the name of the image that belongs to this tile */
     if (xmlPropExists(node, "image"))
-        tile->imageName = xmlGetPropAsStr(node, "image");
+        tile->imageName = xmlGetPropAsString(node, "image");
     else tile->imageName = string("tile_") + tile->name;
 
     /* get the index, if it is provided.  Otherwise, it is implied */

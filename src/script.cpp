@@ -137,7 +137,7 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
             debug = FileSystem::openFile(dbg_filename, "wt");
         else {
             // See if we share our debug space with other scripts
-            string val = xmlGetPropAsStr(root, "debug");
+            string val = xmlGetPropAsString(root, "debug");
             if (val == "share")
                 debug = FileSystem::openFile(dbg_filename, "at");
         }
@@ -147,9 +147,9 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
      * Get a new global item name or id name
      */
     if (xmlPropExists(root, "noun"))
-        nounName = xmlGetPropAsStr(root, "noun");
+        nounName = xmlGetPropAsString(root, "noun");
     if (xmlPropExists(root, "id_prop"))
-        idPropName = xmlGetPropAsStr(root, "id_prop");
+        idPropName = xmlGetPropAsString(root, "id_prop");
 
     this->currentScript = NULL;
     this->currentItem = NULL;
@@ -158,7 +158,7 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
         if (xmlNodeIsText(node) || (xmlStrcmp(node->name, (const xmlChar *) "script") != 0))
             continue;
         
-        if (baseId == xmlGetPropAsStr(node, "id")) {
+        if (baseId == xmlGetPropAsString(node, "id")) {
             /**
              * We use the base node as our main script node
              */
@@ -174,7 +174,7 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
                     xmlStrcmp(child->name, (const xmlChar *) subNodeName.c_str()) != 0)
                     continue;
          
-                string id = xmlGetPropAsStr(child, "id");
+                string id = xmlGetPropAsString(child, "id");
 
                 if (id == subNodeId) {                    
                     this->scriptNode = child;                    
@@ -184,9 +184,9 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
                      * Get a new local item name or id name
                      */
                     if (xmlPropExists(node, "noun"))
-                        nounName = xmlGetPropAsStr(node, "noun");
+                        nounName = xmlGetPropAsString(node, "noun");
                     if (xmlPropExists(node, "id_prop"))
-                        idPropName = xmlGetPropAsStr(node, "id_prop");
+                        idPropName = xmlGetPropAsString(node, "id_prop");
 
                     break;
                 }                
@@ -202,9 +202,9 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
          * Get a new local item name or id name
          */
         if (xmlPropExists(scriptNode, "noun"))
-            nounName = xmlGetPropAsStr(scriptNode, "noun");
+            nounName = xmlGetPropAsString(scriptNode, "noun");
         if (xmlPropExists(scriptNode, "id_prop"))
-            idPropName = xmlGetPropAsStr(scriptNode, "id_prop");
+            idPropName = xmlGetPropAsString(scriptNode, "id_prop");
 
         if (debug)
             fprintf(debug, "\n<Loaded subscript '%s' where id='%s' for script '%s'>\n", subNodeName.c_str(), subNodeId.c_str(), baseId.c_str());
@@ -665,7 +665,7 @@ void Script::translate(string *text) {
             if (!xmlNodeIsText(current) && (script_to_find == (char *)current->name)) {
                 if (id.empty() && !xmlPropExists(current, idPropName.c_str()) && !_default)
                     return current;
-                else if (xmlPropExists(current, idPropName.c_str()) && (id == xmlGetPropAsStr(current, idPropName.c_str())))
+                else if (xmlPropExists(current, idPropName.c_str()) && (id == xmlGetPropAsString(current, idPropName.c_str())))
                     return current;
                 else if (_default && xmlPropExists(current, "default") && xmlGetPropAsBool(current, "default"))
                     return current;
@@ -695,7 +695,7 @@ string Script::getPropAsStr(std::list<xmlNodePtr>& nodes, string prop, bool recu
     for (i = nodes.rbegin(); i != nodes.rend(); i++) {
         xmlNodePtr node = *i;
         if (xmlPropExists(node, prop.c_str())) {
-            propvalue = xmlGetPropAsStr(node, prop.c_str());    
+            propvalue = xmlGetPropAsString(node, prop.c_str());
             break;
         }
     }

@@ -280,11 +280,11 @@ void Tileset::load(string filename) {
 
     TRACE_LOCAL(dbg, string("\tRetreiving global tileset info...") + filename);
 
-    name = xmlGetPropAsStr(root, "name");
+    name = xmlGetPropAsString(root, "name");
     if (xmlPropExists(root, "imageName"))
-        imageName = xmlGetPropAsStr(root, "imageName");
+        imageName = xmlGetPropAsString(root, "imageName");
     if (xmlPropExists(root, "extends"))
-        extends = Tileset::get(xmlGetPropAsStr(root, "extends"));
+        extends = Tileset::get(xmlGetPropAsString(root, "extends"));
     else extends = NULL;
 
     TRACE_LOCAL(dbg, "\tLoading Tiles...");

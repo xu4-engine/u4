@@ -85,7 +85,7 @@ void TileMap::load(string filename) {
 
     TileIndexMap* tileMap = new TileIndexMap;
     
-    string name = xmlGetPropAsStr(root, "name");    
+    string name = xmlGetPropAsString(root, "name");    
     TRACE_LOCAL(dbg, string("Tilemap name is: ") + name);
     
     int index = 0;
@@ -97,7 +97,7 @@ void TileMap::load(string filename) {
            so let's do some translations! */
         
         int frames = 1;
-        string tile = xmlGetPropAsStr(node, "tile");        
+        string tile = xmlGetPropAsString(node, "tile");        
 
         TRACE_LOCAL(dbg, string("\tLoading '") + tile + "'");
         
