@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <SDL.h>
 
+#include "cursors.h"
 #include "debug.h"
 #include "error.h"
 #include "event.h"
@@ -30,9 +31,9 @@ long decompress_u4_file(FILE *in, long filesize, void **out);
 long decompress_u4_memory(void *in, long inlen, void **out);
 
 void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b);
-void fixupIntro(Image *im);
-void fixupIntroExtended(Image *im);
-void fixupAbyssVision(Image *im);
+void fixupIntro(Image *im, int prescale);
+void fixupIntroExtended(Image *im, int prescale);
+void fixupAbyssVision(Image *im, int prescale);
 void screenFreeIntroBackground();
 int screenLoadImageData(struct _Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp);
 Image *screenScale(Image *src, int scale, int n, int filter);
@@ -45,6 +46,7 @@ Image *image[BKGD_MAX];
 Image *dngGraphic[56];
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
+SDL_Cursor *cursors[5];
 int scale;
 Scaler filterScaler;
 
@@ -171,6 +173,7 @@ void screenLoadGraphicsFromXml(void);
 ImageSet *screenLoadImageSetFromXml(xmlNodePtr node);
 ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node);
 Layout *screenLoadLayoutFromXml(xmlNodePtr node);
+SDL_Cursor *screenInitCursor(char *xpm[]);
 
 char **imageSetNames = NULL;
 ListNode *imageSets = NULL;
@@ -222,7 +225,13 @@ void screenInit() {
         printf("screen initialized [screenInit()]\n");
 
     eventKeyboardSetKeyRepeat(settings->keydelay, settings->keyinterval);
-    SDL_ShowCursor(SDL_DISABLE); /* disable the mouse cursor */
+
+    SDL_ShowCursor(SDL_ENABLE); /* disable the mouse cursor */
+    cursors[0] = SDL_GetCursor();
+    cursors[1] = screenInitCursor(w_xpm);
+    cursors[2] = screenInitCursor(n_xpm);
+    cursors[3] = screenInitCursor(e_xpm);
+    cursors[4] = screenInitCursor(s_xpm);
 }
 
 void screenDelete() {
@@ -414,7 +423,7 @@ void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int
         errorWarning("screenFillRect: SDL_FillRect failed\n%s", SDL_GetError());
 }
 
-void fixupIntro(Image *im) {
+void fixupIntro(Image *im, int prescale) {
     const unsigned char *sigData;
     int i, x, y;
     SDL_Rect src, dest;
@@ -426,15 +435,15 @@ void fixupIntro(Image *im) {
      * ----------------------------------------------------------------------------- */
 
     /* we're working with an unscaled surface, so we can't use screenCopyRect, etc. */
-    src.x = 136;  src.y = 0;   src.w = 55;  src.h = 5;
-    dest.x = 136; dest.y = 33; dest.w = 55;  dest.h = 5;
-    SDL_BlitSurface(im->surface, &src, im->surface, &dest);    
+    src.x = 136 * prescale; src.y = 0 * prescale; src.w = 55 * prescale; src.h = 5 * prescale;
+    dest.x = 136 * prescale; dest.y = 33 * prescale; dest.w = 55 * prescale;  dest.h = 5 * prescale;
+    SDL_BlitSurface(im->surface, &src, im->surface, &dest);
 
     /* ----------------------------
      * erase the original "present"
      * ---------------------------- */
 
-    imageFillRect(im, 136, 0, 55, 5, 0, 0, 0);
+    imageFillRect(im, 136 * prescale, 0 * prescale, 55 * prescale, 5 * prescale, 0, 0, 0);
 
     /* -----------------------------
      * draw "Lord British" signature
@@ -443,9 +452,9 @@ void fixupIntro(Image *im) {
     while (sigData[i] != 0) {
         /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
         x = sigData[i] + 0x14;
-        y = 0xBF - sigData[i+1]; 
-        imagePutPixel(im, x, y, 0, 255, 255, IM_OPAQUE); /* cyan */
-        imagePutPixel(im, x+1, y, 0, 255, 255, IM_OPAQUE); /* cyan */
+        y = 0xBF - sigData[i+1];
+        imageFillRect(im, x * prescale, y * prescale, prescale, prescale, 0, 255, 255); /* cyan */
+        imageFillRect(im, (x + 1) * prescale, y * prescale, prescale, prescale, 0, 255, 255); /* cyan */
         i += 2;
     }
 
@@ -454,24 +463,24 @@ void fixupIntro(Image *im) {
      * -------------------------------------------------------------- */
     /* we're still working with an unscaled surface */
     for (i = 86; i < 239; i++)
-        imagePutPixel(im, i, 31, 128, 0, 0, IM_OPAQUE); /* red */
+        imageFillRect(im, i * prescale, 31 * prescale, prescale, prescale, 128, 0, 0); /* red */
 }
 
-void fixupIntroExtended(Image *im) {
+void fixupIntroExtended(Image *im, int prescale) {
     SDL_Rect src, dest;
 
-    fixupIntro(im);
+    fixupIntro(im, prescale);
 
-    src.x = 0;  src.y = 95;  src.w = 320;  src.h = 50;
-    dest.x = 0; dest.y = 10; dest.w = 320;  dest.h = 50;
+    src.x = 0 * prescale;  src.y = 95 * prescale;  src.w = 320 * prescale;  src.h = 50 * prescale;
+    dest.x = 0 * prescale; dest.y = 10 * prescale; dest.w = 320 * prescale;  dest.h = 50 * prescale;
     SDL_BlitSurface(im->surface, &src, im->surface, &dest);    
 
-    src.x = 0;  src.y = 105;  src.w = 320;  src.h = 45;
-    dest.x = 0; dest.y = 60; dest.w = 320;  dest.h = 45;
+    src.x = 0 * prescale;  src.y = 105 * prescale;  src.w = 320 * prescale;  src.h = 45 * prescale;
+    dest.x = 0 * prescale; dest.y = 60 * prescale; dest.w = 320 * prescale;  dest.h = 45 * prescale;
     SDL_BlitSurface(im->surface, &src, im->surface, &dest);    
 }
 
-void fixupAbyssVision(Image *im) {
+void fixupAbyssVision(Image *im, int prescale) {
     int i;
     static unsigned char *data = NULL;
 
@@ -593,6 +602,9 @@ int screenLoadBackground(BackgroundType bkgd) {
     if (info->transparentIndex != -1)
         imageSetTransparentIndex(unscaled, info->transparentIndex);
 
+    if (info->prescale == 0)
+        info->prescale = 1;
+
     /*
      * fixup the image before scaling it
      */
@@ -600,13 +612,13 @@ int screenLoadBackground(BackgroundType bkgd) {
     case FIXUP_NONE:
         break;
     case FIXUP_INTRO:
-        fixupIntro(unscaled);
+        fixupIntro(unscaled, info->prescale);
         break;
     case FIXUP_INTRO_EXTENDED:
-        fixupIntroExtended(unscaled);
+        fixupIntroExtended(unscaled, info->prescale);
         break;
     case FIXUP_ABYSS:
-        fixupAbyssVision(unscaled);
+        fixupAbyssVision(unscaled, info->prescale);
         break;
     }
 
@@ -1622,4 +1634,50 @@ Image *screenScaleDown(Image *src, int scale) {
         imageSetTransparentIndex(dest, 0);
 
     return dest;
+}
+
+/**
+ * Create an SDL cursor object from an xpm.  Derived from example in
+ * SDL documentation project.
+ */
+SDL_Cursor *screenInitCursor(char *xpm[]) {
+    int i, row, col;
+    Uint8 data[4*32];
+    Uint8 mask[4*32];
+    int hot_x, hot_y;
+
+    i = -1;
+    for (row=0; row < 32; row++) {
+        for (col=0; col < 32; col++) {
+            if (col % 8) {
+                data[i] <<= 1;
+                mask[i] <<= 1;
+            } else {
+                i++;
+                data[i] = mask[i] = 0;
+            }
+            switch (xpm[4+row][col]) {
+            case 'X':
+                data[i] |= 0x01;
+                mask[i] |= 0x01;
+                break;
+            case '.':
+                mask[i] |= 0x01;
+                break;
+            case ' ':
+                break;
+            }
+        }
+    }
+    sscanf(xpm[4+row], "%d,%d", &hot_x, &hot_y);
+    return SDL_CreateCursor(data, mask, 32, 32, hot_x, hot_y);
+}
+
+void screenSetMouseCursor(MouseCursor cursor) {
+    static int current = 0;
+
+    if (cursor != current) {
+        SDL_SetCursor(cursors[cursor]);
+        current = cursor;
+    }
 }

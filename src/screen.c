@@ -6,18 +6,20 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <assert.h>
+#include <float.h>
 #include "u4.h"
 
 #include "screen.h"
 
 #include "context.h"
+#include "debug.h"
 #include "dngview.h"
 #include "list.h"
 #include "location.h"
 #include "names.h"
 #include "object.h"
 #include "savegame.h"
+#include "settings.h"
 #include "tileset.h"
 
 int screenNeedPrompt = 1;
@@ -152,7 +154,7 @@ void screenUpdate(int showmap, int blackout) {
     int focus, x, y;
     Tileset *base = tilesetGetByType(TILESET_BASE);
 
-    assert(c != NULL);
+    ASSERT(c != NULL, "context has not yet been initialized");
 
     if (c->location->map->flags & FIRST_PERSON) {
         
@@ -239,7 +241,7 @@ void screenCycle() {
 void screenUpdateCursor() {
     int phase = screenCurrentCycle * SCR_CYCLE_PER_SECOND / SCR_CYCLE_MAX;
 
-    assert(phase >= 0 && phase < 4);
+    ASSERT(phase >= 0 && phase < 4, "derived an invalid cursor phase: %d", phase);
 
     if (screenCursorStatus) {
         screenShowChar(31 - phase, screenCursorX, screenCursorY);
@@ -419,3 +421,86 @@ void screenFindLineOfSight() {
     }
 }
 
+/**
+ * Generates terms a and b for equation "ax + b = y" that defines the
+ * line containing the two given points.  Vertical lines are special
+ * cased to return DBL_MAX for a and the x coordinate as b since they
+ * cannot be represented with the above formula.
+ */
+static void screenGetLineTerms(int x1, int y1, int x2, int y2, double *a, double *b) {
+    if (x2 - x1 == 0) {
+        *a = DBL_MAX;
+        *b = x1;
+    }
+    else {
+        *a = ((double)(y2 - y1)) / ((double)(x2 - x1));
+        *b = y1 - ((*a) * x1);
+    }
+}
+
+/**
+ * Determine if two points are on the same side of a line (or both on
+ * the line).  The line is defined by the terms a and b of the
+ * equation "ax + b = y".
+ */
+static int screenPointsOnSameSideOfLine(int x1, int y1, int x2, int y2, double a, double b) {
+    double p1, p2;
+
+    if (a == DBL_MAX) {
+        p1 = x1 - b;
+        p2 = x2 - b;
+    }
+    else {
+        p1 = x1 * a + b - y1;
+        p2 = x2 * a + b - y2;
+    }
+
+    if ((p1 > 0.0 && p2 > 0.0) ||
+        (p1 < 0.0 && p2 < 0.0) ||
+        (p1 == 0.0 && p2 == 0.0))
+        return 1;
+
+    return 0;
+}
+
+static int screenPointInTriangle(int x, int y, int tx1, int ty1, int tx2, int ty2, int tx3, int ty3) {
+    double a[3], b[3];
+
+    screenGetLineTerms(tx1, ty1, tx2, ty2, &(a[0]), &(b[0]));
+    screenGetLineTerms(tx2, ty2, tx3, ty3, &(a[1]), &(b[1]));
+    screenGetLineTerms(tx3, ty3, tx1, ty1, &(a[2]), &(b[2]));
+
+    if (!screenPointsOnSameSideOfLine(x, y, tx3, ty3, a[0], b[0]))
+        return 0;
+    if (!screenPointsOnSameSideOfLine(x, y, tx1, ty1, a[1], b[1]))
+        return 0;
+    if (!screenPointsOnSameSideOfLine(x, y, tx2, ty2, a[2], b[2]))
+        return 0;
+
+    return 1;
+}
+
+/**
+ * Determine if the given point is within a mouse area.
+ */
+int screenPointInMouseArea(int x, int y, MouseArea *area) {
+    ASSERT(area->npoints == 2 || area->npoints == 3, "unsupported number of points in area: %d", area->npoints);
+
+    /* two points define a rectangle */
+    if (area->npoints == 2) {
+        if (x >= (area->point[0].x * settings->scale) && y >= (area->point[0].y * settings->scale) &&
+            x < (area->point[1].x * settings->scale) && y < (area->point[1].y * settings->scale)) {
+            return 1;
+        }
+    }
+
+    /* three points define a triangle */
+    else if (area->npoints == 3) {
+        return screenPointInTriangle(x, y, 
+                                     area->point[0].x * settings->scale, area->point[0].y * settings->scale,
+                                     area->point[1].x * settings->scale, area->point[1].y * settings->scale,
+                                     area->point[2].x * settings->scale, area->point[2].y * settings->scale);
+    }
+
+    return 0;
+}

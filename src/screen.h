@@ -62,6 +62,23 @@ typedef enum {
     BKGD_MAX
 } BackgroundType;
 
+typedef enum {
+    MC_DEFAULT,
+    MC_WEST,
+    MC_NORTH,
+    MC_EAST,
+    MC_SOUTH
+} MouseCursor;
+
+typedef struct _MouseArea {
+    int npoints;
+    struct {
+        int x, y;
+    } point[4];
+    MouseCursor cursor;
+    int command;
+} MouseArea;
+
 #define SCR_CYCLE_PER_SECOND 4
 
 void screenInit(void);
@@ -115,6 +132,11 @@ void screenSetCursorPos(int x, int y);
 
 void screenDungeonDrawTile(int distance, unsigned char tile);
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
+
+void screenSetMouseCursor(MouseCursor cursor);
+int screenPointInMouseArea(int x, int y, MouseArea *area);
+Direction screenViewportDirectionFromPoint(int x, int y);
+void screenSetCursorFromMousePosition(int x, int y);
 
 extern int screenCurrentCycle;
 
