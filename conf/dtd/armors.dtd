@@ -1,0 +1,9 @@
+<!-- $Id$ -->
+
+<!ELEMENT armors ( armor+ ) >
+
+<!ELEMENT armor EMPTY >
+<!ATTLIST armor name       CDATA   #REQUIRED
+                defense    NMTOKEN #REQUIRED
+                cantwear   CDATA   #IMPLIED
+                canwear    CDATA   #IMPLIED>

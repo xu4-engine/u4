@@ -1,0 +1,30 @@
+<!-- $Id$ -->
+
+<!ENTITY % bool '( true | false )'>
+<!ENTITY % dir '( west | north | east | south | all )'>
+<!ENTITY % effect '( fire | sleep | poison | poisonField | electricity | lava )'>
+<!ENTITY % speed '( slow | vslow | vvslow )'>
+
+<!ELEMENT tiles ( tile+ ) >
+
+<!ELEMENT tile EMPTY >
+<!ATTLIST tile animated           %bool;   #IMPLIED
+               balloon            %bool;   #IMPLIED
+               canattackover      %bool;   #IMPLIED
+               canlandballoon     %bool;   #IMPLIED
+               cantwalkoff        %dir;    #IMPLIED
+               cantwalkon         %dir;    #IMPLIED
+               chest              %bool;   #IMPLIED
+               dispel             %bool;   #IMPLIED
+               door               %bool;   #IMPLIED
+               effect             %effect; #IMPLIED
+               horse              %bool;   #IMPLIED
+               lockeddoor         %bool;   #IMPLIED
+               monsterunwalkable  %bool;   #IMPLIED
+               opaque             %bool;   #IMPLIED
+               sailable           %bool;   #IMPLIED
+               ship               %bool;   #IMPLIED
+               speed              %speed;  #IMPLIED
+               swimable           %bool;   #IMPLIED
+               talkover           %bool;   #IMPLIED
+               unflyable          %bool;   #IMPLIED>

@@ -1,0 +1,62 @@
+<!-- $Id$ -->
+
+<!ENTITY % bool '( true | false )'>
+
+<!ELEMENT maps ( map+ ) >
+
+<!ELEMENT map ( city | dungeon | portal | shrine )* >
+<!ATTLIST map id                  NMTOKEN  #REQUIRED
+              type                ( castle | combat | dungeon | ruins | shrine | town | village | world ) #REQUIRED
+              fname               NMTOKEN  #REQUIRED
+              width               NMTOKEN  #REQUIRED
+              height              NMTOKEN  #REQUIRED
+              levels              NMTOKEN  #REQUIRED
+              borderbehavior      ( exit | fixed | wrap ) #REQUIRED
+              showavatar          %bool;   #IMPLIED
+              nolineofsight       %bool;   #IMPLIED
+              firstperson         %bool;   #IMPLIED
+              music               NMTOKEN  #REQUIRED>
+
+<!ELEMENT city EMPTY >
+<!ATTLIST city name               CDATA    #REQUIRED
+               tlk_fname          NMTOKEN  #REQUIRED
+               armorvendor        NMTOKEN  #IMPLIED
+               companion          NMTOKEN  #IMPLIED
+               foodvendor         NMTOKEN  #IMPLIED
+               guildvendor        NMTOKEN  #IMPLIED
+               hawkwind           NMTOKEN  #IMPLIED
+               healer             NMTOKEN  #IMPLIED
+               horsevendor        NMTOKEN  #IMPLIED
+               innkeeper          NMTOKEN  #IMPLIED
+               lordbritish        NMTOKEN  #IMPLIED
+               reagentsvendor     NMTOKEN  #IMPLIED
+               tavernkeeper       NMTOKEN  #IMPLIED
+               weaponsvendor      NMTOKEN  #IMPLIED>
+
+<!ELEMENT dungeon EMPTY >
+<!ATTLIST dungeon name            CDATA    #REQUIRED>
+
+<!ELEMENT shrine EMPTY >
+<!ATTLIST shrine mantra           NMTOKEN  #REQUIRED
+                 virtue           NMTOKEN  #REQUIRED>
+
+<!ELEMENT portal ( retroActiveDest? ) >
+<!ATTLIST portal x                NMTOKEN  #REQUIRED
+                 y                NMTOKEN  #REQUIRED
+                 z                NMTOKEN  #REQUIRED
+                 destmapid        NMTOKEN  #REQUIRED
+                 startx           NMTOKEN  #REQUIRED
+                 starty           NMTOKEN  #REQUIRED
+                 startlevel       NMTOKEN  #REQUIRED
+                 action           ( descend | enter | klimb ) #REQUIRED
+                 condition        ( shrine | abyss ) #IMPLIED
+                 savelocation     %bool;   #REQUIRED
+                 message          CDATA    #IMPLIED
+                 transport        ( foot | footorhorse ) #REQUIRED>
+
+<!ELEMENT retroActiveDest EMPTY >
+<!ATTLIST retroActiveDest x       NMTOKEN  #REQUIRED
+                          y       NMTOKEN  #REQUIRED
+                          z       NMTOKEN  #REQUIRED
+                          mapid   NMTOKEN  #REQUIRED>
+

@@ -1,0 +1,25 @@
+<!-- $Id$ -->
+
+<!ENTITY % bool '( true | false )'>
+<!ENTITY % hitmisstile '( fire | poison | lightning | magic | lava | fireblast | boulder | sleep | random )'>
+
+<!ELEMENT weapons ( weapon+ ) >
+
+<!ELEMENT weapon EMPTY >
+<!ATTLIST weapon name                   CDATA   #REQUIRED
+                 abbr                   CDATA   #REQUIRED
+                 range                  NMTOKEN #IMPLIED
+                 absolute_range         NMTOKEN #IMPLIED
+                 damage                 NMTOKEN #REQUIRED
+                 attackthroughobjects   %bool;  #IMPLIED
+                 canready               CDATA   #IMPLIED
+                 cantready              CDATA   #IMPLIED
+                 choosedistance         %bool;  #IMPLIED
+                 dontshowtravel         %bool;  #IMPLIED
+                 hittile                %hitmisstile; #IMPLIED
+                 leavetile              %hitmisstile; #IMPLIED
+                 lose                   %bool;  #IMPLIED
+                 losewhenranged         %bool;  #IMPLIED
+                 magic                  %bool;  #IMPLIED
+                 misstile               %hitmisstile; #IMPLIED
+                 returns                %bool;  #IMPLIED>
