@@ -26,6 +26,7 @@ typedef enum {
 typedef SDL_Surface *(*ScreenScaler)(SDL_Surface *src, int scale, int n);
 
 long decompress_u4_file(FILE *in, long filesize, void **out);
+long decompress_u4_memory(void *in, long inlen, void **out);
 
 void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b);
 void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h);
@@ -396,7 +397,7 @@ int screenLoadPaletteEga() {
  * Load the 256 color VGA palette from the given file.
  */
 int screenLoadPaletteVga(const char *filename) {
-    FILE *pal;
+    U4FILE *pal;
     int i;
 
     pal = u4fopen(filename);
@@ -404,9 +405,9 @@ int screenLoadPaletteVga(const char *filename) {
         return 0;
 
     for (i = 0; i < 256; i++) {
-        vgaPalette[i].r = getc(pal) * 255 / 63;
-        vgaPalette[i].g = getc(pal) * 255 / 63;
-        vgaPalette[i].b = getc(pal) * 255 / 63;
+        vgaPalette[i].r = u4fgetc(pal) * 255 / 63;
+        vgaPalette[i].g = u4fgetc(pal) * 255 / 63;
+        vgaPalette[i].b = u4fgetc(pal) * 255 / 63;
     }
     u4fclose(pal);
 
@@ -417,55 +418,60 @@ int screenLoadPaletteVga(const char *filename) {
  * Load an image from an ".ega" image file.
  */
 int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp) {
-    FILE *in;
+    U4FILE *in;
     SDL_Surface *img;
     int x, y;
-    unsigned char *data = NULL;
-    long decompResult;
+    unsigned char *compressed_data, *decompressed_data = NULL;
+    long inlen, decompResult;
 
     in = u4fopen(filename);
     if (!in)
         return 0;
 
+    inlen = u4flength(in);
+    compressed_data = (Uint8 *) malloc(inlen);
+    u4fread(compressed_data, 1, inlen, in);
+    u4fclose(in);
+
     switch(comp) {
     case COMP_NONE:
-        decompResult = u4flength(in);
-        data = (Uint8 *) malloc(decompResult);
-        fread(data, 1, decompResult, in);
+        decompressed_data = compressed_data;
+        decompResult = inlen;
         break;
     case COMP_RLE:
-        decompResult = rleDecompressFile(in, u4flength(in), (void **) &data);
+        decompResult = rleDecompressMemory(compressed_data, inlen, (void **) &decompressed_data);
+        free(compressed_data);
         break;
     case COMP_LZW:
-        decompResult = decompress_u4_file(in, u4flength(in), (void **) &data);
+        decompResult = decompress_u4_memory(compressed_data, inlen, (void **) &decompressed_data);
+        free(compressed_data);
         break;
     default:
         ASSERT(0, "invalid compression type %d", comp);
     }
 
     if (decompResult == -1) {
-        if (data)
-            free(data);
-        u4fclose(in);
+        if (decompressed_data)
+            free(decompressed_data);
         return 0;
     }
 
     img = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
     if (!img) {
-        u4fclose(in);
+        if (decompressed_data)
+            free(decompressed_data);
         return 0;
     }
+
     SDL_SetColors(img, egaPalette, 0, 16);
 
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x+=2) {
-            putPixel(img, x, y, data[(y * width + x) / 2] >> 4);
-            putPixel(img, x + 1, y, data[(y * width + x) / 2] & 0x0f);
+            putPixel(img, x, y, decompressed_data[(y * width + x) / 2] >> 4);
+            putPixel(img, x + 1, y, decompressed_data[(y * width + x) / 2] & 0x0f);
         }
     }
-    free(data);
-
-    u4fclose(in);
+    free(decompressed_data);
 
     (*surface) = img;
 
@@ -476,27 +482,33 @@ int screenLoadImageEga(SDL_Surface **surface, int width, int height, const char 
  * Load an image from a ".vga" or ".ega" image file from the U4 VGA upgrade.
  */
 int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char *filename, CompressionType comp) {
-    FILE *in;
+    U4FILE *in;
     SDL_Surface *img;
     int x, y;
-    unsigned char *data = NULL;
-    long decompResult;
+    unsigned char *compressed_data, *decompressed_data = NULL;
+    long inlen, decompResult;
 
     in = u4fopen(filename);
     if (!in)
         return 0;
 
+    inlen = u4flength(in);
+    compressed_data = (Uint8 *) malloc(inlen);
+    u4fread(compressed_data, 1, inlen, in);
+    u4fclose(in);
+
     switch(comp) {
     case COMP_NONE:
-        decompResult = u4flength(in);
-        data = (Uint8 *) malloc(decompResult);
-        fread(data, 1, decompResult, in);
+        decompressed_data = compressed_data;
+        decompResult = inlen;
         break;
     case COMP_RLE:
-        decompResult = rleDecompressFile(in, u4flength(in), (void **) &data);
+        decompResult = rleDecompressMemory(compressed_data, inlen, (void **) &decompressed_data);
+        free(compressed_data);
         break;
     case COMP_LZW:
-        decompResult = decompress_u4_file(in, u4flength(in), (void **) &data);
+        decompResult = decompress_u4_memory(compressed_data, inlen, (void **) &decompressed_data);
+        free(compressed_data);
         break;
     default:
         ASSERT(0, "invalid compression type %d", comp);
@@ -504,26 +516,25 @@ int screenLoadImageVga(SDL_Surface **surface, int width, int height, const char 
 
     if (decompResult == -1 ||
         decompResult != (width * height)) {
-        if (data)
-            free(data);
-        u4fclose(in);
+        if (decompressed_data)
+            free(decompressed_data);
         return 0;
     }
 
     img = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0, 0, 0, 0);
     if (!img) {
-        u4fclose(in);
+        if (decompressed_data)
+            free(decompressed_data);
         return 0;
     }
+
     SDL_SetColors(img, vgaPalette, 0, 256);
 
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++)
-            putPixel(img, x, y, data[y * width + x]);
+            putPixel(img, x, y, decompressed_data[y * width + x]);
     }
-    free(data);
-
-    u4fclose(in);
+    free(decompressed_data);
 
     (*surface) = img;
 
