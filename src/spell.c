@@ -15,6 +15,7 @@
 #include "annotation.h"
 #include "ttype.h"
 #include "screen.h"
+#include "player.h"
 
 static int spellAwaken(int player);
 static int spellBlink(int dir);
@@ -232,13 +233,7 @@ static int spellBlink(int dir) {
 static int spellCure(int player) {
     assert(player < 8);
 
-    if (player < c->saveGame->members && 
-        c->saveGame->players[player].status == STAT_POISONED) {
-        c->saveGame->players[player].status = STAT_GOOD;
-        return 1;
-    }
-
-    return 0;
+    return playerHeal(c->saveGame, HT_CURE, player);
 }
 
 static int spellDispel(int dir) {
@@ -302,13 +297,7 @@ static int spellGate(int phase) {
 static int spellHeal(int player) {
     assert(player < 8);
 
-    if (player < c->saveGame->members && 
-        c->saveGame->players[player].status != STAT_DEAD) {
-        c->saveGame->players[player].hp = c->saveGame->players[player].hpMax;
-        return 1;
-    }
-
-    return 0;
+    return playerHeal(c->saveGame, HT_HEAL, player);
 }
 
 static int spellIceball(int dir) {
@@ -357,13 +346,7 @@ static int spellProtect(int unused) {
 static int spellRez(int player) {
     assert(player < 8);
 
-    if (player < c->saveGame->members && 
-        c->saveGame->players[player].status == STAT_DEAD) {
-        c->saveGame->players[player].status = STAT_GOOD;
-        return 1;
-    }
-
-    return 0;
+    return playerHeal(c->saveGame, HT_RESURRECT, player);
 }
 
 static int spellQuick(int unused) {
