@@ -36,6 +36,20 @@ spirit of the original game will be added.
 STATUS
 ------
 
+New in v0.07:
+ - items searchable (runes, white & black stones, bell, book, candle,
+   etc.)
+ - city residents now move and have animated tiles
+ - gem viewing (tiles aren't quite right)
+ - getting chests
+ - some actions now affect your virtues (stealing chests, talking to
+   hawkwind, finding runes and stones)
+ - companions will now join the party if asked
+ - added filtering to the scaled images, like exult (2xBilinear only,
+   for now); the -scale parameter now accepts a number or "2xBi" for
+   filtered scaling (2 is still the default, 2xBi looks bad without
+   the VGA upgrade)
+
 New in v0.06:
  - horses, ships, balloons (accessible through debug menu)
  - wind
@@ -88,8 +102,8 @@ To do, in no particular order:
  - karma
  - monsters, combat
  - spells
+ - shrines and meditation
  - autoconf, automake
- - gem viewing
  - everything else :)
 
 Some thoughts for possible improvements:
@@ -98,6 +112,8 @@ Some thoughts for possible improvements:
  - allow the map view to display more of the world
  - read Ultima 4 for DOS files straight out of zip file
  - automatically fetch Ultima 4 for DOS if not found
+ - move hardcoded data (tile attributes, starting attributes, etc.)
+   into xml config file
 
 
 COMPILING
@@ -107,6 +123,7 @@ Note that you need SDL, the SDL development libraries & headers, and
 the SDL_mixer library to compile.  Assuming they are present, type
 make in the src directory to build it.  An executable called u4 is
 created.
+
 
 RUNNING
 -------
