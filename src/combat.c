@@ -20,6 +20,7 @@
 #include "monster.h"
 #include "screen.h"
 #include "names.h"
+#include "player.h"
 
 extern Map brick_map;
 extern Map bridge_map;
@@ -54,6 +55,7 @@ int combatAttackAtCoord(int x, int y);
 int combatIsWon(void);
 int combatIsLost(void);
 void combatEnd(void);
+void combatMoveMonsters();
 int movePartyMember(Direction dir, int member);
 
 void combatBegin(unsigned char partytile, unsigned short transport) {
@@ -118,20 +120,31 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
 }
 
 void combatEndTurn() {
-    if (party[focus])
-        party[focus]->hasFocus = 0;
-    do {
-        focus++;
-        if (focus >= c->saveGame->members)
-            focus = 0;
-    } while (!party[focus]);
-    party[focus]->hasFocus = 1;
+    if (combatIsWon()) {
 
-    if (combatIsWon() || combatIsLost()) {
         eventHandlerPopKeyHandler();
         combatEnd();
         return;
     }
+    else if (combatIsLost()) {
+        /* FIXME: assume for now the party fled, not died */
+        playerAdjustKarma(c->saveGame, KA_FLED);
+
+        eventHandlerPopKeyHandler();
+        combatEnd();
+        return;
+    }
+
+    if (party[focus])
+        party[focus]->hasFocus = 0;
+    do {
+        focus++;
+        if (focus >= c->saveGame->members) {
+            combatMoveMonsters();
+            focus = 0;
+        }
+    } while (!party[focus]);
+    party[focus]->hasFocus = 1;
 
     screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, getWeaponName(c->saveGame->players[focus].weapon));
 }
@@ -206,6 +219,10 @@ int combatAttackAtCoord(int x, int y) {
         screenMessage("Missed!\n");
     } else {
         screenMessage("Hit!\n");
+
+        /* FIXME: every hit is fatal for now */
+        if (monsterIsEvil(monsterForTile(monsters[monster]->tile)))
+            gameLostEighth(playerAdjustKarma(c->saveGame, KA_KILLED_EVIL));
         mapRemoveObject(c->map, monsters[monster]);
         monsters[monster] = NULL;
     }
@@ -266,9 +283,49 @@ void combatEnd() {
     gameFinishTurn();
 }
 
+void combatMoveMonsters() {
+    int i, newx, newy, valid_dirs;
+    unsigned char tile;
+    Object *target, *other;
+
+    i = 0;
+    do {
+        target = party[i++];
+    } while (!target);
+
+    for (i = 0; i < AREA_MONSTERS; i++) {
+        if (!monsters[i])
+            continue;
+
+        newx = monsters[i]->x;
+        newy = monsters[i]->y;
+        valid_dirs = mapGetValidMoves(c->map, newx, newy, AVATAR_TILE);
+        dirMove(dirFindPath(newx, newy, target->x, target->y, valid_dirs), &newx, &newy);
+
+        if (newx >= 0 && newx < c->map->width &&
+            newy >= 0 && newy < c->map->height) {
+            if ((other = mapObjectAt(c->map, newx, newy)) != NULL)
+                tile = other->tile;
+            else
+                tile = mapTileAt(c->map, newx, newy);
+            if (tileIsWalkable(tile)) {
+                if (newx != monsters[i]->x ||
+                    newy != monsters[i]->y) {
+                    monsters[i]->prevx = monsters[i]->x;
+                    monsters[i]->prevy = monsters[i]->y;
+                }
+                monsters[i]->x = newx;
+                monsters[i]->y = newy;
+            }
+        }
+    }
+}
+
+
 int movePartyMember(Direction dir, int member) {
     int result = 1;
     int newx, newy;
+    int movementMask;
 
     newx = party[member]->x;
     newy = party[member]->y;
@@ -282,13 +339,12 @@ int movePartyMember(Direction dir, int member) {
         return result;
     }
 
-#if 0
-    if (!gameCanMoveOntoTile(c->map, newx, newy)) {
+    movementMask = mapGetValidMoves(c->map, party[member]->x, party[member]->y, party[member]->tile);
+    if (!DIR_IN_MASK(dir, movementMask)) {
         screenMessage("Blocked!\n");
         result = 0;
         goto done;
     }
-#endif
 
     party[member]->x = newx;
     party[member]->y = newy;
