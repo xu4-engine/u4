@@ -89,7 +89,7 @@ IntroController::IntroController() : Controller(1) {
  * Initializes intro state and loads in introduction graphics, text
  * and map data from title.exe.
  */
-int IntroController::init() {
+bool IntroController::init() {
     U4FILE *title;
     int i, j;
 
@@ -101,19 +101,15 @@ int IntroController::init() {
 
     title = u4fopen("title.exe");
     if (!title)
-        return 0;
+        return false;
 
     introQuestions = u4read_stringtable(title, INTRO_TEXT_OFFSET, 28);
     introText = u4read_stringtable(title, -1, 24);
     introGypsy = u4read_stringtable(title, -1, 15);
 
     /* clean up stray newlines at end of strings */
-    for (i = 0; i < 15; i++) {
-        int len;
-        while ((len = introGypsy[i].length()) > 0 && 
-               isspace(introGypsy[i][len - 1]))
-            introGypsy[i][len - 1] = '\0';
-    }
+    for (i = 0; i < 15; i++)
+        trim(introGypsy[i]);
 
     if (sigData)
         delete sigData;
@@ -151,10 +147,6 @@ int IntroController::init() {
        load beastie frame table 1
        -------------------------- */
     beastie1FrameTable = new unsigned char[BEASTIE1_FRAMES];
-    if (!beastie1FrameTable) {
-        u4fclose(title);
-        return(0);
-    }
     u4fseek(title, BEASTIE_FRAME_TABLE_OFFSET + BEASTIE1_FRAMES_OFFSET, SEEK_SET);
     for (i = 0; i < BEASTIE1_FRAMES; i++) {
         beastie1FrameTable[i] = u4fgetc(title);
@@ -164,10 +156,6 @@ int IntroController::init() {
        load beastie frame table 2
        -------------------------- */
     beastie2FrameTable = new unsigned char[BEASTIE2_FRAMES];
-    if (!beastie2FrameTable) {
-        u4fclose(title);
-        return(0);
-    }
     u4fseek(title, BEASTIE_FRAME_TABLE_OFFSET + BEASTIE2_FRAMES_OFFSET, SEEK_SET);
     for (i = 0; i < BEASTIE2_FRAMES; i++) {
         beastie2FrameTable[i] = u4fgetc(title);
@@ -270,7 +258,7 @@ int IntroController::init() {
 
     musicMgr->intro();
 
-    return 1;
+    return true;
 }
 
 /**

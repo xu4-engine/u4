@@ -18,7 +18,7 @@ class IntroController : public Controller, public Observer<MenuEvent &> {
 public:
     IntroController();
 
-    int init();
+    bool init();
     void deleteIntro();
     bool keyPressed(int key);
     unsigned char *getSigData();
