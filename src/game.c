@@ -1831,7 +1831,7 @@ int newOrderTemp;
  */
 int newOrderForPlayer(int player) {
     if (player == 0) {
-        screenMessage("%s, You must\nlead!\n", c->saveGame->players[0].name);
+        screenMessage("%s, You must lead!\n", c->saveGame->players[0].name);
         (*c->location->finishTurn)();
         return 0;
     }
@@ -1849,10 +1849,11 @@ int newOrderForPlayer2(int player2) {
     SaveGamePlayerRecord tmp;
 
     if (player2 == 0) {
-        screenMessage("%s, You must\nlead!\n", c->saveGame->players[0].name);
+        screenMessage("%s, You must lead!\n", c->saveGame->players[0].name);
         (*c->location->finishTurn)();
         return 0;
     } else if (player1 == player2) {
+        screenMessage("What?\n");
         (*c->location->finishTurn)();
         return 0;
     }
