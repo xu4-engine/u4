@@ -90,6 +90,8 @@ public:
     virtual void update(Party *party, PartyEvent &event);
 
     TileView mapArea;
+    bool paused;
+    int pausedTimer;
 };
 
 extern GameController *game;

@@ -647,8 +647,9 @@ void IntroController::startQuestions() {
             SaveGame saveGame;
             SaveGamePlayerRecord avatar;
 
-            FILE *saveGameFile = saveGameOpenForWriting();
+            FILE *saveGameFile = fopen((settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "wb");
             if (!saveGameFile) {
+                questionArea.disableCursor();
                 mode = INTRO_MENU;
                 errorMessage = "Unable to create save game!";
                 updateScreen();
@@ -667,7 +668,7 @@ void IntroController::startQuestions() {
             saveGame.write(saveGameFile);
             fclose(saveGameFile);
 
-            saveGameFile = saveGameMonstersOpenForWriting(MONSTERS_SAV_BASE_FILENAME);
+            saveGameFile = fopen((settings.getUserPath() + MONSTERS_SAV_BASE_FILENAME).c_str(), "wb");
             if (saveGameFile) {
                 saveGameMonstersWrite(NULL, saveGameFile);
                 fclose(saveGameFile);
@@ -725,7 +726,7 @@ void IntroController::journeyOnward() {
      * ensure a party.sav file exists, otherwise require user to
      * initiate game
      */
-    saveGameFile = saveGameOpenForReading();
+    saveGameFile = fopen((settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "rb");
     if (saveGameFile) {
         SaveGame *saveGame = new SaveGame;
 

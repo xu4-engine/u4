@@ -126,8 +126,6 @@ int windLock = 0;
 string itemNameBuffer;
 string creatureNameBuffer;
 string destination;
-int paused = 0;
-int pausedTimer = 0;
 int castPlayer;
 unsigned int castSpell;
 EnergyFieldType fieldType;
@@ -194,7 +192,7 @@ int AlphaActionController::get(char lastValidLetter, const string &prompt, Event
     return ctrl.waitFor();
 }
 
-GameController::GameController() : mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H) {
+GameController::GameController() : mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H), paused(false), pausedTimer(0) {
 }
 
 void GameController::init() {
@@ -238,7 +236,7 @@ void GameController::init() {
     TRACE_LOCAL(gameDbg, "World map set."); ++pb;
 
     /* load in the save game */
-    saveGameFile = saveGameOpenForReading();
+    saveGameFile = fopen((settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "rb");
     if (saveGameFile) {
         c->saveGame->read(saveGameFile);
         fclose(saveGameFile);
@@ -287,7 +285,7 @@ void GameController::init() {
     TRACE_LOCAL(gameDbg, "Loading monsters."); ++pb;
 
     /* load in creatures.sav */
-    monstersFile = saveGameMonstersOpenForReading(MONSTERS_SAV_BASE_FILENAME);
+    monstersFile = fopen((settings.getUserPath() + MONSTERS_SAV_BASE_FILENAME).c_str(), "rb");
     if (monstersFile) {
         saveGameMonstersRead(c->location->map->monsterTable, monstersFile);
         fclose(monstersFile);
@@ -296,7 +294,7 @@ void GameController::init() {
 
     /* we have previous creature information as well, load it! */
     if (c->location->prev) {
-        monstersFile = saveGameMonstersOpenForReading(OUTMONST_SAV_BASE_FILENAME);
+        monstersFile = fopen((settings.getUserPath() + OUTMONST_SAV_BASE_FILENAME).c_str(), "rb");
         if (monstersFile) {
             saveGameMonstersRead(c->location->prev->map->monsterTable, monstersFile);
             fclose(monstersFile);
@@ -369,20 +367,20 @@ int gameSave() {
     /* Done making sure the savegame struct is accurate */
     /****************************************************/
 
-    saveGameFile = saveGameOpenForWriting();
+    saveGameFile = fopen((settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "wb");
     if (!saveGameFile) {
-        screenMessage("Error opening party.sav\n");
+        screenMessage("Error opening " PARTY_SAV_BASE_FILENAME "\n");
         return 0;
     }
 
     if (!save.write(saveGameFile)) {
-        screenMessage("Error writing to party.sav\n");
+        screenMessage("Error writing to " PARTY_SAV_BASE_FILENAME "\n");
         fclose(saveGameFile);
         return 0;
     }
     fclose(saveGameFile);
 
-    monstersFile = saveGameMonstersOpenForWriting(MONSTERS_SAV_BASE_FILENAME);
+    monstersFile = fopen((settings.getUserPath() + MONSTERS_SAV_BASE_FILENAME).c_str(), "wb");
     if (!monstersFile) {
         screenMessage("Error opening %s\n", MONSTERS_SAV_BASE_FILENAME);
         return 0;
@@ -429,18 +427,7 @@ int gameSave() {
             id_map[creatures.getById(ROGUE_ID)]           = 15;
         }
 
-#ifdef MACOSX
-        // Mac OS X savegame files go in a set directory
-        char *home = getenv("HOME");
-        if (home && home[0]) {
-            string dngmapfname = home;
-            dngmapfname += MACOSX_USER_FILES_PATH;
-            dngmapfname += "/dngmap.sav";
-            dngMapFile = fopen(dngmapfname.c_str(), "wb");
-        } else dngMapFile = NULL;
-#else
-        dngMapFile = fopen("dngmap.sav", "wb");
-#endif
+        dngMapFile = fopen((settings.getUserPath() + "dngmap.sav").c_str(), "wb");
         if (!dngMapFile) {
             screenMessage("Error opening dngmap.sav\n");
             return 0;
@@ -474,7 +461,7 @@ int gameSave() {
          * Write outmonst.sav
          */ 
 
-        monstersFile = saveGameMonstersOpenForWriting(OUTMONST_SAV_BASE_FILENAME);
+        monstersFile = fopen((settings.getUserPath() + OUTMONST_SAV_BASE_FILENAME).c_str(), "wb");
         if (!monstersFile) {
             screenMessage("Error opening %s\n", OUTMONST_SAV_BASE_FILENAME);
             return 0;
@@ -743,9 +730,9 @@ void gameSpellEffect(int spell, int player, Sound sound) {
     }
 
     /* pause the game for enough time to complete the spell effect */
-    if (!paused) {
-        paused = 1;
-        pausedTimer = ((time * settings.gameCyclesPerSecond) / 1000) + 1;
+    if (!game->paused) {
+        game->paused = true;
+        game->pausedTimer = ((time * settings.gameCyclesPerSecond) / 1000) + 1;
     }
 
     switch(effect)
@@ -1410,8 +1397,8 @@ bool GameController::keyPressed(int key) {
             if (!quit) {
                 eventHandler->setControllerDone(false);
                 eventHandler->popController();
-                eventHandler->pushController(game);
-                game->init();
+                eventHandler->pushController(this);
+                init();
                 eventHandler->run();                
             }
         }
@@ -2777,8 +2764,8 @@ bool gamePeerCity(int city, void *data) {
     if (peerMap != NULL) {
         gameSetMap(peerMap, 1, NULL);
         c->location->viewMode = VIEW_GEM;
-        paused = 1;
-        pausedTimer = 0;
+        game->paused = true;
+        game->pausedTimer = 0;
 
         screenDisableCursor();
             
@@ -2786,7 +2773,7 @@ bool gamePeerCity(int city, void *data) {
 
         gameExitToParentMap();
         screenEnableCursor();
-        paused = 0;
+        game->paused = false;
     
         (*c->location->finishTurn)();
 
@@ -2810,8 +2797,8 @@ void peer(bool useGem) {
         screenMessage("Peer at a Gem!\n");
     }
 
-    paused = 1;
-    pausedTimer = 0;
+    game->paused = true;
+    game->pausedTimer = 0;
     screenDisableCursor();
     
     c->location->viewMode = VIEW_GEM;
@@ -2820,7 +2807,7 @@ void peer(bool useGem) {
 
     screenEnableCursor();    
     c->location->viewMode = VIEW_NORMAL;
-    paused = 0;
+    game->paused = false;
 }
 
 /**
@@ -3037,7 +3024,7 @@ void GameController::timerFired() {
         pausedTimer--;
         if (pausedTimer <= 0) {
             pausedTimer = 0;
-            paused = 0; /* unpause the game */
+            paused = false; /* unpause the game */
         }
     }
     
