@@ -990,14 +990,26 @@ int gameGetAlphaChoiceKeyHandler(int key, void *data) {
 int gameGetDirectionKeyHandler(int key, void *data) {
     int (*handleDirection)(Direction dir) = (int(*)(Direction))data;    
     Direction dir = keyToDirection(key);    
-    int valid = (dir != DIR_NONE);
-
-    if (valid) {
+    int valid = (dir != DIR_NONE) ? 1 : 0;
+    
+    switch(key) {
+    case '\033':
+    case ' ':
+    case '\015':
         eventHandlerPopKeyHandler();
 
-        screenMessage("%s\n", getDirectionName(dir));
-        (*handleDirection)(dir);
-    }
+        screenMessage("\n");
+        (*c->location->finishTurn)();        
+
+    default:
+        if (valid) {
+            eventHandlerPopKeyHandler();
+
+            screenMessage("%s\n", getDirectionName(dir));
+            (*handleDirection)(dir);
+        }       
+        break;
+    }   
 
     return valid || keyHandlerDefault(key, NULL);
 }
@@ -1051,14 +1063,25 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
     int valid = (dir != DIR_NONE);
     info->dir = MASK_DIR(dir);
 
-    eventHandlerPopKeyHandler();    
+    switch(key) {
+    case '\033':
+    case ' ':
+    case '\015':
+        eventHandlerPopKeyHandler();
 
-    if (valid) {
-        screenMessage("%s\n", getDirectionName(dir));
-        gameDirectionalAction(info);
-    }
+        screenMessage("\n");
+        free(info);
+        (*c->location->finishTurn)();        
 
-    free(info);
+    default:
+        if (valid) {
+            eventHandlerPopKeyHandler();
+            screenMessage("%s\n", getDirectionName(dir));
+            gameDirectionalAction(info);
+            free(info);
+        }        
+        break;
+    }    
 
     return valid || keyHandlerDefault(key, NULL);
 }
@@ -1286,8 +1309,8 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     const Monster *m;
 
     /* attack failed: finish up */
-    if (x == -1 && y == -1) {
-        screenMessage("Attack What?\n");
+    if (x == -1 && y == -1) {        
+        screenMessage("Nothing to Attack!\n");
         (*c->location->finishTurn)();
         return 0;
     }
