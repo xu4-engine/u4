@@ -114,9 +114,7 @@ void combatInit(const struct _Monster *m, struct _Object *monsterObj, unsigned c
             combatInfo.monsterStartCoords[i].x = map->area->monster_start[i].x;
             combatInfo.monsterStartCoords[i].y = map->area->monster_start[i].y;
         }
-    }
-    else {
-    }
+    }    
 }
 
 /**
@@ -236,7 +234,10 @@ void combatBegin() {
             partyIsReadyToFight = 1;
             break;
         }
-    }    
+    }
+
+    if (!partyIsReadyToFight)
+        (*c->location->finishTurn)();
 }
 
 /**
@@ -765,7 +766,8 @@ int combatBaseKeyHandler(int key, void *data) {
 
     if (valid) {
         c->lastCommandTime = time(NULL);
-        if (eventHandlerGetKeyHandler() == &combatBaseKeyHandler)
+        if (eventHandlerGetKeyHandler() == &combatBaseKeyHandler &&
+            c->location->finishTurn == &combatFinishTurn)
             (*c->location->finishTurn)();
     }
 
@@ -874,7 +876,9 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     if (!wrongRange && (weaponLeavesTile(weapon) && tileIsWalkable(groundTile)))
         annotationAdd(x, y, c->location->z, c->location->map->id, weaponLeavesTile(weapon));    
     
-    (*c->location->finishTurn)();
+    /* only end the turn if we're still in combat */
+    if (c->location->finishTurn == &combatFinishTurn)
+        (*c->location->finishTurn)();
 
     return 1;
 }

@@ -1168,7 +1168,8 @@ int gameBaseKeyHandler(int key, void *data) {
     }
 
     if (valid && endTurn) {
-        if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler)
+        if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler &&
+            c->location->finishTurn == &gameFinishTurn)
             (*c->location->finishTurn)();
     }
     else if (!endTurn) {
