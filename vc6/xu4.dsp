@@ -185,6 +185,14 @@ SOURCE=..\src\context.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\creature.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\creature.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\death.cpp
 # End Source File
 # Begin Source File
@@ -322,14 +330,6 @@ SOURCE=..\src\menu.cpp
 # Begin Source File
 
 SOURCE=..\src\menu.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\monster.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\monster.h
 # End Source File
 # Begin Source File
 
