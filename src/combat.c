@@ -1248,11 +1248,16 @@ void combatMoveMonsters() {
                     valid = 0,
                     firstTry = 1;
                 unsigned char tile;
+                Object *obj;
             
                 while (!valid) {
                     newx = rand() % c->location->map->width,
                     newy = rand() % c->location->map->height;
+                    
                     tile = mapTileAt(c->location->map, newx, newy, c->location->z);
+                    obj = mapObjectAt(c->location->map, newx, newy, c->location->z);
+                    if (obj)
+                        tile = obj->tile;
                 
                     if (tileIsMonsterWalkable(tile) && tileIsWalkable(tile)) {
                         /* If the tile would slow me down, try again! */
