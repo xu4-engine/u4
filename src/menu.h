@@ -15,7 +15,7 @@ typedef struct _MenuItem {
     short x, y;
     char *text;
     unsigned char isHighlighted;
-    ActivateMenuItem activeMenuItem;
+    ActivateMenuItem activateMenuItem;
 } MenuItem;
 
 Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, ActivateMenuItem activate);
@@ -26,5 +26,7 @@ Menu menuGetRoot(Menu current);
 Menu menuHighlightNew(Menu oldItem, Menu newItem);
 void menuDelete(Menu menu);
 Menu menuReset(Menu current);
+Menu menuGetItemById(Menu menu, unsigned char id);
+int menuCompareFindItemById(void *val1, void *val2);
 
 #endif

@@ -370,11 +370,24 @@ int introKeyHandler(int key, void *data) {
     case INTRO_CONFIG:
 
         if (!introBaseMenuKeyHandler(key, INTRO_MENU, &mainOptions)) {
+            /* navigate to the item and activate it! */
             switch(key) {
-            case 'v': mode = INTRO_CONFIG_VIDEO; videoOptions = menuReset(videoOptions); break;
-            case 's': mode = INTRO_CONFIG_SOUND; soundOptions = menuReset(soundOptions); break;
-            case 'g': mode = INTRO_CONFIG_GAMEPLAY; gameplayOptions = menuReset(gameplayOptions); break;
-            case 'm': mode = INTRO_MENU;
+            case 'v':                
+                mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 0));
+                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions);
+                break;
+            case 's':
+                mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 1));
+                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions);
+                break;
+            case 'g':
+                mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 2));
+                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions);
+                break;
+            case 'm':
+                mainOptions = menuHighlightNew(mainOptions, menuGetItemById(menuGetRoot(mainOptions), 0xFF));
+                (*((MenuItem *)mainOptions->data)->activateMenuItem)(mainOptions);                
+                break;
             default: break;
             }
         }
@@ -384,20 +397,20 @@ int introKeyHandler(int key, void *data) {
 
     case INTRO_CONFIG_VIDEO:
         
-        if (!introBaseMenuKeyHandler(key, INTRO_CONFIG, &videoOptions)) {
+        if (!introBaseMenuKeyHandler(key, INTRO_CONFIG, &videoOptions)) {            
+            /* navigate to the item and activate it! */
             switch (key) {
             case 's':
-                settings->scale++;
-                if (settings->scale > 5)
-                    settings->scale = 1;
+                videoOptions = menuHighlightNew(videoOptions, menuGetItemById(menuGetRoot(videoOptions), 0));
+                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions);
                 break;
             case 'm':
-                settings->fullscreen = !settings->fullscreen;
+                videoOptions = menuHighlightNew(videoOptions, menuGetItemById(menuGetRoot(videoOptions), 1));
+                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions);
                 break;
             case 'f':
-                settings->filter++;
-                if (settings->filter == SCL_MAX)
-                    settings->filter = (FilterType) 0;
+                videoOptions = menuHighlightNew(videoOptions, menuGetItemById(menuGetRoot(videoOptions), 2));
+                (*((MenuItem *)videoOptions->data)->activateMenuItem)(videoOptions);
                 break;
             }
         }
@@ -406,11 +419,13 @@ int introKeyHandler(int key, void *data) {
         return 1;
 
     case INTRO_CONFIG_SOUND:
-
+        
         if (!introBaseMenuKeyHandler(key, INTRO_CONFIG, &soundOptions)) {
+            /* navigate to the item and activate it! */
             switch (key) {
             case 'v':
-                settings->vol = !settings->vol;
+                soundOptions = menuHighlightNew(soundOptions, menuGetItemById(menuGetRoot(soundOptions), 0));
+                (*((MenuItem *)soundOptions->data)->activateMenuItem)(soundOptions);
                 break;
             }
         }
@@ -421,9 +436,20 @@ int introKeyHandler(int key, void *data) {
     case INTRO_CONFIG_GAMEPLAY:
         
         if (!introBaseMenuKeyHandler(key, INTRO_CONFIG, &gameplayOptions)) {
-            if (key == 'a') {
-                advancedOptions = menuReset(advancedOptions);                
-                mode = INTRO_CONFIG_ADVANCED;
+            /* navigate to the item and activate it! */
+            switch(key) {
+            case 'g':
+                gameplayOptions = menuHighlightNew(gameplayOptions, menuGetItemById(menuGetRoot(gameplayOptions), 0));
+                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions);
+                break;
+            case 's':
+                gameplayOptions = menuHighlightNew(gameplayOptions, menuGetItemById(menuGetRoot(gameplayOptions), 1));
+                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions);
+                break;
+            case 'a':
+                gameplayOptions = menuHighlightNew(gameplayOptions, menuGetItemById(menuGetRoot(gameplayOptions), 2));
+                (*((MenuItem *)gameplayOptions->data)->activateMenuItem)(gameplayOptions);
+                break;                
             }            
         }
 
@@ -431,8 +457,8 @@ int introKeyHandler(int key, void *data) {
         return 1;
 
     case INTRO_CONFIG_ADVANCED:
-        
-        introBaseMenuKeyHandler(key, INTRO_CONFIG, &advancedOptions);
+        /* FIXME: need to actually navigate cursor to keyboard option selected */
+        introBaseMenuKeyHandler(key, INTRO_CONFIG_GAMEPLAY, &advancedOptions);
         
         introUpdateScreen();
         return 1;        
@@ -1151,8 +1177,8 @@ int introBaseMenuKeyHandler(int key, IntroMode prevMode, Menu *menu) {
     case U4_ENTER:
         {
             MenuItem *menuItem = (MenuItem *)(*menu)->data;
-            if (menuItem->activeMenuItem)
-                (*menuItem->activeMenuItem)(*menu);
+            if (menuItem->activateMenuItem)
+                (*menuItem->activateMenuItem)(*menu);
         }
         break;
     case ' ':    

@@ -16,7 +16,7 @@ Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, Acti
     menuItem->x = x;
     menuItem->y = y;
     menuItem->isHighlighted = 0;
-    menuItem->activeMenuItem = activate;
+    menuItem->activateMenuItem = activate;
     
     return listAppend(menu, menuItem);
 } 
@@ -75,4 +75,19 @@ void menuDelete(Menu menu) {
 
 Menu menuReset(Menu current) {
     return menuHighlightNew(current, menuGetRoot(current));
+}
+
+Menu menuGetItemById(Menu menu, unsigned char id) {        
+    return listFind(menu, (void *)id, &menuCompareFindItemById);
+}
+
+int menuCompareFindItemById(void *val1, void *val2) {
+    MenuItem *menuItem = (MenuItem *)val1;
+    unsigned char id = (unsigned char)val2;
+
+    if (menuItem->id > id)
+        return 1;
+    else if (menuItem->id < id)
+        return -1;
+    return 0;
 }
