@@ -34,6 +34,8 @@ int isItemInInventory(void *item);
 void putItemInInventory(void *item);
 int isMysticInInventory(void *mystic);
 void putMysticInInventory(void *mystic);
+int isReagentInInventory(void *reag);
+void putReagentInInventory(void *reag);
 
 static const ItemLocation items[] = {
     { "the rune of Honesty", 8, 6, &moonglow_map, &isRuneInInventory, &putRuneInInventory, (void *) RUNE_HONESTY, 0 },
@@ -53,7 +55,11 @@ static const ItemLocation items[] = {
     { "A Silver Horn", 45, 173, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_HORN, 0 },
     { "the Wheel from the H.M.S. Cape", 96, 215, &world_map, &isItemInInventory, &putItemInInventory, (void *) ITEM_WHEEL, 0 },
     { "Mystic Armor", 22, 4, &empath_map, &isMysticInInventory, &putMysticInInventory, (void *) ARMR_MYSTICROBES, SC_FULLAVATAR },
-    { "Mystic Swords", 8, 15, &serpent_map, &isMysticInInventory, &putMysticInInventory, (void *) WEAP_MYSTICSWORD, SC_FULLAVATAR }
+    { "Mystic Swords", 8, 15, &serpent_map, &isMysticInInventory, &putMysticInInventory, (void *) WEAP_MYSTICSWORD, SC_FULLAVATAR },
+    { "Mandrake Root", 182, 54, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS },
+    { "Mandrake Root", 100, 165, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_MANDRAKE, SC_NEWMOONS },
+    { "Nightshade", 46, 149, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS },
+    { "Nightshade", 205, 44, &world_map, &isReagentInInventory, &putReagentInInventory, (void *) REAG_NIGHTSHADE, SC_NEWMOONS }
 };
 
 int isRuneInInventory(void *virt) {
@@ -62,7 +68,7 @@ int isRuneInInventory(void *virt) {
 
 void putRuneInInventory(void *virt) {
     c->saveGame->players[0].xp += 100;
-    playerAdjustKarma(c->saveGame, VIRT_HONOR, KARMA_ADJ_FOUND_ITEM);
+    playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     c->saveGame->runes |= (int)virt;
 }
 
@@ -72,7 +78,7 @@ int isStoneInInventory(void *virt) {
 
 void putStoneInInventory(void *virt) {
     c->saveGame->players[0].xp += 200;
-    playerAdjustKarma(c->saveGame, VIRT_HONOR, KARMA_ADJ_FOUND_ITEM);
+    playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     c->saveGame->stones |= (int)virt;
 }
 
@@ -82,7 +88,7 @@ int isItemInInventory(void *item) {
 
 void putItemInInventory(void *item) {
     c->saveGame->players[0].xp += 400;
-    playerAdjustKarma(c->saveGame, VIRT_HONOR, KARMA_ADJ_FOUND_ITEM);
+    playerAdjustKarma(c->saveGame, KA_FOUND_ITEM);
     c->saveGame->items |= (int)item;
 }
 
@@ -105,6 +111,14 @@ void putMysticInInventory(void *mystic) {
         c->saveGame->armor[ARMR_MYSTICROBES] += 8;
     else
         assert(0);
+}
+
+int isReagentInInventory(void *reag) {
+    return 0;
+}
+
+void putReagentInInventory(void *reag) {
+    c->saveGame->reagents[(int)reag] += 1;
 }
 
 /**
