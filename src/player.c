@@ -386,3 +386,41 @@ void playerRevive(SaveGame *saveGame) {
     saveGame->food = 20000;
     saveGame->gold = 200;
 }
+
+int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price) {
+
+    if (price > saveGame->gold)
+        return 0;
+        
+    saveGame->gold -= price;
+
+    switch (item) {
+    case INV_WEAPON:
+        saveGame->weapons[type] += quantity;
+        break;
+    case INV_ARMOR:
+        saveGame->armor[type] += quantity;
+        break;
+    case INV_FOOD:
+        saveGame->food += quantity * 100;
+        break;
+    case INV_REAGENT:
+        saveGame->reagents[type] += quantity;
+        break;
+    case INV_GUILDITEM:
+        if (type == 0)
+            saveGame->torches += quantity;
+        else if (type == 1)
+            saveGame->gems += quantity;
+        else if (type == 2)
+            saveGame->keys += quantity;
+        else if (type == 3)
+            saveGame->sextants += quantity;
+        break;
+    case INV_HORSE:
+        /* FIXME */
+        break;
+    }
+
+    return 1;
+}

@@ -27,6 +27,15 @@ typedef enum {
     KA_DESTROYED_SKULL
 } KarmaAction;
 
+typedef enum {
+    INV_WEAPON,
+    INV_ARMOR,
+    INV_FOOD,
+    INV_REAGENT,
+    INV_GUILDITEM,
+    INV_HORSE
+} InventoryItem;
+
 void playerApplyDamage(SaveGamePlayerRecord *player, int damage);
 int playerGetRealLevel(const SaveGamePlayerRecord *player);
 int playerGetMaxLevel(const SaveGamePlayerRecord *player);
@@ -45,5 +54,6 @@ void playerApplyEffect(SaveGame *saveGame, TileEffect effect);
 int playerPartyImmobilized(const SaveGame *saveGame);
 int playerPartyDead(const SaveGame *saveGame);
 void playerRevive(SaveGame *saveGame);
+int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantity, int price);
 
 #endif
