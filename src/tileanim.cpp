@@ -121,9 +121,9 @@ void tileAnimDraw(TileAnim *anim, Image *tiles, int tile, int scale, int x, int 
         
         switch (transform->type) {
         case TileAnimTransform::TRANSFORM_INVERT:
-            imageDrawSubRectInverted(tiles, scale * (x + transform->invert.x), scale * (y + transform->invert.y),
-                                     scale * transform->invert.x, tile * (tiles->h / N_TILES) + scale * transform->invert.y, 
-                                     scale * transform->invert.w, scale * transform->invert.h);
+            tiles->drawSubRectInverted(scale * (x + transform->invert.x), scale * (y + transform->invert.y),
+                                       scale * transform->invert.x, tile * (tiles->h / N_TILES) + scale * transform->invert.y, 
+                                       scale * transform->invert.w, scale * transform->invert.h);
             break;
 
         case TileAnimTransform::TRANSFORM_PIXEL:

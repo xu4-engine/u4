@@ -11,12 +11,12 @@
 
 #include "xml.h"
 
-struct _Image;
-struct _RGBA;
+class Image;
+class RGBA;
 
 struct TileAnimPixelTransform {
     int x, y;
-    std::vector<struct _RGBA *> colors;
+    std::vector<RGBA *> colors;
 };
 
 struct TileAnimInvertTransform {

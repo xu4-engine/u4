@@ -39,7 +39,7 @@ void fixupIntroExtended(Image *im, int prescale);
 void fixupAbyssVision(Image *im, int prescale);
 void fixupAbacus(Image *im, int prescale);
 void screenFreeIntroBackground();
-int screenLoadImageData(struct _Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp);
+int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp);
 Image *screenScale(Image *src, int scale, int n, int filter);
 int screenLoadPaletteEga();
 int screenLoadPaletteVga(const char *filename);
@@ -47,8 +47,8 @@ Image *screenScaleDown(Image *src, int scale);
 
 SDL_Surface *screen;
 Image *dngGraphic[56];
-SDL_Color egaPalette[16];
-SDL_Color vgaPalette[256];
+RGBA egaPalette[16];
+RGBA vgaPalette[256];
 SDL_Cursor *cursors[5];
 int scale;
 Scaler filterScaler;
@@ -488,7 +488,7 @@ void fixupIntro(Image *im, int prescale) {
      * erase the original "present"
      * ---------------------------- */
 
-    imageFillRect(im, 136 * prescale, 0 * prescale, 55 * prescale, 5 * prescale, 0, 0, 0);
+    im->fillRect(136 * prescale, 0 * prescale, 55 * prescale, 5 * prescale, 0, 0, 0);
 
     /* -----------------------------
      * draw "Lord British" signature
@@ -498,8 +498,8 @@ void fixupIntro(Image *im, int prescale) {
         /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
         x = sigData[i] + 0x14;
         y = 0xBF - sigData[i+1];
-        imageFillRect(im, x * prescale, y * prescale, prescale, prescale, 0, 255, 255); /* cyan */
-        imageFillRect(im, (x + 1) * prescale, y * prescale, prescale, prescale, 0, 255, 255); /* cyan */
+        im->fillRect(x * prescale, y * prescale, prescale, prescale, 0, 255, 255); /* cyan */
+        im->fillRect((x + 1) * prescale, y * prescale, prescale, prescale, 0, 255, 255); /* cyan */
         i += 2;
     }
 
@@ -508,7 +508,7 @@ void fixupIntro(Image *im, int prescale) {
      * -------------------------------------------------------------- */
     /* we're still working with an unscaled surface */
     for (i = 86; i < 239; i++)
-        imageFillRect(im, i * prescale, 31 * prescale, prescale, prescale, 128, 0, 0); /* red */
+        im->fillRect(i * prescale, 31 * prescale, prescale, prescale, 128, 0, 0); /* red */
 }
 
 void fixupIntroExtended(Image *im, int prescale) {
@@ -550,15 +550,15 @@ void fixupAbacus(Image *im, int prescale) {
      * when scaling
      */
 
-    imageFillRect(im, 7 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    imageFillRect(im, 16 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    imageFillRect(im, 8 * prescale, 186 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
-    imageFillRect(im, 8 * prescale, 199 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
+    im->fillRect(7 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
+    im->fillRect(16 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
+    im->fillRect(8 * prescale, 186 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
+    im->fillRect(8 * prescale, 199 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
 
-    imageFillRect(im, 23 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    imageFillRect(im, 32 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    imageFillRect(im, 24 * prescale, 186 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
-    imageFillRect(im, 24 * prescale, 199 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
+    im->fillRect(23 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
+    im->fillRect(32 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
+    im->fillRect(24 * prescale, 186 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
+    im->fillRect(24 * prescale, 199 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
 }
 
 /**
@@ -701,7 +701,7 @@ ImageInfo *screenLoadImage(const string &name) {
         return NULL;
 
     if (info->transparentIndex != -1)
-        imageSetTransparentIndex(unscaled, info->transparentIndex);
+        unscaled->setTransparentIndex(info->transparentIndex);
 
     if (info->prescale == 0)
         info->prescale = 1;
@@ -747,7 +747,7 @@ void screenFreeImages() {
         for (map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
             ImageInfo *info = j->second;
             if (info->image != NULL) {
-                imageDelete(info->image);
+                delete info->image;
                 info->image = NULL;
             }
         }
@@ -763,7 +763,7 @@ void screenFreeIntroBackgrounds() {
         for (map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
             ImageInfo *info = j->second;
             if (info->image != NULL && info->introOnly) {
-                imageDelete(info->image);
+                delete info->image;
                 info->image = NULL;
             }
         }
@@ -888,21 +888,21 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
 
     screenDeinterlaceCga(decompressed_data, width, height, tiles, 0);
 
-    img = imageNew(width, height, 1, 1, IMTYPE_HW);
+    img = Image::create(width, height, 1, 1, Image::HARDWARE);
     if (!img) {
         if (decompressed_data)
             free(decompressed_data);
         return 0;
     }
 
-    SDL_SetColors(img->surface, egaPalette, 0, 16);
+    img->setPalette(egaPalette, 16);
 
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x+=4) {
-            imagePutPixelIndex(img, x, y, decompressed_data[(y * width + x) / 4] >> 6);
-            imagePutPixelIndex(img, x + 1, y, (decompressed_data[(y * width + x) / 4] >> 4) & 0x03);
-            imagePutPixelIndex(img, x + 2, y, (decompressed_data[(y * width + x) / 4] >> 2) & 0x03);
-            imagePutPixelIndex(img, x + 3, y, (decompressed_data[(y * width + x) / 4]) & 0x03);
+            img->putPixelIndex(x, y, decompressed_data[(y * width + x) / 4] >> 6);
+            img->putPixelIndex(x + 1, y, (decompressed_data[(y * width + x) / 4] >> 4) & 0x03);
+            img->putPixelIndex(x + 2, y, (decompressed_data[(y * width + x) / 4] >> 2) & 0x03);
+            img->putPixelIndex(x + 3, y, (decompressed_data[(y * width + x) / 4]) & 0x03);
         }
     }
     free(decompressed_data);
@@ -953,7 +953,7 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
     }
 
     indexed = (bpp == 4 || bpp == 8);
-    img = imageNew(width, height, 1, indexed, IMTYPE_HW);
+    img = Image::create(width, height, 1, indexed, Image::HARDWARE);
     if (!img) {
         if (decompressed_data)
             free(decompressed_data);
@@ -963,7 +963,7 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
     if (bpp == 32) {
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++)
-                imagePutPixel(img, x, y, 
+                img->putPixel(x, y, 
                               decompressed_data[(y * width + x) * 4], 
                               decompressed_data[(y * width + x) * 4 + 1], 
                               decompressed_data[(y * width + x) * 4 + 2],
@@ -974,7 +974,7 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
     else if (bpp == 24) {
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++)
-                imagePutPixel(img, x, y, 
+                img->putPixel(x, y, 
                               decompressed_data[(y * width + x) * 3], 
                               decompressed_data[(y * width + x) * 3 + 1], 
                               decompressed_data[(y * width + x) * 3 + 2],
@@ -983,21 +983,21 @@ int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *f
     }
 
     else if (bpp == 8) {
-        SDL_SetColors(img->surface, vgaPalette, 0, 256);
+        img->setPalette(vgaPalette, 256);
 
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++)
-                imagePutPixelIndex(img, x, y, decompressed_data[y * width + x]);
+                img->putPixelIndex(x, y, decompressed_data[y * width + x]);
         }
     } 
 
     else if (bpp == 4) {
-        SDL_SetColors(img->surface, egaPalette, 0, 16);
+        img->setPalette(egaPalette, 16);
 
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x+=2) {
-                imagePutPixelIndex(img, x, y, decompressed_data[(y * width + x) / 2] >> 4);
-                imagePutPixelIndex(img, x + 1, y, decompressed_data[(y * width + x) / 2] & 0x0f);
+                img->putPixelIndex(x, y, decompressed_data[(y * width + x) / 2] >> 4);
+                img->putPixelIndex(x + 1, y, decompressed_data[(y * width + x) / 2] & 0x0f);
             }
         }
     }
@@ -1017,7 +1017,7 @@ void screenDrawImage(const string &name) {
 
     info = screenLoadImage(name);
     if (info) {
-        imageDraw(info->image, 0, 0);
+        info->image->draw(0, 0);
         return;
     }
 
@@ -1031,10 +1031,10 @@ void screenDrawImageInMapArea(const string &name) {
     if (!info)
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
-    imageDrawSubRect(info->image, BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
-                     BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
-                     VIEWPORT_W * TILE_WIDTH * scale, 
-                     VIEWPORT_H * TILE_HEIGHT * scale);
+    info->image->drawSubRect(BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
+                             BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
+                             VIEWPORT_W * TILE_WIDTH * scale, 
+                             VIEWPORT_H * TILE_HEIGHT * scale);
 }
 
 
@@ -1047,11 +1047,11 @@ void screenDrawSubImage(const string &name, int x, int y) {
         info = screenLoadImage(subimage->srcImageName);
         
         if (info) {
-            imageDrawSubRect(info->image, x, y, 
-                             subimage->x * (scale / info->prescale),
-                             subimage->y * (scale / info->prescale),
-                             subimage->width * (scale / info->prescale),
-                             subimage->height * (scale / info->prescale));
+            info->image->drawSubRect(x, y, 
+                                     subimage->x * (scale / info->prescale),
+                                     subimage->y * (scale / info->prescale),
+                                     subimage->width * (scale / info->prescale),
+                                     subimage->height * (scale / info->prescale));
             return;
         }
     }
@@ -1070,9 +1070,9 @@ void screenShowChar(int chr, int x, int y) {
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
-    imageDrawSubRect(charsetInfo->image, x * charsetInfo->image->w, y * (CHAR_HEIGHT * scale),
-                     0, chr * (CHAR_HEIGHT * scale),
-                     charsetInfo->image->w, CHAR_HEIGHT * scale);
+    charsetInfo->image->drawSubRect(x * charsetInfo->image->w, y * (CHAR_HEIGHT * scale),
+                                    0, chr * (CHAR_HEIGHT * scale),
+                                    charsetInfo->image->w, CHAR_HEIGHT * scale);
 }
 
 /**
@@ -1102,7 +1102,7 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
  */
 void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int y) {
     int offset;
-    SDL_Rect src, dest;
+    SDL_Rect dest;
     int unscaled_x, unscaled_y;
     Image *tiles;
     TileAnim *anim = NULL;
@@ -1120,33 +1120,24 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
     else
         offset = 0;
     
-    /* FIXME: work dynamically with the width/height of tiles in tileset */
-    src.x = 0;
-    src.y = tile * (tiles->h / N_TILES);
-    src.w = tiles->w;
-    src.h = tiles->h / N_TILES - offset;
-    dest.x = x * tiles->w + (BORDER_WIDTH * scale);
-    dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale) + offset;
-    dest.w = tiles->w;
-    dest.h = tiles->h / N_TILES;
-
     unscaled_x = x * (tiles->w / scale) + BORDER_WIDTH;
     unscaled_y = y * ((tiles->h / scale) / N_TILES) + BORDER_HEIGHT;
 
-    SDL_BlitSurface(tiles->surface, &src, screen, &dest);    
+    tiles->drawSubRect(x * tiles->w + (BORDER_WIDTH * scale),
+                       y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale) + offset,
+                       0,
+                       tile * (tiles->h / N_TILES),
+                       tiles->w,
+                       tiles->h / N_TILES - offset);
 
     if (offset != 0) {
 
-        src.x = 0;
-        src.y = (tile + 1) * (tiles->h / N_TILES) - offset;
-        src.w = tiles->w;
-        src.h = offset;
-        dest.x = x * tiles->w + (BORDER_WIDTH * scale);
-        dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
-        dest.w = tiles->w;
-        dest.h = tiles->h / N_TILES;
-
-        SDL_BlitSurface(tiles->surface, &src, screen, &dest);
+        tiles->drawSubRect(x * tiles->w + (BORDER_WIDTH * scale),
+                           y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale),
+                           0,
+                           (tile + 1) * (tiles->h / N_TILES) - offset,
+                           tiles->w,
+                           offset);
     }
 
     /*
@@ -1224,13 +1215,12 @@ void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
     }
 
     if (tile < 128) {
-        imageDrawSubRect(gemTilesInfo->image, 
-                         (gemlayout->viewport.x + (x * gemlayout->tileshape.width)) * scale,
-                         (gemlayout->viewport.y + (y * gemlayout->tileshape.height)) * scale,
-                         0, 
-                         tile * gemlayout->tileshape.height * scale, 
-                         gemlayout->tileshape.width * scale,
-                         gemlayout->tileshape.height * scale);
+        gemTilesInfo->image->drawSubRect((gemlayout->viewport.x + (x * gemlayout->tileshape.width)) * scale,
+                                         (gemlayout->viewport.y + (y * gemlayout->tileshape.height)) * scale,
+                                         0, 
+                                         tile * gemlayout->tileshape.height * scale, 
+                                         gemlayout->tileshape.width * scale,
+                                         gemlayout->tileshape.height * scale);
     } else {
         SDL_Rect dest;
 
@@ -1284,7 +1274,7 @@ void screenInvertRect(int x, int y, int w, int h) {
     src.w = w * scale;
     src.h = h * scale;
 
-    tmp = imageNew(src.w, src.h, 1, 0, IMTYPE_SW);
+    tmp = Image::create(src.w, src.h, 1, 0, Image::SOFTWARE);
     if (!tmp)
         return;
 
@@ -1292,13 +1282,13 @@ void screenInvertRect(int x, int y, int w, int h) {
 
     for (i = 0; i < src.h; i++) {
         for (j = 0; j < src.w; j++) {
-            imageGetPixel(tmp, j, i, &c.r, &c.g, &c.b, &c.a);
-            imagePutPixel(tmp, j, i, 0xff - c.r, 0xff - c.g, 0xff - c.b, c.a);
+            tmp->getPixel(j, i, c.r, c.g, c.b, c.a);
+            tmp->putPixel(j, i, 0xff - c.r, 0xff - c.g, 0xff - c.b, c.a);
         }
     }
 
     SDL_BlitSurface(tmp->surface, NULL, screen, &src);
-    imageDelete(tmp);
+    delete tmp;
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
@@ -1393,7 +1383,7 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
         return 0;
 
     dngGraphic[index] = screenScale(unscaled, scale, 1, 1);
-    imageSetTransparentIndex(dngGraphic[index], 0);
+    dngGraphic[index]->setTransparentIndex(0);
 
     return 1;
 }
@@ -1405,9 +1395,9 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
     int offset;
     int savedflags;
 
-    tmp = imageNew(tilesInfo->image->w, tilesInfo->image->h / N_TILES, 1, tilesInfo->image->indexed, IMTYPE_SW);
+    tmp = Image::create(tilesInfo->image->w, tilesInfo->image->h / N_TILES, 1, tilesInfo->image->indexed, Image::SOFTWARE);
     if (tilesInfo->image->indexed)
-        imageSetPaletteFromImage(tmp, tilesInfo->image);
+        tmp->setPaletteFromImage(tilesInfo->image);
 
     src.x = 0;
     src.y = tile * (tilesInfo->image->h / N_TILES);
@@ -1438,32 +1428,25 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
     else
         offset = 0;
 
-    src.x = 0;
-    src.y = 0;
-    src.w = scaled->w;
-    src.h = scaled->h - offset;
-    dest.x = (VIEWPORT_W * tilesInfo->image->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
-    dest.y = ((doffset[distance] + BORDER_HEIGHT) * scale) + offset;
-    dest.w = scaled->w;
-    dest.h = scaled->h;
-
-    SDL_BlitSurface(scaled->surface, &src, screen, &dest);
+    scaled->drawSubRect((VIEWPORT_W * tilesInfo->image->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2),
+                        ((doffset[distance] + BORDER_HEIGHT) * scale) + offset,
+                        0,
+                        0,
+                        scaled->w,
+                        scaled->h - offset);
+                        
 
     if (offset != 0) {
 
-        src.x = 0;
-        src.y = scaled->h - offset;
-        src.w = scaled->w;
-        src.h = offset;
-        dest.x = (VIEWPORT_W * tilesInfo->image->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
-        dest.y = ((doffset[distance] + BORDER_HEIGHT) * scale);
-        dest.w = scaled->w;
-        dest.h = scaled->h;
-
-        SDL_BlitSurface(scaled->surface, &src, screen, &dest);
+        scaled->drawSubRect((VIEWPORT_W * tilesInfo->image->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2),
+                            ((doffset[distance] + BORDER_HEIGHT) * scale),
+                            0,
+                            scaled->h - offset,
+                            scaled->w,
+                            offset);
     }
 
-    imageDelete(scaled);
+    delete scaled;
 }
 
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
@@ -1478,7 +1461,7 @@ void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, Dun
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
-    imageDraw(dngGraphic[index], (8 + dngGraphicInfo[index].x) * scale, (8 + dngGraphicInfo[index].y) * scale);
+    dngGraphic[index]->draw((8 + dngGraphicInfo[index].x) * scale, (8 + dngGraphicInfo[index].y) * scale);
 }
 
 /**
@@ -1604,35 +1587,36 @@ void screenGemUpdate() {
  */
 Image *screenScale(Image *src, int scale, int n, int filter) {
     Image *dest;
-    int transparent;
+    bool isTransparent;
+    unsigned int transparentIndex;
 
     if (n == 0)
         n = 1;
 
-    transparent = (src->surface->flags & SDL_SRCCOLORKEY) != 0;
+    isTransparent = src->getTransparentIndex(transparentIndex);
 
     dest = src;
 
     while (filter && filterScaler && (scale % 2 == 0)) {
         dest = (*filterScaler)(src, 2, n);
         scale /= 2;
-        imageDelete(src);
+        delete src;
         src = dest;
     }
     if (scale == 3 && scaler3x(settings.filter)) {
         dest = (*filterScaler)(src, 3, n);
         scale /= 3;
-        imageDelete(src);
+        delete src;
         src = dest;
     }
 
     if (scale != 1) {
         dest = (*scalerGet(SCL_POINT))(src, scale, n);
-        imageDelete(src);
+        delete src;
     }
 
-    if (transparent)
-        imageSetTransparentIndex(dest, 0);
+    if (isTransparent)
+        dest->setTransparentIndex(transparentIndex);
 
     return dest;
 }
@@ -1644,28 +1628,29 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
 Image *screenScaleDown(Image *src, int scale) {
     int x, y;
     Image *dest;
-    int transparent;
+    bool isTransparent;
+    unsigned int transparentIndex;
 
-    transparent = (src->surface->flags & SDL_SRCCOLORKEY) != 0;
+    isTransparent = src->getTransparentIndex(transparentIndex);
 
-    dest = imageNew(src->w / scale, src->h / scale, 1, src->indexed, IMTYPE_HW);
+    dest = Image::create(src->w / scale, src->h / scale, 1, src->indexed, Image::HARDWARE);
     if (!dest)
         return NULL;
 
     if (dest->indexed)
-        imageSetPaletteFromImage(dest, src);
+        dest->setPaletteFromImage(src);
 
     for (y = 0; y < src->h; y+=scale) {
         for (x = 0; x < src->w; x+=scale) {
             unsigned int index;
-            imageGetPixelIndex(src, x, y, &index);                
-            imagePutPixelIndex(dest, x / scale, y / scale, index);
+            src->getPixelIndex(x, y, index);                
+            dest->putPixelIndex(x / scale, y / scale, index);
         }
     }
-    imageDelete(src);
+    delete src;
 
-    if (transparent)
-        imageSetTransparentIndex(dest, 0);
+    if (isTransparent)
+        dest->setTransparentIndex(transparentIndex);
 
     return dest;
 }

@@ -11,6 +11,9 @@
 #include "debug.h"
 #include "image.h"
 
+Image::Image() {
+}
+
 /**
  * Creates a new image.  Scale is stored to allow drawing using U4
  * (320x200) coordinates, regardless of the actual image scale.
@@ -18,7 +21,7 @@
  * Image type determines whether to create a hardware (i.e. video ram)
  * or software (i.e. normal ram) image.
  */
-Image *imageNew(int w, int h, int scale, int indexed, ImageType type) {
+Image *Image::create(int w, int h, int scale, int indexed, Image::Type type) {
     Uint32 rmask, gmask, bmask, amask;
     Uint32 flags;
     Image *im = new Image;
@@ -40,7 +43,7 @@ Image *imageNew(int w, int h, int scale, int indexed, ImageType type) {
     amask = 0xff000000;
 #endif
 
-    if (type == IMTYPE_HW)
+    if (type == Image::HARDWARE)
         flags = SDL_HWSURFACE;
     else
         flags = SDL_SWSURFACE;
@@ -59,51 +62,68 @@ Image *imageNew(int w, int h, int scale, int indexed, ImageType type) {
 }
 
 /**
- * Frees an image.
+ * Frees the image.
  */
-void imageDelete(Image *im) {
-    SDL_FreeSurface(im->surface);
-    delete im;
+Image::~Image() {
+    SDL_FreeSurface(surface);
 }
 
 /**
- * Copies the palette of another image into the given image.
+ * Sets the palette
  */
-void imageSetPaletteFromImage(Image *im, Image *src) {
-    ASSERT(im->indexed && src->indexed, "imageSetPaletteFromImage called on non-indexed image");
-    memcpy(im->surface->format->palette->colors, 
+void Image::setPalette(const RGBA *colors, unsigned n_colors) {
+    ASSERT(indexed, "imageSetPalette called on non-indexed image");
+    
+    SDL_Color *sdlcolors = new SDL_Color[n_colors];
+    for (unsigned i = 0; i < n_colors; i++) {
+        sdlcolors[i].r = colors[i].r;
+        sdlcolors[i].g = colors[i].g;
+        sdlcolors[i].b = colors[i].b;
+    }
+
+    SDL_SetColors(surface, sdlcolors, 0, n_colors);
+
+    delete [] sdlcolors;
+}
+
+/**
+ * Copies the palette from another image.
+ */
+void Image::setPaletteFromImage(const Image *src) {
+    ASSERT(indexed && src->indexed, "imageSetPaletteFromImage called on non-indexed image");
+    memcpy(surface->format->palette->colors, 
            src->surface->format->palette->colors, 
            sizeof(SDL_Color) * src->surface->format->palette->ncolors);
 }
 
-int imageGetTransparentIndex(Image *im, unsigned int *index) {
-    if (!im->indexed || (im->surface->flags & SDL_SRCCOLORKEY) == 0)
-        return 0;
+bool Image::getTransparentIndex(unsigned int &index) const {
+    if (!indexed || (surface->flags & SDL_SRCCOLORKEY) == 0)
+        return false;
         
-    *index = im->surface->format->colorkey;
-    return 1;
+    index = surface->format->colorkey;
+    return true;
 }
 
-void imageSetTransparentIndex(Image *im, unsigned int index) {
+void Image::setTransparentIndex(unsigned int index) {
 
-    SDL_SetAlpha(im->surface, SDL_SRCALPHA, SDL_ALPHA_OPAQUE);
+    SDL_SetAlpha(surface, SDL_SRCALPHA, SDL_ALPHA_OPAQUE);
 
-    if (im->indexed) {
-        SDL_SetColorKey(im->surface, SDL_SRCCOLORKEY, index);
+    if (indexed) {
+        SDL_SetColorKey(surface, SDL_SRCCOLORKEY, index);
     } else {
         int x, y;
         Uint8 t_r, t_g, t_b;
 
-        SDL_GetRGB(index, im->surface->format, &t_r, &t_g, &t_b);
+        SDL_GetRGB(index, surface->format, &t_r, &t_g, &t_b);
 
-        for (y = 0; y < im->h; y++) {
-            for (x = 0; x < im->w; x++) {
+        for (y = 0; y < h; y++) {
+            for (x = 0; x < w; x++) {
                 unsigned int r, g, b, a;
-                imageGetPixel(im, x, y, &r, &g, &b, &a);
+                getPixel(x, y, r, g, b, a);
                 if (r == t_r &&
                     g == t_g &&
                     b == t_b) {
-                    imagePutPixel(im, x, y, r, g, b, IM_TRANSPARENT);
+                    putPixel(x, y, r, g, b, IM_TRANSPARENT);
                 }
             }
         }
@@ -113,8 +133,8 @@ void imageSetTransparentIndex(Image *im, unsigned int index) {
 /**
  * Sets the color of a single pixel.
  */
-void imagePutPixel(Image *im, int x, int y, int r, int g, int b, int a) {
-    imagePutPixelIndex(im, x, y, SDL_MapRGBA(im->surface->format, (Uint8)r, (Uint8)g, (Uint8)b, (Uint8)a));
+void Image::putPixel(int x, int y, int r, int g, int b, int a) {
+    putPixelIndex(x, y, SDL_MapRGBA(surface->format, (Uint8)r, (Uint8)g, (Uint8)b, (Uint8)a));
 }
 
 /**
@@ -122,12 +142,12 @@ void imagePutPixel(Image *im, int x, int y, int r, int g, int b, int a) {
  * indexed mode, then the index is simply the palette entry number.
  * If the image is RGB, it is a packed RGB triplet.
  */
-void imagePutPixelIndex(Image *im, int x, int y, unsigned int index) {
+void Image::putPixelIndex(int x, int y, unsigned int index) {
     int bpp;
     Uint8 *p;
 
-    bpp = im->surface->format->BytesPerPixel;
-    p = (Uint8 *)im->surface->pixels + y * im->surface->pitch + x * bpp;
+    bpp = surface->format->BytesPerPixel;
+    p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
 
     switch(bpp) {
     case 1:
@@ -160,30 +180,46 @@ void imagePutPixelIndex(Image *im, int x, int y, unsigned int index) {
  * Sets the color of a "U4" scale pixel, which may be more than one
  * actual pixel.
  */
-void imagePutPixelScaled(Image *im, int x, int y, int r, int g, int b, int a) {
+void Image::putPixelScaled(int x, int y, int r, int g, int b, int a) {
     int xs, ys;
 
-    for (xs = 0; xs < im->scale; xs++) {
-        for (ys = 0; ys < im->scale; ys++) {
-            imagePutPixel(im, x * im->scale + xs, y * im->scale + ys, r, g, b, a);
+    for (xs = 0; xs < scale; xs++) {
+        for (ys = 0; ys < scale; ys++) {
+            putPixel(x * scale + xs, y * scale + ys, r, g, b, a);
         }
     }
 }
 
 /**
+ * Fills a rectangle in the image with a given color.
+ */
+void Image::fillRect(int x, int y, int w, int h, int r, int g, int b) {
+    SDL_Rect dest;
+    Uint32 pixel;
+
+    pixel = SDL_MapRGB(surface->format, (Uint8)r, (Uint8)g, (Uint8)b);
+    dest.x = x;
+    dest.y = y;
+    dest.w = w;
+    dest.h = h;
+
+    SDL_FillRect(surface, &dest, pixel);
+}
+
+/**
  * Gets the color of a single pixel.
  */
-void imageGetPixel(Image *im, int x, int y, unsigned int *r, unsigned int *g, unsigned int *b, unsigned int *a) {
+void Image::getPixel(int x, int y, unsigned int &r, unsigned int &g, unsigned int &b, unsigned int &a) const {
     unsigned int index;
     Uint8 r1, g1, b1, a1;
 
-    imageGetPixelIndex(im, x, y, &index);
+    getPixelIndex(x, y, index);
 
-    SDL_GetRGBA(index, im->surface->format, &r1, &g1, &b1, &a1);
-    *r = r1;
-    *g = g1;
-    *b = b1;
-    *a = a1;
+    SDL_GetRGBA(index, surface->format, &r1, &g1, &b1, &a1);
+    r = r1;
+    g = g1;
+    b = b1;
+    a = a1;
 }
 
 /**
@@ -191,29 +227,29 @@ void imageGetPixel(Image *im, int x, int y, unsigned int *r, unsigned int *g, un
  * indexed mode, then the index is simply the palette entry number.
  * If the image is RGB, it is a packed RGB triplet.
  */
-void imageGetPixelIndex(Image *im, int x, int y, unsigned int *index) {
-    int bpp = im->surface->format->BytesPerPixel;
+void Image::getPixelIndex(int x, int y, unsigned int &index) const {
+    int bpp = surface->format->BytesPerPixel;
 
-    Uint8 *p = (Uint8 *) im->surface->pixels + y * im->surface->pitch + x * bpp;
+    Uint8 *p = (Uint8 *) surface->pixels + y * surface->pitch + x * bpp;
 
     switch(bpp) {
     case 1:
-        (*index) = *p;
+        index = *p;
         break;
 
     case 2:
-        (*index) = *(Uint16 *)p;
+        index = *(Uint16 *)p;
         break;
 
     case 3:
         if(SDL_BYTEORDER == SDL_BIG_ENDIAN)
-            (*index) =  p[0] << 16 | p[1] << 8 | p[2];
+            index = p[0] << 16 | p[1] << 8 | p[2];
         else
-            (*index) =  p[0] | p[1] << 8 | p[2] << 16;
+            index = p[0] | p[1] << 8 | p[2] << 16;
         break;
 
     case 4:
-        (*index) = *(Uint32 *)p;
+        index = *(Uint32 *)p;
 
     default:
         return;
@@ -221,32 +257,16 @@ void imageGetPixelIndex(Image *im, int x, int y, unsigned int *index) {
 }
 
 /**
- * Fills a rectangle in the image with a given color.
- */
-void imageFillRect(Image *im, int x, int y, int w, int h, int r, int g, int b) {
-    SDL_Rect dest;
-    Uint32 pixel;
-
-    pixel = SDL_MapRGB(im->surface->format, (Uint8)r, (Uint8)g, (Uint8)b);
-    dest.x = x;
-    dest.y = y;
-    dest.w = w;
-    dest.h = h;
-
-    SDL_FillRect(im->surface, &dest, pixel);
-}
-
-/**
  * Draws the entire image onto the screen at the given offset.
  */
-void imageDraw(const Image *im, int x, int y) {
+void Image::draw(int x, int y) const {
     SDL_Rect r;
 
     r.x = x;
     r.y = y;
-    r.w = im->w;
-    r.h = im->h;
-    SDL_BlitSurface(im->surface, NULL, SDL_GetVideoSurface(), &r);
+    r.w = w;
+    r.h = h;
+    SDL_BlitSurface(surface, NULL, SDL_GetVideoSurface(), &r);
 }
 
 /**
@@ -254,7 +274,7 @@ void imageDraw(const Image *im, int x, int y) {
  * The area of the image to draw is defined by the rectangle rx, ry,
  * rw, rh.
  */
-void imageDrawSubRect(const Image *im, int x, int y, int rx, int ry, int rw, int rh) {
+void Image::drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const {
     SDL_Rect src, dest;
 
     src.x = rx;
@@ -266,7 +286,7 @@ void imageDrawSubRect(const Image *im, int x, int y, int rx, int ry, int rw, int
     dest.y = y;
     /* dest w & h unused */
 
-    SDL_BlitSurface(im->surface, &src, SDL_GetVideoSurface(), &dest);
+    SDL_BlitSurface(surface, &src, SDL_GetVideoSurface(), &dest);
 }
 
 /**
@@ -274,7 +294,7 @@ void imageDrawSubRect(const Image *im, int x, int y, int rx, int ry, int rw, int
  * The area of the image to draw is defined by the rectangle rx, ry,
  * rw, rh.
  */
-void imageDrawSubRectInverted(const Image *im, int x, int y, int rx, int ry, int rw, int rh) {
+void Image::drawSubRectInverted(int x, int y, int rx, int ry, int rw, int rh) const {
     int i;
     SDL_Rect src, dest;
 
@@ -288,6 +308,6 @@ void imageDrawSubRectInverted(const Image *im, int x, int y, int rx, int ry, int
         dest.y = y + rh - i - 1;
         /* dest w & h unused */
 
-        SDL_BlitSurface(im->surface, &src, SDL_GetVideoSurface(), &dest);
+        SDL_BlitSurface(surface, &src, SDL_GetVideoSurface(), &dest);
     }
 }
