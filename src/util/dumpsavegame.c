@@ -74,7 +74,7 @@ void showSaveGame(SaveGame *sg) {
 
     printf("party members: %d\n", sg->members);
     printf("transport: %x\n", sg->transport);
-    printf("balloon state: %x\n", sg->balloonstate);
+    printf("balloon state/torch duration: %x\n", sg->balloonstate);
     printf("trammel: %d  felucca: %d\n", sg->trammelphase, sg->feluccaphase);
     printf("shiphull: %d\n", sg->shiphull);
     printf("lbintro: %d\n", sg->lbintro);
