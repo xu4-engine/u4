@@ -96,7 +96,7 @@ const Spell spells[] = {
     { "Kill",         PEARL | NIGHTSHADE,       CTX_COMBAT,   &spellKill,    SPELLPRM_DIR,     25 },
     { "Light",        ASH,                      CTX_DUNGEON,  &spellLight,   SPELLPRM_NONE,    5 },
     { "Magic missile", ASH | PEARL,             CTX_COMBAT,   &spellMMissle, SPELLPRM_DIR,     5 },
-    { "Negate",       ASH | GARLIC | MANDRAKE,  CTX_COMBAT,   &spellNegate,  SPELLPRM_NONE,    20 },
+    { "Negate",       ASH | GARLIC | MANDRAKE,  CTX_ANY,      &spellNegate,  SPELLPRM_NONE,    20 },
     { "Open",         ASH | MOSS,               CTX_NORMAL,   &spellOpen,    SPELLPRM_NONE,    5 },
     { "Protection",   ASH | GINSENG | GARLIC,   CTX_ANY,      &spellProtect, SPELLPRM_NONE,    15 },
     { "Quickness",    ASH | GINSENG | MOSS,     CTX_ANY,      &spellQuick,   SPELLPRM_NONE,    20 },
