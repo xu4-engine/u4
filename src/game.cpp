@@ -180,7 +180,7 @@ void gameInit() {
     /* load in the save game */
     saveGameFile = saveGameOpenForReading();
     if (saveGameFile) {
-        saveGameRead(c->saveGame, saveGameFile);
+        c->saveGame->read(saveGameFile);
         fclose(saveGameFile);
     } else
         errorFatal("no savegame found!");
@@ -337,7 +337,7 @@ int gameSave() {
         return 0;
     }
 
-    if (!saveGameWrite(&save, saveGameFile)) {
+    if (!save.write(saveGameFile)) {
         screenMessage("Error writing to party.sav\n");
         fclose(saveGameFile);
         return 0;

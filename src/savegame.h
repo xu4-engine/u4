@@ -163,6 +163,10 @@ enum Rune {
  * The Ultima IV savegame player record data.  
  */
 struct SaveGamePlayerRecord {
+    int write(FILE *f) const;
+    int read(FILE *f);
+    void init();
+
     unsigned short hp;
     unsigned short hpMax;
     unsigned short xp;
@@ -181,6 +185,10 @@ struct SaveGamePlayerRecord {
  * Represents the on-disk contents of PARTY.SAV.
  */
 struct SaveGame {
+    int write(FILE *f) const;
+    int read(FILE *f);
+    void init(const SaveGamePlayerRecord *avatarInfo);
+
     unsigned int unknown1;
     unsigned int moves;
     SaveGamePlayerRecord players[8];
@@ -225,12 +233,6 @@ FILE *saveGameOpenForWriting(void);
 FILE *saveGameOpenForReading(void);
 FILE *saveGameMonstersOpenForWriting(const char *filename);
 FILE *saveGameMonstersOpenForReading(const char *filename);
-int saveGameWrite(const SaveGame *save, FILE *f);
-int saveGameRead(SaveGame *save, FILE *f);
-void saveGameInit(SaveGame *save, const SaveGamePlayerRecord *avatarInfo);
-int saveGamePlayerRecordWrite(const SaveGamePlayerRecord *record, FILE *f);
-int saveGamePlayerRecordRead(SaveGamePlayerRecord *record, FILE *f);
-void saveGamePlayerRecordInit(SaveGamePlayerRecord *record);
 int saveGameMonstersWrite(std::list<Object *> &objs, FILE *f);
 int saveGameMonstersRead(std::list<Object *> *objs, FILE *f);
 

@@ -1112,8 +1112,8 @@ int introHandleQuestionChoice(int choice) {
             return 1;
         }
 
-        saveGamePlayerRecordInit(&avatar);
-        saveGameInit(&saveGame, &avatar);
+        avatar.init();
+        saveGame.init(&avatar);
         screenHideCursor();
         introInitPlayers(&saveGame);
         saveGame.food = 30000;
@@ -1121,7 +1121,7 @@ int introHandleQuestionChoice(int choice) {
         saveGame.reagents[REAG_GINSENG] = 3;
         saveGame.reagents[REAG_GARLIC] = 4;
         saveGame.torches = 2;
-        saveGameWrite(&saveGame, saveGameFile);
+        saveGame.write(saveGameFile);
         fclose(saveGameFile);
 
         saveGameFile = saveGameMonstersOpenForWriting(MONSTERS_SAV_BASE_FILENAME);

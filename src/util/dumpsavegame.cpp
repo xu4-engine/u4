@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    saveGameRead(&sg, in);
+    sg.read(in);
 
     showSaveGame(&sg);
 
