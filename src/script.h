@@ -5,8 +5,9 @@
 #ifndef SCRIPT_H
 #define SCRIPT_H
 
-#include <string>
+#include <list>
 #include <map>
+#include <string>
 
 #include "types.h"
 #include "xml.h"
@@ -33,8 +34,8 @@ private:
      */ 
     class Variable {
     public:
-        Variable(const int &v);
         Variable(const string &v);
+        Variable(const int &v);
 
         int&    getInt();
         string& getString();
@@ -65,32 +66,29 @@ public:
      */ 
     enum State {
         STATE_UNLOADED,
-        STATE_NORMAL,
-        STATE_CHOICE,
-        STATE_DONE,
-        STATE_WAIT_FOR_KEYPRESS,
-        STATE_INPUT,
-        STATE_INPUT_QUANTITY,
-        STATE_INPUT_PRICE,
-        STATE_INPUT_TEXT,
-        STATE_INPUT_PLAYER
+        STATE_NORMAL,        
+        STATE_DONE,        
+        STATE_INPUT
     };
 
     /**
      * The type of input the script is requesting
      */ 
-    /*enum InputType {
+    enum InputType {
+        INPUT_CHOICE, 
         INPUT_NUMBER,
         INPUT_STRING,
         INPUT_DIRECTION,
-        INPUT_PLAYER
-    };*/
+        INPUT_PLAYER,
+        INPUT_KEYPRESS
+    };
 
     /**
      * The action that the script is taking
      */ 
     enum Action {
-        ACTION_CHOICE,
+        ACTION_SET_CONTEXT,
+        ACTION_UNSET_CONTEXT,
         ACTION_END,
         ACTION_REDIRECT,
         ACTION_WAIT_FOR_KEY,
@@ -112,11 +110,7 @@ public:
         ACTION_DAMAGE,
         ACTION_KARMA,
         ACTION_MUSIC,
-        ACTION_SAVE_CHOICE,
-        ACTION_SET_CHOICE,
-        ACTION_SET_QUANTITY,
-        ACTION_SET_PRICE,
-        ACTION_SET_PLAYER,
+        ACTION_SET_VARIABLE,        
         ACTION_ZTATS
     };
 
@@ -131,34 +125,33 @@ public:
     
     void resetState();
     void setState(State state);
-    State getState();
+    State getState();    
     
-    void setTarget(string val);
-    void setChoice(char val);
-    void setChoice(string val);
+    void setTarget(string val);    
     void setChoices(string val); 
-    void setQuantity(int val);
-    void setPrice(int val);
-    void setPlayer(int val);
-
+    void setVar(string name, string val);
+    void setVar(string name, int val);    
+    
     string getTarget();
-    string getChoice();
+    InputType getInputType();
+    string getInputName();
     string getChoices();
-    int getQuantity();
-    int getPrice();
-    int getPlayer();
-
+    int getInputMaxLen();
+    
 private:
     void        translate(string *script);
     xmlNodePtr  find(xmlNodePtr node, string script, string choice = "", bool _default = false);    
+    string      getPropAsStr(std::list<xmlNodePtr>& nodes, string prop, bool recursive);
     string      getPropAsStr(xmlNodePtr node, string prop, bool recursive = false);
+    int         getPropAsInt(std::list<xmlNodePtr>& nodes, string prop, bool recursive);
     int         getPropAsInt(xmlNodePtr node, string prop, bool recursive = false);
     string      getContent(xmlNodePtr node);   
 
     /*
      * Action Functions
-     */ 
-    ReturnCode choice(xmlNodePtr script, xmlNodePtr current);
+     */     
+    ReturnCode pushContext(xmlNodePtr script, xmlNodePtr current);
+    ReturnCode popContext(xmlNodePtr script, xmlNodePtr current);
     ReturnCode end(xmlNodePtr script, xmlNodePtr current);
     ReturnCode waitForKeypress(xmlNodePtr script, xmlNodePtr current);
     ReturnCode redirect(xmlNodePtr script, xmlNodePtr current);
@@ -178,12 +171,9 @@ private:
     ReturnCode castSpell(xmlNodePtr script, xmlNodePtr current);
     ReturnCode damage(xmlNodePtr script, xmlNodePtr current);
     ReturnCode karma(xmlNodePtr script, xmlNodePtr current);
-    ReturnCode music(xmlNodePtr script, xmlNodePtr current);
-    ReturnCode saveChoice(xmlNodePtr script, xmlNodePtr current);
-    ReturnCode setChoice(xmlNodePtr script, xmlNodePtr current);
-    ReturnCode setQuantity(xmlNodePtr script, xmlNodePtr current);
-    ReturnCode setPrice(xmlNodePtr script, xmlNodePtr current);
-    ReturnCode setPlayer(xmlNodePtr script, xmlNodePtr current);
+    ReturnCode music(xmlNodePtr script, xmlNodePtr current);    
+    ReturnCode setVar(xmlNodePtr script, xmlNodePtr current);
+    ReturnCode setId(xmlNodePtr script, xmlNodePtr current);
     ReturnCode ztats(xmlNodePtr script, xmlNodePtr current);
 
     /*
@@ -212,22 +202,18 @@ private:
     State state;                    /**< The state the script is in */
     xmlNodePtr currentScript;       /**< The currently running script */
     xmlNodePtr currentItem;         /**< The current position in the script */
-    xmlNodePtr translationContext;  /**< The node our translation context resolved to */
+    std::list<xmlNodePtr> translationContext;  /**< A list of nodes that make up our translation context */
     string target;                  /**< The name of a target script */
+    InputType inputType;            /**< The type of input required */
+    string inputName;               /**< The variable in which to place the input (by default, "input") */
+    int inputMaxLen;                /**< The maximum length allowed for input */
 
-    string transCtxPropName;        /**< The name of the property that explicitly changes the translation context */
-    string itemPropName;            /**< The name of the property that identifies a node name to use to
-                                         find a new translation context */
-    string idPropName;              /**< The name of the property that uniquely identifies an 'item' node
+    string nounName;                /**< The name that identifies a node name of noun nodes */
+    string idPropName;              /**< The name of the property that uniquely identifies a noun node
                                          and is used to find a new translation context */
-
-    string answer;
+    
     string choices;
-    string saved_choice;
-    int iterator;
-    int quant;
-    int price;
-    int player;
+    int iterator;   
 
     std::map<string, Variable*> variables;    
 };

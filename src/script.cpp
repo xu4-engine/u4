@@ -32,6 +32,28 @@
 using std::string;
 
 /*
+ * Script::Variable class
+ */
+Script::Variable::Variable(const string &v) {
+    i_val = static_cast<int>(strtol(v.c_str(), NULL, 10));
+    s_val = v;
+}
+
+Script::Variable::Variable(const int &v) {
+    i_val = v;
+    s_val = to_string(v);
+}
+
+int&    Script::Variable::getInt()      { return i_val; }
+string& Script::Variable::getString()   { return s_val; }
+
+void    Script::Variable::setValue(const int &v)    { i_val = v; }
+void    Script::Variable::setValue(const string &v) { s_val = v; }
+
+bool    Script::Variable::isInt() const             { return i_val > 0; }
+bool    Script::Variable::isString() const          { return i_val == 0; }
+
+/*
  * Static member variables 
  */ 
 Script::ActionMap Script::action_map;
@@ -40,9 +62,10 @@ Script::ActionMap Script::action_map;
  * Constructs a script object
  */ 
 Script::Script() : vendorScriptDoc(NULL), scriptNode(NULL), debug(NULL), state(STATE_UNLOADED),
-    transCtxPropName("ctx"), itemPropName("item"), idPropName("id")
-{    
-    action_map["choice"]            = ACTION_CHOICE;
+    nounName("item"), idPropName("id")
+{       
+    action_map["context"]           = ACTION_SET_CONTEXT;
+    action_map["unset_context"]     = ACTION_UNSET_CONTEXT;
     action_map["end"]               = ACTION_END;
     action_map["redirect"]          = ACTION_REDIRECT;
     action_map["wait_for_keypress"] = ACTION_WAIT_FOR_KEY;
@@ -64,11 +87,7 @@ Script::Script() : vendorScriptDoc(NULL), scriptNode(NULL), debug(NULL), state(S
     action_map["damage"]            = ACTION_DAMAGE;
     action_map["karma"]             = ACTION_KARMA;
     action_map["music"]             = ACTION_MUSIC;
-    action_map["save_choice"]       = ACTION_SAVE_CHOICE;
-    action_map["set_choice"]        = ACTION_SET_CHOICE;
-    action_map["set_quantity"]      = ACTION_SET_QUANTITY;
-    action_map["set_price"]         = ACTION_SET_PRICE;
-    action_map["set_player"]        = ACTION_SET_PLAYER;
+    action_map["var"]               = ACTION_SET_VARIABLE;    
     action_map["ztats"]             = ACTION_ZTATS;    
 }
 
@@ -111,23 +130,15 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
     }
 
     /**
-     * Get a new global context-changing property name
-     */
-    if (xmlPropExists(root, "ctx_prop"))
-        transCtxPropName = xmlGetPropAsStr(root, "ctx_prop");
-    
-    /**
      * Get a new global item name or id name
      */
-    if (xmlPropExists(root, "item_prop"))
-        itemPropName = xmlGetPropAsStr(root, "item_prop");
+    if (xmlPropExists(root, "noun"))
+        nounName = xmlGetPropAsStr(root, "noun");
     if (xmlPropExists(root, "id_prop"))
         idPropName = xmlGetPropAsStr(root, "id_prop");
 
     this->currentScript = NULL;
     this->currentItem = NULL;
-    this->quant = 1;
-    this->price = 1;
 
     for (node = root->xmlChildrenNode; node; node = node->next) {
         if (xmlNodeIsText(node) || (xmlStrcmp(node->name, (const xmlChar *) "script") != 0))
@@ -139,7 +150,7 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
              */
             if (subNodeName.empty()) {
                 this->scriptNode = node;            
-                this->translationContext = node;
+                this->translationContext.push_back(node);
 
                 break;                
             }
@@ -153,19 +164,13 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
 
                 if (id == subNodeId) {                    
                     this->scriptNode = child;                    
-                    this->translationContext = child;                    
-
-                    /**
-                     * Get a new global context-changing property name
-                     */
-                    if (xmlPropExists(node, "ctx_prop"))
-                        transCtxPropName = xmlGetPropAsStr(node, "ctx_prop");
+                    this->translationContext.push_back(child);
 
                     /**
                      * Get a new local item name or id name
                      */
-                    if (xmlPropExists(node, "item_prop"))
-                        itemPropName = xmlGetPropAsStr(node, "item_prop");
+                    if (xmlPropExists(node, "noun"))
+                        nounName = xmlGetPropAsStr(node, "noun");
                     if (xmlPropExists(node, "id_prop"))
                         idPropName = xmlGetPropAsStr(node, "id_prop");
 
@@ -180,16 +185,10 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
 
     if (scriptNode) {
         /**
-         * Get a new global context-changing property name
-         */
-        if (xmlPropExists(scriptNode, "ctx_prop"))
-            transCtxPropName = xmlGetPropAsStr(scriptNode, "ctx_prop");
-
-        /**
          * Get a new local item name or id name
          */
-        if (xmlPropExists(scriptNode, "item_prop"))
-            itemPropName = xmlGetPropAsStr(scriptNode, "item_prop");
+        if (xmlPropExists(scriptNode, "noun"))
+            nounName = xmlGetPropAsStr(scriptNode, "noun");
         if (xmlPropExists(scriptNode, "id_prop"))
             idPropName = xmlGetPropAsStr(scriptNode, "id_prop");
 
@@ -226,9 +225,13 @@ void Script::unload() {
  * Runs a script after it's been loaded
  */ 
  void Script::run(string script) {
-    xmlNodePtr scriptNode;    
+    xmlNodePtr scriptNode;
+    string search_id;
     
-    scriptNode = find(this->scriptNode, script, this->answer);    
+    if (variables.find(idPropName) != variables.end())
+        search_id = variables[idPropName]->getString();
+    
+    scriptNode = find(this->scriptNode, script, search_id);
 
     if (!scriptNode)
         errorFatal("Script '%s' not found in vendorScript.xml", script.c_str());
@@ -241,31 +244,8 @@ void Script::unload() {
  */ 
 Script::ReturnCode Script::execute(xmlNodePtr script, xmlNodePtr currentItem, string *output) {
     xmlNodePtr node = this->scriptNode;
-    xmlNodePtr current;
-    xmlNodePtr transContext;
-    Script::ReturnCode retval = RET_OK;    
-
-    /* Save the translation context from the previous script */
-    transContext = this->translationContext;
-    
-    /*
-     * The property identified by transCtxPropName changes the translation context
-     * of the script to one of the vendor's child nodes.
-     */
-    if (xmlPropExists(script, transCtxPropName.c_str())) {
-        /* get the choice to search for */
-        string choice = this->answer;
-        string item_prop = xmlGetPropAsStr(script, transCtxPropName.c_str());
-        if (xmlPropExists(script, "use_saved_choice") && xmlGetPropAsBool(script, "use_saved_choice"))
-            choice = this->saved_choice;
-
-        this->translationContext = find(node, getPropAsStr(script, transCtxPropName), choice);
-        if (debug) {
-            if (!this->translationContext)
-                fprintf(debug, "\nWarning!!! Invalid translation context <%s choice=\"%s\" ...>", item_prop.c_str(), choice.c_str());
-            else fprintf(debug, "\nChanging translation context to <%s choice=\"%s\" ...>\n", item_prop.c_str(), choice.c_str());
-        }
-    }
+    xmlNodePtr current;    
+    Script::ReturnCode retval = RET_OK;
     
     if (!script->children) {
         /* redirect the script to another node */
@@ -322,8 +302,9 @@ Script::ReturnCode Script::execute(xmlNodePtr script, xmlNodePtr currentItem, st
                 /**
                  * Found it!
                  */ 
-                switch(action->second) {
-                case ACTION_CHOICE:         retval = choice(script, current); break;            
+                switch(action->second) {                
+                case ACTION_SET_CONTEXT:    retval = pushContext(script, current); break;
+                case ACTION_UNSET_CONTEXT:  retval = popContext(script, current); break;
                 case ACTION_END:            retval = end(script, current); break;                    
                 case ACTION_REDIRECT:       retval = redirect(script, current); break;
                 case ACTION_WAIT_FOR_KEY:   retval = waitForKeypress(script, current); break;
@@ -345,11 +326,7 @@ Script::ReturnCode Script::execute(xmlNodePtr script, xmlNodePtr currentItem, st
                 case ACTION_DAMAGE:         retval = damage(script, current); break;                    
                 case ACTION_KARMA:          retval = karma(script, current); break;                    
                 case ACTION_MUSIC:          retval = music(script, current); break;                    
-                case ACTION_SAVE_CHOICE:    retval = saveChoice(script, current); break;
-                case ACTION_SET_CHOICE:     retval = setChoice(script, current); break;
-                case ACTION_SET_QUANTITY:   retval = setQuantity(script, current); break;
-                case ACTION_SET_PRICE:      retval = setPrice(script, current); break;
-                case ACTION_SET_PLAYER:     retval = setPlayer(script, current); break;
+                case ACTION_SET_VARIABLE:   retval = setVar(script, current); break;
                 case ACTION_ZTATS:          retval = ztats(script, current); break;
                 default:
                     
@@ -369,12 +346,7 @@ Script::ReturnCode Script::execute(xmlNodePtr script, xmlNodePtr currentItem, st
         
         if (debug)
             fprintf(debug, "\n");        
-    }
-
-    /**
-     * Restore the translation context to the original
-     */ 
-    this->translationContext = transContext;
+    }    
 
     return retval;
 }
@@ -396,30 +368,26 @@ void Script::_continue() {
  * Set and retrieve property values
  */ 
 void Script::resetState()               { state = STATE_NORMAL; }
-void Script::setState(Script::State s)    { state = s; }
+void Script::setState(Script::State s)  { state = s; }
 void Script::setTarget(string val)      { target = val; }
-void Script::setChoice(char val)        { answer = val; }
-void Script::setChoice(string val)      { answer = val; }
 void Script::setChoices(string val)     { choices = val; }
-void Script::setQuantity(int val)       { quant = val; }
-void Script::setPrice(int val)          { price = val; }
-void Script::setPlayer(int val)         { player = val; }
+void Script::setVar(string name, string val)    { variables[name] = new Variable(val); }
+void Script::setVar(string name, int val)       { variables[name] = new Variable(val); }
 
-Script::State Script::getState()          { return state; }
+Script::State Script::getState()        { return state; }
 string Script::getTarget()              { return target; }
-string Script::getChoice()              { return answer; }
+Script::InputType Script::getInputType(){ return inputType; }
 string Script::getChoices()             { return choices; }
-int Script::getQuantity()               { return quant; }
-int Script::getPrice()                  { return price; }
-int Script::getPlayer()                 { return player; }
+string Script::getInputName()           { return inputName; }
+int Script::getInputMaxLen()            { return inputMaxLen; }
 
 /**
  * Translates a script string with dynamic variables
  */ 
 void Script::translate(string *text) {
-    unsigned int pos;      
+    unsigned int pos;
     bool nochars = true;
-    xmlNodePtr node = this->translationContext;
+    xmlNodePtr node = this->translationContext.back();
     
     /* determine if the script is completely whitespace */
     for (string::iterator current = text->begin(); current != text->end(); current++) {
@@ -431,7 +399,7 @@ void Script::translate(string *text) {
 
     /* erase scripts that are composed entirely of whitespace */
     if (nochars)
-        text->erase();    
+        text->erase();
 
     while ((pos = text->find_first_of("{")) < text->length()) {
         string pre = text->substr(0, pos);
@@ -454,7 +422,7 @@ void Script::translate(string *text) {
                 close = current.length();
 
             if (close == current.length())
-                errorFatal("Error: no closing } found in vendor script.");
+                errorFatal("Error: no closing } found in script.");
 
             if (open < close) {
                 num_embedded++;
@@ -486,29 +454,16 @@ void Script::translate(string *text) {
         translate(&item);
 
         string prop;
-        
+
+        // Get defined variables
+        if (item[0] == '$') {
+            string varName = item.substr(1);
+            if (variables.find(varName) != variables.end())
+                prop = variables[varName]->getString();
+        }        
         // Get the current iterator for our loop
-        if (item == "iterator")
-            prop = to_string(this->iterator);            
-        // Get the current choice
-        else if (item == "current_choice") {
-            prop = this->answer;
-            if (prop.empty())
-                prop = " ";
-        }
-        // Get the saved choice
-        else if (item == "saved_choice") {
-            prop = this->saved_choice;
-        }
-        // Get the current quantity
-        else if (item == "current_quantity")
-            prop = to_string(this->quant);            
-        // Get the current price
-        else if (item == "current_price")
-            prop = to_string(this->price);            
-        // Get the current player
-        else if (item == "current_player")
-            prop = to_string(this->player);
+        else if (item == "iterator")
+            prop = to_string(this->iterator);        
         // Get the party's gold amount
         else if (item == "totalgold")
             prop = to_string(c->saveGame->gold);
@@ -579,16 +534,15 @@ void Script::translate(string *text) {
             prop.erase();
             
             /**
-             * Save translation context and iterator
+             * Save iterator
              */ 
-            int oldIterator = this->iterator;
-            xmlNodePtr oldContext = this->translationContext;
+            int oldIterator = this->iterator;            
 
             /* start iterator at 0 */
             this->iterator = 0;
             
             for (item = node->children; item; item = item->next) {
-                if (xmlStrcmp(item->name, (const xmlChar *)itemPropName.c_str()) == 0) {
+                if (xmlStrcmp(item->name, (const xmlChar *)nounName.c_str()) == 0) {
                     bool hidden = (bool)xmlGetPropAsBool(item, "hidden");                    
 
                     if (!hidden) {
@@ -599,8 +553,9 @@ void Script::translate(string *text) {
                                 prop += "\n";                            
 
                             /* set translation context to item */
-                            this->translationContext = item;
+                            translationContext.push_back(item);
                             execute(itemShowScript, NULL, &prop);
+                            translationContext.pop_back();
 
                             this->iterator++;
                         }
@@ -609,30 +564,29 @@ void Script::translate(string *text) {
             }
             
             /**
-             * Restore translation context and iterator to previous values
-             */ 
-            this->translationContext = oldContext;
+             * Restore iterator to previous value
+             */             
             this->iterator = oldIterator;
         }
 
         /**
-         * Make a string containing the available choices using the
+         * Make a string containing the available ids using the
          * vendor's inventory (i.e. "bcde")
          */ 
         else if (item == "inventory_choices") {
             xmlNodePtr item;
-            string choices;
+            string ids;
 
             for (item = node->children; item; item = item->next) {
-                if (xmlStrcmp(item->name, (const xmlChar *)itemPropName.c_str()) == 0) {
-                    string choice = getPropAsStr(item, idPropName.c_str());
+                if (xmlStrcmp(item->name, (const xmlChar *)nounName.c_str()) == 0) {
+                    string id = getPropAsStr(item, idPropName.c_str());
                     /* make sure the item's requisites are met */
                     if (!xmlPropExists(item, "req") || (compare(getPropAsStr(item, "req"))))
-                        choices += choice[0];
+                        ids += id[0];
                 }
             }
 
-            prop = choices;
+            prop = ids;
         }
 
         /**
@@ -701,20 +655,25 @@ void Script::translate(string *text) {
         }        
         
         /**
-         * Check for functions
-         */ 
+         * Resolve as a property name or a function
+         */
         else {            
             string funcName, content;
 
             funcParse(item, &funcName, &content);
             
+            /*
+             * Check to see if it's a property name
+             */
             if (funcName.empty()) {
                 /* we have the property name, now go get the property value! */
-                prop = getPropAsStr(node, item, true);
+                prop = getPropAsStr(translationContext, item, true);
             }
+            
+            /**
+             * We have a function, make it work!
+             */ 
             else {
-                /* we have a function, make it work! */
-
                 /* perform the <math> function on the content */
                 if (funcName == "math") {
                     if (content.empty())
@@ -785,14 +744,14 @@ void Script::translate(string *text) {
 /**
  * Finds a subscript of script 'node'
  */ 
- xmlNodePtr Script::find(xmlNodePtr node, string script_to_find, string choice, bool _default) {
+ xmlNodePtr Script::find(xmlNodePtr node, string script_to_find, string id, bool _default) {
     xmlNodePtr current;
     if (node) {
         for (current = node->children; current; current = current->next) {
             if (!xmlNodeIsText(current) && (script_to_find == (char *)current->name)) {
-                if (choice.empty() && !xmlPropExists(current, idPropName.c_str()) && !_default)
+                if (id.empty() && !xmlPropExists(current, idPropName.c_str()) && !_default)
                     return current;
-                else if (xmlPropExists(current, idPropName.c_str()) && (choice == xmlGetPropAsStr(current, idPropName.c_str())))
+                else if (xmlPropExists(current, idPropName.c_str()) && (id == xmlGetPropAsStr(current, idPropName.c_str())))
                     return current;
                 else if (_default && xmlPropExists(current, "default") && xmlGetPropAsBool(current, "default"))
                     return current;
@@ -801,10 +760,10 @@ void Script::translate(string *text) {
 
         /* only search the parent nodes if we haven't hit the base <script> node */
         if (xmlStrcmp(node->name, (const xmlChar *)"script") != 0)
-            current = find(node->parent, script_to_find, choice);
+            current = find(node->parent, script_to_find, id);
 
         /* find the default script instead */
-        if (!current && !choice.empty() && !_default)
+        if (!current && !id.empty() && !_default)
             current = find(node, script_to_find, "", true);
         return current;        
     }
@@ -815,20 +774,44 @@ void Script::translate(string *text) {
  * Gets a property as string from the script, and
  * translates it using scriptTranslate.
  */ 
-string Script::getPropAsStr(xmlNodePtr node, string prop, bool recursive) {
+string Script::getPropAsStr(std::list<xmlNodePtr>& nodes, string prop, bool recursive) {
     string propvalue;
-    if (xmlPropExists(node, prop.c_str()))
-        propvalue = xmlGetPropAsStr(node, prop.c_str());
-    if (propvalue.empty() && node->parent && recursive)
-        propvalue = getPropAsStr(node->parent, prop, recursive);
+    std::list<xmlNodePtr>::reverse_iterator i;
+    
+    for (i = nodes.rbegin(); i != nodes.rend(); i++) {
+        xmlNodePtr node = *i;
+        if (xmlPropExists(node, prop.c_str())) {
+            propvalue = xmlGetPropAsStr(node, prop.c_str());    
+            break;
+        }
+    }
 
+    if (propvalue.empty() && recursive) {
+        for (i = nodes.rbegin(); i != nodes.rend(); i++) {
+            xmlNodePtr node = *i;
+            if (node->parent) {
+                propvalue = getPropAsStr(node->parent, prop, recursive);
+                break;
+            }
+        }
+    }
+    
     translate(&propvalue);
-    return propvalue;    
+    return propvalue;
+}
+string Script::getPropAsStr(xmlNodePtr node, string prop, bool recursive) {
+    std::list<xmlNodePtr> list;
+    list.push_back(node);
+    return getPropAsStr(list, prop, recursive);    
 }
 
 /**
  * Gets a property as int from the script
  */ 
+int Script::getPropAsInt(std::list<xmlNodePtr>& nodes, string prop, bool recursive) {
+    string propvalue = getPropAsStr(nodes, prop, recursive);
+    return mathValue(propvalue);
+}
 int Script::getPropAsInt(xmlNodePtr node, string prop, bool recursive) {
     string propvalue = getPropAsStr(node, prop, recursive);
     return mathValue(propvalue);
@@ -844,23 +827,38 @@ string Script::getContent(xmlNodePtr node) {
 }
 
 /**
- * Get a 1-key keyboard input as a "choice" (usually y/n)
+ * Sets a new translation context for the script
  */ 
- Script::ReturnCode Script::choice(xmlNodePtr script, xmlNodePtr current) {
-    this->currentScript = script;
-    this->currentItem = current;
-    this->choices = getPropAsStr(current, "options");
-    if (xmlPropExists(current, "target"))
-        this->target = getPropAsStr(current, "target");
-    else this->target.erase();
+Script::ReturnCode Script::pushContext(xmlNodePtr script, xmlNodePtr current) {
+    string nodeName = getPropAsStr(current, "name");
+    string search_id;
 
-    if (debug)
-        fprintf(debug, "\nChoice: %s - target: %s", this->choices.c_str(), this->target.c_str());
+    if (xmlPropExists(current, idPropName.c_str()))
+        search_id = getPropAsStr(current, idPropName);
+    else if (variables.find(idPropName) != variables.end())
+        search_id = variables[idPropName]->getString();    
 
-    this->choices += "\015 \033";
+    // When looking for a new context, start from within our old one
+    translationContext.push_back(find(translationContext.back(), nodeName, search_id));
+    if (debug) {
+        if (!this->translationContext.back())
+            fprintf(debug, "\nWarning!!! Invalid translation context <%s %s=\"%s\" ...>", nodeName.c_str(), idPropName.c_str(), search_id.c_str());
+        else fprintf(debug, "\nChanging translation context to <%s %s=\"%s\" ...>", nodeName.c_str(), idPropName.c_str(), search_id.c_str());
+    }
 
-    this->state = STATE_CHOICE;
-    return RET_STOP;
+    return RET_OK;
+}
+
+/**
+ * Removes a node from the translation context
+ */ 
+Script::ReturnCode Script::popContext(xmlNodePtr script, xmlNodePtr current) {
+    if (translationContext.size() > 1) {
+        translationContext.pop_back();
+        if (debug)
+            fprintf(debug, "\nReverted translation context to <%s ...>", translationContext.back()->name);
+    }
+    return RET_OK;
 }
 
 /**
@@ -890,7 +888,8 @@ Script::ReturnCode Script::waitForKeypress(xmlNodePtr script, xmlNodePtr current
     this->currentItem = current;
     this->choices = "abcdefghijklmnopqrstuvwxyz01234567890\015 \033";
     this->target.erase();
-    this->state = STATE_WAIT_FOR_KEYPRESS;
+    this->state = STATE_INPUT;
+    this->inputType = INPUT_KEYPRESS;
 
     if (debug)
         fprintf(debug, "\n<Wait>");
@@ -908,19 +907,17 @@ Script::ReturnCode Script::redirect(xmlNodePtr script, xmlNodePtr current) {
         target = getPropAsStr(current, "redirect");
     else target = getPropAsStr(current, "target");
 
-    /* set a new current_choice */
-    string choice = getPropAsStr(current, idPropName);
-    if (!choice.empty())
-        this->answer = choice;    
-
-    xmlNodePtr newScript = find(this->scriptNode, target, choice);
+    /* set a new search id */
+    string search_id = getPropAsStr(current, idPropName);
+    
+    xmlNodePtr newScript = find(this->scriptNode, target, search_id);
     if (!newScript)
-        errorFatal("Error: redirect failed -- could not find target script '%s' with choice=\"%s\"", target.c_str(), choice.c_str());
+        errorFatal("Error: redirect failed -- could not find target script '%s' with %s=\"%s\"", target.c_str(), idPropName.c_str(), search_id.c_str());
 
     if (debug) {
         fprintf(debug, "\nRedirected to '%s", target.c_str());
-        if (choice.length())
-            fprintf(debug, ":%s", choice.c_str());
+        if (search_id.length())
+            fprintf(debug, ":%s", search_id.c_str());
         fprintf(debug, "'");
     }
     
@@ -933,16 +930,16 @@ Script::ReturnCode Script::redirect(xmlNodePtr script, xmlNodePtr current) {
  */ 
 Script::ReturnCode Script::include(xmlNodePtr script, xmlNodePtr current) {
     string scriptName = getPropAsStr(current, "script");
-    string choice = getPropAsStr(current, idPropName);    
+    string id = getPropAsStr(current, idPropName);
 
-    xmlNodePtr newScript = find(this->scriptNode, scriptName, choice);
+    xmlNodePtr newScript = find(this->scriptNode, scriptName, id);
     if (!newScript)
-        errorFatal("Error: include failed -- could not find target script '%s' with choice=\"%s\"", scriptName.c_str(), choice.c_str());
+        errorFatal("Error: include failed -- could not find target script '%s' with %s=\"%s\"", scriptName.c_str(), idPropName.c_str(), id.c_str());
 
     if (debug) {
         fprintf(debug, "\nIncluded script <%s", scriptName.c_str());
-        if (choice.length())
-            fprintf(debug, " choice=\"%s\"", choice.c_str());
+        if (id.length())
+            fprintf(debug, " %s=\"%s\"", idPropName.c_str(), id.c_str());
         fprintf(debug, " .../>");
     }
 
@@ -1052,16 +1049,9 @@ Script::ReturnCode Script::cursor(xmlNodePtr script, xmlNodePtr current) {
 /**
  * Pay gold to someone
  */ 
-Script::ReturnCode Script::pay(xmlNodePtr script, xmlNodePtr current) {
-    /* now the translation context should be our item */
-    xmlNodePtr item = this->translationContext;
-
-    int price = xmlPropExists(current, "price") ?
-        getPropAsInt(current, "price") :
-        getPropAsInt(item, "price");
-    int quant = xmlPropExists(current, "quant") ?
-        getPropAsInt(current, "quant") :
-        this->quant;
+Script::ReturnCode Script::pay(xmlNodePtr script, xmlNodePtr current) {    
+    int price = getPropAsInt(current, "price");
+    int quant = getPropAsInt(current, "quantity");       
 
     string cantpay = getPropAsStr(current, "cantpay");
 
@@ -1124,21 +1114,37 @@ Script::ReturnCode Script::input(xmlNodePtr script, xmlNodePtr current) {
         this->target = getPropAsStr(current, "target");
     else this->target.erase();
 
-    if (type == "quantity")                
-        this->state = STATE_INPUT_QUANTITY;
-    else if (type == "price")
-        this->state = STATE_INPUT_PRICE;
-    else if (type == "text")
-        this->state = STATE_INPUT_TEXT;
-    else if (type == "player") {
-        int i;        
-        this->state = STATE_INPUT_PLAYER;
+    this->state = STATE_INPUT;
+    this->inputName = "input";
 
-        /* add member numbers to our choices */
-        this->choices = "0";
-        for (i = 0; i < c->party->size(); i++)
-            this->choices += to_string(i);            
-    }            
+    // Does the variable have a maximum length?
+    if (xmlPropExists(current, "maxlen"))
+        this->inputMaxLen = getPropAsInt(current, "maxlen");
+    else this->inputMaxLen = Conversation::BUFFERLEN;
+
+    // Should we name the variable something other than "input"
+    if (xmlPropExists(current, "name"))
+        this->inputName = getPropAsStr(current, "name");
+    else {
+        if (type == "choice")
+            this->inputName = idPropName;
+    }
+        
+    if (type == "number")
+        this->inputType = INPUT_NUMBER;
+    else if (type == "keypress")
+        this->inputType = INPUT_KEYPRESS;
+    else if (type == "choice") {
+        this->inputType = INPUT_CHOICE;
+        this->choices = getPropAsStr(current, "options");
+        this->choices += " \015\033";
+    }
+    else if (type == "string")
+        this->inputType = INPUT_STRING;
+    else if (type == "direction")
+        this->inputType = INPUT_DIRECTION;
+    else if (type == "player")
+        this->inputType = INPUT_PLAYER;        
 
     if (debug)
         fprintf(debug, "\nInput: %s", type.c_str());
@@ -1153,11 +1159,11 @@ Script::ReturnCode Script::input(xmlNodePtr script, xmlNodePtr current) {
 Script::ReturnCode Script::add(xmlNodePtr script, xmlNodePtr current) {
     string type = getPropAsStr(current, "type");
     string subtype = getPropAsStr(current, "subtype");
-    int quant = getPropAsInt(this->translationContext, "quant");
+    int quant = getPropAsInt(this->translationContext.back(), "quantity");
     if (quant == 0)
-        quant = this->quant;
+        quant = getPropAsInt(current, "quantity");
     else
-        quant *= this->quant;
+        quant *= getPropAsInt(current, "quantity");
 
     if (debug) {
         fprintf(debug, "\nAdd: %s ", type.c_str());
@@ -1165,10 +1171,8 @@ Script::ReturnCode Script::add(xmlNodePtr script, xmlNodePtr current) {
             fprintf(debug, "- %s ", subtype.c_str());
     }
 
-    if (type == "gold") {
-        quant *= this->price;
-        c->party->adjustGold(quant);
-    }
+    if (type == "gold")        
+        c->party->adjustGold(quant);    
     else if (type == "food") {
         quant *= 100;
         c->party->adjustFood(quant);
@@ -1217,7 +1221,7 @@ Script::ReturnCode Script::add(xmlNodePtr script, xmlNodePtr current) {
 Script::ReturnCode Script::lose(xmlNodePtr script, xmlNodePtr current) {
     string type = getPropAsStr(current, "type");
     string subtype = getPropAsStr(current, "subtype");
-    int quant = this->quant;
+    int quant = getPropAsInt(current, "quantity");
 
     if (type == "weapon")
         AdjustValueMin(c->saveGame->weapons[subtype[0] - 'a'], -quant, 0);            
@@ -1272,10 +1276,7 @@ Script::ReturnCode Script::damage(xmlNodePtr script, xmlNodePtr current) {
     int player = getPropAsInt(current, "player") - 1;
     int pts = getPropAsInt(current, "pts");
     PartyMember *p;
-
-    if (player == -1)
-        player = this->player - 1;
-
+    
     p = c->party->member(player);
     p->applyDamage(pts);
 
@@ -1352,64 +1353,23 @@ Script::ReturnCode Script::music(xmlNodePtr script, xmlNodePtr current) {
 }
 
 /**
- * Save currently selected choice, useful for when somebody selects
- * something that you want to remember later in the script
+ * Sets a variable
  */ 
-Script::ReturnCode Script::saveChoice(xmlNodePtr script, xmlNodePtr current) {
-    this->saved_choice = this->answer;
-    if (debug)
-        fprintf(debug, "\nSave Choice: '%s'", this->saved_choice.c_str());
-
-    return RET_OK;
-}
-
-/**
- * Set a new choice, useful for "remembering" what somebody has
- * selected earlier or in another script.
- */ 
-Script::ReturnCode Script::setChoice(xmlNodePtr script, xmlNodePtr current) {
+Script::ReturnCode Script::setVar(xmlNodePtr script, xmlNodePtr current) {
+    string name = getPropAsStr(current, "name");
     string value = getPropAsStr(current, "value");
-    this->answer = value;
 
-    if (debug)
-        fprintf(debug, "\nSet Choice: '%s'", this->answer.c_str());
-
-    return RET_OK;
-}
-
-/**
- * 
- */ 
-Script::ReturnCode Script::setQuantity(xmlNodePtr script, xmlNodePtr current) {
-    this->quant = getPropAsInt(current, "value");
-
-    if (debug)
-        fprintf(debug, "\nSet Quantity: '%d'", this->quant);
-
-    return RET_OK;
-}
-
-/**
- * 
- */ 
-Script::ReturnCode Script::setPrice(xmlNodePtr script, xmlNodePtr current) {
-    this->price = getPropAsInt(current, "value");
-
-    if (debug)
-        fprintf(debug, "\nSet Price: '%d'", this->price);
-
-    return RET_OK;
-}
-
-/**
- * 
- */ 
-Script::ReturnCode Script::setPlayer(xmlNodePtr script, xmlNodePtr current) {
-    this->player = getPropAsInt(current, "value");
-
-    if (debug)
-        fprintf(debug, "\nSet Player: '%d'", this->player);
+    if (name.empty()) {
+        if (debug)
+            fprintf(debug, "Variable name empty!");
+        return RET_STOP;
+    }
     
+    variables[name] = new Variable(value);
+
+    if (debug)
+        fprintf(debug, "\nSet Variable: %s=%s", name.c_str(), variables[name]->getString().c_str());
+
     return RET_OK;
 }
 

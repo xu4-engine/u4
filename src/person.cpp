@@ -15,6 +15,7 @@
 #include "context.h"
 #include "conversation.h"
 #include "debug.h"
+#include "event.h"
 #include "io.h"
 #include "location.h"
 #include "music.h"
@@ -176,6 +177,8 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
         static const string ids[] = { 
             "Weapons", "Armor", "Food", "Tavern", "Reagents", "Healer", "Inn", "Guild", "Stable"
         };
+        Script *script = c->conversation->script;
+
         text.erase();        
 
         /**
@@ -183,88 +186,59 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
          */ 
         if (c->conversation->state == Conversation::INTRO) {
             // unload the previous script if it wasn't already unloaded
-            if (c->conversation->script->getState() != Script::STATE_UNLOADED)
-                c->conversation->script->unload();
-            c->conversation->script->load("vendorScript.xml", ids[cnv->getTalker()->npcType - NPC_VENDOR_WEAPONS], "vendor", c->location->map->getName());
-            c->conversation->script->run("intro");
+            if (script->getState() != Script::STATE_UNLOADED)
+                script->unload();
+            script->load("vendorScript.xml", ids[cnv->getTalker()->npcType - NPC_VENDOR_WEAPONS], "vendor", c->location->map->getName());
+            script->run("intro");       
+               
+            while (script->getState() != Script::STATE_DONE) {
+                // Gather input for the script
+                if (script->getState() == Script::STATE_INPUT) {
+                    switch(script->getInputType()) {
+                    case Script::INPUT_CHOICE: {
+                        // Get choice
+                        char val = ReadChoiceController::get(script->getChoices());
+                        if (isspace(val))
+                            script->setVar(script->getInputName(), "nothing");
+                        else {
+                            string s_val;
+                            s_val.resize(1);
+                            s_val[0] = val;
+                            script->setVar(script->getInputName(), s_val);
+                        }
+                    } break;
+
+                    case Script::INPUT_KEYPRESS:
+                        ReadChoiceController::get(" \015\033");
+                        break;
+                        
+                    case Script::INPUT_NUMBER:                    
+                    case Script::INPUT_STRING: {
+                        string str = ReadStringController::get(script->getInputMaxLen(), TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+                        lowercase(str);
+                        script->setVar(script->getInputName(), str);
+                    } break;                    
+                    
+                    case Script::INPUT_PLAYER: {
+                        ReadPlayerController getPlayerCtrl;
+                        eventHandler->pushController(&getPlayerCtrl);
+                        int player = getPlayerCtrl.waitFor();
+                        string player_str = to_string(player);
+                        script->setVar(script->getInputName(), player_str);
+                    } break;
+
+                    default: break;
+                    } // } switch
+
+                    // Continue running the script!                
+                    script->_continue();
+                } // } if 
+            } // } while
         }
-
-        /**
-         * We're in the middle of a script, process the input!
-         */
-        else {
-            switch(c->conversation->script->getState()) {
-            case Script::STATE_CHOICE:
-                if (isspace(inquiry[0]))
-                    c->conversation->script->setChoice("nothing");
-                else c->conversation->script->setChoice(tolower(inquiry[0]));
-                break;
-
-            case Script::STATE_NORMAL:
-            case Script::STATE_WAIT_FOR_KEYPRESS:
-                break;
-
-            case Script::STATE_INPUT_PLAYER:
-                if (isspace(inquiry[0]) || inquiry[0] == '0')
-                    c->conversation->script->setChoice("nothing");
-                c->conversation->script->setPlayer((int)strtol(inquiry, NULL, 10));
-                break;
-
-            case Script::STATE_INPUT_TEXT:
-                {
-                    string val = inquiry;
-                    string::iterator current;                    
-                    /* convert the string to lowercase */
-                    for (current = val.begin();
-                         current != val.end();
-                         current++) {
-                        *current = tolower(*current);
-                    }
-
-                    c->conversation->script->setChoice(val);
-                }
-                break;
-
-            case Script::STATE_INPUT_PRICE:
-                {
-                    c->conversation->script->setChoice(inquiry);
-                    c->conversation->script->setPrice((int)strtol(inquiry, NULL, 10));
-                    if (c->conversation->script->getPrice() == 0)
-                        c->conversation->script->setChoice("nothing");
-                } break;
-
-            case Script::STATE_INPUT_QUANTITY:            
-                c->conversation->script->setChoice(inquiry);
-                c->conversation->script->setQuantity((int)strtol(inquiry, NULL, 10));
-                if (c->conversation->script->getQuantity() == 0)
-                    c->conversation->script->setChoice("nothing");
-                break;
-            
-            default:
-                break;
-            }
-            
-            // Continue running the script!
-            c->conversation->script->_continue();
-        }
-
-        /**
-         * Set our conversation to gather the correct input for the script
-         */
-        switch(c->conversation->script->getState()) {
-        case Script::STATE_CHOICE:               c->conversation->state = Conversation::VENDORQUESTION; break;
-        case Script::STATE_WAIT_FOR_KEYPRESS:    c->conversation->state = Conversation::CONFIRMATION; break;
-        case Script::STATE_INPUT_QUANTITY:       c->conversation->state = Conversation::BUY_QUANTITY; break;
-        case Script::STATE_INPUT_PRICE:          c->conversation->state = Conversation::BUY_PRICE; break;
-        case Script::STATE_INPUT_TEXT:           c->conversation->state = Conversation::TOPIC; break;
-        case Script::STATE_INPUT_PLAYER:         c->conversation->state = Conversation::PLAYER; break;
-        case Script::STATE_DONE:
-            // Unload the script
-            c->conversation->script->unload();
-            c->conversation->state = Conversation::DONE;
-            break;
-        default: break;
-        }        
+        
+        // Unload the script
+        script->unload();
+        c->conversation->state = Conversation::DONE;
     }
 
     /*
