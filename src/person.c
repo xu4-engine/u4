@@ -42,6 +42,9 @@ WeaponVendorInfo weaponVendorInfo;
 
 #define WV_SHOPNAME 0
 #define WV_VENDORNAME 6
+
+#define WV_VERYGOOD 0
+#define WV_WEHAVE 1
 #define WV_WELCOME 17
 #define WV_SPACER 18
 #define WV_BUYORSELL 19
@@ -52,6 +55,7 @@ void personGetLBResponse(const Person *p, const char *inquiry, char **reply, int
 void personGetHWResponse(const Person *p, const char *inquiry, char **reply, int *state);
 void personGetQuestionResponse(Conversation *cnv, const char *response, char **reply);
 void personGetQuestion(const Person *p, char **question);
+void personGetBuySellResponse(Conversation *cnv, const char *response, char **reply);
 int weaponVendorInfoRead(WeaponVendorInfo *info, FILE *f);
 
 /**
@@ -98,7 +102,7 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
         break;
     
     case CONV_BUYSELL:
-        /* FIXME */
+        personGetBuySellResponse(cnv, inquiry, response);
         break;
 
     case CONV_DONE:
@@ -220,6 +224,13 @@ void personGetPrompt(const Conversation *cnv, char **prompt) {
         break;
 
     case CONV_BUYSELL:
+        switch (cnv->talker->npcType) {
+        case NPC_VENDOR_WEAPONS:
+            *prompt = strdup("Your\nInterest?");
+            break;
+        default:
+            assert(0);
+        }
         break;
         
     default:
@@ -396,6 +407,26 @@ void personGetHWResponse(const Person *p, const char *inquiry, char **reply, int
     }
 
     *reply = strdup(hawkwindText[HW_DEFAULT]);
+}
+
+void personGetBuySellResponse(Conversation *cnv, const char *response, char **reply) {
+    const char *fmt = "%s%s%c-%s\n%c-%s\n%c-%s\n%c-%s\n";
+
+    if (tolower(response[0]) == 'b') {
+        *reply = malloc(strlen(fmt) + strlen(weaponVendorText2[WV_VERYGOOD]) + strlen(weaponVendorText2[WV_WEHAVE]) +
+                        strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][0])) +
+                        strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][1])) +
+                        strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][2])) +
+                        strlen(getWeaponName(weaponVendorInfo.vendorInventory[0][3])));
+
+        sprintf(*reply, fmt, weaponVendorText2[WV_VERYGOOD], weaponVendorText2[WV_WEHAVE], 
+                'A' + weaponVendorInfo.vendorInventory[0][0], getWeaponName(weaponVendorInfo.vendorInventory[0][0]),
+                'A' + weaponVendorInfo.vendorInventory[0][1], getWeaponName(weaponVendorInfo.vendorInventory[0][1]),
+                'A' + weaponVendorInfo.vendorInventory[0][2], getWeaponName(weaponVendorInfo.vendorInventory[0][2]),
+                'A' + weaponVendorInfo.vendorInventory[0][3], getWeaponName(weaponVendorInfo.vendorInventory[0][3]));
+
+        cnv->state = CONV_BUY;
+    }
 }
 
 int weaponVendorInfoRead(WeaponVendorInfo *info, FILE *f) {

@@ -51,6 +51,8 @@ typedef enum {
     CONV_TALK,
     CONV_ASK,
     CONV_BUYSELL,
+    CONV_BUY,
+    CONV_SELL,
     CONV_DONE
 } ConversationState;
 

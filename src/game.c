@@ -769,6 +769,14 @@ void talkSetHandler(const Conversation *cnv) {
         eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
         break;
 
+    case CONV_BUY:
+    case CONV_SELL:
+        gcInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+        gcInfo->choices = "abcdefghijklmnopqrstuvwxyz";
+        gcInfo->handleChoice = &talkHandleChoice;
+        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
+        break;
+
     case CONV_DONE:
         /* no handler: conversation done! */
         break;
@@ -798,8 +806,10 @@ int talkHandleBuffer(const char *message) {
     }
 
     personGetPrompt(&c->conversation, &prompt);
-    screenMessage("%s", prompt);
-    free(prompt);
+    if (prompt) {
+        screenMessage("%s", prompt);
+        free(prompt);
+    }
 
     talkSetHandler(&c->conversation);
 
@@ -827,8 +837,10 @@ int talkHandleChoice(char choice) {
     }
 
     personGetPrompt(&c->conversation, &prompt);
-    screenMessage("%s", prompt);
-    free(prompt);
+    if (prompt) {
+        screenMessage("%s", prompt);
+        free(prompt);
+    }
 
     talkSetHandler(&c->conversation);
 
