@@ -260,7 +260,7 @@ int U4FILE_zip::seek(long offset, int whence) {
     ASSERT(offset - pos > 0, "error in U4FILE_zip::seek");
     buf = new char[offset - pos];
     unzReadCurrentFile(zfile, buf, offset - pos);
-    delete buf;
+    delete [] buf;
     return 0;
 }
 
