@@ -48,8 +48,6 @@ extern Map shipshor_map;
 extern Map shore_map;
 extern Map shorship_map;
 
-Map *oldmap;
-int olddngx, olddngy, oldlevel;
 Object *monsterObj;
 int focus;
 Object *party[8];
@@ -75,10 +73,8 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
 
     monsterObj = monster;
 
-    oldmap = c->map;
-    olddngx = c->saveGame->dngx;
-    olddngy = c->saveGame->dngy;
-    oldlevel = c->saveGame->dnglevel;
+    c = gameCloneContext(c);
+
     gameSetMap(c, getCombatMapForTile(partytile, transport), 1, NULL);
     c->saveGame->dnglevel = 0;
 
@@ -427,7 +423,7 @@ int combatAttackAtCoord(int x, int y, int distance) {
 int combatInitialNumberOfMonsters(unsigned char monster) {
     int nmonsters;
 
-    if (mapIsWorldMap(oldmap)) {
+    if (mapIsWorldMap(c->parent->map)) {
         nmonsters = (rand() % 8) + 1;
         if (nmonsters == 1) {
             /* file offset 116DDh, 36 bytes, indexed by monster number */
@@ -482,19 +478,8 @@ int combatIsLost() {
 }
 
 void combatEnd() {
-    annotationClear(c->map->id);
-    mapClearObjects(c->map);
-
-    c->map = oldmap;
-    c->saveGame->x = c->saveGame->dngx;
-    c->saveGame->y = c->saveGame->dngy;
-    c->saveGame->dnglevel = oldlevel;
-    c->saveGame->dngx = olddngx;
-    c->saveGame->dngy = olddngy;
-    c->col = 0;
-
-    musicPlay();
-
+    gameExitToParentMap(c);
+    
     if (combatIsWon()) {
 
         /* added chest or captured ship object */
