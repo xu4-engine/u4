@@ -10,16 +10,47 @@
 #include "context.h"
 #include "map.h"
 #include "annotation.h"
+#include "event.h"
 
-void annotationAdd(int x, int y, int ttl, unsigned char tile) {
-    Annotation *annotation = (Annotation *) malloc(sizeof(Annotation));
-    annotation->x = x;
-    annotation->y = y;
-    annotation->time_to_live = ttl;
-    annotation->tile = tile;
-    annotation->next = c->map->annotation;
+void annotationTimer(void *data);
+
+Annotation *annotationAdd(int x, int y, unsigned char tile) {
+    Annotation *a = (Annotation *) malloc(sizeof(Annotation));
+    a->x = x;
+    a->y = y;
+    a->time_to_live = -1;
+    a->tile = tile;
+    a->next = c->map->annotation;
     
-    c->map->annotation = annotation;
+    c->map->annotation = a;
+
+    return a;
+}
+
+void annotationSetTurnDuration(Annotation *a, int ttl) {
+    a->time_to_live = ttl;
+}
+
+void annotationSetTimeDuration(Annotation *a, int interval) {
+    eventHandlerAddTimerCallbackData(&annotationTimer, (void *) a, interval);
+}
+
+void annotationTimer(void *data) {
+    Annotation *annotation = c->map->annotation, **prev;
+
+    eventHandlerRemoveTimerCallbackData(&annotationTimer, data);
+
+    prev = &(c->map->annotation);
+    while (annotation) {
+        if (annotation == (Annotation *) data) {
+            *prev = annotation->next;
+            free(annotation);
+            return;
+        }
+        prev = &(annotation->next);
+        annotation = annotation->next;
+    }
+    fprintf(stderr, "warning: couldn't remove annotation %d\n", (int) data);
 }
 
 void annotationRemove(int x, int y, unsigned char tile) {
@@ -84,6 +115,7 @@ void annotationClear(void) {
     Annotation *annotation = c->map->annotation, *tmp;
     
     while (annotation) {
+        eventHandlerRemoveTimerCallbackData(&annotationTimer, (void *)annotation);
         tmp = annotation->next;
         free(annotation);
         annotation = tmp;

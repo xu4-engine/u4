@@ -243,7 +243,7 @@ static int spellDispel(int dir) {
     if (!tileCanDispel(tile))
         return 0;
 
-    annotationAdd(x, y, -1, BRICKFLOOR_TILE);
+    annotationAdd(x, y, BRICKFLOOR_TILE);
 
     return 1;
 }
@@ -257,7 +257,7 @@ static int spellEField(int dir) {
     if (MAP_IS_OOB(c->map, x, y))
         return 0;
 
-    annotationAdd(x, y, -1, LIGHTNINGFIELD_TILE);
+    annotationAdd(x, y, LIGHTNINGFIELD_TILE);
 
     return 1;
 }

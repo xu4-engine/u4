@@ -30,7 +30,7 @@ int reps;
 int shrineHandleVirtue(const char *message);
 int shrineHandleCycles(char choice);
 void shrineMeditationCycle();
-void shrineTimer();
+void shrineTimer(void *data);
 int shrineHandleMantra(const char *message);
 void shrineEject();
 
@@ -95,7 +95,7 @@ void shrineMeditationCycle() {
     eventHandlerAddTimerCallback(&shrineTimer, 4);
 }
 
-void shrineTimer() {
+void shrineTimer(void *data) {
     ReadBufferActionInfo *info;
 
     if (reps++ >= MEDITATION_MANTRAS_PER_CYCLE) {

@@ -29,7 +29,7 @@
 int timerCount;
 int timerMsg;
 
-void deathTimer(void);
+void deathTimer(void *data);
 void deathRevive(void);
 
 const struct {
@@ -61,7 +61,7 @@ void deathStart() {
     screenDisableCursor();
 }
 
-void deathTimer() {
+void deathTimer(void *data) {
 
     timerCount++;
     if (timerCount > deathMsgs[timerMsg].timeout) {

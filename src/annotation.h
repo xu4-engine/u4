@@ -6,11 +6,12 @@
 #define ANNOTATION_H
 
 /*
- * Annotations are temporary or permanent updates to a map.  When one
- * is created, an x,y coordinate and time to live are provided.  The
- * time to live is number of cycles the annotation will exist before
- * being automatically removed.  A time to live of -1 means permanent
- * (the life of the context, or until removed or cleared).
+ * Annotations are updates to a map.  There are three types:
+ * - permanent: lasts until annotationClear is called
+ * - turn based: lasts a given number of cycles
+ * - time based: lasts a given number of time units (1/4 seconds)
+ * When one is created, x and y coordinates are provided.  The
+ * appropriate duration can then be added.
  */
 
 typedef struct _Annotation {
@@ -20,7 +21,9 @@ typedef struct _Annotation {
     struct _Annotation *next;
 } Annotation;
 
-void annotationAdd(int x, int y, int ttl, unsigned char tile);
+Annotation *annotationAdd(int x, int y, unsigned char tile);
+void annotationSetTurnDuration(Annotation *a, int ttl);
+void annotationSetTimeDuration(Annotation *a, int interval);
 void annotationRemove(int x, int y, unsigned char tile);
 const Annotation *annotationAt(int x, int y);
 void annotationCycle(void);

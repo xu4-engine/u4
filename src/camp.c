@@ -23,7 +23,7 @@
 
 extern Map camp_map;
 
-void campTimer(void);
+void campTimer(void *data);
 void campEnd(void);
 
 void campBegin() {
@@ -46,7 +46,7 @@ void campBegin() {
     screenDisableCursor();
 }
 
-void campTimer() {
+void campTimer(void *data) {
     eventHandlerRemoveTimerCallback(&campTimer);
     eventHandlerPopKeyHandler();
     screenEnableCursor();
