@@ -23,6 +23,7 @@ SRCS=\
         location.c \
         map.c \
         mapmgr.c \
+        menu.c \
         monster.c \
         moongate.c \
         movement.c \
