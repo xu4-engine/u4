@@ -51,10 +51,12 @@ typedef enum {
 typedef void (*LostEighthCallback)(Virtue);
 typedef void (*AdvanceLevelCallback)(const SaveGamePlayerRecord *player);
 typedef void (*ItemStatsChangedCallback)(void);
+typedef void (*HealCallback)(HealType type, int player);
 
 void playerSetLostEighthCallback(LostEighthCallback callback);
 void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback);
 void playerSetItemStatsChangedCallback(ItemStatsChangedCallback callback);
+void playerSetHealCallback(HealCallback callback);
 void playerApplyDamage(SaveGamePlayerRecord *player, int damage);
 int playerGetRealLevel(const SaveGamePlayerRecord *player);
 int playerGetMaxLevel(const SaveGamePlayerRecord *player);
