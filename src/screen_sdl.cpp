@@ -1051,41 +1051,36 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
  */
 void Tile::draw(int x, int y, int frame, bool focused) {
     /* FIXME: maybe we should load tiles somewhere else for better performance? */
-    if (image == NULL) {
-        if (!looks_like.empty()) {            
-            // draw the tile that looks just like ours first (to make sure it's loaded)
-            Tile *tile = Tileset::findTileByName(looks_like);
-            tile->draw(x, y, frame);            
-            
-            image = tile->getImage();            
-            w = image->width();
-            h = image->height();
-            return;
-        }
-        
-        // load the image
-        else if (tilesInfo == NULL || tilesInfo->name != tileset->getImageName()) {
-            tilesInfo = screenLoadImage(tileset->getImageName());            
-            if (!tilesInfo)
-                errorFatal("unable to load tileset images: is Ultima IV installed?  See http://xu4.sourceforge.net/");            
-        }
-
-        Image* tiles = tilesInfo->image;
-        
-        /* create the image for our tile */
-        w = tiles->width();
-        h = tiles->height() / tileset->numFrames();
-        image = Image::create(w, frames * h, false, Image::HARDWARE);                
-
-        /* draw the tile from the main image to our tile */
-        tiles->drawSubRectOn(image, 0, 0, 0, index * h, w, image->height());
-
-        if (image == NULL)
-            errorFatal("Error: not all tile images loaded correctly, aborting...");    
-    }
+    if (image == NULL)
+        loadImage();
     
     image->drawSubRect(x * w + (BORDER_WIDTH * scale), y * h + (BORDER_HEIGHT * scale),
         0, frame * h, w, h);    
+}
+
+void Tile::drawInDungeon(int distance, int frame) {    
+    Image *tmp, *scaled;
+    const static int dscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
+
+    if (image == NULL)
+        loadImage();    
+
+    tmp = Image::duplicate(image);
+    
+    /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
+    if (dscale[distance] == 1)
+        scaled = screenScaleDown(tmp, 2);
+    else
+        scaled = screenScale(tmp, dscale[distance] / 2, 1, 1);
+
+    scaled->drawSubRect((VIEWPORT_W * w / 2) + (BORDER_WIDTH * scale) - (scaled->width() / 2),
+                        ((doffset[distance] + BORDER_HEIGHT) * scale),
+                        0,
+                        0,
+                        scaled->width(),
+                        scaled->height());
+    
+    delete scaled;
 }
 
 /**
@@ -1123,6 +1118,41 @@ void Tile::drawFocus(int x, int y) const {
                          w,
                          2 * scale,
                          0xff, 0xff, 0xff);
+    }
+}
+
+void Tile::loadImage() {
+    if (!image) {
+        if (!looks_like.empty()) {            
+            // load the tile that looks just like ours
+            Tile *tile = Tileset::findTileByName(looks_like);            
+            tile->loadImage();
+            
+            image = tile->getImage();            
+            w = image->width();
+            h = image->height();
+            return;
+        }
+        
+        // load the image
+        else if (tilesInfo == NULL || tilesInfo->name != tileset->getImageName()) {
+            tilesInfo = screenLoadImage(tileset->getImageName());            
+            if (!tilesInfo)
+                errorFatal("unable to load tileset images: is Ultima IV installed?  See http://xu4.sourceforge.net/");            
+        }
+
+        Image* tiles = tilesInfo->image;
+        
+        /* create the image for our tile */
+        w = tiles->width();
+        h = tiles->height() / tileset->numFrames();
+        image = Image::create(w, frames * h, false, Image::HARDWARE);                
+
+        /* draw the tile from the main image to our tile */
+        tiles->drawSubRectOn(image, 0, 0, 0, index * h, w, image->height());
+
+        if (image == NULL)
+            errorFatal("Error: not all tile images loaded correctly, aborting...");
     }
 }
 
@@ -1326,65 +1356,16 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
 }
 
 void screenDungeonDrawTile(int distance, MapTile *mapTile) {
-    SDL_Rect src, dest;
-    Image *tmp, *scaled;
-    const static int dscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
-    int offset;
-    int savedflags;
-    unsigned int tile = mapTile->getIndex();
+    Tileset *t = Tileset::get();    
+    Tile *tile = t->get(mapTile->id);
+    TileAnim *anim = tile->anim;
+    
+    /**
+     * Draw the tile to the screen
+     */
+    tile->drawInDungeon(distance, mapTile->frame);
 
-    tmp = Image::create(tilesInfo->image->w, tilesInfo->image->h / N_TILES, tilesInfo->image->isIndexed(), Image::SOFTWARE);
-    if (tilesInfo->image->indexed)
-        tmp->setPaletteFromImage(tilesInfo->image);
-
-    src.x = 0;
-    src.y = tile * (tilesInfo->image->h / N_TILES);
-    src.w = tilesInfo->image->w;
-    src.h = tilesInfo->image->h / N_TILES;
-    dest.x = 0;
-    dest.y = 0;
-    dest.w = tilesInfo->image->w;
-    dest.h = tilesInfo->image->h / N_TILES;
-
-    /* have to turn off alpha on tiles before blitting: why? */
-    savedflags = tilesInfo->image->surface->flags;
-    tilesInfo->image->surface->flags &= ~SDL_SRCALPHA;
-
-    SDL_BlitSurface(tilesInfo->image->surface, &src, tmp->surface, &dest);
-
-    tilesInfo->image->surface->flags = savedflags;
-
-    /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
-    if (dscale[distance] == 1)
-        scaled = screenScaleDown(tmp, 2);
-    else
-        scaled = screenScale(tmp, dscale[distance] / 2, 1, 1);
-
-    /* FIXME: get animation flag properly */
-    if (/*tileGetAnimationStyle(mapTile) == ANIM_SCROLL*/ tile == 2)
-        offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale * dscale[distance] / 2;
-    else
-        offset = 0;
-
-    scaled->drawSubRect((VIEWPORT_W * tilesInfo->image->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2),
-                        ((doffset[distance] + BORDER_HEIGHT) * scale) + offset,
-                        0,
-                        0,
-                        scaled->w,
-                        scaled->h - offset);
-                        
-
-    if (offset != 0) {
-
-        scaled->drawSubRect((VIEWPORT_W * tilesInfo->image->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2),
-                            ((doffset[distance] + BORDER_HEIGHT) * scale),
-                            0,
-                            scaled->h - offset,
-                            scaled->w,
-                            offset);
-    }
-
-    delete scaled;
+    /* FIXME: add animation capability here */
 }
 
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {

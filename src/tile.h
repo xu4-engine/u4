@@ -49,7 +49,9 @@ public:
     static unsigned int getIndex(TileId id);
 
     void draw(int x, int y, int frame, bool focused = false);    
+    void drawInDungeon(int distance, int frame);
     void drawFocus(int x, int y) const;
+    void loadImage();
     Image *getImage();
 
     string name;        /* The name of this tile */

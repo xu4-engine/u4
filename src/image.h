@@ -110,7 +110,6 @@ private:
 
     /* FIXME: blah -- need to find a better way */
     friend void fixupAbyssVision(Image *im, int prescale);
-    friend void screenDungeonDrawTile(int distance, MapTile *tile);
 };
 
 #endif /* IMAGE_H */

@@ -77,9 +77,16 @@ Image *Image::createScreenImage() {
  * Creates a duplicate of another image
  */
 Image *Image::duplicate(Image *image) {
+    Uint32 savedflags;
     Image *im = create(image->width(), image->height(), image->isIndexed(), image->surface->flags & SDL_HWSURFACE ? HARDWARE : SOFTWARE);
 
+    /* have to turn off alpha on tiles before blitting: why? */
+    savedflags = image->surface->flags;
+    image->surface->flags &= ~SDL_SRCALPHA;
+
     image->drawOn(im, 0, 0);
+
+    image->surface->flags = savedflags;
     return im;
 }
 
