@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "savegame.h"
 
@@ -75,17 +77,16 @@ void showSaveGame(SaveGame *sg) {
     printf("party members: %d\n", sg->members);
     printf("transport: %x\n", sg->transport);
     printf("balloon state: %x\n", sg->balloonstate);
+    printf("trammel: %d  felucca: %d\n", sg->trammelphase, sg->feluccaphase);
     printf("???: %x\n", sg->unknown2);
+    printf("lbintro: %d\n", sg->lbintro);
     printf("???: %x\n", sg->unknown3);
     printf("???: %x\n", sg->unknown4);
-    printf("lbintro: %d\n", sg->lbintro);
     printf("???: %x\n", sg->unknown5);
     printf("???: %x\n", sg->unknown6);
-    printf("???: %x\n", sg->unknown7);
-    printf("???: %x\n", sg->unknown8);
     printf("dngx: %-5d dngy: %-5d orientation: %d dnglevel: %d\n", sg->dngx, sg->dngy, sg->orientation, sg->dnglevel);
 
-    printf("???: %d\n", sg->unknown9);
+    printf("???: %d\n", sg->unknown7);
 
     for (i = 0; i < 8; i++) {
         printf("player %d\n", i);

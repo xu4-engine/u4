@@ -63,19 +63,19 @@ int saveGameWrite(const SaveGame *save, FILE *f) {
         !writeShort(save->members, f) ||
         !writeShort(save->transport, f) ||
         !writeShort(save->balloonstate, f) ||
+        !writeShort(save->trammelphase, f) ||
+        !writeShort(save->feluccaphase, f) ||
         !writeShort(save->unknown2, f) ||
+        !writeShort(save->lbintro, f) ||
         !writeShort(save->unknown3, f) ||
         !writeShort(save->unknown4, f) ||
-        !writeShort(save->lbintro, f) ||
         !writeShort(save->unknown5, f) ||
         !writeShort(save->unknown6, f) ||
-        !writeShort(save->unknown7, f) ||
-        !writeShort(save->unknown8, f) ||
         !writeChar(save->dngx, f) ||
         !writeChar(save->dngy, f) ||
         !writeShort(save->orientation, f) ||
         !writeShort(save->dnglevel, f) ||
-        !writeShort(save->unknown9, f))
+        !writeShort(save->unknown7, f))
         return 0;
 
     return 1;
@@ -136,19 +136,19 @@ int saveGameRead(SaveGame *save, FILE *f) {
         !readShort(&(save->members), f) ||
         !readShort(&(save->transport), f) ||
         !readShort(&(save->balloonstate), f) ||
+        !readShort(&(save->trammelphase), f) ||
+        !readShort(&(save->feluccaphase), f) ||
         !readShort(&(save->unknown2), f) ||
+        !readShort(&(save->lbintro), f) ||
         !readShort(&(save->unknown3), f) ||
         !readShort(&(save->unknown4), f) ||
-        !readShort(&(save->lbintro), f) ||
         !readShort(&(save->unknown5), f) ||
         !readShort(&(save->unknown6), f) ||
-        !readShort(&(save->unknown7), f) ||
-        !readShort(&(save->unknown8), f) ||
         !readChar(&(save->dngx), f) ||
         !readChar(&(save->dngy), f) ||
         !readShort(&(save->orientation), f) ||
         !readShort(&(save->dnglevel), f) ||
-        !readShort(&(save->unknown9), f))
+        !readShort(&(save->unknown7), f))
         return 0;
 
     return 1;
@@ -195,19 +195,19 @@ void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avat
     save->members = 1;
     save->transport = 0x1f;
     save->balloonstate = 0;
+    save->trammelphase = 0;
+    save->feluccaphase = 0;
     save->unknown2 = 0;
+    save->lbintro = 0;
     save->unknown3 = 0;
     save->unknown4 = 0;
-    save->lbintro = 0;
     save->unknown5 = 0;
     save->unknown6 = 0;
-    save->unknown7 = 0;
-    save->unknown8 = 0;
     save->dngx = 0;
     save->dngy = 0;
     save->orientation = 0;
     save->dnglevel = 0;
-    save->unknown9 = 0;
+    save->unknown7 = 0;
 }
 
 int saveGamePlayerRecordWrite(const SaveGamePlayerRecord *record, FILE *f) {
