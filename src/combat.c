@@ -582,7 +582,8 @@ int combatBaseKeyHandler(int key, void *data) {
         screenMessage("Dir: ");        
         break;
 
-    case 'c':        
+    case 'c':
+        screenMessage("Cast Spell!\n");
         gameCastForPlayer(FOCUS);
         break;
 
