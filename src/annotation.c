@@ -2,7 +2,6 @@
  * $Id$
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -11,6 +10,7 @@
 #include "map.h"
 #include "annotation.h"
 #include "event.h"
+#include "error.h"
 
 void annotationTimer(void *data);
 
@@ -50,7 +50,7 @@ void annotationTimer(void *data) {
         prev = &(annotation->next);
         annotation = annotation->next;
     }
-    fprintf(stderr, "warning: couldn't remove annotation %d\n", (int) data);
+    errorWarning("couldn't remove annotation %d", (int) data);
 }
 
 void annotationRemove(int x, int y, unsigned char tile) {

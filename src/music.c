@@ -2,7 +2,6 @@
  * $Id$
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -16,6 +15,7 @@
 #include "context.h"
 #include "u4file.h"
 #include "music.h"
+#include "error.h"
 
 const char * const musicFilenames[] = {
     NULL,
@@ -59,7 +59,7 @@ void musicPlayMid(Music music) {
     if (pathname) {
         playing = Mix_LoadMUS(pathname);
         if (!playing)
-            fprintf(stderr, "Unable to load music file %s: %s\n", pathname, Mix_GetError());
+            errorWarning("unable to load music file %s: %s", pathname, Mix_GetError());
         if (toggle && playing)
             Mix_PlayMusic(playing, -1);
         free(pathname);
@@ -102,12 +102,12 @@ int musicInit() {
         int audio_buffers = 4096;
 
         if (SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
-            fprintf(stderr, "Unable to init SDL audio subsystem: %s\n", SDL_GetError());
+            errorWarning("unable to init SDL audio subsystem: %s", SDL_GetError());
             return 1;
         }
 
         if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
-            fprintf(stderr, "Unable to open audio!\n");
+            errorWarning("unable to open audio!");
             return 1;
         }
 

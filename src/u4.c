@@ -22,6 +22,7 @@
 #include "context.h"
 #include "savegame.h"
 #include "stats.h"
+#include "error.h"
 
 Context *c;
 
@@ -40,10 +41,8 @@ int main(int argc, char *argv[]) {
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-filter") == 0 && argc > i + 1) {
             settings->filter = settingsStringToFilter(argv[i+1]);
-            if (settings->filter == SCL_MAX) {
-                fprintf(stderr, "xu4: %s is not a valid filter\n", argv[i+1]);
-                exit(1);
-            }
+            if (settings->filter == SCL_MAX)
+                errorFatal("%s is not a valid filter", argv[i+1]);
             i++;
         }
         if (strcmp(argv[i], "-scale") == 0 && argc > i + 1) {
@@ -84,16 +83,12 @@ int main(int argc, char *argv[]) {
         return 0;
 
     /* load in the maps */
-    if (!initializeMaps()) {
-        fprintf(stderr, "error initializing maps: is Ultima 4 for DOS installed?\n");
-        exit(1);
-    }
+    if (!initializeMaps())
+        errorFatal("unable to load map files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
     /* initialize person data */
-    if (!personInit()) {
-        fprintf(stderr, "error initializing person data: is Ultima 4 for DOS installed?\n");
-        exit(1);
-    }
+    if (!personInit())
+        errorFatal("unable to load person data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
@@ -118,10 +113,9 @@ int main(int argc, char *argv[]) {
     if (saveGameFile) {
         saveGameRead(c->saveGame, saveGameFile);
         fclose(saveGameFile);
-    } else {
-        printf("No savegame found!  Initiate game first\n");
-        exit(0);
-    }
+    } else
+        errorFatal("no savegame found!");
+
     monstersFile = fopen("monsters.sav", "rb");
     if (monstersFile) {
         saveGameMonstersRead(&c->map->objects, monstersFile);

@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include "settings.h"
+#include "error.h"
 
 Settings *settings = NULL;
 
@@ -59,14 +60,14 @@ void settingsRead() {
         else if (strstr(buffer, "filter=") == buffer) {
             settings->filter = settingsStringToFilter(buffer + strlen("filter="));
             if (settings->filter == SCL_MAX) {
-                fprintf(stderr, "xu4: invalid filter name in settings file: resetting to point scaler\n");
+                errorWarning("invalid filter name in settings file: resetting to point scaler");
                 settings->filter = SCL_POINT;
             }
         }
         else if (strstr(buffer, "vol=") == buffer)
             settings->vol = (int) strtoul(buffer + strlen("vol="), NULL, 0);
         else
-            fprintf(stderr, "xu4: invalid line in settings file %s\n", buffer);
+            errorWarning("invalid line in settings file %s", buffer);
     }
 
     fclose(settingsFile);
@@ -83,7 +84,7 @@ void settingsWrite() {
     settingsFile = fopen(settingsFname, "w");
     free(settingsFname);
     if (!settingsFile) {
-        fprintf(stderr, "xu4: can't write settings file\n");
+        errorWarning("can't write settings file");
         return;
     }
 

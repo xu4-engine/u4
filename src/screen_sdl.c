@@ -17,6 +17,7 @@
 #include "savegame.h"
 #include "ttype.h"
 #include "rle.h"
+#include "error.h"
 
 typedef enum {
     COMP_NONE,
@@ -135,16 +136,13 @@ void screenInit() {
     forceVga = 0;
 
     /* start SDL */
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
-        fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
-        exit(1);
-    }
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
+        errorFatal("unable to init SDL: %s", SDL_GetError());
 
     screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (settings->fullscreen ? SDL_FULLSCREEN : 0));
-    if (!screen) {
-        fprintf(stderr, "Unable to set video: %s\n", SDL_GetError());
-        exit(1);
-    }
+    if (!screen)
+        errorFatal("unable to set video: %s", SDL_GetError());
+
     SDL_WM_SetCaption("Ultima IV", NULL);
 #ifdef ICON_FILE
     SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
@@ -156,10 +154,8 @@ void screenInit() {
 
     if (!screenLoadBackground(BKGD_INTRO) ||
         !screenLoadTiles() ||
-        !screenLoadCharSet()) {
-        fprintf(stderr, "Unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/\n");
-        exit(1);
-    }
+        !screenLoadCharSet())
+        errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
     SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL); 
 }
@@ -542,10 +538,8 @@ void screenDrawBackground(BackgroundType bkgd) {
     assert(bkgd < BKGD_MAX);
 
     if (bkgds[bkgd] == NULL) {
-        if (!screenLoadBackground(bkgd)) {
-            fprintf(stderr, "Unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/\n");
-            exit(1);
-        }
+        if (!screenLoadBackground(bkgd))
+            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
     r.x = 0;
@@ -561,10 +555,8 @@ void screenDrawBackgroundInMapArea(BackgroundType bkgd) {
     assert(bkgd < BKGD_MAX);
 
     if (bkgds[bkgd] == NULL) {
-        if (!screenLoadBackground(bkgd)) {
-            fprintf(stderr, "Unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/\n");
-            exit(1);
-        }
+        if (!screenLoadBackground(bkgd))
+            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
     r.x = BORDER_WIDTH * scale;
