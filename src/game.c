@@ -229,6 +229,42 @@ void gameSetMap(Context *ct, Map *map, int saveOldPos, const Portal *portal) {
 }
 
 /**
+ * Exits the current map and context and returns to its parent context
+ * This restores all relevant information from the previous context,
+ * such as the map, map position, etc. (such as exiting a city)
+ **/
+
+int gameExitToParentMap(struct _Context *ct)
+{
+    if (c->parent != NULL) {
+        Context *t = c;
+        annotationClear(c->map->id);
+        mapClearObjects(c->map);
+        c->parent->saveGame->x = c->saveGame->dngx;
+        c->parent->saveGame->y = c->saveGame->dngy;
+        c->parent->annotation = c->annotation;
+        c->parent->line = c->line;
+        c->parent->moonPhase = c->moonPhase;
+        c->parent->windDirection = c->windDirection;
+        c->parent->windCounter = c->windCounter;
+        c->parent->aura = c->aura;
+        c->parent->auraDuration = c->auraDuration;
+        c->parent->horseSpeed = c->horseSpeed;
+        c = c->parent;
+        c->col = 0;
+        free(t);
+
+        screenMessage("Leaving...\n");
+        if (mapIsWorldMap(c->map))
+            c->saveGame->dnglevel = -1;
+        musicPlay();
+        
+        return 1;
+    }
+    return 0;
+}
+
+/**
  * Terminates a game turn.  This performs the post-turn housekeeping
  * tasks like adjusting the party's food, incrementing the number of
  * moves, etc.
@@ -1760,29 +1796,7 @@ int moveAvatar(Direction dir, int userEvent) {
             break;
 
         case BORDER_EXIT2PARENT:
-            if (c->parent != NULL) {
-                Context *t = c;
-                annotationClear(c->map->id);
-                mapClearObjects(c->map);
-                c->parent->saveGame->x = c->saveGame->dngx;
-                c->parent->saveGame->y = c->saveGame->dngy;
-                c->parent->annotation = c->annotation;
-                c->parent->line = c->line;
-                c->parent->moonPhase = c->moonPhase;
-                c->parent->windDirection = c->windDirection;
-                c->parent->windCounter = c->windCounter;
-                c->parent->aura = c->aura;
-                c->parent->auraDuration = c->auraDuration;
-                c->parent->horseSpeed = c->horseSpeed;
-                c = c->parent;
-                c->col = 0;
-                free(t);
-
-                screenMessage("Leaving...\n");
-                if (mapIsWorldMap(c->map))
-                    c->saveGame->dnglevel = -1;
-                musicPlay();
-            }
+            gameExitToParentMap(c);
             goto done;
 
         case BORDER_FIXED:
@@ -2130,5 +2144,4 @@ void gameMonsterAttack(Object *obj) {
         tileIsShip(under->tile))
         ground = under->tile;
     combatBegin(ground, c->saveGame->transport, obj);
-
 }

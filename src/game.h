@@ -35,6 +35,7 @@ void gameInit(void);
 void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
 void gameSetMap(struct _Context *ct, struct _Map *map, int saveOldPos, const struct _Portal *portal);
+int gameExitToParentMap(struct _Context *ct);
 int gameBaseKeyHandler(int key, void *data);
 int gameGetPlayerNoKeyHandler(int key, void *data);
 int gameGetAlphaChoiceKeyHandler(int key, void *data);
