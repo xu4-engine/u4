@@ -268,8 +268,8 @@ int codexHandleVirtues(const char *virtue) {
     if ((current < VIRT_MAX) && 
         (strcasecmp(virtue, getVirtueName((Virtue)current)) == 0)) {
 
-        //screenDrawBackgroundInMapArea(BKGD_HONESTY + current);
-        //screenRedrawMapArea();
+        screenDrawBackgroundInMapArea(BKGD_HONESTY + current);
+        screenRedrawMapArea();
 
         current++;
         tries = 1;
@@ -293,8 +293,8 @@ int codexHandleVirtues(const char *virtue) {
     else if ((current >= VIRT_MAX) &&
              (strcasecmp(virtue, getBaseVirtueName((BaseVirtue)(1 << (current - VIRT_MAX)))) == 0)) {
 
-        //screenDrawBackgroundInMapArea(BKGD_HONESTY + current);
-        //screenRedrawMapArea();
+        screenDrawBackgroundInMapArea(BKGD_HONESTY + current);
+        screenRedrawMapArea();
 
         current++;
         tries = 1;
