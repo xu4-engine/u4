@@ -309,9 +309,6 @@ void Tileset::load(string filename) {
         /* assign the tileset this tile belongs to */
         tile->tileset = this;
 
-        /* the tiles will load their own images when needed */
-        tile->image = NULL;
-
         TRACE_LOCAL(dbg, string("\t\tLoaded '") + tile->name + "'");
 
         /* add the tile to our tileset */

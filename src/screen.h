@@ -29,6 +29,9 @@
 #include "types.h"
 #include "u4file.h"
 
+class Image;
+class TileView;
+
 #if __GNUC__
 #define PRINTF_LIKE(x,y)  __attribute__ ((format (printf, (x), (y))))
 #else
@@ -77,12 +80,11 @@ void screenRedrawScreen(void);
 void screenRedrawTextArea(int x, int y, int width, int height);
 void screenScrollMessageArea(void);
 void screenShake(int iterations);
-void screenShowTile(MapTile* tile, bool focus, int x, int y);
 void screenShowGemTile(MapTile* tile, bool focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, const char *fmt, ...) PRINTF_LIKE(3, 4);
-void screenUpdate(int showmap, int blackout);
+void screenUpdate(TileView *view, bool showmap, bool blackout);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);
 void screenUpdateWind(void);
@@ -104,6 +106,9 @@ void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, Dun
 
 void screenSetMouseCursor(MouseCursor cursor);
 int screenPointInMouseArea(int x, int y, MouseArea *area);
+
+Image *screenScale(Image *src, int scale, int n, int filter);
+Image *screenScaleDown(Image *src, int scale);
 
 extern int screenCurrentCycle;
 

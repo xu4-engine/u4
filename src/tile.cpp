@@ -11,8 +11,11 @@
 #include "context.h"
 #include "creature.h"
 #include "error.h"
+#include "image.h"
+#include "imagemgr.h"
 #include "location.h"
 #include "settings.h"
+#include "tileanim.h"
 #include "tilemap.h"
 #include "tileset.h"
 #include "utils.h"
@@ -95,8 +98,53 @@ unsigned int Tile::getIndex(TileId id) {
     return c && c->location ? c->location->tileset->get(id)->index : Tileset::get("base")->get(id)->index;    
 }
 
-Image *Tile::getImage()     { return image; }
+Image *Tile::getImage() { 
+    if (!image)
+        loadImage();
+    return image;
+}
+
 bool Tile::isLarge() const  { return large; }
+
+/**
+ * Loads the tile image
+ */ 
+void Tile::loadImage() {
+    if (!image) {
+        SubImage *subimage = NULL;        
+
+        ImageInfo *info = imageMgr->get(imageName);
+        if (!info) {
+            subimage = imageMgr->getSubImage(imageName);
+            if (subimage)            
+                info = imageMgr->get(subimage->srcImageName);            
+        }
+
+        scale = settings.scale;
+
+        if (info) {
+            w = (subimage ? subimage->width * scale : info->width * scale);
+            h = (subimage ? (subimage->height * scale) / frames : (info->height * scale) / frames);
+            image = Image::create(w, h * frames, false, Image::HARDWARE);
+
+            info->image->alphaOff();
+
+            /* draw the tile from the image we found to our tile image */
+            if (subimage) {
+                Image *tiles = info->image;
+                tiles->drawSubRectOn(image, 0, 0, subimage->x * scale, subimage->y * scale, subimage->width * scale, subimage->height * scale);
+            }
+            else info->image->drawOn(image, 0, 0);                
+        }
+
+        /* if we have animations, we always used 'animated' to draw from */
+        if (anim)
+            image->alphaOff();
+
+        if (image == NULL)
+            errorFatal("Error: not all tile images loaded correctly, aborting...");
+    }
+}
 
 /**
  * MapTile Class Implementation

@@ -21,6 +21,7 @@
 #include "savegame.h"
 #include "settings.h"
 #include "tileset.h"
+#include "tileview.h"
 
 void screenFindLineOfSight(MapTile *viewportTiles[VIEWPORT_W][VIEWPORT_H]);
 
@@ -142,7 +143,7 @@ MapTile* screenViewportTile(unsigned int width, unsigned int height, int x, int 
  * the map area.  If blackout is set, the map area is blacked out. If
  * neither is set, the map area is left untouched.
  */
-void screenUpdate(int showmap, int blackout) {
+void screenUpdate(TileView *view, bool showmap, bool blackout) {
     std::vector<MapTile *> tiles;
     int x, y;
 
@@ -150,6 +151,7 @@ void screenUpdate(int showmap, int blackout) {
     static MapTile avatar = Tileset::findTileByName("avatar")->id;
 
     ASSERT(c != NULL, "context has not yet been initialized");
+
 
     if (c->location->map->flags & FIRST_PERSON) {
         
@@ -181,17 +183,17 @@ void screenUpdate(int showmap, int blackout) {
             for (y = 0; y < VIEWPORT_H; y++) {
                 for (x = 0; x < VIEWPORT_W; x++) {
                     if (x < 2 || y < 2 || x >= 10 || y >= 10)
-                        screenShowTile(&black, false, x, y);
+                        view->drawTile(&black, false, x, y);
                     else {
                         tiles = dungeonViewGetTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
                         /* Only show blackness if there is no light */
                         if (c->party->getTorchDuration() <= 0)
-                            screenShowTile(&black, false, x, y);
+                            view->drawTile(&black, false, x, y);
                         else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
-                            screenShowTile(&avatar, false, x, y);
+                            view->drawTile(&avatar, false, x, y);
                         else
-                            screenShowTile(tiles.front(), false, x, y);                        
+                            view->drawTile(tiles.front(), false, x, y);
                     }
                 }
             }
@@ -214,10 +216,10 @@ void screenUpdate(int showmap, int blackout) {
 
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
-                if (!blackout && screenLos[x][y]) {
-                    screenShowTile(viewportTiles[x][y], viewportFocus[x][y], x, y);
-                } else
-                    screenShowTile(&black, false, x, y);
+                if (!blackout && screenLos[x][y])
+                    view->drawTile(viewportTiles[x][y], viewportFocus[x][y], x, y);
+                else
+                    view->drawTile(&black, false, x, y);
             }
         }
         screenRedrawMapArea();
