@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "savegame.h"
+
 #include "io.h"
 #include "object.h"
 

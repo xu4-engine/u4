@@ -16,8 +16,9 @@
 #endif
 
 #include "settings.h"
-#include "error.h"
+
 #include "debug.h"
+#include "error.h"
 
 Settings *settings = NULL;
 

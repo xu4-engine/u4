@@ -7,22 +7,23 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
-
 #include "u4.h"
-#include "context.h"
-#include "savegame.h"
+
 #include "person.h"
-#include "u4file.h"
-#include "names.h"
-#include "io.h"
-#include "stats.h"
-#include "vendor.h"
-#include "music.h"
-#include "player.h"
-#include "spell.h"
-#include "location.h"
+
+#include "context.h"
 #include "debug.h"
+#include "io.h"
+#include "location.h"
+#include "music.h"
+#include "names.h"
+#include "player.h"
+#include "savegame.h"
 #include "screen.h"
+#include "spell.h"
+#include "stats.h"
+#include "u4file.h"
+#include "vendor.h"
 
 char **hawkwindText;
 char **lbKeywords;

@@ -10,15 +10,16 @@
 #include <SDL.h>
 
 #include "u4.h"
-#include "settings.h"
-#include "mapinit.h"
-#include "screen.h"
+
+#include "error.h"
 #include "event.h"
-#include "person.h"
 #include "game.h"
 #include "intro.h"
-#include "error.h"
+#include "mapinit.h"
 #include "music.h"
+#include "person.h"
+#include "screen.h"
+#include "settings.h"
 #include "sound.h"
 
 int verbose = 0;

@@ -6,20 +6,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
 #include "u4.h"
-#include "context.h"
-#include "savegame.h"
+
 #include "vendor.h"
-#include "person.h"
-#include "u4file.h"
-#include "names.h"
-#include "stats.h"
-#include "location.h"
-#include "player.h"
-#include "debug.h"
-#include "weapon.h"
+
 #include "armor.h"
+#include "context.h"
+#include "debug.h"
+#include "location.h"
+#include "names.h"
+#include "person.h"
+#include "player.h"
+#include "savegame.h"
+#include "stats.h"
+#include "u4file.h"
+#include "weapon.h"
 
 /*
  * Warning -- this is not the nicest code; vendors are (so far) the

@@ -15,13 +15,13 @@
 /* FIXME: should monsterSpecialAction() and monsterSpecialEffect() be placed elsewhere
    to make monster.c as independent as possible? */
 
+#include "context.h"
+#include "error.h"
 #include "game.h"	/* required by monsterSpecial functions */
 #include "player.h"	/* required by monsterSpecial functions */
-#include "u4file.h"
-#include "context.h"
 #include "savegame.h"
 #include "ttype.h"
-#include "error.h"
+#include "u4file.h"
 
 int monsterInfoLoaded = 0;
 int numMonsters = 0;

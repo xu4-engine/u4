@@ -6,18 +6,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include "u4.h"
 
 #include "shrine.h"
-#include "u4.h"
-#include "context.h"
-#include "screen.h"
-#include "event.h"
-#include "names.h"
+
 #include "annotation.h"
+#include "context.h"
+#include "event.h"
+#include "game.h"
 #include "location.h"
 #include "music.h"
-#include "game.h"
+#include "names.h"
 #include "player.h"
+#include "screen.h"
 
 int shrineHandleVirtue(const char *message);
 int shrineHandleCycles(char choice);

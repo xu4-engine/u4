@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <SDL.h>
-
 #include "u4.h"
+
+#include "context.h"
 #include "event.h"
 #include "screen.h"
-#include "context.h"
 #include "settings.h"
 
 SDL_TimerID timer;

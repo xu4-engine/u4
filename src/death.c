@@ -8,19 +8,20 @@
 #include <ctype.h>
 #include <assert.h>
 #include <time.h>
-
 #include "u4.h"
+
 #include "death.h"
-#include "game.h"
-#include "screen.h"
-#include "event.h"
-#include "player.h"
-#include "context.h"
-#include "portal.h"
+
 #include "annotation.h"
-#include "location.h"
 #include "city.h"
+#include "context.h"
+#include "event.h"
+#include "game.h"
+#include "location.h"
 #include "music.h"
+#include "player.h"
+#include "portal.h"
+#include "screen.h"
 #include "stats.h"
 
 #define REVIVE_WORLD_X 86

@@ -4,9 +4,10 @@
 
 #include <stdlib.h>
 
-#include "event.h"
 #include "direction.h"
+
 #include "debug.h"
+#include "event.h"
 
 /**
  * Adjusts the given coordinates one unit in the given direction.
@@ -69,7 +70,7 @@ Direction dirRotateCCW(Direction dir) {
 
 /**
  * Finds the appropriate direction to travel to get from one point to
- * another.  This algorithm will avoids getting trapped behind simple
+ * another.  This algorithm will avoid getting trapped behind simple
  * obstacles, but still fails with anything mildly complicated.
  */
 Direction dirFindPath(int from_x, int from_y, int to_x, int to_y, int valid_directions_mask) {
@@ -178,6 +179,9 @@ Direction dirRandomDir(int valid_directions_mask) {
     return d[rand() % n];
 }
 
+/**
+ * Translates a keyboard code into a direction
+ */
 Direction keyToDirection(int key) {        
     switch (key) {
     case U4_UP: return DIR_NORTH;        
@@ -188,6 +192,9 @@ Direction keyToDirection(int key) {
     }    
 }
 
+/**
+ * Translates a direction into a keyboard code
+ */
 int directionToKey(Direction dir) {
     switch(dir) {    
     case DIR_WEST: return U4_LEFT;

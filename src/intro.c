@@ -6,16 +6,17 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
-
 #include "u4.h"
+
 #include "intro.h"
-#include "settings.h"
+
 #include "event.h"
-#include "screen.h"
-#include "u4file.h"
-#include "savegame.h"
-#include "player.h"
 #include "music.h"
+#include "player.h"
+#include "savegame.h"
+#include "screen.h"
+#include "settings.h"
+#include "u4file.h"
 
 #define INTRO_TEXT_OFFSET 17445
 #define INTRO_MAP_OFFSET 30339

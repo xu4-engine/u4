@@ -7,16 +7,17 @@
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
-
 #include "u4.h"
+
 #include "screen.h"
-#include "location.h"
-#include "object.h"
+
 #include "context.h"
-#include "savegame.h"
-#include "names.h"
-#include "ttype.h"
 #include "dngview.h"
+#include "location.h"
+#include "names.h"
+#include "object.h"
+#include "savegame.h"
+#include "ttype.h"
 
 int screenNeedPrompt = 1;
 int screenCurrentCycle = 0;

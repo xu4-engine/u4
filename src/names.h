@@ -9,9 +9,8 @@
 #include "direction.h"
 
 /*
- * These routines convert the various enumerations for weapons,
- * classes, armor, etc. into the textual representations used in the
- * game.
+ * These routines convert the various enumerations for classes, reagents,
+ * etc. into the textual representations used in the game.
  */
 
 const char *getClassName(ClassType klass);

@@ -5,13 +5,14 @@
 #include <stdlib.h>
 
 #include "movement.h"
-#include "ttype.h"
-#include "context.h"
-#include "savegame.h"
-#include "location.h"
-#include "object.h"
+
 #include "combat.h"
+#include "context.h"
+#include "location.h"
 #include "monster.h"
+#include "object.h"
+#include "savegame.h"
+#include "ttype.h"
 
 /**
  * Moves an object on the map according to its movement behavior
@@ -19,7 +20,6 @@
  * tile direction changed, or object simply cannot move
  * (fixed objects, nowhere to go, etc.)
  */
-
 int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
     int dir,
         newx = obj->x,
@@ -114,7 +114,6 @@ int moveObject(Map *map, Object *obj, int avatarx, int avatary) {
 /**
  * Moves an object in combat according to its chosen combat action
  */
-
 int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
     int newx = obj->x,
         newy = obj->y,
@@ -179,7 +178,6 @@ int moveCombatObject(int act, Map *map, Object *obj, int targetx, int targety) {
  * Default handler for slowing movement.
  * Returns 1 if slowed, 0 if not slowed
  */
-
 int slowedByTile(int tile) {
     int slow;
     
@@ -206,7 +204,6 @@ int slowedByTile(int tile) {
  * Slowed depending on the direction of object with respect to wind direction
  * Returns 1 if slowed, 0 if not slowed
  */
-
 int slowedByWind(int direction) {
     /* 1 of 4 moves while trying to move into the wind succeeds */
     if (direction == c->windDirection)

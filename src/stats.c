@@ -5,18 +5,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "u4.h"
+
 #include "stats.h"
-#include "screen.h"
-#include "context.h"
-#include "savegame.h"
-#include "names.h"
-#include "ttype.h"
-#include "player.h"
-#include "debug.h"
-#include "weapon.h"
+
 #include "armor.h"
+#include "context.h"
+#include "debug.h"
+#include "names.h"
+#include "player.h"
+#include "savegame.h"
+#include "screen.h"
+#include "ttype.h"
+#include "weapon.h"
 
 #define STATS_AREA_WIDTH 15
 #define STATS_AREA_HEIGHT 8

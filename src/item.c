@@ -7,13 +7,14 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "context.h"
-#include "savegame.h"
-#include "location.h"
-#include "game.h"
-#include "event.h"
 #include "item.h"
+
+#include "context.h"
+#include "event.h"
+#include "game.h"
+#include "location.h"
 #include "player.h"
+#include "savegame.h"
 #include "screen.h"
 
 extern Map world_map;

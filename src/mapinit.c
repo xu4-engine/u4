@@ -7,12 +7,13 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
-
 #include "u4.h"
-#include "u4file.h"
-#include "map.h"
-#include "city.h"
+
 #include "mapinit.h"
+
+#include "city.h"
+#include "map.h"
+#include "u4file.h"
 
 extern Map world_map;
 

@@ -7,26 +7,27 @@
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include "u4.h"
 
 #include "camp.h"
-#include "u4.h"
-#include "context.h"
-#include "screen.h"
-#include "event.h"
-#include "names.h"
-#include "annotation.h"
-#include "object.h"
-#include "location.h"
-#include "music.h"
-#include "game.h"
-#include "player.h"
+
 #include "area.h"
-#include "ttype.h"
-#include "stats.h"
-#include "combat.h"
-#include "monster.h"
-#include "person.h"
+#include "annotation.h"
 #include "city.h"
+#include "combat.h"
+#include "context.h"
+#include "event.h"
+#include "game.h"
+#include "location.h"
+#include "monster.h"
+#include "music.h"
+#include "names.h"
+#include "object.h"
+#include "person.h"
+#include "player.h"
+#include "screen.h"
+#include "stats.h"
+#include "ttype.h"
 
 extern Map camp_map;
 extern Map brick_map;

@@ -8,14 +8,15 @@
 #include <assert.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
-
 #include "u4.h"
-#include "settings.h"
-#include "location.h"
-#include "context.h"
-#include "u4file.h"
+
 #include "music.h"
+
+#include "context.h"
 #include "error.h"
+#include "location.h"
+#include "settings.h"
+#include "u4file.h"
 
 const char * const musicFilenames[] = {
     NULL,

@@ -5,6 +5,8 @@
 #ifndef SAVEGAME_H
 #define SAVEGAME_H
 
+#include <stdio.h>
+
 struct _Object;
 
 typedef enum {

@@ -6,28 +6,29 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "u4.h"
 
 #include "combat.h"
-#include "context.h"
-#include "ttype.h"
-#include "location.h"
-#include "object.h"
+
 #include "annotation.h"
-#include "event.h"
-#include "savegame.h"
-#include "game.h"
 #include "area.h"
-#include "monster.h"
-#include "screen.h"
-#include "names.h"
-#include "player.h"
+#include "context.h"
 #include "death.h"
-#include "stats.h"
-#include "weapon.h"
 #include "debug.h"
-#include "settings.h"
+#include "event.h"
+#include "game.h"
+#include "location.h"
+#include "monster.h"
 #include "movement.h"
-#include "u4.h"
+#include "names.h"
+#include "object.h"
+#include "player.h"
+#include "savegame.h"
+#include "screen.h"
+#include "settings.h"
+#include "stats.h"
+#include "ttype.h"
+#include "weapon.h"
 
 extern Map brick_map;
 extern Map bridge_map;

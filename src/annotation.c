@@ -5,12 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "context.h"
-#include "map.h"
 #include "annotation.h"
-#include "event.h"
-#include "error.h"
+
+#include "context.h"
 #include "debug.h"
+#include "error.h"
+#include "event.h"
+#include "map.h"
 
 void annotationTimer(void *data);
 

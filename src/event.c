@@ -7,13 +7,14 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
-
 #include "u4.h"
-#include "screen.h"
+
 #include "event.h"
-#include "location.h"
+
 #include "context.h"
+#include "location.h"
 #include "savegame.h"
+#include "screen.h"
 
 typedef struct TimerCallbackNode {
     TimerCallback callback;

@@ -8,6 +8,7 @@
 #include <ctype.h>
 
 #include "u4file.h"
+
 #include "debug.h"
 
 extern int verbose;

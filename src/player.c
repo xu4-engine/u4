@@ -7,8 +7,9 @@
 #include <string.h>
 
 #include "player.h"
-#include "debug.h"
+
 #include "armor.h"
+#include "debug.h"
 #include "weapon.h"
 
 LostEighthCallback lostEighthCallback = NULL;

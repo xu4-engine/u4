@@ -3,15 +3,14 @@
  */
 
 #include <stdio.h>
-
 #include "u4.h"
+
+#include "dngview.h"
+
 #include "context.h"
+#include "location.h"
 #include "savegame.h"
 #include "ttype.h"
-#include "dngview.h"
-#include "location.h"
-#include "ttype.h"
-
 
 unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
     int x, y;

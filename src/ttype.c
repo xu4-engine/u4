@@ -7,10 +7,11 @@
 #include <libxml/parser.h>
 
 #include "ttype.h"
-#include "monster.h"
-#include "error.h"
-#include "u4file.h"
+
 #include "context.h"
+#include "error.h"
+#include "monster.h"
+#include "u4file.h"
 
 #define MASK_OPAQUE             0x0001
 #define MASK_SWIMABLE           0x0002

@@ -5,18 +5,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "u4.h"
+
 #include "spell.h"
-#include "direction.h"
+
+#include "annotation.h"
 #include "context.h"
+#include "debug.h"
+#include "direction.h"
+#include "game.h"
 #include "location.h"
 #include "moongate.h"
-#include "annotation.h"
-#include "ttype.h"
 #include "player.h"
-#include "game.h"
-#include "debug.h"
+#include "ttype.h"
 
 SpellCallback spellCallback = NULL; 
 

@@ -5,6 +5,8 @@
 #ifndef ITEM_H
 #define ITEM_H
 
+struct _Map;
+
 typedef enum {
     SC_NONE         = 0x00,
     SC_NEWMOONS     = 0x01,
@@ -16,7 +18,7 @@ typedef struct _ItemLocation {
     const char *name;
     const char *shortname;
     unsigned short x, y, z;
-    const Map* map;
+    const struct _Map* map;
     int (*isItemInInventory)(void *);
     void (*putItemInInventory)(void *);
     void (*useItem)(void *);
@@ -24,7 +26,7 @@ typedef struct _ItemLocation {
     unsigned char conditions;
 } ItemLocation;
 
-const ItemLocation *itemAtLocation(const Map *map, unsigned short x, unsigned short y, unsigned short z);
+const ItemLocation *itemAtLocation(const struct _Map *map, unsigned short x, unsigned short y, unsigned short z);
 void itemUse(const char *shortname);
 
 #endif

@@ -5,22 +5,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "u4.h"
+
 #include "map.h"
-#include "direction.h"
-#include "city.h"
-#include "portal.h"
-#include "object.h"
-#include "person.h"
+
 #include "annotation.h"
-#include "ttype.h"
 #include "area.h"
+#include "city.h"
 #include "context.h"
-#include "savegame.h"
+#include "debug.h"
+#include "direction.h"
 #include "monster.h"
 #include "movement.h"
-#include "debug.h"
+#include "object.h"
+#include "person.h"
+#include "portal.h"
+#include "savegame.h"
+#include "ttype.h"
 
 #define MAP_TILE_AT(mapptr, x, y, z) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 

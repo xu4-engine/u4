@@ -7,15 +7,15 @@
 #include <ctype.h>
 #include <SDL.h>
 
-#include "u4.h"
-#include "u4file.h"
+#include "debug.h"
+#include "error.h"
+#include "rle.h"
+#include "savegame.h"
 #include "settings.h"
 #include "screen.h"
-#include "savegame.h"
 #include "ttype.h"
-#include "rle.h"
-#include "error.h"
-#include "debug.h"
+#include "u4.h"
+#include "u4file.h"
 
 typedef enum {
     COMP_NONE,
