@@ -28,6 +28,7 @@ CXXSRCS=\
         direction.cpp \
         dngview.cpp \
         dungeon.cpp \
+        dungeonview.cpp \
         error.cpp \
         event.cpp \
         event_$(UI).cpp \
@@ -71,6 +72,7 @@ CXXSRCS=\
         tileanim.cpp \
         tilemap.cpp \
         tileset.cpp \
+        tileview.cpp \
         u4.cpp \
         u4_$(UI).cpp \
         u4file.cpp \
