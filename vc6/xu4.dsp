@@ -81,12 +81,13 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 SDL.lib SDLmain.lib SDL_mixer.lib libxml2.lib zdll.lib user32.lib shell32.lib comdlg32.lib gdi32.lib kernel32.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386 /nodefaultlib:"LIBC" /out:"c:\xu4\xu4.exe" /libpath:"..\lib"
+# ADD LINK32 SDL.lib SDLmain.lib SDL_mixer.lib libxml2.lib zlib.lib user32.lib shell32.lib comdlg32.lib gdi32.lib kernel32.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386 /nodefaultlib:"LIBC" /out:"c:\xu4\xu4.exe" /libpath:"..\lib"
 # SUBTRACT LINK32 /map
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
 PreLink_Cmds=set U4ZIPFILE=ultima4.zip
-PostBuild_Cmds=copy ..\bin\*.dll c:\xu4	copy ..\lib\*.dll c:\xu4
+PostBuild_Desc====Installation===
+PostBuild_Cmds=@ECHO OFF	set U4PATH=c:\xu4	echo Install directory set to %U4PATH%	@ECHO ON	xcopy ..\lib\*.dll %U4PATH%\. /T /E /Y	xcopy ..\conf\*.xml %U4PATH%\conf\. /T /E /Y	xcopy ..\conf\dtd\*.dtd %U4PATH%\conf\dtd\. /T /E /Y	xcopy ..\graphics %U4PATH%\graphics\. /T /E /Y	xcopy ..\mid %U4PATH%\mid\. /T /E /Y	xcopy ..\sound %U4PATH%\sound\. /T /E /Y
 # End Special Build Tool
 
 !ENDIF 
@@ -538,6 +539,10 @@ SOURCE=..\src\utils.cpp
 # Begin Source File
 
 SOURCE=..\src\utils.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\vc6.h
 # End Source File
 # Begin Source File
 
