@@ -46,7 +46,7 @@ int menuShow(Menu menu) {
         
             if (menuItem->isVisible) {
                 if (menuItem->isSelected)
-                    screenTextAt(menuItem->x-1, menuItem->y, "*%s", menuItem->text);
+                    screenTextAt(menuItem->x-1, menuItem->y, "\010%s", menuItem->text);
                 else screenTextAt(menuItem->x, menuItem->y, menuItem->text);
 
                 if (menuItem->isHighlighted) {

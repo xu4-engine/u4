@@ -1174,6 +1174,20 @@ int gameSpellMixMenuKeyHandler(int key, void *data) {
     Menu *menu = (Menu *)data;    
     
     switch(key) {
+    case 'a':
+    case 'b':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+    case 'g':
+    case 'h':
+        /* select the corresponding reagent */
+        if (menuCheckVisible(*menu)) {
+            *menu = menuActivateItem(*menu, (short)(key-'a'), ACTIVATE_NORMAL);
+            gameSpellMixMenuKeyHandler(U4_SPACE, menu);
+        }
+        break;
     case U4_UP:
         if (menuCheckVisible(*menu))
             *menu = menuHighlightNew(*menu, menuGetPreviousItem(*menu));
@@ -1274,6 +1288,13 @@ int gameSpellMixHowMany(const char *message) {
     eventHandlerPopKeyHandler();
 
     num = (int) strtol(message, NULL, 10);
+    
+    /* if they ask for more than will give them 99, only use what they need */
+    if (num > 99 - c->saveGame->mixtures[mixSpell]) {
+        num = 99 - c->saveGame->mixtures[mixSpell];
+        screenMessage("\nOnly need %d!", num);
+    }
+    
     screenMessage("\nMixing %d...\n", num);
 
     for (i = 0; i < REAG_MAX; i++) {
@@ -1285,7 +1306,7 @@ int gameSpellMixHowMany(const char *message) {
             (*c->location->finishTurn)();
             return 0;
         }
-    }
+    }    
        
     screenMessage("\nYou mix the Reagents, and...\n");
     if (spellMix(mixSpell, mix)) {
