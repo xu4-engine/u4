@@ -284,24 +284,20 @@ int mapLoadWorld(Map *map) {
     if (!world)
         errorFatal("unable to load map data");
 
-    /* the map must be 256x256 to be read from the world map file */
-    ASSERT(map->width == MAP_WIDTH, "map width is %d, should be %d", map->width, MAP_WIDTH);
-    ASSERT(map->height == MAP_HEIGHT, "map height is %d, should be %d", map->height, MAP_HEIGHT);
-
-    map->data = (unsigned char *) malloc(MAP_HEIGHT * MAP_WIDTH);
+    map->data = (unsigned char *) malloc(map->height * map->width);
     if (!map->data)
         return 0;
 
-    xch = 0;
-    ych = 0;
-    x = 0;
-    y = 0;
+    if (map->chunk_height == 0)
+        map->chunk_height = map->height;
+    if (map->chunk_width == 0)
+        map->chunk_width = map->width;
 
-    for(ych = 0; ych < MAP_VERT_CHUNKS; ++ych) {
-        for(xch = 0; xch < MAP_HORIZ_CHUNKS; ++xch) {
-            for(y = 0; y < MAP_CHUNK_HEIGHT; ++y) {
-                for(x = 0; x < MAP_CHUNK_WIDTH; ++x)
-                    map->data[x + (y * MAP_CHUNK_WIDTH * MAP_HORIZ_CHUNKS) + (xch * MAP_CHUNK_WIDTH) + (ych * MAP_CHUNK_HEIGHT * MAP_HORIZ_CHUNKS * MAP_CHUNK_WIDTH)] = u4fgetc(world);
+    for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
+        for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
+            for(y = 0; y < map->chunk_height; ++y) {
+                for(x = 0; x < map->chunk_width; ++x)
+                    map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = u4fgetc(world);
             }
         }
     }
