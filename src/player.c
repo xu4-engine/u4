@@ -285,6 +285,12 @@ void playerEndTurn(SaveGame *saveGame) {
         default:
             break;
         }
+
+        /* regenerate magic points */
+        if ((saveGame->players[i].status == STAT_GOOD || 
+             saveGame->players[i].status == STAT_POISONED) &&
+            saveGame->players[i].mp < playerGetMaxMp(&(saveGame->players[i])))
+            saveGame->players[i].mp++;
     }
 }
 
