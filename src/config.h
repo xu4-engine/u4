@@ -45,7 +45,7 @@ public:
     const std::string getName() const { return name; }
 
     std::string getString(const std::string &name) const;
-    int getInt(const std::string &name) const;
+    int getInt(const std::string &name, int defaultValue = 0) const;
     bool getBool(const std::string &name) const;
     int getEnum(const std::string &name, const char *enumValues[]) const;
 

@@ -129,13 +129,13 @@ string ConfigElement::getString(const string &name) const {
     return result;
 }
 
-int ConfigElement::getInt(const string &name) const {
+int ConfigElement::getInt(const string &name, int defaultValue) const {
     long result;
     xmlChar *prop;
 
     prop = xmlGetProp(node, reinterpret_cast<const xmlChar *>(name.c_str()));
     if (!prop)
-        return 0;
+        return defaultValue;
 
     result = strtol(reinterpret_cast<const char *>(prop), NULL, 0);
     xmlFree(prop);
