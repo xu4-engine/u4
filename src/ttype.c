@@ -97,9 +97,9 @@ static const short _ttype_info[] = {
     0,                                          /* altar */
     UNWALKABLE,                                 /* roast */
     UNWALKABLE | MASK_ANIMATED,                 /* lava */
-    0,                                          /* stone */
-    0,                                          /* orb1 */
-    0                                           /* orb2 */
+    0,                                          /* miss flash */
+    0,                                          /* magic flash */
+    0                                           /* hit flash */
 };
 
 int tileIsWalkable(unsigned char tile) {

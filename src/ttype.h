@@ -27,6 +27,8 @@
 #define LIGHTNINGFIELD_TILE 0x45
 #define FIREFIELD_TILE 0x46
 #define SLEEPFIELD_TILE 0x47
+#define MISSFLASH_TILE 0x4D
+#define HITFLASH_TILE 0x4F
 #define BLACK_TILE 0x7e
 
 typedef enum {
