@@ -1290,10 +1290,15 @@ bool GameController::keyPressed(int key) {
             if (item) {
                 if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
                     screenMessage("Nothing Here!\n");
-                else {                
-                    if (item->name)
-                        screenMessage("You find...\n%s!\n", item->name);
-                    (*item->putItemInInventory)(item->data);
+                else {
+                    if ((((int)item->data) == ITEM_SKULL) && (c->saveGame->items & ITEM_SKULL_DESTROYED)) {
+                        // you can't find the skull again once it's destroyed */
+                        screenMessage("Nothing Here!\n");
+                    } else {
+                        if (item->name)
+                            screenMessage("You find...\n%s!\n", item->name);
+                        (*item->putItemInInventory)(item->data);
+                    }
                 }
             } else
                 screenMessage("Nothing Here!\n");
