@@ -117,7 +117,7 @@ void deathRevive() {
     gameSetViewMode(VIEW_NORMAL);
     musicPlay();
 
-    playerRevive(c->saveGame);
+    playerReviveParty(c->saveGame);
 
     screenEnableCursor();
     c->statsItem = STATS_PARTY_OVERVIEW;
