@@ -417,10 +417,11 @@ int saveGameMonstersWrite(const Object *objs, FILE *f) {
 
     for (obj = objs; obj != NULL; obj = obj->next) {
         /* Read in the monsters first */
-        if ((obj->objType == OBJECT_MONSTER) && (nMonsters < MONSTERTABLE_MONSTERS_SIZE))
+        if ((obj->objType == OBJECT_MONSTER) && (obj->movement_behavior != MOVEMENT_FIXED) &&
+            (nMonsters < MONSTERTABLE_MONSTERS_SIZE))
             monsterTable[nMonsters++] = obj;
         /* Add inanimate objects after the monster block in save file */
-        else if ((obj->objType == OBJECT_UNKNOWN) && (nObjects < MONSTERTABLE_OBJECTS_SIZE))
+        else if (nObjects < MONSTERTABLE_OBJECTS_SIZE)
             monsterTable[MONSTERTABLE_MONSTERS_SIZE + nObjects++] = obj;
     }    
 

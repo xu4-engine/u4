@@ -228,58 +228,62 @@ void combatFinishTurn() {
         party[focus]->hasFocus = 0;
     }
 
-    do {
-        /* put the focus on the next party member */
-        focus++;
+    /* check to see if the player gets to go again */
+    if ((c->aura != AURA_QUICKNESS) || (rand() % 2 == 0)) {
+        do {
+            /* put the focus on the next party member */
+            focus++;
 
-        annotationCycle();
+            annotationCycle();
 
-        /* move monsters and wrap around at end */
-        if (focus >= c->saveGame->members) {            
+            /* move monsters and wrap around at end */
+            if (focus >= c->saveGame->members) {            
             
-            combatMoveMonsters();
+                combatMoveMonsters();
 
-            focus = 0;
-            if (combatIsLost()) {
-                if (!playerPartyDead(c->saveGame)) {
-                    if (monsterIsGood(monsterForTile(monsterObj->tile)))
-                        playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
-                    else
-                        playerAdjustKarma(c->saveGame, KA_FLED_EVIL);
+                focus = 0;
+                if (combatIsLost()) {
+                    if (!playerPartyDead(c->saveGame)) {
+                        if (monsterIsGood(monsterForTile(monsterObj->tile)))
+                            playerAdjustKarma(c->saveGame, KA_SPARED_GOOD);
+                        else
+                            playerAdjustKarma(c->saveGame, KA_FLED_EVIL);
+                    }
+
+                    eventHandlerPopKeyHandler();
+                    combatEnd();
+                    return;
+                }
+                /* End combat immediately if the enemy has fled */
+                else if (combatIsWon()) {
+                    eventHandlerPopKeyHandler();
+                    combatEnd();
+                    return;
                 }
 
-                eventHandlerPopKeyHandler();
-                combatEnd();
-                return;
-            }
-            /* End combat immediately if the enemy has fled */
-            else if (combatIsWon()) {
-                eventHandlerPopKeyHandler();
-                combatEnd();
-                return;
-            }
+                /* adjust food and moves */
+                playerEndTurn(c->saveGame);
 
-            /* adjust food and moves */
-            playerEndTurn(c->saveGame);
+                /* put a sleeping person in place of the player,
+                   or restore an awakened member to their original state */
+                for (i = 0; i < c->saveGame->members; i++) {                
+                    if (party[i]) {
+                        if (c->saveGame->players[i].status == STAT_SLEEPING)
+                            party[i]->tile = CORPSE_TILE;
+                        else party[i]->tile = tileForClass(c->saveGame->players[i].klass);
+                    }
+                }
 
-            /* put a sleeping person in place of the player,
-               or restore an awakened member to their original state */
-            for (i = 0; i < c->saveGame->members; i++) {                
-                if (party[i]) {
-                    if (c->saveGame->players[i].status == STAT_SLEEPING)
-                        party[i]->tile = CORPSE_TILE;
-                    else party[i]->tile = tileForClass(c->saveGame->players[i].klass);
+                /* check if aura has expired */
+                if (c->auraDuration > 0) {
+                    if (--c->auraDuration == 0)
+                        c->aura = AURA_NONE;
                 }
             }
+        } while (!party[focus] ||    /* dead */
+                 c->saveGame->players[focus].status == STAT_SLEEPING);
+    }
 
-            /* check if aura has expired */
-            if (c->auraDuration > 0) {
-                if (--c->auraDuration == 0)
-                    c->aura = AURA_NONE;
-            }
-        }
-    } while (!party[focus] ||    /* dead */
-             c->saveGame->players[focus].status == STAT_SLEEPING);
     party[focus]->hasFocus = 1;
 
     screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, weaponGetName(c->saveGame->players[focus].weapon));
@@ -519,12 +523,11 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
 int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
     int player;
     const Monster *m;
-    int i, xp, hittile, misstile;
+    int i, hittile, misstile;
     CoordActionInfo* info = (CoordActionInfo*)data;    
     int oldx = info->prev_x,
         oldy = info->prev_y;  
-    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
-    int groundTile;
+    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;    
     
     info->prev_x = x;
     info->prev_y = y;
@@ -958,8 +961,7 @@ int combatChooseWeaponDir(int key, void *data) {
  * Key handler for choosing the range of a wepaon
  */
 int combatChooseWeaponRange(int key, void *data) {    
-    CoordActionInfo *info = (CoordActionInfo *) data;
-    int weapon = c->saveGame->players[info->player].weapon;    
+    CoordActionInfo *info = (CoordActionInfo *) data;    
 
     if ((key >= '0') && (key <= (info->range + '0'))) {
         info->range = key - '0';

@@ -321,13 +321,17 @@ void gameFinishTurn() {
 
         /* Monsters cannot spawn, move or attack while the avatar is on the balloon */
         if (!c->saveGame->balloonstate) {
+
+            /* Move monsters and see if something is attacking the avatar */
             attacker = mapMoveObjects(c->location->map, c->location->x, c->location->y, c->location->z);        
 
+            /* Something's attacking!  Start combat! */
             if (attacker) {
                 gameMonsterAttack(attacker);
                 return;
             }       
 
+            /* Spawn new monsters */
             gameCheckRandomMonsters();
         }
 
@@ -1001,8 +1005,7 @@ int gameGetPhaseKeyHandler(int key, void *data) {
  * specific routine.
  */
 int gameGetCoordinateKeyHandler(int key, void *data) {
-    CoordActionInfo *info = (CoordActionInfo *) data;    
-    int distance = 0;
+    CoordActionInfo *info = (CoordActionInfo *) data;
     Direction dir = keyToDirection(key);
     int valid = (dir != DIR_NONE);
     info->dir = MASK_DIR(dir);
@@ -2471,7 +2474,8 @@ void gameFixupMonsters() {
 
     for (obj = c->location->map->objects; obj; obj = obj->next) {
         /* translate unknown objects into monster objects if necessary */
-        if (obj->objType == OBJECT_UNKNOWN && monsterForTile(obj->tile) != NULL) {
+        if (obj->objType == OBJECT_UNKNOWN && monsterForTile(obj->tile) != NULL &&
+            obj->movement_behavior != MOVEMENT_FIXED) {
             obj->objType = OBJECT_MONSTER;
             obj->monster = monsterForTile(obj->tile);
         }
@@ -2514,25 +2518,32 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
     CoordActionInfo* info = (CoordActionInfo*)data;
     int oldx = info->prev_x,
         oldy = info->prev_y;  
-    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;    
-    int xdir = DIR_NONE,
-        ydir = DIR_NONE;
-    Monster *m = mapObjectAt(c->location->map, info->origin_x, info->origin_y, c->location->z)->monster;
+    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;   
+    Object *obj;
+    Monster *m;
     int hittile, misstile;
 
     info->prev_x = x;
     info->prev_y = y;
 
-    hittile = m->rangedhittile;
-    misstile = m->rangedmisstile;
+    /* Find the monster that made the range attack */
+    obj = mapObjectAt(c->location->map, info->origin_x, info->origin_y, c->location->z);
+    m = (obj && obj->objType == OBJECT_MONSTER) ? obj->monster : NULL;
+
+    /* Figure out what the range attack should look like */
+    hittile = (m) ? m->rangedhittile : HITFLASH_TILE;
+    misstile = (m) ? m->rangedmisstile : MISSFLASH_TILE;
 
     /* Remove the last weapon annotation left behind */
     if ((distance > 0) && (oldx >= 0) && (oldy >= 0))
         annotationRemove(oldx, oldy, c->location->z, c->location->map->id, misstile);
     
+    /* Attack missed, stop now */
     if (x == -1 && y == -1) {
         return 1;
     }
+    
+    /* See if the attack hits the avatar */
     else {
         Object *obj = NULL;
 
@@ -2551,6 +2562,7 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
             return 1;
         }
         
+        /* Show the attack annotation */
         annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, misstile));
         gameUpdateScreen();
 
