@@ -12,6 +12,13 @@
 #define BRUSH_TILE 0x5
 #define FOREST_TILE 0x6
 #define HILLS_TILE 0x7
+#define DUNGEON_TILE 0x9
+#define CITY_TILE 0xa
+#define CASTLE_TILE 0xb
+#define TOWN_TILE 0xc
+#define LCB1_TILE 0xd
+#define LCB2_TILE 0xe
+#define LCB3_TILE 0xf
 #define BRIDGE_TILE 0x17
 #define NORTHBRIDGE_TILE 0x19
 #define SOUTHBRIDGE_TILE 0x1a
