@@ -38,6 +38,7 @@ CXXSRCS=\
         imageloader.cpp \
         imageloader_png.cpp \
         imageloader_u4.cpp \
+        imagemgr.cpp \
         intro.cpp \
         item.cpp \
         location.cpp \
