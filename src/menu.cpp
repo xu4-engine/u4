@@ -132,8 +132,8 @@ void Menu::show(TextView *view) {
                 view->textAt(mi->x, mi->y, mi->text.c_str());
 
             if (mi->isHighlighted()) {
-                view->enableCursor();
                 view->setCursorPos(mi->x - 2, mi->y, true);
+                view->enableCursor();
             }
         }
     }
