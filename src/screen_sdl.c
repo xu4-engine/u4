@@ -287,6 +287,7 @@ void screenReInit() {
     tilesetDeleteAllTilesets(); /* unload tilesets */
     screenDelete(); /* delete screen stuff */            
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
+    eventHandlerInit();    
     tilesetLoadAllTilesetsFromXml("tilesets.xml"); /* re-load tilesets */
     introInit();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
