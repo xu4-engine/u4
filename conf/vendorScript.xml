@@ -1127,7 +1127,7 @@
             <item choice="c" name="Resurrection" desc="Resurrection" price="300" type="resurrect"/>
         </vendor>
 
-        <vendor id="Serpents Hold" name="The Courage Healer" healer="Nameless">
+        <vendor id="Serpents Hold" name="The Courage Healer" healer="Windwalker">
             <item choice="a" name="Curing" desc="A curing" price="100" type="cure"/>
             <item choice="b" name="Healing" desc="A healing" price="200" type="fullheal"/>
             <item choice="c" name="Resurrection" desc="Resurrection" price="300" type="resurrect"/>
