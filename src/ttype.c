@@ -186,8 +186,8 @@ int tileCanTalkOver(unsigned char tile) {
 
 TileEffect tileGetEffect(unsigned char tile) {
     if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
-	return (_ttype_info[tile] & MASK_EFFECT);
-    return 0;
+	return (TileEffect) (_ttype_info[tile] & MASK_EFFECT);
+    return (TileEffect) 0;
 }
 
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile) {

@@ -176,7 +176,7 @@ void screenUpdateMoons() {
 
 void screenUpdateWind() {
     screenEraseTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
-    screenTextAt(WIND_AREA_X, WIND_AREA_Y, "Wind %s", getDirectionName(c->windDirection));
+    screenTextAt(WIND_AREA_X, WIND_AREA_Y, "Wind %s", getDirectionName((Direction) c->windDirection));
     screenRedrawTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
 }
 

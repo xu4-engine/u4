@@ -94,7 +94,7 @@ const Spell spells[] = {
 #define N_SPELLS (sizeof(spells) / sizeof(spells[0]))
 
 Mixture *mixtureNew() {
-    Mixture *mix = malloc(sizeof(Mixture));
+    Mixture *mix = (Mixture *) malloc(sizeof(Mixture));
     memset(mix, 0, sizeof(Mixture));
     return mix;
 }
@@ -221,7 +221,7 @@ static int spellDispel(int dir) {
 
     x = c->saveGame->x;
     y = c->saveGame->y;
-    dirMove(dir, &x, &y);
+    dirMove((Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->map, x, y))
         return 0;
 
@@ -253,7 +253,7 @@ static int spellEField(int dir) {
 
     x = c->saveGame->x;
     y = c->saveGame->y;
-    dirMove(dir, &x, &y);
+    dirMove((Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->map, x, y))
         return 0;
 

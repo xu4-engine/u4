@@ -258,9 +258,9 @@ char *vendorGetBuySellResponse(Conversation *cnv, const char *response) {
                 const char *name;
 
                 if (cnv->talker->npcType == NPC_VENDOR_WEAPONS)
-                    name = getWeaponName(info->vendorInventory[cnv->talker->vendorIndex][i]);
+                    name = getWeaponName((WeaponType) info->vendorInventory[cnv->talker->vendorIndex][i]);
                 else
-                    name = getArmorName(info->vendorInventory[cnv->talker->vendorIndex][i]);
+                    name = getArmorName((ArmorType) info->vendorInventory[cnv->talker->vendorIndex][i]);
 
                 snprintf(buffer, sizeof(buffer), "%c-%s\n", 'A' + info->vendorInventory[cnv->talker->vendorIndex][i], name);
                 newreply = concat(reply, buffer, NULL);
@@ -360,10 +360,10 @@ char *vendorGetSellItemResponse(Conversation *cnv, const char *response) {
 
     switch (cnv->talker->npcType) {
     case NPC_VENDOR_WEAPONS:
-        reply = concat(vendorText[WV_HOWMANY], getWeaponName(cnv->item), vendorText[WV_TOSELL], NULL);
+        reply = concat(vendorText[WV_HOWMANY], getWeaponName((WeaponType) cnv->item), vendorText[WV_TOSELL], NULL);
         break;
     case NPC_VENDOR_ARMOR:
-        reply = concat(vendorText[WV_HOWMANY], getArmorName(cnv->item), vendorText[WV_TOSELL], NULL);
+        reply = concat(vendorText[WV_HOWMANY], getArmorName((ArmorType) cnv->item), vendorText[WV_TOSELL], NULL);
         break;
     default:
         assert(0);              /* shouldn't happen */

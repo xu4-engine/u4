@@ -203,7 +203,11 @@ char *talkerGetIntro(Conversation *cnv) {
     char *prompt, *intro;
 
     personGetPrompt(cnv, &prompt);
-    intro = malloc(strlen(fmt) - 8 + strlen(cnv->talker->description) + strlen(cnv->talker->pronoun) + strlen(cnv->talker->name) + strlen(prompt) + 1);
+    intro = (char *) malloc(strlen(fmt) - 8 + 
+                            strlen(cnv->talker->description) + 
+                            strlen(cnv->talker->pronoun) + 
+                            strlen(cnv->talker->name) + 
+                            strlen(prompt) + 1);
 
     sprintf(intro, fmt, cnv->talker->description, cnv->talker->pronoun, cnv->talker->name, prompt);
     if (isupper(intro[9]))
@@ -224,12 +228,12 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, "look", 4) == 0) {
-        reply = malloc(strlen(cnv->talker->pronoun) + 7 + strlen(cnv->talker->description) + 1);
+        reply = (char *) malloc(strlen(cnv->talker->pronoun) + 7 + strlen(cnv->talker->description) + 1);
         sprintf(reply, "%s says: %s", cnv->talker->pronoun, cnv->talker->description);
     }
 
     else if (strncasecmp(inquiry, "name", 4) == 0) {
-        reply = malloc(strlen(cnv->talker->pronoun) + 12 + strlen(cnv->talker->name) + 1);
+        reply = (char *) malloc(strlen(cnv->talker->pronoun) + 12 + strlen(cnv->talker->name) + 1);
         sprintf(reply, "%s says: I am %s", cnv->talker->pronoun, cnv->talker->name);
     }
 
@@ -377,7 +381,7 @@ char *lordBritishGetIntro(Conversation *cnv) {
     }
 
     if (c->saveGame->lbintro) {
-        intro = malloc(strlen(lbFmt) - 2 + strlen(c->saveGame->players[0].name) + 1);
+        intro = (char *) malloc(strlen(lbFmt) - 2 + strlen(c->saveGame->players[0].name) + 1);
         sprintf(intro, lbFmt, c->saveGame->players[0].name);
     } else {
         intro = strdup("Lord British rises and says: At long last!\n thou hast come!  We have waited such a long, long time...\n");
@@ -464,7 +468,7 @@ char *hawkwindGetResponse(Conversation *cnv, const char *inquiry) {
         
     /* check if asking about a virtue */
     for (v = 0; v < VIRT_MAX; v++) {
-        if (strncasecmp(inquiry, getVirtueName(v), 4) == 0) {
+        if (strncasecmp(inquiry, getVirtueName((Virtue) v), 4) == 0) {
             virtue = v;
             virtueLevel = c->saveGame->karma[v];
         }
@@ -509,7 +513,7 @@ char *concat(const char *str, ...) {
     unsigned int allocated = 1;
     char *result, *p;
 
-    result = malloc(allocated);
+    result = (char *) malloc(allocated);
     if (allocated) {
         const char *s;
         char *newp;
@@ -523,7 +527,7 @@ char *concat(const char *str, ...) {
             /* resize the allocated memory if necessary.  */
             if (p + len + 1 > result + allocated) {
                 allocated = (allocated + len) * 2;
-                newp = realloc(result, allocated);
+                newp = (char *) realloc(result, allocated);
                 if (!newp) {
                     free(result);
                     return NULL;
@@ -540,7 +544,7 @@ char *concat(const char *str, ...) {
         *p++ = '\0';
 
         /* resize memory to the optimal size.  */
-        newp = realloc(result, p - result);
+        newp = (char *) realloc(result, p - result);
         if (newp)
             result = newp;
 

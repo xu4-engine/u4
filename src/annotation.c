@@ -12,7 +12,7 @@
 #include "annotation.h"
 
 void annotationAdd(int x, int y, int ttl, unsigned char tile) {
-    Annotation *annotation = malloc(sizeof(Annotation));
+    Annotation *annotation = (Annotation *) malloc(sizeof(Annotation));
     annotation->x = x;
     annotation->y = y;
     annotation->time_to_live = ttl;

@@ -46,5 +46,5 @@ Direction dirReverse(Direction dir) {
         assert(0);              /* shouldn't happen */
     }
 
-    return 0;
+    return (Direction) 0;
 }

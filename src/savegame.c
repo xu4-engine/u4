@@ -259,25 +259,25 @@ int saveGamePlayerRecordRead(SaveGamePlayerRecord *record, FILE *f) {
         
     if (!readShort(&s, f))
         return 0;
-    record->weapon = s;
+    record->weapon = (WeaponType) s;
     if (!readShort(&s, f))
         return 0;
-    record->armor = s;
+    record->armor = (ArmorType) s;
 
     for (i = 0; i < 16; i++) {
-        if (!readChar(&(record->name[i]), f))
+        if (!readChar((unsigned char *) &(record->name[i]), f))
             return 0;
     }
 
     if (!readChar(&ch, f))
         return 0;
-    record->sex = ch;
+    record->sex = (SexType) ch;
     if (!readChar(&ch, f))
       return 0;
-    record->klass = ch;
+    record->klass = (ClassType) ch;
     if (!readChar(&ch, f))
         return 0;
-    record->status = ch;
+    record->status = (StatusType) ch;
 
     return 1;
 }
@@ -430,7 +430,7 @@ int saveGameMonstersRead(Object **objs, FILE *f) {
     for (i = MONSTERTABLE_SIZE - 1; i >= 0; i--) {
         if (monsterTable[i].tile != 0 &&
             monsterTable[i].prevtile != 0) {
-            obj = malloc(sizeof(Object));
+            obj = (Object *) malloc(sizeof(Object));
             obj->tile = monsterTable[i].tile;
             obj->x = monsterTable[i].x;
             obj->y = monsterTable[i].y;

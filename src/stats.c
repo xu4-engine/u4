@@ -156,7 +156,7 @@ void statsShowWeapons() {
         if (n >= 100)
             n = 99;
         if (n >= 1) {
-            screenTextAt(STATS_AREA_X + col, line++, "%c-%d-%s", w - WEAP_HANDS + 'A', n, getWeaponAbbrev(w));
+            screenTextAt(STATS_AREA_X + col, line++, "%c-%d-%s", w - WEAP_HANDS + 'A', n, getWeaponAbbrev((WeaponType) w));
             if (line >= (STATS_AREA_Y+STATS_AREA_HEIGHT)) {
                 line = STATS_AREA_Y;
                 col += 8;
@@ -177,7 +177,7 @@ void statsShowArmor() {
     screenTextAt(STATS_AREA_X, line++, "A  -No Armour");
     for (a = ARMR_NONE + 1; a < ARMR_MAX; a++) {
         if (c->saveGame->armor[a] > 0)
-            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", a - ARMR_NONE + 'A', c->saveGame->armor[a], getArmorName(a));
+            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", a - ARMR_NONE + 'A', c->saveGame->armor[a], getArmorName((ArmorType) a));
     }
 }
 
@@ -212,7 +212,7 @@ void statsShowItems() {
         j = 0;
         for (i = 0; i < 8; i++) {
             if (c->saveGame->stones & (1 << i))
-                buffer[j++] = getStoneName(i)[0];
+                buffer[j++] = getStoneName((Virtue) i)[0];
         }
         buffer[j] = '\0';
         screenTextAt(STATS_AREA_X, line++, "Stones:%s", buffer);
@@ -221,7 +221,7 @@ void statsShowItems() {
         j = 0;
         for (i = 0; i < 8; i++) {
             if (c->saveGame->runes & (1 << i))
-                buffer[j++] = getVirtueName(i)[0];
+                buffer[j++] = getVirtueName((Virtue) i)[0];
         }
         buffer[j] = '\0';
         screenTextAt(STATS_AREA_X, line++, "Runes:%s", buffer);
@@ -275,9 +275,9 @@ void statsShowReagents() {
         if (n >= 100)
             n = 99;
         if (n >= 10)
-            screenTextAt(STATS_AREA_X, line++, "%c%d-%s", r - REAG_ASH + 'A', n, getReagentName(r));
+            screenTextAt(STATS_AREA_X, line++, "%c%d-%s", r - REAG_ASH + 'A', n, getReagentName((Reagent) r));
         else if (n >= 1)
-            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", r - REAG_ASH + 'A', n, getReagentName(r));
+            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", r - REAG_ASH + 'A', n, getReagentName((Reagent) r));
     }
 }
 

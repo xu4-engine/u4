@@ -49,7 +49,7 @@ int eventHandlerGetExitFlag() {
  * generates 1 callback per second, etc.
  */
 void eventHandlerAddTimerCallback(void (*callback)(), int interval) {
-    TimerCallbackNode *n = malloc(sizeof(TimerCallbackNode));
+    TimerCallbackNode *n = (TimerCallbackNode *) malloc(sizeof(TimerCallbackNode));
 
     assert(interval > 0);
     if (n) {
@@ -121,7 +121,7 @@ void eventHandlerCallTimerCallbacks() {
  * Push a key handler onto the top of the keyhandler stack.
  */
 void eventHandlerPushKeyHandler(KeyHandler kh) {
-    KeyHandlerNode *n = malloc(sizeof(KeyHandlerNode));
+    KeyHandlerNode *n = (KeyHandlerNode *) malloc(sizeof(KeyHandlerNode));
     if (n) {
         n->kh = kh;
         n->data = NULL;
@@ -135,7 +135,7 @@ void eventHandlerPushKeyHandler(KeyHandler kh) {
  * provide specific data to pass to the handler.
  */
 void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data) {
-    KeyHandlerNode *n = malloc(sizeof(KeyHandlerNode));
+    KeyHandlerNode *n = (KeyHandlerNode *) malloc(sizeof(KeyHandlerNode));
     if (n) {
         n->kh = kh;
         n->data = data;

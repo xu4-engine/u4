@@ -24,7 +24,7 @@
 #define MAP_TILE_AT(mapptr, x, y) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 
 int mapRead(City *city, FILE *ult, FILE *tlk) {
-    char conv_idx[CITY_MAX_PERSONS];
+    unsigned char conv_idx[CITY_MAX_PERSONS];
     unsigned char c;
     int i, j;
     char tlk_buffer[288];
@@ -101,8 +101,8 @@ int mapRead(City *city, FILE *ult, FILE *tlk) {
             if (conv_idx[j] == i+1) {
                 char *ptr = tlk_buffer + 3;
 
-                city->persons[j].questionTrigger = tlk_buffer[0];
-                city->persons[j].questionType = tlk_buffer[1];
+                city->persons[j].questionTrigger = (PersonQuestionTrigger) tlk_buffer[0];
+                city->persons[j].questionType = (PersonQuestionType) tlk_buffer[1];
                 city->persons[j].turnAwayProb = tlk_buffer[2];
 
                 city->persons[j].name = strdup(ptr);
@@ -144,7 +144,7 @@ int mapRead(City *city, FILE *ult, FILE *tlk) {
             city->persons[i].npcType = NPC_TALKER_GUARD;
         for (j = 0; j < 12; j++) {
             if (city->person_types[j] == (i + 1))
-                city->persons[i].npcType = j + NPC_TALKER_COMPANION;
+                city->persons[i].npcType = (PersonNpcType) (j + NPC_TALKER_COMPANION);
         }
     }
 
@@ -355,7 +355,7 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
 
         case MOVEMENT_WANDER:
             if (rand() % 2 == 0)
-                dirMove(rand() % 4, &newx, &newy);
+                dirMove((Direction) (rand() % 4), &newx, &newy);
             break;
                 
         case MOVEMENT_ATTACK_AVATAR:

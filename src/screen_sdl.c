@@ -394,7 +394,7 @@ int screenLoadTileSetEga(SDL_Surface **surface, int width, int height, int n, co
         return 0;
     }
 
-    p = unscaled->pixels;
+    p = (Uint8 *) unscaled->pixels;
     for (y = 0; y < height * n; y++) {
         for (x = 0; x < width; x += 2) {
             int temp = getc(in);
@@ -438,7 +438,7 @@ int screenLoadTileSetVga(SDL_Surface **surface, int width, int height, int n, co
         return 0;
     }
 
-    p = unscaled->pixels;
+    p = (Uint8 *) unscaled->pixels;
     for (y = 0; y < height * n; y++) {
         for (x = 0; x < width; x++) {
             int temp = getc(in);
@@ -478,7 +478,7 @@ int screenLoadRleImageEga(SDL_Surface **surface, int width, int height, const ch
         return 0;
     }
 
-    p = unscaled->pixels;
+    p = (Uint8 *) unscaled->pixels;
     while (p < ((Uint8 *)unscaled->pixels) + (unscaled->pitch * unscaled->h)) {
         int temp = getc(in);
         if (temp == RLE_RUNSTART) {
@@ -530,7 +530,7 @@ int screenLoadRleImageVga(SDL_Surface **surface, int width, int height, const ch
         return 0;
     }
 
-    p = unscaled->pixels;
+    p = (Uint8 *) unscaled->pixels;
     while (p < ((Uint8 *)unscaled->pixels) + (unscaled->pitch * unscaled->h)) {
         int temp = getc(in);
         if (temp == EOF) {
@@ -587,7 +587,7 @@ int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const ch
         return 0;
     }
 
-    p = unscaled->pixels;
+    p = (Uint8 *) unscaled->pixels;
     for (y = 0; y < height; y++) {
         for (x = 0; x < width / 2; x++) {
             *p = data[y * width / 2 + x] >> 4;

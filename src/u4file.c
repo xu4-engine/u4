@@ -110,7 +110,7 @@ long u4flength(FILE *f) {
 char **u4read_stringtable(FILE *f, long offset, int nstrings) {
     char buffer[384];
     int i, j;
-    char **strs = malloc(nstrings * sizeof(char *));
+    char **strs = (char **) malloc(nstrings * sizeof(char *));
     if (!strs)
         return NULL;
 
