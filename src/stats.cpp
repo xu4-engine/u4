@@ -114,22 +114,22 @@ void StatsArea::update(Observable<string> *o, string arg) {
     }
 
     switch (c->aura->getType()) {
-    case AURA_NONE:
+    case Aura::NONE:
         screenShowCharMasked(0, STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1, mask);
         break;
-    case AURA_HORN:
+    case Aura::HORN:
         screenShowChar(1, STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1);
         break;
-    case AURA_JINX:
+    case Aura::JINX:
         screenShowChar('J', STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1);
         break;
-    case AURA_NEGATE:
+    case Aura::NEGATE:
         screenShowChar('N', STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1);
         break;
-    case AURA_PROTECTION:
+    case Aura::PROTECTION:
         screenShowChar('P', STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1);
         break;
-    case AURA_QUICKNESS:
+    case Aura::QUICKNESS:
         screenShowChar('Q', STATS_AREA_X + STATS_AREA_WIDTH/2, STATS_AREA_Y+STATS_AREA_HEIGHT+1);
         break;
     }    
