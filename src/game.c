@@ -24,6 +24,7 @@
 #include "spell.h"
 #include "names.h"
 #include "player.h"
+#include "music.h"
 
 int moveAvatar(int dx, int dy);
 int attackAtCoord(int x, int y);
@@ -132,6 +133,9 @@ int gameBaseKeyHandler(int key, void *data) {
 
             if (c->map->city)
                 screenMessage("Enter towne!\n\n%s\n\n", c->map->city->name);
+
+            play_music();
+            
         } else
             screenMessage("Enter what?\n");
         break;
@@ -205,6 +209,13 @@ int gameBaseKeyHandler(int key, void *data) {
         info->failedMessage = "Funny, no\nresponse!";
         eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, info);
         screenMessage("Talk\nDir: ");
+        break;
+
+    case 'v':
+        if (musicToggle())
+            screenMessage("Volume On!\n");
+        else
+            screenMessage("Volume Off!\n");
         break;
 
     case 'w':
@@ -930,6 +941,8 @@ int moveAvatar(int dx, int dy) {
                 c->parent->moonPhase = c->moonPhase;
 		c = c->parent;
 		free(t);
+                
+                play_music();
 	    }
 	    return 1;
 	    
