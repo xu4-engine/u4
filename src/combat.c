@@ -54,6 +54,7 @@ Object *party[8];
 Object *monsters[AREA_MONSTERS];
 int monsterHp[AREA_MONSTERS];
 
+void combatCreateMonster(int index);
 int combatBaseKeyHandler(int key, void *data);
 void combatFinishTurn(void);
 int combatAttackAtCoord(int x, int y, int distance);
@@ -68,7 +69,6 @@ int movePartyMember(Direction dir, int member);
 void combatBegin(unsigned char partytile, unsigned short transport, Object *monster) {
     int i;
     int nmonsters;
-    int mtile;
 
     monsterObj = monster;
 
@@ -98,14 +98,7 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
 
     nmonsters = combatInitialNumberOfMonsters(monster->tile);
     for (i = 0; i < nmonsters; i++) {
-        mtile = monster->tile;
-        if (tileIsPirateShip(mtile))
-            mtile = ROGUE_TILE;
-        if ((rand() % 8) == 0 && monsterForTile(mtile)->leader)
-            monsters[i] = mapAddObject(c->map, monsterForTile(mtile)->leader, monsterForTile(mtile)->leader, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
-        else
-            monsters[i] = mapAddObject(c->map, mtile, mtile, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
-        monsterHp[i] = monsterGetInitialHp(monsterForTile(monsters[i]->tile));
+        combatCreateMonster(i);
     }
     for (; i < AREA_MONSTERS; i++)
         monsters[i] = NULL;
@@ -169,6 +162,37 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     }
 
     return &brick_map;
+}
+
+void combatCreateMonster(int index) {
+    unsigned char mtile;
+
+    mtile = monsterObj->tile;
+
+    if (tileIsPirateShip(mtile))
+        mtile = ROGUE_TILE;
+
+    /* if mtile < 0x80, the monster can't be a leader */
+    if (mtile >= 0x80) {
+        /* the monster can be normal, a leader or a leader's leader */
+        if ((rand() % 32) == 0) {
+            /* leader's leader */
+            mtile = monsterForTile(mtile)->leader;
+            mtile = monsterForTile(mtile)->leader;
+        }
+        else {
+            /* normal or leader */
+            if ((rand() % 8) == 0)
+                /* leader */
+                mtile = monsterForTile(mtile)->leader;
+            else
+                /* normal */
+                ;
+        }
+    }
+    monsters[index] = mapAddObject(c->map, mtile, mtile, c->map->area->monster_start[index].x, c->map->area->monster_start[index].y);
+
+    monsterHp[index] = monsterGetInitialHp(monsterForTile(monsters[index]->tile));
 }
 
 void combatFinishTurn() {
