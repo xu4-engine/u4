@@ -180,9 +180,6 @@ int introKeyHandler(int key, void *data) {
         break;
 
     case INTRO_INIT_NAME:
-        assert(0);              /* shouldn't happen */
-        return 1;
-
     case INTRO_INIT_SEX:
         assert(0);              /* shouldn't happen */
         return 1;
@@ -572,77 +569,33 @@ int introHandleQuestionChoice(char choice) {
  */
 void introInitAvatar(SaveGamePlayerRecord *avatar, int *initX, int *initY) {
     int i;
+    struct {
+        WeaponType weapon;
+        ArmorType armor;
+        int xp, x, y;
+    } initValuesForClass[] = {
+        { WEAP_STAFF,  ARMR_CLOTH,   125, 231, 136 }, /* CLASS_MAGE */
+        { WEAP_SLING,  ARMR_CLOTH,   240,  83, 105 }, /* CLASS_BARD */
+        { WEAP_AXE,    ARMR_LEATHER, 205,  35, 221 }, /* CLASS_FIGHTER */
+        { WEAP_DAGGER, ARMR_CLOTH,   175,  59,  44 }, /* CLASS_DRUID */
+        { WEAP_MACE,   ARMR_LEATHER, 110, 158,  21 }, /* CLASS_TINKER */
+        { WEAP_SWORD,  ARMR_CHAIN,   325, 105, 183 }, /* CLASS_PALADIN */
+        { WEAP_SWORD,  ARMR_LEATHER, 150,  23, 129 }, /* CLASS_RANGER */
+        { WEAP_STAFF,  ARMR_CLOTH,     5, 186, 171 }, /* CLASS_SHEPHERD */
+    };
 
     strcpy(avatar->name, nameBuffer);
     avatar->sex = sex;
     avatar->klass = questionTree[14];
 
-    switch (avatar->klass) {
-    case CLASS_MAGE:
-        avatar->weapon = WEAP_STAFF;
-        avatar->armor = ARMR_CLOTH;
-        avatar->xp = 125;
-        *initX = 231;
-        *initY = 136;
-        break;
-
-    case CLASS_BARD:
-        avatar->weapon = WEAP_SLING;
-        avatar->armor = ARMR_CLOTH;
-        avatar->xp = 240;
-        *initX = 83;
-        *initY = 105;
-        break;
-
-    case CLASS_FIGHTER:
-        avatar->weapon = WEAP_AXE;
-        avatar->armor = ARMR_LEATHER;
-        avatar->xp = 205;
-        *initX = 35;
-        *initY = 221;
-        break;
-
-    case CLASS_DRUID:
-        avatar->weapon = WEAP_DAGGER;
-        avatar->armor = ARMR_CLOTH;
-        avatar->xp = 175;
-        *initX = 59;
-        *initY = 44;
-        break;
-
-    case CLASS_TINKER:
-        avatar->weapon = WEAP_MACE;
-        avatar->armor = ARMR_LEATHER;
-        avatar->xp = 110;
-        *initX = 158;
-        *initY = 21;
-        break;
-
-    case CLASS_PALADIN:
-        avatar->weapon = WEAP_SWORD;
-        avatar->armor = ARMR_CHAIN;
-        avatar->xp = 325;
-        *initX = 105;
-        *initY = 183;
-        break;
-
-    case CLASS_RANGER:
-        avatar->weapon = WEAP_SWORD;
-        avatar->armor = ARMR_LEATHER;
-        avatar->xp = 150;
-        *initX = 23;
-        *initY = 129;
-        break;
-
-    case CLASS_SHEPHERD:
-        avatar->weapon = WEAP_STAFF;
-        avatar->armor = ARMR_CLOTH;
-        avatar->xp = 5;
-        *initX = 186;
-        *initY = 171;
-        break;
-    }
-
+    assert(avatar->klass < 8);
+    
+    avatar->weapon = initValuesForClass[avatar->klass].weapon;
+    avatar->armor = initValuesForClass[avatar->klass].armor;
+    avatar->xp = initValuesForClass[avatar->klass].xp;
+    *initX = initValuesForClass[avatar->klass].x;
+    *initY = initValuesForClass[avatar->klass].y;
+    
     avatar->str = 15;
     avatar->dex = 15;
     avatar->intel = 15;
