@@ -745,6 +745,7 @@ void IntroController::about() {
     mode = INTRO_ABOUT;
 
     screenDrawImage(BKGD_INTRO);
+    screenHideCursor();
     screenTextAt(15, 14, "XU4 %s", VERSION);
     screenTextAt(2, 16, "xu4 is free software; you can redist-");
     screenTextAt(2, 17, "ribute it and/or modify it under the");
@@ -753,7 +754,6 @@ void IntroController::about() {
     screenTextAt(2, 21, "\011 Copyright 2002-2003 xu4 team");
     screenTextAt(2, 22, "\011 Copyright 1987 Lord British");
     drawBeasties();
-    screenHideCursor();
 
     ReadChoiceController::get("");
 
