@@ -260,7 +260,7 @@ int combatAttackAtCoord(int x, int y) {
 
         annotationSetTimeDuration(annotationAdd(x, y, HITFLASH_TILE), 2);
 
-        if (monsters[monster]->tile != LORDBRITISH_TILE)
+        if (m->tile != LORDBRITISH_TILE)
             monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);
 
         switch (monsterGetStatus(m, monsterHp[monster])) {
