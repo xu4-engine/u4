@@ -28,6 +28,7 @@ char **hawkwindText;
 char **lbKeywords;
 char **lbText;
 
+/* Hawkwind text indexes */
 #define HW_SPEAKONLYWITH 40
 #define HW_RETURNWHEN 41
 #define HW_ISREVIVED 42

@@ -2446,7 +2446,7 @@ void gameCheckRandomMonsters() {
        or we're not on the world map, don't worry about it! */
     if (!mapIsWorldMap(c->location->map) ||
         mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS_ON_MAP ||
-        (rand() % 20) != 0)
+        (rand() % 32) != 0)
         return;
 
     dx = 7;

@@ -388,6 +388,10 @@ static int spellGate(int phase) {
         moongate = moongateGetGateForPhase(phase);
         c->location->x = moongate->x;
         c->location->y = moongate->y;    
+
+        /* shows gate spell effect again after teleport */
+        (*spellCallback)('g', -1);
+
         return 1;
     }
     return 0;
