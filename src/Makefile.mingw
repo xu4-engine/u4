@@ -30,10 +30,12 @@ xu4ico.o: xu4.ico xu4.rc
 install: u4.exe
 	mkdir -p $(U4PATH)
 	mkdir -p $(U4PATH)/dtd
+	mkdir -p $(U4PATH)/graphics
 	strip $(MAIN) -o $(U4PATH)/$(MAIN)
 	cp ../mid/*.mid $(U4PATH)
 	cp ../conf/*.xml $(U4PATH)
 	cp ../conf/dtd/*.dtd $(U4PATH)/dtd/
+	cp ../graphics/*.rle $(U4PATH)/graphics/
 	cp SDL/lib/SDL.dll $(U4PATH)
 	cp SDL/lib/SDL_mixer.dll $(U4PATH)
 
