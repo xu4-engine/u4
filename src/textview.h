@@ -24,7 +24,12 @@ public:
     TextView(int x, int y, int columns, int rows);
     virtual ~TextView();
 
+    int getCursorX() const { return cursorX; }
+    int getCursorY() const { return cursorY; }
+    bool getCursorEnabled() const { return cursorEnabled; }
+
     void drawChar(int chr, int x, int y);
+    void drawCharMasked(int chr, int x, int y, unsigned char mask);
     void textAt(int x, int y, const char *fmt, ...) PRINTF_LIKE(4, 5);
     void scroll();
 

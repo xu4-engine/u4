@@ -33,11 +33,27 @@ TextView::~TextView() {
 }
 
 void TextView::drawChar(int chr, int x, int y) {
+    ASSERT(x < columns, "x value of %d out of range", x);
+    ASSERT(y < rows, "y value of %d out of range", y);
+
     charset->drawSubRect(SCALED(this->x + (x * CHAR_WIDTH)),
                          SCALED(this->y + (y * CHAR_HEIGHT)),
                          0, SCALED(chr * CHAR_HEIGHT),
                          SCALED(CHAR_WIDTH),
                          SCALED(CHAR_HEIGHT));
+}
+
+void TextView::drawCharMasked(int chr, int x, int y, unsigned char mask) {
+    drawChar(chr, x, y);
+    for (int i = 0; i < 8; i++) {
+        if (mask & (1 << i)) {
+            screen->fillRect(SCALED(this->x + (x * CHAR_WIDTH)),
+                             SCALED(this->y + (y * CHAR_HEIGHT) + i),
+                             SCALED(CHAR_WIDTH),
+                             SCALED(1),
+                             0, 0, 0);
+        }
+    }
 }
 
 void TextView::textAt(int x, int y, const char *fmt, ...) {
@@ -83,6 +99,12 @@ void TextView::scroll() {
 }
 
 void TextView::setCursorPos(int x, int y, bool clearOld) {
+    while (x >= columns) {
+        x -= columns;
+        y++;
+    }
+    ASSERT(y < rows, "y value of %d out of range", y);
+
     if (clearOld && cursorEnabled) {
         drawChar(' ', cursorX, cursorY);
         update(cursorX * CHAR_WIDTH, cursorY * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT);
