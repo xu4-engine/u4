@@ -258,13 +258,14 @@ const Person *mapPersonAt(const Map *map, int x, int y, int z) {
         return NULL;
 }
 
-const Portal *mapPortalAt(const Map *map, int x, int y, int z) {
+const Portal *mapPortalAt(const Map *map, int x, int y, int z, int actionFlags) {
     int i;
 
     for(i = 0; i < map->n_portals; i++) {
         if (map->portals[i].x == x &&
             map->portals[i].y == y &&
-            map->portals[i].z == z) {
+            map->portals[i].z == z &&
+            (map->portals[i].trigger_action & actionFlags)) {
             return &(map->portals[i]);
         }
     }

@@ -69,7 +69,7 @@ int mapReadDng(Map *map, U4FILE *dng);
 int mapReadWorld(Map *map, U4FILE *world);
 struct _Object *mapObjectAt(const Map *map, int x, int y, int z);
 const struct _Person *mapPersonAt(const Map *map, int x, int y, int z);
-const struct _Portal *mapPortalAt(const Map *map, int x, int y, int z);
+const struct _Portal *mapPortalAt(const Map *map, int x, int y, int z, int actionFlags);
 unsigned char mapTileAt(const Map *map, int x, int y, int z);
 unsigned char mapGroundTileAt(const Map *map, int x, int y, int z);
 unsigned char mapDungeonTileAt(const Map *map, int x, int y, int z);

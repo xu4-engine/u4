@@ -37,7 +37,7 @@ void armorLoadInfoFromXml() {
             xmlStrcmp(node->name, (const xmlChar *) "armor") != 0)
             continue;
 
-        armors[armor].name = (char *)xmlGetProp(node, (const xmlChar *)"name");
+        armors[armor].name = xmlGetPropAsStr(node, (const xmlChar *)"name");
         armors[armor].canuse = 0xFF;
         armors[armor].defense = xmlGetPropAsInt(node, (const xmlChar *)"defense");
         armors[armor].mask = 0;
@@ -64,7 +64,7 @@ void armorLoadInfoFromXml() {
                 mask = 0xFF;
             if (mask == 0) {
                 errorFatal("malformed armor.xml file: constraint has unknown class %s", 
-                           xmlGetProp(child, (const xmlChar *) "class"));
+                           xmlGetPropAsStr(child, (const xmlChar *) "class"));
             }
             if (xmlGetPropAsBool(child, (const xmlChar *) "canuse"))
                 armors[armor].canuse |= mask;

@@ -103,7 +103,7 @@ int musicInit() {
             xmlStrcmp(node->name, (const xmlChar *) "track") != 0)
             continue;
 
-        musicFilenames[musicTrack] = (char *)xmlGetProp(node, (const xmlChar *) "file");
+        musicFilenames[musicTrack] = xmlGetPropAsStr(node, (const xmlChar *) "file");
         musicTrack++;
     }
     xmlFreeDoc(doc);

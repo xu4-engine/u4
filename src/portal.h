@@ -12,10 +12,10 @@ struct _Portal;
 struct _Location;
 
 typedef enum {
-    ACTION_NONE,
-    ACTION_ENTER,
-    ACTION_KLIMB,
-    ACTION_DESCEND    
+    ACTION_NONE     = 0x0,
+    ACTION_ENTER    = 0x1,
+    ACTION_KLIMB    = 0x2,
+    ACTION_DESCEND  = 0x4   
 } PortalTriggerAction;
 
 typedef int (*PortalConditionsMet)(const struct _Portal *p);
@@ -35,6 +35,7 @@ typedef struct _Portal {
     int saveLocation;
     char *message;
     TransportContext portalTransportRequisites;
+    int exitPortal;
 } Portal;
 
 int usePortalAt(struct _Location *location, int x, int y, int z, PortalTriggerAction action);

@@ -75,8 +75,8 @@ void weaponLoadInfoFromXml() {
             xmlStrcmp(node->name, (const xmlChar *) "weapon") != 0)
             continue;
 
-        weapons[weapon].name = (char *)xmlGetProp(node, (const xmlChar *)"name");        
-        weapons[weapon].abbr = (char *)xmlGetProp(node, (const xmlChar *)"abbr");
+        weapons[weapon].name = xmlGetPropAsStr(node, (const xmlChar *)"name");        
+        weapons[weapon].abbr = xmlGetPropAsStr(node, (const xmlChar *)"abbr");
         weapons[weapon].canuse = 0xFF;
         weapons[weapon].damage = xmlGetPropAsInt(node, (const xmlChar *)"damage");
         weapons[weapon].hittile = HITFLASH_TILE;
@@ -85,9 +85,9 @@ void weaponLoadInfoFromXml() {
         weapons[weapon].mask = 0;
 
         /* Get the range of the weapon, whether it is absolute or normal range */
-        range = (char *)xmlGetProp(node, (const xmlChar *)"range");
+        range = xmlGetPropAsStr(node, (const xmlChar *)"range");
         if (range == NULL) {
-            range = (char *)xmlGetProp(node, (const xmlChar *)"absolute_range");
+            range = xmlGetPropAsStr(node, (const xmlChar *)"absolute_range");
             if (range != NULL)
                 weapons[weapon].mask |= MASK_ABSOLUTERANGE;
         }
@@ -140,7 +140,7 @@ void weaponLoadInfoFromXml() {
                 mask = 0xFF;
             if (mask == 0) {
                 errorFatal("malformed weapons.xml file: constraint has unknown class %s", 
-                           xmlGetProp(child, (const xmlChar *) "class"));
+                           xmlGetPropAsStr(child, (const xmlChar *) "class"));
             }
             if (xmlGetPropAsBool(child, (const xmlChar *) "canuse"))
                 weapons[weapon].canuse |= mask;

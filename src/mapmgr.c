@@ -116,7 +116,7 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
     
     map->id = (unsigned char)xmlGetPropAsInt(node, (const xmlChar *) "id");
 
-    prop = xmlGetProp(node, (const xmlChar *) "type");
+    prop = xmlGetPropAsStr(node, (const xmlChar *) "type");
     if (strcmp(prop, "world") == 0)
         map->type = MAPTYPE_WORLD;
     else if (strcmp(prop, "town") == 0)
@@ -137,7 +137,7 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
         errorFatal("unknown type: %s", prop);
     xmlFree(prop);
 
-    prop = xmlGetProp(node, (const xmlChar *) "fname");
+    prop = xmlGetPropAsStr(node, (const xmlChar *) "fname");
     map->fname = strdup(prop);
     xmlFree(prop);
 
@@ -145,7 +145,7 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
     map->height = xmlGetPropAsInt(node, (const xmlChar *) "height");
     map->levels = xmlGetPropAsInt(node, (const xmlChar *) "levels");
 
-    prop = xmlGetProp(node, (const xmlChar *) "borderbehavior");
+    prop = xmlGetPropAsStr(node, (const xmlChar *) "borderbehavior");
     if (strcmp(prop, "wrap") == 0)
         map->border_behavior = BORDER_WRAP;
     else if (strcmp(prop, "exit") == 0)
@@ -210,11 +210,11 @@ City *mapMgrInitCityFromXml(xmlNodePtr node) {
     memset(city->person_types, 0, sizeof(city->person_types));
     city->map = NULL;
 
-    prop = xmlGetProp(node, (const xmlChar *) "name");
+    prop = xmlGetPropAsStr(node, (const xmlChar *) "name");
     city->name = strdup(prop);
     xmlFree(prop);
 
-    prop = xmlGetProp(node, (const xmlChar *) "tlk_fname");
+    prop = xmlGetPropAsStr(node, (const xmlChar *) "tlk_fname");
     city->tlk_fname = strdup(prop);
     xmlFree(prop);
 
@@ -250,11 +250,18 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
     portal->y = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "y");
     portal->z = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "z");
     portal->destid = (unsigned char) xmlGetPropAsInt(node, (const xmlChar *) "destmapid");
-    portal->startx = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "startx");
-    portal->starty = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "starty");
+    
+    if (xmlGetPropAsStr(node, (const xmlChar *) "startx") != NULL)
+        portal->startx = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "startx");
+    else portal->startx = portal->x;
+
+    if (xmlGetPropAsStr(node, (const xmlChar *) "starty") != NULL)
+        portal->starty = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "starty");
+    else portal->starty = portal->y;
+
     portal->startlevel = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "startlevel");
 
-    prop = xmlGetProp(node, (const xmlChar *) "action");
+    prop = xmlGetPropAsStr(node, (const xmlChar *) "action");
     if (strcmp(prop, "none") == 0)
         portal->trigger_action = ACTION_NONE;
     else if (strcmp(prop, "enter") == 0)
@@ -267,7 +274,7 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
         errorFatal("unknown trigger_action: %s", prop);
     xmlFree(prop);
     
-    prop = xmlGetProp(node, (const xmlChar *) "condition");
+    prop = xmlGetPropAsStr(node, (const xmlChar *) "condition");
     if (prop) {
         if (strcmp(prop, "shrine") == 0)
             portal->portalConditionsMet = &shrineCanEnter;
@@ -278,15 +285,17 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
         xmlFree(prop);
     }
 
-    portal->saveLocation = xmlGetPropAsBool(node, (const xmlChar *) "savelocation");
+    if (xmlGetPropAsStr(node, (const xmlChar *)"savelocation") != NULL)
+        portal->saveLocation = xmlGetPropAsBool(node, (const xmlChar *) "savelocation");
+    else portal->saveLocation = 0;
 
-    prop = xmlGetProp(node, (const xmlChar *) "message");
+    prop = xmlGetPropAsStr(node, (const xmlChar *) "message");
     if (prop) {
         portal->message = strdup(prop);
         xmlFree(prop);
     }
 
-    prop = xmlGetProp(node, (const xmlChar *) "transport");
+    prop = xmlGetPropAsStr(node, (const xmlChar *) "transport");
     if (strcmp(prop, "foot") == 0)
         portal->portalTransportRequisites = TRANSPORT_FOOT;
     else if (strcmp(prop, "footorhorse") == 0)
@@ -294,6 +303,10 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
     else
         errorFatal("unknown transport: %s", prop);
     xmlFree(prop);
+
+    if (xmlGetPropAsBool(node, (const xmlChar *) "exits"))
+        portal->exitPortal = 1;
+    else portal->exitPortal = 0;
 
     for (child = node->xmlChildrenNode; child; child = child->next) {
         if (xmlNodeIsText(child))
@@ -307,7 +320,7 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
             portal->retroActiveDest->z = xmlGetPropAsInt(child, (const xmlChar *) "z");
             portal->retroActiveDest->mapid = (unsigned char) xmlGetPropAsInt(child, (const xmlChar *) "mapid");
         }
-    }
+    }    
     return portal;
 }
 
@@ -321,7 +334,7 @@ Shrine *mapMgrInitShrineFromXml(xmlNodePtr node) {
 
     shrine->virtue = xmlGetPropAsInt(node, (const xmlChar *) "virtue");
 
-    prop = xmlGetProp(node, (const xmlChar *) "mantra");
+    prop = xmlGetPropAsStr(node, (const xmlChar *) "mantra");
     shrine->mantra = strdup(prop);
     xmlFree(prop);
 
@@ -338,7 +351,7 @@ Dungeon *mapMgrInitDungeonFromXml(xmlNodePtr node) {
     dungeon->n_rooms = 0;
     dungeon->rooms = NULL;
 
-    prop = xmlGetProp(node, (const xmlChar *) "name");
+    prop = xmlGetPropAsStr(node, (const xmlChar *) "name");
     dungeon->name = strdup(prop);
     xmlFree(prop);
 

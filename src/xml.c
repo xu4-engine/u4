@@ -34,7 +34,6 @@ void *xmlXu4FileOpen (const char *filename) {
         return NULL;
     result = xmlFileOpen(pathname);
 
-
     if (verbose)
         printf("xml parser opened %s: %s\n", pathname, result ? "success" : "failed");
 
@@ -99,6 +98,19 @@ void xmlAccumError(void *l, const char *fmt, ...) {
     *errlist = listAppend(*errlist, strdup(buffer));
 }
 
+char *xmlGetPropAsStr(xmlNodePtr node, const xmlChar *name) {
+    xmlChar *prop;
+
+    if (settings->validateXml && !xmlHasProp(node, name))
+        return NULL;
+    
+    prop = xmlGetProp(node, name);
+    if (!prop)
+        return NULL;
+    
+    return (char *)prop;
+}
+
 /**
  * Get an XML property and convert it to a boolean value.  The value
  * should be "true" or "false", case sensitive.  If it is neither,
@@ -107,6 +119,9 @@ void xmlAccumError(void *l, const char *fmt, ...) {
 int xmlGetPropAsBool(xmlNodePtr node, const xmlChar *name) {
     int result;
     xmlChar *prop;
+
+    if (settings->validateXml && !xmlHasProp(node, name))
+        return 0;
 
     prop = xmlGetProp(node, name);
     if (!prop)
@@ -131,6 +146,9 @@ int xmlGetPropAsInt(xmlNodePtr node, const xmlChar *name) {
     long result;
     xmlChar *prop;
 
+    if (settings->validateXml && !xmlHasProp(node, name))
+        return 0;
+
     prop = xmlGetProp(node, name);
     if (!prop)
         return 0;
@@ -147,7 +165,7 @@ int xmlGetPropAsInt(xmlNodePtr node, const xmlChar *name) {
  */
 int xmlPropCmp(xmlNodePtr node, const xmlChar *name, const char *s) {
     int result;
-    xmlChar *prop;
+    xmlChar *prop;    
     
     prop = xmlGetProp(node, name);
     result = xmlStrcmp(prop, (const xmlChar *) s);

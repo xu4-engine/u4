@@ -663,7 +663,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'e':
         if (!usePortalAt(c->location, c->location->x, c->location->y, c->location->z, ACTION_ENTER)) {
-            if (!mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z))
+            if (!mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z, ACTION_ENTER))
                 screenMessage("Enter what?\n");
         }
         break;

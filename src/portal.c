@@ -16,16 +16,12 @@
 
 int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction action) {
     Map *destination;
-    char *msg = NULL;
+    char *msg = NULL;    
     
-    /* find a portal at the specified location */
-    const Portal *portal = mapPortalAt(c->location->map, x, y, z);
+    const Portal *portal = mapPortalAt(c->location->map, x, y, z, action);
 
     /* didn't find a portal there */
     if (!portal)
-        return 0;
-    /* action didn't work for that portal */
-    else if (portal && (portal->trigger_action != action) && (portal->trigger_action != ACTION_NONE))
         return 0;
     /* conditions not met for portal to work */
     else if (portal && portal->portalConditionsMet && !(*portal->portalConditionsMet)(portal))
@@ -34,15 +30,23 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
     else if (c->transportContext & ~TRANSPORT_FOOT && (action == ACTION_KLIMB || action == ACTION_DESCEND)) {
         screenMessage("%sOnly on foot!\n", action == ACTION_KLIMB ? "Klimb\n" : "");
         return 1;
-    }
+    }    
     
     destination = mapMgrGetById(portal->destid);
 
     if (!portal->message) {
 
         switch(action) {
-        case ACTION_DESCEND:    msg = "Descend to first floor!\n"; break;
-        case ACTION_KLIMB:      msg = "Klimb to second floor!\n"; break;
+        case ACTION_DESCEND:
+            msg = (char *)malloc(32);
+            sprintf(msg, "Descend down to level %d\n", portal->startlevel+1);
+            break;
+        case ACTION_KLIMB:
+            msg = (char *)malloc(32);
+            if (portal->exitPortal)
+                sprintf(msg, "Klimb up!\nLeaving...\n");
+            else sprintf(msg, "Klimb up!\nTo level %d\n", portal->startlevel+1);
+            break;
         case ACTION_ENTER:
             switch (destination->type) {
             case MAPTYPE_TOWN:
@@ -78,8 +82,16 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
         return 1;
     }
     /* ok, we know the portal is going to work -- now display the custom message, if any */
-    else if (portal->message)
-        screenMessage("%s", portal->message);
+    else if (portal->message || msg) {
+        screenMessage("%s", portal->message ? portal->message : msg);
+        if (msg) free(msg);
+    }
+
+    /* portal just exits to parent map */
+    if (portal->exitPortal) {        
+        gameExitToParentMap(c);
+        return 1;
+    }
     
     gameSetMap(c, destination, portal->saveLocation, portal);
     musicPlay();

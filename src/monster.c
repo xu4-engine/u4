@@ -132,11 +132,11 @@ void monsterLoadInfoFromXml() {
             xmlStrcmp(node->name, (const xmlChar *) "monster") != 0)
             continue;
 
-        monsters[monster].name = (char *)xmlGetProp(node, (const xmlChar *)"name");
+        monsters[monster].name = xmlGetPropAsStr(node, (const xmlChar *)"name");
         monsters[monster].id = (unsigned short)xmlGetPropAsInt(node, (const xmlChar *)"id");
         
         /* Get the leader if it's been included, otherwise the leader is itself */
-        if (xmlGetProp(node, (const xmlChar *)"leader") != NULL)
+        if (xmlGetPropAsStr(node, (const xmlChar *)"leader") != NULL)
             monsters[monster].leader = (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"leader");
         else monsters[monster].leader = monsters[monster].id;
         
@@ -159,19 +159,19 @@ void monsterLoadInfoFromXml() {
         monsters[monster].resists = 0;
 
         /* get the encounter size */
-        if (xmlGetProp(node, (const xmlChar *)"encounterSize") != NULL) {
+        if (xmlGetPropAsStr(node, (const xmlChar *)"encounterSize") != NULL) {
             monsters[monster].encounterSize = 
                 (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"encounterSize");
         }
 
         /* get the base hp */
-        if (xmlGetProp(node, (const xmlChar *)"basehp") != NULL) {
+        if (xmlGetPropAsStr(node, (const xmlChar *)"basehp") != NULL) {
             monsters[monster].basehp =
                 (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"basehp");
         }
 
         /* get the camouflaged tile */
-        if (xmlGetProp(node, (const xmlChar *)"camouflageTile") != NULL) {
+        if (xmlGetPropAsStr(node, (const xmlChar *)"camouflageTile") != NULL) {
             monsters[monster].camouflageTile =
                 (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"camouflageTile");
         }
@@ -212,7 +212,7 @@ void monsterLoadInfoFromXml() {
         }
 
         /* get the number of frames for animation */
-        if (xmlGetProp(node, (const xmlChar *)"frames") != NULL) {
+        if (xmlGetPropAsStr(node, (const xmlChar *)"frames") != NULL) {
             monsters[monster].frames =
                 (unsigned char)xmlGetPropAsInt(node, (const xmlChar *)"frames");
         }
