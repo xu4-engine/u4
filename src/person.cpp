@@ -16,6 +16,7 @@
 #include "conversation.h"
 #include "debug.h"
 #include "event.h"
+#include "game.h"   // Included for ReadPlayerController
 #include "io.h"
 #include "location.h"
 #include "music.h"
