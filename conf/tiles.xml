@@ -81,4 +81,52 @@
     <tile/> <!-- miss flash -->
     <tile/> <!-- magic flash -->
     <tile/> <!-- hit flash -->
+    <tile unwalkable="true"/> <!-- guard1 -->
+    <tile unwalkable="true"/> <!-- guard2 -->
+    <tile unwalkable="true"/> <!-- villager1 -->
+    <tile unwalkable="true"/> <!-- villager2 -->
+    <tile unwalkable="true"/> <!-- bard1 -->
+    <tile unwalkable="true"/> <!-- bard2 -->
+    <tile unwalkable="true"/> <!-- bard1 -->
+    <tile unwalkable="true"/> <!-- bard2 -->
+    <tile unwalkable="true"/> <!-- jester1 -->
+    <tile unwalkable="true"/> <!-- jester2 -->
+    <tile unwalkable="true"/> <!-- beggar1 -->
+    <tile unwalkable="true"/> <!-- beggar2 -->
+    <tile unwalkable="true"/> <!-- bull1 -->
+    <tile unwalkable="true"/> <!-- bull2 -->
+    <tile unwalkable="true"/> <!-- lordbritish1 -->
+    <tile unwalkable="true"/> <!-- lordbritish2 -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- A -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- B -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- C -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- D -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- E -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- F -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- G -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- H -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- I -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- J -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- K -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- L -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- M -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- N -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- O -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- P -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- Q -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- R -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- S -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- T -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- U -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- V -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- W -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- X -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- Y -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- Z -->
+    <tile unwalkable="true" cantalkover="true"/> <!-- space -->
+    <tile unwalkable="true"/> <!-- right -->
+    <tile unwalkable="true"/> <!-- left -->
+    <tile unwalkable="true"/> <!-- window -->
+    <tile unwalkable="true"/> <!-- blank -->
+    <tile unwalkable="true" opaque="true"/> <!-- brickwall -->
 </tiles>
