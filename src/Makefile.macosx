@@ -2,7 +2,7 @@
 # $Id$
 #
 
-BUNDLE_CONTENTS=xu4.app/Contents
+BUNDLE_CONTENTS=../xu4.app/Contents
 
 UI=sdl
 UILIBS=-L$(HOME)/Library/Frameworks \
