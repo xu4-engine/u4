@@ -352,6 +352,14 @@ SOURCE=..\src\imageloader_u4.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\imagemgr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\imagemgr.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\intro.cpp
 # End Source File
 # Begin Source File
@@ -488,6 +496,14 @@ SOURCE=..\src\portal.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\progress_bar.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\progress_bar.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\rle.cpp
 # End Source File
 # Begin Source File
@@ -572,6 +588,14 @@ SOURCE=..\src\stats.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\textview.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\textview.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\tile.cpp
 # End Source File
 # Begin Source File
@@ -649,6 +673,14 @@ SOURCE=..\src\utils.h
 # Begin Source File
 
 SOURCE=..\src\vc6.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\view.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\view.h
 # End Source File
 # Begin Source File
 
