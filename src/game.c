@@ -1275,6 +1275,18 @@ int castForPlayerGetPhase(int phase) {
 
 int fireAtCoord(int x, int y, int distance, void *data) {
     
+    CoordActionInfo* info = (CoordActionInfo*)data;
+    int oldx = info->prev_x,
+        oldy = info->prev_y;  
+    int attackdelay = settings->attackdelay;
+    
+    info->prev_x = x;
+    info->prev_y = y;
+
+    /* Remove the last weapon annotation left behind */
+    if ((distance > 1) && (oldx >= 0) && (oldy >= 0))
+        annotationRemove(oldx, oldy, c->location->z, c->location->map->id, MISSFLASH_TILE);
+    
     if (x == -1 && y == -1) {
         if (distance == 0)
             screenMessage("Broadsides Only!\n");
@@ -1291,18 +1303,29 @@ int fireAtCoord(int x, int y, int distance, void *data) {
             m = monsterForTile(obj->tile);
 
         if (m) {
-            if (rand() % 2 == 0) 
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE), 2));
+            if (rand() % 2 == 0)
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE), 2));                
             else {
                 annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, HITFLASH_TILE), 2));
                 if (rand() % 2 == 0)
                     mapRemoveObject(c->location->map, obj);                
             }
+
+            gameUpdateScreen();
+            eventHandlerSleep((attackdelay + 2)*60);
             
             gameFinishTurn();
             return 1;
 
-        } else annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE), 1));        
+        }
+        
+        annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE));
+        gameUpdateScreen();
+
+        /* Based on attack speed setting in setting struct, make a delay for
+           the attack annotation */
+        if (attackdelay > 0)
+            eventHandlerSleep(attackdelay * 6);
     }       
 
     return 0;
