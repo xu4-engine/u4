@@ -12,10 +12,10 @@
 #include "settings.h"
 #include "utils.h"
 
+using std::vector;
+
 #if HAVE_BACKTRACE
 #include <execinfo.h>
-
-using std::vector;
 
 /**
  * Get a backtrace and print it to the file.  Note that gcc requires
