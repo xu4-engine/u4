@@ -38,5 +38,8 @@ void Aura::passTurn() {
     if (--duration <= 0) {
         type = NONE;
         duration = 0;
+
+        setChanged();
+        notifyObservers("Aura::passTurn");
     }
 }
