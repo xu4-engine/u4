@@ -186,7 +186,7 @@ void gameSetMap(Context *ct, Map *map, int setStartPos) {
 void gameFinishTurn() {
 
     /* apply effects from tile avatar is standing on */
-    playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel)));
+    playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel)), ALL_PLAYERS);
 
     while (1) {
         /* adjust food and moves */
