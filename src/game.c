@@ -29,6 +29,7 @@ int jimmyAtCoord(int x, int y);
 int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y);
+int quitHandleChoice(char choice);
 int readyForPlayer(int player);
 int readyForPlayer2(int weapon, void *data);
 int talkAtCoord(int x, int y);
@@ -44,6 +45,7 @@ int gameBaseKeyHandler(int key, void *data) {
     int valid = 1;
     const Portal *portal;
     DirectedActionInfo *info;
+    GetChoiceActionInfo *choiceInfo;
 
     switch (key) {
 
@@ -160,7 +162,10 @@ int gameBaseKeyHandler(int key, void *data) {
         if (strcmp(c->map->name, "World") != 0) {
             screenMessage("Quit & save\nNot Here!\n");
         } else {
-            eventHandlerPushKeyHandler(&gameQuitKeyHandler);
+            choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+            choiceInfo->choices = "yn";
+            choiceInfo->handleChoice = &quitHandleChoice;
+            eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
             screenMessage("Quit & save\nExit (Y/N)? ");
         }
         break;
@@ -330,45 +335,6 @@ int gameGetDirectionKeyHandler(int key, void *data) {
 
  success:
     free(info);
-
-    return valid || keyHandlerDefault(key, NULL);
-}
-
-/**
- * Handles key presses when the Exit (Y/N) prompt is active.
- */
-int gameQuitKeyHandler(int key, void *data) {
-    FILE *saveGameFile;
-    int valid = 1;
-    char answer = '?';
-
-    switch (key) {
-    case 'y':
-    case 'n':
-        answer = key;
-        break;
-    default:
-        valid = 0;
-        break;
-    }
-
-    if (answer == 'y' || answer == 'n') {
-        saveGameFile = fopen("party.sav", "wb");
-        if (saveGameFile) {
-            saveGameWrite(c->saveGame, saveGameFile);
-            fclose(saveGameFile);
-        } else {
-            screenMessage("Error writing to\nparty.sav\n");
-            answer = '?';
-        }
-
-        if (answer == 'y')
-            exit(0);
-        else if (answer == 'n') {
-            screenMessage("%c\n", key);
-            eventHandlerPopKeyHandler();            
-        }
-    }
 
     return valid || keyHandlerDefault(key, NULL);
 }
@@ -606,6 +572,37 @@ int openAtCoord(int x, int y) {
 
     screenMessage("door at %d, %d, opened!\n", x, y);
     annotationAdd(x, y, 4, 0x3e);
+
+    return 1;
+}
+
+/**
+ * Handles the Exit (Y/N) choice.
+ */
+int quitHandleChoice(char choice) {
+    FILE *saveGameFile;
+
+    eventHandlerPopKeyHandler();
+
+    saveGameFile = fopen("party.sav", "wb");
+    if (saveGameFile) {
+        saveGameWrite(c->saveGame, saveGameFile);
+        fclose(saveGameFile);
+    } else {
+        screenMessage("Error writing to\nparty.sav\n");
+        choice = 'n';
+    }
+
+    switch (choice) {
+    case 'y':
+        eventHandlerSetExitFlag(1);
+        break;
+    case 'n':
+        screenMessage("%c\n", choice);
+        break;
+    default:
+        assert(0);              /* shouldn't happen */
+    }
 
     return 1;
 }
