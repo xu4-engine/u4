@@ -7,6 +7,7 @@
 
 struct _Map;
 
+void combatBegin(unsigned char partytile, unsigned short transport);
 struct _Map *getCombatMapForTile(unsigned char partytile, unsigned short transport);
 
 #endif

@@ -8,8 +8,14 @@
 #include <assert.h>
 
 #include "combat.h"
+#include "context.h"
 #include "ttype.h"
 #include "map.h"
+#include "annotation.h"
+#include "event.h"
+#include "savegame.h"
+#include "game.h"
+#include "area.h"
 
 extern Map brick_map;
 extern Map bridge_map;
@@ -33,6 +39,31 @@ extern Map shipship_map;
 extern Map shipshor_map;
 extern Map shore_map;
 extern Map shorship_map;
+
+int combatHandleChoice(char choice);
+void combatEnd(void);
+
+void combatBegin(unsigned char partytile, unsigned short transport) {
+    int i;
+    GetChoiceActionInfo *info;
+
+    mapRemoveAvatarObject(c->map);
+    annotationClear();
+
+    c = gameCloneContext(c);
+
+    gameSetMap(c, getCombatMapForTile(partytile, transport), 1);
+    musicPlay();
+
+    for (i = 0; i < c->saveGame->members; i++)
+        mapAddObject(c->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->map->area->player_start[i].x, c->map->area->player_start[i].y);
+
+    info = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
+    info->choices = " \033";
+    info->handleChoice = &combatHandleChoice;
+    eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, info);
+}
+
 
 Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     int i;
@@ -62,4 +93,35 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     }
 
     return &brick_map;
+}
+
+int combatHandleChoice(char choice) {
+    eventHandlerPopKeyHandler();
+
+    combatEnd();
+
+    return 1;
+}
+
+void combatEnd() {
+    if (c->parent != NULL) {
+        Context *t = c;
+        annotationClear();
+        mapClearObjects(c->map);
+        c->parent->saveGame->x = c->saveGame->dngx;
+        c->parent->saveGame->y = c->saveGame->dngy;
+        c->parent->line = c->line;
+        c->parent->moonPhase = c->moonPhase;
+        c->parent->windDirection = c->windDirection;
+        c->parent->windCounter = c->windCounter;
+        c = c->parent;
+        c->col = 0;
+        free(t);
+                
+        musicPlay();
+    }
+    
+    mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
+
+    gameFinishTurn();
 }
