@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!-- $Id -->
+<tiles>
+    <tile unwalkable="true" swimable="true" sailable="true" animated="true"/> <!-- sea -->
+    <tile unwalkable="true" swimable="true" sailable="true" animated="true"/> <!-- water -->
+    <tile unwalkable="true" swimable="true" animated="true"/> <!-- shallows -->
+    <tile speed="slow" effect="poison"/> <!-- swamp -->
+    <tile/> <!-- grass -->
+    <tile speed="vslow"/> <!-- brush -->
+    <tile speed="vslow" opaque="true"/> <!-- forest -->
+    <tile speed="vvslow"/> <!-- hills -->
+    <tile unwalkable="true" opaque="true" unflyable="true"/> <!-- mountains -->
+    <tile/> <!-- dungeon -->
+    <tile/> <!-- city -->
+    <tile/> <!-- castle -->
+    <tile/> <!-- town -->
+    <tile unwalkable="true"/> <!-- lcb1 -->
+    <tile/> <!-- lcb2 -->
+    <tile unwalkable="true"/> <!-- lcb3 -->
+    <tile ship="true"/> <!-- west ship -->
+    <tile ship="true"/> <!-- north ship -->
+    <tile ship="true"/> <!-- east ship -->
+    <tile ship="true"/> <!-- south ship -->
+    <tile horse="true"/> <!-- west horse -->
+    <tile horse="true"/> <!-- east horse -->
+    <tile/> <!-- hex -->
+    <tile/> <!-- bridge -->
+    <tile balloon="true"/> <!-- balloon -->
+    <tile/> <!-- nbridge -->
+    <tile/> <!-- sbridge -->
+    <tile/> <!-- uladder -->
+    <tile/> <!-- dladder -->
+    <tile/> <!-- ruins -->
+    <tile/> <!-- shrine -->
+    <tile unwalkable="true"/> <!-- avatar -->
+    <tile unwalkable="true"/> <!-- mage1 -->
+    <tile unwalkable="true"/> <!-- mage2 -->
+    <tile unwalkable="true"/> <!-- bard1 -->
+    <tile unwalkable="true"/> <!-- bard2 -->
+    <tile unwalkable="true"/> <!-- fighter1 -->
+    <tile unwalkable="true"/> <!-- fighter2 -->
+    <tile unwalkable="true"/> <!-- druid1 -->
+    <tile unwalkable="true"/> <!-- druid2 -->
+    <tile unwalkable="true"/> <!-- tinker1 -->
+    <tile unwalkable="true"/> <!-- tinker2 -->
+    <tile unwalkable="true"/> <!-- paladin1 -->
+    <tile unwalkable="true"/> <!-- paladin2 -->
+    <tile unwalkable="true"/> <!-- ranger1 -->
+    <tile unwalkable="true"/> <!-- ranger2 -->
+    <tile unwalkable="true"/> <!-- shepherd1 -->
+    <tile unwalkable="true"/> <!-- shepherd2 -->
+    <tile unwalkable="true"/> <!-- column -->
+    <tile unwalkable="true"/> <!-- solid SW -->
+    <tile unwalkable="true"/> <!-- solid SE -->
+    <tile unwalkable="true"/> <!-- solid NW -->
+    <tile unwalkable="true"/> <!-- solid NE -->
+    <tile unwalkable="true"/> <!-- shipmast -->
+    <tile unwalkable="true"/> <!-- shipwheel -->
+    <tile unwalkable="true"/> <!-- rocks -->
+    <tile unwalkable="true"/> <!-- corpse -->
+    <tile unwalkable="true" opaque="true"/> <!-- stonewall -->
+    <tile unwalkable="true"/> <!-- ldoor -->
+    <tile unwalkable="true"/> <!-- door -->
+    <tile/> <!-- chest -->
+    <tile unwalkable="true"/> <!-- ankh -->
+    <tile/> <!-- brickfloor -->
+    <tile/> <!-- woodfloor -->
+    <tile/> <!-- mgate0 -->
+    <tile/> <!-- mgate1 -->
+    <tile/> <!-- mgate2 -->
+    <tile/> <!-- mgate3 -->
+    <tile effect="poison" animated="true" candispel="true"/> <!-- poison field -->
+    <tile unwalkable="true" animated="true" candispel="true"/> <!-- energy field -->
+    <tile speed="vvslow" effect="fire" animated="true" candispel="true"/> <!-- fire field -->
+    <tile effect="sleep" animated="true" candispel="true"/> <!-- sleep field -->
+    <tile unwalkable="true"/> <!-- solid -->
+    <tile opaque="true"/> <!-- secret door -->
+    <tile/> <!-- altar -->
+    <tile unwalkable="true"/> <!-- roast -->
+    <tile unwalkable="true" animated="true"/> <!-- lava -->
+    <tile/> <!-- miss flash -->
+    <tile/> <!-- magic flash -->
+    <tile/> <!-- hit flash -->
+</tiles>
