@@ -26,6 +26,7 @@ int screenCursorY = 0;
 int screenCursorStatus = 0;
 int screenCursorEnabled = 1;
 int screenLos[VIEWPORT_W][VIEWPORT_H];
+int screen3dDungeonView = 1;
 
 void screenTextAt(int x, int y, char *fmt, ...) {
     char buffer[1024];
@@ -133,18 +134,42 @@ void screenUpdate(int showmap, int blackout) {
     assert(c != NULL);
 
     if (c->location->map->flags & FIRST_PERSON) {
-        screenEraseMapArea();
-        if (c->saveGame->torchduration > 0) {
-            for (y = 3; y >= 0; y--) {
+        
+        /* 1st-person perspective */
+        if (screen3dDungeonView) {
+            screenEraseMapArea();
+            if (c->saveGame->torchduration > 0) {
+                for (y = 3; y >= 0; y--) {
 
-                tile = dungeonViewGetVisibleTile(y, -1);
-                screenDungeonDrawWall(-1, y, dungeonViewTileToGraphic(tile));
+                    tile = dungeonViewGetVisibleTile(y, -1);
+                    screenDungeonDrawWall(-1, y, dungeonViewTileToGraphic(tile));
 
-                tile = dungeonViewGetVisibleTile(y, 1);
-                screenDungeonDrawWall(1, y, dungeonViewTileToGraphic(tile));
+                    tile = dungeonViewGetVisibleTile(y, 1);
+                    screenDungeonDrawWall(1, y, dungeonViewTileToGraphic(tile));
 
-                tile = dungeonViewGetVisibleTile(y, 0);
-                screenDungeonDrawWall(0, y, dungeonViewTileToGraphic(tile));
+                    tile = dungeonViewGetVisibleTile(y, 0);
+                    screenDungeonDrawWall(0, y, dungeonViewTileToGraphic(tile));
+                }
+            }
+        }
+
+        /* 3rd-person perspective */
+        else {
+            for (y = 0; y < VIEWPORT_H; y++) {
+                for (x = 0; x < VIEWPORT_W; x++) {
+                    if (x < 2 || y < 2 || x >= 10 || y >= 10)
+                        tile = BLACK_TILE;
+                    else
+                        tile = dungeonViewGetVisibleTile((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
+
+                    /* Only show blackness if there is no light */
+                    if (c->saveGame->torchduration <= 0)
+                        screenShowTile(BLACK_TILE, 0, x, y);
+                    /* FIXME: for now, show the avatar */
+                    else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
+                        screenShowTile(AVATAR_TILE, 0, x, y);
+                    else screenShowTile(tile, 0, x, y);
+                }
             }
         }
     }

@@ -676,6 +676,18 @@ int gameBaseKeyHandler(int key, void *data) {
         else valid = 0;
         break;
 
+    case 22:                    /* ctrl-V */
+        {
+            extern int screen3dDungeonView;
+            if (settings->debug) {
+                screen3dDungeonView = screen3dDungeonView ? 0 : 1;
+                screenMessage("3-D view %s\n", screen3dDungeonView ? "on" : "off");
+                endTurn = 0;
+            }
+            else valid = 0;
+        }
+        break;
+
     case ' ':
         screenMessage("Pass\n");        
         break;
