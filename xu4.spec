@@ -31,7 +31,7 @@ cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir}
 
 %install
 cd src && %{makeinstall} desktopdir=$RPM_BUILD_ROOT/etc/X11/applnk
-cp ~/ultima4-1.01.zip $RPM_BUILD_ROOT/%{_libdir}/u4
+cp ~/ultima4-1.01.zip $RPM_BUILD_ROOT/%{_libdir}/u4/ultima4.zip
 
 %clean
 rm -rf $RPM_BUILD_ROOT
