@@ -53,7 +53,7 @@
     <monster id="41" encounterSize="6" name="Ettin" tile="208" frames="4" basehp="112" exp="8" ranged="true" rangedhittile="boulder" rangedmisstile="boulder" leader="49"/>
     <monster id="42" encounterSize="8" name="Headless" tile="212" frames="4" basehp="64" exp="5" leader="35"/>
     <monster id="43" encounterSize="6" name="Cyclops" tile="216" frames="4" basehp="128" exp="9" ranged="true" rangedhittile="boulder" rangedmisstile="boulder" leader="48"/>
-    <monster id="44" encounterSize="12" name="Wisp" tile="220" frames="4" ambushes="true" basehp="64" exp="5" teleports="true" leader="36"/>
+    <monster id="44" encounterSize="12" name="Wisp" tile="220" frames="4" ambushes="true" basehp="64" exp="5" teleports="true" leader="36" nochest="true"/>
     <monster id="45" encounterSize="6" name="Mage" tile="224" frames="4" basehp="176" exp="12" ranged="true" rangedhittile="magic" rangedmisstile="magic" leader="49"/>
     <monster id="46" encounterSize="4" name="Liche" tile="228" frames="4" basehp="192" exp="13" ranged="true" rangedhittile="magic" rangedmisstile="magic" undead="true" resists="sleep" leader="49"/>
     <monster id="47" encounterSize="8" name="Lava Lizard" tile="232" frames="4" basehp="96" exp="7" ranged="true" worldrangedtile="fireblast" rangedhittile="lava" rangedmisstile="lava" resists="fire" leader="50" leavestile="true"/>

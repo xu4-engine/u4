@@ -145,7 +145,8 @@ typedef enum {
     MATTR_NOATTACK      = 0x200,    
     MATTR_AMBUSHES      = 0x400,
     MATTR_RANDOMRANGED  = 0x800,
-    MATTR_INCORPOREAL   = 0x1000
+    MATTR_INCORPOREAL   = 0x1000,
+    MATTR_NOCHEST       = 0x2000
 } MonsterAttrib;
 
 typedef enum {
@@ -194,6 +195,7 @@ const Monster *monsterForTile(unsigned char tile);
 int monsterIsGood(const Monster *monster);
 int monsterIsEvil(const Monster *monster);
 int monsterIsUndead(const Monster *monster);
+int monsterLeavesChest(const Monster *monster);
 int monsterIsAquatic(const Monster *monster);
 int monsterWanders(const Monster *monster);
 int monsterIsStationary(const Monster *monster);

@@ -49,7 +49,8 @@ void monsterLoadInfoFromXml() {
         { "camouflage", MATTR_CAMOUFLAGE }, 
         { "wontattack", MATTR_NOATTACK },        
         { "ambushes", MATTR_AMBUSHES },
-        { "incorporeal", MATTR_INCORPOREAL }
+        { "incorporeal", MATTR_INCORPOREAL },
+        { "nochest", MATTR_NOCHEST }
     };    
     
     /* steals="" */
@@ -309,6 +310,12 @@ int monsterIsUndead(const Monster *monster) {
     return (monster->mattr & MATTR_UNDEAD) ? 1 : 0;
 }
 
+int monsterLeavesChest(const Monster *monster) {
+    if (monsterIsAquatic(monster))
+        return 0;
+    else return (monster->mattr & MATTR_NOCHEST) ? 0 : 1;
+}
+
 int monsterIsAquatic(const Monster *monster) {
     return (monster->mattr & MATTR_WATER) ? 1 : 0;
 }
@@ -429,8 +436,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
     
-    //return monsterById((era & rand() & rand()) + ORC_ID);
-    return monsterById(ZORN_ID);
+    return monsterById((era & rand() & rand()) + ORC_ID);    
 }
 
 

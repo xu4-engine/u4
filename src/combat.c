@@ -817,7 +817,7 @@ void combatEnd() {
 
         /* added chest or captured ship object */        
         if (combatInfo.monster && combatInfo.isNormalCombat) {
-            if (!monsterIsAquatic(combatInfo.monster))
+            if (monsterLeavesChest(combatInfo.monster))            
                 mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), combatInfo.monsterObj->x, combatInfo.monsterObj->y, c->location->z);
             else if (tileIsPirateShip(combatInfo.monsterObj->tile)) {
                 unsigned char ship = tileGetShipBase();
