@@ -32,7 +32,7 @@ void screenScrollMessageArea(void);
 void screenUpdate(void);
 void screenForceRedraw(void);
 void screenAnimateIntro(int frame);
-void screenEraseIntroText();
+void screenEraseTextArea(int x, int y, int width, int height);
 void screenShowCard(int pos, int card);
 void screenCycle(void);
 void screenUpdateCursor(void);

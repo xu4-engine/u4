@@ -770,13 +770,13 @@ void screenAnimateIntro(int frame) {
     SDL_BlitSurface(bkgds[BKGD_TREE], &src, screen, &dest);
 }
 
-void screenEraseIntroText() {
+void screenEraseTextArea(int x, int y, int width, int height) {
     SDL_Rect dest;
 
-    dest.x = 0 * scale;
-    dest.y = 152 * scale;
-    dest.w = 320 * scale;
-    dest.h = 48 * scale;
+    dest.x = x * 8 * scale;
+    dest.y = y * 8 * scale;
+    dest.w = width * 8 * scale;
+    dest.h = height * 8 * scale;
 
     SDL_FillRect(screen, &dest, 0);
 }
