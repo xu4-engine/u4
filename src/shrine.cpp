@@ -207,7 +207,7 @@ void shrineTimer(void *data) {
 
         screenMessage("\nMantra: ");
 
-        gameGetInput(&shrineHandleMantra, &mantraBuffer, 3);
+        gameGetInput(&shrineHandleMantra, &mantraBuffer, 4);
         screenRedrawScreen();
     }
     else {
