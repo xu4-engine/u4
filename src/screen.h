@@ -42,6 +42,7 @@ typedef enum {
     BKGD_TRUTH,
     BKGD_LOVE,
     BKGD_COURAGE,
+    BKGD_STONCRCL,
     BKGD_RUNE_INF,
     BKGD_SHRINE_HON,
     BKGD_SHRINE_COM,

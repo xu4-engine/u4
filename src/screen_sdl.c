@@ -97,6 +97,7 @@ const struct {
     { "truth.ega",    "truth.old",    320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
     { "love.ega",     "love.old",     320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
     { "courage.ega",  "courage.old",  320, 200, 1, COMP_RLE, 1, 0, &fixupAbyssVision },
+    { "stoncrcl.ega", "stoncrcl.old", 320, 200, 1, COMP_RLE, 1, 0 },
 
     /* shrine vision images */
     { "rune_0.ega",   "rune_0.old", 320, 200, 1, COMP_RLE, 1, 0 },
@@ -334,8 +335,7 @@ void fixupAbyssVision(Image *im) {
      * can be overlaid on each previous image.
      */
     if (settings->videoType == VIDEO_EGA) {
-        im->surface->format->colorkey = 0;
-        im->surface->flags |= SDL_SRCCOLORKEY;
+        imageSetTransparentIndex(im, 0);
         return;
     }
 
@@ -1125,9 +1125,8 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
         return 0;
 
     dngGraphic[index] = screenScale(unscaled, scale, 1, 1);
-    dngGraphic[index]->surface->format->colorkey = 0;
-    dngGraphic[index]->surface->flags |= SDL_SRCCOLORKEY;
-    
+    imageSetTransparentIndex(dngGraphic[index], 0);
+
     return 1;
 }
 
@@ -1391,10 +1390,8 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
         imageDelete(src);
     }
 
-    if (transparent) {
-        src->surface->format->colorkey = 0;
-        src->surface->flags |= SDL_SRCCOLORKEY;
-    }
+    if (transparent)
+        imageSetTransparentIndex(dest, 0);
 
     return dest;
 }
