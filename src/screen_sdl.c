@@ -47,6 +47,7 @@ SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter);
 SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N);
+SDL_Surface *screenAdvanceMAMEScale2x(SDL_Surface *src, int scale, int N);
 Uint32 getPixel(SDL_Surface *s, int x, int y);
 void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel);
 
@@ -74,6 +75,11 @@ void screenInit(const char *screenScale, int fullScreen) {
             printf("using 2xSaI scaler\n");
         scale = 2;
         filterScaler = &screenScale2xSaI;
+    } else if (strcmp(screenScale, "AdvanceMAMEScale2x") == 0) {
+        if (verbose)
+            printf("using AdvanceMAMEScale2x scaler\n");
+        scale = 2;
+        filterScaler = &screenAdvanceMAMEScale2x;
     } else {
         if (verbose)
             printf("using default scaler\n");
@@ -1007,7 +1013,7 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
     SDL_Surface *dest;
     Uint32 rmask, gmask, bmask, amask;
 
-    /* this bilinear scaler works only with 8-bit source images, scaled by 2x */
+    /* this scaler works only with 8-bit source images, scaled by 2x */
     assert(src->format->palette);
     assert(scale == 2);
 
@@ -1171,6 +1177,93 @@ SDL_Surface *screenScale2xSaI(SDL_Surface *src, int scale, int N) {
                 putPixel(dest, x * 2 + 1, y * 2, prod0);
                 putPixel(dest, x * 2, y * 2 + 1, prod1);
                 putPixel(dest, x * 2 + 1, y * 2 + 1, prod2);
+            }
+        }
+    }
+
+    return dest;
+}
+
+SDL_Surface *screenAdvanceMAMEScale2x(SDL_Surface *src, int scale, int n) {
+    int ii, x, y, xoff0, xoff1, yoff0, yoff1;
+    SDL_Color a, b, c, d, e, f, g, h, i;
+    SDL_Color e0, e1, e2, e3;
+    SDL_Surface *dest;
+    Uint32 rmask, gmask, bmask, amask;
+
+    /* this scaler works only with 8-bit source images, scaled by 2x */
+    assert(src->format->palette);
+    assert(scale == 2);
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+#else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+#endif
+
+    dest = SDL_CreateRGBSurface(SDL_HWSURFACE, src->w * scale, src->h * scale, 32, rmask, gmask, bmask, amask);
+    if (!dest)
+        return NULL;
+
+    /*
+     * Each pixel in the source image is translated into four in the
+     * destination.  The destination pixels are dependant on the pixel
+     * itself, and the eight surrounding pixels (E is the original
+     * pixel):
+     * 
+     * A B C
+     * D E F
+     * G H I
+     */
+
+    for (ii = 0; ii < n; ii++) {
+        for (y = (src->h / n) * ii; y < (src->h / n) * (ii + 1); y++) {
+            if (y == 0)
+                yoff0 = 0;
+            else
+                yoff0 = -1;
+            if (y == (src->h / n) * (ii + 1) - 1)
+                yoff1 = 0;
+            else
+                yoff1 = 1;
+
+            for (x = 0; x < src->w; x++) {
+                if (x == 0)
+                    xoff0 = 0;
+                else
+                    xoff0 = -1;
+                if (x == src->w - 1)
+                    xoff1 = 0;
+                else
+                    xoff1 = 1;
+
+                a = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff0)];
+                b = src->format->palette->colors[getPixel(src, x, y + yoff0)];
+                c = src->format->palette->colors[getPixel(src, x + xoff1, y + yoff0)];
+
+                d = src->format->palette->colors[getPixel(src, x + xoff0, y)];
+                e = src->format->palette->colors[getPixel(src, x, y)];
+                f = src->format->palette->colors[getPixel(src, x + xoff1, y)];
+
+                g = src->format->palette->colors[getPixel(src, x + xoff0, y + yoff1)];
+                h = src->format->palette->colors[getPixel(src, x, y + yoff1)];
+                i = src->format->palette->colors[getPixel(src, x + xoff1, y + yoff1)];
+
+                e0 = colorEqual(d, b) && (!colorEqual(b, f)) && (!colorEqual(d, h)) ? d : e;
+                e1 = colorEqual(b, f) && (!colorEqual(b, d)) && (!colorEqual(f, h)) ? f : e;
+                e2 = colorEqual(d, h) && (!colorEqual(d, b)) && (!colorEqual(h, f)) ? d : e;
+                e3 = colorEqual(h, f) && (!colorEqual(d, h)) && (!colorEqual(b, f)) ? f : e;
+                
+                putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, e0.r, e0.g, e0.b));
+                putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, e1.r, e1.g, e1.b));
+                putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, e2.r, e2.g, e2.b));
+                putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, e3.r, e3.g, e3.b));
             }
         }
     }
