@@ -2431,13 +2431,15 @@ MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
  * tile.
  */
 int jimmyAtCoord(int x, int y, int distance, void *data) {    
-    unsigned char tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS);
+    unsigned char tile;
 
     if (x == -1 && y == -1) {
         screenMessage("Jimmy what?\n");
         (*c->location->finishTurn)();
         return 0;
     }
+
+    tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS);
 
     if (!tileIsLockedDoor(tile))
         return 0;
@@ -2678,13 +2680,15 @@ int newOrderForPlayer2(int player2) {
  * replaced by a temporary annotation of a floor tile for 4 turns.
  */
 int openAtCoord(int x, int y, int distance, void *data) {
-    unsigned char tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS);
+    unsigned char tile;
 
     if (x == -1 && y == -1) {
         screenMessage("Not Here!\n");
         (*c->location->finishTurn)();
         return 0;
     }
+
+    tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS);
 
     if (!tileIsDoor(tile) && !tileIsLockedDoor(tile))
         return 0;
