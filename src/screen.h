@@ -58,6 +58,7 @@ typedef enum {
     BKGD_SHRINE_HNR,
     BKGD_SHRINE_SPI,
     BKGD_SHRINE_HUM,
+    BKGD_GEMTILES,
     BKGD_MAX
 } BackgroundType;
 

@@ -49,6 +49,10 @@
         <image id="36" filename="rune_1.ega"   width="320" height="200" depth="4" filetype="rle"/>
         <image id="37" filename="rune_3.ega"   width="320" height="200" depth="4" filetype="rle"/>
         <image id="38" filename="rune_4.ega"   width="320" height="200" depth="4" filetype="rle"/>
+
+        <!-- gem tiles -->
+        <image id="39" filename="ega/gem.rle"  width="4"   height="512" depth="4" filetype="rle" xu4Graphic="true"/>
+
     </imageset>
 
     <imageset name="VGA" extends="EGA">
@@ -84,6 +88,10 @@
         <image id="36" filename="rune_6.ega"   width="320" height="200" depth="8" filetype="rle"/>
         <image id="37" filename="rune_7.ega"   width="320" height="200" depth="8" filetype="rle"/>
         <image id="38" filename="rune_8.ega"   width="320" height="200" depth="8" filetype="rle"/>
+
+        <!-- gem tiles -->
+        <image id="39" filename="vga/gem.rle"  width="4"   height="512" depth="8" filetype="rle" xu4Graphic="true"/>
+
     </imageset>
 
 </graphics>

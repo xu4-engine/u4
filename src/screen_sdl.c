@@ -34,17 +34,15 @@ void fixupIntro(Image *im);
 void fixupIntroExtended(Image *im);
 void fixupAbyssVision(Image *im);
 void screenFreeIntroBackground();
-int screenLoadImage(struct _Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp);
+int screenLoadImageData(struct _Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp);
 Image *screenScale(Image *src, int scale, int n, int filter);
-int screenLoadGemTiles();
 int screenLoadPaletteEga();
 int screenLoadPaletteVga(const char *filename);
 Image *screenScaleDown(Image *src, int scale);
 
 SDL_Surface *screen;
-Image *bkgds[BKGD_MAX];
+Image *image[BKGD_MAX];
 Image *dngGraphic[56];
-Image *gemtiles;
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
 int scale;
@@ -63,10 +61,11 @@ typedef struct {
     int width, height, depth;
     int prescale;
     CompressionType filetype;
-    int tiles;
-    int introOnly;
-    int transparentIndex;
-    ImageFixup fixup;
+    int tiles;                  /* used to scale the without bleeding colors between adjacent tiles */
+    int introOnly;              /* whether can be freed after the intro */
+    int transparentIndex;       /* color index to consider transparent */
+    int xu4Graphic;             /* an original xu4 graphic not part of u4dos or the VGA upgrade */
+    ImageFixup fixup;           /* a routine to do miscellaneous fixes to the image */
 } ImageInfo;
 
 typedef struct {
@@ -197,9 +196,6 @@ void screenInit() {
         settings->videoType = strdup("EGA");
     }
 
-    if (!screenLoadGemTiles())
-        errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
-
     if (verbose)
         printf("screen initialized [screenInit()]\n");
 
@@ -308,6 +304,7 @@ ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node) {
         image->transparentIndex = xmlGetPropAsInt(node, "transparentIndex");
     else
         image->transparentIndex = -1;
+    image->xu4Graphic = xmlGetPropAsBool(node, "xu4Graphic");
     image->fixup = xmlGetPropAsEnum(node, "fixup", fixupEnumStrings);
 
     return image;
@@ -459,24 +456,38 @@ int screenLoadBackground(BackgroundType bkgd) {
     U4FILE *file;
 
     info = screenGetImageInfo(bkgd);
+    if (!info)
+        errorFatal("no information on image %d in graphics.xml", bkgd);
+
     filename = info->filename;
     if ((!u4upgradeExists || strcmp(settings->videoType, "EGA") == 0) && u4upgradeInstalled)
         filename = screenGetImageInfoFromSet(bkgd, "VGA")->filename;
 
-    ret = 0;
-    /* try to load the image in VGA first */
-    if (filename) {
+    if (!filename)
+        return 0;
+
+    if (info->xu4Graphic) {
+        char *pathname;
+
+        pathname = u4find_graphics(filename);
+        if (pathname) {
+            file = u4fopen_stdio(pathname);
+            free(pathname);
+        }
+    } 
+    else {
         file = u4fopen(filename);
+    }
     
-        if (file) {
-            ret = screenLoadImage(&unscaled,
+    ret = 0;
+    if (file) {
+        ret = screenLoadImageData(&unscaled,
                                   info->width,
                                   info->height,
                                   info->depth,
                                   file,
                                   info->filetype);
-            u4fclose(file);
-        }
+        u4fclose(file);
     }
     if (!ret)
         return 0;
@@ -508,7 +519,7 @@ int screenLoadBackground(BackgroundType bkgd) {
         imageScale /= info->prescale;
     }
         
-    bkgds[bkgd] = screenScale(unscaled, imageScale, info->tiles, 1);
+    image[bkgd] = screenScale(unscaled, imageScale, info->tiles, 1);
 
     return 1;
 }
@@ -520,9 +531,9 @@ void screenFreeBackgrounds() {
     int i;
 
     for (i = 0; i < BKGD_MAX; i++) {
-        if (bkgds[i] != NULL) {
-            imageDelete(bkgds[i]);
-            bkgds[i] = NULL;
+        if (image[i] != NULL) {
+            imageDelete(image[i]);
+            image[i] = NULL;
         }
     }
 }
@@ -536,52 +547,11 @@ void screenFreeIntroBackgrounds() {
 
     for (i = 0; i < BKGD_MAX; i++) {
         info = screenGetImageInfo(i);
-        if (bkgds[i] == NULL || !info || !info->introOnly)
+        if (image[i] == NULL || !info || !info->introOnly)
             continue;
-        imageDelete(bkgds[i]);
-        bkgds[i] = NULL;
+        imageDelete(image[i]);
+        image[i] = NULL;
     }
-}
-
-/**
- * Load the gem tile graphics from the "gem.ega.rle" or "gem.vga.rle"
- * file.  Note this file is not part of Ultima IV for DOS.
- */
-int screenLoadGemTiles() {
-    char *pathname;
-    U4FILE *file;
-    int ret = 0;
-
-    /* load vga gem tiles */
-    if (strcmp(settings->videoType, "VGA") == 0) {
-        pathname = u4find_graphics("vga/gem.rle");
-        if (pathname) {
-            file = u4fopen_stdio(pathname);
-            free(pathname);
-            if (file) {
-                ret = screenLoadImage(&gemtiles, GEMTILE_W, GEMTILE_H * 128, 8, file, COMP_RLE);
-                u4fclose(file);
-            }
-        }
-    }
-
-    /* load ega gem tiles (also loads if vga load fails) */
-    if (!ret || strcmp(settings->videoType, "EGA") == 0) {
-        pathname = u4find_graphics("ega/gem.rle");
-        if (pathname) {
-            file = u4fopen_stdio(pathname);
-            free(pathname);
-            if (file) {
-                ret = screenLoadImage(&gemtiles, GEMTILE_W, GEMTILE_H * 128, 4, file, COMP_RLE);
-                u4fclose(file);
-            }
-        }
-    }
-
-    if (gemtiles)
-        gemtiles = screenScale(gemtiles, scale, 128, 1);
-
-    return ret;
 }
 
 /**
@@ -730,13 +700,13 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
  * Load an image from a ".vga" or ".ega" image file.  Both 4-bpp
  * (original) or 8-bpp (VGA upgrade) images are supported.
  */
-int screenLoadImage(Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp) {
+int screenLoadImageData(Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp) {
     Image *img;
     int x, y, indexed;
     unsigned char *compressed_data, *decompressed_data = NULL;
     long inlen, decompResult;
 
-    ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp passed to screenLoadImage: %d", bpp);
+    ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp passed to screenLoadImageData: %d", bpp);
 
     inlen = u4flength(file);
     compressed_data = (Uint8 *) malloc(inlen);
@@ -829,23 +799,23 @@ int screenLoadImage(Image **image, int width, int height, int bpp, U4FILE *file,
 void screenDrawBackground(BackgroundType bkgd) {
     ASSERT(bkgd < BKGD_MAX, "bkgd out of range: %d", bkgd);
 
-    if (bkgds[bkgd] == NULL) {
+    if (image[bkgd] == NULL) {
         if (!screenLoadBackground(bkgd))
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
-    imageDraw(bkgds[bkgd], 0, 0);
+    imageDraw(image[bkgd], 0, 0);
 }
 
 void screenDrawBackgroundInMapArea(BackgroundType bkgd) {
     ASSERT(bkgd < BKGD_MAX, "bkgd out of range: %d", bkgd);
 
-    if (bkgds[bkgd] == NULL) {
+    if (image[bkgd] == NULL) {
         if (!screenLoadBackground(bkgd))
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
-    imageDrawSubRect(bkgds[bkgd], BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
+    imageDrawSubRect(image[bkgd], BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
                      BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
                      VIEWPORT_W * TILE_WIDTH * scale, 
                      VIEWPORT_H * TILE_HEIGHT * scale);
@@ -857,11 +827,11 @@ void screenDrawBackgroundInMapArea(BackgroundType bkgd) {
 void screenShowChar(int chr, int x, int y) {
     Image *charset;
 
-    if (bkgds[BKGD_CHARSET] == NULL) {
+    if (image[BKGD_CHARSET] == NULL) {
         if (!screenLoadBackground(BKGD_CHARSET))
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
-    charset = bkgds[BKGD_CHARSET];
+    charset = image[BKGD_CHARSET];
     imageDrawSubRect(charset, x * charset->w, y * (CHAR_HEIGHT * scale),
                      0, chr * (CHAR_HEIGHT * scale),
                      charset->w, CHAR_HEIGHT * scale);
@@ -878,8 +848,8 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
     int i;
 
     screenShowChar(chr, x, y);
-    dest.x = x * bkgds[BKGD_CHARSET]->w;
-    dest.w = bkgds[BKGD_CHARSET]->w;
+    dest.x = x * image[BKGD_CHARSET]->w;
+    dest.w = image[BKGD_CHARSET]->w;
     dest.h = scale;
     for (i = 0; i < 8; i++) {
         if (mask & (1 << i)) {
@@ -898,11 +868,11 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
     int unscaled_x, unscaled_y;
     Image *tiles;
 
-    if (bkgds[tileset->imageId] == NULL) {
+    if (image[tileset->imageId] == NULL) {
         if (!screenLoadBackground(tileset->imageId))
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
-    tiles = bkgds[tileset->imageId];
+    tiles = image[tileset->imageId];
 
     if (tileGetAnimationStyle(tile) == ANIM_SCROLL)
         offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale;
@@ -1018,6 +988,11 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
 void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
     SDL_Rect src, dest;
 
+    if (!image[BKGD_GEMTILES]) {
+        if (!screenLoadBackground(BKGD_GEMTILES))
+            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+    }
+
     dest.x = (GEMAREA_X + (x * GEMTILE_W)) * scale;
     dest.y = (GEMAREA_Y + (y * GEMTILE_H)) * scale;
     dest.w = GEMTILE_W * scale;
@@ -1029,7 +1004,7 @@ void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
         src.w = GEMTILE_W * scale;
         src.h = GEMTILE_H * scale;
 
-        SDL_BlitSurface(gemtiles->surface, &src, screen, &dest);
+        SDL_BlitSurface(image[BKGD_GEMTILES]->surface, &src, screen, &dest);
     }
 
     else {
@@ -1043,11 +1018,11 @@ void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
 void screenScrollMessageArea() {
     SDL_Rect src, dest;
         
-    ASSERT(bkgds[BKGD_CHARSET] != NULL, "charset not initialized!");
+    ASSERT(image[BKGD_CHARSET] != NULL, "charset not initialized!");
 
-    src.x = TEXT_AREA_X * bkgds[BKGD_CHARSET]->w;
+    src.x = TEXT_AREA_X * image[BKGD_CHARSET]->w;
     src.y = (TEXT_AREA_Y + 1) * CHAR_HEIGHT * scale;
-    src.w = TEXT_AREA_W * bkgds[BKGD_CHARSET]->w;
+    src.w = TEXT_AREA_W * image[BKGD_CHARSET]->w;
     src.h = (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale;
 
     dest.x = src.x;
@@ -1175,12 +1150,12 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
     if (!file)
         return 0;
 
-    ret = screenLoadImage(&unscaled, 
-                          dngGraphicInfo[index].width, 
-                          dngGraphicInfo[index].height, 
-                          dngGraphicInfo[index].depth,
-                          file, 
-                          dngGraphicInfo[index].comp);
+    ret = screenLoadImageData(&unscaled, 
+                              dngGraphicInfo[index].width, 
+                              dngGraphicInfo[index].height, 
+                              dngGraphicInfo[index].depth,
+                              file, 
+                              dngGraphicInfo[index].comp);
     u4fclose(file);
 
     if (!ret)
@@ -1199,26 +1174,26 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
     int offset;
     int savedflags;
 
-    tmp = imageNew(bkgds[BKGD_SHAPES]->w, bkgds[BKGD_SHAPES]->h / N_TILES, 1, bkgds[BKGD_SHAPES]->indexed, IMTYPE_SW);
-    if (bkgds[BKGD_SHAPES]->indexed)
-        imageSetPaletteFromImage(tmp, bkgds[BKGD_SHAPES]);
+    tmp = imageNew(image[BKGD_SHAPES]->w, image[BKGD_SHAPES]->h / N_TILES, 1, image[BKGD_SHAPES]->indexed, IMTYPE_SW);
+    if (image[BKGD_SHAPES]->indexed)
+        imageSetPaletteFromImage(tmp, image[BKGD_SHAPES]);
 
     src.x = 0;
-    src.y = tile * (bkgds[BKGD_SHAPES]->h / N_TILES);
-    src.w = bkgds[BKGD_SHAPES]->w;
-    src.h = bkgds[BKGD_SHAPES]->h / N_TILES;
+    src.y = tile * (image[BKGD_SHAPES]->h / N_TILES);
+    src.w = image[BKGD_SHAPES]->w;
+    src.h = image[BKGD_SHAPES]->h / N_TILES;
     dest.x = 0;
     dest.y = 0;
-    dest.w = bkgds[BKGD_SHAPES]->w;
-    dest.h = bkgds[BKGD_SHAPES]->h / N_TILES;
+    dest.w = image[BKGD_SHAPES]->w;
+    dest.h = image[BKGD_SHAPES]->h / N_TILES;
 
     /* have to turn off alpha on tiles before blitting: why? */
-    savedflags = bkgds[BKGD_SHAPES]->surface->flags;
-    bkgds[BKGD_SHAPES]->surface->flags &= ~SDL_SRCALPHA;
+    savedflags = image[BKGD_SHAPES]->surface->flags;
+    image[BKGD_SHAPES]->surface->flags &= ~SDL_SRCALPHA;
 
-    SDL_BlitSurface(bkgds[BKGD_SHAPES]->surface, &src, tmp->surface, &dest);
+    SDL_BlitSurface(image[BKGD_SHAPES]->surface, &src, tmp->surface, &dest);
 
-    bkgds[BKGD_SHAPES]->surface->flags = savedflags;
+    image[BKGD_SHAPES]->surface->flags = savedflags;
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
     if (dscale[distance] == 1)
@@ -1236,7 +1211,7 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
     src.y = 0;
     src.w = scaled->w;
     src.h = scaled->h - offset;
-    dest.x = (VIEWPORT_W * bkgds[BKGD_SHAPES]->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
+    dest.x = (VIEWPORT_W * image[BKGD_SHAPES]->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
     dest.y = ((doffset[distance] + BORDER_HEIGHT) * scale) + offset;
     dest.w = scaled->w;
     dest.h = scaled->h;
@@ -1249,7 +1224,7 @@ void screenDungeonDrawTile(int distance, unsigned char tile) {
         src.y = scaled->h - offset;
         src.w = scaled->w;
         src.h = offset;
-        dest.x = (VIEWPORT_W * bkgds[BKGD_SHAPES]->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
+        dest.x = (VIEWPORT_W * image[BKGD_SHAPES]->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
         dest.y = ((doffset[distance] + BORDER_HEIGHT) * scale);
         dest.w = scaled->w;
         dest.h = scaled->h;
@@ -1315,7 +1290,7 @@ void screenAnimateIntro(int frame) {
     dest.w = 24 * scale;
     dest.h = 24 * scale;
 
-    SDL_BlitSurface(bkgds[BKGD_TREE]->surface, &src, screen, &dest);
+    SDL_BlitSurface(image[BKGD_TREE]->surface, &src, screen, &dest);
 }
 
 void screenEraseMapArea() {
@@ -1354,7 +1329,7 @@ void screenShowCard(int pos, int card) {
     ASSERT(pos == 0 || pos == 1, "invalid pos: %d", pos);
     ASSERT(card < 8, "invalid card: %d", card);
 
-    if (bkgds[card / 2 + BKGD_HONCOM] == NULL)
+    if (image[card / 2 + BKGD_HONCOM] == NULL)
         screenLoadBackground(card / 2 + BKGD_HONCOM);
 
     src.x = ((card % 2) ? 218 : 12) * scale;
@@ -1367,7 +1342,7 @@ void screenShowCard(int pos, int card) {
     dest.w = 90 * scale;
     dest.h = 124 * scale;
 
-    SDL_BlitSurface(bkgds[card / 2 + BKGD_HONCOM]->surface, &src, screen, &dest);
+    SDL_BlitSurface(image[card / 2 + BKGD_HONCOM]->surface, &src, screen, &dest);
 }
 
 /**
@@ -1430,7 +1405,7 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
 
     ASSERT(beast == 0 || beast == 1, "invalid beast: %d", beast);
 
-    if (bkgds[BKGD_ANIMATE] == NULL)
+    if (image[BKGD_ANIMATE] == NULL)
         screenLoadBackground(BKGD_ANIMATE);
 
     row = frame % 6;
@@ -1455,7 +1430,7 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
     dest.w = src.w;
     dest.h = src.h;
 
-    SDL_BlitSurface(bkgds[BKGD_ANIMATE]->surface, &src, screen, &dest);
+    SDL_BlitSurface(image[BKGD_ANIMATE]->surface, &src, screen, &dest);
 }
 
 void screenGemUpdate() {

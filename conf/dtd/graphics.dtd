@@ -12,7 +12,7 @@
 
 <!ELEMENT image EMPTY >
 <!ATTLIST image id                NMTOKEN  #REQUIRED
-                filename          NMTOKEN  #REQUIRED
+                filename          CDATA    #REQUIRED
                 width             NMTOKEN  #REQUIRED
                 height            NMTOKEN  #REQUIRED
                 depth             NMTOKEN  #REQUIRED
@@ -21,5 +21,6 @@
                 tiles             NMTOKEN  #IMPLIED
                 introOnly         %bool;   #IMPLIED
                 transparentIndex  NMTOKEN  #IMPLIED
+                xu4Graphic        %bool;   #IMPLIED
                 fixup             %fixup;  #IMPLIED>
 
