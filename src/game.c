@@ -604,7 +604,7 @@ int gameBaseKeyHandler(int key, void *data) {
     /* Translate context-sensitive action key into a useful command */
     if (key == U4_ENTER && settings->minorEnhancements && settings->minorEnhancementsOptions.smartEnterKey) {
         /* Attempt to guess based on the character's surroundings etc, what
-           action they want */
+           action they want */        
         
         /* Do they want to board something? */
         if (c->transportContext == TRANSPORT_FOOT) {
@@ -623,12 +623,16 @@ int gameBaseKeyHandler(int key, void *data) {
         else key = 'x';        
         
         /* Klimb? */
-        if (mapPortalAt(c->location->map, c->location->x, c->location->y,
-                c->location->z, ACTION_KLIMB) != NULL)
+        if ((mapPortalAt(c->location->map, c->location->x, c->location->y,
+                c->location->z, ACTION_KLIMB) != NULL) || 
+                (c->location->context == CTX_DUNGEON &&
+                dungeonLadderUpAt(c->location->map, c->location->x, c->location->y, c->location->z)))
             key = 'k';
         /* Descend? */
-        else if (mapPortalAt(c->location->map, c->location->x, c->location->y,
-                c->location->z, ACTION_DESCEND) != NULL)
+        else if ((mapPortalAt(c->location->map, c->location->x, c->location->y,
+                c->location->z, ACTION_DESCEND) != NULL) ||
+                (c->location->context == CTX_DUNGEON &&
+                dungeonLadderDownAt(c->location->map, c->location->x, c->location->y, c->location->z)))
             key = 'd';        
         /* Enter? */
         else if (mapPortalAt(c->location->map, c->location->x, c->location->y,

@@ -73,9 +73,9 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
                     token = DUNGEON_LADDER_DOWN;
             }
 
-            if ((action & ACTION_KLIMB) && (token == DUNGEON_LADDER_UP || token == DUNGEON_LADDER_UPDOWN)) 
+            if ((action & ACTION_KLIMB) && dungeonLadderUpAt(location->map, x, y, z)) 
                 createDngLadder(location, action, &dngLadder);                
-            else if ((action & ACTION_DESCEND) && (token == DUNGEON_LADDER_DOWN || token == DUNGEON_LADDER_UPDOWN))
+            else if ((action & ACTION_DESCEND) && dungeonLadderDownAt(location->map, x, y, z))
                 createDngLadder(location, action, &dngLadder);
             else return 0;
             portal = &dngLadder;
