@@ -78,6 +78,8 @@ Map *mapMgrInitMap(void) {
     map->levels = 1;
     map->chunk_width = 0;
     map->chunk_height = 0;
+    map->n_compressed_chunks = 0;
+    map->compressed_chunks = NULL;
     map->id = 0;
 
     return map;
