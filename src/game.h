@@ -101,11 +101,7 @@ public:
 
 extern GameController *game;
 
-/* main game functions */
-void gameFinishTurn(void);
-
 /* key handlers */
-bool gameBaseKeyHandler(int key, void *data);
 bool gameGetFieldTypeKeyHandler(int key, void *data);
 bool gameGetPhaseKeyHandler(int key, void *data);
 bool gameGetCoordinateKeyHandler(int key, void *data);
