@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE tilemap SYSTEM "dtd/tilemap.dtd">
+<!-- <!DOCTYPE tilemap SYSTEM "dtd/tilemap.dtd">-->
 <!-- $Id$ -->
 
 <tilemap name="base">
