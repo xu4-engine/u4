@@ -3,6 +3,7 @@
  */
 
 #include <stddef.h>
+#include <string.h>
 #include <libxml/xmlmemory.h>
 
 #include "ttype.h"
