@@ -20,13 +20,21 @@ static const char * const paths[] = {
     "/usr/local/lib/u4/ultima4/"
 };
 
-/* the possible paths where u4 for the music files */
+/* the possible paths where the u4 music files can be installed */
 static const char * const music_paths[] = {
     "./",
     "./ultima4/",
     "../mid/",
     "/usr/lib/u4/music/",
     "/usr/local/lib/u4/music/"
+};
+
+/* the possible paths where the u4 config files can be installed */
+static const char * const conf_paths[] = {
+    "./",
+    "../conf/",
+    "/usr/lib/u4/",
+    "/usr/local/lib/u4/"
 };
 
 
@@ -134,13 +142,13 @@ char **u4read_stringtable(FILE *f, long offset, int nstrings) {
     return strs;
 }
 
-char *u4find_music(const char *fname) {
+char *u4find_path(const char *fname, const char * const *pathent, int npathents) {
     FILE *f = NULL;
     unsigned int i;
     char pathname[128];
 
-    for (i = 0; i < sizeof(music_paths) / sizeof(music_paths[0]); i++) {
-        snprintf(pathname, sizeof(pathname), "%s%s", music_paths[i], fname);
+    for (i = 0; i < npathents; i++) {
+        snprintf(pathname, sizeof(pathname), "%s%s", pathent[i], fname);
 
         if (verbose)
             printf("trying to open %s\n", pathname);
@@ -157,4 +165,12 @@ char *u4find_music(const char *fname) {
         return strdup(pathname);
     } else
         return NULL;
+}
+
+char *u4find_music(const char *fname) {
+    return u4find_path(fname, music_paths, sizeof(music_paths) / sizeof(music_paths[0]));
+}
+
+char *u4find_conf(const char *fname) {
+    return u4find_path(fname, conf_paths, sizeof(conf_paths) / sizeof(conf_paths[0]));
 }

@@ -12,5 +12,6 @@ void u4fclose(FILE *f);
 long u4flength(FILE *f);
 char **u4read_stringtable(FILE *f, long offset, int nstrings);
 char *u4find_music(const char *fname);
+char *u4find_conf(const char *fname);
 
 #endif
