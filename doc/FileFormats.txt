@@ -55,6 +55,28 @@ represented as three bytes.  For example, the byte values "28 28 28
 28" could be represented as "02 04 28".  If the value 0x02 needs to be
 represented, it *must* be encoded in a run ("02 01 02").
 
+file         purpose
+START.EGA    the basic game borders
+KEY7.EGA     shown when the key is used
+RUNE_0.EGA   vision shown after meditating on valor
+RUNE_1.EGA   vision shown after meditating on honesty, justice, and honor
+RUNE_2.EGA   vision shown after meditating on compassion and sacrifice
+RUNE_3.EGA   vision shown after meditating on spirituality
+RUNE_4.EGA   vision shown after meditating on humility
+RUNE_5.EGA
+STONCRCL.EGA shown when game completed
+HONESTY.EGA  shown during questioning in abyss
+COMPASSN.EGA shown during questioning in abyss
+VALOR.EGA    shown during questioning in abyss
+JUSTICE.EGA  shown during questioning in abyss
+SACRIFIC.EGA shown during questioning in abyss
+HONOR.EGA    shown during questioning in abyss
+SPIRIT.EGA   shown during questioning in abyss
+HUMILITY.EGA shown during questioning in abyss
+TRUTH.EGA    shown during questioning in abyss
+LOVE.EGA     shown during questioning in abyss
+COURAGE.EGA  shown during questioning in abyss
+
 
 .EGA files (LZW encoded)
 ------------------------
@@ -64,7 +86,26 @@ GYPSY.EGA, INSIDE.EGA, OUTSIDE.EGA, PORTAL.EGA, TREE.EGA, WAGON.EGA,
 HONCOM.EGA, SACHONOR.EGA, SPIRHUM.EGA, VALJUS.EGA, and TITLE.EGA.
 Also, the file SHAPES.EGZ is a LZW compressed version of SHAPES.EGA.
 Like the RLE encoded files, each of these files represents a 16 color
-320x200 bitmap.  (Description of LZW algorithm to go here).
+320x200 bitmap.  LZW encoded files only seem to be used in the
+introduction sequence (title.exe); the images used by avatar.exe are
+RLE encoded instead.  (Description of LZW algorithm to go here).
+
+file         purpose
+TITLE.EGA    the background for the inital screen, including the large Ultima IV and
+             the border for the map/menu
+ANIMATE.EGA  the frames for the little critters in the upper corners of the intro
+             screen
+TREE.EGA     initial graphic for character creation sequence (has animated moongate)
+PORTAL.EGA   closeup of the moongate
+OUTSIDE.EGA  the faire from outside
+INSIDE.EGA   inside the faire
+WAGON.EGA    the gyspy's wagon
+GYPSY.EGA    the gypsy herself
+ABACUS.EGA   the abacus that serves as the background while the questions are asked
+HONCOM.EGA   the cards for honor and compassion
+VALJUS.EGA   the cards for valor and justice
+SACHONOR.EGA the cards for sacrifice and honor
+SPIRHUM.EGA  the cards for spirituality and humility
 
 
 WORLD.MAP
@@ -281,6 +322,43 @@ offset len  notes
 0x24   1    sex (0xb-male, 0xc-female)
 0x25   1    class
 0x26   1    status ('G'-good, 'P'-poisoned, 'S'-sleeping, 'D'-dead)
+
+
+TITLE.EXE
+---------
+
+This executable is launched by ultima.com to display the introduction
+and create new characters.  When "journey onward" is selected from the
+intro menu, it exits and ultima.com passes control off to avatar.exe,
+the main game executable.  This .exe has lots of the data necessary
+for the intro screens embedded in it.
+
+offset len   notes
+0x0    17445 ???
+0x4425 11088 text for introduction, gypsy dialog and gyspy questions
+             (zero terminated strings)
+0x6f75 1273  ???
+0x746e 532   266 x/y pairs that are the coordinates for the pixels that
+             make up the Lord British signature on the introductory
+             title screen
+0x7682 1     zero terminating byte
+0x7683 95    tile values for the 15x9 map that appears on the
+             introductory title screen
+0x76e2 ...   ???
+
+
+AVATAR.EXE
+----------
+
+This is the main game executable, launched from ultima.com (or run on
+its own to skip the intro).  Lots of the special case data is embedded
+in this .exe.
+
+offset  len   notes
+0x0     74729 ???
+0x123e9 3485  hawkwind dialog text; the first 40 zero terminated
+              strings are his responses for 5 levels times 8 virtures,
+              plus some other miscellaneous dialog strings
 
 
 Sources
