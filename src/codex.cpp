@@ -81,7 +81,7 @@ void codexStart() {
      * disable the whirlpool cursor and black out the screen
      */
     screenDisableCursor();
-    screenUpdate(0, 1);
+    screenUpdate(&game->mapArea, false, true);
     
     /**
      * make the avatar alone

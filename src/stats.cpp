@@ -16,6 +16,7 @@
 #include "names.h"
 #include "player.h"
 #include "savegame.h"
+#include "spell.h"
 #include "tile.h"
 #include "weapon.h"
 
@@ -29,6 +30,18 @@ StatsArea::StatsArea() :
     mainArea(STATS_AREA_X * CHAR_WIDTH, STATS_AREA_Y * CHAR_HEIGHT, STATS_AREA_WIDTH, STATS_AREA_HEIGHT),
     summary(STATS_AREA_X * CHAR_WIDTH, (STATS_AREA_Y + STATS_AREA_HEIGHT + 1) * CHAR_HEIGHT, STATS_AREA_WIDTH, 1),
     view(STATS_PARTY_OVERVIEW) {
+
+    /* reagents menu (y values for menuitems filled in later) */
+    reagentsMixMenu.add(0, getReagentName((Reagent)0), 2, 0);
+    reagentsMixMenu.add(1, getReagentName((Reagent)1), 2, 0);
+    reagentsMixMenu.add(2, getReagentName((Reagent)2), 2, 0);
+    reagentsMixMenu.add(3, getReagentName((Reagent)3), 2, 0);
+    reagentsMixMenu.add(4, getReagentName((Reagent)4), 2, 0);
+    reagentsMixMenu.add(5, getReagentName((Reagent)5), 2, 0);
+    reagentsMixMenu.add(6, getReagentName((Reagent)6), 2, 0);
+    reagentsMixMenu.add(7, getReagentName((Reagent)7), 2, 0);
+
+    reagentsMixMenu.addObserver(this);
 }
  
 void StatsArea::setView(StatsView view) {
@@ -355,14 +368,12 @@ void StatsArea::showItems() {
  * Unmixed reagents in inventory.
  */
 void StatsArea::showReagents() {
-    extern Menu spellMixMenu;
-    
-    setTitle("Reagents");    
+    setTitle("Reagents");
 
     int line = 0;
     Menu::MenuItemList::iterator i;
     int r;
-    for (i = spellMixMenu.begin(), r = REAG_ASH; i != spellMixMenu.end(); i++, r++) {
+    for (i = reagentsMixMenu.begin(), r = REAG_ASH; i != reagentsMixMenu.end(); i++, r++) {
         if (i->isVisible()) {
             /* show the quantity of reagents */
             mainArea.textAt(0, line, "%c-", r+'A');
@@ -370,7 +381,7 @@ void StatsArea::showReagents() {
         }
     }
     
-    spellMixMenu.show(&mainArea);
+    reagentsMixMenu.show(&mainArea);
 }
 
 /**
@@ -396,3 +407,74 @@ void StatsArea::showMixtures() {
         }
     }
 }
+
+void StatsArea::resetReagentsMenu() {
+    Menu::MenuItemList::iterator current;
+    int i, row;    
+
+    i = 0;
+    row = 0;
+    for (current = reagentsMixMenu.begin(); current != reagentsMixMenu.end(); current++) {
+        if (c->saveGame->reagents[i++] > 0) {
+            current->setVisible(true);
+            current->setY(row);
+            row++;
+        }
+        else current->setVisible(false);
+    }
+
+    reagentsMixMenu.reset(false);
+}
+
+/**
+ * Handles spell mixing for the Ultima V-style menu-system
+ */
+bool ReagentsMenuController::keyPressed(int key) {
+    switch(key) {
+    case 'a':
+    case 'b':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+    case 'g':
+    case 'h':
+        {
+            /* select the corresponding reagent (if visible) */
+            Menu::MenuItemList::iterator mi = menu->getById((MenuId)(key-'a'));
+            if (mi->isVisible()) {        
+                menu->setCurrent(menu->getById((MenuId)(key-'a')));
+                keyPressed(U4_SPACE);
+            }
+        } break;
+    case U4_LEFT:
+    case U4_RIGHT:
+    case U4_SPACE:
+        if (menu->isVisible()) {            
+            MenuItem *item = &(*menu->getCurrent());
+            
+            /* change whether or not it's selected */
+            item->setSelected(!item->isSelected());
+                        
+            if (item->isSelected())
+                ingredients->addReagent((Reagent)item->getId());
+            else
+                ingredients->removeReagent((Reagent)item->getId());
+        }
+        break;
+    case U4_ENTER:
+        eventHandler->setControllerDone();
+        break;
+
+    case U4_ESC:
+        ingredients->revert();
+        eventHandler->setControllerDone();
+        break;
+
+    default:
+        return MenuController::keyPressed(key);
+    }
+
+    return true;
+}
+

@@ -135,8 +135,6 @@ EnergyFieldType fieldType;
 
 Debug gameDbg("debug/game.txt", "Game");
 
-Menu spellMixMenu;
-
 MouseArea mouseAreas[] = {
     { 3, { { 8, 8 }, { 8, 184 }, { 96, 96 } }, MC_WEST, { U4_ENTER, 0, U4_LEFT } },
     { 3, { { 8, 8 }, { 184, 8 }, { 96, 96 } }, MC_NORTH, { U4_ENTER, 0, U4_UP }  },
@@ -168,58 +166,6 @@ int ReadPlayerController::waitFor() {
     return getPlayer();
 }
 
-/**
- * Handles spell mixing for the Ultima V-style menu-system
- */
-bool ReagentsMenuController::keyPressed(int key) {
-    switch(key) {
-    case 'a':
-    case 'b':
-    case 'c':
-    case 'd':
-    case 'e':
-    case 'f':
-    case 'g':
-    case 'h':
-        {
-            /* select the corresponding reagent (if visible) */
-            Menu::MenuItemList::iterator mi = menu->getById((MenuId)(key-'a'));
-            if (mi->isVisible()) {        
-                menu->setCurrent(menu->getById((MenuId)(key-'a')));
-                keyPressed(U4_SPACE);
-            }
-        } break;
-    case U4_LEFT:
-    case U4_RIGHT:
-    case U4_SPACE:
-        if (menu->isVisible()) {            
-            MenuItem *item = &(*menu->getCurrent());
-            
-            /* change whether or not it's selected */
-            item->setSelected(!item->isSelected());
-                        
-            if (item->isSelected())
-                ingredients->addReagent((Reagent)item->getId());
-            else
-                ingredients->removeReagent((Reagent)item->getId());
-        }
-        break;
-    case U4_ENTER:
-        eventHandler->setControllerDone();
-        break;
-
-    case U4_ESC:
-        ingredients->revert();
-        eventHandler->setControllerDone();
-        break;
-
-    default:
-        return MenuController::keyPressed(key);
-    }
-
-    return true;
-}
-
 bool AlphaActionController::keyPressed(int key) {
     if (islower(key))
         key = toupper(key);
@@ -247,6 +193,9 @@ int AlphaActionController::get(char lastValidLetter, const string &prompt, Event
     AlphaActionController ctrl(lastValidLetter, prompt);
     eh->pushController(&ctrl);
     return ctrl.waitFor();
+}
+
+GameController::GameController() : mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H) {
 }
 
 void GameController::init() {
@@ -374,24 +323,13 @@ void GameController::init() {
     screenPrompt();    
 
     TRACE_LOCAL(gameDbg, "Settings up reagent menu."); 
-
-    /* reagents menu (y values for menuitems filled in later) */
-    spellMixMenu.add(0, getReagentName((Reagent)0), 2, 0);
-    spellMixMenu.add(1, getReagentName((Reagent)1), 2, 0);
-    spellMixMenu.add(2, getReagentName((Reagent)2), 2, 0);
-    spellMixMenu.add(3, getReagentName((Reagent)3), 2, 0);
-    spellMixMenu.add(4, getReagentName((Reagent)4), 2, 0);
-    spellMixMenu.add(5, getReagentName((Reagent)5), 2, 0);
-    spellMixMenu.add(6, getReagentName((Reagent)6), 2, 0);
-    spellMixMenu.add(7, getReagentName((Reagent)7), 2, 0);
-    gameResetSpellMixing();
+    c->stats->resetReagentsMenu();
 
     eventHandler->pushMouseAreaSet(mouseAreas); 
     
     /* add some observers */
     c->aura->addObserver(c->stats);
     c->party->addObserver(c->stats);
-    spellMixMenu.addObserver(c->stats);
     
     eventHandler->setScreenUpdate(&gameUpdateScreen);
 
@@ -570,19 +508,19 @@ void gameSetViewMode(ViewMode newMode) {
 void gameUpdateScreen() {
     switch (c->location->viewMode) {
     case VIEW_NORMAL:
-        screenUpdate(1, 0);
+        screenUpdate(&game->mapArea, true, false);
         break;
     case VIEW_GEM:
         screenGemUpdate();
         break;
     case VIEW_RUNE:
-        screenUpdate(0, 0);
+        screenUpdate(&game->mapArea, false, false);
         break;
     case VIEW_DUNGEON:
-        screenUpdate(1, 0);
+        screenUpdate(&game->mapArea, true, false);
         break;
     case VIEW_DEAD:
-        screenUpdate(1, 1);
+        screenUpdate(&game->mapArea, true, true);
         break;
     case VIEW_CODEX: /* the screen updates will be handled elsewhere */
         break;
@@ -1678,24 +1616,6 @@ bool gameGetCoordinateKeyHandler(int key, void *data) {
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
-void gameResetSpellMixing(void) {
-    Menu::MenuItemList::iterator current;
-    int i, row;    
-
-    i = 0;
-    row = 0;
-    for (current = spellMixMenu.begin(); current != spellMixMenu.end(); current++) {    
-        if (c->saveGame->reagents[i++] > 0) {
-            current->setVisible(true);
-            current->setY(row);
-            row++;
-        }
-        else current->setVisible(false);
-    }
-
-    spellMixMenu.reset(false);
-}
-
 int gameSpellMixHowMany(int spell, int num, Ingredients *ingredients) {
     int i;
     
@@ -2720,10 +2640,10 @@ bool mixReagentsForSpell(int spell) {
         c->stats->setView(STATS_REAGENTS);
 
         screenDisableCursor();
-        gameResetSpellMixing();
-        spellMixMenu.reset(); /* reset the menu, highlighting the first item */
 
-        ReagentsMenuController getReagentsController(&spellMixMenu, &ingredients, c->stats->getMainArea());
+        c->stats->resetReagentsMenu();
+        c->stats->getReagentsMenu()->reset(); // reset the menu, highlighting the first item
+        ReagentsMenuController getReagentsController(c->stats->getReagentsMenu(), &ingredients, c->stats->getMainArea());
         eventHandler->pushController(&getReagentsController);
         getReagentsController.waitFor();
 
@@ -3100,7 +3020,7 @@ void wearArmor(int player, ArmorType armor) {
 bool ztatsFor(int player) {
     /* reset the spell mix menu and un-highlight the current item,
        and hide reagents that you don't have */
-    gameResetSpellMixing();
+    c->stats->resetReagentsMenu();
 
     c->stats->setView(StatsView(STATS_CHAR1 + player));
 

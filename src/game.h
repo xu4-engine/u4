@@ -8,15 +8,14 @@
 #include "controller.h"
 #include "event.h"
 #include "map.h"
-#include "menu.h"
 #include "movement.h"
 #include "sound.h"
+#include "tileview.h"
 #include "types.h"
 
 class Map;
 struct Portal;
 class Creature;
-class Ingredients;
 class Party;
 class PartyMember;
 
@@ -56,20 +55,6 @@ public:
 };
 
 /**
- * Controller for the reagents menu used when mixing spells.  Fills
- * the passed in Ingredients with the selected reagents.
- */
-class ReagentsMenuController : public MenuController {
-public:
-    ReagentsMenuController(Menu *menu, Ingredients *i, TextView *view) : MenuController(menu, view), ingredients(i) { }
-
-    bool keyPressed(int key);
-
-private:
-    Ingredients *ingredients;
-};
-
-/**
  * A controller to handle input for commands requiring a letter
  * argument in the range 'a' - lastValidLetter.
  */
@@ -90,6 +75,8 @@ private:
  */
 class GameController : public Controller {
 public:
+    GameController();
+
     /* controller functions */
     virtual bool keyPressed(int key);
     virtual void timerFired();
@@ -97,6 +84,8 @@ public:
     /* main game functions */
     void init(void);    
     static void finishTurn(void);
+
+    TileView mapArea;
 };
 
 extern GameController *game;
@@ -117,7 +106,6 @@ int gameExitToParentMap();
 
 /* spell functions */
 bool gameCastForPlayer(int player);
-void gameResetSpellMixing(void);
 
 /* action functions */
 bool gameGetChest(int player);

@@ -8,10 +8,12 @@
 #include <string>
 #include "observable.h"
 #include "observer.h"
+#include "menu.h"
 #include "textview.h"
 
 struct SaveGame;
 class Aura;
+class Ingredients;
 class Menu;
 class MenuEvent;
 class Party;
@@ -59,6 +61,9 @@ public:
 
     TextView *getMainArea() { return &mainArea; }
 
+    void resetReagentsMenu();
+    Menu *getReagentsMenu() { return &reagentsMixMenu; }
+
 private:
     void showPartyView(bool avatarOnly);
     void showPlayerDetails();
@@ -75,6 +80,22 @@ private:
     TextView summary;
     
     StatsView view;
+
+    Menu reagentsMixMenu;
+};
+
+/**
+ * Controller for the reagents menu used when mixing spells.  Fills
+ * the passed in Ingredients with the selected reagents.
+ */
+class ReagentsMenuController : public MenuController {
+public:
+    ReagentsMenuController(Menu *menu, Ingredients *i, TextView *view) : MenuController(menu, view), ingredients(i) { }
+
+    bool keyPressed(int key);
+
+private:
+    Ingredients *ingredients;
 };
 
 #endif

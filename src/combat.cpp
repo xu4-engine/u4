@@ -1083,7 +1083,7 @@ bool CombatController::keyPressed(int key) {
 
             /* reset the spell mix menu and un-highlight the current item,
                and hide reagents that you don't have */            
-            gameResetSpellMixing();
+            c->stats->resetReagentsMenu();
 
             eventHandler->pushKeyHandler(&gameZtatsKeyHandler);
             screenMessage("Ztats\n");        
