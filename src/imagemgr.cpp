@@ -439,11 +439,9 @@ ImageInfo *ImageMgr::get(const string &name) {
     }
 
     int imageScale = settings.scale;
-    if (info->prescale != 0) {
-        if ((settings.scale % info->prescale) != 0)
-            errorFatal("image %s is prescaled to an incompatible size: %d\n", filename.c_str(), info->prescale);
-        imageScale /= info->prescale;
-    }
+    if ((settings.scale % info->prescale) != 0)
+        errorFatal("image %s is prescaled to an incompatible size: %d\n", filename.c_str(), info->prescale);
+    imageScale /= info->prescale;
         
     info->image = screenScale(unscaled, imageScale, info->tiles, 1);
 
