@@ -12,6 +12,7 @@
 #include "creature.h"
 #include "error.h"
 #include "location.h"
+#include "settings.h"
 #include "tilemap.h"
 #include "tileset.h"
 #include "utils.h"
@@ -56,7 +57,13 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
 
     /* get the number of frames the tile has */    
     if (xmlPropExists(node, "frames"))
-        tile->frames = xmlGetPropAsInt(node, "frames");    
+        tile->frames = xmlGetPropAsInt(node, "frames");
+    
+    /* FIXME: This is a hack to address the fact that there are 4
+       frames for the guard in VGA mode, but only 2 in EGA. Is there
+       a better way to handle this? */
+    if (tile->name == "guard" && settings.videoType == "EGA")
+        tile->frames = 2;    
 
     /* get the name of the image that belongs to this tile */
     if (xmlPropExists(node, "image"))
