@@ -54,31 +54,49 @@ Direction dirReverse(Direction dir) {
 
 /**
  * Finds the appropriate direction to travel to get from one point to
- * another.  Quite possibly the worst path finding algorithm ever
- * conceived; causes things to get stuck behind obstacles easily.
+ * another.  This algorithm will avoids getting trapped behind simple
+ * obstacles, but still fails with anything mildly complicated.
  */
 Direction dirFindPath(int from_x, int from_y, int to_x, int to_y, int valid_directions_mask) {
-    Direction vert_dir, horiz_dir;
     int dx, dy;
 
     dx = from_x - to_x;
     dy = from_y - to_y;
 
-    vert_dir = (dy < 0) ? DIR_SOUTH : (dy > 0) ? DIR_NORTH : DIR_NONE;
-    horiz_dir = (dx < 0) ? DIR_EAST : (dx > 0) ? DIR_WEST : DIR_NONE;
+    /*
+     * remove directions that move away from the target
+     */
+    if (dx < 0)
+        valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_WEST, valid_directions_mask);
+    else if (dx > 0)
+        valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_EAST, valid_directions_mask);
+        
+    if (dy < 0)
+        valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_NORTH, valid_directions_mask);
+    else if (dy > 0)
+        valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_SOUTH, valid_directions_mask);
 
-    /* restrict direction to the valid directions specified */
-    if (!DIR_IN_MASK(vert_dir, valid_directions_mask))
-        vert_dir = DIR_NONE;
-    if (!DIR_IN_MASK(horiz_dir, valid_directions_mask))
-        horiz_dir = DIR_NONE;
+    /*
+     * in the case where the source and target share a row or a
+     * column, go directly towards the target, if possible; if the
+     * direct route is blocked, it falls back on the other directions
+     */
+    if (dx == 0) {
+        if (DIR_IN_MASK(DIR_NORTH, valid_directions_mask) ||
+            DIR_IN_MASK(DIR_SOUTH, valid_directions_mask)) {
+            valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_EAST, valid_directions_mask);
+            valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_WEST, valid_directions_mask);
+        }
+    }
+    if (dy == 0) {
+        if (DIR_IN_MASK(DIR_EAST, valid_directions_mask) ||
+            DIR_IN_MASK(DIR_WEST, valid_directions_mask)) {
+            valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_NORTH, valid_directions_mask);
+            valid_directions_mask = DIR_REMOVE_FROM_MASK(DIR_SOUTH, valid_directions_mask);
+        }
+    }
 
-    if (vert_dir == DIR_NONE)
-        return horiz_dir;
-    else if (horiz_dir == DIR_NONE)
-        return vert_dir;
-    else
-        return (rand() % 2) ? vert_dir : horiz_dir;
+    return dirRandomDir(valid_directions_mask);
 }
 
 /**
