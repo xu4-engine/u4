@@ -16,7 +16,7 @@ static const Moongate gates[] = {
     { 103, 195 },               /* trinsic */
     {  23, 126 },               /* skara brae */
     { 187, 167 },               /* magincia */
-    { 223, 134 }                /* moonglow */
+    { 224, 134 }                /* moonglow */
 };
 
 const Moongate *moongateGetGateForPhase(int phase) {
