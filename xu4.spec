@@ -31,7 +31,8 @@ cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir}
 
 %install
 cd src && %{makeinstall} desktopdir=$RPM_BUILD_ROOT/etc/X11/applnk
-cp ~/ultima4-1.01.zip $RPM_BUILD_ROOT/%{_libdir}/u4/ultima4.zip
+wget http://aleron.dl.sourceforge.net/sourceforge/xu4/ultima4-1.01.zip -O $RPM_BUILD_ROOT/%{_libdir}/u4/ultima4.zip
+wget http://www.moongates.com/u4/upgrade/files/u4upgrad.zip -O $RPM_BUILD_ROOT/%{_libdir}/u4/u4upgrad.zip
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -50,8 +51,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/rledec
 %{_libdir}/u4/tlkconv
 %{_libdir}/u4/*.xml
+%{_libdir}/u4/dtd/*.dtd
 %{_libdir}/u4/graphics/*.rle
 %{_libdir}/u4/ultima4.zip
+%{_libdir}/u4/u4upgrad.zip
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
