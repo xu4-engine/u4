@@ -1343,7 +1343,7 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
     MenuItem *menuItem = (MenuItem *)menu->data;
     switch(menuItem->id) {
     case 0:
-        settings->debug = ~settings->debug;
+        settings->debug = settings->debug ? 0 : 1;
         break;
     case 1:
         if (action != ACTIVATE_DECREMENT) {
