@@ -1,5 +1,5 @@
 Name:      xu4
-Version:   0.9
+Version:   1.0beta1
 Release:   1
 Epoch:     0
 Summary:   xu4 - Ultima IV Recreated
@@ -30,7 +30,7 @@ spirit of the original game will be added.
 %setup -n u4
 
 %build
-cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir}
+cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir} u4.static_gcc_libs && mv u4.static_gcc_libs u4
 
 %install
 cd src && %{makeinstall}
@@ -57,11 +57,15 @@ rm -rf %{buildroot}
 %{_libdir}/u4/*.xml
 %{_libdir}/u4/dtd/*.dtd
 %{_libdir}/u4/graphics/ega/*.rle
-%{_libdir}/u4/graphics/vga/*.rle
+%{_libdir}/u4/graphics/ega/*.png
+%{_libdir}/u4/graphics/vga/*.png
 %{_libdir}/u4/ultima4.zip
 %{_libdir}/u4/u4upgrad.zip
 
 %changelog
+* Thu Nov 25 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- updated for 1.0beta1, kill libstdc++ dependency
+
 * Sat Feb 28 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - replaced lzwenc, lzwdec, rleenc, rledec with u4enc and u4dec
 
