@@ -2,18 +2,17 @@
 
 <!ENTITY % bool '( true | false )'>
 <!ENTITY % hitmisstile '( fire | poison | lightning | magic | lava | fireblast | boulder | sleep | random )'>
+<!ENTITY % class '( mage | bard | fighter | druid | tinker | paladin | ranger | shepherd | all )'>
 
 <!ELEMENT weapons ( weapon+ ) >
 
-<!ELEMENT weapon EMPTY >
+<!ELEMENT weapon ( constraint* ) >
 <!ATTLIST weapon name                   CDATA   #REQUIRED
                  abbr                   CDATA   #REQUIRED
                  range                  NMTOKEN #IMPLIED
                  absolute_range         NMTOKEN #IMPLIED
                  damage                 NMTOKEN #REQUIRED
                  attackthroughobjects   %bool;  #IMPLIED
-                 canready               CDATA   #IMPLIED
-                 cantready              CDATA   #IMPLIED
                  choosedistance         %bool;  #IMPLIED
                  dontshowtravel         %bool;  #IMPLIED
                  hittile                %hitmisstile; #IMPLIED
@@ -23,3 +22,7 @@
                  magic                  %bool;  #IMPLIED
                  misstile               %hitmisstile; #IMPLIED
                  returns                %bool;  #IMPLIED>
+
+<!ELEMENT constraint EMPTY >
+<!ATTLIST constraint canuse             %bool;  #REQUIRED
+                     class              %class; #REQUIRED>
