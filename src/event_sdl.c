@@ -9,6 +9,7 @@
 #include "screen.h"
 #include "event.h"
 #include "context.h"
+#include "annotation.h"
 
 void eventHandlerMain() {
     eventHandlerPushKeyHandler(&keyHandlerNormal);
@@ -41,9 +42,10 @@ void eventHandlerMain() {
             else
                 key = event.key.keysym.sym;
 
-            processed = (*eventHandlerGetKeyHandler())(key);
+            processed = (*eventHandlerGetKeyHandler())(key, eventHandlerGetKeyHandlerData());
 
             if (processed) {
+                annotationCycle();
                 screenUpdate(c);
                 screenForceRedraw();
             }
