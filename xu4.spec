@@ -30,7 +30,7 @@ spirit of the original game will be added.
 %setup -n u4
 
 %build
-cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir} u4.static_gcc_libs && mv u4.static_gcc_libs u4
+cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir} u4.static_gcc_libs mkutils && mv u4.static_gcc_libs u4
 
 %install
 cd src && %{makeinstall}
@@ -63,6 +63,9 @@ rm -rf %{buildroot}
 %{_libdir}/u4/u4upgrad.zip
 
 %changelog
+* Thu Nov 25 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- fixed to build utils again
+
 * Thu Nov 25 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - updated for 1.0beta1, kill libstdc++ dependency
 
