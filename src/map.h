@@ -34,7 +34,7 @@ typedef struct _Map {
     const char *tlk_fname;
 } Map;
 
-#define MAP_IS_OOB(mapptr, x, y) ((x) < 0 || (x) >= (mapptr)->width || (y) < 0 || (y) >= (mapptr)->height)
+#define MAP_IS_OOB(mapptr, x, y) ((x) < 0 || (x) >= ((int)(mapptr)->width) || (y) < 0 || (y) >= ((int)(mapptr)->height))
 
 int mapRead(Map *map, FILE *ult, FILE *tlk);
 int mapReadCon(Map *map, FILE *con, int header);
