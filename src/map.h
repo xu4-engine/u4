@@ -20,6 +20,7 @@ typedef enum {
 #define SHOW_AVATAR (1 << 0)
 
 typedef struct _Map {
+    int id;
     const char *name;
     unsigned int width, height;
     unsigned int startx, starty;
