@@ -105,7 +105,7 @@ strlen(MACOSX_USER_FILES_PATH) + 1);
     settings->keydelay = 500;
     settings->keyinterval = 30;
     settings->filterMoveMessages = 0;
-    settings->attackdelay = 3;
+    settings->attackdelay = 5;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
