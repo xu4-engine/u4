@@ -20,6 +20,7 @@
 #include "context.h"
 #include "savegame.h"
 #include "ttype.h"
+#include "error.h"
 
 #define UNKNOWN 0
 
