@@ -17,10 +17,11 @@
 #include "event.h"
 #include "game.h"
 #include "location.h"
+#include "mapmgr.h"
 #include "monster.h"
 #include "moongate.h"
 #include "player.h"
-#include "screen.h"     /* for spells not implemented yet, should be removable when implemented */
+#include "screen.h"
 #include "settings.h"
 #include "ttype.h"
 
@@ -697,6 +698,7 @@ static int spellWinds(int fromdir) {
 
 static int spellXit(int unused) {
     if (!mapIsWorldMap(c->location->map)) {
+        screenMessage("Leaving...\n");
         gameExitToParentMap(c);
         musicPlay();
         return 1;
@@ -705,29 +707,63 @@ static int spellXit(int unused) {
 }
 
 static int spellYup(int unused) {
-    unsigned char tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z - 1, WITH_OBJECTS);
+    unsigned char tile;
+    int i, x_new, y_new;
 
-    if (c->location->z > 0) {
-        if (tileIsDungeonWalkable(tile))
-            c->location->z--;
-        else return 0;
+    /* can't cast in the Abyss */
+    if (c->location->map->id == MAP_ABYSS)
+        return 0;
+    /* staying in the dungeon */
+    else if (c->location->z > 0) {
+        for (i = 0; i < 0x20; i++) {
+            x_new = rand() % 8;
+            y_new = rand() % 8;
+            tile = (*c->location->tileAt)(c->location->map, x_new, y_new, c->location->z - 1, WITH_OBJECTS);
+
+            if (tileIsDungeonWalkable(tile) && (tile == BRICKFLOOR_TILE)) {
+                c->location->x = x_new;
+                c->location->y = y_new;
+                c->location->z--;
+                return 1;
+            }
+        }
+    /* exiting the dungeon */
     } else {
         screenMessage("Leaving...\n");
         gameExitToParentMap(c);
         musicPlay();
-    }    
+        return 1;
+    }
     
-    return 1;
+    /* didn't find a place to go, failed! */
+    return 0;
 }
 
 static int spellZdown(int unused) {
-    unsigned char tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z + 1, WITH_OBJECTS);
-
-    if (c->location->z < 7) {
-        if (tileIsDungeonWalkable(tile))
-            c->location->z++;
-        else return 0;
-    } else return 0;
+    unsigned char tile;
+    int i, x_new, y_new;
     
-    return 1;
+    /* can't cast in the Abyss */
+    if (c->location->map->id == MAP_ABYSS)
+        return 0;
+    /* can't go lower than level 8 */
+    else if (c->location->z >= 7)
+        return 0;
+    else {
+        for (i = 0; i < 0x20; i++) {
+            x_new = rand() % 8;
+            y_new = rand() % 8;
+            tile = (*c->location->tileAt)(c->location->map, x_new, y_new, c->location->z + 1, WITH_OBJECTS);
+
+            if (tileIsDungeonWalkable(tile) && (tile == BRICKFLOOR_TILE)) {
+                c->location->x = x_new;
+                c->location->y = y_new;
+                c->location->z++;
+                return 1;
+            }
+        }
+    }
+    
+    /* didn't find a place to go, failed! */
+    return 0;
 }
