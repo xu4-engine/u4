@@ -175,5 +175,6 @@ int shrineEjectOnKey(int key, void *data) {
 
 void shrineEject() {
     gameExitToParentMap(c);
+    musicPlay();
     (*c->location->finishTurn)();
 }

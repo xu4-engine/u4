@@ -302,8 +302,7 @@ int gameExitToParentMap(struct _Context *ct)
     if (ct->location->prev != NULL) {
         annotationClear(c->location->map->id);
         mapClearObjects(c->location->map);
-        locationFree(&ct->location);
-        musicPlay();
+        locationFree(&ct->location);        
         
         return 1;
     }
@@ -726,6 +725,7 @@ int gameBaseKeyHandler(int key, void *data) {
             else {
                 annotationClear(c->location->map->id);
                 gameSetMap(c, portal->destination, 0, portal);
+                
                 screenMessage("Klimb to second floor!\n");
             }
         } else if (tileIsBalloon(c->saveGame->transport)) {
@@ -1856,7 +1856,7 @@ int gamePeerCity(int city, void *data) {
  */
 int peerCityHandleChoice(char choice) {
     eventHandlerPopKeyHandler();
-    gameExitToParentMap(c);    
+    gameExitToParentMap(c);
 
     c->location->viewMode = VIEW_NORMAL; 
     (*c->location->finishTurn)();
@@ -2124,6 +2124,7 @@ int moveAvatar(Direction dir, int userEvent) {
         case BORDER_EXIT2PARENT:
             screenMessage("Leaving...\n");
             gameExitToParentMap(c);
+            musicPlay();
             return result;
 
         case BORDER_FIXED:

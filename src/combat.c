@@ -730,7 +730,8 @@ int combatIsLost() {
 
 void combatEnd() {
     
-    gameExitToParentMap(c);    
+    gameExitToParentMap(c);
+    musicPlay();
     
     if (combatIsWon()) {
 

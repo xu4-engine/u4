@@ -121,7 +121,8 @@ void campEnd(void) {
     musicFadeIn(0); /* Return volume to normal */
 
     eventHandlerPopKeyHandler();
-    gameExitToParentMap(c);    
+    gameExitToParentMap(c);
+    musicPlay();
     
     /* Wake everyone up! */
     for (i = 0; i < c->saveGame->members; i++) {
