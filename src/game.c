@@ -87,10 +87,10 @@ void talkShowReply(int showPrompt);
 /* action functions */
 int attackAtCoord(int x, int y, int distance, void *data);
 int destroyAtCoord(int x, int y, int distance, void *data);
+int gameMoveAvatar(Direction dir, int userEvent);
+int gameMoveAvatarInDungeon(Direction dir, int userEvent);
 int getChestTrapHandler(int player);
 int jimmyAtCoord(int x, int y, int distance, void *data);
-int moveAvatar(Direction dir, int userEvent);
-int moveAvatarInDungeon(Direction dir, int userEvent);
 int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y, int distance, void *data);
@@ -121,7 +121,6 @@ int gameCreateBalloon(Map *map);
 
 extern Object *party[8];
 Context *c = NULL;
-int collisionOverride = 0;
 int windLock = 0;
 char itemNameBuffer[16];
 char monsterNameBuffer[32];
@@ -141,7 +140,7 @@ void gameInit() {
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));    
     c->annotation = NULL;    
-    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, &gameFinishTurn, &moveAvatar, &mapTileAt, NULL);
+    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, &gameFinishTurn, &gameMoveAvatar, &mapTileAt, NULL);
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.playerInquiryBuffer[0] = '\0';
@@ -301,7 +300,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     int i, x, y, z, viewMode;    
     LocationContext context;
     FinishTurnCallback finishTurn = &gameFinishTurn;
-    MoveCallback move = &moveAvatar;
+    MoveCallback move = &gameMoveAvatar;
     TileAt tileAt = &mapTileAt;
 
     if (portal) {
@@ -324,14 +323,14 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         context = CTX_DUNGEON;
         viewMode = VIEW_DUNGEON;
         c->saveGame->orientation = DIR_EAST;
-        move = &moveAvatarInDungeon;
+        move = &gameMoveAvatarInDungeon;
         tileAt = &mapDungeonTileAt;
         break;
     case MAPTYPE_COMBAT:
         context = CTX_COMBAT;
         viewMode = VIEW_NORMAL;
         finishTurn = &combatFinishTurn;
-        move = &movePartyMember;
+        move = &combatMovePartyMember;
         break;
     case MAPTYPE_TOWN:
     case MAPTYPE_VILLAGE:
@@ -579,6 +578,7 @@ int gameCheckPlayerDisabled(int player) {
  */
 int gameBaseKeyHandler(int key, void *data) {
     int valid = 1;
+    int endTurn = 1;
     Object *obj;
     CoordActionInfo *info;    
     AlphaActionInfo *alphaInfo;
@@ -594,13 +594,16 @@ int gameBaseKeyHandler(int key, void *data) {
     case U4_RIGHT:        
         {
             /* move the avatar */
-            int moved = (*c->location->move)(keyToDirection(key), 1);
+            MoveReturnValue retval = (*c->location->move)(keyToDirection(key), 1);
         
             /* horse doubles speed (make sure we're on the same map as the previous move first) */
-            if (moved && (c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
+            if (retval & (MOVE_SUCCEEDED | MOVE_SLOWED) && 
+                (c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
                 gameUpdateScreen(); /* to give it a smooth look of movement */
                 (*c->location->move)(keyToDirection(key), 0);
             }
+
+            endTurn = (retval & MOVE_END_TURN); /* let the movement handler decide to end the turn */
         }
         
         break;    
@@ -635,7 +638,7 @@ int gameBaseKeyHandler(int key, void *data) {
             screenMessage("Cmd (h = help):");
             eventHandlerPushKeyHandler(&gameSpecialCmdKeyHandler);            
         }
-        else valid = 0;
+        else valid = 0;        
         break;
 
     case 4:                     /* ctrl-D */
@@ -658,7 +661,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 8:                     /* ctrl-H */
         if (settings->debug) {
-            screenMessage("Help!\n");            
+            screenMessage("Help!\n");
             screenPrompt();
             
             /* Help! send me to Lord British (who conveniently is right around where you are)! */
@@ -667,7 +670,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
             gameSetMap(c, mapMgrGetById(100), 1, NULL);
             c->location->x = 19;
-            c->location->y = 8;            
+            c->location->y = 8;
             c->location->z = 0;
         }
         else valid = 0;
@@ -704,7 +707,7 @@ int gameBaseKeyHandler(int key, void *data) {
         if (c->transportContext != TRANSPORT_FOOT)
             screenMessage("Board: Can't!\n");
         else if (obj) {
-            int valid = 1;
+            int validTransport = 1;
             
             if (tileIsShip(obj->tile)) {
                 screenMessage("Board Frigate!\n");
@@ -715,9 +718,9 @@ int gameBaseKeyHandler(int key, void *data) {
                 screenMessage("Mount Horse!\n");
             else if (tileIsBalloon(obj->tile))
                 screenMessage("Board Balloon!\n");
-            else valid = 0;
+            else validTransport = 0;
 
-            if (valid) {
+            if (validTransport) {
                 gameSetTransport(obj->tile);
                 mapRemoveObject(c->location->map, obj);
             }
@@ -752,7 +755,7 @@ int gameBaseKeyHandler(int key, void *data) {
         if (!usePortalAt(c->location, c->location->x, c->location->y, c->location->z, ACTION_ENTER)) {
             if (!mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z, ACTION_ENTER))
                 screenMessage("Enter what?\n");
-        }
+        }        
         break;
 
     case 'f':
@@ -1041,7 +1044,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
     }
 
-    if (valid) {
+    if (valid && endTurn) {
         if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler)
             (*c->location->finishTurn)();
     }
@@ -2011,6 +2014,109 @@ int getChestTrapHandler(int player) {
 }
 
 /**
+ * Handles moving the avatar during normal 3rd-person view 
+ */
+MoveReturnValue gameMoveAvatar(Direction dir, int userEvent) {       
+
+    MoveReturnValue retval = moveAvatar(dir, userEvent);  /* move the avatar */
+
+    /*musicPlayEffect();*/
+
+    if (!settings->filterMoveMessages) {
+
+        if (userEvent) {
+            if (retval & MOVE_TURNED)
+                screenMessage("Turn %s!\n", getDirectionName(dir));
+            else if (c->transportContext == TRANSPORT_SHIP)
+                screenMessage("Sail %s!\n", getDirectionName(dir));    
+            else if (c->transportContext != TRANSPORT_BALLOON)
+                screenMessage("%s\n", getDirectionName(dir));    
+
+            /* movement was blocked */
+            if (retval & MOVE_BLOCKED) {
+
+                /* if shortcuts are enabled, try them! */
+                if (settings->shortcutCommands) {
+                    int newx, newy;
+                    newx = c->location->x;
+                    newy = c->location->y;
+                    mapDirMove(c->location->map, dir, &newx, &newy);
+
+                    if (tileIsDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS))) {
+                        openAtCoord(newx, newy, 1, NULL);
+                        retval = MOVE_SUCCEEDED | MOVE_END_TURN;                    
+                    } else if (tileIsLockedDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS))) {
+                        jimmyAtCoord(newx, newy, 1, NULL);
+                        retval = MOVE_SUCCEEDED | MOVE_END_TURN;
+                    } /*else if (mapPersonAt(c->location->map, newx, newy, c->location->z) != NULL) {
+                        talkAtCoord(newx, newy, 1, NULL);
+                        retval = MOVE_SUCCEEDED | MOVE_END_TURN;
+                        }*/                
+                }
+
+                /* if we're still blocked */
+                if (retval & MOVE_BLOCKED)
+                    screenMessage("Blocked!\n");
+            }
+        }
+
+        /* movement was slowed */
+        if (retval & MOVE_SLOWED)
+            screenMessage("Slow progress!\n");        
+    }    
+
+    /* exited map */
+    if (retval & MOVE_EXIT_TO_PARENT) {
+        screenMessage("Leaving...\n");
+        gameExitToParentMap(c);
+        musicPlay();
+    }
+
+    /* things that happen while not on board the balloon */
+    if (c->transportContext & ~TRANSPORT_BALLOON)
+        gameCheckSpecialMonsters(dir);
+    /* things that happen while on foot or horseback */
+    if (c->transportContext & TRANSPORT_FOOT_OR_HORSE) {
+        if (gameCheckMoongates())
+            retval = MOVE_MAP_CHANGE | MOVE_END_TURN;
+    }
+
+    return retval;
+}
+
+/**
+ * Handles moving the avatar in the 3-d dungeon view
+ */
+MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
+
+    MoveReturnValue retval = moveAvatarInDungeon(dir, userEvent);  /* move the avatar */
+    Direction realDir = dirNormalize(c->saveGame->orientation, dir);
+
+    if (!settings->filterMoveMessages) {
+        if (userEvent) {
+            if (retval & MOVE_TURNED) {
+                if (dirRotateCCW(c->saveGame->orientation) == realDir)
+                    screenMessage("Turn Left\n");
+                else screenMessage("Turn Right\n");
+            }
+            /* show 'Advance' or 'Retreat' in dungeons */
+            else screenMessage("%s\n", realDir == c->saveGame->orientation ? "Advance" : "Retreat");
+        }
+
+        if (retval & MOVE_BLOCKED)
+            screenMessage("Blocked!\n");       
+    }
+
+    if (retval & MOVE_EXIT_TO_PARENT) {
+        screenMessage("Leaving...\n");
+        gameExitToParentMap(c);
+        musicPlay();
+    }
+
+    return retval;
+}
+
+/**
  * Attempts to jimmy a locked door at map coordinates x,y.  The locked
  * door is replaced by a permanent annotation of an unlocked door
  * tile.
@@ -2594,242 +2700,6 @@ int ztatsFor(int player) {
 }
 
 /**
- * Attempt to move the avatar in the given direction.  User event
- * should be set if the avatar is being moved in response to a
- * keystroke.  Returns zero if the avatar is blocked.
- */
-int moveAvatar(Direction dir, int userEvent) {
-    int result = 1;
-    int newx, newy;  
-    int slowed = 0;
-    unsigned char temp;
-    SlowedType slowedType = SLOWED_BY_TILE;
-    Object *destObj;
-
-    /* Check to see if we're on the balloon */
-    if (c->transportContext == TRANSPORT_BALLOON && userEvent) {
-        if (!settings->filterMoveMessages)
-            screenMessage("Drift Only!\n");
-        return 0;
-    }            
-    
-    if (c->transportContext == TRANSPORT_SHIP)
-        slowedType = SLOWED_BY_WIND;
-    else if (c->transportContext == TRANSPORT_BALLOON)
-        slowedType = SLOWED_BY_NOTHING;
-
-    /*musicPlayEffect();*/
-
-    /* if you're on ship, you must turn first! */
-    if (c->transportContext == TRANSPORT_SHIP) {
-        if (tileGetDirection((unsigned char)c->saveGame->transport) != dir) {
-	        temp = (unsigned char)c->saveGame->transport;
-            tileSetDirection(&temp, dir);
-	        c->saveGame->transport = temp;            
-            if (!settings->filterMoveMessages)
-                screenMessage("Turn %s!\n", getDirectionName(dir));
-            return result;
-        }
-    }
-    
-    if (c->transportContext == TRANSPORT_HORSE) {
-        if ((dir == DIR_WEST || dir == DIR_EAST) &&
-            tileGetDirection((unsigned char)c->saveGame->transport) != dir) {
-	    temp = (unsigned char)c->saveGame->transport;
-            tileSetDirection(&temp, dir);
-	    c->saveGame->transport = temp;
-        }
-    }
-
-    newx = c->location->x;
-    newy = c->location->y;
-
-    dirMove(dir, &newx, &newy);
-
-    if (!settings->filterMoveMessages && userEvent) {
-        if (c->transportContext == TRANSPORT_SHIP)
-            screenMessage("Sail %s!\n", getDirectionName(dir));    
-        else if (c->transportContext != TRANSPORT_BALLOON)
-            screenMessage("%s\n", getDirectionName(dir));
-    }
-
-    if (MAP_IS_OOB(c->location->map, newx, newy)) {
-        switch (c->location->map->border_behavior) {        
-        case BORDER_WRAP:
-            mapWrapCoordinates(c->location->map, &newx, &newy);
-            break;
-
-        case BORDER_EXIT2PARENT:
-            screenMessage("Leaving...\n");
-            gameExitToParentMap(c);
-            musicPlay();
-            return (result = 0);
-
-        case BORDER_FIXED:
-            if (newx < 0 || newx >= (int) c->location->map->width)
-                newx = c->location->x;
-            if (newy < 0 || newy >= (int) c->location->map->height)
-                newy = c->location->y;
-            break;
-        }
-    }
-
-    if (!collisionOverride && !c->saveGame->balloonstate) {
-        int movementMask;
-
-        movementMask = mapGetValidMoves(c->location->map, c->location->x, c->location->y, c->location->z, (unsigned char)c->saveGame->transport);
-        if (!DIR_IN_MASK(dir, movementMask)) {
-
-            if (settings->shortcutCommands) {
-                if (tileIsDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS))) {
-                    openAtCoord(newx, newy, 1, NULL);
-                    return result;
-                } else if (tileIsLockedDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS))) {
-                    jimmyAtCoord(newx, newy, 1, NULL);
-                    return result;
-                } /*else if (mapPersonAt(c->location->map, newx, newy, c->location->z) != NULL) {
-                    talkAtCoord(newx, newy, 1, NULL);
-                    return result;
-                    }*/
-            }
-
-            screenMessage("Blocked!\n");
-            return (result = 0);
-        }
-
-        /* Are we slowed by terrain or by wind direction? */
-        switch(slowedType) {
-        case SLOWED_BY_TILE:
-            slowed = slowedByTile((*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITHOUT_OBJECTS));
-            break;
-        case SLOWED_BY_WIND:
-            slowed = slowedByWind(dir);
-            break;
-        case SLOWED_BY_NOTHING:
-        default:
-            break;
-        }
-        
-        if (slowed) {
-            if (!settings->filterMoveMessages)
-                screenMessage("Slow progress!\n");
-            return (result = 0);
-        }
-    }    
-
-    c->location->x = newx;
-    c->location->y = newy;
-
-    /* if the avatar moved onto a monster (whirlpool, twister), then do the monster's special effect */
-    destObj = mapObjectAt(c->location->map, newx, newy, c->location->z);    
-    if (destObj && destObj->objType == OBJECT_MONSTER)
-        monsterSpecialEffect(destObj);
-
-    /* things that happen while not on board the balloon */    
-    if (c->transportContext & ~TRANSPORT_BALLOON)
-        gameCheckSpecialMonsters(dir);
-    /* things that happen while on foot or horseback */
-    if (c->transportContext & TRANSPORT_FOOT_OR_HORSE) {
-        if (gameCheckMoongates())
-            return (result = 0);
-    }
-
-    return result;
-}
-
-int moveAvatarInDungeon(Direction dir, int userEvent) {
-    int result = 1;
-    int newx, newy;    
-    Direction realDir = dir,
-              temp = c->saveGame->orientation;
-    
-    /*musicPlayEffect();*/
-    if (c->location->context != CTX_DUNGEON)
-        return (result = 0);
-
-    /* figure out what our real direction is */
-    while (temp != DIR_NORTH) {        
-        temp = dirRotateCW(temp);
-        realDir = dirRotateCCW(realDir);
-    }
-        
-    /* you must turn first! */
-    if (c->saveGame->orientation != realDir &&
-        c->saveGame->orientation != dirReverse(realDir)) {
-        
-        /* FIXME: turning in dungeons does NOT take a turn to do */
-        if (!settings->filterMoveMessages) {
-            if (dirRotateCCW(c->saveGame->orientation) == realDir)
-                screenMessage("Turn Left\n");
-            else screenMessage("Turn Right\n");
-        }
-        c->saveGame->orientation = realDir;
-        return result;
-    }
-    
-    newx = c->location->x;
-    newy = c->location->y;
-
-    dirMove(realDir, &newx, &newy);
-
-    if (!settings->filterMoveMessages && userEvent) 
-        /* show 'Advance' or 'Retreat' in dungeons */
-        screenMessage("%s\n", realDir == c->saveGame->orientation ? "Advance" : "Retreat");
-
-    if (MAP_IS_OOB(c->location->map, newx, newy)) {
-        switch (c->location->map->border_behavior) {        
-        case BORDER_WRAP:
-            mapWrapCoordinates(c->location->map, &newx, &newy);
-            break;
-
-        case BORDER_EXIT2PARENT:
-            screenMessage("Leaving...\n");
-            gameExitToParentMap(c);
-            musicPlay();
-            return (result = 0);
-
-        case BORDER_FIXED:
-            if (newx < 0 || newx >= (int) c->location->map->width)
-                newx = c->location->x;
-            if (newy < 0 || newy >= (int) c->location->map->height)
-                newy = c->location->y;
-            break;
-        }
-    }
-
-    if (!collisionOverride) {
-        int movementMask;
-
-        movementMask = mapGetValidMoves(c->location->map, c->location->x, c->location->y, c->location->z, (unsigned char)c->saveGame->transport);
-        if (!DIR_IN_MASK(realDir, movementMask)) {
-            screenMessage("Blocked!\n");
-            return (result = 0);
-        }
-    }
-
-    c->location->x = newx;
-    c->location->y = newy;
-
-    /* check to see if we're entering a dungeon room */
-    if ((mapGetTileFromData(c->location->map, newx, newy, c->location->z) & 0xF0) == 0xD0) {
-        int room = mapGetTileFromData(c->location->map, newx, newy, c->location->z) & 0xF;
-        
-        /**
-         * recalculate room for the abyss -- there are 16 rooms for every 2 levels, 
-         * each room marked with 0xD* where (* == room number 0-15).
-         * for levels 1 and 2, there are 16 rooms, levels 3 and 4 there are 16 rooms, etc.
-         */
-        if (c->location->map->id == MAP_ABYSS)
-            room = (0x10 * (c->location->z/2)) + room;
-
-        combatInitDungeonRoom(room, dirReverse(realDir));
-        combatBegin();
-    }   
-
-    return result;
-}
-
-/**
  * This function is called every quarter second.
  */
 void gameTimer(void *data) {
@@ -2855,7 +2725,7 @@ void gameTimer(void *data) {
         if ((c->transportContext == TRANSPORT_BALLOON) &&
             c->saveGame->balloonstate) {
             dir = dirReverse((Direction) c->windDirection);
-            moveAvatar(dir, 0);
+            gameMoveAvatar(dir, 0);            
         }
 
         gameUpdateMoons(1);
@@ -3129,7 +2999,7 @@ void gameCheckRandomMonsters() {
         (rand() % 32) != 0)
         return;
     
-    gameSpawnMonster(NULL);
+    //gameSpawnMonster(NULL);
 }
 
 /**

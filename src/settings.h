@@ -16,6 +16,7 @@
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
 #define DEFAULT_FILTER                  SCL_Scale2x
+#define DEFAULT_VIDEO_TYPE              VIDEO_VGA
 #define DEFAULT_SCREEN_SHAKES           1
 #define DEFAULT_VOLUME                  1
 #define DEFAULT_VOLUME_FADES            1
@@ -42,6 +43,13 @@ typedef enum {
     SCL_MAX
 } FilterType;
 
+typedef enum {
+    VIDEO_VGA,
+    VIDEO_EGA,
+    //VIDEO_CGA,
+    VIDEO_MAX
+} VideoType;
+
 typedef struct _SettingsMinorOptions {
     int u5shrines;
     int slimeDivides;
@@ -57,6 +65,7 @@ typedef struct _Settings {
     unsigned int scale;
     int fullscreen;
     FilterType filter;
+    VideoType videoType;
     int screenShakes;
     int vol;
     int volumeFades;
@@ -83,6 +92,8 @@ void settingsRead(void);
 void settingsWrite(void);
 const char *settingsFilterToString(FilterType filter);
 FilterType settingsStringToFilter(const char *str);
+const char *settingsVideoTypeToString(VideoType type);
+VideoType settingsStringToVideoType(const char *str);
 
 /* the global settings */
 extern Settings *settings;

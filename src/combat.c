@@ -1145,6 +1145,24 @@ void combatEnd(int adjustKarma) {
         (*c->location->finishTurn)();
 }
 
+/**
+ * Move a party member during combat and display the appropriate messages
+ */
+MoveReturnValue combatMovePartyMember(Direction dir, int userEvent) {
+    
+    MoveReturnValue retval = movePartyMember(dir, userEvent);
+
+    screenMessage("%s\n", getDirectionName(dir));
+    if (retval & MOVE_MUST_USE_SAME_EXIT)
+        screenMessage("All must use same exit!\n");
+    else if (retval & MOVE_BLOCKED)
+        screenMessage("Blocked!\n");
+    else if (retval & MOVE_SLOWED)
+        screenMessage("Slow progress!\n");
+
+    return retval;
+}
+
 void combatMoveMonsters() {
     int i, target, distance;
     CombatAction action;
@@ -1311,15 +1329,7 @@ void combatMoveMonsters() {
             gameDirectionalAction(info);
             free(info);           
 
-            break;
-
-        case CA_SHOW:
-            combatInfo.monsters[i].obj->isVisible = 1;
-            break;
-
-        case CA_HIDE:
-            combatInfo.monsters[i].obj->isVisible = 0;
-            break;
+            break;        
 
         case CA_FLEE:
         case CA_ADVANCE:
@@ -1374,79 +1384,6 @@ int combatFindTargetForMonster(const Object *monster, int *distance, int ranged)
     }
 
     return closest;
-}
-
-int movePartyMember(Direction dir, int userEvent) {
-    int result = 1;
-    int newx, newy;
-    int movementMask;
-    int member = combatInfo.partyFocus;    
-
-    newx = combatInfo.party[member].obj->x;
-    newy = combatInfo.party[member].obj->y;
-    dirMove(dir, &newx, &newy);
-
-    screenMessage("%s\n", getDirectionName(dir));
-
-    if (MAP_IS_OOB(c->location->map, newx, newy)) {
-        int sameExit = (!combatInfo.dungeonRoom || (combatInfo.exitDir == DIR_NONE) || (dir == combatInfo.exitDir));
-        if (sameExit) {
-            
-            /* if in a win-or-lose battle and not camping, then it can be bad to flee while healthy */
-            if (combatInfo.winOrLose && !combatInfo.camping) {
-                /* A fully-healed party member fled from an evil monster :( */
-                if (combatInfo.monster && monsterIsEvil(combatInfo.monster) && 
-                    c->saveGame->players[member].hp == c->saveGame->players[member].hpMax)
-                    playerAdjustKarma(c->saveGame, KA_HEALTHY_FLED_EVIL);
-            }
-
-            combatInfo.exitDir = dir;
-            mapRemoveObject(c->location->map, combatInfo.party[member].obj);
-            combatInfo.party[member].obj = NULL;
-            return result;
-        }
-        else {
-            screenMessage("All must use same exit!\n");
-            return (result = 0);
-        }
-    }
-
-    movementMask = mapGetValidMoves(c->location->map, combatInfo.party[member].obj->x, combatInfo.party[member].obj->y, c->location->z, combatInfo.party[member].obj->tile);
-    if (!DIR_IN_MASK(dir, movementMask)) {
-        screenMessage("Blocked!\n");
-        return (result = 0);        
-    }
-
-    combatInfo.party[member].obj->x = newx;
-    combatInfo.party[member].obj->y = newy;
-
-    /* handle dungeon room triggers */
-    if (combatInfo.dungeonRoom) {
-        int i;
-        Trigger *triggers = c->location->prev->map->dungeon->currentRoom->triggers;            
-
-        for (i = 0; i < 4; i++) {
-            const Monster *m = monsterForTile(triggers[i].tile);
-
-            /* FIXME: when a monster is created by a trigger, it can be created over and over and over...
-               how do we fix this? */
-
-            /* see if we're on a trigger */
-            if (triggers[i].x == newx && triggers[i].y == newy) {
-                /* change the tiles! */
-                if (triggers[i].change_x1 || triggers[i].change_y1) {                    
-                    /*if (m) combatAddMonster(m, triggers[i].change_x1, triggers[i].change_y1, c->location->z);
-                    else*/ annotationAdd(triggers[i].change_x1, triggers[i].change_y1, c->location->z, 0, triggers[i].tile);
-                }
-                if (triggers[i].change_x2 || triggers[i].change_y2) {
-                    /*if (m) combatAddMonster(m, triggers[i].change_x2, triggers[i].change_y2, c->location->z);
-                    else*/ annotationAdd(triggers[i].change_x2, triggers[i].change_y2, c->location->z, 0, triggers[i].tile);
-                }
-            }
-        }
-    }    
-
-    return result;
 }
 
 /**

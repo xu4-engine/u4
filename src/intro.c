@@ -243,10 +243,11 @@ int introInit() {
     mainOptions = menuAddItem(mainOptions, 2, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
     mainOptions = menuAddItem(mainOptions, 0xFF, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
-    videoOptions = menuAddItem(videoOptions, 0, "Scale", 6, 5, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-    videoOptions = menuAddItem(videoOptions, 1, "Mode", 6, 6, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-    videoOptions = menuAddItem(videoOptions, 2, "Filter", 6, 7, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-    videoOptions = menuAddItem(videoOptions, 3, "Screen Shaking", 6, 8, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+    videoOptions = menuAddItem(videoOptions, 4, "Graphics", 6, 5, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+    videoOptions = menuAddItem(videoOptions, 0, "Scale", 6, 6, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+    videoOptions = menuAddItem(videoOptions, 1, "Mode", 6, 7, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+    videoOptions = menuAddItem(videoOptions, 2, "Filter", 6, 8, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+    videoOptions = menuAddItem(videoOptions, 3, "Screen Shaking", 6, 9, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
     videoOptions = menuAddItem(videoOptions, 0xFE, "Use These Settings", 6, 20, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
     videoOptions = menuAddItem(videoOptions, 0xFF, "Cancel", 6, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
@@ -430,6 +431,7 @@ int introKeyHandler(int key, void *data) {
         if (!introBaseMenuKeyHandler(key, &videoOptions)) {            
             /* navigate to the item and activate it! */
             switch (key) {
+            case 'g': videoOptions = menuActivateItem(videoOptions, 4, ACTIVATE_NORMAL); break;
             case 's': videoOptions = menuActivateItem(videoOptions, 0, ACTIVATE_NORMAL); break;
             case 'm': videoOptions = menuActivateItem(videoOptions, 1, ACTIVATE_NORMAL); break;
             case 'f': videoOptions = menuActivateItem(videoOptions, 2, ACTIVATE_NORMAL); break;
@@ -688,10 +690,11 @@ void introUpdateScreen() {
     case INTRO_CONFIG_VIDEO:
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Video Options:");
-        screenTextAt(24, 5, "x%d", settings->scale);
-        screenTextAt(24, 6, "%s", settings->fullscreen ? "Fullscreen" : "Window");
-        screenTextAt(24, 7, "%s", settingsFilterToString(settings->filter));
-        screenTextAt(24, 8, "%s", settings->screenShakes ? "On" : "Off");
+        screenTextAt(24, 5, "%s", settingsVideoTypeToString(settings->videoType));
+        screenTextAt(24, 6, "x%d", settings->scale);
+        screenTextAt(24, 7, "%s", settings->fullscreen ? "Fullscreen" : "Window");
+        screenTextAt(24, 8, "%s", settingsFilterToString(settings->filter));
+        screenTextAt(24, 9, "%s", settings->screenShakes ? "On" : "Off");
         menuShow(menuGetRoot(videoOptions));        
         break;
 
@@ -1345,6 +1348,18 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
 
     case 3:
         settings->screenShakes = settings->screenShakes ? 0 : 1;
+        break;
+
+    case 4:
+        if (action != ACTIVATE_DECREMENT) {
+            settings->videoType++;
+            if (settings->videoType == VIDEO_MAX)
+                settings->videoType = (VideoType) 0;
+        } else {
+            settings->videoType--;
+            if (settings->videoType < (VideoType) 0)
+                settings->videoType = (VideoType)(VIDEO_MAX-1);
+        }
         break;
 
     case 0xFE:        

@@ -9,6 +9,7 @@
 
 #include "area.h"
 #include "direction.h"
+#include "movement.h"
 #include "savegame.h"
 
 struct _Object;
@@ -21,9 +22,7 @@ typedef enum {
     CA_ADVANCE,
     CA_RANGED,
     CA_FLEE,
-    CA_TELEPORT,
-    CA_SHOW,
-    CA_HIDE
+    CA_TELEPORT    
 } CombatAction;
 
 typedef struct _MonsterCombatInfo {
@@ -77,7 +76,7 @@ int combatInitialNumberOfMonsters(const struct _Monster *monster);
 unsigned char combatMapForTile(unsigned char groundTile, unsigned char transport, struct _Object *obj);
 void combatApplyDamageToMonster(int monster, int damage, int player);
 int combatBaseKeyHandler(int key, void *data);
-int movePartyMember(Direction dir, int userEvent);
+MoveReturnValue combatMovePartyMember(Direction dir, int userEvent);
 
 extern CombatInfo combatInfo;
 

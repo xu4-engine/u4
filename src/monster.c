@@ -254,8 +254,10 @@ void monsterLoadInfoFromXml() {
 
         /* Figure out which 'slowed' function to use */
         if (monsterSails(&monsters[monster]))        
+            /* sailing monsters (pirate ships) */
             monsters[monster].slowedType = SLOWED_BY_WIND;
-        else if (monsterFlies(&monsters[monster]))
+        else if (monsterFlies(&monsters[monster]) || monsterIsIncorporeal(&monsters[monster]))
+            /* flying monsters (dragons, bats, etc.) and incorporeal monsters (ghosts, zorns) */
             monsters[monster].slowedType = SLOWED_BY_NOTHING;
             
         monster++;

@@ -32,7 +32,7 @@ int shrineVision(int key, void *data);
 int shrineEjectOnKey(int key, void *data);
 void shrineEject();
 
-#define MEDITATION_MANTRAS_PER_CYCLE 16
+#define MEDITATION_CYCLES_PER_MANTRA 16
 
 const Shrine *shrine;
 char virtueBuffer[20];
@@ -160,7 +160,7 @@ void shrineMeditationCycle() {
 void shrineTimer(void *data) {
     ReadBufferActionInfo *info;
 
-    if (reps++ >= MEDITATION_MANTRAS_PER_CYCLE) {
+    if (reps++ >= MEDITATION_CYCLES_PER_MANTRA) {
         eventHandlerRemoveTimerCallback(&shrineTimer);
         eventHandlerPopKeyHandler();
 

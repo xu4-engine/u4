@@ -34,6 +34,7 @@ Direction dirGetBroadsidesDirs(Direction dir);
 Direction dirFindPathToTarget(int from_x, int from_y, int target_x, int target_y, int valid_directions_mask);
 Direction dirFindPathAwayFromTarget(int from_x, int from_y, int target_x, int target_y, int valid_directions_mask);
 Direction dirRandomDir(int valid_directions_mask);
+Direction dirNormalize(Direction orientation, Direction dir);
 Direction keyToDirection(int key);
 int directionToKey(Direction dir);
 

@@ -6,6 +6,7 @@
 #define LOCATION_H
 
 #include "map.h"
+#include "movement.h"
 
 typedef unsigned char (*TileAt)(const Map *map, int x, int y, int z, int withObjects);
 
@@ -25,7 +26,6 @@ typedef enum {
 #define CTX_CAN_SAVE_GAME   (CTX_WORLDMAP)
 
 typedef void (*FinishTurnCallback)(void);
-typedef int (*MoveCallback)(Direction, int);
 
 typedef struct _Location {
     int x;

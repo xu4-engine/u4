@@ -62,6 +62,7 @@ void settingsRead() {
     settings->scale                 = DEFAULT_SCALE;
     settings->fullscreen            = DEFAULT_FULLSCREEN;
     settings->filter                = DEFAULT_FILTER;
+    settings->videoType             = DEFAULT_VIDEO_TYPE;
     settings->screenShakes          = DEFAULT_SCREEN_SHAKES;
     settings->vol                   = DEFAULT_VOLUME;
     settings->volumeFades           = DEFAULT_VOLUME_FADES;
@@ -106,6 +107,13 @@ void settingsRead() {
             if (settings->filter == SCL_MAX) {
                 errorWarning("invalid filter name in settings file: resetting to point scaler");
                 settings->filter = SCL_POINT;
+            }
+        }
+        else if (strstr(buffer, "video=") == buffer) {
+            settings->videoType = settingsStringToVideoType(buffer + strlen("video="));
+            if (settings->videoType == VIDEO_MAX) {
+                errorWarning("invalid video type name in settings file: resetting to VGA");
+                settings->videoType = VIDEO_VGA;
             }
         }
         else if (strstr(buffer, "screenShakes=") == buffer)
@@ -190,6 +198,7 @@ void settingsWrite() {
             "scale=%d\n"
             "fullscreen=%d\n"
             "filter=%s\n"
+            "video=%s\n"
             "screenShakes=%d\n"
             "vol=%d\n"
             "volumeFades=%d\n"
@@ -215,6 +224,7 @@ void settingsWrite() {
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
+            settingsVideoTypeToString(settings->videoType),
             settings->screenShakes,
             settings->vol,
             settings->volumeFades,
@@ -264,6 +274,35 @@ FilterType settingsStringToFilter(const char *str) {
     for (f = (FilterType) 0; f < SCL_MAX; f++) {
         if (strcmp(str, settingsFilterToString((FilterType) f)) == 0) {
             result = (FilterType) f;
+            break;
+        }
+    }
+
+    return result;
+}
+
+/**
+ * Convert a video type enum into a readable string.
+ */
+const char *settingsVideoTypeToString(VideoType type) {
+    static const char * const videoNames[] = {
+        "VGA", "EGA", "CGA"
+    };
+
+    ASSERT(type < VIDEO_MAX, "invalid video type %d\n", type);
+
+    return videoNames[type];
+}
+
+/**
+ * Convert a string into a video type enum
+ */
+VideoType settingsStringToVideoType(const char *str) {
+    int v;
+    VideoType result = VIDEO_MAX;
+    for (v = (VideoType) 0; v < VIDEO_MAX; v++) {
+        if (strcmp(str, settingsVideoTypeToString((VideoType) v)) == 0) {
+            result = (VideoType) v;
             break;
         }
     }

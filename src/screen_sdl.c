@@ -135,8 +135,9 @@ void screenInit() {
     if (scale < 1 || scale > 5)
         scale = 2;
 
-    forceEga = 0;
-    forceVga = 0;
+    /* FIXME: shouldn't need to use switch.bat in order to switch between vga/ega */
+    forceEga = settings->videoType == VIDEO_EGA;
+    forceVga = settings->videoType == VIDEO_VGA;
 
     /* start SDL */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
@@ -149,9 +150,9 @@ void screenInit() {
     SDL_WM_SetCaption("Ultima IV", NULL);
 #ifdef ICON_FILE
     SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
-#endif
+#endif   
 
-    screenLoadPaletteEga();
+    screenLoadPaletteEga();    
     if (!screenLoadPaletteVga("u4vga.pal"))
         forceEga = 1;
 
@@ -286,8 +287,8 @@ int screenLoadBackground(BackgroundType bkgd) {
                                  backgroundInfo[bkgd].width, 
                                  backgroundInfo[bkgd].height, 
                                  backgroundInfo[bkgd].filename, 
-                                 backgroundInfo[bkgd].comp);
-    if (!ret && !forceVga) {
+                                 backgroundInfo[bkgd].comp);    
+    if (!ret && (!forceVga || !backgroundInfo[bkgd].hasVga)) {
         BackgroundType egaBkgd;
 
         /*

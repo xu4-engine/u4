@@ -175,6 +175,24 @@ Direction dirRandomDir(int valid_directions_mask) {
 }
 
 /**
+ * Normalizes the direction based on the orientation given
+ * (if facing west, and 'up' is pressed, the 'up' is translated
+ *  into DIR_NORTH -- this function tranlates that direction 
+ *  to DIR_WEST, the correct direction in this case).
+ */
+Direction dirNormalize(Direction orientation, Direction dir) {
+    Direction temp = orientation,
+              realDir = dir;
+
+    while (temp != DIR_NORTH) {        
+        temp = dirRotateCW(temp);
+        realDir = dirRotateCCW(realDir);
+    }
+
+    return realDir;
+}
+
+/**
  * Translates a keyboard code into a direction
  */
 Direction keyToDirection(int key) {        

@@ -96,9 +96,7 @@ void eventHandlerMain(void (*updateScreen)(void)) {
                 processed = eventHandlerUniversalKeyHandler(key);
                 if (!processed)
                     processed = (*eventHandlerGetKeyHandler())(key, eventHandlerGetKeyHandlerData());                    
-            }
-            /*processed = eventHandlerIsKeyIgnored(key) ?
-                0 :*/                
+            }            
 
             if (processed) {
                 if (updateScreen)
