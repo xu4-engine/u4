@@ -1421,10 +1421,10 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         /* re-initialize events */
         eventHandlerResetTimerCallbacks();            
     
-        mode = INTRO_CONFIG;        
+        mode = INTRO_CONFIG_GAMEPLAY;        
         break;
     case 0xFF:        
-        mode = INTRO_CONFIG;
+        mode = INTRO_CONFIG_GAMEPLAY;
         break;
     default: break;
     }
