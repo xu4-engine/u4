@@ -249,10 +249,11 @@ int introInit() {
         mainOptions = menuAddItem(mainOptions, 0xFF, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
         videoOptions = menuAddItem(videoOptions, 4, "Graphics", 6, 5, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-        videoOptions = menuAddItem(videoOptions, 0, "Scale", 6, 6, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-        videoOptions = menuAddItem(videoOptions, 1, "Mode", 6, 7, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-        videoOptions = menuAddItem(videoOptions, 2, "Filter", 6, 8, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
-        videoOptions = menuAddItem(videoOptions, 3, "Screen Shaking", 6, 9, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+        videoOptions = menuAddItem(videoOptions, 5, "Gem Layout", 6, 6, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+        videoOptions = menuAddItem(videoOptions, 0, "Scale", 6, 7, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+        videoOptions = menuAddItem(videoOptions, 1, "Mode", 6, 8, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+        videoOptions = menuAddItem(videoOptions, 2, "Filter", 6, 9, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
+        videoOptions = menuAddItem(videoOptions, 3, "Screen Shaking", 6, 10, &introVideoOptionsMenuItemActivate, ACTIVATE_ANY);
         videoOptions = menuAddItem(videoOptions, 0xFE, "Use These Settings", 6, 20, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
         videoOptions = menuAddItem(videoOptions, 0xFF, "Cancel", 6, 21, &introVideoOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
@@ -325,6 +326,7 @@ void introDelete(int freeMenus) {
     int i;
 
     free(settingsChanged->videoType);
+    free(settingsChanged->gemLayout);
     free(settingsChanged);
 
     for (i = 0; i < 28; i++)
@@ -709,10 +711,11 @@ void introUpdateScreen() {
         screenDrawBackground(BKGD_INTRO_EXTENDED);
         screenTextAt(2, 3, "Video Options:");
         screenTextAt(24, 5, "%s", settingsChanged->videoType);
-        screenTextAt(24, 6, "x%d", settingsChanged->scale);
-        screenTextAt(24, 7, "%s", settingsChanged->fullscreen ? "Fullscreen" : "Window");
-        screenTextAt(24, 8, "%s", settingsFilterToString(settingsChanged->filter));
-        screenTextAt(24, 9, "%s", settingsChanged->screenShakes ? "On" : "Off");
+        screenTextAt(24, 6, "%s", settingsChanged->gemLayout);
+        screenTextAt(24, 7, "x%d", settingsChanged->scale);
+        screenTextAt(24, 8, "%s", settingsChanged->fullscreen ? "Fullscreen" : "Window");
+        screenTextAt(24, 9, "%s", settingsFilterToString(settingsChanged->filter));
+        screenTextAt(24, 10, "%s", settingsChanged->screenShakes ? "On" : "Off");
         menuShow(menuGetRoot(videoOptions));        
         break;
 
@@ -1397,6 +1400,28 @@ void introVideoOptionsMenuItemActivate(Menu menu, ActivateAction action) {
             settingsChanged->videoType = strdup(screenGetImageSetNames()[i-1]);
         }
         break;
+
+    case 5:
+        ASSERT(screenGetImageSetNames()[0], "at least one gem layout set needed");
+        if (action != ACTIVATE_DECREMENT) {
+            int i = 0;
+            while(screenGetGemLayoutNames()[i] && strcmp(settingsChanged->gemLayout, screenGetGemLayoutNames()[i]) != 0)
+                i++;
+            if (!screenGetGemLayoutNames()[i] || !screenGetGemLayoutNames()[i+1])
+                i = 0;
+            else
+                i++;
+            free(settingsChanged->gemLayout);
+            settingsChanged->gemLayout = strdup(screenGetGemLayoutNames()[i]);
+        } else {
+            int i = 1;
+            while(screenGetGemLayoutNames()[i] && strcmp(settingsChanged->gemLayout, screenGetGemLayoutNames()[i]) != 0)
+                i++;
+            free(settingsChanged->gemLayout);
+            settingsChanged->gemLayout = strdup(screenGetGemLayoutNames()[i-1]);
+        }
+        break;
+        
 
     case 0xFE:
         /* save settings (if necessary) */

@@ -21,6 +21,7 @@
 #define DEFAULT_FULLSCREEN              0
 #define DEFAULT_FILTER                  SCL_Scale2x
 #define DEFAULT_VIDEO_TYPE              "VGA"
+#define DEFAULT_GEM_LAYOUT              "Standard"
 #define DEFAULT_SCREEN_SHAKES           1
 #define DEFAULT_VOLUME                  1
 #define DEFAULT_VOLUME_FADES            1
@@ -73,6 +74,7 @@ typedef struct _Settings {
     int fullscreen;
     FilterType filter;
     char *videoType;
+    char *gemLayout;
     int screenShakes;
     int vol;
     int volumeFades;

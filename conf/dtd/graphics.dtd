@@ -3,8 +3,9 @@
 <!ENTITY % bool '( true | false )'>
 <!ENTITY % filetype '( raw | rle | lzw )'>
 <!ENTITY % fixup '( none | intro | introExtended | abyss )'>
+<!ENTITY % layouttype '( standard | gem )'>
 
-<!ELEMENT graphics ( imageset+ ) >
+<!ELEMENT graphics ( imageset | layout )+ >
 
 <!ELEMENT imageset ( image+ ) >
 <!ATTLIST imageset name           NMTOKEN  #REQUIRED
@@ -24,3 +25,16 @@
                 xu4Graphic        %bool;   #IMPLIED
                 fixup             %fixup;  #IMPLIED>
 
+<!ELEMENT layout ( tileshape, viewport ) >
+<!ATTLIST layout name             NMTOKEN  #REQUIRED
+                 type             %layouttype; #REQUIRED>
+
+<!ELEMENT tileshape EMPTY >
+<!ATTLIST tileshape width         NMTOKEN  #REQUIRED
+                    height        NMTOKEN  #REQUIRED>
+
+<!ELEMENT viewport EMPTY >
+<!ATTLIST viewport x              NMTOKEN  #REQUIRED
+                   y              NMTOKEN  #REQUIRED
+                   width          NMTOKEN  #REQUIRED
+                   height         NMTOKEN  #REQUIRED>

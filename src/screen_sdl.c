@@ -75,6 +75,23 @@ typedef struct {
     ImageInfo *image[BKGD_MAX];
 } ImageSet;
 
+typedef enum {
+    LAYOUT_STANDARD,
+    LAYOUT_GEM
+} LayoutType;
+
+typedef struct {
+    char *name;
+    LayoutType type;
+    struct {
+        int width, height;
+    } tileshape;
+    struct {
+        int x, y;
+        int width, height;
+    } viewport;
+} Layout;
+
 const struct {
     const char *filename;
     int width, height;
@@ -153,8 +170,13 @@ const struct {
 void screenLoadGraphicsFromXml(void);
 ImageSet *screenLoadImageSetFromXml(xmlNodePtr node);
 ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node);
+Layout *screenLoadLayoutFromXml(xmlNodePtr node);
+
 char **imageSetNames = NULL;
 ListNode *imageSets = NULL;
+ListNode *layouts = NULL;
+char **gemLayoutNames = NULL;
+Layout *gemlayout = NULL;
 
 extern int verbose;
 
@@ -229,6 +251,12 @@ char **screenGetImageSetNames() {
     return imageSetNames;
 }
 
+char **screenGetGemLayoutNames() {
+    ASSERT(gemLayoutNames != NULL, "gem layouts have not yet been initialized");
+
+    return gemLayoutNames;
+}
+
 void screenLoadGraphicsFromXml() {
     xmlDocPtr doc;
     xmlNodePtr root, node;
@@ -241,11 +269,13 @@ void screenLoadGraphicsFromXml() {
         errorFatal("malformed .xml");
 
     for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) ||
-            xmlStrcmp(node->name, (const xmlChar *) "imageset") != 0)
+        if (xmlNodeIsText(node))
             continue;
 
-        imageSets = listAppend(imageSets, screenLoadImageSetFromXml(node));
+        if (xmlStrcmp(node->name, (const xmlChar *) "imageset") == 0)
+            imageSets = listAppend(imageSets, screenLoadImageSetFromXml(node));
+        else if (xmlStrcmp(node->name, (const xmlChar *) "layout") == 0)
+            layouts = listAppend(layouts, screenLoadLayoutFromXml(node));
     }
 
     if (imageSetNames) {
@@ -257,6 +287,34 @@ void screenLoadGraphicsFromXml() {
     for (i = 0, l = imageSets; l; i++, l = l->next) 
         imageSetNames[i] = strdup(((ImageSet *)l->data)->name);
     imageSetNames[i] = NULL;
+
+    if (gemLayoutNames) {
+        for (i = 0; gemLayoutNames[i]; i++)
+            free(gemLayoutNames[i]);
+        free(gemLayoutNames);
+    }
+    gemLayoutNames = malloc(sizeof(char *) * listLength(layouts) + 1);
+    for (i = 0, l = layouts; l; l = l->next) {
+        if (((Layout *)l->data)->type == LAYOUT_GEM) {
+            gemLayoutNames[i] = strdup(((Layout *)l->data)->name);
+            i++;
+        }
+    }
+    gemLayoutNames[i] = NULL;
+
+    /*
+     * Find gem layout to use.
+     */
+    for (l = layouts; l; l = l->next) {
+        Layout *layout = (Layout *) l->data;
+
+        if (layout->type == LAYOUT_GEM && strcmp(layout->name, settings->gemLayout) == 0) {
+            gemlayout = layout;
+            break;
+        }
+    }
+    if (!gemlayout)
+        errorFatal("no gem layout named %s found!\n", settings->gemLayout);
 }
 
 ImageSet *screenLoadImageSetFromXml(xmlNodePtr node) {
@@ -308,6 +366,35 @@ ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node) {
     image->fixup = xmlGetPropAsEnum(node, "fixup", fixupEnumStrings);
 
     return image;
+}
+
+
+Layout *screenLoadLayoutFromXml(xmlNodePtr node) {
+    Layout *layout;
+    xmlNodePtr child;
+    static const char *typeEnumStrings[] = { "standard", "gem", NULL };
+
+    layout = (Layout *) malloc(sizeof(Layout));
+    layout->name = xmlGetPropAsStr(node, "name");
+    layout->type = xmlGetPropAsEnum(node, "type", typeEnumStrings);
+
+    for (child = node->xmlChildrenNode; child; child = child->next) {
+        if (xmlNodeIsText(child))
+            continue;
+
+        if (xmlStrcmp(child->name, (const xmlChar *) "tileshape") == 0) {
+            layout->tileshape.width = xmlGetPropAsInt(child, "width");
+            layout->tileshape.height = xmlGetPropAsInt(child, "height");
+        }
+        else if (xmlStrcmp(child->name, (const xmlChar *) "viewport") == 0) {
+            layout->viewport.x = xmlGetPropAsInt(child, "x");
+            layout->viewport.y = xmlGetPropAsInt(child, "y");
+            layout->viewport.width = xmlGetPropAsInt(child, "width");
+            layout->viewport.height = xmlGetPropAsInt(child, "height");
+        }
+    }
+
+    return layout;
 }
 
 
@@ -1004,16 +1091,16 @@ void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
             errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
     }
 
-    dest.x = (GEMAREA_X + (x * GEMTILE_W)) * scale;
-    dest.y = (GEMAREA_Y + (y * GEMTILE_H)) * scale;
-    dest.w = GEMTILE_W * scale;
-    dest.h = GEMTILE_H * scale;
+    dest.x = (gemlayout->viewport.x + (x * gemlayout->tileshape.width)) * scale;
+    dest.y = (gemlayout->viewport.y + (y * gemlayout->tileshape.height)) * scale;
+    dest.w = gemlayout->tileshape.width * scale;
+    dest.h = gemlayout->tileshape.height * scale;
 
     if (tile < 128) {
         src.x = 0;
-        src.y = tile * GEMTILE_H * scale;
-        src.w = GEMTILE_W * scale;
-        src.h = GEMTILE_H * scale;
+        src.y = tile * gemlayout->tileshape.height * scale;
+        src.w = gemlayout->tileshape.width * scale;
+        src.h = gemlayout->tileshape.height * scale;
 
         SDL_BlitSurface(image[BKGD_GEMTILES]->surface, &src, screen, &dest);
     }
@@ -1450,9 +1537,9 @@ void screenGemUpdate() {
 
     screenFillRect(screen, BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0, 0, 0);
 
-    for (x = 0; x < GEMAREA_W; x++) {
-        for (y = 0; y < GEMAREA_H; y++) {
-            tile = screenViewportTile(GEMAREA_W, GEMAREA_H, x, y, &focus);
+    for (x = 0; x < gemlayout->viewport.width; x++) {
+        for (y = 0; y < gemlayout->viewport.height; y++) {
+            tile = screenViewportTile(gemlayout->viewport.width, gemlayout->viewport.height, x, y, &focus);
             screenShowGemTile(tile, focus, x, y);
         }
     }

@@ -69,6 +69,7 @@ void screenDelete(void);
 void screenReInit(void);
 
 char **screenGetImageSetNames(void);
+char **screenGetGemLayoutNames(void);
 
 int screenLoadBackground(BackgroundType bkgd);
 void screenDrawBackground(BackgroundType bkgd);

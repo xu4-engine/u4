@@ -63,6 +63,7 @@ void settingsRead() {
     settings->fullscreen            = DEFAULT_FULLSCREEN;
     settings->filter                = DEFAULT_FILTER;
     settings->videoType             = strdup(DEFAULT_VIDEO_TYPE);
+    settings->gemLayout             = strdup(DEFAULT_GEM_LAYOUT);
     settings->screenShakes          = DEFAULT_SCREEN_SHAKES;
     settings->vol                   = DEFAULT_VOLUME;
     settings->volumeFades           = DEFAULT_VOLUME_FADES;
@@ -118,6 +119,8 @@ void settingsRead() {
         }
         else if (strstr(buffer, "video=") == buffer)
             settings->videoType = strdup(buffer + strlen("video="));
+        else if (strstr(buffer, "gemLayout=") == buffer)
+            settings->gemLayout = strdup(buffer + strlen("gemLayout="));
         else if (strstr(buffer, "screenShakes=") == buffer)
             settings->screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);
         else if (strstr(buffer, "vol=") == buffer)
@@ -228,6 +231,7 @@ void settingsWrite() {
             "fullscreen=%d\n"
             "filter=%s\n"
             "video=%s\n"
+            "gemLayout=%s\n"
             "screenShakes=%d\n"
             "vol=%d\n"
             "volumeFades=%d\n"
@@ -260,6 +264,7 @@ void settingsWrite() {
             settings->fullscreen,
             settingsFilterToString(settings->filter),
             settings->videoType,
+            settings->gemLayout,
             settings->screenShakes,
             settings->vol,
             settings->volumeFades,
@@ -294,13 +299,16 @@ void settingsWrite() {
 
 /**
  * Copy settings.  Does a bitwise copy on all members except for
- * string pointer videoType.
+ * string pointers videoType and gemLayout.
  */
 void settingsCopy(Settings *to, const Settings *from) {
     if (to->videoType)
         free(to->videoType);
+    if (to->gemLayout)
+        free(to->gemLayout);
     memcpy(to, from, sizeof(Settings));
     to->videoType = strdup(from->videoType);
+    to->gemLayout = strdup(from->gemLayout);
 }
 
 /**
@@ -315,6 +323,9 @@ int settingsCompare(const Settings *s1, const Settings *s2) {
         return r;
 
     r = strcmp(s1->videoType, s2->videoType);
+    if (r != 0)
+        return r;
+    r = strcmp(s1->gemLayout, s2->gemLayout);
     if (r != 0)
         return r;
 

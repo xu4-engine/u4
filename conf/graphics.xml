@@ -51,7 +51,7 @@
         <image id="38" filename="rune_4.ega"   width="320" height="200" depth="4" filetype="rle"/>
 
         <!-- gem tiles -->
-        <image id="39" filename="ega/gem.rle"  width="4"   height="512" depth="4" filetype="rle" xu4Graphic="true"/>
+        <image id="39" filename="ega/gem.rle"  width="4"   height="512" depth="4" filetype="rle" tiles="128" xu4Graphic="true"/>
 
     </imageset>
 
@@ -90,9 +90,19 @@
         <image id="38" filename="rune_8.ega"   width="320" height="200" depth="8" filetype="rle"/>
 
         <!-- gem tiles -->
-        <image id="39" filename="vga/gem.rle"  width="4"   height="512" depth="8" filetype="rle" xu4Graphic="true"/>
+        <image id="39" filename="vga/gem.rle"  width="4"   height="512" depth="8" filetype="rle" tiles="128" xu4Graphic="true"/>
 
     </imageset>
+
+    <layout type="gem" name="Standard">
+        <tileshape width="4" height="4"/>
+        <viewport x="32" y="32" width="32" height="32"/>
+    </layout>
+    
+    <layout type="gem" name="Full Viewport">
+        <tileshape width="4" height="4"/>
+        <viewport x="8" y="8" width="44" height="44"/>
+    </layout>
 
 </graphics>
    
