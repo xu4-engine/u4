@@ -41,7 +41,7 @@ void combatFinishTurn(void);
 void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);
 int combatInitialNumberOfMonsters(const struct _Monster *monster);
-struct _Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, const struct _Object *obj);
+struct _Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, struct _Object *obj);
 void combatApplyDamageToMonster(int monster, int damage, int player);
 void attackFlash(int x, int y, int tile, int timeFactor);
 

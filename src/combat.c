@@ -158,8 +158,7 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
 
 
 Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, Object *obj) {
-    int i;    
-    const Monster *m;
+    int i;
     int fromShip = 0,
         toShip = 0;
     Object *objUnder = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z);
@@ -167,7 +166,7 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, Obje
     static const struct {
         unsigned char tile;
         Map *map;
-    } tileToMap[] = {        
+    } tileToMap[] = {
         { HORSE1_TILE,  &grass_map },
         { HORSE2_TILE,  &grass_map },
         { SWAMP_TILE,   &marsh_map },

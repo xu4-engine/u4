@@ -158,6 +158,7 @@ void gameInit() {
     playerSetItemStatsChangedCallback(&statsUpdate);
     playerSetSpellCallback(&gameSpellEffect);
     playerSetPartyStarvingCallback(&gamePartyStarving);
+    playerSetSetTransportCallback(&gameSetTransport);
     vendorSetInnHandlerCallback(&innBegin);
 
     musicPlay();
@@ -2613,9 +2614,7 @@ void gameCheckMoongates() {
 /**
  * Checks monster conditions and spawns new monsters if necessary
  */
-void gameCheckRandomMonsters() {    
-    const Monster *monster;    
-
+void gameCheckRandomMonsters() {
     /* remove monsters that are too far away from the avatar */
     gameMonsterCleanup();
     

@@ -119,8 +119,7 @@ void deathRevive() {
     c->lastCommandTime = time(NULL);    
     musicPlay();
 
-    playerReviveParty(c->saveGame);
-    gameSetTransport(AVATAR_TILE);
+    playerReviveParty(c->saveGame);    
 
     screenEnableCursor();
     screenShowCursor();

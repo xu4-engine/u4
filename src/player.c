@@ -17,6 +17,7 @@ LostEighthCallback lostEighthCallback = NULL;
 AdvanceLevelCallback advanceLevelCallback = NULL;
 ItemStatsChangedCallback itemStatsChangedCallback = NULL;
 PartyStarvingCallback partyStarvingCallback = NULL;
+SetTransportCallback setTransportCallback = NULL;
 
 /**
  * Sets up a callback to handle player losing an eighth of his or her
@@ -36,6 +37,10 @@ void playerSetItemStatsChangedCallback(ItemStatsChangedCallback callback) {
 
 void playerSetPartyStarvingCallback(PartyStarvingCallback callback) {
     partyStarvingCallback = callback;
+}
+
+void playerSetSetTransportCallback(SetTransportCallback callback) {
+    setTransportCallback = callback;
 }
 
 /**
@@ -540,6 +545,7 @@ void playerReviveParty(SaveGame *saveGame) {
 
     saveGame->food = 20099;
     saveGame->gold = 200;    
+    (*setTransportCallback)(AVATAR_TILE);
 }
 
 /**
@@ -592,7 +598,7 @@ int playerPurchase(SaveGame *saveGame, InventoryItem item, int type, int quantit
             saveGame->sextants += quantity;
         break;
     case INV_HORSE:
-        gameSetTransport(tileGetHorseBase());
+        (*setTransportCallback)(tileGetHorseBase());
         break;
     }
 
