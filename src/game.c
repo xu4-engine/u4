@@ -936,12 +936,14 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
  */
 int attackAtCoord(int x, int y) {
     Object *obj;
+    const Monster *m;
 
     if (x == -1 && y == -1)
         return 0;
 
     if ((obj = mapObjectAt(c->map, x, y)) != NULL &&
-        monsterForTile(obj->tile) != NULL) {
+        (m = monsterForTile(obj->tile)) != NULL &&
+        (m->mattr & MATTR_NONATTACKABLE) == 0) {
         combatBegin(mapTileAt(c->map, c->saveGame->x, c->saveGame->y), c->saveGame->transport, obj);
     }
     else {
