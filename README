@@ -52,6 +52,7 @@ New in v0.8
  - all music can be previewed at the intro screen with the number keys
  - many spells now work: awaken, blink, cure, dispel, gate, heal,
    light, negate, tremor, resurrect, xit
+ - The bell, book, candle and skull now work
  - better error reporting under MacOS X
  - bug fixes galore
  - lots of code cleanup
@@ -130,7 +131,7 @@ Some thoughts for possible improvements:
  - support for higher-resolution tile sets
  - allow the map view to display more of the world
  - automatically fetch Ultima 4 for DOS if not found
- - move hardcoded data (tile attributes, starting attributes, etc.)
+ - move hardcoded data (starting attributes, etc.)
    into xml config file
  - menu-based interface, like Sega version
  - improve the scalers:
