@@ -43,6 +43,7 @@ typedef struct CoordActionInfo {
 void gameInit(void);
 void gameTimer(void *data);
 void gameFinishTurn(void);
+void gameCleanup(void);
 
 /* key handlers */
 int gameBaseKeyHandler(int key, void *data);

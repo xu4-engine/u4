@@ -89,8 +89,11 @@ int main(int argc, char *argv[]) {
     eventHandlerPushKeyHandler(&gameBaseKeyHandler);
     eventHandlerMain(&gameUpdateScreen);
 
+    /* main event handler returned - cleanup and exit! */
     eventHandlerRemoveTimerCallback(&gameTimer);
     eventHandlerPopKeyHandler();
+
+    gameCleanup();
 
     eventHandlerDelete();
     soundDelete();

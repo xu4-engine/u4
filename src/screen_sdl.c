@@ -851,27 +851,29 @@ void screenShake(int iterations) {
     SDL_Rect dest;
     int i;
 
-    dest.x = 0 * scale;
-    dest.w = 320 * scale;
-    dest.h = 200 * scale;
+    if (settings->minorEnhancements && settings->minorEnhancementsOptions.screenShakes) {
+        dest.x = 0 * scale;
+        dest.w = 320 * scale;
+        dest.h = 200 * scale;
 
-    for (i = 0; i < iterations; i++) {
-        dest.y = 1 * scale;
+        for (i = 0; i < iterations; i++) {
+            dest.y = 1 * scale;
 
-        SDL_BlitSurface(screen, NULL, screen, &dest);
+            SDL_BlitSurface(screen, NULL, screen, &dest);
+            SDL_UpdateRect(screen, 0, 0, 0, 0);
+            eventHandlerSleep(100);
+
+            dest.y = -1 * scale;
+
+            SDL_BlitSurface(screen, NULL, screen, &dest);
+            SDL_UpdateRect(screen, 0, 0, 0, 0);
+            eventHandlerSleep(100);
+        }
+        /* FIXME: remove next line? doesn't seem necessary,
+           just adds another screen refresh (which is visible on my screen)... */
+        //screenDrawBackground(BKGD_BORDERS);
         SDL_UpdateRect(screen, 0, 0, 0, 0);
-        eventHandlerSleep(100);
-
-        dest.y = -1 * scale;
-
-        SDL_BlitSurface(screen, NULL, screen, &dest);
-        SDL_UpdateRect(screen, 0, 0, 0, 0);
-        eventHandlerSleep(100);
     }
-    /* FIXME: remove next line? doesn't seem necessary,
-       just adds another screen refresh (which is visible on my screen)... */
-    //screenDrawBackground(BKGD_BORDERS);
-    SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
 

@@ -200,6 +200,7 @@ void gameInit() {
     statsUpdate();
     screenPrompt();    
 
+    /* reagents menu */
     spellMixMenu = menuAddItem(spellMixMenu, 0, "Ash", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
     spellMixMenu = menuAddItem(spellMixMenu, 1, "Ginseng", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
     spellMixMenu = menuAddItem(spellMixMenu, 2, "Garlic", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
@@ -209,6 +210,14 @@ void gameInit() {
     spellMixMenu = menuAddItem(spellMixMenu, 6, "Nightshade", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
     spellMixMenu = menuAddItem(spellMixMenu, 7, "Mandrake", STATS_AREA_X+2, 0, NULL, ACTIVATE_NORMAL);
     gameResetSpellMixing();    
+}
+
+/**
+ * Frees up memory allocated during the game processes
+ */
+void gameCleanup(void) {
+    if (spellMixMenu)
+        menuDelete(spellMixMenu);
 }
 
 /**
@@ -513,11 +522,8 @@ void gameSpellEffect(unsigned int spell, int player, int hzSound) {
         eventHandlerSleep(time);
 
         if (effect == SPELLEFFECT_TREMOR) {
-            /* screen shaking is an xu4 enhancement -- make sure it's turned on! */
-            if (settings->minorEnhancements && settings->minorEnhancementsOptions.screenShakes) {
-                gameUpdateScreen();
-                screenShake(10);
-            }
+            gameUpdateScreen();
+            screenShake(10);            
         }
 
         break;
@@ -3144,6 +3150,7 @@ void gameDamageParty(int minDamage, int maxDamage) {
             damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
                 rand() % ((maxDamage + 1) - minDamage) + minDamage :
                 maxDamage;
+            screenShake(1);
             playerApplyDamage(&c->saveGame->players[i], damage);
         }
     }
@@ -3162,11 +3169,13 @@ void gameDamageShip(int minDamage, int maxDamage) {
             rand() % ((maxDamage + 1) - minDamage) + minDamage :
             maxDamage;
 
+        screenShake(1);
+
         c->saveGame->shiphull -= damage;
         if ((short)c->saveGame->shiphull < 0)
             c->saveGame->shiphull = 0;
         statsUpdate();
-        gameCheckHullIntegrity();
+        gameCheckHullIntegrity();        
     }
 }
 
