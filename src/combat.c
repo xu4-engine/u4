@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <time.h>
 
 #include "combat.h"
@@ -24,6 +23,7 @@
 #include "player.h"
 #include "death.h"
 #include "stats.h"
+#include "debug.h"
 
 extern Map brick_map;
 extern Map bridge_map;
@@ -215,6 +215,7 @@ void combatFinishTurn() {
     do {
         /* put the focus on the next party member */
         focus++;
+        annotationCycle();
 
         /* move monsters and wrap around at end */
         if (focus >= c->saveGame->members) {
@@ -547,9 +548,13 @@ void combatMoveMonsters() {
                 annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, c->saveGame->dnglevel, c->map->id, HITFLASH_TILE), 2));
 
                 playerApplyDamage(&c->saveGame->players[target], monsterGetDamage(m));
-                if (c->saveGame->players[target].hp == 0) {
+                if (c->saveGame->players[target].status == STAT_DEAD) {
+                    int px, py;
+                    px = party[target]->x;
+                    py = party[target]->y;
                     mapRemoveObject(c->map, party[target]);
                     party[target] = NULL;
+                    annotationSetVisual(annotationSetTurnDuration(annotationAdd(px, py, c->saveGame->dnglevel, c->map->id, CORPSE_TILE), c->saveGame->members));
                     screenMessage("%s is Killed!\n", c->saveGame->players[target].name);
                 }
                 statsUpdate();
