@@ -683,19 +683,45 @@ void screenShowTile(const ScreenTileInfo *tileInfo, int x, int y) {
 
     SDL_BlitSurface(tiles, &src, screen, &dest);
 
-    if (offset == 0)
-        return;
+    if (offset != 0) {
 
-    src.x = 0;
-    src.y = (tileInfo->tile + 1) * (tiles->h / N_TILES) - offset;
-    src.w = tiles->w;
-    src.h = offset;
-    dest.x = x * tiles->w + (BORDER_WIDTH * scale);
-    dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
-    dest.w = tiles->w;
-    dest.h = tiles->h / N_TILES;
+        src.x = 0;
+        src.y = (tileInfo->tile + 1) * (tiles->h / N_TILES) - offset;
+        src.w = tiles->w;
+        src.h = offset;
+        dest.x = x * tiles->w + (BORDER_WIDTH * scale);
+        dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
+        dest.w = tiles->w;
+        dest.h = tiles->h / N_TILES;
 
-    SDL_BlitSurface(tiles, &src, screen, &dest);
+        SDL_BlitSurface(tiles, &src, screen, &dest);
+    }
+
+    if (tileInfo->hasFocus && (screenCurrentCycle % 2)) {
+        dest.x = x * tiles->w + (BORDER_WIDTH * scale);
+        dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
+        dest.w = 2 * scale;
+        dest.h = tiles->h / N_TILES;
+        SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
+
+        dest.x = x * tiles->w + (BORDER_WIDTH * scale);
+        dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
+        dest.w = tiles->w;
+        dest.h = 2 * scale;
+        SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
+
+        dest.x = (x + 1) * tiles->w + (BORDER_WIDTH * scale) - (2 * scale);
+        dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
+        dest.w = tiles->w;
+        dest.h = tiles->h / N_TILES;
+        SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
+
+        dest.x = x * tiles->w + (BORDER_WIDTH * scale);
+        dest.y = (y + 1) * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale) - (2 * scale);
+        dest.w = tiles->w;
+        dest.h = tiles->h / N_TILES;
+        SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
+    }
 }
 
 /**
@@ -869,7 +895,7 @@ SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter) {
 
     dest = src;
 
-    if (filter && filterScaler && (scale % 2 == 0)) {
+    while (filter && filterScaler && (scale % 2 == 0)) {
         dest = (*filterScaler)(src, 2, n);
         scale /= 2;
         SDL_FreeSurface(src);
