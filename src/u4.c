@@ -52,6 +52,7 @@ int main(int argc, char *argv[]) {
     c->line = 0;
     c->col = 0;
     c->statsItem = STATS_PARTY_OVERVIEW;
+    c->moonPhase = 0;
 
     saveGameFile = fopen("party.sav", "rb");
     if (saveGameFile) {
