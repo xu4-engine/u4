@@ -38,7 +38,7 @@ struct ImageInfo {
     string filename;
     int width, height, depth;
     int prescale;
-    CompressionType filetype;
+    string filetype;
     int tiles;                  /* used to scale the without bleeding colors between adjacent tiles */
     bool introOnly;             /* whether can be freed after the intro */
     int transparentIndex;       /* color index to consider transparent */

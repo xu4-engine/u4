@@ -1,7 +1,6 @@
 <!-- $Id$ -->
 
 <!ENTITY % bool '( true | false )'>
-<!ENTITY % filetype '( raw | rle | lzw )'>
 <!ENTITY % fixup '( none | intro | introExtended | abyss | abacus )'>
 <!ENTITY % layouttype '( standard | gem )'>
 <!ENTITY % transformtype '( invert | pixel | scroll | frame | pixel_color )'>
@@ -20,7 +19,7 @@
                 height            NMTOKEN  #REQUIRED
                 depth             NMTOKEN  #REQUIRED
                 prescale          NMTOKEN  #IMPLIED
-                filetype          %filetype; #REQUIRED
+                filetype          CDATA    #REQUIRED
                 tiles             NMTOKEN  #IMPLIED
                 introOnly         %bool;   #IMPLIED
                 transparentIndex  NMTOKEN  #IMPLIED

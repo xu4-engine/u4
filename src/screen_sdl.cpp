@@ -17,6 +17,7 @@
 #include "error.h"
 #include "event.h"
 #include "image.h"
+#include "imageloader.h"
 #include "intro.h"
 #include "rle.h"
 #include "savegame.h"
@@ -83,73 +84,73 @@ const struct {
     int width, height;
     int depth;
     int x, y;
-    CompressionType comp;
+    const char *filetype;
 } dngGraphicInfo[] = {
-    { "ega/dung0la.rle", 32,  176, 4, 0,   0,   COMP_RLE },
-    { "ega/dung0lb.rle", 32,  176, 4, 0,   0,   COMP_RLE },
-    { "ega/dung0ma.rle", 176, 176, 4, 0,   0,   COMP_RLE },
-    { "ega/dung0mb.rle", 176, 176, 4, 0,   0,   COMP_RLE },
-    { "ega/dung0ra.rle", 32,  176, 4, 144, 0,   COMP_RLE },
-    { "ega/dung0rb.rle", 32,  176, 4, 144, 0,   COMP_RLE },
+    { "ega/dung0la.rle", 32,  176, 4, 0,   0,   "image/x-u4rle" },
+    { "ega/dung0lb.rle", 32,  176, 4, 0,   0,   "image/x-u4rle" },
+    { "ega/dung0ma.rle", 176, 176, 4, 0,   0,   "image/x-u4rle" },
+    { "ega/dung0mb.rle", 176, 176, 4, 0,   0,   "image/x-u4rle" },
+    { "ega/dung0ra.rle", 32,  176, 4, 144, 0,   "image/x-u4rle" },
+    { "ega/dung0rb.rle", 32,  176, 4, 144, 0,   "image/x-u4rle" },
 
-    { "ega/dung1la.rle", 64,  112, 4, 0,   32,  COMP_RLE },
-    { "ega/dung1lb.rle", 64,  112, 4, 0,   32,  COMP_RLE },
-    { "ega/dung1ma.rle", 176, 112, 4, 0,   32,  COMP_RLE },
-    { "ega/dung1mb.rle", 176, 112, 4, 0,   32,  COMP_RLE },
-    { "ega/dung1ra.rle", 64,  112, 4, 112, 32,  COMP_RLE },
-    { "ega/dung1rb.rle", 64,  112, 4, 112, 32,  COMP_RLE },
+    { "ega/dung1la.rle", 64,  112, 4, 0,   32,  "image/x-u4rle" },
+    { "ega/dung1lb.rle", 64,  112, 4, 0,   32,  "image/x-u4rle" },
+    { "ega/dung1ma.rle", 176, 112, 4, 0,   32,  "image/x-u4rle" },
+    { "ega/dung1mb.rle", 176, 112, 4, 0,   32,  "image/x-u4rle" },
+    { "ega/dung1ra.rle", 64,  112, 4, 112, 32,  "image/x-u4rle" },
+    { "ega/dung1rb.rle", 64,  112, 4, 112, 32,  "image/x-u4rle" },
 
-    { "ega/dung2la.rle", 80,  48,  4, 0,   64,  COMP_RLE },
-    { "ega/dung2lb.rle", 80,  48,  4, 0,   64,  COMP_RLE },
-    { "ega/dung2ma.rle", 176, 48,  4, 0,   64,  COMP_RLE },
-    { "ega/dung2mb.rle", 176, 48,  4, 0,   64,  COMP_RLE },
-    { "ega/dung2ra.rle", 80,  48,  4, 96,  64,  COMP_RLE },
-    { "ega/dung2rb.rle", 80,  48,  4, 96,  64,  COMP_RLE },
+    { "ega/dung2la.rle", 80,  48,  4, 0,   64,  "image/x-u4rle" },
+    { "ega/dung2lb.rle", 80,  48,  4, 0,   64,  "image/x-u4rle" },
+    { "ega/dung2ma.rle", 176, 48,  4, 0,   64,  "image/x-u4rle" },
+    { "ega/dung2mb.rle", 176, 48,  4, 0,   64,  "image/x-u4rle" },
+    { "ega/dung2ra.rle", 80,  48,  4, 96,  64,  "image/x-u4rle" },
+    { "ega/dung2rb.rle", 80,  48,  4, 96,  64,  "image/x-u4rle" },
 
-    { "ega/dung3la.rle", 88,  16,  4, 0,   80,  COMP_RLE },
-    { "ega/dung3lb.rle", 88,  16,  4, 0,   80,  COMP_RLE },
-    { "ega/dung3ma.rle", 176, 16,  4, 0,   80,  COMP_RLE },
-    { "ega/dung3mb.rle", 176, 16,  4, 0,   80,  COMP_RLE },
-    { "ega/dung3ra.rle", 88,  16,  4, 88,  80,  COMP_RLE },
-    { "ega/dung3rb.rle", 88,  16,  4, 88,  80,  COMP_RLE },
+    { "ega/dung3la.rle", 88,  16,  4, 0,   80,  "image/x-u4rle" },
+    { "ega/dung3lb.rle", 88,  16,  4, 0,   80,  "image/x-u4rle" },
+    { "ega/dung3ma.rle", 176, 16,  4, 0,   80,  "image/x-u4rle" },
+    { "ega/dung3mb.rle", 176, 16,  4, 0,   80,  "image/x-u4rle" },
+    { "ega/dung3ra.rle", 88,  16,  4, 88,  80,  "image/x-u4rle" },
+    { "ega/dung3rb.rle", 88,  16,  4, 88,  80,  "image/x-u4rle" },
 
-    { "ega/dung0la_door.rle", 32,  176, 4, 0,   0,   COMP_RLE },
-    { "ega/dung0lb_door.rle", 32,  176, 4, 0,   0,   COMP_RLE },
-    { "ega/dung0ma_door.rle", 176, 176, 4, 0,   0,   COMP_RLE },
-    { "ega/dung0mb_door.rle", 176, 176, 4, 0,   0,   COMP_RLE },
-    { "ega/dung0ra_door.rle", 32,  176, 4, 144, 0,   COMP_RLE },
-    { "ega/dung0rb_door.rle", 32,  176, 4, 144, 0,   COMP_RLE },
+    { "ega/dung0la_door.rle", 32,  176, 4, 0,   0,   "image/x-u4rle" },
+    { "ega/dung0lb_door.rle", 32,  176, 4, 0,   0,   "image/x-u4rle" },
+    { "ega/dung0ma_door.rle", 176, 176, 4, 0,   0,   "image/x-u4rle" },
+    { "ega/dung0mb_door.rle", 176, 176, 4, 0,   0,   "image/x-u4rle" },
+    { "ega/dung0ra_door.rle", 32,  176, 4, 144, 0,   "image/x-u4rle" },
+    { "ega/dung0rb_door.rle", 32,  176, 4, 144, 0,   "image/x-u4rle" },
 
-    { "ega/dung1la_door.rle", 64,  112, 4, 0,   32,  COMP_RLE },
-    { "ega/dung1lb_door.rle", 64,  112, 4, 0,   32,  COMP_RLE },
-    { "ega/dung1ma_door.rle", 176, 112, 4, 0,   32,  COMP_RLE },
-    { "ega/dung1mb_door.rle", 176, 112, 4, 0,   32,  COMP_RLE },
-    { "ega/dung1ra_door.rle", 64,  112, 4, 112, 32,  COMP_RLE },
-    { "ega/dung1rb_door.rle", 64,  112, 4, 112, 32,  COMP_RLE },
+    { "ega/dung1la_door.rle", 64,  112, 4, 0,   32,  "image/x-u4rle" },
+    { "ega/dung1lb_door.rle", 64,  112, 4, 0,   32,  "image/x-u4rle" },
+    { "ega/dung1ma_door.rle", 176, 112, 4, 0,   32,  "image/x-u4rle" },
+    { "ega/dung1mb_door.rle", 176, 112, 4, 0,   32,  "image/x-u4rle" },
+    { "ega/dung1ra_door.rle", 64,  112, 4, 112, 32,  "image/x-u4rle" },
+    { "ega/dung1rb_door.rle", 64,  112, 4, 112, 32,  "image/x-u4rle" },
 
-    { "ega/dung2la_door.rle", 80,  48,  4, 0,   64,  COMP_RLE },
-    { "ega/dung2lb_door.rle", 80,  48,  4, 0,   64,  COMP_RLE },
-    { "ega/dung2ma_door.rle", 176, 48,  4, 0,   64,  COMP_RLE },
-    { "ega/dung2mb_door.rle", 176, 48,  4, 0,   64,  COMP_RLE },
-    { "ega/dung2ra_door.rle", 80,  48,  4, 96,  64,  COMP_RLE },
-    { "ega/dung2rb_door.rle", 80,  48,  4, 96,  64,  COMP_RLE },
+    { "ega/dung2la_door.rle", 80,  48,  4, 0,   64,  "image/x-u4rle" },
+    { "ega/dung2lb_door.rle", 80,  48,  4, 0,   64,  "image/x-u4rle" },
+    { "ega/dung2ma_door.rle", 176, 48,  4, 0,   64,  "image/x-u4rle" },
+    { "ega/dung2mb_door.rle", 176, 48,  4, 0,   64,  "image/x-u4rle" },
+    { "ega/dung2ra_door.rle", 80,  48,  4, 96,  64,  "image/x-u4rle" },
+    { "ega/dung2rb_door.rle", 80,  48,  4, 96,  64,  "image/x-u4rle" },
 
-    { "ega/dung3la_door.rle", 88,  16,  4, 0,   80,  COMP_RLE },
-    { "ega/dung3lb_door.rle", 88,  16,  4, 0,   80,  COMP_RLE },
-    { "ega/dung3ma_door.rle", 176, 16,  4, 0,   80,  COMP_RLE },
-    { "ega/dung3mb_door.rle", 176, 16,  4, 0,   80,  COMP_RLE },
-    { "ega/dung3ra_door.rle", 88,  16,  4, 88,  80,  COMP_RLE },
-    { "ega/dung3rb_door.rle", 88,  16,  4, 88,  80,  COMP_RLE },
+    { "ega/dung3la_door.rle", 88,  16,  4, 0,   80,  "image/x-u4rle" },
+    { "ega/dung3lb_door.rle", 88,  16,  4, 0,   80,  "image/x-u4rle" },
+    { "ega/dung3ma_door.rle", 176, 16,  4, 0,   80,  "image/x-u4rle" },
+    { "ega/dung3mb_door.rle", 176, 16,  4, 0,   80,  "image/x-u4rle" },
+    { "ega/dung3ra_door.rle", 88,  16,  4, 88,  80,  "image/x-u4rle" },
+    { "ega/dung3rb_door.rle", 88,  16,  4, 88,  80,  "image/x-u4rle" },
 
-    { "ega/ladderup0.rle",   88,  87,  4, 45,  0,   COMP_RLE },
-    { "ega/ladderup1.rle",   50,  48,  4, 64,  40,  COMP_RLE },
-    { "ega/ladderup2.rle",   22,  19,  4, 77,  68,  COMP_RLE },
-    { "ega/ladderup3.rle",   8,   6,   4, 84,  82,  COMP_RLE },
+    { "ega/ladderup0.rle",   88,  87,  4, 45,  0,   "image/x-u4rle" },
+    { "ega/ladderup1.rle",   50,  48,  4, 64,  40,  "image/x-u4rle" },
+    { "ega/ladderup2.rle",   22,  19,  4, 77,  68,  "image/x-u4rle" },
+    { "ega/ladderup3.rle",   8,   6,   4, 84,  82,  "image/x-u4rle" },
 
-    { "ega/ladderdown0.rle", 88,  89,  4, 45,  87,  COMP_RLE },
-    { "ega/ladderdown1.rle", 50,  50,  4, 64,  86,  COMP_RLE },
-    { "ega/ladderdown2.rle", 22,  22,  4, 77,  86,  COMP_RLE },
-    { "ega/ladderdown3.rle", 8,   8,   4, 84,  88,  COMP_RLE }
+    { "ega/ladderdown0.rle", 88,  89,  4, 45,  87,  "image/x-u4rle" },
+    { "ega/ladderdown1.rle", 50,  50,  4, 64,  86,  "image/x-u4rle" },
+    { "ega/ladderdown2.rle", 22,  22,  4, 77,  86,  "image/x-u4rle" },
+    { "ega/ladderdown3.rle", 8,   8,   4, 84,  88,  "image/x-u4rle" }
 
 };
 
@@ -347,7 +348,6 @@ ImageSet *screenLoadImageSetFromConf(const ConfigElement &conf) {
 
 ImageInfo *screenLoadImageInfoFromConf(const ConfigElement &conf) {
     ImageInfo *info;
-    static const char *filetypeEnumStrings[] = { "raw", "rle", "lzw", NULL };
     static const char *fixupEnumStrings[] = { "none", "intro", "introExtended", "abyss", "abacus", NULL };
 
     info = new ImageInfo;
@@ -357,7 +357,7 @@ ImageInfo *screenLoadImageInfoFromConf(const ConfigElement &conf) {
     info->height = conf.getInt("height");
     info->depth = conf.getInt("depth");
     info->prescale = conf.getInt("prescale");
-    info->filetype = static_cast<CompressionType>(conf.getEnum("filetype", filetypeEnumStrings));
+    info->filetype = conf.getString("filetype");
     info->tiles = conf.getInt("tiles");
     info->introOnly = conf.getBool("introOnly");
     info->transparentIndex = conf.getInt("transparentIndex", -1);
@@ -607,13 +607,7 @@ SubImage *screenGetSubImage(const string &name) {
  * Load in a background image from a ".ega" file.
  */
 ImageInfo *screenLoadImage(const string &name) {
-    int ret, imageScale;
-    ImageInfo *info;
-    string filename;
-    Image *unscaled;
-    U4FILE *file;
-
-    info = screenGetImageInfo(name);
+    ImageInfo *info = screenGetImageInfo(name);
     if (!info)
         return NULL;
 
@@ -628,7 +622,7 @@ ImageInfo *screenLoadImage(const string &name) {
      * .old extention.  The charset and tiles have a .vga extention
      * and are not renamed in the upgrade installation process
      */
-    filename = info->filename;
+    string filename = info->filename;
     if (u4upgradeInstalled && screenGetImageInfoFromSet(name, "VGA")->filename.find(".old") != string::npos) {
         if (settings.videoType == "EGA")
             filename = screenGetImageInfoFromSet(name, "VGA")->filename;
@@ -639,6 +633,7 @@ ImageInfo *screenLoadImage(const string &name) {
     if (filename == "")
         return NULL;
 
+    U4FILE *file = NULL;
     if (info->xu4Graphic) {
         string pathname(u4find_graphics(filename));
 
@@ -649,17 +644,16 @@ ImageInfo *screenLoadImage(const string &name) {
         file = u4fopen(filename);
     }
     
-    ret = 0;
+    Image *unscaled = NULL;
     if (file) {
-        ret = screenLoadImageData(&unscaled,
-                                  info->width,
-                                  info->height,
-                                  info->depth,
-                                  file,
-                                  info->filetype);
+        ImageLoader *loader = ImageLoader::getLoader(info->filetype);
+        if (loader == NULL)
+            errorFatal("can't load image of type \"%s\"", info->filetype.c_str());
+        loader->setDimensions(info->width, info->height, info->depth);
+        unscaled = loader->load(file);
         u4fclose(file);
     }
-    if (!ret)
+    if (unscaled == NULL)
         return NULL;
 
     if (info->transparentIndex != -1)
@@ -688,7 +682,7 @@ ImageInfo *screenLoadImage(const string &name) {
         break;
     }
 
-    imageScale = scale;
+    int imageScale = scale;
     if (info->prescale != 0) {
         if ((scale % info->prescale) != 0)
             errorFatal("image %s is prescaled to an incompatible size: %d\n", filename.c_str(), info->prescale);
@@ -1331,31 +1325,25 @@ int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, 
 }
 
 int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
-    U4FILE *file;
-    int index, ret;
-    Image *unscaled;
-
-    ret = 0;
-    index = screenDungeonGraphicIndex(xoffset, distance, orientation, type);
+    int index = screenDungeonGraphicIndex(xoffset, distance, orientation, type);
     ASSERT(index != -1, "invalid graphic paramters provided");
 
     string pathname(u4find_graphics(dngGraphicInfo[index].filename));
     if (pathname.empty())
         return 0;
 
-    file = u4fopen_stdio(pathname);
+    U4FILE *file = u4fopen_stdio(pathname);
     if (!file)
         return 0;
 
-    ret = screenLoadImageData(&unscaled, 
-                              dngGraphicInfo[index].width, 
-                              dngGraphicInfo[index].height, 
-                              dngGraphicInfo[index].depth,
-                              file, 
-                              dngGraphicInfo[index].comp);
+    ImageLoader *loader = ImageLoader::getLoader(dngGraphicInfo[index].filetype);
+    if (loader == NULL)
+        errorFatal("can't load image of type \"%s\"", dngGraphicInfo[index].filetype);
+    loader->setDimensions(dngGraphicInfo[index].width, dngGraphicInfo[index].height, dngGraphicInfo[index].depth);
+    Image *unscaled = loader->load(file);
     u4fclose(file);
 
-    if (!ret)
+    if (unscaled == NULL)
         return 0;
 
     dngGraphic[index] = screenScale(unscaled, scale, 1, 1);
