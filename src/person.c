@@ -11,6 +11,19 @@
 #include "context.h"
 #include "savegame.h"
 #include "person.h"
+#include "u4file.h"
+#include "names.h"
+
+char **hawkwindText;
+
+#define HW_WELCOME 43
+#define HW_GREETING1 44
+#define HW_GREETING2 45
+#define HW_PROMPT 46
+#define HW_DEFAULT 49
+#define HW_ALREADYAVATAR 50
+#define HW_GOTOSHRINE 51
+#define HW_BYE 52
 
 int personIsLordBritish(const Person *p);
 int personIsHawkwind(const Person *p);
@@ -19,12 +32,27 @@ int personGetHWIntroduction(const Person *p, char **intro);
 int personGetLBResponse(const Person *p, const char *inquiry, char **reply, int *askq);
 int personGetHWResponse(const Person *p, const char *inquiry, char **reply, int *askq);
 
+int personInit() {
+    FILE *avatar;
+
+    avatar = u4fopen("avatar.exe");
+    if (!avatar)
+        return 0;
+
+    hawkwindText = u4read_stringtable(avatar, 74729, 53);
+
+    u4fclose(avatar);
+
+    return 1;
+}
+
+
 /**
  * Get the introductory description and dialog shown when a
  * conversation is started.
  */
 int personGetIntroduction(const Person *p, char **intro) {
-    const char *fmt = "You meet\n%s\n\n%s says: I am %s\n\n%s";
+    const char *fmt = "You meet\n%s\n\n%s says: I am %s\n\n%s\n";
     char *prompt;
 
     if (personIsLordBritish(p))
@@ -48,11 +76,11 @@ int personGetIntroduction(const Person *p, char **intro) {
  */
 int personGetPrompt(const Person *p, char **prompt) {
     if (personIsLordBritish(p))
-        *prompt = strdup("What else?");
+        *prompt = strdup("What else?\n");
     else if (personIsHawkwind(p))
-        *prompt = strdup("Hawkwind asks:\nWhat other path\nseeks clarity?");
+        *prompt = strdup(hawkwindText[HW_PROMPT]);
     else
-        *prompt = strdup("Your Interest:");
+        *prompt = strdup("Your Interest:\n");
 
     return 0;
 }
@@ -181,22 +209,11 @@ int personGetLBIntroduction(const Person *p, char **intro) {
 }
 
 int personGetHWIntroduction(const Person *p, char **intro) {
-    const char *fmt = 
-        "Welcome, %s\n"
-        "I am Hawkwind,\n"
-        "Seer of Souls. I\n"
-        "see that which\n"
-        "is within thee\n"
-        "and drives thee\n"
-        "to deeds of good\n"
-        "or evil...\n"
-        "\n"
-        "For what path\n"
-        "dost thou seek\n"
-        "enlightenment?\n\n";
+    const char *fmt = "%s%s%s%s";
 
-    *intro = malloc(strlen(fmt) - 2 + strlen(c->saveGame->players[0].name) + 1);
-    sprintf(*intro, fmt, c->saveGame->players[0].name);
+    *intro = malloc(strlen(fmt) - 8 + strlen(hawkwindText[HW_WELCOME]) + strlen(c->saveGame->players[0].name) + 
+                                             strlen(hawkwindText[HW_GREETING1]) + strlen(hawkwindText[HW_GREETING2]) + 1);
+    sprintf(*intro, fmt, hawkwindText[HW_WELCOME], c->saveGame->players[0].name, hawkwindText[HW_GREETING1], hawkwindText[HW_GREETING2]);
 
     return 0;
 }
@@ -517,17 +534,46 @@ int personGetLBResponse(const Person *p, const char *inquiry, char **reply, int 
 }
 
 int personGetHWResponse(const Person *p, const char *inquiry, char **reply, int *askq) {
+    int v;
+    int virtue = -1, virtueLevel = -1;
+
     if (inquiry[0] == '\0' ||
         strcasecmp(inquiry, "bye") == 0) {
-        *reply = strdup("Hawkwind says:\nFare thee well\nand may thou\ncomplete the\nQuest of the\nAvatar!");
+        *reply = strdup(hawkwindText[HW_BYE]);
         *askq = 0;
         return 1;
     }
-    else {
-        *reply = strdup("He says: That is\nnot a subject\nfor\nenlightenment.");
+        
+    /* check if asking about a virtue */
+    for (v = VIRT_HONESTY; v <= VIRT_HUMILITY; v++) {
+        if (strncasecmp(inquiry, getVirtueName(v), 4) == 0) {
+            virtue = v;
+            virtueLevel = c->saveGame->karma[v];
+        }
+    }
+    if (virtue != -1) {
+        if (virtueLevel == 0)
+            *reply = strdup(hawkwindText[HW_ALREADYAVATAR]);
+        else if (virtueLevel < 20)
+            *reply = strdup(hawkwindText[0 * 8 + virtue]);
+        else if (virtueLevel < 40)
+            *reply = strdup(hawkwindText[1 * 8 + virtue]);
+        else if (virtueLevel < 60)
+            *reply = strdup(hawkwindText[2 * 8 + virtue]);
+        else if (virtueLevel < 99)
+            *reply = strdup(hawkwindText[3 * 8 + virtue]);
+        else /* virtueLevel >= 99 */ {
+            *reply = malloc(strlen(hawkwindText[4 * 8 + virtue]) + strlen(hawkwindText[HW_GOTOSHRINE]) + 1);
+            strcpy(*reply, hawkwindText[4 * 8 + virtue]);
+            strcat(*reply, hawkwindText[HW_GOTOSHRINE]);
+        }
         *askq = 0;
         return 0;
     }
+
+    *reply = strdup(hawkwindText[HW_DEFAULT]);
+    *askq = 0;
+    return 0;
 
     return 0;
 }

@@ -46,6 +46,7 @@ typedef struct _Person {
     PersonMovementBehavior movement_behavior;
 } Person;
 
+int personInit(void);
 int personGetIntroduction(const Person *p, char **intro);
 int personGetPrompt(const Person *p, char **prompt);
 int personGetResponse(const Person *p, const char *inquiry, char **reply, int *askq);
