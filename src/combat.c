@@ -48,8 +48,9 @@ extern Map shipshor_map;
 extern Map shore_map;
 extern Map shorship_map;
 
+Map *oldmap;
+int olddngx, olddngy;
 Object *monsterObj;
-int saved_dngx, saved_dngy;
 int focus;
 Object *party[8];
 Object *monsters[AREA_MONSTERS];
@@ -74,18 +75,16 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
 
     monsterObj = monster;
 
-    annotationClear();
-
-    c = gameCloneContext(c);
-
-    saved_dngx = c->saveGame->dngx;
-    saved_dngy = c->saveGame->dngy;
+    oldmap = c->map;
+    olddngx = c->saveGame->dngx;
+    olddngy = c->saveGame->dngy;
     gameSetMap(c, getCombatMapForTile(partytile, transport), 1);
+
     musicPlay();
 
     for (i = 0; i < c->saveGame->members; i++) {
         if (c->saveGame->players[i].status != STAT_DEAD)
-            party[i] = mapAddObject(c->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->map->area->player_start[i].x, c->map->area->player_start[i].y);
+            party[i] = mapAddObject(c->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->map->area->player_start[i].x, c->map->area->player_start[i].y, c->saveGame->dnglevel);
         else
             party[i] = NULL;
     }
@@ -194,7 +193,7 @@ void combatCreateMonster(int index) {
                 ;
         }
     }
-    monsters[index] = mapAddObject(c->map, mtile, mtile, c->map->area->monster_start[index].x, c->map->area->monster_start[index].y);
+    monsters[index] = mapAddObject(c->map, mtile, mtile, c->map->area->monster_start[index].x, c->map->area->monster_start[index].y, c->saveGame->dnglevel);
 
     monsterHp[index] = monsterGetInitialHp(monsterForTile(monsters[index]->tile));
 }
@@ -349,7 +348,7 @@ int combatAttackAtCoord(int x, int y, int distance) {
     }
 
     if (monster == -1) {
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, MISSFLASH_TILE), 2));
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, MISSFLASH_TILE), 2));
         combatFinishTurn();
         return 1;
     }
@@ -357,12 +356,12 @@ int combatAttackAtCoord(int x, int y, int distance) {
     if (!playerAttackHit(&c->saveGame->players[focus])) {
         screenMessage("Missed!\n");
 
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, MISSFLASH_TILE), 2));
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, MISSFLASH_TILE), 2));
 
     } else {
         m = monsterForTile(monsters[monster]->tile);
 
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, HITFLASH_TILE), 2));
+        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->saveGame->dnglevel, c->map->id, HITFLASH_TILE), 2));
 
         if (m->tile != LORDBRITISH_TILE)
             monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);
@@ -411,7 +410,7 @@ int combatAttackAtCoord(int x, int y, int distance) {
 
 int combatInitialNumberOfMonsters(unsigned char monster) {
     if (monster != GUARD_TILE &&
-        !mapIsWorldMap(c->parent->map))
+        !mapIsWorldMap(oldmap))
         return 1;
 
     return ((rand() % (c->saveGame->members * 2))) + 1;
@@ -448,38 +447,27 @@ int combatIsLost() {
 }
 
 void combatEnd() {
-    if (c->parent != NULL) {
-        Context *t = c;
-        annotationClear();
-        mapClearObjects(c->map);
-        c->parent->saveGame->x = c->saveGame->dngx;
-        c->parent->saveGame->y = c->saveGame->dngy;
-        c->parent->saveGame->dngx = saved_dngx;
-        c->parent->saveGame->dngy = saved_dngy;
-        c->parent->line = c->line;
-        c->parent->moonPhase = c->moonPhase;
-        c->parent->windDirection = c->windDirection;
-        c->parent->windCounter = c->windCounter;
-        c->parent->aura = c->aura;
-        c->parent->auraDuration = c->auraDuration;
-        c->parent->horseSpeed = c->horseSpeed;
-        c->parent->lastCommandTime = time(NULL);
-        c = c->parent;
-        c->col = 0;
-        free(t);
+    annotationClear(c->map->id);
+    mapClearObjects(c->map);
+
+    c->map = oldmap;
+    c->saveGame->x = c->saveGame->dngx;
+    c->saveGame->y = c->saveGame->dngy;
+    c->saveGame->dngx = olddngx;
+    c->saveGame->dngy = olddngy;
+    c->col = 0;
                 
-        musicPlay();
-    }
-    
+    musicPlay();
+
     if (combatIsWon()) {
 
         /* added chest or captured ship object */
         if ((monsterForTile(monsterObj->tile)->mattr & MATTR_WATER) == 0)
-            mapAddObject(c->map, CHEST_TILE, CHEST_TILE, monsterObj->x, monsterObj->y);
+            mapAddObject(c->map, CHEST_TILE, CHEST_TILE, monsterObj->x, monsterObj->y, c->saveGame->dnglevel);
         else if (tileIsPirateShip(monsterObj->tile)) {
             unsigned short ship = tileGetShipBase();
             tileSetDirection(&ship, tileGetDirection(monsterObj->tile));
-            mapAddObject(c->map, ship, ship, monsterObj->x, monsterObj->y);
+            mapAddObject(c->map, ship, ship, monsterObj->x, monsterObj->y, c->saveGame->dnglevel);
         }
 
         screenMessage("\nVictory!\n");
@@ -522,7 +510,7 @@ void combatMoveMonsters() {
         case CA_ATTACK:
             if (playerIsHitByAttack(&c->saveGame->players[target])) {
 
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, HITFLASH_TILE), 2));
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, c->saveGame->dnglevel, c->map->id, HITFLASH_TILE), 2));
 
                 playerApplyDamage(&c->saveGame->players[target], monsterGetDamage(m));
                 if (c->saveGame->players[target].hp == 0) {
@@ -532,7 +520,7 @@ void combatMoveMonsters() {
                 }
                 statsUpdate();
             } else {
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, MISSFLASH_TILE), 2));
+                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, c->saveGame->dnglevel, c->map->id, MISSFLASH_TILE), 2));
             }
             break;
 
@@ -549,10 +537,10 @@ void combatMoveMonsters() {
         case CA_ADVANCE:
             newx = monsters[i]->x;
             newy = monsters[i]->y;
-            valid_dirs = mapGetValidMoves(c->map, newx, newy, monsters[i]->tile);
+            valid_dirs = mapGetValidMoves(c->map, newx, newy, c->saveGame->dnglevel, monsters[i]->tile);
             dirMove(dirFindPath(newx, newy, party[target]->x, party[target]->y, valid_dirs), &newx, &newy);
 
-            switch (tileGetSpeed(mapTileAt(c->map, newx, newy))) {
+            switch (tileGetSpeed(mapTileAt(c->map, newx, newy, c->saveGame->dnglevel))) {
             case FAST:
                 slow = 0;
                 break;
@@ -623,7 +611,7 @@ int movePartyMember(Direction dir, int member) {
         return result;
     }
 
-    movementMask = mapGetValidMoves(c->map, party[member]->x, party[member]->y, party[member]->tile);
+    movementMask = mapGetValidMoves(c->map, party[member]->x, party[member]->y, c->saveGame->dnglevel, party[member]->tile);
     if (!DIR_IN_MASK(dir, movementMask)) {
         screenMessage("Blocked!\n");
         result = 0;
