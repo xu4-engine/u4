@@ -269,19 +269,26 @@ int playerDonate(SaveGame *saveGame, int quantity) {
     return 1;
 }
 
-void playerJoin(SaveGame *saveGame, const char *name) {
+int playerJoin(SaveGame *saveGame, const char *name) {
     int i;
     SaveGamePlayerRecord tmp;
 
     for (i = saveGame->members; i < 8; i++) {
         if (strcmp(saveGame->players[i].name, name) == 0) {
+
+            /* ensure character has enough karma */
+            if (saveGame->karma[saveGame->players[i].klass] < 40)
+                return 0;
+
             tmp = saveGame->players[saveGame->members];
             saveGame->players[saveGame->members] = saveGame->players[i];
             saveGame->players[i] = tmp;
             saveGame->members++;
-            break;
+            return 1;
         }
     }
+
+    return 0;
 }
 
 void playerEndTurn(SaveGame *saveGame) {

@@ -48,7 +48,7 @@ int playerAdjustKarma(SaveGame *saveGame, KarmaAction action);
 int playerAttemptElevation(SaveGame *saveGame, Virtue virtue);
 int playerGetChest(SaveGame *saveGame);
 int playerDonate(SaveGame *saveGame, int quantity);
-void playerJoin(SaveGame *saveGame, const char *name);
+int playerJoin(SaveGame *saveGame, const char *name);
 void playerEndTurn(SaveGame *saveGame);
 void playerApplyEffect(SaveGame *saveGame, TileEffect effect);
 int playerPartyImmobilized(const SaveGame *saveGame);
