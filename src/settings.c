@@ -73,6 +73,7 @@ void settingsRead() {
     settings->gameCyclesPerSecond   = DEFAULT_CYCLES_PER_SECOND;
     settings->debug                 = DEFAULT_DEBUG;
     settings->validateXml           = DEFAULT_VALIDATE_XML;
+    settings->spellEffectSpeed      = DEFAULT_SPELL_EFFECT_SPEED;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -122,6 +123,8 @@ void settingsRead() {
             settings->debug = (int) strtoul(buffer + strlen("debug="), NULL, 0);
         else if (strstr(buffer, "validateXml=") == buffer)
             settings->validateXml = (int) strtoul(buffer + strlen("validateXml="), NULL, 0);
+        else if (strstr(buffer, "spellEffectSpeed=") == buffer)
+            settings->spellEffectSpeed = (int) strtoul(buffer + strlen("spellEffectSpeed="), NULL, 0);
         else
             errorWarning("invalid line in settings file %s", buffer);
     }
@@ -160,7 +163,8 @@ void settingsWrite() {
             "minorEnhancements=%d\n"
             "gameCyclesPerSecond=%d\n"
             "debug=%d\n"
-            "validateXml=%d\n",
+            "validateXml=%d\n"
+            "spellEffectSpeed=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
@@ -174,7 +178,8 @@ void settingsWrite() {
             settings->minorEnhancements,
             settings->gameCyclesPerSecond,
             settings->debug,
-            settings->validateXml);
+            settings->validateXml,
+            settings->spellEffectSpeed);
 
     fclose(settingsFile);
 }

@@ -16,7 +16,7 @@
 #include "settings.h"
 #include "debug.h"
 
-int eventTimerGranularity = 200;
+int eventTimerGranularity = 250;
 
 typedef struct TimerCallbackNode {
     TimerCallback callback;

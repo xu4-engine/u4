@@ -251,6 +251,7 @@ int introInit() {
     advancedOptions = menuAddItem(advancedOptions, 3, "German Keyboard", 7, 10, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);
     advancedOptions = menuAddItem(advancedOptions, 4, "Game Cycles Per Second", 7, 13, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);
     advancedOptions = menuAddItem(advancedOptions, 5, "Battle Speed", 7, 14, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);
+    advancedOptions = menuAddItem(advancedOptions, 6, "Spell Effect Speed", 7, 15, &introAdvancedOptionsMenuItemActivate, ACTIVATE_ANY);
     advancedOptions = menuAddItem(advancedOptions, 0xFE, "Use These Settings", 6, 20, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
     advancedOptions = menuAddItem(advancedOptions, 0xFF, "Cancel", 6, 21, &introAdvancedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
@@ -648,6 +649,7 @@ void introUpdateScreen() {
         screenTextAt(4, 12,  "Speed Options");
         screenTextAt(34, 13, "%d", settings->gameCyclesPerSecond);
         screenTextAt(34, 14, "%d", settings->battleSpeed);
+        screenTextAt(34, 15, "%d", settings->spellEffectSpeed);
         menuShow(menuGetRoot(advancedOptions));
         break;
 
@@ -1341,6 +1343,16 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
                 settings->battleSpeed = MAX_BATTLE_SPEED;
         }
         break;
+    case 6:
+        if (action != ACTIVATE_DECREMENT) {
+            settings->spellEffectSpeed++;
+            if (settings->spellEffectSpeed > MAX_SPELL_EFFECT_SPEED)
+                settings->spellEffectSpeed = 1;
+        } else {
+            settings->spellEffectSpeed--;
+            if (settings->spellEffectSpeed < 1)
+                settings->spellEffectSpeed = MAX_SPELL_EFFECT_SPEED;
+        }
     case 0xFE:
         if (action == ACTIVATE_NORMAL) {
             extern void gameTimer(void *data);

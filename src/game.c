@@ -293,7 +293,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
          map->type == MAPTYPE_VILLAGE ||
          map->type == MAPTYPE_CASTLE ||
          map->type == MAPTYPE_RUIN) &&
-        map->objects == NULL) {
+         map->objects == NULL) {
         for (i = 0; i < map->city->n_persons; i++) {
             if (map->city->persons[i].tile0 != 0 &&
                 !(playerCanPersonJoin(c->saveGame, map->city->persons[i].name, NULL) &&
@@ -417,10 +417,13 @@ void gamePartyStarving(void) {
 
 void gameSpellEffect(unsigned int spell, int player) {
     int time;
-    SpellEffect effect;    
+    SpellEffect effect = SPELLEFFECT_INVERT;
         
     if (player >= 0)
         statsHighlightCharacter(player);
+
+    /* recalculate spell speed - based on 5/sec */
+    time = settings->spellEffectSpeed * 200;
 
     /**
      * special effect FIXME: needs sound
@@ -430,30 +433,26 @@ void gameSpellEffect(unsigned int spell, int player) {
      */
 
     soundPlay(SOUND_MAGIC);
-    
 
     switch(spell)
     {
     case 'g': // gate
-    case 'r': // resurrection
-        time = 2000;
-        effect = SPELLEFFECT_INVERT;
+    case 'r': // resurrection        
+        time <<= 1;        
         break;
-    case 't': // tremor
-        time = 2000;
+    case 't': // tremor        
+        time <<= 1;
         effect = SPELLEFFECT_TREMOR;        
         break;
     default:
-        /* default spell effect */
-        time = 2000;
-        effect = SPELLEFFECT_INVERT;
+        /* default spell effect */        
         break;
     }
 
     /* pause the game for enough time to complete the spell effect */
     if (!paused) {
         paused = 1;
-        pausedTimer = ((time * 4) / 1000) + 1;
+        pausedTimer = ((time * settings->gameCyclesPerSecond) / 1000) + 1;
     }
 
     switch(effect)
@@ -557,6 +556,23 @@ int gameBaseKeyHandler(int key, void *data) {
         }
         else valid = 0;
         break;    
+
+    case 8:                     /* ctrl-H */
+        if (settings->debug) {
+            screenMessage("Help!\n");            
+            screenPrompt();
+            
+            /* Help! send me to Lord British (who conveniently is right around where you are)! */
+            while (c->location->prev)
+                gameExitToParentMap(c);
+
+            gameSetMap(c, mapMgrGetById(100), 1, NULL);
+            c->location->x = 19;
+            c->location->y = 8;
+            c->location->z = 1;            
+        }
+        else valid = 0;
+        break;
     
     case ' ':
         screenMessage("Pass\n");        

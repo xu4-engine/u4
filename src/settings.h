@@ -9,6 +9,7 @@
 #define MAX_KEY_DELAY                   1000
 #define MAX_KEY_INTERVAL                100
 #define MAX_CYCLES_PER_SECOND           20
+#define MAX_SPELL_EFFECT_SPEED          5
 
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
@@ -24,6 +25,7 @@
 #define DEFAULT_CYCLES_PER_SECOND       4
 #define DEFAULT_DEBUG                   0
 #define DEFAULT_VALIDATE_XML            1
+#define DEFAULT_SPELL_EFFECT_SPEED      4
 
 typedef enum {
     SCL_POINT,
@@ -48,6 +50,7 @@ typedef struct _Settings {
     int gameCyclesPerSecond;
     int debug;
     int validateXml;
+    int spellEffectSpeed;
 } Settings;
 
 char *settingsFilename(void);
