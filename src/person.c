@@ -55,22 +55,22 @@ char *hawkwindGetResponse(Conversation *cnv, const char *inquiry);
 char *hawkwindGetPrompt(const Conversation *cnv);
 
 const PersonType personType[NPC_MAX] = {
-    { &emptyGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL }, /* NPC_EMPTY */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER */
-    { &talkerGetIntro, &beggarGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, &beggarGetQuantityResponse, NULL, &beggarGetPrompt }, /* NPC_TALKER_BEGGAR */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER_GUARD */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt }, /* NPC_TALKER_COMPANION */
-    { &vendorGetIntro, NULL, NULL, &vendorGetBuySellResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetPrompt }, /* NPC_VENDOR_WEAPONS */
-    { &vendorGetIntro, NULL, NULL, &vendorGetBuySellResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetPrompt }, /* NPC_VENDOR_ARMOR */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_FOOD */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_TAVERN */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_REAGENTS */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_HEALER */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_INN */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_GUILD */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt }, /* NPC_VENDOR_STABLE */
-    { &lordBritishGetIntro, &lordBritishGetResponse, &lordBritishGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &lordBritishGetPrompt }, /* NPC_LORD_BRITISH */
-    { &hawkwindGetIntro, &hawkwindGetResponse, NULL, NULL, NULL, NULL, NULL, NULL, &hawkwindGetPrompt } /* NPC_HAWKWIND */
+    { &emptyGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }, /* NPC_EMPTY */
+    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER */
+    { &talkerGetIntro, &beggarGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, &beggarGetQuantityResponse, NULL, &beggarGetPrompt, NULL }, /* NPC_TALKER_BEGGAR */
+    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER_GUARD */
+    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER_COMPANION */
+    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_WEAPONS */
+    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_ARMOR */
+    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetPrompt, "yn\033" }, /* NPC_VENDOR_FOOD */
+    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, NULL, NULL, &vendorGetPrompt, "af\033" }, /* NPC_VENDOR_TAVERN */
+    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, NULL, NULL, &vendorGetPrompt, "yn\033" }, /* NPC_VENDOR_REAGENTS */
+    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, NULL, NULL, &vendorGetPrompt, "yn\033" }, /* NPC_VENDOR_HEALER */
+    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, NULL, NULL, &vendorGetPrompt, "yn\033" }, /* NPC_VENDOR_INN */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_GUILD */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_STABLE */
+    { &lordBritishGetIntro, &lordBritishGetResponse, &lordBritishGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, &lordBritishGetPrompt, NULL }, /* NPC_LORD_BRITISH */
+    { &hawkwindGetIntro, &hawkwindGetResponse, NULL, NULL, NULL, NULL, NULL, NULL, &hawkwindGetPrompt, NULL } /* NPC_HAWKWIND */
 };
 
 /**
@@ -124,56 +124,56 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
         if (personType[cnv->talker->npcType].getIntro)
             *response = (*personType[cnv->talker->npcType].getIntro)(cnv);
         else
-            *response = strdup("BUG!!");
+            *response = strdup("BUG: no intro handler for npc");
         return;
 
     case CONV_TALK:
         if (personType[cnv->talker->npcType].getResponse)
             *response = (*personType[cnv->talker->npcType].getResponse)(cnv, inquiry);
         else
-            *response = strdup("BUG!!");
+            *response = strdup("BUG: no response handler for npc");
         return;
 
     case CONV_ASK:
         if (personType[cnv->talker->npcType].getQuestionResponse)
             *response = (*personType[cnv->talker->npcType].getQuestionResponse)(cnv, inquiry);
         else
-            *response = strdup("BUG!!");
+            *response = strdup("BUG: no question response handler for npc");
         break;
     
-    case CONV_BUYSELL:
-        if (personType[cnv->talker->npcType].getBuySellResponse)
-            *response = (*personType[cnv->talker->npcType].getBuySellResponse)(cnv, inquiry);
+    case CONV_VENDORQUESTION:
+        if (personType[cnv->talker->npcType].getVendorQuestionResponse)
+            *response = (*personType[cnv->talker->npcType].getVendorQuestionResponse)(cnv, inquiry);
         else
-            *response = strdup("BUG!!");
+            *response = strdup("BUG: no vendor question handler for npc");
         break;
 
     case CONV_BUY_ITEM:
         if (personType[cnv->talker->npcType].getBuyItemResponse)
             *response = (*personType[cnv->talker->npcType].getBuyItemResponse)(cnv, inquiry);
         else
-            *response = strdup("BUG!!");
+            *response = strdup("BUG: no buy item response handler for npc");
         break;
 
     case CONV_SELL_ITEM:
         if (personType[cnv->talker->npcType].getSellItemResponse)
             *response = (*personType[cnv->talker->npcType].getSellItemResponse)(cnv, inquiry);
         else
-            *response = strdup("BUG!!");
+            *response = strdup("BUG: no sell item response handler for npc");
         break;
 
     case CONV_BUY_QUANTITY:
         if (personType[cnv->talker->npcType].getBuyQuantityResponse)
             *response = (*personType[cnv->talker->npcType].getBuyQuantityResponse)(cnv, inquiry);
         else
-            *response = strdup("BUG!!");
+            *response = strdup("BUG: no buy quantity response handler for npc");
         break;
 
     case CONV_SELL_QUANTITY:
         if (personType[cnv->talker->npcType].getSellQuantityResponse)
             *response = (*personType[cnv->talker->npcType].getSellQuantityResponse)(cnv, inquiry);
         else
-            *response = strdup("BUG!!");
+            *response = strdup("BUG: no sell quantity response handler for npc");
         break;
 
     case CONV_DONE:
@@ -191,6 +191,46 @@ void personGetPrompt(const Conversation *cnv, char **prompt) {
         *prompt = (*personType[cnv->talker->npcType].getPrompt)(cnv);
     else
         *prompt = strdup("BUG!!");
+}
+
+ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
+    switch (cnv->state) {
+    case CONV_TALK:
+    case CONV_ASK:
+    case CONV_BUY_QUANTITY:
+    case CONV_SELL_QUANTITY:
+        return CONVINPUT_STRING;
+    
+    case CONV_VENDORQUESTION:
+    case CONV_BUY_ITEM:
+    case CONV_SELL_ITEM:
+        return CONVINPUT_CHARACTER;
+        
+    case CONV_DONE:
+        return CONVINPUT_NONE;
+    }
+
+    assert(0);                  /* shouldn't happen */
+    return CONVINPUT_NONE;
+}
+
+/**
+ * Returns the valid keyboard choices for a given conversation.
+ */
+const char *personGetChoices(const struct _Conversation *cnv) {
+    switch (cnv->state) {
+    case CONV_VENDORQUESTION:
+        return personType[cnv->talker->npcType].vendorQuestionChoices;
+
+    case CONV_BUY_ITEM:
+    case CONV_SELL_ITEM:
+        return "bcdefghijklmnopqrstuvwxyz\033";
+
+    default:
+        assert(0);              /* shouldn't happen */
+    }
+
+    return NULL;
 }
 
 char *emptyGetIntro(Conversation *cnv) {

@@ -46,7 +46,7 @@ typedef enum {
     CONV_INTRO,
     CONV_TALK,
     CONV_ASK,
-    CONV_BUYSELL,
+    CONV_VENDORQUESTION,
     CONV_BUY_ITEM,
     CONV_SELL_ITEM,
     CONV_BUY_QUANTITY,
@@ -55,16 +55,23 @@ typedef enum {
     CONV_DONE
 } ConversationState;
 
+typedef enum {
+    CONVINPUT_STRING,
+    CONVINPUT_CHARACTER,
+    CONVINPUT_NONE
+} ConversationInputType;
+
 typedef struct _PersonType {
     char *(*getIntro)(struct _Conversation *cnv);
     char *(*getResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getQuestionResponse)(struct _Conversation *cnv, const char *answer);
-    char *(*getBuySellResponse)(struct _Conversation *cnv, const char *inquiry);
+    char *(*getVendorQuestionResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getBuyItemResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getSellItemResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getBuyQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getSellQuantityResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getPrompt)(const struct _Conversation *cnv);
+    const char *vendorQuestionChoices;
 } PersonType;
 
 typedef struct _Person {
@@ -95,6 +102,8 @@ int personIsJoinable(const Person *p);
 int personIsJoined(const Person *p);
 void personGetConversationText(struct _Conversation *cnv, const char *inquiry, char **response);
 void personGetPrompt(const struct _Conversation *cnv, char **prompt);
+ConversationInputType personGetInputRequired(const struct _Conversation *cnv);
+const char *personGetChoices(const struct _Conversation *cnv);
 char *concat(const char *str, ...);
 
 #endif

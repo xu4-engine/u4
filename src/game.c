@@ -1234,11 +1234,8 @@ void talkSetHandler(const Conversation *cnv) {
     ReadBufferActionInfo *rbInfo;
     GetChoiceActionInfo *gcInfo;
 
-    switch (cnv->state) {
-    case CONV_TALK:
-    case CONV_ASK:
-    case CONV_BUY_QUANTITY:
-    case CONV_SELL_QUANTITY:
+    switch (personGetInputRequired(cnv)) {
+    case CONVINPUT_STRING:
         rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
         rbInfo->buffer = c->conversation.buffer;
         rbInfo->bufferLen = CONV_BUFFERLEN;
@@ -1248,27 +1245,16 @@ void talkSetHandler(const Conversation *cnv) {
         eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, rbInfo);
         break;
     
-    case CONV_BUYSELL:
+    case CONVINPUT_CHARACTER:
         gcInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-        gcInfo->choices = "bs";
+        gcInfo->choices = personGetChoices(cnv);
         gcInfo->handleChoice = &talkHandleChoice;
         eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
         break;
 
-    case CONV_BUY_ITEM:
-    case CONV_SELL_ITEM:
-        gcInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-        gcInfo->choices = "bcdefghijklmnopqrstuvwxyz\033";
-        gcInfo->handleChoice = &talkHandleChoice;
-        eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, gcInfo);
-        break;
-
-    case CONV_DONE:
+    case CONVINPUT_NONE:
         /* no handler: conversation done! */
         break;
-
-    default:
-        assert(0);              /* shouldn't happen */
     }
 }
 

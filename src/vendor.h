@@ -9,7 +9,7 @@
 
 int vendorInit(void);
 char *vendorGetIntro(Conversation *cnv);
-char *vendorGetBuySellResponse(Conversation *cnv, const char *response);
+char *vendorGetVendorQuestionResponse(Conversation *cnv, const char *response);
 char *vendorGetBuyItemResponse(Conversation *cnv, const char *response);
 char *vendorGetSellItemResponse(Conversation *cnv, const char *response);
 char *vendorGetBuyQuantityResponse(Conversation *cnv, const char *response);
