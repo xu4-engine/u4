@@ -157,13 +157,17 @@ void combatBegin(Map *map, Object *monster, int isNormalCombat) {
 }
 
 
-Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, const Monster *m) {
+Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, Object *obj) {
     int i;    
+    const Monster *m;
+    int fromShip = 0,
+        toShip = 0;
+    Object *objUnder = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z);
 
     static const struct {
         unsigned char tile;
         Map *map;
-    } tileToMap[] = {   
+    } tileToMap[] = {        
         { HORSE1_TILE,  &grass_map },
         { HORSE2_TILE,  &grass_map },
         { SWAMP_TILE,   &marsh_map },
@@ -188,33 +192,32 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport, cons
         { MOONGATE3_TILE, &grass_map }
     };
 
-    /* We can fight monsters and townsfolk -- let's
-       figure out which one we're dealing with */
-    if (m) {
-        
-        /* check if monster is aquatic */
-        if (monsterIsAquatic(m)) {
-            if (tileIsPirateShip(m->tile)) {
-                if (tileIsShip(transport) || tileIsShip(partytile))
-                    return &shipship_map;
-                else
-                    return &shorship_map;
-            }
+    if (tileIsShip(transport) || (objUnder && tileIsShip(objUnder->tile)))
+        fromShip = 1;
+    if (tileIsPirateShip(obj->tile))
+        toShip = 1;
 
-            if (tileIsShip(transport) || tileIsShip(partytile))
-                return &shipsea_map;
-            else
-                return &shore_map;
-        }
+    if (fromShip && toShip)
+        return &shipship_map;
+
+    /* We can fight monsters and townsfolk */       
+    if (obj->objType != OBJECT_UNKNOWN) {
+        int tileUnderneath = mapTileAt(c->location->map, obj->x, obj->y, obj->z);
+
+        if (toShip)
+            return &shorship_map;
+        else if (fromShip && tileIsWater(tileUnderneath))
+            return &shipsea_map;        
+        else if (tileIsWater(tileUnderneath))
+            return &shore_map;
+        else if (fromShip && !tileIsWater(tileUnderneath))
+            return &shipshor_map;        
     }
-
-    if (tileIsShip(transport) || tileIsShip(partytile))
-        return &shipshor_map;
 
     for (i = 0; i < sizeof(tileToMap) / sizeof(tileToMap[0]); i++) {
         if (tileToMap[i].tile == partytile)
             return tileToMap[i].map;
-    }
+    }    
 
     return &brick_map;
 }
@@ -813,22 +816,32 @@ int combatIsLost() {
 }
 
 void combatEnd() {
-    int i;
+    int i, x, y, z;
+    unsigned char ground;
     
     gameExitToParentMap(c);
     musicPlay();
+
+    if (combatInfo.monsterObj) {
+        x = combatInfo.monsterObj->x;
+        y = combatInfo.monsterObj->y;
+        z = combatInfo.monsterObj->z;
+        mapRemoveObject(c->location->map, combatInfo.monsterObj);
+    }
+
+    ground = mapGroundTileAt(c->location->map, x, y, z);
     
     if (combatIsWon()) {
 
         /* added chest or captured ship object */        
         if (combatInfo.monster && combatInfo.isNormalCombat) {
             if (monsterLeavesChest(combatInfo.monster) && 
-                tileIsMonsterWalkable(mapGroundTileAt(c->location->map, combatInfo.monsterObj->x, combatInfo.monsterObj->y, combatInfo.monsterObj->z)))
-                mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), combatInfo.monsterObj->x, combatInfo.monsterObj->y, c->location->z);
+                tileIsMonsterWalkable(ground) && tileIsWalkable(ground))
+                mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), x, y, z);
             else if (tileIsPirateShip(combatInfo.monsterObj->tile)) {
                 unsigned char ship = tileGetShipBase();
                 tileSetDirection(&ship, tileGetDirection(combatInfo.monsterObj->tile));
-                mapAddObject(c->location->map, ship, ship, combatInfo.monsterObj->x, combatInfo.monsterObj->y, c->location->z);
+                mapAddObject(c->location->map, ship, ship, x, y, z);
             }
         }
 
@@ -844,10 +857,7 @@ void combatEnd() {
             if (c->saveGame->players[i].status == STAT_SLEEPING)
                 c->saveGame->players[i].status = combatInfo.party_status[i];
         }
-    }
-
-    if (combatInfo.monsterObj)
-        mapRemoveObject(c->location->map, combatInfo.monsterObj);
+    }    
     
     if (playerPartyDead(c->saveGame))
         deathStart(0);

@@ -88,6 +88,7 @@ int tileIsWalkable(unsigned char tile);
 int tileIsMonsterWalkable(unsigned char tile);
 int tileIsSwimable(unsigned char tile);
 int tileIsSailable(unsigned char tile);
+int tileIsWater(unsigned char tile);
 int tileIsFlyable(unsigned char tile);
 int tileIsDoor(unsigned char tile);
 int tileIsLockedDoor(unsigned char tile);

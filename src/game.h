@@ -8,6 +8,7 @@
 struct _Context;
 struct _Map;
 struct _Portal;
+struct _Monster;
 
 typedef enum {
     VIEW_NORMAL,
@@ -67,5 +68,6 @@ void gameDamageParty(int minDamage, int maxDamage);
 void gameDamageShip(int minDamage, int maxDamage);
 void gameMonsterCleanup(void);
 void gameSetTransport(unsigned char tile);
+void gameSpawnMonster(const struct _Monster *m);
 
 #endif

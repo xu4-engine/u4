@@ -229,6 +229,10 @@ int tileIsSailable(unsigned char tile) {
     return tileTestBit(tile, MASK_SAILABLE);
 }
 
+int tileIsWater(unsigned char tile) {
+    return (tileIsSwimable(tile) | tileIsSailable(tile));
+}
+
 int tileIsFlyable(unsigned char tile) {
     return !tileTestBit(tile, MASK_UNFLYABLE);
 }

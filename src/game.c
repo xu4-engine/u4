@@ -89,6 +89,7 @@ void gameFixupMonsters(void);
 long gameTimeSinceLastCommand(void);
 void gameMonsterAttack(Object *obj);
 void gameLordBritishCheckLevels(void);
+int gameSummonMonster(const char *monsterName);
 
 extern Map world_map;
 extern Object *party[8];
@@ -96,6 +97,7 @@ Context *c = NULL;
 int collisionOverride = 0;
 int windLock = 0;
 char itemNameBuffer[16];
+char monsterNameBuffer[32];
 int paused = 0;
 int pausedTimer = 0;
 
@@ -1121,6 +1123,7 @@ int gameZtatsKeyHandler(int key, void *data) {
 
 int gameSpecialCmdKeyHandler(int key, void *data) {
     int i;
+    ReadBufferActionInfo *readBufferInfo;
     const Moongate *moongate;
     int valid = 1;
 
@@ -1237,6 +1240,20 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         for (i = 0; i < REAG_MAX; i++)
             c->saveGame->reagents[i] = 99;
         break;
+
+    case 's':
+        screenMessage("Summon!\n");
+        eventHandlerPopKeyHandler();
+
+        readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+        readBufferInfo->handleBuffer = &gameSummonMonster;
+        readBufferInfo->buffer = monsterNameBuffer;
+        readBufferInfo->bufferLen = sizeof(monsterNameBuffer);
+        readBufferInfo->screenX = TEXT_AREA_X + c->col;
+        readBufferInfo->screenY = TEXT_AREA_Y + c->line;
+        monsterNameBuffer[0] = '\0';
+        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+        return 1;
 
     case 't':
         if (mapIsWorldMap(c->location->map)) {
@@ -1365,7 +1382,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
         ((obj->objType != OBJECT_MONSTER) && (obj->movement_behavior != MOVEMENT_ATTACK_AVATAR))) 
         playerAdjustKarma(c->saveGame, KA_ATTACKED_GOOD);
 
-    combatBegin(getCombatMapForTile(ground, c->saveGame->transport, m), obj, 1);
+    combatBegin(getCombatMapForTile(ground, c->saveGame->transport, obj), obj, 1);
     return 1;
 }
 
@@ -2596,8 +2613,7 @@ void gameCheckMoongates() {
 /**
  * Checks monster conditions and spawns new monsters if necessary
  */
-void gameCheckRandomMonsters() {
-    int x, y, dx, dy, t;
+void gameCheckRandomMonsters() {    
     const Monster *monster;    
 
     /* remove monsters that are too far away from the avatar */
@@ -2608,31 +2624,9 @@ void gameCheckRandomMonsters() {
     if (!mapIsWorldMap(c->location->map) ||
         mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS_ON_MAP ||        
         (rand() % 32) != 0)
-        return;
-
-    dx = 7;
-    dy = rand() % 7;
-
-    if (rand() % 2)
-        dx = -dx;
-    if (rand() % 2)
-        dy = -dy;
-    if (rand() % 2) {
-        t = dx;
-        dx = dy;
-        dy = t;
-    }
-
-    x = c->location->x + dx;
-    y = c->location->y + dy;
+        return;    
     
-    /* wrap the coordinates around the map if necessary */
-    mapWrapCoordinates(c->location->map, &x, &y);
-    
-    if ((monster = monsterRandomForTile(mapTileAt(c->location->map, x, y, c->location->z))) == 0)
-        return;
-
-    mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);
+    gameSpawnMonster(NULL);
 }
 
 /**
@@ -2678,7 +2672,7 @@ void gameMonsterAttack(Object *obj) {
     if ((under = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z)) &&
         tileIsShip(under->tile))
         ground = under->tile;
-    combatBegin(getCombatMapForTile(ground, c->saveGame->transport, monsterForTile(obj->tile)), obj, 1);
+    combatBegin(getCombatMapForTile(ground, c->saveGame->transport, obj), obj, 1);
 }
 
 /**
@@ -2918,4 +2912,78 @@ void gameLordBritishCheckLevels(void) {
     }
  
     screenMessage("\nWhat would thou\nask of me?\n");
+}
+
+int gameSummonMonster(const char *monsterName) {
+    extern Monster monsters[];
+    extern int numMonsters;
+    int i, j, id;
+
+    eventHandlerPopKeyHandler();
+
+    if (monsterName == NULL)
+        return 0;
+    
+    /* find the monster by its id and spawn it */
+    id = atoi(monsterName);
+    if (id > 0) {        
+        for (i = 0; i < numMonsters; i++) {
+            if (monsters[i].id == id) {
+                screenMessage("%s summoned!\n", monsters[i].name);
+                gameSpawnMonster(&monsters[i]);
+                return 1;
+            }                
+        }
+    }
+
+    /* find the monster by its name and spawn it */
+    for (i = 0; i < numMonsters; i++) {        
+        int match = 1;
+
+        for (j = 0; j < strlen(monsterName); j++) {
+            if (tolower(monsterName[j]) != tolower(monsters[i].name[j]))
+                match = 0;           
+        }
+
+        if (match) {
+            screenMessage("%s summoned!\n", monsterName);
+            gameSpawnMonster(&monsters[i]);
+            return 1;
+        }
+    }
+
+    screenMessage("%s not found\n", monsterName);    
+    return 0;
+}
+
+void gameSpawnMonster(const Monster *m) {
+    int x, y, dx, dy, t;
+    const Monster *monster;
+
+    dx = 7;
+    dy = rand() % 7;
+
+    if (rand() % 2)
+        dx = -dx;
+    if (rand() % 2)
+        dy = -dy;
+    if (rand() % 2) {
+        t = dx;
+        dx = dy;
+        dy = t;
+    }
+
+    x = c->location->x + dx;
+    y = c->location->y + dy;
+    
+    /* wrap the coordinates around the map if necessary */
+    mapWrapCoordinates(c->location->map, &x, &y);    
+
+    /* figure out what monster to spawn */
+    if (m)
+        monster = m;
+    else
+        monster = monsterRandomForTile(mapTileAt(c->location->map, x, y, c->location->z));
+
+    if (monster) mapAddMonsterObject(c->location->map, monster, x, y, c->location->z);    
 }
