@@ -11,28 +11,29 @@
 #include "u4.h"
 #include "u4file.h"
 #include "map.h"
+#include "city.h"
 #include "mapinit.h"
 
 extern Map world_map;
 
-extern Map lcb_1_map;
-extern Map lcb_2_map;
-extern Map lycaeum_map;
-extern Map empath_map;
-extern Map serpent_map;
+extern City lcb_1_city;
+extern City lcb_2_city;
+extern City lycaeum_city;
+extern City empath_city;
+extern City serpent_city;
 
-extern Map moonglow_map;
-extern Map britain_map;
-extern Map jhelom_map;
-extern Map yew_map;
-extern Map minoc_map;
-extern Map trinsic_map;
-extern Map skara_map;
-extern Map magincia_map;
-extern Map paws_map;
-extern Map den_map;
-extern Map vesper_map;
-extern Map cove_map;
+extern City moonglow_city;
+extern City britain_city;
+extern City jhelom_city;
+extern City yew_city;
+extern City minoc_city;
+extern City trinsic_city;
+extern City skara_city;
+extern City magincia_city;
+extern City paws_city;
+extern City den_city;
+extern City vesper_city;
+extern City cove_city;
 
 extern Map brick_map;
 extern Map bridge_map;
@@ -58,16 +59,16 @@ extern Map shore_map;
 extern Map shorship_map;
 extern Map shrine_map;
 
-Map *cities[] = {
-    &lcb_1_map, &lcb_2_map,
-    &lycaeum_map, &empath_map,
-    &serpent_map,
-    &moonglow_map, &britain_map,
-    &jhelom_map, &yew_map,
-    &minoc_map, &trinsic_map,
-    &skara_map, &magincia_map,
-    &paws_map, &den_map,
-    &vesper_map, &cove_map
+City *cities[] = {
+    &lcb_1_city, &lcb_2_city,
+    &lycaeum_city, &empath_city,
+    &serpent_city,
+    &moonglow_city, &britain_city,
+    &jhelom_city, &yew_city,
+    &minoc_city, &trinsic_city,
+    &skara_city, &magincia_city,
+    &paws_city, &den_city,
+    &vesper_city, &cove_city
 };
 
 Map *areas[] = {
@@ -97,7 +98,7 @@ int initializeMaps() {
 
     for (i = 0; i < sizeof(cities) / sizeof(cities[0]); i++) {
         FILE *ult, *tlk;
-        ult = u4fopen(cities[i]->ult_fname);
+        ult = u4fopen(cities[i]->map->fname);
         tlk = u4fopen(cities[i]->tlk_fname);
         if (!ult || !tlk)
             return 0;
@@ -108,7 +109,7 @@ int initializeMaps() {
 
     for (i = 0; i < sizeof(areas) / sizeof(areas[0]); i++) {
         FILE *con;
-        con = u4fopen(areas[i]->ult_fname);
+        con = u4fopen(areas[i]->fname);
         if (!con)
             return 0;
         mapReadCon(areas[i], con, 1);

@@ -6,6 +6,7 @@
 
 #include "../u4.h"
 #include "../map.h"
+#include "../portal.h"
 
 extern Map britain_map;
 extern Map yew_map;
@@ -52,17 +53,13 @@ const Portal world_portals[] = {
 };
 
 Map world_map = {
-    0, /* id */
-    "World", /* name */
+    NULL, /* fname */
     MAP_WIDTH, MAP_HEIGHT, /* width, height */
     86, 108, /* startx, starty */
     BORDER_WRAP, /* border_behavior */
     sizeof(world_portals) / sizeof(world_portals[0]), /* n_portals */
     world_portals, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    NULL, /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };

@@ -7,7 +7,9 @@
 
 #include <stdio.h>
 
-#include "portal.h"
+struct _City;
+struct _Portal;
+
 #include "person.h"
 
 typedef enum {
@@ -20,28 +22,25 @@ typedef enum {
 #define SHOW_AVATAR (1 << 0)
 
 typedef struct _Map {
-    int id;
-    const char *name;
+    const char *fname;
     unsigned int width, height;
     unsigned int startx, starty;
     MapBorderBehavior border_behavior;
     int n_portals;
-    const Portal *portals;
-    int n_persons;
-    Person *persons;
+    const struct _Portal *portals;
     int flags;
     unsigned char *data;
-    const char *ult_fname;
-    const char *tlk_fname;
+    struct _City *city;
 } Map;
 
 #define MAP_IS_OOB(mapptr, x, y) ((x) < 0 || (x) >= ((int)(mapptr)->width) || (y) < 0 || (y) >= ((int)(mapptr)->height))
 
-int mapRead(Map *map, FILE *ult, FILE *tlk);
+int mapRead(struct _City *city, FILE *ult, FILE *tlk);
 int mapReadCon(Map *map, FILE *con, int header);
 int mapReadWorld(Map *map, FILE *world);
 const Person *mapPersonAt(const Map *map, int x, int y);
-const Portal *mapPortalAt(const Map *map, int x, int y);
+const struct _Portal *mapPortalAt(const Map *map, int x, int y);
 unsigned char mapTileAt(const Map *map, int x, int y);
+int mapIsWorldMap(const Map *map);
 
 #endif

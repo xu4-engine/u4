@@ -8,369 +8,277 @@
 #include "../map.h"
 
 Map brick_map = {
-    0, /* id */
-    "brick", /* name */
+    "brick.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "brick.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map bridge_map = {
-    0, /* id */
-    "bridge", /* name */
+    "bridge.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "bridge.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map brush_map = {
-    0, /* id */
-    "brush", /* name */
+    "brush.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "brush.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map camp_map = {
-    0, /* id */
-    "camp", /* name */
+    "camp.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "camp.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map dng0_map = {
-    0, /* id */
-    "dng0", /* name */
+    "dng0.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "dng0.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map dng1_map = {
-    0, /* id */
-    "dng1", /* name */
+    "dng1.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "dng1.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map dng2_map = {
-    0, /* id */
-    "dng2", /* name */
+    "dng2.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "dng2.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map dng3_map = {
-    0, /* id */
-    "dng3", /* name */
+    "dng3.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "dng3.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map dng4_map = {
-    0, /* id */
-    "dng4", /* name */
+    "dng4.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "dng4.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map dng5_map = {
-    0, /* id */
-    "dng5", /* name */
+    "dng5.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "dng5.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map dng6_map = {
-    0, /* id */
-    "dng6", /* name */
+    "dng6.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "dng6.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map dungeon_map = {
-    0, /* id */
-    "dungeon", /* name */
+    "dungeon.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "dungeon.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map forest_map = {
-    0, /* id */
-    "forest", /* name */
+    "forest.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "forest.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map grass_map = {
-    0, /* id */
-    "grass", /* name */
+    "grass.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "grass.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map hill_map = {
-    0, /* id */
-    "hill", /* name */
+    "hill.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "hill.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map inn_map = {
-    0, /* id */
-    "inn", /* name */
+    "inn.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "inn.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map marsh_map = {
-    0, /* id */
-    "marsh", /* name */
+    "marsh.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "marsh.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map shipsea_map = {
-    0, /* id */
-    "shipsea", /* name */
+    "shipsea.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "shipsea.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map shipship_map = {
-    0, /* id */
-    "shipship", /* name */
+    "shipship.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "shipship.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map shipshor_map = {
-    0, /* id */
-    "shipshor", /* name */
+    "shipshor.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "shipshor.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map shore_map = {
-    0, /* id */
-    "shore", /* name */
+    "shore.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "shore.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map shorship_map = {
-    0, /* id */
-    "shorship", /* name */
+    "shorship.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "shorship.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };
 
 Map shrine_map = {
-    0, /* id */
-    "shrine", /* name */
+    "shrine.con", /* fname */
     CON_WIDTH, CON_HEIGHT, /* width, height */
     5, 5, /* startx, starty */
     BORDER_FIXED, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     0, /* flags */
     NULL, /* data */
-    "shrine.con", /* ult_fname */
-    NULL /* tlk_fname */
+    NULL /* city */
 };

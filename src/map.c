@@ -9,57 +9,59 @@
 
 #include "u4.h"
 #include "map.h"
+#include "city.h"
+#include "portal.h"
 #include "io.h"
 #include "annotation.h"
 
 #define MAP_TILE_AT(mapptr, x, y) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 
-int mapRead(Map *map, FILE *ult, FILE *tlk) {
+int mapRead(City *city, FILE *ult, FILE *tlk) {
     char conv_idx[CITY_MAX_PERSONS];
     unsigned char c;
     int i, j;
     char tlk_buffer[288];
 
     /* the map must be 32x32 to be read from an .ULT file */
-    assert(map->width == CITY_WIDTH);
-    assert(map->height == CITY_HEIGHT);
+    assert(city->map->width == CITY_WIDTH);
+    assert(city->map->height == CITY_HEIGHT);
 
-    map->data = (unsigned char *) malloc(CITY_HEIGHT * CITY_WIDTH);
-    if (!map->data)
+    city->map->data = (unsigned char *) malloc(CITY_HEIGHT * CITY_WIDTH);
+    if (!city->map->data)
         return 0;
 
     for (i = 0; i < (CITY_HEIGHT * CITY_WIDTH); i++) {
-        if (!readChar(&(map->data[i]), ult))
+        if (!readChar(&(city->map->data[i]), ult))
             return 0;
     }
 
-    map->persons = (Person *) malloc(sizeof(Person) * CITY_MAX_PERSONS);
-    if (!map->persons)
+    city->persons = (Person *) malloc(sizeof(Person) * CITY_MAX_PERSONS);
+    if (!city->persons)
         return 0;
-    memset(&(map->persons[0]), 0, sizeof(Person) * CITY_MAX_PERSONS);
+    memset(&(city->persons[0]), 0, sizeof(Person) * CITY_MAX_PERSONS);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         if (!readChar(&c, ult))
             return 0;
-        map->persons[i].tile0 = c;
+        city->persons[i].tile0 = c;
     }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         if (!readChar(&c, ult))
             return 0;
-        map->persons[i].startx = c;
+        city->persons[i].startx = c;
     }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         if (!readChar(&c, ult))
             return 0;
-        map->persons[i].starty = c;
+        city->persons[i].starty = c;
     }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         if (!readChar(&c, ult))
             return 0;
-        map->persons[i].tile1 = c;
+        city->persons[i].tile1 = c;
     }
 
     for (i = 0; i < CITY_MAX_PERSONS * 2; i++) {
@@ -71,13 +73,13 @@ int mapRead(Map *map, FILE *ult, FILE *tlk) {
         if (!readChar(&c, ult))
             return 0;
         if (c == 0)
-            map->persons[i].movement_behavior = MOVEMENT_FIXED;
+            city->persons[i].movement_behavior = MOVEMENT_FIXED;
         else if (c == 1)
-            map->persons[i].movement_behavior = MOVEMENT_WANDER;
+            city->persons[i].movement_behavior = MOVEMENT_WANDER;
         else if (c == 0x80)
-            map->persons[i].movement_behavior = MOVEMENT_FOLLOW_AVATAR;
+            city->persons[i].movement_behavior = MOVEMENT_FOLLOW_AVATAR;
         else if (c == 0xFF)
-            map->persons[i].movement_behavior = MOVEMENT_ATTACK_AVATAR;
+            city->persons[i].movement_behavior = MOVEMENT_ATTACK_AVATAR;
         else 
             return 0;
     }
@@ -94,42 +96,38 @@ int mapRead(Map *map, FILE *ult, FILE *tlk) {
             if (conv_idx[j] == i+1) {
                 char *ptr = tlk_buffer + 3;
 
-                map->persons[j].questionTrigger = tlk_buffer[0];
-                map->persons[j].questionType = tlk_buffer[1];
-                map->persons[j].turnAwayProb = tlk_buffer[2];
+                city->persons[j].questionTrigger = tlk_buffer[0];
+                city->persons[j].questionType = tlk_buffer[1];
+                city->persons[j].turnAwayProb = tlk_buffer[2];
 
-                map->persons[j].name = strdup(ptr);
+                city->persons[j].name = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                map->persons[j].pronoun = strdup(ptr);
+                city->persons[j].pronoun = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                map->persons[j].description = strdup(ptr);
+                city->persons[j].description = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                map->persons[j].job = strdup(ptr);
+                city->persons[j].job = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                map->persons[j].health = strdup(ptr);
+                city->persons[j].health = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                map->persons[j].response1 = strdup(ptr);
+                city->persons[j].response1 = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                map->persons[j].response2 = strdup(ptr);
+                city->persons[j].response2 = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                map->persons[j].question = strdup(ptr);
+                city->persons[j].question = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                map->persons[j].yesresp = strdup(ptr);
+                city->persons[j].yesresp = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                map->persons[j].noresp = strdup(ptr);
+                city->persons[j].noresp = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                map->persons[j].keyword1 = strdup(ptr);
+                city->persons[j].keyword1 = strdup(ptr);
                 ptr += strlen(ptr) + 1;
-                map->persons[j].keyword2 = strdup(ptr);
+                city->persons[j].keyword2 = strdup(ptr);
             }
         }
     }
 
-    map->n_persons = CITY_MAX_PERSONS;
-
-    
-    for (i = 0; i < CITY_MAX_PERSONS; i++)
-        personInitType(&map->persons[i]);
+    city->n_persons = CITY_MAX_PERSONS;
 
     return 1;
 }
@@ -194,11 +192,15 @@ int mapReadWorld(Map *map, FILE *world) {
 const Person *mapPersonAt(const Map *map, int x, int y) {
     int i;
 
-    for(i = 0; i < map->n_persons; i++) {
-        if (map->persons[i].tile0 != 0 &&
-            map->persons[i].startx == x &&
-            map->persons[i].starty == y) {
-            return &(map->persons[i]);
+    /* only cities have persons */
+    if (map->city == NULL)
+        return NULL;
+
+    for(i = 0; i < map->city->n_persons; i++) {
+        if (map->city->persons[i].tile0 != 0 &&
+            map->city->persons[i].startx == x &&
+            map->city->persons[i].starty == y) {
+            return &(map->city->persons[i]);
         }
     }
     return NULL;
@@ -225,4 +227,10 @@ unsigned char mapTileAt(const Map *map, int x, int y) {
         tile = a->tile;
     
     return tile;
+}
+
+int mapIsWorldMap(const Map *map) {
+    return 
+        map->width == MAP_WIDTH &&
+        map->height == MAP_HEIGHT;
 }

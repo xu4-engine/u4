@@ -6,195 +6,280 @@
 
 #include "../u4.h"
 #include "../map.h"
+#include "../city.h"
+
+City britain_city;
 
 Map britain_map = {
-    6, /* id */
-    "Britain", /* name */
+    "britain.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "britain.ult", /* ult_fname */
-    "britain.tlk" /* tlk_fname */
+    &britain_city /* city */
 };
+
+City britain_city  = {
+    "Britain",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "britain.tlk", /* tlk_fname */
+    &britain_map
+};
+
+City cove_city;
 
 Map cove_map = {
-    10, /* id */
-    "Cove", /* name */
+    "cove.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "cove.ult", /* ult_fname */
-    "cove.tlk" /* tlk_fname */
+    &cove_city /* city */
 };
+
+City cove_city  = {
+    "Cove",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "cove.tlk", /* tlk_fname */
+    &cove_map
+};
+
+City den_city;
 
 Map den_map = {
-    14, /* id */
-    "Buccaneers Den", /* name */
+    "den.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "den.ult", /* ult_fname */
-    "den.tlk" /* tlk_fname */
+    &den_city /* city */
 };
+
+City den_city  = {
+    "Buccaneers Den",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "den.tlk", /* tlk_fname */
+    &den_map
+};
+
+City jhelom_city;
 
 Map jhelom_map = {
-    7, /* id */
-    "Jhelom", /* name */
+    "jhelom.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "jhelom.ult", /* ult_fname */
-    "jhelom.tlk" /* tlk_fname */
+    &jhelom_city /* city */
 };
+
+City jhelom_city  = {
+    "Jhelom",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "jhelom.tlk", /* tlk_fname */
+    &jhelom_map
+};
+
+City magincia_city;
 
 Map magincia_map = {
-    12, /* id */
-    "Magincia", /* name */
+    "magincia.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "magincia.ult", /* ult_fname */
-    "magincia.tlk" /* tlk_fname */
+    &magincia_city /* city */
 };
+
+City magincia_city  = {
+    "Magincia",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "magincia.tlk", /* tlk_fname */
+    &magincia_map
+};
+
+City minoc_city;
 
 Map minoc_map = {
-    9, /* id */
-    "Minoc", /* name */
+    "minoc.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "minoc.ult", /* ult_fname */
-    "minoc.tlk" /* tlk_fname */
+    &minoc_city /* city */
 };
+
+City minoc_city  = {
+    "Minoc",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "minoc.tlk", /* tlk_fname */
+    &minoc_map
+};
+
+City moonglow_city;
 
 Map moonglow_map = {
-    5, /* id */
-    "Moonglow", /* name */
+    "moonglow.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "moonglow.ult", /* ult_fname */
-    "moonglow.tlk" /* tlk_fname */
+    &moonglow_city /* city */
 };
+
+City moonglow_city  = {
+    "Moonglow",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "moonglow.tlk", /* tlk_fname */
+    &moonglow_map
+};
+
+City paws_city;
 
 Map paws_map = {
-    13, /* id */
-    "Paws", /* name */
+    "paws.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "paws.ult", /* ult_fname */
-    "paws.tlk" /* tlk_fname */
+    &paws_city /* city */
 };
+
+City paws_city  = {
+    "Paws",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "paws.tlk", /* tlk_fname */
+    &paws_map
+};
+
+City skara_city;
 
 Map skara_map = {
-    11, /* id */
-    "Skara Brae", /* name */
+    "skara.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "skara.ult", /* ult_fname */
-    "skara.tlk" /* tlk_fname */
+    &skara_city /* city */
 };
+
+City skara_city  = {
+    "Skara Brae",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "skara.tlk", /* tlk_fname */
+    &skara_map
+};
+
+City trinsic_city;
 
 Map trinsic_map = {
-    10, /* id */
-    "Trinsic", /* name */
+    "trinsic.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "trinsic.ult", /* ult_fname */
-    "trinsic.tlk" /* tlk_fname */
+    &trinsic_city /* city */
 };
+
+City trinsic_city  = {
+    "Trinsic",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "trinsic.tlk", /* tlk_fname */
+    &trinsic_map
+};
+
+City vesper_city;
 
 Map vesper_map = {
-    15, /* id */
-    "Vesper", /* name */
+    "vesper.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "vesper.ult", /* ult_fname */
-    "vesper.tlk" /* tlk_fname */
+    &vesper_city /* city */
 };
 
+City vesper_city  = {
+    "Vesper",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "vesper.tlk", /* tlk_fname */
+    &vesper_map
+};
+
+City yew_city;
+
 Map yew_map = {
-    8, /* id */
-    "Yew", /* name */
+    "yew.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     0, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "yew.ult", /* ult_fname */
-    "yew.tlk" /* tlk_fname */
+    &yew_city /* city */
+};
+
+City yew_city  = {
+    "Yew",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "yew.tlk", /* tlk_fname */
+    &yew_map
 };

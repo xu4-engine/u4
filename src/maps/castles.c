@@ -6,53 +6,76 @@
 
 #include "../u4.h"
 #include "../map.h"
+#include "../city.h"
+#include "../portal.h"
+
+City empath_city;
 
 Map empath_map = {
-    3, /* id */
-    "Empath Abbey", /* name */
+    "empath.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "empath.ult", /* ult_fname */
-    "empath.tlk" /* tlk_fname */
+    &empath_city /* city */
 };
+
+City empath_city  = {
+    "Empath Abbey",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "empath.tlk", /* tlk_fname */
+    &empath_map
+};
+
+City lycaeum_city;
 
 Map lycaeum_map = {
-    2, /* id */
-    "Lycaeum", /* name */
+    "lycaeum.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "lycaeum.ult", /* ult_fname */
-    "lycaeum.tlk" /* tlk_fname */
+    &lycaeum_city /* city */
 };
 
+City lycaeum_city  = {
+    "Lycaeum",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "lycaeum.tlk", /* tlk_fname */
+    &lycaeum_map
+};
+
+City serpent_city;
+
 Map serpent_map = {
-    4, /* id */
-    "serpent", /* name */
+    "serpent.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     0, /* n_portals */
     NULL, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "serpent.ult", /* ult_fname */
-    "serpent.tlk" /* tlk_fname */
+    &serpent_city /* city */
+};
+
+City serpent_city  = {
+    "Serpents Hold",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "serpent.tlk", /* tlk_fname */
+    &serpent_map
 };
 
 Map lcb_2_map;
@@ -62,20 +85,27 @@ const Portal lcb_1_portals[] = {
     { 27, 3, &lcb_2_map, ACTION_KLIMB }
 };
 
+City lcb_1_city;
+
 Map lcb_1_map = {
-    1, /* id */
-    "Britannia", /* name */
+    "lcb_1.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     2, /* n_portals */
     lcb_1_portals, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "lcb_1.ult", /* ult_fname */
-    "lcb.tlk" /* tlk_fname */
+    &lcb_1_city /* city */
+};
+
+City lcb_1_city  = {
+    "Britannia",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "lcb.tlk", /* tlk_fname */
+    &lcb_1_map
 };
 
 const Portal lcb_2_portals[] = {
@@ -83,18 +113,25 @@ const Portal lcb_2_portals[] = {
     { 27, 3, &lcb_1_map, ACTION_DESCEND }
 };
 
+City lcb_2_city;
+
 Map lcb_2_map = {
-    1, /* id */
-    "Britannia", /* name */
+    "lcb_2.ult", /* fname */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 31, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
     2, /* n_portals */
     lcb_2_portals, /* portals */
-    0, /* n_persons */
-    NULL, /* persons */
     SHOW_AVATAR, /* flags */
     NULL, /* data */
-    "lcb_2.ult", /* ult_fname */
-    "lcb.tlk" /* tlk_fname */
+    &lcb_2_city /* city */
+};
+
+City lcb_2_city  = {
+    "Britannia",
+    0,
+    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
+    "lcb.tlk", /* tlk_fname */
+    &lcb_2_map
 };
