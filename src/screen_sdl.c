@@ -65,6 +65,7 @@ typedef struct {
     CompressionType filetype;
     int tiles;
     int introOnly;
+    int transparentIndex;
     ImageFixup fixup;
 } ImageInfo;
 
@@ -153,6 +154,7 @@ const struct {
 void screenLoadGraphicsFromXml(void);
 ImageSet *screenLoadImageSetFromXml(xmlNodePtr node);
 ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node);
+char **imageSetNames = NULL;
 ListNode *imageSets = NULL;
 
 extern int verbose;
@@ -190,8 +192,10 @@ void screenInit() {
     u4upgradeInstalled = u4isUpgradeInstalled();
 
     /* if we can't use vga, reset to default:ega */
-    if (!u4upgradeExists && settings->videoType == VIDEO_VGA)
-        settings->videoType = VIDEO_EGA;
+    if (!u4upgradeExists && strcmp(settings->videoType, "VGA") == 0) {
+        free(settings->videoType);
+        settings->videoType = strdup("EGA");
+    }
 
     if (!screenLoadGemTiles())
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
@@ -223,9 +227,17 @@ void screenReInit() {
     introInit();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
 
+char **screenGetImageSetNames() {
+    ASSERT(imageSetNames != NULL, "image sets have not yet been initialized");
+
+    return imageSetNames;
+}
+
 void screenLoadGraphicsFromXml() {
     xmlDocPtr doc;
     xmlNodePtr root, node;
+    ListNode *l;
+    int i;
 
     doc = xmlParse("graphics.xml");
     root = xmlDocGetRootElement(doc);
@@ -239,6 +251,16 @@ void screenLoadGraphicsFromXml() {
 
         imageSets = listAppend(imageSets, screenLoadImageSetFromXml(node));
     }
+
+    if (imageSetNames) {
+        for (i = 0; imageSetNames[i]; i++)
+            free(imageSetNames[i]);
+        free(imageSetNames);
+    }
+    imageSetNames = malloc(sizeof(char *) * listLength(imageSets) + 1);
+    for (i = 0, l = imageSets; l; i++, l = l->next) 
+        imageSetNames[i] = strdup(((ImageSet *)l->data)->name);
+    imageSetNames[i] = NULL;
 }
 
 ImageSet *screenLoadImageSetFromXml(xmlNodePtr node) {
@@ -282,6 +304,10 @@ ImageInfo *screenLoadImageInfoFromXml(xmlNodePtr node) {
     image->filetype = xmlGetPropAsEnum(node, "filetype", filetypeEnumStrings);
     image->tiles = xmlGetPropAsInt(node, "tiles");
     image->introOnly = xmlGetPropAsBool(node, "introOnly");
+    if (xmlPropExists(node, "transparentIndex"))
+        image->transparentIndex = xmlGetPropAsInt(node, "transparentIndex");
+    else
+        image->transparentIndex = -1;
     image->fixup = xmlGetPropAsEnum(node, "fixup", fixupEnumStrings);
 
     return image;
@@ -366,15 +392,6 @@ void fixupAbyssVision(Image *im) {
     static unsigned char *data = NULL;
 
     /*
-     * The EGA vision components need to be made transparent, so they
-     * can be overlaid on each previous image.
-     */
-    if (settings->videoType == VIDEO_EGA) {
-        imageSetTransparentIndex(im, 0);
-        return;
-    }
-
-    /*
      * Each VGA vision components must be XORed with all the previous
      * vision components to get the actual image.
      */
@@ -423,10 +440,10 @@ ImageInfo *screenGetImageInfoFromSet(BackgroundType bkgd, const char *setname) {
 ImageInfo *screenGetImageInfo(BackgroundType bkgd) {
     const char *setname;
     
-    if (!u4upgradeExists || settings->videoType == VIDEO_EGA)
+    if (!u4upgradeExists)
         setname = "EGA";
     else
-        setname = "VGA";
+        setname = settings->videoType;
 
     return screenGetImageInfoFromSet(bkgd, setname);
 }
@@ -443,7 +460,7 @@ int screenLoadBackground(BackgroundType bkgd) {
 
     info = screenGetImageInfo(bkgd);
     filename = info->filename;
-    if ((!u4upgradeExists || settings->videoType == VIDEO_EGA) && u4upgradeInstalled)
+    if ((!u4upgradeExists || strcmp(settings->videoType, "EGA") == 0) && u4upgradeInstalled)
         filename = screenGetImageInfoFromSet(bkgd, "VGA")->filename;
 
     ret = 0;
@@ -463,6 +480,9 @@ int screenLoadBackground(BackgroundType bkgd) {
     }
     if (!ret)
         return 0;
+
+    if (info->transparentIndex != -1)
+        imageSetTransparentIndex(unscaled, info->transparentIndex);
 
     /*
      * fixup the image before scaling it
@@ -533,7 +553,7 @@ int screenLoadGemTiles() {
     int ret = 0;
 
     /* load vga gem tiles */
-    if (settings->videoType == VIDEO_VGA) {
+    if (strcmp(settings->videoType, "VGA") == 0) {
         pathname = u4find_graphics("vga/gem.rle");
         if (pathname) {
             file = u4fopen_stdio(pathname);
@@ -546,7 +566,7 @@ int screenLoadGemTiles() {
     }
 
     /* load ega gem tiles (also loads if vga load fails) */
-    if (!ret || settings->videoType == VIDEO_EGA) {
+    if (!ret || strcmp(settings->videoType, "EGA") == 0) {
         pathname = u4find_graphics("ega/gem.rle");
         if (pathname) {
             file = u4fopen_stdio(pathname);
