@@ -30,8 +30,8 @@
     <monster id="20" encounterSize="4" name="Giant Squid" tile="134" frames="2" basehp="96" exp="7" ranged="true" rangedhittile="lightning" rangedmisstile="lightning" poisons="true" swims="true" leader="21"/>
     <monster id="21" encounterSize="4" name="Sea Serpent" tile="136" frames="2" basehp="128" exp="9" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" swims="true" leader="20"/>
     <monster id="22" encounterSize="8" name="Seahorse" tile="138" frames="2" basehp="128" exp="9" movement="wanders" ranged="true" rangedhittile="magic" rangedmisstile="magic" swims="true" leader="19"/>
-    <monster id="23" encounterSize="1" name="Whirlpool" tile="140" frames="2" exp="16" swims="true" movement="wanders" cantattack="true" canMoveOntoMonsters="true" canMoveOntoAvatar="true" wontattack="true"/>
-    <monster id="24" encounterSize="1" name="Storm" tile="142" frames="2" exp="16" flies="true" movement="wanders" cantattack="true" canMoveOntoMonsters="true" canMoveOntoAvatar="true" wontattack="true"/>
+    <monster id="23" encounterSize="1" name="Whirlpool" tile="140" frames="2" exp="16" swims="true" movement="wanders" cantattack="true" canMoveOntoMonsters="true" canMoveOntoAvatar="true" canMoveOn="true" wontattack="true"/>
+    <monster id="24" encounterSize="1" name="Storm" tile="142" frames="2" exp="16" flies="true" movement="wanders" cantattack="true" canMoveOntoMonsters="true" canMoveOntoAvatar="true" canMoveOn="true" wontattack="true"/>
 
     <!-- Main monsters -->
     <monster id="25" encounterSize="12" name="Rat" tile="144" frames="4" basehp="48" exp="4" movement="wanders" good="true" leader="38"/>
