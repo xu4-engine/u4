@@ -24,14 +24,14 @@ typedef enum {
     ACTION_EXIT_WEST    = 0x40
 } PortalTriggerAction;
 
-typedef bool (*PortalConditionsMet)(const struct _Portal *p);
+typedef bool (*PortalConditionsMet)(const Portal *p);
 
 typedef struct _PortalDestination {
     MapCoords coords;
     MapId mapid;
 } PortalDestination;
 
-typedef struct _Portal {
+struct Portal {
     MapCoords coords;
     MapId destid;
     MapCoords start;    
@@ -42,7 +42,7 @@ typedef struct _Portal {
     std::string message;
     TransportContext portalTransportRequisites;
     bool exitPortal;
-} Portal;
+};
 
 void createDngLadder(Location *location, PortalTriggerAction action, Portal *p);
 int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action);

@@ -76,7 +76,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         return 1;
     }    
     
-    destination = mapMgrGetById(portal->destid);
+    destination = mapMgr->get(portal->destid);
 
     if (portal->message.empty()) {
 
@@ -138,7 +138,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
     /* if the portal changes the map retroactively, do it here */
     if (portal->retroActiveDest && location->prev) {
         location->prev->coords = portal->retroActiveDest->coords;        
-        location->prev->map = mapMgrGetById(portal->retroActiveDest->mapid);
+        location->prev->map = mapMgr->get(portal->retroActiveDest->mapid);
     }
 
     if (destination->type == MAPTYPE_SHRINE) {

@@ -9,7 +9,7 @@
 #include "types.h"
 
 class Map;
-struct _Portal;
+struct Portal;
 class Creature;
 
 typedef enum {
@@ -67,7 +67,7 @@ bool gameZtatsKeyHandler(int key, void *data);
 /* map and screen functions */
 void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
-void gameSetMap(class Map *map, bool saveLocation, const struct _Portal *portal);
+void gameSetMap(class Map *map, bool saveLocation, const Portal *portal);
 int gameExitToParentMap();
 
 /* spell functions */

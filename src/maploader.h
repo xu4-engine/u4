@@ -11,6 +11,7 @@
 #include "map.h"
 
 class U4FILE;
+class Dungeon;
 
 /**
  * The generic map loader interface.  Map loaders should override the
@@ -20,8 +21,9 @@ class U4FILE;
  */
 class MapLoader {
 public:
-    virtual int load(Map *map) = 0;
     static MapLoader *getLoader(MapType type);
+
+    virtual int load(Map *map) = 0;
 
 protected:
     static MapLoader *registerLoader(MapLoader *loader, MapType type);
@@ -54,6 +56,8 @@ class DngMapLoader : public MapLoader {
 public:
     virtual int load(Map *map);
 
+private:
+    void initDungeonRoom(Dungeon *dng, int room);
 };
 
 class WorldMapLoader : public MapLoader {

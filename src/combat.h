@@ -116,7 +116,6 @@ protected:
 class CombatMap : public Map {
 public:
     CombatMap();
-    CombatMap(MapId id);
         
     CreatureVector getCreatures();
     PartyMemberVector getPartyMembers();

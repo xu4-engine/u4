@@ -68,7 +68,7 @@ CombatController::CombatController(CombatMap *m) {
     gameSetMap(map, true, NULL);
 }
 CombatController::CombatController(MapId id) {
-    map = getCombatMap(mapMgrGetById(id));
+    map = getCombatMap(mapMgr->get(id));
     gameSetMap(map, true, NULL);
 }
 
@@ -1042,7 +1042,7 @@ bool CombatController::baseKeyHandler(int key, void *data) {
     case 't':
         if (settings.debug && ct->map->isDungeonRoom()) {
             Dungeon *dungeon = dynamic_cast<Dungeon*>(c->location->prev->map);
-            Trigger *triggers = dungeon->currentRoom->triggers;
+            Trigger *triggers = dungeon->rooms[dungeon->currentRoom].triggers;
             int i;
 
             screenMessage("Triggers!\n");
@@ -1198,7 +1198,6 @@ bool CombatController::chooseWeaponDir(int key, void *data) {
  * CombatMap class implementation
  */ 
 CombatMap::CombatMap() : Map() {}
-CombatMap::CombatMap(MapId id) : Map(id) {}
 
 /**
  * Returns a vector containing all of the creatures on the map

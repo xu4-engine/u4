@@ -20,7 +20,6 @@
 #include "event.h"
 #include "game.h"
 #include "intro.h"
-#include "mapmgr.h"
 #include "music.h"
 #include "person.h"
 #include "screen.h"
@@ -116,13 +115,9 @@ int main(int argc, char *argv[]) {
     if (quit)
         return 0;
 
-    /* load in the maps */
-    perf.reset();
-    perf.start();
-    mapMgrInit();
-    perf.end("mapMgrInit()");
 
     /* initialize person data */
+    perf.reset();
     perf.start();
     if (!personInit())
         errorFatal("unable to load person data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");

@@ -5,9 +5,17 @@
 #ifndef MAPMGR_H
 #define MAPMGR_H
 
-#include <map>
+#include <vector>
 
 #include "map.h"
+
+class City;
+class ConfigElement;
+class Debug;
+class Dungeon;
+struct PersonRole;
+struct Portal;
+class Shrine;
 
 /*
  * The map manager is responsible for loading and keeping track of the
@@ -71,9 +79,36 @@
 #define MAP_SHORE_CON 53
 #define MAP_SHORSHIP_CON 54
 
-void mapMgrInit();
-Map *mapMgrInitMap(MapType type);
-void mapMgrRegister(Map *map);
-Map *mapMgrGetById(MapId id);
+/**
+ * The map manager singleton that keeps track of all the maps.
+ */
+class MapMgr {
+public:
+    static MapMgr *getInstance();
+
+    Map *get(MapId id);
+    Map *initMap(MapType type);
+
+private:
+    MapMgr();
+
+    void registerMap(Map *map);
+
+    Map *initMapFromConf(const ConfigElement &mapConf);
+    void initCityFromConf(const ConfigElement &cityConf, City *city);
+    PersonRole *initPersonRoleFromConf(const ConfigElement &cityConf);
+    Portal *initPortalFromConf(const ConfigElement &portalConf);
+    void initShrineFromConf(const ConfigElement &shrineConf, Shrine *shrine);
+    void initDungeonFromConf(const ConfigElement &dungeonConf, Dungeon *dungeon);
+    void initDungeonRoom(Dungeon *dng, int room);
+    void createMoongateFromConf(const ConfigElement &moongateConf);
+    int initCompressedChunkFromConf(const ConfigElement &compressedChunkConf);
+
+    static MapMgr *instance;
+    std::vector<Map *> mapList;
+    Debug *logger;
+};
+
+#define mapMgr (MapMgr::getInstance())
 
 #endif /* MAPMGR_H */

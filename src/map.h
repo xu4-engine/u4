@@ -27,10 +27,10 @@ class Map;
 class Object;
 class Person;
 class Creature;
-struct _Portal;
+struct Portal;
 struct _Dungeon;
 
-typedef std::vector<struct _Portal*> PortalList;
+typedef std::vector<Portal *> PortalList;
 typedef std::list<int> CompressedChunkList;
 typedef std::vector<MapTile> MapData;
 
@@ -87,14 +87,13 @@ public:
 class Map {    
 public:
     Map();
-    Map(MapId id);
     virtual ~Map();
 
     // Member functions
     virtual string getName();
     
     class Object *objectAt(MapCoords coords);    
-    const struct _Portal *portalAt(MapCoords coords, int actionFlags);
+    const Portal *portalAt(MapCoords coords, int actionFlags);
     MapTile* getTileFromData(Coords coords);
     MapTile* tileAt(Coords coords, int withObjects);
     bool isWorldMap();
@@ -137,6 +136,11 @@ public:
     SaveGameMonsterRecord monsterTable[MONSTERTABLE_SIZE];
 
 private:
+    // disallow map copying: all maps should be created and accessed
+    // through the MapMgr
+    Map(const Map &map);
+    Map &operator=(const Map &map);
+
     void findWalkability(Coords coords, int *path_data);
 };
 

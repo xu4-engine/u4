@@ -231,10 +231,17 @@ int MapCoords::distance(const MapCoords &c, const Map *map) const {
  * Map Class Implementation
  */ 
 
-Map::Map() {}
-Map::Map(MapId id) {
-    *this = *mapMgrGetById(id);
+Map::Map() {
+    annotations = new AnnotationMgr();
+    flags = 0;
+    width = 0;
+    height = 0;
+    levels = 1;
+    chunk_width = 0;
+    chunk_height = 0;    
+    id = 0;
 }
+
 Map::~Map() {}
 
 string Map::getName() {

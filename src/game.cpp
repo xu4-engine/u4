@@ -184,7 +184,7 @@ void gameInit() {
     c->lastShip = NULL;
     
     /* set the map to the world map by default */
-    gameSetMap(mapMgrGetById(MAP_WORLD), 0, NULL);    
+    gameSetMap(mapMgr->get(MAP_WORLD), 0, NULL);    
 
     TRACE_LOCAL(gameDbg, "World map set.");
 
@@ -205,7 +205,7 @@ void gameInit() {
     c->combat = new CombatController();
 
     /* initialize our start location */
-    Map *map = mapMgrGetById(c->saveGame->location);
+    Map *map = mapMgr->get(c->saveGame->location);
     TRACE_LOCAL(gameDbg, "Initializing start location.");
 
     /* initialize the moons (must be done from the world map) */
@@ -832,7 +832,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case U4_FKEY+8:
         if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-            gameSetMap(mapMgrGetById(MAP_DECEIT), 1, NULL);
+            gameSetMap(mapMgr->get(MAP_DECEIT), 1, NULL);
             c->location->coords = MapCoords(1, 0, 7);            
             c->saveGame->orientation = DIR_SOUTH;
         }
@@ -841,7 +841,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case U4_FKEY+9:
         if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-            gameSetMap(mapMgrGetById(MAP_DESPISE), 1, NULL);
+            gameSetMap(mapMgr->get(MAP_DESPISE), 1, NULL);
             c->location->coords = MapCoords(3, 2, 7);
             c->saveGame->orientation = DIR_SOUTH;
         }
@@ -850,7 +850,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case U4_FKEY+10:
         if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-            gameSetMap(mapMgrGetById(MAP_DESTARD), 1, NULL);
+            gameSetMap(mapMgr->get(MAP_DESTARD), 1, NULL);
             c->location->coords = MapCoords(7, 6, 7);            
             c->saveGame->orientation = DIR_SOUTH;
         }
@@ -896,7 +896,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             screenPrompt();
             
             /* Help! send me to Lord British (who conveniently is right around where you are)! */
-            gameSetMap(mapMgrGetById(100), 1, NULL);
+            gameSetMap(mapMgr->get(100), 1, NULL);
             c->location->coords.x = 19;
             c->location->coords.y = 8;
             c->location->coords.z = 0;
@@ -1292,7 +1292,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             /* first teleport to the abyss */
             c->location->coords.x = 0xe9;
             c->location->coords.y = 0xe9;
-            gameSetMap(mapMgrGetById(MAP_ABYSS), 1, NULL);
+            gameSetMap(mapMgr->get(MAP_ABYSS), 1, NULL);
             /* then to the final altar */
             c->location->coords.x = 7;
             c->location->coords.y = 7;
@@ -2553,12 +2553,11 @@ MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
                 room = (0x10 * (c->location->coords.z/2)) + room;
 
             Dungeon *dng = dynamic_cast<Dungeon*>(c->location->map);
-            dungeonLoadRoom(dng, room);
-            /* load the map so dng->room points to a valid CombatMap */
+            dng->currentRoom = room;
 
             /* set the map and start combat! */
             delete c->combat;
-            c->combat = new CombatController(dng->room);
+            c->combat = new CombatController(dng->roomMaps[room]);
             c->combat->initDungeonRoom(room, dirReverse(realDir));
             c->combat->begin();
         }
@@ -2869,7 +2868,7 @@ bool gamePeerCity(int city, void *data) {
     KeyHandler::GetChoice *choiceInfo;    
     Map *peerMap;
 
-    peerMap = mapMgrGetById((MapId)(city+1));
+    peerMap = mapMgr->get((MapId)(city+1));
 
     if (peerMap)
     {
@@ -3432,7 +3431,7 @@ int gameCheckMoongates(void) {
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
             Shrine *shrine_spirituality;
 
-            shrine_spirituality = dynamic_cast<Shrine*>(mapMgrGetById(MAP_SHRINE_SPIRITUALITY));
+            shrine_spirituality = dynamic_cast<Shrine*>(mapMgr->get(MAP_SHRINE_SPIRITUALITY));
 
             if (!c->party->canEnterShrine(VIRT_SPIRITUALITY))
                 return 1;

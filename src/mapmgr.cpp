@@ -27,33 +27,34 @@
 
 using std::vector;
 
+MapMgr *MapMgr::instance = NULL;
+
 extern bool isAbyssOpened(const Portal *p);
 extern bool shrineCanEnter(const Portal *p);
 
-Map *mapMgrInitMapFromConf(const ConfigElement &mapConf);
-void mapMgrInitCityFromConf(const ConfigElement &cityConf, City *city);
-PersonRole *mapMgrInitPersonRoleFromConf(const ConfigElement &cityConf);
-Portal *mapMgrInitPortalFromConf(const ConfigElement &portalConf);
-void mapMgrInitShrineFromConf(const ConfigElement &shrineConf, Shrine *shrine);
-void mapMgrInitDungeonFromConf(const ConfigElement &dungeonConf, Dungeon *dungeon);
-void mapMgrCreateMoongateFromConf(const ConfigElement &moongateConf);
-int mapMgrInitCompressedChunkFromConf(const ConfigElement &compressedChunkConf);
+MapMgr *MapMgr::getInstance() {
+    if (instance == NULL)
+        instance = new MapMgr();
+    return instance;
+}
 
-vector<Map *> mapList;
+MapMgr::MapMgr() {
+    logger = new Debug("debug/mapmgr.txt", "MapMgr"); 
+    TRACE(*logger, "creating MapMgr");
 
-void mapMgrInit() {
     const Config *config = Config::getInstance();
     Map *map;
 
     vector<ConfigElement> maps = config->getElement("/config/maps").getChildren();
     for (std::vector<ConfigElement>::iterator i = maps.begin(); i != maps.end(); i++) {
-        map = mapMgrInitMapFromConf(*i);
+        map = initMapFromConf(*i);
+
         /* map actually gets loaded later, when it's needed */        
-        mapMgrRegister(map);
+        registerMap(map);
     }
 }
 
-Map *mapMgrInitMap(MapType type) {
+Map *MapMgr::initMap(MapType type) {
     Map *map;
 
     switch(type) {    
@@ -82,26 +83,39 @@ Map *mapMgrInitMap(MapType type) {
         break;
     }
     
-    if (!map)
-        return NULL;
-    map->annotations = new AnnotationMgr();    
-    map->flags = 0;
-    map->width = 0;
-    map->height = 0;
-    map->levels = 1;
-    map->chunk_width = 0;
-    map->chunk_height = 0;    
-    map->id = 0;
-
     return map;
 }
 
-Map *mapMgrInitMapFromConf(const ConfigElement &mapConf) {
+Map *MapMgr::get(MapId id) {    
+    /* if the map hasn't been loaded yet, load it! */
+    if (!mapList[id]->data.size()) {
+        MapLoader *loader = MapLoader::getLoader(mapList[id]->type);
+        if (loader == NULL)
+            errorFatal("can't load map of type \"%d\"", mapList[id]->type);
+
+        TRACE_LOCAL(*logger, string("loading map data for map \'") + mapList[id]->fname + "\'");
+
+        loader->load(mapList[id]);
+    }
+    return mapList[id];
+}
+
+void MapMgr::registerMap(Map *map) {
+    if (mapList.size() <= map->id)
+        mapList.resize(map->id + 1, NULL);
+
+    if (mapList[map->id] != NULL)
+        errorFatal("Error: A map with id '%d' already exists", map->id);
+
+    mapList[map->id] = map;
+}
+
+Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
     Map *map;
     static const char *mapTypeEnumStrings[] = { "world", "city", "shrine", "combat", "dungeon", NULL };
     static const char *borderBehaviorEnumStrings[] = { "wrap", "exit", "fixed", NULL };
 
-    map = mapMgrInitMap(static_cast<MapType>(mapConf.getEnum("type", mapTypeEnumStrings)));
+    map = initMap(static_cast<MapType>(mapConf.getEnum("type", mapTypeEnumStrings)));
     if (!map)
         return NULL;
 
@@ -114,6 +128,8 @@ Map *mapMgrInitMapFromConf(const ConfigElement &mapConf) {
     map->chunk_width = mapConf.getInt("chunkwidth");
     map->chunk_height = mapConf.getInt("chunkheight");
     map->border_behavior = static_cast<MapBorderBehavior>(mapConf.getEnum("borderbehavior", borderBehaviorEnumStrings));
+
+    TRACE_LOCAL(*logger, string("loading configuration for map \'") + map->fname + "\'");
 
     if (mapConf.getBool("showavatar"))
         map->flags |= SHOW_AVATAR;
@@ -130,28 +146,28 @@ Map *mapMgrInitMapFromConf(const ConfigElement &mapConf) {
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "city") {
             City *city = dynamic_cast<City*>(map);
-            mapMgrInitCityFromConf(*i, city);            
+            initCityFromConf(*i, city);            
         }
         else if (i->getName() == "shrine") {
             Shrine *shrine = dynamic_cast<Shrine*>(map);
-            mapMgrInitShrineFromConf(*i, shrine);
+            initShrineFromConf(*i, shrine);
         }            
         else if (i->getName() == "dungeon") {
             Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
-            mapMgrInitDungeonFromConf(*i, dungeon);
+            initDungeonFromConf(*i, dungeon);
         }
         else if (i->getName() == "portal")
-            map->portals.push_back(mapMgrInitPortalFromConf(*i));
+            map->portals.push_back(initPortalFromConf(*i));
         else if (i->getName() == "moongate")
-            mapMgrCreateMoongateFromConf(*i);
+            createMoongateFromConf(*i);
         else if (i->getName() == "compressedchunk")
-            map->compressed_chunks.push_back(mapMgrInitCompressedChunkFromConf(*i));
+            map->compressed_chunks.push_back(initCompressedChunkFromConf(*i));
     }
     
     return map;
 }
 
-void mapMgrInitCityFromConf(const ConfigElement &cityConf, City *city) {
+void MapMgr::initCityFromConf(const ConfigElement &cityConf, City *city) {
     city->name = cityConf.getString("name");
     city->type = cityConf.getString("type");
     city->tlk_fname = cityConf.getString("tlk_fname");
@@ -159,11 +175,11 @@ void mapMgrInitCityFromConf(const ConfigElement &cityConf, City *city) {
     vector<ConfigElement> children = cityConf.getChildren();
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "personrole")
-            city->personroles.push_back(mapMgrInitPersonRoleFromConf(*i));
+            city->personroles.push_back(initPersonRoleFromConf(*i));
     }    
 }
 
-PersonRole *mapMgrInitPersonRoleFromConf(const ConfigElement &personRoleConf) {
+PersonRole *MapMgr::initPersonRoleFromConf(const ConfigElement &personRoleConf) {
     PersonRole *personrole;
     static const char *roleEnumStrings[] = { "companion", "weaponsvendor", "armorvendor", "foodvendor", "tavernkeeper",
                                              "reagentsvendor", "healer", "innkeeper", "guildvendor", "horsevendor",
@@ -177,7 +193,7 @@ PersonRole *mapMgrInitPersonRoleFromConf(const ConfigElement &personRoleConf) {
     return personrole;
 }
 
-Portal *mapMgrInitPortalFromConf(const ConfigElement &portalConf) {
+Portal *MapMgr::initPortalFromConf(const ConfigElement &portalConf) {
     Portal *portal;
 
     portal = new Portal;
@@ -254,47 +270,27 @@ Portal *mapMgrInitPortalFromConf(const ConfigElement &portalConf) {
     return portal;
 }
 
-void mapMgrInitShrineFromConf(const ConfigElement &shrineConf, Shrine *shrine) {    
+void MapMgr::initShrineFromConf(const ConfigElement &shrineConf, Shrine *shrine) {    
     static const char *virtues[] = {"Honesty", "Compassion", "Valor", "Justice", "Sacrifice", "Honor", "Spirituality", "Humility", NULL};
 
     shrine->setVirtue(static_cast<Virtue>(shrineConf.getEnum("virtue", virtues)));
     shrine->setMantra(shrineConf.getString("mantra"));
 }
 
-void mapMgrInitDungeonFromConf(const ConfigElement &dungeonConf, Dungeon *dungeon) {
+void MapMgr::initDungeonFromConf(const ConfigElement &dungeonConf, Dungeon *dungeon) {
     dungeon->n_rooms = dungeonConf.getInt("rooms");
     dungeon->rooms = NULL;
+    dungeon->roomMaps = NULL;
     dungeon->name = dungeonConf.getString("name");
 }
 
-void mapMgrCreateMoongateFromConf(const ConfigElement &moongateConf) {
+void MapMgr::createMoongateFromConf(const ConfigElement &moongateConf) {
     int phase = moongateConf.getInt("phase");
     Coords coords(moongateConf.getInt("x"), moongateConf.getInt("y"));
 
     moongateAdd(phase, coords);
 }
 
-int mapMgrInitCompressedChunkFromConf(const ConfigElement &compressedChunkConf) {
+int MapMgr::initCompressedChunkFromConf(const ConfigElement &compressedChunkConf) {
     return compressedChunkConf.getInt("index");
-}
-
-void mapMgrRegister(Map *map) {
-    if (mapList.size() <= map->id)
-        mapList.resize(map->id + 1, NULL);
-
-    if (mapList[map->id] != NULL)
-        errorFatal("Error: A map with id '%d' already exists", map->id);
-
-    mapList[map->id] = map;
-}
-
-Map *mapMgrGetById(MapId id) {    
-    /* if the map hasn't been loaded yet, load it! */
-    if (!mapList[id]->data.size()) {
-        MapLoader *loader = MapLoader::getLoader(mapList[id]->type);
-        if (loader == NULL)
-            errorFatal("can't load map of type \"%d\"", mapList[id]->type);
-        loader->load(mapList[id]);
-    }
-    return mapList[id];
 }

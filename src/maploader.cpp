@@ -18,6 +18,7 @@
 #include "filesystem.h"
 #include "map.h"
 #include "maploader.h"
+#include "mapmgr.h"
 #include "object.h"
 #include "person.h"
 #include "portal.h"
@@ -47,7 +48,6 @@ MapLoader *MapLoader::registerLoader(MapLoader *loader, MapType type) {
     (*loaderMap)[type] = loader;
     return loader;
 }
-
 
 int MapLoader::loadData(Map *map, U4FILE *f) {
     unsigned int x, xch, y, ych;
@@ -315,7 +315,6 @@ int DngMapLoader::load(Map *map) {
         dungeon->data.push_back(tile);
     }
 
-    dungeon->room = NULL;
     /* read in the dungeon rooms */
     /* FIXME: needs a cleanup function to free this memory later */
     dungeon->rooms = new DngRoom[dungeon->n_rooms];
@@ -369,7 +368,32 @@ int DngMapLoader::load(Map *map) {
     }
     u4fclose(dng);
 
+    dungeon->roomMaps = new CombatMap *[dungeon->n_rooms];
+    for (unsigned int i = 0; i < dungeon->n_rooms; i++)
+        initDungeonRoom(dungeon, i);
+
     return 1;
+}
+
+/**
+ * Loads a dungeon room into map->dungeon->room
+ */
+void DngMapLoader::initDungeonRoom(Dungeon *dng, int room) {
+    dng->roomMaps[room] = dynamic_cast<CombatMap *>(mapMgr->initMap(MAPTYPE_COMBAT));
+
+    dng->roomMaps[room]->id = 0;
+    dng->roomMaps[room]->border_behavior = BORDER_FIXED;
+    dng->roomMaps[room]->width = dng->roomMaps[room]->height = 11;
+
+    for (unsigned int y = 0; y < dng->roomMaps[room]->height; y++) {
+        for (unsigned int x = 0; x < dng->roomMaps[room]->width; x++) {
+            dng->roomMaps[room]->data.push_back(MapTile(dng->rooms[room].map_data[x + (y * dng->roomMaps[room]->width)]));
+        }
+    }
+
+    dng->roomMaps[room]->music = MUSIC_COMBAT;
+    dng->roomMaps[room]->type = MAPTYPE_COMBAT;
+    dng->roomMaps[room]->flags |= NO_LINE_OF_SIGHT;
 }
 
 /**

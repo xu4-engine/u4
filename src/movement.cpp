@@ -354,7 +354,7 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
         if (cm->isDungeonRoom()) {
             Dungeon *dungeon = dynamic_cast<Dungeon*>(c->location->prev->map);
             int i;
-            Trigger *triggers = dungeon->currentRoom->triggers;            
+            Trigger *triggers = dungeon->rooms[dungeon->currentRoom].triggers;            
 
             for (i = 0; i < 4; i++) {
                 /*const Creature *m = creatures.getByTile(triggers[i].tile);*/

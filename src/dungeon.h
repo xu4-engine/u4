@@ -51,9 +51,9 @@ public:
 
     string name;
     unsigned int n_rooms;
-    CombatMap *room;
     struct _DngRoom *rooms;
-    struct _DngRoom *currentRoom;
+    CombatMap **roomMaps;
+    int currentRoom;
     unsigned char party_startx[8];
     unsigned char party_starty[8];
 };
@@ -110,7 +110,6 @@ DungeonToken dungeonCurrentToken();
 unsigned char dungeonCurrentSubToken();
 DungeonToken dungeonTokenAt(Map *map, MapCoords coords);
 unsigned char dungeonSubTokenAt(Map *map, MapCoords coords);
-bool dungeonLoadRoom(Dungeon *dng, int room);
 void dungeonSearch(void);
 bool dungeonDrinkFountain(int player);
 bool dungeonTouchOrb(int player);

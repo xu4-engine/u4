@@ -13,10 +13,10 @@ using std::string;
 
 #include "map.h"
 
-typedef struct _PersonRole {
+struct PersonRole {
     int role;
     int id;
-} PersonRole;
+};
 
 typedef std::vector<Person *> PersonList;
 typedef std::list<PersonRole*> PersonRoleList;

@@ -104,33 +104,6 @@ unsigned char dungeonSubTokenAt(Map *map, MapCoords coords) {
 }
 
 /**
- * Loads a dungeon room into map->dungeon->room
- */
-bool dungeonLoadRoom(Dungeon *dng, int room) {
-    if (dng->room != NULL)
-        delete dng->room;    
-    
-    dng->room = getCombatMap(mapMgrInitMap(MAPTYPE_COMBAT));
-
-    dng->room->id = 0;
-    dng->room->border_behavior = BORDER_FIXED;
-    dng->room->width = dng->room->height = 11;
-
-    for (unsigned int y = 0; y < dng->room->height; y++) {
-        for (unsigned int x = 0; x < dng->room->width; x++) {
-            dng->room->data.push_back(MapTile(dng->rooms[room].map_data[x + (y * dng->room->width)]));
-        }
-    }
-    
-    dng->room->music = MUSIC_COMBAT;
-    dng->room->type = MAPTYPE_COMBAT;
-    dng->room->flags |= NO_LINE_OF_SIGHT;
-
-    dng->currentRoom = (dng->rooms + room);
-    return true;
-}
-
-/**
  * Handles 's'earching while in dungeons
  */
 void dungeonSearch(void) {
