@@ -434,7 +434,7 @@ void gameFinishTurn() {
         if (c->location->context == CTX_DUNGEON || (!c->saveGame->balloonstate)) {
 
             /* apply effects from tile avatar is standing on */
-            playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_OBJECTS)), ALL_PLAYERS);
+            playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_GROUND_OBJECTS)), ALL_PLAYERS);
 
             /* Move monsters and see if something is attacking the avatar */
             attacker = mapMoveObjects(c->location->map, c->location->x, c->location->y, c->location->z);        
@@ -655,7 +655,7 @@ int gameBaseKeyHandler(int key, void *data) {
         if ((c->location->context == CTX_DUNGEON) || 
             (!c->saveGame->balloonstate)) {
             tile = (*c->location->tileAt)(c->location->map, c->location->x,
-                c->location->y, c->location->z, WITH_OBJECTS);                            
+                c->location->y, c->location->z, WITH_GROUND_OBJECTS);                            
     
             if (tileIsChest(tile)) key = 'g';
         }
@@ -910,7 +910,7 @@ int gameBaseKeyHandler(int key, void *data) {
         if ((c->location->context != CTX_DUNGEON) && c->saveGame->balloonstate)        
             screenMessage("Drift only!\n");
         else {
-            tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_OBJECTS);
+            tile = (*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_GROUND_OBJECTS);
     
             if (tileIsChest(tile))
             {
@@ -2204,7 +2204,7 @@ int gameGetChest(int player) {
     int x, y, z;    
     
     locationGetCurrentPosition(c->location, &x, &y, &z);
-    tile = (*c->location->tileAt)(c->location->map, x, y, z, WITH_OBJECTS);
+    tile = (*c->location->tileAt)(c->location->map, x, y, z, WITH_GROUND_OBJECTS);
     newTile = locationGetReplacementTile(c->location, x, y, z);    
     
     /* get the object for the chest, if it is indeed an object */
@@ -2310,14 +2310,17 @@ MoveReturnValue gameMoveAvatar(Direction dir, int userEvent) {
                 /* if shortcuts are enabled, try them! */
                 if (settings->shortcutCommands) {
                     int newx, newy;
+                    unsigned char tile;
+
                     newx = c->location->x;
                     newy = c->location->y;
                     mapDirMove(c->location->map, dir, &newx, &newy);
+                    tile = (*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS);
 
-                    if (tileIsDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS))) {
+                    if (tileIsDoor(tile)) {
                         openAtCoord(newx, newy, 1, NULL);
                         retval = MOVE_SUCCEEDED | MOVE_END_TURN;                    
-                    } else if (tileIsLockedDoor((*c->location->tileAt)(c->location->map, newx, newy, c->location->z, WITH_OBJECTS))) {
+                    } else if (tileIsLockedDoor(tile)) {
                         jimmyAtCoord(newx, newy, 1, NULL);
                         retval = MOVE_SUCCEEDED | MOVE_END_TURN;
                     } /*else if (mapPersonAt(c->location->map, newx, newy, c->location->z) != NULL) {
@@ -2413,6 +2416,7 @@ MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
  * tile.
  */
 int jimmyAtCoord(int x, int y, int distance, void *data) {    
+    unsigned char tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS);
 
     if (x == -1 && y == -1) {
         screenMessage("Jimmy what?\n");
@@ -2420,7 +2424,7 @@ int jimmyAtCoord(int x, int y, int distance, void *data) {
         return 0;
     }
 
-    if (!tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS)))
+    if (!tileIsLockedDoor(tile))
         return 0;
         
     if (c->saveGame->keys) {
@@ -2659,17 +2663,18 @@ int newOrderForPlayer2(int player2) {
  * replaced by a temporary annotation of a floor tile for 4 turns.
  */
 int openAtCoord(int x, int y, int distance, void *data) {
+    unsigned char tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS);
+
     if (x == -1 && y == -1) {
         screenMessage("Not Here!\n");
         (*c->location->finishTurn)();
         return 0;
     }
 
-    if (!tileIsDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS)) &&
-        !tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS)))
+    if (!tileIsDoor(tile) && !tileIsLockedDoor(tile))
         return 0;
 
-    if (tileIsLockedDoor((*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS))) {
+    if (tileIsLockedDoor(tile)) {
         screenMessage("Can't!\n");
         (*c->location->finishTurn)();
         return 1;

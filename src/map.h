@@ -41,8 +41,9 @@ typedef enum {
 #define FIRST_PERSON (1 << 2)
 
 /* mapTileAt flags */
-#define WITH_OBJECTS 1
 #define WITHOUT_OBJECTS 0
+#define WITH_GROUND_OBJECTS 1
+#define WITH_OBJECTS 2
 
 typedef struct _Map {
     unsigned char id;

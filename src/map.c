@@ -109,12 +109,14 @@ unsigned char mapGetTileFromData(const Map *map, int x, int y, int z) {
 unsigned char mapTileAt(const Map *map, int x, int y, int z, int withObjects) {
     unsigned char tile;
     const Annotation *a = annotationAt(x, y, z, map->id);
-    Object *obj = mapObjectAt(map, x, y, z);
+    Object *obj = mapObjectAt(map, x, y, z);    
  
     tile = mapGetTileFromData(map, x, y, z);
     if ((a != NULL) && !a->visual)
         tile = a->tile;
-    else if (withObjects && obj && tileIsWalkable(obj->tile))
+    else if ((withObjects == WITH_OBJECTS) && obj)
+        tile = obj->tile;
+    else if ((withObjects == WITH_GROUND_OBJECTS) && obj && tileIsWalkable(obj->tile))
         tile = obj->tile;
     
     return tile;

@@ -531,7 +531,7 @@ static int spellEField(int param) {
          * Field cast on top of field and then dispel = no fields left
          * The code below seems to produce this behaviour.
          */
-        tile = (*c->location->tileAt)(c->location->map, x, y, z, WITH_OBJECTS);
+        tile = (*c->location->tileAt)(c->location->map, x, y, z, WITH_GROUND_OBJECTS);
         if (!tileIsWalkable(tile)) return 0;
         
         /* Get rid of old field, if any */

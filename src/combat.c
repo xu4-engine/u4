@@ -490,7 +490,7 @@ void combatFinishTurn() {
     /* make sure the player with the focus is still in battle (hasn't fled or died) */
     if (party[FOCUS].obj) {
         /* apply effects from tile player is standing on */
-        playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, party[FOCUS].obj->x, party[FOCUS].obj->y, c->location->z, WITH_OBJECTS)), FOCUS);
+        playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, party[FOCUS].obj->x, party[FOCUS].obj->y, c->location->z, WITH_GROUND_OBJECTS)), FOCUS);
     }
 
     quick = (c->aura == AURA_QUICKNESS) && (party[FOCUS].obj != NULL) && (rand() % 2 == 0) ? 1 : 0;
@@ -1025,7 +1025,7 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
         m = mapObjectAt(c->location->map, info->origin_x, info->origin_y, c->location->z)->monster;
 
         /* If the monster leaves a tile behind, do it here! (lava lizard, etc) */
-        groundTile = (*c->location->tileAt)(c->location->map, oldx, oldy, c->location->z, WITH_OBJECTS);
+        groundTile = (*c->location->tileAt)(c->location->map, oldx, oldy, c->location->z, WITH_GROUND_OBJECTS);
         if (monsterLeavesTile(m) && tileIsWalkable(groundTile))
             annotationAdd(oldx, oldy, c->location->z, c->location->map->id, hittile);
     }
@@ -1606,7 +1606,7 @@ void combatApplyMonsterTileEffects(void) {
     for (i = 0; i < AREA_MONSTERS; i++) {
         if (combatInfo.monsters[i].obj) {
             TileEffect effect;
-            effect = tileGetEffect((*c->location->tileAt)(c->location->map, combatInfo.monsters[i].obj->x, combatInfo.monsters[i].obj->y, c->location->z, WITH_OBJECTS));
+            effect = tileGetEffect((*c->location->tileAt)(c->location->map, combatInfo.monsters[i].obj->x, combatInfo.monsters[i].obj->y, c->location->z, WITH_GROUND_OBJECTS));
 
             if (effect != EFFECT_NONE) {
 
