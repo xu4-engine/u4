@@ -60,7 +60,7 @@ bool isPartyMember(Object *punknown) {
  * PartyMember class implementation
  */ 
 PartyMember::PartyMember(class Party *p, SaveGamePlayerRecord *pr) : 
-    Monster(tileForClass(pr->klass)),    
+    Creature(tileForClass(pr->klass)),    
     player(pr),
     party(p)
 {
@@ -73,7 +73,7 @@ PartyMember::PartyMember(class Party *p, SaveGamePlayerRecord *pr) :
 /**
  * Determine whether a player's attack hits or not.
  */
-bool PartyMember::attackHit(Monster *m) {
+bool PartyMember::attackHit(Creature *m) {
     if (Weapon::get(player->weapon)->alwaysHits() || player->dex >= 40)
         return true;
 
@@ -281,13 +281,13 @@ bool PartyMember::applyDamage(int damage) {
     return true;
 }
 
-bool PartyMember::dealDamage(Monster *m, int damage) {
+bool PartyMember::dealDamage(Creature *m, int damage) {
     /* we have to record these now, because if we
        kill the target, it gets destroyed */
     bool isEvil = m->isEvil();
     int m_xp = m->xp;
 
-    if (!Monster::dealDamage(m, damage)) {
+    if (!Creature::dealDamage(m, damage)) {
         /* half the time you kill an evil creature you get a karma boost */
         if (isEvil && xu4_random(2) == 0)
             c->party->adjustKarma(KA_KILLED_EVIL);
@@ -416,7 +416,7 @@ void PartyMember::putToSleep() {
 }
 
 void PartyMember::removeStatus(StatusType s) {
-    Monster::removeStatus(s);
+    Creature::removeStatus(s);
     player->status = status.back();
 }
 

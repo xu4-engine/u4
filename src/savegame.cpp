@@ -11,8 +11,8 @@
 #include "types.h"
 
 #define MONSTERTABLE_SIZE           32
-#define MONSTERTABLE_MONSTERS_SIZE  8
-#define MONSTERTABLE_OBJECTS_SIZE   (MONSTERTABLE_SIZE - MONSTERTABLE_MONSTERS_SIZE)
+#define MONSTERTABLE_CREATURES_SIZE  8
+#define MONSTERTABLE_OBJECTS_SIZE   (MONSTERTABLE_SIZE - MONSTERTABLE_CREATURES_SIZE)
 
 char *partySavFilename() {
     char *fname;
@@ -403,10 +403,10 @@ int saveGameMonstersWrite(std::deque<Object *> &objs, FILE *f) {
     const Object *obj;
     const Object *monsterTable[MONSTERTABLE_SIZE];
     std::deque<const Object*> whirlpools_storms;
-    std::deque<const Object*> other_monsters;
+    std::deque<const Object*> other_creatures;
     std::deque<const Object*> inanimate_objects;    
     
-    int nMonsters = 0;
+    int nCreatures = 0;
     int nObjects = 0;    
     int i, r;
 
@@ -419,11 +419,11 @@ int saveGameMonstersWrite(std::deque<Object *> &objs, FILE *f) {
         obj = *current;
 
         /* moving objects first */
-        if ((obj->getType() == OBJECT_MONSTER) && (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
+        if ((obj->getType() == OBJECT_CREATURE) && (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
             /* whirlpools and storms are separated from other moving objects */
             if ((obj->getTile() == 140) || (obj->getTile() == 142))
                 whirlpools_storms.push_back(obj);
-            else other_monsters.push_back(obj);
+            else other_creatures.push_back(obj);
         }
         else inanimate_objects.push_back(obj);
     }
@@ -431,22 +431,22 @@ int saveGameMonstersWrite(std::deque<Object *> &objs, FILE *f) {
     /**
      * OK, whirlpools and storms go first so they behave correctly in u4dos
      */     
-    while (whirlpools_storms.size() && nMonsters < 4) {        
-        monsterTable[nMonsters++] = whirlpools_storms.front();
+    while (whirlpools_storms.size() && nCreatures < 4) {        
+        monsterTable[nCreatures++] = whirlpools_storms.front();
         whirlpools_storms.pop_front();
     }
     /**
-     * Then, fill up the rest of the "moving object" section with monsters
+     * Then, fill up the rest of the "moving object" section with creatures
      */
-    while (other_monsters.size() && nMonsters < MONSTERTABLE_MONSTERS_SIZE) {
-        monsterTable[nMonsters++] = other_monsters.front();
-        other_monsters.pop_front();
+    while (other_creatures.size() && nCreatures < MONSTERTABLE_CREATURES_SIZE) {
+        monsterTable[nCreatures++] = other_creatures.front();
+        other_creatures.pop_front();
     }
     /**
      * Finally, add inanimate objects
      */
     while (inanimate_objects.size() && nObjects < MONSTERTABLE_OBJECTS_SIZE) {
-        monsterTable[MONSTERTABLE_MONSTERS_SIZE + nObjects++] = inanimate_objects.front();
+        monsterTable[MONSTERTABLE_CREATURES_SIZE + nObjects++] = inanimate_objects.front();
         inanimate_objects.pop_front();
     }
 
@@ -582,7 +582,7 @@ int saveGameMonstersRead(std::deque<Object *> *objs, FILE *f) {
             obj = new Object;
             *obj = monsterTable[i];
             
-            if (i < MONSTERTABLE_MONSTERS_SIZE)
+            if (i < MONSTERTABLE_CREATURES_SIZE)
                 obj->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
             else
                 obj->setMovementBehavior(MOVEMENT_FIXED);

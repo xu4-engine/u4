@@ -27,7 +27,7 @@
 #include "location.h"
 #include "mapmgr.h"
 #include "menu.h"
-#include "monster.h"
+#include "creature.h"
 #include "moongate.h"
 #include "movement.h"
 #include "music.h"
@@ -109,16 +109,16 @@ bool ztatsFor(int player);
 void gameCheckBridgeTrolls(void);
 int gameCheckMoongates(void);
 int gameCheckPlayerDisabled(int player);
-void gameCheckRandomMonsters(void);
-void gameCheckSpecialMonsters(Direction dir);
+void gameCheckRandomCreatures(void);
+void gameCheckSpecialCreatures(Direction dir);
 void gameLordBritishCheckLevels(void);
 
-/* monster functions */
+/* creature functions */
 void gameAlertTheGuards(Map *map);
-void gameDestroyAllMonsters(void);
-void gameFixupMonsters(Map *map);
-void gameMonsterAttack(Monster *obj);
-int gameSummonMonster(string *monsterName);
+void gameDestroyAllCreatures(void);
+void gameFixupCreatures(Map *map);
+void gameCreatureAttack(Creature *obj);
+int gameSummonCreature(string *creatureName);
 
 /* etc */
 bool gameCreateBalloon(Map *map);
@@ -130,7 +130,7 @@ extern Object *party[8];
 Context *c = NULL;
 int windLock = 0;
 string itemNameBuffer;
-string monsterNameBuffer;
+string creatureNameBuffer;
 string howmany;
 string destination;
 int paused = 0;
@@ -229,22 +229,22 @@ void gameInit() {
     if (MAP_IS_OOB(c->location->map, c->location->coords))
         c->location->coords.putInBounds(c->location->map);    
 
-    /* load in monsters.sav */
+    /* load in creatures.sav */
     monstersFile = saveGameMonstersOpenForReading(MONSTERS_SAV_BASE_FILENAME);
     if (monstersFile) {
         saveGameMonstersRead(&c->location->map->objects, monstersFile);
         fclose(monstersFile);
     }
-    gameFixupMonsters(c->location->map);
+    gameFixupCreatures(c->location->map);
 
-    /* we have previous monster information as well, load it! */
+    /* we have previous creature information as well, load it! */
     if (c->location->prev) {
         monstersFile = saveGameMonstersOpenForReading(OUTMONST_SAV_BASE_FILENAME);
         if (monstersFile) {
             saveGameMonstersRead(&c->location->prev->map->objects, monstersFile);
             fclose(monstersFile);
         }
-        gameFixupMonsters(c->location->prev->map);
+        gameFixupCreatures(c->location->prev->map);
     }
 
     /* setup transport context */
@@ -256,7 +256,7 @@ void gameInit() {
     playerSetSpellEffectCallback(&gameSpellEffect);
     playerSetPartyStarvingCallback(&gamePartyStarving);
     playerSetSetTransportCallback(&gameSetTransport);
-    itemSetDestroyAllMonstersCallback(&gameDestroyAllMonsters);
+    itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
 
     musicPlay();
     screenDrawImage(BKGD_BORDERS);
@@ -279,7 +279,7 @@ void gameInit() {
 }
 
 /**
- * Saves the game state into party.sav and monsters.sav.
+ * Saves the game state into party.sav and creatures.sav.
  */
 int gameSave() {
     FILE *saveGameFile, *monstersFile, *dngMapFile;
@@ -355,11 +355,11 @@ int gameSave() {
         return 0;
     }
 
-    /* fix monster animations so they are compatible with u4dos */
+    /* fix creature animations so they are compatible with u4dos */
     c->location->map->resetObjectAnimations();
 
     if (!saveGameMonstersWrite(c->location->map->objects, monstersFile)) {
-        screenMessage("Error opening monsters.sav\n");
+        screenMessage("Error opening creatures.sav\n");
         fclose(monstersFile);
         return 0;
     }
@@ -371,28 +371,28 @@ int gameSave() {
     if (c->location->context & CTX_DUNGEON) {
         unsigned int x, y, z;
 
-        typedef std::map<const Monster*, int, std::less<const Monster*> > DngMonsterIdMap;
-        static DngMonsterIdMap id_map;        
+        typedef std::map<const Creature*, int, std::less<const Creature*> > DngCreatureIdMap;
+        static DngCreatureIdMap id_map;        
 
         /**
-         * Map monsters to u4dos dungeon monster Ids
+         * Map creatures to u4dos dungeon creature Ids
          */ 
         if (id_map.size() == 0) {
-            id_map[monsters.getById(RAT_ID)]             = 1;
-            id_map[monsters.getById(BAT_ID)]             = 2;
-            id_map[monsters.getById(GIANT_SPIDER_ID)]    = 3;
-            id_map[monsters.getById(GHOST_ID)]           = 4;
-            id_map[monsters.getById(SLIME_ID)]           = 5;
-            id_map[monsters.getById(TROLL_ID)]           = 6;
-            id_map[monsters.getById(GREMLIN_ID)]         = 7;
-            id_map[monsters.getById(MIMIC_ID)]           = 8;
-            id_map[monsters.getById(REAPER_ID)]          = 9;
-            id_map[monsters.getById(INSECT_SWARM_ID)]    = 10;
-            id_map[monsters.getById(GAZER_ID)]           = 11;
-            id_map[monsters.getById(PHANTOM_ID)]         = 12;
-            id_map[monsters.getById(ORC_ID)]             = 13;
-            id_map[monsters.getById(SKELETON_ID)]        = 14;
-            id_map[monsters.getById(ROGUE_ID)]           = 15;
+            id_map[creatures.getById(RAT_ID)]             = 1;
+            id_map[creatures.getById(BAT_ID)]             = 2;
+            id_map[creatures.getById(GIANT_SPIDER_ID)]    = 3;
+            id_map[creatures.getById(GHOST_ID)]           = 4;
+            id_map[creatures.getById(SLIME_ID)]           = 5;
+            id_map[creatures.getById(TROLL_ID)]           = 6;
+            id_map[creatures.getById(GREMLIN_ID)]         = 7;
+            id_map[creatures.getById(MIMIC_ID)]           = 8;
+            id_map[creatures.getById(REAPER_ID)]          = 9;
+            id_map[creatures.getById(INSECT_SWARM_ID)]    = 10;
+            id_map[creatures.getById(GAZER_ID)]           = 11;
+            id_map[creatures.getById(PHANTOM_ID)]         = 12;
+            id_map[creatures.getById(ORC_ID)]             = 13;
+            id_map[creatures.getById(SKELETON_ID)]        = 14;
+            id_map[creatures.getById(ROGUE_ID)]           = 15;
         }
 
         dngMapFile = fopen("dngmap.sav", "wb");
@@ -408,11 +408,11 @@ int gameSave() {
                     Object *obj = c->location->map->objectAt(MapCoords(x, y, z));
 
                     /**
-                     * Add the monster to the tile
+                     * Add the creature to the tile
                      */ 
-                    if (obj && obj->getType() == OBJECT_MONSTER) {
-                        const Monster *m = dynamic_cast<Monster*>(obj);
-                        DngMonsterIdMap::iterator m_id = id_map.find(m);
+                    if (obj && obj->getType() == OBJECT_CREATURE) {
+                        const Creature *m = dynamic_cast<Creature*>(obj);
+                        DngCreatureIdMap::iterator m_id = id_map.find(m);
                         if (m_id != id_map.end())
                             tile |= m_id->second;                        
                     }
@@ -435,7 +435,7 @@ int gameSave() {
             return 0;
         }
         
-        /* fix monster animations so they are compatible with u4dos */
+        /* fix creature animations so they are compatible with u4dos */
         c->location->prev->map->resetObjectAnimations();
 
         if (!saveGameMonstersWrite(c->location->prev->map->objects, monstersFile)) {
@@ -569,7 +569,7 @@ int gameExitToParentMap() {
  * moves, etc.
  */
 void gameFinishTurn() {
-    Monster *attacker = NULL;    
+    Creature *attacker = NULL;    
 
     while (1) {
         /* adjust food and moves */
@@ -587,7 +587,7 @@ void gameFinishTurn() {
         c->statsView = STATS_PARTY_OVERVIEW;
         statsUpdate();
 
-        /* Monsters cannot spawn, move or attack while the avatar is on the balloon */
+        /* Creatures cannot spawn, move or attack while the avatar is on the balloon */
         /* FIXME: balloonstate is causing problems when mixed with torchduration --
            needs to be separated during gameplay and then put into savegame structure
            when saving */
@@ -596,17 +596,17 @@ void gameFinishTurn() {
             // apply effects from tile avatar is standing on 
             c->party->applyEffect(tileGetEffect(c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS)));
 
-            // Move monsters and see if something is attacking the avatar
+            // Move creatures and see if something is attacking the avatar
             attacker = c->location->map->moveObjects(c->location->coords);        
 
             // Something's attacking!  Start combat!
             if (attacker) {
-                gameMonsterAttack(attacker);
+                gameCreatureAttack(attacker);
                 return;
             }       
 
-            // Spawn new monsters
-            gameCheckRandomMonsters();            
+            // Spawn new creatures
+            gameCheckRandomCreatures();            
             gameCheckBridgeTrolls();
         }
 
@@ -1902,7 +1902,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         eventHandlerPopKeyHandler();
 
         screenMessage("What?\n");
-        gameGetInput(&gameSummonMonster, &monsterNameBuffer);
+        gameGetInput(&gameSummonCreature, &creatureNameBuffer);
         
         return true;
 
@@ -2082,7 +2082,7 @@ bool helpPage3KeyHandler(int key, void *data) {
 bool attackAtCoord(MapCoords coords, int distance, void *data) {
     Object *under;
     MapTile ground;    
-    Monster *m;
+    Creature *m;
 
     /* attack failed: finish up */
     if (coords.x == -1 && coords.y == -1) {        
@@ -2091,7 +2091,7 @@ bool attackAtCoord(MapCoords coords, int distance, void *data) {
         return false;
     }
 
-    m = dynamic_cast<Monster*>(c->location->map->objectAt(coords));
+    m = dynamic_cast<Creature*>(c->location->map->objectAt(coords));
     /* nothing attackable: move on to next tile */
     if ((m == NULL) || 
         /* can't attack horse transport */
@@ -2110,7 +2110,7 @@ bool attackAtCoord(MapCoords coords, int distance, void *data) {
         gameAlertTheGuards(c->location->map);        
 
     /* not good karma to be killing the innocent.  Bad avatar! */    
-    if (m->isGood() || /* attacking a good monster */
+    if (m->isGood() || /* attacking a good creature */
         /* attacking a docile (although possibly evil) person in town */
         ((m->getType() == OBJECT_PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))) 
         c->party->adjustKarma(KA_ATTACKED_GOOD);
@@ -2284,10 +2284,10 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
         Object *obj = NULL;
 
         obj = c->location->map->objectAt(coords);
-        Monster *m = dynamic_cast<Monster*>(obj);
+        Creature *m = dynamic_cast<Creature*>(obj);
                 
         /* FIXME: there's got to be a better way make whirlpools and storms impervious to cannon fire */
-        if (obj && (obj->getType() == OBJECT_MONSTER) && 
+        if (obj && (obj->getType() == OBJECT_CREATURE) && 
             (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID))
             validObject = 1;        
         /* See if it's an object to be destroyed (the avatar cannot destroy the balloon) */
@@ -2312,13 +2312,13 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
                     gameDamageShip(-1, 10);
                 else gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */
             }          
-            /* inanimate objects get destroyed instantly, while monsters get a chance */
+            /* inanimate objects get destroyed instantly, while creatures get a chance */
             else if (obj->getType() == OBJECT_UNKNOWN) {
                 CombatController::attackFlash(coords, HITFLASH_TILE, 5);
                 c->location->map->removeObject(obj);
             }
             
-            /* only the avatar can hurt other monsters with cannon fire */
+            /* only the avatar can hurt other creatures with cannon fire */
             else if (originAvatar) {
                 CombatController::attackFlash(coords, HITFLASH_TILE, 5);
                 if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
@@ -2499,7 +2499,7 @@ MoveReturnValue gameMoveAvatar(Direction dir, int userEvent) {
 
     /* things that happen while not on board the balloon */
     if (c->transportContext & ~TRANSPORT_BALLOON)
-        gameCheckSpecialMonsters(dir);
+        gameCheckSpecialCreatures(dir);
     /* things that happen while on foot or horseback */
     if (c->transportContext & TRANSPORT_FOOT_OR_HORSE) {
         if (gameCheckMoongates())
@@ -3333,7 +3333,7 @@ void gameInitMoons()
  * Handles trolls under bridges
  */
 void gameCheckBridgeTrolls() {
-    Monster *m;
+    Creature *m;
 
     if (!c->location->map->isWorldMap() ||
         c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS) != BRIDGE_TILE ||
@@ -3342,7 +3342,7 @@ void gameCheckBridgeTrolls() {
 
     screenMessage("\nBridge Trolls!\n");
     
-    m = c->location->map->addMonster(monsters.getById(TROLL_ID), c->location->coords);
+    m = c->location->map->addCreature(creatures.getById(TROLL_ID), c->location->coords);
     delete c->combat;
     c->combat = new CombatController(MAP_BRIDGE_CON);    
     c->combat->init(m);
@@ -3375,10 +3375,10 @@ void gameCheckHullIntegrity() {
 
 /**
  * Checks for valid conditions and handles
- * special monsters guarding the entrance to the
+ * special creatures guarding the entrance to the
  * abyss and to the shrine of spirituality
  */
-void gameCheckSpecialMonsters(Direction dir) {
+void gameCheckSpecialCreatures(Direction dir) {
     int i;
     Object *obj;    
     static const struct {
@@ -3403,7 +3403,7 @@ void gameCheckSpecialMonsters(Direction dir) {
         c->location->coords.x == 0xdd &&
         c->location->coords.y == 0xe0) {
         for (i = 0; i < 8; i++) {        
-            obj = c->location->map->addMonster(monsters.getById(PIRATE_ID), MapCoords(pirateInfo[i].x, pirateInfo[i].y));
+            obj = c->location->map->addCreature(creatures.getById(PIRATE_ID), MapCoords(pirateInfo[i].x, pirateInfo[i].y));
             obj->setDirection(pirateInfo[i].dir);            
         }
     }
@@ -3419,7 +3419,7 @@ void gameCheckSpecialMonsters(Direction dir) {
         c->location->coords.y < 217 &&
         c->aura != AURA_HORN) {
         for (i = 0; i < 8; i++)            
-            obj = c->location->map->addMonster(monsters.getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));                    
+            obj = c->location->map->addCreature(creatures.getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));                    
     }
 }
 
@@ -3459,41 +3459,41 @@ int gameCheckMoongates(void) {
 }
 
 /**
- * Checks monster conditions and spawns new monsters if necessary
+ * Checks creature conditions and spawns new creatures if necessary
  */
-void gameCheckRandomMonsters() {
+void gameCheckRandomCreatures() {
     int canSpawnHere = c->location->map->isWorldMap() || c->location->context & CTX_DUNGEON;
     int spawnDivisor = c->location->context & CTX_DUNGEON ? (32 - (c->location->coords.z << 2)) : 32;
 
-    /* remove monsters that are too far away from the avatar */
-    gameMonsterCleanup();
+    /* remove creatures that are too far away from the avatar */
+    gameCreatureCleanup();
     
-    /* If there are too many monsters already,
+    /* If there are too many creatures already,
        or we're not on the world map, don't worry about it! */
     if (!canSpawnHere ||
-        c->location->map->getNumberOfMonsters() >= MAX_MONSTERS_ON_MAP ||
+        c->location->map->getNumberOfCreatures() >= MAX_CREATURES_ON_MAP ||
         xu4_random(spawnDivisor) != 0)
         return;
     
-    gameSpawnMonster(NULL);
+    gameSpawnCreature(NULL);
 }
 
 /**
  * Fixes objects initially loaded by saveGameMonstersRead,
- * and alters movement behavior accordingly to match the monster
+ * and alters movement behavior accordingly to match the creature
  */
-void gameFixupMonsters(Map *map) {
+void gameFixupCreatures(Map *map) {
     ObjectDeque::iterator i;
     Object *obj;
 
     for (i = map->objects.begin(); i != map->objects.end(); i++) {
         obj = *i;
 
-        /* translate unknown objects into monster objects if necessary */
-        if (obj->getType() == OBJECT_UNKNOWN && monsters.getByTile(obj->getTile()) != NULL &&
+        /* translate unknown objects into creature objects if necessary */
+        if (obj->getType() == OBJECT_UNKNOWN && creatures.getByTile(obj->getTile()) != NULL &&
             obj->getMovementBehavior() != MOVEMENT_FIXED) {
-            /* replace the object with a monster object */
-            map->addMonster(monsters.getByTile(obj->getTile()), obj->getCoords());
+            /* replace the object with a creature object */
+            map->addCreature(creatures.getByTile(obj->getTile()), obj->getCoords());
 			obj->setMap(map);
             i = map->removeObject(i);
         }
@@ -3506,9 +3506,9 @@ long gameTimeSinceLastCommand() {
 }
 
 /**
- * Handles what happens when a monster attacks you
+ * Handles what happens when a creature attacks you
  */
-void gameMonsterAttack(Monster *m) {
+void gameCreatureAttack(Creature *m) {
     Object *under;
     MapTile ground;    
     
@@ -3526,19 +3526,19 @@ void gameMonsterAttack(Monster *m) {
 }
 
 /**
- * Performs a ranged attack for the monster at x,y on the world map
+ * Performs a ranged attack for the creature at x,y on the world map
  */
-bool monsterRangeAttack(MapCoords coords, int distance, void *data) {
+bool creatureRangeAttack(MapCoords coords, int distance, void *data) {
     CoordActionInfo* info = (CoordActionInfo*)data;
     MapCoords old = info->prev;
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;       
-    Monster *m;
+    Creature *m;
     MapTile tile;
 
     info->prev = coords;
 
-    /* Find the monster that made the range attack */
-    m = dynamic_cast<Monster*>(c->location->map->objectAt(info->origin));    
+    /* Find the creature that made the range attack */
+    m = dynamic_cast<Creature*>(c->location->map->objectAt(info->origin));    
 
     /* Figure out what the ranged attack should look like */
     tile = (m && (m->worldrangedtile > 0)) ? m->worldrangedtile : HITFLASH_TILE;
@@ -3557,7 +3557,7 @@ bool monsterRangeAttack(MapCoords coords, int distance, void *data) {
         Object *obj = NULL;
 
         obj = c->location->map->objectAt(coords);        
-        m = dynamic_cast<Monster*>(obj);
+        m = dynamic_cast<Creature*>(obj);
         
         /* Does the attack hit the avatar? */
         if (coords == c->location->coords) {
@@ -3573,7 +3573,7 @@ bool monsterRangeAttack(MapCoords coords, int distance, void *data) {
         }
         /* Destroy objects that were hit */
         else if (obj) {
-            if (((obj->getType() == OBJECT_MONSTER) &&
+            if (((obj->getType() == OBJECT_CREATURE) &&
                 (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID)) ||
                 obj->getType() == OBJECT_UNKNOWN) {
                 
@@ -3708,9 +3708,9 @@ void gameDamageShip(int minDamage, int maxDamage) {
 }
 
 /**
- * Removes monsters from the current map if they are too far away from the avatar
+ * Removes creatures from the current map if they are too far away from the avatar
  */
-void gameMonsterCleanup(void) {
+void gameCreatureCleanup(void) {
     ObjectDeque::iterator i;
     Map *map = c->location->map;
     Object *obj;
@@ -3719,8 +3719,8 @@ void gameMonsterCleanup(void) {
         obj = *i;
         MapCoords o_coords = obj->getCoords();
 
-        if ((obj->getType() == OBJECT_MONSTER) && (o_coords.z == c->location->coords.z) &&
-             o_coords.distance(c->location->coords, c->location->map) > MAX_MONSTER_DISTANCE) {
+        if ((obj->getType() == OBJECT_CREATURE) && (o_coords.z == c->location->coords.z) &&
+             o_coords.distance(c->location->coords, c->location->map) > MAX_CREATURE_DISTANCE) {
             
             /* delete the object and remove it from the map */
             i = map->removeObject(i);            
@@ -3770,48 +3770,48 @@ void gameLordBritishCheckLevels(void) {
 }
 
 /**
- * Summons a monster given by 'monsterName'. This can either be given
- * as the monster's name, or the monster's id.  Once it finds the
- * monster to be summoned, it calls gameSpawnMonster() to spawn it.
+ * Summons a creature given by 'creatureName'. This can either be given
+ * as the creature's name, or the creature's id.  Once it finds the
+ * creature to be summoned, it calls gameSpawnCreature() to spawn it.
  */
-int gameSummonMonster(string *monsterName) {    
+int gameSummonCreature(string *creatureName) {    
     unsigned int id;
-    const Monster *m = NULL;
+    const Creature *m = NULL;
 
     eventHandlerPopKeyHandler();
 
-    if (monsterName->empty()) {
+    if (creatureName->empty()) {
         screenPrompt();
         return 0;
     }
     
-    /* find the monster by its id and spawn it */
-    id = atoi(monsterName->c_str());
+    /* find the creature by its id and spawn it */
+    id = atoi(creatureName->c_str());
     if (id > 0)
-        m = monsters.getById(id);
+        m = creatures.getById(id);
 
     if (!m)
-        m = monsters.getByName(*monsterName);
+        m = creatures.getByName(*creatureName);
 
     if (m) {
         screenMessage("\n%s summoned!\n", m->getName().c_str());
         screenPrompt();
-        gameSpawnMonster(m);
+        gameSpawnCreature(m);
         return 1;
     }
     
-    screenMessage("\n%s not found\n", monsterName->c_str());
+    screenMessage("\n%s not found\n", creatureName->c_str());
     screenPrompt();
     return 0;
 }
 
 /**
- * Spawns a monster (m) just offscreen of the avatar.
- * If (m==NULL) then it finds its own monster to spawn and spawns it.
+ * Spawns a creature (m) just offscreen of the avatar.
+ * If (m==NULL) then it finds its own creature to spawn and spawns it.
  */
-void gameSpawnMonster(const Monster *m) {
+void gameSpawnCreature(const Creature *m) {
     int dx, dy, t, i;
-    const Monster *monster;
+    const Creature *creature;
     MapCoords coords = c->location->coords;
 
     if (c->location->context & CTX_DUNGEON) {
@@ -3821,7 +3821,7 @@ void gameSpawnMonster(const Monster *m) {
         for (i = 0; i < 0x20; i++) {
             coords = MapCoords(xu4_random(c->location->map->width), xu4_random(c->location->map->height), c->location->coords.z);
             tile = c->location->map->tileAt(coords, WITH_OBJECTS);
-            if (tileIsMonsterWalkable(tile)) {
+            if (tileIsCreatureWalkable(tile)) {
                 found = 1;
                 break;
             }
@@ -3850,15 +3850,15 @@ void gameSpawnMonster(const Monster *m) {
 
     coords.move(dx, dy, c->location->map);   
     
-    /* figure out what monster to spawn */
+    /* figure out what creature to spawn */
     if (m)
-        monster = m;
+        creature = m;
     else if (c->location->context & CTX_DUNGEON)
-        monster = monsters.randomForDungeon(c->location->coords.z);
+        creature = creatures.randomForDungeon(c->location->coords.z);
     else
-        monster = monsters.randomForTile(c->location->map->tileAt(coords, WITHOUT_OBJECTS));
+        creature = creatures.randomForTile(c->location->map->tileAt(coords, WITHOUT_OBJECTS));
 
-    if (monster) c->location->map->addMonster(monster, coords);    
+    if (creature) c->location->map->addCreature(creature, coords);    
 }
 
 /**
@@ -3866,11 +3866,11 @@ void gameSpawnMonster(const Monster *m) {
  */ 
 void gameAlertTheGuards(Map *map) {
     ObjectDeque::iterator i;    
-    const Monster *m;
+    const Creature *m;
 
     /* switch all the guards to attack mode */
     for (i = map->objects.begin(); i != map->objects.end(); i++) {
-        m = monsters.getByTile((*i)->getTile());
+        m = creatures.getByTile((*i)->getTile());
         if (m && (m->id == GUARD_ID || m->id == LORDBRITISH_ID))
             (*i)->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
     }
@@ -3879,31 +3879,31 @@ void gameAlertTheGuards(Map *map) {
 /**
  * Destroys all creatures on the current map.
  */
-void gameDestroyAllMonsters(void) {
+void gameDestroyAllCreatures(void) {
     int i;
     
     (*spellEffectCallback)('t', -1, SOUND_MAGIC); /* same effect as tremor */
     
     if (c->location->context & CTX_COMBAT) {
-        /* destroy all monsters in combat */
-        for (i = 0; i < AREA_MONSTERS; i++) {            
+        /* destroy all creatures in combat */
+        for (i = 0; i < AREA_CREATURES; i++) {            
             CombatMap *cm = getCombatMap();
-            MonsterVector monsters = cm->getMonsters();
-            MonsterVector::iterator obj;
+            CreatureVector creatures = cm->getCreatures();
+            CreatureVector::iterator obj;
 
-            for (obj = monsters.begin(); obj != monsters.end(); obj++) {
+            for (obj = creatures.begin(); obj != creatures.end(); obj++) {
                 if ((*obj)->id != LORDBRITISH_ID)
                     cm->removeObject(*obj);                
             }            
         }
     }    
     else {
-        /* destroy all monsters on the map */
+        /* destroy all creatures on the map */
         ObjectDeque::iterator current;
         Map *map = c->location->map;
         
         for (current = map->objects.begin(); current != map->objects.end();) {
-            Monster *m = dynamic_cast<Monster*>(*current);
+            Creature *m = dynamic_cast<Creature*>(*current);
 
             if (m) {                
                 /* the skull does not destroy Lord British */

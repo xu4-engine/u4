@@ -24,10 +24,10 @@
 #include "u4.h"
 #include "utils.h"
 
-DestroyAllMonstersCallback destroyAllMonstersCallback;
+DestroyAllCreaturesCallback destroyAllCreaturesCallback;
 
-void itemSetDestroyAllMonstersCallback(DestroyAllMonstersCallback callback) {
-    destroyAllMonstersCallback = callback;
+void itemSetDestroyAllCreaturesCallback(DestroyAllCreaturesCallback callback) {
+    destroyAllCreaturesCallback = callback;
 }
 
 int needStoneNames = 0;
@@ -236,8 +236,8 @@ void useSkull(void *item) {
     else {
         screenMessage("\n\nYou hold the evil Skull of Mondain the Wizard aloft....\n");
     
-        /* destroy all monsters */    
-        (*destroyAllMonstersCallback)();
+        /* destroy all creatures */    
+        (*destroyAllCreaturesCallback)();
     
         /* we don't lose the skull until we toss it into the abyss */
         //c->saveGame->items = (c->saveGame->items & ~ITEM_SKULL);

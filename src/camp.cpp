@@ -17,7 +17,7 @@
 #include "location.h"
 #include "map.h"
 #include "mapmgr.h"
-#include "monster.h"
+#include "creature.h"
 #include "music.h"
 #include "names.h"
 #include "object.h"
@@ -62,19 +62,19 @@ void campTimer(void *data) {
 
     /* Is the party ambushed during their rest? */
     if (settings.campingAlwaysCombat || (xu4_random(8) == 0)) {        
-        const Monster *m = monsters.randomAmbushing();
+        const Creature *m = creatures.randomAmbushing();
                 
         musicPlay();        
         screenMessage("Ambushed!\n");
         
-        /* create an ambushing monster (so it leaves a chest) */
-        c->combat->setMonster(c->location->prev->map->addMonster(m, c->location->prev->coords));
+        /* create an ambushing creature (so it leaves a chest) */
+        c->combat->setCreature(c->location->prev->map->addCreature(m, c->location->prev->coords));
         
-        /* fill the monster table with monsters and place them */
-        c->combat->fillMonsterTable(m);
-        c->combat->placeMonsters();
+        /* fill the creature table with creatures and place them */
+        c->combat->fillCreatureTable(m);
+        c->combat->placeCreatures();
 
-        /* monsters go first! */
+        /* creatures go first! */
         c->combat->finishTurn();        
     }    
     else campEnd();
@@ -161,18 +161,18 @@ void innTimer(void *data) {
     /* Is there a special encounter during your stay? */
     if (settings.innAlwaysCombat || (xu4_random(8) == 0)) {
         MapId mapid;
-        Monster *monster;
+        Creature *creature;
         bool showMessage = true;
             
         /* Rats seem much more rare than meeting rogues in the streets */
         if (xu4_random(4) == 0) {
             /* Rats! */
             mapid = MAP_BRICK_CON;
-            monster = c->location->map->addMonster(monsters.getById(RAT_ID), c->location->coords);
+            creature = c->location->map->addCreature(creatures.getById(RAT_ID), c->location->coords);
         } else {
             /* While strolling down the street, attacked by rogues! */
             mapid = MAP_INN_CON;
-            monster = c->location->map->addMonster(monsters.getById(ROGUE_ID), c->location->coords);
+            creature = c->location->map->addCreature(creatures.getById(ROGUE_ID), c->location->coords);
             screenMessage("\nIn the middle of the night while out on a stroll...\n\n");
             showMessage = false;
         }
@@ -180,7 +180,7 @@ void innTimer(void *data) {
         delete c->combat;
         c->combat = new CombatController(mapid);
         c->combat->setInn(true);
-        c->combat->init(monster);
+        c->combat->init(creature);
         c->combat->showCombatMessage(showMessage);  
         c->combat->begin();
     }
@@ -233,7 +233,7 @@ void innTimer(void *data) {
             Isaac->npcType = NPC_TALKER;            
             Isaac->questionType = QUESTION_NORMAL;
             Isaac->start = MapCoords(27, xu4_random(3) + 10, 0);
-            Isaac->setTile(monsters.getById(GHOST_ID)->getTile());
+            Isaac->setTile(creatures.getById(GHOST_ID)->getTile());
             Isaac->setPrevTile(Isaac->getTile() + 1);            
             Isaac->turnAwayProb = 0;
             

@@ -81,7 +81,7 @@ struct _TileRule;
 #define MASK_SWIMABLE           0x0001
 #define MASK_SAILABLE           0x0002
 #define MASK_UNFLYABLE          0x0004
-#define MASK_MONSTER_UNWALKABLE 0x0008
+#define MASK_CREATURE_UNWALKABLE 0x0008
 
 typedef enum {
     FAST,
@@ -133,7 +133,7 @@ bool tileCanAttackOver(MapTile tile);
 bool tileCanLandBalloon(MapTile tile);
 bool tileIsReplacement(MapTile tile);
 bool tileIsWalkable(MapTile tile);
-bool tileIsMonsterWalkable(MapTile tile);
+bool tileIsCreatureWalkable(MapTile tile);
 bool tileIsDungeonWalkable(MapTile tile);
 bool tileIsSwimable(MapTile tile);
 bool tileIsSailable(MapTile tile);

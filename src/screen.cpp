@@ -167,7 +167,7 @@ void screenUpdate(int showmap, int blackout) {
                     type = dungeonViewTilesToGraphic(tiles);
                     if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE)) {
                         /* FIXME: this isn't very clean, but I guess it works */
-                        /* draw monster objects using the base tileset */
+                        /* draw creature objects using the base tileset */
                         if ((tiles->size() > 1) && (tiles->front() >= 128))
                             screenDungeonDrawTile(y, tiles->front());
                         else screenDungeonDrawTile(y, c->location->tileset->tiles[tiles->front()].displayTile);
@@ -197,7 +197,7 @@ void screenUpdate(int showmap, int blackout) {
                             screenShowTile(base, AVATAR_TILE, 0, x, y);
                         else {
                             /* FIXME: this isn't very clean, but I guess it works */
-                            /* draw monster objects using the base tileset */
+                            /* draw creature objects using the base tileset */
                             if ((tiles->size() > 1) && (tiles->front() >= 128))
                                 screenShowTile(base, tiles->front(), 0, x, y);
                             else screenShowTile(base, c->location->tileset->tiles[tiles->front()].displayTile, 0, x, y);

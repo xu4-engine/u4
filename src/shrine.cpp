@@ -17,7 +17,7 @@
 #include "game.h"
 #include "location.h"
 #include "mapmgr.h"
-#include "monster.h"
+#include "creature.h"
 #include "music.h"
 #include "names.h"
 #include "player.h"
@@ -117,7 +117,7 @@ void Shrine::enter() {
         screenMessage("You approach\nthe ancient\nshrine...\n");
         gameUpdateScreen(); eventHandlerSleep(1000);
         
-        obj = addMonster(monsters.getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
+        obj = addCreature(creatures.getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
         obj->setTile(AVATAR_TILE);
 
         gameUpdateScreen(); eventHandlerSleep(400);        
@@ -126,7 +126,7 @@ void Shrine::enter() {
         c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(400);
         annotations->remove(Coords(5, 6, c->location->coords.z), GRASS_TILE);
         c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); eventHandlerSleep(800);
-        obj->setTile(monsters.getById(BEGGAR_ID)->getTile()); gameUpdateScreen();
+        obj->setTile(creatures.getById(BEGGAR_ID)->getTile()); gameUpdateScreen();
         
         screenMessage("\n...and kneel before the altar.\n");        
         eventHandlerSleep(1000);

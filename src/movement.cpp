@@ -13,7 +13,7 @@
 #include "dungeon.h"
 #include "location.h"
 #include "mapmgr.h"
-#include "monster.h"
+#include "creature.h"
 #include "names.h"
 #include "object.h"
 #include "player.h"
@@ -101,10 +101,10 @@ MoveReturnValue moveAvatar(Direction dir, int userEvent) {
     /* move succeeded */
     c->location->coords = newCoords;    
 
-    /* if the avatar moved onto a monster (whirlpool, twister), then do the monster's special effect */
+    /* if the avatar moved onto a creature (whirlpool, twister), then do the creature's special effect */
     destObj = c->location->map->objectAt(newCoords);
-    if (destObj && destObj->getType() == OBJECT_MONSTER) {
-        Monster *m = dynamic_cast<Monster*>(destObj);
+    if (destObj && destObj->getType() == OBJECT_CREATURE) {
+        Creature *m = dynamic_cast<Creature*>(destObj);
         m->specialEffect();
     }
 
@@ -166,7 +166,7 @@ MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent) {
  * tile direction changed, or object simply cannot move
  * (fixed objects, nowhere to go, etc.)
  */
-int moveObject(Map *map, Monster *obj, MapCoords avatar) {
+int moveObject(Map *map, Creature *obj, MapCoords avatar) {
     int dirmask = DIR_NONE;
     Direction dir;
     MapCoords new_coords = obj->getCoords();    
@@ -209,7 +209,7 @@ int moveObject(Map *map, Monster *obj, MapCoords avatar) {
         return 0;
 
     /* figure out what method to use to tell if the object is getting slowed */   
-    if (obj->getType() == OBJECT_MONSTER)
+    if (obj->getType() == OBJECT_CREATURE)
         slowedType = obj->slowedType;
     
     /* is the object slowed by terrain or by wind direction? */
@@ -248,7 +248,7 @@ int moveObject(Map *map, Monster *obj, MapCoords avatar) {
 /**
  * Moves an object in combat according to its chosen combat action
  */
-int moveCombatObject(int act, Map *map, Monster *obj, MapCoords target) {
+int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
     MapCoords new_coords = obj->getCoords();
     int valid_dirs = map->getValidMoves(new_coords, obj->getTile());
     Direction dir;
@@ -285,7 +285,7 @@ int moveCombatObject(int act, Map *map, Monster *obj, MapCoords target) {
         return 0;
 
     /* figure out what method to use to tell if the object is getting slowed */   
-    if (obj->getType() == OBJECT_MONSTER)
+    if (obj->getType() == OBJECT_CREATURE)
         slowedType = obj->slowedType;
 
     /* is the object slowed by terrain or by wind direction? */
@@ -333,8 +333,8 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
         if (sameExit) {
             /* if in a win-or-lose battle and not camping, then it can be bad to flee while healthy */
             if (ct->isWinOrLose() && !ct->isCamping()) {
-                /* A fully-healed party member fled from an evil monster :( */
-                if (ct->getMonster() && ct->getMonster()->isEvil() && 
+                /* A fully-healed party member fled from an evil creature :( */
+                if (ct->getCreature() && ct->getCreature()->isEvil() && 
                     c->party->member(member)->getHp() == c->party->member(member)->getMaxHp())
                     c->party->adjustKarma(KA_HEALTHY_FLED_EVIL);
             }
@@ -364,9 +364,9 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
             Trigger *triggers = dungeon->currentRoom->triggers;            
 
             for (i = 0; i < 4; i++) {
-                /*const Monster *m = monsters.getByTile(triggers[i].tile);*/
+                /*const Creature *m = creatures.getByTile(triggers[i].tile);*/
 
-                /* FIXME: when a monster is created by a trigger, it can be created over and over and over...
+                /* FIXME: when a creature is created by a trigger, it can be created over and over and over...
                    how do we fix this? */
                 MapCoords trigger(triggers[i].x, triggers[i].y, c->location->coords.z);
 
@@ -383,11 +383,11 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
 
                     /* change the tiles! */
                     if (change1.x || change1.y) {
-                        /*if (m) combatAddMonster(m, triggers[i].change_x1, triggers[i].change_y1, c->location->coords.z);
+                        /*if (m) combatAddCreature(m, triggers[i].change_x1, triggers[i].change_y1, c->location->coords.z);
                         else*/ c->location->map->annotations->add(change1, triggers[i].tile);
                     }
                     if (change2.x || change2.y) {
-                        /*if (m) combatAddMonster(m, triggers[i].change_x2, triggers[i].change_y2, c->location->coords.z);
+                        /*if (m) combatAddCreature(m, triggers[i].change_x2, triggers[i].change_y2, c->location->coords.z);
                         else*/ c->location->map->annotations->add(change2, triggers[i].tile);
                     }
                 }

@@ -13,7 +13,7 @@
 #include "combat.h"
 #include "game.h"
 #include "map.h"
-#include "monster.h"
+#include "creature.h"
 #include "object.h"
 #include "savegame.h"
 #include "tileset.h"
@@ -67,7 +67,7 @@ MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {
     AnnotationList a = location->map->annotations->allAt(coords);    
     AnnotationList::iterator i;
     const Object *obj = location->map->objectAt(coords);
-    const Monster *m = dynamic_cast<const Monster *>(obj);
+    const Creature *m = dynamic_cast<const Creature *>(obj);
     *focus = 0;
 
     bool avatar = location->coords == coords;
@@ -91,12 +91,12 @@ MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {
     if ((location->map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && avatar)
         tiles->push_back(c->saveGame->transport);
 
-    /* then camouflaged monsters that have a disguise */
-    if (obj && (obj->getType() == OBJECT_MONSTER) && !obj->isVisible() && (m->camouflageTile > 0)) {
+    /* then camouflaged creatures that have a disguise */
+    if (obj && (obj->getType() == OBJECT_CREATURE) && !obj->isVisible() && (m->camouflageTile > 0)) {
         *focus = *focus || obj->hasFocus();
         tiles->push_back(m->camouflageTile);
     }
-    /* then visible monsters */
+    /* then visible creatures */
     else if (obj && (obj->getType() != OBJECT_UNKNOWN) && obj->isVisible()) {
         *focus = *focus || obj->hasFocus();
         tiles->push_back(obj->getTile());

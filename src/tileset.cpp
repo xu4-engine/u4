@@ -236,7 +236,7 @@ int tilesetLoadRuleProperties(TileRule *rule, xmlNodePtr node) {
         { "swimable", MASK_SWIMABLE },
         { "sailable", MASK_SAILABLE },       
         { "unflyable", MASK_UNFLYABLE },       
-        { "monsterunwalkable", MASK_MONSTER_UNWALKABLE }        
+        { "creatureunwalkable", MASK_CREATURE_UNWALKABLE }        
     };
     static const char *speedEnumStrings[] = { "fast", "slow", "vslow", "vvslow", NULL };
     static const char *effectsEnumStrings[] = { "none", "fire", "sleep", "poison", "poisonField", "electricity", "lava", NULL };

@@ -222,11 +222,11 @@ int mapLoadCon(Map *map) {
     if (map->type != MAPTYPE_SHRINE) {
         CombatMap *cm = getCombatMap(map);
 
-        for (i = 0; i < AREA_MONSTERS; i++)
-            cm->monster_start[i] = MapCoords(u4fgetc(con));        
+        for (i = 0; i < AREA_CREATURES; i++)
+            cm->creature_start[i] = MapCoords(u4fgetc(con));        
 
-        for (i = 0; i < AREA_MONSTERS; i++)
-            cm->monster_start[i].y = u4fgetc(con);
+        for (i = 0; i < AREA_CREATURES; i++)
+            cm->creature_start[i].y = u4fgetc(con);
 
         for (i = 0; i < AREA_PLAYERS; i++)
             cm->player_start[i] = MapCoords(u4fgetc(con));
@@ -293,9 +293,9 @@ int mapLoadDng(Dungeon *dungeon) {
             dungeon->rooms[i].triggers[j].change_y2 = tmp & 0x0F;
         }
 
-        u4fread(dungeon->rooms[i].monster_tiles, sizeof(dungeon->rooms[i].monster_tiles), 1, dng);
-        u4fread(dungeon->rooms[i].monster_start_x, sizeof(dungeon->rooms[i].monster_start_x), 1, dng);
-        u4fread(dungeon->rooms[i].monster_start_y, sizeof(dungeon->rooms[i].monster_start_y), 1, dng);
+        u4fread(dungeon->rooms[i].creature_tiles, sizeof(dungeon->rooms[i].creature_tiles), 1, dng);
+        u4fread(dungeon->rooms[i].creature_start_x, sizeof(dungeon->rooms[i].creature_start_x), 1, dng);
+        u4fread(dungeon->rooms[i].creature_start_y, sizeof(dungeon->rooms[i].creature_start_y), 1, dng);
         u4fread(dungeon->rooms[i].party_north_start_x, sizeof(dungeon->rooms[i].party_north_start_x), 1, dng);
         u4fread(dungeon->rooms[i].party_north_start_y, sizeof(dungeon->rooms[i].party_north_start_y), 1, dng);
         u4fread(dungeon->rooms[i].party_east_start_x, sizeof(dungeon->rooms[i].party_east_start_x), 1, dng);

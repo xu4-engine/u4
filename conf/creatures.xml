@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<!DOCTYPE creatures SYSTEM "dtd/creatures.dtd">
+<!-- $Id$ -->
+<creatures>
+    <creature id="0" name="Horse" tile="20" basehp="255" exp="10" good="true" wontattack="true"/>
+    <creature id="1" name="Horse" tile="21" basehp="255" exp="10" good="true" wontattack="true"/>
+
+    <!-- Classes -->
+    <creature id="2" name="Mage" tile="32" frames="2" basehp="112" exp="8" ranged="true" rangedhittile="magic" rangedmisstile="magic" good="true" wontattack="true"/>
+    <creature id="3" name="Bard" tile="34" frames="2" basehp="48" exp="7" good="true" wontattack="true"/>
+    <creature id="4" name="Fighter" tile="36" frames="2" basehp="96" exp="7" good="true" wontattack="true"/>
+    <creature id="5" name="Druid" tile="38" frames="2" basehp="64" exp="10" good="true" wontattack="true"/>
+    <creature id="6" name="Tinker" tile="40" frames="2" basehp="96" exp="9" good="true" wontattack="true"/>
+    <creature id="7" name="Paladin" tile="42" frames="2" basehp="128" exp="4" good="true" wontattack="true"/>
+    <creature id="8" name="Ranger" tile="44" frames="2" basehp="144" exp="3" good="true" wontattack="true"/>
+    <creature id="9" name="Shepherd" tile="46" frames="2" basehp="48" exp="9" good="true" wontattack="true"/>
+	
+    <!-- Misc town creatures -->
+    <creature id="10" name="Guard" tile="80" frames="2" basehp="128" exp="13" good="true" wontattack="true"/>
+    <creature id="11" name="Merchant" tile="82" frames="2" basehp="48" exp="9" good="true" wontattack="true"/>
+    <creature id="12" name="Bard" tile="84" frames="2" basehp="48" exp="9" good="true" wontattack="true"/>
+    <creature id="13" name="Jester" tile="86" frames="2" basehp="48" exp="9" good="true" wontattack="true"/>
+    <creature id="14" name="Beggar" tile="88" frames="2" basehp="32" exp="13" good="true" wontattack="true"/>
+    <creature id="15" name="Child" tile="90" frames="2" basehp="32" exp="10" good="true" wontattack="true"/>
+    <creature id="16" name="Bull" tile="92" frames="2" basehp="128" exp="11" good="true"/>
+    <creature id="17" name="Lord British" tile="94" frames="2" basehp="255" exp="16" ranged="true" rangedhittile="magic" rangedmisstile="magic" good="true" wontattack="true"/>
+
+    <!-- Water creatures -->
+    <creature id="18" encounterSize="1" name="Pirate Ship" tile="128" frames="4" exp="16" sails="true"/>
+    <creature id="19" encounterSize="12" name="Nixie" tile="132" frames="2" basehp="64" exp="5" ranged="true" swims="true" leader="22"/>
+    <creature id="20" encounterSize="4" name="Giant Squid" tile="134" frames="2" basehp="96" exp="7" ranged="true" rangedhittile="lightning" rangedmisstile="lightning" poisons="true" swims="true" leader="21"/>
+    <creature id="21" encounterSize="4" name="Sea Serpent" tile="136" frames="2" basehp="128" exp="9" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" swims="true" leader="20"/>
+    <creature id="22" encounterSize="8" name="Seahorse" tile="138" frames="2" basehp="128" exp="9" movement="wanders" ranged="true" rangedhittile="magic" rangedmisstile="magic" swims="true" leader="19"/>
+    <creature id="23" encounterSize="1" name="Whirlpool" tile="140" frames="2" basehp="255" exp="16" swims="true" movement="wanders" cantattack="true" canMoveOntoCreatures="true" canMoveOntoAvatar="true" canMoveOn="true" wontattack="true"/>
+    <creature id="24" encounterSize="1" name="Storm" tile="142" frames="2" basehp="255" exp="16" flies="true" movement="wanders" cantattack="true" canMoveOntoCreatures="true" canMoveOntoAvatar="true" canMoveOn="true" wontattack="true"/>
+
+    <!-- Main creatures -->
+    <creature id="25" encounterSize="12" name="Rat" tile="144" frames="4" basehp="48" exp="4" movement="wanders" good="true" leader="38"/>
+    <creature id="26" encounterSize="12" name="Bat" tile="148" frames="4" basehp="48" exp="4" flies="true" movement="wanders" good="true" leader="47"/>
+    <creature id="27" encounterSize="6" name="Giant Spider" tile="152" frames="4" basehp="64" exp="5" ranged="true" rangedhittile="poison" rangedmisstile="poison" spawntile="3" movement="wanders" good="true" poisons="true" leader="25"/>
+    <creature id="28" encounterSize="4" name="Ghost" tile="156" frames="4" basehp="80" exp="6" undead="true" resists="sleep" incorporeal="true" leader="46"/>
+    <creature id="29" encounterSize="15" name="Slime" tile="160" frames="4" ambushes="true" basehp="48" exp="4" divides="true"/>
+    <creature id="30" encounterSize="6" name="Troll" tile="164" frames="4" ambushes="true" basehp="96" exp="7" ranged="true" leader="41"/>
+    <creature id="31" encounterSize="15" name="Gremlin" tile="168" frames="4" basehp="48" exp="4" steals="food"/>
+    <creature id="32" encounterSize="1" name="Mimic" tile="172" frames="4" basehp="192" exp="13" ranged="true" rangedhittile="poison" rangedmisstile="poison" movement="none" camouflage="true" camouflageTile="60"/>
+    <creature id="33" encounterSize="1" name="Reaper" tile="176" frames="4" basehp="255" exp="16" ranged="true" rangedhittile="random" rangedmisstile="random" movement="none" casts="sleep"/>
+    <creature id="34" encounterSize="15" name="Insect Swarm" tile="180" frames="4" ambushes="true" basehp="48" exp="4" good="true" movement="wanders" leader="25"/>
+    <creature id="35" encounterSize="4" name="Gazer" tile="184" frames="4" basehp="240" exp="16" ranged="true" rangedhittile="sleep" rangedmisstile="sleep" leader="36"/>
+    <creature id="36" encounterSize="8" name="Phantom" tile="188" frames="4" basehp="128" exp="9" undead="true" resists="sleep" leader="28"/>
+    <creature id="37" encounterSize="10" name="Orc" tile="192" frames="4" ambushes="true" basehp="80" exp="6" leader="30"/>
+    <creature id="38" encounterSize="12" name="Skeleton" tile="196" frames="4" ambushes="true" basehp="48" exp="4" undead="true" resists="sleep" leader="45"/>
+    <creature id="39" encounterSize="10" name="Rogue" tile="200" frames="4" ambushes="true" basehp="80" exp="6" steals="gold"/>
+    <creature id="40" encounterSize="12" name="Python" tile="204" frames="4" basehp="48" ambushes="true" exp="4" ranged="true" rangedhittile="poison" rangedmisstile="poison" poisons="true" good="true" movement="wanders" leader="25"/>
+    <creature id="41" encounterSize="6" name="Ettin" tile="208" frames="4" basehp="112" exp="8" ranged="true" rangedhittile="boulder" rangedmisstile="boulder" leader="49"/>
+    <creature id="42" encounterSize="8" name="Headless" tile="212" frames="4" basehp="64" exp="5" leader="35"/>
+    <creature id="43" encounterSize="6" name="Cyclops" tile="216" frames="4" basehp="128" exp="9" ranged="true" rangedhittile="boulder" rangedmisstile="boulder" leader="48"/>
+    <creature id="44" encounterSize="12" name="Wisp" tile="220" frames="4" ambushes="true" basehp="64" exp="5" teleports="true" leader="36" nochest="true"/>
+    <creature id="45" encounterSize="6" name="Mage" tile="224" frames="4" basehp="176" exp="12" ranged="true" rangedhittile="magic" rangedmisstile="magic" leader="49"/>
+    <creature id="46" encounterSize="4" name="Liche" tile="228" frames="4" basehp="192" exp="13" ranged="true" rangedhittile="magic" rangedmisstile="magic" undead="true" resists="sleep" leader="49"/>
+    <creature id="47" encounterSize="8" name="Lava Lizard" tile="232" frames="4" basehp="96" exp="7" ranged="true" worldrangedtile="fireblast" rangedhittile="lava" rangedmisstile="lava" resists="fire" leader="50" leavestile="true"/>
+    <creature id="48" encounterSize="4" name="Zorn" tile="236" frames="4" basehp="240" exp="16" casts="negate" incorporeal="true" leader="35"/>
+    <creature id="49" encounterSize="6" name="Daemon" tile="240" frames="4" basehp="112" exp="8" ranged="true" rangedhittile="magic" rangedmisstile="magic" flies="true" resists="fire" leader="52"/>
+    <creature id="50" encounterSize="4" name="Hydra" tile="244" frames="4" basehp="208" exp="14" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" resists="fire" leader="51"/>
+    <creature id="51" encounterSize="4" name="Dragon" tile="248" frames="4" basehp="224" exp="15" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" flies="true" resists="fire" leader="52"/>
+    <creature id="52" encounterSize="1" name="Balron" tile="252" frames="4" basehp="255" exp="16" ranged="true" rangedhittile="random" rangedmisstile="random" flies="true" casts="sleep" resists="fire"/>
+
+    <!-- Non-standard creatures -->
+    <creature id="53" name="Phantom" tile="61" frames="1" basehp="48" exp="14" good="true"/> <!-- Ankh -->
+    <creature id="54" name="Phantom" tile="75" frames="1" basehp="48" exp="4" good="true"/> <!-- Campfire -->
+    <creature id="55" name="Villager" tile="56" frames="1" basehp="32" exp="13" good="true"/> <!-- Wounded Villager -->
+    <creature id="56" name="Adventurer" tile="31" frames="1" basehp="160" exp="11" good="true"/> <!-- Avatar tile -->
+</creatures>

@@ -25,7 +25,7 @@ class AnnotationMgr;
 class Map;
 class Object;
 class Person;
-class Monster;
+class Creature;
 struct _Portal;
 struct _Dungeon;
 
@@ -97,15 +97,15 @@ public:
     MapTile getTileFromData(Coords coords);
     MapTile tileAt(Coords coords, int withObjects);
     bool isWorldMap();
-    class Monster *addMonster(const class Monster *m, Coords coords);
+    class Creature *addCreature(const class Creature *m, Coords coords);
     class Object *addObject(MapTile tile, MapTile prevTile, Coords coords);
     void removeObject(const class Object *rem);
     ObjectDeque::iterator removeObject(ObjectDeque::iterator rem);    
     void clearObjects();
-    class Monster *moveObjects(MapCoords avatar);
+    class Creature *moveObjects(MapCoords avatar);
     void animateObjects();
     void resetObjectAnimations();
-    int getNumberOfMonsters();
+    int getNumberOfCreatures();
     int getValidMoves(MapCoords from, MapTile transport);
     bool move(Object *obj, Direction d);
 

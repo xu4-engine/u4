@@ -11,7 +11,7 @@
 #include "context.h"
 #include "error.h"
 #include "location.h"
-#include "monster.h"
+#include "creature.h"
 #include "tileset.h"
 #include "xml.h"
 
@@ -123,8 +123,8 @@ bool tileIsWalkable(MapTile tile) {
     return tilesetGetCurrent()->tiles[tile].rule->walkonDirs > 0;
 }
 
-bool tileIsMonsterWalkable(MapTile tile) {
-    return tileCanWalkOn(tile, DIR_ADVANCE) && !tileTestMovementBit(tile, MASK_MONSTER_UNWALKABLE);
+bool tileIsCreatureWalkable(MapTile tile) {
+    return tileCanWalkOn(tile, DIR_ADVANCE) && !tileTestMovementBit(tile, MASK_CREATURE_UNWALKABLE);
 }
 
 bool tileIsSwimable(MapTile tile) {

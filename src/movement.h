@@ -37,8 +37,8 @@ typedef MoveReturnValue (*MoveCallback)(Direction, int);
 
 MoveReturnValue moveAvatar(Direction dir, int userEvent);
 MoveReturnValue moveAvatarInDungeon(Direction dir, int userEvent);
-int moveObject(class Map *map, class Monster *obj, MapCoords avatar);
-int moveCombatObject(int action, class Map *map, class Monster *obj, MapCoords target);
+int moveObject(class Map *map, class Creature *obj, MapCoords avatar);
+int moveCombatObject(int action, class Map *map, class Creature *obj, MapCoords target);
 MoveReturnValue movePartyMember(Direction dir, int userEvent);
 int slowedByTile(MapTile tile);
 int slowedByWind(int direction);

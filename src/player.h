@@ -8,7 +8,7 @@
 #include <list>
 #include <string>
 #include <vector>
-#include "monster.h"
+#include "creature.h"
 #include "savegame.h"
 #include "tile.h"
 #include "types.h"
@@ -70,11 +70,11 @@ typedef enum {
 /**
  * PartyMember class
  */ 
-class PartyMember : public Monster {
+class PartyMember : public Creature {
 public:
     PartyMember(class Party *p, SaveGamePlayerRecord *pr);
 
-    virtual bool attackHit(Monster *m);
+    virtual bool attackHit(Creature *m);
     ClassType getClass();
     int getDamage();
     int getHp();
@@ -97,7 +97,7 @@ public:
     void adjustMp(int pts);
     void advanceLevel();
     virtual bool applyDamage(int damage);
-    virtual bool dealDamage(Monster *m, int damage);
+    virtual bool dealDamage(Creature *m, int damage);
     void applyEffect(TileEffect effect);
     void awardXp(int xp);
     bool heal(HealType type);    

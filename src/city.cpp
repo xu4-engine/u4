@@ -9,7 +9,7 @@
 #include "city.h"
 
 #include "context.h"
-#include "monster.h"
+#include "creature.h"
 #include "object.h"
 #include "person.h"
 #include "player.h"

@@ -10,11 +10,11 @@
 
 #include "annotation.h"
 #include "context.h"
+#include "creature.h"
 #include "debug.h"
 #include "direction.h"
 #include "location.h"
 #include "mapmgr.h"
-#include "monster.h"
 #include "movement.h"
 #include "object.h"
 #include "person.h"
@@ -332,31 +332,31 @@ bool Map::isWorldMap() {
 }
 
 /**
- * Adds a monster object to the given map
+ * Adds a creature object to the given map
  */
-Monster *Map::addMonster(const Monster *monster, Coords coords) {
-    Monster *m = new Monster;
+Creature *Map::addCreature(const Creature *creature, Coords coords) {
+    Creature *m = new Creature;
     
-    /* make a copy of the monster before placing it */
-    *m = *monster;
+    /* make a copy of the creature before placing it */
+    *m = *creature;
 
     m->setInitialHp();
     m->setStatus(STAT_GOOD);    
     m->setCoords(coords);
 	m->setMap(this);
     
-    /* initialize the monster before placing it */
+    /* initialize the creature before placing it */
     if (m->wanders())
         m->setMovementBehavior(MOVEMENT_WANDER);
     else if (m->isStationary())
         m->setMovementBehavior(MOVEMENT_FIXED);
     else m->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
 
-    /* hide camouflaged monsters from view during combat */
+    /* hide camouflaged creatures from view during combat */
     if (m->camouflages() && (type == MAPTYPE_COMBAT))
         m->setVisible(false);
     
-    /* place the monster on the map */
+    /* place the creature on the map */
     objects.push_back(m);
     return m;
 }
@@ -408,21 +408,21 @@ ObjectDeque::iterator Map::removeObject(ObjectDeque::iterator rem) {
 
 /**
  * Moves all of the objects on the given map.
- * Returns an attacking object if there is a monster attacking.
- * Also performs special monster actions and monster effects.
+ * Returns an attacking object if there is a creature attacking.
+ * Also performs special creature actions and creature effects.
  */
-Monster *Map::moveObjects(MapCoords avatar) {        
+Creature *Map::moveObjects(MapCoords avatar) {        
     ObjectDeque::iterator i;
-    Monster *attacker = NULL;
+    Creature *attacker = NULL;
 
     for (i = objects.begin(); i != objects.end(); i++) {
-        Monster *m = dynamic_cast<Monster*>(*i);
+        Creature *m = dynamic_cast<Creature*>(*i);
 
         if (m) {
-            /* check if the object is an attacking monster and not
+            /* check if the object is an attacking creature and not
                just a normal, docile person in town or an inanimate object */
             if ((m->getType() == OBJECT_PERSON && m->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR) ||
-                (m->getType() == OBJECT_MONSTER && m->willAttack())) {
+                (m->getType() == OBJECT_CREATURE && m->willAttack())) {
                 MapCoords o_coords = m->getCoords();
             
                 /* don't move objects that aren't on the same level as us */
@@ -469,8 +469,8 @@ void Map::resetObjectAnimations() {
     for (i = objects.begin(); i != objects.end(); i++) {
         Object *obj = *i;
         
-        if (obj->getType() == OBJECT_MONSTER)
-            obj->setPrevTile(monsters.getByTile(obj->getTile())->getTile());        
+        if (obj->getType() == OBJECT_CREATURE)
+            obj->setPrevTile(creatures.getByTile(obj->getTile())->getTile());        
     }
 }
 
@@ -482,16 +482,16 @@ void Map::clearObjects() {
 }
 
 /**
- * Returns the number of monsters on the given map
+ * Returns the number of creatures on the given map
  */
-int Map::getNumberOfMonsters() {
+int Map::getNumberOfCreatures() {
     ObjectDeque::const_iterator i;
     int n = 0;
 
     for (i = objects.begin(); i != objects.end(); i++) {
         Object *obj = *i;
 
-        if (obj->getType() == OBJECT_MONSTER)
+        if (obj->getType() == OBJECT_CREATURE)
             n++;
     }
 
@@ -506,8 +506,8 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
     Direction d;
     MapTile tile, prev_tile;
     Object *obj;    
-    const Monster *m, *to_m;
-    int ontoAvatar, ontoMonster;    
+    const Creature *m, *to_m;
+    int ontoAvatar, ontoCreature;    
     MapCoords coords = from;
     bool isAvatar = (c->location->coords == coords);
 
@@ -515,7 +515,7 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
     for (d = DIR_WEST; d <= DIR_SOUTH; d = (Direction)(d+1)) {
         coords = from;
         ontoAvatar = 0;
-        ontoMonster = 0;
+        ontoCreature = 0;
 
         // Move the coordinates in the current direction and test it
         coords.move(d, this);
@@ -532,33 +532,33 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
         if ((flags & SHOW_AVATAR) && (coords == c->location->coords))
             ontoAvatar = 1;
         
-        // see if it's trying to move onto a person or monster
+        // see if it's trying to move onto a person or creature
         else if (obj && (obj->getType() != OBJECT_UNKNOWN))                 
-            ontoMonster = 1;
+            ontoCreature = 1;
             
         // get the destination tile
         if (ontoAvatar)
             tile = (MapTile)c->saveGame->transport;
-        else if (ontoMonster)
+        else if (ontoCreature)
             tile = obj->getTile();
         else 
             tile = tileAt(coords, WITH_OBJECTS);
 
         prev_tile = tileAt(from, WITHOUT_OBJECTS);
 
-        // get the monster object, if it exists (the one that's moving)
-        m = monsters.getByTile(transport);        
-        // get the other monster object, if it exists (the one that's being moved onto)        
-        to_m = dynamic_cast<Monster*>(obj);
+        // get the creature object, if it exists (the one that's moving)
+        m = creatures.getByTile(transport);        
+        // get the other creature object, if it exists (the one that's being moved onto)        
+        to_m = dynamic_cast<Creature*>(obj);
 
-        // move on if unable to move onto the avatar or another monster
-        if (m && !isAvatar) { // some monsters/persons have the same tile as the avatar, so we have to adjust
+        // move on if unable to move onto the avatar or another creature
+        if (m && !isAvatar) { // some creatures/persons have the same tile as the avatar, so we have to adjust
             if ((ontoAvatar && !m->canMoveOntoPlayer()) ||
-                (ontoMonster && !m->canMoveOntoMonsters() && !to_m->canMoveOnto()))
+                (ontoCreature && !m->canMoveOntoCreatures() && !to_m->canMoveOnto()))
                 continue;
         }
         // this really only happens with the avatar
-        else if (ontoMonster && to_m && to_m->canMoveOnto()) {
+        else if (ontoCreature && to_m && to_m->canMoveOnto()) {
             retval = DIR_ADD_TO_MASK(d, retval);
             continue;
         }
@@ -579,9 +579,9 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             }
         }
         
-        // monster movement
+        // creature movement
         else if (m) {
-            // flying monsters
+            // flying creatures
             if (tileIsFlyable(tile) && m->flies()) {  
                 // FIXME: flying creatures behave differently on the world map?
                 if (isWorldMap())
@@ -589,24 +589,24 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
                 else if (tileIsWalkable(tile) || tileIsSwimable(tile) || tileIsSailable(tile))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
-            // swimming monsters and sailing monsters
+            // swimming creatures and sailing creatures
             else if (tileIsSwimable(tile) || tileIsSailable(tile)) {
                 if (m->swims() && tileIsSwimable(tile))
                     retval = DIR_ADD_TO_MASK(d, retval);
                 if (m->sails() && tileIsSailable(tile))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
-            // ghosts and other incorporeal monsters
+            // ghosts and other incorporeal creatures
             else if (m->isIncorporeal()) {
-                // can move anywhere but onto water, unless of course the monster can swim
+                // can move anywhere but onto water, unless of course the creature can swim
                 if (!(tileIsSwimable(tile) || tileIsSailable(tile)))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
-            // walking monsters
+            // walking creatures
             else if (m->walks()) {
                 if (tileCanWalkOn(tile, d) &&
                     tileCanWalkOff(prev_tile, d) &&
-                    tileIsMonsterWalkable(tile))
+                    tileIsCreatureWalkable(tile))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }            
         }

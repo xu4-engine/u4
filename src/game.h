@@ -10,7 +10,7 @@
 
 class Map;
 struct _Portal;
-class Monster;
+class Creature;
 
 typedef enum {
     VIEW_NORMAL,
@@ -87,10 +87,10 @@ bool readyForPlayer2(int weapon, void *data);
 /* checking functions */
 void gameCheckHullIntegrity(void);
 
-/* monster functions */
-bool monsterRangeAttack(MapCoords coords, int distance, void *data);
-void gameMonsterCleanup(void);
-void gameSpawnMonster(const class Monster *m);
+/* creature functions */
+bool creatureRangeAttack(MapCoords coords, int distance, void *data);
+void gameCreatureCleanup(void);
+void gameSpawnCreature(const class Creature *m);
 
 /* etc */
 void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen = 32);

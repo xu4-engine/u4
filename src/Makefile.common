@@ -17,6 +17,7 @@ CXXSRCS=\
         codex.cpp \
         combat.cpp \
         config.cpp \
+        creature.cpp \
         death.cpp \
         debug.cpp \
         direction.cpp \
@@ -34,8 +35,7 @@ CXXSRCS=\
         map.cpp \
         maploader.cpp \
         mapmgr.cpp \
-        menu.cpp \
-        monster.cpp \
+        menu.cpp \        
         moongate.cpp \
         movement.cpp \
         music.cpp \

@@ -8,7 +8,7 @@
 #include <string>
 #include <list>
 
-#include "monster.h"
+#include "creature.h"
 #include "types.h"
 
 struct _Conversation;
@@ -75,9 +75,9 @@ typedef enum {
     CONVINPUT_NONE
 } ConversationInputType;
 
-class Person : public Monster {
+class Person : public Creature {
 public:
-    Person(MapTile tile = 0) : Monster(tile) {
+    Person(MapTile tile = 0) : Creature(tile) {
         setType(OBJECT_PERSON);
     }
 

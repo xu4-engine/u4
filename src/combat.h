@@ -9,18 +9,18 @@
 
 #include "direction.h"
 #include "map.h"
-#include "monster.h"
+#include "creature.h"
 #include "movement.h"
 #include "object.h"
 #include "player.h"
 #include "savegame.h"
 #include "types.h"
 
-#define AREA_MONSTERS   16
+#define AREA_CREATURES   16
 #define AREA_PLAYERS    8
 
 class Object;
-class Monster;
+class Creature;
 
 typedef enum {
     CA_ATTACK,
@@ -47,30 +47,30 @@ public:
     Direction     getExitDir() const;
     unsigned char getFocus() const;
     CombatMap *   getMap() const;
-    Monster *     getMonster() const;
+    Creature *     getCreature() const;
     PartyMemberVector* getParty();
     PartyMember*  getCurrentPlayer();
     
     void setExitDir(Direction d);
     void setInn(bool i = true);
-    void setMonster(Monster *);
+    void setCreature(Creature *);
     void setWinOrLose(bool worl = true);
     void showCombatMessage(bool show = true);
 
     // Methods
-    void init(class Monster *m);
+    void init(class Creature *m);
     void initCamping();
     void initDungeonRoom(int room, Direction from);
     
-    void applyMonsterTileEffects();
+    void applyCreatureTileEffects();
     void begin();
     void end(bool adjustKarma);
-    void fillMonsterTable(const Monster *monster);
-    int  initialNumberOfMonsters(const class Monster *monster) const;
+    void fillCreatureTable(const Creature *creature);
+    int  initialNumberOfCreatures(const class Creature *creature) const;
     bool isWon() const;
     bool isLost() const;
-    void moveMonsters();
-    void placeMonsters();
+    void moveCreatures();
+    void placeCreatures();
     void placePartyMembers();
     bool setActivePlayer(int player);
 
@@ -98,13 +98,13 @@ protected:
     PartyMemberVector party;
     unsigned char focus;
 
-    const class Monster *monsterTable[AREA_MONSTERS];
-    class Monster *monster;    
+    const class Creature *creatureTable[AREA_CREATURES];
+    class Creature *creature;    
 
     bool camping;
     bool inn;
     bool placePartyOnMap;
-    bool placeMonstersOnMap;
+    bool placeCreaturesOnMap;
     bool winOrLose;
     bool showMessage;
     Direction exitDir;
@@ -118,10 +118,10 @@ public:
     CombatMap();
     CombatMap(MapId id);
         
-    MonsterVector getMonsters();
+    CreatureVector getCreatures();
     PartyMemberVector getPartyMembers();
     PartyMember* partyMemberAt(Coords coords);    
-    Monster* monsterAt(Coords coords);    
+    Creature* creatureAt(Coords coords);    
     
     static MapId mapForTile(MapTile ground, MapTile transport, class Object *obj);
 
@@ -138,7 +138,7 @@ protected:
     BaseVirtue altarRoom;
 
 public:
-    Coords monster_start[AREA_MONSTERS];
+    Coords creature_start[AREA_CREATURES];
     Coords player_start[AREA_PLAYERS];
 };
 

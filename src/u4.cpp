@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 
     /* Read the game settings from file */
     settings.read();
-    monsters.loadInfoFromXml();
+    creatures.loadInfoFromXml();
 
     for (i = 1; i < (unsigned int)argc; i++) {
         if (strcmp(argv[i], "-filter") == 0 && (unsigned int)argc > i + 1) {

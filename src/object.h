@@ -22,7 +22,7 @@ typedef enum {
 typedef enum {
     OBJECT_UNKNOWN,
     OBJECT_PERSON,
-    OBJECT_MONSTER    
+    OBJECT_CREATURE    
 } ObjectType;
 
 class Object {

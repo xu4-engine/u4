@@ -19,7 +19,7 @@
 #include "location.h"
 #include "map.h"
 #include "mapmgr.h"
-#include "monster.h"
+#include "creature.h"
 #include "moongate.h"
 #include "player.h"
 #include "screen.h"
@@ -330,7 +330,7 @@ void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage)
 }
 
 bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
-    Monster *monster;
+    Creature *creature;
     CoordActionInfo* info = (CoordActionInfo*)data;
     MapCoords old = info->prev;
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
@@ -345,9 +345,9 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
     /* Check to see if we might hit something */
     if (coords.x != -1 && coords.y != -1) {
 
-        monster = cm->monsterAt(coords);
+        creature = cm->creatureAt(coords);
 
-        if (!monster) {
+        if (!creature) {
             cm->annotations->add(coords, spellMagicAttackTile, true);
             gameUpdateScreen();
         
@@ -362,8 +362,8 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
             /* show the 'hit' tile */
             CombatController::attackFlash(coords, spellMagicAttackTile, 3);
 
-            /* apply the damage to the monster */
-			c->combat->getCurrentPlayer()->dealDamage(monster, spellMagicAttackDamage);
+            /* apply the damage to the creature */
+			c->combat->getCurrentPlayer()->dealDamage(creature, spellMagicAttackDamage);
         }
     }
 
@@ -510,7 +510,7 @@ static int spellEField(int param) {
          * Observed behaviour on Amiga version of Ultima IV:
          * Field cast on other field: Works, unless original field is lightning
          * in which case it doesn't.
-         * Field cast on monster: Works, monster remains the visible tile
+         * Field cast on creature: Works, creature remains the visible tile
          * Field cast on top of field and then dispel = no fields left
          * The code below seems to produce this behaviour.
          */
@@ -612,13 +612,13 @@ static int spellQuick(int unused) {
 
 static int spellSleep(int unused) {	
     CombatMap *cm = getCombatMap();
-    MonsterVector monsters = cm->getMonsters();
-    MonsterVector::iterator i;
+    CreatureVector creatures = cm->getCreatures();
+    CreatureVector::iterator i;
 
-    /* try to put each monster to sleep */
+    /* try to put each creature to sleep */
 
-    for (i = monsters.begin(); i != monsters.end(); i++) {         
-        Monster *m = *i;
+    for (i = creatures.begin(); i != creatures.end(); i++) {         
+        Creature *m = *i;
         if ((m->resists != EFFECT_SLEEP) &&
             xu4_random(0xFF) >= m->hp)
             m->putToSleep();
@@ -629,24 +629,24 @@ static int spellSleep(int unused) {
 
 static int spellTremor(int unused) {
     CombatController *ct = c->combat;	
-    MonsterVector monsters = ct->getMap()->getMonsters();
-    MonsterVector::iterator i;
+    CreatureVector creatures = ct->getMap()->getCreatures();
+    CreatureVector::iterator i;
 
-    for (i = monsters.begin(); i != monsters.end(); i++) {
-        Monster *m = *i;
+    for (i = creatures.begin(); i != creatures.end(); i++) {
+        Creature *m = *i;
 
-        /* monsters with over 192 hp are unaffected */
+        /* creatures with over 192 hp are unaffected */
         if (m->hp > 192)
             continue;
         else {
             Coords coords = m->getCoords();
 
-            /* Deal maximum damage to monster */
+            /* Deal maximum damage to creature */
             if (xu4_random(2) == 0) {
 				ct->getCurrentPlayer()->dealDamage(m, 0xFF);                
                 CombatController::attackFlash(coords, HITFLASH_TILE, 1);
             }
-            /* Deal enough damage to monster to make it flee */
+            /* Deal enough damage to creature to make it flee */
             else if (xu4_random(2) == 0) {
                 if (m->hp > 23)
                     ct->getCurrentPlayer()->dealDamage(m, m->hp-23);
@@ -660,11 +660,11 @@ static int spellTremor(int unused) {
 
 static int spellUndead(int unused) {    
     CombatController *ct = c->combat;	
-    MonsterVector monsters = ct->getMap()->getMonsters();
-    MonsterVector::iterator i;
+    CreatureVector creatures = ct->getMap()->getCreatures();
+    CreatureVector::iterator i;
 
-    for (i = monsters.begin(); i != monsters.end(); i++) {         
-        Monster *m = *i;
+    for (i = creatures.begin(); i != creatures.end(); i++) {         
+        Creature *m = *i;
         if (m && m->isUndead() && xu4_random(2) == 0)
             m->hp = 23;        
     }

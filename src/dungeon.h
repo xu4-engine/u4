@@ -25,9 +25,9 @@ typedef struct _Trigger {
 
 typedef struct _DngRoom {
     Trigger triggers[DNGROOM_NTRIGGERS];
-    unsigned char monster_tiles[16];
-    unsigned char monster_start_x[16];
-    unsigned char monster_start_y[16];
+    unsigned char creature_tiles[16];
+    unsigned char creature_start_x[16];
+    unsigned char creature_start_y[16];
     unsigned char party_north_start_x[8];
     unsigned char party_north_start_y[8];
     unsigned char party_east_start_x[8];
