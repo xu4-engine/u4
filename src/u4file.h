@@ -20,6 +20,7 @@ typedef struct {
 } U4FILE;
 
 U4FILE *u4fopen(const char *fname);
+U4FILE *u4fopen_stdio(const char *fname);
 U4FILE *u4fopen_zip(const char *fname, const char *zipfile, const char *zippath, int translate);
 void u4fclose(U4FILE *f);
 int u4fseek(U4FILE *f, long offset, int whence);
@@ -31,7 +32,9 @@ long u4flength(U4FILE *f);
 char **u4read_stringtable(U4FILE *f, long offset, int nstrings);
 char *u4find_path(const char *fname, const char * const *pathent, unsigned int npathents);
 char *u4find_music(const char *fname);
+char *u4find_sound(const char *fname);
 char *u4find_conf(const char *fname);
+char *u4find_graphics(const char *fname);
 const char *u4upgrade_translate_filename(const char *fname);
 
 #endif

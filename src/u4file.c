@@ -37,12 +37,30 @@ static const char * const music_paths[] = {
     "/usr/local/lib/u4/music/"
 };
 
+/* the possible paths where the u4 sound files can be installed */
+static const char * const sound_paths[] = {
+    "./",
+    "./ultima4/",
+    "../sound/",
+    "/usr/lib/u4/sound/",
+    "/usr/local/lib/u4/sound/"
+};
+
 /* the possible paths where the u4 config files can be installed */
 static const char * const conf_paths[] = {
     "./",
     "../conf/",
     "/usr/lib/u4/",
     "/usr/local/lib/u4/"
+};
+
+/* the possible paths where the u4 graphics files can be installed */
+static const char * const graphics_paths[] = {
+    "./",
+    "./ultima4/",
+    "../graphics/",
+    "/usr/lib/u4/graphics/",
+    "/usr/local/lib/u4/graphics/"
 };
 
 
@@ -52,15 +70,20 @@ static const char * const conf_paths[] = {
  * maps the filenames to uppercase if necessary.  The files are always
  * opened for reading only.
  *
- * Currently, it tries FILENAME, Filename and filename in up to four
- * paths, meaning up to twelve opens per file.  Seems to be ok for
- * performance, but could be getting excessive.
+ * First, it looks in the zipfiles.  Next, it tries FILENAME, Filename
+ * and filename in up to four paths, meaning up to twelve or more
+ * opens per file.  Seems to be ok for performance, but could be
+ * getting excessive.  The presence of the zipfiles should probably be
+ * cached.
  */
 U4FILE *u4fopen(const char *fname) {
     U4FILE *u4f = NULL;
     FILE *f = NULL;
     char *fname_copy, *pathname;
     unsigned int i;
+
+    if (verbose)
+        printf("looking for %s\n", fname);
 
     /*
      * search for file within ultima4.zip or u4upgrad.zip
@@ -72,8 +95,10 @@ U4FILE *u4fopen(const char *fname) {
         if (upg_pathname) {
             u4f = u4fopen_zip(fname, upg_pathname, "", 1);
             free(upg_pathname);
-            if (u4f)
+            if (u4f) {
+                free(pathname);
                 return u4f;
+            }
         }
         u4f = u4fopen_zip(fname, pathname, "ultima4/", 0);
         free(pathname);
@@ -101,30 +126,47 @@ U4FILE *u4fopen(const char *fname) {
             pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
         }
     }
-
-    if (pathname)
-        f = fopen(pathname, "rb");
-
-    if (verbose && f != NULL)
-        printf("%s successfully opened\n", pathname);
-
     free(fname_copy);
 
-    if (f) {
-        u4f = (U4FILE *) malloc(sizeof(U4FILE));
-        if (!u4f)
-            return NULL;
-
-        u4f->type = STDIO_FILE;
-        u4f->file = f;
-    }
-
-    if (pathname)
+    if (pathname) {
+        u4f = u4fopen_stdio(pathname);
+        if (verbose && u4f != NULL)
+            printf("%s successfully opened\n", pathname);
         free(pathname);
+    }
 
     return u4f;
 }
 
+/**
+ * Opens a file with the standard C stdio facilities and wrap it in a
+ * U4FILE struct.
+ */
+U4FILE *u4fopen_stdio(const char *fname) {
+    U4FILE *u4f;
+    FILE *f;
+
+    f = fopen(fname, "rb");
+    if (!f)
+        return NULL;
+
+    u4f = (U4FILE *) malloc(sizeof(U4FILE));
+    if (!u4f)
+        return NULL;
+
+    u4f->type = STDIO_FILE;
+    u4f->file = f;
+    
+    return u4f;
+}
+
+/**
+ * Opens a file from within a zip archive.  fname is the filename
+ * being searched for, zipfile is the name of the zip archive, zippath
+ * is a path prefix prepended to each filename.  If translate is
+ * non-zero, some special case translation is done to the filenames to
+ * match up with the names in u4upgrad.zip.
+ */
 U4FILE *u4fopen_zip(const char *fname, const char *zipfile, const char *zippath, int translate) {
     U4FILE *u4f;
     unzFile f;
@@ -337,8 +379,16 @@ char *u4find_music(const char *fname) {
     return u4find_path(fname, music_paths, sizeof(music_paths) / sizeof(music_paths[0]));
 }
 
+char *u4find_sound(const char *fname) {
+    return u4find_path(fname, sound_paths, sizeof(sound_paths) / sizeof(sound_paths[0]));
+}
+
 char *u4find_conf(const char *fname) {
     return u4find_path(fname, conf_paths, sizeof(conf_paths) / sizeof(conf_paths[0]));
+}
+
+char *u4find_graphics(const char *fname) {
+    return u4find_path(fname, graphics_paths, sizeof(graphics_paths) / sizeof(graphics_paths[0]));
 }
 
 const char *u4upgrade_translate_filename(const char *fname) {
