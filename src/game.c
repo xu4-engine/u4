@@ -212,7 +212,9 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'd':
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_DESCEND) {
+            mapRemoveAvatarObject(c->map);
             gameSetMap(c, portal->destination, 0);
+            mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
             screenMessage("Descend!\n\n");
         } else if (tileIsBalloon(c->saveGame->transport)) {
             screenMessage("Land Balloon\n");
@@ -264,7 +266,7 @@ int gameBaseKeyHandler(int key, void *data) {
             mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
 
             play_music();
-            
+
         } else
             screenMessage("Enter what?\n");
         break;
@@ -303,7 +305,9 @@ int gameBaseKeyHandler(int key, void *data) {
             if (c->saveGame->transport != AVATAR_TILE)
                 screenMessage("Klimb\nOnly on foot!\n");
             else {
+                mapRemoveAvatarObject(c->map);
                 gameSetMap(c, portal->destination, 0);
+                mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
                 screenMessage("Klimb!\n\n");
             }
         } else if (tileIsBalloon(c->saveGame->transport)) {
@@ -762,7 +766,6 @@ int jimmyAtCoord(int x, int y) {
         !tileIsLockedDoor(mapTileAt(c->map, x, y)))
         return 0;
 
-
     annotationAdd(x, y, -1, 0x3b);
     screenMessage("\nUnlocked!\n");
     gameFinishTurn();
@@ -951,12 +954,16 @@ int talkAtCoord(int x, int y) {
     const Person *talker;
     char *text;
 
-    if (x == -1 && y == -1)
+    if (x == -1 && y == -1) {
+        gameFinishTurn();
         return 0;
+    }
 
     c->conversation.talker = mapPersonAt(c->map, x, y);
-    if (c->conversation.talker == NULL)
+    if (c->conversation.talker == NULL) {
+        gameFinishTurn();
         return 0;
+    }
 
     talker = c->conversation.talker;
     c->conversation.state = CONV_INTRO;
@@ -965,7 +972,10 @@ int talkAtCoord(int x, int y) {
     personGetConversationText(&c->conversation, "", &text);
     screenMessage("\n\n%s", text);
     free(text);
-    talkSetHandler(&c->conversation);
+    if (c->conversation.state == CONV_DONE)
+        gameFinishTurn();
+    else
+        talkSetHandler(&c->conversation);
 
     return 1;
 }

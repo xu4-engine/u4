@@ -162,7 +162,7 @@ void personGetPrompt(const Conversation *cnv, char **prompt) {
 
 char *emptyGetIntro(Conversation *cnv) {
     cnv->state = CONV_DONE;
-    return strdup("Funny, no response!");
+    return strdup("Funny, no response!\n");
 }
 
 char *talkerGetIntro(Conversation *cnv) {
