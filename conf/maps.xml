@@ -28,7 +28,7 @@
         <portal x="72"  y="168" z="-1" destmapid="19" startx="1" starty="1" startlevel="0" action="enter" savelocation="true" transport="foot"/>
         <portal x="126" y="20"  z="-1" destmapid="20" startx="1" starty="1" startlevel="0" action="enter" savelocation="true" transport="foot"/>
         <portal x="156" y="27"  z="-1" destmapid="21" startx="1" starty="1" startlevel="0" action="enter" savelocation="true" transport="foot"/>
-        <portal x="58"  y="102" z="-1" destmapid="22" startx="3" starty="1" startlevel="0" action="enter" savelocation="true" transport="foot"/>
+        <portal x="58"  y="102" z="-1" destmapid="22" startx="1" starty="1" startlevel="0" action="enter" savelocation="true" transport="foot"/>
         <portal x="239" y="240" z="-1" destmapid="23" startx="1" starty="1" startlevel="0" action="enter" savelocation="true" transport="foot"/>
         <portal x="233" y="233" z="-1" destmapid="24" startx="1" starty="1" startlevel="0" action="enter" condition="abyss" savelocation="true" message="Enter the Great Stygian Abyss!&#xA;&#xA;" transport="foot"/>
 
@@ -107,51 +107,28 @@
 
     <!-- dungeons -->
     <map id="17" type="dungeon" fname="deceit.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Deceit"/>
-        <portal x="1" y="1" z="0" action="klimb" transport="foot" exits="true"/>
-        <portal x="5" y="5" z="0" destmapid="17" startlevel="1" action="descend" savelocation="false" transport="foot"/>
+        <dungeon name="Deceit"/>        
     </map>
     <map id="18" type="dungeon" fname="despise.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Despise"/>
-        <portal x="1" y="1" z="0" action="klimb" transport="foot" exits="true"/>
-        <portal x="5" y="5" z="0" destmapid="18" startlevel="1" action="descend" savelocation="false" transport="foot"/>
-        <portal x="5" y="5" z="1" destmapid="18" startlevel="0" action="klimb" savelocation="false" transport="foot"/>
-        <portal x="3" y="1" z="1" destmapid="18" startlevel="2" action="descend" savelocation="false" transport="foot"/>
-        <portal x="3" y="1" z="2" destmapid="18" startlevel="1" action="klimb" savelocation="false" transport="foot"/>
+        <dungeon name="Despise"/>        
     </map>
     <map id="19" type="dungeon" fname="destard.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Destard"/>
-        <portal x="1" y="1" z="0" action="klimb" transport="foot" exits="true"/>
-        <portal x="3" y="3" z="0" destmapid="19" startlevel="1" action="descend" savelocation="false" transport="foot"/>
-        <portal x="7" y="3" z="0" destmapid="19" startlevel="1" action="descend" savelocation="false" transport="foot"/>
-        <portal x="3" y="7" z="0" destmapid="19" startlevel="1" action="descend" savelocation="false" transport="foot"/>
-        <portal x="7" y="7" z="0" destmapid="19" startlevel="1" action="descend" savelocation="false" transport="foot"/>
-        <portal x="5" y="5" z="0" destmapid="19" startlevel="1" action="descend" savelocation="false" transport="foot"/>
+        <dungeon name="Destard"/>        
     </map>
     <map id="20" type="dungeon" fname="wrong.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Wrong"/>
-        <portal x="1" y="1" z="0" action="klimb" transport="foot" exits="true"/>
+        <dungeon name="Wrong"/>        
     </map>
     <map id="21" type="dungeon" fname="covetous.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Covetous"/>
-        <portal x="1" y="1" z="0" action="klimb" transport="foot" exits="true"/>
-        <portal x="7" y="1" z="0" destmapid="21" startlevel="1" action="descend" savelocation="false" transport="foot"/>
+        <dungeon name="Covetous"/>        
     </map>
     <map id="22" type="dungeon" fname="shame.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Shame"/>
-        <portal x="3" y="1" z="0" action="klimb" transport="foot" exits="true"/>
-        <portal x="3" y="1" z="0" destmapid="22" startlevel="1" action="descend" savelocation="false" transport="foot"/>
-        <portal x="3" y="5" z="0" destmapid="22" startlevel="1" action="descend" savelocation="false" transport="foot"/>
+        <dungeon name="Shame"/>        
     </map>
     <map id="23" type="dungeon" fname="hythloth.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="Hythloth"/>
-        <portal x="1" y="1" z="0" action="klimb" transport="foot" exits="true"/>
-        <portal x="7" y="7" z="0" destmapid="23" startlevel="1" action="descend" savelocation="false" transport="foot"/>
-        <portal x="5" y="5" z="0" destmapid="23" startlevel="1" action="descend" savelocation="false" transport="foot"/>
+        <dungeon name="Hythloth"/>        
     </map>
     <map id="24" type="dungeon" fname="abyss.dng" width="8" height="8" levels="8" borderbehavior="wrap" firstperson="true" music="7">
-        <dungeon name="The Great Stygian Abyss"/>
-        <portal x="1" y="1" z="0" action="klimb" transport="foot" exits="true"/>
+        <dungeon name="The Great Stygian Abyss"/>        
     </map>
 
     <!-- shrines -->
