@@ -209,7 +209,7 @@ unsigned char combatMapForTile(unsigned char partytile, unsigned char transport,
     return MAP_BRICK_CON;
 }
 
-void combatCreateMonster(int index, int canbeleader) {
+void combatCreateMonster(int index, int canbeleader) {    
     
     const Monster *m = combatInfo.monster;
 
@@ -1176,7 +1176,7 @@ int movePartyMember(Direction dir, int member) {
     if (MAP_IS_OOB(c->location->map, newx, newy)) {
 
         /* A fully-healed party member fled from an evil monster :( */
-        if (combatInfo.monsterObj && monsterIsEvil(combatInfo.monsterObj->monster) && 
+        if (combatInfo.monster && monsterIsEvil(combatInfo.monster) && 
             c->saveGame->players[member].hp == c->saveGame->players[member].hpMax)
             playerAdjustKarma(c->saveGame, KA_HEALTHY_FLED_EVIL);
 

@@ -72,6 +72,8 @@ void campTimer(void *data) {
         
         /* assign the monster object for combat */
         combatInfo.monsterObj = mapAddMonsterObject(c->location->prev->map, m, c->location->prev->x, c->location->prev->y, c->location->prev->z);
+        /* assign the monster object for combat so monsters can be created */
+        combatInfo.monster = combatInfo.monsterObj->monster;
         
         /* numAmbushingMonsters is the number of creatures we will have in combat */
         numAmbushingMonsters = combatInitialNumberOfMonsters(m);
