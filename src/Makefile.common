@@ -68,19 +68,19 @@ all:: $(MAIN) mkutils
 mkutils::  dumpsavegame$(EXEEXT) u4enc$(EXEEXT) u4dec$(EXEEXT) tlkconv$(EXEEXT)
 
 $(MAIN): $(OBJS)
-	$(CPP) $(CPPFLAGS) -o $@ $(OBJS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LIBS)
 
 dumpsavegame$(EXEEXT) : util/dumpsavegame.o savegame.o io.o names.o
-	$(CC) $(CPPFLAGS) -o dumpsavegame util/dumpsavegame.o savegame.o io.o names.o
+	$(CXX) $(CXXFLAGS) -o dumpsavegame util/dumpsavegame.o savegame.o io.o names.o
 
 u4enc$(EXEEXT) : util/u4enc.o lzw/hash.o util/pngconv.o
-	$(CC) $(CPPFLAGS) -o u4enc util/u4enc.o lzw/hash.o util/pngconv.o -lpng -lz
+	$(CXX) $(CXXFLAGS) -o u4enc util/u4enc.o lzw/hash.o util/pngconv.o -lpng -lz
 
 u4dec$(EXEEXT) : util/u4dec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o rle.o util/pngconv.o
-	$(CC) $(CPPFLAGS) -o u4dec util/u4dec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o rle.o util/pngconv.o -lpng -lz
+	$(CXX) $(CXXFLAGS) -o u4dec util/u4dec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o rle.o util/pngconv.o -lpng -lz
 
 tlkconv$(EXEEXT) : util/tlkconv.o
-	$(CC) $(CPPFLAGS) -o tlkconv util/tlkconv.o $(shell xml2-config --libs)
+	$(CXX) $(CXXFLAGS) -o tlkconv util/tlkconv.o $(shell xml2-config --libs)
 
 clean:: cleanutil
 	rm -rf *~ */*~ $(OBJS) $(MAIN)
