@@ -646,8 +646,8 @@ int gameBaseKeyHandler(int key, void *data) {
 
             gameSetMap(c, mapMgrGetById(100), 1, NULL);
             c->location->x = 19;
-            c->location->y = 8;
-            c->location->z = 1;            
+            c->location->y = 8;            
+            c->location->z = 0;
         }
         else valid = 0;
         break;

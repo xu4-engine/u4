@@ -111,7 +111,7 @@ void deathRevive() {
     gameSetMap(c, mapMgrGetById(100), 1, NULL);
     c->location->x = REVIVE_CASTLE_X;
     c->location->y = REVIVE_CASTLE_Y;
-    c->location->z = 1;
+    c->location->z = 0;
 
     c->aura = AURA_NONE;
     c->auraDuration = 0;
