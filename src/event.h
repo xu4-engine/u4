@@ -20,7 +20,12 @@ typedef struct KeyHandlerNode {
     struct KeyHandlerNode *next;
 } KeyHandlerNode;
 
+void eventHandlerInit();
 void eventHandlerMain();
+void eventHandlerSetExitFlag(int flag);
+int eventHandlerGetExitFlag();
+void eventHandlerAddTimerCallback(void (*callback)());
+void eventHandlerCallTimerCallbacks();
 void eventTimer();
 void eventHandlerPushKeyHandler(KeyHandler kh);
 void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data);

@@ -9,7 +9,8 @@
 #include "screen.h"
 #include "event.h"
 #include "context.h"
-#include "annotation.h"
+
+int eventDone;
 
 Uint32 eventCallback(Uint32 interval, void *param) {
     SDL_Event event;
@@ -23,13 +24,14 @@ Uint32 eventCallback(Uint32 interval, void *param) {
     return interval;
 }
 
-void eventHandlerMain() {
-    eventHandlerPushKeyHandler(&keyHandlerNormal);
-
+void eventHandlerInit() {
     SDL_AddTimer(250, &eventCallback, NULL);
+}
 
-    screenMessage("\020");
-    while (1) {
+void eventHandlerMain() {
+    eventHandlerSetExitFlag(0);
+
+    while (!eventHandlerGetExitFlag()) {
         int processed = 0;
         SDL_Event event;
 
@@ -59,14 +61,13 @@ void eventHandlerMain() {
             processed = (*eventHandlerGetKeyHandler())(key, eventHandlerGetKeyHandlerData());
 
             if (processed) {
-                annotationCycle();
-                screenUpdate(c);
+                screenUpdate();
                 screenForceRedraw();
             }
             break;
         }
         case SDL_USEREVENT:
-            eventTimer();
+            eventHandlerCallTimerCallbacks();
             break;
 
         case SDL_QUIT:

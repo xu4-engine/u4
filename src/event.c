@@ -35,7 +35,10 @@ int talkAtCoord(int x, int y);
 int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 
-KeyHandlerNode *head = NULL;
+typedef struct TimerCallbackNode {
+    void (*callback)();
+    struct TimerCallbackNode *next;
+} TimerCallbackNode;
 
 typedef struct AlphaActionInfo {
     char lastValidLetter;
@@ -51,6 +54,43 @@ typedef struct DirectedActionInfo {
     const char *failedMessage;
 } DirectedActionInfo;
 
+TimerCallbackNode *timerCallbackHead = NULL;
+KeyHandlerNode *keyHandlerHead = NULL;
+int eventExitFlag = 0;
+
+/**
+ * Set flag to end eventHandlerMain loop.
+ */
+void eventHandlerSetExitFlag(int flag) {
+    eventExitFlag = flag;
+}
+
+/**
+ * Get flag that controls eventHandlerMain loop.
+ */
+int eventHandlerGetExitFlag() {
+    return eventExitFlag;
+}
+
+void eventHandlerAddTimerCallback(void (*callback)()) {
+    TimerCallbackNode *n = malloc(sizeof(TimerCallbackNode));
+    if (n) {
+        n->callback = callback;
+        n->next = timerCallbackHead;
+        timerCallbackHead = n;
+    }
+}
+
+/**
+ * Trigger all the timer callbacks.
+ */
+void eventHandlerCallTimerCallbacks() {
+    TimerCallbackNode *n;    
+
+    for (n = timerCallbackHead; timerCallbackHead != NULL; timerCallbackHead = timerCallbackHead->next) {
+        (*timerCallbackHead->callback)();
+    }
+}
 
 /**
  * This function is called every quarter second.
@@ -71,8 +111,8 @@ void eventHandlerPushKeyHandler(KeyHandler kh) {
     if (n) {
         n->kh = kh;
         n->data = NULL;
-        n->next = head;
-        head = n;
+        n->next = keyHandlerHead;
+        keyHandlerHead = n;
     }
 }
 
@@ -85,8 +125,8 @@ void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data) {
     if (n) {
         n->kh = kh;
         n->data = data;
-        n->next = head;
-        head = n;
+        n->next = keyHandlerHead;
+        keyHandlerHead = n;
     }
 }
 
@@ -94,9 +134,9 @@ void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data) {
  * Pop the top key handler off.
  */
 void eventHandlerPopKeyHandler() {
-    KeyHandlerNode *n = head;
+    KeyHandlerNode *n = keyHandlerHead;
     if (n) {
-        head = n->next;
+        keyHandlerHead = n->next;
         free(n);
     }
 }
@@ -106,14 +146,14 @@ void eventHandlerPopKeyHandler() {
  * stack.
  */
 KeyHandler eventHandlerGetKeyHandler() {
-    return head->kh;
+    return keyHandlerHead->kh;
 }
 
 /**
  * Get the call data associated with the currently active key handler.
  */
 void *eventHandlerGetKeyHandlerData() {
-    return head->data;
+    return keyHandlerHead->data;
 }
 
 int keyHandlerDefault(int key, void *data) {
@@ -292,6 +332,9 @@ int keyHandlerNormal(int key, void *data) {
         break;
     }
 
+    if (valid)
+        annotationCycle();
+
     return valid || keyHandlerDefault(key, NULL);
 }
 
@@ -462,13 +505,14 @@ int keyHandlerTalking(int key, void *data) {
         c->conversation.question = askq;
         c->conversation.buffer[0] = '\0';
 
-        if (askq)
-            screenMessage("%s\n\nYou say: ", c->conversation.talker->question);
-        else if (done) {
+        if (done) {
             eventHandlerPopKeyHandler();
             screenMessage("\020");
-        }
-        else {
+        } else if (askq) {
+            personGetQuestion(c->conversation.talker, &prompt);
+            screenMessage("%s", prompt);
+            free(prompt);
+        } else {
             personGetPrompt(c->conversation.talker, &prompt);
             screenMessage("\n%s\n", prompt);
             free(prompt);
