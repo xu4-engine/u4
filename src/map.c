@@ -342,9 +342,8 @@ void mapRemovePerson(Map *map, const Person *person) {
 
 void mapMoveObjects(Map *map, int avatarx, int avatary) {
     int newx, newy;
-    unsigned char tile;
     int slow;
-    Object *obj = map->objects, *other;
+    Object *obj = map->objects;
     const Monster *m;
 
     for (obj = map->objects; obj; obj = obj->next) {
