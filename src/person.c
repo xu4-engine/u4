@@ -21,6 +21,7 @@
 #include "music.h"
 #include "player.h"
 #include "map.h"
+#include "game.h"
 
 char **hawkwindText;
 char **lbKeywords;
@@ -302,13 +303,13 @@ char *talkerGetQuestionResponse(Conversation *cnv, const char *answer) {
     if (answer[0] == 'y' || answer[0] == 'Y') {
         reply = strdup(cnv->talker->yesresp);
         if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
-            playerAdjustKarma(c->saveGame, KA_BRAGGED);
+            gameLostEighth(playerAdjustKarma(c->saveGame, KA_BRAGGED));
     }
 
     else if (answer[0] == 'n' || answer[0] == 'N') {
         reply = strdup(cnv->talker->noresp);
         if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
-            playerAdjustKarma(c->saveGame, KA_HUMBLE);
+            gameLostEighth(playerAdjustKarma(c->saveGame, KA_HUMBLE));
     }
 
     else
@@ -437,7 +438,7 @@ char *lordBritishGetPrompt(const Conversation *cnv) {
 char *hawkwindGetIntro(Conversation *cnv) {
     char *intro;
 
-    playerAdjustKarma(c->saveGame, KA_HAWKWIND);
+    gameLostEighth(playerAdjustKarma(c->saveGame, KA_HAWKWIND));
 
     intro = concat(hawkwindText[HW_WELCOME], 
                    c->saveGame->players[0].name,
