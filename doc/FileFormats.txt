@@ -172,6 +172,13 @@ This file stores the information that is stored when the game is
 saved.  It includes party-wide information like gold and food, plus a
 39 byte record for each character.
 
+Things that might be in here, but haven't been verified:
+ - amount of time elapsed since last action (offset 0x0?)
+ - whether the skull has been destroyed (bit 2 on 0x1D1?)
+ - which dungeon orbs have been used
+ - location of balloon
+ - phase of the moons/direction of the wind
+
 offset len  notes
 0x0    4    ???
 0x4    2    moves (low word)
