@@ -19,6 +19,8 @@ struct _Tileset;
 struct _Image;
 
 typedef enum {
+    BKGD_SHAPES,
+    BKGD_CHARSET,
     BKGD_BORDERS,
     BKGD_INTRO,
     BKGD_INTRO_EXTENDED,
