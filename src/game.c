@@ -601,6 +601,11 @@ int gameBaseKeyHandler(int key, void *data) {
         screenMessage("Ztats for: ");
         break;
 
+
+    case 'x' + U4_ALT:
+        eventHandlerSetExitFlag(1);
+        break;
+
     default:
         valid = 0;
         break;
