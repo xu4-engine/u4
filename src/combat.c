@@ -511,6 +511,9 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
         x = oldx;        
         y = oldy;
 
+        /* show the 'miss' tile */
+        attackFlash(x, y, misstile, 1);
+
         /* This goes here so messages are shown in the original order */
         screenMessage("Missed!\n");
     }
