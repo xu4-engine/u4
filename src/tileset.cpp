@@ -11,6 +11,7 @@
 #include "error.h"
 #include "screen.h"
 #include "settings.h"
+#include "tilemap.h"
 #include "xml.h"
 
 /**
@@ -154,7 +155,6 @@ TileVector  Tileset::tiles;
 int         Tileset::totalFrames = 0;
 string      Tileset::imageName;
 TileId      Tileset::currentId = 0;
-Tileset::TileMapMap Tileset::tileMaps;
 
 /**
  * Loads all tilesets using the filename
@@ -180,22 +180,19 @@ void Tileset::load(string filename) {
     if (!TileRule::rules.size())
         TileRule::load("tileRules.xml");
 
+    /* load tile maps from xml */
+    if (!TileMap::size())
+        TileMap::loadAll(filename);
+
     /* load all of the tilesets */
     for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node))            
+        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tileset") != 0)            
             continue;
-        else if (xmlStrcmp(node->name, (xmlChar *)"tileset") == 0) {        
-            /* get filename of each group */
-            string groupFilename = xmlGetPropAsStr(node, "file");
-            /* load the tile group! */
-            loadGroup(groupFilename);
-        }
-        else if (xmlStrcmp(node->name, (xmlChar *)"tilemap") == 0) {
-            /* get filename of the tilemap */
-            string tilemapFilename = xmlGetPropAsStr(node, "file");
-            /* load the tilemap ! */
-            loadTileMap(tilemapFilename);
-        }
+        
+        /* get filename of each group */
+        string groupFilename = xmlGetPropAsStr(node, "file");
+        /* load the tile group! */
+        loadGroup(groupFilename);                
     }
 }
 
@@ -203,63 +200,18 @@ void Tileset::load(string filename) {
  * Delete all tiles
  */
 void Tileset::unload() {
-    TileVector::iterator i;
-    TileMapMap::iterator map;
+    TileVector::iterator i;    
         
     /* free all the memory for the tiles */
     for (i = tiles.begin(); i != tiles.end(); i++)
         delete *i;
     
-    /* free all the memory for the tile maps */
-    for (map = tileMaps.begin(); map != tileMaps.end(); map++)
-        delete map->second;
+    TileMap::unloadAll();    
 
     tiles.clear();
     totalFrames = 0;
     imageName.erase();
     currentId = 0;    
-}
-
-/**
- * Loads a tile map which translates between tile indices and tile names
- * Tile maps are useful to translate from dos tile indices to xu4 tile ids
- */
-void Tileset::loadTileMap(string filename) {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;        
-    
-    /* open the filename for the group and parse it! */
-    doc = xmlParse(filename.c_str());
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "tilemap") != 0)
-        errorFatal("malformed %s", filename.c_str());
-
-    TileMap* tileMap = new TileMap;
-    
-    string name = xmlGetPropAsStr(root, "name");    
-    
-    int index = 0;
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"map") != 0)
-            continue;
-        
-        int frames = 1;
-        string tile = xmlGetPropAsStr(node, "tile");
-        
-        if (xmlPropExists(node, "index"))
-            index = xmlGetPropAsInt(node, "index");
-        if (xmlPropExists(node, "frames"))
-            frames = xmlGetPropAsInt(node, "frames");
-
-        /* insert the tile into the tile map */
-        for (int i = 0; i < frames; i++)
-            (*tileMap)[index+i] = tile;        
-
-        index += frames;
-    }
-    
-    /* add the tilemap to our list */
-    tileMaps[name] = tileMap;
 }
 
 /**

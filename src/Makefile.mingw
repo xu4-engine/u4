@@ -31,7 +31,7 @@ xu4ico.o: xu4.ico xu4.rc
 
 install: u4.exe
 	mkdir -p $(U4PATH)
-	mkdir -p $(U4PATH)/conf    
+	mkdir -p $(U4PATH)/conf
 	mkdir -p $(U4PATH)/dtd
 	mkdir -p $(U4PATH)/conf/tilemap
 	mkdir -p $(U4PATH)/graphics

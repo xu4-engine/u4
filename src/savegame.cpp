@@ -10,10 +10,6 @@
 #include "object.h"
 #include "types.h"
 
-#define MONSTERTABLE_SIZE           32
-#define MONSTERTABLE_CREATURES_SIZE  8
-#define MONSTERTABLE_OBJECTS_SIZE   (MONSTERTABLE_SIZE - MONSTERTABLE_CREATURES_SIZE)
-
 char *partySavFilename() {
     char *fname;
     
@@ -398,200 +394,53 @@ void SaveGamePlayerRecord::init() {
     status = STAT_GOOD;
 }
 
-int saveGameMonstersWrite(std::deque<Object *> &objs, FILE *f) {
-    std::deque<Object *>::iterator current;
-    const Object *obj;
-    const Object *monsterTable[MONSTERTABLE_SIZE];
-    std::deque<const Object*> whirlpools_storms;
-    std::deque<const Object*> other_creatures;
-    std::deque<const Object*> inanimate_objects;    
-    
-    int nCreatures = 0;
-    int nObjects = 0;    
-    int i, r;
-
-    memset((void *)monsterTable, 0, MONSTERTABLE_SIZE * sizeof(Object *));
-
-    /**
-     * First, categorize all the objects we have
-     */ 
-    for (current = objs.begin(); current != objs.end(); current++) {
-        obj = *current;
-
-        /* moving objects first */
-        if ((obj->getType() == OBJECT_CREATURE) && (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
-            int tile = obj->getTile(). getIndex();
-            /* whirlpools and storms are separated from other moving objects */
-            if ((tile == 140) || (tile == 142))
-                whirlpools_storms.push_back(obj);
-            else other_creatures.push_back(obj);
-        }
-        else inanimate_objects.push_back(obj);
-    }
-
-    /**
-     * OK, whirlpools and storms go first so they behave correctly in u4dos
-     */     
-    while (whirlpools_storms.size() && nCreatures < 4) {        
-        monsterTable[nCreatures++] = whirlpools_storms.front();
-        whirlpools_storms.pop_front();
-    }
-    /**
-     * Then, fill up the rest of the "moving object" section with creatures
-     */
-    while (other_creatures.size() && nCreatures < MONSTERTABLE_CREATURES_SIZE) {
-        monsterTable[nCreatures++] = other_creatures.front();
-        other_creatures.pop_front();
-    }
-    /**
-     * Finally, add inanimate objects
-     */
-    while (inanimate_objects.size() && nObjects < MONSTERTABLE_OBJECTS_SIZE) {
-        monsterTable[MONSTERTABLE_CREATURES_SIZE + nObjects++] = inanimate_objects.front();
-        inanimate_objects.pop_front();
-    }
-
-    /* tile for each object */
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (monsterTable[i])
-            r = writeChar(monsterTable[i]->getTile().getIndex(), f);
-        else
-            r = writeChar(0, f);
-        if (!r) return 0;
-    }
-        
-    /* x location for each object */
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (monsterTable[i])
-            r = writeChar((unsigned char)monsterTable[i]->getCoords().x, f);
-        else
-            r = writeChar(0, f);
-        if (!r) return 0;
-    }
-        
-    /* y location for each object */
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (monsterTable[i])
-            r = writeChar((unsigned char)monsterTable[i]->getCoords().y, f);
-        else
-            r = writeChar(0, f);
-        if (!r) return 0;
-    }
-        
-    /* previous tile for each object */
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (monsterTable[i])
-            r = writeChar((unsigned char)monsterTable[i]->getPrevTile().getIndex(), f);
-        else
-            r = writeChar(0, f);
-        if (!r) return 0;
-    }
-        
-    /* previous x location for each object */
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (monsterTable[i])
-            r = writeChar((unsigned char)monsterTable[i]->getPrevCoords().x, f);
-        else
-            r = writeChar(0, f);
-        if (!r) return 0;
-    }
-        
-    /* previous y location for each object */
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (monsterTable[i])
-            r = writeChar((unsigned char)monsterTable[i]->getPrevCoords().y, f);
-        else
-            r = writeChar(0, f);
-        if (!r) return 0;
-    }
-        
-    /* unused space */
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (!writeChar(0, f))
-            return 0;
-    }   
-
-    /* unused space, part II */
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (!writeChar(0, f))
-            return 0;
-    }
-
+int SaveGameMonsterRecord::read(FILE *f) {	
+    if (!readChar(&prevTile, f) ||
+        !readChar(&x, f) ||
+        !readChar(&y, f) ||
+        !readChar(&tile, f) ||
+        !readChar(&prevx, f) ||
+        !readChar(&prevy, f) ||
+		!readChar(&unused1, f) ||
+		!readChar(&unused2, f))
+        return 0;
     return 1;
 }
 
-int saveGameMonstersRead(std::deque<Object *> *objs, FILE *f) {    
-    Object *obj;
-    Object monsterTable[MONSTERTABLE_SIZE];
-    int i;
-    unsigned char ch;
-    Coords coords[MONSTERTABLE_SIZE];
-    bool isEmpty[MONSTERTABLE_SIZE];    
-
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (!readChar(&ch, f))
-            return 0;
-        monsterTable[i].setPrevTile(Tile::translate(ch));
-    }
-
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (!readChar(&ch, f))
-            return 0;
-        coords[i].x = ch;
-    }
-
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (!readChar(&ch, f))
-            return 0;
-        coords[i].y = ch;
-    }
-
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        monsterTable[i].setCoords(coords[i]);
-    }
-
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (!readChar(&ch, f))
-            return 0;
-        if (ch > 0)
-            monsterTable[i].setTile(Tile::translate(ch));
-        isEmpty[i] = (ch == 0) ? true : false;
-    }
-
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (!readChar(&ch, f))
-            return 0;
-        coords[i].x = ch;
-    }
-
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        if (!readChar(&ch, f))
-            return 0;
-        coords[i].y = ch;
-    }
-
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        monsterTable[i].setPrevCoords(coords[i]);
-    }
-
-    /* empty out our object list first */
-    objs->clear();    
-    
-    for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        /* check to see if this is a non-empty entry */
-        if (!isEmpty[i]) {
-            obj = new Object;
-            *obj = monsterTable[i];
-            
-            if (i < MONSTERTABLE_CREATURES_SIZE)
-                obj->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
-            else
-                obj->setMovementBehavior(MOVEMENT_FIXED);
-
-            /* add it to the list! */
-            objs->push_back(obj);            
-        }
-    }    
-    
+int SaveGameMonsterRecord::write(FILE *f) const {
+	if (!writeChar(prevTile, f) ||
+        !writeChar(x, f) ||
+        !writeChar(y, f) ||
+        !writeChar(tile, f) ||
+        !writeChar(prevx, f) ||
+        !writeChar(prevy, f) ||
+		!writeChar(unused1, f) ||
+		!writeChar(unused2, f))
+        return 0;
     return 1;
+}
+
+int saveGameMonstersWrite(SaveGameMonsterRecord *monsterTable, FILE *f) {
+    if (monsterTable) {
+		for (int i = 0; i < MONSTERTABLE_SIZE; i++) {		
+			if (!monsterTable[i].write(f))
+				return 0;
+		}		
+	}
+	else {
+		for (int i = 0; i < MONSTERTABLE_SIZE; i++) {
+			SaveGameMonsterRecord empty;
+			if (!empty.write(f))
+				return 0;
+		}
+	}
+	return 1;
+}
+
+int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f) {    
+	for (int i = 0; i < MONSTERTABLE_SIZE; i++) {
+		if (!monsterTable[i].read(f))
+			return 0;
+	}
+	return 1;    
 }

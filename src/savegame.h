@@ -12,6 +12,10 @@
 #define MONSTERS_SAV_BASE_FILENAME      "monsters.sav"
 #define OUTMONST_SAV_BASE_FILENAME      "outmonst.sav"
 
+#define MONSTERTABLE_SIZE				32
+#define MONSTERTABLE_CREATURES_SIZE		8
+#define MONSTERTABLE_OBJECTS_SIZE		(MONSTERTABLE_SIZE - MONSTERTABLE_CREATURES_SIZE)
+
 class Object;
 
 /**
@@ -182,6 +186,22 @@ struct SaveGamePlayerRecord {
 };
 
 /**
+ * How Ultima IV stores monster information
+ */
+typedef struct _SaveGameMonsterRecord {
+	int write(FILE *f) const;
+	int read(FILE *f);
+	unsigned char prevTile;
+	unsigned char x;
+	unsigned char y;
+	unsigned char tile;
+	unsigned char prevx;
+	unsigned char prevy;
+	unsigned char unused1;
+	unsigned char unused2;
+} SaveGameMonsterRecord;
+
+/**
  * Represents the on-disk contents of PARTY.SAV.
  */
 struct SaveGame {
@@ -233,7 +253,7 @@ FILE *saveGameOpenForWriting(void);
 FILE *saveGameOpenForReading(void);
 FILE *saveGameMonstersOpenForWriting(const char *filename);
 FILE *saveGameMonstersOpenForReading(const char *filename);
-int saveGameMonstersWrite(std::deque<Object *> &objs, FILE *f);
-int saveGameMonstersRead(std::deque<Object *> *objs, FILE *f);
+int saveGameMonstersWrite(SaveGameMonsterRecord *monsterTable, FILE *f);
+int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f);
 
 #endif

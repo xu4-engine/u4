@@ -13,7 +13,6 @@
 using std::string;
 
 typedef std::map<string, class TileRule *> TileRuleMap;
-typedef std::map<unsigned int, string> TileMap;
 
 /**
  * TileRule class
@@ -37,11 +36,8 @@ public:
 /**
  * Tileset class
  */
-class Tileset {       
+class Tileset {
 public:    
-    typedef std::map<string, TileMap*> TileMapMap;
-
-    static void loadTileMap(string filename);
     static void loadGroup(string filename);
     static void load(string filename);
     static void unload();    
@@ -50,9 +46,7 @@ public:
     static TileId currentId;    
     static TileVector tiles;
     static int totalFrames;
-    static string imageName;        
-    
-    static TileMapMap tileMaps;
+    static string imageName;
 };
 
 #endif

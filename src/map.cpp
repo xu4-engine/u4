@@ -624,3 +624,80 @@ bool Map::move(Object *obj, Direction d) {
     }
     return false;
 }
+
+bool Map::fillMonsterTable() {
+	ObjectDeque::iterator current;
+    Object *obj;	
+    ObjectDeque monsters;
+    ObjectDeque other_creatures;
+    ObjectDeque inanimate_objects;	
+	Object empty;
+    
+    int nCreatures = 0;
+    int nObjects = 0;    
+    int i;
+	
+    memset(monsterTable, 0, MONSTERTABLE_SIZE * sizeof(SaveGameMonsterRecord));
+
+    /**
+     * First, categorize all the objects we have
+     */
+    for (current = objects.begin(); current != objects.end(); current++) {
+        obj = *current;
+
+        /* moving objects first */
+        if ((obj->getType() == OBJECT_CREATURE) && (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
+			Creature *c = dynamic_cast<Creature*>(obj);			
+			/* whirlpools and storms are separated from other moving objects */
+			if (c->id == WHIRLPOOL_ID || c->id == STORM_ID)            
+                monsters.push_back(obj);
+            else other_creatures.push_back(obj);
+        }
+        else inanimate_objects.push_back(obj);
+    }
+
+    /**
+     * Add other monsters to our whirlpools and storms
+     */
+    while (other_creatures.size() && nCreatures < MONSTERTABLE_CREATURES_SIZE) {
+        monsters.push_back(other_creatures.front());
+        other_creatures.pop_front();
+    }
+
+	/**
+	 * Add empty objects to our list to fill things up
+	 */
+	while (monsters.size() < MONSTERTABLE_CREATURES_SIZE)
+		monsters.push_back(&empty);
+
+    /**
+     * Finally, add inanimate objects
+     */
+    while (inanimate_objects.size() && nObjects < MONSTERTABLE_OBJECTS_SIZE) {
+        monsters.push_back(inanimate_objects.front());
+        inanimate_objects.pop_front();
+    }
+
+	/**
+	 * Fill in the blanks
+	 */
+	while (monsters.size() < MONSTERTABLE_SIZE)
+		monsters.push_back(&empty);
+
+	/**
+	 * Fill in our monster table
+	 */
+	for (i = 0; i < MONSTERTABLE_SIZE; i++) {
+		Coords c = monsters[i]->getCoords(),
+			   prevc = monsters[i]->getPrevCoords();
+
+		monsterTable[i].prevTile = monsters[i]->getPrevTile().getIndex();		
+		monsterTable[i].x = c.x;
+		monsterTable[i].y = c.y;
+		monsterTable[i].tile = monsters[i]->getTile().getIndex();
+		monsterTable[i].prevx = prevc.x;
+		monsterTable[i].prevy = prevc.y;
+	}
+	
+	return true;
+}

@@ -9,9 +9,10 @@
 #include "tile.h"
 
 #include "context.h"
+#include "creature.h"
 #include "error.h"
 #include "location.h"
-#include "creature.h"
+#include "tilemap.h"
 #include "tileset.h"
 #include "xml.h"
 
@@ -66,13 +67,12 @@ Tile *Tile::findByName(string name) {
 /**
  * Returns the tile at the corresponding index of the current tileset
  */ 
-MapTile Tile::translate(int index, string tileMap) {    
-    Tileset::TileMapMap::iterator i = Tileset::tileMaps.find(tileMap);
-    if (i != Tileset::tileMaps.end()) {
-        TileMap *map = i->second;
-        Tile *tile = Tile::findByName((*map)[index]);
+MapTile Tile::translate(int index, string tileMap) {
+    TileIndexMap* im = TileMap::get(tileMap);    
+    if (im) {        
+        Tile *tile = Tile::findByName((*im)[index]);
         if (!tile)
-            errorFatal("Error: the tile '%s' was not found in the tileset", (*map)[index].c_str());
+            errorFatal("Error: the tile '%s' was not found in the tileset", (*im)[index].c_str());
         
         /* FIXME: is tile->index accurate? almost definately not */
         return MapTile(tile->id, index - tile->index);

@@ -34,8 +34,8 @@ install::
 	$(INSTALL) -D u4dec $(libdir)/u4/u4dec
 	$(INSTALL) -D tlkconv $(libdir)/u4/tlkconv
 	$(INSTALL) ../conf/*.xml $(libdir)/u4
-    mkdir -p $(libdir)/u4/tilemap
-    $(INSTALL) ../conf/tilemap/*.xml $(libdir)/u4/tilemap
+	mkdir -p $(libdir)/u4/tilemap
+	$(INSTALL) ../conf/tilemap/*.xml $(libdir)/u4/tilemap
 	mkdir -p $(libdir)/u4/dtd
 	$(INSTALL) ../conf/dtd/*.dtd $(libdir)/u4/dtd
 	mkdir -p $(libdir)/u4/graphics

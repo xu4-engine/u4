@@ -116,7 +116,7 @@ void gameLordBritishCheckLevels(void);
 /* creature functions */
 void gameAlertTheGuards(Map *map);
 void gameDestroyAllCreatures(void);
-void gameFixupCreatures(Map *map);
+void gameFixupObjects(Map *map);
 void gameCreatureAttack(Creature *obj);
 int gameSummonCreature(string *creatureName);
 
@@ -232,19 +232,19 @@ void gameInit() {
     /* load in creatures.sav */
     monstersFile = saveGameMonstersOpenForReading(MONSTERS_SAV_BASE_FILENAME);
     if (monstersFile) {
-        saveGameMonstersRead(&c->location->map->objects, monstersFile);
+        saveGameMonstersRead(c->location->map->monsterTable, monstersFile);
         fclose(monstersFile);
     }
-    gameFixupCreatures(c->location->map);
+    gameFixupObjects(c->location->map);
 
     /* we have previous creature information as well, load it! */
     if (c->location->prev) {
         monstersFile = saveGameMonstersOpenForReading(OUTMONST_SAV_BASE_FILENAME);
         if (monstersFile) {
-            saveGameMonstersRead(&c->location->prev->map->objects, monstersFile);
+            saveGameMonstersRead(c->location->prev->map->monsterTable, monstersFile);
             fclose(monstersFile);
         }
-        gameFixupCreatures(c->location->prev->map);
+        gameFixupObjects(c->location->prev->map);
     }
 
     /* set the party's transport */
@@ -333,8 +333,9 @@ int gameSave() {
 
     /* fix creature animations so they are compatible with u4dos */
     c->location->map->resetObjectAnimations();
+	c->location->map->fillMonsterTable(); /* fill the monster table so we can save it */
 
-    if (!saveGameMonstersWrite(c->location->map->objects, monstersFile)) {
+    if (!saveGameMonstersWrite(c->location->map->monsterTable, monstersFile)) {
         screenMessage("Error opening creatures.sav\n");
         fclose(monstersFile);
         return 0;
@@ -413,8 +414,9 @@ int gameSave() {
         
         /* fix creature animations so they are compatible with u4dos */
         c->location->prev->map->resetObjectAnimations();
+		c->location->prev->map->fillMonsterTable(); /* fill the monster table so we can save it */
 
-        if (!saveGameMonstersWrite(c->location->prev->map->objects, monstersFile)) {
+        if (!saveGameMonstersWrite(c->location->prev->map->monsterTable, monstersFile)) {
             screenMessage("Error opening %s\n", OUTMONST_SAV_BASE_FILENAME);
             fclose(monstersFile);
             return 0;
@@ -3421,23 +3423,27 @@ void gameCheckRandomCreatures() {
  * Fixes objects initially loaded by saveGameMonstersRead,
  * and alters movement behavior accordingly to match the creature
  */
-void gameFixupCreatures(Map *map) {
-    ObjectDeque::iterator i;
+void gameFixupObjects(Map *map) {
+    int i;
     Object *obj;
 
-    for (i = map->objects.begin(); i != map->objects.end(); i++) {
-        obj = *i;
+	/* first, add stuff from the monster table to the map */
+	for (i = 0; i < MONSTERTABLE_SIZE; i++) {
+		SaveGameMonsterRecord *monster = &map->monsterTable[i];
+		if (monster->prevTile != 0) {
+			Coords c(monster->x, monster->y);
+			MapTile tile = Tile::translate(monster->tile),
+				oldTile = Tile::translate(monster->prevTile);
+			
+			if (i < MONSTERTABLE_CREATURES_SIZE)
+				obj = map->addCreature(creatures.getByTile(tile), c);
+			else
+				obj = map->addObject(tile, oldTile, c);
 
-        /* translate unknown objects into creature objects if necessary */
-        if (obj->getType() == OBJECT_UNKNOWN && creatures.getByTile(obj->getTile()) != NULL &&
-            obj->getMovementBehavior() != MOVEMENT_FIXED) {
-            /* replace the object with a creature object */
-            map->addCreature(creatures.getByTile(obj->getTile()), obj->getCoords());
-            obj->setMap(map);
-            i = map->removeObject(i) - 1;
-        }
-        else obj->setMap(map);
-    }    
+			/* set the map for our object */
+			obj->setMap(map);
+		}
+	}    
 }
 
 long gameTimeSinceLastCommand() {

@@ -229,7 +229,8 @@ void StatsArea::showWeapons() {
     int w, line, col;
     view = STATS_WEAPONS;
 
-    setTitle("Weapons");
+    clear();
+	setTitle("Weapons");
 
     line = STATS_AREA_Y;
     col = 0;
@@ -257,7 +258,8 @@ void StatsArea::showArmor() {
     int a, line;
     view = STATS_ARMOR;
 
-    setTitle("Armour");
+    clear();
+	setTitle("Armour");
 
     line = STATS_AREA_Y;
     screenTextAt(STATS_AREA_X, line++, "A  -No Armour");
@@ -277,7 +279,8 @@ void StatsArea::showEquipment() {
     int line;
     view = STATS_EQUIPMENT;
 
-    setTitle("Equipment");
+    clear();
+	setTitle("Equipment");
 
     line = STATS_AREA_Y;
     screenTextAt(STATS_AREA_X, line++, "%2d Torches", c->saveGame->torches);

@@ -27,7 +27,9 @@ typedef enum {
 
 class Object {
 public:
-    Object(ObjectType type = OBJECT_UNKNOWN) :      
+    Object(ObjectType type = OBJECT_UNKNOWN) :
+      tile(0),
+      prevTile(0),
       movement_behavior(MOVEMENT_FIXED),
       objType(type),
       map(NULL),

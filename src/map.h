@@ -14,6 +14,7 @@
 #include "map.h"
 #include "music.h"
 #include "object.h"
+#include "savegame.h"
 #include "types.h"
 #include "u4file.h"
 
@@ -109,6 +110,9 @@ public:
     int getValidMoves(MapCoords from, MapTile transport);
     bool move(Object *obj, Direction d);
 
+	// u4dos compatibility
+	bool fillMonsterTable();
+
 public:
     MapId           id;
     string          fname;
@@ -127,7 +131,10 @@ public:
     int             flags;
     Music           music;
     MapData         data;
-    ObjectDeque     objects;    
+    ObjectDeque     objects;
+
+	// u4dos compatibility
+	SaveGameMonsterRecord monsterTable[MONSTERTABLE_SIZE];
 };
 
 #endif

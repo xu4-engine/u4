@@ -57,6 +57,7 @@ CXXSRCS=\
         stats.cpp \
         tile.cpp \
         tileanim.cpp \
+        tilemap.cpp \
         tileset.cpp \
         u4.cpp \
         u4_$(UI).cpp \
