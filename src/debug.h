@@ -71,6 +71,9 @@ public:
     void trace(const string &msg, const string &file = "", const string &func = "", const int line = -1, bool glbl = true);
 
 private:        
+    static bool loggingEnabled(const string &name);
+
+    bool disabled;
     string filename, name;
     FILE *file;
     static FILE *global; 

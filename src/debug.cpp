@@ -6,11 +6,16 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <vector>
 
 #include "debug.h"
+#include "settings.h"
+#include "utils.h"
 
 #if HAVE_BACKTRACE
 #include <execinfo.h>
+
+using std::vector;
 
 /**
  * Get a backtrace and print it to the file.  Note that gcc requires
@@ -88,7 +93,12 @@ string getFilename(const string &path) {
 
 FILE *Debug::global = NULL;
 
-Debug::Debug(const string &fn, const string &nm, bool append) : filename(fn), name(nm) {
+Debug::Debug(const string &fn, const string &nm, bool append) : disabled(false), filename(fn), name(nm) {
+    if (!loggingEnabled(name)) {
+        disabled = true;
+        return;
+    }
+
     if (append)
         file = fopen(filename.c_str(), "at");
     else file = fopen(filename.c_str(), "wt");        
@@ -106,6 +116,9 @@ void Debug::initGlobal(const string &filename) {
 }
 
 void Debug::trace(const string &msg, const string &filename, const string &func, const int line, bool glbl) {
+    if (disabled)
+        return;
+
     bool brackets = false;
     string message;
 
@@ -152,4 +165,15 @@ void Debug::trace(const string &msg, const string &filename, const string &func,
     fprintf(file, message.c_str());
     if (global && glbl)
         fprintf(global, "%12s: %s", name.c_str(), message.c_str());
+}
+
+bool Debug::loggingEnabled(const string &name) {
+    if (settings.logging == "all")
+        return true;
+
+    vector<string> enabledLogs = split(settings.logging, ", ");
+    if (find(enabledLogs.begin(), enabledLogs.end(), name) != enabledLogs.end())
+        return true;
+
+    return false;
 }
