@@ -307,16 +307,16 @@ void screenLoadGraphicsFromConf() {
     const Config *config = Config::getInstance();
 
     vector<ConfigElement> graphicsConf = config->getElement("/config/graphics").getChildren();
-    for (std::vector<ConfigElement>::iterator i = graphicsConf.begin(); i != graphicsConf.end(); i++) {
+    for (std::vector<ConfigElement>::iterator conf = graphicsConf.begin(); conf != graphicsConf.end(); conf++) {
 
-        if (i->getName() == "imageset") {
-            ImageSet *set = screenLoadImageSetFromConf(*i);
+        if (conf->getName() == "imageset") {
+            ImageSet *set = screenLoadImageSetFromConf(*conf);
             imageSets[set->name] = set;
         }
-        else if (i->getName() == "layout")
-            layouts.push_back(screenLoadLayoutFromConf(*i));
-        else if (i->getName() == "tileanimset")
-            tileanimSets.push_back(new TileAnimSet(*i));
+        else if (conf->getName() == "layout")
+            layouts.push_back(screenLoadLayoutFromConf(*conf));
+        else if (conf->getName() == "tileanimset")
+            tileanimSets.push_back(new TileAnimSet(*conf));
     }
 
     imageSetNames.clear();
