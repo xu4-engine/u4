@@ -1,9 +1,7 @@
 <!-- $Id$ -->
 
-<!ENTITY % type '( base | dungeon | gem )'>
-
 <!ELEMENT tilesets ( tileset+ ) >
+<!ATTLIST tilesets imageName       CDATA    #REQUIRED>
 
 <!ELEMENT tileset EMPTY >
-<!ATTLIST tileset file             CDATA    #REQUIRED                  
-                  type             %type;   #REQUIRED>
+<!ATTLIST tileset file             CDATA    #REQUIRED>

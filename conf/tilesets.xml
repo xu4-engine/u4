@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <!DOCTYPE tilesets SYSTEM "dtd/tilesets.dtd">
 <!-- $Id$ -->
-<tilesets>
-    <tileset file="tiles.xml" type="base"/>
-    <tileset file="dungeonTiles.xml" type="dungeon"/>
+<tilesets imageName="tiles">
+    <tileset file="tiles.xml"/>
+    <tileset file="dungeonTiles.xml"/>
     <!-- FIXME: to be implemented 
         <tileset file="gemTiles.xml" type="gem"/>
     -->

@@ -5,7 +5,6 @@
 <!ENTITY % anim '( scroll | frames | rowswap | none )'>
 
 <!ELEMENT tiles ( tile+ ) >
-<!ATTLIST tiles imageName          NMTOKEN  #REQUIRED>
 
 <!ELEMENT tile EMPTY >
 <!ATTLIST tile  name               CDATA    #REQUIRED
@@ -14,9 +13,6 @@
                 directions         CDATA    #IMPLIED
                 animated           %bool;   #IMPLIED
                 rowtoswap          NMTOKEN  #IMPLIED
-                opaque             %bool;   #IMPLIED
-                displayTile        NMTOKEN  #IMPLIED>
-
-<!-- NOTE: displayTile will be removed. For now, however, it keeps the game functional -->
+                opaque             %bool;   #IMPLIED>
 
 <!-- animation          %anim;   #IMPLIED -->
