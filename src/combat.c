@@ -635,63 +635,68 @@ int combatMonsterRangedAttack(int x, int y, int distance, void *data) {
             /* show the 'miss' tile */
             attackFlash(x, y, misstile, 2);
 
-        } else { /* The weapon hit! */
-            m = mapObjectAt(c->location->map, info->origin_x, info->origin_y, c->location->z)->monster;            
+        } else { /* The weapon hit! */                   
 
             /* show the 'hit' tile */
             attackFlash(x, y, hittile, 2);             
 
-            /* These effects require the player to be hit to affect the player */
-            switch(effect) {
-            case EFFECT_ELECTRICITY:
-                /* FIXME: are there any special effects here? */
-                screenMessage("\n%s Electrified!\n", c->saveGame->players[player].name);
-                playerApplyDamage(&c->saveGame->players[player], monsterGetDamage(m));
-                break;
-            
-            case EFFECT_SLEEP:
-            case EFFECT_POISON:
-            case EFFECT_POISONFIELD:
-                /* no damage is dealt */
-                break;
+            /* FIXME: Will this ever be used? */
 
-            case EFFECT_FIRE:
-                /* FIXME: are there any special effects here? */            
-            default:
-                /* show the default 'hit' message */
-                screenMessage("\n%s Hit!\n", c->saveGame->players[player].name);
-                playerApplyDamage(&c->saveGame->players[player], monsterGetDamage(m));
-                break;
-            }                
+            /* These effects require the player to be hit to affect the player */
+            /*switch(effect) {
+            } */
         }
+
+        m = mapObjectAt(c->location->map, info->origin_x, info->origin_y, c->location->z)->monster;
 
         /* These effects happen whether or not the player was hit */
         switch(effect) {
-            case EFFECT_POISON:
-            case EFFECT_POISONFIELD:
-                
-                screenMessage("\n%s Poisoned!\n", c->saveGame->players[player].name);
-
-                /* see if the player is poisoned */
-                if ((rand() % 2 == 0) && (c->saveGame->players[player].status != STAT_POISONED))
-                    c->saveGame->players[player].status = STAT_POISONED;
-                else screenMessage("Failed.\n");
-                break;
+        
+        case EFFECT_ELECTRICITY:
+            /* FIXME: are there any special effects here? */
+            screenMessage("\n%s Electrified!\n", c->saveGame->players[player].name);
+            playerApplyDamage(&c->saveGame->players[player], monsterGetDamage(m));
+            break;
+        
+        case EFFECT_POISON:
+        case EFFECT_POISONFIELD:
             
-            case EFFECT_SLEEP:
+            screenMessage("\n%s Poisoned!\n", c->saveGame->players[player].name);
 
-                screenMessage("\n%s Slept!\n", c->saveGame->players[player].name);
+            /* see if the player is poisoned */
+            if ((rand() % 2 == 0) && (c->saveGame->players[player].status != STAT_POISONED))
+                c->saveGame->players[player].status = STAT_POISONED;
+            else screenMessage("Failed.\n");
+            break;
+        
+        case EFFECT_SLEEP:
 
-                /* see if the player is put to sleep */
-                if ((rand() % 2 == 0) && (c->saveGame->players[player].status != STAT_SLEEPING)) {
-                    combatInfo.party_status[player] = c->saveGame->players[player].status;
-                    c->saveGame->players[player].status = STAT_SLEEPING;
-                    combatInfo.party[player]->tile = CORPSE_TILE;
-                }
-                else screenMessage("Failed.\n");
-                break;
+            screenMessage("\n%s Slept!\n", c->saveGame->players[player].name);
+
+            /* see if the player is put to sleep */
+            if ((rand() % 2 == 0) && (c->saveGame->players[player].status != STAT_SLEEPING)) {
+                combatInfo.party_status[player] = c->saveGame->players[player].status;
+                c->saveGame->players[player].status = STAT_SLEEPING;
+                combatInfo.party[player]->tile = CORPSE_TILE;
+            }
+            else screenMessage("Failed.\n");
+            break;
+
+        case EFFECT_LAVA:
+        case EFFECT_FIRE:
+            /* FIXME: are there any special effects here? */            
+            screenMessage("\n%s %s Hit!\n", c->saveGame->players[player].name,
+                effect == EFFECT_LAVA ? "Lava" : "Fiery");
+            playerApplyDamage(&c->saveGame->players[player], monsterGetDamage(m));
+            break;
                 
-            default: break;
+        default: 
+            /* show the appropriate 'hit' message */
+            if (hittile == MAGICFLASH_TILE)
+                screenMessage("\n%s Magical Hit!\n", c->saveGame->players[player].name);
+            else screenMessage("\n%s Hit!\n", c->saveGame->players[player].name);
+            playerApplyDamage(&c->saveGame->players[player], monsterGetDamage(m));
+            break;
         }       
 
     }
@@ -1262,9 +1267,10 @@ void combatApplyMonsterTileEffects(void) {
                     }
                     break;
 
+                case EFFECT_LAVA:
                 case EFFECT_FIRE:
                     /* deal 0 - 127 damage to the monster if it is not immune to fire damage */
-                    if (combatInfo.monsters[i]->monster->resists != EFFECT_FIRE)
+                    if (!(combatInfo.monsters[i]->monster->resists & (EFFECT_FIRE | EFFECT_LAVA)))
                         combatApplyDamageToMonster(i, rand() % 0x7F, -1);
                     break;
 

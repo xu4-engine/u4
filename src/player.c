@@ -417,6 +417,7 @@ void playerApplyEffect(SaveGame *saveGame, TileEffect effect, int player) {
         switch (effect) {
         case EFFECT_NONE:
             break;
+        case EFFECT_LAVA:
         case EFFECT_FIRE:
             if (i == player)
                 playerApplyDamage(&(saveGame->players[i]), 16 + (rand() % 32));                

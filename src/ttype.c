@@ -140,6 +140,8 @@ void tileLoadInfoFromXml() {
             _ttype_info[tile].effect = EFFECT_POISONFIELD;
         else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "effect"), (const xmlChar *) "electricity") == 0)
             _ttype_info[tile].effect = EFFECT_ELECTRICITY;
+        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "effect"), (const xmlChar *) "lava") == 0)
+            _ttype_info[tile].effect = EFFECT_LAVA;
 
         tile++;
     }

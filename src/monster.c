@@ -100,7 +100,7 @@ void monsterLoadInfoFromXml() {
         const char *name;
         TileEffect effect;
     } effects[] = {
-        { "fire", EFFECT_FIRE },
+        { "fire", EFFECT_FIRE | EFFECT_LAVA },
         { "poison", EFFECT_POISON | EFFECT_POISONFIELD },
         { "sleep", EFFECT_SLEEP }
     };
@@ -381,7 +381,8 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
     
-    return monsterById((era & rand() & rand()) + ORC_ID);    
+    //return monsterById((era & rand() & rand()) + ORC_ID);    
+    return monsterById(LAVA_LIZARD_ID);
 }
 
 

@@ -55,7 +55,8 @@ typedef enum {
     EFFECT_SLEEP,
     EFFECT_POISON,
     EFFECT_POISONFIELD,
-    EFFECT_ELECTRICITY
+    EFFECT_ELECTRICITY,
+    EFFECT_LAVA
 } TileEffect;
 
 typedef enum {

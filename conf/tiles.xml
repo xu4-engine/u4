@@ -77,7 +77,7 @@
     <tile opaque="true"/> <!-- secret door -->
     <tile/> <!-- altar -->
     <tile cantwalkon="all"/> <!-- roast -->
-    <tile animated="true" effect="fire"/> <!-- lava -->
+    <tile animated="true" effect="lava"/> <!-- lava -->
     <tile/> <!-- miss flash -->
     <tile/> <!-- magic flash -->
     <tile/> <!-- hit flash -->
