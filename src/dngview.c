@@ -70,7 +70,6 @@ DungeonGraphicType dungeonViewTilesToGraphic(ListNode *tiles) {
      * (always displayed as a tile, unless a ladder)
      */
     if (listLength(tiles) > 1) {
-        printf("obj or annot! %d\n", tile);
         switch (tile) {
         case LADDERUP_TILE:
             return DNGGRAPHIC_LADDERUP;
