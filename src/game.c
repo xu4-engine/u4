@@ -408,8 +408,11 @@ void gameFinishTurn() {
         /* Monsters cannot spawn, move or attack while the avatar is on the balloon */
         if (!c->saveGame->balloonstate) {
 
+            /* FIXME: there needs to be a better way of getting tiles */
             /* apply effects from tile avatar is standing on */
-            playerApplyEffect(c->saveGame, tileGetEffect(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
+            if (c->location->context == CTX_DUNGEON)
+                playerApplyEffect(c->saveGame, tileGetEffect(mapDungeonTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
+            else playerApplyEffect(c->saveGame, tileGetEffect(mapGroundTileAt(c->location->map, c->location->x, c->location->y, c->location->z)), ALL_PLAYERS);
 
             /* Move monsters and see if something is attacking the avatar */
             attacker = mapMoveObjects(c->location->map, c->location->x, c->location->y, c->location->z);        
