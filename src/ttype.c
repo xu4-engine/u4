@@ -116,6 +116,7 @@ void tileLoadInfoFromXml() {
 
             /* subtile of dungeon tile (for example, magic fields - poison, energy, fire, sleep) */
             if (xmlStrcmp(node->parent->name, (const xmlChar *) "dngTile") == 0) {                
+                /* FIXME: this isn't handled yet */
                 index = &subTile;
                 offset = ((*index) - 1) << lshift; /* offsets to 0x90, 0x91, 0x92, etc */
                 lshift = 0;

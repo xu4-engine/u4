@@ -2,10 +2,11 @@
 
 <!ENTITY % bool '( true | false )'>
 <!ENTITY % dir '( west | north | east | south | all )'>
+<!ENTITY % dngMove '( advance | retreat | all )'>
 <!ENTITY % effect '( fire | sleep | poison | poisonField | electricity | lava )'>
 <!ENTITY % speed '( slow | vslow | vvslow )'>
 
-<!ELEMENT tiles ( tile+ ) >
+<!ELEMENT tiles ( tile+ | dngTile+ ) >
 
 <!ELEMENT tile EMPTY >
 <!ATTLIST tile animated           %bool;   #IMPLIED
@@ -20,8 +21,7 @@
                effect             %effect; #IMPLIED
                horse              %bool;   #IMPLIED
                lockeddoor         %bool;   #IMPLIED
-               monsterunwalkable  %bool;   #IMPLIED
-               dungeonunwalkable  %bool;   #IMPLIED
+               monsterunwalkable  %bool;   #IMPLIED               
                opaque             %bool;   #IMPLIED
                replacement        %bool;   #IMPLIED
                sailable           %bool;   #IMPLIED
@@ -30,3 +30,12 @@
                swimable           %bool;   #IMPLIED
                talkover           %bool;   #IMPLIED
                unflyable          %bool;   #IMPLIED>
+
+<!ELEMENT dngTile ( dngTile+ ) >
+<!ATTLIST dngTile displayTile           NMTOKEN       #REQUIRED
+                  cantwalkon            %dngMove;     #IMPLIED
+                  chest                 %bool;        #IMPLIED
+                  dispel                %bool;        #IMPLIED
+                  effect                %effect;      #IMPLIED
+                  monsterunwalkable     %bool;        #IMPLIED
+                  replacement           %bool;        #IMPLIED>

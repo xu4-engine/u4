@@ -14,6 +14,7 @@
 #include "context.h"
 #include "debug.h"
 #include "direction.h"
+#include "dungeon.h"
 #include "event.h"
 #include "game.h"
 #include "location.h"
@@ -447,15 +448,19 @@ static int spellDispel(int dir) {
     /* 
      * get the location of the avatar (or current party member, if in battle)
      */
-    locationGetCurrentPosition(c->location, &x, &y, &z);
-    newTile = locationGetReplacementTile(c->location, x, y, z);
+    locationGetCurrentPosition(c->location, &x, &y, &z);    
 
     /*
      * move to where we want to dispel the field
      */
     mapDirMove(c->location->map, (Direction) dir, &x, &y);
     if (MAP_IS_OOB(c->location->map, x, y))
-        return 0;    
+        return 0; 
+
+    /*
+     * get a replacement tile for the field
+     */
+    newTile = locationGetReplacementTile(c->location, x, y, z);
 
     /*
      * if there is a field annotation, remove it and replace it with a valid

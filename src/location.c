@@ -124,10 +124,13 @@ unsigned char locationGetReplacementTile(Location *location, int x, int y, int z
 
         /* make sure the tile we found is a valid replacement */
         if (tileIsReplacement(newTile))
-            return newTile;        
+            return newTile;
     }            
     
-    return (c->location->context & CTX_COMBAT) ? BRICKFLOOR_1_TILE : BRICKFLOOR_TILE;
+    if (c->location->context & CTX_DUNGEON)
+        return 0;
+    else
+        return (c->location->context & CTX_COMBAT) ? BRICKFLOOR_1_TILE : BRICKFLOOR_TILE;
 }
 
 /**
