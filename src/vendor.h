@@ -14,6 +14,7 @@ const char *vendorGetVendorQuestionChoices(const Conversation *cnv);
 char *vendorGetIntro(Conversation *cnv);
 char *vendorGetArmsVendorQuestionResponse(Conversation *cnv, const char *response);
 char *vendorGetTavernVendorQuestionResponse(Conversation *cnv, const char *response);
+char *vendorGetInnVendorQuestionResponse(Conversation *cnv, const char *response);
 char *vendorGetArmsBuyItemResponse(Conversation *cnv, const char *response);
 char *vendorGetReagentsBuyItemResponse(Conversation *cnv, const char *response);
 char *vendorGetHealerBuyItemResponse(Conversation *cnv, const char *response);
