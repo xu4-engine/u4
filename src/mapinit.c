@@ -63,6 +63,7 @@ extern Map shrine_valor_map;
 extern Map shrine_justice_map;
 extern Map shrine_sacrifice_map;
 extern Map shrine_honor_map;
+extern Map shrine_spirituality_map;
 extern Map shrine_humility_map;
 
 City * const cities[] = {
@@ -92,7 +93,7 @@ Map * const areas[] = {
     &shrine_honesty_map, &shrine_compassion_map,
     &shrine_valor_map, &shrine_justice_map,
     &shrine_sacrifice_map, &shrine_honor_map,
-    &shrine_humility_map
+    &shrine_spirituality_map, &shrine_humility_map
 };
 
 int initializeMaps() {
