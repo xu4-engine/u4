@@ -159,7 +159,7 @@ void putStoneInInventory(void *virt) {
 int isItemInInventory(void *item) {
     /* you can't find the skull again once it's destroyed */
     if (((int)item == ITEM_SKULL) && (c->saveGame->items & ITEM_SKULL_DESTROYED))
-        return 1;
+        return 0;
     else return c->saveGame->items & (int)item;
 }
 
