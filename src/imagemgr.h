@@ -103,6 +103,7 @@ public:
 
 private:
     ImageMgr();
+    void init();
 
     ImageSet *loadImageSetFromConf(const ConfigElement &conf);
     ImageInfo *loadImageInfoFromConf(const ConfigElement &conf);
@@ -119,6 +120,7 @@ private:
     void fixupDungNS(Image *im, int prescale);
 
     static ImageMgr *instance;
+    bool initialized;
     std::map<std::string, ImageSet *> imageSets;
     std::vector<std::string> imageSetNames;
 

@@ -34,6 +34,8 @@ ImageMgr *ImageMgr::instance = NULL;
 ImageMgr *ImageMgr::getInstance() {
     if (instance == NULL)
         instance = new ImageMgr();
+    if (!instance->initialized)
+        instance->init();
     return instance;
 }
 
@@ -41,18 +43,52 @@ ImageMgr::ImageMgr() {
     logger = new Debug("debug/imagemgr.txt", "ImageMgr");
     TRACE(*logger, "creating ImageMgr");
 
+    initialized = false;
+}
+
+void ImageMgr::init() {
+    TRACE(*logger, "initializing ImageMgr");
+
+    /*
+     * register the "screen" image representing the entire screen
+     */
+    Image *screen = Image::createScreenImage();
+    ImageInfo *screenInfo = new ImageInfo;
+
+    screenInfo->name = "screen";
+    screenInfo->filename = "";
+    screenInfo->width = screen->width();
+    screenInfo->height = screen->height();
+    screenInfo->depth = 0;
+    screenInfo->prescale = 0;
+    screenInfo->filetype = "";
+    screenInfo->tiles = 0;
+    screenInfo->introOnly = false;
+    screenInfo->transparentIndex = -1;
+    screenInfo->xu4Graphic = false;
+    screenInfo->fixup = FIXUP_NONE;
+    screenInfo->image = screen;
+
+    /*
+     * register all the images declared in the config files
+     */
     const Config *config = Config::getInstance();
     vector<ConfigElement> graphicsConf = config->getElement("/config/graphics").getChildren();
     for (std::vector<ConfigElement>::iterator conf = graphicsConf.begin(); conf != graphicsConf.end(); conf++) {
         if (conf->getName() == "imageset") {
             ImageSet *set = loadImageSetFromConf(*conf);
             imageSets[set->name] = set;
+
+            // all image sets include the "screen" image
+            set->info[screenInfo->name] = screenInfo;
         }
     }
 
     imageSetNames.clear();
     for (std::map<string, ImageSet *>::const_iterator set = imageSets.begin(); set != imageSets.end(); set++)
         imageSetNames.push_back(set->first);
+
+    initialized = true;
 }
 
 ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
@@ -62,6 +98,8 @@ ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
     set->name = conf.getString("name");
     set->location = conf.getString("location");
     set->extends = conf.getString("extends");
+
+    TRACE(*logger, string("loading image set ") + set->name);
 
     vector<ConfigElement> children = conf.getChildren();
     for (vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
@@ -346,6 +384,8 @@ ImageInfo *ImageMgr::get(const string &name) {
     if (filename == "")
         return NULL;
 
+    TRACE(*logger, string("loading image from file '") + filename + string("'"));
+
     U4FILE *file = NULL;
     if (info->xu4Graphic) {
         string pathname(u4find_graphics(filename));
@@ -469,6 +509,7 @@ void ImageMgr::freeAll() {
             }
         }
     }
+    initialized = false;
 }
 
 const vector<string> &ImageMgr::getSetNames() {

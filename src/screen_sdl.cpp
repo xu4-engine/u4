@@ -42,7 +42,6 @@ using std::vector;
 Image *screenScale(Image *src, int scale, int n, int filter);
 Image *screenScaleDown(Image *src, int scale);
 
-Image *screen;
 SDL_Cursor *cursors[5];
 int scale;
 Scaler filterScaler;
@@ -183,8 +182,6 @@ void screenInit() {
     if (!SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (settings.fullscreen ? SDL_FULLSCREEN : 0)))
         errorFatal("unable to set video: %s", SDL_GetError());
 
-    screen = Image::createScreenImage();
-
     /* if we can't use vga, reset to default:ega */
     if (!u4isUpgradeAvailable() && settings.videoType == "VGA")
         settings.videoType = "EGA";
@@ -309,15 +306,6 @@ Layout *screenLoadLayoutFromConf(const ConfigElement &conf) {
     }
 
     return layout;
-}
-
-
-/**
- *  Fills a rectangular screen area with the specified color.  The x,
- *  y, width and height parameters are unscaled, i.e. for 320x200.
- */
-void screenFillRect(int x, int y, int w, int h, int r, int g, int b) {
-    screen->fillRect(x * scale, y * scale, w * scale, h * scale, r, g, b);
 }
 
 #if 0
@@ -478,6 +466,7 @@ void screenShowChar(int chr, int x, int y) {
  * which the player is not an avatar.
  */
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
+    Image *screen = imageMgr->get("screen")->image;
     int i;
 
     screenShowChar(chr, x, y);
@@ -555,6 +544,8 @@ void Tile::drawInDungeon(MapTile *mapTile, int distance, Direction orientation, 
  */
 void Tile::drawFocus(int x, int y) const {
     int scale = ::scale;
+    Image *screen = imageMgr->get("screen")->image;
+
     /**
      * draw the focus rectangle around the tile
      */
@@ -672,6 +663,7 @@ void screenShowGemTile(MapTile *mapTile, bool focus, int x, int y) {
                                          gemlayout->tileshape.width * scale,
                                          gemlayout->tileshape.height * scale);
     } else {
+        Image *screen = imageMgr->get("screen")->image;
         screen->fillRect((gemlayout->viewport.x + (x * gemlayout->tileshape.width)) * scale,
                          (gemlayout->viewport.y + (y * gemlayout->tileshape.height)) * scale,
                          gemlayout->tileshape.width * scale,
@@ -685,6 +677,8 @@ void screenShowGemTile(MapTile *mapTile, bool focus, int x, int y) {
  */
 void screenScrollMessageArea() {
     ASSERT(charsetInfo != NULL && charsetInfo->image != NULL, "charset not initialized!");
+
+    Image *screen = imageMgr->get("screen")->image;
 
     screen->drawSubRectOn(screen, 
                           TEXT_AREA_X * charsetInfo->image->width(), 
@@ -711,6 +705,7 @@ void screenInvertRect(int x, int y, int w, int h) {
     Image *tmp;
     RGBA c;
     int i, j;
+    Image *screen = imageMgr->get("screen")->image;
 
     tmp = Image::create(w * scale, h * scale, false, Image::SOFTWARE);
     if (!tmp)
@@ -737,6 +732,7 @@ void screenInvertRect(int x, int y, int w, int h) {
 void screenShake(int iterations) {
     int x, y, w, h;
     int i;
+    Image *screen = imageMgr->get("screen")->image;
 
     if (settings.screenShakes) {
         x = 0 * scale;
@@ -838,6 +834,7 @@ void screenAnimateIntro(const string &frame) {
 }
 
 void screenEraseMapArea() {
+    Image *screen = imageMgr->get("screen")->image;
     screen->fillRect(BORDER_WIDTH * scale, 
                      BORDER_WIDTH * scale, 
                      VIEWPORT_W * TILE_WIDTH * scale,
@@ -846,6 +843,7 @@ void screenEraseMapArea() {
 }
 
 void screenEraseTextArea(int x, int y, int width, int height) {
+    Image *screen = imageMgr->get("screen")->image;
     screen->fillRect(x * CHAR_WIDTH * scale,
                      y * CHAR_HEIGHT * scale,
                      width * CHAR_WIDTH * scale,
@@ -907,6 +905,7 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
 void screenGemUpdate() {
     MapTile *tile;
     int x, y;
+    Image *screen = imageMgr->get("screen")->image;
     
     const static MapTile black = Tileset::get()->getByName("black")->id;
 
