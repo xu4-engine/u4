@@ -19,6 +19,7 @@
 #include "intro.h"
 #include "error.h"
 #include "music.h"
+#include "sound.h"
 
 int verbose = 0;
 int quit = 0;
@@ -56,6 +57,7 @@ int main(int argc, char *argv[]) {
 
     screenInit();
     musicInit();
+    soundInit();
     eventHandlerInit();
 
     if (!skipIntro) {
@@ -92,6 +94,7 @@ int main(int argc, char *argv[]) {
     eventHandlerPopKeyHandler();
 
     eventHandlerDelete();
+    soundDelete();
     musicDelete();
     screenDelete();
 
