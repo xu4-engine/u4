@@ -521,8 +521,12 @@ string talkerGetQuestionResponse(Conversation *cnv, const char *answer) {
     if (valid) {
         reply = "\n";
         reply += cnv->question->getResponse(yes);
-        if (cnv->question->getType() == Dialogue::Question::HUMILITY_TEST)
-            c->party->adjustKarma(KA_BRAGGED);
+        if (cnv->question->getType() == Dialogue::Question::HUMILITY_TEST) {
+            if (yes)
+                c->party->adjustKarma(KA_BRAGGED);
+            else
+                c->party->adjustKarma(KA_HUMBLE);
+        }
     }
     else {
         reply = "Yes or no!";
