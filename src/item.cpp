@@ -426,16 +426,13 @@ void putWeaponInInventory(void *weapon) {
 }
 
 void useTelescope(void *notused) {
-    AlphaActionInfo *alphaInfo;
+    screenMessage("You see a knob\non the telescope\nmarked A-P\nYou Select:");
+    int choice = AlphaActionController::get('p', "You Select:");
 
-    alphaInfo = new AlphaActionInfo;
-    alphaInfo->lastValidLetter = 'p';
-    alphaInfo->handleAlpha = gamePeerCity;
-    alphaInfo->prompt = "You Select:";
-    alphaInfo->data = NULL;
+    if (choice == -1)
+        return;
 
-    screenMessage("You see a knob\non the telescope\nmarked A-P\n%s", alphaInfo->prompt.c_str());
-    eventHandler->pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, alphaInfo)); 
+    gamePeerCity(choice, NULL);
 }
 
 int isReagentInInventory(void *reag) {

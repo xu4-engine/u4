@@ -929,7 +929,6 @@ bool CombatController::keyPressed(int key) {
     CombatController *ct = c->combat;
     bool valid = true;
     CoordActionInfo *info;
-    AlphaActionInfo *alphaInfo;
     WeaponType weapon = c->combat->getCurrentPlayer()->getWeapon();
 
     switch (key) {
@@ -1027,19 +1026,7 @@ bool CombatController::keyPressed(int key) {
         }
 
     case 'r':
-        {
-            c->stats->showWeapons();
-
-            alphaInfo = new AlphaActionInfo;
-            alphaInfo->lastValidLetter = WEAP_MAX + 'a' - 1;
-            alphaInfo->handleAlpha = readyForPlayer2;
-            alphaInfo->prompt = "Weapon: ";
-            alphaInfo->data = reinterpret_cast<void *>(static_cast<int>(ct->getFocus()));
-
-            screenMessage(alphaInfo->prompt.c_str());
-
-            eventHandler->pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, alphaInfo));
-        }
+        readyWeapon(ct->getFocus());
         break;
 
     case 't':

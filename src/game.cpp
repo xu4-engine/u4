@@ -70,12 +70,10 @@ bool windCmdKeyHandler(int key, void *data);
 void gameUpdateMoons(int showmoongates);
 
 /* spell functions */
-bool castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
 int castForPlayerGetPhase(int phase);
 int castForPlayerGetEnergyType(int fieldType);
 int castForPlayerGetEnergyDir(Direction dir);
-bool castForPlayer2(int spell, void *data);
 void gameCastSpell(unsigned int spell, int caster, int param);
 void gameSpellEffect(int spell, int player, Sound sound);
 int gameSpellMixHowMany(int spell, int num, Ingredients *ingredients);
@@ -96,9 +94,7 @@ MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent);
 bool getChestTrapHandler(int player);
 bool jimmyAtCoord(MapCoords coords, int distance, void *data);
 bool openAtCoord(MapCoords coords, int distance, void *data);
-bool readyForPlayer(int player);
-bool wearForPlayer(int player);
-bool wearForPlayer2(int armor, void *data);
+void wearArmor(int player = -1, ArmorType armor = ARMR_MAX);
 bool ztatsFor(int player);
 
 /* checking functions */
@@ -151,17 +147,17 @@ ReadPlayerController::ReadPlayerController() : ReadChoiceController("12345678 \0
 bool ReadPlayerController::keyPressed(int key) {
     bool valid = ReadChoiceController::keyPressed(key);
     if (valid) {
-        if (choice < '1' ||
-            choice > ('0' + c->saveGame->members))
-            choice = '0';
+        if (value < '1' ||
+            value > ('0' + c->saveGame->members))
+            value = '0';
     } else {
-        choice = '0';
+        value = '0';
     }
     return valid;
 }
 
 int ReadPlayerController::getPlayer() {
-    return choice - '1';
+    return value - '1';
 }
 
 int ReadPlayerController::waitFor() {
@@ -219,6 +215,35 @@ bool ReagentsMenuController::keyPressed(int key) {
     }
 
     return true;
+}
+
+bool AlphaActionController::keyPressed(int key) {
+    if (islower(key))
+        key = toupper(key);
+
+    if (key >= 'A' && key <= toupper(lastValidLetter)) {
+        screenMessage("%c\n", key);
+        value = key - 'A';
+        doneWaiting();
+    } else if (key == U4_SPACE || key == U4_ESC || key == U4_ENTER) {
+        screenMessage("\n");
+        value = -1;
+        doneWaiting();
+    } else {
+        screenMessage("\n%s", prompt.c_str());
+        screenRedrawScreen();
+        return KeyHandler::defaultHandler(key, NULL);
+    }
+    return true;
+}
+    
+int AlphaActionController::get(char lastValidLetter, const string &prompt, EventHandler *eh) {
+    if (!eh)
+        eh = eventHandler;
+
+    AlphaActionController ctrl(lastValidLetter, prompt);
+    eh->pushController(&ctrl);
+    return ctrl.waitFor();
 }
 
 void gameInit() {
@@ -1240,8 +1265,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'r':
-        screenMessage("Ready a weapon\nfor: ");
-        gameGetPlayerForCommand(&readyForPlayer, true, false);
+        readyWeapon();
         break;
 
     case 's':
@@ -1303,8 +1327,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'w':
-        screenMessage("Wear Armour\nfor: ");
-        gameGetPlayerForCommand(&wearForPlayer, true, false);
+        wearArmor();
         break;
 
     case 'x':
@@ -1542,37 +1565,6 @@ void gameGetPlayerForCommand(bool (*commandFn)(int player), bool canBeDisabled, 
     int player = gameGetPlayer(canBeDisabled, canBeActivePlayer);
     if (player != -1)
         (*commandFn)(player);
-}
-
-/**
- * Handles key presses for a command requiring a letter argument.
- * Once a valid key is pressed, control is handed off to a command
- * specific routine.
- */
-bool gameGetAlphaChoiceKeyHandler(int key, void *data) {
-    AlphaActionInfo *info = (AlphaActionInfo *) data;
-    bool valid = true;
-
-    if (islower(key))
-        key = toupper(key);
-
-    if (key >= 'A' && key <= toupper(info->lastValidLetter)) {
-        screenMessage("%c\n", key);
-        eventHandler->popKeyHandler();
-        (*(info->handleAlpha))(key - 'A', info->data);
-        //eventHandler->popKeyHandlerData();
-    } else if (key == U4_SPACE || key == U4_ESC || key == U4_ENTER) {
-        screenMessage("\n");
-        eventHandler->popKeyHandler();
-        //eventHandler->popKeyHandlerData();
-        (*c->location->finishTurn)();
-    } else {
-        valid = false;
-        screenMessage("\n%s", info->prompt.c_str());
-        screenRedrawScreen();
-    }
-
-    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 bool gameGetDirection(int (*handleDirection)(Direction dir)) {
@@ -1954,7 +1946,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
                     bool ok = false;
                     MapTile *ground = c->location->map->tileAt(coords, WITHOUT_OBJECTS);
 
-                    screenMessage("%s\n", getDirectionName(readDir.getDir()));
+                    screenMessage("%s\n", getDirectionName(readDir.getValue()));
 
                     switch(transport) {
                     case 's': ok = ground->isSailable(); break;
@@ -2145,44 +2137,30 @@ bool attackAtCoord(MapCoords coords, int distance, void *data) {
 }
 
 bool gameCastForPlayer(int player) {
-    AlphaActionInfo *info;
-
-    castPlayer = player;
-
     if (gameCheckPlayerDisabled(player)) {
         (*c->location->finishTurn)();
         return false;
     }
 
+    // get the spell to cast
     c->stats->showMixtures();
-
-    info = new AlphaActionInfo;
-    info->lastValidLetter = 'z';
-    info->handleAlpha = castForPlayer2;
-    info->prompt = "Spell: ";
-    info->data = NULL;
-
-    screenMessage("%s", info->prompt.c_str());
-
-    eventHandler->pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, info));
-
-    return true;
-}
-
-bool castForPlayer2(int spell, void *data) {    
-    castSpell = spell;
-
-    screenMessage("%s!\n", spellGetName(spell));    
+    screenMessage("Spell: ");
+    int spell = AlphaActionController::get('z', "Spell: ");
+    if (spell == -1)
+        return true;
+    screenMessage("%s!\n", spellGetName(spell));
 
     c->stats->showPartyView();
-
+    castPlayer = player;
+    castSpell = spell;
+    
     /* If we can't really cast this spell, skip the extra parameters */
     if ((spellGetRequiredMP(spell) > c->party->member(castPlayer)->getMp()) || /* not enough mp */
         ((spellGetContext(spell) & c->location->context) == 0) ||            /* wrong context */
         (c->saveGame->mixtures[spell] == 0) ||                               /* none mixed! */
         ((spellGetTransportContext(spell) & c->transportContext) == 0)) {    /* invalid transportation for spell */
         
-        gameCastSpell(castSpell, castPlayer, 0);
+        gameCastSpell(spell, player, 0);
         (*c->location->finishTurn)();
         return true;
     }
@@ -2190,20 +2168,24 @@ bool castForPlayer2(int spell, void *data) {
     /* Get the final parameters for the spell */
     switch (spellGetParamType(spell)) {
     case Spell::PARAM_NONE:
-        gameCastSpell(castSpell, castPlayer, 0);
+        gameCastSpell(spell, player, 0);
         (*c->location->finishTurn)();
         break;
     case Spell::PARAM_PHASE:
         screenMessage("To Phase: ");
         eventHandler->pushKeyHandler(KeyHandler(&gameGetPhaseKeyHandler, (void *) &castForPlayerGetPhase));        
         break;
-    case Spell::PARAM_PLAYER:
+    case Spell::PARAM_PLAYER: {
         screenMessage("Who: ");
-        gameGetPlayerForCommand(&castForPlayerGetDestPlayer, true, false);
+        int subject = gameGetPlayer(true, false);
+        if (subject != -1)
+            gameCastSpell(spell, player, subject);
+        (*c->location->finishTurn)();
         break;
+    }
     case Spell::PARAM_DIR:
         if (c->location->context == CTX_DUNGEON)
-            gameCastSpell(castSpell, castPlayer, c->saveGame->orientation);
+            gameCastSpell(spell, player, c->saveGame->orientation);
         else {
             screenMessage("Dir: ");
             gameGetDirection(&castForPlayerGetDestDir);
@@ -2219,12 +2201,6 @@ bool castForPlayer2(int spell, void *data) {
         break;
     }    
 
-    return true;
-}
-
-bool castForPlayerGetDestPlayer(int player) {
-    gameCastSpell(castSpell, castPlayer, player);
-    (*c->location->finishTurn)();
     return true;
 }
 
@@ -2631,45 +2607,41 @@ bool jimmyAtCoord(MapCoords coords, int distance, void *data) {
 }
 
 /**
- * Readies a weapon for the given player.  Prompts the use for a
- * weapon.
+ * Readies a weapon for a player.  Prompts for the player and/or the
+ * weapon if not provided.
  */
-bool readyForPlayer(int player) {
-    AlphaActionInfo *info;
+void readyWeapon(int player, WeaponType weapon) {
 
-    c->stats->showWeapons();
-
-    info = new AlphaActionInfo;    
-    info->lastValidLetter = WEAP_MAX + 'a' - 1;
-    info->handleAlpha = readyForPlayer2;
-    info->prompt = "Weapon: ";
-    info->data = (void *) player;
-
-    screenMessage("%s", info->prompt.c_str());
-
-    eventHandler->pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, info));
-
-    return true;
-}
-
-bool readyForPlayer2(int w, void *data) {
-    int player = (int) data;
-    const Weapon *weapon = Weapon::get((WeaponType) w);
-    PartyMember *p = c->party->member(player);
-
-    // Return view to party overview
-    c->stats->showPartyView();
-
-    if (weapon->getType() != WEAP_HANDS && c->saveGame->weapons[weapon->getType()] < 1) {
-        screenMessage("None left!\n");
-        (*c->location->finishTurn)();
-        return false;
+    // get the player if not provided
+    if (player == -1) {
+        screenMessage("Ready a weapon\nfor: ");
+        player = gameGetPlayer(true, false);
+        if (player == -1)
+            return;
     }
 
-    if (!weapon->canReady(p->getClass())) {
+    // get the weapon to use if not provided
+    if (weapon == WEAP_MAX) {
+        c->stats->showWeapons();
+        screenMessage("Weapon: ");
+        weapon = (WeaponType) AlphaActionController::get(WEAP_MAX + 'a' - 1, "Weapon: ");
+        c->stats->showPartyView();
+        if (weapon == -1)
+            return;
+    }
+
+    if (weapon != WEAP_HANDS && c->saveGame->weapons[weapon] < 1) {
+        screenMessage("None left!\n");
+        return;
+    }
+
+    const Weapon *w = Weapon::get((WeaponType) weapon);
+    PartyMember *p = c->party->member(player);
+
+    if (!w->canReady(p->getClass())) {
         string indef_article;
 
-        switch(tolower(weapon->getName()[0])) {
+        switch(tolower(w->getName()[0])) {
         case 'a':
         case 'e':
         case 'i':
@@ -2683,23 +2655,18 @@ bool readyForPlayer2(int w, void *data) {
         screenMessage("\nA %s may NOT use %s\n%s\n",
             getClassName(p->getClass()),
             indef_article.c_str(),
-            weapon->getName().c_str());
-        (*c->location->finishTurn)();
-        return false;
+            w->getName().c_str());
+        return;
     }
 
     WeaponType oldWeapon = p->getWeapon();
     if (oldWeapon != WEAP_HANDS)
         c->saveGame->weapons[oldWeapon]++;
-    if (weapon->getType() != WEAP_HANDS)
-        c->saveGame->weapons[weapon->getType()]--;
-    p->setWeapon(weapon->getType());
+    if (weapon != WEAP_HANDS)
+        c->saveGame->weapons[weapon]--;
+    p->setWeapon(weapon);
 
-    screenMessage("%s\n", weapon->getName().c_str());
-
-    (*c->location->finishTurn)();
-
-    return true;
+    screenMessage("%s\n", w->getName().c_str());
 }
 
 /**
@@ -3073,55 +3040,49 @@ int useItem(string *itemName) {
 }
 
 /**
- * Changes armor for the given player.  Prompts the use for the armor.
+ * Changes a player's armor.  Prompts for the player and/or the armor
+ * type if not provided.
  */
-bool wearForPlayer(int player) {
-    AlphaActionInfo *info;
+void wearArmor(int player, ArmorType armor) {
 
-    c->stats->showArmor();
-
-    info = new AlphaActionInfo;
-    info->lastValidLetter = ARMR_MAX + 'a' - 1;
-    info->handleAlpha = wearForPlayer2;
-    info->prompt = "Armour: ";
-    info->data = (void *) player;
-
-    screenMessage("%s", info->prompt.c_str());
-
-    eventHandler->pushKeyHandler(KeyHandler(&gameGetAlphaChoiceKeyHandler, info));
-
-    return true;
-}
-
-bool wearForPlayer2(int a, void *data) {
-    int player = (int) data;
-    const Armor *armor = Armor::get((ArmorType) a);
-    PartyMember *p = c->party->member(player);
-
-    if (armor->getType() != ARMR_NONE && c->saveGame->armor[armor->getType()] < 1) {
-        screenMessage("None left!\n");
-        (*c->location->finishTurn)();
-        return false;
+    // get the player if not provided
+    if (player == -1) {
+        screenMessage("Wear Armour\nfor: ");
+        player = gameGetPlayer(true, false);
+        if (player == -1)
+            return;
     }
 
-    if (!armor->canWear(p->getClass())) {
-        screenMessage("\nA %s may NOT use\n%s\n", getClassName(p->getClass()), armor->getName().c_str());
-        (*c->location->finishTurn)();
-        return false;
+    if (armor == ARMR_MAX) {
+        c->stats->showArmor();
+        screenMessage("Armour: ");
+        armor = (ArmorType) AlphaActionController::get(ARMR_MAX + 'a' - 1, "Armour: ");
+        c->stats->showPartyView();
+        if (armor == -1)
+            return;
+    }
+
+    if (armor != ARMR_NONE && c->saveGame->armor[armor] < 1) {
+        screenMessage("None left!\n");
+        return;
+    }
+
+    const Armor *a = Armor::get((ArmorType) armor);
+    PartyMember *p = c->party->member(player);
+
+    if (!a->canWear(p->getClass())) {
+        screenMessage("\nA %s may NOT use\n%s\n", getClassName(p->getClass()), a->getName().c_str());
+        return;
     }
 
     ArmorType oldArmorType = p->getArmor();
     if (oldArmorType != ARMR_NONE)
         c->saveGame->armor[oldArmorType]++;
-    if (armor->getType() != ARMR_NONE)
-        c->saveGame->armor[armor->getType()]--;
-    p->setArmor(armor->getType());
+    if (armor != ARMR_NONE)
+        c->saveGame->armor[armor]--;
+    p->setArmor(armor);
 
-    screenMessage("%s\n", armor->getName().c_str());
-
-    (*c->location->finishTurn)();
-
-    return true;
+    screenMessage("%s\n", a->getName().c_str());
 }
 
 /**

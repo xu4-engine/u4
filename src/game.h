@@ -25,13 +25,6 @@ typedef enum {
     VIEW_CODEX
 } ViewMode;
 
-typedef struct AlphaActionInfo {
-    char lastValidLetter;
-    bool (*handleAlpha)(int, void *);
-    string prompt;
-    void *data;
-} AlphaActionInfo;
-
 typedef struct CoordActionInfo {
     bool (*handleAtCoord)(MapCoords, int, void*);
     MapCoords origin, prev;    
@@ -56,6 +49,22 @@ private:
     Ingredients *ingredients;
 };
 
+/**
+ * Handles input for commands requiring a letter argument in the range
+ * 'a' - lastValidLetter.
+ */
+class AlphaActionController : public WaitableController<int> {
+public:
+    AlphaActionController(char letter, const string &p) : lastValidLetter(letter), prompt(p) {}
+    bool keyPressed(int key);
+    
+    static int get(char lastValidLetter, const string &prompt, EventHandler *eh = NULL);
+
+private:
+    char lastValidLetter;
+    string prompt;
+};
+
 /* main game functions */
 void gameInit(void);
 void gameTimer(void *data);
@@ -63,7 +72,6 @@ void gameFinishTurn(void);
 
 /* key handlers */
 bool gameBaseKeyHandler(int key, void *data);
-bool gameGetAlphaChoiceKeyHandler(int key, void *data);
 bool gameGetFieldTypeKeyHandler(int key, void *data);
 bool gameGetPhaseKeyHandler(int key, void *data);
 bool gameGetCoordinateKeyHandler(int key, void *data);
@@ -89,7 +97,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data);
 int gameDirectionalAction(CoordActionInfo *info);
 bool gameGetDirection(int (*handleDirection)(Direction dir));
 int useItem(string *itemName);
-bool readyForPlayer2(int weapon, void *data);
+void readyWeapon(int player = -1, WeaponType w = WEAP_MAX);
 
 /* checking functions */
 void gameCheckHullIntegrity(void);
