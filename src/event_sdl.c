@@ -3,6 +3,7 @@
  */
 
 #include <stdlib.h>
+#include <ctype.h>
 #include <SDL.h>
 
 #include "u4.h"
@@ -42,8 +43,11 @@ void eventHandlerMain() {
             int key;
 
             if (event.key.keysym.sym >= SDLK_a &&
-                event.key.keysym.sym <= SDLK_z)
+                event.key.keysym.sym <= SDLK_z) {
                 key = event.key.keysym.sym - SDLK_a + 'a';
+                if (event.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT))
+                    key = toupper(key);
+            }
             else if (event.key.keysym.sym == SDLK_UP)
                 key = U4_UP;
             else if (event.key.keysym.sym == SDLK_DOWN)
