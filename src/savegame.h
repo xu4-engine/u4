@@ -5,8 +5,9 @@
 #ifndef SAVEGAME_H
 #define SAVEGAME_H
 
-#include <deque>
 #include <cstdio>
+#include <deque>
+#include <string>
 
 #define PARTY_SAV_BASE_FILENAME         "party.sav"
 #define MONSTERS_SAV_BASE_FILENAME      "monsters.sav"
@@ -247,8 +248,8 @@ struct SaveGame {
     unsigned short location;
 };
 
-char *partySavFilename(void);
-char *monstersSavFilename(void);
+std::string partySavFilename();
+std::string monstersSavFilename(const char *base);
 FILE *saveGameOpenForWriting(void);
 FILE *saveGameOpenForReading(void);
 FILE *saveGameMonstersOpenForWriting(const char *filename);

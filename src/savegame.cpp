@@ -10,92 +10,64 @@
 #include "object.h"
 #include "types.h"
 
-char *partySavFilename() {
-    char *fname;
-    
+using std::string;
+
+string partySavFilename() {
+    string fname;
+
 #if defined(MACOSX)
     char *home;
 
     home = getenv("HOME");
     if (home && home[0]) {
-        fname = new char[strlen(home) + strlen(MACOSX_USER_FILES_PATH) + strlen(PARTY_SAV_BASE_FILENAME) + 2];
-        strcpy(fname, home);
-        strcat(fname, MACOSX_USER_FILES_PATH);
-        strcat(fname, "/");
-        strcat(fname, PARTY_SAV_BASE_FILENAME);
+        fname += home;
+        fname += MACOSX_USER_FILES_PATH;
+        fname += "/";
+        fname += PARTY_SAV_BASE_FILENAME;
     } else
-        fname = strdup(PARTY_SAV_BASE_FILENAME);
+        fname = PARTY_SAV_BASE_FILENAME;
 #else
-    fname = strdup(PARTY_SAV_BASE_FILENAME);
+    fname = PARTY_SAV_BASE_FILENAME;
 #endif
     
     return fname;
 }
 
-char *monstersSavFilename(const char *base) {
-    char *fname;
+string monstersSavFilename(const char *base) {
+    string fname;
     
 #if defined(MACOSX)
     char *home;
 
     home = getenv("HOME");
     if (home && home[0]) {
-        fname = new char[strlen(home) + strlen(MACOSX_USER_FILES_PATH) + strlen(base) + 2];
-        strcpy(fname, home);
-        strcat(fname, MACOSX_USER_FILES_PATH);
-        strcat(fname, "/");
-        strcat(fname, base);
+        fname += home;
+        fname += MACOSX_USER_FILES_PATH;
+        fname += "/";
+        fname += base;
     } else
-        fname = strdup(base);
+        fname = base;
 #else
-    fname = strdup(base);
+    fname = base;
 #endif
     
     return fname;
 }
     
 FILE *saveGameOpenForWriting() {
-    char *fname;
-    FILE *f;
-    
-    fname = partySavFilename();
-    f = fopen(fname, "wb");
-    delete fname;
-
-    return f;
+    return fopen(partySavFilename().c_str(), "wb");
 }
 
 FILE *saveGameOpenForReading() {
-    char *fname;
-    FILE *f;
-    
-    fname = partySavFilename();
-    f = fopen(fname, "rb");
-    delete fname;
-
-    return f;
+    return fopen(partySavFilename().c_str(), "rb");
 }
 
 FILE *saveGameMonstersOpenForWriting(const char *filename) {
-    char *fname;
-    FILE *f;
-    
-    fname = monstersSavFilename(filename);
-    f = fopen(fname, "wb");
-    delete fname;
-
-    return f;
+    return fopen(monstersSavFilename(filename).c_str(), "wb");
 }
 
 FILE *saveGameMonstersOpenForReading(const char *filename) {
-    char *fname;
-    FILE *f;
-    
-    fname = monstersSavFilename(filename);
-    f = fopen(fname, "rb");
-    delete fname;
-
-    return f;
+    return fopen(monstersSavFilename(filename).c_str(), "rb");
 }
 
 int SaveGame::write(FILE *f) const {
