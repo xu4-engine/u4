@@ -70,6 +70,7 @@ void gameCheckBridgeTrolls(void);
 void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
 void gameCheckRandomMonsters(void);
+void gameFixupMonstersBehavior(void);
 long gameTimeSinceLastCommand(void);
 int gameWindSlowsShip(Direction shipdir);
 void gameMonsterAttack(Object *obj);
@@ -116,6 +117,7 @@ void gameInit() {
         saveGameMonstersRead(&c->map->objects, monstersFile);
         fclose(monstersFile);
     }
+    gameFixupMonstersBehavior();
 
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
@@ -1992,6 +1994,20 @@ void gameCheckRandomMonsters() {
         obj->movement_behavior = MOVEMENT_FIXED;
     else
         obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
+}
+
+void gameFixupMonstersBehavior() {
+    Object *obj;
+
+    for (obj = c->map->objects; obj; obj = obj->next) {
+        if (obj->movement_behavior == MOVEMENT_ATTACK_AVATAR) {
+            const Monster *m = monsterForTile(obj->tile);
+            if (m && m->mattr & MATTR_WANDERS)
+                obj->movement_behavior = MOVEMENT_WANDER;
+            else if (m && m->mattr & MATTR_STATIONARY)
+                obj->movement_behavior = MOVEMENT_FIXED;
+        }
+    }
 }
 
 long gameTimeSinceLastCommand() {
