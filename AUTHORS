@@ -1,6 +1,10 @@
 Andrew Taylor <andrewtaylor@users.sourceforge.net>
         Main developer
 Marc Winterrowd <nodling@yahoo.com>
-        LZW decoder, tile animations and title screen fixes
+        LZW decoder, tile animations, title screen fixes, and lots more
+Travis Howell <kirben@users.sourceforge.net>
+        Windows port
 Frank Wolter <FrankWolter@gmx.net>
         Ultima IV icon used in xu4
+Dennis De Marco <dennis@demarco.com>
+        Sound code
