@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "error.h"
 #include "event.h"
+#include "filesystem.h"
 #include "utils.h"
 
 /**
@@ -22,11 +23,7 @@ Settings *Settings::instance = NULL;
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define SETTINGS_BASE_FILENAME "xu4.cfg"
 #else
-#if defined(MACOSX)
 #define SETTINGS_BASE_FILENAME "xu4rc"
-#else
-#define SETTINGS_BASE_FILENAME ".xu4rc"
-#endif
 #endif
 
 bool SettingsData::operator==(const SettingsData &s) const {    
@@ -52,21 +49,50 @@ bool SettingsData::operator!=(const SettingsData &s) const {
  * Default contructor.  Settings is a singleton so this is private.
  */
 Settings::Settings() {    
-    char *home;
-
     filters = FilterTranslator(filterStrings);
     battleDiffs = BattleDiffTranslator(battleDiffStrings);
 
-    home = getenv("HOME");
-    if (home && home[0]) {
-        filename = home;
 #if defined(MACOSX)
-        filename += MACOSX_USER_FILES_PATH;
-#endif
-        filename += "/";
+    char *home = getenv("HOME");
+    if (home && home[0]) {
+        userPath += home;
+        userPath += MACOSX_USER_FILES_PATH;
+        userPath += "/";
+    } else
+        userPath = "./";
+#elif defined(__unix__)
+    char *home = getenv("HOME");
+    if (home && home[0]) {
+        userPath += home;
+        userPath += "/.xu4";
+        userPath += "/";
+    } else
+        userPath = "./";
+#elif 0 /*defined(_WIN32) || defined(__CYGWIN__)*/
+    userPath = "./";
+    LPMALLOC pMalloc = NULL;
+    if (SHGetMalloc(&pMalloc) == S_OK) {
+        LPITEMIDLIST pItemIDList = NULL;
+        if (SHGetSpecialFolderLocation(NULL, CSIDL_APPDATA, &pItemIDList) == S_OK &&
+            pItemIDList != NULL) {
+            LPSTR pBuffer = NULL;
+            if ((pBuffer = (LPSTR) pMalloc->Alloc(MAX_PATH + 2)) != NULL) {
+                if (SHGetPathFromIDList(pItemIDList, pBuffer) == TRUE) {
+                    userPath = pBuffer;
+                    userPath += "/xu4/";
+                }
+                pMalloc->Free(pBuffer);
+            }
+            pMalloc->Free(pItemIDList);
+        } 
+        pMalloc->Release();
     }
+#else
+    userPath = "./";
+#endif
+    FileSystem::createDirectory(userPath);
 
-    filename += SETTINGS_BASE_FILENAME;    
+    filename = userPath + SETTINGS_BASE_FILENAME;
 
     read();
 }
@@ -357,3 +383,9 @@ bool Settings::write() {
     return true;
 }
 
+/**
+ * Return the path where user settings are stored.
+ */
+const string &Settings::getUserPath() {
+    return userPath;
+}
