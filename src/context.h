@@ -118,7 +118,7 @@ public:
 
     SaveGamePlayerRecord players[8];
 
-    struct _SaveGame *saveGame;
+    SaveGame *saveGame;
     struct _Location *location;
     Conversation conversation;
     int line, col;
