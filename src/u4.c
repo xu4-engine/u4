@@ -50,10 +50,9 @@ int main(int argc, char *argv[]) {
     /* do the intro */
     introInit();
     intro_music();
-    introUpdateScreen();
     eventHandlerAddTimerCallback(&introTimer);
     eventHandlerPushKeyHandler(&introKeyHandler);
-    eventHandlerMain();
+    eventHandlerMain(&introUpdateScreen);
     eventHandlerRemoveTimerCallback(&introTimer);
     eventHandlerPopKeyHandler();
     introDelete();
@@ -101,17 +100,15 @@ int main(int argc, char *argv[]) {
     }
 
     /* play the game! */
-    mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
+    mapAddAvatarObject(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
     play_music();
     screenDrawBackground(BKGD_BORDERS);
-    screenUpdate();
     statsUpdate();
     screenMessage("\020");
-    screenForceRedraw();
 
     eventHandlerAddTimerCallback(&gameTimer);
     eventHandlerPushKeyHandler(&gameBaseKeyHandler);
-    eventHandlerMain();
+    eventHandlerMain(&gameUpdateScreen);
     eventHandlerRemoveTimerCallback(&gameTimer);
     eventHandlerPopKeyHandler();
 
