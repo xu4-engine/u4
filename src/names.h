@@ -6,7 +6,7 @@
 #define NAMES_H
 
 #include "savegame.h"
-#include "u4.h"
+#include "direction.h"
 
 /*
  * These routines convert the various enumerations for weapons,
