@@ -89,18 +89,18 @@ ListNode *locationTilesAt(Location *location, int x, int y, int z, int *focus) {
 
     /* then camouflaged monsters that have a disguise */
     if (obj && (obj->objType == OBJECT_MONSTER) && !obj->isVisible && (obj->monster->camouflageTile > 0)) {
-        *focus = *focus && obj->hasFocus;
+        *focus = *focus || obj->hasFocus;
         tiles = listAppend(tiles, (void *) (unsigned) obj->monster->camouflageTile);
     }
     /* then visible monsters */
     else if (obj && (obj->objType != OBJECT_UNKNOWN) && obj->isVisible) {
-        *focus = *focus && obj->hasFocus;
+        *focus = *focus || obj->hasFocus;
         tiles = listAppend(tiles, (void *) (unsigned) obj->tile);
     }
 
     /* then other visible objects */
      if (obj && obj->isVisible) {
-        *focus = *focus && obj->hasFocus;
+        *focus = *focus || obj->hasFocus;
         tiles = listAppend(tiles, (void *) (unsigned) obj->tile);
     }
 
