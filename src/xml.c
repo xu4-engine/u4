@@ -163,6 +163,30 @@ int xmlGetPropAsInt(xmlNodePtr node, const char *name) {
     return (int) result;
 }
 
+int xmlGetPropAsEnum(xmlNodePtr node, const char *name, const char *enumValues[]) {
+    int result = -1, i;
+    xmlChar *prop;
+
+    if (settings->validateXml && !xmlHasProp(node, (const xmlChar *)name))
+        return 0;
+
+    prop = xmlGetProp(node, (const xmlChar *)name);
+    if (!prop)
+        return 0;
+
+    for (i = 0; enumValues[i]; i++) {
+        if (xmlStrcmp(prop, (const xmlChar *) enumValues[i]) == 0)
+        result = i;
+    }
+
+    if (result == -1)
+        errorFatal("invalid enum value for %s: %s", name, prop);
+
+    xmlFree(prop);
+
+    return result;
+}
+
 /**
  * Compare an XML property to another string.  The return value is as
  * strcmp.
