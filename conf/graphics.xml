@@ -183,6 +183,10 @@
         <image name="dung1_ladderdown"  filename="ega/ladderdown1.rle"  width="50"  height="50" depth="4" filetype="image/x-u4rle" transparentIndex="0" xu4Graphic="true"/>
         <image name="dung2_ladderdown"  filename="ega/ladderdown2.rle"  width="22"  height="22" depth="4" filetype="image/x-u4rle" transparentIndex="0" xu4Graphic="true"/>
         <image name="dung3_ladderdown"  filename="ega/ladderdown3.rle"  width="8"   height="8"  depth="4" filetype="image/x-u4rle" transparentIndex="0" xu4Graphic="true"/>
+        <image name="dung0_ladderupdown" filename="ega/ladderupdown0.png"  width="88"  height="176" depth="4" filetype="image/png" transparentIndex="0" xu4Graphic="true"/>
+        <image name="dung1_ladderupdown" filename="ega/ladderupdown1.png"  width="50"  height="96" depth="4" filetype="image/png" transparentIndex="0" xu4Graphic="true"/>
+        <image name="dung2_ladderupdown" filename="ega/ladderupdown2.png"  width="22"  height="40" depth="4" filetype="image/png" transparentIndex="0" xu4Graphic="true"/>
+        <image name="dung3_ladderupdown" filename="ega/ladderupdown3.png"  width="8"   height="12"  depth="4" filetype="image/png" transparentIndex="0" xu4Graphic="true"/>        
 
     </imageset>
 
