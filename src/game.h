@@ -5,12 +5,16 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "controller.h"
+#include "event.h"
 #include "map.h"
+#include "menu.h"
 #include "types.h"
 
 class Map;
 struct Portal;
 class Creature;
+class Ingredients;
 
 typedef enum {
     VIEW_NORMAL,
@@ -42,10 +46,24 @@ typedef struct CoordActionInfo {
     int firstValidDistance; /* the first distance at which the action will function correctly */
 } CoordActionInfo;
 
-typedef struct GetPlayerInfo {
-    int canBeDisabled;    
-    bool (*command)(int player);
-} GetPlayerInfo;
+class ReadPlayerController : public ReadChoiceController {
+public:
+    ReadPlayerController();
+    virtual bool keyPressed(int key);
+
+    int getPlayer();
+    int waitFor();
+};
+
+class ReagentsMenuController : public MenuController {
+public:
+    ReagentsMenuController(Menu *menu, Ingredients *i) : MenuController(menu), ingredients(i) { }
+
+    bool keyPressed(int key);
+
+private:
+    Ingredients *ingredients;
+};
 
 /* main game functions */
 void gameInit(void);
@@ -54,7 +72,6 @@ void gameFinishTurn(void);
 
 /* key handlers */
 bool gameBaseKeyHandler(int key, void *data);
-bool gameGetPlayerNoKeyHandler(int key, void *data);
 bool gameGetAlphaChoiceKeyHandler(int key, void *data);
 bool gameGetFieldTypeKeyHandler(int key, void *data);
 bool gameGetPhaseKeyHandler(int key, void *data);
@@ -93,7 +110,8 @@ bool gameSpawnCreature(const class Creature *m);
 
 /* etc */
 void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen = 32);
-void gameGetPlayerForCommand(bool (*commandFn)(int player), int canBeDisabled, int canBeActivePlayer);
+int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer);
+void gameGetPlayerForCommand(bool (*commandFn)(int player), bool canBeDisabled, bool canBeActivePlayer);
 void gameDamageParty(int minDamage, int maxDamage);
 void gameDamageShip(int minDamage, int maxDamage);
 void gameSetActivePlayer(int player);

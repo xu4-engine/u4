@@ -82,8 +82,10 @@ bool castForPlayer2(int spell, void *data);
 void gameCastSpell(unsigned int spell, int caster, int param);
 void gameSpellEffect(int spell, int player, Sound sound);
 int gameSpellMixHowMany(int spell, int num, Ingredients *ingredients);
+
 void mixReagents();
 bool mixReagentsForSpell(int spell);
+void newOrder();
 
 /* conversation functions */
 bool talkAtCoord(MapCoords coords, int distance, void *data);
@@ -98,8 +100,6 @@ MoveReturnValue gameMoveAvatar(Direction dir, int userEvent);
 MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent);
 bool getChestTrapHandler(int player);
 bool jimmyAtCoord(MapCoords coords, int distance, void *data);
-bool newOrderForPlayer(int player);
-bool newOrderForPlayer2(int player2);
 bool openAtCoord(MapCoords coords, int distance, void *data);
 bool readyForPlayer(int player);
 bool wearForPlayer(int player);
@@ -151,15 +151,80 @@ MouseArea mouseAreas[] = {
     { 0 }
 };
 
-class ReagentsMenuController : public MenuController {
-public:
-    ReagentsMenuController(Menu *menu, Ingredients *i) : MenuController(menu), ingredients(i) { }
+ReadPlayerController::ReadPlayerController() : ReadChoiceController("12345678 \033\n") {}
 
-    bool keyPressed(int key);
+bool ReadPlayerController::keyPressed(int key) {
+    bool valid = ReadChoiceController::keyPressed(key);
+    if (valid) {
+        if (choice < '1' ||
+            choice > ('0' + c->saveGame->members))
+            choice = '0';
+    } else {
+        choice = '0';
+    }
+    return valid;
+}
 
-private:
-    Ingredients *ingredients;
-};
+int ReadPlayerController::getPlayer() {
+    return choice - '1';
+}
+
+int ReadPlayerController::waitFor() {
+    ReadChoiceController::waitFor();
+    return getPlayer();
+}
+
+/**
+ * Handles spell mixing for the Ultima V-style menu-system
+ */
+bool ReagentsMenuController::keyPressed(int key) {
+    switch(key) {
+    case 'a':
+    case 'b':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+    case 'g':
+    case 'h':
+        {
+            /* select the corresponding reagent (if visible) */
+            Menu::MenuItemList::iterator mi = menu->getById((MenuId)(key-'a'));
+            if (mi->isVisible()) {        
+                menu->setCurrent(menu->getById((MenuId)(key-'a')));
+                keyPressed(U4_SPACE);
+            }
+        } break;
+    case U4_LEFT:
+    case U4_RIGHT:
+    case U4_SPACE:
+        if (menu->isVisible()) {            
+            MenuItem *item = &(*menu->getCurrent());
+            
+            /* change whether or not it's selected */
+            item->setSelected(!item->isSelected());
+                        
+            if (item->isSelected())
+                ingredients->addReagent((Reagent)item->getId());
+            else
+                ingredients->removeReagent((Reagent)item->getId());
+        }
+        break;
+    case U4_ENTER:
+        eventHandler->setControllerDone();
+        break;
+
+    case U4_ESC:
+        ingredients->revert();
+        eventHandler->setControllerDone();
+        break;
+
+    default:
+        return MenuController::keyPressed(key);
+    }
+
+    return true;
+}
 
 void gameInit() {
     FILE *saveGameFile, *monstersFile;    
@@ -1008,7 +1073,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'c':
         screenMessage("Cast Spell!\nPlayer: ");
-        gameGetPlayerForCommand(&gameCastForPlayer, 0, 1);
+        gameGetPlayerForCommand(&gameCastForPlayer, false, true);
         break;
 
     case 'd':        
@@ -1069,7 +1134,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             if (tile->isChest())
             {
                 screenMessage("Who opens? ");
-                gameGetPlayerForCommand(&gameGetChest, 0, 1);
+                gameGetPlayerForCommand(&gameGetChest, false, true);
             }
             else
                 screenMessage("Not here!\n");
@@ -1141,8 +1206,7 @@ bool gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'n':
-        screenMessage("New Order!\nExchange # ");
-        gameGetPlayerForCommand(&newOrderForPlayer, 1, 0);
+        newOrder();
         break;
 
     case 'o':
@@ -1186,7 +1250,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'r':
         screenMessage("Ready a weapon\nfor: ");
-        gameGetPlayerForCommand(&readyForPlayer, 1, 0);
+        gameGetPlayerForCommand(&readyForPlayer, true, false);
         break;
 
     case 's':
@@ -1250,7 +1314,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'w':
         screenMessage("Wear Armour\nfor: ");
-        gameGetPlayerForCommand(&wearForPlayer, 1, 0);
+        gameGetPlayerForCommand(&wearForPlayer, true, false);
         break;
 
     case 'x':
@@ -1282,7 +1346,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'z':        
         screenMessage("Ztats for: ");
-        gameGetPlayerForCommand(&ztatsFor, 1, 0);
+        gameGetPlayerForCommand(&ztatsFor, true, false);
         break;
 
     case 'c' + U4_ALT:
@@ -1440,47 +1504,40 @@ void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen) {
     eventHandler->pushKeyHandler(KeyHandler(&keyHandlerReadBuffer, readBufferInfo));
 }
 
-void gameGetPlayerForCommand(bool (*commandFn)(int player), int canBeDisabled, int canBeActivePlayer) {
+int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
+    int player;
     if (c->saveGame->members <= 1) {
         screenMessage("1\n");
-        (*commandFn)(0);
+        player = 0;
     }
     else {
-        GetPlayerInfo *info = new GetPlayerInfo;
-        info->canBeDisabled = canBeDisabled;        
-        info->command = commandFn;
-
-        eventHandler->pushKeyHandler(KeyHandler(&gameGetPlayerNoKeyHandler, (void *)info));
         if (canBeActivePlayer && (c->location->activePlayer >= 0))
-            gameGetPlayerNoKeyHandler(c->location->activePlayer + '1', (void *)info);        
+            player = c->location->activePlayer;
+        else {
+            ReadPlayerController readPlayerController;
+            eventHandler->pushController(&readPlayerController);
+            player = readPlayerController.waitFor();
+        }
+
+        if (player == -1) {
+            screenMessage("None\n");
+            (*c->location->finishTurn)();
+            return -1;
+        }
+
+        screenMessage("%d\n", player + 1);
+        if (!canBeDisabled && c->party->member(player)->isDisabled()) {
+            screenMessage("\nDisabled!\n");
+            return -1;
+        }
     }
+    return player;
 }
 
-/**
- * Handles key presses for a command requiring a player number
- * argument.  Once a number key is pressed, control is handed off to a
- * command specific routine.
- */
-bool gameGetPlayerNoKeyHandler(int key, void *data) {
-    GetPlayerInfo *info = (GetPlayerInfo*)data;    
-    bool valid = true;
-
-    eventHandler->popKeyHandler();
-
-    if (key >= '1' &&
-        key <= ('0' + c->saveGame->members)) {
-        screenMessage("%c\n", key);
-        if (!info->canBeDisabled && c->party->member(key - '1')->isDisabled())
-            screenMessage("\nDisabled!\n");
-        else (*info->command)(key - '1');
-    } else {
-        screenMessage("None\n");
-        (*c->location->finishTurn)();
-        valid = false;
-    }
-
-    //eventHandler->popKeyHandlerData();
-    return valid || KeyHandler::defaultHandler(key, NULL);
+void gameGetPlayerForCommand(bool (*commandFn)(int player), bool canBeDisabled, bool canBeActivePlayer) {
+    int player = gameGetPlayer(canBeDisabled, canBeActivePlayer);
+    if (player != -1)
+        (*commandFn)(player);
 }
 
 /**
@@ -2140,7 +2197,7 @@ bool castForPlayer2(int spell, void *data) {
         break;
     case Spell::PARAM_PLAYER:
         screenMessage("Who: ");
-        gameGetPlayerForCommand(&castForPlayerGetDestPlayer, 1, 0);        
+        gameGetPlayerForCommand(&castForPlayerGetDestPlayer, true, false);
         break;
     case Spell::PARAM_DIR:
         if (c->location->context == CTX_DUNGEON)
@@ -2630,58 +2687,6 @@ bool readyForPlayer2(int w, void *data) {
 }
 
 /**
- * Handles spell mixing for the Ultima V-style menu-system
- */
-bool ReagentsMenuController::keyPressed(int key) {
-    switch(key) {
-    case 'a':
-    case 'b':
-    case 'c':
-    case 'd':
-    case 'e':
-    case 'f':
-    case 'g':
-    case 'h':
-        {
-            /* select the corresponding reagent (if visible) */
-            Menu::MenuItemList::iterator mi = menu->getById((MenuId)(key-'a'));
-            if (mi->isVisible()) {        
-                menu->setCurrent(menu->getById((MenuId)(key-'a')));
-                keyPressed(U4_SPACE);
-            }
-        } break;
-    case U4_LEFT:
-    case U4_RIGHT:
-    case U4_SPACE:
-        if (menu->isVisible()) {            
-            MenuItem *item = &(*menu->getCurrent());
-            
-            /* change whether or not it's selected */
-            item->setSelected(!item->isSelected());
-                        
-            if (item->isSelected())
-                ingredients->addReagent((Reagent)item->getId());
-            else
-                ingredients->removeReagent((Reagent)item->getId());
-        }
-        break;
-    case U4_ENTER:
-        eventHandler->setControllerDone();
-        break;
-
-    case U4_ESC:
-        ingredients->revert();
-        eventHandler->setControllerDone();
-        break;
-
-    default:
-        return MenuController::keyPressed(key);
-    }
-
-    return true;
-}
-
-/**
  * Mixes reagents.  Prompts for a spell, then which reagents to
  * include in the mix.
  */
@@ -2781,56 +2786,47 @@ bool mixReagentsForSpell(int spell) {
     return true;
 }
 
-/* FIXME: must be a better way.. */
-int newOrderTemp;
-
 /**
  * Exchanges the position of two players in the party.  Prompts the
- * use for the second player number.
+ * user for the player numbers.
  */
-bool newOrderForPlayer(int player) {
-    GetPlayerInfo *playerInfo;
+void newOrder() {
+    screenMessage("New Order!\nExchange # ");
 
-    if (player == 0) {
+    int player1 = gameGetPlayer(true, false);
+
+    if (player1 == -1)
+        return;
+
+    if (player1 == 0) {
         screenMessage("%s, You must lead!\n", c->party->member(0)->getName().c_str());
-        (*c->location->finishTurn)();
-        return false;
+        return;
     }
 
     screenMessage("    with # ");
 
-    newOrderTemp = player;
-    playerInfo = new GetPlayerInfo;
-    playerInfo->canBeDisabled = 1;
-    playerInfo->command = newOrderForPlayer2;
-    eventHandler->pushKeyHandler(KeyHandler(&gameGetPlayerNoKeyHandler, playerInfo));
+    int player2 = gameGetPlayer(true, false);
 
-    return true;
-}
-
-bool newOrderForPlayer2(int player2) {
-    int player1 = newOrderTemp;
-    SaveGamePlayerRecord tmp;
+    if (player2 == -1)
+        return;
 
     if (player2 == 0) {
         screenMessage("%s, You must lead!\n", c->party->member(0)->getName().c_str());
-        (*c->location->finishTurn)();
-        return false;
-    } else if (player1 == player2) {
-        screenMessage("What?\n");
-        (*c->location->finishTurn)();
-        return false;
+        return;
     }
 
-    tmp = c->saveGame->players[player1];
+    if (player1 == player2) {
+        screenMessage("What?\n");
+        return;
+    }
+
+    SaveGamePlayerRecord tmp = c->saveGame->players[player1];
     c->saveGame->players[player1] = c->saveGame->players[player2];
     c->saveGame->players[player2] = tmp;
 
     /* re-build the party */
     delete c->party;
     c->party = new Party(c->saveGame);
-
-    return true;
 }
 
 /**
