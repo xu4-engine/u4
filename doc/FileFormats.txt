@@ -262,7 +262,7 @@ offset len  notes
 0x158  2    gems
 0x15A  2    keys
 0x15C  2    sextants
-0x16E  16   armor (2 bytes each for none (unused), cloth, leather, chain,
+0x15E  16   armor (2 bytes each for none (unused), cloth, leather, chain,
             plate, magic chain, magic plate, mystic robes)
 0x16E  32   weapons (2 bytes each for none (unused), staves, daggers,
             slings, maces, axes, swords, bows, crossbows, oil, halberds,
@@ -403,11 +403,17 @@ A table entry is free if (currentTile[i] == 0) && (previousTile[i] == 0)
 Newly created monsters are put into the first free entry from the
 beginning of the table.
 Newly created inanimate objects are put into the first free entry
-from tbe end of the table.
+from the end of the table.
 The balloon is created when you leave Hythloth.
 If there is more than one inanimate object on a tile, objects closer to
 the beginning of the table are drawn on top of those closer to the end.
 Monsters and the party are always drawn on top of inanimate objects.
+The current tile and previous tile values are used during runtime.
+However, for the game to behave properly, when the game is saved, the
+current and previous tile values should be set to the base tile value
+the object.  For instance, for pirate ships (4 frames), the current and
+previous tile values should be set to the base value for pirate ships (0x80)
+when saving the game.
 
 0x0     32      current tile
 0x20    32      current x coordinate
