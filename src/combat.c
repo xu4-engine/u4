@@ -302,6 +302,7 @@ int combatBaseKeyHandler(int key, void *data) {
         info->blockedPredicate = weaponCanAttackThroughObjects(c->saveGame->players[focus].weapon) ?
             NULL :
             &tileCanAttackOver;
+        info->blockBefore = 1;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Dir: ");        
         break;
@@ -423,7 +424,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     misstile = weaponGetMissTile(weapon);    
 
     /* Remove the last weapon annotation left behind */
-    if ((distance > 1) && (oldx >= 0) && (oldy >= 0))
+    if ((distance > 0) && (oldx >= 0) && (oldy >= 0))
         annotationRemove(oldx, oldy, c->location->z, c->location->map->id, misstile);
 
     /* Missed */

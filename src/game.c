@@ -472,6 +472,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->range = 1;
         info->validDirections = MASK_DIR_ALL;
         info->blockedPredicate = NULL;
+        info->blockBefore = 0;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Destroy Object\nDir: ");        
         break;
@@ -490,6 +491,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->range = 1;
         info->validDirections = MASK_DIR_ALL;
         info->blockedPredicate = NULL;
+        info->blockBefore = 0;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Attack\nDir: ");
         break;
@@ -606,6 +608,7 @@ int gameBaseKeyHandler(int key, void *data) {
             info->validDirections = validDirs;
             info->player = -1;
             info->blockedPredicate = &tileCanAttackOver;
+            info->blockBefore = 1;
             eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
 
             printf("validDirs = %d\n", validDirs);
@@ -660,6 +663,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->validDirections = MASK_DIR_ALL;
         info->player = -1;
         info->blockedPredicate = NULL;
+        info->blockBefore = 0;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Jimmy\nDir: ");
         break;
@@ -720,6 +724,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->validDirections = MASK_DIR_ALL;
         info->player = -1;
         info->blockedPredicate = NULL;
+        info->blockBefore = 0;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Open\nDir: ");
         break;
@@ -779,6 +784,7 @@ int gameBaseKeyHandler(int key, void *data) {
         info->validDirections = MASK_DIR_ALL;
         info->player = -1;
         info->blockedPredicate = &tileCanTalkOver;
+        info->blockBefore = 0;
         eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Talk\nDir: ");
         break;
@@ -1018,26 +1024,18 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
     for (distance = 1; distance <= info->range; distance++) {
         dirMove(dir, &t_x, &t_y);
 
+        tile = mapGroundTileAt(c->location->map, t_x, t_y, c->location->z);
+
+        /* should we see if the action is blocked before trying it? */       
+        if (info->blockBefore && info->blockedPredicate &&
+            !(*(info->blockedPredicate))(tile))
+            break;
+
         if ((*(info->handleAtCoord))(t_x, t_y, distance, info))
             goto success;
 
-        // Make sure the object we're testing isn't a party member
-        obj = mapObjectAt(c->location->map, t_x, t_y, c->location->z);
-        if (obj != NULL && party[0] != NULL) {
-            for (i = 0; i < c->saveGame->members; i++) {                
-                if (party[i] && (obj->x == party[i]->x) && (obj->y == party[i]->y) && (obj->z == party[i]->z)) {
-                    obj = NULL;
-                    break;
-                }
-            }
-        }
-
-        if (obj != NULL)
-            tile = obj->tile;
-        else
-            tile = mapTileAt(c->location->map, t_x, t_y, c->location->z);        
-
-        if (info->blockedPredicate &&
+        /* see if the action was blocked only if it did not succeed */
+        if (!info->blockBefore && info->blockedPredicate &&
             !(*(info->blockedPredicate))(tile))
             break;
     }
@@ -1308,7 +1306,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
     info->prev_y = y;
 
     /* Remove the last weapon annotation left behind */
-    if ((distance > 1) && (oldx >= 0) && (oldy >= 0))
+    if ((distance > 0) && (oldx >= 0) && (oldy >= 0))
         annotationRemove(oldx, oldy, c->location->z, c->location->map->id, MISSFLASH_TILE);
     
     if (x == -1 && y == -1) {
