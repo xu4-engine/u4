@@ -49,7 +49,7 @@ void musicPlayMid(Music music) {
     }
 
     if (music == MUSIC_NONE) {
-        Mix_FadeOutMusic(1000);
+        musicFadeOut(1000);
         return;
     }
 
@@ -71,9 +71,9 @@ int musicToggle() {
 
     if (!soundDisabled) {
         if (!toggle)
-            Mix_FadeOutMusic(1000);
+            musicFadeOut(1000);
         else if (playing)
-            Mix_FadeInMusic(playing, -1, 1000);
+            musicFadeIn(1000);
     }
 
     return toggle;
@@ -89,6 +89,18 @@ void musicLordBritish(void){  /* Music when you talk to LB */
 
 void musicPlay(void) {  /* Main music loop. */
     musicPlayMid(c->location->map->music);
+}
+
+void musicStop(void) {
+    Mix_PauseMusic();
+}
+
+void musicFadeOut(int msecs) {
+    Mix_FadeOutMusic(msecs);
+}
+
+void musicFadeIn(int msecs) {
+    Mix_FadeInMusic(playing, -1, msecs);
 }
 
 int musicInit() {

@@ -32,7 +32,9 @@ void campBegin() {
     int i;
 
     gameSetMap(c, &camp_map, 1, NULL);
-    musicPlay();
+    musicFadeOut(2000); /* Fade volume out to ease into camp */
+
+    /* FIXME: when random encounters occur, make sure to call musicPlay() function for battle */
 
     for (i = 0; i < c->saveGame->members; i++)
         mapAddObject(c->location->map, CORPSE_TILE, CORPSE_TILE, c->location->map->area->player_start[i].x, c->location->map->area->player_start[i].y, c->location->z);
@@ -54,6 +56,7 @@ void campTimer(void *data) {
 
 void campEnd() {
     int healed = 0;
+    musicFadeIn(0); /* Return volume to normal */
     
     gameExitToParentMap(c);    
     
