@@ -269,14 +269,14 @@ int introInit() {
     keyboardOptions = menuAddItem(keyboardOptions, 0, "German Keyboard", 5, 16, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
     keyboardOptions = menuAddItem(keyboardOptions, 1, "Repeat Delay (in msecs)", 5, 17, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
     keyboardOptions = menuAddItem(keyboardOptions, 2, "Repeat Interval (in msecs)", 5, 18, &introKeyboardOptionsMenuItemActivate, ACTIVATE_ANY);
-    keyboardOptions = menuAddItem(keyboardOptions, 0xFE, "Use These Settings", 4, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    keyboardOptions = menuAddItem(keyboardOptions, 0xFF, "Cancel", 4, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    keyboardOptions = menuAddItem(keyboardOptions, 0xFE, "Use These Settings", 5, 20, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    keyboardOptions = menuAddItem(keyboardOptions, 0xFF, "Cancel", 5, 21, &introKeyboardOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
     speedOptions = menuAddItem(speedOptions, 0, "Game Cycles Per Second", 7, 16, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
     speedOptions = menuAddItem(speedOptions, 1, "Battle Speed", 7, 17, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
     speedOptions = menuAddItem(speedOptions, 2, "Spell Effect Length", 7, 18, &introSpeedOptionsMenuItemActivate, ACTIVATE_ANY);
-    speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 4, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
-    speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 4, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    speedOptions = menuAddItem(speedOptions, 0xFE, "Use These Settings", 7, 20, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
+    speedOptions = menuAddItem(speedOptions, 0xFF, "Cancel", 7, 21, &introSpeedOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
     minorOptions = menuAddItem(minorOptions, 3, "Screen Shaking", 7, 5, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);
     minorOptions = menuAddItem(minorOptions, 0, "Ultima V Shrines", 7, 6, &introMinorOptionsMenuItemActivate, ACTIVATE_ANY);    
@@ -732,12 +732,10 @@ void introUpdateScreen() {
             screenTextAt(32, 16, "%d", settings->gameCyclesPerSecond);
             screenTextAt(32, 17, "%d", settings->battleSpeed);
             
-            sprintf(msg, "%d", settings->spellEffectSpeed / 5);
-            if (settings->spellEffectSpeed % 5 != 0)
-                sprintf(msg + strlen(msg), ".%d", (settings->spellEffectSpeed%5)*2);
-            
-            screenTextAt(33 - strlen(msg), 18, msg);
-            screenTextAt(34, 18, "sec");
+            sprintf(msg, "%0.*f sec",
+                (settings->spellEffectSpeed % 5 == 0) ? 0 : 1,
+                (double)settings->spellEffectSpeed / 5);        
+            screenTextAt(37 - strlen(msg), 18, msg);            
             menuShow(menuGetRoot(speedOptions));
         }
         break;
