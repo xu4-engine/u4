@@ -303,7 +303,7 @@ City yew_city  = {
     "Yew", /* name */
     0, /* n_persons */
     NULL, /* persons */
-    { 32, 0, 0, 26, 0, 0, 26, 0, 0, 0, 0, 0 }, /* person_types */
+    { 32, 0, 0, 27, 0, 0, 26, 0, 0, 0, 0, 0 }, /* person_types */
     "yew.tlk", /* tlk_fname */
     &yew_map /* map */
 };
