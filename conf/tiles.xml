@@ -8,7 +8,7 @@
     <tile rule="swamp"/> <!-- swamp -->
     <tile rule="grass"/> <!-- grass -->
     <tile rule="brush"/> <!-- brush -->
-    <tile rule="brush"/> <!-- forest -->
+    <tile rule="brush" opaque="true"/> <!-- forest -->
     <tile rule="hills"/> <!-- hills -->
     <tile rule="mountains"/> <!-- mountains -->
     <tile/> <!-- dungeon -->
