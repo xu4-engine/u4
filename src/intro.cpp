@@ -80,7 +80,8 @@ IntroController::IntroController() :
     Controller(1), 
     menuArea(1 * CHAR_WIDTH, 13 * CHAR_HEIGHT, 38, 10),
     extendedMenuArea(1 * CHAR_WIDTH, 3 * CHAR_HEIGHT, 38, 22),
-    questionArea(INTRO_TEXT_X * CHAR_WIDTH, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT)
+    questionArea(INTRO_TEXT_X * CHAR_WIDTH, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT),
+    mapArea(BORDER_WIDTH, (TILE_HEIGHT * 6) + BORDER_HEIGHT, INTRO_MAP_WIDTH, INTRO_MAP_HEIGHT, "base")
 {
 
     beastiesVisible = false;
@@ -458,13 +459,13 @@ void IntroController::drawMapAnimated() {
 
     /* draw unmodified map */
     for (y = 0; y < INTRO_MAP_HEIGHT; y++)
-        for (x = 0; x < INTRO_MAP_WIDTH; x++)            
-            screenShowTile(&introMap[x + (y * INTRO_MAP_WIDTH)], false, x, y + 6);
-        
+        for (x = 0; x < INTRO_MAP_WIDTH; x++)
+            mapArea.drawTile(&introMap[x + (y * INTRO_MAP_WIDTH)], false, x, y);
+
     /* draw animated objects */
     for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
-        if (objectStateTable[i].tile != 0)            
-            screenShowTile(&objectStateTable[i].tile, false, objectStateTable[i].x, objectStateTable[i].y + 6);        
+        if (objectStateTable[i].tile != 0)
+            mapArea.drawTile(&objectStateTable[i].tile, false, objectStateTable[i].x, objectStateTable[i].y);
     }
 }
 
@@ -491,7 +492,7 @@ void IntroController::updateScreen() {
         drawBeasties();
         break;
 
-    case INTRO_MENU:        
+    case INTRO_MENU:
         screenSetCursorPos(24, 16);
         screenShowCursor();
 

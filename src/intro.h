@@ -13,6 +13,7 @@
 #include "observer.h"
 #include "savegame.h"
 #include "textview.h"
+#include "tileview.h"
 
 struct IntroObjectState;
 class Tile;
@@ -89,6 +90,7 @@ private:
     TextView menuArea;
     TextView extendedMenuArea;
     TextView questionArea;
+    TileView mapArea;
 
     /* data loaded in from title.exe */
     MapTile *introMap;
