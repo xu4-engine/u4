@@ -154,7 +154,6 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
         map->compressed_chunks = malloc(listLength(compressed_chunks) * sizeof(int));
         for (node = compressed_chunks, i = 0; node; node = node->next, i++) {
             map->compressed_chunks[i] = (int) node->data;
-            free(node->data);
         }
         map->n_compressed_chunks = listLength(compressed_chunks);
         listDelete(compressed_chunks);
