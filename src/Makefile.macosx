@@ -7,7 +7,6 @@ bindir=$(prefix)/bin
 libdir=$(prefix)/lib
 
 UI=sdl
-#UILIBS=$(shell sdl-config --libs) -lSDL_mixer
 UILIBS=-L$(HOME)/Library/Frameworks \
        -framework SDL \
        -framework SDL_mixer \
@@ -16,7 +15,6 @@ UILIBS=-L$(HOME)/Library/Frameworks \
        -framework AppKit \
        -framework Foundation \
        -lobjc
-#UIFLAGS=$(shell sdl-config --cflags)
 UIFLAGS=-F$(HOME)/Library/Frameworks/ \
 	-I$(HOME)/Library/Frameworks/libxml.framework/Headers \
 	-I$(HOME)/Library/Frameworks/libiconv.framework/Headers \
@@ -24,12 +22,20 @@ UIFLAGS=-F$(HOME)/Library/Frameworks/ \
 	-I$(HOME)/Library/Frameworks/SDL_mixer.framework/Headers
 
 FEATURES=-DHAVE_BACKTRACE=0 -DHAVE_VARIADIC_MACROS=1
-#DEBUGCFLAGS=-ggdb -rdynamic
+DEBUGCFLAGS=-ggdb
 CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
-LIBS=SDLMain.o $(UILIBS) 
+LIBS=$(UILIBS) 
 INSTALL=install -D
 
+OBJS=macosx/SDLMain.o
+
 include Makefile.common
+
+SDLMain.o: macosx/SDLMain.m macosx/SDLMain.h
+	$(CC) $(CFLAGS) -c -o macosx/SDLMain.o macosx/SDLMain.m 
+
+mactlkconv: util/tlkconv.o
+	$(CC) $(CFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks -framework libxml -framework libiconv
 
 install::
 	$(INSTALL) $(MAIN) $(bindir)/$(MAIN)
