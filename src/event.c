@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <assert.h>
 
 #include "u4.h"
@@ -150,6 +151,23 @@ int keyHandlerDefault(int key, void *data) {
 }
 
 /**
+ *
+ */
+int keyHandlerGetChoice(int key, void *data) {
+    GetChoiceActionInfo *info = (GetChoiceActionInfo *) data;
+
+    if (isupper(key))
+        key = tolower(key);
+
+    if (strchr(info->choices, key)) {
+        if ((*info->handleChoice)(key))
+            free(info);
+    }
+    return 1;
+}
+
+
+/**
  * Generic handler for reading a buffer.  Handles key presses when a
  * buffer is being read, such as when a conversation is active.  The
  * keystrokes are buffered up into a word, which is then passed off to
@@ -176,7 +194,6 @@ int keyHandlerReadBuffer(int key, void *data) {
 
     } else if (key == U4_BACKSPACE) {
         int len;
-
 
         len = strlen(info->buffer);
         if (len > 0) {

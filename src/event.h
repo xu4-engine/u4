@@ -27,6 +27,11 @@ typedef struct ReadBufferActionInfo {
     int screenX, screenY;
 } ReadBufferActionInfo;
 
+typedef struct GetChoiceActionInfo {
+    const char *choices;
+    int (*handleChoice)(char);
+} GetChoiceActionInfo;
+
 void eventHandlerInit();
 void eventHandlerMain();
 void eventHandlerSetExitFlag(int flag);
@@ -42,5 +47,6 @@ void *eventHandlerGetKeyHandlerData();
 
 int keyHandlerDefault(int key, void *data);
 int keyHandlerReadBuffer(int key, void *data);
+int keyHandlerGetChoice(int key, void *data);
 
 #endif
