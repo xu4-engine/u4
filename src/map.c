@@ -339,7 +339,7 @@ unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus) 
     else if (a && a->visual) {
         *focus = 0;
         tile = a->tile;
-    }    
+    }
     /* then camouflaged monsters that have a disguise */
     else if (obj && (obj->objType == OBJECT_MONSTER) && !obj->isVisible && (obj->monster->camouflageTile > 0)) {
         *focus = obj->hasFocus;
@@ -355,7 +355,7 @@ unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus) 
         *focus = obj->hasFocus;
         tile = obj->tile;
     }
-    /* then the party's ship */
+    /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */
     else if ((map->flags & SHOW_AVATAR) && c->location->x == x && c->location->y == y) {
         *focus = 0;
         tile = c->saveGame->transport;
