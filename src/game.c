@@ -1703,25 +1703,44 @@ int gameGetChest(int player) {
 
 int getChestTrapHandler(int player)
 {            
-    TileEffect trapType = EFFECT_FIRE;
+    TileEffect trapType;
     int dex = c->saveGame->players[player].dex;
-    int randNum = rand()%100;   
+    int randNum = rand()%100;
+
+    switch(rand() % 4) {
+    case 0: trapType = EFFECT_FIRE; break;   /* acid trap */
+    case 1: trapType = EFFECT_POISON; break; /* poison trap */
+    case 2: trapType = EFFECT_SLEEP; break;  /* sleep trap */
+    case 3: trapType = EFFECT_LAVA; break;   /* bomb trap; special case */
+    default: trapType = EFFECT_FIRE; break;
+    }
 
     /* Chest is trapped! */
     if (rand() % 2 == 1)
-    {    
-        if (rand() % 2 == 1)
-            trapType = EFFECT_POISON; // Poison trap
-    
-        screenMessage(trapType == EFFECT_POISON ? "Poison Trap!\n" : "Acid Trap!\n");
+    {   
+        int member = player;
+        int evadable = 1;
+
+        /* apply the effects from the trap */
+        if (trapType == EFFECT_FIRE)
+            screenMessage("Acid Trap!\n");            
+        else if (trapType == EFFECT_POISON)
+            screenMessage("Poison Trap!\n");            
+        else if (trapType == EFFECT_SLEEP)
+            screenMessage("Sleep Trap!\n");            
+        else if (trapType == EFFECT_LAVA) {
+            screenMessage("Bomb Trap!\n");
+            member = ALL_PLAYERS;
+            evadable = 0;
+        }
 
         /* See of the player evaded the trap! */           
         if (((randNum > (dex * 2)) || /* test the player's dexterity */
-            (randNum < 5)) &&         /* there's always a 5% chance of failure */
-            (player >= 0))            /* player is < 0 during the 'O'pen spell (immune to traps) */
-            
-            /* apply the effects from the trap */
-            playerApplyEffect(c->saveGame, trapType, player);
+            (randNum < 5) ||          /* there's always a 5% chance of failure */
+            !evadable) &&             /* see if the trap is unevadable */
+            (player >= 0)) {          /* player is < 0 during the 'O'pen spell (immune to traps) */                         
+            playerApplyEffect(c->saveGame, trapType, member);
+        }
         else screenMessage("Evaded!\n");
 
         return 1;
