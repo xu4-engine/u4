@@ -712,11 +712,11 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
  */
 int screenLoadImage(Image **image, int width, int height, int bpp, U4FILE *file, CompressionType comp) {
     Image *img;
-    int x, y;
+    int x, y, indexed;
     unsigned char *compressed_data, *decompressed_data = NULL;
     long inlen, decompResult;
 
-    ASSERT(bpp == 4 || bpp == 8, "invalid bpp passed to screenLoadImage: %d", bpp);
+    ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp passed to screenLoadImage: %d", bpp);
 
     inlen = u4flength(file);
     compressed_data = (Uint8 *) malloc(inlen);
@@ -746,14 +746,37 @@ int screenLoadImage(Image **image, int width, int height, int bpp, U4FILE *file,
         return 0;
     }
 
-    img = imageNew(width, height, 1, 1, IMTYPE_HW);
+    indexed = (bpp == 4 || bpp == 8);
+    img = imageNew(width, height, 1, indexed, IMTYPE_HW);
     if (!img) {
         if (decompressed_data)
             free(decompressed_data);
         return 0;
     }
 
-    if (bpp == 8) {
+    if (bpp == 32) {
+        for (y = 0; y < height; y++) {
+            for (x = 0; x < width; x++)
+                imagePutPixel(img, x, y, 
+                              decompressed_data[(y * width + x) * 4], 
+                              decompressed_data[(y * width + x) * 4 + 1], 
+                              decompressed_data[(y * width + x) * 4 + 2],
+                              decompressed_data[(y * width + x) * 4 + 3]);
+        }
+    }
+
+    else if (bpp == 24) {
+        for (y = 0; y < height; y++) {
+            for (x = 0; x < width; x++)
+                imagePutPixel(img, x, y, 
+                              decompressed_data[(y * width + x) * 3], 
+                              decompressed_data[(y * width + x) * 3 + 1], 
+                              decompressed_data[(y * width + x) * 3 + 2],
+                              IM_OPAQUE);
+        }
+    }
+
+    else if (bpp == 8) {
         SDL_SetColors(img->surface, vgaPalette, 0, 256);
 
         for (y = 0; y < height; y++) {
