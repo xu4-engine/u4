@@ -493,5 +493,5 @@ CompressionType u4GetCompTypeByStr(const char *comp) {
             return (CompressionType)i;
     }
 
-    return NULL;
+    return COMP_NONE;
 }
