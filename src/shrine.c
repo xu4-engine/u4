@@ -32,6 +32,7 @@ int shrineHandleCycles(char choice);
 void shrineMeditationCycle();
 void shrineTimer(void *data);
 int shrineHandleMantra(const char *message);
+int shrineEjectOnKey(int key, void *data);
 void shrineEject();
 
 void shrineEnter(const Shrine *s) {
@@ -142,16 +143,29 @@ int shrineHandleMantra(const char *message) {
 
         if (completedCycles == 3 &&
             playerAttemptElevation(c->saveGame, shrine->virtue)) {
-            screenMessage("Thou hast achieved partial Avatarhood in the Virtue of %s\n\n", getVirtueName(shrine->virtue));
+            screenMessage("Thou hast achieved partial Avatarhood in the Virtue of %s\n\n"
+                          "Thou art granted a vision!\n", 
+                          getVirtueName(shrine->virtue));
+
+            gameSetViewMode(VIEW_RUNE);
+            screenDrawBackgroundInMapArea(BKGD_SHRINE_HON + shrine->virtue);
+
         } else {
-            screenMessage("\nThy thoughts are pure.  ");
+            screenMessage("\nThy thoughts are pure.  "
+                          "Thou art granted a vision!\n");
+            /* FIXME: print advice string */
         }
 
-        screenMessage("Thou art granted a vision!\n");
-
-        shrineEject();
+        eventHandlerPushKeyHandler(&shrineEjectOnKey);
     }
 
+    return 1;
+}
+
+int shrineEjectOnKey(int key, void *data) {
+    gameSetViewMode(VIEW_NORMAL);
+    eventHandlerPopKeyHandler();
+    shrineEject();
     return 1;
 }
 
