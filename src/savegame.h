@@ -86,6 +86,8 @@ typedef enum {
     REAG_MAX
 } Reagent;
 
+#define SPELL_MAX 26
+
 typedef enum {
     ITEM_SKULL  = 0x01,
     ITEM_SKULL_DESTROYED = 0x02,
@@ -154,7 +156,7 @@ typedef struct _SaveGame {
     unsigned short armor[ARMR_MAX];
     unsigned short weapons[WEAP_MAX];
     unsigned short reagents[REAG_MAX];
-    unsigned short mixtures[26];
+    unsigned short mixtures[SPELL_MAX];
     unsigned short items;
     unsigned char x, y;
     unsigned char stones;
