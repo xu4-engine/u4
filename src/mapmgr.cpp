@@ -46,7 +46,7 @@ void mapMgrInit() {
     Map *map;
 
     vector<ConfigElement> maps = config->getElement("/config/maps").getChildren();
-    for (vector<ConfigElement>::iterator i = maps.begin(); i != maps.end(); i++) {
+    for (std::vector<ConfigElement>::iterator i = maps.begin(); i != maps.end(); i++) {
         map = mapMgrInitMapFromConf(*i);
         mapLoad(map);
         mapMgrRegister(map);
@@ -127,7 +127,7 @@ Map *mapMgrInitMapFromConf(const ConfigElement &mapConf) {
     map->music = static_cast<Music>(mapConf.getInt("music"));
 
     vector<ConfigElement> children = mapConf.getChildren();
-    for (vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "city") {
             City *city = dynamic_cast<City*>(map);
             mapMgrInitCityFromConf(*i, city);            
@@ -157,7 +157,7 @@ void mapMgrInitCityFromConf(const ConfigElement &cityConf, City *city) {
     city->tlk_fname = cityConf.getString("tlk_fname");
 
     vector<ConfigElement> children = cityConf.getChildren();
-    for (vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "personrole")
             city->personroles.push_back(mapMgrInitPersonRoleFromConf(*i));
     }    
@@ -240,7 +240,7 @@ Portal *mapMgrInitPortalFromConf(const ConfigElement &portalConf) {
     portal->exitPortal = portalConf.getBool("exits");
 
     vector<ConfigElement> children = portalConf.getChildren();
-    for (vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "retroActiveDest") {
             portal->retroActiveDest = new PortalDestination;
             

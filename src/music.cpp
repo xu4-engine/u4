@@ -104,7 +104,7 @@ int musicInit() {
     const Config *config = Config::getInstance();
 
     vector<ConfigElement> musicConfs = config->getElement("/config/music").getChildren();
-    for (vector<ConfigElement>::iterator i = musicConfs.begin(); i != musicConfs.end(); i++) {
+    for (std::vector<ConfigElement>::iterator i = musicConfs.begin(); i != musicConfs.end(); i++) {
 
         if (i->getName() != "track")
             continue;
