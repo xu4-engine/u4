@@ -920,7 +920,7 @@ MoveReturnValue CombatController::movePartyMember(Direction dir, int userEvent) 
         screenMessage("Blocked!\n");
     else if (retval & MOVE_SLOWED)
         screenMessage("Slow progress!\n"); 
-    else if (ct->winOrLose && (retval & (MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE)))
+    else if (ct->winOrLose && ct->getCreature()->isEvil() && (retval & (MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE)))
         soundPlay(SOUND_FLEE);
 
     return retval;
