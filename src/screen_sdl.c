@@ -22,6 +22,10 @@ int scale, forceEga, forceVga;
 
 long decompress_u4_file(FILE *in, long filesize, void **out);
 
+void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int color);
+void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h);
+void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, Uint8 color);
+void screenFixIntroScreen();
 int screenLoadIntroBackground();
 int screenLoadBorders();
 void screenFreeIntroBackground();
@@ -67,12 +71,110 @@ void screenInit(int screenScale) {
 }
 
 /**
+ *  Fills a rectangular screen area with the specified color.  The x,
+ *  y, width and height parameters are unscaled, i.e. for 320x200.
+ */
+void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int color) {
+    SDL_Rect dest;
+
+    dest.x = x * scale;
+    dest.y = y * scale;
+    dest.w = w * scale;
+    dest.h = h * scale;
+
+    SDL_FillRect(surface, &dest, color);
+}
+
+/**
+ *  Copies a rectangular screen area.  I don't know what happens if
+ *  the source and destination overlap ;-) The parameters are
+ *  unscaled, i.e. for 320x200.
+ */
+void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h) {
+    SDL_Rect src, dest;
+
+    src.x = srcX * scale;
+    src.y = srcY * scale;
+    src.w = w * scale;
+    src.h = h * scale;
+
+    dest.x = destX * scale;
+    dest.y = destY * scale;
+    dest.w = w * scale;
+    dest.h = h * scale;
+
+    SDL_BlitSurface(surface, &src, surface, &dest);
+}
+
+void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, Uint8 color) {
+    int xs, ys;
+
+    for (xs = 0; xs < scale; xs++) {
+        for (ys = 0; ys < scale; ys++) {
+            ((Uint8 *)surface->pixels)[(y*scale+ys) * scale * (surface->w / scale) + x*scale + xs] = color;
+        }
+    }
+}
+
+void screenFixIntroScreen() {
+    FILE *sigFile;
+    unsigned char *sigData;
+    const int sigDataOffset = 0x746E;   /* offset in title.exe */
+    const int sigDataLength = 0x7682 - sigDataOffset + 1;
+    const Uint8 sigColor = 0xB;   /* light cyan */
+    const Uint8 lineColor = 4;   /* dark red */
+    int i,x,y;
+
+    /* -----------------------------------------------------------------------------
+     * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
+     * ----------------------------------------------------------------------------- */
+    screenCopyRect(intro,136,0,136,0x21,54,5);
+    
+    /* ----------------------------
+     * erase the original "present"
+     * ---------------------------- */
+    screenFillRect(intro,136,0,54,5,0);
+
+    /* -----------------------------
+     * draw "Lord British" signature
+     * ----------------------------- */
+    sigData = (unsigned char *)malloc(sigDataLength);
+    sigFile = u4fopen("title.exe");
+    if (sigData && sigFile /*&& (sigData[sigDataLength-1] == 0)*/) {
+        /* read sig data from title.exe; it's an array of byte pairs (pixel coordinates) */
+        fseek(sigFile, sigDataOffset, SEEK_SET);
+        fread(sigData, 1, sigDataLength, sigFile);
+        /* draw sig */
+        i = 0;
+        while (sigData[i] != 0) {
+            /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
+            x = sigData[i] + 0x14;
+            y = 0xBF - sigData[i+1];
+            screenWriteScaledPixel(intro,x,y,sigColor);
+            screenWriteScaledPixel(intro,x+1,y,sigColor);
+            i += 2;
+        }
+    }
+    if (sigFile) u4fclose(sigFile);
+    if (sigData) free(sigData);
+
+    /* --------------------------------------------------------------
+     * draw the red line between "Origin Systems, Inc." and "present"
+     * -------------------------------------------------------------- */
+    /* (x/y) are unscaled coordinates */
+    screenFillRect(intro, 0x56, 0x1F, 0xEE - 0x56, 1, lineColor);
+}
+
+/**
  * Load the intro background image from the "title.ega" file.
  */
 int screenLoadIntroBackground() {
     int ret = 0;
 
     ret = screenLoadLzwImageEga(&intro, 320, 200, "title.ega");
+
+    if (ret)
+        screenFixIntroScreen();
 
     /* no vga version... yet */
 
