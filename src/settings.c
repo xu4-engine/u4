@@ -42,6 +42,7 @@ void settingsRead() {
     settings->fullscreen = 0;
     settings->filter = SCL_AdvanceMAME;
     settings->vol = 1;
+    settings->germanKbd = 0;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -66,6 +67,8 @@ void settingsRead() {
         }
         else if (strstr(buffer, "vol=") == buffer)
             settings->vol = (int) strtoul(buffer + strlen("vol="), NULL, 0);
+        else if (strstr(buffer, "germanKbd=") == buffer)
+            settings->germanKbd = (int) strtoul(buffer + strlen("germanKbd="), NULL, 0);
         else
             errorWarning("invalid line in settings file %s", buffer);
     }
@@ -92,11 +95,13 @@ void settingsWrite() {
             "scale=%d\n"
             "fullscreen=%d\n"
             "filter=%s\n"
-            "vol=%d\n",
+            "vol=%d\n"
+            "germanKbd=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
-            settings->vol);
+            settings->vol,
+            settings->germanKbd);
 
     fclose(settingsFile);
 }

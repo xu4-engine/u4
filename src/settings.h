@@ -19,6 +19,7 @@ typedef struct _Settings {
     int fullscreen;
     FilterType filter;
     int vol;
+    int germanKbd;
 } Settings;
 
 char *settingsFilename(void);

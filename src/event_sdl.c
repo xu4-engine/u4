@@ -10,10 +10,10 @@
 #include "event.h"
 #include "screen.h"
 #include "context.h"
+#include "settings.h"
 
 int eventDone;
 SDL_TimerID timer;
-extern int germanKbd;
 
 Uint32 eventCallback(Uint32 interval, void *param) {
     SDL_Event event;
@@ -55,7 +55,7 @@ void eventHandlerMain(void (*updateScreen)(void)) {
             if (event.key.keysym.sym >= SDLK_a &&
                 event.key.keysym.sym <= SDLK_z) {
 
-                if (germanKbd) {
+                if (settings->germanKbd) {
                     if (event.key.keysym.sym == SDLK_z)
                         event.key.keysym.sym = SDLK_y;
                     else if (event.key.keysym.sym == SDLK_y)
