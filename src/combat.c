@@ -858,7 +858,12 @@ int combatFindTargetForMonster(const Object *monster, int *distance, int ranged)
             continue;
 
         /* find out how many moves it would take to get to the party member */
-        curDistance = mapMovementDistance(monster->x, monster->y, party[i]->x, party[i]->y);        
+        if (ranged) 
+            /* ranged attacks can go diagonally, so find the closest using diagonals */
+            curDistance = mapDistance(monster->x, monster->y, party[i]->x, party[i]->y);
+        else
+            /* normal attacks are n/e/s/w, so find the distance that way */
+            curDistance = mapMovementDistance(monster->x, monster->y, party[i]->x, party[i]->y);        
 
         /* skip target if further than current target */
         if (curDistance > (*distance))
