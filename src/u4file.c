@@ -373,9 +373,12 @@ char *u4find_path(const char *fname, const char * const *pathent, unsigned int n
             break;
     }
 
-    if (verbose && f != NULL)
-        printf("%s successfully found\n", pathname);
-    else printf("%s not found\n", fname);
+    if (verbose) {
+        if (f != NULL)
+            printf("%s successfully found\n", pathname);
+        else 
+            printf("%s not found\n", fname);
+    }
 
     if (f) {
         fclose(f);
