@@ -1,0 +1,264 @@
+Ultima 4 graphics driver
+========================
+
+This text describes the public functions of ega.drv, the graphics driver
+used by Ultima 4 for DOS.
+It was written by Ryan Wiener (Aradindae Dragon), the programmer of the
+Ultima 4 Upgrade, which can be found at:
+http://www.moongates.com/u4/
+
+---
+
+Function info (by number)
+
+00 - Active Character Box (In combat)
+     Input: (row, col)
+            - Row is the tile row on screen in the main window from 0 to 10
+            - Col is the tile column on screen in the main window from 0 to 10
+     Literally: Draws a white bounding box at tile identified by row and col
+     Description: Draws the white box (2 pixel wide) around the active character
+                  while in combat.
+                  * Blinking effect caused by repetitively painting original
+                  tile, then after a short delay, painting the bounding box.
+01 - Tile Row Expansion (Dungeon)
+     Input: (Tile, TRow, SRow, SCol, Exp)
+            - Tile is the tile number, 0 to 255, with the row to be expanded
+            - TRow is the row in the tile, 0 to 15, to be expanded
+            - SRow is the screen row to expand to, 0 to 199
+            - SCol is the screen column to expand to, 0 to 319
+            - Exp is the expansion factor, 1 (false) or not 1 (true)
+     Literally: Draws the specified row of the specified tile to the screen at
+                coordinate (SRow, SCol).  If Exp is not 1 (true), then the row
+                is expanded horizontally by a factor of 2 (each pixel drawn
+                twice, side by side), otherwise, it is copied pixel for pixel.
+     Description: Used to draw monsters/chests/orbs while in dungeons,
+                  expanding as needed for close up views
+
+02 - Field Painter (Dungeon)
+     Input: (Height, Width, Tile, Row, Col)
+            - Height is the height in tiles, 0 to 10, to copy over.
+            - Width is the width in tiles, 0 to 10, to copy over.
+            - Tile is the Tile to copy.
+            - Row is the upper row in tiles, 0 to 10, to begin copying at.
+            - Col is the left column in tiles, 0 to 10, to begin copying at
+     Literally: Copies the specified Tile over the specified range, starting
+                at (Row, Col) and going for Height rows down and Width columns
+                down
+     Description: Used to paint fields (Magic, Sleep, Poison) on the main view
+                  while in dungeons.
+
+03 - Tremor Shift Down
+04 - Tremor Shift Up
+     Input (Sound)
+           - Sound is a flag for whether or not to play sound (based on program
+             sound setting, don't remember the key, but there is a toggle key)
+     Literally: Shifts entire main view down(up) half a tile (8 pixels).
+                Makes rumble noise if sound != 0
+     Description: Used specifically for the spell tremor, which calls these two
+                  functions.
+
+05 - Draw Tiles from list
+     Input (Height, Width, Pointer)
+           - Height is number of tile rows to draw (0 to 10)
+           - Width is number of tile columns to draw (0 to 10)
+           - Pointer is a near pointer to a list of tile numbers
+     Literally: Draws the tiles in list pointed to by Pointer to the screen
+                starting at the upper left tile and going until Height and
+                Width tiles have been painted.  Paints across then down
+     Description: used mainly to draw non-dungeon scenes, incl: Shrines, Combat,
+                  Town/Castle/Village, Overland, and sleeping views.
+
+06 - Set Pixel
+     Input (Row, Col, Color)
+           - Row is screen row (0-199) to set
+           - Col is screen column (0-319) to set
+           - Color is the color (originally 0-15, but my VGA version uses 0-255)
+     Literally: Sets the pixel at (row, col) to Color
+     Description: Used to draw the Ladders in dungeons (I think that is all, but
+                  it may also be used in the "peer" screen after using a gem...)
+
+07 - Scroll Text
+     Input: none
+     Literally: Shifts text box up 1 line (8 pixels), and clears the bottem line
+                of text
+     Description: Used whenever it needs to scroll the text up...
+
+08 - Invert Main Window
+     Input: none
+     Literally: inverts the main window (where all the tiles are drawn) by
+                XOR-ing each pixel by xFF (on the VGA version)
+     Description: Used during spellcasting to negate the screen, and return it
+                  to normal
+
+09 - Clear Main Window
+     Input: none
+     Literally: clears the main window by setting each pixel to 0 (black)
+     Description: Used various times, whenever the screen needs to change, also
+                  used when your torch goes out...
+
+10 - Invert Line (status box)
+     Input: (row)
+            - Row is the line in the status box to invert (0 to 7)
+     Literally: inverts the specified line (8 pixels tall) in the status box
+                in the same manner as function 08
+     Description: Used during combat to highlight the name of the active
+                  character.
+
+11 - Invert Character (status box)
+     Input: (Row, Column)
+            - Row is line in the status box with the character (0 to 7)
+            - Column is the character in the line to invert (0 to 15)
+     Literally: Inverts the character in the status box specified by
+                row and column in the same manner as function 8
+     Description: Used to invert the Status character whenever
+                  That character is wounded
+
+12 - Clear Status Box
+     Input: none
+     Literally: clears the status box area by setting each pixel to 0
+     Description: Used to clear the box when switching pages while viewing
+                  (Z)stats
+
+13 - OR Pixel Set
+     Input (Row, Col, Color)
+           - Row is screen row (0-199) to set
+           - Col is screen column (0-319) to set
+           - Color is the color (originally 0-15, but my VGA version uses 0-255)
+     Literally: Bitwise OR the pixel at (row, col) with Color
+     Description: I think that it is used in the "peer" screen after using a gem
+
+14 - XOR Pixel Set
+     Input (Row, Col, Color)
+           - Row is screen row (0-199) to set
+           - Col is screen column (0-319) to set
+           - Color is the color (originally 0-15, but my VGA version uses 0-255)
+     Literally: Bitwise XOR the pixel at (row, col) with Color
+     Description: I think that it is used in the "peer" screen after using a gem
+                  in order to get that flickering marker to indicate your
+                  location
+
+15 - Scene Draw
+     Input (FileName, DestOff, DestSeg)
+           - FileName is a near pointer to the filename (string) containing the
+             picture to load
+           - DestOff is the Offset in DestSeg to begin writing picture data
+           - DestSeg is the Segment in memory to write picture data to.  If this
+             Value = 0, then write directly to the screen, instead)
+           * the format of the file is as follows:
+             Do
+               read byte from file
+               if byte != 2, then
+                 write byte to screen.
+                 step to next pixel
+               else
+                 A = next byte
+                 B = byte after that
+                 write A copies of byte A to screen
+                 advance to pixel after last one written
+              end if
+             While not done writing data
+     Literally: decodes and writes data to screen.  By XOR-ing pixels with data.
+                (EGA version uses OR instead)  This is capable of doing full screen
+                displays, (in fact, that is how the border is drawn initially)
+     Description: Used whenever a scene is drawn to the screen (Avatarhood shrine
+                  visions, Initial Border, and Final Questions.)
+
+16 - Show by opening (Final do-dah)
+     Input (FileName)
+           - FileName is a near pointer to the filename (string) containing the
+             picture to load.  This is passed directly to Function 15
+     Literally: Loads screen into memory (via function 15), then does the split
+                open effect (scrolling away the two halves to reveal the scene
+                beneath)
+     Description: Used only at the end of the game, after you have answered every
+                  Avatar question correctly, to show the final in game scene.
+
+17 - Dungeon Draw (Trapazoids)
+     Input (X1, X2, Y1A, Y1B, Y2A, Y2B, C1, C2)
+           - X1 is left edge of trapazoid (0 to 319)
+           - X2 is right edge of trapazoid (0 to 319)
+           - Y1A is upper left boundry (0 to 199)
+           - Y1B is lower left boundry (0 to 199)
+           - Y2A is upper right boundry (0 to 199)
+           - Y2B is lower right boundry (0 to 199)
+           * left and right & Upper/lower don't matter much, as I sort them to
+             make sense anyways
+           - C1 is the the Color of the Trapazoid (0-3) they are then looked up
+             on a color table in the driver (Black, Blue, Green, White)
+           - C2 is unused (both in mine and in the EGA version)
+     Literally: Draws the trapazoid matching the specified dimensions of the given
+                Color.  As a side note, my version draws the dungeon as specified,
+                as opposed to the EGA version, which does some cheap time saving
+                tricks.  As a result, their lines are all at 45 and 90 degree angles,
+                while mine match the specified coordinates, like the C64 version.
+     Description: Used to draw the walls & doors & stuff in the dungeon.  Not much
+                  more than a Trapazoid drawing function
+
+18 - Ankh Set
+     Input (List)
+           - list is a near pointer to a list of near pointers to the avatarhood
+             data
+     Literally: Replaces/updates the Avatarhood character (different character from
+                the ankh) with the data in the ankh.  Where each row of ankh data is
+                copied only if Avatarhood has been achieved in the corresponding
+                Virtue.  If Avatarhood has not been achieved in the virtue, zeroes
+                out the specified row.
+     Description: Used to keep the Avatar symbol (beneath the status box) up to date
+                  with your current Avatarhood progress.
+
+19 - Fire Flicker Effect
+     Input: none
+     Literally: Shifts the color of various pixels in the fire in order to achieve
+                the flickering effect.  (but doesn't always change each pixel)
+     Description: Used to animate the fire.
+
+20 - Initialize
+     Input (Tiles, CharSet, ErrFuncOff, ErrFuncSeg)
+           - Tiles is a near pointer to the far pointer to the list of tiles
+             (256 tiles, each 16 * 16 pixels, 1 byte per pixel in the VGA version)
+           - CharSet is a near pointer to the far pointer to the list of characters
+             (256 chars, each 8*8 pixels, 1 byte per pixel in the VGA version)
+           - ErrFuncSeg:ErrFuncOff is a far pointer to an error handler, in case of
+             failed initialization or failure elsewhere
+     Literally: Initializes Graphics engine, VGA version inits following:
+                - Palette: file of 256 R G B triplets
+                - Saves far pointer to ErrorFunc in local mem
+                - Loads shapes.vga (not needed by the EGA version...)
+                - Loads charset.vga (not needed by the EGA version...)
+                - Loads and inits the music engine... I had to do it somewhere...
+     Description: Used right after you execute the file Avatar.exe (done either by
+                  making a new game, or continuing from a saved game...)
+
+21 - Clear Screen
+     Input: none
+     Literally: Clears entire screen by setting each pixel to 0
+     Description: Used to clear the screen before loading up the rest of the game and
+                  before going to the very end (last scene with grass and stuff)
+
+22 - Water Scroll Effect
+     Input (Tile)
+           - Tile is the tile by number to effect (0 to 255)
+     Literally: Rotates each line of the tile down 1 pixel.  New first row becomes old
+                last row
+     Description: Used to animate water (Shoals, Shallow, and Deep) and fields (Magic, 
+                  Poison, and Sleep)
+
+23 - Flag Wave Effect
+     Input: none
+     Literally: Swaps (at random for each tile) the flag rows on the tiles with flags
+     Description: Used to animate the flags on the towns/castles/ships
+
+24 - Character output
+     Input (Row, Col, Char)
+           - Row is the actual character row (1 row = 8 pixels) to display Char at
+             (0 to 24)
+           - Col is the actual character column (1 column = 8 pixels) to display Char
+             at (0 to 39)
+           - Char is the character (from char map) to display at (row, col)
+     Literally: Displays character Char at (row, col)
+                * (0,0) is the upper left corner of the screen (on the border)
+     Description: Used for writing characters to the screen, incl: moon phases, wind,
+                  Facing, Dungeon map (peer in gem), status box, ankh, and typing area
+                  Also fixes borders when needed...
+                  * this is the main area that I wrote my music detect/change code, so
+                    the actual code in my driver is really nasty!!!
