@@ -4,48 +4,43 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <string>
+#include <vector>
+
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include <libxml/xmlmemory.h>
 
 #include "sound.h"
 
+#include "config.h"
 #include "debug.h"
 #include "error.h"
 #include "settings.h"
 #include "u4file.h"
-#include "xml.h"
 
-char *soundFilenames[SOUND_MAX];
-Mix_Chunk *soundChunk[SOUND_MAX];
+using std::string;
+using std::vector;
+
+vector<string> soundFilenames;
+vector<Mix_Chunk *> soundChunk;
 
 int soundInit() {
-    Sound soundTrack;
-    xmlDocPtr doc;
-    xmlNodePtr root, node;
-
     /*
      * load sound track filenames from xml config file
      */
+    const Config *config = Config::getInstance();
 
-    doc = xmlParse("sound.xml");
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "sound") != 0)
-        errorFatal("malformed sound.xml");
+    vector<ConfigElement> soundConfs = config->getElement("/config/sound").getChildren();
+    for (vector<ConfigElement>::iterator i = soundConfs.begin(); i != soundConfs.end(); i++) {
 
-    soundTrack = (Sound)0;
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (soundTrack >= SOUND_MAX)
-            break;
-
-        if (xmlNodeIsText(node) ||
-            xmlStrcmp(node->name, (const xmlChar *) "track") != 0)
+        if (i->getName() != "track")
             continue;
 
-        soundFilenames[soundTrack] = (char *)xmlGetProp(node, (const xmlChar *) "file");
-        soundTrack = (Sound)(soundTrack + 1);
+        soundFilenames.push_back(i->getString("file"));
     }
-    xmlFreeDoc(doc);
+
+    soundFilenames.resize(SOUND_MAX, "");
+    soundChunk.resize(SOUND_MAX, NULL);
 
     return 1;
 }
@@ -61,11 +56,11 @@ void soundPlay(Sound sound) {
         return;
 
     if (soundChunk[sound] == NULL) {
-        string pathname(u4find_sound(soundFilenames[sound]));
+        string pathname(u4find_sound(soundFilenames[sound].c_str()));
         if (!pathname.empty()) {
             soundChunk[sound] = Mix_LoadWAV(pathname.c_str());
             if (!soundChunk[sound]) {
-                errorWarning("unable to load sound effect file %s: %s", soundFilenames[sound], Mix_GetError());
+                errorWarning("unable to load sound effect file %s: %s", soundFilenames[sound].c_str(), Mix_GetError());
                 return;
             }
         }

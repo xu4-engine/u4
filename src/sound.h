@@ -5,11 +5,7 @@
 #ifndef SOUND_H
 #define SOUND_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef enum {
+enum Sound {
     SOUND_WALK,
     SOUND_BLOCKED,
     SOUND_ERROR,
@@ -25,14 +21,10 @@ typedef enum {
     SOUND_MOONGATE,
     SOUND_FLEE,
     SOUND_MAX
-} Sound;
+};
 
 int soundInit(void);
 void soundDelete(void);
 void soundPlay(Sound sound);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* SOUND_H */

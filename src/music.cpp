@@ -7,13 +7,14 @@
 /* FIXME: should this file have all SDL-related stuff extracted and put in music_sdl.c? */
 
 #include <string>
+#include <vector>
+
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
 
 #include "music.h"
 
+#include "config.h"
 #include "context.h"
 #include "debug.h"
 #include "error.h"
@@ -22,9 +23,9 @@
 #include "u4.h"
 #include "u4_sdl.h"
 #include "u4file.h"
-#include "xml.h"
 
 using std::string;
+using std::vector;
 
 /* A bug in SDL_mixer 1.2.5 for MacOSX causes it to crash looping music */
 #if defined(MACOSX)
@@ -36,7 +37,7 @@ using std::string;
 void musicPlayMid(Music music);
 int musicLoad(Music music);
 
-char *musicFilenames[MUSIC_MAX];
+vector<string> musicFilenames;
 
 Music introMid = MUSIC_TOWNS;
 Mix_Music *playing = NULL;
@@ -71,7 +72,7 @@ int musicLoad(Music music) {
             return 1;
     }
 
-    string pathname(u4find_music(musicFilenames[music]));
+    string pathname(u4find_music(musicFilenames[music].c_str()));
     if (!pathname.empty()) {
         
         if (playing) {
@@ -95,35 +96,23 @@ int musicLoad(Music music) {
  * Initiliaze the music
  */
 int musicInit() {
-    Music musicTrack;
-    xmlDocPtr doc;
-    xmlNodePtr root, node;
+    musicFilenames.push_back("");    // filename for MUSIC_NONE;
 
     /*
      * load music track filenames from xml config file
      */
+    const Config *config = Config::getInstance();
 
-    doc = xmlParse("music.xml");
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "music") != 0)
-        errorFatal("malformed music.xml");
+    vector<ConfigElement> musicConfs = config->getElement("/config/music").getChildren();
+    for (vector<ConfigElement>::iterator i = musicConfs.begin(); i != musicConfs.end(); i++) {
 
-    musicTrack = MUSIC_NONE;
-    musicFilenames[musicTrack] = NULL;
-    musicTrack = (Music)(musicTrack + 1);
-
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (musicTrack >= MUSIC_MAX)
-            break;
-
-        if (xmlNodeIsText(node) ||
-            xmlStrcmp(node->name, (const xmlChar *) "track") != 0)
+        if (i->getName() != "track")
             continue;
 
-        musicFilenames[musicTrack] = xmlGetPropAsStr(node, "file");
-        musicTrack = (Music)(musicTrack + 1);
+        musicFilenames.push_back(i->getString("file"));
+
     }
-    xmlFreeDoc(doc);
+    musicFilenames.resize(MUSIC_MAX, "");
 
     /*
      * initialize sound subsystem
