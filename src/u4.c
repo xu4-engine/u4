@@ -11,6 +11,7 @@
 
 #include "u4.h"
 #include "mapinit.h"
+#include "direction.h"
 #include "screen.h"
 #include "event.h"
 #include "map.h"
@@ -30,7 +31,7 @@ int quit = 0;
 int main(int argc, char *argv[]) {
     unsigned int i;
     FILE *saveGameFile, *monstersFile;
-    char *scale = "2";
+    char *scale = "2xSaI";
     int sound = 1, fullScreen = 0;
 
     for (i = 1; i < argc; i++) {
