@@ -10,6 +10,7 @@
 #include "context.h"
 #include "combat.h"
 #include "game.h"
+#include "list.h"
 #include "monster.h"
 #include "object.h"
 #include "savegame.h"
@@ -19,7 +20,7 @@ Location *locationPush(Location *stack, Location *loc);
 Location *locationPop(Location **stack);
 
 /**
- * Add a new location to the stack, or 
+ * Add a new location to the stack, or
  * start a new stack if 'prev' is NULL
  */
 Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx,
@@ -39,8 +40,8 @@ Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationConte
     newLoc->tileAt = tileAtCallback;
     newLoc->tileset = tileset;
     newLoc->activePlayer = -1;
-    
-    return locationPush(prev, newLoc);    
+
+    return locationPush(prev, newLoc);
 }
 
 /**
@@ -49,68 +50,80 @@ Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationConte
  */
 unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int *focus) {
     unsigned char tile;
-    const Annotation *a = annotationAt(x, y, z, location->map->id);
-    const Object *obj = mapObjectAt(location->map, x, y, z);
-    
-    /* Do not return objects for VIEW_GEM mode, show only the avatar and tiles */
-    if (location->viewMode == VIEW_GEM) {
-        *focus = 0;
-        if ((location->map->flags & SHOW_AVATAR) && location->x == x && location->y == y)            
-            return (unsigned char)c->saveGame->transport;        
-        else return mapGetTileFromData(location->map, x, y, z);
-    }
-    
-    /* draw objects -- visual-only annotations go first */
-    else if (a && a->visual) {
-        *focus = 0;
-        tile = a->tile;
-    }        
-    /* then the avatar is drawn (unless on a ship) */
-    else if ((location->map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && 
-        location->x == x && location->y == y) {
-        *focus = 0;
-        tile = (unsigned char)c->saveGame->transport;
-    }    
-    /* then camouflaged monsters that have a disguise */
-    else if (obj && (obj->objType == OBJECT_MONSTER) && !obj->isVisible && (obj->monster->camouflageTile > 0)) {
-        *focus = obj->hasFocus;
-        tile = obj->monster->camouflageTile;
-    }        
-    /* then visible monsters */
-    else if (obj && (obj->objType != OBJECT_UNKNOWN) && obj->isVisible) {
-        *focus = obj->hasFocus;
-        tile = obj->tile;
-    }
-    /* then other visible objects */
-    else if (obj && obj->isVisible) {
-        *focus = obj->hasFocus;
-        tile = obj->tile;
-    }
-    /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */
-    else if ((location->map->flags & SHOW_AVATAR) && location->x == x && location->y == y) {
-        *focus = 0;
-        tile = (unsigned char)c->saveGame->transport;
-    }
-    /* then permanent annotations */
-    else if (a) {
-        *focus = 0;
-        tile = a->tile;
-    }
-    /* then the base tile */
-    else {
-        *focus = 0;
-        tile = mapGetTileFromData(location->map, x, y, z);
-        if (a)
-            tile = a->tile;
-    }
-    
+    ListNode *tiles;
+
+    /* get the stack of tiles and take the top tile */
+    tiles = locationTilesAt(location, x, y, z, focus);
+    tile = (unsigned char) (unsigned) tiles->data;
+    listDelete(tiles);
+
     return tile;
 }
 
 /**
+ * Return the entire stack of objects at the given location.
+ */
+ListNode *locationTilesAt(Location *location, int x, int y, int z, int *focus) {
+    ListNode *tiles = NULL;
+    const Annotation *a = annotationAt(x, y, z, location->map->id);
+    const Object *obj = mapObjectAt(location->map, x, y, z);
+    *focus = 0;
+
+    /* Do not return objects for VIEW_GEM mode, show only the avatar and tiles */
+    if (location->viewMode == VIEW_GEM) {
+        if ((location->map->flags & SHOW_AVATAR) && location->x == x && location->y == y)
+            tiles = listAppend(tiles, (void *) (unsigned) c->saveGame->transport);
+        else
+            tiles = listAppend(tiles, (void *) (unsigned) mapGetTileFromData(location->map, x, y, z));
+        return tiles;
+    }
+
+    /* draw objects -- visual-only annotations go first */
+    if (a && a->visual)
+        tiles = listAppend(tiles, (void *) (unsigned) a->tile);
+
+    /* then the avatar is drawn (unless on a ship) */
+    if ((location->map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) &&
+        location->x == x && location->y == y)
+        tiles = listAppend(tiles, (void *) (unsigned) c->saveGame->transport);
+
+    /* then camouflaged monsters that have a disguise */
+    if (obj && (obj->objType == OBJECT_MONSTER) && !obj->isVisible && (obj->monster->camouflageTile > 0)) {
+        *focus = *focus && obj->hasFocus;
+        tiles = listAppend(tiles, (void *) (unsigned) obj->monster->camouflageTile);
+    }
+    /* then visible monsters */
+    else if (obj && (obj->objType != OBJECT_UNKNOWN) && obj->isVisible) {
+        *focus = *focus && obj->hasFocus;
+        tiles = listAppend(tiles, (void *) (unsigned) obj->tile);
+    }
+
+    /* then other visible objects */
+     if (obj && obj->isVisible) {
+        *focus = *focus && obj->hasFocus;
+        tiles = listAppend(tiles, (void *) (unsigned) obj->tile);
+    }
+
+    /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */
+    if ((location->map->flags & SHOW_AVATAR) && (c->transportContext == TRANSPORT_SHIP) &&
+        location->x == x && location->y == y)
+        tiles = listAppend(tiles, (void *) (unsigned) c->saveGame->transport);
+
+    /* then permanent annotations */
+    if (a)
+        tiles = listAppend(tiles, (void *) (unsigned) a->tile);
+
+    /* finally the base tile */
+    tiles = listAppend(tiles, (void *) (unsigned) mapGetTileFromData(location->map, x, y, z));
+
+    return tiles;
+}
+
+
+/**
  * Finds a valid replacement tile for the given location, using surrounding tiles
  * as guidelines to choose the new tile.  The new tile will only be chosen if it
- * is marked as a valid replacement tile in tiles.xml.  If a valid replacement 
+ * is marked as a valid replacement tile in tiles.xml.  If a valid replacement
  * cannot be found, it returns a "best guess" tile.
  */
 unsigned char locationGetReplacementTile(Location *location, int x, int y, int z) {
@@ -127,8 +140,8 @@ unsigned char locationGetReplacementTile(Location *location, int x, int y, int z
         /* make sure the tile we found is a valid replacement */
         if (tileIsReplacement(newTile))
             return newTile;
-    }            
-    
+    }
+
     /* couldn't find a tile, give it our best guess */
     if (c->location->context & CTX_DUNGEON)
         return 0;
@@ -175,7 +188,7 @@ Location *locationPush(Location *stack, Location *loc) {
  * Pop a location off the stack
  */
 Location *locationPop(Location **stack) {
-    Location *loc = *stack;    
+    Location *loc = *stack;
     *stack = (*stack)->prev;
     loc->prev = NULL;
     return loc;

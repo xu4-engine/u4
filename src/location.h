@@ -9,6 +9,7 @@
 #include "movement.h"
 
 struct _Tileset;
+struct _ListNode;
 
 typedef unsigned char (*TileAt)(const Map *map, int x, int y, int z, int withObjects);
 
@@ -33,7 +34,7 @@ typedef struct _Location {
     int x;
     int y;
     int z;	
-	Map *map;
+    Map *map;
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn;
@@ -46,6 +47,7 @@ typedef struct _Location {
 
 Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, TileAt tileAtCallback, struct _Tileset *tileset, Location *prev);
 unsigned char locationVisibleTileAt(Location *location, int x, int y, int z, int *focus);
+struct _ListNode *locationTilesAt(Location *location, int x, int y, int z, int *focus);
 unsigned char locationGetReplacementTile(Location *location, int x, int y, int z);
 int locationGetCurrentPosition(Location *location, int *x, int *y, int *z);
 void locationFree(Location **stack);
