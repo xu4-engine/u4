@@ -94,6 +94,7 @@ void deathRevive() {
             c->parent->windCounter = c->windCounter;
             c->parent->aura = c->aura;
             c->parent->auraDuration = c->auraDuration;
+            c->parent->horseSpeed = c->horseSpeed;
             c = c->parent;
             c->col = 0;
             free(t);
