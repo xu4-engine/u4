@@ -26,6 +26,7 @@
 #include "player.h"
 #include "music.h"
 
+void gameFinishTurn(void);
 int moveAvatar(int dx, int dy);
 int attackAtCoord(int x, int y);
 int castForPlayer(int player);
@@ -45,6 +46,47 @@ int wearForPlayer(int player);
 int wearForPlayer2(int armor, void *data);
 
 int collisionOverride = 0;
+
+/**
+ * Terminates a game turn.  This performs the post-turn housekeeping
+ * tasks like adjusting the party's food, incrementing the number of
+ * moves, etc.
+ */
+void gameFinishTurn() {
+
+    /* adjust food and moves */
+    c->saveGame->moves++;
+    c->saveGame->food -= c->saveGame->members;
+    if (c->saveGame->food < 0) {
+        /* FIXME: handle starving */
+        c->saveGame->food = 0;
+    }
+
+    /* apply effects from tile avatar is standing on */
+    switch (tileGetEffect(mapTileAt(c->map, c->saveGame->x, c->saveGame->y))) {
+    case EFFECT_NONE:
+        break;
+    case EFFECT_FIRE:
+        screenMessage("Burning!\n");
+        break;
+    case EFFECT_SLEEP:
+        screenMessage("Zzzz!\n");
+        break;
+    case EFFECT_POISON:
+        screenMessage("Poison!\n");
+        break;
+    default:
+        assert(0);
+    }
+
+    /* update map annotations and the party stats */
+    annotationCycle();
+    c->statsItem = STATS_PARTY_OVERVIEW;
+    statsUpdate();
+
+    /* draw a prompt */
+    screenMessage("\020");
+}
 
 /**
  * The main key handler for the game.  Interpretes each key as a
@@ -238,33 +280,8 @@ int gameBaseKeyHandler(int key, void *data) {
     }
 
     if (valid) {
-        if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler) {
-            c->saveGame->moves++;
-            c->saveGame->food -= c->saveGame->members;
-            if (c->saveGame->food < 0) {
-                /* FIXME: handle starving */
-                c->saveGame->food = 0;
-            }
-            switch (tileGetEffect(mapTileAt(c->map, c->saveGame->x, c->saveGame->y))) {
-            case EFFECT_NONE:
-                break;
-            case EFFECT_FIRE:
-                screenMessage("Burning!\n");
-                break;
-            case EFFECT_SLEEP:
-                screenMessage("Zzzz!\n");
-                break;
-            case EFFECT_POISON:
-                screenMessage("Poison!\n");
-                break;
-            default:
-                assert(0);
-            }
-
-            screenMessage("\020");
-            annotationCycle();
-        }
-        statsUpdate();
+        if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler)
+            gameFinishTurn();
     }
 
     return valid || keyHandlerDefault(key, NULL);
@@ -311,14 +328,12 @@ int gameGetAlphaChoiceKeyHandler(int key, void *data) {
         (*(info->handleAlpha))(key - 'a', info->data);
         eventHandlerPopKeyHandler();
         free(info);
-        c->statsItem = STATS_PARTY_OVERVIEW;
-        statsUpdate();
+        gameFinishTurn();
     } else if (key == ' ' || key == U4_ESC) {
+        screenMessage("\n");
         eventHandlerPopKeyHandler();
         free(info);
-        screenMessage("\n\020");
-        c->statsItem = STATS_PARTY_OVERVIEW;
-        statsUpdate();
+        gameFinishTurn();
     } else {
         valid = 0;
         screenMessage("\n%s", info->prompt);
@@ -447,9 +462,8 @@ int gameZtatsKeyHandler2(int key, void *data) {
             c->statsItem = STATS_WEAPONS;
         break;
     default:
-        c->statsItem = STATS_PARTY_OVERVIEW;
         eventHandlerPopKeyHandler();
-        screenMessage("\020");
+        gameFinishTurn();
         break;
     }
 
@@ -566,7 +580,7 @@ int castForPlayer2(int spell, void *data) {
             assert(0);
         }
     }
-    screenMessage("\n\020");
+    gameFinishTurn();
 
     return 1;
 }
@@ -617,12 +631,14 @@ int readyForPlayer2(int weapon, void *data) {
     int oldWeapon;
 
     if (weapon != WEAP_HANDS && c->saveGame->weapons[weapon] < 1) {
-        screenMessage("None left!\n\020");
+        screenMessage("None left!\n");
+        gameFinishTurn();
         return 0;
     }
 
     if (!playerCanReady(&(c->saveGame->players[player]), weapon)) {
-        screenMessage("\nA %s may NOT\nuse\n%s\n\020", getClassName(c->saveGame->players[player].klass), getWeaponName(weapon));
+        screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), getWeaponName(weapon));
+        gameFinishTurn();
         return 0;
     }
 
@@ -633,7 +649,9 @@ int readyForPlayer2(int weapon, void *data) {
         c->saveGame->weapons[weapon]--;
     c->saveGame->players[player].weapon = weapon;
 
-    screenMessage("%s\n\020", getWeaponName(weapon));
+    screenMessage("%s\n", getWeaponName(weapon));
+
+    gameFinishTurn();
 
     return 1;
 }
@@ -647,7 +665,8 @@ int newOrderTemp;
  */
 int newOrderForPlayer(int player) {
     if (player == 0) {
-        screenMessage("%s, You must\nlead!\n\020", c->saveGame->players[0].name);
+        screenMessage("%s, You must\nlead!\n", c->saveGame->players[0].name);
+        gameFinishTurn();
         return 0;
     }
 
@@ -664,10 +683,11 @@ int newOrderForPlayer2(int player2) {
     SaveGamePlayerRecord tmp;
 
     if (player2 == 0) {
-        screenMessage("%s, You must\nlead!\n\020", c->saveGame->players[0].name);
+        screenMessage("%s, You must\nlead!\n", c->saveGame->players[0].name);
+        gameFinishTurn();
         return 0;
     } else if (player1 == player2) {
-        screenMessage("\020");
+        gameFinishTurn();
         return 0;
     }
 
@@ -718,7 +738,8 @@ int quitHandleChoice(char choice) {
         eventHandlerSetExitFlag(1);
         break;
     case 'n':
-        screenMessage("%c\n\020", choice);
+        screenMessage("%c\n", choice);
+        gameFinishTurn();
         break;
     default:
         assert(0);              /* shouldn't happen */
@@ -813,7 +834,7 @@ int talkHandleBuffer(const char *message) {
     c->conversation.buffer[0] = '\0';
 
     if (c->conversation.state == CONV_DONE) {
-        screenMessage("\020");
+        gameFinishTurn();
         return 1;
     }
 
@@ -844,7 +865,7 @@ int talkHandleChoice(char choice) {
     c->conversation.buffer[0] = '\0';
 
     if (c->conversation.state == CONV_DONE) {
-        screenMessage("\020");
+        gameFinishTurn();
         return 1;
     }
 
@@ -886,12 +907,14 @@ int wearForPlayer2(int armor, void *data) {
     int oldArmor;
 
     if (armor != ARMR_NONE && c->saveGame->armor[armor] < 1) {
-        screenMessage("None left!\n\020");
+        screenMessage("None left!\n");
+        gameFinishTurn();
         return 0;
     }
 
     if (!playerCanWear(&(c->saveGame->players[player]), armor)) {
-        screenMessage("\nA %s may NOT\nuse\n%s\n\020", getClassName(c->saveGame->players[player].klass), getArmorName(armor));
+        screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), getArmorName(armor));
+        gameFinishTurn();
         return 0;
     }
 
@@ -902,7 +925,9 @@ int wearForPlayer2(int armor, void *data) {
         c->saveGame->armor[armor]--;
     c->saveGame->players[player].armor = armor;
 
-    screenMessage("%s\n\020", getArmorName(armor));
+    screenMessage("%s\n", getArmorName(armor));
+
+    gameFinishTurn();
 
     return 1;
 }
