@@ -8,6 +8,7 @@
 #include "u4.h"
 
 #include "context.h"
+#include "debug.h"
 #include "error.h"
 #include "event.h"
 #include "screen.h"
@@ -120,6 +121,23 @@ bool KeyHandler::operator==(Callback cb) const {
     return (handler == cb) ? true : false;        
 }
 
+KeyHandlerController::KeyHandlerController(KeyHandler *handler) {
+    this->handler = handler;
+}
+
+KeyHandlerController::~KeyHandlerController() {
+    delete handler;
+}
+
+bool KeyHandlerController::keyPressed(int key) {
+    ASSERT(handler != NULL, "key handler must be initialized");
+    return handler->handle(key);
+}
+
+KeyHandler *KeyHandlerController::getKeyHandler() {
+    return handler;
+}
+
 /**
  * Constructs a timed event manager object.
  * Adds a timer callback to the SDL subsystem, which
@@ -181,7 +199,7 @@ void TimedEventMgr::reset(unsigned int interval) {
 /**
  * Constructs an event handler object. 
  */
-EventHandler::EventHandler() : timer(eventTimerGranularity) {    
+EventHandler::EventHandler() : timer(eventTimerGranularity), updateScreen(NULL) {
     SDL_EnableUNICODE(1);
 }
 
@@ -192,7 +210,7 @@ void EventHandler::sleep(unsigned int usec) {
     SDL_Delay(usec);
 }
 
-void EventHandler::main(void (*updateScreen)(void)) {
+void EventHandler::main() {
     if (updateScreen)
         (*updateScreen)();
     screenRedrawScreen();
@@ -201,7 +219,7 @@ void EventHandler::main(void (*updateScreen)(void)) {
         int processed = 0;
         SDL_Event event;
         MouseArea *area;
-        KeyHandler *kh = getKeyHandler();
+        Controller *controller = getController();
 
         SDL_WaitEvent(&event);
 
@@ -243,7 +261,7 @@ void EventHandler::main(void (*updateScreen)(void)) {
                        key);
 
             /* handle the keypress */
-            processed = kh->handle(key);           
+            processed = controller->notifyKeyPressed(key);
 
             if (processed) {
                 if (updateScreen)
@@ -264,7 +282,7 @@ void EventHandler::main(void (*updateScreen)(void)) {
             area = eventHandler.mouseAreaForPoint(event.button.x, event.button.y);
             if (!area || area->command[button] == 0)
                 break;
-            kh->handle(area->command[button]);            
+            controller->keyPressed(area->command[button]);            
             if (updateScreen)
                 (*updateScreen)();
             screenRedrawScreen();
@@ -304,6 +322,10 @@ void EventHandler::main(void (*updateScreen)(void)) {
     }
 }
 
+void EventHandler::setScreenUpdate(void (*updateScreen)(void)) {
+    this->updateScreen = updateScreen;
+}
+
 /**
  * Returns true if the queue is empty of events that match 'mask'. 
  */
@@ -316,12 +338,43 @@ void EventHandler::main(void (*updateScreen)(void)) {
         return true;
 }
 
+Controller *EventHandler::pushController(Controller *c) {
+    controllers.push_back(c);
+    getTimer()->add(&Controller::timerCallback, c->getTimerInterval(), c);
+    return c;
+}
+
+Controller *EventHandler::popController() {
+    if (controllers.empty())
+        return NULL;
+
+    Controller *controller = controllers.back();
+    getTimer()->remove(&Controller::timerCallback, controller);
+    controllers.pop_back();
+
+    return getController();
+}
+
+
+Controller *EventHandler::getController() const {
+    if (controllers.empty())
+        return NULL;
+
+    return controllers.back();
+}
+
+void EventHandler::setController(Controller *c) {
+    while (popController() != NULL) {}
+    pushController(c);
+}
+
 /**
  * Adds a key handler to the stack.
  */ 
 void EventHandler::pushKeyHandler(KeyHandler kh) {
     KeyHandler *new_kh = new KeyHandler(kh);
-    keyHandlers.push_back(new_kh);
+    KeyHandlerController *khc = new KeyHandlerController(new_kh);
+    pushController(khc);
 }
 
 /**
@@ -329,13 +382,11 @@ void EventHandler::pushKeyHandler(KeyHandler kh) {
  * Returns a pointer to the resulting key handler after
  * the current handler is popped.
  */ 
-KeyHandler *EventHandler::popKeyHandler() {
-    if (!keyHandlers.empty()) {
-        delete keyHandlers.back();
-        keyHandlers.pop_back();
-        return getKeyHandler();
-    }
-    else return NULL;
+void EventHandler::popKeyHandler() {
+    if (controllers.empty())
+        return;
+
+    popController();
 }
 
 /**
@@ -343,9 +394,14 @@ KeyHandler *EventHandler::popKeyHandler() {
  * Returns NULL if there is no key handler.
  */ 
 KeyHandler *EventHandler::getKeyHandler() const {
-    if (keyHandlers.empty())
+    if (controllers.empty())
         return NULL;
-    else return keyHandlers.back();
+
+    KeyHandlerController *khc = dynamic_cast<KeyHandlerController *>(controllers.back());
+    if (khc == NULL)
+        return NULL;
+
+    return khc->getKeyHandler();
 }
 
 /**
@@ -356,7 +412,7 @@ KeyHandler *EventHandler::getKeyHandler() const {
  * are sure the key handlers in the stack are disposable.
  */ 
 void EventHandler::setKeyHandler(KeyHandler kh) {
-    while (popKeyHandler() != NULL) {}
+    while (popController() != NULL) {}
     pushKeyHandler(kh);
 }
 

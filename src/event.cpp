@@ -201,3 +201,92 @@ MouseArea* EventHandler::getMouseAreaSet() const {
     else
         return NULL;
 }
+
+ReadStringController::ReadStringController(int maxlen, int screenX, int screenY) {
+    this->maxlen = maxlen;
+    this->screenX = screenX;
+    this->screenY = screenY;
+    exitWhenDone = false;
+}
+
+bool ReadStringController::keyPressed(int key) {
+    int valid = true,
+        len = value.length();    
+
+    if ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z') ||
+        (key >= '0' && key <= '9') || key == ' ') {        
+        if (len < maxlen - 1) {
+            /* add a character to the end */
+            value += key;
+
+            screenHideCursor();
+            screenTextAt(screenX + len, screenY, "%c", key);
+            screenSetCursorPos(screenX + len + 1, screenY);
+            screenShowCursor();            
+        }
+
+    } else if (key == U4_BACKSPACE) {
+        if (len > 0) {
+            /* remove the last character */
+            value.erase(len - 1, 1);
+
+            screenHideCursor();
+            screenTextAt(screenX + len - 1, screenY, " ");
+            screenSetCursorPos(screenX + len - 1, screenY);
+            screenShowCursor();
+        }
+
+    } else if (key == '\n' || key == '\r') {
+        if (exitWhenDone)
+            eventHandler.setExitFlag(true);
+    }    
+    else {
+        valid = false;
+    }
+
+    return valid || KeyHandler::defaultHandler(key, NULL);
+}
+
+string ReadStringController::getString() {
+    return value;
+}
+
+string ReadStringController::waitFor() {
+    exitWhenDone = true;
+    eventHandler.main();
+    eventHandler.setExitFlag(false);
+    eventHandler.popController();
+    return value;
+}
+
+ReadChoiceController::ReadChoiceController(const string &choices) {
+    this->choices = choices;
+    exitWhenDone = false;
+}
+
+bool ReadChoiceController::keyPressed(int key) {
+    if (isupper(key))
+        key = tolower(key);
+
+    choice = key;
+
+    if (choices.empty() || choices.find_first_of(choice) < choices.length()) {
+        if (exitWhenDone)
+            eventHandler.setExitFlag(true);
+        return true;
+    }
+
+    return false;
+}
+
+int ReadChoiceController::getChoice() {
+    return choice;
+}
+
+int ReadChoiceController::waitFor() {
+    exitWhenDone = true;
+    eventHandler.main();
+    eventHandler.setExitFlag(false);
+    eventHandler.popController();
+    return choice;
+}

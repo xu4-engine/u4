@@ -7,6 +7,9 @@
 
 #include <list>
 #include <string>
+#include <vector>
+
+#include "controller.h"
 #include "types.h"
 
 using std::string;
@@ -83,6 +86,46 @@ protected:
     void *data;
 };
 
+class KeyHandlerController : public Controller {
+public:
+    KeyHandlerController(KeyHandler *handler);
+    ~KeyHandlerController();
+
+    virtual bool keyPressed(int key);
+    KeyHandler *getKeyHandler();
+
+private:
+    KeyHandler *handler;
+};
+
+class ReadStringController : public Controller {
+public:
+    ReadStringController(int maxlen, int screenX, int screenY);
+    virtual bool keyPressed(int key);
+
+    string getString();
+    string waitFor();
+
+private:
+    int maxlen, screenX, screenY;
+    string value;
+    bool exitWhenDone;
+};
+
+class ReadChoiceController : public Controller {
+public:
+    ReadChoiceController(const string &choices);
+    virtual bool keyPressed(int key);
+
+    int getChoice();
+    int waitFor();
+
+private:
+    string choices;
+    int choice;
+    bool exitWhenDone;
+};
+
 /**
  * A class for handling timed events.
  */ 
@@ -127,7 +170,7 @@ public:
     bool isLocked() const;      /**< Returns true if the event list is locked (in use) */    
 
     void add(TimedEvent::Callback callback, int interval, void *data = NULL);
-    List::iterator remove(List::iterator i);                          
+    List::iterator remove(List::iterator i);
     void remove(TimedEvent* event);
     void remove(TimedEvent::Callback callback, void *data = NULL);
     void tick();
@@ -157,7 +200,6 @@ protected:
 class EventHandler {
 public:    
     /* Typedefs */
-    typedef std::list<KeyHandler*> KeyHandlerList;
     typedef std::list<_MouseArea*> MouseAreaList;    
 
     /* Constructors */
@@ -173,11 +215,18 @@ public:
     TimedEventMgr* getTimer();
 
     /* Event functions */
-    void main(void (*updateScreen)(void));    
+    void main();
+    void setScreenUpdate(void (*updateScreen)(void));
+
+    /* Controller functions */
+    Controller *pushController(Controller *c);
+    Controller *popController();
+    Controller *getController() const;
+    void setController(Controller *c);
 
     /* Key handler functions */
     void pushKeyHandler(KeyHandler kh);
-    KeyHandler *popKeyHandler();
+    void popKeyHandler();
     KeyHandler *getKeyHandler() const;
     void setKeyHandler(KeyHandler kh);
 
@@ -190,8 +239,9 @@ public:
 protected:    
     static bool exit;
     TimedEventMgr timer;
-    KeyHandlerList keyHandlers;
+    std::vector<Controller *> controllers;
     MouseAreaList mouseAreaSets;
+    void (*updateScreen)(void);
 };
 
 bool keyHandlerGetChoice(int key, void *data);
