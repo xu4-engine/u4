@@ -840,24 +840,24 @@ void combatEnd() {
     unsigned char ground;
     
     gameExitToParentMap(c);
-    musicPlay();
-
-    if (combatInfo.monsterObj) {
-        x = combatInfo.monsterObj->x;
-        y = combatInfo.monsterObj->y;
-        z = combatInfo.monsterObj->z;
-        mapRemoveObject(c->location->map, combatInfo.monsterObj);
-    }
-
-    ground = mapGroundTileAt(c->location->map, x, y, z);
+    musicPlay();    
     
     if (combatIsWon()) {
-
-        /* added chest or captured ship object */        
+        
         if (combatInfo.monster && combatInfo.isNormalCombat) {
+
+            if (combatInfo.monsterObj) {
+                x = combatInfo.monsterObj->x;
+                y = combatInfo.monsterObj->y;
+                z = combatInfo.monsterObj->z;                
+            }
+            ground = mapGroundTileAt(c->location->map, x, y, z);
+
+            /* add a chest, if the monster leaves one */
             if (monsterLeavesChest(combatInfo.monster) && 
                 tileIsMonsterWalkable(ground) && tileIsWalkable(ground))
                 mapAddObject(c->location->map, tileGetChestBase(), tileGetChestBase(), x, y, z);
+            /* add a ship if you just defeated a pirate ship */
             else if (tileIsPirateShip(combatInfo.monsterObj->tile)) {
                 unsigned char ship = tileGetShipBase();
                 tileSetDirection(&ship, tileGetDirection(combatInfo.monsterObj->tile));
@@ -870,6 +870,10 @@ void combatEnd() {
 
     else if (!playerPartyDead(c->saveGame))
         screenMessage("Battle is lost!\n");
+
+    /* remove the monster */
+    if (combatInfo.monsterObj)
+        mapRemoveObject(c->location->map, combatInfo.monsterObj);
 
     /* If we were camping and were ambushed, wake everyone up! */
     if (combatInfo.isCamping) {
