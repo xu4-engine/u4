@@ -52,7 +52,7 @@
     <tile name="brick_floor" rule="floors"/>
     <tile name="wood_floor" rule="floors"/>
     <tile name="moongate_opening" rule="solid" frames="3"/>
-    <tile name="moongate_open"/>
+    <tile name="moongate"/>
     <tile name="poison_field" rule="poison_field" animated="true"/>
     <tile name="energy_field" rule="energy_field" animated="true"/>
     <tile name="fire_field" rule="fire_field" animated="true"/>
@@ -74,7 +74,8 @@
     <tile name="bull" rule="person" frames="2"/>
     <tile name="lord_british" rule="person" frames="2"/>
     <tile name="signs" rule="signs" frames="27"/> <!-- the alphabet -->    
-    <tile name="spacers" rule="spacers" frames="4"/> <!-- sign spacers -->
+    <tile name="spacers" rule="spacers" frames="3"/> <!-- sign spacers -->
+    <tile name="black" rule="spacers"/> <!-- black square -->
     <tile name="brick_wall" rule="walls" opaque="true"/>
 
     <!-- Water monsters -->
@@ -86,7 +87,7 @@
     <tile name="whirlpool" frames="2"/>
     <tile name="storm" frames="2"/>
     
-    <!-- Land monsters -->
+    <!-- Land monsters -->    
     <tile name="rat" rule="monster" frames="4"/>
     <tile name="bat" rule="monster" frames="4"/>
     <tile name="spider" rule="monster" frames="4"/>

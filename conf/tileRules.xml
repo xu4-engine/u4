@@ -22,6 +22,7 @@
     <rule name="walls" cantwalkon="all" unflyable="true"/>
     <rule name="locked_door" cantwalkon="all" lockeddoor="true"/>
     <rule name="door" cantwalkon="all" door="true"/>
+    <rule name="secret_door" monsterunwalkable="true"/>
     <rule name="chest" chest="true"/>
     <rule name="poison_field" effect="poisonField" dispel="true"/>
     <rule name="energy_field" cantwalkon="all" effect="electricity" monsterunwalkable="true" unflyable="true" dispel="true"/>

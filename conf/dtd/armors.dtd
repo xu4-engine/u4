@@ -1,7 +1,7 @@
 <!-- $Id$ -->
 
 <!ENTITY % bool '( true | false )'>
-<!ENTITY % class '( mage | bard | fighter | druid | tinker | paladin | ranger | shepherd | all )'>
+<!ENTITY % class '( mage | bard | fighter | druid | tinker | paladin | ranger | shepherd )'>
 
 <!ELEMENT armors ( armor+ ) >
 
