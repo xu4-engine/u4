@@ -18,7 +18,7 @@
 #include "music.h"
 #include "game.h"
 #include "player.h"
-#include "con.h"
+#include "area.h"
 #include "ttype.h"
 
 extern Map camp_map;
@@ -38,7 +38,7 @@ void campBegin() {
     musicPlay();
 
     for (i = 0; i < c->saveGame->members; i++)
-        mapAddObject(c->map, CORPSE_TILE, CORPSE_TILE, c->map->con->player_start[i].x, c->map->con->player_start[i].y);
+        mapAddObject(c->map, CORPSE_TILE, CORPSE_TILE, c->map->area->player_start[i].x, c->map->area->player_start[i].y);
 
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
     eventHandlerAddTimerCallback(&campTimer, 4 * 10);

@@ -9,7 +9,7 @@
 
 struct _City;
 struct _Shrine;
-struct _Con;
+struct _Area;
 struct _Object;
 struct _Person;
 struct _Portal;
@@ -51,7 +51,7 @@ typedef struct _Map {
     union {
         struct _City *city;
         const struct _Shrine *shrine;
-        struct _Con *con;
+        struct _Area *area;
     };
     struct _Annotation *annotation;
     struct _Object *objects;

@@ -17,7 +17,7 @@
 #include "io.h"
 #include "annotation.h"
 #include "ttype.h"
-#include "con.h"
+#include "area.h"
 
 #define MAP_TILE_AT(mapptr, x, y) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 
@@ -161,21 +161,21 @@ int mapReadCon(Map *map, FILE *con) {
         return 0;
 
     if (map->type != MAP_SHRINE) {
-        map->con = (Con *) malloc(sizeof(Con));
-        for (i = 0; i < CON_MONSTERS; i++) {
-            if (!readChar(&(map->con->monster_start[i].x), con))
+        map->area = (Area *) malloc(sizeof(Area));
+        for (i = 0; i < AREA_MONSTERS; i++) {
+            if (!readChar(&(map->area->monster_start[i].x), con))
                 return 0;
         }
-        for (i = 0; i < CON_MONSTERS; i++) {
-            if (!readChar(&(map->con->monster_start[i].y), con))
+        for (i = 0; i < AREA_MONSTERS; i++) {
+            if (!readChar(&(map->area->monster_start[i].y), con))
                 return 0;
         }
-        for (i = 0; i < CON_PLAYERS; i++) {
-            if (!readChar(&(map->con->player_start[i].x), con))
+        for (i = 0; i < AREA_PLAYERS; i++) {
+            if (!readChar(&(map->area->player_start[i].x), con))
                 return 0;
         }
-        for (i = 0; i < CON_PLAYERS; i++) {
-            if (!readChar(&(map->con->player_start[i].y), con))
+        for (i = 0; i < AREA_PLAYERS; i++) {
+            if (!readChar(&(map->area->player_start[i].y), con))
                 return 0;
         }
         fseek(con, 16L, SEEK_CUR);
