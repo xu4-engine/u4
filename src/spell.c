@@ -519,7 +519,8 @@ static int spellGate(int phase) {
 static int spellHeal(int player) {
     ASSERT(player < 8, "player out of range: %d", player);
 
-    return playerHeal(c->saveGame, HT_HEAL, player);
+    playerHeal(c->saveGame, HT_HEAL, player);
+    return 1;
 }
 
 static int spellIceball(int dir) {

@@ -521,8 +521,9 @@ int playerHeal(SaveGame *saveGame, HealType type, int player) {
     case HT_HEAL:
         if (saveGame->players[player].status == STAT_DEAD ||
             saveGame->players[player].hp == saveGame->players[player].hpMax)
-            return 0;
-        saveGame->players[player].hp += 75 + (rand() % 0x18);        
+            return 0;        
+
+        saveGame->players[player].hp += 75 + ((rand() & 0xFF) % 0x19);
         break;
 
     case HT_RESTHEAL:
