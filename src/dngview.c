@@ -12,13 +12,14 @@
 #include "context.h"
 #include "debug.h"
 #include "dungeon.h"
+#include "list.h"
 #include "location.h"
 #include "savegame.h"
 #include "tile.h"
 
-unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
+ListNode *dungeonViewGetTiles(int fwd, int side) {
     int x, y;
-    unsigned char tile;    
+    int focus;
 
     switch (c->saveGame->orientation) {
     case DIR_WEST:
@@ -56,13 +57,36 @@ unsigned char dungeonViewGetVisibleTile(int fwd, int side) {
         while (y >= (int)c->location->map->height)
             y -= c->location->map->height;
     }
-    tile = (*c->location->tileAt)(c->location->map, x, y, c->location->z, WITH_OBJECTS);
 
-    return tile;
+    return locationTilesAt(c->location, x, y, c->location->z, &focus);
 }
 
-DungeonGraphicType dungeonViewTileToGraphic(unsigned char tile) {
-    DungeonToken token = dungeonTokenForTile(tile);    
+DungeonGraphicType dungeonViewTilesToGraphic(ListNode *tiles) {
+    unsigned char tile = (unsigned char) (unsigned) tiles->data;
+    DungeonToken token;
+
+    /* 
+     * check if the dungeon tile has an annotation or object on top
+     * (always displayed as a tile, unless a ladder)
+     */
+    if (listLength(tiles) > 1) {
+        printf("obj or annot! %d\n", tile);
+        switch (tile) {
+        case LADDERUP_TILE:
+            return DNGGRAPHIC_LADDERUP;
+        case LADDERDOWN_TILE:
+            return DNGGRAPHIC_LADDERDOWN;
+    
+        default:
+            return DNGGRAPHIC_BASETILE;
+        }
+    }
+
+    /* 
+     * if not an annotation or object, then the tile is a dungeon
+     * token 
+     */
+    token = dungeonTokenForTile(tile);
 
     switch (token) {
     case DUNGEON_TRAP:
@@ -80,6 +104,6 @@ DungeonGraphicType dungeonViewTileToGraphic(unsigned char tile) {
         return DNGGRAPHIC_LADDERDOWN;
     
     default:
-        return DNGGRAPHIC_TILE;
+        return DNGGRAPHIC_DNGTILE;
     }
 }

@@ -5,6 +5,8 @@
 #ifndef DNGVIEW_H
 #define DNGVIEW_H
 
+struct _ListNode;
+
 typedef enum {
     DNGGRAPHIC_NONE,
     DNGGRAPHIC_WALL,
@@ -12,10 +14,11 @@ typedef enum {
     DNGGRAPHIC_LADDERDOWN,
     DNGGRAPHIC_LADDERUPDOWN,
     DNGGRAPHIC_DOOR,
-    DNGGRAPHIC_TILE
+    DNGGRAPHIC_DNGTILE,
+    DNGGRAPHIC_BASETILE
 } DungeonGraphicType;
 
-unsigned char dungeonViewGetVisibleTile(int fwd, int side);
-DungeonGraphicType dungeonViewTileToGraphic(unsigned char tile);
+struct _ListNode *dungeonViewGetTiles(int fwd, int side);
+DungeonGraphicType dungeonViewTilesToGraphic(struct _ListNode *tiles);
 
 #endif
