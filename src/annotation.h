@@ -56,6 +56,7 @@ public:
 
     Annotation       *add(Coords coords, MapTile tile, bool visual = false);
     Annotation::List allAt(Coords pos);
+    std::list<Annotation *> ptrsToAllAt(Coords pos);
     void             clear();
     void             passTurn();
     void             remove(Coords pos, MapTile tile);

@@ -89,6 +89,20 @@ Annotation::List AnnotationMgr::allAt(Coords coords) {
 }
 
 /**
+ * Returns pointers to all annotations found at the given map coordinates
+ */ 
+std::list<Annotation *> AnnotationMgr::ptrsToAllAt(Coords coords) {
+    std::list<Annotation *> list;
+
+    for (i = annotations.begin(); i != annotations.end(); i++) {
+        if (i->getCoords() == coords)
+            list.push_back(&(*i));
+    }
+    
+    return list;
+}
+
+/**
  * Removes all annotations on the map 
  */ 
 void AnnotationMgr::clear() {

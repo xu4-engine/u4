@@ -59,8 +59,8 @@ MapTile *Location::visibleTileAt(MapCoords coords, bool &focus) {
  */
 std::vector<MapTile *> Location::tilesAt(MapCoords coords, bool &focus) {
     std::vector<MapTile *> tiles;
-    Annotation::List a = map->annotations->allAt(coords);    
-    Annotation::List::iterator i;
+    std::list<Annotation *> a = map->annotations->ptrsToAllAt(coords);
+    std::list<Annotation *>::iterator i;
     Object *obj = map->objectAt(coords);
     Creature *m = dynamic_cast<Creature *>(obj);
     focus = false;
@@ -85,8 +85,8 @@ std::vector<MapTile *> Location::tilesAt(MapCoords coords, bool &focus) {
     
     /* Add visual-only annotations to the list */
     for (i = a.begin(); i != a.end(); i++) {
-        if (i->isVisualOnly())        
-            tiles.push_back(&i->getTile());
+        if ((*i)->isVisualOnly())        
+            tiles.push_back(&(*i)->getTile());
     }
 
     /* then the avatar is drawn (unless on a ship) */
@@ -116,8 +116,8 @@ std::vector<MapTile *> Location::tilesAt(MapCoords coords, bool &focus) {
 
     /* then permanent annotations */
     for (i = a.begin(); i != a.end(); i++) {
-        if (!i->isVisualOnly())
-            tiles.push_back(&i->getTile());
+        if (!(*i)->isVisualOnly())
+            tiles.push_back(&(*i)->getTile());
     }
 
     /* finally the base tile */
