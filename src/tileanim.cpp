@@ -132,18 +132,19 @@ void TileAnimScrollTransform::draw(Tile *tile, MapTile *mapTile) {
         increment = tile->scale;
 
     int offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * tile->scale;
-    tile->loadImage();
-
-    tile->image->drawSubRectOn(tile->animated, 0, current, 0, tile->h * mapTile->frame, tile->w, tile->h - current);
-    if (current != 0)
-        tile->image->drawSubRectOn(tile->animated, 0, 0, 0, (tile->h * mapTile->frame) + tile->h - current, tile->w, current);
-
     if (lastOffset != offset) {
         lastOffset = offset;
         current += increment;
         if (current >= tile->h)
             current = 0;
     }
+    
+    tile->loadImage();
+
+    tile->image->drawSubRectOn(tile->animated, 0, current, 0, tile->h * mapTile->frame, tile->w, tile->h - current);
+    if (current != 0)
+        tile->image->drawSubRectOn(tile->animated, 0, 0, 0, (tile->h * mapTile->frame) + tile->h - current, tile->w, current);
+
 }
 
 /**
