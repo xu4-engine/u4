@@ -256,6 +256,8 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'a':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &attackAtCoord;
+        info->origin_x = c->saveGame->x;
+        info->origin_y = c->saveGame->y;
         info->range = 1;
         info->blockedPredicate = NULL;
         info->failedMessage = "FIXME";
@@ -395,6 +397,8 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'j':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &jimmyAtCoord;
+        info->origin_x = c->saveGame->x;
+        info->origin_y = c->saveGame->y;
         info->range = 1;
         info->blockedPredicate = NULL;
         info->failedMessage = "Jimmy what?";
@@ -450,6 +454,8 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'o':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &openAtCoord;
+        info->origin_x = c->saveGame->x;
+        info->origin_y = c->saveGame->y;
         info->range = 1;
         info->blockedPredicate = NULL;
         info->failedMessage = "Not Here!";
@@ -504,6 +510,8 @@ int gameBaseKeyHandler(int key, void *data) {
     case 't':
         info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &talkAtCoord;
+        info->origin_x = c->saveGame->x;
+        info->origin_y = c->saveGame->y;
         info->range = 2;
         info->blockedPredicate = &tileCanTalkOver;
         info->failedMessage = "Funny, no\nresponse!";
@@ -653,7 +661,7 @@ int gameGetCoordinateKeyHandler(int key, void *data) {
     int valid = 1;
     int i;
     Direction dir;
-    int t_x = c->saveGame->x, t_y = c->saveGame->y;
+    int t_x = info->origin_x, t_y = info->origin_y;
 
     eventHandlerPopKeyHandler();
 

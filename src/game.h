@@ -23,6 +23,7 @@ typedef struct AlphaActionInfo {
 
 typedef struct CoordActionInfo {
     int (*handleAtCoord)(int, int);
+    int origin_x, origin_y;
     int range;
     int (*blockedPredicate)(unsigned char tile);
     const char *failedMessage;
