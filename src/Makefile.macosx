@@ -65,7 +65,6 @@ install: u4
 	cp ../conf/dtd/*.dtd $(BUNDLE_CONTENTS)/Resources/dtd
 	cp ../icons/xu4.icns $(BUNDLE_CONTENTS)/Resources
 	cp ../graphics/ega/*.rle $(BUNDLE_CONTENTS)/Resources/ega
-	cp ../graphics/vga/*.rle $(BUNDLE_CONTENTS)/Resources/vga
 	cp ../ultima4.zip $(BUNDLE_CONTENTS)/Resources
 	cp ../u4upgrad.zip $(BUNDLE_CONTENTS)/Resources
 	$(INSTALL) $< $(BUNDLE_CONTENTS)/MacOS
