@@ -51,6 +51,8 @@ int castForPlayer2(int spell, void *data);
 int castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
 int fireAtCoord(int x, int y, int distance);
+int getChest(int player);
+int getChestTrapHandler(int player);
 int jimmyAtCoord(int x, int y, int distance);
 int mixReagentsForSpell(int spell, void *data);
 int mixReagentsForSpell2(char choice);
@@ -253,8 +255,7 @@ int gameExitToParentMap(struct _Context *ct)
         c = c->parent;
         c->col = 0;
         free(t);
-
-        screenMessage("Leaving...\n");
+        
         if (mapIsWorldMap(c->map))
             c->saveGame->dnglevel = -1;
         musicPlay();
@@ -285,11 +286,12 @@ void gameFinishTurn() {
                 c->aura = AURA_NONE;
         }
 
-        attacker = mapMoveObjects(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+        attacker = mapMoveObjects(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);        
+
         if (attacker) {
             gameMonsterAttack(attacker);
             return;
-        }
+        }        
 
         /* update map annotations and the party stats */
         annotationCycle();
@@ -583,20 +585,20 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'g':
         screenMessage("Get Chest!\n");
+
         if ((obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel)) != NULL)
             tile = obj->tile;
         else
             tile = mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
-        if (tileIsChest(tile)) {
-            if (obj)
-                mapRemoveObject(c->map, obj);
-            else
-                annotationAdd(c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel, c->map->id, BRICKFLOOR_TILE);
-            screenMessage("The Chest Holds: %d Gold\n", playerGetChest(c->saveGame));
-            if (obj == NULL)
-                playerAdjustKarma(c->saveGame, KA_STOLE_CHEST);
-        } else
-            screenMessage("Not Here!\n");
+    
+        if (tileIsChest(tile))
+        {
+            screenMessage("Who opens? ");
+            gameGetPlayerForCommand(&getChest);
+        }
+        else
+            screenMessage("Not here!\n");
+        
         break;
 
     case 'h':
@@ -1233,6 +1235,83 @@ int fireAtCoord(int x, int y, int distance) {
 }
 
 /**
+ * Get the chest at the current x,y of the current context for player 'player'
+ */
+
+int getChest(int player) {
+    Object *obj;
+    unsigned char tile;
+
+    if ((obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel)) != NULL)
+        tile = obj->tile;
+    else
+        tile = mapTileAt(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+    
+    if (tileIsChest(tile)) {
+        if (obj)
+            mapRemoveObject(c->map, obj);
+        else
+            annotationAdd(c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel, c->map->id, BRICKFLOOR_TILE);        
+        
+        getChestTrapHandler(player);
+        screenMessage("The Chest Holds: %d Gold\n", playerGetChest(c->saveGame));
+
+        statsUpdate();
+        
+        if (obj == NULL)
+            playerAdjustKarma(c->saveGame, KA_STOLE_CHEST);
+    }
+    
+    else
+        screenMessage("Not Here!\n");
+}
+
+/**
+ * Called by getChest() to handle possible traps on chests
+ **/
+
+int getChestTrapHandler(int player)
+{            
+    int trapType = 0;
+
+    /** 
+     * FIXME: Formulas for how often chest is trapped
+     *        and how often it's evaded, etc. are 
+     *        only guesses.
+     *
+     *        Also, damage done by an acid trap is a
+     *        vague guess. (Same as damage taken from
+     *        EFFECT_FIRE)
+     **/
+    
+    /* Chest is trapped! */
+    if (rand()%2 == 1)
+    {    
+        if (rand()%2 == 1)
+            trapType = 1; // Poison trap
+    
+        screenMessage(trapType ? "Poison Trap!\n" : "Acid Trap!\n");
+
+        if (rand()%2 == 1)
+        {
+            switch(trapType)
+            {
+                case 0: // Acid trap
+                    playerApplyDamage(&(c->saveGame->players[player]), 16 + (rand() % 32));
+                    break;
+                case 1: // Poison trap
+                    c->saveGame->players[player].status = STAT_POISONED;
+                    break;
+            }            
+        }
+    
+        else screenMessage("Evaded!\n");        
+    }
+
+    return 1;
+}
+
+/**
  * Attempts to jimmy a locked door at map coordinates x,y.  The locked
  * door is replaced by a permanent annotation of an unlocked door
  * tile.
@@ -1796,6 +1875,7 @@ int moveAvatar(Direction dir, int userEvent) {
             break;
 
         case BORDER_EXIT2PARENT:
+            screenMessage("Leaving...\n");
             gameExitToParentMap(c);
             goto done;
 
