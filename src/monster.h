@@ -13,7 +13,7 @@
 /* Monsters on world map */
 
 #define MAX_MONSTERS_ON_MAP 4
-#define MAX_MONSTER_DISTANCE 30
+#define MAX_MONSTER_DISTANCE 10
 
 /* Monster ids */
 

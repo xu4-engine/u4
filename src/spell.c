@@ -382,22 +382,29 @@ static int spellBlink(int dir) {
     int i,
         x = c->location->x,
         y = c->location->y,        
-        distance = 0x10,
-        failed = 0;
+        failed = 0,
+        distance,
+        diff,
+        *var;
     Direction reverseDir = dirReverse(dir);
     
-    /* FIXME: blink to white stone breaks all the rules -- figure out why and how */
+    /* figure out what numbers we're working with */
+    var = (dir & (DIR_WEST | DIR_EAST)) ? &x : &y;
+        
+    /* find the distance we are going to move */
+    distance = (*var) % 0x10;
+    if (dir == DIR_EAST || dir == DIR_SOUTH)
+        distance = 0x10 - distance;
     
-    /*if (mapIsWorldMap(c->location->map) && (c->location->y == 80) && (dir == DIR_WEST) && 
-        (c->location->x <= 90 && c->location->x >= 69)) {
-        c->location->x = 64;
-        return 1;
-    }*/
-    
+    /* see if we move another 16 spaces over */
+    diff = 0x10 - distance;
+    if ((diff > 0) && (rand() % (diff * diff) > distance))
+        distance += 0x10;
+
     /* test our distance, and see if it works */
     for (i = 0; i < distance; i++) {
         mapDirMove(c->location->map, dir, &x, &y);        
-    }
+    }    
     
     i = distance;   
     /* begin walking backward until you find a valid spot */
