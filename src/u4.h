@@ -7,7 +7,7 @@
 
 /* Windows port */
 #if defined(_WIN32)
-    #define VERSION "0.8cvs"
+    #define VERSION "0.8"
 #endif
 
 #define AdjustValue(var, val, max) ((var) += (val)); if ((var) > (max)) (var) = (max)
