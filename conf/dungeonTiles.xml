@@ -11,7 +11,7 @@
     <tile name="floor_hole" displayTile="62" frames="16"/>
     <tile name="magic_orb" displayTile="78" frames="16"/>
     <tile name="trap" displayTile="62" frames="16"/>
-    <tile name="fountain" displayTile="0" frames="16"/>    
+    <tile name="fountain" displayTile="2" frames="16" animated="true"/>    
     <tile name="poison_field" displayTile="68" rule="poison_field"/>
     <tile name="energy_field" displayTile="69" rule="energy_field"/>
     <tile name="fire_field" displayTile="70" rule="fire_field"/>
