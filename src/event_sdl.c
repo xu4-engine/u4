@@ -7,8 +7,8 @@
 #include <SDL.h>
 
 #include "u4.h"
-#include "screen.h"
 #include "event.h"
+#include "screen.h"
 #include "context.h"
 
 int eventDone;
@@ -29,8 +29,12 @@ void eventHandlerInit() {
     SDL_AddTimer(250, &eventCallback, NULL);
 }
 
-void eventHandlerMain() {
+void eventHandlerMain(void (*updateScreen)(void)) {
     eventHandlerSetExitFlag(0);
+
+    if (updateScreen)
+        (*updateScreen)();
+    screenForceRedraw();
 
     while (!eventHandlerGetExitFlag()) {
         int processed = 0;
@@ -67,7 +71,8 @@ void eventHandlerMain() {
             processed = (*eventHandlerGetKeyHandler())(key, eventHandlerGetKeyHandlerData());
 
             if (processed) {
-                screenUpdate();
+                if (updateScreen)
+                    (*updateScreen)();
                 screenForceRedraw();
             }
             break;
