@@ -87,7 +87,7 @@ Dialogue::Keyword *Dialogue::operator[](const string &kw) {
 }
 
 Dialogue::Action Dialogue::getAction() const { 
-    int prob = xu4_random(0x100);
+    int prob = xu4_random(0x80);
 
     /* Does the person turn away from/attack you? */
     if (prob < turnAwayProb) {
