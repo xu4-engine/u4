@@ -20,6 +20,7 @@
 #include "vendor.h"
 #include "music.h"
 #include "player.h"
+#include "map.h"
 
 char **hawkwindText;
 char **lbKeywords;
@@ -90,6 +91,30 @@ int personInit() {
     u4fclose(avatar);
 
     return vendorInit();
+}
+
+int personIsJoinable(const Person *p) {
+    int i;
+
+    if (!p || !p->name)
+        return 0;
+    for (i = 1; i < 8; i++) {
+        if (strcmp(c->saveGame->players[i].name, p->name) == 0)
+            return 1;
+    }
+    return 0;
+}
+
+int personIsJoined(const Person *p) {
+    int i;
+
+    if (!p || !p->name)
+        return 0;
+    for (i = 1; i < c->saveGame->members; i++) {
+        if (strcmp(c->saveGame->players[i].name, p->name) == 0)
+            return 1;
+    }
+    return 0;
 }
 
 void personGetConversationText(Conversation *cnv, const char *inquiry, char **response) {
@@ -235,6 +260,19 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
         reply = concat(cnv->talker->pronoun, 
                        " says: I do not need thy gold.  Keep it!",
                        NULL);
+    }
+
+    else if (strncasecmp(inquiry, "join", 4) == 0) {
+        if (personIsJoinable(cnv->talker)) {
+            playerJoin(c->saveGame, cnv->talker->name);
+            reply = strdup("I am honored to join thee!");
+            statsUpdate();
+            mapRemovePerson(c->map, cnv->talker);
+            cnv->state = CONV_DONE;
+        } else 
+            reply = concat(cnv->talker->pronoun, 
+                           " says: I cannot join thee.",
+                           NULL);
     }
 
     else
