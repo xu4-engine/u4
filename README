@@ -12,13 +12,24 @@ it -- sorry.
 STATUS
 ------
 
-What works in v0.01:
+New in v0.02:
+ - dynamic scaling ("./u4 -scale 1" runs at original resolution,
+   "./u4 -scale 2" and twice normal size, etc)
+ - ztats now display character stats and inventory
+ - the Ultima 4 data files can now be located in the current
+   directory, a subdirectory called "ultima4", /usr/lib/u4/ultima4 or
+   /usr/local/lib/u4/ultima4
+ - the Ultima 4 data files can be uppercase or lowercase
+ - some work on spells has begun
+
+v0.01 features:
  - stunning EGA graphics
  - walking around the world, entering cities and castles
  - the ladders between the two floors in the castle of Lord British
  - conversations with citizens (not merchants, Lord British, or
    Hawkwind)
  - saving the game remembers your position
+ - unlocking and opening of doors
 
 To do, in no particular order:
  - support the VGA upgrade patch
@@ -26,14 +37,13 @@ To do, in no particular order:
  - moongates
  - dungeons
  - line of sight (shouldn't be able to see through walls)
- - player stats, inventory, items
  - karma
  - monsters, combat
  - horses, ships, balloons
  - Lord British, Hawkwind
  - spells
- - windows port
  - autoconf, automake
+ - gem viewing
  - everything else :)
 
 COMPILING
@@ -53,9 +63,14 @@ internet (legally). It is available at
 http://www.zip.com.au/~mfleming/ultima/u4download.html, among many
 other sites.
 
-Create a subdirectory called ultima4 under u4/src (or whereever you
-will be running it from), and unzip ultima 4 there.  You may need to
-use "unzip -L" to get the filenames right.
+Once downloaded, it must be unzipped in one of four places:
+ - the current directory when u4 is run
+ - a subdirectory named "ultima4" of the current directory
+ - "/usr/lib/u4/ultima4/"
+ - "/usr/local/lib/u4/ultima4/"
+
+As of version 0.02, xu4 can handle uppercase or lowercase filenames.
+
 
 MISC
 ----
