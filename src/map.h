@@ -55,6 +55,7 @@ typedef struct _Map {
         struct _City *city;
         const struct _Shrine *shrine;
         struct _Area *area;
+        struct _Dungeon *dungeon;
     };
     struct _Object *objects;
 } Map;
