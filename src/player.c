@@ -83,6 +83,7 @@ int playerGetMaxLevel(const SaveGamePlayerRecord *player) {
 void playerAdvanceLevel(SaveGamePlayerRecord *player) {
     if (playerGetRealLevel(player) == playerGetMaxLevel(player))
         return;
+    player->status = STAT_GOOD;
     player->hpMax = playerGetMaxLevel(player) * 100;
     player->hp = player->hpMax;
 
