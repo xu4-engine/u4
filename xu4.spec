@@ -25,7 +25,7 @@ spirit of the original game will be added.
 %setup -n u4
 
 %build
-cd src && make datadir=%{_datadir}
+cd src && make datadir=%{_datadir} libdir=%{_libdir}
 
 %install
 cd src && %{makeinstall} desktopdir=$RPM_BUILD_ROOT/etc/X11/applnk
@@ -40,9 +40,20 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/u4
 %{_datadir}/pixmaps/u4.bmp
 %{_datadir}/pixmaps/u4.png
+%{_libdir}/u4/music/Castles.mid
+%{_libdir}/u4/music/Combat.mid
+%{_libdir}/u4/music/Dungeon.mid
+%{_libdir}/u4/music/Fanfare_Of_Lord_British.mid
+%{_libdir}/u4/music/Shopping.mid
+%{_libdir}/u4/music/Shrines.mid
+%{_libdir}/u4/music/Towns.mid
+%{_libdir}/u4/music/Wanderer.mid
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Mon Jun  4 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added music files
+
 * Mon May 13 2002 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added new doc files
 
