@@ -546,7 +546,7 @@ static int spellFireball(int dir) {
 }
 
 static int spellGate(int phase) {
-    const MapCoords *moongate;
+    const Coords *moongate;
 
     moongate = moongateGetGateCoordsForPhase(phase);
     if (moongate) 
