@@ -11,10 +11,6 @@
 #include "context.h"
 #include "screen.h"
 
-
-/* place holder for mp values I haven't figured out yet */
-#define UNKNOWN 13
-
 /* masks for reagents */
 #define ASH (1 << REAG_ASH)
 #define GINSENG (1 << REAG_GINSENG)
@@ -36,28 +32,28 @@ const Spell spells[] = {
     { "Blink",        SILK | MOSS,             SC_NORMAL,  15 },
     { "Cure",         GINSENG | GARLIC,        SC_ANY,     5 },
     { "Dispel",       ASH | GARLIC | PEARL,    SC_ANY,     20 },
-    { "Energy Field", ASH | SILK | PEARL,      SC_ANY,     UNKNOWN },
+    { "Energy Field", ASH | SILK | PEARL,      SC_ANY,     10 },
     { "Fireball",     ASH | PEARL,             SC_COMBAT,  15 },
-    { "Gate",         ASH | PEARL | MANDRAKE,  SC_NORMAL,  UNKNOWN },
+    { "Gate",         ASH | PEARL | MANDRAKE,  SC_NORMAL,  40 },
     { "Heal",         GINSENG | SILK,          SC_ANY,     10 },
-    { "Iceball",      PEARL | MANDRAKE,        SC_COMBAT,  UNKNOWN },
-    { "Jinx",         PEARL | NIGHTSHADE | MANDRAKE, SC_COMBAT, UNKNOWN },
-    { "Kill",         PEARL | NIGHTSHADE,      SC_COMBAT,  UNKNOWN },
-    { "Light",        ASH,                     SC_DUNGEON, UNKNOWN },
-    { "Magic missile", ASH | PEARL,            SC_COMBAT,  UNKNOWN },
-    { "Negate",       ASH | GARLIC | MANDRAKE, SC_COMBAT,  UNKNOWN },
+    { "Iceball",      PEARL | MANDRAKE,        SC_COMBAT,  20 },
+    { "Jinx",         PEARL | NIGHTSHADE | MANDRAKE, SC_COMBAT, 30 },
+    { "Kill",         PEARL | NIGHTSHADE,      SC_COMBAT,  25 },
+    { "Light",        ASH,                     SC_DUNGEON, 5 },
+    { "Magic missile", ASH | PEARL,            SC_COMBAT,  5 },
+    { "Negate",       ASH | GARLIC | MANDRAKE, SC_COMBAT,  20 },
     { "Open",         ASH | MOSS,              SC_NORMAL,  5 },
-    { "Protection",   ASH | GINSENG | GARLIC,  SC_ANY,     UNKNOWN },
-    { "Quickness",    ASH | GINSENG | MOSS,    SC_ANY,     UNKNOWN },
+    { "Protection",   ASH | GINSENG | GARLIC,  SC_ANY,     15 },
+    { "Quickness",    ASH | GINSENG | MOSS,    SC_ANY,     20 },
     { "Resurrect",    ASH | GINSENG | GARLIC | SILK | MOSS | MANDRAKE, SC_ANY, 45 },
     { "Sleep",        SILK | GINSENG,          SC_COMBAT,  15 },
     { "Tremor",       ASH | MOSS | MANDRAKE,   SC_COMBAT,  30 },
-    { "Undead",       ASH | GARLIC,            SC_ANY,     UNKNOWN },
-    { "View",         NIGHTSHADE | MANDRAKE,   SC_NORMAL | SC_DUNGEON, UNKNOWN },
+    { "Undead",       ASH | GARLIC,            SC_ANY,     15 },
+    { "View",         NIGHTSHADE | MANDRAKE,   SC_NORMAL | SC_DUNGEON, 15 },
     { "Winds",        ASH | MOSS,              SC_NORMAL,  10 },
-    { "X-it",         ASH | SILK | MOSS,       SC_DUNGEON, UNKNOWN },
-    { "Y-up",         SILK | MOSS,             SC_DUNGEON, UNKNOWN },
-    { "Z-down",       SILK | MOSS,             SC_DUNGEON, UNKNOWN }
+    { "X-it",         ASH | SILK | MOSS,       SC_DUNGEON, 15 },
+    { "Y-up",         SILK | MOSS,             SC_DUNGEON, 10 },
+    { "Z-down",       SILK | MOSS,             SC_DUNGEON, 5 }
 };
 
 #define N_SPELLS (sizeof(spells) / sizeof(spells[0]))
