@@ -35,11 +35,14 @@ bool Aura::operator==(const Type &t) const    { return type == t; }
 bool Aura::operator!=(const Type &t) const    { return !operator==(t); }
 
 void Aura::passTurn() {
-    if (--duration <= 0) {
-        type = NONE;
-        duration = 0;
+    if (duration > 0) {
+        duration--;
+        
+        if (duration == 0) {
+            type = NONE;
 
-        setChanged();
-        notifyObservers("Aura::passTurn");
+            setChanged();
+            notifyObservers("Aura::passTurn");
+        }
     }
 }
