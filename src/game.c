@@ -2293,6 +2293,7 @@ int moveAvatar(Direction dir, int userEvent) {
     int result = 1;
     int newx, newy;  
     int slowed = 0;
+    unsigned char temp;
     SlowedType slowedType = SLOWED_BY_TILE;
     Object *destObj;
     
@@ -2305,7 +2306,9 @@ int moveAvatar(Direction dir, int userEvent) {
 
     if (c->transportContext == TRANSPORT_SHIP) {
         if (tileGetDirection(c->saveGame->transport) != dir) {
-            tileSetDirection((unsigned char *)&c->saveGame->transport, dir);
+	    temp = c->saveGame->transport;
+            tileSetDirection(&temp, dir);
+	    c->saveGame->transport = temp;
             if (!settings->filterMoveMessages)
                 screenMessage("Turn %s!\n", getDirectionName(dir));
             return result;
@@ -2315,7 +2318,9 @@ int moveAvatar(Direction dir, int userEvent) {
     if (c->transportContext == TRANSPORT_HORSE) {
         if ((dir == DIR_WEST || dir == DIR_EAST) &&
             tileGetDirection(c->saveGame->transport) != dir) {
-            tileSetDirection((unsigned char *)&c->saveGame->transport, dir);
+	    temp = c->saveGame->transport;
+            tileSetDirection(&temp, dir);
+	    c->saveGame->transport = temp;
         }
     }
 
