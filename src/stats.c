@@ -274,7 +274,7 @@ const char *statsWeaponName(WeaponType weapon) {
         "Mystic Sword"
     };
 
-    if (weapon >= WEAP_HANDS && weapon < WEAP_MAX)
+    if (weapon < WEAP_MAX)
         return weapNames[weapon - WEAP_HANDS];
     else
         return "???";
@@ -290,7 +290,7 @@ const char *statsWeaponAbbrev(WeaponType weapon) {
         "^SW"
     };
 
-    if (weapon >= WEAP_HANDS && weapon < WEAP_MAX)
+    if (weapon < WEAP_MAX)
         return weapAbbrevs[weapon - WEAP_HANDS];
     else
         return "???";
@@ -303,7 +303,7 @@ const char *statsArmorName(ArmorType armor) {
         "Magic Chain", "Magic Plate", "Mystic Robe"
     };
 
-    if (armor >= ARMR_NONE && armor < ARMR_MAX)
+    if (armor < ARMR_MAX)
         return armorNames[armor - ARMR_NONE];
     else
         return "???";
@@ -316,7 +316,7 @@ const char *statsReagentName(Reagent reagent) {
         "Nightshade", "Mandrake"
     };
 
-    if (reagent >= REAG_ASH && reagent < REAG_MAX)
+    if (reagent < REAG_MAX)
         return reagentNames[reagent - REAG_ASH];
     else
         return "???";

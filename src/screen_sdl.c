@@ -621,7 +621,7 @@ int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const ch
 void screenDrawBackground(BackgroundType bkgd) {
     SDL_Rect r;
 
-    assert(bkgd >= 0 && bkgd < BKGD_MAX);
+    assert(bkgd < BKGD_MAX);
 
     r.x = 0;
     r.y = 0;
