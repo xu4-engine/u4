@@ -1,7 +1,7 @@
 <!-- $Id$ -->
 
 <!ENTITY % bool '( true | false )'>
-<!ENTITY % fixup '( none | intro | introExtended | abyss | abacus )'>
+<!ENTITY % fixup '( none | intro | introExtended | abyss | abacus | dungns )'>
 <!ENTITY % layouttype '( standard | gem )'>
 <!ENTITY % transformtype '( invert | pixel | scroll | frame | pixel_color )'>
 <!ENTITY % context '( frame )'>

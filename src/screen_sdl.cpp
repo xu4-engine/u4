@@ -44,16 +44,12 @@ void fixupIntro(Image *im, int prescale);
 void fixupIntroExtended(Image *im, int prescale);
 void fixupAbyssVision(Image *im, int prescale);
 void fixupAbacus(Image *im, int prescale);
+void fixupDungNS(Image *im, int prescale);
 void screenFreeIntroBackground();
 Image *screenScale(Image *src, int scale, int n, int filter);
-int screenLoadPaletteEga();
-int screenLoadPaletteVga(const char *filename);
 Image *screenScaleDown(Image *src, int scale);
 
 Image *screen;
-Image *dngGraphic[56];
-RGBA egaPalette[16];
-RGBA vgaPalette[256];
 SDL_Cursor *cursors[5];
 int scale;
 Scaler filterScaler;
@@ -83,77 +79,76 @@ struct Layout {
 };
 
 const struct {
-    const char *filename;
-    int width, height;
-    int depth;
     int x, y;
-    const char *filetype;
+    const char *subimage;
+    int x2, y2;
+    const char *subimage2;
 } dngGraphicInfo[] = {
-    { "ega/dung0la.rle", 32,  176, 4, 0,   0,   "image/x-u4rle" },
-    { "ega/dung0lb.rle", 32,  176, 4, 0,   0,   "image/x-u4rle" },
-    { "ega/dung0ma.rle", 176, 176, 4, 0,   0,   "image/x-u4rle" },
-    { "ega/dung0mb.rle", 176, 176, 4, 0,   0,   "image/x-u4rle" },
-    { "ega/dung0ra.rle", 32,  176, 4, 144, 0,   "image/x-u4rle" },
-    { "ega/dung0rb.rle", 32,  176, 4, 144, 0,   "image/x-u4rle" },
+    { 0,   0,   "dung0_lft_ew" },
+    { 0,   0,   "dung0_lft_ns" },
+    { 0,   0,   "dung0_mid_ew" },
+    { 0,   0,   "dung0_mid_ns" },
+    { 144, 0,   "dung0_rgt_ew" },
+    { 144, 0,   "dung0_rgt_ns" },
 
-    { "ega/dung1la.rle", 64,  112, 4, 0,   32,  "image/x-u4rle" },
-    { "ega/dung1lb.rle", 64,  112, 4, 0,   32,  "image/x-u4rle" },
-    { "ega/dung1ma.rle", 176, 112, 4, 0,   32,  "image/x-u4rle" },
-    { "ega/dung1mb.rle", 176, 112, 4, 0,   32,  "image/x-u4rle" },
-    { "ega/dung1ra.rle", 64,  112, 4, 112, 32,  "image/x-u4rle" },
-    { "ega/dung1rb.rle", 64,  112, 4, 112, 32,  "image/x-u4rle" },
+    { 32,  32,  "dung1_lft_ew", 0, 32, "dung1_xxx_ew" },
+    { 32,  32,  "dung1_lft_ns", 0, 32, "dung1_xxx_ns" },
+    { 0,   32,  "dung1_mid_ew" },
+    { 0,   32,  "dung1_mid_ns" },
+    { 112, 32,  "dung1_rgt_ew", 144, 32, "dung1_xxx_ew" },
+    { 112, 32,  "dung1_rgt_ns", 144, 32, "dung1_xxx_ns" },
 
-    { "ega/dung2la.rle", 80,  48,  4, 0,   64,  "image/x-u4rle" },
-    { "ega/dung2lb.rle", 80,  48,  4, 0,   64,  "image/x-u4rle" },
-    { "ega/dung2ma.rle", 176, 48,  4, 0,   64,  "image/x-u4rle" },
-    { "ega/dung2mb.rle", 176, 48,  4, 0,   64,  "image/x-u4rle" },
-    { "ega/dung2ra.rle", 80,  48,  4, 96,  64,  "image/x-u4rle" },
-    { "ega/dung2rb.rle", 80,  48,  4, 96,  64,  "image/x-u4rle" },
+    { 64,  64,  "dung2_lft_ew", 0, 64, "dung2_xxx_ew" },
+    { 64,  64,  "dung2_lft_ns", 0, 64, "dung2_xxx_ns" },
+    { 0,   64,  "dung2_mid_ew" },
+    { 0,   64,  "dung2_mid_ns" },
+    { 96,  64,  "dung2_rgt_ew", 112, 64, "dung2_xxx_ew" },
+    { 96,  64,  "dung2_rgt_ns", 112, 64, "dung2_xxx_ns" },
 
-    { "ega/dung3la.rle", 88,  16,  4, 0,   80,  "image/x-u4rle" },
-    { "ega/dung3lb.rle", 88,  16,  4, 0,   80,  "image/x-u4rle" },
-    { "ega/dung3ma.rle", 176, 16,  4, 0,   80,  "image/x-u4rle" },
-    { "ega/dung3mb.rle", 176, 16,  4, 0,   80,  "image/x-u4rle" },
-    { "ega/dung3ra.rle", 88,  16,  4, 88,  80,  "image/x-u4rle" },
-    { "ega/dung3rb.rle", 88,  16,  4, 88,  80,  "image/x-u4rle" },
+    { 80,  80,  "dung3_lft_ew", 0, 80, "dung3_xxx_ew" },
+    { 80,  80,  "dung3_lft_ns", 0, 80, "dung3_xxx_ns" },
+    { 0,   80,  "dung3_mid_ew" },
+    { 0,   80,  "dung3_mid_ns" },
+    { 88,  80,  "dung3_rgt_ew", 96, 80, "dung3_xxx_ew" },
+    { 88,  80,  "dung3_rgt_ns", 96, 80, "dung3_xxx_ns" },
 
-    { "ega/dung0la_door.rle", 32,  176, 4, 0,   0,   "image/x-u4rle" },
-    { "ega/dung0lb_door.rle", 32,  176, 4, 0,   0,   "image/x-u4rle" },
-    { "ega/dung0ma_door.rle", 176, 176, 4, 0,   0,   "image/x-u4rle" },
-    { "ega/dung0mb_door.rle", 176, 176, 4, 0,   0,   "image/x-u4rle" },
-    { "ega/dung0ra_door.rle", 32,  176, 4, 144, 0,   "image/x-u4rle" },
-    { "ega/dung0rb_door.rle", 32,  176, 4, 144, 0,   "image/x-u4rle" },
+    { 0,   0,   "dung0_lft_ew_door" },
+    { 0,   0,   "dung0_lft_ns_door" },
+    { 0,   0,   "dung0_mid_ew_door" },
+    { 0,   0,   "dung0_mid_ns_door" },
+    { 144, 0,   "dung0_rgt_ew_door" },
+    { 144, 0,   "dung0_rgt_ns_door" },
 
-    { "ega/dung1la_door.rle", 64,  112, 4, 0,   32,  "image/x-u4rle" },
-    { "ega/dung1lb_door.rle", 64,  112, 4, 0,   32,  "image/x-u4rle" },
-    { "ega/dung1ma_door.rle", 176, 112, 4, 0,   32,  "image/x-u4rle" },
-    { "ega/dung1mb_door.rle", 176, 112, 4, 0,   32,  "image/x-u4rle" },
-    { "ega/dung1ra_door.rle", 64,  112, 4, 112, 32,  "image/x-u4rle" },
-    { "ega/dung1rb_door.rle", 64,  112, 4, 112, 32,  "image/x-u4rle" },
+    { 32,  32,  "dung1_lft_ew_door", 0, 32, "dung1_xxx_ew" },
+    { 32,  32,  "dung1_lft_ns_door", 0, 32, "dung1_xxx_ns" },
+    { 0,   32,  "dung1_mid_ew_door" },
+    { 0,   32,  "dung1_mid_ns_door" },
+    { 112, 32,  "dung1_rgt_ew_door", 144, 32, "dung1_xxx_ew" },
+    { 112, 32,  "dung1_rgt_ns_door", 144, 32, "dung1_xxx_ns" },
 
-    { "ega/dung2la_door.rle", 80,  48,  4, 0,   64,  "image/x-u4rle" },
-    { "ega/dung2lb_door.rle", 80,  48,  4, 0,   64,  "image/x-u4rle" },
-    { "ega/dung2ma_door.rle", 176, 48,  4, 0,   64,  "image/x-u4rle" },
-    { "ega/dung2mb_door.rle", 176, 48,  4, 0,   64,  "image/x-u4rle" },
-    { "ega/dung2ra_door.rle", 80,  48,  4, 96,  64,  "image/x-u4rle" },
-    { "ega/dung2rb_door.rle", 80,  48,  4, 96,  64,  "image/x-u4rle" },
+    { 64,  64,  "dung2_lft_ew_door", 0, 64, "dung2_xxx_ew" },
+    { 64,  64,  "dung2_lft_ns_door", 0, 64, "dung2_xxx_ns" },
+    { 0,   64,  "dung2_mid_ew_door" },
+    { 0,   64,  "dung2_mid_ns_door" },
+    { 96,  64,  "dung2_rgt_ew_door", 112, 64, "dung2_xxx_ew" },
+    { 96,  64,  "dung2_rgt_ns_door", 112, 64, "dung2_xxx_ns" },
 
-    { "ega/dung3la_door.rle", 88,  16,  4, 0,   80,  "image/x-u4rle" },
-    { "ega/dung3lb_door.rle", 88,  16,  4, 0,   80,  "image/x-u4rle" },
-    { "ega/dung3ma_door.rle", 176, 16,  4, 0,   80,  "image/x-u4rle" },
-    { "ega/dung3mb_door.rle", 176, 16,  4, 0,   80,  "image/x-u4rle" },
-    { "ega/dung3ra_door.rle", 88,  16,  4, 88,  80,  "image/x-u4rle" },
-    { "ega/dung3rb_door.rle", 88,  16,  4, 88,  80,  "image/x-u4rle" },
+    { 80,  80,  "dung3_lft_ew_door", 0, 80, "dung3_xxx_ew" },
+    { 80,  80,  "dung3_lft_ns_door", 0, 80, "dung3_xxx_ns" },
+    { 0,   80,  "dung3_mid_ew_door" },
+    { 0,   80,  "dung3_mid_ns_door" },
+    { 88,  80,  "dung3_rgt_ew_door", 96, 80, "dung3_xxx_ew" },
+    { 88,  80,  "dung3_rgt_ns_door", 96, 80, "dung3_xxx_ns" },
 
-    { "ega/ladderup0.rle",   88,  87,  4, 45,  0,   "image/x-u4rle" },
-    { "ega/ladderup1.rle",   50,  48,  4, 64,  40,  "image/x-u4rle" },
-    { "ega/ladderup2.rle",   22,  19,  4, 77,  68,  "image/x-u4rle" },
-    { "ega/ladderup3.rle",   8,   6,   4, 84,  82,  "image/x-u4rle" },
+    { 45,  0,   "dung0_ladderup" },
+    { 64,  40,  "dung1_ladderup" },
+    { 77,  68,  "dung2_ladderup" },
+    { 84,  82,  "dung3_ladderup" },
 
-    { "ega/ladderdown0.rle", 88,  89,  4, 45,  87,  "image/x-u4rle" },
-    { "ega/ladderdown1.rle", 50,  50,  4, 64,  86,  "image/x-u4rle" },
-    { "ega/ladderdown2.rle", 22,  22,  4, 77,  86,  "image/x-u4rle" },
-    { "ega/ladderdown3.rle", 8,   8,   4, 84,  88,  "image/x-u4rle" }
+    { 45,  87,  "dung0_ladderdown" },
+    { 64,  86,  "dung1_ladderdown" },
+    { 77,  86,  "dung2_ladderdown" },
+    { 84,  88,  "dung3_ladderdown" }
 
 };
 
@@ -163,7 +158,6 @@ ImageInfo *screenLoadImageInfoFromConf(const ConfigElement &conf);
 SubImage *screenLoadSubImageFromConf(const ConfigElement &conf);
 Layout *screenLoadLayoutFromConf(const ConfigElement &conf);
 ImageInfo *screenLoadImage(const string &name);
-void screenDrawSubImage(const string &name, int x, int y);
 SDL_Cursor *screenInitCursor(char *xpm[]);
 int imageInfoByName(void *info1, void *info2);
 
@@ -210,10 +204,12 @@ void screenInit() {
 
     screen = Image::createScreenImage();
 
-    screenLoadPaletteEga();        
     /* see if the upgrade exists */
-    if (screenLoadPaletteVga("u4vga.pal"))
+    U4FILE *pal;
+    if ((pal = u4fopen("u4vga.pal")) != NULL) {
         u4upgradeExists = 1;
+        u4fclose(pal);
+    }
     u4upgradeInstalled = u4isUpgradeInstalled();
 
     /* if we can't use vga, reset to default:ega */
@@ -350,7 +346,7 @@ ImageSet *screenLoadImageSetFromConf(const ConfigElement &conf) {
 
 ImageInfo *screenLoadImageInfoFromConf(const ConfigElement &conf) {
     ImageInfo *info;
-    static const char *fixupEnumStrings[] = { "none", "intro", "introExtended", "abyss", "abacus", NULL };
+    static const char *fixupEnumStrings[] = { "none", "intro", "introExtended", "abyss", "abacus", "dungns", NULL };
 
     info = new ImageInfo;
     info->name = conf.getString("name");
@@ -529,6 +525,23 @@ void fixupAbacus(Image *im, int prescale) {
 }
 
 /**
+ * Swap blue and green for the dungeon walls when facing north or
+ * south.
+ */
+void fixupDungNS(Image *im, int prescale) {
+    for (int y = 0; y < im->height(); y++) {
+        for (int x = 0; x < im->width(); x++) {
+            unsigned int index;
+            im->getPixelIndex(x, y, index);
+            if (index == 1)
+                im->putPixelIndex(x, y, 2);
+            else if (index == 2)
+                im->putPixelIndex(x, y, 1);
+        }
+    }
+}
+
+/**
  * Returns information for the given image set.
  */
 ImageSet *screenGetImageSet(const string &setname) {
@@ -682,6 +695,9 @@ ImageInfo *screenLoadImage(const string &name) {
     case FIXUP_ABACUS:
         fixupAbacus(unscaled, info->prescale);
         break;
+    case FIXUP_DUNGNS:
+        fixupDungNS(unscaled, info->prescale);
+        break;
     }
 
     int imageScale = scale;
@@ -726,50 +742,6 @@ void screenFreeIntroBackgrounds() {
             }
         }
     }
-}
-
-/**
- * Loads the basic EGA palette from egaPalette.xml
- */
-int screenLoadPaletteEga() {
-    int index = 0;
-    const Config *config = Config::getInstance();
-
-    vector<ConfigElement> paletteConf = config->getElement("/config/egaPalette").getChildren();
-    for (std::vector<ConfigElement>::iterator i = paletteConf.begin(); i != paletteConf.end(); i++) {
-
-        if (i->getName() != "color")
-            continue;
-        
-        egaPalette[index].r = i->getInt("red");
-        egaPalette[index].g = i->getInt("green");
-        egaPalette[index].b = i->getInt("blue");
-
-        index++;
-    }
-
-    return 1;
-}
-
-/**
- * Load the 256 color VGA palette from the given file.
- */
-int screenLoadPaletteVga(const char *filename) {
-    U4FILE *pal;
-    int i;
-
-    pal = u4fopen(filename);
-    if (!pal)
-        return 0;
-
-    for (i = 0; i < 256; i++) {
-        vgaPalette[i].r = u4fgetc(pal) * 255 / 63;
-        vgaPalette[i].g = u4fgetc(pal) * 255 / 63;
-        vgaPalette[i].b = u4fgetc(pal) * 255 / 63;
-    }
-    u4fclose(pal);
-
-    return 1;
 }
 
 #if 0
@@ -870,13 +842,25 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
 /**
  * Draw an image or subimage on the screen.
  */
-void screenDrawImage(const string &name) {
-    ImageInfo *info;
-
-    info = screenLoadImage(name);
+void screenDrawImage(const string &name, int x, int y) {
+    ImageInfo *info = screenLoadImage(name);
     if (info) {
-        info->image->draw(0, 0);
+        info->image->draw(x, y);
         return;
+    }
+
+    SubImage *subimage = screenGetSubImage(name);
+    if (subimage) {
+        info = screenLoadImage(subimage->srcImageName);
+
+        if (info) {
+            info->image->drawSubRect(x, y, 
+                                     subimage->x * (scale / info->prescale),
+                                     subimage->y * (scale / info->prescale),
+                                     subimage->width * (scale / info->prescale),
+                                     subimage->height * (scale / info->prescale));
+            return;
+        }
     }
 
     errorFatal("unable to load image \"%s\": is Ultima IV installed?  See http://xu4.sourceforge.net/", name.c_str());
@@ -895,28 +879,6 @@ void screenDrawImageInMapArea(const string &name) {
                              VIEWPORT_H * TILE_HEIGHT * scale);
 }
 
-
-void screenDrawSubImage(const string &name, int x, int y) {
-    SubImage *subimage;
-    ImageInfo *info;
-
-    subimage = screenGetSubImage(name);
-    if (subimage) {
-        info = screenLoadImage(subimage->srcImageName);
-        
-        if (info) {
-            info->image->drawSubRect(x, y, 
-                                     subimage->x * (scale / info->prescale),
-                                     subimage->y * (scale / info->prescale),
-                                     subimage->width * (scale / info->prescale),
-                                     subimage->height * (scale / info->prescale));
-            return;
-        }
-    }
-
-    errorFatal("unable to load subimage \"%s\": is Ultima IV installed?  See http://xu4.sourceforge.net/", name.c_str());
-
-}
 
 /**
  * Draw a character from the charset onto the screen.
@@ -1231,34 +1193,6 @@ int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, 
     return index;
 }
 
-int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
-    int index = screenDungeonGraphicIndex(xoffset, distance, orientation, type);
-    ASSERT(index != -1, "invalid graphic paramters provided");
-
-    string pathname(u4find_graphics(dngGraphicInfo[index].filename));
-    if (pathname.empty())
-        return 0;
-
-    U4FILE *file = u4fopen_stdio(pathname);
-    if (!file)
-        return 0;
-
-    ImageLoader *loader = ImageLoader::getLoader(dngGraphicInfo[index].filetype);
-    if (loader == NULL)
-        errorFatal("can't load image of type \"%s\"", dngGraphicInfo[index].filetype);
-    loader->setDimensions(dngGraphicInfo[index].width, dngGraphicInfo[index].height, dngGraphicInfo[index].depth);
-    Image *unscaled = loader->load(file);
-    u4fclose(file);
-
-    if (unscaled == NULL)
-        return 0;
-
-    dngGraphic[index] = screenScale(unscaled, scale, 1, 1);
-    dngGraphic[index]->setTransparentIndex(0);
-
-    return 1;
-}
-
 void screenDungeonDrawTile(int distance, MapTile *mapTile) {
     Tileset *t = Tileset::get();    
     Tile *tile = t->get(mapTile->id);
@@ -1279,12 +1213,9 @@ void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, Dun
     if (index == -1)
         return;
 
-    if (dngGraphic[index] == NULL) {
-        if (!screenDungeonLoadGraphic(xoffset, distance, orientation, type))
-            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
-    }
-
-    dngGraphic[index]->draw((8 + dngGraphicInfo[index].x) * scale, (8 + dngGraphicInfo[index].y) * scale);
+    screenDrawImage(dngGraphicInfo[index].subimage, (8 + dngGraphicInfo[index].x) * scale, (8 + dngGraphicInfo[index].y) * scale);
+    if (dngGraphicInfo[index].subimage2 != NULL)
+        screenDrawImage(dngGraphicInfo[index].subimage2, (8 + dngGraphicInfo[index].x2) * scale, (8 + dngGraphicInfo[index].y2) * scale);
 }
 
 /**
@@ -1307,7 +1238,7 @@ void screenRedrawMapArea() {
  * representing the anhk and history book.
  */
 void screenAnimateIntro(const string &frame) {
-    screenDrawSubImage(frame, 72 * scale, 68 * scale);
+    screenDrawImage(frame, 72 * scale, 68 * scale);
 }
 
 void screenEraseMapArea() {
@@ -1343,7 +1274,7 @@ void screenShowCard(int pos, int card) {
     ASSERT(pos == 0 || pos == 1, "invalid pos: %d", pos);
     ASSERT(card < 8, "invalid card: %d", card);
 
-    screenDrawSubImage(subImageNames[card], (pos ? 218 : 12) * scale, 12 * scale);
+    screenDrawImage(subImageNames[card], (pos ? 218 : 12) * scale, 12 * scale);
 }
 
 /**
@@ -1354,8 +1285,8 @@ void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
     ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
     ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
     
-    screenDrawSubImage("whitebead", (128 + (selectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
-    screenDrawSubImage("blackbead", (128 + (rejectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
+    screenDrawImage("whitebead", (128 + (selectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
+    screenDrawImage("blackbead", (128 + (rejectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
 }
 
 /**
@@ -1374,7 +1305,7 @@ void screenShowBeastie(int beast, int vertoffset, int frame) {
     sprintf(buffer, "beast%dframe%02d", beast, frame);
 
     destx = beast ? (320 - 48) : 0;
-    screenDrawSubImage(buffer, destx * scale, vertoffset * scale);
+    screenDrawImage(buffer, destx * scale, vertoffset * scale);
 }
 
 void screenGemUpdate() {

@@ -24,7 +24,8 @@ enum ImageFixup {
     FIXUP_INTRO,
     FIXUP_INTRO_EXTENDED,
     FIXUP_ABYSS,
-    FIXUP_ABACUS
+    FIXUP_ABACUS,
+    FIXUP_DUNGNS
 };
 
 struct SubImage {
