@@ -34,7 +34,7 @@ static const char _ttype_info1[] = {
 /* tile values 56-79 */
 static const char _ttype_info2[] = {
 /* corpse, stonewall, ldoor, door, chest, anhk, brick, wood */
-   0x00,   0x03,      0x03,  0x03, 0x00,  0x03, 0x00,  0x03,
+   0x00,   0x03,      0x03,  0x03, 0x00,  0x03, 0x00,  0x00,
 /* mgate0, mgate1, mgate2, mgate3, field0, field1, field2, field3 */
    0x00,   0x00,   0x00,   0x00,   0x80,   0x80,   0x80,   0x80,
 /* solid, sdoor, altar, roast, lava, stone, orb1, orb2 */
