@@ -184,7 +184,8 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
             else if (cnv->talker->npcType == NPC_HAWKWIND)
                 text = hawkwindGetIntro(cnv);
             else
-                text = talkerGetIntro(cnv);
+                text = talkerGetIntro(cnv);            
+
             break;
 
         case CONV_TALK:
@@ -319,7 +320,14 @@ char *talkerGetIntro(Conversation *cnv) {
 char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     char *reply;
 
-    if (inquiry[0] == '\0' ||
+    /* Does the person turn away from you? */
+    if (rand()%0xFF < cnv->talker->turnAwayProb)
+    {
+        reply = concat(cnv->talker->pronoun, " turns away!\n", NULL);
+        cnv->state = CONV_DONE;
+    }
+
+    else if (inquiry[0] == '\0' ||
         strcasecmp(inquiry, "bye") == 0) {
         reply = strdup("Bye.");
         cnv->state = CONV_DONE;
