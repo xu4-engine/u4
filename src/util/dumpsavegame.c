@@ -3,12 +3,10 @@
 #include <string.h>
 
 #include "savegame.h"
+#include "names.h"
 
 void showSaveGame(SaveGame *sg);
 void showSaveGamePlayerRecord(SaveGamePlayerRecord *rec);
-char *weaponName(WeaponType weapon);
-char *armorName(ArmorType armor);
-char *className(ClassType klass);
 char *itemsString(unsigned short items);
 
 int main(int argc, char *argv[]) {
@@ -78,12 +76,10 @@ void showSaveGame(SaveGame *sg) {
     printf("transport: %x\n", sg->transport);
     printf("balloon state: %x\n", sg->balloonstate);
     printf("trammel: %d  felucca: %d\n", sg->trammelphase, sg->feluccaphase);
-    printf("???: %x\n", sg->unknown2);
+    printf("shiphull: %d\n", sg->shiphull);
     printf("lbintro: %d\n", sg->lbintro);
-    printf("???: %x\n", sg->unknown3);
-    printf("???: %x\n", sg->unknown4);
-    printf("???: %x\n", sg->unknown5);
-    printf("???: %x\n", sg->unknown6);
+    printf("lastcamp: %d       lastreagent: %d\n", sg->lastcamp, sg->lastreagent);
+    printf("lastmeditation: %d lastvirtue: %d\n", sg->lastmeditation, sg->lastvirtue);
     printf("dngx: %-5d dngy: %-5d orientation: %d dnglevel: %d\n", sg->dngx, sg->dngy, sg->orientation, sg->dnglevel);
 
     printf("location: %x\n", sg->location);
@@ -99,94 +95,9 @@ void showSaveGamePlayerRecord(SaveGamePlayerRecord *rec) {
            rec->name, rec->hp, rec->hpMax, rec->xp);
     printf("  str: %-6d dex: %-6d intel: %-4d mp: %-7d ???: %d\n", 
            rec->str, rec->dex, rec->intel, rec->mp, rec->unknown);
-    printf("  weapon: %-15s armor: %s\n", weaponName(rec->weapon), armorName(rec->armor));
+    printf("  weapon: %-15s armor: %s\n", getWeaponName(rec->weapon), getArmorName(rec->armor));
     printf("  sex: %-6s class: %-16s status: %c\n", 
-           rec->sex == 11 ? "M" : "F", className(rec->klass), rec->status);
-}
-
-char *weaponName(WeaponType weapon) {
-    switch (weapon) {
-    case WEAP_HANDS:
-        return "hands";
-    case WEAP_STAFF:
-        return "staff";
-    case WEAP_DAGGER:
-        return "dagger";
-    case WEAP_SLING:
-        return "sling";
-    case WEAP_MACE:
-        return "mace";
-    case WEAP_AXE:
-        return "axe";
-    case WEAP_SWORD:
-        return "sword";
-    case WEAP_BOW:
-        return "bow";
-    case WEAP_CROSSBOW:
-        return "crossbow";
-    case WEAP_OIL:
-        return "oil";
-    case WEAP_HALBERD:
-        return "halberd";
-    case WEAP_MAGICAXE:
-        return "magic axe";
-    case WEAP_MAGICSWORD:
-        return "magic sword";
-    case WEAP_MAGICBOW:
-        return "magic bow";
-    case WEAP_MAGICWAND:
-        return "magic wand";
-    case WEAP_MYSTICSWORD:
-        return "mystic sword";
-    default:
-        return "???";
-    }
-}
-
-char *armorName(ArmorType armor) {
-    switch (armor) {
-    case ARMR_NONE:
-        return "none";
-    case ARMR_CLOTH:
-        return "cloth";
-    case ARMR_LEATHER:
-        return "leather";
-    case ARMR_CHAIN:
-        return "chain";
-    case ARMR_PLATE:
-        return "plate";
-    case ARMR_MAGICCHAIN:
-        return "magicchain";
-    case ARMR_MAGICPLATE:
-        return "magicplate";
-    case ARMR_MYSTICROBES:
-        return "mysticrobes";
-    default:
-        return "???";
-    }
-}
-
-char *className(ClassType klass) {
-    switch (klass) {
-    case CLASS_MAGE:
-        return "mage";
-    case CLASS_BARD:
-        return "bard";
-    case CLASS_FIGHTER:
-        return "fighter";
-    case CLASS_DRUID:
-        return "druid";
-    case CLASS_TINKER:
-        return "tinker";
-    case CLASS_PALADIN:
-        return "paladin";
-    case CLASS_RANGER:
-        return "ranger";
-    case CLASS_SHEPHERD:
-        return "shepherd";
-    default:
-        return "???";
-    }
+           rec->sex == 11 ? "M" : "F", getClassName(rec->klass), rec->status);
 }
 
 char *itemsString(unsigned short items) {
@@ -196,7 +107,7 @@ char *itemsString(unsigned short items) {
     buffer[0] = '\0';
 
     if (items & ITEM_SKULL) {
-        strcat(strcat(buffer, first ? "" : ", "), "skull");
+        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_SKULL));
         first = 0;
     }
     if (items & ITEM_SKULL_DESTROYED) {
@@ -204,15 +115,15 @@ char *itemsString(unsigned short items) {
         first = 0;
     }
     if (items & ITEM_CANDLE) {
-        strcat(strcat(buffer, first ? "" : ", "), "candle");
+        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_CANDLE));
         first = 0;
     }
     if (items & ITEM_BOOK) {
-        strcat(strcat(buffer, first ? "" : ", "), "book");
+        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_BOOK));
         first = 0;
     }
     if (items & ITEM_BELL) {
-        strcat(strcat(buffer, first ? "" : ", "), "bell");
+        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_BELL));
         first = 0;
     }
     if (items & ITEM_KEY_C) {
@@ -228,11 +139,11 @@ char *itemsString(unsigned short items) {
         first = 0;
     }
     if (items & ITEM_HORN) {
-        strcat(strcat(buffer, first ? "" : ", "), "horn");
+        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_HORN));
         first = 0;
     }
     if (items & ITEM_WHEEL) {
-        strcat(strcat(buffer, first ? "" : ", "), "wheel");
+        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_WHEEL));
         first = 0;
     }
     if (items & ITEM_CANDLE_USED) {
