@@ -11,6 +11,8 @@
 #include "map.h"
 #include "city.h"
 #include "portal.h"
+#include "object.h"
+#include "person.h"
 #include "io.h"
 #include "annotation.h"
 
@@ -203,21 +205,24 @@ int mapReadWorld(Map *map, FILE *world) {
     return 1;
 }
 
-const Person *mapPersonAt(const Map *map, int x, int y) {
-    int i;
+Object *mapObjectAt(const Map *map, int x, int y) {
+    Object *obj;
 
-    /* only cities have persons */
-    if (map->city == NULL)
-        return NULL;
-
-    for(i = 0; i < map->city->n_persons; i++) {
-        if (map->city->persons[i].tile0 != 0 &&
-            map->city->persons[i].startx == x &&
-            map->city->persons[i].starty == y) {
-            return &(map->city->persons[i]);
-        }
+    for(obj = map->objects; obj; obj = obj->next) {
+        if (obj->x == x && obj->y == y)
+            return obj;
     }
     return NULL;
+}
+
+const Person *mapPersonAt(const Map *map, int x, int y) {
+    Object *obj;
+
+    obj = mapObjectAt(map, x, y);
+    if (obj)
+        return obj->person;
+    else
+        return NULL;
 }
 
 const Portal *mapPortalAt(const Map *map, int x, int y) {
@@ -247,4 +252,56 @@ int mapIsWorldMap(const Map *map) {
     return 
         map->width == MAP_WIDTH &&
         map->height == MAP_HEIGHT;
+}
+
+void mapAddPersonObject(Map *map, const Person *person) {
+    Object *obj = (Object *) malloc(sizeof(Object));
+
+    obj->tile = person->tile0;
+    obj->prevtile = person->tile1;
+    obj->x = person->startx;
+    obj->y = person->starty;
+    obj->movement_behavior = person->movement_behavior;
+    obj->person = person;
+    obj->next = map->objects;
+
+    map->objects = obj;
+}
+
+void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned int x, unsigned int y) {
+    Object *obj = (Object *) malloc(sizeof(Object));
+
+    obj->tile = tile;
+    obj->prevtile = prevtile;
+    obj->x = x;
+    obj->y = y;
+    obj->movement_behavior = MOVEMENT_FIXED;
+    obj->person = NULL;
+    obj->next = map->objects;
+
+    map->objects = obj;
+}
+
+void mapRemoveObject(Map *map, Object *rem) {
+    Object *obj = map->objects, **prev;
+
+    prev = &(map->objects);
+    while (obj) {
+        if (obj == rem) {
+            *prev = obj->next;
+            free(obj);
+        }
+        obj = *prev;
+    }
+}
+
+void mapClearObjects(Map *map) {
+    Object *obj = map->objects, **prev;
+
+    prev = &(map->objects);
+    while (obj) {
+        *prev = obj->next;
+        free(obj);
+        obj = *prev;
+    }
 }

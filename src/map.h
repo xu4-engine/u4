@@ -8,9 +8,11 @@
 #include <stdio.h>
 
 struct _City;
+struct _Object;
+struct _Person;
 struct _Portal;
+struct _Annotation;
 
-#include "person.h"
 #include "music.h"
 
 typedef enum {
@@ -33,6 +35,8 @@ typedef struct _Map {
     Music music;
     unsigned char *data;
     struct _City *city;
+    struct _Annotation *annotation;
+    struct _Object *objects;
 } Map;
 
 #define MAP_IS_OOB(mapptr, x, y) ((x) < 0 || (x) >= ((int)(mapptr)->width) || (y) < 0 || (y) >= ((int)(mapptr)->height))
@@ -40,9 +44,14 @@ typedef struct _Map {
 int mapRead(struct _City *city, FILE *ult, FILE *tlk);
 int mapReadCon(Map *map, FILE *con, int header);
 int mapReadWorld(Map *map, FILE *world);
-const Person *mapPersonAt(const Map *map, int x, int y);
+struct _Object *mapObjectAt(const Map *map, int x, int y);
+const struct _Person *mapPersonAt(const Map *map, int x, int y);
 const struct _Portal *mapPortalAt(const Map *map, int x, int y);
 unsigned char mapTileAt(const Map *map, int x, int y);
 int mapIsWorldMap(const Map *map);
+void mapAddPersonObject(Map *map, const struct _Person *person);
+void mapAddObject(Map *map, unsigned int tile, unsigned int prevtile, unsigned int x, unsigned int y);
+void mapRemoveObject(Map *map, struct _Object *obj);
+void mapClearObjects(Map *map);
 
 #endif
