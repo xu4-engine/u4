@@ -30,10 +30,10 @@ typedef struct _Map {
     const unsigned char *data;
 } Map;
 
-#define MAP_TILE_AT(mapptr, x, y) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 #define MAP_IS_OOB(mapptr, x, y) ((x) < 0 || (x) >= (mapptr)->width || (y) < 0 || (y) >= (mapptr)->height)
 
 const Person *mapPersonAt(const Map *map, int x, int y);
 const Portal *mapPortalAt(const Map *map, int x, int y);
+unsigned char mapTileAt(const Map *map, int x, int y);
 
 #endif
