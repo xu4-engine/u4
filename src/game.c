@@ -784,7 +784,7 @@ int gameBaseKeyHandler(int key, void *data) {
             }
             else valid = 0;
         }
-        break;
+        break;    
 
     case ' ':
         screenMessage("Pass\n");        
@@ -1749,7 +1749,27 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             screenMessage("Not Here!\n");
         musicPlay();
         screenPrompt();
-        break;    
+        break;
+
+    case 'y':
+        screenMessage("Y-up!\n");
+        if ((c->location->context & CTX_DUNGEON) && (c->location->z > 0))
+            c->location->z--;
+        else {
+            screenMessage("Leaving...\n");
+            gameExitToParentMap(c);
+            musicPlay();
+        }
+        screenPrompt();
+        break;
+
+    case 'z':
+        screenMessage("Z-down!\n");
+        if ((c->location->context & CTX_DUNGEON) && (c->location->z < 7))
+            c->location->z++;
+        else screenMessage("Not Here!\n");
+        screenPrompt();
+        break;
 
     case '\033':
     case '\015':
@@ -1778,7 +1798,10 @@ int cmdHandleAnyKey(int key, void *data) {
                   "s - Summon\n"
                   "t - Transports\n"
                   "w - Change Wind\n"
-                  "x - Exit Map\n");
+                  "x - Exit Map\n"
+                  "y - Y-up\n"
+                  "z - Z-down\n"
+                  );
     screenPrompt();
     return 1;
 }
