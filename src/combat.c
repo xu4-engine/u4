@@ -49,6 +49,8 @@ Object *party[8];
 Object *monsters[AREA_MONSTERS];
 
 int combatBaseKeyHandler(int key, void *data);
+void combatEndTurn(void);
+int combatAttackAtCoord(int x, int y);
 int combatIsWon(void);
 int combatIsLost(void);
 void combatEnd(void);
@@ -79,6 +81,9 @@ void combatBegin(unsigned char partytile, unsigned short transport) {
         monsters[i] = NULL;
 
     eventHandlerPushKeyHandler(&combatBaseKeyHandler);
+
+    screenMessage("\n**** COMBAT ****\n\n");
+    combatEndTurn();
 }
 
 
@@ -112,8 +117,28 @@ Map *getCombatMapForTile(unsigned char partytile, unsigned short transport) {
     return &brick_map;
 }
 
+void combatEndTurn() {
+    if (party[focus])
+        party[focus]->hasFocus = 0;
+    do {
+        focus++;
+        if (focus >= c->saveGame->members)
+            focus = 0;
+    } while (!party[focus]);
+    party[focus]->hasFocus = 1;
+
+    if (combatIsWon() || combatIsLost()) {
+        eventHandlerPopKeyHandler();
+        combatEnd();
+        return;
+    }
+
+    screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, getWeaponName(c->saveGame->players[focus].weapon));
+}
+
 int combatBaseKeyHandler(int key, void *data) {
     int valid = 1;
+    CoordActionInfo *info;
 
     switch (key) {
     case U4_UP:
@@ -137,27 +162,57 @@ int combatBaseKeyHandler(int key, void *data) {
         combatEnd();
         break;
         
+    case 'a':
+        info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
+        info->handleAtCoord = &combatAttackAtCoord;
+        info->origin_x = party[focus]->x;
+        info->origin_y = party[focus]->y;
+        info->range = 1;
+        info->blockedPredicate = NULL;
+        info->failedMessage = "FIXME";
+        eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
+        screenMessage("Dir: ");
+        break;
+
     default:
         valid = 0;
         break;
     }
 
-    if (combatIsWon() || combatIsLost()) {
-        eventHandlerPopKeyHandler();
-        combatEnd();
-    }
-    else if (valid) {
-        if (party[focus])
-            party[focus]->hasFocus = 0;
-        do {
-            focus++;
-            if (focus >= c->saveGame->members)
-                focus = 0;
-        } while (!party[focus]);
-        party[focus]->hasFocus = 1;
+    if (valid) {
+        if (eventHandlerGetKeyHandler() == &combatBaseKeyHandler)
+            combatEndTurn();
     }
 
     return valid;
+}
+
+int combatAttackAtCoord(int x, int y) {
+    int monster;
+    int i;
+
+    if (x == -1 && y == -1)
+        return 0;
+
+    monster = -1;
+    for (i = 0; i < AREA_MONSTERS; i++) {
+        if (monsters[i] &&
+            monsters[i]->x == x &&
+            monsters[i]->y == y)
+            monster = i;
+    }
+
+    if (monster == -1) {
+        screenMessage("Missed!\n");
+    } else {
+        screenMessage("Hit!\n");
+        mapRemoveObject(c->map, monsters[monster]);
+        monsters[monster] = NULL;
+    }
+
+    combatEndTurn();
+
+    return 1;
 }
 
 /**
