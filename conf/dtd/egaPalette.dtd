@@ -1,8 +1,3 @@
 <!-- $Id$ -->
 
 <!ELEMENT egaPalette ( color+ ) >
-
-<!ELEMENT color EMPTY >
-<!ATTLIST color r                 NMTOKEN  #REQUIRED
-                g                 NMTOKEN  #REQUIRED
-                b                 NMTOKEN  #REQUIRED>

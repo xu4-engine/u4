@@ -59,8 +59,3 @@
                     y             NMTOKEN  #IMPLIED
                     width         NMTOKEN  #IMPLIED
                     height        NMTOKEN  #IMPLIED>
-
-<!ELEMENT color EMPTY >
-<!ATTLIST color red               NMTOKEN  #REQUIRED
-                green             NMTOKEN  #REQUIRED
-                blue              NMTOKEN  #REQUIRED>

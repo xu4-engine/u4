@@ -1,21 +1,25 @@
 <?xml version="1.0"?>
-<!DOCTYPE egaPalette SYSTEM "dtd/egaPalette.dtd">
+<!DOCTYPE egaPalette SYSTEM "dtd/egaPalette.dtd" [
+  <!ENTITY % color SYSTEM "dtd/color.dtd">
+  %color;
+]>
+
 <!-- $Id$ -->
 <egaPalette>    
-    <color r="0" g="0" b="0"/>          <!-- black --> 
-    <color r="0" g="0" b="162"/>        <!-- blue -->
-    <color r="0" g="162" b="0"/>        <!-- green -->
-    <color r="0" g="162" b="162"/>      <!-- blue-green -->
-    <color r="162" g="0" b="0"/>        <!-- red -->
-    <color r="162" g="0" b="162"/>      <!-- purple -->
-    <color r="170" g="85" b="0"/>       <!-- brown -->
-    <color r="168" g="168" b="168"/>    <!-- lt. gray -->
-    <color r="82" g="82" b="82"/>       <!-- gray -->
-    <color r="80" g="80" b="255"/>      <!-- bright blue -->
-    <color r="80" g="255" b="80"/>      <!-- bright green -->
-    <color r="80" g="255" b="255"/>     <!-- bright blue-green -->
-    <color r="255" g="80" b="80"/>      <!-- bright red -->
-    <color r="255" g="80" b="255"/>     <!-- magenta -->
-    <color r="255" g="255" b="80"/>     <!-- yellow --> 
-    <color r="255" g="255" b="255"/>    <!-- white -->
+    <color red="0" green="0" blue="0"/>          <!-- black --> 
+    <color red="0" green="0" blue="162"/>        <!-- blue -->
+    <color red="0" green="162" blue="0"/>        <!-- green -->
+    <color red="0" green="162" blue="162"/>      <!-- blue-green -->
+    <color red="162" green="0" blue="0"/>        <!-- red -->
+    <color red="162" green="0" blue="162"/>      <!-- purple -->
+    <color red="170" green="85" blue="0"/>       <!-- brown -->
+    <color red="168" green="168" blue="168"/>    <!-- lt. gray -->
+    <color red="82" green="82" blue="82"/>       <!-- gray -->
+    <color red="80" green="80" blue="255"/>      <!-- bright blue -->
+    <color red="80" green="255" blue="80"/>      <!-- bright green -->
+    <color red="80" green="255" blue="255"/>     <!-- bright blue-green -->
+    <color red="255" green="80" blue="80"/>      <!-- bright red -->
+    <color red="255" green="80" blue="255"/>     <!-- magenta -->
+    <color red="255" green="255" blue="80"/>     <!-- yellow --> 
+    <color red="255" green="255" blue="255"/>    <!-- white -->
 </egaPalette>

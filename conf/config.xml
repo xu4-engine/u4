@@ -4,8 +4,14 @@
   %common;
   <!ENTITY % constraint SYSTEM "dtd/constraint.dtd">
   %constraint;
+  <!ENTITY % color SYSTEM "dtd/color.dtd">
+  %color;
   <!ENTITY % armors SYSTEM "dtd/armors.dtd">
   %armors;
+  <!ENTITY % egaPalette SYSTEM "dtd/egaPalette.dtd">
+  %egaPalette;
+  <!ENTITY % graphics SYSTEM "dtd/graphics.dtd">
+  %graphics;
   <!ENTITY % maps SYSTEM "dtd/maps.dtd">
   %maps;
   <!ENTITY % weapons SYSTEM "dtd/weapons.dtd">
@@ -17,6 +23,8 @@
 <config>
   <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="armors.xml"/>
   <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="maps.xml"/>
+  <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="egaPalette.xml"/>
+  <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="graphics.xml"/>
   <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="music.xml"/>
   <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="sound.xml"/>
   <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="weapons.xml"/>
