@@ -78,6 +78,10 @@ std::vector<MapTile *> Location::tilesAt(MapCoords coords, bool &focus) {
 
         return tiles;
     }
+
+    /* Add the avatar to gem view */
+    if (avatar && viewMode == VIEW_GEM)
+        tiles.push_back(&c->party->transport);
     
     /* Add visual-only annotations to the list */
     for (i = a.begin(); i != a.end(); i++) {

@@ -299,7 +299,7 @@ int introInit() {
         enhancementOptions.add(1, "Slime Divides", 7, 8, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
         enhancementOptions.add(2, "Fixed Chest Traps", 7, 9, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
         enhancementOptions.add(5, "Smart 'Enter' Key", 7, 10, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
-        enhancementOptions.add(7, "Peer Shows Objects", 7, 11, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
+        enhancementOptions.add(7, "Gem View Shows Objects", 7, 11, &introEnhancementOptionsMenuItemActivate, ACTIVATE_ANY);
         enhancementOptions.add(0xFE, "Use These Settings", 7, 20, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
         enhancementOptions.add(0xFF, "Cancel", 7, 21, &introEnhancementOptionsMenuItemActivate, ACTIVATE_NORMAL);
 
