@@ -85,9 +85,7 @@ int main(int argc, char *argv[]) {
     screenTextAt(15, 11, "Loading...");
     screenRedrawScreen();
     perf.end("Screen Initialization");
-    ++pb;
-
-    intro = new IntroController();    
+    ++pb;    
 
     perf.start();
     soundInit();    
@@ -119,6 +117,7 @@ int main(int argc, char *argv[]) {
         eventHandler->run();
         eventHandler->popController();
         intro->deleteIntro();
+        delete intro;
     }
 
     eventHandler->setControllerDone(false);
