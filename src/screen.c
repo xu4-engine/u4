@@ -111,19 +111,17 @@ unsigned char screenViewportTile(int width, int height, int x, int y) {
         return mapTileAt(c->map, tx, ty);
 }
 
-void screenUpdate() {
+void screenUpdate(int showmap) {
     int y, x;
 
-    if (c == NULL) {
-        printf("screenUpdate called with NULL\n");
-        return;
-    }
+    assert(c != NULL);
 
-    screenFindLineOfSight();
+    if (showmap)
+        screenFindLineOfSight();
 
     for (y = 0; y < VIEWPORT_H; y++) {
 	for (x = 0; x < VIEWPORT_W; x++) {
-            if (screenLos[x][y])
+            if (showmap && screenLos[x][y])
                 screenShowTile(screenViewportTile(VIEWPORT_W, VIEWPORT_H, x, y), x, y);
             else
                 screenShowTile(BLACK_TILE, x, y);

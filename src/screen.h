@@ -32,7 +32,7 @@ void screenTextAt(int x, int y, char *fmt, ...);
 void screenMessage(const char *fmt, ...);
 void screenScrollMessageArea(void);
 unsigned char screenViewportTile(int width, int height, int x, int y);
-void screenUpdate(void);
+void screenUpdate(int showmap);
 void screenGemUpdate(void);
 void screenRedrawScreen(void);
 void screenRedrawMapArea(void);
