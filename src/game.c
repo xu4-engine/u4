@@ -121,27 +121,19 @@ int gameBaseKeyHandler(int key, void *data) {
     switch (key) {
 
     case U4_UP:
-        screenMessage("North\n");
-        if (!moveAvatar(0, -1))
-            screenMessage("Blocked!\n");
+        moveAvatar(0, -1);
         break;
 
     case U4_DOWN:
-        screenMessage("South\n");
-        if (!moveAvatar(0, 1))
-            screenMessage("Blocked!\n");
+        moveAvatar(0, 1);
         break;
 
     case U4_LEFT:
-        screenMessage("West\n");
-        if (!moveAvatar(-1, 0))
-            screenMessage("Blocked!\n");
+        moveAvatar(-1, 0);
         break;
 
     case U4_RIGHT:
-        screenMessage("East\n");
-        if (!moveAvatar(1, 0))
-            screenMessage("Blocked!\n");
+        moveAvatar(1, 0);
         break;
 
     case 3:                     /* ctrl-C */
@@ -162,9 +154,22 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'b':
         obj = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y);
         if (obj && tileIsShip(obj->tile)) {
-            c->saveGame->transport = obj->tile;
-            mapRemoveObject(c->map, obj);
-            screenMessage("Board Ship\n");
+            if (c->saveGame->transport != AVATAR_TILE)
+                screenMessage("Board: Can't!\n");
+            else {
+                c->saveGame->transport = obj->tile;
+                c->saveGame->shiphull = 50;
+                mapRemoveObject(c->map, obj);
+                screenMessage("Board Frigate!\n");
+            }
+        } else if (obj && tileIsHorse(obj->tile)) {
+            if (c->saveGame->transport != AVATAR_TILE)
+                screenMessage("Board: Can't!\n");
+            else {
+                c->saveGame->transport = obj->tile;
+                mapRemoveObject(c->map, obj);
+                screenMessage("Mount Horse!\n");
+            }
         } else
             screenMessage("Board What?\n");
         break;
@@ -236,8 +241,12 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'k':
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_KLIMB) {
-            c->map = portal->destination;
-            screenMessage("Klimb!\n\n");
+            if (c->saveGame->transport != AVATAR_TILE)
+                screenMessage("Klimb\nOnly on foot!\n");
+            else {
+                c->map = portal->destination;
+                screenMessage("Klimb!\n\n");
+            }
         }
         else
             screenMessage("Klimb what?\n");
@@ -307,10 +316,10 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'x':
-        if (tileIsShip(c->saveGame->transport)) {
+        if (tileIsShip(c->saveGame->transport) || tileIsHorse(c->saveGame->transport)) {
             mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
-            c->saveGame->transport = 0x1f;
-            screenMessage("X-it Ship\n");
+            c->saveGame->transport = AVATAR_TILE;
+            screenMessage("X-it\n");
         } else
             screenMessage("X-it What?\n");
         break;
@@ -525,13 +534,12 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
     int i;
     int valid = 1;
 
-    eventHandlerPopKeyHandler();
-
     switch (key) {
     case 'b':
-        if (mapIsWorldMap(c->map))
-            mapAddObject(c->map, 0x10, 0x10, 88, 109);
-        screenMessage("Boat created!\n\020");
+        if (mapIsWorldMap(c->map)) {
+            mapAddObject(c->map, 16, 16, 88, 109);
+            screenMessage("Boat created!\n\020");
+        }
         break;
     case 'c':
         collisionOverride = !collisionOverride;
@@ -545,7 +553,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             c->saveGame->weapons[i] = 8;
         break;
     case 'h':
-        screenMessage("Help:\nb - Boat\nc - Collision\ne - Equipment\nh - Help\ni - Items\nk - Show Karma\nm - Mixtures\nr - Reagents\n\020");
+        screenMessage("Help:\nb - Boat\nc - Collision\ne - Equipment\nh - Help\ni - Items\nk - Show Karma\nm - Mixtures\no - Horse\nr - Reagents\n\020");
         break;
     case 'i':
         screenMessage("Items!\n\020");
@@ -568,6 +576,13 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         for (i = 0; i < 26; i++)
             c->saveGame->mixtures[i] = 99;
         break;
+    case 'o':
+        if (mapIsWorldMap(c->map)) {
+            mapAddObject(c->map, 20, 20, 84, 106);
+            screenMessage("Horse created!\n\020");
+        }
+        break;
+
     case 'r':
         screenMessage("Reagents!\n\020");
         for (i = 0; i < REAG_MAX; i++)
@@ -577,6 +592,9 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         valid = 0;
         break;
     }
+
+    if (valid)
+        eventHandlerPopKeyHandler();
 
     return valid || keyHandlerDefault(key, NULL);
 }
@@ -783,7 +801,7 @@ int openAtCoord(int x, int y) {
  * Handles the Exit (Y/N) choice.
  */
 int quitHandleChoice(char choice) {
-    FILE *saveGameFile;
+    FILE *saveGameFile, *monstersFile;
 
     eventHandlerPopKeyHandler();
 
@@ -793,6 +811,15 @@ int quitHandleChoice(char choice) {
         fclose(saveGameFile);
     } else {
         screenMessage("Error writing to\nparty.sav\n");
+        choice = 'n';
+    }
+
+    monstersFile = fopen("monsters.sav", "wb");
+    if (monstersFile) {
+        saveGameMonstersWrite(c->map->objects, monstersFile);
+        fclose(monstersFile);
+    } else {
+        screenMessage("Error writing to\nmonsters.sav\n");
         choice = 'n';
     }
 
@@ -1028,29 +1055,56 @@ int gameCanMoveOntoTile(const Map *map, int x, int y) {
  * is blocked.
  */
 int moveAvatar(int dx, int dy) {
+    const char *fmt;
     int newx, newy;
 
     if (tileIsShip(c->saveGame->transport)) {
         if (dx < 0 && tileGetDirection(c->saveGame->transport) != DIR_WEST) {
             tileSetDirection(&c->saveGame->transport, DIR_WEST);
+            screenMessage("Turn West!\n");
             return 1;
         }
         if (dx > 0 && tileGetDirection(c->saveGame->transport) != DIR_EAST) {
             tileSetDirection(&c->saveGame->transport, DIR_EAST);
+            screenMessage("Turn East!\n");
             return 1;
         }
         if (dy < 0 && tileGetDirection(c->saveGame->transport) != DIR_NORTH) {
             tileSetDirection(&c->saveGame->transport, DIR_NORTH);
+            screenMessage("Turn North!\n");
             return 1;
         }
         if (dy > 0 && tileGetDirection(c->saveGame->transport) != DIR_SOUTH) {
             tileSetDirection(&c->saveGame->transport, DIR_SOUTH);
+            screenMessage("Turn South!\n");
             return 1;
+        }
+    }
+
+    if (tileIsHorse(c->saveGame->transport)) {
+        if (dx < 0 && tileGetDirection(c->saveGame->transport) != DIR_WEST) {
+            tileSetDirection(&c->saveGame->transport, DIR_WEST);
+        }
+        if (dx > 0 && tileGetDirection(c->saveGame->transport) != DIR_EAST) {
+            tileSetDirection(&c->saveGame->transport, DIR_EAST);
         }
     }
 
     newx = c->saveGame->x + dx;
     newy = c->saveGame->y + dy;
+
+    if (tileIsShip(c->saveGame->transport))
+        fmt = "Sail %s!\n";
+    else
+        fmt = "%s\n";
+    if (newx < c->saveGame->x)
+        screenMessage(fmt, "West");
+    else if (newx > c->saveGame->x)
+        screenMessage(fmt, "East");
+    else if (newy < c->saveGame->y)
+        screenMessage(fmt, "North");
+    else if (newy > c->saveGame->y)
+        screenMessage(fmt, "South");
 
     if (MAP_IS_OOB(c->map, newx, newy)) {
 	switch (c->map->border_behavior) {
@@ -1091,17 +1145,23 @@ int moveAvatar(int dx, int dy) {
     }
 
     if (!collisionOverride) {
-        if (!gameCanMoveOntoTile(c->map, newx, newy))
+        if (!gameCanMoveOntoTile(c->map, newx, newy)) {
+            screenMessage("Blocked!\n");
             return 0;
+        }
 
         /* 
          * special cases for tile 0x0e: the center tile of the castle
          * of lord british, which is walkable from the south only
          */
-        if (mapTileAt(c->map, newx, newy) == 0x0e && dy == 1)
+        if (mapTileAt(c->map, newx, newy) == 0x0e && dy == 1) {
+            screenMessage("Blocked!\n");
             return 0;
-        if (mapTileAt(c->map, c->saveGame->x, c->saveGame->y) == 0x0e && dy == -1)
+        }
+        if (mapTileAt(c->map, c->saveGame->x, c->saveGame->y) == 0x0e && dy == -1) {
+            screenMessage("Blocked!\n");
             return 0;
+        }
     }
 
     c->saveGame->x = newx;
