@@ -353,7 +353,7 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
 
         case MOVEMENT_WANDER:
             if (rand() % 2 == 0)
-                dirMove((Direction) (rand() % 4), &newx, &newy);
+                dirMove(dirRandomDir(MASK_DIR_ALL), &newx, &newy);
             break;
                 
         case MOVEMENT_ATTACK_AVATAR:
