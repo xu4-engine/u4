@@ -38,6 +38,9 @@ int eventHandlerGetExitFlag() {
     return eventExitFlag;
 }
 
+/**
+ * Adds a new timer callback to the timer callback list.
+ */
 void eventHandlerAddTimerCallback(void (*callback)()) {
     TimerCallbackNode *n = malloc(sizeof(TimerCallbackNode));
     if (n) {
@@ -47,6 +50,9 @@ void eventHandlerAddTimerCallback(void (*callback)()) {
     }
 }
 
+/**
+ * Removes a timer callback from the timer callback list.
+ */
 void eventHandlerRemoveTimerCallback(void (*callback)()) {
     TimerCallbackNode *n, *prev;
 
@@ -132,6 +138,9 @@ void *eventHandlerGetKeyHandlerData() {
     return keyHandlerHead->data;
 }
 
+/**
+ * A base key handler that should be valid everywhere.
+ */
 int keyHandlerDefault(int key, void *data) {
     int valid = 1;
 
@@ -151,7 +160,8 @@ int keyHandlerDefault(int key, void *data) {
 }
 
 /**
- *
+ * Generic handler for reading a single character choice from a set of
+ * valid characters.
  */
 int keyHandlerGetChoice(int key, void *data) {
     GetChoiceActionInfo *info = (GetChoiceActionInfo *) data;
@@ -166,12 +176,11 @@ int keyHandlerGetChoice(int key, void *data) {
     return 1;
 }
 
-
 /**
  * Generic handler for reading a buffer.  Handles key presses when a
  * buffer is being read, such as when a conversation is active.  The
- * keystrokes are buffered up into a word, which is then passed off to
- * a seperate handler.
+ * keystrokes are buffered up into a word until enter is pressed.
+ * Control is then passed to a seperate handler.
  */
 int keyHandlerReadBuffer(int key, void *data) {
     ReadBufferActionInfo *info = (ReadBufferActionInfo *) data;

@@ -20,6 +20,7 @@ typedef struct KeyHandlerNode {
     struct KeyHandlerNode *next;
 } KeyHandlerNode;
 
+/** Additional information to be passed as data param for read buffer key handler */
 typedef struct ReadBufferActionInfo {
     int (*handleBuffer)(const char *);
     char *buffer;
@@ -27,6 +28,7 @@ typedef struct ReadBufferActionInfo {
     int screenX, screenY;
 } ReadBufferActionInfo;
 
+/** Additional information to be passed as data param for get choice key handler */
 typedef struct GetChoiceActionInfo {
     const char *choices;
     int (*handleChoice)(char);
