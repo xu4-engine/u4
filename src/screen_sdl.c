@@ -3,9 +3,9 @@
  */
 
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 #include <SDL.h>
 
 #include "u4.h"
@@ -209,54 +209,26 @@ void screenShowTile(int tile, int x, int y) {
     SDL_BlitSurface(tiles, &src, screen, &dest);
 }
 
-void screenMessage(char *fmt, ...) {
-    char buffer[1024];
-    int i;
-
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(buffer, fmt, args);
-    va_end(args);
-
-    // scroll the text area, if necessary
-    if (c->line == 12) {
-        SDL_Rect src, dest;
+void screenScrollMessageArea() {
+    SDL_Rect src, dest;
         
-        src.x = TEXT_AREA_X * charset->w;
-        src.y = (TEXT_AREA_Y + 1) * (charset->h / N_CHARS);
-        src.w = TEXT_AREA_W * charset->w;
-        src.h = (TEXT_AREA_H - 1) * charset->h / N_CHARS;
+    src.x = TEXT_AREA_X * charset->w;
+    src.y = (TEXT_AREA_Y + 1) * (charset->h / N_CHARS);
+    src.w = TEXT_AREA_W * charset->w;
+    src.h = (TEXT_AREA_H - 1) * charset->h / N_CHARS;
 
-        dest.x = TEXT_AREA_X * charset->w;
-        dest.y = TEXT_AREA_Y * (charset->h / N_CHARS);
-        dest.w = TEXT_AREA_W * charset->w;
-        dest.h = (TEXT_AREA_H - 1) * charset->h / N_CHARS;
+    dest.x = src.x;
+    dest.y = src.y - (charset->h / N_CHARS);
+    dest.w = src.w;
+    dest.h = src.h;
 
-        SDL_BlitSurface(screen, &src, screen, &dest);
+    SDL_BlitSurface(screen, &src, screen, &dest);
 
-        dest.x = TEXT_AREA_X * charset->w;
-        dest.y = (TEXT_AREA_Y + TEXT_AREA_H - 1) * (charset->h / N_CHARS);
-        dest.w = TEXT_AREA_W * charset->w;
-        dest.h = 1 * charset->h / N_CHARS;
+    dest.y += dest.h;
+    dest.h = (charset->h / N_CHARS);
 
-        SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0, 0, 0));
-        SDL_UpdateRect(screen, 0, 0, 0, 0);
-
-        c->line--;
-    }
-
-    for (i = 0; i < strlen(buffer); i++) {
-        if (buffer[i] == '\n' || c->col == 16) {
-            if (buffer[i] == '\n')
-                i++;
-            c->line++;
-            c->col = 0;
-            screenMessage(buffer + i);
-            return;
-        }
-	screenShowChar(buffer[i], TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
-        c->col++;
-    }
+    SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0, 0, 0));
+    SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
 void screenForceRedraw() {
