@@ -183,9 +183,10 @@ void screenUpdateWind() {
 }
 
 void screenEnableCursor() {
-    if (!screenCursorStatus)
+    if (!screenCursorStatus) {
+        screenCursorStatus = 1;
         screenUpdateCursor();
-    screenCursorStatus = 1;
+    }
 }
 
 void screenDisableCursor() {
