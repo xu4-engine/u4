@@ -78,7 +78,6 @@ static const char * const graphics_paths[] = {
  */
 U4FILE *u4fopen(const char *fname) {
     U4FILE *u4f = NULL;
-    FILE *f = NULL;
     char *fname_copy, *pathname;
     unsigned int i;
 
