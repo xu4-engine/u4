@@ -13,7 +13,7 @@
 #include "event.h"
 #include "map.h"
 #include "person.h"
-#include "ttype.h"
+#include "intro.h"
 #include "context.h"
 #include "savegame.h"
 #include "stats.h"
@@ -40,6 +40,14 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "error initializing maps: is Ultima 4 for DOS installed?\n");
         exit(1);
     }
+
+    eventHandlerInit();
+
+    /* do the intro */
+    introUpdateScreen();
+    eventHandlerPushKeyHandler(&introKeyHandler);
+    eventHandlerMain();
+    eventHandlerPopKeyHandler();
 
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));
@@ -70,11 +78,14 @@ int main(int argc, char *argv[]) {
         saveGameInit(c->saveGame, 86, 109, &avatar);
     }
 
-    screenDrawBorders();
-    screenUpdate(c);
+    screenDrawBackground(BKGD_BORDERS);
+    screenUpdate();
     statsUpdate();
+    screenMessage("\020");
     screenForceRedraw();
 
+    eventHandlerAddTimerCallback(&eventTimer);
+    eventHandlerPushKeyHandler(&keyHandlerNormal);
     eventHandlerMain();
 
     return 0;
