@@ -82,6 +82,8 @@ void screenInit(void);
 void screenDelete(void);
 void screenReInit(void);
 
+void screenIconify(void);
+
 const std::vector<string> &screenGetImageSetNames(void);
 const std::vector<string> &screenGetGemLayoutNames(void);
 

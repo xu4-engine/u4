@@ -247,6 +247,11 @@ bool eventHandlerUniversalKeyHandler(int key) {
 #endif
         quit = eventExitFlag = true;
         return true;
+#if defined(MACOSX)
+    case U4_META + U4_TAB: /* Cmd+tab */
+        screenIconify();
+        return true;
+#endif
     default: return false;
     }
 }

@@ -267,6 +267,13 @@ void screenReInit() {
     introInit();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
 
+/**
+ * Attempts to iconify the screen.
+ */
+void screenIconify() {
+    SDL_WM_IconifyWindow();
+}
+
 const vector<string> &screenGetImageSetNames() {
     return imageSetNames;
 }
