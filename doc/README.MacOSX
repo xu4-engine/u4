@@ -7,16 +7,24 @@ WARNING: If you make a mistake following these instructions you may destroy
 important files from your system. The XU4 team is not responsible for any
 damage to your system caused by following these instructions!
 
-1) Drag the xu4 application wherever you like on you hard drive. Preferably,
+1) Download and install FINK from:
+   http://fink.sourceforge.net/
+
+2) Follow the instructions for FINK and use it to install the following
+packages. Resolve any dependancy conflicts by installing the dependant
+packages:
+   sdl, sdl-image, sdl-mixer, libxml2, libpng3.
+
+3) Drag the xu4 application wherever you like on you hard drive. Preferably,
 put it in your Home directory, since the savegame files (party.sav and
 monster.sav) will be created in the same directory as the xu4 application.
 
-2) Drag the "lib" directory to your desktop.
+4) Drag the "lib" directory to your desktop.
 
-3) You need to get Ultima 4. See the file README for instructions on
+5) You need to get Ultima 4. See the file README for instructions on
 where it can be downloaded. 
 
-4) Inside the "lib" directory is a "u4" directory. Inside that is a
+6) Inside the "lib" directory is a "u4" directory. Inside that is a
 "ultima4" directory. Extract the Ultima 4 data files from your download
 and put them in this "ultima4" directory.
 
@@ -24,18 +32,24 @@ and put them in this "ultima4" directory.
    "ultima4" directory. There should be *no* subdirectories under the
    "ultima4" directory.
 
-5) Open the Terminal application (look in /Applications/Utilities)
+7) Open the Terminal application (look in /Applications/Utilities)
 
-6) Type the following command exactly as shown into the Terminal window.
+8) Type the following command exactly as shown into the Terminal window.
 You will be asked for the Administrator password.
 
 	sudo cp -R ~/Desktop/lib /usr/local/
 
-7) Once the command has finished, quit the Terminal Application (command-Q)
+9) If you have had a previous version of Xu4 installed, you may want to
+remove its configuration file to allow a newer version to be created. You
+can do so by executing the following command.
 
-8) You can now drag the "lib" directory from your Desktop to the trash.
+	rm ~/.xu4rc
 
-9) Start the Xu4 application and have fun!
+10) Once the command has finished, quit the Terminal Application (command-Q)
+
+11) You can now drag the "lib" directory from your Desktop to the trash.
+
+12) Start the Xu4 application and have fun!
 
 Removing Xu4
 ------------
@@ -55,7 +69,12 @@ as shown. (You will be asked for the Administrator password)
 
 	sudo rm -r /usr/local/lib/u4
 
-4) Once the command has finished quit the terminal application (command-Q)
+4) Use the following command to remove the xu4 configuration file, if it
+exists.
 
-5) Xu4 is now removed from your system.
+	rm ~/.xu4rc
+
+5) Once the command has finished quit the terminal application (command-Q)
+
+6) Xu4 is now removed from your system.
 
