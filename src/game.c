@@ -40,7 +40,7 @@
 int gameSave(void);
 void gameLostEighth(Virtue virtue);
 void gameAdvanceLevel(const SaveGamePlayerRecord *player);
-void gameHeal(HealType type, int player);
+void gameSpellEffect(unsigned int spell, int player);
 void gameCastSpell(unsigned int spell, int caster, int param);
 int gameCheckPlayerDisabled(int player);
 void gameGetPlayerForCommand(int (*commandFn)(int player));
@@ -50,6 +50,7 @@ int castForPlayer(int player);
 int castForPlayer2(int spell, void *data);
 int castForPlayerGetDestPlayer(int player);
 int castForPlayerGetDestDir(Direction dir);
+int castForPlayerGetPhase(int phase);
 int fireAtCoord(int x, int y, int distance);
 int getChest(int player);
 int getChestTrapHandler(int player);
@@ -75,6 +76,8 @@ int ztatsFor(int player);
 void gameCheckBridgeTrolls(void);
 void gameCheckSpecialMonsters(Direction dir);
 void gameCheckMoongates(void);
+void gameUpdateMoons(int showmoongates);
+void gameInitMoons();
 void gameCheckRandomMonsters(void);
 void gameFixupMonstersBehavior(void);
 long gameTimeSinceLastCommand(void);
@@ -103,7 +106,7 @@ void gameInit() {
     c->conversation.replyLine = 0;
     c->line = TEXT_AREA_H - 1;
     c->col = 0;
-    c->statsItem = STATS_PARTY_OVERVIEW;
+    c->statsItem = STATS_PARTY_OVERVIEW;        
     c->moonPhase = 0;
     c->windDirection = DIR_NORTH;
     c->windCounter = 0;
@@ -120,6 +123,10 @@ void gameInit() {
     } else
         errorFatal("no savegame found!");
 
+    /* initialize the moons */
+    gameInitMoons();
+
+    /* load in monsters.sav */
     monstersFile = fopen("monsters.sav", "rb");
     if (monstersFile) {
         saveGameMonstersRead(&c->map->objects, monstersFile);
@@ -129,8 +136,8 @@ void gameInit() {
 
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
-    playerSetItemStatsChangedCallback(&statsUpdate);
-    playerSetHealCallback(&gameHeal);
+    playerSetItemStatsChangedCallback(&statsUpdate);    
+    playerSetSpellCallback(&gameSpellEffect);
 
     musicPlay();
     screenDrawBackground(BKGD_BORDERS);
@@ -245,7 +252,7 @@ int gameExitToParentMap(struct _Context *ct)
         c->parent->saveGame->x = c->saveGame->dngx;
         c->parent->saveGame->y = c->saveGame->dngy;
         c->parent->annotation = c->annotation;
-        c->parent->line = c->line;
+        c->parent->line = c->line;        
         c->parent->moonPhase = c->moonPhase;
         c->parent->windDirection = c->windDirection;
         c->parent->windCounter = c->windCounter;
@@ -329,20 +336,48 @@ void gameLostEighth(Virtue virtue) {
 void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
     screenMessage("\n\n%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
 
-    /* special effect FIXME: needs sound */
-    gameUpdateScreen();
-    screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
-    screenRedrawMapArea();
-    eventHandlerSleep(2000);
-
-    statsUpdate();
+    (*spellCallback)('r', -1); // Same effect as a resurrection spell
 }
 
-void gameHeal(HealType type, int player) {
-    statsHighlightCharacter(player);
-    screenRedrawScreen();
-    eventHandlerSleep(1000);
+void gameSpellEffect(unsigned int spell, int player) {
+    int time;
+    SpellEffect effect;    
+        
+    if (player >= 0)
+        statsHighlightCharacter(player);
 
+    /* special effect FIXME: needs sound */
+
+    switch(spell)
+    {
+    case 'g': // gate
+    case 'r': // resurrection
+        time = 2000;
+        effect = SPELLEFFECT_INVERT;
+        break;
+    case 't': // tremor
+        effect = SPELLEFFECT_TREMOR;        
+        break;
+    default:
+        time = 1000;
+        effect = SPELLEFFECT_INVERT;
+        break;
+    }
+    
+    switch(effect)
+    {
+    case SPELLEFFECT_NONE: break;
+    case SPELLEFFECT_INVERT:
+        {
+            gameUpdateScreen();
+            screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
+            screenRedrawScreen();
+        
+            eventHandlerSleep(time);            
+        } break;
+    case SPELLEFFECT_TREMOR: break;
+    }    
+    
     statsUpdate();
 }
 
@@ -355,8 +390,7 @@ Context *gameCloneContext(Context *ctx) {
     newContext->annotation = newContext->parent->annotation;
     newContext->col = newContext->parent->col;
     newContext->line = newContext->parent->line;
-    newContext->statsItem = newContext->parent->statsItem;
-    newContext->moonPhase = newContext->parent->moonPhase;
+    newContext->statsItem = newContext->parent->statsItem;        
     newContext->windDirection = newContext->parent->windDirection;
     newContext->windCounter = newContext->parent->windCounter;
     newContext->moonPhase = newContext->parent->moonPhase;
@@ -382,7 +416,7 @@ void gameCastSpell(unsigned int spell, int caster, int param) {
         { CASTERR_FAILED, "Failed!\n" }
     };
 
-    if (!spellCast(spell, caster, param, &spellError)) {
+    if (!spellCast(spell, caster, param, &spellError, 1)) {
         for (i = 0; i < sizeof(errorMsgs) / sizeof(errorMsgs[0]); i++) {
             if (spellError == errorMsgs[i].err) {
                 msg = errorMsgs[i].msg;
@@ -936,6 +970,24 @@ int gameGetDirectionKeyHandler(int key, void *data) {
     return valid || keyHandlerDefault(key, NULL);
 }
 
+int gameGetPhaseKeyHandler(int key, void *data) {    
+    int (*handlePhase)(int) = (int(*)(int))data;
+    int valid = 1;
+
+    eventHandlerPopKeyHandler();
+
+    if (key >= '1' && key <= '8') {
+        screenMessage("%c\n", key);
+        (*handlePhase)(key - '1');
+    } else {
+        screenMessage("None\n");
+        gameFinishTurn();
+        valid = 0;
+    }
+
+    return valid || keyHandlerDefault(key, NULL);
+}
+
 /**
  * Handles key presses for a command requiring a direction argument.
  * Once an arrow key is pressed, control is handed off to a command
@@ -1184,8 +1236,8 @@ int castForPlayer2(int spell, void *data) {
     switch (spellGetParamType(spell)) {
     case SPELLPRM_NONE:
     case SPELLPRM_PHASE:
-        gameCastSpell(castSpell, castPlayer, 0);
-        gameFinishTurn();
+        screenMessage("Phase: ");
+        eventHandlerPushKeyHandlerData(&gameGetPhaseKeyHandler, (void *) &castForPlayerGetPhase);        
         break;
     case SPELLPRM_PLAYER:
         screenMessage("Player: ");
@@ -1213,6 +1265,12 @@ int castForPlayerGetDestPlayer(int player) {
 
 int castForPlayerGetDestDir(Direction dir) {
     gameCastSpell(castSpell, castPlayer, (int) dir);
+    gameFinishTurn();
+    return 1;
+}
+
+int castForPlayerGetPhase(int phase) {
+    gameCastSpell(castSpell, castPlayer, phase);
     gameFinishTurn();
     return 1;
 }
@@ -1954,9 +2012,7 @@ int moveAvatar(Direction dir, int userEvent) {
 /**
  * This function is called every quarter second.
  */
-void gameTimer(void *data) {
-    int oldTrammel, trammelSubphase;
-    const Moongate *gate;
+void gameTimer(void *data) {  
 
     Direction dir = DIR_WEST;
     if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
@@ -1968,63 +2024,9 @@ void gameTimer(void *data) {
             dir = dirReverse((Direction) c->windDirection);
             moveAvatar(dir, 0);
         }
-    }
+    }   
 
-    /* update moon phases */
-    if (mapIsWorldMap(c->map) && viewMode == VIEW_NORMAL) {
-        oldTrammel = c->saveGame->trammelphase;
-
-        if (++c->moonPhase >= (MOON_SECONDS_PER_PHASE * 4 * MOON_PHASES))
-            c->moonPhase = 0;
-
-        c->saveGame->trammelphase = c->moonPhase / (MOON_SECONDS_PER_PHASE * 4) / 3;
-        c->saveGame->feluccaphase = c->moonPhase / (MOON_SECONDS_PER_PHASE * 4) % 8;
-
-        if (--c->saveGame->trammelphase > 7)
-            c->saveGame->trammelphase = 7;
-        if (--c->saveGame->feluccaphase > 7)
-            c->saveGame->feluccaphase = 7;
-
-        trammelSubphase = c->moonPhase % (MOON_SECONDS_PER_PHASE * 4 * 3);
-
-        /* update the moongates if trammel changed */
-        if (trammelSubphase == 0) {
-            gate = moongateGetGateForPhase(oldTrammel);
-            annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE);
-            gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-            annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE));
-        }
-        else if (trammelSubphase == 1) {
-            gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-            annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE);
-            annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE));
-        }
-        else if (trammelSubphase == 2) {
-            gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-            annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE);
-            annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE));
-        }
-        else if (trammelSubphase == 3) {
-            gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-            annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE);
-            annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE3_TILE));
-        }
-        else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
-            gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-            annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE3_TILE);
-            annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE));
-        }
-        else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
-            gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-            annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE);
-            annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE));
-        }
-        else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
-            gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-            annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE);
-            annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE));
-        }
-    }
+    gameUpdateMoons(1);
 
     mapAnimateObjects(c->map);
 
@@ -2044,6 +2046,89 @@ void gameTimer(void *data) {
         gameTimeSinceLastCommand() > 20)
         gameBaseKeyHandler(' ', NULL);
 
+}
+
+void gameUpdateMoons(int showmoongates)
+{
+    int realMoonPhase,
+        oldTrammel,
+        trammelSubphase;        
+    const Moongate *gate;
+
+    if (mapIsWorldMap(c->map) && viewMode == VIEW_NORMAL) {        
+        oldTrammel = c->saveGame->trammelphase;
+
+        if (++c->moonPhase >= MOON_PHASES * MOON_SECONDS_PER_PHASE * 4)
+            c->moonPhase = 0;
+        
+        trammelSubphase = c->moonPhase % (MOON_SECONDS_PER_PHASE * 4 * 3);
+        realMoonPhase = (c->moonPhase / (4 * MOON_SECONDS_PER_PHASE));        
+
+        c->saveGame->trammelphase = realMoonPhase / 3;
+        c->saveGame->feluccaphase = realMoonPhase % 8;
+
+        if (c->saveGame->trammelphase > 7)
+            c->saveGame->trammelphase = 7;        
+        
+        if (showmoongates)
+        {
+            /* update the moongates if trammel changed */
+            if (trammelSubphase == 0) {               
+                gate = moongateGetGateForPhase(oldTrammel);
+                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE);
+                gate = moongateGetGateForPhase(c->saveGame->trammelphase);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE));
+            }
+            else if (trammelSubphase == 1) {
+                gate = moongateGetGateForPhase(c->saveGame->trammelphase);
+                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE));
+            }
+            else if (trammelSubphase == 2) {
+                gate = moongateGetGateForPhase(c->saveGame->trammelphase);
+                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE));
+            }
+            else if (trammelSubphase == 3) {
+                gate = moongateGetGateForPhase(c->saveGame->trammelphase);
+                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE3_TILE));
+            }
+            else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
+                gate = moongateGetGateForPhase(c->saveGame->trammelphase);
+                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE3_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE));
+            }
+            else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
+                gate = moongateGetGateForPhase(c->saveGame->trammelphase);
+                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE2_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE));
+            }
+            else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
+                gate = moongateGetGateForPhase(c->saveGame->trammelphase);
+                annotationRemove(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE1_TILE);
+                annotationSetVisual(annotationAdd(gate->x, gate->y, c->saveGame->dnglevel, c->map->id, MOONGATE0_TILE));
+            }
+        }
+    }
+}
+
+void gameInitMoons()
+{
+    int trammelphase = c->saveGame->trammelphase,
+        feluccaphase = c->saveGame->feluccaphase,
+        showmoongates = 0;
+
+    ASSERT(c, "Game context doesn't exist!");
+    ASSERT(c->saveGame, "Savegame doesn't exist in current context!");
+    ASSERT(mapIsWorldMap(c->map) && viewMode == VIEW_NORMAL, "Can only call gameInitMoons() from the world map!");
+
+    c->saveGame->trammelphase = c->saveGame->feluccaphase = 0;
+    c->moonPhase = 0;
+
+    while ((c->saveGame->trammelphase != trammelphase) ||
+           (c->saveGame->feluccaphase != feluccaphase))
+        gameUpdateMoons(&showmoongates);    
 }
 
 void gameCheckBridgeTrolls() {
@@ -2107,7 +2192,6 @@ void gameCheckSpecialMonsters(Direction dir) {
     }
 }
 
-
 void gameCheckMoongates() {
     int destx, desty;
     extern Map shrine_spirituality_map;
@@ -2115,12 +2199,8 @@ void gameCheckMoongates() {
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase,
                                  c->saveGame->x, c->saveGame->y, &destx, &desty)) {
 
-        /* special effect FIXME: needs sound */
-        gameUpdateScreen();
-        screenInvertRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
-        screenRedrawMapArea();
-        eventHandlerSleep(2000);
-
+        (*spellCallback)('g', -1); // Same effect as 'gate' spell
+        
         c->saveGame->x = destx;
         c->saveGame->y = desty;
 

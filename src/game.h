@@ -40,6 +40,7 @@ int gameBaseKeyHandler(int key, void *data);
 int gameGetPlayerNoKeyHandler(int key, void *data);
 int gameGetAlphaChoiceKeyHandler(int key, void *data);
 int gameGetDirectionKeyHandler(int key, void *data);
+int gameGetPhaseKeyHandler(int key, void *data);
 int gameGetCoordinateKeyHandler(int key, void *data);
 int gameZtatsKeyHandler(int key, void *data);
 int gameSpecialCmdKeyHandler(int key, void *data);
