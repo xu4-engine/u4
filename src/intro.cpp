@@ -76,7 +76,10 @@ bool menusLoaded = false;
 /* temporary place-holder for settings changes */
 SettingsData settingsChanged;
 
-IntroController::IntroController() : Controller(1) {
+IntroController::IntroController() : 
+    Controller(1), 
+    questionArea(INTRO_TEXT_X, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT) {
+
     beastiesVisible = false;
     introMap = NULL;
     sigData = NULL;
@@ -554,6 +557,10 @@ void IntroController::showStory() {
 
     beastiesVisible = false;
 
+    screenDisableCursor();
+    questionArea.enableCursor();
+    questionArea.setCursorFollowsText(true);
+
     for (int storyInd = 0; storyInd < 24; storyInd++) {
         if (storyInd == 0)
             screenDrawImage(BKGD_TREE);
@@ -603,18 +610,17 @@ void IntroController::startQuestions() {
         screenShowCard(0, questionTree[questionRound * 2]);
         screenShowCard(1, questionTree[questionRound * 2 + 1]);
 
-        screenEraseTextArea(INTRO_TEXT_X, INTRO_TEXT_Y, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT);
-        
-        screenTextAt(0, 19, "%s", introGypsy[questionRound == 0 ? GYP_PLACES_FIRST : (questionRound == 6 ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE)].c_str());
-        screenTextAt(0, 20, "%s", introGypsy[GYP_UPON_TABLE].c_str());
-        screenTextAt(0, 21, "%s and %s.  She says", introGypsy[questionTree[questionRound * 2] + 4].c_str(), introGypsy[questionTree[questionRound * 2 + 1] + 4].c_str());
-        screenTextAt(0, 22, "\"Consider this:\"");
-        screenSetCursorPos(16, 22);
+        questionArea.clear();
+        questionArea.textAt(0, 0, "%s", introGypsy[questionRound == 0 ? GYP_PLACES_FIRST : (questionRound == 6 ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE)].c_str());
+        questionArea.textAt(0, 1, "%s", introGypsy[GYP_UPON_TABLE].c_str());
+        questionArea.textAt(0, 2, "%s and %s.  She says", introGypsy[questionTree[questionRound * 2] + 4].c_str(), introGypsy[questionTree[questionRound * 2 + 1] + 4].c_str());
+        questionArea.textAt(0, 3, "\"Consider this:\"");
 
         // wait for a key
         eventHandler->pushController(&pauseController);
         pauseController.waitFor();
 
+        screenEnableCursor();
         // show the question to choose between virtues
         showText(getQuestion(questionTree[questionRound * 2], questionTree[questionRound * 2 + 1]));
 
@@ -758,22 +764,19 @@ void IntroController::about() {
  */
 void IntroController::showText(const string &text) {
     string current = text;
-    int lineNo = INTRO_TEXT_Y;
-    unsigned long pos;
+    int lineNo = 0;
 
-    screenEraseTextArea(INTRO_TEXT_X, INTRO_TEXT_Y, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT);    
+    questionArea.clear();
     
-    pos = current.find("\n");
+    unsigned long pos = current.find("\n");
     while (pos < current.length()) {
-        screenTextAt(0, lineNo++, "%s", current.substr(0, pos).c_str());
+        questionArea.textAt(0, lineNo++, "%s", current.substr(0, pos).c_str());
         current = current.substr(pos+1);
         pos = current.find("\n");
     }
     
     /* write the last line (possibly only line) */
-    screenTextAt(0, lineNo++, "%s", current.substr(0, pos).c_str());
-
-    screenSetCursorPos(current.length(), lineNo - 1);
+    questionArea.textAt(0, lineNo++, "%s", current.substr(0, pos).c_str());
 }
 
 /**

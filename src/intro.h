@@ -12,6 +12,7 @@
 #include "menu.h"
 #include "observer.h"
 #include "savegame.h"
+#include "textview.h"
 
 struct IntroObjectState;
 
@@ -83,6 +84,8 @@ private:
         USE_SETTINGS = 0xFE,
         CANCEL = 0xFF
     };
+
+    TextView questionArea;
 
     /* data loaded in from title.exe */
     unsigned char **introMap;
