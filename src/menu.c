@@ -8,7 +8,7 @@
 #include "list.h"
 #include "screen.h"
 
-Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, ActivateMenuItem activate) {
+Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, ActivateMenuItem activate, ActivateAction activateOn) {
     MenuItem *menuItem = (MenuItem *)malloc(sizeof(MenuItem));
 
     menuItem->id = id;
@@ -17,6 +17,7 @@ Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, Acti
     menuItem->y = y;
     menuItem->isHighlighted = 0;
     menuItem->activateMenuItem = activate;
+    menuItem->activateOn = activateOn;
     
     return listAppend(menu, menuItem);
 } 
@@ -99,11 +100,22 @@ int menuCompareFindItemById(void *val1, void *val2) {
     return 0;
 }
 
-Menu menuActivateItem(Menu menu, unsigned char id, ActivateAction action) {
-    Menu m = menu;
+Menu menuActivateItem(Menu menu, short id, ActivateAction action) {
+    Menu m, newItem;
+    MenuItem *mi;
+
+    m = newItem = menu;    
     
-    m = menuHighlightNew(menu, menuGetItemById(menuGetRoot(menu), id));
-    (*((MenuItem *)m->data)->activateMenuItem)(m, action);
+    /* find the given id */
+    if (id >= 0)
+        newItem = menuGetItemById(menuGetRoot(menu), (unsigned char)id);
+
+    m = menuHighlightNew(menu, newItem);
+
+    mi = (MenuItem *)m->data;
+    /* make sure the action given will activate the menu item */
+    if (mi && (mi->activateOn & action) && mi->activateMenuItem)
+        (*mi->activateMenuItem)(m, action);
 
     return m;
 }
