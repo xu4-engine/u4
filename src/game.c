@@ -753,6 +753,7 @@ void talkSetHandler(const Conversation *cnv) {
     switch (cnv->state) {
     case CONV_TALK:
     case CONV_ASK:
+    case CONV_QUANTITY:
         rbInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
         rbInfo->buffer = c->conversation.buffer;
         rbInfo->bufferLen = CONV_BUFFERLEN;
