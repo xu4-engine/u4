@@ -2330,6 +2330,16 @@ int talkAtCoord(int x, int y, int distance, void *data) {
 
     c->conversation.talker = mapPersonAt(c->location->map, x, y, c->location->z);
 
+    /* if we're talking to Lord British and the avatar is dead, LB resurrects them! */
+    if (c->conversation.talker->npcType == NPC_LORD_BRITISH &&
+        c->saveGame->players[0].status == STAT_DEAD) {
+        screenMessage("%s, Thou shalt live again!\n", c->saveGame->players[0].name);
+        
+        c->saveGame->players[0].status = STAT_GOOD;
+        playerHeal(c->saveGame, HT_FULLHEAL, 0);
+        (*spellEffectCallback)('r', -1, 0);
+    }
+
     /* some persons in some towns exists as a 'person' object, but they
        really are not someone you can talk to.  These persons have mostly null fields */
     if (c->conversation.talker == NULL || 
@@ -3344,7 +3354,7 @@ void gameSetTransport(unsigned char tile) {
  */
 void gameLordBritishCheckLevels(void) {
     int i;
-    int levelsRaised = 0;
+    int levelsRaised = 0;    
 
     for (i = 0; i < c->saveGame->members; i++) {
         if (playerGetRealLevel(&c->saveGame->players[i]) <

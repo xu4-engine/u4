@@ -1366,7 +1366,7 @@ int movePartyMember(Direction dir, int userEvent) {
         int sameExit = (!combatInfo.dungeonRoom || (combatInfo.exitDir == DIR_NONE) || (dir == combatInfo.exitDir));
         if (sameExit) {
             
-            /* if in a win-or-lose battle and not camping, then it can be bad to flee while healthy monsters */
+            /* if in a win-or-lose battle and not camping, then it can be bad to flee while healthy */
             if (combatInfo.winOrLose && !combatInfo.camping) {
                 /* A fully-healed party member fled from an evil monster :( */
                 if (combatInfo.monster && monsterIsEvil(combatInfo.monster) && 
