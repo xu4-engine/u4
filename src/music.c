@@ -18,6 +18,7 @@
 #include "location.h"
 #include "settings.h"
 #include "u4file.h"
+#include "xml.h"
 
 void musicPlayMid(Music music);
 int musicLoad(Music music);
@@ -77,7 +78,6 @@ int musicLoad(Music music) {
  * Initiliaze the music
  */
 int musicInit() {
-    char *fname;
     Music musicTrack;
     xmlDocPtr doc;
     xmlNodePtr root, node;
@@ -86,13 +86,7 @@ int musicInit() {
      * load music track filenames from xml config file
      */
 
-    fname = u4find_conf("music.xml");
-    if (!fname)
-        errorFatal("unable to open file music.xml");
-    doc = xmlParseFile(fname);
-    if (!doc)
-        errorFatal("error parsing music.xml");
-
+    doc = xmlParse("music.xml");
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "music") != 0)
         errorFatal("malformed music.xml");
@@ -113,7 +107,6 @@ int musicInit() {
         musicTrack++;
     }
     xmlFreeDoc(doc);
-    free(fname);
 
     /*
      * initialize sound subsystem

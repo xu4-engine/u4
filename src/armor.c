@@ -6,19 +6,17 @@
 #include <string.h>
 #include <ctype.h>
 #include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
 
 #include "armor.h"
 
 #include "error.h"
 #include "ttype.h"
-#include "u4file.h"
+#include "xml.h"
 
 int armorInfoLoaded = 0;
 Armor armors[MAX_ARMORS];
 
 void armorLoadInfoFromXml() {
-    char *fname;
     xmlDocPtr doc;
     xmlNodePtr root, node;
     int armor; //, i;
@@ -27,13 +25,7 @@ void armorLoadInfoFromXml() {
         armorInfoLoaded = 1;
     else return;
 
-    fname = u4find_conf("armors.xml");
-    if (!fname)
-        errorFatal("unable to open file armors.xml");
-    doc = xmlParseFile(fname);
-    if (!doc)
-        errorFatal("error parsing armors.xml");
-
+    doc = xmlParse("armors.xml");
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "armors") != 0)
         errorFatal("malformed armors.xml");
@@ -47,13 +39,12 @@ void armorLoadInfoFromXml() {
         armors[armor].name = (char *)xmlGetProp(node, (const xmlChar *)"name");
         armors[armor].canwear = (char *)xmlGetProp(node, (const xmlChar *)"canwear");
         armors[armor].cantwear = (char *)xmlGetProp(node, (const xmlChar *)"cantwear");
-        armors[armor].defense = atoi(xmlGetProp(node, (const xmlChar *)"defense"));
+        armors[armor].defense = xmlGetPropAsInt(node, (const xmlChar *)"defense");
         armors[armor].mask = 0;
 
         /* Load armor attributes, if any 
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
-            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) booleanAttributes[i].name), 
-                          (const xmlChar *) "true") == 0) {
+            if (xmlGetPropAsBool(node, (const xmlChar *) booleanAttributes[i].name)) {
                 weapons[weapon].mask |= booleanAttributes[i].mask;
             }
         } */

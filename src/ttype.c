@@ -4,14 +4,13 @@
 
 #include <stddef.h>
 #include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
 
 #include "ttype.h"
 
 #include "context.h"
 #include "error.h"
 #include "monster.h"
-#include "u4file.h"
+#include "xml.h"
 
 #define MASK_OPAQUE             0x0001
 #define MASK_SWIMABLE           0x0002
@@ -39,7 +38,6 @@ int baseHorse = -1;
 int baseBalloon = -1;
 
 void tileLoadInfoFromXml() {
-    char *fname;
     xmlDocPtr doc;
     xmlNodePtr root, node;
     int tile, i;
@@ -68,13 +66,7 @@ void tileLoadInfoFromXml() {
 
     tileInfoLoaded = 1;
 
-    fname = u4find_conf("tiles.xml");
-    if (!fname)
-        errorFatal("unable to open file tiles.xml");
-    doc = xmlParseFile(fname);
-    if (!doc)
-        errorFatal("error parsing tiles.xml");
-
+    doc = xmlParse("tiles.xml");
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "tiles") != 0)
         errorFatal("malformed tiles.xml");
@@ -92,8 +84,7 @@ void tileLoadInfoFromXml() {
         _ttype_info[tile].walkoffDirs = MASK_DIR_ALL;
 
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
-            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) booleanAttributes[i].name), 
-                          (const xmlChar *) "true") == 0) {
+            if (xmlGetPropAsBool(node, (const xmlChar *) booleanAttributes[i].name)) {
                 _ttype_info[tile].mask |= booleanAttributes[i].mask;
                 if (booleanAttributes[i].base &&
                     (*booleanAttributes[i].base) == -1)
@@ -101,46 +92,46 @@ void tileLoadInfoFromXml() {
             }
         }
 
-        if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "cantwalkon"), (const xmlChar *) "all") == 0)
+        if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "all") == 0)
             _ttype_info[tile].walkonDirs = 0;
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "cantwalkon"), (const xmlChar *) "west") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "west") == 0)
             _ttype_info[tile].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, _ttype_info[tile].walkonDirs);
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "cantwalkon"), (const xmlChar *) "north") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "north") == 0)
             _ttype_info[tile].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, _ttype_info[tile].walkonDirs);
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "cantwalkon"), (const xmlChar *) "east") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "east") == 0)
             _ttype_info[tile].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, _ttype_info[tile].walkonDirs);
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "cantwalkon"), (const xmlChar *) "south") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkon", "south") == 0)
             _ttype_info[tile].walkonDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, _ttype_info[tile].walkonDirs);
 
-        if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "cantwalkoff"), (const xmlChar *) "all") == 0)
+        if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "all") == 0)
             _ttype_info[tile].walkoffDirs = 0;
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "cantwalkoff"), (const xmlChar *) "west") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "west") == 0)
             _ttype_info[tile].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, _ttype_info[tile].walkoffDirs);
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "cantwalkoff"), (const xmlChar *) "north") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "north") == 0)
             _ttype_info[tile].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, _ttype_info[tile].walkoffDirs);
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "cantwalkoff"), (const xmlChar *) "east") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "east") == 0)
             _ttype_info[tile].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, _ttype_info[tile].walkoffDirs);
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "cantwalkoff"), (const xmlChar *) "south") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "cantwalkoff", "south") == 0)
             _ttype_info[tile].walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, _ttype_info[tile].walkoffDirs);
 
-        if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "speed"), (const xmlChar *) "slow") == 0)
+        if (xmlPropCmp(node, (const xmlChar *) "speed", "slow") == 0)
             _ttype_info[tile].speed = SLOW;
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "speed"), (const xmlChar *) "vslow") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "speed", "vslow") == 0)
             _ttype_info[tile].speed = VSLOW;
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "speed"), (const xmlChar *) "vvslow") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "speed", "vvslow") == 0)
             _ttype_info[tile].speed = VVSLOW;
 
-        if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "effect"), (const xmlChar *) "fire") == 0)
+        if (xmlPropCmp(node, (const xmlChar *) "effect", "fire") == 0)
             _ttype_info[tile].effect = EFFECT_FIRE;
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "effect"), (const xmlChar *) "sleep") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "effect", "sleep") == 0)
             _ttype_info[tile].effect = EFFECT_SLEEP;
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "effect"), (const xmlChar *) "poison") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "effect", "poison") == 0)
             _ttype_info[tile].effect = EFFECT_POISON;
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "effect"), (const xmlChar *) "poisonField") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "effect", "poisonField") == 0)
             _ttype_info[tile].effect = EFFECT_POISONFIELD;
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "effect"), (const xmlChar *) "electricity") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "effect", "electricity") == 0)
             _ttype_info[tile].effect = EFFECT_ELECTRICITY;
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "effect"), (const xmlChar *) "lava") == 0)
+        else if (xmlPropCmp(node, (const xmlChar *) "effect", "lava") == 0)
             _ttype_info[tile].effect = EFFECT_LAVA;
 
         tile++;

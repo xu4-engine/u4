@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
 
 #include "u4.h"
 
@@ -22,6 +21,7 @@
 #include "portal.h"
 #include "shrine.h"
 #include "u4file.h"
+#include "xml.h"
 
 extern int isAbyssOpened(const Portal *p);
 extern int shrineCanEnter(const Portal *p);
@@ -35,19 +35,12 @@ Dungeon *mapMgrInitDungeonFromXml(xmlNodePtr node);
 ListNode *mapList = NULL;
 
 void mapMgrInit() {
-    char *fname;
     xmlDocPtr doc;
     xmlNodePtr root, node;
     Map *map;
     U4FILE *world, *ult, *tlk, *con, *dng;
 
-    fname = u4find_conf("maps.xml");
-    if (!fname)
-        errorFatal("unable to open file maps.xml");
-    doc = xmlParseFile(fname);
-    if (!doc)
-        errorFatal("error parsing maps.xml");
-
+    doc = xmlParse("maps.xml");
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "maps") != 0)
         errorFatal("malformed maps.xml");
@@ -121,9 +114,7 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
     map->objects = NULL;
     map->flags = 0;
     
-    prop = xmlGetProp(node, (const xmlChar *) "id");
-    map->id = (unsigned char)strtoul(prop, NULL, 0);
-    xmlFree(prop);
+    map->id = (unsigned char)xmlGetPropAsInt(node, (const xmlChar *) "id");
 
     prop = xmlGetProp(node, (const xmlChar *) "type");
     if (strcmp(prop, "world") == 0)
@@ -150,17 +141,9 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
     map->fname = strdup(prop);
     xmlFree(prop);
 
-    prop = xmlGetProp(node, (const xmlChar *) "width");
-    map->width = strtoul(prop, NULL, 0);
-    xmlFree(prop);
-
-    prop = xmlGetProp(node, (const xmlChar *) "height");
-    map->height = strtoul(prop, NULL, 0);
-    xmlFree(prop);
-
-    prop = xmlGetProp(node, (const xmlChar *) "levels");
-    map->levels = strtoul(prop, NULL, 0);
-    xmlFree(prop);
+    map->width = xmlGetPropAsInt(node, (const xmlChar *) "width");
+    map->height = xmlGetPropAsInt(node, (const xmlChar *) "height");
+    map->levels = xmlGetPropAsInt(node, (const xmlChar *) "levels");
 
     prop = xmlGetProp(node, (const xmlChar *) "borderbehavior");
     if (strcmp(prop, "wrap") == 0)
@@ -173,30 +156,16 @@ Map *mapMgrInitMapFromXml(xmlNodePtr node) {
         errorFatal("unknown borderbehavoir: %s", prop);
     xmlFree(prop);
     
-    prop = xmlGetProp(node, (const xmlChar *) "showavatar");
-    if (prop) {
-        if (strcmp(prop, "true") == 0)
-            map->flags |= SHOW_AVATAR;
-        xmlFree(prop);
-    }
+    if (xmlGetPropAsBool(node, (const xmlChar *) "showavatar"))
+        map->flags |= SHOW_AVATAR;
 
-    prop = xmlGetProp(node, (const xmlChar *) "nolineofsight");
-    if (prop) {
-        if (strcmp(prop, "true") == 0)
-            map->flags |= NO_LINE_OF_SIGHT;
-        xmlFree(prop);
-    }
+    if (xmlGetPropAsBool(node, (const xmlChar *) "nolineofsight"))
+        map->flags |= NO_LINE_OF_SIGHT;
     
-    prop = xmlGetProp(node, (const xmlChar *) "firstperson");
-    if (prop) {
-        if (strcmp(prop, "true") == 0)
-            map->flags |= FIRST_PERSON;
-        xmlFree(prop);
-    }
+    if (xmlGetPropAsBool(node, (const xmlChar *) "firstperson"))
+        map->flags |= FIRST_PERSON;
 
-    prop = xmlGetProp(node, (const xmlChar *) "music");
-    map->music = strtoul(prop, NULL, 0);
-    xmlFree(prop);
+    map->music = xmlGetPropAsInt(node, (const xmlChar *) "music");
 
     for (child = node->xmlChildrenNode; child; child = child->next) {
         if (xmlNodeIsText(child))
@@ -249,77 +218,18 @@ City *mapMgrInitCityFromXml(xmlNodePtr node) {
     city->tlk_fname = strdup(prop);
     xmlFree(prop);
 
-    prop = xmlGetProp(node, (const xmlChar *) "companion");
-    if (prop) {
-        city->person_types[NPC_TALKER_COMPANION - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
-
-    prop = xmlGetProp(node, (const xmlChar *) "weaponsvendor");
-    if (prop) {
-        city->person_types[NPC_VENDOR_WEAPONS - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
-
-    prop = xmlGetProp(node, (const xmlChar *) "armorvendor");
-    if (prop) {
-        city->person_types[NPC_VENDOR_ARMOR - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
-
-    prop = xmlGetProp(node, (const xmlChar *) "foodvendor");
-    if (prop) {
-        city->person_types[NPC_VENDOR_FOOD - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
-
-    prop = xmlGetProp(node, (const xmlChar *) "tavernkeeper");
-    if (prop) {
-        city->person_types[NPC_VENDOR_TAVERN - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
-
-    prop = xmlGetProp(node, (const xmlChar *) "reagentsvendor");
-    if (prop) {
-        city->person_types[NPC_VENDOR_REAGENTS - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
-
-    prop = xmlGetProp(node, (const xmlChar *) "healer");
-    if (prop) {
-        city->person_types[NPC_VENDOR_HEALER - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
-
-    prop = xmlGetProp(node, (const xmlChar *) "innkeeper");
-    if (prop) {
-        city->person_types[NPC_VENDOR_INN - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
-
-    prop = xmlGetProp(node, (const xmlChar *) "guildvendor");
-    if (prop) {
-        city->person_types[NPC_VENDOR_GUILD - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
-
-    prop = xmlGetProp(node, (const xmlChar *) "horsevendor");
-    if (prop) {
-        city->person_types[NPC_VENDOR_STABLE - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
-
-    prop = xmlGetProp(node, (const xmlChar *) "lordbritish");
-    if (prop) {
-        city->person_types[NPC_LORD_BRITISH - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
-
-    prop = xmlGetProp(node, (const xmlChar *) "hawkwind");
-    if (prop) {
-        city->person_types[NPC_HAWKWIND - NPC_TALKER_COMPANION] = (unsigned char)strtoul(prop, NULL, 0);
-        xmlFree(prop);
-    }
+    city->person_types[NPC_TALKER_COMPANION - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "companion");
+    city->person_types[NPC_VENDOR_WEAPONS - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "weaponsvendor");
+    city->person_types[NPC_VENDOR_ARMOR - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "armorvendor");
+    city->person_types[NPC_VENDOR_FOOD - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "foodvendor");
+    city->person_types[NPC_VENDOR_TAVERN - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "tavernkeeper");
+    city->person_types[NPC_VENDOR_REAGENTS - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "reagentsvendor");
+    city->person_types[NPC_VENDOR_HEALER - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "healer");
+    city->person_types[NPC_VENDOR_INN - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "innkeeper");
+    city->person_types[NPC_VENDOR_GUILD - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "guildvendor");
+    city->person_types[NPC_VENDOR_STABLE - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "horsevendor");
+    city->person_types[NPC_LORD_BRITISH - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "lordbritish");
+    city->person_types[NPC_HAWKWIND - NPC_TALKER_COMPANION] = xmlGetPropAsInt(node, (const xmlChar *) "hawkwind");
 
     return city;
 }
@@ -336,33 +246,13 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
     portal->message = NULL;
     portal->retroActiveDest = NULL;
  
-    prop = xmlGetProp(node, (const xmlChar *) "x");
-    portal->x = (unsigned short)strtoul(prop, NULL, 0);
-    xmlFree(prop);
-
-    prop = xmlGetProp(node, (const xmlChar *) "y");
-    portal->y = (unsigned short)strtoul(prop, NULL, 0);
-    xmlFree(prop);
-
-    prop = xmlGetProp(node, (const xmlChar *) "z");
-    portal->z = (unsigned short)strtoul(prop, NULL, 0);
-    xmlFree(prop);
-
-    prop = xmlGetProp(node, (const xmlChar *) "destmapid");
-    portal->destid = (unsigned char)strtoul(prop, NULL, 0);
-    xmlFree(prop);
-
-    prop = xmlGetProp(node, (const xmlChar *) "startx");
-    portal->startx = (unsigned short)strtoul(prop, NULL, 0);
-    xmlFree(prop);
-
-    prop = xmlGetProp(node, (const xmlChar *) "starty");
-    portal->starty = (unsigned short)strtoul(prop, NULL, 0);
-    xmlFree(prop);
-
-    prop = xmlGetProp(node, (const xmlChar *) "startlevel");
-    portal->startlevel = (unsigned short)strtoul(prop, NULL, 0);
-    xmlFree(prop);
+    portal->x = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "x");
+    portal->y = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "y");
+    portal->z = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "z");
+    portal->destid = (unsigned char) xmlGetPropAsInt(node, (const xmlChar *) "destmapid");
+    portal->startx = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "startx");
+    portal->starty = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "starty");
+    portal->startlevel = (unsigned short) xmlGetPropAsInt(node, (const xmlChar *) "startlevel");
 
     prop = xmlGetProp(node, (const xmlChar *) "action");
     if (strcmp(prop, "none") == 0)
@@ -388,14 +278,7 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
         xmlFree(prop);
     }
 
-    prop = xmlGetProp(node, (const xmlChar *) "savelocation");
-    if (strcmp(prop, "true") == 0)
-        portal->saveLocation = 1;
-    else if (strcmp(prop, "false") == 0)
-        portal->saveLocation = 0;
-    else
-        errorFatal("unknown saveLocation: %s", prop);
-    xmlFree(prop);
+    portal->saveLocation = xmlGetPropAsBool(node, (const xmlChar *) "savelocation");
 
     prop = xmlGetProp(node, (const xmlChar *) "message");
     if (prop) {
@@ -419,21 +302,10 @@ Portal *mapMgrInitPortalFromXml(xmlNodePtr node) {
         if (xmlStrcmp(child->name, (const xmlChar *) "retroActiveDest") == 0) {
             portal->retroActiveDest = malloc(sizeof(PortalDestination));
             
-            prop = xmlGetProp(child, (const xmlChar *) "x");
-            portal->retroActiveDest->x = strtoul(prop, NULL, 0);
-            xmlFree(prop);
-
-            prop = xmlGetProp(child, (const xmlChar *) "y");
-            portal->retroActiveDest->y = strtoul(prop, NULL, 0);
-            xmlFree(prop);
-
-            prop = xmlGetProp(child, (const xmlChar *) "z");
-            portal->retroActiveDest->z = strtoul(prop, NULL, 0);
-            xmlFree(prop);
-
-            prop = xmlGetProp(child, (const xmlChar *) "mapid");
-            portal->retroActiveDest->mapid = (unsigned char)strtoul(prop, NULL, 0);
-            xmlFree(prop);
+            portal->retroActiveDest->x = xmlGetPropAsInt(child, (const xmlChar *) "x");
+            portal->retroActiveDest->y = xmlGetPropAsInt(child, (const xmlChar *) "y");
+            portal->retroActiveDest->z = xmlGetPropAsInt(child, (const xmlChar *) "z");
+            portal->retroActiveDest->mapid = (unsigned char) xmlGetPropAsInt(child, (const xmlChar *) "mapid");
         }
     }
     return portal;
@@ -447,9 +319,7 @@ Shrine *mapMgrInitShrineFromXml(xmlNodePtr node) {
     if (!shrine)
         return NULL;
 
-    prop = xmlGetProp(node, (const xmlChar *) "virtue");
-    shrine->virtue = strtoul(prop, NULL, 0);
-    xmlFree(prop);
+    shrine->virtue = xmlGetPropAsInt(node, (const xmlChar *) "virtue");
 
     prop = xmlGetProp(node, (const xmlChar *) "mantra");
     shrine->mantra = strdup(prop);

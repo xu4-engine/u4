@@ -6,14 +6,13 @@
 #include <string.h>
 #include <ctype.h>
 #include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
 
 #include "weapon.h"
 
 #include "error.h"
 #include "names.h"
 #include "ttype.h"
-#include "u4file.h"
+#include "xml.h"
 
 #define MASK_LOSE                   0x0001
 #define MASK_LOSEWHENRANGED         0x0002
@@ -31,7 +30,7 @@ int numWeapons = 0;
 Weapon weapons[MAX_WEAPONS];
 
 void weaponLoadInfoFromXml() {
-    char *fname, *range;
+    char *range;
     xmlDocPtr doc;
     xmlNodePtr root, node;
     int weapon, i;    
@@ -63,13 +62,7 @@ void weaponLoadInfoFromXml() {
         weaponInfoLoaded = 1;
     else return;
 
-    fname = u4find_conf("weapons.xml");
-    if (!fname)
-        errorFatal("unable to open file weapons.xml");
-    doc = xmlParseFile(fname);
-    if (!doc)
-        errorFatal("error parsing weapons.xml");
-
+    doc = xmlParse("weapons.xml");
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "weapons") != 0)
         errorFatal("malformed weapons.xml");
@@ -86,7 +79,7 @@ void weaponLoadInfoFromXml() {
         weapons[weapon].abbr = (char *)xmlGetProp(node, (const xmlChar *)"abbr");
         weapons[weapon].canready = (char *)xmlGetProp(node, (const xmlChar *)"canready");
         weapons[weapon].cantready = (char *)xmlGetProp(node, (const xmlChar *)"cantready");
-        weapons[weapon].damage = atoi(xmlGetProp(node, (const xmlChar *)"damage"));
+        weapons[weapon].damage = xmlGetPropAsInt(node, (const xmlChar *)"damage");
         weapons[weapon].hittile = HITFLASH_TILE;
         weapons[weapon].misstile = MISSFLASH_TILE;
         weapons[weapon].leavetile = 0;
@@ -106,32 +99,28 @@ void weaponLoadInfoFromXml() {
 
         /* Load weapon attributes */
         for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
-            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) booleanAttributes[i].name), 
-                          (const xmlChar *) "true") == 0) {
+            if (xmlGetPropAsBool(node, (const xmlChar *) booleanAttributes[i].name)) {
                 weapons[weapon].mask |= booleanAttributes[i].mask;
             }
         }
 
         /* Load hit tiles */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "hittile"),
-                          (const xmlChar *) tiles[i].name) == 0) {
+            if (xmlPropCmp(node, (const xmlChar *) "hittile", tiles[i].name) == 0) {
                 weapons[weapon].hittile = tiles[i].tile;
             }
         }
 
         /* Load miss tiles */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "misstile"),
-                          (const xmlChar *) tiles[i].name) == 0) {
+            if (xmlPropCmp(node, (const xmlChar *) "misstile", tiles[i].name) == 0) {
                 weapons[weapon].misstile = tiles[i].tile;
             }
         }
 
         /* Load leave tiles */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
-            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) "leavetile"),
-                          (const xmlChar *) tiles[i].name) == 0) {
+            if (xmlPropCmp(node, (const xmlChar *) "leavetile", tiles[i].name) == 0) {
                 weapons[weapon].mask |= MASK_LEAVETILE;
                 weapons[weapon].leavetile = tiles[i].tile;
             }
