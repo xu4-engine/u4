@@ -19,15 +19,6 @@
 #include "rle.h"
 
 typedef enum {
-    ANIM_HONCOM,
-    ANIM_VALJUS,
-    ANIM_SACHONOR,
-    ANIM_SPIRHUM,
-    ANIM_ANIMATE,
-    ANIM_MAX
-} AnimType;
-
-typedef enum {
     COMP_NONE,
     COMP_RLE,
     COMP_LZW
@@ -40,7 +31,7 @@ long decompress_u4_file(FILE *in, long filesize, void **out);
 void screenFillRect(SDL_Surface *surface, int x, int y, int w, int h, int r, int g, int b);
 void screenCopyRect(SDL_Surface *surface, int srcX, int srcY, int destX, int destY, int w, int h);
 void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, int r, int g, int b);
-int screenLoadBackgrounds();
+int screenLoadBackground(BackgroundType bkgd);
 void screenFreeIntroBackground();
 int screenLoadTiles();
 int screenLoadCharSet();
@@ -58,12 +49,34 @@ void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel);
 
 SDL_Surface *screen;
 SDL_Surface *bkgds[BKGD_MAX];
-SDL_Surface *introAnimations[ANIM_MAX];
 SDL_Surface *tiles, *charset;
 SDL_Color egaPalette[16];
 SDL_Color vgaPalette[256];
 int scale, forceEga, forceVga;
 ScreenScaler filterScaler;
+
+const struct {
+    const char *filename;
+    int hasVga;             
+    CompressionType comp;
+    int filter;
+    int introAnim;
+} backgroundInfo[] = {
+    { "title.ega",   0, COMP_LZW, 1, 1 },
+    { "start.ega",   1, COMP_RLE, 1, 0 },
+    { "tree.ega",    0, COMP_LZW, 1, 1 },
+    { "portal.ega",  0, COMP_LZW, 1, 1  },
+    { "outside.ega", 0, COMP_LZW, 1, 1  },
+    { "inside.ega",  0, COMP_LZW, 1, 1  },
+    { "wagon.ega",   0, COMP_LZW, 1, 1  },
+    { "gypsy.ega",   0, COMP_LZW, 1, 1  },
+    { "abacus.ega",  0, COMP_LZW, 1, 1  },
+    { "honcom.ega",  0, COMP_LZW, 1, 1  },
+    { "valjus.ega",  0, COMP_LZW, 1, 1  },
+    { "sachonor.ega", 0, COMP_LZW, 1, 1  },
+    { "spirhum.ega", 0, COMP_LZW, 1, 1  },
+    { "animate.ega", 0, COMP_LZW, 1, 1  }
+};
 
 extern int verbose;
 
@@ -114,7 +127,7 @@ void screenInit() {
     if (!screenLoadPaletteVga("u4vga.pal"))
         forceEga = 1;
 
-    if (!screenLoadBackgrounds() || 
+    if (!screenLoadBackground(BKGD_INTRO) ||
         !screenLoadTiles() ||
         !screenLoadCharSet()) {
         fprintf(stderr, "Unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/\n");
@@ -125,7 +138,8 @@ void screenInit() {
 }
 
 void screenDelete() {
-    SDL_FreeSurface(bkgds[BKGD_BORDERS]);
+    if (bkgds[BKGD_BORDERS])
+        SDL_FreeSurface(bkgds[BKGD_BORDERS]);
     SDL_FreeSurface(tiles);
     SDL_FreeSurface(charset);
     SDL_Quit();
@@ -181,6 +195,8 @@ void screenWriteScaledPixel(SDL_Surface *surface, int x, int y, int r, int g, in
 void screenFixIntroScreen(const unsigned char *sigData) {
     int i,x,y;
 
+    assert(bkgds[BKGD_INTRO]);
+
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
      * ----------------------------------------------------------------------------- */
@@ -212,108 +228,39 @@ void screenFixIntroScreen(const unsigned char *sigData) {
 }
 
 /**
- * Load in the background images from the "*.ega" files.
+ * Load in a background image from a ".ega" file.
  */
-int screenLoadBackgrounds() {
-    unsigned int i;
+int screenLoadBackground(BackgroundType bkgd) {
     int ret;
     SDL_Surface *unscaled;
-    static const struct {
-        BackgroundType bkgd;
-        const char *filename;
-        int hasVga;             
-        CompressionType comp;
-        int filter;
-    } bkgdInfo[] = {
-        { BKGD_INTRO, "title.ega", 0, COMP_LZW, 1 },
-        { BKGD_BORDERS, "start.ega", 1, COMP_RLE, 1 },
-        { BKGD_TREE, "tree.ega", 0, COMP_LZW, 1 },
-        { BKGD_PORTAL, "portal.ega", 0, COMP_LZW, 1 },
-        { BKGD_OUTSIDE, "outside.ega", 0, COMP_LZW, 1 },
-        { BKGD_INSIDE, "inside.ega", 0, COMP_LZW, 1 },
-        { BKGD_WAGON, "wagon.ega", 0, COMP_LZW, 1 },
-        { BKGD_GYPSY, "gypsy.ega", 0, COMP_LZW, 1 },
-        { BKGD_ABACUS, "abacus.ega", 0, COMP_LZW, 1 },
-        
-    };
 
-    for (i = 0; i < sizeof(bkgdInfo) / sizeof(bkgdInfo[0]); i++) {
-        ret = 0;
-        if (!forceEga && bkgdInfo[i].hasVga)
-            ret = screenLoadImageVga(&unscaled, 
-                                     320, 200, 
-                                     bkgdInfo[i].filename, 
-                                     bkgdInfo[i].comp);
-        if (!ret && !forceVga)
-            ret = screenLoadImageEga(&unscaled, 
-                                     320, 200, 
-                                     bkgdInfo[i].filename, 
-                                     bkgdInfo[i].comp);
-        if (!ret)
-            return 0;
+    ret = 0;
+    if (!forceEga && backgroundInfo[bkgd].hasVga)
+        ret = screenLoadImageVga(&unscaled, 
+                                 320, 200, 
+                                 backgroundInfo[bkgd].filename, 
+                                 backgroundInfo[bkgd].comp);
+    if (!ret && !forceVga)
+        ret = screenLoadImageEga(&unscaled, 
+                                 320, 200, 
+                                 backgroundInfo[bkgd].filename, 
+                                 backgroundInfo[bkgd].comp);
+    if (!ret)
+        return 0;
 
-        bkgds[bkgdInfo[i].bkgd] = screenScale(unscaled, scale, 1, bkgdInfo[i].filter);
-    }
+    bkgds[bkgd] = screenScale(unscaled, scale, 1, backgroundInfo[bkgd].filter);
 
     return 1;
 }
 
 /**
- * Load in the intro animation images from the "*.ega" files.
+ * Free up any background images used only in the animations.
  */
-int screenLoadIntroAnimations() {
-    unsigned int i;
-    int ret;
-    SDL_Surface *unscaled;
-    static const struct {
-        AnimType anim;
-        const char *filename;
-        int hasVga;             
-        CompressionType comp;
-        int filter;
-    } animInfo[] = {
-        { ANIM_HONCOM, "honcom.ega", 0, COMP_LZW, 1 },
-        { ANIM_VALJUS, "valjus.ega", 0, COMP_LZW, 1 },
-        { ANIM_SACHONOR, "sachonor.ega", 0, COMP_LZW, 1 },
-        { ANIM_SPIRHUM, "spirhum.ega", 0, COMP_LZW, 1 },
-        { ANIM_ANIMATE, "animate.ega", 0, COMP_LZW, 1 }
-    };
-
-    for (i = 0; i < sizeof(animInfo) / sizeof(animInfo[0]); i++) {
-        ret = 0;
-        if (!forceEga && animInfo[i].hasVga)
-            ret = screenLoadImageVga(&unscaled, 
-                                     320, 200,
-                                     animInfo[i].filename,
-                                     animInfo[i].comp);
-        if (!ret && !forceVga)
-            ret = screenLoadImageEga(&unscaled, 
-                                     320, 200, 
-                                     animInfo[i].filename, 
-                                     animInfo[i].comp);
-        if (!ret)
-            return 0;
-
-        introAnimations[animInfo[i].anim] = screenScale(unscaled, scale, 1, animInfo[i].filter);
-    }
-
-    return 1;
-}
-
-void screenFreeIntroAnimations() {
-    unsigned int i;
-
-    for (i = 0; i < sizeof(introAnimations) / sizeof(introAnimations[0]); i++) {
-        SDL_FreeSurface(introAnimations[i]);
-        introAnimations[i] = NULL;
-    }
-}
-
 void screenFreeIntroBackgrounds() {
     int i;
 
     for (i = 0; i < BKGD_MAX; i++) {
-        if (i == BKGD_BORDERS || bkgds[i] == NULL)
+        if ((!backgroundInfo[i].introAnim) || bkgds[i] == NULL)
             continue;
         SDL_FreeSurface(bkgds[i]);
         bkgds[i] = NULL;
@@ -524,6 +471,13 @@ void screenDrawBackground(BackgroundType bkgd) {
     SDL_Rect r;
 
     assert(bkgd < BKGD_MAX);
+
+    if (bkgds[bkgd] == NULL) {
+        if (!screenLoadBackground(bkgd)) {
+            fprintf(stderr, "Unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/\n");
+            exit(1);
+        }
+    }
 
     r.x = 0;
     r.y = 0;
@@ -781,6 +735,9 @@ void screenShowCard(int pos, int card) {
     assert(pos == 0 || pos == 1);
     assert(card < 8);
 
+    if (bkgds[card / 2 + BKGD_HONCOM] == NULL)
+        screenLoadBackground(card / 2 + BKGD_HONCOM);
+
     src.x = ((card % 2) ? 218 : 12) * scale;
     src.y = 12 * scale;
     src.w = 90 * scale;
@@ -791,7 +748,7 @@ void screenShowCard(int pos, int card) {
     dest.w = 90 * scale;
     dest.h = 124 * scale;
 
-    SDL_BlitSurface(introAnimations[card / 2], &src, screen, &dest);
+    SDL_BlitSurface(bkgds[card / 2 + BKGD_HONCOM], &src, screen, &dest);
 }
 
 void screenShowBeastie(int beast, int frame) {
@@ -799,6 +756,9 @@ void screenShowBeastie(int beast, int frame) {
     int col, row, destx;
     
     assert(beast == 0 || beast == 1);
+
+    if (bkgds[BKGD_ANIMATE] == NULL)
+        screenLoadBackground(BKGD_ANIMATE);
 
     row = frame % 6;
     col = frame / 6;
@@ -822,7 +782,7 @@ void screenShowBeastie(int beast, int frame) {
     dest.w = src.w;
     dest.h = src.h;
 
-    SDL_BlitSurface(introAnimations[ANIM_ANIMATE], &src, screen, &dest);
+    SDL_BlitSurface(bkgds[BKGD_ANIMATE], &src, screen, &dest);
 }
 
 void screenGemUpdate() {

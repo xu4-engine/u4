@@ -15,6 +15,11 @@ typedef enum {
     BKGD_WAGON,
     BKGD_GYPSY,
     BKGD_ABACUS,
+    BKGD_HONCOM,
+    BKGD_VALJUS,
+    BKGD_SACHONOR,
+    BKGD_SPIRHUM,
+    BKGD_ANIMATE,
     BKGD_MAX
 } BackgroundType;
 
@@ -26,7 +31,6 @@ typedef struct {
 void screenInit(void);
 void screenDelete(void);
 void screenFixIntroScreen(const unsigned char *sigData);
-int screenLoadIntroAnimations();
 void screenFreeIntroAnimations();
 void screenFreeIntroBackgrounds();
 void screenDrawBackground(BackgroundType bkgd);

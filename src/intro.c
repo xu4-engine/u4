@@ -189,7 +189,6 @@ int introInit() {
 
     u4fclose(title);
 
-    screenLoadIntroAnimations();
     screenFixIntroScreen(screenFixData);
 
     introUpdateScreen();
@@ -228,7 +227,6 @@ void introDelete() {
     free(beastie1FrameTable);
     free(beastie2FrameTable);
 
-    screenFreeIntroAnimations();
     screenFreeIntroBackgrounds();
 }
 
