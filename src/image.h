@@ -27,6 +27,8 @@ typedef struct _RGB {
 Image *imageNew(int w, int h, int scale, int indexed, ImageType type);
 void imageDelete(Image *im);
 void imageSetPaletteFromImage(Image *im, Image *src);
+int imageGetTransparentIndex(Image *im, int *index);
+void imageSetTransparentIndex(Image *im, int index);
 void imagePutPixel(Image *im, int x, int y, int r, int g, int b);
 void imagePutPixelIndex(Image *im, int x, int y, unsigned int index);
 void imagePutPixelScaled(Image *im, int x, int y, int r, int g, int b);

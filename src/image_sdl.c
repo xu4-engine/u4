@@ -76,6 +76,21 @@ void imageSetPaletteFromImage(Image *im, Image *src) {
            sizeof(SDL_Color) * src->surface->format->palette->ncolors);
 }
 
+int imageGetTransparentIndex(Image *im, int *index) {
+    if (!im->indexed || (im->surface->flags & SDL_SRCCOLORKEY) == 0)
+        return 0;
+        
+    *index = im->surface->format->colorkey;
+    return 1;
+}
+
+void imageSetTransparentIndex(Image *im, int index) {
+    if (im->indexed) {
+        im->surface->format->colorkey = index;
+        im->surface->flags |= SDL_SRCCOLORKEY;
+    }
+}
+
 /**
  * Sets the color of a single pixel.
  */
