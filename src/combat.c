@@ -81,12 +81,20 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
     gameSetMap(c, getCombatMapForTile(partytile, transport), 1);
     musicPlay();
 
-    for (i = 0; i < c->saveGame->members; i++)
-        party[i] = mapAddObject(c->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->map->area->player_start[i].x, c->map->area->player_start[i].y);
+    for (i = 0; i < c->saveGame->members; i++) {
+        if (c->saveGame->players[i].status != STAT_DEAD)
+            party[i] = mapAddObject(c->map, tileForClass(c->saveGame->players[i].klass), tileForClass(c->saveGame->players[i].klass), c->map->area->player_start[i].x, c->map->area->player_start[i].y);
+        else
+            party[i] = NULL;
+    }
     for (; i < 8; i++)
         party[i] = NULL;
-    focus = 0;
-    party[focus]->hasFocus = 1;
+
+    i = 0;
+    while (party[i] == NULL)
+        i++;
+    focus = i;
+    party[i]->hasFocus = 1;
 
     nmonsters = combatInitialNumberOfMonsters(monster->tile);
     for (i = 0; i < nmonsters; i++) {
