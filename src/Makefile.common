@@ -7,7 +7,7 @@ SRCS=\
         u4.c \
         direction.c \
         map.c \
-		location.c \
+        location.c \
         ttype.c \
         screen.c \
         screen_$(UI).c \
@@ -42,7 +42,8 @@ SRCS=\
         dngview.c \
         armor.c \
         weapon.c \
-		movement.c \
+        movement.c \
+        unzip.c \
         maps/cities.c \
         maps/castles.c \
         maps/worldmap.c \
@@ -82,7 +83,7 @@ tlkconv$(EXEEXT) : util/tlkconv.o
 	$(CC) $(CFLAGS) -o tlkconv util/tlkconv.o -lxml2
 
 clean:: cleanutil
-	rm -rf *~ */*~ $(OBJS) $(MAIN) 
+	rm -rf *~ */*~ $(OBJS) $(MAIN)
 
 cleanutil::
 	rm -rf util/dumpsavegame.o dumpsavegame$(EXEEXT) util/lzwenc.o lzwenc$(EXEEXT) util/lzwdec.o lzwdec$(EXEEXT) util/pngconv.o util/rleenc.o rleenc$(EXEEXT) util/rledec.o rledec$(EXEEXT) util/tlkconv.o tlkconv$(EXEEXT)
