@@ -278,7 +278,7 @@ void combatFinishTurn() {
 
             /* eat some food */
             if (c->saveGame->players[focus].status != STAT_DEAD)
-                c->saveGame->food--;
+                playerAdjustFood(c->saveGame, -1);                
 
             /* put the focus on the next party member */
             combatInfo.focus++; focus++;            

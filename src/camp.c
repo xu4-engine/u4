@@ -37,7 +37,6 @@ void campTimer(void *data);
 void campEnd(void);
 int campHeal(void);
 void innTimer(void *data);
-void innEnd(void);
 
 void campBegin(void) {
     /* setup camp (possible, but not for-sure combat situation */
@@ -183,6 +182,9 @@ void innTimer(void *data) {
     c->saveGame->transport = AVATAR_TILE;
     gameUpdateScreen();
 
+    /* the party is always healed */
+    campHeal();
+
     /* Is there a special encounter during your stay? */
     if (rand() % 8 == 0) {
         
@@ -206,7 +208,7 @@ void innTimer(void *data) {
     }
     
     else {
-        innEnd();
+        screenMessage("\nMorning!\n");        
 
         /* Does Isaac the Ghost pay a visit to the Avatar? */
         if (c->location->map->id == 11 && (rand() % 4 == 0)) {
@@ -263,12 +265,3 @@ void innTimer(void *data) {
     musicFadeIn(0);
     musicPlay();
 }
-
-void innEnd(void) {
-    campHeal();
-    
-    /* restore avatar to normal */    
-    screenMessage("\nMorning!\n");
-}
-
-

@@ -45,6 +45,7 @@
 int gameSave(void);
 void gameLostEighth(Virtue virtue);
 void gameAdvanceLevel(const SaveGamePlayerRecord *player);
+void gamePartyStarving(void);
 void gameSpellEffect(unsigned int spell, int player);
 void gameCastSpell(unsigned int spell, int caster, int param);
 void gameInnHandler(void);
@@ -148,6 +149,7 @@ void gameInit() {
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
     playerSetItemStatsChangedCallback(&statsUpdate);
     playerSetSpellCallback(&gameSpellEffect);
+    playerSetPartyStarvingCallback(&gamePartyStarving);
     vendorSetInnHandlerCallback(&innBegin);
 
     musicPlay();
@@ -382,6 +384,17 @@ void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
     screenMessage("\n\n%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
 
     (*spellCallback)('r', -1); // Same effect as a resurrection spell
+}
+
+void gamePartyStarving(void) {
+    int i;
+    
+    screenMessage("\nStarving!!!\n");
+    /* FIXME: add sound effect here */
+
+    /* Do 2 damage to each party member for starving! */
+    for (i = 0; i < c->saveGame->members; i++)
+        playerApplyDamage(&c->saveGame->players[i], 2);    
 }
 
 void gameSpellEffect(unsigned int spell, int player) {

@@ -16,6 +16,7 @@
 LostEighthCallback lostEighthCallback = NULL;
 AdvanceLevelCallback advanceLevelCallback = NULL;
 ItemStatsChangedCallback itemStatsChangedCallback = NULL;
+PartyStarvingCallback partyStarvingCallback = NULL;
 
 /**
  * Sets up a callback to handle player losing an eighth of his or her
@@ -31,6 +32,10 @@ void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback) {
 
 void playerSetItemStatsChangedCallback(ItemStatsChangedCallback callback) {
     itemStatsChangedCallback = callback;
+}
+
+void playerSetPartyStarvingCallback(PartyStarvingCallback callback) {
+    partyStarvingCallback = callback;
 }
 
 /**
@@ -365,7 +370,7 @@ void playerEndTurn(void) {
             
             /* party members eat food (also non-combat) */
             if (saveGame->players[i].status != STAT_DEAD)
-                saveGame->food--;
+                playerAdjustFood(saveGame, -1);
 
             switch (saveGame->players[i].status) {
             case STAT_SLEEPING:            
@@ -389,10 +394,9 @@ void playerEndTurn(void) {
             saveGame->players[i].mp++;        
     }
 
-    if (saveGame->food < 0) {
-        /* FIXME: handle starving */
-        saveGame->food = 0;
-    }
+    /* The party is starving! */
+    if ((saveGame->food == 0) && (c->location->context != CTX_COMBAT))
+        (*partyStarvingCallback)();
     
     /* heal ship (25% chance it is healed each turn) */
     if ((c->location->context == CTX_WORLDMAP) && (saveGame->shiphull < 50) && (rand() % 4 == 0))
