@@ -43,6 +43,34 @@ char *dup_and_escape(const char *s) {
     return dup;
 }
 
+void print_portals(FILE *out, char *cityname, int *n_portals) {
+    if (strcmp(cityname, "lcb_1") == 0) {
+        fprintf(out, "\
+extern Map lcb_2_map;
+
+const Portal %s_portals[] = {
+\t{ 3, 3, &lcb_2_map, ACTION_KLIMB },
+\t{ 27, 3, &lcb_2_map, ACTION_KLIMB }
+};\n
+", cityname);
+        *n_portals = 2;
+    }
+    else if (strcmp(cityname, "lcb_2") == 0) {
+        fprintf(out, "\
+extern Map lcb_1_map;
+
+const Portal %s_portals[] = {
+\t{ 3, 3, &lcb_1_map, ACTION_DESCEND },
+\t{ 27, 3, &lcb_1_map, ACTION_DESCEND }
+};\n
+", cityname);
+        *n_portals = 2;
+    }
+    else {
+        *n_portals = 0;
+    }
+}
+
 int main(int argc, char **argv) {
     char *cityname;
     int startx, starty;
@@ -53,6 +81,8 @@ int main(int argc, char **argv) {
     Person persons[CITY_MAX_PERSONS];
     int conv_idx[CITY_MAX_PERSONS];
     char tlk_buffer[288];
+    int n_portals;
+    char portals[100];
 
     if (argc != 7) {
 	fprintf(stderr, "usage: %s cityname startx starty ultfile tlkfile outfile\n", argv[0]);
@@ -288,6 +318,12 @@ const unsigned char %s_data_rle[] = {
 
     fprintf(out, "};\n\n");
 
+    print_portals(out, cityname, &n_portals);
+    if (n_portals)
+        sprintf(portals, "%s_portals", cityname);
+    else
+        strcpy(portals, "0");
+
     fprintf(out, "\
 const Map %s_map = {
 \t\"%s\", /* name */
@@ -296,13 +332,13 @@ const Map %s_map = {
 \t%d, /* startx */
 \t%d, /* starty */
 \t%s, /* border_behavior */
-\t0, /* n_portals */
-\t0, /* portals */
+\t%d, /* n_portals */
+\t%s, /* portals */
 \t%d, /* n_persons */
 \t%s_persons, /* persons */
 \tSHOW_AVATAR, /* flags */
 \t%s_data /* data */
-};\n\n", cityname, cityname, CITY_WIDTH, CITY_HEIGHT, startx, starty, "BORDER_EXIT2PARENT", n_persons, cityname, cityname);
+};\n\n", cityname, cityname, CITY_WIDTH, CITY_HEIGHT, startx, starty, "BORDER_EXIT2PARENT", n_portals, portals, n_persons, cityname, cityname);
 
     fclose(out);
 
