@@ -135,14 +135,15 @@ Once downloaded, it must be unzipped in one of four places:
 As of version 0.02, xu4 can handle uppercase or lowercase filenames.
 
 xu4 accepts the following command line options:
- -f       - fullscreen mode
- -i       - skip the intro, go directly into the game
- -q       - quiet mode - no music
- -scale n - scale the original graphics by a factor of n
- -filter n - use a filter on the scaled images, AdvanceMAME 2xSaI and
-            2xBi can be specified
- -v       - verbose output; prints out information useful for
-            troubleshooting
+ -f        - fullscreen mode
+ -g        - german keyboard - swap y & z
+ -i        - skip the intro, go directly into the game
+ -q        - quiet mode - no music
+ -scale n  - scale the original graphics by a factor of n
+ -filter n - use a filter on the scaled images; point, 2xBi, 2xSaI,
+             and AdvanceMAME can be specified
+ -v        - verbose output; prints out information useful for
+             troubleshooting
 
 
 ULTIMA 4 DOCUMENTATION
