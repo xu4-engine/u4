@@ -436,6 +436,10 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
             }
         }
 
+        /* monster performed a special action that takes place of movement */
+        if (m && monsterSpecialAction(m))
+            continue;        
+
         /* otherwise, move it according to its movement behavior */
         switch (obj->movement_behavior) {
         case MOVEMENT_FIXED:
@@ -469,7 +473,7 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
         
         /* If the creature doesn't fly, then it can be slowed */
         if (slow && (m && (m->mattr & MATTR_FLIES)==0))
-            continue;        
+            continue;
 
         if ((newx != obj->x || newy != obj->y) &&
             newx >= 0 && newx < map->width &&
@@ -483,6 +487,9 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
             obj->x = newx;
             obj->y = newy;
         }
+
+        /* Affect any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
+        if (m) monsterSpecialEffect(obj);
     }
 
     return attacker;

@@ -5,6 +5,8 @@
 #ifndef MONSTER_H
 #define MONSTER_H
 
+#include "object.h"
+
 /* Monster generation/destruction */
 
 #define MAX_MONSTERS 4
@@ -113,5 +115,7 @@ int monsterGetDamage(const Monster *monster);
 const Monster *monsterRandomForTile(unsigned char tile);
 int monsterGetInitialHp(const Monster *monster);
 MonsterStatus monsterGetStatus(const Monster *monster, int hp);
+int monsterSpecialAction(const Monster *monster);
+void monsterSpecialEffect(const Object *obj);
 
 #endif

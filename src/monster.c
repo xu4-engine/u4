@@ -41,7 +41,7 @@ static const Monster monsters[] = {
     { SEA_SERPENT_TILE, GIANT_SQUID_TILE, "Sea Serpent",  8, FIREFIELD_TILE, MATTR_WATER },
     { SEAHORSE_TILE,    NIXIE_TILE,    "Seahorse",     6,  MAGICFLASH_TILE, MATTR_WATER | MATTR_GOOD },
     { WHIRLPOOL_TILE,   WHIRLPOOL_TILE, "Whirlpool",   16, 0,      MATTR_WATER | MATTR_NONATTACKABLE | MATTR_WANDERS | MATTR_NOATTACK },
-    { STORM_TILE,       STORM_TILE,    "Storm",        16, 0,      MATTR_FLIES | MATTR_NONATTACKABLE | MATTR_WANDERS | MATTR_NOATTACK },
+    { STORM_TILE,       STORM_TILE,    "Storm",        16, 0,      MATTR_FLIES | MATTR_NONATTACKABLE | MATTR_WANDERS | MATTR_NOATTACK },    
     { RAT_TILE,         SKELETON_TILE, "Rat",          3,  0,      MATTR_GOOD | MATTR_WANDERS },
     { BAT_TILE,         LAVA_LIZARD_TILE, "Bat",       3,  0,      MATTR_FLIES | MATTR_GOOD | MATTR_WANDERS },
     { GIANT_SPIDER_TILE, RAT_TILE,     "Giant Spider", 4,  POISONFIELD_TILE, MATTR_GOOD | MATTR_WANDERS },
@@ -140,7 +140,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     int era;
     
     if (tileIsSailable(tile)) {
-        mtile = ((rand() % 8) << 1) + PIRATE_TILE;
+        mtile = ((rand() % 8) << 1) + PIRATE_TILE; 
         return monsterForTile(mtile);
     }
     else if (tileIsSwimable(tile)) {
@@ -158,7 +158,7 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
 
-    mtile = ((era & rand() & rand()) << 2) + ORC_TILE; 
+    mtile = ((era & rand() & rand()) << 2) + ORC_TILE;
 
     return monsterForTile(mtile);
 }
@@ -192,4 +192,82 @@ MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
         return MSTAT_LIGHTLYWOUNDED;
     else
         return MSTAT_BARELYWOUNDED;
+}
+
+int monsterSpecialAction(const Monster *monster) {
+    switch(monster->tile) {
+    case PIRATE_TILE: /* fire cannon */
+    case GIANT_SQUID_TILE: /* ranged */
+    case SEA_SERPENT_TILE: /* ranged */
+    case DRAGON_TILE: /* ranged */
+    
+        /* FIXME: add ranged monster's behavior here */
+
+        /* Other ranged monsters here too, whoever you are! */
+
+    default: break;
+    }
+
+    return 0;
+}
+
+void monsterSpecialEffect(const Object *obj){
+    Object *o;
+
+    switch(obj->tile) {
+    case STORM_TILE:
+    case STORM_TILE+1:
+        {
+            if (obj->x == c->location->x &&
+                    obj->y == c->location->y &&
+                    obj->z == c->location->z) {
+                    /* FIXME: The party gets severely damaged by the storm! */                    
+                    break;
+            }
+
+            /* See if the storm is on top of any objects and destroy them! */
+            for (o = c->location->map->objects; o; o = o->next) {                
+                if (o != obj && 
+                    o->x == obj->x &&
+                    o->y == obj->y &&
+                    o->z == obj->z) {
+                    /* Converged with an object, destroy the object! */
+                    mapRemoveObject(c->location->map, o);
+                    break;
+                }
+            }
+        }      
+        break;
+
+    case WHIRLPOOL_TILE:
+    case WHIRLPOOL_TILE+1:
+        {
+            if (obj->x == c->location->x &&
+                obj->y == c->location->y &&
+                obj->z == c->location->z && tileIsShip(c->saveGame->transport)) {
+                
+                /* FIXME: Screen should shake here */
+                c->saveGame->shiphull -= 10;
+                c->location->x = 127;
+                c->location->y = 78;
+
+                mapRemoveObject(c->location->map, obj);
+                break;
+            }
+            
+            /* See if the storm is on top of any objects and destroy them! */
+            for (o = c->location->map->objects; o; o = o->next) {                
+                if (o != obj && 
+                    o->x == obj->x &&
+                    o->y == obj->y &&
+                    o->z == obj->z) {
+                    /* Converged with an object, destroy the object! */
+                    mapRemoveObject(c->location->map, o);
+                    break;
+                }
+            }            
+        }
+
+    default: break;
+    }
 }
