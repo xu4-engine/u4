@@ -69,16 +69,12 @@ char *concat(const char *str, ...) {
  *    -1 if str2 is greater than str1
  */ 
 int strcmp_i(const char *str1, const char *str2) {
-    unsigned int i;
-    int match = 0;    
-
-    if (strlen(str1) != strlen(str2))        
-        return strlen(str1) > strlen(str2) ? 1 : -1;
-    else {    
-        for (i = 0; i < strlen(str1); i++) {
-            if (tolower(str1[i]) != tolower(str2[i]))
-                match = tolower(str1[i]) > tolower(str2[i]) ? 1 : -1;
-        }
+    for (;; str1++, str2++) {
+       int c1, c2;
+       c1 = tolower(*str1);
+       c2 = tolower(*str2);
+       if (c1 == '\0' || c1 != c2)
+           return c1 - c2;
     }
-    return match;
+    return 0;
 }
