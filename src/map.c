@@ -486,9 +486,9 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char trans
          * castle of lord british, which is walkable from the south
          * only
          */
-        if (tile == 0x0e && d == DIR_SOUTH)
+        if (tile == LCB2_TILE && d == DIR_SOUTH)
             continue;
-        if (mapTileAt(map, from_x, from_y) == 0x0e && d == DIR_NORTH)
+        if (mapTileAt(map, from_x, from_y) == LCB2_TILE && d == DIR_NORTH)
             continue;
 
         /* if the transport is a ship, check sailable */
