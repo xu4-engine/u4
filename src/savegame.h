@@ -5,6 +5,8 @@
 #ifndef SAVEGAME_H
 #define SAVEGAME_H
 
+struct _Object;
+
 typedef enum {
     WEAP_HANDS,
     WEAP_STAFF, 
@@ -180,5 +182,7 @@ void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avat
 int saveGamePlayerRecordWrite(const SaveGamePlayerRecord *record, FILE *f);
 int saveGamePlayerRecordRead(SaveGamePlayerRecord *record, FILE *f);
 void saveGamePlayerRecordInit(SaveGamePlayerRecord *record);
+int saveGameMonstersWrite(const struct _Object *objs, FILE *f);
+int saveGameMonstersRead(struct _Object **objs, FILE *f);
 
 #endif
