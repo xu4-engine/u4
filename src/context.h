@@ -18,6 +18,24 @@ typedef struct {
     char buffer[CONV_BUFFERLEN];
 } Conversation;
 
+typedef enum {
+    STATS_PARTY_OVERVIEW,
+    STATS_CHAR1,
+    STATS_CHAR2,
+    STATS_CHAR3,
+    STATS_CHAR4,
+    STATS_CHAR5, 
+    STATS_CHAR6, 
+    STATS_CHAR7,
+    STATS_CHAR8,
+    STATS_WEAPONS,
+    STATS_ARMOR,
+    STATS_EQUIPMENT,
+    STATS_ITEMS,
+    STATS_REAGENTS,
+    STATS_MIXTURES
+} StatsItem;
+
 typedef struct _Context {
     struct _SaveGame *saveGame;
     struct _Context *parent;
@@ -25,6 +43,7 @@ typedef struct _Context {
     struct _Annotation *annotation;
     Conversation conversation;
     int line, col;
+    StatsItem statsItem;
 } Context;
 
 extern Context *c;
