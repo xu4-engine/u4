@@ -301,12 +301,13 @@ void mapRemoveObject(Map *map, Object *rem) {
 }
 
 void mapClearObjects(Map *map) {
-    Object *obj = map->objects, **prev;
+    Object *obj = map->objects, *tmp;
 
-    prev = &(map->objects);
     while (obj) {
-        *prev = obj->next;
+        tmp = obj->next;
         free(obj);
-        obj = *prev;
+        obj = tmp;
     }
+
+    map->objects = NULL;
 }
