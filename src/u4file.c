@@ -49,13 +49,11 @@ FILE *u4fopen(const char *fname) {
             break;
 
         free(pathname);
+        pathname = NULL;
     }
 
     if (pathname)
         free(pathname);
-
-    if (!f)
-        fprintf(stderr, "warning: couldn't find Ultima 4 data file '%s'\n", fname);
 
     return f;
 }
@@ -65,4 +63,15 @@ FILE *u4fopen(const char *fname) {
  */
 void u4fclose(FILE *f) {
     fclose(f);
+}
+
+long u4flength(FILE *f) {
+    long curr, len;
+
+    curr = ftell(f);
+    fseek(f, 0L, SEEK_END);
+    len = ftell(f);
+    fseek(f, curr, SEEK_SET);
+
+    return len;
 }
