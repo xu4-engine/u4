@@ -47,6 +47,8 @@ void useBBC(void *item);
 void useHorn(void *item);
 void useWheel(void *item);
 void useSkull(void *item);
+void useStone(void *item);
+void useKey(void *item);
 int isMysticInInventory(void *mystic);
 void putMysticInInventory(void *mystic);
 void useTelescope(void *notused);
@@ -62,9 +64,13 @@ static const ItemLocation items[] = {
     { "Nightshade", NULL, 46, 149, -1, &world_map, 
       &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY},
     { "Nightshade", NULL, 205, 44, -1, &world_map, 
-      &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY },
+      &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY },    
     { "the Bell of Courage", "bell", 176, 208, -1, &world_map, 
       &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_BELL, 0 },
+    { "the Book of Truth", "book", 6, 6, 0, &lycaeum_map, 
+      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_BOOK, 0 },
+    { "the Candle of Love", "candle", 22, 1, 0, &cove_map, 
+      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_CANDLE, 0 },    
     { "A Silver Horn", "horn", 45, 173, -1, &world_map, 
       &isItemInInventory, &putItemInInventory, &useHorn, (void *) ITEM_HORN, 0 },
     { "the Wheel from the H.M.S. Cape", "wheel", 96, 215, -1, &world_map, 
@@ -75,11 +81,16 @@ static const ItemLocation items[] = {
       &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_BLACK, SC_NEWMOONS },
     { "the White Stone", NULL, 64, 80, -1, &world_map, 
       &isStoneInInventory, &putStoneInInventory, NULL, (void *) STONE_WHITE, 0 },
-    { "the Book of Truth", "book", 6, 6, 0, &lycaeum_map, 
-      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_BOOK, 0 },
-    { "the Candle of Love", "candle", 22, 1, 0, &cove_map, 
-      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_CANDLE, 0 },    
-    { NULL, NULL, 22, 3, 0, &lycaeum_map, NULL, &useTelescope, NULL, NULL, 0 }, /* Lycaeum telescope */    
+
+    /* handlers for using generic objects */
+    { NULL, "stone", -1, -1, 0, NULL, &isStoneInInventory, NULL, &useStone, NULL, 0 },
+    { NULL, "stones", -1, -1, 0, NULL, &isStoneInInventory, NULL, &useStone, NULL, 0 },
+    { NULL, "key", -1, -1, 0, NULL, &isItemInInventory, NULL, &useKey, (void *)(ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T), 0 },
+    { NULL, "keys", -1, -1, 0, NULL, &isItemInInventory, NULL, &useKey, (void *)(ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T), 0 },    
+    
+    /* Lycaeum telescope */
+    { NULL, NULL, 22, 3, 0, &lycaeum_map, NULL, &useTelescope, NULL, NULL, 0 },
+
     { "Mystic Armor", NULL, 22, 4, 0, &empath_map, 
       &isMysticInInventory, &putMysticInInventory, NULL, (void *) ARMR_MYSTICROBES, SC_FULLAVATAR },
     { "Mystic Swords", NULL, 8, 15, 0, &serpent_map, 
@@ -116,7 +127,11 @@ void putRuneInInventory(void *virt) {
 }
 
 int isStoneInInventory(void *virt) {
-    return c->saveGame->stones & (int)virt;
+    /* generic test: does the party have any stones yet? */
+    if (virt == NULL) 
+        return (c->saveGame->stones > 0);
+    /* specific test: does the party have a specific stone? */
+    else return c->saveGame->stones & (int)virt;
 }
 
 void putStoneInInventory(void *virt) {
@@ -199,6 +214,14 @@ void useSkull(void *item) {
         c->saveGame->items = (c->saveGame->items & ~ITEM_SKULL);
         playerAdjustKarma(c->saveGame, KA_USED_SKULL);
     }
+}
+
+void useStone(void *item) {
+    screenMessage("No place to Use them!\nHmm...No effect!\n");
+}
+
+void useKey(void *item) {
+    screenMessage("No place to Use them!\n");
 }
 
 int isMysticInInventory(void *mystic) {
@@ -301,7 +324,7 @@ void itemUse(const char *shortname) {
             item = &items[i];
 
             /* item name found, see if we have that item in our inventory */
-            if ((*items[i].isItemInInventory)(items[i].data)) {       
+            if (!(*items[i].isItemInInventory) || (*items[i].isItemInInventory)(items[i].data)) {       
 
                 /* use the item, if we can! */
                 if (!item || !item->useItem)
