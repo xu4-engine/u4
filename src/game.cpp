@@ -1876,7 +1876,7 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         screenPrompt();
         for (i = 0; i < SPELL_MAX; i++)
             c->saveGame->mixtures[i] = 99;
-        break;    
+        break;
 
     case 'o':
         c->opacity = !c->opacity;
@@ -2371,6 +2371,7 @@ bool gameGetChest(int player) {
         screenMessage("The Chest Holds: %d Gold\n", c->party->getChest());
 
         statsUpdate();
+		screenPrompt();
         
         if (isCity(c->location->map) && obj == NULL)
             c->party->adjustKarma(KA_STOLE_CHEST);
