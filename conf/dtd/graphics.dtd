@@ -16,6 +16,7 @@
                 width             NMTOKEN  #REQUIRED
                 height            NMTOKEN  #REQUIRED
                 depth             NMTOKEN  #REQUIRED
+                prescale          NMTOKEN  #IMPLIED
                 filetype          %filetype; #REQUIRED
                 tiles             NMTOKEN  #IMPLIED
                 introOnly         %bool;   #IMPLIED
