@@ -13,7 +13,7 @@ typedef enum {
 
 typedef struct {
     unsigned int x, y;
-    struct MapTag *destination;
+    const struct _Map *destination;
     PortalTriggerAction trigger_action;
 } Portal;
 
