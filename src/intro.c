@@ -611,7 +611,7 @@ void introInitiateNewGame() {
     info = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
     info->handleBuffer = &introHandleName;
     info->buffer = nameBuffer;
-    info->bufferLen = 16;
+    info->bufferLen = 12;
     info->screenX = 12;
     info->screenY = 20;
     nameBuffer[0] = '\0';
@@ -641,8 +641,8 @@ int introHandleName(const char *message) {
     if (message[0] == '\0') {
         mode = INTRO_MENU;
 
-        introUpdateScreen();        
-    } 
+        introUpdateScreen();
+    }
 
     else {
         mode = INTRO_INIT_SEX;
