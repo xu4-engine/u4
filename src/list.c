@@ -41,7 +41,9 @@ ListNode *listPrepend(ListNode *list, void *data) {
     node->data = data;
     node->next = list;    
     node->prev = NULL;
-    list->prev = node;
+    
+    if (!list) return node;
+    else list->prev = node;
 
     return node;
 }
