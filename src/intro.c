@@ -224,35 +224,35 @@ int introInit() {
     screenFixIntroScreen(BKGD_INTRO_EXTENDED, screenFixData);    
     screenFixIntroScreenExtended(BKGD_INTRO_EXTENDED);
 
-    mainOptions = menuAddItem(mainOptions, "Video Options", 13, 16, &introMainOptionsMenuItemActivate);
-    mainOptions = menuAddItem(mainOptions, "Sound Options", 13, 17, &introMainOptionsMenuItemActivate);
-    mainOptions = menuAddItem(mainOptions, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate);
-    mainOptions = menuAddItem(mainOptions, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate);
+    mainOptions = menuAddItem(mainOptions, 0, "Video Options", 13, 16, &introMainOptionsMenuItemActivate);
+    mainOptions = menuAddItem(mainOptions, 1, "Sound Options", 13, 17, &introMainOptionsMenuItemActivate);
+    mainOptions = menuAddItem(mainOptions, 2, "Gameplay Options", 13, 18, &introMainOptionsMenuItemActivate);
+    mainOptions = menuAddItem(mainOptions, 0xFF, "Main Menu", 13, 21, &introMainOptionsMenuItemActivate);
 
-    videoOptions = menuAddItem(videoOptions, "Scale", 11, 16, &introVideoOptionsMenuItemActivate);
-    videoOptions = menuAddItem(videoOptions, "Mode", 11, 17, &introVideoOptionsMenuItemActivate);
-    videoOptions = menuAddItem(videoOptions, "Filter", 11, 18, &introVideoOptionsMenuItemActivate);
-    videoOptions = menuAddItem(videoOptions, "Use These Settings", 11, 20, &introVideoOptionsMenuItemActivate);
-    videoOptions = menuAddItem(videoOptions, "Cancel", 11, 21, &introVideoOptionsMenuItemActivate);
+    videoOptions = menuAddItem(videoOptions, 0, "Scale", 11, 16, &introVideoOptionsMenuItemActivate);
+    videoOptions = menuAddItem(videoOptions, 1, "Mode", 11, 17, &introVideoOptionsMenuItemActivate);
+    videoOptions = menuAddItem(videoOptions, 2, "Filter", 11, 18, &introVideoOptionsMenuItemActivate);
+    videoOptions = menuAddItem(videoOptions, 0xFE, "Use These Settings", 11, 20, &introVideoOptionsMenuItemActivate);
+    videoOptions = menuAddItem(videoOptions, 0xFF, "Cancel", 11, 21, &introVideoOptionsMenuItemActivate);
 
-    soundOptions = menuAddItem(soundOptions, "Volume", 11, 16, &introSoundOptionsMenuItemActivate);
-    soundOptions = menuAddItem(soundOptions, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate);
-    soundOptions = menuAddItem(soundOptions, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate);
+    soundOptions = menuAddItem(soundOptions, 0, "Volume", 11, 16, &introSoundOptionsMenuItemActivate);
+    soundOptions = menuAddItem(soundOptions, 0xFE, "Use These Settings", 11, 20, &introSoundOptionsMenuItemActivate);
+    soundOptions = menuAddItem(soundOptions, 0xFF, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate);
     
-    gameplayOptions = menuAddItem(gameplayOptions, "Game Enhancements", 8, 5, &introGameplayOptionsMenuItemActivate);
-    gameplayOptions = menuAddItem(gameplayOptions, "Shortcut Keys", 8, 7, &introGameplayOptionsMenuItemActivate);
-    gameplayOptions = menuAddItem(gameplayOptions, "Advanced Options", 8, 18, &introGameplayOptionsMenuItemActivate);
-    gameplayOptions = menuAddItem(gameplayOptions, "Use These Settings", 8, 20, &introGameplayOptionsMenuItemActivate);
-    gameplayOptions = menuAddItem(gameplayOptions, "Cancel", 8, 21, &introGameplayOptionsMenuItemActivate);
+    gameplayOptions = menuAddItem(gameplayOptions, 0, "Game Enhancements", 8, 5, &introGameplayOptionsMenuItemActivate);
+    gameplayOptions = menuAddItem(gameplayOptions, 1, "Shortcut Keys", 8, 7, &introGameplayOptionsMenuItemActivate);
+    gameplayOptions = menuAddItem(gameplayOptions, 2, "Advanced Options", 8, 18, &introGameplayOptionsMenuItemActivate);
+    gameplayOptions = menuAddItem(gameplayOptions, 0xFE, "Use These Settings", 8, 20, &introGameplayOptionsMenuItemActivate);
+    gameplayOptions = menuAddItem(gameplayOptions, 0xFF, "Cancel", 8, 21, &introGameplayOptionsMenuItemActivate);
     
-    advancedOptions = menuAddItem(advancedOptions, "Debug Mode (Cheats)", 4, 5, &introAdvancedOptionsMenuItemActivate);
-    advancedOptions = menuAddItem(advancedOptions, "Repeat Delay", 7, 8, &introAdvancedOptionsMenuItemActivate);
-    advancedOptions = menuAddItem(advancedOptions, "Repeat Interval", 7, 9, &introAdvancedOptionsMenuItemActivate);
-    advancedOptions = menuAddItem(advancedOptions, "German Keyboard", 7, 10, &introAdvancedOptionsMenuItemActivate);
-    advancedOptions = menuAddItem(advancedOptions, "Game Cycles Per Second", 7, 13, &introAdvancedOptionsMenuItemActivate);
-    advancedOptions = menuAddItem(advancedOptions, "Battle Speed", 7, 14, &introAdvancedOptionsMenuItemActivate);
-    advancedOptions = menuAddItem(advancedOptions, "Use These Settings", 6, 20, &introAdvancedOptionsMenuItemActivate);
-    advancedOptions = menuAddItem(advancedOptions, "Cancel", 6, 21, &introAdvancedOptionsMenuItemActivate);        
+    advancedOptions = menuAddItem(advancedOptions, 0, "Debug Mode (Cheats)", 4, 5, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, 1, "Repeat Delay", 7, 8, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, 2, "Repeat Interval", 7, 9, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, 3, "German Keyboard", 7, 10, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, 4, "Game Cycles Per Second", 7, 13, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, 5, "Battle Speed", 7, 14, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, 0xFE, "Use These Settings", 6, 20, &introAdvancedOptionsMenuItemActivate);
+    advancedOptions = menuAddItem(advancedOptions, 0xFF, "Cancel", 6, 21, &introAdvancedOptionsMenuItemActivate);        
 
     introUpdateScreen();
 
@@ -1177,7 +1177,7 @@ void introMainOptionsMenuItemActivate(Menu menu) {
     case 0: mode = INTRO_CONFIG_VIDEO; videoOptions = menuReset(videoOptions);break;        
     case 1: mode = INTRO_CONFIG_SOUND; soundOptions = menuReset(soundOptions);break;
     case 2: mode = INTRO_CONFIG_GAMEPLAY; gameplayOptions = menuReset(gameplayOptions); break;
-    case 3: mode = INTRO_MENU; break;
+    case 0xFF: mode = INTRO_MENU; break;
     default: break;
     }
 }
@@ -1201,13 +1201,13 @@ void introVideoOptionsMenuItemActivate(Menu menu) {
             settings->filter = (FilterType) 0;
         break;
 
-    case 3:
+    case 0xFE:
         settingsWrite();
         musicIntro();
         
         mode = INTRO_CONFIG;
         break;
-    case 4:
+    case 0xFF:
         mode = INTRO_CONFIG;
         break;
         
@@ -1221,13 +1221,13 @@ void introSoundOptionsMenuItemActivate(Menu menu) {
     case 0: 
         settings->vol = !settings->vol;
         break;
-    case 1:
+    case 0xFE:
         settingsWrite();
         musicIntro();
         
         mode = INTRO_CONFIG;
         break;
-    case 2:
+    case 0xFF:
         mode = INTRO_CONFIG;
         break;
     
@@ -1248,13 +1248,13 @@ void introGameplayOptionsMenuItemActivate(Menu menu) {
         mode = INTRO_CONFIG_ADVANCED;
         advancedOptions = menuReset(advancedOptions);        
         break;
-    case 3:
+    case 0xFE:
         settingsWrite();
         musicIntro();
         
         mode = INTRO_CONFIG;
         break;
-    case 4:
+    case 0xFF:
         mode = INTRO_CONFIG;
         break;
     default: break;
@@ -1290,13 +1290,13 @@ void introAdvancedOptionsMenuItemActivate(Menu menu) {
         if (settings->battleSpeed > MAX_BATTLE_SPEED)
             settings->battleSpeed = 1;
         break;
-    case 6:
+    case 0xFE:
         settingsWrite();
         musicIntro();
         
         mode = INTRO_CONFIG;
         break;
-    case 7:
+    case 0xFF:
         mode = INTRO_CONFIG;
         break;
     default: break;

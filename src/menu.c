@@ -8,10 +8,10 @@
 #include "list.h"
 #include "screen.h"
 
-Menu menuAddItem(Menu menu, char *text, short x, short y, ActivateMenuItem activate) {
+Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, ActivateMenuItem activate) {
     MenuItem *menuItem = (MenuItem *)malloc(sizeof(MenuItem));
 
-    menuItem->id = listLength(menu);
+    menuItem->id = id;
     menuItem->text = text;
     menuItem->x = x;
     menuItem->y = y;

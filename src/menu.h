@@ -18,7 +18,7 @@ typedef struct _MenuItem {
     ActivateMenuItem activeMenuItem;
 } MenuItem;
 
-Menu menuAddItem(Menu menu, char *text, short x, short y, ActivateMenuItem activate);
+Menu menuAddItem(Menu menu, unsigned char id, char *text, short x, short y, ActivateMenuItem activate);
 int menuShow(Menu menu);
 Menu menuGetNextItem(Menu current);
 Menu menuGetPreviousItem(Menu current);
