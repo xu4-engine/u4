@@ -48,4 +48,7 @@ typedef struct _Monster {
     unsigned short xp;
 } Monster;
 
+const Monster *monsterForTile(unsigned char tile);
+int monsterIsEvil(const Monster *monster);
+
 #endif

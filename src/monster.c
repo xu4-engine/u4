@@ -68,3 +68,26 @@ static const Monster monsters[] = {
     { BALRON_TILE,      UNKNOWN,       "Balron",       16 }
 };
 
+#define N_MONSTERS (sizeof(monsters) / sizeof(monsters[0]))
+
+const Monster *monsterForTile(unsigned char tile) {
+    int i;
+
+    for (i = 0; i < N_MONSTERS - 1; i++) {
+        if (tile >= monsters[i].tile && tile < monsters[i+1].tile)
+            return &(monsters[i]);
+    }
+    if (tile >= monsters[N_MONSTERS - 1].tile)
+        return &(monsters[N_MONSTERS - 1]);
+
+    return NULL;
+}
+
+int monsterIsEvil(const Monster *monster) {
+    return !(monster->tile == SEAHORSE_TILE ||
+             monster->tile == RAT_TILE ||
+             monster->tile == BAT_TILE ||
+             monster->tile == GIANT_SPIDER_TILE ||
+             monster->tile == INSECT_SWARM_TILE ||
+             monster->tile == PYTHON_TILE);
+}
