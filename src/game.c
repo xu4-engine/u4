@@ -43,6 +43,7 @@
 #include "spell.h"
 #include "stats.h"
 #include "ttype.h"
+#include "utils.h"
 #include "vendor.h"
 #include "weapon.h"
 
@@ -979,13 +980,13 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 's':
-        screenMessage("Searching...\n");
-
         if (c->location->context == CTX_DUNGEON)
             dungeonSearch();
         else if (c->saveGame->balloonstate)
-            screenMessage("Drift only!\n");
+            screenMessage("Searching...\nDrift only!\n");
         else {
+            screenMessage("Searching...\n");
+
             item = itemAtLocation(c->location->map, c->location->x, c->location->y, c->location->z);
             if (item) {
                 if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
@@ -3413,7 +3414,7 @@ void gameLordBritishCheckLevels(void) {
 int gameSummonMonster(const char *monsterName) {
     extern Monster monsters[];
     extern unsigned int numMonsters;
-    unsigned int i, j, id;
+    unsigned int i, id;
 
     eventHandlerPopKeyHandler();
 
@@ -3437,14 +3438,7 @@ int gameSummonMonster(const char *monsterName) {
 
     /* find the monster by its name and spawn it */
     for (i = 0; i < numMonsters; i++) {        
-        int match = 1;
-
-        for (j = 0; j < strlen(monsterName); j++) {
-            if (tolower(monsterName[j]) != tolower(monsters[i].name[j]))
-                match = 0;           
-        }
-
-        if (match) {
+        if (strcmp_i(monsterName, monsters[i].name) == 0) {        
             screenMessage("\n%s summoned!\n", monsters[i].name);
             screenPrompt();
             gameSpawnMonster(&monsters[i]);

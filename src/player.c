@@ -11,7 +11,8 @@
 #include "armor.h"
 #include "context.h"
 #include "debug.h"
-#include "u4.h"
+//#include "u4.h"
+#include "utils.h"
 #include "weapon.h"
 
 LostEighthCallback lostEighthCallback = NULL;

@@ -16,7 +16,7 @@
 #include "player.h"
 #include "screen.h"
 #include "stats.h"
-#include "u4.h"
+#include "utils.h"
 
 /**
  * Returns the dungeon token associated with the given dungeon tile
@@ -79,6 +79,8 @@ void dungeonSearch(void) {
     if (a) 
         token = DUNGEON_CORRIDOR;
 
+    screenMessage("Search...\n");
+
     switch (token) {
     case DUNGEON_MAGIC_ORB: /* magic orb */
         screenMessage("You find a Magical Ball...\nWho touches? ");
@@ -103,7 +105,7 @@ void dungeonSearch(void) {
                     (*item->putItemInInventory)(item->data);
                 }
             } else
-                screenMessage("Nothing Here!\n");
+                screenMessage("\nYou find Nothing!\n");
         }
         
         break;

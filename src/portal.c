@@ -6,15 +6,17 @@
 
 #include "portal.h"
 
+#include "annotation.h"
 #include "city.h"
 #include "context.h"
 #include "dungeon.h"
 #include "game.h"
 #include "location.h"
+#include "mapmgr.h"
 #include "names.h"
 #include "screen.h"
 #include "shrine.h"
-#include "mapmgr.h"
+#include "ttype.h"
 
 /**
  * Creates a dungeon ladder portal based on the action given
@@ -57,6 +59,16 @@ int usePortalAt(Location *location, int x, int y, int z, PortalTriggerAction act
         /* if it's a dungeon, then ladders are predictable.  Create one! */
         if (location->context == CTX_DUNGEON) {
             unsigned char tile = mapGetTileFromData(location->map, x, y, z);
+            /* FIXME: this isn't very clean at all -- there should be another
+               way for annotations to work cleanly with dungeon portals */
+            const Annotation *a = annotationAt(x, y, z, c->location->map->id);
+            if (a) {
+                if (a->tile == LADDERUP_TILE)
+                    tile = 0x10;
+                else if (a->tile == LADDERDOWN_TILE)
+                    tile = 0x20;
+            }
+
             if ((action & ACTION_KLIMB) && (tile == 0x10 || tile == 0x30)) 
                 createDngLadder(location, action, &dngLadder);                
             else if ((action & ACTION_DESCEND) && (tile == 0x20 || tile == 0x30))

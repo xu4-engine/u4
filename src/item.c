@@ -9,6 +9,7 @@
 
 #include "item.h"
 
+#include "annotation.h"
 #include "combat.h"
 #include "context.h"
 #include "debug.h"
@@ -16,17 +17,21 @@
 #include "game.h"
 #include "location.h"
 #include "mapmgr.h"
+#include "names.h"
 #include "player.h"
 #include "portal.h"
 #include "savegame.h"
 #include "screen.h"
 #include "u4.h"
+#include "utils.h"
 
 DestroyAllMonstersCallback destroyAllMonstersCallback;
 
 void itemSetDestroyAllMonstersCallback(DestroyAllMonstersCallback callback) {
     destroyAllMonstersCallback = callback;
 }
+
+int needStoneNames = 0;
 
 int isRuneInInventory(void *virt);
 void putRuneInInventory(void *virt);
@@ -47,6 +52,7 @@ int isReagentInInventory(void *reag);
 void putReagentInInventory(void *reag);
 int isAbyssOpened(const Portal *p);
 int nameStones(const char *color);
+int nameVirtue(const char *virtue);
 
 static const ItemLocation items[] = {
     { "Mandrake Root", NULL, 182, 54, -1, MAP_WORLD,
@@ -236,8 +242,7 @@ void useSkull(void *item) {
  * Handles using the virtue stones in dungeon altar rooms and on dungeon altars
  */
 void useStone(void *item) {
-    int x, y, z;
-    static int needStoneNames = 0;
+    int x, y, z;    
     ReadBufferActionInfo *readBufferInfo;
     extern char itemNameBuffer[16];
     static unsigned char stoneMask = 0;
@@ -246,62 +251,77 @@ void useStone(void *item) {
     unsigned char truth   = STONE_WHITE | STONE_PURPLE | STONE_GREEN  | STONE_BLUE;
     unsigned char love    = STONE_WHITE | STONE_YELLOW | STONE_GREEN  | STONE_ORANGE;
     unsigned char courage = STONE_WHITE | STONE_RED    | STONE_PURPLE | STONE_ORANGE;
-    unsigned char *attr   = NULL;
+    static unsigned char *attr   = NULL;
     
     locationGetCurrentPosition(c->location, &x, &y, &z);
 
     if (item != NULL) {
         if (needStoneNames) {
-            needStoneNames--;
+            /* we're asking for stones while in a dungeon altar room */
+            if (c->location->context & CTX_ALTAR_ROOM) {
+                needStoneNames--;
 
-            switch(combatInfo.altarRoom) {
-            case VIRT_TRUTH: attr = &truth; break;
-            case VIRT_LOVE: attr = &love; break;
-            case VIRT_COURAGE: attr = &courage; break;
-            default: break;
-            }
-
-            /* we need to use the stone, and we haven't used it yet */
-            if (attr && (*attr & stone) && (stone & ~stoneMask))
-                stoneMask |= stone;
-            else if (attr && (stone & stoneMask)) {
-                screenMessage("\nAlready used!\n");
-                needStoneNames = 0;
-                stoneMask = 0; /* reset the mask so you can try again */                
-                return;
-            }
-            else ASSERT(0, "Not in an altar room!");
-
-            /* see if we have the right stones and have them all */
-            if (attr && needStoneNames) {
-                screenMessage("\n%c:", 'E'-needStoneNames);
-                readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
-                readBufferInfo->handleBuffer = &nameStones;
-                readBufferInfo->buffer = itemNameBuffer;
-                readBufferInfo->bufferLen = sizeof(itemNameBuffer);
-                readBufferInfo->screenX = TEXT_AREA_X + c->col;
-                readBufferInfo->screenY = TEXT_AREA_Y + c->line;
-                itemNameBuffer[0] = '\0';
-                eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
-            }
-            /* all the stones have been entered, check them out! */
-            else {
-                unsigned short key = 0xFFFF;
                 switch(combatInfo.altarRoom) {
-                    case VIRT_TRUTH:    key = ITEM_KEY_T; break;
-                    case VIRT_LOVE:     key = ITEM_KEY_L; break;
-                    case VIRT_COURAGE:  key = ITEM_KEY_C; break;
-                    default: break;
+                case VIRT_TRUTH: attr = &truth; break;
+                case VIRT_LOVE: attr = &love; break;
+                case VIRT_COURAGE: attr = &courage; break;
+                default: break;
                 }
 
-                /* in an altar room, named all of the stones, and don't have the key yet... */
-                if (attr && (stoneMask == *attr) && !(c->saveGame->items & key)) {
-                    screenMessage("\nThou doth find one third of the Three Part Key!\n");
-                    c->saveGame->items |= key;
+                /* we need to use the stone, and we haven't used it yet */
+                if (attr && (*attr & stone) && (stone & ~stoneMask))
+                    stoneMask |= stone;
+                else if (attr && (stone & stoneMask)) {
+                    screenMessage("\nAlready used!\n");
+                    needStoneNames = 0;
+                    stoneMask = 0; /* reset the mask so you can try again */                
+                    return;
+                }
+                else ASSERT(0, "Not in an altar room!");
+
+                /* see if we have the right stones and have them all */
+                if (attr && needStoneNames) {
+                    screenMessage("\n%c:", 'E'-needStoneNames);
+                    readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+                    readBufferInfo->handleBuffer = &nameStones;
+                    readBufferInfo->buffer = itemNameBuffer;
+                    readBufferInfo->bufferLen = sizeof(itemNameBuffer);
+                    readBufferInfo->screenX = TEXT_AREA_X + c->col;
+                    readBufferInfo->screenY = TEXT_AREA_Y + c->line;
+                    itemNameBuffer[0] = '\0';
+                    eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+                }
+                /* all the stones have been entered, check them out! */
+                else {
+                    unsigned short key = 0xFFFF;
+                    switch(combatInfo.altarRoom) {
+                        case VIRT_TRUTH:    key = ITEM_KEY_T; break;
+                        case VIRT_LOVE:     key = ITEM_KEY_L; break;
+                        case VIRT_COURAGE:  key = ITEM_KEY_C; break;
+                        default: break;
+                    }
+
+                    /* in an altar room, named all of the stones, and don't have the key yet... */
+                    if (attr && (stoneMask == *attr) && !(c->saveGame->items & key)) {
+                        screenMessage("\nThou doth find one third of the Three Part Key!\n");
+                        c->saveGame->items |= key;
+                    }
+                    else screenMessage("\nHmm...No effect!\n");
+
+                    stoneMask = 0; /* reset the mask so you can try again */                
+                }
+            }
+
+            /* Otherwise, we're asking for a stone while in the abyss on top of an altar */
+            else {
+                /* replace the altar with a down-ladder */
+                if (stone == (1 << c->location->z)) {
+                    int x, y, z;
+                    screenMessage("\n\nThe altar changes before thyne eyes!\n");
+                    locationGetCurrentPosition(c->location, &x, &y, &z);
+                    annotationAdd(x, y, z, c->location->map->id, LADDERDOWN_TILE);                    
                 }
                 else screenMessage("\nHmm...No effect!\n");
-
-                stoneMask = 0; /* reset the mask so you can try again */                
             }
         }
         else {
@@ -313,10 +333,23 @@ void useStone(void *item) {
     else if (c->location->context == CTX_DUNGEON && 
         (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS) == ALTAR_TILE &&
         c->location->map->id == MAP_ABYSS) {
-        screenMessage("Used stone on altar!\n");
+
+        int virtueMask = getBaseVirtues((Virtue)c->location->z);
+        if (virtueMask > 0)
+            screenMessage("\n\nAs thou doth approach, a voice rings out: What virtue dost stem from %s?\n\n", getBaseVirtueName(virtueMask));
+        else screenMessage("\n\nAs thou doth approach, a voice rings out: What virtue exists independently of Truth, Love, and Courage?\n\n");
+
+        readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+        readBufferInfo->handleBuffer = &nameVirtue;
+        readBufferInfo->buffer = itemNameBuffer;
+        readBufferInfo->bufferLen = sizeof(itemNameBuffer);
+        readBufferInfo->screenX = TEXT_AREA_X + c->col;
+        readBufferInfo->screenY = TEXT_AREA_Y + c->line;
+        itemNameBuffer[0] = '\0';
+        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
     }
     /* in a dungeon altar room, on the altar */
-    else if (c->location->context & (CTX_COMBAT | CTX_ALTAR_ROOM) &&
+    else if (c->location->context & CTX_ALTAR_ROOM &&
             (*c->location->tileAt)(c->location->map, x, y, z, WITHOUT_OBJECTS) == ALTAR_TILE) {
         needStoneNames = 4;
         screenMessage("\n\nThere are holes for 4 stones.\nWhat colors:\nA:");        
@@ -487,8 +520,8 @@ int nameStones(const char *color) {
         "red", "orange", "yellow", "green", "blue", "purple", "white", "black"
     };    
 
-    for (i = 0; i < 8; i++) {
-        if (stricmp(color, colors[i]) == 0) {
+    for (i = 0; i < 8; i++) {        
+        if (strcmp_i(color, colors[i]) == 0) {
             found = 1;
             useItem(color);
         }
@@ -500,5 +533,38 @@ int nameStones(const char *color) {
         (*c->location->finishTurn)();
     }
     
+    return 1;
+}
+
+/**
+ * Handles naming of virtues when you use a stone on an altar in the Abyss
+ */
+int nameVirtue(const char *virtue) {    
+    int found = 0;
+    ReadBufferActionInfo *readBufferInfo;
+    extern char itemNameBuffer[16];
+
+    eventHandlerPopKeyHandler();
+        
+    if (strcmp_i(virtue, getVirtueName((Virtue)c->location->z)) == 0) {
+        /* now ask for stone */
+        screenMessage("\n\nThe Voice says: Use thy Stone.\n\nColor:\n");
+
+        needStoneNames = 1;
+
+        readBufferInfo = (ReadBufferActionInfo *) malloc(sizeof(ReadBufferActionInfo));
+        readBufferInfo->handleBuffer = &nameStones; 
+        readBufferInfo->buffer = itemNameBuffer;
+        readBufferInfo->bufferLen = sizeof(itemNameBuffer);
+        readBufferInfo->screenX = TEXT_AREA_X + c->col;
+        readBufferInfo->screenY = TEXT_AREA_Y + c->line;
+        itemNameBuffer[0] = '\0';
+        eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);        
+    }
+    else {
+        screenMessage("\nHmm...No effect!\n");        
+        (*c->location->finishTurn)();
+    }
+
     return 1;
 }

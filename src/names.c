@@ -57,11 +57,29 @@ const char *getVirtueName(Virtue virtue) {
         return "???";
 }
 
-const char *getBaseVirtueName(BaseVirtue virtue) {
-    if (virtue == VIRT_TRUTH)           return "Truth";
-    else if (virtue == VIRT_LOVE)       return "Love";
-    else if (virtue == VIRT_COURAGE)    return "Courage";
+const char *getBaseVirtueName(int virtueMask) {
+    if (virtueMask == VIRT_TRUTH)           return "Truth";
+    else if (virtueMask == VIRT_LOVE)       return "Love";
+    else if (virtueMask == VIRT_COURAGE)    return "Courage";
+    else if (virtueMask == (VIRT_TRUTH | VIRT_LOVE)) return "Truth and Love";
+    else if (virtueMask == (VIRT_LOVE | VIRT_COURAGE)) return "Love and Courage";
+    else if (virtueMask == (VIRT_COURAGE | VIRT_TRUTH)) return "Courage and Truth";
+    else if (virtueMask == (VIRT_TRUTH | VIRT_LOVE | VIRT_COURAGE)) return "Truth, Love and Courage";
     else return "???";
+}
+
+int getBaseVirtues(Virtue virtue) {
+    switch(virtue) {
+    case VIRT_HONESTY: return VIRT_TRUTH;
+    case VIRT_COMPASSION: return VIRT_LOVE;
+    case VIRT_VALOR: return VIRT_COURAGE;
+    case VIRT_JUSTICE: return VIRT_TRUTH | VIRT_LOVE;
+    case VIRT_SACRIFICE: return VIRT_LOVE | VIRT_COURAGE;
+    case VIRT_HONOR: return VIRT_COURAGE | VIRT_TRUTH;
+    case VIRT_SPIRITUALITY: return 0;
+    case VIRT_HUMILITY: return VIRT_TRUTH | VIRT_LOVE | VIRT_COURAGE;
+    default: return 0;
+    }
 }
 
 const char *getVirtueAdjective(Virtue virtue) {
