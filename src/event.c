@@ -13,6 +13,7 @@
 #include "location.h"
 #include "savegame.h"
 #include "screen.h"
+#include "settings.h"
 #include "debug.h"
 
 int eventTimerGranularity = 200;
@@ -130,6 +131,23 @@ void eventHandlerCallTimerCallbacks() {
         deferedTimerCallbackRemoval = deferedTimerCallbackRemoval->next;
         free(n);
     }
+}
+
+/**
+ * Re-initializes each timer callback to a new eventTimerGranularity
+ */ 
+void eventHandlerResetTimerCallbacks() {
+    int baseInterval;
+    TimerCallbackNode *n;
+
+    for (n = timerCallbackHead; n != NULL; n = n->next) {
+        baseInterval = n->interval / eventTimerGranularity;
+        eventTimerGranularity = (1000 / settings->gameCyclesPerSecond);        
+        n->interval = baseInterval * eventTimerGranularity;
+    }
+
+    /* re-initialize the main event loop */
+    eventHandlerInit();
 }
 
 /**

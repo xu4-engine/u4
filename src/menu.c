@@ -65,8 +65,8 @@ Menu menuGetRoot(Menu current) {
 }
 
 Menu menuHighlightNew(Menu oldItem, Menu newItem) {
-    if (oldItem) ((MenuItem *)(oldItem->data))->isHighlighted = 0;
-    if (newItem) ((MenuItem *)(newItem->data))->isHighlighted = 1;
+    if (oldItem) ((MenuItem *)oldItem->data)->isHighlighted = 0;
+    if (newItem) ((MenuItem *)newItem->data)->isHighlighted = 1;
     return newItem;
 }
 
@@ -82,7 +82,16 @@ void menuDelete(Menu menu) {
 }
 
 Menu menuReset(Menu current) {
-    return menuHighlightNew(current, menuGetRoot(current));
+    Menu item,
+         m = menuGetRoot(current);    
+
+    /* un-highlight each menu item */
+    for (item = m; item; item = item->next)
+        ((MenuItem *)item->data)->isHighlighted = 0;
+
+    /* highlight the first menu item */
+    ((MenuItem *)m->data)->isHighlighted = 1;
+    return m;
 }
 
 Menu menuGetItemById(Menu menu, unsigned char id) {        

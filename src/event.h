@@ -52,12 +52,14 @@ void eventHandlerAddTimerCallbackData(TimerCallback callback, void *data, int in
 void eventHandlerRemoveTimerCallback(TimerCallback callback);
 void eventHandlerRemoveTimerCallbackData(TimerCallback callback, void *data);
 void eventHandlerCallTimerCallbacks();
+void eventHandlerResetTimerCallbacks();
 void eventHandlerPushKeyHandler(KeyHandler kh);
 void eventHandlerPushKeyHandlerData(KeyHandler kh, void *data);
 void eventHandlerPopKeyHandler();
 void eventHandlerSetKeyHandler(KeyHandler kh);
 KeyHandler eventHandlerGetKeyHandler();
 void *eventHandlerGetKeyHandlerData();
+int eventKeyboardSetKeyRepeat(int delay, int interval);
 
 int keyHandlerDefault(int key, void *data);
 int keyHandlerIgnoreKeys(int key, void *data);

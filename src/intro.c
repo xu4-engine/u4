@@ -613,7 +613,7 @@ void introUpdateScreen() {
 
     case INTRO_CONFIG_VIDEO:
         screenDrawBackground(BKGD_INTRO);
-        screenTextAt(2, 14, "Video Options (take effect on restart):");
+        screenTextAt(2, 14, "Video Options:");
         screenTextAt(24, 16, "x%d", settings->scale);
         screenTextAt(24, 17, "%s", settings->fullscreen ? "Fullscreen" : "Window");
         screenTextAt(24, 18, "%s", settingsFilterToString(settings->filter));
@@ -1162,13 +1162,10 @@ int introBaseMenuKeyHandler(int key, IntroMode prevMode, Menu *menu) {
         break;
     case ' ':    
     case U4_ESC:
-        mode = prevMode;
+        menuActivateItem(*menu, 0xFF, ACTIVATE_NORMAL);
         break;
     case 0:
-        settingsWrite();
-        musicIntro();
-
-        mode = prevMode;
+        menuActivateItem(*menu, 0xFE, ACTIVATE_NORMAL);        
         break;
     default:
         return 0;
@@ -1346,8 +1343,15 @@ void introAdvancedOptionsMenuItemActivate(Menu menu, ActivateAction action) {
         break;
     case 0xFE:
         if (action == ACTIVATE_NORMAL) {
+            extern void gameTimer(void *data);
             settingsWrite();
             musicIntro();
+            
+            /* re-initialize keyboard */
+            eventKeyboardSetKeyRepeat(settings->keydelay, settings->keyinterval);            
+            
+            /* re-initialize events */
+            eventHandlerResetTimerCallbacks();            
         
             mode = INTRO_CONFIG;
         }

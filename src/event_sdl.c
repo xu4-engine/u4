@@ -26,8 +26,10 @@ Uint32 eventCallback(Uint32 interval, void *param) {
     return interval;
 }
 
-void eventHandlerInit() {
+void eventHandlerInit() {    
     extern int eventTimerGranularity;
+    if (timer != NULL)
+        SDL_RemoveTimer(timer);
     timer = SDL_AddTimer(eventTimerGranularity, &eventCallback, NULL);
 }
 
@@ -120,4 +122,8 @@ int eventHandlerTimerQueueEmpty() {
         return 0;
     else
         return 1;
+}
+
+int eventKeyboardSetKeyRepeat(int delay, int interval) {    
+    return SDL_EnableKeyRepeat(delay, interval);
 }

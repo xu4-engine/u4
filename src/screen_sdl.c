@@ -9,6 +9,7 @@
 
 #include "debug.h"
 #include "error.h"
+#include "event.h"
 #include "rle.h"
 #include "savegame.h"
 #include "settings.h"
@@ -160,7 +161,7 @@ void screenInit() {
         !screenLoadCharSet())
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
-    SDL_EnableKeyRepeat(settings->keydelay, settings->keyinterval);
+    eventKeyboardSetKeyRepeat(settings->keydelay, settings->keyinterval);
     SDL_ShowCursor(SDL_DISABLE); /* disable the mouse cursor */
 }
 

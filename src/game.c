@@ -587,7 +587,7 @@ int gameBaseKeyHandler(int key, void *data) {
         obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z);
 
         if (c->transportContext != TRANSPORT_FOOT)
-            screenMessage("Board: Can't\n");
+            screenMessage("Board: Can't!\n");
         else if (obj) {
             int valid = 1;
             
