@@ -1,0 +1,50 @@
+=====================================
+How to Compile xu4 from CVS in MacOSX
+=====================================
+
+This document explains how to download the latest version of the xu4 source code from CVS and how to compile it.
+The paths used are just examples; you can change them if you want, as long as you're consistent.
+
+-------------------------------
+Things you only have to do once
+-------------------------------
+
+1. Download and install the Apple Developer Tools from:
+   http://developer.apple.com/tools/
+
+2. Download and install FINK from:
+   http://fink.sourceforge.net/
+
+3. Follow the instructions for FINK and use it to install the following
+packages. Resolve any dependancy conflicts by installing the dependant
+packages:
+   sdl, sdl-image, sdl-mixer, libxml2, libpng3.
+
+4. Check out the current xu4 cvs source code
+   cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 login
+   Just press enter when it asks for password
+   cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 co u4
+
+5. Change to src directory of xu4 source code
+   ie cd u4/src
+
+6. Compile xu4 and enjoy
+   make -f Makefile.macosx install
+
+------------------------------------------------------------
+Things you have to do every time the xu4 source code changes
+------------------------------------------------------------
+
+1. Change to xu4 source code directory
+   ie cd u4
+
+2. Checkout the latest changes from CVS
+   cvs update -d
+
+4. Change to src directory of xu4 source code
+   cd src
+
+2. Compile and install xu4
+   make -f Makefile.macosx clean
+   make -f Makefile.macosx install
+
