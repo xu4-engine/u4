@@ -375,8 +375,12 @@ int combatBaseKeyHandler(int key, void *data) {
         break;
 
     case U4_ESC:
-        eventHandlerPopKeyHandler();
-        combatEnd(0); /* don't adjust karma */
+        if (settings->debug) {
+            eventHandlerPopKeyHandler();
+            combatEnd(0); /* don't adjust karma */
+        }
+        else valid=0;
+
         break;
         
     case ' ':

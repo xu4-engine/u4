@@ -533,23 +533,29 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 3:                     /* ctrl-C */
-        screenMessage("Cmd (h = help):");
-        eventHandlerPushKeyHandler(&gameSpecialCmdKeyHandler);
+        if (settings->debug) {
+            screenMessage("Cmd (h = help):");
+            eventHandlerPushKeyHandler(&gameSpecialCmdKeyHandler);
+        }
+        else valid = 0;
         break;
 
     case 4:                     /* ctrl-D */
-        info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
-        info->handleAtCoord = &destroyAtCoord;
-        info->origin_x = c->location->x;
-        info->origin_y = c->location->y;
-        info->prev_x = info->prev_y = -1;
-        info->range = 1;
-        info->validDirections = MASK_DIR_ALL;
-        info->blockedPredicate = NULL;
-        info->blockBefore = 0;
-        info->firstValidDistance = 1;
-        eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
-        screenMessage("Destroy Object\nDir: ");
+        if (settings->debug) {
+            info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
+            info->handleAtCoord = &destroyAtCoord;
+            info->origin_x = c->location->x;
+            info->origin_y = c->location->y;
+            info->prev_x = info->prev_y = -1;
+            info->range = 1;
+            info->validDirections = MASK_DIR_ALL;
+            info->blockedPredicate = NULL;
+            info->blockBefore = 0;
+            info->firstValidDistance = 1;
+            eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
+            screenMessage("Destroy Object\nDir: ");
+        }
+        else valid = 0;
         break;    
 
     case ' ':

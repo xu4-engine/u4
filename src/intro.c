@@ -437,6 +437,9 @@ int introKeyHandler(int key, void *data) {
         case 'k':
             settings->germanKbd = !settings->germanKbd;
             break;
+        case 'm':
+            settings->debug = ~settings->debug;
+            break;
         case 'c':
             mode = INTRO_CONFIG;
             break;        
@@ -672,6 +675,7 @@ void introUpdateScreen() {
         screenTextAt(3, 10, "Speed Options");
         screenTextAt(6, 11, "'G'ame Cycles Per Second    %d", settings->gameCyclesPerSecond);
         screenTextAt(6, 12, "'B'attle Speed              %d", settings->battleSpeed);
+        screenTextAt(6, 14, "Debug 'M'ode (Cheats)       %s", settings->debug ? "On" : "Off");
         screenTextAt(6, 20, "Use These Settings");
         screenTextAt(6, 21, "Cancel");
         break;

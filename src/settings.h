@@ -22,6 +22,7 @@
 #define DEFAULT_BATTLE_SPEED            5
 #define DEFAULT_MINOR_ENHANCEMENTS      1
 #define DEFAULT_CYCLES_PER_SECOND       5
+#define DEFAULT_DEBUG                   0
 
 typedef enum {
     SCL_POINT,
@@ -44,6 +45,7 @@ typedef struct _Settings {
     int battleSpeed;
     int minorEnhancements;
     int gameCyclesPerSecond;
+    int debug;
 } Settings;
 
 char *settingsFilename(void);
