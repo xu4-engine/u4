@@ -434,8 +434,31 @@ int combatBaseKeyHandler(int key, void *data) {
         valid = 0;
         break;
 
+    case 'b':
+    case 'e':
+    case 'd':
+    case 'f':
+    case 'g':
+    case 'h':
+    case 'i':
+    case 'j':
+    case 'k':
+    case 'l':
+    case 'n':
+    case 'm':
+    case 'o':
+    case 'p':
+    case 'q':
+    case 's':
+    case 't':    
+    case 'w':
+    case 'x':   
+    case 'y':
+        screenMessage("Not here!\n");
+        break;
+
     default:
-        valid = 0;
+        screenMessage("Bad command\n");        
         break;
     }
 
