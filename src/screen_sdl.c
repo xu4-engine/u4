@@ -37,6 +37,7 @@ int screenLoadGemTiles();
 int screenLoadCharSet();
 int screenLoadPaletteEga();
 int screenLoadPaletteVga(const char *filename);
+Image *screenScaleDown(Image *src, int scale);
 
 SDL_Surface *screen;
 Image *bkgds[BKGD_MAX];
@@ -523,7 +524,8 @@ int screenLoadTiles() {
         }
     }
 
-    tiles = screenScale(tiles, scale, N_TILES, 1);
+    if (tiles)
+        tiles = screenScale(tiles, scale, N_TILES, 1);
 
     return ret;
 }
@@ -644,6 +646,99 @@ int screenLoadPaletteVga(const char *filename) {
         vgaPalette[i].b = u4fgetc(pal) * 255 / 63;
     }
     u4fclose(pal);
+
+    return 1;
+}
+
+void screenDeinterlaceCga(unsigned char *data, int width, int height, int tiles, int fudge) {
+    unsigned char *tmp;
+    int t, x, y;
+    int tileheight = height / tiles;
+
+    tmp = malloc(width * tileheight / 4);
+
+    for (t = 0; t < tiles; t++) {
+        unsigned char *base;
+        base = &(data[t * (width * tileheight / 4)]);
+        
+        for (y = 0; y < (tileheight / 2); y++) {
+            for (x = 0; x < width; x+=4) {
+                tmp[((y * 2) * width + x) / 4] = base[(y * width + x) / 4];
+            }
+        }
+        for (y = tileheight / 2; y < tileheight; y++) {
+            for (x = 0; x < width; x+=4) {
+                tmp[(((y - (tileheight / 2)) * 2 + 1) * width + x) / 4] = base[(y * width + x) / 4 + fudge];
+            }
+        }
+        for (y = 0; y < tileheight; y++) {
+            for (x = 0; x < width; x+=4) {
+                base[(y * width + x) / 4] = tmp[(y * width + x) / 4];
+            }
+        }
+    }
+
+    free(tmp);
+}
+
+/**
+ * Load an image from an ".pic" CGA image file.
+ */
+int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, CompressionType comp, int tiles) {
+    Image *img;
+    int x, y;
+    unsigned char *compressed_data, *decompressed_data = NULL;
+    long inlen, decompResult;
+
+    inlen = u4flength(file);
+    compressed_data = (Uint8 *) malloc(inlen);
+    u4fread(compressed_data, 1, inlen, file);
+
+    switch(comp) {
+    case COMP_NONE:
+        decompressed_data = compressed_data;
+        decompResult = inlen;
+        break;
+    case COMP_RLE:
+        decompResult = rleDecompressMemory(compressed_data, inlen, (void **) &decompressed_data);
+        free(compressed_data);
+        break;
+    case COMP_LZW:
+        decompResult = decompress_u4_memory(compressed_data, inlen, (void **) &decompressed_data);
+        free(compressed_data);
+        break;
+    default:
+        ASSERT(0, "invalid compression type %d", comp);
+    }
+
+    if (decompResult == -1) {
+        if (decompressed_data)
+            free(decompressed_data);
+        return 0;
+    }
+
+    screenDeinterlaceCga(decompressed_data, width, height, tiles, 0);
+
+    img = imageNew(width, height, 1, 1, IMTYPE_HW);
+    if (!img) {
+        if (decompressed_data)
+            free(decompressed_data);
+        return 0;
+    }
+
+    SDL_SetColors(img->surface, egaPalette, 0, 16);
+
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x+=4) {
+            imagePutPixelIndex(img, x, y, decompressed_data[(y * width + x) / 4] >> 6);
+            imagePutPixelIndex(img, x + 1, y, (decompressed_data[(y * width + x) / 4] >> 4) & 0x03);
+            imagePutPixelIndex(img, x + 2, y, (decompressed_data[(y * width + x) / 4] >> 2) & 0x03);
+            imagePutPixelIndex(img, x + 3, y, (decompressed_data[(y * width + x) / 4]) & 0x03);
+        }
+    }
+    free(decompressed_data);
+
+    (*image) = img;
 
     return 1;
 }
@@ -1127,19 +1222,63 @@ int screenDungeonLoadGraphic(int xoffset, int distance, Direction orientation, D
 
 void screenDungeonDrawTile(int distance, unsigned char tile) {
     SDL_Rect src, dest;
+    Image *tmp, *scaled;
+    const static int dscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
+    int offset;
 
-    /* FIXME: scale tile image */
+    tmp = imageNew(tiles->w, tiles->h / N_TILES, 1, tiles->indexed, IMTYPE_SW);
+    if (tiles->indexed)
+        imageSetPaletteFromImage(tmp, tiles);
 
     src.x = 0;
     src.y = tile * (tiles->h / N_TILES);
     src.w = tiles->w;
     src.h = tiles->h / N_TILES;
-    dest.x = 5 * tiles->w + (BORDER_WIDTH * scale);
-    dest.y = 5 * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
+    dest.x = 0;
+    dest.y = 0;
     dest.w = tiles->w;
     dest.h = tiles->h / N_TILES;
 
-    SDL_BlitSurface(tiles->surface, &src, screen, &dest);
+    SDL_BlitSurface(tiles->surface, &src, tmp->surface, &dest);
+
+    /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
+    if (dscale[distance] == 1)
+        scaled = screenScaleDown(tmp, 2);
+    else
+        scaled = screenScale(tmp, dscale[distance] / 2, 1, 1);
+
+    /* FIXME: get animation flag properly */
+    if (/*tileGetAnimationStyle(tile) == ANIM_SCROLL*/ tile == 2)
+        offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale * dscale[distance] / 2;
+    else
+        offset = 0;
+
+    src.x = 0;
+    src.y = 0;
+    src.w = scaled->w;
+    src.h = scaled->h - offset;
+    dest.x = (VIEWPORT_W * tiles->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
+    dest.y = ((doffset[distance] + BORDER_HEIGHT) * scale) + offset;
+    dest.w = scaled->w;
+    dest.h = scaled->h;
+
+    SDL_BlitSurface(scaled->surface, &src, screen, &dest);
+
+    if (offset != 0) {
+
+        src.x = 0;
+        src.y = scaled->h - offset;
+        src.w = scaled->w;
+        src.h = offset;
+        dest.x = (VIEWPORT_W * tiles->w / 2) + (BORDER_WIDTH * scale) - (scaled->w / 2);
+        dest.y = ((doffset[distance] + BORDER_HEIGHT) * scale);
+        dest.w = scaled->w;
+        dest.h = scaled->h;
+
+        SDL_BlitSurface(scaled->surface, &src, screen, &dest);
+    }
+
+    imageDelete(scaled);
 }
 
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
@@ -1384,6 +1523,35 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
         dest = (*scalerGet(SCL_POINT))(src, scale, n);
         imageDelete(src);
     }
+
+    if (transparent)
+        imageSetTransparentIndex(dest, 0);
+
+    return dest;
+}
+
+Image *screenScaleDown(Image *src, int scale) {
+    int x, y;
+    Image *dest;
+    int transparent;
+
+    transparent = (src->surface->flags & SDL_SRCCOLORKEY) != 0;
+
+    dest = imageNew(src->w / scale, src->h / scale, 1, src->indexed, IMTYPE_HW);
+    if (!dest)
+        return NULL;
+
+    if (dest->indexed)
+        imageSetPaletteFromImage(dest, src);
+
+    for (y = 0; y < src->h; y+=scale) {
+        for (x = 0; x < src->w; x+=scale) {
+            unsigned int index;
+            imageGetPixelIndex(src, x, y, &index);                
+            imagePutPixelIndex(dest, x / scale, y / scale, index);
+        }
+    }
+    imageDelete(src);
 
     if (transparent)
         imageSetTransparentIndex(dest, 0);
