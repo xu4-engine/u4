@@ -305,7 +305,7 @@ MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
 
 int monsterSpecialAction(Object *obj) {
     int broadsidesDirs, dx, dy, dirx, diry;
-    Monster *m = NULL;
+    const Monster *m = NULL;
     CoordActionInfo *info;
     int retval = 0;
 
@@ -381,7 +381,7 @@ int monsterSpecialAction(Object *obj) {
 
 void monsterSpecialEffect(Object *obj) {
     Object *o;
-    Monster *m = NULL;        
+    const Monster *m = NULL;        
 
     if (obj->objType == OBJECT_MONSTER) {
         m = obj->monster;
