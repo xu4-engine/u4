@@ -48,6 +48,11 @@ void TileMap::unloadAll() {
     /* free all the memory for the tile maps */
     for (map = tileMaps.begin(); map != tileMaps.end(); map++)
         delete map->second;
+    
+    /* Clear the map so we don't attempt to delete the memory again
+     * next time.
+     */
+    tileMaps.clear();
 }
  
 /**
