@@ -222,7 +222,7 @@ void gameInit() {
  */
 void gameCleanup(void) {
     if (spellMixMenu)
-        menuDelete(spellMixMenu);
+        menuDelete(&spellMixMenu);
 }
 
 /**

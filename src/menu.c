@@ -72,7 +72,7 @@ int menuShow(Menu menu) {
  * menuGetNextItem and menuGetPreviousItem.
  */
 int menuCheckVisible(Menu menu) {
-    Menu current = menuGetRoot(menu);
+    Menu current = (menu != NULL) ? menuGetRoot(menu) : NULL;
     int visible = 0;
     
     while (current) {
@@ -162,15 +162,16 @@ void menuItemSetVisible(Menu item, int visible) {
 /**
  * Deletes the menu and frees the memory associated with it
  */
-void menuDelete(Menu menu) {
+void menuDelete(Menu *menu) {
     Menu current;
 
-    for (current = menuGetRoot(menu); current; current = current->next) {
+    for (current = menuGetRoot(*menu); current; current = current->next) {
         if (current->data)
             free(current->data);
     }
 
-    listDelete(menu);
+    listDelete(*menu);
+    *menu = NULL;
 }
 
 /**
@@ -182,6 +183,9 @@ void menuDelete(Menu menu) {
 Menu menuReset(Menu current) {
     Menu item,
          m = menuGetRoot(current);
+
+    if (!current)
+        return NULL;
 
     /* un-highlight and deselect each menu item */
     for (item = m; item; item = item->next) {
@@ -202,8 +206,10 @@ Menu menuReset(Menu current) {
 /**
  * Returns the menu item associated with the given 'id'
  */
-Menu menuGetItemById(Menu menu, unsigned char id) {        
-    return listFind(menuGetRoot(menu), (void *)((unsigned long)id), &menuCompareFindItemById);
+Menu menuGetItemById(Menu menu, unsigned char id) {  
+    if (!menu)
+        return NULL;
+    else return listFind(menuGetRoot(menu), (void *)((unsigned long)id), &menuCompareFindItemById);
 }
 
 /**
@@ -231,6 +237,9 @@ Menu menuActivateItem(Menu menu, short id, ActivateAction action) {
     Menu m, newItem;
     MenuItem *mi;
 
+    if (!menu)
+        return NULL;
+    
     m = newItem = menu;    
     
     /* find the given id */

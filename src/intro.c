@@ -264,8 +264,7 @@ int introInit() {
     soundOptions = menuAddItem(soundOptions, 0xFF, "Cancel", 11, 21, &introSoundOptionsMenuItemActivate, ACTIVATE_NORMAL);
     
     gameplayOptions = menuAddItem(gameplayOptions, 0, "Minor Game Enhancements", 6, 5, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
-    gameplayOptions = menuAddItem(gameplayOptions, 3, "Major Game Enhancements", 6, 6, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);
-    //gameplayOptions = menuAddItem(gameplayOptions, 1, "Shortcut Keys", 6, 8, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
+    gameplayOptions = menuAddItem(gameplayOptions, 3, "Major Game Enhancements", 6, 6, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
     gameplayOptions = menuAddItem(gameplayOptions, 1, "Automatic Actions", 6, 8, &introGameplayOptionsMenuItemActivate, ACTIVATE_ANY);    
     gameplayOptions = menuAddItem(gameplayOptions, 2, "\010 Advanced Options", 6, 18, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
     gameplayOptions = menuAddItem(gameplayOptions, 0xFE, "Use These Settings", 6, 20, &introGameplayOptionsMenuItemActivate, ACTIVATE_NORMAL);
@@ -351,15 +350,15 @@ void introDelete() {
     screenFreeIntroBackgrounds();
 
     /* delete our menus */
-    menuDelete(mainOptions);     mainOptions = NULL;
-    menuDelete(videoOptions);    videoOptions = NULL;
-    menuDelete(soundOptions);    soundOptions = NULL;
-    menuDelete(gameplayOptions); gameplayOptions = NULL;
-    menuDelete(advancedOptions); advancedOptions = NULL;
-    menuDelete(keyboardOptions); keyboardOptions = NULL;
-    menuDelete(speedOptions);    speedOptions = NULL;
-    menuDelete(minorOptions);    minorOptions = NULL;
-    menuDelete(majorOptions);    majorOptions = NULL;
+    menuDelete(&mainOptions);
+    menuDelete(&videoOptions);
+    menuDelete(&soundOptions);
+    menuDelete(&gameplayOptions);
+    menuDelete(&advancedOptions);
+    menuDelete(&keyboardOptions);
+    menuDelete(&speedOptions);
+    menuDelete(&minorOptions);
+    menuDelete(&majorOptions);
 }
 
 /**

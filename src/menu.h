@@ -38,7 +38,7 @@ Menu menuGetPreviousItem(Menu current);
 Menu menuGetRoot(Menu current);
 Menu menuHighlightNew(Menu oldItem, Menu newItem);
 void menuItemSetVisible(Menu item, int visible);
-void menuDelete(Menu menu);
+void menuDelete(Menu *menu);
 Menu menuReset(Menu current);
 Menu menuGetItemById(Menu menu, unsigned char id);
 int menuCompareFindItemById(void *val1, void *val2);

@@ -198,6 +198,9 @@ void screenInit() {
         !screenLoadCharSet())
         errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
 
+    if (verbose)
+        printf("screen initialized [screenInit()]\n");
+
     eventKeyboardSetKeyRepeat(settings->keydelay, settings->keyinterval);
     SDL_ShowCursor(SDL_DISABLE); /* disable the mouse cursor */
 }
@@ -207,6 +210,9 @@ void screenDelete() {
     imageDelete(tiles);
     imageDelete(charset);
     u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
+
+    if (verbose)
+        printf("screen deleted [screenDelete()]\n");
 }
 
 /**
@@ -216,8 +222,7 @@ void screenReInit() {
     introDelete();  /* delete intro stuff */
     screenDelete(); /* delete screen stuff */
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
-    introInit();    /* re-fix the backgrounds loaded and scale images, etc. */    
-    //eventHandlerResetTimerCallbacks(); /* re-init the SDL_TIMER as well (because it gets killed by screenDelete()) */
+    introInit();    /* re-fix the backgrounds loaded and scale images, etc. */        
 }
 
 /**

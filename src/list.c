@@ -39,8 +39,9 @@ ListNode *listPrepend(ListNode *list, void *data) {
 
     ASSERT(node != NULL, "out of memory error");
     node->data = data;
-    node->next = list;
+    node->next = list;    
     node->prev = NULL;
+    list->prev = node;
 
     return node;
 }
