@@ -1209,7 +1209,12 @@ char *vendorDoBuyTransaction(Conversation *cnv) {
                 c->saveGame->x = innVendorInfo[vendorGetVendorNo(cnv->talker)].room_x;
                 c->saveGame->y = innVendorInfo[vendorGetVendorNo(cnv->talker)].room_y;
             }
-            reply = strdup(vendorGetText(cnv->talker, IV_GOODNIGHT));
+            if ((rand() % 4) == 0)
+                reply = concat(vendorGetText(cnv->talker, IV_GOODNIGHT), 
+                               vendorGetText(cnv->talker, IV_RATS),
+                               NULL);
+            else 
+                reply = strdup(vendorGetText(cnv->talker, IV_GOODNIGHT));
             cnv->state = CONV_DONE;
         }
         else {
@@ -1279,7 +1284,7 @@ char *vendorGetArmsConfirmationResponse(Conversation *cnv, const char *response)
     }
     else if (tolower(response[0]) == 'n') {
         reply = strdup(vendorGetText(cnv->talker, WV_HMMPH));
-        cnv->state = CONV_DONE;
+        cnv->state = CONV_SELL_ITEM;
     }
     else {
         reply = strdup("");
