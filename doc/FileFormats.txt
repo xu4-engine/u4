@@ -566,11 +566,44 @@ its own to skip the intro).  Lots of the special case data is embedded
 in this .exe.
 
 offset  len   notes
-0x0     74729 ???
+0x0     63871 ???
+0x0f97f 171   .ULT filenames; 16 zero terminated strings
+0x0fa2a 48    stone colors; 8 zero terminated strings
+0x0fa5a 91    .DNG filenames; 8 zero terminated strings
+0x0fab5 44    ???
+0x0fae1 32    16 two-byte offsets to .ULT filenames (value + 62141 gives
+              file offset)
+0x0fb01 32    area x-coordinates (one byte for each town, city, castle,
+              dungeon, shrine)
+0x0fb21 32    area y-coordinates (one byte for each town, city, castle,
+              dungeon, shrine)
+0x0fb41 16    8 two-byte offsets to stone colors (value + 62141 gives
+              file offset)
+0x0fb51 16    8 two-byte offsets to .DNG filenames (value + 62141 gives
+              file offset)
+0x0fb61 2166  ???
 0x103d7 1280  abyss question dialog strings 
 0x108d7 22    11 two-byte offsets to abyss question answers (value +
               62141 gives file offset)
-0x108ed 4830  ???
+0x108ed 80    ???
+0x1093d 169   .TLK filenames; 16 zero terminated strings
+0x109e6 13    "OUTMONST.SAV" zero terminated string
+0x109f3 32    16 two-byte offsets to .TLK filenames (value + 62139 gives
+              file offset)
+0x10a13 659   ???
+0x10ca6 246   monster names; 36 zero terminated strings
+0x10d9c 129   weapon names; 16 zero terminated strings
+0x10e1d 77    armor names; 8 zero terminated strings
+0x10e6a 64    weapon abbreviations; 16 zero terminated strings
+0x10eaa 55    class names; 8 zero terminated strings
+0x10ee1 58    npc type names; 8 zero terminated strings
+0x10f1b 81    reagent names; 8 zero terminated strings
+0x10f6c 434   spell names; 26 zero terminated strings
+0x1101e 292   castle/city/town/dungeon/shrine names; 32 zero terminated
+              strings
+0x11142 509   ???
+0x1133f 26    mp required for each spell (one byte per spell)
+0x11359 2162  ???
 0x11bcb 120   24 five-byte item location records (see below)
 0x11c43 288   ???
 0x11d63 250   companion dialog text
@@ -655,7 +688,8 @@ offset  len   notes
 0x14b33 598   more healer dialog text; x zero terminated strings
 0x14d89 978   tavern dialog text; x zero terminated strings
 0x1515b 16    tavern index for each city (one byte per castle/city/town)
-0x1516b 12    ??? (price of information?)
+0x1516b 12    minimum price for information at each tavern (two bytes for
+              each price)
 0x15177 12    6 two-byte offsets to tavern shop names (value + 62067 gives
               file offset)
 0x15183 12    6 two-byte offsets to tavern shopkeeper names (value + 62067
