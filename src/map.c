@@ -377,9 +377,9 @@ void mapRemovePerson(Map *map, const Person *person) {
     }
 }
 
-void mapMoveObjects(Map *map, int avatarx, int avatary) {
+void mapMoveObjects(Map *map, int avatarx, int avatary, void(*doAttack)(Object *)) {
     int newx, newy;
-    int slow;
+    int distance, slow;
     Object *obj = map->objects;
     const Monster *m;
 
@@ -399,6 +399,14 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
             break;
                 
         case MOVEMENT_ATTACK_AVATAR:
+            distance = (newx - avatarx) * (newx - avatarx);
+            distance += (newy - avatary) * (newy - avatary);
+            if (distance == 1)
+                (*doAttack)(obj);
+            else
+                dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, obj->tile)), &newx, &newy);
+            break;
+
         case MOVEMENT_FOLLOW_AVATAR:
             dirMove(dirFindPath(newx, newy, avatarx, avatary, mapGetValidMoves(map, newx, newy, obj->tile)), &newx, &newy);
             break;

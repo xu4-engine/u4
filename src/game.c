@@ -72,6 +72,7 @@ void gameCheckMoongates(void);
 void gameCheckRandomMonsters(void);
 long gameTimeSinceLastCommand(void);
 int gameWindSlowsShip(Direction shipdir);
+void gameMonsterAttack(Object *obj);
 
 extern Map world_map;
 Context *c = NULL;
@@ -198,7 +199,7 @@ void gameFinishTurn() {
                 c->aura = AURA_NONE;
         }
 
-        mapMoveObjects(c->map, c->saveGame->x, c->saveGame->y);
+        mapMoveObjects(c->map, c->saveGame->x, c->saveGame->y, &gameMonsterAttack);
 
         /* update map annotations and the party stats */
         annotationCycle();
@@ -902,21 +903,11 @@ int gameZtatsKeyHandler2(int key, void *data) {
     switch (key) {
     case U4_UP:
     case U4_LEFT:
-        c->statsItem = (StatsItem) (c->statsItem - 1);
-        if (c->statsItem < STATS_CHAR1)
-            c->statsItem = STATS_MIXTURES;
-        if (c->statsItem <= STATS_CHAR8 &&
-            (c->statsItem - STATS_CHAR1 + 1) > c->saveGame->members)
-            c->statsItem = (StatsItem) (STATS_CHAR1 - 1 + c->saveGame->members);
+        statsPrevItem();
         break;
     case U4_DOWN:
     case U4_RIGHT:
-        c->statsItem = (StatsItem) (c->statsItem + 1);
-        if (c->statsItem > STATS_MIXTURES)
-            c->statsItem = STATS_CHAR1;
-        if (c->statsItem <= STATS_CHAR8 &&
-            (c->statsItem - STATS_CHAR1 + 1) > c->saveGame->members)
-            c->statsItem = STATS_WEAPONS;
+        statsNextItem();
         break;
     default:
         eventHandlerPopKeyHandler();
@@ -1994,4 +1985,21 @@ int gameWindSlowsShip(Direction shipdir) {
         return (c->saveGame->moves % 4) == 0;
     else
         return 0;
+}
+
+void gameMonsterAttack(Object *obj) {
+    Object *under;
+    unsigned char ground;
+    const Monster *m;
+
+    m = monsterForTile(obj->tile);
+
+    screenMessage("\nAttacked by %s\n", m->name);
+
+    ground = mapTileAt(c->map, c->saveGame->x, c->saveGame->y);
+    if ((under = mapObjectAt(c->map, c->saveGame->x, c->saveGame->y)) &&
+        tileIsShip(under->tile))
+        ground = under->tile; 
+    combatBegin(ground, c->saveGame->transport, obj);
+
 }
