@@ -1129,7 +1129,7 @@ void combatApplyDamageToMonster(int monster, int damage, int player) {
     switch (monsterGetStatus(m, combatInfo.monsterHp[monster])) {
 
     case MSTAT_DEAD:
-        xp = monsterGetXp(m);
+        xp = m->xp;
         screenMessage("%s Killed!\nExp. %d\n", m->name, xp);
         
         /* if a player killed the creature, then award the XP,

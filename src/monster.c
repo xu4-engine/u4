@@ -133,8 +133,8 @@ void monsterLoadInfoFromXml() {
         if (xmlGetProp(node, (const xmlChar *)"leader") != NULL)
             monsters[monster].leader = (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"leader"));
         else monsters[monster].leader = monsters[monster].id;
-
-        monsters[monster].level = (unsigned short)atoi((char *)xmlGetProp(node, (const xmlChar *)"level"));
+        
+        monsters[monster].xp = (unsigned short)atoi((char *)xmlGetProp(node, (const xmlChar *)"exp"));
         monsters[monster].ranged = (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"ranged"), 
             (const xmlChar *) "true") == 0);
         monsters[monster].tile = (unsigned char)atoi((char *)xmlGetProp(node, (const xmlChar *)"tile"));
@@ -337,15 +337,9 @@ int monsterLeavesTile(const Monster *monster) {
     return (monster->leavestile);
 }
 
-int monsterGetXp(const Monster *monster) {
-    return (monster->level == 16) ? 16 : monster->level + 1;    
-}
-
 int monsterGetDamage(const Monster *monster) {
     int damage, val, x;
-    val = (monster->level << 4);
-    if (val > 255)
-        val = 255;
+    val = monster->basehp;    
     x = (rand() % (val >> 2));
     damage = (x >> 4) + ((x >> 2) & 0xfc);
     damage += x % 10;
@@ -390,21 +384,20 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     return monsterById((era & rand() & rand()) + ORC_ID);    
 }
 
+
 int monsterGetInitialHp(const Monster *monster) {
     int basehp, hp;
+    
+    basehp = monster->basehp;
 
-    basehp = (monster->basehp > 0) ? 
-        monster->basehp :
-        monster->level == 16 ? 255 : (monster->level << 4);
-
-    hp = (rand() % basehp) + (basehp / 2);
+    hp = (rand() % basehp) | (basehp / 2);
     return hp;
 }
 
 MonsterStatus monsterGetStatus(const Monster *monster, int hp) {
     int basehp, heavy_threshold, light_threshold, crit_threshold;
 
-    basehp = monster->level == 16 ? 255 : (monster->level << 4);
+    basehp = monster->basehp;
     crit_threshold = basehp / 4;
     heavy_threshold = basehp / 2;
     light_threshold = crit_threshold + heavy_threshold;

@@ -168,7 +168,7 @@ typedef struct _Monster {
     unsigned char frames;
     unsigned char leader;
     unsigned char basehp;
-    unsigned short level;
+    unsigned short xp;
     unsigned char ranged;
     unsigned char worldrangedtile;
     unsigned char rangedhittile;
@@ -197,7 +197,6 @@ int monsterCamouflages(const Monster *monster);
 int monsterAmbushes(const Monster *monster);
 int monsterHasRandomRangedAttack(const Monster *monster);
 int monsterLeavesTile(const Monster *monster);
-int monsterGetXp(const Monster *monster);
 int monsterCastSleep(const Monster *monster);
 int monsterGetDamage(const Monster *monster);
 int monsterGetCamouflageTile(const Monster *monster);
