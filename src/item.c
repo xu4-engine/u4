@@ -246,7 +246,7 @@ void useStone(void *item) {
     int x, y, z;
     extern char itemNameBuffer[16];
     static unsigned char stoneMask = 0;
-    unsigned char stone = (unsigned char)item;
+    unsigned char stone = (unsigned char)((int)item);
     
     unsigned char truth   = STONE_WHITE | STONE_PURPLE | STONE_GREEN  | STONE_BLUE;
     unsigned char love    = STONE_WHITE | STONE_YELLOW | STONE_GREEN  | STONE_ORANGE;
@@ -537,7 +537,6 @@ int itemHandleStones(const char *color) {
  * Handles naming of virtues when you use a stone on an altar in the Abyss
  */
 int itemHandleVirtues(const char *virtue) {
-    int found = 0;    
     extern char itemNameBuffer[16];
 
     eventHandlerPopKeyHandler();

@@ -190,10 +190,7 @@ void combatInitDungeonRoom(int room, Direction from) {
 void combatBegin() {
     int i;
     int partyIsReadyToFight = 0;
-    PartyCombatInfo *party          = combatInfo.party;
-    MonsterCombatInfo *monsters     = combatInfo.monsters;
-    SaveGamePlayerRecord* players   = c->saveGame->players;
-    int isAbyss                     = c->location->map->id == MAP_ABYSS;
+    /*int isAbyss = c->location->map->id == MAP_ABYSS;*/
     
     /* set the new combat map if a new map was provided */
     if (combatInfo.newCombatMap != NULL) {
@@ -668,7 +665,7 @@ int combatBaseKeyHandler(int key, void *data) {
             alphaInfo->lastValidLetter = numWeapons + 'a' - 1;
             alphaInfo->handleAlpha = readyForPlayer2;
             alphaInfo->prompt = "Weapon: ";
-            alphaInfo->data = (void *)FOCUS;
+            alphaInfo->data = (void *)((int)FOCUS);
 
             screenMessage(alphaInfo->prompt);
 
