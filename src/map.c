@@ -17,6 +17,7 @@
 #include "io.h"
 #include "annotation.h"
 #include "ttype.h"
+#include "con.h"
 
 #define MAP_TILE_AT(mapptr, x, y) ((mapptr)->data[(x) + ((y) * (mapptr)->width)])
 
@@ -159,8 +160,26 @@ int mapReadCon(Map *map, FILE *con) {
     if (!map->data)
         return 0;
 
-    if (map->type != MAP_SHRINE)
-        fseek(con, 64L, SEEK_SET);
+    if (map->type != MAP_SHRINE) {
+        map->con = (Con *) malloc(sizeof(Con));
+        for (i = 0; i < CON_MONSTERS; i++) {
+            if (!readChar(&(map->con->monster_start[i].x), con))
+                return 0;
+        }
+        for (i = 0; i < CON_MONSTERS; i++) {
+            if (!readChar(&(map->con->monster_start[i].y), con))
+                return 0;
+        }
+        for (i = 0; i < CON_PLAYERS; i++) {
+            if (!readChar(&(map->con->player_start[i].x), con))
+                return 0;
+        }
+        for (i = 0; i < CON_PLAYERS; i++) {
+            if (!readChar(&(map->con->player_start[i].y), con))
+                return 0;
+        }
+        fseek(con, 16L, SEEK_CUR);
+    }
 
     for (i = 0; i < (CON_HEIGHT * CON_WIDTH); i++) {
         if (!readChar(&(map->data[i]), con))
