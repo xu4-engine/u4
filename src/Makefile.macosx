@@ -50,8 +50,6 @@ mactlkconv: util/tlkconv.o
 install: u4
 	mkdir -p $(BUNDLE_CONTENTS)/MacOS
 	mkdir -p $(BUNDLE_CONTENTS)/Resources
-	mkdir -p $(BUNDLE_CONTENTS)/Resources/tileset
-	mkdir -p $(BUNDLE_CONTENTS)/Resources/tileset/tilemap
 	mkdir -p $(BUNDLE_CONTENTS)/Resources/dtd
 	mkdir -p $(BUNDLE_CONTENTS)/Resources/ega
 	mkdir -p $(BUNDLE_CONTENTS)/Resources/vga
@@ -61,8 +59,6 @@ install: u4
 	cp ../sound/*.wav $(BUNDLE_CONTENTS)/Resources
 	cp ../sound/*.ogg $(BUNDLE_CONTENTS)/Resources
 	cp ../conf/*.xml $(BUNDLE_CONTENTS)/Resources
-	cp ../conf/tileset/*.xml $(BUNDLE_CONTENTS)/Resources/tileset
-	cp ../conf/tileset/tilemap/*.xml $(BUNDLE_CONTENTS)/Resources/tileset/tilemap
 	cp ../conf/dtd/*.dtd $(BUNDLE_CONTENTS)/Resources/dtd
 	cp ../icons/xu4.icns $(BUNDLE_CONTENTS)/Resources
 	cp ../graphics/ega/*.rle $(BUNDLE_CONTENTS)/Resources/ega
