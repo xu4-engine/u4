@@ -65,4 +65,12 @@ typedef enum {
 #define WIND_AREA_H 1
 #define WIND_SECONDS_PER_PHASE 1
 
+/* gem view */
+#define GEMAREA_X 32
+#define GEMAREA_Y 32
+#define GEMAREA_W 32
+#define GEMAREA_H 32
+#define GEMTILE_W 4
+#define GEMTILE_H 4
+
 #endif
