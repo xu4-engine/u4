@@ -408,7 +408,7 @@ void mapRemovePerson(Map *map, const Person *person) {
     }
 }
 
-Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
+Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {    
     int newx, newy;
     int slow;
     Object *obj = map->objects, *attacker = NULL;
@@ -468,7 +468,7 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
         }
         
         /* If the creature doesn't fly, then it can be slowed */
-        if (slow && ((m->mattr & MATTR_FLIES)==0))
+        if (slow && (m && (m->mattr & MATTR_FLIES)==0))
             continue;        
 
         if ((newx != obj->x || newy != obj->y) &&
