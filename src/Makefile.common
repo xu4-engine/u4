@@ -1,7 +1,7 @@
 NULL=
 MAIN=u4$(EXEEXT)
 
-VERSION=0.5
+VERSION=0.6cvs
 
 SRCS=\
         u4.c \
