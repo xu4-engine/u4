@@ -404,103 +404,99 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
                 screenMessage("Last One!\n");
         }
 
+        /* Set things up so it will still display correctly */
+        x = oldx;        
+        y = oldy;
+
         /* This goes here so messages are shown in the original order */
         screenMessage("Missed!\n");
-
-        /* Return the weapon to its owner if necessary */
-        if (weaponReturns(weapon))
-            combatReturnWeaponToOwner(oldx, oldy, distance-1, data);
-
-        /* If the weapon leaves a tile behind, do it here! (flaming oil, etc) */
-        if (!wrongRange && (weaponLeavesTile(weapon) && tileIsWalkable(groundTile)))
-            annotationAdd(oldx, oldy, c->location->z, c->location->map->id, weaponLeavesTile(weapon));        
-
-        (*c->location->finishTurn)();
-
-        return 1;
-    }
-
-    monster = -1;
-    for (i = 0; i < AREA_MONSTERS; i++) {
-        if (combat_monsters[i] &&
-            combat_monsters[i]->x == x &&
-            combat_monsters[i]->y == y)
-            monster = i;
-    }   
-
-    /* If we haven't hit a monster, or the weapon's range is absolute
-       and we're testing the wrong range, stop now! */
-    if (monster == -1 || wrongRange) {        
-        
-        /* If the weapon is shown as it travels, show it now */
-        if (weaponShowTravel(weapon)) {
-            annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, misstile));
-            gameUpdateScreen();
-        
-            /* Based on attack speed setting in setting struct, make a delay for
-               the attack annotation */
-            if (attackdelay > 0)
-                eventHandlerSleep(attackdelay * 2);
-        }       
-
-        return 0;
     }
     
-    /* Check to see if the weapon is lost */
-    if ((distance > 1 && weaponLoseWhenRanged(weapon)) || weaponLoseWhenUsed(weapon)) {
-        if (!playerLoseWeapon(c->saveGame, info->player))
-            screenMessage("Last One!\n");
-    }
-    
-    /* Did the weapon miss? */
-    if (!playerAttackHit(&c->saveGame->players[focus])) {
-        screenMessage("Missed!\n");
+    /* Check to see if we might hit something */
+    else {
+
+        monster = -1;
+        for (i = 0; i < AREA_MONSTERS; i++) {
+            if (combat_monsters[i] &&
+                combat_monsters[i]->x == x &&
+                combat_monsters[i]->y == y)
+                monster = i;
+        }   
+
+        /* If we haven't hit a monster, or the weapon's range is absolute
+           and we're testing the wrong range, stop now! */
+        if (monster == -1 || wrongRange) {        
         
-        /* show the 'miss' tile */
-        attackFlash(x, y, misstile, 1);
+            /* If the weapon is shown as it travels, show it now */
+            if (weaponShowTravel(weapon)) {
+                annotationSetVisual(annotationAddTemporary(x, y, c->location->z, c->location->map->id, misstile));
+                gameUpdateScreen();
+        
+                /* Based on attack speed setting in setting struct, make a delay for
+                   the attack annotation */
+                if (attackdelay > 0)
+                    eventHandlerSleep(attackdelay * 2);
+            }       
 
-    } else { /* The weapon hit! */
-        m = combat_monsters[monster]->monster;
-
-        /* show the 'hit' tile */
-        attackFlash(x, y, hittile, 1);
-
-        if (m->tile != LORDBRITISH_TILE)
-            monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);
-
-        switch (monsterGetStatus(m, monsterHp[monster])) {
-
-        case MSTAT_DEAD:
-            xp = monsterGetXp(m);
-            screenMessage("%s Killed!\nExp. %d\n", m->name, xp);
-            playerAwardXp(&c->saveGame->players[focus], xp);
-            if (monsterIsEvil(m))
-                playerAdjustKarma(c->saveGame, KA_KILLED_EVIL);
-            mapRemoveObject(c->location->map, combat_monsters[monster]);
-            combat_monsters[monster] = NULL;
-            break;
-
-        case MSTAT_FLEEING:
-            screenMessage("%s Fleeing!\n", m->name);
-            break;
-
-        case MSTAT_CRITICAL:
-            screenMessage("%s Critical!\n", m->name);
-            break;
-
-        case MSTAT_HEAVILYWOUNDED:
-            screenMessage("%s\nHeavily Wounded!\n", m->name);
-            break;
-
-        case MSTAT_LIGHTLYWOUNDED:
-            screenMessage("%s\nLightly Wounded!\n", m->name);
-            break;
-
-        case MSTAT_BARELYWOUNDED:
-            screenMessage("%s\nBarely Wounded!\n", m->name);
-            break;
+            return 0;
         }
+    
+        /* Check to see if the weapon is lost */
+        if ((distance > 1 && weaponLoseWhenRanged(weapon)) || weaponLoseWhenUsed(weapon)) {
+            if (!playerLoseWeapon(c->saveGame, info->player))
+                screenMessage("Last One!\n");
+        }
+    
+        /* Did the weapon miss? */
+        if (!playerAttackHit(&c->saveGame->players[focus])) {
+            screenMessage("Missed!\n");
+        
+            /* show the 'miss' tile */
+            attackFlash(x, y, misstile, 1);
 
+        } else { /* The weapon hit! */
+            m = combat_monsters[monster]->monster;
+
+            /* show the 'hit' tile */
+            attackFlash(x, y, hittile, 1);
+
+            if (m->tile != LORDBRITISH_TILE)
+                monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);
+
+            switch (monsterGetStatus(m, monsterHp[monster])) {
+
+            case MSTAT_DEAD:
+                xp = monsterGetXp(m);
+                screenMessage("%s Killed!\nExp. %d\n", m->name, xp);
+                playerAwardXp(&c->saveGame->players[focus], xp);
+                if (monsterIsEvil(m))
+                    playerAdjustKarma(c->saveGame, KA_KILLED_EVIL);
+                mapRemoveObject(c->location->map, combat_monsters[monster]);
+                combat_monsters[monster] = NULL;
+                break;
+
+            case MSTAT_FLEEING:
+                screenMessage("%s Fleeing!\n", m->name);
+                break;
+
+            case MSTAT_CRITICAL:
+                screenMessage("%s Critical!\n", m->name);
+                break;
+
+            case MSTAT_HEAVILYWOUNDED:
+                screenMessage("%s\nHeavily Wounded!\n", m->name);
+                break;
+
+            case MSTAT_LIGHTLYWOUNDED:
+                screenMessage("%s\nLightly Wounded!\n", m->name);
+                break;
+
+            case MSTAT_BARELYWOUNDED:
+                screenMessage("%s\nBarely Wounded!\n", m->name);
+                break;
+            }
+
+        }
     }
 
     /* Check to see if the weapon returns to its owner */
