@@ -85,7 +85,7 @@ void screenShowTile(unsigned char tile, int focus, int x, int y);
 void screenShowGemTile(unsigned char tile, int focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
-void screenTextAt(int x, int y, char *fmt, ...) PRINTF_LIKE(3, 4);
+void screenTextAt(int x, int y, const char *fmt, ...) PRINTF_LIKE(3, 4);
 void screenUpdate(int showmap, int blackout);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);

@@ -28,7 +28,7 @@ int screenCursorEnabled = 1;
 int screenLos[VIEWPORT_W][VIEWPORT_H];
 int screen3dDungeonView = 1;
 
-void screenTextAt(int x, int y, char *fmt, ...) {
+void screenTextAt(int x, int y, const char *fmt, ...) {
     char buffer[1024];
     unsigned int i;
 
