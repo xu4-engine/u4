@@ -37,6 +37,7 @@
 #include "error.h"
 #include "debug.h"
 
+int gameSave(void);
 void gameLostEighth(Virtue virtue);
 void gameAdvanceLevel(const SaveGamePlayerRecord *player);
 void gameHeal(HealType type, int player);
@@ -57,7 +58,6 @@ int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y, int distance);
 int gemHandleChoice(char choice);
-int quitHandleChoice(char choice);
 int readyForPlayer(int player);
 int readyForPlayer2(int weapon, void *data);
 int talkAtCoord(int x, int y, int distance);
@@ -131,6 +131,41 @@ void gameInit() {
     screenDrawBackground(BKGD_BORDERS);
     statsUpdate();
     screenPrompt();
+}
+
+/**
+ * Saves the game state into party.sav and monsters.sav.
+ */
+int gameSave() {
+    FILE *saveGameFile, *monstersFile;
+
+    saveGameFile = fopen("party.sav", "wb");
+    if (!saveGameFile) {
+        screenMessage("Error opening party.sav\n");
+        return 0;
+    }
+
+    if (!saveGameWrite(c->saveGame, saveGameFile)) {
+        screenMessage("Error writing to party.sav\n");
+        fclose(saveGameFile);
+        return 0;
+    }
+    fclose(saveGameFile);
+
+    monstersFile = fopen("monsters.sav", "wb");
+    if (!monstersFile) {
+        screenMessage("Error opening monsters.sav\n");
+        return 0;
+    }
+
+    if (!saveGameMonstersWrite(c->map->objects, monstersFile)) {
+        screenMessage("Error opening monsters.sav\n");
+        fclose(monstersFile);
+        return 0;
+    }
+    fclose(monstersFile);
+
+    return 1;
 }
 
 /**
@@ -623,11 +658,9 @@ int gameBaseKeyHandler(int key, void *data) {
         if (!mapIsWorldMap(c->map)) {
             screenMessage("Quit & save\nNot Here!\n");
         } else {
-            choiceInfo = (GetChoiceActionInfo *) malloc(sizeof(GetChoiceActionInfo));
-            choiceInfo->choices = "yn";
-            choiceInfo->handleChoice = &quitHandleChoice;
-            eventHandlerPushKeyHandlerData(&keyHandlerGetChoice, choiceInfo);
-            screenMessage("Quit & Save...\n%d moves\nExit (Y/N)? ", c->saveGame->moves);
+            screenMessage("Quit & Save...\n");
+            if (gameSave())
+                screenMessage("%d moves\nPress Alt-x to quit\n", c->saveGame->moves);
         }
         break;
 
@@ -1414,47 +1447,6 @@ int gemHandleChoice(char choice) {
 }
 
 /**
- * Handles the Exit (Y/N) choice.
- */
-int quitHandleChoice(char choice) {
-    FILE *saveGameFile, *monstersFile;
-
-    eventHandlerPopKeyHandler();
-
-    saveGameFile = fopen("party.sav", "wb");
-    if (saveGameFile) {
-        saveGameWrite(c->saveGame, saveGameFile);
-        fclose(saveGameFile);
-    } else {
-        screenMessage("Error writing to\nparty.sav\n");
-        choice = 'n';
-    }
-
-    monstersFile = fopen("monsters.sav", "wb");
-    if (monstersFile) {
-        saveGameMonstersWrite(c->map->objects, monstersFile);
-        fclose(monstersFile);
-    } else {
-        screenMessage("Error writing to\nmonsters.sav\n");
-        choice = 'n';
-    }
-
-    switch (choice) {
-    case 'y':
-        eventHandlerSetExitFlag(1);
-        break;
-    case 'n':
-        screenMessage("%c\n", choice);
-        gameFinishTurn();
-        break;
-    default:
-        ASSERT(0, "invalid choice: %d", choice);
-    }
-
-    return 1;
-}
-
-/**
  * Begins a conversation with the NPC at map coordinates x,y.  If no
  * NPC is present at that point, zero is returned.
  */
@@ -1749,7 +1741,10 @@ int moveAvatar(Direction dir, int userEvent) {
                 } else if (tileIsLockedDoor(mapTileAt(c->map, newx, newy, c->saveGame->dnglevel))) {
                     jimmyAtCoord(newx, newy, 1);
                     goto done;
-                }
+                } /*else if (mapPersonAt(c->map, newx, newy, c->saveGame->dnglevel) != NULL) {
+                    talkAtCoord(newx, newy, 1);
+                    goto done;
+                    }*/
             }
 
             screenMessage("Blocked!\n");
