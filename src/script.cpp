@@ -1133,7 +1133,7 @@ Script::ReturnCode Script::add(xmlNodePtr script, xmlNodePtr current) {
 
         if (reagents[reagent].length()) {
             AdjustValueMax(c->saveGame->reagents[reagent], quant, 99);
-            gameResetSpellMixing();
+            c->stats->resetReagentsMenu();
         }
         else errorWarning("Error: reagent '%s' not found", subtype.c_str());
     }
