@@ -336,7 +336,8 @@ int introKeyHandler(int key, void *data) {
             break;
         case 'u':
             settingsWrite();
-            /* FIXME: restart with new settings */
+            musicIntro();
+            
             mode = INTRO_MENU;
             break;
         }

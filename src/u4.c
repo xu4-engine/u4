@@ -98,5 +98,8 @@ int main(int argc, char *argv[]) {
     musicDelete();
     screenDelete();
 
+    /* write settings just before exiting */
+    settingsWrite();
+
     return 0;
 }

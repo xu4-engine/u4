@@ -19,20 +19,24 @@
 #include "settings.h"
 #include "u4file.h"
 
+void musicPlayMid(Music music);
+
 char *musicFilenames[MUSIC_MAX];
 
-int toggle = 1;
 Music introMid = MUSIC_TOWNS;
 Mix_Music *playing = NULL;
 
+/**
+ * Play a midi file
+ */
 void musicPlayMid(Music music) {
     static Music current = MUSIC_NONE;
     char *pathname;
 
     assert(music < MUSIC_MAX);
 
-    if (settings->vol == 0 || current == music) {
-        if (!settings->vol && playing)
+    if (settings->vol == 0 || music == MUSIC_NONE) {
+        if (musicIsPlaying())
             musicFadeOut(1000);
         return;
     }
@@ -42,11 +46,6 @@ void musicPlayMid(Music music) {
         playing = NULL;
     }
 
-    if (music == MUSIC_NONE) {
-        musicFadeOut(1000);
-        return;
-    }
-
     current = music;
 
     pathname = u4find_music(musicFilenames[music]);
@@ -54,71 +53,15 @@ void musicPlayMid(Music music) {
         playing = Mix_LoadMUS(pathname);
         if (!playing)
             errorWarning("unable to load music file %s: %s", pathname, Mix_GetError());
-        if (toggle && playing)
-            Mix_PlayMusic(playing, -1);
+        
+        Mix_PlayMusic(playing, -1);            
         free(pathname);
     }
 }
 
-int musicToggle() {
-    toggle = !toggle;
-
-    if (settings->vol) {
-        if (!toggle)
-            musicFadeOut(1000);
-        else if (playing)
-            musicFadeIn(1000);
-    }
-
-    return toggle;
-}
-
-void musicIntro(void) {         /* Intro Music on title loadup */
-    musicPlayMid(introMid);
-}
-
-void musicIntroSwitch(int n) {
-    if (n > MUSIC_NONE &&
-        n < MUSIC_MAX) {
-        introMid = n;
-        musicIntro();
-    }
-}
-
-void musicLordBritish(void) {  /* Music when you talk to LB */
-    musicPlayMid(MUSIC_FANFARE);
-}
-
-void musicHawkwind(void) { /* Music when you talk to Hawkwind */
-    musicPlayMid(MUSIC_SHOPPING);
-}
-
-void musicCamp(void){  /* Music when camping */
-    musicFadeOut(1000);    
-}
-
-void musicShopping(void){  /* Music when talking to a vendor */
-    musicPlayMid(MUSIC_SHOPPING);
-}
-
-void musicPlay(void) {  /* Main music loop. */
-    musicPlayMid(c->location->map->music);
-}
-
-void musicStop(void) {
-    Mix_PauseMusic();
-}
-
-void musicFadeOut(int msecs) {
-    if (settings->vol)
-        Mix_FadeOutMusic(msecs);
-}
-
-void musicFadeIn(int msecs) {
-    if (settings->vol && toggle)
-        Mix_FadeInMusic(playing, -1, msecs);
-}
-
+/**
+ * Initiliaze the music
+ */
 int musicInit() {
     char *fname;
     Music musicTrack;
@@ -161,7 +104,7 @@ int musicInit() {
     /*
      * initialize sound subsystem
      */
-    if (settings->vol) {
+    {
         int audio_rate = 22050;
         Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
         int audio_channels = 2;
@@ -177,13 +120,15 @@ int musicInit() {
             return 1;
         }
 
-
-        Mix_AllocateChannels(16);
+        Mix_AllocateChannels(16);    
     }
 
     return 0;
 }
 
+/**
+ * Stop playing the music and cleanup
+ */
 void musicDelete() {
     if (playing) {
         Mix_FreeMusic(playing);
@@ -191,4 +136,109 @@ void musicDelete() {
     }
 
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
+}
+
+/**
+ * Returns true if the mixer is playing any audio
+ */
+int musicIsPlaying(void) {
+    return Mix_PlayingMusic();    
+}
+
+/**
+ * Main music loop
+ */
+void musicPlay(void) {
+    musicPlayMid(c->location->map->music);
+}
+
+/**
+ * Stop playing music
+ */
+void musicStop(void) {
+    Mix_HaltMusic();
+}
+
+/**
+ * Fade out the music
+ */
+void musicFadeOut(int msecs) {
+    if (musicIsPlaying()) {
+        if (Mix_FadeOutMusic(msecs) == -1)
+            errorWarning("Mix_FadeOutMusic: %s\n", Mix_GetError());
+    }
+}
+
+/**
+ * Fade in the music
+ */
+void musicFadeIn(int msecs) {
+    if (!musicIsPlaying()) {
+        /* make sure we've got something loaded to play */
+        if (!playing)
+            musicPlay();        
+        
+        if(Mix_FadeInMusic(playing, -1, msecs) == -1)
+            errorWarning("Mix_FadeInMusic: %s\n", Mix_GetError());
+    }
+}
+
+/**
+ * Music when you talk to Lord British
+ */
+void musicLordBritish(void) {
+    musicPlayMid(MUSIC_FANFARE);
+}
+
+/**
+ * Music when you talk to Hawkwind
+ */
+void musicHawkwind(void) {
+    musicPlayMid(MUSIC_SHOPPING);
+}
+
+/**
+ * Music that plays while camping
+ */
+void musicCamp(void) {
+    musicFadeOut(1000);    
+}
+
+/**
+ * Music when talking to a vendor
+ */
+void musicShopping(void) {
+    musicPlayMid(MUSIC_SHOPPING);
+}
+
+/**
+ * Play the introduction music on title loadup
+ */
+void musicIntro(void) {
+    musicPlayMid(introMid);
+}
+
+/**
+ * Cycle through the introduction music
+ */
+void musicIntroSwitch(int n) {
+    if (n > MUSIC_NONE &&
+        n < MUSIC_MAX) {
+        introMid = n;
+        musicIntro();
+    }
+}
+
+/**
+ * Toggle the music on/off (usually by pressing 'v')
+ */
+int musicToggle() {
+    settings->vol = settings->vol ? 0 : 1;
+
+    if (!settings->vol)
+        musicFadeOut(1000);
+    else
+        musicFadeIn(1000);    
+
+    return settings->vol;
 }

@@ -21,6 +21,7 @@ typedef enum {
 
 int musicInit(void);
 void musicDelete(void);
+int musicIsPlaying(void);
 void musicPlay(void);
 void musicStop(void);
 void musicFadeOut(int msecs);
