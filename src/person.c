@@ -60,27 +60,43 @@ int linecount(const char *s, int columnmax);
  * Splits a piece of response text into screen-sized chunks.
  */
 Reply *replyNew(const char *text) {
+    static const char paragraphBreak[] = "\n\n";
     Reply *reply;
     char *ptr;
     int i;
+    int nls;
 
     reply = (Reply *) malloc(sizeof(Reply));
 
-    ptr = strstr(text+2, "\n\n");
+    /*
+     * find the first paragraph break, after skipping over any initial
+     * newlines
+     */
+    nls = strspn(text, "\n");
+    ptr = strstr(text+nls, paragraphBreak);
+
+    /*
+     * don't split up reply if less than a screenful or can't find a
+     * paragraph break
+     */
     if (linecount(text, 16) < 12 || ptr == NULL) {
         reply->nchunks = 1;
         reply->chunk = (char **) malloc(sizeof(char *) * reply->nchunks);
         reply->chunk[0] = strdup(text);
     }
 
+    /*
+     * recursively split up all paragraphs but the first, then prepend
+     * the first
+     */
     else {
-        Reply *tmp = replyNew(ptr + 2);
+        Reply *tmp = replyNew(ptr + strlen(paragraphBreak));
 
         reply->nchunks = tmp->nchunks + 1;
         reply->chunk = (char **) malloc(sizeof(char *) * reply->nchunks);
-        reply->chunk[0] = malloc(ptr - text + 2 + 1);
-        strncpy(reply->chunk[0], text, ptr - text + 2);
-        reply->chunk[0][ptr - text + 2] = '\0';
+        reply->chunk[0] = malloc(ptr - text + strlen(paragraphBreak) + 1);
+        strncpy(reply->chunk[0], text, ptr - text + strlen(paragraphBreak));
+        reply->chunk[0][ptr - text + strlen(paragraphBreak)] = '\0';
         for (i = 1; i < reply->nchunks; i++)
             reply->chunk[i] = tmp->chunk[i - 1];
         free(tmp->chunk);
@@ -218,7 +234,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
     case CONV_CONTINUEQUESTION:
     case CONV_PLAYER:
         return CONVINPUT_CHARACTER;
-        
+
     case CONV_DONE:
         return CONVINPUT_NONE;
     }
@@ -342,8 +358,8 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
                                getVirtueAdjective(v), /* fixme */
                                " enough for me to join thee.",
                                NULL);
-        } else 
-            reply = concat(cnv->talker->pronoun, 
+        } else
+            reply = concat(cnv->talker->pronoun,
                            " says: I cannot join thee.",
                            NULL);
     }
@@ -398,11 +414,11 @@ char *beggarGetQuantityResponse(Conversation *cnv, const char *response) {
 
     if (cnv->quant > 0) {
         if (playerDonate(c->saveGame, cnv->quant)) {
-            reply = concat("\n\n", cnv->talker->pronoun, 
+            reply = concat("\n\n", cnv->talker->pronoun,
                            " says: Oh Thank thee! I shall never forget thy kindness!\n",
                            NULL);
         }
-        
+
         else
             reply = strdup("\n\nThou hast not that much gold!\n");
     } else
@@ -468,13 +484,13 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
 
     if (inquiry[0] == '\0' ||
         strcasecmp(inquiry, "bye") == 0) {
-        reply = strdup("Lord British\nsays: Fare thee\nwell my friends!");
+        reply = strdup("\n\nLord British\nsays: Fare thee\nwell my friends!");
         cnv->state = CONV_DONE;
         musicPlay();
     }
 
     else if (strncasecmp(inquiry, "heal", 4) == 0) {
-        reply = strdup("He says: I am\nwell, thank ye.");
+        reply = strdup("\n\n\n\n\n\nHe says: I am\nwell, thank ye.");
         cnv->state = CONV_ASK;
     }
 
@@ -483,7 +499,7 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
             if (strncasecmp(inquiry, lbKeywords[i], 4) == 0)
                 return strdup(lbText[i]);
         }
-        reply = strdup("He says: I\ncannot help thee\nwith that.");
+        reply = strdup("\n\nHe says: I\ncannot help thee\nwith that.\n");
     }
 
     return reply;
@@ -509,7 +525,7 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
     }
 
     else
-        reply = strdup("That I cannot\nhelp thee with.");
+        reply = strdup("\n\nThat I cannot\nhelp thee with.");
 
     return reply;
 }
@@ -520,7 +536,7 @@ char *lordBritishGetPrompt(const Conversation *cnv) {
     if (cnv->state == CONV_ASK)
         prompt = strdup("\n\nHe asks: Art thou well?");
     else
-        prompt = strdup("What else?\n");
+        prompt = strdup("\nWhat else?\n");
 
     return prompt;
 }
@@ -542,9 +558,9 @@ char *hawkwindGetIntro(Conversation *cnv) {
     else {
         playerAdjustKarma(c->saveGame, KA_HAWKWIND);
 
-        intro = concat(hawkwindText[HW_WELCOME], 
+        intro = concat(hawkwindText[HW_WELCOME],
                        c->saveGame->players[0].name,
-                       hawkwindText[HW_GREETING1], 
+                       hawkwindText[HW_GREETING1],
                        hawkwindText[HW_GREETING2],
                        NULL);
         cnv->state = CONV_TALK;
