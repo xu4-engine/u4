@@ -11,6 +11,13 @@
 #include "debug.h"
 #include "image.h"
 
+/**
+ * Creates a new image.  Scale is stored to allow drawing using U4
+ * (320x200) coordinates, regardless of the actual image scale.
+ * Indexed is true for palette based images, or false for RGB images.
+ * Image type determines whether to create a hardware (i.e. video ram)
+ * or software (i.e. normal ram) image.
+ */
 Image *imageNew(int w, int h, int scale, int indexed, ImageType type) {
     Uint32 rmask, gmask, bmask, amask;
     Uint32 flags;
@@ -51,11 +58,17 @@ Image *imageNew(int w, int h, int scale, int indexed, ImageType type) {
     return im;
 }
 
+/**
+ * Frees an image.
+ */
 void imageDelete(Image *im) {
     SDL_FreeSurface(im->surface);
     free(im);
 }
 
+/**
+ * Copies the palette of another image into the given image.
+ */
 void imageSetPaletteFromImage(Image *im, Image *src) {
     ASSERT(im->indexed && src->indexed, "imageSetPaletteFromImage called on non-indexed image");
     memcpy(im->surface->format->palette->colors, 
@@ -63,10 +76,18 @@ void imageSetPaletteFromImage(Image *im, Image *src) {
            sizeof(SDL_Color) * src->surface->format->palette->ncolors);
 }
 
+/**
+ * Sets the color of a single pixel.
+ */
 void imagePutPixel(Image *im, int x, int y, int r, int g, int b) {
     imagePutPixelIndex(im, x, y, SDL_MapRGB(im->surface->format, (Uint8)r, (Uint8)g, (Uint8)b));
 }
 
+/**
+ * Sets the palette index of a single pixel.  If the image is in
+ * indexed mode, then the index is simply the palette entry number.
+ * If the image is RGB, it is a packed RGB triplet.
+ */
 void imagePutPixelIndex(Image *im, int x, int y, unsigned int index) {
     int bpp;
     Uint8 *p;
@@ -101,6 +122,10 @@ void imagePutPixelIndex(Image *im, int x, int y, unsigned int index) {
     }
 }
 
+/**
+ * Sets the color of a "U4" scale pixel, which may be more than one
+ * actual pixel.
+ */
 void imagePutPixelScaled(Image *im, int x, int y, int r, int g, int b) {
     int xs, ys;
 
@@ -111,6 +136,9 @@ void imagePutPixelScaled(Image *im, int x, int y, int r, int g, int b) {
     }
 }
 
+/**
+ * Gets the color of a single pixel.
+ */
 void imageGetPixel(Image *im, int x, int y, int *r, int *g, int *b) {
     unsigned int index;
     Uint8 r1, g1, b1;
@@ -123,6 +151,11 @@ void imageGetPixel(Image *im, int x, int y, int *r, int *g, int *b) {
     *b = b1;
 }
 
+/**
+ * Gets the palette index of a single pixel.  If the image is in
+ * indexed mode, then the index is simply the palette entry number.
+ * If the image is RGB, it is a packed RGB triplet.
+ */
 void imageGetPixelIndex(Image *im, int x, int y, unsigned int *index) {
     int bpp = im->surface->format->BytesPerPixel;
 
@@ -152,6 +185,9 @@ void imageGetPixelIndex(Image *im, int x, int y, unsigned int *index) {
     }
 }
 
+/**
+ * Fills a rectangle in the image with a given color.
+ */
 void imageFillRect(Image *im, int x, int y, int w, int h, int r, int g, int b) {
     SDL_Rect dest;
     Uint32 pixel;
@@ -165,6 +201,9 @@ void imageFillRect(Image *im, int x, int y, int w, int h, int r, int g, int b) {
     SDL_FillRect(im->surface, &dest, pixel);
 }
 
+/**
+ * Draws the entire image onto the screen at the given offset.
+ */
 void imageDraw(const Image *im, int x, int y) {
     SDL_Rect r;
 
@@ -173,4 +212,24 @@ void imageDraw(const Image *im, int x, int y) {
     r.w = im->w;
     r.h = im->h;
     SDL_BlitSurface(im->surface, NULL, SDL_GetVideoSurface(), &r);
+}
+
+/**
+ * Draws a piece of the image onto the screen at the given offset.
+ * The area of the image to draw is defined by the rectangle rx, ry,
+ * rw, rh.
+ */
+void imageDrawSubRect(const Image *im, int x, int y, int rx, int ry, int rw, int rh) {
+    SDL_Rect src, dest;
+
+    src.x = rx;
+    src.y = ry;
+    src.w = rw;
+    src.h = rh;
+
+    dest.x = x;
+    dest.y = y;
+    /* dest w & h unused */
+
+    SDL_BlitSurface(im->surface, &src, SDL_GetVideoSurface(), &dest);
 }
