@@ -26,6 +26,7 @@ SRCS=\
         player.c \
         names.c \
         music.c \
+        sound.c \
         moongate.c \
         item.c \
         shrine.c \
