@@ -413,7 +413,10 @@ void gameFinishTurn() {
         statsUpdate();
 
         /* Monsters cannot spawn, move or attack while the avatar is on the balloon */
-        if (!c->saveGame->balloonstate) {
+        /* FIXME: balloonstate is causing problems when mixed with torchduration --
+           needs to be separated during gameplay and then put into savegame structure
+           when saving */
+        if (c->location->context == CTX_DUNGEON || (!c->saveGame->balloonstate)) {
 
             /* apply effects from tile avatar is standing on */
             playerApplyEffect(c->saveGame, tileGetEffect((*c->location->tileAt)(c->location->map, c->location->x, c->location->y, c->location->z, WITH_OBJECTS)), ALL_PLAYERS);
