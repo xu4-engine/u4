@@ -3805,9 +3805,11 @@ int gameSummonCreature(string *creatureName) {
         m = creatures.getByName(*creatureName);
 
     if (m) {
-        screenMessage("\n%s summoned!\n", m->getName().c_str());
+        if (gameSpawnCreature(m))
+            screenMessage("\n%s summoned!\n", m->getName().c_str());
+        else screenMessage("\n\nNo place to put %s!\n\n", m->getName().c_str());
         screenPrompt();
-        gameSpawnCreature(m);
+        
         return 1;
     }
     
@@ -3820,7 +3822,7 @@ int gameSummonCreature(string *creatureName) {
  * Spawns a creature (m) just offscreen of the avatar.
  * If (m==NULL) then it finds its own creature to spawn and spawns it.
  */
-void gameSpawnCreature(const Creature *m) {
+bool gameSpawnCreature(const Creature *m) {
     int t, i;
     const Creature *creature;
     MapCoords coords = c->location->coords;
@@ -3842,26 +3844,54 @@ void gameSpawnCreature(const Creature *m) {
         }
 
         if (!found)
-            return;        
+            return false;        
         
         coords = new_coords;
     }    
     else {    
-        int dx = 7,
-            dy = xu4_random(7);
+        int dx = 0,
+            dy = 0;
+        bool ok = false;
+        int tries = 0;
+        static const int MAX_TRIES = 10;
 
-        if (xu4_random(2))
-            dx = -dx;
-        if (xu4_random(2))
-            dy = -dy;
-        if (xu4_random(2)) {
-            t = dx;
-            dx = dy;
-            dy = t;
+        while (!ok && (tries < MAX_TRIES)) {
+            dx = 7;
+            dy = xu4_random(7);
+        
+            if (xu4_random(2))
+                dx = -dx;
+            if (xu4_random(2))
+                dy = -dy;
+            if (xu4_random(2)) {
+                t = dx;
+                dx = dy;
+                dy = t;
+            }
+
+            /* make sure we can spawn the creature there */
+            if (m) {
+                MapCoords new_coords = coords;
+                new_coords.move(dx, dy, c->location->map);
+            
+                MapTile *tile = c->location->map->tileAt(new_coords, WITHOUT_OBJECTS);
+                if ((m->sails() && tile->isSailable()) || 
+                    (m->swims() && tile->isSwimable()) ||
+                    (m->walks() && tile->isCreatureWalkable()) ||
+                    (m->flies() && tile->isFlyable()))
+                    ok = true;
+                else tries++;
+            }
+            else ok = true;
         }
 
-        coords.move(dx, dy, c->location->map);
-    }       
+        if (ok)
+            coords.move(dx, dy, c->location->map);
+    }
+
+    /* can't spawn creatures on top of the player */
+    if (coords == c->location->coords)
+        return false;    
     
     /* figure out what creature to spawn */
     if (m)
@@ -3873,6 +3903,7 @@ void gameSpawnCreature(const Creature *m) {
 
     if (creature)
         c->location->map->addCreature(creature, coords);    
+    return true;
 }
 
 /**
@@ -3941,11 +3972,12 @@ bool gameCreateBalloon(Map *map) {
 
     /* see if the balloon has already been created (and not destroyed) */
     for (i = map->objects.begin(); i != map->objects.end(); i++) {
-        if ((*i)->getTile().isBalloon())
+        Object *obj = *i;
+        if (obj->getTile().isBalloon())
             return false;
     }
     
     MapTile balloon = Tileset::findTileByName("balloon")->id;
-    map->addObject(balloon, balloon, MapCoords(233, 242, -1));
+    map->addObject(balloon, balloon, MapCoords(233, 242, 0));
     return true;
 }

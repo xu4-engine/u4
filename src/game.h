@@ -89,7 +89,7 @@ void gameCheckHullIntegrity(void);
 /* creature functions */
 bool creatureRangeAttack(MapCoords coords, int distance, void *data);
 void gameCreatureCleanup(void);
-void gameSpawnCreature(const class Creature *m);
+bool gameSpawnCreature(const class Creature *m);
 
 /* etc */
 void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen = 32);
