@@ -46,21 +46,41 @@ int screenLoadLzwImageEga(SDL_Surface **surface, int width, int height, const ch
 SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter);
 SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n);
 SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n);
+Uint32 getPixel(SDL_Surface *s, int x, int y);
+void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel);
 
 SDL_Surface *screen;
 SDL_Surface *bkgds[BKGD_MAX];
 SDL_Surface *introAnimations[ANIM_MAX];
 SDL_Surface *tiles, *charset;
 int scale, forceEga, forceVga;
-ScreenScaler filterScaler = &screenScale2xBilinear;
+ScreenScaler filterScaler = NULL;
+
+extern int verbose;
 
 #define RLE_RUNSTART 02
 
-void screenInit(int screenScale) {
-    scale = screenScale;
+void screenInit(const char *screenScale) {
+
+    /* set up scaling parameters */
+    if (strcmp(screenScale, "2xBi") == 0) {
+        if (verbose)
+            printf("using 2xBi scaler\n");
+        scale = 2;
+        filterScaler = &screenScale2xBilinear;
+    } else {
+        if (verbose)
+            printf("using default scaler\n");
+        scale = strtoul(screenScale, NULL, 0);
+    }
+
+    if (scale < 1 || scale > 5)
+        scale = 2;
+
     forceEga = 0;
     forceVga = 0;
 
+    /* start SDL */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
 	fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
 	exit(1);
@@ -707,8 +727,12 @@ void screenScrollMessageArea() {
 /**
  * Force a redraw.
  */
-void screenForceRedraw() {
+void screenRedrawScreen() {
     SDL_UpdateRect(screen, 0, 0, 0, 0);
+}
+
+void screenRedrawMapArea() {
+    SDL_UpdateRect(screen, BORDER_WIDTH * scale, BORDER_HEIGHT * scale, VIEWPORT_W * TILE_WIDTH * scale, VIEWPORT_H * TILE_HEIGHT * scale);
 }
 
 void screenAnimateIntro(int frame) {
@@ -737,12 +761,16 @@ void screenAnimateIntro(int frame) {
 void screenEraseTextArea(int x, int y, int width, int height) {
     SDL_Rect dest;
 
-    dest.x = x * 8 * scale;
-    dest.y = y * 8 * scale;
-    dest.w = width * 8 * scale;
-    dest.h = height * 8 * scale;
+    dest.x = x * CHAR_WIDTH * scale;
+    dest.y = y * CHAR_HEIGHT * scale;
+    dest.w = width * CHAR_WIDTH * scale;
+    dest.h = height * CHAR_HEIGHT * scale;
 
     SDL_FillRect(screen, &dest, 0);
+}
+
+void screenRedrawTextArea(int x, int y, int width, int height) {
+    SDL_UpdateRect(screen, x * CHAR_WIDTH * scale, y * CHAR_HEIGHT * scale, width * CHAR_WIDTH * scale, height * CHAR_HEIGHT * scale);
 }
 
 /**
@@ -802,13 +830,14 @@ void screenShowBeastie(int beast, int frame) {
 void screenGemUpdate() {
     int x, y;
 
-    screenFillRect(screen, 8, 8, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0);
+    screenFillRect(screen, BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0);
 
     for (x = 0; x < GEMAREA_W; x++) {
         for (y = 0; y < GEMAREA_H; y++) {
             screenShowGemTile(screenViewportTile(GEMAREA_W, GEMAREA_H, x, y), x, y);
         }
     }
+    screenRedrawMapArea();
 
     screenUpdateCursor();
     screenUpdateMoons();
@@ -820,7 +849,7 @@ SDL_Surface *screenScale(SDL_Surface *src, int scale, int n, int filter) {
 
     dest = src;
 
-    if (filter && filterScaler && /*(scale % 2) == 0*/ scale == 2) {
+    if (filter && filterScaler && (scale % 2 == 0)) {
         dest = (*filterScaler)(src, 2, n);
         scale /= 2;
         SDL_FreeSurface(src);
@@ -850,7 +879,8 @@ SDL_Surface *screenScaleDefault(SDL_Surface *src, int scale, int n) {
         for (x = 0; x < src->w; x++) {
             for (i = 0; i < scale; i++) {
                 for (j = 0; j < scale; j++)
-                    ((Uint8 *)dest->pixels)[dest->pitch * (y * 2 + i) + x * 2 + j] = ((Uint8 *)src->pixels)[src->pitch * y + x];
+                    memcpy(&((char *)dest->pixels)[dest->pitch * (y * scale + i) + (x * scale + j) * src->format->BytesPerPixel], &((char *)src->pixels)[src->pitch * y + (x * src->format->BytesPerPixel)], src->format->BytesPerPixel);
+                //((Uint8 *)dest->pixels)[dest->pitch * (y * scale + i) + x * scale + j] = ((Uint8 *)src->pixels)[src->pitch * y + x];
             }
         }
     }
@@ -887,37 +917,103 @@ SDL_Surface *screenScale2xBilinear(SDL_Surface *src, int scale, int n) {
     for (i = 0; i < n; i++) {
         for (y = (src->h / n) * i; y < (src->h / n) * (i + 1) - 1; y++) {
             for (x = 0; x < src->w - 1; x++) {
-                a = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x]];
-                b = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x + 1]];
-                c = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * (y + 1) + x]];
-                d = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * (y + 1) + x + 1]];
+                a = src->format->palette->colors[getPixel(src, x, y)];
+                b = src->format->palette->colors[getPixel(src, x + 1, y)];
+                c = src->format->palette->colors[getPixel(src, x, y + 1)];
+                d = src->format->palette->colors[getPixel(src, x + 1, y + 1)];
 
-                ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
-                ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2 + 1] = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
-                ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2] = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
-                ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2 + 1] = SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2);
+                putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
+                putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1));
+                putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1));
+                putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2));
             }
-            a = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x]];
-            c = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * (y + 1) + x]];
-            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
-            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2 + 1] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
-            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2] = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
-            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2 + 1] = SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1);
+            a = src->format->palette->colors[getPixel(src, x, y)];
+            b = src->format->palette->colors[getPixel(src, x, y)];
+            c = src->format->palette->colors[getPixel(src, x, y + 1)];
+            d = src->format->palette->colors[getPixel(src, x, y + 1)];
+            putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
+            putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1));
+            putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1));
+            putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2));
         }
         for (x = 0; x < src->w - 1; x++) {
-            a = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x]];
-            b = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x + 1]];
-            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
-            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2 + 1] = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
-            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
-            ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2 + 1] = SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1);
+            a = src->format->palette->colors[getPixel(src, x, y)];
+            b = src->format->palette->colors[getPixel(src, x + 1, y)];
+            c = src->format->palette->colors[getPixel(src, x, y)];
+            d = src->format->palette->colors[getPixel(src, x + 1, y)];
+            putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
+            putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1));
+            putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1));
+            putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2));
         }
-        a = src->format->palette->colors[((Uint8 *)src->pixels)[src->pitch * y + x]];
-        ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
-        ((Uint32 *)dest->pixels)[(dest->pitch / 4) * y * 2 + x * 2 + 1] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
-        ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
-        ((Uint32 *)dest->pixels)[(dest->pitch / 4) * (y * 2 + 1) + x * 2 + 1] = SDL_MapRGB(dest->format, a.r, a.g, a.b);
+        a = src->format->palette->colors[getPixel(src, x, y)];
+        b = src->format->palette->colors[getPixel(src, x, y)];
+        c = src->format->palette->colors[getPixel(src, x, y)];
+        d = src->format->palette->colors[getPixel(src, x, y)];
+        putPixel(dest, x * 2, y * 2, SDL_MapRGB(dest->format, a.r, a.g, a.b));
+        putPixel(dest, x * 2 + 1, y * 2, SDL_MapRGB(dest->format, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1));
+        putPixel(dest, x * 2, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1));
+        putPixel(dest, x * 2 + 1, y * 2 + 1, SDL_MapRGB(dest->format, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2));
     }
 
     return dest;
 }
+
+Uint32 getPixel(SDL_Surface *s, int x, int y) {
+    int bpp = s->format->BytesPerPixel;
+
+    Uint8 *p = (Uint8 *) s->pixels + y * s->pitch + x * bpp;
+
+    switch(bpp) {
+    case 1:
+        return *p;
+
+    case 2:
+        return *(Uint16 *)p;
+
+    case 3:
+        if(SDL_BYTEORDER == SDL_BIG_ENDIAN)
+            return p[0] << 16 | p[1] << 8 | p[2];
+        else
+            return p[0] | p[1] << 8 | p[2] << 16;
+
+    case 4:
+        return *(Uint32 *)p;
+
+    default:
+        return 0;
+    }
+}
+
+void putPixel(SDL_Surface *s, int x, int y, Uint32 pixel) {
+    int bpp = s->format->BytesPerPixel;
+
+    Uint8 *p = (Uint8 *)s->pixels + y * s->pitch + x * bpp;
+
+    switch(bpp) {
+    case 1:
+        *p = pixel;
+        break;
+
+    case 2:
+        *(Uint16 *)p = pixel;
+        break;
+
+    case 3:
+        if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {
+            p[0] = (pixel >> 16) & 0xff;
+            p[1] = (pixel >> 8) & 0xff;
+            p[2] = pixel & 0xff;
+        } else {
+            p[0] = pixel & 0xff;
+            p[1] = (pixel >> 8) & 0xff;
+            p[2] = (pixel >> 16) & 0xff;
+        }
+        break;
+
+    case 4:
+        *(Uint32 *)p = pixel;
+        break;
+    }
+}
+

@@ -18,7 +18,7 @@ typedef enum {
     BKGD_MAX
 } BackgroundType;
 
-void screenInit(int scale);
+void screenInit(const char *screenScale);
 void screenFixIntroScreen(const unsigned char *sigData);
 int screenLoadIntroAnimations();
 void screenFreeIntroAnimations();
@@ -32,9 +32,11 @@ void screenTextAt(int x, int y, char *fmt, ...);
 void screenMessage(const char *fmt, ...);
 void screenScrollMessageArea(void);
 unsigned char screenViewportTile(int width, int height, int x, int y);
-void screenUpdate();
+void screenUpdate(void);
 void screenGemUpdate(void);
-void screenForceRedraw(void);
+void screenRedrawScreen(void);
+void screenRedrawMapArea(void);
+void screenRedrawTextArea(int x, int y, int width, int height);
 void screenAnimateIntro(int frame);
 void screenEraseTextArea(int x, int y, int width, int height);
 void screenShowCard(int pos, int card);

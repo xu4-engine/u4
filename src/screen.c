@@ -128,6 +128,7 @@ void screenUpdate() {
                 screenShowTile(BLACK_TILE, x, y);
         }
     }
+    screenRedrawMapArea();
 
     screenUpdateCursor();
     screenUpdateMoons();
@@ -144,18 +145,22 @@ void screenUpdateCursor() {
 
     assert(phase >= 0 && phase < 4);
 
-    if (screenCursorStatus)
+    if (screenCursorStatus) {
         screenShowChar(31 - phase, screenCursorX, screenCursorY);
+        screenRedrawTextArea(screenCursorX, screenCursorY, 1, 1);
+    }
 }
 
 void screenUpdateMoons() {
     screenShowChar(MOON_CHAR + c->saveGame->trammelphase, 11, 0);
     screenShowChar(MOON_CHAR + c->saveGame->feluccaphase, 12, 0);
+    screenRedrawTextArea(11, 0, 2, 1);
 }
 
 void screenUpdateWind() {
     screenEraseTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
     screenTextAt(WIND_AREA_X, WIND_AREA_Y, "Wind %s", getDirectionName(c->windDirection));
+    screenRedrawTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
 }
 
 void screenEnableCursor() {
