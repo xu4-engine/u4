@@ -737,7 +737,12 @@ offset  len   notes
 0x117c5 28    14 two-byte offsets to .CON filenames (value + 62131 gives
               file offset)
 0x117e1 64    dungeon .CON filenames; 7 zero terminated strings
-0x11821 322   ???
+0x11821 164   ???
+0x118c5 12    altar room exit destinations
+              0-3 = truth (north, east, south, west)
+              4-7 = love
+              8-11 = courage
+0x118d1 146   ???
 0x11963 8     ambush monster types
 0x1196b 190   miscellaneous text strings
 0x11a29 26    spell reagent masks (one byte per spell)
