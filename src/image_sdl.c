@@ -268,3 +268,26 @@ void imageDrawSubRect(const Image *im, int x, int y, int rx, int ry, int rw, int
 
     SDL_BlitSurface(im->surface, &src, SDL_GetVideoSurface(), &dest);
 }
+
+/**
+ * Draws a piece of the image onto the screen at the given offset, inverted.
+ * The area of the image to draw is defined by the rectangle rx, ry,
+ * rw, rh.
+ */
+void imageDrawSubRectInverted(const Image *im, int x, int y, int rx, int ry, int rw, int rh) {
+    int i;
+    SDL_Rect src, dest;
+
+    for (i = 0; i < rh; i++) {
+        src.x = rx;
+        src.y = ry + i;
+        src.w = rw;
+        src.h = 1;
+
+        dest.x = x;
+        dest.y = y + rh - i - 1;
+        /* dest w & h unused */
+
+        SDL_BlitSurface(im->surface, &src, SDL_GetVideoSurface(), &dest);
+    }
+}

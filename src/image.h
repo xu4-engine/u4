@@ -40,5 +40,6 @@ void imageGetPixelIndex(Image *im, int x, int y, unsigned int *index);
 void imageFillRect(Image *im, int x, int y, int w, int h, int r, int g, int b);
 void imageDraw(const Image *im, int x, int y);
 void imageDrawSubRect(const Image *im, int x, int y, int rx, int ry, int rw, int rh);
+void imageDrawSubRectInverted(const Image *im, int x, int y, int rx, int ry, int rw, int rh);
 
 #endif /* IMAGE_H */
