@@ -12,6 +12,7 @@ struct _Location;
 struct _Reply;
 struct _Person;
 struct _Annotation;
+struct _Object;
 
 #define CONV_BUFFERLEN 16
 
@@ -71,6 +72,7 @@ typedef struct _Context {
     int horseSpeed;
     int opacity;
     long lastCommandTime;
+    struct _Object *lastShip;
 } Context;
 
 extern Context *c;

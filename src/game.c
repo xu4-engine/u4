@@ -122,6 +122,7 @@ void gameInit() {
     c->horseSpeed = 0;
     c->opacity = 1;
     c->lastCommandTime = time(NULL);
+    c->lastShip = NULL;
 
     /* load in the save game */
     saveGameFile = saveGameOpenForReading();
@@ -561,7 +562,8 @@ int gameBaseKeyHandler(int key, void *data) {
                     screenMessage("Board: Can't!\n");
                 else {
                     c->saveGame->transport = obj->tile;
-                    c->saveGame->shiphull = 50;
+                    if (c->lastShip != obj)
+                        c->saveGame->shiphull = 50;
                     mapRemoveObject(c->location->map, obj);
                     screenMessage("Board Frigate!\n");
                 }
@@ -875,7 +877,10 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'x':
         if (c->saveGame->transport != AVATAR_TILE && c->saveGame->balloonstate == 0) {
-            mapAddObject(c->location->map, c->saveGame->transport, c->saveGame->transport, c->location->x, c->location->y, c->location->z);
+            Object *obj = mapAddObject(c->location->map, c->saveGame->transport, c->saveGame->transport, c->location->x, c->location->y, c->location->z);
+            if (tileIsShip(c->saveGame->transport))
+                c->lastShip = obj; 
+
             c->saveGame->transport = AVATAR_TILE;
             c->horseSpeed = 0;
             screenMessage("X-it\n");

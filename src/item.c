@@ -135,11 +135,17 @@ void useBBC(void *item) {
 }
 
 void useHorn(void *item) {
-    screenMessage("using horn\n");
+    screenMessage("\nThe Horn sounds an eerie tone!\n");
+    c->aura = AURA_HORN;
+    c->auraDuration = 10;
 }
 
 void useWheel(void *item) {
-    screenMessage("using wheel\n");
+    if (c->saveGame->shiphull == 50) {
+        screenMessage("\nOnce mounted, the Wheel glows with a blue light!\n");
+        c->saveGame->shiphull = 99;        
+    }
+    else screenMessage("\nHmm...No effect!\n");    
 }
 
 void useSkull(void *item) {
