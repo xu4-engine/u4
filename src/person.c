@@ -55,6 +55,7 @@ char *hawkwindGetIntro(Conversation *cnv);
 char *hawkwindGetResponse(Conversation *cnv, const char *inquiry);
 char *hawkwindGetPrompt(const Conversation *cnv);
 int linecount(const char *s, int columnmax);
+int chars_needed(const char *s, int columnmax, int linesdesired);
 
 
 /**
@@ -65,22 +66,31 @@ Reply *replyNew(const char *text) {
     Reply *reply;
     char *ptr;
     int i;
-    int nls;
+    int offset;
 
-    reply = (Reply *) malloc(sizeof(Reply));
+    reply = (Reply *) malloc(sizeof(Reply));    
 
     /*
      * find the first paragraph break, after skipping over any initial
      * newlines
      */
-    nls = strspn(text, "\n");
-    ptr = strstr(text+nls, paragraphBreak);
-
+    offset = strspn(text, paragraphBreak);
+    ptr = strstr(text+offset, paragraphBreak);
+    if (ptr == NULL)
+    {
+        /*
+         * the text might still be text too large
+         * to display; find a new break point!
+         */
+        ptr = text + offset;
+        ptr += chars_needed(text + offset, 16, 11);
+    }
+    
     /*
      * don't split up reply if less than a screenful or can't find a
      * paragraph break
      */
-    if (linecount(text, 16) < 12 || ptr == NULL) {
+    if (linecount(text, 16) < 12) {        
         reply->nchunks = 1;
         reply->chunk = (char **) malloc(sizeof(char *) * reply->nchunks);
         reply->chunk[0] = strdup(text);
@@ -91,13 +101,17 @@ Reply *replyNew(const char *text) {
      * the first
      */
     else {
-        Reply *tmp = replyNew(ptr + strlen(paragraphBreak));
+        Reply *tmp = replyNew(ptr);
+        
+        /* +1 so that the cursor is a line below the continuous text */
+        int len = ptr - text + 1;        
+        if (*(text+len)!='\n') len--; // If there is no break point, then just display normally
 
         reply->nchunks = tmp->nchunks + 1;
         reply->chunk = (char **) malloc(sizeof(char *) * reply->nchunks);
-        reply->chunk[0] = malloc(ptr - text + strlen(paragraphBreak) + 1);
-        strncpy(reply->chunk[0], text, ptr - text + strlen(paragraphBreak));
-        reply->chunk[0][ptr - text + strlen(paragraphBreak)] = '\0';
+        reply->chunk[0] = malloc(len + 1);
+        strncpy(reply->chunk[0], text, len);
+        reply->chunk[0][len] = '\0';
         for (i = 1; i < reply->nchunks; i++)
             reply->chunk[i] = tmp->chunk[i - 1];
         free(tmp->chunk);
@@ -125,13 +139,14 @@ void replyDelete(Reply *reply) {
  */
 int personInit() {
     FILE *avatar;
+    int i;
 
     avatar = u4fopen("avatar.exe");
     if (!avatar)
         return 0;
 
     lbKeywords = u4read_stringtable(avatar, 87581, 24);
-    lbText = u4read_stringtable(avatar, 87754, 24);
+    lbText = u4read_stringtable(avatar, 87754, 24);    
 
     hawkwindText = u4read_stringtable(avatar, 74729, 53);
 
@@ -147,7 +162,7 @@ int personIsVendor(const Person *person) {
 }
 
 Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
-    char *text;
+    char *text;    
     Reply *reply;
 
     /*
@@ -174,7 +189,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
 
         case CONV_TALK:
             if (cnv->talker->npcType == NPC_LORD_BRITISH)
-                text = lordBritishGetResponse(cnv, inquiry);
+                text = concat("\n", lordBritishGetResponse(cnv, inquiry), NULL);
             else if (cnv->talker->npcType == NPC_HAWKWIND)
                 text = hawkwindGetResponse(cnv, inquiry);
             else
@@ -277,17 +292,22 @@ char *emptyGetIntro(Conversation *cnv) {
 }
 
 char *talkerGetIntro(Conversation *cnv) {
-    const char *fmt = "You meet\n%s\n\n%s says: I am %s\n\n%s";
+    const char *fmt1 = "\nYou meet\n%s\n\n%s says: I am %s\n%s";
+    const char *fmt2 = "\nYou meet\n%s\n%s";
     char *prompt, *intro;
 
     prompt = personGetPrompt(cnv);
-    intro = (char *) malloc(strlen(fmt) - 8 +
+    intro = (char *) malloc(strlen(fmt1) - 8 +
                             strlen(cnv->talker->description) +
                             strlen(cnv->talker->pronoun) +
                             strlen(cnv->talker->name) +
                             strlen(prompt) + 1);
 
-    sprintf(intro, fmt, cnv->talker->description, cnv->talker->pronoun, cnv->talker->name, prompt);
+    // As far as I can tell, about 50% of the time they tell you their name
+    if (rand()%2==1)
+        sprintf(intro, fmt1, cnv->talker->description, cnv->talker->pronoun, cnv->talker->name, prompt);
+    else sprintf(intro, fmt2, cnv->talker->description, prompt);
+
     if (isupper(intro[9]))
         intro[9] = tolower(intro[9]);
     free(prompt);
@@ -429,42 +449,39 @@ char *beggarGetQuantityResponse(Conversation *cnv, const char *response) {
 }
 
 void lordBritishCheckLevels(Conversation *cnv) {
-    int i;
+    int i;    
 
     for (i = 0; i < c->saveGame->members; i++) {
         if (playerGetRealLevel(&c->saveGame->players[i]) <
             playerGetMaxLevel(&c->saveGame->players[i]))
-            playerAdvanceLevel(&c->saveGame->players[i]);
+            playerAdvanceLevel(&c->saveGame->players[i]);        
     }
 }
 
 char *lordBritishGetIntro(Conversation *cnv) {
     char *intro;
+    int i;
 
-    musicLordBritish();
-
-    lordBritishCheckLevels(cnv);
+    musicLordBritish();    
 
     if (c->saveGame->lbintro) {
         if (c->saveGame->members == 1)
-            intro = concat("\n\n\nLord British\nsays:  Welcome\n",
-                           c->saveGame->players[0].name,
-                           "\nWhat would thou\nask of me?\n",
-                           NULL);
+            screenMessage("\n\n\nLord British\nsays:  Welcome\n%s", c->saveGame->players[0].name);
         else if (c->saveGame->members == 2)
-            intro = concat("\n\n\nLord British\nsays:  Welcome\n",
+            screenMessage("\n\n\nLord British\nsays:  Welcome\n%s and thee also %s!",
                            c->saveGame->players[0].name,
-                           " and thee also ",
-                           c->saveGame->players[1].name,
-                           "!\nWhat would thou\nask of me?\n",
-                           NULL);
+                           c->saveGame->players[1].name);
         else
-            intro = concat("\n\n\nLord British\nsays:  Welcome\n",
-                           c->saveGame->players[0].name,
-                           " and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n",
-                           NULL);
+            screenMessage("\n\n\nLord British\nsays:  Welcome\n%s and thy\nworthy\nAdventurers!",
+                           c->saveGame->players[0].name);
+        
+        // Check levels here, just like the original!
+        lordBritishCheckLevels(cnv);
+
+        intro = strdup("\nWhat would thou\nask of me?\n");
     }
-    else {
+
+    else {        
         intro = concat("\n\n\nLord British rises and says: At long last!\n",
                        c->saveGame->players[0].name,
                        " thou hast come!  We have waited such a long, long time...\n\n",
@@ -485,7 +502,7 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
 
     if (inquiry[0] == '\0' ||
         strcasecmp(inquiry, "bye") == 0) {
-        reply = strdup("\n\nLord British\nsays: Fare thee\nwell my friends!");
+        reply = strdup("\nLord British\nsays: Fare thee\nwell my friends!");
         cnv->state = CONV_DONE;
         musicPlay();
     }
@@ -504,24 +521,24 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
             if (strncasecmp(inquiry, lbKeywords[i], 4) == 0)
                 return strdup(lbText[i]);
         }
-        reply = strdup("\n\nHe says: I\ncannot help thee\nwith that.\n");
+        reply = strdup("\nHe says: I\ncannot help thee\nwith that.\n");
     }
 
     return reply;
 }
 
 char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
-    int i;
+    int i;    
     char *reply;
 
     cnv->state = CONV_TALK;
 
     if (tolower(answer[0]) == 'y') {
-        reply = strdup("\nHe says: That is good.\n");
+        reply = strdup("\n\nHe says: That is good.\n");
     }
 
     else if (tolower(answer[0]) == 'n') {
-        reply = strdup("\nHe says: Let me heal thy wounds!\n");
+        reply = strdup("\n\nHe says: Let me heal thy wounds!\n");
         /* FIXME: special effect here */
         for (i = 0; i < c->saveGame->members; i++) {
             playerHeal(c->saveGame, HT_HEAL, i);
@@ -530,7 +547,7 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
     }
 
     else
-        reply = strdup("\n\nThat I cannot\nhelp thee with.");
+        reply = strdup("\n\nThat I cannot\nhelp thee with.\n");
 
     return reply;
 }
@@ -667,28 +684,28 @@ char *hawkwindGetResponse(Conversation *cnv, const char *inquiry) {
             virtueLevel = c->saveGame->karma[v];
         }
     }
-    if (virtue != -1) {
+    if (virtue != -1) {		
         if (virtueLevel == 0)
-            reply = concat("\n\n", hawkwindText[HW_ALREADYAVATAR], NULL);
+            reply = concat("\n\n", hawkwindText[HW_ALREADYAVATAR], "\n", NULL);
         else if (virtueLevel < 20)
-            reply = concat("\n\n", hawkwindText[0 * 8 + virtue], NULL);
+            reply = concat("\n\n", hawkwindText[0 * 8 + virtue], "\n", NULL);
         else if (virtueLevel < 40)
-            reply = concat("\n\n", hawkwindText[1 * 8 + virtue], NULL);
+            reply = concat("\n\n", hawkwindText[1 * 8 + virtue], "\n", NULL);
         else if (virtueLevel < 60)
-            reply = concat("\n\n", hawkwindText[2 * 8 + virtue], NULL);
+            reply = concat("\n\n", hawkwindText[2 * 8 + virtue], "\n", NULL);
         else if (virtueLevel < 99)
-            reply = concat("\n\n", hawkwindText[3 * 8 + virtue], NULL);
+            reply = concat("\n\n", hawkwindText[3 * 8 + virtue], "\n", NULL);
         else /* virtueLevel >= 99 */
-            reply = concat("\n\n", hawkwindText[4 * 8 + virtue], hawkwindText[HW_GOTOSHRINE], NULL);
+            reply = concat("\n\n", hawkwindText[4 * 8 + virtue], hawkwindText[HW_GOTOSHRINE], "\n", NULL);
 
         return reply;
     }
-
-    return strdup(hawkwindText[HW_DEFAULT]);
+        
+    return concat("\n", hawkwindText[HW_DEFAULT], NULL);
 }
 
 char *hawkwindGetPrompt(const Conversation *cnv) {
-    return concat("\n", hawkwindText[HW_PROMPT], NULL);
+    return concat(hawkwindText[HW_PROMPT], NULL);
 }
 
 void personGetQuestion(const Person *p, char **question) {
@@ -766,4 +783,31 @@ int linecount(const char *s, int columnmax) {
     }
 
     return lines;
+}
+
+/**
+ * Returns the number of characters needed to produce a
+ * valid screen of text (given a column width)
+ */
+int chars_needed(const char *s, int columnmax, int linesdesired) {
+    int lines = 1;
+    int col;
+    int charCount = 0;
+
+    col = 0;
+    for (; *s; s++) {
+        if (*s == '\n' || col >= columnmax) {
+            charCount++;
+            lines++;
+            col = 0;
+            if (lines >= linesdesired)
+                return charCount;
+        }
+        else {
+            col++;
+            charCount++;
+        }
+    }    
+
+    return charCount;
 }
