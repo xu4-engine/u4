@@ -18,6 +18,7 @@
 #include "io.h"
 #include "stats.h"
 #include "vendor.h"
+#include "music.h"
 
 char **hawkwindText;
 char **lbKeywords;
@@ -262,6 +263,8 @@ char *lordBritishGetIntro(Conversation *cnv) {
     sprintf(intro, lbFmt, c->saveGame->players[0].name);
     cnv->state = CONV_TALK;
 
+    lb_music();
+
     return intro;
 }
 
@@ -273,6 +276,7 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
         strcasecmp(inquiry, "bye") == 0) {
         reply = strdup("Lord British\nsays: Fare thee\nwell my friends!");
         cnv->state = CONV_DONE;
+        play_music();
     }
 
     else if (strncasecmp(inquiry, "heal", 4) == 0) {
