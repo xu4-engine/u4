@@ -60,9 +60,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/tiles.xml
 %{_libdir}/u4/armors.xml
 %{_libdir}/u4/weapons.xml
+%{_libdir}/u4/music.xml
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Sat Aug 23 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added music.xml to files
+
 * Mon Jul 21 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added armors.xml and weapons.xml to files
 
