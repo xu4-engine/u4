@@ -49,6 +49,9 @@ typedef struct _Map {
     const char *fname;
     MapType type;
     unsigned int width, height, levels;
+    unsigned int chunk_width, chunk_height;
+    int n_compressed_chunks;
+    int *compressed_chunks;
     MapBorderBehavior border_behavior;
     int n_portals;
     struct _Portal *portals;
