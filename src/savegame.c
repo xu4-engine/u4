@@ -158,7 +158,7 @@ int saveGameRead(SaveGame *save, FILE *f) {
     return 1;
 }
 
-void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avatarInfo) {
+void saveGameInit(SaveGame *save, const SaveGamePlayerRecord *avatarInfo) {
     int i;
 
     save->unknown1 = 0;
@@ -168,8 +168,8 @@ void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avat
     for (i = 1; i < 8; i++)
         saveGamePlayerRecordInit(&(save->players[i]));
 
-    save->food = 30000;
-    save->gold = 200;
+    save->food = 0;
+    save->gold = 0;
 
     for (i = 0; i < 8; i++)
         save->karma[i] = 20;
@@ -192,8 +192,8 @@ void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avat
         save->mixtures[i] = 0;
 
     save->items = 0;
-    save->x = x;
-    save->y = y;
+    save->x = 0;
+    save->y = 0;
     save->stones = 0;
     save->runes = 0;
     save->members = 1;

@@ -178,7 +178,7 @@ typedef struct _SaveGame {
 
 int saveGameWrite(const SaveGame *save, FILE *f);
 int saveGameRead(SaveGame *save, FILE *f);
-void saveGameInit(SaveGame *save, int x, int y, const SaveGamePlayerRecord *avatarInfo);
+void saveGameInit(SaveGame *save, const SaveGamePlayerRecord *avatarInfo);
 int saveGamePlayerRecordWrite(const SaveGamePlayerRecord *record, FILE *f);
 int saveGamePlayerRecordRead(SaveGamePlayerRecord *record, FILE *f);
 void saveGamePlayerRecordInit(SaveGamePlayerRecord *record);
