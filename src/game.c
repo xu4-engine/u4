@@ -635,6 +635,36 @@ int gameBaseKeyHandler(int key, void *data) {
         }
         break;
 
+    case U4_FKEY+8:
+        if (settings->debug && (c->location->context & CTX_WORLDMAP)) {
+            gameSetMap(c, mapMgrGetById(MAP_DECEIT), 1, NULL);
+            c->location->x = 1;
+            c->location->y = 0;
+            c->location->z = 7;
+            c->saveGame->orientation = DIR_SOUTH;
+        }
+        break;
+
+    case U4_FKEY+9:
+        if (settings->debug && (c->location->context & CTX_WORLDMAP)) {
+            gameSetMap(c, mapMgrGetById(MAP_DESPISE), 1, NULL);
+            c->location->x = 3;
+            c->location->y = 2;
+            c->location->z = 7;
+            c->saveGame->orientation = DIR_SOUTH;
+        }
+        break;
+
+    case U4_FKEY+10:
+        if (settings->debug && (c->location->context & CTX_WORLDMAP)) {
+            gameSetMap(c, mapMgrGetById(MAP_DESTARD), 1, NULL);
+            c->location->x = 7;
+            c->location->y = 6;
+            c->location->z = 7;
+            c->saveGame->orientation = DIR_SOUTH;
+        }
+        break;
+
     case U4_FKEY+11:
         if (settings->debug) {
             screenMessage("Torch: %d\n", c->saveGame->torchduration);
@@ -1626,7 +1656,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
             screenMessage("Not Here!\n");
         musicPlay();
         screenPrompt();
-        break;
+        break;    
 
     case '\033':
     case '\015':
