@@ -10,6 +10,7 @@
 #include "context.h"
 #include "error.h"
 #include "event.h"
+#include "list.h"
 #include "screen.h"
 #include "settings.h"
 #include "u4_sdl.h"
@@ -50,6 +51,21 @@ void eventHandlerSleep(int usec) {
     SDL_Delay(usec);    
 }
 
+static MouseArea *eventMouseAreaForPoint(int x, int y) {
+    int i;
+    MouseArea *areas = eventHandlerGetMouseAreaSet();
+
+    if (!areas)
+        return NULL;
+
+    for (i = 0; areas[i].npoints != 0; i++) {
+        if (screenPointInMouseArea(x, y, &(areas[i]))) {
+            return &(areas[i]);
+        }
+    }
+    return NULL;
+}
+
 void eventHandlerMain(void (*updateScreen)(void)) {
     eventHandlerSetExitFlag(0);
 
@@ -60,6 +76,7 @@ void eventHandlerMain(void (*updateScreen)(void)) {
     while (!eventHandlerGetExitFlag()) {
         int processed = 0;
         SDL_Event event;
+        MouseArea *area;
 
         SDL_WaitEvent(&event);
 
@@ -116,6 +133,29 @@ void eventHandlerMain(void (*updateScreen)(void)) {
             }
             break;
         }
+
+        case SDL_MOUSEBUTTONDOWN: {
+            int button = event.button.button - 1;
+            if (button > 2)
+                button = 0;
+            area = eventMouseAreaForPoint(event.button.x, event.button.y);
+            if (!area || area->command[button] == 0)
+                break;
+            (*eventHandlerGetKeyHandler())(area->command[button], eventHandlerGetKeyHandlerData());
+            if (updateScreen)
+                (*updateScreen)();
+            screenRedrawScreen();
+            break;
+        }
+
+        case SDL_MOUSEMOTION:
+            area = eventMouseAreaForPoint(event.button.x, event.button.y);
+            if (area)
+                screenSetMouseCursor(area->cursor);
+            else
+                screenSetMouseCursor(MC_DEFAULT);
+            break;
+
         case SDL_USEREVENT:
             eventHandlerCallTimerCallbacks();
             break;

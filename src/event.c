@@ -30,6 +30,7 @@ typedef struct TimerCallbackNode {
 
 TimerCallbackNode *timerCallbackHead = NULL;
 ListNode *keyHandlers = NULL;
+ListNode *mouseAreaSets = NULL;
 int eventExitFlag = 0;
 int timerCallbackListLocked = 0;
 TimerCallbackNode *deferedTimerCallbackRemoval = NULL;
@@ -338,3 +339,24 @@ int keyHandlerReadBuffer(int key, void *data) {
 
     return valid || keyHandlerDefault(key, NULL);
 }
+
+void eventHandlerPushMouseAreaSet(MouseArea *mouseAreas) {
+    mouseAreaSets = listPrepend(mouseAreaSets, mouseAreas);
+}
+
+void eventHandlerPopMouseAreaSet(void) {
+    if (mouseAreaSets) {
+        mouseAreaSets = listRemove(mouseAreaSets, mouseAreaSets);
+    }
+}
+
+/**
+ * Get the currently active mouse area set of the top of the stack.
+ */
+MouseArea *eventHandlerGetMouseAreaSet() {
+    if (mouseAreaSets)
+        return (MouseArea *)mouseAreaSets->data;
+    else
+        return NULL;
+}
+

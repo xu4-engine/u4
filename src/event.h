@@ -28,6 +28,8 @@
 
 extern int eventTimerGranularity;
 
+struct _MouseArea;
+
 typedef int (*KeyHandler)(int, void *);
 typedef void (*TimerCallback)(void *);
 
@@ -77,5 +79,9 @@ int keyHandlerDefault(int key, void *data);
 int keyHandlerIgnoreKeys(int key, void *data);
 int keyHandlerReadBuffer(int key, void *data);
 int keyHandlerGetChoice(int key, void *data);
+
+void eventHandlerPushMouseAreaSet(struct _MouseArea *mouseAreas);
+void eventHandlerPopMouseAreaSet(void);
+struct _MouseArea *eventHandlerGetMouseAreaSet(void);
 
 #endif
