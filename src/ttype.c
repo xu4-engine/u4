@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "ttype.h"
-#include "u4.h"
+#include "direction.h"
 
 #define MASK_WALKABLE  0x0003
 #define MASK_EFFECT    0x000C
