@@ -114,7 +114,6 @@ int main(int argc, char *argv[]) {
     if (quit)
         return 0;
 
-
     /* initialize person data */
     perf.reset();
     perf.start();
@@ -130,10 +129,7 @@ int main(int argc, char *argv[]) {
     /* give a performance report */
     if (settings.debug)
         perf.report("\n===============================\n\n");
-
-    eventHandler->getTimer()->add(&gameTimer, 1);
-    eventHandler->pushKeyHandler(&gameBaseKeyHandler);
-    eventHandler->setScreenUpdate(&gameUpdateScreen);
+    
     eventHandler->run();
 
     /* main event handler returned - cleanup and exit! */
