@@ -39,7 +39,7 @@ void settingsRead() {
     /* default settings */
     settings->scale = 2;
     settings->fullscreen = 0;
-    settings->filter = SCL_2xSaI;
+    settings->filter = SCL_AdvanceMAME;
     settings->vol = 1;
 
     settingsFname = settingsFilename();
