@@ -143,6 +143,10 @@ const Monster *monsterRandomForTile(unsigned char tile) {
         mtile = ((rand() % 8) << 1) + PIRATE_TILE;
         return monsterForTile(mtile);
     }
+    else if (tileIsSwimable(tile)) {
+        mtile = ((rand() % 7) << 1) + NIXIE_TILE;
+        return monsterForTile(mtile);
+    }
 
     if (!tileIsMonsterWalkable(tile))
         return 0;
