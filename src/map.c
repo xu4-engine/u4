@@ -342,7 +342,7 @@ void mapRemovePerson(Map *map, const Person *person) {
 }
 
 void mapMoveObjects(Map *map, int avatarx, int avatary) {
-    int dx, dy, newx, newy;
+    int newx, newy;
     unsigned char tile;
     Object *obj = map->objects, *other;
 
@@ -360,31 +360,8 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
                 
         case MOVEMENT_ATTACK_AVATAR:
         case MOVEMENT_FOLLOW_AVATAR:
-            if (rand() % 2) {
-                if (newx > avatarx)
-                    dx = -1;
-                else
-                    dx = 1;
-                if (newy > avatary)
-                    dy = -1;
-                else
-                    dy = 1;
-                if (newx != avatarx &&
-                    newy != avatary) {
-                    switch(rand() % 2) {
-                    case 0:
-                        newx += dx;
-                        break;
-                    case 1:
-                        newy += dy;
-                        break;
-                    }
-                } else if (newx != avatarx) {
-                    newx += dx;
-                } else if (obj->y != avatary) {
-                    newy += dy;
-                }
-            }
+            if (rand() % 2)
+                dirMove(dirFindPath(newx, newy, avatarx, avatary, MASK_DIR_ALL), &newx, &newy);
             break;
         }
 
@@ -394,7 +371,7 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
             if (c->saveGame->x == newx && c->saveGame->y == newy)
                 tile = c->saveGame->transport;
             else if ((other = mapObjectAt(map, newx, newy)) != NULL)
-                tile = obj->tile;
+                tile = other->tile;
             else
                 tile = mapTileAt(map, newx, newy);
             if (tileIsWalkable(tile)) {
@@ -435,4 +412,62 @@ void mapClearObjects(Map *map) {
     }
 
     map->objects = NULL;
+}
+
+int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char transport) {
+    int retval;
+    Direction d;
+    unsigned char tile;
+    Object *obj;
+    int x, y;
+
+    retval = 0;
+    for (d = DIR_WEST; d <= DIR_SOUTH; d++) {
+        x = from_x;
+        y = from_y;
+
+        dirMove(d, &x, &y);
+
+        if (MAP_IS_OOB(map, x, y)) {
+            if (map->border_behavior == BORDER_WRAP) {
+                if (x < 0)
+                    x += map->width;
+                if (y < 0)
+                    y += map->height;
+                if (x >= (int) map->width)
+                    x -= map->width;
+                if (y >= (int) map->height)
+                    y -= map->height;
+            }
+            else {
+                retval = DIR_ADD_TO_MASK(d, retval);
+                continue;
+            }
+        }
+
+        if ((map->flags & SHOW_AVATAR) &&
+            x == c->saveGame->x && 
+            y == c->saveGame->y)
+            tile = c->saveGame->transport;
+        else if ((obj = mapObjectAt(map, x, y)) != NULL)
+            tile = obj->tile;
+        else
+            tile = mapTileAt(map, x, y);
+
+        /* if the transport is a ship, check sailable */
+        if (tileIsShip(transport) || tileIsPirateShip(transport)) {
+            if (tileIsSailable(tile))
+                retval = DIR_ADD_TO_MASK(d, retval);
+        }
+        /* if it is a balloon, check flyable */
+        else if (tileIsBalloon(transport)) {
+            if (tileIsFlyable(tile))
+                retval = DIR_ADD_TO_MASK(d, retval);
+        }
+        /* otherwise check walkable */
+        else if (!tileIsWalkable(tile))
+            retval = DIR_ADD_TO_MASK(d, retval);
+    }
+
+    return retval;
 }

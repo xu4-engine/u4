@@ -75,5 +75,6 @@ void mapRemovePerson(Map *map, const struct _Person *person);
 void mapClearObjects(Map *map);
 void mapMoveObjects(Map *map, int avatarx, int avatary);
 void mapAnimateObjects(Map *map);
+int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char transport);
 
 #endif
