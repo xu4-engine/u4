@@ -389,21 +389,6 @@ void mapMoveObjects(Map *map, int avatarx, int avatary) {
             newx >= 0 && newx < map->width &&
             newy >= 0 && newy < map->height) {
 
-            if (c->saveGame->x == newx && c->saveGame->y == newy)
-                tile = c->saveGame->transport;
-            else if ((other = mapObjectAt(map, newx, newy)) != NULL)
-                tile = other->tile;
-            else
-                tile = mapTileAt(map, newx, newy);
-
-            if (m && (m->mattr & MATTR_WATER) != 0) {
-                if (!tileIsSailable(tile))
-                    continue;
-            }
-
-            else if (!tileIsWalkable(tile))
-                continue;
-
             if (newx != obj->x ||
                 newy != obj->y) {
                 obj->prevx = obj->x;
@@ -500,6 +485,10 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, unsigned char trans
         else if ((m = monsterForTile(transport)) && (m->mattr & MATTR_WATER)) {
             if (tileIsSwimable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);
+        }
+        /* ghost monster */
+        else if ((m = monsterForTile(transport)) && (m->tile == GHOST_TILE)) {
+            retval = DIR_ADD_TO_MASK(d, retval);
         }
         /* if it is a balloon, check flyable */
         else if (tileIsBalloon(transport)) {
