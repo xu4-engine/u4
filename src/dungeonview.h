@@ -8,6 +8,12 @@
 #include "direction.h"
 #include "tileview.h"
 
+/**
+ * @todo
+ * <ul>
+ *      <li>move the rest of the dungeon drawing logic here from screen_sdl</li>
+ * </ul>
+ */
 class DungeonView : public TileView {
 public:
     DungeonView(int x, int y, int columns, int rows);

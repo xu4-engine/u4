@@ -12,6 +12,11 @@ class MapTile;
 
 /**
  * A view of a grid of tiles.  Used to draw Maps.
+ * @todo
+ * <ul>
+ *      <li>use for gem view</li>
+ *      <li>intialize from a Layout?</li>
+ * </ul>
  */
 class TileView : public View {
 public:
