@@ -13,6 +13,7 @@
 #include "context.h"
 #include "savegame.h"
 #include "names.h"
+#include "ttype.h"
 
 #define STATS_AREA_WIDTH 15
 #define STATS_AREA_HEIGHT 8
@@ -102,7 +103,10 @@ void statsShowPartyView() {
     for (i = 0; i < c->saveGame->members; i++)
         screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, "%d-%-9s%03d%c", i+1, c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
 
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
+    if (tileIsShip(c->saveGame->transport))
+        screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   SHP:%02d", c->saveGame->food / 100, c->saveGame->shiphull);
+    else
+        screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
 }
 
 /**
