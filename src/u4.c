@@ -101,6 +101,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* play the game! */
+    mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
     play_music();
     screenDrawBackground(BKGD_BORDERS);
     screenUpdate();

@@ -103,6 +103,8 @@ void gameFinishTurn() {
         assert(0);
     }
 
+    mapMoveObjects(c->map, c->saveGame->x, c->saveGame->y);
+
     /* update map annotations and the party stats */
     annotationCycle();
     c->statsItem = STATS_PARTY_OVERVIEW;
@@ -210,7 +212,6 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'e':
         portal = mapPortalAt(c->map, c->saveGame->x, c->saveGame->y);
         if (portal && portal->trigger_action == ACTION_ENTER) {
-
             Context *new = (Context *) malloc(sizeof(Context));
             new->parent = c;
             new->saveGame = c->saveGame;
@@ -222,6 +223,7 @@ int gameBaseKeyHandler(int key, void *data) {
             new->windCounter = new->parent->windCounter;
             new->moonPhase = new->parent->moonPhase;
             
+            mapRemoveObjectAtPosition(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
             annotationClear();  /* clear out world map annotations */
             gameSetMap(new, portal->destination, 1);
             c = new;
@@ -244,6 +246,8 @@ int gameBaseKeyHandler(int key, void *data) {
                 }
                 screenMessage("Enter %s!\n\n%s\n\n", type, c->map->city->name);
             }
+
+            mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
 
             play_music();
             
@@ -1104,18 +1108,21 @@ int gameCanMoveOntoTile(const Map *map, int x, int y) {
  * keystroke.  Returns zero if the avatar is blocked.
  */
 int moveAvatar(Direction dir, int userEvent) {
+    int result = 1;
     int newx, newy;
+
+    mapRemoveObjectAtPosition(c->map, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
 
     if (tileIsBalloon(c->saveGame->transport) && userEvent) {
         screenMessage("Drift Only!\n");
-        return 1;
+        goto done;
     }
 
     if (tileIsShip(c->saveGame->transport)) {
         if (tileGetDirection(c->saveGame->transport) != dir) {
             tileSetDirection(&c->saveGame->transport, dir);
             screenMessage("Turn %s!\n", getDirectionName(dir));
-            return 1;
+            goto done;
         }
     }
 
@@ -1177,7 +1184,7 @@ int moveAvatar(Direction dir, int userEvent) {
                 
                 play_music();
 	    }
-	    return 1;
+            goto done;
 	    
 	case BORDER_FIXED:
 	    if (newx < 0 || newx >= c->map->width)
@@ -1191,7 +1198,8 @@ int moveAvatar(Direction dir, int userEvent) {
     if (!collisionOverride) {
         if (!gameCanMoveOntoTile(c->map, newx, newy)) {
             screenMessage("Blocked!\n");
-            return 0;
+            result = 0;
+            goto done;
         }
 
         /* 
@@ -1200,11 +1208,13 @@ int moveAvatar(Direction dir, int userEvent) {
          */
         if (mapTileAt(c->map, newx, newy) == 0x0e && dir == DIR_SOUTH) {
             screenMessage("Blocked!\n");
-            return 0;
+            result = 0;
+            goto done;
         }
         if (mapTileAt(c->map, c->saveGame->x, c->saveGame->y) == 0x0e && dir == DIR_NORTH) {
             screenMessage("Blocked!\n");
-            return 0;
+            result = 0;
+            goto done;
         }
     }
 
@@ -1213,7 +1223,10 @@ int moveAvatar(Direction dir, int userEvent) {
 
     gameCheckMoongates();
 
-    return 1;
+ done:
+
+    mapAddObject(c->map, c->saveGame->transport, c->saveGame->transport, c->saveGame->x, c->saveGame->y);
+    return result;
 }
 
 /**
@@ -1303,6 +1316,8 @@ void gameTimer() {
             annotationAdd(gate->x, gate->y, -1, MOONGATE0_TILE);
         }
     }
+
+    mapAnimateObjects(c->map);
 
     screenCycle();
     screenUpdate();
