@@ -15,6 +15,7 @@ Map brick_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -27,6 +28,7 @@ Map bridge_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -39,6 +41,7 @@ Map brush_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -51,6 +54,7 @@ Map camp_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -63,6 +67,7 @@ Map dng0_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -75,6 +80,7 @@ Map dng1_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -87,6 +93,7 @@ Map dng2_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -99,6 +106,7 @@ Map dng3_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -111,6 +119,7 @@ Map dng4_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -123,6 +132,7 @@ Map dng5_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -135,6 +145,7 @@ Map dng6_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -147,6 +158,7 @@ Map dungeon_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -159,6 +171,7 @@ Map forest_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -171,6 +184,7 @@ Map grass_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -183,6 +197,7 @@ Map hill_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -195,6 +210,7 @@ Map inn_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -207,6 +223,7 @@ Map marsh_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -219,6 +236,7 @@ Map shipsea_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -231,6 +249,7 @@ Map shipship_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -243,6 +262,7 @@ Map shipshor_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -255,6 +275,7 @@ Map shore_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -267,6 +288,7 @@ Map shorship_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_COMBAT, /* music */
     NULL, /* data */
     NULL /* city */
 };
@@ -279,6 +301,7 @@ Map shrine_map = {
     0, /* n_portals */
     NULL, /* portals */
     0, /* flags */
+    MUSIC_SHRINES, /* music */
     NULL, /* data */
     NULL /* city */
 };

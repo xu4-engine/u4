@@ -19,6 +19,7 @@ Map empath_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_CASTLES, /* music */
     NULL, /* data */
     &empath_city /* city */
 };
@@ -42,6 +43,7 @@ Map lycaeum_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_CASTLES, /* music */
     NULL, /* data */
     &lycaeum_city /* city */
 };
@@ -65,6 +67,7 @@ Map serpent_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_CASTLES, /* music */
     NULL, /* data */
     &serpent_city /* city */
 };
@@ -95,6 +98,7 @@ Map lcb_1_map = {
     2, /* n_portals */
     lcb_1_portals, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_RULEBRIT, /* music */
     NULL, /* data */
     &lcb_1_city /* city */
 };
@@ -123,6 +127,7 @@ Map lcb_2_map = {
     2, /* n_portals */
     lcb_2_portals, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_RULEBRIT, /* music */
     NULL, /* data */
     &lcb_2_city /* city */
 };

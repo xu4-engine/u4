@@ -11,6 +11,7 @@ struct _City;
 struct _Portal;
 
 #include "person.h"
+#include "music.h"
 
 typedef enum {
     BORDER_WRAP,
@@ -29,6 +30,7 @@ typedef struct _Map {
     int n_portals;
     const struct _Portal *portals;
     int flags;
+    Music music;
     unsigned char *data;
     struct _City *city;
 } Map;

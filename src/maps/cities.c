@@ -18,6 +18,7 @@ Map britain_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &britain_city /* city */
 };
@@ -41,6 +42,7 @@ Map cove_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &cove_city /* city */
 };
@@ -64,6 +66,7 @@ Map den_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &den_city /* city */
 };
@@ -87,6 +90,7 @@ Map jhelom_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &jhelom_city /* city */
 };
@@ -110,6 +114,7 @@ Map magincia_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &magincia_city /* city */
 };
@@ -133,6 +138,7 @@ Map minoc_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &minoc_city /* city */
 };
@@ -156,6 +162,7 @@ Map moonglow_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &moonglow_city /* city */
 };
@@ -179,6 +186,7 @@ Map paws_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &paws_city /* city */
 };
@@ -202,6 +210,7 @@ Map skara_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &skara_city /* city */
 };
@@ -225,6 +234,7 @@ Map trinsic_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &trinsic_city /* city */
 };
@@ -248,6 +258,7 @@ Map vesper_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &vesper_city /* city */
 };
@@ -271,6 +282,7 @@ Map yew_map = {
     0, /* n_portals */
     NULL, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_TOWNS, /* music */
     NULL, /* data */
     &yew_city /* city */
 };

@@ -60,6 +60,7 @@ Map world_map = {
     sizeof(world_portals) / sizeof(world_portals[0]), /* n_portals */
     world_portals, /* portals */
     SHOW_AVATAR, /* flags */
+    MUSIC_OUTSIDE, /* music */
     NULL, /* data */
     NULL /* city */
 };
