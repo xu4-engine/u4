@@ -26,15 +26,15 @@ void createDngLadder(Location *location, PortalTriggerAction action, Portal *p) 
     else {
         p->destid = location->map->id;
         if (action == ACTION_KLIMB && location->coords.z == 0) {
-            p->exitPortal = 1;
+            p->exitPortal = true;
             p->destid = 1;
         }
-        else p->exitPortal = 0;
-        p->message = NULL;
+        else p->exitPortal = false;
+        p->message = "";
         p->portalConditionsMet = NULL;
         p->portalTransportRequisites = TRANSPORT_FOOT_OR_HORSE;
         p->retroActiveDest = NULL;
-        p->saveLocation = 0;
+        p->saveLocation = false;
         p->start = location->coords;
         p->start.z += (action == ACTION_KLIMB) ? -1 : 1;
     }
@@ -78,13 +78,13 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
     
     destination = mapMgrGetById(portal->destid);
 
-    if (!portal->message) {
+    if (portal->message.empty()) {
 
         switch(action) {
-        case ACTION_DESCEND:            
+        case ACTION_DESCEND:
             sprintf(msg, "Descend down to level %d\n", portal->start.z+1);
             break;
-        case ACTION_KLIMB:            
+        case ACTION_KLIMB:
             if (portal->exitPortal)
                 sprintf(msg, "Klimb up!\nLeaving...\n");
             else sprintf(msg, "Klimb up!\nTo level %d\n", portal->start.z+1);
@@ -118,8 +118,8 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         return 1;
     }
     /* ok, we know the portal is going to work -- now display the custom message, if any */
-    else if (portal->message || strlen(msg))
-        screenMessage("%s", portal->message ? portal->message : msg);    
+    else if (!portal->message.empty() || strlen(msg))
+        screenMessage("%s", portal->message.empty() ? msg : portal->message.c_str());
 
     /* portal just exits to parent map */
     if (portal->exitPortal) {        
