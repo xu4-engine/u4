@@ -3,6 +3,7 @@
 #
 
 bindir=/usr/bin
+libdir=/usr/lib
 datadir=/usr/share
 desktopdir=/etc/X11/applnk
 
@@ -29,6 +30,14 @@ install::
 	install -D $(MAIN) $(bindir)/$(MAIN)
 	install -D ../icons/u4.bmp $(datadir)/pixmaps/u4.bmp
 	install -D ../icons/u4.png $(datadir)/pixmaps/u4.png
+	install -D ../mid/Castles.mid $(libdir)/u4/music/Castles.mid
+	install -D ../mid/Combat.mid $(libdir)/u4/music/Combat.mid
+	install -D ../mid/Dungeon.mid $(libdir)/u4/music/Dungeon.mid
+	install -D ../mid/Fanfare_Of_Lord_British.mid $(libdir)/u4/music/Fanfare_Of_Lord_British.mid
+	install -D ../mid/Shopping.mid $(libdir)/u4/music/Shopping.mid
+	install -D ../mid/Shrines.mid $(libdir)/u4/music/Shrines.mid
+	install -D ../mid/Towns.mid $(libdir)/u4/music/Towns.mid
+	install -D ../mid/Wanderer.mid $(libdir)/u4/music/Wanderer.mid
 	install -D ../u4.desktop $(desktopdir)/Games/u4.desktop
 
 -include .depends
