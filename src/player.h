@@ -39,5 +39,6 @@ void playerEndTurn(SaveGame *saveGame);
 void playerApplyEffect(SaveGame *saveGame, TileEffect effect);
 int playerPartyImmobilized(const SaveGame *saveGame);
 int playerPartyDead(const SaveGame *saveGame);
+void playerRevive(SaveGame *saveGame);
 
 #endif

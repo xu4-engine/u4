@@ -17,12 +17,12 @@
 void playerApplyDamage(SaveGamePlayerRecord *player, int damage) {
     int newHp = player->hp;
 
-    if (newHp == 0 || player->status == STAT_DEAD)
+    if (player->status == STAT_DEAD)
         return;
 
     newHp -= damage;
 
-    if (newHp <= 0) {
+    if (newHp < 0) {
         player->status = STAT_DEAD;
         newHp = 0;
     }
@@ -347,3 +347,14 @@ int playerPartyDead(const SaveGame *saveGame) {
     return dead;
 }
 
+void playerRevive(SaveGame *saveGame) {
+    int i;
+
+    for (i = 0; i < saveGame->members; i++) {
+        saveGame->players[i].status = STAT_GOOD;
+        saveGame->players[i].hp = saveGame->players[i].hpMax;
+    }
+
+    saveGame->food = 20000;
+    saveGame->gold = 200;
+}
