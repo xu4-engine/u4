@@ -23,7 +23,11 @@
 
 void moveAvatar(int dx, int dy);
 int attackAtCoord(int x, int y);
+int castForPlayer(int player);
+int castForPlayer2(int spell, void *data);
 int jimmyAtCoord(int x, int y);
+int newOrderForPlayer(int player);
+int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y);
 int readyForPlayer(int player);
 int readyForPlayer2(int weapon, void *data);
@@ -134,7 +138,6 @@ int keyHandlerNormal(int key, void *data) {
     int valid = 1;
     const Portal *portal;
     DirectedActionInfo *info;
-    SpellCastError spellError;
 
     switch (key) {
 
@@ -165,25 +168,8 @@ int keyHandlerNormal(int key, void *data) {
         break;
 
     case 'c':
-        if (!spellCast(1, 0, &spellError)) {
-            switch(spellError) {
-            case CASTERR_NOMIX:
-                screenMessage("None Mixed!\n");
-                break;
-            case CASTERR_WRONGCONTEXT:
-                screenMessage("Can't Cast Here!\n");
-                break;
-            case CASTERR_MPTOOLOW:
-                screenMessage("Not Enough MP!\n");
-                break;
-            case CASTERR_NOERROR:
-            default:
-                /* should never happen */
-                assert(0);
-            }
-            break;
-        }
-        screenMessage("spell cast - not implemented yet!");
+        eventHandlerPushKeyHandlerData(&keyHandlerGetPlayerNo, &castForPlayer);
+        screenMessage("Cast Spell!\nPlayer: ");
         break;
 
     case 'd':
@@ -237,6 +223,20 @@ int keyHandlerNormal(int key, void *data) {
         }
         else
             screenMessage("Klimb what?\n\020");
+        break;
+
+    case 'l':
+        if (c->saveGame->sextants >= 1)
+            screenMessage("Locate position\nwith sextant\n Latitude: %c'%c\"\nLongitude: %c'%c\"\n\020",
+                          c->saveGame->y / 16 + 'A', c->saveGame->y % 16 + 'A',
+                          c->saveGame->x / 16 + 'A', c->saveGame->x % 16 + 'A');
+        else
+            screenMessage("Locate position\nwith what?\n\020");
+        break;
+
+    case 'n':
+        eventHandlerPushKeyHandlerData(&keyHandlerGetPlayerNo, &newOrderForPlayer);
+        screenMessage("New Order!\nExchange # ");
         break;
 
     case 'o':
@@ -588,6 +588,51 @@ int attackAtCoord(int x, int y) {
     return 1;
 }
 
+int castForPlayer(int player) {
+    AlphaActionInfo *info;
+
+    c->statsItem = STATS_MIXTURES;
+    statsUpdate();
+
+    info = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
+    info->lastValidLetter = 'z';
+    info->handleAlpha = castForPlayer2;
+    info->prompt = "Spell: ";
+    info->data = (void *) player;
+
+    screenMessage("%s", info->prompt);
+
+    eventHandlerPushKeyHandlerData(&keyHandlerGetAlphaChoice, info);
+
+    return 1;
+}
+
+int castForPlayer2(int spell, void *data) {
+    int player = (int) data;
+    SpellCastError spellError;
+
+    if (!spellCast(spell, player, &spellError)) {
+        switch(spellError) {
+        case CASTERR_NOMIX:
+            screenMessage("None Mixed!\n");
+            break;
+        case CASTERR_WRONGCONTEXT:
+            screenMessage("Can't Cast Here!\n");
+            break;
+        case CASTERR_MPTOOLOW:
+            screenMessage("Not Enough MP!\n");
+            break;
+        case CASTERR_NOERROR:
+        default:
+            /* should never happen */
+            assert(0);
+        }
+    }
+    screenMessage("\n\020");
+
+    return 1;
+}
+
 /**
  * Attempts to jimmy a locked door at map coordinates x,y.  If no
  * locked door is present at that point, zero is returned.  The locked
@@ -646,6 +691,48 @@ int readyForPlayer2(int weapon, void *data) {
     c->saveGame->players[player].weapon = weapon;
 
     screenMessage("player %d, weapon %c\n\020", player, weapon + 'a');
+
+    return 1;
+}
+
+/* FIXME: must be a better way.. */
+int newOrderTemp;
+
+/**
+ * Exchanges the position of two players in the party.  Prompts the
+ * use for the second player number.
+ */
+int newOrderForPlayer(int player) {
+    if (player == 0) {
+        screenMessage("%s, You must\nlead!\n\020", c->saveGame->players[0].name);
+        return 0;
+    }
+
+    screenMessage("    with # ");
+
+    newOrderTemp = player;
+    eventHandlerPushKeyHandlerData(&keyHandlerGetPlayerNo, &newOrderForPlayer2);
+
+    return 1;
+}
+
+int newOrderForPlayer2(int player2) {
+    int player1 = newOrderTemp;
+    SaveGamePlayerRecord tmp;
+
+    if (player2 == 0) {
+        screenMessage("%s, You must\nlead!\n\020", c->saveGame->players[0].name);
+        return 0;
+    } else if (player1 == player2) {
+        screenMessage("\020");
+        return 0;
+    }
+
+    tmp = c->saveGame->players[player1];
+    c->saveGame->players[player1] = c->saveGame->players[player2];
+    c->saveGame->players[player2] = tmp;
+
+    statsUpdate();
 
     return 1;
 }
