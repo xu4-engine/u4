@@ -105,7 +105,7 @@ strlen(MACOSX_USER_FILES_PATH) + 1);
     settings->keydelay = 500;
     settings->keyinterval = 30;
     settings->filterMoveMessages = 0;
-    settings->attackdelay = 5;
+    settings->battleSpeed = 5;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -140,8 +140,13 @@ strlen(MACOSX_USER_FILES_PATH) + 1);
             settings->keyinterval = (int) strtoul(buffer + strlen("keyinterval="), NULL, 0);
         else if (strstr(buffer, "filterMoveMessages=") == buffer)
             settings->filterMoveMessages = (int) strtoul(buffer + strlen("filterMoveMessages="), NULL, 0);
+        else if (strstr(buffer, "battlespeed=") == buffer)
+            settings->battleSpeed = (int) strtoul(buffer + strlen("battlespeed="), NULL, 0);
+        /* FIXME: this is just to avoid an error for those who have not written
+           a new xu4.cfg file since attackspeed was removed.  Remove it after a reasonable
+           amount of time */
         else if (strstr(buffer, "attackspeed=") == buffer)
-            settings->attackdelay = MAX_ATTACK_SPEED - (int) strtoul(buffer + strlen("attackspeed="), NULL, 0);
+            ;
         else
             errorWarning("invalid line in settings file %s", buffer);
     }
@@ -174,7 +179,7 @@ void settingsWrite() {
             "keydelay=%d\n"
             "keyinterval=%d\n"
             "filterMoveMessages=%d\n"
-            "attackspeed=%d\n",
+            "battlespeed=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
@@ -184,7 +189,7 @@ void settingsWrite() {
             settings->keydelay,
             settings->keyinterval,
             settings->filterMoveMessages,
-            MAX_ATTACK_SPEED - settings->attackdelay);
+            settings->battleSpeed);
 
     fclose(settingsFile);
 }

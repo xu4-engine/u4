@@ -59,9 +59,6 @@ int monsterHp[AREA_MONSTERS];
 
 void combatCreateMonster(int index, int canbeleader);
 int combatBaseKeyHandler(int key, void *data);
-int combatZtatsKeyHandler(int key, void *data);
-int combatReadyForPlayer(int weapon, void *data);
-void combatFinishTurn(void);
 int combatAttackAtCoord(int x, int y, int distance, void *data);
 int combatReturnWeaponToOwner(int x, int y, int distance, void *data);
 int combatInitialNumberOfMonsters(unsigned char monster);
@@ -315,7 +312,7 @@ int combatBaseKeyHandler(int key, void *data) {
 
         alphaInfo = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
         alphaInfo->lastValidLetter = WEAP_MAX + 'a' - 1;
-        alphaInfo->handleAlpha = combatReadyForPlayer;
+        alphaInfo->handleAlpha = readyForPlayer2;
         alphaInfo->prompt = "Weapon: ";
         alphaInfo->data = (void *) focus;
 
@@ -325,10 +322,11 @@ int combatBaseKeyHandler(int key, void *data) {
         break;
 
     case 'z':
-        eventHandlerPushKeyHandler(&combatZtatsKeyHandler);
-        screenMessage("Ztats\n");
         c->statsItem = (StatsItem) (STATS_CHAR1 + focus);
         statsUpdate();
+
+        eventHandlerPushKeyHandler(&gameZtatsKeyHandler);
+        screenMessage("Ztats\n");        
         break;
 
     case 'x' + U4_ALT:
@@ -342,69 +340,10 @@ int combatBaseKeyHandler(int key, void *data) {
 
     if (valid) {
         if (eventHandlerGetKeyHandler() == &combatBaseKeyHandler)
-            combatFinishTurn();
+            (*c->location->finishTurn)();
     }
 
     return valid;
-}
-
-int combatZtatsKeyHandler(int key, void *data) {
-    switch (key) {
-    case U4_UP:
-    case U4_LEFT:
-        statsPrevItem();
-        break;
-    case U4_DOWN:
-    case U4_RIGHT:
-        statsNextItem();
-        break;
-    default:
-        eventHandlerPopKeyHandler();
-                
-        c->statsItem = STATS_PARTY_OVERVIEW;
-        statsUpdate();
-
-        combatFinishTurn();
-        break;
-    }
-
-    statsUpdate();
-
-    return 1;
-}
-
-int combatReadyForPlayer(int w, void *data) {    
-    int player = (int) data;
-    WeaponType weapon = (WeaponType) w, oldWeapon;
-
-    // Return view to party overview
-    c->statsItem = STATS_PARTY_OVERVIEW;
-    statsUpdate();
-
-    if (weapon != WEAP_HANDS && c->saveGame->weapons[weapon] < 1) {
-        screenMessage("None left!\n");
-        combatFinishTurn();
-        return 0;
-    }    
-
-    if (!weaponCanReady(weapon, getClassName(c->saveGame->players[player].klass))) {
-        screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), weaponGetName(weapon));
-        combatFinishTurn();
-        return 0;
-    }
-
-    oldWeapon = c->saveGame->players[player].weapon;
-    if (oldWeapon != WEAP_HANDS)
-        c->saveGame->weapons[oldWeapon]++;
-    if (weapon != WEAP_HANDS)
-        c->saveGame->weapons[weapon]--;
-    c->saveGame->players[player].weapon = weapon;
-
-    screenMessage("%s\n", weaponGetName(weapon));
-
-    combatFinishTurn();
-
-    return 1;    
 }
 
 int combatAttackAtCoord(int x, int y, int distance, void *data) {
@@ -416,7 +355,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     int wrongRange = weaponRangeAbsolute(weapon) && (distance != weaponGetRange(weapon));
     int oldx = info->prev_x,
         oldy = info->prev_y;  
-    int attackdelay = settings->attackdelay;
+    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
     int groundTile = mapTileAt(c->location->map, x, y, c->location->z);
     
     info->prev_x = x;
@@ -431,7 +370,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
 
     /* Missed */
     if (x == -1 && y == -1) {
-        combatFinishTurn();
+        (*c->location->finishTurn)();
         if (weaponReturns(weapon))
             combatReturnWeaponToOwner(oldx, oldy, distance-1, data);
         if ((distance > 1 && weaponLoseWhenRanged(weapon)) || weaponLoseWhenUsed(weapon))
@@ -521,7 +460,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     if ((distance > 1 && weaponLoseWhenRanged(weapon)) || weaponLoseWhenUsed(weapon))
         playerLoseWeapon(c->saveGame, info->player);
     
-    combatFinishTurn();
+    (*c->location->finishTurn)();
 
     return 1;
 }
@@ -530,6 +469,7 @@ int combatReturnWeaponToOwner(int x, int y, int distance, void *data) {
     int i, new_x, new_y, orig_x, orig_y, misstile, dir;
     CoordActionInfo* info = (CoordActionInfo*)data;
     int weapon = c->saveGame->players[info->player].weapon;
+    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
     
     misstile = weaponGetMissTile(weapon);
 
@@ -551,8 +491,8 @@ int combatReturnWeaponToOwner(int x, int y, int distance, void *data) {
 
         /* Based on attack speed setting in setting struct, make a delay for
            the attack annotation */
-        if (settings->attackdelay > 0)
-            eventHandlerSleep(settings->attackdelay * 2);
+        if (attackdelay > 0)
+            eventHandlerSleep(attackdelay * 2);
         
         annotationRemove(new_x, new_y, c->location->z, c->location->map->id, misstile);
     }
@@ -646,7 +586,7 @@ void combatEnd() {
     if (playerPartyDead(c->saveGame))
         deathStart(0);
     else
-        gameFinishTurn();
+        (*c->location->finishTurn)();
 }
 
 void combatMoveMonsters() {
@@ -689,7 +629,7 @@ void combatMoveMonsters() {
         case CA_ATTACK:
             if (playerIsHitByAttack(&c->saveGame->players[target])) {
 
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, c->location->z, c->location->map->id, HITFLASH_TILE), 2));
+                attackFlash(party[target]->x, party[target]->y, HITFLASH_TILE, 1);
 
                 playerApplyDamage(&c->saveGame->players[target], monsterGetDamage(m));
                 if (c->saveGame->players[target].status == STAT_DEAD) {
@@ -703,7 +643,7 @@ void combatMoveMonsters() {
                 }
                 statsUpdate();
             } else {
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(party[target]->x, party[target]->y, c->location->z, c->location->map->id, MISSFLASH_TILE), 2));
+                attackFlash(party[target]->x, party[target]->y, MISSFLASH_TILE, 1);
             }
             break;
 
@@ -798,7 +738,7 @@ int movePartyMember(Direction dir, int member) {
 
 
 void attackFlash(int x, int y, int tile, int timeFactor) {
-    int attackdelay = settings->attackdelay;
+    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
     int divisor = 8 * timeFactor;
     int mult = 10 * timeFactor;    
 

@@ -5,7 +5,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#define MAX_ATTACK_SPEED        10
+#define MAX_BATTLE_SPEED        10
 
 typedef enum {
     SCL_POINT,
@@ -25,7 +25,7 @@ typedef struct _Settings {
     int keydelay;
     int keyinterval;
     int filterMoveMessages;
-    int attackdelay;
+    int battleSpeed;
 } Settings;
 
 char *settingsFilename(void);

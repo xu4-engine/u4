@@ -67,7 +67,6 @@ int openAtCoord(int x, int y, int distance, void *data);
 int gemHandleChoice(char choice);
 int peerCityHandleChoice(char choice);
 int readyForPlayer(int player);
-int readyForPlayer2(int weapon, void *data);
 int talkAtCoord(int x, int y, int distance, void *data);
 int talkHandleBuffer(const char *message);
 int talkHandleChoice(char choice);
@@ -101,7 +100,7 @@ void gameInit() {
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));    
     c->annotation = NULL;    
-    c->location = locationNew(0, 0, 0, &world_map, VIEW_NORMAL, NULL);
+    c->location = locationNew(0, 0, 0, &world_map, VIEW_NORMAL, (FinishTurnCallback)&gameFinishTurn, NULL);
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.playerInquiryBuffer[0] = '\0';
@@ -143,8 +142,8 @@ void gameInit() {
 
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
-    playerSetItemStatsChangedCallback(&statsUpdate);    
-    playerSetSpellCallback(&gameSpellEffect);
+    playerSetItemStatsChangedCallback(&statsUpdate);
+    playerSetSpellCallback(&gameSpellEffect);    
 
     musicPlay();
     screenDrawBackground(BKGD_BORDERS);
@@ -226,6 +225,7 @@ void gameUpdateScreen() {
 
 void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     int i, x, y, z, viewMode;    
+    FinishTurnCallback finishTurn = &gameFinishTurn;
 
     if (portal) {
         x = portal->startx;
@@ -246,6 +246,8 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     case MAP_DUNGEON:
         viewMode = VIEW_DUNGEON;
         break;
+    case MAP_COMBAT:
+        finishTurn = &combatFinishTurn;
     case MAP_TOWN:
     case MAP_VILLAGE:
     case MAP_CASTLE:
@@ -255,7 +257,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         break;
     }
     
-    ct->location = locationNew(x, y, z, map, viewMode, ct->location);    
+    ct->location = locationNew(x, y, z, map, viewMode, finishTurn, ct->location);    
 
     if ((map->type == MAP_TOWN ||
          map->type == MAP_VILLAGE ||
@@ -886,7 +888,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     if (valid) {
         if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler)
-            gameFinishTurn();
+            (*c->location->finishTurn)();
     }
 
     return valid || keyHandlerDefault(key, NULL);
@@ -917,7 +919,7 @@ int gameGetPlayerNoKeyHandler(int key, void *data) {
         (*handlePlayerNo)(key - '1');
     } else {
         screenMessage("None\n");
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         valid = 0;
     }
 
@@ -945,7 +947,7 @@ int gameGetAlphaChoiceKeyHandler(int key, void *data) {
         screenMessage("\n");
         eventHandlerPopKeyHandler();
         free(info);
-        gameFinishTurn();
+        (*c->location->finishTurn)();
     } else {
         valid = 0;
         screenMessage("\n%s", info->prompt);
@@ -999,7 +1001,7 @@ int gameGetPhaseKeyHandler(int key, void *data) {
         (*handlePhase)(key - '1');
     } else {
         screenMessage("None\n");
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         valid = 0;
     }
 
@@ -1092,7 +1094,7 @@ int gameZtatsKeyHandler(int key, void *data) {
         break;
     default:
         eventHandlerPopKeyHandler();
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         break;
     }
 
@@ -1212,7 +1214,7 @@ int attackAtCoord(int x, int y, int distance, void *data) {
     /* attack failed: finish up */
     if (x == -1 && y == -1) {
         screenMessage("Attack What?\n");
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
     }
 
@@ -1244,7 +1246,7 @@ int castForPlayer(int player) {
     castPlayer = player;
 
     if (gameCheckPlayerDisabled(player)) {
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
     }
 
@@ -1300,19 +1302,19 @@ int castForPlayer2(int spell, void *data) {
 
 int castForPlayerGetDestPlayer(int player) {
     gameCastSpell(castSpell, castPlayer, player);
-    gameFinishTurn();
+    (*c->location->finishTurn)();
     return 1;
 }
 
 int castForPlayerGetDestDir(Direction dir) {
     gameCastSpell(castSpell, castPlayer, (int) dir);
-    gameFinishTurn();
+    (*c->location->finishTurn)();
     return 1;
 }
 
 int castForPlayerGetPhase(int phase) {
     gameCastSpell(castSpell, castPlayer, phase);
-    gameFinishTurn();
+    (*c->location->finishTurn)();
     return 1;
 }
 
@@ -1330,7 +1332,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
     CoordActionInfo* info = (CoordActionInfo*)data;
     int oldx = info->prev_x,
         oldy = info->prev_y;  
-    int attackdelay = settings->attackdelay;
+    int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
     int validObject = 0;
     
     info->prev_x = x;
@@ -1344,7 +1346,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
         if (distance == 0)
             screenMessage("Broadsides Only!\n");
 
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 1;
     }
     else {
@@ -1368,7 +1370,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
             if ((obj->objType == OBJECT_UNKNOWN) || (rand() % 2 == 0))
                 mapRemoveObject(c->location->map, obj);            
             
-            gameFinishTurn();
+            (*c->location->finishTurn)();
             return 1;
         }
         
@@ -1411,7 +1413,7 @@ int getChest(int player) {
         if (obj == NULL)
             playerAdjustKarma(c->saveGame, KA_STOLE_CHEST);
 
-        gameFinishTurn();
+        (*c->location->finishTurn)();
     }
     
     else
@@ -1475,7 +1477,7 @@ int getChestTrapHandler(int player)
 int jimmyAtCoord(int x, int y, int distance, void *data) {
     if (x == -1 && y == -1) {
         screenMessage("Jimmy what?\n");
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
     }
 
@@ -1489,7 +1491,7 @@ int jimmyAtCoord(int x, int y, int distance, void *data) {
     } else
         screenMessage("No keys left!\n");
 
-    gameFinishTurn();
+    (*c->location->finishTurn)();
 
     return 1;
 }
@@ -1521,15 +1523,19 @@ int readyForPlayer2(int w, void *data) {
     int player = (int) data;
     WeaponType weapon = (WeaponType) w, oldWeapon;
 
+    // Return view to party overview
+    c->statsItem = STATS_PARTY_OVERVIEW;
+    statsUpdate();
+
     if (weapon != WEAP_HANDS && c->saveGame->weapons[weapon] < 1) {
         screenMessage("None left!\n");
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
-    }    
+    }
 
     if (!weaponCanReady(weapon, getClassName(c->saveGame->players[player].klass))) {
         screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), weaponGetName(weapon));
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
     }
 
@@ -1542,7 +1548,7 @@ int readyForPlayer2(int w, void *data) {
 
     screenMessage("%s\n", weaponGetName(weapon));
 
-    gameFinishTurn();
+    (*c->location->finishTurn)();
 
     return 1;
 }
@@ -1611,7 +1617,7 @@ int mixReagentsForSpell2(char choice) {
         mixtureDelete(mix);
 
         screenMessage("\n\n");
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 1;
     }
 
@@ -1645,7 +1651,7 @@ int newOrderTemp;
 int newOrderForPlayer(int player) {
     if (player == 0) {
         screenMessage("%s, You must\nlead!\n", c->saveGame->players[0].name);
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
     }
 
@@ -1663,10 +1669,10 @@ int newOrderForPlayer2(int player2) {
 
     if (player2 == 0) {
         screenMessage("%s, You must\nlead!\n", c->saveGame->players[0].name);
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
     } else if (player1 == player2) {
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
     }
 
@@ -1686,7 +1692,7 @@ int newOrderForPlayer2(int player2) {
 int openAtCoord(int x, int y, int distance, void *data) {
     if (x == -1 && y == -1) {
         screenMessage("Not Here!\n");
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
     }
 
@@ -1696,14 +1702,14 @@ int openAtCoord(int x, int y, int distance, void *data) {
 
     if (tileIsLockedDoor(mapTileAt(c->location->map, x, y, c->location->z))) {
         screenMessage("Can't!\n");
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 1;
     }
 
     annotationSetTurnDuration(annotationAdd(x, y, c->location->z, c->location->map->id, BRICKFLOOR_TILE), 4);
 
     screenMessage("\nOpened!\n");
-    gameFinishTurn();
+    (*c->location->finishTurn)();
 
     return 1;
 }
@@ -1715,7 +1721,7 @@ int gemHandleChoice(char choice) {
     eventHandlerPopKeyHandler();
 
     c->location->viewMode = VIEW_NORMAL;
-    gameFinishTurn();
+    (*c->location->finishTurn)();
 
     return 1;
 }
@@ -1763,7 +1769,7 @@ int peerCityHandleChoice(char choice) {
     locationFree(&c->location);    
 
     c->location->viewMode = VIEW_NORMAL; 
-    gameFinishTurn();
+    (*c->location->finishTurn)();
 
     return 1;
 }
@@ -1777,7 +1783,7 @@ int talkAtCoord(int x, int y, int distance, void *data) {
 
     if (x == -1 && y == -1) {
         screenMessage("Funny, no\nresponse!\n");
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
     }
 
@@ -1862,7 +1868,7 @@ void talkShowReply(int showPrompt) {
     c->conversation.reply = NULL;
 
     if (c->conversation.state == CONV_DONE) {
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return;
     }
 
@@ -1901,7 +1907,7 @@ int useItem(const char *itemName) {
 
     itemUse(itemName);
 
-    gameFinishTurn();
+    (*c->location->finishTurn)();
 
     return 1;
 }
@@ -1934,13 +1940,13 @@ int wearForPlayer2(int a, void *data) {
 
     if (armor != ARMR_NONE && c->saveGame->armor[armor] < 1) {
         screenMessage("None left!\n");
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
     }
 
     if (!armorCanWear(armor, getClassName(c->saveGame->players[player].klass))) {
         screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), armorGetName(armor));
-        gameFinishTurn();
+        (*c->location->finishTurn)();
         return 0;
     }
 
@@ -1953,7 +1959,7 @@ int wearForPlayer2(int a, void *data) {
 
     screenMessage("%s\n", armorGetName(armor));
 
-    gameFinishTurn();
+    (*c->location->finishTurn)();
 
     return 1;
 }

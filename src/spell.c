@@ -14,7 +14,6 @@
 #include "moongate.h"
 #include "annotation.h"
 #include "ttype.h"
-#include "screen.h"
 #include "player.h"
 #include "game.h"
 #include "debug.h"

@@ -171,5 +171,5 @@ int shrineEjectOnKey(int key, void *data) {
 
 void shrineEject() {
     gameExitToParentMap(c);
-    gameFinishTurn();
+    (*c->location->finishTurn)();
 }

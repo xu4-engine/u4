@@ -66,7 +66,7 @@ void campEnd() {
     screenMessage(healed ? "Party Healed!\n" : "No effect.\n");
     c->saveGame->lastcamp = c->saveGame->moves;
 
-    gameFinishTurn();
+    (*c->location->finishTurn)();
 }
 
 int campHeal() {
