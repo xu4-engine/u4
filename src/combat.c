@@ -109,7 +109,7 @@ void combatBegin(unsigned char partytile, unsigned short transport, Object *mons
 
     screenMessage("\n**** COMBAT ****\n\n");
 
-    screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, getWeaponName(c->saveGame->players[focus].weapon));
+    screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, weaponGetName(c->saveGame->players[focus].weapon));
     statsHighlightCharacter(focus);
 }
 
@@ -249,7 +249,7 @@ void combatFinishTurn() {
              c->saveGame->players[focus].status == STAT_SLEEPING);
     party[focus]->hasFocus = 1;
 
-    screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, getWeaponName(c->saveGame->players[focus].weapon));
+    screenMessage("%s with %s\n\020", c->saveGame->players[focus].name, weaponGetName(c->saveGame->players[focus].weapon));
     statsUpdate();
     statsHighlightCharacter(focus);    
 }

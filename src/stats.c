@@ -15,6 +15,8 @@
 #include "ttype.h"
 #include "player.h"
 #include "debug.h"
+#include "weapon.h"
+#include "armor.h"
 
 #define STATS_AREA_WIDTH 15
 #define STATS_AREA_HEIGHT 8
@@ -193,8 +195,8 @@ void statsShowCharDetails(int charNo) {
     screenTextAt(STATS_AREA_X, STATS_AREA_Y+3, "STR:%02d  HP:%04d", c->saveGame->players[charNo].str, c->saveGame->players[charNo].hp);
     screenTextAt(STATS_AREA_X, STATS_AREA_Y+4, "DEX:%02d  HM:%04d", c->saveGame->players[charNo].dex, c->saveGame->players[charNo].hpMax);
     screenTextAt(STATS_AREA_X, STATS_AREA_Y+5, "INT:%02d  EX:%04d", c->saveGame->players[charNo].intel, c->saveGame->players[charNo].xp);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+6, "W:%s", getWeaponName(c->saveGame->players[charNo].weapon));
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+7, "A:%s", getArmorName(c->saveGame->players[charNo].armor));
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+6, "W:%s", weaponGetName(c->saveGame->players[charNo].weapon));
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+7, "A:%s", armorGetName(c->saveGame->players[charNo].armor));
 }
 
 /**
@@ -207,13 +209,13 @@ void statsShowWeapons() {
 
     line = STATS_AREA_Y;
     col = 0;
-    screenTextAt(STATS_AREA_X, line++, "A-%s", getWeaponName(WEAP_HANDS));
+    screenTextAt(STATS_AREA_X, line++, "A-%s", weaponGetName(WEAP_HANDS));
     for (w = WEAP_HANDS + 1; w < WEAP_MAX; w++) {
         int n = c->saveGame->weapons[w];
         if (n >= 100)
             n = 99;
         if (n >= 1) {
-            screenTextAt(STATS_AREA_X + col, line++, "%c-%d-%s", w - WEAP_HANDS + 'A', n, getWeaponAbbrev((WeaponType) w));
+            screenTextAt(STATS_AREA_X + col, line++, "%c-%d-%s", w - WEAP_HANDS + 'A', n, weaponGetAbbrev((WeaponType) w));
             if (line >= (STATS_AREA_Y+STATS_AREA_HEIGHT)) {
                 line = STATS_AREA_Y;
                 col += 8;
@@ -234,7 +236,7 @@ void statsShowArmor() {
     screenTextAt(STATS_AREA_X, line++, "A  -No Armour");
     for (a = ARMR_NONE + 1; a < ARMR_MAX; a++) {
         if (c->saveGame->armor[a] > 0)
-            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", a - ARMR_NONE + 'A', c->saveGame->armor[a], getArmorName((ArmorType) a));
+            screenTextAt(STATS_AREA_X, line++, "%c-%d-%s", a - ARMR_NONE + 'A', c->saveGame->armor[a], armorGetName((ArmorType) a));
     }
 }
 

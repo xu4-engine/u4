@@ -35,6 +35,8 @@
 #include "camp.h"
 #include "settings.h"
 #include "error.h"
+#include "weapon.h"
+#include "armor.h"
 #include "debug.h"
 
 int gameSave(void);
@@ -1454,7 +1456,7 @@ int readyForPlayer2(int w, void *data) {
     }
 
     if (!playerCanReady(&(c->saveGame->players[player]), weapon)) {
-        screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), getWeaponName(weapon));
+        screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), weaponGetName(weapon));
         gameFinishTurn();
         return 0;
     }
@@ -1466,7 +1468,7 @@ int readyForPlayer2(int w, void *data) {
         c->saveGame->weapons[weapon]--;
     c->saveGame->players[player].weapon = weapon;
 
-    screenMessage("%s\n", getWeaponName(weapon));
+    screenMessage("%s\n", weaponGetName(weapon));
 
     gameFinishTurn();
 
@@ -1871,7 +1873,7 @@ int wearForPlayer2(int a, void *data) {
     }
 
     if (!playerCanWear(&(c->saveGame->players[player]), armor)) {
-        screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), getArmorName(armor));
+        screenMessage("\nA %s may NOT\nuse\n%s\n", getClassName(c->saveGame->players[player].klass), armorGetName(armor));
         gameFinishTurn();
         return 0;
     }
@@ -1883,7 +1885,7 @@ int wearForPlayer2(int a, void *data) {
         c->saveGame->armor[armor]--;
     c->saveGame->players[player].armor = armor;
 
-    screenMessage("%s\n", getArmorName(armor));
+    screenMessage("%s\n", armorGetName(armor));
 
     gameFinishTurn();
 

@@ -5,6 +5,7 @@
 
 typedef struct _Weapon {
     const char *name;
+    const char *abbr;
     int range;
     int damage;
     int hittile;
@@ -14,6 +15,7 @@ typedef struct _Weapon {
 } Weapon;
 
 char *weaponGetName(int weapon);
+char *weaponGetAbbrev(int weapon);
 int weaponGetRange(int weapon);
 int weaponGetDamage(int weapon);
 int weaponGetHitTile(int weapon);

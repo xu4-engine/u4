@@ -31,51 +31,6 @@ const char *getClassName(ClassType klass) {
     }
 }
 
-const char *getWeaponName(WeaponType weapon) {
-    static const char * const weapNames[] = {
-        "Hands", "Staff", "Dagger",
-        "Sling", "Mace", "Axe",
-        "Sword", "Bow", "Crossbow",
-        "Flaming Oil", "Halberd", "Magic Axe",
-        "Magic Sword", "Magic Bow", "Magic Wand",
-        "Mystic Sword"
-    };
-
-    if (weapon < WEAP_MAX)
-        return weapNames[weapon - WEAP_HANDS];
-    else
-        return "???";
-}
-
-const char *getWeaponAbbrev(WeaponType weapon) {
-    static const char * const weapAbbrevs[] = {
-        "HND", "STF", "DAG",
-        "SLN", "MAC", "AXE",
-        "SWD", "BOW", "XBO",
-        "OIL", "HAL", "+AX",
-        "+SW", "+BO", "WND",
-        "^SW"
-    };
-
-    if (weapon < WEAP_MAX)
-        return weapAbbrevs[weapon - WEAP_HANDS];
-    else
-        return "???";
-}
-
-const char *getArmorName(ArmorType armor) {
-    static const char * const armorNames[] = {
-        "Skin", "Cloth", "Leather", 
-        "Chain Mail", "Plate Mail", 
-        "Magic Chain", "Magic Plate", "Mystic Robe"
-    };
-
-    if (armor < ARMR_MAX)
-        return armorNames[armor - ARMR_NONE];
-    else
-        return "???";
-}
-
 const char *getReagentName(Reagent reagent) {
     static const char * const reagentNames[] = {
         "Sulfur Ash", "Ginseng", "Garlic", 

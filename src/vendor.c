@@ -19,6 +19,8 @@
 #include "map.h"
 #include "player.h"
 #include "debug.h"
+#include "weapon.h"
+#include "armor.h"
 
 /*
  * Warning -- this is not the nicest code; vendors are (so far) the
@@ -596,9 +598,9 @@ char *vendorGetArmsVendorMenu(const Person *v) {
             const char *name;
 
             if (v->npcType == NPC_VENDOR_WEAPONS)
-                name = getWeaponName((WeaponType) info->vendorInventory[vendorGetVendorNo(v)][i]);
+                name = weaponGetName((WeaponType) info->vendorInventory[vendorGetVendorNo(v)][i]);
             else
-                name = getArmorName((ArmorType) info->vendorInventory[vendorGetVendorNo(v)][i]);
+                name = armorGetName((ArmorType) info->vendorInventory[vendorGetVendorNo(v)][i]);
 
             snprintf(buffer, sizeof(buffer), "%c-%s\n", 'A' + info->vendorInventory[vendorGetVendorNo(v)][i], name);
             tmp = concat(menu, buffer, NULL);
@@ -936,11 +938,11 @@ char *vendorGetSellItemResponse(Conversation *cnv, const char *response) {
 
     if (cnv->talker->npcType == NPC_VENDOR_WEAPONS) {
         cnv->price = weaponVendorInfo.prices[cnv->itemSubtype] / 2;
-        itemName = getWeaponName((WeaponType) cnv->itemSubtype);
+        itemName = weaponGetName((WeaponType) cnv->itemSubtype);
     }
     else { /* cnv->talker->npcType == NPC_VENDOR_ARMOR */
         cnv->price = armorVendorInfo.prices[cnv->itemSubtype] / 2;
-        itemName = getArmorName((ArmorType) cnv->itemSubtype);
+        itemName = armorGetName((ArmorType) cnv->itemSubtype);
     }
 
     if (owned == 1) {

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- $Id -->
+<armors>
+    <armor name="Skin" defense="96"/>	
+	<armor name="Cloth" defense="128"/>	
+	<armor name="Leather" defense="144"/>	
+	<armor name="Chain Mail" defense="160"/>	
+	<armor name="Plate Mail" defense="176"/>
+	<armor name="Magic Chain" defense="192"/>	
+	<armor name="Magic Plate" defense="208"/>	
+	<armor name="Mystic Robe" defense="248"/>	
+</armors>

@@ -64,6 +64,7 @@ void weaponLoadInfoFromXml() {
             continue;
 
         weapons[weapon].name = (char *)xmlGetProp(node, (const xmlChar *)"name");        
+        weapons[weapon].abbr = (char *)xmlGetProp(node, (const xmlChar *)"abbr");
         weapons[weapon].range = atoi(xmlGetProp(node, (const xmlChar *)"range"));
         weapons[weapon].damage = atoi(xmlGetProp(node, (const xmlChar *)"damage"));
         weapons[weapon].hittile = HITFLASH_TILE;
@@ -119,6 +120,17 @@ char *weaponGetName(int weapon)
     weaponLoadInfoFromXml();
 
     return weapons[weapon].name;
+}
+
+/**
+ * Returns the abbreviation for the weapon
+ */
+
+char *weaponGetAbbrev(int weapon)
+{
+    weaponLoadInfoFromXml();
+
+    return weapons[weapon].abbr;
 }
 
 /**
