@@ -50,7 +50,7 @@
 <!ELEMENT tileanimset ( tileanim+ ) >
 <!ATTLIST tileanimset name        NMTOKEN  #REQUIRED>
 
-<!ELEMENT tileanim ( transform+ ) >
+<!ELEMENT tileanim ( transform+ | context+ ) >
 <!ATTLIST tileanim name           NMTOKEN  #REQUIRED
                    random         NMTOKEN  #IMPLIED>
 
