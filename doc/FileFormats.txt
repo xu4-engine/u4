@@ -244,7 +244,6 @@ saved.  It includes party-wide information like gold and food, plus a
 
 Things that might be in here, but haven't been verified:
  - amount of time elapsed since last action (offset 0x0?)
- - whether the skull has been destroyed (bit 2 on 0x1D1?)
  - which dungeon orbs have been used
  - location of balloon
  - direction of the wind
@@ -296,7 +295,7 @@ offset len  notes
             0x12-ship facing east, 0x13-ship facing south, 0x14-horse
             facing west, 0x15-horse facing east, 0x18-balloon, 0x1f-on
             foot)
-0x1DC  2    balloon status (0-on ground, 1-flying (?verify?))
+0x1DC  2    balloon status (0-on ground, 1-flying)
 0x1DE  6    ???
 0x1E4  1    introduced to Lord British (0-haven't been introduced, 1-introduced)
 0x1E5  9    ???
@@ -346,7 +345,8 @@ offset len   notes
 0x7682 1     zero terminating byte
 0x7683 95    tile values for the 19x5 map that appears on the
              introductory title screen
-0x76e2 ...   ???
+0x76e2 548   script data for the intro map animations
+0x7906 ...   ???
 
 
 AVATAR.EXE
@@ -394,3 +394,4 @@ Sources
 
 http://www.geocities.com/xenerkes/
 http://www.moongates.com/u4/Tech.asp
+Marc Winterrowd <nodling@yahoo.com>
