@@ -34,12 +34,14 @@
 #include "combat.h"
 #include "monster.h"
 #include "camp.h"
+#include "settings.h"
 #include "error.h"
 
 void gameLostEighth(Virtue virtue);
 void gameAdvanceLevel(const SaveGamePlayerRecord *player);
 void gameCastSpell(unsigned int spell, int caster, int param);
 int gameCheckPlayerDisabled(int player);
+void gameGetPlayerForCommand(int (*commandFn)(int player));
 int gameCanMoveOntoTile(const Map *map, int x, int y);
 int moveAvatar(Direction dir, int userEvent);
 int attackAtCoord(int x, int y, int distance);
@@ -385,8 +387,8 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'c':
-        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &castForPlayer);
         screenMessage("Cast Spell!\nPlayer: ");
+        gameGetPlayerForCommand(&castForPlayer);
         break;
 
     case 'd':
@@ -602,8 +604,8 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'r':
-        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &readyForPlayer);
         screenMessage("Ready a weapon\nfor: ");
+        gameGetPlayerForCommand(&readyForPlayer);
         break;
 
     case 's':
@@ -652,8 +654,8 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'w':
-        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) &wearForPlayer);
         screenMessage("Wear Armor\nfor: ");
+        gameGetPlayerForCommand(&wearForPlayer);
         break;
 
     case 'x':
@@ -704,6 +706,14 @@ int gameBaseKeyHandler(int key, void *data) {
     }
 
     return valid || keyHandlerDefault(key, NULL);
+}
+
+void gameGetPlayerForCommand(int (*commandFn)(int player)) {
+    if (c->saveGame->members <= 1) {
+        screenMessage("1\n");
+        (*commandFn)(0);
+    } else
+        eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, (void *) commandFn);
 }
 
 /**
@@ -1737,6 +1747,17 @@ int moveAvatar(Direction dir, int userEvent) {
 
         movementMask = mapGetValidMoves(c->map, c->saveGame->x, c->saveGame->y, c->saveGame->transport);
         if (!DIR_IN_MASK(dir, movementMask)) {
+
+            if (settings->shortcutCommands) {
+                if (tileIsDoor(mapTileAt(c->map, newx, newy))) {
+                    openAtCoord(newx, newy, 1);
+                    goto done;
+                } else if (tileIsLockedDoor(mapTileAt(c->map, newx, newy))) {
+                    jimmyAtCoord(newx, newy, 1);
+                    goto done;
+                }
+            }
+
             screenMessage("Blocked!\n");
             result = 0;
             goto done;
