@@ -42,6 +42,7 @@ extern int eventTimerGranularity;
 
 struct _MouseArea;
 class EventHandler;
+class TextView;
 
 /**
  * A class for handling keystrokes. 
@@ -111,12 +112,15 @@ private:
 class ReadStringController : public WaitableController<string> {
 public:
     ReadStringController(int maxlen, int screenX, int screenY, const string &accepted_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 \n\r\010");
+    ReadStringController(int maxlen, TextView *view, const string &accepted_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 \n\r\010");
     virtual bool keyPressed(int key);
 
     static string get(int maxlen, int screenX, int screenY, EventHandler *eh = NULL);
+    static string get(int maxlen, TextView *view, EventHandler *eh = NULL);
 
 protected:
     int maxlen, screenX, screenY;
+    TextView *view;
     string accepted;
 };
 

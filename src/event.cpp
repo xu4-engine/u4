@@ -15,6 +15,7 @@
 #include "savegame.h"
 #include "screen.h"
 #include "settings.h"
+#include "textview.h"
 
 int eventTimerGranularity = 250;
 
@@ -245,6 +246,15 @@ ReadStringController::ReadStringController(int maxlen, int screenX, int screenY,
     this->maxlen = maxlen;
     this->screenX = screenX;
     this->screenY = screenY;
+    this->view = NULL;
+    this->accepted = accepted_chars;
+}
+
+ReadStringController::ReadStringController(int maxlen, TextView *view, const string &accepted_chars) {
+    this->maxlen = maxlen;
+    this->screenX = view->getCursorX();
+    this->screenY = view->getCursorY();
+    this->view = view;
     this->accepted = accepted_chars;
 }
 
@@ -262,10 +272,14 @@ bool ReadStringController::keyPressed(int key) {
                 /* remove the last character */
                 value.erase(len - 1, 1);
 
-                screenHideCursor();
-                screenTextAt(screenX + len - 1, screenY, " ");
-                screenSetCursorPos(screenX + len - 1, screenY);
-                screenShowCursor();
+                if (view) {
+                    view->textAt(screenX + len - 1, screenY, " ");
+                } else {
+                    screenHideCursor();
+                    screenTextAt(screenX + len - 1, screenY, " ");
+                    screenSetCursorPos(screenX + len - 1, screenY);
+                    screenShowCursor();
+                }
             }
         }
         else if (key == '\n' || key == '\r') {            
@@ -276,10 +290,14 @@ bool ReadStringController::keyPressed(int key) {
             /* add a character to the end */
             value += key;
 
-            screenHideCursor();
-            screenTextAt(screenX + len, screenY, "%c", key);
-            screenSetCursorPos(screenX + len + 1, screenY);
-            screenShowCursor();            
+            if (view) {
+                view->textAt(screenX + len, screenY, "%c", key);
+            } else {
+                screenHideCursor();
+                screenTextAt(screenX + len, screenY, "%c", key);
+                screenSetCursorPos(screenX + len + 1, screenY);
+                screenShowCursor();            
+            }
         }
     }
     else valid = false;    
@@ -292,6 +310,15 @@ string ReadStringController::get(int maxlen, int screenX, int screenY, EventHand
         eh = eventHandler;
 
     ReadStringController ctrl(maxlen, screenX, screenY);
+    eh->pushController(&ctrl);
+    return ctrl.waitFor();
+}
+
+string ReadStringController::get(int maxlen, TextView *view, EventHandler *eh) {
+    if (!eh)
+        eh = eventHandler;
+
+    ReadStringController ctrl(maxlen, view);
     eh->pushController(&ctrl);
     return ctrl.waitFor();
 }
