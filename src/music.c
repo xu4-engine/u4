@@ -105,10 +105,6 @@ int musicInit(int sound) {
             return 1;
         }
 
-#ifdef WIN32
-        SDL_AudioInit("waveout");
-#endif
-
         if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
             fprintf(stderr, "Unable to open audio!\n");
             return 1;
