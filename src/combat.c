@@ -383,7 +383,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
     int oldx = info->prev_x,
         oldy = info->prev_y;  
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
-    int groundTile = mapTileAt(c->location->map, x, y, c->location->z);
+    int groundTile;
     
     info->prev_x = x;
     info->prev_y = y;
@@ -504,6 +504,7 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
         combatReturnWeaponToOwner(x, y, distance, data);
 
     /* If the weapon leaves a tile behind, do it here! (flaming oil, etc) */
+    groundTile = mapGroundTileAt(c->location->map, x, y, c->location->z);
     if (!wrongRange && (weaponLeavesTile(weapon) && tileIsWalkable(groundTile)))
         annotationAdd(x, y, c->location->z, c->location->map->id, weaponLeavesTile(weapon));    
     
