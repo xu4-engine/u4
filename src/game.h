@@ -40,7 +40,7 @@ int gameGetCoordinateKeyHandler(int key, void *data);
 int gameZtatsKeyHandler(int key, void *data);
 int gameZtatsKeyHandler2(int key, void *data);
 int gameSpecialCmdKeyHandler(int key, void *data);
-void gameTimer(void);
+void gameTimer(void *data);
 void gameFinishTurn(void);
 void gameLostEighth(int eighths);
 struct _Context *gameCloneContext(struct _Context *ctx);

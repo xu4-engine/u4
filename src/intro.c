@@ -731,7 +731,7 @@ void introShowText(const char *text) {
  * Timer callback for the intro sequence.  Handles animating the intro
  * map, the beasties, etc..
  */
-void introTimer() {
+void introTimer(void *data) {
     screenCycle();
     screenUpdateCursor();
     if (mode == INTRO_MAP)

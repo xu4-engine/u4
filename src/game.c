@@ -380,7 +380,7 @@ int gameBaseKeyHandler(int key, void *data) {
             if (obj)
                 mapRemoveObject(c->map, obj);
             else
-                annotationAdd(c->saveGame->x, c->saveGame->y, -1, BRICKFLOOR_TILE);
+                annotationAdd(c->saveGame->x, c->saveGame->y, BRICKFLOOR_TILE);
             playerGetChest(c->saveGame);
             if (obj == NULL)
                 gameLostEighth(playerAdjustKarma(c->saveGame, KA_STOLE_CHEST));
@@ -976,7 +976,7 @@ int jimmyAtCoord(int x, int y) {
 
     if (c->saveGame->keys) {
         c->saveGame->keys--;
-        annotationAdd(x, y, -1, 0x3b);
+        annotationAdd(x, y, 0x3b);
         screenMessage("\nUnlocked!\n");
     } else
         screenMessage("No keys left!\n");
@@ -1143,7 +1143,8 @@ int openAtCoord(int x, int y) {
     if (!tileIsDoor(mapTileAt(c->map, x, y)))
         return 0;
 
-    annotationAdd(x, y, 4, BRICKFLOOR_TILE);
+    annotationSetTurnDuration(annotationAdd(x, y, BRICKFLOOR_TILE), 4);
+    
     screenMessage("\nOpened!\n");
     gameFinishTurn();
 
@@ -1530,7 +1531,7 @@ int moveAvatar(Direction dir, int userEvent) {
 /**
  * This function is called every quarter second.
  */
-void gameTimer() {
+void gameTimer(void *data) {
     int oldTrammel, trammelSubphase;
     const Moongate *gate;
 
@@ -1568,37 +1569,37 @@ void gameTimer() {
             gate = moongateGetGateForPhase(oldTrammel);
             annotationRemove(gate->x, gate->y, MOONGATE0_TILE);
             gate = moongateGetGateForPhase(c->saveGame->trammelphase);
-            annotationAdd(gate->x, gate->y, -1, MOONGATE0_TILE);
+            annotationAdd(gate->x, gate->y, MOONGATE0_TILE);
         }
         else if (trammelSubphase == 1) {
             gate = moongateGetGateForPhase(c->saveGame->trammelphase);
             annotationRemove(gate->x, gate->y, MOONGATE0_TILE);
-            annotationAdd(gate->x, gate->y, -1, MOONGATE1_TILE);
+            annotationAdd(gate->x, gate->y, MOONGATE1_TILE);
         }
         else if (trammelSubphase == 2) {
             gate = moongateGetGateForPhase(c->saveGame->trammelphase);
             annotationRemove(gate->x, gate->y, MOONGATE1_TILE);
-            annotationAdd(gate->x, gate->y, -1, MOONGATE2_TILE);
+            annotationAdd(gate->x, gate->y, MOONGATE2_TILE);
         }
         else if (trammelSubphase == 3) {
             gate = moongateGetGateForPhase(c->saveGame->trammelphase);
             annotationRemove(gate->x, gate->y, MOONGATE2_TILE);
-            annotationAdd(gate->x, gate->y, -1, MOONGATE3_TILE);
+            annotationAdd(gate->x, gate->y, MOONGATE3_TILE);
         }
         else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
             gate = moongateGetGateForPhase(c->saveGame->trammelphase);
             annotationRemove(gate->x, gate->y, MOONGATE3_TILE);
-            annotationAdd(gate->x, gate->y, -1, MOONGATE2_TILE);
+            annotationAdd(gate->x, gate->y, MOONGATE2_TILE);
         }
         else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
             gate = moongateGetGateForPhase(c->saveGame->trammelphase);
             annotationRemove(gate->x, gate->y, MOONGATE2_TILE);
-            annotationAdd(gate->x, gate->y, -1, MOONGATE1_TILE);
+            annotationAdd(gate->x, gate->y, MOONGATE1_TILE);
         }
         else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
             gate = moongateGetGateForPhase(c->saveGame->trammelphase);
             annotationRemove(gate->x, gate->y, MOONGATE1_TILE);
-            annotationAdd(gate->x, gate->y, -1, MOONGATE0_TILE);
+            annotationAdd(gate->x, gate->y, MOONGATE0_TILE);
         }
     }
 
