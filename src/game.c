@@ -2206,6 +2206,7 @@ int moveAvatar(Direction dir, int userEvent) {
     int newx, newy;  
     int slowed = 0;
     SlowedType slowedType = SLOWED_BY_TILE;
+    Object *destObj;
     
     if (c->transportContext == TRANSPORT_SHIP)
         slowedType = SLOWED_BY_WIND;
@@ -2231,7 +2232,7 @@ int moveAvatar(Direction dir, int userEvent) {
     }
 
     newx = c->location->x;
-    newy = c->location->y;    
+    newy = c->location->y;
 
     dirMove(dir, &newx, &newy);
 
@@ -2261,7 +2262,7 @@ int moveAvatar(Direction dir, int userEvent) {
                 newy = c->location->y;
             break;
         }
-    }   
+    }
 
     if (!collisionOverride && !c->saveGame->balloonstate) {
         int movementMask;
@@ -2305,10 +2306,15 @@ int moveAvatar(Direction dir, int userEvent) {
             result = 0;
             return result;
         }
-    }
+    }    
 
     c->location->x = newx;
     c->location->y = newy;
+
+    /* if the avatar moved onto a monster (whirlpool, twister), then do the monster's special effect */
+    destObj = mapObjectAt(c->location->map, newx, newy, c->location->z);    
+    if (destObj && destObj->objType == OBJECT_MONSTER)
+        monsterSpecialEffect(destObj);
 
     gameCheckBridgeTrolls();
     gameCheckSpecialMonsters(dir);
@@ -2598,7 +2604,7 @@ void gameCheckRandomMonsters() {
     /* If there are too many monsters already,
        or we're not on the world map, don't worry about it! */
     if (!mapIsWorldMap(c->location->map) ||
-        mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS_ON_MAP ||
+        mapNumberOfMonsters(c->location->map) >= MAX_MONSTERS_ON_MAP ||        
         (rand() % 32) != 0)
         return;
 
@@ -2645,9 +2651,9 @@ void gameFixupMonsters() {
         /* fix monster behaviors */
         if (obj->movement_behavior == MOVEMENT_ATTACK_AVATAR) {
             const Monster *m = monsterForTile(obj->tile);
-            if (m && m->mattr & MATTR_WANDERS)
+            if (m && monsterWanders(m))
                 obj->movement_behavior = MOVEMENT_WANDER;
-            else if (m && m->mattr & MATTR_STATIONARY)
+            else if (m && monsterIsStationary(m))
                 obj->movement_behavior = MOVEMENT_FIXED;
         }
     }

@@ -44,14 +44,12 @@ void monsterLoadInfoFromXml() {
         { "undead", MATTR_UNDEAD },
         { "good", MATTR_GOOD },
         { "swims", MATTR_WATER },
-        { "sails", MATTR_WATER },
-        { "stationary", MATTR_STATIONARY },
-        { "cantattack", MATTR_NONATTACKABLE },
-        { "teleports", MATTR_TELEPORT },
+        { "sails", MATTR_WATER },        
+        { "cantattack", MATTR_NONATTACKABLE },        
         { "camouflage", MATTR_CAMOUFLAGE }, 
-        { "wontattack", MATTR_NOATTACK },
-        { "flies", MATTR_FLIES },
-        { "ambushes", MATTR_AMBUSHES }
+        { "wontattack", MATTR_NOATTACK },        
+        { "ambushes", MATTR_AMBUSHES },
+        { "incorporeal", MATTR_INCORPOREAL }
     };    
     
     /* steals="" */
@@ -79,7 +77,20 @@ void monsterLoadInfoFromXml() {
     } movement[] = {
         { "none", MATTR_STATIONARY },
         { "wanders", MATTR_WANDERS }
-    };    
+    };
+
+    /* boolean attributes that affect movement */
+    static const struct {
+        const char *name;
+        unsigned int mask;
+    } movementBoolean[] = {
+        { "swims", MATTR_SWIMS },
+        { "sails", MATTR_SAILS },
+        { "flies", MATTR_FLIES },
+        { "teleports", MATTR_TELEPORT },
+        { "canMoveOntoMonsters", MATTR_CANMOVEMONSTERS },
+        { "canMoveOntoAvatar", MATTR_CANMOVEAVATAR }
+    };
 
     /* hit and miss tiles */
     static const struct {
@@ -147,6 +158,7 @@ void monsterLoadInfoFromXml() {
         monsters[monster].leavestile = 0;
 
         monsters[monster].mattr = 0;
+        monsters[monster].movementAttr = 0;
         monsters[monster].slowedType = SLOWED_BY_TILE;
         monsters[monster].basehp = 0;
         monsters[monster].encounterSize = 0;
@@ -227,6 +239,14 @@ void monsterLoadInfoFromXml() {
                 monsters[monster].mattr |= booleanAttributes[i].mask;
             }
         }
+        
+        /* Load boolean attributes that affect movement */
+        for (i = 0; i < sizeof(movementBoolean) / sizeof(movementBoolean[0]); i++) {
+            if (xmlStrcmp(xmlGetProp(node, (const xmlChar *) movementBoolean[i].name), 
+                          (const xmlChar *) "true") == 0) {
+                monsters[monster].movementAttr |= movementBoolean[i].mask;
+            }
+        }
 
         /* steals="" */
         for (i = 0; i < sizeof(steals) / sizeof(steals[0]); i++) {
@@ -248,14 +268,14 @@ void monsterLoadInfoFromXml() {
         for (i = 0; i < sizeof(movement) / sizeof(movement[0]); i++) {
             if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"movement"), 
                           (const xmlChar *)movement[i].name) == 0) {
-                monsters[monster].mattr |= movement[i].mask;
+                monsters[monster].movementAttr |= movement[i].mask;
             }
         }
 
         /* Figure out which 'slowed' function to use */
-        if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"sails"), (const xmlChar *)"true") == 0)
+        if (monsterSails(&monsters[monster]))        
             monsters[monster].slowedType = SLOWED_BY_WIND;
-        else if (xmlStrcmp(xmlGetProp(node, (const xmlChar *)"flies"), (const xmlChar *)"true") == 0)
+        else if (monsterFlies(&monsters[monster]))
             monsters[monster].slowedType = SLOWED_BY_NOTHING;
             
         monster++;
@@ -293,12 +313,36 @@ int monsterIsAquatic(const Monster *monster) {
     return (monster->mattr & MATTR_WATER) ? 1 : 0;
 }
 
+int monsterWanders(const Monster *monster) {
+    return (monster->movementAttr & MATTR_WANDERS) ? 1 : 0;
+}
+
+int monsterIsStationary(const Monster *monster) {
+    return (monster->movementAttr & MATTR_STATIONARY) ? 1 : 0;
+}
+
 int monsterFlies(const Monster *monster) {
-    return (monster->mattr & MATTR_FLIES) ? 1 : 0;
+    return (monster->movementAttr & MATTR_FLIES) ? 1 : 0;
 }
 
 int monsterTeleports(const Monster *monster) {
-    return (monster->mattr & MATTR_TELEPORT) ? 1 : 0;
+    return (monster->movementAttr & MATTR_TELEPORT) ? 1 : 0;
+}
+
+int monsterSwims(const Monster *monster) {
+    return (monster->movementAttr & MATTR_SWIMS) ? 1 : 0;
+}
+
+int monsterSails(const Monster *monster) {
+    return (monster->movementAttr & MATTR_SAILS) ? 1 : 0;
+}
+
+int monsterCanMoveOntoMonsters(const Monster *monster) {
+    return (monster->movementAttr & MATTR_CANMOVEMONSTERS) ? 1 : 0;
+}
+
+int monsterCanMoveOntoAvatar(const Monster *monster) {
+    return (monster->movementAttr & MATTR_CANMOVEAVATAR) ? 1 : 0;
 }
 
 int monsterIsAttackable(const Monster *monster) {
@@ -327,6 +371,10 @@ int monsterCamouflages(const Monster *monster) {
 
 int monsterAmbushes(const Monster *monster) {
     return (monster->mattr & MATTR_AMBUSHES) ? 1 : 0;
+}
+
+int monsterIsIncorporeal(const Monster *monster) {
+    return (monster->mattr & MATTR_INCORPOREAL) ? 1 : 0;
 }
 
 int monsterHasRandomRangedAttack(const Monster *monster) {
@@ -381,7 +429,8 @@ const Monster *monsterRandomForTile(unsigned char tile) {
     else
         era = 0x03;
     
-    return monsterById((era & rand() & rand()) + ORC_ID);
+    //return monsterById((era & rand() & rand()) + ORC_ID);
+    return monsterById(ZORN_ID);
 }
 
 
@@ -571,8 +620,10 @@ void monsterSpecialEffect(Object *obj) {
                     obj->y == c->location->y &&
                     obj->z == c->location->z && (c->transportContext == TRANSPORT_SHIP)) {                    
                                     
+                    /* Deal 10 damage to the ship */
                     gameDamageShip(-1, 10);
 
+                    /* Send the party to Locke Lake */
                     c->location->x = 127;
                     c->location->y = 78;
 
@@ -586,7 +637,7 @@ void monsterSpecialEffect(Object *obj) {
                     if (o != obj && 
                         o->x == obj->x &&
                         o->y == obj->y &&
-                        o->z == obj->z) {                    
+                        o->z == obj->z) {
                     
                         /* Make sure the object isn't a flying monster or object */
                         if (!tileIsBalloon(o->tile) && ((o->objType != OBJECT_MONSTER) || !monsterFlies(o->monster)))

@@ -30,14 +30,14 @@
     <monster id="20" encounterSize="4" name="Giant Squid" tile="134" frames="2" basehp="96" exp="7" ranged="true" rangedhittile="lightning" rangedmisstile="lightning" poisons="true" swims="true" leader="21"/>
     <monster id="21" encounterSize="4" name="Sea Serpent" tile="136" frames="2" basehp="128" exp="9" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" swims="true" leader="20"/>
     <monster id="22" encounterSize="8" name="Seahorse" tile="138" frames="2" basehp="128" exp="9" movement="wanders" ranged="true" rangedhittile="magic" rangedmisstile="magic" swims="true" leader="19"/>
-    <monster id="23" encounterSize="1" name="Whirlpool" tile="140" frames="2" exp="16" swims="true" movement="wanders" cantattack="true" wontattack="true"/>
-    <monster id="24" encounterSize="1" name="Storm" tile="142" frames="2" exp="16" flies="true" movement="wanders" cantattack="true" wontattack="true"/>
+    <monster id="23" encounterSize="1" name="Whirlpool" tile="140" frames="2" exp="16" swims="true" movement="wanders" cantattack="true" canMoveOntoMonsters="true" canMoveOntoAvatar="true" wontattack="true"/>
+    <monster id="24" encounterSize="1" name="Storm" tile="142" frames="2" exp="16" flies="true" movement="wanders" cantattack="true" canMoveOntoMonsters="true" canMoveOntoAvatar="true" wontattack="true"/>
 
     <!-- Main monsters -->
     <monster id="25" encounterSize="12" name="Rat" tile="144" frames="4" basehp="48" exp="4" movement="wanders" good="true" leader="38"/>
     <monster id="26" encounterSize="12" name="Bat" tile="148" frames="4" basehp="48" exp="4" flies="true" movement="wanders" good="true" leader="47"/>
     <monster id="27" encounterSize="6" name="Giant Spider" tile="152" frames="4" basehp="64" exp="5" ranged="true" rangedhittile="poison" rangedmisstile="poison" spawntile="3" movement="wanders" good="true" poisons="true" leader="25"/>
-    <monster id="28" encounterSize="4" name="Ghost" tile="156" frames="4" basehp="80" exp="6" undead="true" resists="sleep" leader="46"/>
+    <monster id="28" encounterSize="4" name="Ghost" tile="156" frames="4" basehp="80" exp="6" undead="true" resists="sleep" incorporeal="true" leader="46"/>
     <monster id="29" encounterSize="15" name="Slime" tile="160" frames="4" ambushes="true" basehp="48" exp="4"/>
     <monster id="30" encounterSize="6" name="Troll" tile="164" frames="4" ambushes="true" basehp="96" exp="7" ranged="true" leader="41"/>
     <monster id="31" encounterSize="15" name="Gremlin" tile="168" frames="4" basehp="48" exp="4" steals="food"/>
@@ -57,7 +57,7 @@
     <monster id="45" encounterSize="6" name="Mage" tile="224" frames="4" basehp="176" exp="12" ranged="true" rangedhittile="magic" rangedmisstile="magic" leader="49"/>
     <monster id="46" encounterSize="4" name="Liche" tile="228" frames="4" basehp="192" exp="13" ranged="true" rangedhittile="magic" rangedmisstile="magic" undead="true" resists="sleep" leader="49"/>
     <monster id="47" encounterSize="8" name="Lava Lizard" tile="232" frames="4" basehp="96" exp="7" ranged="true" worldrangedtile="fireblast" rangedhittile="lava" rangedmisstile="lava" resists="fire" leader="50" leavestile="true"/>
-    <monster id="48" encounterSize="4" name="Zorn" tile="236" frames="4" basehp="240" exp="16" casts="negate" leader="35"/>
+    <monster id="48" encounterSize="4" name="Zorn" tile="236" frames="4" basehp="240" exp="16" casts="negate" incorporeal="true" leader="35"/>
     <monster id="49" encounterSize="6" name="Daemon" tile="240" frames="4" basehp="112" exp="8" ranged="true" rangedhittile="magic" rangedmisstile="magic" flies="true" resists="fire" leader="52"/>
     <monster id="50" encounterSize="4" name="Hydra" tile="244" frames="4" basehp="208" exp="14" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" resists="fire" leader="51"/>
     <monster id="51" encounterSize="4" name="Dragon" tile="248" frames="4" basehp="224" exp="15" ranged="true" worldrangedtile="fireblast" rangedhittile="fireblast" rangedmisstile="fireblast" flies="true" resists="fire" leader="52"/>

@@ -388,9 +388,9 @@ Object *mapAddPersonObject(Map *map, const Person *person) {
 Object *mapAddMonsterObject(Map *map, const Monster *monster, unsigned short x, unsigned short y, unsigned short z) {
     Object *obj = mapAddObject(map, monster->tile, monster->tile, x, y, z);
 
-    if (monster->mattr & MATTR_WANDERS)
+    if (monsterWanders(monster))
         obj->movement_behavior = MOVEMENT_WANDER;
-    else if (monster->mattr & MATTR_STATIONARY)
+    else if (monsterIsStationary(monster))
         obj->movement_behavior = MOVEMENT_FIXED;
     else obj->movement_behavior = MOVEMENT_ATTACK_AVATAR;
 
@@ -484,14 +484,14 @@ Object *mapMoveObjects(Map *map, int avatarx, int avatary, int z) {
             }
         }
 
-        /* Enact any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
-        monsterSpecialEffect(obj);
-
         /* Perform any special actions */
-        monsterSpecialAction(obj);            
+        monsterSpecialAction(obj);
 
         /* Now, move the object according to its movement behavior */
         moveObject(map, obj, avatarx, avatary);        
+
+        /* Enact any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
+        monsterSpecialEffect(obj);
     }
 
     return attacker;
@@ -560,52 +560,57 @@ int mapGetValidMoves(const Map *map, int from_x, int from_y, int z, unsigned cha
     Object *obj;
     int x, y;
     const Monster *m;
+    int ontoAvatar, ontoMonster;
 
     retval = 0;
     for (d = DIR_WEST; d <= DIR_SOUTH; d++) {
+        ontoAvatar = 0;
+        ontoMonster = 0;
         x = from_x;
-        y = from_y;
+        y = from_y;        
 
         dirMove(d, &x, &y);
         
         if (MAP_IS_OOB(map, x, y) && !mapWrapCoordinates(map, &x, &y)) {        
             retval = DIR_ADD_TO_MASK(d, retval);
-            continue;            
+            continue;
         }
 
+        /* see if it's trying to move onto the avatar or onto a person or monster */
         if ((map->flags & SHOW_AVATAR) &&
             x == c->location->x && 
             y == c->location->y)
-            tile = c->saveGame->transport;
-        else if ((obj = mapObjectAt(map, x, y, z)) != NULL)
-            tile = obj->tile;
-        else
-            tile = mapTileAt(map, x, y, z);
-
-        prev_tile = mapTileAt(map, from_x, from_y, z);
+            ontoAvatar = 1;
+        else if ((obj = mapObjectAt(map, x, y, z)) != NULL && (obj->objType != OBJECT_UNKNOWN))
+            ontoMonster = 1;
+            
+        tile = mapGroundTileAt(map, x, y, z);
+        prev_tile = mapGroundTileAt(map, from_x, from_y, z);        
 
         m = monsterForTile(transport);
+
+        /* move on if unable to move onto the avatar or another monster */
+        if ((ontoAvatar && m && !monsterCanMoveOntoAvatar(m)) ||
+            (ontoMonster && m && !monsterCanMoveOntoMonsters(m)))
+            continue;        
+
         /* if the transport is a ship, check sailable */
-        if (tileIsShip(transport) || tileIsPirateShip(transport)) {
+        if (tileIsShip(transport) || (m && monsterSails(m))) {
             if (tileIsSailable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);
         }
         /* aquatic monster */
-        else if (m && monsterIsAquatic(m)) {
+        else if (m && monsterSwims(m)) {
             if (tileIsSwimable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);
         }
-        /* ghost monster */
-        else if (m && (m->id == GHOST_ID)) {
+        /* incorporeal monster */
+        else if (m && monsterIsIncorporeal(m)) {
             retval = DIR_ADD_TO_MASK(d, retval);
         }
         /* if it is a balloon or flying monster, check flyable */
         else if (tileIsBalloon(transport) || (m && monsterFlies(m))) {
-            /* Monster movement */
-            if (m && (!monsterForTile(tile)) && tileIsFlyable(tile))
-                retval = DIR_ADD_TO_MASK(d, retval);           
-            /* Balloon movement */
-            else if (!m && tileIsFlyable(tile))
+            if (tileIsFlyable(tile))
                 retval = DIR_ADD_TO_MASK(d, retval);
         }
         /* avatar or horseback: check walkable */

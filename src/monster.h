@@ -133,23 +133,31 @@
 #define BALRON_TILE 252
 
 typedef enum {
-    MATTR_STEALFOOD     = 0x01,
-    MATTR_STEALGOLD     = 0x02,
-    MATTR_CASTS_SLEEP   = 0x04,
-    MATTR_UNDEAD        = 0x08,
+    MATTR_STEALFOOD     = 0x1,
+    MATTR_STEALGOLD     = 0x2,
+    MATTR_CASTS_SLEEP   = 0x4,
+    MATTR_UNDEAD        = 0x8,
     MATTR_GOOD          = 0x10,
     MATTR_WATER         = 0x20,
-    MATTR_STATIONARY    = 0x40,
-    MATTR_NONATTACKABLE = 0x80,
-    MATTR_NEGATE        = 0x100,
-    MATTR_TELEPORT      = 0x200,    
-    MATTR_CAMOUFLAGE    = 0x400,
-    MATTR_WANDERS       = 0x800,
-    MATTR_NOATTACK      = 0x1000,
-    MATTR_FLIES         = 0x2000,
-    MATTR_AMBUSHES      = 0x4000,
-    MATTR_RANDOMRANGED  = 0x8000    
+    MATTR_NONATTACKABLE = 0x40,
+    MATTR_NEGATE        = 0x80,    
+    MATTR_CAMOUFLAGE    = 0x100,    
+    MATTR_NOATTACK      = 0x200,    
+    MATTR_AMBUSHES      = 0x400,
+    MATTR_RANDOMRANGED  = 0x800,
+    MATTR_INCORPOREAL   = 0x1000
 } MonsterAttrib;
+
+typedef enum {
+    MATTR_STATIONARY        = 0x1,
+    MATTR_WANDERS           = 0x2,
+    MATTR_SWIMS             = 0x4,
+    MATTR_SAILS             = 0x8,
+    MATTR_FLIES             = 0x10,
+    MATTR_TELEPORT          = 0x20,
+    MATTR_CANMOVEMONSTERS   = 0x40,
+    MATTR_CANMOVEAVATAR     = 0x80
+} MonsterMovementAttrib;
 
 typedef enum {
     MSTAT_DEAD,
@@ -175,6 +183,7 @@ typedef struct _Monster {
     unsigned char rangedmisstile;
     unsigned char leavestile        : 1;
     MonsterAttrib mattr;
+    MonsterMovementAttrib movementAttr;
     SlowedType slowedType;
     unsigned char encounterSize;
     unsigned char resists;
@@ -186,8 +195,14 @@ int monsterIsGood(const Monster *monster);
 int monsterIsEvil(const Monster *monster);
 int monsterIsUndead(const Monster *monster);
 int monsterIsAquatic(const Monster *monster);
+int monsterWanders(const Monster *monster);
+int monsterIsStationary(const Monster *monster);
 int monsterFlies(const Monster *monster);
 int monsterTeleports(const Monster *monster);
+int monsterSwims(const Monster *monster);
+int monsterSails(const Monster *monster);
+int monsterCanMoveOntoMonsters(const Monster *monster);
+int monsterCanMoveOntoAvatar(const Monster *monster);
 int monsterIsAttackable(const Monster *monster);
 int monsterWillAttack(const Monster *monster);
 int monsterStealsGold(const Monster *monster);
@@ -195,6 +210,7 @@ int monsterStealsFood(const Monster *monster);
 int monsterNegates(const Monster *monster);
 int monsterCamouflages(const Monster *monster);
 int monsterAmbushes(const Monster *monster);
+int monsterIsIncorporeal(const Monster *monster);
 int monsterHasRandomRangedAttack(const Monster *monster);
 int monsterLeavesTile(const Monster *monster);
 int monsterCastSleep(const Monster *monster);
