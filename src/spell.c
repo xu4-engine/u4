@@ -507,14 +507,11 @@ static int spellFireball(int dir) {
 static int spellGate(int phase) {
     const Moongate *moongate;
 
-    if (!tileIsShip(c->saveGame->transport)) {
-        moongate = moongateGetGateForPhase(phase);
-        c->location->x = moongate->x;
-        c->location->y = moongate->y;        
+    moongate = moongateGetGateForPhase(phase);
+    c->location->x = moongate->x;
+    c->location->y = moongate->y;        
 
-        return 1;
-    }
-    return 0;
+    return 1;    
 }
 
 static int spellHeal(int player) {

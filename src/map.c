@@ -330,7 +330,7 @@ unsigned char mapVisibleTileAt(const Map *map, int x, int y, int z, int *focus) 
         tile = a->tile;
     }        
     /* then the avatar is drawn (unless on a ship) */
-    else if ((map->flags & SHOW_AVATAR) && !tileIsShip(c->saveGame->transport) && 
+    else if ((map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && 
         c->location->x == x && c->location->y == y) {
         *focus = 0;
         tile = c->saveGame->transport;

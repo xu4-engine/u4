@@ -540,7 +540,7 @@ void monsterSpecialEffect(Object *obj) {
                     obj->y == c->location->y &&
                     obj->z == c->location->z) {
 
-                    if (tileIsShip(c->saveGame->transport)) {
+                    if (c->transportContext == TRANSPORT_SHIP) {
                         /* FIXME: Check actual damage from u4dos */                           
                         gameDamageShip(10, 30);                        
                     }
@@ -569,7 +569,7 @@ void monsterSpecialEffect(Object *obj) {
             {
                 if (obj->x == c->location->x &&
                     obj->y == c->location->y &&
-                    obj->z == c->location->z && tileIsShip(c->saveGame->transport)) {                    
+                    obj->z == c->location->z && (c->transportContext == TRANSPORT_SHIP)) {                    
                                     
                     gameDamageShip(-1, 10);
 

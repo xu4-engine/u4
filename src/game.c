@@ -505,10 +505,10 @@ int gameBaseKeyHandler(int key, void *data) {
     case U4_LEFT:
     case U4_RIGHT:
         /* Check to see if we're on the balloon */
-        if (!tileIsBalloon(c->saveGame->transport)) {
+        if (c->transportContext != TRANSPORT_BALLOON) {
             moveAvatar(keyToDirection(key), 1);
             /* horse doubles speed */
-            if (tileIsHorse(c->saveGame->transport) && c->horseSpeed) {
+            if ((c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
                 gameUpdateScreen(); /* to give it a smooth look of movement */
                 moveAvatar(keyToDirection(key), 0);
             }
@@ -561,7 +561,7 @@ int gameBaseKeyHandler(int key, void *data) {
         obj = mapObjectAt(c->location->map, c->location->x, c->location->y, c->location->z);
         if (obj) {
             if (tileIsShip(obj->tile)) {
-                if (c->saveGame->transport != AVATAR_TILE)
+                if (c->transportContext != TRANSPORT_FOOT)
                     screenMessage("Board: Can't!\n");
                 else {
                     gameSetTransport(obj->tile);
@@ -571,7 +571,7 @@ int gameBaseKeyHandler(int key, void *data) {
                     screenMessage("Board Frigate!\n");
                 }
             } else if (tileIsHorse(obj->tile)) {
-                if (c->saveGame->transport != AVATAR_TILE)
+                if (c->transportContext != TRANSPORT_FOOT)
                     screenMessage("Board: Can't!\n");
                 else {
                     gameSetTransport(obj->tile);
@@ -579,7 +579,7 @@ int gameBaseKeyHandler(int key, void *data) {
                     screenMessage("Mount Horse!\n");
                 }
             } else if (tileIsBalloon(obj->tile)) {
-                if (c->saveGame->transport != AVATAR_TILE)
+                if (c->transportContext != TRANSPORT_FOOT)
                     screenMessage("Board: Can't!\n");
                 else {
                     gameSetTransport(obj->tile);
@@ -603,7 +603,7 @@ int gameBaseKeyHandler(int key, void *data) {
             gameSetMap(c, portal->destination, 0, portal);
 
             screenMessage("Descend to first floor!\n");
-        } else if (tileIsBalloon(c->saveGame->transport)) {
+        } else if (c->transportContext == TRANSPORT_BALLOON) {
             screenMessage("Land Balloon\n");
             if (c->saveGame->balloonstate == 0)
                 screenMessage("Already Landed!\n");
@@ -659,7 +659,7 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'f':
-        if (tileIsShip(c->saveGame->transport)) {
+        if (c->transportContext == TRANSPORT_SHIP) {
             int broadsidesDirs = dirGetBroadsidesDirs(tileGetDirection(c->saveGame->transport));            
 
             info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
@@ -704,7 +704,7 @@ int gameBaseKeyHandler(int key, void *data) {
             screenMessage("Hole up & Camp\nNot here!\n");
             break;
         }
-        if (c->saveGame->transport != AVATAR_TILE) {
+        if (c->transportContext != TRANSPORT_FOOT) {
             screenMessage("Hole up & Camp\nOnly on foot!\n");
             break;
         }
@@ -735,7 +735,7 @@ int gameBaseKeyHandler(int key, void *data) {
     case 'k':
         portal = mapPortalAt(c->location->map, c->location->x, c->location->y, c->location->z);
         if (portal && portal->trigger_action == ACTION_KLIMB) {
-            if (c->saveGame->transport != AVATAR_TILE)
+            if (c->transportContext != TRANSPORT_FOOT)
                 screenMessage("Klimb\nOnly on foot!\n");
             else {
                 annotationClear(c->location->map->id);
@@ -743,7 +743,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 
                 screenMessage("Klimb to second floor!\n");
             }
-        } else if (tileIsBalloon(c->saveGame->transport)) {
+        } else if (c->transportContext == TRANSPORT_BALLOON) {
             c->saveGame->balloonstate = 1;
             c->opacity = 0;
             screenMessage("Klimb Altitude!\n");            
@@ -879,9 +879,9 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'x':
-        if (c->saveGame->transport != AVATAR_TILE && c->saveGame->balloonstate == 0) {
+        if ((c->transportContext != TRANSPORT_FOOT) && c->saveGame->balloonstate == 0) {
             Object *obj = mapAddObject(c->location->map, c->saveGame->transport, c->saveGame->transport, c->location->x, c->location->y, c->location->z);
-            if (tileIsShip(c->saveGame->transport))
+            if (c->transportContext == TRANSPORT_SHIP)
                 c->lastShip = obj; 
 
             gameSetTransport(AVATAR_TILE);
@@ -893,7 +893,7 @@ int gameBaseKeyHandler(int key, void *data) {
 
     case 'y':
         screenMessage("Yell ");
-        if (tileIsHorse(c->saveGame->transport)) {
+        if (c->transportContext == TRANSPORT_HORSE) {
             if (c->horseSpeed == 0) {
                 screenMessage("Giddyup!\n");
                 c->horseSpeed = 1;
@@ -1525,7 +1525,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
             if (hitsAvatar) {
                 attackFlash(x, y, HITFLASH_TILE, 2);
 
-                if (tileIsShip(c->saveGame->transport))
+                if (c->transportContext == TRANSPORT_SHIP)
                     gameDamageShip(-1, 10);
                 else gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */
             }          
@@ -2207,14 +2207,14 @@ int moveAvatar(Direction dir, int userEvent) {
     int slowed = 0;
     SlowedType slowedType = SLOWED_BY_TILE;
     
-    if (tileIsShip(c->saveGame->transport))
+    if (c->transportContext == TRANSPORT_SHIP)
         slowedType = SLOWED_BY_WIND;
-    else if (tileIsBalloon(c->saveGame->transport))
+    else if (c->transportContext == TRANSPORT_BALLOON)
         slowedType = SLOWED_BY_NOTHING;
 
     /*musicPlayEffect();*/
 
-    if (tileIsShip(c->saveGame->transport)) {
+    if (c->transportContext == TRANSPORT_SHIP) {
         if (tileGetDirection(c->saveGame->transport) != dir) {
             tileSetDirection((unsigned char *)&c->saveGame->transport, dir);
             if (!settings->filterMoveMessages)
@@ -2223,7 +2223,7 @@ int moveAvatar(Direction dir, int userEvent) {
         }
     }
 
-    if (tileIsHorse(c->saveGame->transport)) {
+    if (c->transportContext == TRANSPORT_HORSE) {
         if ((dir == DIR_WEST || dir == DIR_EAST) &&
             tileGetDirection(c->saveGame->transport) != dir) {
             tileSetDirection((unsigned char *)&c->saveGame->transport, dir);
@@ -2236,9 +2236,9 @@ int moveAvatar(Direction dir, int userEvent) {
     dirMove(dir, &newx, &newy);
 
     if (!settings->filterMoveMessages && userEvent) {
-        if (tileIsShip(c->saveGame->transport))
+        if (c->transportContext == TRANSPORT_SHIP)
             screenMessage("Sail %s!\n", getDirectionName(dir));
-        else if (!tileIsBalloon(c->saveGame->transport))
+        else if (c->transportContext != TRANSPORT_BALLOON)
             screenMessage("%s\n", getDirectionName(dir));
     }    
 
@@ -2340,7 +2340,7 @@ void gameTimer(void *data) {
         }
 
         /* balloon moves about 4 times per second */
-        if (tileIsBalloon(c->saveGame->transport) &&
+        if ((c->transportContext == TRANSPORT_BALLOON) &&
             c->saveGame->balloonstate) {
             dir = dirReverse((Direction) c->windDirection);
             moveAvatar(dir, 0);
@@ -2484,7 +2484,7 @@ void gameCheckHullIntegrity() {
     int i;
 
     /* see if the ship has sunk */
-    if (tileIsShip(c->saveGame->transport) && c->saveGame->shiphull <= 0)
+    if ((c->transportContext == TRANSPORT_SHIP) && c->saveGame->shiphull <= 0)
     {
         screenMessage("\nThy ship sinks!\n\n");        
 
@@ -2716,7 +2716,7 @@ int monsterRangeAttack(int x, int y, int distance, void *data) {
             attackFlash(x, y, tile, 2);
 
             /* FIXME: check actual damage from u4dos -- values here are guessed */
-            if (tileIsShip(c->saveGame->transport))
+            if (c->transportContext == TRANSPORT_SHIP)
                 gameDamageShip(-1, 10);
             else gameDamageParty(10, 25);
 
@@ -2841,7 +2841,7 @@ void gameDamageParty(int minDamage, int maxDamage) {
 void gameDamageShip(int minDamage, int maxDamage) {
     int damage;
 
-    if (tileIsShip(c->saveGame->transport)) {
+    if (c->transportContext == TRANSPORT_SHIP) {
         damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
             rand() % ((maxDamage + 1) - minDamage) + minDamage :
             maxDamage;

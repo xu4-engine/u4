@@ -108,7 +108,7 @@ void statsUpdate() {
     /*
      * update the lower stats box (food, gold, etc.)
      */
-    if (tileIsShip(c->saveGame->transport))
+    if (c->transportContext == TRANSPORT_SHIP)
         screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   SHP:%02d", c->saveGame->food / 100, c->saveGame->shiphull);
     else
         screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
