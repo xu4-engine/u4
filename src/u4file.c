@@ -10,6 +10,8 @@
 
 #include "u4file.h"
 
+extern int verbose;
+
 /* the possible paths where u4 for DOS can be installed */
 const char *paths[] = {
     "./",
@@ -33,6 +35,9 @@ FILE *u4fopen(const char *fname) {
     for (i = 0; i < sizeof(paths) / sizeof(paths[0]); i++) {
         snprintf(pathname, sizeof(pathname), "%s%s", paths[i], fname);
 
+        if (verbose)
+            printf("trying to open %s\n", pathname);
+
         if ((f = fopen(pathname, "rb")) != NULL)
             break;
 
@@ -41,9 +46,15 @@ FILE *u4fopen(const char *fname) {
                 pathname[j] = toupper(pathname[j]);
         }
         
+        if (verbose)
+            printf("trying to open %s\n", pathname);
+
         if ((f = fopen(pathname, "rb")) != NULL)
             break;
     }
+
+    if (verbose && f != NULL)
+        printf("%s successfully opened\n", pathname);
 
     return f;
 }
