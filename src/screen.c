@@ -14,6 +14,7 @@
 #include "object.h"
 #include "context.h"
 #include "savegame.h"
+#include "names.h"
 
 int screenCurrentCycle = 0;
 int screenCursorX = 0;
@@ -99,6 +100,7 @@ void screenUpdate() {
 
     screenUpdateCursor();
     screenUpdateMoons();
+    screenUpdateWind();
 }
 
 void screenCycle() {
@@ -131,6 +133,11 @@ void screenUpdateMoons() {
 
     screenShowChar(MOON_CHAR + trammelPhase, 11, 0);
     screenShowChar(MOON_CHAR + feluccaPhase, 12, 0);
+}
+
+void screenUpdateWind() {
+    screenEraseTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
+    screenTextAt(WIND_AREA_X, WIND_AREA_Y, "Wind %s", getDirectionName(c->windDirection));
 }
 
 void screenEnableCursor() {
