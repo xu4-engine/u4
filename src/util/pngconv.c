@@ -54,7 +54,7 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
     int bit_depth, color_type, interlace_type, compression_type, filter_method;
     int palette_size;
     png_color *palette;
-    png_byte *row_pointers[200];
+    png_byte **row_pointers;
     int i, j;
 
     if (bits == 4)
@@ -66,12 +66,13 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
 
     palette = malloc(sizeof(png_color) * palette_size);        
 
-    printf("ps = %d\n", palette_size);
+    printf("palette size = %d\n", palette_size);
     if (palette_size == 16)
         setEgaPalette(palette);
     else
         setVgaPalette(palette);
 
+    row_pointers = malloc(height * sizeof(png_byte *));
     for (i = 0; i < height; i++) {
         row_pointers[i] = (png_byte *) malloc(width * sizeof (png_byte) * bits / 8);
     }
