@@ -19,10 +19,16 @@ typedef enum {
     INTRO_INIT_NAME,
     INTRO_INIT_SEX,
     INTRO_INIT_STORY,
+    INTRO_INIT_QUESTIONS
 } IntroMode;
 
 char storyInd;
 char *introText[24];
+char *introQuestions[28];
+char *introGypsy[4];
+int questionRound;
+int answerInd;
+int questionTree[15];
 
 IntroMode mode = INTRO_MAP;
 char buffer[16];
@@ -30,6 +36,8 @@ char buffer[16];
 int introHandleName(const char *message);
 int introHandleSex(const char *message);
 void introShowText(int text);
+void introInitQuestionTree();
+int introDoQuestion(int answer);
 
 int introInit() {
     FILE *title;
@@ -40,8 +48,17 @@ int introInit() {
     if (!title)
         return 0;
 
-    fseek(title, 23488, SEEK_SET);
-    for (i = 0; i < 24; i++) {
+    fseek(title, 17445, SEEK_SET);
+    for (i = 0; i < sizeof(introQuestions) / sizeof(introQuestions[0]); i++) {
+        for (j = 0; j < sizeof(buffer) - 1; j++) {
+            buffer[j] = fgetc(title);
+            if (buffer[j] == '\0')
+                break;
+        }
+        introQuestions[i] = strdup(buffer);
+    }
+
+    for (i = 0; i < sizeof(introText) / sizeof(introText[0]); i++) {
         for (j = 0; j < sizeof(buffer) - 1; j++) {
             buffer[j] = fgetc(title);
             if (buffer[j] == '\0')
@@ -50,10 +67,36 @@ int introInit() {
         introText[i] = strdup(buffer);
     }
 
+    for (i = 0; i < sizeof(introGypsy) / sizeof(introGypsy[0]); i++) {
+        for (j = 0; j < sizeof(buffer) - 1; j++) {
+            buffer[j] = fgetc(title);
+            if (buffer[j] == '\0')
+                break;
+        }
+        introGypsy[i] = strdup(buffer);
+    }
+
     u4fclose(title);
+
+    screenLoadCards();
+
     return 1;
 }
 
+
+void introDelete() {
+    int i;
+
+    for (i = 0; i < sizeof(introQuestions) / sizeof(introQuestions[0]); i++)
+        free(introQuestions[i]);
+    for (i = 0; i < sizeof(introText) / sizeof(introText[0]); i++)
+        free(introText[i]);
+    for (i = 0; i < sizeof(introGypsy) / sizeof(introGypsy[0]); i++)
+        free(introGypsy[i]);
+
+    screenFreeCards();
+    screenFreeIntroBackgrounds();
+}
 
 int introKeyHandler(int key, void *data) {
     ReadBufferActionInfo *info;
@@ -107,6 +150,15 @@ int introKeyHandler(int key, void *data) {
     case INTRO_INIT_STORY:
         storyInd++;
         if (storyInd >= 24) {
+            mode = INTRO_INIT_QUESTIONS;
+            questionRound = 0;
+            introInitQuestionTree();
+        }
+        introUpdateScreen();
+        return 1;
+
+    case INTRO_INIT_QUESTIONS:
+        if (introDoQuestion(0)) {
             screenDisableCursor();
             mode = INTRO_MENU;
         }
@@ -188,6 +240,12 @@ void introUpdateScreen() {
         introShowText(storyInd);
         break;
 
+    case INTRO_INIT_QUESTIONS:
+        screenDrawBackground(BKGD_ABACUS);
+        screenShowCard(0, questionTree[questionRound * 2]);
+        screenShowCard(1, questionTree[questionRound * 2 + 1]);
+        break;
+
     default:
         assert(0);
     }
@@ -217,9 +275,6 @@ int introHandleName(const char *message) {
     buffer[0] = '\0';
     eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, info);
 
-    /* FIXME: this could be done somewhere better */
-    introInit();
-
     return 1;
 }
 
@@ -229,12 +284,16 @@ int introHandleSex(const char *message) {
 
     eventHandlerPopKeyHandler();
     mode = INTRO_INIT_STORY;
-    storyInd = 0;
+    storyInd = 23;
 
     introUpdateScreen();
     screenForceRedraw();
 
     return 1;
+}
+
+void introGetQuestion() {
+    
 }
 
 void introShowText(int text) {
@@ -249,7 +308,9 @@ void introShowText(int text) {
         len = strcspn(p, "\n");
         strncpy(line, p, len);
         line[len] = '\0';
-        p += len + 1;
+        p += len;
+        if (*p == '\n')
+            p++;
         screenTextAt(0, lineNo, "%s", line);
         lineNo++;
     }
@@ -262,4 +323,49 @@ void introTimer() {
     if (mode == INTRO_MAP)
         introDrawMap();
     screenForceRedraw();
+}
+
+void introInitQuestionTree() {
+    int i, tmp, r;
+
+    for (i = 0; i < 8; i++)
+        questionTree[i] = i;
+
+    for (i = 0; i < 8; i++) {
+        r = rand() % 8;
+        tmp = questionTree[r];
+        questionTree[r] = questionTree[i];
+        questionTree[i] = tmp;
+    }
+    answerInd = 8;
+
+    if (questionTree[0] > questionTree[1]) {
+        tmp = questionTree[0];
+        questionTree[0] = questionTree[1];
+        questionTree[1] = tmp;
+    }
+        
+}
+
+int introDoQuestion(int answer) {
+    int tmp;
+
+    if (!answer)
+        questionTree[answerInd] = questionTree[questionRound * 2];
+    else
+        questionTree[answerInd] = questionTree[questionRound * 2 + 1];
+
+    answerInd++;
+    questionRound++;
+
+    if (questionRound > 6)
+        return 1;
+
+    if (questionTree[questionRound * 2] > questionTree[questionRound * 2 + 1]) {
+        tmp = questionTree[questionRound * 2];
+        questionTree[questionRound * 2] = questionTree[questionRound * 2 + 1];
+        questionTree[questionRound * 2 + 1] = tmp;
+    }
+
+    return 0;
 }
