@@ -24,6 +24,7 @@
 #include "spell.h"
 #include "names.h"
 #include "player.h"
+#include "moongate.h"
 #include "music.h"
 
 void gameFinishTurn(void);
@@ -294,6 +295,10 @@ int gameBaseKeyHandler(int key, void *data) {
         info->failedMessage = "Not Here!";
         eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, info);
         screenMessage("Open\nDir: ");
+        break;
+
+    case 'p':
+        screenShowGem();
         break;
 
     case 'q':
@@ -574,6 +579,7 @@ int gameSpecialCmdKeyHandler(int key, void *data) {
         c->saveGame->torches = 99;
         c->saveGame->gems = 99;
         c->saveGame->keys = 99;
+        c->saveGame->sextants = 1;
         c->saveGame->items = ITEM_SKULL | ITEM_CANDLE | ITEM_BOOK | ITEM_BELL | ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T | ITEM_HORN | ITEM_WHEEL;
         c->saveGame->stones = 0xff;
         c->saveGame->runes = 0xff;
@@ -1186,6 +1192,9 @@ int moveAvatar(Direction dir, int userEvent) {
 
     c->saveGame->x = newx;
     c->saveGame->y = newy;
+
+    gameCheckMoongates();
+
     return 1;
 }
 
@@ -1193,6 +1202,9 @@ int moveAvatar(Direction dir, int userEvent) {
  * This function is called every quarter second.
  */
 void gameTimer() {
+    int oldTrammel;
+    const Moongate *gate;
+
     Direction dir = DIR_WEST;
     if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
         if ((rand() % 4) == 1)
@@ -1218,10 +1230,38 @@ void gameTimer() {
         }
     }
 
-    screenCycle();
-    screenUpdate();
-    screenForceRedraw();
+    oldTrammel = c->saveGame->trammelphase;
 
     if (++c->moonPhase >= (MOON_SECONDS_PER_PHASE * 4 * MOON_PHASES))
         c->moonPhase = 0;
+
+    c->saveGame->trammelphase = c->moonPhase / (MOON_SECONDS_PER_PHASE * 4) / 3;
+    c->saveGame->feluccaphase = c->moonPhase / (MOON_SECONDS_PER_PHASE * 4) % 8;
+
+    if (--c->saveGame->trammelphase > 7)
+        c->saveGame->trammelphase = 7;
+    if (--c->saveGame->feluccaphase > 7)
+        c->saveGame->feluccaphase = 7;
+
+    if (c->saveGame->trammelphase != oldTrammel) {
+        gate = moongateGetGateForPhase(oldTrammel);
+        annotationRemove(gate->x, gate->y, 67);
+        gate = moongateGetGateForPhase(c->saveGame->trammelphase);
+        annotationAdd(gate->x, gate->y, -1, 67);
+    }
+
+    screenCycle();
+    screenUpdate();
+    screenForceRedraw();
+}
+
+void gameCheckMoongates() {
+    int destx, desty;
+    
+    if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, 
+                                 c->saveGame->x, c->saveGame->y, &destx, &desty)) {
+        
+        c->saveGame->x = destx;
+        c->saveGame->y = desty;
+    }
 }
