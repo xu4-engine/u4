@@ -103,7 +103,8 @@ unsigned char screenViewportTile(int width, int height, int x, int y) {
             return GRASS_TILE;
     }
 
-    if ((obj = mapObjectAt(c->map, tx, ty, 0))) 
+    if ((obj = mapObjectAt(c->map, tx, ty, 0)) &&
+        (!obj->isAvatar || (c->map->flags & SHOW_AVATAR)))
         return obj->tile;
 
     else
