@@ -73,21 +73,10 @@ int issailable(unsigned char tile) {
     return 0;
 }
 
+int isdoor(unsigned char tile) {
+    return tile == 59;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+int islockeddoor(unsigned char tile) {
+    return tile == 58;
+}
