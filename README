@@ -40,6 +40,19 @@ and vice versa, at least in theory.
 STATUS
 ------
 
+New in v0.5
+ - lots of combat refinements, random monsters
+ - lots of fixes to vendor code (weapon, armor and food fully
+   implemented)
+ - Lord British nows heals party when asked about health
+ - "Mix Reagents" command works
+ - the "Yell" command now controls horse speed
+ - lots of the game mechanics that were guessed before now match the
+   original Ultima IV
+ - two new utility programs are provided for encoding and decoding the
+   graphics files used in the introduction (lzwenc & lzwdec)
+ - the usual bug fixes
+
 New in v0.09:
  - first go at combat; still need to figure out true U4
    combat algorithms
@@ -71,52 +84,6 @@ New in v0.07:
    for now); the -scale parameter now accepts a number or "2xBi" for
    filtered scaling (2 is still the default, 2xBi looks bad without
    the VGA upgrade)
-
-New in v0.06:
- - horses, ships, balloons (accessible through debug menu)
- - wind
- - line of sight (no longer possible to see through walls)
- - moongates
-
-New in v0.05:
- - background music!
- - Hawkwind dialog
- - weapons and armor vendors work (partially)
- - new debug menu available with ctrl-c
- - intro map is animated, plus other fixes in the intro sequence
- - lots more minor bug fixes
-
-New in v0.04:
- - the initiate new game sequence and character creation mostly complete
- - lots of minor fixes and code reorganization behind the scenes
-
-New in v0.03:
- - support for the VGA upgrade patch
- - "Wear Armour", "Ready Weapon", "New Order", "Locate Position" commands work
- - more progress on spells
- - water, lava, energy fields are all animated
- - an animated cursor is shown
- - the moons cycle through their phases
- - Lord British talks!  Doesn't heal yet, though
-
-New in v0.02:
- - dynamic scaling ("./u4 -scale 1" runs at original resolution,
-   "./u4 -scale 2" and twice normal size, etc)
- - ztats now display character stats and inventory
- - the Ultima 4 data files can now be located in the current
-   directory, a subdirectory called "ultima4", /usr/lib/u4/ultima4 or
-   /usr/local/lib/u4/ultima4
- - the Ultima 4 data files can be uppercase or lowercase
- - some work on spells has begun
-
-v0.01 features:
- - stunning EGA graphics
- - walking around the world, entering cities and castles
- - the ladders between the two floors in the castle of Lord British
- - conversations with citizens (not merchants, Lord British, or
-   Hawkwind)
- - saving the game remembers your position
- - unlocking and opening of doors
 
 To do, in no particular order:
  - sound
