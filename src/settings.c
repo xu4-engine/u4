@@ -13,16 +13,23 @@
 
 Settings *settings = NULL;
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define SETTINGS_BASE_FILENAME "xu4.cfg"
+#else
+#define SETTINGS_BASE_FILENAME ".xu4rc"
+#endif
+
 char *settingsFilename() {
     char *fname, *home;
 
     home = getenv("HOME");
     if (home && home[0]) {
-        fname = (char *) malloc(strlen(home) + strlen("/.xu4rc") + 1);
+        fname = (char *) malloc(strlen(home) + strlen(SETTINGS_BASE_FILENAME) + 2);
         strcpy(fname, home);
-        strcat(fname, "/.xu4rc");
+        strcat(fname, "/");
+        strcat(fname, SETTINGS_BASE_FILENAME);
     } else
-        fname = strdup(".xu4rc");
+        fname = strdup(SETTINGS_BASE_FILENAME);
 
     return fname;
 }
