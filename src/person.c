@@ -18,39 +18,39 @@ int personGetResponse(const Person *p, const char *inquiry, char **reply, int *a
         return 1;
     }
 
-    else if (strcasecmp(inquiry, "look") == 0) {
+    else if (strncasecmp(inquiry, "look", 4) == 0) {
         *reply = malloc(strlen(p->pronoun) + 7 + strlen(p->description) + 1);
         sprintf(*reply, "%s says: %s", p->pronoun, p->description);
         *askq = 0;
         return 0;
     }
 
-    else if (strcasecmp(inquiry, "name") == 0) {
+    else if (strncasecmp(inquiry, "name", 4) == 0) {
         *reply = malloc(strlen(p->pronoun) + 12 + strlen(p->name) + 1);
         sprintf(*reply, "%s says: I am %s", p->pronoun, p->name);
         *askq = 0;
         return 0;
     }
 
-    else if (strcasecmp(inquiry, "job") == 0) {
+    else if (strncasecmp(inquiry, "job", 4) == 0) {
         *reply = strdup(p->job);
         *askq = (p->questionTrigger == QTRIGGER_JOB);
         return 0;
     }
 
-    else if (strcasecmp(inquiry, "heal") == 0) {
+    else if (strncasecmp(inquiry, "heal", 4) == 0) {
         *reply = strdup(p->health);
         *askq = (p->questionTrigger == QTRIGGER_HEALTH);
         return 0;
     }
 
-    else if (strcasecmp(inquiry, p->keyword1) == 0) {
+    else if (strncasecmp(inquiry, p->keyword1, 4) == 0) {
         *reply = strdup(p->response1);
         *askq = (p->questionTrigger == QTRIGGER_KEYWORD1);
         return 0;
     }
 
-    else if (strcasecmp(inquiry, p->keyword2) == 0) {
+    else if (strncasecmp(inquiry, p->keyword2, 4) == 0) {
         *reply = strdup(p->response1);
         *askq = (p->questionTrigger == QTRIGGER_KEYWORD2);
         return 0;
