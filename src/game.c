@@ -41,6 +41,7 @@ int castForPlayer(int player);
 int castForPlayer2(int spell, void *data);
 int castForPlayerGetDestPlayer(int player);
 int jimmyAtCoord(int x, int y);
+int mixReagentsForSpell(int spell, void *data);
 int newOrderForPlayer(int player);
 int newOrderForPlayer2(int player2);
 int openAtCoord(int x, int y);
@@ -220,8 +221,9 @@ int gameBaseKeyHandler(int key, void *data) {
     int valid = 1;
     Object *obj;
     const Portal *portal;
-    DirectedActionInfo *info;
+    CoordActionInfo *info;
     GetChoiceActionInfo *choiceInfo;
+    AlphaActionInfo *alphaInfo;
     const ItemLocation *item;
     unsigned char tile;
 
@@ -249,12 +251,12 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 'a':
-        info = (DirectedActionInfo *) malloc(sizeof(DirectedActionInfo));
+        info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &attackAtCoord;
         info->range = 1;
         info->blockedPredicate = NULL;
         info->failedMessage = "FIXME";
-        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, info);
+        eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Attack\nDir: ");
         break;
 
@@ -381,13 +383,21 @@ int gameBaseKeyHandler(int key, void *data) {
             screenMessage("Not Here!\n");
         break;
 
+    case 'h':
+        screenMessage("Hole up & camp!\n");
+        break;
+
+    case 'i':
+        screenMessage("Ignite torch!\nNot Here!\n");
+        break;
+
     case 'j':
-        info = (DirectedActionInfo *) malloc(sizeof(DirectedActionInfo));
+        info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &jimmyAtCoord;
         info->range = 1;
         info->blockedPredicate = NULL;
         info->failedMessage = "Jimmy what?";
-        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, info);
+        eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Jimmy\nDir: ");
         break;
         
@@ -418,18 +428,31 @@ int gameBaseKeyHandler(int key, void *data) {
             screenMessage("Locate position\nwith what?\n");
         break;
 
+    case 'm':
+        screenMessage("Mix reagents!\n");
+        alphaInfo = (AlphaActionInfo *) malloc(sizeof(AlphaActionInfo));
+        alphaInfo->lastValidLetter = 'z';
+        alphaInfo->handleAlpha = mixReagentsForSpell;
+        alphaInfo->prompt = "Spell: ";
+        alphaInfo->data = NULL;
+
+        screenMessage("%s", alphaInfo->prompt);
+        eventHandlerPushKeyHandlerData(&gameGetAlphaChoiceKeyHandler, alphaInfo);
+
+        break;
+
     case 'n':
         eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, &newOrderForPlayer);
         screenMessage("New Order!\nExchange # ");
         break;
 
     case 'o':
-        info = (DirectedActionInfo *) malloc(sizeof(DirectedActionInfo));
+        info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &openAtCoord;
         info->range = 1;
         info->blockedPredicate = NULL;
         info->failedMessage = "Not Here!";
-        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, info);
+        eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Open\nDir: ");
         break;
 
@@ -478,12 +501,12 @@ int gameBaseKeyHandler(int key, void *data) {
         break;
 
     case 't':
-        info = (DirectedActionInfo *) malloc(sizeof(DirectedActionInfo));
+        info = (CoordActionInfo *) malloc(sizeof(CoordActionInfo));
         info->handleAtCoord = &talkAtCoord;
         info->range = 2;
         info->blockedPredicate = &tileCanTalkOver;
         info->failedMessage = "Funny, no\nresponse!";
-        eventHandlerPushKeyHandlerData(&gameGetDirectionKeyHandler, info);
+        eventHandlerPushKeyHandlerData(&gameGetCoordinateKeyHandler, info);
         screenMessage("Talk\nDir: ");
         break;
 
@@ -593,60 +616,50 @@ int gameGetAlphaChoiceKeyHandler(int key, void *data) {
  * Once an arrow key is pressed, control is handed off to a command
  * specific routine.
  */
-int gameGetDirectionKeyHandler(int key, void *data) {
-    DirectedActionInfo *info = (DirectedActionInfo *) data;
+int gameGetCoordinateKeyHandler(int key, void *data) {
+    CoordActionInfo *info = (CoordActionInfo *) data;
     int valid = 1;
     int i;
+    Direction dir;
     int t_x = c->saveGame->x, t_y = c->saveGame->y;
 
     eventHandlerPopKeyHandler();
 
     switch (key) {
     case U4_UP:
-        screenMessage("North\n");
+        dir = DIR_NORTH;
         break;
     case U4_DOWN:
-        screenMessage("South\n");
+        dir = DIR_SOUTH;
         break;
     case U4_LEFT:
-        screenMessage("West\n");
+        dir = DIR_WEST;
         break;
     case U4_RIGHT:
-        screenMessage("East\n");
+        dir = DIR_EAST;
+        break;
+    default:
+        valid = 0;
         break;
     }
 
-    /* 
-     * try every tile in the given direction, up to the given range.
-     * Stop when the command handler succeeds, the range is exceeded,
-     * or the action is blocked.
-     */
-    for (i = 1; i <= info->range; i++) {
-        switch (key) {
-        case U4_UP:
-            t_y--;
-            break;
-        case U4_DOWN:
-            t_y++;
-            break;
-        case U4_LEFT:
-            t_x--;
-            break;
-        case U4_RIGHT:
-            t_x++;
-            break;
-        default:
-            t_x = -1;
-            t_y = -1;
-            valid = 0;
-            break;
-        }
+    if (valid) {
+        screenMessage("%s\n", getDirectionName(dir));
 
-        if ((*(info->handleAtCoord))(t_x, t_y))
-            goto success;
-        if (info->blockedPredicate &&
-            !(*(info->blockedPredicate))(mapTileAt(c->map, t_x, t_y)))
-            break;
+        /* 
+         * try every tile in the given direction, up to the given
+         * range.  Stop when the command handler succeeds, the range
+         * is exceeded, or the action is blocked.
+         */
+        for (i = 1; i <= info->range; i++) {
+            dirMove(dir, &t_x, &t_y);
+
+            if ((*(info->handleAtCoord))(t_x, t_y))
+                goto success;
+            if (info->blockedPredicate &&
+                !(*(info->blockedPredicate))(mapTileAt(c->map, t_x, t_y)))
+                break;
+        }
     }
 
     screenMessage("%s\n", info->failedMessage);
@@ -888,8 +901,10 @@ int castForPlayer2(int spell, void *data) {
         eventHandlerPushKeyHandlerData(&gameGetPlayerNoKeyHandler, &castForPlayerGetDestPlayer);
         break;
     case SPELLPRM_DIR:
+    case SPELLPRM_TYPEDIR:
     case SPELLPRM_FROMDIR:
         /* FIXME */
+        gameCastSpell(castSpell, castPlayer, 0);
         gameFinishTurn();
         break;
     }
@@ -976,6 +991,16 @@ int readyForPlayer2(int weapon, void *data) {
     gameFinishTurn();
 
     return 1;
+}
+
+/**
+ * Mixes reagents for a spell.  Prompts for reagents.
+ */
+int mixReagentsForSpell(int spell, void *data) {
+    screenMessage("%s!\n", spellGetName(spell));
+
+    gameFinishTurn();
+    return 0;
 }
 
 /* FIXME: must be a better way.. */
