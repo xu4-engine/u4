@@ -198,7 +198,8 @@ void itemUse(const char *shortname) {
     const ItemLocation *item = NULL;
 
     for (i = 0; i < N_ITEMS; i++) {
-        if (strcasecmp(items[i].shortname, shortname) == 0 &&
+        if (items[i].shortname &&
+            strcasecmp(items[i].shortname, shortname) == 0 &&
             (*items[i].isItemInInventory)(items[i].data))
             item = &(items[i]);
             
