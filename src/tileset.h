@@ -9,6 +9,8 @@
 #include <map>
 #include "tile.h"
 
+using std::string;
+
 typedef enum {
     TILESET_BASE,
     TILESET_DUNGEON,
@@ -16,30 +18,43 @@ typedef enum {
     TILESET_MAX
 } TilesetType;
 
-typedef struct _TileRule {
-    const char *name;
+typedef std::map<TilesetType, class Tileset *> TilesetMap;
+typedef std::map<string, class TileRule *> TileRuleMap;
+
+/**
+ * TileRule class
+ */
+class TileRule {
+public:    
+    static TileRule *findByName(string name);
+    static void load(string filename);
+    static bool loadProperties(TileRule *rule, void *xmlNode);
+
+    string name;
     unsigned short mask;    
     unsigned short movementMask;
     TileSpeed speed;
     TileEffect effect;
     int walkonDirs;
     int walkoffDirs;
-} TileRule;
+};
 
-typedef struct _Tileset {    
+/**
+ * Tileset class
+ */
+class Tileset {
+public:
+    static void load(string filename, TilesetType type);
+    static void loadAll(string filename);
+    static void unloadAll();
+    static Tileset *get(TilesetType type);
+    static TilesetType getTypeByStr(string type);
+
     TilesetType type;
     int numTiles;
     Tile *tiles;
     int totalFrames;
-    std::string imageName;
-} Tileset;
-
-typedef std::map<TilesetType, Tileset*, std::less<TilesetType> > TilesetList;
-
-void tilesetLoadAllTilesetsFromXml(const char *tilesetFilename);
-void tilesetDeleteAllTilesets();
-Tileset *tilesetGetByType(TilesetType type);
-TilesetType tilesetGetTypeByStr(const char *type);
-TileRule *tilesetFindRuleByName(const char *name);
+    string imageName;
+};
 
 #endif

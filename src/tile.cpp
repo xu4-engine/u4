@@ -19,7 +19,7 @@
  * 
  */
 Tileset *tilesetGetCurrent() {
-    return (c && c->location) ? c->location->tileset : tilesetGetByType(TILESET_BASE);
+    return (c && c->location) ? c->location->tileset : Tileset::get(TILESET_BASE);
 }
 
 /**
@@ -50,11 +50,11 @@ bool tileLoadTileInfo(Tile** tiles, int index, void *xmlNode) {
     /* find the rule that applies to the current tile, if there is one.
        if there is no rule specified, it defaults to the "default" rule */
     if (xmlPropExists(node, "rule")) {
-        tile.rule = tilesetFindRuleByName(xmlGetPropAsStr(node, "rule"));
+        tile.rule = TileRule::findByName(xmlGetPropAsStr(node, "rule"));
         if (tile.rule == NULL)
-            tile.rule = tilesetFindRuleByName("default");
+            tile.rule = TileRule::findByName("default");
     }
-    else tile.rule = tilesetFindRuleByName("default");
+    else tile.rule = TileRule::findByName("default");
 
     /* for each frame of the tile, duplicate our values */    
     if (xmlPropExists(node, "frames"))

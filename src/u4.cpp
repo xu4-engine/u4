@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
     soundInit();
     eventHandlerInit();    
 
-    tilesetLoadAllTilesetsFromXml("tilesets.xml");
+    Tileset::loadAll("tilesets.xml");
 
     if (!skipIntro) {
         /* do the intro */
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     eventHandlerRemoveTimerCallback(&gameTimer);
     eventHandlerPopKeyHandler();
 
-    tilesetDeleteAllTilesets();
+    Tileset::unloadAll();
 
     eventHandlerDelete();
     soundDelete();

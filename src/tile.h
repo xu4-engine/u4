@@ -12,8 +12,8 @@
 extern "C" {
 #endif
 
-struct _Tileset;
-struct _TileRule;
+class Tileset;
+class TileRule;
 
 #define DEEP_WATER_TILE 0x0
 #define WATER_TILE 0x1
@@ -121,10 +121,10 @@ typedef struct _Tile {
     MapTile displayTile; /* FIXME: this will go away soon */
     unsigned char animated; /* FIXME: this will be changed to 'animation' of type TileAnimationStyle */
     unsigned char opaque;
-    struct _TileRule *rule;
+    TileRule *rule;
 } Tile;
 
-Tile *tileFindByName(const char *name, struct _Tileset *t = NULL);
+Tile *tileFindByName(const char *name, Tileset *t = NULL);
 bool tileLoadTileInfo(Tile** tiles, int index, void *node);
 
 bool tileCanWalkOn(MapTile tile, Direction d);

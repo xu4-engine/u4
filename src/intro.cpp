@@ -618,7 +618,7 @@ void introDrawMap() {
 
 void introDrawMapAnimated() {
     int x, y, i;
-    Tileset *base = tilesetGetByType(TILESET_BASE);
+    Tileset *base = Tileset::get(TILESET_BASE);
 
     /* draw unmodified map */
     for (y = 0; y < INTRO_MAP_HEIGHT; y++) {

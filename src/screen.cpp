@@ -142,7 +142,7 @@ MapTile screenViewportTile(unsigned int width, unsigned int height, int x, int y
 void screenUpdate(int showmap, int blackout) {
     MapTileList tiles;
     int focus, x, y;
-    Tileset *base = tilesetGetByType(TILESET_BASE);
+    Tileset *base = Tileset::get(TILESET_BASE);
 
     ASSERT(c != NULL, "context has not yet been initialized");
 

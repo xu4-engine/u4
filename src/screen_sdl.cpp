@@ -287,11 +287,11 @@ void screenDelete() {
  */
 void screenReInit() {        
     introDelete(DONT_FREE_MENUS);  /* delete intro stuff */
-    tilesetDeleteAllTilesets(); /* unload tilesets */
+    Tileset::unloadAll(); /* unload tilesets */
     screenDelete(); /* delete screen stuff */            
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
-    eventHandlerInit();    
-    tilesetLoadAllTilesetsFromXml("tilesets.xml"); /* re-load tilesets */
+    eventHandlerInit();  
+    Tileset::loadAll("tilesets.xml"); /* re-load tilesets */
     introInit();    /* re-fix the backgrounds loaded and scale images, etc. */            
 }
 

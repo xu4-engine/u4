@@ -11,7 +11,7 @@
 #include "movement.h"
 #include "types.h"
 
-struct _Tileset;
+class Tileset;
 
 typedef std::list<MapTile>* MapTileList;
 
@@ -37,12 +37,12 @@ typedef struct _Location {
     LocationContext context;
     FinishTurnCallback finishTurn;
     MoveCallback move;    
-    struct _Tileset *tileset;
+    Tileset *tileset;
     int activePlayer;
     struct _Location *prev;
 } Location;
 
-Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, struct _Tileset *tileset, Location *prev);
+Location *locationNew(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, MoveCallback moveCallback, Tileset *tileset, Location *prev);
 MapTile locationVisibleTileAt(Location *location, MapCoords coords, int *focus);
 MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus);
 MapTile locationGetReplacementTile(Location *location, MapCoords coords);

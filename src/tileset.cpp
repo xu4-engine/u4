@@ -14,193 +14,45 @@
 #include "xml.h"
 
 /* global variables */
-TilesetList tilesetList;
-TileRule *tilesetRules = NULL;
-int numRules = 0;
+TilesetMap tilesets;
+TileRuleMap tileRules;
 
 /**
- * Function Prototypes
+ * TileRule Class Implementation
  */
-void tilesetLoad(const char *filename, TilesetType type);
-void tilesetLoadRulesFromXml();
-int tilesetLoadRuleProperties(TileRule *rule, xmlNodePtr node);
 
 /**
- * Loads all tilesets using the filename
- * indicated by 'tilesetFilename' as a definition
+ * Returns the tile rule with the given name, or NULL if none could be found
  */
-void tilesetLoadAllTilesetsFromXml(const char *tilesetFilename) {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;    
-
-    tilesetDeleteAllTilesets();
-
-    /* open the filename for the tileset and parse it! */
-    doc = xmlParse(tilesetFilename);
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "tilesets") != 0)
-        errorFatal("malformed %s", tilesetFilename);
-
-    /* load tile rules from xml */
-    tilesetLoadRulesFromXml();
-
-    /* load all of the tilesets */
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        const char *filename;
-        TilesetType type;
-                
-        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tileset") != 0)
-            continue;
-        
-        /* get filename and type of each tileset */
-        filename = xmlGetPropAsStr(node, "file");        
-        type = tilesetGetTypeByStr(xmlGetPropAsStr(node, "type"));
-    
-        /* load the tileset! */
-        tilesetLoad(filename, type);
-    }
-}
-
-/**
- * Delete all tilesets
- */
-void tilesetDeleteAllTilesets() {
-    tilesetList.clear();
-}
-
-/**
- * Loads a tileset from the .xml file indicated by 'filename'
- */
-void tilesetLoad(const char *filename, TilesetType type) {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;
-    Tileset *tileset;    
-    
-    /* make sure we aren't loading the same type of tileset twice */
-    if (tilesetList.find(type) != tilesetList.end())
-        errorFatal("error: tileset of type %d already loaded", type);        
-    
-    /* open the filename for the tileset and parse it! */
-    doc = xmlParse(filename);
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "tiles") != 0)
-        errorFatal("malformed %s", filename);
-
-    tileset = new Tileset;
-    if (tileset == NULL)
-        errorFatal("error allocating memory for tileset");
-    
-    tileset->type = type;
-    tileset->numTiles = 0;
-    tileset->tiles = NULL;
-    tileset->totalFrames = 0;
-    
-
-    if (xmlPropExists(root, "imageName"))
-        tileset->imageName = xmlGetPropAsString(root, "imageName");
-
-    /* count how many tiles are in the tileset */
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
-            continue;
-        else tileset->numTiles++;
-    }
-
-    if (tileset->numTiles > 0) {
-        /* FIXME: eventually, each tile definition won't be duplicated,
-           so this will work as it should.  For now, we stick to 256 tiles
-        tileset->tiles = new Tile[tileset->numTiles + 1];
-        */
-        tileset->tiles = new Tile[257];
-
-        if (tileset->tiles == NULL)
-            errorFatal("error allocating memory for tiles");
-        
-        for (node = root->xmlChildrenNode; node; node = node->next) {
-            if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
-                continue;
-            
-            tileLoadTileInfo(&tileset->tiles, tileset->totalFrames, node);
-            tileset->totalFrames += tileset->tiles[tileset->totalFrames].frames;            
-        }
-    }
-    else errorFatal("Error: no 'tile' nodes defined in %s", filename);    
-
-    /* insert the tileset into our tileset list */
-    tilesetList.insert(TilesetList::value_type(type, tileset));    
-    xmlFree(doc);
-}
-
-/**
- * Returns the tileset of the given type, if it is already loaded
- */
-Tileset *tilesetGetByType(TilesetType type) {
-    TilesetList::iterator tileset = tilesetList.find(type);
-    if (tileset != tilesetList.end())
-        return tileset->second;
-    
-    errorFatal("Tileset of type %d not found", type);
+TileRule *TileRule::findByName(string name) {
+    TileRuleMap::iterator i = tileRules.find(name);
+    if (i != tileRules.end())
+        return i->second;
     return NULL;
-}
-
-/**
- * Given the string representation of a tileset type, returns the
- * corresponding 'TilesetType' version.
- */
-
-TilesetType tilesetGetTypeByStr(const char *type) {
-    const char *types[] = { "base", "dungeon", "gem" };
-    int i;
-
-    for (i = TILESET_BASE; i < TILESET_MAX; i++) {
-        if (strcasecmp(type, types[i]) == 0)
-            return (TilesetType)i;
-    }
-
-    return TILESET_BASE;
 }
 
 /**
  * Load tile information from xml.
  */
-void tilesetLoadRulesFromXml() {
+void TileRule::load(string filename) {
     xmlDocPtr doc;
     xmlNodePtr root, node;
     
-    numRules = 0;
-    if (tilesetRules)
-        delete tilesetRules;
-
-    doc = xmlParse("tileRules.xml");
+    doc = xmlParse(filename.c_str());
     root = xmlDocGetRootElement(doc);
     if (xmlStrcmp(root->name, (const xmlChar *) "tileRules") != 0)
-        errorFatal("malformed tileRules.xml");
+        errorFatal("malformed %s", filename.c_str());
 
-    /* first, we need to count how many rules we are loading */
     for (node = root->xmlChildrenNode; node; node = node->next) {
         if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"rule") != 0)
             continue;
-        else numRules++;        
+
+        TileRule *rule = new TileRule;
+        TileRule::loadProperties(rule, reinterpret_cast<void*>(node));
+        tileRules[rule->name] = rule;
     }
 
-    if (numRules == 0)
-        return;
-    else {
-        int i = 0;
-
-        tilesetRules = new TileRule[numRules + 1];
-        if (!tilesetRules)
-            errorFatal("Error allocating memory for tile rules");
-
-        for (node = root->xmlChildrenNode; node; node = node->next) {
-            if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"rule") != 0)
-                continue;
-            
-            tilesetLoadRuleProperties(&tilesetRules[i++], node);
-        }
-    }
-
-    if (tilesetFindRuleByName("default") == NULL)
+    if (TileRule::findByName("default") == NULL)
         errorFatal("no 'default' rule found in tileRules.xml");
 
     xmlFree(doc);
@@ -209,7 +61,8 @@ void tilesetLoadRulesFromXml() {
 /**
  * Load properties for the current rule node 
  */
-int tilesetLoadRuleProperties(TileRule *rule, xmlNodePtr node) {
+bool TileRule::loadProperties(TileRule *rule, void *xmlNode) {
+    xmlNodePtr node = reinterpret_cast<xmlNodePtr>(xmlNode);
     unsigned int i;
     
     static const struct {
@@ -292,18 +145,149 @@ int tilesetLoadRuleProperties(TileRule *rule, xmlNodePtr node) {
     rule->speed = (TileSpeed)xmlGetPropAsEnum(node, "speed", speedEnumStrings);
     rule->effect = (TileEffect)xmlGetPropAsEnum(node, "effect", effectsEnumStrings);
 
-    return 1;
+    return true;
 }
 
-TileRule *tilesetFindRuleByName(const char *name) {
-    int i;
-    
-    if (!name)
-        return NULL;
-    
-    for (i = 0; i < numRules; i++)
-        if (strcasecmp(name, tilesetRules[i].name) == 0)
-            return &tilesetRules[i];
 
+/**
+ * Tileset Class Implementation
+ */
+
+/**
+ * Loads all tilesets using the filename
+ * indicated by 'filename' as a definition
+ */
+void Tileset::loadAll(string filename) {
+    xmlDocPtr doc;
+    xmlNodePtr root, node;
+
+    unloadAll();
+
+    /* open the filename for the tileset and parse it! */
+    doc = xmlParse(filename.c_str());
+    root = xmlDocGetRootElement(doc);
+    if (xmlStrcmp(root->name, (const xmlChar *) "tilesets") != 0)
+        errorFatal("malformed %s", filename.c_str());
+
+    /* load tile rules from xml */
+    if (!tileRules.size())
+        TileRule::load("tileRules.xml");
+
+    /* load all of the tilesets */
+    for (node = root->xmlChildrenNode; node; node = node->next) {
+        string tilesetFilename;
+        TilesetType type;
+                
+        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tileset") != 0)
+            continue;
+        
+        /* get filename and type of each tileset */
+        tilesetFilename = xmlGetPropAsStr(node, "file");        
+        type = getTypeByStr(xmlGetPropAsStr(node, "type"));
+    
+        /* load the tileset! */
+        load(tilesetFilename, type);
+    }
+}
+
+/**
+ * Delete all tilesets
+ */
+void Tileset::unloadAll() {
+    TilesetMap::iterator i;
+    for (i = tilesets.begin(); i != tilesets.end(); ) {
+        delete i->second;
+        i = tilesets.erase(i);
+    }
+}
+
+/**
+ * Loads a tileset from the .xml file indicated by 'filename'
+ */
+void Tileset::load(string filename, TilesetType type) {
+    xmlDocPtr doc;
+    xmlNodePtr root, node;
+    Tileset *tileset;
+    
+    /* make sure we aren't loading the same type of tileset twice */
+    if (tilesets.find(type) != tilesets.end())
+        errorFatal("error: tileset of type %d already loaded", type);        
+    
+    /* open the filename for the tileset and parse it! */
+    doc = xmlParse(filename.c_str());
+    root = xmlDocGetRootElement(doc);
+    if (xmlStrcmp(root->name, (const xmlChar *) "tiles") != 0)
+        errorFatal("malformed %s", filename.c_str());
+
+    tileset = new Tileset;
+    if (tileset == NULL)
+        errorFatal("error allocating memory for tileset");
+    
+    tileset->type = type;
+    tileset->numTiles = 0;
+    tileset->tiles = NULL;
+    tileset->totalFrames = 0;
+    
+
+    if (xmlPropExists(root, "imageName"))
+        tileset->imageName = xmlGetPropAsString(root, "imageName");
+
+    /* count how many tiles are in the tileset */
+    for (node = root->xmlChildrenNode; node; node = node->next) {
+        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
+            continue;
+        else tileset->numTiles++;
+    }
+
+    if (tileset->numTiles > 0) {
+        /* FIXME: eventually, each tile definition won't be duplicated,
+           so this will work as it should.  For now, we stick to 256 tiles
+        tileset->tiles = new Tile[tileset->numTiles + 1];
+        */
+        tileset->tiles = new Tile[257];
+
+        if (tileset->tiles == NULL)
+            errorFatal("error allocating memory for tiles");
+        
+        for (node = root->xmlChildrenNode; node; node = node->next) {
+            if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
+                continue;
+            
+            tileLoadTileInfo(&tileset->tiles, tileset->totalFrames, node);
+            tileset->totalFrames += tileset->tiles[tileset->totalFrames].frames;            
+        }
+    }
+    else errorFatal("Error: no 'tile' nodes defined in %s", filename);    
+
+    /* insert the tileset into our tileset list */
+    tilesets[type] = tileset;
+    xmlFree(doc);
+}
+
+/**
+ * Returns the tileset of the given type, if it is already loaded
+ */
+Tileset *Tileset::get(TilesetType type) {
+    TilesetMap::iterator tileset = tilesets.find(type);
+    if (tileset != tilesets.end())
+        return tileset->second;
+    
+    errorFatal("Tileset of type %d not found", type);
     return NULL;
+}
+
+/**
+ * Given the string representation of a tileset type, returns the
+ * corresponding 'TilesetType' version.
+ */
+TilesetType Tileset::getTypeByStr(string type) {
+    const char *types[] = { "base", "dungeon", "gem" };
+    int i;
+
+    for (i = TILESET_BASE; i < TILESET_MAX; i++) {
+        if (strcasecmp(type.c_str(), types[i]) == 0)
+            return (TilesetType)i;
+    }
+
+    return TILESET_BASE;
 }

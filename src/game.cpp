@@ -490,7 +490,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
     LocationContext context;
     FinishTurnCallback finishTurn = &gameFinishTurn;
     MoveCallback move = &gameMoveAvatar;
-    Tileset *tileset = tilesetGetByType(TILESET_BASE);
+    Tileset *tileset = Tileset::get(TILESET_BASE);
     int activePlayer = (c->location) ? c->location->activePlayer : -1;
     MapCoords coords;
 
@@ -515,7 +515,7 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         if (portal)
             c->saveGame->orientation = DIR_EAST;
         move = &gameMoveAvatarInDungeon;
-        tileset = tilesetGetByType(TILESET_DUNGEON);        
+        tileset = Tileset::get(TILESET_DUNGEON);        
         break;
     case MAPTYPE_COMBAT:
         coords = MapCoords(-1, -1); /* set these to -1 just to be safe; we don't need them */

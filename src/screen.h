@@ -17,7 +17,7 @@
 #define PRINTF_LIKE(x,y)
 #endif
 
-struct _Tileset;
+class Tileset;
 
 #define BKGD_SHAPES "tiles"
 #define BKGD_CHARSET "charset"
@@ -104,7 +104,7 @@ void screenRedrawScreen(void);
 void screenRedrawTextArea(int x, int y, int width, int height);
 void screenScrollMessageArea(void);
 void screenShake(int iterations);
-void screenShowTile(struct _Tileset* tileset, unsigned char tile, int focus, int x, int y);
+void screenShowTile(Tileset* tileset, unsigned char tile, int focus, int x, int y);
 void screenShowGemTile(unsigned char tile, int focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
