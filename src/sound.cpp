@@ -31,7 +31,7 @@ int soundInit() {
     const Config *config = Config::getInstance();
 
     vector<ConfigElement> soundConfs = config->getElement("/config/sound").getChildren();
-    for (vector<ConfigElement>::iterator i = soundConfs.begin(); i != soundConfs.end(); i++) {
+    for (std::vector<ConfigElement>::iterator i = soundConfs.begin(); i != soundConfs.end(); i++) {
 
         if (i->getName() != "track")
             continue;
@@ -48,7 +48,7 @@ int soundInit() {
 void soundDelete() {
 }
 
-void soundPlay(Sound sound) {
+void soundPlay(Sound sound, bool onlyOnce) {
 
     ASSERT(sound < SOUND_MAX, "Attempted to play an invalid sound in soundPlay()");
     
@@ -69,7 +69,7 @@ void soundPlay(Sound sound) {
     /**
      * Use Channel 1 for sound effects
      */ 
-    if (!Mix_Playing(1)) {
+    if (!onlyOnce || !Mix_Playing(1)) {
         if (Mix_PlayChannel(1, soundChunk[sound], 0) == -1)
             errorWarning("error playing sound: %s", Mix_GetError());
     }

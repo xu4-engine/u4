@@ -9,7 +9,10 @@
 
 #include "direction.h"
 #include "map.h"
+#include "monster.h"
 #include "movement.h"
+#include "object.h"
+#include "player.h"
 #include "savegame.h"
 #include "types.h"
 
@@ -18,8 +21,6 @@
 
 class Object;
 class Monster;
-
-typedef std::map<int, class Monster *, std::less<int> > CombatObjectMap;
 
 typedef enum {
     CA_ATTACK,
@@ -30,77 +31,118 @@ typedef enum {
     CA_TELEPORT    
 } CombatAction;
 
-class CombatMap : public Map {
+/**
+ * CombatController class
+ */ 
+class CombatController {
 public:
-    CombatMap();
-    CombatMap(MapId id);
+    CombatController();
+    CombatController(class CombatMap *m);
+    CombatController(MapId id);
+
+    // Accessor Methods    
+    bool          isCamping() const;
+    bool          isInn() const;    
+    bool          isWinOrLose() const;
+    Direction     getExitDir() const;
+    unsigned char getFocus() const;
+    CombatMap *   getMap() const;
+    Monster *     getMonster() const;
+    PartyMemberVector* getParty();
+    PartyMember*  getCurrentPlayer();
+    
+    void setExitDir(Direction d);
+    void setInn(bool i = true);
+    void setMonster(Monster *);
+    void setWinOrLose(bool worl = true);
+    void showCombatMessage(bool show = true);
 
     // Methods
     void init(class Monster *m);
     void initCamping();
     void initDungeonRoom(int room, Direction from);
+    
+    void applyMonsterTileEffects();
     void begin();
-    bool addMonster(const class Monster *m, Coords coords);
-    bool setActivePlayer(int player);
-    bool putPlayerToSleep(int player);
-    int partyMemberAt(Coords coords);    
-    int monsterAt(Coords coords);
-    void placePartyMembers();
-    void fillMonsterTable(const Monster *monster);
-    void placeMonsters();
-    int initialNumberOfMonsters(const class Monster *monster);
-    static MapId mapForTile(MapTile ground, MapTile transport, class Object *obj);
-    void applyDamageToMonster(int monster, int damage, int player);
-    void applyDamageToPlayer(int player, int damage);    
-
-    int isWon(void);
-    int isLost(void);
     void end(bool adjustKarma);
-    void moveMonsters(void);
-    void applyMonsterTileEffects(void);
-        
-//protected:
-    int findTargetForMonster(Monster *monster, int *distance, int ranged);    
-    int divideMonster(Monster *monster);
-    int nearestPartyMember(Monster *obj, int *dist);
-    int hideOrShowCamouflageMonster(Monster *monster);
+    void fillMonsterTable(const Monster *monster);
+    int  initialNumberOfMonsters(const class Monster *monster) const;
+    bool isWon() const;
+    bool isLost() const;
+    void moveMonsters();
+    void placeMonsters();
+    void placePartyMembers();
+    bool setActivePlayer(int player);
+
+    /** 
+     * Static member functions
+     */
+    // Directional actions
+    static bool attackAtCoord(MapCoords coords, int distance, void *data);
+    static bool rangedAttack(MapCoords coords, int distance, void *data);
+    static bool returnWeaponToOwner(MapCoords coords, int distance, void *data);
+
+    static void attackFlash(Coords coords, MapTile tile, int timeFactor);
+    static void finishTurn(void);
+    static MoveReturnValue movePartyMember(Direction dir, int userEvent);
+
+    // Key handlers
+    static bool baseKeyHandler(int key, void *data);
+    static bool chooseWeaponRange(int key, void *data);
+    static bool chooseWeaponDir(int key, void *data);
 
     // Properties
-public:
+protected:
+    class CombatMap *map;
+    
+    PartyMemberVector party;
     unsigned char focus;
 
-    CombatObjectMap party;
-    CombatObjectMap monsters;
-
-//protected:
-    
     const class Monster *monsterTable[AREA_MONSTERS];
-    class Monster *monster;
+    class Monster *monster;    
 
-    Coords monster_start[AREA_MONSTERS];
-    Coords player_start[AREA_PLAYERS];    
-
-    bool dungeonRoom;
-    BaseVirtue altarRoom;
     bool camping;
     bool inn;
     bool placePartyOnMap;
     bool placeMonstersOnMap;
     bool winOrLose;
-    bool showCombatMessage;
+    bool showMessage;
     Direction exitDir;
+};
+
+/**
+ * CombatMap class
+ */
+class CombatMap : public Map {
+public:
+    CombatMap();
+    CombatMap(MapId id);
+        
+    MonsterVector getMonsters();
+    PartyMemberVector getPartyMembers();
+    PartyMember* partyMemberAt(Coords coords);    
+    Monster* monsterAt(Coords coords);    
+    
+    static MapId mapForTile(MapTile ground, MapTile transport, class Object *obj);
+
+    bool isDungeonRoom() const;
+    bool isAltarRoom() const;
+    
+    BaseVirtue getAltarRoom() const;
+    void setAltarRoom(BaseVirtue ar);
+    void setDungeonRoom(bool d);    
+    
+    // Properties
+protected:
+    bool dungeonRoom;
+    BaseVirtue altarRoom;
+
+public:
+    Coords monster_start[AREA_MONSTERS];
+    Coords player_start[AREA_PLAYERS];
 };
 
 bool isCombatMap(Map *punknown);
 CombatMap *getCombatMap(Map *punknown = NULL);
-
-void attackFlash(Coords coords, MapTile tile, int timeFactor);
-void combatFinishTurn(void);
-MoveReturnValue combatMovePartyMember(Direction dir, int userEvent);
-
-/**
- * Key handlers
- */ 
-bool combatBaseKeyHandler(int key, void *data);
 
 #endif

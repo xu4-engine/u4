@@ -6,6 +6,7 @@
 #define MONSTER_H
 
 #include <map>
+#include <vector>
 
 #include "object.h"
 #include "map.h"
@@ -15,6 +16,7 @@
 
 typedef unsigned short MonsterId;
 typedef std::map<MonsterId, class Monster*, std::less<MonsterId> > MonsterMap;
+typedef std::vector<class Monster *> MonsterVector;
 
 #define MAX_MONSTERS 128
 
@@ -126,8 +128,19 @@ typedef enum {
  */ 
 
 class Monster : public Object {
+    typedef std::list<StatusType> StatusList;
+
 public:
     Monster(MapTile tile = 0);
+
+    // Accessor methods
+    virtual string getName() const;
+    virtual MapTile getHitTile() const;
+    virtual MapTile getMissTile() const;
+
+    void setName(string s);
+    void setHitTile(MapTile t);
+    void setMissTile(MapTile t);
 
     // Methods
     bool isGood() const;
@@ -159,28 +172,48 @@ public:
     bool castsSleep() const;
     int getDamage() const;    
     MapTile getCamouflageTile() const;    
-    MonsterStatus getStatus() const;
     void setRandomRanged();
     int setInitialHp(int hp = -1);
 
     bool specialAction();
-    bool specialEffect();	
+    bool specialEffect();
+
+	/* combat methods */
+    void act();
+    virtual void addStatus(StatusType status);
+    void applyTileEffect(TileEffect effect);
+    virtual bool attackHit(Monster *m);
+    bool divide();
+    MonsterStatus getState() const;
+    StatusType getStatus() const;
+    bool hideOrShow();
+    virtual bool isHit(int hit_offset = 0);
+    Monster *nearestOpponent(int *dist, bool ranged);
+    virtual void putToSleep();
+    virtual void removeStatus(StatusType status);
+    virtual void setStatus(StatusType status);
+    virtual void wakeUp();
+
+	virtual bool applyDamage(int damage);
+	virtual bool dealDamage(Monster *m, int damage);
 
     // Properties
-public:
+protected:
     string          name;
+    MapTile         rangedhittile;
+    MapTile         rangedmisstile;
+
+public:    
     MonsterId       id;    
     MapTile         camouflageTile;
     unsigned char   frames;
     MonsterId       leader;
     unsigned short  basehp;
     short           hp;
-    StatusType      status;
+    StatusList      status;
     unsigned short  xp;
     unsigned char   ranged;
-    MapTile         worldrangedtile;
-    MapTile         rangedhittile;
-    MapTile         rangedmisstile;
+    MapTile         worldrangedtile;    
     bool            leavestile;
     MonsterAttrib   mattr;
     MonsterMovementAttrib movementAttr;
@@ -208,6 +241,8 @@ public:
 private:    
     MonsterMap monsters;    
 };
+
+bool isMonster(Object *punknown);
 
 extern MonsterMgr monsters;
 

@@ -5,7 +5,7 @@
 #ifndef SAVEGAME_H
 #define SAVEGAME_H
 
-#include <list>
+#include <deque>
 #include <cstdio>
 
 #define PARTY_SAV_BASE_FILENAME         "party.sav"
@@ -233,7 +233,7 @@ FILE *saveGameOpenForWriting(void);
 FILE *saveGameOpenForReading(void);
 FILE *saveGameMonstersOpenForWriting(const char *filename);
 FILE *saveGameMonstersOpenForReading(const char *filename);
-int saveGameMonstersWrite(std::list<Object *> &objs, FILE *f);
-int saveGameMonstersRead(std::list<Object *> *objs, FILE *f);
+int saveGameMonstersWrite(std::deque<Object *> &objs, FILE *f);
+int saveGameMonstersRead(std::deque<Object *> *objs, FILE *f);
 
 #endif

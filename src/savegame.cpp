@@ -398,13 +398,13 @@ void SaveGamePlayerRecord::init() {
     status = STAT_GOOD;
 }
 
-int saveGameMonstersWrite(std::list<Object *> &objs, FILE *f) {
-    std::list<Object *>::iterator current;
+int saveGameMonstersWrite(std::deque<Object *> &objs, FILE *f) {
+    std::deque<Object *>::iterator current;
     const Object *obj;
     const Object *monsterTable[MONSTERTABLE_SIZE];
-    std::list<const Object*> whirlpools_storms;
-    std::list<const Object*> other_monsters;
-    std::list<const Object*> inanimate_objects;    
+    std::deque<const Object*> whirlpools_storms;
+    std::deque<const Object*> other_monsters;
+    std::deque<const Object*> inanimate_objects;    
     
     int nMonsters = 0;
     int nObjects = 0;    
@@ -519,7 +519,7 @@ int saveGameMonstersWrite(std::list<Object *> &objs, FILE *f) {
     return 1;
 }
 
-int saveGameMonstersRead(std::list<Object *> *objs, FILE *f) {    
+int saveGameMonstersRead(std::deque<Object *> *objs, FILE *f) {    
     Object *obj;
     Object monsterTable[MONSTERTABLE_SIZE];
     int i;

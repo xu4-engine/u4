@@ -245,6 +245,7 @@ SpellParam spellGetParamType(unsigned int spell) {
  */
 int spellCast(unsigned int spell, int character, int param, SpellCastError *error, int spellEffect) {
     int player = (spells[spell].paramType == SPELLPRM_PLAYER) ? param : -1;
+    PartyMember *p = c->party->member(character);
     
     ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
     ASSERT(character >= 0 && character < c->saveGame->members, "character out of range: %d", character);
@@ -269,7 +270,7 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
         return 0;
     }
 
-    if (c->players[character].mp < spells[spell].mp) {
+    if (p->getMp() < spells[spell].mp) {
         *error = CASTERR_MPTOOLOW;
         return 0;
     }    
@@ -278,7 +279,7 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
     if (c->aura != AURA_NEGATE) {    
 
         /* subtract the mp needed for the spell */
-        c->players[character].mp -= spells[spell].mp;
+        p->adjustMp(-spells[spell].mp);
 
         if (spellEffect)
             (*spellEffectCallback)(spell + 'a', player, SOUND_MAGIC);
@@ -301,9 +302,9 @@ int spellCast(unsigned int spell, int character, int param, SpellCastError *erro
 MapTile spellMagicAttackTile;
 int spellMagicAttackDamage;
 
-void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage) {
-	CombatMap *cm = getCombatMap();
+void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage) {	
     CoordActionInfo *info;
+    PartyMemberVector *party = c->combat->getParty();
 
     spellMagicAttackDamage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
         xu4_random((maxDamage + 1) - minDamage) + minDamage :
@@ -314,11 +315,11 @@ void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage)
     /* setup the spell */
     info = new CoordActionInfo;
     info->handleAtCoord = &spellMagicAttackAtCoord;
-    info->origin = cm->party[cm->focus]->getCoords();
+    info->origin = (*party)[c->combat->getFocus()]->getCoords();
     info->prev = MapCoords(-1, -1);
     info->range = 11;
     info->validDirections = MASK_DIR_ALL;
-    info->player = cm->focus;
+    info->player = c->combat->getFocus();
     info->blockedPredicate = &tileCanAttackOver;
     info->blockBefore = 1;
     info->firstValidDistance = 1;
@@ -329,7 +330,7 @@ void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage)
 }
 
 bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
-    int monster;
+    Monster *monster;
     CoordActionInfo* info = (CoordActionInfo*)data;
     MapCoords old = info->prev;
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
@@ -346,7 +347,7 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
 
         monster = cm->monsterAt(coords);
 
-        if (monster == -1) {
+        if (!monster) {
             cm->annotations->add(coords, spellMagicAttackTile, true);
             gameUpdateScreen();
         
@@ -359,10 +360,10 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
         }
         else {
             /* show the 'hit' tile */
-            attackFlash(coords, spellMagicAttackTile, 3);
+            CombatController::attackFlash(coords, spellMagicAttackTile, 3);
 
             /* apply the damage to the monster */
-            cm->applyDamageToMonster(monster, spellMagicAttackDamage, cm->focus);
+			c->combat->getCurrentPlayer()->dealDamage(monster, spellMagicAttackDamage);
         }
     }
 
@@ -370,22 +371,11 @@ bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
 }
 
 static int spellAwaken(int player) {
-	CombatMap *cm = getCombatMap();
     ASSERT(player < 8, "player out of range: %d", player);
+    PartyMember *p = c->party->member(player);
 
-    if (player < c->saveGame->members && 
-        c->players[player].status == STAT_SLEEPING) {
-        
-        /* restore the party member to their original state */
-        /*if (c->players[player].status)
-            c->players[player].status = combatInfo.party[player]->status;
-        else c->players[player].status = STAT_GOOD;*/
-        c->players[player].status = STAT_GOOD;
-
-        /* wake the member up! */
-        if (cm->party.find(player) != cm->party.end())
-            cm->party[player]->setTile(tileForClass(c->players[player].klass));
-
+    if ((player < c->party->size()) && (p->getStatus() == STAT_SLEEPING)) {
+        p->wakeUp();
         return 1;
     }
 
@@ -437,7 +427,7 @@ static int spellBlink(int dir) {
 static int spellCure(int player) {
     ASSERT(player < 8, "player out of range: %d", player);
 
-    return playerHeal(HT_CURE, player);
+    return c->party->member(player)->heal(HT_CURE);
 }
 
 static int spellDispel(int dir) {    
@@ -561,7 +551,7 @@ static int spellGate(int phase) {
 static int spellHeal(int player) {
     ASSERT(player < 8, "player out of range: %d", player);
 
-    playerHeal(HT_HEAL, player);
+    c->party->member(player)->heal(HT_HEAL);
     return 1;
 }
 
@@ -611,7 +601,7 @@ static int spellProtect(int unused) {
 static int spellRez(int player) {
     ASSERT(player < 8, "player out of range: %d", player);
 
-    return playerHeal(HT_RESURRECT, player);
+    return c->party->member(player)->heal(HT_RESURRECT);
 }
 
 static int spellQuick(int unused) {
@@ -620,49 +610,47 @@ static int spellQuick(int unused) {
     return 1;
 }
 
-static int spellSleep(int unused) {
-	CombatMap *cm = getCombatMap();
-    int i;
+static int spellSleep(int unused) {	
+    CombatMap *cm = getCombatMap();
+    MonsterVector monsters = cm->getMonsters();
+    MonsterVector::iterator i;
 
     /* try to put each monster to sleep */
-    for (i = 0; i < AREA_MONSTERS; i++) { 
-        if (cm->monsters.find(i) != cm->monsters.end()) {
-            if ((cm->monsters[i]->resists != EFFECT_SLEEP) &&
-                xu4_random(0xFF) >= cm->monsters[i]->hp) {
-                cm->monsters[i]->status = STAT_SLEEPING;
-                cm->monsters[i]->setAnimated(false); /* freeze monster */
-            }
-        }
+
+    for (i = monsters.begin(); i != monsters.end(); i++) {         
+        Monster *m = *i;
+        if ((m->resists != EFFECT_SLEEP) &&
+            xu4_random(0xFF) >= m->hp)
+            m->putToSleep();
     }
 
     return 1;
 }
 
 static int spellTremor(int unused) {
-	CombatMap *cm = getCombatMap();
-    int i;        
-    MapCoords coords;
+    CombatController *ct = c->combat;	
+    MonsterVector monsters = ct->getMap()->getMonsters();
+    MonsterVector::iterator i;
 
-    for (i = 0; i < AREA_MONSTERS; i++) {        
-        /* make sure we have a valid monster */
-        if (cm->monsters.find(i) == cm->monsters.end())
-            continue;
+    for (i = monsters.begin(); i != monsters.end(); i++) {
+        Monster *m = *i;
+
         /* monsters with over 192 hp are unaffected */
-        else if (cm->monsters[i]->hp > 192)
+        if (m->hp > 192)
             continue;
         else {
-            coords = cm->monsters[i]->getCoords();
+            Coords coords = m->getCoords();
 
             /* Deal maximum damage to monster */
             if (xu4_random(2) == 0) {
-                cm->applyDamageToMonster(i, 0xFF, cm->focus);
-                attackFlash(coords, HITFLASH_TILE, 1);
+				ct->getCurrentPlayer()->dealDamage(m, 0xFF);                
+                CombatController::attackFlash(coords, HITFLASH_TILE, 1);
             }
             /* Deal enough damage to monster to make it flee */
             else if (xu4_random(2) == 0) {
-                if (cm->monsters[i]->hp > 23)
-                    cm->applyDamageToMonster(i, cm->monsters[i]->hp-23, cm->focus);
-                attackFlash(coords, HITFLASH_TILE, 1);
+                if (m->hp > 23)
+                    ct->getCurrentPlayer()->dealDamage(m, m->hp-23);
+                CombatController::attackFlash(coords, HITFLASH_TILE, 1);
             }
         }
     }
@@ -671,14 +659,14 @@ static int spellTremor(int unused) {
 }
 
 static int spellUndead(int unused) {    
-	CombatMap *cm = getCombatMap();
-    int i;
-    
-    for (i = 0; i < AREA_MONSTERS; i++) {
-        /* Deal enough damage to undead to make them flee */
-        if ((cm->monsters.find(i) != cm->monsters.end()) && 
-            cm->monsters[i]->isUndead() && xu4_random(2) == 0)
-            cm->monsters[i]->hp = 23;        
+    CombatController *ct = c->combat;	
+    MonsterVector monsters = ct->getMap()->getMonsters();
+    MonsterVector::iterator i;
+
+    for (i = monsters.begin(); i != monsters.end(); i++) {         
+        Monster *m = *i;
+        if (m && m->isUndead() && xu4_random(2) == 0)
+            m->hp = 23;        
     }
     
     return 1;

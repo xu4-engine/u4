@@ -9,8 +9,10 @@
 #include "types.h"
 #include "savegame.h"
 
+class CombatController;
 struct _Location;
 class Object;
+class Party;
 class Person;
 class Script;
 
@@ -65,60 +67,13 @@ typedef struct _Conversation {
     int price;
 } Conversation;
 
-/*class Party {
-    unsigned int moves;
-    unsigned int food;
-    unsigned int gold;
-    unsigned short karma[8];
-    struct {
-        WeaponType weapons[WEAP_MAX];
-        ArmorType armor[ARMR_MAX];
-        int mask;
-    } items;
-
-    struct {
-        unsigned short reagents[REAG_MAX];
-        unsigned short mixtures[SPELL_MAX];
-    } spell;    
-
-    struct {
-        int moonPhase;
-        int windDirection;
-        int windCounter;        
-    } env;
-
-    Aura aura;
-    int auraDuration;
-
-    struct {
-        TransportContext ctx;
-        int state;
-        MapTile tile;
-    } transport;    
-
-    struct {
-        StatsView statsView;
-        bool opacity;
-    } display;
-
-    struct {
-        long lastCmdTime;
-        class Object *lastShip;
-        unsigned short lbintro;
-        unsigned short lastcamp;
-        unsigned short lastreagent;
-        unsigned short lastmeditation;
-        unsigned short lastvirtue;
-    } gameState;
-};*/
-
 class Context {
 public:
     Context() : saveGame(NULL), location(NULL) {}
 
-    SaveGamePlayerRecord players[8];
-
+    Party *party;
     SaveGame *saveGame;
+    CombatController *combat;
     struct _Location *location;
     Conversation conversation;
     int line, col;

@@ -171,9 +171,9 @@ void statsShowPartyView(int member) {
 
     if (member == -1) {
         for (i = 0; i < c->saveGame->members; i++)
-            screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, format, i+1, (i==c->location->activePlayer) ? CHARSET_BULLET : '-', c->players[i].name, c->players[i].hp, c->players[i].status);
+            screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, format, i+1, (i==c->location->activePlayer) ? CHARSET_BULLET : '-', c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
     }
-    else screenTextAt(STATS_AREA_X, STATS_AREA_Y+member, format, member+1, (member==c->location->activePlayer) ? CHARSET_BULLET : '-', c->players[member].name, c->players[member].hp, c->players[member].status);
+    else screenTextAt(STATS_AREA_X, STATS_AREA_Y+member, format, member+1, (member==c->location->activePlayer) ? CHARSET_BULLET : '-', c->saveGame->players[member].name, c->saveGame->players[member].hp, c->saveGame->players[member].status);
 }
 
 /**
@@ -185,17 +185,17 @@ void statsShowCharDetails(int charNo) {
 
     ASSERT(charNo < 8, "character number out of range: %d", charNo);
 
-    statsAreaSetTitle(c->players[charNo].name);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+0, "%c             %c", c->players[charNo].sex, c->players[charNo].status);
-    classString = getClassName(c->players[charNo].klass);
+    statsAreaSetTitle(c->saveGame->players[charNo].name);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+0, "%c             %c", c->saveGame->players[charNo].sex, c->saveGame->players[charNo].status);
+    classString = getClassName(c->saveGame->players[charNo].klass);
     classStart = (STATS_AREA_WIDTH / 2) - (strlen(classString) / 2);
     screenTextAt(STATS_AREA_X + classStart, STATS_AREA_Y, "%s", classString);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+2, " MP:%02d  LV:%d", c->players[charNo].mp, playerGetRealLevel(&c->players[charNo]));
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+3, "STR:%02d  HP:%04d", c->players[charNo].str, c->players[charNo].hp);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+4, "DEX:%02d  HM:%04d", c->players[charNo].dex, c->players[charNo].hpMax);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+5, "INT:%02d  EX:%04d", c->players[charNo].intel, c->players[charNo].xp);
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+6, "W:%s", Weapon::get(c->players[charNo].weapon)->getName().c_str());
-    screenTextAt(STATS_AREA_X, STATS_AREA_Y+7, "A:%s", Armor::get(c->players[charNo].armor)->getName().c_str());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+2, " MP:%02d  LV:%d", c->saveGame->players[charNo].mp, c->party->member(charNo)->getRealLevel());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+3, "STR:%02d  HP:%04d", c->saveGame->players[charNo].str, c->saveGame->players[charNo].hp);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+4, "DEX:%02d  HM:%04d", c->saveGame->players[charNo].dex, c->saveGame->players[charNo].hpMax);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+5, "INT:%02d  EX:%04d", c->saveGame->players[charNo].intel, c->saveGame->players[charNo].xp);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+6, "W:%s", Weapon::get(c->saveGame->players[charNo].weapon)->getName().c_str());
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+7, "A:%s", Armor::get(c->saveGame->players[charNo].armor)->getName().c_str());
 }
 
 /**

@@ -522,9 +522,9 @@ string talkerGetResponse(Conversation *cnv, const char *inquiry) {
     else if (strncasecmp(inquiry, "join", 4) == 0) {
         Virtue v;
 
-        if (playerCanPersonJoin(cnv->talker->name, &v)) {
+        if (c->party->canPersonJoin(cnv->talker->name, &v)) {
 
-            CannotJoinError join = playerJoin(cnv->talker->name);
+            CannotJoinError join = c->party->join(cnv->talker->name);
 
             if (join == JOIN_SUCCEEDED) {
                 City *city = dynamic_cast<City*>(c->location->map);
@@ -567,14 +567,14 @@ string talkerGetQuestionResponse(Conversation *cnv, const char *answer) {
         reply = "\n";
         reply += cnv->talker->yesresp;
         if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
-            playerAdjustKarma(KA_BRAGGED);
+            c->party->adjustKarma(KA_BRAGGED);
     }
 
     else if (tolower(answer[0]) == 'n') {
         reply = "\n";
         reply = cnv->talker->noresp;
         if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
-            playerAdjustKarma(KA_HUMBLE);
+            c->party->adjustKarma(KA_HUMBLE);
     }
 
     else {
@@ -605,7 +605,7 @@ string beggarGetQuantityResponse(Conversation *cnv, const char *response) {
     cnv->state = CONV_TALK;
 
     if (cnv->quant > 0) {
-        if (playerDonate(cnv->quant)) {
+        if (c->party->donate(cnv->quant)) {
             reply = "\n";
             reply += cnv->talker->pronoun;
             reply += " says: Oh Thank thee! I shall never forget thy kindness!\n";
@@ -628,18 +628,16 @@ string lordBritishGetIntro(Conversation *cnv) {
     if (c->saveGame->lbintro) {
         if (c->saveGame->members == 1) {
             intro = "\n\n\nLord British\nsays:  Welcome\n";
-            intro += c->players[0].name;
+            intro += c->party->member(0)->getName();
         }
         else if (c->saveGame->members == 2) {
             intro = "\n\nLord British\nsays:  Welcome\n";
-            intro += c->players[0].name;
-            intro += " and thee also ";
-            intro += c->players[1].name;
+            intro += c->party->member(0)->getName() + " and thee also " + c->party->member(1)->getName();            
             intro += "!";
         }
         else {
             intro = "\n\n\nLord British\nsays:  Welcome\n";
-            intro += c->players[0].name;
+            intro += c->party->member(0)->getName();
             intro += " and thy\nworthy\nAdventurers!";
         }
 
@@ -649,7 +647,7 @@ string lordBritishGetIntro(Conversation *cnv) {
 
     else {
         intro = "\n\n\nLord British rises and says: At long last!\n";
-        intro += c->players[0].name;
+        intro += c->party->member(0)->getName();
         intro += " thou hast come!  We have waited such a long, long time...\n\n";
         intro += "\n\nLord British sits and says: A new age is upon Britannia. The great evil Lords are gone but our people lack direction and purpose in their lives...\n\n\n\n\n";
         intro += "A champion of virtue is called for. Thou may be this champion, but only time shall tell.  I will aid thee any way that I can!\n\n";
@@ -812,18 +810,18 @@ string lordBritishGetHelp(const Conversation *cnv) {
 string hawkwindGetIntro(Conversation *cnv) {
     string intro;   
 
-    if (c->players[0].status == STAT_SLEEPING ||
-        c->players[0].status == STAT_DEAD) {
-        intro = hawkwindText[HW_SPEAKONLYWITH] + c->players[0].name;        
-        intro += hawkwindText[HW_RETURNWHEN] + c->players[0].name;
+    if (c->party->member(0)->getStatus() == STAT_SLEEPING ||
+        c->party->member(0)->getStatus() == STAT_DEAD) {
+        intro = hawkwindText[HW_SPEAKONLYWITH] + c->party->member(0)->getName();        
+        intro += hawkwindText[HW_RETURNWHEN] + c->party->member(0)->getName();
         intro += hawkwindText[HW_ISREVIVED];
         cnv->state = CONV_DONE;
     }
 
     else {
-        playerAdjustKarma(KA_HAWKWIND);
+        c->party->adjustKarma(KA_HAWKWIND);
 
-        intro = hawkwindText[HW_WELCOME] + c->players[0].name;
+        intro = hawkwindText[HW_WELCOME] + c->party->member(0)->getName();
         intro += hawkwindText[HW_GREETING1] + hawkwindText[HW_GREETING2];
         cnv->state = CONV_TALK;
 

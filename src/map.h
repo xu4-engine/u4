@@ -15,6 +15,7 @@
 #include "music.h"
 #include "object.h"
 #include "types.h"
+#include "u4file.h"
 
 using std::string;
 
@@ -99,7 +100,7 @@ public:
     class Monster *addMonster(const class Monster *m, Coords coords);
     class Object *addObject(MapTile tile, MapTile prevTile, Coords coords);
     void removeObject(const class Object *rem);
-    ObjectList::iterator removeObject(ObjectList::iterator rem);    
+    ObjectDeque::iterator removeObject(ObjectDeque::iterator rem);    
     void clearObjects();
     class Monster *moveObjects(MapCoords avatar);
     void animateObjects();
@@ -126,7 +127,7 @@ public:
     int             flags;
     Music           music;
     MapData         data;
-    ObjectList      objects;    
+    ObjectDeque      objects;    
 };
 
 #endif

@@ -25,6 +25,6 @@ enum Sound {
 
 int soundInit(void);
 void soundDelete(void);
-void soundPlay(Sound sound);
+void soundPlay(Sound sound, bool onlyOnce = true);
 
 #endif /* SOUND_H */

@@ -18,6 +18,7 @@
 #include "movement.h"
 #include "object.h"
 #include "person.h"
+#include "player.h"
 #include "portal.h"
 #include "savegame.h"
 #include "tile.h"
@@ -245,7 +246,7 @@ string Map::getName() {
  */
 Object *Map::objectAt(MapCoords coords) {
     /* FIXME: return a list instead of one object */
-    ObjectList::const_iterator i;        
+    ObjectDeque::const_iterator i;        
     Object *objAt = NULL;    
 
     for(i = objects.begin(); i != objects.end(); i++) {
@@ -340,8 +341,9 @@ Monster *Map::addMonster(const Monster *monster, Coords coords) {
     *m = *monster;
 
     m->setInitialHp();
-    m->status = STAT_GOOD;
+    m->setStatus(STAT_GOOD);    
     m->setCoords(coords);
+	m->setMap(this);
     
     /* initialize the monster before placing it */
     if (m->wanders())
@@ -369,6 +371,7 @@ Object *Map::addObject(MapTile tile, MapTile prevtile, Coords coords) {
     obj->setPrevTile(prevtile);
     obj->setCoords(coords);    
     obj->setPrevCoords(coords);
+	obj->setMap(this);
     
     objects.push_front(obj);    
 
@@ -380,22 +383,26 @@ Object *Map::addObject(MapTile tile, MapTile prevtile, Coords coords) {
  */ 
 
 // This function should only be used when not iterating through an
-// ObjectList, as the iterator will be invalidated and the
+// ObjectDeque, as the iterator will be invalidated and the
 // results will be unpredictable.  Instead, use the function
 // below.
 void Map::removeObject(const Object *rem) {
-    ObjectList::iterator i;
+    ObjectDeque::iterator i;
     for (i = objects.begin(); i != objects.end(); i++) {
         if (*i == rem) {
-            delete (*i);
+            /* Party members persist through different maps, so don't delete them! */
+            if (!isPartyMember(*i))
+                delete (*i);
             objects.erase(i);
             return;
         }
     }
 }
 
-ObjectList::iterator Map::removeObject(ObjectList::iterator rem) {
-    delete (*rem);
+ObjectDeque::iterator Map::removeObject(ObjectDeque::iterator rem) {
+    /* Party members persist through different maps, so don't delete them! */
+    if (!isPartyMember(*rem))
+        delete (*rem);
     return objects.erase(rem);
 }
 
@@ -405,7 +412,7 @@ ObjectList::iterator Map::removeObject(ObjectList::iterator rem) {
  * Also performs special monster actions and monster effects.
  */
 Monster *Map::moveObjects(MapCoords avatar) {        
-    ObjectList::iterator i;
+    ObjectDeque::iterator i;
     Monster *attacker = NULL;
 
     for (i = objects.begin(); i != objects.end(); i++) {
@@ -444,7 +451,7 @@ Monster *Map::moveObjects(MapCoords avatar) {
  * Animates the objects on the given map
  */
 void Map::animateObjects() {
-    ObjectList::iterator i;
+    ObjectDeque::iterator i;
     
     for (i = objects.begin(); i != objects.end(); i++) {
         if ((*i)->isAnimated() && xu4_random(2))
@@ -457,7 +464,7 @@ void Map::animateObjects() {
  * savegame compatibility with u4dos.
  */
 void Map::resetObjectAnimations() {
-    ObjectList::iterator i;
+    ObjectDeque::iterator i;
     
     for (i = objects.begin(); i != objects.end(); i++) {
         Object *obj = *i;
@@ -478,7 +485,7 @@ void Map::clearObjects() {
  * Returns the number of monsters on the given map
  */
 int Map::getNumberOfMonsters() {
-    ObjectList::const_iterator i;
+    ObjectDeque::const_iterator i;
     int n = 0;
 
     for (i = objects.begin(); i != objects.end(); i++) {

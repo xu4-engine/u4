@@ -75,7 +75,7 @@ void deathTimer(void *data) {
     timerCount++;
     if ((timerMsg < N_MSGS) && (timerCount > deathMsgs[timerMsg].timeout)) {
 
-        screenMessage(deathMsgs[timerMsg].text, c->players[0].name);
+        screenMessage(deathMsgs[timerMsg].text, c->party->member(0)->getName().c_str());
         screenHideCursor();
 
         timerCount = 0;
@@ -115,7 +115,7 @@ void deathRevive() {
     c->lastCommandTime = time(NULL);    
     musicPlay();
 
-    playerReviveParty();    
+    c->party->reviveParty();
 
     screenEnableCursor();
     screenShowCursor();

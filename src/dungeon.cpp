@@ -166,29 +166,29 @@ bool dungeonDrinkFountain(int player) {
 
     /* healing fountain */
     case FOUNTAIN_HEALING: 
-        if (playerHeal(HT_FULLHEAL, player))
+        if (c->party->member(player)->heal(HT_FULLHEAL))
             screenMessage("\nAhh-Refreshing!\n");
         else screenMessage("\nHmmm--No Effect!\n");
         break;
     
     /* acid fountain */
     case FOUNTAIN_ACID:
-        playerApplyDamage(&c->players[player], 100); /* 100 damage to drinker */
+        c->party->member(player)->applyDamage(100); /* 100 damage to drinker */        
         screenMessage("\nBleck--Nasty!\n");
         break;
 
     /* cure fountain */
     case FOUNTAIN_CURE:
-        if (playerHeal(HT_CURE, player))
+        if (c->party->member(player)->heal(HT_CURE))        
             screenMessage("\nHmmm--Delicious!\n");
         else screenMessage("\nHmmm--No Effect!\n");
         break;
 
     /* poison fountain */
     case FOUNTAIN_POISON: 
-        if (c->players[player].status != STAT_POISONED) {
-            playerApplyEffect(EFFECT_POISON, player);
-            playerApplyDamage(&c->players[player], 100); /* 100 damage to drinker also */
+        if (c->party->member(player)->getStatus() != STAT_POISONED) {
+            c->party->member(player)->applyEffect(EFFECT_POISON);
+            c->party->member(player)->applyDamage(100); /* 100 damage to drinker also */            
             screenMessage("\nArgh-Choke-Gasp!\n");
         }
         else screenMessage("\nHmm--No Effect!\n");
@@ -228,22 +228,22 @@ bool dungeonTouchOrb(int player) {
     /* give stats bonuses */
     if (stats & STATSBONUS_STR) {
         screenMessage("Strength + 5\n");
-        AdjustValueMax(c->players[player].str, 5, 50);
+        AdjustValueMax(c->saveGame->players[player].str, 5, 50);
         damage += 200;
     }
     if (stats & STATSBONUS_DEX) {
         screenMessage("Dexterity + 5\n");
-        AdjustValueMax(c->players[player].dex, 5, 50);        
+        AdjustValueMax(c->saveGame->players[player].dex, 5, 50);        
         damage += 200;
     }
     if (stats & STATSBONUS_INT) {
         screenMessage("Intelligence + 5\n");
-        AdjustValueMax(c->players[player].intel, 5, 50);        
+        AdjustValueMax(c->saveGame->players[player].intel, 5, 50);        
         damage += 200;
     }   
     
     /* deal damage to the party member who touched the orb */
-    playerApplyDamage(&c->players[player], damage);
+    c->party->member(player)->applyDamage(damage);    
     /* remove the orb from the map */
     c->location->map->annotations->add(c->location->coords, replacementTile);
 

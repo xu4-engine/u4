@@ -1130,7 +1130,7 @@ int introHandleQuestionChoice(int choice) {
 
         saveGameFile = saveGameMonstersOpenForWriting(MONSTERS_SAV_BASE_FILENAME);
         if (saveGameFile) {
-            ObjectList noObjects;
+            ObjectDeque noObjects;
             saveGameMonstersWrite(noObjects, saveGameFile);
             fclose(saveGameFile);
         }
@@ -1229,13 +1229,15 @@ void introInitPlayers(SaveGame *saveGame) {
         }
     }
 
-    saveGame->players[0].hp = saveGame->players[0].hpMax = playerGetMaxLevel(&saveGame->players[0]) * 100;
-    saveGame->players[0].mp = playerGetMaxMp(&saveGame->players[0]);
+    PartyMember player(NULL, &saveGame->players[0]);
+	saveGame->players[0].hp = saveGame->players[0].hpMax = player.getMaxLevel() * 100;
+    saveGame->players[0].mp = player.getMaxMp();
 
     p = 1;
     for (i = 0; i < VIRT_MAX; i++) {
         /* Setup the initial virtue levels according to the avatar's class */
         saveGame->karma[i] = initValuesForClass[saveGame->players[0].klass].virtues[i];
+		player = PartyMember(NULL, &saveGame->players[i]);
 
         /* Initial setup for party members that aren't in your group yet... */
         if (i != saveGame->players[0].klass) {
@@ -1248,8 +1250,8 @@ void introInitPlayers(SaveGame *saveGame) {
             saveGame->players[p].armor = initValuesForClass[i].armor;
             strcpy(saveGame->players[p].name, initValuesForNpcClass[i].name);
             saveGame->players[p].sex = initValuesForNpcClass[i].sex;
-            saveGame->players[p].hp = saveGame->players[p].hpMax = playerGetMaxLevel(&saveGame->players[p]) * 100;
-            saveGame->players[p].mp = playerGetMaxMp(&saveGame->players[p]);
+            saveGame->players[p].hp = saveGame->players[p].hpMax = player.getMaxLevel() * 100;
+            saveGame->players[p].mp = player.getMaxMp();
             p++;
         }
     }

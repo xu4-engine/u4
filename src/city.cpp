@@ -8,6 +8,7 @@
 #include <typeinfo>
 #include "city.h"
 
+#include "context.h"
 #include "monster.h"
 #include "object.h"
 #include "person.h"
@@ -34,7 +35,8 @@ Person *City::addPerson(Person *person) {
     *p = *person;
 
     /* set the start coordinates for the person */
-    p->setCoords(p->start);    
+    p->setCoords(p->start);
+    p->setMap(this);
 
     objects.push_back(p);    
     return p;
@@ -48,7 +50,7 @@ void City::addPeople() {
     for (current = persons.begin(); current != persons.end(); current++) {
         Person *p = *current;
         if ((p->getTile() != 0) && 
-            !(playerCanPersonJoin(p->name, NULL) && playerIsPersonJoined(p->name)))
+            !(c->party->canPersonJoin(p->name, NULL) && c->party->isPersonJoined(p->name)))
             addPerson(p);
     }
 }

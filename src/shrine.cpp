@@ -55,7 +55,7 @@ vector<string> shrineAdvice;
  */ 
 bool shrineCanEnter(const Portal *p) {
     Shrine *shrine = dynamic_cast<Shrine*>(mapMgrGetById(p->destid));
-    if (!playerCanEnterShrine(shrine->getVirtue())) {
+    if (!c->party->canEnterShrine(shrine->getVirtue())) {
         screenMessage("Thou dost not bear the rune of entry!  A strange force keeps you out!\n");
         return 0;
     }
@@ -222,20 +222,20 @@ int shrineHandleMantra(string *message) {
     screenMessage("\n");
 
     if (strcasecmp(mantraBuffer.c_str(), shrine->getMantra().c_str()) != 0) {
-        playerAdjustKarma(KA_BAD_MANTRA);
+        c->party->adjustKarma(KA_BAD_MANTRA);
         screenMessage("Thou art not able to focus thy thoughts with that Mantra!\n");
         shrineEject();
     }
     else if (--cycles > 0) {
         completedCycles++;
-        playerAdjustKarma(KA_MEDITATION);
+        c->party->adjustKarma(KA_MEDITATION);
         shrineMeditationCycle();
     }
     else {
         completedCycles++;
-        playerAdjustKarma(KA_MEDITATION);
+        c->party->adjustKarma(KA_MEDITATION);
 
-        elevated = completedCycles == 3 && playerAttemptElevation(shrine->getVirtue());
+        elevated = completedCycles == 3 && c->party->attemptElevation(shrine->getVirtue());
         if (elevated)
             screenMessage("\nThou hast achieved partial Avatarhood in the Virtue of %s\n\n",
                           getVirtueName(shrine->getVirtue()));

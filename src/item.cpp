@@ -134,8 +134,8 @@ int isRuneInInventory(void *virt) {
 }
 
 void putRuneInInventory(void *virt) {
-    playerAwardXp(&c->players[0], 100);
-    playerAdjustKarma(KA_FOUND_ITEM);
+    c->party->member(0)->awardXp(100);    
+    c->party->adjustKarma(KA_FOUND_ITEM);
     c->saveGame->runes |= (int)virt;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
@@ -149,8 +149,8 @@ int isStoneInInventory(void *virt) {
 }
 
 void putStoneInInventory(void *virt) {
-    playerAwardXp(&c->players[0], 200);
-    playerAdjustKarma(KA_FOUND_ITEM);
+    c->party->member(0)->awardXp(200);
+    c->party->adjustKarma(KA_FOUND_ITEM);
     c->saveGame->stones |= (int)virt;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
@@ -163,8 +163,8 @@ int isItemInInventory(void *item) {
 }
 
 void putItemInInventory(void *item) {
-    playerAwardXp(&c->players[0], 400);
-    playerAdjustKarma(KA_FOUND_ITEM);
+    c->party->member(0)->awardXp(400);
+    c->party->adjustKarma(KA_FOUND_ITEM);
     c->saveGame->items |= (int)item;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
@@ -229,7 +229,7 @@ void useSkull(void *item) {
         screenMessage("\n\nYou cast the Skull of Mondain into the Abyss!\n");
 
         c->saveGame->items = (c->saveGame->items & ~ITEM_SKULL) | ITEM_SKULL_DESTROYED;
-        playerAdjustKarma(KA_DESTROYED_SKULL);
+        c->party->adjustKarma(KA_DESTROYED_SKULL);
     }
 
     /* use the skull... bad, very bad */
@@ -241,7 +241,7 @@ void useSkull(void *item) {
     
         /* we don't lose the skull until we toss it into the abyss */
         //c->saveGame->items = (c->saveGame->items & ~ITEM_SKULL);
-        playerAdjustKarma(KA_USED_SKULL);
+        c->party->adjustKarma(KA_USED_SKULL);
     }
 }
 
@@ -271,7 +271,7 @@ void useStone(void *item) {
             if (c->location->context & CTX_ALTAR_ROOM) {
                 needStoneNames--;                
 
-                switch(cm->altarRoom) {
+                switch(cm->getAltarRoom()) {
                 case VIRT_TRUTH: attr = &truth; break;
                 case VIRT_LOVE: attr = &love; break;
                 case VIRT_COURAGE: attr = &courage; break;
@@ -301,7 +301,7 @@ void useStone(void *item) {
                 /* all the stones have been entered, verify them! */
                 else {
                     unsigned short key = 0xFFFF;
-                    switch(cm->altarRoom) {
+                    switch(cm->getAltarRoom()) {
                         case VIRT_TRUTH:    key = ITEM_KEY_T; break;
                         case VIRT_LOVE:     key = ITEM_KEY_L; break;
                         case VIRT_COURAGE:  key = ITEM_KEY_C; break;
@@ -397,8 +397,8 @@ int isMysticInInventory(void *mystic) {
 }
 
 void putMysticInInventory(void *mystic) {
-    playerAwardXp(&c->players[0], 400);
-    playerAdjustKarma(KA_FOUND_ITEM);
+    c->party->member(0)->awardXp(400);
+    c->party->adjustKarma(KA_FOUND_ITEM);
     if (((int)mystic) == WEAP_MYSTICSWORD)
         c->saveGame->weapons[WEAP_MYSTICSWORD] += 8;
     else if (((int)mystic) == ARMR_MYSTICROBES)
@@ -413,8 +413,8 @@ int isWeaponInInventory(void *weapon) {
         return 1;
     else {
         int i;
-        for (i = 0; i < c->saveGame->members; i++) {
-            if (c->players[i].weapon == (int)weapon)
+        for (i = 0; i < c->party->size(); i++) {
+            if (c->party->member(i)->getWeapon() == (int)weapon)
                 return 1;
         }
     }
@@ -443,7 +443,7 @@ int isReagentInInventory(void *reag) {
 }
 
 void putReagentInInventory(void *reag) {
-    playerAdjustKarma(KA_FOUND_ITEM);
+    c->party->adjustKarma(KA_FOUND_ITEM);
     c->saveGame->reagents[(int)reag] += xu4_random(8) + 2;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 

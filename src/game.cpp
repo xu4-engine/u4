@@ -51,7 +51,7 @@
 /* Functions BEGIN */
 
 /* main game functions */
-void gameAdvanceLevel(const SaveGamePlayerRecord *player);
+void gameAdvanceLevel(PartyMember *player);
 void gameInitMoons();
 void gameInnHandler(void);
 void gameLostEighth(Virtue virtue);
@@ -154,10 +154,11 @@ MouseArea mouseAreas[] = {
 
 void gameInit() {
     FILE *saveGameFile, *monstersFile;    
+    //SaveGame *saveGame;
 
     /* initialize the global game context */
     c = new Context;
-    c->saveGame = new SaveGame;    
+    c->saveGame = new SaveGame;
 
     /* initialize conversation and game state variables */
     c->conversation.talker = NULL;
@@ -185,6 +186,11 @@ void gameInit() {
     } else
         errorFatal("no savegame found!");
 
+    /* initialize our party */
+    c->party = new Party(c->saveGame);
+
+    c->combat = new CombatController();
+
     /* initialize our start location */
     Map *map = mapMgrGetById(c->saveGame->location);
     
@@ -206,8 +212,7 @@ void gameInit() {
 
     /**
      * Translate info from the savegame to something we can use
-     */ 
-    memcpy(c->players, c->saveGame->players, sizeof(c->players));    
+     */     
     if (c->location->prev) {
         c->location->coords = MapCoords(c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
         c->location->prev->coords = MapCoords(c->saveGame->dngx, c->saveGame->dngy);    
@@ -316,7 +321,7 @@ int gameSave() {
     memcpy(save.mixtures, c->saveGame->mixtures, sizeof(save.mixtures));
     save.moves = c->saveGame->moves;
     save.orientation = (Direction)(c->saveGame->orientation - DIR_WEST);
-    memcpy(save.players, c->players, sizeof(save.players));
+    memcpy(save.players, c->saveGame->players, sizeof(save.players));
     memcpy(save.reagents, c->saveGame->reagents, sizeof(save.reagents));
     save.runes = c->saveGame->runes;
     save.sextants = c->saveGame->sextants;
@@ -511,8 +516,8 @@ void gameSetMap(Map *map, bool saveLocation, const Portal *portal) {
         coords = MapCoords(-1, -1); /* set these to -1 just to be safe; we don't need them */
         context = CTX_COMBAT;
         viewMode = VIEW_NORMAL;
-        finishTurn = &combatFinishTurn;
-        move = &combatMovePartyMember;
+        finishTurn = &CombatController::finishTurn;
+        move = &CombatController::movePartyMember;
         activePlayer = -1; /* different active player for combat, defaults to 'None' */
         break;
     case MAPTYPE_CITY:    
@@ -568,7 +573,7 @@ void gameFinishTurn() {
 
     while (1) {
         /* adjust food and moves */
-        playerEndTurn();
+        c->party->endTurn();
 
         /* check if aura has expired */
         if (c->auraDuration > 0) {
@@ -589,7 +594,7 @@ void gameFinishTurn() {
         if (c->location->context == CTX_DUNGEON || (!c->saveGame->balloonstate)) {
 
             // apply effects from tile avatar is standing on 
-            playerApplyEffect(tileGetEffect(c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS)), ALL_PLAYERS);
+            c->party->applyEffect(tileGetEffect(c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS)));
 
             // Move monsters and see if something is attacking the avatar
             attacker = c->location->map->moveObjects(c->location->coords);        
@@ -608,10 +613,10 @@ void gameFinishTurn() {
         /* update map annotations */
         c->location->map->annotations->passTurn();
 
-        if (!playerPartyImmobilized())
+        if (!c->party->isImmobilized())
             break;
 
-        if (playerPartyDead()) {
+        if (c->party->isDead()) {
             deathStart(0);
             return;
         } else {            
@@ -648,8 +653,8 @@ void gameLostEighth(Virtue virtue) {
     statsUpdate();
 }
 
-void gameAdvanceLevel(const SaveGamePlayerRecord *player) {
-    screenMessage("\n%s\nThou art now Level %d\n", player->name, playerGetRealLevel(player));
+void gameAdvanceLevel(PartyMember *player) {
+    screenMessage("\n%s\nThou art now Level %d\n", player->getName().c_str(), player->getRealLevel());
 
     (*spellEffectCallback)('r', -1, SOUND_MAGIC); // Same as resurrect spell
 }
@@ -662,7 +667,7 @@ void gamePartyStarving(void) {
 
     /* Do 2 damage to each party member for starving! */
     for (i = 0; i < c->saveGame->members; i++)
-        playerApplyDamage(&c->players[i], 2);    
+        c->party->member(i)->applyDamage(2);
 }
 
 void gameSpellEffect(int spell, int player, Sound sound) {
@@ -674,8 +679,8 @@ void gameSpellEffect(int spell, int player, Sound sound) {
 
     /* recalculate spell speed - based on 5/sec */
     time = settings.spellEffectSpeed * 200;
-
-    soundPlay(sound);
+    
+    soundPlay(sound, false);    
 
     switch(spell)
     {
@@ -733,15 +738,9 @@ void gameCastSpell(unsigned int spell, int caster, int param) {
 }
 
 int gameCheckPlayerDisabled(int player) {
-    ASSERT(player < c->saveGame->members, "player %d, but only %d members\n", player, c->saveGame->members);
+    ASSERT(player < c->party->size(), "player %d, but only %d members\n", player, c->party->size());
 
-    if (c->players[player].status == STAT_DEAD ||
-        c->players[player].status == STAT_SLEEPING) {
-        screenMessage("Disabled!\n");
-        return 1;
-    }
-
-    return 0;
+    return c->party->member(player)->isDisabled();    
 }
 
 
@@ -1329,7 +1328,7 @@ bool gameBaseKeyHandler(int key, void *data) {
             }
             else if (key-'1' < c->saveGame->members) {
                 c->location->activePlayer = key - '1';
-                screenMessage("Set Active Player: %s!\n", c->players[c->location->activePlayer].name);
+                screenMessage("Set Active Player: %s!\n", c->party->member(c->location->activePlayer)->getName().c_str());
             }
         }
         else screenMessage("Bad command!\n");
@@ -1409,7 +1408,7 @@ bool gameGetPlayerNoKeyHandler(int key, void *data) {
     if (key >= '1' &&
         key <= ('0' + c->saveGame->members)) {
         screenMessage("%c\n", key);
-        if (!info->canBeDisabled && playerIsDisabled(key - '1'))
+        if (!info->canBeDisabled && c->party->member(key - '1')->isDisabled())
             screenMessage("\nDisabled!\n");
         else (*info->command)(key - '1');
     } else {
@@ -1509,7 +1508,7 @@ bool gameGetFieldTypeKeyHandler(int key, void *data) {
          * original Ultima IV (at least, in the Amiga version.) 
          */
         c->saveGame->mixtures[castSpell]--;
-        c->players[castPlayer].mp -= spellGetRequiredMP(castSpell);
+        c->party->member(castPlayer)->adjustMp(-spellGetRequiredMP(castSpell));
         (*c->location->finishTurn)();
     }
 
@@ -2114,14 +2113,12 @@ bool attackAtCoord(MapCoords coords, int distance, void *data) {
     if (m->isGood() || /* attacking a good monster */
         /* attacking a docile (although possibly evil) person in town */
         ((m->getType() == OBJECT_PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))) 
-        playerAdjustKarma(KA_ATTACKED_GOOD);
+        c->party->adjustKarma(KA_ATTACKED_GOOD);
 
-    Map *map = mapMgrGetById(CombatMap::mapForTile(ground, (MapTile)c->saveGame->transport, m));
-    gameSetMap(map, true, NULL);
-    CombatMap *cm = getCombatMap();
-    
-    cm->init(m);
-    cm->begin();
+    delete(c->combat);
+    c->combat = new CombatController(CombatMap::mapForTile(ground, (MapTile)c->saveGame->transport, m));
+    c->combat->init(m);
+    c->combat->begin();    
     return true;
 }
 
@@ -2160,7 +2157,7 @@ bool castForPlayer2(int spell, void *data) {
     statsUpdate();
 
     /* If we can't really cast this spell, skip the extra parameters */
-    if ((spellGetRequiredMP(spell) > c->players[castPlayer].mp) || /* not enough mp */
+    if ((spellGetRequiredMP(spell) > c->party->member(castPlayer)->getMp()) || /* not enough mp */
         ((spellGetContext(spell) & c->location->context) == 0) ||            /* wrong context */
         (c->saveGame->mixtures[spell] == 0) ||                               /* none mixed! */
         ((spellGetTransportContext(spell) & c->transportContext) == 0)) {    /* invalid transportation for spell */
@@ -2309,7 +2306,7 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
             
             /* Is is a pirate ship firing at US? */
             if (hitsAvatar) {
-                attackFlash(coords, HITFLASH_TILE, 5);
+                CombatController::attackFlash(coords, HITFLASH_TILE, 5);
 
                 if (c->transportContext == TRANSPORT_SHIP)
                     gameDamageShip(-1, 10);
@@ -2317,13 +2314,13 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
             }          
             /* inanimate objects get destroyed instantly, while monsters get a chance */
             else if (obj->getType() == OBJECT_UNKNOWN) {
-                attackFlash(coords, HITFLASH_TILE, 5);
+                CombatController::attackFlash(coords, HITFLASH_TILE, 5);
                 c->location->map->removeObject(obj);
             }
             
             /* only the avatar can hurt other monsters with cannon fire */
             else if (originAvatar) {
-                attackFlash(coords, HITFLASH_TILE, 5);
+                CombatController::attackFlash(coords, HITFLASH_TILE, 5);
                 if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
                     c->location->map->removeObject(obj);
             }
@@ -2371,12 +2368,12 @@ bool gameGetChest(int player) {
         
         /* see if the chest is trapped and handle it */
         getChestTrapHandler(player);
-        screenMessage("The Chest Holds: %d Gold\n", playerGetChest());
+        screenMessage("The Chest Holds: %d Gold\n", c->party->getChest());
 
         statsUpdate();
         
         if (isCity(c->location->map) && obj == NULL)
-            playerAdjustKarma(KA_STOLE_CHEST);
+            c->party->adjustKarma(KA_STOLE_CHEST);
     }    
     else
         screenMessage("Not Here!\n");
@@ -2389,7 +2386,7 @@ bool gameGetChest(int player) {
  **/
 bool getChestTrapHandler(int player) {            
     TileEffect trapType;
-    int dex = c->players[player].dex;
+    int dex = c->saveGame->players[player].dex;
     int randNum = xu4_random(4);
     int member = player;
     
@@ -2425,7 +2422,7 @@ bool getChestTrapHandler(int player) {
         /* See if the trap was evaded! */           
         if ((dex + 25) < xu4_random(100) &&         /* test player's dex */            
             (player >= 0)) {                        /* player is < 0 during the 'O'pen spell (immune to traps) */                         
-            playerApplyEffect(trapType, member);
+            c->party->member(member)->applyEffect(trapType);
             statsUpdate();
         }
         else screenMessage("Evaded!\n");
@@ -2560,9 +2557,10 @@ MoveReturnValue gameMoveAvatarInDungeon(Direction dir, int userEvent) {
             /* load the map so dng->room points to a valid CombatMap */
 
             /* set the map and start combat! */
-            gameSetMap(dng->room, 1, NULL);
-            dng->room->initDungeonRoom(room, dirReverse(realDir));
-            dng->room->begin();
+            delete c->combat;
+            c->combat = new CombatController(dng->room);
+            c->combat->initDungeonRoom(room, dirReverse(realDir));
+            c->combat->begin();
         }
     }
 
@@ -2626,6 +2624,7 @@ bool readyForPlayer(int player) {
 bool readyForPlayer2(int w, void *data) {
     int player = (int) data;
     const Weapon *weapon = Weapon::get((WeaponType) w);
+    PartyMember *p = c->party->member(player);
 
     // Return view to party overview
     c->statsView = STATS_PARTY_OVERVIEW;
@@ -2637,7 +2636,7 @@ bool readyForPlayer2(int w, void *data) {
         return false;
     }
 
-    if (!weapon->canReady(c->players[player].klass)) {
+    if (!weapon->canReady(p->getClass())) {
         string indef_article;
 
         switch(tolower(weapon->getName()[0])) {
@@ -2652,19 +2651,19 @@ bool readyForPlayer2(int w, void *data) {
         }
 
         screenMessage("\nA %s may NOT use %s\n%s\n",
-            getClassName(c->players[player].klass),
+            getClassName(p->getClass()),
             indef_article.c_str(),
             weapon->getName().c_str());
         (*c->location->finishTurn)();
         return false;
     }
 
-    WeaponType oldWeapon = c->players[player].weapon;
+    WeaponType oldWeapon = p->getWeapon();
     if (oldWeapon != WEAP_HANDS)
         c->saveGame->weapons[oldWeapon]++;
     if (weapon->getType() != WEAP_HANDS)
         c->saveGame->weapons[weapon->getType()]--;
-    c->players[player].weapon = weapon->getType();
+    p->setWeapon(weapon->getType());
 
     screenMessage("%s\n", weapon->getName().c_str());
 
@@ -2778,7 +2777,7 @@ bool newOrderForPlayer(int player) {
     GetPlayerInfo *playerInfo;
 
     if (player == 0) {
-        screenMessage("%s, You must lead!\n", c->players[0].name);
+        screenMessage("%s, You must lead!\n", c->party->member(0)->getName().c_str());
         (*c->location->finishTurn)();
         return false;
     }
@@ -2799,7 +2798,7 @@ bool newOrderForPlayer2(int player2) {
     SaveGamePlayerRecord tmp;
 
     if (player2 == 0) {
-        screenMessage("%s, You must lead!\n", c->players[0].name);
+        screenMessage("%s, You must lead!\n", c->party->member(0)->getName().c_str());
         (*c->location->finishTurn)();
         return false;
     } else if (player1 == player2) {
@@ -2808,9 +2807,13 @@ bool newOrderForPlayer2(int player2) {
         return false;
     }
 
-    tmp = c->players[player1];
-    c->players[player1] = c->players[player2];
-    c->players[player2] = tmp;
+    tmp = c->saveGame->players[player1];
+    c->saveGame->players[player1] = c->saveGame->players[player2];
+    c->saveGame->players[player2] = tmp;
+
+    /* re-build the party */
+    delete c->party;
+    c->party = new Party(c->saveGame);
 
     statsUpdate();
 
@@ -2947,11 +2950,11 @@ bool talkAtCoord(MapCoords coords, int distance, void *data) {
 
     /* if we're talking to Lord British and the avatar is dead, LB resurrects them! */
     if (c->conversation.talker->npcType == NPC_LORD_BRITISH &&
-        c->players[0].status == STAT_DEAD) {
-        screenMessage("%s, Thou shalt live again!\n", c->players[0].name);
+        c->party->member(0)->getStatus() == STAT_DEAD) {
+        screenMessage("%s, Thou shalt live again!\n", c->party->member(0)->getName().c_str());
         
-        c->players[0].status = STAT_GOOD;
-        playerHeal(HT_FULLHEAL, 0);
+        c->party->member(0)->setStatus(STAT_GOOD);
+        c->party->member(0)->heal(HT_FULLHEAL);
         (*spellEffectCallback)('r', -1, SOUND_LBHEAL);
     }
 
@@ -3038,9 +3041,9 @@ void talkShowReply(int showPrompt) {
     else if (c->conversation.state == CONV_FULLHEAL) {
         int i;
         
-        for (i = 0; i < c->saveGame->members; i++) {
-            playerHeal(HT_CURE, i);        // cure the party
-            playerHeal(HT_FULLHEAL, i);    // heal the party
+        for (i = 0; i < c->party->size(); i++) {
+            c->party->member(i)->heal(HT_CURE);        // cure the party
+            c->party->member(i)->heal(HT_FULLHEAL);    // heal the party
         }        
         (*spellEffectCallback)('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
 
@@ -3083,7 +3086,7 @@ int useItem(string *itemName) {
     itemUse(itemName->c_str());
 
     if (eventHandlerGetKeyHandler() == &gameBaseKeyHandler ||
-        eventHandlerGetKeyHandler() == &combatBaseKeyHandler)
+        eventHandlerGetKeyHandler() == &CombatController::baseKeyHandler)
         (*c->location->finishTurn)();
 
     return 1;
@@ -3114,6 +3117,7 @@ bool wearForPlayer(int player) {
 bool wearForPlayer2(int a, void *data) {
     int player = (int) data;
     const Armor *armor = Armor::get((ArmorType) a);
+    PartyMember *p = c->party->member(player);
 
     if (armor->getType() != ARMR_NONE && c->saveGame->armor[armor->getType()] < 1) {
         screenMessage("None left!\n");
@@ -3121,18 +3125,18 @@ bool wearForPlayer2(int a, void *data) {
         return false;
     }
 
-    if (!armor->canWear(c->players[player].klass)) {
-        screenMessage("\nA %s may NOT use\n%s\n", getClassName(c->players[player].klass), armor->getName().c_str());
+    if (!armor->canWear(p->getClass())) {
+        screenMessage("\nA %s may NOT use\n%s\n", getClassName(p->getClass()), armor->getName().c_str());
         (*c->location->finishTurn)();
         return false;
     }
 
-    ArmorType oldArmorType = c->players[player].armor;
+    ArmorType oldArmorType = p->getArmor();
     if (oldArmorType != ARMR_NONE)
         c->saveGame->armor[oldArmorType]++;
     if (armor->getType() != ARMR_NONE)
         c->saveGame->armor[armor->getType()]--;
-    c->players[player].armor = armor->getType();
+    p->setArmor(armor->getType());
 
     screenMessage("%s\n", armor->getName().c_str());
 
@@ -3202,7 +3206,7 @@ void gameTimer(void *data) {
          * force pass if no commands within last 20 seconds
          */
         if ((eventHandlerGetKeyHandler() == &gameBaseKeyHandler ||
-             eventHandlerGetKeyHandler() == &combatBaseKeyHandler) &&
+            eventHandlerGetKeyHandler() == &CombatController::baseKeyHandler) &&
              gameTimeSinceLastCommand() > 20) {
          
             /* pass the turn, and redraw the text area so the prompt is shown */
@@ -3339,10 +3343,10 @@ void gameCheckBridgeTrolls() {
     screenMessage("\nBridge Trolls!\n");
     
     m = c->location->map->addMonster(monsters.getById(TROLL_ID), c->location->coords);
-    gameSetMap(mapMgrGetById(MAP_BRIDGE_CON), true, NULL);
-    CombatMap *cm = getCombatMap();
-    cm->init(m);
-    cm->begin();
+    delete c->combat;
+    c->combat = new CombatController(MAP_BRIDGE_CON);    
+    c->combat->init(m);
+    c->combat->begin();
 }
 
 /**
@@ -3357,10 +3361,10 @@ void gameCheckHullIntegrity() {
     {
         screenMessage("\nThy ship sinks!\n\n");        
 
-        for (i = 0; i < c->saveGame->members; i++)
+        for (i = 0; i < c->party->size(); i++)
         {
-            c->players[i].hp = 0;
-            c->players[i].status = STAT_DEAD;
+            c->party->member(i)->setHp(0);
+            c->party->member(i)->setStatus(STAT_DEAD);            
         }
         statsUpdate();   
 
@@ -3428,7 +3432,7 @@ int gameCheckMoongates(void) {
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, c->location->coords, dest)) {
 
         (*spellEffectCallback)(-1, -1, SOUND_MOONGATE); // Default spell effect (screen inversion without 'spell' sound effects)
-
+        
         if (c->location->coords != dest) {
             c->location->coords = dest;            
             (*spellEffectCallback)(-1, -1, SOUND_MOONGATE); // Again, after arriving
@@ -3439,7 +3443,7 @@ int gameCheckMoongates(void) {
 
             shrine_spirituality = dynamic_cast<Shrine*>(mapMgrGetById(MAP_SHRINE_SPIRITUALITY));
 
-            if (!playerCanEnterShrine(VIRT_SPIRITUALITY))
+            if (!c->party->canEnterShrine(VIRT_SPIRITUALITY))
                 return 1;
             
             gameSetMap(shrine_spirituality, 1, NULL);
@@ -3479,7 +3483,7 @@ void gameCheckRandomMonsters() {
  * and alters movement behavior accordingly to match the monster
  */
 void gameFixupMonsters(Map *map) {
-    ObjectList::iterator i;
+    ObjectDeque::iterator i;
     Object *obj;
 
     for (i = map->objects.begin(); i != map->objects.end(); i++) {
@@ -3489,9 +3493,11 @@ void gameFixupMonsters(Map *map) {
         if (obj->getType() == OBJECT_UNKNOWN && monsters.getByTile(obj->getTile()) != NULL &&
             obj->getMovementBehavior() != MOVEMENT_FIXED) {
             /* replace the object with a monster object */
-            map->addMonster(monsters.getByTile(obj->getTile()), obj->getCoords());            
+            map->addMonster(monsters.getByTile(obj->getTile()), obj->getCoords());
+			obj->setMap(map);
             i = map->removeObject(i);
         }
+		else obj->setMap(map);
     }    
 }
 
@@ -3506,19 +3512,17 @@ void gameMonsterAttack(Monster *m) {
     Object *under;
     MapTile ground;    
     
-    screenMessage("\nAttacked by %s\n", m->name.c_str());
+    screenMessage("\nAttacked by %s\n", m->getName().c_str());
 
     ground = c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS);
     if ((under = c->location->map->objectAt(c->location->coords)) &&
         tileIsShip(under->getTile()))
         ground = under->getTile();
 
-    Map *map = mapMgrGetById(CombatMap::mapForTile(ground, (MapTile)c->saveGame->transport, m));
-    gameSetMap(map, true, NULL);
-    CombatMap *cm = getCombatMap();
-
-    cm->init(m);
-    cm->begin();
+    delete c->combat;
+    c->combat = new CombatController(CombatMap::mapForTile(ground, (MapTile)c->saveGame->transport, m));
+    c->combat->init(m);
+    c->combat->begin();
 }
 
 /**
@@ -3558,7 +3562,7 @@ bool monsterRangeAttack(MapCoords coords, int distance, void *data) {
         /* Does the attack hit the avatar? */
         if (coords == c->location->coords) {
             /* always displays as a 'hit' */
-            attackFlash(coords, tile, 3);
+            CombatController::attackFlash(coords, tile, 3);
 
             /* FIXME: check actual damage from u4dos -- values here are guessed */
             if (c->transportContext == TRANSPORT_SHIP)
@@ -3573,7 +3577,7 @@ bool monsterRangeAttack(MapCoords coords, int distance, void *data) {
                 (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID)) ||
                 obj->getType() == OBJECT_UNKNOWN) {
                 
-                attackFlash(coords, tile, 3);
+                CombatController::attackFlash(coords, tile, 3);
                 c->location->map->removeObject(obj);
 
                 return true;
@@ -3665,12 +3669,12 @@ void gameDamageParty(int minDamage, int maxDamage) {
     int i;
     int damage;
 
-    for (i = 0; i < c->saveGame->members; i++) {
+    for (i = 0; i < c->party->size(); i++) {
         if (xu4_random(2) == 0) {
             damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
                 xu4_random((maxDamage + 1) - minDamage) + minDamage :
-                maxDamage;            
-            playerApplyDamage(&c->players[i], damage);
+                maxDamage;
+            c->party->member(i)->applyDamage(damage);            
             statsHighlightCharacter(i);            
         }
     }
@@ -3707,7 +3711,7 @@ void gameDamageShip(int minDamage, int maxDamage) {
  * Removes monsters from the current map if they are too far away from the avatar
  */
 void gameMonsterCleanup(void) {
-    ObjectList::iterator i;
+    ObjectDeque::iterator i;
     Map *map = c->location->map;
     Object *obj;
     
@@ -3748,9 +3752,10 @@ void gameLordBritishCheckLevels(void) {
     int i;
     int levelsRaised = 0;    
 
-    for (i = 0; i < c->saveGame->members; i++) {
-        if (playerGetRealLevel(&c->players[i]) <
-            playerGetMaxLevel(&c->players[i]))
+    for (i = 0; i < c->party->size(); i++) {
+        PartyMember *player = c->party->member(i);
+        if (player->getRealLevel() <
+            player->getMaxLevel())
 
             if (!levelsRaised) {
                 /* give an extra space to separate these messages */
@@ -3758,7 +3763,7 @@ void gameLordBritishCheckLevels(void) {
                 levelsRaised = 1;
             }
 
-            playerAdvanceLevel(&c->players[i]);
+            player->advanceLevel();
     }
  
     screenMessage("\nWhat would thou\nask of me?\n");
@@ -3771,7 +3776,7 @@ void gameLordBritishCheckLevels(void) {
  */
 int gameSummonMonster(string *monsterName) {    
     unsigned int id;
-    const Monster *m;
+    const Monster *m = NULL;
 
     eventHandlerPopKeyHandler();
 
@@ -3782,12 +3787,14 @@ int gameSummonMonster(string *monsterName) {
     
     /* find the monster by its id and spawn it */
     id = atoi(monsterName->c_str());
-    m = monsters.getById(id);
+    if (id > 0)
+        m = monsters.getById(id);
+
     if (!m)
         m = monsters.getByName(*monsterName);
 
     if (m) {
-        screenMessage("\n%s summoned!\n", m->name.c_str());
+        screenMessage("\n%s summoned!\n", m->getName().c_str());
         screenPrompt();
         gameSpawnMonster(m);
         return 1;
@@ -3858,7 +3865,7 @@ void gameSpawnMonster(const Monster *m) {
  * Alerts the guards that the avatar is doing something bad
  */ 
 void gameAlertTheGuards(Map *map) {
-    ObjectList::iterator i;    
+    ObjectDeque::iterator i;    
     const Monster *m;
 
     /* switch all the guards to attack mode */
@@ -3879,26 +3886,20 @@ void gameDestroyAllMonsters(void) {
     
     if (c->location->context & CTX_COMBAT) {
         /* destroy all monsters in combat */
-        for (i = 0; i < AREA_MONSTERS; i++) {
-            CombatObjectMap::iterator obj;
+        for (i = 0; i < AREA_MONSTERS; i++) {            
             CombatMap *cm = getCombatMap();
+            MonsterVector monsters = cm->getMonsters();
+            MonsterVector::iterator obj;
 
-            for (obj = cm->monsters.begin(); obj != cm->monsters.end();) {
-                if (obj->second->id != LORDBRITISH_ID) {
-                    /* FIXME: This is a crappy way of doing things, but
-                       when the combat is setup the way it should be, this 
-                       should work out */
-                    cm->removeObject(obj->second);
-                    /* this, however, is a BAD way of doing it, but necessary for now */
-                    cm->monsters.clear();
-                }
-                else obj++;
+            for (obj = monsters.begin(); obj != monsters.end(); obj++) {
+                if ((*obj)->id != LORDBRITISH_ID)
+                    cm->removeObject(*obj);                
             }            
         }
     }    
     else {
         /* destroy all monsters on the map */
-        ObjectList::iterator current;
+        ObjectDeque::iterator current;
         Map *map = c->location->map;
         
         for (current = map->objects.begin(); current != map->objects.end();) {
@@ -3922,7 +3923,7 @@ void gameDestroyAllMonsters(void) {
  * Creates the balloon near Hythloth, but only if the balloon doesn't already exists somewhere
  */
 bool gameCreateBalloon(Map *map) {
-    ObjectList::iterator i;    
+    ObjectDeque::iterator i;    
 
     /* see if the balloon has already been created (and not destroyed) */
     for (i = map->objects.begin(); i != map->objects.end(); i++)

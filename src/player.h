@@ -5,16 +5,17 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <list>
 #include <string>
+#include <vector>
+#include "monster.h"
 #include "savegame.h"
 #include "tile.h"
 #include "types.h"
 
 using std::string;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+typedef std::vector<class PartyMember *> PartyMemberVector;
 
 #define ALL_PLAYERS -1
 
@@ -66,8 +67,91 @@ typedef enum {
     JOIN_NOT_VIRTUOUS
 } CannotJoinError;
 
+/**
+ * PartyMember class
+ */ 
+class PartyMember : public Monster {
+public:
+    PartyMember(class Party *p, SaveGamePlayerRecord *pr);
+
+    virtual bool attackHit(Monster *m);
+    ClassType getClass();
+    int getDamage();
+    int getHp();
+    int getMaxHp();
+    int getMp();
+    int getMaxMp();
+    int getRealLevel();
+    int getMaxLevel();
+    virtual string getName() const;
+    StatusType getStatus();
+    virtual MapTile getHitTile() const;
+    virtual MapTile getMissTile() const;
+    ArmorType getArmor() const;
+    WeaponType getWeapon() const;    
+    virtual bool isHit(int hit_offset = 0);
+    bool isDead();
+    bool isDisabled();        
+    
+    virtual void addStatus(StatusType status);
+    void adjustMp(int pts);
+    void advanceLevel();
+    virtual bool applyDamage(int damage);
+    virtual bool dealDamage(Monster *m, int damage);
+    void applyEffect(TileEffect effect);
+    void awardXp(int xp);
+    bool heal(HealType type);    
+    int  loseWeapon();
+    virtual void putToSleep();
+    virtual void removeStatus(StatusType status);
+    void setHp(int hp);
+    void setMp(int mp);    
+    void setArmor(ArmorType a);
+    void setWeapon(WeaponType w);    
+    virtual void wakeUp();
+
+protected:
+    SaveGamePlayerRecord *player;
+    class Party *party;
+    
+};
+
+/**
+ * Party class
+ */ 
+typedef std::vector<PartyMember *> PartyMemberVector;
+
+class Party {
+public:
+    Party(SaveGame *saveGame);
+
+    void adjustFood(int food);
+    void adjustGold(int gold);
+    void adjustKarma(KarmaAction action);
+    void applyEffect(TileEffect effect);
+    bool attemptElevation(Virtue virtue);    
+    bool canEnterShrine(Virtue virtue);    
+    bool canPersonJoin(string name, Virtue *v);
+    bool donate(int quantity);
+    void endTurn();
+    int  getChest();
+    bool isImmobilized();
+    bool isDead();
+    bool isPersonJoined(string name);
+    CannotJoinError join(string name);
+    void reviveParty();
+
+    int size() const;
+    PartyMember *member(int index) const;
+    
+//protected:
+public:
+    PartyMemberVector members;
+    SaveGame *saveGame;
+};
+
 typedef void (*LostEighthCallback)(Virtue);
-typedef void (*AdvanceLevelCallback)(const SaveGamePlayerRecord *player);
+typedef void (*AdvanceLevelCallback)(PartyMember *player);
 typedef void (*ItemStatsChangedCallback)(void);
 typedef void (*PartyStarvingCallback)(void);
 typedef void (*SetTransportCallback)(MapTile tile);
@@ -77,41 +161,7 @@ void playerSetAdvanceLevelCallback(AdvanceLevelCallback callback);
 void playerSetItemStatsChangedCallback(ItemStatsChangedCallback callback);
 void playerSetPartyStarvingCallback(PartyStarvingCallback callback);
 void playerSetSetTransportCallback(SetTransportCallback callback);
-void playerApplyDamage(SaveGamePlayerRecord *player, int damage);
-int playerGetRealLevel(const SaveGamePlayerRecord *player);
-int playerGetMaxLevel(const SaveGamePlayerRecord *player);
-void playerAdvanceLevel(SaveGamePlayerRecord *player);
-void playerAwardXp(SaveGamePlayerRecord *player, int xp);
-int playerGetMaxMp(const SaveGamePlayerRecord *player);
-int playerCanEnterShrine(Virtue virtue);
-void playerAdjustKarma(KarmaAction action);
-int playerAttemptElevation(Virtue virtue);
-int playerGetChest();
-int playerDonate(int quantity);
-int playerCanPersonJoin(string name, Virtue *v);
-int playerIsPersonJoined(string name);
-CannotJoinError playerJoin(string name);
-void playerEndTurn(void);
-void playerApplyEffect(TileEffect effect, int player);
-int playerPartyImmobilized();
-int playerPartyDead();
-void playerApplySleepSpell(SaveGamePlayerRecord *player);
-int playerHeal(HealType type, int player);
-void playerReviveParty();
-int playerCanAfford(int price);
-int playerPurchase(InventoryItem item, int type, int quantity, int price);
-int playerCanSell(InventoryItem item, int type, int quantity);
-int playerSell(InventoryItem item, int type, int quantity, int price);
-int playerAttackHit(const SaveGamePlayerRecord *player);
-int playerGetDamage(const SaveGamePlayerRecord *player);
-int playerIsHitByAttack(const SaveGamePlayerRecord *player);
-int playerLoseWeapon(int player);
-void playerAdjustGold(int gold);
-void playerAdjustFood(int food);
-int playerIsDisabled(int player);
 
-#ifdef __cplusplus
-}
-#endif
+bool isPartyMember(Object *punknown);
 
 #endif

@@ -32,7 +32,8 @@ typedef struct CoordActionInfo {
     bool (*handleAtCoord)(MapCoords, int, void*);
     MapCoords origin, prev;    
     int range;
-    int validDirections;    
+    int validDirections;
+    class Object *obj;
     int player;
     int dir;                /* mask of the direction the action is taken
                                (so that (MASK_DIR(DIR_NORTH) | MASK_DIR(DIR_EAST)) makes a diagonal) */

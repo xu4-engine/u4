@@ -316,36 +316,38 @@ int moveCombatObject(int act, Map *map, Monster *obj, MapCoords target) {
  * Moves a party member during combat screens
  */
 MoveReturnValue movePartyMember(Direction dir, int userEvent) {
+    CombatController *ct = c->combat;
     CombatMap *cm = getCombatMap();
     MoveReturnValue result = MOVE_SUCCEEDED;    
     int movementMask;
-    int member = cm->focus;
+    int member = ct->getFocus();
     MapCoords newCoords;
+    PartyMemberVector *party = ct->getParty();
 
     /* find our new location */
-    newCoords = cm->party[member]->getCoords();
+    newCoords = (*party)[member]->getCoords();
     newCoords.move(dir, c->location->map);
 
     if (MAP_IS_OOB(c->location->map, newCoords)) {
-        bool sameExit = (!cm->dungeonRoom || (cm->exitDir == DIR_NONE) || (dir == cm->exitDir));
+        bool sameExit = (!cm->isDungeonRoom() || (ct->getExitDir() == DIR_NONE) || (dir == ct->getExitDir()));
         if (sameExit) {
             /* if in a win-or-lose battle and not camping, then it can be bad to flee while healthy */
-            if (cm->winOrLose && !cm->camping) {
+            if (ct->isWinOrLose() && !ct->isCamping()) {
                 /* A fully-healed party member fled from an evil monster :( */
-                if (cm->monster && cm->monster->isEvil() && 
-                    c->players[member].hp == c->players[member].hpMax)
-                    playerAdjustKarma(KA_HEALTHY_FLED_EVIL);
+                if (ct->getMonster() && ct->getMonster()->isEvil() && 
+                    c->party->member(member)->getHp() == c->party->member(member)->getMaxHp())
+                    c->party->adjustKarma(KA_HEALTHY_FLED_EVIL);
             }
 
-            cm->exitDir = dir;
-            c->location->map->removeObject(cm->party[member]);
-            cm->party.erase(cm->party.find(member));            
+            ct->setExitDir(dir);
+            c->location->map->removeObject((*party)[member]);
+            (*party)[member] = NULL;
             return (MoveReturnValue)(MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE | MOVE_SUCCEEDED | MOVE_END_TURN);
         }
         else return (MoveReturnValue)(MOVE_MUST_USE_SAME_EXIT | MOVE_END_TURN);
     }
 
-    movementMask = c->location->map->getValidMoves(cm->party[member]->getCoords(), cm->party[member]->getTile());
+    movementMask = c->location->map->getValidMoves((*party)[member]->getCoords(), (*party)[member]->getTile());
     if (!DIR_IN_MASK(dir, movementMask))
         return (MoveReturnValue)(MOVE_BLOCKED | MOVE_END_TURN);
 
@@ -353,10 +355,10 @@ MoveReturnValue movePartyMember(Direction dir, int userEvent) {
     if (!slowedByTile(c->location->map->tileAt(newCoords, WITHOUT_OBJECTS)))
     {
         /* move succeeded */        
-        cm->party[member]->setCoords(newCoords);
+        (*party)[member]->setCoords(newCoords);
 
         /* handle dungeon room triggers */
-        if (cm->dungeonRoom) {
+        if (cm->isDungeonRoom()) {
             Dungeon *dungeon = dynamic_cast<Dungeon*>(c->location->prev->map);
             int i;
             Trigger *triggers = dungeon->currentRoom->triggers;            

@@ -8,20 +8,33 @@
 
 #include "monster.h"
 
+#include "combat.h"
 #include "context.h"
 #include "debug.h"
 #include "error.h"
 #include "event.h"
 #include "game.h"	/* required by specialAction and specialEffect functions */
 #include "location.h"
+#include "map.h"
 #include "player.h"	/* required by specialAction and specialEffect functions */
 #include "savegame.h"
+#include "screen.h" /* FIXME: remove dependence on this */
 #include "settings.h"
+#include "spell.h"  /* FIXME: remove dependence on this */
+#include "stats.h"  /* FIXME: remove dependence on this */
 #include "tile.h"
 #include "utils.h"
 #include "xml.h"
 
 MonsterMgr monsters;
+
+bool isMonster(Object *punknown) {
+    Monster *m;
+    if ((m = dynamic_cast<Monster*>(punknown)) != NULL)
+        return true;
+    else
+        return false;
+}
 
 /**
  * Monster class implementation
@@ -31,6 +44,14 @@ Monster::Monster(MapTile tile) : Object(OBJECT_MONSTER) {
     if (m)
         *this = *m;
 }
+
+string Monster::getName() const         { return name; }
+MapTile Monster::getHitTile() const     { return rangedhittile; }
+MapTile Monster::getMissTile() const    { return rangedmisstile; }
+
+void Monster::setName(string s)         { name = s; }
+void Monster::setHitTile(MapTile t)     { rangedhittile = t; }
+void Monster::setMissTile(MapTile t)    { rangedmisstile = t; }
 
 bool Monster::isGood() const        { return (mattr & MATTR_GOOD) ? true : false; }
 bool Monster::isEvil() const        { return !isGood(); }
@@ -96,7 +117,7 @@ void Monster::setRandomRanged() {
     rangedhittile = rangedmisstile = xu4_random(4) + POISONFIELD_TILE;
 }
 
-MonsterStatus Monster::getStatus() const {
+MonsterStatus Monster::getState() const {
     int heavy_threshold, light_threshold, crit_threshold;
     
     crit_threshold = basehp >> 2;  /* (basehp / 4) */
@@ -200,7 +221,7 @@ bool Monster::specialEffect() {
     
     case STORM_ID:
         {
-            ObjectList::iterator i;
+            ObjectDeque::iterator i;
 
             if (coords == c->location->coords) {
 
@@ -235,7 +256,7 @@ bool Monster::specialEffect() {
     
     case WHIRLPOOL_ID:        
         {
-            ObjectList::iterator i;
+            ObjectDeque::iterator i;
 
             if (coords == c->location->coords && (c->transportContext == TRANSPORT_SHIP)) {                    
                                 
@@ -276,6 +297,377 @@ bool Monster::specialEffect() {
     }
 
     return retval;
+}
+
+void Monster::act() {
+    int dist;
+    CombatAction action;
+    Monster *target;
+
+    /* see if monster wakes up if it is asleep */
+    if ((getStatus() == STAT_SLEEPING) && (xu4_random(8) == 0))
+        wakeUp();    
+
+    /* if the monster is still asleep, then do nothing */
+    if (getStatus() == STAT_SLEEPING)
+        return;
+
+    if (negates()) {
+        c->aura = AURA_NEGATE;
+        c->auraDuration = 2;
+        statsUpdate();
+    }
+
+    /* default action */
+    action = CA_ATTACK;        
+
+    /* if the monster doesn't have something specific to do yet, let's try to find something! */
+    if (action == CA_ATTACK) {
+        /* monsters who teleport do so 1/8 of the time */
+        if (teleports() && xu4_random(8) == 0)
+            action = CA_TELEPORT;
+        /* monsters who ranged attack do so 1/4 of the time.
+           make sure their ranged attack is not negated! */
+        else if (ranged != 0 && xu4_random(4) == 0 && 
+                 ((rangedhittile != MAGICFLASH_TILE) || (c->aura != AURA_NEGATE)))
+            action = CA_RANGED;
+        /* monsters who cast sleep do so 1/4 of the time they don't ranged attack */
+        else if (castsSleep() && (c->aura != AURA_NEGATE) && (xu4_random(4) == 0))
+            action = CA_CAST_SLEEP;
+    
+        else if (getState() == MSTAT_FLEEING)
+            action = CA_FLEE;
+    }
+    
+    target = nearestOpponent(&dist, action == CA_RANGED);    
+    if (target == NULL)
+        return;
+
+    if (action == CA_ATTACK && dist > 1)
+        action = CA_ADVANCE;
+
+    /* let's see if the monster blends into the background, or if he appears... */
+    if (camouflages() && !hideOrShow())
+        return; /* monster is hidden -- no action! */
+
+    switch(action) {
+    case CA_ATTACK:
+        if (attackHit(target)) {            
+            CombatController::attackFlash(target->getCoords(), HITFLASH_TILE, 3);
+            if (!dealDamage(target, getDamage()))
+                target = NULL;
+
+            if (target && isPartyMember(target)) {
+                /* steal gold if the monster steals gold */
+                if (stealsGold() && xu4_random(4) == 0)
+                    c->party->adjustGold(-(xu4_random(0x3f)));
+            
+                /* steal food if the monster steals food */
+                if (stealsFood())
+                    c->party->adjustFood(-2500);
+            }
+        } else {
+            CombatController::attackFlash(target->getCoords(), MISSFLASH_TILE, 3);
+        }
+        break;
+
+    case CA_CAST_SLEEP:
+        {            
+            screenMessage("Sleep!\n");
+
+            (*spellEffectCallback)('s', -1, (Sound)0); /* show the sleep spell effect */
+        
+            /* Apply the sleep spell to party members still in combat */
+            if (!isPartyMember(this)) {
+                PartyMemberVector party = c->combat->getMap()->getPartyMembers();
+                PartyMemberVector::iterator j;
+                
+                for (j = party.begin(); j != party.end(); j++) {
+                    if (xu4_random(2) == 0)
+                        (*j)->putToSleep();                    
+                }
+            }
+        }
+        
+        break;
+
+    case CA_TELEPORT: {
+            Coords new_c;
+            bool valid = false;
+            bool firstTry = true;                    
+            MapTile tile;                
+        
+            while (!valid) {
+                new_c = Coords(xu4_random(map->width), xu4_random(map->height), c->location->coords.z);
+                
+                tile = map->tileAt(new_c, WITH_OBJECTS);
+            
+                if (tileIsMonsterWalkable(tile) && tileIsWalkable(tile)) {
+                    /* If the tile would slow me down, try again! */
+                    if (firstTry && tileGetSpeed(tile) != FAST)
+                        firstTry = false;
+                    /* OK, good enough! */
+                    else
+                        valid = true;
+                }
+            }
+        
+            /* Teleport! */
+            setCoords(new_c);
+        }
+
+        break;
+
+    case CA_RANGED:
+        {           
+            CoordActionInfo *info;
+            MapCoords m_coords = getCoords(),
+                      p_coords = target->getCoords();
+        
+            info = new CoordActionInfo;
+            info->handleAtCoord = &CombatController::rangedAttack;
+            info->origin = m_coords;
+            info->prev = Coords(-1, -1);
+            info->range = 11;
+            info->validDirections = MASK_DIR_ALL;
+            info->obj = this;
+            info->blockedPredicate = &tileCanAttackOver;
+            info->blockBefore = 1;
+            info->firstValidDistance = 0;
+
+            /* if the monster has a random tile for a ranged weapon,
+               let's switch it now! */
+            if (hasRandomRanged())
+                setRandomRanged();
+
+            /* figure out which direction to fire the weapon */            
+            info->dir = m_coords.getRelativeDirection(p_coords);
+        
+            /* fire! */
+            gameDirectionalAction(info);
+            delete info;
+        } break;
+
+    case CA_FLEE:
+    case CA_ADVANCE:
+        if (moveCombatObject(action, map, this, target->getCoords())) {
+            Coords coords = getCoords();
+
+            if (MAP_IS_OOB(map, coords)) {
+                screenMessage("\n%s Flees!\n", name.c_str());
+                
+                /* Congrats, you have a heart! */
+                if (isGood())
+                    c->party->adjustKarma(KA_SPARED_GOOD);
+
+                map->removeObject(this);                
+            }
+        }
+        
+        break;
+    }        
+    statsUpdate();
+    screenRedrawScreen();
+}
+
+void Monster::addStatus(StatusType s) {
+    status.push_back(s);
+}
+
+void Monster::applyTileEffect(TileEffect effect) {        
+    if (effect != EFFECT_NONE) {
+        gameUpdateScreen();
+
+        switch(effect) {
+        case EFFECT_SLEEP:
+            /* monster fell asleep! */
+            if ((resists != EFFECT_SLEEP) &&
+                (xu4_random(0xFF) >= hp))
+                putToSleep();            
+            break;
+
+        case EFFECT_LAVA:
+        case EFFECT_FIRE:
+            /* deal 0 - 127 damage to the monster if it is not immune to fire damage */
+            if (!(resists & (EFFECT_FIRE | EFFECT_LAVA)))
+                applyDamage(xu4_random(0x7F));
+            break;
+
+        case EFFECT_POISONFIELD:
+            /* deal 0 - 127 damage to the monster if it is not immune to poison field damage */
+            if (resists != EFFECT_POISONFIELD)
+                applyDamage(xu4_random(0x7F));
+            break;
+
+        case EFFECT_POISON:
+        default: break;
+        }
+    }
+}
+
+bool Monster::attackHit(Monster *m) {
+    return m->isHit();
+}
+
+bool Monster::divide() {
+    int dirmask = map->getValidMoves(getCoords(), getTile());
+    Direction d = dirRandomDir(dirmask);
+
+    /* this is a game enhancement, make sure it's turned on! */
+    if (!settings.enhancements || !settings.enhancementsOptions.slimeDivides)
+        return false;
+    
+    /* make sure there's a place to put the divided monster! */
+    if (d != DIR_NONE) {                            
+        MapCoords coords(getCoords());
+        
+        screenMessage("%s Divides!\n", name.c_str());
+
+        /* find a spot to put our new monster */        
+        coords.move(d, map);
+
+        /* create our new monster! */
+        map->addMonster(this, coords);                
+        return true;
+    }
+    return false;
+}
+
+StatusType Monster::getStatus() const {
+    return status.back();
+}
+
+/**
+ * Hides or shows a camouflaged monster, depending on its distance from
+ * the nearest opponent
+ */
+bool Monster::hideOrShow() {
+    /* find the nearest opponent */
+    int dist;
+    
+    /* ok, now we've got the nearest party member.  Now, see if they're close enough */
+    if (nearestOpponent(&dist, false) != NULL) {
+        if ((dist < 5) && !isVisible())
+            setVisible(); /* show yourself */
+        else if (dist >= 5)
+            setVisible(false); /* hide and take no action! */
+    }
+
+    return isVisible();
+}
+
+bool Monster::isHit(int hit_offset) {
+    return (hit_offset + 128) >= xu4_random(0x100) ? true : false;
+}
+
+Monster *Monster::nearestOpponent(int *dist, bool ranged) {
+    Monster *opponent = NULL;
+    int d, leastDist = 0xFFFF;    
+    ObjectDeque::iterator i;
+    bool opp = (c->aura == AURA_JINX) ? false : true;
+
+    for (i = map->objects.begin(); i < map->objects.end(); i++) {
+        bool player = isPartyMember(this);
+        bool monster = !isPartyMember(*i);
+
+        /* if a party member, find a monster. If a monster, find a party member */
+        if (isMonster(*i)) {
+            if ((player && monster) || (!player && (opp ? !monster : (monster && (*i != this))))) {
+                MapCoords objCoords = (*i)->getCoords();
+
+                /* if ranged, get the distance using diagonals, otherwise get movement distance */
+                if (ranged)
+                    d = objCoords.distance(getCoords());
+                else d = objCoords.movementDistance(getCoords());
+            
+                /* skip target 50% of time if same distance */
+                if (d < leastDist || (d == leastDist && xu4_random(2) == 0)) {
+                    opponent = dynamic_cast<Monster*>(*i);
+                    leastDist = d;
+                }
+            }
+        }        
+    }
+
+    if (opponent)
+        *dist = leastDist;
+
+    return opponent;
+}
+
+void Monster::putToSleep() {
+    if (getStatus() != STAT_DEAD) {
+        addStatus(STAT_SLEEPING);
+        setAnimated(false); /* freeze monster */
+    }
+}
+
+void Monster::removeStatus(StatusType s) {
+    StatusList::iterator i;
+    for (i = status.begin(); i != status.end();) {
+        if (*i == s)
+            i = status.erase(i);
+        else i++;
+    }
+}
+
+void Monster::setStatus(StatusType s) {
+    status.clear();
+    this->addStatus(s);
+}
+
+void Monster::wakeUp() {
+    removeStatus(STAT_SLEEPING);
+    setAnimated(); /* reanimate monster */
+}
+
+/**
+ * Applies damage to the monster.
+ * Returns true if the monster still exists after the damage has been applied
+ * or false, if the monster was destroyed
+ */
+bool Monster::applyDamage(int damage) {	
+	/* deal the damage */
+	if (id != LORDBRITISH_ID)
+		AdjustValueMin(hp, -damage, 0);	
+
+    switch (getState()) {
+
+    case MSTAT_DEAD:        
+        screenMessage("%s Killed!\nExp. %d\n", name.c_str(), xp);
+		
+		// Remove yourself from the map
+        if (map) {
+		    map->removeObject(this);
+            return false;
+        }
+        break;
+
+    case MSTAT_FLEEING:
+        screenMessage("%s Fleeing!\n", name.c_str());
+        break;
+
+    case MSTAT_CRITICAL:
+        screenMessage("%s Critical!\n", name.c_str());
+        break;
+
+    case MSTAT_HEAVILYWOUNDED:
+        screenMessage("%s\nHeavily Wounded!\n", name.c_str());
+        break;
+
+    case MSTAT_LIGHTLYWOUNDED:
+        screenMessage("%s\nLightly Wounded!\n", name.c_str());
+        break;
+
+    case MSTAT_BARELYWOUNDED:
+        screenMessage("%s\nBarely Wounded!\n", name.c_str());
+        break;
+    }
+    return true;
+}
+
+bool Monster::dealDamage(Monster *m, int damage) {
+	return m->applyDamage(damage);
 }
 
 /**
@@ -384,7 +776,7 @@ void MonsterMgr::loadInfoFromXml() {
             xmlStrcmp(node->name, (const xmlChar *) "monster") != 0)
             continue;
 
-        m->name = xmlGetPropAsStr(node, "name");
+        m->setName(xmlGetPropAsStr(node, "name"));
         m->id = (unsigned short)xmlGetPropAsInt(node, "id");
         
         /* Get the leader if it's been included, otherwise the leader is itself */
@@ -399,8 +791,8 @@ void MonsterMgr::loadInfoFromXml() {
         m->camouflageTile = 0;
 
         m->worldrangedtile = 0;
-        m->rangedhittile = HITFLASH_TILE;
-        m->rangedmisstile = MISSFLASH_TILE;
+        m->setHitTile(HITFLASH_TILE);
+        m->setMissTile(MISSFLASH_TILE);
         m->leavestile = 0;
 
         m->mattr = (MonsterAttrib)0;
@@ -440,7 +832,7 @@ void MonsterMgr::loadInfoFromXml() {
         /* get ranged hit tile */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
             if (xmlPropCmp(node, "rangedhittile", tiles[i].name) == 0) {
-                m->rangedhittile = tiles[i].tile;
+                m->setHitTile(tiles[i].tile);
             }
             else if (xmlPropCmp(node, "rangedhittile", "random") == 0)
                 m->mattr = (MonsterAttrib)(m->mattr | MATTR_RANDOMRANGED);
@@ -449,7 +841,7 @@ void MonsterMgr::loadInfoFromXml() {
         /* get ranged miss tile */
         for (i = 0; i < sizeof(tiles) / sizeof(tiles[0]); i++) {
             if (xmlPropCmp(node, "rangedmisstile", tiles[i].name) == 0) {
-                m->rangedmisstile = tiles[i].tile;
+                m->setMissTile(tiles[i].tile);
             }
             else if (xmlPropCmp(node, "rangedhittile", "random") == 0)
                 m->mattr = (MonsterAttrib)(m->mattr | MATTR_RANDOMRANGED);
@@ -557,7 +949,7 @@ const Monster *MonsterMgr::getById(MonsterId id) const {
 const Monster *MonsterMgr::getByName(string name) const {
     MonsterMap::const_iterator i;
     for (i = monsters.begin(); i != monsters.end(); i++) {
-        if (strcasecmp(i->second->name.c_str(), name.c_str()) == 0)
+        if (strcasecmp(i->second->getName().c_str(), name.c_str()) == 0)
             return i->second;
     }
     return NULL;

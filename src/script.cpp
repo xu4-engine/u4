@@ -651,22 +651,23 @@ void Script::translate(string *text) {
             /* party:member# */
             if (item2.find_first_of("member") == 0) {                
                 int member = (int)strtol(item2.substr(6,1).c_str(), NULL, 10) - 1;
+                PartyMember *p = c->party->member(member);
                 
                 /* party:member#:needs */
                 if (item3 == "needs") {                    
                     if (item4 == "cure") /* party:member:needs:cure */
-                        prop = (c->players[member].status == STAT_POISONED) ? "true" : "false";
+                        prop = (p->getStatus() == STAT_POISONED) ? "true" : "false";
                     else if ((item4 == "heal") || (item4 == "fullheal")) /* party:member:needs:(heal||fullheal) */
-                        prop = (c->players[member].hp < c->players[member].hpMax) ? "true" : "false";
+                        prop = (p->getHp() < p->getMaxHp()) ? "true" : "false";
                     else if (item4 == "resurrect") /* party:member:needs:resurrect */
-                        prop = (c->players[member].status == STAT_DEAD) ? "true" : "false";
+                        prop = (p->getStatus() == STAT_DEAD) ? "true" : "false";
 
                     statsUpdate();
                 }
                 /* party:member#:hp */
                 else if (item3 == "hp") {
                     char buffer[16];
-                    sprintf(buffer, "%d", c->players[member].hp);
+                    sprintf(buffer, "%d", p->getHp());
                     prop = buffer;
                 }
             }
@@ -1057,7 +1058,7 @@ ScriptReturnCode Script::pay(xmlNodePtr script, xmlNodePtr current) {
         run(cantpay);
         return SCRIPT_RET_STOP;
     }
-    else playerAdjustGold(-price);
+    else c->party->adjustGold(-price);
 
     if (debug)
         fprintf(debug, "\n\tBalance:     %d\n", c->saveGame->gold);
@@ -1147,11 +1148,11 @@ ScriptReturnCode Script::add(xmlNodePtr script, xmlNodePtr current) {
 
     if (type == "gold") {
         quant *= this->price;
-        playerAdjustGold(quant);
+        c->party->adjustGold(quant);
     }
     else if (type == "food") {
         quant *= 100;
-        playerAdjustFood(quant);
+        c->party->adjustFood(quant);
     }
     else if (type == "horse")
         gameSetTransport(tileGetHorseBase());
@@ -1220,16 +1221,16 @@ ScriptReturnCode Script::lose(xmlNodePtr script, xmlNodePtr current) {
  */ 
 ScriptReturnCode Script::heal(xmlNodePtr script, xmlNodePtr current) {
     string type = getPropAsStr(current, "type");
-    int player = getPropAsInt(current, "player")-1;
+    PartyMember *p = c->party->member(getPropAsInt(current, "player")-1);
 
     if (type == "cure")
-        playerHeal(HT_CURE, player);
+        p->heal(HT_CURE);
     else if (type == "heal")
-        playerHeal(HT_HEAL, player);
+        p->heal(HT_HEAL);
     else if (type == "fullheal")
-        playerHeal(HT_FULLHEAL, player);
+        p->heal(HT_FULLHEAL);
     else if (type == "resurrect")
-        playerHeal(HT_RESURRECT, player);
+        p->heal(HT_RESURRECT);
 
     statsUpdate();
     return SCRIPT_RET_OK;
@@ -1253,11 +1254,13 @@ ScriptReturnCode Script::castSpell(xmlNodePtr script, xmlNodePtr current) {
 ScriptReturnCode Script::damage(xmlNodePtr script, xmlNodePtr current) {
     int player = getPropAsInt(current, "player") - 1;
     int pts = getPropAsInt(current, "pts");
+    PartyMember *p;
 
     if (player == -1)
         player = this->player - 1;
 
-    playerApplyDamage(&c->players[player], pts);
+    p = c->party->member(player);
+    p->applyDamage(pts);
 
     if (debug)
         fprintf(debug, "\nDamage: %d damage to player %d", pts, player);
@@ -1301,7 +1304,7 @@ ScriptReturnCode Script::karma(xmlNodePtr script, xmlNodePtr current) {
 
     KarmaActionMap::iterator ka = action_map.find(action);
     if (ka != action_map.end())
-        playerAdjustKarma(ka->second);
+        c->party->adjustKarma(ka->second);
     else if (debug)
         fprintf(debug, " <FAILED - action '%s' not found>", action.c_str());
 

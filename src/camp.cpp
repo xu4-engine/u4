@@ -35,16 +35,18 @@ int campHeal(HealType heal_type);
 void innTimer(void *data);
 
 void campBegin(void) {    
-    musicCamp();    
+    musicCamp();
+    MapId id;
     
     /* setup camp (possible, but not for-sure combat situation */
     if (c->location->context & CTX_DUNGEON)
-        gameSetMap(mapMgrGetById(MAP_DUNGEON_CON), 1, NULL);
-    else gameSetMap(mapMgrGetById(MAP_CAMP_CON), 1, NULL);
+        id = MAP_DUNGEON_CON;
+    else id = MAP_CAMP_CON;
 
-    CombatMap *cm = getCombatMap();
-    cm->initCamping();
-    cm->begin();    
+    delete c->combat;
+    c->combat = new CombatController(id);
+    c->combat->initCamping();
+    c->combat->begin();    
     
     eventHandlerPushKeyHandler(&keyHandlerIgnoreKeys);
     eventHandlerAddTimerCallback(&campTimer, (eventTimerGranularity * settings.gameCyclesPerSecond) * settings.campTime);
@@ -59,22 +61,21 @@ void campTimer(void *data) {
     screenEnableCursor();
 
     /* Is the party ambushed during their rest? */
-    if (settings.campingAlwaysCombat || (xu4_random(8) == 0)) {
-        CombatMap *cm = getCombatMap();
+    if (settings.campingAlwaysCombat || (xu4_random(8) == 0)) {        
         const Monster *m = monsters.randomAmbushing();
                 
         musicPlay();        
         screenMessage("Ambushed!\n");
         
         /* create an ambushing monster (so it leaves a chest) */
-        cm->monster = c->location->prev->map->addMonster(m, c->location->prev->coords);
+        c->combat->setMonster(c->location->prev->map->addMonster(m, c->location->prev->coords));
         
         /* fill the monster table with monsters and place them */
-        cm->fillMonsterTable(m);
-        cm->placeMonsters();
+        c->combat->fillMonsterTable(m);
+        c->combat->placeMonsters();
 
         /* monsters go first! */
-        combatFinishTurn();
+        c->combat->finishTurn();        
     }    
     else campEnd();
 }
@@ -86,12 +87,9 @@ void campEnd(void) {
     gameExitToParentMap();
     musicFadeIn(CAMP_FADE_IN_TIME, 1);
     
-    /* Wake everyone up! */
-    /* FIXME: sleeping like this will again cure poison -- needs to be fixed */
-    for (i = 0; i < c->saveGame->members; i++) {
-        if (c->players[i].status == STAT_SLEEPING)
-            c->players[i].status = STAT_GOOD;
-    }    
+    /* Wake everyone up! */    
+    for (i = 0; i < c->party->size(); i++)
+        c->party->member(i)->wakeUp();    
 
     /* Make sure we've waited long enough for camping to be effective */
     if (((c->saveGame->moves / CAMP_HEAL_INTERVAL) >= 0x10000) || (((c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff) != c->saveGame->lastcamp))
@@ -110,10 +108,10 @@ int campHeal(HealType heal_type) {
     healed = 0;
 
     /* restore each party member to max mp, and restore some hp */
-    for (i = 0; i < c->saveGame->members; i++) {
-        c->players[i].mp = playerGetMaxMp(&c->players[i]);
-        if ((c->players[i].hp < c->players[i].hpMax) &&
-            (playerHeal(heal_type, i)))
+    for (i = 0; i < c->party->size(); i++) {
+        PartyMember *m = c->party->member(i);
+        m->setMp(m->getMaxMp());
+        if ((m->getHp() < m->getMaxHp()) && m->heal(heal_type))
             healed = true;
     }
     statsUpdate();
@@ -179,13 +177,12 @@ void innTimer(void *data) {
             showMessage = false;
         }
 
-        gameSetMap(mapMgrGetById(mapid), true, NULL);
-        CombatMap *cm = getCombatMap();
-        
-        cm->inn = true;
-        cm->init(monster);
-        cm->showCombatMessage = showMessage;        
-        cm->begin();
+        delete c->combat;
+        c->combat = new CombatController(mapid);
+        c->combat->setInn(true);
+        c->combat->init(monster);
+        c->combat->showCombatMessage(showMessage);  
+        c->combat->begin();
     }
     
     else {
@@ -197,7 +194,7 @@ void innTimer(void *data) {
         if (c->location->map->id == 11) {// && (xu4_random(4) == 0)) {
             City *city = dynamic_cast<City*>(c->location->map);
             Person *Isaac;
-            ObjectList::iterator i;
+            ObjectDeque::iterator i;
             int x = 27,
                 y = xu4_random(3) + 10,
                 z = c->location->coords.z;

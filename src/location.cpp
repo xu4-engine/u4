@@ -160,8 +160,8 @@ MapTile locationGetReplacementTile(Location *location, MapCoords coords) {
  */
 int locationGetCurrentPosition(Location *location, MapCoords *coords) {
     if (location->context & CTX_COMBAT) {
-        CombatMap *cm = getCombatMap();
-        *coords = cm->party[cm->focus]->getCoords();
+        PartyMemberVector *party = c->combat->getParty();
+        *coords = (*party)[c->combat->getFocus()]->getCoords();    
     }
     else
         *coords = location->coords;
