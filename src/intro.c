@@ -693,6 +693,10 @@ const char *introGetQuestion(int v1, int v2) {
 void introJourneyOnward() {
     FILE *saveGameFile;
 
+    /* 
+     * ensure a party.sav file exists, otherwise require user to
+     * initiate game
+     */
     saveGameFile = fopen("party.sav", "rb");
     if (!saveGameFile) {
         introErrorMessage = "Initiate game first!";
