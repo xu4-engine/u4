@@ -530,6 +530,10 @@ int gameExitToParentMap() {
         if (c->location->prev->map != c->location->map) {
             c->location->map->annotations->clear();
             c->location->map->clearObjects();
+            
+            /* quench the torch of we're on the world map */
+            if (c->location->prev->map->isWorldMap())
+                c->party->quenchTorch();
         }
         locationFree(&c->location);
 
@@ -599,19 +603,15 @@ void gameFinishTurn() {
     }
 
     if (c->location->context == CTX_DUNGEON) {
-        if (c->saveGame->torchduration <= 0)
+        if (c->party->getTorchDuration() <= 0)
             screenMessage("It's Dark!\n");
-        else c->saveGame->torchduration--;
+        else c->party->burnTorch();
 
         /* handle dungeon traps */
         if (dungeonCurrentToken() == DUNGEON_TRAP)
             dungeonHandleTrap((TrapType)dungeonCurrentSubToken());
     }
-    /* since torchduration and balloon state share the same variable, make sure our torch
-       isn't still lit (screwing all sorts of things up) */
-    else if (c->transportContext != TRANSPORT_BALLOON && c->saveGame->balloonstate)
-        c->saveGame->balloonstate = 0;
-
+    
     /* draw a prompt */
     screenPrompt();
     screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
@@ -842,7 +842,7 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case U4_FKEY+11:
         if (settings.debug) {
-            screenMessage("Torch: %d\n", c->saveGame->torchduration);
+            screenMessage("Torch: %d\n", c->party->getTorchDuration());
             screenPrompt();
         }
         else valid = false;
@@ -1037,8 +1037,8 @@ bool gameBaseKeyHandler(int key, void *data) {
 
     case 'i':
         screenMessage("Ignite torch!\n");
-        if (c->location->context == CTX_DUNGEON)            
-            c->saveGame->torchduration += 100;
+        if (c->location->context == CTX_DUNGEON)
+            c->party->lightTorch();            
         else screenMessage("Not here!\n");
         break;
 

@@ -571,7 +571,7 @@ static int spellKill(int dir) {
 }
 
 static int spellLight(int unused) {
-    c->saveGame->torchduration += 100;
+    c->party->lightTorch(100, false);
     return 1;
 }
 

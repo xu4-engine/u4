@@ -278,7 +278,7 @@ bool dungeonHandleTrap(TrapType trap) {
     switch((TrapType)dungeonCurrentSubToken()) {
     case TRAP_WINDS:
         screenMessage("\nWinds!\n");
-        c->saveGame->torchduration = 0;
+        c->party->quenchTorch();
         break;
     case TRAP_FALLING_ROCK:
         /* FIXME: implement */

@@ -140,17 +140,21 @@ public:
     void adjustKarma(KarmaAction action);
     void applyEffect(TileEffect effect);
     bool attemptElevation(Virtue virtue);    
+    void burnTorch(int turns = 1);
     bool canEnterShrine(Virtue virtue);    
     bool canPersonJoin(string name, Virtue *v);    
     void damageShip(unsigned int pts);
     bool donate(int quantity);
     void endTurn();
     int  getChest();
+    int  getTorchDuration() const;
     void healShip(unsigned int pts);
     bool isImmobilized();
     bool isDead();
     bool isPersonJoined(string name);
     CannotJoinError join(string name);
+    void lightTorch(int duration = 100, bool loseTorch = true);
+    void quenchTorch();
     void reviveParty();
     void setTransport(MapTile transport);
     void setShipHull(int str);
@@ -166,6 +170,7 @@ public:
     PartyMemberVector members;
     SaveGame *saveGame;
     MapTile transport;
+    int torchduration;
 };
 
 typedef void (*LostEighthCallback)(Virtue);

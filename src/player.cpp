@@ -472,7 +472,7 @@ void PartyMember::wakeUp() {
 /**
  * Party class implementation
  */ 
-Party::Party(SaveGame *s) : saveGame(s) {
+Party::Party(SaveGame *s) : saveGame(s), torchduration(0) {
     for (int i = 0; i < saveGame->members; i++) {
         // add the members to the party
         members.push_back(new PartyMember(this, &saveGame->players[i]));
@@ -656,6 +656,20 @@ bool Party::attemptElevation(Virtue virtue) {
 }
 
 /**
+ * Burns a torch's duration down a certain number of turns
+ */
+void Party::burnTorch(int turns) {
+    torchduration -= turns;
+    if (torchduration <= 0)
+        torchduration = 0;
+
+    saveGame->torchduration = torchduration;
+
+    setChanged();
+    notifyObservers("Party::burnTorch");
+}
+
+/**
  * Returns true if the party can enter the shrine
  */
 bool Party::canEnterShrine(Virtue virtue) {
@@ -767,6 +781,13 @@ int Party::getChest() {
 }
 
 /**
+ * Returns the number of turns a currently lit torch will last (or 0 if no torch lit)
+ */
+int Party::getTorchDuration() const {
+    return torchduration;
+}
+
+/**
  * Heals the ship's hull strength by 'pts' points
  */
 void Party::healShip(unsigned int pts) {
@@ -859,6 +880,35 @@ CannotJoinError Party::join(string name) {
     }
 
     return JOIN_NOT_EXPERIENCED;
+}
+
+/**
+ * Lights a torch with a default duration of 100
+ */
+void Party::lightTorch(int duration, bool loseTorch) {
+    if (loseTorch) { 
+        if (!c->saveGame->torches) {
+            screenMessage("None left!\n");
+            return;
+        }
+        else c->saveGame->torches--;
+    }
+    
+    torchduration += duration;
+    saveGame->torchduration = torchduration;
+
+    setChanged();
+    notifyObservers("Party::lightTorch");
+}
+
+/**
+ * Extinguishes a torch
+ */
+void Party::quenchTorch() {
+    torchduration = saveGame->torchduration = 0;
+
+    setChanged();
+    notifyObservers("Party::quenchTorch");
 }
 
 /**

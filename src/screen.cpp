@@ -17,6 +17,7 @@
 #include "location.h"
 #include "names.h"
 #include "object.h"
+#include "player.h"
 #include "savegame.h"
 #include "settings.h"
 #include "tileset.h"
@@ -154,7 +155,7 @@ void screenUpdate(int showmap, int blackout) {
         /* 1st-person perspective */
         if (screen3dDungeonView) {
             screenEraseMapArea();
-            if (c->saveGame->torchduration > 0 && !blackout) {
+            if (c->party->getTorchDuration() > 0 && !blackout) {
                 for (y = 3; y >= 0; y--) {
                     DungeonGraphicType type;
 
@@ -187,7 +188,7 @@ void screenUpdate(int showmap, int blackout) {
                         tiles = dungeonViewGetTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
                         /* Only show blackness if there is no light */
-                        if (c->saveGame->torchduration <= 0)
+                        if (c->party->getTorchDuration() <= 0)
                             screenShowTile(&black, 0, x, y);
                         else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
                             screenShowTile(&avatar, 0, x, y);
