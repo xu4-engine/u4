@@ -33,7 +33,7 @@ void screenTextAt(int x, int y, char *fmt, ...) {
 	screenShowChar(buffer[i], x + i, y);
 }
 
-void screenMessage(char *fmt, ...) {
+void screenMessage(const char *fmt, ...) {
     char buffer[1024];
     int i;
     int wordlen;

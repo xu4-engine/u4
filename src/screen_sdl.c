@@ -684,7 +684,7 @@ void screenShowChar(int chr, int x, int y) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowTile(int tile, int x, int y) {
+void screenShowTile(unsigned char tile, int x, int y) {
     int offset;
     SDL_Rect src, dest;
 
