@@ -21,6 +21,7 @@ typedef struct _Object {
     ObjectMovementBehavior movement_behavior;
     const struct _Person *person;
     int isAvatar;
+    int hasFocus;
     struct _Object *next;
 } Object;
 
