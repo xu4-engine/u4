@@ -12,8 +12,8 @@ UILIBS=$(shell sdl-config --libs) -lSDL_mixer
 UIFLAGS=$(shell sdl-config --cflags)
 
 FEATURES=-DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
-DEBUGCPPFLAGS=-ggdb -rdynamic
-CPPFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\" -DVERSION=\"$(VERSION)\" $(DEBUGCPPFLAGS)
+DEBUGCXXFLAGS=-ggdb -rdynamic
+CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\" -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS)
 LIBS=$(UILIBS) $(shell xml2-config --libs)
 INSTALL=install
 
@@ -42,4 +42,11 @@ install::
 	$(INSTALL) ../graphics/vga/*.rle $(libdir)/u4/graphics/vga
 	$(INSTALL) -D ../u4.desktop $(datadir)/applications/u4.desktop
 
+# use GCC's automatic dependency generation
+.depends::
+	rm -f .depends
+	$(CC) $(CFLAGS) -MM $(CSRCS) >> .depends
+	$(CXX) $(CXXFLAGS) -MM $(CXXSRCS) >> .depends
+
 -include .depends
+
