@@ -35,6 +35,7 @@ install: all
 	strip lzwdec.exe -o $(U4PATH)/tools/lzwdec.exe
 	strip rleenc.exe -o $(U4PATH)/tools/rleenc.exe
 	strip rledec.exe -o $(U4PATH)/tools/rledec.exe
+	strip tlkconv.exe -o $(U4PATH)/tools/tlkconv.exe
 	cp ../README $(U4PATH)/readme.txt
 	cp ../mid/*.mid $(U4PATH)
 	cp ../conf/*.xml $(U4PATH)
