@@ -29,5 +29,7 @@ int weaponGetMissTile(int weapon);
 int weaponAlwaysHits(int weapon);
 int weaponLeavesTile(int weapon);
 int weaponCanReady(int weapon, const char *className);
+int weaponCanAttackThroughObjects(int weapon);
+int weaponRangeAbsolute(int weapon);
 
 #endif
