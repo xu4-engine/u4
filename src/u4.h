@@ -10,6 +10,8 @@
     #define VERSION "0.8cvs"
 #endif
 
+#define AdjustValue(var, val, max) ((var) += (val)); if ((var) > (max)) (var) = (max)
+
 /* info for loading world map from world.map */
 #define MAP_WIDTH 256
 #define MAP_HEIGHT 256

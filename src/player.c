@@ -11,9 +11,8 @@
 #include "armor.h"
 #include "context.h"
 #include "debug.h"
+#include "u4.h"
 #include "weapon.h"
-
-#define AdjustValue(var, val, max) ((var) += (val)); if ((var) > (max)) (var) = (max)
 
 LostEighthCallback lostEighthCallback = NULL;
 AdvanceLevelCallback advanceLevelCallback = NULL;
@@ -57,7 +56,7 @@ void playerApplyDamage(SaveGamePlayerRecord *player, int damage) {
 
     newHp -= damage;
 
-    if (newHp <= 0) {
+    if (newHp < 0) {
         player->status = STAT_DEAD;
         newHp = 0;
     }

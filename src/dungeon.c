@@ -15,6 +15,7 @@
 #include "player.h"
 #include "screen.h"
 #include "stats.h"
+#include "u4.h"
 
 /**
  * Loads a dungeon room into map->dungeon->room
@@ -125,17 +126,17 @@ int dungeonTouchOrb(int player) {
     /* give stats bonuses */
     if (stats & STATSBONUS_STR) {
         screenMessage("Strength + 5\n");
-        c->saveGame->players[player].str += 5;
+        AdjustValue(c->saveGame->players[player].str, 5, 50);
         damage += 200;
     }
     if (stats & STATSBONUS_DEX) {
         screenMessage("Dexterity + 5\n");
-        c->saveGame->players[player].dex += 5;
+        AdjustValue(c->saveGame->players[player].dex, 5, 50);        
         damage += 200;
     }
     if (stats & STATSBONUS_INT) {
         screenMessage("Intelligence + 5\n");
-        c->saveGame->players[player].intel += 5;
+        AdjustValue(c->saveGame->players[player].intel, 5, 50);        
         damage += 200;
     }   
     
