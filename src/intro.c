@@ -9,6 +9,7 @@
 
 #include "u4.h"
 #include "intro.h"
+#include "settings.h"
 #include "event.h"
 #include "screen.h"
 #include "u4file.h"
@@ -41,6 +42,7 @@
 typedef enum {
     INTRO_MAP,                  /* displaying the animated intro map */
     INTRO_MENU,                 /* displaying the main menu: journey onward, etc. */
+    INTRO_CONFIG,               /* the configuration screen */
     INTRO_INIT_NAME,            /* prompting for character name */
     INTRO_INIT_SEX,             /* prompting for character sex */
     INTRO_INIT_STORY,           /* displaying the intro story leading up the gypsy */
@@ -99,7 +101,7 @@ void introDrawBeasties(void);
 void introStartQuestions(void);
 int introHandleName(const char *message);
 int introHandleSexChoice(char choice);
-void introJourneyOnward();
+void introJourneyOnward(void);
 void introShowText(const char *text);
 void introInitQuestionTree(void);
 const char *introGetQuestion(int v1, int v2);
@@ -257,6 +259,11 @@ int introKeyHandler(int key, void *data) {
             mode = INTRO_MAP;
             introUpdateScreen();
             break;
+        case 'c':
+            introErrorMessage = NULL;
+            mode = INTRO_CONFIG;
+            introUpdateScreen();
+            break;
         case 'q':
             quit = 1;
             eventHandlerSetExitFlag(1);
@@ -266,6 +273,36 @@ int introKeyHandler(int key, void *data) {
             break;
         }
         break;
+
+    case INTRO_CONFIG:
+        switch (key) {
+        case 's':
+            settings->scale++;
+            if (settings->scale > 5)
+                settings->scale = 1;
+            break;
+        case 'm':
+            settings->fullscreen = !settings->fullscreen;
+            break;
+        case 'f':
+            settings->filter++;
+            if (settings->filter == SCL_MAX)
+                settings->filter = SCL_DEFAULT;
+            break;
+        case 'v':
+            settings->vol = !settings->vol;
+            break;
+        case 'c':
+            mode = INTRO_MENU;
+            break;
+        case 'u':
+            settingsWrite();
+            /* FIXME: restart with new settings */
+            mode = INTRO_MENU;
+            break;
+        }
+        introUpdateScreen();
+        return 1;
 
     case INTRO_INIT_NAME:
     case INTRO_INIT_SEX:
@@ -436,6 +473,18 @@ void introUpdateScreen() {
             screenTextAt(3, 21, "xu4 is free software, see COPYING");
             screenTextAt(5, 22, "\011 Copyright 1987 Lord British");
         }
+        introDrawBeasties();
+        break;
+
+    case INTRO_CONFIG:
+        screenDrawBackground(BKGD_INTRO);
+        screenTextAt(15, 14, "Settings:");
+        screenTextAt(11, 15, "Scale       x%d", settings->scale);
+        screenTextAt(11, 16, "Mode        %s", settings->fullscreen ? "Fullscreen" : "Window");
+        screenTextAt(11, 17, "Filter      %s", settingsFilterToString(settings->filter));
+        screenTextAt(11, 18, "Volume      %s", settings->vol ? "On" : "Off");
+        screenTextAt(11, 19, "Use These Settings");
+        screenTextAt(11, 20, "Cancel");
         introDrawBeasties();
         break;
 
