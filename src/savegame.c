@@ -441,6 +441,8 @@ int saveGameMonstersRead(Object **objs, FILE *f) {
             obj->prevy = monsterTable[i].prevy;
             obj->movement_behavior = MOVEMENT_FIXED; /* FIXME: monsters should be MOVEMENT_ATTACK_AVATAR */
             obj->person = NULL;
+            obj->isAvatar = 0;
+            obj->hasFocus = 0;
             obj->next = *objs;
             *objs = obj;
         }
