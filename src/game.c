@@ -28,6 +28,7 @@
 #include "music.h"
 #include "item.h"
 #include "shrine.h"
+#include "combat.h"
 
 int gameCanMoveOntoTile(const Map *map, int x, int y);
 int moveAvatar(Direction dir, int userEvent);
@@ -92,37 +93,31 @@ void gameSetMap(Context *ct, Map *map, int setStartPos) {
  */
 void gameFinishTurn() {
 
-    /* adjust food and moves */
-    c->saveGame->moves++;
-    c->saveGame->food -= c->saveGame->members;
-    if (c->saveGame->food < 0) {
-        /* FIXME: handle starving */
-        c->saveGame->food = 0;
-    }
-
     /* apply effects from tile avatar is standing on */
-    switch (tileGetEffect(mapTileAt(c->map, c->saveGame->x, c->saveGame->y))) {
-    case EFFECT_NONE:
-        break;
-    case EFFECT_FIRE:
-        screenMessage("Burning!\n");
-        break;
-    case EFFECT_SLEEP:
-        screenMessage("Zzzz!\n");
-        break;
-    case EFFECT_POISON:
-        screenMessage("Poison!\n");
-        break;
-    default:
-        assert(0);
+    playerApplyEffect(c->saveGame, tileGetEffect(mapTileAt(c->map, c->saveGame->x, c->saveGame->y)));
+
+    while (1) {
+        /* adjust food and moves */
+        playerEndTurn(c->saveGame);
+
+        mapMoveObjects(c->map, c->saveGame->x, c->saveGame->y);
+
+        /* update map annotations and the party stats */
+        annotationCycle();
+        c->statsItem = STATS_PARTY_OVERVIEW;
+        statsUpdate();
+
+        if (!playerPartyImmobilized(c->saveGame))
+            break;
+
+        if (playerPartyDead(c->saveGame)) {
+            screenMessage("Party is dead!\nReviving...\n");
+            c->saveGame->players[0].status = STAT_GOOD;
+            c->saveGame->players[0].hp = c->saveGame->players[0].hpMax;
+        } else {
+            screenMessage("Zzzzzz\n");
+        }
     }
-
-    mapMoveObjects(c->map, c->saveGame->x, c->saveGame->y);
-
-    /* update map annotations and the party stats */
-    annotationCycle();
-    c->statsItem = STATS_PARTY_OVERVIEW;
-    statsUpdate();
 
     /* draw a prompt */
     screenMessage("\020");
