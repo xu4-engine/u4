@@ -138,6 +138,7 @@ U4FILE *u4fopen(const char *fname) {
         u4f = u4fopen_zip(fname, pathname, "ultima4/", 0);
         if (u4f) {
             free(pathname);
+            free(upg_pathname);
             return u4f; /* file was found, return it! */
         }
 
@@ -387,8 +388,6 @@ char **u4read_stringtable(U4FILE *f, long offset, int nstrings) {
             if (buffer[j] == '\0')                
                 break;            
         }
-        while(j > 0 && !(isprint(buffer[j - 1]) || isspace(buffer[j - 1])))
-            j--;
         buffer[j] = '\0';
         strs[i] = strdup(buffer);
     }
