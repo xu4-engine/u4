@@ -14,7 +14,7 @@
 			leavetile="fire" hittile="fire"/>
 	<weapon name="Halberd" abbr="HAL" absolute_range="2" attackthroughobjects="true" damage="96"
 			canready="fighter, tinker, paladin"/>
-	<weapon name="Magic Axe" abbr="+AX" range="10" damage="96" magic="true"
+	<weapon name="Magic Axe" abbr="+AX" range="10" returns="true" damage="96" magic="true"
 			canready="tinker, paladin"/>
 	<weapon name="Magic Sword" abbr="+SW" range="1" damage="128" magic="true"
 			canready="fighter, tinker, paladin, ranger"/>
