@@ -45,7 +45,7 @@ int screenLoadPaletteEga();
 int screenLoadPaletteVga(const char *filename);
 Image *screenScaleDown(Image *src, int scale);
 
-SDL_Surface *screen;
+Image *screen;
 Image *dngGraphic[56];
 RGBA egaPalette[16];
 RGBA vgaPalette[256];
@@ -229,9 +229,10 @@ void screenInit() {
     SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
 #endif   
 
-    screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (settings.fullscreen ? SDL_FULLSCREEN : 0));
-    if (!screen)
+    if (!SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (settings.fullscreen ? SDL_FULLSCREEN : 0)))
         errorFatal("unable to set video: %s", SDL_GetError());
+
+    screen = Image::createScreenImage();
 
     screenLoadPaletteEga();        
     /* see if the upgrade exists */
@@ -243,8 +244,10 @@ void screenInit() {
     if (!u4upgradeExists && settings.videoType == "VGA")
         settings.videoType = "EGA";
 
-    if (verbose)
-        printf("screen initialized [screenInit()]\n");
+    if (verbose) {
+        char driver[32];
+        printf("screen initialized [screenInit()], using %s video driver\n", SDL_VideoDriverName(driver, sizeof(driver)));
+    }
 
     eventKeyboardSetKeyRepeat(settings.keydelay, settings.keyinterval);
 
@@ -457,21 +460,12 @@ Layout *screenLoadLayoutFromXml(xmlNodePtr node) {
  *  y, width and height parameters are unscaled, i.e. for 320x200.
  */
 void screenFillRect(int x, int y, int w, int h, int r, int g, int b) {
-    SDL_Rect dest;
-
-    dest.x = x * scale;
-    dest.y = y * scale;
-    dest.w = w * scale;
-    dest.h = h * scale;
-
-    if (SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, (Uint8)r, (Uint8)g, (Uint8)b)) != 0)
-        errorWarning("screenFillRect: SDL_FillRect failed\n%s", SDL_GetError());
+    screen->fillRect(x * scale, y * scale, w * scale, h * scale, r, g, b);
 }
 
 void fixupIntro(Image *im, int prescale) {
     const unsigned char *sigData;
     int i, x, y;
-    SDL_Rect src, dest;
 
     sigData = introGetSigData();
 
@@ -479,10 +473,13 @@ void fixupIntro(Image *im, int prescale) {
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
      * ----------------------------------------------------------------------------- */
 
-    /* we're working with an unscaled surface, so we can't use screenCopyRect, etc. */
-    src.x = 136 * prescale; src.y = 0 * prescale; src.w = 55 * prescale; src.h = 5 * prescale;
-    dest.x = 136 * prescale; dest.y = 33 * prescale; dest.w = 55 * prescale;  dest.h = 5 * prescale;
-    SDL_BlitSurface(im->surface, &src, im->surface, &dest);
+    im->drawSubRectOn(im, 
+                      136 * prescale,
+                      33 * prescale,
+                      136 * prescale,
+                      0 * prescale,
+                      55 * prescale,
+                      5 * prescale);
 
     /* ----------------------------
      * erase the original "present"
@@ -512,17 +509,23 @@ void fixupIntro(Image *im, int prescale) {
 }
 
 void fixupIntroExtended(Image *im, int prescale) {
-    SDL_Rect src, dest;
-
     fixupIntro(im, prescale);
 
-    src.x = 0 * prescale;  src.y = 95 * prescale;  src.w = 320 * prescale;  src.h = 50 * prescale;
-    dest.x = 0 * prescale; dest.y = 10 * prescale; dest.w = 320 * prescale;  dest.h = 50 * prescale;
-    SDL_BlitSurface(im->surface, &src, im->surface, &dest);    
+    im->drawSubRectOn(im, 
+                      0 * prescale,
+                      10 * prescale,
+                      0 * prescale,
+                      95 * prescale,
+                      320 * prescale,
+                      50 * prescale);
 
-    src.x = 0 * prescale;  src.y = 105 * prescale;  src.w = 320 * prescale;  src.h = 45 * prescale;
-    dest.x = 0 * prescale; dest.y = 60 * prescale; dest.w = 320 * prescale;  dest.h = 45 * prescale;
-    SDL_BlitSurface(im->surface, &src, im->surface, &dest);    
+    im->drawSubRectOn(im, 
+                      0 * prescale,
+                      60 * prescale,
+                      0 * prescale, 
+                      105 * prescale,
+                      320 * prescale,
+                      45 * prescale);
 }
 
 void fixupAbyssVision(Image *im, int prescale) {
@@ -1082,17 +1085,16 @@ void screenShowChar(int chr, int x, int y) {
  * which the player is not an avatar.
  */
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
-    SDL_Rect dest;
     int i;
 
     screenShowChar(chr, x, y);
-    dest.x = x * charsetInfo->image->w;
-    dest.w = charsetInfo->image->w;
-    dest.h = scale;
     for (i = 0; i < 8; i++) {
         if (mask & (1 << i)) {
-            dest.y = y * (CHAR_HEIGHT * scale) + (i * scale);
-            SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0, 0, 0));
+            screen->fillRect(x * charsetInfo->image->w,
+                             y * (CHAR_HEIGHT * scale) + (i * scale),
+                             charsetInfo->image->w,
+                             scale,
+                             0, 0, 0);
         }
     }
 }
@@ -1102,7 +1104,6 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
  */
 void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int y) {
     int offset;
-    SDL_Rect dest;
     int unscaled_x, unscaled_y;
     Image *tiles;
     TileAnim *anim = NULL;
@@ -1168,39 +1169,39 @@ void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int 
     }
 
     if (anim)
-        tileAnimDraw(anim, tiles, tile, scale, x * tiles->w / scale + BORDER_WIDTH, y * tiles->h / N_TILES / scale + BORDER_HEIGHT);
+        anim->draw(tiles, tile, scale, x * tiles->w / scale + BORDER_WIDTH, y * tiles->h / N_TILES / scale + BORDER_HEIGHT);
 
     /*
      * finally draw the focus rectangle if the tile has the focus
      */
     if (focus && ((screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2)) {
         /* left edge */
-        dest.x = x * tiles->w + (BORDER_WIDTH * scale);
-        dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
-        dest.w = 2 * scale;
-        dest.h = tiles->h / N_TILES;
-        SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
+        screen->fillRect(x * tiles->w + (BORDER_WIDTH * scale),
+                         y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale),
+                         2 * scale,
+                         tiles->h / N_TILES, 
+                         0xff, 0xff, 0xff);
 
         /* top edge */
-        dest.x = x * tiles->w + (BORDER_WIDTH * scale);
-        dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
-        dest.w = tiles->w;
-        dest.h = 2 * scale;
-        SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
+        screen->fillRect(x * tiles->w + (BORDER_WIDTH * scale),
+                         y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale),
+                         tiles->w,
+                         2 * scale,
+                         0xff, 0xff, 0xff);
 
         /* right edge */
-        dest.x = (x + 1) * tiles->w + (BORDER_WIDTH * scale) - (2 * scale);
-        dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
-        dest.w = 2 * scale;
-        dest.h = tiles->h / N_TILES;
-        SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
+        screen->fillRect((x + 1) * tiles->w + (BORDER_WIDTH * scale) - (2 * scale),
+                         y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale),
+                         2 * scale,
+                         tiles->h / N_TILES,
+                         0xff, 0xff, 0xff);
 
         /* bottom edge */
-        dest.x = x * tiles->w + (BORDER_WIDTH * scale);
-        dest.y = (y + 1) * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale) - (2 * scale);
-        dest.w = tiles->w;
-        dest.h = 2 * scale;
-        SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0xff, 0xff, 0xff));
+        screen->fillRect(x * tiles->w + (BORDER_WIDTH * scale),
+                         (y + 1) * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale) - (2 * scale),
+                         tiles->w,
+                         2 * scale,
+                         0xff, 0xff, 0xff);
     }
 }
 
@@ -1222,14 +1223,11 @@ void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
                                          gemlayout->tileshape.width * scale,
                                          gemlayout->tileshape.height * scale);
     } else {
-        SDL_Rect dest;
-
-        dest.x = (gemlayout->viewport.x + (x * gemlayout->tileshape.width)) * scale;
-        dest.y = (gemlayout->viewport.y + (y * gemlayout->tileshape.height)) * scale;
-        dest.w = gemlayout->tileshape.width * scale;
-        dest.h = gemlayout->tileshape.height * scale;
-
-        SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0, 0, 0));
+        screen->fillRect((gemlayout->viewport.x + (x * gemlayout->tileshape.width)) * scale,
+                         (gemlayout->viewport.y + (y * gemlayout->tileshape.height)) * scale,
+                         gemlayout->tileshape.width * scale,
+                         gemlayout->tileshape.height * scale,
+                         0, 0, 0);
     }
 }
 
@@ -1237,90 +1235,82 @@ void screenShowGemTile(unsigned char tile, int focus, int x, int y) {
  * Scroll the text in the message area up one position.
  */
 void screenScrollMessageArea() {
-    SDL_Rect src, dest;
-        
     ASSERT(charsetInfo != NULL && charsetInfo->image != NULL, "charset not initialized!");
 
-    src.x = TEXT_AREA_X * charsetInfo->image->w;
-    src.y = (TEXT_AREA_Y + 1) * CHAR_HEIGHT * scale;
-    src.w = TEXT_AREA_W * charsetInfo->image->w;
-    src.h = (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale;
+    screen->drawSubRectOn(screen, 
+                          TEXT_AREA_X * charsetInfo->image->w, 
+                          TEXT_AREA_Y * CHAR_HEIGHT * scale,
+                          TEXT_AREA_X * charsetInfo->image->w,
+                          (TEXT_AREA_Y + 1) * CHAR_HEIGHT * scale,
+                          TEXT_AREA_W * charsetInfo->image->w,
+                          (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale);
 
-    dest.x = src.x;
-    dest.y = src.y - CHAR_HEIGHT * scale;
-    dest.w = src.w;
-    dest.h = src.h;
 
-    SDL_BlitSurface(screen, &src, screen, &dest);
-
-    dest.y += dest.h;
-    dest.h = CHAR_HEIGHT * scale;
-
-    SDL_FillRect(screen, &dest, SDL_MapRGB(screen->format, 0, 0, 0));
-    SDL_UpdateRect(screen, 0, 0, 0, 0);
+    screen->fillRect(TEXT_AREA_X * charsetInfo->image->w,
+                     TEXT_AREA_Y * CHAR_HEIGHT * scale + (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale,
+                     TEXT_AREA_W * charsetInfo->image->w,
+                     CHAR_HEIGHT * scale,
+                     0, 0, 0);
+                     
+    screenRedrawScreen();
 }
 
 /**
- * Invert an area of the screen.
+ * Inverts the colors of a screen area.
  */
 void screenInvertRect(int x, int y, int w, int h) {
-    SDL_Rect src;
     Image *tmp;
     RGBA c;
     int i, j;
 
-    src.x = x * scale;
-    src.y = y * scale;
-    src.w = w * scale;
-    src.h = h * scale;
-
-    tmp = Image::create(src.w, src.h, 1, 0, Image::SOFTWARE);
+    tmp = Image::create(w * scale, h * scale, 1, false, Image::SOFTWARE);
     if (!tmp)
         return;
 
-    SDL_BlitSurface(screen, &src, tmp->surface, NULL);
+    screen->drawSubRectOn(tmp, 0, 0, x * scale, y * scale, w * scale, h * scale);
 
-    for (i = 0; i < src.h; i++) {
-        for (j = 0; j < src.w; j++) {
+    for (i = 0; i < h * scale; i++) {
+        for (j = 0; j < w * scale; j++) {
             tmp->getPixel(j, i, c.r, c.g, c.b, c.a);
             tmp->putPixel(j, i, 0xff - c.r, 0xff - c.g, 0xff - c.b, c.a);
         }
     }
 
-    SDL_BlitSurface(tmp->surface, NULL, screen, &src);
+    tmp->draw(x * scale, y * scale);
     delete tmp;
-    SDL_UpdateRect(screen, 0, 0, 0, 0);
+
+    screenRedrawScreen();
 }
 
 /**
  * Do the tremor spell effect where the screen shakes.
  */
 void screenShake(int iterations) {
-    SDL_Rect dest;
+    int x, y, w, h;
     int i;
 
     if (settings.screenShakes) {
-        dest.x = 0 * scale;
-        dest.w = 320 * scale;
-        dest.h = 200 * scale;
+        x = 0 * scale;
+        w = 320 * scale;
+        h = 200 * scale;
 
         for (i = 0; i < iterations; i++) {
-            dest.y = 1 * scale;
+            y = 1 * scale;
 
-            SDL_BlitSurface(screen, NULL, screen, &dest);
-            SDL_UpdateRect(screen, 0, 0, 0, 0);
+            screen->drawSubRectOn(screen, x, y, 0, 0, w, h);
+            screenRedrawScreen();
             eventHandlerSleep(settings.shakeInterval);
 
-            dest.y = -1 * scale;
+            y = -1 * scale;
 
-            SDL_BlitSurface(screen, NULL, screen, &dest);
-            SDL_UpdateRect(screen, 0, 0, 0, 0);
+            screen->drawSubRectOn(screen, x, y, 0, 0, w, h);
+            screenRedrawScreen();
             eventHandlerSleep(settings.shakeInterval);
         }
         /* FIXME: remove next line? doesn't seem necessary,
            just adds another screen refresh (which is visible on my screen)... */
         //screenDrawBackground(BKGD_BORDERS);
-        SDL_UpdateRect(screen, 0, 0, 0, 0);
+        screenRedrawScreen();
     }
 }
 
@@ -1468,11 +1458,11 @@ void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, Dun
  * Force a redraw.
  */
 void screenRedrawScreen() {
-    SDL_UpdateRect(screen, 0, 0, 0, 0);
+    SDL_UpdateRect(SDL_GetVideoSurface(), 0, 0, 0, 0);
 }
 
 void screenRedrawMapArea() {
-    SDL_UpdateRect(screen, BORDER_WIDTH * scale, BORDER_HEIGHT * scale, VIEWPORT_W * TILE_WIDTH * scale, VIEWPORT_H * TILE_HEIGHT * scale);
+    SDL_UpdateRect(SDL_GetVideoSurface(), BORDER_WIDTH * scale, BORDER_HEIGHT * scale, VIEWPORT_W * TILE_WIDTH * scale, VIEWPORT_H * TILE_HEIGHT * scale);
 }
 
 /**
@@ -1488,29 +1478,23 @@ void screenAnimateIntro(const string &frame) {
 }
 
 void screenEraseMapArea() {
-    SDL_Rect dest;
-
-    dest.x = BORDER_WIDTH * scale;
-    dest.y = BORDER_WIDTH * scale;
-    dest.w = VIEWPORT_W * TILE_WIDTH * scale;
-    dest.h = VIEWPORT_H * TILE_HEIGHT * scale;
-
-    SDL_FillRect(screen, &dest, 0);
+    screen->fillRect(BORDER_WIDTH * scale, 
+                     BORDER_WIDTH * scale, 
+                     VIEWPORT_W * TILE_WIDTH * scale,
+                     VIEWPORT_H * TILE_HEIGHT * scale,
+                     0, 0, 0);
 }
 
 void screenEraseTextArea(int x, int y, int width, int height) {
-    SDL_Rect dest;
-
-    dest.x = x * CHAR_WIDTH * scale;
-    dest.y = y * CHAR_HEIGHT * scale;
-    dest.w = width * CHAR_WIDTH * scale;
-    dest.h = height * CHAR_HEIGHT * scale;
-
-    SDL_FillRect(screen, &dest, 0);
+    screen->fillRect(x * CHAR_WIDTH * scale,
+                     y * CHAR_HEIGHT * scale,
+                     width * CHAR_WIDTH * scale,
+                     height * CHAR_HEIGHT * scale,
+                     0, 0, 0);
 }
 
 void screenRedrawTextArea(int x, int y, int width, int height) {
-    SDL_UpdateRect(screen, x * CHAR_WIDTH * scale, y * CHAR_HEIGHT * scale, width * CHAR_WIDTH * scale, height * CHAR_HEIGHT * scale);
+    SDL_UpdateRect(SDL_GetVideoSurface(), x * CHAR_WIDTH * scale, y * CHAR_HEIGHT * scale, width * CHAR_WIDTH * scale, height * CHAR_HEIGHT * scale);
 }
 
 /**
@@ -1564,7 +1548,11 @@ void screenGemUpdate() {
     unsigned char tile;
     int focus, x, y;
 
-    screenFillRect(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT, 0, 0, 0);
+    screen->fillRect(BORDER_WIDTH * scale, 
+                     BORDER_HEIGHT * scale, 
+                     VIEWPORT_W * TILE_WIDTH * scale, 
+                     VIEWPORT_H * TILE_HEIGHT * scale,
+                     0, 0, 0);
 
     for (x = 0; x < gemlayout->viewport.width; x++) {
         for (y = 0; y < gemlayout->viewport.height; y++) {

@@ -21,7 +21,7 @@ Image::Image() {
  * Image type determines whether to create a hardware (i.e. video ram)
  * or software (i.e. normal ram) image.
  */
-Image *Image::create(int w, int h, int scale, int indexed, Image::Type type) {
+Image *Image::create(int w, int h, int scale, bool indexed, Image::Type type) {
     Uint32 rmask, gmask, bmask, amask;
     Uint32 flags;
     Image *im = new Image;
@@ -59,6 +59,21 @@ Image *Image::create(int w, int h, int scale, int indexed, Image::Type type) {
     }
 
     return im;
+}
+
+/**
+ * Create a special purpose image the represents the whole screen.
+ */
+Image *Image::createScreenImage() {
+    Image *screen = new Image();
+
+    screen->surface = SDL_GetVideoSurface();
+    screen->w = screen->surface->w;
+    screen->h = screen->surface->h;
+    screen->scale = 1;
+    screen->indexed = screen->surface->format->palette != NULL;
+
+    return screen;
 }
 
 /**
@@ -260,13 +275,7 @@ void Image::getPixelIndex(int x, int y, unsigned int &index) const {
  * Draws the entire image onto the screen at the given offset.
  */
 void Image::draw(int x, int y) const {
-    SDL_Rect r;
-
-    r.x = x;
-    r.y = y;
-    r.w = w;
-    r.h = h;
-    SDL_BlitSurface(surface, NULL, SDL_GetVideoSurface(), &r);
+    drawOn(NULL, x, y);
 }
 
 /**
@@ -275,7 +284,48 @@ void Image::draw(int x, int y) const {
  * rw, rh.
  */
 void Image::drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const {
+    drawSubRectOn(NULL, x, y, rx, ry, rw, rh);
+}
+
+/**
+ * Draws a piece of the image onto the screen at the given offset, inverted.
+ * The area of the image to draw is defined by the rectangle rx, ry,
+ * rw, rh.
+ */
+void Image::drawSubRectInverted(int x, int y, int rx, int ry, int rw, int rh) const {
+    drawSubRectInvertedOn(NULL, x, y, rx, ry, rw, rh);
+}
+
+/**
+ * Draws the image onto another image.
+ */
+void Image::drawOn(Image *d, int x, int y) const {
+    SDL_Rect r;
+    SDL_Surface *destSurface;
+
+    if (d == NULL)
+        destSurface = SDL_GetVideoSurface();
+    else
+        destSurface = d->surface;
+
+    r.x = x;
+    r.y = y;
+    r.w = w;
+    r.h = h;
+    SDL_BlitSurface(surface, NULL, destSurface, &r);
+}
+
+/**
+ * Draws a piece of the image onto another image.
+ */
+void Image::drawSubRectOn(Image *d, int x, int y, int rx, int ry, int rw, int rh) const {
     SDL_Rect src, dest;
+    SDL_Surface *destSurface;
+
+    if (d == NULL)
+        destSurface = SDL_GetVideoSurface();
+    else
+        destSurface = d->surface;
 
     src.x = rx;
     src.y = ry;
@@ -286,17 +336,21 @@ void Image::drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const {
     dest.y = y;
     /* dest w & h unused */
 
-    SDL_BlitSurface(surface, &src, SDL_GetVideoSurface(), &dest);
+    SDL_BlitSurface(surface, &src, destSurface, &dest);
 }
 
 /**
- * Draws a piece of the image onto the screen at the given offset, inverted.
- * The area of the image to draw is defined by the rectangle rx, ry,
- * rw, rh.
+ * Draws a piece of the image onto another image, inverted.
  */
-void Image::drawSubRectInverted(int x, int y, int rx, int ry, int rw, int rh) const {
+void Image::drawSubRectInvertedOn(Image *d, int x, int y, int rx, int ry, int rw, int rh) const {
     int i;
     SDL_Rect src, dest;
+    SDL_Surface *destSurface;
+
+    if (d == NULL)
+        destSurface = SDL_GetVideoSurface();
+    else
+        destSurface = d->surface;
 
     for (i = 0; i < rh; i++) {
         src.x = rx;
@@ -308,6 +362,6 @@ void Image::drawSubRectInverted(int x, int y, int rx, int ry, int rw, int rh) co
         dest.y = y + rh - i - 1;
         /* dest w & h unused */
 
-        SDL_BlitSurface(surface, &src, SDL_GetVideoSurface(), &dest);
+        SDL_BlitSurface(surface, &src, destSurface, &dest);
     }
 }

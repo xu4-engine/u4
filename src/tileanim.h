@@ -14,27 +14,36 @@
 class Image;
 class RGBA;
 
-struct TileAnimPixelTransform {
+class  TileAnimTransform {
+public:
+    virtual void draw(Image *tiles, int tile, int scale, int x, int y) = 0;
+    virtual ~TileAnimTransform() {}
+};
+
+class TileAnimInvertTransform : public TileAnimTransform {
+public:
+    TileAnimInvertTransform(int x, int y, int w, int h);
+    virtual void draw(Image *tiles, int tile, int scale, int x, int y);
+    
+private:
+    int x, y, w, h;
+};
+
+class TileAnimPixelTransform : public TileAnimTransform {
+public:
+    TileAnimPixelTransform(int x, int y);
+    virtual void draw(Image *tiles, int tile, int scale, int x, int y);
+
     int x, y;
     std::vector<RGBA *> colors;
 };
 
-struct TileAnimInvertTransform {
-    int x, y, w, h;
-};
-
-struct  TileAnimTransform {
-    enum TileAnimTransformType {
-        TRANSFORM_INVERT,
-        TRANSFORM_PIXEL
-    } type;
-    TileAnimInvertTransform invert;
-    TileAnimPixelTransform pixel;
-};
-
-struct TileAnim {
+class TileAnim {
+public:
     std::string name;
     std::vector<TileAnimTransform *> transforms;
+
+    void draw(Image *tiles, int tile, int scale, int x, int y);
 };
 
 struct TileAnimSet {
@@ -48,6 +57,5 @@ TileAnim *tileAnimLoadFromXml(xmlNodePtr node);
 TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node);
 TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const std::string &name);
 RGBA *tileAnimColorLoadFromXml(xmlNodePtr node);
-void tileAnimDraw(TileAnim *anim, Image *tiles, int tile, int scale, int x, int y);
 
 #endif

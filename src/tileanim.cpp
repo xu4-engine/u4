@@ -60,20 +60,19 @@ TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node) {
     xmlNodePtr child;
     static const char *transformTypeEnumStrings[] = { "invert", "pixel", NULL };
 
-    transform = new TileAnimTransform;
-    transform->type = (TileAnimTransform::TileAnimTransformType) xmlGetPropAsEnum(node, "type", transformTypeEnumStrings);
+    int type = xmlGetPropAsEnum(node, "type", transformTypeEnumStrings);
 
-    switch (transform->type) {
-    case TileAnimTransform::TRANSFORM_INVERT:
-        transform->invert.x = xmlGetPropAsInt(node, "x");
-        transform->invert.y = xmlGetPropAsInt(node, "y");
-        transform->invert.w = xmlGetPropAsInt(node, "width");
-        transform->invert.h = xmlGetPropAsInt(node, "height");
+    switch (type) {
+    case 0:
+        transform = new TileAnimInvertTransform(xmlGetPropAsInt(node, "x"),
+                                                xmlGetPropAsInt(node, "y"),
+                                                xmlGetPropAsInt(node, "width"),
+                                                xmlGetPropAsInt(node, "height"));
         break;
 
-    case TileAnimTransform::TRANSFORM_PIXEL:
-        transform->pixel.x = xmlGetPropAsInt(node, "x");
-        transform->pixel.y = xmlGetPropAsInt(node, "y");
+    case 1:
+        transform = new TileAnimPixelTransform(xmlGetPropAsInt(node, "x"),
+                                               xmlGetPropAsInt(node, "y"));
 
         for (child = node->xmlChildrenNode; child; child = child->next) {
             if (xmlNodeIsText(child))
@@ -81,7 +80,7 @@ TileAnimTransform *tileAnimTransformLoadFromXml(xmlNodePtr node) {
 
             if (xmlStrcmp(child->name, (const xmlChar *) "color") == 0) {
                 RGBA *rgba = tileAnimColorLoadFromXml(child);
-                transform->pixel.colors.push_back(rgba);
+                ((TileAnimPixelTransform *)transform)->colors.push_back(rgba);
             }
         }
 
@@ -103,6 +102,29 @@ RGBA *tileAnimColorLoadFromXml(xmlNodePtr node) {
     return rgba;
 }
 
+TileAnimInvertTransform::TileAnimInvertTransform(int x, int y, int w, int h) {
+    this->x = x;
+    this->y = y;
+    this->w = w;
+    this->h = h;
+}
+
+void TileAnimInvertTransform::draw(Image *tiles, int tile, int scale, int x, int y) {
+    tiles->drawSubRectInverted(scale * (x + this->x), scale * (y + this->y),
+                               scale * this->x, tile * (tiles->h / N_TILES) + scale * this->y, 
+                               scale * w, scale * h);
+}
+
+TileAnimPixelTransform::TileAnimPixelTransform(int x, int y) {
+    this->x = x;
+    this->y = y;
+}
+
+void TileAnimPixelTransform::draw(Image *tiles, int tile, int scale, int x, int y) {
+    RGBA *color = colors[xu4_random(colors.size())];
+    screenFillRect(this->x + x, this->y + y, 1, 1, color->r, color->g, color->b);
+}
+
 TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const std::string &name) {
     map<std::string, TileAnim *>::iterator i = set->tileanims.find(name);
     if (i == set->tileanims.end())
@@ -110,15 +132,16 @@ TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const std::string &name) {
     return i->second;
 }
 
-void tileAnimDraw(TileAnim *anim, Image *tiles, int tile, int scale, int x, int y) {
-    RGBA *color;
-    
+void TileAnim::draw(Image *tiles, int tile, int scale, int x, int y) {
     if (xu4_random(2) == 0)
         return;
 
-    for (vector<TileAnimTransform *>::const_iterator i = anim->transforms.begin(); i != anim->transforms.end(); i++) {
+    for (vector<TileAnimTransform *>::const_iterator i = transforms.begin(); i != transforms.end(); i++) {
         TileAnimTransform *transform = *i;
         
+        transform->draw(tiles, tile, scale, x, y);
+
+#if 0
         switch (transform->type) {
         case TileAnimTransform::TRANSFORM_INVERT:
             tiles->drawSubRectInverted(scale * (x + transform->invert.x), scale * (y + transform->invert.y),
@@ -131,5 +154,6 @@ void tileAnimDraw(TileAnim *anim, Image *tiles, int tile, int scale, int x, int 
             screenFillRect(transform->pixel.x + x, transform->pixel.y + y, 1, 1, color->r, color->g, color->b);
             break;
         }
+#endif
     }
 }

@@ -8,6 +8,7 @@
 struct RGBA {
     unsigned int r, g, b, a;
 };
+bool operator==(const RGBA &lhs, const RGBA &rhs);
 
 #define IM_OPAQUE 255
 #define IM_TRANSPARENT 0
@@ -23,7 +24,8 @@ public:
         SOFTWARE
     };
 
-    static Image *create(int w, int h, int scale, int indexed, Type type);
+    static Image *create(int w, int h, int scale, bool indexed, Type type);
+    static Image *createScreenImage();
     ~Image();
 
     /* palette handling */
@@ -47,23 +49,25 @@ public:
     void drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const;
     void drawSubRectInverted(int x, int y, int rx, int ry, int rw, int rh) const;
 
+    /* image drawing methods for drawing onto another image instead of the screen */
+    void drawOn(Image *d, int x, int y) const;
+    void drawSubRectOn(Image *d, int x, int y, int rx, int ry, int rw, int rh) const;
+    void drawSubRectInvertedOn(Image *d, int x, int y, int rx, int ry, int rw, int rh) const;
+
     int w, h, scale;
-    int indexed;
+    bool indexed;
 
 private:
     Image();                    /* use create method to construct images */
 
-#ifdef _SDL_video_h
-    SDL_Surface *surface;
-#else
-    void *surface;
+#ifndef _SDL_video_h
+    struct SDL_Surface { int dummy; };
 #endif
 
+    SDL_Surface *surface;
+
     /* FIXME: blah -- need to find a better way */
-    friend void fixupIntro(Image *im, int prescale);
-    friend void fixupIntroExtended(Image *im, int prescale);
     friend void fixupAbyssVision(Image *im, int prescale);
-    friend void screenInvertRect(int x, int y, int w, int h);
     friend void screenDungeonDrawTile(int distance, unsigned char tile);
 };
 
