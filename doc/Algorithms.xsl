@@ -72,7 +72,7 @@
         <xsl:attribute name="style">padding-left: <xsl:value-of select="$indent*3"/>em; </xsl:attribute>        
         <xsl:value-of select="normalize-space(text())"/><br/>
         <xsl:apply-templates select="line">
-            <xsl:with-param name="indent" select="$indent + 1"/>
+            <xsl:with-param name="indent" select="1"/>
         </xsl:apply-templates>
     </div>
 </xsl:template>
