@@ -9,6 +9,7 @@
 #include <SDL.h>
 
 #include "u4.h"
+#include "u4file.h"
 #include "screen.h"
 #include "map.h"
 #include "context.h"
@@ -16,24 +17,27 @@
 
 SDL_Surface *screen;
 SDL_Surface *tiles, *charset;
+int scale;
 
 int screenLoadTiles();
 int screenLoadCharSet();
 int screenLoadTileSet(SDL_Surface **surface, int width, int height, int n, const char *filename);
 
-void screenInit() {
+void screenInit(int screenScale) {
+    scale = screenScale;
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 	fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
 	exit(1);
     }
     atexit(SDL_Quit);
 
-    screen = SDL_SetVideoMode(320 * SCALE, 200 * SCALE, 16, SDL_SWSURFACE);
+    screen = SDL_SetVideoMode(320 * scale, 200 * scale, 16, SDL_SWSURFACE);
     if (!screen) {
 	fprintf(stderr, "Unable to set video: %s\n", SDL_GetError());
 	exit(1);
     }
-    SDL_WM_SetCaption("GNU Ultima IV", NULL);
+    SDL_WM_SetCaption("Ultima IV", NULL);
 
     if (!screenLoadTiles() ||
         !screenLoadCharSet()) {
@@ -45,26 +49,25 @@ void screenInit() {
 }
 
 int screenLoadTiles() {
-    return screenLoadTileSet(&tiles, TILE_WIDTH, TILE_HEIGHT, N_TILES, "./ultima4/shapes.ega");
+    return screenLoadTileSet(&tiles, TILE_WIDTH, TILE_HEIGHT, N_TILES, "shapes.ega");
 }
 
 int screenLoadCharSet() {
-    return screenLoadTileSet(&charset, CHAR_WIDTH, CHAR_HEIGHT, N_CHARS, "./ultima4/charset.ega");
+    return screenLoadTileSet(&charset, CHAR_WIDTH, CHAR_HEIGHT, N_CHARS, "charset.ega");
 }
 
 int screenLoadTileSet(SDL_Surface **surface, int width, int height, int n, const char *filename) {
     FILE *in;
-    int scale = SCALE;
     int x, y, xs, ys;
     Uint8 *p;
 
-    in = fopen(filename, "r");
+    in = u4fopen(filename);
     if (!in)
         return 0;
 
     (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * n * scale, 8, 0, 0, 0, 0);
     if (!(*surface)) {
-        fclose(in);
+        u4fclose(in);
         return 0;
     }
 
@@ -115,7 +118,7 @@ int screenLoadTileSet(SDL_Surface **surface, int width, int height, int n, const
         }
     }
 
-    fclose(in);
+    u4fclose(in);
 
     return 1;
 }
@@ -125,10 +128,10 @@ void screenDrawBorders() {
     SDL_Rect r;
 
 #define do_rect(X, Y, W, H, red, green, blue) \
-    r.x = (X) * SCALE; \
-    r.y = (Y) * SCALE; \
-    r.w = (W) * SCALE; \
-    r.h = (H) * SCALE; \
+    r.x = (X) * scale; \
+    r.y = (Y) * scale; \
+    r.w = (W) * scale; \
+    r.h = (H) * scale; \
     SDL_FillRect(screen, &r, SDL_MapRGB(screen->format, red, green, blue));
 
     do_rect(0, 0, CHAR_WIDTH * 40, CHAR_HEIGHT, 0, 0, 255);
@@ -199,8 +202,8 @@ void screenShowTile(int tile, int x, int y) {
     src.y = tile * (tiles->h / N_TILES);
     src.w = tiles->w;
     src.h = tiles->h / N_TILES;
-    dest.x = x * tiles->w + (BORDER_WIDTH * SCALE);
-    dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * SCALE);
+    dest.x = x * tiles->w + (BORDER_WIDTH * scale);
+    dest.y = y * (tiles->h / N_TILES) + (BORDER_HEIGHT * scale);
     dest.w = tiles->w;
     dest.h = tiles->h / N_TILES;
     SDL_BlitSurface(tiles, &src, screen, &dest);
