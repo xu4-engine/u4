@@ -91,7 +91,7 @@ Reply *replyNew(const char *text) {
      * don't split up reply if less than a screenful or can't find a
      * paragraph break
      */
-    if (linecount(text, 16) < 12) {
+    if (linecount(text, 16) < TEXT_AREA_H) {
         reply->nchunks = 1;
         reply->chunk = (char **) malloc(sizeof(char *) * reply->nchunks);
         reply->chunk[0] = strdup(text);
@@ -169,11 +169,11 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
     /*
      * a convsation with a vendor
      */
-    if (personIsVendor(cnv->talker)) {      
+    if (personIsVendor(cnv->talker)) {
         vendorGetConversationText(cnv, inquiry, &text); 
         /* let the inn handle its own music */
         if (cnv->state == CONV_DONE && cnv->talker->npcType != NPC_VENDOR_INN)
-            musicPlay();            
+            musicPlay();
     }
 
     /*
@@ -198,8 +198,8 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                 text = concat("\n", lordBritishGetResponse(cnv, inquiry), NULL);
             else if (cnv->talker->npcType == NPC_HAWKWIND)
                 text = hawkwindGetResponse(cnv, inquiry);
-            else                
-                text = concat("\n\n", talkerGetResponse(cnv, inquiry), "\n", NULL);            
+            else
+                text = concat("\n\n", talkerGetResponse(cnv, inquiry), "\n", NULL);
             break;
 
         case CONV_CONFIRMATION:
@@ -209,7 +209,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
 
         case CONV_ASK:
         case CONV_ASKYESNO:
-            ASSERT(cnv->talker->npcType != NPC_HAWKWIND, "invalid state for hawkwind conversation");            
+            ASSERT(cnv->talker->npcType != NPC_HAWKWIND, "invalid state for hawkwind conversation");
             text = concat("\n", talkerGetQuestionResponse(cnv, inquiry), "\n", NULL);
             break;
 
@@ -248,7 +248,7 @@ char *personGetPrompt(const Conversation *cnv) {
 }
 
 ConversationInputType personGetInputRequired(const struct _Conversation *cnv, int *bufferlen) {
-    switch (cnv->state) {    
+    switch (cnv->state) {
     case CONV_BUY_QUANTITY:
     case CONV_SELL_QUANTITY:
         {
@@ -256,7 +256,7 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv, in
             return CONVINPUT_STRING;
         }
 
-    case CONV_TALK:       
+    case CONV_TALK:
     case CONV_BUY_PRICE:
     case CONV_TOPIC:
         {
@@ -268,14 +268,14 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv, in
         {
             *bufferlen = 3;
             return CONVINPUT_STRING;
-        }    
+        }
 
     case CONV_ASK:
     case CONV_ASKYESNO:
         {
             *bufferlen = 4;
             return CONVINPUT_STRING;
-        }                 
+        }
 
     case CONV_VENDORQUESTION:
     case CONV_BUY_ITEM:
@@ -355,7 +355,7 @@ char *talkerGetIntro(Conversation *cnv) {
 char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     char *reply;
     unsigned int testLen = 4;
-    
+
     if (strlen(inquiry) < 4)
         testLen = strlen(inquiry);
 
@@ -427,12 +427,12 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, "join", 4) == 0) {
-        Virtue v;        
+        Virtue v;
 
-        if (playerCanPersonJoin(c->saveGame, cnv->talker->name, &v)) {            
-            
+        if (playerCanPersonJoin(c->saveGame, cnv->talker->name, &v)) {
+
             CannotJoinError join = playerJoin(c->saveGame, cnv->talker->name);
-            
+
             if (join == JOIN_SUCCEEDED) {
                 reply = strdup("I am honored to join thee!");
                 statsUpdate();
@@ -447,7 +447,7 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
                            " says: I cannot join thee.",
                            NULL);
     }
-    
+
     /* 
      * This little easter egg appeared in the Amiga version of Ultima IV.
      * I've never figured out what the number means.
@@ -456,7 +456,7 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     else if (strncasecmp(inquiry, "ojna", 4) == 0) {
         reply = strdup("Hi Banjo Bob!\nYour secret\nnumber is\n4F4A4E0A");
     }
-    
+
     else
         reply = strdup("That I cannot\nhelp thee with.");
 
@@ -494,7 +494,7 @@ char *talkerGetPrompt(const Conversation *cnv) {
     if (cnv->state == CONV_ASK)
         personGetQuestion(cnv->talker, &prompt);
     else if (cnv->state == CONV_GIVEBEGGAR)
-        prompt = strdup("How much? ");        
+        prompt = strdup("How much? ");
     else if (cnv->state != CONV_ASKYESNO)
         prompt = strdup("\nYour Interest:\n");
 
@@ -541,10 +541,10 @@ char *lordBritishGetIntro(Conversation *cnv) {
             intro = concat("\n\n\nLord British\nsays:  Welcome\n",
                             c->saveGame->players[0].name,
                             " and thy\nworthy\nAdventurers!",
-                            NULL);                           
+                            NULL);
 
         // Check levels here, just like the original!
-        cnv->state = CONV_ADVANCELEVELS;      
+        cnv->state = CONV_ADVANCELEVELS;
     }
 
     else {
@@ -556,7 +556,7 @@ char *lordBritishGetIntro(Conversation *cnv) {
                        "How may I help thee?\n",
                        NULL);
         c->saveGame->lbintro = 1;
-    }    
+    }
 
     return intro;
 }
@@ -573,7 +573,7 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, "heal", 4) == 0) {
-        reply = strdup("\n\n\n\n\n\nHe says: I am\nwell, thank ye.");        
+        reply = strdup("\n\n\n\n\n\nHe says: I am\nwell, thank ye.");
         cnv->state = CONV_CONFIRMATION;
     }
 
@@ -610,7 +610,7 @@ char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
         reply = strdup("Y\n\nHe says: That is good.\n");
     }
 
-    else if (tolower(answer[0]) == 'n') {        
+    else if (tolower(answer[0]) == 'n') {
         reply = strdup("N\n\nHe says: Let me heal thy wounds!\n");
         cnv->state = CONV_FULLHEAL;           
     }
@@ -791,8 +791,12 @@ void personGetQuestion(const Person *p, char **question) {
  * columnmax) in the string.
  */
 int linecount(const char *s, int columnmax) {
-    int lines = 1;
+    int lines = 0;
     int col;
+
+    /* skip over any leading whitespace/blank lines */
+    while (isspace(*s))
+        s++;
 
     col = 0;
     for (; *s; s++) {
