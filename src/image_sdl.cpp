@@ -76,17 +76,19 @@ Image *Image::createScreenImage() {
 /**
  * Creates a duplicate of another image
  */
-Image *Image::duplicate(Image *image) {
-    Uint32 savedflags;
+Image *Image::duplicate(Image *image) {    
+    bool alphaOn = image->isAlphaOn();
     Image *im = create(image->width(), image->height(), image->isIndexed(), image->surface->flags & SDL_HWSURFACE ? HARDWARE : SOFTWARE);
-
-    /* have to turn off alpha on tiles before blitting: why? */
-    savedflags = image->surface->flags;
-    image->surface->flags &= ~SDL_SRCALPHA;
-
+    
+    /* Turn alpha off before blitting to non-screen surfaces */
+    if (alphaOn)
+        image->alphaOff();
+    
     image->drawOn(im, 0, 0);
 
-    image->surface->flags = savedflags;
+    if (alphaOn)
+        image->alphaOn();
+
     return im;
 }
 
@@ -157,6 +159,18 @@ void Image::setTransparentIndex(unsigned int index) {
             }
         }
     }
+}
+
+bool Image::isAlphaOn() const {
+    return (surface->flags & SDL_SRCALPHA) ? true : false;
+}
+
+void Image::alphaOn() {
+    surface->flags |= SDL_SRCALPHA;    
+}
+
+void Image::alphaOff() {
+    surface->flags &= ~SDL_SRCALPHA;    
 }
 
 /**

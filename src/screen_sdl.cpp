@@ -1137,6 +1137,8 @@ void Tile::loadImage() {
         // load the image
         else if (tilesInfo == NULL || tilesInfo->name != tileset->getImageName()) {
             tilesInfo = screenLoadImage(tileset->getImageName());            
+            tilesInfo->image->alphaOff(); /* turn alpha off here */
+
             if (!tilesInfo)
                 errorFatal("unable to load tileset images: is Ultima IV installed?  See http://xu4.sourceforge.net/");            
         }
@@ -1146,10 +1148,10 @@ void Tile::loadImage() {
         /* create the image for our tile */
         w = tiles->width();
         h = tiles->height() / tileset->numFrames();
-        image = Image::create(w, frames * h, false, Image::HARDWARE);                
+        image = Image::create(w, frames * h, false, Image::HARDWARE);
 
         /* draw the tile from the main image to our tile */
-        tiles->drawSubRectOn(image, 0, 0, 0, index * h, w, image->height());
+        tiles->drawSubRectOn(image, 0, 0, 0, index * h, w, image->height());        
 
         if (image == NULL)
             errorFatal("Error: not all tile images loaded correctly, aborting...");

@@ -73,6 +73,11 @@ public:
     bool getTransparentIndex(unsigned int &index) const;
     void setTransparentIndex(unsigned int index);
 
+    /* alpha handling */
+    bool isAlphaOn() const;
+    void alphaOn();
+    void alphaOff();
+
     /* writing to image */
     void putPixel(int x, int y, int r, int g, int b, int a);
     void putPixelIndex(int x, int y, unsigned int index);

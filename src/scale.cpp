@@ -79,7 +79,7 @@ Image *scale2xBilinear(Image *src, int scale, int n) {
 
     /* this scaler works only with images scaled by 2x */
     ASSERT(scale == 2, "invalid scale: %d", scale);
-
+    
     dest = Image::create(src->width() * scale, src->height() * scale, false, Image::HARDWARE);
     if (!dest)
         return NULL;
@@ -118,10 +118,10 @@ Image *scale2xBilinear(Image *src, int scale, int n) {
                 dest->putPixel(x * 2, y * 2, a.r, a.g, a.b, a.a);
                 dest->putPixel(x * 2 + 1, y * 2, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1, (a.a + b.a) >> 1);
                 dest->putPixel(x * 2, y * 2 + 1, (a.r + c.r) >> 1, (a.g + c.g) >> 1, (a.b + c.b) >> 1, (a.a + c.a) >> 1);
-                dest->putPixel(x * 2 + 1, y * 2 + 1, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2, (a.a + b.a + c.a + d.a) >> 2);
+                dest->putPixel(x * 2 + 1, y * 2 + 1, (a.r + b.r + c.r + d.r) >> 2, (a.g + b.g + c.g + d.g) >> 2, (a.b + b.b + c.b + d.b) >> 2, (a.a + b.a + c.a + d.a) >> 2);                
             }
         }
-    }
+    }    
 
     return dest;
 }
@@ -177,8 +177,8 @@ Image *scale2xSaI(Image *src, int scale, int N) {
 
     /* this scaler works only with images scaled by 2x */
     ASSERT(scale == 2, "invalid scale: %d", scale);
-
-    dest = Image::create(src->width() * scale, src->height() * scale, 0, Image::HARDWARE);
+    
+    dest = Image::create(src->width() * scale, src->height() * scale, false, Image::HARDWARE);
     if (!dest)
         return NULL;
 
