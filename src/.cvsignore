@@ -1,6 +1,9 @@
 .depends
 dumpsavegame
 u4
+lzwenc
+lzwdec
+coord
 party.sav
 monsters.sav
 
