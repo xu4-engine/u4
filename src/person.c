@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "u4.h"
 #include "context.h"
@@ -13,16 +14,22 @@
 #include "person.h"
 #include "u4file.h"
 #include "names.h"
+#include "io.h"
 
 #define N_WEAPON_VENDORS 6
 #define WEAPON_VENDOR_INVENTORY_SIZE 4
+
+typedef struct WeaponVendorInfo {
+    WeaponType vendorInventory[N_WEAPON_VENDORS][WEAPON_VENDOR_INVENTORY_SIZE];
+    unsigned short prices[WEAP_MAX];
+} WeaponVendorInfo;
 
 char **hawkwindText;
 char **lbKeywords;
 char **lbText;
 char **weaponVendorText;
 char **weaponVendorText2;
-WeaponType weaponVendorItems[N_WEAPON_VENDORS][WEAPON_VENDOR_INVENTORY_SIZE];
+WeaponVendorInfo weaponVendorInfo;
 
 #define HW_WELCOME 43
 #define HW_GREETING1 44
@@ -33,19 +40,25 @@ WeaponType weaponVendorItems[N_WEAPON_VENDORS][WEAPON_VENDOR_INVENTORY_SIZE];
 #define HW_GOTOSHRINE 51
 #define HW_BYE 52
 
-int personIsLordBritish(const Person *p);
-int personIsHawkwind(const Person *p);
-int personGetLBIntroduction(const Person *p, char **intro);
-int personGetHWIntroduction(const Person *p, char **intro);
-int personGetLBResponse(const Person *p, const char *inquiry, char **reply, int *askq);
-int personGetHWResponse(const Person *p, const char *inquiry, char **reply, int *askq);
+#define WV_SHOPNAME 0
+#define WV_VENDORNAME 6
+#define WV_WELCOME 17
+#define WV_SPACER 18
+#define WV_BUYORSELL 19
+
+void personGetIntroduction(Conversation *cnv, char **intro);
+void personGetResponse(Conversation *cnv, const char *inquiry, char **reply);
+void personGetLBResponse(const Person *p, const char *inquiry, char **reply, int *state);
+void personGetHWResponse(const Person *p, const char *inquiry, char **reply, int *state);
+void personGetQuestionResponse(Conversation *cnv, const char *response, char **reply);
+void personGetQuestion(const Person *p, char **question);
+int weaponVendorInfoRead(WeaponVendorInfo *info, FILE *f);
 
 /**
  * Loads in conversation data for special cases and vendors from
  * avatar.exe.
  */
 int personInit() {
-    int i, j;
     FILE *avatar;
 
     avatar = u4fopen("avatar.exe");
@@ -60,235 +73,281 @@ int personInit() {
     weaponVendorText = u4read_stringtable(avatar, 78883, 28);
 
     fseek(avatar, 80181, SEEK_SET);
-    for (i = 0; i < N_WEAPON_VENDORS; i++) {
-        for (j = 0; j < WEAPON_VENDOR_INVENTORY_SIZE; j++) {
-            weaponVendorItems[i][j] = fgetc(avatar);
-        }
-    }
+    if (!weaponVendorInfoRead(&weaponVendorInfo, avatar))
+        return 0;
 
-    weaponVendorText2 = u4read_stringtable(avatar, 80282, 17);
-    
+    weaponVendorText2 = u4read_stringtable(avatar, 80282, 20);
+
     u4fclose(avatar);
 
     return 1;
+}
+
+void personInitType(Person *p) {
+    p->vendorIndex = 0;
+
+    if (p->tile0 == 94 && p->startx == 19 && p->starty == 7)
+        p->npcType = NPC_LORD_BRITISH;
+    else if (p->name == NULL && p->tile0 == 82 && p->startx == 9 && p->starty == 27)
+        p->npcType = NPC_HAWKWIND;
+    else if (p->name == NULL && p->tile0 == 83 && p->startx == 5 && p->starty == 2) {
+        p->npcType = NPC_VENDOR_WEAPONS;
+        p->vendorIndex = 0;
+    }
+    else if (p->name != NULL)
+        p->npcType = NPC_TALKER;
+    else
+        p->npcType = NPC_EMPTY;
+}
+
+void personGetConversationText(Conversation *cnv, const char *inquiry, char **response) {
+    switch (cnv->state) {
+    case CONV_INTRO:
+        personGetIntroduction(cnv, response);
+        return;
+
+    case CONV_TALK:
+        personGetResponse(cnv, inquiry, response);
+        return;
+
+    case CONV_ASK:
+        personGetQuestionResponse(cnv, inquiry, response);
+        break;
+    
+    case CONV_BUYSELL:
+        /* FIXME */
+        break;
+
+    case CONV_DONE:
+    default:
+        assert(0);              /* shouldn't happen */
+    }
 }
 
 /**
  * Get the introductory description and dialog shown when a
  * conversation is started.
  */
-int personGetIntroduction(const Person *p, char **intro) {
-    const char *fmt = "You meet\n%s\n\n%s says: I am %s\n\n%s\n";
+void personGetIntroduction(Conversation *cnv, char **intro) {
+    const char *lbFmt = "Lord British\nsays:  Welcome\n%s and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n";
+    const char *hwFmt = "%s%s%s%s";
+    const char *fmt = "You meet\n%s\n\n%s says: I am %s\n\n%s";
     char *prompt;
 
-    if (personIsLordBritish(p))
-        return personGetLBIntroduction(p, intro);
-    else if (personIsHawkwind(p))
-        return personGetHWIntroduction(p, intro);
-        
-    personGetPrompt(p, &prompt);
-    *intro = malloc(strlen(fmt) - 8 + strlen(p->description) + strlen(p->pronoun) + strlen(p->name) + strlen(prompt) + 1);
+    switch (cnv->talker->npcType) {
 
-    sprintf(*intro, fmt, p->description, p->pronoun, p->name, prompt);
-    if (isupper((*intro)[9]))
-        (*intro)[9] = tolower((*intro)[9]);
-    free(prompt);
+    case NPC_LORD_BRITISH:
+        *intro = malloc(strlen(lbFmt) - 2 + strlen(c->saveGame->players[0].name) + 1);
+        sprintf(*intro, lbFmt, c->saveGame->players[0].name);
+        cnv->state = CONV_TALK;
+        break;
 
-    return 0;
+    case NPC_HAWKWIND:
+        *intro = malloc(strlen(hwFmt) - 8 + strlen(hawkwindText[HW_WELCOME]) + strlen(c->saveGame->players[0].name) + 
+                        strlen(hawkwindText[HW_GREETING1]) + strlen(hawkwindText[HW_GREETING2]) + 1);
+        sprintf(*intro, hwFmt, hawkwindText[HW_WELCOME], c->saveGame->players[0].name, hawkwindText[HW_GREETING1], hawkwindText[HW_GREETING2]);
+        cnv->state = CONV_TALK;
+        break;
+
+    case NPC_VENDOR_WEAPONS:
+        *intro = malloc(strlen(weaponVendorText2[WV_WELCOME]) + strlen(weaponVendorText[WV_SHOPNAME + cnv->talker->vendorIndex]) + 
+                        strlen(weaponVendorText2[WV_SPACER]) + strlen(weaponVendorText[WV_VENDORNAME + cnv->talker->vendorIndex]) + 
+                        strlen(weaponVendorText2[WV_BUYORSELL]) + 1);
+        strcpy(*intro, weaponVendorText2[WV_WELCOME]);
+        strcat(*intro, weaponVendorText[WV_SHOPNAME + cnv->talker->vendorIndex]);
+        strcat(*intro, weaponVendorText2[WV_SPACER]);
+        strcat(*intro, weaponVendorText[WV_VENDORNAME + cnv->talker->vendorIndex]);
+        strcat(*intro, weaponVendorText2[WV_BUYORSELL]);
+        cnv->state = CONV_BUYSELL;
+        break;
+
+    case NPC_EMPTY:
+        *intro = strdup("");
+        cnv->state = CONV_DONE;
+        break;
+
+
+    case NPC_TALKER:
+    case NPC_TALKER_COMPANION:
+    case NPC_TALKER_BEGGAR:
+        personGetPrompt(cnv, &prompt);
+        *intro = malloc(strlen(fmt) - 8 + strlen(cnv->talker->description) + strlen(cnv->talker->pronoun) + strlen(cnv->talker->name) + strlen(prompt) + 1);
+
+        sprintf(*intro, fmt, cnv->talker->description, cnv->talker->pronoun, cnv->talker->name, prompt);
+        if (isupper((*intro)[9]))
+            (*intro)[9] = tolower((*intro)[9]);
+        free(prompt);
+        cnv->state = CONV_TALK;
+        break;
+
+    default:
+        assert(0);
+    }
 }
 
 /**
  * Get the prompt shown after each reply.
  */
-int personGetPrompt(const Person *p, char **prompt) {
-    if (personIsLordBritish(p))
-        *prompt = strdup("What else?\n");
-    else if (personIsHawkwind(p))
-        *prompt = strdup(hawkwindText[HW_PROMPT]);
-    else
-        *prompt = strdup("Your Interest:\n");
+void personGetPrompt(const Conversation *cnv, char **prompt) {
 
-    return 0;
+    switch (cnv->state) {
+
+    case CONV_ASK:
+        personGetQuestion(cnv->talker, prompt);
+        break;
+
+    case CONV_BUYSELL:
+        break;
+        
+    default:
+        switch (cnv->talker->npcType) {
+        case NPC_LORD_BRITISH:
+            *prompt = strdup("What else?\n");
+            break;
+        case NPC_HAWKWIND:
+            *prompt = strdup(hawkwindText[HW_PROMPT]);
+            break;
+        default:
+            *prompt = strdup("\nYour Interest:\n");
+            break;
+        }
+        break;
+    }
 }
 
 /**
  * Get the reply for an inquiry.
  */
-int personGetResponse(const Person *p, const char *inquiry, char **reply, int *askq) {
+void personGetResponse(Conversation *cnv, const char *inquiry, char **reply) {
 
-    /* check if it's Lord British */
-    if (personIsLordBritish(p))
-        return personGetLBResponse(p, inquiry, reply, askq);
+    switch (cnv->talker->npcType) {
 
-    /* check if it's Hawkwind */
-    else if (personIsHawkwind(p))
-        return personGetHWResponse(p, inquiry, reply, askq);
+    case NPC_LORD_BRITISH:
+        personGetLBResponse(cnv->talker, inquiry, reply, &cnv->state);
+        break;
         
+    case NPC_HAWKWIND:
+         personGetHWResponse(cnv->talker, inquiry, reply, &cnv->state);
+         break;
 
-    if (inquiry[0] == '\0' ||
-        strcasecmp(inquiry, "bye") == 0) {
-        *reply = strdup("Bye.");
-        *askq = 0;
-        return 1;
-    }
+    case NPC_EMPTY:
+        *reply = strdup("");
+        cnv->state = CONV_DONE;
+        break;
 
-    else if (strncasecmp(inquiry, "look", 4) == 0) {
-        *reply = malloc(strlen(p->pronoun) + 7 + strlen(p->description) + 1);
-        sprintf(*reply, "%s says: %s", p->pronoun, p->description);
-        *askq = 0;
-        return 0;
-    }
+    case NPC_TALKER:
+    case NPC_TALKER_COMPANION:
+    case NPC_TALKER_BEGGAR:
+        if (inquiry[0] == '\0' ||
+            strcasecmp(inquiry, "bye") == 0) {
+            *reply = strdup("Bye.");
+            cnv->state = CONV_DONE;
+        }
 
-    else if (strncasecmp(inquiry, "name", 4) == 0) {
-        *reply = malloc(strlen(p->pronoun) + 12 + strlen(p->name) + 1);
-        sprintf(*reply, "%s says: I am %s", p->pronoun, p->name);
-        *askq = 0;
-        return 0;
-    }
+        else if (strncasecmp(inquiry, "look", 4) == 0) {
+            *reply = malloc(strlen(cnv->talker->pronoun) + 7 + strlen(cnv->talker->description) + 1);
+            sprintf(*reply, "%s says: %s", cnv->talker->pronoun, cnv->talker->description);
+        }
 
-    else if (strncasecmp(inquiry, "job", 4) == 0) {
-        *reply = strdup(p->job);
-        *askq = (p->questionTrigger == QTRIGGER_JOB);
-        return 0;
-    }
+        else if (strncasecmp(inquiry, "name", 4) == 0) {
+            *reply = malloc(strlen(cnv->talker->pronoun) + 12 + strlen(cnv->talker->name) + 1);
+            sprintf(*reply, "%s says: I am %s", cnv->talker->pronoun, cnv->talker->name);
+        }
 
-    else if (strncasecmp(inquiry, "heal", 4) == 0) {
-        *reply = strdup(p->health);
-        *askq = (p->questionTrigger == QTRIGGER_HEALTH);
-        return 0;
-    }
+        else if (strncasecmp(inquiry, "job", 4) == 0) {
+            *reply = strdup(cnv->talker->job);
+            if (cnv->talker->questionTrigger == QTRIGGER_JOB)
+                cnv->state = CONV_ASK;
+        }
 
-    else if (strncasecmp(inquiry, p->keyword1, 4) == 0) {
-        *reply = strdup(p->response1);
-        *askq = (p->questionTrigger == QTRIGGER_KEYWORD1);
-        return 0;
-    }
+        else if (strncasecmp(inquiry, "heal", 4) == 0) {
+            *reply = strdup(cnv->talker->health);
+            if (cnv->talker->questionTrigger == QTRIGGER_HEALTH)
+                cnv->state = CONV_ASK;
+        }
 
-    else if (strncasecmp(inquiry, p->keyword2, 4) == 0) {
-        *reply = strdup(p->response1);
-        *askq = (p->questionTrigger == QTRIGGER_KEYWORD2);
-        return 0;
-    }
+        else if (strncasecmp(inquiry, cnv->talker->keyword1, 4) == 0) {
+            *reply = strdup(cnv->talker->response1);
+            if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD1)
+                cnv->state = CONV_ASK;
+        }
 
-    else {
-        *reply = strdup("That I cannot\nhelp thee with.");
-        *askq = 0;
-        return 0;
+        else if (strncasecmp(inquiry, cnv->talker->keyword2, 4) == 0) {
+            *reply = strdup(cnv->talker->response1);
+            if (cnv->talker->questionTrigger == QTRIGGER_KEYWORD2)
+                cnv->state = CONV_ASK;
+        }
+
+        else
+            *reply = strdup("That I cannot\nhelp thee with.");
+        break;
+
+    default:
+        assert(0);
     }
 }
 
-int personGetQuestion(const Person *p, char **question) {
+void personGetQuestion(const Person *p, char **question) {
     const char *prompt = "\n\nYou say: ";
 
     *question = malloc(strlen(p->question) + strlen(prompt) + 1);
 
     strcpy(*question, p->question);
     strcat(*question, prompt);
-
-    return 0;
 }
 
-int personGetQuestionResponse(const Person *p, const char *response, char **reply, int *askq) {
+void personGetQuestionResponse(Conversation *cnv, const char *response, char **reply) {
+    cnv->state = CONV_TALK;
 
-    if (response[0] == 'y' || response[0] == 'Y') {
-        *reply = strdup(p->yesresp);
-        *askq = 0;
-        return 0;
-    }
+    if (response[0] == 'y' || response[0] == 'Y')
+        *reply = strdup(cnv->talker->yesresp);
 
-    else if (response[0] == 'n' || response[0] == 'N') {
-        *reply = strdup(p->noresp);
-        *askq = 0;
-        return 0;
-    }
+    else if (response[0] == 'n' || response[0] == 'N')
+        *reply = strdup(cnv->talker->noresp);
 
-    else {
+    else
         *reply = strdup("That I cannot\nhelp thee with.");
-        *askq = 0;
-        return 0;
-    }
-
 }
 
-/**
- * Determine if the given person is Lord British.  This allows LB to
- * be special cased.
- */
-int personIsLordBritish(const Person *p) {
-    return (p->tile0 == 94 && p->startx == 19 && p->starty == 7);
-}
-
-/**
- * Determine if the given person is Hawkwind.  This allows Hawkwind to
- * be special cased.
- */
-int personIsHawkwind(const Person *p) {
-    return (p->name == NULL && p->tile0 == 82 && p->startx == 9 && p->starty == 27);
-}
-
-int personGetLBIntroduction(const Person *p, char **intro) {
-    const char *fmt = "Lord British\nsays:  Welcome\n%s and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n";
-
-    *intro = malloc(strlen(fmt) - 2 + strlen(c->saveGame->players[0].name) + 1);
-    sprintf(*intro, fmt, c->saveGame->players[0].name);
-
-    return 0;
-}
-
-int personGetHWIntroduction(const Person *p, char **intro) {
-    const char *fmt = "%s%s%s%s";
-
-    *intro = malloc(strlen(fmt) - 8 + strlen(hawkwindText[HW_WELCOME]) + strlen(c->saveGame->players[0].name) + 
-                                             strlen(hawkwindText[HW_GREETING1]) + strlen(hawkwindText[HW_GREETING2]) + 1);
-    sprintf(*intro, fmt, hawkwindText[HW_WELCOME], c->saveGame->players[0].name, hawkwindText[HW_GREETING1], hawkwindText[HW_GREETING2]);
-
-    return 0;
-}
-
-int personGetLBResponse(const Person *p, const char *inquiry, char **reply, int *askq) {
+void personGetLBResponse(const Person *p, const char *inquiry, char **reply, int *state) {
     int i;
 
     if (inquiry[0] == '\0' ||
         strcasecmp(inquiry, "bye") == 0) {
         *reply = strdup("Lord British\nsays: Fare thee\nwell my friends!");
-        *askq = 0;
-        return 1;
+        *state = CONV_DONE;
     }
 
     else if (strncasecmp(inquiry, "heal", 4) == 0) {
         /* FIXME: should ask/heal party */
         *reply = strdup("He says: I am\nwell, thank ye.");
-        *askq = 1;
-        return 0;
+        *state = CONV_ASK;
     }
 
     else {
         for (i = 0; i < 24; i++) {
             if (strncasecmp(inquiry, lbKeywords[i], 4) == 0) {
                 *reply = strdup(lbText[i]);
-                *askq = 0;
-                return 0;
+                return;
             }
         }
         *reply = strdup("He says: I\ncannot help thee\nwith that.");
-        *askq = 0;
-        return 0;
     }
 }
 
-int personGetHWResponse(const Person *p, const char *inquiry, char **reply, int *askq) {
+void personGetHWResponse(const Person *p, const char *inquiry, char **reply, int *state) {
     int v;
     int virtue = -1, virtueLevel = -1;
 
     if (inquiry[0] == '\0' ||
         strcasecmp(inquiry, "bye") == 0) {
         *reply = strdup(hawkwindText[HW_BYE]);
-        *askq = 0;
-        return 1;
+        *state = CONV_DONE;
+        return;
     }
         
     /* check if asking about a virtue */
-    for (v = VIRT_HONESTY; v <= VIRT_HUMILITY; v++) {
+    for (v = 0; v < VIRT_MAX; v++) {
         if (strncasecmp(inquiry, getVirtueName(v), 4) == 0) {
             virtue = v;
             virtueLevel = c->saveGame->karma[v];
@@ -310,13 +369,28 @@ int personGetHWResponse(const Person *p, const char *inquiry, char **reply, int 
             strcpy(*reply, hawkwindText[4 * 8 + virtue]);
             strcat(*reply, hawkwindText[HW_GOTOSHRINE]);
         }
-        *askq = 0;
-        return 0;
+        return;
     }
 
     *reply = strdup(hawkwindText[HW_DEFAULT]);
-    *askq = 0;
-    return 0;
+}
 
-    return 0;
+int weaponVendorInfoRead(WeaponVendorInfo *info, FILE *f) {
+    int i, j;
+    char c;
+
+    for (i = 0; i < N_WEAPON_VENDORS; i++) {
+        for (j = 0; j < WEAPON_VENDOR_INVENTORY_SIZE; j++) {
+            if (!readChar(&c, f))
+                return 0;
+            info->vendorInventory[i][j] = c;
+        }
+    }
+
+    for (i = 0; i < WEAP_MAX; i++) {
+        if (!readShort(&(info->prices[i]), f))
+            return 0;
+    }
+    
+    return 1;
 }
