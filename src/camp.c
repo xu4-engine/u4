@@ -30,11 +30,11 @@ extern Map camp_map;
 
 void campTimer(void *data);
 void campEnd(void);
-int campHeal();
+int campHeal(void);
 void innTimer(void *data);
 void innEnd(void);
 
-void campBegin() {
+void campBegin(void) {
     /* setup camp (possible, but not for-sure combat situation */
     combatBegin(CORPSE_TILE, AVATAR_TILE, NULL);
     
@@ -113,7 +113,7 @@ void campTimer(void *data) {
     else campEnd();    
 }
 
-void campEnd() {
+void campEnd(void) {
     int i, healed = 0;
     musicFadeIn(0); /* Return volume to normal */
     
@@ -135,7 +135,7 @@ void campEnd() {
     (*c->location->finishTurn)();
 }
 
-int campHeal() {
+int campHeal(void) {
     int i, healed;
 
     healed = 0;
@@ -152,7 +152,7 @@ int campHeal() {
     return healed;
 }
 
-void innBegin() {
+void innBegin(void) {
     int i;
 
     /* first, show the avatar before sleeping */
@@ -179,7 +179,7 @@ void innTimer(void *data) {
     innEnd();
 }
 
-void innEnd() {
+void innEnd(void) {
     campHeal();
     
     /* restore avatar to normal */

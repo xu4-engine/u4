@@ -934,14 +934,11 @@ int movePartyMember(Direction dir, int member) {
     movementMask = mapGetValidMoves(c->location->map, party[member]->x, party[member]->y, c->location->z, party[member]->tile);
     if (!DIR_IN_MASK(dir, movementMask)) {
         screenMessage("Blocked!\n");
-        result = 0;
-        goto done;
+        return (result = 0);        
     }
 
     party[member]->x = newx;
-    party[member]->y = newy;
-
- done:
+    party[member]->y = newy; 
 
     return result;
 }
@@ -954,7 +951,7 @@ int movePartyMember(Direction dir, int member) {
 void attackFlash(int x, int y, int tile, int timeFactor) {
     int attackdelay = MAX_BATTLE_SPEED - settings->battleSpeed;
     int divisor = 8 * timeFactor;
-    int mult = 10 * timeFactor;    
+    int mult = 12 * timeFactor;    
 
     annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, tile), (attackdelay + divisor)/divisor));
     gameUpdateScreen();
