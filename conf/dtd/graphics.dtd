@@ -4,7 +4,8 @@
 <!ENTITY % filetype '( raw | rle | lzw )'>
 <!ENTITY % fixup '( none | intro | introExtended | abyss | abacus )'>
 <!ENTITY % layouttype '( standard | gem )'>
-<!ENTITY % transformtype '( invert | pixel )'>
+<!ENTITY % transformtype '( invert | pixel | scroll | frame | pixel_color )'>
+<!ENTITY % context '( frame )'>
 
 <!ELEMENT graphics ( imageset | layout | tileanimset )+ >
 
@@ -51,11 +52,18 @@
 <!ATTLIST tileanimset name        NMTOKEN  #REQUIRED>
 
 <!ELEMENT tileanim ( transform+ ) >
-<!ATTLIST tileanim name           NMTOKEN  #REQUIRED>
+<!ATTLIST tileanim name           NMTOKEN  #REQUIRED
+                   controlling    NMTOKEN  #IMPLIED
+                   random         NMTOKEN  #IMPLIED>                   
+
+<!ELEMENT context ( transform+ ) >
+<!ATTLIST context type            %context; #REQUIRED
+                  frame           NMTOKEN   #REQUIRED>
 
 <!ELEMENT transform ( color* ) >
 <!ATTLIST transform type          %transformtype; #REQUIRED
                     x             NMTOKEN  #IMPLIED
                     y             NMTOKEN  #IMPLIED
                     width         NMTOKEN  #IMPLIED
-                    height        NMTOKEN  #IMPLIED>
+                    height        NMTOKEN  #IMPLIED
+                    random        NMTOKEN  #IMPLIED>
