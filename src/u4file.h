@@ -5,9 +5,11 @@
 #ifndef U4FILE_H
 #define U4FILE_H
 
-#include <stdio.h>
+#include <string>
+#include <cstdio>
 #include "unzip.h"
-#include "types.h"
+
+using std::string;
 
 #ifdef __cplusplus
 extern "C" {

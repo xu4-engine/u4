@@ -12,7 +12,7 @@
 #include "xml.h"
 
 class Image;
-class RGBA;
+struct RGBA;
 
 /**
  * The interface for tile animation transformations.

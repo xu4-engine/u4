@@ -6,7 +6,7 @@
 #define TILE_H
 
 #include "direction.h"
-#include "map.h"
+#include "types.h"
 
 #ifdef __cplusplus
 extern "C" {

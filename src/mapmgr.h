@@ -5,6 +5,8 @@
 #ifndef MAPMGR_H
 #define MAPMGR_H
 
+#include <map>
+
 #include "map.h"
 
 /*
@@ -12,7 +14,7 @@
  * various maps.
  */
 
-typedef xu4_map<int, Map*, std::less<int> > MapList; // Contains a list of maps searchable by map id
+typedef std::map<int, Map*, std::less<int> > MapList; // Contains a list of maps searchable by map id
 
 #define MAP_NONE 255
 #define MAP_WORLD 0

@@ -1,6 +1,8 @@
 /*
  * $Id$
  */
+
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
  
 #include "annotation.h"
 
@@ -33,7 +35,7 @@ void Annotation::debug_output() const {
     printf("y: %d\n", coords.y);
     printf("z: %d\n", coords.z);
     printf("tile: %d\n", tile);
-    printf("visual: %s\n", YesNo(visual));        
+    printf("visual: %s\n", visual ? "Yes" : "No");
 }
 
 const Coords& Annotation::getCoords() const         { return coords;      }

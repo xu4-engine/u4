@@ -5,12 +5,14 @@
 #ifndef PERSON_H
 #define PERSON_H
 
+#include <list>
+
 #include "monster.h"
 #include "types.h"
 
 struct _Conversation;
 
-typedef xu4_list<const char *> Reply;
+typedef std::list<const char *> Reply;
 
 typedef enum {
     QTRIGGER_NONE = 0,

@@ -5,7 +5,10 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#include <string>
 #include "types.h"
+
+using std::string;
 
 #ifdef __cplusplus
 extern "C" {

@@ -5,10 +5,11 @@
 #ifndef WEAPON_H
 #define WEAPON_H
 
+#include <string>
 #include "savegame.h"
 #include "types.h"
 
-using namespace xu4;
+using std::string;
 
 #ifdef __cplusplus
 extern "C" {

@@ -5,8 +5,12 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include <list>
+#include "coords.h"
 #include "tile.h"
 #include "types.h"
+
+typedef std::list<class Object *> ObjectList;
 
 typedef enum {
     MOVEMENT_FIXED,

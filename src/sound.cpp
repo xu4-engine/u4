@@ -2,8 +2,8 @@
  * $Id$
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <libxml/xmlmemory.h>

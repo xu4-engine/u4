@@ -5,6 +5,8 @@
 #ifndef COMBAT_H
 #define COMBAT_H
 
+#include <map>
+
 #include "direction.h"
 #include "map.h"
 #include "movement.h"
@@ -18,7 +20,7 @@
 class Object;
 class Monster;
 
-typedef xu4_map<int, class Monster *, std::less<int> > CombatObjectMap;
+typedef std::map<int, class Monster *, std::less<int> > CombatObjectMap;
 
 typedef enum {
     CA_ATTACK,

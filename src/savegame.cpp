@@ -2,17 +2,13 @@
  * $Id$
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include "savegame.h"
 
 #include "io.h"
 #include "object.h"
 #include "types.h"
-
-using std::list;
 
 #define MONSTERTABLE_SIZE           32
 #define MONSTERTABLE_MONSTERS_SIZE  8
@@ -402,13 +398,13 @@ void saveGamePlayerRecordInit(SaveGamePlayerRecord *record) {
     record->status = STAT_GOOD;
 }
 
-int saveGameMonstersWrite(list<Object *> &objs, FILE *f) {
-    list<Object *>::iterator current;
+int saveGameMonstersWrite(std::list<Object *> &objs, FILE *f) {
+    std::list<Object *>::iterator current;
     const Object *obj;
     const Object *monsterTable[MONSTERTABLE_SIZE];
-    list<const Object*> whirlpools_storms;
-    list<const Object*> other_monsters;
-    list<const Object*> inanimate_objects;    
+    std::list<const Object*> whirlpools_storms;
+    std::list<const Object*> other_monsters;
+    std::list<const Object*> inanimate_objects;    
     
     int nMonsters = 0;
     int nObjects = 0;    
@@ -523,7 +519,7 @@ int saveGameMonstersWrite(list<Object *> &objs, FILE *f) {
     return 1;
 }
 
-int saveGameMonstersRead(list<Object *> *objs, FILE *f) {    
+int saveGameMonstersRead(std::list<Object *> *objs, FILE *f) {    
     Object *obj;
     Object monsterTable[MONSTERTABLE_SIZE];
     int i;

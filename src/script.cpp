@@ -1,3 +1,11 @@
+/**
+ * $Id$
+ */
+
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
+#include <map>
+#include <string>
 #include "script.h"
 
 #include "armor.h"
@@ -18,6 +26,8 @@
 #include "utils.h"
 #include "weapon.h"
 #include "xml.h"
+
+using std::string;
 
 /**
  * Constructor
@@ -156,7 +166,7 @@ ScriptReturnCode Script::execute(xmlNodePtr script, xmlNodePtr currentItem, stri
      *
      * FIXME: this should probably be initialized in the constructor of its own class
      */ 
-    typedef xu4_map<string, ScriptAction, std::less<string> > ScriptActionMap;
+    typedef std::map<string, ScriptAction, std::less<string> > ScriptActionMap;
     static ScriptActionMap action_map;
 
     if (action_map.size() == 0) {        
@@ -1264,7 +1274,7 @@ ScriptReturnCode Script::karma(xmlNodePtr script, xmlNodePtr current) {
     if (debug)
         fprintf(debug, "\nKarma: adjusting - '%s'", action.c_str());            
 
-    typedef xu4_map<string, KarmaAction, std::less<string> > KarmaActionMap;
+    typedef std::map<string, KarmaAction, std::less<string> > KarmaActionMap;
     static KarmaActionMap action_map;
 
     if (action_map.size() == 0) {
@@ -1387,7 +1397,7 @@ ScriptReturnCode Script::setPlayer(xmlNodePtr script, xmlNodePtr current) {
  * Display a different ztats screen
  */ 
 ScriptReturnCode Script::ztats(xmlNodePtr script, xmlNodePtr current) {
-    typedef xu4_map<string, StatsView, std::less<string> > StatsViewMap;
+    typedef std::map<string, StatsView, std::less<string> > StatsViewMap;
     static StatsViewMap view_map;
 
     if (view_map.size() == 0) {        

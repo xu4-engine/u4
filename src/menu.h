@@ -5,7 +5,11 @@
 #ifndef MENU_H
 #define MENU_H
 
+#include <list>
+#include <string>
 #include "types.h"
+
+using std::string;
 
 typedef enum {
     ACTIVATE_NORMAL     = 0x1,
@@ -36,7 +40,7 @@ typedef struct _MenuItem {
  */
 class Menu {
 public:
-    typedef xu4_list<MenuItem> MenuItemList;
+    typedef std::list<MenuItem> MenuItemList;
 
 public:
     Menu() {}

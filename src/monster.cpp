@@ -2,10 +2,8 @@
  * $Id$
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
 #include <libxml/xmlmemory.h>
 
 #include "monster.h"
@@ -604,7 +602,7 @@ const Monster *MonsterMgr::randomForTile(MapTile tile) const {
  */ 
 const Monster *MonsterMgr::randomForDungeon(int dngLevel) const {
     int era;
-    static xu4_vector<MonsterId> id_list;
+    static std::vector<MonsterId> id_list;
     if (id_list.size() == 0) {
         id_list.push_back(RAT_ID);
         id_list.push_back(BAT_ID);

@@ -5,8 +5,10 @@
 #ifndef ARMOR_H
 #define ARMOR_H
 
+#include <string>
 #include "savegame.h"
-#include "types.h"
+
+using std::string;
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,7 +17,7 @@ extern "C" {
 #define MAX_ARMORS     128
 
 typedef struct _Armor {
-    string name;    
+    string name;
     unsigned char canuse;
     int defense;
     unsigned short mask;

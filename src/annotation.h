@@ -5,13 +5,13 @@
 #ifndef ANNOTATION_H
 #define ANNOTATION_H
 
+#include <list>
 #include "coords.h"
-#include "types.h"
-
+#include "map.h"
 
 class Annotation;
 
-typedef xu4_list<Annotation> AnnotationList;
+typedef std::list<Annotation> AnnotationList;
 
 /**
  * Annotation class

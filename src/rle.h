@@ -5,8 +5,6 @@
 #ifndef RLE_H
 #define RLE_H
 
-#include <stdio.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif

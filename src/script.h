@@ -1,8 +1,15 @@
+/**
+ * $Id$
+ */
+
 #ifndef SCRIPT_H
 #define SCRIPT_H
 
+#include <string>
 #include "types.h"
 #include "xml.h"
+
+using std::string;
 
 typedef enum {
     SCRIPT_RET_OK,

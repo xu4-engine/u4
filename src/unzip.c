@@ -4,16 +4,17 @@
    Read unzip.h for more info
 */
 
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "zlib.h"
 #include "unzip.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #ifdef STDC
 #  include <stddef.h>

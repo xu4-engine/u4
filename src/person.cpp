@@ -2,9 +2,8 @@
  * $Id$
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
 #include "u4.h"
 
 #include "person.h"

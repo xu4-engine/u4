@@ -2,8 +2,7 @@
  * $Id$
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include "image.h"
 #include "screen.h"
@@ -12,8 +11,7 @@
 #include "u4.h"
 #include "utils.h"
 
-using std::map;
-using std::vector;
+using std::string;
 
 TileAnimSet *tileAnimSetLoadFromXml(xmlNodePtr node) {
     TileAnimSet *set;
@@ -125,8 +123,8 @@ void TileAnimPixelTransform::draw(Image *tiles, int tile, int scale, int x, int 
     screenFillRect(this->x + x, this->y + y, 1, 1, color->r, color->g, color->b);
 }
 
-TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const std::string &name) {
-    map<std::string, TileAnim *>::iterator i = set->tileanims.find(name);
+TileAnim *tileAnimSetGetAnimByName(TileAnimSet *set, const string &name) {
+    std::map<string, TileAnim *>::iterator i = set->tileanims.find(name);
     if (i == set->tileanims.end())
         return NULL;
     return i->second;
@@ -136,7 +134,7 @@ void TileAnim::draw(Image *tiles, int tile, int scale, int x, int y) {
     if (xu4_random(2) == 0)
         return;
 
-    for (vector<TileAnimTransform *>::const_iterator i = transforms.begin(); i != transforms.end(); i++) {
+    for (std::vector<TileAnimTransform *>::const_iterator i = transforms.begin(); i != transforms.end(); i++) {
         TileAnimTransform *transform = *i;
         
         transform->draw(tiles, tile, scale, x, y);

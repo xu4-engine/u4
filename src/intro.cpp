@@ -2,10 +2,10 @@
  * $Id$
  */
 
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
+#include <algorithm>
 #include <vector>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
 #include "u4.h"
 
 #include "intro.h"
@@ -23,8 +23,6 @@
 #include "tileset.h"
 #include "u4file.h"
 #include "utils.h"
-
-using std::vector;
 
 extern bool quit;
 
@@ -1359,8 +1357,8 @@ void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 
     case 4:
         {   
-            const vector<string> &imageSetNames = screenGetImageSetNames();
-            vector<string>::const_iterator set = find(imageSetNames.begin(), imageSetNames.end(), settingsChanged.videoType);
+            const std::vector<string> &imageSetNames = screenGetImageSetNames();
+            std::vector<string>::const_iterator set = std::find(imageSetNames.begin(), imageSetNames.end(), settingsChanged.videoType);
             if (set == imageSetNames.end())
                 errorFatal("Error: image set '%s' not found", settingsChanged.videoType.c_str());
             
@@ -1383,8 +1381,8 @@ void introVideoOptionsMenuItemActivate(MenuItem *menuItem, ActivateAction action
 
     case 5:
         {
-            const vector<string> &layoutNames = screenGetGemLayoutNames();
-            vector<string>::const_iterator layout = find(layoutNames.begin(), layoutNames.end(), settingsChanged.gemLayout);
+            const std::vector<string> &layoutNames = screenGetGemLayoutNames();
+            std::vector<string>::const_iterator layout = std::find(layoutNames.begin(), layoutNames.end(), settingsChanged.gemLayout);
             if (layout == layoutNames.end())
                 errorFatal("Error: gem layout '%s' not found", settingsChanged.gemLayout.c_str());
        

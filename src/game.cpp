@@ -2,11 +2,11 @@
  * $Id$
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
+#include <map>
+
+#include <ctime>
 #include "u4.h"
 
 #include "game.h"
@@ -366,7 +366,7 @@ int gameSave() {
     if (c->location->context & CTX_DUNGEON) {
         unsigned int x, y, z;
 
-        typedef xu4_map<const Monster*, int, std::less<const Monster*> > DngMonsterIdMap;
+        typedef std::map<const Monster*, int, std::less<const Monster*> > DngMonsterIdMap;
         static DngMonsterIdMap id_map;        
 
         /**

@@ -5,11 +5,19 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include <list>
+#include <string>
+#include <vector>
+
 #include "coords.h"
-#include "u4file.h"
-#include "music.h"
 #include "direction.h"
+#include "map.h"
+#include "music.h"
+#include "object.h"
 #include "types.h"
+#include "u4file.h"
+
+using std::string;
 
 #define MAP_IS_OOB(mapptr, c) (((c).x) < 0 || ((c).x) >= ((int)(mapptr)->width) || ((c).y) < 0 || ((c).y) >= ((int)(mapptr)->height) || ((c).z) < 0 || ((c).z) >= ((int)(mapptr)->levels))
 
@@ -21,10 +29,9 @@ class Monster;
 struct _Portal;
 struct _Dungeon;
 
-typedef unsigned char MapId;
-typedef xu4_vector<struct _Portal*> PortalList;
-typedef xu4_list<int> CompressedChunkList;
-typedef xu4_vector<MapTile> MapData;
+typedef std::vector<struct _Portal*> PortalList;
+typedef std::list<int> CompressedChunkList;
+typedef std::vector<MapTile> MapData;
 
 typedef enum {
     MAPTYPE_WORLD,

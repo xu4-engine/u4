@@ -2,10 +2,9 @@
  * $Id$
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
+#include <list>
 
 #include "event.h"
 
@@ -34,9 +33,9 @@ bool timerCallbackListLocked = false;
 extern bool quit;
 bool eventExitFlag = false;
 
-xu4_list<KeyHandler>    keyHandlers;    /* key handler <stack> */
-xu4_list<void *>        keyHandlerData; /* key handler data <queue> */
-xu4_list<MouseArea*>    mouseAreaSets;  /* mouse areas <stack> */
+std::list<KeyHandler>    keyHandlers;    /* key handler <stack> */
+std::list<void *>        keyHandlerData; /* key handler data <queue> */
+std::list<MouseArea*>    mouseAreaSets;  /* mouse areas <stack> */
 
 /**
  * Set flag to end eventHandlerMain loop.

@@ -5,13 +5,15 @@
 #ifndef LOCATION_H
 #define LOCATION_H
 
+#include <list>
+
 #include "map.h"
 #include "movement.h"
 #include "types.h"
 
 struct _Tileset;
 
-typedef xu4_list<MapTile>* MapTileList;
+typedef std::list<MapTile>* MapTileList;
 
 typedef enum {
     CTX_WORLDMAP    = 0x0001,

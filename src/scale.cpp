@@ -2,7 +2,7 @@
  * $Id$
  */
 
-#include <stdlib.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include "debug.h"
 #include "image.h"

@@ -2,15 +2,16 @@
  * $Id$
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
+#include <map>
 
 #include "error.h"
 #include "map.h"
 #include "moongate.h"
 #include "types.h"
 
-typedef xu4_map<int, MapCoords, std::less<int> > MoongateList; /* map moon phase to map coordinates */
+typedef std::map<int, MapCoords, std::less<int> > MoongateList; /* map moon phase to map coordinates */
 
 MoongateList gates; 
 

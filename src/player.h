@@ -5,9 +5,12 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <string>
 #include "savegame.h"
 #include "tile.h"
 #include "types.h"
+
+using std::string;
 
 #ifdef __cplusplus
 extern "C" {

@@ -2,12 +2,11 @@
  * $Id$
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
 #include <SDL.h>
 
+#include <memory>
 #include "debug.h"
 #include "image.h"
 

@@ -5,6 +5,7 @@
 #ifndef TILESET_H
 #define TILESET_H
 
+#include <map>
 #include "u4file.h"
 #include "tile.h"
 
@@ -38,7 +39,7 @@ typedef struct _Tileset {
     string imageName;
 } Tileset;
 
-typedef xu4_map<TilesetType, Tileset*, std::less<TilesetType> > TilesetList;
+typedef std::map<TilesetType, Tileset*, std::less<TilesetType> > TilesetList;
 
 void tilesetLoadAllTilesetsFromXml(const char *tilesetFilename);
 void tilesetDeleteAllTilesets();

@@ -1,0 +1,10 @@
+#ifndef __VC6_H
+#define __VC6_H
+
+// VC6 Compiler issues
+#if defined(_MSC_VER)
+#   pragma warning(disable:4786) // Disable "symbol truncated to 255 characters" compiler warning
+#   pragma warning(disable:4800) // Disable "conversion from int to bool" compiler performance warning
+#endif
+
+#endif

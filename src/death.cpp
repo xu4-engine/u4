@@ -2,7 +2,9 @@
  * $Id$
  */
 
-#include <time.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
+#include <ctime>
 #include "u4.h"
 
 #include "death.h"

@@ -2,11 +2,10 @@
  * $Id$
  */
 
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
 /* FIXME: should this file have all SDL-related stuff extracted and put in music_sdl.c? */
 
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <libxml/xmlmemory.h>

@@ -2,6 +2,9 @@
  * $Id$
  */
 
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
+#include <string>
 #include <typeinfo>
 #include "city.h"
 
@@ -9,7 +12,8 @@
 #include "object.h"
 #include "person.h"
 #include "player.h"
-#include "types.h"
+
+using std::string;
 
 /**
  * Returns the name of the city

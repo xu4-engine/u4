@@ -5,7 +5,11 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <map>
+#include <string>
 #include "types.h"
+
+using std::string;
 
 #define MIN_SHAKE_INTERVAL              50
 
@@ -81,8 +85,8 @@ typedef struct _MouseOptions {
  * a string value and a type.
  */ 
 class Translator {
-    typedef xu4_map<string, int, std::less<string> >    T_s;    
-    typedef xu4_map<int, string, std::less<int> >     T_t;
+    typedef std::map<string, int, std::less<string> >    T_s;    
+    typedef std::map<int, string, std::less<int> >		 T_t;
 public:
     Translator() {}
     Translator(const string values[]) {
@@ -120,7 +124,7 @@ private:
 class Settings {
     typedef Translator FilterTranslator;
     typedef Translator BattleDiffTranslator;
-    typedef xu4_map<string, int, std::less<string> > SettingsMap;
+    typedef std::map<string, int, std::less<string> > SettingsMap;
 
 public:
     Settings();

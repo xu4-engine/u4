@@ -2,12 +2,12 @@
  * $Id$
  */
 
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
 #include <algorithm>
 #include <functional>
 #include <vector>
 #include <map>
-#include <cstdlib>
-#include <cctype>
 #include <SDL.h>
 
 #include "cursors.h"
@@ -202,7 +202,7 @@ ImageInfo *charsetInfo = NULL;
 ImageInfo *tilesInfo = NULL;
 ImageInfo *gemTilesInfo = NULL;
 
-extern int verbose;
+extern bool verbose;
 
 void screenInit() {
     charsetInfo = NULL;
@@ -265,7 +265,7 @@ void screenInit() {
 
     /* find the tile animations for our tileset */
     tileanims = NULL;
-    for (vector<TileAnimSet *>::const_iterator i = tileanimSets.begin(); i != tileanimSets.end(); i++) {
+    for (std::vector<TileAnimSet *>::const_iterator i = tileanimSets.begin(); i != tileanimSets.end(); i++) {
         TileAnimSet *set = *i;
         if (set->name == settings.videoType)
             tileanims = set;
@@ -327,11 +327,12 @@ void screenLoadGraphicsFromXml() {
     }
 
     imageSetNames.clear();
-    for (map<string, ImageSet *>::const_iterator i = imageSets.begin(); i != imageSets.end(); i++)
-        imageSetNames.push_back(i->first);
+    for (std::map<string, ImageSet *>::const_iterator set = imageSets.begin(); set != imageSets.end(); set++)
+        imageSetNames.push_back(set->first);
 
     gemLayoutNames.clear();
-    for (vector<Layout *>::const_iterator i = layouts.begin(); i != layouts.end(); i++) {
+	std::vector<Layout *>::const_iterator i;
+    for (i = layouts.begin(); i != layouts.end(); i++) {
         Layout *layout = *i;
         if (layout->type == LAYOUT_GEM) {
             gemLayoutNames.push_back(layout->name);
@@ -341,7 +342,7 @@ void screenLoadGraphicsFromXml() {
     /*
      * Find gem layout to use.
      */
-    for (vector<Layout *>::const_iterator i = layouts.begin(); i != layouts.end(); i++) {
+    for (i = layouts.begin(); i != layouts.end(); i++) {
         Layout *layout = *i;
 
         if (layout->type == LAYOUT_GEM && layout->name == settings.gemLayout) {
@@ -568,7 +569,7 @@ void fixupAbacus(Image *im, int prescale) {
  * Returns information for the given image set.
  */
 ImageSet *screenGetImageSet(const string &setname) {
-    map<string, ImageSet *>::iterator i = imageSets.find(setname);
+	std::map<string, ImageSet *>::iterator i = imageSets.find(setname);
     if (i != imageSets.end())
         return i->second;
     else
@@ -587,7 +588,7 @@ ImageInfo *screenGetImageInfoFromSet(const string &name, const string &setname) 
 
     /* if the image set contains the image we want, we are done */
     
-    map<string, ImageInfo *>::iterator i = set->info.find(name);
+    std::map<string, ImageInfo *>::iterator i = set->info.find(name);
     if (i != set->info.end())
         return i->second;
 
@@ -627,9 +628,9 @@ SubImage *screenGetSubImage(const string &name) {
     set = screenGetImageSet(setname);
 
     while (set != NULL) {
-        for (map<string, ImageInfo *>::iterator i = set->info.begin(); i != set->info.end(); i++) {
+        for (std::map<string, ImageInfo *>::iterator i = set->info.begin(); i != set->info.end(); i++) {
             ImageInfo *info = (ImageInfo *) i->second;
-            map<string, SubImage *>::iterator j = info->subImages.find(name);
+            std::map<string, SubImage *>::iterator j = info->subImages.find(name);
             if (j != info->subImages.end())
                 return j->second;
         }
@@ -745,9 +746,9 @@ ImageInfo *screenLoadImage(const string &name) {
  * Free up all images
  */
 void screenFreeImages() {
-    for (map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++) {
+    for (std::map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++) {
         ImageSet *set = i->second;
-        for (map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
+        for (std::map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
             ImageInfo *info = j->second;
             if (info->image != NULL) {
                 delete info->image;
@@ -761,9 +762,9 @@ void screenFreeImages() {
  * Free up any background images used only in the animations.
  */
 void screenFreeIntroBackgrounds() {
-    for (map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++) {
+    for (std::map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++) {
         ImageSet *set = i->second;
-        for (map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
+        for (std::map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
             ImageInfo *info = j->second;
             if (info->image != NULL && info->introOnly) {
                 delete info->image;

@@ -5,6 +5,12 @@
 #ifndef CITY_H
 #define CITY_H
 
+#include <list>
+#include <string>
+#include <vector>
+
+using std::string;
+
 #include "map.h"
 
 typedef struct _PersonRole {
@@ -12,8 +18,8 @@ typedef struct _PersonRole {
     int id;
 } PersonRole;
 
-typedef xu4_vector<Person *> PersonList;
-typedef xu4_list<PersonRole*> PersonRoleList;
+typedef std::vector<Person *> PersonList;
+typedef std::list<PersonRole*> PersonRoleList;
 
 class City : public Map {
 public:

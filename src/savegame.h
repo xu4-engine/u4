@@ -6,7 +6,7 @@
 #define SAVEGAME_H
 
 #include <list>
-#include <stdio.h>
+#include <cstdio>
 
 #define PARTY_SAV_BASE_FILENAME         "party.sav"
 #define MONSTERS_SAV_BASE_FILENAME      "monsters.sav"

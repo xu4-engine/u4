@@ -2,7 +2,9 @@
  * $Id$
  */
 
-#include <stdlib.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
+#include <list>
 
 #include "location.h"
 
@@ -61,7 +63,7 @@ MapTile locationVisibleTileAt(Location *location, MapCoords coords, int *focus) 
  * Return the entire stack of objects at the given location.
  */
 MapTileList locationTilesAt(Location *location, MapCoords coords, int *focus) {    
-    MapTileList tiles = new xu4_list<MapTile>;
+    MapTileList tiles = new std::list<MapTile>;
     AnnotationList a = location->map->annotations->allAt(coords);    
     AnnotationList::iterator i;
     const Object *obj = location->map->objectAt(coords);

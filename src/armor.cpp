@@ -2,9 +2,8 @@
  * $Id$
  */
 
-#include <stddef.h>
-#include <string.h>
-#include <ctype.h>
+#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
+
 #include <libxml/xmlmemory.h>
 
 #include "armor.h"

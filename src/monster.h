@@ -5,6 +5,8 @@
 #ifndef MONSTER_H
 #define MONSTER_H
 
+#include <map>
+
 #include "object.h"
 #include "map.h"
 #include "movement.h"
@@ -12,7 +14,7 @@
 #include "types.h"
 
 typedef unsigned short MonsterId;
-typedef xu4_map<MonsterId, class Monster*, std::less<MonsterId> > MonsterMap;
+typedef std::map<MonsterId, class Monster*, std::less<MonsterId> > MonsterMap;
 
 #define MAX_MONSTERS 128
 

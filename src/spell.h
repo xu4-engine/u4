@@ -5,8 +5,6 @@
 #ifndef SPELL_H
 #define SPELL_H
 
-#include <stddef.h>
-
 #include "context.h"
 #include "location.h"
 #include "map.h"
