@@ -96,7 +96,7 @@ static const short _ttype_info[] = {
     MASK_OPAQUE,                                /* secret door */
     0,                                          /* altar */
     UNWALKABLE,                                 /* roast */
-    UNWALKABLE,                                 /* lava */
+    UNWALKABLE | MASK_ANIMATED,                 /* lava */
     0,                                          /* stone */
     0,                                          /* orb1 */
     0                                           /* orb2 */
@@ -237,4 +237,8 @@ int tileIsOpaque(unsigned char tile) {
     if (tile < (sizeof(_ttype_info) / sizeof(_ttype_info[0])))
 	return (_ttype_info[tile] & MASK_OPAQUE) != 0;
     return tile == 127;         /* brick wall */
+}
+
+unsigned char tileForClass(int klass) {
+    return (klass * 2) + 0x20;
 }

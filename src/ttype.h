@@ -65,5 +65,6 @@ TileEffect tileGetEffect(unsigned char tile);
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile);
 void tileAdvanceFrame(unsigned char *tile);
 int tileIsOpaque(unsigned char tile);
+unsigned char tileForClass(int klass);
 
 #endif
