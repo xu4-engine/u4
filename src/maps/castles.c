@@ -13,6 +13,7 @@ City empath_city;
 
 Map empath_map = {
     "empath.ult", /* fname */
+    MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 30, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -26,7 +27,6 @@ Map empath_map = {
 
 City empath_city  = {
     "Empath Abbey", /* name */
-    CITY_CASTLE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
@@ -38,6 +38,7 @@ City lycaeum_city;
 
 Map lycaeum_map = {
     "lycaeum.ult", /* fname */
+    MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 30, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -51,7 +52,6 @@ Map lycaeum_map = {
 
 City lycaeum_city  = {
     "Lycaeum", /* name */
-    CITY_CASTLE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
@@ -63,6 +63,7 @@ City serpent_city;
 
 Map serpent_map = {
     "serpent.ult", /* fname */
+    MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 30, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -76,7 +77,6 @@ Map serpent_map = {
 
 City serpent_city  = {
     "Serpents Hold", /* name */
-    CITY_CASTLE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
@@ -95,6 +95,7 @@ City lcb_1_city;
 
 Map lcb_1_map = {
     "lcb_1.ult", /* fname */
+    MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 30, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -108,7 +109,6 @@ Map lcb_1_map = {
 
 City lcb_1_city  = {
     "Britannia", /* name */
-    CITY_CASTLE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30 }, /* person_types */
@@ -125,6 +125,7 @@ City lcb_2_city;
 
 Map lcb_2_map = {
     "lcb_2.ult", /* fname */
+    MAP_CASTLE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     15, 30, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -138,7 +139,6 @@ Map lcb_2_map = {
 
 City lcb_2_city  = {
     "Britannia", /* name */
-    CITY_CASTLE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0 }, /* person_types */

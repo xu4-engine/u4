@@ -247,17 +247,17 @@ int gameBaseKeyHandler(int key, void *data) {
 
             if (c->map->city) {
                 const char *type = NULL;
-                switch (c->map->city->type) {
-                case CITY_TOWN:
+                switch (c->map->type) {
+                case MAP_TOWN:
                     type = "towne";
                     break;
-                case CITY_VILLAGE:
+                case MAP_VILLAGE:
                     type = "village";
                     break;
-                case CITY_CASTLE:
+                case MAP_CASTLE:
                     type = "castle";
                     break;
-                case CITY_RUIN:
+                case MAP_RUIN:
                     type = "ruin";
                     break;
                 }

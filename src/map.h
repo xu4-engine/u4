@@ -16,6 +16,16 @@ struct _Annotation;
 #include "music.h"
 
 typedef enum {
+    MAP_WORLD,
+    MAP_TOWN,
+    MAP_VILLAGE,
+    MAP_CASTLE,
+    MAP_RUIN,
+    MAP_SHRINE,
+    MAP_COMBAT
+} MapType;
+
+typedef enum {
     BORDER_WRAP,
     BORDER_EXIT2PARENT,
     BORDER_FIXED
@@ -26,6 +36,7 @@ typedef enum {
 
 typedef struct _Map {
     const char *fname;
+    MapType type;
     unsigned int width, height;
     unsigned int startx, starty;
     MapBorderBehavior border_behavior;
@@ -42,7 +53,7 @@ typedef struct _Map {
 #define MAP_IS_OOB(mapptr, x, y) ((x) < 0 || (x) >= ((int)(mapptr)->width) || (y) < 0 || (y) >= ((int)(mapptr)->height))
 
 int mapRead(struct _City *city, FILE *ult, FILE *tlk);
-int mapReadCon(Map *map, FILE *con, int header);
+int mapReadCon(Map *map, FILE *con);
 int mapReadWorld(Map *map, FILE *world);
 struct _Object *mapObjectAt(const Map *map, int x, int y, int ignoreAvatar);
 const struct _Person *mapPersonAt(const Map *map, int x, int y);

@@ -54,6 +54,7 @@ const Portal world_portals[] = {
 
 Map world_map = {
     NULL, /* fname */
+    MAP_WORLD, /* type */
     MAP_WIDTH, MAP_HEIGHT, /* width, height */
     86, 108, /* startx, starty */
     BORDER_WRAP, /* border_behavior */

@@ -147,7 +147,7 @@ int mapRead(City *city, FILE *ult, FILE *tlk) {
     return 1;
 }
 
-int mapReadCon(Map *map, FILE *con, int header) {
+int mapReadCon(Map *map, FILE *con) {
     int i;
 
     /* the map must be 11x11 to be read from an .CON file */
@@ -158,7 +158,7 @@ int mapReadCon(Map *map, FILE *con, int header) {
     if (!map->data)
         return 0;
 
-    if (header)
+    if (map->type != MAP_SHRINE)
         fseek(con, 64L, SEEK_SET);
 
     for (i = 0; i < (CON_HEIGHT * CON_WIDTH); i++) {

@@ -12,6 +12,7 @@ City britain_city;
 
 Map britain_map = {
     "britain.ult", /* fname */
+    MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -25,7 +26,6 @@ Map britain_map = {
 
 City britain_city  = {
     "Britain", /* name */
-    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 29, 28, 27, 26, 0, 31, 25, 0, 0, 0, 0 }, /* person_types */
@@ -37,6 +37,7 @@ City cove_city;
 
 Map cove_map = {
     "cove.ult", /* fname */
+    MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -50,7 +51,6 @@ Map cove_map = {
 
 City cove_city  = {
     "Cove", /* name */
-    CITY_VILLAGE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0, 0 }, /* person_types */
@@ -62,6 +62,7 @@ City den_city;
 
 Map den_map = {
     "den.ult", /* fname */
+    MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -75,7 +76,6 @@ Map den_map = {
 
 City den_city  = {
     "Buccaneers Den", /* name */
-    CITY_VILLAGE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 28, 27, 0, 25, 30, 0, 0, 29, 0, 0, 0 }, /* person_types */
@@ -87,6 +87,7 @@ City jhelom_city;
 
 Map jhelom_map = {
     "jhelom.ult", /* fname */
+    MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -100,7 +101,6 @@ Map jhelom_map = {
 
 City jhelom_city  = {
     "Jhelom", /* name */
-    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 29, 28, 0, 30, 0, 25, 31, 0, 0, 0, 0 }, /* person_types */
@@ -112,6 +112,7 @@ City magincia_city;
 
 Map magincia_map = {
     "magincia.ult", /* fname */
+    MAP_RUIN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -125,7 +126,6 @@ Map magincia_map = {
 
 City magincia_city  = {
     "Magincia", /* name */
-    CITY_RUIN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
@@ -137,6 +137,7 @@ City minoc_city;
 
 Map minoc_map = {
     "minoc.ult", /* fname */
+    MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -150,7 +151,6 @@ Map minoc_map = {
 
 City minoc_city  = {
     "Minoc", /* name */
-    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 30, 0, 0, 0, 0, 0, 31, 0, 0, 0, 0 }, /* person_types */
@@ -162,6 +162,7 @@ City moonglow_city;
 
 Map moonglow_map = {
     "moonglow.ult", /* fname */
+    MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -175,7 +176,6 @@ Map moonglow_map = {
 
 City moonglow_city  = {
     "Moonglow", /* name */
-    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 0, 0, 26, 24, 25, 30, 0, 0, 0, 0, 0 }, /* person_types */
@@ -187,6 +187,7 @@ City paws_city;
 
 Map paws_map = {
     "paws.ult", /* fname */
+    MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -200,7 +201,6 @@ Map paws_map = {
 
 City paws_city  = {
     "Paws", /* name */
-    CITY_VILLAGE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, /* person_types */
@@ -212,6 +212,7 @@ City skara_city;
 
 Map skara_map = {
     "skara.ult", /* fname */
+    MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -225,7 +226,6 @@ Map skara_map = {
 
 City skara_city  = {
     "Skara Brae", /* name */
-    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 0, 0, 28, 0, 30, 31, 29, 0, 0, 0, 0 }, /* person_types */
@@ -237,6 +237,7 @@ City trinsic_city;
 
 Map trinsic_map = {
     "trinsic.ult", /* fname */
+    MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -250,7 +251,6 @@ Map trinsic_map = {
 
 City trinsic_city  = {
     "Trinsic", /* name */
-    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 29, 28, 0, 31, 0, 0, 29, 0, 0, 0, 0 }, /* person_types */
@@ -262,6 +262,7 @@ City vesper_city;
 
 Map vesper_map = {
     "vesper.ult", /* fname */
+    MAP_VILLAGE, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -275,7 +276,6 @@ Map vesper_map = {
 
 City vesper_city  = {
     "Vesper", /* name */
-    CITY_VILLAGE, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 0, 25, 0, 0, 23, 0, 0, 26, 23, 0, 0, 0 }, /* person_types */
@@ -287,6 +287,7 @@ City yew_city;
 
 Map yew_map = {
     "yew.ult", /* fname */
+    MAP_TOWN, /* type */
     CITY_WIDTH, CITY_HEIGHT, /* width, height */
     1, 15, /* startx, starty */
     BORDER_EXIT2PARENT, /* border_behavior */
@@ -300,7 +301,6 @@ Map yew_map = {
 
 City yew_city  = {
     "Yew", /* name */
-    CITY_TOWN, /* type */
     0, /* n_persons */
     NULL, /* persons */
     { 32, 0, 0, 26, 0, 0, 26, 0, 0, 0, 0, 0 }, /* person_types */
