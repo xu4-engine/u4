@@ -5,6 +5,8 @@
 #ifndef TTYPE_H
 #define TTYPE_H
 
+#include "direction.h"
+
 #define SWAMP_TILE 0x3
 #define GRASS_TILE 0x4
 #define BRUSH_TILE 0x5
@@ -58,8 +60,8 @@ int tileIsShip(unsigned char tile);
 int tileIsHorse(unsigned char tile);
 int tileIsBalloon(unsigned char tile);
 int tileCanDispel(unsigned char tile);
-unsigned int tileGetDirection(unsigned char tile);
-void tileSetDirection(unsigned short *tile, unsigned int dir);
+Direction tileGetDirection(unsigned char tile);
+void tileSetDirection(unsigned short *tile, Direction dir);
 int tileCanTalkOver(unsigned char tile);
 TileEffect tileGetEffect(unsigned char tile);
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile);

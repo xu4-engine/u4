@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "ttype.h"
-#include "direction.h"
 
 #define MASK_WALKABLE  0x0003
 #define MASK_EFFECT    0x000C
@@ -164,16 +163,16 @@ int tileCanDispel(unsigned char tile) {
     return 0;
 }
 
-unsigned int tileGetDirection(unsigned char tile) {
+Direction tileGetDirection(unsigned char tile) {
     if (tileIsShip(tile))
-        return tile - 16 + DIR_WEST;
+        return (Direction) (tile - 16 + DIR_WEST);
     else if (tileIsHorse(tile))
         return tile == 20 ? DIR_WEST : DIR_EAST;
     else 
         return DIR_WEST;        /* some random default */
 }
 
-void tileSetDirection(unsigned short *tile, unsigned int dir) {
+void tileSetDirection(unsigned short *tile, Direction dir) {
     if (tileIsShip(*tile))
         *tile = 16 + dir;
     else if (tileIsHorse(*tile))
