@@ -148,6 +148,9 @@ void gameInit() {
     }
     gameFixupMonsters();
 
+    /* setup transport context */
+    gameSetTransport(c->saveGame->transport);
+
     playerSetLostEighthCallback(&gameLostEighth);
     playerSetAdvanceLevelCallback(&gameAdvanceLevel);
     playerSetItemStatsChangedCallback(&statsUpdate);
@@ -158,9 +161,7 @@ void gameInit() {
     musicPlay();
     screenDrawBackground(BKGD_BORDERS);
     statsUpdate();
-    screenPrompt();	
-
-    gameSetTransport(c->saveGame->transport); /* setup transport context */
+    screenPrompt();
 }
 
 /**
