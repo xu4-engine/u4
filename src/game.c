@@ -15,6 +15,7 @@
 #include "armor.h"
 #include "camp.h"
 #include "city.h"
+#include "dungeon.h"
 #include "combat.h"
 #include "context.h"
 #include "death.h"
@@ -643,8 +644,7 @@ int gameBaseKeyHandler(int key, void *data) {
                 screenMessage("Enter the Shrine of %s!\n\n", getVirtueName(portal->destination->shrine->virtue));
                 break;
             case MAP_DUNGEON:
-                /* FIXME: add dungeon names */
-                screenMessage("Enter dungeon!\n\n%s\n\n", portal->destination->fname);
+                screenMessage("Enter dungeon!\n\n%s\n\n", portal->destination->dungeon->name);
                 break;
             default:
                 break;
@@ -892,6 +892,10 @@ int gameBaseKeyHandler(int key, void *data) {
         readBufferInfo->screenY = TEXT_AREA_Y + c->line;
         itemNameBuffer[0] = '\0';
         eventHandlerPushKeyHandlerData(&keyHandlerReadBuffer, readBufferInfo);
+
+        /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
+        c->statsItem = STATS_ITEMS;
+        statsUpdate();
         break;
 
     case 'v':
