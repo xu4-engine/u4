@@ -17,21 +17,21 @@ class Dungeon;
  * The generic map loader interface.  Map loaders should override the
  * load method to load a map from the meta data already initialized in
  * the map object passed in. They must also register themselves with
- * registerLoader for one or more MapTypes.
+ * registerLoader for one or more Map::Types.
  */
 class MapLoader {
 public:
-    static MapLoader *getLoader(MapType type);
+    static MapLoader *getLoader(Map::Type type);
 
     virtual int load(Map *map) = 0;
 
 protected:
-    static MapLoader *registerLoader(MapLoader *loader, MapType type);
+    static MapLoader *registerLoader(MapLoader *loader, Map::Type type);
     static int loadData(Map *map, U4FILE *f);
     static int isChunkCompressed(Map *map, int chunk);
 
 private:
-    static std::map<MapType, MapLoader *> *loaderMap;
+    static std::map<Map::Type, MapLoader *> *loaderMap;
 };
 
 class CityMapLoader : public MapLoader {

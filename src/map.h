@@ -34,20 +34,6 @@ typedef std::vector<Portal *> PortalList;
 typedef std::list<int> CompressedChunkList;
 typedef std::vector<MapTile> MapData;
 
-typedef enum {
-    MAPTYPE_WORLD,
-    MAPTYPE_CITY,    
-    MAPTYPE_SHRINE,
-    MAPTYPE_COMBAT,
-    MAPTYPE_DUNGEON
-} MapType;
-
-typedef enum {
-    BORDER_WRAP,
-    BORDER_EXIT2PARENT,
-    BORDER_FIXED
-} MapBorderBehavior;
-
 /* flags */
 #define SHOW_AVATAR (1 << 0)
 #define NO_LINE_OF_SIGHT (1 << 1)
@@ -86,6 +72,30 @@ public:
  */ 
 class Map {    
 public:
+    enum Type {
+        WORLD,
+        CITY,    
+        SHRINE,
+        COMBAT,
+        DUNGEON
+    };
+
+    enum BorderBehavior {
+        BORDER_WRAP,
+        BORDER_EXIT2PARENT,
+        BORDER_FIXED
+    };
+
+
+    class Source {
+    public:
+        Source() {}
+        Source(const string &f, Type t) : fname(f), type(t) {}
+
+        string fname;
+        Type type;
+    };
+
     Map();
     virtual ~Map();
 
@@ -100,8 +110,8 @@ public:
     bool isEnclosed(Coords party);
     class Creature *addCreature(const class Creature *m, Coords coords);
     class Object *addObject(MapTile tile, MapTile prevTile, Coords coords);
-    void removeObject(const class Object *rem);
-    ObjectDeque::iterator removeObject(ObjectDeque::iterator rem);    
+    void removeObject(const class Object *rem, bool deleteObject = true);
+    ObjectDeque::iterator removeObject(ObjectDeque::iterator rem, bool deleteObject = true);    
     void clearObjects();
     class Creature *moveObjects(MapCoords avatar);
     void resetObjectAnimations();
@@ -110,20 +120,23 @@ public:
     bool move(Object *obj, Direction d);
 
     // u4dos compatibility
-    bool fillMonsterTable();
+    bool fillMonsterTable();    
 
 public:
-    MapId           id;
+    MapId           id;    
     string          fname;
-    MapType         type;
+    Type            type;
     unsigned int    width,
                     height,
                     levels;
     unsigned int    chunk_width,
                     chunk_height;
+
+    Source          baseSource;
+    std::list<Source> extraSources;
     
     CompressedChunkList     compressed_chunks;
-    MapBorderBehavior       border_behavior;
+    BorderBehavior          border_behavior;
 
     PortalList      portals;
     AnnotationMgr  *annotations;

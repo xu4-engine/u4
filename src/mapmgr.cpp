@@ -54,27 +54,27 @@ MapMgr::MapMgr() {
     }
 }
 
-Map *MapMgr::initMap(MapType type) {
+Map *MapMgr::initMap(Map::Type type) {
     Map *map;
 
     switch(type) {    
-    case MAPTYPE_WORLD:    
+    case Map::WORLD:    
         map = new Map;
         break;
 
-    case MAPTYPE_COMBAT:
+    case Map::COMBAT:
         map = new CombatMap;
         break;
 
-    case MAPTYPE_SHRINE:
+    case Map::SHRINE:
         map = new Shrine;
         break;
 
-    case MAPTYPE_DUNGEON:
+    case Map::DUNGEON:
         map = new Dungeon;
         break;
 
-    case MAPTYPE_CITY:
+    case Map::CITY:
         map = new City;
         break;
         
@@ -115,19 +115,19 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
     static const char *mapTypeEnumStrings[] = { "world", "city", "shrine", "combat", "dungeon", NULL };
     static const char *borderBehaviorEnumStrings[] = { "wrap", "exit", "fixed", NULL };
 
-    map = initMap(static_cast<MapType>(mapConf.getEnum("type", mapTypeEnumStrings)));
+    map = initMap(static_cast<Map::Type>(mapConf.getEnum("type", mapTypeEnumStrings)));
     if (!map)
         return NULL;
 
     map->id = static_cast<MapId>(mapConf.getInt("id"));
-    map->type = static_cast<MapType>(mapConf.getEnum("type", mapTypeEnumStrings));
+    map->type = static_cast<Map::Type>(mapConf.getEnum("type", mapTypeEnumStrings));
     map->fname = mapConf.getString("fname");
     map->width = mapConf.getInt("width");
     map->height = mapConf.getInt("height");
     map->levels = mapConf.getInt("levels");
     map->chunk_width = mapConf.getInt("chunkwidth");
     map->chunk_height = mapConf.getInt("chunkheight");
-    map->border_behavior = static_cast<MapBorderBehavior>(mapConf.getEnum("borderbehavior", borderBehaviorEnumStrings));
+    map->border_behavior = static_cast<Map::BorderBehavior>(mapConf.getEnum("borderbehavior", borderBehaviorEnumStrings));
 
     TRACE_LOCAL(*logger, string("loading configuration for map \'") + map->fname + "\'");
 

@@ -87,7 +87,7 @@ public:
     static MapMgr *getInstance();
 
     Map *get(MapId id);
-    Map *initMap(MapType type);
+    Map *initMap(Map::Type type);
 
 private:
     MapMgr();

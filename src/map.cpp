@@ -37,7 +37,7 @@ bool MapCoords::operator!=(const MapCoords &a) const {
 }    
 
 MapCoords& MapCoords::wrap(const Map *map) {
-    if (map && map->border_behavior == BORDER_WRAP) {
+    if (map && map->border_behavior == Map::BORDER_WRAP) {
         while (x < 0)
             x += map->width;
         while (y < 0)
@@ -110,7 +110,7 @@ int MapCoords::getRelativeDirection(const MapCoords &c, const Map *map) const {
         return dirmask;
     
     /* adjust our coordinates to find the closest path */
-    if (map && map->border_behavior == BORDER_WRAP) {
+    if (map && map->border_behavior == Map::BORDER_WRAP) {
         MapCoords me = *this;            
         
         if (abs(me.x - c.x) > abs(me.x + map->width - c.x))
@@ -245,7 +245,7 @@ Map::Map() {
 Map::~Map() {}
 
 string Map::getName() {
-    return fname;
+    return baseSource.fname;
 }
 
 /**
@@ -262,7 +262,7 @@ Object *Map::objectAt(MapCoords coords) {
         
         if (obj->getCoords() == coords) {
             /* get the most visible object */
-            if (objAt && (objAt->getType() == OBJECT_UNKNOWN) && (obj->getType() != OBJECT_UNKNOWN))
+            if (objAt && (objAt->getType() == Object::UNKNOWN) && (obj->getType() != Object::UNKNOWN))
                 objAt = obj;
             /* give priority to objects that have the focus */
             else if (objAt && (!objAt->hasFocus()) && (obj->hasFocus()))
@@ -337,7 +337,7 @@ MapTile* Map::tileAt(Coords coords, int withObjects) {
  * Returns true if the given map is the world map
  */
 bool Map::isWorldMap() {
-    return type == MAPTYPE_WORLD;
+    return type == WORLD;
 }
 
 
@@ -416,7 +416,7 @@ Creature *Map::addCreature(const Creature *creature, Coords coords) {
     else m->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
 
     /* hide camouflaged creatures from view during combat */
-    if (m->camouflages() && (type == MAPTYPE_COMBAT))
+    if (m->camouflages() && (type == COMBAT))
         m->setVisible(false);
     
     /* place the creature on the map */
@@ -449,12 +449,12 @@ Object *Map::addObject(MapTile tile, MapTile prevtile, Coords coords) {
 // ObjectDeque, as the iterator will be invalidated and the
 // results will be unpredictable.  Instead, use the function
 // below.
-void Map::removeObject(const Object *rem) {
+void Map::removeObject(const Object *rem, bool deleteObject) {
     ObjectDeque::iterator i;
     for (i = objects.begin(); i != objects.end(); i++) {
         if (*i == rem) {
             /* Party members persist through different maps, so don't delete them! */
-            if (!isPartyMember(*i))
+            if (!isPartyMember(*i) && deleteObject)
                 delete (*i);
             objects.erase(i);
             return;
@@ -462,9 +462,9 @@ void Map::removeObject(const Object *rem) {
     }
 }
 
-ObjectDeque::iterator Map::removeObject(ObjectDeque::iterator rem) {
+ObjectDeque::iterator Map::removeObject(ObjectDeque::iterator rem, bool deleteObject) {
     /* Party members persist through different maps, so don't delete them! */
-    if (!isPartyMember(*rem))
+    if (!isPartyMember(*rem) && deleteObject)
         delete (*rem);
     return objects.erase(rem);
 }
@@ -484,8 +484,8 @@ Creature *Map::moveObjects(MapCoords avatar) {
         if (m) {
             /* check if the object is an attacking creature and not
                just a normal, docile person in town or an inanimate object */
-            if ((m->getType() == OBJECT_PERSON && m->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR) ||
-                (m->getType() == OBJECT_CREATURE && m->willAttack())) {
+            if ((m->getType() == Object::PERSON && m->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR) ||
+                (m->getType() == Object::CREATURE && m->willAttack())) {
                 MapCoords o_coords = m->getCoords();
             
                 /* don't move objects that aren't on the same level as us */
@@ -520,7 +520,7 @@ void Map::resetObjectAnimations() {
     for (i = objects.begin(); i != objects.end(); i++) {
         Object *obj = *i;
         
-        if (obj->getType() == OBJECT_CREATURE)
+        if (obj->getType() == Object::CREATURE)
             obj->setPrevTile(creatures.getByTile(obj->getTile())->getTile());        
     }
 }
@@ -542,7 +542,7 @@ int Map::getNumberOfCreatures() {
     for (i = objects.begin(); i != objects.end(); i++) {
         Object *obj = *i;
 
-        if (obj->getType() == OBJECT_CREATURE)
+        if (obj->getType() == Object::CREATURE)
             n++;
     }
 
@@ -584,7 +584,7 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             ontoAvatar = 1;
         
         // see if it's trying to move onto a person or creature
-        else if (obj && (obj->getType() != OBJECT_UNKNOWN))                 
+        else if (obj && (obj->getType() != Object::UNKNOWN))                 
             ontoCreature = 1;
             
         // get the destination tile
@@ -696,7 +696,7 @@ bool Map::fillMonsterTable() {
         obj = *current;
 
         /* moving objects first */
-        if ((obj->getType() == OBJECT_CREATURE) && (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
+        if ((obj->getType() == Object::CREATURE) && (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
             Creature *c = dynamic_cast<Creature*>(obj);            
             /* whirlpools and storms are separated from other moving objects */
             if (c->id == WHIRLPOOL_ID || c->id == STORM_ID)            

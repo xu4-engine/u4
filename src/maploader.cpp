@@ -12,6 +12,8 @@
 
 #include "city.h"
 #include "combat.h"
+#include "conversation.h"
+#include "dialogueloader.h"
 #include "debug.h"
 #include "dungeon.h"
 #include "error.h"
@@ -27,23 +29,23 @@
 #include "u4file.h"
 #include "utils.h"
 
-std::map<MapType, MapLoader *> *MapLoader::loaderMap = NULL;
+std::map<Map::Type, MapLoader *> *MapLoader::loaderMap = NULL;
 
-MapLoader *CityMapLoader::instance = MapLoader::registerLoader(new CityMapLoader, MAPTYPE_CITY);
-MapLoader *ConMapLoader::instance = MapLoader::registerLoader(MapLoader::registerLoader(new ConMapLoader, MAPTYPE_COMBAT), MAPTYPE_SHRINE);
-MapLoader *DngMapLoader::instance = MapLoader::registerLoader(new DngMapLoader, MAPTYPE_DUNGEON);
-MapLoader *WorldMapLoader::instance = MapLoader::registerLoader(new WorldMapLoader, MAPTYPE_WORLD);
+MapLoader *CityMapLoader::instance = MapLoader::registerLoader(new CityMapLoader, Map::CITY);
+MapLoader *ConMapLoader::instance = MapLoader::registerLoader(MapLoader::registerLoader(new ConMapLoader, Map::COMBAT), Map::SHRINE);
+MapLoader *DngMapLoader::instance = MapLoader::registerLoader(new DngMapLoader, Map::DUNGEON);
+MapLoader *WorldMapLoader::instance = MapLoader::registerLoader(new WorldMapLoader, Map::WORLD);
 
-MapLoader *MapLoader::getLoader(MapType type) {
+MapLoader *MapLoader::getLoader(Map::Type type) {
     ASSERT(loaderMap != NULL, "loaderMap not initialized");
     if (loaderMap->find(type) == loaderMap->end())
         return NULL;
     return (*loaderMap)[type];
 }
 
-MapLoader *MapLoader::registerLoader(MapLoader *loader, MapType type) {
+MapLoader *MapLoader::registerLoader(MapLoader *loader, Map::Type type) {
     if (loaderMap == NULL) {
-        loaderMap = new std::map<MapType, MapLoader *>;
+        loaderMap = new std::map<Map::Type, MapLoader *>;
     }
     (*loaderMap)[type] = loader;
     return loader;
@@ -116,6 +118,8 @@ int CityMapLoader::load(Map *map) {
 
     unsigned int i, j;
     Person *people[CITY_MAX_PERSONS];    
+    Dialogue *dialogues[CITY_MAX_PERSONS];
+    DialogueLoader *dlgLoader = DialogueLoader::getLoader("application/x-u4tlk");
 
     U4FILE *ult = u4fopen(city->fname);
     U4FILE *tlk = u4fopen(city->tlk_fname);
@@ -160,74 +164,43 @@ int CityMapLoader::load(Map *map) {
     }
 
     unsigned char conv_idx[CITY_MAX_PERSONS];
-    for (i = 0; i < CITY_MAX_PERSONS; i++)
+    for (i = 0; i < CITY_MAX_PERSONS; i++) {
         conv_idx[i] = u4fgetc(ult);
+        people[i]->dialogue = NULL;
+    }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         people[i]->start.z = 0;        
     }
 
-    for (i = 0; ; i++) {
-        char tlk_buffer[288];
-        if (u4fread(tlk_buffer, 1, sizeof(tlk_buffer), tlk) != sizeof(tlk_buffer))
-            break;
+    for (i = 0; i < CITY_MAX_PERSONS; i++) {
+        dialogues[i] = dlgLoader->load(tlk);        
+        
+        /*
+         * Match up dialogues with their respective people
+         */
         for (j = 0; j < CITY_MAX_PERSONS; j++) {
-            /** 
-             * Match the conversation to the person;
-             * sometimes we'll have a rogue entry for the .tlk file -- 
-             * we'll fill in the empty spaces with this conversation 
-             * (such as Isaac the Ghost in Skara Brae)
-             */
-            if (conv_idx[j] == i+1 || (conv_idx[j] == 0 && people[j]->getTile() == 0)) {
-                char *ptr = tlk_buffer + 3;
-
-                people[j]->questionTrigger = (PersonQuestionTrigger) tlk_buffer[0];
-                people[j]->questionType = (PersonQuestionType) tlk_buffer[1];
-                people[j]->turnAwayProb = tlk_buffer[2];
-
-                people[j]->name = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                people[j]->pronoun = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                people[j]->description = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                people[j]->job = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                people[j]->health = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                people[j]->response1 = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                people[j]->response2 = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                people[j]->question = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                people[j]->yesresp = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                people[j]->noresp = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                people[j]->keyword1 = strdup(ptr);
-                ptr += strlen(ptr) + 1;
-                people[j]->keyword2 = strdup(ptr);
-
-                /* trim whitespace on keywords */
-                trim(&people[j]->keyword1);
-                trim(&people[j]->keyword2);                
+            if (conv_idx[j] == i+1) {
+                people[j]->dialogue = dialogues[i];
+                people[j]->name = dialogues[i]->getName();
             }
         }
     }    
 
-    /**
+    /*
      * Assign roles to certain people
      */ 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         PersonRoleList::iterator current;
+        Tileset *tileset = Tileset::get();
         
         people[i]->npcType = NPC_EMPTY;
         if (!people[i]->name.empty())
             people[i]->npcType = NPC_TALKER;        
-        if (people[i]->getTile() == 88 || people[i]->getTile() == 89)
+        /* FIXME: this type of thing should be done in xml */
+        if (people[i]->getTile() == tileset->findTileByName("beggar")->id)
             people[i]->npcType = NPC_TALKER_BEGGAR;
-        if (people[i]->getTile() == 80 || people[i]->getTile() == 81)
+        if (people[i]->getTile() == tileset->findTileByName("guard")->id)
             people[i]->npcType = NPC_TALKER_GUARD;
         
         for (current = city->personroles.begin(); current != city->personroles.end(); current++) {
@@ -264,7 +237,7 @@ int ConMapLoader::load(Map *map) {
     ASSERT(map->width == CON_WIDTH, "map width is %d, should be %d", map->width, CON_WIDTH);
     ASSERT(map->height == CON_HEIGHT, "map height is %d, should be %d", map->height, CON_HEIGHT);
 
-    if (map->type != MAPTYPE_SHRINE) {
+    if (map->type != Map::SHRINE) {
         CombatMap *cm = getCombatMap(map);
 
         for (i = 0; i < AREA_CREATURES; i++)
@@ -379,10 +352,10 @@ int DngMapLoader::load(Map *map) {
  * Loads a dungeon room into map->dungeon->room
  */
 void DngMapLoader::initDungeonRoom(Dungeon *dng, int room) {
-    dng->roomMaps[room] = dynamic_cast<CombatMap *>(mapMgr->initMap(MAPTYPE_COMBAT));
+    dng->roomMaps[room] = dynamic_cast<CombatMap *>(mapMgr->initMap(Map::COMBAT));
 
     dng->roomMaps[room]->id = 0;
-    dng->roomMaps[room]->border_behavior = BORDER_FIXED;
+    dng->roomMaps[room]->border_behavior = Map::BORDER_FIXED;
     dng->roomMaps[room]->width = dng->roomMaps[room]->height = 11;
 
     for (unsigned int y = 0; y < dng->roomMaps[room]->height; y++) {
@@ -392,7 +365,7 @@ void DngMapLoader::initDungeonRoom(Dungeon *dng, int room) {
     }
 
     dng->roomMaps[room]->music = MUSIC_COMBAT;
-    dng->roomMaps[room]->type = MAPTYPE_COMBAT;
+    dng->roomMaps[room]->type = Map::COMBAT;
     dng->roomMaps[room]->flags |= NO_LINE_OF_SIGHT;
 }
 
