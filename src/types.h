@@ -1,5 +1,5 @@
-#ifndef __TYPEDEFS_H
-#define __TYPEDEFS_H
+#ifndef TYPEDEFS_H
+#define TYPEDEFS_H
 
 // VC6 Compiler issues
 #if defined(_MSC_VER)
