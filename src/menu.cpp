@@ -77,9 +77,7 @@ void MenuItem::setClosesMenu(bool closesMenu) {
  * Adds an item to the menu list and returns the menu
  */
 void Menu::add(MenuId id, string text, short x, short y, int sc) {
-    MenuItem menuItem(this, id, text, x, y, sc);
-
-    items.push_back(menuItem);
+    items.push_back(MenuItem(this, id, text, x, y, sc));
 }
 
 void Menu::addShortcutKey(MenuId id, int shortcutKey) {
