@@ -15,7 +15,9 @@
 #include "names.h"
 
 #define STATS_AREA_WIDTH 15
+#define STATS_AREA_HEIGHT 8
 #define STATS_AREA_X TEXT_AREA_X
+#define STATS_AREA_Y 1
 
 void statsAreaClear();
 void statsAreaSetTitle(const char *title);
@@ -76,7 +78,7 @@ void statsAreaClear() {
     for (i = 0; i < STATS_AREA_WIDTH; i++)
         screenTextAt(STATS_AREA_X + i, 0, "%c", 13);
     
-    screenEraseTextArea(STATS_AREA_X, 1, 15, 8);
+    screenEraseTextArea(STATS_AREA_X, STATS_AREA_Y, STATS_AREA_WIDTH, STATS_AREA_HEIGHT);
 }
 
 /**
@@ -98,9 +100,9 @@ void statsShowPartyView() {
     assert(c->saveGame->members <= 8);
 
     for (i = 0; i < c->saveGame->members; i++)
-        screenTextAt(STATS_AREA_X, 1+i, "%d-%-9s%03d%c", i+1, c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
+        screenTextAt(STATS_AREA_X, STATS_AREA_Y+i, "%d-%-9s%03d%c", i+1, c->saveGame->players[i].name, c->saveGame->players[i].hp, c->saveGame->players[i].status);
 
-    screenTextAt(STATS_AREA_X, 10, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+STATS_AREA_HEIGHT+1, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
 }
 
 /**
@@ -113,16 +115,16 @@ void statsShowCharDetails(int charNo) {
     assert(charNo < 8);
 
     statsAreaSetTitle(c->saveGame->players[charNo].name);
-    screenTextAt(STATS_AREA_X, 1, "%c             %c", c->saveGame->players[charNo].sex, c->saveGame->players[charNo].status);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+0, "%c             %c", c->saveGame->players[charNo].sex, c->saveGame->players[charNo].status);
     classString = getClassName(c->saveGame->players[charNo].klass);
     classStart = (STATS_AREA_WIDTH / 2) - (strlen(classString) / 2);
-    screenTextAt(STATS_AREA_X + classStart, 1, "%s", classString);
-    screenTextAt(STATS_AREA_X, 3, " MP:%02d  LV:%d", c->saveGame->players[charNo].mp, c->saveGame->players[charNo].hpMax / 100);
-    screenTextAt(STATS_AREA_X, 4, "STR:%02d  HP:%04d", c->saveGame->players[charNo].str, c->saveGame->players[charNo].hp);
-    screenTextAt(STATS_AREA_X, 5, "DEX:%02d  HM:%04d", c->saveGame->players[charNo].dex, c->saveGame->players[charNo].hpMax);
-    screenTextAt(STATS_AREA_X, 6, "INT:%02d  EX:%04d", c->saveGame->players[charNo].intel, c->saveGame->players[charNo].xp);
-    screenTextAt(STATS_AREA_X, 7, "W:%s", getWeaponName(c->saveGame->players[charNo].weapon));
-    screenTextAt(STATS_AREA_X, 8, "A:%s", getArmorName(c->saveGame->players[charNo].armor));
+    screenTextAt(STATS_AREA_X + classStart, STATS_AREA_Y, "%s", classString);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+2, " MP:%02d  LV:%d", c->saveGame->players[charNo].mp, c->saveGame->players[charNo].hpMax / 100);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+3, "STR:%02d  HP:%04d", c->saveGame->players[charNo].str, c->saveGame->players[charNo].hp);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+4, "DEX:%02d  HM:%04d", c->saveGame->players[charNo].dex, c->saveGame->players[charNo].hpMax);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+5, "INT:%02d  EX:%04d", c->saveGame->players[charNo].intel, c->saveGame->players[charNo].xp);
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+6, "W:%s", getWeaponName(c->saveGame->players[charNo].weapon));
+    screenTextAt(STATS_AREA_X, STATS_AREA_Y+7, "A:%s", getArmorName(c->saveGame->players[charNo].armor));
 }
 
 /**
@@ -133,7 +135,7 @@ void statsShowWeapons() {
 
     statsAreaSetTitle("Weapons");
 
-    line = 1;
+    line = STATS_AREA_Y;
     col = 0;
     screenTextAt(STATS_AREA_X, line++, "A-%s", getWeaponName(WEAP_HANDS));
     for (w = WEAP_HANDS + 1; w < WEAP_MAX; w++) {
@@ -142,8 +144,8 @@ void statsShowWeapons() {
             n = 99;
         if (n >= 1) {
             screenTextAt(STATS_AREA_X + col, line++, "%c-%d-%s", w - WEAP_HANDS + 'A', n, getWeaponAbbrev(w));
-            if (line >= 9) {
-                line = 1;
+            if (line >= (STATS_AREA_Y+STATS_AREA_HEIGHT)) {
+                line = STATS_AREA_Y;
                 col += 8;
             }
         }
@@ -158,7 +160,7 @@ void statsShowArmor() {
 
     statsAreaSetTitle("Armour");
 
-    line = 1;
+    line = STATS_AREA_Y;
     screenTextAt(STATS_AREA_X, line++, "A  -No Armour");
     for (a = ARMR_NONE + 1; a < ARMR_MAX; a++) {
         if (c->saveGame->armor[a] > 0)
@@ -174,7 +176,7 @@ void statsShowEquipment() {
 
     statsAreaSetTitle("Equipment");
     
-    line = 1;
+    line = STATS_AREA_Y;
     screenTextAt(STATS_AREA_X, line++, "%2d-Torches", c->saveGame->torches);
     screenTextAt(STATS_AREA_X, line++, "%2d-Gems", c->saveGame->gems);
     screenTextAt(STATS_AREA_X, line++, "%2d-Keys", c->saveGame->keys);
@@ -192,7 +194,7 @@ void statsShowItems() {
 
     statsAreaSetTitle("Items");
 
-    line = 1;
+    line = STATS_AREA_Y;
     if (c->saveGame->stones != 0) {
         j = 0;
         for (i = 0; i < 8; i++) {
@@ -254,7 +256,7 @@ void statsShowReagents() {
 
     statsAreaSetTitle("Reagents");
 
-    line = 1;
+    line = STATS_AREA_Y;
     for (r = REAG_ASH; r < REAG_MAX; r++) {
         int n = c->saveGame->reagents[r];
         if (n >= 100)
@@ -274,7 +276,7 @@ void statsShowMixtures() {
 
     statsAreaSetTitle("Mixtures");
     
-    line = 1;
+    line = STATS_AREA_Y;
     col = 0;
     for (s = 0; s < 26; s++) {
         int n = c->saveGame->mixtures[s];
@@ -282,10 +284,10 @@ void statsShowMixtures() {
             n = 99;
         if (n >= 1) {
             screenTextAt(STATS_AREA_X + col, line++, "%c-%02d", s + 'A', n);
-            if (line >= 9) {
+            if (line >= (STATS_AREA_Y+STATS_AREA_HEIGHT)) {
                 if (col >= 10)
                     break;
-                line = 1;
+                line = STATS_AREA_Y;
                 col += 5;
             }
         }
