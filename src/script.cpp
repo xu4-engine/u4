@@ -50,7 +50,11 @@ string& Script::Variable::getString()   { return s_val; }
 
 void    Script::Variable::setValue(const int &v)    { i_val = v; }
 void    Script::Variable::setValue(const string &v) { s_val = v; }
-void    Script::Variable::unset()                   { set = false; i_val = 0; s_val = ""; }
+void    Script::Variable::unset()                   {
+    set = false;
+    i_val = 0;
+    s_val = "";
+}
 
 bool    Script::Variable::isInt() const             { return i_val > 0; }
 bool    Script::Variable::isString() const          { return i_val == 0; }
@@ -385,7 +389,12 @@ void Script::setTarget(string val)      { target = val; }
 void Script::setChoices(string val)     { choices = val; }
 void Script::setVar(string name, string val)    { variables[name] = new Variable(val); }
 void Script::setVar(string name, int val)       { variables[name] = new Variable(val); }
-void Script::unsetVar(string name)              { variables[name]->unset(); }
+void Script::unsetVar(string name) {
+    // Ensure that the variable at least exists, but has no value
+    if (variables.find(name) != variables.end())
+        variables[name]->unset();
+    else variables[name] = new Variable;
+}
 
 Script::State Script::getState()        { return state; }
 string Script::getTarget()              { return target; }
@@ -860,7 +869,7 @@ Script::ReturnCode Script::include(xmlNodePtr script, xmlNodePtr current) {
  */ 
 Script::ReturnCode Script::wait(xmlNodePtr script, xmlNodePtr current) {
     int msecs = getPropAsInt(current, "msecs");
-    EventHandler::sleep(msecs);
+    EventHandler::wait_msecs(msecs);    
     return RET_OK;
 }
 
@@ -1047,7 +1056,7 @@ Script::ReturnCode Script::input(xmlNodePtr script, xmlNodePtr current) {
         this->choices = getPropAsStr(current, "options");
         this->choices += " \015\033";
     }
-    else if (type == "string")
+    else if (type == "text")
         this->inputType = INPUT_STRING;
     else if (type == "direction")
         this->inputType = INPUT_DIRECTION;
