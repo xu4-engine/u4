@@ -112,10 +112,10 @@ unsigned char screenViewportTile(unsigned int width, unsigned int height, int x,
     z = c->location->z;
     centerx = c->location->x;
     centery = c->location->y;
-    if (c->location->map->width == width &&
-        c->location->map->height == height) {
-        centerx = width / 2;
-        centery = height / 2;
+    if (c->location->map->width <= width &&
+        c->location->map->height <= height) {
+        centerx = c->location->map->width / 2;
+        centery = c->location->map->height / 2;
     }
 
     tx = x + centerx - (width / 2);
