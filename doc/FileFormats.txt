@@ -39,6 +39,34 @@ offset  len  notes
 0x1FC0  32   character 255
 
 
+.EGA files (RLE encoded)
+------------------------
+
+The following .EGA files are RLE encoded: START.EGA, KEY7.EGA,
+RUNE_x.EGA (where x is between 0 and 5), STONCRCL.EGA, HONESTY.EGA,
+COMPASSN.EGA, VALOR.EGA, JUSTICE.EGA, SACRIFIC.EGA, HONOR.EGA,
+SPIRIT.EGA, HUMILITY.EGA, TRUTH.EGA, LOVE.EGA, and COURAGE.EGA.  Each
+of these files represents a 16 color 320x200 bitmap.  Each pixel is
+encoded in 4 bits, like SHAPES.EGA and CHARSET.EGA.  However, runs of
+identical *bytes* (not pixels) are encoded with a special run
+indicator value (0x02) followed by a one byte count and a one byte
+value.  This allows a single run of up to 255 bytes (510 pixels) to be
+represented as three bytes.  For example, the byte values "28 28 28
+28" could be represented as "02 04 28".  If the value 0x02 needs to be
+represented, it *must* be encoded in a run ("02 01 02").
+
+
+.EGA files (LZW encoded)
+------------------------
+
+The remaining .EGA files are LZW encoded: ABACUS.EGA, ANIMATE.EGA,
+GYPSY.EGA, INSIDE.EGA, OUTSIDE.EGA, PORTAL.EGA, TREE.EGA, WAGON.EGA,
+HONCOM.EGA, SACHONOR.EGA, SPIRHUM.EGA, VALJUS.EGA, and TITLE.EGA.
+Also, the file SHAPES.EGZ is a LZW compressed version of SHAPES.EGA.
+Like the RLE encoded files, each of these files represents a 16 color
+320x200 bitmap.  (Description of LZW algorithm to go here).
+
+
 WORLD.MAP
 ---------
 
@@ -123,8 +151,8 @@ offset len  notes
 0x10   16   start_y for monsters 0-15
 0x20   8    start_x for party members 0-7
 0x28   8    start_y for party members 0-7
-0x30   32   ???
-0x50   121  11x11 map matrix
+0x30   16   ???
+0x40   121  11x11 map matrix
 0xB9   7    ???
 
 
