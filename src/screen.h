@@ -20,8 +20,8 @@ typedef enum {
 
 void screenInit(int scale);
 void screenFixIntroScreen(const unsigned char *sigData);
-int screenLoadCards();
-void screenFreeCards();
+int screenLoadIntroAnimations();
+void screenFreeIntroAnimations();
 void screenFreeIntroBackgrounds();
 void screenDrawBackground(BackgroundType bkgd);
 void screenShowTile(int tile, int x, int y);
@@ -34,6 +34,7 @@ void screenForceRedraw(void);
 void screenAnimateIntro(int frame);
 void screenEraseTextArea(int x, int y, int width, int height);
 void screenShowCard(int pos, int card);
+void screenShowBeastie(int beast, int frame);
 void screenCycle(void);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);

@@ -17,16 +17,17 @@
 #include "ttype.h"
 
 typedef enum {
-    CARD_HONCOM,
-    CARD_VALJUS,
-    CARD_SACHONOR,
-    CARD_SPIRHUM,
-    CARD_MAX
-} CardType;
+    ANIM_HONCOM,
+    ANIM_VALJUS,
+    ANIM_SACHONOR,
+    ANIM_SPIRHUM,
+    ANIM_ANIMATE,
+    ANIM_MAX
+} AnimType;
 
 SDL_Surface *screen;
 SDL_Surface *bkgds[BKGD_MAX];
-SDL_Surface *cards[CARD_MAX];
+SDL_Surface *introAnimations[ANIM_MAX];
 SDL_Surface *tiles, *charset;
 int scale, forceEga, forceVga;
 
@@ -199,23 +200,24 @@ int screenLoadBackgrounds() {
 }
 
 /**
- * Load in the card images from the "*.ega" files.
+ * Load in the intro animation images from the "*.ega" files.
  */
-int screenLoadCards() {
+int screenLoadIntroAnimations() {
     int ret, i;
     const struct {
-        CardType card;
+        AnimType anim;
         const char *filename;
-    } lzwCardInfo[] = {
-        { CARD_HONCOM, "honcom.ega" },
-        { CARD_VALJUS, "valjus.ega" },
-        { CARD_SACHONOR, "sachonor.ega" },
-        { CARD_SPIRHUM, "spirhum.ega" }
+    } lzwAnimInfo[] = {
+        { ANIM_HONCOM, "honcom.ega" },
+        { ANIM_VALJUS, "valjus.ega" },
+        { ANIM_SACHONOR, "sachonor.ega" },
+        { ANIM_SPIRHUM, "spirhum.ega" },
+        { ANIM_ANIMATE, "animate.ega" }
     };
 
-    for (i = 0; i < sizeof(lzwCardInfo) / sizeof(lzwCardInfo[0]); i++) {
+    for (i = 0; i < sizeof(lzwAnimInfo) / sizeof(lzwAnimInfo[0]); i++) {
         /* no vga version of lzw files... yet */
-        ret = screenLoadLzwImageEga(&cards[lzwCardInfo[i].card], 320, 200, lzwCardInfo[i].filename);
+        ret = screenLoadLzwImageEga(&introAnimations[lzwAnimInfo[i].anim], 320, 200, lzwAnimInfo[i].filename);
         if (!ret)
             return 0;
     }
@@ -223,11 +225,11 @@ int screenLoadCards() {
     return 1;
 }
 
-void screenFreeCards() {
+void screenFreeIntroAnimations() {
     int i;
 
-    for (i = 0; i < sizeof(cards) / sizeof(cards[0]); i++)
-        SDL_FreeSurface(cards[i]);
+    for (i = 0; i < sizeof(introAnimations) / sizeof(introAnimations[0]); i++)
+        SDL_FreeSurface(introAnimations[i]);
 }
 
 void screenFreeIntroBackgrounds() {
@@ -781,6 +783,10 @@ void screenEraseTextArea(int x, int y, int width, int height) {
     SDL_FillRect(screen, &dest, 0);
 }
 
+/**
+ * Draws a card on the screen for the character creation sequence with
+ * the gypsy.
+ */
 void screenShowCard(int pos, int card) {
     SDL_Rect src, dest;
 
@@ -797,5 +803,36 @@ void screenShowCard(int pos, int card) {
     dest.w = 90 * scale;
     dest.h = 124 * scale;
 
-    SDL_BlitSurface(cards[card / 2], &src, screen, &dest);
+    SDL_BlitSurface(introAnimations[card / 2], &src, screen, &dest);
+}
+
+void screenShowBeastie(int beast, int frame) {
+    SDL_Rect src, dest;
+    int col, row, destx;
+    
+    assert(beast == 0 || beast == 1);
+
+    if (beast == 0)
+        col = 0;
+    else
+        col = 3;
+
+    row = frame % 6;
+    col += frame / 6;
+
+    src.x = col * 56 * scale;
+    src.y = row * 32 * scale;
+    src.w = 56 * scale;
+    src.h = 32 * scale;
+
+    destx = beast ? (320 - 56) : 0;
+    if (col >= 4)
+        destx += 8 * (col - 3);
+
+    dest.x = destx * scale;
+    dest.y = 0 * scale;
+    dest.w = 56 * scale;
+    dest.h = 32 * scale;
+
+    SDL_BlitSurface(introAnimations[ANIM_ANIMATE], &src, screen, &dest);
 }
