@@ -10,21 +10,21 @@ Things you only have to do once
 -------------------------------
 
 1. Download and install MinGW from:
-   http://prdownloads.sourceforge.net/mingw/MinGW-2.0.0-3.exe
+   http://prdownloads.sourceforge.net/mingw/MinGW-3.1.0-1.exe
 
 2. Download and install MSYS from:
-   http://prdownloads.sourceforge.net/mingw/MSYS-1.0.8.exe
+   http://prdownloads.sourceforge.net/mingw/MSYS-1.0.9.exe
 
 3. Download and install MSYSDTK from:
-   http://prdownloads.sourceforge.net/mingw/msysDTK-1.0.0.exe
+   http://prdownloads.sourceforge.net/mingw/msysDTK-1.0.1.exe
 
 4. Download the SDL binaries & headers from:
    http://exult.sourceforge.net/snapshots/exult_sdl_win32.zip
 
-5. Download the libpng,libxml, pkgconfig and zlib binaries & headers from:
+5. Download the libpng,libxml and zlib binaries & headers from:
    http://xu4.sourceforge.net/xu4_dev_win32.zip
 
-6. Extract libpng,libxml, pkgconfig and zlib binaries & headers to mingw directory
+6. Extract libpng,libxml and zlib binaries & headers to mingw directory
 
 7. Start MSYS
 
