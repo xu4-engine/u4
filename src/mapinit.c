@@ -57,7 +57,13 @@ extern Map shipship_map;
 extern Map shipshor_map;
 extern Map shore_map;
 extern Map shorship_map;
-extern Map shrine_map;
+extern Map shrine_honesty_map;
+extern Map shrine_compassion_map;
+extern Map shrine_valor_map;
+extern Map shrine_justice_map;
+extern Map shrine_sacrifice_map;
+extern Map shrine_honor_map;
+extern Map shrine_humility_map;
 
 City * const cities[] = {
     &lcb_1_city, &lcb_2_city,
@@ -83,7 +89,10 @@ Map * const areas[] = {
     &marsh_map, &shipsea_map,
     &shipship_map, &shipshor_map,
     &shore_map, &shorship_map,
-    &shrine_map
+    &shrine_honesty_map, &shrine_compassion_map,
+    &shrine_valor_map, &shrine_justice_map,
+    &shrine_sacrifice_map, &shrine_honor_map,
+    &shrine_humility_map
 };
 
 int initializeMaps() {
