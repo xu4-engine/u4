@@ -25,7 +25,7 @@ DEBUGCFLAGS=-ggdb
 # Optimising
 #DEBUGCFLAGS=-O2 -faltivec -mdynamic-no-pic
 
-CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(XML2FLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
+CFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCFLAGS) -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp 
 LIBS=$(UILIBS)
 INSTALL=install
 
