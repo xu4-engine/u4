@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.buffer[0] = '\0';
-    c->line = 0;
+    c->line = TEXT_AREA_H - 1;
     c->col = 0;
     c->statsItem = STATS_PARTY_OVERVIEW;
     c->moonPhase = 0;
