@@ -46,6 +46,27 @@ void eventHandlerAddTimerCallback(void (*callback)()) {
     }
 }
 
+void eventHandlerRemoveTimerCallback(void (*callback)()) {
+    TimerCallbackNode *n, *prev;
+
+    n = timerCallbackHead;
+    prev = NULL;
+    while (n) {
+        if (n->callback != callback) {
+            prev = n;
+            n = n->next;
+            continue;
+        }
+
+        if (prev)
+            prev->next = n->next;
+        else
+            timerCallbackHead = n->next;
+        free(n);
+        return;
+    }
+}
+
 /**
  * Trigger all the timer callbacks.
  */
@@ -56,17 +77,6 @@ void eventHandlerCallTimerCallbacks() {
         (*timerCallbackHead->callback)();
     }
 }
-
-/**
- * This function is called every quarter second.
- */
-void eventTimer() {
-    screenAnimate();
-
-    if (++c->moonPhase >= (MOON_SECONDS_PER_PHASE * 4 * MOON_PHASES))
-        c->moonPhase = 0;
-}
-
 
 /**
  * Push a key handler onto the top of the keyhandler stack.
