@@ -173,7 +173,8 @@ const struct {
 
     { "ega/ladderdown0.rle", 88,  89,  4, 45,  87,  COMP_RLE },
     { "ega/ladderdown1.rle", 50,  50,  4, 64,  86,  COMP_RLE },
-    { "ega/ladderdown2.rle", 22,  22,  4, 77,  86,  COMP_RLE }
+    { "ega/ladderdown2.rle", 22,  22,  4, 77,  86,  COMP_RLE },
+    { "ega/ladderdown3.rle", 8,   8,   4, 84,  88,  COMP_RLE }
 
 };
 
@@ -1157,7 +1158,7 @@ int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, 
     if (type == DNGGRAPHIC_LADDERUP && xoffset == 0)
         return 48 + distance;
 
-    if (type == DNGGRAPHIC_LADDERDOWN && xoffset == 0 && distance < 3)
+    if (type == DNGGRAPHIC_LADDERDOWN && xoffset == 0)
         return 52 + distance;
 
     /* FIXME */
