@@ -121,7 +121,7 @@ ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
     TRACE(*logger, string("loading image set ") + set->name);
 
     vector<ConfigElement> children = conf.getChildren();
-    for (vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "image") {
             ImageInfo *info = loadImageInfoFromConf(*i);
             set->info[info->name] = info;
@@ -152,7 +152,7 @@ ImageInfo *ImageMgr::loadImageInfoFromConf(const ConfigElement &conf) {
     info->image = NULL;
 
     vector<ConfigElement> children = conf.getChildren();
-    for (vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "subimage") {
             SubImage *subimage = loadSubImageFromConf(info, *i);            
             info->subImages[subimage->name] = subimage;
