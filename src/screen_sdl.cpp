@@ -12,7 +12,13 @@
 
 #include "config.h"
 #include "context.h"
+
+#if defined(MACOSX)
+#include "macosx/cursors.h"
+#else
 #include "cursors.h"
+#endif
+
 #include "debug.h"
 #include "error.h"
 #include "event.h"
@@ -1477,15 +1483,20 @@ Image *screenScaleDown(Image *src, int scale) {
  * Create an SDL cursor object from an xpm.  Derived from example in
  * SDL documentation project.
  */
+#if defined(MACOSX)
+#define CURSORSIZE 16
+#else
+#define CURSORSIZE 32
+#endif
 SDL_Cursor *screenInitCursor(char *xpm[]) {
     int i, row, col;
-    Uint8 data[4*32];
-    Uint8 mask[4*32];
+    Uint8 data[(CURSORSIZE/8)*CURSORSIZE];
+    Uint8 mask[(CURSORSIZE/8)*CURSORSIZE];
     int hot_x, hot_y;
 
     i = -1;
-    for (row=0; row < 32; row++) {
-        for (col=0; col < 32; col++) {
+    for (row=0; row < CURSORSIZE; row++) {
+        for (col=0; col < CURSORSIZE; col++) {
             if (col % 8) {
                 data[i] <<= 1;
                 mask[i] <<= 1;
@@ -1507,7 +1518,7 @@ SDL_Cursor *screenInitCursor(char *xpm[]) {
         }
     }
     sscanf(xpm[4+row], "%d,%d", &hot_x, &hot_y);
-    return SDL_CreateCursor(data, mask, 32, 32, hot_x, hot_y);
+    return SDL_CreateCursor(data, mask, CURSORSIZE, CURSORSIZE, hot_x, hot_y);
 }
 
 void screenSetMouseCursor(MouseCursor cursor) {
