@@ -68,6 +68,7 @@ void settingsRead() {
     settings->keyinterval = 30;
     settings->filterMoveMessages = 0;
     settings->battleSpeed = 5;
+    settings->minorEnhancements = 1;
 
     settingsFname = settingsFilename();
     settingsFile = fopen(settingsFname, "r");
@@ -109,6 +110,8 @@ void settingsRead() {
            amount of time */
         else if (strstr(buffer, "attackspeed=") == buffer)
             ;
+        else if (strstr(buffer, "minorEnhancements=") == buffer)
+            settings->minorEnhancements = (int) strtoul(buffer + strlen("minorEnhancements="), NULL, 0);
         else
             errorWarning("invalid line in settings file %s", buffer);
     }
@@ -141,7 +144,8 @@ void settingsWrite() {
             "keydelay=%d\n"
             "keyinterval=%d\n"
             "filterMoveMessages=%d\n"
-            "battlespeed=%d\n",
+            "battlespeed=%d\n"
+            "minorEnhancements=%d\n",
             settings->scale,
             settings->fullscreen,
             settingsFilterToString(settings->filter),
@@ -151,7 +155,8 @@ void settingsWrite() {
             settings->keydelay,
             settings->keyinterval,
             settings->filterMoveMessages,
-            settings->battleSpeed);
+            settings->battleSpeed,
+            settings->minorEnhancements);
 
     fclose(settingsFile);
 }

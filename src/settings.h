@@ -26,6 +26,7 @@ typedef struct _Settings {
     int keyinterval;
     int filterMoveMessages;
     int battleSpeed;
+    int minorEnhancements;
 } Settings;
 
 char *settingsFilename(void);
