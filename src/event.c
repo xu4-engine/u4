@@ -217,6 +217,10 @@ int keyHandlerNormal(int key, void *data) {
         screenMessage("Talk\nDir: ");
         break;
 
+    case 'y':
+        screenMessage("Yell what?\n");
+        break;
+
     case 'z':
         eventHandlerPushKeyHandler(&keyHandlerZtats);
         screenMessage("Ztats for: ");
@@ -400,6 +404,8 @@ int keyHandlerQuit(int key, void *data) {
 int keyHandlerZtats(int key, void *data) {
     int valid = 1;
 
+    screenMessage("%c\n", key);
+
     if (key == '0')
         c->statsItem = STATS_WEAPONS;
     else if (key >= '1' && key <= '8' && (key - '1' + 1) <= c->saveGame->members)
@@ -410,11 +416,45 @@ int keyHandlerZtats(int key, void *data) {
     if (valid) {
         statsUpdate();
         eventHandlerPopKeyHandler();
-    } else {
-        screenMessage("\nZtats for: ");
+        eventHandlerPushKeyHandler(&keyHandlerZtats2);
     }
 
     return valid || keyHandlerDefault(key, NULL);
+}
+
+/**
+ * Handles key presses while Ztats are being displayed.
+ */
+int keyHandlerZtats2(int key, void *data) {
+    switch (key) {
+    case U4_UP:
+    case U4_LEFT:
+        c->statsItem--;
+        if (c->statsItem < STATS_CHAR1)
+            c->statsItem = STATS_MIXTURES;
+        if (c->statsItem <= STATS_CHAR8 &&
+            (c->statsItem - STATS_CHAR1 + 1) > c->saveGame->members)
+            c->statsItem = STATS_CHAR1 - 1 + c->saveGame->members;
+        break;
+    case U4_DOWN:
+    case U4_RIGHT:
+        c->statsItem++;
+        if (c->statsItem > STATS_MIXTURES)
+            c->statsItem = STATS_CHAR1;
+        if (c->statsItem <= STATS_CHAR8 &&
+            (c->statsItem - STATS_CHAR1 + 1) > c->saveGame->members)
+            c->statsItem = STATS_WEAPONS;
+        break;
+    default:
+        c->statsItem = STATS_PARTY_OVERVIEW;
+        eventHandlerPopKeyHandler();
+        screenMessage("\020");
+        break;
+    }
+
+    statsUpdate();
+
+    return 1;
 }
 
 /**
