@@ -6,6 +6,7 @@ URL: http://xu4.sourceforge.net/
 Source0: http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
 License: GPL
 Group: Amusements/Games
+Prefix: /usr
 BuildRequires: SDL-devel SDL_mixer-devel libxml2-devel zlib-devel
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -30,7 +31,7 @@ spirit of the original game will be added.
 cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir}
 
 %install
-cd src && %{makeinstall} desktopdir=$RPM_BUILD_ROOT/etc/X11/applnk
+cd src && %{makeinstall}
 wget http://aleron.dl.sourceforge.net/sourceforge/xu4/ultima4-1.01.zip -O $RPM_BUILD_ROOT/%{_libdir}/u4/ultima4.zip
 wget http://www.moongates.com/u4/upgrade/files/u4upgrad.zip -O $RPM_BUILD_ROOT/%{_libdir}/u4/u4upgrad.zip
 
@@ -43,6 +44,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/u4
 %{_datadir}/pixmaps/u4.bmp
 %{_datadir}/pixmaps/u4.png
+%{_datadir}/applications/u4.desktop
 %{_libdir}/u4/music/*.mid
 %{_libdir}/u4/dumpsavegame
 %{_libdir}/u4/lzwenc
@@ -56,9 +58,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/graphics/vga/*.rle
 %{_libdir}/u4/ultima4.zip
 %{_libdir}/u4/u4upgrad.zip
-/etc/X11/applnk/Games/u4.desktop
 
 %changelog
+* Thu Jan 08 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- replaced ancient /etc/X11/applnk menu entry with more modern /usr/share/applications entry
+
 * Thu Dec 10 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - split graphics into ega and vga subdirectories
 

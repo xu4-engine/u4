@@ -6,7 +6,6 @@ prefix=/usr/local
 bindir=$(prefix)/bin
 libdir=$(prefix)/lib
 datadir=$(prefix)/share
-desktopdir=/etc/X11/applnk
 
 UI=sdl
 UILIBS=$(shell sdl-config --libs) -lSDL_mixer
@@ -40,6 +39,6 @@ install::
 	mkdir -p $(libdir)/u4/graphics/vga
 	$(INSTALL) ../graphics/ega/*.rle $(libdir)/u4/graphics/ega
 	$(INSTALL) ../graphics/vga/*.rle $(libdir)/u4/graphics/vga
-	$(INSTALL) -D ../u4.desktop $(desktopdir)/Games/u4.desktop
+	$(INSTALL) -D ../u4.desktop $(datadir)/applications/u4.desktop
 
 -include .depends
