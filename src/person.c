@@ -24,18 +24,21 @@ int personGetHWResponse(const Person *p, const char *inquiry, char **reply, int 
  * conversation is started.
  */
 int personGetIntroduction(const Person *p, char **intro) {
-    const char *fmt = "You meet\n%s\n\n%s says: I am %s\n\n:";
+    const char *fmt = "You meet\n%s\n\n%s says: I am %s\n\n%s";
+    char *prompt;
 
     if (personIsLordBritish(p))
         return personGetLBIntroduction(p, intro);
     else if (personIsHawkwind(p))
         return personGetHWIntroduction(p, intro);
         
-    *intro = malloc(strlen(fmt) - 6 + strlen(p->description) + strlen(p->pronoun) + strlen(p->name) + 1);
+    personGetPrompt(p, &prompt);
+    *intro = malloc(strlen(fmt) - 8 + strlen(p->description) + strlen(p->pronoun) + strlen(p->name) + strlen(prompt) + 1);
 
-    sprintf(*intro, fmt, p->description, p->pronoun, p->name);
+    sprintf(*intro, fmt, p->description, p->pronoun, p->name, prompt);
     if (isupper((*intro)[9]))
         (*intro)[9] = tolower((*intro)[9]);
+    free(prompt);
 
     return 0;
 }
