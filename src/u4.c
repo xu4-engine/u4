@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     intro_music();
     eventHandlerAddTimerCallback(&introTimer);
     eventHandlerPushKeyHandler(&introKeyHandler);
-    eventHandlerMain(&introUpdateScreen);
+    eventHandlerMain(NULL);
     eventHandlerRemoveTimerCallback(&introTimer);
     eventHandlerPopKeyHandler();
     introDelete();

@@ -184,6 +184,8 @@ int introInit() {
     screenLoadIntroAnimations();
     screenFixIntroScreen(screenFixData);
 
+    introUpdateScreen();
+
     return 1;
 }
 
@@ -417,11 +419,13 @@ void introUpdateScreen() {
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(4, 16, "By what name shalt thou be known");
         screenTextAt(4, 17, "in this world and time?");
+        introDrawBeasties();
         break;
 
     case INTRO_INIT_SEX:
         screenDrawBackground(BKGD_INTRO);
         screenTextAt(4, 16, "Art thou Male or Female?");
+        introDrawBeasties();
         break;
 
     case INTRO_INIT_STORY:
@@ -624,7 +628,8 @@ void introTimer() {
     screenUpdateCursor();
     if (mode == INTRO_MAP)
         introDrawMap();
-    if (mode == INTRO_MAP || mode == INTRO_MENU)
+    if (mode == INTRO_MAP || mode == INTRO_MENU || 
+        mode == INTRO_INIT_NAME || mode == INTRO_INIT_SEX)
         introDrawBeasties();
     screenForceRedraw();
 
