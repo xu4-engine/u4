@@ -32,7 +32,7 @@ void Annotation::debug_output() const {
     printf("x: %d\n", coords.x);
     printf("y: %d\n", coords.y);
     printf("z: %d\n", coords.z);
-    printf("tile: %d\n", tile);
+    printf("tile: %d\n", tile.id);
     printf("visual: %s\n", visual ? "Yes" : "No");
 }
 

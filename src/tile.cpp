@@ -49,7 +49,7 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
  * Returns the tile with the given name in the tileset
  */ 
 Tile *Tile::findByName(string name) {    
-    int i;
+    unsigned int i;
 
     for (i = 0; i < Tileset::tiles.size(); i++) { 
         Tile *tile = Tileset::tiles[i];

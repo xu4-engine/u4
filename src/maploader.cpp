@@ -279,7 +279,6 @@ int mapLoadDng(Dungeon *dungeon) {
             dungeon->data.push_back(MapTile(Tile::findByName(found->second)->id, mapData % 16));
         else
             dungeon->data.push_back(MapTile(Tile::findByName("brick_floor")->id, mapData % 16));
-        MapTile tile = dungeon->data.back();
     }
 
     dungeon->room = NULL;

@@ -32,7 +32,6 @@ bool collisionOverride = false;
 MoveReturnValue moveAvatar(Direction dir, int userEvent) {    
     MapCoords newCoords;
     int slowed = 0;
-    MapTile temp;
     SlowedType slowedType = SLOWED_BY_TILE;
     Object *destObj;
 
