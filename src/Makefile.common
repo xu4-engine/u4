@@ -65,6 +65,7 @@ CXXSRCS=\
         sound.cpp \
         spell.cpp \
         stats.cpp \
+        textview.cpp \
         tile.cpp \
         tileanim.cpp \
         tilemap.cpp \
@@ -73,6 +74,7 @@ CXXSRCS=\
         u4_$(UI).cpp \
         u4file.cpp \
         utils.cpp \
+        view.cpp \
         weapon.cpp \
         xml.cpp \
         lzw/u4decode.cpp \
