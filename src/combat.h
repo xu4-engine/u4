@@ -6,6 +6,7 @@
 #define COMBAT_H
 
 struct _Map;
+struct _Object;
 
 typedef enum {
     CA_ATTACK,
@@ -14,7 +15,7 @@ typedef enum {
     CA_FLEE
 } CombatAction;
 
-void combatBegin(unsigned char partytile, unsigned short transport, unsigned char monster);
+void combatBegin(unsigned char partytile, unsigned short transport, struct _Object *monster);
 struct _Map *getCombatMapForTile(unsigned char partytile, unsigned short transport);
 
 #endif

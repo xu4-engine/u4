@@ -47,6 +47,7 @@ extern Map shipshor_map;
 extern Map shore_map;
 extern Map shorship_map;
 
+Object *monsterObj;
 int saved_dngx, saved_dngy;
 int focus;
 Object *party[8];
@@ -63,9 +64,11 @@ void combatMoveMonsters(void);
 int combatFindTargetForMonster(const Object *monster, int *distance);
 int movePartyMember(Direction dir, int member);
 
-void combatBegin(unsigned char partytile, unsigned short transport, unsigned char monster) {
+void combatBegin(unsigned char partytile, unsigned short transport, Object *monster) {
     int i;
     int nmonsters;
+
+    monsterObj = monster;
 
     annotationClear();
 
@@ -83,9 +86,9 @@ void combatBegin(unsigned char partytile, unsigned short transport, unsigned cha
     focus = 0;
     party[focus]->hasFocus = 1;
 
-    nmonsters = combatInitialNumberOfMonsters(monster);
+    nmonsters = combatInitialNumberOfMonsters(monster->tile);
     for (i = 0; i < nmonsters; i++)
-        monsters[i] = mapAddObject(c->map, monster, monster, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
+        monsters[i] = mapAddObject(c->map, monster->tile, monster->tile, c->map->area->monster_start[i].x, c->map->area->monster_start[i].y);
     for (; i < AREA_MONSTERS; i++)
         monsters[i] = NULL;
 
@@ -332,6 +335,10 @@ void combatEnd() {
                 
         musicPlay();
     }
+    
+    if (combatIsWon())
+        mapAddObject(c->map, CHEST_TILE, CHEST_TILE, monsterObj->x, monsterObj->y);
+    mapRemoveObject(c->map, monsterObj);
     
     if (!playerPartyDead(c->saveGame))
         gameFinishTurn();
