@@ -14,12 +14,12 @@
 #include "context.h"
 #include "savegame.h"
 
-const extern unsigned char charset_data[];
-const extern int charset_size;
-const extern unsigned char tiles_data[];
-const extern int tiles_size;
 SDL_Surface *screen;
 SDL_Surface *tiles, *charset;
+
+int screenLoadTiles();
+int screenLoadCharSet();
+int screenLoadTileSet(SDL_Surface **surface, int width, int height, int n, const char *filename);
 
 void screenInit() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -35,20 +35,91 @@ void screenInit() {
     }
     SDL_WM_SetCaption("GNU Ultima IV", NULL);
 
-    tiles = SDL_LoadBMP_RW(SDL_RWFromMem((unsigned char *) tiles_data, tiles_size), 0);
-    if (!tiles) {
-        fprintf(stderr, "Couldn't load tiles: %s\n", SDL_GetError());
-        exit(1);
-    }
-
-    charset = SDL_LoadBMP_RW(SDL_RWFromMem((unsigned char *) charset_data, charset_size), 0);
-    if (!charset) {
-        fprintf(stderr, "Couldn't load charset: %s\n", SDL_GetError());
+    if (!screenLoadTiles() ||
+        !screenLoadCharSet()) {
+        fprintf(stderr, "Unable to load data files\n");
         exit(1);
     }
 
     SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL); 
 }
+
+int screenLoadTiles() {
+    return screenLoadTileSet(&tiles, TILE_WIDTH, TILE_HEIGHT, N_TILES, "./ultima4/shapes.ega");
+}
+
+int screenLoadCharSet() {
+    return screenLoadTileSet(&charset, CHAR_WIDTH, CHAR_HEIGHT, N_CHARS, "./ultima4/charset.ega");
+}
+
+int screenLoadTileSet(SDL_Surface **surface, int width, int height, int n, const char *filename) {
+    FILE *in;
+    int scale = SCALE;
+    int x, y, xs, ys;
+    Uint8 *p;
+
+    in = fopen(filename, "r");
+    if (!in)
+        return 0;
+
+    (*surface) = SDL_CreateRGBSurface(SDL_HWSURFACE, width * scale, height * n * scale, 8, 0, 0, 0, 0);
+    if (!(*surface)) {
+        fclose(in);
+        return 0;
+    }
+
+    #define setpalentry(i, red, green, blue) \
+        (*surface)->format->palette->colors[i].r = red; \
+        (*surface)->format->palette->colors[i].g = green; \
+        (*surface)->format->palette->colors[i].b = blue;
+    setpalentry(0, 0x00, 0x00, 0x00);
+    setpalentry(1, 0x00, 0x00, 0x80);
+    setpalentry(2, 0x00, 0x80, 0x00);
+    setpalentry(3, 0x00, 0x80, 0x80);
+    setpalentry(4, 0x80, 0x00, 0x00);
+    setpalentry(5, 0x00, 0x80, 0x80);
+    setpalentry(6, 0x80, 0x80, 0x00);
+    setpalentry(7, 0xc3, 0xc3, 0xc3);
+    setpalentry(8, 0xa0, 0xa0, 0xa0);
+    setpalentry(9, 0x00, 0x00, 0xFF);
+    setpalentry(10, 0x00, 0xFF, 0x00);
+    setpalentry(11, 0xFF, 0x00, 0x00);
+    setpalentry(12, 0xFF, 0x00, 0x00);
+    setpalentry(13, 0xFF, 0x00, 0xFF);
+    setpalentry(14, 0xFF, 0xFF, 0x00);
+    setpalentry(15, 0xFF, 0xFF, 0xFF);
+    #undef setpalentry
+
+    p = (*surface)->pixels;
+    for (y = 0; y < height * n; y++) {
+        for (x = 0; x < width; x += 2) {
+            int temp = getc(in);
+            for (xs = 0; xs < scale; xs++) {
+                *p = temp >> 4;
+                p++;
+            }
+            for (xs = 0; xs < scale; xs++) {
+                *p = temp & 0x0f;
+                p++;
+            }
+        }
+        p += ((*surface)->pitch) - (width * scale);
+        for (ys = 1; ys < scale; ys++) {
+            for (x = 0; x < width; x++) {
+                for (xs = 0; xs < scale; xs++) {
+                    *p = *(p - (*surface)->pitch);
+                    p++;
+                }
+            }
+            p += ((*surface)->pitch) - (width * scale);
+        }
+    }
+
+    fclose(in);
+
+    return 1;
+}
+
 
 void screenDrawBorders() {
     SDL_Rect r;
