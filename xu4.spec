@@ -31,7 +31,7 @@ cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir}
 
 %install
 cd src && %{makeinstall} desktopdir=$RPM_BUILD_ROOT/etc/X11/applnk
-
+cp ~/ultima4-1.01.zip $RPM_BUILD_ROOT/%{_libdir}/u4
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -51,10 +51,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/u4/tlkconv
 %{_libdir}/u4/*.xml
 %{_libdir}/u4/graphics/*.rle
+%{_libdir}/u4/ultima4-1.01.zip
 /etc/X11/applnk/Games/u4.desktop
 
 %changelog
-* Sat Oct 22 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+* Thu Oct 23 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- added ultima 4 zipfile to project
+
+* Wed Oct 22 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - added graphics files, cleanup
 
 * Sat Aug 23 2003 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
