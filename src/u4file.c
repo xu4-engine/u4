@@ -37,7 +37,7 @@ FILE *u4fopen(const char *fname) {
         strcpy(pathname, paths[i]);
         strcat(pathname, fname);
 
-        if ((f = fopen(pathname, "r")) != NULL)
+        if ((f = fopen(pathname, "rb")) != NULL)
             break;
 
         for (j = strlen(paths[i]); pathname[j] != '\0'; j++) {
@@ -45,7 +45,7 @@ FILE *u4fopen(const char *fname) {
                 pathname[j] = toupper(pathname[j]);
         }
         
-        if ((f = fopen(pathname, "r")) != NULL)
+        if ((f = fopen(pathname, "rb")) != NULL)
             break;
 
         free(pathname);

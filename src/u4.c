@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     c->col = 0;
     c->statsItem = STATS_PARTY_OVERVIEW;
 
-    saveGameFile = fopen("party.sav", "r");
+    saveGameFile = fopen("party.sav", "rb");
     if (saveGameFile) {
         saveGameRead(c->saveGame, saveGameFile);
 		fclose(saveGameFile);

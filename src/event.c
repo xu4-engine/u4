@@ -403,7 +403,7 @@ int keyHandlerQuit(int key, void *data) {
     }
 
     if (answer == 'y' || answer == 'n') {
-        saveGameFile = fopen("party.sav", "w");
+        saveGameFile = fopen("party.sav", "wb");
         if (saveGameFile) {
             saveGameWrite(c->saveGame, saveGameFile);
             fclose(saveGameFile);
