@@ -120,6 +120,16 @@ int personGetResponse(const Person *p, const char *inquiry, char **reply, int *a
     }
 }
 
+int personGetQuestion(const Person *p, char **question) {
+    const char *fmt = "%s\n\nYou say: ";
+
+    *question = malloc(strlen(fmt) - 2 + strlen(p->question) + 1);
+
+    sprintf(*question, fmt, p->question);
+
+    return 0;
+}
+
 int personGetQuestionResponse(const Person *p, const char *response, char **reply, int *askq) {
 
     if (response[0] == 'y' || response[0] == 'Y') {
@@ -485,7 +495,7 @@ int personGetLBResponse(const Person *p, const char *inquiry, char **reply, int 
     else if (strncasecmp(inquiry, "heal", 4) == 0) {
         /* FIXME: should ask/heal party */
         *reply = strdup("He says: I am\nwell, thank ye.");
-        *askq = 0;
+        *askq = 1;
         return 0;
     }
 

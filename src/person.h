@@ -49,6 +49,7 @@ typedef struct _Person {
 int personGetIntroduction(const Person *p, char **intro);
 int personGetPrompt(const Person *p, char **prompt);
 int personGetResponse(const Person *p, const char *inquiry, char **reply, int *askq);
+int personGetQuestion(const Person *p, char **question);
 int personGetQuestionResponse(const Person *p, const char *response, char **reply, int *askq);
 
 #endif
