@@ -5,7 +5,6 @@
 #ifndef PERSON_H
 #define PERSON_H
 
-#include "savegame.h"
 #include "object.h"
 
 struct _Conversation;
@@ -63,10 +62,8 @@ typedef enum {
     CONVINPUT_NONE
 } ConversationInputType;
 
-typedef struct _PersonType {
+typedef struct _VendorType {
     char *(*getIntro)(struct _Conversation *cnv);
-    char *(*getResponse)(struct _Conversation *cnv, const char *inquiry);
-    char *(*getQuestionResponse)(struct _Conversation *cnv, const char *answer);
     char *(*getVendorQuestionResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getBuyItemResponse)(struct _Conversation *cnv, const char *inquiry);
     char *(*getSellItemResponse)(struct _Conversation *cnv, const char *inquiry);
@@ -75,7 +72,7 @@ typedef struct _PersonType {
     char *(*getContinueQuestionResponse)(struct _Conversation *cnv, const char *answer);
     char *(*getPrompt)(const struct _Conversation *cnv);
     const char *vendorQuestionChoices;
-} PersonType;
+} VendorType;
 
 typedef struct _Person {
     char *name;
@@ -101,8 +98,6 @@ typedef struct _Person {
 } Person;
 
 int personInit(void);
-int personIsJoinable(const Person *p, Virtue *v);
-int personIsJoined(const Person *p);
 void personGetConversationText(struct _Conversation *cnv, const char *inquiry, char **response);
 void personGetPrompt(const struct _Conversation *cnv, char **prompt);
 ConversationInputType personGetInputRequired(const struct _Conversation *cnv);

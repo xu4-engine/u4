@@ -21,7 +21,6 @@
 #include "music.h"
 #include "player.h"
 #include "map.h"
-#include "game.h"
 
 char **hawkwindText;
 char **lbKeywords;
@@ -41,10 +40,8 @@ void personGetQuestion(const Person *p, char **question);
 char *emptyGetIntro(Conversation *cnv);
 char *talkerGetIntro(Conversation *cnv);
 char *talkerGetResponse(Conversation *cnv, const char *inquiry);
-char *beggarGetResponse(Conversation *cnv, const char *inquiry);
 char *talkerGetQuestionResponse(Conversation *cnv, const char *inquiry);
 char *talkerGetPrompt(const Conversation *cnv);
-char *beggarGetPrompt(const Conversation *cnv);
 char *beggarGetQuantityResponse(Conversation *cnv, const char *response);
 char *lordBritishGetIntro(Conversation *cnv);
 char *lordBritishGetResponse(Conversation *cnv, const char *inquiry);
@@ -54,23 +51,16 @@ char *hawkwindGetIntro(Conversation *cnv);
 char *hawkwindGetResponse(Conversation *cnv, const char *inquiry);
 char *hawkwindGetPrompt(const Conversation *cnv);
 
-const PersonType personType[NPC_MAX] = {
-    { &emptyGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }, /* NPC_EMPTY */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER */
-    { &talkerGetIntro, &beggarGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, &beggarGetQuantityResponse, NULL, NULL, &beggarGetPrompt, NULL }, /* NPC_TALKER_BEGGAR */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER_GUARD */
-    { &talkerGetIntro, &talkerGetResponse, &talkerGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, NULL, &talkerGetPrompt, NULL }, /* NPC_TALKER_COMPANION */
-    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_WEAPONS */
-    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_ARMOR */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_FOOD */
-    { &vendorGetIntro, NULL, NULL, &vendorGetVendorQuestionResponse, NULL, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "af\033" }, /* NPC_VENDOR_TAVERN */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_REAGENTS */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_HEALER */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_INN */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_GUILD */
-    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_STABLE */
-    { &lordBritishGetIntro, &lordBritishGetResponse, &lordBritishGetQuestionResponse, NULL, NULL, NULL, NULL, NULL, NULL, &lordBritishGetPrompt, NULL }, /* NPC_LORD_BRITISH */
-    { &hawkwindGetIntro, &hawkwindGetResponse, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &hawkwindGetPrompt, NULL } /* NPC_HAWKWIND */
+const VendorType vendorType[] = {
+    { &vendorGetIntro, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_WEAPONS */
+    { &vendorGetIntro, &vendorGetVendorQuestionResponse, &vendorGetBuyItemResponse, &vendorGetSellItemResponse, &vendorGetBuyQuantityResponse, &vendorGetSellQuantityResponse, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "bs\033" }, /* NPC_VENDOR_ARMOR */
+    { &vendorGetIntro, NULL, NULL, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_FOOD */
+    { &vendorGetIntro, &vendorGetVendorQuestionResponse, NULL, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, "af\033" }, /* NPC_VENDOR_TAVERN */
+    { &vendorGetIntro, NULL, &vendorGetBuyItemResponse, NULL, &vendorGetBuyQuantityResponse, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_REAGENTS */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_HEALER */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, &vendorGetContinueQuestionResponse, &vendorGetPrompt, NULL }, /* NPC_VENDOR_INN */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_GUILD */
+    { &vendorGetIntro, NULL, NULL, NULL, NULL, NULL, NULL, &vendorGetPrompt, NULL }, /* NPC_VENDOR_STABLE */
 };
 
 /**
@@ -94,102 +84,87 @@ int personInit() {
     return vendorInit();
 }
 
-int personIsJoinable(const Person *p, Virtue *v) {
-    int i;
-
-    if (!p || !p->name)
-        return 0;
-    for (i = 1; i < 8; i++) {
-        if (strcmp(c->saveGame->players[i].name, p->name) == 0) {
-            if (v)
-                *v = (Virtue) c->saveGame->players[i].klass;
-            return 1;
-        }
-            
-    }
-    return 0;
-}
-
-int personIsJoined(const Person *p) {
-    int i;
-
-    if (!p || !p->name)
-        return 0;
-    for (i = 1; i < c->saveGame->members; i++) {
-        if (strcmp(c->saveGame->players[i].name, p->name) == 0)
-            return 1;
-    }
-    return 0;
+int personIsVendor(const Person *person) {
+    return 
+        person->npcType >= NPC_VENDOR_WEAPONS &&
+        person->npcType <= NPC_VENDOR_STABLE;
 }
 
 void personGetConversationText(Conversation *cnv, const char *inquiry, char **response) {
-    switch (cnv->state) {
-    case CONV_INTRO:
-        if (personType[cnv->talker->npcType].getIntro)
-            *response = (*personType[cnv->talker->npcType].getIntro)(cnv);
-        else
-            *response = strdup("BUG: no intro handler for npc");
-        return;
 
-    case CONV_TALK:
-        if (personType[cnv->talker->npcType].getResponse)
-            *response = (*personType[cnv->talker->npcType].getResponse)(cnv, inquiry);
-        else
-            *response = strdup("BUG: no response handler for npc");
-        return;
+    /*
+     * a convsation with a vendor
+     */
+    if (personIsVendor(cnv->talker)) {
+        switch (cnv->state) {
+        case CONV_INTRO:
+            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getIntro)(cnv);
+            return;
+        case CONV_VENDORQUESTION:
+            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getVendorQuestionResponse)(cnv, inquiry);
+            return;
+        case CONV_BUY_ITEM:
+            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getBuyItemResponse)(cnv, inquiry);
+            return;
+        case CONV_SELL_ITEM:
+            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getSellItemResponse)(cnv, inquiry);
+            return;
+        case CONV_BUY_QUANTITY:
+            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getBuyQuantityResponse)(cnv, inquiry);
+            return;
+        case CONV_SELL_QUANTITY:
+            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getSellQuantityResponse)(cnv, inquiry);
+            return;
+        case CONV_CONTINUEQUESTION:
+            *response = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getContinueQuestionResponse)(cnv, inquiry);
+            return;
+        default:
+            assert(0);          /* shouldn't happen */
 
-    case CONV_ASK:
-        if (personType[cnv->talker->npcType].getQuestionResponse)
-            *response = (*personType[cnv->talker->npcType].getQuestionResponse)(cnv, inquiry);
-        else
-            *response = strdup("BUG: no question response handler for npc");
-        break;
+        }
+    } 
+
+    /*
+     * a conversation with a non-vendor
+     */
+    else {
+        switch (cnv->state) {
+        case CONV_INTRO:
+            if (cnv->talker->npcType == NPC_EMPTY)
+                *response = emptyGetIntro(cnv);
+            else if (cnv->talker->npcType == NPC_LORD_BRITISH)
+                *response = lordBritishGetIntro(cnv);
+            else if (cnv->talker->npcType == NPC_HAWKWIND)
+                *response = hawkwindGetIntro(cnv);
+            else 
+                *response = talkerGetIntro(cnv);
+            return;
+
+        case CONV_TALK:
+            if (cnv->talker->npcType == NPC_LORD_BRITISH)
+                *response = lordBritishGetResponse(cnv, inquiry);
+            else if (cnv->talker->npcType == NPC_HAWKWIND)
+                *response = hawkwindGetResponse(cnv, inquiry);
+            else 
+                *response = talkerGetResponse(cnv, inquiry);
+            return;
+
+        case CONV_ASK:
+            assert(cnv->talker->npcType != NPC_HAWKWIND);
+            if (cnv->talker->npcType == NPC_LORD_BRITISH)
+                *response = lordBritishGetQuestionResponse(cnv, inquiry);
+            else 
+                *response = talkerGetQuestionResponse(cnv, inquiry);
+            return;
     
-    case CONV_VENDORQUESTION:
-        if (personType[cnv->talker->npcType].getVendorQuestionResponse)
-            *response = (*personType[cnv->talker->npcType].getVendorQuestionResponse)(cnv, inquiry);
-        else
-            *response = strdup("BUG: no vendor question handler for npc");
-        break;
+        case CONV_BUY_QUANTITY:
+            assert(cnv->talker->npcType == NPC_TALKER_BEGGAR);
+            *response = beggarGetQuantityResponse(cnv, inquiry);
+            return;
 
-    case CONV_BUY_ITEM:
-        if (personType[cnv->talker->npcType].getBuyItemResponse)
-            *response = (*personType[cnv->talker->npcType].getBuyItemResponse)(cnv, inquiry);
-        else
-            *response = strdup("BUG: no buy item response handler for npc");
-        break;
-
-    case CONV_SELL_ITEM:
-        if (personType[cnv->talker->npcType].getSellItemResponse)
-            *response = (*personType[cnv->talker->npcType].getSellItemResponse)(cnv, inquiry);
-        else
-            *response = strdup("BUG: no sell item response handler for npc");
-        break;
-
-    case CONV_BUY_QUANTITY:
-        if (personType[cnv->talker->npcType].getBuyQuantityResponse)
-            *response = (*personType[cnv->talker->npcType].getBuyQuantityResponse)(cnv, inquiry);
-        else
-            *response = strdup("BUG: no buy quantity response handler for npc");
-        break;
-
-    case CONV_SELL_QUANTITY:
-        if (personType[cnv->talker->npcType].getSellQuantityResponse)
-            *response = (*personType[cnv->talker->npcType].getSellQuantityResponse)(cnv, inquiry);
-        else
-            *response = strdup("BUG: no sell quantity response handler for npc");
-        break;
-
-    case CONV_CONTINUEQUESTION:
-        if (personType[cnv->talker->npcType].getContinueQuestionResponse)
-            *response = (*personType[cnv->talker->npcType].getContinueQuestionResponse)(cnv, inquiry);
-        else
-            *response = strdup("BUG: no continue question response handler for npc");
-        break;
-
-    case CONV_DONE:
-    default:
-        assert(0);              /* shouldn't happen */
+        default:
+            assert(0);          /* shouldn't happen */
+        }
     }
 }
 
@@ -197,11 +172,14 @@ void personGetConversationText(Conversation *cnv, const char *inquiry, char **re
  * Get the prompt shown after each reply.
  */
 void personGetPrompt(const Conversation *cnv, char **prompt) {
-
-    if (personType[cnv->talker->npcType].getPrompt)
-        *prompt = (*personType[cnv->talker->npcType].getPrompt)(cnv);
-    else
-        *prompt = strdup("BUG!!");
+    if (cnv->talker->npcType == NPC_LORD_BRITISH)
+        *prompt = lordBritishGetPrompt(cnv);
+    else if (cnv->talker->npcType == NPC_HAWKWIND)
+        *prompt = hawkwindGetPrompt(cnv);
+    else if (personIsVendor(cnv->talker))
+        *prompt = (*vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].getPrompt)(cnv);
+    else 
+        *prompt = talkerGetPrompt(cnv);
 }
 
 ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
@@ -232,11 +210,12 @@ ConversationInputType personGetInputRequired(const struct _Conversation *cnv) {
 const char *personGetChoices(const struct _Conversation *cnv) {
     switch (cnv->state) {
     case CONV_VENDORQUESTION:
-        return personType[cnv->talker->npcType].vendorQuestionChoices;
+        assert(personIsVendor(cnv->talker));
+        return vendorType[cnv->talker->npcType - NPC_VENDOR_WEAPONS].vendorQuestionChoices;
 
     case CONV_BUY_ITEM:
     case CONV_SELL_ITEM:
-        return "bcdefghijklmnopqrstuvwxyz\033";
+        return "abcdefghijklmnopqrstuvwxyz\033";
 
     case CONV_CONTINUEQUESTION:
         return "ny\033";
@@ -317,14 +296,18 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, "give", 4) == 0) {
-        reply = concat(cnv->talker->pronoun, 
-                       " says: I do not need thy gold.  Keep it!",
-                       NULL);
+        if (cnv->talker->npcType == NPC_TALKER_BEGGAR) {
+            reply = strdup("");
+            cnv->state = CONV_BUY_QUANTITY;
+        } else
+            reply = concat(cnv->talker->pronoun, 
+                           " says: I do not need thy gold.  Keep it!",
+                           NULL);
     }
 
     else if (strncasecmp(inquiry, "join", 4) == 0) {
         Virtue v;
-        if (personIsJoinable(cnv->talker, &v)) {
+        if (playerCanPersonJoin(c->saveGame, cnv->talker->name, &v)) {
             if (playerJoin(c->saveGame, cnv->talker->name)) {
                 reply = strdup("I am honored to join thee!");
                 statsUpdate();
@@ -347,19 +330,6 @@ char *talkerGetResponse(Conversation *cnv, const char *inquiry) {
     return reply;
 }
 
-char *beggarGetResponse(Conversation *cnv, const char *inquiry) {
-    char *reply;
-
-    if (strncasecmp(inquiry, "give", 4) == 0) {
-        reply = strdup("");
-        cnv->state = CONV_BUY_QUANTITY;
-    }
-    else
-        reply = talkerGetResponse(cnv, inquiry);
-
-    return reply;
-}
-
 char *talkerGetQuestionResponse(Conversation *cnv, const char *answer) {
     char *reply;
 
@@ -368,13 +338,13 @@ char *talkerGetQuestionResponse(Conversation *cnv, const char *answer) {
     if (tolower(answer[0]) == 'y') {
         reply = strdup(cnv->talker->yesresp);
         if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
-            gameLostEighth(playerAdjustKarma(c->saveGame, KA_BRAGGED));
+            playerAdjustKarma(c->saveGame, KA_BRAGGED);
     }
 
     else if (tolower(answer[0]) == 'n') {
         reply = strdup(cnv->talker->noresp);
         if (cnv->talker->questionType == QUESTION_HUMILITY_TEST)
-            gameLostEighth(playerAdjustKarma(c->saveGame, KA_HUMBLE));
+            playerAdjustKarma(c->saveGame, KA_HUMBLE);
     }
 
     else
@@ -388,19 +358,10 @@ char *talkerGetPrompt(const Conversation *cnv) {
 
     if (cnv->state == CONV_ASK)
         personGetQuestion(cnv->talker, &prompt);
-    else
-        prompt = strdup("\nYour Interest:\n");
-
-    return prompt;
-}
-
-char *beggarGetPrompt(const Conversation *cnv) {
-    char *prompt;
-
-    if (cnv->state == CONV_BUY_QUANTITY)
+    else if (cnv->state == CONV_BUY_QUANTITY)
         prompt = strdup("How much? ");
     else
-        prompt = talkerGetPrompt(cnv);
+        prompt = strdup("\nYour Interest:\n");
 
     return prompt;
 }
@@ -426,41 +387,45 @@ char *beggarGetQuantityResponse(Conversation *cnv, const char *response) {
     return reply;
 }
 
-char *lordBritishCheckLevels(Conversation *cnv) {
+void lordBritishCheckLevels(Conversation *cnv) {
     int i;
-    char buffer[10];
-    char *msg, *tmp;
 
-    msg = strdup("");
     for (i = 0; i < c->saveGame->members; i++) {
-        if (playerGetRealLevel(&c->saveGame->players[i]) < playerGetMaxLevel(&c->saveGame->players[i])) {
+        if (playerGetRealLevel(&c->saveGame->players[i]) < 
+            playerGetMaxLevel(&c->saveGame->players[i]))
             playerAdvanceLevel(&c->saveGame->players[i]);
-            tmp = msg;
-            sprintf(buffer, "%d", playerGetRealLevel(&c->saveGame->players[i]));
-            msg = concat(tmp, c->saveGame->players[i].name, " Thou art now Level ", buffer, "\n", NULL);
-            statsUpdate();
-        }
     }
-
-    return msg;
 }
 
 char *lordBritishGetIntro(Conversation *cnv) {
-    char *leveled, *intro;
+    char *intro;
 
     musicLordBritish();
 
-    leveled = lordBritishCheckLevels(cnv);
+    lordBritishCheckLevels(cnv);
 
-    if (c->saveGame->lbintro)
-        intro = concat(leveled, 
-                       "Lord British\nsays:  Welcome\n",
-                       c->saveGame->players[0].name,
-                       " and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n",
-                       NULL);
+    if (c->saveGame->lbintro) {
+        if (c->saveGame->members == 1)
+            intro = concat("Lord British\nsays:  Welcome\n",
+                           c->saveGame->players[0].name,
+                           "\nWhat would thou\nask of me?\n",
+                           NULL);
+        else if (c->saveGame->members == 2)
+            intro = concat("Lord British\nsays:  Welcome\n",
+                           c->saveGame->players[0].name,
+                           " and thee also ",
+                           c->saveGame->players[1].name,
+                           "!\nWhat would thou\nask of me?\n",
+                           NULL);
+        else
+            intro = concat("Lord British\nsays:  Welcome\n",
+                           c->saveGame->players[0].name,
+                           " and thy\nworthy\nAdventurers!\nWhat would thou\nask of me?\n",
+                           NULL);
+            
+    }
     else {
-        intro = concat(leveled, 
-                       "Lord British rises and says: At long last!\n thou hast come!  We have waited such a long, long time...\n",
+        intro = concat("Lord British rises and says: At long last!\n thou hast come!  We have waited such a long, long time...\n",
                        NULL);
         c->saveGame->lbintro = 1;
     }
@@ -499,8 +464,8 @@ char *lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
 char *lordBritishGetQuestionResponse(Conversation *cnv, const char *answer) {
     int i;
     char *reply;
-    cnv->state = CONV_TALK;
 
+    cnv->state = CONV_TALK;
 
     if (tolower(answer[0]) == 'y') {
         reply = strdup("\nHe says: That is good.\n");
@@ -536,7 +501,7 @@ char *lordBritishGetPrompt(const Conversation *cnv) {
 char *hawkwindGetIntro(Conversation *cnv) {
     char *intro;
 
-    gameLostEighth(playerAdjustKarma(c->saveGame, KA_HAWKWIND));
+    playerAdjustKarma(c->saveGame, KA_HAWKWIND);
 
     intro = concat(hawkwindText[HW_WELCOME], 
                    c->saveGame->players[0].name,
