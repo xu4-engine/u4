@@ -7,12 +7,16 @@
 
 #include "direction.h"
 #include "dngview.h"
+#include "u4file.h"
 
 #if __GNUC__
 #define PRINTF_LIKE(x,y)  __attribute__ ((format (printf, (x), (y))))
 #else
 #define PRINTF_LIKE(x,y)
 #endif
+
+struct _Tileset;
+struct _Image;
 
 typedef enum {
     BKGD_BORDERS,
@@ -68,6 +72,10 @@ void screenFreeBackgrounds();
 const char *screenGetVgaFilename(BackgroundType bkgd);
 const char *screenGetEgaFilename(BackgroundType bkgd);
 
+int screenLoadImageEga(struct _Image **image, int width, int height, U4FILE *file, CompressionType comp);
+int screenLoadImageVga(struct _Image **image, int width, int height, U4FILE *file, CompressionType comp);
+struct _Image *screenScale(struct _Image *src, int scale, int n, int filter);
+
 void screenCycle(void);
 void screenEraseMapArea(void);
 void screenEraseTextArea(int x, int y, int width, int height);
@@ -81,7 +89,7 @@ void screenRedrawScreen(void);
 void screenRedrawTextArea(int x, int y, int width, int height);
 void screenScrollMessageArea(void);
 void screenShake(int iterations);
-void screenShowTile(unsigned char tile, int focus, int x, int y);
+void screenShowTile(struct _Tileset* tileset, unsigned char tile, int focus, int x, int y);
 void screenShowGemTile(unsigned char tile, int focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);

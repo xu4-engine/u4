@@ -15,7 +15,10 @@
 
 #include "context.h"
 #include "error.h"
+#include "list.h"
 #include "monster.h"
+#include "settings.h"
+#include "u4file.h"
 #include "xml.h"
 
 /* attr masks */
@@ -39,24 +42,153 @@
 
 /* tile values 0-127 */
 int tileInfoLoaded = 0;
-Tile _ttype_info[256];
-Tile _dng_ttype_info[256];
 TileRule *tile_rules = NULL;
 int numRules = 0;
-int baseChest = -1;
-int baseShip = -1;
-int baseHorse = -1;
-int baseBalloon = -1;
-int mapTile = 0,
-    dngTile = 0;    
 
-int tileLoadTileInfo(Tile *current, xmlNodePtr node);
+ListNode *tilesetList = NULL;  
+
+void tilesetLoad(const char *filename, const char *image, int w, int h, int bpp, CompressionType comp, TilesetType type);
+void tileLoadRulesFromXml();
+int tileLoadTileInfo(Tile** tiles, int index, xmlNodePtr node);
 int ruleLoadProperties(TileRule *rule, xmlNodePtr node);
 Tile *tileFindByName(const char *name);
 TileRule *ruleFindByName(const char *name);
 
+/**
+ * Loads all tilesets using the filename
+ * indicated by 'tilesetFilename' as a definition
+ */
+void tilesetLoadAllTilesetsFromXml(const char *tilesetFilename) {
+    if (tileInfoLoaded)
+        return;
+
+    tileInfoLoaded = 1;
+
+    tileLoadRulesFromXml();
+    tilesetLoad("tiles.xml", "shapes.vga", 16, 16, 8, COMP_NONE, TILESET_BASE);
+    tilesetLoad("dungeonTiles.xml", NULL, 0, 0, 0, COMP_NONE, TILESET_DUNGEON);
+}
+
+/**
+ * Delete all tilesets
+ */
+void tilesetDeleteAllTilesets() {
+    ListNode *node = tilesetList;
+    Tileset* tileset;
+    
+    while(node) {
+        tileset = (Tileset*)node->data;
+        if (tileset) {
+            free(tileset->tiles);
+        }
+        free(node->data);
+        node = node->next;
+    }
+
+    listDelete(tilesetList);
+    tilesetList = NULL;
+}
+
+/**
+ * Loads a tileset from the .xml file indicated by 'filename'
+ */
+void tilesetLoad(const char *filename, const char *image, int w, int h, int bpp, CompressionType comp, TilesetType type) {
+    xmlDocPtr doc;
+    xmlNodePtr root, node;
+    Tileset *tileset;    
+    ListNode *list = tilesetList;
+    
+    /* make sure we aren't loading the same type of tileset twice */
+    while (list) {
+        if (type == ((Tileset*)list->data)->type)
+            errorFatal("error: tileset of type %d already loaded", type);
+        list = list->next;
+    }
+    
+    /* open the filename for the tileset and parse it! */
+    doc = xmlParse(filename);
+    root = xmlDocGetRootElement(doc);
+    if (xmlStrcmp(root->name, (const xmlChar *) "tiles") != 0)
+        errorFatal("malformed %s", filename);
+
+    tileset = (Tileset *)malloc(sizeof(Tileset));
+    if (tileset == NULL)
+        errorFatal("error allocating memory for tileset");
+    tileset->tileWidth = w;
+    tileset->tileHeight = h;
+    tileset->bpp = bpp;
+    tileset->compType = comp;
+    tileset->type = type;
+    tileset->numTiles = 0;
+    tileset->totalFrames = 0;
+    tileset->tileGraphic = NULL;
+    tileset->tiles = NULL;
+
+    /* count how many tiles are in the tileset */
+    for (node = root->xmlChildrenNode; node; node = node->next) {
+        if (xmlNodeIsText(node) || xmlStrcmp(node->name, "tile") != 0)
+            continue;
+        else tileset->numTiles++;
+    }
+
+    if (tileset->numTiles > 0) {
+        /* FIXME: eventually, each tile definition won't be duplicated,
+           so this will work as it should.  For now, we stick to 256 tiles
+        tileset->tiles = (Tile*)malloc(sizeof(Tile) * (tileset->numTiles + 1));
+        */
+        tileset->tiles = (Tile*)malloc(sizeof(Tile) * 257);
+
+        if (tileset->tiles == NULL)
+            errorFatal("error allocating memory for tiles");
+        
+        for (node = root->xmlChildrenNode; node; node = node->next) {
+            if (xmlNodeIsText(node) || xmlStrcmp(node->name, "tile") != 0)
+                continue;
+            
+            tileLoadTileInfo(&tileset->tiles, tileset->totalFrames, node);
+            tileset->totalFrames += tileset->tiles[tileset->totalFrames].frames;            
+        }
+    }
+    else errorFatal("Error: no 'tile' nodes defined in %s", filename);    
+
+    /* FIXME: move to tilesetLoadTileImage() function */
+    /***/
+    if (image) {
+        U4FILE *file = u4fopen(image);    
+        if (file)
+            screenLoadImageVga(&tileset->tileGraphic, w, h * tileset->totalFrames, file, comp);
+        u4fclose(file);
+
+        tileset->tileGraphic = screenScale(tileset->tileGraphic, settings->scale, tileset->totalFrames, 1);
+    }
+    /***/
+
+    tilesetList = listAppend(tilesetList, tileset);
+    xmlFree(doc);
+}
+
+/**
+ * Returns the tileset of the given type, if it is already loaded
+ */
+Tileset *tilesetGetByType(TilesetType type) {
+    ListNode *node;    
+
+    node = tilesetList;
+    while (node) {
+        if (((Tileset*)node->data)->type == type)
+            return (Tileset*)node->data;
+        node = node->next;
+    }
+    
+    errorFatal("Tileset of type %d not found", type);
+    return NULL;
+}
+
+/**
+ * 
+ */
 Tile *tileCurrentTilesetInfo() {
-    return (c && c->location) ? c->location->tileset_info : _ttype_info;
+    return (c && c->location) ? c->location->tileset->tiles : tilesetGetByType(TILESET_BASE)->tiles;
 }
 
 /**
@@ -101,90 +233,8 @@ void tileLoadRulesFromXml() {
 
     if (ruleFindByName("default") == NULL)
         errorFatal("no 'default' rule found in tileRules.xml");
-}
 
-/**
- * Load tile information from xml.
- */
-void tileLoadInfoFromXml() {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;
-    Tile *tile;
-
-    if (tileInfoLoaded)
-        return;
-
-    tileInfoLoaded = 1;
-
-    tileLoadRulesFromXml();
-
-    doc = xmlParse("tiles.xml");
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "tiles") != 0)
-        errorFatal("malformed tiles.xml");
-    
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        /* load tile info from the xml node */
-        tileLoadTileInfo(_ttype_info, node);
-    }
-
-    xmlFreeDoc(doc);
-    
-    doc = xmlParse("dungeonTiles.xml");
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "tiles") != 0)
-        errorFatal("malformed dungeonTiles.xml");
-
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        /* load tile info from the xml node */
-        tileLoadTileInfo(_dng_ttype_info, node);
-    }
-
-    /* ensure information for all non-monster tiles was loaded */
-    if (mapTile != 256)
-        errorFatal("tiles.xml contained %d entries (must be 256)\n", mapTile);
-
-    /* FIXME: this is not very clean; baseChest, baseHorse, etc. should be removed */
-    /* find the base tiles for each item */
-
-    /* find base chest tile */
-    tile = tileFindByName("chest");
-    if (tile)
-        baseChest = tile->index;
-
-    /* find base ship tile */
-    tile = tileFindByName("ship");
-    if (tile)
-        baseShip = tile->index;
-        
-    /* find base horse tile */
-    tile = tileFindByName("horse");
-    if (tile)
-        baseHorse = tile->index;
-
-    /* find base balloon tile */
-    tile = tileFindByName("balloon");
-    if (tile)
-        baseBalloon = tile->index;
-
-    /* make sure all of our "base" tiles have been found */   
-    if (baseChest == -1)
-        errorFatal("tile attributes: a tile must have the \"chest\" attribute");
-
-    if (baseShip == -1 ||
-        !tileIsShip((unsigned char)(baseShip + 1)) ||
-        !tileIsShip((unsigned char)(baseShip + 2)) ||
-        !tileIsShip((unsigned char)(baseShip + 3)))
-        errorFatal("tile attributes: four consecutive tiles must have the \"ship\" attribute");
-
-    if (baseHorse == -1 ||
-        !tileIsHorse((unsigned char)(baseHorse + 1)))
-        errorFatal("tile attributes: two consecutive tiles must have the \"horse\" attribute");
-
-    if (baseBalloon == -1)
-        errorFatal("tile attributes: a tile must have the \"balloon\" attribute");
-
-    xmlFreeDoc(doc);
+    xmlFree(doc);
 }
 
 /**
@@ -192,22 +242,16 @@ void tileLoadInfoFromXml() {
  * is a valid tile node.  This loads in both <tile> and 
  * <dngTile> nodes.
  */
-int tileLoadTileInfo(Tile* current, xmlNodePtr node) {    
-    int *indexPtr, i;
+int tileLoadTileInfo(Tile** tiles, int index, xmlNodePtr node) {    
+    int i;
     Tile tile, *tilePtr;
 
     /* ignore 'text' nodes */        
     if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
         return 1;
-
-    /* a standard map tile */
-    if (current == _ttype_info)
-        indexPtr = &mapTile;
-    else if (current = _dng_ttype_info)
-        indexPtr = &dngTile;    
-        
+            
     tile.name = xmlGetPropAsStr(node, "name"); /* get the name of the tile */
-    tile.index = *indexPtr; /* get the index of the tile */
+    tile.index = index; /* get the index of the tile */
     tile.frames = 1;
     tile.animated = xmlGetPropAsBool(node, "animated"); /* see if the tile is animated */
     tile.opaque = xmlGetPropAsBool(node, "opaque"); /* see if the tile is opaque */
@@ -216,7 +260,7 @@ int tileLoadTileInfo(Tile* current, xmlNodePtr node) {
     if (xmlPropExists(node, "displayTile"))
         tile.displayTile = xmlGetPropAsInt(node, "displayTile");
     else
-        tile.displayTile = *indexPtr; /* itself */    
+        tile.displayTile = index; /* itself */    
 
     /* find the rule that applies to the current tile, if there is one.
        if there is no rule specified, it defaults to the "default" rule */
@@ -231,11 +275,10 @@ int tileLoadTileInfo(Tile* current, xmlNodePtr node) {
     if (xmlPropExists(node, "frames"))
         tile.frames = xmlGetPropAsInt(node, "frames");
     
-    tilePtr = &current[*indexPtr];    
+    tilePtr = (*tiles) + index;
     for (i = 0; i < tile.frames; i++) {        
         memcpy(tilePtr + i, &tile, sizeof(Tile));
-        (tilePtr + i)->index += i; /* fix the index */
-        (*indexPtr)++;
+        (tilePtr + i)->index += i; /* fix the index */        
     }
     
     return 1;
@@ -364,17 +407,11 @@ TileRule *ruleFindByName(const char *name) {
 
 int tileTestBit(unsigned char tile, unsigned short mask) {
     Tile *tileset = tileCurrentTilesetInfo();
-    if (!tileInfoLoaded)
-        tileLoadInfoFromXml();
-
     return (tileset[tile].rule->mask & mask) != 0;
 }
 
 int tileTestMovementBit(unsigned char tile, unsigned short mask) {
     Tile *tileset = tileCurrentTilesetInfo();
-    if (!tileInfoLoaded)
-        tileLoadInfoFromXml();
-
     return (tileset[tile].rule->movementMask & mask) != 0;
 }
 
@@ -441,7 +478,7 @@ int tileIsChest(unsigned char tile) {
 }
 
 unsigned char tileGetChestBase() {
-    return baseChest;
+    return tileFindByName("chest")->index;
 }
 
 int tileIsShip(unsigned char tile) {
@@ -449,7 +486,7 @@ int tileIsShip(unsigned char tile) {
 }
 
 unsigned char tileGetShipBase() {
-    return baseShip;
+    return tileFindByName("ship")->index;
 }
 
 int tileIsPirateShip(unsigned char tile) {
@@ -463,7 +500,7 @@ int tileIsHorse(unsigned char tile) {
 }
 
 unsigned char tileGetHorseBase() {
-    return baseHorse;
+    return tileFindByName("horse")->index;
 }
 
 int tileIsBalloon(unsigned char tile) {
@@ -471,7 +508,7 @@ int tileIsBalloon(unsigned char tile) {
 }
 
 unsigned char tileGetBalloonBase() {
-    return baseBalloon;
+    return tileFindByName("balloon")->index;
 }
 
 int tileCanDispel(unsigned char tile) {
@@ -480,11 +517,11 @@ int tileCanDispel(unsigned char tile) {
 
 Direction tileGetDirection(unsigned char tile) {
     if (tileIsShip(tile))
-        return (Direction) (tile - baseShip + DIR_WEST);
+        return (Direction) (tile - tileFindByName("ship")->index + DIR_WEST);
     if (tileIsPirateShip(tile))
         return (Direction) (tile - PIRATE_TILE + DIR_WEST);
     else if (tileIsHorse(tile))
-        return tile == baseHorse ? DIR_WEST : DIR_EAST;
+        return tile == tileFindByName("horse")->index ? DIR_WEST : DIR_EAST;
     else
         return DIR_WEST;        /* some random default */
 }
@@ -498,11 +535,11 @@ int tileSetDirection(unsigned char *tile, Direction dir) {
         return 0;
 
     if (tileIsShip(*tile))
-        *tile = baseShip + dir - DIR_WEST;
+        *tile = tileFindByName("ship")->index + dir - DIR_WEST;
     else if (tileIsPirateShip(*tile))
         *tile = PIRATE_TILE + dir - DIR_WEST;
     else if (tileIsHorse(*tile))
-        *tile = (dir == DIR_WEST ? baseHorse : baseHorse + 1);
+        *tile = (dir == DIR_WEST ? tileFindByName("horse")->index : tileFindByName("horse")->index + 1);
     else   
         newDir = 0;
 
@@ -518,25 +555,17 @@ int tileCanTalkOver(unsigned char tile) {
 
 TileSpeed tileGetSpeed(unsigned char tile) {
     Tile *tileset = tileCurrentTilesetInfo();
-    if (!tileInfoLoaded)
-        tileLoadInfoFromXml();
-
     return tileset[tile].rule->speed;
 }
 
 TileEffect tileGetEffect(unsigned char tile) {
     Tile *tileset = tileCurrentTilesetInfo();
-    if (!tileInfoLoaded)
-        tileLoadInfoFromXml();
-
     return tileset[tile].rule->effect;
 }
 
 TileAnimationStyle tileGetAnimationStyle(unsigned char tile) {
     Tile *tileset = tileCurrentTilesetInfo();
-    if (!tileInfoLoaded)
-        tileLoadInfoFromXml();
-
+   
     if (tileset[tile].animated)
         return ANIM_SCROLL;
     else if (tile == 75)

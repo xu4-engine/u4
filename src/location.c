@@ -24,7 +24,7 @@ Location *locationPop(Location **stack);
  */
 Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationContext ctx,
                       FinishTurnCallback finishTurnCallback, MoveCallback moveCallback,
-                      TileAt tileAtCallback, Tile *tileset_info, Location *prev) {
+                      TileAt tileAtCallback, Tileset *tileset, Location *prev) {
 
     Location *newLoc = (Location *)malloc(sizeof(Location));
 
@@ -37,7 +37,7 @@ Location *locationNew(int x, int y, int z, Map *map, int viewmode, LocationConte
     newLoc->finishTurn = finishTurnCallback;
     newLoc->move = moveCallback;
     newLoc->tileAt = tileAtCallback;
-    newLoc->tileset_info = tileset_info;
+    newLoc->tileset = tileset;
     newLoc->activePlayer = -1;
     
     return locationPush(prev, newLoc);    

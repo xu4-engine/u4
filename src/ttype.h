@@ -6,6 +6,7 @@
 #define TTYPE_H
 
 #include "direction.h"
+#include "u4file.h"
 
 #define DEEP_WATER_TILE 0x0
 #define WATER_TILE 0x1
@@ -86,6 +87,12 @@ typedef enum {
     ANIM_FOURFRAMES
 } TileAnimationStyle;
 
+typedef enum {
+    TILESET_BASE,
+    TILESET_DUNGEON,
+    TILESET_GEM
+} TilesetType;
+
 typedef struct _TileRule {
     const char *name;
     unsigned short mask;    
@@ -98,13 +105,44 @@ typedef struct _TileRule {
 
 typedef struct _Tile {    
     const char *name;
+    int id;
     int index;
     int frames;
-    unsigned char displayTile;
-    unsigned char animated;
+    unsigned char displayTile; /* FIXME: this will go away soon */
+    unsigned char animated; /* FIXME: this will be changed to 'animation' of type TileAnimationStyle */
     unsigned char opaque;
     TileRule *rule;
 } Tile;
+
+/* FIXME: to be done (something like this)
+typedef struct _TileGraphic {
+    const char *filename;
+    int tileWidth;
+    int tileHeight;
+    int bpp;
+    VideoType mode;
+    struct _Image *graphic;
+} TileGraphic;
+*/
+
+typedef struct _Tileset {    
+    TilesetType type;
+    CompressionType compType;    
+    int numTiles;
+    int totalFrames;
+    int tileWidth;
+    int tileHeight;    
+    int bpp;
+    Tile *tiles;
+    struct _Image *tileGraphic;
+    /* FIXME: to be implemented instead of above (using TileGraphic above for data)
+    ListNode *graphics;
+    */
+} Tileset;
+
+void tilesetLoadAllTilesetsFromXml(const char *tilesetFilename);
+void tilesetDeleteAllTilesets();
+Tileset *tilesetGetByType(TilesetType type);
 
 int tileCanWalkOn(unsigned char tile, Direction d);
 int tileCanWalkOff(unsigned char tile, Direction d);
@@ -139,8 +177,5 @@ TileAnimationStyle tileGetAnimationStyle(unsigned char tile);
 void tileAdvanceFrame(unsigned char *tile);
 int tileIsOpaque(unsigned char tile);
 unsigned char tileForClass(int klass);
-
-extern Tile _ttype_info[256];
-extern Tile _dng_ttype_info[256];
 
 #endif

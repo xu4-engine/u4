@@ -8,6 +8,12 @@
 #include <stdio.h>
 #include "unzip.h"
 
+typedef enum {
+    COMP_NONE,
+    COMP_RLE,
+    COMP_LZW
+} CompressionType;
+
 typedef struct {
     enum {
         STDIO_FILE,

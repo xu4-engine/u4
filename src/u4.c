@@ -21,6 +21,7 @@
 #include "screen.h"
 #include "settings.h"
 #include "sound.h"
+#include "ttype.h"
 
 #if defined(MACOSX)
 #include "macosx/osxinit.h"
@@ -69,6 +70,8 @@ int main(int argc, char *argv[]) {
     soundInit();
     eventHandlerInit();
 
+    tilesetLoadAllTilesetsFromXml("tilesets.xml");
+
     if (!skipIntro) {
         /* do the intro */
         introInit();
@@ -102,6 +105,8 @@ int main(int argc, char *argv[]) {
     eventHandlerPopKeyHandler();
 
     gameCleanup();
+
+    tilesetDeleteAllTilesets();
 
     eventHandlerDelete();
     soundDelete();

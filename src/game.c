@@ -148,7 +148,7 @@ void gameInit() {
     c = (Context *) malloc(sizeof(Context));
     c->saveGame = (SaveGame *) malloc(sizeof(SaveGame));    
     c->annotation = NULL;    
-    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, &gameFinishTurn, &gameMoveAvatar, &mapTileAt, _ttype_info, NULL);
+    c->location = locationNew(0, 0, 0, mapMgrGetById(MAP_WORLD), VIEW_NORMAL, CTX_WORLDMAP, &gameFinishTurn, &gameMoveAvatar, &mapTileAt, tilesetGetByType(TILESET_BASE), NULL);
     c->conversation.talker = NULL;
     c->conversation.state = 0;
     c->conversation.playerInquiryBuffer[0] = '\0';
@@ -317,7 +317,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
     FinishTurnCallback finishTurn = &gameFinishTurn;
     MoveCallback move = &gameMoveAvatar;
     TileAt tileAt = &mapTileAt;
-    Tile *tileset_info = _ttype_info;
+    Tileset *tileset = tilesetGetByType(TILESET_BASE);
     int activePlayer = ct->location->activePlayer;
 
     if (portal) {
@@ -341,7 +341,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         viewMode = VIEW_DUNGEON;
         c->saveGame->orientation = DIR_EAST;
         move = &gameMoveAvatarInDungeon;
-        tileset_info = _dng_ttype_info;
+        tileset = tilesetGetByType(TILESET_DUNGEON);        
         break;
     case MAPTYPE_COMBAT:
         x = y = -1; /* set these to -1 just to be safe; we don't need them */
@@ -361,7 +361,7 @@ void gameSetMap(Context *ct, Map *map, int saveLocation, const Portal *portal) {
         break;
     }
     
-    ct->location = locationNew(x, y, z, map, viewMode, context, finishTurn, move, tileAt, tileset_info, ct->location);    
+    ct->location = locationNew(x, y, z, map, viewMode, context, finishTurn, move, tileAt, tileset, ct->location);    
     ct->location->activePlayer = activePlayer;
 
     if ((map->type == MAPTYPE_TOWN ||

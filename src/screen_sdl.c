@@ -24,12 +24,6 @@
 #include "u4file.h"
 #include "xml.h"
 
-typedef enum {
-    COMP_NONE,
-    COMP_RLE,
-    COMP_LZW
-} CompressionType;
-
 long decompress_u4_file(FILE *in, long filesize, void **out);
 long decompress_u4_memory(void *in, long inlen, void **out);
 
@@ -43,9 +37,6 @@ int screenLoadGemTiles();
 int screenLoadCharSet();
 int screenLoadPaletteEga();
 int screenLoadPaletteVga(const char *filename);
-int screenLoadImageEga(Image **image, int width, int height, U4FILE *file, CompressionType comp);
-int screenLoadImageVga(Image **image, int width, int height, U4FILE *file, CompressionType comp);
-Image *screenScale(Image *src, int scale, int n, int filter);
 
 SDL_Surface *screen;
 Image *bkgds[BKGD_MAX];
@@ -234,8 +225,7 @@ void screenInit() {
 }
 
 void screenDelete() {
-    screenFreeBackgrounds();
-    imageDelete(tiles);
+    screenFreeBackgrounds();    
     imageDelete(charset);
     u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
@@ -833,16 +823,19 @@ void screenShowCharMasked(int chr, int x, int y, unsigned char mask) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowTile(unsigned char tile, int focus, int x, int y) {
+void screenShowTile(Tileset *tileset, unsigned char tile, int focus, int x, int y) {
     int offset, i, swaprow;
     SDL_Rect src, dest;
     int unscaled_x, unscaled_y;
+    /* FIXME: remove global "Image *tiles" definition entirely */
+    Image *tiles = tileset->tileGraphic; /* get the graphic to use for the tile */
 
     if (tileGetAnimationStyle(tile) == ANIM_SCROLL)
         offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * scale;
     else
         offset = 0;
-
+    
+    /* FIXME: work dynamically with the width/height of tiles in tileset */
     src.x = 0;
     src.y = tile * (tiles->h / N_TILES);
     src.w = tiles->w;
