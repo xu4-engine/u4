@@ -433,6 +433,8 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
         combatFinishTurn();
         if (weaponReturns(weapon))
             combatReturnWeaponToOwner(oldx, oldy, distance-1, data);
+        if ((distance > 1 && weaponLoseWhenRanged(weapon)) || weaponLoseWhenUsed(weapon))
+            playerLoseWeapon(c->saveGame, info->player);
 
         return 1;
     }
@@ -465,19 +467,15 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
 
     if (!playerAttackHit(&c->saveGame->players[focus])) {
         screenMessage("Missed!\n");
-
+        
         /* show the 'miss' tile */
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, misstile), (attackdelay + 8)/8));
-        gameUpdateScreen();
-        eventHandlerSleep((attackdelay + 2)*40);
+        attackFlash(x, y, misstile, 1);
 
     } else {
         m = combat_monsters[monster]->monster;
 
         /* show the 'hit' tile */
-        annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, hittile), (attackdelay + 8)/8));
-        gameUpdateScreen();
-        eventHandlerSleep((attackdelay + 2)*40);
+        attackFlash(x, y, hittile, 1);
 
         if (m->tile != LORDBRITISH_TILE)
             monsterHp[monster] -= playerGetDamage(&c->saveGame->players[focus]);
@@ -519,6 +517,8 @@ int combatAttackAtCoord(int x, int y, int distance, void *data) {
 
     if (weaponReturns(weapon))
         combatReturnWeaponToOwner(x, y, distance, data);
+    if ((distance > 1 && weaponLoseWhenRanged(weapon)) || weaponLoseWhenUsed(weapon))
+        playerLoseWeapon(c->saveGame, info->player);
     
     combatFinishTurn();
 
@@ -837,4 +837,15 @@ int movePartyMember(Direction dir, int member) {
  done:
 
     return result;
+}
+
+
+void attackFlash(int x, int y, int tile, int timeFactor) {
+    int attackdelay = settings->attackdelay;
+    int divisor = 8 * timeFactor;
+    int mult = 10 * timeFactor;
+
+    annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, tile), (attackdelay + divisor)/divisor));
+    gameUpdateScreen();
+    eventHandlerSleep(attackdelay * mult);    
 }

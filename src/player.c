@@ -664,3 +664,14 @@ int playerGetDamage(const SaveGamePlayerRecord *player) {
 int playerIsHitByAttack(const SaveGamePlayerRecord *player) {
     return (rand() % 256) > armorGetDefense(player->armor);
 }
+
+/**
+ * Lose a weapon for the player (flaming oil, ranged daggers, etc.)
+ */
+
+int playerLoseWeapon(SaveGame *saveGame, int player) {
+    int i, weapon = saveGame->players[player].weapon;
+    if (saveGame->weapons[weapon] > 0)
+        saveGame->weapons[weapon]--;
+    else saveGame->players[player].weapon = WEAP_HANDS;
+}

@@ -32,5 +32,8 @@ int weaponCanReady(int weapon, const char *className);
 int weaponCanAttackThroughObjects(int weapon);
 int weaponRangeAbsolute(int weapon);
 int weaponReturns(int weapon);
+int weaponLoseWhenUsed(int weapon);
+int weaponLoseWhenRanged(int weapon);
+int weaponCanChooseDistance(int weapon);
 
 #endif

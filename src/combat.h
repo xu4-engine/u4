@@ -18,5 +18,6 @@ typedef enum {
 
 void combatBegin(unsigned char partytile, unsigned short transport, struct _Object *monster);
 struct _Map *getCombatMapForTile(unsigned char partytile, unsigned short transport);
+void attackFlash(int x, int y, int tile, int timeFactor);
 
 #endif

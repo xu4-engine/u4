@@ -1306,6 +1306,7 @@ int fireAtCoord(int x, int y, int distance, void *data) {
     int oldx = info->prev_x,
         oldy = info->prev_y;  
     int attackdelay = settings->attackdelay;
+    int validObject = 0;
     
     info->prev_x = x;
     info->prev_y = y;
@@ -1321,21 +1322,26 @@ int fireAtCoord(int x, int y, int distance, void *data) {
         gameFinishTurn();
         return 1;
     }
-    else {        
+    else {
         Object *obj = NULL;
 
         obj = mapObjectAt(c->location->map, x, y, c->location->z);
-        if (obj && (obj->objType == OBJECT_MONSTER || obj->objType == OBJECT_UNKNOWN)) {
-            if (rand() % 2 == 0)
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, MISSFLASH_TILE), (attackdelay + 8)/8));
-            else {
-                annotationSetVisual(annotationSetTimeDuration(annotationAdd(x, y, c->location->z, c->location->map->id, HITFLASH_TILE), (attackdelay + 8)/8));
-                if (rand() % 2 == 0)
-                    mapRemoveObject(c->location->map, obj);                
-            }
+                
+        /* FIXME: there's got to be a better way make whirlpools and storms impervious to cannon fire */
+        if (obj && (obj->objType == OBJECT_MONSTER) &&
+                (obj->monster->id != WHIRLPOOL_ID) && (obj->monster->id != STORM_ID))
+            validObject = 1;
+        else if (obj && (obj->objType == OBJECT_UNKNOWN))
+            validObject = 1;
 
-            gameUpdateScreen();
-            eventHandlerSleep((attackdelay + 2)*60);
+        if (validObject)       
+        {
+            /* always displays as a 'hit', though the monster may not be destroyed */
+            attackFlash(x, y, HITFLASH_TILE, 2);            
+            
+            /* inanimate objects get destroyed instantly */
+            if ((obj->objType == OBJECT_UNKNOWN) || (rand() % 2 == 0))
+                mapRemoveObject(c->location->map, obj);            
             
             gameFinishTurn();
             return 1;
@@ -1347,8 +1353,8 @@ int fireAtCoord(int x, int y, int distance, void *data) {
         /* Based on attack speed setting in setting struct, make a delay for
            the attack annotation */
         if (attackdelay > 0)
-            eventHandlerSleep(attackdelay * 6);
-    }       
+            eventHandlerSleep(attackdelay * 4);
+    }
 
     return 0;
 }

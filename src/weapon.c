@@ -39,7 +39,7 @@ void weaponLoadInfoFromXml() {
     } booleanAttributes[] = {
         { "lose", MASK_LOSE },
         { "losewhenranged", MASK_LOSEWHENRANGED },
-        { "choosedistance", MASK_CHOOSEDISTANCE },
+        { "choosedistance", MASK_CHOOSEDISTANCE | MASK_ABSOLUTERANGE },        
         { "alwayshits", MASK_ALWAYSHITS },
         { "magic", MASK_MAGIC },
         { "attackthroughobjects", MASK_ATTACKTHROUGHOBJECTS },
@@ -260,6 +260,8 @@ int weaponCanReady(int weapon, const char *className) {
  */
 
 int weaponCanAttackThroughObjects(int weapon) {
+    weaponLoadInfoFromXml();
+
     return (weapons[weapon].mask & MASK_ATTACKTHROUGHOBJECTS);
 }
 
@@ -268,6 +270,8 @@ int weaponCanAttackThroughObjects(int weapon) {
  */
 
 int weaponRangeAbsolute(int weapon) {
+    weaponLoadInfoFromXml();
+
     return (weapons[weapon].mask & MASK_ABSOLUTERANGE);
 }
 
@@ -276,5 +280,37 @@ int weaponRangeAbsolute(int weapon) {
  */
 
 int weaponReturns(int weapon) {
+    weaponLoadInfoFromXml();
+
     return (weapons[weapon].mask & MASK_RETURNS);
+}
+
+/**
+ * Return true if the weapon is lost when used
+ */
+
+int weaponLoseWhenUsed(int weapon) {
+    weaponLoadInfoFromXml();
+
+    return (weapons[weapon].mask & MASK_LOSE);
+}
+
+/**
+ * Returns true if the weapon is lost if it is a ranged attack
+ */
+
+int weaponLoseWhenRanged(int weapon) {
+    weaponLoadInfoFromXml();
+
+    return (weapons[weapon].mask & MASK_LOSEWHENRANGED);
+}
+
+/**
+ * Return true if the weapon allows you to choose the distance
+ */
+
+int weaponCanChooseDistance(int weapon) {
+    weaponLoadInfoFromXml();
+
+    return (weapons[weapon].mask & MASK_CHOOSEDISTANCE);
 }
