@@ -1194,6 +1194,7 @@ bool GameController::keyPressed(int key) {
         break;
 
     case 'o':
+        ///  XXX: Pressing "o" should close any open door.
         if (c->party->isFlying())
             screenMessage("Open; Not Here!\n");
         else {
@@ -1202,7 +1203,7 @@ bool GameController::keyPressed(int key) {
             info->origin = c->location->coords;
             info->prev = MapCoords(-1, -1);
             info->range = 1;
-            info->validDirections = MASK_DIR_ALL;
+            info->validDirections = MASK_DIR_WEST | MASK_DIR_EAST;
             info->player = -1;
             info->blockedPredicate = NULL;
             info->blockBefore = 0;
