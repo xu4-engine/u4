@@ -116,7 +116,7 @@ public:
     void setArmor(ArmorType a);
     void setWeapon(WeaponType w);    
     
-    virtual bool applyDamage(int damage);    
+    virtual bool applyDamage(int damage, bool byplayer = false);    
     virtual bool attackHit(Creature *m);
     virtual bool dealDamage(Creature *m, int damage);
     int getDamage();   

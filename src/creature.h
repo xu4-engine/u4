@@ -194,7 +194,7 @@ public:
     virtual void setStatus(StatusType status);
     virtual void wakeUp();
 
-    virtual bool applyDamage(int damage);
+    virtual bool applyDamage(int damage, bool byplayer = true);
     virtual bool dealDamage(Creature *m, int damage);
 
     // Properties

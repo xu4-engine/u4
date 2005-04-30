@@ -177,8 +177,11 @@ bool Creature::specialAction() {
     case HYDRA_ID:
     case DRAGON_ID:       
         
-        /* A 50/50 chance they try to range attack when you're close enough */
-        if (mapdist <= 3 && xu4_random(2) == 0)                
+        /* A 50/50 chance they try to range attack when you're close enough 
+           and not in a city
+           Note: Monsters in settlements in U3 do fire on party
+        */
+        if (mapdist <= 3 && xu4_random(2) == 0 && (c->location->context & CTX_CITY) == 0)
             gameDirectionalAction(info);       
         
         break;
@@ -498,13 +501,13 @@ void Creature::applyTileEffect(TileEffect effect) {
         case EFFECT_FIRE:
             /* deal 0 - 127 damage to the creature if it is not immune to fire damage */
             if (!(resists & (EFFECT_FIRE | EFFECT_LAVA)))
-                applyDamage(xu4_random(0x7F));
+                applyDamage(xu4_random(0x7F), false);
             break;
 
         case EFFECT_POISONFIELD:
             /* deal 0 - 127 damage to the creature if it is not immune to poison field damage */
             if (resists != EFFECT_POISONFIELD)
-                applyDamage(xu4_random(0x7F));
+                applyDamage(xu4_random(0x7F), false);
             break;
 
         case EFFECT_POISON:
@@ -640,8 +643,12 @@ void Creature::wakeUp() {
  * Applies damage to the creature.
  * Returns true if the creature still exists after the damage has been applied
  * or false, if the creature was destroyed
+ *
+ * If byplayer is false (when a monster is killed by walking through
+ * fire or poison, or as a result of jinx) we don't report experience
+ * on death
  */
-bool Creature::applyDamage(int damage) {
+bool Creature::applyDamage(int damage, bool byplayer) {
     /* deal the damage */
     if (id != LORDBRITISH_ID)
         AdjustValueMin(hp, -damage, 0);    
@@ -649,8 +656,11 @@ bool Creature::applyDamage(int damage) {
     switch (getState()) {
 
     case MSTAT_DEAD:        
+      if (byplayer)
         screenMessage("%s Killed!\nExp. %d\n", name.c_str(), xp);        
-        
+      else
+        screenMessage("%s Killed!\n", name.c_str());        
+
         // Remove yourself from the map
         remove();
         return false;        
@@ -680,7 +690,7 @@ bool Creature::applyDamage(int damage) {
 
 bool Creature::dealDamage(Creature *m, int damage) {
     soundPlay(SOUND_CREATUREATTACK, false);
-    return m->applyDamage(damage);
+    return m->applyDamage(damage, true);  /// XXX: Need to handle Jinx here
 }
 
 /**

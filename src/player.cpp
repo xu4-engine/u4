@@ -374,8 +374,12 @@ void PartyMember::setWeapon(WeaponType w) {
 /**
  * Applies damage to a player, and changes status to dead if hit
  * points drop to zero or below.
+ * 
+ * Byplayer is ignored for now, since it should always be false for U4.  (Is
+ * there anything special about being killed by a party member in U5?)  Also
+ * keeps interface consistent for virtual base function Creature::applydamage()
  */
-bool PartyMember::applyDamage(int damage) {
+bool PartyMember::applyDamage(int damage, bool) {
     int newHp = player->hp;
 
     if (getStatus() == STAT_DEAD)
@@ -415,6 +419,8 @@ bool PartyMember::applyDamage(int damage) {
  * Determine whether a player's attack hits or not.
  */
 bool PartyMember::attackHit(Creature *m) {
+    if (!m)
+        return false;
     if (Weapon::get(player->weapon)->alwaysHits() || player->dex >= 40)
         return true;
 
@@ -1069,6 +1075,10 @@ void Party::reviveParty() {
         saveGame->players[i].hp = saveGame->players[i].hpMax;
     }
     
+    for (int i = ARMR_NONE + 1; i < ARMR_MAX; i++)
+        saveGame->armor[i] = 0;
+    for (int i = WEAP_HANDS + 1; i < WEAP_MAX; i++)
+        saveGame->weapons[i] = 0;
     saveGame->food = 20099;
     saveGame->gold = 200;
     setTransport(Tileset::findTileByName("avatar")->id);
