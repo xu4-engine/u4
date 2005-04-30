@@ -222,12 +222,12 @@ int codexHandleWOP(string *word) {
     if (strcasecmp(word->c_str(), "veramocor") == 0) {        
         tries = 1; /* reset 'tries' in case we need to enter this again later */
 
-	/* eject them if they don't have all 8 party members */
-	if (c->saveGame->members != 8) {
-	  codexEject(CODEX_EJECT_NO_FULL_PARTY);
-		  return 0;
-	}
-	
+        /* eject them if they don't have all 8 party members */
+        if (c->saveGame->members != 8) {
+            codexEject(CODEX_EJECT_NO_FULL_PARTY);
+            return 0;
+        }
+        
         /* eject them if they're not a full avatar at this point */
         for (i = 0; i < VIRT_MAX; i++) {
             if (c->saveGame->karma[i] != 0) {
