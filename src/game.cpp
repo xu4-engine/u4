@@ -1671,6 +1671,23 @@ bool gameZtatsKeyHandler(int key, void *data) {
     case U4_RIGHT:
         c->stats->nextItem();
         break;
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+        if (c->saveGame->members >= key - '0') {
+            c->stats->setView(StatsView(STATS_CHAR1 + key - '1'));
+            break;
+        } else {
+            return true;
+        }
+    case '0':
+        c->stats->setView(StatsView(STATS_WEAPONS));
+        break;
     default:
         eventHandler->popKeyHandler();
         (*c->location->finishTurn)();
@@ -2952,7 +2969,8 @@ void talkRunConversation(bool showPrompt) {
             break;
         }
     }
-    screenMessage("\n");
+    if (c->conversation->reply)
+        screenMessage("%s", c->conversation->reply->front());
     (*c->location->finishTurn)();
 }
 
