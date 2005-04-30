@@ -1473,6 +1473,12 @@
             <end/>
         </buy>       
 
+        <cantpay>
+            
+            It seems thou hast not gold enough to pay!
+            <end/>
+        </cantpay>
+
         <vendor id="Paws" price="{math({party:members}*100)}"/>
     </script>
     
