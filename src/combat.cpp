@@ -109,7 +109,7 @@ void CombatController::init(class Creature *m) {
     winOrLose = true;
     map->setDungeonRoom(false);
     map->setAltarRoom(VIRT_NONE);
-    showMessage = false;
+    showMessage = true;
     camping = false;
     inn = false;
 
