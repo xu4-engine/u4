@@ -2043,10 +2043,15 @@ bool attackAtCoord(MapCoords coords, int distance, void *data) {
     }
 
     /* attack successful */
-    ground = c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS);
-    if ((under = c->location->map->objectAt(c->location->coords)) &&
-        under->getTile().isShip())
-        ground = &under->getTile();
+    /// TODO: CHEST: Make a user option to not make chests change battlefield
+    /// map (1 of 2)
+    ground = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
+    if (! ground->isChest()) {
+        ground = c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS);
+        if ((under = c->location->map->objectAt(c->location->coords)) && 
+            under->getTile().isShip())
+            ground = &under->getTile();
+    }
 
     /* You're attacking a townsperson!  Alert the guards! */
     if ((m->getType() == Object::PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))
@@ -3194,8 +3199,9 @@ void gameCheckBridgeTrolls() {
     Creature *m;
     static const TileId bridge = Tileset::findTileByName("bridge")->id;
 
+    // TODO: CHEST: Make a user option to not make chests block bridge trolls
     if (!c->location->map->isWorldMap() ||
-        c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS)->id != bridge ||
+        c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->id != bridge ||
         xu4_random(8) != 0)
         return;
 
@@ -3384,10 +3390,15 @@ void gameCreatureAttack(Creature *m) {
     
     screenMessage("\nAttacked by %s\n", m->getName().c_str());
 
-    ground = c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS);
-    if ((under = c->location->map->objectAt(c->location->coords)) &&
-        under->getTile().isShip())
-        ground = &under->getTile();
+    /// TODO: CHEST: Make a user option to not make chests change battlefield
+    /// map (2 of 2)
+    ground = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
+    if (! ground->isChest()) {
+        ground = c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS);
+        if ((under = c->location->map->objectAt(c->location->coords)) && 
+            under->getTile().isShip())
+            ground = &under->getTile();
+    }
 
     delete c->combat;
     c->combat = new CombatController(CombatMap::mapForTile(*ground, c->party->transport, m));

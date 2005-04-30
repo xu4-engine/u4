@@ -79,7 +79,9 @@ void moveAvatar(MoveEvent &event) {
         /* Are we slowed by terrain or by wind direction? */
         switch(slowedType) {
         case SLOWED_BY_TILE:
-            slowed = slowedByTile(*c->location->map->tileAt(newCoords, WITHOUT_OBJECTS));
+          // TODO: CHEST: Make a user option to not make chests always fast to
+          // travel over
+            slowed = slowedByTile(*c->location->map->tileAt(newCoords, WITH_OBJECTS));
             break;
         case SLOWED_BY_WIND:
             slowed = slowedByWind(event.dir);
