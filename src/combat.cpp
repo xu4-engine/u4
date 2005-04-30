@@ -595,7 +595,7 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
         }
     
         /* Did the weapon miss? */
-        if ((cm->id == 24 && !weapon->isMagic()) || /* non-magical weapon in the Abyss */
+        if ((c->location->prev->map->id == MAP_ABYSS && !weapon->isMagic()) || /* non-magical weapon in the Abyss */
             !attacker->attackHit(creature)) { /* player naturally missed */
             screenMessage("Missed!\n");
         
