@@ -142,6 +142,11 @@ void codexEject(CodexEjectCode code) {
     case CODEX_EJECT_NO_3_PART_KEY:
         screenMessage("\nThou dost not have the Key of Three Parts.\n\n");
         break;    
+    case CODEX_EJECT_NO_FULL_PARTY:
+      screenMessage("\nThou hast not proved thy leadership in all eight virtues.\n\n");
+      EventHandler::sleep(2000);
+      screenMessage("\nPassage is not granted.\n\n");      
+      break;
     case CODEX_EJECT_NO_FULL_AVATAR:
         screenMessage("\nThou art not ready.\n");
         EventHandler::sleep(2000);
@@ -217,6 +222,12 @@ int codexHandleWOP(string *word) {
     if (strcasecmp(word->c_str(), "veramocor") == 0) {        
         tries = 1; /* reset 'tries' in case we need to enter this again later */
 
+	/* eject them if they don't have all 8 party members */
+	if (c->saveGame->members != 8) {
+	  codexEject(CODEX_EJECT_NO_FULL_PARTY);
+		  return 0;
+	}
+	
         /* eject them if they're not a full avatar at this point */
         for (i = 0; i < VIRT_MAX; i++) {
             if (c->saveGame->karma[i] != 0) {
