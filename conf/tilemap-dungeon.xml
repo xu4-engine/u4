@@ -12,7 +12,7 @@
     <map frames="16" tile="floor_hole"/>
     <map frames="16" tile="magic_orb"/>
     
-    <map frames="16" tile="brick_floor"/>
+    <map frames="16" tile="ceiling_hole"/>
     <!--
     <map tile="wind_trap"/>
     <map tile="falling_rock_trap"/>

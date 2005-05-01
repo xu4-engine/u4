@@ -44,8 +44,10 @@ string Dungeon::getName() {
 DungeonToken dungeonTokenForTile(MapTile tile) {    
     const static std::string tileNames[] = {
         "brick_floor", "up_ladder", "down_ladder", "up_down_ladder", "chest",
-        "ceiling_hole", "floor_hole", "magic_orb", "brick_floor", "fountain", 
-        "brick_floor", "dungeon_altar", "dungeon_door", "dungeon_room", "secret_door", "brick_wall", ""
+        "unimpl_ceiling_hole", "unimpl_floor_hole", "magic_orb", 
+        "ceiling_hole", "fountain", 
+        "brick_floor", "dungeon_altar", "dungeon_door", "dungeon_room",
+        "secret_door", "brick_wall", ""
     };
 
     const static std::string fieldNames[] = { "poison_field", "energy_field", "fire_field", "sleep_field", "" };
@@ -254,9 +256,15 @@ bool dungeonHandleTrap(TrapType trap) {
         c->party->quenchTorch();
         break;
     case TRAP_FALLING_ROCK:
-        /* FIXME: implement */
+        // Treat falling rocks and pits like bomb traps
+        // XXX: That's a little harsh.
+        screenMessage("\nFalling Rocks!\n");
+        c->party->applyEffect(EFFECT_LAVA);
+        break;
     case TRAP_PIT:
-        /* FIXME: implement */
+        screenMessage("\nPit!\n");
+        c->party->applyEffect(EFFECT_LAVA);
+        break;
     default: break;
     }
 
