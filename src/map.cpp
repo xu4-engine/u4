@@ -484,12 +484,11 @@ ObjectDeque::iterator Map::removeObject(ObjectDeque::iterator rem, bool deleteOb
  * Also performs special creature actions and creature effects.
  */
 Creature *Map::moveObjects(MapCoords avatar) {        
-    ObjectDeque::iterator i;
     Creature *attacker = NULL;
-
-    for (i = objects.begin(); i != objects.end(); i++) {
-        Creature *m = dynamic_cast<Creature*>(*i);
-
+    
+    for (u_int i = 0; i < objects.size(); i++) {
+        Creature *m = dynamic_cast<Creature*>(objects[i]);
+        
         if (m) {
             /* check if the object is an attacking creature and not
                just a normal, docile person in town or an inanimate object */
