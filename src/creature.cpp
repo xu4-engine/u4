@@ -689,8 +689,9 @@ bool Creature::applyDamage(int damage, bool byplayer) {
 }
 
 bool Creature::dealDamage(Creature *m, int damage) {
+    bool isPlayer = ((dynamic_cast<PartyMember*>(this)) != NULL);
     soundPlay(SOUND_CREATUREATTACK, false);
-    return m->applyDamage(damage, true);  /// XXX: Need to handle Jinx here
+    return m->applyDamage(damage, isPlayer);
 }
 
 /**

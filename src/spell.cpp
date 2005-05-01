@@ -98,7 +98,7 @@ const Spell spells[] = {
     { "Heal",         GINSENG | SILK,           CTX_ANY,        TRANSPORT_ANY,  &spellHeal,    Spell::PARAM_PLAYER,  10 },
     { "Iceball",      PEARL | MANDRAKE,         CTX_COMBAT,     TRANSPORT_ANY,  &spellIceball, Spell::PARAM_DIR,     20 },
     { "Jinx",         PEARL | NIGHTSHADE | MANDRAKE,
-                                                CTX_COMBAT,     TRANSPORT_ANY,  &spellJinx,    Spell::PARAM_NONE,    30 },
+                                                CTX_ANY,        TRANSPORT_ANY,  &spellJinx,    Spell::PARAM_NONE,    30 },
     { "Kill",         PEARL | NIGHTSHADE,       CTX_COMBAT,     TRANSPORT_ANY,  &spellKill,    Spell::PARAM_DIR,     25 },
     { "Light",        ASH,                      CTX_DUNGEON,    TRANSPORT_ANY,  &spellLight,   Spell::PARAM_NONE,    5 },
     { "Magic missile", ASH | PEARL,             CTX_COMBAT,     TRANSPORT_ANY,  &spellMMissle, Spell::PARAM_DIR,     5 },
