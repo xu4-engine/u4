@@ -500,7 +500,7 @@ void Creature::applyTileEffect(TileEffect effect) {
         case EFFECT_LAVA:
         case EFFECT_FIRE:
             /* deal 0 - 127 damage to the creature if it is not immune to fire damage */
-            if (!(resists & (EFFECT_FIRE | EFFECT_LAVA)))
+	    if ((resists != EFFECT_FIRE) && (resists != EFFECT_LAVA))
                 applyDamage(xu4_random(0x7F), false);
             break;
 
@@ -768,8 +768,8 @@ void CreatureMgr::loadInfoFromXml() {
         const char *name;
         TileEffect effect;
     } effects[] = {
-        { "fire", (TileEffect)(EFFECT_FIRE | EFFECT_LAVA) },
-        { "poison", (TileEffect)(EFFECT_POISON | EFFECT_POISONFIELD) },
+        { "fire", EFFECT_FIRE },
+        { "poison", EFFECT_POISONFIELD },
         { "sleep", EFFECT_SLEEP }
     };    
 
