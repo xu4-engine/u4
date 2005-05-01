@@ -100,7 +100,10 @@ void screenMessage(const char *fmt, ...) {
             c->col++;
             continue;
         }
-        
+        /* don't show a space in column 1.  Helps with Hawkwind. */
+        if (buffer[i] == ' ' && c->col == 0)
+          continue; 
+
         screenShowChar(buffer[i], TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
         c->col++;
     }

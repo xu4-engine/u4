@@ -355,7 +355,7 @@ string talkerGetIntro(Conversation *cnv) {
 
     prompt = personGetPrompt(cnv);
 
-    intro = "\nYou meet\n";
+    intro = "\nYou meet ";
     intro += dlg->getDesc();
     intro += "\n";
     
@@ -370,8 +370,8 @@ string talkerGetIntro(Conversation *cnv) {
 
     intro += prompt;
 
-    if (isupper(intro[9]))
-        intro[9] = tolower(intro[9]);
+    if (isupper(intro[10]))
+        intro[10] = tolower(intro[10]);
     cnv->state = Conversation::TALK;
 
     return intro;
@@ -844,7 +844,7 @@ int chars_to_next_line(const char *s, int columnmax) {
  * columnmax) in the string.
  */
 int linecount(const char *s, int columnmax) {
-    int lines = 1;
+    int lines = 0;
     while (strlen(s)) {
         s += chars_to_next_line(s, columnmax);
         if (*s != '\0')
@@ -883,6 +883,7 @@ int chars_needed(const char *s, int columnmax, int linesdesired, int *real_lines
 
     if (!paragraphs.empty()) {
         *real_lines = lines;
+        free(new_str);
         return paragraphs.length();
     }
     else {
