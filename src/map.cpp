@@ -324,6 +324,8 @@ MapTile* Map::tileAt(const Coords &coords, int withObjects) {
     if (a.size() > 0) {
         Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
+            /// FIXME: this returns an ephemeral tile!
+            /// future calls can overwrite what we return!
             if (!i->isVisualOnly())            
                 return &i->getTile();
         }
@@ -602,6 +604,9 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             tile = &obj->getTile();
         else 
             tile = tileAt(coords, WITH_OBJECTS);
+
+        MapTile tmp_copy = *tile;
+        tile = &tmp_copy;
 
         prev_tile = tileAt(from, WITHOUT_OBJECTS);
 
