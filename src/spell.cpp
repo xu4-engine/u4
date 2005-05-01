@@ -409,6 +409,13 @@ static int spellBlink(int dir) {
     Direction reverseDir = dirReverse((Direction)dir);
     MapCoords coords = c->location->coords;
     
+    /* Blink doesn't work near the mouth of the abyss */
+    /* Note: This means you can teleport to Hythloth from the top of the map,
+       and that you can teleport to the abyss from the left edge of the map,
+       Unfortunately, this matches the bugs in the game. :(  Consider fixing. */
+    if (coords.x >= 192 && coords.y >= 192)
+        return 0;
+
     /* figure out what numbers we're working with */
     var = (dir & (DIR_WEST | DIR_EAST)) ? &coords.x : &coords.y;
         
