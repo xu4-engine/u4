@@ -585,7 +585,10 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
                     EventHandler::wait_msecs(attackdelay * 2);
             }       
 
-            return 0;
+            if (distance < info->range)
+                return 0;
+            else
+                cm->annotations->remove(coords, misstile);
         }
     
         /* Check to see if the weapon is lost */

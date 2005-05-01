@@ -109,9 +109,11 @@ Weapon::Weapon(const ConfigElement &conf) {
         misstile = Tileset::findTileByName(conf.getString("misstile"))->id;
     
     /* Load leave tiles */
-    if (conf.exists("leavetile"))
+    if (conf.exists("leavetile")) {
         leavetile = Tileset::findTileByName(conf.getString("leavetile"))->id;
-        
+        mask |= MASK_LEAVETILE;
+    }
+    
     vector<ConfigElement> contraintConfs = conf.getChildren();
     for (std::vector<ConfigElement>::iterator i = contraintConfs.begin(); i != contraintConfs.end(); i++) {
         unsigned char mask = 0;
