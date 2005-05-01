@@ -138,6 +138,8 @@ MouseArea mouseAreas[] = {
     { 0 }
 };
 
+int linecount(const char *s, int columnmax);
+
 ReadPlayerController::ReadPlayerController() : ReadChoiceController("12345678 \033\n") {}
 
 bool ReadPlayerController::keyPressed(int key) {
@@ -2894,6 +2896,9 @@ bool talkAtCoord(MapCoords coords, int distance, void *data) {
 void talkRunConversation(bool showPrompt) {
 
     while (c->conversation->state != Conversation::DONE) {
+        // TODO: instead of calculating linesused again, cache the
+        // result in person.cpp somewhere.
+        int linesused = linesused = linecount(c->conversation->reply->front(), TEXT_AREA_W);
         screenMessage("%s", c->conversation->reply->front());
         int size = c->conversation->reply->size();
         c->conversation->reply->pop_front();
@@ -2938,8 +2943,11 @@ void talkRunConversation(bool showPrompt) {
 
         if (showPrompt) {
             string prompt = personGetPrompt(c->conversation);
-            if (!prompt.empty())
+            if (!prompt.empty()) {
+                if (linesused + linecount(prompt.c_str(), TEXT_AREA_W) > TEXT_AREA_H)
+                    ReadChoiceController::get("");
                 screenMessage("%s", prompt.c_str());        
+            }
         }
 
         int maxlen;
