@@ -500,7 +500,7 @@ void Creature::applyTileEffect(TileEffect effect) {
         case EFFECT_LAVA:
         case EFFECT_FIRE:
             /* deal 0 - 127 damage to the creature if it is not immune to fire damage */
-	    if ((resists != EFFECT_FIRE) && (resists != EFFECT_LAVA))
+            if ((resists != EFFECT_FIRE) && (resists != EFFECT_LAVA))
                 applyDamage(xu4_random(0x7F), false);
             break;
 
@@ -998,7 +998,6 @@ Creature *CreatureMgr::randomForDungeon(int dngLevel) {
         id_list.push_back(SLIME_ID);
         id_list.push_back(TROLL_ID);
         id_list.push_back(GREMLIN_ID);
-        id_list.push_back(MIMIC_ID);
         id_list.push_back(REAPER_ID);
         id_list.push_back(INSECT_SWARM_ID);
         id_list.push_back(GAZER_ID);
