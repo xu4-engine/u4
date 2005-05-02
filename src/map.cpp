@@ -488,7 +488,7 @@ ObjectDeque::iterator Map::removeObject(ObjectDeque::iterator rem, bool deleteOb
 Creature *Map::moveObjects(MapCoords avatar) {        
     Creature *attacker = NULL;
     
-    for (u_int i = 0; i < objects.size(); i++) {
+    for (unsigned int i = 0; i < objects.size(); i++) {
         Creature *m = dynamic_cast<Creature*>(objects[i]);
         
         if (m) {
