@@ -4,6 +4,7 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <stdlib.h>
 #include <algorithm>
 #include <functional>
 #include <vector>
@@ -170,6 +171,7 @@ void screenInit() {
     /* start SDL */
     if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
         errorFatal("unable to init SDL: %s", SDL_GetError());    
+    atexit(SDL_Quit);
 
     SDL_WM_SetCaption("Ultima IV", NULL);
 #ifdef ICON_FILE
