@@ -365,13 +365,15 @@ void useStone(void *item) {
      * in a dungeon altar room, on the altar
      */
     else if ((c->location->context & CTX_ALTAR_ROOM) &&
-        c->location->map->tileAt(coords, WITHOUT_OBJECTS)->id == Tileset::findTileByName("altar")->id) {
+             coords.x == 5 && coords.y == 5) {
         needStoneNames = 4;
         screenMessage("\n\nThere are holes for 4 stones.\nWhat colors:\nA:");        
 
         gameGetInput(&itemHandleStones, &itemNameBuffer);
     }
-    else screenMessage("\nNo place to Use them!\nHmm...No effect!\n");
+    else screenMessage("\nNo place to Use them!\n");
+    // This used to say "\nNo place to Use them!\nHmm...No effect!\n"
+    // That doesn't match U4DOS; does it match another?
 }
 
 void useKey(void *item) {
