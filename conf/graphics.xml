@@ -526,8 +526,14 @@
             <context type="frame" frame="0">
                 <transform type="invert" x="6" y="1" width="3" height="4"/>
             </context>
+            <context type="frame" frame="1">
+                <transform type="invert" x="0" y="0" width="0" height="0"/>
+            </context>
             <context type="frame" frame="2">
                 <transform type="invert" x="7" y="1" width="3" height="4"/>                
+            </context>
+            <context type="frame" frame="3">
+                <transform type="invert" x="0" y="0" width="0" height="0"/>
             </context>
         </tileanim>        
         <tileanim name="pirateflag" random="50">
