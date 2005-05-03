@@ -2463,7 +2463,8 @@ void GameController::avatarMoved(MoveEvent &event) {
     if (c->transportContext & ~TRANSPORT_BALLOON)
         gameCheckSpecialCreatures(event.dir);
     /* things that happen while on foot or horseback */
-    if (c->transportContext & TRANSPORT_FOOT_OR_HORSE) {
+    if ((c->transportContext & TRANSPORT_FOOT_OR_HORSE) &&
+        !(event.result & (MOVE_SLOWED|MOVE_BLOCKED))) {
         if (gameCheckMoongates())
             event.result = (MoveResult)(MOVE_MAP_CHANGE | MOVE_END_TURN);
     }
