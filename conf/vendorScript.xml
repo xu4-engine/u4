@@ -31,7 +31,8 @@
         <bye>
 
             {owner} says:
-            Fare thee well!<end/>
+            Fare thee well!
+        <end/>
         </bye>        
 
         <!--
@@ -362,7 +363,8 @@
         <bye>
 
             {owner} says:
-            Good Bye.<end/>
+            Good Bye.
+        <end/>
         </bye>
 
        <!--
