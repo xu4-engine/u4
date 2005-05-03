@@ -1071,6 +1071,7 @@ void Party::reviveParty() {
     int i;
 
     for (i = 0; i < size(); i++) {
+        members[i]->wakeUp();
         members[i]->setStatus(STAT_GOOD);
         saveGame->players[i].hp = saveGame->players[i].hpMax;
     }
