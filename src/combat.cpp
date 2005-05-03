@@ -621,6 +621,11 @@ bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data)
         }
     }
 
+    /* We only use the "coords" struct beyond here for magic axes and
+       flaming oils */
+    if (coords.x == -1 && coords.y == -1)
+        coords = old;
+
     /* Check to see if the weapon returns to its owner */
     if (weapon->returns())
         CombatController::returnWeaponToOwner(coords, distance, data);
@@ -1157,6 +1162,8 @@ bool CombatController::chooseWeaponRange(int key, void *data) {
     if ((key >= '0') && (key <= (info->range + '0'))) {
         info->range = key - '0';
         screenMessage("%d\n", info->range);
+        if (info->range == 0)
+            info->range = 10;
         gameDirectionalAction(info);
 
         eventHandler->popKeyHandler();
