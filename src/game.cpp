@@ -2869,13 +2869,13 @@ bool talkAtCoord(MapCoords coords, int distance, void *data) {
     Person *p = city->personAt(coords);
     c->conversation->setTalker(p);
 
+    /* make sure we have someone we can talk with */
+    if (!c->conversation->isValid())
+        return false;
+
     /* No response from alerted guards... does any monster both
        attack and talk besides Nate the Snake? */
     if  (p->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR && p->id != PYTHON_ID)
-        return false;
-
-    /* make sure we have someone we can talk with */
-    if (!c->conversation->isValid())
         return false;
 
     /* if we're talking to Lord British and the avatar is dead, LB resurrects them! */
