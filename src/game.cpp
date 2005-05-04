@@ -2866,7 +2866,13 @@ bool talkAtCoord(MapCoords coords, int distance, void *data) {
     }
 
     city = dynamic_cast<City*>(c->location->map);
-    c->conversation->setTalker(city->personAt(coords));
+    Person *p = city->personAt(coords);
+    c->conversation->setTalker(p);
+
+    /* No response from alerted guards... does any monster both
+       attack and talk besides Nate the Snake? */
+    if  (p->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR && p->id != PYTHON_ID)
+        return false;
 
     /* make sure we have someone we can talk with */
     if (!c->conversation->isValid())
