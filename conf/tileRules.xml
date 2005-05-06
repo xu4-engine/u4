@@ -34,7 +34,7 @@
     <rule name="monster" cantwalkon="all"/>    
 
     <!-- Dungeon tile rules -->
-    <rule name="dng_altar" creatureunwalkable="true"/>
+    <rule name="dng_altar" creatureunwalkable="true" unflyable="true"/>
     <rule name="dng_door" cantwalkon="retreat"/>
-    <rule name="dng_room" creatureunwalkable="true" cantwalkon="retreat"/>
+    <rule name="dng_room" creatureunwalkable="true" cantwalkon="retreat" unflyable="true"/>
 </tileRules>
