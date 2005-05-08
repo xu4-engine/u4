@@ -2413,6 +2413,8 @@ void GameController::avatarMoved(MoveEvent &event) {
                 screenMessage("Sail %s!\n", getDirectionName(event.dir));    
             else if (c->transportContext != TRANSPORT_BALLOON)
                 screenMessage("%s\n", getDirectionName(event.dir));
+            else 
+                screenMessage("Drift Only!\n");
         }
 
         /* movement was blocked */
