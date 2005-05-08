@@ -848,615 +848,618 @@ bool GameController::keyPressed(int key) {
         /* None of these? Default to search */
         if (key == U4_ENTER) key = 's';
     }
-    
-    switch (key) {
 
-    case U4_UP:
-    case U4_DOWN:
-    case U4_LEFT:
-    case U4_RIGHT:        
-        {
-            /* move the avatar */
-            MoveResult retval = c->location->move(keyToDirection(key), true);
-        
-            /* horse doubles speed (make sure we're on the same map as the previous move first) */
-            if (retval & (MOVE_SUCCEEDED | MOVE_SLOWED) && 
-                (c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
-                gameUpdateScreen(); /* to give it a smooth look of movement */
-                c->location->move(keyToDirection(key), false);
-            }
+    if ((c->location->context & CTX_DUNGEON) && strchr("abefjlotxy", key))
+        screenMessage("Not here!\n");
+    else 
+        switch (key) {
 
-            endTurn = (retval & MOVE_END_TURN); /* let the movement handler decide to end the turn */
-        }
-        
-        break;    
-
-    case U4_FKEY:
-    case U4_FKEY+1:
-    case U4_FKEY+2:
-    case U4_FKEY+3:
-    case U4_FKEY+4:
-    case U4_FKEY+5:
-    case U4_FKEY+6:
-    case U4_FKEY+7:
-        /* teleport to dungeon entrances! */
-        if (settings.debug && (c->location->context & CTX_WORLDMAP) && (c->transportContext & TRANSPORT_FOOT_OR_HORSE))
-        {
-            int portal = 16 + (key - U4_FKEY); /* find dungeon portal */
-            c->location->coords = c->location->map->portals[portal]->coords;
-        }
-        else valid = false;
-        break;
-
-    case U4_FKEY+8:
-        if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-            setMap(mapMgr->get(MAP_DECEIT), 1, NULL);
-            c->location->coords = MapCoords(1, 0, 7);            
-            c->saveGame->orientation = DIR_SOUTH;
-        }
-        else valid = false;
-        break;
-
-    case U4_FKEY+9:
-        if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-            setMap(mapMgr->get(MAP_DESPISE), 1, NULL);
-            c->location->coords = MapCoords(3, 2, 7);
-            c->saveGame->orientation = DIR_SOUTH;
-        }
-        else valid = false;
-        break;
-
-    case U4_FKEY+10:
-        if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-            setMap(mapMgr->get(MAP_DESTARD), 1, NULL);
-            c->location->coords = MapCoords(7, 6, 7);            
-            c->saveGame->orientation = DIR_SOUTH;
-        }
-        else valid = false;
-        break;
-
-    case U4_FKEY+11:
-        if (settings.debug) {
-            screenMessage("Torch: %d\n", c->party->getTorchDuration());
-            screenPrompt();
-        }
-        else valid = false;
-        break;
-
-    case 3:                     /* ctrl-C */
-        if (settings.debug) {
-            screenMessage("Cmd (h = help):");
-            eventHandler->pushKeyHandler(&gameSpecialCmdKeyHandler);            
-        }
-        else valid = false;
-        break;
-
-    case 4:                     /* ctrl-D */
-        if (settings.debug) {
-            info = new CoordActionInfo;
-            info->handleAtCoord = &destroyAtCoord;
-            info->origin = c->location->coords;            
-            info->prev = MapCoords(-1, -1);
-            info->range = 1;
-            info->validDirections = MASK_DIR_ALL;
-            info->blockedPredicate = NULL;
-            info->blockBefore = 0;
-            info->firstValidDistance = 1;
-            eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
-            screenMessage("Destroy Object\nDir: ");
-        }
-        else valid = false;
-        break;    
-
-    case 8:                     /* ctrl-H */
-        if (settings.debug) {
-            screenMessage("Help!\n");
-            screenPrompt();
+        case U4_UP:
+        case U4_DOWN:
+        case U4_LEFT:
+        case U4_RIGHT:        
+            {
+                /* move the avatar */
+                MoveResult retval = c->location->move(keyToDirection(key), true);
             
-            /* Help! send me to Lord British (who conveniently is right around where you are)! */
-            setMap(mapMgr->get(100), 1, NULL);
-            c->location->coords.x = 19;
-            c->location->coords.y = 8;
-            c->location->coords.z = 0;
-        }
-        else valid = false;
-        break;    
+                /* horse doubles speed (make sure we're on the same map as the previous move first) */
+                if (retval & (MOVE_SUCCEEDED | MOVE_SLOWED) && 
+                    (c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
+                    gameUpdateScreen(); /* to give it a smooth look of movement */
+                    c->location->move(keyToDirection(key), false);
+                }
 
-    case 22:                    /* ctrl-V */
-        {
-            extern int screen3dDungeonView;
-            if (settings.debug && c->location->context == CTX_DUNGEON) {
-                screen3dDungeonView = screen3dDungeonView ? 0 : 1;
-                screenMessage("3-D view %s\n", screen3dDungeonView ? "on" : "off");
-                endTurn = 0;
+                endTurn = (retval & MOVE_END_TURN); /* let the movement handler decide to end the turn */
+            }
+            
+            break;    
+
+        case U4_FKEY:
+        case U4_FKEY+1:
+        case U4_FKEY+2:
+        case U4_FKEY+3:
+        case U4_FKEY+4:
+        case U4_FKEY+5:
+        case U4_FKEY+6:
+        case U4_FKEY+7:
+            /* teleport to dungeon entrances! */
+            if (settings.debug && (c->location->context & CTX_WORLDMAP) && (c->transportContext & TRANSPORT_FOOT_OR_HORSE))
+            {
+                int portal = 16 + (key - U4_FKEY); /* find dungeon portal */
+                c->location->coords = c->location->map->portals[portal]->coords;
             }
             else valid = false;
-        }
-        break;    
+            break;
 
-    case ' ':
-        screenMessage("Pass\n");        
-        break;
-
-    case '+':
-    case '-':
-    case U4_KEYPAD_ENTER:
-        {
-            int old_cycles = settings.gameCyclesPerSecond;
-            if (key == '+' && ++settings.gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
-                settings.gameCyclesPerSecond = MAX_CYCLES_PER_SECOND;        
-            else if (key == '-' && --settings.gameCyclesPerSecond == 0)
-                settings.gameCyclesPerSecond = 1;
-            else if (key == U4_KEYPAD_ENTER)
-                settings.gameCyclesPerSecond = DEFAULT_CYCLES_PER_SECOND;
-
-            if (old_cycles != settings.gameCyclesPerSecond) {
-                eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
-                eventHandler->getTimer()->reset(eventTimerGranularity);                
-        
-                if (settings.gameCyclesPerSecond == DEFAULT_CYCLES_PER_SECOND)
-                    screenMessage("Speed: Normal\n");
-                else if (key == '+')
-                    screenMessage("Speed Up (%d)\n", settings.gameCyclesPerSecond);
-                else screenMessage("Speed Down (%d)\n", settings.gameCyclesPerSecond);                
+        case U4_FKEY+8:
+            if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
+                setMap(mapMgr->get(MAP_DECEIT), 1, NULL);
+                c->location->coords = MapCoords(1, 0, 7);            
+                c->saveGame->orientation = DIR_SOUTH;
             }
-            else if (settings.gameCyclesPerSecond == DEFAULT_CYCLES_PER_SECOND)
-                screenMessage("Speed: Normal\n");
-        }        
+            else valid = false;
+            break;
 
-        endTurn = false;
-        break;
+        case U4_FKEY+9:
+            if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
+                setMap(mapMgr->get(MAP_DESPISE), 1, NULL);
+                c->location->coords = MapCoords(3, 2, 7);
+                c->saveGame->orientation = DIR_SOUTH;
+            }
+            else valid = false;
+            break;
 
-    case 'a':
-        screenMessage("Attack: ");
+        case U4_FKEY+10:
+            if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
+                setMap(mapMgr->get(MAP_DESTARD), 1, NULL);
+                c->location->coords = MapCoords(7, 6, 7);            
+                c->saveGame->orientation = DIR_SOUTH;
+            }
+            else valid = false;
+            break;
 
-        if (c->party->isFlying())
-            screenMessage("\nDrift only!\n");
-        else {
-            info = new CoordActionInfo;
-            info->handleAtCoord = &attackAtCoord;
-            info->origin = c->location->coords;            
-            info->prev = MapCoords(-1, -1);
-            info->range = 1;
-            info->validDirections = MASK_DIR_ALL;
-            info->blockedPredicate = NULL;
-            info->blockBefore = 0;
-            info->firstValidDistance = 1;
-            eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));            
-        }
-        break;
+        case U4_FKEY+11:
+            if (settings.debug) {
+                screenMessage("Torch: %d\n", c->party->getTorchDuration());
+                screenPrompt();
+            }
+            else valid = false;
+            break;
 
-    case 'b':
+        case 3:                     /* ctrl-C */
+            if (settings.debug) {
+                screenMessage("Cmd (h = help):");
+                eventHandler->pushKeyHandler(&gameSpecialCmdKeyHandler);            
+            }
+            else valid = false;
+            break;
 
-        obj = c->location->map->objectAt(c->location->coords);
+        case 4:                     /* ctrl-D */
+            if (settings.debug) {
+                info = new CoordActionInfo;
+                info->handleAtCoord = &destroyAtCoord;
+                info->origin = c->location->coords;            
+                info->prev = MapCoords(-1, -1);
+                info->range = 1;
+                info->validDirections = MASK_DIR_ALL;
+                info->blockedPredicate = NULL;
+                info->blockBefore = 0;
+                info->firstValidDistance = 1;
+                eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
+                screenMessage("Destroy Object\nDir: ");
+            }
+            else valid = false;
+            break;    
 
-        if (c->transportContext != TRANSPORT_FOOT)
-            screenMessage("Board: Can't!\n");
-        else if (obj) {
-            int validTransport = 1;
+        case 8:                     /* ctrl-H */
+            if (settings.debug) {
+                screenMessage("Help!\n");
+                screenPrompt();
+                
+                /* Help! send me to Lord British (who conveniently is right around where you are)! */
+                setMap(mapMgr->get(100), 1, NULL);
+                c->location->coords.x = 19;
+                c->location->coords.y = 8;
+                c->location->coords.z = 0;
+            }
+            else valid = false;
+            break;    
+
+        case 22:                    /* ctrl-V */
+            {
+                extern int screen3dDungeonView;
+                if (settings.debug && c->location->context == CTX_DUNGEON) {
+                    screen3dDungeonView = screen3dDungeonView ? 0 : 1;
+                    screenMessage("3-D view %s\n", screen3dDungeonView ? "on" : "off");
+                    endTurn = 0;
+                }
+                else valid = false;
+            }
+            break;    
+
+        case ' ':
+            screenMessage("Pass\n");        
+            break;
+
+        case '+':
+        case '-':
+        case U4_KEYPAD_ENTER:
+            {
+                int old_cycles = settings.gameCyclesPerSecond;
+                if (key == '+' && ++settings.gameCyclesPerSecond > MAX_CYCLES_PER_SECOND)
+                    settings.gameCyclesPerSecond = MAX_CYCLES_PER_SECOND;        
+                else if (key == '-' && --settings.gameCyclesPerSecond == 0)
+                    settings.gameCyclesPerSecond = 1;
+                else if (key == U4_KEYPAD_ENTER)
+                    settings.gameCyclesPerSecond = DEFAULT_CYCLES_PER_SECOND;
+
+                if (old_cycles != settings.gameCyclesPerSecond) {
+                    eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
+                    eventHandler->getTimer()->reset(eventTimerGranularity);                
             
-            if (obj->getTile().isShip()) {
-                screenMessage("Board Frigate!\n");
-                if (c->lastShip != obj)
-                    c->party->setShipHull(50);                    
-            }
-            else if (obj->getTile().isHorse())
-                screenMessage("Mount Horse!\n");
-            else if (obj->getTile().isBalloon())
-                screenMessage("Board Balloon!\n");
-            else validTransport = 0;
+                    if (settings.gameCyclesPerSecond == DEFAULT_CYCLES_PER_SECOND)
+                        screenMessage("Speed: Normal\n");
+                    else if (key == '+')
+                        screenMessage("Speed Up (%d)\n", settings.gameCyclesPerSecond);
+                    else screenMessage("Speed Down (%d)\n", settings.gameCyclesPerSecond);                
+                }
+                else if (settings.gameCyclesPerSecond == DEFAULT_CYCLES_PER_SECOND)
+                    screenMessage("Speed: Normal\n");
+            }        
 
-            if (validTransport) {
-                c->party->setTransport(obj->getTile());
-                c->location->map->removeObject(obj);
+            endTurn = false;
+            break;
+
+        case 'a':
+            screenMessage("Attack: ");
+
+            if (c->party->isFlying())
+                screenMessage("\nDrift only!\n");
+            else {
+                info = new CoordActionInfo;
+                info->handleAtCoord = &attackAtCoord;
+                info->origin = c->location->coords;            
+                info->prev = MapCoords(-1, -1);
+                info->range = 1;
+                info->validDirections = MASK_DIR_ALL;
+                info->blockedPredicate = NULL;
+                info->blockBefore = 0;
+                info->firstValidDistance = 1;
+                eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));            
+            }
+            break;
+
+        case 'b':
+
+            obj = c->location->map->objectAt(c->location->coords);
+
+            if (c->transportContext != TRANSPORT_FOOT)
+                screenMessage("Board: Can't!\n");
+            else if (obj) {
+                int validTransport = 1;
+                
+                if (obj->getTile().isShip()) {
+                    screenMessage("Board Frigate!\n");
+                    if (c->lastShip != obj)
+                        c->party->setShipHull(50);                    
+                }
+                else if (obj->getTile().isHorse())
+                    screenMessage("Mount Horse!\n");
+                else if (obj->getTile().isBalloon())
+                    screenMessage("Board Balloon!\n");
+                else validTransport = 0;
+
+                if (validTransport) {
+                    c->party->setTransport(obj->getTile());
+                    c->location->map->removeObject(obj);
+                }
+                else screenMessage("Board What?\n");
             }
             else screenMessage("Board What?\n");
-        }
-        else screenMessage("Board What?\n");
-        break;
+            break;
 
-    case 'c':
-        screenMessage("Cast Spell!\nPlayer: ");
-        gameGetPlayerForCommand(&gameCastForPlayer, false, true);
-        break;
+        case 'c':
+            screenMessage("Cast Spell!\nPlayer: ");
+            gameGetPlayerForCommand(&gameCastForPlayer, false, true);
+            break;
 
-    case 'd':        
-        if (!usePortalAt(c->location, c->location->coords, ACTION_DESCEND)) {
-            if (c->transportContext == TRANSPORT_BALLOON) {
-                screenMessage("Land Balloon\n");
-                if (!c->party->isFlying())
-                    screenMessage("Already Landed!\n");
-                else if (c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->canLandBalloon()) {
-                    c->saveGame->balloonstate = 0;
-                    c->opacity = 1;
+        case 'd':        
+            if (!usePortalAt(c->location, c->location->coords, ACTION_DESCEND)) {
+                if (c->transportContext == TRANSPORT_BALLOON) {
+                    screenMessage("Land Balloon\n");
+                    if (!c->party->isFlying())
+                        screenMessage("Already Landed!\n");
+                    else if (c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->canLandBalloon()) {
+                        c->saveGame->balloonstate = 0;
+                        c->opacity = 1;
+                    }
+                    else screenMessage("Not Here!\n");
                 }
-                else screenMessage("Not Here!\n");
+                else screenMessage("Descend what?\n");
+            }        
+
+            break;
+
+        case 'e':
+            if (!usePortalAt(c->location, c->location->coords, ACTION_ENTER)) {
+                if (!c->location->map->portalAt(c->location->coords, ACTION_ENTER))
+                    screenMessage("Enter what?\n");
             }
-            else screenMessage("Descend what?\n");
-        }        
+            else endTurn = 0; /* entering a portal doesn't end the turn */
+            break;
 
-        break;
+        case 'f':
+            if (c->transportContext == TRANSPORT_SHIP) {
+                int broadsidesDirs = dirGetBroadsidesDirs(c->party->transport.getDirection());
 
-    case 'e':
-        if (!usePortalAt(c->location, c->location->coords, ACTION_ENTER)) {
-            if (!c->location->map->portalAt(c->location->coords, ACTION_ENTER))
-                screenMessage("Enter what?\n");
-        }
-        else endTurn = 0; /* entering a portal doesn't end the turn */
-        break;
+                info = new CoordActionInfo;
+                info->handleAtCoord = &fireAtCoord;
+                info->origin = c->location->coords;            
+                info->prev = MapCoords(-1, -1);
+                info->range = 3;
+                info->validDirections = broadsidesDirs; /* can only fire broadsides! */
+                info->player = -1;
+                info->blockedPredicate = NULL; /* nothing (not even mountains!) can block cannonballs */
+                info->blockBefore = 1;
+                info->firstValidDistance = 1;
+                eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
+                
+                screenMessage("Fire Cannon!\nDir: ");
+            }
+            else
+                screenMessage("Fire What?\n");
+            break;
 
-    case 'f':
-        if (c->transportContext == TRANSPORT_SHIP) {
-            int broadsidesDirs = dirGetBroadsidesDirs(c->party->transport.getDirection());
-
-            info = new CoordActionInfo;
-            info->handleAtCoord = &fireAtCoord;
-            info->origin = c->location->coords;            
-            info->prev = MapCoords(-1, -1);
-            info->range = 3;
-            info->validDirections = broadsidesDirs; /* can only fire broadsides! */
-            info->player = -1;
-            info->blockedPredicate = NULL; /* nothing (not even mountains!) can block cannonballs */
-            info->blockBefore = 1;
-            info->firstValidDistance = 1;
-            eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
+        case 'g':
+            screenMessage("Get Chest!\n");
             
-            screenMessage("Fire Cannon!\nDir: ");
-        }
-        else
-            screenMessage("Fire What?\n");
-        break;
-
-    case 'g':
-        screenMessage("Get Chest!\n");
+            if (c->party->isFlying())
+                screenMessage("Drift only!\n");
+            else {
+                tile = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
         
-        if (c->party->isFlying())
-            screenMessage("Drift only!\n");
-        else {
-            tile = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
-    
-            if (tile->isChest())
-            {
-                screenMessage("Who opens? ");
-                gameGetPlayerForCommand(&gameGetChest, false, true);
+                if (tile->isChest())
+                {
+                    screenMessage("Who opens? ");
+                    gameGetPlayerForCommand(&gameGetChest, false, true);
+                }
+                else
+                    screenMessage("Not here!\n");
             }
-            else
-                screenMessage("Not here!\n");
-        }
-        
-        break;
-
-    case 'h':
-        if (!(c->location->context & (CTX_WORLDMAP | CTX_DUNGEON))) {
-            screenMessage("Hole up & Camp\nNot here!\n");
+            
             break;
-        }
-        if (c->transportContext != TRANSPORT_FOOT) {
-            screenMessage("Hole up & Camp\nOnly on foot!\n");
+
+        case 'h':
+            if (!(c->location->context & (CTX_WORLDMAP | CTX_DUNGEON))) {
+                screenMessage("Hole up & Camp\nNot here!\n");
+                break;
+            }
+            if (c->transportContext != TRANSPORT_FOOT) {
+                screenMessage("Hole up & Camp\nOnly on foot!\n");
+                break;
+            }
+            screenMessage("Hole up & Camp!\n");
+            campBegin();
             break;
-        }
-        screenMessage("Hole up & Camp!\n");
-        campBegin();
-        break;
 
-    case 'i':
-        screenMessage("Ignite torch!\n");
-        if (c->location->context == CTX_DUNGEON) {
-            if (!c->party->lightTorch())
-                screenMessage("None left!\n");
-        }
-        else screenMessage("Not here!\n");
-        break;
+        case 'i':
+            screenMessage("Ignite torch!\n");
+            if (c->location->context == CTX_DUNGEON) {
+                if (!c->party->lightTorch())
+                    screenMessage("None left!\n");
+            }
+            else screenMessage("Not here!\n");
+            break;
 
-    case 'j':
-        info = new CoordActionInfo;
-        info->handleAtCoord = &jimmyAtCoord;
-        info->origin = c->location->coords;        
-        info->prev = MapCoords(-1, -1);
-        info->range = 1;
-        info->validDirections = MASK_DIR_ALL;
-        info->player = -1;
-        info->blockedPredicate = NULL;
-        info->blockBefore = 0;
-        info->firstValidDistance = 1;
-        eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
-        screenMessage("Jimmy\nDir: ");
-        break;
-
-    case 'k':        
-        if (!usePortalAt(c->location, c->location->coords, ACTION_KLIMB)) {
-            if (c->transportContext == TRANSPORT_BALLOON) {
-                c->saveGame->balloonstate = 1;
-                c->opacity = 0;
-                screenMessage("Klimb altitude\n");            
-            } else
-                screenMessage("Klimb what?\n");
-        }
-        break;
-
-    case 'l':
-        /* can't use sextant in dungeon or in combat */
-        if (c->location->context & ~(CTX_DUNGEON | CTX_COMBAT)) {
-            if (c->saveGame->sextants >= 1)
-                screenMessage("Locate position\nwith sextant\n Latitude: %c'%c\"\nLongitude: %c'%c\"\n",
-                              c->location->coords.y / 16 + 'A', c->location->coords.y % 16 + 'A',
-                              c->location->coords.x / 16 + 'A', c->location->coords.x % 16 + 'A');
-            else
-                screenMessage("Locate position with What?\n");
-        }
-        else screenMessage("Not here!\n");
-        break;
-
-    case 'm':
-        mixReagents();
-        break;
-
-    case 'n':
-        newOrder();
-        break;
-
-    case 'o':
-        ///  XXX: Pressing "o" should close any open door.
-        if (c->party->isFlying())
-            screenMessage("Open; Not Here!\n");
-        else {
+        case 'j':
             info = new CoordActionInfo;
-            info->handleAtCoord = &openAtCoord;
-            info->origin = c->location->coords;
+            info->handleAtCoord = &jimmyAtCoord;
+            info->origin = c->location->coords;        
             info->prev = MapCoords(-1, -1);
             info->range = 1;
-            info->validDirections = MASK_DIR_WEST | MASK_DIR_EAST;
+            info->validDirections = MASK_DIR_ALL;
             info->player = -1;
             info->blockedPredicate = NULL;
             info->blockBefore = 0;
             info->firstValidDistance = 1;
             eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
-            screenMessage("Open\nDir: ");
-        }
-        break;
+            screenMessage("Jimmy\nDir: ");
+            break;
 
-    case 'p':
-        peer();
-        break;
+        case 'k':        
+            if (!usePortalAt(c->location, c->location->coords, ACTION_KLIMB)) {
+                if (c->transportContext == TRANSPORT_BALLOON) {
+                    c->saveGame->balloonstate = 1;
+                    c->opacity = 0;
+                    screenMessage("Klimb altitude\n");            
+                } else
+                    screenMessage("Klimb what?\n");
+            }
+            break;
 
-    case 'q':        
-        screenMessage("Quit & Save...\n%d moves\n", c->saveGame->moves);
-        if (c->location->context & CTX_CAN_SAVE_GAME) {        
-            gameSave();
-            screenMessage("Press Alt-x to quit\n");
-        }
-        else screenMessage("Not here!\n");
-        
-        break;
+        case 'l':
+            /* can't use sextant in dungeon or in combat */
+            if (c->location->context & ~(CTX_DUNGEON | CTX_COMBAT)) {
+                if (c->saveGame->sextants >= 1)
+                    screenMessage("Locate position\nwith sextant\n Latitude: %c'%c\"\nLongitude: %c'%c\"\n",
+                                  c->location->coords.y / 16 + 'A', c->location->coords.y % 16 + 'A',
+                                  c->location->coords.x / 16 + 'A', c->location->coords.x % 16 + 'A');
+                else
+                    screenMessage("Locate position with What?\n");
+            }
+            else screenMessage("Not here!\n");
+            break;
 
-    case 'r':
-        readyWeapon();
-        break;
+        case 'm':
+            mixReagents();
+            break;
 
-    case 's':
-        if (c->location->context == CTX_DUNGEON)
-            dungeonSearch();
-        else if (c->party->isFlying())
-            screenMessage("Searching...\nDrift only!\n");
-        else {
-            screenMessage("Searching...\n");
+        case 'n':
+            newOrder();
+            break;
 
-            item = itemAtLocation(c->location->map, c->location->coords);
-            if (item) {
-                if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
+        case 'o':
+            ///  XXX: Pressing "o" should close any open door.
+            if (c->party->isFlying())
+                screenMessage("Open; Not Here!\n");
+            else {
+                info = new CoordActionInfo;
+                info->handleAtCoord = &openAtCoord;
+                info->origin = c->location->coords;
+                info->prev = MapCoords(-1, -1);
+                info->range = 1;
+                info->validDirections = MASK_DIR_WEST | MASK_DIR_EAST;
+                info->player = -1;
+                info->blockedPredicate = NULL;
+                info->blockBefore = 0;
+                info->firstValidDistance = 1;
+                eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
+                screenMessage("Open\nDir: ");
+            }
+            break;
+
+        case 'p':
+            peer();
+            break;
+
+        case 'q':        
+            screenMessage("Quit & Save...\n%d moves\n", c->saveGame->moves);
+            if (c->location->context & CTX_CAN_SAVE_GAME) {        
+                gameSave();
+                screenMessage("Press Alt-x to quit\n");
+            }
+            else screenMessage("Not here!\n");
+            
+            break;
+
+        case 'r':
+            readyWeapon();
+            break;
+
+        case 's':
+            if (c->location->context == CTX_DUNGEON)
+                dungeonSearch();
+            else if (c->party->isFlying())
+                screenMessage("Searching...\nDrift only!\n");
+            else {
+                screenMessage("Searching...\n");
+
+                item = itemAtLocation(c->location->map, c->location->coords);
+                if (item) {
+                    if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
+                        screenMessage("Nothing Here!\n");
+                    else {                    
+                        if (item->name)
+                            screenMessage("You find...\n%s!\n", item->name);
+                        (*item->putItemInInventory)(item->data);                    
+                    }
+                } else
                     screenMessage("Nothing Here!\n");
-                else {                    
-                    if (item->name)
-                        screenMessage("You find...\n%s!\n", item->name);
-                    (*item->putItemInInventory)(item->data);                    
+            }
+
+            break;
+
+        case 't':
+            if (c->party->isFlying())
+                screenMessage("Talk\nDrift only!\n");
+            else {
+                info = new CoordActionInfo;
+                info->handleAtCoord = &talkAtCoord;
+                info->origin = c->location->coords;            
+                info->prev = MapCoords(-1, -1);
+                info->range = 2;
+                info->validDirections = MASK_DIR_ALL;
+                info->player = -1;
+                info->blockedPredicate = &MapTile::canTalkOverTile;
+                info->blockBefore = 0;
+                info->firstValidDistance = 1;
+                eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
+                screenMessage("Talk\nDir: ");
+            }
+            break;
+
+        case 'u':
+            screenMessage("Use which item:\n");
+            if (settings.enhancements) {
+                /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
+                c->stats->setView(STATS_ITEMS);
+            }
+            itemUse(gameGetInput().c_str());
+            break;
+
+        case 'v':
+            if (musicMgr->toggle())
+                screenMessage("Volume On!\n");
+            else
+                screenMessage("Volume Off!\n");
+            break;
+
+        case 'w':
+            wearArmor();
+            break;
+
+        case 'x':
+            if ((c->transportContext != TRANSPORT_FOOT) && !c->party->isFlying()) {
+                Object *obj = c->location->map->addObject(c->party->transport, c->party->transport, c->location->coords);
+                if (c->transportContext == TRANSPORT_SHIP)
+                    c->lastShip = obj;
+
+                c->party->setTransport(Tileset::findTileByName("avatar")->id);
+                c->horseSpeed = 0;
+                screenMessage("X-it\n");
+            } else
+                screenMessage("X-it What?\n");
+            break;
+
+        case 'y':
+            screenMessage("Yell ");
+            if (c->transportContext == TRANSPORT_HORSE) {
+                if (c->horseSpeed == 0) {
+                    screenMessage("Giddyup!\n");
+                    c->horseSpeed = 1;
+                } else {
+                    screenMessage("Whoa!\n");
+                    c->horseSpeed = 0;
                 }
             } else
-                screenMessage("Nothing Here!\n");
-        }
+                screenMessage("what?\n");
+            break;
 
-        break;
+        case 'z':        
+            screenMessage("Ztats for: ");
+            gameGetPlayerForCommand(&ztatsFor, true, false);
+            break;
 
-    case 't':
-        if (c->party->isFlying())
-            screenMessage("Talk\nDrift only!\n");
-        else {
-            info = new CoordActionInfo;
-            info->handleAtCoord = &talkAtCoord;
-            info->origin = c->location->coords;            
-            info->prev = MapCoords(-1, -1);
-            info->range = 2;
-            info->validDirections = MASK_DIR_ALL;
-            info->player = -1;
-            info->blockedPredicate = &MapTile::canTalkOverTile;
-            info->blockBefore = 0;
-            info->firstValidDistance = 1;
-            eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
-            screenMessage("Talk\nDir: ");
-        }
-        break;
-
-    case 'u':
-        screenMessage("Use which item:\n");
-        if (settings.enhancements) {
-            /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
-            c->stats->setView(STATS_ITEMS);
-        }
-        itemUse(gameGetInput().c_str());
-        break;
-
-    case 'v':
-        if (musicMgr->toggle())
-            screenMessage("Volume On!\n");
-        else
-            screenMessage("Volume Off!\n");
-        break;
-
-    case 'w':
-        wearArmor();
-        break;
-
-    case 'x':
-        if ((c->transportContext != TRANSPORT_FOOT) && !c->party->isFlying()) {
-            Object *obj = c->location->map->addObject(c->party->transport, c->party->transport, c->location->coords);
-            if (c->transportContext == TRANSPORT_SHIP)
-                c->lastShip = obj;
-
-            c->party->setTransport(Tileset::findTileByName("avatar")->id);
-            c->horseSpeed = 0;
-            screenMessage("X-it\n");
-        } else
-            screenMessage("X-it What?\n");
-        break;
-
-    case 'y':
-        screenMessage("Yell ");
-        if (c->transportContext == TRANSPORT_HORSE) {
-            if (c->horseSpeed == 0) {
-                screenMessage("Giddyup!\n");
-                c->horseSpeed = 1;
-            } else {
-                screenMessage("Whoa!\n");
-                c->horseSpeed = 0;
+        case 'c' + U4_ALT:
+            if (settings.debug && c->location->map->isWorldMap()) {
+                /* first teleport to the abyss */
+                c->location->coords.x = 0xe9;
+                c->location->coords.y = 0xe9;
+                setMap(mapMgr->get(MAP_ABYSS), 1, NULL);
+                /* then to the final altar */
+                c->location->coords.x = 7;
+                c->location->coords.y = 7;
+                c->location->coords.z = 7;            
             }
-        } else
-            screenMessage("what?\n");
-        break;
+            break;
+        
+        case 'h' + U4_ALT: {
+            ReadChoiceController pauseController("");
 
-    case 'z':        
-        screenMessage("Ztats for: ");
-        gameGetPlayerForCommand(&ztatsFor, true, false);
-        break;
+            screenMessage("Key Reference:\n"
+                          "Arrow Keys: Move\n"
+                          "a: Attack\n"
+                          "b: Board\n"
+                          "c: Cast Spell\n"
+                          "d: Descend\n"
+                          "e: Enter\n"
+                          "f: Fire\n"
+                          "g: Get Chest\n"
+                          "h: Hole up\n"
+                          "i: Ignite torch\n"
+                          "(more)");
 
-    case 'c' + U4_ALT:
-        if (settings.debug && c->location->map->isWorldMap()) {
-            /* first teleport to the abyss */
-            c->location->coords.x = 0xe9;
-            c->location->coords.y = 0xe9;
-            setMap(mapMgr->get(MAP_ABYSS), 1, NULL);
-            /* then to the final altar */
-            c->location->coords.x = 7;
-            c->location->coords.y = 7;
-            c->location->coords.z = 7;            
+            eventHandler->pushController(&pauseController);
+            pauseController.waitFor();
+
+            screenMessage("\n"
+                          "j: Jimmy lock\n"
+                          "k: Klimb\n"
+                          "l: Locate\n"
+                          "m: Mix reagents\n"
+                          "n: New Order\n"
+                          "o: Open door\n"
+                          "p: Peer at Gem\n"
+                          "q: Quit & Save\n"
+                          "r: Ready weapon\n"
+                          "s: Search\n"
+                          "t: Talk\n"
+                          "(more)");
+
+            eventHandler->pushController(&pauseController);
+            pauseController.waitFor();
+
+            screenMessage("\n"
+                          "u: Use Item\n"
+                          "v: Volume On/Off\n"
+                          "w: Wear armour\n"
+                          "x: eXit\n"
+                          "y: Yell\n"
+                          "z: Ztats\n"
+                          "Space: Pass\n"
+                          "Alt-V: Version\n"
+                          "Alt-X: Quit\n"
+                          );
+            screenPrompt();
+            break;
         }
-        break;
-    
-    case 'h' + U4_ALT: {
-        ReadChoiceController pauseController("");
 
-        screenMessage("Key Reference:\n"
-                      "Arrow Keys: Move\n"
-                      "a: Attack\n"
-                      "b: Board\n"
-                      "c: Cast Spell\n"
-                      "d: Descend\n"
-                      "e: Enter\n"
-                      "f: Fire\n"
-                      "g: Get Chest\n"
-                      "h: Hole up\n"
-                      "i: Ignite torch\n"
-                      "(more)");
+        case 'q' + U4_ALT:
+            {             
+                // TODO - implement loop in main() and let quit fall back to there
+                // Quit to the main menu
+                extern bool quit;
+                endTurn = false;
 
-        eventHandler->pushController(&pauseController);
-        pauseController.waitFor();
-
-        screenMessage("\n"
-                      "j: Jimmy lock\n"
-                      "k: Klimb\n"
-                      "l: Locate\n"
-                      "m: Mix reagents\n"
-                      "n: New Order\n"
-                      "o: Open door\n"
-                      "p: Peer at Gem\n"
-                      "q: Quit & Save\n"
-                      "r: Ready weapon\n"
-                      "s: Search\n"
-                      "t: Talk\n"
-                      "(more)");
-
-        eventHandler->pushController(&pauseController);
-        pauseController.waitFor();
-
-        screenMessage("\n"
-                      "u: Use Item\n"
-                      "v: Volume On/Off\n"
-                      "w: Wear armour\n"
-                      "x: eXit\n"
-                      "y: Yell\n"
-                      "z: Ztats\n"
-                      "Space: Pass\n"
-                      "Alt-V: Version\n"
-                      "Alt-X: Quit\n"
-                      );
-        screenPrompt();
-        break;
-    }
-
-    case 'q' + U4_ALT:
-        {             
-            // TODO - implement loop in main() and let quit fall back to there
-            // Quit to the main menu
-            extern bool quit;
-            endTurn = false;
-
-            screenMessage("Quit to menu?");            
-            char choice = ReadChoiceController::get("yn \n\033");
-            screenMessage("%c", choice);
-            if (choice != 'y') {
-                screenMessage("\n");
-                break;
-            }
-            
-            eventHandler->setScreenUpdate(NULL);
-            eventHandler->popController();
-            
-            eventHandler->pushController(intro);
-            intro->init();
-            eventHandler->run();
-            intro->deleteIntro();
-            if (!quit) {
-                eventHandler->setControllerDone(false);
+                screenMessage("Quit to menu?");            
+                char choice = ReadChoiceController::get("yn \n\033");
+                screenMessage("%c", choice);
+                if (choice != 'y') {
+                    screenMessage("\n");
+                    break;
+                }
+                
+                eventHandler->setScreenUpdate(NULL);
                 eventHandler->popController();
-                eventHandler->pushController(this);
-                init();
-                eventHandler->run();                
+                
+                eventHandler->pushController(intro);
+                intro->init();
+                eventHandler->run();
+                intro->deleteIntro();
+                if (!quit) {
+                    eventHandler->setControllerDone(false);
+                    eventHandler->popController();
+                    eventHandler->pushController(this);
+                    init();
+                    eventHandler->run();                
+                }
             }
+            break;
+
+        case 'v' + U4_ALT:
+            screenMessage("XU4 %s\n", VERSION);        
+            break;
+
+        // Turn sound effects on/off    
+        case 's' + U4_ALT:
+            // FIXME: there's probably a more intuitive key combination for this
+            settings.soundVol = !settings.soundVol;
+            screenMessage("Sound FX %s!\n", settings.soundVol ? "on" : "off");        
+            endTurn = false;
+            break;
+            
+        case '0':        
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':        
+            if (settings.enhancements && settings.enhancementsOptions.activePlayer)
+                gameSetActivePlayer(key - '1');        
+            else screenMessage("Bad command!\n");
+
+            endTurn = 0;
+            break;
+            
+        default:
+            valid = false;
+            break;
         }
-        break;
-
-    case 'v' + U4_ALT:
-        screenMessage("XU4 %s\n", VERSION);        
-        break;
-
-    // Turn sound effects on/off    
-    case 's' + U4_ALT:
-        // FIXME: there's probably a more intuitive key combination for this
-        settings.soundVol = !settings.soundVol;
-        screenMessage("Sound FX %s!\n", settings.soundVol ? "on" : "off");        
-        endTurn = false;
-        break;
-        
-    case '0':        
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':        
-        if (settings.enhancements && settings.enhancementsOptions.activePlayer)
-            gameSetActivePlayer(key - '1');        
-        else screenMessage("Bad command!\n");
-
-        endTurn = 0;
-        break;
-        
-    default:
-        valid = false;
-        break;
-    }
-
+    
     if (valid && endTurn) {
         if (eventHandler->getController() != c->combat && eventHandler->getController() == game)            
             (*c->location->finishTurn)();
