@@ -458,12 +458,17 @@ bool CombatController::isLost() const {
  */
 void CombatController::moveCreatures() {
     Creature *m;
-    CreatureVector creatures = map->getCreatures();
-    CreatureVector::iterator i;
-    
-    for (i = creatures.begin(); i != creatures.end(); i++) {
-        m = *i;
+
+    // XXX: this iterator is rather complex; but the vector::iterator can
+    // break and crash if we delete elements while iterating it, which we do
+    // if a jinxed monster kills another
+    for (unsigned int i = 0; i < map->getCreatures().size(); i++) {
+        m = map->getCreatures().at(i);
         m->act();
+        if (i < map->getCreatures().size() && map->getCreatures().at(i) != m) {
+            // don't skip a later creature when an earlier one flees
+            i--;
+        }
     }
 }
 
@@ -1065,8 +1070,10 @@ bool CombatController::keyPressed(int key) {
             screenPrompt();
             valid = false;
             
-            break;
         }
+        else
+            screenMessage("Not here!\n");
+        break;
 
     case 'u':
         {
