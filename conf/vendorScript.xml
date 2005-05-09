@@ -949,6 +949,8 @@
         <you_pay choice="null" redirect="i_see_then"/>
         <you_pay>
             
+            <if test="{$quantity}==0" redirect="i_see_then"/>
+
             Very good, that will be {math({price}*{$quantity})}gp.
             You pay: <input name="price" type="number" target="buy"/>
         </you_pay>
