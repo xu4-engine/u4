@@ -66,7 +66,7 @@
     <tile name="fire_field" rule="fire_field" animation="scroll" large="true"/>
     <tile name="sleep_field" rule="sleep_field" animation="scroll" large="true"/>
     <tile name="solid" rule="solid_attackover"/>
-    <tile name="secret_door" opaque="true"/>
+    <tile name="secret_door" rule="secret_door" opaque="true"/>
     <tile name="altar"/>
     <tile name="campfire" rule="solid" animation="campfire"/>
     <tile name="lava" rule="lava" animation="scroll"/>
