@@ -584,8 +584,9 @@ Creature *Creature::nearestOpponent(int *dist, bool ranged) {
         bool creature = !isPartyMember(*i);
 
         /* if a party member, find a creature. If a creature, find a party member */
+        /* if jinxed is false, find anything that isn't self */
         if (isCreature(*i)) {
-            if ((player && creature) || (!player && (opp ? !creature : (creature && (*i != this))))) {
+            if ((player && creature) || (!player && !creature) || (!opp && *i != this)) {
                 MapCoords objCoords = (*i)->getCoords();
 
                 /* if ranged, get the distance using diagonals, otherwise get movement distance */
@@ -599,7 +600,8 @@ Creature *Creature::nearestOpponent(int *dist, bool ranged) {
                     leastDist = d;
                 }
             }
-        }        
+        }    
+    
     }
 
     if (opponent)
@@ -689,9 +691,8 @@ bool Creature::applyDamage(int damage, bool byplayer) {
 }
 
 bool Creature::dealDamage(Creature *m, int damage) {
-    bool isPlayer = ((dynamic_cast<PartyMember*>(this)) != NULL);
     soundPlay(SOUND_CREATUREATTACK, false);
-    return m->applyDamage(damage, isPlayer);
+    return m->applyDamage(damage, isPartyMember(this));
 }
 
 /**
