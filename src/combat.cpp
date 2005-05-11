@@ -1044,8 +1044,10 @@ bool CombatController::keyPressed(int key) {
             screenMessage("\nLocation:\nx:%d\ny:%d\nz:%d\n", coords.x, coords.y, coords.z);
             screenPrompt();
             valid = false;
-            break;            
         }
+        else
+            screenMessage("Not here!\n");
+        break;            
 
     case 'r':
         readyWeapon(ct->getFocus());
@@ -1305,6 +1307,24 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
         tileMap[Tileset::findTileByName("brick_floor")->id] = MAP_BRICK_CON;
         tileMap[Tileset::findTileByName("moongate")->id] = MAP_GRASS_CON;
         tileMap[Tileset::findTileByName("moongate_opening")->id] = MAP_GRASS_CON;        
+    }
+    static std::map<MapTile, MapId> dungeontileMap;
+    if (!dungeontileMap.size()) {               
+        dungeontileMap[Tileset::findTileByName("brick_floor")->id] = MAP_DNG0_CON;
+        dungeontileMap[Tileset::findTileByName("up_ladder")->id] = MAP_DNG1_CON;
+        dungeontileMap[Tileset::findTileByName("down_ladder")->id] = MAP_DNG2_CON;
+        dungeontileMap[Tileset::findTileByName("up_down_ladder")->id] = MAP_DNG3_CON;
+        // dungeontileMap[Tileset::findTileByName("chest")->id] = MAP_DNG4_CON; 
+        // chest tile doesn't work that well
+        dungeontileMap[Tileset::findTileByName("dungeon_door")->id] = MAP_DNG5_CON;
+        dungeontileMap[Tileset::findTileByName("secret_door")->id] = MAP_DNG6_CON;
+    }
+
+    if (c->location->context & CTX_DUNGEON) {
+        if (dungeontileMap.find(groundTile) != dungeontileMap.end())
+            return dungeontileMap[groundTile];    
+
+        return MAP_DUNGEON_CON;
     }
 
     if (transport.isShip() || (objUnder && objUnder->getTile().isShip()))
