@@ -1294,7 +1294,7 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
         tileMap[Tileset::findTileByName("brush")->id] = MAP_BRUSH_CON;
         tileMap[Tileset::findTileByName("forest")->id] = MAP_FOREST_CON;
         tileMap[Tileset::findTileByName("hills")->id] = MAP_HILL_CON;
-        tileMap[Tileset::findTileByName("dungeon")->id] = MAP_HILL_CON;
+        tileMap[Tileset::findTileByName("dungeon")->id] = MAP_DUNGEON_CON;
         tileMap[Tileset::findTileByName("city")->id] = MAP_GRASS_CON;
         tileMap[Tileset::findTileByName("castle")->id] = MAP_GRASS_CON;
         tileMap[Tileset::findTileByName("town")->id] = MAP_GRASS_CON;
@@ -1307,6 +1307,7 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
         tileMap[Tileset::findTileByName("brick_floor")->id] = MAP_BRICK_CON;
         tileMap[Tileset::findTileByName("moongate")->id] = MAP_GRASS_CON;
         tileMap[Tileset::findTileByName("moongate_opening")->id] = MAP_GRASS_CON;        
+        tileMap[Tileset::findTileByName("dungeon_floor")->id] = MAP_GRASS_CON;        
     }
     static std::map<MapTile, MapId> dungeontileMap;
     if (!dungeontileMap.size()) {               
