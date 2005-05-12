@@ -78,6 +78,7 @@ class Shrine;
 #define MAP_SHIPSHOR_CON 52
 #define MAP_SHORE_CON 53
 #define MAP_SHORSHIP_CON 54
+#define MAP_CAMP_DNG 55
 
 /**
  * The map manager singleton that keeps track of all the maps.

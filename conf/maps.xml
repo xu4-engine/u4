@@ -313,5 +313,6 @@
     <map id="52" type="combat" fname="shipshor.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
     <map id="53" type="combat" fname="shore.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
     <map id="54" type="combat" fname="shorship.con" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>
+    <map id="55" type="combat" fname="camp.dng" width="11" height="11" levels="1" borderbehavior="fixed" nolineofsight="true" music="8"/>    
 
 </maps>

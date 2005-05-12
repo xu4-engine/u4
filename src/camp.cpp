@@ -41,7 +41,7 @@ void campBegin(void) {
     
     /* setup camp (possible, but not for-sure combat situation */
     if (c->location->context & CTX_DUNGEON)
-        id = MAP_DUNGEON_CON;
+        id = MAP_CAMP_DNG;
     else id = MAP_CAMP_CON;
 
     delete c->combat;
