@@ -2673,6 +2673,9 @@ bool mixReagentsForSpell(int spell) {
         eventHandler->pushController(&getReagentsController);
         getReagentsController.waitFor();
 
+        c->stats->getMainArea()->disableCursor();
+        screenEnableCursor();
+
         screenMessage("How many? ");
 
         int howmany = ReadIntController::get(2, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
