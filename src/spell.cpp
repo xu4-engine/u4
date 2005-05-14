@@ -107,7 +107,7 @@ const Spell spells[] = {
     { "Protection",   ASH | GINSENG | GARLIC,   CTX_ANY,        TRANSPORT_ANY,  &spellProtect, Spell::PARAM_NONE,    15 },
     { "Quickness",    ASH | GINSENG | MOSS,     CTX_ANY,        TRANSPORT_ANY,  &spellQuick,   Spell::PARAM_NONE,    20 },
     { "Resurrect",    ASH | GINSENG | GARLIC | SILK | MOSS | MANDRAKE, 
-                                                CTX_ANY,        TRANSPORT_ANY,  &spellRez,     Spell::PARAM_PLAYER,  45 },
+                                                CTX_NON_COMBAT, TRANSPORT_ANY,  &spellRez,     Spell::PARAM_PLAYER,  45 },
     { "Sleep",        SILK | GINSENG,           CTX_COMBAT,     TRANSPORT_ANY,  &spellSleep,   Spell::PARAM_NONE,    15 },
     { "Tremor",       ASH | MOSS | MANDRAKE,    CTX_COMBAT,     TRANSPORT_ANY,  &spellTremor,  Spell::PARAM_NONE,    30 },
     { "Undead",       ASH | GARLIC,             CTX_COMBAT,     TRANSPORT_ANY,  &spellUndead,  Spell::PARAM_NONE,    15 },
