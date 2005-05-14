@@ -285,6 +285,8 @@ void CombatController::end(bool adjustKarma) {
     if (winOrLose) {
         if (won) {
             if (creature) {
+                if (creature->isEvil())
+                    c->party->adjustKarma(KA_KILLED_EVIL);
                 coords = creature->getCoords();
                 ground = c->location->map->tileAt(coords, WITHOUT_OBJECTS);
 
@@ -1325,7 +1327,7 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
         if (dungeontileMap.find(groundTile) != dungeontileMap.end())
             return dungeontileMap[groundTile];    
 
-        return MAP_DUNGEON_CON;
+        return MAP_DNG0_CON;
     }
 
     if (transport.isShip() || (objUnder && objUnder->getTile().isShip()))

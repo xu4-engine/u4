@@ -430,13 +430,10 @@ bool PartyMember::attackHit(Creature *m) {
 bool PartyMember::dealDamage(Creature *m, int damage) {
     /* we have to record these now, because if we
        kill the target, it gets destroyed */
-    bool isEvil = m->isEvil();
     int m_xp = m->xp;
 
     if (!Creature::dealDamage(m, damage)) {
         /* half the time you kill an evil creature you get a karma boost */
-        if (isEvil && xu4_random(2) == 0)
-            c->party->adjustKarma(KA_KILLED_EVIL);
         awardXp(m_xp);
         return false;
     }
