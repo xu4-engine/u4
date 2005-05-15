@@ -292,7 +292,8 @@ void CombatController::end(bool adjustKarma) {
 
                 /* FIXME: move to separate function */
                 /* add a chest, if the creature leaves one */
-                if (!inn && creature->leavesChest() && ground->isCreatureWalkable()) {
+                if (!inn && creature->leavesChest() && ground->isCreatureWalkable()
+                    && (!(c->location->context & CTX_DUNGEON) || ground->isDungeonFloor())) {
                     MapTile chest = Tileset::findTileByName("chest")->id;
                     c->location->map->addObject(chest, chest, coords);
                 }

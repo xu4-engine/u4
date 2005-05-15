@@ -80,6 +80,7 @@ public:
     bool isWalkable() const;
     bool isCreatureWalkable() const;
     bool isDungeonWalkable() const;
+    bool isDungeonFloor() const;
     bool isSwimable() const;
     bool isSailable() const;
     bool isWater() const;

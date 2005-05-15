@@ -213,6 +213,13 @@ bool MapTile::isCreatureWalkable() const {
     return canWalkOn(DIR_ADVANCE) && !TESTMOVEBIT(MASK_CREATURE_UNWALKABLE);
 }
 
+bool MapTile::isDungeonFloor() const {
+    Tile *floor = Tileset::findTileByName("brick_floor");
+    if (id == floor->id)
+        return true;
+    return false;
+}
+
 bool MapTile::isSwimable() const {    
     return TESTMOVEBIT(MASK_SWIMABLE);
 }
