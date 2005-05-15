@@ -36,6 +36,7 @@ typedef enum {
     KA_BAD_MANTRA,
     KA_ATTACKED_GOOD,
     KA_FLED_EVIL,
+    KA_FLED_GOOD,
     KA_HEALTHY_FLED_EVIL,
     KA_KILLED_EVIL,
     KA_SPARED_GOOD,    

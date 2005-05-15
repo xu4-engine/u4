@@ -1239,6 +1239,7 @@ Script::ReturnCode Script::karma(xmlNodePtr script, xmlNodePtr current) {
         action_map["bad_mantra"]            = KA_BAD_MANTRA;
         action_map["attacked_good"]         = KA_ATTACKED_GOOD;
         action_map["fled_evil"]             = KA_FLED_EVIL;
+        action_map["fled_good"]             = KA_FLED_GOOD;
         action_map["healthy_fled_evil"]     = KA_HEALTHY_FLED_EVIL;
         action_map["killed_evil"]           = KA_KILLED_EVIL;
         action_map["spared_good"]           = KA_SPARED_GOOD;

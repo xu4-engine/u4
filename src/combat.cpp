@@ -313,7 +313,7 @@ void CombatController::end(bool adjustKarma) {
                 c->party->adjustKarma(KA_FLED_EVIL);
             }
             else if (adjustKarma && creature && creature->isGood())
-                c->party->adjustKarma(KA_SPARED_GOOD);
+                c->party->adjustKarma(KA_FLED_GOOD);
         }
     }
 
