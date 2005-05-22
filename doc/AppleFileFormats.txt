@@ -1,0 +1,142 @@
+Ultima 4 File Structs (Apple version)
+=====================================
+
+I haven't yet explored all of the ways in which Ultima IV 
+stores its static data.  That's a project for another day.
+
+On the Apple 2 Britannia disk, game state is saved in four files:
+
+ B 003 TLST
+ B 003 LIST
+ B 004 ROST
+ B 002 PRTY
+
+As in the other Ultima games on the Apple, Ultima IV stores most values 
+that are ever displayed to the player in Binary Coded Decimal (BCD),
+giving 4 bits to each decimal digit.  The upshot is that when you view
+values in a hex editor, you see their decimal equivalent.  Each of
+these bytes essentially stores a number from 0-99, so storing a number
+from 0-9999 takes 2 bytes.  Editing the data structures to put in a
+non-decimal value (like 0xC0) has undefined effects, although usually
+it will be treated as a large stat (such as 120).
+
+Most text variables are stored in high-byte format; you can read their
+value in plain ASCII if you AND with 0x80.
+
+ROST
+----
+
+512 bytes.  Essentially stores what you see on your "Ztats" windows.
+
+Mapped in memory to byte locations EC00-EDFF.
+
+offset	len	notes
+0x0     32      character 1
+0x20    32      character 2
+0x40    32      character 3
+0x60    32      character 4
+0x80    32      character 5
+0xA0    32      character 6
+0xC0    32      character 7
+0xe0    32      character 8
+0x100   8	karma for Honesty - Humility (1-99, or 0) (is 1 the minimum?)
+0x108	1	Torches
+0x109	1	Gems
+0x10A	1	Keys
+0x10B	1	Sextants
+0x10C   1	Stones (80 blue, 01 black)
+0x10D	1	Runes (80 honesty, 01 humility)
+0x10E	1	Bell Book Candle Owned/Used (0x4 0x2 0x1/0x40 0x20 0x10)
+0x10F	1	Three Part Key TLC (0x4, 0x2, 0x1)
+0x110 	3	Food (in Hundredths)
+0x113	2	Gold
+0x115   1	Horn
+0x116	1	Wheel
+0x117	1	Skull (1 if owned, 0xff if destoyed)
+0x118	8	Armor quantities (skin through robe)
+0x120	16	Weapon quantities (hands through mystic swords)
+0x130	8	UNKNOWN (always zero)
+0x138	8	Reagents quantities (Ash through Mandrake Root)
+0x140	26	Mixture quantities (Awaken through Z-down)
+0x15A	6	UNKNOWN (always zero, probably padding)
+0x160	32	UNKNOWN (always zero)
+0x180	64	UNKNOWN (repeating FFFFFFFF00000000 pattern)
+		(exception: 0x1EA is FF normally, 99 if skull destroyed)
+
+Character field (32 bytes)
+
+offset	len	notes
+0x0	16	Character name, null-terminated, in high-bytes.
+		(Null is followed by what I -think- is garbage)
+0x10	1	sex (5C male, 7B female)
+0x11	1	class (0-7, mage-shepherd)
+0x12	1	health (high-byte "G", "D", "P", or "S")
+0x13	1	Str
+0x14	1	Dex
+0x15	1	Int
+0x16	1	MP
+0x17	1	Virtue bitmask (80 - 01, honesty - humility)
+		Determines what weapons you can use, maybe other
+                things, too.  Can be set independently of
+		offset 0x11 above.
+0x18	2	Hit points
+0x1A	2	Hit Max
+0x1C	2	Experience
+0x1E	1	Weapon (00-0f, hands-mysticsword)
+0x1F	1	Armor (00-07, skin-mysticrobe)
+
+PRTY
+----
+
+This stores information about the state of your game.
+
+I can't figure out where wind direction is stored.  Possibly
+in the mystery 2-byte field at offset 0x6.
+
+offset	len	notes
+0x0	1	x position (hex value; on any map, including dungeon)
+0x1	1	y position (ditto)
+0x2     4	redundant x,y position data (probably has to do with
+                with which sub-map of Britannia we are on; doesn't
+		change in dungeons)
+0x6 	2	weird rotating values... almost like a PRNG
+0x8	1	x of last settlement/dungeon visited
+0x9	1	y of last settlement/dungeon visited
+0xA	1   	Party location (same as in DOS; see FileFormats.txt)
+0xB	1	map-type (0x1: world map; 0x2: town; 0x3 dungeon;
+			  0x80: combat (with location 0); 0x81 dungeon room)
+0xC	1	dungeon level (starting with 0; ff after exiting a dungeon)
+0xD 	1	0 on ground, ff in air (game never checks this value?)
+0xE	1	transport: same codes as in DOS version 
+OxF	1	Party size
+0x10 	1	Direction facing in dungeon (0 north, 1 east, 2 south, 3 west)
+0x11 	1	Torch life (in hex) 
+0x12	1	Trammel phase, 0-7
+0x13	1	Felucca phase, 0-7
+0x14	1	0 normal, ff when Giddyup'd (not loaded from disk)
+0x15 	1	Introduced to Lord British
+0x16	1	Last camp (hundreds byte of nmoves)
+0x17	1	Last humility question / give to beggar (ones byte & 0xf0)
+0x18	1	Altar Room Type (0x0: Truth, 0x1: Love, 0x2: Courage,
+	                         0xFF: Not an Altar Room)
+0x19	1	Last meditate (hundred byte?)
+0x1A	1	Last mandrake/nightshade (ones byte & 0xf0)
+0x1B 	1	hull strength (is it preserved??)
+0x1C	4	Number of moves	
+
+LIST
+----
+
+These contain information about surface objects and creatures,
+just like MONSTERS.SAV
+
+This seems to be binary compatible with U4DOS and xu4.
+I haven't used this extensively, but quick tests worked.
+
+TLST
+----
+
+I assume this is the backup of LIST, just like in U4DOS that
+OUTMONST.SAV is the backup of MONSTERS.SAV
+
+
