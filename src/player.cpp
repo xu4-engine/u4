@@ -661,13 +661,15 @@ void Party::adjustKarma(KarmaAction action) {
         AdjustValueMin(newKarma[VIRT_JUSTICE], -1, 1);
         AdjustValueMin(newKarma[VIRT_HONOR], -1, 1);
         break;
-    /* FIXME: is this accurate to the original? */
     case KA_GAVE_ALL_TO_BEGGAR:
-        AdjustValueMax(newKarma[VIRT_SACRIFICE], 5, maxVal[VIRT_SACRIFICE]);
+        //  When donating all, you get +3 HONOR in Apple 2, but not in in U4DOS.
+        //  TODO: Make this a configuration option.
+        //  AdjustValueMax(newKarma[VIRT_HONOR], 3, maxVal[VIRT_HONOR]);
     case KA_GAVE_TO_BEGGAR:
+        //  In U4DOS, we only get +2 COMPASSION, no HONOR or SACRIFICE even if
+        //  donating all.
         timeLimited = 1;
         AdjustValueMax(newKarma[VIRT_COMPASSION], 2, maxVal[VIRT_COMPASSION]);
-        AdjustValueMax(newKarma[VIRT_HONOR], 3, maxVal[VIRT_HONOR]); /* FIXME: verify if honor goes up */
         break;
     case KA_BRAGGED:
         AdjustValueMin(newKarma[VIRT_HUMILITY], -5, 1);
