@@ -488,7 +488,7 @@ static int spellDispel(int dir) {
             if (i->getTile().canDispel()) {
                 c->location->map->annotations->remove(*i);
                 c->location->map->annotations->add(field, newTile);
-                break;
+                return 1;
             }                
         }
     }    
