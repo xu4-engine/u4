@@ -191,7 +191,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
                         tiles = dungeonViewGetTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
                         /* Only show blackness if there is no light */
-                        if (c->party->getTorchDuration() <= 0)
+                        if (c->party->getTorchDuration() <= 0 || blackout)
                             view->drawTile(&black, false, x, y);
                         else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
                             view->drawTile(&avatar, false, x, y);
