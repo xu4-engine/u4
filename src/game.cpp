@@ -664,8 +664,17 @@ void GameController::finishTurn() {
         else c->party->burnTorch();
 
         /* handle dungeon traps */
-        if (dungeonCurrentToken() == DUNGEON_TRAP)
+        if (dungeonCurrentToken() == DUNGEON_TRAP) {
             dungeonHandleTrap((TrapType)dungeonCurrentSubToken());
+            // a little kludgey to have a second test for this
+            // right here.  But without it you can survive an
+            // extra turn after party death and do some things
+            // that could cause a crash, like Hole up and Camp.
+            if (c->party->isDead()) {
+              deathStart(0);
+              return;
+            }
+        }
     }
     
     /* draw a prompt */
