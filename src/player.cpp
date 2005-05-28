@@ -373,7 +373,7 @@ void PartyMember::setWeapon(WeaponType w) {
 
 /**
  * Applies damage to a player, and changes status to dead if hit
- * points drop to zero or below.
+ * points drop below zero.
  * 
  * Byplayer is ignored for now, since it should always be false for U4.  (Is
  * there anything special about being killed by a party member in U5?)  Also
