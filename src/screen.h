@@ -90,12 +90,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);
 void screenUpdateWind(void);
-MapTile* screenViewportTile(unsigned int width, unsigned int height, int x, int y, bool &focus);
-
-void screenAnimateIntro(const string &frame);
-void screenShowCard(int pos, int card);
-void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue);
-void screenShowBeastie(int beast, int vertoffset, int frame);
+std::vector<MapTile *> screenViewportTile(unsigned int width, unsigned int height, int x, int y, bool &focus);
 
 void screenShowCursor(void);
 void screenHideCursor(void);

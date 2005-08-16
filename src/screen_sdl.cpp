@@ -4,7 +4,6 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
-#include <stdlib.h>
 #include <algorithm>
 #include <functional>
 #include <vector>
@@ -631,18 +630,6 @@ void screenRedrawMapArea() {
     SDL_UpdateRect(SDL_GetVideoSurface(), BORDER_WIDTH * scale, BORDER_HEIGHT * scale, VIEWPORT_W * TILE_WIDTH * scale, VIEWPORT_H * TILE_HEIGHT * scale);
 }
 
-/**
- * Animates the moongate in the intro.  The tree intro image has two
- * overlays in the part of the image normally covered by the text.  If
- * the frame parameter is zero, the first overlay is painted over the
- * image: a moongate.  If frame is one, the second overlay is painted:
- * the circle without the moongate, but with a small white dot
- * representing the anhk and history book.
- */
-void screenAnimateIntro(const string &frame) {
-    screenDrawImage(frame, 72 * scale, 68 * scale);
-}
-
 void screenEraseMapArea() {
     Image *screen = imageMgr->get("screen")->image;
     screen->fillRect(BORDER_WIDTH * scale, 
@@ -665,53 +652,6 @@ void screenRedrawTextArea(int x, int y, int width, int height) {
     SDL_UpdateRect(SDL_GetVideoSurface(), x * CHAR_WIDTH * scale, y * CHAR_HEIGHT * scale, width * CHAR_WIDTH * scale, height * CHAR_HEIGHT * scale);
 }
 
-/**
- * Draws a card on the screen for the character creation sequence with
- * the gypsy.
- */
-void screenShowCard(int pos, int card) {
-    static const char *subImageNames[] = { 
-        "honestycard", "compassioncard", "valorcard", "justicecard",
-        "sacrificecard", "honorcard", "spiritualitycard", "humilitycard" 
-    };
-
-    ASSERT(pos == 0 || pos == 1, "invalid pos: %d", pos);
-    ASSERT(card < 8, "invalid card: %d", card);
-
-    screenDrawImage(subImageNames[card], (pos ? 218 : 12) * scale, 12 * scale);
-}
-
-/**
- * Draws the beads in the abacus during the character creation sequence
- */
-void screenShowAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
-    ASSERT(row >= 0 && row < 7, "invalid row: %d", row);
-    ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
-    ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
-    
-    screenDrawImage("whitebead", (128 + (selectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
-    screenDrawImage("blackbead", (128 + (rejectedVirtue * 9)) * scale, (24 + (row * 15)) * scale);
-}
-
-/**
- * Animates the "beasties" in the intro.  The animate intro image is
- * made up frames for the two creatures in the top left and top right
- * corners of the screen.  This function draws the frame for the given
- * beastie on the screen.  vertoffset is used lower the creatures down
- * from the top of the screen.
- */
-void screenShowBeastie(int beast, int vertoffset, int frame) {
-    char buffer[128];
-    int destx;
-
-    ASSERT(beast == 0 || beast == 1, "invalid beast: %d", beast);
-
-    sprintf(buffer, "beast%dframe%02d", beast, frame);
-
-    destx = beast ? (320 - 48) : 0;
-    screenDrawImage(buffer, destx * scale, vertoffset * scale);
-}
-
 void screenGemUpdate() {
     MapTile *tile;
     int x, y;
@@ -728,7 +668,7 @@ void screenGemUpdate() {
     for (x = 0; x < gemlayout->viewport.width; x++) {
         for (y = 0; y < gemlayout->viewport.height; y++) {
             bool focus;
-            tile = screenViewportTile(gemlayout->viewport.width, gemlayout->viewport.height, x, y, focus);
+            tile = screenViewportTile(gemlayout->viewport.width, gemlayout->viewport.height, x, y, focus).front();
             screenShowGemTile(tile, focus, x, y);
         }
     }
