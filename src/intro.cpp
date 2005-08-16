@@ -30,21 +30,8 @@ extern bool quit;
 
 IntroController *intro = NULL;
 
-#define INTRO_TEXT_OFFSET 17445
-#define INTRO_MAP_OFFSET 30339
 #define INTRO_MAP_HEIGHT 5
 #define INTRO_MAP_WIDTH 19
-#define INTRO_FIXUPDATA_OFFSET 29806
-#define INTRO_SCRIPT_TABLE_SIZE 548
-#define INTRO_SCRIPT_TABLE_OFFSET 30434
-#define INTRO_BASETILE_TABLE_SIZE 15
-#define INTRO_BASETILE_TABLE_OFFSET 16584
-#define BEASTIE1_FRAMES 0x80
-#define BEASTIE2_FRAMES 0x40
-#define BEASTIE_FRAME_TABLE_OFFSET 0x7380
-#define BEASTIE1_FRAMES_OFFSET 0
-#define BEASTIE2_FRAMES_OFFSET 0x78
-
 #define INTRO_TEXT_X 0
 #define INTRO_TEXT_Y 19
 #define INTRO_TEXT_WIDTH 40
@@ -57,7 +44,9 @@ IntroController *intro = NULL;
 #define GYP_SEGUE1 13
 #define GYP_SEGUE2 14
 
-struct IntroObjectState {
+class IntroObjectState {
+public:
+    IntroObjectState() : x(0), y(0) {}
     int x, y;
     MapTile tile; /* base tile + tile frame */    
 };
@@ -76,15 +65,20 @@ bool menusLoaded = false;
 /* temporary place-holder for settings changes */
 SettingsData settingsChanged;
 
-IntroController::IntroController() : 
-    Controller(1), 
-    menuArea(1 * CHAR_WIDTH, 13 * CHAR_HEIGHT, 38, 10),
-    extendedMenuArea(1 * CHAR_WIDTH, 3 * CHAR_HEIGHT, 38, 22),
-    questionArea(INTRO_TEXT_X * CHAR_WIDTH, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT),
-    mapArea(BORDER_WIDTH, (TILE_HEIGHT * 6) + BORDER_HEIGHT, INTRO_MAP_WIDTH, INTRO_MAP_HEIGHT, "base")
-{
+const int IntroBinData::INTRO_TEXT_OFFSET = 17445;
+const int IntroBinData::INTRO_MAP_OFFSET = 30339;
+const int IntroBinData::INTRO_FIXUPDATA_OFFSET = 29806;
+const int IntroBinData::INTRO_SCRIPT_TABLE_SIZE = 548;
+const int IntroBinData::INTRO_SCRIPT_TABLE_OFFSET = 30434;
+const int IntroBinData::INTRO_BASETILE_TABLE_SIZE = 15;
+const int IntroBinData::INTRO_BASETILE_TABLE_OFFSET = 16584;
+const int IntroBinData::BEASTIE1_FRAMES = 0x80;
+const int IntroBinData::BEASTIE2_FRAMES = 0x40;
+const int IntroBinData::BEASTIE_FRAME_TABLE_OFFSET = 0x7380;
+const int IntroBinData::BEASTIE1_FRAMES_OFFSET = 0;
+const int IntroBinData::BEASTIE2_FRAMES_OFFSET = 0x78;
 
-    beastiesVisible = false;
+IntroBinData::IntroBinData() {
     introMap = NULL;
     sigData = NULL;
     scriptTable = NULL;
@@ -93,21 +87,29 @@ IntroController::IntroController() :
     beastie2FrameTable = NULL;
 }
 
-/**
- * Initializes intro state and loads in introduction graphics, text
- * and map data from title.exe.
- */
-bool IntroController::init() {
-    U4FILE *title;
+IntroBinData::~IntroBinData() {
+    if (introMap)
+        delete [] introMap;
+    if (sigData)
+        delete [] sigData;
+    if (scriptTable)
+        delete [] scriptTable;
+    if (baseTileTable)
+        delete [] baseTileTable;
+    if (beastie1FrameTable)
+        delete [] beastie1FrameTable;
+    if (beastie2FrameTable)
+        delete [] beastie2FrameTable;
+
+    introQuestions.clear();
+    introText.clear();
+    introGypsy.clear();
+}
+
+bool IntroBinData::load() {
     int i;
 
-    mode = INTRO_MAP;
-    beastie1Cycle = 0;
-    beastie2Cycle = 0;
-    beastieOffset = -32;    
-    beastiesVisible = true;
-
-    title = u4fopen("title.exe");
+    U4FILE *title = u4fopen("title.exe");
     if (!title)
         return false;
 
@@ -130,9 +132,6 @@ bool IntroController::init() {
     for (i = 0; i < INTRO_MAP_HEIGHT * INTRO_MAP_WIDTH; i++)        
         introMap[i] = Tile::translate(u4fgetc(title));
         
-    sleepCycles = 0;
-    scrPos = 0;
-
     u4fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
     scriptTable = new unsigned char[INTRO_SCRIPT_TABLE_SIZE];
     for (i = 0; i < INTRO_SCRIPT_TABLE_SIZE; i++)
@@ -144,9 +143,6 @@ bool IntroController::init() {
         MapTile tile = Tile::translate(u4fgetc(title));
         baseTileTable[i] = Tileset::get()->get(tile.id);
     }
-
-    objectStateTable = new IntroObjectState[INTRO_BASETILE_TABLE_SIZE];
-    memset(objectStateTable, 0, sizeof(IntroObjectState) * INTRO_BASETILE_TABLE_SIZE);
 
     /* --------------------------
        load beastie frame table 1
@@ -167,6 +163,39 @@ bool IntroController::init() {
     }
 
     u4fclose(title);
+
+    return true;
+}
+
+IntroController::IntroController() : 
+    Controller(1), 
+    backgroundArea(),
+    menuArea(1 * CHAR_WIDTH, 13 * CHAR_HEIGHT, 38, 10),
+    extendedMenuArea(1 * CHAR_WIDTH, 3 * CHAR_HEIGHT, 38, 22),
+    questionArea(INTRO_TEXT_X * CHAR_WIDTH, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT),
+    mapArea(BORDER_WIDTH, (TILE_HEIGHT * 6) + BORDER_HEIGHT, INTRO_MAP_WIDTH, INTRO_MAP_HEIGHT, "base")
+{
+    binData = NULL;
+    beastiesVisible = false;
+}
+
+/**
+ * Initializes intro state and loads in introduction graphics, text
+ * and map data from title.exe.
+ */
+bool IntroController::init() {
+    mode = INTRO_MAP;
+    beastie1Cycle = 0;
+    beastie2Cycle = 0;
+    beastieOffset = -32;    
+    beastiesVisible = true;
+
+    sleepCycles = 0;
+    scrPos = 0;
+    objectStateTable = new IntroObjectState[IntroBinData::INTRO_BASETILE_TABLE_SIZE];
+
+    binData = new IntroBinData();
+    binData->load();
 
     /* load our menus, checking to see if they're already loaded first */
     if (!menusLoaded) {
@@ -270,28 +299,18 @@ bool IntroController::init() {
  * Frees up data not needed after introduction.
  */
 void IntroController::deleteIntro() {
-    delete [] introMap;
+    delete binData;
+    binData = NULL;
 
-    introQuestions.clear();
-    introText.clear();
-    introGypsy.clear();
-
-    delete [] scriptTable;
-    scriptTable = NULL;
-    delete [] baseTileTable;
-    baseTileTable = NULL;
     delete [] objectStateTable;
     objectStateTable = NULL;
-
-    delete [] beastie1FrameTable;
-    delete [] beastie2FrameTable;
 
     imageMgr->freeIntroBackgrounds();
 }
 
 unsigned char *IntroController::getSigData() {
-    ASSERT(sigData != NULL, "intro sig data not loaded");
-    return sigData;
+    ASSERT(binData->sigData != NULL, "intro sig data not loaded");
+    return binData->sigData;
 }
 
 /**
@@ -380,7 +399,7 @@ void IntroController::drawMap() {
         unsigned char dataNibble;
 
         do {
-            commandNibble = scriptTable[scrPos] >> 4;
+            commandNibble = binData->scriptTable[scrPos] >> 4;
 
             switch(commandNibble) {
                 /* 0-4 = set object position and tile frame */
@@ -397,19 +416,19 @@ void IntroController::drawMap() {
                    y = y coordinate
                    t = tile frame (3 most significant bits of second byte)
                    ---------------------------------------------------------- */
-                dataNibble = scriptTable[scrPos] & 0xf;
-                objectStateTable[dataNibble].x = scriptTable[scrPos+1] & 0x1f;
+                dataNibble = binData->scriptTable[scrPos] & 0xf;
+                objectStateTable[dataNibble].x = binData->scriptTable[scrPos+1] & 0x1f;
                 objectStateTable[dataNibble].y = commandNibble;
                 
                 // See if the tile id needs to be recalculated 
-                if ((scriptTable[scrPos+1] >> 5) >= baseTileTable[dataNibble]->frames) {
-                    int frame = (scriptTable[scrPos+1] >> 5) - baseTileTable[dataNibble]->frames;
-                    objectStateTable[dataNibble].tile = baseTileTable[dataNibble]->id + 1;
+                if ((binData->scriptTable[scrPos+1] >> 5) >= binData->baseTileTable[dataNibble]->frames) {
+                    int frame = (binData->scriptTable[scrPos+1] >> 5) - binData->baseTileTable[dataNibble]->frames;
+                    objectStateTable[dataNibble].tile = binData->baseTileTable[dataNibble]->id + 1;
                     objectStateTable[dataNibble].tile.frame = frame;
                 }
                 else {
-                    objectStateTable[dataNibble].tile = baseTileTable[dataNibble]->id;
-                    objectStateTable[dataNibble].tile.frame = (scriptTable[scrPos+1] >> 5);
+                    objectStateTable[dataNibble].tile = binData->baseTileTable[dataNibble]->id;
+                    objectStateTable[dataNibble].tile.frame = (binData->scriptTable[scrPos+1] >> 5);
                 }
                 
                 scrPos += 2;
@@ -420,7 +439,7 @@ void IntroController::drawMap() {
                    Format: 7i
                    i = table index
                    --------------- */
-                dataNibble = scriptTable[scrPos] & 0xf;
+                dataNibble = binData->scriptTable[scrPos] & 0xf;
                 objectStateTable[dataNibble].tile = 0;
                 scrPos++;
                 break;
@@ -433,7 +452,7 @@ void IntroController::drawMap() {
                 drawMapAnimated();
 
                 /* set sleep cycles */
-                sleepCycles = scriptTable[scrPos] & 0xf;
+                sleepCycles = binData->scriptTable[scrPos] & 0xf;
                 scrPos++;
                 break;
             case 0xf:
@@ -460,10 +479,10 @@ void IntroController::drawMapAnimated() {
     /* draw unmodified map */
     for (y = 0; y < INTRO_MAP_HEIGHT; y++)
         for (x = 0; x < INTRO_MAP_WIDTH; x++)
-            mapArea.drawTile(&introMap[x + (y * INTRO_MAP_WIDTH)], false, x, y);
+            mapArea.drawTile(&binData->introMap[x + (y * INTRO_MAP_WIDTH)], false, x, y);
 
     /* draw animated objects */
-    for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
+    for (i = 0; i < IntroBinData::INTRO_BASETILE_TABLE_SIZE; i++) {
         if (objectStateTable[i].tile != 0)
             mapArea.drawTile(&objectStateTable[i].tile, false, objectStateTable[i].x, objectStateTable[i].y);
     }
@@ -473,10 +492,68 @@ void IntroController::drawMapAnimated() {
  * Draws the animated beasts in the upper corners of the screen.
  */
 void IntroController::drawBeasties() {
-    screenShowBeastie(0, beastieOffset, beastie1FrameTable[beastie1Cycle]);
-    screenShowBeastie(1, beastieOffset, beastie2FrameTable[beastie2Cycle]);
+    drawBeastie(0, beastieOffset, binData->beastie1FrameTable[beastie1Cycle]);
+    drawBeastie(1, beastieOffset, binData->beastie2FrameTable[beastie2Cycle]);
     if (beastieOffset < 0)
         beastieOffset++;
+}
+
+/**
+ * Animates the "beasties".  The animate intro image is made up frames
+ * for the two creatures in the top left and top right corners of the
+ * screen.  This function draws the frame for the given beastie on the
+ * screen.  vertoffset is used lower the creatures down from the top
+ * of the screen.
+ */
+void IntroController::drawBeastie(int beast, int vertoffset, int frame) {
+    char buffer[128];
+    int destx;
+
+    ASSERT(beast == 0 || beast == 1, "invalid beast: %d", beast);
+
+    sprintf(buffer, "beast%dframe%02d", beast, frame);
+
+    destx = beast ? (320 - 48) : 0;
+    backgroundArea.draw(buffer, destx, vertoffset);
+}
+
+/**
+ * Animates the moongate in the tree intro image.  There are two
+ * overlays in the part of the image normally covered by the text.  If
+ * the frame parameter is "moongate", the moongate overlay is painted
+ * over the image.  If frame is "items", the second overlay is
+ * painted: the circle without the moongate, but with a small white
+ * dot representing the anhk and history book.
+ */
+void IntroController::animateTree(const string &frame) {
+    backgroundArea.draw(frame, 72, 68);
+}
+
+/**
+ * Draws the cards in the character creation sequence with the gypsy.
+ */
+void IntroController::drawCard(int pos, int card) {
+    static const char *cardNames[] = { 
+        "honestycard", "compassioncard", "valorcard", "justicecard",
+        "sacrificecard", "honorcard", "spiritualitycard", "humilitycard" 
+    };
+
+    ASSERT(pos == 0 || pos == 1, "invalid pos: %d", pos);
+    ASSERT(card < 8, "invalid card: %d", card);
+
+    backgroundArea.draw(cardNames[card], pos ? 218 : 12, 12);
+}
+
+/**
+ * Draws the beads in the abacus during the character creation sequence
+ */
+void IntroController::drawAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
+    ASSERT(row >= 0 && row < 7, "invalid row: %d", row);
+    ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
+    ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
+    
+    backgroundArea.draw("whitebead", 128 + (selectedVirtue * 9), 24 + (row * 15));
+    backgroundArea.draw("blackbead", 128 + (rejectedVirtue * 9), 24 + (row * 15));
 }
 
 /**
@@ -487,7 +564,7 @@ void IntroController::updateScreen() {
 
     switch (mode) {
     case INTRO_MAP:
-        screenDrawImage(BKGD_INTRO);
+        backgroundArea.draw(BKGD_INTRO);
         drawMap();
         drawBeasties();
         break;
@@ -496,7 +573,7 @@ void IntroController::updateScreen() {
         screenSetCursorPos(24, 16);
         screenShowCursor();
 
-        screenDrawImage(BKGD_INTRO);
+        backgroundArea.draw(BKGD_INTRO);
         menuArea.textAt(1, 1, "In another world, in a time to come.");
         menuArea.textAt(14, 3, "Options:");
         menuArea.textAt(10, 4, "Return to the view");
@@ -532,7 +609,7 @@ void IntroController::initiateNewGame() {
     menuArea.setCursorFollowsText(true);
 
     // display name prompt and read name from keyboard
-    screenDrawImage(BKGD_INTRO);
+    backgroundArea.draw(BKGD_INTRO);
     menuArea.textAt(3, 3, "By what name shalt thou be known");
     menuArea.textAt(3, 4, "in this world and time?");
     menuArea.setCursorPos(11, 7, true);
@@ -550,7 +627,7 @@ void IntroController::initiateNewGame() {
     }
 
     // display sex prompt and read sex from keyboard
-    screenDrawImage(BKGD_INTRO);
+    backgroundArea.draw(BKGD_INTRO);
     menuArea.textAt(3, 3, "Art thou Male or Female?");
     menuArea.setCursorPos(28, 3, true);
     drawBeasties();
@@ -565,6 +642,57 @@ void IntroController::initiateNewGame() {
 
     // show the lead up story
     showStory();
+
+    // ask questions that determine character class
+    startQuestions();
+
+    // write out save game an segue into game
+    SaveGame saveGame;
+    SaveGamePlayerRecord avatar;
+
+    FILE *saveGameFile = fopen((settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "wb");
+    if (!saveGameFile) {
+        questionArea.disableCursor();
+        mode = INTRO_MENU;
+        errorMessage = "Unable to create save game!";
+        updateScreen();
+        return;
+    }
+
+    avatar.init();
+    saveGame.init(&avatar);
+    screenHideCursor();
+    initPlayers(&saveGame);
+    saveGame.food = 30000;
+    saveGame.gold = 200;
+    saveGame.reagents[REAG_GINSENG] = 3;
+    saveGame.reagents[REAG_GARLIC] = 4;
+    saveGame.torches = 2;
+    saveGame.write(saveGameFile);
+    fclose(saveGameFile);
+
+    saveGameFile = fopen((settings.getUserPath() + MONSTERS_SAV_BASE_FILENAME).c_str(), "wb");
+    if (saveGameFile) {
+        saveGameMonstersWrite(NULL, saveGameFile);
+        fclose(saveGameFile);
+    }
+
+    // show the text thats segues into the main game
+    showText(binData->introGypsy[GYP_SEGUE1]);
+
+    ReadChoiceController pauseController("");
+    eventHandler->pushController(&pauseController);
+    pauseController.waitFor();
+
+    showText(binData->introGypsy[GYP_SEGUE2]);
+
+    eventHandler->pushController(&pauseController);
+    pauseController.waitFor();
+
+    // done: exit intro and let game begin
+    EventHandler::setControllerDone();
+
+    return;
 }
 
 void IntroController::showStory() {
@@ -577,31 +705,30 @@ void IntroController::showStory() {
 
     for (int storyInd = 0; storyInd < 24; storyInd++) {
         if (storyInd == 0)
-            screenDrawImage(BKGD_TREE);
+            backgroundArea.draw(BKGD_TREE);
         else if (storyInd == 3)
-            screenAnimateIntro("moongate");
+            animateTree("moongate");
         else if (storyInd == 5)
-            screenAnimateIntro("items");
+            animateTree("items");
         else if (storyInd == 6)
-            screenDrawImage(BKGD_PORTAL);
+            backgroundArea.draw(BKGD_PORTAL);
         else if (storyInd == 11)
-            screenDrawImage(BKGD_TREE);
+            backgroundArea.draw(BKGD_TREE);
         else if (storyInd == 15)
-            screenDrawImage(BKGD_OUTSIDE);
+            backgroundArea.draw(BKGD_OUTSIDE);
         else if (storyInd == 17)
-            screenDrawImage(BKGD_INSIDE);
+            backgroundArea.draw(BKGD_INSIDE);
         else if (storyInd == 20)
-            screenDrawImage(BKGD_WAGON);
+            backgroundArea.draw(BKGD_WAGON);
         else if (storyInd == 21)
-            screenDrawImage(BKGD_GYPSY);
+            backgroundArea.draw(BKGD_GYPSY);
         else if (storyInd == 23)
-            screenDrawImage(BKGD_ABACUS);
-        showText(introText[storyInd]);
+            backgroundArea.draw(BKGD_ABACUS);
+        showText(binData->introText[storyInd]);
     
         eventHandler->pushController(&pauseController);
         pauseController.waitFor();
     }
-    startQuestions();
 }
 
 /**
@@ -618,16 +745,18 @@ void IntroController::startQuestions() {
     while (1) {
         // draw the abacus background, if necessary
         if (questionRound == 0)
-            screenDrawImage(BKGD_ABACUS);
+            backgroundArea.draw(BKGD_ABACUS);
 
         // draw the cards and show the lead up text
-        screenShowCard(0, questionTree[questionRound * 2]);
-        screenShowCard(1, questionTree[questionRound * 2 + 1]);
+        drawCard(0, questionTree[questionRound * 2]);
+        drawCard(1, questionTree[questionRound * 2 + 1]);
 
         questionArea.clear();
-        questionArea.textAt(0, 0, "%s", introGypsy[questionRound == 0 ? GYP_PLACES_FIRST : (questionRound == 6 ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE)].c_str());
-        questionArea.textAt(0, 1, "%s", introGypsy[GYP_UPON_TABLE].c_str());
-        questionArea.textAt(0, 2, "%s and %s.  She says", introGypsy[questionTree[questionRound * 2] + 4].c_str(), introGypsy[questionTree[questionRound * 2 + 1] + 4].c_str());
+        questionArea.textAt(0, 0, "%s", binData->introGypsy[questionRound == 0 ? GYP_PLACES_FIRST : (questionRound == 6 ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE)].c_str());
+        questionArea.textAt(0, 1, "%s", binData->introGypsy[GYP_UPON_TABLE].c_str());
+        questionArea.textAt(0, 2, "%s and %s.  She says", 
+                            binData->introGypsy[questionTree[questionRound * 2] + 4].c_str(), 
+                            binData->introGypsy[questionTree[questionRound * 2 + 1] + 4].c_str());
         questionArea.textAt(0, 3, "\"Consider this:\"");
 
         // wait for a key
@@ -642,52 +771,8 @@ void IntroController::startQuestions() {
         eventHandler->pushController(&questionController);
         int choice = questionController.waitFor();
 
-        // if done, create the savegame and continue on to the game
+        // update the question tree
         if (doQuestion(choice == 'a' ? 0 : 1)) {
-            SaveGame saveGame;
-            SaveGamePlayerRecord avatar;
-
-            FILE *saveGameFile = fopen((settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "wb");
-            if (!saveGameFile) {
-                questionArea.disableCursor();
-                mode = INTRO_MENU;
-                errorMessage = "Unable to create save game!";
-                updateScreen();
-                return;
-            }
-
-            avatar.init();
-            saveGame.init(&avatar);
-            screenHideCursor();
-            initPlayers(&saveGame);
-            saveGame.food = 30000;
-            saveGame.gold = 200;
-            saveGame.reagents[REAG_GINSENG] = 3;
-            saveGame.reagents[REAG_GARLIC] = 4;
-            saveGame.torches = 2;
-            saveGame.write(saveGameFile);
-            fclose(saveGameFile);
-
-            saveGameFile = fopen((settings.getUserPath() + MONSTERS_SAV_BASE_FILENAME).c_str(), "wb");
-            if (saveGameFile) {
-                saveGameMonstersWrite(NULL, saveGameFile);
-                fclose(saveGameFile);
-            }
-
-            // show the text thats segues into the main game
-            showText(introGypsy[GYP_SEGUE1]);
-
-            eventHandler->pushController(&pauseController);
-            pauseController.waitFor();
-
-            showText(introGypsy[GYP_SEGUE2]);
-
-            eventHandler->pushController(&pauseController);
-            pauseController.waitFor();
-
-            // done: exit intro and let game begin
-            EventHandler::setControllerDone();
-
             return;
         }
     }
@@ -712,7 +797,7 @@ string IntroController::getQuestion(int v1, int v2) {
 
     ASSERT((i + v2 - 1) < 28, "calculation failed");
 
-    return introQuestions[i + v2 - 1];
+    return binData->introQuestions[i + v2 - 1];
 }
 
 /**
@@ -756,7 +841,7 @@ void IntroController::journeyOnward() {
 void IntroController::about() {
     mode = INTRO_ABOUT;
 
-    screenDrawImage(BKGD_INTRO);
+    backgroundArea.draw(BKGD_INTRO);
     screenHideCursor();
     menuArea.textAt(14, 1, "XU4 %s", VERSION);
     menuArea.textAt(1, 3, "xu4 is free software; you can redist-");
@@ -833,9 +918,9 @@ void IntroController::timerFired() {
     if (EventHandler::timerQueueEmpty())
         screenRedrawScreen();
 
-    if (xu4_random(2) && ++beastie1Cycle >= BEASTIE1_FRAMES)
+    if (xu4_random(2) && ++beastie1Cycle >= IntroBinData::BEASTIE1_FRAMES)
         beastie1Cycle = 0;
-    if (xu4_random(2) && ++beastie2Cycle >= BEASTIE2_FRAMES)
+    if (xu4_random(2) && ++beastie2Cycle >= IntroBinData::BEASTIE2_FRAMES)
         beastie2Cycle = 0;
 }
 
@@ -890,7 +975,7 @@ void IntroController::updateMainOptions(MenuEvent &event) {
         }
     }
 
-    screenDrawImage(BKGD_INTRO);
+    backgroundArea.draw(BKGD_INTRO);
     menuArea.textAt(8, 1, "-- xu4 Configuration --");
 }
 
@@ -1005,7 +1090,7 @@ void IntroController::updateVideoOptions(MenuEvent &event) {
         }
     }
 
-    screenDrawImage(BKGD_INTRO_EXTENDED);
+    backgroundArea.draw(BKGD_INTRO_EXTENDED);
     extendedMenuArea.textAt(1, 0, "Video Options:");
     extendedMenuArea.textAt(23, 2, "%s", settingsChanged.videoType.c_str());
     extendedMenuArea.textAt(23, 3, "%s", settingsChanged.gemLayout.c_str());
@@ -1047,7 +1132,7 @@ void IntroController::updateSoundOptions(MenuEvent &event) {
         }
     }
 
-    screenDrawImage(BKGD_INTRO);
+    backgroundArea.draw(BKGD_INTRO);
     menuArea.textAt(2, 1, "Sound Options:");
     menuArea.textAt(25, 3, "%s", settingsChanged.musicVol ? "On" : "Off");
     menuArea.textAt(25, 4, "%s", settingsChanged.soundVol ? "On" : "Off");
@@ -1099,7 +1184,7 @@ void IntroController::updateGameplayOptions(MenuEvent &event) {
         }
     }
 
-    screenDrawImage(BKGD_INTRO_EXTENDED);
+    backgroundArea.draw(BKGD_INTRO_EXTENDED);
     extendedMenuArea.textAt(1, 0, "Gameplay Options:");
     extendedMenuArea.textAt(31, 2, "%s", settingsChanged.enhancements ? "On" : "Off");        
     extendedMenuArea.textAt(5, 5, "  (Open, Jimmy, etc.)     %s", settingsChanged.shortcutCommands ? "On" : "Off");        
@@ -1138,7 +1223,7 @@ void IntroController::updateAdvancedOptions(MenuEvent &event) {
         }
     }
 
-    screenDrawImage(BKGD_INTRO_EXTENDED);
+    backgroundArea.draw(BKGD_INTRO_EXTENDED);
     extendedMenuArea.textAt(1, 0,   "Advanced Options:");
     extendedMenuArea.textAt(33, 5,  "%s", settingsChanged.debug ? "On" : "Off");
 }
@@ -1184,7 +1269,7 @@ void IntroController::updateEnhancementOptions(MenuEvent &event) {
         }
     }
 
-    screenDrawImage(BKGD_INTRO_EXTENDED);
+    backgroundArea.draw(BKGD_INTRO_EXTENDED);
     extendedMenuArea.textAt(1, 0,  "Game Enhancement Options:");        
     extendedMenuArea.textAt(30, 2, "%s", settingsChanged.enhancementsOptions.activePlayer ? "On" : "Off");
     extendedMenuArea.textAt(30, 3, "%s", settingsChanged.enhancementsOptions.u5spellMixing ? "On" : "Off");
@@ -1240,7 +1325,7 @@ void IntroController::updateKeyboardOptions(MenuEvent &event) {
         }    
     }
 
-    screenDrawImage(BKGD_INTRO_EXTENDED);
+    backgroundArea.draw(BKGD_INTRO_EXTENDED);
     extendedMenuArea.textAt(1, 0, "Keyboard Settings:");
     extendedMenuArea.textAt(33, 2,  "%d", settingsChanged.keydelay);
     extendedMenuArea.textAt(33, 3,  "%d", settingsChanged.keyinterval);
@@ -1352,7 +1437,7 @@ void IntroController::updateSpeedOptions(MenuEvent &event) {
     }
 
     char msg[16] = {0};
-    screenDrawImage(BKGD_INTRO_EXTENDED);
+    backgroundArea.draw(BKGD_INTRO_EXTENDED);
     extendedMenuArea.textAt(1, 0, "Speed Settings:");           
     extendedMenuArea.textAt(29, 2, "%3d", settingsChanged.gameCyclesPerSecond);
 
@@ -1409,14 +1494,12 @@ void IntroController::initQuestionTree() {
  * @return true if all questions have been answered, false otherwise
  */
 bool IntroController::doQuestion(int answer) {
-    int tmp;
-    
     if (!answer)
         questionTree[answerInd] = questionTree[questionRound * 2];
     else
         questionTree[answerInd] = questionTree[questionRound * 2 + 1];
     
-    screenShowAbacusBeads(questionRound, questionTree[answerInd], 
+    drawAbacusBeads(questionRound, questionTree[answerInd],
         questionTree[questionRound * 2 + ((answer) ? 0 : 1)]);
 
     answerInd++;
@@ -1426,7 +1509,7 @@ bool IntroController::doQuestion(int answer) {
         return true;
 
     if (questionTree[questionRound * 2] > questionTree[questionRound * 2 + 1]) {
-        tmp = questionTree[questionRound * 2];
+        int tmp = questionTree[questionRound * 2];
         questionTree[questionRound * 2] = questionTree[questionRound * 2 + 1];
         questionTree[questionRound * 2 + 1] = tmp;
     }

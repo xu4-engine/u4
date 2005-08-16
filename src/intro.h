@@ -12,11 +12,46 @@
 #include "menu.h"
 #include "observer.h"
 #include "savegame.h"
+#include "imageview.h"
 #include "textview.h"
 #include "tileview.h"
 
 struct IntroObjectState;
 class Tile;
+
+/**
+ * Binary data loaded from the U4DOS title.exe file.
+ */
+class IntroBinData {
+public:
+    const static int INTRO_TEXT_OFFSET;
+    const static int INTRO_MAP_OFFSET;
+    const static int INTRO_FIXUPDATA_OFFSET;
+    const static int INTRO_SCRIPT_TABLE_SIZE;
+    const static int INTRO_SCRIPT_TABLE_OFFSET;
+    const static int INTRO_BASETILE_TABLE_SIZE;
+    const static int INTRO_BASETILE_TABLE_OFFSET;
+    const static int BEASTIE1_FRAMES;
+    const static int BEASTIE2_FRAMES;
+    const static int BEASTIE_FRAME_TABLE_OFFSET;
+    const static int BEASTIE1_FRAMES_OFFSET;
+    const static int BEASTIE2_FRAMES_OFFSET;
+
+    IntroBinData();
+    ~IntroBinData();
+
+    bool load();
+
+    MapTile *introMap;
+    unsigned char *sigData;
+    unsigned char *scriptTable;
+    Tile **baseTileTable;
+    unsigned char *beastie1FrameTable;
+    unsigned char *beastie2FrameTable;
+    std::vector<std::string> introText;
+    std::vector<std::string> introQuestions;
+    std::vector<std::string> introGypsy;
+};
 
 /**
  * Controls the intro sequence, including the traditional animated map
@@ -55,6 +90,10 @@ private:
     void drawMap();
     void drawMapAnimated();
     void drawBeasties();
+    void drawBeastie(int beast, int vertoffset, int frame);
+    void animateTree(const string &frame);
+    void drawCard(int pos, int card);
+    void drawAbacusBeads(int row, int selectedVirtue, int rejectedVirtue);
 
     void initQuestionTree();
     bool doQuestion(int answer);
@@ -87,21 +126,14 @@ private:
         CANCEL = 0xFF
     };
 
+    ImageView backgroundArea;
     TextView menuArea;
     TextView extendedMenuArea;
     TextView questionArea;
     TileView mapArea;
 
     /* data loaded in from title.exe */
-    MapTile *introMap;
-    unsigned char *sigData;
-    unsigned char *scriptTable;
-    Tile **baseTileTable;
-    unsigned char *beastie1FrameTable;
-    unsigned char *beastie2FrameTable;
-    std::vector<std::string> introText;
-    std::vector<std::string> introQuestions;
-    std::vector<std::string> introGypsy;
+    IntroBinData *binData;
 
     /* additional introduction state data */
     std::string errorMessage;
