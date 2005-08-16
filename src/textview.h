@@ -41,11 +41,12 @@ public:
     static void cursorTimer(void *data);
 
 protected:
-    int columns, rows;
-    bool cursorEnabled, cursorFollowsText;
-    int cursorX, cursorY;
-    int cursorPhase;
-    static Image *charset;
+    int columns, rows;          /**< size of the view in character cells  */
+    bool cursorEnabled;         /**< whether the cursor is enabled */
+    bool cursorFollowsText;     /**< whether the cursor is moved past the last character written */
+    int cursorX, cursorY;       /**< current position of cursor */
+    int cursorPhase;            /**< the rotation state of the cursor */
+    static Image *charset;      /**< image containing font */
 };
 
 #endif /* TEXTVIEW_H */
