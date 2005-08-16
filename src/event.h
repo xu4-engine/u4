@@ -49,6 +49,8 @@ class TextView;
  */
 class KeyHandler {
 public:
+    virtual ~KeyHandler() {}
+
     /* Typedefs */
     typedef bool (*Callback)(int, void*);
 
