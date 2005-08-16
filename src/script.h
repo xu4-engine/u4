@@ -39,6 +39,7 @@ public:
      */
     class Provider {
     public:
+        virtual ~Provider() {}
         virtual string translate(std::vector<string>& parts) = 0;
     };
 

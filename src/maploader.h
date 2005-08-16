@@ -29,6 +29,8 @@ class Dungeon;
  */
 class MapLoader {
 public:
+    virtual ~MapLoader() {}
+
     static MapLoader *getLoader(Map::Type type);
 
     virtual int load(Map *map) = 0;

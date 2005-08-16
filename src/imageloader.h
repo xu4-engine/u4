@@ -22,6 +22,7 @@ class U4FILE;
 class ImageLoader {
 public:
     ImageLoader();
+    virtual ~ImageLoader() {}
     void setDimensions(int width, int height, int bpp);
     virtual Image *load(U4FILE *file) = 0;
     static ImageLoader *getLoader(const std::string &fileType);
