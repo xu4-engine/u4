@@ -285,6 +285,12 @@ bool IntroController::init() {
         menusLoaded = true;
     }
 
+    backgroundArea.reinit();
+    menuArea.reinit();
+    extendedMenuArea.reinit();
+    questionArea.reinit();
+    mapArea.reinit();
+
     /* Make a copy of our settings so we can change them */
     settingsChanged = settings;
 
