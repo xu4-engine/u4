@@ -38,6 +38,11 @@ TileView::~TileView() {
     delete animated;
 }
 
+void TileView::reinit() {
+    View::reinit();
+    tileset = Tileset::get();
+}
+
 void TileView::drawTile(MapTile *mapTile, bool focus, int x, int y) {
     Tile *tile = handleMissingTiles(mapTile);
     Image *image = tile->getImage();

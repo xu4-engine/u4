@@ -24,6 +24,8 @@ public:
     TextView(int x, int y, int columns, int rows);
     virtual ~TextView();
 
+    void reinit();
+
     int getCursorX() const { return cursorX; }
     int getCursorY() const { return cursorY; }
     bool getCursorEnabled() const { return cursorEnabled; }

@@ -27,6 +27,7 @@ public:
     TileView(int x, int y, int columns, int rows, const string &tileset);
     virtual ~TileView();
 
+    void reinit();
     void drawTile(MapTile *mapTile, bool focus, int x, int y);
     void drawTile(const std::vector<MapTile *> &tiles, bool focus, int x, int y);
     void drawFocus(int x, int y);

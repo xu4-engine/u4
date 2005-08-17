@@ -19,6 +19,13 @@ View::View(int x, int y, int width, int height) {
 }
 
 /**
+ * Hook for reinitializing when graphics reloaded.
+ */
+void View::reinit() {
+    screen = imageMgr->get("screen")->image;
+}
+
+/**
  * Clear the view to black.
  */
 void View::clear() {

@@ -18,6 +18,7 @@ public:
     View(int x, int y, int width, int height);
     virtual ~View() {}
 
+    virtual void reinit();
     virtual void clear();
     virtual void update();
     virtual void update(int x, int y, int width, int height);

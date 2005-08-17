@@ -32,6 +32,11 @@ TextView::~TextView() {
     eventHandler->getTimer()->remove(&cursorTimer, this);
 }
 
+void TextView::reinit() {
+    View::reinit();
+    charset = imageMgr->get(BKGD_CHARSET)->image;
+}
+
 /**
  * Draw a character from the charset onto the view.
  */
