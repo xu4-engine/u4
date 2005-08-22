@@ -594,7 +594,7 @@ string Party::translate(std::vector<string>& parts) {
 
             // Find the member we'll be working with
             string str = parts[0];
-            unsigned int pos = str.find_first_of("1234567890");
+            string::size_type pos = str.find_first_of("1234567890");
             if (pos != string::npos) {
                 str = str.substr(pos);
                 int p_member = (int)strtol(str.c_str(), NULL, 10);

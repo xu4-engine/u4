@@ -261,7 +261,7 @@ ReadStringController::ReadStringController(int maxlen, TextView *view, const str
 bool ReadStringController::keyPressed(int key) {
     int valid = true,
         len = value.length();
-    unsigned int pos = string::npos;
+    string::size_type pos = string::npos;
     
     if (key < U4_ALT)
          pos = accepted.find_first_of(key);
