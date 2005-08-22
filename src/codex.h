@@ -5,11 +5,7 @@
 #ifndef CODEX_H
 #define CODEX_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef enum _CodexEjectCode {
+enum CodexEjectCode {
     CODEX_EJECT_NO_3_PART_KEY,
     CODEX_EJECT_BAD_WOP,
     CODEX_EJECT_NO_FULL_PARTY,
@@ -26,12 +22,8 @@ typedef enum _CodexEjectCode {
     CODEX_EJECT_LOVE,
     CODEX_EJECT_COURAGE,
     CODEX_EJECT_BAD_INFINITY 
-} CodexEjectCode;
+};
 
 void codexStart();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

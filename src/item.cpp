@@ -15,6 +15,7 @@
 #include "event.h"
 #include "game.h"
 #include "location.h"
+#include "map.h"
 #include "mapmgr.h"
 #include "names.h"
 #include "player.h"
@@ -25,6 +26,8 @@
 #include "u4.h"
 #include "utils.h"
 
+using std::string;
+
 DestroyAllCreaturesCallback destroyAllCreaturesCallback;
 
 void itemSetDestroyAllCreaturesCallback(DestroyAllCreaturesCallback callback) {
@@ -34,12 +37,12 @@ void itemSetDestroyAllCreaturesCallback(DestroyAllCreaturesCallback callback) {
 int needStoneNames = 0;
 unsigned char stoneMask = 0;
 
-int isRuneInInventory(void *virt);
+bool isRuneInInventory(void *virt);
 void putRuneInInventory(void *virt);
-int isStoneInInventory(void *virt);
+bool isStoneInInventory(void *virt);
 void putStoneInInventory(void *virt);
-int isItemInInventory(void *item);
-int isSkullInInventory(void *item);
+bool isItemInInventory(void *item);
+bool isSkullInInventory(void *item);
 void putItemInInventory(void *item);
 void useBBC(void *item);
 void useHorn(void *item);
@@ -47,12 +50,12 @@ void useWheel(void *item);
 void useSkull(void *item);
 void useStone(void *item);
 void useKey(void *item);
-int isMysticInInventory(void *mystic);
+bool isMysticInInventory(void *mystic);
 void putMysticInInventory(void *mystic);
-int isWeaponInInventory(void *weapon);
+bool isWeaponInInventory(void *weapon);
 void putWeaponInInventory(void *weapon);
 void useTelescope(void *notused);
-int isReagentInInventory(void *reag);
+bool isReagentInInventory(void *reag);
 void putReagentInInventory(void *reag);
 bool isAbyssOpened(const Portal *p);
 int itemHandleStones(string *color);
@@ -131,7 +134,7 @@ static const ItemLocation items[] = {
 
 #define N_ITEMS (sizeof(items) / sizeof(items[0]))
 
-int isRuneInInventory(void *virt) {
+bool isRuneInInventory(void *virt) {
     return c->saveGame->runes & (int)virt;
 }
 
@@ -142,7 +145,7 @@ void putRuneInInventory(void *virt) {
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
-int isStoneInInventory(void *virt) {
+bool isStoneInInventory(void *virt) {
     /* generic test: does the party have any stones yet? */
     if (virt == NULL) 
         return (c->saveGame->stones > 0);
@@ -157,11 +160,11 @@ void putStoneInInventory(void *virt) {
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
-int isItemInInventory(void *item) {
+bool isItemInInventory(void *item) {
     return c->saveGame->items & (int)item;
 }
 
-int isSkullInInventory(void *) {
+bool isSkullInInventory(void *) {
     return (c->saveGame->items & (ITEM_SKULL | ITEM_SKULL_DESTROYED));
 }
 
@@ -380,7 +383,7 @@ void useKey(void *item) {
     screenMessage("\nNo place to Use them!\n");
 }
 
-int isMysticInInventory(void *mystic) {
+bool isMysticInInventory(void *mystic) {
     /* FIXME: you could feasibly get more mystic weapons and armor if you
        have 8 party members and equip them all with everything,
        then search for Mystic Weapons/Armor again 
@@ -397,7 +400,7 @@ int isMysticInInventory(void *mystic) {
         return c->saveGame->armor[ARMR_MYSTICROBES] > 0;
     else
         ASSERT(0, "Invalid mystic item was tested in isMysticInInventory()");    
-    return 0;
+    return false;
 }
 
 void putMysticInInventory(void *mystic) {
@@ -412,17 +415,17 @@ void putMysticInInventory(void *mystic) {
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
-int isWeaponInInventory(void *weapon) {
+bool isWeaponInInventory(void *weapon) {
     if (c->saveGame->weapons[(int)weapon])
-        return 1;
+        return true;
     else {
         int i;
         for (i = 0; i < c->party->size(); i++) {
             if (c->party->member(i)->getWeapon() == (int)weapon)
-                return 1;
+                return true;
         }
     }
-    return 0;
+    return false;
 }
 
 void putWeaponInInventory(void *weapon) {
@@ -439,8 +442,8 @@ void useTelescope(void *notused) {
     gamePeerCity(choice, NULL);
 }
 
-int isReagentInInventory(void *reag) {
-    return 0;
+bool isReagentInInventory(void *reag) {
+    return false;
 }
 
 void putReagentInInventory(void *reag) {
@@ -457,32 +460,32 @@ void putReagentInInventory(void *reag) {
 /**
  * Returns true if the specified conditions are met to be able to get the item
  */
-int itemConditionsMet(unsigned char conditions) {
+bool itemConditionsMet(unsigned char conditions) {
     int i;
 
     if ((conditions & SC_NEWMOONS) &&
         !(c->saveGame->trammelphase == 0 && c->saveGame->feluccaphase == 0))
-        return 0;
+        return false;
 
     if (conditions & SC_FULLAVATAR) {
         for (i = 0; i < VIRT_MAX; i++) {
             if (c->saveGame->karma[i] != 0)
-                return 0;
+                return false;
         }
     }
 
     if ((conditions & SC_REAGENTDELAY) &&
         (c->saveGame->moves & 0xF0) == c->saveGame->lastreagent)
-        return 0;
+        return false;
 
-    return 1;
+    return true;
 }
 
 /**
  * Returns an item location record if a searchable object exists at
  * the given location. NULL is returned if nothing is there.
  */
-const ItemLocation *itemAtLocation(const Map *map, Coords coords) {
+const ItemLocation *itemAtLocation(const Map *map, const Coords &coords) {
     unsigned int i;
     for (i = 0; i < N_ITEMS; i++) {
         Coords item(items[i].x, items[i].y, items[i].z);
@@ -497,7 +500,7 @@ const ItemLocation *itemAtLocation(const Map *map, Coords coords) {
 /**
  * Uses the item indicated by 'shortname'
  */
-void itemUse(string shortname) {
+void itemUse(const string &shortname) {
     unsigned int i;
     const ItemLocation *item = NULL;
 
