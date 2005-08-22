@@ -374,7 +374,7 @@ void StatsArea::showReagents() {
     Menu::MenuItemList::iterator i;
     int r;
     for (i = reagentsMixMenu.begin(), r = REAG_ASH; i != reagentsMixMenu.end(); i++, r++) {
-        if (i->isVisible()) {
+        if ((*i)->isVisible()) {
             /* show the quantity of reagents */
             mainArea.textAt(0, line, "%c-", r+'A');
             mainArea.textAt(13, line++, "%2d", c->party->reagents(r - REAG_ASH));
@@ -416,11 +416,11 @@ void StatsArea::resetReagentsMenu() {
     row = 0;
     for (current = reagentsMixMenu.begin(); current != reagentsMixMenu.end(); current++) {
         if (c->saveGame->reagents[i++] > 0) {
-            current->setVisible(true);
-            current->setY(row);
+            (*current)->setVisible(true);
+            (*current)->setY(row);
             row++;
         }
-        else current->setVisible(false);
+        else (*current)->setVisible(false);
     }
 
     reagentsMixMenu.reset(false);
@@ -441,9 +441,9 @@ bool ReagentsMenuController::keyPressed(int key) {
     case 'h':
         {
             /* select the corresponding reagent (if visible) */
-            Menu::MenuItemList::iterator mi = menu->getById((MenuId)(key-'a'));
-            if (mi->isVisible()) {        
-                menu->setCurrent(menu->getById((MenuId)(key-'a')));
+            Menu::MenuItemList::iterator mi = menu->getById(key-'a');
+            if ((*mi)->isVisible()) {
+                menu->setCurrent(menu->getById(key-'a'));
                 keyPressed(U4_SPACE);
             }
         } break;
@@ -451,7 +451,7 @@ bool ReagentsMenuController::keyPressed(int key) {
     case U4_RIGHT:
     case U4_SPACE:
         if (menu->isVisible()) {            
-            MenuItem *item = &(*menu->getCurrent());
+            MenuItem *item = *menu->getCurrent();
             
             /* change whether or not it's selected */
             item->setSelected(!item->isSelected());
