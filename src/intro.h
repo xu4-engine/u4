@@ -59,10 +59,10 @@ public:
  * menu.
  * @todo
  * <ul>
- *      <li>menus need id's instead of magic numbers</li>
  *      <li>make initial menu a Menu too</li>
  *      <li>get rid of mode and switch(mode) statements</li>
  *      <li>get rid global intro instance -- should only need to be accessed from u4.cpp</li>
+ *      <li>animate the lord british signature</li>
  * </ul>
  */
 class IntroController : public Controller, public Observer<Menu *, MenuEvent &> {
@@ -77,14 +77,14 @@ public:
     void timerFired();
 
     void update(Menu *menu, MenuEvent &event);
-    void updateMainOptions(MenuEvent &event);
-    void updateVideoOptions(MenuEvent &event);
-    void updateSoundOptions(MenuEvent &event);
-    void updateGameplayOptions(MenuEvent &event);
-    void updateAdvancedOptions(MenuEvent &event);
-    void updateEnhancementOptions(MenuEvent &event);
-    void updateKeyboardOptions(MenuEvent &event);
-    void updateSpeedOptions(MenuEvent &event);
+    void updateMainMenu(MenuEvent &event);
+    void updateVideoMenu(MenuEvent &event);
+    void updateSoundMenu(MenuEvent &event);
+    void updateGameplayMenu(MenuEvent &event);
+    void updateAdvancedMenu(MenuEvent &event);
+    void updateEnhancementMenu(MenuEvent &event);
+    void updateKeyboardMenu(MenuEvent &event);
+    void updateSpeedMenu(MenuEvent &event);
 
 private:
     void drawMap();
@@ -122,6 +122,13 @@ private:
     } mode;
 
     enum MenuConstants {
+        VIDEO_MENU,
+        SOUND_MENU,
+        GAMEPLAY_MENU,
+        ADVANCED_MENU,
+        SPEED_MENU,
+        KEYBOARD_MENU,
+        ENHANCEMENT_MENU,
         USE_SETTINGS = 0xFE,
         CANCEL = 0xFF
     };
