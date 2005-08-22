@@ -110,10 +110,7 @@ private:
 extern GameController *game;
 
 /* key handlers */
-bool gameGetFieldTypeKeyHandler(int key, void *data);
-bool gameGetPhaseKeyHandler(int key, void *data);
 bool gameGetCoordinateKeyHandler(int key, void *data);
-bool gameSpellMixMenuKeyHandler(int key, void *data);
 bool gameSpecialCmdKeyHandler(int key, void *data);
 bool gameZtatsKeyHandler(int key, void *data);
 
@@ -126,7 +123,7 @@ void castSpell(int player = -1);
 void gameSpellEffect(int spell, int player, Sound sound);
 
 /* action functions */
-bool gameGetChest(int player);
+void getChest(int player = -1);
 bool gamePeerCity(int city, void *data);
 void peer(bool useGem = true);
 bool fireAtCoord(MapCoords coords, int distance, void *data);

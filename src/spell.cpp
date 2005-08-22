@@ -616,7 +616,8 @@ static int spellNegate(int unused) {
 }
 
 static int spellOpen(int unused) {    
-    gameGetChest(-1);
+    // FIXME: shouldn't prompt for opener
+    getChest(-1);
     return 1;
 }
 

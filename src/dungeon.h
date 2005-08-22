@@ -11,19 +11,19 @@
 
 #define DNGROOM_NTRIGGERS 4
 
-typedef enum {
+enum StatsBonusType {
     STATSBONUS_INT = 0x1,
     STATSBONUS_DEX = 0x2,
     STATSBONUS_STR = 0x4
-} StatsBonusType;
+};
 
-typedef struct _Trigger {
+struct Trigger {
     unsigned char tile;
     unsigned char x, y;
     unsigned char change_x1, change_y1, change_x2, change_y2;
-} Trigger;
+};
 
-typedef struct _DngRoom {
+struct DngRoom {
     Trigger triggers[DNGROOM_NTRIGGERS];
     unsigned char creature_tiles[16];
     unsigned char creature_start_x[16];
@@ -39,7 +39,7 @@ typedef struct _DngRoom {
     MapData  map_data;  // This is OK to change to MapData since sizeof(DngRoom) or 
                         // anything like it is not being used.
     unsigned char buffer[7];
-} DngRoom;
+};
 
 class Dungeon : public Map {
 public:
@@ -52,7 +52,7 @@ public:
 
     string name;
     unsigned int n_rooms;
-    struct _DngRoom *rooms;
+    DngRoom *rooms;
     CombatMap **roomMaps;
     int currentRoom;
     unsigned char party_startx[8];
@@ -62,7 +62,7 @@ public:
 /**
  * Dungeon tokens
  */
-typedef enum _DungeonToken {
+enum DungeonToken {
     DUNGEON_CORRIDOR            = 0x00,
     DUNGEON_LADDER_UP           = 0x10,
     DUNGEON_LADDER_DOWN         = 0x20,
@@ -79,31 +79,31 @@ typedef enum _DungeonToken {
     DUNGEON_ROOM                = 0xD0,
     DUNGEON_SECRET_DOOR         = 0xE0,
     DUNGEON_WALL                = 0xF0
-} DungeonToken;
+};
 
 /**
  * Dungeon sub-tokens
  */
-typedef enum _TrapType {
+enum TrapType {
     TRAP_WINDS                  = 0x0,
     TRAP_FALLING_ROCK           = 0x1,
     TRAP_PIT                    = 0xe
-} TrapType;
+};
 
-typedef enum _FountainType {
+enum FountainType {
     FOUNTAIN_NORMAL             = 0x0,
     FOUNTAIN_HEALING            = 0x1,
     FOUNTAIN_ACID               = 0x2,
     FOUNTAIN_CURE               = 0x3,
     FOUNTAIN_POISON             = 0x4
-} FountainType;
+};
 
-typedef enum _FieldType {
+enum FieldType {
     FIELD_POISON                = 0x0,
     FIELD_ENERGY                = 0x1,
     FIELD_FIRE                  = 0x2,
     FIELD_SLEEP                 = 0x3
-} FieldType;
+};
 
 DungeonToken dungeonTokenForTile(MapTile tile);
 unsigned char dungeonSubTokenForTile(MapTile tile);
@@ -112,8 +112,8 @@ unsigned char dungeonCurrentSubToken();
 DungeonToken dungeonTokenAt(Map *map, MapCoords coords);
 unsigned char dungeonSubTokenAt(Map *map, MapCoords coords);
 void dungeonSearch(void);
-bool dungeonDrinkFountain(int player);
-bool dungeonTouchOrb(int player);
+void dungeonDrinkFountain();
+void dungeonTouchOrb();
 bool dungeonHandleTrap(TrapType trap);
 bool dungeonLadderUpAt(Map *map, MapCoords coords);
 bool dungeonLadderDownAt(Map *map, MapCoords coords);

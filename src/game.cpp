@@ -93,7 +93,7 @@ bool getChestTrapHandler(int player);
 bool jimmyAtCoord(MapCoords coords, int distance, void *data);
 bool openAtCoord(MapCoords coords, int distance, void *data);
 void wearArmor(int player = -1, ArmorType armor = ARMR_MAX);
-bool ztatsFor(int player);
+void ztatsFor(int player = -1);
 
 /* checking functions */
 void gameCheckBridgeTrolls(void);
@@ -1115,20 +1115,10 @@ bool GameController::keyPressed(int key) {
 
         case 'g':
             screenMessage("Get Chest!\n");
-            
             if (c->party->isFlying())
                 screenMessage("Drift only!\n");
-            else {
-                tile = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
-        
-                if (tile->isChest())
-                {
-                    screenMessage("Who opens? ");
-                    gameGetPlayerForCommand(&gameGetChest, false, true);
-                }
-                else
-                    screenMessage("Not here!\n");
-            }
+            else
+                getChest();
             
             break;
 
@@ -1329,8 +1319,7 @@ bool GameController::keyPressed(int key) {
             break;
 
         case 'z':        
-            screenMessage("Ztats for: ");
-            gameGetPlayerForCommand(&ztatsFor, true, false);
+            ztatsFor();
             break;
 
         case 'c' + U4_ALT:
@@ -1532,12 +1521,6 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
         }
     }
     return player;
-}
-
-void gameGetPlayerForCommand(bool (*commandFn)(int player), bool canBeDisabled, bool canBeActivePlayer) {
-    int player = gameGetPlayer(canBeDisabled, canBeActivePlayer);
-    if (player != -1)
-        (*commandFn)(player);
 }
 
 Direction gameGetDirection() {
@@ -2294,17 +2277,21 @@ bool fireAtCoord(MapCoords coords, int distance, void *data) {
 /**
  * Get the chest at the current x,y of the current context for player 'player'
  */
-bool gameGetChest(int player) {
-    Object *obj;
-    MapTile *tile, newTile;
+void getChest(int player) {
+    if (player == -1) {
+        screenMessage("Who opens? ");
+        player = gameGetPlayer(false, true);
+    }
+    if (player == -1)
+        return;
+
     MapCoords coords;    
-    
     c->location->getCurrentPosition(&coords);
-    tile = c->location->map->tileAt(coords, WITH_GROUND_OBJECTS);
-    newTile = c->location->getReplacementTile(coords);    
-    
+    MapTile *tile = c->location->map->tileAt(coords, WITH_GROUND_OBJECTS);
+    MapTile newTile = c->location->getReplacementTile(coords);    
+
     /* get the object for the chest, if it is indeed an object */
-    obj = c->location->map->objectAt(coords);
+    Object *obj = c->location->map->objectAt(coords);
     if (obj && !obj->getTile().isChest())
         obj = NULL;
     
@@ -2325,8 +2312,6 @@ bool gameGetChest(int player) {
     }    
     else
         screenMessage("Not Here!\n");
-    
-    return true;
 }
 
 /**
@@ -3044,7 +3029,15 @@ void wearArmor(int player, ArmorType armor) {
 /**
  * Called when the player selects a party member for ztats
  */
-bool ztatsFor(int player) {
+void ztatsFor(int player) {
+    // get the player if not provided
+    if (player == -1) {
+        screenMessage("Ztats for: ");
+        player = gameGetPlayer(true, false);
+        if (player == -1)
+            return;
+    }
+
     /* reset the spell mix menu and un-highlight the current item,
        and hide reagents that you don't have */
     c->stats->resetReagentsMenu();
@@ -3052,7 +3045,6 @@ bool ztatsFor(int player) {
     c->stats->setView(StatsView(STATS_CHAR1 + player));
 
     eventHandler->pushKeyHandler(&gameZtatsKeyHandler);    
-    return true;
 }
 
 /**

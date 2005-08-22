@@ -1038,7 +1038,7 @@ bool CombatController::keyPressed(int key) {
 
     case 'g':
         screenMessage("Get Chest!\n");
-        gameGetChest(ct->focus);
+        getChest(ct->focus);
         break;
 
     case 'l':

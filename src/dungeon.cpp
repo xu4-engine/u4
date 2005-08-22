@@ -119,13 +119,12 @@ void dungeonSearch(void) {
 
     switch (token) {
     case DUNGEON_MAGIC_ORB: /* magic orb */
-        screenMessage("You find a Magical Ball...\nWho touches? ");
-        gameGetPlayerForCommand(&dungeonTouchOrb, false, false);
+    screenMessage("You find a Magical Ball...\nWho touches? ");
+        dungeonTouchOrb();
         break;
 
     case DUNGEON_FOUNTAIN: /* fountains */
-        screenMessage("You find a Fountain.\nWho drinks? ");
-        gameGetPlayerForCommand(&dungeonDrinkFountain, false, false);
+        dungeonDrinkFountain();
         break;
 
     default: 
@@ -151,8 +150,12 @@ void dungeonSearch(void) {
 /**
  * Drink from the fountain at the current location
  */
-bool dungeonDrinkFountain(int player) {
-    bool retval = true;
+void dungeonDrinkFountain() {
+    screenMessage("You find a Fountain.\nWho drinks? ");
+    int player = gameGetPlayer(false, false);
+    if (player == -1)
+        return;
+
     FountainType type = (FountainType)dungeonCurrentSubToken();    
 
     switch(type) {
@@ -193,16 +196,18 @@ bool dungeonDrinkFountain(int player) {
 
     default:
         ASSERT(0, "Invalid call to dungeonDrinkFountain: no fountain at current location");
-        retval = false;
     }
-
-    return retval;
 }
 
 /**
  * Touch the magical ball at the current location
  */
-bool dungeonTouchOrb(int player) {
+void dungeonTouchOrb() {
+    screenMessage("You find a Magical Ball...\nWho touches? ");
+    int player = gameGetPlayer(false, false);
+    if (player == -1)
+        return;
+
     int stats = 0;
     int damage = 0;    
     MapTile replacementTile;
@@ -242,8 +247,6 @@ bool dungeonTouchOrb(int player) {
     c->party->member(player)->applyDamage(damage);    
     /* remove the orb from the map */
     c->location->map->annotations->add(c->location->coords, replacementTile);
-
-    return true;
 }
 
 /**
