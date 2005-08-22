@@ -52,9 +52,7 @@ int main(int argc, char *argv[]) {
 
     for (i = 1; i < (unsigned int)argc; i++) {
         if (strcmp(argv[i], "-filter") == 0 && (unsigned int)argc > i + 1) {
-            settings.filter = (FilterType)settings.filters.getType(argv[i+1]);
-            if (settings.filter == -1)
-                errorFatal("%s is not a valid filter", argv[i+1]);
+            settings.filter = argv[i+1];
             i++;
         }
         if (strcmp(argv[i], "-scale") == 0 && (unsigned int)argc > i + 1) {
