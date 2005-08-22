@@ -36,7 +36,7 @@ string& trim(string &val, const string &chars_to_trim) {
     using namespace std;
     string::iterator i;
     if (val.size()) {
-        unsigned int pos;
+        string::size_type pos;
         for (i = val.begin(); (i != val.end()) && (pos = chars_to_trim.find(*i)) != string::npos; )
             i = val.erase(i);    
         for (i = val.end()-1; (i != val.begin()) && (pos = chars_to_trim.find(*i)) != string::npos; )
