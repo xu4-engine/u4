@@ -14,6 +14,11 @@
 #include <libxml/xinclude.h>
 #include <libxml/xpath.h>
 
+// we rely on xinclude support
+#ifndef LIBXML_XINCLUDE_ENABLED
+#error "xinclude not available: libxml2 must be compiled with xinclude support"
+#endif
+
 #include "config.h"
 #include "error.h"
 #include "settings.h"
