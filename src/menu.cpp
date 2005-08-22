@@ -10,89 +10,46 @@
 #include "event.h"
 #include "textview.h"
 
-/**
- * MenuItem class
- */
-MenuItem::MenuItem(class Menu *m, MenuId i, string t, short xpos, short ypos, int sc) :
-    menu(m),
-    id(i),
-    x(xpos),
-    y(ypos),
-    text(t),
-    highlighted(false),
-    selected(false),
-    visible(true),
-    closesMenu(false)
-{    
-    addShortcutKey(sc);
+Menu::Menu() : 
+    closed(false),
+    title(""),
+    titleX(0),
+    titleY(0)
+{
 }
 
-MenuId MenuItem::getId() const                      { return id; }
-short MenuItem::getX() const                        { return x; }
-short MenuItem::getY() const                        { return y; }
-string MenuItem::getText() const                    { return text; }
-bool MenuItem::isHighlighted() const                { return highlighted; }
-bool MenuItem::isSelected() const                   { return selected; }
-bool MenuItem::isVisible() const                    { return visible; }
-const set<int> &MenuItem::getShortcutKeys() const   { return shortcutKeys; }
-bool MenuItem::getClosesMenu() const                { return closesMenu; }
-
-void MenuItem::setId(MenuId i) {
-    id = i;
-}
-
-void MenuItem::setX(int xpos) {
-    x = xpos;
-}
-
-void MenuItem::setY(int ypos) {
-    y = ypos;
-}
-
-void MenuItem::setText(string t) {
-    text = t;
-}
-
-void MenuItem::setHighlighted(bool h) {
-    highlighted = h;
-}
-
-void MenuItem::setSelected(bool s) {
-    selected = s;
-}
-
-void MenuItem::setVisible(bool v) {
-    visible = v;
-}
-
-void MenuItem::addShortcutKey(int sc) {
-    shortcutKeys.insert(sc);
-}
-
-void MenuItem::setClosesMenu(bool closesMenu) {
-    this->closesMenu = closesMenu;
+Menu::~Menu() {
+    for (MenuItemList::iterator i = items.begin(); i != items.end(); i++)
+        delete *i;
 }
 
 /**
  * Adds an item to the menu list and returns the menu
  */
-void Menu::add(MenuId id, string text, short x, short y, int sc) {
-    items.push_back(MenuItem(this, id, text, x, y, sc));
+void Menu::add(int id, string text, short x, short y, int sc) {
+    MenuItem *item = new MenuItem(text, x, y, sc);
+    item->setId(id);
+    items.push_back(item);
 }
 
-void Menu::addShortcutKey(MenuId id, int shortcutKey) {
+MenuItem *Menu::add(MenuItem *item) {
+    items.push_back(item);
+    return item;
+}
+
+void Menu::addShortcutKey(int id, int shortcutKey) {
     for (MenuItemList::iterator i = items.begin(); i != items.end(); i++) {
-        if (i->getId() == id) {
-            i->addShortcutKey(shortcutKey);
+        if ((*i)->getId() == id) {
+            (*i)->addShortcutKey(shortcutKey);
             break;
         }
     }    
 }
 
-void Menu::setClosesMenu(MenuId id) {
+void Menu::setClosesMenu(int id) {
     for (MenuItemList::iterator i = items.begin(); i != items.end(); i++) {
-        if (i->getId() == id) {
-            i->setClosesMenu(true);
+        if ((*i)->getId() == id) {
+            (*i)->setClosesMenu(true);
             break;
         }
     }
@@ -100,39 +57,42 @@ void Menu::setClosesMenu(MenuId id) {
 
 /**
  * Returns the menu item that is currently selected/highlighted
- */ 
-Menu::MenuItemList::iterator Menu::getCurrent() {    
+ */
+Menu::MenuItemList::iterator Menu::getCurrent() {
     return selected;
 }
 
 /**
  * Sets the current menu item to the one indicated by the iterator
- */ 
+ */
 void Menu::setCurrent(MenuItemList::iterator i) {
     selected = i;
-    highlight(&(*selected));
+    highlight(*selected);
 
     MenuEvent event(this, MenuEvent::SELECT);
     setChanged();
     notifyObservers(event);
 }
 
-void Menu::setCurrent(MenuId id) {
+void Menu::setCurrent(int id) {
     setCurrent(getById(id));
 }
 
 void Menu::show(TextView *view) {
+    if (title.length() > 0)
+        view->textAt(titleX, titleY, "%s", title.c_str());
+
     for (current = items.begin(); current != items.end(); current++) {
-        MenuItem *mi = &(*current);
+        MenuItem *mi = *current;
 
         if (mi->isVisible()) {
             if (mi->isSelected())
-                view->textAt(mi->x-1, mi->y, "\010%s", mi->text.c_str());
+                view->textAt(mi->getX()-1, mi->getY(), "\010%s", mi->getText().c_str());
             else
-                view->textAt(mi->x, mi->y, mi->text.c_str());
+                view->textAt(mi->getX(), mi->getY(), mi->getText().c_str());
 
             if (mi->isHighlighted()) {
-                view->setCursorPos(mi->x - 2, mi->y, true);
+                view->setCursorPos(mi->getX() - 2, mi->getY(), true);
                 view->enableCursor();
             }
         }
@@ -142,13 +102,13 @@ void Menu::show(TextView *view) {
 /**
  * Checks the menu to ensure that there is at least 1 visible
  * item in the list.  Returns true if there is at least 1 visible
- * item, false if nothing is visible. 
+ * item, false if nothing is visible.
  */
 bool Menu::isVisible() {
     bool visible = false;
 
     for (current = items.begin(); current != items.end(); current++) {
-        if (current->isVisible())
+        if ((*current)->isVisible())
             visible = true;
     }
 
@@ -163,9 +123,9 @@ void Menu::next() {
     if (isVisible()) {
         if (++i == items.end())
             i = items.begin();
-        while (!i->isVisible()) {
+        while (!(*i)->isVisible()) {
             if (++i == items.end())
-                i = items.begin();            
+                i = items.begin();
         }
     }
 
@@ -177,11 +137,11 @@ void Menu::next() {
  */
 void Menu::prev() {
     MenuItemList::iterator i = selected;
-    if (isVisible()) {        
+    if (isVisible()) {
         if (i == items.begin())
             i = items.end();
         i--;
-        while (!i->isVisible()) {
+        while (!(*i)->isVisible()) {
             if (i == items.begin())
                 i = items.end();
             i--;
@@ -193,37 +153,38 @@ void Menu::prev() {
 
 /**
  * Highlights a single menu item, un-highlighting any others
- */ 
+ */
 void Menu::highlight(MenuItem *item) {
+    // unhighlight all menu items first
     for (current = items.begin(); current != items.end(); current++)
-        current->highlighted = false;
+        (*current)->setHighlighted(false);
     if (item)
-        item->highlighted = true;
+        item->setHighlighted(true);
 }
 
 /**
  * Returns an iterator pointing to the first menu item
- */ 
+ */
 Menu::MenuItemList::iterator Menu::begin() {
     return items.begin();
 }
 
 /**
  * Returns an iterator pointing just past the last menu item
- */ 
+ */
 Menu::MenuItemList::iterator Menu::end() {
     return items.end();
 }
 
 /**
  * Returns an iterator pointing to the first visible menu item
- */ 
+ */
 Menu::MenuItemList::iterator Menu::begin_visible() {
     if (!isVisible())
         return items.end();
 
     current = items.begin();
-    while (!current->isVisible() && current != items.end())
+    while (!(*current)->isVisible() && current != items.end())
         current++;
 
     return current;
@@ -238,18 +199,18 @@ Menu::MenuItemList::iterator Menu::begin_visible() {
 void Menu::reset(bool highlightFirst) {
     closed = false;
 
-    /* get the first visible menu item */    
+    /* get the first visible menu item */
     selected = begin_visible();
-    
+
     /* un-highlight and deselect each menu item */
     for (current = items.begin(); current != items.end(); current++) {
-        current->highlighted = false;
-        current->selected = false;
+        (*current)->setHighlighted(false);
+        (*current)->setSelected(false);
     }
 
     /* highlight the first visible menu item */
     if (highlightFirst)
-        highlight(&(*selected));  
+        highlight(*selected);
 
     MenuEvent event(this, MenuEvent::RESET);
     setChanged();
@@ -258,25 +219,25 @@ void Menu::reset(bool highlightFirst) {
 
 /**
  * Returns an iterator pointing to the item associated with the given 'id'
- */ 
-Menu::MenuItemList::iterator Menu::getById(MenuId id) {
+ */
+Menu::MenuItemList::iterator Menu::getById(int id) {
     if (id == -1)
         return getCurrent();
-    
+
     for (current = items.begin(); current != items.end(); current++) {
-        if (current->id == id)
+        if ((*current)->getId() == id)
             return current;
-    }   
+    }
     return items.end();
 }
 
 /**
  * Returns the menu item associated with the given 'id'
  */
-MenuItem *Menu::getItemById(MenuId id) {
+MenuItem *Menu::getItemById(int id) {
     current = getById(id);
     if (current != items.end())
-        return &(*current);
+        return *current;
     return NULL;
 }
 
@@ -287,14 +248,14 @@ MenuItem *Menu::getItemById(MenuId id) {
  * the menu item given by 'menu' and highlights the new menu
  * item that was found for 'id'.
  */
-void Menu::activateItem(MenuId id, MenuEvent::Type action) {
+void Menu::activateItem(int id, MenuEvent::Type action) {
     MenuItem *mi;
     
     /* find the given menu item by id */
     if (id >= 0)
         mi = getItemById(id);
     /* or use the current item */
-    else mi = &(*getCurrent());
+    else mi = *getCurrent();
        
     if (!mi)
         errorFatal("Error: Unable to find menu item with id '%d'", id);
@@ -304,6 +265,7 @@ void Menu::activateItem(MenuId id, MenuEvent::Type action) {
         setClosed(true);
 
     MenuEvent event(this, (MenuEvent::Type) action, mi);
+    mi->activate(event);
     setChanged();
     notifyObservers(event);
 }
@@ -314,9 +276,9 @@ void Menu::activateItem(MenuId id, MenuEvent::Type action) {
  */
 bool Menu::activateItemByShortcut(int key, MenuEvent::Type action) {
     for (MenuItemList::iterator i = items.begin(); i != items.end(); i++) {
-        const set<int> &shortcuts = i->getShortcutKeys();
+        const set<int> &shortcuts = (*i)->getShortcutKeys();
         if (shortcuts.find(key) != shortcuts.end()) {
-            activateItem(i->getId(), action);
+            activateItem((*i)->getId(), action);
             return true;
         }
     }
@@ -337,6 +299,12 @@ void Menu::setClosed(bool closed) {
     this->closed = closed;
 }
 
+void Menu::setTitle(const string &text, int x, int y) {
+    title = text;
+    titleX = x;
+    titleY = y;
+}
+
 MenuController::MenuController(Menu *menu, TextView *view) {
     this->menu = menu;
     this->view = view;
@@ -351,7 +319,7 @@ bool MenuController::keyPressed(int key) {
 
     switch(key) {
     case U4_UP:
-        menu->prev();        
+        menu->prev();
         break;
     case U4_DOWN:
         menu->next();
@@ -371,7 +339,7 @@ bool MenuController::keyPressed(int key) {
         break;
     default:
         handled = menu->activateItemByShortcut(key, MenuEvent::ACTIVATE);
-    }    
+    }
 
     menu->show(view);
 

@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 #include "event.h"
+#include "menuitem.h"
 #include "observable.h"
 #include "types.h"
 
@@ -16,10 +17,7 @@ using std::string;
 using std::set;
 
 class Menu;
-class MenuItem;
 class TextView;
-
-typedef short MenuId;
 
 class MenuEvent {
 public:
@@ -47,64 +45,24 @@ private:
     const MenuItem *item;
 };
 
-class MenuItem {
-    /* we want our menu to be able to modify us
-       without notifying their observsers a bunch
-       of unnecessary times */
-    friend class Menu;
-
-public:
-    MenuItem(class Menu *m, MenuId id, string text, short x, short y, int shortcutKey = 0);
-
-    // Accessor Methods
-    MenuId getId() const;
-    short getX() const;
-    short getY() const;
-    string getText() const;
-    bool isHighlighted() const;
-    bool isSelected() const;
-    bool isVisible() const;
-    const set<int> &getShortcutKeys() const;
-    bool getClosesMenu() const;
-
-    void setId(MenuId id);
-    void setX(int xpos);
-    void setY(int ypos);
-    void setText(string text);
-    void setHighlighted(bool h = true);
-    void setSelected(bool s = true);
-    void setVisible(bool v = true);
-    void addShortcutKey(int shortcutKey);
-    void setClosesMenu(bool closesMenu);
-    
-private:
-    class Menu* menu;
-    MenuId id;
-    short x, y;
-    string text;
-    bool highlighted;
-    bool selected;
-    bool visible;    
-    set<int> shortcutKeys;
-    bool closesMenu;
-};
-
 /**
  * Menu class definition
  */
 class Menu : public Observable<Menu *, MenuEvent &> {
 public:
-    typedef std::list<MenuItem> MenuItemList;
+    typedef std::list<MenuItem *> MenuItemList;
 
 public:
-    Menu() : closed(false) {}
+    Menu();
+    ~Menu();
 
-    void                    add(MenuId id, string text, short x, short y, int shortcutKey = 0);
-    void                    addShortcutKey(MenuId id, int shortcutKey);
-    void                    setClosesMenu(MenuId id);
+    void                    add(int id, string text, short x, short y, int shortcutKey = 0);
+    MenuItem *              add(MenuItem *item);
+    void                    addShortcutKey(int id, int shortcutKey);
+    void                    setClosesMenu(int id);
     MenuItemList::iterator  getCurrent();
     void                    setCurrent(MenuItemList::iterator i);
-    void                    setCurrent(MenuId id);
+    void                    setCurrent(int id);
     void                    show(TextView *view);
     bool                    isVisible();
     void                    next();
@@ -114,18 +72,21 @@ public:
     MenuItemList::iterator  end();
     MenuItemList::iterator  begin_visible();
     void                    reset(bool highlightFirst = true);
-    MenuItemList::iterator  getById(MenuId id);
-    MenuItem*               getItemById(MenuId id);
-    void                    activateItem(MenuId id, MenuEvent::Type action);
+    MenuItemList::iterator  getById(int id);
+    MenuItem*               getItemById(int id);
+    void                    activateItem(int id, MenuEvent::Type action);
     bool                    activateItemByShortcut(int key, MenuEvent::Type action);
     bool                    getClosed() const;
     void                    setClosed(bool closed);
+    void                    setTitle(const string &text, int x, int y);
 
 private:    
     MenuItemList items;
     MenuItemList::iterator current;
     MenuItemList::iterator selected;
     bool closed;
+    string title;
+    int titleX, titleY;
 };
 
 /**
