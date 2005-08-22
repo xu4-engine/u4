@@ -1058,7 +1058,7 @@ void IntroController::updateGameplayMenu(MenuEvent &event) {
         switch(event.getMenuItem()->getId()) {
         case ADVANCED_MENU:
             // show or hide game enhancement options if enhancements are enabled/disabled
-            advancedMenu.getItemById(0)->setVisible(settingsChanged.enhancements);
+            advancedMenu.getItemById(ENHANCEMENT_MENU)->setVisible(settingsChanged.enhancements);
 
             runMenu(&advancedMenu, &extendedMenuArea, false);
             break;
