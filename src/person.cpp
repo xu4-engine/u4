@@ -151,7 +151,12 @@ int personInit() {
         return 0;
 
     lbKeywords = u4read_stringtable(avatar, 87581, 24);
-    lbText = u4read_stringtable(avatar, 87754, 24);
+    /* There's a \0 in the 19th string so we get a
+       spurious 20th entry */
+    lbText = u4read_stringtable(avatar, 87754, 25);
+    for (int i = 20; i < 24; i++)
+        lbText[i] = lbText[i+1];
+    lbText.pop_back();
 
     hawkwindText = u4read_stringtable(avatar, 74729, 53);
 
@@ -199,7 +204,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
                     case Script::INPUT_CHOICE: {
                         // Get choice
                         char val = ReadChoiceController::get(script->getChoices());
-                        if (isspace(val))
+                        if (isspace(val) || val == '\033')
                             script->unsetVar(script->getInputName());
                         else {
                             string s_val;
