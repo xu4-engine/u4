@@ -145,6 +145,7 @@ SDL_Cursor *screenInitCursor(char *xpm[]);
 vector<Layout *> layouts;
 vector<TileAnimSet *> tileanimSets;
 vector<string> gemLayoutNames;
+vector<string> filterNames;
 Layout *gemlayout = NULL;
 TileAnimSet *tileanims = NULL;
 ImageInfo *charsetInfo = NULL;
@@ -153,6 +154,12 @@ ImageInfo *gemTilesInfo = NULL;
 extern bool verbose;
 
 void screenInit() {
+    filterNames.clear();
+    filterNames.push_back("point");
+    filterNames.push_back("2xBi");
+    filterNames.push_back("2xSaI");
+    filterNames.push_back("Scale2x");
+
     charsetInfo = NULL;    
     gemTilesInfo = NULL;
 
@@ -161,8 +168,10 @@ void screenInit() {
     /* set up scaling parameters */
     scale = settings.scale;
     filterScaler = scalerGet(settings.filter);
+    if (!filterScaler)
+        errorFatal("%s is not a valid filter", settings.filter.c_str());
     if (verbose)
-        printf("using %s scaler\n", settings.filters.getName(settings.filter).c_str());
+        printf("using %s scaler\n", settings.filter.c_str());
 
     if (scale < 1 || scale > 5)
         scale = 2;
@@ -249,6 +258,10 @@ void screenReInit() {
  */
 void screenIconify() {
     SDL_WM_IconifyWindow();
+}
+
+const vector<string> &screenGetFilterNames() {
+    return filterNames;
 }
 
 const vector<string> &screenGetGemLayoutNames() {
@@ -710,7 +723,7 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
     }
 
     if (scale != 1)
-        dest = (*scalerGet(SCL_POINT))(src, scale, n);
+        dest = (*scalerGet("point"))(src, scale, n);
 
     if (!dest)
         dest = Image::duplicate(src);

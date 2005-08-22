@@ -65,7 +65,8 @@ void screenReInit(void);
 
 void screenIconify(void);
 
-const std::vector<string> &screenGetGemLayoutNames(void);
+const std::vector<string> &screenGetGemLayoutNames();
+const std::vector<string> &screenGetFilterNames();
 
 void screenDrawImage(const string &name, int x = 0, int y = 0);
 void screenDrawImageInMapArea(const string &bkgd);

@@ -822,7 +822,10 @@ void CreatureMgr::loadInfoFromXml() {
             m->basehp =
                 (unsigned short)xmlGetPropAsInt(node, "basehp");
             /* adjust basehp according to battle difficulty setting */
-            m->basehp <<= (settings.battleDiff - 1);
+            if (settings.battleDiff == "Hard")
+                m->basehp *= 2;
+            if (settings.battleDiff == "Expert")
+                m->basehp *= 4;
         }
 
         /* get the camouflaged tile */

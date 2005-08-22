@@ -8,35 +8,31 @@
 #include "image.h"
 #include "scale.h"
 
+using std::string;
+
 Image *scalePoint(Image *src, int scale, int n);
 Image *scale2xBilinear(Image *src, int scale, int n);
 Image *scale2xSaI(Image *src, int scale, int N);
 Image *scaleScale2x(Image *src, int scale, int N);
 
-Scaler scalerGet(FilterType filter) {
-    switch (filter) {
-    case SCL_POINT:
+Scaler scalerGet(const string &filter) {
+    if (filter == "point")
         return &scalePoint;
-
-    case SCL_2xBi:
+    else if (filter == "2xBi")
         return &scale2xBilinear;
-
-    case SCL_2xSaI:
+    else if (filter == "2xSaI")
         return &scale2xSaI;
-
-    case SCL_Scale2x:
+    else if (filter == "Scale2x")
         return &scaleScale2x;
-
-    default:
+    else
         return NULL;
-    }
 }
 
 /**
  * Returns true if the given scaler can scale by 3 (as well as by 2).
  */
-int scaler3x(FilterType filter) {
-    return filter == SCL_Scale2x;
+int scaler3x(const string &filter) {
+    return filter == "Scale2x";
 }
 
 /**

@@ -17,12 +17,11 @@
 #include <shlobj.h>
 #endif
 
-/**
+using std::vector;
+
+/*
  * Initialize static members
  */ 
-const static char *filterStrings[]     = {"SCL_MIN", "point", "2xBi", "2xSaI", "Scale2x", ""};
-const static char *battleDiffStrings[] = {"DIFF_MIN", "Normal", "Hard", "Expert", ""};
-
 Settings *Settings::instance = NULL;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -36,11 +35,17 @@ bool SettingsData::operator==(const SettingsData &s) const {
     if (memcmp(this, &s, offset) != 0)
         return false;
 
+    if (filter != s.filter)
+        return false;
     if (gemLayout != s.gemLayout)
         return false;
     if (videoType != s.videoType)
         return false;
+    if (battleDiff != s.battleDiff)
+        return false;
     if (logging != s.logging)
+        return false;
+    if (game != s.game)
         return false;
 
     return true;
@@ -54,8 +59,9 @@ bool SettingsData::operator!=(const SettingsData &s) const {
  * Default contructor.  Settings is a singleton so this is private.
  */
 Settings::Settings() {    
-    filters = FilterTranslator(filterStrings);
-    battleDiffs = BattleDiffTranslator(battleDiffStrings);
+    battleDiffs.push_back("Normal");
+    battleDiffs.push_back("Hard");
+    battleDiffs.push_back("Expert");
 
 #if defined(MACOSX)
     char *home = getenv("HOME");
@@ -168,6 +174,7 @@ bool Settings::read() {
     mouseOptions.enabled = 1;
 
     logging = DEFAULT_LOGGING;
+    game = "Ultima IV";
     
     settingsFile = fopen(filename.c_str(), "rt");    
     if (!settingsFile)
@@ -181,13 +188,8 @@ bool Settings::read() {
             scale = (unsigned int) strtoul(buffer + strlen("scale="), NULL, 0);
         else if (strstr(buffer, "fullscreen=") == buffer)
             fullscreen = (int) strtoul(buffer + strlen("fullscreen="), NULL, 0);
-        else if (strstr(buffer, "filter=") == buffer) {
-            filter = (FilterType)Settings::filters.getType(buffer + strlen("filter="));
-            if (filter == -1) {
-                errorWarning("invalid filter name in settings file: resetting to point scaler");
-                filter = SCL_POINT;
-            }
-        }
+        else if (strstr(buffer, "filter=") == buffer)
+            filter = buffer + strlen("filter=");
         else if (strstr(buffer, "video=") == buffer)
             videoType = buffer + strlen("video=");
         else if (strstr(buffer, "gemLayout=") == buffer)
@@ -216,13 +218,8 @@ bool Settings::read() {
             gameCyclesPerSecond = (int) strtoul(buffer + strlen("gameCyclesPerSecond="), NULL, 0);
         else if (strstr(buffer, "debug=") == buffer)
             debug = (int) strtoul(buffer + strlen("debug="), NULL, 0);
-        else if (strstr(buffer, "battleDiff=") == buffer) {
-            battleDiff = (BattleDifficulty)Settings::battleDiffs.getType(buffer + strlen("battleDiff="));
-            if (battleDiff == -1) {
-                errorWarning("invalid difficulty name in settings file: resetting to normal");
-                battleDiff = DIFF_NORMAL;
-            }
-        }
+        else if (strstr(buffer, "battleDiff=") == buffer)
+            battleDiff = buffer + strlen("battleDiff=");
         else if (strstr(buffer, "validateXml=") == buffer)
             validateXml = (int) strtoul(buffer + strlen("validateXml="), NULL, 0);
         else if (strstr(buffer, "spellEffectSpeed=") == buffer)
@@ -265,6 +262,8 @@ bool Settings::read() {
             mouseOptions.enabled = (int) strtoul(buffer + strlen("mouseEnabled="), NULL, 0);
         else if (strstr(buffer, "logging=") == buffer)
             logging = buffer + strlen("logging=");
+        else if (strstr(buffer, "game=") == buffer)
+            game = buffer + strlen("game=");
 
         /**
          * FIXME: this is just to avoid an error for those who have not written
@@ -342,10 +341,11 @@ bool Settings::write() {
             "innAlwaysCombat=%d\n"
             "campingAlwaysCombat=%d\n"
             "mouseEnabled=%d\n"
-            "logging=%s\n",
+            "logging=%s\n"
+            "game=%s\n",
             scale,
             fullscreen,
-            Settings::filters.getName(filter).c_str(),            
+            filter.c_str(),
             videoType.c_str(),
             gemLayout.c_str(),
             screenShakes,
@@ -360,7 +360,7 @@ bool Settings::write() {
             enhancements,            
             gameCyclesPerSecond,
             debug,
-            Settings::battleDiffs.getName(battleDiff).c_str(),
+            battleDiff.c_str(),
             validateXml,
             spellEffectSpeed,
             campTime,
@@ -378,7 +378,8 @@ bool Settings::write() {
             innAlwaysCombat,
             campingAlwaysCombat,
             mouseOptions.enabled,
-            logging.c_str());
+            logging.c_str(),
+            game.c_str());
 
     fclose(settingsFile);
 
@@ -393,4 +394,8 @@ bool Settings::write() {
  */
 const string &Settings::getUserPath() {
     return userPath;
+}
+
+const vector<string> &Settings::getBattleDiffs() { 
+    return battleDiffs;
 }

@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 #include "observable.h"
 #include "types.h"
 
@@ -26,7 +27,7 @@ using std::string;
 
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
-#define DEFAULT_FILTER                  SCL_Scale2x
+#define DEFAULT_FILTER                  "Scale2x"
 #define DEFAULT_VIDEO_TYPE              "VGA"
 #define DEFAULT_GEM_LAYOUT              "Standard"
 #define DEFAULT_SCREEN_SHAKES           1
@@ -47,77 +48,22 @@ using std::string;
 #define DEFAULT_INN_TIME                8
 #define DEFAULT_SHRINE_TIME             16
 #define DEFAULT_SHAKE_INTERVAL          100
-#define DEFAULT_BATTLE_DIFFICULTY       DIFF_NORMAL
+#define DEFAULT_BATTLE_DIFFICULTY       "Normal"
 #define DEFAULT_LOGGING                 ""
 
-typedef enum {
-    SCL_MIN,
-    SCL_POINT,
-    SCL_2xBi,
-    SCL_2xSaI,
-    SCL_Scale2x,
-    SCL_MAX
-} FilterType;
+struct SettingsEnhancementOptions {
+    bool activePlayer;
+    bool u5spellMixing;
+    bool u5shrines;
+    bool u5combat;
+    bool slimeDivides;
+    bool c64chestTraps;    
+    bool smartEnterKey;
+    bool peerShowsObjects;
+};
 
-typedef enum {
-    DIFF_MIN,
-    DIFF_NORMAL,
-    DIFF_HARD,
-    DIFF_EXPERT,
-    DIFF_MAX
-} BattleDifficulty;
-
-typedef struct _SettingsEnhancementOptions {
-    int activePlayer;
-    int u5spellMixing;
-    int u5shrines;
-    int u5combat;
-    int slimeDivides;
-    int c64chestTraps;    
-    int smartEnterKey;
-    int peerShowsObjects;
-} SettingsEnhancementOptions;
-
-typedef struct _MouseOptions {
-    int enabled;
-} MouseOptions;
-
-/**
- * Translator Class -- used to provide translation between
- * a string value and a type.
- */ 
-class Translator {
-    typedef std::map<string, int, std::less<string> >    T_s;    
-    typedef std::map<int, string, std::less<int> >       T_t;
-public:
-    Translator() {}
-    Translator(const char *values[]) {
-        /**
-         * Initialize the maps
-         */ 
-        for (int i = 0; values[i][0] != '\0'; i++) {
-            s_map[values[i]] = i;
-            t_map[i] = values[i];
-        }
-    }
-
-    int getType(string name) {
-        T_s::iterator found = s_map.find(name);
-        if (found != s_map.end())
-            return found->second;
-        return -1;
-    }
-    
-    string getName(int type) {
-        T_t::iterator found = t_map.find(type);
-        if (found != t_map.end())
-            return found->second;
-        return "";
-    }
-
-private:
-    T_s s_map;
-    T_t t_map;
+struct MouseOptions {
+    bool enabled;
 };
 
 /**
@@ -128,14 +74,12 @@ public:
     bool operator==(const SettingsData &) const;
     bool operator!=(const SettingsData &) const;
 
-    BattleDifficulty    battleDiff;
     int                 battleSpeed;
     bool                campingAlwaysCombat;
     int                 campTime;
     bool                debug;
     bool                enhancements;
     SettingsEnhancementOptions enhancementsOptions;    
-    FilterType          filter;
     bool                filterMoveMessages;
     bool                fullscreen;
     int                 gameCyclesPerSecond;    
@@ -163,9 +107,12 @@ public:
      */ 
     long                end_of_bitwise_comparators;
 
+    string              filter;
     string              gemLayout;
     string              videoType;
+    string              battleDiff;
     string              logging;
+    string              game;
 };
 
 /**
@@ -173,8 +120,6 @@ public:
  * information.  It is dynamically initialized when first accessed.
  */ 
 class Settings : public SettingsData, public Observable<Settings *> {
-    typedef Translator FilterTranslator;
-    typedef Translator BattleDiffTranslator;
     typedef std::map<string, int, std::less<string> > SettingsMap;
 
 public:
@@ -185,9 +130,7 @@ public:
     bool write();
 
     const string &getUserPath();
-
-    FilterTranslator filters;
-    BattleDiffTranslator battleDiffs;    
+    const std::vector<string> &getBattleDiffs();
 
 private:
     Settings();
@@ -196,6 +139,7 @@ private:
 
     string userPath;
     string filename;
+    std::vector<string> battleDiffs;
 };
 
 /* the global settings */
