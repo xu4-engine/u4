@@ -11,7 +11,7 @@
 #include "savegame.h"
 #include "sound.h"
 
-typedef enum {
+enum SpellCastError {
     CASTERR_NOERROR,            /* success */
     CASTERR_NOMIX,              /* no mixture available */    
     CASTERR_MPTOOLOW,           /* caster doesn't have enough mp */
@@ -21,16 +21,16 @@ typedef enum {
     CASTERR_COMBATONLY,         /* e.g. spell must be cast in combat */
     CASTERR_DUNGEONONLY,        /* e.g. spell must be cast in dungeons */
     CASTERR_WORLDMAPONLY,       /* e.g. spell must be cast on the world map */
-} SpellCastError;
+};
 
 /* Field types for the Energy field spell */
-typedef enum {
+enum EnergyFieldType {
     ENERGYFIELD_NONE,
     ENERGYFIELD_FIRE,
     ENERGYFIELD_LIGHTNING,
     ENERGYFIELD_POISON,
     ENERGYFIELD_SLEEP
-} EnergyFieldType;
+};
 
 /**
  * The ingredients for a spell mixture.
@@ -84,6 +84,7 @@ TransportContext spellGetTransportContext(unsigned int spell);
 string spellGetErrorMessage(unsigned int spell, SpellCastError error);
 int spellMix(unsigned int spell, const Ingredients *ingredients);
 Spell::Param spellGetParamType(unsigned int spell);
-int spellCast(unsigned int spell, int character, int param, SpellCastError *error, int spellEffect);
+SpellCastError spellCheckPrerequisites(unsigned int spell, int character);
+bool spellCast(unsigned int spell, int character, int param, SpellCastError *error, bool spellEffect);
 
 #endif

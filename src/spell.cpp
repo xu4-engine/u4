@@ -257,61 +257,66 @@ Spell::Param spellGetParamType(unsigned int spell) {
 }
 
 /**
- * Casts spell.  Fails and returns false if no mixture is available,
- * the character doesn't have enough magic points, or the context is
- * invalid.  The error code is updated with the reason for failure.
+ * Checks some basic prerequistes for casting a spell.  Returns an
+ * error if no mixture is available, the context is invalid, or the
+ * character doesn't have enough magic points.
  */
-int spellCast(unsigned int spell, int character, int param, SpellCastError *error, int spellEffect) {
-    int player = (spells[spell].paramType == Spell::PARAM_PLAYER) ? param : -1;
+SpellCastError spellCheckPrerequisites(unsigned int spell, int character) {
+    ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
+    ASSERT(character >= 0 && character < c->saveGame->members, "character out of range: %d", character);
+
+    if (c->saveGame->mixtures[spell] == 0)
+        return CASTERR_NOMIX;
+
+    if ((c->location->context & spells[spell].context) == 0)
+        return CASTERR_WRONGCONTEXT;        
+
+    if ((c->transportContext & spells[spell].transportContext) == 0)
+        return CASTERR_FAILED;
+
+    if (c->party->member(character)->getMp() < spells[spell].mp)
+        return CASTERR_MPTOOLOW;
+
+    return CASTERR_NOERROR;
+}
+
+/**
+ * Casts spell.  Fails and returns false if the spell cannot be cast.
+ * The error code is updated with the reason for failure.
+ */
+bool spellCast(unsigned int spell, int character, int param, SpellCastError *error, bool spellEffect) {
+    int subject = (spells[spell].paramType == Spell::PARAM_PLAYER) ? param : -1;
     PartyMember *p = c->party->member(character);
     
     ASSERT(spell < N_SPELLS, "invalid spell: %d", spell);
     ASSERT(character >= 0 && character < c->saveGame->members, "character out of range: %d", character);
 
-    *error = CASTERR_NOERROR;
+    *error = spellCheckPrerequisites(spell, character);
 
-    if (c->saveGame->mixtures[spell] == 0) {
-        *error = CASTERR_NOMIX;
-        return 0;
-    }
-
-    /* subtract the mixture for even trying to cast the spell */
+    // subtract the mixture for even trying to cast the spell
     c->saveGame->mixtures[spell]--;
         
-    if ((c->location->context & spells[spell].context) == 0) {
-        *error = CASTERR_WRONGCONTEXT;        
-        return 0;
-    }
+    if (*error != CASTERR_NOERROR)
+        return false;
 
-    if ((c->transportContext & spells[spell].transportContext) == 0) {
+    // If there's a negate magic aura, spells fail!
+    if (*c->aura == Aura::NEGATE) {
         *error = CASTERR_FAILED;
         return 0;
     }
 
-    if (p->getMp() < spells[spell].mp) {
-        *error = CASTERR_MPTOOLOW;
-        return 0;
-    }    
+    // subtract the mp needed for the spell
+    p->adjustMp(-spells[spell].mp);
 
-    /* If there's a negate magic aura, spells fail! */
-    if (*c->aura != Aura::NEGATE) {    
-
-        /* subtract the mp needed for the spell */
-        p->adjustMp(-spells[spell].mp);
-
-        if (spellEffect)
-            (*spellEffectCallback)(spell + 'a', player, SOUND_MAGIC);
+    if (spellEffect)
+        (*spellEffectCallback)(spell + 'a', subject, SOUND_MAGIC);
     
-        if (!(*spells[spell].spellFunc)(param)) {
-            *error = CASTERR_FAILED;
-            return 0;
-        }    
-    } else {
+    if (!(*spells[spell].spellFunc)(param)) {
         *error = CASTERR_FAILED;
-        return 0;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
 /**
