@@ -74,14 +74,12 @@ bool windCmdKeyHandler(int key, void *data);
 void gameUpdateMoons(int showmoongates);
 
 /* spell functions */
-int castForPlayerGetDestDir(Direction dir);
-int castForPlayerGetEnergyType(int fieldType);
-int castForPlayerGetEnergyDir(Direction dir);
 void gameCastSpell(unsigned int spell, int caster, int param);
-int gameSpellMixHowMany(int spell, int num, Ingredients *ingredients);
+bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients);
 
 void mixReagents();
-bool mixReagentsForSpell(int spell);
+bool mixReagentsForSpellU4(int spell);
+bool mixReagentsForSpellU5(int spell);
 void newOrder();
 
 /* conversation functions */
@@ -124,9 +122,6 @@ int windLock = 0;
 string itemNameBuffer;
 string creatureNameBuffer;
 string destination;
-int castPlayer;
-unsigned int castSpell;
-EnergyFieldType fieldType;
 
 Debug gameDbg("debug/game.txt", "Game");
 
@@ -787,7 +782,7 @@ void gameCastSpell(unsigned int spell, int caster, int param) {
     SpellCastError spellError;
     string msg;
     
-    if (!spellCast(spell, caster, param, &spellError, 1)) {        
+    if (!spellCast(spell, caster, param, &spellError, true)) {
         msg = spellGetErrorMessage(spell, spellError);
         if (!msg.empty())
             screenMessage(msg.c_str());
@@ -1068,8 +1063,7 @@ bool GameController::keyPressed(int key) {
             break;
 
         case 'c':
-            screenMessage("Cast Spell!\nPlayer: ");
-            gameGetPlayerForCommand(&gameCastForPlayer, false, true);
+            castSpell();
             break;
 
         case 'd':        
@@ -1546,7 +1540,7 @@ void gameGetPlayerForCommand(bool (*commandFn)(int player), bool canBeDisabled, 
         (*commandFn)(player);
 }
 
-bool gameGetDirection(int (*handleDirection)(Direction dir)) {
+Direction gameGetDirection() {
     ReadDirController dirController;
 
     eventHandler->pushController(&dirController);
@@ -1555,49 +1549,12 @@ bool gameGetDirection(int (*handleDirection)(Direction dir)) {
     if (dir == DIR_NONE) {
         screenMessage("\n");
         (*c->location->finishTurn)();
-        return false;
+        return dir;
     }
     else {
         screenMessage("%s\n", getDirectionName(dir));
-        (*handleDirection)(dir);
-        return true;
+        return dir;
     }    
-}
-
-bool gameGetFieldTypeKeyHandler(int key, void *data) {
-    int (*handleFieldType)(int field) = (int(*)(int))data;    
-    fieldType = ENERGYFIELD_NONE;
-
-    eventHandler->popKeyHandler();
-    
-    switch(tolower(key)) {
-    case 'f': fieldType = ENERGYFIELD_FIRE; break;
-    case 'l': fieldType = ENERGYFIELD_LIGHTNING; break;
-    case 'p': fieldType = ENERGYFIELD_POISON; break;
-    case 's': fieldType = ENERGYFIELD_SLEEP; break;
-    default: break;
-    }
-    
-    if (fieldType != ENERGYFIELD_NONE) {
-        screenMessage("%c\n", toupper(key));
-        (*handleFieldType)((int)fieldType);
-        //eventHandler->popKeyHandlerData();
-        return true;
-    } else {
-        /* Invalid input here = spell failure */
-        screenMessage("Failed!\n");
-        /* 
-         * Confirmed both mixture loss and mp loss in this situation in the 
-         * original Ultima IV (at least, in the Amiga version.) 
-         */
-        c->saveGame->mixtures[castSpell]--;
-        c->party->member(castPlayer)->adjustMp(-spellGetRequiredMP(castSpell));
-        (*c->location->finishTurn)();
-    }
-
-    //eventHandler->popKeyHandlerData();
-    
-    return false;
 }
 
 /**
@@ -1634,14 +1591,14 @@ bool gameGetCoordinateKeyHandler(int key, void *data) {
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
-int gameSpellMixHowMany(int spell, int num, Ingredients *ingredients) {
+bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients) {
     int i;
     
     /* entered 0 mixtures, don't mix anything! */
     if (num == 0) {
         screenMessage("\nNone mixed!\n");
         ingredients->revert();
-        return 0;
+        return false;
     }
     
     /* if they ask for more than will give them 99, only use what they need */
@@ -1656,7 +1613,7 @@ int gameSpellMixHowMany(int spell, int num, Ingredients *ingredients) {
     if (!ingredients->checkMultiple(num)) {
         screenMessage("\nYou don't have enough reagents to mix %d spells!\n\n", num);
         ingredients->revert();
-        return 0;
+        return false;
     }
 
     screenMessage("\nYou mix the Reagents, and...\n");
@@ -1670,7 +1627,7 @@ int gameSpellMixHowMany(int spell, int num, Ingredients *ingredients) {
     else 
         screenMessage("It Fizzles!");
 
-    return 1;        
+    return true;        
 }
 
 /**
@@ -2102,40 +2059,39 @@ bool attackAtCoord(MapCoords coords, int distance, void *data) {
     return true;
 }
 
-bool gameCastForPlayer(int player) {
-    if (gameCheckPlayerDisabled(player)) {
-        (*c->location->finishTurn)();
-        return false;
+void castSpell(int player) {
+    if (player == -1) {
+        screenMessage("Cast Spell!\nPlayer: ");
+        player = gameGetPlayer(false, true);
     }
+    if (player == -1)
+        return;
+
+    if (gameCheckPlayerDisabled(player))
+        return;
 
     // get the spell to cast
     c->stats->setView(STATS_MIXTURES);
     screenMessage("Spell: ");
     int spell = AlphaActionController::get('z', "Spell: ");
     if (spell == -1)
-        return true;
+        return;
     screenMessage("%s!\n", spellGetName(spell));
 
     c->stats->setView(STATS_PARTY_OVERVIEW);
-    castPlayer = player;
-    castSpell = spell;
+    //castPlayer = player;
+    //castSpell = spell;
     
-    /* If we can't really cast this spell, skip the extra parameters */
-    if ((spellGetRequiredMP(spell) > c->party->member(castPlayer)->getMp()) || /* not enough mp */
-        ((spellGetContext(spell) & c->location->context) == 0) ||            /* wrong context */
-        (c->saveGame->mixtures[spell] == 0) ||                               /* none mixed! */
-        ((spellGetTransportContext(spell) & c->transportContext) == 0)) {    /* invalid transportation for spell */
-        
+    // if we can't really cast this spell, skip the extra parameters
+    if (spellCheckPrerequisites(spell, player) != CASTERR_NOERROR) {
         gameCastSpell(spell, player, 0);
-        (*c->location->finishTurn)();
-        return true;
+        return;
     }
 
-    /* Get the final parameters for the spell */
+    // Get the final parameters for the spell
     switch (spellGetParamType(spell)) {
     case Spell::PARAM_NONE:
         gameCastSpell(spell, player, 0);
-        (*c->location->finishTurn)();
         break;
     case Spell::PARAM_PHASE: {
         screenMessage("To Phase: ");
@@ -2146,7 +2102,6 @@ bool gameCastForPlayer(int player) {
             screenMessage("%c\n", choice);
             gameCastSpell(spell, player, choice - '1');
         }
-        (*c->location->finishTurn)();
         break;
     }
     case Spell::PARAM_PLAYER: {
@@ -2154,7 +2109,6 @@ bool gameCastForPlayer(int player) {
         int subject = gameGetPlayer(true, false);
         if (subject != -1)
             gameCastSpell(spell, player, subject);
-        (*c->location->finishTurn)();
         break;
     }
     case Spell::PARAM_DIR:
@@ -2162,49 +2116,65 @@ bool gameCastForPlayer(int player) {
             gameCastSpell(spell, player, c->saveGame->orientation);
         else {
             screenMessage("Dir: ");
-            gameGetDirection(&castForPlayerGetDestDir);
+            Direction dir = gameGetDirection();
+            if (dir != DIR_NONE)
+                gameCastSpell(spell, player, (int) dir);
         }
         break;
-    case Spell::PARAM_TYPEDIR:
+    case Spell::PARAM_TYPEDIR: {
         screenMessage("Energy type? ");
-        eventHandler->pushKeyHandler(KeyHandler(&gameGetFieldTypeKeyHandler, (void *) &castForPlayerGetEnergyType));
+
+        EnergyFieldType fieldType = ENERGYFIELD_NONE;
+        char key = ReadChoiceController::get("flps \033\n\r");
+        switch(key) {
+        case 'f': fieldType = ENERGYFIELD_FIRE; break;
+        case 'l': fieldType = ENERGYFIELD_LIGHTNING; break;
+        case 'p': fieldType = ENERGYFIELD_POISON; break;
+        case 's': fieldType = ENERGYFIELD_SLEEP; break;
+        default: break;
+        }
+    
+        if (fieldType != ENERGYFIELD_NONE) {
+            screenMessage("%c\n", toupper(key));
+
+            Direction dir;
+            if (c->location->context == CTX_DUNGEON)
+                dir = (Direction)c->saveGame->orientation;
+            else {
+                screenMessage("Dir: ");
+                dir = gameGetDirection();
+            }
+
+            if (dir != DIR_NONE) {
+
+                /* Need to pack both dir and fieldType into param */
+                int param = fieldType << 4;
+                param |= (int) dir;
+
+                gameCastSpell(spell, player, param);
+            }
+        } 
+        else {
+            /* Invalid input here = spell failure */
+            screenMessage("Failed!\n");
+
+            /* 
+             * Confirmed both mixture loss and mp loss in this situation in the 
+             * original Ultima IV (at least, in the Amiga version.) 
+             */
+            //c->saveGame->mixtures[castSpell]--;
+            c->party->member(player)->adjustMp(-spellGetRequiredMP(spell));
+        }
         break;
-    case Spell::PARAM_FROMDIR:
-        screenMessage("From Dir: ");
-        gameGetDirection(&castForPlayerGetDestDir);
-        break;
-    }    
-
-    return true;
-}
-
-int castForPlayerGetDestDir(Direction dir) {
-    gameCastSpell(castSpell, castPlayer, (int) dir);
-    (*c->location->finishTurn)();
-    return 1;
-}
-
-int castForPlayerGetEnergyType(int fieldType) {
-    /* Need a direction */
-    if (c->location->context == CTX_DUNGEON)
-        castForPlayerGetEnergyDir((Direction)c->saveGame->orientation);
-    else {
-        screenMessage("Dir: ");
-        gameGetDirection(&castForPlayerGetEnergyDir);        
     }
-    return 1;
-}
-
-int castForPlayerGetEnergyDir(Direction dir) {
-    int param;
-    
-    /* Need to pack both dir and fieldType into param */
-    param = fieldType << 4;
-    param |= (int) dir;
-    
-    gameCastSpell(castSpell, castPlayer, param);
-    (*c->location->finishTurn)();
-    return 1;
+    case Spell::PARAM_FROMDIR: {
+        screenMessage("From Dir: ");
+        Direction dir = gameGetDirection();
+        if (dir != DIR_NONE)
+            gameCastSpell(spell, player, (int) dir);
+        break;
+    }
+    }    
 }
 
 bool destroyAtCoord(MapCoords coords, int distance, void *data) {
@@ -2648,82 +2618,88 @@ void mixReagents() {
         if (choice == ' ' || choice == '\033' || choice == '\n' || choice == '\r')
             break;
 
-        done = mixReagentsForSpell(choice - 'a');
+        int spell = choice - 'a';
+        screenMessage("%s\n", spellGetName(spell));
+
+        // ensure the mixtures for the spell isn't already maxed out
+        if (c->saveGame->mixtures[spell] == 99) {
+            screenMessage("\nYou cannot mix any more of that spell!\n");
+            break;
+        }
+
+        c->stats->setView(STATS_REAGENTS);
+        if (settings.enhancements && settings.enhancementsOptions.u5spellMixing)
+            done = mixReagentsForSpellU5(spell);
+        else
+            done = mixReagentsForSpellU4(spell);
     }
 
+    c->stats->setView(STATS_PARTY_OVERVIEW);
     screenMessage("\n\n");
     (*c->location->finishTurn)();
 }
 
 /**
- * Mixes reagents for a spell.  Prompts for reagents.
+ * Prompts for spell reagents to mix in the traditional Ultima IV
+ * style.
  */
-bool mixReagentsForSpell(int spell) {
+bool mixReagentsForSpellU4(int spell) {
     Ingredients ingredients;
 
-    screenMessage("%s\n", spellGetName(spell));
+    screenMessage("Reagent: ");
 
-    if (c->saveGame->mixtures[spell] == 99) {
-        screenMessage("\nYou cannot mix any more of that spell!\n");
-        c->stats->setView(STATS_PARTY_OVERVIEW);
-        (*c->location->finishTurn)();
-        return true;
-    }
-
-    /* do we use the Ultima V menu system? */
-    if (settings.enhancements && settings.enhancementsOptions.u5spellMixing) {
-        c->stats->setView(STATS_REAGENTS);
-
-        screenDisableCursor();
-
-        c->stats->resetReagentsMenu();
-        c->stats->getReagentsMenu()->reset(); // reset the menu, highlighting the first item
-        ReagentsMenuController getReagentsController(c->stats->getReagentsMenu(), &ingredients, c->stats->getMainArea());
-        eventHandler->pushController(&getReagentsController);
-        getReagentsController.waitFor();
-
-        c->stats->getMainArea()->disableCursor();
-        screenEnableCursor();
-
-        screenMessage("How many? ");
-
-        int howmany = ReadIntController::get(2, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
-        gameSpellMixHowMany(spell, howmany, &ingredients);
-    }
-
-    /* traditional Ultima 4 mixing */
-    else {
-        screenMessage("Reagent: ");
-        c->stats->setView(STATS_REAGENTS);
-
-        while (1) {
-            int choice = ReadChoiceController::get("abcdefgh\n\r \033");
+    while (1) {
+        int choice = ReadChoiceController::get("abcdefgh\n\r \033");
             
-            // done selecting reagents? mix it up and prompt to mix
-            // another spell
-            if (choice == '\n' || choice == '\r' || choice == ' ') {
-                screenMessage("\n\nYou mix the Reagents, and...\n");
+        // done selecting reagents? mix it up and prompt to mix
+        // another spell
+        if (choice == '\n' || choice == '\r' || choice == ' ') {
+            screenMessage("\n\nYou mix the Reagents, and...\n");
 
-                if (spellMix(spell, &ingredients))
-                    screenMessage("Success!\n\n");
-                else
-                    screenMessage("It Fizzles!\n\n");
+            if (spellMix(spell, &ingredients))
+                screenMessage("Success!\n\n");
+            else
+                screenMessage("It Fizzles!\n\n");
 
-                return false;
-            }
-
-            // escape: put ingredients back and quit mixing
-            if (choice == '\033') {
-                ingredients.revert();
-                return true;
-            }
-
-            screenMessage("%c\n", toupper(choice));
-            if (!ingredients.addReagent((Reagent)(choice - 'a')))
-                screenMessage("None Left!\n");
-            screenMessage("Reagent: ");
+            return false;
         }
+
+        // escape: put ingredients back and quit mixing
+        if (choice == '\033') {
+            ingredients.revert();
+            return true;
+        }
+
+        screenMessage("%c\n", toupper(choice));
+        if (!ingredients.addReagent((Reagent)(choice - 'a')))
+            screenMessage("None Left!\n");
+        screenMessage("Reagent: ");
     }
+
+    return true;
+}
+
+/**
+ * Prompts for spell reagents to mix with an Ultima V-like menu.
+ */
+bool mixReagentsForSpellU5(int spell) {
+    Ingredients ingredients;
+
+    screenDisableCursor();
+
+    c->stats->resetReagentsMenu();
+    c->stats->getReagentsMenu()->reset(); // reset the menu, highlighting the first item
+    ReagentsMenuController getReagentsController(c->stats->getReagentsMenu(), &ingredients, c->stats->getMainArea());
+    eventHandler->pushController(&getReagentsController);
+    getReagentsController.waitFor();
+
+    c->stats->getMainArea()->disableCursor();
+    screenEnableCursor();
+
+    screenMessage("How many? ");
+
+    int howmany = ReadIntController::get(2, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+    gameSpellMixHowMany(spell, howmany, &ingredients);
 
     return true;
 }

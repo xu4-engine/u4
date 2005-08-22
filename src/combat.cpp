@@ -1032,7 +1032,7 @@ bool CombatController::keyPressed(int key) {
 
     case 'c':
         screenMessage("Cast Spell!\n");
-        gameCastForPlayer(ct->focus);
+        castSpell(ct->focus);
         endTurn = false; /* gameCastForPlayer calls finishTurn() */
         break;
 

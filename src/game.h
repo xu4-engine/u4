@@ -122,7 +122,7 @@ void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
 
 /* spell functions */
-bool gameCastForPlayer(int player);
+void castSpell(int player = -1);
 void gameSpellEffect(int spell, int player, Sound sound);
 
 /* action functions */
@@ -131,7 +131,7 @@ bool gamePeerCity(int city, void *data);
 void peer(bool useGem = true);
 bool fireAtCoord(MapCoords coords, int distance, void *data);
 int gameDirectionalAction(CoordActionInfo *info);
-bool gameGetDirection(int (*handleDirection)(Direction dir));
+Direction gameGetDirection();
 int useItem(string *itemName);
 void readyWeapon(int player = -1, WeaponType w = WEAP_MAX);
 
