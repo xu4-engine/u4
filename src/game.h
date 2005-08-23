@@ -109,9 +109,13 @@ private:
 
 extern GameController *game;
 
+class CheatMenuController : public WaitableController<void *> {
+public:
+    bool keyPressed(int key);
+};
+
 /* key handlers */
 bool gameGetCoordinateKeyHandler(int key, void *data);
-bool gameSpecialCmdKeyHandler(int key, void *data);
 bool gameZtatsKeyHandler(int key, void *data);
 
 /* map and screen functions */
@@ -129,7 +133,6 @@ void peer(bool useGem = true);
 bool fireAtCoord(MapCoords coords, int distance, void *data);
 int gameDirectionalAction(CoordActionInfo *info);
 Direction gameGetDirection();
-int useItem(string *itemName);
 void readyWeapon(int player = -1, WeaponType w = WEAP_MAX);
 
 /* checking functions */

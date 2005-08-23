@@ -67,7 +67,6 @@ long gameTimeSinceLastCommand(void);
 int gameSave(void);
 
 /* key handlers */
-bool cmdHandleAnyKey(int key, void *data);
 bool windCmdKeyHandler(int key, void *data);
 
 /* map and screen functions */
@@ -116,12 +115,9 @@ bool gameCreateBalloon(Map *map);
 /* Functions END */
 /*---------------*/
 
-extern Object *party[8];
+//extern Object *party[8];
 Context *c = NULL;
 int windLock = 0;
-string itemNameBuffer;
-string creatureNameBuffer;
-string destination;
 
 Debug gameDbg("debug/game.txt", "Game");
 
@@ -933,7 +929,9 @@ bool GameController::keyPressed(int key) {
         case 3:                     /* ctrl-C */
             if (settings.debug) {
                 screenMessage("Cmd (h = help):");
-                eventHandler->pushKeyHandler(&gameSpecialCmdKeyHandler);            
+                CheatMenuController cheatMenuController;
+                eventHandler->pushController(&cheatMenuController);
+                cheatMenuController.waitFor();
             }
             else valid = false;
             break;
@@ -1652,9 +1650,8 @@ bool gameZtatsKeyHandler(int key, void *data) {
     return true;
 }
 
-bool gameSpecialCmdKeyHandler(int key, void *data) {
+bool CheatMenuController::keyPressed(int key) {
     int i;
-    const Coords *moongate;
     bool valid = true;
 
     switch (key) {
@@ -1669,70 +1666,99 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         screenMessage("Gate %d!\n", key - '0');
 
         if (c->location->map->isWorldMap()) {
-            moongate = moongateGetGateCoordsForPhase(key - '1');
+            const Coords *moongate = moongateGetGateCoordsForPhase(key - '1');
             if (moongate)
                 c->location->coords = *moongate;                
         }
-        else screenMessage("Not here!\n");
-        screenPrompt();
+        else
+            screenMessage("Not here!\n");
         break;
 
-    case 'a':
-        {
-            int newTrammelphase = c->saveGame->trammelphase + 1;
-            if (newTrammelphase > 7)
-                newTrammelphase = 0;
+    case 'a': {
+        int newTrammelphase = c->saveGame->trammelphase + 1;
+        if (newTrammelphase > 7)
+            newTrammelphase = 0;
 
-            screenMessage("Advance Moons!\n");
-            while (c->saveGame->trammelphase != newTrammelphase)
-                gameUpdateMoons(1);
-
-            screenPrompt();
-        }
+        screenMessage("Advance Moons!\n");
+        while (c->saveGame->trammelphase != newTrammelphase)
+            gameUpdateMoons(1);
         break;
+    }
 
     case 'c':
         collisionOverride = !collisionOverride;
         screenMessage("Collision detection %s!\n", collisionOverride ? "off" : "on");
-        screenPrompt();
         break;
 
     case 'e':
-        {
-            screenMessage("Equipment!\n");
-            screenPrompt();
-            for (i = ARMR_NONE + 1; i < ARMR_MAX; i++)
-                c->saveGame->armor[i] = 8;
-            for (i = WEAP_HANDS + 1; i < WEAP_MAX; i++) {
-                const Weapon *weapon = Weapon::get(static_cast<WeaponType>(i));
-                if (weapon->loseWhenUsed() || weapon->loseWhenRanged())
-                    c->saveGame->weapons[i] = 99;
-                else
-                    c->saveGame->weapons[i] = 8;
-            }
+        screenMessage("Equipment!\n");
+        for (i = ARMR_NONE + 1; i < ARMR_MAX; i++)
+            c->saveGame->armor[i] = 8;
+        for (i = WEAP_HANDS + 1; i < WEAP_MAX; i++) {
+            const Weapon *weapon = Weapon::get(static_cast<WeaponType>(i));
+            if (weapon->loseWhenUsed() || weapon->loseWhenRanged())
+                c->saveGame->weapons[i] = 99;
+            else
+                c->saveGame->weapons[i] = 8;
         }
         break;
 
-    case 'h':
+    case 'g': {
+        screenMessage("Goto: ");
+        string dest = gameGetInput(32);
+        lowercase(dest);
+
+        if (c->location->map->isWorldMap()) {
+            for (unsigned p = 0; p < c->location->map->portals.size(); p++) {
+                MapId destid = c->location->map->portals[p]->destid;
+                string destNameLower = mapMgr->get(destid)->getName();
+                lowercase(destNameLower);
+                if (destNameLower.find(dest) != string::npos) {
+                    screenMessage("\n%s\n", mapMgr->get(destid)->getName().c_str());
+                    c->location->coords = c->location->map->portals[p]->coords;
+                    break;
+                }
+            }
+        }
+        break;
+    }
+
+    case 'h': {
         screenMessage("Help:\n"
                       "1-8   - Gate\n"
                       "F1-F8 - +Virtue\n"
                       "a - Adv. Moons\n"
                       "c - Collision\n"
                       "e - Equipment\n"
+                      "g - Goto\n"
                       "h - Help\n"
                       "i - Items\n"
                       "k - Show Karma\n"
                       "l - Location\n"
-                      "m - Mixtures\n"                      
                       "(more)");
-        eventHandler->popKeyHandler();
-        eventHandler->pushKeyHandler(&cmdHandleAnyKey);
-        return true;
+
+        ReadChoiceController pauseController("");
+        eventHandler->pushController(&pauseController);
+        pauseController.waitFor();
+
+        screenMessage("\n"
+                      "m - Mixtures\n"
+                      "o - Opacity\n"
+                      "p - Peer\n"
+                      "r - Reagents\n"
+                      "s - Summon\n"
+                      "t - Transports\n"
+                      "v - Full Virtues\n"
+                      "w - Change Wind\n"
+                      "x - Exit Map\n"
+                      "y - Y-up\n"
+                      "z - Z-down\n"
+                  );
+        break;
+    }
 
     case 'i':
         screenMessage("Items!\n");
-        screenPrompt();
         c->saveGame->torches = 99;
         c->saveGame->gems = 99;
         c->saveGame->keys = 99;
@@ -1756,8 +1782,6 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
                 screenMessage("%.2d\n", c->saveGame->karma[i]);            
             else screenMessage("--\n");
         }
-        screenPrompt();
-
         break;
 
     case 'l':
@@ -1765,12 +1789,10 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
             screenMessage("\nLocation:\n%s\nx: %d\ny: %d\n", "World Map", c->location->coords.x, c->location->coords.y);
         else
             screenMessage("\nLocation:\n%s\nx: %d\ny: %d\nz: %d\n", c->location->map->getName().c_str(), c->location->coords.x, c->location->coords.y, c->location->coords.z);
-        screenPrompt();
         break;
 
     case 'm':
         screenMessage("Mixtures!\n");
-        screenPrompt();
         for (i = 0; i < SPELL_MAX; i++)
             c->saveGame->mixtures[i] = 99;
         break;
@@ -1778,39 +1800,33 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
     case 'o':
         c->opacity = !c->opacity;
         screenMessage("Opacity %s!\n", c->opacity ? "on" : "off");
-        screenPrompt();
         break;
 
     case 'p':        
-        eventHandler->popKeyHandler();
         if ((c->location->viewMode == VIEW_NORMAL) || (c->location->viewMode == VIEW_DUNGEON))
             c->location->viewMode = VIEW_GEM;
         else if (c->location->context == CTX_DUNGEON)
             c->location->viewMode = VIEW_DUNGEON;
-        else c->location->viewMode = VIEW_NORMAL;
+        else 
+            c->location->viewMode = VIEW_NORMAL;
         
         screenMessage("\nToggle View!\n");
-        screenPrompt();
-        return true;
+        break;
 
     case 'r':
         screenMessage("Reagents!\n");
-        screenPrompt();
         for (i = 0; i < REAG_MAX; i++)
             c->saveGame->reagents[i] = 99;
         break;
 
     case 's':
         screenMessage("Summon!\n");
-        eventHandler->popKeyHandler();
-
         screenMessage("What?\n");
         gameSummonCreature(gameGetInput());
-        
-        return true;
+        break;
 
     case 't':
-        if (c->location->map->isWorldMap()) {            
+        if (c->location->map->isWorldMap()) {
             MapCoords coords = c->location->coords;
             static MapTile horse = Tileset::findTileByName("horse")->id,
                 ship = Tileset::findTileByName("ship")->id,
@@ -1865,8 +1881,6 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
                 }
             }
             else screenMessage("None!\n");
-            
-            screenPrompt();
         }
         break;
 
@@ -1875,7 +1889,6 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         for (i = 0; i < 8; i++)
             c->saveGame->karma[i] = 0;        
         c->stats->update();
-        screenPrompt();
         break;
 
     case 'w':        
@@ -1889,7 +1902,6 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         if (!game->exitToParentMap())
             screenMessage("Not Here!\n");
         musicMgr->play();
-        screenPrompt();
         break;
 
     case 'y':
@@ -1901,7 +1913,6 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
             game->exitToParentMap();
             musicMgr->play();
         }
-        screenPrompt();
         break;
 
     case 'z':
@@ -1909,7 +1920,6 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         if ((c->location->context & CTX_DUNGEON) && (c->location->coords.z < 7))
             c->location->coords.z++;
         else screenMessage("Not Here!\n");
-        screenPrompt();
         break;
 
     case U4_FKEY+0:
@@ -1928,14 +1938,12 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         if (c->saveGame->karma[key - U4_FKEY] > 99)
             c->saveGame->karma[key - U4_FKEY] = 99;
         c->stats->update();
-        screenPrompt();
         break;
 
     case U4_ESC:
     case U4_ENTER:
     case U4_SPACE:
         screenMessage("Nothing\n");
-        screenPrompt();
         break;
 
     default:
@@ -1943,29 +1951,12 @@ bool gameSpecialCmdKeyHandler(int key, void *data) {
         break;
     }
 
-    if (valid)
-        eventHandler->popKeyHandler();
+    if (valid) {
+        doneWaiting();
+        screenPrompt();
+    }
 
-    return valid || KeyHandler::defaultHandler(key, NULL);
-}
-
-bool cmdHandleAnyKey(int key, void *data) {
-    eventHandler->popKeyHandler();
-
-    screenMessage("\n"
-                  "o - Opacity\n"
-                  "p - Peer\n"
-                  "r - Reagents\n"
-                  "s - Summon\n"
-                  "t - Transports\n"
-                  "v - Full Virtues\n"
-                  "w - Change Wind\n"
-                  "x - Exit Map\n"
-                  "y - Y-up\n"
-                  "z - Z-down\n"
-                  );
-    screenPrompt();
-    return true;
+    return valid;
 }
 
 bool windCmdKeyHandler(int key, void *data) {
@@ -2968,18 +2959,6 @@ void talkRunConversation(bool showPrompt) {
     (*c->location->finishTurn)();
 }
 
-int useItem(string *itemName) {
-    eventHandler->popKeyHandler();
-
-    itemUse(itemName->c_str());
-
-    if (eventHandler->getController() == game ||
-        eventHandler->getController() == c->combat)
-        (*c->location->finishTurn)();
-
-    return 1;
-}
-
 /**
  * Changes a player's armor.  Prompts for the player and/or the armor
  * type if not provided.
@@ -3680,19 +3659,17 @@ void gameLordBritishCheckLevels(void) {
  * creature to be summoned, it calls gameSpawnCreature() to spawn it.
  */
 void gameSummonCreature(const string &name) {    
-    unsigned int id;
     const Creature *m = NULL;
     string creatureName = name;
 
     trim(creatureName);
     if (creatureName.empty()) {
         screenMessage("\n");
-        screenPrompt();
         return;
     }
     
     /* find the creature by its id and spawn it */
-    id = atoi(creatureName.c_str());
+    unsigned int id = atoi(creatureName.c_str());
     if (id > 0)
         m = creatures.getById(id);
 
@@ -3703,13 +3680,11 @@ void gameSummonCreature(const string &name) {
         if (gameSpawnCreature(m))
             screenMessage("\n%s summoned!\n", m->getName().c_str());
         else screenMessage("\n\nNo place to put %s!\n\n", m->getName().c_str());
-        screenPrompt();
         
         return;
     }
     
     screenMessage("\n%s not found\n", creatureName.c_str());
-    screenPrompt();
 }
 
 /**
