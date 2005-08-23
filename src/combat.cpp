@@ -17,6 +17,7 @@
 #include "dungeon.h"
 #include "event.h"
 #include "game.h"
+#include "item.h"
 #include "location.h"
 #include "mapmgr.h"
 #include "menu.h"
@@ -1081,15 +1082,10 @@ bool CombatController::keyPressed(int key) {
         break;
 
     case 'u':
-        {
-            extern string itemNameBuffer;
-            screenMessage("Use which item:\n");
-            gameGetInput(&useItem, &itemNameBuffer);
-
-            c->stats->setView(STATS_ITEMS);
-
-            return true;
-        }
+        screenMessage("Use which item:\n");
+        c->stats->setView(STATS_ITEMS);
+        itemUse(gameGetInput().c_str());
+        break;
 
     case 'v':
         if (musicMgr->toggle())

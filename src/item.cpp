@@ -58,8 +58,8 @@ void useTelescope(void *notused);
 bool isReagentInInventory(void *reag);
 void putReagentInInventory(void *reag);
 bool isAbyssOpened(const Portal *p);
-int itemHandleStones(string *color);
-int itemHandleVirtues(string *virtue);
+void itemHandleStones(const string &color);
+void itemHandleVirtues(const string &virtue);
 
 static const ItemLocation items[] = {
     { "Mandrake Root", NULL, 182, 54, 0, MAP_WORLD,
@@ -255,7 +255,6 @@ void useSkull(void *item) {
  */
 void useStone(void *item) {
     MapCoords coords;
-    extern string itemNameBuffer;
     unsigned char stone = (unsigned char)((int)item);
     
     unsigned char truth   = STONE_WHITE | STONE_PURPLE | STONE_GREEN  | STONE_BLUE;
@@ -301,7 +300,7 @@ void useStone(void *item) {
                 /* see if we have all the stones, if not, get more names! */
                 if (attr && needStoneNames) {
                     screenMessage("\n%c:", 'E'-needStoneNames);
-                    gameGetInput(&itemHandleStones, &itemNameBuffer);
+                    itemHandleStones(gameGetInput());
                 }
                 /* all the stones have been entered, verify them! */
                 else {
@@ -361,7 +360,7 @@ void useStone(void *item) {
             screenMessage("\n\nAs thou doth approach, a voice rings out: What virtue dost stem from %s?\n\n", getBaseVirtueName(virtueMask));
         else screenMessage("\n\nA voice rings out:  What virtue exists independently of Truth, Love, and Courage?\n\n");
 
-        gameGetInput(&itemHandleVirtues, &itemNameBuffer);
+        itemHandleVirtues(gameGetInput());
     }
 
     /**
@@ -372,7 +371,7 @@ void useStone(void *item) {
         needStoneNames = 4;
         screenMessage("\n\nThere are holes for 4 stones.\nWhat colors:\nA:");        
 
-        gameGetInput(&itemHandleStones, &itemNameBuffer);
+        itemHandleStones(gameGetInput());
     }
     else screenMessage("\nNo place to Use them!\n");
     // This used to say "\nNo place to Use them!\nHmm...No effect!\n"
@@ -548,47 +547,39 @@ bool isAbyssOpened(const Portal *p) {
 /**
  * Handles naming of stones when used
  */
-int itemHandleStones(string *color) {
+void itemHandleStones(const string &color) {
     int i;
     int found = 0;    
 
     for (i = 0; i < 8; i++) {        
-        if (strcasecmp(color->c_str(), getStoneName((Virtue)i)) == 0 &&
+        if (strcasecmp(color.c_str(), getStoneName((Virtue)i)) == 0 &&
             isStoneInInventory((void *)(1<<i))) {
             found = 1;
-            useItem(color);
+            itemUse(color.c_str());
         }
     }
     
     if (!found) {
         screenMessage("\nNone owned!\n");
         stoneMask = 0; /* make sure stone mask is reset */
-        eventHandler->popKeyHandler();
-        (*c->location->finishTurn)();
     }
-    
-    return 1;
 }
 
 /**
  * Handles naming of virtues when you use a stone on an altar in the Abyss
  */
-int itemHandleVirtues(string *virtue) {
-    extern string itemNameBuffer;
-
+void itemHandleVirtues(const string &virtue) {
     eventHandler->popKeyHandler();
         
-    if (strncasecmp(virtue->c_str(), getVirtueName((Virtue)c->location->coords.z), 6) == 0) {
+    if (strncasecmp(virtue.c_str(), getVirtueName((Virtue)c->location->coords.z), 6) == 0) {
         /* now ask for stone */
         screenMessage("\n\nThe Voice says: Use thy Stone.\n\nColor:\n");
         needStoneNames = 1;
 
-        gameGetInput(&itemHandleStones, &itemNameBuffer);
+        itemHandleStones(gameGetInput());
     }
     else {
-        screenMessage("\nHmm...No effect!\n");        
+        screenMessage("\nHmm...No effect!\n");
         (*c->location->finishTurn)();
     }
-
-    return 1;
 }
