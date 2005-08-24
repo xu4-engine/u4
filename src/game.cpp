@@ -220,12 +220,6 @@ void GameController::init() {
     c->lastCommandTime = time(NULL);
     c->lastShip = NULL;
 
-    /* set the map to the world map by default */
-    setMap(mapMgr->get(MAP_WORLD), 0, NULL);  
-    c->location->map->clearObjects();
-
-    TRACE_LOCAL(gameDbg, "World map set."); ++pb;
-
     /* load in the save game */
     saveGameFile = fopen((settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "rb");
     if (saveGameFile) {
@@ -239,6 +233,12 @@ void GameController::init() {
     /* initialize our party */
     c->party = new Party(c->saveGame);
     c->party->addObserver(this);
+
+    /* set the map to the world map by default */
+    setMap(mapMgr->get(MAP_WORLD), 0, NULL);  
+    c->location->map->clearObjects();
+
+    TRACE_LOCAL(gameDbg, "World map set."); ++pb;
 
     /* initialize our combat controller */
     c->combat = new CombatController();
@@ -509,7 +509,7 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
     LocationContext context;
     FinishTurnCallback finishTurn = &GameController::finishTurn;
     Tileset *tileset = Tileset::get("base");
-    int activePlayer = (c->location) ? c->location->activePlayer : -1;
+    int activePlayer = c->party->getActivePlayer();
     MapCoords coords;
 
     if (portal)
@@ -550,7 +550,7 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
     
     c->location = new Location(coords, map, viewMode, context, finishTurn, tileset, c->location);
     c->location->addObserver(this);
-    c->location->activePlayer = activePlayer;
+    c->party->setActivePlayer(activePlayer);
 
     /* now, actually set our new tileset */
     Tileset::set(tileset);
@@ -1498,8 +1498,8 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
         player = 0;
     }
     else {
-        if (canBeActivePlayer && (c->location->activePlayer >= 0))
-            player = c->location->activePlayer;
+        if (canBeActivePlayer && (c->party->getActivePlayer() >= 0))
+            player = c->party->getActivePlayer();
         else {
             ReadPlayerController readPlayerController;
             eventHandler->pushController(&readPlayerController);
@@ -3592,19 +3592,16 @@ void gameDamageShip(int minDamage, int maxDamage) {
  */
 void gameSetActivePlayer(int player) {
     if (player == -1) {
-        c->location->activePlayer = -1;
+        c->party->setActivePlayer(-1);
         screenMessage("Set Active Player: None!\n");
     }
     else if (player < c->party->size()) {
         screenMessage("Set Active Player: %s!\n", c->party->member(player)->getName().c_str());
         if (c->party->member(player)->isDisabled())
             screenMessage("Disabled!\n");
-        else c->location->activePlayer = player;
+        else 
+            c->party->setActivePlayer(player);
     }
-    // FIXME: we should move the active player into the Party class
-    // so it will notify the stats area when a new active player is
-    // selected.  For now, this will do:
-    c->stats->update();
 }
 
 /**

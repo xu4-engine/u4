@@ -35,7 +35,6 @@ Location::Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx
     this->context = ctx;
     this->finishTurn = finishTurnCallback;
     this->tileset = tileset;
-    this->activePlayer = -1;
 
     locationPush(prev, this);
 }

@@ -526,7 +526,7 @@ void PartyMember::wakeUp() {
 /**
  * Party class implementation
  */ 
-Party::Party(SaveGame *s) : saveGame(s), torchduration(0) {
+Party::Party(SaveGame *s) : saveGame(s), torchduration(0), activePlayer(-1) {
     if (MAP_DECEIT <= saveGame->location && saveGame->location <= MAP_ABYSS)
         torchduration = saveGame->torchduration;
     for (int i = 0; i < saveGame->members; i++) {
@@ -1125,6 +1125,17 @@ void Party::adjustReagent(int reagent, int amt) {
 
 int Party::reagents(int reagent) const {
     return c->saveGame->reagents[reagent];
+}
+
+void Party::setActivePlayer(int p) {
+    activePlayer = p;
+    setChanged();
+    PartyEvent event(PartyEvent::ACTIVE_PLAYER_CHANGED);
+    notifyObservers(event);
+}
+
+int Party::getActivePlayer() const {
+    return activePlayer;
 }
 
 /**

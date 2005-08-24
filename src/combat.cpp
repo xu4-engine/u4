@@ -899,10 +899,10 @@ void CombatController::finishTurn(void) {
             }
         } while (!player || 
                   player->isDisabled() || /* dead or sleeping */                 
-                 ((c->location->activePlayer >= 0) && /* active player is set */
-                  (ct->party[c->location->activePlayer]) && /* and the active player is still in combat */
-                  !ct->party[c->location->activePlayer]->isDisabled() && /* and the active player is not disabled */
-                  (c->location->activePlayer != ct->focus)));
+                 ((c->party->getActivePlayer() >= 0) && /* active player is set */
+                  (ct->party[c->party->getActivePlayer()]) && /* and the active player is still in combat */
+                  !ct->party[c->party->getActivePlayer()]->isDisabled() && /* and the active player is not disabled */
+                  (c->party->getActivePlayer() != ct->focus)));
     }
     else c->location->map->annotations->passTurn();
     
@@ -926,12 +926,12 @@ void CombatController::movePartyMember(MoveEvent &event) {
     int i;
 
     /* active player left/fled combat */
-    if ((event.result & MOVE_EXIT_TO_PARENT) && (c->location->activePlayer == ct->focus)) {
-        c->location->activePlayer = -1;
+    if ((event.result & MOVE_EXIT_TO_PARENT) && (c->party->getActivePlayer() == ct->focus)) {
+        c->party->setActivePlayer(-1);
         /* assign active player to next available party member */
         for (i = 0; i < c->party->size(); i++) {
             if (ct->party[i] && !ct->party[i]->isDisabled()) {
-                c->location->activePlayer = i;
+                c->party->setActivePlayer(i);
                 break;
             }
         }

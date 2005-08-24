@@ -45,7 +45,6 @@ public:
     LocationContext context;
     FinishTurnCallback finishTurn;
     Tileset *tileset;
-    int activePlayer;
     Location *prev;
 };
 

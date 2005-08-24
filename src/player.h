@@ -179,6 +179,8 @@ public:
     
     void adjustReagent(int reagent, int amt);
     int reagents(int reagent) const;
+    void setActivePlayer(int p);
+    int getActivePlayer() const;
 
     int size() const;
     PartyMember *member(int index) const;    
@@ -189,6 +191,8 @@ public:
     SaveGame *saveGame;
     MapTile transport;
     int torchduration;
+private:
+    int activePlayer;
 };
 
 class PartyEvent {
@@ -199,7 +203,8 @@ public:
         ADVANCED_LEVEL,
         STARVING,
         TRANSPORT_CHANGED,
-        PLAYER_KILLED
+        PLAYER_KILLED,
+        ACTIVE_PLAYER_CHANGED
     };
 
     PartyEvent(Type type) { this->type = type; }

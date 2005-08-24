@@ -11,7 +11,6 @@
 #include "armor.h"
 #include "context.h"
 #include "debug.h"
-#include "location.h"
 #include "menu.h"
 #include "names.h"
 #include "player.h"
@@ -207,7 +206,7 @@ void StatsArea::setTitle(const string &s) {
 void StatsArea::showPartyView(bool avatarOnly) {
     char *format = "%d%c%-9.8s%3d%c";
     PartyMember *p = NULL;
-    int activePlayer = c->location ? c->location->activePlayer : -1;
+    int activePlayer = c->party->getActivePlayer();
 
     ASSERT(c->party->size() <= 8, "party members out of range: %d", c->party->size());
 
