@@ -77,7 +77,7 @@ public:
     void timerFired();
 
     void update(Menu *menu, MenuEvent &event);
-    void updateMainMenu(MenuEvent &event);
+    void updateConfMenu(MenuEvent &event);
     void updateVideoMenu(MenuEvent &event);
     void updateSoundMenu(MenuEvent &event);
     void updateGameplayMenu(MenuEvent &event);
@@ -115,10 +115,7 @@ private:
      */
     enum {
         INTRO_MAP,                          /* displaying the animated intro map */
-        INTRO_MENU,                         /* displaying the main menu: journey onward, etc. */
-        INTRO_CONFIG,                       /* the configuration screens */
-        INTRO_ABOUT,                        /* about xu4 screen */
-        INTRO_INIT,                         /* initializing a new game */
+        INTRO_MENU                          /* displaying the main menu: journey onward, etc. */
     } mode;
 
     enum MenuConstants {
@@ -139,13 +136,22 @@ private:
     TextView questionArea;
     TileView mapArea;
 
-    /* data loaded in from title.exe */
+    // menus
+    Menu mainMenu;
+    Menu confMenu;
+    Menu videoMenu;
+    Menu soundMenu;
+    Menu gameplayMenu;
+    Menu advancedMenu;
+    Menu keyboardMenu;
+    Menu speedMenu;
+    Menu enhancementMenu;
+
+    // data loaded in from title.exe
     IntroBinData *binData;
 
-    /* additional introduction state data */
+    // additional introduction state data
     std::string errorMessage;
-    std::string nameBuffer;
-    SexType sex;
     int answerInd;
     int questionRound;
     int questionTree[15];
