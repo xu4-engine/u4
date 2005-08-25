@@ -508,7 +508,6 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn = &GameController::finishTurn;
-    Tileset *tileset = Tileset::get("base");
     int activePlayer = c->party->getActivePlayer();
     MapCoords coords;
 
@@ -532,7 +531,6 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
         viewMode = VIEW_DUNGEON;
         if (portal)
             c->saveGame->orientation = DIR_EAST;
-        tileset = Tileset::get("dungeon");
         break;
     case Map::COMBAT:
         coords = MapCoords(-1, -1); /* set these to -1 just to be safe; we don't need them */
@@ -548,12 +546,12 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
         break;
     }    
     
-    c->location = new Location(coords, map, viewMode, context, finishTurn, tileset, c->location);
+    c->location = new Location(coords, map, viewMode, context, finishTurn, c->location);
     c->location->addObserver(this);
     c->party->setActivePlayer(activePlayer);
 
     /* now, actually set our new tileset */
-    Tileset::set(tileset);
+    Tileset::set(map->tileset);
 
     if (isCity(map)) {
         City *city = dynamic_cast<City*>(map);
@@ -572,11 +570,11 @@ int GameController::exitToParentMap() {
         return 0;
 
     if (c->location->prev != NULL) {
-        /* Create the balloon for Hythloth */
+        // Create the balloon for Hythloth
         if (c->location->map->id == MAP_HYTHLOTH)
             gameCreateBalloon(c->location->prev->map);            
 
-        /* free map info only if previous location was on a different map */
+        // free map info only if previous location was on a different map
         if (c->location->prev->map != c->location->map) {
             c->location->map->annotations->clear();
             c->location->map->clearObjects();
@@ -587,8 +585,8 @@ int GameController::exitToParentMap() {
         }
         locationFree(&c->location);
 
-        /* restore the tileset to the one the current location uses */
-        Tileset::set(c->location->tileset);
+        // restore the tileset to the one the current map uses
+        Tileset::set(c->location->map->tileset);
         
         return 1;
     }
@@ -3362,7 +3360,7 @@ void gameFixupObjects(Map *map) {
                 if (creature)
                     obj = map->addCreature(creature, c);
                 else {
-                    fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", ::c->location->tileset->get(tile.id)->name.c_str());
+                    fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", map->tileset->get(tile.id)->name.c_str());
                     obj = map->addObject(tile, oldTile, c);
                 }
             }

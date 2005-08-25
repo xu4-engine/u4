@@ -27,6 +27,7 @@ class Map;
 class Object;
 class Person;
 class Creature;
+class Tileset;
 struct Portal;
 struct _Dungeon;
 
@@ -145,6 +146,7 @@ public:
     Music::Type     music;
     MapData         data;
     ObjectDeque     objects;
+    Tileset        *tileset;
 
     // u4dos compatibility
     SaveGameMonsterRecord monsterTable[MONSTERTABLE_SIZE];

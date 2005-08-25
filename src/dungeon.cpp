@@ -53,7 +53,7 @@ DungeonToken dungeonTokenForTile(MapTile tile) {
     const static std::string fieldNames[] = { "poison_field", "energy_field", "fire_field", "sleep_field", "" };
 
     int i;
-    Tile *t = c->location->tileset->get(tile.id);
+    Tile *t = c->location->map->tileset->get(tile.id);
 
     for (i = 0; !tileNames[i].empty(); i++) {        
         if (strcasecmp(t->name.c_str(), tileNames[i].c_str()) == 0)

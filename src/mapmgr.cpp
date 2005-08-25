@@ -21,6 +21,7 @@
 #include "person.h"
 #include "portal.h"
 #include "shrine.h"
+#include "tileset.h"
 #include "types.h"
 #include "u4file.h"
 #include "config.h"
@@ -72,7 +73,7 @@ Map *MapMgr::initMap(Map::Type type) {
     Map *map;
 
     switch(type) {    
-    case Map::WORLD:    
+    case Map::WORLD:
         map = new Map;
         break;
 
@@ -142,7 +143,7 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
     map->chunk_width = mapConf.getInt("chunkwidth");
     map->chunk_height = mapConf.getInt("chunkheight");
     map->border_behavior = static_cast<Map::BorderBehavior>(mapConf.getEnum("borderbehavior", borderBehaviorEnumStrings));    
-    
+
     if (isCombatMap(map)) {
         CombatMap *cm = dynamic_cast<CombatMap*>(map);
         cm->setContextual(mapConf.getBool("contextual"));
@@ -160,6 +161,11 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
         map->flags |= FIRST_PERSON;
 
     map->music = static_cast<Music::Type>(mapConf.getInt("music"));
+
+    if (map->type == Map::DUNGEON)
+        map->tileset = Tileset::get("dungeon");
+    else
+        map->tileset = Tileset::get("base");
 
     vector<ConfigElement> children = mapConf.getChildren();
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {

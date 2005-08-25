@@ -12,8 +12,6 @@
 #include "observable.h"
 #include "types.h"
 
-class Tileset;
-
 typedef enum {
     CTX_WORLDMAP    = 0x0001,
     CTX_COMBAT      = 0x0002,
@@ -31,7 +29,7 @@ typedef void (*FinishTurnCallback)(void);
 
 class Location : public Observable<Location *, MoveEvent &> {
 public:
-    Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, Tileset* tileset, Location *prev);
+    Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, Location *prev);
 
     MapTile *visibleTileAt(MapCoords coords, bool &focus);
     std::vector<MapTile *> tilesAt(MapCoords coords, bool &focus);
@@ -44,7 +42,6 @@ public:
     int viewMode;
     LocationContext context;
     FinishTurnCallback finishTurn;
-    Tileset *tileset;
     Location *prev;
 };
 

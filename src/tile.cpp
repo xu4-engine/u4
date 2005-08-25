@@ -95,7 +95,9 @@ MapTile Tile::translate(int index, string tileMap) {
 }
 
 unsigned int Tile::getIndex(TileId id) {
-    return c && c->location ? c->location->tileset->get(id)->index : Tileset::get("base")->get(id)->index;    
+    return c && c->location && c->location->map ? 
+        c->location->map->tileset->get(id)->index : 
+        Tileset::get("base")->get(id)->index;    
 }
 
 Image *Tile::getImage() { 

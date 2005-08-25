@@ -27,14 +27,13 @@ Location *locationPop(Location **stack);
  * start a new stack if 'prev' is NULL
  */
 Location::Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx,
-                   FinishTurnCallback finishTurnCallback, Tileset* tileset, Location *prev) {
+                   FinishTurnCallback finishTurnCallback, Location *prev) {
 
     this->coords = coords;
     this->map = map;
     this->viewMode = viewmode;
     this->context = ctx;
     this->finishTurn = finishTurnCallback;
-    this->tileset = tileset;
 
     locationPush(prev, this);
 }
@@ -146,7 +145,7 @@ MapTile Location::getReplacementTile(MapCoords coords) {
     }
 
     /* couldn't find a tile, give it our best guess */
-    return Tileset::findTileByName("brick_floor")->id;
+    return map->tileset->getByName("brick_floor")->id;
 }
 
 /**

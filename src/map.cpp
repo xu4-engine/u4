@@ -240,6 +240,7 @@ Map::Map() {
     chunk_width = 0;
     chunk_height = 0;    
     id = 0;
+    tileset = NULL;
 }
 
 Map::~Map() {
