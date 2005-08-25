@@ -1,4 +1,6 @@
-#include <stdarg.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstdlib>
 
 /*
  * MacOS X: errors shown in alert panel
