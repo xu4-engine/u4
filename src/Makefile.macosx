@@ -11,11 +11,9 @@ LIBPNGDIR=../../libpng
 UILIBS=-L$(HOME)/Library/Frameworks \
 	-framework Cocoa \
 	-framework SDL \
-	-framework SDL_mixer \
-	-framework libxml 
+	-framework SDL_mixer
 UIFLAGS=-F$(HOME)/Library/Frameworks \
-	-I$(HOME)/Library/Frameworks/libxml.framework/Headers \
-	-I$(HOME)/Library/Frameworks/SDL.framework/Headers \
+	-I/Library/Frameworks/SDL.framework/Headers \
 	-I$(HOME)/Library/Frameworks/SDL_mixer.framework/Headers \
 	-I$(LIBPNGDIR)
 
@@ -26,9 +24,9 @@ DEBUGCXXFLAGS=-ggdb
 # Optimising
 #DEBUGCXXFLAGS=-O2 -mdynamic-no-pic
 
-CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Preferences/XU4\" -no-cpp-precomp -L$(LIBPNGDIR)
+CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Application\ Support/xu4\" -no-cpp-precomp -L$(LIBPNGDIR)
 CFLAGS=$(CXXFLAGS)
-LIBS=$(LIBPNGDIR)/libpng.a $(UILIBS) -lobjc -lz
+LIBS=$(LIBPNGDIR)/libpng.a $(UILIBS) $(shell xml2-config --libs) -lobjc -lz
 INSTALL=install
 
 OBJS=macosx/SDLMain.o macosx/osxinit.o macosx/osxerror.o
@@ -38,8 +36,8 @@ include Makefile.common
 macosx/SDLMain.o: macosx/SDLMain.m macosx/SDLMain.h
 	$(CC) $(CXXFLAGS) -c -o macosx/SDLMain.o macosx/SDLMain.m
 
-macosx/osxerror.o: macosx/osxerror.m
-	$(CC) $(CXXFLAGS) -c -o macosx/osxerror.o macosx/osxerror.m 
+macosx/osxerror.o: macosx/osxerror.mm
+	$(CC) $(CXXFLAGS) -c -o macosx/osxerror.o macosx/osxerror.mm 
 
 macosx/osxinit.o: macosx/osxinit.cpp
 	$(CXX) $(CXXFLAGS) -c -o macosx/osxinit.o macosx/osxinit.cpp
@@ -65,7 +63,7 @@ install: u4
 	cp ../graphics/vga/*.png $(BUNDLE_CONTENTS)/Resources/vga
 	cp ../../ultima4.zip $(BUNDLE_CONTENTS)/Resources
 	cp ../../u4upgrad.zip $(BUNDLE_CONTENTS)/Resources
-	$(INSTALL) $< $(BUNDLE_CONTENTS)/MacOS
+	cp $< $(BUNDLE_CONTENTS)/MacOS
 
 -include .depends
 
