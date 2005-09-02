@@ -5,13 +5,14 @@
 #ifndef PERSON_H
 #define PERSON_H
 
-#include <string>
 #include <list>
+#include <string>
 
 #include "creature.h"
 #include "types.h"
 
-typedef std::list<const char *> Reply;
+using std::list;
+using std::string;
 
 class Conversation;
 class Dialogue;
@@ -43,7 +44,7 @@ public:
     }
 
 public:
-    std::string name;
+    string name;
     Dialogue* dialogue;
     MapCoords start;    
     PersonNpcType npcType;
@@ -51,11 +52,11 @@ public:
 
 bool isPerson(Object *punknown);
 
-Reply *replyNew(const std::string &text);
-void replyDelete(Reply *reply);
+list<string> replySplit(const string &text);
 int personInit(void);
-Reply *personGetConversationText(class Conversation *cnv, const char *inquiry);
-std::string personGetPrompt(class Conversation *cnv);
+list<string> personGetConversationText(class Conversation *cnv, const char *inquiry);
+string personGetPrompt(class Conversation *cnv);
 const char *personGetChoices(class Conversation *cnv);
+int linecount(const string &s, int columnmax);
 
 #endif

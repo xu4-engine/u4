@@ -11,13 +11,12 @@
 
 #include "utils.h"
 
+using std::list;
 using std::string;
 
 class Debug;
 class Person;
 class Script;
-
-typedef std::list<const char *> Reply;
 
 /**
  * The dialogue class, which holds conversation information for
@@ -189,7 +188,7 @@ private:
 public:    
     State state;                /**< The state of the conversation */    
     string playerInput;         /**< A string holding the text the player inputs */
-    Reply *reply;               /**< A string holding what the talker says */    
+    list<string> reply;         /**< What the talker says */
     class Script *script;       /**< A script that this person follows during the conversation (may be NULL) */
     Dialogue::Question *question; /**< The current question the player is being asked */
     int quant;                  /**< For vendor transactions */

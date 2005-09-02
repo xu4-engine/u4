@@ -77,19 +77,16 @@ string lordBritishGetHelp(const Conversation *cnv);
 string hawkwindGetIntro(Conversation *cnv);
 string hawkwindGetResponse(Conversation *cnv, const char *inquiry);
 string hawkwindGetPrompt(const Conversation *cnv);
-int linecount(const char *s, int columnmax);
 int chars_needed(const char *s, int columnmax, int linesdesired, int *real_lines);
 
 
 /**
  * Splits a piece of response text into screen-sized chunks.
  */
-Reply *replyNew(const string &text) {
+list<string> replySplit(const string &text) {
     string str = text;
     int pos, real_lines;
-    Reply *reply;
-
-    reply = new Reply;
+    list<string> reply;
 
     /* skip over any initial newlines */
     if ((pos = str.find("\n\n")) == 0)
@@ -100,12 +97,12 @@ Reply *replyNew(const string &text) {
     /* we only have one chunk, no need to split it up */
     unsigned int len = str.length();
     if (num_chars == len)
-        reply->push_back(strdup(str.c_str()));    
+        reply.push_back(str);
     else {
         string pre = str.substr(0, num_chars);        
 
         /* add the first chunk to the list */
-        reply->push_back(strdup(pre.c_str()));
+        reply.push_back(pre);
         /* skip over any initial newlines */
         if ((pos = str.find("\n\n")) == 0)
             str = str.substr(pos+2);
@@ -121,21 +118,11 @@ Reply *replyNew(const string &text) {
             num_chars = chars_needed(str.c_str(), TEXT_AREA_W, TEXT_AREA_H, &real_lines);
             pre = str.substr(0, num_chars);            
 
-            reply->push_back(strdup(pre.c_str()));
+            reply.push_back(pre);
         }
     }
     
     return reply;
-}
-
-/**
- * Frees a reply.
- */
-void replyDelete(Reply *reply) {    
-    Reply::iterator current;
-    for (current = reply->begin(); current != reply->end(); current++)
-        free((void*)*current);
-    delete reply;
 }
 
 /**
@@ -170,9 +157,8 @@ int personIsVendor(const Person *person) {
         person->npcType <= NPC_VENDOR_STABLE;
 }
 
-Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
+list<string> personGetConversationText(Conversation *cnv, const char *inquiry) {
     string text;
-    Reply *reply;
 
     text = "\n\n\n";
 
@@ -309,8 +295,7 @@ Reply *personGetConversationText(Conversation *cnv, const char *inquiry) {
         }
     }
 
-    reply = replyNew(text);
-    return reply;
+    return replySplit(text);
 }
 
 /**
@@ -829,7 +814,7 @@ int chars_to_next_line(const char *s, int columnmax) {
     int chars = -1;
 
     if (strlen(s) > 0) {
-        int lastbreak;
+        int lastbreak = columnmax;
         chars = 0;
         for (str = s; *str; str++) {            
             if (*str == '\n')
@@ -848,12 +833,13 @@ int chars_to_next_line(const char *s, int columnmax) {
  * Counts the number of lines (of the maximum width given by
  * columnmax) in the string.
  */
-int linecount(const char *s, int columnmax) {
+int linecount(const string &s, int columnmax) {
     int lines = 0;
-    while (strlen(s)) {
-        s += chars_to_next_line(s, columnmax);
-        if (*s != '\0')
-            s++;        
+    unsigned ch = 0;
+    while (ch < s.length()) {
+        ch += chars_to_next_line(s.c_str() + ch, columnmax);
+        if (ch < s.length())
+            ch++;
         lines++;
     }
     return lines;

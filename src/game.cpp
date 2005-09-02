@@ -129,8 +129,6 @@ MouseArea mouseAreas[] = {
     { 0 }
 };
 
-int linecount(const char *s, int columnmax);
-
 ReadPlayerController::ReadPlayerController() : ReadChoiceController("12345678 \033\n") {}
 
 bool ReadPlayerController::keyPressed(int key) {
@@ -2872,21 +2870,20 @@ void talkRunConversation(bool showPrompt) {
     while (c->conversation->state != Conversation::DONE) {
         // TODO: instead of calculating linesused again, cache the
         // result in person.cpp somewhere.
-        int linesused = linesused = linecount(c->conversation->reply->front(), TEXT_AREA_W);
-        screenMessage("%s", c->conversation->reply->front());
-        int size = c->conversation->reply->size();
-        c->conversation->reply->pop_front();
+        int linesused = linecount(c->conversation->reply.front(), TEXT_AREA_W);
+        screenMessage("%s", c->conversation->reply.front().c_str());
+        int size = c->conversation->reply.size();
+        c->conversation->reply.pop_front();
 
         /* if all chunks haven't been shown, wait for a key and process next chunk*/    
-        size = c->conversation->reply->size();
+        size = c->conversation->reply.size();
         if (size > 0) {    
             ReadChoiceController::get("");
             continue;
         }
 
-        /* otherwise, free current reply and proceed based on conversation state */
-        replyDelete(c->conversation->reply);
-        c->conversation->reply = NULL;
+        /* otherwise, clear current reply and proceed based on conversation state */
+        c->conversation->reply.clear();
     
         /* they're attacking you! */
         if (c->conversation->state == Conversation::ATTACK) {
@@ -2918,7 +2915,7 @@ void talkRunConversation(bool showPrompt) {
         if (showPrompt) {
             string prompt = personGetPrompt(c->conversation);
             if (!prompt.empty()) {
-                if (linesused + linecount(prompt.c_str(), TEXT_AREA_W) > TEXT_AREA_H)
+                if (linesused + linecount(prompt, TEXT_AREA_W) > TEXT_AREA_H)
                     ReadChoiceController::get("");
                 screenMessage("%s", prompt.c_str());        
             }
@@ -2952,8 +2949,8 @@ void talkRunConversation(bool showPrompt) {
             break;
         }
     }
-    if (c->conversation->reply)
-        screenMessage("%s", c->conversation->reply->front());
+    if (c->conversation->reply.size() > 0)
+        screenMessage("%s", c->conversation->reply.front().c_str());
     (*c->location->finishTurn)();
 }
 
@@ -3473,6 +3470,8 @@ bool creatureRangeAttack(MapCoords coords, int distance, void *data) {
 
     return false;    
 }
+
+//vector<MapCoords> gameGetDirectionalActionPath(int dirmask, int validDirections, MapCoords origin, int minDistance, int maxDistance, 
 
 /**
  * Perform an action in the given direction, using the 'handleAtCoord'
