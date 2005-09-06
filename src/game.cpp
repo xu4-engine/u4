@@ -82,15 +82,15 @@ bool mixReagentsForSpellU5(int spell);
 void newOrder();
 
 /* conversation functions */
-bool talkAtCoord(MapCoords coords, int distance, void *data);
+bool talkAt(const Coords &coords);
 void talkRunConversation(bool showPrompt);
 
 /* action functions */
-bool attackAtCoord(MapCoords coords, int distance, void *data);
-bool destroyAtCoord(MapCoords coords, int distance, void *data);
+bool attackAt(const Coords &coords);
+bool destroyAt(const Coords &coords);
 bool getChestTrapHandler(int player);
-bool jimmyAtCoord(MapCoords coords, int distance, void *data);
-bool openAtCoord(MapCoords coords, int distance, void *data);
+bool jimmyAt(const Coords &coords);
+bool openAt(const Coords &coords);
 void wearArmor(int player = -1, ArmorType armor = ARMR_MAX);
 void ztatsFor(int player = -1);
 
@@ -796,7 +796,6 @@ bool GameController::keyPressed(int key) {
     bool valid = true;
     int endTurn = 1;
     Object *obj;
-    CoordActionInfo *info;    
     const ItemLocation *item;
     MapTile *tile;
 
@@ -934,17 +933,7 @@ bool GameController::keyPressed(int key) {
 
         case 4:                     /* ctrl-D */
             if (settings.debug) {
-                info = new CoordActionInfo;
-                info->handleAtCoord = &destroyAtCoord;
-                info->origin = c->location->coords;            
-                info->prev = MapCoords(-1, -1);
-                info->range = 1;
-                info->validDirections = MASK_DIR_ALL;
-                info->blockedPredicate = NULL;
-                info->blockBefore = 0;
-                info->firstValidDistance = 1;
-                eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
-                screenMessage("Destroy Object\nDir: ");
+                destroy();
             }
             else valid = false;
             break;    
@@ -1009,22 +998,7 @@ bool GameController::keyPressed(int key) {
             break;
 
         case 'a':
-            screenMessage("Attack: ");
-
-            if (c->party->isFlying())
-                screenMessage("\nDrift only!\n");
-            else {
-                info = new CoordActionInfo;
-                info->handleAtCoord = &attackAtCoord;
-                info->origin = c->location->coords;            
-                info->prev = MapCoords(-1, -1);
-                info->range = 1;
-                info->validDirections = MASK_DIR_ALL;
-                info->blockedPredicate = NULL;
-                info->blockBefore = 0;
-                info->firstValidDistance = 1;
-                eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));            
-            }
+            attack();
             break;
 
         case 'b':
@@ -1086,25 +1060,7 @@ bool GameController::keyPressed(int key) {
             break;
 
         case 'f':
-            if (c->transportContext == TRANSPORT_SHIP) {
-                int broadsidesDirs = dirGetBroadsidesDirs(c->party->transport.getDirection());
-
-                info = new CoordActionInfo;
-                info->handleAtCoord = &fireAtCoord;
-                info->origin = c->location->coords;            
-                info->prev = MapCoords(-1, -1);
-                info->range = 3;
-                info->validDirections = broadsidesDirs; /* can only fire broadsides! */
-                info->player = -1;
-                info->blockedPredicate = NULL; /* nothing (not even mountains!) can block cannonballs */
-                info->blockBefore = 1;
-                info->firstValidDistance = 1;
-                eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
-                
-                screenMessage("Fire Cannon!\nDir: ");
-            }
-            else
-                screenMessage("Fire What?\n");
+            fire();
             break;
 
         case 'g':
@@ -1139,18 +1095,7 @@ bool GameController::keyPressed(int key) {
             break;
 
         case 'j':
-            info = new CoordActionInfo;
-            info->handleAtCoord = &jimmyAtCoord;
-            info->origin = c->location->coords;        
-            info->prev = MapCoords(-1, -1);
-            info->range = 1;
-            info->validDirections = MASK_DIR_ALL;
-            info->player = -1;
-            info->blockedPredicate = NULL;
-            info->blockBefore = 0;
-            info->firstValidDistance = 1;
-            eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
-            screenMessage("Jimmy\nDir: ");
+            jimmy();
             break;
 
         case 'k':        
@@ -1186,23 +1131,7 @@ bool GameController::keyPressed(int key) {
             break;
 
         case 'o':
-            ///  XXX: Pressing "o" should close any open door.
-            if (c->party->isFlying())
-                screenMessage("Open; Not Here!\n");
-            else {
-                info = new CoordActionInfo;
-                info->handleAtCoord = &openAtCoord;
-                info->origin = c->location->coords;
-                info->prev = MapCoords(-1, -1);
-                info->range = 1;
-                info->validDirections = MASK_DIR_WEST | MASK_DIR_EAST;
-                info->player = -1;
-                info->blockedPredicate = NULL;
-                info->blockBefore = 0;
-                info->firstValidDistance = 1;
-                eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
-                screenMessage("Open\nDir: ");
-            }
+            opendoor();
             break;
 
         case 'p':
@@ -1247,22 +1176,7 @@ bool GameController::keyPressed(int key) {
             break;
 
         case 't':
-            if (c->party->isFlying())
-                screenMessage("Talk\nDrift only!\n");
-            else {
-                info = new CoordActionInfo;
-                info->handleAtCoord = &talkAtCoord;
-                info->origin = c->location->coords;            
-                info->prev = MapCoords(-1, -1);
-                info->range = 2;
-                info->validDirections = MASK_DIR_ALL;
-                info->player = -1;
-                info->blockedPredicate = &MapTile::canTalkOverTile;
-                info->blockBefore = 0;
-                info->firstValidDistance = 1;
-                eventHandler->pushKeyHandler(KeyHandler(&gameGetCoordinateKeyHandler, info));
-                screenMessage("Talk\nDir: ");
-            }
+            talk();
             break;
 
         case 'u':
@@ -1458,28 +1372,6 @@ bool GameController::keyPressed(int key) {
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
-void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen) {
-    KeyHandler::ReadBuffer *readBufferInfo;
-
-    screenEnableCursor();
-    screenShowCursor();
-
-    if (!buffer)
-        errorFatal("Error: call to gameGetInput() with an invalid input buffer.");
-
-    /* clear out the input buffer */
-    buffer->erase();
-
-    readBufferInfo = new KeyHandler::ReadBuffer;
-    readBufferInfo->handleBuffer = handleBuffer; 
-    readBufferInfo->buffer = buffer;    
-    readBufferInfo->bufferLen = bufferlen+1;
-    readBufferInfo->screenX = TEXT_AREA_X + c->col;
-    readBufferInfo->screenY = TEXT_AREA_Y + c->line;
-
-    eventHandler->pushKeyHandler(KeyHandler(&keyHandlerReadBuffer, readBufferInfo));
-}
-
 string gameGetInput(int maxlen) {
     screenEnableCursor();
     screenShowCursor();
@@ -1532,40 +1424,6 @@ Direction gameGetDirection() {
         screenMessage("%s\n", getDirectionName(dir));
         return dir;
     }    
-}
-
-/**
- * Handles key presses for a command requiring a direction argument.
- * Once an arrow key is pressed, control is handed off to a command
- * specific routine.
- */
-bool gameGetCoordinateKeyHandler(int key, void *data) {
-    CoordActionInfo *info = (CoordActionInfo *) data;
-    Direction dir = keyToDirection(key);
-    bool valid = (dir != DIR_NONE) ? true : false;
-    info->dir = MASK_DIR(dir);
-
-    switch(key) {
-    case U4_ESC:
-    case U4_SPACE:
-    case U4_ENTER:
-        eventHandler->popKeyHandler();
-        //eventHandler->popKeyHandlerData();
-
-        screenMessage("\n");        
-        (*c->location->finishTurn)();        
-
-    default:
-        if (valid) {
-            eventHandler->popKeyHandler();
-            screenMessage("%s\n", getDirectionName(dir));
-            gameDirectionalAction(info);
-            //eventHandler->popKeyHandlerData();
-        }        
-        break;
-    }    
-
-    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients) {
@@ -1977,21 +1835,77 @@ bool windCmdKeyHandler(int key, void *data) {
     return true;
 }
 
+void destroy() {
+    screenMessage("Destroy Object\nDir: ");
+
+    Direction dir = gameGetDirection();
+
+    if (dir == DIR_NONE)
+        return;
+
+    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, c->location->coords, 
+                                                       1, 1, NULL, true);
+    for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+        if (destroyAt(*i))
+            return;
+    }
+
+    screenMessage("Nothing there!\n");
+}
+
+bool destroyAt(const Coords &coords) {
+    Object *obj = c->location->map->objectAt(coords);
+
+    if (obj) {
+        if (isCreature(obj)) {
+            Creature *c = dynamic_cast<Creature*>(obj);
+            screenMessage("%s Destroyed!\n", c->getName().c_str());
+        }
+        else {
+            Tile *t = Tileset::get()->get(obj->getTile().id);
+            screenMessage("%s Destroyed!\n", t->name.c_str());
+        }
+
+        c->location->map->removeObject(obj);
+        screenPrompt();
+        
+        return true;
+    }
+    
+    return false;
+}
+
+void attack() {
+    screenMessage("Attack: ");
+
+    if (c->party->isFlying()) {
+        screenMessage("\nDrift only!\n");
+        return;
+    }
+
+    Direction dir = gameGetDirection();
+
+    if (dir == DIR_NONE)
+        return;
+
+    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, c->location->coords, 
+                                                                       1, 1, NULL, true);
+    for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+        if (attackAt(*i))
+            return;
+    }
+
+    screenMessage("Nothing to Attack!\n");
+}
+
 /**
  * Attempts to attack a creature at map coordinates x,y.  If no
  * creature is present at that point, zero is returned.
  */
-bool attackAtCoord(MapCoords coords, int distance, void *data) {
+bool attackAt(const Coords &coords) {
     Object *under;
     const MapTile *ground;    
     Creature *m;
-
-    /* attack failed: finish up */
-    if (coords.x == -1 && coords.y == -1) {        
-        screenMessage("Nothing to Attack!\n");
-        (*c->location->finishTurn)();
-        return false;
-    }
 
     m = dynamic_cast<Creature*>(c->location->map->objectAt(coords));
     /* nothing attackable: move on to next tile */
@@ -2147,118 +2061,97 @@ void castSpell(int player) {
     }    
 }
 
-bool destroyAtCoord(MapCoords coords, int distance, void *data) {
-    Object *obj = c->location->map->objectAt(coords);    
-
-    if (obj) {
-        if (isCreature(obj)) {
-            Creature *c = dynamic_cast<Creature*>(obj);
-            screenMessage("%s Destroyed!\n", c->getName().c_str());
-        }
-        else {
-            Tile *t = Tileset::get()->get(obj->getTile().id);
-            screenMessage("%s Destroyed!\n", t->name.c_str());
-        }
-
-        c->location->map->removeObject(obj);
-        screenPrompt();
-        
-        return true;
+void fire() {
+    if (c->transportContext != TRANSPORT_SHIP) {
+        screenMessage("Fire What?\n");
+        return;
     }
-    
-    if (coords.x == -1 && coords.y == -1) {
-        screenMessage("Nothing there!\n");
-        screenPrompt();
+
+    screenMessage("Fire Cannon!\nDir: ");
+    Direction dir = gameGetDirection();
+
+    if (dir == DIR_NONE)
+        return;
+
+    // can only fire broadsides
+    int broadsidesDirs = dirGetBroadsidesDirs(c->party->transport.getDirection());
+    if (!DIR_IN_MASK(dir, broadsidesDirs)) {
+        screenMessage("Broadsides Only!\n");
+        return;
     }
-    return false;
+
+    // nothing (not even mountains!) can block cannonballs
+    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), broadsidesDirs, c->location->coords, 
+                                                       1, 3, NULL, false);
+    for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+        if (fireAt(*i, true))
+            return;
+    }
 }
 
-bool fireAtCoord(MapCoords coords, int distance, void *data) {
+bool fireAt(const Coords &coords, bool originAvatar) {
+    bool validObject = false;
+    bool hitsAvatar = false;
+    bool objectHit = false;
     
-    CoordActionInfo* info = (CoordActionInfo*)data;
-    MapCoords old = info->prev;
-    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
-    int validObject = 0;
-    int hitsAvatar = 0;
-    int originAvatar = (c->location->coords == info->origin);
-    
-    info->prev = coords;
+    Object *obj = NULL;
 
-    /* Remove the last weapon annotation left behind */
-    if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
-        c->location->map->annotations->remove(old, Tileset::findTileByName("miss_flash")->id);
-    
-    if (coords.x == -1 && coords.y == -1) {
-        if (distance == 0)
-            screenMessage("Broadsides Only!\n");
+    c->location->map->annotations->add(coords, Tileset::findTileByName("miss_flash")->id, true);
+    gameUpdateScreen();
 
-        /* The avatar's ship was firing */
-        if (originAvatar)
-            (*c->location->finishTurn)();
+    // based on attack speed setting in setting struct, make a delay
+    // for the attack annotation
+    int animationDelay = MAX_BATTLE_SPEED - settings.battleSpeed;
+    if (animationDelay > 0)
+        EventHandler::wait_msecs(animationDelay * 4);
 
-        return true;
-    }
-    else {
-        Object *obj = NULL;
+    obj = c->location->map->objectAt(coords);
+    Creature *m = dynamic_cast<Creature*>(obj);
 
-        obj = c->location->map->objectAt(coords);
-        Creature *m = dynamic_cast<Creature*>(obj);
-                
-        /* FIXME: there's got to be a better way make whirlpools and storms impervious to cannon fire */
-        if (obj && (obj->getType() == Object::CREATURE) && 
-            (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID))
-            validObject = 1;        
-        /* See if it's an object to be destroyed (the avatar cannot destroy the balloon) */
-        else if (obj && (obj->getType() == Object::UNKNOWN) && !(obj->getTile().isBalloon() && originAvatar))
-            validObject = 1;
+    /* FIXME: there's got to be a better way make whirlpools and storms impervious to cannon fire */
+    if (obj && (obj->getType() == Object::CREATURE) &&
+        (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID))
+        validObject = true;
+    /* See if it's an object to be destroyed (the avatar cannot destroy the balloon) */
+    else if (obj && (obj->getType() == Object::UNKNOWN) && !(obj->getTile().isBalloon() && originAvatar))
+        validObject = true;
+
+    /* Does the cannon hit the avatar? */
+    if (coords == c->location->coords) {
+        validObject = true;
+        hitsAvatar = true;
+    }        
+
+    if (validObject) {
+        /* always displays as a 'hit' though the object may not be destroyed */                        
         
-        /* Does the cannon hit the avatar? */
-        if (coords == c->location->coords) {
-            validObject = 1;
-            hitsAvatar = 1;
-        }        
+        /* Is is a pirate ship firing at US? */
+        if (hitsAvatar) {
+            CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
 
-        if (validObject)
-        {
-            /* always displays as a 'hit' though the object may not be destroyed */                        
-            
-            /* Is is a pirate ship firing at US? */
-            if (hitsAvatar) {
-                CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
-
-                if (c->transportContext == TRANSPORT_SHIP)
-                    gameDamageShip(-1, 10);
-                else gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */
-            }          
-            /* inanimate objects get destroyed instantly, while creatures get a chance */
-            else if (obj->getType() == Object::UNKNOWN) {
-                CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
-                c->location->map->removeObject(obj);
-            }
-            
-            /* only the avatar can hurt other creatures with cannon fire */
-            else if (originAvatar) {
-                CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
-                if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
-                    c->location->map->removeObject(obj);
-            }
-            
-            if (originAvatar)
-                (*c->location->finishTurn)();
-
-            return true;
+            if (c->transportContext == TRANSPORT_SHIP)
+                gameDamageShip(-1, 10);
+            else gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */
+        }          
+        /* inanimate objects get destroyed instantly, while creatures get a chance */
+        else if (obj->getType() == Object::UNKNOWN) {
+            CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
+            c->location->map->removeObject(obj);
         }
-        
-        c->location->map->annotations->add(coords, Tileset::findTileByName("miss_flash")->id, true);
-        gameUpdateScreen();
-
-        /* Based on attack speed setting in setting struct, make a delay for
-           the attack annotation */
-        if (attackdelay > 0)
-            EventHandler::wait_msecs(attackdelay * 4);
+            
+        /* only the avatar can hurt other creatures with cannon fire */
+        else if (originAvatar) {
+            CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
+            if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
+                c->location->map->removeObject(obj);
+        }
+            
+        objectHit = true;
     }
+        
+    c->location->map->annotations->remove(coords, Tileset::findTileByName("miss_flash")->id);
 
-    return false;
+    return objectHit;
 }
 
 /**
@@ -2380,10 +2273,10 @@ void GameController::avatarMoved(MoveEvent &event) {
                 tile = c->location->map->tileAt(new_coords, WITH_OBJECTS);
 
                 if (tile->isDoor()) {
-                    openAtCoord(new_coords, 1, NULL);
+                    openAt(new_coords);
                     event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);
                 } else if (tile->isLockedDoor()) {
-                    jimmyAtCoord(new_coords, 1, NULL);
+                    jimmyAt(new_coords);
                     event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);
                 } /*else if (mapPersonAt(c->location->map, new_coords) != NULL) {
                     talkAtCoord(newx, newy, 1, NULL);
@@ -2479,21 +2372,30 @@ void GameController::avatarMovedInDungeon(MoveEvent &event) {
     }
 }
 
+void jimmy() {
+    screenMessage("Jimmy\nDir: ");
+    Direction dir = gameGetDirection();
+
+    if (dir == DIR_NONE)
+        return;
+
+    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, c->location->coords, 
+                                                                       1, 1, NULL, true);
+    for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+        if (jimmyAt(*i))
+            return;
+    }
+
+    screenMessage("Jimmy what?\n");
+}
+
 /**
  * Attempts to jimmy a locked door at map coordinates x,y.  The locked
  * door is replaced by a permanent annotation of an unlocked door
  * tile.
  */
-bool jimmyAtCoord(MapCoords coords, int distance, void *data) {    
-    MapTile *tile;
-
-    if (coords.x == -1 && coords.y == -1) {
-        screenMessage("Jimmy what?\n");
-        (*c->location->finishTurn)();
-        return false;
-    }
-
-    tile = c->location->map->tileAt(coords, WITH_OBJECTS);
+bool jimmyAt(const Coords &coords) {    
+    MapTile *tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
     if (!tile->isLockedDoor())
         return false;
@@ -2506,6 +2408,53 @@ bool jimmyAtCoord(MapCoords coords, int distance, void *data) {
     } else
         screenMessage("No keys left!\n");
 
+    (*c->location->finishTurn)();
+
+    return true;
+}
+
+void opendoor() {
+    ///  XXX: Pressing "o" should close any open door.
+    if (c->party->isFlying()) {
+        screenMessage("Open; Not Here!\n");
+        return;
+    }
+
+    screenMessage("Open\nDir: ");
+    Direction dir = gameGetDirection();
+
+    if (dir == DIR_NONE)
+        return;
+
+    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_EAST | MASK_DIR_WEST, c->location->coords, 
+                                                                       1, 1, NULL, true);
+    for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+        if (openAt(*i))
+            return;
+    }
+
+    screenMessage("Not Here!\n");
+}
+
+/**
+ * Attempts to open a door at map coordinates x,y.  The door is
+ * replaced by a temporary annotation of a floor tile for 4 turns.
+ */
+bool openAt(const Coords &coords) {
+    MapTile *tile = c->location->map->tileAt(coords, WITH_OBJECTS);
+
+    if (!tile->isDoor() && !tile->isLockedDoor())
+        return false;
+
+    if (tile->isLockedDoor()) {
+        screenMessage("Can't!\n");
+        (*c->location->finishTurn)();
+        return true;
+    }
+    
+    c->location->map->annotations->add(coords, Tileset::findTileByName("brick_floor")->id)->setTTL(4);    
+
+    screenMessage("\nOpened!\n");
     (*c->location->finishTurn)();
 
     return true;
@@ -2572,6 +2521,28 @@ void readyWeapon(int player, WeaponType weapon) {
     p->setWeapon(weapon);
 
     screenMessage("%s\n", w->getName().c_str());
+}
+
+void talk() {
+    if (c->party->isFlying()) {
+        screenMessage("Talk\nDrift only!\n");
+        return;
+    }
+    
+    screenMessage("Talk\nDir: ");
+    Direction dir = gameGetDirection();
+
+    if (dir == DIR_NONE)
+        return;
+
+    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, c->location->coords, 
+                                                                       1, 2, &MapTile::canTalkOverTile, true);
+    for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+        if (talkAt(*i))
+            return;
+    }
+
+    screenMessage("Funny, no\nresponse!\n");
 }
 
 /**
@@ -2721,38 +2692,6 @@ void newOrder() {
 }
 
 /**
- * Attempts to open a door at map coordinates x,y.  The door is
- * replaced by a temporary annotation of a floor tile for 4 turns.
- */
-bool openAtCoord(MapCoords coords, int distance, void *data) {
-    MapTile *tile;
-
-    if (coords.x == -1 && coords.y == -1) {
-        screenMessage("Not Here!\n");
-        (*c->location->finishTurn)();
-        return false;
-    }
-
-    tile = c->location->map->tileAt(coords, WITH_OBJECTS);
-
-    if (!tile->isDoor() && !tile->isLockedDoor())
-        return false;
-
-    if (tile->isLockedDoor()) {
-        screenMessage("Can't!\n");
-        (*c->location->finishTurn)();
-        return true;
-    }
-    
-    c->location->map->annotations->add(coords, Tileset::findTileByName("brick_floor")->id)->setTTL(4);    
-
-    screenMessage("\nOpened!\n");
-    (*c->location->finishTurn)();
-
-    return true;
-}
-
-/**
  * Peers at a city from A-P (Lycaeum telescope) and functions like a gem
  */
 bool gamePeerCity(int city, void *data) {
@@ -2813,7 +2752,7 @@ void peer(bool useGem) {
  * Begins a conversation with the NPC at map coordinates x,y.  If no
  * NPC is present at that point, zero is returned.
  */
-bool talkAtCoord(MapCoords coords, int distance, void *data) {
+bool talkAt(const Coords &coords) {
     extern int personIsVendor(const Person *person);
     City *city;
 
@@ -2824,12 +2763,6 @@ bool talkAtCoord(MapCoords coords, int distance, void *data) {
         return true;
     }
     
-    if (coords.x == -1 && coords.y == -1) {
-        screenMessage("Funny, no\nresponse!\n");
-        (*c->location->finishTurn)();
-        return false;
-    }
-
     city = dynamic_cast<City*>(c->location->map);
     Person *p = city->personAt(coords);
     c->conversation->setTalker(p);
@@ -3471,7 +3404,64 @@ bool creatureRangeAttack(MapCoords coords, int distance, void *data) {
     return false;    
 }
 
-//vector<MapCoords> gameGetDirectionalActionPath(int dirmask, int validDirections, MapCoords origin, int minDistance, int maxDistance, 
+/**
+ * Gets the path of coordinates for an action.  Each tile in the
+ * direction specified by dirmask, between the minimum and maximum
+ * distances given, is included in the path, until blockedPredicate
+ * fails.  If a tile is blocked, that tile is included in the path
+ * only if includeBlocked is true.
+ */
+vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, const Coords &origin, int minDistance, int maxDistance, bool (*blockedPredicate)(MapTile tile), bool includeBlocked) {
+    vector<Coords> path;
+    Direction dirx = DIR_NONE,
+              diry = DIR_NONE;
+
+    /* Figure out which direction the action is going */
+    if (DIR_IN_MASK(DIR_WEST, dirmask)) 
+        dirx = DIR_WEST;
+    else if (DIR_IN_MASK(DIR_EAST, dirmask)) 
+        dirx = DIR_EAST;
+    if (DIR_IN_MASK(DIR_NORTH, dirmask)) 
+        diry = DIR_NORTH;
+    else if (DIR_IN_MASK(DIR_SOUTH, dirmask)) 
+        diry = DIR_SOUTH;
+
+    /*
+     * try every tile in the given direction, up to the given range.
+     * Stop when the the range is exceeded, or the action is blocked.
+     */
+    
+    MapCoords t_c(origin);
+    if ((dirx <= 0 || DIR_IN_MASK(dirx, validDirections)) && 
+        (diry <= 0 || DIR_IN_MASK(diry, validDirections))) {
+        for (int distance = 0; distance <= maxDistance;
+             distance++, t_c.move(dirx, c->location->map), t_c.move(diry, c->location->map)) {
+
+            if (distance >= minDistance) {
+                /* make sure our action isn't taking us off the map */
+                if (MAP_IS_OOB(c->location->map, t_c))
+                    break;
+
+                MapTile *tile = c->location->map->tileAt(t_c, WITH_GROUND_OBJECTS);
+
+                /* should we see if the action is blocked before trying it? */
+                if (!includeBlocked && blockedPredicate &&
+                    !(*(blockedPredicate))(*tile))
+                    break;
+
+                path.push_back(t_c);
+
+                /* see if the action was blocked only if it did not succeed */
+                if (includeBlocked && blockedPredicate &&
+                    !(*(blockedPredicate))(*tile))
+                    break;
+            }
+        }
+    }
+
+    return path;
+}
+
 
 /**
  * Perform an action in the given direction, using the 'handleAtCoord'

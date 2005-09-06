@@ -191,13 +191,18 @@ bool Creature::specialAction() {
         /* Fire cannon: Pirates only fire broadsides and only when they can hit you :) */
         retval = true;
 
-        info->handleAtCoord = &fireAtCoord;
-        info->validDirections = broadsidesDirs;            
-        
-        if ((((dx == 0) && (dy <= 3)) ||        /* avatar is close enough and on the same column, OR */
-             ((dy == 0) && (dx <= 3))) &&       /* avatar is close enough and on the same row, AND */
-             ((broadsidesDirs & info->dir) > 0))/* pirate ship is firing broadsides */
-             gameDirectionalAction(info);       /* *** FIRE! *** */
+        if ((((dx == 0) && (dy <= 3)) ||          /* avatar is close enough and on the same column, OR */
+             ((dy == 0) && (dx <= 3))) &&         /* avatar is close enough and on the same row, AND */
+            ((broadsidesDirs & info->dir) > 0)) { /* pirate ship is firing broadsides */
+
+            // nothing (not even mountains!) can block cannonballs
+            vector<Coords> path = gameGetDirectionalActionPath(info->dir, broadsidesDirs, coords,
+                                                               1, 3, NULL, false);
+            for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+                if (fireAt(*i, false))
+                    break;
+            }
+        }
         else
             retval = false;
         

@@ -5,6 +5,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <vector>
+
 #include "controller.h"
 #include "event.h"
 #include "map.h"
@@ -13,6 +15,8 @@
 #include "sound.h"
 #include "tileview.h"
 #include "types.h"
+
+using std::vector;
 
 class Map;
 struct Portal;
@@ -31,7 +35,7 @@ typedef enum {
     VIEW_CODEX
 } ViewMode;
 
-typedef struct CoordActionInfo {
+struct CoordActionInfo {
     bool (*handleAtCoord)(MapCoords, int, void*);
     MapCoords origin, prev;    
     int range;
@@ -43,7 +47,7 @@ typedef struct CoordActionInfo {
     bool (*blockedPredicate)(MapTile tile);
     int blockBefore;        /* try the action first, or test to see if it was blocked first? */
     int firstValidDistance; /* the first distance at which the action will function correctly */
-} CoordActionInfo;
+};
 
 /**
  * A controller to read a player number.
@@ -115,7 +119,6 @@ public:
 };
 
 /* key handlers */
-bool gameGetCoordinateKeyHandler(int key, void *data);
 bool gameZtatsKeyHandler(int key, void *data);
 
 /* map and screen functions */
@@ -127,10 +130,16 @@ void castSpell(int player = -1);
 void gameSpellEffect(int spell, int player, Sound sound);
 
 /* action functions */
+void destroy();
+void attack();
+void fire();
 void getChest(int player = -1);
+void jimmy();
+void opendoor();
 bool gamePeerCity(int city, void *data);
 void peer(bool useGem = true);
-bool fireAtCoord(MapCoords coords, int distance, void *data);
+void talk();
+bool fireAt(const Coords &coords, bool originAvatar);
 int gameDirectionalAction(CoordActionInfo *info);
 Direction gameGetDirection();
 void readyWeapon(int player = -1, WeaponType w = WEAP_MAX);
@@ -144,12 +153,13 @@ void gameCreatureCleanup(void);
 bool gameSpawnCreature(const class Creature *m);
 
 /* etc */
-void gameGetInput(int (*handleBuffer)(string*), string *buffer, int bufferlen = 32);
 string gameGetInput(int maxlen = 32);
 int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer);
 void gameGetPlayerForCommand(bool (*commandFn)(int player), bool canBeDisabled, bool canBeActivePlayer);
 void gameDamageParty(int minDamage, int maxDamage);
 void gameDamageShip(int minDamage, int maxDamage);
 void gameSetActivePlayer(int player);
+vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, const Coords &origin, int minDistance, int maxDistance, bool (*blockedPredicate)(MapTile tile), bool includeBlocked);
+
 
 #endif
