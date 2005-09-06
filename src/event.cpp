@@ -170,53 +170,6 @@ bool keyHandlerGetChoice(int key, void *data) {
     return false;
 }
 
-/**
- * Generic handler for reading a buffer.  Handles key presses when a
- * buffer is being read, such as when a conversation is active.  The
- * keystrokes are buffered up into a word until enter is pressed.
- * Control is then passed to a seperate handler.
- */
-bool keyHandlerReadBuffer(int key, void *data) {
-    KeyHandler::ReadBuffer *info = (KeyHandler::ReadBuffer *) data;
-    int valid = true,
-        len = info->buffer->length();    
-
-    if ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z') ||
-        (key >= '0' && key <= '9') || key == ' ') {        
-        if (len < info->bufferLen - 1) {
-            /* add a character to the end */
-            *info->buffer += key;
-
-            screenHideCursor();
-            screenTextAt(info->screenX + len, info->screenY, "%c", key);
-            screenSetCursorPos(info->screenX + len + 1, info->screenY);
-            screenShowCursor();            
-        }
-
-    } else if (key == U4_BACKSPACE) {
-        if (len > 0) {
-            /* remove the last character */
-            info->buffer->erase(len - 1, 1);
-
-            screenHideCursor();
-            screenTextAt(info->screenX + len - 1, info->screenY, " ");
-            screenSetCursorPos(info->screenX + len - 1, info->screenY);
-            screenShowCursor();
-        }
-
-    } else if (key == '\n' || key == '\r') {
-        if ((*info->handleBuffer)(info->buffer))
-            ;//eventHandler->popKeyHandlerData();
-        else
-            info->screenX -= info->buffer->length();
-    }    
-    else {
-        valid = false;
-    }
-
-    return valid || KeyHandler::defaultHandler(key, NULL);
-}
-
 void EventHandler::pushMouseAreaSet(MouseArea *mouseAreas) {
     mouseAreaSets.push_front(mouseAreas);
 }

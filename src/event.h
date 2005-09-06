@@ -308,6 +308,5 @@ private:
 };
 
 bool keyHandlerGetChoice(int key, void *data);
-bool keyHandlerReadBuffer(int key, void *data);
 
 #endif
