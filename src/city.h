@@ -11,6 +11,8 @@
 
 using std::string;
 
+class Person;
+
 #include "map.h"
 
 struct PersonRole {
@@ -28,10 +30,10 @@ public:
 
     // Members
     virtual string getName();
-    class Person *addPerson(class Person *p);
+    Person *addPerson(Person *p);
     void addPeople();
     void removeAllPeople();
-    class Person *personAt(MapCoords coords);    
+    Person *personAt(const Coords &coords);
 
     // Properties
     string name;

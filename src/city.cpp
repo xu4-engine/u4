@@ -82,7 +82,7 @@ void City::removeAllPeople() {
  * Returns the person object at the given (x,y,z) coords, if one exists.
  * Otherwise, returns NULL.
  */
-Person *City::personAt(MapCoords coords) {
+Person *City::personAt(const Coords &coords) {
     Object *obj;
 
     obj = objectAt(coords);
