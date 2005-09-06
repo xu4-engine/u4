@@ -27,9 +27,9 @@ using namespace std;
 int codexInit();
 void codexDelete();
 void codexEject(CodexEjectCode code);
-int codexHandleWOP(string *word);
-int codexHandleVirtues(string *virtue);
-int codexHandleInfinity(string *answer);
+void codexHandleWOP(const string &word);
+void codexHandleVirtues(const string &virtue);
+void codexHandleInfinity(const string &answer);
 void codexImpureThoughts();
 
 /**
@@ -38,7 +38,6 @@ void codexImpureThoughts();
 bool codexHandleInfinityAnyKey(int key, void *data);
 bool codexHandleEndgameAnyKey(int key, void *data);
 
-string codexInputBuffer;
 vector<string> codexVirtueQuestions;
 vector<string> codexEndgameText1;
 vector<string> codexEndgameText2;
@@ -117,7 +116,7 @@ void codexStart() {
     /**
      * Get the Word of Passage
      */
-    gameGetInput(&codexHandleWOP, &codexInputBuffer);
+    codexHandleWOP(gameGetInput());
 }
 
 /**
@@ -207,7 +206,7 @@ void codexEject(CodexEjectCode code) {
 /**
  * Handles entering the Word of Passage
  */
-int codexHandleWOP(string *word) {
+void codexHandleWOP(const string &word) {
     static int tries = 1;
     int i;
 
@@ -217,22 +216,22 @@ int codexHandleWOP(string *word) {
     screenMessage("\n");    
     screenDisableCursor();
     EventHandler::sleep(1000);    
-        
+
     /* entered correctly */
-    if (strcasecmp(word->c_str(), "veramocor") == 0) {        
+    if (strcasecmp(word.c_str(), "veramocor") == 0) {        
         tries = 1; /* reset 'tries' in case we need to enter this again later */
 
         /* eject them if they don't have all 8 party members */
         if (c->saveGame->members != 8) {
             codexEject(CODEX_EJECT_NO_FULL_PARTY);
-            return 0;
+            return;
         }
         
         /* eject them if they're not a full avatar at this point */
         for (i = 0; i < VIRT_MAX; i++) {
             if (c->saveGame->karma[i] != 0) {
                 codexEject(CODEX_EJECT_NO_FULL_AVATAR);
-                return 0;
+                return;
             }
         }        
         
@@ -247,9 +246,9 @@ int codexHandleWOP(string *word) {
         EventHandler::sleep(2000);
         screenMessage("\n%s\n\n", codexVirtueQuestions[0].c_str());
 
-        gameGetInput(&codexHandleVirtues, &codexInputBuffer);
+        codexHandleVirtues(gameGetInput());
         
-        return 1;
+        return;
     }
     
     /* entered incorrectly - give 3 tries before ejecting */
@@ -257,7 +256,7 @@ int codexHandleWOP(string *word) {
         codexImpureThoughts();
         screenMessage("\"What is the Word of Passage?\"\n\n");
 
-        gameGetInput(&codexHandleWOP, &codexInputBuffer);
+        codexHandleWOP(gameGetInput());
     }
     
     /* 3 tries are up... eject! */
@@ -265,14 +264,12 @@ int codexHandleWOP(string *word) {
         tries = 1;
         codexEject(CODEX_EJECT_BAD_WOP);
     }
-
-    return 0;
 }
 
 /**
  * Handles naming of virtues in the Chamber of the Codex
  */
-int codexHandleVirtues(string *virtue) {    
+void codexHandleVirtues(const string &virtue) {
     static const char *codexImageNames[] = {
         BKGD_HONESTY, BKGD_COMPASSN, BKGD_VALOR, BKGD_JUSTICE, 
         BKGD_SACRIFIC, BKGD_HONOR, BKGD_SPIRIT, BKGD_HUMILITY,
@@ -291,7 +288,7 @@ int codexHandleVirtues(string *virtue) {
         
     /* answered with the correct one of eight virtues */
     if ((current < VIRT_MAX) && 
-        (strcasecmp(virtue->c_str(), getVirtueName(static_cast<Virtue>(current))) == 0)) {
+        (strcasecmp(virtue.c_str(), getVirtueName(static_cast<Virtue>(current))) == 0)) {
 
         screenDrawImageInMapArea(codexImageNames[current]);
         screenRedrawMapArea();
@@ -310,12 +307,12 @@ int codexHandleVirtues(string *virtue) {
         EventHandler::sleep(2000);
         screenMessage("\n%s\n\n", codexVirtueQuestions[current].c_str());
 
-        gameGetInput(&codexHandleVirtues, &codexInputBuffer);
+        codexHandleVirtues(gameGetInput());
     }
 
     /* answered with the correct base virtue (truth, love, courage) */
     else if ((current >= VIRT_MAX) &&
-             (strcasecmp(virtue->c_str(), getBaseVirtueName(static_cast<BaseVirtue>(1 << (current - VIRT_MAX)))) == 0)) {
+             (strcasecmp(virtue.c_str(), getBaseVirtueName(static_cast<BaseVirtue>(1 << (current - VIRT_MAX)))) == 0)) {
 
         screenDrawImageInMapArea(codexImageNames[current]);
         screenRedrawMapArea();
@@ -328,7 +325,7 @@ int codexHandleVirtues(string *virtue) {
             EventHandler::sleep(2000);
             screenMessage("\n%s\n\n", codexVirtueQuestions[current].c_str());
     
-            gameGetInput(&codexHandleVirtues, &codexInputBuffer);
+            codexHandleVirtues(gameGetInput());
         }
         else {
             screenMessage("\nThe ground rumbles beneath your feet.\n");
@@ -347,7 +344,7 @@ int codexHandleVirtues(string *virtue) {
         codexImpureThoughts();
         screenMessage("%s\n\n", codexVirtueQuestions[current].c_str());
     
-        gameGetInput(&codexHandleVirtues, &codexInputBuffer);
+        codexHandleVirtues(gameGetInput());
     }
     
     /* failed 3 times... eject! */
@@ -357,19 +354,17 @@ int codexHandleVirtues(string *virtue) {
         tries = 1;        
         current = 0;
     }
-
-    return 1;
 }
 
 bool codexHandleInfinityAnyKey(int key, void *data) {
     eventHandler->popKeyHandler();
 
     screenMessage("\n\nThen what is the one thing which encompasses and is the whole of all undeniable Truth, unending Love, and unyielding Courage?\n\n");
-    gameGetInput(&codexHandleInfinity, &codexInputBuffer);
+    codexHandleInfinity(gameGetInput());
     return true;
 }
 
-int codexHandleInfinity(string *answer) {
+void codexHandleInfinity(const string &answer) {
     static int tries = 1;
 
     eventHandler->popKeyHandler();
@@ -379,7 +374,7 @@ int codexHandleInfinity(string *answer) {
     screenDisableCursor();
     EventHandler::sleep(1000);
 
-    if (strcasecmp(answer->c_str(), "infinity") == 0) {        
+    if (strcasecmp(answer.c_str(), "infinity") == 0) {        
         EventHandler::sleep(2000);
         screenShake(10);
         
@@ -393,8 +388,6 @@ int codexHandleInfinity(string *answer) {
         eventHandler->pushKeyHandler(&codexHandleInfinityAnyKey);
     }
     else codexEject(CODEX_EJECT_BAD_INFINITY);
-
-    return 1;
 }
 
 bool codexHandleEndgameAnyKey(int key, void *data) {
