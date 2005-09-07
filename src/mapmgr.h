@@ -6,6 +6,7 @@
 #define MAPMGR_H
 
 #include <vector>
+#include <utility>
 
 #include "map.h"
 
@@ -106,6 +107,7 @@ private:
     void initDungeonRoom(Dungeon *dng, int room);
     void createMoongateFromConf(const ConfigElement &moongateConf);
     int initCompressedChunkFromConf(const ConfigElement &compressedChunkConf);
+    std::pair<std::string, MapCoords> initLabelFromConf(const ConfigElement &labelConf);
 
     static MapMgr *instance;
     std::vector<Map *> mapList;
