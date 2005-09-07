@@ -27,6 +27,7 @@
 #include "config.h"
 
 using std::vector;
+using std::pair;
 
 MapMgr *MapMgr::instance = NULL;
 
@@ -187,6 +188,8 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
             createMoongateFromConf(*i);
         else if (i->getName() == "compressedchunk")
             map->compressed_chunks.push_back(initCompressedChunkFromConf(*i));
+        else if (i->getName() == "label")
+            map->labels.insert(initLabelFromConf(*i));
     }
     
     return map;
@@ -229,12 +232,12 @@ Portal *MapMgr::initPortalFromConf(const ConfigElement &portalConf) {
     portal->coords = MapCoords(
         portalConf.getInt("x"),
         portalConf.getInt("y"),
-        portalConf.getInt("z"));
+        portalConf.getInt("z", 0));
     portal->destid = static_cast<MapId>(portalConf.getInt("destmapid"));
     
     portal->start.x = static_cast<unsigned short>(portalConf.getInt("startx"));
     portal->start.y = static_cast<unsigned short>(portalConf.getInt("starty"));
-    portal->start.z = static_cast<unsigned short>(portalConf.getInt("startlevel"));
+    portal->start.z = static_cast<unsigned short>(portalConf.getInt("startlevel", 0));
 
     string prop = portalConf.getString("action");
     if (prop == "none")
@@ -288,7 +291,7 @@ Portal *MapMgr::initPortalFromConf(const ConfigElement &portalConf) {
             portal->retroActiveDest->coords = MapCoords(
                 i->getInt("x"),
                 i->getInt("y"),
-                i->getInt("z"));
+                i->getInt("z", 0));
             portal->retroActiveDest->mapid = static_cast<MapId>(i->getInt("mapid"));
         }
     }
@@ -318,4 +321,10 @@ void MapMgr::createMoongateFromConf(const ConfigElement &moongateConf) {
 
 int MapMgr::initCompressedChunkFromConf(const ConfigElement &compressedChunkConf) {
     return compressedChunkConf.getInt("index");
+}
+
+pair<string, MapCoords> MapMgr::initLabelFromConf(const ConfigElement &labelConf) {
+    return pair<string, MapCoords>
+        (labelConf.getString("name"), 
+         MapCoords(labelConf.getInt("x"), labelConf.getInt("y"), labelConf.getInt("z", 0)));
 }
