@@ -14,6 +14,7 @@ CXXSRCS=\
         armor.cpp \
         aura.cpp \
         camp.cpp \
+        cheat.cpp \
         city.cpp \
         codex.cpp \
         combat.cpp \
