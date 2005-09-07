@@ -22,8 +22,7 @@ enum SearchCondition {
 struct ItemLocation {
     const char *name;
     const char *shortname;
-    int x, y, z;
-    MapId mapid;
+    const char *locationLabel;
     bool (*isItemInInventory)(void *);
     void (*putItemInInventory)(void *);
     void (*useItem)(void *);
