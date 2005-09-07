@@ -50,6 +50,7 @@ public:
     int moonPhase;
     int windDirection;
     int windCounter;
+    bool windLock;
     Aura *aura;    
     int horseSpeed;
     int opacity;
