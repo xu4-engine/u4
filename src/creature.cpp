@@ -272,7 +272,7 @@ bool Creature::specialEffect() {
                 gameDamageShip(-1, 10);
 
                 /* Send the party to Locke Lake */
-                c->location->coords = MapCoords(127, 78);                    
+                c->location->coords = c->location->map->getLabel("lockelake");
 
                 /* Destroy the whirlpool that sent you there */
                 c->location->map->removeObject(this);
