@@ -1106,8 +1106,10 @@ bool CombatController::keyPressed(int key) {
                and hide reagents that you don't have */            
             c->stats->resetReagentsMenu();
 
-            eventHandler->pushKeyHandler(&gameZtatsKeyHandler);
             screenMessage("Ztats\n");        
+            ZtatsController ctrl;
+            eventHandler->pushController(&ctrl);
+            ctrl.waitFor();
         }
         break;    
 
