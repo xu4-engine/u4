@@ -6,6 +6,7 @@
 #define MAP_H
 
 #include <list>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -66,6 +67,8 @@ public:
     Direction pathAway(const MapCoords &c, int valid_dirs = MASK_DIR_ALL) const;
     int movementDistance(const MapCoords &c, const class Map *map = NULL) const;
     int distance(const MapCoords &c, const class Map *map = NULL) const;
+
+    static MapCoords nowhere;
 };
 
 /**
@@ -120,6 +123,8 @@ public:
     int getNumberOfCreatures();
     int getValidMoves(MapCoords from, MapTile transport);
     bool move(Object *obj, Direction d);
+    void alertGuards();
+    const MapCoords &getLabel(const string &name) const;
 
     // u4dos compatibility
     bool fillMonsterTable();    
@@ -146,6 +151,7 @@ public:
     Music::Type     music;
     MapData         data;
     ObjectDeque     objects;
+    std::map<string, MapCoords> labels;
     Tileset        *tileset;
 
     // u4dos compatibility

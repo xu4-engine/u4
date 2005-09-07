@@ -28,6 +28,7 @@
 /**
  * MapCoords Class Implementation
  */
+MapCoords MapCoords::nowhere(-1, -1, -1);
 
 bool MapCoords::operator==(const MapCoords &a) const {        
     return ((x == a.x) && (y == a.y) && (z == a.z)) ? true : false;        
@@ -691,6 +692,28 @@ bool Map::move(Object *obj, Direction d) {
         return true;
     }
     return false;
+}
+
+/**
+ * Alerts the guards that the avatar is doing something bad
+ */ 
+void Map::alertGuards() {
+    ObjectDeque::iterator i;    
+    const Creature *m;
+
+    /* switch all the guards to attack mode */
+    for (i = objects.begin(); i != objects.end(); i++) {
+        m = creatures.getByTile((*i)->getTile());
+        if (m && (m->id == GUARD_ID || m->id == LORDBRITISH_ID))
+            (*i)->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
+    }
+}
+
+const MapCoords &Map::getLabel(const string &name) const {
+    std::map<string, MapCoords>::const_iterator i = labels.find(name);
+    if (i == labels.end())
+        return MapCoords::nowhere;
+    return i->second;
 }
 
 bool Map::fillMonsterTable() {
