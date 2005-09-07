@@ -78,6 +78,14 @@ private:
 };
 
 /**
+ * Controls interaction while Ztats are being displayed.
+ */
+class ZtatsController : public WaitableController<void *> {
+public:
+    bool keyPressed(int key);
+};
+
+/**
  * The main game controller that handles basic game flow and keypresses.
  *
  * @todo
@@ -113,17 +121,10 @@ private:
 
 extern GameController *game;
 
-class CheatMenuController : public WaitableController<void *> {
-public:
-    bool keyPressed(int key);
-};
-
-/* key handlers */
-bool gameZtatsKeyHandler(int key, void *data);
-
 /* map and screen functions */
 void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
+void gameUpdateMoons(bool showmoongates);
 
 /* spell functions */
 void castSpell(int player = -1);
@@ -132,6 +133,7 @@ void gameSpellEffect(int spell, int player, Sound sound);
 /* action functions */
 void destroy();
 void attack();
+void board();
 void fire();
 void getChest(int player = -1);
 void jimmy();
@@ -150,6 +152,7 @@ void gameCheckHullIntegrity(void);
 /* creature functions */
 bool creatureRangeAttack(MapCoords coords, int distance, void *data);
 void gameCreatureCleanup(void);
+void gameSummonCreature(const string &creatureName);
 bool gameSpawnCreature(const class Creature *m);
 
 /* etc */
@@ -160,6 +163,5 @@ void gameDamageParty(int minDamage, int maxDamage);
 void gameDamageShip(int minDamage, int maxDamage);
 void gameSetActivePlayer(int player);
 vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, const Coords &origin, int minDistance, int maxDistance, bool (*blockedPredicate)(MapTile tile), bool includeBlocked);
-
 
 #endif
