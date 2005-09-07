@@ -307,6 +307,4 @@ private:
     static EventHandler *instance;
 };
 
-bool keyHandlerGetChoice(int key, void *data);
-
 #endif

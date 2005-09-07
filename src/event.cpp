@@ -151,25 +151,6 @@ void TimedEventMgr::tick() {
 void TimedEventMgr::lock()      { locked = true; }
 void TimedEventMgr::unlock()    { locked = false; }
 
-/**
- * Generic handler for reading a single character choice from a set of
- * valid characters.
- */
-bool keyHandlerGetChoice(int key, void *data) {
-    KeyHandler::GetChoice *info = (KeyHandler::GetChoice *) data;
-
-    if (isupper(key))
-        key = tolower(key);
-
-    if (info->choices.find_first_of(key) < info->choices.length()) {
-        if ((*info->handleChoice)(key))
-            //eventHandler->popKeyHandlerData();
-
-        return true;
-    }    
-    return false;
-}
-
 void EventHandler::pushMouseAreaSet(MouseArea *mouseAreas) {
     mouseAreaSets.push_front(mouseAreas);
 }
