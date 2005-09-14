@@ -231,6 +231,7 @@ bool ReadStringController::keyPressed(int key) {
                 screenHideCursor();
                 screenTextAt(screenX + len, screenY, "%c", key);
                 screenSetCursorPos(screenX + len + 1, screenY);
+                c->col = len + 1;
                 screenShowCursor();            
             }
         }
