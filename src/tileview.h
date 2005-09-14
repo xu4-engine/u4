@@ -31,11 +31,9 @@ public:
     void drawTile(MapTile *mapTile, bool focus, int x, int y);
     void drawTile(const std::vector<MapTile *> &tiles, bool focus, int x, int y);
     void drawFocus(int x, int y);
+    void setTileset(Tileset *tileset);
 
 protected:
-
-    Tile *handleMissingTiles(MapTile *mapTile);
-
     int columns, rows;
     int tileWidth, tileHeight;
     Tileset *tileset;

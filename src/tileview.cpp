@@ -44,7 +44,7 @@ void TileView::reinit() {
 }
 
 void TileView::drawTile(MapTile *mapTile, bool focus, int x, int y) {
-    Tile *tile = handleMissingTiles(mapTile);
+    Tile *tile = tileset->get(mapTile->id);
     Image *image = tile->getImage();
 
     ASSERT(x < columns, "x value of %d out of range", x);
@@ -78,7 +78,7 @@ void TileView::drawTile(MapTile *mapTile, bool focus, int x, int y) {
 }
 
 void TileView::drawTile(const vector<MapTile *> &tiles, bool focus, int x, int y) {
-    Tile *tile = handleMissingTiles(tiles.front());
+    Tile *tile = tileset->get(tiles.front()->id);
     Image *image = tile->getImage();
 
     ASSERT(x < columns, "x value of %d out of range", x);
@@ -152,21 +152,6 @@ void TileView::drawFocus(int x, int y) {
     }
 }
 
-Tile *TileView::handleMissingTiles(MapTile *mapTile) {
-    int id = mapTile->id;
-    switch (id) {
-        // Handle missing tiles.  We should probably do this
-        // in a config file, but putting this now stops a crash.
-    case 109: id = 38;  break; // double-ladder as ship wheel
-    case 110: id = 58;  break; // trap as lava
-    case 112: id = 60;  break; // orb as magic-hit
-    case 113: id = 2;   break; // fountain as shallows
-    case 114: id = 71;  break; // room as spacer
-    case 115: id = 43;  break; // door as door
-    case 116: id = 56;  break; // altar as altar
-    }
-    Tile *tile = tileset->get(id);
-    if (!tile)
-        tile = tileset->get(4);    // any other failues replaced with grass
-    return tile;
+void TileView::setTileset(Tileset *tileset) {
+    this->tileset = tileset;
 }
