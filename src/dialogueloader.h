@@ -21,6 +21,8 @@ class Dialogue;
  */
 class DialogueLoader {
 public:    
+    virtual ~DialogueLoader() {}
+
     static DialogueLoader *getLoader(const std::string &mimeType);
     virtual Dialogue *load(void *source) = 0;
 
