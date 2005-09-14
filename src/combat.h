@@ -11,7 +11,6 @@
 #include "map.h"
 #include "controller.h"
 #include "creature.h"
-#include "movement.h"
 #include "object.h"
 #include "observer.h"
 #include "player.h"
@@ -21,8 +20,10 @@
 #define AREA_CREATURES   16
 #define AREA_PLAYERS    8
 
-class Object;
+class CombatMap;
 class Creature;
+class MoveEvent;
+class Weapon;
 
 typedef enum {
     CA_ATTACK,
@@ -39,7 +40,7 @@ typedef enum {
 class CombatController : public Controller, public Observer<Party *, PartyEvent &> {
 public:
     CombatController();
-    CombatController(class CombatMap *m);
+    CombatController(CombatMap *m);
     CombatController(MapId id);
     virtual ~CombatController();
 
@@ -61,7 +62,7 @@ public:
     void showCombatMessage(bool show = true);
 
     // Methods
-    void init(class Creature *m);
+    void init(Creature *m);
     void initCamping();
     void initDungeonRoom(int room, Direction from);
     
@@ -69,7 +70,7 @@ public:
     void begin();
     void end(bool adjustKarma);
     void fillCreatureTable(const Creature *creature);
-    int  initialNumberOfCreatures(const class Creature *creature) const;
+    int  initialNumberOfCreatures(const Creature *creature) const;
     bool isWon() const;
     bool isLost() const;
     void moveCreatures();
@@ -77,34 +78,34 @@ public:
     void placePartyMembers();
     bool setActivePlayer(int player);
 
+    // attack functions
+    bool attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance);
+    bool rangedAttack(const Coords &coords, Creature *attacker);
+    void rangedMiss(const Coords &coords, Creature *attacker);
+    bool returnWeaponToOwner(const Coords &coords, int distance, int dir, const Weapon *weapon);
+
     /** 
      * Static member functions
      */
-    // Directional actions
-    static bool attackAtCoord(MapCoords coords, int distance, void *data);
-    static bool rangedAttack(MapCoords coords, int distance, void *data);
-    static bool returnWeaponToOwner(MapCoords coords, int distance, void *data);
-
     static void attackFlash(Coords coords, MapTile tile, int timeFactor);
     static void finishTurn(void);
     static void movePartyMember(MoveEvent &event);
 
     // Key handlers
     virtual bool keyPressed(int key);
-    static bool chooseWeaponRange(int key, void *data);
     static bool chooseWeaponDir(int key, void *data);
 
     virtual void update(Party *party, PartyEvent &event);
 
     // Properties
 protected:
-    class CombatMap *map;
+    CombatMap *map;
     
     PartyMemberVector party;
     unsigned char focus;
 
-    const class Creature *creatureTable[AREA_CREATURES];
-    class Creature *creature;    
+    const Creature *creatureTable[AREA_CREATURES];
+    Creature *creature;    
 
     bool camping;
     bool inn;
@@ -113,6 +114,10 @@ protected:
     bool winOrLose;
     bool showMessage;
     Direction exitDir;
+
+private:
+    CombatController(const CombatController&);
+    const CombatController &operator=(const CombatController&);
 };
 
 /**
@@ -127,7 +132,7 @@ public:
     PartyMember* partyMemberAt(Coords coords);    
     Creature* creatureAt(Coords coords);    
     
-    static MapId mapForTile(MapTile ground, MapTile transport, class Object *obj);
+    static MapId mapForTile(MapTile ground, MapTile transport, Object *obj);
 
     bool isDungeonRoom() const;
     bool isAltarRoom() const;

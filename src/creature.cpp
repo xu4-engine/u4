@@ -145,30 +145,16 @@ CreatureStatus Creature::getState() const {
  * whole turn (i.e. it cant move afterwords)
  */ 
 bool Creature::specialAction() {
-    int broadsidesDirs, dx, dy, mapdist;    
-    CoordActionInfo *info;
     bool retval = false;        
-    broadsidesDirs = dirGetBroadsidesDirs(tile.getDirection());
+    int broadsidesDirs = dirGetBroadsidesDirs(tile.getDirection());
 
-    dx = abs(c->location->coords.x - coords.x);
-    dy = abs(c->location->coords.y - coords.y);
-    mapdist = c->location->coords.distance(coords, c->location->map);
-
-    /* setup info for creature action */
-    info = new CoordActionInfo;        
-    info->handleAtCoord = &creatureRangeAttack; /* standard action */
-    info->origin = coords;
-    info->prev = MapCoords(-1, -1);
-    info->range = 3;
-    info->validDirections = MASK_DIR_ALL;
-    info->player = -1;
-    info->blockedPredicate = NULL;
-    info->blockBefore = 1; 
-    info->firstValidDistance = 1;
+    int dx = abs(c->location->coords.x - coords.x);
+    int dy = abs(c->location->coords.y - coords.y);
+    int mapdist = c->location->coords.distance(coords, c->location->map);
 
     /* find out which direction the avatar is in relation to the creature */
     MapCoords mapcoords(coords);
-    info->dir = mapcoords.getRelativeDirection(c->location->coords, c->location->map);
+    int dir = mapcoords.getRelativeDirection(c->location->coords, c->location->map);
    
     switch(id) {
     
@@ -181,8 +167,14 @@ bool Creature::specialAction() {
            and not in a city
            Note: Monsters in settlements in U3 do fire on party
         */
-        if (mapdist <= 3 && xu4_random(2) == 0 && (c->location->context & CTX_CITY) == 0)
-            gameDirectionalAction(info);       
+        if (mapdist <= 3 && xu4_random(2) == 0 && (c->location->context & CTX_CITY) == 0) {
+            vector<Coords> path = gameGetDirectionalActionPath(dir, MASK_DIR_ALL, coords,
+                                                               1, 3, NULL, false);
+            for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+                if (creatureRangeAttack(*i, this))
+                    break;
+            }
+        }
         
         break;
 
@@ -193,10 +185,10 @@ bool Creature::specialAction() {
 
         if ((((dx == 0) && (dy <= 3)) ||          /* avatar is close enough and on the same column, OR */
              ((dy == 0) && (dx <= 3))) &&         /* avatar is close enough and on the same row, AND */
-            ((broadsidesDirs & info->dir) > 0)) { /* pirate ship is firing broadsides */
+            ((broadsidesDirs & dir) > 0)) { /* pirate ship is firing broadsides */
 
             // nothing (not even mountains!) can block cannonballs
-            vector<Coords> path = gameGetDirectionalActionPath(info->dir, broadsidesDirs, coords,
+            vector<Coords> path = gameGetDirectionalActionPath(dir, broadsidesDirs, coords,
                                                                1, 3, NULL, false);
             for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
                 if (fireAt(*i, false))
@@ -211,8 +203,6 @@ bool Creature::specialAction() {
     default: break;
     }
 
-    delete info;    
-    
     return retval;
 }
 
@@ -426,33 +416,31 @@ void Creature::act() {
 
     case CA_RANGED:
         {           
-            CoordActionInfo *info;
-            MapCoords m_coords = getCoords(),
-                      p_coords = target->getCoords();
-        
-            info = new CoordActionInfo;
-            info->handleAtCoord = &CombatController::rangedAttack;
-            info->origin = m_coords;
-            info->prev = Coords(-1, -1);
-            info->range = 11;
-            info->validDirections = MASK_DIR_ALL;
-            info->obj = this;
-            info->blockedPredicate = &MapTile::canAttackOverTile;
-            info->blockBefore = 1;
-            info->firstValidDistance = 0;
-
-            /* if the creature has a random tile for a ranged weapon,
-               let's switch it now! */
+            // if the creature has a random tile for a ranged weapon,
+            // let's switch it now!
             if (hasRandomRanged())
                 setRandomRanged();
 
-            /* figure out which direction to fire the weapon */            
-            info->dir = m_coords.getRelativeDirection(p_coords);
-        
-            /* fire! */
-            gameDirectionalAction(info);
-            delete info;
-        } break;
+            MapCoords m_coords = getCoords(),
+                      p_coords = target->getCoords();
+
+            // figure out which direction to fire the weapon
+            int dir = m_coords.getRelativeDirection(p_coords);
+
+            vector<Coords> path = gameGetDirectionalActionPath(dir, MASK_DIR_ALL, m_coords,
+                                                               1, 11, &MapTile::canAttackOverTile, false);
+            bool hit = false;
+            for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+                if (c->combat->rangedAttack(*i, this)) {
+                    hit = true;
+                    break;
+                }
+            }
+            if (!hit && path.size() > 0)
+                c->combat->rangedMiss(path[path.size() - 1], this);
+
+            break;
+        }
 
     case CA_FLEE:
     case CA_ADVANCE:

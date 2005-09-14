@@ -31,7 +31,7 @@
 SpellEffectCallback spellEffectCallback = NULL;
 
 void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage);
-bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data);
+bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDamage);
 
 static int spellAwaken(int player);
 static int spellBlink(int dir);
@@ -322,75 +322,50 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
 /**
  * Makes a special magic ranged attack in the given direction
  */
-MapTile spellMagicAttackTile;
-int spellMagicAttackDamage;
-
 void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage) {    
-    CoordActionInfo *info;
     PartyMemberVector *party = c->combat->getParty();
 
-    spellMagicAttackDamage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
+    int attackDamage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
         xu4_random((maxDamage + 1) - minDamage) + minDamage :
         maxDamage;
 
-    spellMagicAttackTile = tile;
-        
-    /* setup the spell */
-    info = new CoordActionInfo;
-    info->handleAtCoord = &spellMagicAttackAtCoord;
-    info->origin = (*party)[c->combat->getFocus()]->getCoords();
-    info->prev = MapCoords(-1, -1);
-    info->range = 11;
-    info->validDirections = MASK_DIR_ALL;
-    info->player = c->combat->getFocus();
-    info->blockedPredicate = &MapTile::canAttackOverTile;
-    info->blockBefore = 1;
-    info->firstValidDistance = 1;
-    info->dir = MASK_DIR(dir);
-
-    gameDirectionalAction(info);
-    delete info;
+    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, (*party)[c->combat->getFocus()]->getCoords(), 
+                                                       1, 11, MapTile::canAttackOverTile, false);
+    for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+        if (spellMagicAttackAt(*i, tile, attackDamage))
+            return;
+    }
 }
 
-bool spellMagicAttackAtCoord(MapCoords coords, int distance, void *data) {
-    Creature *creature;
-    CoordActionInfo* info = (CoordActionInfo*)data;
-    MapCoords old = info->prev;
+bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDamage) {
+    bool objectHit = false;
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
     CombatMap *cm = getCombatMap();
     
-    info->prev = coords;
+    Creature *creature = cm->creatureAt(coords);
 
-    /* Remove the last weapon annotation left behind */
-    if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
-        c->location->map->annotations->remove(old, spellMagicAttackTile);
-
-    /* Check to see if we might hit something */
-    if (coords.x != -1 && coords.y != -1) {
-
-        creature = cm->creatureAt(coords);
-
-        if (!creature) {
-            cm->annotations->add(coords, spellMagicAttackTile, true);
-            gameUpdateScreen();
+    if (!creature) {
+        cm->annotations->add(coords, attackTile, true);
+        gameUpdateScreen();
         
-            /* Based on attack speed setting in setting struct, make a delay for
-               the attack annotation */
-            if (attackdelay > 0)
-                EventHandler::wait_msecs(attackdelay * 2);
+        /* Based on attack speed setting in setting struct, make a delay for
+           the attack annotation */
+        if (attackdelay > 0)
+            EventHandler::wait_msecs(attackdelay * 2);
 
-            return 0;
-        }
-        else {
-            /* show the 'hit' tile */
-            CombatController::attackFlash(coords, spellMagicAttackTile, 3);
+        cm->annotations->remove(coords, attackTile);
+    }
+    else {
+        objectHit = true;
 
-            /* apply the damage to the creature */
-            c->combat->getCurrentPlayer()->dealDamage(creature, spellMagicAttackDamage);
-        }
+        /* show the 'hit' tile */
+        CombatController::attackFlash(coords, attackTile, 3);
+
+        /* apply the damage to the creature */
+        c->combat->getCurrentPlayer()->dealDamage(creature, attackDamage);
     }
 
-    return 1;
+    return objectHit;
 }
 
 static int spellAwaken(int player) {

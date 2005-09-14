@@ -63,11 +63,11 @@ CombatMap *getCombatMap(Map *punknown) {
 /**
  * CombatController class implementation
  */
-CombatController::CombatController() {
+CombatController::CombatController() : map(NULL) {
     c->party->addObserver(this);
 }
-CombatController::CombatController(CombatMap *m) {
-    map = m;
+
+CombatController::CombatController(CombatMap *m) : map(m) {
     game->setMap(map, true, NULL);    
     c->party->addObserver(this);
 }
@@ -536,248 +536,170 @@ bool CombatController::setActivePlayer(int player) {
  * Static member functions
  */
 // Directional actions
-bool CombatController::attackAtCoord(MapCoords coords, int distance, void *data) {
-    CombatController *ct = c->combat;
-    CombatMap *cm = ct->map;
-    MapTile hittile, misstile;
-    CoordActionInfo* info = (CoordActionInfo*)data;    
-    PartyMember *attacker = dynamic_cast<PartyMember*>(info->obj);
+bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance) {
     const Weapon *weapon = Weapon::get(attacker->getWeapon());
-    bool wrongRange = weapon->rangeAbsolute() && (distance != info->range);
-    Coords old = info->prev;    
+    bool wrongRange = weapon->rangeAbsolute() && (distance != range);
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
-    MapTile *groundTile;    
-    Creature *creature;
 
-    info->prev = coords;    
+    MapTile hittile = weapon->getHitTile();
+    MapTile misstile = weapon->getMissTile();
 
-    hittile = weapon->getHitTile();
-    misstile = weapon->getMissTile();
+    // Check to see if something hit
+    Creature *creature = map->creatureAt(coords);
 
-    /* Remove the last weapon annotation left behind */
-    if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
-        cm->annotations->remove(old, misstile);
-
-    /* Missed */
-    if (coords.x == -1 && coords.y == -1) {
-
-        /* Check to see if the weapon is lost */
-        if ((distance > 1 && weapon->loseWhenRanged()) || weapon->loseWhenUsed()) {
-            if (!attacker->loseWeapon())
-                screenMessage("Last One!\n");
-        }
-
-        /* show the 'miss' tile */
-        attackFlash(old, misstile, 3);
-        soundPlay(SOUND_MISSED, false);
-
-        /* This goes here so messages are shown in the original order */
-        screenMessage("Missed!\n");
-    }
-    
-    /* Check to see if we might hit something */
-    else {
-        creature = cm->creatureAt(coords);
-
-        /* If we haven't hit a creature, or the weapon's range is absolute
-           and we're testing the wrong range, stop now! */
-        if (!creature || wrongRange) {
+    /* If we haven't hit a creature, or the weapon's range is absolute
+       and we're testing the wrong range, stop now! */
+    if (!creature || wrongRange) {
         
-            /* If the weapon is shown as it travels, show it now */
-            if (weapon->showTravel()) {
-                cm->annotations->add(coords, misstile, true);
-                gameUpdateScreen();
+        /* If the weapon is shown as it travels, show it now */
+        if (weapon->showTravel()) {
+            map->annotations->add(coords, misstile, true);
+            gameUpdateScreen();
         
-                /* Based on attack speed setting in setting struct, make a delay for
-                   the attack annotation */
-                if (attackdelay > 0)
-                    EventHandler::wait_msecs(attackdelay * 2);
-            }       
-
-            if (distance < info->range)
-                return 0;
-            else
-                cm->annotations->remove(coords, misstile);
-        }
-    
-        /* Check to see if the weapon is lost */
-        if ((distance > 1 && weapon->loseWhenRanged()) || weapon->loseWhenUsed()) {
-            if (!attacker->loseWeapon())
-                screenMessage("Last One!\n");
-        }
-    
-        /* Did the weapon miss? */
-        if ((c->location->prev->map->id == MAP_ABYSS && !weapon->isMagic()) || /* non-magical weapon in the Abyss */
-            !attacker->attackHit(creature)) { /* player naturally missed */
-            screenMessage("Missed!\n");
-        
-            /* show the 'miss' tile */
-            attackFlash(coords, misstile, 3);
-            soundPlay(SOUND_MISSED, false);
-
-        } else { /* The weapon hit! */
-
-            /* show the 'hit' tile */
-            attackFlash(coords, hittile, 3);            
-
-            /* apply the damage to the creature */
-            if (!attacker->dealDamage(creature, attacker->getDamage()))
-                creature = NULL;
-
-            /* creature is still alive and has the chance to divide - xu4 enhancement */
-            if (xu4_random(2) == 0 && creature && creature->divides())
-                creature->divide();
-        }
-    }
-
-    /* We only use the "coords" struct beyond here for magic axes and
-       flaming oils */
-    if (coords.x == -1 && coords.y == -1)
-        coords = old;
-
-    /* Check to see if the weapon returns to its owner */
-    if (weapon->returns())
-        CombatController::returnWeaponToOwner(coords, distance, data);
-
-    /* If the weapon leaves a tile behind, do it here! (flaming oil, etc) */
-    groundTile = cm->tileAt(coords, WITHOUT_OBJECTS);
-    if (!wrongRange && (weapon->leavesTile().id > 0 && groundTile->isWalkable()))
-        cm->annotations->add(coords, weapon->leavesTile());    
-    
-    /* only end the turn if we're still in combat */
-    if (c->location->finishTurn == &CombatController::finishTurn)
-        (*c->location->finishTurn)();
-
-    return true;
-}
-
-bool CombatController::rangedAttack(MapCoords coords, int distance, void *data) {
-    CombatMap *cm = c->combat->map;    
-    MapTile hittile, misstile;
-    CoordActionInfo* info = (CoordActionInfo*)data;    
-    Coords old = info->prev;    
-    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
-    MapTile *groundTile;
-    TileEffect effect;
-    Creature *attacker = dynamic_cast<Creature*>(info->obj),
-            *target = NULL;
-    
-    info->prev = coords;
-
-    hittile = attacker->getHitTile();
-    misstile = attacker->getMissTile();
-
-    /* Remove the last weapon annotation left behind */
-    if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
-        cm->annotations->remove(old, misstile);
-
-    /* Check to see if the creature hit an opponent */
-    if (coords.x != -1 && coords.y != -1) {
-        target = isCreature(attacker) ? cm->partyMemberAt(coords) : cm->creatureAt(coords);
-
-        /* If we haven't hit something valid, stop now */
-        if (!target) {            
-            cm->annotations->add(coords, misstile, true);            
-            gameUpdateScreen();            
-    
             /* Based on attack speed setting in setting struct, make a delay for
                the attack annotation */
             if (attackdelay > 0)
                 EventHandler::wait_msecs(attackdelay * 2);
 
-            return 0;
+            map->annotations->remove(coords, misstile);
         }
 
-        /* Get the effects of the tile the creature is using */
-        effect = hittile.getEffect();
-  
-        /* Monster's ranged attacks never miss */
-
-        /* show the 'hit' tile */
-        attackFlash(coords, hittile, 4);        
-
-        /* These effects happen whether or not the opponent was hit */
-        switch(effect) {
-        
-        case EFFECT_ELECTRICITY:
-            /* FIXME: are there any special effects here? */
-            screenMessage("\n%s Electrified!\n", target->getName().c_str());
-            attacker->dealDamage(target, attacker->getDamage());
-            break;
-        
-        case EFFECT_POISON:
-        case EFFECT_POISONFIELD:
-            
-            screenMessage("\n%s Poisoned!\n", target->getName().c_str());
-
-            /* see if the player is poisoned */
-            if ((xu4_random(2) == 0) && (target->getStatus() != STAT_POISONED)) {
-                target->addStatus(STAT_POISONED);
-                soundPlay(SOUND_PLAYERHIT, false);
-            }
-            else screenMessage("Failed.\n");
-            break;
-        
-        case EFFECT_SLEEP:
-
-            screenMessage("\n%s Slept!\n", target->getName().c_str());
-            soundPlay(SOUND_PLAYERHIT, false);
-
-            /* see if the player is put to sleep */
-            if (xu4_random(2) == 0)
-                target->putToSleep();
-            else screenMessage("Failed.\n");
-            break;
-
-        case EFFECT_LAVA:
-        case EFFECT_FIRE:
-            /* FIXME: are there any special effects here? */            
-            screenMessage("\n%s %s Hit!\n", target->getName().c_str(),
-                effect == EFFECT_LAVA ? "Lava" : "Fiery");
-            attacker->dealDamage(target, attacker->getDamage());
-            break;
-                
-        default: 
-            /* show the appropriate 'hit' message */
-            if (hittile == Tileset::findTileByName("magic_flash")->id)
-                screenMessage("\n%s Magical Hit!\n", target->getName().c_str());
-            else screenMessage("\n%s Hit!\n", target->getName().c_str());
-            attacker->dealDamage(target, attacker->getDamage());
-            break;
-        }       
-
+        // no target found
+        return false;
     }
-    else {
+    
+    /* Did the weapon miss? */
+    if ((c->location->prev->map->id == MAP_ABYSS && !weapon->isMagic()) || /* non-magical weapon in the Abyss */
+        !attacker->attackHit(creature)) { /* player naturally missed */
+        screenMessage("Missed!\n");
+        
+        /* show the 'miss' tile */
+        attackFlash(coords, misstile, 3);
         soundPlay(SOUND_MISSED, false);
 
-        /* If the creature leaves a tile behind, do it here! (lava lizard, etc) */
-        groundTile = cm->tileAt(old, WITH_GROUND_OBJECTS);
-        if (attacker->leavesTile() && groundTile->isWalkable())
-            cm->annotations->add(old, hittile);
+    } else { /* The weapon hit! */
+
+        /* show the 'hit' tile */
+        attackFlash(coords, hittile, 3);            
+
+        /* apply the damage to the creature */
+        if (!attacker->dealDamage(creature, attacker->getDamage()))
+            creature = NULL;
+
+        /* creature is still alive and has the chance to divide - xu4 enhancement */
+        if (xu4_random(2) == 0 && creature && creature->divides())
+            creature->divide();
     }
 
     return true;
 }
 
-bool CombatController::returnWeaponToOwner(MapCoords coords, int distance, void *data) {
-    CombatMap *cm = c->combat->map;
-    Direction dir;
-    int i;
-    MapTile misstile;
-    CoordActionInfo* info = (CoordActionInfo*)data;
-    const Weapon *weapon = Weapon::get(c->combat->party[info->player]->getWeapon());
+bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
+    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
+    
+    MapTile hittile = attacker->getHitTile();
+    MapTile misstile = attacker->getMissTile();
+
+    Creature *target = isCreature(attacker) ? map->partyMemberAt(coords) : map->creatureAt(coords);
+
+    /* If we haven't hit something valid, stop now */
+    if (!target) {            
+        map->annotations->add(coords, misstile, true);            
+        gameUpdateScreen();            
+    
+        /* Based on attack speed setting in setting struct, make a delay for
+           the attack annotation */
+        if (attackdelay > 0)
+            EventHandler::wait_msecs(attackdelay * 2);
+
+        map->annotations->remove(coords, misstile);
+
+        return false;
+    }
+
+    /* Get the effects of the tile the creature is using */
+    TileEffect effect = hittile.getEffect();
+  
+    /* Monster's ranged attacks never miss */
+
+    /* show the 'hit' tile */
+    attackFlash(coords, hittile, 4);        
+
+    /* These effects happen whether or not the opponent was hit */
+    switch(effect) {
+        
+    case EFFECT_ELECTRICITY:
+        /* FIXME: are there any special effects here? */
+        screenMessage("\n%s Electrified!\n", target->getName().c_str());
+        attacker->dealDamage(target, attacker->getDamage());
+        break;
+        
+    case EFFECT_POISON:
+    case EFFECT_POISONFIELD:
+            
+        screenMessage("\n%s Poisoned!\n", target->getName().c_str());
+
+        /* see if the player is poisoned */
+        if ((xu4_random(2) == 0) && (target->getStatus() != STAT_POISONED)) {
+            target->addStatus(STAT_POISONED);
+            soundPlay(SOUND_PLAYERHIT, false);
+        }
+        else screenMessage("Failed.\n");
+        break;
+        
+    case EFFECT_SLEEP:
+
+        screenMessage("\n%s Slept!\n", target->getName().c_str());
+        soundPlay(SOUND_PLAYERHIT, false);
+
+        /* see if the player is put to sleep */
+        if (xu4_random(2) == 0)
+            target->putToSleep();
+        else screenMessage("Failed.\n");
+        break;
+
+    case EFFECT_LAVA:
+    case EFFECT_FIRE:
+        /* FIXME: are there any special effects here? */            
+        screenMessage("\n%s %s Hit!\n", target->getName().c_str(),
+                      effect == EFFECT_LAVA ? "Lava" : "Fiery");
+        attacker->dealDamage(target, attacker->getDamage());
+        break;
+                
+    default: 
+        /* show the appropriate 'hit' message */
+        if (hittile == Tileset::findTileByName("magic_flash")->id)
+            screenMessage("\n%s Magical Hit!\n", target->getName().c_str());
+        else screenMessage("\n%s Hit!\n", target->getName().c_str());
+        attacker->dealDamage(target, attacker->getDamage());
+        break;
+    }       
+
+    return true;
+}
+
+void CombatController::rangedMiss(const Coords &coords, Creature *attacker) {
+    soundPlay(SOUND_MISSED, false);
+
+    /* If the creature leaves a tile behind, do it here! (lava lizard, etc) */
+    MapTile *groundTile = map->tileAt(coords, WITH_GROUND_OBJECTS);
+    if (attacker->leavesTile() && groundTile->isWalkable())
+        map->annotations->add(coords, attacker->getHitTile());
+}
+
+bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, int dir, const Weapon *weapon) {
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
     MapCoords new_coords = coords;
-    
-    misstile = weapon->getMissTile();
+
+    MapTile misstile = weapon->getMissTile();
 
     /* reverse the direction of the weapon */
-    dir = dirReverse(dirFromMask(info->dir));
+    Direction returnDir = dirReverse(dirFromMask(dir));
 
-    for (i = distance; i > 1; i--) {
-        new_coords.move(dir, cm);        
+    for (int i = distance; i > 1; i--) {
+        new_coords.move(returnDir, map);        
         
-        cm->annotations->add(new_coords, misstile, true);
+        map->annotations->add(new_coords, misstile, true);
         gameUpdateScreen();
 
         /* Based on attack speed setting in setting struct, make a delay for
@@ -785,7 +707,7 @@ bool CombatController::returnWeaponToOwner(MapCoords coords, int distance, void 
         if (attackdelay > 0)
             EventHandler::wait_msecs(attackdelay * 2);
         
-        cm->annotations->remove(new_coords, misstile);
+        map->annotations->remove(new_coords, misstile);
     }
     gameUpdateScreen();
 
@@ -953,8 +875,6 @@ bool CombatController::keyPressed(int key) {
     CombatController *ct = c->combat;
     bool valid = true;
     bool endTurn = true;
-    CoordActionInfo *info;
-    WeaponType weapon = c->combat->getCurrentPlayer()->getWeapon();
 
     switch (key) {
     case U4_UP:
@@ -1013,22 +933,8 @@ bool CombatController::keyPressed(int key) {
         break;
 
     case 'a':
-        info = new CoordActionInfo;
-        info->handleAtCoord = &CombatController::attackAtCoord;
-        info->origin = ct->getCurrentPlayer()->getCoords();
-        info->prev = Coords(-1, -1);        
-        info->range = Weapon::get(weapon)->getRange();
-        info->validDirections = MASK_DIR_ALL;
-        info->obj = ct->getCurrentPlayer();
-        info->player = ct->getFocus();
-        info->blockedPredicate = Weapon::get(weapon)->canAttackThroughObjects() ?
-            NULL :
-            &MapTile::canAttackOverTile;
-        info->blockBefore = 1;
-        info->firstValidDistance = 0;
-        
         screenMessage("Dir: ");        
-        eventHandler->pushKeyHandler(KeyHandler(&CombatController::chooseWeaponDir, info));
+        eventHandler->pushKeyHandler(KeyHandler(&CombatController::chooseWeaponDir, NULL));
         break;
 
     case 'c':
@@ -1164,51 +1070,86 @@ bool CombatController::keyPressed(int key) {
 }
 
 /**
- * Key handler for choosing the range of a wepaon
- */
-bool CombatController::chooseWeaponRange(int key, void *data) {
-    CoordActionInfo *info = (CoordActionInfo *) data;    
-
-    if ((key >= '0') && (key <= (info->range + '0'))) {
-        info->range = key - '0';
-        screenMessage("%d\n", info->range);
-        if (info->range == 0)
-            info->range = 10;
-        gameDirectionalAction(info);
-
-        eventHandler->popKeyHandler();
-        //eventHandler->popKeyHandlerData();
-
-        return true;
-    }
-    
-    return false;
-}
-
-/**
  * Key handler for choosing an attack direction
  */
 bool CombatController::chooseWeaponDir(int key, void *data) {
     CombatController *ct = c->combat;
-    CoordActionInfo *info = (CoordActionInfo *)data;
     Direction dir = keyToDirection(key);
     bool valid = (dir != DIR_NONE) ? true : false;
-    WeaponType weapon = ct->party[info->player]->getWeapon();
+    const Weapon *weapon = Weapon::get(ct->party[ct->getFocus()]->getWeapon());
 
     eventHandler->popKeyHandler();
-    info->dir = MASK_DIR(dir);
 
+    int range = weapon->getRange();
     if (valid) {
         screenMessage("%s\n", getDirectionName(dir));
-        if (Weapon::get(weapon)->canChooseDistance()) {
+        if (weapon->canChooseDistance()) {
             screenMessage("Range: ");
-            eventHandler->pushKeyHandler(KeyHandler(&CombatController::chooseWeaponRange, info));
+            int choice = ReadChoiceController::get("123456789");
+            if ((choice - '0') >= 1 && (choice - '0') <= weapon->getRange()) {
+                range = choice - '0';
+                screenMessage("%d\n", range);
+            } else {
+                valid = false;
+            }
         }
-        else gameDirectionalAction(info);        
+    }
+    if (valid) {
+        PartyMember *attacker = ct->getCurrentPlayer();
+
+        vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, 
+                                                           attacker->getCoords(),
+                                                           1, range, 
+                                                           weapon->canAttackThroughObjects() ? NULL : &MapTile::canAttackOverTile,
+                                                           false);
+
+        bool foundTarget = false;
+        int targetDistance = path.size();
+        Coords targetCoords = path[path.size() - 1];
+
+        int distance = 1;
+        for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+            if (c->combat->attackAt(*i, attacker, MASK_DIR(dir), range, distance)) {
+                foundTarget = true;
+                targetDistance = distance;
+                targetCoords = *i;
+                break;
+            }
+            distance++;
+        }
+
+        // is weapon lost? (e.g. dagger)
+        if (weapon->loseWhenUsed() ||
+            (weapon->loseWhenRanged() && (!foundTarget || targetDistance > 1))) {
+            if (!attacker->loseWeapon())
+                screenMessage("Last One!\n");
+        }
+
+        // does weapon leaves a tile behind? (e.g. flaming oil)
+        MapTile *groundTile = ct->map->tileAt(targetCoords, WITHOUT_OBJECTS);
+        if (weapon->leavesTile().id > 0 && groundTile->isWalkable() &&
+            (!foundTarget || targetDistance == range))
+            ct->map->annotations->add(path[path.size() - 1], weapon->leavesTile());
+
+        /* show the 'miss' tile */
+        if (!foundTarget) {
+            attackFlash(targetCoords, weapon->getMissTile(), 3);
+            soundPlay(SOUND_MISSED, false);
+
+            /* This goes here so messages are shown in the original order */
+            screenMessage("Missed!\n");
+        }
+
+        // does weapon returns to its owner? (e.g. magic axe)
+        if (weapon->returns())
+            ct->returnWeaponToOwner(targetCoords, targetDistance, MASK_DIR(dir), weapon);
+
+        // only end the turn if we're still in combat
+        if (c->location->finishTurn == &CombatController::finishTurn)
+            (*c->location->finishTurn)();
+
     }
 
-    //eventHandler->popKeyHandlerData();
-    
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
