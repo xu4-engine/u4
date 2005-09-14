@@ -5,11 +5,23 @@
 #ifndef CHEAT_H
 #define CHEAT_H
 
+#include <string>
+
 #include "controller.h"
+
+using std::string;
+
+class GameController;
 
 class CheatMenuController : public WaitableController<void *> {
 public:
+    CheatMenuController(GameController *game);
     bool keyPressed(int key);
+
+private:
+    void summonCreature(const string &name);
+
+    GameController *game;
 };
 
 /**

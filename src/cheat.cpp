@@ -17,6 +17,9 @@
 #include "utils.h"
 #include "weapon.h"
 
+CheatMenuController::CheatMenuController(GameController *game) : game(game) {
+}
+
 bool CheatMenuController::keyPressed(int key) {
     int i;
     bool valid = true;
@@ -48,7 +51,7 @@ bool CheatMenuController::keyPressed(int key) {
 
         screenMessage("Advance Moons!\n");
         while (c->saveGame->trammelphase != newTrammelphase)
-            gameUpdateMoons(true);
+            game->updateMoons(true);
         break;
     }
 
@@ -152,8 +155,8 @@ bool CheatMenuController::keyPressed(int key) {
         screenMessage("Karma!\n\n");
         for (i = 0; i < 8; i++) {
             unsigned int j;
-            screenMessage("%s:", getVirtueName((Virtue)i));
-            for (j = 13; j > strlen(getVirtueName((Virtue)i)); j--)
+            screenMessage("%s:", getVirtueName(static_cast<Virtue>(i)));
+            for (j = 13; j > strlen(getVirtueName(static_cast<Virtue>(i))); j--)
                 screenMessage(" ");
             if (c->saveGame->karma[i] > 0)                
                 screenMessage("%.2d\n", c->saveGame->karma[i]);            
@@ -199,7 +202,7 @@ bool CheatMenuController::keyPressed(int key) {
     case 's':
         screenMessage("Summon!\n");
         screenMessage("What?\n");
-        gameSummonCreature(gameGetInput());
+        summonCreature(gameGetInput());
         break;
 
     case 't':
@@ -309,7 +312,7 @@ bool CheatMenuController::keyPressed(int key) {
     case U4_FKEY+5:
     case U4_FKEY+6:
     case U4_FKEY+7:
-        screenMessage("Improve %s!\n", getVirtueName((Virtue)(key - U4_FKEY)));
+        screenMessage("Improve %s!\n", getVirtueName(static_cast<Virtue>(key - U4_FKEY)));
         if (c->saveGame->karma[key - U4_FKEY] == 99)
             c->saveGame->karma[key - U4_FKEY] = 0;
         else if (c->saveGame->karma[key - U4_FKEY] != 0)
@@ -338,6 +341,40 @@ bool CheatMenuController::keyPressed(int key) {
     return valid;
 }
 
+/**
+ * Summons a creature given by 'creatureName'. This can either be given
+ * as the creature's name, or the creature's id.  Once it finds the
+ * creature to be summoned, it calls gameSpawnCreature() to spawn it.
+ */
+void CheatMenuController::summonCreature(const string &name) {
+    const Creature *m = NULL;
+    string creatureName = name;
+
+    trim(creatureName);
+    if (creatureName.empty()) {
+        screenMessage("\n");
+        return;
+    }
+    
+    /* find the creature by its id and spawn it */
+    unsigned int id = atoi(creatureName.c_str());
+    if (id > 0)
+        m = creatures.getById(id);
+
+    if (!m)
+        m = creatures.getByName(creatureName);
+
+    if (m) {
+        if (gameSpawnCreature(m))
+            screenMessage("\n%s summoned!\n", m->getName().c_str());
+        else screenMessage("\n\nNo place to put %s!\n\n", m->getName().c_str());
+        
+        return;
+    }
+    
+    screenMessage("\n%s not found\n", creatureName.c_str());
+}
+
 bool WindCmdController::keyPressed(int key) {
     switch (key) {
     case U4_UP:
@@ -345,7 +382,7 @@ bool WindCmdController::keyPressed(int key) {
     case U4_DOWN:
     case U4_RIGHT:
         c->windDirection = keyToDirection(key);
-        screenMessage("Wind %s!\n", getDirectionName((Direction)c->windDirection));
+        screenMessage("Wind %s!\n", getDirectionName(static_cast<Direction>(c->windDirection)));
         doneWaiting();
         return true;
 
