@@ -51,6 +51,11 @@ public:
     std::vector<std::string> introText;
     std::vector<std::string> introQuestions;
     std::vector<std::string> introGypsy;
+
+private:
+    // disallow assignments, copy contruction
+    IntroBinData(const IntroBinData&);
+    const IntroBinData &operator=(const IntroBinData&);
 };
 
 /**

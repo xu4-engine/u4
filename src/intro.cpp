@@ -67,13 +67,13 @@ const int IntroBinData::BEASTIE_FRAME_TABLE_OFFSET = 0x7380;
 const int IntroBinData::BEASTIE1_FRAMES_OFFSET = 0;
 const int IntroBinData::BEASTIE2_FRAMES_OFFSET = 0x78;
 
-IntroBinData::IntroBinData() {
-    introMap = NULL;
-    sigData = NULL;
-    scriptTable = NULL;
-    baseTileTable = NULL;
-    beastie1FrameTable = NULL;
-    beastie2FrameTable = NULL;
+IntroBinData::IntroBinData() : 
+    introMap(NULL), 
+    sigData(NULL), 
+    scriptTable(NULL), 
+    baseTileTable(NULL),
+    beastie1FrameTable(NULL),
+    beastie2FrameTable(NULL) {
 }
 
 IntroBinData::~IntroBinData() {
@@ -179,7 +179,7 @@ IntroController::IntroController() :
     videoMenu.setTitle("Video Options:", 1, 0);
     videoMenu.add(new StringMenuItem("Graphics          %s", 5, 2, 'g', &settingsChanged.videoType, imageMgr->getSetNames()));
     videoMenu.add(new StringMenuItem("Gem Layout        %s", 5, 3, 0, &settingsChanged.gemLayout, screenGetGemLayoutNames()));
-    videoMenu.add(new IntMenuItem   ("Scale             x%d", 5, 4, 's', (int *) &settingsChanged.scale, 1, 5, 1));
+    videoMenu.add(new IntMenuItem   ("Scale             x%d", 5, 4, 's', reinterpret_cast<int *>(&settingsChanged.scale), 1, 5, 1));
     videoMenu.add((new BoolMenuItem ("Mode              %s", 5, 5, 'm', &settingsChanged.fullscreen))->
                   setValueStrings("Fullscreen", "Window"));
     videoMenu.add(new StringMenuItem("Filter            %s", 5, 6, 'f', &settingsChanged.filter, screenGetFilterNames()));
