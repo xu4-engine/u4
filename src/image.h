@@ -87,6 +87,10 @@ private:
 
     Image();                    /* use create method to construct images */
 
+    // disallow assignments, copy contruction
+    Image(const Image&);
+    const Image &operator=(const Image&);
+
 #ifndef _SDL_video_h
     struct SDL_Surface { int dummy; };
 #endif
