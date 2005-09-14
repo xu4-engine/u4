@@ -43,7 +43,7 @@ class TileRule;
 class Tile : public MapTile {
 public:
     Tile() : w(0), h(0), index(0), frames(0), scale(1), anim(NULL), opaque(false), rule(NULL), 
-        tileset(NULL), image(NULL) {}
+        tileset(NULL), image(NULL), large(false) {}
 
     static void loadProperties(Tile *tile, void *xmlNode);    
     static MapTile translate(int index, string tileMap = "base");    
@@ -69,6 +69,10 @@ private:
 
     Image *image;       /**< The original image for this tile (with all of its frames) */
     bool large;
+
+    // disallow assignments, copy contruction
+    Tile(const Tile&);
+    const Tile &operator=(const Tile&);
 };
 
 #endif
