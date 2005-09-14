@@ -10,7 +10,6 @@
 #include "controller.h"
 #include "event.h"
 #include "map.h"
-#include "movement.h"
 #include "observer.h"
 #include "sound.h"
 #include "tileview.h"
@@ -22,6 +21,7 @@ class Map;
 struct Portal;
 class Creature;
 class Location;
+class MoveEvent;
 class Party;
 class PartyEvent;
 class PartyMember;
@@ -34,20 +34,6 @@ typedef enum {
     VIEW_DEAD,
     VIEW_CODEX
 } ViewMode;
-
-struct CoordActionInfo {
-    bool (*handleAtCoord)(MapCoords, int, void*);
-    MapCoords origin, prev;    
-    int range;
-    int validDirections;
-    class Object *obj;
-    int player;
-    int dir;                /* mask of the direction the action is taken
-                               (so that (MASK_DIR(DIR_NORTH) | MASK_DIR(DIR_EAST)) makes a diagonal) */
-    bool (*blockedPredicate)(MapTile tile);
-    int blockBefore;        /* try the action first, or test to see if it was blocked first? */
-    int firstValidDistance; /* the first distance at which the action will function correctly */
-};
 
 /**
  * A controller to read a player number.
@@ -110,6 +96,9 @@ public:
     virtual void update(Party *party, PartyEvent &event);
     virtual void update(Location *location, MoveEvent &event);
 
+    void initMoons();
+    void updateMoons(bool showmoongates);
+
     TileView mapArea;
     bool paused;
     int pausedTimer;
@@ -124,7 +113,6 @@ extern GameController *game;
 /* map and screen functions */
 void gameSetViewMode(ViewMode newMode);
 void gameUpdateScreen(void);
-void gameUpdateMoons(bool showmoongates);
 
 /* spell functions */
 void castSpell(int player = -1);
@@ -142,7 +130,6 @@ bool gamePeerCity(int city, void *data);
 void peer(bool useGem = true);
 void talk();
 bool fireAt(const Coords &coords, bool originAvatar);
-int gameDirectionalAction(CoordActionInfo *info);
 Direction gameGetDirection();
 void readyWeapon(int player = -1, WeaponType w = WEAP_MAX);
 
@@ -150,9 +137,8 @@ void readyWeapon(int player = -1, WeaponType w = WEAP_MAX);
 void gameCheckHullIntegrity(void);
 
 /* creature functions */
-bool creatureRangeAttack(MapCoords coords, int distance, void *data);
+bool creatureRangeAttack(const Coords &coords, Creature *m);
 void gameCreatureCleanup(void);
-void gameSummonCreature(const string &creatureName);
 bool gameSpawnCreature(const class Creature *m);
 
 /* etc */

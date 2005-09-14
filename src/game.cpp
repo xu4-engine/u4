@@ -60,7 +60,6 @@ GameController *game = NULL;
 
 /* main game functions */
 void gameAdvanceLevel(PartyMember *player);
-void gameInitMoons();
 void gameInnHandler(void);
 void gameLostEighth(Virtue virtue);
 void gamePartyStarving(void);
@@ -238,7 +237,7 @@ void GameController::init() {
     TRACE_LOCAL(gameDbg, "Initializing start location.");
 
     /* initialize the moons (must be done from the world map) */
-    gameInitMoons();
+    initMoons();
     
     /* if our map is not the world map, then load our map */
     if (map->type != Map::WORLD)
@@ -542,6 +541,7 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
 
     /* now, actually set our new tileset */
     Tileset::set(map->tileset);
+    mapArea.setTileset(map->tileset);
 
     if (isCity(map)) {
         City *city = dynamic_cast<City*>(map);
@@ -577,6 +577,7 @@ int GameController::exitToParentMap() {
 
         // restore the tileset to the one the current map uses
         Tileset::set(c->location->map->tileset);
+        mapArea.setTileset(c->location->map->tileset);
         
         return 1;
     }
@@ -909,7 +910,7 @@ bool GameController::keyPressed(int key) {
         case 3:                     /* ctrl-C */
             if (settings.debug) {
                 screenMessage("Cmd (h = help):");
-                CheatMenuController cheatMenuController;
+                CheatMenuController cheatMenuController(this);
                 eventHandler->pushController(&cheatMenuController);
                 cheatMenuController.waitFor();
             }
@@ -1351,7 +1352,6 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
 
         if (player == -1) {
             screenMessage("None\n");
-            (*c->location->finishTurn)();
             return -1;
         }
 
@@ -1374,7 +1374,6 @@ Direction gameGetDirection() {
 
     if (dir == DIR_NONE) {
         screenMessage("\n");
-        (*c->location->finishTurn)();
         return dir;
     }
     else {
@@ -1613,8 +1612,6 @@ void castSpell(int player) {
     screenMessage("%s!\n", spellGetName(spell));
 
     c->stats->setView(STATS_PARTY_OVERVIEW);
-    //castPlayer = player;
-    //castSpell = spell;
     
     // if we can't really cast this spell, skip the extra parameters
     if (spellCheckPrerequisites(spell, player) != CASTERR_NOERROR) {
@@ -1902,6 +1899,118 @@ bool getChestTrapHandler(int player) {
 }
 
 /**
+ * Initializes the moon state according to the savegame file. This method of
+ * initializing the moons (rather than just setting them directly) is necessary
+ * to make sure trammel and felucca stay in sync
+ */
+void GameController::initMoons()
+{
+    int trammelphase = c->saveGame->trammelphase,
+        feluccaphase = c->saveGame->feluccaphase;        
+
+    ASSERT(c != NULL, "Game context doesn't exist!");
+    ASSERT(c->saveGame != NULL, "Savegame doesn't exist!");
+    //ASSERT(mapIsWorldMap(c->location->map) && c->location->viewMode == VIEW_NORMAL, "Can only call gameInitMoons() from the world map!");
+
+    c->saveGame->trammelphase = c->saveGame->feluccaphase = 0;
+    c->moonPhase = 0;
+
+    while ((c->saveGame->trammelphase != trammelphase) ||
+           (c->saveGame->feluccaphase != feluccaphase))
+        updateMoons(false);    
+}
+
+/**
+ * Updates the phases of the moons and shows
+ * the visual moongates on the map, if desired
+ */
+void GameController::updateMoons(bool showmoongates)
+{
+    int realMoonPhase,
+        oldTrammel,
+        trammelSubphase;        
+    const Coords *gate;
+
+    if (c->location->map->isWorldMap()) {
+        oldTrammel = c->saveGame->trammelphase;
+
+        if (++c->moonPhase >= MOON_PHASES * MOON_SECONDS_PER_PHASE * 4)
+            c->moonPhase = 0;
+        
+        trammelSubphase = c->moonPhase % (MOON_SECONDS_PER_PHASE * 4 * 3);
+        realMoonPhase = (c->moonPhase / (4 * MOON_SECONDS_PER_PHASE));
+
+        c->saveGame->trammelphase = realMoonPhase / 3;
+        c->saveGame->feluccaphase = realMoonPhase % 8;
+
+        if (c->saveGame->trammelphase > 7)
+            c->saveGame->trammelphase = 7;        
+        
+        if (showmoongates)
+        {
+            /* update the moongates if trammel changed */
+            if (trammelSubphase == 0) {
+                gate = moongateGetGateCoordsForPhase(oldTrammel);
+                if (gate)
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x40));
+                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                if (gate)
+                    c->location->map->annotations->add(*gate, Tile::translate(0x40));
+            }
+            else if (trammelSubphase == 1) {
+                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                if (gate) {
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x40));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x41));
+                }
+            }
+            else if (trammelSubphase == 2) {
+                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                if (gate) {
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x41));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x42));
+                }
+            }
+            else if (trammelSubphase == 3) {
+                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                if (gate) {
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x42));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x43));
+                }
+            }
+            else if ((trammelSubphase > 3) && (trammelSubphase < (MOON_SECONDS_PER_PHASE * 4 * 3) - 3)) {
+                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                if (gate) {
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x43));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x43));
+                }
+            }
+            else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
+                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                if (gate) {
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x43));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x42));
+                }
+            }
+            else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
+                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                if (gate) {
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x42));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x41));
+                }
+            }
+            else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
+                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                if (gate) {
+                    c->location->map->annotations->remove(*gate, Tile::translate(0x41));
+                    c->location->map->annotations->add(*gate, Tile::translate(0x40));
+                }
+            }
+        }
+    }
+}
+
+/**
  * Handles feedback after avatar moved during normal 3rd-person view.
  */
 void GameController::avatarMoved(MoveEvent &event) {       
@@ -2065,8 +2174,6 @@ bool jimmyAt(const Coords &coords) {
     } else
         screenMessage("No keys left!\n");
 
-    (*c->location->finishTurn)();
-
     return true;
 }
 
@@ -2105,14 +2212,12 @@ bool openAt(const Coords &coords) {
 
     if (tile->isLockedDoor()) {
         screenMessage("Can't!\n");
-        (*c->location->finishTurn)();
         return true;
     }
     
     c->location->map->annotations->add(coords, Tileset::findTileByName("brick_floor")->id)->setTTL(4);    
 
     screenMessage("\nOpened!\n");
-    (*c->location->finishTurn)();
 
     return true;
 }
@@ -2236,7 +2341,6 @@ void mixReagents() {
 
     c->stats->setView(STATS_PARTY_OVERVIEW);
     screenMessage("\n\n");
-    (*c->location->finishTurn)();
 }
 
 /**
@@ -2370,8 +2474,6 @@ bool gamePeerCity(int city, void *data) {
         screenEnableCursor();
         game->paused = false;
     
-        (*c->location->finishTurn)();
-
         return true;
     }
     return false;
@@ -2416,7 +2518,6 @@ bool talkAt(const Coords &coords) {
     /* can't have any conversations outside of town */
     if (!isCity(c->location->map)) {
         screenMessage("Funny, no\nresponse!\n");
-        (*c->location->finishTurn)();
         return true;
     }
     
@@ -2541,7 +2642,6 @@ void talkRunConversation(bool showPrompt) {
     }
     if (c->conversation->reply.size() > 0)
         screenMessage("%s", c->conversation->reply.front().c_str());
-    (*c->location->finishTurn)();
 }
 
 /**
@@ -2639,7 +2739,7 @@ void GameController::timerFired() {
             c->location->move(dirReverse((Direction) c->windDirection), false);
         }        
         
-        gameUpdateMoons(true);
+        updateMoons(true);
 
         screenCycle();
 
@@ -2663,118 +2763,6 @@ void GameController::timerFired() {
         }
     }
 
-}
-
-/**
- * Updates the phases of the moons and shows
- * the visual moongates on the map, if desired
- */
-void gameUpdateMoons(bool showmoongates)
-{
-    int realMoonPhase,
-        oldTrammel,
-        trammelSubphase;        
-    const Coords *gate;
-
-    if (c->location->map->isWorldMap()) {
-        oldTrammel = c->saveGame->trammelphase;
-
-        if (++c->moonPhase >= MOON_PHASES * MOON_SECONDS_PER_PHASE * 4)
-            c->moonPhase = 0;
-        
-        trammelSubphase = c->moonPhase % (MOON_SECONDS_PER_PHASE * 4 * 3);
-        realMoonPhase = (c->moonPhase / (4 * MOON_SECONDS_PER_PHASE));
-
-        c->saveGame->trammelphase = realMoonPhase / 3;
-        c->saveGame->feluccaphase = realMoonPhase % 8;
-
-        if (c->saveGame->trammelphase > 7)
-            c->saveGame->trammelphase = 7;        
-        
-        if (showmoongates)
-        {
-            /* update the moongates if trammel changed */
-            if (trammelSubphase == 0) {
-                gate = moongateGetGateCoordsForPhase(oldTrammel);
-                if (gate)
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x40));
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
-                if (gate)
-                    c->location->map->annotations->add(*gate, Tile::translate(0x40));
-            }
-            else if (trammelSubphase == 1) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
-                if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x40));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x41));
-                }
-            }
-            else if (trammelSubphase == 2) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
-                if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x41));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x42));
-                }
-            }
-            else if (trammelSubphase == 3) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
-                if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x42));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x43));
-                }
-            }
-            else if ((trammelSubphase > 3) && (trammelSubphase < (MOON_SECONDS_PER_PHASE * 4 * 3) - 3)) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
-                if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x43));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x43));
-                }
-            }
-            else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
-                if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x43));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x42));
-                }
-            }
-            else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
-                if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x42));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x41));
-                }
-            }
-            else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
-                if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x41));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x40));
-                }
-            }
-        }
-    }
-}
-
-/**
- * Initializes the moon state according to the savegame file. This method of
- * initializing the moons (rather than just setting them directly) is necessary
- * to make sure trammel and felucca stay in sync
- */
-void gameInitMoons()
-{
-    int trammelphase = c->saveGame->trammelphase,
-        feluccaphase = c->saveGame->feluccaphase;        
-
-    ASSERT(c != NULL, "Game context doesn't exist!");
-    ASSERT(c->saveGame != NULL, "Savegame doesn't exist!");
-    //ASSERT(mapIsWorldMap(c->location->map) && c->location->viewMode == VIEW_NORMAL, "Can only call gameInitMoons() from the world map!");
-
-    c->saveGame->trammelphase = c->saveGame->feluccaphase = 0;
-    c->moonPhase = 0;
-
-    while ((c->saveGame->trammelphase != trammelphase) ||
-           (c->saveGame->feluccaphase != feluccaphase))
-        gameUpdateMoons(false);    
 }
 
 /**
@@ -2994,71 +2982,53 @@ void gameCreatureAttack(Creature *m) {
 /**
  * Performs a ranged attack for the creature at x,y on the world map
  */
-bool creatureRangeAttack(MapCoords coords, int distance, void *data) {
-    CoordActionInfo* info = (CoordActionInfo*)data;
-    MapCoords old = info->prev;
-    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;       
-    Creature *m;
-    MapTile tile;
+bool creatureRangeAttack(const Coords &coords, Creature *m) {
+    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
 
-    info->prev = coords;
+    // Figure out what the ranged attack should look like
+    MapTile tile = (m && (m->worldrangedtile.id > 0)) ? 
+        m->worldrangedtile : 
+        Tileset::findTileByName("hit_flash")->id;
 
-    /* Find the creature that made the range attack */
-    m = dynamic_cast<Creature*>(c->location->map->objectAt(info->origin));    
+    // See if the attack hits the avatar
+    Object *obj = c->location->map->objectAt(coords);        
+    m = dynamic_cast<Creature*>(obj);
+        
+    // Does the attack hit the avatar?
+    if (coords == c->location->coords) {
+        /* always displays as a 'hit' */
+        CombatController::attackFlash(coords, tile, 3);
 
-    /* Figure out what the ranged attack should look like */
-    tile = (m && (m->worldrangedtile.id > 0)) ? m->worldrangedtile : Tileset::findTileByName("hit_flash")->id;
+        /* FIXME: check actual damage from u4dos -- values here are guessed */
+        if (c->transportContext == TRANSPORT_SHIP)
+            gameDamageShip(-1, 10);
+        else gameDamageParty(10, 25);
 
-    /* Remove the last weapon annotation left behind */
-    if ((distance > 0) && (old.x >= 0) && (old.y >= 0))
-        c->location->map->annotations->remove(old, tile);
-    
-    /* Attack missed, stop now */
-    if (coords.x == -1 && coords.y == -1) {
         return true;
     }
-    
-    /* See if the attack hits the avatar */
-    else {
-        Object *obj = NULL;
-
-        obj = c->location->map->objectAt(coords);        
-        m = dynamic_cast<Creature*>(obj);
-        
-        /* Does the attack hit the avatar? */
-        if (coords == c->location->coords) {
-            /* always displays as a 'hit' */
+    // Destroy objects that were hit
+    else if (obj) {
+        if (((obj->getType() == Object::CREATURE) &&
+             (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID)) ||
+            obj->getType() == Object::UNKNOWN) {
+                
             CombatController::attackFlash(coords, tile, 3);
-
-            /* FIXME: check actual damage from u4dos -- values here are guessed */
-            if (c->transportContext == TRANSPORT_SHIP)
-                gameDamageShip(-1, 10);
-            else gameDamageParty(10, 25);
+            c->location->map->removeObject(obj);
 
             return true;
-        }
-        /* Destroy objects that were hit */
-        else if (obj) {
-            if (((obj->getType() == Object::CREATURE) &&
-                (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID)) ||
-                obj->getType() == Object::UNKNOWN) {
-                
-                CombatController::attackFlash(coords, tile, 3);
-                c->location->map->removeObject(obj);
-
-                return true;
-            }            
-        }
-        
-        /* Show the attack annotation */
-        c->location->map->annotations->add(coords, tile, true);
-        gameUpdateScreen();
-
-        /* Based on attack speed setting in setting struct, make a delay for
-           the attack annotation */
-        if (attackdelay > 0)
-            EventHandler::wait_msecs(attackdelay * 4);
+        }            
     }
+        
+    // Show the attack annotation
+    c->location->map->annotations->add(coords, tile, true);
+    gameUpdateScreen();
+
+    /* Based on attack speed setting in setting struct, make a delay for
+       the attack annotation */
+    if (attackdelay > 0)
+        EventHandler::wait_msecs(attackdelay * 4);
+
+    c->location->map->annotations->remove(coords, tile);
 
     return false;    
 }
@@ -3119,69 +3089,6 @@ vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, co
     }
 
     return path;
-}
-
-
-/**
- * Perform an action in the given direction, using the 'handleAtCoord'
- * function of the CoordActionInfo struct.  The 'blockedPredicate'
- * function is used to determine whether or not the action is blocked
- * by the tile it passes over.
- */
-int gameDirectionalAction(CoordActionInfo *info) {
-    int distance = 0,
-        succeeded = 0;
-    MapCoords t_c = info->origin;
-    Direction dirx = DIR_NONE,
-              diry = DIR_NONE;
-    MapTile *tile;
-
-    /* Figure out which direction the action is going */
-    if (DIR_IN_MASK(DIR_WEST, info->dir)) dirx = DIR_WEST;
-    else if (DIR_IN_MASK(DIR_EAST, info->dir)) dirx = DIR_EAST;
-    if (DIR_IN_MASK(DIR_NORTH, info->dir)) diry = DIR_NORTH;
-    else if (DIR_IN_MASK(DIR_SOUTH, info->dir)) diry = DIR_SOUTH;
-
-    /*
-     * try every tile in the given direction, up to the given range.
-     * Stop when the command handler succeeds, the range is exceeded,
-     * or the action is blocked.
-     */
-    
-    if ((dirx <= 0 || DIR_IN_MASK(dirx, info->validDirections)) && 
-        (diry <= 0 || DIR_IN_MASK(diry, info->validDirections))) {
-        for (distance = 0; distance <= info->range;
-             distance++, t_c.move(dirx, c->location->map), t_c.move(diry, c->location->map)) {
-            if (distance >= info->firstValidDistance) {                
-            
-                /* make sure our action isn't taking us off the map */
-                if (MAP_IS_OOB(c->location->map, t_c))
-                    break;
-
-                tile = c->location->map->tileAt(t_c, WITH_GROUND_OBJECTS);
-
-                /* should we see if the action is blocked before trying it? */
-                if (info->blockBefore && info->blockedPredicate &&
-                    !(*(info->blockedPredicate))(*tile))
-                    break;
-
-                if ((*(info->handleAtCoord))(t_c, distance, info)) {
-                    succeeded = 1;
-                    break;
-                }                
-
-                /* see if the action was blocked only if it did not succeed */
-                if (!info->blockBefore && info->blockedPredicate &&
-                    !(*(info->blockedPredicate))(*tile))
-                    break;
-            }
-        }
-    }
-
-    if (!succeeded)
-        (*info->handleAtCoord)(MapCoords(-1, -1), distance, info);
-
-    return 0;
 }
 
 /**
@@ -3294,40 +3201,6 @@ void gameLordBritishCheckLevels(void) {
     }
  
     screenMessage("\nWhat would thou\nask of me?\n");
-}
-
-/**
- * Summons a creature given by 'creatureName'. This can either be given
- * as the creature's name, or the creature's id.  Once it finds the
- * creature to be summoned, it calls gameSpawnCreature() to spawn it.
- */
-void gameSummonCreature(const string &name) {    
-    const Creature *m = NULL;
-    string creatureName = name;
-
-    trim(creatureName);
-    if (creatureName.empty()) {
-        screenMessage("\n");
-        return;
-    }
-    
-    /* find the creature by its id and spawn it */
-    unsigned int id = atoi(creatureName.c_str());
-    if (id > 0)
-        m = creatures.getById(id);
-
-    if (!m)
-        m = creatures.getByName(creatureName);
-
-    if (m) {
-        if (gameSpawnCreature(m))
-            screenMessage("\n%s summoned!\n", m->getName().c_str());
-        else screenMessage("\n\nNo place to put %s!\n\n", m->getName().c_str());
-        
-        return;
-    }
-    
-    screenMessage("\n%s not found\n", creatureName.c_str());
 }
 
 /**
