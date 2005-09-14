@@ -43,8 +43,8 @@ void moveAvatarInDungeon(MoveEvent &event);
 int moveObject(class Map *map, class Creature *obj, MapCoords avatar);
 int moveCombatObject(int action, class Map *map, class Creature *obj, MapCoords target);
 void movePartyMember(MoveEvent &event);
-int slowedByTile(MapTile tile);
-int slowedByWind(int direction);
+bool slowedByTile(MapTile tile);
+bool slowedByWind(int direction);
 
 extern bool collisionOverride;
 

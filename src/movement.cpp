@@ -410,10 +410,10 @@ void movePartyMember(MoveEvent &event) {
  
 /**
  * Default handler for slowing movement.
- * Returns 1 if slowed, 0 if not slowed
+ * Returns true if slowed, false if not slowed
  */
-int slowedByTile(MapTile tile) {
-    int slow;
+bool slowedByTile(MapTile tile) {
+    bool slow;
     
     switch (tile.getSpeed()) {    
     case SLOW:
@@ -427,7 +427,7 @@ int slowedByTile(MapTile tile) {
         break;
     case FAST:
     default:
-        slow = 0;
+        slow = false;
         break;
     }
 
@@ -436,9 +436,9 @@ int slowedByTile(MapTile tile) {
 
 /**
  * Slowed depending on the direction of object with respect to wind direction
- * Returns 1 if slowed, 0 if not slowed
+ * Returns true if slowed, false if not slowed
  */
-int slowedByWind(int direction) {
+bool slowedByWind(int direction) {
     /* 1 of 4 moves while trying to move into the wind succeeds */
     if (direction == c->windDirection)
         return (c->saveGame->moves % 4) != 0;
@@ -446,5 +446,5 @@ int slowedByWind(int direction) {
     else if (direction == dirReverse((Direction) c->windDirection))
         return (c->saveGame->moves % 4) == 3;    
     else
-        return 0;
+        return false;
 }
