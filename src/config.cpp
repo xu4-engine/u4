@@ -95,7 +95,7 @@ void *Config::fileOpen(const char *filename) {
 }
 
 void Config::accumError(void *l, const char *fmt, ...) {
-    string* errorMessage = (string *) l;
+    string* errorMessage = static_cast<string *>(l);
     char buffer[1000];
     va_list args;
 
@@ -185,7 +185,7 @@ int ConfigElement::getEnum(const string &name, const char *enumValues[]) const {
         return 0;
 
     for (i = 0; enumValues[i]; i++) {
-        if (xmlStrcmp(prop, (const xmlChar *) enumValues[i]) == 0)
+        if (xmlStrcmp(prop, reinterpret_cast<const xmlChar *>(enumValues[i])) == 0)
         result = i;
     }
 
