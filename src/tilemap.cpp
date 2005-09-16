@@ -72,7 +72,7 @@ void TileMap::unloadAll() {
  * Loads a tile map which translates between tile indices and tile names
  * Tile maps are useful to translate from dos tile indices to xu4 tile ids
  */
-void TileMap::load(string filename) {
+void TileMap::load(const string &filename) {
     xmlDocPtr doc;
     xmlNodePtr root, node;    
     
@@ -83,7 +83,7 @@ void TileMap::load(string filename) {
     if (xmlStrcmp(root->name, (const xmlChar *) "tilemap") != 0)
         errorFatal("malformed %s", filename.c_str());
 
-    TileIndexMap* tileMap = new TileIndexMap;
+    TileMap *tm = new TileMap;
     
     string name = xmlGetPropAsString(root, "name");    
     TRACE_LOCAL(dbg, string("Tilemap name is: ") + name);
@@ -114,16 +114,17 @@ void TileMap::load(string filename) {
         /* insert the tile into the tile map */
         for (int i = 0; i < frames; i++) {
             if (i < t->frames)
-                (*tileMap)[index+i] = MapTile(t->id, i);
+                tm->tilemap[index+i] = MapTile(t->id, i);
             /* frame fell out of the scope of the tile -- frame is set to 0 */
-            else (*tileMap)[index+i] = MapTile(t->id, 0);
+            else
+                tm->tilemap[index+i] = MapTile(t->id, 0);
         }
         
         index += frames;
     }
     
     /* add the tilemap to our list */
-    tileMaps[name] = tileMap;
+    tileMaps[name] = tm;
 
     xmlFreeDoc(doc);
 }
@@ -131,15 +132,16 @@ void TileMap::load(string filename) {
 /**
  * Returns the Tile index map with the specified name
  */
-TileIndexMap* TileMap::get(string name) {
+TileMap *TileMap::get(string name) {
     if (tileMaps.find(name) != tileMaps.end())
         return tileMaps[name];
     else return NULL;    
 }
 
 /**
- * Returns the number of tile maps currently loaded
+ * Translates a raw index to a MapTile.
  */
-int TileMap::size() {
-    return tileMaps.size();
+MapTile TileMap::translate(unsigned int index) {
+    return tilemap[index];
 }
+

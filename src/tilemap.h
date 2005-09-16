@@ -11,20 +11,24 @@
 
 using std::string;
 
-typedef std::map<unsigned int, MapTile> TileIndexMap;
-
+/**
+ * A tilemap maps the raw bytes in a map file to MapTiles.
+ */
 class TileMap {
 public:
-    typedef std::map<string, TileIndexMap*> TileIndexMapMap;
+    typedef std::map<string, TileMap *> TileIndexMapMap;
     
+    MapTile translate(unsigned int index);
+
     static void loadAll();
     static void unloadAll();
-    static void load(string filename);
-    static TileIndexMap* get(string name);
-    static int size();
+    static TileMap *get(string name);
 
 private:
+    static void load(const string &filename);
     static TileIndexMapMap tileMaps;
+
+    std::map<unsigned int, MapTile> tilemap;
 };
 
 #endif
