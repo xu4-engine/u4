@@ -119,7 +119,7 @@ bool IntroBinData::load() {
     u4fseek(title, INTRO_MAP_OFFSET, SEEK_SET);
     introMap = new MapTile[(INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT) + 1];    
     for (i = 0; i < INTRO_MAP_HEIGHT * INTRO_MAP_WIDTH; i++)        
-        introMap[i] = Tile::translate(u4fgetc(title));
+        introMap[i] = Tile::translate(u4fgetc(title), "base");
         
     u4fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
     scriptTable = new unsigned char[INTRO_SCRIPT_TABLE_SIZE];
@@ -129,8 +129,8 @@ bool IntroBinData::load() {
     u4fseek(title, INTRO_BASETILE_TABLE_OFFSET, SEEK_SET);
     baseTileTable = new Tile*[INTRO_BASETILE_TABLE_SIZE];
     for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
-        MapTile tile = Tile::translate(u4fgetc(title));
-        baseTileTable[i] = Tileset::get()->get(tile.id);
+        MapTile tile = Tile::translate(u4fgetc(title), "base");
+        baseTileTable[i] = Tileset::get("base")->get(tile.id);
     }
 
     /* --------------------------
