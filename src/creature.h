@@ -184,7 +184,7 @@ public:
     void applyTileEffect(TileEffect effect);
     virtual bool attackHit(Creature *m);
     bool divide();
-    CreatureStatus getState() const;
+    virtual CreatureStatus getState() const;
     StatusType getStatus() const;
     bool hideOrShow();
     virtual bool isHit(int hit_offset = 0);

@@ -313,27 +313,31 @@ void Creature::act() {
     if (negates())
         c->aura->set(Aura::NEGATE, 2);
 
-    /* default action */
-    action = CA_ATTACK;        
+    /*
+     * figure out what to do
+     */
 
-    /* if the creature doesn't have something specific to do yet, let's try to find something! */
-    if (action == CA_ATTACK) {
-        /* creatures who teleport do so 1/8 of the time */
-        if (teleports() && xu4_random(8) == 0)
-            action = CA_TELEPORT;
-        /* creatures who ranged attack do so 1/4 of the time.
-           make sure their ranged attack is not negated! */
-        else if (ranged != 0 && xu4_random(4) == 0 && 
-            ((rangedhittile != Tileset::findTileByName("magic_flash")->id) || (*c->aura != Aura::NEGATE)))
-            action = CA_RANGED;
-        /* creatures who cast sleep do so 1/4 of the time they don't ranged attack */
-        else if (castsSleep() && (*c->aura != Aura::NEGATE) && (xu4_random(4) == 0))
-            action = CA_CAST_SLEEP;
+    // creatures who teleport do so 1/8 of the time
+    if (teleports() && xu4_random(8) == 0)
+        action = CA_TELEPORT;
+    // creatures who ranged attack do so 1/4 of the time.  Make sure
+    // their ranged attack is not negated!
+    else if (ranged != 0 && xu4_random(4) == 0 && 
+             ((rangedhittile != Tileset::findTileByName("magic_flash")->id) || (*c->aura != Aura::NEGATE)))
+        action = CA_RANGED;
+    // creatures who cast sleep do so 1/4 of the time they don't ranged attack
+    else if (castsSleep() && (*c->aura != Aura::NEGATE) && (xu4_random(4) == 0))
+        action = CA_CAST_SLEEP;
+    else if (getState() == MSTAT_FLEEING)
+        action = CA_FLEE;
+    // default action: attack (or move towards) closest target
+    else
+        action = CA_ATTACK;        
     
-        else if (getState() == MSTAT_FLEEING)
-            action = CA_FLEE;
-    }
-    
+    /* 
+     * now find out who to do it to
+     */
+
     target = nearestOpponent(&dist, action == CA_RANGED);    
     if (target == NULL)
         return;
@@ -347,7 +351,7 @@ void Creature::act() {
 
     switch(action) {
     case CA_ATTACK:
-        if (attackHit(target)) {            
+        if (attackHit(target)) {
             CombatController::attackFlash(target->getCoords(), Tileset::findTileByName("hit_flash")->id, 3);
             if (!dealDamage(target, getDamage()))
                 target = NULL;
@@ -366,103 +370,96 @@ void Creature::act() {
         }
         break;
 
-    case CA_CAST_SLEEP:
-        {            
-            screenMessage("Sleep!\n");
+    case CA_CAST_SLEEP: {            
+        screenMessage("Sleep!\n");
 
-            gameSpellEffect('s', -1, (Sound)0); /* show the sleep spell effect */
+        gameSpellEffect('s', -1, (Sound)0); /* show the sleep spell effect */
         
-            /* Apply the sleep spell to party members still in combat */
-            if (!isPartyMember(this)) {
-                PartyMemberVector party = c->combat->getMap()->getPartyMembers();
-                PartyMemberVector::iterator j;
-                
-                for (j = party.begin(); j != party.end(); j++) {
-                    if (xu4_random(2) == 0)
-                        (*j)->putToSleep();                    
-                }
+        /* Apply the sleep spell to party members still in combat */
+        if (!isPartyMember(this)) {
+            PartyMemberVector party = c->combat->getMap()->getPartyMembers();
+            PartyMemberVector::iterator j;
+
+            for (j = party.begin(); j != party.end(); j++) {
+                if (xu4_random(2) == 0)
+                    (*j)->putToSleep();                    
             }
         }
-        
         break;
+    }
 
     case CA_TELEPORT: {
-            Coords new_c;
-            bool valid = false;
-            bool firstTry = true;                    
-            MapTile *tile;                
+        Coords new_c;
+        bool valid = false;
+        bool firstTry = true;                    
         
-            while (!valid) {
-                Map *map = getMap();
-                new_c = Coords(xu4_random(map->width), xu4_random(map->height), c->location->coords.z);
+        while (!valid) {
+            Map *map = getMap();
+            new_c = Coords(xu4_random(map->width), xu4_random(map->height), c->location->coords.z);
                 
-                tile = map->tileAt(new_c, WITH_OBJECTS);
+            MapTile *tile = map->tileAt(new_c, WITH_OBJECTS);
             
-                if (tile->isCreatureWalkable()) {
-                    /* If the tile would slow me down, try again! */
-                    if (firstTry && tile->getSpeed() != FAST)
-                        firstTry = false;
-                    /* OK, good enough! */
-                    else
-                        valid = true;
-                }
+            if (tile->isCreatureWalkable()) {
+                /* If the tile would slow me down, try again! */
+                if (firstTry && tile->getSpeed() != FAST)
+                    firstTry = false;
+                /* OK, good enough! */
+                else
+                    valid = true;
             }
-        
-            /* Teleport! */
-            setCoords(new_c);
         }
+        
+        /* Teleport! */
+        setCoords(new_c);
+        break;
+    }
+
+    case CA_RANGED: {
+        // if the creature has a random tile for a ranged weapon,
+        // let's switch it now!
+        if (hasRandomRanged())
+            setRandomRanged();
+
+        MapCoords m_coords = getCoords(),
+            p_coords = target->getCoords();
+
+        // figure out which direction to fire the weapon
+        int dir = m_coords.getRelativeDirection(p_coords);
+
+        vector<Coords> path = gameGetDirectionalActionPath(dir, MASK_DIR_ALL, m_coords,
+                                                           1, 11, &MapTile::canAttackOverTile, false);
+        bool hit = false;
+        for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+            if (c->combat->rangedAttack(*i, this)) {
+                hit = true;
+                break;
+            }
+        }
+        if (!hit && path.size() > 0)
+            c->combat->rangedMiss(path[path.size() - 1], this);
 
         break;
-
-    case CA_RANGED:
-        {           
-            // if the creature has a random tile for a ranged weapon,
-            // let's switch it now!
-            if (hasRandomRanged())
-                setRandomRanged();
-
-            MapCoords m_coords = getCoords(),
-                      p_coords = target->getCoords();
-
-            // figure out which direction to fire the weapon
-            int dir = m_coords.getRelativeDirection(p_coords);
-
-            vector<Coords> path = gameGetDirectionalActionPath(dir, MASK_DIR_ALL, m_coords,
-                                                               1, 11, &MapTile::canAttackOverTile, false);
-            bool hit = false;
-            for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
-                if (c->combat->rangedAttack(*i, this)) {
-                    hit = true;
-                    break;
-                }
-            }
-            if (!hit && path.size() > 0)
-                c->combat->rangedMiss(path[path.size() - 1], this);
-
-            break;
-        }
+    }
 
     case CA_FLEE:
-    case CA_ADVANCE:
-        {
-            Map *map = getMap();
-            if (moveCombatObject(action, getMap(), this, target->getCoords())) {
-                Coords coords = getCoords();
+    case CA_ADVANCE: {
+        Map *map = getMap();
+        if (moveCombatObject(action, map, this, target->getCoords())) {
+            Coords coords = getCoords();
 
-                if (MAP_IS_OOB(map, coords)) {
-                    screenMessage("\n%s Flees!\n", name.c_str());
+            if (MAP_IS_OOB(map, coords)) {
+                screenMessage("\n%s Flees!\n", name.c_str());
                 
-                    /* Congrats, you have a heart! */
-                    if (isGood())
-                        c->party->adjustKarma(KA_SPARED_GOOD);
+                /* Congrats, you have a heart! */
+                if (isGood())
+                    c->party->adjustKarma(KA_SPARED_GOOD);
 
-                    map->removeObject(this);                
-                }
+                map->removeObject(this);                
             }
         }
-        
         break;
-    }    
+    }
+    }
 }
 
 /**
@@ -569,32 +566,33 @@ Creature *Creature::nearestOpponent(int *dist, bool ranged) {
     Creature *opponent = NULL;
     int d, leastDist = 0xFFFF;    
     ObjectDeque::iterator i;
-    bool opp = (*c->aura == Aura::JINX) ? false : true;
+    bool jinx = (*c->aura == Aura::JINX);
     Map *map = getMap();
 
     for (i = map->objects.begin(); i < map->objects.end(); i++) {
-        bool player = isPartyMember(this);
-        bool creature = !isPartyMember(*i);
+        if (!isCreature(*i))
+            continue;
+
+        bool amPlayer = isPartyMember(this);
+        bool fightingPlayer = isPartyMember(*i);
 
         /* if a party member, find a creature. If a creature, find a party member */
         /* if jinxed is false, find anything that isn't self */
-        if (isCreature(*i)) {
-            if ((player && creature) || (!player && !creature) || (!opp && *i != this)) {
-                MapCoords objCoords = (*i)->getCoords();
+        if ((amPlayer != fightingPlayer) || 
+            (jinx && !amPlayer && *i != this)) {
+            MapCoords objCoords = (*i)->getCoords();
 
-                /* if ranged, get the distance using diagonals, otherwise get movement distance */
-                if (ranged)
-                    d = objCoords.distance(getCoords());
-                else d = objCoords.movementDistance(getCoords());
+            /* if ranged, get the distance using diagonals, otherwise get movement distance */
+            if (ranged)
+                d = objCoords.distance(getCoords());
+            else d = objCoords.movementDistance(getCoords());
             
-                /* skip target 50% of time if same distance */
-                if (d < leastDist || (d == leastDist && xu4_random(2) == 0)) {
-                    opponent = dynamic_cast<Creature*>(*i);
-                    leastDist = d;
-                }
+            /* skip target 50% of time if same distance */
+            if (d < leastDist || (d == leastDist && xu4_random(2) == 0)) {
+                opponent = dynamic_cast<Creature*>(*i);
+                leastDist = d;
             }
         }    
-    
     }
 
     if (opponent)
