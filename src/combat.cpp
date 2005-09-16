@@ -20,7 +20,6 @@
 #include "item.h"
 #include "location.h"
 #include "mapmgr.h"
-#include "menu.h"
 #include "movement.h"
 #include "names.h"
 #include "object.h"
@@ -128,14 +127,6 @@ void CombatController::init(class Creature *m) {
 
     /* initialize focus */
     focus = 0; 
-}
-
-/**
- * Initializes information for camping
- */
-void CombatController::initCamping() {
-    init(NULL);
-    camping = true;
 }
 
 /**
@@ -844,15 +835,12 @@ void CombatController::finishTurn(void) {
  * Move a party member during combat and display the appropriate messages
  */
 void CombatController::movePartyMember(MoveEvent &event) {
-    CombatController *ct = c->combat;    
-    int i;
-
     /* active player left/fled combat */
-    if ((event.result & MOVE_EXIT_TO_PARENT) && (c->party->getActivePlayer() == ct->focus)) {
+    if ((event.result & MOVE_EXIT_TO_PARENT) && (c->party->getActivePlayer() == focus)) {
         c->party->setActivePlayer(-1);
         /* assign active player to next available party member */
-        for (i = 0; i < c->party->size(); i++) {
-            if (ct->party[i] && !ct->party[i]->isDisabled()) {
+        for (int i = 0; i < c->party->size(); i++) {
+            if (party[i] && !party[i]->isDisabled()) {
                 c->party->setActivePlayer(i);
                 break;
             }
@@ -866,13 +854,12 @@ void CombatController::movePartyMember(MoveEvent &event) {
         screenMessage("Blocked!\n");
     else if (event.result & MOVE_SLOWED)
         screenMessage("Slow progress!\n"); 
-    else if (ct->winOrLose && ct->getCreature()->isEvil() && (event.result & (MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE)))
+    else if (winOrLose && getCreature()->isEvil() && (event.result & (MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE)))
         soundPlay(SOUND_FLEE);
 }
 
 // Key handlers
 bool CombatController::keyPressed(int key) {
-    CombatController *ct = c->combat;
     bool valid = true;
     bool endTurn = true;
 
@@ -886,7 +873,7 @@ bool CombatController::keyPressed(int key) {
 
     case U4_ESC:
         if (settings.debug)            
-            ct->end(false); /* don't adjust karma */        
+            end(false);         /* don't adjust karma */        
         else screenMessage("Bad command\n");        
 
         break;
@@ -933,24 +920,23 @@ bool CombatController::keyPressed(int key) {
         break;
 
     case 'a':
-        screenMessage("Dir: ");        
-        eventHandler->pushKeyHandler(KeyHandler(&CombatController::chooseWeaponDir, NULL));
+        attack();
         break;
 
     case 'c':
         screenMessage("Cast Spell!\n");
-        castSpell(ct->focus);
+        castSpell(focus);
         endTurn = false; /* gameCastForPlayer calls finishTurn() */
         break;
 
     case 'g':
         screenMessage("Get Chest!\n");
-        getChest(ct->focus);
+        getChest(focus);
         break;
 
     case 'l':
         if (settings.debug) {
-            Coords coords = ct->getCurrentPlayer()->getCoords();
+            Coords coords = getCurrentPlayer()->getCoords();
             screenMessage("\nLocation:\nx:%d\ny:%d\nz:%d\n", coords.x, coords.y, coords.z);
             screenPrompt();
             valid = false;
@@ -960,11 +946,11 @@ bool CombatController::keyPressed(int key) {
         break;            
 
     case 'r':
-        readyWeapon(ct->getFocus());
+        readyWeapon(getFocus());
         break;
 
     case 't':
-        if (settings.debug && ct->map->isDungeonRoom()) {
+        if (settings.debug && map->isDungeonRoom()) {
             Dungeon *dungeon = dynamic_cast<Dungeon*>(c->location->prev->map);
             Trigger *triggers = dungeon->rooms[dungeon->currentRoom].triggers;
             int i;
@@ -1006,7 +992,7 @@ bool CombatController::keyPressed(int key) {
 
     case 'z': 
         {            
-            c->stats->setView(StatsView(STATS_CHAR1 + ct->getFocus()));
+            c->stats->setView(StatsView(STATS_CHAR1 + getFocus()));
 
             /* reset the spell mix menu and un-highlight the current item,
                and hide reagents that you don't have */            
@@ -1072,85 +1058,77 @@ bool CombatController::keyPressed(int key) {
 /**
  * Key handler for choosing an attack direction
  */
-bool CombatController::chooseWeaponDir(int key, void *data) {
-    CombatController *ct = c->combat;
-    Direction dir = keyToDirection(key);
-    bool valid = (dir != DIR_NONE) ? true : false;
-    const Weapon *weapon = Weapon::get(ct->party[ct->getFocus()]->getWeapon());
+void CombatController::attack() {
+    screenMessage("Dir: ");
 
-    eventHandler->popKeyHandler();
+    ReadDirController dirController;
+    eventHandler->pushController(&dirController);
+    Direction dir = dirController.waitFor();
+    if (dir == DIR_NONE)
+        return;
+    screenMessage("%s\n", getDirectionName(dir));
 
+    PartyMember *attacker = getCurrentPlayer();
+
+    const Weapon *weapon = Weapon::get(attacker->getWeapon());
     int range = weapon->getRange();
-    if (valid) {
-        screenMessage("%s\n", getDirectionName(dir));
-        if (weapon->canChooseDistance()) {
-            screenMessage("Range: ");
-            int choice = ReadChoiceController::get("123456789");
-            if ((choice - '0') >= 1 && (choice - '0') <= weapon->getRange()) {
-                range = choice - '0';
-                screenMessage("%d\n", range);
-            } else {
-                valid = false;
-            }
+    if (weapon->canChooseDistance()) {
+        screenMessage("Range: ");
+        int choice = ReadChoiceController::get("123456789");
+        if ((choice - '0') >= 1 && (choice - '0') <= weapon->getRange()) {
+            range = choice - '0';
+            screenMessage("%d\n", range);
+        } else {
+            return;
         }
     }
-    if (valid) {
-        PartyMember *attacker = ct->getCurrentPlayer();
 
-        vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, 
-                                                           attacker->getCoords(),
-                                                           1, range, 
-                                                           weapon->canAttackThroughObjects() ? NULL : &MapTile::canAttackOverTile,
-                                                           false);
+    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, 
+                                                       attacker->getCoords(),
+                                                       1, range, 
+                                                       weapon->canAttackThroughObjects() ? NULL : &MapTile::canAttackOverTile,
+                                                       false);
 
-        bool foundTarget = false;
-        int targetDistance = path.size();
-        Coords targetCoords = path[path.size() - 1];
+    bool foundTarget = false;
+    int targetDistance = path.size();
+    Coords targetCoords = path[path.size() - 1];
 
-        int distance = 1;
-        for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
-            if (c->combat->attackAt(*i, attacker, MASK_DIR(dir), range, distance)) {
-                foundTarget = true;
-                targetDistance = distance;
-                targetCoords = *i;
-                break;
-            }
-            distance++;
+    int distance = 1;
+    for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+        if (c->combat->attackAt(*i, attacker, MASK_DIR(dir), range, distance)) {
+            foundTarget = true;
+            targetDistance = distance;
+            targetCoords = *i;
+            break;
         }
-
-        // is weapon lost? (e.g. dagger)
-        if (weapon->loseWhenUsed() ||
-            (weapon->loseWhenRanged() && (!foundTarget || targetDistance > 1))) {
-            if (!attacker->loseWeapon())
-                screenMessage("Last One!\n");
-        }
-
-        // does weapon leaves a tile behind? (e.g. flaming oil)
-        MapTile *groundTile = ct->map->tileAt(targetCoords, WITHOUT_OBJECTS);
-        if (weapon->leavesTile().id > 0 && groundTile->isWalkable() &&
-            (!foundTarget || targetDistance == range))
-            ct->map->annotations->add(path[path.size() - 1], weapon->leavesTile());
-
-        /* show the 'miss' tile */
-        if (!foundTarget) {
-            attackFlash(targetCoords, weapon->getMissTile(), 3);
-            soundPlay(SOUND_MISSED, false);
-
-            /* This goes here so messages are shown in the original order */
-            screenMessage("Missed!\n");
-        }
-
-        // does weapon returns to its owner? (e.g. magic axe)
-        if (weapon->returns())
-            ct->returnWeaponToOwner(targetCoords, targetDistance, MASK_DIR(dir), weapon);
-
-        // only end the turn if we're still in combat
-        if (c->location->finishTurn == &CombatController::finishTurn)
-            (*c->location->finishTurn)();
-
+        distance++;
     }
 
-    return valid || KeyHandler::defaultHandler(key, NULL);
+    // is weapon lost? (e.g. dagger)
+    if (weapon->loseWhenUsed() ||
+        (weapon->loseWhenRanged() && (!foundTarget || targetDistance > 1))) {
+        if (!attacker->loseWeapon())
+            screenMessage("Last One!\n");
+    }
+
+    // does weapon leaves a tile behind? (e.g. flaming oil)
+    MapTile *groundTile = map->tileAt(targetCoords, WITHOUT_OBJECTS);
+    if (weapon->leavesTile().id > 0 && groundTile->isWalkable() &&
+        (!foundTarget || targetDistance == range))
+        map->annotations->add(path[path.size() - 1], weapon->leavesTile());
+
+    /* show the 'miss' tile */
+    if (!foundTarget) {
+        attackFlash(targetCoords, weapon->getMissTile(), 3);
+        soundPlay(SOUND_MISSED, false);
+
+        /* This goes here so messages are shown in the original order */
+        screenMessage("Missed!\n");
+    }
+
+    // does weapon returns to its owner? (e.g. magic axe)
+    if (weapon->returns())
+        returnWeaponToOwner(targetCoords, targetDistance, MASK_DIR(dir), weapon);
 }
 
 void CombatController::update(Party *party, PartyEvent &event) {
@@ -1224,8 +1202,8 @@ Creature *CombatMap::creatureAt(Coords coords) {
  * Returns a valid combat map given the provided information
  */ 
 MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) {
-    int fromShip = 0,
-        toShip = 0;
+    bool fromShip = false,
+        toShip = false;
     Object *objUnder = c->location->map->objectAt(c->location->coords);
 
     static std::map<MapTile, MapId> tileMap;
@@ -1271,9 +1249,9 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
     }
 
     if (transport.isShip() || (objUnder && objUnder->getTile().isShip()))
-        fromShip = 1;
+        fromShip = true;
     if (obj->getTile().isPirateShip())
-        toShip = 1;
+        toShip = true;
 
     if (fromShip && toShip)
         return MAP_SHIPSHIP_CON;

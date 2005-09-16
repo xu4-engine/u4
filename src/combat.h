@@ -62,12 +62,11 @@ public:
     void showCombatMessage(bool show = true);
 
     // Methods
-    void init(Creature *m);
-    void initCamping();
+    virtual void init(Creature *m);
     void initDungeonRoom(int room, Direction from);
     
     void applyCreatureTileEffects();
-    void begin();
+    virtual void begin();
     void end(bool adjustKarma);
     void fillCreatureTable(const Creature *creature);
     int  initialNumberOfCreatures(const Creature *creature) const;
@@ -79,6 +78,7 @@ public:
     bool setActivePlayer(int player);
 
     // attack functions
+    void attack();
     bool attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance);
     bool rangedAttack(const Coords &coords, Creature *attacker);
     void rangedMiss(const Coords &coords, Creature *attacker);
@@ -89,12 +89,11 @@ public:
      */
     static void attackFlash(Coords coords, MapTile tile, int timeFactor);
     static void finishTurn(void);
-    static void movePartyMember(MoveEvent &event);
 
     // Key handlers
     virtual bool keyPressed(int key);
-    static bool chooseWeaponDir(int key, void *data);
 
+    void movePartyMember(MoveEvent &event);
     virtual void update(Party *party, PartyEvent &event);
 
     // Properties
