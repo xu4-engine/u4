@@ -195,8 +195,7 @@ void Tileset::loadAll() {
 
     /* load tile maps from xml, including translations from index to id */
     TRACE_LOCAL(dbg, "Loading tilemaps");
-    if (!TileMap::size())
-        TileMap::loadAll();
+    TileMap::loadAll();
 
     TRACE(dbg, "Successfully Loaded Tilesets");
 }
