@@ -48,6 +48,7 @@
 #include "sound.h"
 #include "spell.h"
 #include "stats.h"
+#include "tilemap.h"
 #include "tileset.h"
 #include "utils.h"
 #include "script.h"
@@ -283,7 +284,7 @@ void GameController::init() {
     }
 
     /* set the party's transport */
-    c->party->setTransport(Tile::translate(c->saveGame->transport));
+    c->party->setTransport(c->location->map->tilemap->translate(c->saveGame->transport));
 
     spellSetEffectCallback(&gameSpellEffect);
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
@@ -701,7 +702,7 @@ void GameController::update(Location *location, MoveEvent &event) {
         avatarMovedInDungeon(event);
         break;
     case Map::COMBAT:
-        CombatController::movePartyMember(event);
+        c->combat->movePartyMember(event);
         break;
     default:
         avatarMoved(event);
@@ -1029,16 +1030,7 @@ bool GameController::keyPressed(int key) {
             break;
 
         case 'h':
-            if (!(c->location->context & (CTX_WORLDMAP | CTX_DUNGEON))) {
-                screenMessage("Hole up & Camp\nNot here!\n");
-                break;
-            }
-            if (c->transportContext != TRANSPORT_FOOT) {
-                screenMessage("Hole up & Camp\nOnly on foot!\n");
-                break;
-            }
-            screenMessage("Hole up & Camp!\n");
-            campBegin();
+            holeUp();
             break;
 
         case 'i':
@@ -1161,7 +1153,7 @@ bool GameController::keyPressed(int key) {
                 if (c->transportContext == TRANSPORT_SHIP)
                     c->lastShip = obj;
 
-                c->party->setTransport(Tileset::findTileByName("avatar")->id);
+                c->party->setTransport(c->location->map->tileset->getByName("avatar")->id);
                 c->horseSpeed = 0;
                 screenMessage("X-it\n");
             } else
@@ -1482,7 +1474,7 @@ bool destroyAt(const Coords &coords) {
             screenMessage("%s Destroyed!\n", c->getName().c_str());
         }
         else {
-            Tile *t = Tileset::get()->get(obj->getTile().id);
+            Tile *t = c->location->map->tileset->get(obj->getTile().id);
             screenMessage("%s Destroyed!\n", t->name.c_str());
         }
 
@@ -1898,6 +1890,24 @@ bool getChestTrapHandler(int player) {
     return false;
 }
 
+void holeUp() {
+    if (!(c->location->context & (CTX_WORLDMAP | CTX_DUNGEON))) {
+        screenMessage("Hole up & Camp\nNot here!\n");
+        return;
+    }
+
+    if (c->transportContext != TRANSPORT_FOOT) {
+        screenMessage("Hole up & Camp\nOnly on foot!\n");
+        return;
+    }
+
+    screenMessage("Hole up & Camp!\n");
+
+    c->combat = new CampController();
+    c->combat->init(NULL);
+    c->combat->begin();
+}
+
 /**
  * Initializes the moon state according to the savegame file. This method of
  * initializing the moons (rather than just setting them directly) is necessary
@@ -1952,58 +1962,58 @@ void GameController::updateMoons(bool showmoongates)
             if (trammelSubphase == 0) {
                 gate = moongateGetGateCoordsForPhase(oldTrammel);
                 if (gate)
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x40));
+                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x40));
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate)
-                    c->location->map->annotations->add(*gate, Tile::translate(0x40));
+                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x40));
             }
             else if (trammelSubphase == 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x40));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x41));
+                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x40));
+                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x41));
                 }
             }
             else if (trammelSubphase == 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x41));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x42));
+                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x41));
+                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x42));
                 }
             }
             else if (trammelSubphase == 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x42));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x43));
+                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x42));
+                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x43));
                 }
             }
             else if ((trammelSubphase > 3) && (trammelSubphase < (MOON_SECONDS_PER_PHASE * 4 * 3) - 3)) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x43));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x43));
+                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x43));
+                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x43));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x43));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x42));
+                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x43));
+                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x42));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x42));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x41));
+                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x42));
+                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x41));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, Tile::translate(0x41));
-                    c->location->map->annotations->add(*gate, Tile::translate(0x40));
+                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x41));
+                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x40));
                 }
             }
         }
@@ -2167,7 +2177,7 @@ bool jimmyAt(const Coords &coords) {
         return false;
         
     if (c->saveGame->keys) {
-        static const MapTile door = *Tileset::get()->getByName("door");
+        static const MapTile door = *c->location->map->tileset->getByName("door");
         c->saveGame->keys--;
         c->location->map->annotations->add(coords, door);
         screenMessage("\nUnlocked!\n");
@@ -2449,7 +2459,7 @@ void newOrder() {
     /* re-build the party */
     delete c->party;
     c->party = new Party(c->saveGame);
-    c->party->setTransport(Tile::translate(c->saveGame->transport));
+    c->party->setTransport(c->location->map->tilemap->translate(c->saveGame->transport));
 }
 
 /**
@@ -2927,22 +2937,22 @@ void gameFixupObjects(Map *map) {
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         SaveGameMonsterRecord *monster = &map->monsterTable[i];
         if (monster->prevTile != 0) {
-            Coords c(monster->x, monster->y);
-            MapTile tile = Tile::translate(monster->tile),
-                oldTile = Tile::translate(monster->prevTile);
+            Coords coords(monster->x, monster->y);
+            MapTile tile = c->location->map->tilemap->translate(monster->tile),
+                oldTile = c->location->map->tilemap->translate(monster->prevTile);
             
             if (i < MONSTERTABLE_CREATURES_SIZE) {
                 const Creature *creature = creatures.getByTile(tile);
                 /* make sure we really have a creature */
                 if (creature)
-                    obj = map->addCreature(creature, c);
+                    obj = map->addCreature(creature, coords);
                 else {
                     fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", map->tileset->get(tile.id)->name.c_str());
-                    obj = map->addObject(tile, oldTile, c);
+                    obj = map->addObject(tile, oldTile, coords);
                 }
             }
             else
-                obj = map->addObject(tile, oldTile, c);
+                obj = map->addObject(tile, oldTile, coords);
 
             /* set the map for our object */
             obj->setMap(map);

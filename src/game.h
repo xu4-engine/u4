@@ -124,6 +124,7 @@ void attack();
 void board();
 void fire();
 void getChest(int player = -1);
+void holeUp();
 void jimmy();
 void opendoor();
 bool gamePeerCity(int city, void *data);
