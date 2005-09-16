@@ -46,7 +46,7 @@ public:
         tileset(NULL), image(NULL), large(false) {}
 
     static void loadProperties(Tile *tile, void *xmlNode);    
-    static MapTile translate(int index, string tileMap = "base");    
+    static MapTile translate(int index, string tileMap);
     static unsigned int getIndex(TileId id);
 
     Image *getImage();

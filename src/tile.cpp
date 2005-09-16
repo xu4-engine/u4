@@ -87,9 +87,9 @@ void Tile::loadProperties(Tile *tile, void *xmlNode) {
  * Returns the tile at the corresponding index of the current tileset
  */ 
 MapTile Tile::translate(int index, string tileMap) {    
-    TileIndexMap* im = TileMap::get(tileMap);
+    TileMap *im = TileMap::get(tileMap);
     if (im)
-        return (*im)[index];         
+        return im->translate(index);
 
     return MapTile();
 }
@@ -308,7 +308,7 @@ bool MapTile::canAttackOverTile(MapTile tile) {
 }
 
 MapTile MapTile::tileForClass(int klass) {    
-    return Tile::translate((klass * 2) + 0x20);
+    return Tile::translate((klass * 2) + 0x20, "base");
 }
 
 #undef TESTBIT
