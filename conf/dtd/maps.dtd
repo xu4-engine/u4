@@ -21,7 +21,9 @@
               nolineofsight       %bool;   #IMPLIED
               firstperson         %bool;   #IMPLIED
               contextual          %bool;   #IMPLIED
-              music               NMTOKEN  #REQUIRED>
+              music               NMTOKEN  #REQUIRED
+              tileset             NMTOKEN  #REQUIRED
+              tilemap             NMTOKEN  #REQUIRED>
 
 <!-- city-map specific information -->
 <!ELEMENT city ( personrole* ) >
