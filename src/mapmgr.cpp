@@ -21,6 +21,7 @@
 #include "person.h"
 #include "portal.h"
 #include "shrine.h"
+#include "tilemap.h"
 #include "tileset.h"
 #include "types.h"
 #include "u4file.h"
@@ -162,11 +163,8 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
         map->flags |= FIRST_PERSON;
 
     map->music = static_cast<Music::Type>(mapConf.getInt("music"));
-
-    if (map->type == Map::DUNGEON)
-        map->tileset = Tileset::get("dungeon");
-    else
-        map->tileset = Tileset::get("base");
+    map->tileset = Tileset::get(mapConf.getString("tileset"));
+    map->tilemap = TileMap::get(mapConf.getString("tilemap"));
 
     vector<ConfigElement> children = mapConf.getChildren();
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {

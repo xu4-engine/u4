@@ -54,8 +54,6 @@ MapLoader *MapLoader::registerLoader(MapLoader *loader, Map::Type type) {
 int MapLoader::loadData(Map *map, U4FILE *f) {
     unsigned int x, xch, y, ych;
 
-    TileIndexMap* tileMap = TileMap::get("base");
-    
     /* allocate the space we need for the map data */
     map->data.resize(map->height * map->width);
 
@@ -84,7 +82,7 @@ int MapLoader::loadData(Map *map, U4FILE *f) {
                             return 0;
                       
                         clock_t s = clock();
-                        MapTile mt = (*tileMap)[c];
+                        MapTile mt = map->tilemap->translate(c);
                         total += clock() - s;
 
                         map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt;
@@ -141,7 +139,7 @@ int CityMapLoader::load(Map *map) {
 
     /* Properly construct people for the city */       
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i] = new Person(Tile::translate(u4fgetc(ult)));
+        people[i] = new Person(map->tilemap->translate(u4fgetc(ult)));
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
         people[i]->start.x = u4fgetc(ult);
@@ -150,7 +148,7 @@ int CityMapLoader::load(Map *map) {
         people[i]->start.y = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i]->setPrevTile(Tile::translate(u4fgetc(ult)));
+        people[i]->setPrevTile(map->tilemap->translate(u4fgetc(ult)));
 
     for (i = 0; i < CITY_MAX_PERSONS * 2; i++)
         u4fgetc(ult);           /* read redundant startx/starty */
@@ -198,17 +196,16 @@ int CityMapLoader::load(Map *map) {
      */ 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         PersonRoleList::iterator current;
-        Tileset *tileset = Tileset::get();
-        
+
         people[i]->npcType = NPC_EMPTY;
         if (!people[i]->name.empty())
-            people[i]->npcType = NPC_TALKER;        
+            people[i]->npcType = NPC_TALKER;
         /* FIXME: this type of thing should be done in xml */
-        if (people[i]->getTile() == tileset->findTileByName("beggar")->id)
+        if (people[i]->getTile() == map->tileset->findTileByName("beggar")->id)
             people[i]->npcType = NPC_TALKER_BEGGAR;
-        if (people[i]->getTile() == tileset->findTileByName("guard")->id)
+        if (people[i]->getTile() == map->tileset->findTileByName("guard")->id)
             people[i]->npcType = NPC_TALKER_GUARD;
-        
+
         for (current = city->personroles.begin(); current != city->personroles.end(); current++) {
             if ((unsigned)(*current)->id == (i + 1))
                 people[i]->npcType = (PersonNpcType)(*current)->role;
@@ -217,7 +214,7 @@ int CityMapLoader::load(Map *map) {
 
     /**
      * Add the people to the city structure
-     */ 
+     */
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         if (people[i]->getTile() != 0)            
             city->persons.push_back(people[i]);        
@@ -287,7 +284,7 @@ int DngMapLoader::load(Map *map) {
     unsigned int i, j;
     for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * dungeon->levels); i++) {
         unsigned char mapData = u4fgetc(dng);
-        MapTile tile = Tile::translate(mapData, "dungeon");
+        MapTile tile = map->tilemap->translate(mapData);
         
         /* determine what type of tile it is */
         tile.type = mapData % 16;
@@ -304,7 +301,7 @@ int DngMapLoader::load(Map *map) {
         for (j = 0; j < DNGROOM_NTRIGGERS; j++) {
             int tmp;
 
-            dungeon->rooms[i].triggers[j].tile = Tile::translate(u4fgetc(dng)).id;
+            dungeon->rooms[i].triggers[j].tile = Tile::translate(u4fgetc(dng), "base").id;
 
             tmp = u4fgetc(dng);
             if (tmp == EOF)
@@ -341,11 +338,11 @@ int DngMapLoader::load(Map *map) {
 
         /* translate each creature tile to a tile id */
         for (j = 0; j < sizeof(dungeon->rooms[i].creature_tiles); j++)
-            dungeon->rooms[i].creature_tiles[j] = Tile::translate(dungeon->rooms[i].creature_tiles[j]).id;
+            dungeon->rooms[i].creature_tiles[j] = Tile::translate(dungeon->rooms[i].creature_tiles[j], "base").id;
 
         /* translate each map tile to a tile id */
         for (j = 0; j < sizeof(room_tiles); j++)
-            dungeon->rooms[i].map_data.push_back(Tile::translate(room_tiles[j]));
+            dungeon->rooms[i].map_data.push_back(Tile::translate(room_tiles[j], "base"));
     }
     u4fclose(dng);
 

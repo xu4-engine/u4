@@ -242,6 +242,7 @@ Map::Map() {
     chunk_height = 0;    
     id = 0;
     tileset = NULL;
+    tilemap = NULL;
 }
 
 Map::~Map() {

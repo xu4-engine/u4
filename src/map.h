@@ -28,6 +28,7 @@ class Map;
 class Object;
 class Person;
 class Creature;
+class TileMap;
 class Tileset;
 struct Portal;
 struct _Dungeon;
@@ -153,6 +154,7 @@ public:
     ObjectDeque     objects;
     std::map<string, MapCoords> labels;
     Tileset        *tileset;
+    TileMap        *tilemap;
 
     // u4dos compatibility
     SaveGameMonsterRecord monsterTable[MONSTERTABLE_SIZE];
