@@ -208,9 +208,9 @@ bool CheatMenuController::keyPressed(int key) {
     case 't':
         if (c->location->map->isWorldMap()) {
             MapCoords coords = c->location->coords;
-            static MapTile horse = Tileset::findTileByName("horse")->id,
-                ship = Tileset::findTileByName("ship")->id,
-                balloon = Tileset::findTileByName("balloon")->id;
+            static MapTile horse = c->location->map->tileset->getByName("horse")->id,
+                ship = c->location->map->tileset->getByName("ship")->id,
+                balloon = c->location->map->tileset->getByName("balloon")->id;
             MapTile *choice; 
             Tile *tile;
             
@@ -229,7 +229,7 @@ bool CheatMenuController::keyPressed(int key) {
 
             if (choice) {
                 ReadDirController readDir;
-                tile = Tileset::get()->get(choice->id);
+                tile = c->location->map->tileset->get(choice->id);
 
                 screenMessage("%s\n", tile->name.c_str());
 
