@@ -32,6 +32,7 @@
 #include "u4file.h"
 
 class Image;
+class Tile;
 class TileView;
 
 #if __GNUC__
@@ -83,7 +84,7 @@ void screenRedrawScreen(void);
 void screenRedrawTextArea(int x, int y, int width, int height);
 void screenScrollMessageArea(void);
 void screenShake(int iterations);
-void screenShowGemTile(MapTile* tile, bool focus, int x, int y);
+void screenShowGemTile(Tile* t, bool focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, const char *fmt, ...) PRINTF_LIKE(3, 4);
@@ -99,7 +100,7 @@ void screenEnableCursor(void);
 void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);
 
-void screenDungeonDrawTile(MapTile *tile, int distance, Direction orientation);
+void screenDungeonDrawTile(Tile *tile, int distance, Direction orientation);
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
 
 void screenSetMouseCursor(MouseCursor cursor);

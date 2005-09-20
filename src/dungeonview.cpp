@@ -20,8 +20,7 @@ DungeonView::DungeonView(int x, int y, int columns, int rows) : TileView(x, y, r
 DungeonView::DungeonView(int x, int y, int columns, int rows, const string &tileset) : TileView(x, y, rows, columns, tileset) {
 }
 
-void DungeonView::drawInDungeon(MapTile *mapTile, int distance, Direction orientation, bool large) {
-    Tile *tile = tileset->get(mapTile->id);    
+void DungeonView::drawInDungeon(Tile *tile, int distance, Direction orientation, bool large) {
     Image *tmp, *scaled;
     const static int nscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
     const static int lscale[] = { 22, 14, 6, 2 };
@@ -29,7 +28,7 @@ void DungeonView::drawInDungeon(MapTile *mapTile, int distance, Direction orient
 
     // create our animated version of the tile
     if (tile->anim) {
-        tile->anim->draw(animated, tile, mapTile, orientation);
+        tile->anim->draw(animated, tile, tile, orientation);
         tmp = Image::duplicate(animated);
     }
     else

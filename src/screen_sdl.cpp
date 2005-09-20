@@ -483,13 +483,12 @@ void screenShowChar(int chr, int x, int y) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowGemTile(MapTile *mapTile, bool focus, int x, int y) {
+void screenShowGemTile(Tile *t, bool focus, int x, int y) {
     // Make sure we account for tiles that look like other tiles (dungeon tiles, mainly)
-    Tile *t = Tileset::get()->get(mapTile->id);
     if (!t->looks_like.empty())
         t = Tileset::findTileByName(t->looks_like);
 
-    unsigned int tile = Tile::getIndex(t->id);
+    unsigned int tile = t->getIndex();
 
     if (gemTilesInfo == NULL) {
         gemTilesInfo = imageMgr->get(BKGD_GEMTILES);
@@ -604,13 +603,11 @@ int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, 
     return index;
 }
 
-void screenDungeonDrawTile(MapTile *mapTile, int distance, Direction orientation) {
+void screenDungeonDrawTile(Tile *tile, int distance, Direction orientation) {
     DungeonView view(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H);
-    Tileset *t = Tileset::get();    
-    Tile *tile = t->get(mapTile->id);
     
     // Draw the tile to the screen
-    view.drawInDungeon(mapTile, distance, orientation, tile->isLarge());
+    view.drawInDungeon(tile, distance, orientation, tile->isLarge());
 }
 
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
@@ -670,7 +667,7 @@ void screenGemUpdate() {
     int x, y;
     Image *screen = imageMgr->get("screen")->image;
     
-    const static MapTile black = Tileset::get()->getByName("black")->id;
+    //const static MapTile black = Tileset::get()->getByName("black")->id;
 
     screen->fillRect(BORDER_WIDTH * scale, 
                      BORDER_HEIGHT * scale, 
@@ -682,7 +679,7 @@ void screenGemUpdate() {
         for (y = 0; y < gemlayout->viewport.height; y++) {
             bool focus;
             tile = screenViewportTile(gemlayout->viewport.width, gemlayout->viewport.height, x, y, focus).front();
-            screenShowGemTile(tile, focus, x, y);
+            screenShowGemTile(c->location->map->tileset->get(tile->id), focus, x, y);
         }
     }
     screenRedrawMapArea();
