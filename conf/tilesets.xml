@@ -4,9 +4,9 @@
 
 <tilesets>
     <!-- Load some tilemaps -->
-    <tilemap file="tilemap-base.xml"/>
-    <tilemap file="tilemap-dungeon.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="tilemap-base.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="tilemap-dungeon.xml"/>
 
-    <tileset file="tileset-base.xml"/>
-    <tileset file="tileset-dungeon.xml"/>    
+    <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="tileset-base.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="tileset-dungeon.xml"/>
 </tilesets>
