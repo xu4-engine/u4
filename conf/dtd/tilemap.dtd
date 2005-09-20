@@ -1,9 +1,9 @@
 <!-- $Id$ -->
 
-<!ELEMENT tilemap ( map+ ) >
+<!ELEMENT tilemap ( mapping+ ) >
 <!ATTLIST tilemap name             CDATA    #REQUIRED>
 
-<!ELEMENT map EMPTY >
-<!ATTLIST map tile                 CDATA    #REQUIRED
-              index                NMTOKEN  #IMPLIED
-              frames               NMTOKEN  #IMPLIED>
+<!ELEMENT mapping EMPTY >
+<!ATTLIST mapping tile                 CDATA    #REQUIRED
+                  index                NMTOKEN  #IMPLIED
+                  frames               NMTOKEN  #IMPLIED>

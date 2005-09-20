@@ -3,117 +3,143 @@
 <!-- $Id$ -->
 
 <tilemap name="base">
-    <map tile="sea"/>
-    <map tile="water"/>
-    <map tile="shallows"/>
-    <map tile="swamp"/>
-    <map tile="grass"/>
-    <map tile="brush"/>
-    <map tile="forest"/>
-    <map tile="hills"/>
-    <map tile="mountains"/>
-    <map tile="dungeon"/>
-    <map tile="city"/>
-    <map tile="castle"/>
-    <map tile="town"/>
-    <map tile="lcb_west"/>
-    <map tile="lcb_entrance"/>
-    <map tile="lcb_east"/>
-    <map frames="4" tile="ship"/>
-    <map frames="2" tile="horse"/>
-    <map tile="dungeon_floor"/>    
-    <map tile="bridge"/>
-    <map tile="balloon"/>
-    <map frames="2" tile="bridge_pieces"/>
-    <map tile="up_ladder"/>
-    <map tile="down_ladder"/>
-    <map tile="ruins"/>    
-    <map tile="shrine"/>
-    <map tile="avatar"/>
-    <map frames="2" tile="mage"/>
-    <map frames="2" tile="bard"/>
-    <map frames="2" tile="fighter"/>
-    <map frames="2" tile="druid"/>
-    <map frames="2" tile="tinker"/>
-    <map frames="2" tile="paladin"/>
-    <map frames="2" tile="ranger"/>
-    <map frames="2" tile="shepherd"/>
-    <map tile="column"/>
-    <map frames="4" tile="solids"/>
-    <map tile="shipmast"/>
-    <map tile="shipwheel"/>
-    <map tile="rocks"/>
-    <map tile="corpse"/>
-    <map tile="stone_wall"/>
-    <map tile="locked_door"/>
-    <map tile="door"/>
-    <map tile="chest"/>
-    <map tile="ankh"/>
-    <map tile="brick_floor"/>
-    <map tile="wood_floor"/>
-    <map frames="3" tile="moongate_opening"/>
-    <map tile="moongate"/>
-    <map tile="poison_field"/>
-    <map tile="energy_field"/>
-    <map tile="fire_field"/>
-    <map tile="sleep_field"/>
-    <map tile="solid"/>
-    <map tile="secret_door"/>
-    <map tile="altar"/>
-    <map tile="campfire"/>
-    <map tile="lava"/>
-    <map tile="miss_flash"/>
-    <map tile="magic_flash"/>
-    <map tile="hit_flash"/>
-    <map frames="2" tile="guard"/>
-    <map frames="2" tile="villager"/>
-    <map frames="2" tile="bard_singing"/>
-    <map frames="2" tile="jester"/>
-    <map frames="2" tile="beggar"/>
-    <map frames="2" tile="child"/>
-    <map frames="2" tile="bull"/>
-    <map frames="2" tile="lord_british"/>
-    <map frames="27" tile="signs"/>
-    <map frames="3" tile="spacers"/>
-    <map tile="black"/>
-    <map tile="brick_wall"/>
+    <mapping tile="sea"/>
+    <mapping tile="water"/>
+    <mapping tile="shallows"/>
+    <mapping tile="swamp"/>
+    <mapping tile="grass"/>
+    <mapping tile="brush"/>
+    <mapping tile="forest"/>
+    <mapping tile="hills"/>
+    <mapping tile="mountains"/>
+    <mapping tile="dungeon"/>
+    <mapping tile="city"/>
+    <mapping tile="castle"/>
+    <mapping tile="town"/>
+    <mapping tile="lcb_west"/>
+    <mapping tile="lcb_entrance"/>
+    <mapping tile="lcb_east"/>
+    <mapping frames="4" tile="ship"/>
+    <mapping frames="2" tile="horse"/>
+    <mapping tile="dungeon_floor"/>    
+    <mapping tile="bridge"/>
+    <mapping tile="balloon"/>
+    <mapping frames="2" tile="bridge_pieces"/>
+    <mapping tile="up_ladder"/>
+    <mapping tile="down_ladder"/>
+    <mapping tile="ruins"/>    
+    <mapping tile="shrine"/>
+    <mapping tile="avatar"/>
+    <mapping frames="2" tile="mage"/>
+    <mapping frames="2" tile="bard"/>
+    <mapping frames="2" tile="fighter"/>
+    <mapping frames="2" tile="druid"/>
+    <mapping frames="2" tile="tinker"/>
+    <mapping frames="2" tile="paladin"/>
+    <mapping frames="2" tile="ranger"/>
+    <mapping frames="2" tile="shepherd"/>
+    <mapping tile="column"/>
+    <mapping frames="4" tile="solids"/>
+    <mapping tile="shipmast"/>
+    <mapping tile="shipwheel"/>
+    <mapping tile="rocks"/>
+    <mapping tile="corpse"/>
+    <mapping tile="stone_wall"/>
+    <mapping tile="locked_door"/>
+    <mapping tile="door"/>
+    <mapping tile="chest"/>
+    <mapping tile="ankh"/>
+    <mapping tile="brick_floor"/>
+    <mapping tile="wood_floor"/>
+    <mapping frames="3" tile="moongate_opening"/>
+    <mapping tile="moongate"/>
+    <mapping tile="poison_field"/>
+    <mapping tile="energy_field"/>
+    <mapping tile="fire_field"/>
+    <mapping tile="sleep_field"/>
+    <mapping tile="solid"/>
+    <mapping tile="secret_door"/>
+    <mapping tile="altar"/>
+    <mapping tile="campfire"/>
+    <mapping tile="lava"/>
+    <mapping tile="miss_flash"/>
+    <mapping tile="magic_flash"/>
+    <mapping tile="hit_flash"/>
+    <mapping frames="2" tile="guard"/>
+    <mapping frames="2" tile="villager"/>
+    <mapping frames="2" tile="bard_singing"/>
+    <mapping frames="2" tile="jester"/>
+    <mapping frames="2" tile="beggar"/>
+    <mapping frames="2" tile="child"/>
+    <mapping frames="2" tile="bull"/>
+    <mapping frames="2" tile="lord_british"/>
+    <mapping tile="A"/>
+    <mapping tile="B"/>
+    <mapping tile="C"/>
+    <mapping tile="D"/>
+    <mapping tile="E"/>
+    <mapping tile="F"/>
+    <mapping tile="G"/>
+    <mapping tile="H"/>
+    <mapping tile="I"/>
+    <mapping tile="J"/>
+    <mapping tile="K"/>
+    <mapping tile="L"/>
+    <mapping tile="M"/>
+    <mapping tile="N"/>
+    <mapping tile="O"/>
+    <mapping tile="P"/>
+    <mapping tile="Q"/>
+    <mapping tile="R"/>
+    <mapping tile="S"/>
+    <mapping tile="T"/>
+    <mapping tile="U"/>
+    <mapping tile="V"/>
+    <mapping tile="W"/>
+    <mapping tile="X"/>
+    <mapping tile="Y"/>
+    <mapping tile="Z"/>
+    <mapping tile="space"/>
+    <mapping frames="3" tile="spacers"/>
+    <mapping tile="black"/>
+    <mapping tile="brick_wall"/>
 
     <!-- Water monsters -->
-    <map frames="4" tile="pirate_ship"/>
-    <map frames="2" tile="nixie"/>
-    <map frames="2" tile="giant_squid"/>
-    <map frames="2" tile="sea_serpent"/>
-    <map frames="2" tile="sea_horse"/>
-    <map frames="2" tile="whirlpool"/>
-    <map frames="2" tile="storm"/>
+    <mapping frames="4" tile="pirate_ship"/>
+    <mapping frames="2" tile="nixie"/>
+    <mapping frames="2" tile="giant_squid"/>
+    <mapping frames="2" tile="sea_serpent"/>
+    <mapping frames="2" tile="sea_horse"/>
+    <mapping frames="2" tile="whirlpool"/>
+    <mapping frames="2" tile="storm"/>
     
     <!-- Land monsters -->    
-    <map frames="4" tile="rat"/>
-    <map frames="4" tile="bat"/>
-    <map frames="4" tile="spider"/>
-    <map frames="4" tile="ghost"/>
-    <map frames="4" tile="slime"/>
-    <map frames="4" tile="troll"/>
-    <map frames="4" tile="gremlin"/>
-    <map frames="4" tile="mimic"/>
-    <map frames="4" tile="reaper"/>
-    <map frames="4" tile="insect_swarm"/>
-    <map frames="4" tile="gazer"/>
-    <map frames="4" tile="phantom"/>
-    <map frames="4" tile="orc"/>
-    <map frames="4" tile="skeleton"/>
-    <map frames="4" tile="rogue"/>
-    <map frames="4" tile="python"/>
-    <map frames="4" tile="ettin"/>
-    <map frames="4" tile="headless"/>
-    <map frames="4" tile="cyclops"/>
-    <map frames="4" tile="wisp"/>
-    <map frames="4" tile="evil_mage"/>
-    <map frames="4" tile="liche"/>
-    <map frames="4" tile="lava_lizard"/>
-    <map frames="4" tile="zorn"/>
-    <map frames="4" tile="daemon"/>
-    <map frames="4" tile="hydra"/>
-    <map frames="4" tile="dragon"/>
-    <map frames="4" tile="balron"/>
+    <mapping frames="4" tile="rat"/>
+    <mapping frames="4" tile="bat"/>
+    <mapping frames="4" tile="spider"/>
+    <mapping frames="4" tile="ghost"/>
+    <mapping frames="4" tile="slime"/>
+    <mapping frames="4" tile="troll"/>
+    <mapping frames="4" tile="gremlin"/>
+    <mapping frames="4" tile="mimic"/>
+    <mapping frames="4" tile="reaper"/>
+    <mapping frames="4" tile="insect_swarm"/>
+    <mapping frames="4" tile="gazer"/>
+    <mapping frames="4" tile="phantom"/>
+    <mapping frames="4" tile="orc"/>
+    <mapping frames="4" tile="skeleton"/>
+    <mapping frames="4" tile="rogue"/>
+    <mapping frames="4" tile="python"/>
+    <mapping frames="4" tile="ettin"/>
+    <mapping frames="4" tile="headless"/>
+    <mapping frames="4" tile="cyclops"/>
+    <mapping frames="4" tile="wisp"/>
+    <mapping frames="4" tile="evil_mage"/>
+    <mapping frames="4" tile="liche"/>
+    <mapping frames="4" tile="lava_lizard"/>
+    <mapping frames="4" tile="zorn"/>
+    <mapping frames="4" tile="daemon"/>
+    <mapping frames="4" tile="hydra"/>
+    <mapping frames="4" tile="dragon"/>
+    <mapping frames="4" tile="balron"/>
 </tilemap>
