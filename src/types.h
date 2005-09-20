@@ -47,10 +47,8 @@ typedef enum {
  */
 class MapTile {
 public:
-    MapTile() : id(0), frame(0) {}
-    MapTile(const TileId &i, unsigned char f = 0) : id(i), frame(f) {}
-
-    unsigned int getIndex() const;
+    MapTile() : id(0), frame(0), type(0) {}
+    MapTile(const TileId &i, unsigned char f = 0) : id(i), frame(f), type(0) {}
 
     // Operators
     MapTile& operator=(const int &i) {

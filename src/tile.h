@@ -12,6 +12,7 @@
 
 using std::string;
 
+class ConfigElement;
 class Image;
 class Tileset;
 class TileAnim;
@@ -45,10 +46,10 @@ public:
     Tile() : w(0), h(0), index(0), frames(0), scale(1), anim(NULL), opaque(false), rule(NULL), 
         tileset(NULL), image(NULL), large(false) {}
 
-    static void loadProperties(Tile *tile, void *xmlNode);    
+    void loadProperties(const ConfigElement &conf);
     static MapTile translate(int index, string tileMap);
-    static unsigned int getIndex(TileId id);
 
+    int getIndex() const;
     Image *getImage();
     bool isLarge() const;
 

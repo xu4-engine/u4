@@ -4,10 +4,9 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
-#include <libxml/xmlmemory.h>
-
 #include "tile.h"
 
+#include "config.h"
 #include "context.h"
 #include "creature.h"
 #include "error.h"
@@ -19,68 +18,59 @@
 #include "tilemap.h"
 #include "tileset.h"
 #include "utils.h"
-#include "xml.h"
 
 /**
- * Loads tile information from the xml node 'node', if it
- * is a valid tile node.
+ * Loads tile information.
  */
-void Tile::loadProperties(Tile *tile, void *xmlNode) {
-    xmlNodePtr node = (xmlNodePtr)xmlNode;
-    
-    /* ignore 'text' nodes */
-    if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
+void Tile::loadProperties(const ConfigElement &conf) {
+    if (conf.getName() != "tile")
         return;
             
-    tile->name = xmlGetPropAsString(node, "name"); /* get the name of the tile */    
-    tile->frames = 1;
+    name = conf.getString("name"); /* get the name of the tile */
 
     /* get the animation for the tile, if one is specified */
-    if (xmlPropExists(node, "animation")) {
+    if (conf.exists("animation")) {
         extern TileAnimSet *tileanims;
-        string animation = xmlGetPropAsString(node, "animation");
+        string animation = conf.getString("animation");
 
-        tile->anim = tileanims->getByName(animation);
-        if (tile->anim == NULL)
+        anim = tileanims->getByName(animation);
+        if (anim == NULL)
             errorWarning("Warning: animation style '%s' not found", animation.c_str());        
     }
-    else tile->anim = NULL;    
+    else
+        anim = NULL;    
 
     /* see if the tile is opaque */
-    tile->opaque = xmlGetPropAsBool(node, "opaque"); 
+    opaque = conf.getBool("opaque"); 
 
     /* find the rule that applies to the current tile, if there is one.
        if there is no rule specified, it defaults to the "default" rule */
-    if (xmlPropExists(node, "rule")) {
-        tile->rule = TileRule::findByName(xmlGetPropAsString(node, "rule"));
-        if (tile->rule == NULL)
-            tile->rule = TileRule::findByName("default");
+    if (conf.exists("rule")) {
+        rule = TileRule::findByName(conf.getString("rule"));
+        if (rule == NULL)
+            rule = TileRule::findByName("default");
     }
-    else tile->rule = TileRule::findByName("default");
+    else rule = TileRule::findByName("default");
 
     /* get the number of frames the tile has */    
-    if (xmlPropExists(node, "frames"))
-        tile->frames = xmlGetPropAsInt(node, "frames");
+    frames = conf.getInt("frames", 1);
     
     /* FIXME: This is a hack to address the fact that there are 4
        frames for the guard in VGA mode, but only 2 in EGA. Is there
        a better way to handle this? */
-    if (tile->name == "guard" && settings.videoType == "EGA")
-        tile->frames = 2;    
+    if (name == "guard" && settings.videoType == "EGA")
+        frames = 2;    
 
     /* get the name of the image that belongs to this tile */
-    if (xmlPropExists(node, "image"))
-        tile->imageName = xmlGetPropAsString(node, "image");
-    else tile->imageName = string("tile_") + tile->name;
+    if (conf.exists("image"))
+        imageName = conf.getString("image");
+    else 
+        imageName = string("tile_") + name;
 
     /* get the index, if it is provided.  Otherwise, it is implied */
-    if (xmlPropExists(node, "index"))
-        tile->index = xmlGetPropAsInt(node, "index");
-    else tile->index = -1;
+    index = conf.getInt("index", -1);
 
-    if (xmlPropExists(node, "large"))
-        tile->large = xmlGetPropAsBool(node, "large");
-    else tile->large = false;
+    large = conf.getBool("large");
 }
 
 /**
@@ -94,10 +84,8 @@ MapTile Tile::translate(int index, string tileMap) {
     return MapTile();
 }
 
-unsigned int Tile::getIndex(TileId id) {
-    return c && c->location && c->location->map ? 
-        c->location->map->tileset->get(id)->index : 
-        Tileset::get("base")->get(id)->index;    
+int Tile::getIndex() const {
+    return index + frame;
 }
 
 Image *Tile::getImage() { 
@@ -151,10 +139,6 @@ void Tile::loadImage() {
 /**
  * MapTile Class Implementation
  */
-unsigned int MapTile::getIndex() const {
-    return Tile::getIndex(id) + frame;
-}
-
 Direction MapTile::getDirection() const {
     if (isShip() || isPirateShip())
         return (Direction) (frame + DIR_WEST);
