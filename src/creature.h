@@ -9,10 +9,11 @@
 #include <vector>
 
 #include "object.h"
-#include "map.h"
 #include "movement.h"
 #include "savegame.h"
 #include "types.h"
+
+class ConfigElement;
 
 typedef unsigned short CreatureId;
 typedef std::map<CreatureId, class Creature*> CreatureMap;
@@ -126,21 +127,31 @@ typedef enum {
 /**
  * Creature Class Definition
  */ 
-
 class Creature : public Object {
     typedef std::list<StatusType> StatusList;
 
 public:
     Creature(MapTile tile = 0);
 
+    void load(const ConfigElement &conf);
+
     // Accessor methods
     virtual string getName() const;
-    virtual MapTile getHitTile() const;
-    virtual MapTile getMissTile() const;
+    MapTile getHitTile() const;
+    MapTile getMissTile() const;
+    virtual CreatureId getId() const;
+    virtual CreatureId getLeader() const;
+    virtual int getHp() const;
+    virtual int getXp() const;
+    virtual MapTile getWorldrangedtile() const;
+    virtual SlowedType getSlowedType() const;
+    virtual int getEncounterSize() const;
+    virtual unsigned char getResists() const;
 
     void setName(string s);
     void setHitTile(MapTile t);
     void setMissTile(MapTile t);
+    virtual void setHp(int points);
 
     // Methods
     bool isGood() const;
@@ -171,7 +182,7 @@ public:
     bool leavesTile() const;
     bool castsSleep() const;
     int getDamage() const;    
-    MapTile getCamouflageTile() const;    
+    MapTile &getCamouflageTile();
     void setRandomRanged();
     int setInitialHp(int hp = -1);
 
@@ -202,22 +213,20 @@ protected:
     string          name;
     MapTile         rangedhittile;
     MapTile         rangedmisstile;
-
-public:    
     CreatureId      id;    
     MapTile         camouflageTile;    
     CreatureId      leader;
-    unsigned short  basehp;
-    short           hp;
+    int             basehp;
+    int             hp;
     StatusList      status;
-    unsigned short  xp;
+    int             xp;
     unsigned char   ranged;
     MapTile         worldrangedtile;    
     bool            leavestile;
-    CreatureAttrib   mattr;
+    CreatureAttrib  mattr;
     CreatureMovementAttrib movementAttr;
     SlowedType      slowedType;
-    unsigned char   encounterSize;
+    int             encounterSize;
     unsigned char   resists;
 };
 
@@ -226,9 +235,9 @@ public:
  */ 
 class CreatureMgr {
 public:
-    CreatureMgr();
+    static CreatureMgr *getInstance();
 
-    void loadInfoFromXml();
+    void loadAll();
 
     Creature *getByTile(MapTile tile);
     Creature *getById(CreatureId id);
@@ -238,11 +247,19 @@ public:
     Creature *randomAmbushing();
 
 private:    
+    CreatureMgr() {}
+
+    // disallow assignments, copy contruction
+    CreatureMgr(const CreatureMgr&);
+    const CreatureMgr &operator=(const CreatureMgr&);
+
+    static CreatureMgr *instance;
+
     CreatureMap creatures;    
 };
 
 bool isCreature(Object *punknown);
 
-extern CreatureMgr creatures;
+#define creatureMgr (CreatureMgr::getInstance())
 
 #endif

@@ -300,14 +300,13 @@ const Portal *Map::portalAt(const Coords &coords, int actionFlags) {
 /**
  * Returns the raw tile for the given (x,y,z) coords for the given map
  */
-MapTile* Map::getTileFromData(const Coords &coords) {
-    int index;
+MapTile *Map::getTileFromData(const Coords &coords) {
     static MapTile blank;
 
     if (MAP_IS_OOB(this, coords))
         return &blank;
 
-    index = coords.x + (coords.y * width) + (width * height * coords.z);    
+    int index = coords.x + (coords.y * width) + (width * height * coords.z);
     return &data[index];
 }
 
@@ -316,7 +315,7 @@ MapTile* Map::getTileFromData(const Coords &coords) {
  * annotations like moongates and attack icons are ignored.  Any walkable tiles
  * are taken into account (treasure chests, ships, balloon, etc.)
  */
-MapTile* Map::tileAt(const Coords &coords, int withObjects) {
+MapTile *Map::tileAt(const Coords &coords, int withObjects) {
     /* FIXME: this should return a list of tiles, with the most visible at the front */
     MapTile *tile;
     Annotation::List a = annotations->allAt(coords);
@@ -534,7 +533,7 @@ void Map::resetObjectAnimations() {
         Object *obj = *i;
         
         if (obj->getType() == Object::CREATURE)
-            obj->setPrevTile(creatures.getByTile(obj->getTile())->getTile());        
+            obj->setPrevTile(creatureMgr->getByTile(obj->getTile())->getTile());
     }
 }
 
@@ -614,7 +613,7 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
         prev_tile = tileAt(from, WITHOUT_OBJECTS);
 
         // get the creature object, if it exists (the one that's moving)
-        m = creatures.getByTile(transport);        
+        m = creatureMgr->getByTile(transport);        
         // get the other creature object, if it exists (the one that's being moved onto)        
         to_m = dynamic_cast<Creature*>(obj);
 
@@ -704,8 +703,8 @@ void Map::alertGuards() {
 
     /* switch all the guards to attack mode */
     for (i = objects.begin(); i != objects.end(); i++) {
-        m = creatures.getByTile((*i)->getTile());
-        if (m && (m->id == GUARD_ID || m->id == LORDBRITISH_ID))
+        m = creatureMgr->getByTile((*i)->getTile());
+        if (m && (m->getId() == GUARD_ID || m->getId() == LORDBRITISH_ID))
             (*i)->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
     }
 }
@@ -741,7 +740,7 @@ bool Map::fillMonsterTable() {
         if ((obj->getType() == Object::CREATURE) && (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
             Creature *c = dynamic_cast<Creature*>(obj);            
             /* whirlpools and storms are separated from other moving objects */
-            if (c->id == WHIRLPOOL_ID || c->id == STORM_ID)            
+            if (c->getId() == WHIRLPOOL_ID || c->getId() == STORM_ID)            
                 monsters.push_back(obj);
             else other_creatures.push_back(obj);
         }
@@ -783,10 +782,10 @@ bool Map::fillMonsterTable() {
         Coords c = monsters[i]->getCoords(),
                prevc = monsters[i]->getPrevCoords();
 
-        monsterTable[i].tile = monsters[i]->getTile().getIndex();        
+        monsterTable[i].tile = tileset->get(monsters[i]->getTile().id)->getIndex();
         monsterTable[i].x = c.x;
         monsterTable[i].y = c.y;
-        monsterTable[i].prevTile = monsters[i]->getPrevTile().getIndex();
+        monsterTable[i].prevTile = tileset->get(monsters[i]->getPrevTile().id)->getIndex();
         monsterTable[i].prevx = prevc.x;
         monsterTable[i].prevy = prevc.y;
     }

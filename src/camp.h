@@ -19,7 +19,8 @@ private:
     bool heal();
 };
 
-class InnController : public CombatController {
+#if 0
+class InnController : public Controller {
 public:
     void run();
     virtual bool keyPressed(int key);
@@ -27,6 +28,7 @@ public:
 private:
     bool heal();
 };
+#endif
 
 void innBegin(void);
 

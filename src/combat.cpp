@@ -162,7 +162,7 @@ void CombatController::initDungeonRoom(int room, Direction from) {
         for (i = 0; i < AREA_CREATURES; i++) {
             if (dng->rooms[room].creature_tiles[i] > 0) {
                 placeCreaturesOnMap = true;
-                creatureTable[i] = ::creatures.getByTile(dng->rooms[room].creature_tiles[i]);
+                creatureTable[i] = creatureMgr->getByTile(dng->rooms[room].creature_tiles[i]);
             }
             map->creature_start[i].x = dng->rooms[room].creature_start_x[i];
             map->creature_start[i].y = dng->rooms[room].creature_start_y[i];            
@@ -371,8 +371,8 @@ void CombatController::fillCreatureTable(const Creature *creature) {
         const Creature *baseCreature = creature, *current;
         int numCreatures = initialNumberOfCreatures(creature);
 
-        if (baseCreature->id == PIRATE_ID)
-            baseCreature = creatures.getById(ROGUE_ID);
+        if (baseCreature->getId() == PIRATE_ID)
+            baseCreature = creatureMgr->getById(ROGUE_ID);
 
         for (i = 0; i < numCreatures; i++) {
             current = baseCreature;
@@ -381,13 +381,13 @@ void CombatController::fillCreatureTable(const Creature *creature) {
             do {j = xu4_random(AREA_CREATURES) ;} while (creatureTable[j] != NULL);
             
             /* see if creature is a leader or leader's leader */
-            if (creatures.getById(baseCreature->leader) != baseCreature && /* leader is a different creature */
+            if (creatureMgr->getById(baseCreature->getLeader()) != baseCreature && /* leader is a different creature */
                 i != (numCreatures - 1)) { /* must have at least 1 creature of type encountered */
                 
                 if (xu4_random(32) == 0)       /* leader's leader */
-                    current = creatures.getById(creatures.getById(baseCreature->leader)->leader);
+                    current = creatureMgr->getById(creatureMgr->getById(baseCreature->getLeader())->getLeader());
                 else if (xu4_random(8) == 0)   /* leader */
-                    current = creatures.getById(baseCreature->leader);
+                    current = creatureMgr->getById(baseCreature->getLeader());
             }
 
             /* place this creature in the creature table */
@@ -409,8 +409,8 @@ int  CombatController::initialNumberOfCreatures(const class Creature *creature) 
         ncreatures = xu4_random(8) + 1;
         
         if (ncreatures == 1) {
-            if (creature && creature->encounterSize > 0)
-                ncreatures = xu4_random(creature->encounterSize) + creature->encounterSize + 1;
+            if (creature && creature->getEncounterSize() > 0)
+                ncreatures = xu4_random(creature->getEncounterSize()) + creature->getEncounterSize() + 1;
             else
                 ncreatures = 8;
         }
@@ -419,7 +419,7 @@ int  CombatController::initialNumberOfCreatures(const class Creature *creature) 
             ncreatures = xu4_random(16) + 1;
         }
     } else {
-        if (creature && creature->id == GUARD_ID)
+        if (creature && creature->getId() == GUARD_ID)
             ncreatures = c->saveGame->members * 2;
         else
             ncreatures = 1;
@@ -1095,7 +1095,7 @@ void CombatController::attack() {
 
     int distance = 1;
     for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
-        if (c->combat->attackAt(*i, attacker, MASK_DIR(dir), range, distance)) {
+        if (attackAt(*i, attacker, MASK_DIR(dir), range, distance)) {
             foundTarget = true;
             targetDistance = distance;
             targetCoords = *i;

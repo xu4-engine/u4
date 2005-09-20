@@ -252,7 +252,7 @@ bool CheatMenuController::keyPressed(int key) {
                     }
 
                     if (choice && ok) {
-                        c->location->map->addObject(*choice, *choice, coords);                     
+                        c->location->map->addObject(*choice, *choice, coords);
                         screenMessage("%s created!\n", tile->name.c_str());
                     }
                     else if (!choice)
@@ -359,10 +359,10 @@ void CheatMenuController::summonCreature(const string &name) {
     /* find the creature by its id and spawn it */
     unsigned int id = atoi(creatureName.c_str());
     if (id > 0)
-        m = creatures.getById(id);
+        m = creatureMgr->getById(id);
 
     if (!m)
-        m = creatures.getByName(creatureName);
+        m = creatureMgr->getByName(creatureName);
 
     if (m) {
         if (gameSpawnCreature(m))

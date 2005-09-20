@@ -621,8 +621,8 @@ static int spellSleep(int unused) {
 
     for (i = creatures.begin(); i != creatures.end(); i++) {         
         Creature *m = *i;
-        if ((m->resists != EFFECT_SLEEP) &&
-            xu4_random(0xFF) >= m->hp)
+        if ((m->getResists() != EFFECT_SLEEP) &&
+            xu4_random(0xFF) >= m->getHp())
             m->putToSleep();
     }
 
@@ -638,7 +638,7 @@ static int spellTremor(int unused) {
         Creature *m = *i;
 
         /* creatures with over 192 hp are unaffected */
-        if (m->hp > 192)
+        if (m->getHp() > 192)
             continue;
         else {
             Coords coords = m->getCoords();
@@ -650,8 +650,8 @@ static int spellTremor(int unused) {
             }
             /* Deal enough damage to creature to make it flee */
             else if (xu4_random(2) == 0) {
-                if (m->hp > 23)
-                    ct->getCurrentPlayer()->dealDamage(m, m->hp-23);
+                if (m->getHp() > 23)
+                    ct->getCurrentPlayer()->dealDamage(m, m->getHp()-23);
                 CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 1);
             }
         }
@@ -668,7 +668,7 @@ static int spellUndead(int unused) {
     for (i = creatures.begin(); i != creatures.end(); i++) {         
         Creature *m = *i;
         if (m && m->isUndead() && xu4_random(2) == 0)
-            m->hp = 23;        
+            m->setHp(23);
     }
     
     return 1;

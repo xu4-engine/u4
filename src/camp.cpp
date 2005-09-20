@@ -67,7 +67,7 @@ void CampController::begin() {
 
     /* Is the party ambushed during their rest? */
     if (settings.campingAlwaysCombat || (xu4_random(8) == 0)) {        
-        const Creature *m = creatures.randomAmbushing();
+        const Creature *m = creatureMgr->randomAmbushing();
                 
         musicMgr->play();        
         screenMessage("Ambushed!\n");
@@ -114,7 +114,12 @@ bool CampController::heal() {
     return healed;
 }
 
-void InnController::run() {
+#if 0
+InnController::InnController() {
+    map = NULL;
+}
+
+void InnController::begin() {
     /* first, show the avatar before sleeping */
     gameUpdateScreen();
 
@@ -161,7 +166,7 @@ void InnController::run() {
         }
 
         delete c->combat;
-        c->combat = new CombatController(mapid);        
+        c->combat = this;
         c->combat->init(creature);
         c->combat->setInn(true);
         c->combat->showCombatMessage(showMessage);  
@@ -220,12 +225,12 @@ void InnController::run() {
             // Add Isaac near the Avatar
             city->addPerson(Isaac);
         }*/
+
+        eventHandler->popController();
     }    
     
     musicMgr->fadeIn(INN_FADE_IN_TIME, true);
 
-    eventHandler->popController();
-    game->exitToParentMap();
 }
 
 bool InnController::keyPressed(int key) {
@@ -244,6 +249,7 @@ bool InnController::heal() {
 
     return healed;
 }
+#endif
 
 int campHeal(HealType heal_type) {
     int i;
@@ -305,11 +311,11 @@ void innTimer(void *data) {
         if (xu4_random(4) == 0) {
             /* Rats! */
             mapid = MAP_BRICK_CON;
-            creature = c->location->map->addCreature(creatures.getById(RAT_ID), c->location->coords);
+            creature = c->location->map->addCreature(creatureMgr->getById(RAT_ID), c->location->coords);
         } else {
             /* While strolling down the street, attacked by rogues! */
             mapid = MAP_INN_CON;
-            creature = c->location->map->addCreature(creatures.getById(ROGUE_ID), c->location->coords);
+            creature = c->location->map->addCreature(creatureMgr->getById(ROGUE_ID), c->location->coords);
             screenMessage("\nIn the middle of the night while out on a stroll...\n\n");
             showMessage = false;
         }

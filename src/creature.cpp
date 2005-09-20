@@ -4,15 +4,13 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
-#include <libxml/xmlmemory.h>
-
 #include "creature.h"
 
 #include "combat.h"
+#include "config.h"
 #include "context.h"
 #include "debug.h"
 #include "error.h"
-#include "event.h"
 #include "game.h"    /* required by specialAction and specialEffect functions */
 #include "location.h"
 #include "map.h"
@@ -21,12 +19,10 @@
 #include "screen.h" /* FIXME: remove dependence on this */
 #include "settings.h"
 #include "spell.h"  /* FIXME: remove dependence on this */
-#include "stats.h"  /* FIXME: remove dependence on this */
 #include "tileset.h"
 #include "utils.h"
-#include "xml.h"
 
-CreatureMgr creatures;
+CreatureMgr *CreatureMgr::instance = NULL;
 
 bool isCreature(Object *punknown) {
     Creature *m;
@@ -40,18 +36,206 @@ bool isCreature(Object *punknown) {
  * Creature class implementation
  */ 
 Creature::Creature(MapTile tile) : Object(Object::CREATURE) {
-    const Creature *m = creatures.getByTile(tile);
+    const Creature *m = creatureMgr->getByTile(tile);
     if (m)
         *this = *m;
 }
 
+void Creature::load(const ConfigElement &conf) {
+    unsigned int idx;
+
+    static const struct {
+        const char *name;
+        unsigned int mask;
+    } booleanAttributes[] = {
+        { "undead", MATTR_UNDEAD },
+        { "good", MATTR_GOOD },
+        { "swims", MATTR_WATER },
+        { "sails", MATTR_WATER },       
+        { "cantattack", MATTR_NONATTACKABLE },       
+        { "camouflage", MATTR_CAMOUFLAGE }, 
+        { "wontattack", MATTR_NOATTACK },       
+        { "ambushes", MATTR_AMBUSHES },
+        { "incorporeal", MATTR_INCORPOREAL },
+        { "nochest", MATTR_NOCHEST },
+        { "divides", MATTR_DIVIDES }
+    };    
+    
+    /* steals="" */
+    static const struct {
+        const char *name;
+        unsigned int mask;
+    } steals[] = {
+        { "food", MATTR_STEALFOOD },
+        { "gold", MATTR_STEALGOLD }
+    };
+
+    /* casts="" */
+    static const struct {
+        const char *name;
+        unsigned int mask;
+    } casts[] = {
+        { "sleep", MATTR_CASTS_SLEEP },
+        { "negate", MATTR_NEGATE }
+    };
+
+    /* movement="" */
+    static const struct {
+        const char *name;
+        unsigned int mask;
+    } movement[] = {
+        { "none", MATTR_STATIONARY },
+        { "wanders", MATTR_WANDERS }
+    };
+
+    /* boolean attributes that affect movement */
+    static const struct {
+        const char *name;
+        unsigned int mask;
+    } movementBoolean[] = {
+        { "swims", MATTR_SWIMS },
+        { "sails", MATTR_SAILS },
+        { "flies", MATTR_FLIES },
+        { "teleports", MATTR_TELEPORT },
+        { "canMoveOntoCreatures", MATTR_CANMOVECREATURES },
+        { "canMoveOntoAvatar", MATTR_CANMOVEAVATAR },
+        { "canMoveOn", MATTR_CANMOVEON }
+    };
+
+    static const struct {
+        const char *name;
+        TileEffect effect;
+    } effects[] = {
+        { "fire", EFFECT_FIRE },
+        { "poison", EFFECT_POISONFIELD },
+        { "sleep", EFFECT_SLEEP }
+    };    
+
+    name = conf.getString("name");
+    id = static_cast<unsigned short>(conf.getInt("id"));
+        
+    /* Get the leader if it's been included, otherwise the leader is itself */
+    leader = static_cast<unsigned char>(conf.getInt("leader", id));
+        
+    xp = static_cast<unsigned short>(conf.getInt("exp"));
+    ranged = conf.getBool("ranged");
+    setTile(Tileset::findTileByName(conf.getString("tile")));
+
+    setHitTile(Tileset::findTileByName("hit_flash")->id);
+    setMissTile(Tileset::findTileByName("miss_flash")->id);
+
+    mattr = static_cast<CreatureAttrib>(0);
+    movementAttr = static_cast<CreatureMovementAttrib>(0);
+    resists = 0;
+
+    /* get the encounter size */
+    encounterSize = conf.getInt("encounterSize", 0);
+
+    /* get the base hp */
+    basehp = conf.getInt("basehp", 0);
+    /* adjust basehp according to battle difficulty setting */
+    if (settings.battleDiff == "Hard")
+        basehp *= 2;
+    if (settings.battleDiff == "Expert")
+        basehp *= 4;
+
+    /* get the camouflaged tile */
+    camouflageTile = 0;
+    if (conf.exists("camouflageTile"))
+        camouflageTile = Tileset::findTileByName(conf.getString("camouflageTile"))->id;
+
+    /* get the ranged tile for world map attacks */
+    worldrangedtile = 0;
+    if (conf.exists("worldrangedtile"))
+        worldrangedtile = Tileset::findTileByName(conf.getString("worldrangedtile"))->id;
+
+    /* get ranged hit tile */
+    if (conf.exists("rangedhittile")) {
+        if (conf.getString("rangedhittile") == "random")
+            mattr = static_cast<CreatureAttrib>(mattr | MATTR_RANDOMRANGED);
+        else 
+            setHitTile(Tileset::findTileByName(conf.getString("rangedhittile"))->id);
+    }
+        
+    /* get ranged miss tile */
+    if (conf.exists("rangedmisstile")) {
+        if (conf.getString("rangedmisstile") ==  "random")
+            mattr = static_cast<CreatureAttrib>(mattr | MATTR_RANDOMRANGED);
+        else
+            setMissTile(Tileset::findTileByName(conf.getString("rangedmisstile"))->id);
+    }
+
+    /* find out if the creature leaves a tile behind on ranged attacks */
+    leavestile = conf.getBool("leavestile");
+
+    /* get effects that this creature is immune to */
+    for (idx = 0; idx < sizeof(effects) / sizeof(effects[0]); idx++) {
+        if (conf.getString("resists") == effects[idx].name) {
+            resists = effects[idx].effect;
+        }
+    }
+        
+    /* Load creature attributes */
+    for (idx = 0; idx < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); idx++) {
+        if (conf.getBool(booleanAttributes[idx].name)) {
+            mattr = static_cast<CreatureAttrib>(mattr | booleanAttributes[idx].mask);
+        }
+    }
+        
+    /* Load boolean attributes that affect movement */
+    for (idx = 0; idx < sizeof(movementBoolean) / sizeof(movementBoolean[0]); idx++) {
+        if (conf.getBool(movementBoolean[idx].name)) {
+            movementAttr = static_cast<CreatureMovementAttrib>(movementAttr | movementBoolean[idx].mask);
+        }
+    }
+
+    /* steals="" */
+    for (idx = 0; idx < sizeof(steals) / sizeof(steals[0]); idx++) {
+        if (conf.getString("steals") == steals[idx].name) {
+            mattr = static_cast<CreatureAttrib>(mattr | steals[idx].mask);
+        }
+    }
+
+    /* casts="" */
+    for (idx = 0; idx < sizeof(casts) / sizeof(casts[0]); idx++) {
+        if (conf.getString("casts") == casts[idx].name) {
+            mattr = static_cast<CreatureAttrib>(mattr | casts[idx].mask);
+        }
+    }
+
+    /* movement="" */
+    for (idx = 0; idx < sizeof(movement) / sizeof(movement[0]); idx++) {
+        if (conf.getString("movement") == movement[idx].name) {
+            movementAttr = static_cast<CreatureMovementAttrib>(movementAttr | movement[idx].mask);
+        }
+    }
+
+    /* Figure out which 'slowed' function to use */
+    slowedType = SLOWED_BY_TILE;
+    if (sails())
+        /* sailing creatures (pirate ships) */
+        slowedType = SLOWED_BY_WIND;
+    else if (flies() || isIncorporeal())
+        /* flying creatures (dragons, bats, etc.) and incorporeal creatures (ghosts, zorns) */
+        slowedType = SLOWED_BY_NOTHING;
+}
+
 string Creature::getName() const         { return name; }
+CreatureId Creature::getId() const       { return id; }
+CreatureId Creature::getLeader() const   { return leader; }
 MapTile Creature::getHitTile() const     { return rangedhittile; }
 MapTile Creature::getMissTile() const    { return rangedmisstile; }
+int Creature::getHp() const              { return hp; }
+int Creature::getXp() const              { return xp; }
+MapTile Creature::getWorldrangedtile() const       { return worldrangedtile; }
+SlowedType Creature::getSlowedType() const         { return slowedType; }
+int Creature::Creature::getEncounterSize() const   { return encounterSize; }
+unsigned char Creature::getResists() const         { return resists; }
 
 void Creature::setName(string s)         { name = s; }
 void Creature::setHitTile(MapTile t)     { rangedhittile = t; }
 void Creature::setMissTile(MapTile t)    { rangedmisstile = t; }
+void Creature::setHp(int points)         { hp = points; }
 
 bool Creature::isGood() const        { return (mattr & MATTR_GOOD) ? true : false; }
 bool Creature::isEvil() const        { return !isGood(); }
@@ -90,7 +274,7 @@ bool Creature::isIncorporeal() const { return (mattr & MATTR_INCORPOREAL) ? true
 bool Creature::hasRandomRanged() const { return (mattr & MATTR_RANDOMRANGED) ? true : false; }
 bool Creature::leavesTile() const    { return leavestile; }
 bool Creature::castsSleep() const { return (mattr & MATTR_CASTS_SLEEP) ? true : false; }
-MapTile Creature::getCamouflageTile() const { return camouflageTile; }
+MapTile &Creature::getCamouflageTile() { return camouflageTile; }
 
 int  Creature::getDamage() const {
     int damage, val, x;
@@ -373,7 +557,7 @@ void Creature::act() {
     case CA_CAST_SLEEP: {            
         screenMessage("Sleep!\n");
 
-        gameSpellEffect('s', -1, (Sound)0); /* show the sleep spell effect */
+        gameSpellEffect('s', -1, static_cast<Sound>(0)); /* show the sleep spell effect */
         
         /* Apply the sleep spell to party members still in combat */
         if (!isPartyMember(this)) {
@@ -689,216 +873,28 @@ bool Creature::dealDamage(Creature *m, int damage) {
 /**
  * CreatureMgr class implementation
  */
-CreatureMgr::CreatureMgr() {}
+CreatureMgr *CreatureMgr::getInstance() {
+    if (instance == NULL) {
+        instance = new CreatureMgr();
+        instance->loadAll();
+    }
+    return instance;
+}
 
-/**
- * Load creature info from xml
- */ 
-void CreatureMgr::loadInfoFromXml() {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;
-    unsigned int i;
-    static const struct {
-        const char *name;
-        unsigned int mask;
-    } booleanAttributes[] = {
-        { "undead", MATTR_UNDEAD },
-        { "good", MATTR_GOOD },
-        { "swims", MATTR_WATER },
-        { "sails", MATTR_WATER },       
-        { "cantattack", MATTR_NONATTACKABLE },       
-        { "camouflage", MATTR_CAMOUFLAGE }, 
-        { "wontattack", MATTR_NOATTACK },       
-        { "ambushes", MATTR_AMBUSHES },
-        { "incorporeal", MATTR_INCORPOREAL },
-        { "nochest", MATTR_NOCHEST },
-        { "divides", MATTR_DIVIDES }
-    };    
-    
-    /* steals="" */
-    static const struct {
-        const char *name;
-        unsigned int mask;
-    } steals[] = {
-        { "food", MATTR_STEALFOOD },
-        { "gold", MATTR_STEALGOLD }
-    };
+void CreatureMgr::loadAll() {
+    const Config *config = Config::getInstance();
+    vector<ConfigElement> creatureConfs = config->getElement("/config/creatures").getChildren();
 
-    /* casts="" */
-    static const struct {
-        const char *name;
-        unsigned int mask;
-    } casts[] = {
-        { "sleep", MATTR_CASTS_SLEEP },
-        { "negate", MATTR_NEGATE }
-    };
-
-    /* movement="" */
-    static const struct {
-        const char *name;
-        unsigned int mask;
-    } movement[] = {
-        { "none", MATTR_STATIONARY },
-        { "wanders", MATTR_WANDERS }
-    };
-
-    /* boolean attributes that affect movement */
-    static const struct {
-        const char *name;
-        unsigned int mask;
-    } movementBoolean[] = {
-        { "swims", MATTR_SWIMS },
-        { "sails", MATTR_SAILS },
-        { "flies", MATTR_FLIES },
-        { "teleports", MATTR_TELEPORT },
-        { "canMoveOntoCreatures", MATTR_CANMOVECREATURES },
-        { "canMoveOntoAvatar", MATTR_CANMOVEAVATAR },
-        { "canMoveOn", MATTR_CANMOVEON }
-    };
-
-    static const struct {
-        const char *name;
-        TileEffect effect;
-    } effects[] = {
-        { "fire", EFFECT_FIRE },
-        { "poison", EFFECT_POISONFIELD },
-        { "sleep", EFFECT_SLEEP }
-    };    
-
-    doc = xmlParse("creatures.xml");
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "creatures") != 0)
-        errorFatal("malformed creatures.xml");
-    
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) ||
-            xmlStrcmp(node->name, (const xmlChar *) "creature") != 0)
+    for (std::vector<ConfigElement>::iterator i = creatureConfs.begin(); i != creatureConfs.end(); i++) {
+        if (i->getName() != "creature")
             continue;
 
         Creature *m = new Creature;
+        m->load(*i);
 
-        m->setName(xmlGetPropAsString(node, "name"));
-        m->id = (unsigned short)xmlGetPropAsInt(node, "id");
-        
-        /* Get the leader if it's been included, otherwise the leader is itself */
-        if (xmlPropExists(node, "leader"))        
-            m->leader = (unsigned char)xmlGetPropAsInt(node, "leader");
-        else m->leader = m->id;
-        
-        m->xp = (unsigned short)xmlGetPropAsInt(node, "exp");
-        m->ranged = xmlGetPropAsBool(node, "ranged");
-        m->setTile(Tileset::findTileByName(xmlGetPropAsString(node, "tile")));
-        m->camouflageTile = 0;
-
-        m->worldrangedtile = 0;
-        m->setHitTile(Tileset::findTileByName("hit_flash")->id);
-        m->setMissTile(Tileset::findTileByName("miss_flash")->id);
-        m->leavestile = 0;
-
-        m->mattr = (CreatureAttrib)0;
-        m->movementAttr = (CreatureMovementAttrib)0;
-        m->slowedType = SLOWED_BY_TILE;
-        m->basehp = 0;
-        m->encounterSize = 0;
-        m->resists = 0;
-
-        /* get the encounter size */
-        if (xmlPropExists(node, "encounterSize")) {
-            m->encounterSize = 
-                (unsigned char)xmlGetPropAsInt(node, "encounterSize");
-        }
-
-        /* get the base hp */
-        if (xmlPropExists(node, "basehp")) {
-            m->basehp =
-                (unsigned short)xmlGetPropAsInt(node, "basehp");
-            /* adjust basehp according to battle difficulty setting */
-            if (settings.battleDiff == "Hard")
-                m->basehp *= 2;
-            if (settings.battleDiff == "Expert")
-                m->basehp *= 4;
-        }
-
-        /* get the camouflaged tile */
-        if (xmlPropExists(node, "camouflageTile"))
-            m->camouflageTile = Tileset::findTileByName(xmlGetPropAsString(node, "camouflageTile"))->id;
-
-        /* get the ranged tile for world map attacks */
-        if (xmlPropExists(node, "worldrangedtile"))
-            m->worldrangedtile = Tileset::findTileByName(xmlGetPropAsString(node, "worldrangedtile"))->id;
-
-        /* get ranged hit tile */
-        if (xmlPropExists(node, "rangedhittile")) {
-            if (xmlPropCmp(node, "rangedhittile", "random") == 0)
-                m->mattr = (CreatureAttrib)(m->mattr | MATTR_RANDOMRANGED);
-            else m->setHitTile(Tileset::findTileByName(xmlGetPropAsString(node, "rangedhittile"))->id);
-        }
-        
-        /* get ranged miss tile */
-        if (xmlPropExists(node, "rangedmisstile")) {
-            if (xmlPropCmp(node, "rangedmisstile", "random") == 0)
-                m->mattr = (CreatureAttrib)(m->mattr | MATTR_RANDOMRANGED);
-            else m->setMissTile(Tileset::findTileByName(xmlGetPropAsString(node, "rangedmisstile"))->id);
-        }
-
-        /* find out if the creature leaves a tile behind on ranged attacks */
-        m->leavestile = xmlGetPropAsBool(node, "leavestile");
-
-        /* get effects that this creature is immune to */
-        for (i = 0; i < sizeof(effects) / sizeof(effects[0]); i++) {
-            if (xmlPropCmp(node, "resists", effects[i].name) == 0) {
-                m->resists = effects[i].effect;
-            }
-        }
-        
-        /* Load creature attributes */
-        for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
-            if (xmlGetPropAsBool(node, booleanAttributes[i].name)) {
-                m->mattr = (CreatureAttrib)(m->mattr | booleanAttributes[i].mask);
-            }
-        }
-        
-        /* Load boolean attributes that affect movement */
-        for (i = 0; i < sizeof(movementBoolean) / sizeof(movementBoolean[0]); i++) {
-            if (xmlGetPropAsBool(node, movementBoolean[i].name)) {
-                m->movementAttr = (CreatureMovementAttrib)(m->movementAttr | movementBoolean[i].mask);
-            }
-        }
-
-        /* steals="" */
-        for (i = 0; i < sizeof(steals) / sizeof(steals[0]); i++) {
-            if (xmlPropCmp(node, "steals", steals[i].name) == 0) {
-                m->mattr = (CreatureAttrib)(m->mattr | steals[i].mask);
-            }
-        }
-
-        /* casts="" */
-        for (i = 0; i < sizeof(casts) / sizeof(casts[0]); i++) {
-            if (xmlPropCmp(node, "casts", casts[i].name) == 0) {
-                m->mattr = (CreatureAttrib)(m->mattr | casts[i].mask);
-            }
-        }
-
-        /* movement="" */
-        for (i = 0; i < sizeof(movement) / sizeof(movement[0]); i++) {
-            if (xmlPropCmp(node, "movement", movement[i].name) == 0) {
-                m->movementAttr = (CreatureMovementAttrib)(m->movementAttr | movement[i].mask);
-            }
-        }
-
-        /* Figure out which 'slowed' function to use */
-        if (m->sails())
-            /* sailing creatures (pirate ships) */
-            m->slowedType = SLOWED_BY_WIND;
-        else if (m->flies() || m->isIncorporeal())
-            /* flying creatures (dragons, bats, etc.) and incorporeal creatures (ghosts, zorns) */
-            m->slowedType = SLOWED_BY_NOTHING;
-            
         /* add the creature to the list */
-        creatures[m->id] = m;
+        creatures[m->getId()] = m;
     }
-
-    xmlFreeDoc(doc);
 }
 
 /**

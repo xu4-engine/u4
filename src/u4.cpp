@@ -96,8 +96,8 @@ int main(int argc, char *argv[]) {
     ++pb;
 
     perf.start();
-    creatures.loadInfoFromXml();
-    perf.end("CreatureMgr::loadInfoFromXml()");
+    creatureMgr->getInstance();
+    perf.end("creatureMgr->getInstance()");
     ++pb;
 
     intro = new IntroController();

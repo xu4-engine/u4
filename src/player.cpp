@@ -170,7 +170,15 @@ ArmorType PartyMember::getArmor() const     { return player->armor; }
 string PartyMember::getName() const         { return player->name; }
 SexType PartyMember::getSex() const         { return player->sex; }
 ClassType PartyMember::getClass() const     { return player->klass; }
-StatusType PartyMember::getStatus() const   { return status.back(); }
+
+CreatureStatus PartyMember::getState() const {
+    if (getHp() <= 0)
+        return MSTAT_DEAD;
+    else if (getHp() < 24)
+        return MSTAT_FLEEING;
+    else 
+        return MSTAT_BARELYWOUNDED;
+}
 
 /**
  * Determine what level a character has.
@@ -430,7 +438,7 @@ bool PartyMember::attackHit(Creature *m) {
 bool PartyMember::dealDamage(Creature *m, int damage) {
     /* we have to record these now, because if we
        kill the target, it gets destroyed */
-    int m_xp = m->xp;
+    int m_xp = m->getXp();
 
     if (!Creature::dealDamage(m, damage)) {
         /* half the time you kill an evil creature you get a karma boost */
@@ -1090,7 +1098,7 @@ void Party::reviveParty() {
 }
 
 void Party::setTransport(MapTile tile) {
-    saveGame->transport = tile.getIndex();
+    saveGame->transport = c->location->map->tileset->get(tile.id)->getIndex();
     transport = tile;
     
     if (tile.isHorse())

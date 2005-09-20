@@ -88,7 +88,7 @@ public:
     virtual string translate(std::vector<string>& parts);
     
     // Accessor methods
-    int getHp() const;
+    virtual int getHp() const;
     int getMaxHp() const;
     int getExp() const;
     int getStr() const;
@@ -101,7 +101,7 @@ public:
     virtual string getName() const;    
     SexType getSex() const;
     ClassType getClass() const;
-    StatusType getStatus() const;
+    virtual CreatureStatus getState() const;
     int getRealLevel() const;
     int getMaxLevel() const;
 
@@ -112,7 +112,7 @@ public:
     void awardXp(int xp);
     bool heal(HealType type);    
     virtual void removeStatus(StatusType status);
-    void setHp(int hp);
+    virtual void setHp(int hp);
     void setMp(int mp);    
     void setArmor(ArmorType a);
     void setWeapon(WeaponType w);    

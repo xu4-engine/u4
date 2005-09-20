@@ -172,7 +172,6 @@ int moveObject(Map *map, Creature *obj, MapCoords avatar) {
     int dirmask = DIR_NONE;
     Direction dir;
     MapCoords new_coords = obj->getCoords();    
-    SlowedType slowedType = SLOWED_BY_TILE;
     int slowed = 0;    
     
     /* determine a direction depending on the object's movement behavior */
@@ -211,8 +210,9 @@ int moveObject(Map *map, Creature *obj, MapCoords avatar) {
         return 0;
 
     /* figure out what method to use to tell if the object is getting slowed */   
+    SlowedType slowedType = SLOWED_BY_TILE;
     if (obj->getType() == Object::CREATURE)
-        slowedType = obj->slowedType;
+        slowedType = obj->getSlowedType();
     
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {
@@ -288,7 +288,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
 
     /* figure out what method to use to tell if the object is getting slowed */   
     if (obj->getType() == Object::CREATURE)
-        slowedType = obj->slowedType;
+        slowedType = obj->getSlowedType();
 
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {

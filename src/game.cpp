@@ -391,21 +391,21 @@ int gameSave() {
          * Map creatures to u4dos dungeon creature Ids
          */ 
         if (id_map.size() == 0) {
-            id_map[creatures.getById(RAT_ID)]             = 1;
-            id_map[creatures.getById(BAT_ID)]             = 2;
-            id_map[creatures.getById(GIANT_SPIDER_ID)]    = 3;
-            id_map[creatures.getById(GHOST_ID)]           = 4;
-            id_map[creatures.getById(SLIME_ID)]           = 5;
-            id_map[creatures.getById(TROLL_ID)]           = 6;
-            id_map[creatures.getById(GREMLIN_ID)]         = 7;
-            id_map[creatures.getById(MIMIC_ID)]           = 8;
-            id_map[creatures.getById(REAPER_ID)]          = 9;
-            id_map[creatures.getById(INSECT_SWARM_ID)]    = 10;
-            id_map[creatures.getById(GAZER_ID)]           = 11;
-            id_map[creatures.getById(PHANTOM_ID)]         = 12;
-            id_map[creatures.getById(ORC_ID)]             = 13;
-            id_map[creatures.getById(SKELETON_ID)]        = 14;
-            id_map[creatures.getById(ROGUE_ID)]           = 15;
+            id_map[creatureMgr->getById(RAT_ID)]          = 1;
+            id_map[creatureMgr->getById(BAT_ID)]          = 2;
+            id_map[creatureMgr->getById(GIANT_SPIDER_ID)] = 3;
+            id_map[creatureMgr->getById(GHOST_ID)]        = 4;
+            id_map[creatureMgr->getById(SLIME_ID)]        = 5;
+            id_map[creatureMgr->getById(TROLL_ID)]        = 6;
+            id_map[creatureMgr->getById(GREMLIN_ID)]      = 7;
+            id_map[creatureMgr->getById(MIMIC_ID)]        = 8;
+            id_map[creatureMgr->getById(REAPER_ID)]       = 9;
+            id_map[creatureMgr->getById(INSECT_SWARM_ID)] = 10;
+            id_map[creatureMgr->getById(GAZER_ID)]        = 11;
+            id_map[creatureMgr->getById(PHANTOM_ID)]      = 12;
+            id_map[creatureMgr->getById(ORC_ID)]          = 13;
+            id_map[creatureMgr->getById(SKELETON_ID)]     = 14;
+            id_map[creatureMgr->getById(ROGUE_ID)]        = 15;
         }
 
         dngMapFile = fopen((settings.getUserPath() + "dngmap.sav").c_str(), "wb");
@@ -417,7 +417,7 @@ int gameSave() {
         for (z = 0; z < c->location->map->levels; z++) {
             for (y = 0; y < c->location->map->height; y++) {
                 for (x = 0; x < c->location->map->width; x++) {
-                    unsigned char tile = c->location->map->getTileFromData(MapCoords(x, y, z))->getIndex();
+                    unsigned char tile = c->location->map->tileset->get(c->location->map->getTileFromData(MapCoords(x, y, z))->id)->getIndex();
                     Object *obj = c->location->map->objectAt(MapCoords(x, y, z));
 
                     /**
@@ -1749,7 +1749,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
 
     /* FIXME: there's got to be a better way make whirlpools and storms impervious to cannon fire */
     if (obj && (obj->getType() == Object::CREATURE) &&
-        (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID))
+        (m->getId() != WHIRLPOOL_ID) && (m->getId() != STORM_ID))
         validObject = true;
     /* See if it's an object to be destroyed (the avatar cannot destroy the balloon) */
     else if (obj && (obj->getType() == Object::UNKNOWN) && !(obj->getTile().isBalloon() && originAvatar))
@@ -2541,7 +2541,7 @@ bool talkAt(const Coords &coords) {
 
     /* No response from alerted guards... does any monster both
        attack and talk besides Nate the Snake? */
-    if  (p->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR && p->id != PYTHON_ID)
+    if  (p->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR && p->getId() != PYTHON_ID)
         return false;
 
     /* if we're talking to Lord British and the avatar is dead, LB resurrects them! */
@@ -2790,7 +2790,7 @@ void gameCheckBridgeTrolls() {
 
     screenMessage("\nBridge Trolls!\n");
     
-    m = c->location->map->addCreature(creatures.getById(TROLL_ID), c->location->coords);
+    m = c->location->map->addCreature(creatureMgr->getById(TROLL_ID), c->location->coords);
     delete c->combat;
     c->combat = new CombatController(MAP_BRIDGE_CON);    
     c->combat->init(m);
@@ -2850,7 +2850,7 @@ void gameCheckSpecialCreatures(Direction dir) {
         c->location->coords.x == 0xdd &&
         c->location->coords.y == 0xe0) {
         for (i = 0; i < 8; i++) {        
-            obj = c->location->map->addCreature(creatures.getById(PIRATE_ID), MapCoords(pirateInfo[i].x, pirateInfo[i].y));
+            obj = c->location->map->addCreature(creatureMgr->getById(PIRATE_ID), MapCoords(pirateInfo[i].x, pirateInfo[i].y));
             obj->setDirection(pirateInfo[i].dir);            
         }
     }
@@ -2866,7 +2866,7 @@ void gameCheckSpecialCreatures(Direction dir) {
         c->location->coords.y < 217 &&
         *c->aura != Aura::HORN) {
         for (i = 0; i < 8; i++)            
-            obj = c->location->map->addCreature(creatures.getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));                    
+            obj = c->location->map->addCreature(creatureMgr->getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));                    
     }
 }
 
@@ -2942,7 +2942,7 @@ void gameFixupObjects(Map *map) {
                 oldTile = c->location->map->tilemap->translate(monster->prevTile);
             
             if (i < MONSTERTABLE_CREATURES_SIZE) {
-                const Creature *creature = creatures.getByTile(tile);
+                const Creature *creature = creatureMgr->getByTile(tile);
                 /* make sure we really have a creature */
                 if (creature)
                     obj = map->addCreature(creature, coords);
@@ -2996,8 +2996,8 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
 
     // Figure out what the ranged attack should look like
-    MapTile tile = (m && (m->worldrangedtile.id > 0)) ? 
-        m->worldrangedtile : 
+    MapTile tile = (m && (m->getWorldrangedtile().id > 0)) ? 
+        m->getWorldrangedtile() : 
         Tileset::findTileByName("hit_flash")->id;
 
     // See if the attack hits the avatar
@@ -3019,7 +3019,7 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
     // Destroy objects that were hit
     else if (obj) {
         if (((obj->getType() == Object::CREATURE) &&
-             (m->id != WHIRLPOOL_ID) && (m->id != STORM_ID)) ||
+             (m->getId() != WHIRLPOOL_ID) && (m->getId() != STORM_ID)) ||
             obj->getType() == Object::UNKNOWN) {
                 
             CombatController::attackFlash(coords, tile, 3);
@@ -3292,9 +3292,9 @@ bool gameSpawnCreature(const Creature *m) {
     if (m)
         creature = m;
     else if (c->location->context & CTX_DUNGEON)
-        creature = creatures.randomForDungeon(c->location->coords.z);
+        creature = creatureMgr->randomForDungeon(c->location->coords.z);
     else
-        creature = creatures.randomForTile(*c->location->map->tileAt(coords, WITHOUT_OBJECTS));
+        creature = creatureMgr->randomForTile(*c->location->map->tileAt(coords, WITHOUT_OBJECTS));
 
     if (creature)
         c->location->map->addCreature(creature, coords);    
@@ -3317,7 +3317,7 @@ void gameDestroyAllCreatures(void) {
             CreatureVector::iterator obj;
 
             for (obj = creatures.begin(); obj != creatures.end(); obj++) {
-                if ((*obj)->id != LORDBRITISH_ID)
+                if ((*obj)->getId() != LORDBRITISH_ID)
                     cm->removeObject(*obj);                
             }            
         }
@@ -3332,7 +3332,7 @@ void gameDestroyAllCreatures(void) {
 
             if (m) {                
                 /* the skull does not destroy Lord British */
-                if (m->id != LORDBRITISH_ID)
+                if (m->getId() != LORDBRITISH_ID)
                     current = map->removeObject(current);                
                 else current++;
             }
