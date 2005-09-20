@@ -1,4 +1,5 @@
-<!ELEMENT config ( armors, maps, tileRules, tilesets, egaPalette, graphics, music, sound, weapons ) >
+<!ELEMENT config ( armors, creatures, maps, tileRules, tilesets, egaPalette, graphics, music, sound, weapons ) >
+<!ATTLIST config name      CDATA   #REQUIRED>
 
 <!ELEMENT sound ( track+ ) >
 
