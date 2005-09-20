@@ -9,6 +9,8 @@
 #include <string>
 #include "types.h"
 
+class ConfigElement;
+
 using std::string;
 
 /**
@@ -25,7 +27,7 @@ public:
     static TileMap *get(string name);
 
 private:
-    static void load(const string &filename);
+    static void load(const ConfigElement &tilemapConf);
     static TileIndexMapMap tileMaps;
 
     std::map<unsigned int, MapTile> tilemap;

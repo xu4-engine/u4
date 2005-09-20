@@ -14,7 +14,6 @@
 #include "screen.h"
 #include "settings.h"
 #include "tilemap.h"
-#include "xml.h"
 
 using std::vector;
 
@@ -26,7 +25,7 @@ TileRuleMap TileRule::rules;
 /**
  * Returns the tile rule with the given name, or NULL if none could be found
  */
-TileRule *TileRule::findByName(string name) {
+TileRule *TileRule::findByName(const string &name) {
     TileRuleMap::iterator i = rules.find(name);
     if (i != rules.end())
         return i->second;
@@ -164,36 +163,31 @@ void Tileset::loadAll() {
     TRACE(dbg, "Unloading all tilesets");    
     unloadAll();
 
-    /* open the filename for the tileset and parse it! */
+    // get the config element for all tilesets
     TRACE_LOCAL(dbg, "Loading tilesets info from config");
     conf = config->getElement("/config/tilesets").getChildren();
     
-    /* load tile rules from xml */
+    // load tile rules
     TRACE_LOCAL(dbg, "Loading tile rules");
     if (!TileRule::rules.size())
         TileRule::load();
 
-    /* load all of the tilesets */
+    // load all of the tilesets
     for (std::vector<ConfigElement>::iterator i = conf.begin(); i != conf.end(); i++) {
         if (i->getName() == "tileset") {
+
             Tileset *tileset = new Tileset;
-
-            /* get filename of each tileset */
-            string tilesetFilename = i->getString("file");
-
-            /* load the tileset! */
-            TRACE_LOCAL(dbg, string("Loading tileset: ") + tilesetFilename);
-            tileset->load(tilesetFilename);
+            tileset->load(*i);
 
             tilesets[tileset->name] = tileset;
         }
     }
 
-    /* make the current tileset the first one encountered */
+    // make the current tileset the first one encountered
     TRACE_LOCAL(dbg, "Setting default tileset");
     set(tilesets.begin()->second);
 
-    /* load tile maps from xml, including translations from index to id */
+    // load tile maps, including translations from index to id
     TRACE_LOCAL(dbg, "Loading tilemaps");
     TileMap::loadAll();
 
@@ -221,7 +215,7 @@ void Tileset::unloadAll() {
 /**
  * Returns the tileset with the given name, if it exists
  */
-Tileset* Tileset::get(string name) {
+Tileset* Tileset::get(const string &name) {
     if (tilesets.find(name) != tilesets.end())
         return tilesets[name];
     else return NULL;
@@ -237,7 +231,7 @@ TileId Tileset::getNextTileId() {
 /**
  * Returns the tile that has the given name from any tileset, if there is one
  */
-Tile* Tileset::findTileByName(string name) {
+Tile* Tileset::findTileByName(const string &name) {
     TilesetMap::iterator i;
     for (i = tilesets.begin(); i != tilesets.end(); i++) {
         Tile *t = i->second->getByName(name);
@@ -263,39 +257,28 @@ void Tileset::set(Tileset* t) {
 }
 
 /**
- * Loads a tileset from the .xml file indicated by 'filename'
+ * Loads a tileset.
  */
-void Tileset::load(string filename) {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;
+void Tileset::load(const ConfigElement &tilesetConf) {
     Debug dbg("debug/tileset.txt", "Tileset", true);
     
-    TRACE_LOCAL(dbg, string("\tParsing ") + filename);
-    
-    /* open the filename for the group and parse it! */
-    doc = xmlParse(filename.c_str());
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "tileset") != 0)
-        errorFatal("malformed %s", filename.c_str());
-
-    TRACE_LOCAL(dbg, string("\tRetreiving global tileset info...") + filename);
-
-    name = xmlGetPropAsString(root, "name");
-    if (xmlPropExists(root, "imageName"))
-        imageName = xmlGetPropAsString(root, "imageName");
-    if (xmlPropExists(root, "extends"))
-        extends = Tileset::get(xmlGetPropAsString(root, "extends"));
+    name = tilesetConf.getString("name");
+    if (tilesetConf.exists("imageName"))
+        imageName = tilesetConf.getString("imageName");
+    if (tilesetConf.exists("extends"))
+        extends = Tileset::get(tilesetConf.getString("extends"));
     else extends = NULL;
 
     TRACE_LOCAL(dbg, "\tLoading Tiles...");
 
     int index = 0;
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"tile") != 0)
+    vector<ConfigElement> children = tilesetConf.getChildren();
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+        if (i->getName() != "tile")
             continue;
         
         Tile *tile = new Tile;
-        Tile::loadProperties(tile, node);
+        tile->loadProperties(*i);
 
         /* set the base index for the tile (if it isn't already set explicitly) */
         if (tile->index != -1)
@@ -318,8 +301,6 @@ void Tileset::load(string filename) {
         index += tile->frames;
     }
     totalFrames = index;   
-    
-    xmlFreeDoc(doc);
 }
 
 /**
@@ -351,7 +332,7 @@ Tile* Tileset::get(TileId id) {
 /**
  * Returns the tile with the given name from the tileset, if it exists
  */
-Tile* Tileset::getByName(string name) {
+Tile* Tileset::getByName(const string &name) {
     if (nameMap.find(name) != nameMap.end())
         return nameMap[name];
     else if (extends)

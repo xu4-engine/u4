@@ -12,7 +12,6 @@
 #include "debug.h"
 #include "error.h"
 #include "tileset.h"
-#include "xml.h"
 
 using std::vector;
 
@@ -42,12 +41,9 @@ void TileMap::loadAll() {
     /* load all of the tilemaps */
     for (std::vector<ConfigElement>::iterator i = conf.begin(); i != conf.end(); i++) {
         if (i->getName() == "tilemap") {
-            /* get filename of the tilemap */
-            string tilemapFilename = i->getString("file");
         
             /* load the tilemap ! */
-            TRACE(dbg, string("Loading tilemap: ") + tilemapFilename);
-            load(tilemapFilename);
+            load(*i);
         }
     }
 }
@@ -69,47 +65,39 @@ void TileMap::unloadAll() {
 }
  
 /**
- * Loads a tile map which translates between tile indices and tile names
- * Tile maps are useful to translate from dos tile indices to xu4 tile ids
+ * Loads a tile map which translates between tile indices and tile
+ * names.  Tile maps are useful to translate from dos tile indices to
+ * xu4 tile ids.
  */
-void TileMap::load(const string &filename) {
-    xmlDocPtr doc;
-    xmlNodePtr root, node;    
-    
-    /* open the filename for the group and parse it! */
-    TRACE_LOCAL(dbg, string("Parsing ") + filename);
-    doc = xmlParse(filename.c_str());
-    root = xmlDocGetRootElement(doc);
-    if (xmlStrcmp(root->name, (const xmlChar *) "tilemap") != 0)
-        errorFatal("malformed %s", filename.c_str());
-
+void TileMap::load(const ConfigElement &tilemapConf) {
     TileMap *tm = new TileMap;
     
-    string name = xmlGetPropAsString(root, "name");    
+    string name = tilemapConf.getString("name");
     TRACE_LOCAL(dbg, string("Tilemap name is: ") + name);
     
     int index = 0;
-    for (node = root->xmlChildrenNode; node; node = node->next) {
-        if (xmlNodeIsText(node) || xmlStrcmp(node->name, (xmlChar *)"map") != 0)
+    vector<ConfigElement> children = tilemapConf.getChildren();
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+        if (i->getName() != "mapping")
             continue;
 
         /* we assume tiles have already been loaded at this point,
            so let's do some translations! */
         
         int frames = 1;
-        string tile = xmlGetPropAsString(node, "tile");        
+        string tile = i->getString("tile");        
 
         TRACE_LOCAL(dbg, string("\tLoading '") + tile + "'");
         
         /* find the tile this references */
         Tile *t = Tileset::findTileByName(tile);
         if (!t)
-            errorFatal("Error: tile '%s' from '%s' was not found in any tileset", tile.c_str(), filename.c_str());
+            errorFatal("Error: tile '%s' from '%s' was not found in any tileset", tile.c_str(), name.c_str());
         
-        if (xmlPropExists(node, "index"))
-            index = xmlGetPropAsInt(node, "index");        
-        if (xmlPropExists(node, "frames"))
-            frames = xmlGetPropAsInt(node, "frames");        
+        if (i->exists("index"))
+            index = i->getInt("index");        
+        if (i->exists("frames"))
+            frames = i->getInt("frames");
 
         /* insert the tile into the tile map */
         for (int i = 0; i < frames; i++) {
@@ -125,8 +113,6 @@ void TileMap::load(const string &filename) {
     
     /* add the tilemap to our list */
     tileMaps[name] = tm;
-
-    xmlFreeDoc(doc);
 }
 
 /**

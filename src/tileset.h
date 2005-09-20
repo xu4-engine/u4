@@ -21,7 +21,7 @@ typedef std::map<string, class TileRule *> TileRuleMap;
  */
 class TileRule {
 public:    
-    static TileRule *findByName(string name);
+    static TileRule *findByName(const string &name);
     static void load();
     static TileRuleMap rules;   // A map of rule names to rules
 
@@ -47,17 +47,17 @@ public:
 
     static void loadAll();
     static void unloadAll();
-    static Tileset* get(string name);
+    static Tileset* get(const string &name);
     static TileId getNextTileId();
-    static Tile* findTileByName(string name);        
+    static Tile* findTileByName(const string &name);        
     static Tileset* get(void);
     static void set(Tileset*);    
 
 public:
-    void load(string filename);
+    void load(const ConfigElement &tilesetConf);
     void unload();
     Tile* get(TileId id);
-    Tile* getByName(string name);
+    Tile* getByName(const string &name);
     string getImageName() const;
     unsigned int numTiles() const;
     unsigned int numFrames() const;    
