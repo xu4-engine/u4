@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
-<!DOCTYPE creatures SYSTEM "dtd/creatures.dtd">
+<!DOCTYPE creatures SYSTEM "dtd/creatures.dtd" [
+  <!ENTITY % common SYSTEM "dtd/common.dtd">
+  %common;
+]>
+
 <!-- $Id$ -->
 <creatures>
     <creature id="0" name="Horse" tile="horse" basehp="255" exp="10" good="true" wontattack="true"/>

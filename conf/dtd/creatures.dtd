@@ -1,8 +1,5 @@
 <!-- $Id$ -->
 
-<!ENTITY % bool '( true | false )'>
-<!ENTITY % effect '( fire | poison | sleep )'>
-
 <!ELEMENT creatures ( creature+ ) >
 
 <!ELEMENT creature EMPTY >

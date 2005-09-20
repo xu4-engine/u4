@@ -1,3 +1,4 @@
 <!-- $Id$ -->
 <!ENTITY % bool '( true | false )'>
 <!ENTITY % class '( mage | bard | fighter | druid | tinker | paladin | ranger | shepherd | all )'>
+<!ENTITY % effect '( fire | sleep | poison | poisonField | electricity | lava )'>
