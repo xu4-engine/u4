@@ -21,7 +21,7 @@ TileView::TileView(int x, int y, int columns, int rows) : View(x, y, columns * T
     this->rows = rows;
     this->tileWidth = TILE_WIDTH;
     this->tileHeight = TILE_HEIGHT;
-    this->tileset = Tileset::get();
+    this->tileset = Tileset::get("base");
     animated = Image::create(SCALED(tileWidth), SCALED(tileHeight), false, Image::HARDWARE);
 }
 
@@ -40,7 +40,7 @@ TileView::~TileView() {
 
 void TileView::reinit() {
     View::reinit();
-    tileset = Tileset::get();
+    tileset = Tileset::get("base");
 }
 
 void TileView::drawTile(MapTile *mapTile, bool focus, int x, int y) {
