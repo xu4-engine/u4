@@ -126,6 +126,13 @@ typedef enum {
 
 /**
  * Creature Class Definition
+ * @todo
+ * <ul>
+ *      <li>split into a CreatureType (all the settings for a
+ *      particular creature e.g. orc) and Creature (a specific
+ *      creature instance)</li>
+ *      <li>creatures can be looked up by name, ids can probably go away</li>
+ * </ul>
  */ 
 class Creature : public Object {
     typedef std::list<StatusType> StatusList;
