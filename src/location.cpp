@@ -94,14 +94,8 @@ std::vector<MapTile *> Location::tilesAt(MapCoords coords, bool &focus) {
         focus = focus || obj->hasFocus();
         tiles.push_back(&m->getCamouflageTile());
     }
-    /* then visible creatures */
-    else if (obj && (obj->getType() != Object::UNKNOWN) && obj->isVisible()) {
-        focus = focus || obj->hasFocus();
-        tiles.push_back(&obj->getTile());
-    }
-
-    /* then other visible objects */
-     if (obj && obj->isVisible()) {
+    /* then visible creatures and objects */
+    else if (obj && obj->isVisible()) {
         focus = focus || obj->hasFocus();
         tiles.push_back(&obj->getTile());
     }
