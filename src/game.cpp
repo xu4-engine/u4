@@ -78,7 +78,7 @@ void newOrder();
 
 /* conversation functions */
 bool talkAt(const Coords &coords);
-void talkRunConversation(bool showPrompt);
+void talkRunConversation(Person *talker, bool showPrompt);
 
 /* action functions */
 bool attackAt(const Coords &coords);
@@ -2532,33 +2532,33 @@ bool talkAt(const Coords &coords) {
     }
     
     city = dynamic_cast<City*>(c->location->map);
-    Person *p = city->personAt(coords);
-    c->conversation->setTalker(p);
+    Person *talker = city->personAt(coords);
 
     /* make sure we have someone we can talk with */
-    if (!c->conversation->isValid())
+    if (!talker || !talker->canConverse())
         return false;
 
     /* No response from alerted guards... does any monster both
        attack and talk besides Nate the Snake? */
-    if  (p->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR && p->getId() != PYTHON_ID)
+    if  (talker->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR && 
+         talker->getId() != PYTHON_ID)
         return false;
 
     /* if we're talking to Lord British and the avatar is dead, LB resurrects them! */
-    if (c->conversation->getTalker()->npcType == NPC_LORD_BRITISH &&
+    if (talker->npcType == NPC_LORD_BRITISH &&
         c->party->member(0)->getStatus() == STAT_DEAD) {
         screenMessage("%s, Thou shalt live again!\n", c->party->member(0)->getName().c_str());
-        
+
         c->party->member(0)->setStatus(STAT_GOOD);
         c->party->member(0)->heal(HT_FULLHEAL);
         gameSpellEffect('r', -1, SOUND_LBHEAL);
     }
     
     c->conversation->state = Conversation::INTRO;
-    c->conversation->reply = personGetConversationText(c->conversation, "");
+    c->conversation->reply = talker->getConversationText(c->conversation, "");
     c->conversation->playerInput.erase();
 
-    talkRunConversation(false);
+    talkRunConversation(talker, false);
 
     return true;
 }
@@ -2566,7 +2566,7 @@ bool talkAt(const Coords &coords) {
 /**
  * Executes the current conversation until it is done.
  */
-void talkRunConversation(bool showPrompt) {
+void talkRunConversation(Person *talker, bool showPrompt) {
 
     while (c->conversation->state != Conversation::DONE) {
         // TODO: instead of calculating linesused again, cache the
@@ -2589,7 +2589,7 @@ void talkRunConversation(bool showPrompt) {
         /* they're attacking you! */
         if (c->conversation->state == Conversation::ATTACK) {
             c->conversation->state = Conversation::DONE;
-            c->conversation->getTalker()->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
+            talker->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
         }
     
         if (c->conversation->state == Conversation::DONE)
@@ -2614,7 +2614,7 @@ void talkRunConversation(bool showPrompt) {
         }
 
         if (showPrompt) {
-            string prompt = personGetPrompt(c->conversation);
+            string prompt = talker->getPrompt(c->conversation);
             if (!prompt.empty()) {
                 if (linesused + linecount(prompt, TEXT_AREA_W) > TEXT_AREA_H)
                     ReadChoiceController::get("");
@@ -2626,7 +2626,7 @@ void talkRunConversation(bool showPrompt) {
         switch (c->conversation->getInputRequired(&maxlen)) {
         case Conversation::INPUT_STRING:
             c->conversation->playerInput = gameGetInput(maxlen);
-            c->conversation->reply = personGetConversationText(c->conversation, c->conversation->playerInput.c_str());
+            c->conversation->reply = talker->getConversationText(c->conversation, c->conversation->playerInput.c_str());
             c->conversation->playerInput.erase();
             showPrompt = true;
             break;
@@ -2638,7 +2638,7 @@ void talkRunConversation(bool showPrompt) {
             message[0] = choice;
             message[1] = '\0';
 
-            c->conversation->reply = personGetConversationText(c->conversation, message);
+            c->conversation->reply = talker->getConversationText(c->conversation, message);
             c->conversation->playerInput.erase();
 
             showPrompt = true;

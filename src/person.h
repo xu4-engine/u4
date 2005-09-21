@@ -43,6 +43,29 @@ public:
         setType(Object::PERSON);
     }
 
+    bool canConverse() const;
+    bool isVendor() const;
+
+    list<string> getConversationText(Conversation *cnv, const char *inquiry);
+    string getPrompt(Conversation *cnv);
+    const char *getChoices(Conversation *cnv);
+
+    string emptyGetIntro(Conversation *cnv);
+    string talkerGetIntro(Conversation *cnv);
+    string talkerGetResponse(Conversation *cnv, const char *inquiry);
+    string talkerGetQuestionResponse(Conversation *cnv, const char *inquiry);
+    string talkerGetPrompt(Conversation *cnv);
+    string beggarGetQuantityResponse(Conversation *cnv, const char *response);
+    string lordBritishGetIntro(Conversation *cnv);
+    string lordBritishGetResponse(Conversation *cnv, const char *inquiry);
+    string lordBritishGetQuestionResponse(Conversation *cnv, const char *answer);
+    string lordBritishGetPrompt(const Conversation *cnv);
+    string lordBritishGetHelp(const Conversation *cnv);
+    string hawkwindGetIntro(Conversation *cnv);
+    string hawkwindGetResponse(Conversation *cnv, const char *inquiry);
+    string hawkwindGetPrompt(const Conversation *cnv);
+    void getQuestion(Conversation *cnv, string *question);
+
 public:
     string name;
     Dialogue* dialogue;
@@ -54,9 +77,6 @@ bool isPerson(Object *punknown);
 
 list<string> replySplit(const string &text);
 int personInit(void);
-list<string> personGetConversationText(class Conversation *cnv, const char *inquiry);
-string personGetPrompt(class Conversation *cnv);
-const char *personGetChoices(class Conversation *cnv);
 int linecount(const string &s, int columnmax);
 
 #endif
