@@ -105,23 +105,12 @@ Dialogue::Action Dialogue::getAction() const {
  */ 
 
 
-Conversation::Conversation() : talker(NULL), state(INTRO), script(new Script()) {
+Conversation::Conversation() : state(INTRO), script(new Script()) {
     logger = new Debug("debug/conversation.txt", "Conversation"); 
 }
 
 Conversation::~Conversation() {
     delete script;
-}
-
-/**
- * Returns true if the talker has a valid dialogue.
- */
-bool Conversation::isValid() const {
-    /* some persons in some towns exist as a 'person' object, but they
-       really are not someone you can talk to.  These persons have mostly null fields */
-    if (!talker || (!talker->dialogue && talker->npcType <= NPC_TALKER_COMPANION))
-        return false;
-    return true;
 }
 
 Conversation::InputType Conversation::getInputRequired(int *bufferlen) {    
@@ -174,5 +163,3 @@ Conversation::InputType Conversation::getInputRequired(int *bufferlen) {
     return INPUT_NONE;
 }
 
-Person *Conversation::getTalker()       { return talker; }  /**< Returns the person object the player is talking with */
-void Conversation::setTalker(Person *p) { talker = p; }     /**< Sets the person the player is/will be talking with */

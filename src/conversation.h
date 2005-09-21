@@ -172,18 +172,12 @@ public:
     ~Conversation();
 
     /* Member functions */
-    bool isValid() const;       
     InputType getInputRequired(int *bufferLen);
-
-    /* Accessor functions */
-    Person *getTalker();
-    void setTalker(Person *);
 
     /* Static variables */
     static const unsigned int BUFFERLEN;    /**< The default maxixum length of input */
     
 private:
-    class Person *talker;       /**< The person object the player is talking with */
     Debug *logger;
 public:    
     State state;                /**< The state of the conversation */    
