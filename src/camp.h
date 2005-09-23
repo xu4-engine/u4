@@ -14,22 +14,21 @@ public:
     CampController();
     virtual void init(Creature *m);
     virtual void begin();
+    virtual void end(bool adjustKarma);
 
 private:
     bool heal();
 };
 
-#if 0
-class InnController : public Controller {
+class InnController : public CombatController {
 public:
-    void run();
-    virtual bool keyPressed(int key);
+    InnController();
+
+    virtual void begin();
+    virtual void awardLoot();
 
 private:
     bool heal();
 };
-#endif
-
-void innBegin(void);
 
 #endif

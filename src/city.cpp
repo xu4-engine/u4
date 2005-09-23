@@ -9,6 +9,7 @@
 #include "city.h"
 
 #include "context.h"
+#include "conversation.h"
 #include "creature.h"
 #include "object.h"
 #include "person.h"
@@ -21,6 +22,8 @@ City::~City() {
         delete *i;
     for (PersonRoleList::iterator j = personroles.begin(); j != personroles.end(); j++)
         delete *j;
+    for (std::vector<Dialogue *>::iterator k = extraDialogues.begin(); k != extraDialogues.end(); k++)
+        delete *k;
 }
 
 /**

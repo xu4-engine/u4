@@ -178,16 +178,29 @@ int CityMapLoader::load(Map *map) {
     }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        dialogues[i] = dlgLoader->load(tlk);        
-        
+        dialogues[i] = dlgLoader->load(tlk);
+       
+        if (!dialogues[i])
+            break;
+
         /*
          * Match up dialogues with their respective people
          */
+        bool found = false;
         for (j = 0; j < CITY_MAX_PERSONS; j++) {
             if (conv_idx[j] == i+1) {
                 people[j]->dialogue = dialogues[i];
                 people[j]->name = dialogues[i]->getName();
+                found = true;
             }
+        }
+        /*
+         * if the dialogue doesn't match up with a person, attach it
+         * to the city; Isaac the ghost in Skara Brae is handled like
+         * this
+         */
+        if (!found) {
+            city->extraDialogues.push_back(dialogues[i]);
         }
     }    
 

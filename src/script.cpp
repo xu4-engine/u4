@@ -947,7 +947,9 @@ Script::ReturnCode Script::move(xmlNodePtr script, xmlNodePtr current) {
 Script::ReturnCode Script::sleep(xmlNodePtr script, xmlNodePtr current) {
     if (debug)
         fprintf(debug, "\nSleep!\n");
-    innBegin();
+
+    c->combat = new InnController;
+    c->combat->begin();
 
     return RET_OK;
 }

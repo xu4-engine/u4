@@ -74,6 +74,7 @@ CombatController::CombatController(MapId id) {
     map = getCombatMap(mapMgr->get(id));
     game->setMap(map, true, NULL);
     c->party->addObserver(this);
+    forceStandardEncounterSize = false;
 }
 
 CombatController::~CombatController() {
@@ -82,7 +83,6 @@ CombatController::~CombatController() {
 
 // Accessor Methods    
 bool CombatController::isCamping() const                    { return camping; }
-bool CombatController::isInn() const                        { return inn; }
 bool CombatController::isWinOrLose() const                  { return winOrLose; }
 Direction CombatController::getExitDir() const              { return exitDir; }
 unsigned char CombatController::getFocus() const            { return focus; }
@@ -92,7 +92,6 @@ PartyMemberVector *CombatController::getParty()             { return &party; }
 PartyMember* CombatController::getCurrentPlayer()           { return party[focus]; }
 
 void CombatController::setExitDir(Direction d)              { exitDir = d; }
-void CombatController::setInn(bool i)                       { inn = i; }
 void CombatController::setCreature(Creature *m)               { creature = m; }
 void CombatController::setWinOrLose(bool worl)              { winOrLose = worl; }
 void CombatController::showCombatMessage(bool show)         { showMessage = show; }
@@ -111,7 +110,6 @@ void CombatController::init(class Creature *m) {
     map->setAltarRoom(VIRT_NONE);
     showMessage = true;
     camping = false;
-    inn = false;
 
     /* initialize creature info */
     for (i = 0; i < AREA_CREATURES; i++) {
@@ -205,7 +203,6 @@ void CombatController::applyCreatureTileEffects() {
  * Begin combat
  */
 void CombatController::begin() {
-    int i;
     bool partyIsReadyToFight = false;    
     
     /* place party members on the map */    
@@ -215,12 +212,6 @@ void CombatController::begin() {
     /* place creatures on the map */
     if (placeCreaturesOnMap)
         placeCreatures();
-
-    /* camping, make sure everyone's asleep */
-    if (camping) {
-        for (i = 0; i < c->party->size(); i++)
-            c->party->member(i)->putToSleep();            
-    }
 
     /* if we entered an altar room, show the name */
     if (map->isAltarRoom()) {
@@ -238,7 +229,7 @@ void CombatController::begin() {
     }
 
     /* Set focus to the first active party member, if there is one */ 
-    for (i = 0; i < AREA_PLAYERS; i++) {
+    for (int i = 0; i < AREA_PLAYERS; i++) {
         if (setActivePlayer(i)) {
             partyIsReadyToFight = true;
             break;
@@ -252,10 +243,6 @@ void CombatController::begin() {
 }
 
 void CombatController::end(bool adjustKarma) {
-    int i;
-    Coords coords;    
-    MapTile *ground;
-
     eventHandler->popController();
 
     /* The party is dead -- start the death sequence */
@@ -279,22 +266,7 @@ void CombatController::end(bool adjustKarma) {
             if (creature) {
                 if (creature->isEvil())
                     c->party->adjustKarma(KA_KILLED_EVIL);
-                coords = creature->getCoords();
-                ground = c->location->map->tileAt(coords, WITHOUT_OBJECTS);
-
-                /* FIXME: move to separate function */
-                /* add a chest, if the creature leaves one */
-                if (!inn && creature->leavesChest() && ground->isCreatureWalkable()
-                    && (!(c->location->context & CTX_DUNGEON) || ground->isDungeonFloor())) {
-                    MapTile chest = Tileset::findTileByName("chest")->id;
-                    c->location->map->addObject(chest, chest, coords);
-                }
-                /* add a ship if you just defeated a pirate ship */
-                else if (creature->getTile().isPirateShip()) {
-                    MapTile ship = Tileset::findTileByName("ship")->id;
-                    ship.setDirection(creature->getTile().getDirection());
-                    c->location->map->addObject(ship, ship, coords);
-                }
+                awardLoot();
             }
             
             screenMessage("\nVictory!\n");
@@ -343,15 +315,8 @@ void CombatController::end(bool adjustKarma) {
     if (creature)
         c->location->map->removeObject(creature);
 
-    /* If we were camping and were ambushed, wake everyone up! */
-    if (camping) {
-        for (i = 0; i < c->party->size(); i++)
-            c->party->member(i)->wakeUp();        
-    }
-
     /* reset our combat variables */
     camping = false;
-    inn = false;
     
     /* Make sure finishturn only happens if a new combat has not begun */
     if (eventHandler->getController() != this)
@@ -399,13 +364,13 @@ void CombatController::fillCreatureTable(const Creature *creature) {
 /**
  * Generate the number of creatures in a group.
  */
-int  CombatController::initialNumberOfCreatures(const class Creature *creature) const {
+int  CombatController::initialNumberOfCreatures(const Creature *creature) const {
     int ncreatures;
     Map *map = c->location->prev ? c->location->prev->map : c->location->map;
 
     /* if in an unusual combat situation, generally we stick to normal encounter sizes,
        (such as encounters from sleeping in an inn, etc.) */
-    if (camping || inn || map->isWorldMap() || (c->location->prev && c->location->prev->context & CTX_DUNGEON)) {
+    if (forceStandardEncounterSize || map->isWorldMap() || (c->location->prev && c->location->prev->context & CTX_DUNGEON)) {
         ncreatures = xu4_random(8) + 1;
         
         if (ncreatures == 1) {
@@ -523,10 +488,25 @@ bool CombatController::setActivePlayer(int player) {
     return false;
 }
 
-/** 
- * Static member functions
- */
-// Directional actions
+void CombatController::awardLoot() {
+    Coords coords = creature->getCoords();
+    MapTile *ground = c->location->map->tileAt(coords, WITHOUT_OBJECTS);
+
+    /* add a chest, if the creature leaves one */
+    if (creature->leavesChest() && 
+        ground->isCreatureWalkable() &&
+        (!(c->location->context & CTX_DUNGEON) || ground->isDungeonFloor())) {
+        MapTile chest = Tileset::findTileByName("chest")->id;
+        c->location->map->addObject(chest, chest, coords);
+    }
+    /* add a ship if you just defeated a pirate ship */
+    else if (creature->getTile().isPirateShip()) {
+        MapTile ship = Tileset::findTileByName("ship")->id;
+        ship.setDirection(creature->getTile().getDirection());
+        c->location->map->addObject(ship, ship, coords);
+    }
+}
+
 bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance) {
     const Weapon *weapon = Weapon::get(attacker->getWeapon());
     bool wrongRange = weapon->rangeAbsolute() && (distance != range);

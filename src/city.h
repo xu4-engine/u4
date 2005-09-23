@@ -12,6 +12,7 @@
 using std::string;
 
 class Person;
+class Dialogue;
 
 #include "map.h"
 
@@ -41,6 +42,7 @@ public:
     PersonList persons;
     string tlk_fname;
     PersonRoleList personroles;    
+    std::vector<Dialogue *> extraDialogues;
 };
 
 bool isCity(Map *punknown);

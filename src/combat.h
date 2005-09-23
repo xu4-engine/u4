@@ -46,7 +46,6 @@ public:
 
     // Accessor Methods    
     bool          isCamping() const;
-    bool          isInn() const;    
     bool          isWinOrLose() const;
     Direction     getExitDir() const;
     unsigned char getFocus() const;
@@ -56,7 +55,6 @@ public:
     PartyMember*  getCurrentPlayer();
     
     void setExitDir(Direction d);
-    void setInn(bool i = true);
     void setCreature(Creature *);
     void setWinOrLose(bool worl = true);
     void showCombatMessage(bool show = true);
@@ -67,7 +65,7 @@ public:
     
     void applyCreatureTileEffects();
     virtual void begin();
-    void end(bool adjustKarma);
+    virtual void end(bool adjustKarma);
     void fillCreatureTable(const Creature *creature);
     int  initialNumberOfCreatures(const Creature *creature) const;
     bool isWon() const;
@@ -76,6 +74,7 @@ public:
     void placeCreatures();
     void placePartyMembers();
     bool setActivePlayer(int player);
+    virtual void awardLoot();
 
     // attack functions
     void attack();
@@ -107,7 +106,7 @@ protected:
     Creature *creature;    
 
     bool camping;
-    bool inn;
+    bool forceStandardEncounterSize;
     bool placePartyOnMap;
     bool placeCreaturesOnMap;
     bool winOrLose;
