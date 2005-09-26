@@ -67,9 +67,9 @@ int MapLoader::loadData(Map *map, U4FILE *f) {
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
         for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
             if (isChunkCompressed(map, ych * map->chunk_width + xch)) {
+                MapTile water = *map->tileset->getByName("sea");
                 for(y = 0; y < map->chunk_height; ++y) {
                     for(x = 0; x < map->chunk_width; ++x) {
-                        static int water = map->translateToRawTileIndex(*map->tileset->getByName("water"));
                         map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = water;
                     }
                 }
