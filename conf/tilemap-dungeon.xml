@@ -2,7 +2,7 @@
 <!-- <!DOCTYPE tilemap SYSTEM "dtd/tilemap.dtd">-->
 <!-- $Id$ -->
 
-<tilemap name="dungeon">   
+<tilemap name="dungeon" tileset="dungeon">
     <mapping frames="16" tile="brick_floor"/>
     <mapping frames="16" tile="up_ladder"/>
     <mapping frames="16" tile="down_ladder"/>

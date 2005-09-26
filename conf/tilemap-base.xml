@@ -2,7 +2,7 @@
 <!-- <!DOCTYPE tilemap SYSTEM "dtd/tilemap.dtd">-->
 <!-- $Id$ -->
 
-<tilemap name="base">
+<tilemap name="base" tileset="base">
     <mapping tile="sea"/>
     <mapping tile="water"/>
     <mapping tile="shallows"/>
