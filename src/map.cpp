@@ -22,6 +22,7 @@
 #include "portal.h"
 #include "savegame.h"
 #include "tileset.h"
+#include "tilemap.h"
 #include "types.h"
 #include "utils.h"
 
@@ -782,13 +783,23 @@ bool Map::fillMonsterTable() {
         Coords c = monsters[i]->getCoords(),
                prevc = monsters[i]->getPrevCoords();
 
-        monsterTable[i].tile = tileset->get(monsters[i]->getTile().id)->getIndex();
+        monsterTable[i].tile = translateToRawTileIndex(monsters[i]->getTile());
         monsterTable[i].x = c.x;
         monsterTable[i].y = c.y;
-        monsterTable[i].prevTile = tileset->get(monsters[i]->getPrevTile().id)->getIndex();
+        monsterTable[i].prevTile = translateToRawTileIndex(monsters[i]->getPrevTile());
         monsterTable[i].prevx = prevc.x;
         monsterTable[i].prevy = prevc.y;
     }
     
     return true;
+}
+
+MapTile Map::translateFromRawTileIndex(int raw) const {
+    ASSERT(tilemap != NULL, "tilemap hasn't been set");
+
+    return tilemap->translate(raw);
+}
+
+unsigned int Map::translateToRawTileIndex(MapTile &tile) const {
+    return tilemap->untranslate(tile);
 }

@@ -1098,7 +1098,7 @@ void Party::reviveParty() {
 }
 
 void Party::setTransport(MapTile tile) {
-    saveGame->transport = c->location->map->tileset->get(tile.id)->getIndex();
+    saveGame->transport = c->location->map->translateToRawTileIndex(tile);
     transport = tile;
     
     if (tile.isHorse())

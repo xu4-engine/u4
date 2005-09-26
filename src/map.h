@@ -129,6 +129,8 @@ public:
 
     // u4dos compatibility
     bool fillMonsterTable();    
+    MapTile translateFromRawTileIndex(int c) const;
+    unsigned int translateToRawTileIndex(MapTile &tile) const;
 
 public:
     MapId           id;    

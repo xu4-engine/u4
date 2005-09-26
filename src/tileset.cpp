@@ -280,12 +280,6 @@ void Tileset::load(const ConfigElement &tilesetConf) {
         Tile *tile = new Tile;
         tile->loadProperties(*i);
 
-        /* set the base index for the tile (if it isn't already set explicitly) */
-        if (tile->index != -1)
-            index = tile->index;
-        else            
-            tile->index = index;        
-
         /* grab a unique id for the tile */
         tile->id = getNextTileId();
         

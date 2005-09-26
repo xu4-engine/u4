@@ -43,19 +43,16 @@ class TileRule;
  */
 class Tile : public MapTile {
 public:
-    Tile() : w(0), h(0), index(0), frames(0), scale(1), anim(NULL), opaque(false), rule(NULL), 
+    Tile() : w(0), h(0), frames(0), scale(1), anim(NULL), opaque(false), rule(NULL), 
         tileset(NULL), image(NULL), large(false) {}
 
     void loadProperties(const ConfigElement &conf);
-    static MapTile translate(int index, string tileMap);
 
-    int getIndex() const;
     Image *getImage();
     bool isLarge() const;
 
     string name;        /**< The name of this tile */
     int w, h;           /**< width and height of the tile */
-    int index;          /**< The physical tile index of this tile on its parent image (the whole tileset image) */
     int frames;         /**< The number of frames this tile has */
     int scale;          /**< The scale of the tile */
     TileAnim *anim;     /**< The tile animation for this tile */    

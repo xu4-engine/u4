@@ -33,7 +33,9 @@ void Tile::loadProperties(const ConfigElement &conf) {
         extern TileAnimSet *tileanims;
         string animation = conf.getString("animation");
 
-        anim = tileanims->getByName(animation);
+        anim = NULL;
+        if (tileanims)
+            anim = tileanims->getByName(animation);
         if (anim == NULL)
             errorWarning("Warning: animation style '%s' not found", animation.c_str());        
     }
@@ -67,25 +69,7 @@ void Tile::loadProperties(const ConfigElement &conf) {
     else 
         imageName = string("tile_") + name;
 
-    /* get the index, if it is provided.  Otherwise, it is implied */
-    index = conf.getInt("index", -1);
-
     large = conf.getBool("large");
-}
-
-/**
- * Returns the tile at the corresponding index of the current tileset
- */ 
-MapTile Tile::translate(int index, string tileMap) {    
-    TileMap *im = TileMap::get(tileMap);
-    if (im)
-        return im->translate(index);
-
-    return MapTile();
-}
-
-int Tile::getIndex() const {
-    return index + frame;
 }
 
 Image *Tile::getImage() { 
@@ -292,7 +276,7 @@ bool MapTile::canAttackOverTile(MapTile tile) {
 }
 
 MapTile MapTile::tileForClass(int klass) {    
-    return Tile::translate((klass * 2) + 0x20, "base");
+    return TileMap::get("base")->translate((klass * 2) + 0x20);
 }
 
 #undef TESTBIT

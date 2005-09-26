@@ -32,6 +32,7 @@
 #include "u4file.h"
 
 class Image;
+class Map;
 class Tile;
 class TileView;
 
@@ -84,7 +85,7 @@ void screenRedrawScreen(void);
 void screenRedrawTextArea(int x, int y, int width, int height);
 void screenScrollMessageArea(void);
 void screenShake(int iterations);
-void screenShowGemTile(Tile* t, bool focus, int x, int y);
+void screenShowGemTile(Map *map, Tile *t, bool focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, const char *fmt, ...) PRINTF_LIKE(3, 4);

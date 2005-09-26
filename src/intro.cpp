@@ -21,6 +21,7 @@
 #include "settings.h"
 #include "shrine.h"
 #include "tileset.h"
+#include "tilemap.h"
 #include "u4file.h"
 #include "utils.h"
 
@@ -119,7 +120,7 @@ bool IntroBinData::load() {
     u4fseek(title, INTRO_MAP_OFFSET, SEEK_SET);
     introMap = new MapTile[(INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT) + 1];    
     for (i = 0; i < INTRO_MAP_HEIGHT * INTRO_MAP_WIDTH; i++)        
-        introMap[i] = Tile::translate(u4fgetc(title), "base");
+        introMap[i] = TileMap::get("base")->translate(u4fgetc(title));
         
     u4fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
     scriptTable = new unsigned char[INTRO_SCRIPT_TABLE_SIZE];
@@ -129,7 +130,7 @@ bool IntroBinData::load() {
     u4fseek(title, INTRO_BASETILE_TABLE_OFFSET, SEEK_SET);
     baseTileTable = new Tile*[INTRO_BASETILE_TABLE_SIZE];
     for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
-        MapTile tile = Tile::translate(u4fgetc(title), "base");
+        MapTile tile = TileMap::get("base")->translate(u4fgetc(title));
         baseTileTable[i] = Tileset::get("base")->get(tile.id);
     }
 

@@ -48,7 +48,6 @@
 #include "sound.h"
 #include "spell.h"
 #include "stats.h"
-#include "tilemap.h"
 #include "tileset.h"
 #include "utils.h"
 #include "script.h"
@@ -417,7 +416,7 @@ int gameSave() {
         for (z = 0; z < c->location->map->levels; z++) {
             for (y = 0; y < c->location->map->height; y++) {
                 for (x = 0; x < c->location->map->width; x++) {
-                    unsigned char tile = c->location->map->tileset->get(c->location->map->getTileFromData(MapCoords(x, y, z))->id)->getIndex();
+                    unsigned char tile = c->location->map->translateToRawTileIndex(*c->location->map->getTileFromData(MapCoords(x, y, z)));
                     Object *obj = c->location->map->objectAt(MapCoords(x, y, z));
 
                     /**
@@ -1962,58 +1961,58 @@ void GameController::updateMoons(bool showmoongates)
             if (trammelSubphase == 0) {
                 gate = moongateGetGateCoordsForPhase(oldTrammel);
                 if (gate)
-                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x40));
+                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x40));
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate)
-                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x40));
+                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x40));
             }
             else if (trammelSubphase == 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x40));
-                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x41));
+                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x40));
+                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x41));
                 }
             }
             else if (trammelSubphase == 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x41));
-                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x42));
+                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x41));
+                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x42));
                 }
             }
             else if (trammelSubphase == 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x42));
-                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x43));
+                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x42));
+                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x43));
                 }
             }
             else if ((trammelSubphase > 3) && (trammelSubphase < (MOON_SECONDS_PER_PHASE * 4 * 3) - 3)) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x43));
-                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x43));
+                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x43));
+                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x43));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x43));
-                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x42));
+                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x43));
+                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x42));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x42));
-                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x41));
+                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x42));
+                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x41));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->tilemap->translate(0x41));
-                    c->location->map->annotations->add(*gate, c->location->map->tilemap->translate(0x40));
+                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x41));
+                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x40));
                 }
             }
         }
@@ -2459,7 +2458,7 @@ void newOrder() {
     /* re-build the party */
     delete c->party;
     c->party = new Party(c->saveGame);
-    c->party->setTransport(c->location->map->tilemap->translate(c->saveGame->transport));
+    c->party->setTransport(c->location->map->translateFromRawTileIndex(c->saveGame->transport));
 }
 
 /**
@@ -2938,8 +2937,8 @@ void gameFixupObjects(Map *map) {
         SaveGameMonsterRecord *monster = &map->monsterTable[i];
         if (monster->prevTile != 0) {
             Coords coords(monster->x, monster->y);
-            MapTile tile = c->location->map->tilemap->translate(monster->tile),
-                oldTile = c->location->map->tilemap->translate(monster->prevTile);
+            MapTile tile = c->location->map->translateFromRawTileIndex(monster->tile),
+                oldTile = c->location->map->translateFromRawTileIndex(monster->prevTile);
             
             if (i < MONSTERTABLE_CREATURES_SIZE) {
                 const Creature *creature = creatureMgr->getByTile(tile);

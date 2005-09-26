@@ -69,7 +69,7 @@ int MapLoader::loadData(Map *map, U4FILE *f) {
             if (isChunkCompressed(map, ych * map->chunk_width + xch)) {
                 for(y = 0; y < map->chunk_height; ++y) {
                     for(x = 0; x < map->chunk_width; ++x) {
-                        static int water = Tileset::findTileByName("water")->id;
+                        static int water = map->translateToRawTileIndex(*map->tileset->getByName("water"));
                         map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = water;
                     }
                 }
@@ -82,7 +82,7 @@ int MapLoader::loadData(Map *map, U4FILE *f) {
                             return 0;
                       
                         clock_t s = clock();
-                        MapTile mt = map->tilemap->translate(c);
+                        MapTile mt = map->translateFromRawTileIndex(c);
                         total += clock() - s;
 
                         map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt;
@@ -139,7 +139,7 @@ int CityMapLoader::load(Map *map) {
 
     /* Properly construct people for the city */       
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i] = new Person(map->tilemap->translate(u4fgetc(ult)));
+        people[i] = new Person(map->translateFromRawTileIndex(u4fgetc(ult)));
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
         people[i]->start.x = u4fgetc(ult);
@@ -148,7 +148,7 @@ int CityMapLoader::load(Map *map) {
         people[i]->start.y = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i]->setPrevTile(map->tilemap->translate(u4fgetc(ult)));
+        people[i]->setPrevTile(map->translateFromRawTileIndex(u4fgetc(ult)));
 
     for (i = 0; i < CITY_MAX_PERSONS * 2; i++)
         u4fgetc(ult);           /* read redundant startx/starty */
@@ -297,7 +297,7 @@ int DngMapLoader::load(Map *map) {
     unsigned int i, j;
     for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * dungeon->levels); i++) {
         unsigned char mapData = u4fgetc(dng);
-        MapTile tile = map->tilemap->translate(mapData);
+        MapTile tile = map->translateFromRawTileIndex(mapData);
         
         /* determine what type of tile it is */
         tile.type = mapData % 16;
@@ -314,7 +314,7 @@ int DngMapLoader::load(Map *map) {
         for (j = 0; j < DNGROOM_NTRIGGERS; j++) {
             int tmp;
 
-            dungeon->rooms[i].triggers[j].tile = Tile::translate(u4fgetc(dng), "base").id;
+            dungeon->rooms[i].triggers[j].tile = TileMap::get("base")->translate(u4fgetc(dng)).id;
 
             tmp = u4fgetc(dng);
             if (tmp == EOF)
@@ -351,11 +351,11 @@ int DngMapLoader::load(Map *map) {
 
         /* translate each creature tile to a tile id */
         for (j = 0; j < sizeof(dungeon->rooms[i].creature_tiles); j++)
-            dungeon->rooms[i].creature_tiles[j] = Tile::translate(dungeon->rooms[i].creature_tiles[j], "base").id;
+            dungeon->rooms[i].creature_tiles[j] = TileMap::get("base")->translate(dungeon->rooms[i].creature_tiles[j]).id;
 
         /* translate each map tile to a tile id */
         for (j = 0; j < sizeof(room_tiles); j++)
-            dungeon->rooms[i].map_data.push_back(Tile::translate(room_tiles[j], "base"));
+            dungeon->rooms[i].map_data.push_back(TileMap::get("base")->translate(room_tiles[j]));
     }
     u4fclose(dng);
 

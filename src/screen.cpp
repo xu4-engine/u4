@@ -118,7 +118,7 @@ void screenMessage(const char *fmt, ...) {
 
 vector<MapTile *> screenViewportTile(unsigned int width, unsigned int height, int x, int y, bool &focus) {
     MapCoords center = c->location->coords;    
-    static MapTile grass = Tileset::findTileByName("grass")->id;
+    static MapTile grass = c->location->map->tileset->getByName("grass")->id;
     
     if (c->location->map->width <= width &&
         c->location->map->height <= height) {
@@ -154,8 +154,8 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
     vector<MapTile *> tiles;
     int x, y;
 
-    static MapTile black = Tileset::findTileByName("black")->id;
-    static MapTile avatar = Tileset::findTileByName("avatar")->id;
+    static MapTile black = c->location->map->tileset->getByName("black")->id;
+    static MapTile avatar = c->location->map->tileset->getByName("avatar")->id;
 
     ASSERT(c != NULL, "context has not yet been initialized");
 
