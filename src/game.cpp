@@ -283,7 +283,7 @@ void GameController::init() {
     }
 
     /* set the party's transport */
-    c->party->setTransport(c->location->map->tilemap->translate(c->saveGame->transport));
+    c->party->setTransport(c->location->map->translateFromRawTileIndex(c->saveGame->transport));
 
     spellSetEffectCallback(&gameSpellEffect);
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
