@@ -32,7 +32,7 @@ bool isPartyMember(Object *punknown) {
  * PartyMember class implementation
  */ 
 PartyMember::PartyMember(Party *p, SaveGamePlayerRecord *pr) : 
-    Creature(MapTile::tileForClass(pr->klass)),    
+    Creature(tileForClass(pr->klass)),
     player(pr),
     party(p)
 {
@@ -466,7 +466,7 @@ int PartyMember::getDamage() {
  * Returns the tile that will be displayed when the party
  * member's attack hits
  */
-MapTile PartyMember::getHitTile() const {
+const string &PartyMember::getHitTile() const {
     return Weapon::get(getWeapon())->getHitTile();
 }
 
@@ -474,7 +474,7 @@ MapTile PartyMember::getHitTile() const {
  * Returns the tile that will be displayed when the party
  * member's attack fails
  */
-MapTile PartyMember::getMissTile() const {
+const string &PartyMember::getMissTile() const {
     return Weapon::get(getWeapon())->getMissTile();
 }
 
@@ -527,14 +527,50 @@ void PartyMember::putToSleep() {
  */
 void PartyMember::wakeUp() {
     removeStatus(STAT_SLEEPING);    
-    setTile(MapTile::tileForClass(getClass()));
+    setTile(tileForClass(getClass()));
 }
 
+MapTile PartyMember::tileForClass(int klass) {
+    const char *name = NULL;
+
+    switch (klass) {
+    case CLASS_MAGE:
+        name = "mage";
+        break;
+    case CLASS_BARD:
+        name = "bard";
+        break;
+    case CLASS_FIGHTER:
+        name = "fighter";
+        break;
+    case CLASS_DRUID:
+        name = "druid";
+        break;
+    case CLASS_TINKER:
+        name = "tinker";
+        break;
+    case CLASS_PALADIN:
+        name = "paladin";
+        break;
+    case CLASS_RANGER:
+        name = "ranger";
+        break;
+    case CLASS_SHEPHERD:
+        name = "shepherd";
+        break;
+    default:
+        ASSERT(0, "invalid class %d in tileForClass", klass);
+    }
+
+    const Tile *tile = Tileset::get("base")->getByName(name);
+    ASSERT(tile, "no tile found for class %d", klass);
+    return tile->id;
+}
 
 /**
  * Party class implementation
  */ 
-Party::Party(SaveGame *s) : saveGame(s), torchduration(0), activePlayer(-1) {
+Party::Party(SaveGame *s) : saveGame(s), transport(0), torchduration(0), activePlayer(-1) {
     if (MAP_DECEIT <= saveGame->location && saveGame->location <= MAP_ABYSS)
         torchduration = saveGame->torchduration;
     for (int i = 0; i < saveGame->members; i++) {
@@ -1101,11 +1137,11 @@ void Party::setTransport(MapTile tile) {
     saveGame->transport = c->location->map->translateToRawTileIndex(tile);
     transport = tile;
     
-    if (tile.isHorse())
+    if (tile.getTileType()->isHorse())
         c->transportContext = TRANSPORT_HORSE;
-    else if (tile.isShip())
+    else if (tile.getTileType()->isShip())
         c->transportContext = TRANSPORT_SHIP;
-    else if (tile.isBalloon())
+    else if (tile.getTileType()->isBalloon())
         c->transportContext = TRANSPORT_BALLOON;
     else c->transportContext = TRANSPORT_FOOT;
 

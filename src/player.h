@@ -121,8 +121,8 @@ public:
     virtual bool attackHit(Creature *m);
     virtual bool dealDamage(Creature *m, int damage);
     int getDamage();   
-    virtual MapTile getHitTile() const;
-    virtual MapTile getMissTile() const;    
+    virtual const string &getHitTile() const;
+    virtual const string &getMissTile() const;    
     virtual bool isHit(int hit_offset = 0);
     bool isDead();
     bool isDisabled();
@@ -131,6 +131,8 @@ public:
     virtual void wakeUp();
 
 protected:
+    static MapTile tileForClass(int klass);
+
     SaveGamePlayerRecord *player;
     class Party *party;    
 };
@@ -211,7 +213,6 @@ public:
 
     Type type;
     PartyMember *player;
-    MapTile tile;
 };
 
 bool isPartyMember(Object *punknown);
