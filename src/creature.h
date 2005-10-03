@@ -14,6 +14,7 @@
 #include "types.h"
 
 class ConfigElement;
+class Tile;
 
 typedef unsigned short CreatureId;
 typedef std::map<CreatureId, class Creature*> CreatureMap;
@@ -138,26 +139,26 @@ class Creature : public Object {
     typedef std::list<StatusType> StatusList;
 
 public:
-    Creature(MapTile tile = 0);
+    Creature(MapTile tile = MapTile(0));
 
     void load(const ConfigElement &conf);
 
     // Accessor methods
     virtual string getName() const;
-    MapTile getHitTile() const;
-    MapTile getMissTile() const;
+    virtual const string &getHitTile() const;
+    virtual const string &getMissTile() const;
     virtual CreatureId getId() const;
     virtual CreatureId getLeader() const;
     virtual int getHp() const;
     virtual int getXp() const;
-    virtual MapTile getWorldrangedtile() const;
+    virtual const string &getWorldrangedtile() const;
     virtual SlowedType getSlowedType() const;
     virtual int getEncounterSize() const;
     virtual unsigned char getResists() const;
 
     void setName(string s);
-    void setHitTile(MapTile t);
-    void setMissTile(MapTile t);
+    void setHitTile(const string &t);
+    void setMissTile(const string &t);
     virtual void setHp(int points);
 
     // Methods
@@ -189,7 +190,7 @@ public:
     bool leavesTile() const;
     bool castsSleep() const;
     int getDamage() const;    
-    MapTile &getCamouflageTile();
+    const string &getCamouflageTile();
     void setRandomRanged();
     int setInitialHp(int hp = -1);
 
@@ -218,17 +219,17 @@ public:
     // Properties
 protected:
     string          name;
-    MapTile         rangedhittile;
-    MapTile         rangedmisstile;
+    string          rangedhittile;
+    string          rangedmisstile;
     CreatureId      id;    
-    MapTile         camouflageTile;    
+    string          camouflageTile;    
     CreatureId      leader;
     int             basehp;
     int             hp;
     StatusList      status;
     int             xp;
     unsigned char   ranged;
-    MapTile         worldrangedtile;    
+    string          worldrangedtile;    
     bool            leavestile;
     CreatureAttrib  mattr;
     CreatureMovementAttrib movementAttr;
@@ -249,7 +250,7 @@ public:
     Creature *getByTile(MapTile tile);
     Creature *getById(CreatureId id);
     Creature *getByName(string name);
-    Creature *randomForTile(MapTile tile);
+    Creature *randomForTile(const Tile *tile);
     Creature *randomForDungeon(int dnglevel);
     Creature *randomAmbushing();
 
