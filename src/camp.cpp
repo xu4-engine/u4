@@ -145,7 +145,7 @@ void InnController::begin() {
     EventHandler::wait_msecs(INN_FADE_OUT_TIME);
 
     /* show the sleeping avatar */
-    c->party->setTransport(Tileset::findTileByName("corpse")->id);
+    c->party->setTransport(c->location->map->tileset->getByName("corpse")->id);
     gameUpdateScreen();
 
     screenDisableCursor();
@@ -155,7 +155,7 @@ void InnController::begin() {
     screenEnableCursor();
 
     /* restore the avatar to normal */
-    c->party->setTransport(Tileset::findTileByName("avatar")->id);
+    c->party->setTransport(c->location->map->tileset->getByName("avatar")->id);
     gameUpdateScreen();
 
     /* the party is always healed */

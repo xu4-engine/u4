@@ -332,7 +332,7 @@ void useStone(void *item) {
                         MapCoords coords;
                         screenMessage("\n\nThe altar changes before thyne eyes!\n");
                         c->location->getCurrentPosition(&coords);
-                        c->location->map->annotations->add(coords, Tileset::findTileByName("down_ladder")->id);
+                        c->location->map->annotations->add(coords, c->location->map->tileset->getByName("down_ladder")->id);
                     }
                     /* start chamber of the codex sequence... */
                     else {
@@ -353,7 +353,7 @@ void useStone(void *item) {
      */
     else if ((c->location->map->id == MAP_ABYSS) &&
              (c->location->context & CTX_DUNGEON) && 
-             (dungeonCurrentToken() == DUNGEON_ALTAR)) {
+             (dynamic_cast<Dungeon *>(c->location->map)->currentToken() == DUNGEON_ALTAR)) {
 
         int virtueMask = getBaseVirtues((Virtue)c->location->coords.z);
         if (virtueMask > 0)

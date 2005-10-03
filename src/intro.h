@@ -42,7 +42,7 @@ public:
 
     bool load();
 
-    MapTile *introMap;
+    std::vector<MapTile> introMap;
     unsigned char *sigData;
     unsigned char *scriptTable;
     Tile **baseTileTable;

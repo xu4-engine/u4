@@ -194,7 +194,7 @@ void CombatController::applyCreatureTileEffects() {
 
     for (i = creatures.begin(); i != creatures.end(); i++) {        
         Creature *m = *i;
-        TileEffect effect = map->tileAt(m->getCoords(), WITH_GROUND_OBJECTS)->getEffect();
+        TileEffect effect = map->tileTypeAt(m->getCoords(), WITH_GROUND_OBJECTS)->getEffect();
         m->applyTileEffect(effect);
     }
 }
@@ -490,18 +490,18 @@ bool CombatController::setActivePlayer(int player) {
 
 void CombatController::awardLoot() {
     Coords coords = creature->getCoords();
-    MapTile *ground = c->location->map->tileAt(coords, WITHOUT_OBJECTS);
+    const Tile *ground = c->location->map->tileTypeAt(coords, WITHOUT_OBJECTS);
 
     /* add a chest, if the creature leaves one */
     if (creature->leavesChest() && 
         ground->isCreatureWalkable() &&
         (!(c->location->context & CTX_DUNGEON) || ground->isDungeonFloor())) {
-        MapTile chest = Tileset::findTileByName("chest")->id;
+        MapTile chest = c->location->map->tileset->getByName("chest")->id;
         c->location->map->addObject(chest, chest, coords);
     }
     /* add a ship if you just defeated a pirate ship */
-    else if (creature->getTile().isPirateShip()) {
-        MapTile ship = Tileset::findTileByName("ship")->id;
+    else if (creature->getTile().getTileType()->isPirateShip()) {
+        MapTile ship = c->location->map->tileset->getByName("ship")->id;
         ship.setDirection(creature->getTile().getDirection());
         c->location->map->addObject(ship, ship, coords);
     }
@@ -512,8 +512,8 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
     bool wrongRange = weapon->rangeAbsolute() && (distance != range);
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
 
-    MapTile hittile = weapon->getHitTile();
-    MapTile misstile = weapon->getMissTile();
+    MapTile hittile = map->tileset->getByName(weapon->getHitTile())->id;
+    MapTile misstile = map->tileset->getByName(weapon->getMissTile())->id;
 
     // Check to see if something hit
     Creature *creature = map->creatureAt(coords);
@@ -568,8 +568,8 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
 bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
     
-    MapTile hittile = attacker->getHitTile();
-    MapTile misstile = attacker->getMissTile();
+    MapTile hittile = map->tileset->getByName(attacker->getHitTile())->id;
+    MapTile misstile = map->tileset->getByName(attacker->getMissTile())->id;
 
     Creature *target = isCreature(attacker) ? map->partyMemberAt(coords) : map->creatureAt(coords);
 
@@ -589,7 +589,7 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
     }
 
     /* Get the effects of the tile the creature is using */
-    TileEffect effect = hittile.getEffect();
+    TileEffect effect = hittile.getTileType()->getEffect();
   
     /* Monster's ranged attacks never miss */
 
@@ -653,16 +653,16 @@ void CombatController::rangedMiss(const Coords &coords, Creature *attacker) {
     soundPlay(SOUND_MISSED, false);
 
     /* If the creature leaves a tile behind, do it here! (lava lizard, etc) */
-    MapTile *groundTile = map->tileAt(coords, WITH_GROUND_OBJECTS);
-    if (attacker->leavesTile() && groundTile->isWalkable())
-        map->annotations->add(coords, attacker->getHitTile());
+    const Tile *ground = map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
+    if (attacker->leavesTile() && ground->isWalkable())
+        map->annotations->add(coords, map->tileset->getByName(attacker->getHitTile())->id);
 }
 
 bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, int dir, const Weapon *weapon) {
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
     MapCoords new_coords = coords;
 
-    MapTile misstile = weapon->getMissTile();
+    MapTile misstile = map->tileset->getByName(weapon->getMissTile())->id;
 
     /* reverse the direction of the weapon */
     Direction returnDir = dirReverse(dirFromMask(dir));
@@ -690,7 +690,7 @@ bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, i
  * This is used for 'being hit' or 'being missed' 
  * by weapons, cannon fire, spells, etc.
  */
-void CombatController::attackFlash(Coords coords, MapTile tile, int timeFactor) {
+void CombatController::attackFlash(const Coords &coords, MapTile tile, int timeFactor) {
     int i;
     int divisor = settings.battleSpeed;
     
@@ -704,6 +704,12 @@ void CombatController::attackFlash(Coords coords, MapTile tile, int timeFactor) 
         EventHandler::wait_msecs(eventTimerGranularity/divisor);
     }
     c->location->map->annotations->remove(coords, tile);
+}
+
+void CombatController::attackFlash(const Coords &coords, const string &tilename, int timeFactor) {
+    Tile *tile = c->location->map->tileset->getByName(tilename);
+    ASSERT(tile, "no tile named '%s' found in tileset", tilename.c_str());
+    attackFlash(coords, tile->id, timeFactor);
 }
 
 void CombatController::finishTurn(void) {
@@ -722,7 +728,7 @@ void CombatController::finishTurn(void) {
     /* make sure the player with the focus is still in battle (hasn't fled or died) */
     if (player) {
         /* apply effects from tile player is standing on */
-        player->applyEffect(c->location->map->tileAt(player->getCoords(), WITH_GROUND_OBJECTS)->getEffect());
+        player->applyEffect(c->location->map->tileTypeAt(player->getCoords(), WITH_GROUND_OBJECTS)->getEffect());
     }
 
     quick = (*c->aura == Aura::QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;
@@ -1066,7 +1072,7 @@ void CombatController::attack() {
     vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, 
                                                        attacker->getCoords(),
                                                        1, range, 
-                                                       weapon->canAttackThroughObjects() ? NULL : &MapTile::canAttackOverTile,
+                                                       weapon->canAttackThroughObjects() ? NULL : &Tile::canAttackOverTile,
                                                        false);
 
     bool foundTarget = false;
@@ -1092,10 +1098,10 @@ void CombatController::attack() {
     }
 
     // does weapon leaves a tile behind? (e.g. flaming oil)
-    MapTile *groundTile = map->tileAt(targetCoords, WITHOUT_OBJECTS);
-    if (weapon->leavesTile().id > 0 && groundTile->isWalkable() &&
+    const Tile *ground = map->tileTypeAt(targetCoords, WITHOUT_OBJECTS);
+    if (!weapon->leavesTile().empty() && ground->isWalkable() &&
         (!foundTarget || targetDistance == range))
-        map->annotations->add(path[path.size() - 1], weapon->leavesTile());
+        map->annotations->add(path[path.size() - 1], map->tileset->getByName(weapon->leavesTile())->id);
 
     /* show the 'miss' tile */
     if (!foundTarget) {
@@ -1181,44 +1187,44 @@ Creature *CombatMap::creatureAt(Coords coords) {
 /**
  * Returns a valid combat map given the provided information
  */ 
-MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) {
+MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Object *obj) {
     bool fromShip = false,
         toShip = false;
     Object *objUnder = c->location->map->objectAt(c->location->coords);
 
-    static std::map<MapTile, MapId> tileMap;
+    static std::map<const Tile *, MapId> tileMap;
     if (!tileMap.size()) {        
-        tileMap[Tileset::findTileByName("horse")->id] = MAP_GRASS_CON;        
-        tileMap[Tileset::findTileByName("swamp")->id] = MAP_MARSH_CON;
-        tileMap[Tileset::findTileByName("grass")->id] = MAP_GRASS_CON;
-        tileMap[Tileset::findTileByName("brush")->id] = MAP_BRUSH_CON;
-        tileMap[Tileset::findTileByName("forest")->id] = MAP_FOREST_CON;
-        tileMap[Tileset::findTileByName("hills")->id] = MAP_HILL_CON;
-        tileMap[Tileset::findTileByName("dungeon")->id] = MAP_DUNGEON_CON;
-        tileMap[Tileset::findTileByName("city")->id] = MAP_GRASS_CON;
-        tileMap[Tileset::findTileByName("castle")->id] = MAP_GRASS_CON;
-        tileMap[Tileset::findTileByName("town")->id] = MAP_GRASS_CON;
-        tileMap[Tileset::findTileByName("lcb_entrance")->id] = MAP_GRASS_CON;
-        tileMap[Tileset::findTileByName("bridge")->id] = MAP_BRIDGE_CON;
-        tileMap[Tileset::findTileByName("balloon")->id] = MAP_GRASS_CON;
-        tileMap[Tileset::findTileByName("bridge_pieces")->id] = MAP_BRIDGE_CON;        
-        tileMap[Tileset::findTileByName("shrine")->id] = MAP_GRASS_CON;
-        tileMap[Tileset::findTileByName("chest")->id] = MAP_GRASS_CON;
-        tileMap[Tileset::findTileByName("brick_floor")->id] = MAP_BRICK_CON;
-        tileMap[Tileset::findTileByName("moongate")->id] = MAP_GRASS_CON;
-        tileMap[Tileset::findTileByName("moongate_opening")->id] = MAP_GRASS_CON;        
-        tileMap[Tileset::findTileByName("dungeon_floor")->id] = MAP_GRASS_CON;        
+        tileMap[Tileset::get("base")->getByName("horse")] = MAP_GRASS_CON;        
+        tileMap[Tileset::get("base")->getByName("swamp")] = MAP_MARSH_CON;
+        tileMap[Tileset::get("base")->getByName("grass")] = MAP_GRASS_CON;
+        tileMap[Tileset::get("base")->getByName("brush")] = MAP_BRUSH_CON;
+        tileMap[Tileset::get("base")->getByName("forest")] = MAP_FOREST_CON;
+        tileMap[Tileset::get("base")->getByName("hills")] = MAP_HILL_CON;
+        tileMap[Tileset::get("base")->getByName("dungeon")] = MAP_DUNGEON_CON;
+        tileMap[Tileset::get("base")->getByName("city")] = MAP_GRASS_CON;
+        tileMap[Tileset::get("base")->getByName("castle")] = MAP_GRASS_CON;
+        tileMap[Tileset::get("base")->getByName("town")] = MAP_GRASS_CON;
+        tileMap[Tileset::get("base")->getByName("lcb_entrance")] = MAP_GRASS_CON;
+        tileMap[Tileset::get("base")->getByName("bridge")] = MAP_BRIDGE_CON;
+        tileMap[Tileset::get("base")->getByName("balloon")] = MAP_GRASS_CON;
+        tileMap[Tileset::get("base")->getByName("bridge_pieces")] = MAP_BRIDGE_CON;        
+        tileMap[Tileset::get("base")->getByName("shrine")] = MAP_GRASS_CON;
+        tileMap[Tileset::get("base")->getByName("chest")] = MAP_GRASS_CON;
+        tileMap[Tileset::get("base")->getByName("brick_floor")] = MAP_BRICK_CON;
+        tileMap[Tileset::get("base")->getByName("moongate")] = MAP_GRASS_CON;
+        tileMap[Tileset::get("base")->getByName("moongate_opening")] = MAP_GRASS_CON;        
+        tileMap[Tileset::get("base")->getByName("dungeon_floor")] = MAP_GRASS_CON;        
     }
-    static std::map<MapTile, MapId> dungeontileMap;
+    static std::map<const Tile *, MapId> dungeontileMap;
     if (!dungeontileMap.size()) {               
-        dungeontileMap[Tileset::findTileByName("brick_floor")->id] = MAP_DNG0_CON;
-        dungeontileMap[Tileset::findTileByName("up_ladder")->id] = MAP_DNG1_CON;
-        dungeontileMap[Tileset::findTileByName("down_ladder")->id] = MAP_DNG2_CON;
-        dungeontileMap[Tileset::findTileByName("up_down_ladder")->id] = MAP_DNG3_CON;
-        // dungeontileMap[Tileset::findTileByName("chest")->id] = MAP_DNG4_CON; 
+        dungeontileMap[Tileset::get("dungeon")->getByName("brick_floor")] = MAP_DNG0_CON;
+        dungeontileMap[Tileset::get("dungeon")->getByName("up_ladder")] = MAP_DNG1_CON;
+        dungeontileMap[Tileset::get("dungeon")->getByName("down_ladder")] = MAP_DNG2_CON;
+        dungeontileMap[Tileset::get("dungeon")->getByName("up_down_ladder")] = MAP_DNG3_CON;
+        // dungeontileMap[Tileset::get("dungeon")->getByName("chest")] = MAP_DNG4_CON; 
         // chest tile doesn't work that well
-        dungeontileMap[Tileset::findTileByName("dungeon_door")->id] = MAP_DNG5_CON;
-        dungeontileMap[Tileset::findTileByName("secret_door")->id] = MAP_DNG6_CON;
+        dungeontileMap[Tileset::get("dungeon")->getByName("dungeon_door")] = MAP_DNG5_CON;
+        dungeontileMap[Tileset::get("dungeon")->getByName("secret_door")] = MAP_DNG6_CON;
     }
 
     if (c->location->context & CTX_DUNGEON) {
@@ -1228,9 +1234,9 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
         return MAP_DNG0_CON;
     }
 
-    if (transport.isShip() || (objUnder && objUnder->getTile().isShip()))
+    if (transport->isShip() || (objUnder && objUnder->getTile().getTileType()->isShip()))
         fromShip = true;
-    if (obj->getTile().isPirateShip())
+    if (obj->getTile().getTileType()->isPirateShip())
         toShip = true;
 
     if (fromShip && toShip)
@@ -1238,7 +1244,7 @@ MapId CombatMap::mapForTile(MapTile groundTile, MapTile transport, Object *obj) 
 
     /* We can fight creatures and townsfolk */       
     if (obj->getType() != Object::UNKNOWN) {
-        MapTile *tileUnderneath = c->location->map->tileAt(obj->getCoords(), WITHOUT_OBJECTS);
+        const Tile *tileUnderneath = c->location->map->tileTypeAt(obj->getCoords(), WITHOUT_OBJECTS);
 
         if (toShip)
             return MAP_SHORSHIP_CON;

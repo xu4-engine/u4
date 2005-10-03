@@ -43,17 +43,17 @@ void TileView::reinit() {
     tileset = Tileset::get("base");
 }
 
-void TileView::drawTile(MapTile *mapTile, bool focus, int x, int y) {
-    Tile *tile = tileset->get(mapTile->id);
+void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
+    Tile *tile = tileset->get(mapTile.id);
     Image *image = tile->getImage();
 
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
 
     // draw the tile to the screen
-    if (tile->anim) {
+    if (tile->getAnim()) {
         // First, create our animated version of the tile
-        tile->anim->draw(animated, tile, mapTile, DIR_NONE);
+        tile->getAnim()->draw(animated, tile, mapTile, DIR_NONE);
 
         // Then draw it to the screen
         animated->drawSubRect(SCALED(x * tileWidth + this->x),
@@ -67,7 +67,7 @@ void TileView::drawTile(MapTile *mapTile, bool focus, int x, int y) {
         image->drawSubRect(SCALED(x * tileWidth + this->x), 
                            SCALED(y * tileHeight + this->y),
                            0,
-                           SCALED(tileHeight * mapTile->frame),
+                           SCALED(tileHeight * mapTile.frame),
                            SCALED(tileWidth),
                            SCALED(tileHeight));
     }
@@ -77,17 +77,17 @@ void TileView::drawTile(MapTile *mapTile, bool focus, int x, int y) {
         drawFocus(x, y);
 }
 
-void TileView::drawTile(const vector<MapTile *> &tiles, bool focus, int x, int y) {
-    Tile *tile = tileset->get(tiles.front()->id);
+void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
+    Tile *tile = tileset->get(tiles.front().id);
     Image *image = tile->getImage();
 
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
 
     // draw the tile to the screen
-    if (tile->anim) {
+    if (tile->getAnim()) {
         // First, create our animated version of the tile
-        tile->anim->draw(animated, tile, tiles.front(), DIR_NONE);
+        tile->getAnim()->draw(animated, tile, tiles.front(), DIR_NONE);
 
         // Then draw it to the screen
         animated->drawSubRect(SCALED(x * tileWidth + this->x),
@@ -101,7 +101,7 @@ void TileView::drawTile(const vector<MapTile *> &tiles, bool focus, int x, int y
         image->drawSubRect(SCALED(x * tileWidth + this->x), 
                            SCALED(y * tileHeight + this->y),
                            0,
-                           SCALED(tileHeight * tiles.front()->frame),
+                           SCALED(tileHeight * tiles.front().frame),
                            SCALED(tileWidth),
                            SCALED(tileHeight));
     }

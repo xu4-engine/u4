@@ -540,7 +540,6 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
     c->party->setActivePlayer(activePlayer);
 
     /* now, actually set our new tileset */
-    Tileset::set(map->tileset);
     mapArea.setTileset(map->tileset);
 
     if (isCity(map)) {
@@ -576,7 +575,6 @@ int GameController::exitToParentMap() {
         locationFree(&c->location);
 
         // restore the tileset to the one the current map uses
-        Tileset::set(c->location->map->tileset);
         mapArea.setTileset(c->location->map->tileset);
         
         return 1;
@@ -608,7 +606,7 @@ void GameController::finishTurn() {
         if (!c->party->isFlying()) {
 
             // apply effects from tile avatar is standing on 
-            c->party->applyEffect(c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS)->getEffect());
+            c->party->applyEffect(c->location->map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS)->getEffect());
 
             // Move creatures and see if something is attacking the avatar
             attacker = c->location->map->moveObjects(c->location->coords);        
@@ -639,13 +637,14 @@ void GameController::finishTurn() {
     }
 
     if (c->location->context == CTX_DUNGEON) {
+        Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
         if (c->party->getTorchDuration() <= 0)
             screenMessage("It's Dark!\n");
         else c->party->burnTorch();
 
         /* handle dungeon traps */
-        if (dungeonCurrentToken() == DUNGEON_TRAP) {
-            dungeonHandleTrap((TrapType)dungeonCurrentSubToken());
+        if (dungeon->currentToken() == DUNGEON_TRAP) {
+            dungeonHandleTrap((TrapType)dungeon->currentSubToken());
             // a little kludgey to have a second test for this
             // right here.  But without it you can survive an
             // extra turn after party death and do some things
@@ -793,7 +792,9 @@ bool GameController::keyPressed(int key) {
         /* Do they want to board something? */
         if (c->transportContext == TRANSPORT_FOOT) {
             obj = c->location->map->objectAt(c->location->coords);
-            if (obj && (obj->getTile().isShip() || obj->getTile().isHorse() || obj->getTile().isBalloon()))
+            if (obj && (obj->getTile().getTileType()->isShip() || 
+                        obj->getTile().getTileType()->isHorse() || 
+                        obj->getTile().getTileType()->isBalloon()))
                 key = 'b';
         }
         /* Klimb/Descend Balloon */
@@ -807,13 +808,13 @@ bool GameController::keyPressed(int key) {
         
         /* Klimb? */
         if ((c->location->map->portalAt(c->location->coords, ACTION_KLIMB) != NULL) || 
-                (c->location->context == CTX_DUNGEON &&
-                dungeonLadderUpAt(c->location->map, c->location->coords)))
+            (c->location->context == CTX_DUNGEON &&
+             dynamic_cast<Dungeon *>(c->location->map)->ladderUpAt(c->location->coords)))
             key = 'k';
         /* Descend? */
         else if ((c->location->map->portalAt(c->location->coords, ACTION_DESCEND) != NULL) ||
-                (c->location->context == CTX_DUNGEON &&
-                dungeonLadderDownAt(c->location->map, c->location->coords)))
+                 (c->location->context == CTX_DUNGEON &&
+                  dynamic_cast<Dungeon *>(c->location->map)->ladderDownAt(c->location->coords)))
             key = 'd';        
         /* Enter? */
         else if (c->location->map->portalAt(c->location->coords, ACTION_ENTER) != NULL)
@@ -823,7 +824,7 @@ bool GameController::keyPressed(int key) {
         if (!c->party->isFlying()) {
             tile = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
     
-            if (tile->isChest()) key = 'g';
+            if (tile->getTileType()->isChest()) key = 'g';
         }
         
         /* None of these? Default to search */
@@ -1001,7 +1002,7 @@ bool GameController::keyPressed(int key) {
                     screenMessage("Land Balloon\n");
                     if (!c->party->isFlying())
                         screenMessage("Already Landed!\n");
-                    else if (c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->canLandBalloon()) {
+                    else if (c->location->map->tileTypeAt(c->location->coords, WITH_OBJECTS)->canLandBalloon()) {
                         c->saveGame->balloonstate = 0;
                         c->opacity = 1;
                     }
@@ -1152,7 +1153,9 @@ bool GameController::keyPressed(int key) {
                 if (c->transportContext == TRANSPORT_SHIP)
                     c->lastShip = obj;
 
-                c->party->setTransport(c->location->map->tileset->getByName("avatar")->id);
+                Tile *avatar = c->location->map->tileset->getByName("avatar");
+                ASSERT(avatar, "no avatar tile found in tileset");
+                c->party->setTransport(avatar->id);
                 c->horseSpeed = 0;
                 screenMessage("X-it\n");
             } else
@@ -1474,7 +1477,7 @@ bool destroyAt(const Coords &coords) {
         }
         else {
             Tile *t = c->location->map->tileset->get(obj->getTile().id);
-            screenMessage("%s Destroyed!\n", t->name.c_str());
+            screenMessage("%s Destroyed!\n", t->getName().c_str());
         }
 
         c->location->map->removeObject(obj);
@@ -1515,26 +1518,26 @@ void attack() {
  */
 bool attackAt(const Coords &coords) {
     Object *under;
-    const MapTile *ground;    
+    const Tile *ground;    
     Creature *m;
 
     m = dynamic_cast<Creature*>(c->location->map->objectAt(coords));
     /* nothing attackable: move on to next tile */
     if ((m == NULL) || 
         /* can't attack horse transport */
-        (m->getTile().isHorse() && m->getMovementBehavior() == MOVEMENT_FIXED)) {
+        (m->getTile().getTileType()->isHorse() && m->getMovementBehavior() == MOVEMENT_FIXED)) {
         return false;
     }
 
     /* attack successful */
     /// TODO: CHEST: Make a user option to not make chests change battlefield
     /// map (1 of 2)
-    ground = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
-    if (! ground->isChest()) {
-        ground = c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS);
+    ground = c->location->map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS);
+    if (!ground->isChest()) {
+        ground = c->location->map->tileTypeAt(c->location->coords, WITHOUT_OBJECTS);
         if ((under = c->location->map->objectAt(c->location->coords)) && 
-            under->getTile().isShip())
-            ground = &under->getTile();
+            under->getTile().getTileType()->isShip())
+            ground = under->getTile().getTileType();
     }
 
     /* You're attacking a townsperson!  Alert the guards! */
@@ -1548,7 +1551,7 @@ bool attackAt(const Coords &coords) {
         c->party->adjustKarma(KA_ATTACKED_GOOD);
 
     delete(c->combat);
-    c->combat = new CombatController(CombatMap::mapForTile(*ground, c->party->transport, m));
+    c->combat = new CombatController(CombatMap::mapForTile(ground, c->party->transport.getTileType(), m));
     c->combat->init(m);
     c->combat->begin();    
     return true;
@@ -1567,14 +1570,14 @@ void board() {
         return;
     }
 
-    if (obj->getTile().isShip()) {
+    if (obj->getTile().getTileType()->isShip()) {
         screenMessage("Board Frigate!\n");
         if (c->lastShip != obj)
             c->party->setShipHull(50);                    
     }
-    else if (obj->getTile().isHorse())
+    else if (obj->getTile().getTileType()->isHorse())
         screenMessage("Mount Horse!\n");
-    else if (obj->getTile().isBalloon())
+    else if (obj->getTile().getTileType()->isBalloon())
         screenMessage("Board Balloon!\n");
     else {
         screenMessage("Board What?\n");
@@ -1734,7 +1737,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
     
     Object *obj = NULL;
 
-    c->location->map->annotations->add(coords, Tileset::findTileByName("miss_flash")->id, true);
+    c->location->map->annotations->add(coords, c->location->map->tileset->getByName("miss_flash")->id, true);
     gameUpdateScreen();
 
     // based on attack speed setting in setting struct, make a delay
@@ -1751,7 +1754,9 @@ bool fireAt(const Coords &coords, bool originAvatar) {
         (m->getId() != WHIRLPOOL_ID) && (m->getId() != STORM_ID))
         validObject = true;
     /* See if it's an object to be destroyed (the avatar cannot destroy the balloon) */
-    else if (obj && (obj->getType() == Object::UNKNOWN) && !(obj->getTile().isBalloon() && originAvatar))
+    else if (obj && 
+             (obj->getType() == Object::UNKNOWN) && 
+             !(obj->getTile().getTileType()->isBalloon() && originAvatar))
         validObject = true;
 
     /* Does the cannon hit the avatar? */
@@ -1765,7 +1770,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
         
         /* Is is a pirate ship firing at US? */
         if (hitsAvatar) {
-            CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
+            CombatController::attackFlash(coords, "hit_flash", 5);
 
             if (c->transportContext == TRANSPORT_SHIP)
                 gameDamageShip(-1, 10);
@@ -1773,13 +1778,13 @@ bool fireAt(const Coords &coords, bool originAvatar) {
         }          
         /* inanimate objects get destroyed instantly, while creatures get a chance */
         else if (obj->getType() == Object::UNKNOWN) {
-            CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
+            CombatController::attackFlash(coords, "hit_flash", 5);
             c->location->map->removeObject(obj);
         }
             
         /* only the avatar can hurt other creatures with cannon fire */
         else if (originAvatar) {
-            CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 5);
+            CombatController::attackFlash(coords, "hit_flash", 5);
             if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
                 c->location->map->removeObject(obj);
         }
@@ -1787,7 +1792,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
         objectHit = true;
     }
         
-    c->location->map->annotations->remove(coords, Tileset::findTileByName("miss_flash")->id);
+    c->location->map->annotations->remove(coords, c->location->map->tileset->getByName("miss_flash")->id);
 
     return objectHit;
 }
@@ -1812,12 +1817,12 @@ void getChest(int player) {
 
     MapCoords coords;    
     c->location->getCurrentPosition(&coords);
-    MapTile *tile = c->location->map->tileAt(coords, WITH_GROUND_OBJECTS);
+    const Tile *tile = c->location->map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
     MapTile newTile = c->location->getReplacementTile(coords);    
 
     /* get the object for the chest, if it is indeed an object */
     Object *obj = c->location->map->objectAt(coords);
-    if (obj && !obj->getTile().isChest())
+    if (obj && !obj->getTile().getTileType()->isChest())
         obj = NULL;
     
     if (tile->isChest()) {
@@ -2047,10 +2052,10 @@ void GameController::avatarMoved(MoveEvent &event) {
                 new_coords.move(event.dir, c->location->map);
                 tile = c->location->map->tileAt(new_coords, WITH_OBJECTS);
 
-                if (tile->isDoor()) {
+                if (tile->getTileType()->isDoor()) {
                     openAt(new_coords);
                     event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);
-                } else if (tile->isLockedDoor()) {
+                } else if (tile->getTileType()->isLockedDoor()) {
                     jimmyAt(new_coords);
                     event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);
                 } /*else if (mapPersonAt(c->location->map, new_coords) != NULL) {
@@ -2098,6 +2103,7 @@ void GameController::avatarMoved(MoveEvent &event) {
  * Handles feedback after moving the avatar in the 3-d dungeon view.
  */
 void GameController::avatarMovedInDungeon(MoveEvent &event) {
+    Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
     Direction realDir = dirNormalize((Direction)c->saveGame->orientation, event.dir);
 
     if (!settings.filterMoveMessages) {
@@ -2124,8 +2130,8 @@ void GameController::avatarMovedInDungeon(MoveEvent &event) {
 
     /* check to see if we're entering a dungeon room */
     if (event.result & MOVE_SUCCEEDED) {
-        if (dungeonCurrentToken() == DUNGEON_ROOM) {            
-            int room = (int)dungeonCurrentSubToken(); /* get room number */
+        if (dungeon->currentToken() == DUNGEON_ROOM) {            
+            int room = (int)dungeon->currentSubToken(); /* get room number */
         
             /**
              * recalculate room for the abyss -- there are 16 rooms for every 2 levels, 
@@ -2172,13 +2178,14 @@ void jimmy() {
 bool jimmyAt(const Coords &coords) {    
     MapTile *tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
-    if (!tile->isLockedDoor())
+    if (!tile->getTileType()->isLockedDoor())
         return false;
         
     if (c->saveGame->keys) {
-        static const MapTile door = *c->location->map->tileset->getByName("door");
+        Tile *door = c->location->map->tileset->getByName("door");
+        ASSERT(door, "no door tile found in tileset");
         c->saveGame->keys--;
-        c->location->map->annotations->add(coords, door);
+        c->location->map->annotations->add(coords, door->id);
         screenMessage("\nUnlocked!\n");
     } else
         screenMessage("No keys left!\n");
@@ -2199,8 +2206,8 @@ void opendoor() {
     if (dir == DIR_NONE)
         return;
 
-    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_EAST | MASK_DIR_WEST, c->location->coords, 
-                                                                       1, 1, NULL, true);
+    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, c->location->coords, 
+                                                       1, 1, NULL, true);
     for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
         if (openAt(*i))
             return;
@@ -2214,9 +2221,10 @@ void opendoor() {
  * replaced by a temporary annotation of a floor tile for 4 turns.
  */
 bool openAt(const Coords &coords) {
-    MapTile *tile = c->location->map->tileAt(coords, WITH_OBJECTS);
+    const Tile *tile = c->location->map->tileTypeAt(coords, WITH_OBJECTS);
 
-    if (!tile->isDoor() && !tile->isLockedDoor())
+    if (!tile->isDoor() && 
+        !tile->isLockedDoor())
         return false;
 
     if (tile->isLockedDoor()) {
@@ -2224,7 +2232,9 @@ bool openAt(const Coords &coords) {
         return true;
     }
     
-    c->location->map->annotations->add(coords, Tileset::findTileByName("brick_floor")->id)->setTTL(4);    
+    Tile *floor = c->location->map->tileset->getByName("brick_floor");
+    ASSERT(floor, "no floor tile found in tileset");
+    c->location->map->annotations->add(coords, floor->id)->setTTL(4);    
 
     screenMessage("\nOpened!\n");
 
@@ -2307,7 +2317,7 @@ void talk() {
         return;
 
     vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, c->location->coords, 
-                                                                       1, 2, &MapTile::canTalkOverTile, true);
+                                                                       1, 2, &Tile::canTalkOverTile, true);
     for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
         if (talkAt(*i))
             return;
@@ -2779,11 +2789,12 @@ void GameController::timerFired() {
  */
 void gameCheckBridgeTrolls() {
     Creature *m;
-    static const TileId bridge = Tileset::findTileByName("bridge")->id;
+    const Tile *bridge = c->location->map->tileset->getByName("bridge");
+    ASSERT(bridge, "no bridge tile found in tileset");
 
     // TODO: CHEST: Make a user option to not make chests block bridge trolls
     if (!c->location->map->isWorldMap() ||
-        c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->id != bridge ||
+        c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->id != bridge->id ||
         xu4_random(8) != 0)
         return;
 
@@ -2946,7 +2957,7 @@ void gameFixupObjects(Map *map) {
                 if (creature)
                     obj = map->addCreature(creature, coords);
                 else {
-                    fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", map->tileset->get(tile.id)->name.c_str());
+                    fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", map->tileset->get(tile.id)->getName().c_str());
                     obj = map->addObject(tile, oldTile, coords);
                 }
             }
@@ -2968,22 +2979,22 @@ long gameTimeSinceLastCommand() {
  */
 void gameCreatureAttack(Creature *m) {
     Object *under;
-    const MapTile *ground;
+    const Tile *ground;
     
     screenMessage("\nAttacked by %s\n", m->getName().c_str());
 
     /// TODO: CHEST: Make a user option to not make chests change battlefield
     /// map (2 of 2)
-    ground = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
-    if (! ground->isChest()) {
-        ground = c->location->map->tileAt(c->location->coords, WITHOUT_OBJECTS);
+    ground = c->location->map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS);
+    if (!ground->isChest()) {
+        ground = c->location->map->tileTypeAt(c->location->coords, WITHOUT_OBJECTS);
         if ((under = c->location->map->objectAt(c->location->coords)) && 
-            under->getTile().isShip())
-            ground = &under->getTile();
+            under->getTile().getTileType()->isShip())
+            ground = under->getTile().getTileType();
     }
 
     delete c->combat;
-    c->combat = new CombatController(CombatMap::mapForTile(*ground, c->party->transport, m));
+    c->combat = new CombatController(CombatMap::mapForTile(ground, c->party->transport.getTileType(), m));
     c->combat->init(m);
     c->combat->begin();
 }
@@ -2995,9 +3006,9 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
 
     // Figure out what the ranged attack should look like
-    MapTile tile = (m && (m->getWorldrangedtile().id > 0)) ? 
-        m->getWorldrangedtile() : 
-        Tileset::findTileByName("hit_flash")->id;
+    MapTile tile(c->location->map->tileset->getByName((m && !m->getWorldrangedtile().empty()) ? 
+                                                      m->getWorldrangedtile() : 
+                                                      "hit_flash")->id);
 
     // See if the attack hits the avatar
     Object *obj = c->location->map->objectAt(coords);        
@@ -3049,7 +3060,7 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
  * fails.  If a tile is blocked, that tile is included in the path
  * only if includeBlocked is true.
  */
-vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, const Coords &origin, int minDistance, int maxDistance, bool (*blockedPredicate)(MapTile tile), bool includeBlocked) {
+vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, const Coords &origin, int minDistance, int maxDistance, bool (*blockedPredicate)(const Tile *tile), bool includeBlocked) {
     vector<Coords> path;
     Direction dirx = DIR_NONE,
               diry = DIR_NONE;
@@ -3080,18 +3091,18 @@ vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, co
                 if (MAP_IS_OOB(c->location->map, t_c))
                     break;
 
-                MapTile *tile = c->location->map->tileAt(t_c, WITH_GROUND_OBJECTS);
+                const Tile *tile = c->location->map->tileTypeAt(t_c, WITH_GROUND_OBJECTS);
 
                 /* should we see if the action is blocked before trying it? */
                 if (!includeBlocked && blockedPredicate &&
-                    !(*(blockedPredicate))(*tile))
+                    !(*(blockedPredicate))(tile))
                     break;
 
                 path.push_back(t_c);
 
                 /* see if the action was blocked only if it did not succeed */
                 if (includeBlocked && blockedPredicate &&
-                    !(*(blockedPredicate))(*tile))
+                    !(*(blockedPredicate))(tile))
                     break;
             }
         }
@@ -3224,13 +3235,12 @@ bool gameSpawnCreature(const Creature *m) {
     if (c->location->context & CTX_DUNGEON) {
         /* FIXME: for some reason dungeon monsters aren't spawning correctly */
 
-        MapTile *tile;
         bool found = false;
         MapCoords new_coords;
         
         for (i = 0; i < 0x20; i++) {
             new_coords = MapCoords(xu4_random(c->location->map->width), xu4_random(c->location->map->height), coords.z);
-            tile = c->location->map->tileAt(new_coords, WITH_OBJECTS);
+            const Tile *tile = c->location->map->tileTypeAt(new_coords, WITH_OBJECTS);
             if (tile->isCreatureWalkable()) {
                 found = true;
                 break;
@@ -3268,7 +3278,7 @@ bool gameSpawnCreature(const Creature *m) {
                 MapCoords new_coords = coords;
                 new_coords.move(dx, dy, c->location->map);
             
-                MapTile *tile = c->location->map->tileAt(new_coords, WITHOUT_OBJECTS);
+                const Tile *tile = c->location->map->tileTypeAt(new_coords, WITHOUT_OBJECTS);
                 if ((m->sails() && tile->isSailable()) || 
                     (m->swims() && tile->isSwimable()) ||
                     (m->walks() && tile->isCreatureWalkable()) ||
@@ -3293,7 +3303,7 @@ bool gameSpawnCreature(const Creature *m) {
     else if (c->location->context & CTX_DUNGEON)
         creature = creatureMgr->randomForDungeon(c->location->coords.z);
     else
-        creature = creatureMgr->randomForTile(*c->location->map->tileAt(coords, WITHOUT_OBJECTS));
+        creature = creatureMgr->randomForTile(c->location->map->tileTypeAt(coords, WITHOUT_OBJECTS));
 
     if (creature)
         c->location->map->addCreature(creature, coords);    
@@ -3352,11 +3362,12 @@ bool gameCreateBalloon(Map *map) {
     /* see if the balloon has already been created (and not destroyed) */
     for (i = map->objects.begin(); i != map->objects.end(); i++) {
         Object *obj = *i;
-        if (obj->getTile().isBalloon())
+        if (obj->getTile().getTileType()->isBalloon())
             return false;
     }
     
-    MapTile balloon = Tileset::findTileByName("balloon")->id;
-    map->addObject(balloon, balloon, map->getLabel("balloon"));
+    const Tile *balloon = map->tileset->getByName("balloon");
+    ASSERT(balloon, "no balloon tile found in tileset");
+    map->addObject(balloon->id, balloon->id, map->getLabel("balloon"));
     return true;
 }

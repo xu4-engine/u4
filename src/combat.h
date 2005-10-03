@@ -86,7 +86,8 @@ public:
     /** 
      * Static member functions
      */
-    static void attackFlash(Coords coords, MapTile tile, int timeFactor);
+    static void attackFlash(const Coords &coords, MapTile tile, int timeFactor);
+    static void attackFlash(const Coords &coords, const string &tilename, int timeFactor);
     static void finishTurn(void);
 
     // Key handlers
@@ -130,7 +131,7 @@ public:
     PartyMember* partyMemberAt(Coords coords);    
     Creature* creatureAt(Coords coords);    
     
-    static MapId mapForTile(MapTile ground, MapTile transport, Object *obj);
+    static MapId mapForTile(const Tile *ground, const Tile *transport, Object *obj);
 
     bool isDungeonRoom() const;
     bool isAltarRoom() const;

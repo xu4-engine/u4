@@ -27,8 +27,9 @@ void DungeonView::drawInDungeon(Tile *tile, int distance, Direction orientation,
     const int *dscale = large ? lscale : nscale;
 
     // create our animated version of the tile
-    if (tile->anim) {
-        tile->anim->draw(animated, tile, tile, orientation);
+    if (tile->getAnim()) {
+        MapTile mt = tile->id;
+        tile->getAnim()->draw(animated, tile, mt, orientation);
         tmp = Image::duplicate(animated);
     }
     else

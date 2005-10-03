@@ -231,7 +231,7 @@ bool CheatMenuController::keyPressed(int key) {
                 ReadDirController readDir;
                 tile = c->location->map->tileset->get(choice->id);
 
-                screenMessage("%s\n", tile->name.c_str());
+                screenMessage("%s\n", tile->getName().c_str());
 
                 // Get the direction in which to create the transport
                 eventHandler->pushController(&readDir);                
@@ -245,19 +245,19 @@ bool CheatMenuController::keyPressed(int key) {
                     screenMessage("%s\n", getDirectionName(readDir.getValue()));
 
                     switch(transport) {
-                    case 's': ok = ground->isSailable(); break;
-                    case 'h': ok = ground->isWalkable(); break;
-                    case 'b': ok = ground->isWalkable(); break;
+                    case 's': ok = ground->getTileType()->isSailable(); break;
+                    case 'h': ok = ground->getTileType()->isWalkable(); break;
+                    case 'b': ok = ground->getTileType()->isWalkable(); break;
                     default: break;                      
                     }
 
                     if (choice && ok) {
                         c->location->map->addObject(*choice, *choice, coords);
-                        screenMessage("%s created!\n", tile->name.c_str());
+                        screenMessage("%s created!\n", tile->getName().c_str());
                     }
                     else if (!choice)
                         screenMessage("Invalid transport!\n");
-                    else screenMessage("Can't place %s there!\n", tile->name.c_str());
+                    else screenMessage("Can't place %s there!\n", tile->getName().c_str());
                 }
             }
             else screenMessage("None!\n");

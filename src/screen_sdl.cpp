@@ -483,12 +483,13 @@ void screenShowChar(int chr, int x, int y) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowGemTile(Map *map, Tile *t, bool focus, int x, int y) {
+void screenShowGemTile(Map *map, MapTile &t, bool focus, int x, int y) {
     // Make sure we account for tiles that look like other tiles (dungeon tiles, mainly)
-    if (!t->looks_like.empty())
-        t = Tileset::findTileByName(t->looks_like);
+    string looks_like = t.getTileType()->getLooksLike();
+    if (!looks_like.empty())
+        t = map->tileset->getByName(looks_like)->id;
 
-    unsigned int tile = map->translateToRawTileIndex(*t);
+    unsigned int tile = map->translateToRawTileIndex(t);
 
     if (gemTilesInfo == NULL) {
         gemTilesInfo = imageMgr->get(BKGD_GEMTILES);
@@ -663,7 +664,7 @@ void screenRedrawTextArea(int x, int y, int width, int height) {
 }
 
 void screenGemUpdate() {
-    MapTile *tile;
+    MapTile tile;
     int x, y;
     Image *screen = imageMgr->get("screen")->image;
     
@@ -679,7 +680,7 @@ void screenGemUpdate() {
         for (y = 0; y < gemlayout->viewport.height; y++) {
             bool focus;
             tile = screenViewportTile(gemlayout->viewport.width, gemlayout->viewport.height, x, y, focus).front();
-            screenShowGemTile(c->location->map, c->location->map->tileset->get(tile->id), focus, x, y);
+            screenShowGemTile(c->location->map, tile, focus, x, y);
         }
     }
     screenRedrawMapArea();

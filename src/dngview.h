@@ -21,7 +21,6 @@ typedef enum {
     DNGGRAPHIC_BASETILE
 } DungeonGraphicType;
 
-std::vector<MapTile *> dungeonViewGetTiles(int fwd, int side);
-DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile *> &tiles);
-
+std::vector<MapTile> dungeonViewGetTiles(int fwd, int side);
+DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile> &tiles);
 #endif

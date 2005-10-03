@@ -10,6 +10,7 @@
 
 class Object;
 class Map;
+class Tile;
 
 enum SlowedType {
     SLOWED_BY_NOTHING,
@@ -43,7 +44,7 @@ void moveAvatarInDungeon(MoveEvent &event);
 int moveObject(class Map *map, class Creature *obj, MapCoords avatar);
 int moveCombatObject(int action, class Map *map, class Creature *obj, MapCoords target);
 void movePartyMember(MoveEvent &event);
-bool slowedByTile(MapTile tile);
+bool slowedByTile(const Tile *tile);
 bool slowedByWind(int direction);
 
 extern bool collisionOverride;

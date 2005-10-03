@@ -30,7 +30,7 @@
 
 SpellEffectCallback spellEffectCallback = NULL;
 
-void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage);
+void spellMagicAttack(const string &tilename, Direction dir, int minDamage, int maxDamage);
 bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDamage);
 
 static int spellAwaken(int player);
@@ -322,15 +322,17 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
 /**
  * Makes a special magic ranged attack in the given direction
  */
-void spellMagicAttack(MapTile tile, Direction dir, int minDamage, int maxDamage) {    
+void spellMagicAttack(const string &tilename, Direction dir, int minDamage, int maxDamage) {    
     PartyMemberVector *party = c->combat->getParty();
+
+    MapTile tile = c->location->map->tileset->getByName(tilename)->id;
 
     int attackDamage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
         xu4_random((maxDamage + 1) - minDamage) + minDamage :
         maxDamage;
 
     vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, (*party)[c->combat->getFocus()]->getCoords(), 
-                                                       1, 11, MapTile::canAttackOverTile, false);
+                                                       1, 11, Tile::canAttackOverTile, false);
     for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
         if (spellMagicAttackAt(*i, tile, attackDamage))
             return;
@@ -415,10 +417,10 @@ static int spellBlink(int dir) {
     
     i = distance;   
     /* begin walking backward until you find a valid spot */
-    while ((i-- > 0) && !c->location->map->tileAt(coords, WITH_OBJECTS)->isWalkable())
+    while ((i-- > 0) && !c->location->map->tileTypeAt(coords, WITH_OBJECTS)->isWalkable())
         coords.move(reverseDir, c->location->map);
     
-    if (c->location->map->tileAt(coords, WITH_OBJECTS)->isWalkable()) {
+    if (c->location->map->tileTypeAt(coords, WITH_OBJECTS)->isWalkable()) {
         /* we didn't move! */
         if (c->location->coords == coords)
             failed = 1;
@@ -436,7 +438,7 @@ static int spellCure(int player) {
 }
 
 static int spellDispel(int dir) {    
-    MapTile *tile, newTile;    
+    MapTile *tile; 
     MapCoords field;
 
     /* 
@@ -452,7 +454,7 @@ static int spellDispel(int dir) {
     /*
      * get a replacement tile for the field
      */
-    newTile = c->location->getReplacementTile(field);
+    MapTile newTile(c->location->getReplacementTile(field));
 
     /*
      * if there is a field annotation, remove it and replace it with a valid
@@ -465,7 +467,7 @@ static int spellDispel(int dir) {
     if (a.size() > 0) {
         Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {            
-            if (i->getTile().canDispel()) {
+            if (i->getTile().getTileType()->canDispel()) {
                 c->location->map->annotations->remove(*i);
                 c->location->map->annotations->add(field, newTile);
                 return 1;
@@ -477,7 +479,7 @@ static int spellDispel(int dir) {
      * if the map tile itself is a field, overlay it with a replacement tile
      */
     tile = c->location->map->tileAt(field, WITHOUT_OBJECTS);    
-    if (!tile->canDispel())
+    if (!tile->getTileType()->canDispel())
         return 0;
     
     c->location->map->annotations->add(field, newTile);
@@ -486,10 +488,9 @@ static int spellDispel(int dir) {
 }
 
 static int spellEField(int param) {    
-    MapTile fieldTile;
+    MapTile fieldTile(0);
     int fieldType;
     int dir;
-    MapTile *tile;    
     MapCoords coords;
     
     /* Unpack fieldType and direction */
@@ -498,10 +499,10 @@ static int spellEField(int param) {
     
     /* Make sure params valid */
     switch (fieldType) {
-        case ENERGYFIELD_FIRE: fieldTile = Tileset::findTileByName("fire_field")->id; break;
-        case ENERGYFIELD_LIGHTNING: fieldTile = Tileset::findTileByName("energy_field")->id; break;
-        case ENERGYFIELD_POISON: fieldTile = Tileset::findTileByName("poison_field")->id; break;
-        case ENERGYFIELD_SLEEP: fieldTile = Tileset::findTileByName("sleep_field")->id; break;
+        case ENERGYFIELD_FIRE: fieldTile = c->location->map->tileset->getByName("fire_field")->id; break;
+        case ENERGYFIELD_LIGHTNING: fieldTile = c->location->map->tileset->getByName("energy_field")->id; break;
+        case ENERGYFIELD_POISON: fieldTile = c->location->map->tileset->getByName("poison_field")->id; break;
+        case ENERGYFIELD_SLEEP: fieldTile = c->location->map->tileset->getByName("sleep_field")->id; break;
         default: return 0; break;
     }
 
@@ -519,7 +520,7 @@ static int spellEField(int param) {
          * Field cast on top of field and then dispel = no fields left
          * The code below seems to produce this behaviour.
          */
-        tile = c->location->map->tileAt(coords, WITH_GROUND_OBJECTS);
+        const Tile *tile = c->location->map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
         if (!tile->isWalkable()) return 0;
         
         /* Get rid of old field, if any */
@@ -527,7 +528,7 @@ static int spellEField(int param) {
         if (a.size() > 0) {
             Annotation::List::iterator i;
             for (i = a.begin(); i != a.end(); i++) {                
-                if (i->getTile().canDispel())
+                if (i->getTile().getTileType()->canDispel())
                     c->location->map->annotations->remove(*i);
             }
         }     
@@ -539,7 +540,7 @@ static int spellEField(int param) {
 }
 
 static int spellFireball(int dir) {
-    spellMagicAttack(Tileset::findTileByName("hit_flash")->id, (Direction)dir, 24, 128);    
+    spellMagicAttack("hit_flash", (Direction)dir, 24, 128);    
     return 1;
 }
 
@@ -561,7 +562,7 @@ static int spellHeal(int player) {
 }
 
 static int spellIceball(int dir) {
-    spellMagicAttack(Tileset::findTileByName("magic_flash")->id, (Direction)dir, 32, 224);    
+    spellMagicAttack("magic_flash", (Direction)dir, 32, 224);    
     return 1;
 }
 
@@ -571,7 +572,7 @@ static int spellJinx(int unused) {
 }
 
 static int spellKill(int dir) {
-    spellMagicAttack(Tileset::findTileByName("whirlpool")->id, (Direction)dir, -1, 232);
+    spellMagicAttack("whirlpool", (Direction)dir, -1, 232);
     return 1;
 }
 
@@ -581,7 +582,7 @@ static int spellLight(int unused) {
 }
 
 static int spellMMissle(int dir) {
-    spellMagicAttack(Tileset::findTileByName("miss_flash")->id, (Direction)dir, 64, 16);
+    spellMagicAttack("miss_flash", (Direction)dir, 64, 16);
     return 1;
 }
 
@@ -646,13 +647,13 @@ static int spellTremor(int unused) {
             /* Deal maximum damage to creature */
             if (xu4_random(2) == 0) {
                 ct->getCurrentPlayer()->dealDamage(m, 0xFF);                
-                CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 1);
+                CombatController::attackFlash(coords, "hit_flash", 1);
             }
             /* Deal enough damage to creature to make it flee */
             else if (xu4_random(2) == 0) {
                 if (m->getHp() > 23)
                     ct->getCurrentPlayer()->dealDamage(m, m->getHp()-23);
-                CombatController::attackFlash(coords, Tileset::findTileByName("hit_flash")->id, 1);
+                CombatController::attackFlash(coords, "hit_flash", 1);
             }
         }
     }
@@ -695,20 +696,17 @@ static int spellXit(int unused) {
 }
 
 static int spellYup(int unused) {
-    MapTile *tile;
-    int i;
     MapCoords coords = c->location->coords;
+    Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
 
     /* can't cast in the Abyss */
     if (c->location->map->id == MAP_ABYSS)
         return 0;
     /* staying in the dungeon */
     else if (coords.z > 0) {
-        for (i = 0; i < 0x20; i++) {
+        for (int i = 0; i < 0x20; i++) {
             coords = MapCoords(xu4_random(8), xu4_random(8), c->location->coords.z - 1);
-            tile = c->location->map->tileAt(coords, WITH_OBJECTS);
-
-            if (dungeonTokenForTile(*tile) == DUNGEON_CORRIDOR) {
+            if (dungeon->validTeleportLocation(coords)) {
                 c->location->coords = coords;
                 return 1;
             }
@@ -726,9 +724,8 @@ static int spellYup(int unused) {
 }
 
 static int spellZdown(int unused) {
-    MapTile *tile;
-    int i;
     MapCoords coords = c->location->coords;
+    Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
     
     /* can't cast in the Abyss */
     if (c->location->map->id == MAP_ABYSS)
@@ -737,11 +734,9 @@ static int spellZdown(int unused) {
     else if (coords.z >= 7)
         return 0;
     else {
-        for (i = 0; i < 0x20; i++) {
+        for (int i = 0; i < 0x20; i++) {
             coords = MapCoords(xu4_random(8), xu4_random(8), c->location->coords.z + 1);
-            tile = c->location->map->tileAt(coords, WITH_OBJECTS);
-
-            if (dungeonTokenForTile(*tile) == DUNGEON_CORRIDOR) {
+            if (dungeon->validTeleportLocation(coords)) {
                 c->location->coords = coords;
                 return 1;
             }

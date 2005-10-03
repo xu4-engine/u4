@@ -42,10 +42,10 @@ Location::Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx
  * Returns the visible tile at the given point on a map.  This
  * includes visual-only annotations like attack icons.
  */
-MapTile *Location::visibleTileAt(MapCoords coords, bool &focus) {
+MapTile Location::visibleTileAt(MapCoords coords, bool &focus) {
 
     /* get the stack of tiles and take the top tile */
-    std::vector<MapTile *> tiles = tilesAt(coords, focus);
+    std::vector<MapTile> tiles = tilesAt(coords, focus);
 
     return tiles.front();
 }
@@ -53,8 +53,8 @@ MapTile *Location::visibleTileAt(MapCoords coords, bool &focus) {
 /**
  * Return the entire stack of objects at the given location.
  */
-std::vector<MapTile *> Location::tilesAt(MapCoords coords, bool &focus) {
-    std::vector<MapTile *> tiles;
+std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
+    std::vector<MapTile> tiles;
     std::list<Annotation *> a = map->annotations->ptrsToAllAt(coords);
     std::list<Annotation *>::iterator i;
     Object *obj = map->objectAt(coords);
@@ -68,50 +68,50 @@ std::vector<MapTile *> Location::tilesAt(MapCoords coords, bool &focus) {
         // When viewing a gem, always show the avatar regardless of whether or not
         // it is shown in our normal view
         if (avatar)
-            tiles.push_back(&c->party->transport);
+            tiles.push_back(c->party->transport);
         else             
-            tiles.push_back(map->getTileFromData(coords));
+            tiles.push_back(*map->getTileFromData(coords));
 
         return tiles;
     }
 
     /* Add the avatar to gem view */
     if (avatar && viewMode == VIEW_GEM)
-        tiles.push_back(&c->party->transport);
+        tiles.push_back(c->party->transport);
     
     /* Add visual-only annotations to the list */
     for (i = a.begin(); i != a.end(); i++) {
         if ((*i)->isVisualOnly())        
-            tiles.push_back(&(*i)->getTile());
+            tiles.push_back((*i)->getTile());
     }
 
     /* then the avatar is drawn (unless on a ship) */
     if ((map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && avatar)
-        tiles.push_back(&c->party->transport);
+        tiles.push_back(c->party->transport);
 
     /* then camouflaged creatures that have a disguise */
-    if (obj && (obj->getType() == Object::CREATURE) && !obj->isVisible() && (m->getCamouflageTile().id > 0)) {
+    if (obj && (obj->getType() == Object::CREATURE) && !obj->isVisible() && (!m->getCamouflageTile().empty())) {
         focus = focus || obj->hasFocus();
-        tiles.push_back(&m->getCamouflageTile());
+        tiles.push_back(map->tileset->getByName(m->getCamouflageTile())->id);
     }
     /* then visible creatures and objects */
     else if (obj && obj->isVisible()) {
         focus = focus || obj->hasFocus();
-        tiles.push_back(&obj->getTile());
+        tiles.push_back(obj->getTile());
     }
 
     /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */
     if ((map->flags & SHOW_AVATAR) && (c->transportContext == TRANSPORT_SHIP) && avatar)
-        tiles.push_back(&c->party->transport);
+        tiles.push_back(c->party->transport);
 
     /* then permanent annotations */
     for (i = a.begin(); i != a.end(); i++) {
         if (!(*i)->isVisualOnly())
-            tiles.push_back(&(*i)->getTile());
+            tiles.push_back((*i)->getTile());
     }
 
     /* finally the base tile */
-    tiles.push_back(map->getTileFromData(coords));
+    tiles.push_back(*map->getTileFromData(coords));
 
     return tiles;
 }
@@ -128,13 +128,12 @@ MapTile Location::getReplacementTile(MapCoords coords) {
 
     for (d = DIR_WEST; d <= DIR_SOUTH; d = (Direction)(d+1)) {
         MapCoords new_c = coords;        
-        MapTile newTile;
 
         new_c.move(d, map);        
-        newTile = *map->tileAt(new_c, WITHOUT_OBJECTS);
+        MapTile newTile(*map->tileAt(new_c, WITHOUT_OBJECTS));
 
         /* make sure the tile we found is a valid replacement */
-        if (newTile.isReplacement())
+        if (newTile.getTileType()->isReplacement())
             return newTile;
     }
 

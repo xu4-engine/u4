@@ -126,20 +126,20 @@ void Shrine::enter() {
 
 void Shrine::enhancedSequence() {
     /* replace the 'static' avatar tile with grass */        
-    annotations->add(Coords(5, 6, c->location->coords.z), Tileset::findTileByName("grass")->id, true);
+    annotations->add(Coords(5, 6, c->location->coords.z), tileset->getByName("grass")->id, true);
 
     screenDisableCursor();
     screenMessage("You approach\nthe ancient\nshrine...\n");
     gameUpdateScreen(); EventHandler::wait_cycles(settings.gameCyclesPerSecond);
         
     Object *obj = addCreature(creatureMgr->getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
-    obj->setTile(Tileset::findTileByName("avatar")->id);
+    obj->setTile(tileset->getByName("avatar")->id);
 
     gameUpdateScreen(); EventHandler::wait_msecs(400);        
     c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(400);
     c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(400);
     c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(400);
-    annotations->remove(Coords(5, 6, c->location->coords.z), Tileset::findTileByName("grass")->id);
+    annotations->remove(Coords(5, 6, c->location->coords.z), tileset->getByName("grass")->id);
     c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(800);
     obj->setTile(creatureMgr->getById(BEGGAR_ID)->getTile()); gameUpdateScreen();
         

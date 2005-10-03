@@ -85,7 +85,7 @@ void screenRedrawScreen(void);
 void screenRedrawTextArea(int x, int y, int width, int height);
 void screenScrollMessageArea(void);
 void screenShake(int iterations);
-void screenShowGemTile(Map *map, Tile *t, bool focus, int x, int y);
+void screenShowGemTile(Map *map, MapTile &t, bool focus, int x, int y);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, const char *fmt, ...) PRINTF_LIKE(3, 4);
@@ -93,7 +93,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);
 void screenUpdateWind(void);
-std::vector<MapTile *> screenViewportTile(unsigned int width, unsigned int height, int x, int y, bool &focus);
+std::vector<MapTile> screenViewportTile(unsigned int width, unsigned int height, int x, int y, bool &focus);
 
 void screenShowCursor(void);
 void screenHideCursor(void);

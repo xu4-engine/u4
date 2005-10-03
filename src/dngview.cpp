@@ -14,7 +14,7 @@
 #include "savegame.h"
 #include "tileset.h"
 
-std::vector<MapTile *> dungeonViewGetTiles(int fwd, int side) {    
+std::vector<MapTile> dungeonViewGetTiles(int fwd, int side) {    
     MapCoords coords = c->location->coords;
 
     switch (c->saveGame->orientation) {
@@ -51,27 +51,26 @@ std::vector<MapTile *> dungeonViewGetTiles(int fwd, int side) {
     return c->location->tilesAt(coords, focus);
 }
 
-DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile *> &tiles) {
-    MapTile *tile = tiles.front();
-    DungeonToken token;
+DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile> &tiles) {
+    MapTile tile = tiles.front();
 
-    static const MapTile corridor = Tileset::findTileByName("brick_floor")->id;
-    static const MapTile up_ladder = Tileset::findTileByName("up_ladder")->id;
-    static const MapTile down_ladder = Tileset::findTileByName("down_ladder")->id;
-    static const MapTile updown_ladder = Tileset::findTileByName("up_down_ladder")->id;
+    static const MapTile corridor = c->location->map->tileset->getByName("brick_floor")->id;
+    static const MapTile up_ladder = c->location->map->tileset->getByName("up_ladder")->id;
+    static const MapTile down_ladder = c->location->map->tileset->getByName("down_ladder")->id;
+    static const MapTile updown_ladder = c->location->map->tileset->getByName("up_down_ladder")->id;
 
     /* 
      * check if the dungeon tile has an annotation or object on top
      * (always displayed as a tile, unless a ladder)
      */
     if (tiles.size() > 1) {
-        if (tile->id == up_ladder.id)
+        if (tile.id == up_ladder.id)
             return DNGGRAPHIC_LADDERUP;
-        else if (tile->id == down_ladder.id)
+        else if (tile.id == down_ladder.id)
             return DNGGRAPHIC_LADDERDOWN;
-        else if (tile->id == updown_ladder.id)            
+        else if (tile.id == updown_ladder.id)            
             return DNGGRAPHIC_LADDERUPDOWN;
-        else if (tile->id == corridor.id)
+        else if (tile.id == corridor.id)
             return DNGGRAPHIC_NONE;
         else
             return DNGGRAPHIC_BASETILE;
@@ -81,7 +80,8 @@ DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile *> &tiles
      * if not an annotation or object, then the tile is a dungeon
      * token 
      */
-    token = dungeonTokenForTile(*tile);
+    Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
+    DungeonToken token = dungeon->tokenForTile(tile);
 
     switch (token) {
     case DUNGEON_TRAP:

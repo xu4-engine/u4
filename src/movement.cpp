@@ -81,7 +81,7 @@ void moveAvatar(MoveEvent &event) {
         case SLOWED_BY_TILE:
           // TODO: CHEST: Make a user option to not make chests always fast to
           // travel over
-            slowed = slowedByTile(*c->location->map->tileAt(newCoords, WITH_OBJECTS));
+            slowed = slowedByTile(c->location->map->tileTypeAt(newCoords, WITH_OBJECTS));
             break;
         case SLOWED_BY_WIND:
             slowed = slowedByWind(event.dir);
@@ -145,9 +145,9 @@ void moveAvatarInDungeon(MoveEvent &event) {
     if (!collisionOverride) {
         int movementMask = c->location->map->getValidMoves(c->location->coords, c->party->transport);
 
-        if (advancing && !tile->canWalkOn(DIR_ADVANCE))
+        if (advancing && !tile->getTileType()->canWalkOn(DIR_ADVANCE))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
-        else if (retreating && !tile->canWalkOn(DIR_RETREAT))
+        else if (retreating && !tile->getTileType()->canWalkOn(DIR_RETREAT))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
 
         if (!DIR_IN_MASK(realDir, movementMask)) {
@@ -193,7 +193,7 @@ int moveObject(Map *map, Creature *obj, MapCoords avatar) {
         
         /* If the pirate ship turned last move instead of moving, this time it must
            try to move, not turn again */
-        if (obj->getTile().isPirateShip() && DIR_IN_MASK(obj->getTile().getDirection(), dirmask) &&
+        if (obj->getTile().getTileType()->isPirateShip() && DIR_IN_MASK(obj->getTile().getDirection(), dirmask) &&
             (obj->getTile() != obj->getPrevTile()) && (obj->getPrevCoords() == obj->getCoords())) {
             dir = obj->getTile().getDirection();
             break;
@@ -217,7 +217,7 @@ int moveObject(Map *map, Creature *obj, MapCoords avatar) {
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {
     case SLOWED_BY_TILE:
-        slowed = slowedByTile(*map->tileAt(new_coords, WITHOUT_OBJECTS));
+        slowed = slowedByTile(map->tileTypeAt(new_coords, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
         slowed = slowedByWind(obj->getTile().getDirection());
@@ -293,7 +293,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
     /* is the object slowed by terrain or by wind direction? */
     switch(slowedType) {
     case SLOWED_BY_TILE:
-        slowed = slowedByTile(*map->tileAt(new_coords, WITHOUT_OBJECTS));
+        slowed = slowedByTile(map->tileTypeAt(new_coords, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
         slowed = slowedByWind(obj->getTile().getDirection());
@@ -360,7 +360,7 @@ void movePartyMember(MoveEvent &event) {
     }
 
     /* is the party member slowed? */
-    if (!slowedByTile(*c->location->map->tileAt(newCoords, WITHOUT_OBJECTS)))
+    if (!slowedByTile(c->location->map->tileTypeAt(newCoords, WITHOUT_OBJECTS)))
     {
         /* move succeeded */        
         (*party)[member]->setCoords(newCoords);
@@ -412,10 +412,10 @@ void movePartyMember(MoveEvent &event) {
  * Default handler for slowing movement.
  * Returns true if slowed, false if not slowed
  */
-bool slowedByTile(MapTile tile) {
+bool slowedByTile(const Tile *tile) {
     bool slow;
     
-    switch (tile.getSpeed()) {    
+    switch (tile->getSpeed()) {
     case SLOW:
         slow = xu4_random(8) == 0;
         break;
