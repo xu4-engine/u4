@@ -27,8 +27,8 @@
     <tile name="lcb_west" rule="lcb"/>
     <tile name="lcb_entrance" rule="lcb_entrance" animation="lcbflag"/>
     <tile name="lcb_east" rule="lcb"/>    
-    <tile name="ship" rule="ship" frames="4" directions="nesw" animation="shipflag"/>
-    <tile name="horse" rule="horse" frames="2" directions="ew"/>
+    <tile name="ship" rule="ship" frames="4" directions="wnes" animation="shipflag"/>
+    <tile name="horse" rule="horse" frames="2" directions="we"/>
     <tile name="dungeon_floor" rule="floors"/>
     <tile name="bridge"/>
     <tile name="balloon" rule="balloon"/>
@@ -81,13 +81,39 @@
     <tile name="child" rule="person" frames="2" animation="frame"/>
     <tile name="bull" rule="person" frames="2" animation="frame"/>
     <tile name="lord_british" rule="person" frames="2" animation="frame"/>
-    <tile name="signs" rule="signs" frames="27"/> <!-- the alphabet -->    
+    <tile name="A" rule="signs"/> <!-- the alphabet -->
+    <tile name="B" rule="signs"/>
+    <tile name="C" rule="signs"/>
+    <tile name="D" rule="signs"/>
+    <tile name="E" rule="signs"/>
+    <tile name="F" rule="signs"/>
+    <tile name="G" rule="signs"/>
+    <tile name="H" rule="signs"/>
+    <tile name="I" rule="signs"/>
+    <tile name="J" rule="signs"/>
+    <tile name="K" rule="signs"/>
+    <tile name="L" rule="signs"/>
+    <tile name="M" rule="signs"/>
+    <tile name="N" rule="signs"/>
+    <tile name="O" rule="signs"/>
+    <tile name="P" rule="signs"/>
+    <tile name="Q" rule="signs"/>
+    <tile name="R" rule="signs"/>
+    <tile name="S" rule="signs"/>
+    <tile name="T" rule="signs"/>
+    <tile name="U" rule="signs"/>
+    <tile name="V" rule="signs"/>
+    <tile name="W" rule="signs"/>
+    <tile name="X" rule="signs"/>
+    <tile name="Y" rule="signs"/>
+    <tile name="Z" rule="signs"/>
+    <tile name="space" rule="signs"/>
     <tile name="spacers" rule="spacers" frames="3"/> <!-- sign spacers -->
     <tile name="black" rule="spacers"/> <!-- black square -->
     <tile name="brick_wall" rule="walls" opaque="true"/>
 
     <!-- Water monsters -->
-    <tile name="pirate_ship" rule="monster" frames="4" directions="nesw" animation="pirateflag"/>
+    <tile name="pirate_ship" rule="monster" frames="4" directions="wnes" animation="pirateflag"/>
     <tile name="nixie" rule="monster" frames="2" animation="frame"/>
     <tile name="giant_squid" rule="monster" frames="2" animation="frame"/>
     <tile name="sea_serpent" rule="monster" frames="2" animation="frame"/>

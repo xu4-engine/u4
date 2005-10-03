@@ -75,7 +75,33 @@
             <subimage name="tile_child"         width="16" height="32"/>
             <subimage name="tile_bull"          width="16" height="32"/>
             <subimage name="tile_lord_british"  width="16" height="32"/>
-            <subimage name="tile_signs"         width="16" height="432"/>
+            <subimage name="tile_A"             width="16" height="16"/>
+            <subimage name="tile_B"             width="16" height="16"/>
+            <subimage name="tile_C"             width="16" height="16"/>
+            <subimage name="tile_D"             width="16" height="16"/>
+            <subimage name="tile_E"             width="16" height="16"/>
+            <subimage name="tile_F"             width="16" height="16"/>
+            <subimage name="tile_G"             width="16" height="16"/>
+            <subimage name="tile_H"             width="16" height="16"/>
+            <subimage name="tile_I"             width="16" height="16"/>
+            <subimage name="tile_J"             width="16" height="16"/>
+            <subimage name="tile_K"             width="16" height="16"/>
+            <subimage name="tile_L"             width="16" height="16"/>
+            <subimage name="tile_M"             width="16" height="16"/>
+            <subimage name="tile_N"             width="16" height="16"/>
+            <subimage name="tile_O"             width="16" height="16"/>
+            <subimage name="tile_P"             width="16" height="16"/>
+            <subimage name="tile_Q"             width="16" height="16"/>
+            <subimage name="tile_R"             width="16" height="16"/>
+            <subimage name="tile_S"             width="16" height="16"/>
+            <subimage name="tile_T"             width="16" height="16"/>
+            <subimage name="tile_U"             width="16" height="16"/>
+            <subimage name="tile_V"             width="16" height="16"/>
+            <subimage name="tile_W"             width="16" height="16"/>
+            <subimage name="tile_X"             width="16" height="16"/>
+            <subimage name="tile_Y"             width="16" height="16"/>
+            <subimage name="tile_Z"             width="16" height="16"/>
+            <subimage name="tile_space"         width="16" height="16"/>
             <subimage name="tile_spacers"       width="16" height="48"/>
             <subimage name="tile_black"         width="16" height="16"/>
             <subimage name="tile_brick_wall"    width="16" height="16"/>
@@ -412,7 +438,33 @@
             <subimage name="tile_child"         width="16" height="32"/>
             <subimage name="tile_bull"          width="16" height="32"/>
             <subimage name="tile_lord_british"  width="16" height="32"/>
-            <subimage name="tile_signs"         width="16" height="432"/>
+            <subimage name="tile_A"             width="16" height="16"/>
+            <subimage name="tile_B"             width="16" height="16"/>
+            <subimage name="tile_C"             width="16" height="16"/>
+            <subimage name="tile_D"             width="16" height="16"/>
+            <subimage name="tile_E"             width="16" height="16"/>
+            <subimage name="tile_F"             width="16" height="16"/>
+            <subimage name="tile_G"             width="16" height="16"/>
+            <subimage name="tile_H"             width="16" height="16"/>
+            <subimage name="tile_I"             width="16" height="16"/>
+            <subimage name="tile_J"             width="16" height="16"/>
+            <subimage name="tile_K"             width="16" height="16"/>
+            <subimage name="tile_L"             width="16" height="16"/>
+            <subimage name="tile_M"             width="16" height="16"/>
+            <subimage name="tile_N"             width="16" height="16"/>
+            <subimage name="tile_O"             width="16" height="16"/>
+            <subimage name="tile_P"             width="16" height="16"/>
+            <subimage name="tile_Q"             width="16" height="16"/>
+            <subimage name="tile_R"             width="16" height="16"/>
+            <subimage name="tile_S"             width="16" height="16"/>
+            <subimage name="tile_T"             width="16" height="16"/>
+            <subimage name="tile_U"             width="16" height="16"/>
+            <subimage name="tile_V"             width="16" height="16"/>
+            <subimage name="tile_W"             width="16" height="16"/>
+            <subimage name="tile_X"             width="16" height="16"/>
+            <subimage name="tile_Y"             width="16" height="16"/>
+            <subimage name="tile_Z"             width="16" height="16"/>
+            <subimage name="tile_space"         width="16" height="16"/>
             <subimage name="tile_spacers"       width="16" height="48"/>
             <subimage name="tile_black"         width="16" height="16"/>
             <subimage name="tile_brick_wall"    width="16" height="16"/>
