@@ -48,10 +48,9 @@ public:
     static void loadAll();
     static void unloadAll();
     static Tileset* get(const string &name);
-    static TileId getNextTileId();
+
     static Tile* findTileByName(const string &name);        
-    static Tileset* get(void);
-    static void set(Tileset*);    
+    static Tile* findTileById(TileId id);        
 
 public:
     void load(const ConfigElement &tilesetConf);
@@ -64,8 +63,6 @@ public:
     
 private:
     static TilesetMap tilesets;
-    static TileId currentId;    
-    static Tileset* current;    
 
     string name;
     TileIdMap tiles;

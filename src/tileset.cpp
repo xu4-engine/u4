@@ -147,9 +147,7 @@ bool TileRule::initFromConf(const ConfigElement &conf) {
  */
 
 /* static member variables */
-TileId              Tileset::currentId = 0;
 Tileset::TilesetMap Tileset::tilesets;    
-Tileset*            Tileset::current = NULL;
 
 /**
  * Loads all tilesets using the filename
@@ -183,10 +181,6 @@ void Tileset::loadAll() {
         }
     }
 
-    // make the current tileset the first one encountered
-    TRACE_LOCAL(dbg, "Setting default tileset");
-    set(tilesets.begin()->second);
-
     // load tile maps, including translations from index to id
     TRACE_LOCAL(dbg, "Loading tilemaps");
     TileMap::loadAll();
@@ -209,7 +203,7 @@ void Tileset::unloadAll() {
     }
     tilesets.clear();
     
-    currentId = 0;
+    Tile::resetNextId();
 }
 
 /**
@@ -219,13 +213,6 @@ Tileset* Tileset::get(const string &name) {
     if (tilesets.find(name) != tilesets.end())
         return tilesets[name];
     else return NULL;
-}
-
-/**
- * Returns the next unique id for a tile
- */
-TileId Tileset::getNextTileId() {
-    return currentId++;
 }
 
 /**
@@ -242,18 +229,15 @@ Tile* Tileset::findTileByName(const string &name) {
     return NULL;
 }
 
-/**
- * Returns the current tileset
- */ 
-Tileset* Tileset::get(void) {
-    return current;
-}
+Tile* Tileset::findTileById(TileId id) {
+    TilesetMap::iterator i;
+    for (i = tilesets.begin(); i != tilesets.end(); i++) {
+        Tile *t = i->second->get(id);
+        if (t)
+            return t;        
+    }
 
-/**
- * Sets the current tileset
- */ 
-void Tileset::set(Tileset* t) {
-    current = t;
+    return NULL;
 }
 
 /**
@@ -277,22 +261,16 @@ void Tileset::load(const ConfigElement &tilesetConf) {
         if (i->getName() != "tile")
             continue;
         
-        Tile *tile = new Tile;
+        Tile *tile = new Tile(this);
         tile->loadProperties(*i);
 
-        /* grab a unique id for the tile */
-        tile->id = getNextTileId();
-        
-        /* assign the tileset this tile belongs to */
-        tile->tileset = this;
-
-        TRACE_LOCAL(dbg, string("\t\tLoaded '") + tile->name + "'");
+        TRACE_LOCAL(dbg, string("\t\tLoaded '") + tile->getName() + "'");
 
         /* add the tile to our tileset */
         tiles[tile->id] = tile;
-        nameMap[tile->name] = tile;
+        nameMap[tile->getName()] = tile;
         
-        index += tile->frames;
+        index += tile->getFrames();
     }
     totalFrames = index;   
 }
