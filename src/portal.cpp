@@ -57,9 +57,10 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         
         /* if it's a dungeon, then ladders are predictable.  Create one! */
         if (location->context == CTX_DUNGEON) {
-            if ((action & ACTION_KLIMB) && dungeonLadderUpAt(location->map, coords)) 
+            Dungeon *dungeon = dynamic_cast<Dungeon *>(location->map);
+            if ((action & ACTION_KLIMB) && dungeon->ladderUpAt(coords)) 
                 createDngLadder(location, action, &dngLadder);                
-            else if ((action & ACTION_DESCEND) && dungeonLadderDownAt(location->map, coords))
+            else if ((action & ACTION_DESCEND) && dungeon->ladderDownAt(coords))
                 createDngLadder(location, action, &dngLadder);
             else return 0;
             portal = &dngLadder;
