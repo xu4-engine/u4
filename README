@@ -39,6 +39,11 @@ and vice versa, at least in theory.
 STATUS
 ------
 
+New in v1.0beta3
+ - more bug fixes
+ - stability improvements
+ - lots more changes under the hood
+
 New in v1.0beta1
  - lots of fixes for dungeons and combat
  - now fully playable from start to finish

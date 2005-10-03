@@ -1,5 +1,5 @@
 Name:      xu4
-Version:   1.0beta1
+Version:   1.0beta3
 Release:   1
 Epoch:     0
 Summary:   xu4 - Ultima IV Recreated
@@ -63,6 +63,9 @@ rm -rf %{buildroot}
 %{_libdir}/u4/u4upgrad.zip
 
 %changelog
+* Sun Oct 02 2005 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- updated for v1.0beta3, minor cleanup
+
 * Sun Nov 28 2004 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - flatten conf directory
 - download u4 upgrade from sourceforge instead of www.moongates.com
