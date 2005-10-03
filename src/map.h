@@ -111,6 +111,7 @@ public:
     const Portal *portalAt(const Coords &coords, int actionFlags);
     MapTile* getTileFromData(const Coords &coords);
     MapTile* tileAt(const Coords &coords, int withObjects);
+    const Tile *tileTypeAt(const Coords &coords, int withObjects);
     bool isWorldMap();
     bool isEnclosed(const Coords &party);
     class Creature *addCreature(const class Creature *m, Coords coords);
@@ -141,6 +142,7 @@ public:
                     levels;
     unsigned int    chunk_width,
                     chunk_height;
+    unsigned int    offset;
 
     Source          baseSource;
     std::list<Source> extraSources;
