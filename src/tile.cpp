@@ -19,6 +19,13 @@
 #include "tileset.h"
 #include "utils.h"
 
+TileId Tile::nextId = 0;
+
+Tile::Tile(Tileset *tileset) : 
+    id(nextId++), tileset(tileset), w(0), h(0), frames(0), scale(1), 
+    anim(NULL), opaque(false), rule(NULL), image(NULL), large(false) {
+}
+
 /**
  * Loads tile information.
  */
@@ -70,6 +77,24 @@ void Tile::loadProperties(const ConfigElement &conf) {
         imageName = string("tile_") + name;
 
     large = conf.getBool("large");
+
+    if (conf.exists("directions")) {
+        string dirs = conf.getString("directions");
+        if (dirs.length() != (unsigned) frames)
+            errorFatal("Error: %d directions for tile but only %d frames", dirs.length(), frames);
+        for (unsigned i = 0; i < dirs.length(); i++) {
+            if (dirs[i] == 'w')
+                directions.push_back(DIR_WEST);
+            else if (dirs[i] == 'n')
+                directions.push_back(DIR_NORTH);
+            else if (dirs[i] == 'e')
+                directions.push_back(DIR_EAST);
+            else if (dirs[i] == 's')
+                directions.push_back(DIR_SOUTH);
+            else
+                errorFatal("Error: unknown direction specified by %c", dirs[i]);
+        }
+    }
 }
 
 Image *Tile::getImage() { 
@@ -124,161 +149,159 @@ void Tile::loadImage() {
  * MapTile Class Implementation
  */
 Direction MapTile::getDirection() const {
-    if (isShip() || isPirateShip())
-        return (Direction) (frame + DIR_WEST);
-    else if (isHorse())
-        return (Direction) ((frame << 1) + DIR_WEST);
-    else
-        return DIR_WEST;        /* some random default */
+    return getTileType()->directionForFrame(frame);
 }
 
 bool MapTile::setDirection(Direction d) {
-    bool changed = true;
-    
     /* if we're already pointing the right direction, do nothing! */
     if (getDirection() == d)
         return false;
 
-    if (isShip() || isPirateShip())
-        frame = d - DIR_WEST;
-    else if (isHorse())
-        frame = d == DIR_WEST ? 0 : 1;
-    else
-        changed = false;
+    const Tile *type = getTileType();
 
-    return changed;
+    int new_frame = type->frameForDirection(d);
+    if (new_frame != -1) {
+        frame = new_frame;
+        return true;
+    }
+    return false;
 }
 
-#define TESTBIT(against)     (Tileset::get()->get(id)->rule->mask & (against))
-#define TESTMOVEBIT(against) (Tileset::get()->get(id)->rule->movementMask & (against))
-#define GETRULE              (Tileset::get()->get(id)->rule)
-
-bool MapTile::canWalkOn(Direction d) const {    
-    return DIR_IN_MASK(d, GETRULE->walkonDirs) ? true : false;
+bool Tile::canWalkOn(Direction d) const {    
+    return DIR_IN_MASK(d, rule->walkonDirs) ? true : false;
 }
 
-bool MapTile::canWalkOff(Direction d) const {        
-    return DIR_IN_MASK(d, GETRULE->walkoffDirs) ? true : false;
+bool Tile::canWalkOff(Direction d) const {        
+    return DIR_IN_MASK(d, rule->walkoffDirs) ? true : false;
 }
 
-bool MapTile::canAttackOver() const {
+bool Tile::canAttackOver() const {
     /* All tiles that you can walk, swim, or sail on, can be attacked over.
        All others must declare themselves */    
-    return isWalkable() || isSwimable() || isSailable() || TESTBIT(MASK_ATTACKOVER);        
+    return isWalkable() || isSwimable() || isSailable() || (rule->mask & MASK_ATTACKOVER); 
 }
 
-bool MapTile::canLandBalloon() const {    
-    return TESTBIT(MASK_CANLANDBALLOON);
+bool Tile::canLandBalloon() const {    
+    return (rule->mask & MASK_CANLANDBALLOON);
 }
 
-bool MapTile::isReplacement() const {    
-    return TESTBIT(MASK_REPLACEMENT);
+bool Tile::isReplacement() const {    
+    return (rule->mask & MASK_REPLACEMENT);
 }
 
-bool MapTile::isWalkable() const {        
-    return GETRULE->walkonDirs > 0;
+bool Tile::isWalkable() const {        
+    return rule->walkonDirs > 0;
 }
 
-bool MapTile::isCreatureWalkable() const {
-    return canWalkOn(DIR_ADVANCE) && !TESTMOVEBIT(MASK_CREATURE_UNWALKABLE);
+bool Tile::isCreatureWalkable() const {
+    return canWalkOn(DIR_ADVANCE) && !(rule->movementMask & MASK_CREATURE_UNWALKABLE);
 }
 
-bool MapTile::isDungeonFloor() const {
-    Tile *floor = Tileset::findTileByName("brick_floor");
+bool Tile::isDungeonFloor() const {
+    Tile *floor = tileset->getByName("brick_floor");
     if (id == floor->id)
         return true;
     return false;
 }
 
-bool MapTile::isSwimable() const {    
-    return TESTMOVEBIT(MASK_SWIMABLE);
+bool Tile::isSwimable() const {    
+    return (rule->movementMask & MASK_SWIMABLE);
 }
 
-bool MapTile::isSailable() const {    
-    return TESTMOVEBIT(MASK_SAILABLE);
+bool Tile::isSailable() const {    
+    return (rule->movementMask & MASK_SAILABLE);
 }
 
-bool MapTile::isWater() const {
+bool Tile::isWater() const {
     return (isSwimable() || isSailable());
 }
 
-bool MapTile::isFlyable() const {    
-    return !TESTMOVEBIT(MASK_UNFLYABLE);
+bool Tile::isFlyable() const {    
+    return !(rule->movementMask & MASK_UNFLYABLE);
 }
 
-bool MapTile::isDoor() const {    
-    return TESTBIT(MASK_DOOR);
+bool Tile::isDoor() const {    
+    return (rule->mask & MASK_DOOR);
 }
 
-bool MapTile::isLockedDoor() const {    
-    return TESTBIT(MASK_LOCKEDDOOR);
+bool Tile::isLockedDoor() const {    
+    return (rule->mask & MASK_LOCKEDDOOR);
 }
 
-bool MapTile::isChest() const {    
-    return TESTBIT(MASK_CHEST);
+bool Tile::isChest() const {    
+    return (rule->mask & MASK_CHEST);
 }
 
-bool MapTile::isShip() const {    
-    return TESTBIT(MASK_SHIP);
+bool Tile::isShip() const {    
+    return (rule->mask & MASK_SHIP);
 }
 
-bool MapTile::isPirateShip() const {
-    Tile *pirate = Tileset::findTileByName("pirate_ship");
-    if (id == pirate->id)
-        return true;
-    return false;
+bool Tile::isPirateShip() const {
+    return name == "pirate_ship";
 }
 
-bool MapTile::isHorse() const {    
-    return TESTBIT(MASK_HORSE);
+bool Tile::isHorse() const {    
+    return (rule->mask & MASK_HORSE);
 }
 
-bool MapTile::isBalloon() const {    
-    return TESTBIT(MASK_BALLOON);
+bool Tile::isBalloon() const {    
+    return (rule->mask & MASK_BALLOON);
 }
 
-bool MapTile::canDispel() const {    
-    return TESTBIT(MASK_DISPEL);
+bool Tile::canDispel() const {    
+    return (rule->mask & MASK_DISPEL);
 }
 
-bool MapTile::canTalkOver() const {    
-    return TESTBIT(MASK_TALKOVER);
+bool Tile::canTalkOver() const {    
+    return (rule->mask & MASK_TALKOVER);
 }
 
-TileSpeed MapTile::getSpeed() const {     
-    return GETRULE->speed;
+TileSpeed Tile::getSpeed() const {     
+    return rule->speed;
 }
 
-TileEffect MapTile::getEffect() const {    
-    return GETRULE->effect;
+TileEffect Tile::getEffect() const {    
+    return rule->effect;
 }
 
-bool MapTile::isOpaque() const {
+bool Tile::isOpaque() const {
     extern Context *c;
 
     if (c->opacity)
-        return Tileset::get()->get(id)->opaque ? 1 : 0;
-    else return 0;
+        return opaque;
+    else
+        return false;
 }
 
 /**
  * Is tile a foreground tile (i.e. has transparent parts).
  */
-bool MapTile::isForeground() const {
-    return TESTBIT(MASK_FOREGROUND);
+bool Tile::isForeground() const {
+    return (rule->mask & MASK_FOREGROUND);
 }
 
-bool MapTile::canTalkOverTile(MapTile tile) {
-    return tile.canTalkOver();
-}
-bool MapTile::canAttackOverTile(MapTile tile) {
-    return tile.canAttackOver();
-}
-
-MapTile MapTile::tileForClass(int klass) {    
-    return TileMap::get("base")->translate((klass * 2) + 0x20);
+Direction Tile::directionForFrame(int frame) const {
+    if (static_cast<unsigned>(frame) >= directions.size())
+        return DIR_NONE;
+    else
+        return directions[frame];
 }
 
-#undef TESTBIT
-#undef TESTMOVEBIT
-#undef GETRULE
+int Tile::frameForDirection(Direction d) const {
+    for (int i = 0; (unsigned) i < directions.size() && i < frames; i++) {
+        if (directions[i] == d)
+            return i;
+    }
+    return -1;
+}
+
+bool Tile::canTalkOverTile(const Tile *tile) {
+    return tile->canTalkOver();
+}
+bool Tile::canAttackOverTile(const Tile *tile) {
+    return tile->canAttackOver();
+}
+
+const Tile *MapTile::getTileType() const {
+    return Tileset::findTileById(id);
+}
