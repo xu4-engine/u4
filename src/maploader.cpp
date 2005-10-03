@@ -55,7 +55,7 @@ int MapLoader::loadData(Map *map, U4FILE *f) {
     unsigned int x, xch, y, ych;
 
     /* allocate the space we need for the map data */
-    map->data.resize(map->height * map->width);
+    map->data.resize(map->height * map->width, MapTile(0));
 
     if (map->chunk_height == 0)
         map->chunk_height = map->height;
@@ -64,10 +64,13 @@ int MapLoader::loadData(Map *map, U4FILE *f) {
 
     clock_t total = 0;
     clock_t start = clock();
+
+    u4fseek(f, map->offset, SEEK_CUR);
+
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
         for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
             if (isChunkCompressed(map, ych * map->chunk_width + xch)) {
-                MapTile water = *map->tileset->getByName("sea");
+                MapTile water = map->tileset->getByName("sea")->id;
                 for(y = 0; y < map->chunk_height; ++y) {
                     for(x = 0; x < map->chunk_width; ++x) {
                         map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = water;
@@ -214,9 +217,9 @@ int CityMapLoader::load(Map *map) {
         if (!people[i]->name.empty())
             people[i]->npcType = NPC_TALKER;
         /* FIXME: this type of thing should be done in xml */
-        if (people[i]->getTile() == map->tileset->findTileByName("beggar")->id)
+        if (people[i]->getTile() == map->tileset->getByName("beggar")->id)
             people[i]->npcType = NPC_TALKER_BEGGAR;
-        if (people[i]->getTile() == map->tileset->findTileByName("guard")->id)
+        if (people[i]->getTile() == map->tileset->getByName("guard")->id)
             people[i]->npcType = NPC_TALKER_GUARD;
 
         for (current = city->personroles.begin(); current != city->personroles.end(); current++) {
@@ -300,8 +303,8 @@ int DngMapLoader::load(Map *map) {
         MapTile tile = map->translateFromRawTileIndex(mapData);
         
         /* determine what type of tile it is */
-        tile.type = mapData % 16;
         dungeon->data.push_back(tile);
+        dungeon->dataSubTokens.push_back(mapData % 16);
     }
 
     /* read in the dungeon rooms */
