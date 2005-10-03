@@ -56,7 +56,6 @@ rm -rf %{buildroot}
 %{_libdir}/u4/tlkconv
 %{_libdir}/u4/*.xml
 %{_libdir}/u4/dtd/*.dtd
-%{_libdir}/u4/graphics/ega/*.rle
 %{_libdir}/u4/graphics/ega/*.png
 %{_libdir}/u4/graphics/vga/*.png
 %{_libdir}/u4/ultima4-1.01.zip
