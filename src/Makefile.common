@@ -40,6 +40,7 @@ CXXSRCS=\
         imageloader.cpp \
         imageloader_png.cpp \
         imageloader_u4.cpp \
+        imageloader_u5.cpp \
         imagemgr.cpp \
         imageview.cpp \
         intro.cpp \
@@ -84,6 +85,7 @@ CXXSRCS=\
         weapon.cpp \
         xml.cpp \
         lzw/u4decode.cpp \
+        lzw/u6decode.cpp \
         $(NULL)
 
 OBJS += $(CSRCS:.c=.o) $(CXXSRCS:.cpp=.o)
@@ -114,4 +116,4 @@ cleanutil::
 	rm -rf util/dumpsavegame.o dumpsavegame$(EXEEXT) util/u4enc.o u4enc$(EXEEXT) util/u4dec.o u4dec$(EXEEXT) util/pngconv.o util/tlkconv.o tlkconv$(EXEEXT)
 
 TAGS: $(CSRCS) $(CXXSRCS)
-	etags $(CSRCS) $(CXXSRCS)
+	etags *.h $(CSRCS) $(CXXSRCS)
