@@ -11,7 +11,6 @@
 #include "config.h"
 #include "error.h"
 #include "names.h"
-#include "tileset.h"
 
 using std::string;
 using std::vector;
@@ -21,7 +20,6 @@ using std::vector;
 #define MASK_CHOOSEDISTANCE         0x0004
 #define MASK_ALWAYSHITS             0x0008
 #define MASK_MAGIC                  0x0010
-#define MASK_LEAVETILE              0x0020
 #define MASK_ATTACKTHROUGHOBJECTS   0x0040
 #define MASK_ABSOLUTERANGE          0x0080
 #define MASK_RETURNS                0x0100
@@ -76,9 +74,9 @@ Weapon::Weapon(const ConfigElement &conf) {
     abbr = conf.getString("abbr");
     canuse = 0xFF;
     damage = conf.getInt("damage");
-    hittile = Tileset::findTileByName("hit_flash")->id;
-    misstile = Tileset::findTileByName("miss_flash")->id;
-    leavetile = 0;
+    hittile = "hit_flash";
+    misstile = "miss_flash";
+    leavetile = "";
     mask = 0;
 
     /* Get the range of the weapon, whether it is absolute or normal range */
@@ -102,16 +100,15 @@ Weapon::Weapon(const ConfigElement &conf) {
 
     /* Load hit tiles */
     if (conf.exists("hittile"))
-        hittile = Tileset::findTileByName(conf.getString("hittile"))->id;
+        hittile = conf.getString("hittile");
     
     /* Load miss tiles */
     if (conf.exists("misstile"))
-        misstile = Tileset::findTileByName(conf.getString("misstile"))->id;
+        misstile = conf.getString("misstile");
     
     /* Load leave tiles */
     if (conf.exists("leavetile")) {
-        leavetile = Tileset::findTileByName(conf.getString("leavetile"))->id;
-        mask |= MASK_LEAVETILE;
+        leavetile = conf.getString("leavetile");
     }
     
     vector<ConfigElement> contraintConfs = conf.getChildren();
@@ -195,14 +192,14 @@ int Weapon::getDamage() const {
 /**
  * Return the hit tile for the specified weapon
  */
-MapTile Weapon::getHitTile() const {
+const string &Weapon::getHitTile() const {
     return hittile;
 }
 
 /**
  * Return the miss tile for the specified weapon
  */
-MapTile Weapon::getMissTile() const {
+const string &Weapon::getMissTile() const {
     return misstile;
 }
 
@@ -217,8 +214,8 @@ bool Weapon::alwaysHits() const {
  * Returns 0 if the weapon leaves no tile, otherwise it
  * returns the # of the tile the weapon leaves
  */
-MapTile Weapon::leavesTile() const {
-    return (mask & MASK_LEAVETILE) ? leavetile : 0;
+const string &Weapon::leavesTile() const {
+    return leavetile;
 }
 
 /**

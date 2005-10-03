@@ -8,24 +8,25 @@
 #include <string>
 #include <vector>
 #include "savegame.h"
-#include "types.h"
 
 class ConfigElement;
 
 class Weapon {
 public:
+    typedef std::string string;
+
     static const Weapon *get(WeaponType w);
-    static const Weapon *get(const std::string &name);
+    static const Weapon *get(const string &name);
 
     WeaponType getType() const;
-    const std::string &getName() const;
-    const std::string &getAbbrev() const;
+    const string &getName() const;
+    const string &getAbbrev() const;
     int getRange() const;
     int getDamage() const;
-    MapTile getHitTile() const;
-    MapTile getMissTile() const;
+    const string &getHitTile() const;
+    const string &getMissTile() const;
     bool alwaysHits() const;
-    MapTile leavesTile() const;
+    const string &leavesTile() const;
     bool canReady(ClassType klass) const;
     bool canAttackThroughObjects() const;
     bool rangeAbsolute() const;
@@ -44,14 +45,14 @@ private:
     static std::vector<Weapon *> weapons;
 
     WeaponType type;
-    std::string name;
-    std::string abbr;
+    string name;
+    string abbr;
     unsigned char canuse;
     int range;
     int damage;
-    MapTile hittile;
-    MapTile misstile;
-    MapTile leavetile;
+    string hittile;
+    string misstile;
+    string leavetile;
     unsigned short mask;
 };
 
