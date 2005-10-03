@@ -41,7 +41,7 @@ string Dungeon::getName() {
 /**
  * Returns the dungeon token associated with the given dungeon tile
  */
-DungeonToken dungeonTokenForTile(MapTile tile) {    
+DungeonToken Dungeon::tokenForTile(MapTile tile) {
     const static std::string tileNames[] = {
         "brick_floor", "up_ladder", "down_ladder", "up_down_ladder", "chest",
         "unimpl_ceiling_hole", "unimpl_floor_hole", "magic_orb", 
@@ -53,15 +53,15 @@ DungeonToken dungeonTokenForTile(MapTile tile) {
     const static std::string fieldNames[] = { "poison_field", "energy_field", "fire_field", "sleep_field", "" };
 
     int i;
-    Tile *t = c->location->map->tileset->get(tile.id);
+    Tile *t = tileset->get(tile.id);
 
     for (i = 0; !tileNames[i].empty(); i++) {        
-        if (strcasecmp(t->name.c_str(), tileNames[i].c_str()) == 0)
+        if (t->getName() == tileNames[i])
             return DungeonToken(i<<4);
     }
 
     for (i = 0; !fieldNames[i].empty(); i++) {        
-        if (strcasecmp(t->name.c_str(), fieldNames[i].c_str()) == 0)
+        if (t->getName() == fieldNames[i])
             return DUNGEON_FIELD;
     }
 
@@ -69,48 +69,49 @@ DungeonToken dungeonTokenForTile(MapTile tile) {
 }
 
 /**
- * Return the dungeon sub-token associated with the given dungeon tile.
- * For instance, for tile 0x91, returns FOUNTAIN_HEALING
- * NOTE: This function will always need type-casting to the token type necessary
+ * Returns the dungeon token for the current location
  */
-unsigned char dungeonSubTokenForTile(MapTile tile) {    
-    return (tile.type);
+DungeonToken Dungeon::currentToken() {
+    return tokenAt(c->location->coords);
 }
 
 /**
- * Returns the dungeon token for the current location
+ * Return the dungeon sub-token associated with the given dungeon tile.
+ * 
  */
-DungeonToken dungeonCurrentToken() {
-    return dungeonTokenAt(c->location->map, c->location->coords);
-}
-
 /**
  * Returns the dungeon sub-token for the current location
  */
-unsigned char dungeonCurrentSubToken() {
-    return dungeonSubTokenAt(c->location->map, c->location->coords);
+unsigned char Dungeon::currentSubToken() {
+    return subTokenAt(c->location->coords);
 }
 
 /**
  * Returns the dungeon token for the given coordinates
  */
-DungeonToken dungeonTokenAt(Map *map, MapCoords coords) {
-    return dungeonTokenForTile(*map->getTileFromData(coords));
+DungeonToken Dungeon::tokenAt(MapCoords coords) {
+    return tokenForTile(*getTileFromData(coords));
 }
 
 /**
- * Returns the dungeon sub-token for the given coordinates
+ * Returns the dungeon sub-token for the given coordinates.  The
+ * subtoken is encoded in the lower bits of the map raw data.  For
+ * instance, for the raw value 0x91, returns FOUNTAIN_HEALING NOTE:
+ * This function will always need type-casting to the token type
+ * necessary
  */
-unsigned char dungeonSubTokenAt(Map *map, MapCoords coords) {
-    return dungeonSubTokenForTile(*map->getTileFromData(coords));
+unsigned char Dungeon::subTokenAt(MapCoords coords) {
+    int index = coords.x + (coords.y * width) + (width * height * coords.z);
+    return dataSubTokens[index];
 }
 
 /**
  * Handles 's'earching while in dungeons
  */
 void dungeonSearch(void) {
-    DungeonToken token = dungeonCurrentToken(); 
-    Annotation::List a = c->location->map->annotations->allAt(c->location->coords);
+    Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
+    DungeonToken token = dungeon->currentToken(); 
+    Annotation::List a = dungeon->annotations->allAt(c->location->coords);
     const ItemLocation *item;
     if (a.size() > 0)
         token = DUNGEON_CORRIDOR;
@@ -130,7 +131,7 @@ void dungeonSearch(void) {
     default: 
         {
             /* see if there is an item at the current location (stones on altars, etc.) */
-            item = itemAtLocation(c->location->map, c->location->coords);
+            item = itemAtLocation(dungeon, c->location->coords);
             if (item) {
                 if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
                     screenMessage("Nothing Here!\n");
@@ -156,7 +157,8 @@ void dungeonDrinkFountain() {
     if (player == -1)
         return;
 
-    FountainType type = (FountainType)dungeonCurrentSubToken();    
+    Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
+    FountainType type = (FountainType) dungeon->currentSubToken();    
 
     switch(type) {
     /* plain fountain */
@@ -210,10 +212,9 @@ void dungeonTouchOrb() {
 
     int stats = 0;
     int damage = 0;    
-    MapTile replacementTile;
     
     /* Get current position and find a replacement tile for it */   
-    replacementTile = c->location->getReplacementTile(c->location->coords);
+    MapTile replacementTile(c->location->getReplacementTile(c->location->coords));
 
     switch(c->location->map->id) {
     case MAP_DECEIT:    stats = STATSBONUS_INT; break;
@@ -253,7 +254,8 @@ void dungeonTouchOrb() {
  * Handles dungeon traps
  */
 bool dungeonHandleTrap(TrapType trap) {
-    switch((TrapType)dungeonCurrentSubToken()) {
+    Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
+    switch((TrapType)dungeon->currentSubToken()) {
     case TRAP_WINDS:
         screenMessage("\nWinds!\n");
         c->party->quenchTorch();
@@ -277,17 +279,17 @@ bool dungeonHandleTrap(TrapType trap) {
 /**
  * Returns true if a ladder-up is found at the given coordinates
  */
-bool dungeonLadderUpAt(class Map *map, MapCoords coords) {    
-    Annotation::List a = c->location->map->annotations->allAt(coords);
+bool Dungeon::ladderUpAt(MapCoords coords) {    
+    Annotation::List a = annotations->allAt(coords);
 
-    if (dungeonTokenAt(map, coords) == DUNGEON_LADDER_UP ||
-        dungeonTokenAt(map, coords) == DUNGEON_LADDER_UPDOWN)
+    if (tokenAt(coords) == DUNGEON_LADDER_UP ||
+        tokenAt(coords) == DUNGEON_LADDER_UPDOWN)
         return true;
 
     if (a.size() > 0) {
         Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == Tileset::findTileByName("up_ladder")->id)
+            if (i->getTile() == tileset->getByName("up_ladder")->id)
                 return true;
         }
     }
@@ -297,19 +299,24 @@ bool dungeonLadderUpAt(class Map *map, MapCoords coords) {
 /**
  * Returns true if a ladder-down is found at the given coordinates
  */
-bool dungeonLadderDownAt(class Map *map, MapCoords coords) {
-    Annotation::List a = c->location->map->annotations->allAt(coords);
+bool Dungeon::ladderDownAt(MapCoords coords) {
+    Annotation::List a = annotations->allAt(coords);
 
-    if (dungeonTokenAt(map, coords) == DUNGEON_LADDER_DOWN ||
-        dungeonTokenAt(map, coords) == DUNGEON_LADDER_UPDOWN)
+    if (tokenAt(coords) == DUNGEON_LADDER_DOWN ||
+        tokenAt(coords) == DUNGEON_LADDER_UPDOWN)
         return true;
 
     if (a.size() > 0) {
         Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == Tileset::findTileByName("down_ladder")->id)
+            if (i->getTile() == tileset->getByName("down_ladder")->id)
                 return true;
         }
     }
     return false;
+}
+
+bool Dungeon::validTeleportLocation(MapCoords coords) {
+    MapTile *tile = tileAt(coords, WITH_OBJECTS);
+    return tokenForTile(*tile) == DUNGEON_CORRIDOR;    
 }

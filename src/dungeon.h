@@ -5,6 +5,8 @@
 #ifndef DUNGEON_H
 #define DUNGEON_H
 
+#include <vector>
+
 #include "combat.h"
 #include "map.h"
 #include "types.h"
@@ -41,24 +43,6 @@ struct DngRoom {
     unsigned char buffer[7];
 };
 
-class Dungeon : public Map {
-public:
-    Dungeon() {}
-
-    // Members
-    virtual string getName();
-
-    // Properties
-
-    string name;
-    unsigned int n_rooms;
-    DngRoom *rooms;
-    CombatMap **roomMaps;
-    int currentRoom;
-    unsigned char party_startx[8];
-    unsigned char party_starty[8];
-};
-
 /**
  * Dungeon tokens
  */
@@ -79,6 +63,35 @@ enum DungeonToken {
     DUNGEON_ROOM                = 0xD0,
     DUNGEON_SECRET_DOOR         = 0xE0,
     DUNGEON_WALL                = 0xF0
+};
+
+class Dungeon : public Map {
+public:
+    Dungeon() {}
+
+    // Members
+    virtual string getName();
+
+    DungeonToken tokenForTile(MapTile tile);
+    DungeonToken currentToken();
+    unsigned char currentSubToken();
+    DungeonToken tokenAt(MapCoords coords);
+    unsigned char subTokenAt(MapCoords coords);
+
+    bool ladderUpAt(MapCoords coords);
+    bool ladderDownAt(MapCoords coords);
+
+    bool validTeleportLocation(MapCoords coords);
+
+    // Properties
+    string name;
+    unsigned int n_rooms;
+    std::vector<unsigned char> dataSubTokens;
+    DngRoom *rooms;
+    CombatMap **roomMaps;
+    int currentRoom;
+    unsigned char party_startx[8];
+    unsigned char party_starty[8];
 };
 
 /**
@@ -105,18 +118,10 @@ enum FieldType {
     FIELD_SLEEP                 = 0x3
 };
 
-DungeonToken dungeonTokenForTile(MapTile tile);
-unsigned char dungeonSubTokenForTile(MapTile tile);
-DungeonToken dungeonCurrentToken();
-unsigned char dungeonCurrentSubToken();
-DungeonToken dungeonTokenAt(Map *map, MapCoords coords);
-unsigned char dungeonSubTokenAt(Map *map, MapCoords coords);
 void dungeonSearch(void);
 void dungeonDrinkFountain();
 void dungeonTouchOrb();
 bool dungeonHandleTrap(TrapType trap);
-bool dungeonLadderUpAt(Map *map, MapCoords coords);
-bool dungeonLadderDownAt(Map *map, MapCoords coords);
 
 bool isDungeon(Map *punknown);
 
