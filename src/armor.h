@@ -13,11 +13,13 @@ class ConfigElement;
 
 class Armor {
 public:
+    typedef std::string string;
+
     static const Armor *get(ArmorType a);
-    static const Armor *get(const std::string &name);
+    static const Armor *get(const string &name);
 
     ArmorType getType() const;
-    const std::string &getName() const;
+    const string &getName() const;
     int getDefense() const;
     bool canWear(ClassType klass) const;
 
@@ -29,7 +31,7 @@ private:
     static std::vector<Armor *> armors;
 
     ArmorType type;
-    std::string name;
+    string name;
     unsigned char canuse;
     int defense;
     unsigned short mask;
