@@ -103,7 +103,7 @@ void TileMap::load(const ConfigElement &tilemapConf) {
 
         /* insert the tile into the tile map */
         for (int i = 0; i < frames; i++) {
-            if (i < t->frames)
+            if (i < t->getFrames())
                 tm->tilemap[index+i] = MapTile(t->id, i);
             /* frame fell out of the scope of the tile -- frame is set to 0 */
             else
