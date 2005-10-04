@@ -20,6 +20,7 @@ ImageLoader *U4RawImageLoader::instance = ImageLoader::registerLoader(new U4RawI
 ImageLoader *U4RleImageLoader::instance = ImageLoader::registerLoader(new U4RleImageLoader, "image/x-u4rle");
 ImageLoader *U4LzwImageLoader::instance = ImageLoader::registerLoader(new U4LzwImageLoader, "image/x-u4lzw");
 
+RGBA *U4PaletteLoader::bwPalette = NULL;
 RGBA *U4PaletteLoader::egaPalette = NULL;
 RGBA *U4PaletteLoader::vgaPalette = NULL;
 
@@ -29,7 +30,7 @@ RGBA *U4PaletteLoader::vgaPalette = NULL;
  */
 Image *U4RawImageLoader::load(U4FILE *file) {
     ASSERT(width != -1 && height != -1 && bpp != -1, "dimensions not set");
-    ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp: %d", bpp);
+    ASSERT(bpp == 1 || bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp: %d", bpp);
 
     long rawLen = file->length();
     unsigned char *raw = (unsigned char *) malloc(rawLen);
@@ -41,7 +42,7 @@ Image *U4RawImageLoader::load(U4FILE *file) {
         return NULL;
     }
 
-    Image *image = Image::create(width, height, bpp == 4 || bpp == 8, Image::HARDWARE);
+    Image *image = Image::create(width, height, bpp <= 8, Image::HARDWARE);
     if (!image) {
         if (raw)
             free(raw);
@@ -53,6 +54,8 @@ Image *U4RawImageLoader::load(U4FILE *file) {
         image->setPalette(paletteLoader.loadVgaPalette(), 256);
     else if (bpp == 4)
         image->setPalette(paletteLoader.loadEgaPalette(), 16);
+    else if (bpp == 1)
+        image->setPalette(paletteLoader.loadBWPalette(), 2);
 
     setFromRawData(image, width, height, bpp, raw);
 
@@ -67,7 +70,7 @@ Image *U4RawImageLoader::load(U4FILE *file) {
  */
 Image *U4RleImageLoader::load(U4FILE *file) {
     ASSERT(width != -1 && height != -1 && bpp != -1, "dimensions not set");
-    ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp: %d", bpp);
+    ASSERT(bpp == 1 || bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp: %d", bpp);
 
     long compressedLen = file->length();
     unsigned char *compressed = (unsigned char *) malloc(compressedLen);
@@ -83,7 +86,7 @@ Image *U4RleImageLoader::load(U4FILE *file) {
         return NULL;
     }
 
-    Image *image = Image::create(width, height, bpp == 4 || bpp == 8, Image::HARDWARE);
+    Image *image = Image::create(width, height, bpp <= 8, Image::HARDWARE);
     if (!image) {
         if (raw)
             free(raw);
@@ -95,6 +98,8 @@ Image *U4RleImageLoader::load(U4FILE *file) {
         image->setPalette(paletteLoader.loadVgaPalette(), 256);
     else if (bpp == 4)
         image->setPalette(paletteLoader.loadEgaPalette(), 16);
+    else if (bpp == 1)
+        image->setPalette(paletteLoader.loadBWPalette(), 2);
 
     setFromRawData(image, width, height, bpp, raw);
 
@@ -109,7 +114,7 @@ Image *U4RleImageLoader::load(U4FILE *file) {
  */
 Image *U4LzwImageLoader::load(U4FILE *file) {
     ASSERT(width != -1 && height != -1 && bpp != -1, "dimensions not set");
-    ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp: %d", bpp);
+    ASSERT(bpp == 1 || bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp: %d", bpp);
 
     long compressedLen = file->length();
     unsigned char *compressed = (unsigned char *) malloc(compressedLen);
@@ -125,7 +130,7 @@ Image *U4LzwImageLoader::load(U4FILE *file) {
         return NULL;
     }
 
-    Image *image = Image::create(width, height, bpp == 4 || bpp == 8, Image::HARDWARE);
+    Image *image = Image::create(width, height, bpp <= 8, Image::HARDWARE);
     if (!image) {
         if (raw)
             free(raw);
@@ -137,12 +142,33 @@ Image *U4LzwImageLoader::load(U4FILE *file) {
         image->setPalette(paletteLoader.loadVgaPalette(), 256);
     else if (bpp == 4)
         image->setPalette(paletteLoader.loadEgaPalette(), 16);
+    else if (bpp == 1)
+        image->setPalette(paletteLoader.loadBWPalette(), 2);
 
     setFromRawData(image, width, height, bpp, raw);
 
     free(raw);
 
     return image;
+}
+
+/**
+ * Loads a simple black & white palette
+ */
+RGBA *U4PaletteLoader::loadBWPalette() {
+    if (bwPalette == NULL) {
+        bwPalette = new RGBA[2];
+
+        bwPalette[0].r = 0;
+        bwPalette[0].g = 0;
+        bwPalette[0].b = 0;
+
+        bwPalette[1].r = 255;
+        bwPalette[1].g = 255;
+        bwPalette[1].b = 255;
+
+    }
+    return bwPalette;
 }
 
 /**

@@ -4,6 +4,15 @@
 
 #include "pngconv.h"
 
+void setBWPalette(png_color *palette) {
+    palette[0].red = 0;
+    palette[0].green = 0;
+    palette[0].blue = 0;
+    palette[1].red = 255;
+    palette[1].green = 255;
+    palette[1].blue = 255;
+}
+
 void setEgaPalette(png_color *palette) {
     #define setpalentry(i, r, g, b) \
         palette[i].red = r; \
@@ -57,7 +66,9 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
     png_byte **row_pointers;
     int i, j;
 
-    if (bits == 4)
+    if (bits == 1)
+        palette_size = 2;
+    else if (bits == 4)
         palette_size = 16;
     else if (bits == 8)
         palette_size = 256;
@@ -65,10 +76,12 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
         palette_size = 0;
 
     if (palette_size != 0) {
-        palette = (png_color*)malloc(sizeof(png_color) * palette_size);        
+        palette = (png_color*)malloc(sizeof(png_color) * palette_size);
 
         printf("palette size = %d\n", palette_size);
-        if (palette_size == 16)
+        if (palette_size == 2)
+            setBWPalette(palette);
+        else if (palette_size == 16)
             setEgaPalette(palette);
         else
             setVgaPalette(palette);
@@ -114,6 +127,7 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
     png_init_io(png_ptr, fp);
 
     switch (bits) {
+    case 1:
     case 4:
     case 8:
         bit_depth = bits;

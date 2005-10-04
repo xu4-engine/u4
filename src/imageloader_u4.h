@@ -52,10 +52,12 @@ public:
 };
 
 class U4PaletteLoader {
+    static RGBA *bwPalette;
     static RGBA *egaPalette;
     static RGBA *vgaPalette;
 
 public:
+    RGBA *loadBWPalette();
     RGBA *loadEgaPalette();
     RGBA *loadVgaPalette();
 };
