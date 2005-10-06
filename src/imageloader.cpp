@@ -88,6 +88,21 @@ void ImageLoader::setFromRawData(Image *image, int width, int height, int bpp, u
         }
         break;
 
+    case 1:
+        for (y = 0; y < height; y++) {
+            for (x = 0; x < width; x+=8) {
+                image->putPixelIndex(x + 0, y, (rawData[(y * width + x) / 8] >> 7) & 0x01);
+                image->putPixelIndex(x + 1, y, (rawData[(y * width + x) / 8] >> 6) & 0x01);
+                image->putPixelIndex(x + 2, y, (rawData[(y * width + x) / 8] >> 5) & 0x01);
+                image->putPixelIndex(x + 3, y, (rawData[(y * width + x) / 8] >> 4) & 0x01);
+                image->putPixelIndex(x + 4, y, (rawData[(y * width + x) / 8] >> 3) & 0x01);
+                image->putPixelIndex(x + 5, y, (rawData[(y * width + x) / 8] >> 2) & 0x01);
+                image->putPixelIndex(x + 6, y, (rawData[(y * width + x) / 8] >> 1) & 0x01);
+                image->putPixelIndex(x + 7, y, (rawData[(y * width + x) / 8] >> 0) & 0x01);
+            }
+        }
+        break;
+
     default:
         ASSERT(0, "invalid bits-per-pixel (bpp): %d", bpp);
     }
