@@ -260,7 +260,16 @@ bool Creature::walks() const {
 bool Creature::divides() const       { return (mattr & MATTR_DIVIDES) ? true : false; }
 bool Creature::canMoveOntoCreatures() const { return (movementAttr & MATTR_CANMOVECREATURES) ? true : false; }
 bool Creature::canMoveOntoPlayer() const   { return (movementAttr & MATTR_CANMOVEAVATAR) ? true : false; }
-bool Creature::isAttackable() const  { return (mattr & MATTR_NONATTACKABLE) ? false : true; }
+
+bool Creature::isAttackable() const  { 
+    if (mattr & MATTR_NONATTACKABLE)
+        return false;
+    /* can't attack horse transport */
+    if (tile.getTileType()->isHorse() && getMovementBehavior() == MOVEMENT_FIXED)
+        return false;
+    return true; 
+}
+
 bool Creature::willAttack() const    { return (mattr & MATTR_NOATTACK) ? false : true; }
 bool Creature::stealsGold() const    { return (mattr & MATTR_STEALGOLD) ? true : false; }
 bool Creature::stealsFood() const    { return (mattr & MATTR_STEALFOOD) ? true : false; }

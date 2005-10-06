@@ -1523,11 +1523,8 @@ bool attackAt(const Coords &coords) {
 
     m = dynamic_cast<Creature*>(c->location->map->objectAt(coords));
     /* nothing attackable: move on to next tile */
-    if ((m == NULL) || 
-        /* can't attack horse transport */
-        (m->getTile().getTileType()->isHorse() && m->getMovementBehavior() == MOVEMENT_FIXED)) {
+    if (m == NULL || !m->isAttackable())
         return false;
-    }
 
     /* attack successful */
     /// TODO: CHEST: Make a user option to not make chests change battlefield
@@ -1749,9 +1746,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
     obj = c->location->map->objectAt(coords);
     Creature *m = dynamic_cast<Creature*>(obj);
 
-    /* FIXME: there's got to be a better way make whirlpools and storms impervious to cannon fire */
-    if (obj && (obj->getType() == Object::CREATURE) &&
-        (m->getId() != WHIRLPOOL_ID) && (m->getId() != STORM_ID))
+    if (obj && obj->getType() == Object::CREATURE && m->isAttackable())
         validObject = true;
     /* See if it's an object to be destroyed (the avatar cannot destroy the balloon) */
     else if (obj && 
@@ -3028,8 +3023,7 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
     }
     // Destroy objects that were hit
     else if (obj) {
-        if (((obj->getType() == Object::CREATURE) &&
-             (m->getId() != WHIRLPOOL_ID) && (m->getId() != STORM_ID)) ||
+        if ((obj->getType() == Object::CREATURE && m->isAttackable()) ||
             obj->getType() == Object::UNKNOWN) {
                 
             CombatController::attackFlash(coords, tile, 3);
