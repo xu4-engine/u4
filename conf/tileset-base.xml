@@ -118,7 +118,7 @@
     <tile name="giant_squid" rule="monster" frames="2" animation="frame"/>
     <tile name="sea_serpent" rule="monster" frames="2" animation="frame"/>
     <tile name="sea_horse" rule="monster" frames="2" animation="frame"/>
-    <tile name="whirlpool" frames="2" animation="frame"/>
+    <tile name="whirlpool" rule="water" frames="2" animation="frame"/>
     <tile name="storm" frames="2" animation="frame"/>
     
     <!-- Land monsters -->    

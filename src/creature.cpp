@@ -99,8 +99,7 @@ void Creature::load(const ConfigElement &conf) {
         { "flies", MATTR_FLIES },
         { "teleports", MATTR_TELEPORT },
         { "canMoveOntoCreatures", MATTR_CANMOVECREATURES },
-        { "canMoveOntoAvatar", MATTR_CANMOVEAVATAR },
-        { "canMoveOn", MATTR_CANMOVEON }
+        { "canMoveOntoAvatar", MATTR_CANMOVEAVATAR }
     };
 
     static const struct {
@@ -261,7 +260,6 @@ bool Creature::walks() const {
 bool Creature::divides() const       { return (mattr & MATTR_DIVIDES) ? true : false; }
 bool Creature::canMoveOntoCreatures() const { return (movementAttr & MATTR_CANMOVECREATURES) ? true : false; }
 bool Creature::canMoveOntoPlayer() const   { return (movementAttr & MATTR_CANMOVEAVATAR) ? true : false; }
-bool Creature::canMoveOnto() const         { return (movementAttr & MATTR_CANMOVEON) ? true : false; }
 bool Creature::isAttackable() const  { return (mattr & MATTR_NONATTACKABLE) ? true : false; }
 bool Creature::willAttack() const    { return (mattr & MATTR_NOATTACK) ? false : true; }
 bool Creature::stealsGold() const    { return (mattr & MATTR_STEALGOLD) ? true : false; }

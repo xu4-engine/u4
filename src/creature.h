@@ -112,8 +112,7 @@ typedef enum {
     MATTR_FLIES             = 0x10,
     MATTR_TELEPORT          = 0x20,
     MATTR_CANMOVECREATURES  = 0x40,
-    MATTR_CANMOVEAVATAR     = 0x80,
-    MATTR_CANMOVEON         = 0x100
+    MATTR_CANMOVEAVATAR     = 0x80
 } CreatureMovementAttrib;
 
 typedef enum {
@@ -177,7 +176,6 @@ public:
     bool divides() const;
     bool canMoveOntoCreatures() const;
     bool canMoveOntoPlayer() const;
-    bool canMoveOnto() const;
     bool isAttackable() const;
     bool willAttack() const;
     bool stealsGold() const;

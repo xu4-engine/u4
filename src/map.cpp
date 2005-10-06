@@ -633,13 +633,8 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             // and the creature must be able to have others move onto it.  If either of
             // these conditions are not met, the creature cannot move onto another.
             if ((ontoAvatar && !m->canMoveOntoPlayer()) ||
-                (ontoCreature && (!m->canMoveOntoCreatures() || !to_m->canMoveOnto())))
+                (ontoCreature && (!m->canMoveOntoCreatures() || !tile->getTileType()->isWalkable())))
                 continue;
-        }
-        // this really only happens with the avatar
-        else if (ontoCreature && to_m && to_m->canMoveOnto()) {
-            retval = DIR_ADD_TO_MASK(d, retval);
-            continue;
         }
 
         // avatar movement

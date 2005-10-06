@@ -13,7 +13,6 @@
                   ambushes             %bool;   #IMPLIED
                   camouflage           %bool;   #IMPLIED
                   camouflageTile       NMTOKEN  #IMPLIED
-                  canMoveOn            %bool;   #IMPLIED
                   canMoveOntoAvatar    NMTOKEN  #IMPLIED
                   canMoveOntoCreatures %bool;   #IMPLIED
                   cantattack           %bool;   #IMPLIED

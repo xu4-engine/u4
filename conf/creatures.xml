@@ -35,8 +35,8 @@
     <creature id="20" encounterSize="4" name="Giant Squid" tile="giant_squid" basehp="96" exp="7" ranged="true" rangedhittile="energy_field" rangedmisstile="energy_field" poisons="true" swims="true" leader="21"/>
     <creature id="21" encounterSize="4" name="Sea Serpent" tile="sea_serpent" basehp="128" exp="9" ranged="true" worldrangedtile="hit_flash" rangedhittile="hit_flash" rangedmisstile="hit_flash" swims="true" leader="20"/>
     <creature id="22" encounterSize="8" name="Seahorse" tile="sea_horse" basehp="128" exp="9" movement="wanders" ranged="true" rangedhittile="magic_flash" rangedmisstile="magic_flash" swims="true" good="true" leader="19"/>
-    <creature id="23" encounterSize="1" name="Whirlpool" tile="whirlpool" basehp="255" exp="16" swims="true" movement="wanders" cantattack="true" canMoveOntoCreatures="true" canMoveOntoAvatar="true" canMoveOn="true" wontattack="true"/>
-    <creature id="24" encounterSize="1" name="Storm" tile="storm" basehp="255" exp="16" flies="true" movement="wanders" cantattack="true" canMoveOntoCreatures="true" canMoveOntoAvatar="true" canMoveOn="true" wontattack="true"/>
+    <creature id="23" encounterSize="1" name="Whirlpool" tile="whirlpool" basehp="255" exp="16" swims="true" movement="wanders" cantattack="true" canMoveOntoCreatures="true" canMoveOntoAvatar="true" wontattack="true"/>
+    <creature id="24" encounterSize="1" name="Storm" tile="storm" basehp="255" exp="16" flies="true" movement="wanders" cantattack="true" canMoveOntoCreatures="true" canMoveOntoAvatar="true" wontattack="true"/>
 
     <!-- Main creatures -->
     <creature id="25" encounterSize="12" name="Rat" tile="rat" basehp="48" exp="4" movement="wanders" good="true" leader="38"/>
