@@ -63,7 +63,7 @@ Path::Path(const string &p) : path(p) {
     }
 
     /* If it's for sure a file, get file information! */
-    if ((path_stat.st_mode & S_IFDIR) == 0) {
+    if (_exists && !isDir) {
         file = dirs.size() ? path.substr(path.find_last_of(dest_char)+1) : path;
         if ((pos = file.find_last_of(".")) < file.size()) {
             ext = file.substr(pos + 1);
