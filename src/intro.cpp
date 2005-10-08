@@ -249,9 +249,10 @@ IntroController::IntroController() :
     enhancementMenu.add(new BoolMenuItem("Ultima V Spell Mixing   %s", 6, 3, 0, &settingsChanged.enhancementsOptions.u5spellMixing));
     enhancementMenu.add(new BoolMenuItem("Ultima V Shrines        %s", 6, 4, 0, &settingsChanged.enhancementsOptions.u5shrines));
     enhancementMenu.add(new BoolMenuItem("Slime Divides           %s", 6, 5, 0, &settingsChanged.enhancementsOptions.slimeDivides));
-    enhancementMenu.add(new BoolMenuItem("Fixed Chest Traps       %s", 6, 6, 0, &settingsChanged.enhancementsOptions.c64chestTraps));
-    enhancementMenu.add(new BoolMenuItem("Smart 'Enter' Key       %s", 6, 7, 0, &settingsChanged.enhancementsOptions.smartEnterKey));
-    enhancementMenu.add(new BoolMenuItem("Gem View Shows Objects  %s", 6, 8, 0, &settingsChanged.enhancementsOptions.peerShowsObjects));
+    enhancementMenu.add(new BoolMenuItem("Gazer Spawns Insects    %s", 6, 6, 0, &settingsChanged.enhancementsOptions.gazerSpawnsInsects));
+    enhancementMenu.add(new BoolMenuItem("Fixed Chest Traps       %s", 6, 7, 0, &settingsChanged.enhancementsOptions.c64chestTraps));
+    enhancementMenu.add(new BoolMenuItem("Smart 'Enter' Key       %s", 6, 8, 0, &settingsChanged.enhancementsOptions.smartEnterKey));
+    enhancementMenu.add(new BoolMenuItem("Gem View Shows Objects  %s", 6, 9, 0, &settingsChanged.enhancementsOptions.peerShowsObjects));
     enhancementMenu.add(USE_SETTINGS, "Use These Settings", 6, 17, 'u');
     enhancementMenu.add(CANCEL, "Cancel", 6, 18, 'c');
     enhancementMenu.addShortcutKey(CANCEL, ' ');
@@ -384,7 +385,7 @@ bool IntroController::keyPressed(int key) {
  * Draws the small map on the intro screen.
  */
 void IntroController::drawMap() {
-    if (sleepCycles > 0) {
+    if (0 && sleepCycles > 0) {
         drawMapAnimated();
         sleepCycles--;
     }

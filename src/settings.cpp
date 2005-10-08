@@ -158,14 +158,15 @@ bool Settings::read() {
     shakeInterval         = DEFAULT_SHAKE_INTERVAL;
 
     /* all specific minor enhancements default to "on", any major enhancements default to "off" */
-    enhancementsOptions.activePlayer     = 1;
-    enhancementsOptions.u5spellMixing    = 1;
-    enhancementsOptions.u5shrines        = 1;
-    enhancementsOptions.slimeDivides     = 1;
-    enhancementsOptions.c64chestTraps    = 1;    
-    enhancementsOptions.smartEnterKey    = 1;
-    enhancementsOptions.peerShowsObjects = 0;
-    enhancementsOptions.u5combat         = 0;    
+    enhancementsOptions.activePlayer     = true;
+    enhancementsOptions.u5spellMixing    = true;
+    enhancementsOptions.u5shrines        = true;
+    enhancementsOptions.slimeDivides     = true;
+    enhancementsOptions.gazerSpawnsInsects = true;
+    enhancementsOptions.c64chestTraps    = true;
+    enhancementsOptions.smartEnterKey    = true;
+    enhancementsOptions.peerShowsObjects = false;
+    enhancementsOptions.u5combat         = false;
 
     innAlwaysCombat = 0;
     campingAlwaysCombat = 0;
@@ -242,6 +243,8 @@ bool Settings::read() {
             enhancementsOptions.u5shrines = (int) strtoul(buffer + strlen("u5shrines="), NULL, 0);
         else if (strstr(buffer, "slimeDivides=") == buffer)
             enhancementsOptions.slimeDivides = (int) strtoul(buffer + strlen("slimeDivides="), NULL, 0);
+        else if (strstr(buffer, "gazerSpawnsInsects=") == buffer)
+            enhancementsOptions.gazerSpawnsInsects = (int) strtoul(buffer + strlen("gazerSpawnsInsects="), NULL, 0);
         else if (strstr(buffer, "c64chestTraps=") == buffer)
             enhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);                
         else if (strstr(buffer, "smartEnterKey=") == buffer)
@@ -334,6 +337,7 @@ bool Settings::write() {
             "u5spellMixing=%d\n"
             "u5shrines=%d\n"
             "slimeDivides=%d\n"
+            "gazerSpawnsInsects=%d\n"
             "c64chestTraps=%d\n"            
             "smartEnterKey=%d\n"
             "peerShowsObjects=%d\n"
@@ -371,6 +375,7 @@ bool Settings::write() {
             enhancementsOptions.u5spellMixing,
             enhancementsOptions.u5shrines,
             enhancementsOptions.slimeDivides,
+            enhancementsOptions.gazerSpawnsInsects,
             enhancementsOptions.c64chestTraps,            
             enhancementsOptions.smartEnterKey,
             enhancementsOptions.peerShowsObjects,

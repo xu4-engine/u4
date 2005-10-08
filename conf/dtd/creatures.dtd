@@ -18,6 +18,7 @@
                   cantattack           %bool;   #IMPLIED
                   casts                ( sleep | negate ) #IMPLIED
                   divides              %bool;   #IMPLIED
+                  spawnsOnDeath        NMTOKEN  #IMPLIED
                   flies                %bool;   #IMPLIED
                   good                 %bool;   #IMPLIED
                   incorporeal          %bool;   #IMPLIED
