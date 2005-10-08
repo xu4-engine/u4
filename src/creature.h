@@ -101,7 +101,8 @@ typedef enum {
     MATTR_RANDOMRANGED  = 0x800,
     MATTR_INCORPOREAL   = 0x1000,
     MATTR_NOCHEST       = 0x2000,
-    MATTR_DIVIDES       = 0x4000
+    MATTR_DIVIDES       = 0x4000,
+    MATTR_SPAWNSONDEATH = 0x8000
 } CreatureAttrib;
 
 typedef enum {
@@ -174,6 +175,7 @@ public:
     bool sails() const;
     bool walks() const;
     bool divides() const;
+    bool spawnsOnDeath() const;
     bool canMoveOntoCreatures() const;
     bool canMoveOntoPlayer() const;
     bool isAttackable() const;
@@ -201,6 +203,7 @@ public:
     void applyTileEffect(TileEffect effect);
     virtual bool attackHit(Creature *m);
     bool divide();
+    bool spawnOnDeath();
     virtual CreatureStatus getState() const;
     StatusType getStatus() const;
     bool hideOrShow();
@@ -234,6 +237,7 @@ protected:
     SlowedType      slowedType;
     int             encounterSize;
     unsigned char   resists;
+    CreatureId      spawn;
 };
 
 /**

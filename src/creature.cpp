@@ -208,6 +208,11 @@ void Creature::load(const ConfigElement &conf) {
         }
     }
 
+    if (conf.exists("spawnsOnDeath")) {
+        mattr = static_cast<CreatureAttrib>(mattr | MATTR_SPAWNSONDEATH);
+        spawn = static_cast<unsigned char>(conf.getInt("spawnsOnDeath"));
+    }
+
     /* Figure out which 'slowed' function to use */
     slowedType = SLOWED_BY_TILE;
     if (sails())
@@ -257,7 +262,8 @@ bool Creature::walks() const {
     return (flies() || swims() || sails()) ? false : true;
 }
 
-bool Creature::divides() const       { return (mattr & MATTR_DIVIDES) ? true : false; }
+bool Creature::divides() const       { return mattr & MATTR_DIVIDES; }
+bool Creature::spawnsOnDeath() const { return mattr & MATTR_SPAWNSONDEATH; }
 bool Creature::canMoveOntoCreatures() const { return (movementAttr & MATTR_CANMOVECREATURES) ? true : false; }
 bool Creature::canMoveOntoPlayer() const   { return (movementAttr & MATTR_CANMOVEAVATAR) ? true : false; }
 
@@ -719,10 +725,25 @@ bool Creature::divide() {
         coords.move(d, map);
 
         /* create our new creature! */
-        map->addCreature(this, coords);                
+        map->addCreature(this, coords);
         return true;
     }
     return false;
+}
+
+bool Creature::spawnOnDeath() {
+    Map *map = getMap();
+
+    /* this is a game enhancement, make sure it's turned on! */
+    if (!settings.enhancements || !settings.enhancementsOptions.gazerSpawnsInsects)
+        return false;
+    
+    /* make sure there's a place to put the divided creature! */
+    MapCoords coords(getCoords());
+        
+    /* create our new creature! */
+    map->addCreature(creatureMgr->getById(spawn), coords);                
+    return true;
 }
 
 StatusType Creature::getStatus() const {
@@ -839,10 +860,18 @@ bool Creature::applyDamage(int damage, bool byplayer) {
     switch (getState()) {
 
     case MSTAT_DEAD:        
-      if (byplayer)
-        screenMessage("%s Killed!\nExp. %d\n", name.c_str(), xp);        
-      else
-        screenMessage("%s Killed!\n", name.c_str());        
+        if (byplayer)
+            screenMessage("%s Killed!\nExp. %d\n", name.c_str(), xp);        
+        else
+            screenMessage("%s Killed!\n", name.c_str());        
+
+        /*
+         * the creature is dead; let it spawns something else on
+         * death (e.g. a gazer that spawns insects like in u5)
+         * then remove it
+         */
+        if (spawnsOnDeath())
+            spawnOnDeath();
 
         // Remove yourself from the map
         remove();
@@ -868,6 +897,11 @@ bool Creature::applyDamage(int damage, bool byplayer) {
         screenMessage("%s\nBarely Wounded!\n", name.c_str());
         break;
     }
+
+    /* creature is still alive and has the chance to divide - xu4 enhancement */
+    if (divides() && xu4_random(2) == 0)
+        divide();
+
     return true;
 }
 

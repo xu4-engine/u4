@@ -556,10 +556,6 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
         /* apply the damage to the creature */
         if (!attacker->dealDamage(creature, attacker->getDamage()))
             creature = NULL;
-
-        /* creature is still alive and has the chance to divide - xu4 enhancement */
-        if (xu4_random(2) == 0 && creature && creature->divides())
-            creature->divide();
     }
 
     return true;
@@ -1077,7 +1073,9 @@ void CombatController::attack() {
 
     bool foundTarget = false;
     int targetDistance = path.size();
-    Coords targetCoords = path[path.size() - 1];
+    Coords targetCoords(attacker->getCoords());
+    if (path.size() > 0)
+        targetCoords = path.back();
 
     int distance = 1;
     for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
@@ -1101,7 +1099,7 @@ void CombatController::attack() {
     const Tile *ground = map->tileTypeAt(targetCoords, WITHOUT_OBJECTS);
     if (!weapon->leavesTile().empty() && ground->isWalkable() &&
         (!foundTarget || targetDistance == range))
-        map->annotations->add(path[path.size() - 1], map->tileset->getByName(weapon->leavesTile())->id);
+        map->annotations->add(targetCoords, map->tileset->getByName(weapon->leavesTile())->id);
 
     /* show the 'miss' tile */
     if (!foundTarget) {
