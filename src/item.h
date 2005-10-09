@@ -23,10 +23,10 @@ struct ItemLocation {
     const char *name;
     const char *shortname;
     const char *locationLabel;
-    bool (*isItemInInventory)(void *);
-    void (*putItemInInventory)(void *);
-    void (*useItem)(void *);
-    void *data;
+    bool (*isItemInInventory)(int item);
+    void (*putItemInInventory)(int item);
+    void (*useItem)(int item);
+    int data;
     unsigned char conditions;
 };
 

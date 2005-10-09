@@ -37,163 +37,163 @@ void itemSetDestroyAllCreaturesCallback(DestroyAllCreaturesCallback callback) {
 int needStoneNames = 0;
 unsigned char stoneMask = 0;
 
-bool isRuneInInventory(void *virt);
-void putRuneInInventory(void *virt);
-bool isStoneInInventory(void *virt);
-void putStoneInInventory(void *virt);
-bool isItemInInventory(void *item);
-bool isSkullInInventory(void *item);
-void putItemInInventory(void *item);
-void useBBC(void *item);
-void useHorn(void *item);
-void useWheel(void *item);
-void useSkull(void *item);
-void useStone(void *item);
-void useKey(void *item);
-bool isMysticInInventory(void *mystic);
-void putMysticInInventory(void *mystic);
-bool isWeaponInInventory(void *weapon);
-void putWeaponInInventory(void *weapon);
-void useTelescope(void *notused);
-bool isReagentInInventory(void *reag);
-void putReagentInInventory(void *reag);
+bool isRuneInInventory(int virt);
+void putRuneInInventory(int virt);
+bool isStoneInInventory(int virt);
+void putStoneInInventory(int virt);
+bool isItemInInventory(int item);
+bool isSkullInInventory(int item);
+void putItemInInventory(int item);
+void useBBC(int item);
+void useHorn(int item);
+void useWheel(int item);
+void useSkull(int item);
+void useStone(int item);
+void useKey(int item);
+bool isMysticInInventory(int mystic);
+void putMysticInInventory(int mystic);
+bool isWeaponInInventory(int weapon);
+void putWeaponInInventory(int weapon);
+void useTelescope(int notused);
+bool isReagentInInventory(int reag);
+void putReagentInInventory(int reag);
 bool isAbyssOpened(const Portal *p);
 void itemHandleStones(const string &color);
 void itemHandleVirtues(const string &virtue);
 
 static const ItemLocation items[] = {
     { "Mandrake Root", NULL, "mandrake1",
-      &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
+      &isReagentInInventory, &putReagentInInventory, NULL, REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
     { "Mandrake Root", NULL, "mandrake2",
-      &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
+      &isReagentInInventory, &putReagentInInventory, NULL, REAG_MANDRAKE, SC_NEWMOONS | SC_REAGENTDELAY },
     { "Nightshade", NULL, "nightshade1",
-      &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY},
+      &isReagentInInventory, &putReagentInInventory, NULL, REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY},
     { "Nightshade", NULL, "nightshade2",
-      &isReagentInInventory, &putReagentInInventory, NULL, (void *) REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY },    
+      &isReagentInInventory, &putReagentInInventory, NULL, REAG_NIGHTSHADE, SC_NEWMOONS | SC_REAGENTDELAY },    
     { "the Bell of Courage", "bell", "bell",
-      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_BELL, 0 },
+      &isItemInInventory, &putItemInInventory, &useBBC, ITEM_BELL, 0 },
     { "the Book of Truth", "book", "book",
-      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_BOOK, 0 },
+      &isItemInInventory, &putItemInInventory, &useBBC, ITEM_BOOK, 0 },
     { "the Candle of Love", "candle", "candle",
-      &isItemInInventory, &putItemInInventory, &useBBC, (void *) ITEM_CANDLE, 0 },    
+      &isItemInInventory, &putItemInInventory, &useBBC, ITEM_CANDLE, 0 },    
     { "A Silver Horn", "horn", "horn",
-      &isItemInInventory, &putItemInInventory, &useHorn, (void *) ITEM_HORN, 0 },
+      &isItemInInventory, &putItemInInventory, &useHorn, ITEM_HORN, 0 },
     { "the Wheel from the H.M.S. Cape", "wheel", "wheel",
-      &isItemInInventory, &putItemInInventory, &useWheel, (void *) ITEM_WHEEL, 0 },
+      &isItemInInventory, &putItemInInventory, &useWheel, ITEM_WHEEL, 0 },
     { "the Skull of Modain the Wizard", "skull", "skull",
-      &isSkullInInventory, &putItemInInventory, &useSkull, (void *) ITEM_SKULL, SC_NEWMOONS },
+      &isSkullInInventory, &putItemInInventory, &useSkull, ITEM_SKULL, SC_NEWMOONS },
     { "the Red Stone", "red", "redstone",
-      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_RED, 0 },
+      &isStoneInInventory, &putStoneInInventory, &useStone, STONE_RED, 0 },
     { "the Orange Stone", "orange", "orangestone",
-      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_ORANGE, 0 },
+      &isStoneInInventory, &putStoneInInventory, &useStone, STONE_ORANGE, 0 },
     { "the Yellow Stone", "yellow", "yellowstone",
-      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_YELLOW, 0 },
+      &isStoneInInventory, &putStoneInInventory, &useStone, STONE_YELLOW, 0 },
     { "the Green Stone", "green", "greenstone",
-      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_GREEN, 0 },
+      &isStoneInInventory, &putStoneInInventory, &useStone, STONE_GREEN, 0 },
     { "the Blue Stone", "blue", "bluestone",
-      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_BLUE, 0 },
+      &isStoneInInventory, &putStoneInInventory, &useStone, STONE_BLUE, 0 },
     { "the Purple Stone", "purple", "purplestone",
-      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_PURPLE, 0 },
+      &isStoneInInventory, &putStoneInInventory, &useStone, STONE_PURPLE, 0 },
     { "the Black Stone", "black", "blackstone",
-      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_BLACK, SC_NEWMOONS },
+      &isStoneInInventory, &putStoneInInventory, &useStone, STONE_BLACK, SC_NEWMOONS },
     { "the White Stone", "white", "whitestone",
-      &isStoneInInventory, &putStoneInInventory, &useStone, (void *) STONE_WHITE, 0 },
+      &isStoneInInventory, &putStoneInInventory, &useStone, STONE_WHITE, 0 },
 
     /* handlers for using generic objects */
-    { NULL, "stone",  NULL, &isStoneInInventory, NULL, &useStone, NULL, 0 },
-    { NULL, "stones", NULL, &isStoneInInventory, NULL, &useStone, NULL, 0 },
-    { NULL, "key",    NULL, &isItemInInventory, NULL, &useKey, (void *)(ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T), 0 },
-    { NULL, "keys",   NULL, &isItemInInventory, NULL, &useKey, (void *)(ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T), 0 },    
+    { NULL, "stone",  NULL, &isStoneInInventory, NULL, &useStone, -1, 0 },
+    { NULL, "stones", NULL, &isStoneInInventory, NULL, &useStone, -1, 0 },
+    { NULL, "key",    NULL, &isItemInInventory, NULL, &useKey, (ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T), 0 },
+    { NULL, "keys",   NULL, &isItemInInventory, NULL, &useKey, (ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T), 0 },    
     
     /* Lycaeum telescope */
-    { NULL, NULL, "telescope", NULL, &useTelescope, NULL, NULL, 0 },
+    { NULL, NULL, "telescope", NULL, &useTelescope, NULL, 0, 0 },
 
     { "Mystic Armor", NULL, "mysticarmor",
-      &isMysticInInventory, &putMysticInInventory, NULL, (void *) ARMR_MYSTICROBES, SC_FULLAVATAR },
+      &isMysticInInventory, &putMysticInInventory, NULL, ARMR_MYSTICROBES, SC_FULLAVATAR },
     { "Mystic Swords", NULL, "mysticswords",
-      &isMysticInInventory, &putMysticInInventory, NULL, (void *) WEAP_MYSTICSWORD, SC_FULLAVATAR },
+      &isMysticInInventory, &putMysticInInventory, NULL, WEAP_MYSTICSWORD, SC_FULLAVATAR },
     { "Laser Gun", NULL, "lasergun", // lol, where'd that come from?
-      &isWeaponInInventory, &putWeaponInInventory, NULL, (void *)16 },
+      &isWeaponInInventory, &putWeaponInInventory, 0, 16 },
     { "the rune of Honesty", NULL, "honestyrune",
-      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_HONESTY, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, RUNE_HONESTY, 0 },
     { "the rune of Compassion", NULL, "compassionrune",
-      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_COMPASSION, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, RUNE_COMPASSION, 0 },
     { "the rune of Valor", NULL, "valorrune",
-      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_VALOR, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, RUNE_VALOR, 0 },
     { "the rune of Justice", NULL, "justicerune",
-      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_JUSTICE, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, RUNE_JUSTICE, 0 },
     { "the rune of Sacrifice", NULL, "sacrificerune",
-      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_SACRIFICE, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, RUNE_SACRIFICE, 0 },
     { "the rune of Honor", NULL, "honorrune",
-      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_HONOR, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, RUNE_HONOR, 0 },
     { "the rune of Spirituality", NULL, "spiritualityrune",
-      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_SPIRITUALITY, 0 },
+      &isRuneInInventory, &putRuneInInventory, NULL, RUNE_SPIRITUALITY, 0 },
     { "the rune of Humility", NULL, "humilityrune",
-      &isRuneInInventory, &putRuneInInventory, NULL, (void *) RUNE_HUMILITY, 0 }
+      &isRuneInInventory, &putRuneInInventory, NULL, RUNE_HUMILITY, 0 }
 };
 
 #define N_ITEMS (sizeof(items) / sizeof(items[0]))
 
-bool isRuneInInventory(void *virt) {
-    return c->saveGame->runes & (int)virt;
+bool isRuneInInventory(int virt) {
+    return c->saveGame->runes & virt;
 }
 
-void putRuneInInventory(void *virt) {
+void putRuneInInventory(int virt) {
     c->party->member(0)->awardXp(100);    
     c->party->adjustKarma(KA_FOUND_ITEM);
-    c->saveGame->runes |= (int)virt;
+    c->saveGame->runes |= virt;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
-bool isStoneInInventory(void *virt) {
+bool isStoneInInventory(int virt) {
     /* generic test: does the party have any stones yet? */
-    if (virt == NULL) 
+    if (virt == -1) 
         return (c->saveGame->stones > 0);
     /* specific test: does the party have a specific stone? */
-    else return c->saveGame->stones & (int)virt;
+    else return c->saveGame->stones & virt;
 }
 
-void putStoneInInventory(void *virt) {
+void putStoneInInventory(int virt) {
     c->party->member(0)->awardXp(200);
     c->party->adjustKarma(KA_FOUND_ITEM);
-    c->saveGame->stones |= (int)virt;
+    c->saveGame->stones |= virt;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
-bool isItemInInventory(void *item) {
-    return c->saveGame->items & (int)item;
+bool isItemInInventory(int item) {
+    return c->saveGame->items & item;
 }
 
-bool isSkullInInventory(void *) {
+bool isSkullInInventory(int unused) {
     return (c->saveGame->items & (ITEM_SKULL | ITEM_SKULL_DESTROYED));
 }
 
-void putItemInInventory(void *item) {
+void putItemInInventory(int item) {
     c->party->member(0)->awardXp(400);
     c->party->adjustKarma(KA_FOUND_ITEM);
-    c->saveGame->items |= (int)item;
+    c->saveGame->items |= item;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
 /**
  * Use bell, book, or candle on the entrance to the Abyss
  */
-void useBBC(void *item) {
+void useBBC(int item) {
     Coords abyssEntrance(0xe9, 0xe9);
     /* on top of the Abyss entrance */
     if (c->location->coords == abyssEntrance) {
         /* must use bell first */
-        if ((int)item == ITEM_BELL) {
+        if (item == ITEM_BELL) {
             screenMessage("\nThe Bell rings on and on!\n");
             c->saveGame->items |= ITEM_BELL_USED;
         }
         /* then the book */
-        else if (((int)item == ITEM_BOOK) && (c->saveGame->items & ITEM_BELL_USED)) {
+        else if ((item == ITEM_BOOK) && (c->saveGame->items & ITEM_BELL_USED)) {
             screenMessage("\nThe words resonate with the ringing!\n");
             c->saveGame->items |= ITEM_BOOK_USED;
         }
         /* then the candle */
-        else if (((int)item == ITEM_CANDLE) && (c->saveGame->items & ITEM_BOOK_USED)) {
+        else if ((item == ITEM_CANDLE) && (c->saveGame->items & ITEM_BOOK_USED)) {
             screenMessage("\nAs you light the Candle the Earth Trembles!\n");    
             c->saveGame->items |= ITEM_CANDLE_USED;
         }
@@ -206,7 +206,7 @@ void useBBC(void *item) {
 /**
  * Uses the silver horn
  */
-void useHorn(void *item) {
+void useHorn(int item) {
     screenMessage("\nThe Horn sounds an eerie tone!\n");
     c->aura->set(Aura::HORN, 10);    
 }
@@ -214,7 +214,7 @@ void useHorn(void *item) {
 /**
  * Uses the wheel (if on board a ship)
  */
-void useWheel(void *item) {
+void useWheel(int item) {
     if ((c->transportContext == TRANSPORT_SHIP) && (c->saveGame->shiphull == 50)) {
         screenMessage("\nOnce mounted, the Wheel glows with a blue light!\n");
         c->party->setShipHull(99);
@@ -225,7 +225,7 @@ void useWheel(void *item) {
 /**
  * Uses or destroys the skull of Mondain
  */
-void useSkull(void *item) {
+void useSkull(int item) {
     /* FIXME: check to see if the abyss must be opened first
        for the skull to be *able* to be destroyed */
 
@@ -253,9 +253,9 @@ void useSkull(void *item) {
 /**
  * Handles using the virtue stones in dungeon altar rooms and on dungeon altars
  */
-void useStone(void *item) {
+void useStone(int item) {
     MapCoords coords;
-    unsigned char stone = (unsigned char)((int)item);
+    unsigned char stone = static_cast<unsigned char>(item);
     
     unsigned char truth   = STONE_WHITE | STONE_PURPLE | STONE_GREEN  | STONE_BLUE;
     unsigned char love    = STONE_WHITE | STONE_YELLOW | STONE_GREEN  | STONE_ORANGE;
@@ -267,7 +267,7 @@ void useStone(void *item) {
     /**
      * Named a specific stone (after using "stone" or "stones")
      */    
-    if (item != NULL) {
+    if (item != -1) {
         CombatMap *cm = getCombatMap();
 
         if (needStoneNames) {
@@ -378,11 +378,11 @@ void useStone(void *item) {
     // That doesn't match U4DOS; does it match another?
 }
 
-void useKey(void *item) {
+void useKey(int item) {
     screenMessage("\nNo place to Use them!\n");
 }
 
-bool isMysticInInventory(void *mystic) {
+bool isMysticInInventory(int mystic) {
     /* FIXME: you could feasibly get more mystic weapons and armor if you
        have 8 party members and equip them all with everything,
        then search for Mystic Weapons/Armor again 
@@ -393,45 +393,44 @@ bool isMysticInInventory(void *mystic) {
        This would be a good candidate for an xu4 "extended" savegame
        format.
     */
-    if (((int)mystic) == WEAP_MYSTICSWORD)
+    if (mystic == WEAP_MYSTICSWORD)
         return c->saveGame->weapons[WEAP_MYSTICSWORD] > 0;
-    else if (((int)mystic) == ARMR_MYSTICROBES)
+    else if (mystic == ARMR_MYSTICROBES)
         return c->saveGame->armor[ARMR_MYSTICROBES] > 0;
     else
         ASSERT(0, "Invalid mystic item was tested in isMysticInInventory()");    
     return false;
 }
 
-void putMysticInInventory(void *mystic) {
+void putMysticInInventory(int mystic) {
     c->party->member(0)->awardXp(400);
     c->party->adjustKarma(KA_FOUND_ITEM);
-    if (((int)mystic) == WEAP_MYSTICSWORD)
+    if (mystic == WEAP_MYSTICSWORD)
         c->saveGame->weapons[WEAP_MYSTICSWORD] += 8;
-    else if (((int)mystic) == ARMR_MYSTICROBES)
+    else if (mystic == ARMR_MYSTICROBES)
         c->saveGame->armor[ARMR_MYSTICROBES] += 8;
     else
         ASSERT(0, "Invalid mystic item was added in putMysticInInventory()");        
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
-bool isWeaponInInventory(void *weapon) {
-    if (c->saveGame->weapons[(int)weapon])
+bool isWeaponInInventory(int weapon) {
+    if (c->saveGame->weapons[weapon])
         return true;
     else {
-        int i;
-        for (i = 0; i < c->party->size(); i++) {
-            if (c->party->member(i)->getWeapon() == (int)weapon)
+        for (int i = 0; i < c->party->size(); i++) {
+            if (c->party->member(i)->getWeapon() == weapon)
                 return true;
         }
     }
     return false;
 }
 
-void putWeaponInInventory(void *weapon) {
-    c->saveGame->weapons[(int)weapon]++;
+void putWeaponInInventory(int weapon) {
+    c->saveGame->weapons[weapon]++;
 }
 
-void useTelescope(void *notused) {
+void useTelescope(int notused) {
     screenMessage("You see a knob\non the telescope\nmarked A-P\nYou Select:");
     int choice = AlphaActionController::get('p', "You Select:");
 
@@ -441,17 +440,17 @@ void useTelescope(void *notused) {
     gamePeerCity(choice, NULL);
 }
 
-bool isReagentInInventory(void *reag) {
+bool isReagentInInventory(int reag) {
     return false;
 }
 
-void putReagentInInventory(void *reag) {
+void putReagentInInventory(int reag) {
     c->party->adjustKarma(KA_FOUND_ITEM);
-    c->saveGame->reagents[(int)reag] += xu4_random(8) + 2;
+    c->saveGame->reagents[reag] += xu4_random(8) + 2;
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 
-    if (c->saveGame->reagents[(int)reag] > 99) {
-        c->saveGame->reagents[(int)reag] = 99;
+    if (c->saveGame->reagents[reag] > 99) {
+        c->saveGame->reagents[reag] = 99;
         screenMessage("Dropped some!\n");
     }
 }
@@ -510,7 +509,7 @@ void itemUse(const string &shortname) {
             item = &items[i];
 
             /* item name found, see if we have that item in our inventory */
-            if (!(*items[i].isItemInInventory) || (*items[i].isItemInInventory)(items[i].data)) {       
+            if (!(*items[i].isItemInInventory) || (*items[i].isItemInInventory)(items[i].data)) {
 
                 /* use the item, if we can! */
                 if (!item || !item->useItem)
@@ -548,13 +547,12 @@ bool isAbyssOpened(const Portal *p) {
  * Handles naming of stones when used
  */
 void itemHandleStones(const string &color) {
-    int i;
-    int found = 0;    
+    bool found = false;
 
-    for (i = 0; i < 8; i++) {        
+    for (int i = 0; i < 8; i++) {        
         if (strcasecmp(color.c_str(), getStoneName((Virtue)i)) == 0 &&
-            isStoneInInventory((void *)(1<<i))) {
-            found = 1;
+            isStoneInInventory(1<<i)) {
+            found = true;
             itemUse(color.c_str());
         }
     }
