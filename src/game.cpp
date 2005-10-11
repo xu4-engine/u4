@@ -1115,7 +1115,7 @@ bool GameController::keyPressed(int key) {
                     else {                    
                         if (item->name)
                             screenMessage("You find...\n%s!\n", item->name);
-                        (*item->putItemInInventory)(item->data);                    
+                        (*item->putItemInInventory)(item->data);
                     }
                 } else
                     screenMessage("Nothing Here!\n");
@@ -1555,26 +1555,26 @@ bool attackAt(const Coords &coords) {
 }
 
 void board() {
-    Object *obj = c->location->map->objectAt(c->location->coords);
-
     if (c->transportContext != TRANSPORT_FOOT) {
         screenMessage("Board: Can't!\n");
         return;
     }
 
+    Object *obj = c->location->map->objectAt(c->location->coords);
     if (!obj) {
         screenMessage("Board What?\n");
         return;
     }
 
-    if (obj->getTile().getTileType()->isShip()) {
+    const Tile *tile = obj->getTile().getTileType();
+    if (tile->isShip()) {
         screenMessage("Board Frigate!\n");
         if (c->lastShip != obj)
-            c->party->setShipHull(50);                    
+            c->party->setShipHull(50);
     }
-    else if (obj->getTile().getTileType()->isHorse())
+    else if (tile->isHorse())
         screenMessage("Mount Horse!\n");
-    else if (obj->getTile().getTileType()->isBalloon())
+    else if (tile->isBalloon())
         screenMessage("Board Balloon!\n");
     else {
         screenMessage("Board What?\n");
@@ -2952,7 +2952,7 @@ void gameFixupObjects(Map *map) {
                 if (creature)
                     obj = map->addCreature(creature, coords);
                 else {
-                    fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", map->tileset->get(tile.id)->getName().c_str());
+                    fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", tile.getTileType()->getName().c_str());
                     obj = map->addObject(tile, oldTile, coords);
                 }
             }
