@@ -4,6 +4,7 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <cctype>
 #include <list>
 
 #include "event.h"
@@ -16,6 +17,8 @@
 #include "screen.h"
 #include "settings.h"
 #include "textview.h"
+
+using namespace std;
 
 int eventTimerGranularity = 250;
 

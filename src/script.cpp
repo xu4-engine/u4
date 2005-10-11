@@ -4,6 +4,7 @@
     
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <cctype>
 #include <map>
 #include <string>
 #include "script.h"
@@ -30,7 +31,7 @@
 #include "weapon.h"
 #include "xml.h"
 
-using std::string;
+using namespace std;
 
 /*
  * Script::Variable class

@@ -4,9 +4,10 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <cctype>
+#include <ctime>
 #include <map>
 
-#include <ctime>
 #include "u4.h"
 
 #include "game.h"
@@ -52,6 +53,8 @@
 #include "utils.h"
 #include "script.h"
 #include "weapon.h"
+
+using namespace std;
 
 GameController *game = NULL;
 

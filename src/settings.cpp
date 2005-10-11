@@ -4,6 +4,8 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <cctype>
+
 #include "settings.h"
 
 #include "debug.h"
@@ -17,7 +19,7 @@
 #include <shlobj.h>
 #endif
 
-using std::vector;
+using namespace std;
 
 /*
  * Initialize static members

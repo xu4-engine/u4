@@ -4,8 +4,9 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
-#include <vector>
+#include <cctype>
 #include <string>
+#include <vector>
 
 #include "u4.h"
 
@@ -29,8 +30,7 @@
 #include "utils.h"
 #include "script.h"
 
-using std::string;
-using std::vector;
+using namespace std;
 
 vector<string> hawkwindText;
 vector<string> lbKeywords;
