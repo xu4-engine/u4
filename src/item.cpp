@@ -12,7 +12,6 @@
 #include "context.h"
 #include "debug.h"
 #include "dungeon.h"
-#include "event.h"
 #include "game.h"
 #include "location.h"
 #include "map.h"
@@ -59,7 +58,6 @@ bool isReagentInInventory(int reag);
 void putReagentInInventory(int reag);
 bool isAbyssOpened(const Portal *p);
 void itemHandleStones(const string &color);
-void itemHandleVirtues(const string &virtue);
 
 static const ItemLocation items[] = {
     { "Mandrake Root", NULL, "mandrake1",
@@ -360,7 +358,18 @@ void useStone(int item) {
             screenMessage("\n\nAs thou doth approach, a voice rings out: What virtue dost stem from %s?\n\n", getBaseVirtueName(virtueMask));
         else screenMessage("\n\nA voice rings out:  What virtue exists independently of Truth, Love, and Courage?\n\n");
 
-        itemHandleVirtues(gameGetInput());
+        string virtue = gameGetInput();
+
+        if (strncasecmp(virtue.c_str(), getVirtueName((Virtue)c->location->coords.z), 6) == 0) {
+            /* now ask for stone */
+            screenMessage("\n\nThe Voice says: Use thy Stone.\n\nColor:\n");
+            needStoneNames = 1;
+
+            itemHandleStones(gameGetInput());
+        }
+        else {
+            screenMessage("\nHmm...No effect!\n");
+        }
     }
 
     /**
@@ -560,24 +569,5 @@ void itemHandleStones(const string &color) {
     if (!found) {
         screenMessage("\nNone owned!\n");
         stoneMask = 0; /* make sure stone mask is reset */
-    }
-}
-
-/**
- * Handles naming of virtues when you use a stone on an altar in the Abyss
- */
-void itemHandleVirtues(const string &virtue) {
-    eventHandler->popKeyHandler();
-        
-    if (strncasecmp(virtue.c_str(), getVirtueName((Virtue)c->location->coords.z), 6) == 0) {
-        /* now ask for stone */
-        screenMessage("\n\nThe Voice says: Use thy Stone.\n\nColor:\n");
-        needStoneNames = 1;
-
-        itemHandleStones(gameGetInput());
-    }
-    else {
-        screenMessage("\nHmm...No effect!\n");
-        (*c->location->finishTurn)();
     }
 }
