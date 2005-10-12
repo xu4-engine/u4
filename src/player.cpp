@@ -1182,6 +1182,31 @@ int Party::getActivePlayer() const {
     return activePlayer;
 }
 
+void Party::swapPlayers(int p1, int p2) {
+    ASSERT(p1 < saveGame->members, "p1 out of range: %d", p1);
+    ASSERT(p2 < saveGame->members, "p2 out of range: %d", p2);
+
+    SaveGamePlayerRecord tmp = saveGame->players[p1];
+    saveGame->players[p1] = c->saveGame->players[p2];
+    c->saveGame->players[p2] = tmp;
+
+    members.clear();
+    for (int i = 0; i < saveGame->members; i++) {
+        // add the members to the party
+        members.push_back(new PartyMember(this, &saveGame->players[i]));
+    }    
+
+    if (p1 == activePlayer)
+        activePlayer = p2;
+    else if (p2 == activePlayer)
+        activePlayer = p1;
+
+    setChanged();
+    PartyEvent event(PartyEvent::GENERIC);
+    notifyObservers(event);
+}
+
+
 /**
  * Returns the size of the party
  */

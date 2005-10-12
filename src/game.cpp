@@ -49,6 +49,7 @@
 #include "sound.h"
 #include "spell.h"
 #include "stats.h"
+#include "tilemap.h"
 #include "tileset.h"
 #include "utils.h"
 #include "script.h"
@@ -286,7 +287,7 @@ void GameController::init() {
     }
 
     /* set the party's transport */
-    c->party->setTransport(c->location->map->translateFromRawTileIndex(c->saveGame->transport));
+    c->party->setTransport(TileMap::get("base")->translate(c->saveGame->transport));
 
     spellSetEffectCallback(&gameSpellEffect);
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
@@ -2459,14 +2460,7 @@ void newOrder() {
         return;
     }
 
-    SaveGamePlayerRecord tmp = c->saveGame->players[player1];
-    c->saveGame->players[player1] = c->saveGame->players[player2];
-    c->saveGame->players[player2] = tmp;
-
-    /* re-build the party */
-    delete c->party;
-    c->party = new Party(c->saveGame);
-    c->party->setTransport(c->location->map->translateFromRawTileIndex(c->saveGame->transport));
+    c->party->swapPlayers(player1, player2);
 }
 
 /**

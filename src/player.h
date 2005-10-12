@@ -24,7 +24,7 @@ typedef std::vector<class PartyMember *> PartyMemberVector;
 
 #define ALL_PLAYERS -1
 
-typedef enum {
+enum KarmaAction {
     KA_FOUND_ITEM,
     KA_STOLE_CHEST,    
     KA_GAVE_TO_BEGGAR,
@@ -46,9 +46,9 @@ typedef enum {
     KA_DIDNT_CHEAT_REAGENTS,
     KA_USED_SKULL,
     KA_DESTROYED_SKULL
-} KarmaAction;
+};
 
-typedef enum {
+enum HealType {
     HT_NONE,
     HT_CURE,
     HT_FULLHEAL,
@@ -56,9 +56,9 @@ typedef enum {
     HT_HEAL,
     HT_CAMPHEAL,
     HT_INNHEAL
-} HealType;
+};
 
-typedef enum {
+enum InventoryItem {
     INV_NONE,
     INV_WEAPON,
     INV_ARMOR,
@@ -66,13 +66,13 @@ typedef enum {
     INV_REAGENT,
     INV_GUILDITEM,
     INV_HORSE
-} InventoryItem;
+};
 
-typedef enum {    
+enum CannotJoinError {    
     JOIN_SUCCEEDED,
     JOIN_NOT_EXPERIENCED,
     JOIN_NOT_VIRTUOUS
-} CannotJoinError;
+};
 
 /**
  * PartyMember class
@@ -183,6 +183,8 @@ public:
     int reagents(int reagent) const;
     void setActivePlayer(int p);
     int getActivePlayer() const;
+
+    void swapPlayers(int p1, int p2);
 
     int size() const;
     PartyMember *member(int index) const;    
