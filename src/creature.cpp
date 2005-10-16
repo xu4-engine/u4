@@ -310,7 +310,20 @@ int Creature::setInitialHp(int points) {
 }
 
 void Creature::setRandomRanged() {
-    rangedhittile = rangedmisstile = Tileset::findTileByName("poison_field")->id + xu4_random(4);
+    switch(xu4_random(4)) {
+    case 0:
+        rangedhittile = rangedmisstile = "poison_field";
+        break;
+    case 1:
+        rangedhittile = rangedmisstile = "energy_field";
+        break;
+    case 2:
+        rangedhittile = rangedmisstile = "fire_field";
+        break;
+    case 3:
+        rangedhittile = rangedmisstile = "sleep_field";
+        break;
+    }
 }
 
 CreatureStatus Creature::getState() const {
