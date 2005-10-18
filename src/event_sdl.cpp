@@ -213,7 +213,6 @@ void TimedEventMgr::start() {
  * Constructs an event handler object. 
  */
 EventHandler::EventHandler() : timer(eventTimerGranularity), updateScreen(NULL) {
-    SDL_EnableUNICODE(1);
 }
 
 /**
