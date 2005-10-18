@@ -46,7 +46,8 @@ Scaler filterScaler;
 
 enum LayoutType {
     LAYOUT_STANDARD,
-    LAYOUT_GEM
+    LAYOUT_GEM,
+    LAYOUT_DUNGEONGEM
 };
 
 struct Layout {
@@ -141,6 +142,7 @@ const struct {
 void screenLoadGraphicsFromConf(void);
 Layout *screenLoadLayoutFromConf(const ConfigElement &conf);
 SDL_Cursor *screenInitCursor(char *xpm[]);
+void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y);
 
 vector<Layout *> layouts;
 vector<TileAnimSet *> tileanimSets;
@@ -150,6 +152,7 @@ Layout *gemlayout = NULL;
 TileAnimSet *tileanims = NULL;
 ImageInfo *charsetInfo = NULL;
 ImageInfo *gemTilesInfo = NULL;
+std::map<string, int> dungeonTileChars;
 
 extern bool verbose;
 
@@ -221,6 +224,22 @@ void screenInit() {
     }
     if (!tileanims)
         errorFatal("unable to find tile animations for \"%s\" video mode in graphics.xml", settings.videoType.c_str());
+
+    dungeonTileChars.clear();
+    dungeonTileChars["brick_floor"] = CHARSET_FLOOR;
+    dungeonTileChars["up_ladder"] = CHARSET_LADDER_UP;
+    dungeonTileChars["down_ladder"] = CHARSET_LADDER_DOWN;      
+    dungeonTileChars["up_down_ladder"] = CHARSET_LADDER_UPDOWN;
+    dungeonTileChars["chest"] = '$';
+    dungeonTileChars["ceiling_hole"] = CHARSET_FLOOR;
+    dungeonTileChars["floor_hole"] = CHARSET_FLOOR;
+    dungeonTileChars["magic_orb"] = CHARSET_ORB;
+    dungeonTileChars["ceiling_hole"] = 'T';
+    dungeonTileChars["fountain"] = 'F';
+    dungeonTileChars["secret_door"] = CHARSET_SDOOR;
+    dungeonTileChars["brick_wall"] = CHARSET_WALL;
+    dungeonTileChars["dungeon_door"] = CHARSET_ROOM;
+    dungeonTileChars["avatar"] = CHARSET_REDDOT;
 }
 
 void screenDelete() {
@@ -306,7 +325,7 @@ void screenLoadGraphicsFromConf() {
 
 Layout *screenLoadLayoutFromConf(const ConfigElement &conf) {
     Layout *layout;
-    static const char *typeEnumStrings[] = { "standard", "gem", NULL };
+    static const char *typeEnumStrings[] = { "standard", "gem", "dungeon_gem", NULL };
 
     layout = new Layout;
     layout->name = conf.getString("name");
@@ -439,7 +458,7 @@ void screenDrawImage(const string &name, int x, int y) {
         info = imageMgr->get(subimage->srcImageName);
 
         if (info) {
-            info->image->drawSubRect(x, y, 
+            info->image->drawSubRect(x, y,
                                      subimage->x * (scale / info->prescale),
                                      subimage->y * (scale / info->prescale),
                                      subimage->width * (scale / info->prescale),
@@ -483,7 +502,7 @@ void screenShowChar(int chr, int x, int y) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowGemTile(Map *map, MapTile &t, bool focus, int x, int y) {
+void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y) {
     // Make sure we account for tiles that look like other tiles (dungeon tiles, mainly)
     string looks_like = t.getTileType()->getLooksLike();
     if (!looks_like.empty())
@@ -491,26 +510,40 @@ void screenShowGemTile(Map *map, MapTile &t, bool focus, int x, int y) {
 
     unsigned int tile = map->translateToRawTileIndex(t);
 
-    if (gemTilesInfo == NULL) {
-        gemTilesInfo = imageMgr->get(BKGD_GEMTILES);
-        if (!gemTilesInfo)
-            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+    if (map->type == Map::DUNGEON) {
+        ASSERT(charsetInfo, "charset not initialized");
+        std::map<string, int>::iterator charIndex = dungeonTileChars.find(t.getTileType()->getName());
+        if (charIndex != dungeonTileChars.end()) {
+            charsetInfo->image->drawSubRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
+                                            (layout->viewport.y + (y * layout->tileshape.height)) * scale,
+                                            0, 
+                                            charIndex->second * layout->tileshape.height * scale, 
+                                            layout->tileshape.width * scale,
+                                            layout->tileshape.height * scale);
+        }
     }
+    else {
+        if (gemTilesInfo == NULL) {
+            gemTilesInfo = imageMgr->get(BKGD_GEMTILES);
+            if (!gemTilesInfo)
+                errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+        }
 
-    if (tile < 128) {
-        gemTilesInfo->image->drawSubRect((gemlayout->viewport.x + (x * gemlayout->tileshape.width)) * scale,
-                                         (gemlayout->viewport.y + (y * gemlayout->tileshape.height)) * scale,
-                                         0, 
-                                         tile * gemlayout->tileshape.height * scale, 
-                                         gemlayout->tileshape.width * scale,
-                                         gemlayout->tileshape.height * scale);
-    } else {
-        Image *screen = imageMgr->get("screen")->image;
-        screen->fillRect((gemlayout->viewport.x + (x * gemlayout->tileshape.width)) * scale,
-                         (gemlayout->viewport.y + (y * gemlayout->tileshape.height)) * scale,
-                         gemlayout->tileshape.width * scale,
-                         gemlayout->tileshape.height * scale,
-                         0, 0, 0);
+        if (tile < 128) {
+            gemTilesInfo->image->drawSubRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
+                                             (layout->viewport.y + (y * layout->tileshape.height)) * scale,
+                                             0, 
+                                             tile * layout->tileshape.height * scale, 
+                                             layout->tileshape.width * scale,
+                                             layout->tileshape.height * scale);
+        } else {
+            Image *screen = imageMgr->get("screen")->image;
+            screen->fillRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
+                             (layout->viewport.y + (y * layout->tileshape.height)) * scale,
+                             layout->tileshape.width * scale,
+                             layout->tileshape.height * scale,
+                             0, 0, 0);
+        }
     }
 }
 
@@ -663,24 +696,39 @@ void screenRedrawTextArea(int x, int y, int width, int height) {
     SDL_UpdateRect(SDL_GetVideoSurface(), x * CHAR_WIDTH * scale, y * CHAR_HEIGHT * scale, width * CHAR_WIDTH * scale, height * CHAR_HEIGHT * scale);
 }
 
+Layout *screenGetGemLayout(const Map *map) {
+    if (map->type == Map::DUNGEON) {
+        std::vector<Layout *>::const_iterator i;
+        for (i = layouts.begin(); i != layouts.end(); i++) {
+            Layout *layout = *i;
+
+            if (layout->type == LAYOUT_DUNGEONGEM)
+                return layout;
+        }
+        errorFatal("no dungeon gem layout found!\n");
+        return NULL;
+    }
+    else
+        return gemlayout;
+}
+
 void screenGemUpdate() {
     MapTile tile;
     int x, y;
     Image *screen = imageMgr->get("screen")->image;
     
-    //const static MapTile black = Tileset::get()->getByName("black")->id;
-
     screen->fillRect(BORDER_WIDTH * scale, 
                      BORDER_HEIGHT * scale, 
                      VIEWPORT_W * TILE_WIDTH * scale, 
                      VIEWPORT_H * TILE_HEIGHT * scale,
                      0, 0, 0);
 
-    for (x = 0; x < gemlayout->viewport.width; x++) {
-        for (y = 0; y < gemlayout->viewport.height; y++) {
+    Layout *layout = screenGetGemLayout(c->location->map);
+    for (x = 0; x < layout->viewport.width; x++) {
+        for (y = 0; y < layout->viewport.height; y++) {
             bool focus;
-            tile = screenViewportTile(gemlayout->viewport.width, gemlayout->viewport.height, x, y, focus).front();
-            screenShowGemTile(c->location->map, tile, focus, x, y);
+            tile = screenViewportTile(layout->viewport.width, layout->viewport.height, x, y, focus).front();
+            screenShowGemTile(layout, c->location->map, tile, focus, x, y);
         }
     }
     screenRedrawMapArea();

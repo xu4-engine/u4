@@ -555,6 +555,11 @@
         <viewport x="8" y="8" width="44" height="44"/>
     </layout>
 
+    <layout type="dungeon_gem" name="Standard">
+        <tileshape width="8" height="8"/>
+        <viewport x="8" y="8" width="22" height="22"/>
+    </layout>
+
     <tileanimset name="EGA">
         <tileanim name="scroll">
             <transform type="scroll"/>
