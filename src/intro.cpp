@@ -981,8 +981,8 @@ void IntroController::updateVideoMenu(MenuEvent &event) {
                 /* FIXME: resize images, etc. */
                 screenReInit();
 
-                // Fix the menu since it was obliterated
-                runMenu(&confMenu, &menuArea, true);
+                // go back to menu mode
+                mode = INTRO_MENU;
             }        
             break;
         case CANCEL:
