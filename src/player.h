@@ -16,7 +16,9 @@
 #include "tile.h"
 #include "types.h"
 
+class Armor;
 class Party;
+class Weapon;
 
 using std::string;
 
@@ -74,6 +76,12 @@ enum CannotJoinError {
     JOIN_NOT_VIRTUOUS
 };
 
+enum EquipError {
+    EQUIP_SUCCEEDED,
+    EQUIP_NONE_LEFT,
+    EQUIP_CLASS_RESTRICTED
+};
+
 /**
  * PartyMember class
  */ 
@@ -96,8 +104,8 @@ public:
     int getInt() const;
     int getMp() const;
     int getMaxMp() const;
-    WeaponType getWeapon() const;
-    ArmorType getArmor() const;
+    const Weapon *getWeapon() const;
+    const Armor *getArmor() const;
     virtual string getName() const;    
     SexType getSex() const;
     ClassType getClass() const;
@@ -114,8 +122,8 @@ public:
     virtual void removeStatus(StatusType status);
     virtual void setHp(int hp);
     void setMp(int mp);    
-    void setArmor(ArmorType a);
-    void setWeapon(WeaponType w);    
+    EquipError setArmor(const Armor *a);
+    EquipError setWeapon(const Weapon *w);    
     
     virtual bool applyDamage(int damage, bool byplayer = false);    
     virtual bool attackHit(Creature *m);

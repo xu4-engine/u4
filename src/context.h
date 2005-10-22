@@ -15,7 +15,6 @@
 #include "savegame.h"
 
 class CombatController;
-class Conversation;
 class Location;
 class Object;
 class Party;
@@ -44,7 +43,6 @@ public:
     SaveGame *saveGame;
     CombatController *combat;
     class Location *location;
-    Conversation *conversation;
     int line, col;
     StatsArea *stats;
     int moonPhase;

@@ -81,7 +81,7 @@ void newOrder();
 
 /* conversation functions */
 bool talkAt(const Coords &coords);
-void talkRunConversation(Person *talker, bool showPrompt);
+void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt);
 
 /* action functions */
 bool attackAt(const Coords &coords);
@@ -89,7 +89,7 @@ bool destroyAt(const Coords &coords);
 bool getChestTrapHandler(int player);
 bool jimmyAt(const Coords &coords);
 bool openAt(const Coords &coords);
-void wearArmor(int player = -1, ArmorType armor = ARMR_MAX);
+void wearArmor(int player = -1);
 void ztatsFor(int player = -1);
 
 /* checking functions */
@@ -195,7 +195,6 @@ void GameController::init() {
     /* initialize the global game context */
     c = new Context;
     c->saveGame = new SaveGame;
-    c->conversation = new Conversation;
 
     TRACE_LOCAL(gameDbg, "Global context initialized.");
 
@@ -311,12 +310,6 @@ void GameController::init() {
     c->party->addObserver(c->stats);
     
     eventHandler->setScreenUpdate(&gameUpdateScreen);
-
-    TRACE_LOCAL(gameDbg, "Setting up script information providers.");
-
-    Script *script = c->conversation->script;
-    script->addProvider("party", c->party);
-    script->addProvider("context", c);
 
     TRACE(gameDbg, "gameInit() completed successfully."); 
 }
@@ -2244,7 +2237,7 @@ bool openAt(const Coords &coords) {
  * Readies a weapon for a player.  Prompts for the player and/or the
  * weapon if not provided.
  */
-void readyWeapon(int player, WeaponType weapon) {
+void readyWeapon(int player) {
 
     // get the player if not provided
     if (player == -1) {
@@ -2254,53 +2247,40 @@ void readyWeapon(int player, WeaponType weapon) {
             return;
     }
 
-    // get the weapon to use if not provided
-    if (weapon == WEAP_MAX) {
-        c->stats->setView(STATS_WEAPONS);
-        screenMessage("Weapon: ");
-        weapon = (WeaponType) AlphaActionController::get(WEAP_MAX + 'a' - 1, "Weapon: ");
-        c->stats->setView(STATS_PARTY_OVERVIEW);
-        if (weapon == -1)
-            return;
-    }
-
-    if (weapon != WEAP_HANDS && c->saveGame->weapons[weapon] < 1) {
-        screenMessage("None left!\n");
+    // get the weapon to use
+    c->stats->setView(STATS_WEAPONS);
+    screenMessage("Weapon: ");
+    WeaponType weapon = (WeaponType) AlphaActionController::get(WEAP_MAX + 'a' - 1, "Weapon: ");
+    c->stats->setView(STATS_PARTY_OVERVIEW);
+    if (weapon == -1)
         return;
-    }
 
-    const Weapon *w = Weapon::get((WeaponType) weapon);
     PartyMember *p = c->party->member(player);
+    const Weapon *w = Weapon::get(weapon);
 
-    if (!w->canReady(p->getClass())) {
+    switch (p->setWeapon(w)) {
+    case EQUIP_SUCCEEDED:
+        screenMessage("%s\n", w->getName().c_str());
+        break;
+    case EQUIP_NONE_LEFT:
+        screenMessage("None left!\n");
+        break;
+    case EQUIP_CLASS_RESTRICTED: {
         string indef_article;
 
         switch(tolower(w->getName()[0])) {
-        case 'a':
-        case 'e':
-        case 'i':
-        case 'o':
-        case 'u':
-        case 'y':
+        case 'a': case 'e': case 'i':
+        case 'o': case 'u': case 'y':
             indef_article = "an"; break;
-        default: indef_article = "a"; break;
+        default: 
+            indef_article = "a"; break;
         }
 
-        screenMessage("\nA %s may NOT use %s\n%s\n",
-            getClassName(p->getClass()),
-            indef_article.c_str(),
-            w->getName().c_str());
-        return;
+        screenMessage("\nA %s may NOT use %s\n%s\n", getClassName(p->getClass()),
+                      indef_article.c_str(), w->getName().c_str());
+        break;
     }
-
-    WeaponType oldWeapon = p->getWeapon();
-    if (oldWeapon != WEAP_HANDS)
-        c->saveGame->weapons[oldWeapon]++;
-    if (weapon != WEAP_HANDS)
-        c->saveGame->weapons[weapon]--;
-    p->setWeapon(weapon);
-
-    screenMessage("%s\n", w->getName().c_str());
+    }
 }
 
 void talk() {
@@ -2555,11 +2535,15 @@ bool talkAt(const Coords &coords) {
         gameSpellEffect('r', -1, SOUND_LBHEAL);
     }
     
-    c->conversation->state = Conversation::INTRO;
-    c->conversation->reply = talker->getConversationText(c->conversation, "");
-    c->conversation->playerInput.erase();
+    Conversation conv;
+    TRACE_LOCAL(gameDbg, "Setting up script information providers.");
+    conv.script->addProvider("party", c->party);
+    conv.script->addProvider("context", c);
 
-    talkRunConversation(talker, false);
+    conv.state = Conversation::INTRO;
+    conv.reply = talker->getConversationText(&conv, "");
+    conv.playerInput.erase();
+    talkRunConversation(conv, talker, false);
 
     return true;
 }
@@ -2567,37 +2551,37 @@ bool talkAt(const Coords &coords) {
 /**
  * Executes the current conversation until it is done.
  */
-void talkRunConversation(Person *talker, bool showPrompt) {
+void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
 
-    while (c->conversation->state != Conversation::DONE) {
+    while (conv.state != Conversation::DONE) {
         // TODO: instead of calculating linesused again, cache the
         // result in person.cpp somewhere.
-        int linesused = linecount(c->conversation->reply.front(), TEXT_AREA_W);
-        screenMessage("%s", c->conversation->reply.front().c_str());
-        int size = c->conversation->reply.size();
-        c->conversation->reply.pop_front();
+        int linesused = linecount(conv.reply.front(), TEXT_AREA_W);
+        screenMessage("%s", conv.reply.front().c_str());
+        int size = conv.reply.size();
+        conv.reply.pop_front();
 
         /* if all chunks haven't been shown, wait for a key and process next chunk*/    
-        size = c->conversation->reply.size();
+        size = conv.reply.size();
         if (size > 0) {    
             ReadChoiceController::get("");
             continue;
         }
 
         /* otherwise, clear current reply and proceed based on conversation state */
-        c->conversation->reply.clear();
+        conv.reply.clear();
     
         /* they're attacking you! */
-        if (c->conversation->state == Conversation::ATTACK) {
-            c->conversation->state = Conversation::DONE;
+        if (conv.state == Conversation::ATTACK) {
+            conv.state = Conversation::DONE;
             talker->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
         }
     
-        if (c->conversation->state == Conversation::DONE)
+        if (conv.state == Conversation::DONE)
             break;
 
         /* When Lord British heals the party */
-        else if (c->conversation->state == Conversation::FULLHEAL) {
+        else if (conv.state == Conversation::FULLHEAL) {
             int i;
 
             for (i = 0; i < c->party->size(); i++) {
@@ -2606,16 +2590,16 @@ void talkRunConversation(Person *talker, bool showPrompt) {
             }
             gameSpellEffect('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
 
-            c->conversation->state = Conversation::TALK;
+            conv.state = Conversation::TALK;
         }
         /* When Lord British checks and advances each party member's level */
-        else if (c->conversation->state == Conversation::ADVANCELEVELS) {
+        else if (conv.state == Conversation::ADVANCELEVELS) {
             gameLordBritishCheckLevels();
-            c->conversation->state = Conversation::TALK;
+            conv.state = Conversation::TALK;
         }
 
         if (showPrompt) {
-            string prompt = talker->getPrompt(c->conversation);
+            string prompt = talker->getPrompt(&conv);
             if (!prompt.empty()) {
                 if (linesused + linecount(prompt, TEXT_AREA_W) > TEXT_AREA_H)
                     ReadChoiceController::get("");
@@ -2624,11 +2608,11 @@ void talkRunConversation(Person *talker, bool showPrompt) {
         }
 
         int maxlen;
-        switch (c->conversation->getInputRequired(&maxlen)) {
+        switch (conv.getInputRequired(&maxlen)) {
         case Conversation::INPUT_STRING:
-            c->conversation->playerInput = gameGetInput(maxlen);
-            c->conversation->reply = talker->getConversationText(c->conversation, c->conversation->playerInput.c_str());
-            c->conversation->playerInput.erase();
+            conv.playerInput = gameGetInput(maxlen);
+            conv.reply = talker->getConversationText(&conv, conv.playerInput.c_str());
+            conv.playerInput.erase();
             showPrompt = true;
             break;
 
@@ -2639,27 +2623,27 @@ void talkRunConversation(Person *talker, bool showPrompt) {
             message[0] = choice;
             message[1] = '\0';
 
-            c->conversation->reply = talker->getConversationText(c->conversation, message);
-            c->conversation->playerInput.erase();
+            conv.reply = talker->getConversationText(&conv, message);
+            conv.playerInput.erase();
 
             showPrompt = true;
             break;
         }
 
         case Conversation::INPUT_NONE:
-            c->conversation->state = Conversation::DONE;
+            conv.state = Conversation::DONE;
             break;
         }
     }
-    if (c->conversation->reply.size() > 0)
-        screenMessage("%s", c->conversation->reply.front().c_str());
+    if (conv.reply.size() > 0)
+        screenMessage("%s", conv.reply.front().c_str());
 }
 
 /**
  * Changes a player's armor.  Prompts for the player and/or the armor
  * type if not provided.
  */
-void wearArmor(int player, ArmorType armor) {
+void wearArmor(int player) {
 
     // get the player if not provided
     if (player == -1) {
@@ -2669,36 +2653,27 @@ void wearArmor(int player, ArmorType armor) {
             return;
     }
 
-    if (armor == ARMR_MAX) {
-        c->stats->setView(STATS_ARMOR);
-        screenMessage("Armour: ");
-        armor = (ArmorType) AlphaActionController::get(ARMR_MAX + 'a' - 1, "Armour: ");
-        c->stats->setView(STATS_PARTY_OVERVIEW);
-        if (armor == -1)
-            return;
-    }
-
-    if (armor != ARMR_NONE && c->saveGame->armor[armor] < 1) {
-        screenMessage("None left!\n");
+    c->stats->setView(STATS_ARMOR);
+    screenMessage("Armour: ");
+    ArmorType armor = (ArmorType) AlphaActionController::get(ARMR_MAX + 'a' - 1, "Armour: ");
+    c->stats->setView(STATS_PARTY_OVERVIEW);
+    if (armor == -1)
         return;
-    }
 
-    const Armor *a = Armor::get((ArmorType) armor);
+    const Armor *a = Armor::get(armor);
     PartyMember *p = c->party->member(player);
 
-    if (!a->canWear(p->getClass())) {
+    switch (p->setArmor(a)) {
+    case EQUIP_SUCCEEDED:
+        screenMessage("%s\n", a->getName().c_str());
+        break;
+    case EQUIP_NONE_LEFT:
+        screenMessage("None left!\n");
+        break;
+    case EQUIP_CLASS_RESTRICTED:
         screenMessage("\nA %s may NOT use\n%s\n", getClassName(p->getClass()), a->getName().c_str());
-        return;
+        break;
     }
-
-    ArmorType oldArmorType = p->getArmor();
-    if (oldArmorType != ARMR_NONE)
-        c->saveGame->armor[oldArmorType]++;
-    if (armor != ARMR_NONE)
-        c->saveGame->armor[armor]--;
-    p->setArmor(armor);
-
-    screenMessage("%s\n", a->getName().c_str());
 }
 
 /**
@@ -2780,9 +2755,9 @@ void GameController::timerFired() {
  * Handles trolls under bridges
  */
 void gameCheckBridgeTrolls() {
-    Creature *m;
     const Tile *bridge = c->location->map->tileset->getByName("bridge");
-    ASSERT(bridge, "no bridge tile found in tileset");
+    if (!bridge)
+        return;
 
     // TODO: CHEST: Make a user option to not make chests block bridge trolls
     if (!c->location->map->isWorldMap() ||
@@ -2792,7 +2767,7 @@ void gameCheckBridgeTrolls() {
 
     screenMessage("\nBridge Trolls!\n");
     
-    m = c->location->map->addCreature(creatureMgr->getById(TROLL_ID), c->location->coords);
+    Creature *m = c->location->map->addCreature(creatureMgr->getById(TROLL_ID), c->location->coords);
     delete c->combat;
     c->combat = new CombatController(MAP_BRIDGE_CON);    
     c->combat->init(m);

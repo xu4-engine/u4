@@ -132,7 +132,7 @@ void peer(bool useGem = true);
 void talk();
 bool fireAt(const Coords &coords, bool originAvatar);
 Direction gameGetDirection();
-void readyWeapon(int player = -1, WeaponType w = WEAP_MAX);
+void readyWeapon(int player = -1);
 
 /* checking functions */
 void gameCheckHullIntegrity(void);

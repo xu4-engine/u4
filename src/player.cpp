@@ -80,9 +80,9 @@ string PartyMember::translate(std::vector<string>& parts) {
         else if (parts[0] == "name")
             return getName();
         else if (parts[0] == "weapon")
-            return Weapon::get(getWeapon())->getName();
+            return getWeapon()->getName();
         else if (parts[0] == "armor")
-            return Armor::get(getArmor())->getName();
+            return getArmor()->getName();
         else if (parts[0] == "sex") {
             string var = " ";
             var[0] = getSex();
@@ -165,11 +165,11 @@ int PartyMember::getMaxMp() const {
     return max_mp;
 }
 
-WeaponType PartyMember::getWeapon() const   { return player->weapon; }
-ArmorType PartyMember::getArmor() const     { return player->armor; }
-string PartyMember::getName() const         { return player->name; }
-SexType PartyMember::getSex() const         { return player->sex; }
-ClassType PartyMember::getClass() const     { return player->klass; }
+const Weapon *PartyMember::getWeapon() const { return Weapon::get(player->weapon); }
+const Armor *PartyMember::getArmor() const   { return Armor::get(player->armor); }
+string PartyMember::getName() const          { return player->name; }
+SexType PartyMember::getSex() const          { return player->sex; }
+ClassType PartyMember::getClass() const      { return player->klass; }
 
 CreatureStatus PartyMember::getState() const {
     if (getHp() <= 0)
@@ -369,14 +369,44 @@ void PartyMember::setMp(int mp) {
     notifyOfChange();
 }
 
-void PartyMember::setArmor(ArmorType a) {
-    player->armor = a;
+EquipError PartyMember::setArmor(const Armor *a) {
+    ArmorType type = a->getType();
+
+    if (type != ARMR_NONE && party->saveGame->armor[type] < 1)
+        return EQUIP_NONE_LEFT;
+    if (!a->canWear(getClass()))
+        return EQUIP_CLASS_RESTRICTED;
+
+    ArmorType oldArmorType = getArmor()->getType();
+    if (oldArmorType != ARMR_NONE)
+        party->saveGame->armor[oldArmorType]++;
+    if (type != ARMR_NONE)
+        party->saveGame->armor[type]--;
+
+    player->armor = type;
     notifyOfChange();
+
+    return EQUIP_SUCCEEDED;
 }
 
-void PartyMember::setWeapon(WeaponType w) {
-    player->weapon = w;
+EquipError PartyMember::setWeapon(const Weapon *w) {
+    WeaponType type = w->getType();
+
+    if (type != WEAP_HANDS && party->saveGame->weapons[type] < 1)
+        return EQUIP_NONE_LEFT;
+    if (!w->canReady(getClass()))
+        return EQUIP_CLASS_RESTRICTED;
+
+    WeaponType old = getWeapon()->getType();
+    if (old != WEAP_HANDS)
+        party->saveGame->weapons[old]++;
+    if (type != WEAP_HANDS)
+        party->saveGame->weapons[type]--;
+
+    player->weapon = type;
     notifyOfChange();
+
+    return EQUIP_SUCCEEDED;
 }
 
 /**
@@ -467,7 +497,7 @@ int PartyMember::getDamage() {
  * member's attack hits
  */
 const string &PartyMember::getHitTile() const {
-    return Weapon::get(getWeapon())->getHitTile();
+    return getWeapon()->getHitTile();
 }
 
 /**
@@ -475,7 +505,7 @@ const string &PartyMember::getHitTile() const {
  * member's attack fails
  */
 const string &PartyMember::getMissTile() const {
-    return Weapon::get(getWeapon())->getMissTile();
+    return getWeapon()->getMissTile();
 }
 
 /**
