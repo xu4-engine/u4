@@ -543,6 +543,78 @@
         <!-- gem tiles -->
         <image name="gemtiles" filename="vga/gem.png"  width="4"   height="512" depth="8" filetype="image/png" tiles="128" xu4Graphic="true"/>
 
+        <image name="dung"    filename="vga/dungeonhall.png" width="176" height="176" depth="8" filetype="image/png" xu4Graphic="true">
+            <subimage name="dung0_lft_ew" x="0"   y="0"  width="16" height="176"/>
+            <subimage name="dung0_rgt_ew" x="160" y="0"  width="16" height="176"/>
+            <subimage name="dung1_lft_ew" x="16"  y="8"  width="32" height="160"/>
+            <subimage name="dung1_rgt_ew" x="128" y="8"  width="32" height="160"/>
+            <subimage name="dung2_lft_ew" x="48"  y="24" width="24" height="128"/>
+            <subimage name="dung2_rgt_ew" x="104" y="24" width="24" height="128"/>
+            <subimage name="dung3_lft_ew" x="72"  y="72" width="16" height="32"/>
+            <subimage name="dung3_rgt_ew" x="88"  y="72" width="16" height="32"/>
+            <subimage name="dung0_lft_ns" x="0"   y="0"  width="16" height="176"/>
+            <subimage name="dung0_rgt_ns" x="160" y="0"  width="16" height="176"/>
+            <subimage name="dung1_lft_ns" x="16"  y="8"  width="32" height="160"/>
+            <subimage name="dung1_rgt_ns" x="128" y="8"  width="32" height="160"/>
+            <subimage name="dung2_lft_ns" x="48"  y="24" width="24" height="128"/>
+            <subimage name="dung2_rgt_ns" x="104" y="24" width="24" height="128"/>
+            <subimage name="dung3_lft_ns" x="72"  y="72" width="16" height="32"/>
+            <subimage name="dung3_rgt_ns" x="88"  y="72" width="16" height="32"/>
+        </image>
+
+        <image name="dung_door" filename="vga/dungeonhall_door.png" width="176" height="176" depth="4" filetype="image/png" xu4Graphic="true">
+            <subimage name="dung0_lft_ew_door" x="0"   y="0"  width="16" height="176"/>
+            <subimage name="dung0_rgt_ew_door" x="160" y="0"  width="16" height="176"/>
+            <subimage name="dung1_lft_ew_door" x="16"  y="8"  width="32" height="160"/>
+            <subimage name="dung1_rgt_ew_door" x="128" y="8"  width="32" height="160"/>
+            <subimage name="dung2_lft_ew_door" x="48"  y="24" width="24" height="128"/>
+            <subimage name="dung2_rgt_ew_door" x="104" y="24" width="24" height="128"/>
+            <subimage name="dung3_lft_ew_door" x="72"  y="72" width="16" height="32"/>
+            <subimage name="dung3_rgt_ew_door" x="88"  y="72" width="16" height="32"/>
+            <subimage name="dung0_lft_ns_door" x="0"   y="0"  width="16" height="176"/>
+            <subimage name="dung0_rgt_ns_door" x="160" y="0"  width="16" height="176"/>
+            <subimage name="dung1_lft_ns_door" x="16"  y="8"  width="32" height="160"/>
+            <subimage name="dung1_rgt_ns_door" x="128" y="8"  width="32" height="160"/>
+            <subimage name="dung2_lft_ns_door" x="48"  y="24" width="24" height="128"/>
+            <subimage name="dung2_rgt_ns_door" x="104" y="24" width="24" height="128"/>
+            <subimage name="dung3_lft_ns_door" x="72"  y="72" width="16" height="32"/>
+            <subimage name="dung3_rgt_ns_door" x="88"  y="72" width="16" height="32"/>
+        </image>
+
+        <image name="dungback0" filename="vga/dungeonback0.png" width="176" height="176" depth="4" filetype="image/png" xu4Graphic="true">
+            <subimage name="dung1_mid_ew" x="0"   y="0"  width="176" height="176"/>
+            <subimage name="dung1_xxx_ew" x="0"   y="8"  width="16"  height="160"/>
+            <subimage name="dung1_mid_ns" x="0"   y="0"  width="176" height="176"/>
+            <subimage name="dung1_xxx_ns" x="0"   y="8"  width="16"  height="160"/>
+        </image>
+
+        <image name="dungback1" filename="vga/dungeonback1.png" width="176" height="176" depth="4" filetype="image/png" xu4Graphic="true">
+            <subimage name="dung2_mid_ew" x="16"  y="48" width="144" height="80"/>
+            <subimage name="dung2_xxx_ew" x="16"  y="48" width="48"  height="80"/>
+            <subimage name="dung2_mid_ns" x="16"  y="48" width="144" height="80"/>
+            <subimage name="dung2_xxx_ns" x="16"  y="48" width="48"  height="80"/>
+        </image>
+
+        <image name="dungback2" filename="vga/dungeonback2.png" width="176" height="176" depth="4" filetype="image/png" xu4Graphic="true">
+            <subimage name="dung3_mid_ew" x="56"  y="72" width="48" height="32"/>
+            <subimage name="dung3_xxx_ew" x="48"  y="72" width="24" height="32"/>
+            <subimage name="dung3_mid_ns" x="56"  y="72" width="48" height="32"/>
+            <subimage name="dung3_xxx_ns" x="48"  y="72" width="24" height="32"/>
+        </image>
+
+        <image name="dung1_mid_door_image" filename="vga/dungeonback0_door.png" width="176" height="176" depth="4" filetype="image/png" xu4Graphic="true">
+            <subimage name="dung1_mid_ew_door" x="0"   y="16" width="176"  height="160"/>
+            <subimage name="dung1_mid_ns_door" x="0"   y="16" width="176"  height="160"/>
+        </image>
+        <image name="dung2_mid_door_image" filename="vga/dungeonback1_door.png" width="176" height="176" depth="4" filetype="image/png" xu4Graphic="true">
+            <subimage name="dung2_mid_ew_door" x="16"  y="48" width="144"  height="80"/>
+            <subimage name="dung2_mid_ns_door" x="16"  y="48" width="144"  height="80"/>
+        </image>
+        <image name="dung3_mid_door_image" filename="vga/dungeonback2_door.png" width="176" height="176" depth="4" filetype="image/png" xu4Graphic="true">
+            <subimage name="dung3_mid_ew_door" x="48"  y="72" width="80"  height="32"/>
+            <subimage name="dung3_mid_ns_door" x="48"  y="72" width="80"  height="32"/>
+        </image>
+
     </imageset>
 
     <layout type="gem" name="Standard">

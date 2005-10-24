@@ -64,7 +64,8 @@ struct Layout {
 
 const struct {
     const char *subimage;
-    int x2, y2;
+    int ega_x2, ega_y2;
+    int vga_x2, vga_y2;
     const char *subimage2;
 } dngGraphicInfo[] = {
     { "dung0_lft_ew" },
@@ -74,26 +75,26 @@ const struct {
     { "dung0_rgt_ew" },
     { "dung0_rgt_ns" },
 
-    { "dung1_lft_ew", 0, 32, "dung1_xxx_ew" },
-    { "dung1_lft_ns", 0, 32, "dung1_xxx_ns" },
+    { "dung1_lft_ew", 0, 32, 0, 8, "dung1_xxx_ew" },
+    { "dung1_lft_ns", 0, 32, 0, 8, "dung1_xxx_ns" },
     { "dung1_mid_ew" },
     { "dung1_mid_ns" },
-    { "dung1_rgt_ew", 144, 32, "dung1_xxx_ew" },
-    { "dung1_rgt_ns", 144, 32, "dung1_xxx_ns" },
+    { "dung1_rgt_ew", 144, 32, 160, 8, "dung1_xxx_ew" },
+    { "dung1_rgt_ns", 144, 32, 160, 8, "dung1_xxx_ns" },
 
-    { "dung2_lft_ew", 0, 64, "dung2_xxx_ew" },
-    { "dung2_lft_ns", 0, 64, "dung2_xxx_ns" },
+    { "dung2_lft_ew", 0, 64, 0, 48, "dung2_xxx_ew" },
+    { "dung2_lft_ns", 0, 64, 0, 48, "dung2_xxx_ns" },
     { "dung2_mid_ew" },
     { "dung2_mid_ns" },
-    { "dung2_rgt_ew", 112, 64, "dung2_xxx_ew" },
-    { "dung2_rgt_ns", 112, 64, "dung2_xxx_ns" },
+    { "dung2_rgt_ew", 112, 64, 128, 48, "dung2_xxx_ew" },
+    { "dung2_rgt_ns", 112, 64, 128, 48, "dung2_xxx_ns" },
 
-    { "dung3_lft_ew", 0, 80, "dung3_xxx_ew" },
-    { "dung3_lft_ns", 0, 80, "dung3_xxx_ns" },
+    { "dung3_lft_ew", 0, 80, 48, 72, "dung3_xxx_ew" },
+    { "dung3_lft_ns", 0, 80, 48, 72, "dung3_xxx_ns" },
     { "dung3_mid_ew" },
     { "dung3_mid_ns" },
-    { "dung3_rgt_ew", 96, 80, "dung3_xxx_ew" },
-    { "dung3_rgt_ns", 96, 80, "dung3_xxx_ns" },
+    { "dung3_rgt_ew", 96, 80, 104, 72, "dung3_xxx_ew" },
+    { "dung3_rgt_ns", 96, 80, 104, 72, "dung3_xxx_ns" },
 
     { "dung0_lft_ew_door" },
     { "dung0_lft_ns_door" },
@@ -102,26 +103,26 @@ const struct {
     { "dung0_rgt_ew_door" },
     { "dung0_rgt_ns_door" },
 
-    { "dung1_lft_ew_door", 0, 32, "dung1_xxx_ew" },
-    { "dung1_lft_ns_door", 0, 32, "dung1_xxx_ns" },
+    { "dung1_lft_ew_door", 0, 32, 0, 8, "dung1_xxx_ew" },
+    { "dung1_lft_ns_door", 0, 32, 0, 8, "dung1_xxx_ns" },
     { "dung1_mid_ew_door" },
     { "dung1_mid_ns_door" },
-    { "dung1_rgt_ew_door", 144, 32, "dung1_xxx_ew" },
-    { "dung1_rgt_ns_door", 144, 32, "dung1_xxx_ns" },
+    { "dung1_rgt_ew_door", 144, 32, 160, 8, "dung1_xxx_ew" },
+    { "dung1_rgt_ns_door", 144, 32, 160, 8, "dung1_xxx_ns" },
 
-    { "dung2_lft_ew_door", 0, 64, "dung2_xxx_ew" },
-    { "dung2_lft_ns_door", 0, 64, "dung2_xxx_ns" },
+    { "dung2_lft_ew_door", 0, 64, 0, 48, "dung2_xxx_ew" },
+    { "dung2_lft_ns_door", 0, 64, 0, 48, "dung2_xxx_ns" },
     { "dung2_mid_ew_door" },
     { "dung2_mid_ns_door" },
-    { "dung2_rgt_ew_door", 112, 64, "dung2_xxx_ew" },
-    { "dung2_rgt_ns_door", 112, 64, "dung2_xxx_ns" },
+    { "dung2_rgt_ew_door", 112, 64, 128, 48, "dung2_xxx_ew" },
+    { "dung2_rgt_ns_door", 112, 64, 128, 48, "dung2_xxx_ns" },
 
-    { "dung3_lft_ew_door", 0, 80, "dung3_xxx_ew" },
-    { "dung3_lft_ns_door", 0, 80, "dung3_xxx_ns" },
+    { "dung3_lft_ew_door", 0, 80, 48, 72, "dung3_xxx_ew" },
+    { "dung3_lft_ns_door", 0, 80, 48, 72, "dung3_xxx_ns" },
     { "dung3_mid_ew_door" },
     { "dung3_mid_ns_door" },
-    { "dung3_rgt_ew_door", 96, 80, "dung3_xxx_ew" },
-    { "dung3_rgt_ns_door", 96, 80, "dung3_xxx_ns" },
+    { "dung3_rgt_ew_door", 96, 80, 104, 72, "dung3_xxx_ew" },
+    { "dung3_rgt_ns_door", 96, 80, 104, 72, "dung3_xxx_ns" },
 
     { "dung0_ladderup" },
     { "dung1_ladderup" },
@@ -660,8 +661,13 @@ void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, Dun
     }
 
     screenDrawImage(dngGraphicInfo[index].subimage, (BORDER_WIDTH + x) * scale, (BORDER_HEIGHT + y) * scale);
-    if (dngGraphicInfo[index].subimage2 != NULL)
-        screenDrawImage(dngGraphicInfo[index].subimage2, (8 + dngGraphicInfo[index].x2) * scale, (8 + dngGraphicInfo[index].y2) * scale);
+    if (dngGraphicInfo[index].subimage2 != NULL) {
+        // FIXME: subimage2 is a horrible hack, needs to be cleaned up
+        if (settings.videoType == "EGA")
+            screenDrawImage(dngGraphicInfo[index].subimage2, (8 + dngGraphicInfo[index].ega_x2) * scale, (8 + dngGraphicInfo[index].ega_y2) * scale);
+        else
+            screenDrawImage(dngGraphicInfo[index].subimage2, (8 + dngGraphicInfo[index].vga_x2) * scale, (8 + dngGraphicInfo[index].vga_y2) * scale);
+    }
 }
 
 /**
