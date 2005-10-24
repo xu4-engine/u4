@@ -37,13 +37,23 @@ extern "C" {
 #define CHAR_HEIGHT 8
 
 /* some character defines */
+#define CHARSET_ANKH '\0'
+#define CHARSET_REDDOT '\01'
+#define CHARSET_SDOOR '\02'
+#define CHARSET_WALL '\03'
+#define CHARSET_LADDER_UPDOWN '\04'
+#define CHARSET_LADDER_DOWN '\05'
+#define CHARSET_LADDER_UP '\06'
 #define CHARSET_BULLET '\010'
 #define CHARSET_COPYRIGHT '\011'
 #define CHARSET_REGISTERED '\012'
 #define CHARSET_MALE '\013'
 #define CHARSET_FEMALE '\014'
 #define CHARSET_HORIZBAR '\015'
+#define CHARSET_ROOM '\016'
+#define CHARSET_ORB '\017'
 #define CHARSET_PROMPT '\020'
+#define CHARSET_FLOOR '\022'
 
 /* map viewport size (in tiles) */
 #define VIEWPORT_W 11
