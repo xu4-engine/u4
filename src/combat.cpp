@@ -480,7 +480,7 @@ bool CombatController::setActivePlayer(int player) {
         p->setFocus();
         focus = player;
 
-        screenMessage("%s with %s\n\020", p->getName().c_str(), Weapon::get(p->getWeapon())->getName().c_str());        
+        screenMessage("%s with %s\n\020", p->getName().c_str(), p->getWeapon()->getName().c_str());        
         c->stats->highlightPlayer(focus);        
         return true;
     }
@@ -508,7 +508,7 @@ void CombatController::awardLoot() {
 }
 
 bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance) {
-    const Weapon *weapon = Weapon::get(attacker->getWeapon());
+    const Weapon *weapon = attacker->getWeapon();
     bool wrongRange = weapon->rangeAbsolute() && (distance != range);
     int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
 
@@ -1052,7 +1052,7 @@ void CombatController::attack() {
 
     PartyMember *attacker = getCurrentPlayer();
 
-    const Weapon *weapon = Weapon::get(attacker->getWeapon());
+    const Weapon *weapon = attacker->getWeapon();
     int range = weapon->getRange();
     if (weapon->canChooseDistance()) {
         screenMessage("Range: ");

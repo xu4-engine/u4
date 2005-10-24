@@ -24,6 +24,7 @@
 #include "tileset.h"
 #include "u4.h"
 #include "utils.h"
+#include "weapon.h"
 
 using std::string;
 
@@ -428,7 +429,7 @@ bool isWeaponInInventory(int weapon) {
         return true;
     else {
         for (int i = 0; i < c->party->size(); i++) {
-            if (c->party->member(i)->getWeapon() == weapon)
+            if (c->party->member(i)->getWeapon()->getType() == weapon)
                 return true;
         }
     }

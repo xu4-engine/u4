@@ -140,7 +140,7 @@ void StatsArea::update(Aura *aura) {
         summary.drawCharMasked(0, STATS_AREA_WIDTH/2, 0, mask);
         break;
     case Aura::HORN:
-        summary.drawChar(1, STATS_AREA_WIDTH/2, 0);
+        summary.drawChar(CHARSET_REDDOT, STATS_AREA_WIDTH/2, 0);
         break;
     case Aura::JINX:
         summary.drawChar('J', STATS_AREA_WIDTH/2, 0);
@@ -240,8 +240,8 @@ void StatsArea::showPlayerDetails() {
     mainArea.textAt(0, 3, "STR:%02d  HP:%04d", p->getStr(), p->getHp());
     mainArea.textAt(0, 4, "DEX:%02d  HM:%04d", p->getDex(), p->getMaxHp());
     mainArea.textAt(0, 5, "INT:%02d  EX:%04d", p->getInt(), p->getExp());
-    mainArea.textAt(0, 6, "W:%s", Weapon::get(p->getWeapon())->getName().c_str());
-    mainArea.textAt(0, 7, "A:%s", Armor::get(p->getArmor())->getName().c_str());
+    mainArea.textAt(0, 6, "W:%s", p->getWeapon()->getName().c_str());
+    mainArea.textAt(0, 7, "A:%s", p->getArmor()->getName().c_str());
 }
 
 /**
