@@ -189,7 +189,7 @@ IntroController::IntroController() :
     videoMenu.setClosesMenu(CANCEL);
     
     soundMenu.setTitle("Sound Options:", 2, 1);
-    soundMenu.add(new BoolMenuItem("Volume         %s", 10, 3, 'v', &settingsChanged.musicVol));
+    soundMenu.add(new BoolMenuItem("Music          %s", 10, 3, 'm', &settingsChanged.musicVol));
     soundMenu.add(new BoolMenuItem("Sound Effects  %s", 10, 4, 's', &settingsChanged.soundVol));
     soundMenu.add(new BoolMenuItem("Fading         %s", 10, 5, 'f', &settingsChanged.volumeFades));
     soundMenu.add(USE_SETTINGS, "Use These Settings", 10, 7, 'u');
