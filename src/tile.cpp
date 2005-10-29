@@ -81,7 +81,7 @@ void Tile::loadProperties(const ConfigElement &conf) {
     if (conf.exists("directions")) {
         string dirs = conf.getString("directions");
         if (dirs.length() != (unsigned) frames)
-            errorFatal("Error: %d directions for tile but only %d frames", dirs.length(), frames);
+            errorFatal("Error: %ld directions for tile but only %d frames", (long) dirs.length(), frames);
         for (unsigned i = 0; i < dirs.length(); i++) {
             if (dirs[i] == 'w')
                 directions.push_back(DIR_WEST);
@@ -141,7 +141,7 @@ void Tile::loadImage() {
             image->alphaOff();
 
         if (image == NULL)
-            errorFatal("Error: not all tile images loaded correctly, aborting...");
+            errorFatal("Error: couldn't load image for tile '%s'", name.c_str());
     }
 }
 
