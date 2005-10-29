@@ -125,19 +125,31 @@ const struct {
     { "dung3_rgt_ns_door", 96, 80, 104, 72, "dung3_xxx_ns" },
 
     { "dung0_ladderup" },
+    { "dung0_ladderup_side" },
     { "dung1_ladderup" },
+    { "dung1_ladderup_side" },
     { "dung2_ladderup" },
+    { "dung2_ladderup_side" },
     { "dung3_ladderup" },
+    { "dung3_ladderup_side" },
 
     { "dung0_ladderdown" },
+    { "dung0_ladderdown_side" },
     { "dung1_ladderdown" },
+    { "dung1_ladderdown_side" },
     { "dung2_ladderdown" },
+    { "dung2_ladderdown_side" },
     { "dung3_ladderdown" },
+    { "dung3_ladderdown_side" },
 
     { "dung0_ladderupdown" },
+    { "dung0_ladderupdown_side" },
     { "dung1_ladderupdown" },
+    { "dung1_ladderupdown_side" },
     { "dung2_ladderupdown" },
+    { "dung2_ladderupdown_side" },
     { "dung3_ladderupdown" },
+    { "dung3_ladderupdown_side" },
 };
 
 void screenLoadGraphicsFromConf(void);
@@ -292,7 +304,7 @@ const vector<string> &screenGetGemLayoutNames() {
 void screenLoadGraphicsFromConf() {
     const Config *config = Config::getInstance();
 
-    vector<ConfigElement> graphicsConf = config->getElement("/config/graphics").getChildren();
+    vector<ConfigElement> graphicsConf = config->getElement("graphics").getChildren();
     for (std::vector<ConfigElement>::iterator conf = graphicsConf.begin(); conf != graphicsConf.end(); conf++) {
 
         if (conf->getName() == "layout")
@@ -614,13 +626,19 @@ int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, 
     index = 0;
 
     if (type == DNGGRAPHIC_LADDERUP && xoffset == 0)
-        return 48 + distance;
+        return 48 + 
+            (distance * 2) + 
+            (DIR_IN_MASK(orientation, MASK_DIR_SOUTH | MASK_DIR_NORTH) ? 1 : 0);
 
     if (type == DNGGRAPHIC_LADDERDOWN && xoffset == 0)
-        return 52 + distance;
+        return 56 + 
+            (distance * 2) +
+            (DIR_IN_MASK(orientation, MASK_DIR_SOUTH | MASK_DIR_NORTH) ? 1 : 0);
 
     if (type == DNGGRAPHIC_LADDERUPDOWN && xoffset == 0)
-        return 56 + distance;
+        return 64 + 
+            (distance * 2) +
+            (DIR_IN_MASK(orientation, MASK_DIR_SOUTH | MASK_DIR_NORTH) ? 1 : 0);
 
     /* FIXME */
     if (type != DNGGRAPHIC_WALL && type != DNGGRAPHIC_DOOR)
