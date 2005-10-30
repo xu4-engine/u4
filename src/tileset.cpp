@@ -37,7 +37,7 @@ TileRule *TileRule::findByName(const string &name) {
  */
 void TileRule::load() {
     const Config *config = Config::getInstance();
-    vector<ConfigElement> rules = config->getElement("/config/tileRules").getChildren();
+    vector<ConfigElement> rules = config->getElement("tileRules").getChildren();
 
     for (std::vector<ConfigElement>::iterator i = rules.begin(); i != rules.end(); i++) {
         TileRule *rule = new TileRule;
@@ -163,7 +163,7 @@ void Tileset::loadAll() {
 
     // get the config element for all tilesets
     TRACE_LOCAL(dbg, "Loading tilesets info from config");
-    conf = config->getElement("/config/tilesets").getChildren();
+    conf = config->getElement("tilesets").getChildren();
     
     // load tile rules
     TRACE_LOCAL(dbg, "Loading tile rules");

@@ -145,7 +145,7 @@ void Weapon::loadConf() {
 
     const Config *config = Config::getInstance();
 
-    vector<ConfigElement> weaponConfs = config->getElement("/config/weapons").getChildren();
+    vector<ConfigElement> weaponConfs = config->getElement("weapons").getChildren();
     for (std::vector<ConfigElement>::iterator i = weaponConfs.begin(); i != weaponConfs.end(); i++) {
         if (i->getName() != "weapon")
             continue;

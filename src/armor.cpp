@@ -84,7 +84,7 @@ void Armor::loadConf() {
 
     const Config *config = Config::getInstance();
 
-    vector<ConfigElement> armorConfs = config->getElement("/config/armors").getChildren();    
+    vector<ConfigElement> armorConfs = config->getElement("armors").getChildren();    
     for (std::vector<ConfigElement>::iterator i = armorConfs.begin(); i != armorConfs.end(); i++) {
         if (i->getName() != "armor")
             continue;

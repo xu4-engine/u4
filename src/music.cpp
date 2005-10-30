@@ -72,7 +72,7 @@ Music::Music() : introMid(TOWNS), playing(NULL), logger(new Debug("debug/music.t
 
     TRACE_LOCAL(*logger, "Loading music tracks");
 
-    vector<ConfigElement> musicConfs = config->getElement("/config/music").getChildren();
+    vector<ConfigElement> musicConfs = config->getElement("music").getChildren();
     for (std::vector<ConfigElement>::iterator i = musicConfs.begin(); i != musicConfs.end(); i++) {
 
         if (i->getName() != "track")

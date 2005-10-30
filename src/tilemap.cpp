@@ -36,7 +36,7 @@ void TileMap::loadAll() {
 
     /* open the filename for the tileset and parse it! */
     TRACE_LOCAL(dbg, "Loading tilemaps from config");
-    conf = config->getElement("/config/tilesets").getChildren();    
+    conf = config->getElement("tilesets").getChildren();    
     
     /* load all of the tilemaps */
     for (std::vector<ConfigElement>::iterator i = conf.begin(); i != conf.end(); i++) {

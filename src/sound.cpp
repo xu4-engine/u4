@@ -31,7 +31,7 @@ int soundInit() {
      */
     const Config *config = Config::getInstance();
 
-    vector<ConfigElement> soundConfs = config->getElement("/config/sound").getChildren();
+    vector<ConfigElement> soundConfs = config->getElement("sound").getChildren();
     for (std::vector<ConfigElement>::iterator i = soundConfs.begin(); i != soundConfs.end(); i++) {
 
         if (i->getName() != "track")
