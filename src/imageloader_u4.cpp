@@ -181,7 +181,7 @@ RGBA *U4PaletteLoader::loadEgaPalette() {
         
         egaPalette = new RGBA[16];
 
-        vector<ConfigElement> paletteConf = config->getElement("/config/egaPalette").getChildren();
+        vector<ConfigElement> paletteConf = config->getElement("egaPalette").getChildren();
         for (std::vector<ConfigElement>::iterator i = paletteConf.begin(); i != paletteConf.end(); i++) {
 
             if (i->getName() != "color")

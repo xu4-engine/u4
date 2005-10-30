@@ -92,7 +92,7 @@ void ImageMgr::init() {
      * register all the images declared in the config files
      */
     const Config *config = Config::getInstance();
-    vector<ConfigElement> graphicsConf = config->getElement("/config/graphics").getChildren();
+    vector<ConfigElement> graphicsConf = config->getElement("graphics").getChildren();
     for (std::vector<ConfigElement>::iterator conf = graphicsConf.begin(); conf != graphicsConf.end(); conf++) {
         if (conf->getName() == "imageset") {
             ImageSet *set = loadImageSetFromConf(*conf);

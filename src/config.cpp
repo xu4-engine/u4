@@ -37,10 +37,11 @@ const Config *Config::getInstance() {
     return instance;
 }
 
-ConfigElement Config::getElement(const string &path) const {
+ConfigElement Config::getElement(const string &name) const {
     xmlXPathContextPtr context;
     xmlXPathObjectPtr result;
 
+    string path = "/config/" + name;
     context = xmlXPathNewContext(doc);
     result = xmlXPathEvalExpression(reinterpret_cast<const xmlChar *>(path.c_str()), context);
     if(xmlXPathNodeSetIsEmpty(result->nodesetval))
@@ -79,6 +80,15 @@ Config::Config() {
     }
 }
 
+
+vector<string> Config::getGames() {
+    vector<string> result;
+    result.push_back("Ultima IV");
+    return result;
+}
+
+void Config::setGame(const string &name) {
+}
 
 void *Config::fileOpen(const char *filename) {
     void *result;

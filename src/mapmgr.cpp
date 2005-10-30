@@ -55,7 +55,7 @@ MapMgr::MapMgr() {
     const Config *config = Config::getInstance();
     Map *map;
 
-    vector<ConfigElement> maps = config->getElement("/config/maps").getChildren();
+    vector<ConfigElement> maps = config->getElement("maps").getChildren();
     for (std::vector<ConfigElement>::iterator i = maps.begin(); i != maps.end(); i++) {
         map = initMapFromConf(*i);
 

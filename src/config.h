@@ -19,7 +19,10 @@ class Config {
 public:
     static const Config *getInstance();
 
-    ConfigElement getElement(const std::string &path) const;
+    ConfigElement getElement(const std::string &name) const;
+
+    static std::vector<std::string> getGames();
+    static void setGame(const std::string &name);
 
 private:
     Config();
