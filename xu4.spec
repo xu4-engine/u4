@@ -34,8 +34,8 @@ cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir} all.stati
 
 %install
 cd src && %{makeinstall}
-wget http://aleron.dl.sourceforge.net/sourceforge/xu4/ultima4-1.01.zip -O %{buildroot}/%{_libdir}/u4/ultima4-1.01.zip
-wget http://aleron.dl.sourceforge.net/sourceforge/xu4/u4upgrad.zip -O %{buildroot}/%{_libdir}/u4/u4upgrad.zip
+wget http://easynews.dl.sourceforge.net/sourceforge/xu4/ultima4-1.01.zip -O %{buildroot}/%{_libdir}/u4/ultima4-1.01.zip
+wget http://easynews.dl.sourceforge.net/sourceforge/xu4/u4upgrad.zip -O %{buildroot}/%{_libdir}/u4/u4upgrad.zip
 
 %clean
 rm -rf %{buildroot}
@@ -62,6 +62,9 @@ rm -rf %{buildroot}
 %{_libdir}/u4/u4upgrad.zip
 
 %changelog
+* Mon Oct 31 2005 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
+- changed sourceforge mirror from aleron (defunct?) to easynews
+
 * Sun Oct 02 2005 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - updated for v1.0beta3, minor cleanup
 
