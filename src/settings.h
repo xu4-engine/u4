@@ -31,6 +31,7 @@ using std::string;
 #define DEFAULT_VIDEO_TYPE              "VGA"
 #define DEFAULT_GEM_LAYOUT              "Standard"
 #define DEFAULT_SCREEN_SHAKES           1
+#define DEFAULT_GAMMA                   100
 #define DEFAULT_MUSIC_VOLUME            1
 #define DEFAULT_SOUND_VOLUME            1
 #define DEFAULT_VOLUME_FADES            1
@@ -92,6 +93,7 @@ public:
     bool                musicVol;
     unsigned int        scale;
     bool                screenShakes;
+    int                 gamma;
     int                 shakeInterval;
     bool                shortcutCommands;
     int                 shrineTime;

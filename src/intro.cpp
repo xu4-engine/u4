@@ -182,6 +182,7 @@ IntroController::IntroController() :
                   setValueStrings("Fullscreen", "Window"));
     videoMenu.add(new StringMenuItem("Filter            %s", 5, 6, 'f', &settingsChanged.filter, screenGetFilterNames()));
     videoMenu.add(new BoolMenuItem  ("Screen Shaking    %s", 5, 7, 'k', &settingsChanged.screenShakes));
+    videoMenu.add(new IntMenuItem   ("Gamma",                5, 8, 0, &settingsChanged.gamma, 50, 150, 10));
     videoMenu.add(USE_SETTINGS, "Use These Settings", 5, 17, 'u');
     videoMenu.add(CANCEL, "Cancel", 5, 18, 'c');
     videoMenu.addShortcutKey(CANCEL, ' ');
@@ -995,6 +996,7 @@ void IntroController::updateVideoMenu(MenuEvent &event) {
     }
 
     backgroundArea.draw(BKGD_INTRO_EXTENDED);
+    extendedMenuArea.textAt(23, 8, "%.1f", static_cast<double>(settingsChanged.gamma) / 100);
 }
 
 void IntroController::updateSoundMenu(MenuEvent &event) {

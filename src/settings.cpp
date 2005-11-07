@@ -140,6 +140,7 @@ bool Settings::read() {
     videoType             = DEFAULT_VIDEO_TYPE;
     gemLayout             = DEFAULT_GEM_LAYOUT;
     screenShakes          = DEFAULT_SCREEN_SHAKES;
+    gamma                 = DEFAULT_GAMMA;
     musicVol              = DEFAULT_MUSIC_VOLUME;
     soundVol              = DEFAULT_SOUND_VOLUME;
     volumeFades           = DEFAULT_VOLUME_FADES;
@@ -199,6 +200,8 @@ bool Settings::read() {
             gemLayout = buffer + strlen("gemLayout=");
         else if (strstr(buffer, "screenShakes=") == buffer)
             screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);        
+        else if (strstr(buffer, "gamma=") == buffer)
+            gamma = (int) strtoul(buffer + strlen("gamma="), NULL, 0);        
         else if (strstr(buffer, "musicVol=") == buffer)
             musicVol = (int) strtoul(buffer + strlen("musicVol="), NULL, 0);
         else if (strstr(buffer, "soundVol=") == buffer)
@@ -317,6 +320,7 @@ bool Settings::write() {
             "video=%s\n"
             "gemLayout=%s\n"
             "screenShakes=%d\n"
+            "gamma=%d\n"
             "musicVol=%d\n"
             "soundVol=%d\n"
             "volumeFades=%d\n"
@@ -355,6 +359,7 @@ bool Settings::write() {
             videoType.c_str(),
             gemLayout.c_str(),
             screenShakes,
+            gamma,
             musicVol,
             soundVol,
             volumeFades,

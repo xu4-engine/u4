@@ -196,6 +196,7 @@ void screenInit() {
     if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
         errorFatal("unable to init SDL: %s", SDL_GetError());    
     SDL_EnableUNICODE(1);
+    SDL_SetGamma(settings.gamma / 100.0f, settings.gamma / 100.0f, settings.gamma / 100.0f);
     atexit(SDL_Quit);
 
     SDL_WM_SetCaption("Ultima IV", NULL);
