@@ -208,7 +208,7 @@ void InnController::begin() {
                      i != c->location->map->objects.end();
                      i++) {
                     Person *p = dynamic_cast<Person*>(*i);
-                    if (p && p->name == "Isaac") {                
+                    if (p && p->getName() == "Isaac") {
                         p->setCoords(coords);
                         return;
                     }
@@ -216,15 +216,12 @@ void InnController::begin() {
 
                 // Otherwise, we need to create Isaac
                 Person *Isaac;
-                Isaac = new Person;
+                Isaac = new Person(creatureMgr->getById(GHOST_ID)->getTile());
 
                 Isaac->setMovementBehavior(MOVEMENT_WANDER);
 
-                Isaac->dialogue = city->extraDialogues[0];
-                Isaac->name = city->extraDialogues[0]->getName();
-                Isaac->start = coords;
-                Isaac->npcType = NPC_TALKER;
-                Isaac->setTile(creatureMgr->getById(GHOST_ID)->getTile());
+                Isaac->setDialogue(city->extraDialogues[0]);
+                Isaac->getStart() = coords;
                 Isaac->setPrevTile(Isaac->getTile());
 
                 // Add Isaac near the Avatar

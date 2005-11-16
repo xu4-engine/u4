@@ -37,16 +37,14 @@ string City::getName() {
  * Adds a person object to the map
  */
 Person *City::addPerson(Person *person) {    
-    Person *p = new Person;
-    
     // Make a copy of the person before adding them, so 
     // things like angering the guards, etc. will be
     // forgotten the next time you visit :)
-    *p = *person;
-
+    Person *p = new Person(person);
+    
     /* set the start coordinates for the person */
-    p->setCoords(p->start);
     p->setMap(this);
+    p->goToStartLocation();
 
     objects.push_back(p);    
     return p;
@@ -64,7 +62,7 @@ void City::addPeople() {
     for (current = persons.begin(); current != persons.end(); current++) {
         Person *p = *current;
         if ((p->getTile() != 0) && 
-            !(c->party->canPersonJoin(p->name, NULL) && c->party->isPersonJoined(p->name)))
+            !(c->party->canPersonJoin(p->getName(), NULL) && c->party->isPersonJoined(p->getName())))
             addPerson(p);
     }
 }
