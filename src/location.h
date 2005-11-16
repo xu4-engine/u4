@@ -25,11 +25,11 @@ typedef enum {
 #define CTX_NON_COMBAT      (LocationContext)(CTX_ANY & ~CTX_COMBAT)
 #define CTX_CAN_SAVE_GAME   (LocationContext)(CTX_WORLDMAP | CTX_DUNGEON)
 
-typedef void (*FinishTurnCallback)(void);
+class TurnCompleter;
 
 class Location : public Observable<Location *, MoveEvent &> {
 public:
-    Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx, FinishTurnCallback finishTurnCallback, Location *prev);
+    Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx, TurnCompleter *turnCompleter, Location *prev);
 
     MapTile visibleTileAt(MapCoords coords, bool &focus);
     std::vector<MapTile> tilesAt(MapCoords coords, bool &focus);
@@ -41,7 +41,7 @@ public:
     Map *map;
     int viewMode;
     LocationContext context;
-    FinishTurnCallback finishTurn;
+    TurnCompleter *turnCompleter;
     Location *prev;
 };
 

@@ -27,13 +27,13 @@ Location *locationPop(Location **stack);
  * start a new stack if 'prev' is NULL
  */
 Location::Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx,
-                   FinishTurnCallback finishTurnCallback, Location *prev) {
+                   TurnCompleter *turnCompleter, Location *prev) {
 
     this->coords = coords;
     this->map = map;
     this->viewMode = viewmode;
     this->context = ctx;
-    this->finishTurn = finishTurnCallback;
+    this->turnCompleter = turnCompleter;
 
     locationPush(prev, this);
 }
@@ -87,7 +87,8 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
 
     /* then the avatar is drawn (unless on a ship) */
     if ((map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && avatar)
-        tiles.push_back(c->party->transport);
+        tiles.push_back(map->tileset->getByName("avatar")->id);
+    //tiles.push_back(c->party->transport);
 
     /* then camouflaged creatures that have a disguise */
     if (obj && (obj->getType() == Object::CREATURE) && !obj->isVisible() && (!m->getCamouflageTile().empty())) {

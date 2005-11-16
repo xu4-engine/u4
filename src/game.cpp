@@ -93,19 +93,12 @@ void wearArmor(int player = -1);
 void ztatsFor(int player = -1);
 
 /* checking functions */
-void gameCheckBridgeTrolls(void);
-bool gameCheckMoongates(void);
-void gameCheckRandomCreatures(void);
-void gameCheckSpecialCreatures(Direction dir);
 void gameLordBritishCheckLevels(void);
 
 /* creature functions */
 void gameDestroyAllCreatures(void);
 void gameFixupObjects(Map *map);
 void gameCreatureAttack(Creature *obj);
-
-/* etc */
-bool gameCreateBalloon(Map *map);
 
 /* Functions END */
 /*---------------*/
@@ -493,7 +486,7 @@ void gameUpdateScreen() {
 void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
     int viewMode;
     LocationContext context;
-    FinishTurnCallback finishTurn = &GameController::finishTurn;
+    TurnCompleter *turnCompleter = this;
     int activePlayer = c->party->getActivePlayer();
     MapCoords coords;
 
@@ -522,7 +515,7 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
         coords = MapCoords(-1, -1); /* set these to -1 just to be safe; we don't need them */
         context = CTX_COMBAT;
         viewMode = VIEW_NORMAL;
-        finishTurn = &CombatController::finishTurn;
+        turnCompleter = c->combat;
         activePlayer = -1; /* different active player for combat, defaults to 'None' */
         break;
     case Map::CITY:    
@@ -532,7 +525,7 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
         break;
     }    
     
-    c->location = new Location(coords, map, viewMode, context, finishTurn, c->location);
+    c->location = new Location(coords, map, viewMode, context, turnCompleter, c->location);
     c->location->addObserver(this);
     c->party->setActivePlayer(activePlayer);
 
@@ -558,7 +551,7 @@ int GameController::exitToParentMap() {
     if (c->location->prev != NULL) {
         // Create the balloon for Hythloth
         if (c->location->map->id == MAP_HYTHLOTH)
-            gameCreateBalloon(c->location->prev->map);            
+            createBalloon(c->location->prev->map);            
 
         // free map info only if previous location was on a different map
         if (c->location->prev->map != c->location->map) {
@@ -614,9 +607,10 @@ void GameController::finishTurn() {
                 return;
             }       
 
-            // Spawn new creatures
-            gameCheckRandomCreatures();            
-            gameCheckBridgeTrolls();
+            // cleanup old creatures and spawn new ones
+            creatureCleanup();
+            checkRandomCreatures();            
+            checkBridgeTrolls();
         }
 
         /* update map annotations */
@@ -778,7 +772,6 @@ bool GameController::keyPressed(int key) {
     bool valid = true;
     int endTurn = 1;
     Object *obj;
-    const ItemLocation *item;
     MapTile *tile;
 
     /* Translate context-sensitive action key into a useful command */
@@ -1105,7 +1098,7 @@ bool GameController::keyPressed(int key) {
             else {
                 screenMessage("Searching...\n");
 
-                item = itemAtLocation(c->location->map, c->location->coords);
+                const ItemLocation *item = itemAtLocation(c->location->map, c->location->coords);
                 if (item) {
                     if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
                         screenMessage("Nothing Here!\n");
@@ -1308,8 +1301,8 @@ bool GameController::keyPressed(int key) {
         }
     
     if (valid && endTurn) {
-        if (eventHandler->getController() != c->combat && eventHandler->getController() == game)            
-            (*c->location->finishTurn)();
+        if (eventHandler->getController() != c->combat && eventHandler->getController() == game)
+            c->location->turnCompleter->finishTurn();
     }
     else if (!endTurn) {
         /* if our turn did not end, then manually redraw the text prompt */    
@@ -2082,11 +2075,11 @@ void GameController::avatarMoved(MoveEvent &event) {
 
     /* things that happen while not on board the balloon */
     if (c->transportContext & ~TRANSPORT_BALLOON)
-        gameCheckSpecialCreatures(event.dir);
+        checkSpecialCreatures(event.dir);
     /* things that happen while on foot or horseback */
     if ((c->transportContext & TRANSPORT_FOOT_OR_HORSE) &&
         !(event.result & (MOVE_SLOWED|MOVE_BLOCKED))) {
-        if (gameCheckMoongates())
+        if (checkMoongates())
             event.result = (MoveResult)(MOVE_MAP_CHANGE | MOVE_END_TURN);
     }
 }
@@ -2526,7 +2519,7 @@ bool talkAt(const Coords &coords) {
         return false;
 
     /* if we're talking to Lord British and the avatar is dead, LB resurrects them! */
-    if (talker->npcType == NPC_LORD_BRITISH &&
+    if (talker->getNpcType() == NPC_LORD_BRITISH &&
         c->party->member(0)->getStatus() == STAT_DEAD) {
         screenMessage("%s, Thou shalt live again!\n", c->party->member(0)->getName().c_str());
 
@@ -2752,29 +2745,6 @@ void GameController::timerFired() {
 }
 
 /**
- * Handles trolls under bridges
- */
-void gameCheckBridgeTrolls() {
-    const Tile *bridge = c->location->map->tileset->getByName("bridge");
-    if (!bridge)
-        return;
-
-    // TODO: CHEST: Make a user option to not make chests block bridge trolls
-    if (!c->location->map->isWorldMap() ||
-        c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->id != bridge->id ||
-        xu4_random(8) != 0)
-        return;
-
-    screenMessage("\nBridge Trolls!\n");
-    
-    Creature *m = c->location->map->addCreature(creatureMgr->getById(TROLL_ID), c->location->coords);
-    delete c->combat;
-    c->combat = new CombatController(MAP_BRIDGE_CON);    
-    c->combat->init(m);
-    c->combat->begin();
-}
-
-/**
  * Checks the hull integrity of the ship and handles
  * the ship sinking, if necessary
  */
@@ -2802,7 +2772,7 @@ void gameCheckHullIntegrity() {
  * special creatures guarding the entrance to the
  * abyss and to the shrine of spirituality
  */
-void gameCheckSpecialCreatures(Direction dir) {
+void GameController::checkSpecialCreatures(Direction dir) {
     int i;
     Object *obj;    
     static const struct {
@@ -2850,7 +2820,7 @@ void gameCheckSpecialCreatures(Direction dir) {
 /**
  * Checks for and handles when the avatar steps on a moongate
  */
-bool gameCheckMoongates(void) {
+bool GameController::checkMoongates() {
     Coords dest;
     
     if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, c->location->coords, dest)) {
@@ -2870,7 +2840,7 @@ bool gameCheckMoongates(void) {
             if (!c->party->canEnterShrine(VIRT_SPIRITUALITY))
                 return true;
             
-            game->setMap(shrine_spirituality, 1, NULL);
+            setMap(shrine_spirituality, 1, NULL);
             musicMgr->play();
 
             shrine_spirituality->enter();
@@ -2880,26 +2850,6 @@ bool gameCheckMoongates(void) {
     }
 
     return false;
-}
-
-/**
- * Checks creature conditions and spawns new creatures if necessary
- */
-void gameCheckRandomCreatures() {
-    int canSpawnHere = c->location->map->isWorldMap() || c->location->context & CTX_DUNGEON;
-    int spawnDivisor = c->location->context & CTX_DUNGEON ? (32 - (c->location->coords.z << 2)) : 32;
-
-    /* remove creatures that are too far away from the avatar */
-    gameCreatureCleanup();
-    
-    /* If there are too many creatures already,
-       or we're not on the world map, don't worry about it! */
-    if (!canSpawnHere ||
-        c->location->map->getNumberOfCreatures() >= MAX_CREATURES_ON_MAP ||
-        xu4_random(spawnDivisor) != 0)
-        return;
-    
-    gameSpawnCreature(NULL);
 }
 
 /**
@@ -3146,13 +3096,12 @@ void gameSetActivePlayer(int player) {
 /**
  * Removes creatures from the current map if they are too far away from the avatar
  */
-void gameCreatureCleanup(void) {
+void GameController::creatureCleanup() {
     ObjectDeque::iterator i;
     Map *map = c->location->map;
-    Object *obj;
     
     for (i = map->objects.begin(); i != map->objects.end();) {
-        obj = *i;
+        Object *obj = *i;
         MapCoords o_coords = obj->getCoords();
 
         if ((obj->getType() == Object::CREATURE) && (o_coords.z == c->location->coords.z) &&
@@ -3166,21 +3115,60 @@ void gameCreatureCleanup(void) {
 }
 
 /**
+ * Checks creature conditions and spawns new creatures if necessary
+ */
+void GameController::checkRandomCreatures() {
+    int canSpawnHere = c->location->map->isWorldMap() || c->location->context & CTX_DUNGEON;
+    int spawnDivisor = c->location->context & CTX_DUNGEON ? (32 - (c->location->coords.z << 2)) : 32;
+
+    /* If there are too many creatures already,
+       or we're not on the world map, don't worry about it! */
+    if (!canSpawnHere ||
+        c->location->map->getNumberOfCreatures() >= MAX_CREATURES_ON_MAP ||
+        xu4_random(spawnDivisor) != 0)
+        return;
+    
+    gameSpawnCreature(NULL);
+}
+
+/**
+ * Handles trolls under bridges
+ */
+void GameController::checkBridgeTrolls() {
+    const Tile *bridge = c->location->map->tileset->getByName("bridge");
+    if (!bridge)
+        return;
+
+    // TODO: CHEST: Make a user option to not make chests block bridge trolls
+    if (!c->location->map->isWorldMap() ||
+        c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->id != bridge->id ||
+        xu4_random(8) != 0)
+        return;
+
+    screenMessage("\nBridge Trolls!\n");
+    
+    Creature *m = c->location->map->addCreature(creatureMgr->getById(TROLL_ID), c->location->coords);
+    delete c->combat;
+    c->combat = new CombatController(MAP_BRIDGE_CON);    
+    c->combat->init(m);
+    c->combat->begin();
+}
+
+/**
  * Check the levels of each party member while talking to Lord British
  */
-void gameLordBritishCheckLevels(void) {
-    int i;
-    int levelsRaised = 0;    
+void gameLordBritishCheckLevels() {
+    bool advanced = false;
 
-    for (i = 0; i < c->party->size(); i++) {
+    for (int i = 0; i < c->party->size(); i++) {
         PartyMember *player = c->party->member(i);
         if (player->getRealLevel() <
             player->getMaxLevel())
 
-            if (!levelsRaised) {
-                /* give an extra space to separate these messages */
+            // add an extra space to separate messages
+            if (!advanced) {
                 screenMessage("\n");
-                levelsRaised = 1;
+                advanced = true;
             }
 
             player->advanceLevel();
@@ -3322,7 +3310,7 @@ void gameDestroyAllCreatures(void) {
 /**
  * Creates the balloon near Hythloth, but only if the balloon doesn't already exists somewhere
  */
-bool gameCreateBalloon(Map *map) {
+bool GameController::createBalloon(Map *map) {
     ObjectDeque::iterator i;    
 
     /* see if the balloon has already been created (and not destroyed) */

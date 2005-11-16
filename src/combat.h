@@ -11,6 +11,7 @@
 #include "map.h"
 #include "controller.h"
 #include "creature.h"
+#include "game.h"
 #include "object.h"
 #include "observer.h"
 #include "player.h"
@@ -37,7 +38,7 @@ typedef enum {
 /**
  * CombatController class
  */ 
-class CombatController : public Controller, public Observer<Party *, PartyEvent &> {
+class CombatController : public Controller, public Observer<Party *, PartyEvent &>, public TurnCompleter {
 public:
     CombatController();
     CombatController(CombatMap *m);
@@ -88,11 +89,11 @@ public:
      */
     static void attackFlash(const Coords &coords, MapTile tile, int timeFactor);
     static void attackFlash(const Coords &coords, const string &tilename, int timeFactor);
-    static void finishTurn(void);
 
     // Key handlers
     virtual bool keyPressed(int key);
 
+    virtual void finishTurn();
     void movePartyMember(MoveEvent &event);
     virtual void update(Party *party, PartyEvent &event);
 

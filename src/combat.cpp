@@ -237,7 +237,7 @@ void CombatController::begin() {
     }    
 
     if (!camping && !partyIsReadyToFight)
-        (*c->location->finishTurn)();
+        c->location->turnCompleter->finishTurn();
 
     eventHandler->pushController(this);
 }
@@ -320,7 +320,7 @@ void CombatController::end(bool adjustKarma) {
     
     /* Make sure finishturn only happens if a new combat has not begun */
     if (eventHandler->getController() != this)
-        (*c->location->finishTurn)();
+        c->location->turnCompleter->finishTurn();
 }
 
 /**
@@ -708,16 +708,15 @@ void CombatController::attackFlash(const Coords &coords, const string &tilename,
     attackFlash(coords, tile->id, timeFactor);
 }
 
-void CombatController::finishTurn(void) {
-    CombatController *ct = c->combat;    
-    PartyMember *player = ct->getCurrentPlayer();
+void CombatController::finishTurn() {
+    PartyMember *player = getCurrentPlayer();
     int quick;
 
     /* return to party overview */
     c->stats->setView(STATS_PARTY_OVERVIEW);
 
-    if (ct->isWon() && ct->winOrLose) {        
-        ct->end(true);
+    if (isWon() && winOrLose) {        
+        end(true);
         return;
     }
     
@@ -749,15 +748,15 @@ void CombatController::finishTurn(void) {
             }
 
             /* put the focus on the next party member */
-            ct->focus++;
-            player = ct->getCurrentPlayer();
+            focus++;
+            player = getCurrentPlayer();
 
             /* move creatures and wrap around at end */
-            if (ct->focus >= c->party->size()) {   
+            if (focus >= c->party->size()) {   
                 
                 /* reset the focus to the avatar and start the party's turn over again */
-                ct->focus = 0;
-                player = ct->getCurrentPlayer();
+                focus = 0;
+                player = getCurrentPlayer();
 
                 gameUpdateScreen();
                 EventHandler::sleep(50); /* give a slight pause in case party members are asleep for awhile */
@@ -775,41 +774,41 @@ void CombatController::finishTurn(void) {
                  */
             
                 /* first, move all the creatures */
-                ct->moveCreatures();
+                moveCreatures();
 
                 /* then, apply tile effects to creatures */
-                ct->applyCreatureTileEffects();                
+                applyCreatureTileEffects();                
 
                 /* check to see if combat is over */
-                if (ct->isLost()) {                    
-                    ct->end(true);
+                if (isLost()) {                    
+                    end(true);
                     return;
                 }
 
                 /* end combat immediately if the enemy has fled */
-                else if (ct->isWon() && ct->winOrLose) {                    
-                    ct->end(true);
+                else if (isWon() && winOrLose) {                    
+                    end(true);
                     return;
                 }
             }
         } while (!player || 
                   player->isDisabled() || /* dead or sleeping */                 
                  ((c->party->getActivePlayer() >= 0) && /* active player is set */
-                  (ct->party[c->party->getActivePlayer()]) && /* and the active player is still in combat */
-                  !ct->party[c->party->getActivePlayer()]->isDisabled() && /* and the active player is not disabled */
-                  (c->party->getActivePlayer() != ct->focus)));
+                  (party[c->party->getActivePlayer()]) && /* and the active player is still in combat */
+                  !party[c->party->getActivePlayer()]->isDisabled() && /* and the active player is not disabled */
+                  (c->party->getActivePlayer() != focus)));
     }
     else c->location->map->annotations->passTurn();
     
 #if 0
-    if (ct->focus != 0) {
-        ct->getCurrentPlayer()->act();
-        ct->finishTurn();
+    if (focus != 0) {
+        getCurrentPlayer()->act();
+        finishTurn();
     }
-    else ct->setActivePlayer(ct->focus);
+    else setActivePlayer(focus);
 #else
     /* display info about the current player */
-    ct->setActivePlayer(ct->focus);
+    setActivePlayer(focus);
 #endif
 }
 
@@ -1031,7 +1030,7 @@ bool CombatController::keyPressed(int key) {
     if (valid) {
         c->lastCommandTime = time(NULL);
         if (endTurn && (eventHandler->getController() == this))
-            (*c->location->finishTurn)();
+            c->location->turnCompleter->finishTurn();
     }
 
     return valid;

@@ -71,6 +71,12 @@ public:
     bool keyPressed(int key);
 };
 
+class TurnCompleter {
+public:
+    virtual ~TurnCompleter() {}
+    virtual void finishTurn() = 0;
+};
+
 /**
  * The main game controller that handles basic game flow and keypresses.
  *
@@ -79,7 +85,8 @@ public:
  *      <li>separate the dungeon specific stuff into another class (subclass?)</li>
  *  </ul>
  */
-class GameController : public Controller, public Observer<Party *, PartyEvent &>, public Observer<Location *, MoveEvent &> {
+class GameController : public Controller, public Observer<Party *, PartyEvent &>, public Observer<Location *, MoveEvent &>,
+    public TurnCompleter {
 public:
     GameController();
 
@@ -91,7 +98,7 @@ public:
     void init();
     void setMap(Map *map, bool saveLocation, const Portal *portal);
     int exitToParentMap();
-    static void finishTurn();
+    virtual void finishTurn();
 
     virtual void update(Party *party, PartyEvent &event);
     virtual void update(Location *location, MoveEvent &event);
@@ -106,6 +113,14 @@ public:
 private:
     void avatarMoved(MoveEvent &event);
     void avatarMovedInDungeon(MoveEvent &event);
+
+    void creatureCleanup();
+    void checkBridgeTrolls();
+    void checkRandomCreatures();
+    void checkSpecialCreatures(Direction dir);
+    bool checkMoongates();
+
+    bool createBalloon(Map *map);
 };
 
 extern GameController *game;

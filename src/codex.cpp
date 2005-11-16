@@ -200,7 +200,7 @@ void codexEject(CodexEjectCode code) {
     }
 
     /* finally, finish the turn */
-    (*c->location->finishTurn)();
+    c->location->turnCompleter->finishTurn();
 }
 
 /**
