@@ -33,12 +33,12 @@ public:
 
     static MapLoader *getLoader(Map::Type type);
 
-    virtual int load(Map *map) = 0;
+    virtual bool load(Map *map) = 0;
 
 protected:
     static MapLoader *registerLoader(MapLoader *loader, Map::Type type);
-    static int loadData(Map *map, U4FILE *f);
-    static int isChunkCompressed(Map *map, int chunk);
+    static bool loadData(Map *map, U4FILE *f);
+    static bool isChunkCompressed(Map *map, int chunk);
 
 private:
     static std::map<Map::Type, MapLoader *> *loaderMap;
@@ -48,7 +48,7 @@ class CityMapLoader : public MapLoader {
     static MapLoader *instance;
 
 public:
-    virtual int load(Map *map);
+    virtual bool load(Map *map);
 
 };
 
@@ -56,7 +56,7 @@ class ConMapLoader : public MapLoader {
     static MapLoader *instance;
 
 public:
-    virtual int load(Map *map);
+    virtual bool load(Map *map);
 
 };
 
@@ -64,7 +64,7 @@ class DngMapLoader : public MapLoader {
     static MapLoader *instance;
 
 public:
-    virtual int load(Map *map);
+    virtual bool load(Map *map);
 
 private:
     void initDungeonRoom(Dungeon *dng, int room);
@@ -74,7 +74,7 @@ class WorldMapLoader : public MapLoader {
     static MapLoader *instance;
 
 public:
-    virtual int load(Map *map);
+    virtual bool load(Map *map);
 
 };
 

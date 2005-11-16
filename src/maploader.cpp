@@ -29,6 +29,9 @@
 #include "u4file.h"
 #include "utils.h"
 
+#include "image.h"
+#include "imagemgr.h"
+
 std::map<Map::Type, MapLoader *> *MapLoader::loaderMap = NULL;
 
 MapLoader *CityMapLoader::instance = MapLoader::registerLoader(new CityMapLoader, Map::CITY);
@@ -36,6 +39,9 @@ MapLoader *ConMapLoader::instance = MapLoader::registerLoader(MapLoader::registe
 MapLoader *DngMapLoader::instance = MapLoader::registerLoader(new DngMapLoader, Map::DUNGEON);
 MapLoader *WorldMapLoader::instance = MapLoader::registerLoader(new WorldMapLoader, Map::WORLD);
 
+/**
+ * Gets a map loader for the given map type.
+ */
 MapLoader *MapLoader::getLoader(Map::Type type) {
     ASSERT(loaderMap != NULL, "loaderMap not initialized");
     if (loaderMap->find(type) == loaderMap->end())
@@ -43,15 +49,24 @@ MapLoader *MapLoader::getLoader(Map::Type type) {
     return (*loaderMap)[type];
 }
 
+/**
+ * Registers a loader for the given map type.
+ */
 MapLoader *MapLoader::registerLoader(MapLoader *loader, Map::Type type) {
-    if (loaderMap == NULL) {
+    if (loaderMap == NULL)
         loaderMap = new std::map<Map::Type, MapLoader *>;
-    }
+
+    if (loaderMap->find(type) != loaderMap->end())
+        errorFatal("map loader already registered for type %d", type);
+
     (*loaderMap)[type] = loader;
     return loader;
 }
 
-int MapLoader::loadData(Map *map, U4FILE *f) {
+/**
+ * Loads raw data from the given file.  
+ */
+bool MapLoader::loadData(Map *map, U4FILE *f) {
     unsigned int x, xch, y, ych;
 
     /* allocate the space we need for the map data */
@@ -82,7 +97,7 @@ int MapLoader::loadData(Map *map, U4FILE *f) {
                     for(x = 0; x < map->chunk_width; ++x) {                    
                         int c = u4fgetc(f);
                         if (c == EOF)
-                            return 0;
+                            return false;
                       
                         clock_t s = clock();
                         MapTile mt = map->translateFromRawTileIndex(c);
@@ -104,23 +119,23 @@ int MapLoader::loadData(Map *map, U4FILE *f) {
     }
 #endif
 
-    return 1;
+    return true;
 }
 
-int MapLoader::isChunkCompressed(Map *map, int chunk) {
+bool MapLoader::isChunkCompressed(Map *map, int chunk) {
     CompressedChunkList::iterator i;    
 
     for (i = map->compressed_chunks.begin(); i != map->compressed_chunks.end(); i++) {
         if (chunk == *i)
-            return 1;
+            return true;
     }
-    return 0;
+    return false;
 }
 
 /**
  * Load city data from 'ult' and 'tlk' files.
  */
-int CityMapLoader::load(Map *map) {
+bool CityMapLoader::load(Map *map) {
     City *city = dynamic_cast<City*>(map);
 
     unsigned int i, j;
@@ -138,17 +153,17 @@ int CityMapLoader::load(Map *map) {
     ASSERT(city->height == CITY_HEIGHT, "map height is %d, should be %d", city->height, CITY_HEIGHT);
 
     if (!loadData(city, ult))
-        return 0;
+        return false;
 
     /* Properly construct people for the city */       
     for (i = 0; i < CITY_MAX_PERSONS; i++)
         people[i] = new Person(map->translateFromRawTileIndex(u4fgetc(ult)));
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i]->start.x = u4fgetc(ult);
+        people[i]->getStart().x = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i]->start.y = u4fgetc(ult);
+        people[i]->getStart().y = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
         people[i]->setPrevTile(map->translateFromRawTileIndex(u4fgetc(ult)));
@@ -167,22 +182,21 @@ int CityMapLoader::load(Map *map) {
         else if (c == 0xFF)
             people[i]->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
         else
-            return 0;        
+            return false;        
     }
 
     unsigned char conv_idx[CITY_MAX_PERSONS];
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         conv_idx[i] = u4fgetc(ult);
-        people[i]->dialogue = NULL;
     }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        people[i]->start.z = 0;        
+        people[i]->getStart().z = 0;        
     }
 
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         dialogues[i] = dlgLoader->load(tlk);
-       
+
         if (!dialogues[i])
             break;
 
@@ -192,8 +206,7 @@ int CityMapLoader::load(Map *map) {
         bool found = false;
         for (j = 0; j < CITY_MAX_PERSONS; j++) {
             if (conv_idx[j] == i+1) {
-                people[j]->dialogue = dialogues[i];
-                people[j]->name = dialogues[i]->getName();
+                people[j]->setDialogue(dialogues[i]);
                 found = true;
             }
         }
@@ -213,18 +226,12 @@ int CityMapLoader::load(Map *map) {
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         PersonRoleList::iterator current;
 
-        people[i]->npcType = NPC_EMPTY;
-        if (!people[i]->name.empty())
-            people[i]->npcType = NPC_TALKER;
-        /* FIXME: this type of thing should be done in xml */
-        if (people[i]->getTile() == map->tileset->getByName("beggar")->id)
-            people[i]->npcType = NPC_TALKER_BEGGAR;
-        if (people[i]->getTile() == map->tileset->getByName("guard")->id)
-            people[i]->npcType = NPC_TALKER_GUARD;
-
         for (current = city->personroles.begin(); current != city->personroles.end(); current++) {
-            if ((unsigned)(*current)->id == (i + 1))
-                people[i]->npcType = (PersonNpcType)(*current)->role;
+            if ((unsigned)(*current)->id == (i + 1)) {
+                if ((*current)->role == NPC_LORD_BRITISH)
+                    people[i]->setDialogue(DialogueLoader::getLoader("application/x-u4lbtlk")->load(NULL));
+                people[i]->setNpcType(static_cast<PersonNpcType>((*current)->role));
+            }
         }
     }
 
@@ -239,13 +246,13 @@ int CityMapLoader::load(Map *map) {
     u4fclose(ult);
     u4fclose(tlk);
 
-    return 1;
+    return true;
 }
 
 /**
  * Loads a combat map from the 'con' file
  */
-int ConMapLoader::load(Map *map) {
+bool ConMapLoader::load(Map *map) {
     int i;
 
     U4FILE *con = u4fopen(map->fname);
@@ -275,17 +282,17 @@ int ConMapLoader::load(Map *map) {
     }
 
     if (!loadData(map, con))
-        return 0;
+        return false;
 
     u4fclose(con);
 
-    return 1;
+    return true;
 }
 
 /**
  * Loads a dungeon map from the 'dng' file
  */
-int DngMapLoader::load(Map *map) {
+bool DngMapLoader::load(Map *map) {
     Dungeon *dungeon = dynamic_cast<Dungeon*>(map);    
 
     U4FILE *dng = u4fopen(dungeon->fname);
@@ -321,19 +328,19 @@ int DngMapLoader::load(Map *map) {
 
             tmp = u4fgetc(dng);
             if (tmp == EOF)
-                return 0;
+                return false;
             dungeon->rooms[i].triggers[j].x = (tmp >> 4) & 0x0F;
             dungeon->rooms[i].triggers[j].y = tmp & 0x0F;
 
             tmp = u4fgetc(dng);
             if (tmp == EOF)
-                return 0;
+                return false;
             dungeon->rooms[i].triggers[j].change_x1 = (tmp >> 4) & 0x0F;
             dungeon->rooms[i].triggers[j].change_y1 = tmp & 0x0F;
             
             tmp = u4fgetc(dng);
             if (tmp == EOF)
-                return 0;
+                return false;
             dungeon->rooms[i].triggers[j].change_x2 = (tmp >> 4) & 0x0F;
             dungeon->rooms[i].triggers[j].change_y2 = tmp & 0x0F;
         }
@@ -366,7 +373,7 @@ int DngMapLoader::load(Map *map) {
     for (i = 0; i < dungeon->n_rooms; i++)
         initDungeonRoom(dungeon, i);
 
-    return 1;
+    return true;
 }
 
 /**
@@ -388,16 +395,15 @@ void DngMapLoader::initDungeonRoom(Dungeon *dng, int room) {
 /**
  * Loads the world map data in from the 'world' file.
  */
-int WorldMapLoader::load(Map *map) {
+bool WorldMapLoader::load(Map *map) {
     U4FILE *world = u4fopen(map->fname);
     if (!world)
         errorFatal("unable to load map data");
 
     if (!loadData(map, world))
-        return 0;
+        return false;
 
     u4fclose(world);
 
-    return 1;
-    
+    return true;
 }
