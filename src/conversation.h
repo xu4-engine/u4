@@ -31,7 +31,7 @@ public:
      */ 
     enum Action {
         NO_ACTION,
-        TURN_AWAY,
+        END_CONVERSATION,
         ATTACK
     };
 
@@ -95,34 +95,41 @@ public:
      * Constructors/Destructors
      */
     Dialogue();
+    virtual ~Dialogue();
 
     /*
      * Accessor methods
      */ 
     string getName();
     string getPronoun();
-    string getDesc();
+    string getIntro(bool familiar = false);
+    string getLongIntro(bool familiar = false);
+    string getDefaultAnswer();
+
+    /*
+     * Member functions 
+     */ 
     void   setName(const string &n);
     void   setPronoun(const string &pn);
-    void   setDesc(const string &d);
+    void   setIntro(const string &i);
+    void   setLongIntro(const string &i);
+    void   setDefaultAnswer(const string &a);
     void   setTurnAwayProb(int prob);
     void   addKeyword(Keyword *kw);
+    Action getAction() const;
+    string dump(const string &arg);
 
     /*
      * Operators 
      */ 
     Keyword *operator[](const string &kw);
-
     
-    /*
-     * Member functions 
-     */ 
-    Action getAction() const;
-
 private:
     string name;
     string pronoun;
-    string description;
+    string intro;
+    string longIntro;
+    string defaultAnswer;
     KeywordMap keywords;
     union {
         int turnAwayProb;

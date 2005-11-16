@@ -32,6 +32,7 @@ string Dialogue::Question::getResponse(bool yes) {
     return noresp;
 }
 
+            
 /*
  * Dialogue::Keyword class
  */ 
@@ -61,14 +62,33 @@ bool                Dialogue::Keyword::isQuestion() const       { return questio
  */ 
 
 Dialogue::Dialogue() {}
+
+Dialogue::~Dialogue() {
+    for (KeywordMap::iterator i = keywords.begin(); i != keywords.end(); i++) {
+        delete i->second;
+    }
+}
+
 string Dialogue::getName()                    { return name; }
 string Dialogue::getPronoun()                 { return pronoun; }
-string Dialogue::getDesc()                    { return description; }
+string Dialogue::getIntro(bool familiar)      { return intro; }
+string Dialogue::getLongIntro(bool familiar)  { return longIntro; }
+string Dialogue::getDefaultAnswer()           { return defaultAnswer; }
+
 void   Dialogue::setName(const string &n)     { name = n; }
 void   Dialogue::setPronoun(const string &pn) { pronoun = pn; }
-void   Dialogue::setDesc(const string &d)     { description = d; }
+void   Dialogue::setIntro(const string &i)    { intro = i; }
+void   Dialogue::setLongIntro(const string &i){ longIntro = i; }
+void   Dialogue::setDefaultAnswer(const string &a){ defaultAnswer = a; }
 void   Dialogue::setTurnAwayProb(int prob)    { turnAwayProb = prob; }
-void   Dialogue::addKeyword(Keyword *kw)      { keywords[kw->getKeyword()] = kw; }
+
+void   Dialogue::addKeyword(Keyword *kw) {
+    if (keywords.find(kw->getKeyword()) != keywords.end() &&
+        keywords[kw->getKeyword()] != kw)
+        delete keywords[kw->getKeyword()];
+
+    keywords[kw->getKeyword()] = kw;
+}
 
 Dialogue::Keyword *Dialogue::operator[](const string &kw) {
     KeywordMap::iterator i = keywords.find(kw);
@@ -94,16 +114,30 @@ Dialogue::Action Dialogue::getAction() const {
         return NO_ACTION;
     else {
         if (attackProb - prob < 0x40)
-            return TURN_AWAY;
+            return END_CONVERSATION;
         else
             return ATTACK;
     }
 }
 
+string Dialogue::dump(const string &arg) {
+    string result;
+    if (arg == "") {
+        result = "keywords:\n";
+        for (KeywordMap::iterator i = keywords.begin(); i != keywords.end(); i++) {
+            result += i->first + "\n";
+        }
+    } else {
+        if (keywords.find(arg) != keywords.end())
+            result = keywords[arg]->getResponse();
+    }
+
+    return result;
+}
+
 /*
  * Conversation class 
  */ 
-
 
 Conversation::Conversation() : state(INTRO), script(new Script()) {
     logger = new Debug("debug/conversation.txt", "Conversation"); 
