@@ -81,6 +81,8 @@ public:
     int height() const { return h; }
     bool isIndexed() const { return indexed; }
 
+    void save(const string &filename);
+
 private:
     int w, h;
     bool indexed;

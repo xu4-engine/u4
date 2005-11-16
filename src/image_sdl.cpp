@@ -10,7 +10,7 @@
 #include "debug.h"
 #include "image.h"
 
-Image::Image() {
+Image::Image() : surface(NULL) {
 }
 
 /**
@@ -382,4 +382,12 @@ void Image::drawSubRectInvertedOn(Image *d, int x, int y, int rx, int ry, int rw
 
         SDL_BlitSurface(surface, &src, destSurface, &dest);
     }
+}
+
+/**
+ * Dumps the image to a file.  The file is always saved in .bmp
+ * format.  This is mainly used for debugging.
+ */
+void Image::save(const string &filename) {
+    SDL_SaveBMP(surface, filename.c_str());
 }
