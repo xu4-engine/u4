@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "direction.h"
-#include "xml.h"
 
 class ConfigElement;
 class Image;
