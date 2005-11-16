@@ -39,12 +39,17 @@ typedef enum {
 
 class Person : public Creature {
 public:
-    Person(MapTile tile = 0) : Creature(tile) {
-        setType(Object::PERSON);
-    }
+    Person(MapTile tile);
+    Person(const Person *p);
 
     bool canConverse() const;
     bool isVendor() const;
+    virtual string getName() const;
+    void goToStartLocation();
+    void setDialogue(Dialogue *d);
+    MapCoords &getStart() { return start; }
+    PersonNpcType getNpcType() const { return npcType; }
+    void setNpcType(PersonNpcType t);
 
     list<string> getConversationText(Conversation *cnv, const char *inquiry);
     string getPrompt(Conversation *cnv);
@@ -66,8 +71,7 @@ public:
     string hawkwindGetPrompt(const Conversation *cnv);
     void getQuestion(Conversation *cnv, string *question);
 
-public:
-    string name;
+private:
     Dialogue* dialogue;
     MapCoords start;    
     PersonNpcType npcType;

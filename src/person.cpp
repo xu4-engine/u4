@@ -24,6 +24,7 @@
 #include "names.h"
 #include "player.h"
 #include "savegame.h"
+#include "settings.h"
 #include "stats.h"
 #include "types.h"
 #include "u4file.h"
@@ -33,8 +34,6 @@
 using namespace std;
 
 vector<string> hawkwindText;
-vector<string> lbKeywords;
-vector<string> lbText;
 
 /* Hawkwind text indexes */
 #define HW_SPEAKONLYWITH 40
@@ -123,18 +122,20 @@ int personInit() {
     if (!avatar)
         return 0;
 
-    lbKeywords = u4read_stringtable(avatar, 87581, 24);
-    /* There's a \0 in the 19th string so we get a
-       spurious 20th entry */
-    lbText = u4read_stringtable(avatar, 87754, 25);
-    for (int i = 20; i < 24; i++)
-        lbText[i] = lbText[i+1];
-    lbText.pop_back();
-
     hawkwindText = u4read_stringtable(avatar, 74729, 53);
 
     u4fclose(avatar);
     return 1;
+}
+
+Person::Person(MapTile tile) : Creature(tile), start(0, 0) {
+    setType(Object::PERSON);
+    dialogue = NULL;
+    npcType = NPC_EMPTY;
+}
+
+Person::Person(const Person *p) : Creature(p->tile) {
+    *this = *p;
 }
 
 bool Person::canConverse() const {
@@ -148,6 +149,32 @@ bool Person::isVendor() const {
     return
         npcType >= NPC_VENDOR_WEAPONS &&
         npcType <= NPC_VENDOR_STABLE;
+}
+
+string Person::getName() const {
+    if (dialogue)
+        return dialogue->getName();
+    else
+        return "(unnamed person)";
+}
+
+void Person::goToStartLocation() {
+    setCoords(start);
+}
+
+void Person::setDialogue(Dialogue *d) {
+    dialogue = d;
+    if (tile.getTileType()->getName() == "beggar")
+        npcType = NPC_TALKER_BEGGAR;
+    else if (tile.getTileType()->getName() == "guard")
+        npcType = NPC_TALKER_GUARD;
+    else
+        npcType = NPC_TALKER;
+}
+
+void Person::setNpcType(PersonNpcType t) {
+    npcType = t;
+    ASSERT(!isVendor() || dialogue == NULL, "vendor has dialogue");
 }
 
 list<string> Person::getConversationText(Conversation *cnv, const char *inquiry) {
@@ -335,18 +362,13 @@ string Person::emptyGetIntro(Conversation *cnv) {
 string Person::talkerGetIntro(Conversation *cnv) {    
     string prompt = getPrompt(cnv);
 
-    string intro = "\nYou meet ";
-    intro += dialogue->getDesc();
-    intro += "\n";
-
-    // As far as I can tell, about 50% of the time they tell you their name
-    if (xu4_random(2) == 0) {
-        intro += "\n";
-        intro += dialogue->getPronoun();
-        intro += " says: I am ";
-        intro += dialogue->getName();
-        intro += "\n";
-    }
+    // As far as I can tell, about 50% of the time they tell you their
+    // name in the introduction
+    string intro;
+    if (xu4_random(2) == 0)
+        intro = dialogue->getIntro();
+    else
+        intro = dialogue->getLongIntro();
 
     intro += prompt;
 
@@ -359,13 +381,14 @@ string Person::talkerGetIntro(Conversation *cnv) {
 
 string Person::talkerGetResponse(Conversation *cnv, const char *inquiry) {
     string reply;
+    Virtue v;
     Dialogue::Action action = dialogue->getAction();
     
     reply = "\n";
     
     /* Does the person take action during the conversation? */
     switch(action) {
-    case Dialogue::TURN_AWAY:
+    case Dialogue::END_CONVERSATION:
         reply = dialogue->getPronoun();
         reply += " turns away!\n";
         cnv->state = Conversation::DONE;
@@ -373,7 +396,7 @@ string Person::talkerGetResponse(Conversation *cnv, const char *inquiry) {
 
     case Dialogue::ATTACK:
         reply = "\n";
-        reply += dialogue->getName();
+        reply += getName();
         reply += " says: On guard! Fool!";
         cnv->state = Conversation::ATTACK;
         return reply;
@@ -389,82 +412,47 @@ string Person::talkerGetResponse(Conversation *cnv, const char *inquiry) {
         cnv->state = Conversation::DONE;
     }
 
-    /*
-     * Check the talker's custom keywords before the standard keywords
-     * like HEAL and LOOK.  This behavior differs from u4dos, but fixes
-     * a couple conversation files which have keywords that conflict
-     * with the standard ones (e.g. Calabrini in Moonglow has HEAL for
-     * healer, which is unreachable in u4dos, but clearly more useful
-     * than "Fine." for health).
-     */
+    else if (npcType == NPC_TALKER_BEGGAR && strncasecmp(inquiry, "give", 4) == 0) {
+        reply.erase();
+        cnv->state = Conversation::GIVEBEGGAR;
+    }
+
+    else if (strncasecmp(inquiry, "join", 4) == 0 &&
+             c->party->canPersonJoin(getName(), &v)) {
+        CannotJoinError join = c->party->join(name);
+
+        if (join == JOIN_SUCCEEDED) {
+            reply += "I am honored to join thee!";
+            c->location->map->removeObject(this);
+            cnv->state = Conversation::DONE;
+        } else {
+            reply += "Thou art not ";
+            reply += (join == JOIN_NOT_VIRTUOUS) ? getVirtueAdjective(v) : "experienced";
+            reply += " enough for me to join thee.";
+        }
+    }
+
     else if ((*dialogue)[inquiry]) {        
         Dialogue::Keyword *kw = (*dialogue)[inquiry];
-        reply += kw->getResponse();
+        reply = kw->getResponse();
         
         // If it's a question keyword, then show the question.
-        if (kw->isQuestion()) {            
+        if (kw->isQuestion()) {
             cnv->question = kw->getQuestion();
             cnv->state = Conversation::ASK;
         }
     }    
 
-    else if (strncasecmp(inquiry, "look", 4) == 0) {
-        reply += "You see ";
-        reply += dialogue->getDesc();
-        if (isupper(reply[8]))
-            reply[8] = tolower(reply[8]);
-    }
-
-    else if (strncasecmp(inquiry, "name", 4) == 0) {
-        reply += dialogue->getPronoun();
-        reply += " says: I am ";
-        reply += dialogue->getName();
-    }        
-
-    else if (strncasecmp(inquiry, "give", 4) == 0) {
-        if (npcType == NPC_TALKER_BEGGAR) {
-            reply.erase();
-            cnv->state = Conversation::GIVEBEGGAR;
-        } else {
-            reply += dialogue->getPronoun();
-            reply += " says: I do not need thy gold.  Keep it!";
-        }
-    }
-
-    else if (strncasecmp(inquiry, "join", 4) == 0) {
-        Virtue v;
-
-        if (c->party->canPersonJoin(name, &v)) {
-
-            CannotJoinError join = c->party->join(name);
-
-            if (join == JOIN_SUCCEEDED) {
-                City *city = dynamic_cast<City*>(c->location->map);
-                reply += "I am honored to join thee!";
-                city->removeObject(this);
-                cnv->state = Conversation::DONE;
-            } else {
-                reply += "Thou art not ";
-                reply += (join == JOIN_NOT_VIRTUOUS) ? getVirtueAdjective(v) : "experienced";
-                reply += " enough for me to join thee.";
-            }
-        } else {
-            reply += dialogue->getPronoun();
-            reply += " says: I cannot join thee.";
-        }
-    }
-
-    /* 
-     * This little easter egg appeared in the Amiga version of Ultima IV.
-     * I've never figured out what the number means.
-     * "Banjo" Bob Hardy was the programmer for the Amiga version.
-     */
-    else if (strncasecmp(inquiry, "ojna", 4) == 0) {
-        reply += "Hi Banjo Bob!\nYour secret\nnumber is\n4F4A4E0A";
+    else if (settings.debug && strncasecmp(inquiry, "dump", 4) == 0) {
+        vector<string> words = split(inquiry, " \t");
+        if (words.size() <= 1)
+            reply = dialogue->dump("");
+        else
+            reply = dialogue->dump(words[1]);
     }
 
     else
-        reply += "That I cannot\nhelp thee with.";
+        reply += dialogue->getDefaultAnswer();
 
     return reply;
 }
@@ -575,7 +563,6 @@ string Person::lordBritishGetIntro(Conversation *cnv) {
 
 string Person::lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
     string reply;
-    int i;
 
     if (inquiry[0] == '\0' ||
         strcasecmp(inquiry, "bye") == 0) {
@@ -594,22 +581,8 @@ string Person::lordBritishGetResponse(Conversation *cnv, const char *inquiry) {
         reply += lordBritishGetHelp(cnv);
     }
 
-    /* since the original game files are a bit sketchy on the 'abyss' keyword,
-       let's handle it here just to be safe :) */
-    else if (strncasecmp(inquiry, "abys", 4) == 0) {
-        reply = "\n\n\n\n\nHe says:\nThe Great Stygian Abyss is the darkest pocket of evil "
-                "remaining in Britannia!\n\n\n\n\nIt is said that in the deepest recesses of "
-                "the Abyss is the Chamber of the Codex!\n\n\n\nIt is also said that only one "
-                "of highest Virtue may enter this Chamber, one such as an Avatar!!!\n";
-    }
-
-    else {
-        for (i = 0; i < 24; i++) {
-            if (strncasecmp(inquiry, lbKeywords[i].c_str(), 4) == 0)
-                return lbText[i];
-        }
-        reply = "\nHe says: I\ncannot help thee\nwith that.\n";
-    }
+    else
+        reply = talkerGetResponse(cnv, inquiry);
 
     return reply;
 }
