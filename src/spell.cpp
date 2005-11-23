@@ -294,7 +294,7 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
     *error = spellCheckPrerequisites(spell, character);
 
     // subtract the mixture for even trying to cast the spell
-    c->saveGame->mixtures[spell]--;
+    AdjustValueMin(c->saveGame->mixtures[spell], -1, 0);
         
     if (*error != CASTERR_NOERROR)
         return false;
@@ -302,7 +302,7 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
     // If there's a negate magic aura, spells fail!
     if (*c->aura == Aura::NEGATE) {
         *error = CASTERR_FAILED;
-        return 0;
+        return false;
     }
 
     // subtract the mp needed for the spell
