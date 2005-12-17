@@ -161,6 +161,7 @@ vector<Layout *> layouts;
 vector<TileAnimSet *> tileanimSets;
 vector<string> gemLayoutNames;
 vector<string> filterNames;
+vector<string> lineOfSightStyles;
 Layout *gemlayout = NULL;
 TileAnimSet *tileanims = NULL;
 ImageInfo *charsetInfo = NULL;
@@ -175,6 +176,10 @@ void screenInit() {
     filterNames.push_back("2xBi");
     filterNames.push_back("2xSaI");
     filterNames.push_back("Scale2x");
+
+    lineOfSightStyles.clear();
+    lineOfSightStyles.push_back("DOS");
+    lineOfSightStyles.push_back("Enhanced");
 
     charsetInfo = NULL;    
     gemTilesInfo = NULL;
@@ -300,6 +305,10 @@ const vector<string> &screenGetFilterNames() {
 
 const vector<string> &screenGetGemLayoutNames() {
     return gemLayoutNames;
+}
+
+const vector<string> &screenGetLineOfSightStyles() {
+    return lineOfSightStyles;
 }
 
 void screenLoadGraphicsFromConf() {

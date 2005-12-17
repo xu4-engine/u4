@@ -30,6 +30,7 @@ using std::string;
 #define DEFAULT_FILTER                  "Scale2x"
 #define DEFAULT_VIDEO_TYPE              "VGA"
 #define DEFAULT_GEM_LAYOUT              "Standard"
+#define DEFAULT_LINEOFSIGHT             "DOS"
 #define DEFAULT_SCREEN_SHAKES           1
 #define DEFAULT_GAMMA                   100
 #define DEFAULT_MUSIC_VOLUME            1
@@ -112,6 +113,7 @@ public:
 
     string              filter;
     string              gemLayout;
+    string              lineOfSight;
     string              videoType;
     string              battleDiff;
     string              logging;

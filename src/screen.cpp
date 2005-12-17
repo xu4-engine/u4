@@ -14,6 +14,7 @@
 #include "context.h"
 #include "debug.h"
 #include "dngview.h"
+#include "error.h"
 #include "location.h"
 #include "names.h"
 #include "object.h"
@@ -26,6 +27,8 @@
 using std::vector;
 
 void screenFindLineOfSight(vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]);
+void screenFindLineOfSightDOS(vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]);
+void screenFindLineOfSightEnhanced(vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]);
 
 int screenNeedPrompt = 1;
 int screenCurrentCycle = 0;
@@ -321,10 +324,14 @@ void screenSetCursorPos(int x, int y) {
     screenCursorY = y;
 }
 
+/**
+ * Finds which tiles in the viewport are visible from the avatars
+ * location in the middle. (original DOS algorithm)
+ */
 void screenFindLineOfSight(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
     int x, y;
 
-    if (c == NULL)
+    if (!c)
         return;
 
     /*
@@ -347,6 +354,22 @@ void screenFindLineOfSight(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H
             screenLos[x][y] = 0;
         }
     }
+
+    if (settings.lineOfSight == "DOS")
+        screenFindLineOfSightDOS(viewportTiles);
+    else if (settings.lineOfSight == "Enhanced")
+        screenFindLineOfSightEnhanced(viewportTiles);
+    else
+        errorFatal("unknown line of sight style %s!\n", settings.lineOfSight.c_str());
+}        
+
+
+/**
+ * Finds which tiles in the viewport are visible from the avatars
+ * location in the middle. (original DOS algorithm)
+ */
+void screenFindLineOfSightDOS(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
+    int x, y;
 
     screenLos[VIEWPORT_W / 2][VIEWPORT_H / 2] = 1;
 
@@ -421,6 +444,208 @@ void screenFindLineOfSight(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H
             else if (screenLos[x - 1][y - 1] &&
                      !viewportTiles[x - 1][y - 1].front().getTileType()->isOpaque())
                 screenLos[x][y] = 1;
+        }
+    }
+}
+
+/**
+ * Finds which tiles in the viewport are visible from the avatars
+ * location in the middle.
+ *
+ * A new, more accurate LOS function
+ *
+ * Based somewhat off Andy McFadden's 1994 article,
+ *   "Improvements to a Fast Algorithm for Calculating Shading
+ *   and Visibility in a Two-Dimensional Field"
+ *   -----
+ *   http://www.fadden.com/techmisc/fast-los.html
+ *
+ * This function uses a lookup table to get the correct shadowmap,
+ * therefore, the table will need to be updated if the viewport
+ * dimensions increase. Also, the function assumes that the
+ * viewport width and height are odd values and that the player
+ * is always at the center of the screen.
+ */
+void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
+    int x, y;
+
+    /*
+     * the shadow rasters for each viewport octant
+     *
+     * shadowRaster[0][0]    // number of raster segments in this shadow
+     * shadowRaster[0][1]    // #1 shadow bitmask value (low three bits) + "newline" flag (high bit)
+     * shadowRaster[0][2]    // #1 length
+     * shadowRaster[0][3]    // #2 shadow bitmask value
+     * shadowRaster[0][4]    // #2 length
+     * shadowRaster[0][5]    // #3 shadow bitmask value
+     * shadowRaster[0][6]    // #3 length
+     * ...etc...
+     */
+    const int shadowRaster[14][13] = {
+        { 6, __VCH, 4, _N_CH, 1, __VCH, 3, _N___, 1, ___CH, 1, __VCH, 1 },    // raster_1_0
+        { 6, __VC_, 1, _NVCH, 2, __VC_, 1, _NVCH, 3, _NVCH, 2, _NVCH, 1 },    // raster_1_1
+        //
+        { 4, __VCH, 3, _N__H, 1, ___CH, 1, __VCH, 1,     0, 0,     0, 0 },    // raster_2_0
+        { 6, __VC_, 2, _N_CH, 1, __VCH, 2, _N_CH, 1, __VCH, 1, _N__H, 1 },    // raster_2_1
+        { 6, __V__, 1, _NVCH, 1, __VC_, 1, _NVCH, 1, __VC_, 1, _NVCH, 1 },    // raster_2_2
+        //
+        { 2, __VCH, 2, _N__H, 2,     0, 0,     0, 0,     0, 0,     0, 0 },    // raster_3_0
+        { 3, __VC_, 2, _N_CH, 1, __VCH, 1,     0, 0,     0, 0,     0, 0 },    // raster_3_1
+        { 3, __VC_, 1, _NVCH, 2, _N_CH, 1,     0, 0,     0, 0,     0, 0 },    // raster_3_2
+        { 3, _NVCH, 1, __V__, 1, _NVCH, 1,     0, 0,     0, 0,     0, 0 },    // raster_3_3
+        //
+        { 2, __VCH, 1, _N__H, 1,     0, 0,     0, 0,     0, 0,     0, 0 },    // raster_4_0
+        { 2, __VC_, 1, _N__H, 1,     0, 0,     0, 0,     0, 0,     0, 0 },    // raster_4_1
+        { 2, __VC_, 1, _N_CH, 1,     0, 0,     0, 0,     0, 0,     0, 0 },    // raster_4_2
+        { 2, __V__, 1, _NVCH, 1,     0, 0,     0, 0,     0, 0,     0, 0 },    // raster_4_3
+        { 2, __V__, 1, _NVCH, 1,     0, 0,     0, 0,     0, 0,     0, 0 }     // raster_4_4
+    };
+
+    /*
+     * As each viewport tile is processed, it will store the bitmask for the shadow it casts.
+     * Later, after processing all octants, the entire viewport will be marked visible except
+     * for those tiles that have the __VCH bitmask.
+     */
+    const int _OCTANTS = 8;
+    const int _NUM_RASTERS_COLS = 4;
+    
+    int octant;
+    int xOrigin, yOrigin, xSign, ySign, reflect, xTile, yTile, xTileOffset, yTileOffset;
+
+    for (octant = 0; octant < _OCTANTS; octant++) {
+        switch (octant) {
+            case 0:  xSign=  1;  ySign=  1;  reflect=false;  break;        // lower-right
+            case 1:  xSign=  1;  ySign=  1;  reflect=true;   break;
+            case 2:  xSign=  1;  ySign= -1;  reflect=true;   break;        // lower-left
+            case 3:  xSign= -1;  ySign=  1;  reflect=false;  break;
+            case 4:  xSign= -1;  ySign= -1;  reflect=false;  break;        // upper-left
+            case 5:  xSign= -1;  ySign= -1;  reflect=true;   break;
+            case 6:  xSign= -1;  ySign=  1;  reflect=true;   break;        // upper-right
+            case 7:  xSign=  1;  ySign= -1;  reflect=false;  break;
+        }
+
+        // determine the origin point for the current LOS octant
+        xOrigin = VIEWPORT_W / 2;
+        yOrigin = VIEWPORT_H / 2;
+
+        // make sure the segment doesn't reach out of bounds
+        int maxWidth      = xOrigin;
+        int maxHeight     = yOrigin;
+        int currentRaster = 0;
+
+        // just in case the viewport isn't square, swap the width and height
+        if (reflect) {
+            // swap height and width for later use
+            maxWidth ^= maxHeight;
+            maxHeight ^= maxWidth;
+            maxWidth ^= maxHeight;
+        }
+
+        // check the visibility of each tile
+        for (int currentCol = 1; currentCol <= _NUM_RASTERS_COLS; currentCol++) {
+            for (int currentRow = 0; currentRow <= currentCol; currentRow++) {
+                // swap X and Y to reflect the octant rasters
+                if (reflect) {
+                    xTile = xOrigin+(currentRow*ySign);
+                    yTile = yOrigin+(currentCol*xSign);
+                }
+                else {
+                    xTile = xOrigin+(currentCol*xSign);
+                    yTile = yOrigin+(currentRow*ySign);
+                }
+
+                if (viewportTiles[xTile][yTile].front().getTileType()->isOpaque()) {
+                    // a wall was detected, so go through the raster for this wall
+                    // segment and mark everything behind it with the appropriate
+                    // shadow bitmask.
+                    //
+                    // first, get the correct raster
+                    //
+                    if ((currentCol==1) && (currentRow==0)) { currentRaster=0; }
+                    else if ((currentCol==1) && (currentRow==1)) { currentRaster=1; }
+                    else if ((currentCol==2) && (currentRow==0)) { currentRaster=2; }
+                    else if ((currentCol==2) && (currentRow==1)) { currentRaster=3; }
+                    else if ((currentCol==2) && (currentRow==2)) { currentRaster=4; }
+                    else if ((currentCol==3) && (currentRow==0)) { currentRaster=5; }
+                    else if ((currentCol==3) && (currentRow==1)) { currentRaster=6; }
+                    else if ((currentCol==3) && (currentRow==2)) { currentRaster=7; }
+                    else if ((currentCol==3) && (currentRow==3)) { currentRaster=8; }
+                    else if ((currentCol==4) && (currentRow==0)) { currentRaster=9; }
+                    else if ((currentCol==4) && (currentRow==1)) { currentRaster=10; }
+                    else if ((currentCol==4) && (currentRow==2)) { currentRaster=11; }
+                    else if ((currentCol==4) && (currentRow==3)) { currentRaster=12; }
+                    else { currentRaster=13; }  // currentCol and currentRow must equal 4
+
+                    xTileOffset = 0;
+                    yTileOffset = 0;
+
+                    //========================================
+                    for (int currentSegment = 0; currentSegment < shadowRaster[currentRaster][0]; currentSegment++) {
+                        // each shadow segment is 2 bytes
+                        int shadowType   = shadowRaster[currentRaster][currentSegment*2+1];
+                        int shadowLength = shadowRaster[currentRaster][currentSegment*2+2];
+
+                        // update the raster length to make sure it fits in the viewport
+                        shadowLength = (shadowLength+1+yTileOffset > maxWidth ? maxWidth : shadowLength);
+
+                        // check to see if we should move up a row
+                        if (shadowType & 0x80) {
+                            // remove the flag from the shadowType
+                            shadowType ^= _N___;
+//                            if (currentRow + yTileOffset >= maxHeight) {
+                            if (currentRow + yTileOffset > maxHeight) {
+                                break;
+                            }
+                            xTileOffset = yTileOffset;
+                            yTileOffset++;
+                        }
+
+                        /* it is seemingly unnecessary to swap the edges for
+                         * shadow tiles, because we only care about shadow
+                         * tiles that have all three parts (V, C, and H)
+                         * flagged.  if a tile has fewer than three, it is
+                         * ignored during the draw phase, so vertical and
+                         * horizontal shadow edge accuracy isn't important
+                         */
+                        // if reflecting the octant, swap the edges
+//                        if (reflect) {
+//                            int shadowTemp = 0;
+//                            // swap the vertical and horizontal shadow edges
+//                            if (shadowType & __V__) { shadowTemp |= ____H; }
+//                            if (shadowType & ___C_) { shadowTemp |= ___C_; }
+//                            if (shadowType & ____H) { shadowTemp |= __V__; }
+//                            shadowType = shadowTemp;
+//                        }
+
+                        for (int currentShadow = 1; currentShadow <= shadowLength; currentShadow++) {
+                            // apply the shadow to the shadowMap
+                            if (reflect) {
+                                screenLos[xTile + ((yTileOffset) * ySign)][yTile + ((currentShadow+xTileOffset) * xSign)] |= shadowType;
+                            }
+                            else {
+                                screenLos[xTile + ((currentShadow+xTileOffset) * xSign)][yTile + ((yTileOffset) * ySign)] |= shadowType;
+                            }
+                        }
+                        xTileOffset += shadowLength;
+                    }  // for (int currentSegment = 0; currentSegment < shadowRaster[currentRaster][0]; currentSegment++)
+                    //========================================
+
+                }  // if (viewportTiles[xTile][yTile].front().getTileType()->isOpaque())
+            }  // for (int currentRow = 0; currentRow <= currentCol; currentRow++)
+        }  // for (int currentCol = 1; currentCol <= _NUM_RASTERS_COLS; currentCol++)
+    }  // for (octant = 0; octant < _OCTANTS; octant++)
+
+    // go through all tiles on the viewable area and set the appropriate visibility
+    for (y = 0; y < VIEWPORT_H; y++) {
+        for (x = 0; x < VIEWPORT_W; x++) {
+            // if the shadow flags equal __VCH, hide it, otherwise it's fully visible
+            //
+            if ((screenLos[x][y] & __VCH) == __VCH) {
+                screenLos[x][y] = 0;
+            }
+            else {
+                screenLos[x][y] = 1;
+            }
         }
     }
 }

@@ -42,6 +42,24 @@ class TileView;
 #define PRINTF_LIKE(x,y)
 #endif
 
+/*
+ * bitmasks for LOS shadows
+ */
+#define ____H 0x01    // obscured along the horizontal face
+#define ___C_ 0x02    // obscured at the center
+#define __V__ 0x04    // obscured along the vertical face
+#define _N___ 0x80    // start of new raster
+
+#define ___CH 0x03
+#define __VCH 0x07
+#define __VC_ 0x06
+
+#define _N__H 0x81
+#define _N_CH 0x83
+#define _NVCH 0x87
+#define _NVC_ 0x86
+#define _NV__ 0x84
+
 typedef enum {
     MC_DEFAULT,
     MC_WEST,
@@ -69,6 +87,7 @@ void screenIconify(void);
 
 const std::vector<string> &screenGetGemLayoutNames();
 const std::vector<string> &screenGetFilterNames();
+const std::vector<string> &screenGetLineOfSightStyles();
 
 void screenDrawImage(const string &name, int x = 0, int y = 0);
 void screenDrawImageInMapArea(const string &bkgd);

@@ -177,12 +177,13 @@ IntroController::IntroController() :
     videoMenu.setTitle("Video Options:", 1, 0);
     videoMenu.add(new StringMenuItem("Graphics          %s", 5, 2, 'g', &settingsChanged.videoType, imageMgr->getSetNames()));
     videoMenu.add(new StringMenuItem("Gem Layout        %s", 5, 3, 0, &settingsChanged.gemLayout, screenGetGemLayoutNames()));
-    videoMenu.add(new IntMenuItem   ("Scale             x%d", 5, 4, 's', reinterpret_cast<int *>(&settingsChanged.scale), 1, 5, 1));
-    videoMenu.add((new BoolMenuItem ("Mode              %s", 5, 5, 'm', &settingsChanged.fullscreen))->
+    videoMenu.add(new StringMenuItem("Line Of Sight     %s", 5, 4, 0, &settingsChanged.lineOfSight, screenGetLineOfSightStyles()));
+    videoMenu.add(new IntMenuItem   ("Scale             x%d", 5, 5, 's', reinterpret_cast<int *>(&settingsChanged.scale), 1, 5, 1));
+    videoMenu.add((new BoolMenuItem ("Mode              %s", 5, 6, 'm', &settingsChanged.fullscreen))->
                   setValueStrings("Fullscreen", "Window"));
-    videoMenu.add(new StringMenuItem("Filter            %s", 5, 6, 'f', &settingsChanged.filter, screenGetFilterNames()));
-    videoMenu.add(new BoolMenuItem  ("Screen Shaking    %s", 5, 7, 'k', &settingsChanged.screenShakes));
-    videoMenu.add(new IntMenuItem   ("Gamma",                5, 8, 0, &settingsChanged.gamma, 50, 150, 10));
+    videoMenu.add(new StringMenuItem("Filter            %s", 5, 7, 'f', &settingsChanged.filter, screenGetFilterNames()));
+    videoMenu.add(new BoolMenuItem  ("Screen Shaking    %s", 5, 8, 'k', &settingsChanged.screenShakes));
+    videoMenu.add(new IntMenuItem   ("Gamma",                5, 9, 0, &settingsChanged.gamma, 50, 150, 10));
     videoMenu.add(USE_SETTINGS, "Use These Settings", 5, 17, 'u');
     videoMenu.add(CANCEL, "Cancel", 5, 18, 'c');
     videoMenu.addShortcutKey(CANCEL, ' ');
@@ -996,7 +997,7 @@ void IntroController::updateVideoMenu(MenuEvent &event) {
     }
 
     backgroundArea.draw(BKGD_INTRO_EXTENDED);
-    extendedMenuArea.textAt(23, 8, "%.1f", static_cast<double>(settingsChanged.gamma) / 100);
+    extendedMenuArea.textAt(23, 9, "%.1f", static_cast<double>(settingsChanged.gamma) / 100);
 }
 
 void IntroController::updateSoundMenu(MenuEvent &event) {

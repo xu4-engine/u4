@@ -41,6 +41,8 @@ bool SettingsData::operator==(const SettingsData &s) const {
         return false;
     if (gemLayout != s.gemLayout)
         return false;
+    if (lineOfSight != s.lineOfSight)
+        return false;
     if (videoType != s.videoType)
         return false;
     if (battleDiff != s.battleDiff)
@@ -139,6 +141,7 @@ bool Settings::read() {
     filter                = DEFAULT_FILTER;
     videoType             = DEFAULT_VIDEO_TYPE;
     gemLayout             = DEFAULT_GEM_LAYOUT;
+    lineOfSight           = DEFAULT_LINEOFSIGHT;
     screenShakes          = DEFAULT_SCREEN_SHAKES;
     gamma                 = DEFAULT_GAMMA;
     musicVol              = DEFAULT_MUSIC_VOLUME;
@@ -198,6 +201,8 @@ bool Settings::read() {
             videoType = buffer + strlen("video=");
         else if (strstr(buffer, "gemLayout=") == buffer)
             gemLayout = buffer + strlen("gemLayout=");
+        else if (strstr(buffer, "lineOfSight=") == buffer)
+            lineOfSight = buffer + strlen("lineOfSight=");
         else if (strstr(buffer, "screenShakes=") == buffer)
             screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);        
         else if (strstr(buffer, "gamma=") == buffer)
@@ -319,6 +324,7 @@ bool Settings::write() {
             "filter=%s\n"
             "video=%s\n"
             "gemLayout=%s\n"
+            "lineOfSight=%s\n"
             "screenShakes=%d\n"
             "gamma=%d\n"
             "musicVol=%d\n"
@@ -358,6 +364,7 @@ bool Settings::write() {
             filter.c_str(),
             videoType.c_str(),
             gemLayout.c_str(),
+            lineOfSight.c_str(),
             screenShakes,
             gamma,
             musicVol,
