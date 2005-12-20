@@ -419,7 +419,7 @@ string Person::talkerGetResponse(Conversation *cnv, const char *inquiry) {
 
     else if (strncasecmp(inquiry, "join", 4) == 0 &&
              c->party->canPersonJoin(getName(), &v)) {
-        CannotJoinError join = c->party->join(name);
+        CannotJoinError join = c->party->join(getName());
 
         if (join == JOIN_SUCCEEDED) {
             reply += "I am honored to join thee!";
