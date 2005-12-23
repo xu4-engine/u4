@@ -232,7 +232,7 @@ int Creature::getHp() const              { return hp; }
 int Creature::getXp() const              { return xp; }
 const string &Creature::getWorldrangedtile() const { return worldrangedtile; }
 SlowedType Creature::getSlowedType() const         { return slowedType; }
-int Creature::Creature::getEncounterSize() const   { return encounterSize; }
+int Creature::getEncounterSize() const   { return encounterSize; }
 unsigned char Creature::getResists() const         { return resists; }
 
 void Creature::setName(string s)         { name = s; }
