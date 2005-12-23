@@ -229,7 +229,7 @@ void GameController::init() {
     c->combat = new CombatController();
 
     /* initialize our start location */
-    Map *map = mapMgr->get(c->saveGame->location);
+    Map *map = mapMgr->get(MapId(c->saveGame->location));
     TRACE_LOCAL(gameDbg, "Initializing start location.");
 
     /* initialize the moons (must be done from the world map) */
