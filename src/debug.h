@@ -10,7 +10,7 @@
  * __FUNCTION__.  GCC provides __FUNCTION__ as a variable, not as a
  * macro, so detecting with #if __FUNCTION__ doesn't work.
  */
-#if __GNUC__ || __FUNCTION__
+#if defined(__GNUC__) || defined(__FUNCTION__)
 #   define XU4_FUNCTION __FUNCTION__
 #else
 #   define XU4_FUNCTION ""
@@ -52,12 +52,15 @@ void print_trace(FILE *file);
 #   endif /* ifdef NDEBUG */
 #else
 
-void ASSERT(int exp, const char *desc, ...);
+void ASSERT(bool exp, const char *desc, ...);
 
 #endif /* if HAVE_VARIADIC_MACROS */
 
 /**
- * Provides trace functionality to debug apps.
+ * A debug class that uses the TRACE() and TRACE_LOCAL() macros.
+ * It writes debug info to the filename provided, creating
+ * any directory structure it needs to ensure the file will
+ * be created successfully.
  */
 class Debug {
 public:
@@ -67,6 +70,10 @@ public:
     void trace(const string &msg, const string &file = "", const string &func = "", const int line = -1, bool glbl = true);
 
 private:        
+    // disallow assignments, copy contruction
+    Debug(const Debug&);
+    const Debug &operator=(const Debug &);
+
     static bool loggingEnabled(const string &name);
 
     bool disabled;

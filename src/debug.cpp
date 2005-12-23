@@ -64,7 +64,7 @@ void print_trace(FILE *file) {
  * Stub for systems without variadic macros.  Unfortunately, this
  * assert won't be very useful.
  */
-void ASSERT(int exp, const char *desc, ...) {
+void ASSERT(bool exp, const char *desc, ...) {
 #ifndef NDEBUG
     va_list args;
     va_start(args, desc);
