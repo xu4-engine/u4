@@ -16,7 +16,7 @@
 #include "textview.h"
 #include "tileview.h"
 
-struct IntroObjectState;
+class IntroObjectState;
 class Tile;
 
 /**
