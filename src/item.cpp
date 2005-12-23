@@ -519,7 +519,7 @@ void itemUse(const string &shortname) {
             item = &items[i];
 
             /* item name found, see if we have that item in our inventory */
-            if (!(*items[i].isItemInInventory) || (*items[i].isItemInInventory)(items[i].data)) {
+            if (!items[i].isItemInInventory || (*items[i].isItemInInventory)(items[i].data)) {
 
                 /* use the item, if we can! */
                 if (!item || !item->useItem)
