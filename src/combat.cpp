@@ -67,12 +67,12 @@ CombatController::CombatController() : map(NULL) {
 }
 
 CombatController::CombatController(CombatMap *m) : map(m) {
-    game->setMap(map, true, NULL);    
+    game->setMap(map, true, NULL, this);
     c->party->addObserver(this);
 }
 CombatController::CombatController(MapId id) {
     map = getCombatMap(mapMgr->get(id));
-    game->setMap(map, true, NULL);
+    game->setMap(map, true, NULL, this);
     c->party->addObserver(this);
     forceStandardEncounterSize = false;
 }

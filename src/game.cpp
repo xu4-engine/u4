@@ -483,12 +483,14 @@ void gameUpdateScreen() {
     }
 }
 
-void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
+void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, TurnCompleter *turnCompleter) {
     int viewMode;
     LocationContext context;
-    TurnCompleter *turnCompleter = this;
     int activePlayer = c->party->getActivePlayer();
     MapCoords coords;
+
+    if (!turnCompleter)
+        turnCompleter = this;
 
     if (portal)
         coords = portal->start;
@@ -515,7 +517,6 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal) {
         coords = MapCoords(-1, -1); /* set these to -1 just to be safe; we don't need them */
         context = CTX_COMBAT;
         viewMode = VIEW_NORMAL;
-        turnCompleter = c->combat;
         activePlayer = -1; /* different active player for combat, defaults to 'None' */
         break;
     case Map::CITY:    
@@ -1538,6 +1539,7 @@ bool attackAt(const Coords &coords) {
         c->party->adjustKarma(KA_ATTACKED_GOOD);
 
     delete(c->combat);
+    c->combat = NULL;
     c->combat = new CombatController(CombatMap::mapForTile(ground, c->party->transport.getTileType(), m));
     c->combat->init(m);
     c->combat->begin();    

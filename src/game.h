@@ -96,7 +96,7 @@ public:
 
     /* main game functions */
     void init();
-    void setMap(Map *map, bool saveLocation, const Portal *portal);
+    void setMap(Map *map, bool saveLocation, const Portal *portal, TurnCompleter *turnCompleter = NULL);
     int exitToParentMap();
     virtual void finishTurn();
 
