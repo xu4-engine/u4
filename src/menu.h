@@ -56,8 +56,10 @@ public:
     Menu();
     ~Menu();
 
+    void                    removeAll();
+
     void                    add(int id, string text, short x, short y, int shortcutKey = 0);
-    MenuItem *              add(MenuItem *item);
+    MenuItem *              add(int id, MenuItem *item);
     void                    addShortcutKey(int id, int shortcutKey);
     void                    setClosesMenu(int id);
     MenuItemList::iterator  getCurrent();

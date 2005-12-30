@@ -132,18 +132,64 @@ void StringMenuItem::activate(MenuEvent &event) {
     }
 }
 
-IntMenuItem::IntMenuItem(string text, short x, short y, int shortcutKey, int *val, int min, int max, int increment) : 
+IntMenuItem::IntMenuItem(string text, short x, short y, int shortcutKey, int *val, int min, int max, int increment, menuOutputType output) :
     MenuItem(text, x, y, shortcutKey),
     val(val),
     min(min),
     max(max),
-    increment(increment)
+    increment(increment),
+    output(output)
 {
 }
 
-string IntMenuItem::getText() const { 
+string IntMenuItem::getText() const {
+    // do custom formatting for some menu entries,
+    // and generate a string of the results
+    char outputBuffer[10];
+    switch (output){
+        case MENU_OUTPUT_GAMMA:
+            snprintf(outputBuffer, sizeof(outputBuffer), "%.1f", static_cast<float>(*val) / 100);
+            break;
+        case MENU_OUTPUT_SPELL:
+            snprintf(outputBuffer, sizeof(outputBuffer), "%3g sec", static_cast<double>(*val) / 5);
+            break;
+        case MENU_OUTPUT_SHRINE:
+/*
+ * is this code really necessary?  the increments/decrements can be handled by IntMenuItem(),
+ * as well as the looping once the max is reached.  more importantly, the minimum value is
+ * inconstant, and based upon another setting that can be changed independent of this one.
+ * This variable could be set to it's minimum value, but when the gameCyclesPerSecond setting
+ * is changed, the value of this setting could become out of bounds.
+ *
+ * settings.shrineTime is only used in one function within shrine.cpp, and that code appears
+ * to handle the min value, caping the minimum interval at 1.
+ *  
+            // make sure that the setting we're trying for is even possible
+            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+                settingsChanged.shrineTime++;
+                if (settingsChanged.shrineTime > MAX_SHRINE_TIME)
+                    settingsChanged.shrineTime = MEDITATION_MANTRAS_PER_CYCLE / settingsChanged.gameCyclesPerSecond;
+            } else if (event.getType() == MenuEvent::DECREMENT) {
+                settingsChanged.shrineTime--;
+                if (settingsChanged.shrineTime < (MEDITATION_MANTRAS_PER_CYCLE / settingsChanged.gameCyclesPerSecond))
+                    settingsChanged.shrineTime = MAX_SHRINE_TIME;
+            }
+ *
+ */
+            snprintf(outputBuffer, sizeof(outputBuffer), "%d sec", *val);
+            break;
+        default:
+            break;
+    }
+
+    // the buffer must contain a field character %d or %s depending
+    // on the menuOutputType selected. MENU_OUTPUT_INT always uses
+    // %d, whereas all others use %s
     char buffer[64];
-    snprintf(buffer, sizeof(buffer), text.c_str(), *val);
+    if (output != MENU_OUTPUT_INT)
+        snprintf(buffer, sizeof(buffer), text.c_str(), outputBuffer);
+    else
+        snprintf(buffer, sizeof(buffer), text.c_str(), *val);
     return buffer;
 }
 
@@ -159,4 +205,3 @@ void IntMenuItem::activate(MenuEvent &event) {
             *val = max;
     }
 }
-

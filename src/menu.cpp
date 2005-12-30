@@ -23,6 +23,10 @@ Menu::~Menu() {
         delete *i;
 }
 
+void Menu::removeAll() {
+    items.clear();
+}
+
 /**
  * Adds an item to the menu list and returns the menu
  */
@@ -32,7 +36,8 @@ void Menu::add(int id, string text, short x, short y, int sc) {
     items.push_back(item);
 }
 
-MenuItem *Menu::add(MenuItem *item) {
+MenuItem *Menu::add(int id, MenuItem *item) {
+    item->setId(id);
     items.push_back(item);
     return item;
 }
@@ -279,6 +284,9 @@ bool Menu::activateItemByShortcut(int key, MenuEvent::Type action) {
         const set<int> &shortcuts = (*i)->getShortcutKeys();
         if (shortcuts.find(key) != shortcuts.end()) {
             activateItem((*i)->getId(), action);
+            // if the selection doesn't close the menu, highlight the selection
+            if (!(*i)->getClosesMenu())
+                setCurrent((*i)->getId());
             return true;
         }
     }

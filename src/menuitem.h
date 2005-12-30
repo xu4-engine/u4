@@ -15,6 +15,18 @@ using std::vector;
 
 class MenuEvent;
 
+/**
+ * custom output types for with menu items that need
+ * to perform special calculations before displaying
+ * its associated value
+ */
+typedef enum {
+    MENU_OUTPUT_INT,
+    MENU_OUTPUT_GAMMA,
+    MENU_OUTPUT_SPELL,
+    MENU_OUTPUT_SHRINE
+} menuOutputType;
+
 class MenuItem {
 public:
     MenuItem(string text, short x, short y, int shortcutKey = 0);
@@ -94,7 +106,7 @@ protected:
  */
 class IntMenuItem : public MenuItem {
 public:
-    IntMenuItem(string text, short x, short y, int shortcutKey, int *val, int min, int max, int increment);
+    IntMenuItem(string text, short x, short y, int shortcutKey, int *val, int min, int max, int increment, menuOutputType output=MENU_OUTPUT_INT);
 
     virtual void activate(MenuEvent &event);
     virtual string getText() const;
@@ -102,6 +114,7 @@ public:
 protected:
     int *val;
     int min, max, increment;
+    menuOutputType output;
 };
 
 #endif
