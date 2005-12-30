@@ -26,7 +26,8 @@ class Settings;
 #define BKGD_CHARSET "charset"
 #define BKGD_BORDERS "borders"
 #define BKGD_INTRO "title"
-#define BKGD_INTRO_EXTENDED "titlex"
+#define BKGD_OPTIONS_TOP "options_top"
+#define BKGD_OPTIONS_BTM "options_btm"
 #define BKGD_TREE "tree"
 #define BKGD_PORTAL "portal"
 #define BKGD_OUTSIDE "outside"
@@ -66,7 +67,11 @@ class Settings;
 enum ImageFixup {
     FIXUP_NONE,
     FIXUP_INTRO,
-    FIXUP_INTRO_EXTENDED,
+/*
+ * @VERIFY: no longer being used?
+ *
+ *    FIXUP_INTRO_EXTENDED,
+ */
     FIXUP_ABYSS,
     FIXUP_ABACUS,
     FIXUP_DUNGNS
@@ -120,7 +125,11 @@ private:
     ImageInfo *getInfoFromSet(const string &name, ImageSet *set);
 
     void fixupIntro(Image *im, int prescale);
-    void fixupIntroExtended(Image *im, int prescale);
+/*
+ * @VERIFY: no longer being used?
+ *
+ *    void fixupIntroExtended(Image *im, int prescale);
+ */
     void fixupAbyssVision(Image *im, int prescale);
     void fixupAbacus(Image *im, int prescale);
     void fixupDungNS(Image *im, int prescale);

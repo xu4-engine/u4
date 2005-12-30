@@ -85,11 +85,10 @@ public:
     void updateConfMenu(MenuEvent &event);
     void updateVideoMenu(MenuEvent &event);
     void updateSoundMenu(MenuEvent &event);
-    void updateGameplayMenu(MenuEvent &event);
-    void updateAdvancedMenu(MenuEvent &event);
-    void updateEnhancementMenu(MenuEvent &event);
-    void updateKeyboardMenu(MenuEvent &event);
+    void updateInputMenu(MenuEvent &event);
     void updateSpeedMenu(MenuEvent &event);
+    void updateGameplayMenu(MenuEvent &event);
+    void updateInterfaceMenu(MenuEvent &event);
 
 private:
     void drawMap();
@@ -124,13 +123,46 @@ private:
     } mode;
 
     enum MenuConstants {
-        VIDEO_MENU,
-        SOUND_MENU,
-        GAMEPLAY_MENU,
-        ADVANCED_MENU,
-        SPEED_MENU,
-        KEYBOARD_MENU,
-        ENHANCEMENT_MENU,
+        MI_CONF_VIDEO,
+        MI_CONF_SOUND,
+        MI_CONF_INPUT,
+        MI_CONF_SPEED,
+        MI_CONF_GAMEPLAY,
+        MI_CONF_INTERFACE,
+        MI_CONF_01,
+        MI_VIDEO_01,
+        MI_VIDEO_02,
+        MI_VIDEO_03,
+        MI_VIDEO_04,
+        MI_VIDEO_05,
+        MI_VIDEO_06,
+        MI_VIDEO_07,
+        MI_VIDEO_08,
+        MI_SOUND_01,
+        MI_SOUND_02,
+        MI_SOUND_03,
+        MI_INPUT_01,
+        MI_INPUT_02,
+        MI_INPUT_03,
+        MI_SPEED_01,
+        MI_SPEED_02,
+        MI_SPEED_03,
+        MI_SPEED_04,
+        MI_SPEED_05,
+        MI_SPEED_06,
+        MI_SPEED_07,
+        MI_GAMEPLAY_01,
+        MI_GAMEPLAY_02,
+        MI_GAMEPLAY_03,
+        MI_GAMEPLAY_04,
+        MI_GAMEPLAY_05,
+        MI_GAMEPLAY_06,
+        MI_INTERFACE_01,
+        MI_INTERFACE_02,
+        MI_INTERFACE_03,
+        MI_INTERFACE_04,
+        MI_INTERFACE_05,
+        MI_INTERFACE_06,
         USE_SETTINGS = 0xFE,
         CANCEL = 0xFF
     };
@@ -146,11 +178,10 @@ private:
     Menu confMenu;
     Menu videoMenu;
     Menu soundMenu;
-    Menu gameplayMenu;
-    Menu advancedMenu;
-    Menu keyboardMenu;
+    Menu inputMenu;
     Menu speedMenu;
-    Menu enhancementMenu;
+    Menu gameplayMenu;
+    Menu interfaceMenu;
 
     // data loaded in from title.exe
     IntroBinData *binData;

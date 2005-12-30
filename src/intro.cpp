@@ -158,7 +158,7 @@ IntroController::IntroController() :
     Controller(1), 
     backgroundArea(),
     menuArea(1 * CHAR_WIDTH, 13 * CHAR_HEIGHT, 38, 10),
-    extendedMenuArea(1 * CHAR_WIDTH, 3 * CHAR_HEIGHT, 38, 22),
+    extendedMenuArea(2 * CHAR_WIDTH, 10 * CHAR_HEIGHT, 36, 13),
     questionArea(INTRO_TEXT_X * CHAR_WIDTH, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT),
     mapArea(BORDER_WIDTH, (TILE_HEIGHT * 6) + BORDER_HEIGHT, INTRO_MAP_WIDTH, INTRO_MAP_HEIGHT, "base")
 {
@@ -166,100 +166,98 @@ IntroController::IntroController() :
     beastiesVisible = false;
 
     // initialize menus
-    confMenu.setTitle("-- xu4 Configuration --", 8, 1);
-    confMenu.add(VIDEO_MENU, "Video Options", 12, 3, 'v');
-    confMenu.add(SOUND_MENU, "Sound Options", 12, 4, 's');
-    confMenu.add(GAMEPLAY_MENU, "Gameplay Options", 12, 5, 'g');
-    confMenu.add(CANCEL, "Main Menu", 12, 8, 'm');
+    confMenu.setTitle("xu4 Configuration:",                         0,  0);
+    confMenu.add(MI_CONF_VIDEO, "\010 Video Options",                  2,  2, 'v');
+    confMenu.add(MI_CONF_SOUND, "\010 Sound Options",                  2,  3, 's');
+    confMenu.add(MI_CONF_INPUT, "\010 Input Options",                  2,  4, 'i');
+    confMenu.add(MI_CONF_SPEED, "\010 Speed Options",                  2,  5,   0);
+    confMenu.add(new BoolMenuItem  ("Game Enhancements         %s", 2,  7,   0, &settingsChanged.enhancements));
+    confMenu.add(MI_CONF_GAMEPLAY, "\010 Enhanced Gameplay Options",   2,  9, 'g');
+    confMenu.add(MI_CONF_INTERFACE, "\010 Enhanced Interface Options", 2, 10,   0);
+    confMenu.add(CANCEL, "\017 Main Menu",                          2, 12, 'm');
     confMenu.addShortcutKey(CANCEL, ' ');
     confMenu.setClosesMenu(CANCEL);
 
-    videoMenu.setTitle("Video Options:", 1, 0);
-    videoMenu.add(new StringMenuItem("Graphics          %s", 5, 2, 'g', &settingsChanged.videoType, imageMgr->getSetNames()));
-    videoMenu.add(new StringMenuItem("Gem Layout        %s", 5, 3, 0, &settingsChanged.gemLayout, screenGetGemLayoutNames()));
-    videoMenu.add(new StringMenuItem("Line Of Sight     %s", 5, 4, 0, &settingsChanged.lineOfSight, screenGetLineOfSightStyles()));
-    videoMenu.add(new IntMenuItem   ("Scale             x%d", 5, 5, 's', reinterpret_cast<int *>(&settingsChanged.scale), 1, 5, 1));
-    videoMenu.add((new BoolMenuItem ("Mode              %s", 5, 6, 'm', &settingsChanged.fullscreen))->
-                  setValueStrings("Fullscreen", "Window"));
-    videoMenu.add(new StringMenuItem("Filter            %s", 5, 7, 'f', &settingsChanged.filter, screenGetFilterNames()));
-    videoMenu.add(new BoolMenuItem  ("Screen Shaking    %s", 5, 8, 'k', &settingsChanged.screenShakes));
-    videoMenu.add(new IntMenuItem   ("Gamma",                5, 9, 0, &settingsChanged.gamma, 50, 150, 10));
-    videoMenu.add(USE_SETTINGS, "Use These Settings", 5, 17, 'u');
-    videoMenu.add(CANCEL, "Cancel", 5, 18, 'c');
+    /* set the default visibility of the two enhancement menus */
+    confMenu.getItemById(MI_CONF_GAMEPLAY)->setVisible(settings.enhancements);
+    confMenu.getItemById(MI_CONF_INTERFACE)->setVisible(settings.enhancements);
+
+    videoMenu.setTitle("Video Options:", 0, 0);
+    videoMenu.add(new StringMenuItem("Graphics             %s",     2,  2, 'g', &settingsChanged.videoType, imageMgr->getSetNames()));
+    videoMenu.add(new StringMenuItem("Gem Layout           %s",     2,  3,   0, &settingsChanged.gemLayout, screenGetGemLayoutNames()));
+    videoMenu.add(new StringMenuItem("Line Of Sight        %s",     2,  4,   0, &settingsChanged.lineOfSight, screenGetLineOfSightStyles()));
+    videoMenu.add(new IntMenuItem   ("Scale                x%d",    2,  5, 's', reinterpret_cast<int *>(&settingsChanged.scale), 1, 5, 1));
+    videoMenu.add((new BoolMenuItem ("Mode                 %s",     2,  6, 'm', &settingsChanged.fullscreen))->setValueStrings("Fullscreen", "Window"));
+    videoMenu.add(new StringMenuItem("Filter               %s",     2,  7, 'f', &settingsChanged.filter, screenGetFilterNames()));
+    videoMenu.add(new BoolMenuItem  ("Screen Shaking       %s",     2,  8, 'k', &settingsChanged.screenShakes));
+    videoMenu.add(new IntMenuItem   ("Gamma",                       2,  9,   0, &settingsChanged.gamma, 50, 150, 10));
+    videoMenu.add(USE_SETTINGS, "\010 Use These Settings",          2, 11, 'u');
+    videoMenu.add(CANCEL, "\010 Cancel",                            2, 12, 'c');
     videoMenu.addShortcutKey(CANCEL, ' ');
     videoMenu.setClosesMenu(USE_SETTINGS);
     videoMenu.setClosesMenu(CANCEL);
     
-    soundMenu.setTitle("Sound Options:", 2, 1);
-    soundMenu.add(new BoolMenuItem("Music          %s", 10, 3, 'm', &settingsChanged.musicVol));
-    soundMenu.add(new BoolMenuItem("Sound Effects  %s", 10, 4, 's', &settingsChanged.soundVol));
-    soundMenu.add(new BoolMenuItem("Fading         %s", 10, 5, 'f', &settingsChanged.volumeFades));
-    soundMenu.add(USE_SETTINGS, "Use These Settings", 10, 7, 'u');
-    soundMenu.add(CANCEL, "Cancel", 10, 8, 'c');
+    soundMenu.setTitle("Sound Options:", 0, 0);
+    soundMenu.add(new BoolMenuItem("Music                %s",       2,  2, 'm', &settingsChanged.musicVol));
+    soundMenu.add(new BoolMenuItem("Sound Effects        %s",       2,  3, 's', &settingsChanged.soundVol));
+    soundMenu.add(new BoolMenuItem("Fading               %s",       2,  4, 'f', &settingsChanged.volumeFades));
+    soundMenu.add(USE_SETTINGS, "\010 Use These Settings",          2, 11, 'u');
+    soundMenu.add(CANCEL, "\010 Cancel",                            2, 12, 'c');
     soundMenu.addShortcutKey(CANCEL, ' ');
     soundMenu.setClosesMenu(USE_SETTINGS);
     soundMenu.setClosesMenu(CANCEL);
 
-    gameplayMenu.setTitle("Gameplay Options:", 1, 0);
-    gameplayMenu.add(new BoolMenuItem  ("Game Enhancements         %s", 5, 2, 'g', &settingsChanged.enhancements));
-    gameplayMenu.add(new BoolMenuItem  ("Automatic Actions         %s", 5, 4, 'a', &settingsChanged.shortcutCommands));
-    gameplayMenu.add(new StringMenuItem("Battle Difficulty         %s", 5, 7, 'b', &settingsChanged.battleDiff, settings.getBattleDiffs()));
-    gameplayMenu.add(new BoolMenuItem("Mouse                     %s", 5, 9, 0, &settingsChanged.mouseOptions.enabled));
-    gameplayMenu.add(ADVANCED_MENU, "\010 Advanced Options", 5, 15, 'o');
-    gameplayMenu.add(USE_SETTINGS, "Use These Settings", 5, 17, 'u');
-    gameplayMenu.add(CANCEL, "Cancel", 5, 18, 'c');
-    gameplayMenu.addShortcutKey(CANCEL, ' ');
-    gameplayMenu.setClosesMenu(USE_SETTINGS);
-    gameplayMenu.setClosesMenu(CANCEL);
+    inputMenu.setTitle("Keyboard Options:", 0, 0);
+    inputMenu.add(new IntMenuItem("Repeat Delay        %4d msec",   2, 2, 0, &settingsChanged.keydelay, 100, MAX_KEY_DELAY, 100));
+    inputMenu.add(new IntMenuItem("Repeat Interval     %4d msec",   2, 3, 0, &settingsChanged.keyinterval, 10, MAX_KEY_INTERVAL, 10));
+    /* "Mouse Options:" is drawn in the updateInputMenu() function */
+    inputMenu.add(new BoolMenuItem("Mouse                %s",       2, 7, 0, &settingsChanged.mouseOptions.enabled));
+    inputMenu.add(USE_SETTINGS, "\010 Use These Settings",          2, 11, 'u');
+    inputMenu.add(CANCEL, "\010 Cancel",                            2, 12, 'c');
+    inputMenu.addShortcutKey(CANCEL, ' ');
+    inputMenu.setClosesMenu(USE_SETTINGS);
+    inputMenu.setClosesMenu(CANCEL);
     
-    advancedMenu.setTitle("Advanced Options:", 1, 0);
-    advancedMenu.add(SPEED_MENU, "\010 Speed Settings", 3, 2, 's');
-    advancedMenu.add(KEYBOARD_MENU, "\010 Keyboard Settings", 3, 3, 'k');
-    advancedMenu.add(new BoolMenuItem("Debug Mode (Cheats)           %s", 3, 5, 'd', &settingsChanged.debug)); 
-    advancedMenu.add(ENHANCEMENT_MENU, "\010 Game Enhancement Options", 3, 15, 'g');
-    advancedMenu.add(USE_SETTINGS, "Use These Settings", 3, 17, 'u');
-    advancedMenu.add(CANCEL, "Cancel", 3, 18, 'c');
-    advancedMenu.addShortcutKey(CANCEL, ' ');
-    advancedMenu.setClosesMenu(USE_SETTINGS);
-    advancedMenu.setClosesMenu(CANCEL);
-
-    keyboardMenu.setTitle("Keyboard Settings:", 1, 0);
-    keyboardMenu.add(new IntMenuItem("Repeat Delay (in msecs)      %d", 4, 2, 0, &settingsChanged.keydelay, 100, MAX_KEY_DELAY, 100));
-    keyboardMenu.add(new IntMenuItem("Repeat Interval (in msecs)   %d", 4, 3, 0, &settingsChanged.keyinterval, 10, MAX_KEY_INTERVAL, 10));
-    keyboardMenu.add(USE_SETTINGS, "Use These Settings", 4, 17, 'u');
-    keyboardMenu.add(CANCEL, "Cancel", 4, 18, 'c');
-    keyboardMenu.addShortcutKey(CANCEL, ' ');
-    keyboardMenu.setClosesMenu(USE_SETTINGS);
-    keyboardMenu.setClosesMenu(CANCEL);
-    
-    speedMenu.setTitle("Speed Settings:", 1, 0);
-    speedMenu.add(new IntMenuItem("Game Cycles Per Second    %3d", 3, 2, 0, &settingsChanged.gameCyclesPerSecond, 1, MAX_CYCLES_PER_SECOND, 1));
-    speedMenu.add(new IntMenuItem("Battle Speed              %3d", 3, 3, 0, &settingsChanged.battleSpeed, 1, MAX_BATTLE_SPEED, 1));
-    speedMenu.add(new IntMenuItem("Spell Effect Length",           3, 4, 0, &settingsChanged.spellEffectSpeed, 1, MAX_SPELL_EFFECT_SPEED, 1));
-    speedMenu.add(new IntMenuItem("Camping length            %3d sec", 3, 5, 0, &settingsChanged.campTime, 1, MAX_CAMP_TIME, 1));
-    speedMenu.add(new IntMenuItem("Inn rest length           %3d sec", 3, 6, 0, &settingsChanged.innTime, 1, MAX_INN_TIME, 1));
-    speedMenu.add(5, "Shrine Meditation length", 3, 7);
-    speedMenu.add(new IntMenuItem("Screen Shake Interval     %3d msec", 3, 8, 0, &settingsChanged.shakeInterval, MIN_SHAKE_INTERVAL, MAX_SHAKE_INTERVAL, 10));
-    speedMenu.add(USE_SETTINGS, "Use These Settings", 3, 17);
-    speedMenu.add(CANCEL, "Cancel", 3, 18, 'c');
+    speedMenu.setTitle("Speed Options:", 0, 0);
+    speedMenu.add(new IntMenuItem("Game Cycles Per Second    %3d",      2, 2, 0, &settingsChanged.gameCyclesPerSecond, 1, MAX_CYCLES_PER_SECOND, 1));
+    speedMenu.add(new IntMenuItem("Battle Speed              %3d",      2, 3, 0, &settingsChanged.battleSpeed, 1, MAX_BATTLE_SPEED, 1));
+    speedMenu.add(new IntMenuItem("Spell Effect Length",                2, 4, 0, &settingsChanged.spellEffectSpeed, 1, MAX_SPELL_EFFECT_SPEED, 1));
+    speedMenu.add(new IntMenuItem("Camping length            %3d sec",  2, 5, 0, &settingsChanged.campTime, 1, MAX_CAMP_TIME, 1));
+    speedMenu.add(new IntMenuItem("Inn rest length           %3d sec",  2, 6, 0, &settingsChanged.innTime, 1, MAX_INN_TIME, 1));
+    speedMenu.add(5, "Shrine Meditation length",                        2, 7, 0);
+    speedMenu.add(new IntMenuItem("Screen Shake Interval     %3d msec", 2, 8, 0, &settingsChanged.shakeInterval, MIN_SHAKE_INTERVAL, MAX_SHAKE_INTERVAL, 10));
+    speedMenu.add(USE_SETTINGS, "\010 Use These Settings",              2, 11, 'u');
+    speedMenu.add(CANCEL, "\010 Cancel",                                2, 12, 'c');
     speedMenu.addShortcutKey(CANCEL, ' ');
     speedMenu.setClosesMenu(USE_SETTINGS);
     speedMenu.setClosesMenu(CANCEL);
-    
-    enhancementMenu.setTitle("Game Enhancement Options:", 1, 0);
-    enhancementMenu.add(new BoolMenuItem("Set Active Player       %s", 6, 2, 0, &settingsChanged.enhancementsOptions.activePlayer));
-    enhancementMenu.add(new BoolMenuItem("Ultima V Spell Mixing   %s", 6, 3, 0, &settingsChanged.enhancementsOptions.u5spellMixing));
-    enhancementMenu.add(new BoolMenuItem("Ultima V Shrines        %s", 6, 4, 0, &settingsChanged.enhancementsOptions.u5shrines));
-    enhancementMenu.add(new BoolMenuItem("Slime Divides           %s", 6, 5, 0, &settingsChanged.enhancementsOptions.slimeDivides));
-    enhancementMenu.add(new BoolMenuItem("Gazer Spawns Insects    %s", 6, 6, 0, &settingsChanged.enhancementsOptions.gazerSpawnsInsects));
-    enhancementMenu.add(new BoolMenuItem("Fixed Chest Traps       %s", 6, 7, 0, &settingsChanged.enhancementsOptions.c64chestTraps));
-    enhancementMenu.add(new BoolMenuItem("Smart 'Enter' Key       %s", 6, 8, 0, &settingsChanged.enhancementsOptions.smartEnterKey));
-    enhancementMenu.add(new BoolMenuItem("Gem View Shows Objects  %s", 6, 9, 0, &settingsChanged.enhancementsOptions.peerShowsObjects));
-    enhancementMenu.add(USE_SETTINGS, "Use These Settings", 6, 17, 'u');
-    enhancementMenu.add(CANCEL, "Cancel", 6, 18, 'c');
-    enhancementMenu.addShortcutKey(CANCEL, ' ');
-    enhancementMenu.setClosesMenu(USE_SETTINGS);
-    enhancementMenu.setClosesMenu(CANCEL);
+
+    /* move the BATTLE DIFFICULTY, DEBUG, and AUTOMATIC ACTIONS settings to "enhancementsOptions" */
+    gameplayMenu.setTitle("Enhanced Gameplay Options:", 0, 0);
+    gameplayMenu.add(new StringMenuItem("Battle Difficulty          %s", 2,  2, 'b', &settingsChanged.battleDiff, settings.getBattleDiffs()));
+    gameplayMenu.add(new BoolMenuItem("Fixed Chest Traps          %s",  2,  3,   0, &settingsChanged.enhancementsOptions.c64chestTraps));
+    gameplayMenu.add(new BoolMenuItem("Gazer Spawns Insects       %s",  2,  4,   0, &settingsChanged.enhancementsOptions.gazerSpawnsInsects));
+    gameplayMenu.add(new BoolMenuItem("Gem View Shows Objects     %s",  2,  5,   0, &settingsChanged.enhancementsOptions.peerShowsObjects));
+    gameplayMenu.add(new BoolMenuItem("Slime Divides              %s",  2,  6,   0, &settingsChanged.enhancementsOptions.slimeDivides));
+    gameplayMenu.add(new BoolMenuItem("Debug Mode (Cheats)        %s",  2,  8, 'd', &settingsChanged.debug)); 
+    gameplayMenu.add(USE_SETTINGS, "\010 Use These Settings",           2, 11, 'u');
+    gameplayMenu.add(CANCEL, "\010 Cancel",                             2, 12, 'c');
+    gameplayMenu.addShortcutKey(CANCEL, ' ');
+    gameplayMenu.setClosesMenu(USE_SETTINGS);
+    gameplayMenu.setClosesMenu(CANCEL);
+
+    interfaceMenu.setTitle("Enhanced Interface Options:", 0, 0);
+    interfaceMenu.add(new BoolMenuItem("Automatic Actions          %s", 2,  2, 'a', &settingsChanged.shortcutCommands));
+    /* "(Open, Jimmy, etc.)" */
+    interfaceMenu.add(new BoolMenuItem("Set Active Player          %s", 2,  4,   0, &settingsChanged.enhancementsOptions.activePlayer));
+    interfaceMenu.add(new BoolMenuItem("Smart 'Enter' Key          %s", 2,  5,   0, &settingsChanged.enhancementsOptions.smartEnterKey));
+    interfaceMenu.add(new BoolMenuItem("Ultima V Shrines           %s", 2,  6,   0, &settingsChanged.enhancementsOptions.u5shrines));
+    interfaceMenu.add(new BoolMenuItem("Ultima V Spell Mixing      %s", 2,  7,   0, &settingsChanged.enhancementsOptions.u5spellMixing));
+    interfaceMenu.add(USE_SETTINGS, "\010 Use These Settings",          2, 11, 'u');
+    interfaceMenu.add(CANCEL, "\010 Cancel",                            2, 12, 'c');
+    interfaceMenu.addShortcutKey(CANCEL, ' ');
+    interfaceMenu.setClosesMenu(USE_SETTINGS);
+    interfaceMenu.setClosesMenu(CANCEL);
 }
 
 /**
@@ -287,7 +285,9 @@ bool IntroController::init() {
     mapArea.reinit();
 
     /* Make a copy of our settings so we can change them */
-    settingsChanged = settings;
+// Settings are copied each time "Configuration" is
+// selected from the main menu.  That's all we need
+//    settingsChanged = settings;
 
     updateScreen();
 
@@ -343,9 +343,10 @@ bool IntroController::keyPressed(int key) {
             break;
         case 'c': {
             errorMessage.erase();
+            // Make a copy of our settings so we can change them
             settingsChanged = settings;
             screenDisableCursor();
-            runMenu(&confMenu, &menuArea, true);
+            runMenu(&confMenu, &extendedMenuArea, true);
             screenEnableCursor();
             updateScreen();
             break;
@@ -567,20 +568,24 @@ void IntroController::updateScreen() {
         break;
 
     case INTRO_MENU:
+        // draw the extended background for all option screens
+        backgroundArea.draw(BKGD_INTRO);
+        backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
+
+        menuArea.textAt(1,  1, "In another world, in a time to come.");
+        menuArea.textAt(14, 3, "Options:");
+        menuArea.textAt(10, 5, "Return to the view");
+        menuArea.textAt(10, 6, "Journey Onward");
+        menuArea.textAt(10, 7, "Initiate New Game");
+        menuArea.textAt(10, 8, "Configure");
+        menuArea.textAt(10, 9, "About");
+        if (!errorMessage.empty())
+            menuArea.textAt(1, 10, errorMessage.c_str());
+        drawBeasties();
+
+        // draw the cursor last
         screenSetCursorPos(24, 16);
         screenShowCursor();
-
-        backgroundArea.draw(BKGD_INTRO);
-        menuArea.textAt(1, 1, "In another world, in a time to come.");
-        menuArea.textAt(14, 3, "Options:");
-        menuArea.textAt(10, 4, "Return to the view");
-        menuArea.textAt(10, 5, "Journey Onward");
-        menuArea.textAt(10, 6, "Initiate New Game");
-        menuArea.textAt(10, 7, "Configure");
-        menuArea.textAt(10, 8, "About");
-        if (!errorMessage.empty())
-            menuArea.textAt(10, 9, errorMessage.c_str());
-        drawBeasties();
         break;
 
     default:
@@ -596,31 +601,45 @@ void IntroController::updateScreen() {
  * series of questions to determine the class of the new character.
  */
 void IntroController::initiateNewGame() {
+    // disable the screen cursor because a text cursor will now be used
     screenDisableCursor();
-    menuArea.enableCursor();
-    menuArea.setCursorFollowsText(true);
+
+    // draw the extended background for all option screens
+    backgroundArea.draw(BKGD_INTRO);
+    backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
 
     // display name prompt and read name from keyboard
-    backgroundArea.draw(BKGD_INTRO);
     menuArea.textAt(3, 3, "By what name shalt thou be known");
     menuArea.textAt(3, 4, "in this world and time?");
-    menuArea.setCursorPos(11, 7, true);
+
+    // enable the text cursor after setting it's initial position
+    // this will avoid drawing in undesirable areas like 0,0
+    menuArea.setCursorPos(11, 7, false);
+    menuArea.setCursorFollowsText(true);
+    menuArea.enableCursor();
 
     drawBeasties();
-
     screenRedrawScreen();
 
     string nameBuffer = ReadStringController::get(12, &menuArea);
     if (nameBuffer.length() == 0) {
+        // the user didn't enter a name
         menuArea.disableCursor();
+        screenEnableCursor();
         updateScreen();
         return;
     }
 
-    // display sex prompt and read sex from keyboard
+    // draw the extended background for all option screens
     backgroundArea.draw(BKGD_INTRO);
+    backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
+
+    // display sex prompt and read sex from keyboard
     menuArea.textAt(3, 3, "Art thou Male or Female?");
+
+    // the cursor is already enabled, just change its position
     menuArea.setCursorPos(28, 3, true);
+
     drawBeasties();
 
     SexType sex;
@@ -630,6 +649,7 @@ void IntroController::initiateNewGame() {
     else
         sex = SEX_FEMALE;
 
+    // no more text entry, so disable the text cursor
     menuArea.disableCursor();
 
     // show the lead up story
@@ -693,7 +713,6 @@ void IntroController::showStory() {
 
     beastiesVisible = false;
 
-    questionArea.enableCursor();
     questionArea.setCursorFollowsText(true);
 
     for (int storyInd = 0; storyInd < 24; storyInd++) {
@@ -717,9 +736,12 @@ void IntroController::showStory() {
             backgroundArea.draw(BKGD_GYPSY);
         else if (storyInd == 23)
             backgroundArea.draw(BKGD_ABACUS);
+
         showText(binData->introText[storyInd]);
-    
+
         eventHandler->pushController(&pauseController);
+        // enable the cursor here to avoid drawing in undesirable locations
+        questionArea.enableCursor();
         pauseController.waitFor();
     }
 }
@@ -832,15 +854,18 @@ void IntroController::journeyOnward() {
  * Shows an about box.
  */
 void IntroController::about() {
+    // draw the extended background for all option screens
     backgroundArea.draw(BKGD_INTRO);
+    backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
+
     screenHideCursor();
     menuArea.textAt(14, 1, "XU4 %s", VERSION);
     menuArea.textAt(1, 3, "xu4 is free software; you can redist-");
     menuArea.textAt(1, 4, "ribute it and/or modify it under the");
     menuArea.textAt(1, 5, "terms of the GNU GPL as published by");
     menuArea.textAt(1, 6, "the FSF.  See COPYING.");
-    menuArea.textAt(1, 8, "\011 Copyright 2002-2003 xu4 team");
-    menuArea.textAt(1, 9, "\011 Copyright 1987 Lord British");
+    menuArea.textAt(4, 8, "Copyright \011 2002-2006, xu4 Team");
+    menuArea.textAt(4, 9, "Copyright \011 1987, Lord British");
     drawBeasties();
 
     ReadChoiceController::get("");
@@ -874,9 +899,10 @@ void IntroController::showText(const string &text) {
  * updates are handled by observing the menu.
  */
 void IntroController::runMenu(Menu *menu, TextView *view, bool withBeasties) {
-    view->enableCursor();
     menu->addObserver(this);
     menu->reset();
+
+    // if the menu has an extended height, fill the menu background, otherwise reset the display
     menu->show(view);
     if (withBeasties)
         drawBeasties();
@@ -885,6 +911,8 @@ void IntroController::runMenu(Menu *menu, TextView *view, bool withBeasties) {
     eventHandler->pushController(&menuController);
     menuController.waitFor();
 
+    // enable the cursor here, after the menu has been established
+    view->enableCursor();
     menu->deleteObserver(this);
     view->disableCursor();
 }
@@ -925,19 +953,17 @@ void IntroController::update(Menu *menu, MenuEvent &event) {
         updateVideoMenu(event);
     else if (menu == &soundMenu)
         updateSoundMenu(event);
-    else if (menu == &gameplayMenu)
-        updateGameplayMenu(event);
-    else if (menu == &advancedMenu)
-        updateAdvancedMenu(event);
-    else if (menu == &enhancementMenu)
-        updateEnhancementMenu(event);
-    else if (menu == &keyboardMenu)
-        updateKeyboardMenu(event);
+    else if (menu == &inputMenu)
+        updateInputMenu(event);
     else if (menu == &speedMenu)
         updateSpeedMenu(event);
+    else if (menu == &gameplayMenu)
+        updateGameplayMenu(event);
+    else if (menu == &interfaceMenu)
+        updateInterfaceMenu(event);
 
-    if (beastiesVisible)
-        drawBeasties();
+    // beasties are always visible on the menus
+    drawBeasties();
 }
 
 void IntroController::updateConfMenu(MenuEvent &event) {
@@ -945,27 +971,44 @@ void IntroController::updateConfMenu(MenuEvent &event) {
         event.getType() == MenuEvent::INCREMENT ||
         event.getType() == MenuEvent::DECREMENT) {
 
+        // show or hide game enhancement options if enhancements are enabled/disabled
+        confMenu.getItemById(MI_CONF_GAMEPLAY)->setVisible(settingsChanged.enhancements);
+        confMenu.getItemById(MI_CONF_INTERFACE)->setVisible(settingsChanged.enhancements);
+
+        // save settings
+        settings.setData(settingsChanged);
+        settings.write();
+
         switch(event.getMenuItem()->getId()) {
-        case 0:
-            beastiesVisible = false;
-            runMenu(&videoMenu, &extendedMenuArea, false);
-            beastiesVisible = true;
+        case MI_CONF_VIDEO:
+            runMenu(&videoMenu, &extendedMenuArea, true);
             break;
-        case 1:
-            runMenu(&soundMenu, &menuArea, true);
+        case MI_CONF_SOUND:
+            runMenu(&soundMenu, &extendedMenuArea, true);
             break;
-        case 2:
-            beastiesVisible = false;
-            runMenu(&gameplayMenu, &extendedMenuArea, false);
-            beastiesVisible = true;
+        case MI_CONF_INPUT:
+            runMenu(&inputMenu, &extendedMenuArea, true);
+            break;
+        case MI_CONF_SPEED:
+            runMenu(&speedMenu, &extendedMenuArea, true);
+            break;
+        case MI_CONF_GAMEPLAY:
+            runMenu(&gameplayMenu, &extendedMenuArea, true);
+            break;
+        case MI_CONF_INTERFACE:
+            runMenu(&interfaceMenu, &extendedMenuArea, true);
             break;
         case CANCEL:
-        default:
+            // discard settings
+            settingsChanged = settings;
             break;
+        default: break;
         }
     }
 
-    backgroundArea.draw(BKGD_INTRO);
+    // draw the extended background for all option screens
+    backgroundArea.draw(BKGD_OPTIONS_TOP, 0, 0);
+    backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
 }
 
 void IntroController::updateVideoMenu(MenuEvent &event) {
@@ -988,15 +1031,18 @@ void IntroController::updateVideoMenu(MenuEvent &event) {
             }        
             break;
         case CANCEL:
-            /* discard settings */
+            // discard settings
             settingsChanged = settings;
             break;
-
         default: break;
         }
     }
 
-    backgroundArea.draw(BKGD_INTRO_EXTENDED);
+    // draw the extended background for all option screens
+    backgroundArea.draw(BKGD_OPTIONS_TOP, 0, 0);
+    backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
+
+    // after drawing the menu, extra menu text can be added here
     extendedMenuArea.textAt(23, 9, "%.1f", static_cast<double>(settingsChanged.gamma) / 100);
 }
 
@@ -1007,7 +1053,7 @@ void IntroController::updateSoundMenu(MenuEvent &event) {
 
         switch(event.getMenuItem()->getId()) {
         case USE_SETTINGS:
-            /* save settings */
+            // save settings
             settings.setData(settingsChanged);
             settings.write();
         
@@ -1015,124 +1061,47 @@ void IntroController::updateSoundMenu(MenuEvent &event) {
 
             break;
         case CANCEL:
-            /* discard settings */
-            settingsChanged = settings;
-            break;
-    
-        default: break;
-        }
-    }
-
-    backgroundArea.draw(BKGD_INTRO);
-}
-
-void IntroController::updateGameplayMenu(MenuEvent &event) {
-    if (event.getType() == MenuEvent::ACTIVATE ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::DECREMENT) {
-
-        switch(event.getMenuItem()->getId()) {
-        case ADVANCED_MENU:
-            // show or hide game enhancement options if enhancements are enabled/disabled
-            advancedMenu.getItemById(ENHANCEMENT_MENU)->setVisible(settingsChanged.enhancements);
-
-            runMenu(&advancedMenu, &extendedMenuArea, false);
-            break;
-        case USE_SETTINGS:
-            /* save settings */
-            settings.setData(settingsChanged);
-            settings.write();
-            break;
-        case CANCEL:
-            /* discard settings */
+            // discard settings
             settingsChanged = settings;
             break;
         default: break;
         }
     }
 
-    backgroundArea.draw(BKGD_INTRO_EXTENDED);
-    extendedMenuArea.textAt(5, 5, "  (Open, Jimmy, etc.)");
+    // draw the extended background for all option screens
+    backgroundArea.draw(BKGD_OPTIONS_TOP, 0, 0);
+    backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
 }
 
-void IntroController::updateAdvancedMenu(MenuEvent &event) {
-    if (event.getType() == MenuEvent::ACTIVATE ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::DECREMENT) {
-
-        switch(event.getMenuItem()->getId()) {
-        case ENHANCEMENT_MENU:
-            runMenu(&enhancementMenu, &extendedMenuArea, false);
-            break;
-        case KEYBOARD_MENU:
-            runMenu(&keyboardMenu, &extendedMenuArea, false);
-            break;
-        case SPEED_MENU:
-            runMenu(&speedMenu, &extendedMenuArea, false);
-            break;
-        case USE_SETTINGS:
-            /* save settings */
-            settings.setData(settingsChanged);
-            settings.write();
-            break;
-        case CANCEL:
-            /* discard settings */
-            settingsChanged = settings;
-            break;
-        default: break;
-        }
-    }
-
-    backgroundArea.draw(BKGD_INTRO_EXTENDED);
-}
-
-void IntroController::updateEnhancementMenu(MenuEvent &event) {
-    if (event.getType() == MenuEvent::ACTIVATE ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::DECREMENT) {
-
-        switch(event.getMenuItem()->getId()) {
-        case USE_SETTINGS:        
-            /* save settings */
-            settings.setData(settingsChanged);
-            settings.write();        
-            break;
-        case CANCEL:        
-            /* discard settings */
-            settingsChanged = settings;
-            break;
-    
-        default: break;
-        }
-    }
-
-    backgroundArea.draw(BKGD_INTRO_EXTENDED);
-}
-
-void IntroController::updateKeyboardMenu(MenuEvent &event) {
+void IntroController::updateInputMenu(MenuEvent &event) {
     if (event.getType() == MenuEvent::ACTIVATE ||
         event.getType() == MenuEvent::INCREMENT ||
         event.getType() == MenuEvent::DECREMENT) {
 
         switch(event.getMenuItem()->getId()) {
         case USE_SETTINGS:
-            /* save settings */
+            // save settings
             settings.setData(settingsChanged);
             settings.write();
 
-            /* re-initialize keyboard */
+            // re-initialize keyboard
             KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
     
             break;
         case CANCEL:
-            /* discard settings */
+            // discard settings
             settingsChanged = settings;
             break;
         default: break;
         }    
     }
 
-    backgroundArea.draw(BKGD_INTRO_EXTENDED);
+    // draw the extended background for all option screens
+    backgroundArea.draw(BKGD_OPTIONS_TOP, 0, 0);
+    backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
+
+    // after drawing the menu, extra menu text can be added here
+    extendedMenuArea.textAt(0, 5, "Mouse Options:");
 }
 
 void IntroController::updateSpeedMenu(MenuEvent &event) {
@@ -1154,28 +1123,82 @@ void IntroController::updateSpeedMenu(MenuEvent &event) {
             }
             break;
         case USE_SETTINGS:
-            /* save settings */
+            // save settings
             settings.setData(settingsChanged);
             settings.write();
     
-            /* re-initialize events */
+            // re-initialize events
             eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
             eventHandler->getTimer()->reset(eventTimerGranularity);            
         
             break;
         case CANCEL:
-            /* discard settings */
+            // discard settings
             settingsChanged = settings;
             break;
         default: break;
         }
     }
 
-    backgroundArea.draw(BKGD_INTRO_EXTENDED);
-    extendedMenuArea.textAt(29, 4, "%3g sec", static_cast<double>(settingsChanged.spellEffectSpeed) / 5);
-    extendedMenuArea.textAt(29, 7, "%3d sec", settingsChanged.shrineTime);
+    // draw the extended background for all option screens
+    backgroundArea.draw(BKGD_OPTIONS_TOP, 0, 0);
+    backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
+
+    // after drawing the menu, extra menu text can be added here
+    extendedMenuArea.textAt(28, 4, "%3g sec", static_cast<double>(settingsChanged.spellEffectSpeed) / 5);
+    extendedMenuArea.textAt(28, 7, "%3d sec", settingsChanged.shrineTime);
 }
 
+void IntroController::updateGameplayMenu(MenuEvent &event) {
+    if (event.getType() == MenuEvent::ACTIVATE ||
+        event.getType() == MenuEvent::INCREMENT ||
+        event.getType() == MenuEvent::DECREMENT) {
+
+        switch(event.getMenuItem()->getId()) {
+        case USE_SETTINGS:
+            // save settings
+            settings.setData(settingsChanged);
+            settings.write();
+            break;
+        case CANCEL:
+            // discard settings
+            settingsChanged = settings;
+            break;
+        default: break;
+        }
+    }
+
+    // draw the extended background for all option screens
+    backgroundArea.draw(BKGD_OPTIONS_TOP, 0, 0);
+    backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
+}
+
+void IntroController::updateInterfaceMenu(MenuEvent &event) {
+    if (event.getType() == MenuEvent::ACTIVATE ||
+        event.getType() == MenuEvent::INCREMENT ||
+        event.getType() == MenuEvent::DECREMENT) {
+
+        switch(event.getMenuItem()->getId()) {
+        case USE_SETTINGS:
+            // save settings
+            settings.setData(settingsChanged);
+            settings.write();
+            break;
+        case CANCEL:
+            // discard settings
+            settingsChanged = settings;
+            break;
+        default: break;
+        }
+    }
+
+    // draw the extended background for all option screens
+    backgroundArea.draw(BKGD_OPTIONS_TOP, 0, 0);
+    backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
+
+    // after drawing the menu, extra menu text can be added here
+    extendedMenuArea.textAt(2, 3, "  (Open, Jimmy, etc.)");
+}
 
 /**
  * Initializes the question tree.  The tree starts off with the first
