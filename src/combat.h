@@ -39,8 +39,9 @@ typedef enum {
  * CombatController class
  */ 
 class CombatController : public Controller, public Observer<Party *, PartyEvent &>, public TurnCompleter {
-public:
+protected:
     CombatController();
+public:
     CombatController(CombatMap *m);
     CombatController(MapId id);
     virtual ~CombatController();

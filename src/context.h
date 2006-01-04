@@ -14,7 +14,6 @@
 #include "types.h"
 #include "savegame.h"
 
-class CombatController;
 class Location;
 class Object;
 class Party;
@@ -41,7 +40,6 @@ public:
 
     Party *party;
     SaveGame *saveGame;
-    CombatController *combat;
     class Location *location;
     int line, col;
     StatsArea *stats;

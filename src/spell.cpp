@@ -30,6 +30,7 @@
 
 SpellEffectCallback spellEffectCallback = NULL;
 
+CombatController *spellCombatController();
 void spellMagicAttack(const string &tilename, Direction dir, int minDamage, int maxDamage);
 bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDamage);
 
@@ -319,11 +320,17 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
     return true;
 }
 
+CombatController *spellCombatController() {
+    CombatController *cc = dynamic_cast<CombatController *>(eventHandler->getController());
+    return cc;
+}
+
 /**
  * Makes a special magic ranged attack in the given direction
  */
 void spellMagicAttack(const string &tilename, Direction dir, int minDamage, int maxDamage) {    
-    PartyMemberVector *party = c->combat->getParty();
+    CombatController *controller = spellCombatController();
+    PartyMemberVector *party = controller->getParty();
 
     MapTile tile = c->location->map->tileset->getByName(tilename)->id;
 
@@ -331,7 +338,7 @@ void spellMagicAttack(const string &tilename, Direction dir, int minDamage, int 
         xu4_random((maxDamage + 1) - minDamage) + minDamage :
         maxDamage;
 
-    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, (*party)[c->combat->getFocus()]->getCoords(), 
+    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, (*party)[controller->getFocus()]->getCoords(), 
                                                        1, 11, Tile::canAttackOverTile, false);
     for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
         if (spellMagicAttackAt(*i, tile, attackDamage))
@@ -364,7 +371,8 @@ bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDama
         CombatController::attackFlash(coords, attackTile, 3);
 
         /* apply the damage to the creature */
-        c->combat->getCurrentPlayer()->dealDamage(creature, attackDamage);
+        CombatController *controller = spellCombatController();
+        controller->getCurrentPlayer()->dealDamage(creature, attackDamage);
     }
 
     return objectHit;
@@ -631,7 +639,7 @@ static int spellSleep(int unused) {
 }
 
 static int spellTremor(int unused) {
-    CombatController *ct = c->combat;    
+    CombatController *ct = spellCombatController();    
     CreatureVector creatures = ct->getMap()->getCreatures();
     CreatureVector::iterator i;
 
@@ -662,7 +670,7 @@ static int spellTremor(int unused) {
 }
 
 static int spellUndead(int unused) {    
-    CombatController *ct = c->combat;
+    CombatController *ct = spellCombatController();
     CreatureVector creatures = ct->getMap()->getCreatures();
     CreatureVector::iterator i;
 

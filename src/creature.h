@@ -13,6 +13,7 @@
 #include "savegame.h"
 #include "types.h"
 
+class CombatController;
 class ConfigElement;
 class Tile;
 
@@ -198,7 +199,7 @@ public:
     bool specialEffect();
 
     /* combat methods */
-    void act();
+    void act(CombatController *controller);
     virtual void addStatus(StatusType status);
     void applyTileEffect(TileEffect effect);
     virtual bool attackHit(Creature *m);

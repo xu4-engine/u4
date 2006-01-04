@@ -506,7 +506,7 @@ bool Creature::specialEffect() {
     return retval;
 }
 
-void Creature::act() {
+void Creature::act(CombatController *controller) {
     int dist;
     CombatAction action;
     Creature *target;
@@ -586,7 +586,7 @@ void Creature::act() {
         
         /* Apply the sleep spell to party members still in combat */
         if (!isPartyMember(this)) {
-            PartyMemberVector party = c->combat->getMap()->getPartyMembers();
+            PartyMemberVector party = controller->getMap()->getPartyMembers();
             PartyMemberVector::iterator j;
 
             for (j = party.begin(); j != party.end(); j++) {
@@ -639,13 +639,13 @@ void Creature::act() {
                                                            1, 11, &Tile::canAttackOverTile, false);
         bool hit = false;
         for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
-            if (c->combat->rangedAttack(*i, this)) {
+            if (controller->rangedAttack(*i, this)) {
                 hit = true;
                 break;
             }
         }
         if (!hit && path.size() > 0)
-            c->combat->rangedMiss(path[path.size() - 1], this);
+            controller->rangedMiss(path[path.size() - 1], this);
 
         break;
     }

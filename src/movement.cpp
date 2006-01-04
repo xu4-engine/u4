@@ -11,6 +11,7 @@
 #include "context.h"
 #include "debug.h"
 #include "dungeon.h"
+#include "event.h"
 #include "location.h"
 #include "creature.h"
 #include "object.h"
@@ -318,7 +319,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
  * Moves a party member during combat screens
  */
 void movePartyMember(MoveEvent &event) {
-    CombatController *ct = c->combat;
+    CombatController *ct = dynamic_cast<CombatController *>(eventHandler->getController());
     CombatMap *cm = getCombatMap();
     int member = ct->getFocus();
     MapCoords newCoords;

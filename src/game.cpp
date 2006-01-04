@@ -225,9 +225,6 @@ void GameController::init() {
 
     TRACE_LOCAL(gameDbg, "World map set."); ++pb;
 
-    /* initialize our combat controller */
-    c->combat = new CombatController();
-
     /* initialize our start location */
     Map *map = mapMgr->get(MapId(c->saveGame->location));
     TRACE_LOCAL(gameDbg, "Initializing start location.");
@@ -692,7 +689,8 @@ void GameController::update(Location *location, MoveEvent &event) {
         avatarMovedInDungeon(event);
         break;
     case Map::COMBAT:
-        c->combat->movePartyMember(event);
+        // FIXME: let the combat controller handle it
+        dynamic_cast<CombatController *>(eventHandler->getController())->movePartyMember(event);
         break;
     default:
         avatarMoved(event);
@@ -1302,7 +1300,7 @@ bool GameController::keyPressed(int key) {
         }
     
     if (valid && endTurn) {
-        if (eventHandler->getController() != c->combat && eventHandler->getController() == game)
+        if (eventHandler->getController() == game)
             c->location->turnCompleter->finishTurn();
     }
     else if (!endTurn) {
@@ -1538,11 +1536,9 @@ bool attackAt(const Coords &coords) {
         ((m->getType() == Object::PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))) 
         c->party->adjustKarma(KA_ATTACKED_GOOD);
 
-    delete(c->combat);
-    c->combat = NULL;
-    c->combat = new CombatController(CombatMap::mapForTile(ground, c->party->transport.getTileType(), m));
-    c->combat->init(m);
-    c->combat->begin();    
+    CombatController *cc = new CombatController(CombatMap::mapForTile(ground, c->party->transport.getTileType(), m));
+    cc->init(m);
+    cc->begin();    
     return true;
 }
 
@@ -1894,9 +1890,9 @@ void holeUp() {
 
     screenMessage("Hole up & Camp!\n");
 
-    c->combat = new CampController();
-    c->combat->init(NULL);
-    c->combat->begin();
+    CombatController *cc = new CampController();
+    cc->init(NULL);
+    cc->begin();
 }
 
 /**
@@ -2132,10 +2128,9 @@ void GameController::avatarMovedInDungeon(MoveEvent &event) {
             dng->currentRoom = room;
 
             /* set the map and start combat! */
-            delete c->combat;
-            c->combat = new CombatController(dng->roomMaps[room]);
-            c->combat->initDungeonRoom(room, dirReverse(realDir));
-            c->combat->begin();
+            CombatController *cc = new CombatController(dng->roomMaps[room]);
+            cc->initDungeonRoom(room, dirReverse(realDir));
+            cc->begin();
         }
     }
 }
@@ -2735,7 +2730,7 @@ void GameController::timerFired() {
          * force pass if no commands within last 20 seconds
          */
         Controller *controller = eventHandler->getController();
-        if (controller != NULL && (eventHandler->getController() == game || eventHandler->getController() == c->combat) &&
+        if (controller != NULL && (eventHandler->getController() == game || dynamic_cast<CombatController *>(eventHandler->getController()) != NULL) &&
              gameTimeSinceLastCommand() > 20) {
          
             /* pass the turn, and redraw the text area so the prompt is shown */
@@ -2912,10 +2907,9 @@ void gameCreatureAttack(Creature *m) {
             ground = under->getTile().getTileType();
     }
 
-    delete c->combat;
-    c->combat = new CombatController(CombatMap::mapForTile(ground, c->party->transport.getTileType(), m));
-    c->combat->init(m);
-    c->combat->begin();
+    CombatController *cc = new CombatController(CombatMap::mapForTile(ground, c->party->transport.getTileType(), m));
+    cc->init(m);
+    cc->begin();
 }
 
 /**
@@ -3150,10 +3144,9 @@ void GameController::checkBridgeTrolls() {
     screenMessage("\nBridge Trolls!\n");
     
     Creature *m = c->location->map->addCreature(creatureMgr->getById(TROLL_ID), c->location->coords);
-    delete c->combat;
-    c->combat = new CombatController(MAP_BRIDGE_CON);    
-    c->combat->init(m);
-    c->combat->begin();
+    CombatController *cc = new CombatController(MAP_BRIDGE_CON);    
+    cc->init(m);
+    cc->begin();
 }
 
 /**

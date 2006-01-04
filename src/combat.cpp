@@ -70,6 +70,7 @@ CombatController::CombatController(CombatMap *m) : map(m) {
     game->setMap(map, true, NULL, this);
     c->party->addObserver(this);
 }
+
 CombatController::CombatController(MapId id) {
     map = getCombatMap(mapMgr->get(id));
     game->setMap(map, true, NULL, this);
@@ -252,75 +253,76 @@ void CombatController::end(bool adjustKarma) {
             c->location->map->removeObject(creature);
 
         deathStart(5);
-        return;
     }
+
+    else {
     
-    /* need to get this here because when we exit to the parent map, all the monsters are cleared */
-    bool won = isWon();    
+        /* need to get this here because when we exit to the parent map, all the monsters are cleared */
+        bool won = isWon();    
     
-    game->exitToParentMap();
-    musicMgr->play();
+        game->exitToParentMap();
+        musicMgr->play();
     
-    if (winOrLose) {
-        if (won) {
-            if (creature) {
-                if (creature->isEvil())
-                    c->party->adjustKarma(KA_KILLED_EVIL);
-                awardLoot();
-            }
+        if (winOrLose) {
+            if (won) {
+                if (creature) {
+                    if (creature->isEvil())
+                        c->party->adjustKarma(KA_KILLED_EVIL);
+                    awardLoot();
+                }
             
-            screenMessage("\nVictory!\n");
-        }
-        else if (!c->party->isDead()) {
-            /* minus points for fleeing from evil creatures */
-            if (adjustKarma && creature && creature->isEvil()) {
-                screenMessage("Battle is lost!\n");
-                c->party->adjustKarma(KA_FLED_EVIL);
+                screenMessage("\nVictory!\n");
             }
-            else if (adjustKarma && creature && creature->isGood())
-                c->party->adjustKarma(KA_FLED_GOOD);
+            else if (!c->party->isDead()) {
+                /* minus points for fleeing from evil creatures */
+                if (adjustKarma && creature && creature->isEvil()) {
+                    screenMessage("Battle is lost!\n");
+                    c->party->adjustKarma(KA_FLED_EVIL);
+                }
+                else if (adjustKarma && creature && creature->isGood())
+                    c->party->adjustKarma(KA_FLED_GOOD);
+            }
         }
+
+        /* exiting a dungeon room */
+        if (map->isDungeonRoom()) {
+            screenMessage("Leave Room!\n");
+            if (map->isAltarRoom()) {            
+                PortalTriggerAction action = ACTION_NONE;
+
+                /* when exiting altar rooms, you exit to other dungeons.  Here it goes... */
+                switch(exitDir) {
+                case DIR_NORTH: action = ACTION_EXIT_NORTH; break;
+                case DIR_EAST:  action = ACTION_EXIT_EAST; break;
+                case DIR_SOUTH: action = ACTION_EXIT_SOUTH; break;
+                case DIR_WEST:  action = ACTION_EXIT_WEST; break;            
+                case DIR_NONE:  break;
+                case DIR_ADVANCE:
+                case DIR_RETREAT:
+                default: ASSERT(0, "Invalid exit dir %d", exitDir); break;
+                }
+
+                if (action != ACTION_NONE)
+                    usePortalAt(c->location, c->location->coords, action);
+            }
+            else screenMessage("\n");
+
+            if (exitDir != DIR_NONE) {
+                c->saveGame->orientation = exitDir;  /* face the direction exiting the room */
+                c->location->move(DIR_NORTH, false);  /* advance 1 space outside of the room */
+            }
+        }
+
+        /* remove the creature */
+        if (creature)
+            c->location->map->removeObject(creature);
+
+        /* Make sure finishturn only happens if a new combat has not begun */
+        if (eventHandler->getController() != this)
+            c->location->turnCompleter->finishTurn();
     }
 
-    /* exiting a dungeon room */
-    if (map->isDungeonRoom()) {
-        screenMessage("Leave Room!\n");
-        if (map->isAltarRoom()) {            
-            PortalTriggerAction action = ACTION_NONE;
-
-            /* when exiting altar rooms, you exit to other dungeons.  Here it goes... */
-            switch(exitDir) {
-            case DIR_NORTH: action = ACTION_EXIT_NORTH; break;
-            case DIR_EAST:  action = ACTION_EXIT_EAST; break;
-            case DIR_SOUTH: action = ACTION_EXIT_SOUTH; break;
-            case DIR_WEST:  action = ACTION_EXIT_WEST; break;            
-            case DIR_NONE:  break;
-            case DIR_ADVANCE:
-            case DIR_RETREAT:
-            default: ASSERT(0, "Invalid exit dir %d", exitDir); break;
-            }
-
-            if (action != ACTION_NONE)
-                usePortalAt(c->location, c->location->coords, action);
-        }
-        else screenMessage("\n");
-
-        if (exitDir != DIR_NONE) {
-            c->saveGame->orientation = exitDir;  /* face the direction exiting the room */
-            c->location->move(DIR_NORTH, false);  /* advance 1 space outside of the room */
-        }
-    }
-
-    /* remove the creature */
-    if (creature)
-        c->location->map->removeObject(creature);
-
-    /* reset our combat variables */
-    camping = false;
-    
-    /* Make sure finishturn only happens if a new combat has not begun */
-    if (eventHandler->getController() != this)
-        c->location->turnCompleter->finishTurn();
+    delete this;
 }
 
 /**
@@ -424,7 +426,7 @@ void CombatController::moveCreatures() {
     // if a jinxed monster kills another
     for (unsigned int i = 0; i < map->getCreatures().size(); i++) {
         m = map->getCreatures().at(i);
-        m->act();
+        m->act(this);
         if (i < map->getCreatures().size() && map->getCreatures().at(i) != m) {
             // don't skip a later creature when an earlier one flees
             i--;
@@ -1118,7 +1120,6 @@ void CombatController::update(Party *party, PartyEvent &event) {
     if (event.type == PartyEvent::PLAYER_KILLED)
         screenMessage("%s is Killed!\n", event.player->getName().c_str());
 }
-
 
 /**
  * CombatMap class implementation

@@ -12,6 +12,7 @@
 #include "context.h"
 #include "combat.h"
 #include "creature.h"
+#include "event.h"
 #include "game.h"
 #include "map.h"
 #include "object.h"
@@ -149,8 +150,9 @@ MapTile Location::getReplacementTile(MapCoords coords) {
  */
 int Location::getCurrentPosition(MapCoords *coords) {
     if (context & CTX_COMBAT) {
-        PartyMemberVector *party = c->combat->getParty();
-        *coords = (*party)[c->combat->getFocus()]->getCoords();    
+        CombatController *cc = dynamic_cast<CombatController *>(eventHandler->getController());
+        PartyMemberVector *party = cc->getParty();
+        *coords = (*party)[cc->getFocus()]->getCoords();    
     }
     else
         *coords = this->coords;
