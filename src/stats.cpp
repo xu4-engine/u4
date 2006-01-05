@@ -204,7 +204,8 @@ void StatsArea::setTitle(const string &s) {
  * The basic party view.
  */
 void StatsArea::showPartyView(bool avatarOnly) {
-    char *format = "%d%c%-9.8s%3d%c";
+    char *format = "%d%c%-9.8s%3d%s";
+
     PartyMember *p = NULL;
     int activePlayer = c->party->getActivePlayer();
 
@@ -213,7 +214,7 @@ void StatsArea::showPartyView(bool avatarOnly) {
     if (!avatarOnly) {
         for (int i = 0; i < c->party->size(); i++) {
             p = c->party->member(i);
-            mainArea.textAt(0, i, format, i+1, (i==activePlayer) ? CHARSET_BULLET : '-', p->getName().c_str(), p->getHp(), p->getStatus());
+            mainArea.textAt(0, i, format, i+1, (i==activePlayer) ? CHARSET_BULLET : '-', p->getName().c_str(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
         }
     }
     else {        
