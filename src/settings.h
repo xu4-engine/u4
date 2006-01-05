@@ -60,6 +60,7 @@ struct SettingsEnhancementOptions {
     bool u5combat;
     bool slimeDivides;
     bool gazerSpawnsInsects;
+    bool textColorization;
     bool c64chestTraps;    
     bool smartEnterKey;
     bool peerShowsObjects;

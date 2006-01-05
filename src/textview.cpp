@@ -70,9 +70,94 @@ void TextView::drawCharMasked(int chr, int x, int y, unsigned char mask) {
     }
 }
 
+/* highlight the selected row using a background color */
+void TextView::colorizeSelectedRow(int x, int y, const char *text) {
+    if (!settings.enhancements || !settings.enhancementsOptions.textColorization) {
+        this->textAt(x, y, text);
+        return;
+    }
+
+    this->setFontColorBG(BG_BRIGHT);
+    for (int i=0; i < this->getWidth()-1; i++)
+        this->textAt(x-1+i, y, " ");
+    this->textAt(x, y, text);
+    this->setFontColorBG(BG_NORMAL);
+}
+
+/* depending on the status type, apply colorization to the character */
+string TextView::colorizeStatus(char statustype) {
+    string output;
+
+    if (!settings.enhancements || !settings.enhancementsOptions.textColorization) {
+        output = statustype;
+        return output;
+    }
+
+    switch (statustype) {
+        case 'P':  output = FG_GREEN;    break;
+        case 'S':  output = FG_BLUE;     break;
+        case 'D':  output = FG_RED;      break;
+        default:   output = statustype;  return output;
+    }
+    output += statustype;
+    output += FG_WHITE;
+    return output;
+}
+
+/* depending on the status type, apply colorization to the character */
+string TextView::colorizeString(string input, ColorFG color, unsigned int colorstart, unsigned int colorlength) {
+    if (!settings.enhancements || !settings.enhancementsOptions.textColorization)
+        return input;
+
+    string output = "";
+    string::size_type length = input.length();
+    string::size_type i;
+    bool colorization = false;
+
+    // the color is intended to run the length of the string
+    if (length < 1)
+        length = input.length();
+
+    // loop through the entire string and 
+    for (i = 0; i < input.size(); i++) {
+        if (i == colorstart-1) {
+            output += color;
+            colorization = true;
+        }
+        output += input[i];
+        if (colorization) {
+           colorlength--;
+            if (colorlength == 0) {
+                output += FG_WHITE;
+                colorization = false;
+            }
+        }
+    }
+
+    // if we reached the end of the string without
+    // resetting the color to white, do it now
+    if (colorization)
+        output += FG_WHITE;
+
+    return output;
+}
+
+void TextView::setFontColor(ColorFG fg, ColorBG bg) {
+    charset->setFontColorFG(fg);
+    charset->setFontColorBG(bg);
+}
+
+void TextView::setFontColorFG(ColorFG fg) {
+    charset->setFontColorFG(fg);
+}
+void TextView::setFontColorBG(ColorBG bg) {
+    charset->setFontColorBG(bg);
+}
+
 void TextView::textAt(int x, int y, const char *fmt, ...) {
     char buffer[1024];
     unsigned int i;
+    unsigned int offset = 0;
 
     bool reenableCursor = false;
     if (cursorFollowsText && cursorEnabled) {
@@ -85,8 +170,21 @@ void TextView::textAt(int x, int y, const char *fmt, ...) {
     vsnprintf(buffer, sizeof(buffer), fmt, args);
     va_end(args);
 
-    for (i = 0; i < strlen(buffer); i++)
-        drawChar(buffer[i], x + i, y);
+    for (i = 0; i < strlen(buffer); i++) {
+        switch (buffer[i]) {
+            case FG_GREY:
+            case FG_BLUE:
+            case FG_GREEN:
+            case FG_RED:
+            case FG_YELLOW:
+            case FG_WHITE:
+                setFontColorFG((ColorFG)buffer[i]);
+                offset++;
+                break;
+            default:
+                drawChar(buffer[i], x+(i-offset), y);
+        }
+    }
 
     if (cursorFollowsText)
         setCursorPos(x + i, y, true);

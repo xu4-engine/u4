@@ -15,6 +15,7 @@
 #define CHAR_HEIGHT 8
 
 #include "view.h"
+#include "image.h"
 
 /**
  * A view of a text area.  Keeps track of the cursor position.
@@ -29,6 +30,7 @@ public:
     int getCursorX() const { return cursorX; }
     int getCursorY() const { return cursorY; }
     bool getCursorEnabled() const { return cursorEnabled; }
+    int getWidth() const { return columns; }
 
     void drawChar(int chr, int x, int y);
     void drawCharMasked(int chr, int x, int y, unsigned char mask);
@@ -41,6 +43,17 @@ public:
     void disableCursor();
     void drawCursor();
     static void cursorTimer(void *data);
+
+    // functions to modify the charset font palette
+    void setFontColor(ColorFG fg, ColorBG bg);
+    void setFontColorFG(ColorFG fg);
+    void setFontColorBG(ColorBG bg);
+
+    // functions to add color to strings
+    void colorizeSelectedRow(int x, int y, const char *text);
+    string colorizeStatus(char statustype);
+    string colorizeString(string input, ColorFG color, unsigned int colorstart, unsigned int colorlength=0);
+
 
 protected:
     int columns, rows;          /**< size of the view in character cells  */

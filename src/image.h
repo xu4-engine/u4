@@ -5,6 +5,8 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#include <SDL.h>
+
 #include <string>
 #include "types.h"
 #include "u4file.h"
@@ -23,6 +25,27 @@ struct SubImage {
     string srcImageName;
     int x, y, width, height;
 };
+
+#define TEXT_BG_INDEX 0
+#define TEXT_FG_PRIMARY_INDEX 15
+#define TEXT_FG_SECONDARY_INDEX 7
+#define TEXT_FG_SHADOW_INDEX 80
+
+// text foreground colors
+typedef enum {
+    FG_GREY   = '\024',
+    FG_BLUE   = '\025',
+    FG_GREEN  = '\026',
+    FG_RED    = '\027',
+    FG_YELLOW = '\030',
+    FG_WHITE  = '\031'
+} ColorFG;
+
+// text background colors
+typedef enum {
+    BG_NORMAL = '\032',
+    BG_BRIGHT = '\033'
+} ColorBG;
 
 #define IM_OPAQUE 255
 #define IM_TRANSPARENT 0
@@ -52,6 +75,15 @@ public:
     void setPaletteFromImage(const Image *src);
     bool getTransparentIndex(unsigned int &index) const;
     void setTransparentIndex(unsigned int index);
+
+    bool setFontColor(ColorFG fg, ColorBG bg);
+    bool setFontColorFG(ColorFG fg);
+    bool setFontColorBG(ColorBG bg);
+
+    bool setPaletteIndex(unsigned int index, SDL_Color color);  // sets the specified palette index to the specified RGB color
+    int getPaletteIndex(SDL_Color color);              // returns the palette index of the specified RGB color
+    SDL_Color setColor(Uint8 r, Uint8 g, Uint8 b);
+
 
     /* alpha handling */
     bool isAlphaOn() const;

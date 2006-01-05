@@ -131,6 +131,100 @@ void Image::setPaletteFromImage(const Image *src) {
            sizeof(SDL_Color) * src->surface->format->palette->ncolors);
 }
 
+/* returns the palette index of the specified RGB color */
+int Image::getPaletteIndex(SDL_Color color) {
+    if (!indexed)
+        return -1;
+
+    for (int i = 0; i < surface->format->palette->ncolors; i++)
+    {
+        if ( (surface->format->palette->colors[i].r == 255)
+            && (surface->format->palette->colors[i].g == 255)
+            && (surface->format->palette->colors[i].b == 255) ) {
+            return i;
+        }
+
+    }
+
+    // return the proper palette index for the specified color
+    return -1;
+}
+
+SDL_Color Image::setColor(Uint8 r, Uint8 g, Uint8 b) {
+    SDL_Color color = {r, g, b, 0};
+    return color;
+}
+
+/* sets the specified font colors */
+bool Image::setFontColor(ColorFG fg, ColorBG bg) {
+    if (!setFontColorFG(fg)) return false;
+    if (!setFontColorBG(bg)) return false;
+    return true;
+}
+
+/* sets the specified font colors */
+bool Image::setFontColorFG(ColorFG fg) {
+    switch (fg) {
+        case FG_GREY:
+            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(153,153,153))) return false;
+            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(102,102,102))) return false;
+            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(51,51,51))) return false;
+            break;
+        case FG_BLUE:
+            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(102,102,255))) return false;
+            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(51,51,204))) return false;
+            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(51,51,51))) return false;
+            break;
+        case FG_GREEN:
+            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(102,255,102))) return false;
+            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(0,153,0))) return false;
+            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(51,51,51))) return false;
+            break;
+        case FG_RED:
+            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(255,102,102))) return false;
+            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(204,51,51))) return false;
+            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(51,51,51))) return false;
+            break;
+        case FG_YELLOW:
+            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(255,255,51))) return false;
+            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(204,153,51))) return false;
+            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(51,51,51))) return false;
+            break;
+        default:
+            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(255,255,255))) return false;
+            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(204,204,204))) return false;
+            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(68,68,68))) return false;
+    }
+    return true;
+}
+
+/* sets the specified font colors */
+bool Image::setFontColorBG(ColorBG bg) {
+    switch (bg) {
+        case BG_BRIGHT:
+            if (!setPaletteIndex(TEXT_BG_INDEX, setColor(0,0,102)))
+                return false;
+            break;
+        default:
+            if (!setPaletteIndex(TEXT_BG_INDEX, setColor(0,0,0)))
+                return false;
+    }
+    return true;
+}
+
+/* sets the specified palette index to the specified RGB color */
+bool Image::setPaletteIndex(unsigned int index, SDL_Color color) {
+    if (!indexed)
+        return false;
+
+    surface->format->palette->colors[index].r = color.r;
+    surface->format->palette->colors[index].g = color.g;
+    surface->format->palette->colors[index].b = color.b;
+
+    // success
+    return true;
+}
+
 bool Image::getTransparentIndex(unsigned int &index) const {
     if (!indexed || (surface->flags & SDL_SRCCOLORKEY) == 0)
         return false;

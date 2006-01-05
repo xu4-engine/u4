@@ -169,6 +169,7 @@ bool Settings::read() {
     enhancementsOptions.u5shrines        = true;
     enhancementsOptions.slimeDivides     = true;
     enhancementsOptions.gazerSpawnsInsects = true;
+    enhancementsOptions.textColorization = false;
     enhancementsOptions.c64chestTraps    = true;
     enhancementsOptions.smartEnterKey    = true;
     enhancementsOptions.peerShowsObjects = false;
@@ -255,6 +256,8 @@ bool Settings::read() {
             enhancementsOptions.slimeDivides = (int) strtoul(buffer + strlen("slimeDivides="), NULL, 0);
         else if (strstr(buffer, "gazerSpawnsInsects=") == buffer)
             enhancementsOptions.gazerSpawnsInsects = (int) strtoul(buffer + strlen("gazerSpawnsInsects="), NULL, 0);
+        else if (strstr(buffer, "textColorization=") == buffer)
+            enhancementsOptions.textColorization = (int) strtoul(buffer + strlen("textColorization="), NULL, 0);
         else if (strstr(buffer, "c64chestTraps=") == buffer)
             enhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);                
         else if (strstr(buffer, "smartEnterKey=") == buffer)
@@ -350,6 +353,7 @@ bool Settings::write() {
             "u5shrines=%d\n"
             "slimeDivides=%d\n"
             "gazerSpawnsInsects=%d\n"
+            "textColorization=%d\n"
             "c64chestTraps=%d\n"            
             "smartEnterKey=%d\n"
             "peerShowsObjects=%d\n"
@@ -390,6 +394,7 @@ bool Settings::write() {
             enhancementsOptions.u5shrines,
             enhancementsOptions.slimeDivides,
             enhancementsOptions.gazerSpawnsInsects,
+            enhancementsOptions.textColorization,
             enhancementsOptions.c64chestTraps,            
             enhancementsOptions.smartEnterKey,
             enhancementsOptions.peerShowsObjects,

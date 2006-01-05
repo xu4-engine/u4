@@ -92,11 +92,13 @@ void Menu::show(TextView *view) {
 
         if (mi->isVisible()) {
             if (mi->isSelected())
+//                view->setFontColorBG(BG_BRIGHT);
                 view->textAt(mi->getX()-1, mi->getY(), "\010%s", mi->getText().c_str());
             else
                 view->textAt(mi->getX(), mi->getY(), mi->getText().c_str());
 
             if (mi->isHighlighted()) {
+                view->colorizeSelectedRow(mi->getX(), mi->getY(), mi->getText().c_str());
                 view->setCursorPos(mi->getX() - 2, mi->getY(), true);
                 view->enableCursor();
             }
