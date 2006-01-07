@@ -71,7 +71,7 @@ void TextView::drawCharMasked(int chr, int x, int y, unsigned char mask) {
 }
 
 /* highlight the selected row using a background color */
-void TextView::colorizeSelectedRow(int x, int y, const char *text) {
+void TextView::textSelectedAt(int x, int y, const char *text) {
     if (!settings.enhancements || !settings.enhancementsOptions.textColorization) {
         this->textAt(x, y, text);
         return;
@@ -120,7 +120,7 @@ string TextView::colorizeString(string input, ColorFG color, unsigned int colors
 
     // loop through the entire string and 
     for (i = 0; i < input.size(); i++) {
-        if (i == colorstart-1) {
+        if (i == colorstart) {
             output += color;
             colorization = true;
         }

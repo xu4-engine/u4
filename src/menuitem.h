@@ -29,7 +29,7 @@ typedef enum {
 
 class MenuItem {
 public:
-    MenuItem(string text, short x, short y, int shortcutKey = 0);
+    MenuItem(string text, short x, short y, int shortcutKey = -1);
     virtual ~MenuItem() {}
 
     virtual void activate(MenuEvent &event) {}
@@ -38,6 +38,8 @@ public:
     int getId() const;
     short getX() const;
     short getY() const;
+    int getScOffset() const;
+
     virtual string getText() const;
     bool isHighlighted() const;
     bool isSelected() const;
@@ -61,7 +63,8 @@ protected:
     string text;
     bool highlighted;
     bool selected;
-    bool visible;    
+    bool visible;
+    int scOffset;
     set<int> shortcutKeys;
     bool closesMenu;
 };

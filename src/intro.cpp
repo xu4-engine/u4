@@ -154,121 +154,6 @@ bool IntroBinData::load() {
     return true;
 }
 
-
-void IntroController::initMenus() {
-    // initialize menus
-    confMenu.setTitle("XU4 Configuration:", 0, 0);
-    confMenu.add(MI_CONF_VIDEO, extendedMenuArea.colorizeString("\010 Video Options", FG_YELLOW, 3, 1), 2, 2, 'v');
-    confMenu.add(MI_CONF_SOUND, extendedMenuArea.colorizeString("\010 Sound Options", FG_YELLOW, 3, 1), 2, 3, 's');
-    confMenu.add(MI_CONF_INPUT, extendedMenuArea.colorizeString("\010 Input Options", FG_YELLOW, 3, 1), 2, 4, 'i');
-    confMenu.add(MI_CONF_SPEED, extendedMenuArea.colorizeString("\010 Speed Options", FG_YELLOW, 4, 1), 2, 5, 'p');
-    confMenu.add(MI_CONF_01, new BoolMenuItem  (extendedMenuArea.colorizeString("Game Enhancements         %s", FG_YELLOW, 6, 1), 2,  7, 'e', &settingsChanged.enhancements));
-    confMenu.add(MI_CONF_GAMEPLAY, extendedMenuArea.colorizeString("\010 Enhanced Gameplay Options", FG_YELLOW, 12, 1), 2, 9, 'g');
-    confMenu.add(MI_CONF_INTERFACE, extendedMenuArea.colorizeString("\010 Enhanced Interface Options", FG_YELLOW, 13, 1), 2, 10, 'n');
-    confMenu.add(CANCEL, extendedMenuArea.colorizeString("\017 Main Menu", FG_YELLOW, 3, 1), 2, 12, 'm');
-    confMenu.addShortcutKey(CANCEL, ' ');
-    confMenu.setClosesMenu(CANCEL);
-
-    /* set the default visibility of the two enhancement menus */
-    confMenu.getItemById(MI_CONF_GAMEPLAY)->setVisible(settings.enhancements);
-    confMenu.getItemById(MI_CONF_INTERFACE)->setVisible(settings.enhancements);
-
-    videoMenu.setTitle("Video Options:", 0, 0);
-    videoMenu.add(MI_VIDEO_01, new StringMenuItem(extendedMenuArea.colorizeString("Graphics             %s", FG_YELLOW, 1, 1),  2, 2, 'g', &settingsChanged.videoType, imageMgr->getSetNames()));
-    videoMenu.add(MI_VIDEO_02, new StringMenuItem(extendedMenuArea.colorizeString("Gem Layout           %s", FG_YELLOW, 2, 1),  2, 3, 'e', &settingsChanged.gemLayout, screenGetGemLayoutNames()));
-    videoMenu.add(MI_VIDEO_03, new StringMenuItem(extendedMenuArea.colorizeString("Line Of Sight        %s", FG_YELLOW, 1, 1),  2, 4, 'l', &settingsChanged.lineOfSight, screenGetLineOfSightStyles()));
-    videoMenu.add(MI_VIDEO_04, new IntMenuItem   (extendedMenuArea.colorizeString("Scale                x%d", FG_YELLOW, 1, 1), 2, 5, 's', reinterpret_cast<int *>(&settingsChanged.scale), 1, 5, 1));
-    videoMenu.add(MI_VIDEO_05, (new BoolMenuItem (extendedMenuArea.colorizeString("Mode                 %s", FG_YELLOW, 1, 1),  2, 6, 'm', &settingsChanged.fullscreen))->setValueStrings("Fullscreen", "Window"));
-    videoMenu.add(MI_VIDEO_06, new StringMenuItem(extendedMenuArea.colorizeString("Filter               %s", FG_YELLOW, 1, 1),  2, 7, 'f', &settingsChanged.filter, screenGetFilterNames()));
-    videoMenu.add(MI_VIDEO_07, new BoolMenuItem  (extendedMenuArea.colorizeString("Screen Shaking       %s", FG_YELLOW, 11, 1), 2, 8, 'k', &settingsChanged.screenShakes));
-    videoMenu.add(MI_VIDEO_08, new IntMenuItem   (extendedMenuArea.colorizeString("Gamma                %s", FG_YELLOW, 2, 1),  2, 9, 'a', &settingsChanged.gamma, 50, 150, 10, MENU_OUTPUT_GAMMA));
-    videoMenu.add(USE_SETTINGS, extendedMenuArea.colorizeString("\010 Use These Settings", FG_YELLOW, 3, 1), 2, 11, 'u');
-    videoMenu.add(CANCEL, extendedMenuArea.colorizeString("\010 Cancel", FG_YELLOW, 3, 1), 2, 12, 'c');
-    videoMenu.addShortcutKey(CANCEL, ' ');
-    videoMenu.setClosesMenu(USE_SETTINGS);
-    videoMenu.setClosesMenu(CANCEL);
-    
-    soundMenu.setTitle("Sound Options:", 0, 0);
-    soundMenu.add(MI_SOUND_01, new BoolMenuItem(extendedMenuArea.colorizeString("Music                %s", FG_YELLOW, 1, 1),       2,  2, 'm', &settingsChanged.musicVol));
-    soundMenu.add(MI_SOUND_02, new BoolMenuItem(extendedMenuArea.colorizeString("Sound Effects        %s", FG_YELLOW, 1, 1),       2,  3, 's', &settingsChanged.soundVol));
-    soundMenu.add(MI_SOUND_03, new BoolMenuItem(extendedMenuArea.colorizeString("Fading               %s", FG_YELLOW, 1, 1),       2,  4, 'f', &settingsChanged.volumeFades));
-    soundMenu.add(USE_SETTINGS, extendedMenuArea.colorizeString("\010 Use These Settings", FG_YELLOW, 3, 1), 2, 11, 'u');
-    soundMenu.add(CANCEL, extendedMenuArea.colorizeString("\010 Cancel", FG_YELLOW, 3, 1), 2, 12, 'c');
-    soundMenu.addShortcutKey(CANCEL, ' ');
-    soundMenu.setClosesMenu(USE_SETTINGS);
-    soundMenu.setClosesMenu(CANCEL);
-
-    inputMenu.setTitle("Keyboard Options:", 0, 0);
-    inputMenu.add(MI_INPUT_01, new IntMenuItem(extendedMenuArea.colorizeString("Repeat Delay        %4d msec", FG_YELLOW, 8, 1),   2,  2, 'd', &settingsChanged.keydelay, 100, MAX_KEY_DELAY, 100));
-    inputMenu.add(MI_INPUT_02, new IntMenuItem(extendedMenuArea.colorizeString("Repeat Interval     %4d msec", FG_YELLOW, 8, 1),   2,  3, 'i', &settingsChanged.keyinterval, 10, MAX_KEY_INTERVAL, 10));
-    /* "Mouse Options:" is drawn in the updateInputMenu() function */
-    inputMenu.add(MI_INPUT_03, new BoolMenuItem(extendedMenuArea.colorizeString("Mouse                %s", FG_YELLOW, 1, 1),       2,  7, 'm', &settingsChanged.mouseOptions.enabled));
-    inputMenu.add(USE_SETTINGS, extendedMenuArea.colorizeString("\010 Use These Settings", FG_YELLOW, 3, 1), 2, 11, 'u');
-    inputMenu.add(CANCEL, extendedMenuArea.colorizeString("\010 Cancel", FG_YELLOW, 3, 1), 2, 12, 'c');
-    inputMenu.addShortcutKey(CANCEL, ' ');
-    inputMenu.setClosesMenu(USE_SETTINGS);
-    inputMenu.setClosesMenu(CANCEL);
-    
-    speedMenu.setTitle("Speed Options:", 0, 0);
-    speedMenu.add(MI_SPEED_01, new IntMenuItem(extendedMenuArea.colorizeString("Game Cycles per Second    %3d", FG_YELLOW, 1, 1),      2,  2, 'g', &settingsChanged.gameCyclesPerSecond, 1, MAX_CYCLES_PER_SECOND, 1));
-    speedMenu.add(MI_SPEED_02, new IntMenuItem(extendedMenuArea.colorizeString("Battle Speed              %3d", FG_YELLOW, 1, 1),      2,  3, 'b', &settingsChanged.battleSpeed, 1, MAX_BATTLE_SPEED, 1));
-    speedMenu.add(MI_SPEED_03, new IntMenuItem(extendedMenuArea.colorizeString("Spell Effect Length       %s", FG_YELLOW, 2, 1),       2,  4, 'p', &settingsChanged.spellEffectSpeed, 1, MAX_SPELL_EFFECT_SPEED, 1, MENU_OUTPUT_SPELL));
-    speedMenu.add(MI_SPEED_04, new IntMenuItem(extendedMenuArea.colorizeString("Camping Length            %3d sec", FG_YELLOW, 3, 1),  2,  5, 'm', &settingsChanged.campTime, 1, MAX_CAMP_TIME, 1));
-    speedMenu.add(MI_SPEED_05, new IntMenuItem(extendedMenuArea.colorizeString("Inn Rest Length           %3d sec", FG_YELLOW, 1, 1),  2,  6, 'i', &settingsChanged.innTime, 1, MAX_INN_TIME, 1));
-    speedMenu.add(MI_SPEED_06, new IntMenuItem(extendedMenuArea.colorizeString("Shrine Meditation Length  %3d sec", FG_YELLOW, 1, 1),  2,  7, 's', &settingsChanged.shrineTime, 1, MAX_SHRINE_TIME, 1));
-    speedMenu.add(MI_SPEED_07, new IntMenuItem(extendedMenuArea.colorizeString("Screen Shake Interval     %3d msec", FG_YELLOW, 3, 1), 2,  8, 'r', &settingsChanged.shakeInterval, MIN_SHAKE_INTERVAL, MAX_SHAKE_INTERVAL, 10));
-    speedMenu.add(USE_SETTINGS, extendedMenuArea.colorizeString("\010 Use These Settings", FG_YELLOW, 3, 1), 2, 11, 'u');
-    speedMenu.add(CANCEL, extendedMenuArea.colorizeString("\010 Cancel", FG_YELLOW, 3, 1), 2, 12, 'c');
-    speedMenu.addShortcutKey(CANCEL, ' ');
-    speedMenu.setClosesMenu(USE_SETTINGS);
-    speedMenu.setClosesMenu(CANCEL);
-
-    /* move the BATTLE DIFFICULTY, DEBUG, and AUTOMATIC ACTIONS settings to "enhancementsOptions" */
-    gameplayMenu.setTitle("Enhanced Gameplay Options:", 0, 0);
-    gameplayMenu.add(MI_GAMEPLAY_01, new StringMenuItem(extendedMenuArea.colorizeString("Battle Difficulty          %s", FG_YELLOW, 1, 1), 2,  2, 'b', &settingsChanged.battleDiff, settings.getBattleDiffs()));
-    gameplayMenu.add(MI_GAMEPLAY_02, new BoolMenuItem(extendedMenuArea.colorizeString("Fixed Chest Traps          %s", FG_YELLOW, 13, 1),  2,  3, 't', &settingsChanged.enhancementsOptions.c64chestTraps));
-    gameplayMenu.add(MI_GAMEPLAY_03, new BoolMenuItem(extendedMenuArea.colorizeString("Gazer Spawns Insects       %s", FG_YELLOW, 1, 1),  2,  4, 'g', &settingsChanged.enhancementsOptions.gazerSpawnsInsects));
-    gameplayMenu.add(MI_GAMEPLAY_04, new BoolMenuItem(extendedMenuArea.colorizeString("Gem View Shows Objects     %s", FG_YELLOW, 2, 1),  2,  5, 'e', &settingsChanged.enhancementsOptions.peerShowsObjects));
-    gameplayMenu.add(MI_GAMEPLAY_05, new BoolMenuItem(extendedMenuArea.colorizeString("Slime Divides              %s", FG_YELLOW, 1, 1),  2,  6, 's', &settingsChanged.enhancementsOptions.slimeDivides));
-    gameplayMenu.add(MI_GAMEPLAY_06, new BoolMenuItem(extendedMenuArea.colorizeString("Debug Mode (Cheats)        %s", FG_YELLOW, 1, 1),  2,  8, 'd', &settingsChanged.debug)); 
-    gameplayMenu.add(USE_SETTINGS, extendedMenuArea.colorizeString("\010 Use These Settings", FG_YELLOW, 3, 1), 2, 11, 'u');
-    gameplayMenu.add(CANCEL, extendedMenuArea.colorizeString("\010 Cancel", FG_YELLOW, 3, 1), 2, 12, 'c');
-    gameplayMenu.addShortcutKey(CANCEL, ' ');
-    gameplayMenu.setClosesMenu(USE_SETTINGS);
-    gameplayMenu.setClosesMenu(CANCEL);
-
-    interfaceMenu.setTitle("Enhanced Interface Options:", 0, 0);
-    interfaceMenu.add(MI_INTERFACE_01, new BoolMenuItem(extendedMenuArea.colorizeString("Automatic Actions          %s", FG_YELLOW, 1, 1), 2,  2, 'a', &settingsChanged.shortcutCommands));
-    /* "(Open, Jimmy, etc.)" */
-    interfaceMenu.add(MI_INTERFACE_02, new BoolMenuItem(extendedMenuArea.colorizeString("Set Active Player          %s", FG_YELLOW, 12, 1), 2,  4, 'p', &settingsChanged.enhancementsOptions.activePlayer));
-    interfaceMenu.add(MI_INTERFACE_03, new BoolMenuItem(extendedMenuArea.colorizeString("Smart 'Enter' Key          %s", FG_YELLOW, 8, 1), 2,  5, 'e', &settingsChanged.enhancementsOptions.smartEnterKey));
-    interfaceMenu.add(MI_INTERFACE_04, new BoolMenuItem(extendedMenuArea.colorizeString("Text Colorization          %s", FG_YELLOW, 1, 1), 2,  6, 't', &settingsChanged.enhancementsOptions.textColorization));
-    interfaceMenu.add(MI_INTERFACE_05, new BoolMenuItem(extendedMenuArea.colorizeString("Ultima V Shrines           %s", FG_YELLOW, 10, 1), 2,  7, 's', &settingsChanged.enhancementsOptions.u5shrines));
-    interfaceMenu.add(MI_INTERFACE_06, new BoolMenuItem(extendedMenuArea.colorizeString("Ultima V Spell Mixing      %s", FG_YELLOW, 16, 1), 2,  8, 'm', &settingsChanged.enhancementsOptions.u5spellMixing));
-    interfaceMenu.add(USE_SETTINGS, extendedMenuArea.colorizeString("\010 Use These Settings", FG_YELLOW, 3, 1), 2, 11, 'u');
-    interfaceMenu.add(CANCEL, extendedMenuArea.colorizeString("\010 Cancel", FG_YELLOW, 3, 1), 2, 12, 'c');
-    interfaceMenu.addShortcutKey(CANCEL, ' ');
-    interfaceMenu.setClosesMenu(USE_SETTINGS);
-    interfaceMenu.setClosesMenu(CANCEL);
-}
-
-
-void IntroController::reinitMenus() {
-    // remove the existing menu items
-    confMenu.removeAll();
-    videoMenu.removeAll();
-    soundMenu.removeAll();
-    inputMenu.removeAll();
-    speedMenu.removeAll();
-    gameplayMenu.removeAll();
-    interfaceMenu.removeAll();
-
-    // initialize menus
-    initMenus();
-}
-
-
-
 IntroController::IntroController() : 
     Controller(1), 
     backgroundArea(),
@@ -281,7 +166,99 @@ IntroController::IntroController() :
     beastiesVisible = false;
 
     // initialize menus
-    initMenus();
+    confMenu.setTitle("XU4 Configuration:", 0, 0);
+    confMenu.add(MI_CONF_VIDEO,               "\010 Video Options",              2,  2,/*'v'*/  2);
+    confMenu.add(MI_CONF_SOUND,               "\010 Sound Options",              2,  3,/*'s'*/  2);
+    confMenu.add(MI_CONF_INPUT,               "\010 Input Options",              2,  4,/*'i'*/  2);
+    confMenu.add(MI_CONF_SPEED,               "\010 Speed Options",              2,  5,/*'p'*/  3);
+    confMenu.add(MI_CONF_01, new BoolMenuItem("Game Enhancements         %s",    2,  7,/*'e'*/  5, &settingsChanged.enhancements));
+    confMenu.add(MI_CONF_GAMEPLAY,            "\010 Enhanced Gameplay Options",  2,  9,/*'g'*/ 11);
+    confMenu.add(MI_CONF_INTERFACE,           "\010 Enhanced Interface Options", 2, 10,/*'n'*/ 12);
+    confMenu.add(CANCEL,                      "\017 Main Menu",                  2, 12,/*'m'*/  2);
+    confMenu.addShortcutKey(CANCEL, ' ');
+    confMenu.setClosesMenu(CANCEL);
+
+    /* set the default visibility of the two enhancement menus */
+    confMenu.getItemById(MI_CONF_GAMEPLAY)->setVisible(settings.enhancements);
+    confMenu.getItemById(MI_CONF_INTERFACE)->setVisible(settings.enhancements);
+
+    videoMenu.setTitle("Video Options:", 0, 0);
+    videoMenu.add(MI_VIDEO_01, new StringMenuItem("Graphics             %s",  2,  2,/*'g'*/  0, &settingsChanged.videoType, imageMgr->getSetNames()));
+    videoMenu.add(MI_VIDEO_02, new StringMenuItem("Gem Layout           %s",  2,  3,/*'e'*/  1, &settingsChanged.gemLayout, screenGetGemLayoutNames()));
+    videoMenu.add(MI_VIDEO_03, new StringMenuItem("Line Of Sight        %s",  2,  4,/*'l'*/  0, &settingsChanged.lineOfSight, screenGetLineOfSightStyles()));
+    videoMenu.add(MI_VIDEO_04,    new IntMenuItem("Scale                x%d", 2,  5,/*'s'*/  0, reinterpret_cast<int *>(&settingsChanged.scale), 1, 5, 1));
+    videoMenu.add(MI_VIDEO_05,  (new BoolMenuItem("Mode                 %s",  2,  6,/*'m'*/  0, &settingsChanged.fullscreen))->setValueStrings("Fullscreen", "Window"));
+    videoMenu.add(MI_VIDEO_06, new StringMenuItem("Filter               %s",  2,  7,/*'f'*/  0, &settingsChanged.filter, screenGetFilterNames()));
+    videoMenu.add(MI_VIDEO_07,   new BoolMenuItem("Screen Shaking       %s",  2,  8,/*'k'*/ 10, &settingsChanged.screenShakes));
+    videoMenu.add(MI_VIDEO_08,    new IntMenuItem("Gamma                %s",  2,  9,/*'a'*/  1, &settingsChanged.gamma, 50, 150, 10, MENU_OUTPUT_GAMMA));
+    videoMenu.add(USE_SETTINGS,                   "\010 Use These Settings",  2, 11,/*'u'*/  2);
+    videoMenu.add(CANCEL,                         "\010 Cancel",              2, 12,/*'c'*/  2);
+    videoMenu.addShortcutKey(CANCEL, ' ');
+    videoMenu.setClosesMenu(USE_SETTINGS);
+    videoMenu.setClosesMenu(CANCEL);
+    
+    soundMenu.setTitle("Sound Options:", 0, 0);
+    soundMenu.add(MI_SOUND_01, new BoolMenuItem("Music                %s", 2,  2,/*'m'*/  0, &settingsChanged.musicVol));
+    soundMenu.add(MI_SOUND_02, new BoolMenuItem("Sound Effects        %s", 2,  3,/*'s'*/  0, &settingsChanged.soundVol));
+    soundMenu.add(MI_SOUND_03, new BoolMenuItem("Fading               %s", 2,  4,/*'f'*/  0, &settingsChanged.volumeFades));
+    soundMenu.add(USE_SETTINGS,                 "\010 Use These Settings", 2, 11,/*'u'*/  2);
+    soundMenu.add(CANCEL,                       "\010 Cancel",             2, 12,/*'c'*/  2);
+    soundMenu.addShortcutKey(CANCEL, ' ');
+    soundMenu.setClosesMenu(USE_SETTINGS);
+    soundMenu.setClosesMenu(CANCEL);
+
+    inputMenu.setTitle("Keyboard Options:", 0, 0);
+    inputMenu.add(MI_INPUT_01,  new IntMenuItem("Repeat Delay        %4d msec", 2,  2,/*'d'*/  7, &settingsChanged.keydelay, 100, MAX_KEY_DELAY, 100));
+    inputMenu.add(MI_INPUT_02,  new IntMenuItem("Repeat Interval     %4d msec", 2,  3,/*'i'*/  7, &settingsChanged.keyinterval, 10, MAX_KEY_INTERVAL, 10));
+    /* "Mouse Options:" is drawn in the updateInputMenu() function */
+    inputMenu.add(MI_INPUT_03, new BoolMenuItem("Mouse                %s",      2,  7,/*'m'*/  0, &settingsChanged.mouseOptions.enabled));
+    inputMenu.add(USE_SETTINGS,                 "\010 Use These Settings",      2, 11,/*'u'*/  2);
+    inputMenu.add(CANCEL,                       "\010 Cancel",                  2, 12,/*'c'*/  2);
+    inputMenu.addShortcutKey(CANCEL, ' ');
+    inputMenu.setClosesMenu(USE_SETTINGS);
+    inputMenu.setClosesMenu(CANCEL);
+    
+    speedMenu.setTitle("Speed Options:", 0, 0);
+    speedMenu.add(MI_SPEED_01, new IntMenuItem("Game Cycles per Second    %3d",      2,  2,/*'g'*/  0, &settingsChanged.gameCyclesPerSecond, 1, MAX_CYCLES_PER_SECOND, 1));
+    speedMenu.add(MI_SPEED_02, new IntMenuItem("Battle Speed              %3d",      2,  3,/*'b'*/  0, &settingsChanged.battleSpeed, 1, MAX_BATTLE_SPEED, 1));
+    speedMenu.add(MI_SPEED_03, new IntMenuItem("Spell Effect Length       %s",       2,  4,/*'p'*/  1, &settingsChanged.spellEffectSpeed, 1, MAX_SPELL_EFFECT_SPEED, 1, MENU_OUTPUT_SPELL));
+    speedMenu.add(MI_SPEED_04, new IntMenuItem("Camping Length            %3d sec",  2,  5,/*'m'*/  2, &settingsChanged.campTime, 1, MAX_CAMP_TIME, 1));
+    speedMenu.add(MI_SPEED_05, new IntMenuItem("Inn Rest Length           %3d sec",  2,  6,/*'i'*/  0, &settingsChanged.innTime, 1, MAX_INN_TIME, 1));
+    speedMenu.add(MI_SPEED_06, new IntMenuItem("Shrine Meditation Length  %3d sec",  2,  7,/*'s'*/  0, &settingsChanged.shrineTime, 1, MAX_SHRINE_TIME, 1));
+    speedMenu.add(MI_SPEED_07, new IntMenuItem("Screen Shake Interval     %3d msec", 2,  8,/*'r'*/  2, &settingsChanged.shakeInterval, MIN_SHAKE_INTERVAL, MAX_SHAKE_INTERVAL, 10));
+    speedMenu.add(USE_SETTINGS,                "\010 Use These Settings",            2, 11,/*'u'*/  2);
+    speedMenu.add(CANCEL,                      "\010 Cancel",                        2, 12,/*'c'*/  2);
+    speedMenu.addShortcutKey(CANCEL, ' ');
+    speedMenu.setClosesMenu(USE_SETTINGS);
+    speedMenu.setClosesMenu(CANCEL);
+
+    /* move the BATTLE DIFFICULTY, DEBUG, and AUTOMATIC ACTIONS settings to "enhancementsOptions" */
+    gameplayMenu.setTitle("Enhanced Gameplay Options:", 0, 0);
+    gameplayMenu.add(MI_GAMEPLAY_01, new StringMenuItem("Battle Difficulty          %s", 2,  2,/*'b'*/  0, &settingsChanged.battleDiff, settings.getBattleDiffs()));
+    gameplayMenu.add(MI_GAMEPLAY_02,   new BoolMenuItem("Fixed Chest Traps          %s", 2,  3,/*'t'*/ 12, &settingsChanged.enhancementsOptions.c64chestTraps));
+    gameplayMenu.add(MI_GAMEPLAY_03,   new BoolMenuItem("Gazer Spawns Insects       %s", 2,  4,/*'g'*/  0, &settingsChanged.enhancementsOptions.gazerSpawnsInsects));
+    gameplayMenu.add(MI_GAMEPLAY_04,   new BoolMenuItem("Gem View Shows Objects     %s", 2,  5,/*'e'*/  1, &settingsChanged.enhancementsOptions.peerShowsObjects));
+    gameplayMenu.add(MI_GAMEPLAY_05,   new BoolMenuItem("Slime Divides              %s", 2,  6,/*'s'*/  0, &settingsChanged.enhancementsOptions.slimeDivides));
+    gameplayMenu.add(MI_GAMEPLAY_06,   new BoolMenuItem("Debug Mode (Cheats)        %s", 2,  8,/*'d'*/  0, &settingsChanged.debug)); 
+    gameplayMenu.add(USE_SETTINGS,                      "\010 Use These Settings",       2, 11,/*'u'*/  2);
+    gameplayMenu.add(CANCEL,                            "\010 Cancel",                   2, 12,/*'c'*/  2);
+    gameplayMenu.addShortcutKey(CANCEL, ' ');
+    gameplayMenu.setClosesMenu(USE_SETTINGS);
+    gameplayMenu.setClosesMenu(CANCEL);
+
+    interfaceMenu.setTitle("Enhanced Interface Options:", 0, 0);
+    interfaceMenu.add(MI_INTERFACE_01, new BoolMenuItem("Automatic Actions          %s", 2,  2,/*'a'*/  0, &settingsChanged.shortcutCommands));
+    /* "(Open, Jimmy, etc.)" */
+    interfaceMenu.add(MI_INTERFACE_02, new BoolMenuItem("Set Active Player          %s", 2,  4,/*'p'*/ 11, &settingsChanged.enhancementsOptions.activePlayer));
+    interfaceMenu.add(MI_INTERFACE_03, new BoolMenuItem("Smart 'Enter' Key          %s", 2,  5,/*'e'*/  7, &settingsChanged.enhancementsOptions.smartEnterKey));
+    interfaceMenu.add(MI_INTERFACE_04, new BoolMenuItem("Text Colorization          %s", 2,  6,/*'t'*/  0, &settingsChanged.enhancementsOptions.textColorization));
+    interfaceMenu.add(MI_INTERFACE_05, new BoolMenuItem("Ultima V Shrines           %s", 2,  7,/*'s'*/  9, &settingsChanged.enhancementsOptions.u5shrines));
+    interfaceMenu.add(MI_INTERFACE_06, new BoolMenuItem("Ultima V Spell Mixing      %s", 2,  8,/*'m'*/ 15, &settingsChanged.enhancementsOptions.u5spellMixing));
+    interfaceMenu.add(USE_SETTINGS,                     "\010 Use These Settings",       2, 11,/*'u'*/  2);
+    interfaceMenu.add(CANCEL,                           "\010 Cancel",                   2, 12,/*'c'*/  2);
+    interfaceMenu.addShortcutKey(CANCEL, ' ');
+    interfaceMenu.setClosesMenu(USE_SETTINGS);
+    interfaceMenu.setClosesMenu(CANCEL);
 }
 
 /**
@@ -598,11 +575,11 @@ void IntroController::updateScreen() {
 
         menuArea.textAt(1,  1, "In another world, in a time to come.");
         menuArea.textAt(14, 3, "Options:");
-        menuArea.textAt(10, 5, menuArea.colorizeString("Return to the view", FG_YELLOW, 1, 1).c_str());
-        menuArea.textAt(10, 6, menuArea.colorizeString("Journey Onward",     FG_YELLOW, 1, 1).c_str());
-        menuArea.textAt(10, 7, menuArea.colorizeString("Initiate New Game",  FG_YELLOW, 1, 1).c_str());
-        menuArea.textAt(10, 8, menuArea.colorizeString("Configure",          FG_YELLOW, 1, 1).c_str());
-        menuArea.textAt(10, 9, menuArea.colorizeString("About",              FG_YELLOW, 1, 1).c_str());
+        menuArea.textAt(10, 5, menuArea.colorizeString("Return to the view", FG_YELLOW, 0, 1).c_str());
+        menuArea.textAt(10, 6, menuArea.colorizeString("Journey Onward",     FG_YELLOW, 0, 1).c_str());
+        menuArea.textAt(10, 7, menuArea.colorizeString("Initiate New Game",  FG_YELLOW, 0, 1).c_str());
+        menuArea.textAt(10, 8, menuArea.colorizeString("Configure",          FG_YELLOW, 0, 1).c_str());
+        menuArea.textAt(10, 9, menuArea.colorizeString("About",              FG_YELLOW, 0, 1).c_str());
         if (!errorMessage.empty())
             menuArea.textAt(1, 10, errorMessage.c_str());
         drawBeasties();
@@ -1183,34 +1160,17 @@ void IntroController::updateInterfaceMenu(MenuEvent &event) {
         event.getType() == MenuEvent::INCREMENT ||
         event.getType() == MenuEvent::DECREMENT) {
 
-        bool reinitializeMenus = false;
-
         switch(event.getMenuItem()->getId()) {
-        case MI_INTERFACE_04:
-//            reinitMenus();
-//            interfaceMenu.show(&extendedMenuArea);
-//            extendedMenuArea.update();
-            break;
-        case USE_SETTINGS:
-            // if the textColorization has changed, the menus need to be reinitialized
-            if (settings.enhancementsOptions.textColorization != settingsChanged.enhancementsOptions.textColorization)
-                reinitializeMenus = true;
-
-            // save settings
-            settings.setData(settingsChanged);
-            settings.write();
-
-            if (reinitializeMenus)
-                reinitMenus();
-
-            // place the menu focus back on the parent menu selection
-//            confMenu.setCurrent(MI_CONF_INTERFACE);
-            break;
-        case CANCEL:
-            // discard settings
-            settingsChanged = settings;
-            break;
-        default: break;
+            case USE_SETTINGS:
+                // save settings
+                settings.setData(settingsChanged);
+                settings.write();
+                break;
+            case CANCEL:
+                // discard settings
+                settingsChanged = settings;
+                break;
+            default: break;
         }
     }
 

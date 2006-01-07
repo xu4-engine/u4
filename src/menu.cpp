@@ -91,16 +91,17 @@ void Menu::show(TextView *view) {
         MenuItem *mi = *current;
 
         if (mi->isVisible()) {
-            if (mi->isSelected())
+            if (mi->isSelected()) {
 //                view->setFontColorBG(BG_BRIGHT);
                 view->textAt(mi->getX()-1, mi->getY(), "\010%s", mi->getText().c_str());
-            else
-                view->textAt(mi->getX(), mi->getY(), mi->getText().c_str());
-
-            if (mi->isHighlighted()) {
-                view->colorizeSelectedRow(mi->getX(), mi->getY(), mi->getText().c_str());
+            }
+            else if (mi->isHighlighted()) {
+                view->textSelectedAt(mi->getX(), mi->getY(), view->colorizeString(mi->getText().c_str(), FG_YELLOW, mi->getScOffset(), 1).c_str());
                 view->setCursorPos(mi->getX() - 2, mi->getY(), true);
                 view->enableCursor();
+            }
+            else {
+                view->textAt(mi->getX(), mi->getY(), view->colorizeString(mi->getText().c_str(), FG_YELLOW, mi->getScOffset(), 1).c_str());
             }
         }
     }

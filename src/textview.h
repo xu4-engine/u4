@@ -50,7 +50,7 @@ public:
     void setFontColorBG(ColorBG bg);
 
     // functions to add color to strings
-    void colorizeSelectedRow(int x, int y, const char *text);
+    void textSelectedAt(int x, int y, const char *text);
     string colorizeStatus(char statustype);
     string colorizeString(string input, ColorFG color, unsigned int colorstart, unsigned int colorlength=0);
 

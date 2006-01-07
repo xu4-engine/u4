@@ -4,6 +4,7 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include "debug.h"
 #include "error.h"
 #include "menu.h"
 #include "menuitem.h"
@@ -19,14 +20,18 @@ MenuItem::MenuItem(string t, short xpos, short ypos, int sc) :
     highlighted(false),
     selected(false),
     visible(true),
+    scOffset(sc),
     closesMenu(false)
-{    
-    addShortcutKey(sc);
+{
+    // if the sc/scOffset is outside the range of the text string, assert
+    ASSERT(sc==-1 || (sc >= 0 && sc <= (int)text.length()), "sc value of %d out of range!", sc);
+    addShortcutKey(tolower(text[sc]));
 }
 
 int MenuItem::getId() const                         { return id; }
 short MenuItem::getX() const                        { return x; }
 short MenuItem::getY() const                        { return y; }
+int MenuItem::getScOffset() const                   { return scOffset; }
 string MenuItem::getText() const                    { return text; }
 bool MenuItem::isHighlighted() const                { return highlighted; }
 bool MenuItem::isSelected() const                   { return selected; }

@@ -81,9 +81,6 @@ public:
     void updateScreen();
     void timerFired();
 
-    void initMenus();
-    void reinitMenus();
-
     void update(Menu *menu, MenuEvent &event);
     void updateConfMenu(MenuEvent &event);
     void updateVideoMenu(MenuEvent &event);
