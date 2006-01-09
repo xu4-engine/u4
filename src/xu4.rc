@@ -69,6 +69,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ICON1               ICON    DISCARDABLE     "xu4.ico"
+IDI_ICON2               ICON    DISCARDABLE     "ankh.ico"
+IDI_ICON3               ICON    DISCARDABLE     "serpent.ico"
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
@@ -96,7 +98,7 @@ BEGIN
             VALUE "FileDescription", "XU4 Ultima IV Engine\0"
             VALUE "FileVersion", "1.0cvs\0"
             VALUE "InternalName", "XU4\0"
-            VALUE "LegalCopyright", "Copyright © 2004\0"
+            VALUE "LegalCopyright", "Copyright © 2004-2006\0"
             VALUE "OriginalFilename", "u4.exe\0"
             VALUE "ProductName", "XU4 Ultima IV Engine\0"
             VALUE "ProductVersion", "1.0cvs\0"

@@ -453,9 +453,9 @@ void CombatController::placeCreatures() {
 void CombatController::placePartyMembers() {
     int i;
     party.clear();
-    
+
     for (i = 0; i < c->party->size(); i++) {
-        PartyMember *p = c->party->member(i);        
+        PartyMember *p = c->party->member(i);
         p->setFocus(false); // take the focus off of everyone        
 
         /* don't place dead party members */
@@ -548,12 +548,12 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
         
         /* show the 'miss' tile */
         attackFlash(coords, misstile, 3);
-        soundPlay(SOUND_MISSED, false);
-
     } else { /* The weapon hit! */
 
         /* show the 'hit' tile */
         attackFlash(coords, hittile, 3);            
+
+        soundPlay(SOUND_NPC_STRUCK, false);                                    // NPC_STRUCK, melee hit
 
         /* apply the damage to the creature */
         if (!attacker->dealDamage(creature, attacker->getDamage()))
@@ -610,8 +610,8 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
 
         /* see if the player is poisoned */
         if ((xu4_random(2) == 0) && (target->getStatus() != STAT_POISONED)) {
+            soundPlay(SOUND_POISON_EFFECT, false);                             // POISON_EFFECT, ranged hit
             target->addStatus(STAT_POISONED);
-            soundPlay(SOUND_PLAYERHIT, false);
         }
         else screenMessage("Failed.\n");
         break;
@@ -619,7 +619,7 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
     case EFFECT_SLEEP:
 
         screenMessage("\n%s Slept!\n", target->getName().c_str());
-        soundPlay(SOUND_PLAYERHIT, false);
+        soundPlay(SOUND_SLEEP, false);                                         // SLEEP, ranged hit, plays even if sleep failed or PC already asleep
 
         /* see if the player is put to sleep */
         if (xu4_random(2) == 0)
@@ -648,8 +648,6 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
 }
 
 void CombatController::rangedMiss(const Coords &coords, Creature *attacker) {
-    soundPlay(SOUND_MISSED, false);
-
     /* If the creature leaves a tile behind, do it here! (lava lizard, etc) */
     const Tile *ground = map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
     if (attacker->leavesTile() && ground->isWalkable())
@@ -831,14 +829,24 @@ void CombatController::movePartyMember(MoveEvent &event) {
     }
 
     screenMessage("%s\n", getDirectionName(event.dir));
-    if (event.result & MOVE_MUST_USE_SAME_EXIT)
+    if (event.result & MOVE_MUST_USE_SAME_EXIT) {
+        soundPlay(SOUND_ERROR);                                                // ERROR move, all PCs must use the same exit
         screenMessage("All must use same exit!\n");
-    else if (event.result & MOVE_BLOCKED)
+    }
+    else if (event.result & MOVE_BLOCKED) {
+        soundPlay(SOUND_BLOCKED);                                              // BLOCKED move
         screenMessage("Blocked!\n");
-    else if (event.result & MOVE_SLOWED)
-        screenMessage("Slow progress!\n"); 
-    else if (winOrLose && getCreature()->isEvil() && (event.result & (MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE)))
-        soundPlay(SOUND_FLEE);
+    }
+    else if (event.result & MOVE_SLOWED) {
+        soundPlay(SOUND_WALK_SLOWED);                                          // WALK_SLOWED move
+        screenMessage("Slow progress!\n");
+    }
+    else if (winOrLose && getCreature()->isEvil() && (event.result & (MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE))) {
+        soundPlay(SOUND_FLEE);                                                 // FLEE move
+    }
+    else {
+        soundPlay(SOUND_WALK_COMBAT);                                          // WALK_COMBAT move
+    }
 }
 
 // Key handlers
@@ -1065,6 +1073,11 @@ void CombatController::attack() {
         }
     }
 
+    // the attack was already made, even if there is no valid target
+    // so play the attack sound
+    soundPlay(SOUND_PC_ATTACK, false);                                        // PC_ATTACK, melee and ranged
+
+
     vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, 
                                                        attacker->getCoords(),
                                                        1, range, 
@@ -1104,8 +1117,6 @@ void CombatController::attack() {
     /* show the 'miss' tile */
     if (!foundTarget) {
         attackFlash(targetCoords, weapon->getMissTile(), 3);
-        soundPlay(SOUND_MISSED, false);
-
         /* This goes here so messages are shown in the original order */
         screenMessage("Missed!\n");
     }

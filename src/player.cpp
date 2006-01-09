@@ -269,7 +269,10 @@ void PartyMember::applyEffect(TileEffect effect) {
         break;
     case EFFECT_POISONFIELD:
     case EFFECT_POISON:
-        addStatus(STAT_POISONED);
+        if (getStatus() != STAT_POISONED) {
+            soundPlay(SOUND_POISON_EFFECT, false);
+            addStatus(STAT_POISONED);
+        }
         break;
     case EFFECT_ELECTRICITY: break;
     default:
@@ -547,6 +550,7 @@ int PartyMember::loseWeapon() {
  */
 void PartyMember::putToSleep() {    
     if (getStatus() != STAT_DEAD) {
+        soundPlay(SOUND_SLEEP, false);
         addStatus(STAT_SLEEPING);
         setTile(Tileset::findTileByName("corpse")->id);
     }
@@ -971,7 +975,14 @@ void Party::endTurn() {
                     members[i]->wakeUp();                    
                 break;
 
-            case STAT_POISONED:            
+            case STAT_POISONED:
+                /* SOLUS
+                 * shouldn't play poison damage sound in combat,
+                 * yet if the PC takes damage just befor combat
+                 * begins, the sound is played  after the combat
+                 * screen appears
+                 */
+                soundPlay(SOUND_POISON_DAMAGE, false);
                 members[i]->applyDamage(2);
                 break;
 

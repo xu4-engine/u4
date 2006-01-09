@@ -1808,7 +1808,7 @@ void getChest(int player) {
     if (obj && !obj->getTile().getTileType()->isChest())
         obj = NULL;
     
-    if (tile->isChest()) {
+    if (tile->isChest() || obj) {
         if (obj)
             c->location->map->removeObject(obj);
         else
@@ -2010,18 +2010,28 @@ void GameController::updateMoons(bool showmoongates)
 /**
  * Handles feedback after avatar moved during normal 3rd-person view.
  */
-void GameController::avatarMoved(MoveEvent &event) {       
+void GameController::avatarMoved(MoveEvent &event) {
     if (event.userEvent) {
 
+        // is filterMoveMessages even used?  it doesn't look like the option is hooked up in the configuration menu
         if (!settings.filterMoveMessages) {
-            if (event.result & MOVE_TURNED)
-                screenMessage("Turn %s!\n", getDirectionName(event.dir));
-            else if (c->transportContext == TRANSPORT_SHIP)
-                screenMessage("Sail %s!\n", getDirectionName(event.dir));    
-            else if (c->transportContext != TRANSPORT_BALLOON)
-                screenMessage("%s\n", getDirectionName(event.dir));
-            else 
-                screenMessage("Drift Only!\n");
+            switch (c->transportContext) {
+                case TRANSPORT_FOOT:
+                case TRANSPORT_HORSE:
+                    screenMessage("%s\n", getDirectionName(event.dir));
+                    break;
+                case TRANSPORT_SHIP:
+                    if (event.result & MOVE_TURNED)
+                        screenMessage("Turn %s!\n", getDirectionName(event.dir));
+                    else
+                        screenMessage("Sail %s!\n", getDirectionName(event.dir));    
+                    break;
+                case TRANSPORT_BALLOON:
+                    screenMessage("Drift Only!\n");
+                    break;
+                default:
+                    ASSERT(0, "bad transportContext %d in avatarMoved()", c->transportContext);
+            }
         }
 
         /* movement was blocked */
@@ -2049,20 +2059,21 @@ void GameController::avatarMoved(MoveEvent &event) {
 
             /* if we're still blocked */
             if ((event.result & MOVE_BLOCKED) && !settings.filterMoveMessages) {
+                soundPlay(SOUND_BLOCKED, false);
                 screenMessage("Blocked!\n");
             }
         }
-
-        /* play an approriate sound effect */
-        if (event.result & MOVE_BLOCKED)
-            soundPlay(SOUND_BLOCKED);
-        else if (c->transportContext == TRANSPORT_FOOT || c->transportContext == TRANSPORT_HORSE)
-            soundPlay(SOUND_WALK);
+        else if (c->transportContext == TRANSPORT_FOOT || c->transportContext == TRANSPORT_HORSE) {
+            /* movement was slowed */
+            if (event.result & MOVE_SLOWED) {
+                soundPlay(SOUND_WALK_SLOWED);
+                screenMessage("Slow progress!\n");
+            }
+            else {
+                soundPlay(SOUND_WALK_NORMAL);
+            }
+        }
     }
-
-    /* movement was slowed */
-    if (event.result & MOVE_SLOWED)
-        screenMessage("Slow progress!\n");        
 
     /* exited map */
     if (event.result & MOVE_EXIT_TO_PARENT) {

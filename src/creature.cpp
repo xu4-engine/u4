@@ -560,19 +560,28 @@ void Creature::act(CombatController *controller) {
 
     switch(action) {
     case CA_ATTACK:
+        soundPlay(SOUND_NPC_ATTACK, false);                                    // NPC_ATTACK, melee
+
         if (attackHit(target)) {
             CombatController::attackFlash(target->getCoords(), "hit_flash", 3);
+
+            soundPlay(SOUND_PC_STRUCK, false);                                 // PC_STRUCK, melee and ranged
+
             if (!dealDamage(target, getDamage()))
                 target = NULL;
 
             if (target && isPartyMember(target)) {
                 /* steal gold if the creature steals gold */
-                if (stealsGold() && xu4_random(4) == 0)
+                if (stealsGold() && xu4_random(4) == 0) {
+                    soundPlay(SOUND_ITEM_STOLEN, false);                       // ITEM_STOLEN, gold
                     c->party->adjustGold(-(xu4_random(0x3f)));
+                }
             
                 /* steal food if the creature steals food */
-                if (stealsFood())
+                if (stealsFood()) {
+                    soundPlay(SOUND_ITEM_STOLEN, false);                       // ITEM_STOLEN, food
                     c->party->adjustFood(-2500);
+                }
             }
         } else {
             CombatController::attackFlash(target->getCoords(), "miss_flash", 3);
@@ -634,6 +643,8 @@ void Creature::act(CombatController *controller) {
 
         // figure out which direction to fire the weapon
         int dir = m_coords.getRelativeDirection(p_coords);
+
+        soundPlay(SOUND_NPC_ATTACK, false);                                    // NPC_ATTACK, ranged
 
         vector<Coords> path = gameGetDirectionalActionPath(dir, MASK_DIR_ALL, m_coords,
                                                            1, 11, &Tile::canAttackOverTile, false);
@@ -919,7 +930,6 @@ bool Creature::applyDamage(int damage, bool byplayer) {
 }
 
 bool Creature::dealDamage(Creature *m, int damage) {
-    soundPlay(SOUND_CREATUREATTACK, false);
     return m->applyDamage(damage, isPartyMember(this));
 }
 

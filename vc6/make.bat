@@ -59,7 +59,7 @@ IF EXIST "%U4PATH%" (
     xcopy ..\conf\dtd\*.dtd "%U4PATH%\conf\dtd\." /E /Y
     xcopy ..\graphics "%U4PATH%\graphics\." /E /D /Y
     xcopy ..\mid "%U4PATH%\mid\." /E /D /Y
-    xcopy ..\sound "%U4PATH%\sound\." /E /D /Y    
+    xcopy ..\sound "%U4PATH%\sound\." /E /Y    
 ) ELSE (
     echo An error occurred while setting the xu4 installation path.
 )
