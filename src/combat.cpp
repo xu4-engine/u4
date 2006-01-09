@@ -909,7 +909,6 @@ bool CombatController::keyPressed(int key) {
     case 'c':
         screenMessage("Cast Spell!\n");
         castSpell(focus);
-        endTurn = false; /* gameCastForPlayer calls finishTurn() */
         break;
 
     case 'g':
