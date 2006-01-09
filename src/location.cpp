@@ -88,8 +88,8 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
 
     /* then the avatar is drawn (unless on a ship) */
     if ((map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && avatar)
-        tiles.push_back(map->tileset->getByName("avatar")->id);
-    //tiles.push_back(c->party->transport);
+        //tiles.push_back(map->tileset->getByName("avatar")->id);
+        tiles.push_back(c->party->transport);
 
     /* then camouflaged creatures that have a disguise */
     if (obj && (obj->getType() == Object::CREATURE) && !obj->isVisible() && (!m->getCamouflageTile().empty())) {
