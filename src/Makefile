@@ -32,7 +32,6 @@ install::
 	$(INSTALL) ../mid/*.mid $(libdir)/u4/music
 	mkdir -p $(libdir)/u4/sound
 	$(INSTALL) ../sound/*.ogg $(libdir)/u4/sound
-	$(INSTALL) ../sound/*.wav $(libdir)/u4/sound
 	$(INSTALL) -D dumpsavegame $(libdir)/u4/dumpsavegame
 	$(INSTALL) -D u4enc $(libdir)/u4/u4enc
 	$(INSTALL) -D u4dec $(libdir)/u4/u4dec
