@@ -24,6 +24,7 @@ using std::string;
 #define MAX_INN_TIME                    10
 #define MAX_SHRINE_TIME                 20
 #define MAX_SHAKE_INTERVAL              200
+#define MAX_VOLUME                      10
 
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
@@ -33,8 +34,8 @@ using std::string;
 #define DEFAULT_LINEOFSIGHT             "DOS"
 #define DEFAULT_SCREEN_SHAKES           1
 #define DEFAULT_GAMMA                   100
-#define DEFAULT_MUSIC_VOLUME            1
-#define DEFAULT_SOUND_VOLUME            1
+#define DEFAULT_MUSIC_VOLUME            10
+#define DEFAULT_SOUND_VOLUME            10
 #define DEFAULT_VOLUME_FADES            1
 #define DEFAULT_SHORTCUT_COMMANDS       0
 #define DEFAULT_KEY_DELAY               500
@@ -92,14 +93,14 @@ public:
     int                 keydelay;
     int                 keyinterval;
     MouseOptions        mouseOptions;
-    bool                musicVol;
+    int                 musicVol;
     unsigned int        scale;
     bool                screenShakes;
     int                 gamma;
     int                 shakeInterval;
     bool                shortcutCommands;
     int                 shrineTime;
-    bool                soundVol;
+    int                 soundVol;
     int                 spellEffectSpeed;
     bool                validateXml;    
     bool                volumeFades;

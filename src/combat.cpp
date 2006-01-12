@@ -910,6 +910,32 @@ bool CombatController::keyPressed(int key) {
         valid = false;
         break;
 
+    /* handle music volume adjustments */
+    case ',':
+        // decrease the volume if possible
+        screenMessage("Music: %d%s\n", musicMgr->decreaseMusicVolume(), "%");
+        endTurn = false;
+        break;
+    case '.':
+        // increase the volume if possible
+        screenMessage("Music: %d%s\n", musicMgr->increaseMusicVolume(), "%");
+        endTurn = false;
+        break;
+
+    /* handle sound volume adjustments */
+    case '<':
+        // decrease the volume if possible
+        screenMessage("Sound: %d%s\n", musicMgr->decreaseSoundVolume(), "%");
+        soundPlay(SOUND_FLEE);
+        endTurn = false;
+        break;
+    case '>':
+        // increase the volume if possible
+        screenMessage("Sound: %d%s\n", musicMgr->increaseSoundVolume(), "%");
+        soundPlay(SOUND_FLEE);
+        endTurn = false;
+        break;
+
     case 'a':
         attack();
         break;
@@ -974,10 +1000,12 @@ bool CombatController::keyPressed(int key) {
             screenMessage("Volume On!\n");
         else
             screenMessage("Volume Off!\n");
+        endTurn = false;
         break;
 
     case 'v' + U4_ALT:
         screenMessage("XU4 %s\n", VERSION);        
+        endTurn = false;
         break;
 
     case 'z': 

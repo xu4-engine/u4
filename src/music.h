@@ -56,6 +56,14 @@ public:
     void introSwitch(int n);
     bool toggle();
 
+    int decreaseMusicVolume();
+    int increaseMusicVolume();
+    void setMusicVolume(int volume);
+
+    int decreaseSoundVolume();
+    int increaseSoundVolume();
+    void setSoundVolume(int volume);
+
 private:
     void playMid(Type music);
     bool load(Type music);

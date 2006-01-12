@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "music.h"
+#include "sound.h"
 
 #include "config.h"
 #include "context.h"
@@ -115,6 +116,8 @@ Music::Music() : introMid(TOWNS), playing(NULL), logger(new Debug("debug/music.t
     }
 
     on = settings.musicVol;
+    setMusicVolume(settings.musicVol);
+    setSoundVolume(settings.soundVol);
     TRACE(*logger, string("Music initialized: volume is ") + (on ? "on" : "off"));
 }
 
@@ -148,10 +151,10 @@ void Music::playMid(Type music) {
     if (!functional)
         return;
 
-    if (!settings.musicVol) {
-        musicMgr->fadeOut(1000);
-        return;    
-    }    
+    //if (!settings.musicVol) {
+    //    musicMgr->fadeOut(1000);
+    //    return;    
+    //}    
 
     /* loaded a new piece of music */
     if (load(music))
@@ -204,7 +207,7 @@ void Music::callback(void *data) {
         musicMgr->play();
     else if (!on && isPlaying())
         musicMgr->stop();
-    settings.musicVol = on;
+//    settings.musicVol = on;
 }
     
 /**
@@ -253,7 +256,8 @@ void Music::fadeIn(int msecs, bool loadFromMap) {
     if (!functional)
         return;
 
-    if (!isPlaying() && settings.musicVol) {
+//    if (!isPlaying() && settings.musicVol) {
+    if (!isPlaying()) {
         /* make sure we've got something loaded to play */
         if (loadFromMap || !playing)
             load(c->location->map->music);        
@@ -319,7 +323,7 @@ bool Music::toggle() {
     eventHandler->getTimer()->remove(&Music::callback);
 
     on = !on;
-    settings.musicVol = on;
+//    settings.musicVol = on;
 
     if (!on)
         fadeOut(1000);
@@ -328,4 +332,69 @@ bool Music::toggle() {
     eventHandler->getTimer()->add(&Music::callback, settings.gameCyclesPerSecond);
     
     return on;    
+}
+
+/**
+ * Decrease music volume
+ */
+int Music::decreaseMusicVolume() {
+    if (--settings.musicVol < 0)
+        settings.musicVol = 0;
+    // set new volume level
+    Mix_VolumeMusic(int((float)MIX_MAX_VOLUME / MAX_VOLUME * settings.musicVol));
+    // return new value as a percentage
+    return (settings.musicVol * 100 / MAX_VOLUME);
+}
+
+/**
+ * Increase music volume
+ */
+int Music::increaseMusicVolume() {
+    if (++settings.musicVol > MAX_VOLUME)
+        settings.musicVol = MAX_VOLUME;
+    // set new volume level
+    Mix_VolumeMusic(int((float)MIX_MAX_VOLUME / MAX_VOLUME * settings.musicVol));
+    // return new value as a percentage
+    return (settings.musicVol * 100 / MAX_VOLUME);
+}
+
+/**
+ * Set music volume
+ */
+void Music::setMusicVolume(int volume) {
+    Mix_VolumeMusic(int((float)MIX_MAX_VOLUME / MAX_VOLUME * volume));
+}
+
+/**
+ * Decrease sound volume
+ */
+int Music::decreaseSoundVolume() {
+    if (--settings.soundVol < 0)
+        settings.soundVol = 0;
+    // set new volume level
+    Mix_Volume(1, int((float)MIX_MAX_VOLUME / MAX_VOLUME * settings.soundVol));
+    // return new value as a percentage
+    return (settings.soundVol * 100 / MAX_VOLUME);
+}
+
+/**
+ * Increase sound volume
+ */
+int Music::increaseSoundVolume() {
+    if (++settings.soundVol > MAX_VOLUME)
+        settings.soundVol = MAX_VOLUME;
+    // set new volume level
+    Mix_Volume(1, int((float)MIX_MAX_VOLUME / MAX_VOLUME * settings.soundVol));
+    // return new value as a percentage
+    return (settings.soundVol * 100 / MAX_VOLUME);
+}
+
+/**
+ * Set sound volume
+ */
+void Music::setSoundVolume(int volume) {
+    /**
+     * Use Channel 1 for sound effects
+     */ 
+    Mix_Volume(1, int((float)MIX_MAX_VOLUME / MAX_VOLUME * volume));
 }

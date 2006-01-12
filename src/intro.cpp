@@ -15,6 +15,7 @@
 #include "imagemgr.h"
 #include "menu.h"
 #include "music.h"
+#include "sound.h"
 #include "player.h"
 #include "savegame.h"
 #include "screen.h"
@@ -198,8 +199,8 @@ IntroController::IntroController() :
     videoMenu.setClosesMenu(CANCEL);
     
     soundMenu.setTitle("Sound Options:", 0, 0);
-    soundMenu.add(MI_SOUND_01, new BoolMenuItem("Music                %s", 2,  2,/*'m'*/  0, &settingsChanged.musicVol));
-    soundMenu.add(MI_SOUND_02, new BoolMenuItem("Sound Effects        %s", 2,  3,/*'s'*/  0, &settingsChanged.soundVol));
+    soundMenu.add(MI_SOUND_01,  new IntMenuItem("Music Volume         %s", 2,  2,/*'m'*/  0, &settingsChanged.musicVol, 0, MAX_VOLUME, 1, MENU_OUTPUT_VOLUME));
+    soundMenu.add(MI_SOUND_02,  new IntMenuItem("Sound Effect Volume  %s", 2,  3,/*'s'*/  0, &settingsChanged.soundVol, 0, MAX_VOLUME, 1, MENU_OUTPUT_VOLUME));
     soundMenu.add(MI_SOUND_03, new BoolMenuItem("Fading               %s", 2,  4,/*'f'*/  0, &settingsChanged.volumeFades));
     soundMenu.add(USE_SETTINGS,                 "\010 Use These Settings", 2, 11,/*'u'*/  2);
     soundMenu.add(CANCEL,                       "\010 Cancel",             2, 12,/*'c'*/  2);
@@ -1050,19 +1051,26 @@ void IntroController::updateSoundMenu(MenuEvent &event) {
         event.getType() == MenuEvent::DECREMENT) {
 
         switch(event.getMenuItem()->getId()) {
-        case USE_SETTINGS:
-            // save settings
-            settings.setData(settingsChanged);
-            settings.write();
-        
-            musicMgr->intro();
-
-            break;
-        case CANCEL:
-            // discard settings
-            settingsChanged = settings;
-            break;
-        default: break;
+            case MI_SOUND_01:
+                musicMgr->setMusicVolume(settingsChanged.musicVol);
+                break;
+            case MI_SOUND_02:
+                musicMgr->setSoundVolume(settingsChanged.soundVol);
+                soundPlay(SOUND_FLEE);
+                break;
+            case USE_SETTINGS:
+                // save settings
+                settings.setData(settingsChanged);
+                settings.write();
+                musicMgr->intro();
+                break;
+            case CANCEL:
+                musicMgr->setMusicVolume(settings.musicVol);
+                musicMgr->setSoundVolume(settings.soundVol);
+                // discard settings
+                settingsChanged = settings;
+                break;
+            default: break;
         }
     }
 

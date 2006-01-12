@@ -8,6 +8,7 @@
 #include "error.h"
 #include "menu.h"
 #include "menuitem.h"
+#include "settings.h"
 
 /**
  * MenuItem class
@@ -155,9 +156,6 @@ string IntMenuItem::getText() const {
         case MENU_OUTPUT_GAMMA:
             snprintf(outputBuffer, sizeof(outputBuffer), "%.1f", static_cast<float>(*val) / 100);
             break;
-        case MENU_OUTPUT_SPELL:
-            snprintf(outputBuffer, sizeof(outputBuffer), "%3g sec", static_cast<double>(*val) / 5);
-            break;
         case MENU_OUTPUT_SHRINE:
 /*
  * is this code really necessary?  the increments/decrements can be handled by IntMenuItem(),
@@ -182,6 +180,20 @@ string IntMenuItem::getText() const {
  *
  */
             snprintf(outputBuffer, sizeof(outputBuffer), "%d sec", *val);
+            break;
+        case MENU_OUTPUT_SPELL:
+            snprintf(outputBuffer, sizeof(outputBuffer), "%3g sec", static_cast<double>(*val) / 5);
+            break;
+        case MENU_OUTPUT_VOLUME:
+            if (*val == 0) {
+                snprintf(outputBuffer, sizeof(outputBuffer), "Disabled");
+            }
+            else if (*val == MAX_VOLUME) {
+                snprintf(outputBuffer, sizeof(outputBuffer), "Full");
+            }
+            else {
+                snprintf(outputBuffer, sizeof(outputBuffer), "%d%s%s", *val * 10, "%", "%");
+            }
             break;
         default:
             break;
