@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
         eventHandler->run();
         eventHandler->popController();
         intro->deleteIntro();
-        delete intro;
+//        delete intro;
     }
 
     eventHandler->setControllerDone(false);
