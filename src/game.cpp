@@ -998,7 +998,6 @@ bool GameController::keyPressed(int key) {
             soundPlay(SOUND_FLEE);
             endTurn = false;
             break;
-        case 998:
 
         case 'a':
             attack();
