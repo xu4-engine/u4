@@ -1226,6 +1226,7 @@ bool GameController::keyPressed(int key) {
                           "y: Yell\n"
                           "z: Ztats\n"
                           "Space: Pass\n"
+                          "Alt-Q: Main Menu\n"
                           "Alt-V: Version\n"
                           "Alt-X: Quit\n"
                           );
