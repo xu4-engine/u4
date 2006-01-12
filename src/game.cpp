@@ -1254,9 +1254,27 @@ bool GameController::keyPressed(int key) {
                           "y: Yell\n"
                           "z: Ztats\n"
                           "Space: Pass\n"
+                          ",: - Music Vol\n"
+                          ".: + Music Vol\n"
+                          "<: - Sound Vol\n"
+                          ">: + Sound Vol\n"
+                          "(more)");
+
+            eventHandler->pushController(&pauseController);
+            pauseController.waitFor();
+
+            screenMessage("\n"
                           "Alt-Q: Main Menu\n"
                           "Alt-V: Version\n"
                           "Alt-X: Quit\n"
+                          "\n"
+                          "\n"
+                          "\n"
+                          "\n"
+                          "\n"
+                          "\n"
+                          "\n"
+                          "\n"
                           );
             screenPrompt();
             break;
