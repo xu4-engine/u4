@@ -28,8 +28,9 @@ Map *Object::getMap() {
 }
 
 void Object::remove() {
-    for (unsigned int i = 0; i < maps.size(); i++) {
-        if (i == maps.size() - 1)
+    unsigned int size = maps.size();
+    for (unsigned int i = 0; i < size; i++) {
+        if (i == size - 1)
             maps[i]->removeObject(this);
         else maps[i]->removeObject(this, false);
     }
