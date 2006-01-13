@@ -320,21 +320,20 @@ MapTile *Map::getTileFromData(const Coords &coords) {
 MapTile *Map::tileAt(const Coords &coords, int withObjects) {
     /* FIXME: this should return a list of tiles, with the most visible at the front */
     MapTile *tile;
-    Annotation::List a = annotations->allAt(coords);
-    Object *obj = objectAt(coords);    
+    std::list<Annotation *> a = annotations->ptrsToAllAt(coords);
+    std::list<Annotation *>::iterator i;
+    Object *obj = objectAt(coords);
  
     tile = getTileFromData(coords);
+
     /* FIXME: this only returns the first valid annotation it can find */
     if (a.size() > 0) {
-        Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            /// FIXME: this returns an ephemeral tile!
-            /// future calls can overwrite what we return!
-            if (!i->isVisualOnly())            
-                return &i->getTile();
+            if (!(*i)->isVisualOnly())        
+                return &(*i)->getTile();
         }
-    }    
-    
+    }
+
     if ((withObjects == WITH_OBJECTS) && obj)
         tile = &obj->getTile();
     else if ((withObjects == WITH_GROUND_OBJECTS) && 
