@@ -219,7 +219,7 @@ void StatsArea::showPartyView(bool avatarOnly) {
     }
     else {        
         p = c->party->member(0);
-        mainArea.textAt(0, 0, format, 1, (activePlayer==0) ? CHARSET_BULLET : '-', p->getName().c_str(), p->getHp(), p->getStatus());
+        mainArea.textAt(0, 0, format, 1, (activePlayer==0) ? CHARSET_BULLET : '-', p->getName().c_str(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
     }
 }
 
