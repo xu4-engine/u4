@@ -180,8 +180,6 @@ void Person::setNpcType(PersonNpcType t) {
 list<string> Person::getConversationText(Conversation *cnv, const char *inquiry) {
     string text;
 
-    text = "\n\n\n";
-
     /*
      * a convsation with a vendor
      */
@@ -190,8 +188,6 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
             "Weapons", "Armor", "Food", "Tavern", "Reagents", "Healer", "Inn", "Guild", "Stable"
         };
         Script *script = cnv->script;
-
-        text.erase();        
 
         /**
          * We aren't currently running a script, load the appropriate one!
@@ -267,6 +263,8 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
      * a conversation with a non-vendor
      */
     else {
+        text = "\n\n\n";
+
         switch (cnv->state) {
         case Conversation::INTRO:
             if (npcType == NPC_EMPTY)
