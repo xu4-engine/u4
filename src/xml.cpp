@@ -109,7 +109,7 @@ string xmlGetPropAsString(xmlNodePtr node, const char *name) {
         return "";
 
     string result((char *)prop);
-    free(prop);
+    xmlFree(prop);
     
     return result;
 }
