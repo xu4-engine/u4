@@ -2070,6 +2070,8 @@ void GameController::avatarMoved(MoveEvent &event) {
                 case TRANSPORT_SHIP:
                     if (event.result & MOVE_TURNED)
                         screenMessage("Turn %s!\n", getDirectionName(event.dir));
+                    else if (event.result & MOVE_SLOWED)
+                        screenMessage("Slow progress!\n");
                     else
                         screenMessage("Sail %s!\n", getDirectionName(event.dir));    
                     break;
