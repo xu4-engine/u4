@@ -56,6 +56,9 @@ void deathStart(int delay) {
     if (deathSequenceRunning)
         return;
     
+    // stop playing music
+    musicMgr->fadeOut(1000);
+
     deathSequenceRunning = 1;
     timerCount = 0;
     timerMsg = 0;
