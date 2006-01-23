@@ -122,12 +122,7 @@ int main(int argc, char *argv[]) {
     if (quit)
         return 0;
 
-    /* initialize person data */
     perf.reset();
-    perf.start();
-    if (!personInit())
-        errorFatal("unable to load person data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
-    perf.end("personInit()");
 
     /* play the game! */
     perf.start();

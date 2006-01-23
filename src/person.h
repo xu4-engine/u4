@@ -16,6 +16,8 @@ using std::string;
 
 class Conversation;
 class Dialogue;
+class Response;
+class ResponsePart;
 
 typedef enum {
    NPC_EMPTY,
@@ -55,21 +57,14 @@ public:
     string getPrompt(Conversation *cnv);
     const char *getChoices(Conversation *cnv);
 
-    string emptyGetIntro(Conversation *cnv);
-    string talkerGetIntro(Conversation *cnv);
-    string talkerGetResponse(Conversation *cnv, const char *inquiry);
+    string getIntro(Conversation *cnv);
+    string processResponse(Conversation *cnv, Response *response);
+    void runCommand(Conversation *cnv, const ResponsePart &command);
+    string getResponse(Conversation *cnv, const char *inquiry);
     string talkerGetQuestionResponse(Conversation *cnv, const char *inquiry);
-    string talkerGetPrompt(Conversation *cnv);
     string beggarGetQuantityResponse(Conversation *cnv, const char *response);
-    string lordBritishGetIntro(Conversation *cnv);
-    string lordBritishGetResponse(Conversation *cnv, const char *inquiry);
     string lordBritishGetQuestionResponse(Conversation *cnv, const char *answer);
-    string lordBritishGetPrompt(const Conversation *cnv);
-    string lordBritishGetHelp(const Conversation *cnv);
-    string hawkwindGetIntro(Conversation *cnv);
-    string hawkwindGetResponse(Conversation *cnv, const char *inquiry);
-    string hawkwindGetPrompt(const Conversation *cnv);
-    void getQuestion(Conversation *cnv, string *question);
+    string getQuestion(Conversation *cnv);
 
 private:
     Dialogue* dialogue;
@@ -80,7 +75,6 @@ private:
 bool isPerson(Object *punknown);
 
 list<string> replySplit(const string &text);
-int personInit(void);
 int linecount(const string &s, int columnmax);
 
 #endif

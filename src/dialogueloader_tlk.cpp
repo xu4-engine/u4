@@ -19,12 +19,6 @@ DialogueLoader* U4TlkDialogueLoader::instance = DialogueLoader::registerLoader(n
  */
 Dialogue* U4TlkDialogueLoader::load(void *source) {
     U4FILE *file = static_cast<U4FILE*>(source);
-    char tlk_buffer[288];
-    Dialogue *dlg;
-    unsigned char prob;
-    char *ptr;
-    Dialogue::Question *question = NULL;
-    Dialogue::Keyword *job, *health, *kw1, *kw2;
     
     enum QTrigger {
         NONE = 0,
@@ -34,56 +28,66 @@ Dialogue* U4TlkDialogueLoader::load(void *source) {
         KEYWORD2 = 6
     };
     
-    QTrigger qtrigger;
-    Dialogue::Question::Type qtype;
-    
     /* there's no dialogues left in the file */
+    char tlk_buffer[288];
     if (u4fread(tlk_buffer, 1, sizeof(tlk_buffer), file) != sizeof(tlk_buffer))
         return NULL;
     
-    dlg = new Dialogue();
-    prob = tlk_buffer[2];
-    qtrigger = QTrigger(tlk_buffer[0]);
-    qtype = Dialogue::Question::Type(tlk_buffer[1]);
+    char *ptr = &tlk_buffer[3];    
+    vector<string> strings;
+    for (int i = 0; i < 12; i++) {
+        strings.push_back(ptr);
+        ptr += strlen(ptr) + 1;
+    }
+
+    Dialogue *dlg = new Dialogue();
+    unsigned char prob = tlk_buffer[2];
+    QTrigger qtrigger = QTrigger(tlk_buffer[0]);
+    bool humilityTestQuestion = tlk_buffer[1] == 1;
 
     dlg->setTurnAwayProb(prob);
 
-    // Get the name, pronoun, and description of the talker
-    ptr = &tlk_buffer[3];    
-    string name(ptr);    ptr += strlen(ptr) + 1;
-    string pronoun(ptr); ptr += strlen(ptr) + 1;
-    string desc(ptr);    ptr += strlen(ptr) + 1;
+    dlg->setName(strings[0]);
+    dlg->setPronoun(strings[1]);
+    dlg->setPrompt("\nYour Interest:\n");
 
-    job = new Dialogue::Keyword("job", string("\n") + ptr);        ptr += strlen(ptr) + 1;
-    health = new Dialogue::Keyword("health", string("\n") + ptr);  ptr += strlen(ptr) + 1;
-    
-    string resp1(ptr);   ptr += strlen(ptr) + 1;
-    string resp2(ptr);   ptr += strlen(ptr) + 1;
-    string q(ptr);       ptr += strlen(ptr) + 1;
-    string y(ptr);       ptr += strlen(ptr) + 1;
-    string n(ptr);       ptr += strlen(ptr) + 1;
+    string introBase = string("\nYou meet ") + strings[2] + "\n";
+    if (isupper(introBase[10]))
+        introBase[10] = tolower(introBase[10]);
 
-    question = new Dialogue::Question(q, y, n, qtype);
+    dlg->setIntro(new Response(introBase + dlg->getPrompt()));
+    dlg->setLongIntro(new Response(introBase +
+                                   "\n" + dlg->getPronoun() + " says: I am " + dlg->getName() + "\n"
+                                   + dlg->getPrompt()));
+    dlg->setDefaultAnswer(new Response("That I cannot\nhelp thee with."));
 
-    kw1 = new Dialogue::Keyword(ptr, string("\n") + resp1);        ptr += strlen(ptr) + 1;
-    kw2 = new Dialogue::Keyword(ptr, string("\n") + resp2);
+    Response *yes = new Response(strings[8]);
+    Response *no = new Response(strings[9]);
+    if (humilityTestQuestion) {
+        yes->add(ResponsePart::BRAGGED);
+        no->add(ResponsePart::HUMBLE);
+    }
+    dlg->setQuestion(new Dialogue::Question(strings[7], yes, no));
+
+    // one of the following four keywords triggers the speaker's question
+    Response *job = new Response(string("\n") + strings[3]);
+    Response *health = new Response(string("\n") + strings[4]);
+    Response *kw1 = new Response(string("\n") + strings[5]);
+    Response *kw2 = new Response(string("\n") + strings[6]);
     
     switch(qtrigger) {
-    case JOB:       job->setQuestion(question); break;
-    case HEALTH:    health->setQuestion(question); break;
-    case KEYWORD1:  kw1->setQuestion(question); break;
-    case KEYWORD2:  kw2->setQuestion(question); break;
+    case JOB:       job->add(ResponsePart::ASK); break;
+    case HEALTH:    health->add(ResponsePart::ASK); break;
+    case KEYWORD1:  kw1->add(ResponsePart::ASK); break;
+    case KEYWORD2:  kw2->add(ResponsePart::ASK); break;
     case NONE:
     default:
         break;
     }
-
-    dlg->setName(name);
-    dlg->setPronoun(pronoun);
-    dlg->setIntro(string("\nYou meet ") + desc + "\n");
-    dlg->setLongIntro(dlg->getIntro() + 
-                      "\n" + pronoun + " says: I am " + name + "\n");
-    dlg->setDefaultAnswer("That I cannot\nhelp thee with.");
+    dlg->addKeyword("job", job);
+    dlg->addKeyword("heal", health);
+    dlg->addKeyword(strings[10], kw1);
+    dlg->addKeyword(strings[11], kw2);
 
     // NOTE: We let the talker's custom keywords override the standard
     // keywords like HEAL and LOOK.  This behavior differs from u4dos,
@@ -91,26 +95,25 @@ Dialogue* U4TlkDialogueLoader::load(void *source) {
     // conflict with the standard ones (e.g. Calabrini in Moonglow has
     // HEAL for healer, which is unreachable in u4dos, but clearly
     // more useful than "Fine." for health).
-    
-    string look = string("\nYou see ") + desc;
+    string look = string("\nYou see ") + strings[2];
     if (isupper(look[8]))
         look[8] = tolower(look[8]);
-    dlg->addKeyword(new Dialogue::Keyword("look", look));
-    dlg->addKeyword(new Dialogue::Keyword("name", string("\n") + pronoun + " says: I am " + name));
-    dlg->addKeyword(new Dialogue::Keyword("give", string("\n") + pronoun + " says: I do not need thy gold.  Keep it!"));
-    dlg->addKeyword(new Dialogue::Keyword("join", string("\n") + pronoun + " says: I cannot join thee."));
+    dlg->addKeyword("look", new Response(look));
+    dlg->addKeyword("name", new Response(string("\n") + dlg->getPronoun() + " says: I am " + dlg->getName()));
+    dlg->addKeyword("give", new Response(string("\n") + dlg->getPronoun() + " says: I do not need thy gold.  Keep it!"));
+    dlg->addKeyword("join", new Response(string("\n") + dlg->getPronoun() + " says: I cannot join thee."));
+
+    Response *bye = new Response("\nBye.");
+    bye->add(ResponsePart::END);
+    dlg->addKeyword("bye", bye);
+    dlg->addKeyword("", bye);
 
     /* 
      * This little easter egg appeared in the Amiga version of Ultima IV.
      * I've never figured out what the number means.
      * "Banjo" Bob Hardy was the programmer for the Amiga version.
      */
-    dlg->addKeyword(new Dialogue::Keyword("ojna", "\nHi Banjo Bob!\nYour secret\nnumber is\n4F4A4E0A"));
-
-    dlg->addKeyword(job);
-    dlg->addKeyword(health);
-    dlg->addKeyword(kw1);
-    dlg->addKeyword(kw2);
+    dlg->addKeyword("ojna", new Response("\nHi Banjo Bob!\nYour secret\nnumber is\n4F4A4E0A"));
 
     return dlg;
 }

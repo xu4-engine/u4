@@ -230,6 +230,8 @@ bool CityMapLoader::load(Map *map) {
             if ((unsigned)(*current)->id == (i + 1)) {
                 if ((*current)->role == NPC_LORD_BRITISH)
                     people[i]->setDialogue(DialogueLoader::getLoader("application/x-u4lbtlk")->load(NULL));
+                else if ((*current)->role == NPC_HAWKWIND)
+                    people[i]->setDialogue(DialogueLoader::getLoader("application/x-u4hwtlk")->load(NULL));
                 people[i]->setNpcType(static_cast<PersonNpcType>((*current)->role));
             }
         }

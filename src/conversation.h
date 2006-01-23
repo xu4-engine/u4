@@ -8,15 +8,91 @@
 #include <list>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "utils.h"
 
 using std::list;
 using std::string;
+using std::vector;
 
 class Debug;
 class Person;
 class Script;
+
+/**
+ * A response part can be text or a "command" that triggers an
+ * action.
+ */
+class ResponsePart {
+public:
+    // the valid command response parts
+    static const ResponsePart NONE;
+    static const ResponsePart ASK;
+    static const ResponsePart END;
+    static const ResponsePart ATTACK;
+    static const ResponsePart BRAGGED;
+    static const ResponsePart HUMBLE;
+    static const ResponsePart ADVANCELEVELS;
+    static const ResponsePart HEALCONFIRM;
+    static const ResponsePart STARTMUSIC_LB;
+    static const ResponsePart STARTMUSIC_HW;
+    static const ResponsePart STOPMUSIC;
+    static const ResponsePart HAWKWIND;
+
+    ResponsePart(const string &value, const string &arg="", bool command=false);
+
+    operator string() const;
+    bool operator==(const ResponsePart &rhs) const;
+    bool isCommand() const;
+
+private:
+    string value, arg;
+    bool command;
+};
+
+/**
+ * A static response.  Each response can be made up of any number of
+ * ResponseParts, which are either text fragments or commands.
+ */
+class Response {
+public:
+    Response(const string &response);
+    virtual ~Response() {}
+
+    void add(const ResponsePart &part);
+
+    virtual const vector<ResponsePart> &getParts() const;
+
+    operator string() const;
+
+    Response *addref();
+    void release();
+
+private:
+    int references;
+    vector<ResponsePart> parts;
+};
+
+/**
+ * A dynamically generated response.  This class allows the response
+ * to be generated dynamically at the time of the conversation instead
+ * of when the conversation data is loaded.
+ */
+class DynamicResponse : public Response {
+public:
+    DynamicResponse(Response *(*generator)(const DynamicResponse *), const string &param = "");
+    virtual ~DynamicResponse();
+
+    virtual const vector<ResponsePart> &getParts() const;
+
+    const string &getParam() const { return param; }
+
+private:
+    Response *(*generator)(const DynamicResponse *);
+    Response *currentResponse;
+    string param;
+};
 
 /**
  * The dialogue class, which holds conversation information for
@@ -27,63 +103,42 @@ class Script;
 class Dialogue {
 public:
     /**
-     * The action the talker is taking.
-     */ 
-    enum Action {
-        NO_ACTION,
-        END_CONVERSATION,
-        ATTACK
-    };
-
-    /**
      * A question-response to a keyword.
      */ 
     class Question {
     public:
-        /** The Type of question that the talker asks */
-        enum Type {
-            NORMAL,
-            HUMILITY_TEST
-        };        
-
-        Question(const string &txt, const string &yes, const string &no, Type t);
+        Question(const string &txt, Response *yes, Response *no);
 
         string getText();
-        Type getType() const;
-        string getResponse(bool yes);
+        Response *getResponse(bool yes);
 
     private:
-        string text, yesresp, noresp;
-        Type type;
+        string text;
+        Response *yesresp, *noresp;
     };
 
     /**
      * A dialogue keyword.
      * It contains all the keywords that the talker will respond to, as
-     * well as the responses to those keywords (including question-responses).
+     * well as the responses to those keywords.
      */ 
     class Keyword {
     public:        
-        Keyword(const string &kw, const string &resp, Question *q = NULL);
+        Keyword(const string &kw, Response *resp);
+        Keyword(const string &kw, const string &resp);
+        ~Keyword();
         
         bool operator==(const string &kw) const;
-        
+
         /*
          * Accessor methods
          */
         string      getKeyword();
-        string      getResponse();
-        Question*   getQuestion();
-        void        setQuestion(Question *q);
+        Response*   getResponse();
         
-        /*
-         * Member functions
-         */
-        bool        isQuestion() const;
-
     private:
-        string keyword, response;
-        Question *question;
+        string keyword;
+        Response *response;
     };
 
     /**
@@ -100,41 +155,47 @@ public:
     /*
      * Accessor methods
      */ 
-    string getName();
-    string getPronoun();
-    string getIntro(bool familiar = false);
-    string getLongIntro(bool familiar = false);
-    string getDefaultAnswer();
+    const string &getName() const;
+    const string &getPronoun() const;
+    const string &getPrompt() const;
+    Response *getIntro(bool familiar = false);
+    Response *getLongIntro(bool familiar = false);
+    Response *getDefaultAnswer();
+    Question *getQuestion();
 
     /*
      * Member functions 
      */ 
-    void   setName(const string &n);
-    void   setPronoun(const string &pn);
-    void   setIntro(const string &i);
-    void   setLongIntro(const string &i);
-    void   setDefaultAnswer(const string &a);
-    void   setTurnAwayProb(int prob);
-    void   addKeyword(Keyword *kw);
-    Action getAction() const;
+    void  setName(const string &n);
+    void  setPronoun(const string &pn);
+    void  setPrompt(const string &prompt);
+    void  setIntro(Response *i);
+    void  setLongIntro(Response *i);
+    void  setDefaultAnswer(Response *a);
+    void  setTurnAwayProb(int prob);
+    void  addKeyword(const string &kw, Response *response);
+    void  setQuestion(Question *q);
+    const ResponsePart &getAction() const;
     string dump(const string &arg);
 
     /*
      * Operators 
-     */ 
+     */
     Keyword *operator[](const string &kw);
     
 private:
     string name;
     string pronoun;
-    string intro;
-    string longIntro;
-    string defaultAnswer;
+    string prompt;
+    Response *intro;
+    Response *longIntro;
+    Response *defaultAnswer;
     KeywordMap keywords;
     union {
         int turnAwayProb;
         int attackProb;    
     };
+    Question *question;
 };
 
 /**
@@ -187,7 +248,7 @@ public:
 private:
     Debug *logger;
 public:    
-    State state;                /**< The state of the conversation */    
+    State state;                /**< The state of the conversation */
     string playerInput;         /**< A string holding the text the player inputs */
     list<string> reply;         /**< What the talker says */
     class Script *script;       /**< A script that this person follows during the conversation (may be NULL) */
