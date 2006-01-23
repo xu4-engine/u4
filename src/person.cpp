@@ -320,8 +320,8 @@ string Person::getIntro(Conversation *cnv) {
     else
         intro = dialogue->getLongIntro();
 
-    string text = processResponse(cnv, intro);
     cnv->state = Conversation::TALK;
+    string text = processResponse(cnv, intro);
 
     return text;
 }
