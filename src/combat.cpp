@@ -309,6 +309,7 @@ void CombatController::end(bool adjustKarma) {
 
             if (exitDir != DIR_NONE) {
                 c->saveGame->orientation = exitDir;  /* face the direction exiting the room */
+                // XXX: why north, shouldn't this be orientation?
                 c->location->move(DIR_NORTH, false);  /* advance 1 space outside of the room */
             }
         }

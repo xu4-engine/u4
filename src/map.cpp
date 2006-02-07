@@ -575,7 +575,6 @@ int Map::getNumberOfCreatures() {
 int Map::getValidMoves(MapCoords from, MapTile transport) {
     int retval;
     Direction d;
-    MapTile *tile, *prev_tile;
     Object *obj;    
     const Creature *m, *to_m;
     int ontoAvatar, ontoCreature;    
@@ -608,17 +607,15 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             ontoCreature = 1;
             
         // get the destination tile
+        MapTile tile;
         if (ontoAvatar)
-            tile = &c->party->transport;
+            tile = c->party->getTransport();
         else if (ontoCreature)
-            tile = &obj->getTile();
+            tile = obj->getTile();
         else 
-            tile = tileAt(coords, WITH_OBJECTS);
+            tile = *tileAt(coords, WITH_OBJECTS);
 
-        MapTile tmp_copy = *tile;
-        tile = &tmp_copy;
-
-        prev_tile = tileAt(from, WITHOUT_OBJECTS);
+        MapTile prev_tile = *tileAt(from, WITHOUT_OBJECTS);
 
         // get the creature object, if it exists (the one that's moving)
         m = creatureMgr->getByTile(transport);        
@@ -632,22 +629,22 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             // and the creature must be able to have others move onto it.  If either of
             // these conditions are not met, the creature cannot move onto another.
             if ((ontoAvatar && !m->canMoveOntoPlayer()) ||
-                (ontoCreature && (!m->canMoveOntoCreatures() || !tile->getTileType()->isWalkable())))
+                (ontoCreature && (!m->canMoveOntoCreatures() || !tile.getTileType()->isWalkable())))
                 continue;
         }
 
         // avatar movement
         if (isAvatar) {
             // if the transport is a ship, check sailable
-            if (transport.getTileType()->isShip() && tile->getTileType()->isSailable())
+            if (transport.getTileType()->isShip() && tile.getTileType()->isSailable())
                 retval = DIR_ADD_TO_MASK(d, retval);
             // if it is a balloon, check flyable
-            else if (transport.getTileType()->isBalloon() && tile->getTileType()->isFlyable())
+            else if (transport.getTileType()->isBalloon() && tile.getTileType()->isFlyable())
                 retval = DIR_ADD_TO_MASK(d, retval);        
             // avatar or horseback: check walkable
             else if (transport == tileset->getByName("avatar")->id || transport.getTileType()->isHorse()) {
-                if (tile->getTileType()->canWalkOn(d) &&
-                    prev_tile->getTileType()->canWalkOff(d))
+                if (tile.getTileType()->canWalkOn(d) &&
+                    prev_tile.getTileType()->canWalkOff(d))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
         }
@@ -655,35 +652,35 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
         // creature movement
         else if (m) {
             // flying creatures
-            if (tile->getTileType()->isFlyable() && m->flies()) {
+            if (tile.getTileType()->isFlyable() && m->flies()) {
                 // FIXME: flying creatures behave differently on the world map?
                 if (isWorldMap())
                     retval = DIR_ADD_TO_MASK(d, retval);
-                else if (tile->getTileType()->isWalkable() || 
-                         tile->getTileType()->isSwimable() || 
-                         tile->getTileType()->isSailable())
+                else if (tile.getTileType()->isWalkable() || 
+                         tile.getTileType()->isSwimable() || 
+                         tile.getTileType()->isSailable())
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
             // swimming creatures and sailing creatures
-            else if (tile->getTileType()->isSwimable() || 
-                     tile->getTileType()->isSailable()) {
-                if (m->swims() && tile->getTileType()->isSwimable())
+            else if (tile.getTileType()->isSwimable() || 
+                     tile.getTileType()->isSailable()) {
+                if (m->swims() && tile.getTileType()->isSwimable())
                     retval = DIR_ADD_TO_MASK(d, retval);
-                if (m->sails() && tile->getTileType()->isSailable())
+                if (m->sails() && tile.getTileType()->isSailable())
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
             // ghosts and other incorporeal creatures
             else if (m->isIncorporeal()) {
                 // can move anywhere but onto water, unless of course the creature can swim
-                if (!(tile->getTileType()->isSwimable() || 
-                      tile->getTileType()->isSailable()))
+                if (!(tile.getTileType()->isSwimable() || 
+                      tile.getTileType()->isSailable()))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
             // walking creatures
             else if (m->walks()) {
-                if (tile->getTileType()->canWalkOn(d) &&
-                    prev_tile->getTileType()->canWalkOff(d) &&
-                    tile->getTileType()->isCreatureWalkable())
+                if (tile.getTileType()->canWalkOn(d) &&
+                    prev_tile.getTileType()->canWalkOff(d) &&
+                    tile.getTileType()->isCreatureWalkable())
                     retval = DIR_ADD_TO_MASK(d, retval);
             }            
         }

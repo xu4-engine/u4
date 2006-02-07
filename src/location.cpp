@@ -69,7 +69,7 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
         // When viewing a gem, always show the avatar regardless of whether or not
         // it is shown in our normal view
         if (avatar)
-            tiles.push_back(c->party->transport);
+            tiles.push_back(c->party->getTransport());
         else             
             tiles.push_back(*map->getTileFromData(coords));
 
@@ -78,7 +78,7 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
 
     /* Add the avatar to gem view */
     if (avatar && viewMode == VIEW_GEM)
-        tiles.push_back(c->party->transport);
+        tiles.push_back(c->party->getTransport());
     
     /* Add visual-only annotations to the list */
     for (i = a.begin(); i != a.end(); i++) {
@@ -89,7 +89,7 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     /* then the avatar is drawn (unless on a ship) */
     if ((map->flags & SHOW_AVATAR) && (c->transportContext != TRANSPORT_SHIP) && avatar)
         //tiles.push_back(map->tileset->getByName("avatar")->id);
-        tiles.push_back(c->party->transport);
+        tiles.push_back(c->party->getTransport());
 
     /* then camouflaged creatures that have a disguise */
     if (obj && (obj->getType() == Object::CREATURE) && !obj->isVisible() && (!m->getCamouflageTile().empty())) {
@@ -104,7 +104,7 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
 
     /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */
     if ((map->flags & SHOW_AVATAR) && (c->transportContext == TRANSPORT_SHIP) && avatar)
-        tiles.push_back(c->party->transport);
+        tiles.push_back(c->party->getTransport());
 
     /* then permanent annotations */
     for (i = a.begin(); i != a.end(); i++) {

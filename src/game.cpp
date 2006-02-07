@@ -275,9 +275,6 @@ void GameController::init() {
         gameFixupObjects(c->location->prev->map);
     }
 
-    /* set the party's transport */
-    c->party->setTransport(TileMap::get("base")->translate(c->saveGame->transport));
-
     spellSetEffectCallback(&gameSpellEffect);
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
 
@@ -1165,7 +1162,7 @@ bool GameController::keyPressed(int key) {
 
         case 'x':
             if ((c->transportContext != TRANSPORT_FOOT) && !c->party->isFlying()) {
-                Object *obj = c->location->map->addObject(c->party->transport, c->party->transport, c->location->coords);
+                Object *obj = c->location->map->addObject(c->party->getTransport(), c->party->getTransport(), c->location->coords);
                 if (c->transportContext == TRANSPORT_SHIP)
                     c->lastShip = obj;
 
@@ -1583,7 +1580,7 @@ bool attackAt(const Coords &coords) {
         ((m->getType() == Object::PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))) 
         c->party->adjustKarma(KA_ATTACKED_GOOD);
 
-    CombatController *cc = new CombatController(CombatMap::mapForTile(ground, c->party->transport.getTileType(), m));
+    CombatController *cc = new CombatController(CombatMap::mapForTile(ground, c->party->getTransport().getTileType(), m));
     cc->init(m);
     cc->begin();    
     return true;
@@ -1747,7 +1744,7 @@ void fire() {
         return;
 
     // can only fire broadsides
-    int broadsidesDirs = dirGetBroadsidesDirs(c->party->transport.getDirection());
+    int broadsidesDirs = dirGetBroadsidesDirs(c->party->getDirection());
     if (!DIR_IN_MASK(dir, broadsidesDirs)) {
         screenMessage("Broadsides Only!\n");
         return;
@@ -2922,8 +2919,10 @@ void gameFixupObjects(Map *map) {
         SaveGameMonsterRecord *monster = &map->monsterTable[i];
         if (monster->prevTile != 0) {
             Coords coords(monster->x, monster->y);
-            MapTile tile = c->location->map->translateFromRawTileIndex(monster->tile),
-                oldTile = c->location->map->translateFromRawTileIndex(monster->prevTile);
+
+            // tile values stored in monsters.sav hardcoded to index into base tilemap
+            MapTile tile = TileMap::get("base")->translate(monster->tile),
+                oldTile = TileMap::get("base")->translate(monster->prevTile);
             
             if (i < MONSTERTABLE_CREATURES_SIZE) {
                 const Creature *creature = creatureMgr->getByTile(tile);
@@ -2967,7 +2966,7 @@ void gameCreatureAttack(Creature *m) {
             ground = under->getTile().getTileType();
     }
 
-    CombatController *cc = new CombatController(CombatMap::mapForTile(ground, c->party->transport.getTileType(), m));
+    CombatController *cc = new CombatController(CombatMap::mapForTile(ground, c->party->getTransport().getTileType(), m));
     cc->init(m);
     cc->begin();
 }

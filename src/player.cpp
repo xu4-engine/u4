@@ -15,6 +15,7 @@
 #include "location.h"
 #include "mapmgr.h"
 #include "names.h"
+#include "tilemap.h"
 #include "tileset.h"
 #include "types.h"
 #include "utils.h"
@@ -611,6 +612,10 @@ Party::Party(SaveGame *s) : saveGame(s), transport(0), torchduration(0), activeP
         // add the members to the party
         members.push_back(new PartyMember(this, &saveGame->players[i]));
     }    
+
+    // set the party's transport (transport value stored in savegame
+    // hardcoded to index into base tilemap)
+    setTransport(TileMap::get("base")->translate(saveGame->transport));
 }
 
 Party::~Party() {
@@ -1174,8 +1179,15 @@ void Party::reviveParty() {
     notifyOfChange();
 }
 
+MapTile Party::getTransport() const {
+    return transport;
+}
+
 void Party::setTransport(MapTile tile) {
-    saveGame->transport = c->location->map->translateToRawTileIndex(tile);
+    // transport value stored in savegame hardcoded to index into base tilemap
+    saveGame->transport = TileMap::get("base")->untranslate(tile);
+    ASSERT(saveGame->transport != 0, "could not generate valid savegame transport for tile with id %d\n", tile.id);
+
     transport = tile;
     
     if (tile.getTileType()->isHorse())
@@ -1197,6 +1209,14 @@ void Party::setShipHull(int str) {
         saveGame->shiphull = newStr;
         notifyOfChange();
     }
+}
+
+Direction Party::getDirection() const {
+    return transport.getDirection();
+}
+
+void Party::setDirection(Direction dir) {
+    transport.setDirection(dir);
 }
 
 void Party::adjustReagent(int reagent, int amt) {

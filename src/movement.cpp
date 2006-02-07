@@ -46,8 +46,8 @@ void moveAvatar(MoveEvent &event) {
 
     /* if you're on ship, you must turn first! */
     if (c->transportContext == TRANSPORT_SHIP) {
-        if (c->party->transport.getDirection() != event.dir) {
-            c->party->transport.setDirection(event.dir);
+        if (c->party->getDirection() != event.dir) {
+            c->party->setDirection(event.dir);
             event.result = (MoveResult)(MOVE_TURNED | MOVE_END_TURN);
             return;
         }
@@ -55,8 +55,8 @@ void moveAvatar(MoveEvent &event) {
     
     /* change direction of horse, if necessary */
     if (c->transportContext == TRANSPORT_HORSE) {
-        if ((event.dir == DIR_WEST || event.dir == DIR_EAST) && (c->party->transport.getDirection() != event.dir))
-            c->party->transport.setDirection(event.dir);
+        if ((event.dir == DIR_WEST || event.dir == DIR_EAST) && (c->party->getDirection() != event.dir))
+            c->party->setDirection(event.dir);
     }
 
     /* figure out our new location we're trying to move to */
@@ -70,7 +70,7 @@ void moveAvatar(MoveEvent &event) {
     }
 
     if (!collisionOverride && !c->party->isFlying()) {
-        int movementMask = c->location->map->getValidMoves(c->location->coords, c->party->transport);
+        int movementMask = c->location->map->getValidMoves(c->location->coords, c->party->getTransport());
         /* See if movement was blocked */
         if (!DIR_IN_MASK(event.dir, movementMask)) {
             event.result = (MoveResult)(MOVE_BLOCKED | MOVE_END_TURN);
@@ -144,7 +144,7 @@ void moveAvatarInDungeon(MoveEvent &event) {
     }
 
     if (!collisionOverride) {
-        int movementMask = c->location->map->getValidMoves(c->location->coords, c->party->transport);
+        int movementMask = c->location->map->getValidMoves(c->location->coords, c->party->getTransport());
 
         if (advancing && !tile->getTileType()->canWalkOn(DIR_ADVANCE))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);

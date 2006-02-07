@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "creature.h"
+#include "direction.h"
 #include "observable.h"
 #include "savegame.h"
 #include "script.h"
@@ -184,9 +185,13 @@ public:
     bool lightTorch(int duration = 100, bool loseTorch = true);
     void quenchTorch();
     void reviveParty();
+    MapTile getTransport() const;
     void setTransport(MapTile transport);
     void setShipHull(int str);
-    
+
+    Direction getDirection() const;
+    void setDirection(Direction dir);
+
     void adjustReagent(int reagent, int amt);
     int reagents(int reagent) const;
     void setActivePlayer(int p);
@@ -197,13 +202,11 @@ public:
     int size() const;
     PartyMember *member(int index) const;    
     
-//protected:
-public:
+private:
     PartyMemberVector members;
     SaveGame *saveGame;
     MapTile transport;
     int torchduration;
-private:
     int activePlayer;
 };
 
