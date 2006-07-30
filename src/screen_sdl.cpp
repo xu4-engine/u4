@@ -608,7 +608,7 @@ void screenShake(int iterations) {
     if (settings.screenShakes) {
         x = 0 * scale;
         w = 320 * scale;
-        h = 200 * scale;
+        h = (200-1) * scale;
 
         for (i = 0; i < iterations; i++) {
             y = 1 * scale;
@@ -617,9 +617,7 @@ void screenShake(int iterations) {
             screenRedrawScreen();
             EventHandler::sleep(settings.shakeInterval);
 
-            y = -1 * scale;
-
-            screen->drawSubRectOn(screen, x, y, 0, 0, w, h);
+            screen->drawSubRectOn(screen, x, 0, 0, y, w, h);
             screenRedrawScreen();
             EventHandler::sleep(settings.shakeInterval);
         }
