@@ -102,7 +102,7 @@ public:
     int                 shrineTime;
     int                 soundVol;
     int                 spellEffectSpeed;
-    bool                validateXml;    
+    bool                validateXml;
     bool                volumeFades;
 
     /**
@@ -125,12 +125,13 @@ public:
 /**
  * The settings class is a singleton that holds all the settings
  * information.  It is dynamically initialized when first accessed.
- */ 
+ */
 class Settings : public SettingsData, public Observable<Settings *> {
     typedef std::map<string, int, std::less<string> > SettingsMap;
 
 public:
     /* Methods */
+	void init(const bool useProfile, const string profileName);
     static Settings &getInstance();
     void setData(const SettingsData &data);
     bool read();

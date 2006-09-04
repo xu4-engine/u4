@@ -28,6 +28,8 @@
 
 using namespace std;
 
+extern bool useProfile;
+extern string profileName;
 extern bool quit;
 
 IntroController *intro = NULL;
@@ -567,6 +569,9 @@ void IntroController::updateScreen() {
         backgroundArea.draw(BKGD_INTRO);
         drawMap();
         drawBeasties();
+		// display the profile name if a local profile is being used
+		if (useProfile)
+			screenTextAt(40-profileName.length(), 24, profileName.c_str());
         break;
 
     case INTRO_MENU:

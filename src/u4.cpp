@@ -35,6 +35,8 @@
 
 bool verbose = false;
 bool quit = false;
+bool useProfile = false;
+string profileName = "";
 
 Performance perf("debug/performance.txt");
 
@@ -50,22 +52,57 @@ int main(int argc, char *argv[]) {
 
     Debug::initGlobal("debug/global.txt");
 
+	/*
+	 * if the -p or -profile arguments are passed to the application,
+	 * they need to be identified before the settings are initialized.
+	 */
+    for (i = 1; i < (unsigned int)argc; i++) {
+        if (((strcmp(argv[i], "-p") == 0) || (strcmp(argv[i], "-profile") == 0))
+                && (unsigned int)argc > i + 1) {
+			// when grabbing the profile name:
+			// 1. trim leading whitespace
+			// 2. truncate the string at 20 characters
+			// 3. then strip any trailing whitespace
+			profileName = argv[i+1];
+			profileName = profileName.erase(0,profileName.find_first_not_of(' '));
+			profileName.resize(20, ' ');
+			profileName = profileName.erase(profileName.find_last_not_of(' ')+1);
+
+			// verify that profileName is valid, otherwise do not use the profile
+			if (!profileName.empty()) {
+	            useProfile = true;
+			}
+			i++;
+			break;
+		}
+    }
+
+	/* initialize the settings */
+	settings.init(useProfile, profileName);
+
+	/* update the settings based upon command-line arguments */
     for (i = 1; i < (unsigned int)argc; i++) {
         if (strcmp(argv[i], "-filter") == 0 && (unsigned int)argc > i + 1) {
             settings.filter = argv[i+1];
             i++;
         }
-        if (strcmp(argv[i], "-scale") == 0 && (unsigned int)argc > i + 1) {
+        else if (strcmp(argv[i], "-scale") == 0 && (unsigned int)argc > i + 1) {
             settings.scale = strtoul(argv[i+1], NULL, 0);
             i++;
         }
-        else if (strcmp(argv[i], "-i") == 0)
+        else if (((strcmp(argv[i], "-p") == 0)
+			        || (strcmp(argv[i], "-profile") == 0))
+                && (unsigned int)argc > i + 1) {
+			// do nothing
+			i++;
+		}
+        else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "-skipintro") == 0)
             skipIntro = 1;
-        else if (strcmp(argv[i], "-v") == 0)
+        else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "-verbose") == 0)
             verbose = true;
-        else if (strcmp(argv[i], "-f") == 0)
+        else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "-fullscreen") == 0)
             settings.fullscreen = 1;
-        else if (strcmp(argv[i], "-q") == 0) {
+		else if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "-quiet") == 0) {
             settings.musicVol = 0;
             settings.soundVol = 0;
         }

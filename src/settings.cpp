@@ -59,6 +59,7 @@ bool SettingsData::operator!=(const SettingsData &s) const {
     return !operator==(s);
 }
 
+
 /**
  * Default contructor.  Settings is a singleton so this is private.
  */
@@ -66,51 +67,66 @@ Settings::Settings() {
     battleDiffs.push_back("Normal");
     battleDiffs.push_back("Hard");
     battleDiffs.push_back("Expert");
+}
+
+
+/**
+ * Initialize the settings.
+ */
+void Settings::init(const bool useProfile, const string profileName) {
+	if (useProfile) {
+		userPath = "./profiles/";
+		userPath += profileName.c_str();
+		userPath += "/";
+	} else {
 
 #if defined(MACOSX)
-    char *home = getenv("HOME");
-    if (home && home[0]) {
-        userPath += home;
-        userPath += MACOSX_USER_FILES_PATH;
-        userPath += "/";
-    } else
-        userPath = "./";
+        char *home = getenv("HOME");
+        if (home && home[0]) {
+            userPath += home;
+            userPath += MACOSX_USER_FILES_PATH;
+            userPath += "/";
+        } else
+            userPath = "./";
 #elif defined(__unix__)
-    char *home = getenv("HOME");
-    if (home && home[0]) {
-        userPath += home;
-        userPath += "/.xu4";
-        userPath += "/";
-    } else
-        userPath = "./";
+        char *home = getenv("HOME");
+        if (home && home[0]) {
+            userPath += home;
+            userPath += "/.xu4";
+            userPath += "/";
+        } else
+            userPath = "./";
 #elif defined(_WIN32) || defined(__CYGWIN__)
-    userPath = "./";
-    LPMALLOC pMalloc = NULL;
-    if (SHGetMalloc(&pMalloc) == S_OK) {
-        LPITEMIDLIST pItemIDList = NULL;
-        if (SHGetSpecialFolderLocation(NULL, CSIDL_APPDATA, &pItemIDList) == S_OK &&
-            pItemIDList != NULL) {
-            LPSTR pBuffer = NULL;
-            if ((pBuffer = (LPSTR) pMalloc->Alloc(MAX_PATH + 2)) != NULL) {
-                if (SHGetPathFromIDList(pItemIDList, pBuffer) == TRUE) {
-                    userPath = pBuffer;
-                    userPath += "/xu4/";
+        userPath = "./";
+        LPMALLOC pMalloc = NULL;
+        if (SHGetMalloc(&pMalloc) == S_OK) {
+            LPITEMIDLIST pItemIDList = NULL;
+            if (SHGetSpecialFolderLocation(NULL, CSIDL_APPDATA, &pItemIDList) == S_OK &&
+                pItemIDList != NULL) {
+                LPSTR pBuffer = NULL;
+                if ((pBuffer = (LPSTR) pMalloc->Alloc(MAX_PATH + 2)) != NULL) {
+                    if (SHGetPathFromIDList(pItemIDList, pBuffer) == TRUE) {
+                        userPath = pBuffer;
+                        userPath += "/xu4/";
+                    }
+                    pMalloc->Free(pBuffer);
                 }
-                pMalloc->Free(pBuffer);
-            }
-            pMalloc->Free(pItemIDList);
-        } 
-        pMalloc->Release();
-    }
+                pMalloc->Free(pItemIDList);
+            } 
+            pMalloc->Release();
+        }
 #else
-    userPath = "./";
+        userPath = "./";
 #endif
+
+	}
     FileSystem::createDirectory(userPath);
 
     filename = userPath + SETTINGS_BASE_FILENAME;
 
     read();
 }
+
 
 /**
  * Return the global instance of settings.
@@ -119,7 +135,6 @@ Settings &Settings::getInstance() {
     if (instance == NULL)
         instance = new Settings();
     return *instance;
-    
 }
 
 void Settings::setData(const SettingsData &data) {
