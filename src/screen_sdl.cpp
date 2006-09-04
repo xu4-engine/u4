@@ -490,8 +490,7 @@ void screenDrawImage(const string &name, int x, int y) {
             return;
         }
     }
-
-    errorFatal("unable to load image \"%s\": is Ultima IV installed?  See http://xu4.sourceforge.net/", name.c_str());
+    errorFatal("ERROR 1006: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", name.c_str(), settings.game.c_str());
 }
 
 void screenDrawImageInMapArea(const string &name) {
@@ -499,7 +498,7 @@ void screenDrawImageInMapArea(const string &name) {
 
     info = imageMgr->get(name);
     if (!info)
-        errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+        errorFatal("ERROR 1004: Unable to load data files.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", settings.game.c_str());
 
     info->image->drawSubRect(BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
                              BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
@@ -515,7 +514,7 @@ void screenShowChar(int chr, int x, int y) {
     if (charsetInfo == NULL) {
         charsetInfo = imageMgr->get(BKGD_CHARSET);
         if (!charsetInfo)
-            errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+			errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
     }
 
     charsetInfo->image->drawSubRect(x * charsetInfo->image->width(), y * (CHAR_HEIGHT * scale),
@@ -550,7 +549,7 @@ void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, 
         if (gemTilesInfo == NULL) {
             gemTilesInfo = imageMgr->get(BKGD_GEMTILES);
             if (!gemTilesInfo)
-                errorFatal("unable to load data files: is Ultima IV installed?  See http://xu4.sourceforge.net/");
+                errorFatal("ERROR 1002: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_GEMTILES, settings.game.c_str());
         }
 
         if (tile < 128) {
