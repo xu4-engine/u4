@@ -453,7 +453,8 @@ void CombatController::placeCreatures() {
  */
 void CombatController::placePartyMembers() {
     int i;
-    party.clear();
+//  The following line caused a crash upon entering combat (MSVC8 binary)
+//    party.clear();
 
     for (i = 0; i < c->party->size(); i++) {
         PartyMember *p = c->party->member(i);

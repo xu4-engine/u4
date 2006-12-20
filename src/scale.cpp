@@ -319,6 +319,7 @@ Image *scale2xSaI(Image *src, int scale, int N) {
                     prod2.r = (a.r + b.r + c.r + d.r) >> 2;
                     prod2.g = (a.g + b.g + c.g + d.g) >> 2;
                     prod2.b = (a.b + b.b + c.b + d.b) >> 2;
+                    prod2.a = 255;
                 }
 
                 dest->putPixel((x << 1), (y << 1), a.r, a.g, a.b, a.a);

@@ -26,7 +26,7 @@ MenuItem::MenuItem(string t, short xpos, short ypos, int sc) :
 {
     // if the sc/scOffset is outside the range of the text string, assert
     ASSERT(sc==-1 || (sc >= 0 && sc <= (int)text.length()), "sc value of %d out of range!", sc);
-    addShortcutKey(tolower(text[sc]));
+    if (sc != -1) addShortcutKey(tolower(text[sc]));
 }
 
 int MenuItem::getId() const                         { return id; }
