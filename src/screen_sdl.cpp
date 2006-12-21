@@ -600,30 +600,43 @@ void screenScrollMessageArea() {
  * Do the tremor spell effect where the screen shakes.
  */
 void screenShake(int iterations) {
-    int x, y, w, h;
+    int shakeOffset;
     int i;
     Image *screen = imageMgr->get("screen")->image;
+    //Image *bottom;
+
+    // the MSVC8 binary was generating a Access Violation when using
+    // drawSubRectOn() or drawOn() to draw the screen surface on top
+    // of itself.  Occured on settings.scale 2 and 4 only.
+    // Therefore, a temporary Image buffer is used.
+    Image *tmpImage = Image::duplicate(screen);
 
     if (settings.screenShakes) {
-        x = 0 * scale;
-        w = 320 * scale;
-        h = (200-1) * scale;
+        // specify the size of the offset, and create a buffer to store it
+        shakeOffset = 1;
+        //bottom = Image::create(SCALED(320), SCALED(shakeOffset), false, Image::HARDWARE);
 
         for (i = 0; i < iterations; i++) {
-            y = 1 * scale;
+            // store the bottom row
+            //screen->drawOn(bottom,0,SCALED(shakeOffset-200));
 
-            screen->drawSubRectOn(screen, x, y, 0, 0, w, h);
+            // shift the screen down and make the top row black
+            tmpImage->drawOn(screen, 0, SCALED(shakeOffset));
+            //screen->drawOn(screen, 0, SCALED(shakeOffset));
+            screen->fillRect(0, 0, SCALED(320), SCALED(shakeOffset), 0, 0, 0);
             screenRedrawScreen();
             EventHandler::sleep(settings.shakeInterval);
 
-            screen->drawSubRectOn(screen, x, 0, 0, y, w, h);
+            // shift the screen back up, and replace the bottom row
+            tmpImage->drawOn(screen, 0, 0);
+            //screen->drawOn(screen, 0, 0-SCALED(shakeOffset));
+            //bottom->drawOn(screen, 0, SCALED(200-shakeOffset));
             screenRedrawScreen();
             EventHandler::sleep(settings.shakeInterval);
         }
-        /* FIXME: remove next line? doesn't seem necessary,
-           just adds another screen refresh (which is visible on my screen)... */
-        //screenDrawBackground(BKGD_BORDERS);
-        screenRedrawScreen();
+        // free the bottom row image
+        delete tmpImage;
+        //delete bottom;
     }
 }
 
