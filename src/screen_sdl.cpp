@@ -601,42 +601,41 @@ void screenScrollMessageArea() {
  */
 void screenShake(int iterations) {
     int shakeOffset;
-    int i;
+    unsigned short i;
     Image *screen = imageMgr->get("screen")->image;
-    //Image *bottom;
+    Image *bottom;
 
     // the MSVC8 binary was generating a Access Violation when using
     // drawSubRectOn() or drawOn() to draw the screen surface on top
     // of itself.  Occured on settings.scale 2 and 4 only.
-    // Therefore, a temporary Image buffer is used.
-    Image *tmpImage = Image::duplicate(screen);
+    // Therefore, a temporary Image buffer is used to store the area
+    // that gets clipped at the bottom.
 
     if (settings.screenShakes) {
-        // specify the size of the offset, and create a buffer to store it
+        // specify the size of the offset, and create a buffer
+        // to store the offset row plus 1
         shakeOffset = 1;
-        //bottom = Image::create(SCALED(320), SCALED(shakeOffset), false, Image::HARDWARE);
+        bottom = Image::create(SCALED(320), SCALED(shakeOffset+1), false, Image::HARDWARE);
 
         for (i = 0; i < iterations; i++) {
             // store the bottom row
-            //screen->drawOn(bottom,0,SCALED(shakeOffset-200));
+            screen->drawOn(bottom, 0, SCALED((shakeOffset+1)-200));
 
             // shift the screen down and make the top row black
-            tmpImage->drawOn(screen, 0, SCALED(shakeOffset));
-            //screen->drawOn(screen, 0, SCALED(shakeOffset));
+            screen->drawSubRectOn(screen, 0, SCALED(shakeOffset), 0, 0, SCALED(320), SCALED(200-(shakeOffset+1)));
+            bottom->drawOn(screen, 0, SCALED(200-(shakeOffset)));
             screen->fillRect(0, 0, SCALED(320), SCALED(shakeOffset), 0, 0, 0);
             screenRedrawScreen();
             EventHandler::sleep(settings.shakeInterval);
 
             // shift the screen back up, and replace the bottom row
-            tmpImage->drawOn(screen, 0, 0);
-            //screen->drawOn(screen, 0, 0-SCALED(shakeOffset));
-            //bottom->drawOn(screen, 0, SCALED(200-shakeOffset));
+            screen->drawOn(screen, 0, 0-SCALED(shakeOffset));
+            bottom->drawOn(screen, 0, SCALED(200-(shakeOffset+1)));
             screenRedrawScreen();
             EventHandler::sleep(settings.shakeInterval);
         }
         // free the bottom row image
-        delete tmpImage;
-        //delete bottom;
+        delete bottom;
     }
 }
 
