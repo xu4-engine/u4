@@ -710,6 +710,7 @@ void IntroController::initiateNewGame() {
     pauseController.waitFor();
 
     // done: exit intro and let game begin
+    questionArea.disableCursor();
     EventHandler::setControllerDone();
 
     return;
