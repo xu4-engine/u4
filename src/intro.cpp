@@ -160,7 +160,7 @@ bool IntroBinData::load() {
 IntroController::IntroController() : 
     Controller(1), 
     backgroundArea(),
-    menuArea(1 * CHAR_WIDTH, 13 * CHAR_HEIGHT, 38, 10),
+    menuArea(1 * CHAR_WIDTH, 13 * CHAR_HEIGHT, 38, 11),
     extendedMenuArea(2 * CHAR_WIDTH, 10 * CHAR_HEIGHT, 36, 13),
     questionArea(INTRO_TEXT_X * CHAR_WIDTH, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT),
     mapArea(BORDER_WIDTH, (TILE_HEIGHT * 6) + BORDER_HEIGHT, INTRO_MAP_WIDTH, INTRO_MAP_HEIGHT, "base")
@@ -579,6 +579,20 @@ void IntroController::updateScreen() {
         backgroundArea.draw(BKGD_INTRO);
         backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
 
+        // if there is an error message to display, show it
+        if (!errorMessage.empty())
+        {
+            menuArea.textAt(6, 5, errorMessage.c_str());
+            drawBeasties();
+            screenRedrawScreen();
+            // wait for a couple seconds
+            EventHandler::wait_msecs(2000);
+            // clear the screen again
+            errorMessage.erase();
+            backgroundArea.draw(BKGD_INTRO);
+            backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
+        }
+
         menuArea.textAt(1,  1, "In another world, in a time to come.");
         menuArea.textAt(14, 3, "Options:");
         menuArea.textAt(10, 5, menuArea.colorizeString("Return to the view", FG_YELLOW, 0, 1).c_str());
@@ -586,8 +600,6 @@ void IntroController::updateScreen() {
         menuArea.textAt(10, 7, menuArea.colorizeString("Initiate New Game",  FG_YELLOW, 0, 1).c_str());
         menuArea.textAt(10, 8, menuArea.colorizeString("Configure",          FG_YELLOW, 0, 1).c_str());
         menuArea.textAt(10, 9, menuArea.colorizeString("About",              FG_YELLOW, 0, 1).c_str());
-        if (!errorMessage.empty())
-            menuArea.textAt(1, 10, errorMessage.c_str());
         drawBeasties();
 
         // draw the cursor last
@@ -848,7 +860,7 @@ void IntroController::journeyOnward() {
     }
     
     if (!validSave) {
-        errorMessage = "Initiate game first!";
+        errorMessage = "Initiate a new game first!";
         updateScreen();
         screenRedrawScreen();
         return;
