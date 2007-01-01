@@ -133,7 +133,7 @@ ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
 
 ImageInfo *ImageMgr::loadImageInfoFromConf(const ConfigElement &conf) {
     ImageInfo *info;
-    static const char *fixupEnumStrings[] = { "none", "intro", /* @VERIFY: no longer being used? "introExtended", */ "abyss", "abacus", "dungns", NULL };
+    static const char *fixupEnumStrings[] = { "none", "intro", "abyss", "abacus", "dungns", NULL };
 
     info = new ImageInfo;
     info->name = conf.getString("name");
@@ -241,31 +241,6 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
     for (i = 86; i < 239; i++)
         im->fillRect(i * prescale, 31 * prescale, prescale, prescale, 128, 0, 0); /* red */
 }
-
-/*
- * @VERIFY: no longer being used?
- *
-void ImageMgr::fixupIntroExtended(Image *im, int prescale) {
-    fixupIntro(im, prescale);
-
-    im->drawSubRectOn(im, 
-                      0 * prescale,
-                      10 * prescale,
-                      0 * prescale,
-                      95 * prescale,
-                      320 * prescale,
-                      50 * prescale);
-
-    im->drawSubRectOn(im, 
-                      0 * prescale,
-                      60 * prescale,
-                      0 * prescale, 
-                      105 * prescale,
-                      320 * prescale,
-                      45 * prescale);
-}
- *
- */
 
 void ImageMgr::fixupAbyssVision(Image *im, int prescale) {
     static unsigned int *data = NULL;
@@ -441,14 +416,6 @@ ImageInfo *ImageMgr::get(const string &name) {
     case FIXUP_INTRO:
         fixupIntro(unscaled, info->prescale);
         break;
-/*
- * @VERIFY: no longer being used?
- *
-    case FIXUP_INTRO_EXTENDED:
-        fixupIntroExtended(unscaled, info->prescale);
-        break;
- *
- */
     case FIXUP_ABYSS:
         fixupAbyssVision(unscaled, info->prescale);
         break;

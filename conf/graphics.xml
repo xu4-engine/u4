@@ -153,9 +153,6 @@
             <subimage name="options_top"  x="0"  y="32"   width="320"  height="128"/>
             <subimage name="options_btm"  x="0"  y="112"  width="320"  height="80"/>
         </image>
-<!-- @VERIFY: no longer being used?
-        <image name="titlex"   filename="title.ega"    width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true" fixup="introExtended"/>
--->
         <image name="tree"     filename="tree.ega"     width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true">
             <subimage name="moongate" x="0"   y="152" width="24" height="24"/>
             <subimage name="items"    x="24"  y="152" width="24" height="24"/>

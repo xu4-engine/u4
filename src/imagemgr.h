@@ -67,11 +67,6 @@ class Settings;
 enum ImageFixup {
     FIXUP_NONE,
     FIXUP_INTRO,
-/*
- * @VERIFY: no longer being used?
- *
- *    FIXUP_INTRO_EXTENDED,
- */
     FIXUP_ABYSS,
     FIXUP_ABACUS,
     FIXUP_DUNGNS
@@ -125,11 +120,6 @@ private:
     ImageInfo *getInfoFromSet(const string &name, ImageSet *set);
 
     void fixupIntro(Image *im, int prescale);
-/*
- * @VERIFY: no longer being used?
- *
- *    void fixupIntroExtended(Image *im, int prescale);
- */
     void fixupAbyssVision(Image *im, int prescale);
     void fixupAbacus(Image *im, int prescale);
     void fixupDungNS(Image *im, int prescale);
