@@ -20,8 +20,8 @@ ProgressBar& ProgressBar::operator++()  { current++; draw(); return *this; }
 ProgressBar& ProgressBar::operator--()  { current--; draw(); return *this; }
 void ProgressBar::draw() {
     Image *bar = Image::create(SCALED(width), SCALED(height), false, Image::HARDWARE);
-    int pos = static_cast<int>(double(current - min) / double(max - min)) * (width - (bwidth * 2));
-    
+    int pos = static_cast<int>((double(current - min) / double(max - min)) * (width - (bwidth * 2)));
+
     // border color
     bar->fillRect(0, 0, SCALED(width), SCALED(height), bcolor.r, bcolor.g, bcolor.b); 
 
