@@ -101,7 +101,7 @@ public:
     static ImageMgr *getInstance();
     static void destroy();
 
-    ImageInfo *get(const std::string &name);
+    ImageInfo *get(const std::string &name, bool returnUnscaled=false);
     SubImage *ImageMgr::getSubImage(const std::string &name);
     void freeIntroBackgrounds();
     const std::vector<std::string> &getSetNames();

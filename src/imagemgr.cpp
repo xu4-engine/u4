@@ -200,33 +200,41 @@ SubImage *ImageMgr::loadSubImageFromConf(const ImageInfo *info, const ConfigElem
 void ImageMgr::fixupIntro(Image *im, int prescale) {
     const unsigned char *sigData;
     int i, x, y;
+    bool alpha = false;
 
     sigData = intro->getSigData();
 
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
      * ----------------------------------------------------------------------------- */
-
+    alpha = im->isAlphaOn();
+    if (alpha)
+    {
+        im->alphaOff();
+    }
     im->drawSubRectOn(im, 
-                      136 * prescale,
+                      135 * prescale,
                       33 * prescale,
-                      136 * prescale,
+                      135 * prescale,
                       0 * prescale,
-                      55 * prescale,
+                      56 * prescale,
                       5 * prescale);
+    if (alpha)
+    {
+        im->alphaOn();
+    }
 
     /* ----------------------------
      * erase the original "present"
      * ---------------------------- */
-
-    im->fillRect(136 * prescale, 0 * prescale, 55 * prescale, 5 * prescale, 0, 0, 0);
+    im->fillRect(135 * prescale, 0 * prescale, 56 * prescale, 5 * prescale, 0, 0, 0);
 
     /* -----------------------------
      * draw "Lord British" signature
      * ----------------------------- */
     i = 0;
     while (sigData[i] != 0) {
-        /*  (x/y) are unscaled coordinates, i.e. in 320x200  */
+        /* (x/y) are unscaled coordinates, i.e. in 320x200 */
         x = sigData[i] + 0x14;
         y = 0xBF - sigData[i+1];
         im->fillRect(x * prescale, y * prescale, prescale, prescale, 0, 255, 255); /* cyan */
@@ -348,7 +356,7 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
 /**
  * Load in a background image from a ".ega" file.
  */
-ImageInfo *ImageMgr::get(const string &name) {
+ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     ImageInfo *info = getInfo(name);
     if (!info)
         return NULL;
@@ -427,11 +435,17 @@ ImageInfo *ImageMgr::get(const string &name) {
         break;
     }
 
+    if (returnUnscaled)
+    {
+        info->image = unscaled;
+        return info;
+    }
+
     int imageScale = settings.scale;
     if ((settings.scale % info->prescale) != 0)
         errorFatal("image %s is prescaled to an incompatible size: %d\n", filename.c_str(), info->prescale);
     imageScale /= info->prescale;
-        
+
     info->image = screenScale(unscaled, imageScale, info->tiles, 1);
 
     delete unscaled;
