@@ -131,6 +131,19 @@ void Image::setPaletteFromImage(const Image *src) {
            sizeof(SDL_Color) * src->surface->format->palette->ncolors);
 }
 
+// returns the color of the specified palette index
+SDL_Color Image::getPaletteColor(int index) {
+    SDL_Color color = {0, 0, 0};
+
+    if (indexed)
+    {
+        color.r = surface->format->palette->colors[index].r;
+        color.g = surface->format->palette->colors[index].g;
+        color.b = surface->format->palette->colors[index].b;
+    }
+    return color;
+}
+
 /* returns the palette index of the specified RGB color */
 int Image::getPaletteIndex(SDL_Color color) {
     if (!indexed)
@@ -138,9 +151,15 @@ int Image::getPaletteIndex(SDL_Color color) {
 
     for (int i = 0; i < surface->format->palette->ncolors; i++)
     {
+/*
         if ( (surface->format->palette->colors[i].r == 255)
             && (surface->format->palette->colors[i].g == 255)
-            && (surface->format->palette->colors[i].b == 255) ) {
+            && (surface->format->palette->colors[i].b == 255) )
+*/
+        if ( (surface->format->palette->colors[i].r == color.r)
+            && (surface->format->palette->colors[i].g == color.g)
+            && (surface->format->palette->colors[i].b == color.b) )
+        {
             return i;
         }
 
