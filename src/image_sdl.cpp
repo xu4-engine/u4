@@ -151,11 +151,6 @@ int Image::getPaletteIndex(SDL_Color color) {
 
     for (int i = 0; i < surface->format->palette->ncolors; i++)
     {
-/*
-        if ( (surface->format->palette->colors[i].r == 255)
-            && (surface->format->palette->colors[i].g == 255)
-            && (surface->format->palette->colors[i].b == 255) )
-*/
         if ( (surface->format->palette->colors[i].r == color.r)
             && (surface->format->palette->colors[i].g == color.g)
             && (surface->format->palette->colors[i].b == color.b) )
