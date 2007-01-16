@@ -200,21 +200,100 @@ SubImage *ImageMgr::loadSubImageFromConf(const ImageInfo *info, const ConfigElem
 void ImageMgr::fixupIntro(Image *im, int prescale) {
     const unsigned char *sigData;
     int i, x, y;
-    bool alpha = false;
+    bool alpha = im->isAlphaOn();
+    SDL_Color color = {0, 0, 0};
 
     sigData = intro->getSigData();
+    im->alphaOff();
 
+    /* ----------------------------
+     * update the position of "and"
+     * ---------------------------- */
+    im->drawSubRectOn(im, 148 * prescale, 17 * prescale,
+                      153 * prescale,
+                      17 * prescale,
+                      11 * prescale,
+                      4 * prescale);
+    im->drawSubRectOn(im, 159 * prescale, 17 * prescale,
+                      165 * prescale,
+                      18 * prescale,
+                      1 * prescale,
+                      4 * prescale);
+    im->drawSubRectOn(im, 160 * prescale, 17 * prescale,
+                      164 * prescale,
+                      17 * prescale,
+                      16 * prescale,
+                      4 * prescale);
+    /* ---------------------------------------------
+     * update the position of "Origin Systems, Inc."
+     * --------------------------------------------- */
+    im->drawSubRectOn(im, 86 * prescale, 21 * prescale,
+                      88 * prescale,
+                      21 * prescale,
+                      114 * prescale,
+                      9 * prescale);
+    im->drawSubRectOn(im, 199 * prescale, 21 * prescale,
+                      202 * prescale,
+                      21 * prescale,
+                      6 * prescale,
+                      9 * prescale);
+    im->drawSubRectOn(im, 207 * prescale, 21 * prescale,
+                      208 * prescale,
+                      21 * prescale,
+                      28 * prescale,
+                      9 * prescale);
+    /* ---------------------------------------------
+     * update the position of "Ultima IV"
+     * --------------------------------------------- */
+    // move this *prior* to moving "present"
+    im->drawSubRectOn(im, 59 * prescale, 33 * prescale,
+                      61 * prescale,
+                      33 * prescale,
+                      204 * prescale,
+                      46 * prescale);
+    /* ---------------------------------------------
+     * update the position of "Quest of the Avatar"
+     * --------------------------------------------- */
+    im->drawSubRectOn(im, 69 * prescale, 80 * prescale,     // quEst
+                      70 * prescale,
+                      80 * prescale,
+                      11 * prescale,
+                      13 * prescale);
+    im->drawSubRectOn(im, 82 * prescale, 80 * prescale,     // queST
+                      84 * prescale,
+                      80 * prescale,
+                      27 * prescale,
+                      13 * prescale);
+    im->drawSubRectOn(im, 131 * prescale, 80 * prescale,    // oF
+                      132 * prescale,
+                      80 * prescale,
+                      11 * prescale,
+                      13 * prescale);
+    im->drawSubRectOn(im, 150 * prescale, 80 * prescale,    // THE
+                      149 * prescale,
+                      80 * prescale,
+                      40 * prescale,
+                      13 * prescale);
+    im->drawSubRectOn(im, 166 * prescale, 80 * prescale,    // tHe
+                      165 * prescale,
+                      80 * prescale,
+                      11 * prescale,
+                      13 * prescale);
+    im->drawSubRectOn(im, 200 * prescale, 80 * prescale,    // AVATAR
+                      201 * prescale,
+                      80 * prescale,
+                      81 * prescale,
+                      13 * prescale);
+    im->drawSubRectOn(im, 227 * prescale, 80 * prescale,    // avAtar
+                      228 * prescale,
+                      80 * prescale,
+                      11 * prescale,
+                      13 * prescale);
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
      * ----------------------------------------------------------------------------- */
-    alpha = im->isAlphaOn();
-    if (alpha)
-    {
-        im->alphaOff();
-    }
-    im->drawSubRectOn(im, 
-                      135 * prescale,
-                      33 * prescale,
+    // do this *after* moving "Ultima IV"
+    im->drawSubRectOn(im, 132 * prescale, 33 * prescale,
                       135 * prescale,
                       0 * prescale,
                       56 * prescale,
@@ -229,16 +308,64 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
      * ---------------------------- */
     im->fillRect(135 * prescale, 0 * prescale, 56 * prescale, 5 * prescale, 0, 0, 0);
 
+    /* -------------------------
+     * update the colors for VGA
+     * ------------------------- */
+    if (settings.videoType == "VGA")
+    {
+        ImageInfo *borderInfo = imageMgr->get(BKGD_BORDERS, true);
+//        ImageInfo *charsetInfo = imageMgr->get(BKGD_CHARSET);
+        if (!borderInfo)
+            errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_BORDERS, settings.game.c_str());
+
+        delete borderInfo->image;
+        borderInfo->image = NULL;
+        borderInfo = imageMgr->get(BKGD_BORDERS, true);
+
+        im->setPaletteFromImage(borderInfo->image);
+
+        // update the color of "and" and "present"
+        im->setPaletteIndex(15, im->setColor(226, 226, 255));
+
+        // update the color of "Origin Systems, Inc."
+        im->setPaletteIndex(9, im->setColor(129, 129, 255));
+
+        // update the border appearance
+        borderInfo->image->alphaOff();
+        borderInfo->image->drawSubRectOn(im, 0, 96, 0, 0, 16, 56);
+        for (int i=0; i < 9; i++)
+        {
+            borderInfo->image->drawSubRectOn(im, 16+(i*32), 96, 144, 0, 48, 48);
+        }
+        im->drawSubRectInvertedOn(im, 0, 144, 0, 104, 320, 40);
+        im->drawSubRectOn(im, 0, 184, 0, 96, 320, 8);
+        borderInfo->image->alphaOn();
+
+        delete borderInfo->image;
+        borderInfo->image = NULL;
+    }
+
     /* -----------------------------
      * draw "Lord British" signature
      * ----------------------------- */
+    color = im->setColor(0, 255, 255);  // cyan for EGA
+    int blue[16] = {255, 250, 226, 226, 210, 194, 161, 161,
+                    129,  97,  97,  64,  64,  32,  32,   0};
     i = 0;
     while (sigData[i] != 0) {
         /* (x/y) are unscaled coordinates, i.e. in 320x200 */
         x = sigData[i] + 0x14;
         y = 0xBF - sigData[i+1];
-        im->fillRect(x * prescale, y * prescale, prescale, prescale, 0, 255, 255); /* cyan */
-        im->fillRect((x + 1) * prescale, y * prescale, prescale, prescale, 0, 255, 255); /* cyan */
+
+        if (settings.videoType == "VGA")
+        {
+            // yellow gradient
+            color = im->setColor(255, (y == 1 ? 250 : 255), blue[y]);
+        }
+
+        im->fillRect(x * prescale, y * prescale,
+                     2 * prescale, prescale,
+                     color.r, color.g, color.b);
         i += 2;
     }
 
@@ -246,8 +373,18 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
      * draw the red line between "Origin Systems, Inc." and "present"
      * -------------------------------------------------------------- */
     /* we're still working with an unscaled surface */
-    for (i = 86; i < 239; i++)
-        im->fillRect(i * prescale, 31 * prescale, prescale, prescale, 128, 0, 0); /* red */
+    if (settings.videoType == "VGA")
+    {
+        color = im->setColor(0, 0, 161);    // dark blue
+    }
+    else
+    {
+        color = im->setColor(128, 0, 0);    // dark red for EGA
+    }
+    for (i = 84; i < 236; i++)  // 152 px wide
+        im->fillRect(i * prescale, 31 * prescale,
+                     prescale, prescale,
+                     color.r, color.g, color.b);
 }
 
 void ImageMgr::fixupAbyssVision(Image *im, int prescale) {
