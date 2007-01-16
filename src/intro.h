@@ -58,16 +58,19 @@ private:
     const IntroBinData &operator=(const IntroBinData&);
 };
 
+
 /**
- * Controls the intro sequence, including the traditional animated map
- * and "Journey Onward" menu, plus the xu4 specific configuration
- * menu.
+ * Controls the title animation sequences, including the traditional
+ * plotted "Lord British" signature, the pixelized fade-in of the
+ * "Ultima IV" game title, as well as the other more simple animated
+ * features, followed by the traditional animated map and "Journey
+ * Onward" menu, plus the xU4-specific configuration menu.
+ *
  * @todo
  * <ul>
  *      <li>make initial menu a Menu too</li>
  *      <li>get rid of mode and switch(mode) statements</li>
  *      <li>get rid global intro instance -- should only need to be accessed from u4.cpp</li>
- *      <li>animate the lord british signature</li>
  * </ul>
  */
 class IntroController : public Controller, public Observer<Menu *, MenuEvent &> {
@@ -81,6 +84,8 @@ public:
     void updateScreen();
     void timerFired();
 
+    void preloadMap();
+
     void update(Menu *menu, MenuEvent &event);
     void updateConfMenu(MenuEvent &event);
     void updateVideoMenu(MenuEvent &event);
@@ -90,8 +95,15 @@ public:
     void updateGameplayMenu(MenuEvent &event);
     void updateInterfaceMenu(MenuEvent &event);
 
+    //
+    // Title methods
+    //
+    void initTitles();
+    bool updateTitle();
+
 private:
     void drawMap();
+    void drawMapStatic();
     void drawMapAnimated();
     void drawBeasties();
     void drawBeastie(int beast, int vertoffset, int frame);
@@ -118,8 +130,9 @@ private:
      * The states of the intro.
      */
     enum {
-        INTRO_MAP,                          /* displaying the animated intro map */
-        INTRO_MENU                          /* displaying the main menu: journey onward, etc. */
+        INTRO_TITLES,                       // displaying the animated intro titles
+        INTRO_MAP,                          // displaying the animated intro map
+        INTRO_MENU                          // displaying the main menu: journey onward, etc.
     } mode;
 
     enum MenuConstants {
@@ -198,6 +211,54 @@ private:
     int sleepCycles;
     int scrPos;  /* current position in the script table */
     IntroObjectState *objectStateTable;
+
+    //
+    // Title defs, structs, methods, and data members
+    //
+    enum AnimType {
+        SIGNATURE,
+        AND,
+        BAR,
+        ORIGIN,
+        PRESENT,
+        TITLE,
+        SUBTITLE,
+        MAP
+    };
+
+    typedef struct AnimPlot {
+        Uint8 x, y;
+        Uint8 r, g, b, a;
+    };
+
+    typedef struct AnimElement {
+        int rx, ry;                         // screen/source x and y
+        int rw, rh;                         // source width and height
+        AnimType method;                    // render method
+        int animStep;                       // tracks animation position
+        int animStepMax;
+        int timeBase;                       // initial animation time
+        int timeDelay;                      // delay before rendering begins
+        int timeDuration;                   // total animation time
+        Image *srcImage;                    // storage for the source image
+        Image *destImage;                   // storage for the animation frame
+        std::vector <AnimPlot> plotData;    // plot data
+        bool prescaled;
+    };
+
+    void addTitle(int x, int y, int w, int h, AnimType method, int delay, int duration);
+    void compactTitle();
+    void drawTitle();
+    void getTitleSourceData();
+    void skipTitles();
+
+    std::vector<AnimElement> titles;            // list of title elements
+    std::vector<AnimElement>::iterator title;   // current title element
+
+    int transparentIndex;           // palette index for transparency
+    SDL_Color transparentColor;     // palette color for transparency
+
+    bool bSkipTitles;
 };
 
 extern IntroController *intro;

@@ -160,14 +160,17 @@ bool IntroBinData::load() {
 IntroController::IntroController() : 
     Controller(1), 
     backgroundArea(),
+    bSkipTitles(false),
+    binData(NULL),
     menuArea(1 * CHAR_WIDTH, 13 * CHAR_HEIGHT, 38, 11),
     extendedMenuArea(2 * CHAR_WIDTH, 10 * CHAR_HEIGHT, 36, 13),
     questionArea(INTRO_TEXT_X * CHAR_WIDTH, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT),
-    mapArea(BORDER_WIDTH, (TILE_HEIGHT * 6) + BORDER_HEIGHT, INTRO_MAP_WIDTH, INTRO_MAP_HEIGHT, "base")
+    mapArea(BORDER_WIDTH, (TILE_HEIGHT * 6) + BORDER_HEIGHT, INTRO_MAP_WIDTH, INTRO_MAP_HEIGHT, "base"),
+    titles(NULL),               // element list
+    title(titles.begin()),      // element iterator
+    transparentIndex(13),       // palette index for transparency
+    transparentColor()          // palette color for transparency
 {
-    binData = NULL;
-    beastiesVisible = false;
-
     // initialize menus
     confMenu.setTitle("XU4 Configuration:", 0, 0);
     confMenu.add(MI_CONF_VIDEO,               "\010 Video Options",              2,  2,/*'v'*/  2);
@@ -269,18 +272,35 @@ IntroController::IntroController() :
  * and map data from title.exe.
  */
 bool IntroController::init() {
-    mode = INTRO_MAP;
+    // sigData is referenced during Titles initialization
+    binData = new IntroBinData();
+    binData->load();
+
+    if (bSkipTitles)
+    {
+        // the init() method is called again from within the
+        // game via ALT-Q, so return to the menu
+        //
+        mode = INTRO_MENU;
+        beastiesVisible = true;
+        beastieOffset = 0;
+        musicMgr->intro();
+    }
+    else
+    {
+        // initialize the titles
+        initTitles();
+        mode = INTRO_TITLES;
+        beastiesVisible = false;
+        beastieOffset = -32;
+    }
+
     beastie1Cycle = 0;
     beastie2Cycle = 0;
-    beastieOffset = -32;    
-    beastiesVisible = true;
 
     sleepCycles = 0;
     scrPos = 0;
     objectStateTable = new IntroObjectState[IntroBinData::INTRO_BASETILE_TABLE_SIZE];
-
-    binData = new IntroBinData();
-    binData->load();
 
     backgroundArea.reinit();
     menuArea.reinit();
@@ -288,14 +308,9 @@ bool IntroController::init() {
     questionArea.reinit();
     mapArea.reinit();
 
-    /* Make a copy of our settings so we can change them */
-// Settings are copied each time "Configuration" is
-// selected from the main menu.  That's all we need
-//    settingsChanged = settings;
-
-    updateScreen();
-
-    musicMgr->intro();
+    // only update the screen if we are returning from game mode
+    if (bSkipTitles)
+        updateScreen();
 
     return true;
 }
@@ -325,6 +340,11 @@ bool IntroController::keyPressed(int key) {
     bool valid = true;
 
     switch (mode) {
+
+    case INTRO_TITLES:
+        // the user pressed a key to abort the sequence
+        skipTitles();
+        break;
 
     case INTRO_MAP:
         mode = INTRO_MENU;
@@ -393,6 +413,7 @@ bool IntroController::keyPressed(int key) {
  */
 void IntroController::drawMap() {
     if (0 && sleepCycles > 0) {
+        drawMapStatic();
         drawMapAnimated();
         sleepCycles--;
     }
@@ -451,6 +472,7 @@ void IntroController::drawMap() {
                    Format: 8c
                    c = cycles to sleep
                    ---------------------------------------------- */
+                drawMapStatic();
                 drawMapAnimated();
 
                 /* set sleep cycles */
@@ -475,19 +497,22 @@ void IntroController::drawMap() {
     }
 }
 
-void IntroController::drawMapAnimated() {
-    int x, y, i;    
+void IntroController::drawMapStatic() {
+    int x, y;
 
-    /* draw unmodified map */
+    // draw unmodified map
     for (y = 0; y < INTRO_MAP_HEIGHT; y++)
         for (x = 0; x < INTRO_MAP_WIDTH; x++)
             mapArea.drawTile(binData->introMap[x + (y * INTRO_MAP_WIDTH)], false, x, y);
+}
 
-    /* draw animated objects */
-    for (i = 0; i < IntroBinData::INTRO_BASETILE_TABLE_SIZE; i++) {
+void IntroController::drawMapAnimated() {
+    int i;    
+
+    // draw animated objects
+    for (i = 0; i < IntroBinData::INTRO_BASETILE_TABLE_SIZE; i++)
         if (objectStateTable[i].tile != 0)
             mapArea.drawTile(objectStateTable[i].tile, false, objectStateTable[i].x, objectStateTable[i].y);
-    }
 }
 
 /**
@@ -944,8 +969,20 @@ void IntroController::runMenu(Menu *menu, TextView *view, bool withBeasties) {
 void IntroController::timerFired() {
     screenCycle();
     screenUpdateCursor();
+
+    if (mode == INTRO_TITLES)
+        if (updateTitle() == false)
+        {
+            // setup the map screen
+            mode = INTRO_MAP;
+            beastiesVisible = true;
+            musicMgr->intro();
+            updateScreen();
+        }
+
     if (mode == INTRO_MAP)
         drawMap();
+
     if (beastiesVisible)
         drawBeasties();
 
@@ -1373,4 +1410,619 @@ void IntroController::initPlayers(SaveGame *saveGame) {
             p++;
         }
     }
+}
+
+
+/**
+ * Preload map tiles
+ */
+void IntroController::preloadMap()
+{
+    int x, y, i;    
+
+    // draw unmodified map
+    for (y = 0; y < INTRO_MAP_HEIGHT; y++)
+        for (x = 0; x < INTRO_MAP_WIDTH; x++)
+            mapArea.loadTile(binData->introMap[x + (y * INTRO_MAP_WIDTH)]);
+
+    // draw animated objects
+    for (i = 0; i < IntroBinData::INTRO_BASETILE_TABLE_SIZE; i++) {
+        if (objectStateTable[i].tile != 0)
+            mapArea.loadTile(objectStateTable[i].tile);
+    }
+}
+
+
+//
+// Initialize the title elements
+//
+void IntroController::initTitles()
+{
+    // add the intro elements
+    //          x,  y,   w,  h, method,  delay, duration
+    //
+    addTitle(  97,  0, 130, 16, SIGNATURE,   1000, 3000 );  // "Lord British"
+    addTitle( 148, 17,  24,  4, AND,         1000,  100 );  // "and"
+    addTitle(  84, 31, 152,  1, BAR,         1000,  500 );  // <bar>
+    addTitle(  86, 21, 148,  9, ORIGIN,      1000,  100 );  // "Origin Systems, Inc."
+    addTitle( 133, 33,  54,  5, PRESENT,        0,  100 );  // "present"
+    addTitle(  59, 33, 202, 46, TITLE,       1000, 5000 );  // "Ultima IV"
+    addTitle(  40, 80, 240, 13, SUBTITLE,    1000,  100 );  // "Quest of the Avatar"
+    addTitle(   0, 96, 320, 96, MAP,         1000,  100 );  // the map
+
+    // get the source data for the elements
+    getTitleSourceData();
+
+    // reset the iterator
+    title = titles.begin();
+
+    // speed up the timer while the intro titles are displayed
+    eventHandler->getTimer()->reset(settings.titleSpeedOther);
+}
+
+
+//
+// Add the intro element to the element list
+//
+void IntroController::addTitle(int x, int y, int w, int h, AnimType method, int delay, int duration)
+{
+    AnimElement data = {
+        x, y,               // source x and y
+        w, h,               // source width and height
+        method,             // render method
+        0,                  // animStep
+        0,                  // animStepMax
+        0,                  // timeBase
+        delay,              // delay before rendering begins
+        duration,           // total animation time
+        NULL,               // storage for the source image
+        NULL,               // storage for the animation frame
+        std::vector<AnimPlot>(),
+        false};             // prescaled
+    titles.push_back(data);
+}
+
+
+//
+// Get the source data for title elements
+// that have already been initialized
+//
+void IntroController::getTitleSourceData()
+{
+    unsigned int r, g, b, a;        // color values
+    unsigned char *srcData;         // plot data
+
+    // The BKGD_INTRO image is assumed to have not been
+    // loaded yet.  The unscaled version will be loaded
+    // here, and elements of the image will be stored
+    // individually.  Afterward, the BKGD_INTRO image
+    // will be scaled appropriately.
+    ImageInfo *info = imageMgr->get(BKGD_INTRO, true);
+    if (!info) {
+        errorFatal("ERROR 1007: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO, settings.game.c_str());
+    }
+    if (info->width != 320 || info->height != 200)
+    {
+        // the image appears to have been scaled already
+        errorFatal("ERROR 1008: The title image (\"%s\") has been scaled too early!\t\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO);
+    }
+
+    // get the palette index state of the source image
+    bool indexed = info->image->isIndexed();
+
+    // get the transparent color
+    transparentColor = info->image->getPaletteColor(transparentIndex);
+
+    // turn alpha off, if necessary
+    bool alpha = info->image->isAlphaOn();
+    info->image->alphaOff();
+
+    // for each element, get the source data
+    for (unsigned i=0; i < titles.size(); i++)
+    {
+        if ((titles[i].method != SIGNATURE)
+            && (titles[i].method != BAR))
+        {
+            // create a place to store the source image
+            titles[i].srcImage = Image::create(
+                titles[i].rw,
+                titles[i].rh,
+                indexed,
+                Image::HARDWARE );
+            titles[i].srcImage->setPaletteFromImage(info->image);
+
+            // get the source image
+            info->image->drawSubRectOn(
+                titles[i].srcImage,
+                0,
+                0,
+                titles[i].rx,
+                titles[i].ry,
+                titles[i].rw,
+                titles[i].rh );
+        }
+
+        // after getting the srcImage
+        switch (titles[i].method)
+        {
+            case SIGNATURE:
+            {
+                // PLOT: "Lord British"
+                srcData = intro->getSigData();
+
+                SDL_Color color = info->image->setColor(0, 255, 255);    // cyan for EGA
+                int blue[16] = {255, 250, 226, 226, 210, 194, 161, 161,
+                                129,  97,  97,  64,  64,  32,  32,   0};
+                int x = 0;
+                int y = 0;
+
+                while (srcData[titles[i].animStepMax] != 0)
+                {
+                    x = srcData[titles[i].animStepMax] - 0x4C;
+                    y = 0xC0 - srcData[titles[i].animStepMax+1];
+
+                    if (settings.videoType == "VGA")
+                    {
+                        // yellow gradient
+                        color = info->image->setColor(255, (y == 2 ? 250 : 255), blue[y-1]);
+                    }
+                    AnimPlot plot = {
+                        x,
+                        y,
+                        color.r,
+                        color.g,
+                        color.b,
+                        255};
+                    titles[i].plotData.push_back(plot);
+                    titles[i].animStepMax += 2;
+                }
+                titles[i].animStepMax = titles[i].plotData.size();
+                break;
+            }
+
+            case BAR:
+            {
+                titles[i].animStepMax = titles[i].rw;  // image width
+                break;
+            }
+
+            case TITLE:
+            {
+                for (int y=0; y < titles[i].rh; y++)
+                {
+                    for (int x=0; x < titles[i].rw; x++)
+                    {
+                        titles[i].srcImage->getPixel(x, y, r, g, b, a);
+                        if (r || g || b)
+                        {
+                            AnimPlot plot = {x+1, y+1, r, g, b, a};
+                            titles[i].plotData.push_back(plot);
+                        }
+                    }
+                }
+                titles[i].animStepMax = titles[i].plotData.size();
+                break;
+            }
+
+            case MAP:
+            {
+                // fill the map area with the transparent color
+                titles[i].srcImage->fillRect(
+                    8, 8, 304, 80,
+                    transparentColor.r,
+                    transparentColor.g,
+                    transparentColor.b);
+
+                Image *scaled;      // the scaled and filtered image
+                scaled = screenScale(titles[i].srcImage, settings.scale, 1, 1);
+                scaled->setTransparentIndex(transparentIndex);
+
+                titles[i].prescaled = true;
+                delete titles[i].srcImage;
+                titles[i].srcImage = scaled;
+
+                titles[i].animStepMax = 20;
+                break;
+            }
+
+            default:
+            {
+                titles[i].animStepMax = titles[i].rh;  // image height
+                break;
+            }
+        }
+
+        // permanently disable alpha
+        if (titles[i].srcImage)
+            titles[i].srcImage->alphaOff();
+
+        bool indexed = info->image->isIndexed();
+        // create the initial animation frame
+        titles[i].destImage = Image::create(
+            2 + (titles[i].prescaled ? SCALED(titles[i].rw) : titles[i].rw),
+            2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh),
+            indexed,
+            Image::HARDWARE);
+        if (indexed)
+            titles[i].destImage->setPaletteFromImage(info->image);
+    }
+
+    // turn alpha back on
+    if (alpha)
+    {
+        info->image->alphaOn();
+    }
+
+    // scale the original image now
+    Image *scaled = screenScale(info->image,
+                                settings.scale,
+                                info->image->isIndexed(),
+                                1);
+    delete info->image;
+    info->image = scaled;
+}
+
+
+//
+// Update the title element, drawing the appropriate frame of animation
+//
+bool IntroController::updateTitle()
+{
+    int animStepTarget = 0;
+    int timeCurrent = SDL_GetTicks();
+    float timePercent = 0;
+
+    if (title->animStep == 0 && !bSkipTitles)
+    {
+        if (title->timeBase == 0)
+        {
+            // reset the base time
+            title->timeBase = timeCurrent;
+        }
+        if (title == titles.begin())
+        {
+            // clear the screen
+            Image *screen = imageMgr->get("screen")->image;
+            screen->fillRect(0, 0, screen->width(), screen->height(), 0, 0, 0);
+        }
+        if (title->method == TITLE)
+        {
+            // assume this is the first frame of "Ultima IV" and begin sound
+            soundPlay(SOUND_TITLE_FADE);
+        }
+    }
+
+    // abort after processing all elements
+    if (title == titles.end())
+    {
+        return false;
+    }
+
+    // delay the drawing of this phase
+    if ((timeCurrent - title->timeBase) < title->timeDelay)
+    {
+        return true;
+    }
+
+    // determine how much of the animation should have been drawn up until now
+    timePercent = float(timeCurrent - title->timeBase - title->timeDelay) / title->timeDuration;
+    if (timePercent > 1 || bSkipTitles)
+        timePercent = 1;
+    animStepTarget = int(title->animStepMax * timePercent);
+
+    // perform the animation
+    switch (title->method)
+    {
+        case SIGNATURE:
+        {
+            while (animStepTarget > title->animStep)
+            {
+                // blit the pixel-pair to the src surface
+                title->destImage->fillRect(
+                    title->plotData[title->animStep].x,
+                    title->plotData[title->animStep].y,
+                    2,
+                    1,
+                    title->plotData[title->animStep].r,
+                    title->plotData[title->animStep].g,
+                    title->plotData[title->animStep].b);
+                title->animStep++;
+            }
+            break;
+        }
+
+        case BAR:
+        {
+            SDL_Color color = {0,0,0,0};
+            while (animStepTarget > title->animStep)
+            {
+                title->animStep++;
+                if (settings.videoType == "VGA")
+                {
+                    color = title->destImage->setColor(0, 0, 161); // dark blue
+                }
+                else
+                {
+                    color = title->destImage->setColor(128, 0, 0); // dark red for EGA
+                }
+
+                // blit bar to the canvas
+                title->destImage->fillRect(
+                    1,
+                    1,
+                    title->animStep,
+                    1,
+                    color.r,
+                    color.g,
+                    color.b);
+            }
+            break;
+        }
+
+        case AND:
+        {
+            // blit the entire src to the canvas
+            title->srcImage->drawOn(title->destImage, 1, 1);
+            title->animStep = title->animStepMax;
+            break;
+        }
+
+        case ORIGIN:
+        {
+            if (bSkipTitles)
+                title->animStep = title->animStepMax;
+            else
+            {
+                title->animStep++;
+                title->timeDelay = SDL_GetTicks() - title->timeBase + 100;
+            }
+
+            // blit src to the canvas one row at a time, bottom up
+            title->srcImage->drawSubRectOn(
+                title->destImage,
+                1,
+                title->destImage->height() - 1 - title->animStep,
+                0,
+                0,
+                title->srcImage->width(),
+                title->animStep);
+            break;
+        }
+
+        case PRESENT:
+        {
+            if (bSkipTitles)
+                title->animStep = title->animStepMax;
+            else
+            {
+                title->animStep++;
+                title->timeDelay = SDL_GetTicks() - title->timeBase + 100;
+            }
+
+            // blit src to the canvas one row at a time, top down
+            title->srcImage->drawSubRectOn(
+                title->destImage,
+                1,
+                1,
+                0,
+                title->srcImage->height() - title->animStep,
+                title->srcImage->width(),
+                title->animStep);
+            break;
+        }
+
+        case TITLE:
+        {
+            // blit src to the canvas in a random pixelized manner
+            title->animStep = animStepTarget;
+
+            random_shuffle(title->plotData.begin(), title->plotData.end());
+            title->destImage->fillRect(1, 1, title->rw, title->rh, 0, 0, 0);
+
+            // @TODO: animStepTarget (for this loop) should not exceed
+            // half of animStepMax.  If so, instead draw the entire
+            // image, and then black out the necessary pixels.
+            // this should speed the loop up at the end
+            for (int i=0; i < animStepTarget; ++i)
+            {
+                title->destImage->putPixel(
+                    title->plotData[i].x,
+                    title->plotData[i].y,
+                    title->plotData[i].r,
+                    title->plotData[i].g,
+                    title->plotData[i].b,
+                    title->plotData[i].a);
+            }
+
+            // cover the "present" area with the transparent color
+            title->destImage->fillRect(
+                75, 1, 54, 5,
+                transparentColor.r,
+                transparentColor.g,
+                transparentColor.b);
+            break;
+        }
+
+        case SUBTITLE:
+        {
+            if (bSkipTitles)
+                title->animStep = title->animStepMax;
+            else
+            {
+                title->animStep++;
+                title->timeDelay = SDL_GetTicks() - title->timeBase + 100;
+            }
+
+            // blit src to the canvas one row at a time, center out
+            int y = int(title->rh / 2) - title->animStep + 1;
+            title->srcImage->drawSubRectOn(
+                title->destImage,
+                1,
+                y+1,
+                0,
+                y,
+                title->srcImage->width(),
+                1 + ((title->animStep - 1) * 2));
+            break;
+        }
+
+        case MAP:
+        {
+            if (bSkipTitles)
+                title->animStep = title->animStepMax;
+            else
+            {
+                title->animStep++;
+                title->timeDelay = SDL_GetTicks() - title->timeBase + 100;
+            }
+
+            int step = (title->animStep == title->animStepMax ? title->animStepMax - 1 : title->animStep);
+
+            // blit src to the canvas one row at a time, center out
+            title->srcImage->drawSubRectOn(
+                title->destImage,
+                SCALED( 153-(step*8) ),
+                SCALED( 1 ),
+                0,
+                0,
+                SCALED( (step+1) * 8 ),
+                SCALED( title->srcImage->height()) );
+            title->srcImage->drawSubRectOn(
+                title->destImage,
+                SCALED( 161 ),
+                SCALED( 1 ),
+                SCALED( 312-(step*8) ),
+                0,
+                SCALED( (step+1) * 8 ),
+                SCALED( title->srcImage->height()) );
+
+
+            // create a destimage for the map tiles
+            int newtime = SDL_GetTicks();
+            if (newtime > title->timeDuration + 250/4)
+            {
+                // grab the map from the screen
+                Image *screen = imageMgr->get("screen")->image;
+
+                // draw the updated map display
+                intro->drawMapStatic();
+
+                screen->drawSubRectOn(
+                    title->srcImage,
+                    SCALED(8),
+                    SCALED(8),
+                    SCALED(8),
+                    SCALED(13*8),
+                    SCALED(38*8),
+                    SCALED(10*8));
+
+                title->timeDuration = newtime + 250/4;
+            }
+
+            title->srcImage->drawSubRectOn(
+                title->destImage,
+                SCALED( 161 - (step * 8) ),
+                SCALED( 9 ),
+                SCALED( 160 - (step * 8) ),
+                SCALED( 8 ),
+                SCALED( (step * 2) * 8 ),
+                SCALED( (10 * 8) ) );
+
+            break;
+        }
+    }
+
+    // draw the titles
+    drawTitle();
+
+    // if the animation for this title has completed,
+    // move on to the next title
+    if (title->animStep >= title->animStepMax)
+    {
+        // free memory that is no longer needed
+        compactTitle();
+        title++;
+
+        if (title == titles.end())
+        {
+            // reset the timer to the pre-titles granularity
+            eventHandler->getTimer()->reset(eventTimerGranularity);
+
+            // make sure the titles only appear when the app first loads
+            bSkipTitles = true;
+
+            return false;
+        }
+
+        if (title->method == TITLE)
+        {
+            // assume this is "Ultima IV" and pre-load sound
+//            soundLoad(SOUND_TITLE_FADE);
+            eventHandler->getTimer()->reset(settings.titleSpeedRandom);
+        }
+        else if (title->method == MAP)
+        {
+            eventHandler->getTimer()->reset(settings.titleSpeedOther);
+        }
+        else
+        {
+            eventHandler->getTimer()->reset(settings.titleSpeedOther);
+        }
+    }
+
+    return true;
+}
+
+
+//
+// The title element has finished drawing all frames, so
+// delete, remove, or free data that is no longer needed
+//
+void IntroController::compactTitle()
+{
+    if (title->srcImage)
+    {
+        delete title->srcImage;
+        title->srcImage = NULL;
+    }
+    title->plotData.clear();
+}
+
+
+//
+// Scale the animation canvas, then draw it to the screen
+//
+void IntroController::drawTitle()
+{
+    Image *scaled;      // the scaled and filtered image
+
+    // blit the scaled and filtered surface to the screen
+    if (title->prescaled)
+        scaled = title->destImage;
+    else
+        scaled = screenScale(title->destImage, settings.scale, 1, 1);
+    scaled->setTransparentIndex(transparentIndex);
+    scaled->drawSubRect(
+        SCALED(title->rx),    // dest x, y
+        SCALED(title->ry),
+        SCALED(1),              // src x, y, w, h
+        SCALED(1),
+        SCALED(title->rw),
+        SCALED(title->rh));
+
+    if (!title->prescaled)
+    {
+        delete scaled;
+        scaled = NULL;
+    }
+}
+
+
+//
+// skip the remaining titles
+//
+void IntroController::skipTitles()
+{
+    bSkipTitles = true;
+    soundStop();
 }
