@@ -43,6 +43,12 @@ void TileView::reinit() {
     tileset = Tileset::get("base");
 }
 
+void TileView::loadTile(MapTile &mapTile)
+{
+    Tile *tile = tileset->get(mapTile.id);
+    Image *image = tile->getImage();
+}
+
 void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
     Tile *tile = tileset->get(mapTile.id);
     Image *image = tile->getImage();
