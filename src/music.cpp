@@ -153,12 +153,12 @@ void Music::playMid(Type music) {
 
     //if (!settings.musicVol) {
     //    musicMgr->fadeOut(1000);
-    //    return;    
-    //}    
+    //    return;
+    //}
 
     /* loaded a new piece of music */
     if (load(music))
-        Mix_PlayMusic(playing, NLOOPS);    
+        Mix_PlayMusic(playing, NLOOPS);
 }
 
 bool Music::load(Type music) {
