@@ -160,16 +160,16 @@ bool IntroBinData::load() {
 IntroController::IntroController() : 
     Controller(1), 
     backgroundArea(),
-    bSkipTitles(false),
-    binData(NULL),
     menuArea(1 * CHAR_WIDTH, 13 * CHAR_HEIGHT, 38, 11),
     extendedMenuArea(2 * CHAR_WIDTH, 10 * CHAR_HEIGHT, 36, 13),
     questionArea(INTRO_TEXT_X * CHAR_WIDTH, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT),
     mapArea(BORDER_WIDTH, (TILE_HEIGHT * 6) + BORDER_HEIGHT, INTRO_MAP_WIDTH, INTRO_MAP_HEIGHT, "base"),
-    titles(NULL),               // element list
+    binData(NULL),
+    titles(),                   // element list
     title(titles.begin()),      // element iterator
     transparentIndex(13),       // palette index for transparency
-    transparentColor()          // palette color for transparency
+    transparentColor(),         // palette color for transparency
+    bSkipTitles(false)
 {
     // initialize menus
     confMenu.setTitle("XU4 Configuration:", 0, 0);
