@@ -49,6 +49,27 @@ int soundInit() {
 void soundDelete() {
 }
 
+bool soundLoad(Sound sound) {
+    ASSERT(sound < SOUND_MAX, "Attempted to load an invalid sound in soundLoad()");
+    
+    // If music didn't initialize correctly, then we can't play it anyway
+    if (!Music::functional || !settings.soundVol)
+        return false;
+
+    if (soundChunk[sound] == NULL) {
+        string pathname(u4find_sound(soundFilenames[sound]));
+        string basename = pathname.substr(pathname.find_last_of("/") + 1);
+        if (!basename.empty()) {
+            soundChunk[sound] = Mix_LoadWAV(pathname.c_str());
+            if (!soundChunk[sound]) {
+                errorWarning("Unable to load sound effect file %s: %s", soundFilenames[sound].c_str(), Mix_GetError());
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 void soundPlay(Sound sound, bool onlyOnce) {
 
     ASSERT(sound < SOUND_MAX, "Attempted to play an invalid sound in soundPlay()");
@@ -57,15 +78,12 @@ void soundPlay(Sound sound, bool onlyOnce) {
     if (!Music::functional || !settings.soundVol)
         return;
 
-    if (soundChunk[sound] == NULL) {
-        string pathname(u4find_sound(soundFilenames[sound]));
-        string basename = pathname.substr(pathname.find_last_of("/") + 1);
-        if (!basename.empty()) {
-            soundChunk[sound] = Mix_LoadWAV(pathname.c_str());
-            if (!soundChunk[sound]) {
-                errorWarning("unable to load sound effect file %s: %s", soundFilenames[sound].c_str(), Mix_GetError());
-                return;
-            }
+    if (soundChunk[sound] == NULL)
+    {
+        if (!soundLoad(sound))
+        {
+            errorWarning("Unable to load sound effect file %s: %s", soundFilenames[sound].c_str(), Mix_GetError());
+            return;
         }
     }
 
@@ -76,4 +94,10 @@ void soundPlay(Sound sound, bool onlyOnce) {
         if (Mix_PlayChannel(1, soundChunk[sound], 0) == -1)
             fprintf(stderr, "Error playing sound %d: %s\n", sound, Mix_GetError());
     }
+}
+
+void soundStop(int channel)
+{
+    if (Mix_Playing(channel))
+        Mix_HaltChannel(channel);
 }

@@ -39,28 +39,10 @@ enum Sound {
     SOUND_MAX
 };
 
-/*
-enum Sound {
-    SOUND_WALK,
-    SOUND_BLOCKED,
-    SOUND_ERROR,
-    SOUND_CANNON,
-    SOUND_MISSED,
-    SOUND_CREATUREATTACK,
-    SOUND_RUMBLE,
-    SOUND_PLAYERHIT,
-    SOUND_MAGIC,
-    SOUND_LBHEAL,
-    SOUND_WHIRLPOOL,
-    SOUND_STORM,
-    SOUND_MOONGATE,
-    SOUND_FLEE,
-    SOUND_MAX
-};
-*/
-
 int soundInit(void);
 void soundDelete(void);
+bool soundLoad(Sound sound);
 void soundPlay(Sound sound, bool onlyOnce = true);
+void soundStop(int channel = 1);
 
 #endif /* SOUND_H */
