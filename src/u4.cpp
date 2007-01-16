@@ -108,22 +108,22 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    xu4_srandom();    
+    xu4_srandom();
 
-    perf.start();    
+    perf.start();
     screenInit();
-    ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, 4);
+    ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, (skipIntro ? 4 : 7));
     pb.setBorderColor(240, 240, 240);
     pb.setColor(0, 0, 128);
-    pb.setBorderWidth(1);    
+    pb.setBorderWidth(1);
 
     screenTextAt(15, 11, "Loading...");
     screenRedrawScreen();
     perf.end("Screen Initialization");
-    ++pb;    
+    ++pb;
 
     perf.start();
-    soundInit();    
+    soundInit();
     perf.end("Misc Initialization");
     ++pb;
 
@@ -138,12 +138,24 @@ int main(int argc, char *argv[]) {
     ++pb;
 
     intro = new IntroController();
-    if (!skipIntro) {
+    if (!skipIntro)
+    {
         /* do the intro */
         perf.start();
         intro->init();
-        perf.end("introInit()");        
-        
+        perf.end("introInit()");
+        ++pb;
+
+        perf.start();
+        intro->preloadMap();
+        perf.end("intro->preloadMap()");
+        ++pb;
+
+        perf.start();
+        musicMgr->init();
+        perf.end("musicMgr->init()");
+        ++pb;
+
         /* give a performance report */
         if (settings.debug)
             perf.report();
@@ -163,14 +175,14 @@ int main(int argc, char *argv[]) {
     /* play the game! */
     perf.start();
     game = new GameController();
-    game->init();    
+    game->init();
     perf.end("gameInit()");
     
     /* give a performance report */
     if (settings.debug)
         perf.report("\n===============================\n\n");
 
-    eventHandler->pushController(game);    
+    eventHandler->pushController(game);
     eventHandler->run();
     eventHandler->popController();
 
