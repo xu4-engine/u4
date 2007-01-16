@@ -53,6 +53,8 @@ using std::string;
 #define DEFAULT_SHAKE_INTERVAL          100
 #define DEFAULT_BATTLE_DIFFICULTY       "Normal"
 #define DEFAULT_LOGGING                 ""
+#define DEFAULT_TITLE_SPEED_RANDOM      150
+#define DEFAULT_TITLE_SPEED_OTHER       30
 
 struct SettingsEnhancementOptions {
     bool activePlayer;
@@ -104,6 +106,8 @@ public:
     int                 spellEffectSpeed;
     bool                validateXml;
     bool                volumeFades;
+    int                 titleSpeedRandom;
+    int                 titleSpeedOther;
 
     /**
      * Strings, classes, and other objects that cannot

@@ -177,6 +177,8 @@ bool Settings::read() {
     innTime               = DEFAULT_INN_TIME;
     shrineTime            = DEFAULT_SHRINE_TIME;
     shakeInterval         = DEFAULT_SHAKE_INTERVAL;
+    titleSpeedRandom      = DEFAULT_TITLE_SPEED_RANDOM;
+    titleSpeedOther       = DEFAULT_TITLE_SPEED_OTHER;
 
     /* all specific minor enhancements default to "on", any major enhancements default to "off" */
     enhancementsOptions.activePlayer     = true;
@@ -259,6 +261,10 @@ bool Settings::read() {
             shrineTime = (int) strtoul(buffer + strlen("shrineTime="), NULL, 0);
         else if (strstr(buffer, "shakeInterval=") == buffer)
             shakeInterval = (int) strtoul(buffer + strlen("shakeInterval="), NULL, 0);
+        else if (strstr(buffer, "titleSpeedRandom=") == buffer)
+            titleSpeedRandom = (int) strtoul(buffer + strlen("titleSpeedRandom="), NULL, 0);
+        else if (strstr(buffer, "titleSpeedOther=") == buffer)
+            titleSpeedOther = (int) strtoul(buffer + strlen("titleSpeedOther="), NULL, 0);
         
         /* minor enhancement options */
         else if (strstr(buffer, "activePlayer=") == buffer)
@@ -363,6 +369,8 @@ bool Settings::write() {
             "innTime=%d\n"
             "shrineTime=%d\n"
             "shakeInterval=%d\n"
+            "titleSpeedRandom=%d\n"
+            "titleSpeedOther=%d\n"
             "activePlayer=%d\n"
             "u5spellMixing=%d\n"
             "u5shrines=%d\n"
@@ -404,6 +412,8 @@ bool Settings::write() {
             innTime,
             shrineTime,
             shakeInterval,
+            titleSpeedRandom,
+            titleSpeedOther,
             enhancementsOptions.activePlayer,
             enhancementsOptions.u5spellMixing,
             enhancementsOptions.u5shrines,
