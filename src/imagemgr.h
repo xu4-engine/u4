@@ -102,7 +102,7 @@ public:
     static void destroy();
 
     ImageInfo *get(const std::string &name, bool returnUnscaled=false);
-    SubImage *ImageMgr::getSubImage(const std::string &name);
+    SubImage *getSubImage(const std::string &name);
     void freeIntroBackgrounds();
     const std::vector<std::string> &getSetNames();
 
