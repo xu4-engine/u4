@@ -233,18 +233,42 @@ DEBUG MODE (CHEATS)
 -------------------
 
 xu4 has a very useful debug mode (you can also think of it as a cheat mode).
-To enable it, go from the xu4 main menu to:
-Configure -> Gameplay Options -> Advanced Options -> Debug Mode (Cheats)
+To enable it:
+- press 'c' in the main xu4 menu
+- make sure that
+  1) Game Enhancements = On
+  2) Enhanced Gameplay Options -> Debug Mode (Cheats) = On
 
 Cheat list:
-* ctrl-c + h (cheat menu help)
-* ctrl-d (destroy monster/object)
+* ctrl-c (cheat menu; press one of the following keys to use a cheat)
+  1-8     gate (teleports you to a moongate location)
+  F1-F8   virtue +10
+  a       advance moons (advances the left moon [Trammel] to its next phase)
+  c       collision (lets you walk across water, through mountains, etc.)
+  e       equipment (gives the party Armour and Weapons)
+  g       goto (enter a location and xu4 teleports you there)
+  h       help (displays list of available cheats)
+  i       items (gives the party Items and Equipment)
+  k       show karma (shows your virtues)
+  l       location (displays current map and coordinates)
+  m       mixtures (gives the party 99 mixtures of all spells)
+  o       opacity (lets you see through opaque tiles)
+  p       peer (switches between normal and gem view)
+  r       reagents (gives the party 99 of all reagents)
+  s       summon (enter a monster name, and xu4 creates it somewhere nearby)
+  t       transports (press b/h/s + arrow key, and xu4 creates a balloon/horse/ship)
+  v       full virtues (makes you a full avatar)
+  w       change wind (changes or locks the wind direction)
+  x       exit map (teleports the party to where it entered the current map)
+  y       y-up (like the Y-up spell, but free)
+  z       z-down (like the Z-down spell, but free)
+* ctrl-d (destroy monster/object; doesn't work on energy fields)
 * ctrl-h (teleport to Lord British's throne room)
 * ctrl-v (switch between 3-d and 2-d view; dungeons only)
 * F1-F8 (teleport to a dungeon entrance; surface only)
 * F9-F11 (teleport to the altar room of truth/love/courage; surface only)
 * F12 (display torch duration)
-* Escape (end combat; combat only)
+* Escape (end combat)
 
 Note:
 Except for the Escape key, none of the cheats work during combat.
