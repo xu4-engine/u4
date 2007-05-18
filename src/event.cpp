@@ -283,7 +283,9 @@ ReadChoiceController::ReadChoiceController(const string &choices) {
 }
 
 bool ReadChoiceController::keyPressed(int key) {
-    if (isupper(key))
+    // isupper() accepts 1-byte characters, yet the modifier keys
+    // (ALT, SHIFT, ETC) produce values beyond 255
+    if ((key <= 0x7F) && (isupper(key)))
         key = tolower(key);
 
     value = key;
