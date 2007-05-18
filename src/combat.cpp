@@ -751,7 +751,6 @@ void CombatController::finishTurn() {
 
             /* put the focus on the next party member */
             focus++;
-            player = getCurrentPlayer();
 
             /* move creatures and wrap around at end */
             if (focus >= c->party->size()) {   
@@ -793,6 +792,10 @@ void CombatController::finishTurn() {
                     return;
                 }
             }
+
+            /* get the next party member */
+            player = getCurrentPlayer();
+
         } while (!player || 
                   player->isDisabled() || /* dead or sleeping */                 
                  ((c->party->getActivePlayer() >= 0) && /* active player is set */
