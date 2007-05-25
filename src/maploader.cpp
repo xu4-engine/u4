@@ -368,6 +368,67 @@ bool DngMapLoader::load(Map *map) {
         /* translate each map tile to a tile id */
         for (j = 0; j < sizeof(room_tiles); j++)
             dungeon->rooms[i].map_data.push_back(TileMap::get("base")->translate(room_tiles[j]));
+
+        //
+        // dungeon room fixup
+        //
+        if (map->id == MAP_HYTHLOTH)
+        {
+            // A couple rooms in hythloth have NULL player start positions,
+            // which causes the entire party to appear in the upper-left
+            // tile when entering the dungeon room.
+            //
+            // Also, one dungeon room is apparently supposed to be connected
+            // to another, although the the connection does not exist in the
+            // DOS U4 dungeon data file.  This was fixed by removing a few
+            // wall tiles, and relocating a chest and the few monsters around
+            // it to the center of the room.
+            //
+            if (i == 0x7)
+            {
+                // update party start positions when entering from the east
+                const unsigned char x1[8] = { 0x8, 0x8, 0x9, 0x9, 0x9, 0xA, 0xA, 0xA },
+                                    y1[8] = { 0x3, 0x2, 0x3, 0x2, 0x1, 0x3, 0x2, 0x1 };
+                memcpy(dungeon->rooms[i].party_east_start_x, x1, sizeof(x1));
+                memcpy(dungeon->rooms[i].party_east_start_y, y1, sizeof(y1));
+
+                // update party start positions when entering from the south
+                const unsigned char x2[8] = { 0x3, 0x2, 0x3, 0x2, 0x1, 0x3, 0x2, 0x1 },
+                                    y2[8] = { 0x8, 0x8, 0x9, 0x9, 0x9, 0xA, 0xA, 0xA };
+                memcpy(dungeon->rooms[i].party_south_start_x, x2, sizeof(x2));
+                memcpy(dungeon->rooms[i].party_south_start_y, y2, sizeof(y2));
+            }
+            else if (i == 0x9)
+            {
+                // update the starting position of monsters 7, 8, and 9
+                const unsigned char x1[3] = { 0x4, 0x6, 0x5 },
+                                    y1[3] = { 0x5, 0x5, 0x6 };
+                memcpy(dungeon->rooms[i].creature_start_x+7, x1, sizeof(x1));
+                memcpy(dungeon->rooms[i].creature_start_y+7, y1, sizeof(y1));
+
+                // update party start positions when entering from the west
+                const unsigned char x2[8] = { 0x2, 0x2, 0x1, 0x1, 0x1, 0x0, 0x0, 0x0 },
+                                    y2[8] = { 0x9, 0x8, 0x9, 0x8, 0x7, 0x9, 0x8, 0x7 };
+                memcpy(dungeon->rooms[i].party_west_start_x, x2, sizeof(x2));
+                memcpy(dungeon->rooms[i].party_west_start_y, y2, sizeof(y2));
+
+                // update the map data, moving the chest to the center of the room,
+                // and removing the walls at the lower-left corner thereby creating
+                // a connection to room 8
+                const Coords tile[] = { Coords(5, 5, 0x3C),  // chest
+                                        Coords(0, 7, 0x16),  // floor
+                                        Coords(1, 7, 0x16),
+                                        Coords(0, 8, 0x16),
+                                        Coords(1, 8, 0x16),
+                                        Coords(0, 9, 0x16) };
+
+                for (int j=0; j < (sizeof(tile)/sizeof(Coords)); j++)
+                {
+                    const int index = (tile[j].y * CON_WIDTH) + tile[j].x;
+                    dungeon->rooms[i].map_data[index] = TileMap::get("base")->translate(tile[j].z);
+                }
+            }
+        }
     }
     u4fclose(dng);
 
