@@ -21,6 +21,7 @@
 #include "player.h"
 #include "savegame.h"
 #include "settings.h"
+#include "textcolor.h"
 #include "tileset.h"
 #include "tileview.h"
 
@@ -78,7 +79,8 @@ void screenMessage(const char *fmt, ...) {
     }
 
     for (i = 0; i < strlen(buffer); i++) {
-        wordlen = strcspn(buffer + i, " \b\t\n");
+        // include whitespace and color-change codes
+        wordlen = strcspn(buffer + i, " \b\t\n\024\025\026\027\030\031");
 
         /* backspace */
         if (buffer[i] == '\b') {
@@ -89,6 +91,19 @@ void screenMessage(const char *fmt, ...) {
             }
             continue;
         }
+
+		/* color-change codes */
+		switch (buffer[i])
+		{
+			case FG_GREY:
+			case FG_BLUE:
+			case FG_GREEN:
+			case FG_RED:
+			case FG_YELLOW:
+			case FG_WHITE:
+				screenTextColor(buffer[i]);
+				continue;
+		}
 
         /* check for word wrap */
         if ((c->col + wordlen > 16) || buffer[i] == '\n' || c->col == 16) {

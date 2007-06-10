@@ -11,14 +11,15 @@
 #include "context.h"
 #include "debug.h"
 #include "error.h"
-#include "game.h"    /* required by specialAction and specialEffect functions */
+#include "game.h"       /* required by specialAction and specialEffect functions */
 #include "location.h"
 #include "map.h"
-#include "player.h"    /* required by specialAction and specialEffect functions */
+#include "player.h"     /* required by specialAction and specialEffect functions */
 #include "savegame.h"
-#include "screen.h" /* FIXME: remove dependence on this */
+#include "screen.h"     /* FIXME: remove dependence on this */
 #include "settings.h"
-#include "spell.h"  /* FIXME: remove dependence on this */
+#include "spell.h"      /* FIXME: remove dependence on this */
+#include "textcolor.h"  /* required to change the color of screen message text */
 #include "tileset.h"
 #include "utils.h"
 
@@ -668,7 +669,7 @@ void Creature::act(CombatController *controller) {
             Coords coords = getCoords();
 
             if (MAP_IS_OOB(map, coords)) {
-                screenMessage("\n%s Flees!\n", name.c_str());
+                screenMessage("\n%c%s Flees!%c\n", FG_YELLOW, name.c_str(), FG_WHITE);
                 
                 /* Congrats, you have a heart! */
                 if (isGood())
@@ -885,9 +886,9 @@ bool Creature::applyDamage(int damage, bool byplayer) {
 
     case MSTAT_DEAD:        
         if (byplayer)
-            screenMessage("%s Killed!\nExp. %d\n", name.c_str(), xp);        
+            screenMessage("%c%s Killed!%c\nExp. %d\n", FG_RED, name.c_str(), FG_WHITE, xp);
         else
-            screenMessage("%s Killed!\n", name.c_str());        
+            screenMessage("%c%s Killed!%c\n", FG_RED, name.c_str(), FG_WHITE);        
 
         /*
          * the creature is dead; let it spawns something else on
@@ -902,7 +903,7 @@ bool Creature::applyDamage(int damage, bool byplayer) {
         return false;        
 
     case MSTAT_FLEEING:
-        screenMessage("%s Fleeing!\n", name.c_str());
+        screenMessage("%c%s Fleeing!%c\n", FG_YELLOW, name.c_str(), FG_WHITE);
         break;
 
     case MSTAT_CRITICAL:
@@ -910,15 +911,15 @@ bool Creature::applyDamage(int damage, bool byplayer) {
         break;
 
     case MSTAT_HEAVILYWOUNDED:
-        screenMessage("%s\nHeavily Wounded!\n", name.c_str());
+        screenMessage("%s Heavily Wounded!\n", name.c_str());
         break;
 
     case MSTAT_LIGHTLYWOUNDED:
-        screenMessage("%s\nLightly Wounded!\n", name.c_str());
+        screenMessage("%s Lightly Wounded!\n", name.c_str());
         break;
 
     case MSTAT_BARELYWOUNDED:
-        screenMessage("%s\nBarely Wounded!\n", name.c_str());
+        screenMessage("%s Barely Wounded!\n", name.c_str());
         break;
     }
 

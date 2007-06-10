@@ -658,14 +658,14 @@ void GameController::update(Party *party, PartyEvent &event) {
     switch (event.type) {
     case PartyEvent::LOST_EIGHTH:
         // inform a player he has lost zero or more eighths of avatarhood.
-        screenMessage("\n Thou hast lost\n  an eighth!\n");
+        screenMessage("\n %cThou hast lost\n  an eighth!%c\n", FG_YELLOW, FG_WHITE);
         break;
     case PartyEvent::ADVANCED_LEVEL:
-        screenMessage("\n%s\nThou art now Level %d\n", event.player->getName().c_str(), event.player->getRealLevel());
+        screenMessage("\n%c%s\nThou art now Level %d%c\n", FG_YELLOW, event.player->getName().c_str(), event.player->getRealLevel(), FG_WHITE);
         gameSpellEffect('r', -1, SOUND_MAGIC); // Same as resurrect spell
         break;
     case PartyEvent::STARVING:
-        screenMessage("\nStarving!!!\n");
+        screenMessage("\n%cStarving!!!%c\n", FG_YELLOW, FG_WHITE);
         /* FIXME: add sound effect here */
 
         // 2 damage to each party member for starving!
@@ -818,7 +818,7 @@ bool GameController::keyPressed(int key) {
     }
 
     if ((c->location->context & CTX_DUNGEON) && strchr("abefjlotxy", key))
-        screenMessage("Not here!\n");
+        screenMessage("%cNot here!%c\n", FG_GREY, FG_WHITE);
     else 
         switch (key) {
 
@@ -1013,14 +1013,14 @@ bool GameController::keyPressed(int key) {
                 if (c->transportContext == TRANSPORT_BALLOON) {
                     screenMessage("Land Balloon\n");
                     if (!c->party->isFlying())
-                        screenMessage("Already Landed!\n");
+                        screenMessage("%cAlready Landed!%c\n", FG_GREY, FG_WHITE);
                     else if (c->location->map->tileTypeAt(c->location->coords, WITH_OBJECTS)->canLandBalloon()) {
                         c->saveGame->balloonstate = 0;
                         c->opacity = 1;
                     }
-                    else screenMessage("Not Here!\n");
+                    else screenMessage("%cNot Here!%c\n", FG_GREY, FG_WHITE);
                 }
-                else screenMessage("Descend what?\n");
+                else screenMessage("%cDescend what?%c\n", FG_GREY, FG_WHITE);
             }        
 
             break;
@@ -1028,7 +1028,7 @@ bool GameController::keyPressed(int key) {
         case 'e':
             if (!usePortalAt(c->location, c->location->coords, ACTION_ENTER)) {
                 if (!c->location->map->portalAt(c->location->coords, ACTION_ENTER))
-                    screenMessage("Enter what?\n");
+                    screenMessage("%cEnter what?%c\n", FG_GREY, FG_WHITE);
             }
             else endTurn = 0; /* entering a portal doesn't end the turn */
             break;
@@ -1049,9 +1049,9 @@ bool GameController::keyPressed(int key) {
             screenMessage("Ignite torch!\n");
             if (c->location->context == CTX_DUNGEON) {
                 if (!c->party->lightTorch())
-                    screenMessage("None left!\n");
+                    screenMessage("%cNone left!%c\n", FG_GREY, FG_WHITE);
             }
-            else screenMessage("Not here!\n");
+            else screenMessage("%cNot here!%c\n", FG_GREY, FG_WHITE);
             break;
 
         case 'j':
@@ -1065,7 +1065,7 @@ bool GameController::keyPressed(int key) {
                     c->opacity = 0;
                     screenMessage("Klimb altitude\n");            
                 } else
-                    screenMessage("Klimb what?\n");
+                    screenMessage("%cKlimb what?%c\n", FG_GREY, FG_WHITE);
             }
             break;
 
@@ -1077,9 +1077,9 @@ bool GameController::keyPressed(int key) {
                                   c->location->coords.y / 16 + 'A', c->location->coords.y % 16 + 'A',
                                   c->location->coords.x / 16 + 'A', c->location->coords.x % 16 + 'A');
                 else
-                    screenMessage("Locate position with What?\n");
+                    screenMessage("%cLocate position with what?%c\n", FG_GREY, FG_WHITE);
             }
-            else screenMessage("Not here!\n");
+            else screenMessage("%cNot here!%c\n", FG_GREY, FG_WHITE);
             break;
 
         case 'm':
@@ -1104,7 +1104,7 @@ bool GameController::keyPressed(int key) {
                 gameSave();
                 screenMessage("Press Alt-x to quit\n");
             }
-            else screenMessage("Not here!\n");
+            else screenMessage("%cNot here!%c\n", FG_GREY, FG_WHITE);
             
             break;
 
@@ -1116,21 +1116,21 @@ bool GameController::keyPressed(int key) {
             if (c->location->context == CTX_DUNGEON)
                 dungeonSearch();
             else if (c->party->isFlying())
-                screenMessage("Searching...\nDrift only!\n");
+                screenMessage("Searching...\n%cDrift only!%c\n", FG_GREY, FG_WHITE);
             else {
                 screenMessage("Searching...\n");
 
                 const ItemLocation *item = itemAtLocation(c->location->map, c->location->coords);
                 if (item) {
                     if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
-                        screenMessage("Nothing Here!\n");
+                        screenMessage("%cNothing Here!%c\n", FG_GREY, FG_WHITE);
                     else {                    
                         if (item->name)
                             screenMessage("You find...\n%s!\n", item->name);
                         (*item->putItemInInventory)(item->data);
                     }
                 } else
-                    screenMessage("Nothing Here!\n");
+                    screenMessage("%cNothing Here!%c\n", FG_GREY, FG_WHITE);
             }
 
             break;
@@ -1172,7 +1172,7 @@ bool GameController::keyPressed(int key) {
                 c->horseSpeed = 0;
                 screenMessage("X-it\n");
             } else
-                screenMessage("X-it What?\n");
+                screenMessage("%cX-it What?%c\n", FG_GREY, FG_WHITE);
             break;
 
         case 'y':
@@ -1186,7 +1186,7 @@ bool GameController::keyPressed(int key) {
                     c->horseSpeed = 0;
                 }
             } else
-                screenMessage("what?\n");
+                screenMessage("%cWhat?%c\n", FG_GREY, FG_WHITE);
             break;
 
         case 'z':        
@@ -1216,7 +1216,7 @@ bool GameController::keyPressed(int key) {
                           "c: Cast Spell\n"
                           "d: Descend\n"
                           "e: Enter\n"
-                          "f: Fire\n"
+                          "f: Fire Cannons\n"
                           "g: Get Chest\n"
                           "h: Hole up\n"
                           "i: Ignite torch\n"
@@ -1333,7 +1333,7 @@ bool GameController::keyPressed(int key) {
         case '9':        
             if (settings.enhancements && settings.enhancementsOptions.activePlayer)
                 gameSetActivePlayer(key - '1');        
-            else screenMessage("Bad command!\n");
+            else screenMessage("%cBad command!%c\n", FG_GREY, FG_WHITE);
 
             endTurn = 0;
             break;
@@ -1396,11 +1396,15 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
 Direction gameGetDirection() {
     ReadDirController dirController;
 
+	screenMessage("Dir?");
+
     eventHandler->pushController(&dirController);
     Direction dir = dirController.waitFor();
 
+    screenMessage("\b\b\b\b");
+
     if (dir == DIR_NONE) {
-        screenMessage("\n");
+        screenMessage("    \n");
         return dir;
     }
     else {
@@ -1429,7 +1433,7 @@ bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients) {
 
     /* see if there's enough reagents to make number of mixtures requested */
     if (!ingredients->checkMultiple(num)) {
-        screenMessage("\nYou don't have enough reagents to mix %d spells!\n\n", num);
+        screenMessage("\n%cYou don't have enough reagents to mix %d spells!%c\n\n", FG_GREY, num, FG_WHITE);
         ingredients->revert();
         return false;
     }
@@ -1497,7 +1501,7 @@ void destroy() {
             return;
     }
 
-    screenMessage("Nothing there!\n");
+    screenMessage("%cNothing there!%c\n", FG_GREY, FG_WHITE);
 }
 
 bool destroyAt(const Coords &coords) {
@@ -1526,7 +1530,7 @@ void attack() {
     screenMessage("Attack: ");
 
     if (c->party->isFlying()) {
-        screenMessage("\nDrift only!\n");
+        screenMessage("\n%cDrift only!%c\n", FG_GREY, FG_WHITE);
         return;
     }
 
@@ -1542,7 +1546,7 @@ void attack() {
             return;
     }
 
-    screenMessage("Nothing to Attack!\n");
+    screenMessage("%cNothing to Attack!%c\n", FG_GREY, FG_WHITE);
 }
 
 /**
@@ -1588,13 +1592,13 @@ bool attackAt(const Coords &coords) {
 
 void board() {
     if (c->transportContext != TRANSPORT_FOOT) {
-        screenMessage("Board: Can't!\n");
+        screenMessage("Board: %cCan't!%c\n", FG_GREY, FG_WHITE);
         return;
     }
 
     Object *obj = c->location->map->objectAt(c->location->coords);
     if (!obj) {
-        screenMessage("Board What?\n");
+        screenMessage("%cBoard What?%c\n", FG_GREY, FG_WHITE);
         return;
     }
 
@@ -1609,7 +1613,7 @@ void board() {
     else if (tile->isBalloon())
         screenMessage("Board Balloon!\n");
     else {
-        screenMessage("Board What?\n");
+        screenMessage("%cBoard What?%c\n", FG_GREY, FG_WHITE);
         return;
     }
 
@@ -1733,7 +1737,7 @@ void castSpell(int player) {
 
 void fire() {
     if (c->transportContext != TRANSPORT_SHIP) {
-        screenMessage("Fire What?\n");
+        screenMessage("%cFire What?%c\n", FG_GREY, FG_WHITE);
         return;
     }
 
@@ -1746,7 +1750,7 @@ void fire() {
     // can only fire broadsides
     int broadsidesDirs = dirGetBroadsidesDirs(c->party->getDirection());
     if (!DIR_IN_MASK(dir, broadsidesDirs)) {
-        screenMessage("Broadsides Only!\n");
+        screenMessage("%cBroadsides Only!%c\n", FG_GREY, FG_WHITE);
         return;
     }
 
@@ -1831,7 +1835,7 @@ void getChest(int player) {
     screenMessage("Get Chest!\n");
 
     if (c->party->isFlying()) {
-        screenMessage("Drift only!\n");
+        screenMessage("%cDrift only!%c\n", FG_GREY, FG_WHITE);
         return;
     }
             
@@ -1868,7 +1872,7 @@ void getChest(int player) {
             c->party->adjustKarma(KA_STOLE_CHEST);
     }    
     else
-        screenMessage("Not Here!\n");
+        screenMessage("%cNot Here!%c\n", FG_GREY, FG_WHITE);
 }
 
 /**
@@ -1898,13 +1902,13 @@ bool getChestTrapHandler(int player) {
 
         /* apply the effects from the trap */
         if (trapType == EFFECT_FIRE)
-            screenMessage("Acid Trap!\n");            
+            screenMessage("%cAcid%c Trap!\n", FG_RED, FG_WHITE);
         else if (trapType == EFFECT_POISON)
-            screenMessage("Poison Trap!\n");            
+            screenMessage("%cPoison%c Trap!\n", FG_GREEN, FG_WHITE);
         else if (trapType == EFFECT_SLEEP)
-            screenMessage("Sleep Trap!\n");            
+            screenMessage("%cSleep%c Trap!\n", FG_BLUE, FG_WHITE);
         else if (trapType == EFFECT_LAVA)
-            screenMessage("Bomb Trap!\n");        
+            screenMessage("%cBomb%c Trap!\n", FG_RED, FG_WHITE);
 
         /* See if the trap was evaded! */           
         if ((dex + 25) < xu4_random(100) &&         /* test player's dex */            
@@ -1922,17 +1926,17 @@ bool getChestTrapHandler(int player) {
 }
 
 void holeUp() {
-    if (!(c->location->context & (CTX_WORLDMAP | CTX_DUNGEON))) {
-        screenMessage("Hole up & Camp\nNot here!\n");
+    screenMessage("Hole up & Camp!\n");
+
+	if (!(c->location->context & (CTX_WORLDMAP | CTX_DUNGEON))) {
+        screenMessage("%cNot here!%c\n", FG_GREY, FG_WHITE);
         return;
     }
 
     if (c->transportContext != TRANSPORT_FOOT) {
-        screenMessage("Hole up & Camp\nOnly on foot!\n");
+        screenMessage("%cOnly on foot!%c\n", FG_GREY, FG_WHITE);
         return;
     }
-
-    screenMessage("Hole up & Camp!\n");
 
     CombatController *cc = new CampController();
     cc->init(NULL);
@@ -2068,12 +2072,12 @@ void GameController::avatarMoved(MoveEvent &event) {
                     if (event.result & MOVE_TURNED)
                         screenMessage("Turn %s!\n", getDirectionName(event.dir));
                     else if (event.result & MOVE_SLOWED)
-                        screenMessage("Slow progress!\n");
+                        screenMessage("%cSlow progress!%c\n", FG_GREY, FG_WHITE);
                     else
                         screenMessage("Sail %s!\n", getDirectionName(event.dir));    
                     break;
                 case TRANSPORT_BALLOON:
-                    screenMessage("Drift Only!\n");
+                    screenMessage("%cDrift Only!%c\n", FG_GREY, FG_WHITE);
                     break;
                 default:
                     ASSERT(0, "bad transportContext %d in avatarMoved()", c->transportContext);
@@ -2106,14 +2110,14 @@ void GameController::avatarMoved(MoveEvent &event) {
             /* if we're still blocked */
             if ((event.result & MOVE_BLOCKED) && !settings.filterMoveMessages) {
                 soundPlay(SOUND_BLOCKED, false);
-                screenMessage("Blocked!\n");
+                screenMessage("%cBlocked!%c\n", FG_GREY, FG_WHITE);
             }
         }
         else if (c->transportContext == TRANSPORT_FOOT || c->transportContext == TRANSPORT_HORSE) {
             /* movement was slowed */
             if (event.result & MOVE_SLOWED) {
                 soundPlay(SOUND_WALK_SLOWED);
-                screenMessage("Slow progress!\n");
+                screenMessage("%cSlow progress!%c\n", FG_GREY, FG_WHITE);
             }
             else {
                 soundPlay(SOUND_WALK_NORMAL);
@@ -2123,7 +2127,7 @@ void GameController::avatarMoved(MoveEvent &event) {
 
     /* exited map */
     if (event.result & MOVE_EXIT_TO_PARENT) {
-        screenMessage("Leaving...\n");
+        screenMessage("%cLeaving...%c\n", FG_GREY, FG_WHITE);
         exitToParentMap();
         musicMgr->play();
     }
@@ -2158,12 +2162,12 @@ void GameController::avatarMovedInDungeon(MoveEvent &event) {
         }
 
         if (event.result & MOVE_BLOCKED)
-            screenMessage("Blocked!\n");       
+            screenMessage("%cBlocked!%c\n", FG_GREY, FG_WHITE);       
     }
 
     /* if we're exiting the map, do this */
     if (event.result & MOVE_EXIT_TO_PARENT) {
-        screenMessage("Leaving...\n");
+        screenMessage("%cLeaving...%c\n", FG_GREY, FG_WHITE);
         exitToParentMap();
         musicMgr->play();
     }
@@ -2193,7 +2197,7 @@ void GameController::avatarMovedInDungeon(MoveEvent &event) {
 }
 
 void jimmy() {
-    screenMessage("Jimmy\nDir: ");
+    screenMessage("Jimmy: ");
     Direction dir = gameGetDirection();
 
     if (dir == DIR_NONE)
@@ -2206,7 +2210,7 @@ void jimmy() {
             return;
     }
 
-    screenMessage("Jimmy what?\n");
+    screenMessage("%cJimmy what?%c\n", FG_GREY, FG_WHITE);
 }
 
 /**
@@ -2227,19 +2231,21 @@ bool jimmyAt(const Coords &coords) {
         c->location->map->annotations->add(coords, door->id);
         screenMessage("\nUnlocked!\n");
     } else
-        screenMessage("No keys left!\n");
+        screenMessage("%cNo keys left!%c\n", FG_GREY, FG_WHITE);
 
     return true;
 }
 
 void opendoor() {
     ///  XXX: Pressing "o" should close any open door.
-    if (c->party->isFlying()) {
-        screenMessage("Open; Not Here!\n");
+
+	screenMessage("Open: ");
+
+	if (c->party->isFlying()) {
+        screenMessage("%cNot Here!%c\n", FG_GREY, FG_WHITE);
         return;
     }
 
-    screenMessage("Open\nDir: ");
     Direction dir = gameGetDirection();
 
     if (dir == DIR_NONE)
@@ -2252,7 +2258,7 @@ void opendoor() {
             return;
     }
 
-    screenMessage("Not Here!\n");
+    screenMessage("%cNot Here!%c\n", FG_GREY, FG_WHITE);
 }
 
 /**
@@ -2267,7 +2273,7 @@ bool openAt(const Coords &coords) {
         return false;
 
     if (tile->isLockedDoor()) {
-        screenMessage("Can't!\n");
+        screenMessage("%cCan't!%c\n", FG_GREY, FG_WHITE);
         return true;
     }
     
@@ -2288,7 +2294,7 @@ void readyWeapon(int player) {
 
     // get the player if not provided
     if (player == -1) {
-        screenMessage("Ready a weapon\nfor: ");
+        screenMessage("Ready a weapon for: ");
         player = gameGetPlayer(true, false);
         if (player == -1)
             return;
@@ -2310,7 +2316,7 @@ void readyWeapon(int player) {
         screenMessage("%s\n", w->getName().c_str());
         break;
     case EQUIP_NONE_LEFT:
-        screenMessage("None left!\n");
+        screenMessage("%cNone left!%c\n", FG_GREY, FG_WHITE);
         break;
     case EQUIP_CLASS_RESTRICTED: {
         string indef_article;
@@ -2323,20 +2329,21 @@ void readyWeapon(int player) {
             indef_article = "a"; break;
         }
 
-        screenMessage("\nA %s may NOT use %s\n%s\n", getClassName(p->getClass()),
-                      indef_article.c_str(), w->getName().c_str());
+        screenMessage("\n%cA %s may NOT use %s %s%c\n", FG_GREY, getClassName(p->getClass()),
+                      indef_article.c_str(), w->getName().c_str(), FG_WHITE);
         break;
     }
     }
 }
 
 void talk() {
+	screenMessage("Talk: ");
+
     if (c->party->isFlying()) {
-        screenMessage("Talk\nDrift only!\n");
+        screenMessage("%cDrift only!%c\n", FG_GREY, FG_WHITE);
         return;
     }
-    
-    screenMessage("Talk\nDir: ");
+
     Direction dir = gameGetDirection();
 
     if (dir == DIR_NONE)
@@ -2349,7 +2356,7 @@ void talk() {
             return;
     }
 
-    screenMessage("Funny, no\nresponse!\n");
+    screenMessage("Funny, no response!\n");
 }
 
 /**
@@ -2373,7 +2380,7 @@ void mixReagents() {
 
         // ensure the mixtures for the spell isn't already maxed out
         if (c->saveGame->mixtures[spell] == 99) {
-            screenMessage("\nYou cannot mix any more of that spell!\n");
+            screenMessage("\n%cYou cannot mix any more of that spell!%c\n", FG_GREY, FG_WHITE);
             break;
         }
 
@@ -2421,7 +2428,7 @@ bool mixReagentsForSpellU4(int spell) {
 
         screenMessage("%c\n", toupper(choice));
         if (!ingredients.addReagent((Reagent)(choice - 'a')))
-            screenMessage("None Left!\n");
+            screenMessage("%cNone Left!%c\n", FG_GREY, FG_WHITE);
         screenMessage("Reagent: ");
     }
 
@@ -2483,7 +2490,7 @@ void newOrder() {
     }
 
     if (player1 == player2) {
-        screenMessage("What?\n");
+        screenMessage("%cWhat?%c\n", FG_GREY, FG_WHITE);
         return;
     }
 
@@ -2524,7 +2531,7 @@ void peer(bool useGem) {
 
     if (useGem) {
         if (c->saveGame->gems <= 0) {
-            screenMessage("Peer at What?\n");
+            screenMessage("%cPeer at What?%c\n", FG_GREY, FG_WHITE);
             return;
         }
 
@@ -2555,7 +2562,7 @@ bool talkAt(const Coords &coords) {
 
     /* can't have any conversations outside of town */
     if (!isCity(c->location->map)) {
-        screenMessage("Funny, no\nresponse!\n");
+        screenMessage("Funny, no response!\n");
         return true;
     }
     
@@ -2715,10 +2722,10 @@ void wearArmor(int player) {
         screenMessage("%s\n", a->getName().c_str());
         break;
     case EQUIP_NONE_LEFT:
-        screenMessage("None left!\n");
+        screenMessage("%cNone left!%c\n", FG_GREY, FG_WHITE);
         break;
     case EQUIP_CLASS_RESTRICTED:
-        screenMessage("\nA %s may NOT use\n%s\n", getClassName(p->getClass()), a->getName().c_str());
+        screenMessage("\n%cA %s may NOT use %s%c\n", FG_GREY, getClassName(p->getClass()), a->getName().c_str(), FG_WHITE);
         break;
     }
 }

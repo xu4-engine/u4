@@ -222,7 +222,7 @@ void CombatController::begin() {
  
     /* if there are creatures around, start combat! */    
     if (showMessage && placeCreaturesOnMap && winOrLose)
-        screenMessage("\n**** COMBAT ****\n\n");
+        screenMessage("\n%c****%c COMBAT %c****%c\n", FG_GREY, FG_WHITE, FG_GREY, FG_WHITE);
     
     /* FIXME: there should be a better way to accomplish this */
     if (!camping) {
@@ -271,12 +271,12 @@ void CombatController::end(bool adjustKarma) {
                     awardLoot();
                 }
             
-                screenMessage("\nVictory!\n");
+                screenMessage("\nVictory!\n\n");
             }
             else if (!c->party->isDead()) {
                 /* minus points for fleeing from evil creatures */
                 if (adjustKarma && creature && creature->isEvil()) {
-                    screenMessage("Battle is lost!\n");
+                    screenMessage("\nBattle is lost!\n\n");
                     c->party->adjustKarma(KA_FLED_EVIL);
                 }
                 else if (adjustKarma && creature && creature->isGood())
@@ -484,7 +484,7 @@ bool CombatController::setActivePlayer(int player) {
         p->setFocus();
         focus = player;
 
-        screenMessage("%s with %s\n\020", p->getName().c_str(), p->getWeapon()->getName().c_str());        
+        screenMessage("\n%s with %s\n\020", p->getName().c_str(), p->getWeapon()->getName().c_str());        
         c->stats->highlightPlayer(focus);        
         return true;
     }
@@ -844,7 +844,7 @@ void CombatController::movePartyMember(MoveEvent &event) {
     }
     else if (event.result & MOVE_SLOWED) {
         soundPlay(SOUND_WALK_SLOWED);                                          // WALK_SLOWED move
-        screenMessage("Slow progress!\n");
+        screenMessage("%cSlow progress!%c\n", FG_GREY, FG_WHITE);
     }
     else if (winOrLose && getCreature()->isEvil() && (event.result & (MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE))) {
         soundPlay(SOUND_FLEE);                                                 // FLEE move
@@ -1161,7 +1161,7 @@ void CombatController::attack() {
 
 void CombatController::update(Party *party, PartyEvent &event) {
     if (event.type == PartyEvent::PLAYER_KILLED)
-        screenMessage("%s is Killed!\n", event.player->getName().c_str());
+        screenMessage("\n%c%s is Killed!%c\n", FG_RED, event.player->getName().c_str(), FG_WHITE);
 }
 
 /**

@@ -107,6 +107,7 @@ void screenShake(int iterations);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, const char *fmt, ...) PRINTF_LIKE(3, 4);
+void screenTextColor(int color);
 void screenUpdate(TileView *view, bool showmap, bool blackout);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);

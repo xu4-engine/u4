@@ -508,13 +508,39 @@ void screenDrawImageInMapArea(const string &name) {
 
 
 /**
+ * Change the current text color
+ */
+void screenTextColor(int color) {
+    if (charsetInfo == NULL) {
+        charsetInfo = imageMgr->get(BKGD_CHARSET);
+        if (!charsetInfo)
+            errorFatal("ERROR 1003: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
+    }
+
+	if (!settings.enhancements || !settings.enhancementsOptions.textColorization) {
+		return;
+	}
+
+	switch (color)
+	{
+		case FG_GREY:
+		case FG_BLUE:
+		case FG_GREEN:
+		case FG_RED:
+		case FG_YELLOW:
+		case FG_WHITE:
+			charsetInfo->image->setFontColorFG((ColorFG)color);
+	}
+}
+
+/**
  * Draw a character from the charset onto the screen.
  */
 void screenShowChar(int chr, int x, int y) {
     if (charsetInfo == NULL) {
         charsetInfo = imageMgr->get(BKGD_CHARSET);
         if (!charsetInfo)
-			errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
+            errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
     }
 
     charsetInfo->image->drawSubRect(x * charsetInfo->image->width(), y * (CHAR_HEIGHT * scale),

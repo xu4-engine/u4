@@ -588,6 +588,10 @@ SOURCE=..\src\stats.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\textcolor.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\textview.cpp
 # End Source File
 # Begin Source File
