@@ -51,9 +51,33 @@ Dialogue* U4TlkDialogueLoader::load(void *source) {
     dlg->setPronoun(strings[1]);
     dlg->setPrompt("\nYour Interest:\n");
 
+    // Fix the actor description string, converting the first character
+    // to lower-case.
+    strings[2][0] = tolower(strings[2][0]);
+
+    // ... then replace any newlines in the string with spaces
+    int index = strings[2].find ("\n");
+    while (index != string::npos)
+    {
+        strings[2][index] = ' ';
+        index = strings[2].find ("\n");
+    }
+
+    // ... then append a period to the end of the string if one does
+    // not already exist
+    if (!ispunct(strings[2][strings[2].length()-1]))
+        strings[2] = strings[2] + string(".");
+
+    // ... and finally, a few characters in the game have descriptions
+    // that do not begin with a definite (the) or indefinite (a/an)
+    // article.  On those characters, insert the appropriate article.
+    if ((strings[0] == "Iolo")
+        || (strings[0] == "Tracie")
+        || (strings[0] == "Dupre")
+        || (strings[0] == "Traveling Dan"))
+        strings[2] = string("a ") + strings[2];
+
     string introBase = string("\nYou meet ") + strings[2] + "\n";
-    if (isupper(introBase[10]))
-        introBase[10] = tolower(introBase[10]);
 
     dlg->setIntro(new Response(introBase + dlg->getPrompt()));
     dlg->setLongIntro(new Response(introBase +
@@ -96,8 +120,6 @@ Dialogue* U4TlkDialogueLoader::load(void *source) {
     // HEAL for healer, which is unreachable in u4dos, but clearly
     // more useful than "Fine." for health).
     string look = string("\nYou see ") + strings[2];
-    if (isupper(look[8]))
-        look[8] = tolower(look[8]);
     dlg->addKeyword("look", new Response(look));
     dlg->addKeyword("name", new Response(string("\n") + dlg->getPronoun() + " says: I am " + dlg->getName()));
     dlg->addKeyword("give", new Response(string("\n") + dlg->getPronoun() + " says: I do not need thy gold.  Keep it!"));
