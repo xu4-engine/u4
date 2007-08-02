@@ -1228,8 +1228,12 @@ void Party::adjustReagent(int reagent, int amt) {
     }
 }
 
-int Party::reagents(int reagent) const {
+int Party::getReagent(int reagent) const {
     return c->saveGame->reagents[reagent];
+}
+
+short* Party::getReagentPtr(int reagent) const {
+    return &c->saveGame->reagents[reagent];
 }
 
 void Party::setActivePlayer(int p) {

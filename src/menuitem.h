@@ -25,7 +25,8 @@ typedef enum {
     MENU_OUTPUT_GAMMA,
     MENU_OUTPUT_SHRINE,
     MENU_OUTPUT_SPELL,
-    MENU_OUTPUT_VOLUME
+    MENU_OUTPUT_VOLUME,
+    MENU_OUTPUT_REAGENT
 } menuOutputType;
 
 class MenuItem {

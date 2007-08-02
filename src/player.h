@@ -193,7 +193,9 @@ public:
     void setDirection(Direction dir);
 
     void adjustReagent(int reagent, int amt);
-    int reagents(int reagent) const;
+    int getReagent(int reagent) const;
+    short* getReagentPtr(int reagent) const;
+
     void setActivePlayer(int p);
     int getActivePlayer() const;
 

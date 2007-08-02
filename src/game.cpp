@@ -1426,14 +1426,14 @@ bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients) {
     /* if they ask for more than will give them 99, only use what they need */
     if (num > 99 - c->saveGame->mixtures[spell]) {
         num = 99 - c->saveGame->mixtures[spell];
-        screenMessage("\nOnly need %d!", num);
+        screenMessage("\n%cOnly need %d!%c\n", FG_GREY, num, FG_WHITE);
     }
     
     screenMessage("\nMixing %d...\n", num);
 
     /* see if there's enough reagents to make number of mixtures requested */
     if (!ingredients->checkMultiple(num)) {
-        screenMessage("\n%cYou don't have enough reagents to mix %d spells!%c\n\n", FG_GREY, num, FG_WHITE);
+        screenMessage("\n%cYou don't have enough reagents to mix %d spells!%c\n", FG_GREY, num, FG_WHITE);
         ingredients->revert();
         return false;
     }
@@ -2368,27 +2368,51 @@ void mixReagents() {
 
     while (!done) {
         screenMessage("Mix reagents\n");
-        screenMessage("For Spell: ");
-        c->stats->setView(STATS_MIXTURES);
 
-        int choice = ReadChoiceController::get("abcdefghijklmnopqrstuvwxyz \033\n\r");
-        if (choice == ' ' || choice == '\033' || choice == '\n' || choice == '\r')
-            break;
-
-        int spell = choice - 'a';
-        screenMessage("%s\n", spellGetName(spell));
-
-        // ensure the mixtures for the spell isn't already maxed out
-        if (c->saveGame->mixtures[spell] == 99) {
-            screenMessage("\n%cYou cannot mix any more of that spell!%c\n", FG_GREY, FG_WHITE);
-            break;
+        // Verify that there are reagents remaining in the inventory
+        bool found = false;
+        for (int i=0; i < 8; i++)
+        {
+            if (c->saveGame->reagents[i] > 0)
+            {
+                found = true;
+                break;
+            }
         }
-
-        c->stats->setView(STATS_REAGENTS);
-        if (settings.enhancements && settings.enhancementsOptions.u5spellMixing)
-            done = mixReagentsForSpellU5(spell);
+        if (!found)
+        {
+            screenMessage("%cNone Left!%c", FG_GREY, FG_WHITE);
+            done = true;
+        }
         else
-            done = mixReagentsForSpellU4(spell);
+        {
+            screenMessage("For Spell: ");
+            c->stats->setView(STATS_MIXTURES);
+
+            int choice = ReadChoiceController::get("abcdefghijklmnopqrstuvwxyz \033\n\r");
+            if (choice == ' ' || choice == '\033' || choice == '\n' || choice == '\r')
+                break;
+
+            int spell = choice - 'a';
+            screenMessage("%s\n", spellGetName(spell));
+
+            // ensure the mixtures for the spell isn't already maxed out
+            if (c->saveGame->mixtures[spell] == 99) {
+                screenMessage("\n%cYou cannot mix any more of that spell!%c\n", FG_GREY, FG_WHITE);
+                break;
+            }
+
+            // Reset the reagent spell mix menu by removing
+            // the menu highlight from the current item, and
+            // hiding reagents that you don't have
+            c->stats->resetReagentsMenu();
+
+            c->stats->setView(MIX_REAGENTS);
+            if (settings.enhancements && settings.enhancementsOptions.u5spellMixing)
+                done = mixReagentsForSpellU5(spell);
+            else
+                done = mixReagentsForSpellU4(spell);
+        }
     }
 
     c->stats->setView(STATS_PARTY_OVERVIEW);
@@ -2443,7 +2467,6 @@ bool mixReagentsForSpellU5(int spell) {
 
     screenDisableCursor();
 
-    c->stats->resetReagentsMenu();
     c->stats->getReagentsMenu()->reset(); // reset the menu, highlighting the first item
     ReagentsMenuController getReagentsController(c->stats->getReagentsMenu(), &ingredients, c->stats->getMainArea());
     eventHandler->pushController(&getReagentsController);
@@ -2742,8 +2765,9 @@ void ztatsFor(int player) {
             return;
     }
 
-    /* reset the spell mix menu and un-highlight the current item,
-       and hide reagents that you don't have */
+    // Reset the reagent spell mix menu by removing
+    // the menu highlight from the current item, and
+    // hiding reagents that you don't have
     c->stats->resetReagentsMenu();
 
     c->stats->setView(StatsView(STATS_CHAR1 + player));

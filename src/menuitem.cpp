@@ -152,7 +152,11 @@ string IntMenuItem::getText() const {
     // do custom formatting for some menu entries,
     // and generate a string of the results
     char outputBuffer[10];
+
     switch (output){
+        case MENU_OUTPUT_REAGENT:
+            snprintf(outputBuffer, sizeof(outputBuffer), "%2d", static_cast<short>(*val));
+            break;
         case MENU_OUTPUT_GAMMA:
             snprintf(outputBuffer, sizeof(outputBuffer), "%.1f", static_cast<float>(*val) / 100);
             break;

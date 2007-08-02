@@ -41,7 +41,8 @@ enum StatsView {
     STATS_EQUIPMENT,
     STATS_ITEMS,
     STATS_REAGENTS,
-    STATS_MIXTURES
+    STATS_MIXTURES,
+    MIX_REAGENTS
 };
 
 class StatsArea : public Observer<Aura *>, public Observer<Party *, PartyEvent &>, public Observer<Menu *, MenuEvent &>, public Observable<StatsArea *, string> {
@@ -72,7 +73,7 @@ private:
     void showArmor();
     void showEquipment();
     void showItems();
-    void showReagents();
+    void showReagents(bool active = false);
     void showMixtures();
     void setTitle(const string &s);
 

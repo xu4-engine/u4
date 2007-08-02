@@ -28,17 +28,17 @@ StatsArea::StatsArea() :
     title(STATS_AREA_X * CHAR_WIDTH, 0 * CHAR_HEIGHT, STATS_AREA_WIDTH, 1),
     mainArea(STATS_AREA_X * CHAR_WIDTH, STATS_AREA_Y * CHAR_HEIGHT, STATS_AREA_WIDTH, STATS_AREA_HEIGHT),
     summary(STATS_AREA_X * CHAR_WIDTH, (STATS_AREA_Y + STATS_AREA_HEIGHT + 1) * CHAR_HEIGHT, STATS_AREA_WIDTH, 1),
-    view(STATS_PARTY_OVERVIEW) {
-
-    /* reagents menu (y values for menuitems filled in later) */
-    reagentsMixMenu.add(0, getReagentName((Reagent)0), 2, 0);
-    reagentsMixMenu.add(1, getReagentName((Reagent)1), 2, 0);
-    reagentsMixMenu.add(2, getReagentName((Reagent)2), 2, 0);
-    reagentsMixMenu.add(3, getReagentName((Reagent)3), 2, 0);
-    reagentsMixMenu.add(4, getReagentName((Reagent)4), 2, 0);
-    reagentsMixMenu.add(5, getReagentName((Reagent)5), 2, 0);
-    reagentsMixMenu.add(6, getReagentName((Reagent)6), 2, 0);
-    reagentsMixMenu.add(7, getReagentName((Reagent)7), 2, 0);
+    view(STATS_PARTY_OVERVIEW)
+{
+    // Generate a formatted string for each menu item,
+    // and then add the item to the menu.  The Y value
+    // for each menu item will be filled in later.
+    for (int count=0; count < 8; count++)
+    {
+        char outputBuffer[16];
+        snprintf(outputBuffer, sizeof(outputBuffer), "-%-11s%%s", getReagentName((Reagent)count));
+        reagentsMixMenu.add(count, new IntMenuItem(outputBuffer, 1, 0, -1, (int *)c->party->getReagentPtr((Reagent)count), 0, 99, 1, MENU_OUTPUT_REAGENT));
+    }
 
     reagentsMixMenu.addObserver(this);
 }
@@ -112,6 +112,9 @@ void StatsArea::update(bool avatarOnly) {
         break;
     case STATS_MIXTURES:
         showMixtures();
+        break;
+    case MIX_REAGENTS:
+        showReagents(true);
         break;
     }
 
@@ -367,21 +370,29 @@ void StatsArea::showItems() {
 /**
  * Unmixed reagents in inventory.
  */
-void StatsArea::showReagents() {
+void StatsArea::showReagents(bool active)
+{
     setTitle("Reagents");
 
-    int line = 0;
     Menu::MenuItemList::iterator i;
-    int r;
-    for (i = reagentsMixMenu.begin(), r = REAG_ASH; i != reagentsMixMenu.end(); i++, r++) {
-        if ((*i)->isVisible()) {
-            /* show the quantity of reagents */
-            mainArea.textAt(0, line, "%c-", r+'A');
-            mainArea.textAt(13, line++, "%2d", c->party->reagents(r - REAG_ASH));
+    int line = 0,
+        r = REAG_ASH;
+    string shortcut ("A");
+
+    reagentsMixMenu.show(&mainArea);
+
+    for (i = reagentsMixMenu.begin(); i != reagentsMixMenu.end(); i++, r++)
+    {
+        if ((*i)->isVisible())
+        {
+            // Insert the reagent menu item shortcut character
+            shortcut[0] = 'A'+r;
+            if (active)
+                mainArea.textAt(0, line++, mainArea.colorizeString(shortcut, FG_YELLOW, 0, 1).c_str());
+            else
+                mainArea.textAt(0, line++, shortcut.c_str());
         }
     }
-    
-    reagentsMixMenu.show(&mainArea);
 }
 
 /**
@@ -410,15 +421,15 @@ void StatsArea::showMixtures() {
 
 void StatsArea::resetReagentsMenu() {
     Menu::MenuItemList::iterator current;
-    int i, row;    
+    int i = 0,
+        row = 0;
 
-    i = 0;
-    row = 0;
-    for (current = reagentsMixMenu.begin(); current != reagentsMixMenu.end(); current++) {
-        if (c->saveGame->reagents[i++] > 0) {
+    for (current = reagentsMixMenu.begin(); current != reagentsMixMenu.end(); current++)
+    {
+        if (c->saveGame->reagents[i++] > 0)
+        {
             (*current)->setVisible(true);
-            (*current)->setY(row);
-            row++;
+            (*current)->setY(row++);
         }
         else (*current)->setVisible(false);
     }

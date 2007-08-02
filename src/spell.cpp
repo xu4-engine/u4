@@ -131,7 +131,7 @@ Ingredients::Ingredients() {
 
 bool Ingredients::addReagent(Reagent reagent) {
     ASSERT(reagent < REAG_MAX, "invalid reagent: %d", reagent);    
-    if (c->party->reagents(reagent) < 1)
+    if (c->party->getReagent(reagent) < 1)
         return false;
     c->party->adjustReagent(reagent, -1);    
     reagents[reagent]++;
