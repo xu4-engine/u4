@@ -840,7 +840,7 @@ void CombatController::movePartyMember(MoveEvent &event) {
     }
     else if (event.result & MOVE_BLOCKED) {
         soundPlay(SOUND_BLOCKED);                                              // BLOCKED move
-        screenMessage("Blocked!\n");
+        screenMessage("%cBlocked!%c\n", FG_GREY, FG_WHITE);
     }
     else if (event.result & MOVE_SLOWED) {
         soundPlay(SOUND_WALK_SLOWED);                                          // WALK_SLOWED move
