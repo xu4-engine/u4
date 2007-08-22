@@ -1364,29 +1364,40 @@ string gameGetInput(int maxlen) {
 
 int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
     int player;
-    if (c->saveGame->members <= 1) {
-        screenMessage("1\n");
+    if (c->saveGame->members <= 1)
+    {
         player = 0;
     }
-    else {
+    else
+    {
         if (canBeActivePlayer && (c->party->getActivePlayer() >= 0))
+        {
             player = c->party->getActivePlayer();
-        else {
+        }
+        else
+        {
             ReadPlayerController readPlayerController;
             eventHandler->pushController(&readPlayerController);
             player = readPlayerController.waitFor();
         }
 
-        if (player == -1) {
+        if (player == -1)
+        {
             screenMessage("None\n");
             return -1;
         }
+    }
 
-        screenMessage("\n");
-        if (!canBeDisabled && c->party->member(player)->isDisabled()) {
-            screenMessage("\nDisabled!\n");
-            return -1;
-        }
+    // display the selected character number
+    if ((player >= 0) && (player < 8))
+    {
+        screenMessage("%d\n", player+1);
+    }
+
+    if (!canBeDisabled && c->party->member(player)->isDisabled())
+    {
+        screenMessage("%cDisabled!%c\n", FG_GREY, FG_WHITE);
+        return -1;
     }
 
     ASSERT(player < c->party->size(), "player %d, but only %d members\n", player, c->party->size());
@@ -1831,21 +1842,18 @@ bool fireAt(const Coords &coords, bool originAvatar) {
 /**
  * Get the chest at the current x,y of the current context for player 'player'
  */
-void getChest(int player) {
+void getChest(int player)
+{
     screenMessage("Get Chest!\n");
 
-    if (c->party->isFlying()) {
+    if (c->party->isFlying())
+    {
         screenMessage("%cDrift only!%c\n", FG_GREY, FG_WHITE);
         return;
     }
-            
-    if (player == -1) {
-        screenMessage("Who opens? ");
-        player = gameGetPlayer(false, true);
-    }
-    if (player == -1)
-        return;
 
+    // first check to see if a chest exists at the current location
+    // if one exists, prompt the player for the opener, if necessary
     MapCoords coords;    
     c->location->getCurrentPosition(&coords);
     const Tile *tile = c->location->map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
@@ -1856,14 +1864,32 @@ void getChest(int player) {
     if (obj && !obj->getTile().getTileType()->isChest())
         obj = NULL;
     
-    if (tile->isChest() || obj) {
+    if (tile->isChest() || obj)
+    {
+        // if a spell was cast to open this chest,
+        // player will equal -2, otherwise player
+        // will default to -1 or the defult character
+        // number if one was earlier specified
+        if (player == -1)
+        {
+            screenMessage("Who opens? ");
+            player = gameGetPlayer(false, true);
+        }
+        if (player == -1)
+            return;
+
         if (obj)
             c->location->map->removeObject(obj);
         else
             c->location->map->annotations->add(coords, newTile);
-        
-        /* see if the chest is trapped and handle it */
-        getChestTrapHandler(player);
+
+        // if a spell was cast to open this chest,
+        // bypass any trap that may be on it
+        if (player != -2)
+        {
+            // see if the chest is trapped and handle it
+            getChestTrapHandler(player);
+        }
         screenMessage("The Chest Holds: %d Gold\n", c->party->getChest());
 
         screenPrompt();
@@ -1872,11 +1898,13 @@ void getChest(int player) {
             c->party->adjustKarma(KA_STOLE_CHEST);
     }    
     else
+    {
         screenMessage("%cNot Here!%c\n", FG_GREY, FG_WHITE);
+    }
 }
 
 /**
- * Called by gameGetChest() to handle possible traps on chests
+ * Called by getChest() to handle possible traps on chests
  **/
 bool getChestTrapHandler(int player) {            
     TileEffect trapType;

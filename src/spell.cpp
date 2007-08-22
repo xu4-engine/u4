@@ -600,8 +600,7 @@ static int spellNegate(int unused) {
 }
 
 static int spellOpen(int unused) {    
-    // FIXME: shouldn't prompt for opener
-    getChest(-1);
+    getChest(-2);   // HACK: -2 will not prompt for opener
     return 1;
 }
 
