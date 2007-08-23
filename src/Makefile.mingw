@@ -20,7 +20,7 @@ CXX=g++
 CC=gcc
 CXXFLAGS=-Wall -g -I. $(SDL_CXXFLAGS) $(XML_CXXFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
 CFLAGS=$(CXXFLAGS)
-LIBS=-lmingw32 $(SDL_LIBS) $(XML_LIBS) -lpng -mwindows
+LIBS=-lmingw32 $(SDL_LIBS) $(XML_LIBS) -lpng -lwinmm -mwindows
 EXEEXT	:=.exe
 OBJS= xu4ico.o
 
@@ -46,7 +46,6 @@ install: u4.exe
 	cp ../mid/*.mid $(U4PATH)/mid
 	cp ../sound/*.ogg $(U4PATH)/sound
 	cp SDL/lib/SDL.dll $(U4PATH)
-	cp SDL/lib/SDL_mixer.dll $(U4PATH)
 
 tools: mkutils
 	mkdir -p $(U4PATH)
