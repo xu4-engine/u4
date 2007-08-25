@@ -1883,13 +1883,9 @@ void getChest(int player)
         else
             c->location->map->annotations->add(coords, newTile);
 
-        // if a spell was cast to open this chest,
-        // bypass any trap that may be on it
-        if (player != -2)
-        {
-            // see if the chest is trapped and handle it
-            getChestTrapHandler(player);
-        }
+        // see if the chest is trapped and handle it
+        getChestTrapHandler(player);
+
         screenMessage("The Chest Holds: %d Gold\n", c->party->getChest());
 
         screenPrompt();
@@ -1908,7 +1904,6 @@ void getChest(int player)
  **/
 bool getChestTrapHandler(int player) {            
     TileEffect trapType;
-    int dex = c->saveGame->players[player].dex;
     int randNum = xu4_random(4);    
     
     /* Do we use u4dos's way of trap-determination, or the original intended way? */
@@ -1938,9 +1933,14 @@ bool getChestTrapHandler(int player) {
         else if (trapType == EFFECT_LAVA)
             screenMessage("%cBomb%c Trap!\n", FG_RED, FG_WHITE);
 
-        /* See if the trap was evaded! */           
-        if ((dex + 25) < xu4_random(100) &&         /* test player's dex */            
-            (player >= 0)) {                        /* player is < 0 during the 'O'pen spell (immune to traps) */
+        // player is < 0 during the 'O'pen spell (immune to traps)
+        //
+        // if the chest was opened by a PC, see if the trap was
+        // evaded by testing the PC's dex
+        //
+        if ((player >= 0) && 
+            (c->saveGame->players[player].dex + 25 < xu4_random(100)))
+        {
             if (trapType == EFFECT_LAVA) /* bomb trap */
                 c->party->applyEffect(trapType);
             else c->party->member(player)->applyEffect(trapType);
