@@ -73,6 +73,21 @@ bool CheatMenuController::keyPressed(int key) {
         }
         break;
 
+    case 'f':
+        screenMessage("Full Stats!\n");
+        for (i = 0; i < c->saveGame->members; i++) {
+            c->saveGame->players[i].str = 50;
+            c->saveGame->players[i].dex = 50;
+            c->saveGame->players[i].intel = 50;
+
+            if (c->saveGame->players[i].hpMax < 800) {
+                c->saveGame->players[i].xp = 9999;
+                c->saveGame->players[i].hpMax = 800;
+                c->saveGame->players[i].hp = 800;
+            }
+        }
+        break;
+
     case 'g': {
         screenMessage("Goto: ");
         string dest = gameGetInput(32);
@@ -110,11 +125,11 @@ bool CheatMenuController::keyPressed(int key) {
                       "a - Adv. Moons\n"
                       "c - Collision\n"
                       "e - Equipment\n"
+                      "f - Full Stats\n"
                       "g - Goto\n"
                       "h - Help\n"
                       "i - Items\n"
                       "k - Show Karma\n"
-                      "l - Location\n"
                       "(more)");
 
         ReadChoiceController pauseController("");
@@ -122,6 +137,7 @@ bool CheatMenuController::keyPressed(int key) {
         pauseController.waitFor();
 
         screenMessage("\n"
+                      "l - Location\n"
                       "m - Mixtures\n"
                       "o - Opacity\n"
                       "p - Peer\n"
@@ -132,6 +148,12 @@ bool CheatMenuController::keyPressed(int key) {
                       "w - Change Wind\n"
                       "x - Exit Map\n"
                       "y - Y-up\n"
+                      "(more)");
+
+        eventHandler->pushController(&pauseController);
+        pauseController.waitFor();
+
+        screenMessage("\n"
                       "z - Z-down\n"
                   );
         break;
