@@ -1,0 +1,135 @@
+Unpacking AVATAR.EXE (Ultima 4 for DOS)
+=======================================
+
+$Id$
+
+Please send additions, corrections and feedback to this e-mail address:
+Remove space + vowels from "marc winterrowd" and append "at yahoo dot com"
+
+
+General Information about AVATAR.EXE
+------------------------------------
+Compiler:
+At offset 0xf2c5, AVATAR.EXE contains the string "C Library - (C)Copyright Microsoft Corp 1986".
+todo: which version of the Microsoft C compiler?
+
+Packing:
+AVATAR.EXE has been packed twice:
+1) Microsoft EXEPACK 4.06 (inner layer)
+2) unknown packer (outer layer; see below for a description)
+
+Note:
+TITLE.EXE is not packed.
+
+
+Map of AVATAR.EXE
+-----------------
+offset    length    purpose
+0         0x200     exe header
+0x200     0x17720   packed exe
+--- variables used by the exepack unpacker (all except 0x17924 are pre-initialized) ---
+0x17920   2         real start address (offset)
+0x17922   2         real start address (segment)
+0x17924   2         start of the exe in memory (segment)
+0x17926   2         size of <unpacker vars + unpacker code + error string + packed reloc table> in bytes
+0x17928   2         real stack (offset)
+0x1792a   2         real stack (segment)
+0x1792c   2         destination of the unpacker code (in paragraphs, relative to start of exe in memory)
+0x1792e   2         <number of paragraphs between packed exe and unpacker variables> + 1
+0x17930   2         "RB" (magic number of exepacked files)
+--- exepack unpacker ---
+0x17932   0x105     exepack unpacking code
+0x17a37   0x16      string "Packed file is corrupt" (no terminating zero, because it gets written with DOS function 40h)
+--- relocation table ---
+0x17a4d   0x26      packed relocation table (see below for more information)
+--- padding to make the next segment paragraph-aligned (i.e. garbage) ---
+0x17a73   0xd       " you have not" (no terminating zero)
+--- unknown unpacker ---
+0x17a80   0x23      unknown unpacking code
+--- unknown ---
+0x17aa3   0x4fd     probably garbage
+
+
+Unknown Packer (Outer Layer)
+----------------------------
+Instead of compressing AVATAR.EXE, the unknown packer made it 0x520 bytes bigger.
+The data after the unknown unpacking code seems to be just garbage.
+
+The unknown unpacking routine does the following:
+1) Sets up a stack with 128 bytes of space
+2) Pushes the CS:IP of the exepack unpacker code
+3) Zeroes these registers: ax, bx, cx, dx, bp, si, di
+4) Executes a far return to the exepack unpacking routine
+
+
+Microsoft Exepack (Inner Layer)
+-------------------------------
+The exepack unpacker first copies itself to the location stored in 0x1792c.
+(the value in 0x1792c also equals the unpacked exe's size in paragraphs)
+It then executes a retf to the new location and starts unpacking.
+The unpacking algorithm works like this:
+
+  int srcPos = 0x1791f; /* start at the end of the packed exe, because the unpacker works downwards */
+  int dstPos;
+  int commandByte, lengthWord, fillByte;
+
+  /* skip all 0xff bytes (they're just padding to make the packed exe's size a multiple of 16 */
+  while (*srcPos == 0xff) {
+    srcPos--;
+  }
+
+  /* unpack */
+  do {
+    commandByte = *(srcPos--);
+  
+    switch (commandByte & 0xFE) {
+      /* (byte)value (word)length (byte)0xb0 */
+      /* writes a run of <length> bytes with a value of <value> */
+      case 0xb0:
+        lengthWord = (*(srcPos--))*0x100;
+        lengthWord += *(srcPos--);
+        fillByte = *(srcPos--);
+        for (i = 0; i < lengthWord; i++) {
+          *(dstPos--) = fillByte;
+        }
+        break;
+      /* (word)length (byte)0xb2 */
+      /* copies the next <length> bytes */
+      case 0xb2:
+        lengthWord = (*(srcPos--))*0x100;
+        lengthWord += *(srcPos--);
+        for (i = 0; i < lengthWord; i++) {
+          *(dstPos--) = *(srcPos--);
+        }
+        break;
+      /* unknown command */
+      default:
+        printf("Unknown command %x at position %x\n", commandByte, srcPos);
+        exit(1);
+        break;
+    }
+  } while ((commandByte & 1) != 1); /* lowest bit set => last block */
+
+Notes:
+- The sizes of both the packed exe and the unpacked exe are multiples of 16
+- The code at 0x17932 unpacks the exe onto itself, i.e. the unpacked exe has the same starting address
+  (in memory) as the packed exe (in memory).
+
+
+Format of the Packed Relocation Table
+-------------------------------------
+packed relocation table = section_0, section_1, ..., section_0xf
+section = number_of_entries [can be zero], set of entry [can be empty]
+number_of_entries = unsigned word (16 bits)
+entry = unsigned word (16 bits)
+
+An entry in section n patches the segment value at:
+0x1000*n + entry (relative to the start of the exe in memory)
+
+
+Links
+-----
+http://www.tbcnet.com/~clive/vcomwinp.html
+  Home of UnPack, a program that decompresses files packed with Microsoft EXEPACK
+http://en.wikipedia.org/wiki/Interactive_Disassembler
+  Contains a link to the freeware version of IDA Pro, a great disassembler
