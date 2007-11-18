@@ -32,10 +32,12 @@ install::
 	$(INSTALL) ../mid/*.mid $(libdir)/u4/music
 	mkdir -p $(libdir)/u4/sound
 	$(INSTALL) ../sound/*.ogg $(libdir)/u4/sound
+	$(INSTALL) -D coord $(libdir)/u4/coord
 	$(INSTALL) -D dumpsavegame $(libdir)/u4/dumpsavegame
-	$(INSTALL) -D u4enc $(libdir)/u4/u4enc
-	$(INSTALL) -D u4dec $(libdir)/u4/u4dec
 	$(INSTALL) -D tlkconv $(libdir)/u4/tlkconv
+	$(INSTALL) -D u4dec $(libdir)/u4/u4dec
+	$(INSTALL) -D u4enc $(libdir)/u4/u4enc
+	$(INSTALL) -D u4unpackexe $(libdir)/u4/u4unpackexe
 	$(INSTALL) ../conf/*.xml $(libdir)/u4
 	mkdir -p $(libdir)/u4/dtd
 	$(INSTALL) ../conf/dtd/*.dtd $(libdir)/u4/dtd

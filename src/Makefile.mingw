@@ -51,10 +51,12 @@ install: u4.exe
 tools: mkutils
 	mkdir -p $(U4PATH)
 	mkdir -p $(U4PATH)/tools
+	strip coord.exe -o $(U4PATH)/tools/coord.exe
 	strip dumpsavegame.exe -o $(U4PATH)/tools/dumpsavegame.exe
-	strip u4enc.exe -o $(U4PATH)/tools/u4enc.exe
-	strip u4dec.exe -o $(U4PATH)/tools/u4dec.exe
 	strip tlkconv.exe -o $(U4PATH)/tools/tlkconv.exe
+	strip u4dec.exe -o $(U4PATH)/tools/u4dec.exe
+	strip u4enc.exe -o $(U4PATH)/tools/u4enc.exe
+	strip u4unpackexe.exe -o $(U4PATH)/tools/u4unpackexe.exe
 
 dist:  install tools
 	cp ../AUTHORS $(U4PATH)/AUTHORS.txt
