@@ -148,13 +148,8 @@ Music::~Music() {
  * Play a midi file
  */
 void Music::playMid(Type music) {
-    if (!functional)
+    if (!functional || !on)
         return;
-
-    //if (!settings.musicVol) {
-    //    musicMgr->fadeOut(1000);
-    //    return;
-    //}
 
     /* loaded a new piece of music */
     if (load(music))
@@ -202,12 +197,11 @@ bool Music::load(Type music) {
  */
 void Music::callback(void *data) {    
     eventHandler->getTimer()->remove(&Music::callback);
-    
+
     if (on && !isPlaying())
         musicMgr->play();
     else if (!on && isPlaying())
         musicMgr->stop();
-//    settings.musicVol = on;
 }
     
 /**
@@ -236,6 +230,7 @@ void Music::stop() {
  * Fade out the music
  */
 void Music::fadeOut(int msecs) {
+    // fade the music out even if 'on' is false
     if (!functional)
         return;
 
@@ -253,10 +248,9 @@ void Music::fadeOut(int msecs) {
  * Fade in the music
  */
 void Music::fadeIn(int msecs, bool loadFromMap) {
-    if (!functional)
+    if (!functional || !on)
         return;
 
-//    if (!isPlaying() && settings.musicVol) {
     if (!isPlaying()) {
         /* make sure we've got something loaded to play */
         if (loadFromMap || !playing)
@@ -323,78 +317,61 @@ bool Music::toggle() {
     eventHandler->getTimer()->remove(&Music::callback);
 
     on = !on;
-//    settings.musicVol = on;
-
     if (!on)
         fadeOut(1000);
-    else fadeIn(1000, true);   
+    else
+        fadeIn(1000, true);
 
     eventHandler->getTimer()->add(&Music::callback, settings.gameCyclesPerSecond);
-    
     return on;    
 }
 
 /**
- * Decrease music volume
- */
-int Music::decreaseMusicVolume() {
-    if (--settings.musicVol < 0)
-        settings.musicVol = 0;
-    // set new volume level
-    Mix_VolumeMusic(int((float)MIX_MAX_VOLUME / MAX_VOLUME * settings.musicVol));
-    // return new value as a percentage
-    return (settings.musicVol * 100 / MAX_VOLUME);
-}
-
-/**
- * Increase music volume
- */
-int Music::increaseMusicVolume() {
-    if (++settings.musicVol > MAX_VOLUME)
-        settings.musicVol = MAX_VOLUME;
-    // set new volume level
-    Mix_VolumeMusic(int((float)MIX_MAX_VOLUME / MAX_VOLUME * settings.musicVol));
-    // return new value as a percentage
-    return (settings.musicVol * 100 / MAX_VOLUME);
-}
-
-/**
- * Set music volume
+ * Set, increase, and decrease music volume
  */
 void Music::setMusicVolume(int volume) {
     Mix_VolumeMusic(int((float)MIX_MAX_VOLUME / MAX_VOLUME * volume));
 }
 
-/**
- * Decrease sound volume
- */
-int Music::decreaseSoundVolume() {
-    if (--settings.soundVol < 0)
-        settings.soundVol = 0;
-    // set new volume level
-    Mix_Volume(1, int((float)MIX_MAX_VOLUME / MAX_VOLUME * settings.soundVol));
-    // return new value as a percentage
-    return (settings.soundVol * 100 / MAX_VOLUME);
+int Music::increaseMusicVolume() {
+    if (++settings.musicVol > MAX_VOLUME)
+        settings.musicVol = MAX_VOLUME;
+    else
+        setMusicVolume(settings.musicVol);
+    return (settings.musicVol * 100 / MAX_VOLUME);  // percentage
 }
 
-/**
- * Increase sound volume
- */
-int Music::increaseSoundVolume() {
-    if (++settings.soundVol > MAX_VOLUME)
-        settings.soundVol = MAX_VOLUME;
-    // set new volume level
-    Mix_Volume(1, int((float)MIX_MAX_VOLUME / MAX_VOLUME * settings.soundVol));
-    // return new value as a percentage
-    return (settings.soundVol * 100 / MAX_VOLUME);
+int Music::decreaseMusicVolume() {
+    if (--settings.musicVol < 0)
+        settings.musicVol = 0;
+    else
+        setMusicVolume(settings.musicVol);
+    return (settings.musicVol * 100 / MAX_VOLUME);  // percentage
 }
 
+
 /**
- * Set sound volume
+ * Set, increase, and decrease sound volume
  */
 void Music::setSoundVolume(int volume) {
     /**
      * Use Channel 1 for sound effects
      */ 
     Mix_Volume(1, int((float)MIX_MAX_VOLUME / MAX_VOLUME * volume));
+}
+
+int Music::increaseSoundVolume() {
+    if (++settings.soundVol > MAX_VOLUME)
+        settings.soundVol = MAX_VOLUME;
+    else
+        setSoundVolume(settings.soundVol);
+    return (settings.soundVol * 100 / MAX_VOLUME);  // percentage
+}
+
+int Music::decreaseSoundVolume() {
+    if (--settings.soundVol < 0)
+        settings.soundVol = 0;
+    else
+        setSoundVolume(settings.soundVol);
+    return (settings.soundVol * 100 / MAX_VOLUME);  // percentage
 }
