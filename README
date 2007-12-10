@@ -213,12 +213,12 @@ xu4 also accepts the following command line options:
    -f
 
    -filter <str>    Apply a filter on the scaled images. The <str>
-                    parameter should be set to one of the following
-                    options:
+                    parameter must be set to one of the following
+                    case-sensitive options:
                         point
                         2xBi
-                        2xSai
-                        AdvanceMAME
+                        2xSaI
+                        Scale2x
 
    -skipintro       Skip the intro, and go directly into the game.
    -i               This option requires the existance of a valid saved
