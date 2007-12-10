@@ -12,5 +12,7 @@ Dennis De Marco <dennis@demarco.com>
         Sound code
 Steve Saunders <s_j_nevets@yahoo.com.au>
         MacOSX port
+Michael Ryan <solus@users.sourceforge.net>
+        Text colorization, profiles, enhanced LOS algorithm, title/intro sequence, general fixes
 Gregory Saunders <grerfy@users.sourceforge.net>
         Amiga file formats, minor enhancements
