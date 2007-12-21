@@ -115,6 +115,8 @@ bool Person::isVendor() const {
 string Person::getName() const {
     if (dialogue)
         return dialogue->getName();
+    else if (npcType == NPC_EMPTY)
+        return Creature::getName();
     else
         return "(unnamed person)";
 }

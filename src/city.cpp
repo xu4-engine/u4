@@ -61,8 +61,10 @@ void City::addPeople() {
 
     for (current = persons.begin(); current != persons.end(); current++) {
         Person *p = *current;
-        if ((p->getTile() != 0) && 
-            !(c->party->canPersonJoin(p->getName(), NULL) && c->party->isPersonJoined(p->getName())))
+        if ( (p->getTile() != 0)
+             && !(c->party->canPersonJoin(p->getName(), NULL)
+                  && c->party->isPersonJoined(p->getName()))
+            )
             addPerson(p);
     }
 }
