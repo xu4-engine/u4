@@ -525,6 +525,7 @@ void screenTextColor(int color) {
 	{
 		case FG_GREY:
 		case FG_BLUE:
+        case FG_PURPLE:
 		case FG_GREEN:
 		case FG_RED:
 		case FG_YELLOW:
@@ -822,7 +823,7 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
     bool alpha = src->isAlphaOn();
 
     if (n == 0)
-        n = 1;    
+        n = 1;
 
     isTransparent = src->getTransparentIndex(transparentIndex);    
     src->alphaOff();

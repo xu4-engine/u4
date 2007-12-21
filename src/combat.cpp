@@ -601,46 +601,50 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
         
     case EFFECT_ELECTRICITY:
         /* FIXME: are there any special effects here? */
-        screenMessage("\n%s Electrified!\n", target->getName().c_str());
+        soundPlay(SOUND_PC_STRUCK, false);
+        screenMessage("\n%s %cElectrified%c!\n", target->getName().c_str(), FG_BLUE, FG_WHITE);
         attacker->dealDamage(target, attacker->getDamage());
         break;
-        
+
     case EFFECT_POISON:
     case EFFECT_POISONFIELD:
-            
-        screenMessage("\n%s Poisoned!\n", target->getName().c_str());
-
         /* see if the player is poisoned */
-        if ((xu4_random(2) == 0) && (target->getStatus() != STAT_POISONED)) {
-            soundPlay(SOUND_POISON_EFFECT, false);                             // POISON_EFFECT, ranged hit
+        if ((xu4_random(2) == 0) && (target->getStatus() != STAT_POISONED))
+        {
+            // POISON_EFFECT, ranged hit
+            soundPlay(SOUND_POISON_EFFECT, false);
+            screenMessage("\n%s %cPoisoned%c!\n", target->getName().c_str(), FG_GREEN, FG_WHITE);
             target->addStatus(STAT_POISONED);
         }
-        else screenMessage("Failed.\n");
+        // else screenMessage("Failed.\n");
         break;
         
     case EFFECT_SLEEP:
-
-        screenMessage("\n%s Slept!\n", target->getName().c_str());
-        soundPlay(SOUND_SLEEP, false);                                         // SLEEP, ranged hit, plays even if sleep failed or PC already asleep
-
         /* see if the player is put to sleep */
         if (xu4_random(2) == 0)
+        {
+            // SLEEP, ranged hit, plays even if sleep failed or PC already asleep
+            soundPlay(SOUND_SLEEP, false);
+            screenMessage("\n%s %cSlept%c!\n", target->getName().c_str(), FG_PURPLE, FG_WHITE);
             target->putToSleep();
-        else screenMessage("Failed.\n");
+        }
+        // else screenMessage("Failed.\n");
         break;
 
     case EFFECT_LAVA:
     case EFFECT_FIRE:
-        /* FIXME: are there any special effects here? */            
-        screenMessage("\n%s %s Hit!\n", target->getName().c_str(),
-                      effect == EFFECT_LAVA ? "Lava" : "Fiery");
+        /* FIXME: are there any special effects here? */
+        soundPlay(SOUND_PC_STRUCK, false);
+        screenMessage("\n%s %c%s Hit%c!\n", target->getName().c_str(), FG_RED,
+                      effect == EFFECT_LAVA ? "Lava" : "Fiery", FG_WHITE);
         attacker->dealDamage(target, attacker->getDamage());
         break;
-                
+
     default: 
         /* show the appropriate 'hit' message */
+        // soundPlay(SOUND_PC_STRUCK, false);
         if (hittile == Tileset::findTileByName("magic_flash")->id)
-            screenMessage("\n%s Magical Hit!\n", target->getName().c_str());
+            screenMessage("\n%s %cMagical Hit%c!\n", target->getName().c_str(), FG_BLUE, FG_WHITE);
         else screenMessage("\n%s Hit!\n", target->getName().c_str());
         attacker->dealDamage(target, attacker->getDamage());
         break;

@@ -95,7 +95,7 @@ string TextView::colorizeStatus(char statustype) {
 
     switch (statustype) {
         case 'P':  output = FG_GREEN;    break;
-        case 'S':  output = FG_BLUE;     break;
+        case 'S':  output = FG_PURPLE;   break;
         case 'D':  output = FG_RED;      break;
         default:   output = statustype;  return output;
     }
@@ -174,6 +174,7 @@ void TextView::textAt(int x, int y, const char *fmt, ...) {
         switch (buffer[i]) {
             case FG_GREY:
             case FG_BLUE:
+            case FG_PURPLE:
             case FG_GREEN:
             case FG_RED:
             case FG_YELLOW:

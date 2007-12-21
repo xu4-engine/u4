@@ -1929,7 +1929,7 @@ bool getChestTrapHandler(int player) {
         else if (trapType == EFFECT_POISON)
             screenMessage("%cPoison%c Trap!\n", FG_GREEN, FG_WHITE);
         else if (trapType == EFFECT_SLEEP)
-            screenMessage("%cSleep%c Trap!\n", FG_BLUE, FG_WHITE);
+            screenMessage("%cSleep%c Trap!\n", FG_PURPLE, FG_WHITE);
         else if (trapType == EFFECT_LAVA)
             screenMessage("%cBomb%c Trap!\n", FG_RED, FG_WHITE);
 

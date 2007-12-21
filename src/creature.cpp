@@ -590,9 +590,9 @@ void Creature::act(CombatController *controller) {
         break;
 
     case CA_CAST_SLEEP: {            
-        screenMessage("Sleep!\n");
+        screenMessage("\nSleep!\n");
 
-        gameSpellEffect('s', -1, static_cast<Sound>(0)); /* show the sleep spell effect */
+        gameSpellEffect('s', -1, static_cast<Sound>(SOUND_MAGIC)); /* show the sleep spell effect */
         
         /* Apply the sleep spell to party members still in combat */
         if (!isPartyMember(this)) {
@@ -601,7 +601,7 @@ void Creature::act(CombatController *controller) {
 
             for (j = party.begin(); j != party.end(); j++) {
                 if (xu4_random(2) == 0)
-                    (*j)->putToSleep();                    
+                    (*j)->putToSleep();
             }
         }
         break;

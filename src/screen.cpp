@@ -97,6 +97,7 @@ void screenMessage(const char *fmt, ...) {
 		{
 			case FG_GREY:
 			case FG_BLUE:
+            case FG_PURPLE:
 			case FG_GREEN:
 			case FG_RED:
 			case FG_YELLOW:

@@ -16,8 +16,9 @@
 // text foreground colors
 //
 typedef enum {
-    FG_GREY   = '\024',
-    FG_BLUE   = '\025',
+    FG_GREY   = '\023',
+    FG_BLUE   = '\024',
+    FG_PURPLE = '\025',
     FG_GREEN  = '\026',
     FG_RED    = '\027',
     FG_YELLOW = '\030',
