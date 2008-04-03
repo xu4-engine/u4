@@ -12,9 +12,9 @@ UILIBS=-L$(HOME)/Library/Frameworks \
 	-framework Cocoa \
 	-framework SDL \
 	-framework SDL_mixer
-UIFLAGS=-F$(HOME)/Library/Frameworks \
+UIFLAGS=-F/Library/Frameworks \
 	-I/Library/Frameworks/SDL.framework/Headers \
-	-I$(HOME)/Library/Frameworks/SDL_mixer.framework/Headers \
+	-I/Library/Frameworks/SDL_mixer.framework/Headers \
 	-I$(LIBPNGDIR)
 
 FEATURES=-DHAVE_BACKTRACE=0 -DHAVE_VARIADIC_MACROS=1
@@ -24,9 +24,9 @@ DEBUGCXXFLAGS=-ggdb
 # Optimising
 #DEBUGCXXFLAGS=-O2 -mdynamic-no-pic
 
-CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Application\ Support/xu4\" -no-cpp-precomp -L$(LIBPNGDIR)
+CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Application\ Support/xu4\" -no-cpp-precomp -L$(LIBPNGDIR) -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc
 CFLAGS=$(CXXFLAGS)
-LIBS=$(LIBPNGDIR)/libpng.a $(UILIBS) $(shell xml2-config --libs) -lobjc -lz
+LIBS=$(LIBPNGDIR)/libpng.a $(UILIBS) $(shell xml2-config --libs) -lobjc -lz -arch i386 -arch ppc
 INSTALL=install
 
 OBJS=macosx/SDLMain.o macosx/osxinit.o macosx/osxerror.o
@@ -43,7 +43,7 @@ macosx/osxinit.o: macosx/osxinit.cpp
 	$(CXX) $(CXXFLAGS) -c -o macosx/osxinit.o macosx/osxinit.cpp
 
 mactlkconv: util/tlkconv.o
-	$(CXX) $(CXXFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks -framework libxml
+	$(CXX) $(CXXFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks
 
 install: u4
 	mkdir -p $(BUNDLE_CONTENTS)/MacOS
@@ -54,7 +54,6 @@ install: u4
 	echo "APPL????" > $(BUNDLE_CONTENTS)/PkgInfo
 	cp macosx/Info.plist $(BUNDLE_CONTENTS)
 	cp ../mid/*.mid $(BUNDLE_CONTENTS)/Resources
-	cp ../sound/*.wav $(BUNDLE_CONTENTS)/Resources
 	cp ../sound/*.ogg $(BUNDLE_CONTENTS)/Resources
 	cp ../conf/*.xml $(BUNDLE_CONTENTS)/Resources
 	cp ../conf/dtd/*.dtd $(BUNDLE_CONTENTS)/Resources/dtd
