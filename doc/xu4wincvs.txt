@@ -45,9 +45,9 @@ provided the tools to compile xu4 in Visual Studio 6.0.
        ie cd C:/
 
     9. Check out the current xu4 cvs source code
-       cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 login
+       cvs -d:pserver:anonymous@xu4.cvs.sourceforge.net:/cvsroot/xu4 login
        Just press enter when it asks for password
-       cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 co u4
+       cvs -z3 -d:pserver:anonymous@xu4.cvs.sourceforge.net:/cvsroot/xu4 co u4
 
     10. Extract SDL binaries & headers to src directory of xu4 source code
 
@@ -109,7 +109,7 @@ provided the tools to compile xu4 in Visual Studio 6.0.
     4. Right-click on an empty space in the folder and click "CVS Checkout"
 
     5. Enter the following for the CVSROOT (including the leading colon):
-       :pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4
+       :pserver:anonymous@xu4.cvs.sourceforge.net:/cvsroot/xu4
 
     6. At the bottom of the form, enter "u4" for the module and click OK.
        It should download the xu4 source code for you.
