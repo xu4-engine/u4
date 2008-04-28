@@ -1147,6 +1147,13 @@ void IntroController::updateInputMenu(MenuEvent &event) {
 
             // re-initialize keyboard
             KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
+
+			if (settings.mouseOptions.enabled) {
+				SDL_ShowCursor(SDL_ENABLE);
+			}
+			else {
+				SDL_ShowCursor(SDL_DISABLE);
+			}
     
             break;
         case CANCEL:
