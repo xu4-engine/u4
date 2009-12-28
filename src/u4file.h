@@ -51,6 +51,10 @@ private:
     std::vector<U4ZipPackage *> packages;
 };
 
+#ifdef putc
+#undef putc
+#endif
+
 /**
  * An abstract interface for file access.
  */

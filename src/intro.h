@@ -226,12 +226,12 @@ private:
         MAP
     };
 
-    typedef struct AnimPlot {
+    struct AnimPlot {
         Uint8 x, y;
         Uint8 r, g, b, a;
     };
 
-    typedef struct AnimElement {
+    struct AnimElement {
         int rx, ry;                         // screen/source x and y
         int rw, rh;                         // source width and height
         AnimType method;                    // render method

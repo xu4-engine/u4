@@ -8,6 +8,7 @@
 
 #include "spell.h"
 
+#include <cstring>
 #include "annotation.h"
 #include "combat.h"
 #include "context.h"

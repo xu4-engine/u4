@@ -3,6 +3,7 @@
  */
 
 #include <cctype>
+#include <cstdlib>
 
 #include "u4file.h"
 #include "unzip.h"

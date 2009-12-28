@@ -6,6 +6,7 @@
 
 #include "creature.h"
 
+#include <cstring>
 #include "combat.h"
 #include "config.h"
 #include "context.h"

@@ -4,6 +4,8 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include <cstdlib>
+#include <cstring>
 #include "debug.h"
 #include "conversation.h"
 #include "dialogueloader.h"

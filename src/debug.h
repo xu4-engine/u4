@@ -22,6 +22,7 @@
 
 #include <string>
 #include <cstdio>
+#include <cstdlib>
 
 using std::string;
 

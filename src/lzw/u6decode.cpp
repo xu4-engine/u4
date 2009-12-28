@@ -28,6 +28,7 @@
  */
 
 #include <stdio.h>
+#include <cstdlib>
 
 #include "u6decode.h"
 #include "u6stack.h"

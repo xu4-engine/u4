@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstdarg>
 #include <cfloat>
+#include <cstring>
 #include "u4.h"
 
 #include "screen.h"
