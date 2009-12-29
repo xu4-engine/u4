@@ -169,7 +169,7 @@ void SaveGame::init(const SaveGamePlayerRecord *avatarInfo) {
     unknown1 = 0;
     moves = 0;
 
-    memcpy(&(players[0]), avatarInfo, sizeof(SaveGamePlayerRecord));
+    players[0] = *avatarInfo;
     for (i = 1; i < 8; i++)
         players[i].init();
 
