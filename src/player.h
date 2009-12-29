@@ -127,12 +127,12 @@ public:
     EquipError setWeapon(const Weapon *w);    
     
     virtual bool applyDamage(int damage, bool byplayer = false);    
-    virtual bool attackHit(Creature *m);
+    virtual int getAttackBonus() const;
+    virtual int getDefense() const;
     virtual bool dealDamage(Creature *m, int damage);
     int getDamage();   
     virtual const string &getHitTile() const;
     virtual const string &getMissTile() const;    
-    virtual bool isHit(int hit_offset = 0);
     bool isDead();
     bool isDisabled();
     int  loseWeapon();

@@ -564,7 +564,7 @@ void Creature::act(CombatController *controller) {
     case CA_ATTACK:
         soundPlay(SOUND_NPC_ATTACK, false);                                    // NPC_ATTACK, melee
 
-        if (attackHit(target)) {
+        if (controller->attackHit(this, target)) {
             CombatController::attackFlash(target->getCoords(), "hit_flash", 3);
 
             soundPlay(SOUND_PC_STRUCK, false);                                 // PC_STRUCK, melee and ranged
@@ -728,8 +728,12 @@ void Creature::applyTileEffect(TileEffect effect) {
     }
 }
 
-bool Creature::attackHit(Creature *m) {
-    return m->isHit();
+int Creature::getAttackBonus() const {
+    return 0;
+}
+
+int Creature::getDefense() const {
+    return 128;
 }
 
 bool Creature::divide() {
@@ -793,10 +797,6 @@ bool Creature::hideOrShow() {
     }
 
     return isVisible();
-}
-
-bool Creature::isHit(int hit_offset) {
-    return (hit_offset + 128) >= xu4_random(0x100) ? true : false;
 }
 
 Creature *Creature::nearestOpponent(int *dist, bool ranged) {

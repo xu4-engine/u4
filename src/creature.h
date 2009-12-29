@@ -202,13 +202,13 @@ public:
     void act(CombatController *controller);
     virtual void addStatus(StatusType status);
     void applyTileEffect(TileEffect effect);
-    virtual bool attackHit(Creature *m);
+    virtual int getAttackBonus() const;
+    virtual int getDefense() const;
     bool divide();
     bool spawnOnDeath();
     virtual CreatureStatus getState() const;
     StatusType getStatus() const;
     bool hideOrShow();
-    virtual bool isHit(int hit_offset = 0);
     Creature *nearestOpponent(int *dist, bool ranged);
     virtual void putToSleep();
     virtual void removeStatus(StatusType status);

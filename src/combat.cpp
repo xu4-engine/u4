@@ -511,6 +511,16 @@ void CombatController::awardLoot() {
     }
 }
 
+bool CombatController::attackHit(Creature *attacker, Creature *defender) {
+    ASSERT(attacker != NULL, "attacker must not be NULL");
+    ASSERT(defender != NULL, "defender must not be NULL");
+
+    int attackValue = xu4_random(0x100) + attacker->getAttackBonus();
+    int defenseValue = defender->getDefense();
+
+    return attackValue > defenseValue;
+}
+
 bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance) {
     const Weapon *weapon = attacker->getWeapon();
     bool wrongRange = weapon->rangeAbsolute() && (distance != range);
@@ -545,9 +555,9 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
     
     /* Did the weapon miss? */
     if ((c->location->prev->map->id == MAP_ABYSS && !weapon->isMagic()) || /* non-magical weapon in the Abyss */
-        !attacker->attackHit(creature)) { /* player naturally missed */
+        !attackHit(attacker, creature)) { /* player naturally missed */
         screenMessage("Missed!\n");
-        
+
         /* show the 'miss' tile */
         attackFlash(coords, misstile, 3);
     } else { /* The weapon hit! */

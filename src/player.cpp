@@ -457,16 +457,14 @@ bool PartyMember::applyDamage(int damage, bool) {
     return true;
 }
 
-/**
- * Determine whether a player's attack hits or not.
- */
-bool PartyMember::attackHit(Creature *m) {
-    if (!m)
-        return false;
+int PartyMember::getAttackBonus() const {
     if (Weapon::get(player->weapon)->alwaysHits() || player->dex >= 40)
-        return true;
+	return 255;
+    return player->dex;
+}
 
-    return(m->isHit(player->dex));
+int PartyMember::getDefense() const {
+    return Armor::get(player->armor)->getDefense();
 }
 
 bool PartyMember::dealDamage(Creature *m, int damage) {
@@ -510,13 +508,6 @@ const string &PartyMember::getHitTile() const {
  */
 const string &PartyMember::getMissTile() const {
     return getWeapon()->getMissTile();
-}
-
-/**
- * Determine whether a player is hit by a melee attack.
- */
-bool PartyMember::isHit(int hit_offset) {
-    return xu4_random(0x100) + hit_offset > Armor::get(player->armor)->getDefense();
 }
 
 bool PartyMember::isDead() {
