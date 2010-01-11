@@ -1373,11 +1373,11 @@ void IntroController::initPlayers(SaveGame *saveGame) {
             saveGame->players[0].dex++;
             break;
         case VIRT_SACRIFICE:
-            saveGame->players[0].intel++;
+            saveGame->players[0].dex++;
             saveGame->players[0].str++;
             break;
         case VIRT_HONOR:
-            saveGame->players[0].dex++;
+            saveGame->players[0].intel++;
             saveGame->players[0].str++;
             break;
         case VIRT_SPIRITUALITY:
