@@ -228,6 +228,13 @@ void useSkull(int item) {
     /* FIXME: check to see if the abyss must be opened first
        for the skull to be *able* to be destroyed */
 
+    /* We do the check here instead of in the table, because we need to distinguish between a 
+       never-found skull and a destroyed skull. */ 
+    if (c->saveGame->items & ITEM_SKULL_DESTROYED) {
+        screenMessage("\nNone owned!\n");
+        return;
+    }
+
     /* destroy the skull! pat yourself on the back */
     if (c->location->coords.x == 0xe9 && c->location->coords.y == 0xe9) {
         screenMessage("\n\nYou cast the Skull of Mondain into the Abyss!\n");
