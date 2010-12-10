@@ -568,15 +568,16 @@
         <image name="stoncrcl" filename="stoncrcl.old" width="320" height="200" depth="8" filetype="image/x-u4rle"/>
 
         <!-- shrine vision images -->
-        <image name="rune0"    filename="rune_0.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
+        <!-- rune_5.old is the infinity symbol.  What shows rune0? -->
+        <image name="rune0"    filename="rune_5.old"   width="320" height="400" depth="8" filetype="image/x-u4rle"/>
         <image name="rune1"    filename="rune_1.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
         <image name="rune2"    filename="rune_2.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune3"    filename="rune_3.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune4"    filename="rune_4.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune5"    filename="rune_5.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune6"    filename="rune_6.ega"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune7"    filename="rune_7.ega"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune8"    filename="rune_8.ega"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
+        <image name="rune3"    filename="rune_0.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
+        <image name="rune4"    filename="rune_1.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
+        <image name="rune5"    filename="rune_2.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
+        <image name="rune6"    filename="rune_1.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
+        <image name="rune7"    filename="rune_3.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
+        <image name="rune8"    filename="rune_4.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
 
         <!-- gem tiles -->
         <image name="gemtiles" filename="vga/gem.png"  width="4"   height="512" depth="8" filetype="image/png" tiles="128" xu4Graphic="true"/>
