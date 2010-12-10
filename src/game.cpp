@@ -828,13 +828,15 @@ bool GameController::keyPressed(int key) {
         case U4_RIGHT:        
             {
                 /* move the avatar */
+                string previous_map = c->location->map->fname;
                 MoveResult retval = c->location->move(keyToDirection(key), true);
             
                 /* horse doubles speed (make sure we're on the same map as the previous move first) */
                 if (retval & (MOVE_SUCCEEDED | MOVE_SLOWED) && 
                     (c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
                     gameUpdateScreen(); /* to give it a smooth look of movement */
-                    c->location->move(keyToDirection(key), false);
+                    if (previous_map == c->location->map->fname)
+                        c->location->move(keyToDirection(key), false);
                 }
 
                 endTurn = (retval & MOVE_END_TURN); /* let the movement handler decide to end the turn */
