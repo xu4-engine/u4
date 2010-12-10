@@ -1,6 +1,8 @@
-======================================
-How to Compile xu4 from CVS in Windows
-======================================
+==========================================
+How to Compile xu4 from SVN/CVS in Windows
+==========================================
+
+*NOTE*: The CVS repository exists, but is out of date.  Please use the Subversion repository instead.
 
 This document explains how to download the latest version of the xu4 source code from CVS and how to compile it.
 The paths used are just examples; you can change them if you want, as long as you're consistent.
