@@ -47,6 +47,7 @@ public:
     virtual ~CombatController();
 
     // Accessor Methods    
+    bool          isCombatController() const { return true; }
     bool          isCamping() const;
     bool          isWinOrLose() const;
     Direction     getExitDir() const;

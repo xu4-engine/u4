@@ -319,7 +319,7 @@ void CombatController::end(bool adjustKarma) {
             c->location->map->removeObject(creature);
 
         /* Make sure finishturn only happens if a new combat has not begun */
-        if (eventHandler->getController() != this)
+        if (! eventHandler->getController()->isCombatController())
             c->location->turnCompleter->finishTurn();
     }
 

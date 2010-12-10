@@ -16,6 +16,7 @@ public:
     virtual ~Controller();
 
     /* methods for interacting with event manager */
+    virtual bool  isCombatController() const { return false; }
     bool notifyKeyPressed(int key);
     int getTimerInterval();
     static void timerCallback(void *data);
