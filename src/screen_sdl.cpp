@@ -255,11 +255,18 @@ void screenInit() {
     dungeonTileChars["floor_hole"] = CHARSET_FLOOR;
     dungeonTileChars["magic_orb"] = CHARSET_ORB;
     dungeonTileChars["ceiling_hole"] = 'T';
+    dungeonTileChars["floor_hole"] = 'T';
     dungeonTileChars["fountain"] = 'F';
     dungeonTileChars["secret_door"] = CHARSET_SDOOR;
     dungeonTileChars["brick_wall"] = CHARSET_WALL;
     dungeonTileChars["dungeon_door"] = CHARSET_ROOM;
     dungeonTileChars["avatar"] = CHARSET_REDDOT;
+    dungeonTileChars["dungeon_room"] = CHARSET_ROOM;
+    dungeonTileChars["dungeon_altar"] = CHARSET_ANKH;
+    dungeonTileChars["energy_field"] = '^';
+    dungeonTileChars["fire_field"] = '^';
+    dungeonTileChars["poison_field"] = '^';
+    dungeonTileChars["sleep_field"] = '^';
 }
 
 void screenDelete() {
