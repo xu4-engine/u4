@@ -154,7 +154,7 @@ const struct {
 
 void screenLoadGraphicsFromConf(void);
 Layout *screenLoadLayoutFromConf(const ConfigElement &conf);
-SDL_Cursor *screenInitCursor(char *xpm[]);
+SDL_Cursor *screenInitCursor(const char *xpm[]);
 void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y);
 
 vector<Layout *> layouts;
@@ -909,7 +909,7 @@ Image *screenScaleDown(Image *src, int scale) {
 #else
 #define CURSORSIZE 32
 #endif
-SDL_Cursor *screenInitCursor(char *xpm[]) {
+SDL_Cursor *screenInitCursor(const char *xpm[]) {
     int i, row, col;
     Uint8 data[(CURSORSIZE/8)*CURSORSIZE];
     Uint8 mask[(CURSORSIZE/8)*CURSORSIZE];
