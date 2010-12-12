@@ -77,6 +77,7 @@ bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients);
 void mixReagents();
 bool mixReagentsForSpellU4(int spell);
 bool mixReagentsForSpellU5(int spell);
+void mixReagentsSuper();
 void newOrder();
 
 /* conversation functions */
@@ -471,6 +472,8 @@ void gameUpdateScreen() {
         screenUpdate(&game->mapArea, true, true);
         break;
     case VIEW_CODEX: /* the screen updates will be handled elsewhere */
+        break;
+    case VIEW_MIXTURES: /* still testing */
         break;
     default:
         ASSERT(0, "invalid view mode: %d", c->location->viewMode);
@@ -2394,6 +2397,9 @@ void talk() {
  * include in the mix.
  */
 void mixReagents() {
+   
+    /*  uncomment this line to activate new spell mixing code */ 
+    //   return mixReagentsSuper();
     bool done = false;
 
     while (!done) {
@@ -3439,4 +3445,137 @@ bool GameController::createBalloon(Map *map) {
     ASSERT(balloon, "no balloon tile found in tileset");
     map->addObject(balloon->id, balloon->id, map->getLabel("balloon"));
     return true;
+}
+
+// Colors assigned to reagents based on my best reading of them
+// from the book of wisdom.  Maybe we could use BOLD to distinguish
+// the two grey and the two red reagents.
+const int colors[] = {
+  FG_YELLOW, FG_GREY, FG_BLUE, FG_WHITE, FG_RED, FG_GREY, FG_GREEN, FG_RED
+};
+
+void
+showMixturesSuper(int page = 0) {
+  screenTextColor(FG_WHITE);
+  for (int i = 0; i < 13; i++) {
+    char buf[4];
+
+    const Spell *s = getSpell(i + 13 * page);
+    int line = i + 8;
+    screenTextAt(2, line, s->name);
+
+    snprintf(buf, 4, "%3d", c->saveGame->mixtures[i + 13 * page]);
+    screenTextAt(6, line, buf);
+    
+    screenShowChar(32, 9, line);
+    int comp = s->components;
+    for (int j = 0; j < 8; j++) {
+      screenTextColor(colors[j]);
+      screenShowChar(comp & (1 << j) ? CHARSET_BULLET : ' ', 10 + j, line);
+    }
+    screenTextColor(FG_WHITE);
+  
+    snprintf(buf, 3, "%2d", s->mp);
+    screenTextAt(19, line, buf);
+  }
+}
+
+void
+mixReagentsSuper() {
+  
+  screenMessage("Mix reagents\n");
+  
+  static int page = 0;
+
+  struct ReagentShop {
+    const char *name;
+    int price[6];
+  };
+  ReagentShop shops[] = {
+    { "BuccDen", {6, 7, 9, 9, 9, 1} },
+    { "Moonglo", {2, 5, 6, 3, 6, 9} },
+    { "Paws",    {3, 4, 2, 8, 6, 7} },
+    { "SkaraBr", {2, 4, 9, 6, 4, 8} },
+  };
+  const int shopcount = sizeof (shops) / sizeof (shops[0]);
+
+  int oldlocation = c->location->viewMode;
+  c->location->viewMode = VIEW_MIXTURES;
+  screenUpdate(&game->mapArea, true, true);
+
+  screenTextAt(16, 2, "<-Shops");
+  
+  c->stats->setView(StatsView(STATS_REAGENTS));
+  screenTextColor(FG_PURPLE);
+  screenTextAt(2, 7, "SPELL # Reagents MP");
+  
+  for (int i = 0; i < shopcount; i++) {
+    int line = i + 1;
+    ReagentShop *s = &shops[i];
+    screenTextColor(FG_WHITE);
+    screenTextAt(2, line, s->name);
+    for (int j = 0; j < 6; j++) {
+      screenTextColor(colors[j]);
+      screenShowChar('0' + s->price[j], 10 + j, line);
+    } 
+  }
+  
+  for (int i = 0; i < 8; i++) {
+    screenTextColor(colors[i]);
+    screenShowChar('A' + i, 10 + i, 6);
+  }
+
+  bool done = false;
+  while (!done) {
+    showMixturesSuper(page);
+    screenMessage("For Spell: ");
+
+    int spell = ReadChoiceController::get("abcdefghijklmnopqrstuvwxyz \033\n\r");   
+    if (spell < 'a' || spell > 'z' ) {
+      screenMessage("\nDone.\n");
+      done = true;
+    } else {
+      spell -= 'a';
+      const Spell *s = getSpell(spell);
+      screenMessage("%s\n", s->name);
+      page = (spell >= 13);
+      showMixturesSuper(page);
+      
+      // how many can we mix?  
+      int mixQty = 99 - c->saveGame->mixtures[spell];
+      int ingQty = 99;
+      int comp = s->components;
+      for (int i = 0; i < 8; i++) {
+        if (comp & 1 << i) {
+          int reagentQty = c->saveGame->reagents[i];
+          if (reagentQty < ingQty)
+            ingQty = reagentQty;
+        }
+      }
+      screenMessage("You can make %d.\n", (mixQty > ingQty) ? ingQty : mixQty);
+      screenMessage("How many? ");
+      
+      int howmany = ReadIntController::get(2, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+      
+      if (howmany == 0) {
+        screenMessage("\nNone mixed!\n");
+      } else if (howmany > mixQty) {
+        screenMessage("\n%cYou cannot mix that much more of that spell!%c\n", FG_GREY, FG_WHITE);
+      } else if (howmany > ingQty) {
+        screenMessage("\n%cYou don't have enough reagents to mix %d spells!%c\n", FG_GREY, howmany, FG_WHITE);
+      } else {
+        c->saveGame->mixtures[spell] += howmany;
+        for (int i = 0; i < 8; i++) {
+          if (comp & 1 << i) {
+            c->saveGame->reagents[i] -= howmany;
+          }
+        }
+        screenMessage("\nSuccess!\n\n");
+      }
+    }
+    c->stats->setView(StatsView(STATS_REAGENTS));
+  }
+  
+  c->location->viewMode = oldlocation;
+  return;
 }

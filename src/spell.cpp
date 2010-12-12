@@ -754,3 +754,9 @@ static int spellZdown(int unused) {
     /* didn't find a place to go, failed! */
     return 0;
 }
+
+const Spell*
+getSpell(int i) {
+  return &spells[i];
+}
+

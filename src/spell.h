@@ -86,5 +86,6 @@ int spellMix(unsigned int spell, const Ingredients *ingredients);
 Spell::Param spellGetParamType(unsigned int spell);
 SpellCastError spellCheckPrerequisites(unsigned int spell, int character);
 bool spellCast(unsigned int spell, int character, int param, SpellCastError *error, bool spellEffect);
+const Spell* getSpell(int i);
 
 #endif

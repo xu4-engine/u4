@@ -32,7 +32,8 @@ typedef enum {
     VIEW_RUNE,
     VIEW_DUNGEON,
     VIEW_DEAD,
-    VIEW_CODEX
+    VIEW_CODEX,
+    VIEW_MIXTURES
 } ViewMode;
 
 /**
