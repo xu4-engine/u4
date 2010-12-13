@@ -111,7 +111,8 @@ static const ItemLocation items[] = {
       &isMysticInInventory, &putMysticInInventory, NULL, ARMR_MYSTICROBES, SC_FULLAVATAR },
     { "Mystic Swords", NULL, "mysticswords",
       &isMysticInInventory, &putMysticInInventory, NULL, WEAP_MYSTICSWORD, SC_FULLAVATAR },
-    { "Laser Gun", NULL, "lasergun", // lol, where'd that come from?
+    { "the sulfury remains of an ancient Sosarian Laser Gun. It turns to ash in your fingers", NULL, "lasergun", // lol, where'd that come from?
+    		//Looks like someone was experimenting with "maps.xml". It effectively increments sulfur ash by one due to '16' being an invalid weapon index.
       &isWeaponInInventory, &putWeaponInInventory, 0, 16 },
     { "the rune of Honesty", NULL, "honestyrune",
       &isRuneInInventory, &putRuneInInventory, NULL, RUNE_HONESTY, 0 },
