@@ -68,7 +68,7 @@
 
     <!-- castles -->
     <map id="1" type="city" fname="lcb_1.ult" width="32" height="32" levels="1" 
-     borderbehavior="exit" showavatar="true" music="5" tileset="base" tilemap="base">
+     borderbehavior="exit" showavatar="true" music="9" tileset="base" tilemap="base">
         <city name="Britannia" type="castle" tlk_fname="lcb.tlk">
             <personrole role="healer" id="29"/>
             <personrole role="hawkwind" id="30"/>
@@ -81,7 +81,7 @@
         <label name="spiritualityrune" x="17" y="8"/>
     </map>
     <map id="100" type="city" fname="lcb_2.ult" width="32" height="32" levels="1" 
-     borderbehavior="exit" showavatar="true" music="5" tileset="base" tilemap="base">
+     borderbehavior="exit" showavatar="true" music="9" tileset="base" tilemap="base">
         <city name="Britannia" type="castle" tlk_fname="lcb.tlk">
             <personrole role="lordbritish" id="32"/>
         </city>

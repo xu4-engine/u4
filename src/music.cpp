@@ -269,7 +269,7 @@ void Music::fadeIn(int msecs, bool loadFromMap) {
  * Music when you talk to Lord British
  */
 void Music::lordBritish() {
-    playMid(FANFARE);
+    playMid(RULEBRIT);
 }
 
 /**
