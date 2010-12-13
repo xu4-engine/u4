@@ -185,7 +185,7 @@ void codexEject(CodexEjectCode code) {
     screenShowCursor();
         
     /* return view to normal and exit the Abyss */
-    gameSetViewMode(VIEW_DUNGEON);
+    gameSetViewMode(VIEW_NORMAL);
     game->exitToParentMap();    
     
     /**
@@ -201,6 +201,7 @@ void codexEject(CodexEjectCode code) {
 
     /* finally, finish the turn */
     c->location->turnCompleter->finishTurn();
+    eventHandler->setController(game);
 }
 
 /**
