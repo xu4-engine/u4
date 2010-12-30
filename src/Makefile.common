@@ -92,7 +92,7 @@ CXXSRCS=\
 
 OBJS += $(CSRCS:.c=.o) $(CXXSRCS:.cpp=.o)
 
-all:: $(MAIN) #mkutils
+all:: $(MAIN) mkutils
 
 mkutils::  coord$(EXEEXT) dumpsavegame$(EXEEXT) tlkconv$(EXEEXT) u4dec$(EXEEXT) u4enc$(EXEEXT) u4unpackexe$(EXEEXT)
 
