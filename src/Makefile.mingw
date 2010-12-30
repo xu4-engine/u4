@@ -2,25 +2,53 @@
 # $Id$
 #
 
-# Where is xu4 will be installed
+# Where xu4 will be installed
 U4PATH=C:/xu4
 
 SRC=.
 
 ### Modify these paths
-SDL_CXXFLAGS=-I$(SRC)/sdl/include
-SDL_LIBS=-L$(SRC)/sdl/lib -lSDL_mixer -lSDLmain -lSDL
+LIB_ROOT=$(SRC)/../3rd_party/win32_lib
 
-XML_CXXFLAGS=$(shell xml2-config --cflags)
-XML_LIBS=$(shell xml2-config --libs)
+SDL_DIR=$(LIB_ROOT)/SDL
+SDL_MIXER_DIR=$(LIB_ROOT)/SDL_mixer
+XML2_DIR=$(LIB_ROOT)/libxml2
+ZLIB_DIR=$(LIB_ROOT)/zlib
+PNG_DIR=$(LIB_ROOT)/libpng
+ICONV_DIR=$(LIB_ROOT)/libiconv
+
+LIBRARY_INCLUDE_DIRS_AND_CFLAGS = \
+	-I$(SDL_DIR)/include/SDL	\
+		-D_GNU_SOURCE=1			\
+		-Dmain=SDL_main			\
+	-I$(SDL_MIXER_DIR)/include	\
+	-I$(XML2_DIR)/include		\
+	-I$(ZLIB_DIR)/include		\
+	-I$(PNG_DIR)/include		\
+
+LIB_LINKS = \
+	-lmingw32							\
+	-L$(SDL_DIR)/lib					\
+		-lSDLmain						\
+		-lSDL							\
+		-mwindows						\
+	-L$(SDL_MIXER_DIR)/lib  			\
+		-lSDL_mixer						\
+	-L$(ZLIB_DIR)/lib					\
+		-lzdll							\
+	-L$(PNG_DIR)/lib					\
+		-lpng							\
+	-L$(XML2_DIR)/bin					\
+		-llibxml2						\
+		-lws2_32						\
 
 UI=sdl
 
 CXX=g++
 CC=gcc
-CXXFLAGS=-Wall -g -I. $(SDL_CXXFLAGS) $(XML_CXXFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
+CXXFLAGS=-Wall -g -I. $(LIBRARY_INCLUDE_DIRS_AND_CFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
 CFLAGS=$(CXXFLAGS)
-LIBS=-lmingw32 $(SDL_LIBS) $(XML_LIBS) -lpng -mwindows
+LIBS=$(LIB_LINKS) 
 EXEEXT	:=.exe
 OBJS= xu4ico.o
 
@@ -43,10 +71,16 @@ install: u4.exe
 	cp ../conf/dtd/*.dtd $(U4PATH)/dtd/
 	cp ../graphics/ega/*.png $(U4PATH)/graphics/ega/
 	cp ../graphics/vga/*.png $(U4PATH)/graphics/vga/
-	cp ../mid/*.mid $(U4PATH)/mid
+	cp ../mid/* $(U4PATH)/mid
 	cp ../sound/*.ogg $(U4PATH)/sound
-	cp SDL/lib/SDL.dll $(U4PATH)
-	cp SDL/lib/SDL_mixer.dll $(U4PATH)
+	cp $(SDL_DIR)/bin/*.dll $(U4PATH)
+	cp $(SDL_MIXER_DIR)/lib/*.dll $(U4PATH)
+	cp $(XML2_DIR)/bin/*.dll $(U4PATH)
+	cp $(ZLIB_DIR)/zlib1.dll $(U4PATH)
+	cp $(ZLIB_DIR)/zlib1.dll $(U4PATH)/libz.dll
+	cp $(PNG_DIR)/*.dll $(U4PATH)
+	cp $(ICONV_DIR)/libiconv2.dll $(U4PATH)/iconv.dll
+	
 
 tools: mkutils
 	mkdir -p $(U4PATH)
