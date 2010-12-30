@@ -1,10 +1,8 @@
 ==========================================
-How to Compile xu4 from SVN/CVS in Windows
+How to Compile xu4 from SVN in Windows
 ==========================================
 
-*NOTE*: The CVS repository exists, but is out of date.  Please use the Subversion repository instead.
-
-This document explains how to download the latest version of the xu4 source code from CVS and how to compile it.
+This document explains how to download the latest version of the xu4 source code from SVN and how to compile it.
 The paths used are just examples; you can change them if you want, as long as you're consistent.
 
 There are two different methods of compiling xu4 in Windows:
@@ -43,13 +41,11 @@ provided the tools to compile xu4 in Visual Studio 6.0.
 
     7. Start MSYS
 
-    8. Change to the directory where you want xu4 cvs 
+    8. Change to the directory where you want xu4 svn
        ie cd C:/
 
-    9. Check out the current xu4 cvs source code
-       cvs -d:pserver:anonymous@xu4.cvs.sourceforge.net:/cvsroot/xu4 login
-       Just press enter when it asks for password
-       cvs -z3 -d:pserver:anonymous@xu4.cvs.sourceforge.net:/cvsroot/xu4 co u4
+    9. Check out the current xu4 svn source code
+       svn co https://xu4.svn.sourceforge.net/svnroot/xu4/trunk xu4 
 
     10. Extract SDL binaries & headers to src directory of xu4 source code
 
@@ -76,8 +72,8 @@ provided the tools to compile xu4 in Visual Studio 6.0.
     2. Change to xu4 source code directory
        ie cd C:/u4
 
-    3. Checkout the latest changes from CVS
-       cvs update -d
+    3. Checkout the latest changes from SVN
+       svn up
 
     4. Change to src directory of xu4 source code
        cd src
@@ -100,21 +96,18 @@ provided the tools to compile xu4 in Visual Studio 6.0.
     Things you only have to do once
     -------------------------------
 
-    1. Download and install the most recent (stable) version of TortoiseCVS from:
-       http://www.tortoisecvs.org/download.shtml
+    1. Download and install the most recent (stable) version of TortoiseSVN from:
+       http://tortoisesvn.net/downloads.html
 
     2. Download the libxml, SDL, SDL_Mixer, and zlib libraries from:
        http://xu4.sourceforge.net/download/xu4_dev_win32_VC6.zip
 
     3. Open/Create the folder where you want the xu4 source code to go.
     
-    4. Right-click on an empty space in the folder and click "CVS Checkout"
+    4. Right-click on an empty space in the folder and click "SVN Checkout"
 
-    5. Enter the following for the CVSROOT (including the leading colon):
-       :pserver:anonymous@xu4.cvs.sourceforge.net:/cvsroot/xu4
-
-    6. At the bottom of the form, enter "u4" for the module and click OK.
-       It should download the xu4 source code for you.
+    5. Enter the following for the URL of repository:
+       https://xu4.svn.sourceforge.net/svnroot/xu4/trunk
 
     7. Extract the contents of xu4_dev_win32_VC6.zip into the "u4" directory.
 
@@ -141,9 +134,9 @@ provided the tools to compile xu4 in Visual Studio 6.0.
     Things you have to do every time the xu4 source code changes
     ------------------------------------------------------------
 
-    1. Open the folder where you did the "CVS Checkout"
+    1. Open the folder where you did the "SVN Checkout"
 
-    2. Right click on the "u4" directory itself and click "CVS Update"
+    2. Right click on the "u4" directory itself and click "SVN Update"
 
     3. Open Visual Studio 6.0 and open the xu4 project
 
