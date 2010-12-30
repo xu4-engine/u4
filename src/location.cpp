@@ -100,12 +100,9 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     else if (obj && obj->isVisible()) {
         focus = focus || obj->hasFocus();
         MapTile visibleCreatureAndObjectTile = obj->getTile();
-        if (obj->getType() == Object::CREATURE)
-        {
-        	//Sleeping creatures have their animation frozen
-        	if (m->isAsleep())
-        		visibleCreatureAndObjectTile.freezeAnimation = true;
-        }
+		//Sleeping creatures and persons have their animation frozen
+		if (m && m->isAsleep())
+			visibleCreatureAndObjectTile.freezeAnimation = true;
         tiles.push_back(visibleCreatureAndObjectTile);
     }
 
