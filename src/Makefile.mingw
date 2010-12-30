@@ -64,5 +64,5 @@ dist:  install tools
 	cp ../README $(U4PATH)/README.txt
 	cp ../doc/tools.txt $(U4PATH)/tools/tools.txt
 	cp SDL/README-SDL.txt $(U4PATH)
-	cp ../doc/xu4wincvs.txt $(U4PATH)
+	cp ../doc/xu4winsvn.txt $(U4PATH)
 	u2d $(U4PATH)/*.txt $(U4PATH)/tools/*.txt
