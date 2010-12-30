@@ -75,4 +75,5 @@
     <creature id="56" name="Adventurer" tile="avatar" basehp="160" exp="11" good="true"/> <!-- Avatar tile -->
     <creature id="57" name="Water" tile="shallows" basehp="255" exp="16" good="true" swims="true"/> <!-- Water in LBs castle -->
     <creature id="58" name="Ankh" tile="ankh" basehp="255" exp="16" good="true"/> <!-- Ankh in Skara Brae -->
+    <creature id="59" name="Phantom" tile="fire_field" basehp="48" exp="14" canMoveOntoCreatures="true" resists="fire" canMoveOntoAvatar="true" rangedhittile="random" rangedmisstile="fire_field" leader="45" divides="true"/> <!-- Peculiar Fire field phantoms found in Destard LV4 -->
 </creatures>

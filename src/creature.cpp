@@ -982,6 +982,9 @@ Creature *CreatureMgr::getByTile(MapTile tile) {
         if (i->second->getTile() == tile)
             return i->second;        
     }
+
+//    if (tile.id)
+//    	errorWarning("Did not find creature for tile %d", tile.id);
     return NULL;
 }
 
