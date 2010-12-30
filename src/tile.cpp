@@ -193,6 +193,10 @@ bool Tile::isWalkable() const {
     return rule->walkonDirs > 0;
 }
 
+bool Tile::isLivingObject() const {
+	return rule->mask & MASK_LIVING_THING;
+}
+
 bool Tile::isCreatureWalkable() const {
     return canWalkOn(DIR_ADVANCE) && !(rule->movementMask & MASK_CREATURE_UNWALKABLE);
 }

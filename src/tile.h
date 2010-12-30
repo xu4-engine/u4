@@ -32,6 +32,7 @@ class TileRule;
 #define MASK_CANLANDBALLOON     0x0200
 #define MASK_REPLACEMENT        0x0400
 #define MASK_FOREGROUND         0x0800
+#define MASK_LIVING_THING		0x1000
 
 /* movement masks */
 #define MASK_SWIMABLE           0x0001
@@ -63,6 +64,7 @@ public:
     bool canWalkOff(Direction d) const;
     bool canAttackOver() const;
     bool canLandBalloon() const;
+    bool isLivingObject() const;
     bool isReplacement() const;
     bool isWalkable() const;
     bool isCreatureWalkable() const;

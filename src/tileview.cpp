@@ -45,8 +45,9 @@ void TileView::reinit() {
 
 void TileView::loadTile(MapTile &mapTile)
 {
+	//Not sure if this is wanted. Defeats the purpose of the lazy evaluation? (or does this solve a problem?)
     Tile *tile = tileset->get(mapTile.id);
-    Image *image = tile->getImage();
+    tile->getImage();
 }
 
 void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
@@ -84,16 +85,18 @@ void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
 }
 
 void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
-    Tile *tile = tileset->get(tiles.front().id);
-    Image *image = tile->getImage();
+
+	MapTile& frontTile = tiles.front();
+	Tile *frontTileType = tileset->get(frontTile.id);
+    Image *image = frontTileType->getImage();
 
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
 
     // draw the tile to the screen
-    if (tile->getAnim()) {
+    if (frontTileType->getAnim()) {
         // First, create our animated version of the tile
-        tile->getAnim()->draw(animated, tile, tiles.front(), DIR_NONE);
+    	frontTileType->getAnim()->draw(animated, frontTileType, frontTile, DIR_NONE);
 
         // Then draw it to the screen
         animated->drawSubRect(SCALED(x * tileWidth + this->x),
@@ -107,7 +110,7 @@ void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
         image->drawSubRect(SCALED(x * tileWidth + this->x), 
                            SCALED(y * tileHeight + this->y),
                            0,
-                           SCALED(tileHeight * tiles.front().frame),
+                           SCALED(tileHeight * frontTile.frame),
                            SCALED(tileWidth),
                            SCALED(tileHeight));
     }

@@ -208,6 +208,7 @@ public:
     bool spawnOnDeath();
     virtual CreatureStatus getState() const;
     StatusType getStatus() const;
+    bool isAsleep() const;
     bool hideOrShow();
     Creature *nearestOpponent(int *dist, bool ranged);
     virtual void putToSleep();

@@ -780,6 +780,15 @@ StatusType Creature::getStatus() const {
     return status.back();
 }
 
+bool Creature::isAsleep() const {
+	for (StatusList::const_iterator itr = this->status.begin();
+		itr != this->status.end();
+		++itr)
+		if (*itr == STAT_SLEEPING)
+			return true;
+	return false;
+}
+
 /**
  * Hides or shows a camouflaged creature, depending on its distance from
  * the nearest opponent

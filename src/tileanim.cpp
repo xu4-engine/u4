@@ -306,7 +306,7 @@ void TileAnim::draw(Image *dest, Tile *tile, MapTile &mapTile, Direction dir) {
     bool drawn = false;
 
     /* nothing to do, draw the tile and return! */
-    if ((random && xu4_random(100) > random) || (!transforms.size() && !contexts.size())) {
+    if ((random && xu4_random(100) > random) || (!transforms.size() && !contexts.size()) || mapTile.freezeAnimation) {
         tile->getImage()->drawSubRectOn(dest, 0, 0, 0, mapTile.frame * tile->getHeight(), tile->getWidth(), tile->getHeight());
         return;
     }

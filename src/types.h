@@ -47,8 +47,8 @@ typedef enum {
 class MapTile {
 public:
     MapTile() : id(0), frame(0) {}
-    MapTile(const TileId &i, unsigned char f = 0) : id(i), frame(f) {}
-    MapTile(const MapTile &t) : id(t.id), frame(t.frame) {}
+    MapTile(const TileId &i, unsigned char f = 0) : id(i), frame(f), freezeAnimation(false) {}
+    MapTile(const MapTile &t) : id(t.id), frame(t.frame), freezeAnimation(t.freezeAnimation) {}
 
     bool operator==(const MapTile &m) const  { return id == m.id; }
     bool operator==(const TileId &i) const   { return id == i; }
@@ -61,9 +61,11 @@ public:
 
     const Tile *getTileType() const;
 
+
     // Properties
     TileId id;
     unsigned char frame;
+    bool freezeAnimation;
 };
 
 #endif

@@ -16,7 +16,7 @@
     <rule name="horse" horse="true" creatureunwalkable="true"/>
     <rule name="floors" replacement="true"/>
     <rule name="balloon" balloon="true" creatureunwalkable="true"/>
-    <rule name="person" cantwalkon="all"/>
+    <rule name="person" cantwalkon="all" livingthing="true"/>
     <rule name="solid" cantwalkon="all"/>
     <rule name="solid_attackover" cantwalkon="all" canattackover="true"/>
     <rule name="walls" cantwalkon="all" unflyable="true"/>
@@ -31,7 +31,7 @@
     <rule name="lava" effect="lava"/>
     <rule name="signs" cantwalkon="all" talkover="true"/>
     <rule name="spacers" cantwalkon="all"/>
-    <rule name="monster" cantwalkon="all"/>    
+    <rule name="monster" cantwalkon="all" livingthing="true"/>    
 
     <!-- Dungeon tile rules -->
     <rule name="dng_altar" creatureunwalkable="true" unflyable="true"/>

@@ -27,4 +27,5 @@
                speed              %speed;  #IMPLIED
                swimable           %bool;   #IMPLIED
                talkover           %bool;   #IMPLIED
-               unflyable          %bool;   #IMPLIED>
+               unflyable          %bool;   #IMPLIED
+               livingthing        %bool;   #IMPLIED>

@@ -70,7 +70,8 @@ bool TileRule::initFromConf(const ConfigElement &conf) {
         { "canattackover", MASK_ATTACKOVER },
         { "canlandballoon", MASK_CANLANDBALLOON },
         { "replacement", MASK_REPLACEMENT },
-        { "foreground", MASK_FOREGROUND }
+        { "foreground", MASK_FOREGROUND },
+        { "livingthing", MASK_LIVING_THING }
     };
 
     static const struct {

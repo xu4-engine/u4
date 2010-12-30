@@ -99,7 +99,14 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     /* then visible creatures and objects */
     else if (obj && obj->isVisible()) {
         focus = focus || obj->hasFocus();
-        tiles.push_back(obj->getTile());
+        MapTile visibleCreatureAndObjectTile = obj->getTile();
+        if (obj->getType() == Object::CREATURE)
+        {
+        	//Sleeping creatures have their animation frozen
+        	if (m->isAsleep())
+        		visibleCreatureAndObjectTile.freezeAnimation = true;
+        }
+        tiles.push_back(visibleCreatureAndObjectTile);
     }
 
     /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */
@@ -113,7 +120,11 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     }
 
     /* finally the base tile */
-    tiles.push_back(*map->getTileFromData(coords));
+    MapTile tileFromMapData = *map->getTileFromData(coords);
+    if (tileFromMapData.getTileType()->isLivingObject())
+    	//This animation should be frozen because a living object represented on the map data is usually a statue of a monster or something
+    	tileFromMapData.freezeAnimation = true;
+    tiles.push_back(tileFromMapData);
 
     return tiles;
 }
