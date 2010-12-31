@@ -1,0 +1,2 @@
+32 msecs total
+19 msecs used by Tile::translate()

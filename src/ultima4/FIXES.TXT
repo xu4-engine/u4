@@ -1,0 +1,10 @@
+This updated version of Ultima IV fixes some minor bugs in the data
+files.  This is a list of the fixes:
+
+1.01
+- Charm in Cove asks her question
+- Water in Lord British's castle asks its question
+- Alkerion in Minoc asks his question
+- Shamino in Skara Brae asks his question
+- fixed mispelling of keyword of prisoner in Yew
+- fixed incorrect guard indices in Serpents Hold

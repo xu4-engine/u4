@@ -755,7 +755,10 @@ bool Creature::divide() {
         coords.move(d, map);
 
         /* create our new creature! */
-        map->addCreature(this, coords);
+        Creature * addedCreature = map->addCreature(this, coords);
+        int dividedHp = (this->hp + 1) / 2;
+        addedCreature->hp = dividedHp;
+        this->hp = dividedHp;
         return true;
     }
     return false;
