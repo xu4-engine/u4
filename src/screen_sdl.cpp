@@ -802,13 +802,94 @@ void screenGemUpdate() {
                      0, 0, 0);
 
     Layout *layout = screenGetGemLayout(c->location->map);
-    for (x = 0; x < layout->viewport.width; x++) {
-        for (y = 0; y < layout->viewport.height; y++) {
-            bool focus;
-            tile = screenViewportTile(layout->viewport.width, layout->viewport.height, x, y, focus).front();
-            screenShowGemTile(layout, c->location->map, tile, focus, x, y);
-        }
-    }
+
+
+    //TODO, move the code responsible for determining 'peer' visibility to a non SDL specific part of the code.
+    if (c->location->map->type == Map::DUNGEON) {
+    	//DO THE SPECIAL DUNGEON MAP TRAVERSAL
+    	std::vector<std::vector<int> > drawnTiles(layout->viewport.width, vector<int>(layout->viewport.height, 0));
+    	std::list<std::pair<int,int> > coordStack;
+
+    	//Put the avatar's position on the stack
+    	int center_x = layout->viewport.width / 2 - 1;
+    	int center_y = layout->viewport.height / 2 - 1;
+    	int avt_x = c->location->coords.x - 1;
+    	int avt_y = c->location->coords.y - 1;
+
+    	coordStack.push_back(std::pair<int,int>(center_x, center_y));
+    	bool weAreDrawingTheAvatarTile = true;
+
+    	//And draw each tile on the growing stack until it is empty
+    	while (coordStack.size() > 0) {
+    		std::pair<int,int> currentXY = coordStack.back();
+    		coordStack.pop_back();
+
+    		x = currentXY.first;
+    		y = currentXY.second;
+
+    		if (	x < 0 || x >= layout->viewport.width ||
+    				y < 0 || y >= layout->viewport.height)
+    			continue;	//Skip out of range tiles
+
+    		if (drawnTiles[x][y])
+    			continue;	//Skip already considered tiles
+
+    		drawnTiles[x][y] = 1;
+
+    		// DRAW THE ACTUAL TILE
+    		bool focus;
+
+
+			vector<MapTile> tiles = screenViewportTile(layout->viewport.width,
+				layout->viewport.height, x - center_x + avt_x, y - center_y + avt_y, focus);
+			tile = tiles.front();
+
+			TileId avatarTileId = c->location->map->tileset->getByName("avatar")->id;
+
+
+			if (!weAreDrawingTheAvatarTile)
+			{
+				//Hack to avoid showing the avatar tile multiple times in cycling dungeon maps
+				if (tile.id == avatarTileId)
+					tile = tiles[1];
+			}
+
+			screenShowGemTile(layout, c->location->map, tile, focus, x, y);
+
+			if (!tile.getTileType()->isOpaque() || tile.getTileType()->isWalkable() ||  weAreDrawingTheAvatarTile)
+			{
+				//Continue the search so we can see through all walkable objects, non-opaque objects (like creatures)
+				//or the avatar position in those rare circumstances where he is stuck in a wall
+
+				//by adding all relative adjacency combinations to the stack for drawing
+				coordStack.push_back(std::pair<int,int>(x	+ 1	,	y	- 1	));
+				coordStack.push_back(std::pair<int,int>(x	+ 1	,	y		));
+				coordStack.push_back(std::pair<int,int>(x	+ 1	,	y	+ 1	));
+
+				coordStack.push_back(std::pair<int,int>(x		,	y	- 1	));
+				coordStack.push_back(std::pair<int,int>(x		,	y	+ 1	));
+
+				coordStack.push_back(std::pair<int,int>(x	- 1	,	y	- 1	));
+				coordStack.push_back(std::pair<int,int>(x	- 1	,	y	 	));
+				coordStack.push_back(std::pair<int,int>(x	- 1	,	y	+ 1	));
+
+				// We only draw the avatar tile once, it is the first tile drawn
+				weAreDrawingTheAvatarTile = false;
+			}
+    	}
+
+	} else {
+		//DO THE REGULAR EVERYTHING-IS-VISIBLE MAP TRAVERSAL
+		for (x = 0; x < layout->viewport.width; x++) {
+			for (y = 0; y < layout->viewport.height; y++) {
+				bool focus;
+				tile = screenViewportTile(layout->viewport.width,
+						layout->viewport.height, x, y, focus).front();
+				screenShowGemTile(layout, c->location->map, tile, focus, x, y);
+			}
+		}
+	}
+
     screenRedrawMapArea();
 
     screenUpdateCursor();
