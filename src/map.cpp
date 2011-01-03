@@ -518,11 +518,14 @@ Creature *Map::moveObjects(MapCoords avatar) {
                 }
             }
 
+            /* Before moving, Enact any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
+            m->specialEffect();
+
             /* Perform any special actions (such as pirate ships firing cannons, sea serpents' fireblast attect, etc.) */
             if (!m->specialAction())
                 moveObject(this, m, avatar);
 
-            /* Enact any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
+            /* After moving, Enact any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
             m->specialEffect();
         }
     }
@@ -628,8 +631,18 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             // If moving onto another creature, it must be able to move onto other creatures,
             // and the creature must be able to have others move onto it.  If either of
             // these conditions are not met, the creature cannot move onto another.
-            if ((ontoAvatar && !m->canMoveOntoPlayer()) ||
-                (ontoCreature && ((!m->canMoveOntoCreatures() && !to_m->canMoveOntoCreatures()) || !tile.getTileType()->isWalkable())))
+            if ((ontoAvatar && !m->canMoveOntoPlayer())
+            	||	(
+            			ontoCreature &&
+            			(
+            				(!m->canMoveOntoCreatures() && !to_m->canMoveOntoCreatures())
+            				|| (m->swims() && !tile.getTileType()->isSwimable())
+            				|| (m->sails() && !tile.getTileType()->isSailable())
+            				|| (m->walks() && !tile.getTileType()->isWalkable())
+            				|| (m->isForceOfNature() && to_m->isForceOfNature())
+            			)
+            		)
+            	)
                 continue;
 
 

@@ -61,7 +61,8 @@ void Creature::load(const ConfigElement &conf) {
         { "ambushes", MATTR_AMBUSHES },
         { "incorporeal", MATTR_INCORPOREAL },
         { "nochest", MATTR_NOCHEST },
-        { "divides", MATTR_DIVIDES }
+        { "divides", MATTR_DIVIDES },
+        { "forceOfNature", MATTR_FORCE_OF_NATURE }
     };    
     
     /* steals="" */
@@ -246,6 +247,8 @@ bool Creature::isGood() const        { return (mattr & MATTR_GOOD) ? true : fals
 bool Creature::isEvil() const        { return !isGood(); }
 bool Creature::isUndead() const      { return (mattr & MATTR_UNDEAD) ? true : false; }
 
+bool Creature::isForceOfNature() const		{return mattr & MATTR_FORCE_OF_NATURE;}
+
 bool Creature::leavesChest() const {
     if (isAquatic())
         return true;
@@ -427,7 +430,7 @@ bool Creature::specialEffect() {
     bool retval = false;
     
     switch(id) {
-    
+
     case STORM_ID:
         {
             ObjectDeque::iterator i;
@@ -452,8 +455,8 @@ bool Creature::specialEffect() {
                  i != c->location->map->objects.end();) {
 
                 obj = *i;
-                if (this != obj && 
-                    obj->getCoords() == coords) {                        
+                if (this != obj &&
+                    obj->getCoords() == coords) {
                     /* Converged with an object, destroy the object! */
                     i = c->location->map->removeObject(i);
                     retval = true;
@@ -480,23 +483,27 @@ bool Creature::specialEffect() {
                 retval = true;
                 break;
             }
-        
+
             /* See if the whirlpool is on top of any objects and destroy them! */
             for (i = c->location->map->objects.begin();
                  i != c->location->map->objects.end();) {
-                
-                obj = *i;                    
-                if (this != obj && 
-                    coords == obj->getCoords()) {
+
+                obj = *i;
+                Coords const & otherObj = obj->getCoords();
+
+                if (this != obj &&
+                    coords.x == otherObj.x && coords.y == otherObj.y) {
                     Creature *m = dynamic_cast<Creature*>(obj);
-                                    
+
                     /* Make sure the object isn't a flying creature or object */
-                    if (!obj->getTile().getTileType()->isBalloon() && (!m || !m->flies())) {
+                    if (m && (m->swims() || m->sails()) && !m->flies()) {
                         /* Destroy the object it met with */
                         i = c->location->map->removeObject(i);
                         retval = true;
                     }
-                    else i++;
+                    else {
+                    	i++;
+                    }
                 }
                 else i++;
             }            

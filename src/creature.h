@@ -103,7 +103,8 @@ typedef enum {
     MATTR_INCORPOREAL   = 0x1000,
     MATTR_NOCHEST       = 0x2000,
     MATTR_DIVIDES       = 0x4000,
-    MATTR_SPAWNSONDEATH = 0x8000
+    MATTR_SPAWNSONDEATH = 0x8000,
+    MATTR_FORCE_OF_NATURE = 0x10000
 } CreatureAttrib;
 
 typedef enum {
@@ -190,6 +191,7 @@ public:
     bool hasRandomRanged() const;
     bool leavesTile() const;
     bool castsSleep() const;
+    bool isForceOfNature() const;
     int getDamage() const;    
     const string &getCamouflageTile();
     void setRandomRanged();
