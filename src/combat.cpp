@@ -1276,7 +1276,7 @@ MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Objec
         dungeontileMap[Tileset::get("dungeon")->getByName("up_ladder")] = MAP_DNG1_CON;
         dungeontileMap[Tileset::get("dungeon")->getByName("down_ladder")] = MAP_DNG2_CON;
         dungeontileMap[Tileset::get("dungeon")->getByName("up_down_ladder")] = MAP_DNG3_CON;
-        // dungeontileMap[Tileset::get("dungeon")->getByName("chest")] = MAP_DNG4_CON; 
+        // dungeontileMap[Tileset::get("dungeon")->getByName("chest")] = MAP_DNG4_CON;
         // chest tile doesn't work that well
         dungeontileMap[Tileset::get("dungeon")->getByName("dungeon_door")] = MAP_DNG5_CON;
         dungeontileMap[Tileset::get("dungeon")->getByName("secret_door")] = MAP_DNG6_CON;

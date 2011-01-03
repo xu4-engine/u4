@@ -58,7 +58,7 @@ public:
     TileAnim *getAnim() const { return anim; }
     Image *getImage();
     const string &getLooksLike() const { return looks_like; }
-    bool isLarge() const;
+    bool isTiledInDungeon() const;
 
     bool canWalkOn(Direction d) const;
     bool canWalkOff(Direction d) const;
@@ -110,7 +110,7 @@ private:
     void loadImage();
 
     Image *image;       /**< The original image for this tile (with all of its frames) */
-    bool large;
+    bool tiledInDungeon;
     vector<Direction> directions;
 
     // disallow assignments, copy contruction

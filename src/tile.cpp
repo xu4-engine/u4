@@ -23,7 +23,7 @@ TileId Tile::nextId = 0;
 
 Tile::Tile(Tileset *tileset) : 
     id(nextId++), tileset(tileset), w(0), h(0), frames(0), scale(1), 
-    anim(NULL), opaque(false), rule(NULL), image(NULL), large(false) {
+    anim(NULL), opaque(false), rule(NULL), image(NULL), tiledInDungeon(false) {
 }
 
 /**
@@ -76,7 +76,7 @@ void Tile::loadProperties(const ConfigElement &conf) {
     else 
         imageName = string("tile_") + name;
 
-    large = conf.getBool("large");
+    tiledInDungeon = conf.getBool("tiledInDungeon");
 
     if (conf.exists("directions")) {
         string dirs = conf.getString("directions");
@@ -103,7 +103,7 @@ Image *Tile::getImage() {
     return image;
 }
 
-bool Tile::isLarge() const  { return large; }
+bool Tile::isTiledInDungeon() const  { return tiledInDungeon; }
 
 /**
  * Loads the tile image

@@ -20,4 +20,4 @@
                 rowtoswap          NMTOKEN  #IMPLIED
                 opaque             %bool;   #IMPLIED                
                 frame              NMTOKEN  #IMPLIED
-                large              %bool;   #IMPLIED>
+                tiledInDungeon     %bool;   #IMPLIED>

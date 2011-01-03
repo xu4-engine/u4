@@ -714,7 +714,7 @@ void screenDungeonDrawTile(Tile *tile, int distance, Direction orientation) {
     DungeonView view(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H);
     
     // Draw the tile to the screen
-    view.drawInDungeon(tile, distance, orientation, tile->isLarge());
+    view.drawInDungeon(tile, distance, orientation, tile->isTiledInDungeon());
 }
 
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
