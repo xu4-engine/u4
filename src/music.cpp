@@ -94,7 +94,7 @@ Music::Music() : introMid(TOWNS), playing(NULL), logger(new Debug("debug/music.t
         int audio_rate = 22050;
         Uint16 audio_format = AUDIO_S16LSB; /* 16-bit stereo */
         int audio_channels = 2;
-        int audio_buffers = 4096;
+        int audio_buffers = 1024;
 
         if (u4_SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
             errorWarning("unable to init SDL audio subsystem: %s", SDL_GetError());
@@ -152,8 +152,10 @@ void Music::playMid(Type music) {
         return;
 
     /* loaded a new piece of music */
-    if (load(music))
+    if (load(music)) {
         Mix_PlayMusic(playing, NLOOPS);
+        //Mix_SetMusicPosition(0.0);  //Could be useful if music was stored on different 'it/mod' patterns
+    }
 }
 
 bool Music::load(Type music) {

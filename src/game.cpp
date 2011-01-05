@@ -645,12 +645,28 @@ void GameController::finishTurn() {
         }
     }
     
+    doScreenAnimationsWhilePausing(15);
+
     /* draw a prompt */
     screenPrompt();
     screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
 
     c->lastCommandTime = time(NULL);
 }
+
+
+void GameController::doScreenAnimationsWhilePausing(int timeFactor)
+{
+    int i;
+    int divisor = 20;
+    for (i = 0; i < timeFactor; i++) {
+        /* do screen animations while we're pausing */
+        if (i % divisor == 0)
+        	gameUpdateScreen();
+        EventHandler::wait_msecs(eventTimerGranularity/divisor);
+    }
+}
+
 
 /**
  * Provide feedback to user after a party event happens.
@@ -699,36 +715,28 @@ void GameController::update(Location *location, MoveEvent &event) {
 }
 
 void gameSpellEffect(int spell, int player, Sound sound) {
-    int time;
+
+	int time;
     Spell::SpecialEffects effect = Spell::SFX_INVERT;
-        
+
     if (player >= 0)
         c->stats->highlightPlayer(player);
 
-    /* recalculate spell speed - based on 5/sec */
-    time = settings.spellEffectSpeed * 200;
-    
-    soundPlay(sound, false);    
+    time = settings.spellEffectSpeed * settings.gameCyclesPerSecond * 60;
+    soundPlay(sound, false, time);
 
+    ///The following effect multipliers are not accurate
     switch(spell)
     {
     case 'g': /* gate */
     case 'r': /* resurrection */
-        time = (time * 3) / 2;
         break;
     case 't': /* tremor */
-        time = (time * 3) / 2;
         effect = Spell::SFX_TREMOR;        
         break;
     default:
         /* default spell effect */        
         break;
-    }
-
-    /* pause the game for enough time to complete the spell effect */
-    if (!game->paused) {
-        game->paused = true;
-        game->pausedTimer = ((time * settings.gameCyclesPerSecond) / 1000) + 1;
     }
 
     switch(effect)
@@ -739,13 +747,13 @@ void gameSpellEffect(int spell, int player, Sound sound) {
     case Spell::SFX_INVERT:
         gameUpdateScreen();
         game->mapArea.highlight(0, 0, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
-        screenRedrawScreen();
-        
         EventHandler::sleep(time);
+        screenRedrawScreen();
 
         if (effect == Spell::SFX_TREMOR) {
             gameUpdateScreen();
-            screenShake(10);            
+            soundPlay(SOUND_RUMBLE, false);
+            screenShake(8);
         }
 
         break;

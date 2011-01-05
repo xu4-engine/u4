@@ -25,6 +25,8 @@
 #include "tilemap.h"
 #include "types.h"
 #include "utils.h"
+#include "settings.h"
+#include "event.h"
 
 /**
  * MapCoords Class Implementation

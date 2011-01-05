@@ -427,6 +427,7 @@ void CombatController::moveCreatures() {
     // if a jinxed monster kills another
     for (unsigned int i = 0; i < map->getCreatures().size(); i++) {
         m = map->getCreatures().at(i);
+        doScreenAnimationsWhilePausing(1);
         m->act(this);
         if (i < map->getCreatures().size() && map->getCreatures().at(i) != m) {
             // don't skip a later creature when an earlier one flees
@@ -524,7 +525,6 @@ bool CombatController::attackHit(Creature *attacker, Creature *defender) {
 bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance) {
     const Weapon *weapon = attacker->getWeapon();
     bool wrongRange = weapon->rangeAbsolute() && (distance != range);
-    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
 
     MapTile hittile = map->tileset->getByName(weapon->getHitTile())->id;
     MapTile misstile = map->tileset->getByName(weapon->getMissTile())->id;
@@ -538,15 +538,7 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
         
         /* If the weapon is shown as it travels, show it now */
         if (weapon->showTravel()) {
-            map->annotations->add(coords, misstile, true);
-            gameUpdateScreen();
-        
-            /* Based on attack speed setting in setting struct, make a delay for
-               the attack annotation */
-            if (attackdelay > 0)
-                EventHandler::wait_msecs(attackdelay * 2);
-
-            map->annotations->remove(coords, misstile);
+        	attackFlash(coords, misstile, 1);
         }
 
         // no target found
@@ -559,13 +551,14 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
         screenMessage("Missed!\n");
 
         /* show the 'miss' tile */
-        attackFlash(coords, misstile, 3);
+        attackFlash(coords, misstile, 1);
     } else { /* The weapon hit! */
 
         /* show the 'hit' tile */
-        attackFlash(coords, hittile, 3);            
+        attackFlash(coords, misstile, 2);
+        soundPlay(SOUND_NPC_STRUCK, false,-1);                                    // NPC_STRUCK, melee hit
+        attackFlash(coords, hittile, 6);
 
-        soundPlay(SOUND_NPC_STRUCK, false);                                    // NPC_STRUCK, melee hit
 
         /* apply the damage to the creature */
         if (!attacker->dealDamage(creature, attacker->getDamage()))
@@ -576,24 +569,24 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
 }
 
 bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
-    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
-    
     MapTile hittile = map->tileset->getByName(attacker->getHitTile())->id;
     MapTile misstile = map->tileset->getByName(attacker->getMissTile())->id;
 
     Creature *target = isCreature(attacker) ? map->partyMemberAt(coords) : map->creatureAt(coords);
 
     /* If we haven't hit something valid, stop now */
-    if (!target) {            
-        map->annotations->add(coords, misstile, true);            
-        gameUpdateScreen();            
-    
-        /* Based on attack speed setting in setting struct, make a delay for
-           the attack annotation */
-        if (attackdelay > 0)
-            EventHandler::wait_msecs(attackdelay * 2);
+    if (!target) {
+    	attackFlash(coords, misstile, 1);
 
-        map->annotations->remove(coords, misstile);
+//        map->annotations->add(coords, misstile, true);
+//        gameUpdateScreen();
+//
+//        /* Based on attack speed setting in setting struct, make a delay for
+//           the attack annotation */
+//        if (attackdelay > 0)
+//            EventHandler::wait_msecs(attackdelay * 3);
+//
+//        map->annotations->remove(coords, misstile);
 
         return false;
     }
@@ -603,8 +596,9 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
   
     /* Monster's ranged attacks never miss */
 
+    attackFlash(coords, misstile, 2);
     /* show the 'hit' tile */
-    attackFlash(coords, hittile, 4);        
+    attackFlash(coords, hittile, 6);
 
     /* These effects happen whether or not the opponent was hit */
     switch(effect) {
@@ -703,18 +697,8 @@ bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, i
  * by weapons, cannon fire, spells, etc.
  */
 void CombatController::attackFlash(const Coords &coords, MapTile tile, int timeFactor) {
-    int i;
-    int divisor = settings.battleSpeed;
-    
     c->location->map->annotations->add(coords, tile, true);
-    for (i = 0; i < timeFactor; i++) {        
-        /* do screen animations while we're pausing */
-        if (i % divisor == 1)
-            screenCycle();
-
-        gameUpdateScreen();       
-        EventHandler::wait_msecs(eventTimerGranularity/divisor);
-    }
+    doScreenAnimationsWhilePausing(timeFactor);
     c->location->map->annotations->remove(coords, tile);
 }
 
@@ -722,6 +706,18 @@ void CombatController::attackFlash(const Coords &coords, const string &tilename,
     Tile *tile = c->location->map->tileset->getByName(tilename);
     ASSERT(tile, "no tile named '%s' found in tileset", tilename.c_str());
     attackFlash(coords, tile->id, timeFactor);
+}
+
+void CombatController::doScreenAnimationsWhilePausing(int timeFactor)
+{
+    int i;
+    int divisor = settings.battleSpeed;
+    for (i = 0; i < timeFactor; i++) {        
+        /* do screen animations while we're pausing */
+        if (i % divisor == 0)
+        	gameUpdateScreen();
+        EventHandler::wait_msecs(eventTimerGranularity/divisor);
+    }
 }
 
 void CombatController::finishTurn() {
@@ -1158,12 +1154,12 @@ void CombatController::attack() {
     // does weapon leaves a tile behind? (e.g. flaming oil)
     const Tile *ground = map->tileTypeAt(targetCoords, WITHOUT_OBJECTS);
     if (!weapon->leavesTile().empty() && ground->isWalkable() &&
-        (!foundTarget || targetDistance == range))
+        (!foundTarget))
         map->annotations->add(targetCoords, map->tileset->getByName(weapon->leavesTile())->id);
 
     /* show the 'miss' tile */
     if (!foundTarget) {
-        attackFlash(targetCoords, weapon->getMissTile(), 3);
+        attackFlash(targetCoords, weapon->getMissTile(), 5);
         /* This goes here so messages are shown in the original order */
         screenMessage("Missed!\n");
     }

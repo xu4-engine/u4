@@ -29,6 +29,7 @@ enum Sound {
 
     SOUND_CANNON,
     SOUND_RUMBLE,
+    SOUND_PREMAGIC_MANA_JUMBLE,
     SOUND_MAGIC,
     SOUND_WHIRLPOOL,
     SOUND_STORM,
@@ -42,7 +43,9 @@ enum Sound {
 int soundInit(void);
 void soundDelete(void);
 bool soundLoad(Sound sound);
-void soundPlay(Sound sound, bool onlyOnce = true);
+
+void soundPlay(Sound sound, bool onlyOnce = true, int specificDurationInTicks = -1);
+
 void soundStop(int channel = 1);
 
 #endif /* SOUND_H */

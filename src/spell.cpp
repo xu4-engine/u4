@@ -310,8 +310,17 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
     // subtract the mp needed for the spell
     p->adjustMp(-spells[spell].mp);
 
-    if (spellEffect)
+    if (spellEffect) {
+		int time;
+		/* recalculate spell speed - based on 5/sec */
+		float MP_OF_LARGEST_SPELL = 45;
+		int spellMp = spells[spell].mp;
+		time = 20000.0 / settings.spellEffectSpeed *  spellMp / MP_OF_LARGEST_SPELL;
+		soundPlay(SOUND_PREMAGIC_MANA_JUMBLE, false, time);
+		EventHandler::wait_msecs(time);
+
         (*spellEffectCallback)(spell + 'a', subject, SOUND_MAGIC);
+    }
     
     if (!(*spells[spell].spellFunc)(param)) {
         *error = CASTERR_FAILED;
@@ -369,7 +378,9 @@ bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDama
         objectHit = true;
 
         /* show the 'hit' tile */
-        CombatController::attackFlash(coords, attackTile, 3);
+        soundPlay(SOUND_NPC_STRUCK);
+        CombatController::attackFlash(coords, attackTile, 6);
+
 
         /* apply the damage to the creature */
         CombatController *controller = spellCombatController();
@@ -654,14 +665,16 @@ static int spellTremor(int unused) {
 
             /* Deal maximum damage to creature */
             if (xu4_random(2) == 0) {
-                ct->getCurrentPlayer()->dealDamage(m, 0xFF);                
-                CombatController::attackFlash(coords, "hit_flash", 1);
+                ct->getCurrentPlayer()->dealDamage(m, 0xFF);
+                soundPlay(SOUND_NPC_STRUCK);
+                CombatController::attackFlash(coords, "hit_flash", 6);
             }
             /* Deal enough damage to creature to make it flee */
             else if (xu4_random(2) == 0) {
                 if (m->getHp() > 23)
                     ct->getCurrentPlayer()->dealDamage(m, m->getHp()-23);
-                CombatController::attackFlash(coords, "hit_flash", 1);
+                soundPlay(SOUND_NPC_STRUCK);
+                CombatController::attackFlash(coords, "hit_flash", 6);
             }
         }
     }

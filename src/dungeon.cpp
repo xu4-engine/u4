@@ -189,7 +189,7 @@ void dungeonDrinkFountain() {
     /* poison fountain */
     case FOUNTAIN_POISON: 
         if (c->party->member(player)->getStatus() != STAT_POISONED) {
-            soundPlay(SOUND_POISON_DAMAGE, false);
+            soundPlay(SOUND_POISON_DAMAGE);
             c->party->member(player)->applyEffect(EFFECT_POISON);
             c->party->member(player)->applyDamage(100); /* 100 damage to drinker also */            
             screenMessage("\nArgh-Choke-Gasp!\n");

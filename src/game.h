@@ -107,6 +107,8 @@ public:
     void initMoons();
     void updateMoons(bool showmoongates);
 
+    static void doScreenAnimationsWhilePausing(int timeFactor);
+
     TileView mapArea;
     bool paused;
     int pausedTimer;

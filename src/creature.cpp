@@ -689,6 +689,7 @@ void Creature::act(CombatController *controller) {
         break;
     }
     }
+    EventHandler::sleep(settings.pauseForEachMovement);
 }
 
 /**
