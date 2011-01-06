@@ -577,17 +577,6 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
     /* If we haven't hit something valid, stop now */
     if (!target) {
     	attackFlash(coords, misstile, 1);
-
-//        map->annotations->add(coords, misstile, true);
-//        gameUpdateScreen();
-//
-//        /* Based on attack speed setting in setting struct, make a delay for
-//           the attack annotation */
-//        if (attackdelay > 0)
-//            EventHandler::wait_msecs(attackdelay * 3);
-//
-//        map->annotations->remove(coords, misstile);
-
         return false;
     }
 

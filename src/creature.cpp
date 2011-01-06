@@ -572,9 +572,9 @@ void Creature::act(CombatController *controller) {
         soundPlay(SOUND_NPC_ATTACK, false);                                    // NPC_ATTACK, melee
 
         if (controller->attackHit(this, target)) {
-            CombatController::attackFlash(target->getCoords(), "hit_flash", 3);
-
             soundPlay(SOUND_PC_STRUCK, false);                                 // PC_STRUCK, melee and ranged
+            CombatController::attackFlash(target->getCoords(), "hit_flash", 4);
+
 
             if (!dealDamage(target, getDamage()))
                 target = NULL;
@@ -593,7 +593,7 @@ void Creature::act(CombatController *controller) {
                 }
             }
         } else {
-            CombatController::attackFlash(target->getCoords(), "miss_flash", 3);
+            CombatController::attackFlash(target->getCoords(), "miss_flash", 2);
         }
         break;
 
