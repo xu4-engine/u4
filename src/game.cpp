@@ -645,7 +645,7 @@ void GameController::finishTurn() {
         }
     }
     
-    doScreenAnimationsWhilePausing(15);
+    doScreenAnimationsWhilePausing(12);
 
     /* draw a prompt */
     screenPrompt();
@@ -1794,14 +1794,16 @@ bool fireAt(const Coords &coords, bool originAvatar) {
     
     Object *obj = NULL;
 
-    c->location->map->annotations->add(coords, c->location->map->tileset->getByName("miss_flash")->id, true);
-    gameUpdateScreen();
+
+    CombatController::attackFlash(coords, "miss_flash", 1);
+//    c->location->map->annotations->add(coords, c->location->map->tileset->getByName("miss_flash")->id, true);
+//    gameUpdateScreen();
 
     // based on attack speed setting in setting struct, make a delay
     // for the attack annotation
     int animationDelay = MAX_BATTLE_SPEED - settings.battleSpeed;
-    if (animationDelay > 0)
-        EventHandler::wait_msecs(animationDelay * 4);
+    //if (animationDelay > 0)
+    //    EventHandler::wait_msecs(animationDelay * 4);
 
     obj = c->location->map->objectAt(coords);
     Creature *m = dynamic_cast<Creature*>(obj);
@@ -1825,7 +1827,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
         
         /* Is is a pirate ship firing at US? */
         if (hitsAvatar) {
-            CombatController::attackFlash(coords, "hit_flash", 5);
+            CombatController::attackFlash(coords, "hit_flash", 4);
 
             if (c->transportContext == TRANSPORT_SHIP)
                 gameDamageShip(-1, 10);
@@ -1833,13 +1835,13 @@ bool fireAt(const Coords &coords, bool originAvatar) {
         }          
         /* inanimate objects get destroyed instantly, while creatures get a chance */
         else if (obj->getType() == Object::UNKNOWN) {
-            CombatController::attackFlash(coords, "hit_flash", 5);
+            CombatController::attackFlash(coords, "hit_flash", 4);
             c->location->map->removeObject(obj);
         }
             
         /* only the avatar can hurt other creatures with cannon fire */
         else if (originAvatar) {
-            CombatController::attackFlash(coords, "hit_flash", 5);
+            CombatController::attackFlash(coords, "hit_flash", 4);
             if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
                 c->location->map->removeObject(obj);
         }
@@ -3091,8 +3093,8 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
 
     /* Based on attack speed setting in setting struct, make a delay for
        the attack annotation */
-    if (attackdelay > 0)
-        EventHandler::wait_msecs(attackdelay * 4);
+    //if (attackdelay > 0)
+    //    EventHandler::wait_msecs(attackdelay * 4);
 
     c->location->map->annotations->remove(coords, tile);
 

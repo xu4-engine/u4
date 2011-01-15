@@ -369,8 +369,8 @@ bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDama
         
         /* Based on attack speed setting in setting struct, make a delay for
            the attack annotation */
-        if (attackdelay > 0)
-            EventHandler::wait_msecs(attackdelay * 2);
+        //if (attackdelay > 0)
+        //    EventHandler::wait_msecs(attackdelay * 2);
 
         cm->annotations->remove(coords, attackTile);
     }
@@ -379,7 +379,7 @@ bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDama
 
         /* show the 'hit' tile */
         soundPlay(SOUND_NPC_STRUCK);
-        CombatController::attackFlash(coords, attackTile, 6);
+        CombatController::attackFlash(coords, attackTile, 4);
 
 
         /* apply the damage to the creature */

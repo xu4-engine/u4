@@ -555,9 +555,9 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
     } else { /* The weapon hit! */
 
         /* show the 'hit' tile */
-        attackFlash(coords, misstile, 2);
+        attackFlash(coords, misstile, 1);
         soundPlay(SOUND_NPC_STRUCK, false,-1);                                    // NPC_STRUCK, melee hit
-        attackFlash(coords, hittile, 6);
+        attackFlash(coords, hittile, 4);
 
 
         /* apply the damage to the creature */
@@ -585,9 +585,9 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
   
     /* Monster's ranged attacks never miss */
 
-    attackFlash(coords, misstile, 2);
+    attackFlash(coords, misstile, 1);
     /* show the 'hit' tile */
-    attackFlash(coords, hittile, 6);
+    attackFlash(coords, hittile, 4);
 
     /* These effects happen whether or not the opponent was hit */
     switch(effect) {
@@ -670,8 +670,8 @@ bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, i
 
         /* Based on attack speed setting in setting struct, make a delay for
            the attack annotation */
-        if (attackdelay > 0)
-            EventHandler::wait_msecs(attackdelay * 2);
+        //if (attackdelay > 0)
+        //    EventHandler::wait_msecs(attackdelay * 2);
         
         map->annotations->remove(new_coords, misstile);
     }
@@ -1148,7 +1148,7 @@ void CombatController::attack() {
 
     /* show the 'miss' tile */
     if (!foundTarget) {
-        attackFlash(targetCoords, weapon->getMissTile(), 5);
+        attackFlash(targetCoords, weapon->getMissTile(), 1);
         /* This goes here so messages are shown in the original order */
         screenMessage("Missed!\n");
     }

@@ -593,7 +593,7 @@ void Creature::act(CombatController *controller) {
                 }
             }
         } else {
-            CombatController::attackFlash(target->getCoords(), "miss_flash", 2);
+            CombatController::attackFlash(target->getCoords(), "miss_flash", 1);
         }
         break;
 
