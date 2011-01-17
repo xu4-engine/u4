@@ -119,7 +119,7 @@
     <tile name="sea_serpent" rule="monster" frames="2" animation="frame"/>
     <tile name="sea_horse" rule="monster" frames="2" animation="frame"/>
     <tile name="whirlpool" rule="water" frames="2" animation="frame"/>
-    <tile name="storm" frames="2" animation="frame"/>
+    <tile name="twister" frames="2" animation="frame"/>
     
     <!-- Land monsters -->    
     <tile name="rat" rule="monster" frames="4" animation="frame"/>

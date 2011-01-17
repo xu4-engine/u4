@@ -105,7 +105,7 @@ void moveAvatar(MoveEvent &event) {
     destObj = c->location->map->objectAt(newCoords);
     if (destObj && destObj->getType() == Object::CREATURE) {
         Creature *m = dynamic_cast<Creature*>(destObj);
-        m->specialEffect();
+        //m->specialEffect();
     }
 
     event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);

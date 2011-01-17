@@ -111,7 +111,7 @@
     <mapping frames="2" tile="sea_serpent"/>
     <mapping frames="2" tile="sea_horse"/>
     <mapping frames="2" tile="whirlpool"/>
-    <mapping frames="2" tile="storm"/>
+    <mapping frames="2" tile="twister"/>
     
     <!-- Land monsters -->    
     <mapping frames="4" tile="rat"/>

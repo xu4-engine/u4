@@ -113,7 +113,7 @@
             <subimage name="tile_sea_serpent"   width="16" height="32"/>
             <subimage name="tile_sea_horse"     width="16" height="32"/>
             <subimage name="tile_whirlpool"     width="16" height="32"/>
-            <subimage name="tile_storm"         width="16" height="32"/>
+            <subimage name="tile_twister"         width="16" height="32"/>
     
             <!-- Land monsters -->
             <subimage name="tile_rat"           width="16" height="64"/>
@@ -514,7 +514,7 @@
             <subimage name="tile_sea_serpent"   width="16" height="32"/>
             <subimage name="tile_sea_horse"     width="16" height="32"/>
             <subimage name="tile_whirlpool"     width="16" height="32"/>
-            <subimage name="tile_storm"         width="16" height="32"/>
+            <subimage name="tile_twister"         width="16" height="32"/>
     
             <!-- Land monsters -->
             <subimage name="tile_rat"           width="16" height="64"/>

@@ -525,10 +525,11 @@ Creature *Map::moveObjects(MapCoords avatar) {
 
             /* Perform any special actions (such as pirate ships firing cannons, sea serpents' fireblast attect, etc.) */
             if (!m->specialAction())
-                moveObject(this, m, avatar);
-
-            /* After moving, Enact any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
-            m->specialEffect();
+            {
+                if	(moveObject(this, m, avatar))
+                /* After moving, Enact any special effects of the creature (such as storms eating objects, whirlpools teleporting, etc.) */
+                	m->specialEffect();
+            }
         }
     }
 

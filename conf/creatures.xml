@@ -38,7 +38,7 @@
 
 	<!-- Forces of nature -->
     <creature id="23" encounterSize="1" name="Whirlpool" forceOfNature="true" tile="whirlpool" basehp="255" exp="16" swims="true" movement="wanders" cantattack="true" canMoveOntoCreatures="true" canMoveOntoAvatar="true" wontattack="true"/>
-    <creature id="24" encounterSize="1" name="Storm" forceOfNature="true" tile="storm" basehp="255" exp="16" flies="true" movement="wanders" cantattack="true" canMoveOntoCreatures="true" canMoveOntoAvatar="true" wontattack="true"/>
+    <creature id="24" encounterSize="1" name="Twister" forceOfNature="true" tile="twister" basehp="255" exp="16" flies="true" movement="wanders" cantattack="true" canMoveOntoCreatures="true" canMoveOntoAvatar="true" wontattack="true"/>
 
     <!-- Main creatures -->
     <creature id="25" encounterSize="12" name="Rat" tile="rat" basehp="48" exp="4" movement="wanders" good="true" leader="38"/>
