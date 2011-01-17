@@ -1140,10 +1140,9 @@ void CombatController::attack() {
             screenMessage("Last One!\n");
     }
 
-    // does weapon leaves a tile behind? (e.g. flaming oil)
+    // does weapon leave a tile behind? (e.g. flaming oil)
     const Tile *ground = map->tileTypeAt(targetCoords, WITHOUT_OBJECTS);
-    if (!weapon->leavesTile().empty() && ground->isWalkable() &&
-        (!foundTarget))
+    if (!weapon->leavesTile().empty() && ground->isWalkable())
         map->annotations->add(targetCoords, map->tileset->getByName(weapon->leavesTile())->id);
 
     /* show the 'miss' tile */
