@@ -153,6 +153,8 @@ void TileAnimFrameTransform::draw(Image *dest, Tile *tile, MapTile &mapTile) {
     if (++mapTile.frame >= tile->getFrames())
         mapTile.frame = 0;
     tile->getImage()->drawSubRectOn(dest, 0, 0, 0, mapTile.frame * tile->getHeight(), tile->getWidth(), tile->getHeight());
+
+
 }
 
 TileAnimPixelColorTransform::TileAnimPixelColorTransform(int x, int y, int w, int h) {

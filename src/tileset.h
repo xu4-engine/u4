@@ -47,6 +47,7 @@ public:
 
     static void loadAll();
     static void unloadAll();
+    static void unloadAllImages();
     static Tileset* get(const string &name);
 
     static Tile* findTileByName(const string &name);        
@@ -55,6 +56,7 @@ public:
 public:
     void load(const ConfigElement &tilesetConf);
     void unload();
+    void unloadImages();
     Tile* get(TileId id);
     Tile* getByName(const string &name);
     string getImageName() const;

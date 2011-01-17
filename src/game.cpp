@@ -172,19 +172,42 @@ int AlphaActionController::get(char lastValidLetter, const string &prompt, Event
 GameController::GameController() : mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H), paused(false), pausedTimer(0) {
 }
 
+void GameController::initScreen()
+{
+    Image *screen = imageMgr->get("screen")->image;
+
+    screen->fillRect(0, 0, screen->width(), screen->height(), 0, 0, 0);
+    screenRedrawScreen();
+}
+
+void GameController::initScreenWithLoadState()
+{
+    musicMgr->play();
+    imageMgr->get(BKGD_BORDERS)->image->draw(0, 0);
+    c->stats->update(); /* draw the party stats */
+
+    screenMessage("Press Alt-h for help\n");
+    screenPrompt();
+
+    eventHandler->pushMouseAreaSet(mouseAreas);
+
+    eventHandler->setScreenUpdate(&gameUpdateScreen);
+}
+
+
 void GameController::init() {
     FILE *saveGameFile, *monstersFile;    
-    Image *screen = imageMgr->get("screen")->image;
 
     TRACE(gameDbg, "gameInit() running.");
 
-    screen->fillRect(0, 0, screen->width(), screen->height(), 0, 0, 0);
-    screenTextAt(13, 11, "Loading Game...");    
-    screenRedrawScreen();    
+    initScreen();
+
     ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, 4);
     pb.setBorderColor(240, 240, 240);
     pb.setBorderWidth(1);
     pb.setColor(0, 0, 128);
+
+    screenTextAt(13, 11, "Loading Game...");
 
     /* initialize the global game context */
     c = new Context;
@@ -230,9 +253,6 @@ void GameController::init() {
     Map *map = mapMgr->get(MapId(c->saveGame->location));
     TRACE_LOCAL(gameDbg, "Initializing start location.");
 
-    /* initialize the moons (must be done from the world map) */
-    initMoons();
-    
     /* if our map is not the world map, then load our map */
     if (map->type != Map::WORLD)
         setMap(map, 1, NULL);    
@@ -281,24 +301,18 @@ void GameController::init() {
 
     ++pb;
 
-    musicMgr->play();
-    imageMgr->get(BKGD_BORDERS)->image->draw(0, 0);
-    c->stats->update(); /* draw the party stats */
-
-    screenMessage("Press Alt-h for help\n");    
-    screenPrompt();    
-
     TRACE_LOCAL(gameDbg, "Settings up reagent menu."); 
     c->stats->resetReagentsMenu();
 
-    eventHandler->pushMouseAreaSet(mouseAreas); 
-    
     /* add some observers */
     c->aura->addObserver(c->stats);
     c->party->addObserver(c->stats);
-    
-    eventHandler->setScreenUpdate(&gameUpdateScreen);
 
+    /* initialize the moons (must be done from the world map) */
+    initMoons();
+
+
+    initScreenWithLoadState();
     TRACE(gameDbg, "gameInit() completed successfully."); 
 }
 
@@ -1310,12 +1324,29 @@ bool GameController::keyPressed(int key) {
                 eventHandler->pushController(intro);
                 intro->init();
                 eventHandler->run();
-                intro->deleteIntro();
+
+
                 if (!quit) {
                     eventHandler->setControllerDone(false);
                     eventHandler->popController();
                     eventHandler->pushController(this);
-                    init();
+
+
+                	if (intro->hasInitiatedNewGame())
+                    {
+                    	//Loads current savegame
+                    	init();
+                    }
+                    else
+                    {
+                    	//Inits screen stuff without renewing game
+                    	initScreen();
+                    	initScreenWithLoadState();
+                    }
+
+                    this->mapArea.reinit();
+
+                    intro->deleteIntro();
                     eventHandler->run();                
                 }
             }

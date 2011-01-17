@@ -23,7 +23,7 @@ TileId Tile::nextId = 0;
 
 Tile::Tile(Tileset *tileset) : 
     id(nextId++), tileset(tileset), w(0), h(0), frames(0), scale(1), 
-    anim(NULL), opaque(false), rule(NULL), image(NULL), tiledInDungeon(false) {
+    anim(NULL), opaque(false), rule(NULL), image(NULL), tiledInDungeon(false), animationRule("") {
 }
 
 /**
@@ -37,17 +37,8 @@ void Tile::loadProperties(const ConfigElement &conf) {
 
     /* get the animation for the tile, if one is specified */
     if (conf.exists("animation")) {
-        extern TileAnimSet *tileanims;
-        string animation = conf.getString("animation");
-
-        anim = NULL;
-        if (tileanims)
-            anim = tileanims->getByName(animation);
-        if (anim == NULL)
-            errorWarning("Warning: animation style '%s' not found", animation.c_str());        
+        animationRule = conf.getString("animation");
     }
-    else
-        anim = NULL;    
 
     /* see if the tile is opaque */
     opaque = conf.getBool("opaque"); 
@@ -63,12 +54,6 @@ void Tile::loadProperties(const ConfigElement &conf) {
 
     /* get the number of frames the tile has */    
     frames = conf.getInt("frames", 1);
-    
-    /* FIXME: This is a hack to address the fact that there are 4
-       frames for the guard in VGA mode, but only 2 in EGA. Is there
-       a better way to handle this? */
-    if (name == "guard" && settings.videoType == "EGA")
-        frames = 2;    
 
     /* get the name of the image that belongs to this tile */
     if (conf.exists("image"))
@@ -97,7 +82,7 @@ void Tile::loadProperties(const ConfigElement &conf) {
     }
 }
 
-Image *Tile::getImage() { 
+Image *Tile::getImage() {
     if (!image)
         loadImage();
     return image;
@@ -110,7 +95,9 @@ bool Tile::isTiledInDungeon() const  { return tiledInDungeon; }
  */ 
 void Tile::loadImage() {
     if (!image) {
-        SubImage *subimage = NULL;        
+        scale = settings.scale;
+
+    	SubImage *subimage = NULL;
 
         ImageInfo *info = imageMgr->get(imageName);
         if (!info) {
@@ -119,7 +106,16 @@ void Tile::loadImage() {
                 info = imageMgr->get(subimage->srcImageName);            
         }
 
-        scale = settings.scale;
+//        /* FIXME: This is a hack to address the fact that there are 4
+//           frames for the guard in VGA mode, but only 2 in EGA. Is there
+//           a better way to handle this? */
+//        if (name == "guard")
+//        {
+//        	if (settings.videoType == "EGA")
+//        		frames = 2;
+//        	else
+//        		frames = 4;
+//        }
 
         if (info) {
             w = (subimage ? subimage->width * scale : info->width * scale);
@@ -136,6 +132,16 @@ void Tile::loadImage() {
             else info->image->drawOn(image, 0, 0);                
         }
 
+        if (animationRule.size() > 0) {
+            extern TileAnimSet *tileanims;
+
+            anim = NULL;
+            if (tileanims)
+                anim = tileanims->getByName(animationRule);
+            if (anim == NULL)
+                errorWarning("Warning: animation style '%s' not found", animationRule.c_str());
+        }
+
         /* if we have animations, we always used 'animated' to draw from */
         if (anim)
             image->alphaOff();
@@ -144,6 +150,15 @@ void Tile::loadImage() {
             errorFatal("Error: couldn't load image for tile '%s'", name.c_str());
     }
 }
+
+void Tile::deleteImage()
+{
+	delete this->image;
+	this->image = NULL;
+	this->scale = settings.scale;
+
+}
+
 
 /**
  * MapTile Class Implementation

@@ -292,11 +292,12 @@ void screenDelete() {
  */
 void screenReInit() {        
     intro->deleteIntro();       /* delete intro stuff */
-    Tileset::unloadAll(); /* unload tilesets */
-    screenDelete(); /* delete screen stuff */            
-    screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */    
-    Tileset::loadAll(); /* re-load tilesets */
-    intro->init();    /* re-fix the backgrounds loaded and scale images, etc. */            
+    Tileset::unloadAllImages(); /* unload tilesets, which will be reloaded lazily as needed */
+    ImageMgr::destroy();
+    tileanims = NULL;
+    screenDelete(); /* delete screen stuff */
+    screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
+    intro->init();    /* re-fix the backgrounds loaded and scale images, etc. */
 }
 
 /**

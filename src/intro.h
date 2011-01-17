@@ -78,6 +78,8 @@ public:
     IntroController();
 
     bool init();
+    bool hasInitiatedNewGame();
+
     void deleteIntro();
     bool keyPressed(int key);
     unsigned char *getSigData();
@@ -211,6 +213,8 @@ private:
     int sleepCycles;
     int scrPos;  /* current position in the script table */
     IntroObjectState *objectStateTable;
+
+    bool justInitiatedNewGame;
 
     //
     // Title defs, structs, methods, and data members

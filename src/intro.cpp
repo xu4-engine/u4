@@ -272,6 +272,9 @@ IntroController::IntroController() :
  * and map data from title.exe.
  */
 bool IntroController::init() {
+
+	justInitiatedNewGame = false;
+
     // sigData is referenced during Titles initialization
     binData = new IntroBinData();
     binData->load();
@@ -313,6 +316,11 @@ bool IntroController::init() {
         updateScreen();
 
     return true;
+}
+
+bool IntroController::hasInitiatedNewGame()
+{
+	return this->justInitiatedNewGame;
 }
 
 /**
@@ -733,6 +741,7 @@ void IntroController::initiateNewGame() {
         saveGameMonstersWrite(NULL, saveGameFile);
         fclose(saveGameFile);
     }
+    justInitiatedNewGame = true;
 
     // show the text thats segues into the main game
     showText(binData->introGypsy[GYP_SEGUE1]);

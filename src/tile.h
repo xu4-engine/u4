@@ -95,6 +95,9 @@ public:
     static bool canAttackOverTile(const Tile *tile);
 
     TileId id;          /**< an id that is unique across all tilesets */
+
+    void deleteImage();
+
 private:
     string name;        /**< The name of this tile */
     Tileset *tileset;   /**< The tileset this tile belongs to */
@@ -116,6 +119,8 @@ private:
     // disallow assignments, copy contruction
     Tile(const Tile&);
     const Tile &operator=(const Tile&);
+    string animationRule;
+
 
     static TileId nextId;
 };

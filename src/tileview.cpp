@@ -41,6 +41,14 @@ TileView::~TileView() {
 void TileView::reinit() {
     View::reinit();
     tileset = Tileset::get("base");
+
+    //Scratchpad needs to be re-inited if we rescale...
+    if (animated)
+    {
+    	delete animated;
+    	animated = NULL;
+    }
+    animated = Image::create(SCALED(tileWidth), SCALED(tileHeight), false, Image::HARDWARE);
 }
 
 void TileView::loadTile(MapTile &mapTile)

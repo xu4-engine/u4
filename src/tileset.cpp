@@ -159,7 +159,7 @@ void Tileset::loadAll() {
     const Config *config = Config::getInstance();    
     vector<ConfigElement> conf;
 
-    TRACE(dbg, "Unloading all tilesets");    
+    TRACE(dbg, "Unloading all tilesets");
     unloadAll();
 
     // get the config element for all tilesets
@@ -206,6 +206,20 @@ void Tileset::unloadAll() {
     
     Tile::resetNextId();
 }
+
+/**
+ * Delete all tileset images
+ */
+void Tileset::unloadAllImages() {
+    TilesetMap::iterator i;
+
+    for (i = tilesets.begin(); i != tilesets.end(); i++) {
+        i->second->unloadImages();
+    }
+
+    Tile::resetNextId();
+}
+
 
 /**
  * Returns the tileset with the given name, if it exists
@@ -274,6 +288,17 @@ void Tileset::load(const ConfigElement &tilesetConf) {
         index += tile->getFrames();
     }
     totalFrames = index;   
+}
+
+void Tileset::unloadImages()
+{
+    Tileset::TileIdMap::iterator i;
+
+    /* free all the image memory and nullify so that reloading can automatically take place lazily */
+    for (i = tiles.begin(); i != tiles.end(); i++)
+    {
+    	i->second->deleteImage();
+    }
 }
 
 /**
