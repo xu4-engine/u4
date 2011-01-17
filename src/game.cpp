@@ -180,7 +180,7 @@ void GameController::initScreen()
     screenRedrawScreen();
 }
 
-void GameController::initScreenWithLoadState()
+void GameController::initScreenWithoutReloadingState()
 {
     musicMgr->play();
     imageMgr->get(BKGD_BORDERS)->image->draw(0, 0);
@@ -256,6 +256,10 @@ void GameController::init() {
     /* if our map is not the world map, then load our map */
     if (map->type != Map::WORLD)
         setMap(map, 1, NULL);    
+    else
+        /* initialize the moons (must be done from the world map) */
+        initMoons();
+
 
     /**
      * Translate info from the savegame to something we can use
@@ -308,11 +312,9 @@ void GameController::init() {
     c->aura->addObserver(c->stats);
     c->party->addObserver(c->stats);
 
-    /* initialize the moons (must be done from the world map) */
-    initMoons();
 
 
-    initScreenWithLoadState();
+    initScreenWithoutReloadingState();
     TRACE(gameDbg, "gameInit() completed successfully."); 
 }
 
@@ -1341,7 +1343,7 @@ bool GameController::keyPressed(int key) {
                     {
                     	//Inits screen stuff without renewing game
                     	initScreen();
-                    	initScreenWithLoadState();
+                    	initScreenWithoutReloadingState();
                     }
 
                     this->mapArea.reinit();
