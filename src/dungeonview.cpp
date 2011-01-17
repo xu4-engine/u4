@@ -22,8 +22,8 @@ DungeonView::DungeonView(int x, int y, int columns, int rows, const string &tile
 
 void DungeonView::drawInDungeon(Tile *tile, int distance, Direction orientation, bool tiledWall) {
     Image *baseTileImage, *scaled;
-    const static int nscale[] = { 8, 4, 2, 1 }, doffset[] = { 96, 96, 88, 88 };
-    const static int lscale[] = { 22, 14, 6, 2 };
+    const static int nscale[] = { 11, 9, 5, 2 }, doffset[] = { 88 , 88, 88, 88 };
+    const static int lscale[] = { 22, 18, 10, 4};
     const int *dscale = tiledWall ? lscale : nscale;
 
     // create our animated version of the tile

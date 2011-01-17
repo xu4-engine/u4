@@ -197,10 +197,9 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 
                     tiles = dungeonViewGetTiles(y, 0);
                     type = dungeonViewTilesToGraphic(tiles);
+                    screenDungeonDrawWall(0, y, (Direction)c->saveGame->orientation, type);
                     if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
                         screenDungeonDrawTile(c->location->map->tileset->get(tiles.front().id), y, Direction(c->saveGame->orientation));
-                    else
-                        screenDungeonDrawWall(0, y, (Direction)c->saveGame->orientation, type);
                 }
             }
         }

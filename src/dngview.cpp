@@ -59,7 +59,7 @@ DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile> &tiles) 
     static const MapTile down_ladder = c->location->map->tileset->getByName("down_ladder")->id;
     static const MapTile updown_ladder = c->location->map->tileset->getByName("up_down_ladder")->id;
 
-    /* 
+    /*
      * check if the dungeon tile has an annotation or object on top
      * (always displayed as a tile, unless a ladder)
      */
@@ -68,7 +68,7 @@ DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile> &tiles) 
             return DNGGRAPHIC_LADDERUP;
         else if (tile.id == down_ladder.id)
             return DNGGRAPHIC_LADDERDOWN;
-        else if (tile.id == updown_ladder.id)            
+        else if (tile.id == updown_ladder.id)
             return DNGGRAPHIC_LADDERUPDOWN;
         else if (tile.id == corridor.id)
             return DNGGRAPHIC_NONE;
@@ -76,9 +76,9 @@ DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile> &tiles) 
             return DNGGRAPHIC_BASETILE;
     }
 
-    /* 
+    /*
      * if not an annotation or object, then the tile is a dungeon
-     * token 
+     * token
      */
     Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
     DungeonToken token = dungeon->tokenForTile(tile);
@@ -97,9 +97,9 @@ DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile> &tiles) 
         return DNGGRAPHIC_LADDERUP;
     case DUNGEON_LADDER_DOWN:
         return DNGGRAPHIC_LADDERDOWN;
-    case DUNGEON_LADDER_UPDOWN:        
+    case DUNGEON_LADDER_UPDOWN:
         return DNGGRAPHIC_LADDERUPDOWN;
-    
+
     default:
         return DNGGRAPHIC_DNGTILE;
     }
