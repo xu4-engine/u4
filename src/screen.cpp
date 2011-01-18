@@ -177,6 +177,9 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
     static MapTile black = c->location->map->tileset->getByName("black")->id;
     static MapTile avatar = c->location->map->tileset->getByName("avatar")->id;
 
+    //Note: This shouldn't go above 4, unless we check opaque tiles each step of the way.
+    const int farthest_non_wall_tile_visibility = 4;
+
     ASSERT(c != NULL, "context has not yet been initialized");
 
 
@@ -189,17 +192,42 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
                 for (y = 3; y >= 0; y--) {
                     DungeonGraphicType type;
 
-                    tiles = dungeonViewGetTiles(y, -1);
-                    screenDungeonDrawWall(-1, y, (Direction)c->saveGame->orientation, dungeonViewTilesToGraphic(tiles));
+                    //FIXME: Maybe this should be in a loop
+					tiles = dungeonViewGetTiles(y, -1);
+                    type = dungeonViewTilesToGraphic(tiles);
+					screenDungeonDrawWall(-1, y, (Direction)c->saveGame->orientation, type);
 
-                    tiles = dungeonViewGetTiles(y, 1);
-                    screenDungeonDrawWall(1, y, (Direction)c->saveGame->orientation, dungeonViewTilesToGraphic(tiles));
+//					if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
+//						screenDungeonDrawTile(c->location->map->tileset->get(tiles.front().id), -1, y, Direction(c->saveGame->orientation));
+
+					tiles = dungeonViewGetTiles(y, 1);
+                    type = dungeonViewTilesToGraphic(tiles);
+					screenDungeonDrawWall(1, y, (Direction)c->saveGame->orientation, type);
+
+//					if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
+//						screenDungeonDrawTile(c->location->map->tileset->get(tiles.front().id), 1, y, Direction(c->saveGame->orientation));
+
 
                     tiles = dungeonViewGetTiles(y, 0);
                     type = dungeonViewTilesToGraphic(tiles);
                     screenDungeonDrawWall(0, y, (Direction)c->saveGame->orientation, type);
-                    if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
-                        screenDungeonDrawTile(c->location->map->tileset->get(tiles.front().id), y, Direction(c->saveGame->orientation));
+
+
+                    //This only checks that the tile at y==3 is opaque
+                    if (y == 3 && !tiles.front().getTileType()->isOpaque())
+                   	{
+
+                   		for (int y_obj = farthest_non_wall_tile_visibility; y_obj > y; y_obj--)
+                   		{
+                   		vector<MapTile> distant_tiles = dungeonViewGetTiles(y_obj     , 0);
+                   		DungeonGraphicType distant_type = dungeonViewTilesToGraphic(distant_tiles);
+
+						if ((distant_type == DNGGRAPHIC_DNGTILE) || (distant_type == DNGGRAPHIC_BASETILE))
+							screenDungeonDrawTile(c->location->map->tileset->get(distant_tiles.front().id),0, y_obj, Direction(c->saveGame->orientation));
+                   		}
+                   	}
+					if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
+						screenDungeonDrawTile(c->location->map->tileset->get(tiles.front().id), 0, y, Direction(c->saveGame->orientation));
                 }
             }
         }

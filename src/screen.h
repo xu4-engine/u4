@@ -120,7 +120,7 @@ void screenEnableCursor(void);
 void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);
 
-void screenDungeonDrawTile(Tile *tile, int distance, Direction orientation);
+void screenDungeonDrawTile(Tile *tile, int x_offset, int distance, Direction orientation);
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
 
 void screenSetMouseCursor(MouseCursor cursor);

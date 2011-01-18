@@ -467,6 +467,7 @@ void Image::drawSubRectOn(Image *d, int x, int y, int rx, int ry, int rw, int rh
     dest.y = y;
     /* dest w & h unused */
 
+
     SDL_BlitSurface(surface, &src, destSurface, &dest);
 }
 

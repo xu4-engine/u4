@@ -19,7 +19,7 @@ public:
     DungeonView(int x, int y, int columns, int rows);
     DungeonView(int x, int y, int columns, int rows, const string &tileset);
 
-    void drawInDungeon(Tile *tile, int distance, Direction orientation, bool tiled);
+    void drawInDungeon(Tile *tile, int x_offset, int distance, Direction orientation, bool tiled);
 };
 
 #endif /* DUNGEONVIEW_H */

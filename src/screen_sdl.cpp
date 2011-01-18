@@ -481,6 +481,8 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
 void screenDrawImage(const string &name, int x, int y) {
     ImageInfo *info = imageMgr->get(name);
     if (info) {
+    	info->image->alphaOn();
+    	info->image->setTransparentIndex(0);
         info->image->draw(x, y);
         return;
     }
@@ -711,18 +713,18 @@ int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, 
     return index;
 }
 
-void screenDungeonDrawTile(Tile *tile, int distance, Direction orientation) {
+void screenDungeonDrawTile(Tile *tile, int x_offset, int distance, Direction orientation) {
     DungeonView view(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H);
     
     // Draw the tile to the screen
-    view.drawInDungeon(tile, distance, orientation, tile->isTiledInDungeon());
+    view.drawInDungeon(tile, x_offset, distance, orientation, tile->isTiledInDungeon());
 }
 
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
     int index;
 
     index = screenDungeonGraphicIndex(xoffset, distance, orientation, type);
-    if (index == -1)
+    if (index == -1 || distance >= 4)
         return;
 
     int x = 0, y = 0;
@@ -731,6 +733,8 @@ void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, Dun
         x = subimage->x;
         y = subimage->y;
     }
+
+
 
     screenDrawImage(dngGraphicInfo[index].subimage, (BORDER_WIDTH + x) * scale, (BORDER_HEIGHT + y) * scale);
     if (dngGraphicInfo[index].subimage2 != NULL) {
