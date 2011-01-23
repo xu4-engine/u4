@@ -8,7 +8,7 @@ CC=gcc
 CXX=g++
 UI=sdl
 LIBPNGDIR=../../libpng
-UILIBS=-L$(HOME)/Library/Frameworks \
+UILIBS=-L/Library/Frameworks \
 	-framework Cocoa \
 	-framework SDL \
 	-framework SDL_mixer
@@ -24,9 +24,18 @@ DEBUGCXXFLAGS=-ggdb
 # Optimising
 #DEBUGCXXFLAGS=-O2 -mdynamic-no-pic
 
-CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Application\ Support/xu4\" -no-cpp-precomp -L$(LIBPNGDIR) -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc
+#SYSROOT=/Developer/SDKs/MacOSX10.4u.sdk
+SYSROOT=/Developer/SDKs/MacOSX10.6.sdk
+
+#SPECIFIC_ARCH=-arch i386 
+#SPECIFIC_ARCH=-arch ppc
+#There appear to be conflicts with libpng if you attempt to specify an ARCH.
+SPECIFIC_ARCH=
+
+
+CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Application\ Support/xu4\" -no-cpp-precomp -L$(LIBPNGDIR) -isysroot $(SYSROOT) $(SPECIFIC_ARCH)
 CFLAGS=$(CXXFLAGS)
-LIBS=$(LIBPNGDIR)/libpng.a $(UILIBS) $(shell xml2-config --libs) -lobjc -lz -arch i386 -arch ppc
+LIBS=$(LIBPNGDIR)/libpng.a $(UILIBS) $(shell xml2-config --libs) -lobjc -lz $(SPECIFIC_ARCH)
 INSTALL=install
 
 OBJS=macosx/SDLMain.o macosx/osxinit.o macosx/osxerror.o
