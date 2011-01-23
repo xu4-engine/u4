@@ -5,7 +5,7 @@
  */
  
 /* XPM */
-static char * n_xpm[] = {
+static const char * n_xpm[] = {
 "16 16 3 1",
 "     c None",
 ".    c #FFFFFF",
@@ -29,7 +29,7 @@ static char * n_xpm[] = {
 "7,0"};
 
 /* XPM */
-static char * e_xpm[] = {
+static const char * e_xpm[] = {
 "16 16 3 1",
 "     c None",
 ".    c #FFFFFF",
@@ -53,7 +53,7 @@ static char * e_xpm[] = {
 "15,7"};
 
 /* XPM */
-static char * s_xpm[] = {
+static const char * s_xpm[] = {
 "16 16 3 1",
 "     c None",
 ".    c #FFFFFF",
@@ -77,7 +77,7 @@ static char * s_xpm[] = {
 "7,15"};
 
 /* XPM */
-static char * w_xpm[] = {
+static const char * w_xpm[] = {
 "16 16 3 1",
 "     c None",
 ".    c #FFFFFF",
