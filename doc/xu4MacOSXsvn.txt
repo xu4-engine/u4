@@ -1,5 +1,5 @@
 =======================================
-How to Compile xu4 from CVS in Mac OS X
+How to Compile xu4 from SVN in Mac OS X
 =======================================
 
 This document explains how to download the latest version of the xu4 source
@@ -17,25 +17,27 @@ instead of Xcode should be possible.
 Things you only have to do once
 -------------------------------
 
-1. Grab SDL-devel-1.2.7.pkg.tar.gz from http://www.libsdl.org/download-1.2.php
-   Unpack and install it.
+1. Grab SDL-1.2.14.dmg and SDL-devel-1.2.14-extras.dmg from 
+   http://www.libsdl.org/download-1.2.php
+   Unpack contents of SDL-1.2.14.dmg to /Library/Frameworks
+   Contents of SDL-devel-1.2.14-extras.dmg will be extracted in step 
 
 2. Grab SDL_mixer-devel-1.2.5.pkg.tar.gz from
    http://www.libsdl.org/projects/SDL_mixer/
-   Unpack and install it.
+   Unpack contents of SDL_mixer-1.2.11.dmg to /Library/Frameworks
 
 3. Grab xu4_libxml_osx.dmg.gz from
    http://xu4.sourceforge.net/download/xu4_libxml_osx.dmg.gz
    Unpack and open the .dmg. Copy the libxml frameworks into
-   ~/Library/Frameworks
+   /Library/Frameworks
    If you have older versions of the libxml and libiconv frameworks from
    previous xu4 development, you need to remove them first.
 
-4. Grab libpng-1.2.6.tar.gz from
+4. Grab libpng-1.2.44.tar.gz (with config) from
    http://www.libpng.org/pub/png/libpng.html
    Unpack it into a temporary directory. Then run the following commands
    using the Terminal app:
-      cd libpng-1.2.6
+      cd libpng-1.2.44
       cp scripts/makefile.std Makefile
    Edit Makefile and change the ZLIBLIB and ZLIBINC lines to:
       ZLIBLIB=/usr/lib
@@ -47,18 +49,16 @@ Things you only have to do once
    e.g. cd ~/
 
 6. Check out the current xu4 cvs source code
-      cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 login
-   Just press enter when it asks for password
-      cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/xu4 co u4
+	svn co https://xu4.svn.sourceforge.net/svnroot/xu4/trunk/u4 xu4
 
 7. Download the Ultima IV data files and gfx update (if desired) and copy
    them into the directory where you put xu4:
       cp path/to/ultima4.zip .
       cp path/to/u4upgrad.zip .
 
-8. Copy or move the libpng-1.2.6 directory containing the libpng headers
+8. Copy or move the libpng-1.2.44 directory containing the libpng headers
    and library to the same directory:
-      cp -R path/to/libpng-1.2.6 libpng
+      cp -R path/to/libpng-1.2.44 libpng
    Alternatively you can edit u4/src/Makefile.macosx and change the LIBPNGDIR
    line to point to the correct location for the libpng headers and library.
    
@@ -66,7 +66,9 @@ Things you only have to do once
       cd u4/src
 
 10. Copy the files SDLMain.h and SDLMain.c into the 'macosx' dir
-      cp "/Library/Application Support/Apple/Developer Tools/Project Templates/Application/SDL Application"/SDLMain.* macosx
+	You can get them from SDL-devel-1.2.14-extras.dmg/SDLMain/NIBless
+	Copy them into src/macosx
+	(see step 1, if you haven't downloaded the .dmg file yet)
 
 11. Compile xu4 
       make -f Makefile.macosx
@@ -87,7 +89,7 @@ Things you have to do every time the xu4 source code changes
       cd u4
 
 3. Checkout the latest changes from CVS
-      cvs update -d
+      svn up
 
 4. Change to the source directory
       cd src
