@@ -236,9 +236,9 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
         else {
             for (y = 0; y < VIEWPORT_H; y++) {
                 for (x = 0; x < VIEWPORT_W; x++) {
-                    if (x < 2 || y < 2 || x >= 10 || y >= 10)
-                        view->drawTile(black, false, x, y);
-                    else {
+//                    if (x < 2 || y < 2 || x >= 10 || y >= 10)
+//                        view->drawTile(black, false, x, y);
+//                    else {
                         tiles = dungeonViewGetTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
                         /* Only show blackness if there is no light */
@@ -248,7 +248,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
                             view->drawTile(avatar, false, x, y);
                         else
                             view->drawTile(tiles, false, x, y);
-                    }
+//                    }
                 }
             }
         }

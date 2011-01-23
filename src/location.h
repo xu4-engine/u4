@@ -31,7 +31,6 @@ class Location : public Observable<Location *, MoveEvent &> {
 public:
     Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx, TurnCompleter *turnCompleter, Location *prev);
 
-    MapTile visibleTileAt(MapCoords coords, bool &focus);
     std::vector<MapTile> tilesAt(MapCoords coords, bool &focus);
     MapTile getReplacementTile(MapCoords coords);
     int getCurrentPosition(MapCoords *coords);

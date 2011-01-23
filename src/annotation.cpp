@@ -19,11 +19,13 @@
 /**
  * Constructors
  */ 
-Annotation::Annotation(const Coords &c, MapTile t, bool v) : 
+Annotation::Annotation(const Coords &c, MapTile t, bool v, bool coverUp) :
     coords(c), 
     tile(t),
     visual(v),
-    ttl(-1) {}
+    ttl(-1),
+    coverUp(coverUp)
+{}
 
 /**
  * Members
@@ -45,7 +47,7 @@ void Annotation::setTile(const MapTile &t)          { tile = t;           } /**<
 void Annotation::setVisualOnly(bool v)              { visual = v;         } /**< Sets whether or not the annotation is visual-only */
 void Annotation::setTTL(int turns)                  { ttl = turns;        } /**< Sets the number of turns the annotation will live */
 void Annotation::passTurn()                         { if (ttl > 0) ttl--; } /**< Passes a turn for the annotation */
-
+bool Annotation::isCoverUp()						{ return this->coverUp;}
 /**
  * Operators
  */ 
@@ -68,9 +70,9 @@ AnnotationMgr::AnnotationMgr() {}
 /**
  * Adds an annotation to the current map
  */
-Annotation *AnnotationMgr::add(Coords coords, MapTile tile, bool visual) {
+Annotation *AnnotationMgr::add(Coords coords, MapTile tile, bool visual, bool isCoverUp) {
     /* new annotations go to the front so they're handled "on top" */
-    annotations.push_front(Annotation(coords, tile, visual));
+    annotations.push_front(Annotation(coords, tile, visual, isCoverUp));
     return &annotations.front();
 }        
 

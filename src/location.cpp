@@ -40,18 +40,6 @@ Location::Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx
 }
 
 /**
- * Returns the visible tile at the given point on a map.  This
- * includes visual-only annotations like attack icons.
- */
-MapTile Location::visibleTileAt(MapCoords coords, bool &focus) {
-
-    /* get the stack of tiles and take the top tile */
-    std::vector<MapTile> tiles = tilesAt(coords, focus);
-
-    return tiles.front();
-}
-
-/**
  * Return the entire stack of objects at the given location.
  */
 std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
@@ -112,8 +100,16 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
 
     /* then permanent annotations */
     for (i = a.begin(); i != a.end(); i++) {
-        if (!(*i)->isVisualOnly())
+        if (!(*i)->isVisualOnly()) {
             tiles.push_back((*i)->getTile());
+
+            /* If this is the first cover-up annotation,
+             * everything underneath it will be invisible,
+             * so stop here
+             */
+            if ((*i)->isCoverUp())
+            	return tiles;
+        }
     }
 
     /* finally the base tile */

@@ -654,7 +654,6 @@ void CombatController::rangedMiss(const Coords &coords, Creature *attacker) {
 }
 
 bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, int dir, const Weapon *weapon) {
-    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
     MapCoords new_coords = coords;
 
     MapTile misstile = map->tileset->getByName(weapon->getMissTile())->id;
@@ -686,15 +685,11 @@ bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, i
  * by weapons, cannon fire, spells, etc.
  */
 void CombatController::attackFlash(const Coords &coords, MapTile tile, int timeFactor) {
-    c->location->map->annotations->add(coords, tile, true);
-    doScreenAnimationsWhilePausing(timeFactor);
-    c->location->map->annotations->remove(coords, tile);
+	GameController::flashTile(coords, tile, timeFactor);
 }
 
 void CombatController::attackFlash(const Coords &coords, const string &tilename, int timeFactor) {
-    Tile *tile = c->location->map->tileset->getByName(tilename);
-    ASSERT(tile, "no tile named '%s' found in tileset", tilename.c_str());
-    attackFlash(coords, tile->id, timeFactor);
+    GameController::flashTile(coords, tilename, timeFactor);
 }
 
 void CombatController::doScreenAnimationsWhilePausing(int timeFactor)

@@ -482,7 +482,6 @@ void screenDrawImage(const string &name, int x, int y) {
     ImageInfo *info = imageMgr->get(name);
     if (info) {
     	info->image->alphaOn();
-    	info->image->setTransparentIndex(0);
         info->image->draw(x, y);
         return;
     }

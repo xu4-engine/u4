@@ -7,6 +7,8 @@
 #include <SDL.h>
 
 #include <memory>
+#include <list>
+#include <utility>
 #include "debug.h"
 #include "image.h"
 
@@ -252,7 +254,7 @@ bool Image::getTransparentIndex(unsigned int &index) const {
     return true;
 }
 
-void Image::setTransparentIndex(unsigned int index) {
+void Image::setTransparentIndex(unsigned int index, int shadowOutlineWidth, int numFrames, int frameIndex) {
 
     SDL_SetAlpha(surface, SDL_SRCALPHA, SDL_ALPHA_OPAQUE);
 
@@ -264,7 +266,15 @@ void Image::setTransparentIndex(unsigned int index) {
 
         SDL_GetRGB(index, surface->format, &t_r, &t_g, &t_b);
 
-        for (y = 0; y < h; y++) {
+        std::list<std::pair<int,int> > opaqueXYs;
+
+        int frameHeight = h / numFrames;
+        //Min'd so that they never go out of range (>=h)
+        int top = std::min(h, frameIndex * frameHeight);
+        int bottom = std::min(h, top + frameHeight);
+
+        for (y = top; y < bottom; y++) {
+
             for (x = 0; x < w; x++) {
                 unsigned int r, g, b, a;
                 getPixel(x, y, r, g, b, a);
@@ -272,8 +282,32 @@ void Image::setTransparentIndex(unsigned int index) {
                     g == t_g &&
                     b == t_b) {
                     putPixel(x, y, r, g, b, IM_TRANSPARENT);
+                } else {
+                    putPixel(x, y, r, g, b, IM_OPAQUE);
+                    if (shadowOutlineWidth)
+                    	opaqueXYs.push_back(std::pair<int,int>(x,y));
                 }
             }
+        }
+
+        const unsigned int shadowOpacity = 32;
+        int ox, oy;
+        for (std::list<std::pair<int,int> >::iterator xy = opaqueXYs.begin();
+        		xy != opaqueXYs.end();
+        		++xy)
+        {
+        	ox = xy->first;
+        	oy = xy->second;
+        	for (x = std::max(0,ox - shadowOutlineWidth); x < std::min(w, ox + shadowOutlineWidth); ++x) {
+            	for (y = std::max(top,oy - shadowOutlineWidth); y < std::min(bottom, oy + shadowOutlineWidth); ++y) {
+
+                    unsigned int r, g, b, a;
+                    getPixel(x, y, r, g, b, a);
+                    if (a != IM_OPAQUE) {
+                        putPixel(x, y, r, g, b, std::min(IM_OPAQUE, a + shadowOpacity));
+                    }
+            	}
+        	}
         }
     }
 }
@@ -283,7 +317,7 @@ bool Image::isAlphaOn() const {
 }
 
 void Image::alphaOn() {
-    surface->flags |= SDL_SRCALPHA;    
+    surface->flags |= SDL_SRCALPHA;
 }
 
 void Image::alphaOff() {
@@ -339,11 +373,11 @@ void Image::putPixelIndex(int x, int y, unsigned int index) {
 /**
  * Fills a rectangle in the image with a given color.
  */
-void Image::fillRect(int x, int y, int w, int h, int r, int g, int b) {
+void Image::fillRect(int x, int y, int w, int h, int r, int g, int b, int a) {
     SDL_Rect dest;
     Uint32 pixel;
 
-    pixel = SDL_MapRGB(surface->format, static_cast<Uint8>(r), static_cast<Uint8>(g), static_cast<Uint8>(b));
+    pixel = SDL_MapRGBA(surface->format, static_cast<Uint8>(r), static_cast<Uint8>(g), static_cast<Uint8>(b), static_cast<Uint8>(a));
     dest.x = x;
     dest.y = y;
     dest.w = w;

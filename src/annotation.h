@@ -22,7 +22,7 @@ class Annotation {
 public:    
     typedef std::list<Annotation> List;
 
-    Annotation(const Coords &coords, MapTile tile, bool visual = false);        
+    Annotation(const Coords &coords, MapTile tile, bool visual = false, bool coverUp = false);
 
     void             debug_output() const;
     const Coords&    getCoords() const;
@@ -34,6 +34,7 @@ public:
     void             setVisualOnly(bool visual = true);
     void             setTTL(int turns);
     void             passTurn();
+    bool			 isCoverUp();
 
     bool operator==(const Annotation&) const;    
 
@@ -43,6 +44,8 @@ private:
     MapTile tile;        
     bool visual;
     int ttl;
+    bool coverUp;
+
 };
 
 /** 
@@ -54,7 +57,7 @@ class AnnotationMgr {
 public:        
     AnnotationMgr();
 
-    Annotation       *add(Coords coords, MapTile tile, bool visual = false);
+    Annotation       *add(Coords coords, MapTile tile, bool visual = false, bool isCoverUp = false);
     Annotation::List allAt(Coords pos);
     std::list<Annotation *> ptrsToAllAt(Coords pos);
     void             clear();

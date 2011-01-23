@@ -670,6 +670,23 @@ void GameController::finishTurn() {
     c->lastCommandTime = time(NULL);
 }
 
+/**
+ * Show an attack flash at x, y on the current map.
+ * This is used for 'being hit' or 'being missed'
+ * by weapons, cannon fire, spells, etc.
+ */
+void GameController::flashTile(const Coords &coords, MapTile tile, int timeFactor) {
+    c->location->map->annotations->add(coords, tile, true);
+    doScreenAnimationsWhilePausing(timeFactor);
+    c->location->map->annotations->remove(coords, tile);
+}
+
+void GameController::flashTile(const Coords &coords, const string &tilename, int timeFactor) {
+    Tile *tile = c->location->map->tileset->getByName(tilename);
+    ASSERT(tile, "no tile named '%s' found in tileset", tilename.c_str());
+    flashTile(coords, tile->id, timeFactor);
+}
+
 
 void GameController::doScreenAnimationsWhilePausing(int timeFactor)
 {
@@ -738,7 +755,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
     if (player >= 0)
         c->stats->highlightPlayer(player);
 
-    time = settings.spellEffectSpeed * settings.gameCyclesPerSecond * 60;
+    time = settings.spellEffectSpeed * 1000 / settings.gameCyclesPerSecond;
     soundPlay(sound, false, time);
 
     ///The following effect multipliers are not accurate
@@ -1829,14 +1846,6 @@ bool fireAt(const Coords &coords, bool originAvatar) {
 
 
     CombatController::attackFlash(coords, "miss_flash", 1);
-//    c->location->map->annotations->add(coords, c->location->map->tileset->getByName("miss_flash")->id, true);
-//    gameUpdateScreen();
-
-    // based on attack speed setting in setting struct, make a delay
-    // for the attack annotation
-    int animationDelay = MAX_BATTLE_SPEED - settings.battleSpeed;
-    //if (animationDelay > 0)
-    //    EventHandler::wait_msecs(animationDelay * 4);
 
     obj = c->location->map->objectAt(coords);
     Creature *m = dynamic_cast<Creature*>(obj);
@@ -1929,7 +1938,7 @@ void getChest(int player)
         if (obj)
             c->location->map->removeObject(obj);
         else
-            c->location->map->annotations->add(coords, newTile);
+            c->location->map->annotations->add(coords, newTile, false , true);
 
         // see if the chest is trapped and handle it
         getChestTrapHandler(player);
@@ -2355,7 +2364,7 @@ bool openAt(const Coords &coords) {
     
     Tile *floor = c->location->map->tileset->getByName("brick_floor");
     ASSERT(floor, "no floor tile found in tileset");
-    c->location->map->annotations->add(coords, floor->id)->setTTL(4);    
+    c->location->map->annotations->add(coords, floor->id, false, true)->setTTL(4);
 
     screenMessage("\nOpened!\n");
 

@@ -106,30 +106,33 @@ void Tile::loadImage() {
                 info = imageMgr->get(subimage->srcImageName);            
         }
 
-//        /* FIXME: This is a hack to address the fact that there are 4
-//           frames for the guard in VGA mode, but only 2 in EGA. Is there
-//           a better way to handle this? */
-//        if (name == "guard")
-//        {
-//        	if (settings.videoType == "EGA")
-//        		frames = 2;
-//        	else
-//        		frames = 4;
-//        }
+        /* FIXME: This is a hack to address the fact that there are 4
+           frames for the guard in VGA mode, but only 2 in EGA. Is there
+           a better way to handle this? */
+        if (name == "guard")
+        {
+        	if (settings.videoType == "EGA")
+        		frames = 2;
+        	else
+        		frames = 4;
+        }
+
+        info->image->alphaOff();
 
         if (info) {
             w = (subimage ? subimage->width * scale : info->width * scale);
             h = (subimage ? (subimage->height * scale) / frames : (info->height * scale) / frames);
             image = Image::create(w, h * frames, false, Image::HARDWARE);
 
-            info->image->alphaOff();
+
+            //info->image->alphaOff();
 
             /* draw the tile from the image we found to our tile image */
             if (subimage) {
                 Image *tiles = info->image;
                 tiles->drawSubRectOn(image, 0, 0, subimage->x * scale, subimage->y * scale, subimage->width * scale, subimage->height * scale);
             }
-            else info->image->drawOn(image, 0, 0);                
+            else info->image->drawOn(image, 0, 0);
         }
 
         if (animationRule.size() > 0) {
@@ -143,11 +146,14 @@ void Tile::loadImage() {
         }
 
         /* if we have animations, we always used 'animated' to draw from */
-        if (anim)
-            image->alphaOff();
+        //if (anim)
+        //    image->alphaOff();
 
         if (image == NULL)
             errorFatal("Error: couldn't load image for tile '%s'", name.c_str());
+
+        for (int f = 0; f < frames; ++f)
+        	image->setTransparentIndex(0, 1 * scale, frames, f);
     }
 }
 

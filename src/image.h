@@ -27,7 +27,7 @@ struct SubImage {
     int x, y, width, height;
 };
 
-#define IM_OPAQUE 255
+#define IM_OPAQUE (unsigned int) 255
 #define IM_TRANSPARENT 0
 
 /**
@@ -54,7 +54,7 @@ public:
     void setPalette(const RGBA *colors, unsigned n_colors);
     void setPaletteFromImage(const Image *src);
     bool getTransparentIndex(unsigned int &index) const;
-    void setTransparentIndex(unsigned int index);
+    void setTransparentIndex(unsigned int index, int shadowOutlineWidth = 0, int numFrames = 1, int frameIndex = 0);
 
     bool setFontColor(ColorFG fg, ColorBG bg);
     bool setFontColorFG(ColorFG fg);
@@ -74,7 +74,9 @@ public:
     /* writing to image */
     void putPixel(int x, int y, int r, int g, int b, int a);
     void putPixelIndex(int x, int y, unsigned int index);
-    void fillRect(int x, int y, int w, int h, int r, int g, int b);
+
+
+    void fillRect(int x, int y, int w, int h, int r, int g, int b, int a=IM_OPAQUE);
 
     /* reading from image */
     void getPixel(int x, int y, unsigned int &r, unsigned int &g, unsigned int &b, unsigned int &a) const;

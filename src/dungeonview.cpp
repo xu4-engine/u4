@@ -53,6 +53,9 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
         delete baseTileImage;
         baseTileImage = Image::duplicate(animated);
     }
+    baseTileImage->alphaOn();
+	baseTileImage->setTransparentIndex(0);
+
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
     if (dscale[distance] == 0)
@@ -75,13 +78,9 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
 
     	for (int x = i_x; x < f_x; x+=d_x)
     		for (int y = i_y; y < f_y; y+=d_y)
-    			//TODO Add a check for the rectangle w,h fields to deal with (currently non-existent) case where the scaling isn't a direct multiple of the tile width
-
     			baseTileImage->drawSubRectOn(this->screen,x,y,0,0,f_x - x,f_y - y);
     }
     else {
-    	scaled->alphaOn();
-    	scaled->setTransparentIndex(0);
 
     	int x = SCALED((VIEWPORT_W * tileWidth / 2.0) + this->x) - (scaled->width() / 2.0);
     	int y = SCALED((VIEWPORT_H * tileHeight / 2.0) + this->y) - (scaled->height() / 8.0);
