@@ -290,7 +290,7 @@ void Image::setTransparentIndex(unsigned int index, int shadowOutlineWidth, int 
             }
         }
 
-        const unsigned int shadowOpacity = 32;
+        const unsigned int shadowOpacity = 16;
         int ox, oy;
         for (std::list<std::pair<int,int> >::iterator xy = opaqueXYs.begin();
         		xy != opaqueXYs.end();
@@ -301,10 +301,12 @@ void Image::setTransparentIndex(unsigned int index, int shadowOutlineWidth, int 
         	for (x = std::max(0,ox - shadowOutlineWidth); x < std::min(w, ox + shadowOutlineWidth); ++x) {
             	for (y = std::max(top,oy - shadowOutlineWidth); y < std::min(bottom, oy + shadowOutlineWidth); ++y) {
 
+            		int divisor = 1 + shadowOutlineWidth * 2 - abs(ox - x) - abs(oy - y);
+
                     unsigned int r, g, b, a;
                     getPixel(x, y, r, g, b, a);
                     if (a != IM_OPAQUE) {
-                        putPixel(x, y, r, g, b, std::min(IM_OPAQUE, a + shadowOpacity));
+                        putPixel(x, y, r, g, b, std::min(IM_OPAQUE, a + shadowOpacity / divisor));
                     }
             	}
         	}

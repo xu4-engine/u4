@@ -152,8 +152,13 @@ void Tile::loadImage() {
         if (image == NULL)
             errorFatal("Error: couldn't load image for tile '%s'", name.c_str());
 
+        int transparency_shadow_size = 2;
+    	if (settings.videoType == "EGA")
+            transparency_shadow_size = 2;
+
+
         for (int f = 0; f < frames; ++f)
-        	image->setTransparentIndex(0, 1 * scale, frames, f);
+        	image->setTransparentIndex(0, transparency_shadow_size * scale, frames, f);
     }
 }
 
