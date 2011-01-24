@@ -71,7 +71,11 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     /* Add visual-only annotations to the list */
     for (i = a.begin(); i != a.end(); i++) {
         if ((*i)->isVisualOnly())        
+        {
             tiles.push_back((*i)->getTile());
+            /*Visual-only tiles will overlap all underneath*/
+            return tiles;
+        }
     }
 
     /* then the avatar is drawn (unless on a ship) */

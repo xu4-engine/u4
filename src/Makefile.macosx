@@ -62,14 +62,14 @@ install: u4
 	mkdir -p $(BUNDLE_CONTENTS)/Resources/vga
 	echo "APPL????" > $(BUNDLE_CONTENTS)/PkgInfo
 	cp macosx/Info.plist $(BUNDLE_CONTENTS)
-	cp ../mid/*.mid $(BUNDLE_CONTENTS)/Resources
+	cp ../mid/*.* $(BUNDLE_CONTENTS)/Resources
 	cp ../sound/*.ogg $(BUNDLE_CONTENTS)/Resources
 	cp ../conf/*.xml $(BUNDLE_CONTENTS)/Resources
 	cp ../conf/dtd/*.dtd $(BUNDLE_CONTENTS)/Resources/dtd
 	cp ../icons/xu4.icns $(BUNDLE_CONTENTS)/Resources
 	cp ../graphics/ega/*.png $(BUNDLE_CONTENTS)/Resources/ega
 	cp ../graphics/vga/*.png $(BUNDLE_CONTENTS)/Resources/vga
-	cp ../../ultima4.zip $(BUNDLE_CONTENTS)/Resources
+	cp ../../ultima4*.zip $(BUNDLE_CONTENTS)/Resources
 	cp ../../u4upgrad.zip $(BUNDLE_CONTENTS)/Resources
 	cp $< $(BUNDLE_CONTENTS)/MacOS
 
