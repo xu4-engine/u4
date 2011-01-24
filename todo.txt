@@ -1,0 +1,10 @@
+- Been working on timing of animations and events.
+	- Need to fix movement, compare movement with battle movement, update creature movement when the screen should update
+
+FIX BATTLE MOVEMENT for monsters.  add delay.
+
+Take sum of all overworld/town creatures delay, and use that as a portion
+of the regular step delay for even stepping.
+Integrate background animation into the mix.	
+	
+	SPELL RATIO 0.9911467901345249 

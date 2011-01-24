@@ -1914,7 +1914,7 @@ void getChest(int player)
     MapCoords coords;    
     c->location->getCurrentPosition(&coords);
     const Tile *tile = c->location->map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
-    MapTile newTile = c->location->getReplacementTile(coords);    
+    TileId newTile = c->location->getReplacementTile(coords, tile);
 
     /* get the object for the chest, if it is indeed an object */
     Object *obj = c->location->map->objectAt(coords);

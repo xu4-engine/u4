@@ -20,19 +20,21 @@ class TileAnim;
 class TileRule;
 
 /* attr masks */
-#define MASK_SHIP               0x0001
-#define MASK_HORSE              0x0002
-#define MASK_BALLOON            0x0004
-#define MASK_DISPEL             0x0008
-#define MASK_TALKOVER           0x0010
-#define MASK_DOOR               0x0020
-#define MASK_LOCKEDDOOR         0x0040
-#define MASK_CHEST              0x0080
-#define MASK_ATTACKOVER         0x0100
-#define MASK_CANLANDBALLOON     0x0200
-#define MASK_REPLACEMENT        0x0400
-#define MASK_FOREGROUND         0x0800
-#define MASK_LIVING_THING		0x1000
+#define MASK_SHIP               	0x0001
+#define MASK_HORSE              	0x0002
+#define MASK_BALLOON            	0x0004
+#define MASK_DISPEL             	0x0008
+#define MASK_TALKOVER           	0x0010
+#define MASK_DOOR               	0x0020
+#define MASK_LOCKEDDOOR         	0x0040
+#define MASK_CHEST              	0x0080
+#define MASK_ATTACKOVER         	0x0100
+#define MASK_CANLANDBALLOON     	0x0200
+#define MASK_REPLACEMENT        	0x0400
+#define MASK_WATER_REPLACEMENT		0x0800
+#define MASK_FOREGROUND         	0x1000
+#define MASK_LIVING_THING			0x2000
+
 
 /* movement masks */
 #define MASK_SWIMABLE           0x0001
@@ -58,7 +60,11 @@ public:
     TileAnim *getAnim() const { return anim; }
     Image *getImage();
     const string &getLooksLike() const { return looks_like; }
+
     bool isTiledInDungeon() const;
+
+    bool isLandForeground() const;
+    bool isWaterForeground() const;
 
     bool canWalkOn(Direction d) const;
     bool canWalkOff(Direction d) const;
@@ -66,6 +72,8 @@ public:
     bool canLandBalloon() const;
     bool isLivingObject() const;
     bool isReplacement() const;
+    bool isWaterReplacement() const;
+
     bool isWalkable() const;
     bool isCreatureWalkable() const;
     bool isDungeonWalkable() const;
@@ -106,6 +114,10 @@ private:
     int scale;          /**< The scale of the tile */
     TileAnim *anim;     /**< The tile animation for this tile */    
     bool opaque;        /**< Is this tile opaque? */
+
+    bool foreground;		/**< As a maptile, is a foreground that will search neighbour maptiles for a land-based background replacement. ex: chests */
+    bool waterForeground;	/**< As a maptile, is a foreground that will search neighbour maptiles for a water-based background replacement. ex: chests */
+
     TileRule *rule;     /**< The rules that govern the behavior of this tile */
     string imageName;   /**< The name of the image that belongs to this tile */
     string looks_like;  /**< The name of the tile that this tile looks exactly like (if any) */    

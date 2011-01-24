@@ -464,12 +464,6 @@ static int spellDispel(int dir) {
      */
     field.move((Direction)dir, c->location->map);    
 
-    /*
-     * get a replacement tile for the field
-     */
-    MapTile newTile(c->location->getReplacementTile(field));
-
-
     GameController::flashTile(field, "wisp", 16);
     /*
      * if there is a field annotation, remove it and replace it with a valid
@@ -483,6 +477,12 @@ static int spellDispel(int dir) {
         Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {            
             if (i->getTile().getTileType()->canDispel()) {
+
+                /*
+                 * get a replacement tile for the field
+                 */
+                MapTile newTile(c->location->getReplacementTile(field, i->getTile().getTileType()));
+
                 c->location->map->annotations->remove(*i);
                 c->location->map->annotations->add(field, newTile, false, true);
                 return 1;
@@ -493,9 +493,15 @@ static int spellDispel(int dir) {
     /*
      * if the map tile itself is a field, overlay it with a replacement tile
      */
+
     tile = c->location->map->tileAt(field, WITHOUT_OBJECTS);    
     if (!tile->getTileType()->canDispel())
         return 0;
+
+    /*
+     * get a replacement tile for the field
+     */
+    MapTile newTile(c->location->getReplacementTile(field, tile->getTileType()));
     
     c->location->map->annotations->add(field, newTile, false, true);
 

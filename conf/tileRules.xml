@@ -3,9 +3,9 @@
 <!-- $Id$ -->
 <tileRules>
     <rule name="default"/>
-    <rule name="water" cantwalkon="all" swimable="true" sailable="true"/>
-    <rule name="shallows" cantwalkon="all" swimable="true"/>
-    <rule name="swamp" speed="slow" effect="poison"/>
+    <rule name="water" cantwalkon="all" swimable="true" sailable="true" onWaterOnlyReplacement="true"/>
+    <rule name="shallows" cantwalkon="all" swimable="true" onWaterOnlyReplacement="true"/>
+    <rule name="swamp" speed="slow" effect="poison" replacement="true"/>
     <rule name="grass" canlandballoon="true" replacement="true"/>
     <rule name="brush" speed="vslow" replacement="true"/>
     <rule name="hills" speed="vvslow" replacement="true"/>
@@ -28,7 +28,7 @@
     <rule name="energy_field" cantwalkon="all" effect="electricity" creatureunwalkable="true" unflyable="true" dispel="true"/>
     <rule name="fire_field" speed="vvslow" effect="fire" dispel="true"/>
     <rule name="sleep_field" effect="sleep" dispel="true"/>
-    <rule name="lava" effect="lava"/>
+    <rule name="lava" effect="lava" replacement="true"/>
     <rule name="signs" cantwalkon="all" talkover="true"/>
     <rule name="spacers" cantwalkon="all"/>
     <rule name="monster" cantwalkon="all" livingthing="true"/>    

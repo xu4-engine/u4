@@ -215,7 +215,8 @@ void dungeonTouchOrb() {
     int damage = 0;    
     
     /* Get current position and find a replacement tile for it */   
-    MapTile replacementTile(c->location->getReplacementTile(c->location->coords));
+    Tile * orb_tile = c->location->map->tileset->getByName("magic_orb");
+    MapTile replacementTile(c->location->getReplacementTile(c->location->coords, orb_tile));
 
     switch(c->location->map->id) {
     case MAP_DECEIT:    stats = STATSBONUS_INT; break;

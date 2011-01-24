@@ -32,7 +32,7 @@ public:
     Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx, TurnCompleter *turnCompleter, Location *prev);
 
     std::vector<MapTile> tilesAt(MapCoords coords, bool &focus);
-    MapTile getReplacementTile(MapCoords coords);
+    TileId getReplacementTile(MapCoords atCoords, Tile const * forTile);
     int getCurrentPosition(MapCoords *coords);
     MoveResult move(Direction dir, bool userEvent);
 

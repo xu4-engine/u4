@@ -22,6 +22,7 @@
                lockeddoor         %bool;   #IMPLIED
                creatureunwalkable %bool;   #IMPLIED               
                replacement        %bool;   #IMPLIED
+               onWaterOnlyReplacement %bool; #IMPLIED
                sailable           %bool;   #IMPLIED
                ship               %bool;   #IMPLIED
                speed              %speed;  #IMPLIED

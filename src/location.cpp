@@ -5,6 +5,7 @@
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include <list>
+#include <map>
 
 #include "location.h"
 
@@ -73,8 +74,13 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
         if ((*i)->isVisualOnly())        
         {
             tiles.push_back((*i)->getTile());
-            /*Visual-only tiles will overlap all underneath*/
-            return tiles;
+
+            /* If this is the first cover-up annotation,
+			 * everything underneath it will be invisible,
+			 * so stop here
+			 */
+			if ((*i)->isCoverUp())
+				return tiles;
         }
     }
 
@@ -118,10 +124,20 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
 
     /* finally the base tile */
     MapTile tileFromMapData = *map->getTileFromData(coords);
-    if (tileFromMapData.getTileType()->isLivingObject())
+    const Tile * tileType = map->getTileFromData(coords)->getTileType();
+    if (tileType->isLivingObject())
+    {
     	//This animation should be frozen because a living object represented on the map data is usually a statue of a monster or something
     	tileFromMapData.freezeAnimation = true;
-    tiles.push_back(tileFromMapData);
+    }
+	tiles.push_back(tileFromMapData);
+
+
+
+    if (tileType->isLandForeground()	||
+    	tileType->isWaterForeground()	||
+    	tileType->isLivingObject())
+    	tiles.push_back(getReplacementTile(coords, tileType));
 
     return tiles;
 }
@@ -130,24 +146,68 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
 /**
  * Finds a valid replacement tile for the given location, using surrounding tiles
  * as guidelines to choose the new tile.  The new tile will only be chosen if it
- * is marked as a valid replacement tile in tiles.xml.  If a valid replacement
+ * is marked as a valid replacement (or waterReplacement) tile in tiles.xml.  If a valid replacement
  * cannot be found, it returns a "best guess" tile.
  */
-MapTile Location::getReplacementTile(MapCoords coords) {
-    Direction d;
+TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
+    std::map<TileId, int> validMapTileCount;
 
-    for (d = DIR_WEST; d <= DIR_SOUTH; d = (Direction)(d+1)) {
-        MapCoords new_c = coords;        
+    int surround[][2] = {{-1,-1},{-1,0},{-1,1},
+    					{ 0,-1},   	   { 0,1},
+    					{ 1,-1},{ 1,0},{ 1,1}};
 
-        new_c.move(d, map);        
-        MapTile newTile(*map->tileAt(new_c, WITHOUT_OBJECTS));
+    //Fan out into 8 surrounding directions and find the most appropriate tile
+    //Todo, employ pathfinding as the shortest walkable path (or swimable for watery tiles) usually denotes enclosed rooms. See "Hawkwind" for a good example of this algorithm failing
+	for (int d = 1; d < 5; d++)
+	{
+		for (int i = 0; i < 8; i++)
+		{
+			MapCoords new_c(atCoords);
+			new_c.move(surround[i][0] * d, surround[i][1] * d, map);
 
-        /* make sure the tile we found is a valid replacement */
-        if (newTile.getTileType()->isReplacement())
-            return newTile;
-    }
+		    if (MAP_IS_OOB(map, atCoords))
+		    	continue;
 
-    /* couldn't find a tile, give it our best guess */
+			Tile const * tileType = map->tileAt(new_c, WITHOUT_OBJECTS)->getTileType();
+
+			if ((tileType->isReplacement() && (forTile->isLandForeground() || forTile->isLivingObject())) ||
+				(tileType->isWaterReplacement() && forTile->isWaterForeground()))
+			{
+				std::map<TileId, int>::iterator validCount = validMapTileCount.find(tileType->id);
+
+				if (validCount == validMapTileCount.end())
+				{
+					validMapTileCount[tileType->id] = 1;
+				}
+				else
+				{
+					validMapTileCount[tileType->id]++;
+				}
+			}
+		}
+
+
+		if (validMapTileCount.size() > 0)
+		{
+			std::map<TileId, int>::iterator itr = validMapTileCount.begin();
+
+			TileId winner = itr->first;
+			int score = itr->second;
+
+			while (++itr != validMapTileCount.end())
+			{
+				if (score < itr->second)
+				{
+					score = itr->second;
+					winner = itr->first;
+				}
+			}
+
+			return winner;
+		}
+	}
+
+    /* couldn't find a tile, give it the sad default */
     return map->tileset->getByName("brick_floor")->id;
 }
 

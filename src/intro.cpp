@@ -520,7 +520,12 @@ void IntroController::drawMapAnimated() {
     // draw animated objects
     for (i = 0; i < IntroBinData::INTRO_BASETILE_TABLE_SIZE; i++)
         if (objectStateTable[i].tile != 0)
-            mapArea.drawTile(objectStateTable[i].tile, false, objectStateTable[i].x, objectStateTable[i].y);
+        {
+        	std::vector<MapTile> tiles;
+        	tiles.push_back(objectStateTable[i].tile);
+        	tiles.push_back(binData->introMap[objectStateTable[i].x + (objectStateTable[i].y * INTRO_MAP_WIDTH)]);
+            mapArea.drawTile(tiles, false, objectStateTable[i].x, objectStateTable[i].y);
+        }
 }
 
 /**

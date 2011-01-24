@@ -43,6 +43,9 @@ void Tile::loadProperties(const ConfigElement &conf) {
     /* see if the tile is opaque */
     opaque = conf.getBool("opaque"); 
 
+    foreground = conf.getBool("usesReplacementTileAsBackground");
+    waterForeground = conf.getBool("usesWaterReplacementTileAsBackground");
+
     /* find the rule that applies to the current tile, if there is one.
        if there is no rule specified, it defaults to the "default" rule */
     if (conf.exists("rule")) {
@@ -215,6 +218,10 @@ bool Tile::isReplacement() const {
     return (rule->mask & MASK_REPLACEMENT);
 }
 
+bool Tile::isWaterReplacement() const {
+    return (rule->mask & MASK_WATER_REPLACEMENT);
+}
+
 bool Tile::isWalkable() const {        
     return rule->walkonDirs > 0;
 }
@@ -303,8 +310,17 @@ bool Tile::isOpaque() const {
         return false;
 }
 
+bool Tile::isLandForeground() const{
+	return this->foreground;
+}
+bool Tile::isWaterForeground() const{
+	return this->waterForeground;
+}
+
+
 /**
  * Is tile a foreground tile (i.e. has transparent parts).
+ * Deprecated? Never used in XML. Other mechanisms exist, though this could help?
  */
 bool Tile::isForeground() const {
     return (rule->mask & MASK_FOREGROUND);

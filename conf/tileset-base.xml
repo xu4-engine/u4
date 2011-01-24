@@ -21,12 +21,12 @@
     <tile name="hills" rule="hills"/>
     <tile name="mountains" rule="mountains" opaque="true"/>
     <tile name="dungeon"/>
-    <tile name="city" animation="cityflag"/>
-    <tile name="castle" animation="castleflag"/>
-    <tile name="town"/>
-    <tile name="lcb_west" rule="lcb"/>
-    <tile name="lcb_entrance" rule="lcb_entrance" animation="lcbflag"/>
-    <tile name="lcb_east" rule="lcb"/>    
+    <tile name="city" animation="cityflag" usesReplacementTileAsBackground="true"/>
+    <tile name="castle" animation="castleflag" usesReplacementTileAsBackground="true"/>
+    <tile name="town" usesReplacementTileAsBackground="true"/>
+    <tile name="lcb_west" rule="lcb" usesReplacementTileAsBackground="true"/>
+    <tile name="lcb_entrance" rule="lcb_entrance" animation="lcbflag" usesReplacementTileAsBackground="true"/>
+    <tile name="lcb_east" rule="lcb" usesReplacementTileAsBackground="true"/>    
     <tile name="ship" rule="ship" frames="4" directions="wnes" animation="shipflag"/>
     <tile name="horse" rule="horse" frames="2" directions="we"/>
     <tile name="dungeon_floor" rule="floors"/>
@@ -35,8 +35,8 @@
     <tile name="bridge_pieces" frames="2"/>
     <tile name="up_ladder"/>
     <tile name="down_ladder"/>
-    <tile name="ruins"/>
-    <tile name="shrine"/>
+    <tile name="ruins" usesReplacementTileAsBackground="true"/>
+    <tile name="shrine" usesReplacementTileAsBackground="true"/>
     <tile name="avatar" rule="person"/>
     <tile name="mage" rule="person" frames="2" animation="frame"/>
     <tile name="bard" rule="person" frames="2" animation="frame"/>
@@ -46,29 +46,29 @@
     <tile name="paladin" rule="person" frames="2" animation="frame"/>
     <tile name="ranger" rule="person" frames="2" animation="frame"/>
     <tile name="shepherd" rule="person" frames="2" animation="frame"/>
-    <tile name="column" rule="solid"/>
-    <tile name="solids" rule="solid_attackover" frames="4"/>
+    <tile name="column" rule="solid" usesReplacementTileAsBackground="true" /> 
+    <tile name="solids" rule="solid_attackover" frames="4" usesReplacementTileAsBackground="true" usesWaterReplacementTileAsBackground="true"/>
     <tile name="shipmast" rule="solid"/>
     <tile name="shipwheel" rule="solid"/>
-    <tile name="rocks" rule="solid"/>
-    <tile name="corpse" rule="solid"/>
+    <tile name="rocks" rule="solid" usesReplacementTileAsBackground="true"/>
+    <tile name="corpse" rule="solid" usesReplacementTileAsBackground="true"/>
     <tile name="stone_wall" rule="walls"/>
     <tile name="locked_door" rule="locked_door"/>
     <tile name="door" rule="door"/>
-    <tile name="chest" rule="chest"/>
-    <tile name="ankh" rule="solid"/>
+    <tile name="chest" rule="chest" usesReplacementTileAsBackground="true"/>
+    <tile name="ankh" rule="solid" usesReplacementTileAsBackground="true" usesWaterReplacementTileAsBackground="true"/>
     <tile name="brick_floor" rule="floors"/>
     <tile name="wood_floor" rule="floors"/>
     <tile name="moongate_opening" rule="solid" frames="3"/>
     <tile name="moongate"/>
-    <tile name="poison_field" rule="poison_field" animation="scroll" tiledInDungeon="true"/>
-    <tile name="energy_field" rule="energy_field" animation="scroll" tiledInDungeon="true"/>
-    <tile name="fire_field" rule="fire_field" animation="scroll" tiledInDungeon="true"/>
-    <tile name="sleep_field" rule="sleep_field" animation="scroll" tiledInDungeon="true"/>
+    <tile name="poison_field" rule="poison_field" animation="scroll" tiledInDungeon="true" usesReplacementTileAsBackground="true" usesWaterReplacementTileAsBackground="true"/>
+    <tile name="energy_field" rule="energy_field" animation="scroll" tiledInDungeon="true" usesReplacementTileAsBackground="true" usesWaterReplacementTileAsBackground="true"/>
+    <tile name="fire_field" rule="fire_field" animation="scroll" tiledInDungeon="true" usesReplacementTileAsBackground="true" usesWaterReplacementTileAsBackground="true"/>
+    <tile name="sleep_field" rule="sleep_field" animation="scroll" tiledInDungeon="true" usesReplacementTileAsBackground="true" usesWaterReplacementTileAsBackground="true"/>
     <tile name="solid" rule="solid_attackover"/>
     <tile name="secret_door" rule="secret_door" opaque="true"/>
-    <tile name="altar"/>
-    <tile name="campfire" rule="solid" animation="campfire"/>
+    <tile name="altar" usesReplacementTileAsBackground="true" />
+    <tile name="campfire" rule="solid" animation="campfire" usesReplacementTileAsBackground="true" />
     <tile name="lava" rule="lava" animation="scroll"/>
     <tile name="miss_flash"/>
     <tile name="magic_flash"/>
