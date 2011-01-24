@@ -30,13 +30,7 @@
 using std::string;
 using std::vector;
 
-/* A bug in SDL_mixer 1.2.5 for MacOSX causes it to crash looping music */
-#if defined(MACOSX)
-#define NLOOPS 1
-#else
 #define NLOOPS -1
-#endif
-
 /*
  * Static variables
  */
