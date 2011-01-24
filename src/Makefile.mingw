@@ -45,8 +45,6 @@ install: u4.exe
 	cp ../graphics/vga/*.png $(U4PATH)/graphics/vga/
 	cp ../mid/* $(U4PATH)/mid
 	cp ../sound/*.ogg $(U4PATH)/sound
-	cp ../ultima4*.zip $(U4PATH)
-	cp ../u4upgrad*.zip $(U4PATH)
 	
 	cp SDL/lib/SDL.dll $(U4PATH)
 	cp SDL/lib/SDL_mixer.dll $(U4PATH)
