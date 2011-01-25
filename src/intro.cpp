@@ -2,6 +2,11 @@
  * $Id$
  */
 
+#define SLACK_ON_SDL_AGNOSTICISM
+#ifdef SLACK_ON_SDL_AGNOSTICISM
+#include "SDL.h"
+#endif
+
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include <algorithm>

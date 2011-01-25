@@ -44,7 +44,7 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
     unsigned int i;
-    int skipIntro = 0;    
+    int skipIntro = 0;
 
 #if defined(MACOSX)
     osxInit(argv[0]);
