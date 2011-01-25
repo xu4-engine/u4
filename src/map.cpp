@@ -39,6 +39,10 @@ bool MapCoords::operator==(const MapCoords &a) const {
 bool MapCoords::operator!=(const MapCoords &a) const {
     return !operator==(a);
 }    
+bool MapCoords::operator<(const MapCoords &a)  const {
+	return (x <= a.x) || (y <= a.y) || (z < a.z);
+}
+
 
 MapCoords& MapCoords::wrap(const Map *map) {
     if (map && map->border_behavior == Map::BORDER_WRAP) {
@@ -513,7 +517,7 @@ Creature *Map::moveObjects(MapCoords avatar) {
                 /* don't move objects that aren't on the same level as us */
                 if (o_coords.z != avatar.z)
                     continue;
-            
+
                 if (o_coords.movementDistance(avatar, this) <= 1) {
                     attacker = m;
                     continue;

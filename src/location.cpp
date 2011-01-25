@@ -6,6 +6,7 @@
 
 #include <list>
 #include <map>
+#include <set>
 
 #include "location.h"
 
@@ -152,23 +153,37 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
 TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
     std::map<TileId, int> validMapTileCount;
 
-    int surround[][2] = {{-1,-1},{-1,0},{-1,1},
-    					{ 0,-1},   	   { 0,1},
-    					{ 1,-1},{ 1,0},{ 1,1}};
+    int dirs[][2] = {{-1,0},{0,-1},{0,1},{1,0}};
+    int dirs_per_step = 4; //
+
+    std::set<MapCoords> searched;
+    std::list<MapCoords> searchQueue;
 
     //Fan out into 8 surrounding directions and find the most appropriate tile
     //Todo, employ pathfinding as the shortest walkable path (or swimable for watery tiles) usually denotes enclosed rooms. See "Hawkwind" for a good example of this algorithm failing
-	for (int d = 1; d < 5; d++)
-	{
-		for (int i = 0; i < 8; i++)
+
+
+    searchQueue.push_back(atCoords);
+    do
+    {
+        MapCoords currentStep = searchQueue.front();
+        searchQueue.pop_front();
+
+		searched.insert(currentStep);
+
+    	for (int i = 0; i < dirs_per_step; i++)
 		{
-			MapCoords new_c(atCoords);
-			new_c.move(surround[i][0] * d, surround[i][1] * d, map);
+			MapCoords newStep(currentStep);
+			newStep.move(dirs[i][0], dirs[i][1], map);
 
-		    if (MAP_IS_OOB(map, atCoords))
+		    if (MAP_IS_OOB(map, newStep))
 		    	continue;
+			Tile const * tileType = map->tileAt(newStep, WITHOUT_OBJECTS)->getTileType();
 
-			Tile const * tileType = map->tileAt(new_c, WITHOUT_OBJECTS)->getTileType();
+			if ((tileType->isWalkable() || (tileType->isSwimable() && forTile->isWaterForeground()))) {
+				if (searched.find(newStep) == searched.end())
+					searchQueue.push_back(newStep);
+			}
 
 			if ((tileType->isReplacement() && (forTile->isLandForeground() || forTile->isLivingObject())) ||
 				(tileType->isWaterReplacement() && forTile->isWaterForeground()))
@@ -185,7 +200,6 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
 				}
 			}
 		}
-
 
 		if (validMapTileCount.size() > 0)
 		{
@@ -205,7 +219,7 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
 
 			return winner;
 		}
-	}
+	} while (searchQueue.size() > 0);
 
     /* couldn't find a tile, give it the sad default */
     return map->tileset->getByName("brick_floor")->id;

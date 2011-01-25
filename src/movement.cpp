@@ -376,7 +376,10 @@ void movePartyMember(MoveEvent &event) {
                 /*const Creature *m = creatures.getByTile(triggers[i].tile);*/
 
                 /* FIXME: when a creature is created by a trigger, it can be created over and over and over...
-                   how do we fix this? */
+                   how do we fix this? In the c64 version is appears that such triggers (on the world map)
+                   wipe the creature table and replace it with the triggered creatures. Thus, retriggering
+                   it will reset the creatures.
+                   */
                 MapCoords trigger(triggers[i].x, triggers[i].y, c->location->coords.z);
 
                 /* see if we're on a trigger */
@@ -393,11 +396,11 @@ void movePartyMember(MoveEvent &event) {
                     /* change the tiles! */
                     if (change1.x || change1.y) {
                         /*if (m) combatAddCreature(m, triggers[i].change_x1, triggers[i].change_y1, c->location->coords.z);
-                        else*/ c->location->map->annotations->add(change1, triggers[i].tile);
+                        else*/ c->location->map->annotations->add(change1, triggers[i].tile, false, true);
                     }
                     if (change2.x || change2.y) {
                         /*if (m) combatAddCreature(m, triggers[i].change_x2, triggers[i].change_y2, c->location->coords.z);
-                        else*/ c->location->map->annotations->add(change2, triggers[i].tile);
+                        else*/ c->location->map->annotations->add(change2, triggers[i].tile, false, true);
                     }
                 }
             }

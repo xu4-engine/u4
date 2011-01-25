@@ -58,6 +58,7 @@ public:
     MapCoords &operator=(const Coords &a) { x = a.x; y = a.y; z = a.z; return *this; }
     bool operator==(const MapCoords &a) const;
     bool operator!=(const MapCoords &a) const;
+    bool operator<(const MapCoords &a)  const;
     
     MapCoords &wrap(const class Map *map);
     MapCoords &putInBounds(const class Map *map);
