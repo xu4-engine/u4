@@ -33,8 +33,8 @@
     <tile name="bridge"/>
     <tile name="balloon" rule="balloon"/>
     <tile name="bridge_pieces" frames="2"/>
-    <tile name="up_ladder"/>
-    <tile name="down_ladder"/>
+    <tile name="up_ladder" usesReplacementTileAsBackground="true"/>
+    <tile name="down_ladder" usesReplacementTileAsBackground="true"/>
     <tile name="ruins" usesReplacementTileAsBackground="true"/>
     <tile name="shrine" usesReplacementTileAsBackground="true"/>
     <tile name="avatar" rule="person"/>
@@ -70,9 +70,9 @@
     <tile name="altar" usesReplacementTileAsBackground="true" />
     <tile name="campfire" rule="solid" animation="campfire" usesReplacementTileAsBackground="true" />
     <tile name="lava" rule="lava" animation="scroll"/>
-    <tile name="miss_flash"/>
-    <tile name="magic_flash"/>
-    <tile name="hit_flash"/>
+    <tile name="miss_flash" usesReplacementTileAsBackground="true"/>
+    <tile name="magic_flash" usesReplacementTileAsBackground="true"/>
+    <tile name="hit_flash" usesReplacementTileAsBackground="true"/>
     <tile name="guard" rule="person" frames="4" animation="slow_frame"/>
     <tile name="villager" rule="person" frames="2" animation="frame"/>
     <tile name="bard_singing" rule="person" frames="2" animation="frame"/>    
