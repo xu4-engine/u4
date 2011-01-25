@@ -360,7 +360,6 @@ CreatureStatus Creature::getState() const {
  */ 
 bool Creature::specialAction() {
     bool retval = false;        
-    int broadsidesDirs = dirGetBroadsidesDirs(tile.getDirection());
 
     int dx = abs(c->location->coords.x - coords.x);
     int dy = abs(c->location->coords.y - coords.y);
@@ -369,7 +368,10 @@ bool Creature::specialAction() {
     /* find out which direction the avatar is in relation to the creature */
     MapCoords mapcoords(coords);
     int dir = mapcoords.getRelativeDirection(c->location->coords, c->location->map);
-   
+
+    //Init outside of switch
+    int broadsidesDirs = 0;
+
     switch(id) {
     
     case LAVA_LIZARD_ID:
@@ -396,6 +398,7 @@ bool Creature::specialAction() {
         
         /* Fire cannon: Pirates only fire broadsides and only when they can hit you :) */
         retval = true;
+        broadsidesDirs = dirGetBroadsidesDirs(tile.getDirection());
 
         if ((((dx == 0) && (dy <= 3)) ||          /* avatar is close enough and on the same column, OR */
              ((dy == 0) && (dx <= 3))) &&         /* avatar is close enough and on the same row, AND */
@@ -478,8 +481,8 @@ bool Creature::specialEffect() {
                 /* Send the party to Locke Lake */
                 c->location->coords = c->location->map->getLabel("lockelake");
 
-                /* Destroy the whirlpool that sent you there */
-                c->location->map->removeObject(this);
+                /* Teleport the whirlpool that sent you there far away from lockelake */
+                this->setCoords(Coords(0,0,0));
                 retval = true;
                 break;
             }
@@ -492,11 +495,12 @@ bool Creature::specialEffect() {
                 Coords const & otherObj = obj->getCoords();
 
                 if (this != obj &&
-                    coords.x == otherObj.x && coords.y == otherObj.y) {
-                    Creature *m = dynamic_cast<Creature*>(obj);
+                	obj->getCoords() == coords) {
+
+                	Creature *m = dynamic_cast<Creature*>(obj);
 
                     /* Make sure the object isn't a flying creature or object */
-                    if (m && (m->swims() || m->sails()) && !m->flies()) {
+                    if (!m || (m && (m->swims() || m->sails()) && !m->flies())) {
                         /* Destroy the object it met with */
                         i = c->location->map->removeObject(i);
                         retval = true;

@@ -2924,18 +2924,33 @@ void GameController::timerFired() {
 void gameCheckHullIntegrity() {
     int i;
 
+    bool killAll = false;
     /* see if the ship has sunk */
     if ((c->transportContext == TRANSPORT_SHIP) && c->saveGame->shiphull <= 0)
     {
-        screenMessage("\nThy ship sinks!\n\n");        
+        screenMessage("\nThy ship sinks!\n\n");
+        killAll = true;
+    }
 
+
+    if (!collisionOverride && c->transportContext == TRANSPORT_FOOT &&
+    	c->location->map->tileTypeAt(c->location->coords, WITHOUT_OBJECTS)->isSailable() &&
+    	!c->location->map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS)->isShip() &&
+    	!c->location->map->getValidMoves(c->location->coords, c->party->getTransport()))
+    {
+        screenMessage("\nTrapped at sea without thy ship, thou dost drown!\n\n");
+        killAll = true;
+    }
+
+    if (killAll)
+    {
         for (i = 0; i < c->party->size(); i++)
         {
             c->party->member(i)->setHp(0);
-            c->party->member(i)->setStatus(STAT_DEAD);            
+            c->party->member(i)->setStatus(STAT_DEAD);
         }
 
-        screenRedrawScreen();        
+        screenRedrawScreen();
         deathStart(5);
     }
 }
