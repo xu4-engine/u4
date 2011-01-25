@@ -159,10 +159,8 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
     std::set<MapCoords> searched;
     std::list<MapCoords> searchQueue;
 
-    //Fan out into 8 surrounding directions and find the most appropriate tile
-    //Todo, employ pathfinding as the shortest walkable path (or swimable for watery tiles) usually denotes enclosed rooms. See "Hawkwind" for a good example of this algorithm failing
-
-
+    //Pathfinding to closest traversable tile.
+    //For tiles marked water-replaceable
     searchQueue.push_back(atCoords);
     do
     {
