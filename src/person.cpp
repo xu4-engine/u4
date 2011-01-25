@@ -6,6 +6,7 @@
 
 #include <cctype>
 #include <string>
+#include <cstring>
 #include <vector>
 
 #include "u4.h"

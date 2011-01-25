@@ -8,6 +8,8 @@
 
 #include "stats.h"
 
+#include <cstring>
+
 #include "armor.h"
 #include "context.h"
 #include "debug.h"

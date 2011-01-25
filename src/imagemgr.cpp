@@ -201,7 +201,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
     const unsigned char *sigData;
     int i, x, y;
     bool alpha = im->isAlphaOn();
-    SDL_Color color = {0, 0, 0};
+    RGBA color = {0, 0, 0};
 
     sigData = intro->getSigData();
     im->alphaOff();

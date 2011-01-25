@@ -134,20 +134,21 @@ void Image::setPaletteFromImage(const Image *src) {
 }
 
 // returns the color of the specified palette index
-SDL_Color Image::getPaletteColor(int index) {
-    SDL_Color color = {0, 0, 0};
+RGBA Image::getPaletteColor(int index) {
+	RGBA color = {0, 0, 0, 0};
 
     if (indexed)
     {
         color.r = surface->format->palette->colors[index].r;
         color.g = surface->format->palette->colors[index].g;
         color.b = surface->format->palette->colors[index].b;
+        color.a = IM_OPAQUE;
     }
     return color;
 }
 
 /* returns the palette index of the specified RGB color */
-int Image::getPaletteIndex(SDL_Color color) {
+int Image::getPaletteIndex(RGBA color) {
     if (!indexed)
         return -1;
 
@@ -166,8 +167,8 @@ int Image::getPaletteIndex(SDL_Color color) {
     return -1;
 }
 
-SDL_Color Image::setColor(Uint8 r, Uint8 g, Uint8 b) {
-    SDL_Color color = {r, g, b, 0};
+RGBA Image::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	RGBA color = {r, g, b, a};
     return color;
 }
 
@@ -234,7 +235,7 @@ bool Image::setFontColorBG(ColorBG bg) {
 }
 
 /* sets the specified palette index to the specified RGB color */
-bool Image::setPaletteIndex(unsigned int index, SDL_Color color) {
+bool Image::setPaletteIndex(unsigned int index, RGBA color) {
     if (!indexed)
         return false;
 

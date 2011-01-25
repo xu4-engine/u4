@@ -5,8 +5,6 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <SDL.h>
-
 #include <string>
 #include "types.h"
 #include "u4file.h"
@@ -60,10 +58,10 @@ public:
     bool setFontColorFG(ColorFG fg);
     bool setFontColorBG(ColorBG bg);
 
-    SDL_Color getPaletteColor(int index);       // returns the color of the specified palette index
-    bool setPaletteIndex(unsigned int index, SDL_Color color);  // sets the specified palette index to the specified RGB color
-    int getPaletteIndex(SDL_Color color);              // returns the palette index of the specified RGB color
-    SDL_Color setColor(Uint8 r, Uint8 g, Uint8 b);
+    RGBA getPaletteColor(int index);       // returns the color of the specified palette index
+    bool setPaletteIndex(unsigned int index, RGBA color);  // sets the specified palette index to the specified RGB color
+    int getPaletteIndex(RGBA color);              // returns the palette index of the specified RGB color
+    RGBA setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = IM_OPAQUE);
 
 
     /* alpha handling */

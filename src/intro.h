@@ -231,8 +231,8 @@ private:
     };
 
     struct AnimPlot {
-        Uint8 x, y;
-        Uint8 r, g, b, a;
+    	uint8_t x, y;
+    	uint8_t r, g, b, a;
     };
 
     struct AnimElement {
@@ -260,7 +260,7 @@ private:
     std::vector<AnimElement>::iterator title;   // current title element
 
     int transparentIndex;           // palette index for transparency
-    SDL_Color transparentColor;     // palette color for transparency
+    RGBA transparentColor;     // palette color for transparency
 
     bool bSkipTitles;
 };

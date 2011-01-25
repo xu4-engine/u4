@@ -5,6 +5,7 @@
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include <algorithm>
+#include <cstring>
 #include "u4.h"
 
 #include "intro.h"
@@ -1162,12 +1163,14 @@ void IntroController::updateInputMenu(MenuEvent &event) {
             // re-initialize keyboard
             KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
 
+			#ifdef SLACK_ON_SDL_AGNOSTICISM
             if (settings.mouseOptions.enabled) {
                 SDL_ShowCursor(SDL_ENABLE);
             }
             else {
                 SDL_ShowCursor(SDL_DISABLE);
             }
+			#endif
     
             break;
         case CANCEL:
@@ -1572,7 +1575,7 @@ void IntroController::getTitleSourceData()
                 // PLOT: "Lord British"
                 srcData = intro->getSigData();
 
-                SDL_Color color = info->image->setColor(0, 255, 255);    // cyan for EGA
+                RGBA color = info->image->setColor(0, 255, 255);    // cyan for EGA
                 int blue[16] = {255, 250, 226, 226, 210, 194, 161, 161,
                                 129,  97,  97,  64,  64,  32,  32,   0};
                 int x = 0;
@@ -1685,13 +1688,30 @@ void IntroController::getTitleSourceData()
 }
 
 
+
+#ifdef SLACK_ON_SDL_AGNOSTICISM
+int getTicks()
+{
+	return SDL_GetTicks();
+}
+#else
+static int ticks = 0;
+int getTicks()
+{
+	ticks += 1000;
+	return ticks;
+}
+#endif
+
+
 //
 // Update the title element, drawing the appropriate frame of animation
 //
 bool IntroController::updateTitle()
 {
     int animStepTarget = 0;
-    int timeCurrent = SDL_GetTicks();
+
+    int timeCurrent = getTicks();
     float timePercent = 0;
 
     if (title->animStep == 0 && !bSkipTitles)
@@ -1755,7 +1775,7 @@ bool IntroController::updateTitle()
 
         case BAR:
         {
-            SDL_Color color = {0,0,0,0};
+        	RGBA color = {0,0,0,0};
             while (animStepTarget > title->animStep)
             {
                 title->animStep++;
@@ -1796,7 +1816,7 @@ bool IntroController::updateTitle()
             else
             {
                 title->animStep++;
-                title->timeDelay = SDL_GetTicks() - title->timeBase + 100;
+                title->timeDelay = getTicks() - title->timeBase + 100;
             }
 
             // blit src to the canvas one row at a time, bottom up
@@ -1818,7 +1838,7 @@ bool IntroController::updateTitle()
             else
             {
                 title->animStep++;
-                title->timeDelay = SDL_GetTicks() - title->timeBase + 100;
+                title->timeDelay = getTicks() - title->timeBase + 100;
             }
 
             // blit src to the canvas one row at a time, top down
@@ -1872,7 +1892,7 @@ bool IntroController::updateTitle()
             else
             {
                 title->animStep++;
-                title->timeDelay = SDL_GetTicks() - title->timeBase + 100;
+                title->timeDelay = getTicks() - title->timeBase + 100;
             }
 
             // blit src to the canvas one row at a time, center out
@@ -1895,7 +1915,7 @@ bool IntroController::updateTitle()
             else
             {
                 title->animStep++;
-                title->timeDelay = SDL_GetTicks() - title->timeBase + 100;
+                title->timeDelay = getTicks() - title->timeBase + 100;
             }
 
             int step = (title->animStep == title->animStepMax ? title->animStepMax - 1 : title->animStep);
@@ -1920,7 +1940,7 @@ bool IntroController::updateTitle()
 
 
             // create a destimage for the map tiles
-            int newtime = SDL_GetTicks();
+            int newtime = getTicks();
             if (newtime > title->timeDuration + 250/4)
             {
                 // grab the map from the screen
