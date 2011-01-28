@@ -64,6 +64,37 @@ bool EventHandler::getControllerDone()         { return controllerDone; }      /
 void EventHandler::end() { ended = true; }                                     /**< End all event processing */
 TimedEventMgr* EventHandler::getTimer()  { return &timer;}
 
+Controller *EventHandler::pushController(Controller *c) {
+    controllers.push_back(c);
+    getTimer()->add(&Controller::timerCallback, c->getTimerInterval(), c);
+    return c;
+}
+
+Controller *EventHandler::popController() {
+    if (controllers.empty())
+        return NULL;
+
+    Controller *controller = controllers.back();
+    getTimer()->remove(&Controller::timerCallback, controller);
+    controllers.pop_back();
+
+    return getController();
+}
+
+
+Controller *EventHandler::getController() const {
+    if (controllers.empty())
+        return NULL;
+
+    return controllers.back();
+}
+
+void EventHandler::setController(Controller *c) {
+    while (popController() != NULL) {}
+    pushController(c);
+}
+
+
 /* TimedEvent functions */
 TimedEvent::TimedEvent(TimedEvent::Callback cb, int i, void *d) :
     callback(cb),
@@ -358,3 +389,5 @@ void WaitController::wait() {
 void WaitController::setCycles(int c) {
     cycles = c;
 }
+
+

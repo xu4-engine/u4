@@ -359,35 +359,6 @@ void EventHandler::setScreenUpdate(void (*updateScreen)(void)) {
         return true;
 }
 
-Controller *EventHandler::pushController(Controller *c) {
-    controllers.push_back(c);
-    getTimer()->add(&Controller::timerCallback, c->getTimerInterval(), c);
-    return c;
-}
-
-Controller *EventHandler::popController() {
-    if (controllers.empty())
-        return NULL;
-
-    Controller *controller = controllers.back();
-    getTimer()->remove(&Controller::timerCallback, controller);
-    controllers.pop_back();
-
-    return getController();
-}
-
-
-Controller *EventHandler::getController() const {
-    if (controllers.empty())
-        return NULL;
-
-    return controllers.back();
-}
-
-void EventHandler::setController(Controller *c) {
-    while (popController() != NULL) {}
-    pushController(c);
-}
 
 /**
  * Adds a key handler to the stack.
