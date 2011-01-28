@@ -18,6 +18,7 @@
 #include "music.h"
 #include "settings.h"
 #include "u4file.h"
+#include "music_sdl.h"
 
 using std::string;
 using std::vector;
@@ -30,7 +31,6 @@ int soundInit() {
      * load sound track filenames from xml config file
      */
     const Config *config = Config::getInstance();
-
     vector<ConfigElement> soundConfs = config->getElement("sound").getChildren();
     for (std::vector<ConfigElement>::iterator i = soundConfs.begin(); i != soundConfs.end(); i++) {
 
@@ -53,7 +53,7 @@ bool soundLoad(Sound sound) {
     ASSERT(sound < SOUND_MAX, "Attempted to load an invalid sound in soundLoad()");
     
     // If music didn't initialize correctly, then we can't play it anyway
-    if (!Music::functional || !settings.soundVol)
+    if (!musicMgr->functional || !settings.soundVol)
         return false;
 
     if (soundChunk[sound] == NULL) {
@@ -75,7 +75,7 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
     ASSERT(sound < SOUND_MAX, "Attempted to play an invalid sound in soundPlay()");
     
     // If music didn't initialize correctly, then we can't play it anyway
-    if (!Music::functional || !settings.soundVol)
+    if (!musicMgr->functional || !settings.soundVol)
         return;
 
     if (soundChunk[sound] == NULL)
@@ -98,6 +98,10 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
 
 void soundStop(int channel)
 {
+    // If music didn't initialize correctly, then we shouldn't try to stop it
+    if (!musicMgr->functional || !settings.soundVol)
+        return;
+
     if (Mix_Playing(channel))
         Mix_HaltChannel(channel);
 }

@@ -56,6 +56,7 @@ CXXSRCS=\
         moongate.cpp \
         movement.cpp \
         music.cpp \
+        music_$(UI).cpp \
         names.cpp \
         object.cpp \
         person.cpp \

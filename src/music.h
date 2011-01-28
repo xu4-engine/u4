@@ -10,16 +10,18 @@
 
 #include "debug.h"
 
-#define musicMgr   (Music::getInstance())
+#define musicMgr   (Music::GET_MUSIC_INSTANCE())
 
 #define CAMP_FADE_OUT_TIME          1000
 #define CAMP_FADE_IN_TIME           0
 #define INN_FADE_OUT_TIME           1000
 #define INN_FADE_IN_TIME            5000
+#define NLOOPS -1
 
 #if !defined(_MIXER_H_) && !defined(_SDL_MIXER_H)
     struct Mix_Music { int dummy; };
 #endif 
+
 
 class Music {
 public:
@@ -43,12 +45,14 @@ public:
     static Music *getInstance();    
     static void callback(void *);    
     static bool isPlaying();
+    virtual bool isActuallyPlaying();
+
 
     void init() {};
-    void play();
-    void stop();
-    void fadeOut(int msecs);
-    void fadeIn(int msecs, bool loadFromMap);
+    virtual void play(){};
+    virtual void stop(){};
+    virtual void fadeOut(int msecs){};
+    virtual void fadeIn(int msecs, bool loadFromMap){};
     void lordBritish();
     void hawkwind();
     void camp();
@@ -57,28 +61,29 @@ public:
     void introSwitch(int n);
     bool toggle();
 
-    int decreaseMusicVolume();
-    int increaseMusicVolume();
-    void setMusicVolume(int volume);
-
+    virtual int decreaseMusicVolume();
+    virtual int increaseMusicVolume();
+    virtual void setMusicVolume(int volume){};
     int decreaseSoundVolume();
     int increaseSoundVolume();
-    void setSoundVolume(int volume);
+    virtual void setSoundVolume(int volume){};
 
-private:
-    void playMid(Type music);
-    bool load(Type music);
 
     /*
      * Static variables
      */
-private:
+protected:
     static Music *instance;
-    static bool fading;
-    static bool on;
+    bool fading;
+    bool on;
+
+
+    virtual bool doLoad(Type music, string pathname, Type & current){return false;};
+    virtual void playMid(Type music){};
+    bool load(Type music);
 
 public:
-    static bool functional;
+    bool functional;
 
     /*
      * Properties
@@ -89,6 +94,13 @@ public:
 
     Mix_Music* playing;
     Debug *logger;
+
+    static Music * (*GET_MUSIC_INSTANCE)(void);
 };
+;
+
+
+
+
 
 #endif
