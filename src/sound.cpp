@@ -7,9 +7,6 @@
 #include <string>
 #include <vector>
 
-#include <SDL.h>
-#include <SDL_mixer.h>
-
 #include "sound.h"
 
 #include "config.h"
@@ -18,15 +15,19 @@
 #include "music.h"
 #include "settings.h"
 #include "u4file.h"
-#include "music_sdl.h"
 
 using std::string;
 using std::vector;
 
-vector<string> soundFilenames;
-vector<Mix_Chunk *> soundChunk;
+/*
+ * Static variables
+ */
+SoundMgr *SoundMgr::instance = NULL;
+SoundMgr * (*SoundMgr::GET_SOUND_MGR_INSTANCE)(void) = &SoundMgr::getInstance;
 
-int soundInit() {
+
+
+int SoundMgr::init() {
     /*
      * load sound track filenames from xml config file
      */
@@ -41,67 +42,13 @@ int soundInit() {
     }
 
     soundFilenames.resize(SOUND_MAX, "");
-    soundChunk.resize(SOUND_MAX, NULL);
 
     return 1;
 }
 
-void soundDelete() {
+SoundMgr *SoundMgr::getInstance() {
+    if (!instance)
+        instance = new SoundMgr();
+    return instance;
 }
 
-bool soundLoad(Sound sound) {
-    ASSERT(sound < SOUND_MAX, "Attempted to load an invalid sound in soundLoad()");
-    
-    // If music didn't initialize correctly, then we can't play it anyway
-    if (!musicMgr->functional || !settings.soundVol)
-        return false;
-
-    if (soundChunk[sound] == NULL) {
-        string pathname(u4find_sound(soundFilenames[sound]));
-        string basename = pathname.substr(pathname.find_last_of("/") + 1);
-        if (!basename.empty()) {
-            soundChunk[sound] = Mix_LoadWAV(pathname.c_str());
-            if (!soundChunk[sound]) {
-                errorWarning("Unable to load sound effect file %s: %s", soundFilenames[sound].c_str(), Mix_GetError());
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
-
-    ASSERT(sound < SOUND_MAX, "Attempted to play an invalid sound in soundPlay()");
-    
-    // If music didn't initialize correctly, then we can't play it anyway
-    if (!musicMgr->functional || !settings.soundVol)
-        return;
-
-    if (soundChunk[sound] == NULL)
-    {
-        if (!soundLoad(sound))
-        {
-            errorWarning("Unable to load sound effect file %s: %s", soundFilenames[sound].c_str(), Mix_GetError());
-            return;
-        }
-    }
-
-    /**
-     * Use Channel 1 for sound effects
-     */
-    if (!onlyOnce || !Mix_Playing(1)) {
-        if (Mix_PlayChannelTimed(1, soundChunk[sound], specificDurationInTicks == -1 ? 0 : -1, specificDurationInTicks) == -1)
-            fprintf(stderr, "Error playing sound %d: %s\n", sound, Mix_GetError());
-    }
-}
-
-void soundStop(int channel)
-{
-    // If music didn't initialize correctly, then we shouldn't try to stop it
-    if (!musicMgr->functional || !settings.soundVol)
-        return;
-
-    if (Mix_Playing(channel))
-        Mix_HaltChannel(channel);
-}

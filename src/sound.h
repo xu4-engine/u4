@@ -5,6 +5,10 @@
 #ifndef SOUND_H
 #define SOUND_H
 
+#include <vector>
+#include <string>
+
+
 enum Sound {
     SOUND_TITLE_FADE,       // the intro title fade
     SOUND_WALK_NORMAL,      // walk, world and town
@@ -40,12 +44,30 @@ enum Sound {
     SOUND_MAX
 };
 
-int soundInit(void);
-void soundDelete(void);
-bool soundLoad(Sound sound);
+#define soundMgr   (SoundMgr::GET_SOUND_MGR_INSTANCE())
 
-void soundPlay(Sound sound, bool onlyOnce = true, int specificDurationInTicks = -1);
+#define soundInit() soundMgr->init()
+#define soundDelete() soundMgr->del3te()
+#define soundLoad(sound) soundMgr->load(sound)
+#define soundPlay soundMgr->play
+#define soundStop() soundMgr->stop()
 
-void soundStop(int channel = 1);
+
+class SoundMgr {
+public:
+
+    static SoundMgr * (*GET_SOUND_MGR_INSTANCE)(void);
+    static SoundMgr *getInstance();
+
+	virtual int init(void);
+	virtual void del3te(void){};
+	virtual bool load(Sound sound){return true;};
+	virtual void play(Sound sound, bool onlyOnce = true, int specificDurationInTicks = -1){};
+	virtual void stop(int channel = 1){};
+protected:
+	std::vector<std::string> soundFilenames;
+    static SoundMgr * instance;
+};
+
 
 #endif /* SOUND_H */

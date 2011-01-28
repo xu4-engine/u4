@@ -7,9 +7,11 @@
 #include <SDL.h>
 #include "u4_sdl.h"
 #include "music_sdl.h"
+#include "sound_sdl.h"
 
 int u4_SDL_Init() {
     MusicSDL::replaceMusicInstance();
+    SoundMgr_SDL::replaceSoundMgrInstance();
 
     return SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
 }

@@ -42,6 +42,7 @@ public:
     Music();
     ~Music();
 
+    static Music * (*GET_MUSIC_INSTANCE)(void);
     static Music *getInstance();    
     static void callback(void *);    
     static bool isPlaying();
@@ -95,7 +96,6 @@ public:
     Mix_Music* playing;
     Debug *logger;
 
-    static Music * (*GET_MUSIC_INSTANCE)(void);
 };
 ;
 
