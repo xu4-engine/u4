@@ -23,7 +23,6 @@
 #include "location.h"
 #include "settings.h"
 #include "u4.h"
-#include "u4_sdl.h"
 #include "u4file.h"
 
 using std::string;
