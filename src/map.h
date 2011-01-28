@@ -12,7 +12,6 @@
 
 #include "coords.h"
 #include "direction.h"
-#include "map.h"
 #include "music.h"
 #include "object.h"
 #include "savegame.h"

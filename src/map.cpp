@@ -10,11 +10,9 @@
 
 #include "annotation.h"
 #include "context.h"
-#include "creature.h"
 #include "debug.h"
 #include "direction.h"
 #include "location.h"
-#include "mapmgr.h"
 #include "movement.h"
 #include "object.h"
 #include "person.h"
@@ -26,7 +24,6 @@
 #include "types.h"
 #include "utils.h"
 #include "settings.h"
-#include "event.h"
 
 /**
  * MapCoords Class Implementation

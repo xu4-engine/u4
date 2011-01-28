@@ -9,7 +9,6 @@
 
 #include "event.h"
 
-#include "u4.h"
 #include "context.h"
 #include "debug.h"
 #include "location.h"
