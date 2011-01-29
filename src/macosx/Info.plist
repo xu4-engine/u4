@@ -24,5 +24,10 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>LSMinimumSystemVersionByArchitecture</key>
+	<dict>
+	<key>x86_64</key>
+	<string>10.6.0</string>
+	</dict>
 </dict>
 </plist>

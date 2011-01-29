@@ -2,20 +2,31 @@
 # $Id$
 #
 
-BUNDLE_CONTENTS=../../xu4.app/Contents
+# name and path to ultima4.zip and u4upgrad.zip
+ULTIMA4=ultima4*.zip
+U4UPGRADE=u4upgrad.zip
 
+# for crosscompiling arch ppc or i386 from OS X 10.6 use 
+# CC=/usr/bin/gcc-4.0
+# CXX=/usr/bin/g++-4.0
 CC=gcc
 CXX=g++
 UI=sdl
-LIBPNGDIR=../../libpng
+
+# if you use MacPorts or fink and want to use that change the PREFIX
+# to /opt/local for macports and /sw for Fink
+PREFIX=/usr
 UILIBS=-L/Library/Frameworks \
 	-framework Cocoa \
 	-framework SDL \
-	-framework SDL_mixer
+	-framework SDL_mixer \
+	-framework libpng
+	
 UIFLAGS=-F/Library/Frameworks \
 	-I/Library/Frameworks/SDL.framework/Headers \
 	-I/Library/Frameworks/SDL_mixer.framework/Headers \
-	-I$(LIBPNGDIR)
+	-I/Library/Frameworks/libpng.framework/Headers \
+	-I$(PREFIX)/include
 
 FEATURES=-DHAVE_BACKTRACE=0 -DHAVE_VARIADIC_MACROS=1
 
@@ -24,22 +35,26 @@ DEBUGCXXFLAGS=-ggdb
 # Optimising
 #DEBUGCXXFLAGS=-O2 -mdynamic-no-pic
 
-#SYSROOT=/Developer/SDKs/MacOSX10.4u.sdk
+# for crosscompiling arch ppc or i386 from OS X 10.6 use 
+# SYSROOT='/Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4'
+# for compiling on OS X 10.5 use
+# SYSROOT=/Developer/SDKs/MacOSX10.5.sdk
+# for compiling on OS X 10.6 use
 SYSROOT=/Developer/SDKs/MacOSX10.6.sdk
 
-#SPECIFIC_ARCH=-arch i386 
-#SPECIFIC_ARCH=-arch ppc
-#There appear to be conflicts with libpng if you attempt to specify an ARCH.
+# for crosscompiling from OS X 10.6 set the arch
+# SPECIFIC_ARCH=-arch i386 
+# SPECIFIC_ARCH=-arch ppc
 SPECIFIC_ARCH=
 
 
-CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Application\ Support/xu4\" -no-cpp-precomp -L$(LIBPNGDIR) -isysroot $(SYSROOT) $(SPECIFIC_ARCH)
+CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Application\ Support/xu4\" -no-cpp-precomp -L$(PREFIX)/lib -isysroot $(SYSROOT) $(SPECIFIC_ARCH)
 CFLAGS=$(CXXFLAGS)
-LIBS=$(LIBPNGDIR)/libpng.a $(UILIBS) $(shell xml2-config --libs) -lobjc -lz $(SPECIFIC_ARCH)
+LIBS=-lxml2 -lz -lpthread -licucore -lm $(UILIBS) -lobjc $(SPECIFIC_ARCH)
+
 INSTALL=install
 
 OBJS=macosx/SDLMain.o macosx/osxinit.o macosx/osxerror.o
-
 include Makefile.common
 
 macosx/SDLMain.o: macosx/SDLMain.m macosx/SDLMain.h
@@ -52,26 +67,57 @@ macosx/osxinit.o: macosx/osxinit.cpp
 	$(CXX) $(CXXFLAGS) -c -o macosx/osxinit.o macosx/osxinit.cpp
 
 mactlkconv: util/tlkconv.o
-	$(CXX) $(CXXFLAGS) -o tlkconv util/tlkconv.o -L$(HOME)/Library/Frameworks
+	$(CXX) $(CXXFLAGS) -o tlkconv util/tlkconv.o -L/Library/Frameworks
 
-install: u4
-	mkdir -p $(BUNDLE_CONTENTS)/MacOS
-	mkdir -p $(BUNDLE_CONTENTS)/Resources
-	mkdir -p $(BUNDLE_CONTENTS)/Resources/dtd
-	mkdir -p $(BUNDLE_CONTENTS)/Resources/ega
-	mkdir -p $(BUNDLE_CONTENTS)/Resources/vga
-	echo "APPL????" > $(BUNDLE_CONTENTS)/PkgInfo
-	cp macosx/Info.plist $(BUNDLE_CONTENTS)
-	cp ../mid/*.* $(BUNDLE_CONTENTS)/Resources
-	cp ../sound/*.ogg $(BUNDLE_CONTENTS)/Resources
-	cp ../conf/*.xml $(BUNDLE_CONTENTS)/Resources
-	cp ../conf/dtd/*.dtd $(BUNDLE_CONTENTS)/Resources/dtd
-	cp ../icons/xu4.icns $(BUNDLE_CONTENTS)/Resources
-	cp ../graphics/ega/*.png $(BUNDLE_CONTENTS)/Resources/ega
-	cp ../graphics/vga/*.png $(BUNDLE_CONTENTS)/Resources/vga
-	cp ../../ultima4*.zip $(BUNDLE_CONTENTS)/Resources
-	cp ../../u4upgrad.zip $(BUNDLE_CONTENTS)/Resources
-	cp $< $(BUNDLE_CONTENTS)/MacOS
+bundle_name=XU4.app
 
+bundle: u4
+	mkdir -p $(bundle_name)/Contents/MacOS
+
+	mkdir -p $(bundle_name)/Contents/Resources
+	mkdir -p $(bundle_name)/Contents/Resources/dtd
+	mkdir -p $(bundle_name)/Contents/Resources/ega
+	mkdir -p $(bundle_name)/Contents/Resources/vga
+	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
+	cp macosx/Info.plist $(bundle_name)/Contents
+	cp ../mid/*.* $(bundle_name)/Contents/Resources
+	cp ../sound/*.ogg $(bundle_name)/Contents/Resources
+	cp ../conf/*.xml $(bundle_name)/Contents/Resources
+	cp ../conf/dtd/*.dtd $(bundle_name)/Contents/Resources/dtd
+	cp ../icons/xu4.icns $(bundle_name)/Contents/Resources
+	cp ../graphics/ega/*.png $(bundle_name)/Contents/Resources/ega
+	cp ../graphics/vga/*.png $(bundle_name)/Contents/Resources/vga
+	cp $(ULTIMA4) $(bundle_name)/Contents/Resources
+	cp $(U4UPGRADE) $(bundle_name)/Contents/Resources
+	cp $< $(bundle_name)/Contents/MacOS
+
+# This will make a disk image with the app bundle (and the needed text files)
+# The frameworks are copied into the bundle so the app bundle on the image
+# works on other macs
+osxdmg: bundle
+	mkdir -p $(bundle_name)/Contents/Frameworks
+	cp -R -L /Library/Frameworks/SDL.framework $(bundle_name)/Contents/Frameworks
+	cp -R -L /Library/Frameworks/SDL_mixer.framework $(bundle_name)/Contents/Frameworks
+	cp -R -L /Library/Frameworks/libpng.framework $(bundle_name)/Contents/Frameworks
+	mkdir -p xu4-MacOSXdmg
+	cp ../AUTHORS ./xu4-MacOSXdmg/Authors
+	cp ../COPYING ./xu4-MacOSXdmg/COPYING
+	cp ../README ./xu4-MacOSXdmg/ReadMe
+	cp ../doc/README.MacOSX ./xu4-MacOSXdmg/ReadMe.MacOSX
+	/Developer/Tools/SetFile -t ttro -c ttxt ./xu4-MacOSXdmg/*
+	/Developer/Tools/CpMac -r $(bundle_name) ./xu4-MacOSXdmg/
+	hdiutil create -ov -format UDZO -imagekey zlib-level=9 -fs HFS+ \
+					-srcfolder xu4-MacOSXdmg \
+					-volname "xu4-MacOSX" \
+					xu4-MacOSX.dmg
+	rm -rf xu4-MacOSXdmg
+
+install: bundle
+	cp -r $(bundle_name) /Applications/
+
+clean-local:
+	-rm -f xu4-MacOSX.dmg
+	-rm -rf $(bundle_name)
+		
 -include .depends
 

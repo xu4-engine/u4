@@ -28,7 +28,7 @@ installed a copy of xu4 version 0.6 or earlier.
    http://fink.sourceforge.net/
 
 2) Under MacOSX the configuration and savegame files are now kept in
-   ~/Library/Preferences/XU4. This directory will be created the first
+   ~/Library/Application Support/XU4. This directory will be created the first
    time you run XU4 versions >= 0.7. You can delete any old configuration 
    and savegame files. The old configuration was kept in ~/.xu4rc. You
    can remove it by opening the Terminal application and executing the
@@ -55,6 +55,6 @@ Removing Xu4
 1) Drag the XU4 application to the trash.
 
 2) If you have played XU4, there will be some configuration and savegame
-   files stored in ~/Library/Preferences/XU4. If you wish, you can drag
+   files stored in ~/Library/Application Support/XU4. If you wish, you can drag
    this directory to the trash as well.
 
