@@ -73,7 +73,6 @@ bundle_name=XU4.app
 
 bundle: u4
 	mkdir -p $(bundle_name)/Contents/MacOS
-
 	mkdir -p $(bundle_name)/Contents/Resources
 	mkdir -p $(bundle_name)/Contents/Resources/dtd
 	mkdir -p $(bundle_name)/Contents/Resources/ega
@@ -87,18 +86,21 @@ bundle: u4
 	cp ../icons/xu4.icns $(bundle_name)/Contents/Resources
 	cp ../graphics/ega/*.png $(bundle_name)/Contents/Resources/ega
 	cp ../graphics/vga/*.png $(bundle_name)/Contents/Resources/vga
-	cp $(ULTIMA4) $(bundle_name)/Contents/Resources
+	# if you want to include the ultima4.zip in the bundle uncomment the
+	# following line.
+	#cp $(ULTIMA4) $(bundle_name)/Contents/Resources
 	cp $(U4UPGRADE) $(bundle_name)/Contents/Resources
 	cp $< $(bundle_name)/Contents/MacOS
+	
 
 # This will make a disk image with the app bundle (and the needed text files)
 # The frameworks are copied into the bundle so the app bundle on the image
 # works on other macs
 osxdmg: bundle
 	mkdir -p $(bundle_name)/Contents/Frameworks
-	cp -R -L /Library/Frameworks/SDL.framework $(bundle_name)/Contents/Frameworks
-	cp -R -L /Library/Frameworks/SDL_mixer.framework $(bundle_name)/Contents/Frameworks
-	cp -R -L /Library/Frameworks/libpng.framework $(bundle_name)/Contents/Frameworks
+	cp -rf /Library/Frameworks/SDL.framework $(bundle_name)/Contents/Frameworks
+	cp -rf /Library/Frameworks/SDL_mixer.framework $(bundle_name)/Contents/Frameworks
+	cp -rf /Library/Frameworks/libpng.framework $(bundle_name)/Contents/Frameworks
 	mkdir -p xu4-MacOSXdmg
 	cp ../AUTHORS ./xu4-MacOSXdmg/Authors
 	cp ../COPYING ./xu4-MacOSXdmg/COPYING
