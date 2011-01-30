@@ -80,7 +80,7 @@ extern "C" {
 #define WIND_AREA_W 10
 #define WIND_AREA_H 1
 #define WIND_SECONDS_PER_PHASE 1
-
+  
 #ifdef __cplusplus
 }
 #endif
