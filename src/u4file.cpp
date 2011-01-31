@@ -80,6 +80,7 @@ void U4PATH::initDefaultPaths() {
 	/* the possible paths where u4 for DOS can be installed */
 	u4ForDOSPaths.push_back("");
 	u4ForDOSPaths.push_back("u4/");
+	u4ForDOSPaths.push_back("ultima4/");
 
 	/* the possible paths where the u4 zipfiles can be installed */
 	u4ZipPaths.push_back("");
