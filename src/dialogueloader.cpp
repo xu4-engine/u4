@@ -13,7 +13,7 @@
 std::map<std::string, DialogueLoader *> *DialogueLoader::loaderMap = NULL;
 
 DialogueLoader *DialogueLoader::getLoader(const std::string &mimeType) {
-    ASSERT(loaderMap != NULL, "loaderMap not initialized");
+    ASSERT(loaderMap != NULL, "DialogueLoader::getLoader loaderMap not initialized");
     if (loaderMap->find(mimeType) == loaderMap->end())
         return NULL;
     return (*loaderMap)[mimeType];

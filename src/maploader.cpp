@@ -43,7 +43,7 @@ MapLoader *WorldMapLoader::instance = MapLoader::registerLoader(new WorldMapLoad
  * Gets a map loader for the given map type.
  */
 MapLoader *MapLoader::getLoader(Map::Type type) {
-    ASSERT(loaderMap != NULL, "loaderMap not initialized");
+    ASSERT(loaderMap != NULL, "ImageLoader::getLoader loaderMap not initialized");
     if (loaderMap->find(type) == loaderMap->end())
         return NULL;
     return (*loaderMap)[type];

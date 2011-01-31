@@ -23,7 +23,7 @@ void ImageLoader::setDimensions(int width, int height, int bpp) {
  * appropriate for loading images of a type given by fileType.
  */
 ImageLoader *ImageLoader::getLoader(const std::string &fileType) {
-    ASSERT(loaderMap != NULL, "loaderMap not initialized");
+    ASSERT(loaderMap != NULL, "ImageLoader::getLoader loaderMap not initialized");
     if (loaderMap->find(fileType) == loaderMap->end())
         return NULL;
     return (*loaderMap)[fileType];
