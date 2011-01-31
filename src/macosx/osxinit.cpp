@@ -51,5 +51,8 @@ void osxInit(char *binpath)
 
         free(dirname);
     }
+
+    /* Include the application bundle's 'Resources' directory in Mac OS X */
+    U4FILE::rootResourcePaths.push_back(std::string(macOSX_AppBundle_Resource_Path), fname.c_str());
 }
 

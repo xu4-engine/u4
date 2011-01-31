@@ -54,63 +54,59 @@ private:
 
 extern bool verbose;
 
-/* the possible paths where u4 for DOS can be installed */
-static const char * const paths[] = {
-    "./",
-    "./ultima4/",
-    "/usr/lib/u4/ultima4/",
-    "/usr/local/lib/u4/ultima4/"
-};
+U4PATH * U4PATH::instance = NULL;
+U4PATH * U4PATH::getInstance() {
+	if (!instance) {
+		instance = new U4PATH();
+		instance->initDefaultPaths();
+	}
+	return instance;
+}
 
-/* the possible paths where the u4 zipfiles can be installed */
-static const char * const zip_paths[] = {
-    "./",
-    "/usr/lib/u4/",
-    "/usr/local/lib/u4/"
-};
+void U4PATH::initDefaultPaths() {
+	if (defaultsHaveBeenInitd)
+		return;
 
-/* the possible paths where the u4 music files can be installed */
-static const char * const music_paths[] = {
-    "./",
-    "./ultima4/",
-    "./mid/",
-    "../mid/",
-    "/usr/lib/u4/music/",
-    "/usr/local/lib/u4/music/"
-};
+	//The first part of the path searched will be one of these root directories
 
-/* the possible paths where the u4 sound files can be installed */
-static const char * const sound_paths[] = {
-    "./",
-    "./ultima4/",
-    "./sound/",
-    "../sound/",
-    "/usr/lib/u4/sound/",
-    "/usr/local/lib/u4/sound/"
-};
+	/*Try to cover all root possibilities. These can be added to by separate modules*/
+	rootResourcePaths.push_back("./");
+	rootResourcePaths.push_back("./ultima4/");
+	rootResourcePaths.push_back("/usr/lib/u4/");
+	rootResourcePaths.push_back("/usr/local/lib/u4/");
 
-/* the possible paths where the u4 config files can be installed */
-static const char * const conf_paths[] = {
-    "./",
-    "./conf/",
-    "../conf/",
-    "/usr/lib/u4/",
-    "/usr/local/lib/u4/"
-};
+	//The second (specific) part of the path searched will be these various subdirectories
 
-/* the possible paths where the u4 graphics files can be installed */
-static const char * const graphics_paths[] = {
-    "./",
-    "./ultima4/",
-    "./graphics/",
-    "../graphics/",
-    "/usr/lib/u4/graphics/",
-    "/usr/local/lib/u4/graphics/"
-};
+	/* the possible paths where u4 for DOS can be installed */
+	u4ForDOSPaths.push_back("");
+	u4ForDOSPaths.push_back("u4/");
 
-#ifdef MACOSX
-extern char macOSX_AppBundle_Resource_Path[];
-#endif
+	/* the possible paths where the u4 zipfiles can be installed */
+	u4ZipPaths.push_back("");
+	u4ZipPaths.push_back("u4/");
+
+	/* the possible paths where the u4 music files can be installed */
+	musicPaths.push_back("");
+	musicPaths.push_back("mid/");
+	musicPaths.push_back("../mid/");
+	musicPaths.push_back("music/");
+	musicPaths.push_back("../music/");
+
+	/* the possible paths where the u4 sound files can be installed */
+    soundPaths.push_back("");
+    soundPaths.push_back("./sound/");
+    soundPaths.push_back("../sound/");
+
+    /* the possible paths where the u4 config files can be installed */
+    configPaths.push_back("");
+    configPaths.push_back("conf/");
+    configPaths.push_back("../conf/");
+
+    /* the possible paths where the u4 graphics files can be installed */
+    graphicsPaths.push_back("");
+    graphicsPaths.push_back("./graphics/");
+    graphicsPaths.push_back("../graphics/");
+}
 
 /**
  * Returns true if the upgrade is present.
@@ -194,7 +190,7 @@ void U4ZipPackageMgr::add(U4ZipPackage *package) {
 }
 
 U4ZipPackageMgr::U4ZipPackageMgr() {
-    string upg_pathname(u4find_path("u4upgrad.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0])));
+    string upg_pathname(u4find_path("u4upgrad.zip", u4Path.u4ZipPaths));
     if (!upg_pathname.empty()) {
         /* upgrade zip is present */
         U4ZipPackage *upgrade = new U4ZipPackage(upg_pathname, "", false);
@@ -228,12 +224,12 @@ U4ZipPackageMgr::U4ZipPackageMgr() {
         add(upgrade);
     }
     // check for the default zip packages
-    string pathname(u4find_path("ultima4-1.01.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0])));
+    string pathname(u4find_path("ultima4-1.01.zip", u4Path.u4ZipPaths));
     if (!pathname.empty()) {
         /* updated 1.01 u4 zip is present */
         add(new U4ZipPackage(pathname, "ultima4/", false));
     } else {
-        pathname = u4find_path("ultima4.zip", zip_paths, sizeof(zip_paths) / sizeof(zip_paths[0]));
+        pathname = u4find_path("ultima4.zip", u4Path.u4ZipPaths);
         if (!pathname.empty()) {
             /* original u4 zip is present */
             add(new U4ZipPackage(pathname, "ultima4/", false));
@@ -426,12 +422,12 @@ U4FILE *u4fopen(const string &fname) {
      */
     string fname_copy(fname);
 
-    string pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
+    string pathname = u4find_path(fname_copy, u4Path.u4ForDOSPaths);
     if (pathname.empty()) {
         using namespace std;
         if (islower(fname_copy[0])) {
             fname_copy[0] = toupper(fname_copy[0]);
-            pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
+            pathname = u4find_path(fname_copy, u4Path.u4ForDOSPaths);
         }
 
         if (pathname.empty()) {
@@ -439,7 +435,7 @@ U4FILE *u4fopen(const string &fname) {
                 if (islower(fname_copy[i]))
                     fname_copy[i] = toupper(fname_copy[i]);
             }
-            pathname = u4find_path(fname_copy, paths, sizeof(paths) / sizeof(paths[0]));
+            pathname = u4find_path(fname_copy, u4Path.u4ForDOSPaths);
         }
     }
 
@@ -533,59 +529,54 @@ vector<string> u4read_stringtable(U4FILE *f, long offset, int nstrings) {
     return strs;
 }
 
-string u4find_path(const string &fname, const char * const *pathent, unsigned int npathents) {
+string u4find_path(const string &fname, std::list<string> specificSubPaths) {
     FILE *f = NULL;
-    unsigned int i;
-    char pathname[128];
 
-    for (i = 0; i < npathents; i++) {
-        snprintf(pathname, sizeof(pathname), "%s%s", pathent[i], fname.c_str());
+    char path[2048]; //Sometimes paths get big.
 
-        if (verbose)
-            printf("trying to open %s\n", pathname);
+    for (std::list<string>::iterator rootItr = u4Path.rootResourcePaths.begin();
+    		rootItr!=u4Path.rootResourcePaths.end() && !f;
+    		++rootItr) {
+    	for (std::list<string>::iterator subItr = specificSubPaths.begin();
+    			subItr!=specificSubPaths.end() && !f;
+    			++subItr) {
 
-        if ((f = fopen(pathname, "rb")) != NULL)
-            break;
+            snprintf(path, sizeof(path), "%s%s%s", rootItr->c_str(), subItr->c_str(), fname.c_str());
+
+            if (verbose)
+                printf("trying to open %s\n", path);
+
+            if ((f = fopen(path, "rb")) != NULL)
+                break;
+    	}
     }
-
-#ifdef MACOSX
-    /* Try the application bundle's 'Resources' directory in Mac OS X */
-    if (f == NULL) {
-        snprintf(pathname, sizeof(pathname), "%s%s", macOSX_AppBundle_Resource_Path, fname.c_str());
-
-        if (verbose)
-            printf("trying to open %s\n", pathname);
-
-        f = fopen(pathname, "rb");
-    }
-#endif
 
     if (verbose) {
         if (f != NULL)
-            printf("%s successfully found\n", pathname);
+            printf("%s successfully found\n", path);
         else 
             printf("%s not found\n", fname.c_str());
     }
 
     if (f) {
         fclose(f);
-        return pathname;
+        return path;
     } else
         return "";
 }
 
 string u4find_music(const string &fname) {
-    return u4find_path(fname, music_paths, sizeof(music_paths) / sizeof(music_paths[0]));
+    return u4find_path(fname, u4Path.musicPaths);
 }
 
 string u4find_sound(const string &fname) {
-    return u4find_path(fname, sound_paths, sizeof(sound_paths) / sizeof(sound_paths[0]));
+    return u4find_path(fname, u4Path.soundPaths);
 }
 
 string u4find_conf(const string &fname) {
-    return u4find_path(fname, conf_paths, sizeof(conf_paths) / sizeof(conf_paths[0]));
+    return u4find_path(fname, u4Path.configPaths);
 }
 
 string u4find_graphics(const string &fname) {
-    return u4find_path(fname, graphics_paths, sizeof(graphics_paths) / sizeof(graphics_paths[0]));
+    return u4find_path(fname, u4Path.graphicsPaths);
 }
