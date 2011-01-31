@@ -1914,7 +1914,6 @@ void getChest(int player)
     MapCoords coords;    
     c->location->getCurrentPosition(&coords);
     const Tile *tile = c->location->map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
-    TileId newTile = c->location->getReplacementTile(coords, tile);
 
     /* get the object for the chest, if it is indeed an object */
     Object *obj = c->location->map->objectAt(coords);
@@ -1937,8 +1936,10 @@ void getChest(int player)
 
         if (obj)
             c->location->map->removeObject(obj);
-        else
+        else {
+            TileId newTile = c->location->getReplacementTile(coords, tile);
             c->location->map->annotations->add(coords, newTile, false , true);
+        }
 
         // see if the chest is trapped and handle it
         getChestTrapHandler(player);

@@ -217,6 +217,9 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
 
 			return winner;
 		}
+
+		if (searchQueue.size() > 64)
+			break;
 	} while (searchQueue.size() > 0);
 
     /* couldn't find a tile, give it the sad default */
