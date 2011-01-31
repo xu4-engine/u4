@@ -58,8 +58,11 @@ ConfigElement Config::getElement(const string &name) const {
     return ConfigElement(node);
 }
 
+char DEFAULT_CONFIG_XML_LOCATION[] = "config.xml";
+char * Config::CONFIG_XML_LOCATION_POINTER = &DEFAULT_CONFIG_XML_LOCATION[0];
+
 Config::Config() {
-    doc = xmlParseFile("config.xml");
+    doc = xmlParseFile(Config::CONFIG_XML_LOCATION_POINTER);
     if (!doc)
         errorFatal("error parsing config.xml");
 

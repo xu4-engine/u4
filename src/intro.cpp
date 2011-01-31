@@ -2,7 +2,7 @@
  * $Id$
  */
 
-//#define SLACK_ON_SDL_AGNOSTICISM
+#define SLACK_ON_SDL_AGNOSTICISM
 #ifdef SLACK_ON_SDL_AGNOSTICISM
 #include "SDL.h"
 #endif

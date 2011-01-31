@@ -24,6 +24,9 @@ public:
     static std::vector<std::string> getGames();
     static void setGame(const std::string &name);
 
+    static char * CONFIG_XML_LOCATION_POINTER;
+
+
 private:
     Config();
     static void *fileOpen(const char *filename);
