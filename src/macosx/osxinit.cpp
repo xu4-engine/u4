@@ -21,7 +21,7 @@ void osxInit(char *binpath)
     int result;
     
 
-    std:string MACOSX_APP_SUPPORT = "/Library/Application Support/xu4";
+    std::string MACOSX_APP_SUPPORT = std::string("/Library/Application Support/xu4");
 
     // Figure out and store the path to the application bundle's
     // 'Resources' directory, so that it can be searched in
