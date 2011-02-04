@@ -53,6 +53,6 @@ void osxInit(char *binpath)
         free(dirname);
     }
     u4Path.rootResourcePaths.push_back(std::string(macOSX_AppBundle_Resource_Path));
-
+    u4Path.rootResourcePaths.push_back(std::string(MACOSX_USER_FILES_PATH));
 }
 
