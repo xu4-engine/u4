@@ -20,6 +20,9 @@ void osxInit(char *binpath)
     mode_t mask;
     int result;
     
+
+    std:string MACOSX_APP_SUPPORT = "/Library/Application Support/xu4";
+
     // Figure out and store the path to the application bundle's
     // 'Resources' directory, so that it can be searched in
     // u4file.cpp:u4find_path()
@@ -54,5 +57,6 @@ void osxInit(char *binpath)
     }
     u4Path.rootResourcePaths.push_back(std::string(macOSX_AppBundle_Resource_Path));
     u4Path.rootResourcePaths.push_back(std::string(MACOSX_USER_FILES_PATH));
+    u4Path.rootResourcePaths.push_back(MACOSX_APP_SUPPORT);
 }
 
