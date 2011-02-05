@@ -31,13 +31,18 @@
 MapCoords MapCoords::nowhere(-1, -1, -1);
 
 bool MapCoords::operator==(const MapCoords &a) const {        
-    return ((x == a.x) && (y == a.y) && (z == a.z)) ? true : false;        
+    return (x == a.x) && (y == a.y) && (z == a.z);
 }
 bool MapCoords::operator!=(const MapCoords &a) const {
     return !operator==(a);
 }    
 bool MapCoords::operator<(const MapCoords &a)  const {
-	return (x <= a.x) || (y <= a.y) || (z < a.z);
+	//TODO cooler boolean logic
+	if (x > a.x)
+		return false;
+	if (y > a.y)
+		return false;
+	return z < a.z;
 }
 
 

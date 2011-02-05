@@ -218,9 +218,7 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
 			return winner;
 		}
 
-		if (searchQueue.size() > 64)
-			break;
-	} while (searchQueue.size() > 0);
+	} while (searchQueue.size() > 0 && searchQueue.size() < 64);
 
     /* couldn't find a tile, give it the sad default */
     return map->tileset->getByName("brick_floor")->id;
