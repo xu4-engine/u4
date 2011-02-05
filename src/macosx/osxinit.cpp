@@ -20,8 +20,15 @@ void osxInit(char *binpath)
     mode_t mask;
     int result;
     
+    home = getenv("HOME");
 
-    std::string MACOSX_APP_SUPPORT = std::string("/Library/Application Support/xu4");
+    std::list<std::string> mac_roots;
+    mac_roots.push_back(std::string("."));
+    mac_roots.push_back(std::string(home));
+
+    std::list<std::string> mac_app_support;
+    mac_app_support.push_back(std::string("/Library/Application Support/xu4"));
+    mac_app_support.push_back(std::string(MACOSX_USER_FILES_PATH));
 
     // Figure out and store the path to the application bundle's
     // 'Resources' directory, so that it can be searched in
@@ -35,9 +42,10 @@ void osxInit(char *binpath)
     snprintf(macOSX_AppBundle_Resource_Path, MAXPATHLEN, "%s/Resources/",
         parentdir);
     
+    u4Path.rootResourcePaths.push_back(macOSX_AppBundle_Resource_Path);
+
     // On the first run, the directory for user files must be created.
     // This code checks if it has been created, and creates it if not.
-    home = getenv("HOME");
     if (home && home[0]) {
         dirname = (char *) malloc(strlen(home) +
         strlen(MACOSX_USER_FILES_PATH) + 1);
@@ -52,11 +60,21 @@ void osxInit(char *binpath)
             umask(mask); /* Restore old umask */
             mkdir(dirname, S_IRWXU | mask);
         }
+
       /* Include the application bundle's 'Resources' directory in Mac OS X */
+        u4Path.rootResourcePaths.push_back(std::string(dirname));
         free(dirname);
     }
-    u4Path.rootResourcePaths.push_back(std::string(macOSX_AppBundle_Resource_Path));
-    u4Path.rootResourcePaths.push_back(std::string(MACOSX_USER_FILES_PATH));
-    u4Path.rootResourcePaths.push_back(MACOSX_APP_SUPPORT);
+
+    for (std::list<std::string>::iterator root = mac_roots.begin();
+    		root != mac_roots.end();
+    		++root)
+    	for (std::list<std::string>::iterator app_supp = mac_app_support.begin();
+    		app_supp != map_app_support.end();
+    		++app_supp)
+    	{
+    		u4Path.rootResourcePaths.push_back((*mac_roots).append(*app_supp));
+    	}
+
 }
 
