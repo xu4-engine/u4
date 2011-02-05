@@ -6,6 +6,15 @@ Installing XU4
 No special installation procedure is required for xu4 versions 0.8 and higher. 
 Simply drag the xu4 application to anywhere you like on your hard drive.
 
+
+The OS X version of XU4 no longer comes bundled with Ultima 4. Please download
+the Ultima4.zip (or Ultima4-1.01.zip) seperately and place it in 
+~/library/Application Support/xu4 and XU4 will automatically find and use it.
+Alternatively if you want to enable all users of your mac to play with this zip
+you can place it in /Library/Application Support/xu4.
+(~/Library/... is in your userspace /Library/... is in the root of your hd)
+
+
 If you have had a version of XU4 prior to 0.7 installed, please see
 the "Removing Old (<0.7) Versions of XU4" section of this document. Make
 sure you have removed the previous version before continuing.
@@ -16,6 +25,7 @@ following locations:
 
 	/usr/lib/u4
         /usr/local/lib/u4	
+
 
 Removing Old (<0.7) Versions of XU4
 -----------------------------------
@@ -48,6 +58,7 @@ installed a copy of xu4 version 0.6 or earlier.
    password.)
 
 	sudo rm -r /usr/local/lib/u4
+
 
 Removing Xu4
 ------------

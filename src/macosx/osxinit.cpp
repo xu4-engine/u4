@@ -70,10 +70,10 @@ void osxInit(char *binpath)
     		root != mac_roots.end();
     		++root)
     	for (std::list<std::string>::iterator app_supp = mac_app_support.begin();
-    		app_supp != map_app_support.end();
+    		app_supp != mac_app_support.end();
     		++app_supp)
     	{
-    		u4Path.rootResourcePaths.push_back((*mac_roots).append(*app_supp));
+    		u4Path.rootResourcePaths.push_back((*root).append(*app_supp));
     	}
 
 }
