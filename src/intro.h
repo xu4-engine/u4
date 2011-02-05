@@ -91,6 +91,7 @@ public:
     void update(Menu *menu, MenuEvent &event);
     void updateConfMenu(MenuEvent &event);
     void updateVideoMenu(MenuEvent &event);
+    void updateGfxMenu(MenuEvent &event);
     void updateSoundMenu(MenuEvent &event);
     void updateInputMenu(MenuEvent &event);
     void updateSpeedMenu(MenuEvent &event);
@@ -145,7 +146,7 @@ private:
         MI_CONF_GAMEPLAY,
         MI_CONF_INTERFACE,
         MI_CONF_01,
-        MI_VIDEO_01,
+        MI_VIDEO_CONF_GFX,
         MI_VIDEO_02,
         MI_VIDEO_03,
         MI_VIDEO_04,
@@ -153,6 +154,11 @@ private:
         MI_VIDEO_06,
         MI_VIDEO_07,
         MI_VIDEO_08,
+        MI_GFX_SCHEME,
+        MI_GFX_TILE_TRANSPARENCY,
+        MI_GFX_TILE_TRANSPARENCY_SHADOW_SIZE,
+        MI_GFX_TILE_TRANSPARENCY_SHADOW_OPACITY,
+        MI_GFX_RETURN,
         MI_SOUND_01,
         MI_SOUND_02,
         MI_SOUND_03,
@@ -192,6 +198,7 @@ private:
     Menu mainMenu;
     Menu confMenu;
     Menu videoMenu;
+    Menu gfxMenu;
     Menu soundMenu;
     Menu inputMenu;
     Menu speedMenu;

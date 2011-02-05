@@ -59,6 +59,10 @@ using std::string;
 #define DEFAULT_PAUSE_FOR_EACH_TURN		100
 #define DEFAULT_PAUSE_FOR_EACH_MOVEMENT 10
 
+//--Tile transparency stuff
+#define DEFAULT_SHADOW_PIXEL_OPACITY	64
+#define DEFAULT_SHADOW_PIXEL_SIZE		2
+
 struct SettingsEnhancementOptions {
     bool activePlayer;
     bool u5spellMixing;
@@ -70,6 +74,10 @@ struct SettingsEnhancementOptions {
     bool c64chestTraps;    
     bool smartEnterKey;
     bool peerShowsObjects;
+    bool renderTileTransparency;
+    int	 transparentTilePixelShadowOpacity;
+    int	 transparentTileShadowSize;
+
 };
 
 struct MouseOptions {

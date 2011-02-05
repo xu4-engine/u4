@@ -11,6 +11,7 @@
 #include <utility>
 #include "debug.h"
 #include "image.h"
+#include "settings.h"
 
 Image::Image() : surface(NULL) {
 }
@@ -291,7 +292,7 @@ void Image::setTransparentIndex(unsigned int index, int shadowOutlineWidth, int 
             }
         }
 
-        const unsigned int shadowOpacity = 16;
+        int shadowOpacity = Settings::getInstance().enhancementsOptions.transparentTilePixelShadowOpacity;
         int ox, oy;
         for (std::list<std::pair<int,int> >::iterator xy = opaqueXYs.begin();
         		xy != opaqueXYs.end();

@@ -195,6 +195,9 @@ bool Settings::read() {
     enhancementsOptions.smartEnterKey    = true;
     enhancementsOptions.peerShowsObjects = false;
     enhancementsOptions.u5combat         = false;
+    enhancementsOptions.renderTileTransparency = true;
+    enhancementsOptions.transparentTilePixelShadowOpacity = DEFAULT_SHADOW_PIXEL_OPACITY;
+    enhancementsOptions.transparentTileShadowSize = DEFAULT_SHADOW_PIXEL_SIZE;
 
     innAlwaysCombat = 0;
     campingAlwaysCombat = 0;
@@ -306,6 +309,16 @@ bool Settings::read() {
         else if (strstr(buffer, "game=") == buffer)
             game = buffer + strlen("game=");
 
+        /* graphics enhancements options */
+        else if (strstr(buffer, "renderTileTransparency=") == buffer)
+            enhancementsOptions.renderTileTransparency = (int) strtoul(buffer + strlen("renderTileTransparency="), NULL, 0);
+        else if (strstr(buffer, "transparentTilePixelShadowOpacity=") == buffer)
+        	enhancementsOptions.transparentTilePixelShadowOpacity = (int) strtoul(buffer + strlen("transparentTilePixelShadowOpacity="), NULL, 0);
+        else if (strstr(buffer, "transparentTileShadowSize=") == buffer)
+        	enhancementsOptions.transparentTileShadowSize = (int) strtoul(buffer + strlen("transparentTileShadowSize="), NULL, 0);
+
+
+
         /**
          * FIXME: this is just to avoid an error for those who have not written
          * a new xu4.cfg file since these items were removed.  Remove them after a reasonable
@@ -389,7 +402,10 @@ bool Settings::write() {
             "campingAlwaysCombat=%d\n"
             "mouseEnabled=%d\n"
             "logging=%s\n"
-            "game=%s\n",
+            "game=%s\n"
+            "renderTileTransparency=%d\n"
+            "transparentTilePixelShadowOpacity=%d\n"
+            "transparentTileShadowSize=%d\n",
             scale,
             fullscreen,
             filter.c_str(),
@@ -432,7 +448,10 @@ bool Settings::write() {
             campingAlwaysCombat,
             mouseOptions.enabled,
             logging.c_str(),
-            game.c_str());
+            game.c_str(),
+            enhancementsOptions.renderTileTransparency,
+            enhancementsOptions.transparentTilePixelShadowOpacity,
+            enhancementsOptions.transparentTileShadowSize);
 
     fclose(settingsFile);
 

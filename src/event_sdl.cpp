@@ -320,7 +320,7 @@ void EventHandler::run() {
         }
 
         case SDL_USEREVENT: {
-            eventHandler->getTimer()->tick();            
+            eventHandler->getTimer()->tick();
             break;
         }
 
