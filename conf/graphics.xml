@@ -737,7 +737,7 @@
 
     <imageset name="HiresVGA" extends="EGA">
         <!-- tiles, charset, and game border -->
-        <image name="tiles"    filename="hires/myshapes.vga"   width="32" height="8192" depth="32" filetype="image/x-u4raw" tiles="256" prescale="2">
+        <image name="tiles"    filename="hires/myshapes.vga"   width="32" height="8192" depth="32" filetype="image/x-u4raw" tiles="256" prescale="2" xu4Graphic="true">
             <subimage name="tile_sea" x="0" y="0" width="16" height="16"/>
             <subimage name="tile_water"         width="16" height="16"/>
             <subimage name="tile_shallows"      width="16" height="16"/>
@@ -879,16 +879,16 @@
             <subimage name="tile_balron"        width="16" height="64"/>
         </image>
         <image name="tile_guard" filename="hires/mytile_guard.png" width="32" height="128" depth="8" filetype="image/png" tiles="4" xu4Graphic="true" prescale="2"/>
-        <image name="charset"  filename="hires/mycharset.vga"  width="16"  height="2048" depth="32" filetype="image/x-u4raw" tiles="128" prescale="2"/>
-        <image name="borders"  filename="hires/mystart.vga"    width="640" height="400" depth="32" filetype="image/x-u4rle" prescale="2"/>
+        <image name="charset"  filename="hires/mycharset.vga"  width="16"  height="2048" depth="32" filetype="image/x-u4raw" tiles="128" prescale="2" xu4Graphic="true"/>
+        <image name="borders"  filename="hires/mystart.vga"    width="640" height="400" depth="32" filetype="image/x-u4rle" prescale="2" xu4Graphic="true"/>
 
         <!-- no intro screen images in VGA upgrade--> 
-        <image name="title"   filename="hires/mytitle.vga"  width="640" height="400" depth="24" filetype="image/x-u4lzw" introOnly="true" fixup="intro" prescale="2">
+        <image name="title"   filename="hires/mytitle.vga"  width="640" height="400" depth="24" filetype="image/x-u4lzw" introOnly="true" fixup="intro" prescale="2" xu4Graphic="true">
            <subimage name="options_top"  x="0"  y="64"   width="640"  height="256"/>
            <subimage name="options_btm"  x="0"  y="224"  width="640"  height="160"/>
         </image>
 
-       <image name="beasties" filename="hires/myanimate.vga" width="640" height="400" depth="24" filetype="image/x-u4lzw" introOnly="true" prescale="2">
+       <image name="beasties" filename="hires/myanimate.vga" width="640" height="400" depth="24" filetype="image/x-u4lzw" introOnly="true" prescale="2" xu4Graphic="true">
             <subimage name="beast0frame00" x="0"   y="0"   width="110" height="62"/>
             <subimage name="beast0frame01" x="0"   y="64"  width="110" height="62"/>
             <subimage name="beast0frame02" x="0"   y="128" width="110" height="62"/>
@@ -927,24 +927,24 @@
             <subimage name="beast1frame17" x="544" y="320" width="96"  height="62"/>
         </image>
         
-        <image name="abacus"   filename="hires/abacus.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" fixup="abacus" prescale="2" transparentIndex="0">
+        <image name="abacus"   filename="hires/abacus.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" fixup="abacus" prescale="2" transparentIndex="0" xu4Graphic="true">
             <subimage name="whitebead"      x="16"   y="374" width="16" height="24"/>
             <subimage name="blackbead"      x="48"  y="374" width="16" height="24"/>
         </image>
         
-       <image name="honcom"   filename="hires/honcom.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0">
+       <image name="honcom"   filename="hires/honcom.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0" xu4Graphic="true">
             <subimage name="honestycard"    x="26"  y="26" width="178" height="244"/>
             <subimage name="compassioncard" x="438" y="26" width="178" height="244"/>
         </image>
-        <image name="valjus"   filename="hires/valjus.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0">
+        <image name="valjus"   filename="hires/valjus.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0" xu4Graphic="true">
             <subimage name="valorcard"      x="26"  y="26" width="178" height="244"/>
             <subimage name="justicecard"    x="438" y="26" width="178" height="244"/>
         </image>
-        <image name="sachonor" filename="hires/sachonor.vga" width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0">
+        <image name="sachonor" filename="hires/sachonor.vga" width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0" xu4Graphic="true">
             <subimage name="sacrificecard"  x="26"  y="26" width="178" height="244"/>
             <subimage name="honorcard"      x="438" y="26" width="178" height="244"/>
         </image>
-        <image name="spirhum"  filename="hires/spirhum.vga"  width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0">
+        <image name="spirhum"  filename="hires/spirhum.vga"  width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0" xu4Graphic="true">
             <subimage name="spiritualitycard" x="26"  y="26" width="178" height="244"/>
             <subimage name="humilitycard"   x="438" y="26" width="178" height="244"/>
         </image>
