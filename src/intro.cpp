@@ -1569,10 +1569,10 @@ void IntroController::getTitleSourceData()
     if (!info) {
         errorFatal("ERROR 1007: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO, settings.game.c_str());
     }
-    if (info->width != 320 || info->height != 200)
+    if (info->width / info->prescale != 320 || info->height / info->prescale != 200)
     {
         // the image appears to have been scaled already
-        errorFatal("ERROR 1008: The title image (\"%s\") has been scaled too early!\t\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO);
+    		errorFatal("ERROR 1008: The title image (\"%s\") has been scaled too early!\t\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO);
     }
 
     // get the palette index state of the source image
@@ -1593,21 +1593,22 @@ void IntroController::getTitleSourceData()
         {
             // create a place to store the source image
             titles[i].srcImage = Image::create(
-                titles[i].rw,
-                titles[i].rh,
+                titles[i].rw * info->prescale,
+                titles[i].rh * info->prescale,
                 indexed,
                 Image::HARDWARE );
-            titles[i].srcImage->setPaletteFromImage(info->image);
+            if (settings.videoType == "EGA")
+            	titles[i].srcImage->setPaletteFromImage(info->image);
 
             // get the source image
             info->image->drawSubRectOn(
                 titles[i].srcImage,
                 0,
                 0,
-                titles[i].rx,
-                titles[i].ry,
-                titles[i].rw,
-                titles[i].rh );
+                titles[i].rx * info->prescale,
+                titles[i].ry * info->prescale,
+                titles[i].rw * info->prescale,
+                titles[i].rh * info->prescale);
         }
 
         // after getting the srcImage
@@ -1629,7 +1630,7 @@ void IntroController::getTitleSourceData()
                     x = srcData[titles[i].animStepMax] - 0x4C;
                     y = 0xC0 - srcData[titles[i].animStepMax+1];
 
-                    if (settings.videoType == "VGA")
+                    if (settings.videoType != "EGA")
                     {
                         // yellow gradient
                         color = info->image->setColor(255, (y == 2 ? 250 : 255), blue[y-1]);
@@ -1658,9 +1659,9 @@ void IntroController::getTitleSourceData()
             {
                 for (int y=0; y < titles[i].rh; y++)
                 {
-                    for (int x=0; x < titles[i].rw; x++)
+                    for (int x=0; x < titles[i].rw ; x++)
                     {
-                        titles[i].srcImage->getPixel(x, y, r, g, b, a);
+                        titles[i].srcImage->getPixel(x*info->prescale, y*info->prescale, r, g, b, a);
                         if (r || g || b)
                         {
                             AnimPlot plot = {x+1, y+1, r, g, b, a};
@@ -1682,7 +1683,7 @@ void IntroController::getTitleSourceData()
                     transparentColor.b);
 
                 Image *scaled;      // the scaled and filtered image
-                scaled = screenScale(titles[i].srcImage, settings.scale, 1, 1);
+                scaled = screenScale(titles[i].srcImage, settings.scale / info->prescale, 1, 1);
                 scaled->setTransparentIndex(transparentIndex);
 
                 titles[i].prescaled = true;
@@ -1695,7 +1696,7 @@ void IntroController::getTitleSourceData()
 
             default:
             {
-                titles[i].animStepMax = titles[i].rh;  // image height
+                titles[i].animStepMax = titles[i].rh ;  // image height
                 break;
             }
         }
@@ -1707,8 +1708,8 @@ void IntroController::getTitleSourceData()
         bool indexed = info->image->isIndexed();
         // create the initial animation frame
         titles[i].destImage = Image::create(
-            2 + (titles[i].prescaled ? SCALED(titles[i].rw) : titles[i].rw),
-            2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh),
+            2 + (titles[i].prescaled ? SCALED(titles[i].rw) : titles[i].rw) * info->prescale ,
+            2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh) * info->prescale,
             indexed,
             Image::HARDWARE);
         if (indexed)
@@ -1723,7 +1724,7 @@ void IntroController::getTitleSourceData()
 
     // scale the original image now
     Image *scaled = screenScale(info->image,
-                                settings.scale,
+                                settings.scale / info->prescale,
                                 info->image->isIndexed(),
                                 1);
     delete info->image;
@@ -1822,7 +1823,7 @@ bool IntroController::updateTitle()
             while (animStepTarget > title->animStep)
             {
                 title->animStep++;
-                if (settings.videoType == "VGA")
+                if (settings.videoType != "EGA")
                 {
                     color = title->destImage->setColor(0, 0, 161); // dark blue
                 }

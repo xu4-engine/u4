@@ -120,7 +120,8 @@ void Tile::loadImage() {
         		frames = 4;
         }
 
-        info->image->alphaOff();
+        if (image)
+        	info->image->alphaOff();
 
         if (info) {
             w = (subimage ? subimage->width * scale : info->width * scale);
