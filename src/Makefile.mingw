@@ -35,6 +35,7 @@ install: u4.exe
 	mkdir -p $(U4PATH)/dtd
 	mkdir -p $(U4PATH)/graphics
 	mkdir -p $(U4PATH)/graphics/ega
+	mkdir -p $(U4PATH)/graphics/hires
 	mkdir -p $(U4PATH)/graphics/vga
 	mkdir -p $(U4PATH)/mid
 	mkdir -p $(U4PATH)/sound
@@ -42,6 +43,8 @@ install: u4.exe
 	cp ../conf/*.xml $(U4PATH)/conf
 	cp ../conf/dtd/*.dtd $(U4PATH)/dtd/
 	cp ../graphics/ega/*.png $(U4PATH)/graphics/ega/
+	cp ../graphics/hires/*.png $(U4PATH)/graphics/hires/
+	cp ../graphics/hires/*.vga $(U4PATH)/graphics/hires/
 	cp ../graphics/vga/*.png $(U4PATH)/graphics/vga/
 	cp ../mid/* $(U4PATH)/mid
 	cp ../sound/*.ogg $(U4PATH)/sound
