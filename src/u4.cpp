@@ -29,6 +29,7 @@
 
 #if defined(MACOSX)
 #include "macosx/osxinit.h"
+#include "SDL.h"
 #endif
 
 bool verbose = false;
