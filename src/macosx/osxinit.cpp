@@ -9,6 +9,7 @@
 #include <cerrno>
 #include "error.h"
 #include "u4file.h"
+#include <CoreServices/CoreServices.h>
 
 char macOSX_AppBundle_Resource_Path[MAXPATHLEN];
 
@@ -33,14 +34,10 @@ void osxInit(char *binpath)
     // Figure out and store the path to the application bundle's
     // 'Resources' directory, so that it can be searched in
     // u4file.cpp:u4find_path()
-    strncpy ( parentdir, binpath, sizeof(parentdir) );
-    c = (char*) parentdir;
-    while (*c != '\0') c++;    /* go to end */
-    while (*c != '/') c--;     /* back up to parent */
-    do c--; while (*c != '/'); /* One more level up */
-    *c++ = '\0';               /* cut off remainder */
-    snprintf(macOSX_AppBundle_Resource_Path, MAXPATHLEN, "%s/Resources/",
-        parentdir);
+    CFURLRef resourcePath = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
+    CFURLGetFileSystemRepresentation(resourcePath, true, reinterpret_cast<UInt8 *>(macOSX_AppBundle_Resource_Path),
+                                     MAXPATHLEN);
+    CFRelease(resourcePath);
     
     u4Path.rootResourcePaths.push_back(macOSX_AppBundle_Resource_Path);
 

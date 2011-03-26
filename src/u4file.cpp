@@ -8,6 +8,9 @@
 #include "u4file.h"
 #include "unzip.h"
 #include "debug.h"
+#ifdef MACOSX
+#include <libgen.h>
+#endif
 
 using std::map;
 using std::string;

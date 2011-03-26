@@ -18,6 +18,8 @@
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 #include <shlobj.h>
+#elif defined(MACOSX)
+#include <CoreServices/CoreServices.h>
 #endif
 
 using namespace std;
@@ -82,13 +84,27 @@ void Settings::init(const bool useProfile, const string profileName) {
 	} else {
 
 #if defined(MACOSX)
-        char *home = getenv("HOME");
-        if (home && home[0]) {
-            userPath += home;
-            userPath += MACOSX_USER_FILES_PATH;
-            userPath += "/";
-        } else
-            userPath = "./";
+            FSRef folder;
+            OSErr err = FSFindFolder(kUserDomain, kApplicationSupportFolderType, kCreateFolder, &folder);
+            if (err == noErr) {
+                UInt8 path[2048];
+                if (FSRefMakePath(&folder, path, 2048) == noErr) {
+                    userPath.append(reinterpret_cast<const char *>(path));
+                    userPath.append("/xu4/");
+                }
+            }
+            if (userPath.empty()) {
+                char *home = getenv("HOME");
+                if (home && home[0]) {
+                    if (userPath.size() == 0) {
+                        userPath += home;
+                        userPath += "/.xu4";
+                        userPath += "/";
+                    }
+                } else {
+                    userPath = "./";
+                }
+            }
 #elif defined(__unix__)
         char *home = getenv("HOME");
         if (home && home[0]) {

@@ -16,6 +16,10 @@
 #include "settings.h"
 #include "utils.h"
 
+#ifdef MACOSX
+#include <CoreServices/CoreServices.h>
+#endif
+
 using std::vector;
 
 #if HAVE_BACKTRACE
@@ -104,12 +108,15 @@ Debug::Debug(const string &fn, const string &nm, bool append) : disabled(false),
 
 #ifdef MACOSX
     /* In Mac OS X store debug files in a user-specific location */
-    char *home = getenv("HOME");
-    if (home && home[0]) {
-        filename = home;
-        filename += MACOSX_USER_FILES_PATH;
-        filename += "/";
-        filename += fn;
+    FSRef folder;
+    OSErr err = FSFindFolder(kUserDomain, kApplicationSupportFolderType, kCreateFolder, &folder);
+    if (err == noErr) {
+        UInt8 path[2048];
+        if (FSRefMakePath(&folder, path, 2048) == noErr) {
+            filename = reinterpret_cast<const char *>(path);
+            filename += "/xu4/" + fn;
+        }
+
     }
 #endif
 
@@ -137,16 +144,19 @@ void Debug::initGlobal(const string &filename) {
 
 #ifdef MACOSX
     /* In Mac OS X store debug files in a user-specific location */
-    char *home = getenv("HOME");
-    if (home && home[0]) {
-        string osxfname = home;
-        osxfname += MACOSX_USER_FILES_PATH;
-        osxfname += "/";
-        osxfname += filename;
-        global = FileSystem::openFile(osxfname, "wt");
-    } else {
-        global = NULL;
+    string osxfname;
+    osxfname.reserve(2048);
+    FSRef folder;
+    OSErr err = FSFindFolder(kUserDomain, kApplicationSupportFolderType, kCreateFolder, &folder);
+    if (err == noErr) {
+        UInt8 path[2048];
+        if (FSRefMakePath(&folder, path, 2048) == noErr) {
+            osxfname.append(reinterpret_cast<const char *>(path));
+            osxfname += "/xu4/";
+            osxfname += filename;
+        }
     }
+    global = osxfname.empty() ? NULL : FileSystem::openFile(osxfname, "wt");
 #else
     global = FileSystem::openFile(filename, "wt");
 #endif
