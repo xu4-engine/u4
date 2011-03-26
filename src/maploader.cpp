@@ -70,7 +70,7 @@ bool MapLoader::loadData(Map *map, U4FILE *f) {
     unsigned int x, xch, y, ych;
 
     /* allocate the space we need for the map data */
-    map->data.resize(map->height * map->width, MapTile(0));
+    map->data.reserve(map->height * map->width);
 
     if (map->chunk_height == 0)
         map->chunk_height = map->height;
@@ -245,6 +245,8 @@ bool CityMapLoader::load(Map *map) {
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         if (people[i]->getTile() != 0)            
             city->persons.push_back(people[i]);        
+        else
+            delete people[i];
     }
 
     u4fclose(ult);
