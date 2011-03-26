@@ -111,7 +111,7 @@ void Menu::show(TextView *view)
             }
             else
             {
-                view->textAt(mi->getX(), mi->getY(), view->colorizeString(text.c_str(), FG_YELLOW, mi->getScOffset(), 1).c_str());
+                view->textAt(mi->getX(), mi->getY(), "%s", view->colorizeString(text.c_str(), FG_YELLOW, mi->getScOffset(), 1).c_str());
             }
         }
     }

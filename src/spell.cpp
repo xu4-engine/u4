@@ -358,7 +358,7 @@ void spellMagicAttack(const string &tilename, Direction dir, int minDamage, int 
 
 bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDamage) {
     bool objectHit = false;
-    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
+//    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;    
     CombatMap *cm = getCombatMap();
     
     Creature *creature = cm->creatureAt(coords);

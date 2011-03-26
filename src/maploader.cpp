@@ -78,7 +78,9 @@ bool MapLoader::loadData(Map *map, U4FILE *f) {
         map->chunk_width = map->width;
 
     clock_t total = 0;
+#ifndef NPERF
     clock_t start = clock();
+#endif
 
     u4fseek(f, map->offset, SEEK_CUR);
 
@@ -109,9 +111,9 @@ bool MapLoader::loadData(Map *map, U4FILE *f) {
             }
         }
     }
-    clock_t end = clock();
     
 #ifndef NPERF
+    clock_t end = clock();
     FILE *file = FileSystem::openFile("debug/mapLoadData.txt", "wt");
     if (file) {
         fprintf(file, "%d msecs total\n%d msecs used by Tile::translate()", int(end - start), int(total));
@@ -422,7 +424,7 @@ bool DngMapLoader::load(Map *map) {
                                         Coords(1, 8, 0x16),
                                         Coords(0, 9, 0x16) };
 
-                for (int j=0; j < (sizeof(tile)/sizeof(Coords)); j++)
+                for (int j=0; j < int(sizeof(tile)/sizeof(Coords)); j++)
                 {
                     const int index = (tile[j].y * CON_WIDTH) + tile[j].x;
                     dungeon->rooms[i].map_data[index] = TileMap::get("base")->translate(tile[j].z);

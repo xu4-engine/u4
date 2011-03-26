@@ -492,7 +492,6 @@ bool Creature::specialEffect() {
                  i != c->location->map->objects.end();) {
 
                 obj = *i;
-                Coords const & otherObj = obj->getCoords();
 
                 if (this != obj &&
                 	obj->getCoords() == coords) {

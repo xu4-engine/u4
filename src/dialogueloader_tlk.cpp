@@ -57,7 +57,7 @@ Dialogue* U4TlkDialogueLoader::load(void *source) {
     strings[2][0] = tolower(strings[2][0]);
 
     // ... then replace any newlines in the string with spaces
-    int index = strings[2].find ("\n");
+    size_t index = strings[2].find ("\n");
     while (index != string::npos)
     {
         strings[2][index] = ' ';

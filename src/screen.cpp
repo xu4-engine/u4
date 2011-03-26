@@ -113,7 +113,7 @@ void screenMessage(const char *fmt, ...) {
                 i++;
             c->line++;
             c->col = 0;
-            screenMessage(buffer + i);
+            screenMessage("%s", buffer + i);
             return;
         }
 

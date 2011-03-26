@@ -16,7 +16,7 @@ void errorFatal(const char *fmt, ...) {
     vsnprintf(buffer, sizeof(buffer), fmt, args);
     va_end(args);
 
-    NSRunCriticalAlertPanel(@"XU4 Error", [NSString stringWithCString:buffer], @"OK", NULL, NULL);
+    NSRunCriticalAlertPanel(@"XU4 Error", [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding], @"OK", NULL, NULL);
 
     exit(1);
 }
@@ -29,7 +29,7 @@ void errorWarning(const char *fmt, ...) {
     vsnprintf(buffer, sizeof(buffer), fmt, args);
     va_end(args);
 
-    NSRunAlertPanel(@"XU4 Error", [NSString stringWithCString:buffer], @"OK", NULL, NULL);
+    NSRunAlertPanel(@"XU4 Error", [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding], @"OK", NULL, NULL);
 }
 
 

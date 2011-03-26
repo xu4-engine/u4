@@ -209,7 +209,7 @@ void StatsArea::setTitle(const string &s) {
  * The basic party view.
  */
 void StatsArea::showPartyView(bool avatarOnly) {
-    char *format = "%d%c%-9.8s%3d%s";
+    const char *format = "%d%c%-9.8s%3d%s";
 
     PartyMember *p = NULL;
     int activePlayer = c->party->getActivePlayer();
@@ -390,9 +390,9 @@ void StatsArea::showReagents(bool active)
             // Insert the reagent menu item shortcut character
             shortcut[0] = 'A'+r;
             if (active)
-                mainArea.textAt(0, line++, mainArea.colorizeString(shortcut, FG_YELLOW, 0, 1).c_str());
+                mainArea.textAt(0, line++, "%s", mainArea.colorizeString(shortcut, FG_YELLOW, 0, 1).c_str());
             else
-                mainArea.textAt(0, line++, shortcut.c_str());
+                mainArea.textAt(0, line++, "%s", shortcut.c_str());
         }
     }
 }

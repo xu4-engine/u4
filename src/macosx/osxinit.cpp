@@ -15,8 +15,7 @@ char macOSX_AppBundle_Resource_Path[MAXPATHLEN];
 
 void osxInit(char *binpath)
 {
-    char parentdir[MAXPATHLEN];
-    char *c, *dirname, *home;
+    char *dirname, *home;
     struct stat sb;
     mode_t mask;
     int result;

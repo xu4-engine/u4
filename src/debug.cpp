@@ -219,7 +219,7 @@ void Debug::trace(const string &msg, const string &fn, const string &func, const
         message += "]";
     message += "\n";
     
-    fprintf(file, message.c_str());
+    fprintf(file, "%s", message.c_str());
     if (global && glbl)
         fprintf(global, "%12s: %s", name.c_str(), message.c_str());
 }

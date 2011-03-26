@@ -74,14 +74,14 @@ void TextView::drawCharMasked(int chr, int x, int y, unsigned char mask) {
 /* highlight the selected row using a background color */
 void TextView::textSelectedAt(int x, int y, const char *text) {
     if (!settings.enhancements || !settings.enhancementsOptions.textColorization) {
-        this->textAt(x, y, text);
+        this->textAt(x, y, "%s", text);
         return;
     }
 
     this->setFontColorBG(BG_BRIGHT);
     for (int i=0; i < this->getWidth()-1; i++)
         this->textAt(x-1+i, y, " ");
-    this->textAt(x, y, text);
+    this->textAt(x, y, "%s", text);
     this->setFontColorBG(BG_NORMAL);
 }
 

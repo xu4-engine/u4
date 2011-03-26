@@ -405,7 +405,7 @@ bool codexHandleEndgameAnyKey(int key, void *data) {
                 screenEraseMapArea();
                 screenRedrawMapArea();
             }
-            screenMessage(codexEndgameText1[index].c_str());
+            screenMessage("%s", codexEndgameText1[index].c_str());
         } 
         else if (index == 7) {
             screenDrawImageInMapArea(BKGD_STONCRCL);
@@ -413,7 +413,7 @@ bool codexHandleEndgameAnyKey(int key, void *data) {
             screenMessage("\n\n%s", codexEndgameText2[index-7].c_str());
         }
         else if (index > 7)
-            screenMessage(codexEndgameText2[index-7].c_str());
+            screenMessage("%s", codexEndgameText2[index-7].c_str());
     
         index++;
         eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey);

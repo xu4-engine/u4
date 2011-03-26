@@ -207,7 +207,7 @@ void GameController::init() {
     pb.setBorderWidth(1);
     pb.setColor(0, 0, 128);
 
-    screenTextAt(13, 11, "Loading Game...");
+    screenTextAt(13, 11, "%s", "Loading Game...");
 
     /* initialize the global game context */
     c = new Context;
@@ -800,7 +800,7 @@ void gameCastSpell(unsigned int spell, int caster, int param) {
     if (!spellCast(spell, caster, param, &spellError, true)) {
         msg = spellGetErrorMessage(spell, spellError);
         if (!msg.empty())
-            screenMessage(msg.c_str());
+            screenMessage("%s", msg.c_str());
     }    
 }
 
@@ -3110,7 +3110,7 @@ void gameCreatureAttack(Creature *m) {
  * Performs a ranged attack for the creature at x,y on the world map
  */
 bool creatureRangeAttack(const Coords &coords, Creature *m) {
-    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
+//    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
 
     // Figure out what the ranged attack should look like
     MapTile tile(c->location->map->tileset->getByName((m && !m->getWorldrangedtile().empty()) ? 
@@ -3530,10 +3530,10 @@ showMixturesSuper(int page = 0) {
 
     const Spell *s = getSpell(i + 13 * page);
     int line = i + 8;
-    screenTextAt(2, line, s->name);
+    screenTextAt(2, line, "%s", s->name);
 
     snprintf(buf, 4, "%3d", c->saveGame->mixtures[i + 13 * page]);
-    screenTextAt(6, line, buf);
+    screenTextAt(6, line, "%s", buf);
     
     screenShowChar(32, 9, line);
     int comp = s->components;
@@ -3544,7 +3544,7 @@ showMixturesSuper(int page = 0) {
     screenTextColor(FG_WHITE);
   
     snprintf(buf, 3, "%2d", s->mp);
-    screenTextAt(19, line, buf);
+    screenTextAt(19, line, "%s", buf);
   }
 }
 
@@ -3571,17 +3571,17 @@ mixReagentsSuper() {
   c->location->viewMode = VIEW_MIXTURES;
   screenUpdate(&game->mapArea, true, true);
 
-  screenTextAt(16, 2, "<-Shops");
+  screenTextAt(16, 2, "%s", "<-Shops");
   
   c->stats->setView(StatsView(STATS_REAGENTS));
   screenTextColor(FG_PURPLE);
-  screenTextAt(2, 7, "SPELL # Reagents MP");
+  screenTextAt(2, 7, "%s", "SPELL # Reagents MP");
   
   for (int i = 0; i < shopcount; i++) {
     int line = i + 1;
     ReagentShop *s = &shops[i];
     screenTextColor(FG_WHITE);
-    screenTextAt(2, line, s->name);
+    screenTextAt(2, line, "%s", s->name);
     for (int j = 0; j < 6; j++) {
       screenTextColor(colors[j]);
       screenShowChar('0' + s->price[j], 10 + j, line);

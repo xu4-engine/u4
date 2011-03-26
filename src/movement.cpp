@@ -31,7 +31,6 @@ void moveAvatar(MoveEvent &event) {
     MapCoords newCoords;
     int slowed = 0;
     SlowedType slowedType = SLOWED_BY_TILE;
-    Object *destObj;
 
     /* Check to see if we're on the balloon */
     if (c->transportContext == TRANSPORT_BALLOON && event.userEvent) {
@@ -101,12 +100,14 @@ void moveAvatar(MoveEvent &event) {
     /* move succeeded */
     c->location->coords = newCoords;    
 
-    /* if the avatar moved onto a creature (whirlpool, twister), then do the creature's special effect */
-    destObj = c->location->map->objectAt(newCoords);
+    /* if the avatar moved onto a creature (whirlpool, twister), then do the creature's special effect (this current code does double damage according to changeset 2753.
+      
+    Object *destObj = c->location->map->objectAt(newCoords);
     if (destObj && destObj->getType() == Object::CREATURE) {
         Creature *m = dynamic_cast<Creature*>(destObj);
         //m->specialEffect();
     }
+    */
 
     event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);
 }

@@ -624,7 +624,7 @@ void IntroController::updateScreen() {
         drawBeasties();
 		// display the profile name if a local profile is being used
 		if (useProfile)
-			screenTextAt(40-profileName.length(), 24, profileName.c_str());
+			screenTextAt(40-profileName.length(), 24, "%s", profileName.c_str());
         break;
 
     case INTRO_MENU:
@@ -635,7 +635,7 @@ void IntroController::updateScreen() {
         // if there is an error message to display, show it
         if (!errorMessage.empty())
         {
-            menuArea.textAt(6, 5, errorMessage.c_str());
+            menuArea.textAt(6, 5, "%s", errorMessage.c_str());
             drawBeasties();
             screenRedrawScreen();
             // wait for a couple seconds
@@ -648,11 +648,11 @@ void IntroController::updateScreen() {
 
         menuArea.textAt(1,  1, "In another world, in a time to come.");
         menuArea.textAt(14, 3, "Options:");
-        menuArea.textAt(10, 5, menuArea.colorizeString("Return to the view", FG_YELLOW, 0, 1).c_str());
-        menuArea.textAt(10, 6, menuArea.colorizeString("Journey Onward",     FG_YELLOW, 0, 1).c_str());
-        menuArea.textAt(10, 7, menuArea.colorizeString("Initiate New Game",  FG_YELLOW, 0, 1).c_str());
-        menuArea.textAt(10, 8, menuArea.colorizeString("Configure",          FG_YELLOW, 0, 1).c_str());
-        menuArea.textAt(10, 9, menuArea.colorizeString("About",              FG_YELLOW, 0, 1).c_str());
+        menuArea.textAt(10, 5, "%s", menuArea.colorizeString("Return to the view", FG_YELLOW, 0, 1).c_str());
+        menuArea.textAt(10, 6, "%s", menuArea.colorizeString("Journey Onward",     FG_YELLOW, 0, 1).c_str());
+        menuArea.textAt(10, 7, "%s", menuArea.colorizeString("Initiate New Game",  FG_YELLOW, 0, 1).c_str());
+        menuArea.textAt(10, 8, "%s", menuArea.colorizeString("Configure",          FG_YELLOW, 0, 1).c_str());
+        menuArea.textAt(10, 9, "%s", menuArea.colorizeString("About",              FG_YELLOW, 0, 1).c_str());
         drawBeasties();
 
         // draw the cursor last

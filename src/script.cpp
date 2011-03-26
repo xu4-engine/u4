@@ -304,7 +304,7 @@ Script::ReturnCode Script::execute(xmlNodePtr script, xmlNodePtr currentItem, st
             string content = getContent(current);
             if (output)
                 *output += content;
-            else screenMessage(content.c_str());
+            else screenMessage("%s", content.c_str());
 
             if (debug && content.length())
                 fprintf(debug, "\nOutput: \n====================\n%s\n====================", content.c_str());
@@ -439,11 +439,6 @@ void Script::translate(string *text) {
         while (true) {
             unsigned int open = current.find_first_of("{"),
                          close = current.find_first_of("}");
-
-            if (open < 0)
-                open = current.length();
-            if (close < 0)
-                close = current.length();
 
             if (close == current.length())
                 errorFatal("Error: no closing } found in script.");
@@ -1546,7 +1541,7 @@ void Script::funcParse(string str, string *funcName, string *contents) {
         
         *contents = str.substr(pos+1);
         pos = contents->find_first_of(")");
-        if ((pos < 0) || (pos >= contents->length()))
+        if (pos >= contents->length())
             errorWarning("Error: No closing ) in function %s()", funcName->c_str());
         else *contents = contents->substr(0, pos);
     }
