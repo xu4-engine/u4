@@ -1597,7 +1597,7 @@ void IntroController::getTitleSourceData()
                 titles[i].rh * info->prescale,
                 indexed,
                 Image::HARDWARE );
-            if (settings.videoType == "EGA")
+            if (titles[i].srcImage->isIndexed())
             	titles[i].srcImage->setPaletteFromImage(info->image);
 
             // get the source image
@@ -1823,14 +1823,7 @@ bool IntroController::updateTitle()
             while (animStepTarget > title->animStep)
             {
                 title->animStep++;
-                if (settings.videoType != "EGA")
-                {
-                    color = title->destImage->setColor(0, 0, 161); // dark blue
-                }
-                else
-                {
-                    color = title->destImage->setColor(128, 0, 0); // dark red for EGA
-                }
+                color = title->destImage->setColor(128, 0, 0); // dark red for the underline
 
                 // blit bar to the canvas
                 title->destImage->fillRect(
