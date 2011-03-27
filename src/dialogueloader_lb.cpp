@@ -58,7 +58,7 @@ Dialogue* U4LBDialogueLoader::load(void *source) {
 
     /* since the original game files are a bit sketchy on the 'abyss' keyword,
        let's handle it here just to be safe :) */
-    dlg->addKeyword("abys", 
+    dlg->addKeyword("abyss",
                     new Response("\n\n\n\n\nHe says:\nThe Great Stygian Abyss is the darkest pocket of evil "
                                  "remaining in Britannia!\n\n\n\n\nIt is said that in the deepest recesses of "
                                  "the Abyss is the Chamber of the Codex!\n\n\n\nIt is also said that only one "
@@ -187,9 +187,9 @@ Response *lordBritishGetIntro(const DynamicResponse *resp) {
     else {
         intro->add(string("\n\n\nLord British rises and says: At long last!\n") +
                    c->party->member(0)->getName() +
-                   " thou hast come!  We have waited such a long, long time...\n\n" +
-                   "\n\nLord British sits and says: A new age is upon Britannia. The great evil Lords are gone but our people lack direction and purpose in their lives...\n\n\n\n\n" +
-                   "A champion of virtue is called for. Thou may be this champion, but only time shall tell.  I will aid thee any way that I can!\n\n" +
+                   " thou hast come!  We have waited such a long, long time...\n"
+                   "\n\nLord British sits and says: A new age is upon Britannia. The great evil Lords are gone but our people lack direction and purpose in their lives...\n\n\n"
+                   "A champion of virtue is called for. Thou may be this champion, but only time shall tell.  I will aid thee any way that I can!\n\n"
                    "How may I help thee?\n");
         c->saveGame->lbintro = 1;
     }

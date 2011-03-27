@@ -543,6 +543,7 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         u4fclose(file);
 
     }
+
     if (unscaled == NULL)
         return NULL;
 
