@@ -958,6 +958,7 @@
 
         <buy choice="null" redirect="i_see_then"/>
         <buy>
+            <if test="{$price}==0" redirect="i_see_then"/>
             <pay price="{$price}" quantity="1" cantpay="cantpay"/>
             <add type="reagent" subtype="{type}" quantity="{$quantity}"/>
 
