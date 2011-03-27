@@ -77,6 +77,7 @@ bundle: u4
 	mkdir -p $(bundle_name)/Contents/Resources/dtd
 	mkdir -p $(bundle_name)/Contents/Resources/ega
 	mkdir -p $(bundle_name)/Contents/Resources/vga
+	mkdir -p $(bundle_name)/Contents/Resources/vga2
 	mkdir -p $(bundle_name)/Contents/Resources/hires
 	echo "APPL????" > $(bundle_name)/Contents/PkgInfo
 	cp macosx/Info.plist $(bundle_name)/Contents
@@ -87,6 +88,7 @@ bundle: u4
 	cp ../icons/xu4.icns $(bundle_name)/Contents/Resources
 	cp ../graphics/ega/*.png $(bundle_name)/Contents/Resources/ega
 	cp ../graphics/vga/*.png $(bundle_name)/Contents/Resources/vga
+	cp ../graphics/vga2/*.png $(bundle_name)/Contents/Resources/vga2
 	cp ../graphics/hires/*.png $(bundle_name)/Contents/Resources/hires
 	cp ../graphics/hires/*.vga $(bundle_name)/Contents/Resources/hires
 	# if you want to include the ultima4.zip in the bundle uncomment the
