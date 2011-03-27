@@ -212,7 +212,8 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
                     default: break;
                     } // } switch
 
-                    // Continue running the script!                
+                    // Continue running the script!
+                    c->line++;
                     script->_continue();
                 } // } if 
             } // } while
