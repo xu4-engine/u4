@@ -543,6 +543,8 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         u4fclose(file);
 
     }
+    else
+    	errorFatal("Was no file");
 
     if (unscaled == NULL)
         return NULL;
@@ -583,7 +585,7 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     if ((settings.scale % info->prescale) != 0) {
         settings.scale ++;
         settings.write();
-    	errorFatal("image %s is prescaled to an incompatible size: %d\nSetting the scale to %d. Please restart.", filename.c_str(), info->prescale, settings.scale);
+    	errorFatal("image %s is prescaled to an incompatible size: %d\nResetting the scale to %d. Sorry about the inconvenience, please restart.", filename.c_str(), info->prescale, settings.scale);
     }
     imageScale /= info->prescale;
 
