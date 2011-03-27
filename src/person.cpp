@@ -58,7 +58,7 @@ list<string> replySplit(const string &text) {
 
     /* skip over any initial newlines */
     if ((pos = str.find("\n\n")) == 0)
-        str = str.substr(pos+2);
+        str = str.substr(pos+1);
     
     unsigned int num_chars = chars_needed(str.c_str(), TEXT_AREA_W, TEXT_AREA_H, &real_lines);
     
@@ -73,14 +73,14 @@ list<string> replySplit(const string &text) {
         reply.push_back(pre);
         /* skip over any initial newlines */
         if ((pos = str.find("\n\n")) == 0)
-            str = str.substr(pos+2);
+            str = str.substr(pos+1);
 
         while (num_chars != str.length()) {
             /* go to the rest of the text */
             str = str.substr(num_chars);
             /* skip over any initial newlines */
             if ((pos = str.find("\n\n")) == 0)
-                str = str.substr(pos+2);            
+                str = str.substr(pos+1);
 
             /* find the next chunk and add it */
             num_chars = chars_needed(str.c_str(), TEXT_AREA_W, TEXT_AREA_H, &real_lines);
