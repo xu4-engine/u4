@@ -1341,6 +1341,12 @@ bool GameController::keyPressed(int key) {
                 eventHandler->popController();
                 
                 eventHandler->pushController(intro);
+
+                // Fade out the music and hide the cursor
+                //before returning to the menu.
+                musicMgr->fadeOut(1000);
+                screenHideCursor();
+
                 intro->init();
                 eventHandler->run();
 
