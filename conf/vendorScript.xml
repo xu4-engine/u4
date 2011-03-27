@@ -754,7 +754,7 @@
             <pay price="{$price}" quantity="1" cantpay="cantpay_ale"/>
             <if test="{$price}={ale_price}" redirect="something_else"/>
             <if test="{$price}&gt;{ale_price}">
-                
+                <var name="tip_total" value="{math({$price}-{ale_price})}"/>
                 What'd ya like to know friend?
                 <input name="choice" type="text" target="topic"/>
             </if>
@@ -820,30 +820,31 @@
         <save>
             <context name="topic"/>
             <var name="topic" value="{$choice}"/>
-            <var name="price" value="0"/>
-            <var name="total" value="0"/>            
+            <var name="payment" value="0"/>
             <redirect target="foggy"/>
         </save>
         
         <sorry>
 
             Sorry, I could
-            not hep ya mate!<redirect target="bye"/>
+            not help ya mate!<redirect target="something_else"/>
         </sorry>
 
         <foggy choice="null" redirect="sorry"/>
         <foggy>
-            <pay price="{$price}" quantity="1" cantpay="cantpay_topic"/>
-            <var name="total" value="{math({$total}+{$price})}"/>
-            <if test="{price}&lt;={$total}" choice="{$topic}" redirect="reply"/>
-            
+            <pay price="payment" quantity="1" cantpay="cantpay_topic"/>
+            <var name="tip_total" value="{math({$tip_total}+{$payment})}"/>
+            <if test="{price}&lt;={$tip_total}" choice="{$topic}" redirect="reply"/>
+
             That subject is a bit foggy, perhaps more gold will refresh my memory. You
-            give: <input name="price" type="number" maxlen="2" target="foggy"/>
+            give: <input name="payment" type="number" maxlen="2"/>
+            <if test="{$payment}==0" redirect="sorry"/>
+        	<redirect target="foggy"/>
         </foggy>
 
         <cantpay_topic>
 
-            Yer don't have that mate!<redirect target="sorry"/>
+            Ye don't have that mate!<redirect target="sorry"/>
         </cantpay_topic>
 
         <vendor id="Britain" name="Jolly Spirits" owner="Sam" specialty="Lamb Chops" spec_price="4" ale_price="2">
