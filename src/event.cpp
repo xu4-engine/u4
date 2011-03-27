@@ -251,7 +251,6 @@ bool ReadStringController::keyPressed(int key) {
             }
         }
         else if (key == '\n' || key == '\r') {            
-            //screenMessage("%s", value.c_str());
             doneWaiting();
         }
         else if (len < maxlen) {
@@ -322,8 +321,8 @@ bool ReadChoiceController::keyPressed(int key) {
 
     if (choices.empty() || choices.find_first_of(value) < choices.length()) {
         // If the value is printable, display it
-        //if (!isspace(key))
-        //screenMessage("%c", toupper(key));
+        if (!isspace(key))
+        	screenMessage("%c", toupper(key));
         doneWaiting();
         return true;
     }
