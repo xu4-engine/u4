@@ -1575,9 +1575,6 @@ void IntroController::getTitleSourceData()
     		errorFatal("ERROR 1008: The title image (\"%s\") has been scaled too early!\t\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO);
     }
 
-    // get the palette index state of the source image
-    bool indexed = info->image->isIndexed();
-
     // get the transparent color
     transparentColor = info->image->getPaletteColor(transparentIndex);
 
@@ -1595,7 +1592,7 @@ void IntroController::getTitleSourceData()
             titles[i].srcImage = Image::create(
                 titles[i].rw * info->prescale,
                 titles[i].rh * info->prescale,
-                indexed,
+                false,
                 Image::HARDWARE );
             if (titles[i].srcImage->isIndexed())
             	titles[i].srcImage->setPaletteFromImage(info->image);
@@ -1705,7 +1702,7 @@ void IntroController::getTitleSourceData()
         if (titles[i].srcImage)
             titles[i].srcImage->alphaOff();
 
-        bool indexed = info->image->isIndexed();
+        bool indexed = info->image->isIndexed() && titles[i].method != MAP;
         // create the initial animation frame
         titles[i].destImage = Image::create(
             2 + (titles[i].prescaled ? SCALED(titles[i].rw) : titles[i].rw) * info->prescale ,
