@@ -1131,6 +1131,37 @@
         </image>
     </imageset>
 
+    <imageset name="VGA2" extends="VGA">
+        <image name="borders" filename="vga2/start.png" width="640" height="400" depth="8" filetype="image/png" prescale="2" xu4Graphic="true"/>
+        <image name="charset" filename="vga2/charset.png" width="16"  height="2048" depth="8" filetype="image/png" tiles="128" prescale="2" xu4Graphic="true"/>
+        <image name="honcom" filename="vga2/honcom.png" width="640" height="400" depth="8" filetype="image/png" introOnly="true" prescale="2" xu4Graphic="true">
+            <subimage name="honestycard"    x="24"  y="24" width="180" height="248"/>
+            <subimage name="compassioncard" x="436" y="24" width="180" height="248"/>
+        </image>
+        <image name="sachonor" filename="vga2/sachonor.png" width="640" height="400" depth="8" filetype="image/png" introOnly="true" prescale="2" xu4Graphic="true">
+            <subimage name="sacrificecard"  x="26"  y="26" width="178" height="244"/>
+            <subimage name="honorcard"      x="438" y="26" width="178" height="244"/>
+        </image>
+        <image name="spirhum"  filename="vga2/spirhum.png" width="640" height="400" depth="8" filetype="image/png" introOnly="true" prescale="2" xu4Graphic="true">
+            <subimage name="spiritualitycard" x="26"  y="26" width="178" height="244"/>
+            <subimage name="humilitycard"   x="438" y="26" width="178" height="244"/>
+        </image>
+        <image name="valjus" filename="vga2/valjus.png" width="640" height="400" depth="8" filetype="image/png" introOnly="true" prescale="2" xu4Graphic="true">
+            <subimage name="valorcard"      x="26"  y="26" width="178" height="244"/>
+            <subimage name="justicecard"    x="438" y="26" width="178" height="244"/>
+        </image>
+        <image name="rune0" filename="vga2/rune_0.png" width="640" height="400" depth="8" filetype="image/png" prescale="2" xu4Graphic="true"/>
+        <image name="rune1" filename="vga2/rune_1.png" width="640" height="400" depth="8" filetype="image/png" prescale="2" xu4Graphic="true"/>
+        <image name="rune2" filename="vga2/rune_2.png" width="640" height="400" depth="8" filetype="image/png" prescale="2" xu4Graphic="true"/>
+        <image name="rune3" filename="vga2/rune_3.png" width="640" height="400" depth="8" filetype="image/png" prescale="2" xu4Graphic="true"/>
+        <image name="rune4" filename="vga2/rune_4.png" width="640" height="400" depth="8" filetype="image/png" prescale="2" xu4Graphic="true"/>
+        <image name="rune5" filename="vga2/rune_5.png" width="640" height="400" depth="8" filetype="image/png" prescale="2" xu4Graphic="true"/>
+        <image name="rune6" filename="vga2/rune_6.png" width="640" height="400" depth="8" filetype="image/png" prescale="2" xu4Graphic="true"/>
+        <image name="rune7" filename="vga2/rune_7.png" width="640" height="400" depth="8" filetype="image/png" prescale="2" xu4Graphic="true"/>
+        <image name="rune8" filename="vga2/rune_8.png" width="640" height="400" depth="8" filetype="image/png" prescale="2" xu4Graphic="true"/>
+        <image name="key" filename="vga2/key7.png" width="640" height="400" depth="8" filetype="image/png" prescale="2" xu4Graphic="true"/>
+    </imageset>
+
 
 
     <layout type="gem" name="Standard">
@@ -1313,5 +1344,65 @@
             </transform>
         </tileanim>
     </tileanimset>
+
+    <tileanimset name="VGA2">
+        <tileanim name="scroll">
+            <transform type="scroll" increment="1"/>
+        </tileanim>
+        <tileanim name="frame" random="50">
+            <transform type="frame"/>
+        </tileanim>
+        <tileanim name="slow_frame" random="5">
+            <transform type="frame"/>
+        </tileanim>
+        <tileanim name="cityflag" random="50">
+            <transform type="invert" x="5" y="2" width="5" height="4"/>
+        </tileanim>
+        <tileanim name="lcbflag" random="50">
+            <transform type="invert" x="5" y="0" width="7" height="4"/>
+        </tileanim>
+        <tileanim name="castleflag" random="50">
+            <transform type="invert" x="5" y="0" width="4" height="4"/>
+        </tileanim>
+        <tileanim name="shipflag" random="50">
+            <context type="frame" frame="0">
+                <transform type="invert" x="10" y="1" width="5" height="4"/>
+            </context>
+            <context type="frame" frame="1">
+                <transform type="invert" x="6" y="1" width="3" height="3"/>
+            </context>
+            <context type="frame" frame="2">
+                <transform type="invert" x="7" y="2" width="5" height="2"/>
+            </context>
+            <context type="frame" frame="3">
+                <transform type="invert" x="6" y="2" width="2" height="2"/>
+            </context>
+        </tileanim>
+        <tileanim name="pirateflag" random="50">
+            <context type="frame" frame="0">
+                <transform type="invert" x="10" y="2" width="6" height="2"/>
+            </context>
+            <context type="frame" frame="1">
+                <transform type="invert" x="6" y="2" width="3" height="2"/>
+            </context>
+            <context type="frame" frame="2">
+                <transform type="invert" x="7" y="2" width="5" height="2"/>
+            </context>
+            <context type="frame" frame="3">
+                <transform type="invert" x="6" y="2" width="2" height="2"/>
+            </context>
+        </tileanim>
+        <tileanim name="campfire">
+            <transform type="pixel_color" x="4" y="7" width="5" height="7">
+                <color red="97" green="0" blue="0"/>
+                <color red="256" green="200" blue="0"/>                
+            </transform>
+            <transform type="pixel_color" x="4" y="7" width="5" height="7">
+                <color red="0" green="0" blue="0"/>
+                <color red="156" green="0" blue="0"/>                
+            </transform>
+        </tileanim>
+    </tileanimset>
+
 </graphics>
    
