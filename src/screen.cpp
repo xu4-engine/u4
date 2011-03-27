@@ -348,7 +348,7 @@ void screenShowCursor() {
 
 void screenHideCursor() {
     if (screenCursorStatus) {
-        screenEraseTextArea(screenCursorX, screenCursorY, 1, 1);    
+        screenEraseTextArea(screenCursorX, screenCursorY, 1, 1);
         screenRedrawTextArea(screenCursorX, screenCursorY, 1, 1);
     }
     screenCursorStatus = 0;
