@@ -62,7 +62,9 @@ void screenPrompt() {
 }
 
 void screenMessage(const char *fmt, ...) {
-    char buffer[1024];
+    if (!c)
+    	return; //Because some cases (like the intro) don't have the context initiated.
+	char buffer[1024];
     unsigned int i;
     int wordlen;
 

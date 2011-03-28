@@ -145,7 +145,6 @@ bool AlphaActionController::keyPressed(int key) {
         key = toupper(key);
 
     if (key >= 'A' && key <= toupper(lastValidLetter)) {
-        screenMessage("%c\n", key);
         value = key - 'A';
         doneWaiting();
     } else if (key == U4_SPACE || key == U4_ESC || key == U4_ENTER) {
@@ -1457,10 +1456,10 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
         }
     }
 
-    // display the selected character number
+    c->col--;// display the selected character name, in place of the number
     if ((player >= 0) && (player < 8))
     {
-        screenMessage("%d\n", player+1);
+        screenMessage("%s\n", c->saveGame->players[player].name); //Write player's name after prompt
     }
 
     if (!canBeDisabled && c->party->member(player)->isDisabled())
@@ -1716,7 +1715,8 @@ void castSpell(int player) {
     int spell = AlphaActionController::get('z', "Spell: ");
     if (spell == -1)
         return;
-    screenMessage("%s!\n", spellGetName(spell));
+
+    screenMessage("%s!\n", spellGetName(spell)); //Prints spell name at prompt
 
     c->stats->setView(STATS_PARTY_OVERVIEW);
     
