@@ -583,9 +583,10 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
 
     int imageScale = settings.scale;
     if ((settings.scale % info->prescale) != 0) {
-        settings.scale ++;
+        int orig_scale = settings.scale;
+        settings.scale = info->prescale;
         settings.write();
-    	errorFatal("image %s is prescaled to an incompatible size: %d\nResetting the scale to %d. Sorry about the inconvenience, please restart.", filename.c_str(), info->prescale, settings.scale);
+    	errorFatal("image %s is prescaled to an incompatible size: %d\nResetting the scale to %d. Sorry about the inconvenience, please restart.", filename.c_str(), orig_scale, settings.scale);
     }
     imageScale /= info->prescale;
 
