@@ -105,7 +105,7 @@ void Shrine::enter() {
         cycles = choice - '0';
     completedCycles = 0;
 
-    screenMessage("%c\n\n", cycles + '0');
+    screenMessage("\n\n");
 
     // ensure the player chose the right virtue and entered a valid number for cycles
     if (strncasecmp(virtue.c_str(), getVirtueName(getVirtue()), 6) != 0 || cycles == 0) {
