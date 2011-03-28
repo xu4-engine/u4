@@ -1737,7 +1737,7 @@ void castSpell(int player) {
         if (choice < '1' || choice > '8')
             screenMessage("None\n");
         else {
-            screenMessage("%c\n", choice);
+            screenMessage("\n");
             gameCastSpell(spell, player, choice - '1');
         }
         break;
@@ -1773,7 +1773,7 @@ void castSpell(int player) {
         }
     
         if (fieldType != ENERGYFIELD_NONE) {
-            screenMessage("%c\n", toupper(key));
+            screenMessage("\n");
 
             Direction dir;
             if (c->location->context == CTX_DUNGEON)
