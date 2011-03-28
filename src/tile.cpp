@@ -120,7 +120,7 @@ void Tile::loadImage() {
         		frames = 4;
         }
 
-        if (image)
+        if (info->image)
         	info->image->alphaOff();
 
         if (info) {
