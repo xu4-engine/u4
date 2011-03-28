@@ -23,24 +23,29 @@ DungeonView::DungeonView(int x, int y, int columns, int rows, const string &tile
 void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Direction orientation, bool tiledWall) {
 	Image *baseTileImage, *scaled;
 
-  	const static int nscale_vga[] = { 16, 8, 4, 2, 1};
-    const static int nscale_ega[] = { 16, 8, 4, 1, 0};
+  	const static int nscale_vga[] = { 12, 8, 4, 2, 1};
+    const static int nscale_ega[] = { 8, 4, 2, 1, 0};
 
 	const int lscale_vga[] = { 22, 18, 10, 4, 1};
 	const int lscale_ega[] = { 22, 14, 6, 3, 1};
 
     const int * lscale;
     const int * nscale;
-    if (settings.videoType == "VGA")
+    int offset_multiplier = 0;
+    int offset_adj = 0;
+    if (settings.videoType != "EGA")
     {
     	lscale = & lscale_vga[0];
     	nscale = & nscale_vga[0];
+    	offset_multiplier = 1;
+    	offset_adj = 2;
     }
     else
     {
     	lscale = & lscale_ega[0];
     	nscale = & nscale_ega[0];
-
+    	offset_adj = 1;
+    	offset_multiplier = 4;
     }
 
     const int *dscale = tiledWall ? lscale : nscale;
@@ -63,7 +68,7 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
     else if (dscale[distance] == 1)
         scaled = screenScaleDown(baseTileImage, 2);
     else
-        scaled = screenScale(baseTileImage, dscale[distance] / 2, 1, 1);
+        scaled = screenScale(baseTileImage, dscale[distance] / 2, 1, 0);
 
 
     if (tiledWall) {
@@ -81,9 +86,9 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
     			baseTileImage->drawSubRectOn(this->screen,x,y,0,0,f_x - x,f_y - y);
     }
     else {
-
+    	int y_offset = std::max(0,(dscale[distance] - offset_adj) * offset_multiplier);
     	int x = SCALED((VIEWPORT_W * tileWidth / 2.0) + this->x) - (scaled->width() / 2.0);
-    	int y = SCALED((VIEWPORT_H * tileHeight / 2.0) + this->y) - (scaled->height() / 8.0);
+    	int y = SCALED((VIEWPORT_H * tileHeight / 2.0) + this->y + y_offset) - (scaled->height() / 8.0);
 
     scaled->drawSubRectOn(	this->screen,
     						x,
