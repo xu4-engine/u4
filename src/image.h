@@ -6,6 +6,7 @@
 #define IMAGE_H
 
 #include <string>
+#include <stdint.h>
 #include "types.h"
 #include "u4file.h"
 #include "textcolor.h"

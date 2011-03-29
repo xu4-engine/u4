@@ -63,8 +63,10 @@ char * Config::CONFIG_XML_LOCATION_POINTER = &DEFAULT_CONFIG_XML_LOCATION[0];
 
 Config::Config() {
     doc = xmlParseFile(Config::CONFIG_XML_LOCATION_POINTER);
-    if (!doc)
+    if (!doc) {
+    	printf("Failed to read core config.xml. Assuming it is located at '%s'", Config::CONFIG_XML_LOCATION_POINTER);
         errorFatal("error parsing config.xml");
+    }
 
     xmlXIncludeProcess(doc);
 
