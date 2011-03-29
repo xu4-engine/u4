@@ -544,7 +544,7 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
 
     }
     else
-    	errorFatal("Failed to open file %s for reading.", filename);
+    	errorFatal("Failed to open file %s for reading.", filename.data());
 
     if (unscaled == NULL)
         return NULL;

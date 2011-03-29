@@ -2403,6 +2403,11 @@ void readyWeapon(int player) {
     PartyMember *p = c->party->member(player);
     const Weapon *w = Weapon::get(weapon);
 
+
+    if (!w) {
+        screenMessage("\n");
+        return;
+    }
     switch (p->setWeapon(w)) {
     case EQUIP_SUCCEEDED:
         screenMessage("%s\n", w->getName().c_str());
@@ -2835,6 +2840,10 @@ void wearArmor(int player) {
     const Armor *a = Armor::get(armor);
     PartyMember *p = c->party->member(player);
 
+    if (!a) {
+        screenMessage("\n");
+        return;
+    }
     switch (p->setArmor(a)) {
     case EQUIP_SUCCEEDED:
         screenMessage("%s\n", a->getName().c_str());
