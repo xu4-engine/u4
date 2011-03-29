@@ -5,7 +5,7 @@
  *      Author: Darren Janeczek
  */
 
-#include "sound_SDL.h"
+#include "sound_sdl.h"
 #include <string>
 #include <vector>
 
