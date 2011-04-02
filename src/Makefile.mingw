@@ -36,6 +36,7 @@ install: u4.exe
 	mkdir -p $(U4PATH)/graphics
 	mkdir -p $(U4PATH)/graphics/ega
 	mkdir -p $(U4PATH)/graphics/hires
+	mkdir -p $(U4PATH)/graphics/png
 	mkdir -p $(U4PATH)/graphics/vga
 	mkdir -p $(U4PATH)/graphics/vga2
 	mkdir -p $(U4PATH)/mid
@@ -46,6 +47,7 @@ install: u4.exe
 	cp ../graphics/ega/*.png $(U4PATH)/graphics/ega/
 	cp ../graphics/hires/*.png $(U4PATH)/graphics/hires/
 	cp ../graphics/hires/*.vga $(U4PATH)/graphics/hires/
+	cp ../graphics/png/*.png $(U4PATH)/graphics/png/
 	cp ../graphics/vga/*.png $(U4PATH)/graphics/vga/
 	cp ../graphics/vga2/*.png $(U4PATH)/graphics/vga2/
 	cp ../mid/* $(U4PATH)/mid

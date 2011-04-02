@@ -43,9 +43,16 @@ install::
 	$(INSTALL) ../conf/dtd/*.dtd $(libdir)/u4/dtd
 	mkdir -p $(libdir)/u4/graphics
 	mkdir -p $(libdir)/u4/graphics/ega
+	mkdir -p $(libdir)/u4/graphics/hires
+	mkdir -p $(libdir)/u4/graphics/png
 	mkdir -p $(libdir)/u4/graphics/vga
+	mkdir -p $(libdir)/u4/graphics/vga2
 	$(INSTALL) ../graphics/ega/*.png $(libdir)/u4/graphics/ega
+	$(INSTALL) ../graphics/hires/*.png $(libdir)/u4/graphics/hires
+	$(INSTALL) ../graphics/hires/*.vga $(libdir)/u4/graphics/hires
+	$(INSTALL) ../graphics/png/*.png $(libdir)/u4/graphics/png
 	$(INSTALL) ../graphics/vga/*.png $(libdir)/u4/graphics/vga
+	$(INSTALL) ../graphics/vga2/*.png $(libdir)/u4/graphics/vga2
 	$(INSTALL) -D ../u4.desktop $(datadir)/applications/u4.desktop
 
 # use GCC's automatic dependency generation
