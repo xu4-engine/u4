@@ -2,6 +2,13 @@
  * $Id$
  */
 
+
+#ifdef MACOSX
+#include <CoreServices/CoreServices.h>
+#elif defined(IOS)
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include "debug.h"
@@ -16,9 +23,6 @@
 #include "settings.h"
 #include "utils.h"
 
-#ifdef MACOSX
-#include <CoreServices/CoreServices.h>
-#endif
 
 using std::vector;
 
@@ -118,6 +122,8 @@ Debug::Debug(const string &fn, const string &nm, bool append) : disabled(false),
         }
 
     }
+#else
+    
 #endif
 
     if (append)

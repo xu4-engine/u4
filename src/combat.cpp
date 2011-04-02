@@ -33,6 +33,10 @@
 #include "utils.h"
 #include "weapon.h"
 
+#ifdef IOS
+#include "ios_helpers.h"
+#endif
+
 /**
  * Returns true if 'map' points to a Combat Map
  */ 
@@ -991,6 +995,9 @@ bool CombatController::keyPressed(int key) {
     case 'u':
         screenMessage("Use which item:\n");
         c->stats->setView(STATS_ITEMS);
+#ifdef IOS
+        U4IOS::IOSConversationHelper::setIntroString("Use which item?");
+#endif            
         itemUse(gameGetInput().c_str());
         break;
 
@@ -1079,6 +1086,9 @@ void CombatController::attack() {
     screenMessage("Dir: ");
 
     ReadDirController dirController;
+#ifdef IOS
+    U4IOS::IOSDirectionHelper directionPopup;
+#endif
     eventHandler->pushController(&dirController);
     Direction dir = dirController.waitFor();
     if (dir == DIR_NONE)

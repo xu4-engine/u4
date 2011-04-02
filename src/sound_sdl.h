@@ -23,6 +23,7 @@ public:
 	bool load(Sound sound);
 	void play(Sound sound, bool onlyOnce = true, int specificDurationInTicks = -1);
 	void stop(int channel = 1);
+    void del() {}
 
 	static SoundMgr *getSDLInstance();
 	static void replaceSoundMgrInstance();

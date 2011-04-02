@@ -25,6 +25,9 @@
 #include "u4.h"
 #include "utils.h"
 #include "weapon.h"
+#ifdef IOS
+#include "ios_helpers.h"
+#endif
 
 using std::string;
 
@@ -307,6 +310,9 @@ void useStone(int item) {
                 /* see if we have all the stones, if not, get more names! */
                 if (attr && needStoneNames) {
                     screenMessage("\n%c:", 'E'-needStoneNames);
+#ifdef IOS
+                    U4IOS::IOSConversationHelper::setIntroString("Which Color?");
+#endif
                     itemHandleStones(gameGetInput());
                 }
                 /* all the stones have been entered, verify them! */
@@ -366,14 +372,18 @@ void useStone(int item) {
         if (virtueMask > 0)
             screenMessage("\n\nAs thou doth approach, a voice rings out: What virtue dost stem from %s?\n\n", getBaseVirtueName(virtueMask));
         else screenMessage("\n\nA voice rings out:  What virtue exists independently of Truth, Love, and Courage?\n\n");
-
+#ifdef IOS
+        U4IOS::IOSConversationHelper::setIntroString("Which virtue?");
+#endif
         string virtue = gameGetInput();
 
         if (strncasecmp(virtue.c_str(), getVirtueName((Virtue)c->location->coords.z), 6) == 0) {
             /* now ask for stone */
             screenMessage("\n\nThe Voice says: Use thy Stone.\n\nColor:\n");
             needStoneNames = 1;
-
+#ifdef IOS
+            U4IOS::IOSConversationHelper::setIntroString("Which color?");
+#endif
             itemHandleStones(gameGetInput());
         }
         else {
@@ -388,7 +398,9 @@ void useStone(int item) {
              coords.x == 5 && coords.y == 5) {
         needStoneNames = 4;
         screenMessage("\n\nThere are holes for 4 stones.\nWhat colors:\nA:");        
-
+#ifdef IOS
+        U4IOS::IOSConversationHelper::setIntroString("Which color?");
+#endif
         itemHandleStones(gameGetInput());
     }
     else screenMessage("\nNo place to Use them!\n");
@@ -450,6 +462,10 @@ void putWeaponInInventory(int weapon) {
 
 void useTelescope(int notused) {
     screenMessage("You see a knob\non the telescope\nmarked A-P\nYou Select:");
+#ifdef IOS
+    U4IOS::IOSConversationChoiceHelper telescopeHelper;
+    telescopeHelper.updateChoices("abcdefghijklmnop ");
+#endif
     int choice = AlphaActionController::get('p', "You Select:");
 
     if (choice == -1)

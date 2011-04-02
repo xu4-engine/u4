@@ -32,7 +32,9 @@ using std::vector;
  * Static variables
  */
 Music *Music::instance = NULL;
-Music * (*Music::GET_MUSIC_INSTANCE)(void) = &Music::getInstance;
+bool Music::fading = false;
+bool Music::on = false;
+bool Music::functional = true;
 
 /**
  * Returns an instance of the Music class
@@ -43,7 +45,6 @@ Music *Music::getInstance() {
     return instance;
 }
 
-
 /*
  * Constructors/Destructors
  */
@@ -51,7 +52,8 @@ Music *Music::getInstance() {
 /**
  * Initiliaze the music
  */
-Music::Music() : introMid(TOWNS), playing(NULL), logger(new Debug("debug/music.txt", "Music")) {
+Music::Music() : introMid(TOWNS), current(NONE), playing(NULL), logger(new Debug("debug/music.txt", "Music")) {
+    filenames.reserve(MAX);
     filenames.push_back("");    // filename for MUSIC_NONE;
 
     TRACE(*logger, "Initializing music");
@@ -64,18 +66,22 @@ Music::Music() : introMid(TOWNS), playing(NULL), logger(new Debug("debug/music.t
     TRACE_LOCAL(*logger, "Loading music tracks");
 
     vector<ConfigElement> musicConfs = config->getElement("music").getChildren();
-    for (std::vector<ConfigElement>::iterator i = musicConfs.begin(); i != musicConfs.end(); i++) {
-
+    std::vector<ConfigElement>::const_iterator i = musicConfs.begin();
+    std::vector<ConfigElement>::const_iterator theEnd = musicConfs.end();
+    for (; i != theEnd; ++i) {
         if (i->getName() != "track")
             continue;
 
         filenames.push_back(i->getString("file"));
         TRACE_LOCAL(*logger, string("\tTrack file: ") + filenames.back());
-
     }
-    filenames.resize(MAX, "");
 
+	create_sys(); // Call the Sound System specific creation file.
 
+	// Set up the volume.
+    on = settings.musicVol;
+    setMusicVolume(settings.musicVol);
+    setSoundVolume(settings.soundVol);
     TRACE(*logger, string("Music initialized: volume is ") + (on ? "on" : "off"));
 }
 
@@ -85,7 +91,7 @@ Music::Music() : introMid(TOWNS), playing(NULL), logger(new Debug("debug/music.t
 Music::~Music() {
     TRACE(*logger, "Uninitializing music");
     eventHandler->getTimer()->remove(&Music::callback);
-
+	destroy_sys(); // Call the Sound System specific destruction file.
 
     TRACE(*logger, "Music uninitialized");
     delete logger;
@@ -93,8 +99,6 @@ Music::~Music() {
 
 
 bool Music::load(Type music) {
-    static Type current = NONE;
-
     ASSERT(music < MAX, "Attempted to load an invalid piece of music in Music::load()");
 
     /* music already loaded */
@@ -109,9 +113,12 @@ bool Music::load(Type music) {
 
     string pathname(u4find_music(filenames[music]));
     if (!pathname.empty()) {
-    	return doLoad(music, pathname, current);
+		bool status = load_sys(pathname);
+		if (status)
+			current = music;
+		return status;
     }
-    else return false;
+    return false;
 }
 
 /**
@@ -131,11 +138,22 @@ void Music::callback(void *data) {
  * Returns true if the mixer is playing any audio
  */
 bool Music::isPlaying() {
-    return getInstance()->isActuallyPlaying();
+    return getInstance()->isPlaying_sys();
 }
 
-bool Music::isActuallyPlaying() {
-	return false;
+/**
+ * Main music loop
+ */
+void Music::play() {
+    playMid(c->location->map->music);
+}
+
+/**
+ * Stop playing music
+ */
+void Music::stop() {
+    on = false;
+	stopMid();
 }
 
 /**
@@ -199,7 +217,50 @@ bool Music::toggle() {
     return on;    
 }
 
+/**
+ * Fade out the music
+ */
+void Music::fadeOut(int msecs) {
+	// fade the music out even if 'on' is false
+	if (!functional)
+		return;
 
+	if (isPlaying()) {
+		if (!settings.volumeFades)
+			stop();
+		else {
+			fadeOut_sys(msecs);
+		}
+	}
+}
+
+/**
+ * Fade in the music
+ */
+void Music::fadeIn(int msecs, bool loadFromMap) {
+	if (!functional || !on)
+		return;
+
+	if (!isPlaying()) {
+		/* make sure we've got something loaded to play */
+		if (loadFromMap || !playing)
+			load(c->location->map->music);
+
+		if (!settings.volumeFades)
+			play();
+		else {
+			fadeIn_sys(msecs, loadFromMap);
+		}
+	}
+}
+
+void Music::setMusicVolume(int volume) {
+	setMusicVolume_sys(volume);
+}
+
+void Music::setSoundVolume(int volume) {
+	setSoundVolume_sys(volume);
+}
 
 int Music::increaseMusicVolume() {
     if (++settings.musicVol > MAX_VOLUME)

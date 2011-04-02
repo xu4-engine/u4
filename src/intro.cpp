@@ -2,9 +2,11 @@
  * $Id$
  */
 
+#ifndef IOS
 #define SLACK_ON_SDL_AGNOSTICISM
 #ifdef SLACK_ON_SDL_AGNOSTICISM
-#include "SDL.h"
+#include <SDL.h>
+#endif
 #endif
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
@@ -31,6 +33,10 @@
 #include "tilemap.h"
 #include "u4file.h"
 #include "utils.h"
+
+#ifdef IOS
+#include "ios_helpers.h"
+#endif
 
 using namespace std;
 
@@ -299,7 +305,11 @@ bool IntroController::init() {
         // the init() method is called again from within the
         // game via ALT-Q, so return to the menu
         //
+#ifndef IOS
         mode = INTRO_MENU;
+#else
+        mode = INTRO_MAP;
+#endif
         beastiesVisible = true;
         beastieOffset = 0;
         musicMgr->intro();
@@ -720,7 +730,13 @@ void IntroController::initiateNewGame() {
         sex = SEX_MALE;
     else
         sex = SEX_FEMALE;
+}
 
+void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
+{
+#ifdef IOS
+    mode = INTRO_MENU; // ensure we are now in the menu mode, (i.e., stop drawing the map).
+#endif
     // no more text entry, so disable the text cursor
     menuArea.disableCursor();
 
@@ -765,7 +781,9 @@ void IntroController::initiateNewGame() {
 
     // show the text thats segues into the main game
     showText(binData->introGypsy[GYP_SEGUE1]);
-
+#ifdef IOS
+    U4IOS::switchU4IntroControllerToContinueButton();
+#endif
     ReadChoiceController pauseController("");
     eventHandler->pushController(&pauseController);
     pauseController.waitFor();
@@ -848,6 +866,9 @@ void IntroController::startQuestions() {
                             binData->introGypsy[questionTree[questionRound * 2 + 1] + 4].c_str());
         questionArea.textAt(0, 3, "\"Consider this:\"");
 
+#ifdef IOS
+        U4IOS::switchU4IntroControllerToContinueButton();
+#endif
         // wait for a key
         eventHandler->pushController(&pauseController);
         pauseController.waitFor();
@@ -856,6 +877,9 @@ void IntroController::startQuestions() {
         // show the question to choose between virtues
         showText(getQuestion(questionTree[questionRound * 2], questionTree[questionRound * 2 + 1]));
 
+#ifdef IOS
+        U4IOS::switchU4IntroControllerToABButtons();
+#endif
         // wait for an answer
         eventHandler->pushController(&questionController);
         int choice = questionController.waitFor();
@@ -1206,14 +1230,14 @@ void IntroController::updateInputMenu(MenuEvent &event) {
             // re-initialize keyboard
             KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
 
-			#ifdef SLACK_ON_SDL_AGNOSTICISM
+#ifdef SLACK_ON_SDL_AGNOSTICISM
             if (settings.mouseOptions.enabled) {
                 SDL_ShowCursor(SDL_ENABLE);
             }
             else {
                 SDL_ShowCursor(SDL_DISABLE);
             }
-			#endif
+#endif
     
             break;
         case CANCEL:
@@ -1744,12 +1768,19 @@ int getTicks()
 }
 #endif
 
-
 //
 // Update the title element, drawing the appropriate frame of animation
 //
 bool IntroController::updateTitle()
 {
+#ifdef IOS
+    static bool firstTime = true;
+    if (firstTime) {
+        firstTime = false;
+        SDL_StartTicks();
+    }
+#endif
+
     int animStepTarget = 0;
 
     int timeCurrent = getTicks();

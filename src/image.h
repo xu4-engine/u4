@@ -11,6 +11,15 @@
 #include "u4file.h"
 #include "textcolor.h"
 
+#if defined(IOS)
+typedef struct CGImage *CGImageRef;
+typedef struct CGLayer *CGLayerRef;
+typedef CGLayerRef BackendSurface;
+#else
+struct SDL_Surface;
+typedef SDL_Surface *BackendSurface;
+#endif
+
 using std::string;
 
 struct RGBA {
@@ -94,24 +103,31 @@ public:
     int width() const { return w; }
     int height() const { return h; }
     bool isIndexed() const { return indexed; }
-
+    BackendSurface getSurface() { return surface; }
     void save(const string &filename);
+#ifdef IOS
+    void initWithImage(CGImageRef image);
+    void clearImageContents();
+#endif
+    void drawHighlighted();
+
 
 private:
     int w, h;
     bool indexed;
-
+#ifdef IOS
+    mutable char *cachedImageData;
+    void clearCachedImageData() const;
+    void createCachedImage() const;
+    friend Image *screenScale(Image *src, int scale, int n, int filter);
+#endif
     Image();                    /* use create method to construct images */
 
     // disallow assignments, copy contruction
     Image(const Image&);
     const Image &operator=(const Image&);
 
-#ifndef _SDL_video_h
-    struct SDL_Surface { int dummy; };
-#endif
-
-    SDL_Surface *surface;
+    BackendSurface surface;
 };
 
 #endif /* IMAGE_H */

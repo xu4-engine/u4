@@ -118,13 +118,18 @@ private:
     bool doQuestion(int answer);
     void initPlayers(SaveGame *saveGame);
     std::string getQuestion(int v1, int v2);
-
+#ifdef IOS
+public:
+#endif
     void initiateNewGame();
+    void finishInitiateGame(const string &nameBuffer, SexType sex);
     void startQuestions();
     void showStory();
     void journeyOnward();
     void about();
-
+#ifdef IOS
+private:
+#endif
     void showText(const string &text);
 
     void runMenu(Menu *menu, TextView *view, bool withBeasties);
@@ -261,8 +266,13 @@ private:
     void compactTitle();
     void drawTitle();
     void getTitleSourceData();
+#ifdef IOS
+public:
+#endif
     void skipTitles();
-
+#ifdef IOS
+private:
+#endif
     std::vector<AnimElement> titles;            // list of title elements
     std::vector<AnimElement>::iterator title;   // current title element
 

@@ -543,3 +543,14 @@ void Image::drawSubRectInvertedOn(Image *d, int x, int y, int rx, int ry, int rw
 void Image::save(const string &filename) {
     SDL_SaveBMP(surface, filename.c_str());
 }
+
+
+void Image::drawHighlighted() {
+    RGBA c;
+    for (unsigned i = 0; i < h; i++) {
+        for (unsigned j = 0; j < w; j++) {
+            getPixel(j, i, c.r, c.g, c.b, c.a);
+            putPixel(j, i, 0xff - c.r, 0xff - c.g, 0xff - c.b, c.a);
+        }
+    }
+}

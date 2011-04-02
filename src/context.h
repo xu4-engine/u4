@@ -36,7 +36,7 @@ typedef enum {
  */
 class Context : public Script::Provider {
 public:
-    Context() : saveGame(NULL), location(NULL) {}
+    Context() : party(NULL), saveGame(NULL), location(NULL) {}
 
     Party *party;
     SaveGame *saveGame;

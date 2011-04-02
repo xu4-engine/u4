@@ -55,6 +55,10 @@
 #include "script.h"
 #include "weapon.h"
 
+#ifdef IOS
+#include "ios_helpers.h"
+#endif
+
 using namespace std;
 
 GameController *game = NULL;
@@ -836,17 +840,32 @@ bool GameController::keyPressed(int key) {
         else key = 'x';        
         
         /* Klimb? */
-        if ((c->location->map->portalAt(c->location->coords, ACTION_KLIMB) != NULL) || 
-            (c->location->context == CTX_DUNGEON &&
-             dynamic_cast<Dungeon *>(c->location->map)->ladderUpAt(c->location->coords)))
+        if ((c->location->map->portalAt(c->location->coords, ACTION_KLIMB) != NULL))
             key = 'k';
         /* Descend? */
-        else if ((c->location->map->portalAt(c->location->coords, ACTION_DESCEND) != NULL) ||
-                 (c->location->context == CTX_DUNGEON &&
-                  dynamic_cast<Dungeon *>(c->location->map)->ladderDownAt(c->location->coords)))
-            key = 'd';        
-        /* Enter? */
-        else if (c->location->map->portalAt(c->location->coords, ACTION_ENTER) != NULL)
+        else if ((c->location->map->portalAt(c->location->coords, ACTION_DESCEND) != NULL))
+            key = 'd';
+		
+		if (c->location->context == CTX_DUNGEON) {
+			Dungeon *dungeon = static_cast<Dungeon *>(c->location->map);
+			bool up = dungeon->ladderUpAt(c->location->coords);
+			bool down = dungeon->ladderDownAt(c->location->coords);
+			if (up && down) {
+#ifdef IOS
+                U4IOS::IOSClimbHelper climbHelper;
+                key = ReadChoiceController::get("kd \033\n");
+#else
+                key = 'k'; // This is consistent with the previous code. Ideally, I would have a UI here as well.
+#endif
+			} else if (up) {
+				key = 'k';
+			} else {
+				key = 'd';
+			}
+		}
+        
+		/* Enter? */
+		if (c->location->map->portalAt(c->location->coords, ACTION_ENTER) != NULL)
             key = 'e';
         
         /* Get Chest? */
@@ -1184,14 +1203,18 @@ bool GameController::keyPressed(int key) {
             talk();
             break;
 
-        case 'u':
+		case 'u': {
             screenMessage("Use which item:\n");
             if (settings.enhancements) {
                 /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
                 c->stats->setView(STATS_ITEMS);
             }
-            itemUse(gameGetInput().c_str());
+#ifdef IOS
+            U4IOS::IOSConversationHelper::setIntroString("Use which item?");
+#endif
+			itemUse(gameGetInput().c_str());
             break;
+		}
 
         case 'v':
             if (musicMgr->toggle())
@@ -1252,6 +1275,9 @@ bool GameController::keyPressed(int key) {
             break;
         
         case 'h' + U4_ALT: {
+#ifdef IOS
+            U4IOS::IOSHideActionKeysHelper hideActionKeys;
+#endif
             ReadChoiceController pauseController("");
 
             screenMessage("Key Reference:\n"
@@ -1426,6 +1452,10 @@ bool GameController::keyPressed(int key) {
 string gameGetInput(int maxlen) {
     screenEnableCursor();
     screenShowCursor();
+#ifdef IOS
+    U4IOS::IOSConversationHelper helper;
+    helper.beginConversation(U4IOS::UIKeyboardTypeDefault);
+#endif
 
     return ReadStringController::get(maxlen, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
 }
@@ -1445,6 +1475,9 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
         else
         {
             ReadPlayerController readPlayerController;
+#ifdef IOS
+            U4IOS::IOSCharacterChoiceHelper choiceHelper;
+#endif
             eventHandler->pushController(&readPlayerController);
             player = readPlayerController.waitFor();
         }
@@ -1476,6 +1509,9 @@ Direction gameGetDirection() {
     ReadDirController dirController;
 
 	screenMessage("Dir?");
+#ifdef IOS
+    U4IOS::IOSDirectionHelper directionPopup;
+#endif
 
     eventHandler->pushController(&dirController);
     Direction dir = dirController.waitFor();
@@ -1712,6 +1748,10 @@ void castSpell(int player) {
     // get the spell to cast
     c->stats->setView(STATS_MIXTURES);
     screenMessage("Spell: ");
+    // ### Put the iPad thing too.
+#ifdef IOS
+    U4IOS::IOSCastSpellHelper castSpellController;
+#endif
     int spell = AlphaActionController::get('z', "Spell: ");
     if (spell == -1)
         return;
@@ -1733,6 +1773,11 @@ void castSpell(int player) {
         break;
     case Spell::PARAM_PHASE: {
         screenMessage("To Phase: ");
+#ifdef IOS
+        U4IOS::IOSConversationChoiceHelper choiceController;
+        choiceController.fullSizeChoicePanel();
+        choiceController.updateChoices("12345678 \033\n");
+#endif
         int choice = ReadChoiceController::get("12345678 \033\n");
         if (choice < '1' || choice > '8')
             screenMessage("None\n");
@@ -1761,7 +1806,11 @@ void castSpell(int player) {
         break;
     case Spell::PARAM_TYPEDIR: {
         screenMessage("Energy type? ");
-
+#ifdef IOS
+        U4IOS::IOSConversationChoiceHelper choiceController;
+        choiceController.fullSizeChoicePanel();
+        choiceController.updateChoices("flps \033\n\r");
+#endif
         EnergyFieldType fieldType = ENERGYFIELD_NONE;
         char key = ReadChoiceController::get("flps \033\n\r");
         switch(key) {
@@ -2395,6 +2444,10 @@ void readyWeapon(int player) {
     // get the weapon to use
     c->stats->setView(STATS_WEAPONS);
     screenMessage("Weapon: ");
+#ifdef IOS
+    // ### Put the iPad stuff here.
+    U4IOS::IOSWeaponDialogHelper helper;
+#endif
     WeaponType weapon = (WeaponType) AlphaActionController::get(WEAP_MAX + 'a' - 1, "Weapon: ");
     c->stats->setView(STATS_PARTY_OVERVIEW);
     if (weapon == -1)
@@ -2467,6 +2520,9 @@ void mixReagents() {
     bool done = false;
 
     while (!done) {
+#ifdef IOS
+        U4IOS::beginMixSpellController();
+#endif
         screenMessage("Mix reagents\n");
 
         // Verify that there are reagents remaining in the inventory
@@ -2635,7 +2691,11 @@ bool gamePeerCity(int city, void *data) {
         game->pausedTimer = 0;
 
         screenDisableCursor();
-            
+#ifdef IOS
+        U4IOS::IOSConversationChoiceHelper continueHelper;
+        continueHelper.updateChoices(" ");
+        continueHelper.fullSizeChoicePanel();
+#endif
         ReadChoiceController::get("\015 \033");
 
         game->exitToParentMap();
@@ -2667,7 +2727,11 @@ void peer(bool useGem) {
     screenDisableCursor();
     
     c->location->viewMode = VIEW_GEM;
-
+#ifdef IOS
+    U4IOS::IOSConversationChoiceHelper continueHelper;
+    continueHelper.updateChoices(" ");
+    continueHelper.fullSizeChoicePanel();
+#endif
     ReadChoiceController::get("\015 \033");
 
     screenEnableCursor();    
@@ -2729,7 +2793,10 @@ bool talkAt(const Coords &coords) {
  * Executes the current conversation until it is done.
  */
 void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
-
+#ifdef IOS
+     // Just add an extra layer of hiding. This stops a lot of flashing during a conversation.
+    U4IOS::IOSHideGameControllerHelper hideButtonsHelper;
+#endif
     while (conv.state != Conversation::DONE) {
         // TODO: instead of calculating linesused again, cache the
         // result in person.cpp somewhere.
@@ -2740,7 +2807,11 @@ void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
 
         /* if all chunks haven't been shown, wait for a key and process next chunk*/    
         size = conv.reply.size();
-        if (size > 0) {    
+        if (size > 0) {
+#ifdef IOS
+            U4IOS::IOSConversationChoiceHelper continueDialog;
+            continueDialog.updateChoices(" ");
+#endif
             ReadChoiceController::get("");
             continue;
         }
@@ -2778,24 +2849,35 @@ void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
         if (showPrompt) {
             string prompt = talker->getPrompt(&conv);
             if (!prompt.empty()) {
-                if (linesused + linecount(prompt, TEXT_AREA_W) > TEXT_AREA_H)
+                if (linesused + linecount(prompt, TEXT_AREA_W) > TEXT_AREA_H) {
+#ifdef IOS
+                    U4IOS::IOSConversationChoiceHelper continueDialog;
+                    continueDialog.updateChoices(" ");
+#endif
                     ReadChoiceController::get("");
+                }
+                    
                 screenMessage("%s", prompt.c_str());        
             }
         }
 
         int maxlen;
         switch (conv.getInputRequired(&maxlen)) {
-        case Conversation::INPUT_STRING:
+        case Conversation::INPUT_STRING: {
             conv.playerInput = gameGetInput(maxlen);
             conv.reply = talker->getConversationText(&conv, conv.playerInput.c_str());
             conv.playerInput.erase();
             showPrompt = true;
             break;
-
+        }
         case Conversation::INPUT_CHARACTER: {
             char message[2];
+#ifdef IOS
+            U4IOS::IOSConversationChoiceHelper yesNoHelper;
+            yesNoHelper.updateChoices("yn ");
+#endif
             int choice = ReadChoiceController::get("");
+            
 
             message[0] = choice;
             message[1] = '\0';
@@ -2830,6 +2912,9 @@ void wearArmor(int player) {
             return;
     }
 
+#ifdef IOS
+    U4IOS::IOSArmorDialogHelper helper;
+#endif
     c->stats->setView(STATS_ARMOR);
     screenMessage("Armour: ");
     ArmorType armor = (ArmorType) AlphaActionController::get(ARMR_MAX + 'a' - 1, "Armour: ");
@@ -2875,7 +2960,9 @@ void ztatsFor(int player) {
     c->stats->resetReagentsMenu();
 
     c->stats->setView(StatsView(STATS_CHAR1 + player));
-
+#ifdef IOS
+    U4IOS::IOSHideActionKeysHelper hideExtraControls;
+#endif
     ZtatsController ctrl;
     eventHandler->pushController(&ctrl);
     ctrl.waitFor();
@@ -2932,6 +3019,13 @@ void GameController::timerFired() {
     }
 
 }
+
+#ifdef IOS
+const SaveGame *GameController::currentGame() const {
+    return c->saveGame;
+}
+#endif
+
 
 /**
  * Checks the hull integrity of the ship and handles

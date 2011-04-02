@@ -32,6 +32,10 @@
 #include "utils.h"
 #include "script.h"
 
+#ifdef IOS
+#include "ios_helpers.h"
+#endif
+
 using namespace std;
 
 int chars_needed(const char *s, int columnmax, int linesdesired, int *real_lines);
@@ -162,14 +166,20 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
                 script->unload();
             script->load("vendorScript.xml", ids[npcType - NPC_VENDOR_WEAPONS], "vendor", c->location->map->getName());
             script->run("intro");       
-               
+#ifdef IOS
+            U4IOS::IOSConversationChoiceHelper choiceDialog;
+#endif
             while (script->getState() != Script::STATE_DONE) {
                 // Gather input for the script
                 if (script->getState() == Script::STATE_INPUT) {
                     switch(script->getInputType()) {
                     case Script::INPUT_CHOICE: {
+                        const string &choices = script->getChoices();
                         // Get choice
-                        char val = ReadChoiceController::get(script->getChoices());
+#ifdef IOS
+                        choiceDialog.updateChoices(choices);
+#endif
+                        char val = ReadChoiceController::get(choices);
                         if (isspace(val) || val == '\033')
                             script->unsetVar(script->getInputName());
                         else {
@@ -185,11 +195,19 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
                         break;
                         
                     case Script::INPUT_NUMBER: {
+#ifdef IOS
+                        U4IOS::IOSConversationHelper ipadNumberInput;
+                        ipadNumberInput.beginConversation(U4IOS::UIKeyboardTypeNumberPad, "Amount?");
+#endif
                         int val = ReadIntController::get(script->getInputMaxLen(), TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
                         script->setVar(script->getInputName(), val);
                     } break;
 
                     case Script::INPUT_STRING: {
+#ifdef IOS
+                        U4IOS::IOSConversationHelper ipadNumberInput;
+                        ipadNumberInput.beginConversation(U4IOS::UIKeyboardTypeDefault);
+#endif
                         string str = ReadStringController::get(script->getInputMaxLen(), TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
                         if (str.size()) {
                             lowercase(str);                        
@@ -199,6 +217,10 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
                     } break;                    
                     
                     case Script::INPUT_PLAYER: {
+#ifdef IOS
+                        U4IOS::IOSConversationHelper ipadNumberInput;
+                        ipadNumberInput.beginConversation(U4IOS::UIKeyboardTypeNumberPad, "Which character?");
+#endif
                         ReadPlayerController getPlayerCtrl;
                         eventHandler->pushController(&getPlayerCtrl);
                         int player = getPlayerCtrl.waitFor();
@@ -570,7 +592,10 @@ int chars_needed(const char *s, int columnmax, int linesdesired, int *real_lines
         else break;
         text = text.substr(pos+1);
     }
-    if (lines + linecount(text.c_str(), columnmax) <= linesdesired)
+    // Seems to be some sort of clang compilation bug in this code, that causes this addition
+    // to not work correctly.
+    int totalPossibleLines = lines + linecount(text.c_str(), columnmax);
+    if (totalPossibleLines <= linesdesired)
         paragraphs += text;
 
     if (!paragraphs.empty()) {

@@ -1,6 +1,10 @@
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#ifndef IOS
 #include <SDL.h>
+#else
+#include "ios_helpers.h"
+#endif
 
 #include "image.h"
 #include "imagemgr.h"
@@ -36,21 +40,28 @@ void View::clear() {
  * Update the view to the screen.
  */
 void View::update() {
-    SDL_UpdateRect(SDL_GetVideoSurface(), SCALED(x), SCALED(y), SCALED(width), SCALED(height));    
+#ifndef IOS
+    SDL_UpdateRect(SDL_GetVideoSurface(), SCALED(x), SCALED(y), SCALED(width), SCALED(height));
+#else
+    U4IOS::updateView();
+#endif
 }
 
 /**
  * Update a piece of the view to the screen.
  */
 void View::update(int x, int y, int width, int height) {
+#ifndef IOS
     SDL_UpdateRect(SDL_GetVideoSurface(), SCALED(this->x + x), SCALED(this->y + y), SCALED(width), SCALED(height));
+#else
+    U4IOS::updateRectInView(x, y, width, height);
+#endif
 }
 
 /**
  * Highlight a piece of the screen by drawing it in inverted colors.
  */ 
 void View::highlight(int x, int y, int width, int height) {
-    RGBA c;
     Image *screen = imageMgr->get("screen")->image;
 
     Image *tmp = Image::create(SCALED(width), SCALED(height), false, Image::SOFTWARE);
@@ -58,14 +69,7 @@ void View::highlight(int x, int y, int width, int height) {
         return;
 
     screen->drawSubRectOn(tmp, 0, 0, SCALED(this->x + x), SCALED(this->y + y), SCALED(width), SCALED(height));
-
-    for (unsigned i = 0; i < SCALED(height); i++) {
-        for (unsigned j = 0; j < SCALED(width); j++) {
-            tmp->getPixel(j, i, c.r, c.g, c.b, c.a);
-            tmp->putPixel(j, i, 0xff - c.r, 0xff - c.g, 0xff - c.b, c.a);
-        }
-    }
-
+    tmp->drawHighlighted();
     tmp->draw(SCALED(this->x + x), SCALED(this->y + y));
     delete tmp;
 

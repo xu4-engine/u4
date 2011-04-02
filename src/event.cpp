@@ -58,7 +58,14 @@ void EventHandler::wait_cycles(unsigned int cycles) {
     waitCtrl.wait();
 }
 
-void EventHandler::setControllerDone(bool done) { controllerDone = done; }     /**< Sets the controller exit flag for the event handler */
+void EventHandler::setControllerDone(bool done) 
+{ 
+	controllerDone = done; 
+#if defined(IOS)
+    if (done)
+        controllerStopped_helper();
+#endif
+}     /**< Sets the controller exit flag for the event handler */
 bool EventHandler::getControllerDone()         { return controllerDone; }      /**< Returns the current value of the global exit flag */
 void EventHandler::end() { ended = true; }                                     /**< End all event processing */
 TimedEventMgr* EventHandler::getTimer()  { return &timer;}

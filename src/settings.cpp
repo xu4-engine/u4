@@ -20,6 +20,10 @@
 #include <shlobj.h>
 #elif defined(MACOSX)
 #include <CoreServices/CoreServices.h>
+#elif defined(IOS)
+#include <CoreFoundation/CoreFoundation.h>
+#include "U4CFHelper.h"
+#include "ios_helpers.h"
 #endif
 
 using namespace std;
@@ -105,6 +109,16 @@ void Settings::init(const bool useProfile, const string profileName) {
                     userPath = "./";
                 }
             }
+#elif defined(IOS)
+        boost::intrusive_ptr<CFURL> urlForLocation = cftypeFromCreateOrCopy(U4IOS::copyAppSupportDirectoryLocation());
+        if (urlForLocation != 0) {
+            char path[2048];
+            boost::intrusive_ptr<CFString> tmpStr = cftypeFromCreateOrCopy(CFURLCopyFileSystemPath(urlForLocation.get(), kCFURLPOSIXPathStyle));
+            if (CFStringGetFileSystemRepresentation(tmpStr.get(), path, 2048) != false) {
+                userPath.append(path);
+                userPath += "/";
+            }
+        }
 #elif defined(__unix__)
         char *home = getenv("HOME");
         if (home && home[0]) {

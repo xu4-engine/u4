@@ -29,7 +29,11 @@ using std::string;
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
 #define DEFAULT_FILTER                  "Scale2x"
+#ifndef IOS
 #define DEFAULT_VIDEO_TYPE              "VGA"
+#else
+#define DEFAULT_VIDEO_TYPE              "VGA-ALLPNG"
+#endif
 #define DEFAULT_GEM_LAYOUT              "Standard"
 #define DEFAULT_LINEOFSIGHT             "DOS"
 #define DEFAULT_SCREEN_SHAKES           1

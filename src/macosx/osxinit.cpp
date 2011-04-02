@@ -9,7 +9,11 @@
 #include <cerrno>
 #include "error.h"
 #include "u4file.h"
+#ifdef MACOSX
 #include <CoreServices/CoreServices.h>
+#else
+#include <CoreFoundation/CoreFoundation.h>
+#endif
 
 char macOSX_AppBundle_Resource_Path[MAXPATHLEN];
 

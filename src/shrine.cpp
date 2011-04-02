@@ -28,6 +28,10 @@
 #include "tileset.h"
 #include "types.h"
 
+#ifdef IOS
+#include "ios_helpers.h"
+#endif
+
 using std::string;
 using std::vector;
 
@@ -87,18 +91,37 @@ void Shrine::enter() {
         shrineAdvice = u4read_stringtable(avatar, 93682, 24);
         u4fclose(avatar);
     }
-
+#ifdef IOS
+    U4IOS::IOSHideGameControllerHelper hideControllsHelper;
+#endif
     if (settings.enhancements && settings.enhancementsOptions.u5shrines)
         enhancedSequence();
     else  
         screenMessage("You enter the ancient shrine and sit before the altar...");
 
-    screenMessage("\nUpon which virtue dost thou meditate?\n");        
-    string virtue = ReadStringController::get(32, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+    screenMessage("\nUpon which virtue dost thou meditate?\n");
+    string virtue;
+#ifdef IOS
+    {
+    U4IOS::IOSConversationHelper inputVirture;
+    inputVirture.beginConversation(U4IOS::UIKeyboardTypeDefault, "Upon which virtue dost thou meditate?");
+#endif
+    virtue = ReadStringController::get(32, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+#ifdef IOS
+    }
+#endif
 
+    int choice;
     screenMessage("\n\nFor how many Cycles (0-3)? ");
-    int choice = ReadChoiceController::get("0123\015\033");
-
+#ifdef IOS
+    {
+    U4IOS::IOSConversationChoiceHelper cyclesChoice;
+    cyclesChoice.updateChoices("0123 \015\033");
+#endif
+    choice = ReadChoiceController::get("0123\015\033");
+#ifdef IOS
+    }
+#endif
     if (choice == '\033' || choice == '\015')
         cycles = 0;
     else
@@ -173,8 +196,17 @@ void Shrine::askMantra() {
     screenEnableCursor();
     screenMessage("\nMantra: ");
     screenRedrawScreen();       // FIXME: needed?
-    string mantra = ReadStringController::get(4, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+    string mantra;
+#ifdef IOS
+    {
+    U4IOS::IOSConversationHelper mantraHelper;
+    mantraHelper.beginConversation(U4IOS::UIKeyboardTypeASCIICapable, "Mantra?");
+#endif
+    mantra = ReadStringController::get(4, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
     screenMessage("\n");
+#ifdef IOS
+    }
+#endif
 
     if (strcasecmp(mantra.c_str(), getMantra().c_str()) != 0) {
         c->party->adjustKarma(KA_BAD_MANTRA);
@@ -198,6 +230,10 @@ void Shrine::askMantra() {
             screenMessage("\nThy thoughts are pure. "
                           "Thou art granted a vision!\n");
 
+#ifdef IOS
+        U4IOS::IOSConversationChoiceHelper choiceDialog;
+        choiceDialog.updateChoices(" ");
+#endif
         ReadChoiceController::get("");
         showVision(elevated);
         ReadChoiceController::get("");

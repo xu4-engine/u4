@@ -22,6 +22,9 @@
 #include "u4.h"
 #include "u4file.h"
 #include "utils.h"
+#ifdef IOS
+#include "ios_helpers.h"
+#endif
 
 using namespace std;
 
@@ -75,11 +78,14 @@ void codexDelete() {
  * Begins the Chamber of the Codex sequence
  */
 void codexStart() { 
-    codexInit();    
+    codexInit();  
 
     /**
      * disable the whirlpool cursor and black out the screen
      */
+#ifdef IOS
+    U4IOS::IOSHideGameControllerHelper hideControllsHelper;
+#endif
     screenDisableCursor();
     screenUpdate(&game->mapArea, false, true);
     
@@ -117,6 +123,9 @@ void codexStart() {
     /**
      * Get the Word of Passage
      */
+#ifdef IOS
+    U4IOS::IOSConversationHelper::setIntroString("What is the Word of Passage?");
+#endif
     codexHandleWOP(gameGetInput());
 }
 
@@ -258,7 +267,9 @@ void codexHandleWOP(const string &word) {
     else if (tries++ < 3) {
         codexImpureThoughts();
         screenMessage("\"What is the Word of Passage?\"\n\n");
-
+#ifdef IOS
+        U4IOS::IOSConversationHelper::setIntroString("Which virtue?");
+#endif
         codexHandleWOP(gameGetInput());
     }
     
@@ -309,7 +320,9 @@ void codexHandleVirtues(const string &virtue) {
         screenMessage("\n\nThe voice asks:\n");
         EventHandler::sleep(2000);
         screenMessage("\n%s\n\n", codexVirtueQuestions[current].c_str());
-
+#ifdef IOS
+        U4IOS::IOSConversationHelper::setIntroString((current != VIRT_MAX) ? "Which virtue?" : "Which principle?");
+#endif
         codexHandleVirtues(gameGetInput());
     }
 
@@ -327,10 +340,12 @@ void codexHandleVirtues(const string &virtue) {
             screenMessage("\n\nThe voice asks:\n");
             EventHandler::sleep(2000);
             screenMessage("\n%s\n\n", codexVirtueQuestions[current].c_str());
-    
+#ifdef IOS
+            U4IOS::IOSConversationHelper::setIntroString("Which principle?");
+#endif    
             codexHandleVirtues(gameGetInput());
         }
-        else {
+        else {            
             screenMessage("\nThe ground rumbles beneath your feet.\n");
             EventHandler::sleep(1000);
             screenShake(10);
@@ -338,6 +353,11 @@ void codexHandleVirtues(const string &virtue) {
             EventHandler::sleep(3000);
             screenEnableCursor();
             screenMessage("\nAbove the din, the voice asks:\n\nIf all eight virtues of the Avatar combine into and are derived from the Three Principles of Truth, Love and Courage...");
+#ifdef IOS
+            // Ugh, we now enter happy callback land, so I know how to do these things manually. Good thing I kept these separate functions.
+            U4IOS::beginChoiceConversation();
+            U4IOS::updateChoicesInDialog(" ");
+#endif    
             eventHandler->pushKeyHandler(&codexHandleInfinityAnyKey);
         }
     }
@@ -346,7 +366,9 @@ void codexHandleVirtues(const string &virtue) {
     else if (tries++ < 3) {
         codexImpureThoughts();
         screenMessage("%s\n\n", codexVirtueQuestions[current].c_str());
-    
+#ifdef IOS
+        U4IOS::IOSConversationHelper::setIntroString("Which virtue?");
+#endif
         codexHandleVirtues(gameGetInput());
     }
     
@@ -363,6 +385,10 @@ bool codexHandleInfinityAnyKey(int key, void *data) {
     eventHandler->popKeyHandler();
 
     screenMessage("\n\nThen what is the one thing which encompasses and is the whole of all undeniable Truth, unending Love, and unyielding Courage?\n\n");
+#ifdef IOS
+    U4IOS::endChoiceConversation();
+    U4IOS::IOSConversationHelper::setIntroString("What is the whole of all undeniable Truth, unending Love, and unyielding Courage?");
+#endif
     codexHandleInfinity(gameGetInput());
     return true;
 }
@@ -371,7 +397,9 @@ void codexHandleInfinity(const string &answer) {
     static int tries = 1;
 
     eventHandler->popKeyHandler();
-
+#ifdef IOS
+    U4IOS::IOSHideGameControllerHelper hideControllsHelper;
+#endif
     /* slight pause before continuing */    
     screenMessage("\n");
     screenDisableCursor();
@@ -383,6 +411,12 @@ void codexHandleInfinity(const string &answer) {
         
         screenEnableCursor();
         screenMessage("\n%s", codexEndgameText1[0].c_str());
+#ifdef IOS
+        // Ugh, we now enter happy callback land, so I know how to do these things manually. Good thing I kept these separate functions.
+        U4IOS::hideGameButtons();
+        U4IOS::beginChoiceConversation();
+        U4IOS::updateChoicesInDialog(" ");
+#endif
         eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey); 
     }
     else if (tries++ < 3) {
@@ -422,6 +456,9 @@ bool codexHandleEndgameAnyKey(int key, void *data) {
         /* CONGRATULATIONS!... you have completed the game in x turns */    
         screenDisableCursor();
         screenMessage("%s%d%s", codexEndgameText2[index-7].c_str(), c->saveGame->moves, codexEndgameText2[index-6].c_str());
+#ifdef IOS
+        U4IOS::endChoiceConversation();
+#endif
         eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);        
     }
 
