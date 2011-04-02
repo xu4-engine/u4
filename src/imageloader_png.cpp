@@ -19,7 +19,7 @@ static void png_read_xu4(png_structp png_ptr, png_bytep data, png_size_t length)
    png_size_t check;
    U4FILE *file;
  
-   file = (U4FILE *) png_ptr->io_ptr;
+   file = (U4FILE *) png_get_io_ptr(png_ptr);
    check = file->read(data, (png_size_t)1, length);
 
    if (check != length)
