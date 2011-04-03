@@ -490,6 +490,14 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
     return NULL;
 }
 
+std::string ImageMgr::guessFileType(const string &filename) {
+    if (filename.length() >= 4 && filename.compare(filename.length() - 4, 4, ".png") == 0) {
+        return "image/png";
+    } else {
+        return "";
+    }
+}
+
 /**
  * Load in a background image from a ".ega" file.
  */
@@ -535,15 +543,16 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     
     Image *unscaled = NULL;
     if (file) {
-        ImageLoader *loader = ImageLoader::getLoader(info->filetype);
+        string filetype = info->filetype == "" ? guessFileType(filename) : info->filetype;
+        ImageLoader *loader = ImageLoader::getLoader(filetype);
         if (loader == NULL)
-            errorFatal("can't load image of type \"%s\"", info->filetype.c_str());
+            errorFatal("can't load image \"%s\" with type \"%s\"", filename.c_str(), filetype.c_str());
         unscaled = loader->load(file, info->width, info->height, info->depth);
         u4fclose(file);
 
     }
     else
-    	errorFatal("Failed to open file %s for reading.", filename.data());
+        errorFatal("Failed to open file %s for reading.", filename.data());
 
     if (unscaled == NULL)
         return NULL;

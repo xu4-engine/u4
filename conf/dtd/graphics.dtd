@@ -19,7 +19,7 @@
                 height            NMTOKEN  #IMPLIED
                 depth             NMTOKEN  #IMPLIED
                 prescale          NMTOKEN  #IMPLIED
-                filetype          CDATA    #REQUIRED
+                filetype          CDATA    #IMPLIED
                 tiles             NMTOKEN  #IMPLIED
                 introOnly         %bool;   #IMPLIED
                 transparentIndex  NMTOKEN  #IMPLIED

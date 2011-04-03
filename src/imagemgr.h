@@ -119,6 +119,8 @@ private:
     ImageInfo *getInfo(const std::string &name);
     ImageInfo *getInfoFromSet(const string &name, ImageSet *set);
 
+    std::string guessFileType(const string &filename);
+
     void fixupIntro(Image *im, int prescale);
     void fixupAbyssVision(Image *im, int prescale);
     void fixupAbacus(Image *im, int prescale);
