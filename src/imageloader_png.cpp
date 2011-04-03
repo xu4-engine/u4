@@ -9,6 +9,7 @@
 #include <png.h>
 
 #include "debug.h"
+#include "error.h"
 #include "image.h"
 #include "imageloader.h"
 #include "imageloader_png.h"
@@ -29,7 +30,11 @@ static void png_read_xu4(png_structp png_ptr, png_bytep data, png_size_t length)
 /**
  * Loads in the PNG with the libpng library.
  */
-Image *PngImageLoader::load(U4FILE *file) {
+Image *PngImageLoader::load(U4FILE *file, int width, int height, int bpp) {
+    if (width != -1 || height != -1 || bpp != -1) {
+          errorWarning("dimensions set for PNG image, will be ignored");
+    }
+
     char header[8];
     file->read(header, 1, sizeof(header));
     if (png_sig_cmp((png_byte*)header, 0, sizeof(header)) != 0)
@@ -116,3 +121,4 @@ Image *PngImageLoader::load(U4FILE *file) {
 
     return image;
 }
+

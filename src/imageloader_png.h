@@ -16,7 +16,7 @@ class PngImageLoader : public ImageLoader {
     static ImageLoader *instance;
 
 public:
-    virtual Image *load(U4FILE *file);
+    virtual Image *load(U4FILE *file, int width, int height, int bpp);
     
 };
 

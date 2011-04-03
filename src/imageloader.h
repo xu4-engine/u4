@@ -21,14 +21,12 @@ class U4FILE;
  */
 class ImageLoader {
 public:
-    ImageLoader();
+    ImageLoader() {}
     virtual ~ImageLoader() {}
-    void setDimensions(int width, int height, int bpp);
-    virtual Image *load(U4FILE *file) = 0;
+    virtual Image *load(U4FILE *file, int width, int height, int bpp) = 0;
     static ImageLoader *getLoader(const std::string &fileType);
 
 protected:
-    int width, height, bpp;
     static ImageLoader *registerLoader(ImageLoader *loader, const std::string &type);
     static void setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData);
 

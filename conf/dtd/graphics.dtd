@@ -15,9 +15,9 @@
 <!ELEMENT image ( subimage* ) >
 <!ATTLIST image name              NMTOKEN  #REQUIRED
                 filename          CDATA    #REQUIRED
-                width             NMTOKEN  #REQUIRED
-                height            NMTOKEN  #REQUIRED
-                depth             NMTOKEN  #REQUIRED
+                width             NMTOKEN  #IMPLIED
+                height            NMTOKEN  #IMPLIED
+                depth             NMTOKEN  #IMPLIED
                 prescale          NMTOKEN  #IMPLIED
                 filetype          CDATA    #REQUIRED
                 tiles             NMTOKEN  #IMPLIED

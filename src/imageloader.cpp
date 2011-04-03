@@ -10,14 +10,6 @@
 
 std::map<std::string, ImageLoader *> *ImageLoader::loaderMap = NULL;
 
-ImageLoader::ImageLoader() : width(-1), height(-1), bpp(-1) {}
-
-void ImageLoader::setDimensions(int width, int height, int bpp) {
-    this->width = width;
-    this->height = height;
-    this->bpp = bpp;
-}
-
 /**
  * This class method returns the registered concrete subclass
  * appropriate for loading images of a type given by fileType.

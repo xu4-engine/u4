@@ -138,9 +138,9 @@ ImageInfo *ImageMgr::loadImageInfoFromConf(const ConfigElement &conf) {
     info = new ImageInfo;
     info->name = conf.getString("name");
     info->filename = conf.getString("filename");
-    info->width = conf.getInt("width");
-    info->height = conf.getInt("height");
-    info->depth = conf.getInt("depth");
+    info->width = conf.getInt("width", -1);
+    info->height = conf.getInt("height", -1);
+    info->depth = conf.getInt("depth", -1);
     info->prescale = conf.getInt("prescale");
     info->filetype = conf.getString("filetype");
     info->tiles = conf.getInt("tiles");
@@ -154,7 +154,7 @@ ImageInfo *ImageMgr::loadImageInfoFromConf(const ConfigElement &conf) {
     vector<ConfigElement> children = conf.getChildren();
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "subimage") {
-            SubImage *subimage = loadSubImageFromConf(info, *i);            
+            SubImage *subimage = loadSubImageFromConf(info, *i);
             info->subImages[subimage->name] = subimage;
         }
     }
@@ -538,8 +538,7 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         ImageLoader *loader = ImageLoader::getLoader(info->filetype);
         if (loader == NULL)
             errorFatal("can't load image of type \"%s\"", info->filetype.c_str());
-        loader->setDimensions(info->width, info->height, info->depth);
-        unscaled = loader->load(file);
+        unscaled = loader->load(file, info->width, info->height, info->depth);
         u4fclose(file);
 
     }

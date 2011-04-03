@@ -8,6 +8,7 @@
 
 #include "config.h"
 #include "debug.h"
+#include "error.h"
 #include "image.h"
 #include "imageloader.h"
 #include "imageloader_u4.h"
@@ -22,8 +23,11 @@ ImageLoader *U5LzwImageLoader::instance = ImageLoader::registerLoader(new U5LzwI
  * Loads in the lzw-compressed image and apply the standard U4 16 or
  * 256 color palette.
  */
-Image *U5LzwImageLoader::load(U4FILE *file) {
-    ASSERT(width != -1 && height != -1 && bpp != -1, "dimensions not set");
+Image *U5LzwImageLoader::load(U4FILE *file, int width, int height, int bpp) {
+    if (width == -1 || height == -1 || bpp == -1) {
+          errorFatal("dimensions not set for u5lzw image");
+    }
+
     ASSERT(bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32, "invalid bpp: %d", bpp);
 
     long compressedLen = file->length();
