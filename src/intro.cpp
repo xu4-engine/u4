@@ -730,6 +730,8 @@ void IntroController::initiateNewGame() {
         sex = SEX_MALE;
     else
         sex = SEX_FEMALE;
+
+    finishInitiateGame(nameBuffer, sex);
 }
 
 void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
