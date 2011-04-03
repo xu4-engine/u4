@@ -14,7 +14,9 @@
 #include <libxml/xinclude.h>
 #include <libxml/xpath.h>
 
+#if defined(MACOSX) || defined(IOS)
 #include <CoreFoundation/CoreFoundation.h>
+#endif
 
 // we rely on xinclude support
 #ifndef LIBXML_XINCLUDE_ENABLED
