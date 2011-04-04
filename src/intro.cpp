@@ -1596,8 +1596,7 @@ void IntroController::getTitleSourceData()
         errorFatal("ERROR 1007: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO, settings.game.c_str());
     }
 
-    bool isPngImage = info->filetype == "image/png";
-    if (!isPngImage && (info->width / info->prescale != 320 || info->height / info->prescale != 200))
+    if (info->width / info->prescale != 320 || info->height / info->prescale != 200)
     {
         // the image appears to have been scaled already
     		errorFatal("ERROR 1008: The title image (\"%s\") has been scaled too early!\t\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO);
