@@ -550,6 +550,12 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         if (loader == NULL)
             errorFatal("can't load image \"%s\" with type \"%s\"", filename.c_str(), filetype.c_str());
         unscaled = loader->load(file, info->width, info->height, info->depth);
+        if (info->width == -1) {
+            // Write in the values for later use.
+            info->width = unscaled->width();
+            info->height = unscaled->height();
+// ###            info->depth = ???
+        }
         u4fclose(file);
 
     }
