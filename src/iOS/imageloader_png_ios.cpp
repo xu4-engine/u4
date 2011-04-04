@@ -52,7 +52,7 @@ static void releaseData(void *, const void *data, size_t)
 /**
  * Loads in the PNG with the libpng library.
  */
-Image *PngImageLoader::load(U4FILE *file) {
+Image *PngImageLoader::load(U4FILE *file, int width, int height, int bpp) {
     int fileLength = file->length();
     char *raw = new char[fileLength];
     int check = file->read(raw, 1, fileLength);

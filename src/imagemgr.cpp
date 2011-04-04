@@ -543,7 +543,9 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     
     Image *unscaled = NULL;
     if (file) {
-        string filetype = info->filetype == "" ? guessFileType(filename) : info->filetype;
+        if (info->filetype.empty())
+            info->filetype = guessFileType(filename);
+        string filetype = info->filetype;
         ImageLoader *loader = ImageLoader::getLoader(filetype);
         if (loader == NULL)
             errorFatal("can't load image \"%s\" with type \"%s\"", filename.c_str(), filetype.c_str());

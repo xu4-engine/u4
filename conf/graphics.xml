@@ -1165,162 +1165,162 @@
 
     <imageset name="VGA-ALLPNG">
         <!-- tiles, charset, and game border -->
-        <image name="tile_sea" filename="png/tile_sea.png"/>
-        <image name="tile_water" filename="png/tile_water.png"/>
-        <image name="tile_shallows" filename="png/tile_shallows.png"/>
-        <image name="tile_swamp" filename="png/tile_swamp.png"/>
-        <image name="tile_grass" filename="png/tile_grass.png"/>
-        <image name="tile_brush" filename="png/tile_brush.png"/>
-        <image name="tile_forest" filename="png/tile_forest.png"/>
-        <image name="tile_hills" filename="png/tile_hills.png"/>
-        <image name="tile_mountains" filename="png/tile_mountains.png"/>
-        <image name="tile_dungeon" filename="png/tile_dungeon.png"/>
-        <image name="tile_city" filename="png/tile_city.png"/>
-        <image name="tile_castle" filename="png/tile_castle.png"/>
-        <image name="tile_town" filename="png/tile_town.png"/>
-        <image name="tile_lcb_west" filename="png/tile_lcb_west.png"/>
-        <image name="tile_lcb_entrance" filename="png/tile_lcb_entrance.png"/>
-        <image name="tile_lcb_east" filename="png/tile_lcb_east.png"/>
-        <image name="tile_ship" filename="png/tile_ship.png"/>
-        <image name="tile_horse" filename="png/tile_horse.png"/>
-        <image name="tile_dungeon_floor" filename="png/tile_dungeon_floor.png"/>    
-        <image name="tile_bridge" filename="png/tile_bridge.png"/>
-        <image name="tile_balloon" filename="png/tile_balloon.png"/>
-        <image name="tile_bridge_pieces" filename="png/tile_bridge_pieces.png"/>
-        <image name="tile_up_ladder" filename="png/tile_up_ladder.png"/>
-        <image name="tile_down_ladder" filename="png/tile_down_ladder.png"/>
-        <image name="tile_ruins" filename="png/tile_ruins.png"/>    
-        <image name="tile_shrine" filename="png/tile_shrine.png"/>
-        <image name="tile_avatar" filename="png/tile_avatar.png"/>
-        <image name="tile_mage" filename="png/tile_mage.png"/>
-        <image name="tile_bard" filename="png/tile_bard.png"/>
-        <image name="tile_fighter" filename="png/tile_fighter.png"/>
-        <image name="tile_druid" filename="png/tile_druid.png"/>
-        <image name="tile_tinker" filename="png/tile_tinker.png"/>
-        <image name="tile_paladin" filename="png/tile_paladin.png"/>
-        <image name="tile_ranger" filename="png/tile_ranger.png"/>
-        <image name="tile_shepherd" filename="png/tile_shepherd.png"/>
-        <image name="tile_column" filename="png/tile_column.png"/>
-        <image name="tile_solids" filename="png/tile_solids.png"/>
-        <image name="tile_shipmast" filename="png/tile_shipmast.png"/>
-        <image name="tile_shipwheel" filename="png/tile_shipwheel.png"/>
-        <image name="tile_rocks" filename="png/tile_rocks.png"/>
-        <image name="tile_corpse" filename="png/tile_corpse.png"/>
-        <image name="tile_stone_wall" filename="png/tile_stone_wall.png"/>
-        <image name="tile_locked_door" filename="png/tile_locked_door.png"/>
-        <image name="tile_door" filename="png/tile_door.png"/>
-        <image name="tile_chest" filename="png/tile_chest.png"/>
-        <image name="tile_ankh" filename="png/tile_ankh.png"/>
-        <image name="tile_brick_floor" filename="png/tile_brick_floor.png"/>
-        <image name="tile_wood_floor" filename="png/tile_wood_floor.png"/>
-        <image name="tile_moongate_opening" filename="png/tile_moongate_opening.png"/>
-        <image name="tile_moongate" filename="png/tile_moongate.png"/>
-        <image name="tile_poison_field" filename="png/tile_poison_field.png"/>
-        <image name="tile_energy_field" filename="png/tile_energy_field.png"/>
-        <image name="tile_fire_field" filename="png/tile_fire_field.png"/>
-        <image name="tile_sleep_field" filename="png/tile_sleep_field.png"/>
-        <image name="tile_solid" filename="png/tile_solid.png"/>
-        <image name="tile_secret_door" filename="png/tile_secret_door.png"/>
-        <image name="tile_altar" filename="png/tile_altar.png"/>
-        <image name="tile_campfire" filename="png/tile_campfire.png"/>
-        <image name="tile_lava" filename="png/tile_lava.png"/>
-        <image name="tile_miss_flash" filename="png/tile_miss_flash.png"/>
-        <image name="tile_magic_flash" filename="png/tile_magic_flash.png"/>
-        <image name="tile_hit_flash" filename="png/tile_hit_flash.png"/>
-        <image name="tile_unused" filename="png/tile_unused.png"/>
-        <image name="tile_villager" filename="png/tile_villager.png"/>
-        <image name="tile_bard_singing" filename="png/tile_bard_singing.png"/>
-        <image name="tile_jester" filename="png/tile_jester.png"/>
-        <image name="tile_beggar" filename="png/tile_beggar.png"/>
-        <image name="tile_child" filename="png/tile_child.png"/>
-        <image name="tile_bull" filename="png/tile_bull.png"/>
-        <image name="tile_lord_british" filename="png/tile_lord_british.png"/>
-        <image name="tile_A" filename="png/tile_A.png"/>
-        <image name="tile_B" filename="png/tile_B.png"/>
-        <image name="tile_C" filename="png/tile_C.png"/>
-        <image name="tile_D" filename="png/tile_D.png"/>
-        <image name="tile_E" filename="png/tile_E.png"/>
-        <image name="tile_F" filename="png/tile_F.png"/>
-        <image name="tile_G" filename="png/tile_G.png"/>
-        <image name="tile_H" filename="png/tile_H.png"/>
-        <image name="tile_I" filename="png/tile_I.png"/>
-        <image name="tile_J" filename="png/tile_J.png"/>
-        <image name="tile_K" filename="png/tile_K.png"/>
-        <image name="tile_L" filename="png/tile_L.png"/>
-        <image name="tile_M" filename="png/tile_M.png"/>
-        <image name="tile_N" filename="png/tile_N.png"/>
-        <image name="tile_O" filename="png/tile_O.png"/>
-        <image name="tile_P" filename="png/tile_P.png"/>
-        <image name="tile_Q" filename="png/tile_Q.png"/>
-        <image name="tile_R" filename="png/tile_R.png"/>
-        <image name="tile_S" filename="png/tile_S.png"/>
-        <image name="tile_T" filename="png/tile_T.png"/>
-        <image name="tile_U" filename="png/tile_U.png"/>
-        <image name="tile_V" filename="png/tile_V.png"/>
-        <image name="tile_W" filename="png/tile_W.png"/>
-        <image name="tile_X" filename="png/tile_X.png"/>
-        <image name="tile_Y" filename="png/tile_Y.png"/>
-        <image name="tile_Z" filename="png/tile_Z.png"/>
-        <image name="tile_space" filename="png/tile_space.png"/>
-        <image name="tile_spacers" filename="png/tile_spacers.png"/>
-        <image name="tile_black" filename="png/tile_black.png"/>
-        <image name="tile_brick_wall" filename="png/tile_brick_wall.png"/>
+        <image name="tile_sea" filename="png/tile_sea.png" xu4Graphic="true"/>
+        <image name="tile_water" filename="png/tile_water.png" xu4Graphic="true"/>
+        <image name="tile_shallows" filename="png/tile_shallows.png" xu4Graphic="true"/>
+        <image name="tile_swamp" filename="png/tile_swamp.png" xu4Graphic="true"/>
+        <image name="tile_grass" filename="png/tile_grass.png" xu4Graphic="true"/>
+        <image name="tile_brush" filename="png/tile_brush.png" xu4Graphic="true"/>
+        <image name="tile_forest" filename="png/tile_forest.png" xu4Graphic="true"/>
+        <image name="tile_hills" filename="png/tile_hills.png" xu4Graphic="true"/>
+        <image name="tile_mountains" filename="png/tile_mountains.png" xu4Graphic="true"/>
+        <image name="tile_dungeon" filename="png/tile_dungeon.png" xu4Graphic="true"/>
+        <image name="tile_city" filename="png/tile_city.png" xu4Graphic="true"/>
+        <image name="tile_castle" filename="png/tile_castle.png" xu4Graphic="true"/>
+        <image name="tile_town" filename="png/tile_town.png" xu4Graphic="true"/>
+        <image name="tile_lcb_west" filename="png/tile_lcb_west.png" xu4Graphic="true"/>
+        <image name="tile_lcb_entrance" filename="png/tile_lcb_entrance.png" xu4Graphic="true"/>
+        <image name="tile_lcb_east" filename="png/tile_lcb_east.png" xu4Graphic="true"/>
+        <image name="tile_ship" filename="png/tile_ship.png" xu4Graphic="true"/>
+        <image name="tile_horse" filename="png/tile_horse.png" xu4Graphic="true"/>
+        <image name="tile_dungeon_floor" filename="png/tile_dungeon_floor.png" xu4Graphic="true"/>    
+        <image name="tile_bridge" filename="png/tile_bridge.png" xu4Graphic="true"/>
+        <image name="tile_balloon" filename="png/tile_balloon.png" xu4Graphic="true"/>
+        <image name="tile_bridge_pieces" filename="png/tile_bridge_pieces.png" xu4Graphic="true"/>
+        <image name="tile_up_ladder" filename="png/tile_up_ladder.png" xu4Graphic="true"/>
+        <image name="tile_down_ladder" filename="png/tile_down_ladder.png" xu4Graphic="true"/>
+        <image name="tile_ruins" filename="png/tile_ruins.png" xu4Graphic="true"/>    
+        <image name="tile_shrine" filename="png/tile_shrine.png" xu4Graphic="true"/>
+        <image name="tile_avatar" filename="png/tile_avatar.png" xu4Graphic="true"/>
+        <image name="tile_mage" filename="png/tile_mage.png" xu4Graphic="true"/>
+        <image name="tile_bard" filename="png/tile_bard.png" xu4Graphic="true"/>
+        <image name="tile_fighter" filename="png/tile_fighter.png" xu4Graphic="true"/>
+        <image name="tile_druid" filename="png/tile_druid.png" xu4Graphic="true"/>
+        <image name="tile_tinker" filename="png/tile_tinker.png" xu4Graphic="true"/>
+        <image name="tile_paladin" filename="png/tile_paladin.png" xu4Graphic="true"/>
+        <image name="tile_ranger" filename="png/tile_ranger.png" xu4Graphic="true"/>
+        <image name="tile_shepherd" filename="png/tile_shepherd.png" xu4Graphic="true"/>
+        <image name="tile_column" filename="png/tile_column.png" xu4Graphic="true"/>
+        <image name="tile_solids" filename="png/tile_solids.png" xu4Graphic="true"/>
+        <image name="tile_shipmast" filename="png/tile_shipmast.png" xu4Graphic="true"/>
+        <image name="tile_shipwheel" filename="png/tile_shipwheel.png" xu4Graphic="true"/>
+        <image name="tile_rocks" filename="png/tile_rocks.png" xu4Graphic="true"/>
+        <image name="tile_corpse" filename="png/tile_corpse.png" xu4Graphic="true"/>
+        <image name="tile_stone_wall" filename="png/tile_stone_wall.png" xu4Graphic="true"/>
+        <image name="tile_locked_door" filename="png/tile_locked_door.png" xu4Graphic="true"/>
+        <image name="tile_door" filename="png/tile_door.png" xu4Graphic="true"/>
+        <image name="tile_chest" filename="png/tile_chest.png" xu4Graphic="true"/>
+        <image name="tile_ankh" filename="png/tile_ankh.png" xu4Graphic="true"/>
+        <image name="tile_brick_floor" filename="png/tile_brick_floor.png" xu4Graphic="true"/>
+        <image name="tile_wood_floor" filename="png/tile_wood_floor.png" xu4Graphic="true"/>
+        <image name="tile_moongate_opening" filename="png/tile_moongate_opening.png" xu4Graphic="true"/>
+        <image name="tile_moongate" filename="png/tile_moongate.png" xu4Graphic="true"/>
+        <image name="tile_poison_field" filename="png/tile_poison_field.png" xu4Graphic="true"/>
+        <image name="tile_energy_field" filename="png/tile_energy_field.png" xu4Graphic="true"/>
+        <image name="tile_fire_field" filename="png/tile_fire_field.png" xu4Graphic="true"/>
+        <image name="tile_sleep_field" filename="png/tile_sleep_field.png" xu4Graphic="true"/>
+        <image name="tile_solid" filename="png/tile_solid.png" xu4Graphic="true"/>
+        <image name="tile_secret_door" filename="png/tile_secret_door.png" xu4Graphic="true"/>
+        <image name="tile_altar" filename="png/tile_altar.png" xu4Graphic="true"/>
+        <image name="tile_campfire" filename="png/tile_campfire.png" xu4Graphic="true"/>
+        <image name="tile_lava" filename="png/tile_lava.png" xu4Graphic="true"/>
+        <image name="tile_miss_flash" filename="png/tile_miss_flash.png" xu4Graphic="true"/>
+        <image name="tile_magic_flash" filename="png/tile_magic_flash.png" xu4Graphic="true"/>
+        <image name="tile_hit_flash" filename="png/tile_hit_flash.png" xu4Graphic="true"/>
+        <image name="tile_unused" filename="png/tile_unused.png" xu4Graphic="true"/>
+        <image name="tile_villager" filename="png/tile_villager.png" xu4Graphic="true"/>
+        <image name="tile_bard_singing" filename="png/tile_bard_singing.png" xu4Graphic="true"/>
+        <image name="tile_jester" filename="png/tile_jester.png" xu4Graphic="true"/>
+        <image name="tile_beggar" filename="png/tile_beggar.png" xu4Graphic="true"/>
+        <image name="tile_child" filename="png/tile_child.png" xu4Graphic="true"/>
+        <image name="tile_bull" filename="png/tile_bull.png" xu4Graphic="true"/>
+        <image name="tile_lord_british" filename="png/tile_lord_british.png" xu4Graphic="true"/>
+        <image name="tile_A" filename="png/tile_A.png" xu4Graphic="true"/>
+        <image name="tile_B" filename="png/tile_B.png" xu4Graphic="true"/>
+        <image name="tile_C" filename="png/tile_C.png" xu4Graphic="true"/>
+        <image name="tile_D" filename="png/tile_D.png" xu4Graphic="true"/>
+        <image name="tile_E" filename="png/tile_E.png" xu4Graphic="true"/>
+        <image name="tile_F" filename="png/tile_F.png" xu4Graphic="true"/>
+        <image name="tile_G" filename="png/tile_G.png" xu4Graphic="true"/>
+        <image name="tile_H" filename="png/tile_H.png" xu4Graphic="true"/>
+        <image name="tile_I" filename="png/tile_I.png" xu4Graphic="true"/>
+        <image name="tile_J" filename="png/tile_J.png" xu4Graphic="true"/>
+        <image name="tile_K" filename="png/tile_K.png" xu4Graphic="true"/>
+        <image name="tile_L" filename="png/tile_L.png" xu4Graphic="true"/>
+        <image name="tile_M" filename="png/tile_M.png" xu4Graphic="true"/>
+        <image name="tile_N" filename="png/tile_N.png" xu4Graphic="true"/>
+        <image name="tile_O" filename="png/tile_O.png" xu4Graphic="true"/>
+        <image name="tile_P" filename="png/tile_P.png" xu4Graphic="true"/>
+        <image name="tile_Q" filename="png/tile_Q.png" xu4Graphic="true"/>
+        <image name="tile_R" filename="png/tile_R.png" xu4Graphic="true"/>
+        <image name="tile_S" filename="png/tile_S.png" xu4Graphic="true"/>
+        <image name="tile_T" filename="png/tile_T.png" xu4Graphic="true"/>
+        <image name="tile_U" filename="png/tile_U.png" xu4Graphic="true"/>
+        <image name="tile_V" filename="png/tile_V.png" xu4Graphic="true"/>
+        <image name="tile_W" filename="png/tile_W.png" xu4Graphic="true"/>
+        <image name="tile_X" filename="png/tile_X.png" xu4Graphic="true"/>
+        <image name="tile_Y" filename="png/tile_Y.png" xu4Graphic="true"/>
+        <image name="tile_Z" filename="png/tile_Z.png" xu4Graphic="true"/>
+        <image name="tile_space" filename="png/tile_space.png" xu4Graphic="true"/>
+        <image name="tile_spacers" filename="png/tile_spacers.png" xu4Graphic="true"/>
+        <image name="tile_black" filename="png/tile_black.png" xu4Graphic="true"/>
+        <image name="tile_brick_wall" filename="png/tile_brick_wall.png" xu4Graphic="true"/>
         <!-- Water monsters -->
-        <image name="tile_pirate_ship" filename="png/tile_pirate_ship.png"/>
-        <image name="tile_nixie" filename="png/tile_nixie.png"/>
-        <image name="tile_giant_squid" filename="png/tile_giant_squid.png"/>
-        <image name="tile_sea_serpent" filename="png/tile_sea_serpent.png"/>
-        <image name="tile_sea_horse" filename="png/tile_sea_horse.png"/>
-        <image name="tile_whirlpool" filename="png/tile_whirlpool.png"/>
-        <image name="tile_storm" filename="png/tile_storm.png"/>
+        <image name="tile_pirate_ship" filename="png/tile_pirate_ship.png" xu4Graphic="true"/>
+        <image name="tile_nixie" filename="png/tile_nixie.png" xu4Graphic="true"/>
+        <image name="tile_giant_squid" filename="png/tile_giant_squid.png" xu4Graphic="true"/>
+        <image name="tile_sea_serpent" filename="png/tile_sea_serpent.png" xu4Graphic="true"/>
+        <image name="tile_sea_horse" filename="png/tile_sea_horse.png" xu4Graphic="true"/>
+        <image name="tile_whirlpool" filename="png/tile_whirlpool.png" xu4Graphic="true"/>
+        <image name="tile_storm" filename="png/tile_storm.png" xu4Graphic="true"/>
         <!-- Land monsters -->
-        <image name="tile_rat"           filename="png/tile_rat.png"/>
-        <image name="tile_bat"           filename="png/tile_bat.png"/>
-        <image name="tile_spider"        filename="png/tile_spider.png"/>
-        <image name="tile_ghost"         filename="png/tile_ghost.png"/>
-        <image name="tile_slime"         filename="png/tile_slime.png"/>
-        <image name="tile_troll"         filename="png/tile_troll.png"/>
-        <image name="tile_gremlin"       filename="png/tile_gremlin.png"/>
-        <image name="tile_mimic"         filename="png/tile_mimic.png"/>
-        <image name="tile_reaper"        filename="png/tile_reaper.png"/>
-        <image name="tile_insect_swarm"  filename="png/tile_insect_swarm.png"/>
-        <image name="tile_gazer"         filename="png/tile_gazer.png"/>
-        <image name="tile_phantom"       filename="png/tile_phantom.png"/>
-        <image name="tile_orc"           filename="png/tile_orc.png"/>
-        <image name="tile_skeleton"      filename="png/tile_skeleton.png"/>
-        <image name="tile_rogue"         filename="png/tile_rogue.png"/>
-        <image name="tile_python"        filename="png/tile_python.png"/>
-        <image name="tile_ettin"         filename="png/tile_ettin.png"/>
-        <image name="tile_headless"      filename="png/tile_headless.png"/>
-        <image name="tile_cyclops"       filename="png/tile_cyclops.png"/>
-        <image name="tile_wisp"          filename="png/tile_wisp.png"/>
-        <image name="tile_evil_mage"     filename="png/tile_evil_mage.png"/>
-        <image name="tile_liche"         filename="png/tile_liche.png"/>
-        <image name="tile_lava_lizard"   filename="png/tile_lava_lizard.png"/>
-        <image name="tile_zorn"          filename="png/tile_zorn.png"/>
-        <image name="tile_daemon"        filename="png/tile_daemon.png"/>
-        <image name="tile_hydra"         filename="png/tile_hydra.png"/>
-        <image name="tile_dragon"        filename="png/tile_dragon.png"/>
-        <image name="tile_balron"        filename="png/tile_balron.png"/>
+        <image name="tile_rat"           filename="png/tile_rat.png" xu4Graphic="true"/>
+        <image name="tile_bat"           filename="png/tile_bat.png" xu4Graphic="true"/>
+        <image name="tile_spider"        filename="png/tile_spider.png" xu4Graphic="true"/>
+        <image name="tile_ghost"         filename="png/tile_ghost.png" xu4Graphic="true"/>
+        <image name="tile_slime"         filename="png/tile_slime.png" xu4Graphic="true"/>
+        <image name="tile_troll"         filename="png/tile_troll.png" xu4Graphic="true"/>
+        <image name="tile_gremlin"       filename="png/tile_gremlin.png" xu4Graphic="true"/>
+        <image name="tile_mimic"         filename="png/tile_mimic.png" xu4Graphic="true"/>
+        <image name="tile_reaper"        filename="png/tile_reaper.png" xu4Graphic="true"/>
+        <image name="tile_insect_swarm"  filename="png/tile_insect_swarm.png" xu4Graphic="true"/>
+        <image name="tile_gazer"         filename="png/tile_gazer.png" xu4Graphic="true"/>
+        <image name="tile_phantom"       filename="png/tile_phantom.png" xu4Graphic="true"/>
+        <image name="tile_orc"           filename="png/tile_orc.png" xu4Graphic="true"/>
+        <image name="tile_skeleton"      filename="png/tile_skeleton.png" xu4Graphic="true"/>
+        <image name="tile_rogue"         filename="png/tile_rogue.png" xu4Graphic="true"/>
+        <image name="tile_python"        filename="png/tile_python.png" xu4Graphic="true"/>
+        <image name="tile_ettin"         filename="png/tile_ettin.png" xu4Graphic="true"/>
+        <image name="tile_headless"      filename="png/tile_headless.png" xu4Graphic="true"/>
+        <image name="tile_cyclops"       filename="png/tile_cyclops.png" xu4Graphic="true"/>
+        <image name="tile_wisp"          filename="png/tile_wisp.png" xu4Graphic="true"/>
+        <image name="tile_evil_mage"     filename="png/tile_evil_mage.png" xu4Graphic="true"/>
+        <image name="tile_liche"         filename="png/tile_liche.png" xu4Graphic="true"/>
+        <image name="tile_lava_lizard"   filename="png/tile_lava_lizard.png" xu4Graphic="true"/>
+        <image name="tile_zorn"          filename="png/tile_zorn.png" xu4Graphic="true"/>
+        <image name="tile_daemon"        filename="png/tile_daemon.png" xu4Graphic="true"/>
+        <image name="tile_hydra"         filename="png/tile_hydra.png" xu4Graphic="true"/>
+        <image name="tile_dragon"        filename="png/tile_dragon.png" xu4Graphic="true"/>
+        <image name="tile_balron"        filename="png/tile_balron.png" xu4Graphic="true"/>
         
         <image name="tile_guard" filename="png/tile_guard.png" tiles="4" xu4Graphic="true"/>
         <image name="charset" filename="vga2/charset.png" tiles="128" prescale="2" xu4Graphic="true"/>
         <image name="borders" filename="vga2/start.png" prescale="2" xu4Graphic="true"/>
 
         <!-- no intro screen images in VGA upgrade -->
-         <image name="title"   filename="png/title.png" introOnly="true" fixup="intro">
+         <image name="title"   filename="png/title.png" introOnly="true" fixup="intro" xu4Graphic="true">
                 <subimage name="options_top"  x="0"  y="32"   width="320"  height="128"/>
                 <subimage name="options_btm"  x="0"  y="112"  width="320"  height="80"/>
             </image>
-            <image name="tree"     filename="png/tree.png" introOnly="true">
+            <image name="tree"     filename="png/tree.png" introOnly="true" xu4Graphic="true">
                 <subimage name="moongate" x="0"   y="152" width="24" height="24"/>
                 <subimage name="items"    x="24"  y="152" width="24" height="24"/>
             </image>
-            <image name="portal"   filename="png/portal.png" introOnly="true"/>
-            <image name="outside"  filename="png/outside.png" introOnly="true"/>
-            <image name="inside"   filename="png/inside.png" introOnly="true"/>
-            <image name="wagon"    filename="png/wagon.png" introOnly="true"/>
-            <image name="gypsy"    filename="png/gypsy.png" introOnly="true"/>
+            <image name="portal"   filename="png/portal.png" introOnly="true" xu4Graphic="true"/>
+            <image name="outside"  filename="png/outside.png" introOnly="true" xu4Graphic="true"/>
+            <image name="inside"   filename="png/inside.png" introOnly="true" xu4Graphic="true"/>
+            <image name="wagon"    filename="png/wagon.png" introOnly="true" xu4Graphic="true"/>
+            <image name="gypsy"    filename="png/gypsy.png" introOnly="true" xu4Graphic="true"/>
             <image name="abacus"   filename="png/abacus.png" introOnly="true" fixup="abacus">
                 <subimage name="whitebead"      x="8"   y="187" width="8" height="12"/>
                 <subimage name="blackbead"      x="24"  y="187" width="8" height="12"/>
@@ -1341,7 +1341,7 @@
                 <subimage name="valorcard"      x="26"  y="26" width="178" height="244"/>
                 <subimage name="justicecard"    x="438" y="26" width="178" height="244"/>
             </image>
-            <image name="beasties" filename="png/beasties.png" introOnly="true">
+            <image name="beasties" filename="png/beasties.png" introOnly="true" xu4Graphic="true">
                 <subimage name="beast0frame00" x="0"   y="0"   width="55" height="31"/>
                 <subimage name="beast0frame01" x="0"   y="32"  width="55" height="31"/>
                 <subimage name="beast0frame02" x="0"   y="64"  width="55" height="31"/>
@@ -1381,19 +1381,19 @@
             </image>        
 
         <!-- abyss vision images -->
-        <image name="key"      filename="png/key.png"/>
-        <image name="honesty"  filename="png/honesty.png" fixup="abyss"/>
-        <image name="compassn" filename="png/compassn.png" fixup="abyss"/>
-        <image name="valor"    filename="png/valor.png" fixup="abyss"/>
-        <image name="justice"  filename="png/justice.png" fixup="abyss"/>
-        <image name="sacrific" filename="png/sacrific.png" fixup="abyss"/>
-        <image name="honor"    filename="png/honor.png" fixup="abyss"/>
-        <image name="spirit"   filename="png/spirit.png" fixup="abyss"/>
-        <image name="humility" filename="png/humility.png" fixup="abyss"/>
-        <image name="truth"    filename="png/truth.png" fixup="abyss"/>
-        <image name="love"     filename="png/love.png" fixup="abyss"/>
-        <image name="courage"  filename="png/courage.png" fixup="abyss"/>
-        <image name="stoncrcl" filename="png/stoncrcl.png"/>        
+        <image name="key"      filename="png/key.png" xu4Graphic="true"/>
+        <image name="honesty"  filename="png/honesty.png" fixup="abyss" xu4Graphic="true"/>
+        <image name="compassn" filename="png/compassn.png" fixup="abyss" xu4Graphic="true"/>
+        <image name="valor"    filename="png/valor.png" fixup="abyss" xu4Graphic="true"/>
+        <image name="justice"  filename="png/justice.png" fixup="abyss" xu4Graphic="true"/>
+        <image name="sacrific" filename="png/sacrific.png" fixup="abyss" xu4Graphic="true"/>
+        <image name="honor"    filename="png/honor.png" fixup="abyss" xu4Graphic="true"/>
+        <image name="spirit"   filename="png/spirit.png" fixup="abyss" xu4Graphic="true"/>
+        <image name="humility" filename="png/humility.png" fixup="abyss" xu4Graphic="true"/>
+        <image name="truth"    filename="png/truth.png" fixup="abyss" xu4Graphic="true"/>
+        <image name="love"     filename="png/love.png" fixup="abyss" xu4Graphic="true"/>
+        <image name="courage"  filename="png/courage.png" fixup="abyss" xu4Graphic="true"/>
+        <image name="stoncrcl" filename="png/stoncrcl.png" xu4Graphic="true"/>        
 
          <!-- shrine vision images -->
         <image name="rune0" filename="vga2/rune_0.png" prescale="2" xu4Graphic="true"/>
