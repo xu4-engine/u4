@@ -196,6 +196,8 @@ void U4ZipPackageMgr::add(U4ZipPackage *package) {
 }
 
 U4ZipPackageMgr::U4ZipPackageMgr() {
+	unzFile f;
+	
     string upg_pathname(u4find_path("u4upgrad.zip", u4Path.u4ZipPaths));
     if (!upg_pathname.empty()) {
         /* upgrade zip is present */
@@ -229,19 +231,85 @@ U4ZipPackageMgr::U4ZipPackageMgr() {
         upgrade->addTranslation("yew.tlk", "yew.old");
         add(upgrade);
     }
-    // check for the default zip packages
-    string pathname(u4find_path("ultima4-1.01.zip", u4Path.u4ZipPaths));
-    if (!pathname.empty()) {
-        /* updated 1.01 u4 zip is present */
-        add(new U4ZipPackage(pathname, "ultima4/", false));
-    } else {
-        pathname = u4find_path("ultima4.zip", u4Path.u4ZipPaths);
-        if (!pathname.empty()) {
-            /* original u4 zip is present */
-            add(new U4ZipPackage(pathname, "ultima4/", false));
-        }
-    }
+	
+	// Check for the default zip packages
+	int flag = 0;
+	string pathname;
 
+	do {
+		//Check for the upgraded package once. unlikely it'll be renamed.
+		pathname = u4find_path("ultima4-1.01.zip", u4Path.u4ZipPaths);
+		if (!pathname.empty()) {
+		    flag = 1;
+			break;
+		}
+
+		// We check for all manner of generic packages, though.
+		pathname = u4find_path("ultima4.zip", u4Path.u4ZipPaths);
+		if (!pathname.empty()) {
+		    flag = 1;
+			break;
+		}
+
+	    pathname = u4find_path("Ultima4.zip", u4Path.u4ZipPaths);
+		if (!pathname.empty()) {
+		    flag = 1;
+			break;
+		}
+
+	    pathname = u4find_path("ULTIMA4.zip", u4Path.u4ZipPaths);
+		if (!pathname.empty()) {
+		    flag = 1;
+			break;
+		}
+
+	    pathname = u4find_path("u4.zip", u4Path.u4ZipPaths);
+		if (!pathname.empty()) {
+		    flag = 1;
+			break;
+		}
+		
+	    pathname = u4find_path("U4.zip", u4Path.u4ZipPaths);
+		if (!pathname.empty()) {
+		    flag = 1;
+			break;
+		}
+
+		// If it's not found by this point, give up.
+		break;
+		
+	} while (flag == 0);
+
+	if (flag) {
+		f = unzOpen(pathname.c_str());
+		if (!f)
+			return;
+	
+		//Now we detect the folder structure inside the zipfile.
+		if (unzLocateFile(f, "charset.ega", 2) == UNZ_OK) {
+			add(new U4ZipPackage(pathname, "", false));
+			
+    	} else if (unzLocateFile(f, "ultima4/charset.ega", 2) == UNZ_OK) {
+			add(new U4ZipPackage(pathname, "ultima4/", false));
+
+		} else if (unzLocateFile(f, "Ultima4/charset.ega", 2) == UNZ_OK) {
+			add(new U4ZipPackage(pathname, "Ultima4/", false));
+
+		} else if (unzLocateFile(f, "ULTIMA4/charset.ega", 2) == UNZ_OK) {
+			add(new U4ZipPackage(pathname, "ULTIMA4/", false));
+
+		} else if (unzLocateFile(f, "u4/charset.ega", 2) == UNZ_OK) {
+			add(new U4ZipPackage(pathname, "u4/", false));
+
+		} else if (unzLocateFile(f, "U4/charset.ega", 2) == UNZ_OK) {
+			add(new U4ZipPackage(pathname, "U4/", false));
+
+		}
+
+		unzClose(f);
+
+	}
+	
     /* scan for extensions */
 }
 
