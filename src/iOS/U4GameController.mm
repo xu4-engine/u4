@@ -41,6 +41,7 @@
 #import "U4ChooseDirectionPopup.h"
 #import "U4GameController.h"
 #import "U4WeaponChoiceDialog.h"
+#import "U4View.h"
 #include "U4CFHelper.h"
 #include "ios_helpers.h"
 
@@ -64,7 +65,55 @@ static void showButtonHelper(NSArray *buttons) {
     
 }
 
+static CGRect computeFrameRect(const CGRect &rect, UIInterfaceOrientation orientation) {
+    CGRect retRect = rect;
+    if (UIInterfaceOrientationIsLandscape(orientation)) {
+        // Swap the size around.
+        CGSize size = rect.size;
+        retRect.size.height = size.width;
+        retRect.size.width = size.height;
+    }
+    CGFloat oneThirdHeight = retRect.size.height / 3.;
+    retRect.origin.y = retRect.size.height - oneThirdHeight;
+    retRect.size.height = oneThirdHeight;
+    return retRect;
+}
 
+static NSString *shrinkOldText(NSString *currentText, NSUInteger lineThreshold,
+                               NSUInteger currentNumberOfLines) {
+    // This function tries to be a bit smart by limiting allocations.
+    // Calculate the number lines we need to skip.
+    // Skip ahead that many lines
+    // Create a substring of the remaining lines.
+    NSUInteger numberOfLinesToSkip = currentNumberOfLines - lineThreshold;
+    NSUInteger linesTraversed = 0;
+    NSUInteger textLength = [currentText length];
+    NSRange range = NSMakeRange(0, textLength);
+    while (range.location != NSNotFound && linesTraversed < numberOfLinesToSkip) {
+        range = [currentText rangeOfString:@"\n" options:0 range:range];
+        if (range.location != NSNotFound) {
+            range = NSMakeRange(range.location + range.length, textLength - (range.location + range.length));
+            ++linesTraversed;
+        }
+    }
+    
+    // The cool thing is that the range should be correct to create the substring.
+    return [currentText substringWithRange:range];    
+}
+
+static NSUInteger computeLineCount(NSString *lines) {
+    NSUInteger count = 0;
+    NSUInteger textLength = [lines length];
+    NSRange range = NSMakeRange(0, textLength); 
+    while (range.location != NSNotFound) {
+        range = [lines rangeOfString:@"\n" options:0 range:range];
+        if (range.location != NSNotFound) {
+            range = NSMakeRange(range.location + range.length, textLength - (range.location + range.length));
+            ++count; 
+        }
+    }
+    return count;
+}
 
 extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); // game.cpp
 
@@ -102,6 +151,8 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 @synthesize leftButton;
 @synthesize downButton;
 @synthesize rightBUtton;
+@synthesize u4view;
+@synthesize gameText;
 @synthesize weaponPanel;
 @synthesize armorPanel;
 /*
@@ -135,6 +186,8 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
                                             U4IOS::createDictionaryForButtons(
                                                         reinterpret_cast<CFArrayRef>(gameButtons),
                                                         allKeys.get(), passButton)));
+    U4AppDelegate *appDelegate = static_cast<U4AppDelegate *>([UIApplication sharedApplication].delegate);
+    [appDelegate pushU4View:self.u4view];
 }
 
 - (NSArray *)allButtons {
@@ -164,12 +217,21 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 - (void)didReceiveMemoryWarning {
     // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
-    Tileset::unloadAllImages();
     // Release any cached data, images, etc that aren't in use.
+    Tileset::unloadAllImages();
+    [self clearText];
+}
+
+- (void)clearText {
+    // This could probably be a little nice and not delete the current visible text...
+    self.gameText.text = @"";
+    lineCount = 0;
 }
 
 - (void)viewDidUnload {
     [self cleanUp];
+    [self setU4view:nil];
+    [self setGameText:nil];
     [super viewDidUnload];
     if (viewsReadytoFadeOutSet != nil) {
         [viewsReadytoFadeOutSet removeAllObjects];
@@ -208,6 +270,8 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     [leftButton release];
     [downButton release];
     [rightBUtton release];
+    [u4view release];
+    [gameText release];
     [super dealloc];
 }
 
@@ -221,6 +285,30 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     delete musicMgr;
     soundDelete();
     screenDelete();    
+}
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+                                duration:(NSTimeInterval)duration {
+    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
+    static const CGPoint PortaitPoint = CGPointMake(190., 59.);
+    static const CGPoint LandscapePoint = CGPointMake(5, 10.);
+    
+    static const CGRect PortraitLogRect = CGRectMake(140., 355., 728., 156.);
+    static const CGRect LandscapeLogRect = CGRectMake(417., 10., 343., 156.);
+    static const CGRect PortraitEditRect = CGRectMake(140, 497, 728, 31);
+    static const CGRect LandscapeEditRect = CGRectMake(417, 300, 343, 31);
+    
+    CGRect u4frame = self.u4view.frame;
+    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
+        u4frame.origin = LandscapePoint;
+        self.gameText.frame = LandscapeLogRect;
+        self.conversationEdit.frame = LandscapeEditRect;
+    } else {
+        u4frame.origin = PortaitPoint;
+        self.gameText.frame = PortraitLogRect;
+        self.conversationEdit.frame = PortraitEditRect;
+    }
+    self.u4view.frame = u4frame;
 }
 
 - (IBAction)buttonPressed:(id)sender {
@@ -262,21 +350,18 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 - (void)bringUpMixReagentsController {
     MixSpellDialog *mixSpellDialog = [[MixSpellDialog alloc] initWithNibName:@"MixSpellDialog" bundle:nil];
     mixSpellDialog.delegate = self;
-    U4AppDelegate *ourDelegate = [UIApplication sharedApplication].delegate;
-    [ourDelegate.viewController presentModalViewController:mixSpellDialog animated:YES];
+    [self presentModalViewController:mixSpellDialog animated:YES];
     [mixSpellDialog release];
 }
 
 -(void)mixSpellDialog:(MixSpellDialog *)dialog chooseSpell:(NSInteger)spellIndex reagents:(Ingredients *)reagents numberOfSpells:(NSInteger)amount {
-    U4AppDelegate *ourDelegate = [UIApplication sharedApplication].delegate;
-    [ourDelegate.viewController dismissModalViewControllerAnimated:YES];
+    [self dismissModalViewControllerAnimated:YES];
     gameSpellMixHowMany(spellIndex, amount, reagents);
     [self buttonPressed:passButton];
 }
 
 -(void)mixWasCanceled:(MixSpellDialog *)dialog {
-    U4AppDelegate *ourDelegate = [UIApplication sharedApplication].delegate;
-    [ourDelegate.viewController dismissModalViewControllerAnimated:YES];
+    [self dismissModalViewControllerAnimated:YES];
     [self buttonPressed:passButton];
 }
 
@@ -376,14 +461,6 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     }
     [self finishBringUpPanel:choiceController.view halfSized:YES];
 
-    /*
-    UIView *choiceDialog = self.choiceController.view;
-    [choiceDialog removeFromSuperview];
-    [self.view addSubview:choiceDialog];
-    [self halfSizeChoicePanel];
-    [self hideAllButtons];
-     */
-
     if (conversationEdit.hidden == YES) {
         inMidConversation = NO;
     } else {
@@ -407,16 +484,15 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 }
 
 - (void)slideViewHalfwayIn:(UIView *)view {
-    CGRect mySize = self.view.frame;
-    [self slideViewIn:view 
-           finalFrame:CGRectMake(0, conversationEdit.frame.size.height + 24,
-                                 mySize.size.width, 
-                                 mySize.size.height - conversationEdit.frame.size.height + 24)];
+    CGRect finalFrame = computeFrameRect(self.view.frame, self.interfaceOrientation);
+    const CGFloat offset = conversationEdit.frame.size.height + 24;
+    finalFrame.origin.y += offset;
+    finalFrame.size.height -= offset;
+    [self slideViewIn:view finalFrame:finalFrame];
 }
 
 - (void)slideViewFullIn:(UIView *)view {
-    CGRect mySize = self.view.frame;
-    [self slideViewIn:view finalFrame:CGRectMake(0, 0, mySize.size.width, mySize.size.height)];    
+    [self slideViewIn:view finalFrame:computeFrameRect(self.view.frame, self.interfaceOrientation)];
 }
 
 - (void)updateChoices:(NSString *)choices {
@@ -539,6 +615,22 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 
 - (void)dismissArmorChoicePanel {
     [self finishDismissPanel:self.armorPanel.view];
+}
+
+- (void)showMessage:(NSString *)message {
+    static const NSUInteger LineThreshold = 256; // Don't let this grow without bounds.
+    if ([message compare:@"\n"] == NSOrderedSame)
+        return;
+    NSString *oldText = self.gameText.text;
+    NSUInteger newLineCount = computeLineCount(message);
+
+    if (newLineCount + lineCount > LineThreshold) {
+        oldText = shrinkOldText(oldText, LineThreshold - newLineCount, lineCount);
+        lineCount = LineThreshold - newLineCount;
+    }
+    lineCount += newLineCount;
+    self.gameText.text = [oldText stringByAppendingString:message];
+    [self.gameText scrollRangeToVisible:NSMakeRange([self.gameText.text length] - 1, 0)];
 }
 
 @end

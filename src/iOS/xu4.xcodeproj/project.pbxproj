@@ -13,8 +13,6 @@
 		CA069EA011498D6E00CB4AE8 /* image_ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA069E9F11498D6E00CB4AE8 /* image_ios.mm */; };
 		CA117C691269BF7300BC272E /* ConversationChoiceController.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA117C671269BF7300BC272E /* ConversationChoiceController.mm */; };
 		CA117C6A1269BF7300BC272E /* ConversationChoiceController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CA117C681269BF7300BC272E /* ConversationChoiceController.xib */; };
-		CA25298F12326D4A005ABE57 /* U4RootController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CAFB77231232629200ADFF0B /* U4RootController.xib */; };
-		CA25299012326D62005ABE57 /* U4RootController.mm in Sources */ = {isa = PBXBuildFile; fileRef = CAFB77221232629200ADFF0B /* U4RootController.mm */; };
 		CA3357571129C8B900B5A128 /* annotation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357461129C8B900B5A128 /* annotation.cpp */; };
 		CA3357581129C8B900B5A128 /* armor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357491129C8B900B5A128 /* armor.cpp */; };
 		CA3357591129C8B900B5A128 /* aura.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA33574B1129C8B900B5A128 /* aura.cpp */; };
@@ -2255,9 +2253,6 @@
 		CAFB771A12325F9100ADFF0B /* U4IntroController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4IntroController.h; sourceTree = "<group>"; };
 		CAFB771B12325F9100ADFF0B /* U4IntroController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4IntroController.mm; sourceTree = "<group>"; };
 		CAFB771C12325F9100ADFF0B /* U4IntroController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = U4IntroController.xib; sourceTree = "<group>"; };
-		CAFB77211232629200ADFF0B /* U4RootController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4RootController.h; sourceTree = "<group>"; };
-		CAFB77221232629200ADFF0B /* U4RootController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4RootController.mm; sourceTree = "<group>"; };
-		CAFB77231232629200ADFF0B /* U4RootController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = U4RootController.xib; sourceTree = "<group>"; };
 		CAFC528113474B82000A5749 /* sound_p.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sound_p.h; path = ../sound_p.h; sourceTree = "<group>"; };
 		CAFCFBF412D8B94300AC49B2 /* U4WeaponChoiceDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4WeaponChoiceDialog.h; sourceTree = "<group>"; };
 		CAFCFBF512D8B94300AC49B2 /* U4WeaponChoiceDialog.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4WeaponChoiceDialog.mm; sourceTree = "<group>"; };
@@ -3085,7 +3080,6 @@
 				CAF4742D1291B015008571C9 /* SpellInfoPickerLabel.xib */,
 				CA4CAA22128ED7FC00731E73 /* MixSpellDialog.xib */,
 				CABA4DA41285479B00195CFD /* U4ChooseDirectionPopup.xib */,
-				CAFB77231232629200ADFF0B /* U4RootController.xib */,
 				CAFB771C12325F9100ADFF0B /* U4IntroController.xib */,
 				CAEC59F712296F27008095DC /* U4StartDialog.xib */,
 				CA6D0D6111E656AE003B29AE /* U4GameController.xib */,
@@ -3135,8 +3129,6 @@
 				CA069E7B114986E300CB4AE8 /* imageloader_png_ios.cpp */,
 				CABE6F14113C5AB70085A8DF /* U4ViewController.h */,
 				CABE6F15113C5AB70085A8DF /* U4ViewController.mm */,
-				CAFB77211232629200ADFF0B /* U4RootController.h */,
-				CAFB77221232629200ADFF0B /* U4RootController.mm */,
 				CAEC59F512296F27008095DC /* U4StartDialog.h */,
 				CAEC59F612296F27008095DC /* U4StartDialog.mm */,
 				CA6D0D5F11E656AE003B29AE /* U4GameController.h */,
@@ -3358,7 +3350,6 @@
 				CA9933241142E96C00AEFE37 /* u4upgrad.zip in Resources */,
 				CA9933251142E96C00AEFE37 /* ultima4.zip in Resources */,
 				CA640BD3123277880049CA17 /* U4IntroController.xib in Resources */,
-				CA25298F12326D4A005ABE57 /* U4RootController.xib in Resources */,
 				CABE6F3E113C5E520085A8DF /* U4ViewController.xib in Resources */,
 				CABE6F3F113C5E520085A8DF /* MainWindow.xib in Resources */,
 				CA6D0D6311E656AE003B29AE /* U4GameController.xib in Resources */,
@@ -3595,7 +3586,6 @@
 				CA791843114BF2D60071F53D /* sound_ios.mm in Sources */,
 				CAF00E2D114D3F4600FDBE00 /* screen_ios.mm in Sources */,
 				CAF00E39114D421300FDBE00 /* event_ios.mm in Sources */,
-				CA25299012326D62005ABE57 /* U4RootController.mm in Sources */,
 				CA6D0D6211E656AE003B29AE /* U4GameController.mm in Sources */,
 				CA117C691269BF7300BC272E /* ConversationChoiceController.mm in Sources */,
 				CABA4DA51285479B00195CFD /* U4ChooseDirectionPopup.mm in Sources */,

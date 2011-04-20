@@ -33,6 +33,7 @@
 
 #import "U4StartDialog.h"
 
+@class U4View;
 @interface U4IntroController : UIViewController  <StartGameDialogDelegate> {
     U4StartDialogController *startGame;
     UIButton *startButton;
@@ -40,6 +41,8 @@
     UIButton *continueButton;
     UIButton *choiceAButton;
     UIButton *choiceBButton;
+    U4View *u4view;
+    BOOL finishFirstTimeLoad;
 }
 - (IBAction)choiceAClicked:(id)sender;
 - (IBAction)choiceBClicked:(id)sender;
@@ -55,5 +58,6 @@
 @property (nonatomic, retain) IBOutlet UIButton *continueButton;
 @property (nonatomic, retain) IBOutlet UIButton *choiceAButton;
 @property (nonatomic, retain) IBOutlet UIButton *choiceBButton;
+@property (nonatomic, retain) IBOutlet U4View *u4view;
 
 @end

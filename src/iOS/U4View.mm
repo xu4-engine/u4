@@ -41,16 +41,6 @@
     ImageHeight = 200 * settings.scale;
 
     image = Image::create(ImageWidth, ImageHeight, false, Image::HARDWARE);
-    centerPoint = CGPointZero;
-}
-
-- (void)computeCenter:(UIInterfaceOrientation)fromInterfaceOrientation {
-    CGSize bounds = self.window.frame.size;
-    if (UIInterfaceOrientationIsPortrait(fromInterfaceOrientation))
-        bounds = CGSizeMake(bounds.height, bounds.width);
-
-    centerPoint = CGPointMake(bounds.width / 2 - ImageWidth / 2,
-                              bounds.height / 3 - ImageHeight / 3);    
 }
 
 - (id)initWithFrame:(CGRect)frame {
@@ -72,10 +62,8 @@
 }
 
 - (void)drawRect:(CGRect)rect {
-    if (CGPointEqualToPoint(centerPoint, CGPointZero))
-        [self computeCenter:UIInterfaceOrientationLandscapeLeft];
     CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextDrawLayerAtPoint(context, centerPoint, image->getSurface());
+    CGContextDrawLayerAtPoint(context, CGPointZero, image->getSurface());
 }
     
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {

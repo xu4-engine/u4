@@ -663,7 +663,7 @@ void screenRedrawTextArea(int x, int y, int width, int height) {
 Layout *screenGetGemLayout(const Map *map) {
     if (map->type == Map::DUNGEON) {
         std::vector<Layout *>::const_iterator i;
-        for (i = layouts.begin(); i != layouts.end(); i++) {
+        for (i = layouts.begin(); i != layouts.end(); ++i) {
             Layout *layout = *i;
             
             if (layout->type == LAYOUT_DUNGEONGEM)

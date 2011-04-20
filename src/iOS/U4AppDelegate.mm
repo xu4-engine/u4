@@ -30,7 +30,8 @@
 //
 
 #import "U4AppDelegate.h"
-#import "U4RootController.h"
+#import "U4IntroController.h"
+#import "U4GameController.h"
 
 
 #include "u4.h"
@@ -47,15 +48,12 @@
 #include "sound.h"
 #include "tileset.h"
 #include "utils.h"
+#include "imagemgr.h"
+#include "image.h"
+#import "U4View.h"
 
 #if defined(MACOSX)
 #include "macosx/osxinit.h"
-#endif
-
-#ifdef USE_QT
-#include <QtGui/QApplication>
-#include <QtGui/QVBoxLayout>
-#include "u4widget.h"
 #endif
 
 // ### These global variables are used in other places, until I can clear those out, they live here.
@@ -67,7 +65,8 @@ string profileName = "";
 @implementation U4AppDelegate
 
 @synthesize window;
-@synthesize viewController;
+@synthesize introController;
+@synthesize gameController;
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {    
@@ -79,20 +78,63 @@ string profileName = "";
 //    verbose = true;
     
     xu4_srandom();
-
-    [window addSubview:viewController.view];
+    u4viewStack = [[NSMutableArray alloc] initWithCapacity:8];
+    [window addSubview:introController.view];
     [window makeKeyAndVisible];
-    
+
     return NO;
 }
 
 
 
 - (void)dealloc {
-    [viewController release];
+    [introController release];
+    [gameController release];
     [window release];
+    [u4viewStack release];
     [super dealloc];
 }
 
+- (void)pushU4View:(U4View *)view {
+    static BOOL firstTime = YES;    
+    [u4viewStack addObject:view];
+    if (firstTime) {
+        firstTime = NO;
+        return;
+    }
+
+    ImageInfo *screenInfo = imageMgr->get("screen");
+    screenInfo->image = [view image];
+}
+
+- (void)popU4View {
+    [u4viewStack removeLastObject];
+    if ([u4viewStack count] == 0)
+        return;
+    ImageInfo *screenInfo = imageMgr->get("screen");
+    U4View *view = static_cast<U4View *>([u4viewStack lastObject]);
+    screenInfo->image = [view image];
+}
+
+- (U4View *)frontU4View {
+    return [u4viewStack lastObject];
+}
+
+- (void)startGameController {
+    [self popU4View];
+    self.gameController = [[[U4GameController alloc] initWithNibName:@"U4GameController" bundle:nil] autorelease];
+    UIView *introControllerView = self.introController.view;
+    [introControllerView removeFromSuperview];
+    [introController release];
+    introController = nil;
+    UIView *gameControllerView = gameController.view;
+    [window addSubview:gameControllerView];
+    gameControllerView.hidden = NO;
+    eventHandler->popController();
+    intro->deleteIntro();
+    game = new GameController();
+    game->init();
+    eventHandler->pushController(game);
+}
 
 @end

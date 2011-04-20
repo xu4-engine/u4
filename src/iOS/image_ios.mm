@@ -79,8 +79,7 @@ Image *Image::create(int w, int h, bool indexed, Image::Type type) {
  * Create a special purpose image the represents the whole screen.
  */
 Image *Image::createScreenImage() {
-    Image *screen = new Image();
-    screen->surface = [U4IOS::frontU4View() image]->surface;
+    Image *screen = [U4IOS::frontU4View() image];
     ASSERT(screen->surface != NULL, "SDL_GetVideoSurface() returned a NULL screen surface!");
     CGSize size = CGLayerGetSize(screen->surface);
     screen->w = int(size.width);

@@ -31,15 +31,21 @@
 
 #import <UIKit/UIKit.h>
 
-@class U4RootController;
-
+@class U4IntroController;
+@class U4GameController;
+@class U4View;
 @interface U4AppDelegate : NSObject <UIApplicationDelegate> {
     UIWindow *window;
-    U4RootController *viewController;
+    U4IntroController *introController;
+    U4GameController *gameController;
+    NSMutableArray *u4viewStack;
 }
-
+-(void)pushU4View:(U4View *)view;
+-(void)popU4View;
+-(U4View *)frontU4View;
 @property (nonatomic, retain) IBOutlet UIWindow *window;
-@property (nonatomic, retain) IBOutlet U4RootController *viewController;
+@property (nonatomic, retain) IBOutlet U4IntroController *introController;
+@property (nonatomic, retain) IBOutlet U4GameController *gameController;
 
 @end
 

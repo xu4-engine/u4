@@ -38,6 +38,7 @@ class GameController;
 @class CharacterChoiceController;
 @class U4WeaponChoiceDialog;
 @class U4ArmorChoiceDialog;
+@class U4View;
 
 @interface U4GameController : UIViewController<UITextFieldDelegate, UIPopoverControllerDelegate, MixSpellDialogDelegate> {
 @private
@@ -78,7 +79,10 @@ class GameController;
     UIButton *leftButton;
     UIButton *downButton;
     UIButton *rightBUtton;
+    U4View *u4view;
+    UITextView *gameText;
     NSMutableSet *viewsReadytoFadeOutSet;
+    NSUInteger lineCount;
 }
 @property (nonatomic, retain) U4WeaponChoiceDialog *weaponPanel;
 @property (nonatomic, retain) U4ArmorChoiceDialog *armorPanel;
@@ -115,6 +119,8 @@ class GameController;
 @property (nonatomic, retain) IBOutlet UIButton *leftButton;
 @property (nonatomic, retain) IBOutlet UIButton *downButton;
 @property (nonatomic, retain) IBOutlet UIButton *rightBUtton;
+@property (nonatomic, retain) IBOutlet U4View *u4view;
+@property (nonatomic, retain) IBOutlet UITextView *gameText;
 - (IBAction)buttonPressed:(id)sender;
 - (IBAction)goUpPressed:(id)sender;
 - (IBAction)goLeftPressed:(id)sender;
@@ -153,6 +159,8 @@ class GameController;
 - (void)dismissWeaponChoicePanel;
 - (void)bringUpArmorChoicePanel;
 - (void)dismissArmorChoicePanel;
+- (void)showMessage:(NSString *)message;
+- (void)clearText;
 - (NSArray *)allButtons;
 - (NSArray *)allButtonsButDirectionButtons;
 @end

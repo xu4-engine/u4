@@ -33,7 +33,6 @@
 #include "ios_helpers.h"
 #import "U4View.h"
 #import "U4AppDelegate.h"
-#import "U4RootController.h"
 #import "U4IntroController.h"
 #import "U4GameController.h"
 #import "U4ViewController.h"
@@ -85,7 +84,7 @@ CFDictionaryRef createDictionaryForButtons(CFArrayRef buttonArray,
     CFRetain(mutableDict.get());
     return mutableDict.get();
 }
-    
+
 void updateView() {
     [frontU4View() setNeedsDisplay];
 }
@@ -121,19 +120,23 @@ CFURLRef copyAppSupportDirectoryLocation()
 
 static U4IntroController *introController() {
     U4AppDelegate *appDelegate = static_cast<U4AppDelegate *>([[UIApplication sharedApplication] delegate]);
-    return appDelegate.viewController.introController;
+    return appDelegate.introController;
 }
 
 static U4GameController *gameController() {
     U4AppDelegate *appDelegate = static_cast<U4AppDelegate *>([[UIApplication sharedApplication] delegate]);
-    return appDelegate.viewController.gameController;
+    return appDelegate.gameController;
 }
 
 U4View *frontU4View() {
     U4AppDelegate *appDelegate = static_cast<U4AppDelegate *>([[UIApplication sharedApplication] delegate]);
-    return static_cast<U4View *>(appDelegate.viewController.gameViewController.view);
+    return [appDelegate frontU4View];
 }
-    
+
+void drawMessageOnLabel(const std::string &message) {
+    [gameController() showMessage:[NSString stringWithUTF8String:message.c_str()]];
+}
+
 void switchU4IntroControllerToContinueButton() {
     [introController() switchToContinueButtons];
 }

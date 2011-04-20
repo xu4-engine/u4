@@ -96,6 +96,8 @@ namespace U4IOS {
     void showArmorDialog();
     void hideArmorDialog();
 
+    void drawMessageOnLabel(const std::string &message);
+
     class IOSHideGameControllerHelper {
     public:
         IOSHideGameControllerHelper() {

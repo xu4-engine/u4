@@ -35,12 +35,10 @@ class Image;
 
 @interface U4View : UIView {
     Image *image;
-    CGPoint centerPoint;
 @private
     int ImageWidth;
     int ImageHeight;
 }
 - (void)initHelper;
-- (void)computeCenter:(UIInterfaceOrientation)fromInterfaceOrientation;
 - (Image *)image;
 @end

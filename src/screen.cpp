@@ -26,6 +26,10 @@
 #include "tileset.h"
 #include "tileview.h"
 
+#ifdef IOS
+#include "ios_helpers.h"
+#endif
+
 using std::vector;
 
 void screenFindLineOfSight(vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]);
@@ -41,13 +45,15 @@ int screenCursorEnabled = 1;
 int screenLos[VIEWPORT_W][VIEWPORT_H];
 int screen3dDungeonView = 1;
 
+static const int BufferSize = 1024;
+
 void screenTextAt(int x, int y, const char *fmt, ...) {
-    char buffer[1024];
+    char buffer[BufferSize];
     unsigned int i;
 
     va_list args;
     va_start(args, fmt);
-    vsprintf(buffer, fmt, args);
+    vsnprintf(buffer, BufferSize, fmt, args);
     va_end(args);
 
     for (i = 0; i < strlen(buffer); i++)
@@ -62,16 +68,26 @@ void screenPrompt() {
 }
 
 void screenMessage(const char *fmt, ...) {
+#ifdef IOS
+    static bool recursed = false;
+#endif
+    
     if (!c)
     	return; //Because some cases (like the intro) don't have the context initiated.
-	char buffer[1024];
+    char buffer[BufferSize];
     unsigned int i;
-    int wordlen;
+    int wordlen;    
 
     va_list args;
     va_start(args, fmt);
-    vsprintf(buffer, fmt, args);
+    vsnprintf(buffer, BufferSize, fmt, args);
     va_end(args);
+#ifdef IOS
+    if (recursed)
+        recursed = false;
+    else
+        U4IOS::drawMessageOnLabel(string(buffer, 1024));
+#endif
 
     screenHideCursor();
 
@@ -115,6 +131,9 @@ void screenMessage(const char *fmt, ...) {
                 i++;
             c->line++;
             c->col = 0;
+#ifdef IOS
+            recursed = true;
+#endif
             screenMessage("%s", buffer + i);
             return;
         }
@@ -127,7 +146,6 @@ void screenMessage(const char *fmt, ...) {
         /* don't show a space in column 1.  Helps with Hawkwind. */
         if (buffer[i] == ' ' && c->col == 0)
           continue; 
-
         screenShowChar(buffer[i], TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
         c->col++;
     }

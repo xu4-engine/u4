@@ -31,9 +31,20 @@
 
 #import "U4IntroController.h"
 #import "U4AppDelegate.h"
-#import "U4RootController.h"
+#import "U4View.h"
+#include "debug.h"
+#include "error.h"
+#include "event.h"
+#include "game.h"
 #include "intro.h"
+#include "music.h"
+#include "person.h"
+#include "progress_bar.h"
+#include "screen.h"
 #include "settings.h"
+#include "sound.h"
+#include "tileset.h"
+#include "utils.h"
 
 
 @implementation U4IntroController
@@ -43,6 +54,7 @@
 @synthesize continueButton;
 @synthesize choiceAButton;
 @synthesize choiceBButton;
+@synthesize u4view;
 
 /*
  // The designated initializer.  Override if you create the controller programmatically and want to perform customization that is not appropriate for viewDidLoad.
@@ -63,8 +75,66 @@
     loadButton.hidden = !([[NSFileManager defaultManager] 
                            fileExistsAtPath:[NSString stringWithUTF8String:
                            (settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str()]]);
+    U4AppDelegate *appDelegate = static_cast<U4AppDelegate *>([UIApplication sharedApplication].delegate);
+    [appDelegate pushU4View:self.u4view];
 }
 
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    if (finishFirstTimeLoad)
+        return;
+    finishFirstTimeLoad = YES;
+    screenInit();
+    ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, 7);
+    pb.setBorderColor(240, 240, 240);
+    pb.setColor(0, 0, 128);
+    pb.setBorderWidth(1);
+    
+    screenTextAt(15, 11, "Loading...");
+    screenRedrawScreen();
+    ++pb;
+    
+    soundInit();
+    ++pb;
+    
+    Tileset::loadAll();
+    ++pb;
+    
+    creatureMgr->getInstance();
+    ++pb;
+    
+    if (intro == 0)
+        intro = new IntroController();
+    /* do the intro */
+    //    intro->skipTitles();
+    intro->init();
+    ++pb;
+    
+    intro->preloadMap();
+    ++pb;
+    
+    musicMgr->init();
+    ++pb;
+    
+    eventHandler->pushController(intro);
+}
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+                                duration:(NSTimeInterval)duration {
+    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
+    static const CGPoint PortaitPoint = CGPointMake(190., 59.);
+    static const CGPoint LandscapePoint = CGPointMake(64, 10.);
+
+    
+    CGRect u4frame = self.u4view.frame;
+    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
+        u4frame.origin = LandscapePoint;
+    } else {
+        u4frame.origin = PortaitPoint;
+    }
+    self.u4view.frame = u4frame;
+}
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     // Overriden to allow any orientation.
@@ -80,6 +150,7 @@
 }
 
 - (void)viewDidUnload {
+    [self setU4view:nil];
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -92,6 +163,7 @@
 
 
 - (void)dealloc {
+    [u4view release];
     [super dealloc];
 }
 
@@ -100,8 +172,7 @@
 //    oldBounds = self.view.frame;
     startGame = [[[U4StartDialogController alloc] initWithNibName:@"U4StartDialog" bundle:nil] autorelease];
     startGame.delegate = self;
-    U4AppDelegate *ourDelegate = [UIApplication sharedApplication].delegate;
-    [ourDelegate.viewController presentModalViewController:startGame animated:YES];
+    [self presentModalViewController:startGame animated:YES];
 }
 
 - (IBAction)loadGame:(id)sender {
@@ -117,8 +188,7 @@
 }
 
 - (void)startDialogControllerDidFinish:(U4StartDialogController *)controller {
-    U4AppDelegate *ourDelegate = [UIApplication sharedApplication].delegate;
-    [ourDelegate.viewController dismissModalViewControllerAnimated:YES];
+    [self dismissModalViewControllerAnimated:YES];
     if (controller.success) {
         [self switchToContinueButtons];
         string namebuffer = [controller.avatarName UTF8String];
@@ -131,8 +201,7 @@
 
 - (void)launchGameController {
     U4AppDelegate *appDelegate = [UIApplication sharedApplication].delegate;
-    U4RootController *rootController = appDelegate.viewController;
-    [rootController performSelector:@selector(startGameController)
+    [appDelegate performSelector:@selector(startGameController)
                          withObject:nil afterDelay:.125];    
 }
 
