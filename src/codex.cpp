@@ -356,7 +356,7 @@ void codexHandleVirtues(const string &virtue) {
 #ifdef IOS
             // Ugh, we now enter happy callback land, so I know how to do these things manually. Good thing I kept these separate functions.
             U4IOS::beginChoiceConversation();
-            U4IOS::updateChoicesInDialog(" ");
+            U4IOS::updateChoicesInDialog(" ", "", -1);
 #endif    
             eventHandler->pushKeyHandler(&codexHandleInfinityAnyKey);
         }
@@ -415,7 +415,7 @@ void codexHandleInfinity(const string &answer) {
         // Ugh, we now enter happy callback land, so I know how to do these things manually. Good thing I kept these separate functions.
         U4IOS::hideGameButtons();
         U4IOS::beginChoiceConversation();
-        U4IOS::updateChoicesInDialog(" ");
+        U4IOS::updateChoicesInDialog(" ", "", -1);
 #endif
         eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey); 
     }

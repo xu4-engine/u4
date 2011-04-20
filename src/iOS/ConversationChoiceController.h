@@ -34,7 +34,7 @@
 @class U4GameController;
 
 @interface ConversationChoiceController : UIViewController {
-    
+@private    
     UIButton *choice1Button;
     UIButton *choice3Button;
     UIButton *choice2Button;
@@ -53,11 +53,12 @@
     UIButton *choice16Button;
     UIButton *noThanksButton;
     NSString *choices;
+    NSString *target;
+    int npcType;
     NSMutableDictionary *choiceButtonToStringDict;
     U4GameController *gameController;
 }
 @property (nonatomic, retain) IBOutlet UIButton *noThanksButton;
-@property (nonatomic, retain) NSString *choices;
 @property (nonatomic, retain) IBOutlet UIButton *choice16Button;
 @property (nonatomic, retain) IBOutlet UIButton *choice15Button;
 @property (nonatomic, retain) IBOutlet UIButton *choice14Button;
@@ -77,7 +78,9 @@
 @property (nonatomic, retain) U4GameController *gameController;
 - (IBAction)choiceButtonPressed:(id)sender;
 - (IBAction)noThanksButtonPressed:(id)sender;
--(void)updateChoiceButtons;
--(void)setChoices:(NSString *)choices;
--(void)joinButton:(UIButton *)button withString:(NSString *)string buttonText:(NSString *)buttonText;
+- (void)updateChoiceButtons;
+- (NSArray *)allChoiceButtons;
+- (void)setChoices:(NSString *)choices withTarget:(NSString *)target npcType:(int)npcType;
+- (void)joinButton:(UIButton *)button withString:(NSString *)string buttonText:(NSString *)buttonText;
+- (void)buildChoicesFromInventory;
 @end

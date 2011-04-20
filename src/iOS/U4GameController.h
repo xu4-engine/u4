@@ -144,7 +144,7 @@ class GameController;
 - (void)hideAllButtonsMinusDirections;
 - (void)showAllButtonsMinusDirections;
 - (void)bringUpChoicePanel;
-- (void)updateChoices:(NSString *)choices;
+- (void)updateChoices:(NSString *)choices withTarget:(NSString *)target npcType:(int)npcType;
 - (void)endChoiceConversation;
 - (void)bringUpCharacterPanel;
 - (void)endCharacterPanel;

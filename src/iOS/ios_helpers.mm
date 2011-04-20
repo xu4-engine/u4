@@ -188,8 +188,10 @@ void restoreChoicePanel() {
     [gameController() halfSizeChoicePanel];
 }
     
-void updateChoicesInDialog(const std::string &choices) {
-    [gameController() updateChoices:[NSString stringWithUTF8String:choices.c_str()]];
+void updateChoicesInDialog(const std::string &choices, const std::string &target, int npcType) {
+    [gameController() updateChoices:[NSString stringWithUTF8String:choices.c_str()]
+                         withTarget:[NSString stringWithUTF8String:target.c_str()]
+                        npcType:npcType];
 }
     
     

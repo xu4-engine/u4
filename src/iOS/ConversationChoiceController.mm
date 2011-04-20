@@ -32,7 +32,10 @@
 #import "ConversationChoiceController.h"
 #import "U4GameController.h"
 #include "event.h"
+#include "game.h"
+#include "savegame.h"
 #include <algorithm>
+#include "person.h"
 
 @implementation ConversationChoiceController
 @synthesize choice8Button;
@@ -53,7 +56,6 @@
 @synthesize choice16Button;
 @synthesize noThanksButton;
 @synthesize gameController;
-@synthesize choices;
 
 /*
  // The designated initializer.  Override if you create the controller programmatically and want to perform customization that is not appropriate for viewDidLoad.
@@ -110,6 +112,7 @@
 
 - (void)dealloc {
     [choices release];
+    [target release];
     [gameController release];
     // The other items were freed when the view unloaded.
     [super dealloc];
@@ -129,18 +132,120 @@
     EventHandler::getInstance()->getController()->notifyKeyPressed('\r');
 }
 
+- (void)buildChoicesFromInventory_helperWithArray:(const short *)items withIndex:(int)index withInventoryLabels:(NSArray *)labels {
+    int inventoryIndex = index;
+    NSRange totalChoices = [choices rangeOfString:@" " options:NSBackwardsSearch];
+    NSUInteger maxWalk = std::min((totalChoices.location == NSNotFound) ? NSUInteger(0)
+                                                                        : totalChoices.location,
+                                  [labels count]);
+    NSArray *allButtons = [self allChoiceButtons];
+    for (NSUInteger characterIndex = 0; characterIndex < maxWalk; ++characterIndex) {
+        int numItems = items[inventoryIndex];
+        if (numItems > 0) {
+            unichar charArray[1];
+            charArray[0] = [choices characterAtIndex:characterIndex];
+            NSString *onlyOneCharacter = [NSString stringWithCharacters:charArray length:1];
+            NSUInteger labelIndex = charArray[0] - int('a');
+            [self joinButton:[allButtons objectAtIndex:characterIndex] withString:onlyOneCharacter
+                  buttonText:[NSString stringWithFormat:@"%@ (%d)", 
+                              [labels objectAtIndex:labelIndex], numItems]];
+        }
+        ++inventoryIndex;
+    }
+}
+
+- (NSArray *)allChoiceButtons {
+    return [NSArray arrayWithObjects:self.choice1Button, self.choice2Button,
+            self.choice3Button, self.choice4Button, self.choice5Button,
+            self.choice6Button, self.choice7Button, self.choice8Button,
+            self.choice9Button, self.choice10Button, self.choice11Button,
+            self.choice12Button, self.choice13Button, self.choice14Button,
+            self.choice15Button, self.choice16Button, nil];
+}
+
+- (NSArray *)allArmor {
+    return [NSArray arrayWithObjects:@"None", @"Cloth", @"Leather", @"Chain Mail", @"Plate Mail",
+                                     @"Magic Chain", @"Magic Plate", @"Mystic Robe", nil];
+    
+}
+
+- (NSArray *)allWeapons {
+ return [NSArray arrayWithObjects:@"Hands", @"Staff", @"Dagger", @"Sling", @"Mace", @"Axe",
+                                  @"Sword", @"Bow", @"Crossbow", @"Oil", @"Halberd", @"Magic Axe",
+                                  @"Magic Sword", @"Magic Bow", @"Magic Wand", @"Mystic Sword", nil];
+}
+
+- (void)buildChoicesFromInventory {
+    // Build our choices up based on the current party's inventory.
+    const SaveGame *savegame = game->currentGame();
+    // ### There should be a better way to get the cannonical names for these items.
+    if ([target compare:@"sell_weapon"] == NSOrderedSame) {
+        [self buildChoicesFromInventory_helperWithArray:savegame->weapons withIndex:WEAP_STAFF
+                                    withInventoryLabels:[self allWeapons]];
+    } else {
+        assert([target compare:@"sell_armor"] == NSOrderedSame);
+        [self buildChoicesFromInventory_helperWithArray:savegame->armor withIndex:ARMR_CLOTH
+                                    withInventoryLabels:[self allArmor]];
+    }
+}
+
+- (void)buildButtonsFromArray:(NSArray *)array calculateIndex:(BOOL)calcIndex {
+    NSRange totalChoices = [choices rangeOfString:@" " options:NSBackwardsSearch];
+    NSUInteger maxWalk = std::min((totalChoices.location == NSNotFound) ? NSUInteger(0)
+                                                                        : totalChoices.location,
+                                  [array count]);
+    NSArray *allButtons = [self allChoiceButtons];
+    for (NSUInteger i = 0; i < maxWalk; ++i) {
+        unichar charArray[1];
+        charArray[0] = [choices characterAtIndex:i];
+        NSUInteger index = calcIndex ? charArray[0] - int('a') : i;
+        NSString *onlyOneCharacter = [NSString stringWithCharacters:charArray length:1];
+        [self joinButton:[allButtons objectAtIndex:i] 
+              withString:onlyOneCharacter buttonText:[array objectAtIndex:index]];
+    }
+}
+
+- (void)buildChoicesFromNPCType {
+    switch (npcType) {
+    case NPC_VENDOR_WEAPONS:
+        [self buildButtonsFromArray:[self allWeapons] calculateIndex:YES];
+        break;
+    case NPC_VENDOR_ARMOR:
+        [self buildButtonsFromArray:[self allArmor] calculateIndex:YES];
+        break;
+    case NPC_VENDOR_REAGENTS:
+        [self buildButtonsFromArray:[NSArray arrayWithObjects:@"Sulfurous Ash", @"Ginseng",
+                                                              @"Garlic", @"Spider Silk",
+                                                              @"Blood Moss", @"Black Pearl", nil]
+         calculateIndex:NO];
+        break;
+    case NPC_VENDOR_HEALER:
+        [self buildButtonsFromArray:[NSArray arrayWithObjects:@"Curing", @"Healing",
+                                                              @"Resurrect", nil] 
+                     calculateIndex:NO];
+        break;
+    case NPC_VENDOR_TAVERN:
+        [self buildButtonsFromArray:[NSArray arrayWithObjects:@"Food", @"Ale", nil]
+                  calculateIndex:NO];
+        break;
+    case NPC_VENDOR_GUILD:
+        // ### *Sigh* This exposes sextants! But on the other hand, I would rather make the game beatable NOW then
+        // not make it possible as an alternate interface is devised.
+        [self buildButtonsFromArray:[NSArray arrayWithObjects:@"Torches", @"Magic Gems",
+                                                              @"Magic Keys" @"Sextant", nil]
+                  calculateIndex:NO];
+        break;
+    default:
+        break;
+    }
+}
+
 -(void)updateChoiceButtons {
     if (choices == nil)
         return;
     [choiceButtonToStringDict release];
     choiceButtonToStringDict = [[NSMutableDictionary alloc] initWithCapacity:17];
-    NSArray *buttonArray = [NSArray arrayWithObjects:self.choice1Button, self.choice2Button,
-                            self.choice3Button, self.choice4Button, self.choice5Button,
-                            self.choice6Button, self.choice7Button, self.choice8Button,
-                            self.choice9Button, self.choice10Button, self.choice11Button,
-                            self.choice12Button, self.choice13Button, self.choice14Button,
-                            self.choice15Button, self.choice16Button, nil];
-
+    NSArray *buttonArray = [self allChoiceButtons];
     for (UIButton *button in buttonArray)
         button.hidden = YES;
     
@@ -159,6 +264,10 @@
     } else if ([choices hasPrefix:@"bs"]) {
         [self joinButton:self.choice1Button withString:@"b" buttonText:@"Buy"];
         [self joinButton:self.choice2Button withString:@"s" buttonText:@"Sell"];
+    } else if ([target hasPrefix:@"sell_"]) {
+        [self buildChoicesFromInventory];
+    } else if (npcType != -1) {
+        [self buildChoicesFromNPCType];
     } else {
         NSRange totalChoices = [choices rangeOfString:@" " options:NSBackwardsSearch];
         NSUInteger maxWalk = std::min((totalChoices.location == NSNotFound) ? NSUInteger(0)
@@ -174,17 +283,25 @@
     }
 }
 
--(void)joinButton:(UIButton *)button withString:(NSString *)string buttonText:(NSString *)buttonText {
+-(void)joinButton:(UIButton *)button withString:(NSString *)string
+       buttonText:(NSString *)buttonText {
     [choiceButtonToStringDict setObject:string forKey:buttonText];
     [button setTitle:buttonText forState:UIControlStateNormal];
     button.hidden = NO;
 }
 
--(void)setChoices:(NSString *)newChoices {
+-(void)setChoices:(NSString *)newChoices withTarget:(NSString *)newTarget  npcType:(int)npc {
     [newChoices retain];
-    NSString *oldChoices = choices;
+    NSString *old = choices;
     choices = newChoices;
-    [oldChoices release];
+    [old release];
+    
+    [newTarget retain];
+    old = target;
+    target = newTarget;
+    [old release];
+
+    npcType = npc;
     if (choice1Button != nil) {
         [self updateChoiceButtons];
     }

@@ -73,7 +73,7 @@ namespace U4IOS {
     void beginChoiceConversation();
     void maximizeChoicePanel();
     void restoreChoicePanel();
-    void updateChoicesInDialog(const std::string &choices);
+    void updateChoicesInDialog(const std::string &choices, const std::string &target, int npcType);
     void endChoiceConversation();
     
     void beginCharacterChoiceDialog();
@@ -141,8 +141,8 @@ namespace U4IOS {
         ~IOSConversationChoiceHelper() {
             endChoiceConversation();
         }
-        void updateChoices(const std::string &choices) {
-            updateChoicesInDialog(choices);
+        void updateChoices(const std::string &choices, const std::string &target = "", int npcType = -1) {
+            updateChoicesInDialog(choices, target, npcType);
         }
         void fullSizeChoicePanel() {
             maximizeChoicePanel();

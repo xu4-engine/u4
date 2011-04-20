@@ -177,7 +177,7 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
                         const string &choices = script->getChoices();
                         // Get choice
 #ifdef IOS
-                        choiceDialog.updateChoices(choices);
+                        choiceDialog.updateChoices(choices, script->getTarget(), npcType);
 #endif
                         char val = ReadChoiceController::get(choices);
                         if (isspace(val) || val == '\033')

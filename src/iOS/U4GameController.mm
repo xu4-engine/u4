@@ -468,7 +468,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         [conversationEdit resignFirstResponder];
         conversationEdit.hidden = YES;
     }
-    [self updateChoices:nil];
+    [self updateChoices:nil withTarget:nil npcType:-1];
 }
 
 - (void)fullSizeChoicePanel {
@@ -495,8 +495,8 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     [self slideViewIn:view finalFrame:computeFrameRect(self.view.frame, self.interfaceOrientation)];
 }
 
-- (void)updateChoices:(NSString *)choices {
-    self.choiceController.choices = choices;
+- (void)updateChoices:(NSString *)choices withTarget:(NSString *)target npcType:(int)npcType;{
+    [self.choiceController setChoices:choices withTarget:target npcType:npcType];
     self.choiceController.view.hidden = NO;
 }
 
