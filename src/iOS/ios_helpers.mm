@@ -43,13 +43,13 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 struct timeval start;
-void SDL_StartTicks()
+void startTicks()
 {
     /* Set first ticks value */
     gettimeofday(&start, NULL);
 }
 
-int SDL_GetTicks()
+int getTicks()
 {
     int ticks;
     struct timeval now;

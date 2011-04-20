@@ -1762,7 +1762,7 @@ int getTicks()
 {
 	return SDL_GetTicks();
 }
-#else
+#elif !defined(IOS)
 static int ticks = 0;
 int getTicks()
 {
@@ -1780,7 +1780,7 @@ bool IntroController::updateTitle()
     static bool firstTime = true;
     if (firstTime) {
         firstTime = false;
-        SDL_StartTicks();
+        startTicks();
     }
 #endif
 

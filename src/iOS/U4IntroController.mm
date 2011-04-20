@@ -106,6 +106,8 @@
 
 - (IBAction)loadGame:(id)sender {
     intro->skipTitles();
+    // reset the timer to the pre-titles granularity, this ensures the timer is running correctly.
+    eventHandler->getTimer()->reset(eventTimerGranularity);
     intro->journeyOnward();
     [self launchGameController];
 }

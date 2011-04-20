@@ -31,8 +31,6 @@
 
 #import <UIKit/UIKit.h>
 
-#define VALGRIND "/opt/local/bin/valgrind"
-
 int main(int argc, char *argv[]) {    
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
     int retVal = UIApplicationMain(argc, argv, nil, nil);

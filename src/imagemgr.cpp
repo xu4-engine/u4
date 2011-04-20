@@ -205,90 +205,91 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
 
     sigData = intro->getSigData();
     im->alphaOff();
-
-    /* ----------------------------
-     * update the position of "and"
-     * ---------------------------- */
-    im->drawSubRectOn(im, 148 * prescale, 17 * prescale,
-                      153 * prescale,
-                      17 * prescale,
-                      11 * prescale,
-                      4 * prescale);
-    im->drawSubRectOn(im, 159 * prescale, 17 * prescale,
-                      165 * prescale,
-                      18 * prescale,
-                      1 * prescale,
-                      4 * prescale);
-    im->drawSubRectOn(im, 160 * prescale, 17 * prescale,
-                      164 * prescale,
-                      17 * prescale,
-                      16 * prescale,
-                      4 * prescale);
-    /* ---------------------------------------------
-     * update the position of "Origin Systems, Inc."
-     * --------------------------------------------- */
-    im->drawSubRectOn(im, 86 * prescale, 21 * prescale,
-                      88 * prescale,
-                      21 * prescale,
-                      114 * prescale,
-                      9 * prescale);
-    im->drawSubRectOn(im, 199 * prescale, 21 * prescale,
-                      202 * prescale,
-                      21 * prescale,
-                      6 * prescale,
-                      9 * prescale);
-    im->drawSubRectOn(im, 207 * prescale, 21 * prescale,
-                      208 * prescale,
-                      21 * prescale,
-                      28 * prescale,
-                      9 * prescale);
-    /* ---------------------------------------------
-     * update the position of "Ultima IV"
-     * --------------------------------------------- */
-    // move this *prior* to moving "present"
-    im->drawSubRectOn(im, 59 * prescale, 33 * prescale,
-                      61 * prescale,
-                      33 * prescale,
-                      204 * prescale,
-                      46 * prescale);
-    /* ---------------------------------------------
-     * update the position of "Quest of the Avatar"
-     * --------------------------------------------- */
-    im->drawSubRectOn(im, 69 * prescale, 80 * prescale,     // quEst
-                      70 * prescale,
-                      80 * prescale,
-                      11 * prescale,
-                      13 * prescale);
-    im->drawSubRectOn(im, 82 * prescale, 80 * prescale,     // queST
-                      84 * prescale,
-                      80 * prescale,
-                      27 * prescale,
-                      13 * prescale);
-    im->drawSubRectOn(im, 131 * prescale, 80 * prescale,    // oF
-                      132 * prescale,
-                      80 * prescale,
-                      11 * prescale,
-                      13 * prescale);
-    im->drawSubRectOn(im, 150 * prescale, 80 * prescale,    // THE
-                      149 * prescale,
-                      80 * prescale,
-                      40 * prescale,
-                      13 * prescale);
-    im->drawSubRectOn(im, 166 * prescale, 80 * prescale,    // tHe
-                      165 * prescale,
-                      80 * prescale,
-                      11 * prescale,
-                      13 * prescale);
-    im->drawSubRectOn(im, 200 * prescale, 80 * prescale,    // AVATAR
-                      201 * prescale,
-                      80 * prescale,
-                      81 * prescale,
-                      13 * prescale);
-    im->drawSubRectOn(im, 227 * prescale, 80 * prescale,    // avAtar
-                      228 * prescale,
-                      80 * prescale,
-                      11 * prescale,
-                      13 * prescale);
+    if (settings.videoType != "VGA-ALLPNG") {
+        /* ----------------------------
+         * update the position of "and"
+         * ---------------------------- */
+        im->drawSubRectOn(im, 148 * prescale, 17 * prescale,
+                          153 * prescale,
+                          17 * prescale,
+                          11 * prescale,
+                          4 * prescale);
+        im->drawSubRectOn(im, 159 * prescale, 17 * prescale,
+                          165 * prescale,
+                          18 * prescale,
+                          1 * prescale,
+                          4 * prescale);
+        im->drawSubRectOn(im, 160 * prescale, 17 * prescale,
+                          164 * prescale,
+                          17 * prescale,
+                          16 * prescale,
+                          4 * prescale);
+        /* ---------------------------------------------
+         * update the position of "Origin Systems, Inc."
+         * --------------------------------------------- */
+        im->drawSubRectOn(im, 86 * prescale, 21 * prescale,
+                          88 * prescale,
+                          21 * prescale,
+                          114 * prescale,
+                          9 * prescale);
+        im->drawSubRectOn(im, 199 * prescale, 21 * prescale,
+                          202 * prescale,
+                          21 * prescale,
+                          6 * prescale,
+                          9 * prescale);
+        im->drawSubRectOn(im, 207 * prescale, 21 * prescale,
+                          208 * prescale,
+                          21 * prescale,
+                          28 * prescale,
+                          9 * prescale);
+        /* ---------------------------------------------
+         * update the position of "Ultima IV"
+         * --------------------------------------------- */
+        // move this *prior* to moving "present"
+        im->drawSubRectOn(im, 59 * prescale, 33 * prescale,
+                          61 * prescale,
+                          33 * prescale,
+                          204 * prescale,
+                          46 * prescale);
+        /* ---------------------------------------------
+         * update the position of "Quest of the Avatar"
+         * --------------------------------------------- */
+        im->drawSubRectOn(im, 69 * prescale, 80 * prescale,     // quEst
+                          70 * prescale,
+                          80 * prescale,
+                          11 * prescale,
+                          13 * prescale);
+        im->drawSubRectOn(im, 82 * prescale, 80 * prescale,     // queST
+                          84 * prescale,
+                          80 * prescale,
+                          27 * prescale,
+                          13 * prescale);
+        im->drawSubRectOn(im, 131 * prescale, 80 * prescale,    // oF
+                          132 * prescale,
+                          80 * prescale,
+                          11 * prescale,
+                          13 * prescale);
+        im->drawSubRectOn(im, 150 * prescale, 80 * prescale,    // THE
+                          149 * prescale,
+                          80 * prescale,
+                          40 * prescale,
+                          13 * prescale);
+        im->drawSubRectOn(im, 166 * prescale, 80 * prescale,    // tHe
+                          165 * prescale,
+                          80 * prescale,
+                          11 * prescale,
+                          13 * prescale);
+        im->drawSubRectOn(im, 200 * prescale, 80 * prescale,    // AVATAR
+                          201 * prescale,
+                          80 * prescale,
+                          81 * prescale,
+                          13 * prescale);
+        im->drawSubRectOn(im, 227 * prescale, 80 * prescale,    // avAtar
+                          228 * prescale,
+                          80 * prescale,
+                          11 * prescale,
+                          13 * prescale);
+    }
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
      * ----------------------------------------------------------------------------- */
@@ -298,6 +299,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
                       0 * prescale,
                       56 * prescale,
                       5 * prescale);
+
     if (alpha)
     {
         im->alphaOn();
@@ -330,6 +332,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
         // update the color of "Origin Systems, Inc."
         im->setPaletteIndex(9, im->setColor(129, 129, 255));
 
+        borderInfo->image->save("border.png");
         // update the border appearance
         borderInfo->image->alphaOff();
         borderInfo->image->drawSubRectOn(im, 0, 96, 0, 0, 16, 56);
@@ -357,7 +360,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
         x = sigData[i] + 0x14;
         y = 0xBF - sigData[i+1];
 
-        if (settings.videoType == "VGA")
+        if (settings.videoType == "VGA" || settings.videoType == "VGA-ALLPNG")
         {
             // yellow gradient
             color = im->setColor(255, (y == 1 ? 250 : 255), blue[y]);

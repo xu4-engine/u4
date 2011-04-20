@@ -38,8 +38,8 @@ typedef const struct __CFURL *CFURLRef;
 typedef const struct __CFDictionary *CFDictionaryRef;
 typedef const struct __CFArray *CFArrayRef;
 typedef const struct __CFString *CFStringRef;
-void SDL_StartTicks();
-int SDL_GetTicks();
+void startTicks();
+int getTicks();
 
 #if __OBJC__
 @class U4View;
