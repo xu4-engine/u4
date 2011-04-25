@@ -79,6 +79,7 @@ string profileName = "";
     
     xu4_srandom();
     u4viewStack = [[NSMutableArray alloc] initWithCapacity:8];
+    [[UIApplication sharedApplication] setStatusBarHidden:YES];
     [window addSubview:introController.view];
     [window makeKeyAndVisible];
 

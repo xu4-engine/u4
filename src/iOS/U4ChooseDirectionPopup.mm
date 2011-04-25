@@ -33,7 +33,6 @@
 #import "U4ChooseDirectionPopup.h"
 #import "U4GameController.h"
 
-
 @implementation U4ChooseDirectionPopup
 @synthesize upButton;
 @synthesize rightButton;

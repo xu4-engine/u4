@@ -73,7 +73,7 @@ static CGRect computeFrameRect(const CGRect &rect, UIInterfaceOrientation orient
         retRect.size.height = size.width;
         retRect.size.width = size.height;
     }
-    CGFloat oneThirdHeight = retRect.size.height / 3.;
+    CGFloat oneThirdHeight = 243;
     retRect.origin.y = retRect.size.height - oneThirdHeight;
     retRect.size.height = oneThirdHeight;
     return retRect;
@@ -153,6 +153,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 @synthesize rightBUtton;
 @synthesize u4view;
 @synthesize gameText;
+@synthesize scrollImage;
 @synthesize weaponPanel;
 @synthesize armorPanel;
 /*
@@ -232,6 +233,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     [self cleanUp];
     [self setU4view:nil];
     [self setGameText:nil];
+    [self setScrollImage:nil];
     [super viewDidUnload];
     if (viewsReadytoFadeOutSet != nil) {
         [viewsReadytoFadeOutSet removeAllObjects];
@@ -272,6 +274,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     [rightBUtton release];
     [u4view release];
     [gameText release];
+    [scrollImage release];
     [super dealloc];
 }
 
@@ -290,23 +293,29 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
                                 duration:(NSTimeInterval)duration {
     [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
-    static const CGPoint PortaitPoint = CGPointMake(190., 59.);
+    static const CGPoint PortaitPoint = CGPointMake(193., 12.);
     static const CGPoint LandscapePoint = CGPointMake(5, 10.);
     
-    static const CGRect PortraitLogRect = CGRectMake(140., 355., 728., 156.);
-    static const CGRect LandscapeLogRect = CGRectMake(417., 10., 343., 156.);
-    static const CGRect PortraitEditRect = CGRectMake(140, 497, 728, 31);
-    static const CGRect LandscapeEditRect = CGRectMake(417, 300, 343, 31);
+    static const CGRect PortraitLogRect = CGRectMake(216., 332., 649., 229.);
+    static const CGRect LandscapeLogRect = CGRectMake(435., 88., 318., 230.);
+
+    static const CGRect PortraitScrollRect = CGRectMake(145., 266., 728., 351.);
+    static const CGRect LandscapeScrollRect = CGRectMake(417., 10., 343., 351.);
+
+    static const CGRect PortraitEditRect = CGRectMake(360., 540., 728, 31);
+    static const CGRect LandscapeEditRect = CGRectMake(435, 415, 320, 31);
     
     CGRect u4frame = self.u4view.frame;
     if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
         u4frame.origin = LandscapePoint;
         self.gameText.frame = LandscapeLogRect;
         self.conversationEdit.frame = LandscapeEditRect;
+        self.scrollImage.frame = LandscapeScrollRect;
     } else {
         u4frame.origin = PortaitPoint;
         self.gameText.frame = PortraitLogRect;
         self.conversationEdit.frame = PortraitEditRect;
+        self.scrollImage.frame = PortraitScrollRect;
     }
     self.u4view.frame = u4frame;
 }
@@ -485,7 +494,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 
 - (void)slideViewHalfwayIn:(UIView *)view {
     CGRect finalFrame = computeFrameRect(self.view.frame, self.interfaceOrientation);
-    const CGFloat offset = conversationEdit.frame.size.height + 24;
+    const CGFloat offset = 0;//conversationEdit.frame.size.height + 24;
     finalFrame.origin.y += offset;
     finalFrame.size.height -= offset;
     [self slideViewIn:view finalFrame:finalFrame];

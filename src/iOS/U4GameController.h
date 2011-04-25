@@ -81,6 +81,7 @@ class GameController;
     UIButton *rightBUtton;
     U4View *u4view;
     UITextView *gameText;
+    UIImageView *scrollImage;
     NSMutableSet *viewsReadytoFadeOutSet;
     NSUInteger lineCount;
 }
@@ -121,6 +122,7 @@ class GameController;
 @property (nonatomic, retain) IBOutlet UIButton *rightBUtton;
 @property (nonatomic, retain) IBOutlet U4View *u4view;
 @property (nonatomic, retain) IBOutlet UITextView *gameText;
+@property (nonatomic, retain) IBOutlet UIImageView *scrollImage;
 - (IBAction)buttonPressed:(id)sender;
 - (IBAction)goUpPressed:(id)sender;
 - (IBAction)goLeftPressed:(id)sender;
