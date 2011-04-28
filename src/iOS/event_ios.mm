@@ -296,9 +296,12 @@ EventHandler::EventHandler() : timer(eventTimerGranularity), updateScreen(NULL) 
  * Delays program execution for the specified number of milliseconds.
  */
 void EventHandler::sleep(unsigned int usec) {
-    NSRunLoop *runloop = [NSRunLoop mainRunLoop];
-    NSDate *date = [NSDate dateWithTimeIntervalSinceNow:usec / 1000.0];
-    [runloop runUntilDate:date];
+    // We have to wait, we can't dispatch events. This is *not* the nicest thing to do and
+    // is why events get delayed.
+    [NSThread sleepForTimeInterval:usec / 1000.];
+//    NSRunLoop *runloop = [NSRunLoop mainRunLoop];
+//    NSDate *date = [NSDate dateWithTimeIntervalSinceNow:usec / 1000.0];
+//    [runloop runUntilDate:date];
 }
 
 void EventHandler::run() {
