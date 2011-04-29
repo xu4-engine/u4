@@ -33,6 +33,7 @@
 #import "MixSpellDialog.h"
 
 class GameController;
+
 @class ConversationChoiceController;
 @class CastSpellController;
 @class CharacterChoiceController;
@@ -163,6 +164,8 @@ class GameController;
 - (void)dismissArmorChoicePanel;
 - (void)showMessage:(NSString *)message;
 - (void)clearText;
+- (void)disableGameButtons;
+- (void)enableGameButtons;
 - (NSArray *)allButtons;
 - (NSArray *)allButtonsButDirectionButtons;
 @end

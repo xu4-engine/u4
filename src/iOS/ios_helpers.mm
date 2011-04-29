@@ -247,4 +247,13 @@ void beginMixSpellController() {
     [gameController() bringUpMixReagentsController];
 }
 
+    void disableGameButtons() {
+        [gameController() disableGameButtons];
+    }
+    
+    void enableGameButtons() {
+        [gameController() enableGameButtons];        
+    }
+
+    
 }

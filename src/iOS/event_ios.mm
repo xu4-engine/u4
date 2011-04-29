@@ -47,6 +47,8 @@
 #include "settings.h"
 #include <UIKit/UIKit.h>
 #include <limits>
+#include "ios_helpers.h"
+#include "combat.h"
 
 extern bool verbose, quit;
 extern int eventTimerGranularity;
@@ -296,21 +298,17 @@ EventHandler::EventHandler() : timer(eventTimerGranularity), updateScreen(NULL) 
  * Delays program execution for the specified number of milliseconds.
  */
 void EventHandler::sleep(unsigned int usec) {
-    // We have to wait, we can't dispatch events. This is *not* the nicest thing to do and
-    // is why events get delayed.
-    [NSThread sleepForTimeInterval:usec / 1000.];
-//    NSRunLoop *runloop = [NSRunLoop mainRunLoop];
-//    NSDate *date = [NSDate dateWithTimeIntervalSinceNow:usec / 1000.0];
-//    [runloop runUntilDate:date];
+    bool combatControllerRunning = dynamic_cast<CombatController *>(instance->getController());
+    if (combatControllerRunning)
+        U4IOS::disableGameButtons();
+    NSRunLoop *runloop = [NSRunLoop mainRunLoop];
+    NSDate *date = [NSDate dateWithTimeIntervalSinceNow:usec / 1000.0];
+    [runloop runUntilDate:date];
+    if (combatControllerRunning)
+        U4IOS::enableGameButtons();
 }
 
 void EventHandler::run() {
-    /*
-     if (WaitController *waitController = dynamic_cast<WaitController *>(getController())) {
-     if (updateScreen)
-     (*updateScreen)();
-     screenRedrawScreen();
-     */
     static const CFTimeInterval DistantFuture = std::numeric_limits<CFTimeInterval>::max();
     while (!ended && !controllerDone) {
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, DistantFuture, true);
@@ -319,11 +317,6 @@ void EventHandler::run() {
         int unused; // Quit somehow...
         (void)unused;
     }
-    /*
-     } else {
-     QApplication::exec();
-     }
-     */
 }
 
 void EventHandler::controllerStopped_helper() {

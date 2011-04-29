@@ -301,7 +301,7 @@ public:
 #if defined(IOS)
     void handleEvent(UIEvent *);
     static void controllerStopped_helper();
-     updateScreenCallback screenCallback() { return updateScreen; }
+    updateScreenCallback screenCallback() { return updateScreen; }
 #endif
 
     /* Controller functions */

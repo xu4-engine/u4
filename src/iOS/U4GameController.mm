@@ -324,10 +324,8 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     self.currentPressedButton = sender;
     NSString *gameLetter = static_cast<NSString *>([gameButtonDict objectForKey:sender]);
     assert(gameLetter != nil || sender == helpButton);
-    if (sender == helpButton)
-        EventHandler::getInstance()->getController()->notifyKeyPressed('h' + U4_ALT);
-    else
-        EventHandler::getInstance()->getController()->notifyKeyPressed(char([gameLetter characterAtIndex:0]));
+    char gameChar = (sender == helpButton) ? 'h' + U4_ALT : char([gameLetter characterAtIndex:0]);
+    EventHandler::getInstance()->getController()->notifyKeyPressed(gameChar);
 }
 
 - (IBAction)goUpPressed:(id)sender {
@@ -641,5 +639,18 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     self.gameText.text = [oldText stringByAppendingString:message];
     [self.gameText scrollRangeToVisible:NSMakeRange([self.gameText.text length] - 1, 0)];
 }
+
+- (void)disableGameButtons {
+    for (UIButton *button in [self allButtons]) {
+        button.enabled = NO;
+    }
+}
+
+- (void)enableGameButtons {
+    for (UIButton *button in [self allButtons]) {
+        button.enabled = YES;
+    }
+}
+
 
 @end
