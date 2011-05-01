@@ -100,13 +100,16 @@ void Music::playMid(Type music) {
 }
 
 bool Music::load_sys(const string &pathname) {
+    CGFloat volume = settings.musicVol / CGFloat(MAX_VOLUME);
 	if (playing) {
+        volume = playing.volume;
 	    [playing stop];
 	    [playing release];
 	    playing = nil;
 	}
 	playing = [[U4AudioController alloc] initWithFile:
-	            [NSString stringWithUTF8String:pathname.c_str()]];        
+	            [NSString stringWithUTF8String:pathname.c_str()]];
+    playing.volume = volume;
 	return true;
 }
 
@@ -143,9 +146,9 @@ void Music::setSoundVolume_sys(int volume) {
 }
 
 void Music::fadeIn_sys(int msecs, bool loadFromMap) {
-
+    [playing fadeIn:NSTimeInterval(msecs / 1000.)];
 }
 
 void Music::fadeOut_sys(int msecs) {
-
+    [playing fadeOut:NSTimeInterval(msecs / 1000.)];
 }

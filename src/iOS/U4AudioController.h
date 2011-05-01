@@ -37,7 +37,8 @@
 @private
     AVAudioPlayer *player;
     BOOL interruptedWhilePlaying;
-    BOOL playing;
+    CGFloat volumeDelta;
+    NSTimeInterval volumeStep;
 }
 - (id)initWithFile:(NSString *)file;
 - (BOOL)isPlaying;
@@ -47,4 +48,8 @@
 - (float)volume;
 - (void)setNumberOfLoops:(int)numberOfLoops;
 - (int)numberOfLoops;
+- (void)fadeOut:(NSTimeInterval)duration;
+- (void)fadeIn:(NSTimeInterval)duration;
+- (void)doVolumeFadeIn;
+- (void)doVolumeFadeOut;
 @end

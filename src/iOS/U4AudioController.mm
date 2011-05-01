@@ -30,7 +30,10 @@
 //
 
 #import "U4AudioController.h"
+#include <cmath>
+#include "settings.h"
 
+static const int FadeSteps = 30;
 
 @implementation U4AudioController
 
@@ -46,7 +49,7 @@
             player.delegate = self;
             player.numberOfLoops = 0;
         }
-        interruptedWhilePlaying = playing = NO;
+        interruptedWhilePlaying = NO;
     }
     return self;
 }
@@ -56,39 +59,36 @@
     [super dealloc];
 }
 
-- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
-    playing = NO;
+- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)thePlayer successfully:(BOOL)flag {
 }
 
 - (void)audioPlayerBeginInterruption:(AVAudioPlayer *)player {
-    if (playing) {
-        playing = NO;
+    if (settings.musicVol) {
         interruptedWhilePlaying = YES;
     }
 }
 
 - (void)audioPlayerEndInterruption:(AVAudioPlayer *)thePlayer {
     if (interruptedWhilePlaying) {
-        [thePlayer prepareToPlay];
-        [thePlayer play];
-        playing = YES;
-        interruptedWhilePlaying = NO;
+        if (settings.musicVol) {
+            [thePlayer prepareToPlay];
+            [thePlayer play];
+            interruptedWhilePlaying = NO;
+        }
     }
 }
 
 - (void)play {
     [player prepareToPlay];
     [player play];
-    playing = YES;
 }
 
 - (void)stop {
     [player stop];
-    playing = NO;
 }
 
 - (BOOL)isPlaying {
-    return playing;
+    return player.isPlaying;
 }
 
 - (void)setVolume:(float)volume {
@@ -105,6 +105,40 @@
 
 - (int)numberOfLoops {
     return player.numberOfLoops;
+}
+
+- (void)fadeOut:(NSTimeInterval)duration {
+    volumeStep = duration / FadeSteps;
+    volumeDelta = player.volume / FadeSteps;
+    [self performSelector:@selector(doVolumeFadeOut) withObject:nil afterDelay:volumeStep];
+}
+
+- (void)doVolumeFadeOut {
+    if (player.volume > volumeDelta) {
+        player.volume = player.volume - volumeDelta;
+        [self performSelector:@selector(doVolumeFadeOut) withObject:nil afterDelay:volumeStep];
+    } else {
+        [self stop];
+    }
+}
+
+- (void)fadeIn:(NSTimeInterval)duration {
+    volumeStep = duration / FadeSteps;
+    volumeDelta = settings.musicVol / CGFloat(MAX_VOLUME) / FadeSteps;
+    if (!player.isPlaying)
+        [self play];
+
+    [self performSelector:@selector(doVolumeFadeIn) withObject:nil afterDelay:volumeStep];
+}
+
+-(void)doVolumeFadeIn {  
+    CGFloat finalVolume = settings.musicVol / CGFloat(MAX_VOLUME);
+    if (player.volume < finalVolume - volumeDelta) {
+        player.volume = player.volume + volumeDelta;
+        [self performSelector:@selector(doVolumeFadeIn) withObject:nil afterDelay:volumeStep];
+    } else {
+        player.volume = finalVolume;
+    }
 }
 
 @end
