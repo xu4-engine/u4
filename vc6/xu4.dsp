@@ -708,7 +708,7 @@ SOURCE=..\src\xu4.ico
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\xu4.rc
+SOURCE=..\src\win32\xu4.rc
 # End Source File
 # End Target
 # End Project

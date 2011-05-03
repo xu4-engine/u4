@@ -26,8 +26,8 @@ OBJS= xu4ico.o
 
 include Makefile.common
 
-xu4ico.o: xu4.ico xu4.rc
-	windres xu4.rc xu4ico.o
+xu4ico.o: xu4.ico win32/xu4.rc
+	windres win32/xu4.rc xu4ico.o
 
 install: u4.exe
 	mkdir -p $(U4PATH)
@@ -55,6 +55,7 @@ install: u4.exe
 	
 	cp SDL/lib/SDL.dll $(U4PATH)
 	cp SDL/lib/SDL_mixer.dll $(U4PATH)
+	cp win32/xu4.iss $(U4PATH)
 
 tools: mkutils
 	mkdir -p $(U4PATH)
