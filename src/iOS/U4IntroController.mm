@@ -125,7 +125,7 @@
     [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
     
     // Only really change things if our orientation really is different, not just "upside down."
-    if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation) == UIInterfaceOrientationIsLandscape(toInterfaceOrientation))
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation) && UIInterfaceOrientationIsPortrait(toInterfaceOrientation))
         return;
 
     static const CGPoint PortaitPoint = CGPointMake(190., 59.);
