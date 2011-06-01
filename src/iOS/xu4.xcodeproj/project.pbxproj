@@ -14,6 +14,7 @@
 		CA117C691269BF7300BC272E /* ConversationChoiceController.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA117C671269BF7300BC272E /* ConversationChoiceController.mm */; };
 		CA117C6A1269BF7300BC272E /* ConversationChoiceController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CA117C681269BF7300BC272E /* ConversationChoiceController.xib */; };
 		CA314DC91364553900B90AA7 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA314DC81364553900B90AA7 /* QuartzCore.framework */; };
+		CA3260541396BC1C002C7741 /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = CA3260531396BC1C002C7741 /* Entitlements.plist */; };
 		CA3357571129C8B900B5A128 /* annotation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357461129C8B900B5A128 /* annotation.cpp */; };
 		CA3357581129C8B900B5A128 /* armor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357491129C8B900B5A128 /* armor.cpp */; };
 		CA3357591129C8B900B5A128 /* aura.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA33574B1129C8B900B5A128 /* aura.cpp */; };
@@ -1613,6 +1614,7 @@
 		CA117C671269BF7300BC272E /* ConversationChoiceController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ConversationChoiceController.mm; sourceTree = "<group>"; };
 		CA117C681269BF7300BC272E /* ConversationChoiceController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ConversationChoiceController.xib; sourceTree = "<group>"; };
 		CA314DC81364553900B90AA7 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = ../../Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.2.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		CA3260531396BC1C002C7741 /* Entitlements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Entitlements.plist; sourceTree = "<group>"; };
 		CA3357461129C8B900B5A128 /* annotation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = annotation.cpp; path = ../annotation.cpp; sourceTree = "<group>"; };
 		CA3357471129C8B900B5A128 /* annotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = annotation.h; path = ../annotation.h; sourceTree = "<group>"; };
 		CA3357481129C8B900B5A128 /* area.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = area.h; path = ../area.h; sourceTree = "<group>"; };
@@ -2217,7 +2219,7 @@
 		CABE6F17113C5AD20085A8DF /* U4ViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = U4ViewController.xib; sourceTree = "<group>"; };
 		CABE6F18113C5AD20085A8DF /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
 		CABE6F19113C5AE50085A8DF /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		CABE6F24113C5C100085A8DF /* Ultima4-iPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ultima4-iPad.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CABE6F24113C5C100085A8DF /* Ultima4-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ultima4-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAC8CAD512AAD12900510BAC /* CharacterChoiceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CharacterChoiceController.h; sourceTree = "<group>"; };
 		CAC8CAD612AAD12900510BAC /* CharacterChoiceController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CharacterChoiceController.mm; sourceTree = "<group>"; };
 		CAC8CAD712AAD12900510BAC /* CharacterChoiceController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CharacterChoiceController.xib; sourceTree = "<group>"; };
@@ -2337,7 +2339,7 @@
 			isa = PBXGroup;
 			children = (
 				8D1107320486CEB800E47090 /* xu4.app */,
-				CABE6F24113C5C100085A8DF /* Ultima4-iPad.app */,
+				CABE6F24113C5C100085A8DF /* Ultima4-iOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3099,6 +3101,7 @@
 				CABE6F16113C5AD20085A8DF /* Ultima4-iPad.plist */,
 				CABE6F17113C5AD20085A8DF /* U4ViewController.xib */,
 				CABE6F18113C5AD20085A8DF /* MainWindow.xib */,
+				CA3260531396BC1C002C7741 /* Entitlements.plist */,
 			);
 			name = iPad;
 			sourceTree = "<group>";
@@ -3187,9 +3190,9 @@
 			productReference = 8D1107320486CEB800E47090 /* xu4.app */;
 			productType = "com.apple.product-type.application";
 		};
-		CABE6F23113C5C100085A8DF /* Ultima4-iPad */ = {
+		CABE6F23113C5C100085A8DF /* Ultima4-iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CABE6F29113C5C110085A8DF /* Build configuration list for PBXNativeTarget "Ultima4-iPad" */;
+			buildConfigurationList = CABE6F29113C5C110085A8DF /* Build configuration list for PBXNativeTarget "Ultima4-iOS" */;
 			buildPhases = (
 				CABE6F21113C5C100085A8DF /* Sources */,
 				CA9934091142EA2800AEFE37 /* Copy VGA files */,
@@ -3204,9 +3207,9 @@
 			);
 			dependencies = (
 			);
-			name = "Ultima4-iPad";
+			name = "Ultima4-iOS";
 			productName = Untitled;
-			productReference = CABE6F24113C5C100085A8DF /* Ultima4-iPad.app */;
+			productReference = CABE6F24113C5C100085A8DF /* Ultima4-iOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -3226,7 +3229,7 @@
 			projectRoot = "";
 			targets = (
 				8D1107260486CEB800E47090 /* xu4 */,
-				CABE6F23113C5C100085A8DF /* Ultima4-iPad */,
+				CABE6F23113C5C100085A8DF /* Ultima4-iOS */,
 			);
 		};
 /* End PBXProject section */
@@ -3413,6 +3416,7 @@
 				CA9DADD8131A9E4800D81CB3 /* spell_flash_25.caf in Resources */,
 				CA9DADD9131A9E4800D81CB3 /* spell_precast_R_with_mp45.caf in Resources */,
 				CA9DADDA131A9E4800D81CB3 /* walk_normal.caf in Resources */,
+				CA3260541396BC1C002C7741 /* Entitlements.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3720,6 +3724,94 @@
 			};
 			name = Release;
 		};
+		CA3260561396BC45002C7741 /* Ad Hoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.6;
+			};
+			name = "Ad Hoc";
+		};
+		CA3260571396BC45002C7741 /* Ad Hoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = ../u4_pch.h;
+				HEADER_SEARCH_PATHS = (
+					/usr/include/libxml2,
+					/opt/local/include/SDL,
+					/opt/local/include,
+				);
+				INFOPLIST_FILE = "xu4-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/local/lib,
+				);
+				OTHER_CFLAGS = (
+					"-DMACOSX",
+					"-DMACOSX_USER_FILES_PATH=\\\"/Library/Application\\ Support/xu4\\\"",
+					"-DVERSION=\\\"1.1svn\\\"",
+					"-DNPERF",
+				);
+				PRODUCT_NAME = xu4;
+			};
+			name = "Ad Hoc";
+		};
+		CA3260581396BC45002C7741 /* Ad Hoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CODE_SIGN_ENTITLEMENTS = Entitlements.plist;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 1.1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				HEADER_SEARCH_PATHS = (
+					"$(HOME)/dev/boost/iphone/include",
+					/usr/include/libxml2,
+				);
+				INFOPLIST_FILE = "Ultima4-iPad.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				OTHER_CFLAGS = (
+					"-DIOS",
+					"-DMACOSX_USER_FILES_PATH=\\\"/Library/Application\\ Support/xu4\\\"",
+					"-DVERSION=\\\"1.1svn\\\"",
+					"-DNPERF",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					UIKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Ultima4-iOS";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				VERSIONING_SYSTEM = "apple-generic";
+				ZERO_LINK = NO;
+			};
+			name = "Ad Hoc";
+		};
 		CABE6F27113C5C110085A8DF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -3758,7 +3850,7 @@
 					UIKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = "Ultima4-iPad";
+				PRODUCT_NAME = "Ultima4-iOS";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 2;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -3803,7 +3895,7 @@
 					UIKit,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = "Ultima4-iPad";
+				PRODUCT_NAME = "Ultima4-iOS";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 2;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -3819,6 +3911,7 @@
 			buildConfigurations = (
 				C01FCF4B08A954540054247B /* Debug */,
 				C01FCF4C08A954540054247B /* Release */,
+				CA3260571396BC45002C7741 /* Ad Hoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3828,15 +3921,17 @@
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
 				C01FCF5008A954540054247B /* Release */,
+				CA3260561396BC45002C7741 /* Ad Hoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CABE6F29113C5C110085A8DF /* Build configuration list for PBXNativeTarget "Ultima4-iPad" */ = {
+		CABE6F29113C5C110085A8DF /* Build configuration list for PBXNativeTarget "Ultima4-iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CABE6F27113C5C110085A8DF /* Debug */,
 				CABE6F28113C5C110085A8DF /* Release */,
+				CA3260581396BC45002C7741 /* Ad Hoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
