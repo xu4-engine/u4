@@ -166,16 +166,6 @@ namespace U4IOS {
         }
     };
     
-    class IOSCharacterChoiceHelper {
-    public:
-        IOSCharacterChoiceHelper() {
-            beginCharacterChoiceDialog();
-        }
-        ~IOSCharacterChoiceHelper() {
-            endCharacterChoiceDialog();
-        }
-    };
-    
     class IOSCastSpellHelper {
     public:
         IOSCastSpellHelper() {

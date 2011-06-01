@@ -217,10 +217,6 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
                     } break;                    
                     
                     case Script::INPUT_PLAYER: {
-#ifdef IOS
-                        U4IOS::IOSConversationHelper ipadNumberInput;
-                        ipadNumberInput.beginConversation(U4IOS::UIKeyboardTypeNumberPad, "Which character?");
-#endif
                         ReadPlayerController getPlayerCtrl;
                         eventHandler->pushController(&getPlayerCtrl);
                         int player = getPlayerCtrl.waitFor();

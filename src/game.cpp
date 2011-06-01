@@ -121,7 +121,17 @@ MouseArea mouseAreas[] = {
     { 0 }
 };
 
-ReadPlayerController::ReadPlayerController() : ReadChoiceController("12345678 \033\n") {}
+ReadPlayerController::ReadPlayerController() : ReadChoiceController("12345678 \033\n") {
+#ifdef IOS
+    U4IOS::beginCharacterChoiceDialog();
+#endif
+}
+
+ReadPlayerController::~ReadPlayerController() {
+#ifdef IOS
+    U4IOS::endCharacterChoiceDialog();
+#endif
+}
 
 bool ReadPlayerController::keyPressed(int key) {
     bool valid = ReadChoiceController::keyPressed(key);
@@ -1475,9 +1485,6 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
         else
         {
             ReadPlayerController readPlayerController;
-#ifdef IOS
-            U4IOS::IOSCharacterChoiceHelper choiceHelper;
-#endif
             eventHandler->pushController(&readPlayerController);
             player = readPlayerController.waitFor();
         }

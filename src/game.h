@@ -42,6 +42,7 @@ typedef enum {
 class ReadPlayerController : public ReadChoiceController {
 public:
     ReadPlayerController();
+    ~ReadPlayerController();
     virtual bool keyPressed(int key);
 
     int getPlayer();
