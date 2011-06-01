@@ -293,6 +293,11 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
                                 duration:(NSTimeInterval)duration {
     [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
+    
+    // Only really change things if our orientation really is different, not just "upside down."
+    if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation) == UIInterfaceOrientationIsLandscape(toInterfaceOrientation))
+        return;
+
     static const CGPoint PortaitPoint = CGPointMake(193., 12.);
     static const CGPoint LandscapePoint = CGPointMake(5, 10.);
     
