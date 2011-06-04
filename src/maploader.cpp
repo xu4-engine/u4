@@ -70,7 +70,7 @@ bool MapLoader::loadData(Map *map, U4FILE *f) {
     unsigned int x, xch, y, ych;
 
     /* allocate the space we need for the map data */
-    map->data.reserve(map->height * map->width);
+    map->data.resize(map->height * map->width, MapTile(0));
 
     if (map->chunk_height == 0)
         map->chunk_height = map->height;
