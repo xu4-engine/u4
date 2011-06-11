@@ -948,6 +948,9 @@ bool CombatController::keyPressed(int key) {
         castSpell(focus);
         break;
 
+#ifdef IOS
+    case U4_ENTER: // Fall through and get the chest.
+#endif
     case 'g':
         screenMessage("Get Chest!\n");
         getChest(focus);

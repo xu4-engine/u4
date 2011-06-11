@@ -599,7 +599,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     } else {
         [self slideViewFullIn:view];
     }
-    view.hidden = NO;    
+    view.hidden = NO;
 }
 
 - (void)finishDismissPanel:(UIView *)view {
