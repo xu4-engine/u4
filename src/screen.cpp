@@ -1473,7 +1473,7 @@ void screenGemUpdate() {
 			{
 				//Hack to avoid showing the avatar tile multiple times in cycling dungeon maps
 				if (tile.id == avatarTileId)
-					tile = tiles[1];
+					tile = c->location->map->getTileFromData(c->location->coords)->id;
 			}
             
 			screenShowGemTile(layout, c->location->map, tile, focus, x, y);
