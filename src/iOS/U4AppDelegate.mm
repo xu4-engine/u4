@@ -106,6 +106,7 @@ string profileName = "";
 
     ImageInfo *screenInfo = imageMgr->get("screen");
     screenInfo->image = [view image];
+    U4IOS::updateScreenView();
 }
 
 - (void)popU4View {
@@ -115,6 +116,7 @@ string profileName = "";
     ImageInfo *screenInfo = imageMgr->get("screen");
     U4View *view = static_cast<U4View *>([u4viewStack lastObject]);
     screenInfo->image = [view image];
+    U4IOS::updateScreenView();
 }
 
 - (U4View *)frontU4View {

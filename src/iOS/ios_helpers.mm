@@ -39,6 +39,8 @@
 #import <UIKit/UIKit.h>
 #include <sys/time.h>
 #include "U4CFHelper.h"
+#include "imagemgr.h"
+#include "view.h"
 #include <CoreFoundation/CoreFoundation.h>
 
 struct timeval start;
@@ -247,13 +249,16 @@ void beginMixSpellController() {
     [gameController() bringUpMixReagentsController];
 }
 
-    void disableGameButtons() {
-        [gameController() disableGameButtons];
-    }
+void updateScreenView() {
+    View::screen = imageMgr->get("screen")->image;
+}
     
-    void enableGameButtons() {
-        [gameController() enableGameButtons];        
-    }
+void disableGameButtons() {
+    [gameController() disableGameButtons];
+}
 
-    
+void enableGameButtons() {
+    [gameController() enableGameButtons];        
+}
+
 }

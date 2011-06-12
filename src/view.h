@@ -7,6 +7,10 @@
 
 #define SCALED(n) ((n) * settings.scale)
 
+#ifdef IOS
+#include "ios_helpers.h"
+#endif
+
 class Image;
 
 /**
@@ -26,6 +30,9 @@ public:
 
 protected:
     int x, y, width, height;
+#ifdef IOS
+    friend void U4IOS::updateScreenView();
+#endif
     static Image *screen;
 };
 

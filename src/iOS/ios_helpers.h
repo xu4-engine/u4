@@ -33,6 +33,8 @@
 // These functions exist primarily for sealing Objective-C away from the C++ code (i.e., I don't want to change the file types).
 
 #ifdef IOS
+#ifndef IOS_HELPERS_H
+#define IOS_HELPERS_H
 #include <string>
 typedef const struct __CFURL *CFURLRef;
 typedef const struct __CFDictionary *CFDictionaryRef;
@@ -69,6 +71,7 @@ namespace U4IOS {
     ::CFDictionaryRef createDictionaryForButtons(::CFArrayRef buttonArray,
                                                  ::CFStringRef arrayOfLetters, void * uibuttonCancelButton);
     U4View *frontU4View();
+    void updateScreenView();
     
     void beginChoiceConversation();
     void maximizeChoicePanel();
@@ -213,6 +216,6 @@ namespace U4IOS {
         }
     };
 }
-
-#endif
+#endif // IOS_HELPERS_H
+#endif // IOS
 
