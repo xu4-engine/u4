@@ -30,7 +30,8 @@
 //
 
 #import "U4WeaponChoiceDialog.h"
-#include "game.h"
+#include "context.h"
+#include "event.h"
 #include "ios_helpers.h"
 
 @implementation U4WeaponChoiceDialog
@@ -53,7 +54,7 @@
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
     [super viewDidLoad];
-    const SaveGame * const savegame = game->currentGame();
+    const SaveGame * const savegame = c->saveGame;
     NSArray *allButtons = [NSArray arrayWithObjects:handsButton, staffButton, daggerButton, slingButton, maceButton,
                            axeButton, swordButton, bowButton, crossBowButton, oilButton, halberdButton, magicAxeButton,
                            magicSwordButton, magicBowButton, magicWandButton, mysticSwordButton, nil];

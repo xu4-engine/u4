@@ -31,7 +31,8 @@
 
 #import "CastSpellController.h"
 #import "U4GameController.h"
-#include "game.h"
+#include "event.h"
+#include "context.h"
 #include "ios_helpers.h"
 
 @implementation CastSpellController
@@ -79,7 +80,7 @@
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
     [super viewDidLoad];
-    const SaveGame * const saveGame = game->currentGame();
+    const SaveGame * const saveGame = c->saveGame;
     NSArray *spellButtons = [NSArray arrayWithObjects:awakenButton, blinkButton, cureButton, dispelButton,
                                                       energyFieldButton, fireballButton, gateTravelButton,
                                                       healButton, iceballButton, jinxButton, killButton,

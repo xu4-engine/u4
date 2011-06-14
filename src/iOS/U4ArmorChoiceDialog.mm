@@ -30,7 +30,8 @@
 //
 
 #import "U4ArmorChoiceDialog.h"
-#include "game.h"
+#include "context.h"
+#include "event.h"
 #include "ios_helpers.h"
 
 @implementation U4ArmorChoiceDialog
@@ -59,7 +60,7 @@
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
     [super viewDidLoad];
-    const SaveGame * const savegame = game->currentGame();
+    const SaveGame * const savegame = c->saveGame;
     NSArray *allButtons = [NSArray arrayWithObjects:noneButton, clothButton, leatherButton, 
                                                     chainButton, plateButton, magicChainButton,
                                                     magicPlateButton, mysticRobesButton, nil];

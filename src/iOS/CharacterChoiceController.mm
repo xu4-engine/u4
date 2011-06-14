@@ -30,7 +30,8 @@
 //
 
 #import "CharacterChoiceController.h"
-#include "game.h"
+#include "context.h"
+#include "event.h"
 #include "ios_helpers.h"
 
 @implementation CharacterChoiceController
@@ -58,7 +59,8 @@
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
     [super viewDidLoad];
-    const SaveGame *saveGame = game->currentGame();
+    const SaveGame * const saveGame = c->saveGame;
+
     NSArray *allButtons = [NSArray arrayWithObjects:avatarButton, character2Button,
                                                    character3Button, character4Button,
                                                    character5Button, character6Button,

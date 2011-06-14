@@ -3027,13 +3027,6 @@ void GameController::timerFired() {
 
 }
 
-#ifdef IOS
-const SaveGame *GameController::currentGame() const {
-    return c->saveGame;
-}
-#endif
-
-
 /**
  * Checks the hull integrity of the ship and handles
  * the ship sinking, if necessary

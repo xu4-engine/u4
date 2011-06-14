@@ -32,8 +32,7 @@
 #import "ConversationChoiceController.h"
 #import "U4GameController.h"
 #include "event.h"
-#include "game.h"
-#include "savegame.h"
+#include "context.h"
 #include <algorithm>
 #include "person.h"
 
@@ -177,7 +176,7 @@
 
 - (void)buildChoicesFromInventory {
     // Build our choices up based on the current party's inventory.
-    const SaveGame *savegame = game->currentGame();
+    const SaveGame * const savegame = c->saveGame;
     // ### There should be a better way to get the cannonical names for these items.
     if ([target compare:@"sell_weapon"] == NSOrderedSame) {
         [self buildChoicesFromInventory_helperWithArray:savegame->weapons withIndex:WEAP_STAFF

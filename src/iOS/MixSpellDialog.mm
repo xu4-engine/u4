@@ -33,8 +33,7 @@
 #import "SpellInfo.h"
 #import "SpellReagent.h"
 #import "SpellInfoPickerLabel.h"
-#include "game.h"
-#include "savegame.h"
+#include "event.h"
 #include "spell.h"
 
 static NSString *reagentForIndex(int index) {
@@ -74,7 +73,7 @@ static NSString *reagentForIndex(int index) {
  // The designated initializer.  Override if you create the controller programmatically and want to perform customization that is not appropriate for viewDidLoad.
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil])) {
-        const SaveGame *saveGame = game->currentGame();
+        const SaveGame * const saveGame = c->saveGame;
         NSArray *spellNames = [NSArray arrayWithObjects:@"Awaken", @"Blink", @"Cure", @"Dispel",
                                                         @"Energy Field", @"Fireball", @"Gate Travel",
                                                         @"Heal", @"Iceball", @"Jinx", @"Kill", @"Light",
