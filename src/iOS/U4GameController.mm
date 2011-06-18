@@ -329,7 +329,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     self.currentPressedButton = sender;
     NSString *gameLetter = static_cast<NSString *>([gameButtonDict objectForKey:sender]);
     assert(gameLetter != nil || sender == helpButton);
-    char gameChar = (sender == helpButton) ? 'h' + U4_ALT : char([gameLetter characterAtIndex:0]);
+    int gameChar = (sender == helpButton) ? 'h' + U4_ALT : char([gameLetter characterAtIndex:0]);
     EventHandler::getInstance()->getController()->notifyKeyPressed(gameChar);
 }
 
