@@ -3771,7 +3771,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CODE_SIGN_ENTITLEMENTS = Entitlements.plist;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				COPY_PHASE_STRIP = YES;
 				CURRENT_PROJECT_VERSION = 1.2.0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -3805,6 +3805,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Ultima4-iOS";
+				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 2;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -3896,6 +3897,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "Ultima4-iOS";
+				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 2;
 				VERSIONING_SYSTEM = "apple-generic";
