@@ -40,6 +40,7 @@ typedef const struct __CFURL *CFURLRef;
 typedef const struct __CFDictionary *CFDictionaryRef;
 typedef const struct __CFArray *CFArrayRef;
 typedef const struct __CFString *CFStringRef;
+typedef double NSTimeInterval;
 void startTicks();
 int getTicks();
 
@@ -50,6 +51,9 @@ typedef void U4View;
 #endif
 
 namespace U4IOS {
+    static const NSTimeInterval ALPHA_DURATION = 0.40;
+    static const NSTimeInterval SLIDE_DURATION = 0.40;
+    
     enum IPadKeyboardType {
         UIKeyboardTypeDefault,
         UIKeyboardTypeASCIICapable,

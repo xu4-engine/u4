@@ -219,30 +219,35 @@
 }
 
 - (void)switchToContinueButtons {
-    static const  NSTimeInterval ALPHA_DURATION = 0.40;
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:ALPHA_DURATION];
-    self.startButton.alpha = 0.0;
-    self.loadButton.alpha = 0.0;
-    self.choiceAButton.alpha = 0.0;
-    self.choiceBButton.alpha = 0.0;
-    self.continueButton.hidden = NO;
-    self.continueButton.alpha = 1.0;
-    [UIView commitAnimations];
+    [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
+        self.startButton.alpha = 0.0;
+        self.loadButton.alpha = 0.0;
+        self.choiceAButton.alpha = 0.0;
+        self.choiceBButton.alpha = 0.0;
+        self.continueButton.hidden = NO;
+        self.continueButton.alpha = 1.0;        
+    } completion:^(BOOL finished) {
+        if (finished) {
+            self.choiceAButton.hidden = YES;
+            self.choiceAButton.hidden = YES;
+        }
+    }];
 }
 
 - (void)switchToChoiceButtons {
-    static const NSTimeInterval ALPHA_DURATION = 0.40;
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:ALPHA_DURATION];
-    self.startButton.alpha = 0.0;
-    self.loadButton.alpha = 0.0;
-    self.choiceAButton.hidden = NO;
-    self.choiceBButton.hidden = NO;
-    self.choiceAButton.alpha = 1.0;
-    self.choiceBButton.alpha = 1.0;
-    self.continueButton.alpha = 0.0;
-    [UIView commitAnimations];
+    [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
+        self.startButton.alpha = 0.0;
+        self.loadButton.alpha = 0.0;
+        self.choiceAButton.hidden = NO;
+        self.choiceBButton.hidden = NO;
+        self.choiceAButton.alpha = 1.0;
+        self.choiceBButton.alpha = 1.0;
+        self.continueButton.alpha = 0.0;        
+    } completion:^(BOOL finished) {
+        if (finished) {
+            self.continueButton.hidden = YES;
+        }
+    }];    
 }
 
 @end

@@ -45,26 +45,6 @@
 #include "U4CFHelper.h"
 #include "ios_helpers.h"
 
-
-static const  NSTimeInterval ALPHA_DURATION = 0.40;
-static void hideButtonHelper(NSArray *buttons) {
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:ALPHA_DURATION];
-    for (UIButton *button in buttons)
-        button.alpha = 0.0;
-        [UIView commitAnimations];
-    
-}
-
-static void showButtonHelper(NSArray *buttons) {
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:ALPHA_DURATION];        
-    for (UIButton *button in buttons)
-        button.alpha = 1.0;
-        [UIView commitAnimations];
-    
-}
-
 static CGRect computeFrameRect(const CGRect &rect, UIInterfaceOrientation orientation) {
     CGRect retRect = rect;
     if (UIInterfaceOrientationIsLandscape(orientation)) {
@@ -418,7 +398,11 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 - (void)hideAllButtons {
     buttonHideCount++;
     if (buttonHideCount == 1) {
-        hideButtonHelper([self allButtons]);
+        [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
+            for (UIButton *button in [self allButtons]) {
+                button.alpha = 0.0;
+            }
+        }];
     }
 }
 
@@ -426,19 +410,31 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     buttonHideCount--;
     assert(buttonHideCount > -1);
     if (buttonHideCount == 0) {
-        showButtonHelper([self allButtons]);
+        [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
+            for (UIButton *button in [self allButtons]) {
+                button.alpha = 1.0;
+            }
+        }];
     }
 }
 
 - (void)hideAllButtonsMinusDirections {
     // No stacking, we shouldn't get in a case where that's necessary.
-    hideButtonHelper([self allButtonsButDirectionButtons]);
+    [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
+        for (UIButton *button in [self allButtonsButDirectionButtons]) {
+            button.alpha = 0.0;
+        }
+    }];
     [self.passButton setTitle:@"Done" forState:UIControlStateNormal];
 }
 
 
 - (void)showAllButtonsMinusDirections {
-    showButtonHelper([self allButtonsButDirectionButtons]);
+    [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
+        for (UIButton *button in [self allButtonsButDirectionButtons]) {
+            button.alpha = 1.0;
+        }
+    }];
     [self.passButton setTitle:@"Pass" forState:UIControlStateNormal];
 }
 
@@ -548,43 +544,36 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 
 - (void)slideViewIn:(UIView *)view finalFrame:(CGRect)newFrame {
     CGRect mySize = self.view.frame;
-    view.frame = CGRectMake(0, mySize.size.height, mySize.size.width, mySize.size.height);    
-    [UIView beginAnimations:nil context:NULL];
-    view.frame = newFrame;
-    [UIView commitAnimations];
+    view.frame = CGRectMake(0, mySize.size.height, mySize.size.width, mySize.size.height);
+    [UIView animateWithDuration:U4IOS::SLIDE_DURATION animations:^{
+        view.frame = newFrame;
+    }];
 }
 
 - (void)slideViewOut:(UIView *)view {
-    [UIView beginAnimations:nil context:NULL];
     CGRect mySize = self.view.frame;
-    view.frame = CGRectMake(0, mySize.size.height, mySize.size.width, mySize.size.height);    
-    [UIView commitAnimations];
+    [UIView animateWithDuration:U4IOS::SLIDE_DURATION animations:^{
+        view.frame = CGRectMake(0, mySize.size.height, mySize.size.width, mySize.size.height);
+    } completion:^(BOOL) {
+        if ([viewsReadytoFadeOutSet containsObject:view]) { // Don't do this unless we actually are in the set.
+            [view removeFromSuperview];
+            if (self.choiceController != nil && self.choiceController.view == view) {
+                self.choiceController = nil;
+            } else if (self.castSpellController != nil && self.castSpellController.view == view) {
+                self.castSpellController = nil;
+            } else if (self.characterChoiceController != nil
+                       && self.characterChoiceController.view == view) {
+                self.characterChoiceController = nil;
+            } else if (self.weaponPanel != nil && self.weaponPanel.view == view) {
+                self.weaponPanel = nil;
+            } else if (self.armorPanel != nil && self.armorPanel.view == view) {
+                self.armorPanel = nil;
+            }
+            [viewsReadytoFadeOutSet removeObject:view];
+        }}];
     if (viewsReadytoFadeOutSet == nil)
         viewsReadytoFadeOutSet = [[NSMutableSet alloc] initWithCapacity:16];
     [viewsReadytoFadeOutSet addObject:view];
-    [NSTimer scheduledTimerWithTimeInterval:0.400 target:self 
-                          selector:@selector(finishSlideOut:) userInfo:view repeats:NO];
-}
-
-- (void)finishSlideOut:(NSTimer *)theTimer {
-    UIView *view = static_cast<UIView *>([theTimer userInfo]);
-    if ([viewsReadytoFadeOutSet containsObject:view]) { // Don't do this unless we actually are in the set.
-        [view removeFromSuperview];
-        if (self.choiceController != nil && self.choiceController.view == view) {
-            self.choiceController = nil;
-        } else if (self.castSpellController != nil && self.castSpellController.view == view) {
-            self.castSpellController = nil;
-        } else if (self.characterChoiceController != nil
-                   && self.characterChoiceController.view == view) {
-            self.characterChoiceController = nil;
-        } else if (self.weaponPanel != nil && self.weaponPanel.view == view) {
-            self.weaponPanel = nil;
-        } else if (self.armorPanel != nil && self.armorPanel.view == view) {
-            self.armorPanel = nil;
-        }
-        [viewsReadytoFadeOutSet removeObject:view];
-    }
-    [theTimer invalidate];
 }
 
 - (void)finishBringUpPanel:(UIView *)view halfSized:(BOOL)halfSize {

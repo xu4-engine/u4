@@ -157,7 +157,6 @@ class GameController;
 - (void)finishDismissPanel:(UIView *)view;
 - (void)slideViewIn:(UIView *)view finalFrame:(CGRect)newFrame;
 - (void)slideViewOut:(UIView *)view;
-- (void)finishSlideOut:(NSTimer *)theTimer;
 - (void)bringUpWeaponChoicePanel;
 - (void)dismissWeaponChoicePanel;
 - (void)bringUpArmorChoicePanel;
