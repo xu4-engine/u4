@@ -36,6 +36,7 @@
 #ifndef IOS_HELPERS_H
 #define IOS_HELPERS_H
 #include <string>
+#include "location.h"
 typedef const struct __CFURL *CFURLRef;
 typedef const struct __CFDictionary *CFDictionaryRef;
 typedef const struct __CFArray *CFArrayRef;
@@ -107,6 +108,7 @@ namespace U4IOS {
     
     void disableGameButtons();
     void enableGameButtons();
+    void updateGameControllerContext(LocationContext context);
     
     class IOSDisableGameControllerHelper {
     public:

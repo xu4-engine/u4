@@ -261,4 +261,8 @@ void enableGameButtons() {
     [gameController() enableGameButtons];        
 }
 
+void updateGameControllerContext(LocationContext context) {
+    [gameController() updateGameControllerLocationContext:context];
+}
+
 }

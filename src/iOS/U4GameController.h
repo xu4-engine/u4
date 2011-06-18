@@ -31,6 +31,7 @@
 
 #import <UIKit/UIKit.h>
 #import "MixSpellDialog.h"
+#include "location.h"
 
 class GameController;
 
@@ -165,6 +166,7 @@ class GameController;
 - (void)clearText;
 - (void)disableGameButtons;
 - (void)enableGameButtons;
+- (void)updateGameControllerLocationContext:(LocationContext)locationContext;
 - (NSArray *)allButtons;
 - (NSArray *)allButtonsButDirectionButtons;
 @end

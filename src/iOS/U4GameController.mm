@@ -646,5 +646,107 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     }
 }
 
+- (void)updateGameControllerLocationContext:(LocationContext)locationContext {
+    NSMutableArray *buttonsToHide = [NSMutableArray arrayWithCapacity:32];
+    NSMutableArray *buttonsToShow = [NSMutableArray arrayWithCapacity:32];
+    
+    switch (locationContext) {
+    case CTX_CITY:
+        [buttonsToHide addObject:self.lightTorchButton];
+        [buttonsToHide addObject:self.makeCampButton];
+        [buttonsToHide addObject:self.fireCannonButton];
+        [buttonsToHide addObject:self.peerAtGemButton];
 
+        [buttonsToShow addObject:self.currentPosButton];
+        [buttonsToShow addObject:self.talkButton];
+        [buttonsToShow addObject:self.partyOrderButton];
+        [buttonsToShow addObject:self.pickLockButton];
+        [buttonsToShow addObject:self.yellButton];
+        [buttonsToShow addObject:self.searchButton];
+        [buttonsToShow addObject:self.mixSpellButton];
+        [buttonsToShow addObject:self.openDoorButton];
+        [buttonsToShow addObject:self.wearArmorButton];
+        break;
+    case CTX_COMBAT:
+        [buttonsToHide addObject:self.currentPosButton];
+        [buttonsToHide addObject:self.lightTorchButton];
+        [buttonsToHide addObject:self.makeCampButton];
+        [buttonsToHide addObject:self.talkButton];
+        [buttonsToHide addObject:self.fireCannonButton];
+        [buttonsToHide addObject:self.pickLockButton];
+        [buttonsToHide addObject:self.peerAtGemButton];
+        [buttonsToHide addObject:self.partyOrderButton];
+        [buttonsToHide addObject:self.yellButton];
+        [buttonsToHide addObject:self.searchButton];
+        [buttonsToHide addObject:self.mixSpellButton];
+        [buttonsToHide addObject:self.openDoorButton];
+        [buttonsToHide addObject:self.wearArmorButton];
+        break;
+    case CTX_DUNGEON:
+        [buttonsToHide addObject:self.currentPosButton];
+        [buttonsToHide addObject:self.talkButton];
+        [buttonsToHide addObject:self.fireCannonButton];
+        [buttonsToHide addObject:self.pickLockButton];
+        [buttonsToHide addObject:self.yellButton];
+        [buttonsToHide addObject:self.openDoorButton];
+        
+        [buttonsToShow addObject:self.peerAtGemButton];
+        [buttonsToShow addObject:self.partyOrderButton];
+        [buttonsToShow addObject:self.searchButton];
+        [buttonsToShow addObject:self.mixSpellButton];
+        [buttonsToShow addObject:self.wearArmorButton];
+        [buttonsToShow addObject:self.lightTorchButton];
+        [buttonsToShow addObject:self.makeCampButton];
+        break;
+    case CTX_WORLDMAP:
+        [buttonsToHide addObject:self.lightTorchButton];
+        [buttonsToHide addObject:self.talkButton];
+        [buttonsToHide addObject:self.pickLockButton];
+        [buttonsToHide addObject:self.peerAtGemButton];
+        [buttonsToHide addObject:self.openDoorButton];
+        
+        [buttonsToShow addObject:self.currentPosButton];
+        [buttonsToShow addObject:self.makeCampButton];
+        [buttonsToShow addObject:self.fireCannonButton];
+        [buttonsToShow addObject:self.partyOrderButton];
+        [buttonsToShow addObject:self.yellButton];
+        [buttonsToShow addObject:self.searchButton];
+        [buttonsToShow addObject:self.mixSpellButton];
+        [buttonsToShow addObject:self.wearArmorButton];
+        break;
+    case CTX_ALTAR_ROOM:
+        [buttonsToShow addObject:self.currentPosButton];
+        
+        [buttonsToHide addObject:self.lightTorchButton];
+        [buttonsToHide addObject:self.makeCampButton];
+        [buttonsToHide addObject:self.talkButton];
+        [buttonsToHide addObject:self.fireCannonButton];
+        [buttonsToHide addObject:self.pickLockButton];
+        [buttonsToHide addObject:self.peerAtGemButton];
+        [buttonsToHide addObject:self.partyOrderButton];
+        [buttonsToHide addObject:self.yellButton];
+        [buttonsToHide addObject:self.searchButton];
+        [buttonsToHide addObject:self.mixSpellButton];
+        [buttonsToHide addObject:self.openDoorButton];
+        [buttonsToHide addObject:self.wearArmorButton];
+        break;
+    default:
+        break;
+    }
+    
+    if (locationContext & CTX_CAN_SAVE_GAME) {
+        [buttonsToShow addObject:self.saveButton];
+    } else {
+        [buttonsToHide addObject:self.saveButton];
+    }
+    
+    [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
+        for (UIButton *button in buttonsToHide)
+            button.alpha = 0.0;
+        
+        for (UIButton *button in buttonsToShow)
+            button.alpha = 1.0;
+    }];
+}
+  
 @end

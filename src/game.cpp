@@ -551,10 +551,12 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
         viewMode = VIEW_NORMAL;
         break;
     }    
-    
     c->location = new Location(coords, map, viewMode, context, turnCompleter, c->location);
     c->location->addObserver(this);
     c->party->setActivePlayer(activePlayer);
+#ifdef IOS
+    U4IOS::updateGameControllerContext(c->location->context);
+#endif
 
     /* now, actually set our new tileset */
     mapArea.setTileset(map->tileset);
@@ -593,6 +595,9 @@ int GameController::exitToParentMap() {
 
         // restore the tileset to the one the current map uses
         mapArea.setTileset(c->location->map->tileset);
+#ifdef IOS
+        U4IOS::updateGameControllerContext(c->location->context);
+#endif        
         
         return 1;
     }
