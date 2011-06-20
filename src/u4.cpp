@@ -44,7 +44,13 @@ using namespace std;
 
 
 int main(int argc, char *argv[]) {
-    unsigned int i;
+
+	if (!u4fopen("AVATAR.EXE"))
+	{
+        errorFatal("xu4 requires the PC version of Ultima IV to be present. It must either be in the same directory as the xu4 executable, or in a subdirectory named \"ultima4\".\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/");
+	}
+
+	unsigned int i;
     int skipIntro = 0;
 
 #if defined(MACOSX)
