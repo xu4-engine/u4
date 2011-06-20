@@ -47,7 +47,13 @@ int main(int argc, char *argv[]) {
 
 	if (!u4fopen("AVATAR.EXE"))
 	{
-        errorFatal("xu4 requires the PC version of Ultima IV to be present. It must either be in the same directory as the xu4 executable, or in a subdirectory named \"ultima4\".\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/");
+        errorFatal(	"xu4 requires the PC version of Ultima IV to be present. "
+        			"It must either be in the same directory as the xu4 executable, "
+        			"or in a subdirectory named \"ultima4\"."
+        			"\n\nThis can be achieved by downloading \"UltimaIV.zip\" from www.ultimaforever.com"
+        			"\n - Extract the contents of UltimaIV.zip"
+        			"\n - Copy the \"ultima4\" folder to your xu4 executable location."
+        			"\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/");
 	}
 
 	unsigned int i;
