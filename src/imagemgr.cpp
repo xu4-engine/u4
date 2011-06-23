@@ -557,19 +557,21 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         string filetype = info->filetype;
         ImageLoader *loader = ImageLoader::getLoader(filetype);
         if (loader == NULL)
-            errorFatal("can't load image \"%s\" with type \"%s\"", filename.c_str(), filetype.c_str());
-        unscaled = loader->load(file, info->width, info->height, info->depth);
-        if (info->width == -1) {
-            // Write in the values for later use.
-            info->width = unscaled->width();
-            info->height = unscaled->height();
-// ###            info->depth = ???
+            errorWarning("can't find loader to load image \"%s\" with type \"%s\"", filename.c_str(), filetype.c_str());
+        else
+        {
+			unscaled = loader->load(file, info->width, info->height, info->depth);
+			if (info->width == -1) {
+				// Write in the values for later use.
+				info->width = unscaled->width();
+				info->height = unscaled->height();
+	// ###            info->depth = ???
+			}
         }
         u4fclose(file);
-
     }
     else
-        errorFatal("Failed to open file %s for reading.", filename.data());
+        errorWarning("Failed to open file %s for reading.", filename.c_str());
 
     if (unscaled == NULL)
         return NULL;
@@ -687,10 +689,7 @@ const vector<string> &ImageMgr::getSetNames() {
 void ImageMgr::update(Settings *newSettings) {
     string setname;
 
-    if (!u4isUpgradeAvailable())
-        setname = "EGA";
-    else
-        setname = newSettings->videoType;
+    setname = newSettings->videoType;
 
     TRACE(*logger, string("base image set is '") + setname + string("'"));
 

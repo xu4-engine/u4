@@ -113,7 +113,7 @@
             <subimage name="tile_sea_serpent"   width="16" height="32"/>
             <subimage name="tile_sea_horse"     width="16" height="32"/>
             <subimage name="tile_whirlpool"     width="16" height="32"/>
-            <subimage name="tile_twister"         width="16" height="32"/>
+            <subimage name="tile_twister"       width="16" height="32"/>
     
             <!-- Land monsters -->
             <subimage name="tile_rat"           width="16" height="64"/>
@@ -735,7 +735,7 @@
         </image>
     </imageset>
 
-    <imageset name="HiresVGA" extends="EGA">
+    <imageset name="HiresVGA" extends="VGA">
         <!-- tiles, charset, and game border -->
         <image name="tiles"    filename="hires/myshapes.vga"   width="32" height="8192" depth="32" filetype="image/x-u4raw" tiles="256" prescale="2" xu4Graphic="true" fixup="blackTransparencyHack">
             <subimage name="tile_sea" x="0" y="0" width="16" height="16"/>
@@ -949,187 +949,6 @@
             <subimage name="spiritualitycard" x="26"  y="26" width="178" height="244"/>
             <subimage name="humilitycard"   x="438" y="26" width="178" height="244"/>
         </image>
- 
-        <!-- abyss vision images -->
-        <image name="key"      filename="key7.old"     width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="honesty"  filename="honesty.old"  width="320" height="200" depth="8" filetype="image/x-u4rle" fixup="abyss"/>
-        <image name="compassn" filename="compassn.old" width="320" height="200" depth="8" filetype="image/x-u4rle" fixup="abyss"/>
-        <image name="valor"    filename="valor.old"    width="320" height="200" depth="8" filetype="image/x-u4rle" fixup="abyss"/>
-        <image name="justice"  filename="justice.old"  width="320" height="200" depth="8" filetype="image/x-u4rle" fixup="abyss"/>
-        <image name="sacrific" filename="sacrific.old" width="320" height="200" depth="8" filetype="image/x-u4rle" fixup="abyss"/>
-        <image name="honor"    filename="honor.old"    width="320" height="200" depth="8" filetype="image/x-u4rle" fixup="abyss"/>
-        <image name="spirit"   filename="spirit.old"   width="320" height="200" depth="8" filetype="image/x-u4rle" fixup="abyss"/>
-        <image name="humility" filename="humility.old" width="320" height="200" depth="8" filetype="image/x-u4rle" fixup="abyss"/>
-        <image name="truth"    filename="truth.old"    width="320" height="200" depth="8" filetype="image/x-u4rle" fixup="abyss"/>
-        <image name="love"     filename="love.old"     width="320" height="200" depth="8" filetype="image/x-u4rle" fixup="abyss"/>
-        <image name="courage"  filename="courage.old"  width="320" height="200" depth="8" filetype="image/x-u4rle" fixup="abyss"/>
-        <image name="stoncrcl" filename="stoncrcl.old" width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-
-        <!-- shrine vision images -->
-        <image name="rune0"    filename="rune_0.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune1"    filename="rune_1.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune2"    filename="rune_2.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune3"    filename="rune_3.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune4"    filename="rune_4.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune5"    filename="rune_5.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune6"    filename="rune_6.ega"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune7"    filename="rune_7.ega"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-        <image name="rune8"    filename="rune_8.ega"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
-
-        <!-- gem tiles -->
-        <image name="gemtiles" filename="vga/gem.png" tiles="128" xu4Graphic="true"/>
-
-        <image name="dung"    filename="vga/dungeonhall.png" xu4Graphic="true">
-            <subimage name="dung0_lft_ew" x="0"   y="0"  width="16" height="176"/>
-            <subimage name="dung0_rgt_ew" x="160" y="0"  width="16" height="176"/>
-            <subimage name="dung1_lft_ew" x="16"  y="8"  width="32" height="160"/>
-            <subimage name="dung1_rgt_ew" x="128" y="8"  width="32" height="160"/>
-            <subimage name="dung2_lft_ew" x="48"  y="24" width="24" height="128"/>
-            <subimage name="dung2_rgt_ew" x="104" y="24" width="24" height="128"/>
-            <subimage name="dung3_lft_ew" x="72"  y="72" width="16" height="32"/>
-            <subimage name="dung3_rgt_ew" x="88"  y="72" width="16" height="32"/>
-            <subimage name="dung0_lft_ns" x="0"   y="0"  width="16" height="176"/>
-            <subimage name="dung0_rgt_ns" x="160" y="0"  width="16" height="176"/>
-            <subimage name="dung1_lft_ns" x="16"  y="8"  width="32" height="160"/>
-            <subimage name="dung1_rgt_ns" x="128" y="8"  width="32" height="160"/>
-            <subimage name="dung2_lft_ns" x="48"  y="24" width="24" height="128"/>
-            <subimage name="dung2_rgt_ns" x="104" y="24" width="24" height="128"/>
-            <subimage name="dung3_lft_ns" x="72"  y="72" width="16" height="32"/>
-            <subimage name="dung3_rgt_ns" x="88"  y="72" width="16" height="32"/>
-        </image>
-
-        <image name="dung_door" filename="vga/dungeonhall_door.png" xu4Graphic="true">
-            <subimage name="dung0_lft_ew_door" x="0"   y="0"  width="16" height="176"/>
-            <subimage name="dung0_rgt_ew_door" x="160" y="0"  width="16" height="176"/>
-            <subimage name="dung1_lft_ew_door" x="16"  y="8"  width="32" height="160"/>
-            <subimage name="dung1_rgt_ew_door" x="128" y="8"  width="32" height="160"/>
-            <subimage name="dung2_lft_ew_door" x="48"  y="24" width="24" height="128"/>
-            <subimage name="dung2_rgt_ew_door" x="104" y="24" width="24" height="128"/>
-            <subimage name="dung3_lft_ew_door" x="72"  y="72" width="16" height="32"/>
-            <subimage name="dung3_rgt_ew_door" x="88"  y="72" width="16" height="32"/>
-            <subimage name="dung0_lft_ns_door" x="0"   y="0"  width="16" height="176"/>
-            <subimage name="dung0_rgt_ns_door" x="160" y="0"  width="16" height="176"/>
-            <subimage name="dung1_lft_ns_door" x="16"  y="8"  width="32" height="160"/>
-            <subimage name="dung1_rgt_ns_door" x="128" y="8"  width="32" height="160"/>
-            <subimage name="dung2_lft_ns_door" x="48"  y="24" width="24" height="128"/>
-            <subimage name="dung2_rgt_ns_door" x="104" y="24" width="24" height="128"/>
-            <subimage name="dung3_lft_ns_door" x="72"  y="72" width="16" height="32"/>
-            <subimage name="dung3_rgt_ns_door" x="88"  y="72" width="16" height="32"/>
-        </image>
-
-        <image name="dungback0" filename="vga/dungeonback0.png" xu4Graphic="true">
-            <subimage name="dung0_mid_ew" x="0"   y="0"  width="176" height="176"/>
-            <subimage name="dung0_mid_ns" x="0"   y="0"  width="176" height="176"/>
-        </image>
-
-        <image name="dungback1" filename="vga/dungeonback1.png" xu4Graphic="true">
-            <subimage name="dung1_mid_ew" x="0"   y="0"  width="176" height="176"/>
-            <subimage name="dung1_xxx_ew" x="0"   y="8"  width="16"  height="160"/>
-            <subimage name="dung1_mid_ns" x="0"   y="0"  width="176" height="176"/>
-            <subimage name="dung1_xxx_ns" x="0"   y="8"  width="16"  height="160"/>
-        </image>
-
-        <image name="dungback2" filename="vga/dungeonback2.png" xu4Graphic="true">
-            <subimage name="dung2_mid_ew" x="16"  y="48" width="144" height="80"/>
-            <subimage name="dung2_xxx_ew" x="16"  y="48" width="48"  height="80"/>
-            <subimage name="dung2_mid_ns" x="16"  y="48" width="144" height="80"/>
-            <subimage name="dung2_xxx_ns" x="16"  y="48" width="48"  height="80"/>
-        </image>
-
-        <image name="dungback3" filename="vga/dungeonback3.png" xu4Graphic="true">
-            <subimage name="dung3_mid_ew" x="56"  y="72" width="48" height="32"/>
-            <subimage name="dung3_xxx_ew" x="48"  y="72" width="24" height="32"/>
-            <subimage name="dung3_mid_ns" x="56"  y="72" width="48" height="32"/>
-            <subimage name="dung3_xxx_ns" x="48"  y="72" width="24" height="32"/>
-        </image>
-
-        <image name="dung0_mid_ew_door" filename="vga/dungeonback0_door.png" transparentIndex="9" xu4Graphic="true"/>
-        <image name="dung0_mid_ns_door" filename="vga/dungeonback0_door.png" transparentIndex="9" xu4Graphic="true" fixup="dungns"/>
-        <image name="dung1_mid_door_image" filename="vga/dungeonback1_door.png" xu4Graphic="true">
-            <subimage name="dung1_mid_ew_door" x="0"   y="16" width="176"  height="160"/>
-            <subimage name="dung1_mid_ns_door" x="0"   y="16" width="176"  height="160"/>
-        </image>
-        <image name="dung2_mid_door_image" filename="vga/dungeonback2_door.png" xu4Graphic="true">
-            <subimage name="dung2_mid_ew_door" x="16"  y="48" width="144"  height="80"/>
-            <subimage name="dung2_mid_ns_door" x="16"  y="48" width="144"  height="80"/>
-        </image>
-        <image name="dung3_mid_door_image" filename="vga/dungeonback3_door.png" xu4Graphic="true">
-            <subimage name="dung3_mid_ew_door" x="48"  y="72" width="80"  height="32"/>
-            <subimage name="dung3_mid_ns_door" x="48"  y="72" width="80"  height="32"/>
-        </image>
-
-        <image name="dung0_ladderup_image" filename="vga/ladderup0.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderup" x="45" y="0" width="88" height="87"/>
-        </image>
-        <image name="dung0_ladderup_side_image" filename="vga/ladderup0_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderup_side" x="45" y="0" width="88" height="87"/>
-        </image>
-        <image name="dung1_ladderup_image" filename="vga/ladderup1.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderup" x="64" y="40" width="50" height="48"/>
-        </image>
-        <image name="dung1_ladderup_side_image" filename="vga/ladderup1_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderup_side" x="64" y="40" width="50" height="48"/>
-        </image>
-        <image name="dung2_ladderup_image" filename="vga/ladderup2.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderup" x="77" y="68" width="22" height="19"/>
-        </image>
-        <image name="dung2_ladderup_side_image" filename="vga/ladderup2_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderup_side" x="77" y="68" width="22" height="19"/>
-        </image>
-        <image name="dung3_ladderup_image" filename="vga/ladderup3.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderup" x="84" y="82" width="8" height="6"/>
-        </image>
-        <image name="dung3_ladderup_side_image" filename="vga/ladderup3_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderup_side" x="84" y="82" width="8" height="6"/>
-        </image>
-        <image name="dung0_ladderdown_image" filename="vga/ladderdown0.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderdown" x="45" y="87" width="88" height="89"/>
-        </image>
-        <image name="dung0_ladderdown_side_image" filename="vga/ladderdown0_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderdown_side" x="45" y="87" width="88" height="89"/>
-        </image>
-        <image name="dung1_ladderdown_image" filename="vga/ladderdown1.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderdown" x="64" y="86" width="50" height="50"/>
-        </image>
-        <image name="dung1_ladderdown_side_image" filename="vga/ladderdown1_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderdown_side" x="64" y="86" width="50" height="50"/>
-        </image>
-        <image name="dung2_ladderdown_image" filename="vga/ladderdown2.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderdown" x="77" y="86" width="22" height="22"/>
-        </image>
-        <image name="dung2_ladderdown_side_image" filename="vga/ladderdown2_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderdown_side" x="77" y="86" width="22" height="22"/>
-        </image>
-        <image name="dung3_ladderdown_image" filename="vga/ladderdown3.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderdown" x="84" y="88" width="8" height="8"/>
-        </image>
-        <image name="dung3_ladderdown_side_image" filename="vga/ladderdown3_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderdown_side" x="84" y="88" width="8" height="8"/>
-        </image>
-        <image name="dung0_ladderupdown_image" filename="vga/ladderupdown0.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderupdown" x="45" y="0" width="88" height="176"/>
-        </image>
-        <image name="dung0_ladderupdown_side_image" filename="vga/ladderupdown0_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderupdown_side" x="45" y="0" width="88" height="176"/>
-        </image>
-        <image name="dung1_ladderupdown_image" filename="vga/ladderupdown1.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderupdown" x="64" y="40" width="50" height="96"/>
-        </image>
-        <image name="dung1_ladderupdown_side_image" filename="vga/ladderupdown1_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderupdown_side" x="64" y="40" width="50" height="96"/>
-        </image>
-        <image name="dung2_ladderupdown_image" filename="vga/ladderupdown2.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderupdown" x="77" y="68" width="22" height="40"/>
-        </image>
-        <image name="dung2_ladderupdown_side_image" filename="vga/ladderupdown2_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderupdown_side" x="77" y="68" width="22" height="40"/>
-        </image>
-        <image name="dung3_ladderupdown_image" filename="vga/ladderupdown3.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderupdown" x="84" y="82" width="8" height="12"/>
-        </image>
-        <image name="dung3_ladderupdown_side_image" filename="vga/ladderupdown3_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderupdown_side" x="84" y="82" width="8" height="12"/>
-        </image>
     </imageset>
 
     <imageset name="VGA2" extends="VGA">
@@ -1163,7 +982,7 @@
         <image name="key" filename="vga2/key7.png" prescale="2" xu4Graphic="true"/>
     </imageset>
 
-    <imageset name="VGA-ALLPNG">
+    <imageset name="VGA-ALLPNG" extends="VGA2">
         <!-- tiles, charset, and game border -->
         <image name="tile_sea" filename="png/tile_sea.png" xu4Graphic="true"/>
         <image name="tile_water" filename="png/tile_water.png" xu4Graphic="true"/>
@@ -1325,22 +1144,7 @@
                 <subimage name="whitebead"      x="8"   y="187" width="8" height="12"/>
                 <subimage name="blackbead"      x="24"  y="187" width="8" height="12"/>
             </image>
-            <image name="honcom" filename="vga2/honcom.png" introOnly="true" prescale="2" xu4Graphic="true">
-                <subimage name="honestycard"    x="24"  y="24" width="180" height="248"/>
-                <subimage name="compassioncard" x="436" y="24" width="180" height="248"/>
-            </image>
-            <image name="sachonor" filename="vga2/sachonor.png" introOnly="true" prescale="2" xu4Graphic="true">
-                <subimage name="sacrificecard"  x="26"  y="26" width="178" height="244"/>
-                <subimage name="honorcard"      x="438" y="26" width="178" height="244"/>
-            </image>
-            <image name="spirhum"  filename="vga2/spirhum.png" introOnly="true" prescale="2" xu4Graphic="true">
-                <subimage name="spiritualitycard" x="26"  y="26" width="178" height="244"/>
-                <subimage name="humilitycard"   x="438" y="26" width="178" height="244"/>
-            </image>
-            <image name="valjus" filename="vga2/valjus.png" introOnly="true" prescale="2" xu4Graphic="true">
-                <subimage name="valorcard"      x="26"  y="26" width="178" height="244"/>
-                <subimage name="justicecard"    x="438" y="26" width="178" height="244"/>
-            </image>
+
             <image name="beasties" filename="png/beasties.png" introOnly="true" xu4Graphic="true">
                 <subimage name="beast0frame00" x="0"   y="0"   width="55" height="31"/>
                 <subimage name="beast0frame01" x="0"   y="32"  width="55" height="31"/>
@@ -1395,174 +1199,7 @@
         <image name="courage"  filename="png/courage.png" fixup="abyss" xu4Graphic="true"/>
         <image name="stoncrcl" filename="png/stoncrcl.png" xu4Graphic="true"/>        
 
-         <!-- shrine vision images -->
-        <image name="rune0" filename="vga2/rune_0.png" prescale="2" xu4Graphic="true"/>
-        <image name="rune1" filename="vga2/rune_1.png" prescale="2" xu4Graphic="true"/>
-        <image name="rune2" filename="vga2/rune_2.png" prescale="2" xu4Graphic="true"/>
-        <image name="rune3" filename="vga2/rune_3.png" prescale="2" xu4Graphic="true"/>
-        <image name="rune4" filename="vga2/rune_4.png" prescale="2" xu4Graphic="true"/>
-        <image name="rune5" filename="vga2/rune_5.png" prescale="2" xu4Graphic="true"/>
-        <image name="rune6" filename="vga2/rune_6.png" prescale="2" xu4Graphic="true"/>
-        <image name="rune7" filename="vga2/rune_7.png" prescale="2" xu4Graphic="true"/>
-        <image name="rune8" filename="vga2/rune_8.png" prescale="2" xu4Graphic="true"/>
-        <image name="key" filename="vga2/key7.png" prescale="2" xu4Graphic="true"/>        
-        
-        <!-- gem tiles -->
-        <image name="gemtiles" filename="vga/gem.png" tiles="128" xu4Graphic="true"/>
-
-        <image name="dung"    filename="vga/dungeonhall.png" xu4Graphic="true">
-            <subimage name="dung0_lft_ew" x="0"   y="0"  width="16" height="176"/>
-            <subimage name="dung0_rgt_ew" x="160" y="0"  width="16" height="176"/>
-            <subimage name="dung1_lft_ew" x="16"  y="8"  width="32" height="160"/>
-            <subimage name="dung1_rgt_ew" x="128" y="8"  width="32" height="160"/>
-            <subimage name="dung2_lft_ew" x="48"  y="24" width="24" height="128"/>
-            <subimage name="dung2_rgt_ew" x="104" y="24" width="24" height="128"/>
-            <subimage name="dung3_lft_ew" x="72"  y="72" width="16" height="32"/>
-            <subimage name="dung3_rgt_ew" x="88"  y="72" width="16" height="32"/>
-            <subimage name="dung0_lft_ns" x="0"   y="0"  width="16" height="176"/>
-            <subimage name="dung0_rgt_ns" x="160" y="0"  width="16" height="176"/>
-            <subimage name="dung1_lft_ns" x="16"  y="8"  width="32" height="160"/>
-            <subimage name="dung1_rgt_ns" x="128" y="8"  width="32" height="160"/>
-            <subimage name="dung2_lft_ns" x="48"  y="24" width="24" height="128"/>
-            <subimage name="dung2_rgt_ns" x="104" y="24" width="24" height="128"/>
-            <subimage name="dung3_lft_ns" x="72"  y="72" width="16" height="32"/>
-            <subimage name="dung3_rgt_ns" x="88"  y="72" width="16" height="32"/>
-        </image>
-
-        <image name="dung_door" filename="vga/dungeonhall_door.png" xu4Graphic="true">
-            <subimage name="dung0_lft_ew_door" x="0"   y="0"  width="16" height="176"/>
-            <subimage name="dung0_rgt_ew_door" x="160" y="0"  width="16" height="176"/>
-            <subimage name="dung1_lft_ew_door" x="16"  y="8"  width="32" height="160"/>
-            <subimage name="dung1_rgt_ew_door" x="128" y="8"  width="32" height="160"/>
-            <subimage name="dung2_lft_ew_door" x="48"  y="24" width="24" height="128"/>
-            <subimage name="dung2_rgt_ew_door" x="104" y="24" width="24" height="128"/>
-            <subimage name="dung3_lft_ew_door" x="72"  y="72" width="16" height="32"/>
-            <subimage name="dung3_rgt_ew_door" x="88"  y="72" width="16" height="32"/>
-            <subimage name="dung0_lft_ns_door" x="0"   y="0"  width="16" height="176"/>
-            <subimage name="dung0_rgt_ns_door" x="160" y="0"  width="16" height="176"/>
-            <subimage name="dung1_lft_ns_door" x="16"  y="8"  width="32" height="160"/>
-            <subimage name="dung1_rgt_ns_door" x="128" y="8"  width="32" height="160"/>
-            <subimage name="dung2_lft_ns_door" x="48"  y="24" width="24" height="128"/>
-            <subimage name="dung2_rgt_ns_door" x="104" y="24" width="24" height="128"/>
-            <subimage name="dung3_lft_ns_door" x="72"  y="72" width="16" height="32"/>
-            <subimage name="dung3_rgt_ns_door" x="88"  y="72" width="16" height="32"/>
-        </image>
-
-        <image name="dungback0" filename="vga/dungeonback0.png" xu4Graphic="true">
-            <subimage name="dung0_mid_ew" x="0"   y="0"  width="176" height="176"/>
-            <subimage name="dung0_mid_ns" x="0"   y="0"  width="176" height="176"/>
-        </image>
-
-        <image name="dungback1" filename="vga/dungeonback1.png" xu4Graphic="true">
-            <subimage name="dung1_mid_ew" x="0"   y="0"  width="176" height="176"/>
-            <subimage name="dung1_xxx_ew" x="0"   y="8"  width="16"  height="160"/>
-            <subimage name="dung1_mid_ns" x="0"   y="0"  width="176" height="176"/>
-            <subimage name="dung1_xxx_ns" x="0"   y="8"  width="16"  height="160"/>
-        </image>
-
-        <image name="dungback2" filename="vga/dungeonback2.png" xu4Graphic="true">
-            <subimage name="dung2_mid_ew" x="16"  y="48" width="144" height="80"/>
-            <subimage name="dung2_xxx_ew" x="16"  y="48" width="48"  height="80"/>
-            <subimage name="dung2_mid_ns" x="16"  y="48" width="144" height="80"/>
-            <subimage name="dung2_xxx_ns" x="16"  y="48" width="48"  height="80"/>
-        </image>
-
-        <image name="dungback3" filename="vga/dungeonback3.png" xu4Graphic="true">
-            <subimage name="dung3_mid_ew" x="56"  y="72" width="48" height="32"/>
-            <subimage name="dung3_xxx_ew" x="48"  y="72" width="24" height="32"/>
-            <subimage name="dung3_mid_ns" x="56"  y="72" width="48" height="32"/>
-            <subimage name="dung3_xxx_ns" x="48"  y="72" width="24" height="32"/>
-        </image>
-
-        <image name="dung0_mid_ew_door" filename="vga/dungeonback0_door.png" transparentIndex="9" xu4Graphic="true"/>
-        <image name="dung0_mid_ns_door" filename="vga/dungeonback0_door.png" transparentIndex="9" xu4Graphic="true" fixup="dungns"/>
-        <image name="dung1_mid_door_image" filename="vga/dungeonback1_door.png" xu4Graphic="true">
-            <subimage name="dung1_mid_ew_door" x="0"   y="16" width="176"  height="160"/>
-            <subimage name="dung1_mid_ns_door" x="0"   y="16" width="176"  height="160"/>
-        </image>
-        <image name="dung2_mid_door_image" filename="vga/dungeonback2_door.png" xu4Graphic="true">
-            <subimage name="dung2_mid_ew_door" x="16"  y="48" width="144"  height="80"/>
-            <subimage name="dung2_mid_ns_door" x="16"  y="48" width="144"  height="80"/>
-        </image>
-        <image name="dung3_mid_door_image" filename="vga/dungeonback3_door.png" xu4Graphic="true">
-            <subimage name="dung3_mid_ew_door" x="48"  y="72" width="80"  height="32"/>
-            <subimage name="dung3_mid_ns_door" x="48"  y="72" width="80"  height="32"/>
-        </image>
-
-        <image name="dung0_ladderup_image" filename="vga/ladderup0.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderup" x="45" y="0" width="88" height="87"/>
-        </image>
-        <image name="dung0_ladderup_side_image" filename="vga/ladderup0_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderup_side" x="45" y="0" width="88" height="87"/>
-        </image>
-        <image name="dung1_ladderup_image" filename="vga/ladderup1.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderup" x="64" y="40" width="50" height="48"/>
-        </image>
-        <image name="dung1_ladderup_side_image" filename="vga/ladderup1_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderup_side" x="64" y="40" width="50" height="48"/>
-        </image>
-        <image name="dung2_ladderup_image" filename="vga/ladderup2.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderup" x="77" y="68" width="22" height="19"/>
-        </image>
-        <image name="dung2_ladderup_side_image" filename="vga/ladderup2_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderup_side" x="77" y="68" width="22" height="19"/>
-        </image>
-        <image name="dung3_ladderup_image" filename="vga/ladderup3.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderup" x="84" y="82" width="8" height="6"/>
-        </image>
-        <image name="dung3_ladderup_side_image" filename="vga/ladderup3_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderup_side" x="84" y="82" width="8" height="6"/>
-        </image>
-        <image name="dung0_ladderdown_image" filename="vga/ladderdown0.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderdown" x="45" y="87" width="88" height="89"/>
-        </image>
-        <image name="dung0_ladderdown_side_image" filename="vga/ladderdown0_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderdown_side" x="45" y="87" width="88" height="89"/>
-        </image>
-        <image name="dung1_ladderdown_image" filename="vga/ladderdown1.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderdown" x="64" y="86" width="50" height="50"/>
-        </image>
-        <image name="dung1_ladderdown_side_image" filename="vga/ladderdown1_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderdown_side" x="64" y="86" width="50" height="50"/>
-        </image>
-        <image name="dung2_ladderdown_image" filename="vga/ladderdown2.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderdown" x="77" y="86" width="22" height="22"/>
-        </image>
-        <image name="dung2_ladderdown_side_image" filename="vga/ladderdown2_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderdown_side" x="77" y="86" width="22" height="22"/>
-        </image>
-        <image name="dung3_ladderdown_image" filename="vga/ladderdown3.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderdown" x="84" y="88" width="8" height="8"/>
-        </image>
-        <image name="dung3_ladderdown_side_image" filename="vga/ladderdown3_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderdown_side" x="84" y="88" width="8" height="8"/>
-        </image>
-        <image name="dung0_ladderupdown_image" filename="vga/ladderupdown0.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderupdown" x="45" y="0" width="88" height="176"/>
-        </image>
-        <image name="dung0_ladderupdown_side_image" filename="vga/ladderupdown0_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung0_ladderupdown_side" x="45" y="0" width="88" height="176"/>
-        </image>
-        <image name="dung1_ladderupdown_image" filename="vga/ladderupdown1.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderupdown" x="64" y="40" width="50" height="96"/>
-        </image>
-        <image name="dung1_ladderupdown_side_image" filename="vga/ladderupdown1_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung1_ladderupdown_side" x="64" y="40" width="50" height="96"/>
-        </image>
-        <image name="dung2_ladderupdown_image" filename="vga/ladderupdown2.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderupdown" x="77" y="68" width="22" height="40"/>
-        </image>
-        <image name="dung2_ladderupdown_side_image" filename="vga/ladderupdown2_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung2_ladderupdown_side" x="77" y="68" width="22" height="40"/>
-        </image>
-        <image name="dung3_ladderupdown_image" filename="vga/ladderupdown3.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderupdown" x="84" y="82" width="8" height="12"/>
-        </image>
-        <image name="dung3_ladderupdown_side_image" filename="vga/ladderupdown3_side.png" transparentIndex="0" xu4Graphic="true">
-            <subimage name="dung3_ladderupdown_side" x="84" y="82" width="8" height="12"/>
-        </image>
     </imageset>
-
 
     <layout type="gem" name="Standard">
         <tileshape width="4" height="4"/>
