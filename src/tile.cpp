@@ -108,6 +108,9 @@ void Tile::loadImage() {
             if (subimage)            
                 info = imageMgr->get(subimage->srcImageName);            
         }
+        if (!info) //IF still no info loaded
+            errorWarning("Error: couldn't load image for tile '%s'", name.c_str());
+
 
         /* FIXME: This is a hack to address the fact that there are 4
            frames for the guard in VGA mode, but only 2 in EGA. Is there
@@ -119,6 +122,7 @@ void Tile::loadImage() {
         	else
         		frames = 4;
         }
+
 
         if (info->image)
         	info->image->alphaOff();
@@ -153,15 +157,7 @@ void Tile::loadImage() {
         //if (anim)
         //    image->alphaOff();
 
-        if (image == NULL)
-            errorFatal("Error: couldn't load image for tile '%s'", name.c_str());
 
-    	if (Settings::getInstance().enhancements && Settings::getInstance().enhancementsOptions.renderTileTransparency)
-    	{
-    		int transparency_shadow_size =Settings::getInstance().enhancementsOptions.transparentTileShadowSize;
-			for (int f = 0; f < frames; ++f)
-				image->setTransparentIndex(0, transparency_shadow_size * scale, frames, f);
-    	}
     }
 }
 

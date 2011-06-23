@@ -219,38 +219,41 @@ void screenRedrawTextArea(int x, int y, int width, int height) {
  */
 Image *screenScale(Image *src, int scale, int n, int filter) {
     Image *dest = NULL;
-    bool isTransparent;
-    unsigned int transparentIndex;
-    bool alpha = src->isAlphaOn();
+	bool isTransparent;
+	unsigned int transparentIndex;
+	bool alpha = src->isAlphaOn();
 
-    if (n == 0)
-        n = 1;
+	if (n == 0)
+		n = 1;
 
-    isTransparent = src->getTransparentIndex(transparentIndex);    
-    src->alphaOff();
+	isTransparent = src->getTransparentIndex(transparentIndex);
+	src->alphaOff();
 
-    while (filter && filterScaler && (scale % 2 == 0)) {
-        dest = (*filterScaler)(src, 2, n);
-        src = dest;
-        scale /= 2;                
-    }
-    if (scale == 3 && scaler3x(settings.filter)) {
-        dest = (*filterScaler)(src, 3, n);
-        src = dest;
-        scale /= 3;
-    }
+	while (filter && filterScaler && (scale % 2 == 0)) {
+		dest = (*filterScaler)(src, 2, n);
+		src = dest;
+		scale /= 2;
+	}
+	if (scale == 3 && scaler3x(settings.filter)) {
+		dest = (*filterScaler)(src, 3, n);
+		src = dest;
+		scale /= 3;
+	}
 
-    if (scale != 1)
-        dest = (*scalerGet("point"))(src, scale, n);
+	if (scale != 1)
+		dest = (*scalerGet("point"))(src, scale, n);
 
-    if (!dest)
-        dest = Image::duplicate(src);
+	if (!dest)
+		dest = Image::duplicate(src);
 
-    if (isTransparent)
-        dest->setTransparentIndex(transparentIndex);
+	if (isTransparent)
+		dest->setTransparentIndex(transparentIndex);
 
-    if (alpha)
-        src->alphaOn();
+	if (alpha)
+		src->alphaOn();
+
+
+
 
     return dest;
 }
@@ -273,6 +276,9 @@ Image *screenScaleDown(Image *src, int scale) {
     dest = Image::create(src->width() / scale, src->height() / scale, src->isIndexed(), Image::HARDWARE);
     if (!dest)
         return NULL;
+
+	if (!dest)
+		dest = Image::duplicate(src);
 
     if (dest->isIndexed())
         dest->setPaletteFromImage(src);

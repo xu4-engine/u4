@@ -69,7 +69,8 @@ enum ImageFixup {
     FIXUP_INTRO,
     FIXUP_ABYSS,
     FIXUP_ABACUS,
-    FIXUP_DUNGNS
+    FIXUP_DUNGNS,
+    FIXUP_BLACKTRANSPARENCYHACK
 };
 
 /**
@@ -91,6 +92,8 @@ public:
     ImageFixup fixup;           /**< a routine to do miscellaneous fixes to the image */
     Image *image;               /**< the image we're describing */
     std::map<std::string, SubImage *> subImages;
+
+    bool hasBlackBackground();
 };
 
 /**

@@ -519,26 +519,17 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
                     type = dungeonViewTilesToGraphic(tiles);
 					screenDungeonDrawWall(-1, y, (Direction)c->saveGame->orientation, type);
 
-//					if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
-//						screenDungeonDrawTile(c->location->map->tileset->get(tiles.front().id), -1, y, Direction(c->saveGame->orientation));
-
 					tiles = dungeonViewGetTiles(y, 1);
                     type = dungeonViewTilesToGraphic(tiles);
 					screenDungeonDrawWall(1, y, (Direction)c->saveGame->orientation, type);
-
-//					if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
-//						screenDungeonDrawTile(c->location->map->tileset->get(tiles.front().id), 1, y, Direction(c->saveGame->orientation));
-
 
                     tiles = dungeonViewGetTiles(y, 0);
                     type = dungeonViewTilesToGraphic(tiles);
                     screenDungeonDrawWall(0, y, (Direction)c->saveGame->orientation, type);
 
-
                     //This only checks that the tile at y==3 is opaque
                     if (y == 3 && !tiles.front().getTileType()->isOpaque())
                    	{
-
                    		for (int y_obj = farthest_non_wall_tile_visibility; y_obj > y; y_obj--)
                    		{
                    		vector<MapTile> distant_tiles = dungeonViewGetTiles(y_obj     , 0);
@@ -620,6 +611,7 @@ void screenDrawImage(const string &name, int x, int y) {
     SubImage *subimage = imageMgr->getSubImage(name);
     if (subimage) {
         info = imageMgr->get(subimage->srcImageName);
+    	info->image->alphaOn();
         
         if (info) {
             info->image->drawSubRect(x, y,
@@ -1318,7 +1310,7 @@ void screenDungeonDrawTile(Tile *tile, int x_offset, int distance, Direction ori
 
 void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
     int index;
-    
+
     index = screenDungeonGraphicIndex(xoffset, distance, orientation, type);
     if (index == -1 || distance >= 4)
         return;
@@ -1329,8 +1321,6 @@ void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, Dun
         x = subimage->x;
         y = subimage->y;
     }
-    
-    
     
     screenDrawImage(dngGraphicInfo[index].subimage, (BORDER_WIDTH + x) * settings.scale,
                     (BORDER_HEIGHT + y) * settings.scale);

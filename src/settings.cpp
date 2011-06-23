@@ -225,9 +225,9 @@ bool Settings::read() {
     enhancementsOptions.smartEnterKey    = true;
     enhancementsOptions.peerShowsObjects = false;
     enhancementsOptions.u5combat         = false;
-    enhancementsOptions.renderTileTransparency = true;
-    enhancementsOptions.transparentTilePixelShadowOpacity = DEFAULT_SHADOW_PIXEL_OPACITY;
-    enhancementsOptions.transparentTileShadowSize = DEFAULT_SHADOW_PIXEL_SIZE;
+    enhancementsOptions.u4TileTransparencyHack = true;
+    enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity = DEFAULT_SHADOW_PIXEL_OPACITY;
+    enhancementsOptions.u4TrileTransparencyHackShadowBreadth = DEFAULT_SHADOW_PIXEL_SIZE;
 
     innAlwaysCombat = 0;
     campingAlwaysCombat = 0;
@@ -341,11 +341,11 @@ bool Settings::read() {
 
         /* graphics enhancements options */
         else if (strstr(buffer, "renderTileTransparency=") == buffer)
-            enhancementsOptions.renderTileTransparency = (int) strtoul(buffer + strlen("renderTileTransparency="), NULL, 0);
+            enhancementsOptions.u4TileTransparencyHack = (int) strtoul(buffer + strlen("renderTileTransparency="), NULL, 0);
         else if (strstr(buffer, "transparentTilePixelShadowOpacity=") == buffer)
-        	enhancementsOptions.transparentTilePixelShadowOpacity = (int) strtoul(buffer + strlen("transparentTilePixelShadowOpacity="), NULL, 0);
+        	enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity = (int) strtoul(buffer + strlen("transparentTilePixelShadowOpacity="), NULL, 0);
         else if (strstr(buffer, "transparentTileShadowSize=") == buffer)
-        	enhancementsOptions.transparentTileShadowSize = (int) strtoul(buffer + strlen("transparentTileShadowSize="), NULL, 0);
+        	enhancementsOptions.u4TrileTransparencyHackShadowBreadth = (int) strtoul(buffer + strlen("transparentTileShadowSize="), NULL, 0);
 
 
 
@@ -479,9 +479,9 @@ bool Settings::write() {
             mouseOptions.enabled,
             logging.c_str(),
             game.c_str(),
-            enhancementsOptions.renderTileTransparency,
-            enhancementsOptions.transparentTilePixelShadowOpacity,
-            enhancementsOptions.transparentTileShadowSize);
+            enhancementsOptions.u4TileTransparencyHack,
+            enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity,
+            enhancementsOptions.u4TrileTransparencyHackShadowBreadth);
 
     fclose(settingsFile);
 

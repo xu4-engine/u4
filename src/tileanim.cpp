@@ -122,7 +122,7 @@ bool TileAnimPixelTransform::drawsTile() const { return false; }
 void TileAnimPixelTransform::draw(Image *dest, Tile *tile, MapTile &mapTile) {
     RGBA *color = colors[xu4_random(colors.size())];
     int scale = tile->getScale();
-    dest->fillRect(x * scale, y * scale, scale, scale, color->r, color->g, color->b);    
+    dest->fillRect(x * scale, y * scale, scale, scale, color->r, color->g, color->b, color->a);
 }
 
 bool TileAnimScrollTransform::drawsTile() const { return true; }

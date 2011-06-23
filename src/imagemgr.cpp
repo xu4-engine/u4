@@ -22,6 +22,12 @@ using std::vector;
 
 Image *screenScale(Image *src, int scale, int n, int filter);
 
+bool ImageInfo::hasBlackBackground()
+{
+	return this->filetype == "image/x-u4raw";
+}
+
+
 class ImageSet {
 public:
     ~ImageSet();
@@ -133,7 +139,7 @@ ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
 
 ImageInfo *ImageMgr::loadImageInfoFromConf(const ConfigElement &conf) {
     ImageInfo *info;
-    static const char *fixupEnumStrings[] = { "none", "intro", "abyss", "abacus", "dungns", NULL };
+    static const char *fixupEnumStrings[] = { "none", "intro", "abyss", "abacus", "dungns", "blackTransparencyHack", NULL };
 
     info = new ImageInfo;
     info->name = conf.getString("name");
@@ -201,7 +207,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
     const unsigned char *sigData;
     int i, x, y;
     bool alpha = im->isAlphaOn();
-    RGBA color = {0, 0, 0};
+    RGBA color;
 
     sigData = intro->getSigData();
     im->alphaOff();
@@ -592,6 +598,24 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     case FIXUP_DUNGNS:
         fixupDungNS(unscaled, info->prescale);
         break;
+    case FIXUP_BLACKTRANSPARENCYHACK:
+        //Apply transparency shadow hack to ultima4 ega and vga upgrade classic graphics.
+        Image *unscaled_original = unscaled;
+    	unscaled = Image::duplicate(unscaled);
+    	delete unscaled_original;
+    	if (Settings::getInstance().enhancements && Settings::getInstance().enhancementsOptions.u4TileTransparencyHack)
+    	{
+    		int transparency_shadow_size =Settings::getInstance().enhancementsOptions.u4TrileTransparencyHackShadowBreadth;
+    		int black_index = 0;
+    		int opacity = Settings::getInstance().enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity;
+
+    		int frames = info->tiles;
+    		for (int f = 0; f < frames; ++f)
+    			unscaled->performTransparencyHack(black_index, frames, f, transparency_shadow_size, opacity);
+
+    	}
+        break;
+
     }
 
     if (returnUnscaled)

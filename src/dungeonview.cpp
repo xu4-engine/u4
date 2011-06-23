@@ -13,6 +13,7 @@
 #include "tileanim.h"
 #include "tileset.h"
 #include "u4.h"
+#include "error.h"
 
 DungeonView::DungeonView(int x, int y, int columns, int rows) : TileView(x, y, rows, columns) {
 }
@@ -21,7 +22,7 @@ DungeonView::DungeonView(int x, int y, int columns, int rows, const string &tile
 }
 
 void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Direction orientation, bool tiledWall) {
-	Image *baseTileImage, *scaled;
+	Image *scaled;
 
   	const static int nscale_vga[] = { 12, 8, 4, 2, 1};
     const static int nscale_ega[] = { 8, 4, 2, 1, 0};
@@ -50,56 +51,57 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
 
     const int *dscale = tiledWall ? lscale : nscale;
 
-    // create our animated version of the tile
-	baseTileImage = Image::duplicate(tile->getImage());
+    //Clear scratchpad and set a background colour
+    animated->initializeToBackgroundColour();
+    //Put tile on animated scratchpad
     if (tile->getAnim()) {
         MapTile mt = tile->id;
         tile->getAnim()->draw(animated, tile, mt, orientation);
-        delete baseTileImage;
-        baseTileImage = Image::duplicate(animated);
     }
-    baseTileImage->alphaOn();
-	baseTileImage->setTransparentIndex(0);
-
+    else
+    {
+        tile->getImage()->drawOn(animated, 0, 0);
+    }
+    animated->makeBackgroundColourTransparent();
+    //This process involving the background colour is only required for drawing in the dungeon.
+    //It will not play well with semi-transparent graphics.
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
     if (dscale[distance] == 0)
 		return;
     else if (dscale[distance] == 1)
-        scaled = screenScaleDown(baseTileImage, 2);
+        scaled = screenScaleDown(animated, 2);
     else
-        scaled = screenScale(baseTileImage, dscale[distance] / 2, 1, 0);
-
+    {
+        scaled = screenScale(animated, dscale[distance] / 2, 1, 0);
+    }
 
     if (tiledWall) {
-    	baseTileImage->alphaOn();
-    	baseTileImage->setTransparentIndex(0);
     	int i_x = SCALED((VIEWPORT_W * tileWidth / 2.0) + this->x) - (scaled->width() / 2.0);
     	int i_y = SCALED((VIEWPORT_H * tileHeight / 2.0) + this->y) - (scaled->height() / 2.0);
     	int f_x = i_x + scaled->width();
     	int f_y = i_y + scaled->height();
-    	int d_x = baseTileImage->width();
-    	int d_y = baseTileImage->height();
+    	int d_x = animated->width();
+    	int d_y = animated->height();
 
     	for (int x = i_x; x < f_x; x+=d_x)
     		for (int y = i_y; y < f_y; y+=d_y)
-    			baseTileImage->drawSubRectOn(this->screen,x,y,0,0,f_x - x,f_y - y);
+    			animated->drawSubRectOn(this->screen,x,y,0,0,f_x - x,f_y - y);
     }
     else {
     	int y_offset = std::max(0,(dscale[distance] - offset_adj) * offset_multiplier);
     	int x = SCALED((VIEWPORT_W * tileWidth / 2.0) + this->x) - (scaled->width() / 2.0);
     	int y = SCALED((VIEWPORT_H * tileHeight / 2.0) + this->y + y_offset) - (scaled->height() / 8.0);
 
-    scaled->drawSubRectOn(	this->screen,
-    						x,
-    						y,
-    						0,
-    						0,
-    						SCALED(tileWidth * VIEWPORT_W + this->x) - x ,
-    						SCALED(tileHeight * VIEWPORT_H + this->y) - y );
+		scaled->drawSubRectOn(	this->screen,
+								x,
+								y,
+								0,
+								0,
+								SCALED(tileWidth * VIEWPORT_W + this->x) - x ,
+								SCALED(tileHeight * VIEWPORT_H + this->y) - y );
     }
 
     delete scaled;
-    delete baseTileImage;
 }
 

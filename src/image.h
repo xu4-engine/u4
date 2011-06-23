@@ -22,7 +22,12 @@ typedef SDL_Surface *BackendSurface;
 
 using std::string;
 
+
+#define DARK_GRAY_HALO RGBA(14,15,16,255)
+
 struct RGBA {
+	RGBA(int r, int g, int b, int a) : r(r), g(g), b(b), a(a){}
+	RGBA() : r(0), g(0), b(0), a(255){}
     unsigned int r, g, b, a;
 };
 bool operator==(const RGBA &lhs, const RGBA &rhs);
@@ -62,7 +67,9 @@ public:
     void setPalette(const RGBA *colors, unsigned n_colors);
     void setPaletteFromImage(const Image *src);
     bool getTransparentIndex(unsigned int &index) const;
-    void setTransparentIndex(unsigned int index, int shadowOutlineWidth = 0, int numFrames = 1, int frameIndex = 0);
+    void performTransparencyHack(unsigned int colourValue, unsigned int numFrames, unsigned int currentFrameIndex, unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance);
+    void setTransparentIndex(unsigned int index);
+//    void invokeTransparencyHack(ImageInfo * info);
 
     bool setFontColor(ColorFG fg, ColorBG bg);
     bool setFontColorFG(ColorFG fg);
@@ -78,6 +85,21 @@ public:
     bool isAlphaOn() const;
     void alphaOn();
     void alphaOff();
+
+
+
+	#ifndef IOS
+    /* Will clear the image to the background colour, and set the internal backgroundColour variable */
+    void initializeToBackgroundColour(RGBA backgroundColour = DARK_GRAY_HALO);
+    /* Will make the pixels that match the background colour disappear, with a blur halo */
+    void makeBackgroundColourTransparent(int haloSize = 0,  int shadowOpacity = 255);
+	#else
+    /* The iOS variant seems to have its own way of handling transparency */
+    void initializeToBackgroundColour(RGBA backgroundColour = DARK_GRAY_HALO){}
+    void makeBackgroundColourTransparent(int haloSize){}
+	#endif
+
+    //void finalizeAlphaSurface(RGBA * key = NULL);
 
     /* writing to image */
     void putPixel(int x, int y, int r, int g, int b, int a);
@@ -113,8 +135,9 @@ public:
 
 
 private:
-    int w, h;
+    unsigned int w, h;
     bool indexed;
+    RGBA backgroundColour;
 #ifdef IOS
     mutable char *cachedImageData;
     void clearCachedImageData() const;

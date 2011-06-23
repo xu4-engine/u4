@@ -78,9 +78,9 @@ struct SettingsEnhancementOptions {
     bool c64chestTraps;    
     bool smartEnterKey;
     bool peerShowsObjects;
-    bool renderTileTransparency;
-    int	 transparentTilePixelShadowOpacity;
-    int	 transparentTileShadowSize;
+    bool u4TileTransparencyHack;
+    int	 u4TileTransparencyHackPixelShadowOpacity;
+    int	 u4TrileTransparencyHackShadowBreadth;
 
 };
 

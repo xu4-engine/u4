@@ -213,13 +213,13 @@ IntroController::IntroController() :
     videoMenu.setClosesMenu(CANCEL);
     
     gfxMenu.setTitle("Game Graphics Options", 0,0);
-    gfxMenu.add(MI_GFX_SCHEME, new StringMenuItem		 	 			("Graphics Scheme      %s", 2, 2, /*'G'*/ 0, &settingsChanged.videoType, imageMgr->getSetNames()));
-    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY, new BoolMenuItem              ("Tile Transparency    %s", 2, 4, /*'t'*/ 0, &settingsChanged.enhancementsOptions.renderTileTransparency));
-    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_SIZE, new IntMenuItem   ("  Shadow Size:       %d", 2, 5, /*'s'*/ 9, &settingsChanged.enhancementsOptions.transparentTileShadowSize, 0, 16, 1));
-    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_OPACITY, new IntMenuItem("  Shadow Opacity:    %d", 2, 6, /*'o'*/ 9, &settingsChanged.enhancementsOptions.transparentTilePixelShadowOpacity, 8, 256, 8));
-    gfxMenu.add(MI_VIDEO_02, 				new StringMenuItem			("Gem Layout           %s",  2,  8,/*'e'*/  1, &settingsChanged.gemLayout, screenGetGemLayoutNames()));
-    gfxMenu.add(MI_VIDEO_03, 			new StringMenuItem				("Line Of Sight        %s",  2,  9,/*'l'*/  0, &settingsChanged.lineOfSight, screenGetLineOfSightStyles()));
-    gfxMenu.add(MI_VIDEO_07,   		new BoolMenuItem					("Screen Shaking       %s",  2, 10,/*'k'*/ 8, &settingsChanged.screenShakes));
+    gfxMenu.add(MI_GFX_SCHEME, new StringMenuItem		 	 			("Graphics Scheme    %s", 2, 2, /*'G'*/ 0, &settingsChanged.videoType, imageMgr->getSetNames()));
+    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY, new BoolMenuItem              ("Transparency Hack  %s", 2, 4, /*'t'*/ 0, &settingsChanged.enhancementsOptions.u4TileTransparencyHack));
+    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_SIZE, new IntMenuItem   ("  Shadow Size:     %d", 2, 5, /*'s'*/ 9, &settingsChanged.enhancementsOptions.u4TrileTransparencyHackShadowBreadth, 0, 16, 1));
+    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_OPACITY, new IntMenuItem("  Shadow Opacity:  %d", 2, 6, /*'o'*/ 9, &settingsChanged.enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity, 8, 256, 8));
+    gfxMenu.add(MI_VIDEO_02, 				new StringMenuItem			("Gem Layout         %s",  2,  8,/*'e'*/  1, &settingsChanged.gemLayout, screenGetGemLayoutNames()));
+    gfxMenu.add(MI_VIDEO_03, 			new StringMenuItem				("Line Of Sight      %s",  2,  9,/*'l'*/  0, &settingsChanged.lineOfSight, screenGetLineOfSightStyles()));
+    gfxMenu.add(MI_VIDEO_07,   		new BoolMenuItem					("Screen Shaking     %s",  2, 10,/*'k'*/ 8, &settingsChanged.screenShakes));
     gfxMenu.add(MI_GFX_RETURN,               "\010 Return to Video Options",              2,  12,/*'r'*/  2);
     gfxMenu.setClosesMenu(MI_GFX_RETURN);
 
@@ -1708,7 +1708,8 @@ void IntroController::getTitleSourceData()
 
                 Image *scaled;      // the scaled and filtered image
                 scaled = screenScale(titles[i].srcImage, settings.scale / info->prescale, 1, 1);
-                scaled->setTransparentIndex(transparentIndex);
+                if (transparentIndex >= 0)
+                	scaled->setTransparentIndex(transparentIndex);
 
                 titles[i].prescaled = true;
                 delete titles[i].srcImage;
@@ -1850,7 +1851,7 @@ bool IntroController::updateTitle()
 
         case BAR:
         {
-        	RGBA color = {0,0,0,0};
+        	RGBA color;
             while (animStepTarget > title->animStep)
             {
                 title->animStep++;
@@ -2111,6 +2112,7 @@ void IntroController::drawTitle()
         scaled = title->destImage;
     else
         scaled = screenScale(title->destImage, settings.scale, 1, 1);
+
     scaled->setTransparentIndex(transparentIndex);
     scaled->drawSubRect(
         SCALED(title->rx),    // dest x, y

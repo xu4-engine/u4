@@ -44,8 +44,8 @@ using namespace std;
 
 
 int main(int argc, char *argv[]) {
-
-	if (!u4fopen("AVATAR.EXE"))
+    Debug::initGlobal("debug/global.txt");
+    if (!u4fopen("AVATAR.EXE"))
 	{
         errorFatal(	"xu4 requires the PC version of Ultima IV to be present. "
         			"It must either be in the same directory as the xu4 executable, "
@@ -59,11 +59,11 @@ int main(int argc, char *argv[]) {
 	unsigned int i;
     int skipIntro = 0;
 
+
 #if defined(MACOSX)
     osxInit(argv[0]);
 #endif
 
-    Debug::initGlobal("debug/global.txt");
 
     /*
      * if the -p or -profile arguments are passed to the application,
