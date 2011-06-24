@@ -54,9 +54,13 @@ void TileView::reinit() {
 
 void TileView::loadTile(MapTile &mapTile)
 {
-	//Not sure if this is wanted. Defeats the purpose of the lazy evaluation? (or does this solve a problem?)
+	//This attempts to preload tiles in advance
     Tile *tile = tileset->get(mapTile.id);
-    tile->getImage();
+    if (tile)
+    {
+    	tile->getImage();
+    }
+    //But may fail if the tiles don't exist directly in the expected imagesets
 }
 
 void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {

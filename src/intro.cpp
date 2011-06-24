@@ -1599,7 +1599,7 @@ void IntroController::getTitleSourceData()
     if (info->width / info->prescale != 320 || info->height / info->prescale != 200)
     {
         // the image appears to have been scaled already
-    		errorFatal("ERROR 1008: The title image (\"%s\") has been scaled too early!\t\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO);
+    	errorWarning("ERROR 1008: The title image (\"%s\") has been scaled too early!\t\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO);
     }
 
     // get the transparent color

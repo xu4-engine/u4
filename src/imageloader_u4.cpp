@@ -40,9 +40,11 @@ Image *U4RawImageLoader::load(U4FILE *file, int width, int height, int bpp) {
     unsigned char *raw = (unsigned char *) malloc(rawLen);
     file->read(raw, 1, rawLen);
 
-    if (rawLen != (width * height * bpp / 8)) {
+    long requiredLength = (width * height * bpp / 8);
+    if (rawLen < requiredLength) {
         if (raw)
             free(raw);
+        errorWarning("u4Raw Image of size %d does not fit anticipated size %d", rawLen, requiredLength);
         return NULL;
     }
 

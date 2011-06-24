@@ -108,6 +108,10 @@ public:
     SubImage *getSubImage(const std::string &name);
     void freeIntroBackgrounds();
     const std::vector<std::string> &getSetNames();
+    U4FILE * getImageFile(ImageInfo *info);
+    bool imageExists(ImageInfo * info);
+
+
 
 private:
     ImageMgr();

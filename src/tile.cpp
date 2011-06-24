@@ -109,8 +109,10 @@ void Tile::loadImage() {
                 info = imageMgr->get(subimage->srcImageName);            
         }
         if (!info) //IF still no info loaded
+        {
             errorWarning("Error: couldn't load image for tile '%s'", name.c_str());
-
+            return;
+        }
 
         /* FIXME: This is a hack to address the fact that there are 4
            frames for the guard in VGA mode, but only 2 in EGA. Is there

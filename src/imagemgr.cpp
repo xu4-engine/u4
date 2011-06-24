@@ -485,10 +485,11 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
     if (!imageset)
         return NULL;
 
-    /* if the image set contains the image we want, we are done */
+    /* if the image set contains the image we want, AND IT EXISTS we are done */
     std::map<string, ImageInfo *>::iterator i = imageset->info.find(name);
     if (i != imageset->info.end())
-        return i->second;
+    	if (imageExists(i->second))
+    		return i->second;
 
     /* otherwise if this image set extends another, check the base image set */
     if (imageset->extends != "") {
@@ -496,6 +497,7 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
         return getInfoFromSet(name, imageset);
     }
 
+    //errorWarning("Searched recursively from imageset %s through to %s and couldn't find %s", baseSet->name.c_str(), imageset->name.c_str(), name.c_str());
     return NULL;
 }
 
@@ -505,6 +507,54 @@ std::string ImageMgr::guessFileType(const string &filename) {
     } else {
         return "";
     }
+}
+
+bool ImageMgr::imageExists(ImageInfo * info)
+{
+	if (info->filename == "") //If it is an abstract image like "screen"
+		return true;
+	U4FILE * file = getImageFile(info);
+	if (file)
+	{
+		u4fclose(file);
+		return true;
+	}
+	return false;
+}
+
+
+U4FILE * ImageMgr::getImageFile(ImageInfo *info)
+{
+	string filename = info->filename;
+
+    /*
+     * If the u4 VGA upgrade is installed (i.e. setup has been run and
+     * the u4dos files have been renamed), we need to use VGA names
+     * for EGA and vice versa, but *only* when the upgrade file has a
+     * .old extention.  The charset and tiles have a .vga extention
+     * and are not renamed in the upgrade installation process
+     */
+	if (u4isUpgradeInstalled() && getInfoFromSet(info->name, getSet("VGA"))->filename.find(".old") != string::npos) {
+        if (settings.videoType == "EGA")
+            filename = getInfoFromSet(info->name, getSet("VGA"))->filename;
+        else
+            filename = getInfoFromSet(info->name, getSet("EGA"))->filename;
+    }
+
+    if (filename == "")
+    	return NULL;
+
+    U4FILE *file = NULL;
+    if (info->xu4Graphic) {
+        string pathname(u4find_graphics(filename));
+
+        if (!pathname.empty())
+            file = u4fopen_stdio(pathname);
+    }
+    else {
+        file = u4fopen(filename);
+    }
+    return file;
 }
 
 /**
@@ -519,45 +569,19 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     if (info->image != NULL)
         return info;
 
-    /*
-     * If the u4 VGA upgrade is installed (i.e. setup has been run and
-     * the u4dos files have been renamed), we need to use VGA names
-     * for EGA and vice versa, but *only* when the upgrade file has a
-     * .old extention.  The charset and tiles have a .vga extention
-     * and are not renamed in the upgrade installation process
-     */
-    string filename = info->filename;
-    if (u4isUpgradeInstalled() && getInfoFromSet(name, getSet("VGA"))->filename.find(".old") != string::npos) {
-        if (settings.videoType == "EGA")
-            filename = getInfoFromSet(name, getSet("VGA"))->filename;
-        else
-            filename = getInfoFromSet(name, getSet("EGA"))->filename;
-    }
 
-    if (filename == "")
-        return NULL;
 
-    TRACE(*logger, string("loading image from file '") + filename + string("'"));
-
-    U4FILE *file = NULL;
-    if (info->xu4Graphic) {
-        string pathname(u4find_graphics(filename));
-
-        if (!pathname.empty())
-            file = u4fopen_stdio(pathname);
-    } 
-    else {
-        file = u4fopen(filename);
-    }
-    
+    U4FILE *file = getImageFile(info);
     Image *unscaled = NULL;
     if (file) {
+        TRACE(*logger, string("loading image from file '") + info->filename + string("'"));
+
         if (info->filetype.empty())
-            info->filetype = guessFileType(filename);
+            info->filetype = guessFileType(info->filename);
         string filetype = info->filetype;
         ImageLoader *loader = ImageLoader::getLoader(filetype);
         if (loader == NULL)
-            errorWarning("can't find loader to load image \"%s\" with type \"%s\"", filename.c_str(), filetype.c_str());
+            errorWarning("can't find loader to load image \"%s\" with type \"%s\"", info->filename.c_str(), filetype.c_str());
         else
         {
 			unscaled = loader->load(file, info->width, info->height, info->depth);
@@ -571,7 +595,10 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         u4fclose(file);
     }
     else
-        errorWarning("Failed to open file %s for reading.", filename.c_str());
+    {
+        errorWarning("Failed to open file %s for reading.", info->filename.c_str());
+        return NULL;
+    }
 
     if (unscaled == NULL)
         return NULL;
@@ -631,7 +658,7 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         int orig_scale = settings.scale;
         settings.scale = info->prescale;
         settings.write();
-    	errorFatal("image %s is prescaled to an incompatible size: %d\nResetting the scale to %d. Sorry about the inconvenience, please restart.", filename.c_str(), orig_scale, settings.scale);
+    	errorFatal("image %s is prescaled to an incompatible size: %d\nResetting the scale to %d. Sorry about the inconvenience, please restart.", info->filename.c_str(), orig_scale, settings.scale);
     }
     imageScale /= info->prescale;
 
