@@ -64,17 +64,6 @@ void ImageLoader::setFromRawData(Image *image, int width, int height, int bpp, u
         }
         break;
 
-    case 16:
-        for (y = 0; y < height; y++) {
-            for (x = 0; x < width; x++)
-                image->putPixel(x, y,
-                                rawData[(y * width + x) * 2],
-                                rawData[(y * width + x) * 2 + 1],
-                                rawData[(y * width + x) * 2 + 2],
-                                IM_OPAQUE);
-        }
-        break;
-
     case 8:
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++)

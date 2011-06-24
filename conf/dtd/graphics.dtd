@@ -1,7 +1,7 @@
 <!-- $Id$ -->
 
 <!ENTITY % bool '( true | false )'>
-<!ENTITY % fixup '( none | intro | abyss | abacus | dungns | blackTransparencyHack )'>
+<!ENTITY % fixup '( none | intro | abyss | abacus | dungns | blackTransparencyHack | fmtownsscreen )'>
 <!ENTITY % layouttype '( standard | gem | dungeon_gem )'>
 <!ENTITY % transformtype '( invert | pixel | scroll | frame | pixel_color )'>
 <!ENTITY % context '( frame | dir )'>

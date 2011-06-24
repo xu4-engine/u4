@@ -139,7 +139,7 @@ ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
 
 ImageInfo *ImageMgr::loadImageInfoFromConf(const ConfigElement &conf) {
     ImageInfo *info;
-    static const char *fixupEnumStrings[] = { "none", "intro", "abyss", "abacus", "dungns", "blackTransparencyHack", NULL };
+    static const char *fixupEnumStrings[] = { "none", "intro", "abyss", "abacus", "dungns", "blackTransparencyHack", "fmtownsscreen", NULL };
 
     info = new ImageInfo;
     info->name = conf.getString("name");
@@ -461,6 +461,20 @@ void ImageMgr::fixupDungNS(Image *im, int prescale) {
 }
 
 /**
+ * The FMTowns images have a different screen dimension. This moves them up to what xu4 is accustomed to.
+ * south.
+ */
+void ImageMgr::fixupFMTowns(Image *im, int prescale) {
+    for (int y = 20; y < im->height(); y++) {
+        for (int x = 0; x < im->width(); x++) {
+            unsigned int index;
+            im->getPixelIndex(x, y, index);
+			im->putPixelIndex(x, y-20, index);
+        }
+    }
+}
+
+/**
  * Returns information for the given image set.
  */
 ImageSet *ImageMgr::getSet(const string &setname) {
@@ -492,7 +506,7 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
     		return i->second;
 
     /* otherwise if this image set extends another, check the base image set */
-    if (imageset->extends != "") {
+    while (imageset->extends != "") {
         imageset = getSet(imageset->extends);
         return getInfoFromSet(name, imageset);
     }
@@ -627,9 +641,12 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     case FIXUP_DUNGNS:
         fixupDungNS(unscaled, info->prescale);
         break;
+    case FIXUP_FMTOWNSSCREEN:
+    	fixupFMTowns(unscaled, info->prescale);
+    	break;
     case FIXUP_BLACKTRANSPARENCYHACK:
         //Apply transparency shadow hack to ultima4 ega and vga upgrade classic graphics.
-        Image *unscaled_original = unscaled;
+    	Image *unscaled_original = unscaled;
     	unscaled = Image::duplicate(unscaled);
     	delete unscaled_original;
     	if (Settings::getInstance().enhancements && Settings::getInstance().enhancementsOptions.u4TileTransparencyHack)
@@ -641,10 +658,8 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     		int frames = info->tiles;
     		for (int f = 0; f < frames; ++f)
     			unscaled->performTransparencyHack(black_index, frames, f, transparency_shadow_size, opacity);
-
     	}
         break;
-
     }
 
     if (returnUnscaled)

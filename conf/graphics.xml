@@ -568,7 +568,7 @@
         <image name="stoncrcl" filename="stoncrcl.old" width="320" height="200" depth="8" filetype="image/x-u4rle"/>
 
         <!-- shrine vision images  for VGA -->
-        <!-- rune_5.old is the infinity symbol.  What shows rune0? -->
+        <!-- rune_5.old is the infinity symbol.  What shows rune0? It's infinity at the endgame. xu4 doesn't show it yet TODO!-->
         <image name="rune0"    filename="rune_5.old"   width="320" height="400" depth="8" filetype="image/x-u4rle"/>
         <image name="rune1"    filename="rune_1.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
         <image name="rune2"    filename="rune_2.old"   width="320" height="200" depth="8" filetype="image/x-u4rle"/>
@@ -980,6 +980,7 @@
         <image name="rune7" filename="vga2/rune_7.png" prescale="2" xu4Graphic="true"/>
         <image name="rune8" filename="vga2/rune_8.png" prescale="2" xu4Graphic="true"/>
         <image name="key" filename="vga2/key7.png" prescale="2" xu4Graphic="true"/>
+        
     </imageset>
 
     <imageset name="VGA-ALLPNG" extends="VGA2">
@@ -1131,7 +1132,7 @@
                 <subimage name="options_top"  x="0"  y="32"   width="320"  height="128"/>
                 <subimage name="options_btm"  x="0"  y="112"  width="320"  height="80"/>
             </image>
-            <image name="tree"     filename="png/tree.png" introOnly="true" xu4Graphic="true">
+            <image name="tree"     filename="png/tree.png" introOnly="true" xu4Graphic="true" >
                 <subimage name="moongate" x="0"   y="152" width="24" height="24"/>
                 <subimage name="items"    x="24"  y="152" width="24" height="24"/>
             </image>
@@ -1199,7 +1200,74 @@
         <image name="courage"  filename="png/courage.png" fixup="abyss" xu4Graphic="true"/>
         <image name="stoncrcl" filename="png/stoncrcl.png" xu4Graphic="true"/>        
 
+
     </imageset>
+
+	<imageset extends="HiresVGA" name="FMTOWNS-Test">
+		<!-- The sizes of some images are not correct yet, and will require some tweaking. It does give people a preview of the updated game graphics. -->
+        
+        <!-- Not a 16 bit image :( <image name="borders"  filename="fmtowns/ULT4_MEN.TIF" width="320" height="200" depth="16" filetype="image/fmtowns-tif" xu4Graphic="true"/> -->
+        
+        <!-- intro screen images Don't look good yet.  Wrong palette, and incompatible positioning 
+        <image name="title"   filename="fmtowns/ULT4_MEN.TIF"  width="640" height="480" depth="4" prescale="2" filetype="image/fmtowns-tif" xu4Graphic="true" introOnly="true" fixup="fmtownsscreen" >
+            <subimage name="options_top"  x="0"  y="64"   width="640"  height="400"/>
+            <subimage name="options_btm"  x="0"  y="300"  width="640"  height="180"/>
+        </image>
+        -->
+
+		<image name="tree"     filename="fmtowns/U4_6.TIF"     width="320" height="240" depth="16" filetype="image/fmtowns-tif" xu4Graphic="true" introOnly="true" fixup="fmtownsscreen"/>
+		<!-- TODO, create replacement moongate and items
+        <image name="tree"     filename="tree.ega"     width="320" height="200" depth="16" filetype="image/fmtowns" introOnly="true">
+            <subimage name="moongate" x="0"   y="152" width="24" height="24"/>
+            <subimage name="items"    x="24"  y="152" width="24" height="24"/>
+        </image>  -->
+        <image name="portal"   filename="fmtowns/U4_7.TIF" 	width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true" fixup="fmtownsscreen"/>
+        <image name="outside"  filename="fmtowns/U4_8.TIF" 	width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true" fixup="fmtownsscreen"/>
+        <image name="inside"   filename="fmtowns/U4_9.TIF" 	width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true" fixup="fmtownsscreen"/>
+        <image name="wagon"    filename="fmtowns/U4_10.TIF" width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true" fixup="fmtownsscreen"/>
+        <image name="gypsy"    filename="fmtowns/U4_11.TIF" width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true" fixup="fmtownsscreen"/>
+        <image name="abacus"   filename="fmtowns/U4_HASHI.TIF" width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true" />
+
+        <image name="whitebead"  filename="fmtowns/TAMA_W.TIF"       width="8" height="15" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true"/>
+        <image name="blackbead"  filename="fmtowns/TAMA_B.TIF"       width="8" height="15" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true"/>
+
+        <image filename="fmtowns/U4_16.TIF" name="honestycard" width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true"/>
+        <image filename="fmtowns/U4_18.TIF" name="compassioncard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true"/>
+        <image filename="fmtowns/U4_12.TIF" name="valorcard" width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true"/>
+        <image filename="fmtowns/U4_14.TIF" name="justicecard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true"/>
+        <image filename="fmtowns/U4_13.TIF" name="sacrificecard" width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true"/>
+        <image filename="fmtowns/U4_19.TIF" name="honorcard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true"/>
+        <image filename="fmtowns/U4_17.TIF" name="spiritualitycard" width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true"/>
+        <image filename="fmtowns/U4_15.TIF" name="humilitycard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true" xu4Graphic="true"/>
+       
+        <!-- abyss vision images: codex symbol images are overlaid on top of each other, so color 0 (black) is set to be transparent PICS don't work yet.
+        <image name="key"      filename="fmtowns/key7.pic"     width="320" height="200" depth="16" filetype="image/fmtowns-pic"  xu4Graphic="true"/>
+        <image name="honesty"  filename="fmtowns/honesty.pic"  width="320" height="200" depth="16" filetype="image/fmtowns-pic" transparentIndex="0"  xu4Graphic="true"/>
+        <image name="compassn" filename="fmtowns/compassn.pic" width="320" height="200" depth="16" filetype="image/fmtowns-pic" transparentIndex="0"  xu4Graphic="true"/>
+        <image name="valor"    filename="fmtowns/valor.pic"    width="320" height="200" depth="16" filetype="image/fmtowns-pic" transparentIndex="0"  xu4Graphic="true"/>
+        <image name="justice"  filename="fmtowns/justice.pic"  width="320" height="200" depth="16" filetype="image/fmtowns-pic" transparentIndex="0"  xu4Graphic="true"/>
+        <image name="sacrific" filename="fmtowns/sacrific.pic" width="320" height="200" depth="16" filetype="image/fmtowns-pic" transparentIndex="0"  xu4Graphic="true"/>
+        <image name="honor"    filename="fmtowns/honor.pic"    width="320" height="200" depth="16" filetype="image/fmtowns-pic" transparentIndex="0"  xu4Graphic="true"/>
+        <image name="spirit"   filename="fmtowns/spirit.pic"   width="320" height="200" depth="16" filetype="image/fmtowns-pic" transparentIndex="0"  xu4Graphic="true"/>
+        <image name="humility" filename="fmtowns/humility.pic" width="320" height="200" depth="16" filetype="image/fmtowns-pic" transparentIndex="0"  xu4Graphic="true"/>
+        <image name="truth"    filename="fmtowns/truth.pic"    width="320" height="200" depth="16" filetype="image/fmtowns-pic" transparentIndex="0"  xu4Graphic="true"/>
+        <image name="love"     filename="fmtowns/love.pic"     width="320" height="200" depth="16" filetype="image/fmtowns-pic" transparentIndex="0"  xu4Graphic="true"/>
+        <image name="courage"  filename="fmtowns/courage.pic"  width="320" height="200" depth="16" filetype="image/fmtowns-pic" transparentIndex="0"  xu4Graphic="true"/>
+        <image name="stoncrcl" filename="fmtowns/stoncrcl.pic" width="320" height="200" depth="16" filetype="image/fmtowns-pic"/>
+		-->
+        <!-- shrine vision images  for EGA PICS don't work yet 
+        <image name="rune0"    filename="fmtowns/rune_i.pic"   width="320" height="200" depth="16" filetype="image/fmtowns-pic"  xu4Graphic="true"/>
+        <image name="rune1"    filename="fmtowns/rune_n.pic"   width="320" height="200" depth="16" filetype="image/fmtowns-pic" xu4Graphic="true"/>
+        <image name="rune2"    filename="fmtowns/rune_f.pic"   width="320" height="200" depth="16" filetype="image/fmtowns-pic" xu4Graphic="true"/>
+        <image name="rune3"    filename="fmtowns/rune_i.pic"   width="320" height="200" depth="16" filetype="image/fmtowns-pic" xu4Graphic="true"/>
+        <image name="rune4"    filename="fmtowns/rune_n.pic"   width="320" height="200" depth="16" filetype="image/fmtowns-pic" xu4Graphic="true"/>
+        <image name="rune5"    filename="fmtowns/rune_i.pic"   width="320" height="200" depth="16" filetype="image/fmtowns-pic" xu4Graphic="true"/>
+        <image name="rune6"    filename="fmtowns/rune_t.pic"   width="320" height="200" depth="16" filetype="image/fmtowns-pic" xu4Graphic="true"/>
+        <image name="rune7"    filename="fmtowns/rune_y.pic"   width="320" height="200" depth="16" filetype="image/fmtowns-pic" xu4Graphic="true"/>
+        <image name="rune8"    filename="fmtowns/u4_20.pic"   width="320" height="200" depth="16" filetype="image/fmtowns-pic" xu4Graphic="true"/>
+        -->
+        
+	</imageset>
 
     <layout type="gem" name="Standard">
         <tileshape width="4" height="4"/>
@@ -1499,6 +1567,67 @@
             </transform>
         </tileanim>
     </tileanimset>
+
+	<!-- TODO 'extends' for animsets -->
+    <tileanimset name="FMTOWNS-Test">
+        <tileanim name="scroll">
+            <transform type="scroll" increment="1"/>
+        </tileanim>
+        <tileanim name="frame" random="50">
+            <transform type="frame"/>
+        </tileanim>
+        <tileanim name="slow_frame" random="5">
+            <transform type="frame"/>
+        </tileanim>
+        <tileanim name="cityflag" random="50">
+            <transform type="invert" x="5" y="2" width="5" height="4"/>
+        </tileanim>
+        <tileanim name="lcbflag" random="50">
+            <transform type="invert" x="5" y="0" width="7" height="4"/>
+        </tileanim>
+        <tileanim name="castleflag" random="50">
+            <transform type="invert" x="5" y="0" width="4" height="4"/>
+        </tileanim>
+        <tileanim name="shipflag" random="50">
+            <context type="frame" frame="0">
+                <transform type="invert" x="10" y="1" width="5" height="4"/>
+            </context>
+            <context type="frame" frame="1">
+                <transform type="invert" x="6" y="1" width="3" height="3"/>
+            </context>
+            <context type="frame" frame="2">
+                <transform type="invert" x="7" y="2" width="5" height="2"/>
+            </context>
+            <context type="frame" frame="3">
+                <transform type="invert" x="6" y="2" width="2" height="2"/>
+            </context>
+        </tileanim>
+        <tileanim name="pirateflag" random="50">
+            <context type="frame" frame="0">
+                <transform type="invert" x="10" y="2" width="6" height="2"/>
+            </context>
+            <context type="frame" frame="1">
+                <transform type="invert" x="6" y="2" width="3" height="2"/>
+            </context>
+            <context type="frame" frame="2">
+                <transform type="invert" x="7" y="2" width="5" height="2"/>
+            </context>
+            <context type="frame" frame="3">
+                <transform type="invert" x="6" y="2" width="2" height="2"/>
+            </context>
+        </tileanim>
+        <tileanim name="campfire">
+            <transform type="pixel_color" x="4" y="7" width="5" height="7">
+                <color red="97" green="0" blue="0"/>
+                <color red="256" green="200" blue="0"/>                
+            </transform>
+            <transform type="pixel_color" x="4" y="7" width="5" height="7">
+                <color red="0" green="0" blue="0"/>
+                <color red="156" green="0" blue="0"/>                
+            </transform>
+        </tileanim>
+    </tileanimset>
+
 
 </graphics>
    

@@ -70,7 +70,8 @@ enum ImageFixup {
     FIXUP_ABYSS,
     FIXUP_ABACUS,
     FIXUP_DUNGNS,
-    FIXUP_BLACKTRANSPARENCYHACK
+    FIXUP_BLACKTRANSPARENCYHACK,
+    FIXUP_FMTOWNSSCREEN
 };
 
 /**
@@ -132,6 +133,7 @@ private:
     void fixupAbyssVision(Image *im, int prescale);
     void fixupAbacus(Image *im, int prescale);
     void fixupDungNS(Image *im, int prescale);
+    void fixupFMTowns(Image *im, int prescale);
 
     void update(Settings *newSettings);
 
