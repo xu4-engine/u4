@@ -41,7 +41,6 @@
 #include "scale.h"
 #include "screen.h"
 #include "tileset.h"
-#include "dngview.h"
 #include "u4.h"
 #include "u4file.h"
 #include "utils.h"

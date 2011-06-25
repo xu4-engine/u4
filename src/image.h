@@ -87,17 +87,11 @@ public:
     void alphaOff();
 
 
-
-	#ifndef IOS
     /* Will clear the image to the background colour, and set the internal backgroundColour variable */
     void initializeToBackgroundColour(RGBA backgroundColour = DARK_GRAY_HALO);
     /* Will make the pixels that match the background colour disappear, with a blur halo */
     void makeBackgroundColourTransparent(int haloSize = 0,  int shadowOpacity = 255);
-	#else
-    /* The iOS variant seems to have its own way of handling transparency */
-    void initializeToBackgroundColour(RGBA backgroundColour = DARK_GRAY_HALO){}
-    void makeBackgroundColourTransparent(int haloSize){}
-	#endif
+
 
     //void finalizeAlphaSurface(RGBA * key = NULL);
 

@@ -157,8 +157,7 @@ void Image::setPaletteFromImage(const Image *src) {
 
 // returns the color of the specified palette index
 RGBA Image::getPaletteColor(int index) {
-    RGBA color = {0, 0, 0, 255};
-    return color;
+    return RGBA(0, 0, 0, 255);
 }
 
 /* returns the palette index of the specified RGB color */
@@ -167,8 +166,7 @@ int Image::getPaletteIndex(RGBA color) {
 }
 
 RGBA Image::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-    RGBA color = { r, g, b, a };
-    return color;
+    return RGBA(r, g, b, a);
 }
 
 /* sets the specified font colors */
@@ -249,7 +247,7 @@ bool Image::getTransparentIndex(unsigned int &index) const {
      */
 }
 
-void Image::setTransparentIndex(unsigned int index, int shadowOutlineWidth, int numFrames, int frameIndex) {
+void Image::setTransparentIndex(unsigned int index) {
     /* ### HELP!!!
      SDL_SetAlpha(surface, SDL_SRCALPHA, SDL_ALPHA_OPAQUE);
      
@@ -274,6 +272,18 @@ void Image::setTransparentIndex(unsigned int index, int shadowOutlineWidth, int 
      }
      }
      */
+}
+
+void Image::performTransparencyHack(unsigned int colourValue, unsigned int numFrames, unsigned int currentFrameIndex,
+                                    unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance) {
+    ;
+}
+
+/* The iOS variant seems to have its own way of handling transparency */
+void Image::initializeToBackgroundColour(RGBA backgroundColour) {
+}
+
+void Image::makeBackgroundColourTransparent(int haloSize, int shadowOpacity) {
 }
 
 bool Image::isAlphaOn() const {

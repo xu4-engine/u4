@@ -34,7 +34,6 @@
 		CA3357F51129C96E00B5A128 /* dialogueloader_tlk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357731129C96E00B5A128 /* dialogueloader_tlk.cpp */; };
 		CA3357F61129C96E00B5A128 /* dialogueloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357751129C96E00B5A128 /* dialogueloader.cpp */; };
 		CA3357F71129C96E00B5A128 /* direction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357771129C96E00B5A128 /* direction.cpp */; };
-		CA3357F81129C96E00B5A128 /* dngview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357791129C96E00B5A128 /* dngview.cpp */; };
 		CA3357F91129C96E00B5A128 /* dungeon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA33577B1129C96E00B5A128 /* dungeon.cpp */; };
 		CA3357FA1129C96E00B5A128 /* dungeonview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA33577D1129C96E00B5A128 /* dungeonview.cpp */; };
 		CA3357FB1129C96E00B5A128 /* error.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA33577F1129C96E00B5A128 /* error.cpp */; };
@@ -611,7 +610,6 @@
 		CA9935971142EB9B00AEFE37 /* dialogueloader_tlk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357731129C96E00B5A128 /* dialogueloader_tlk.cpp */; };
 		CA9935981142EB9B00AEFE37 /* dialogueloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357751129C96E00B5A128 /* dialogueloader.cpp */; };
 		CA9935991142EB9B00AEFE37 /* direction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357771129C96E00B5A128 /* direction.cpp */; };
-		CA99359A1142EB9B00AEFE37 /* dngview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357791129C96E00B5A128 /* dngview.cpp */; };
 		CA99359B1142EB9B00AEFE37 /* dungeon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA33577B1129C96E00B5A128 /* dungeon.cpp */; };
 		CA99359C1142EB9B00AEFE37 /* dungeonview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA33577D1129C96E00B5A128 /* dungeonview.cpp */; };
 		CA99359F1142EB9B00AEFE37 /* event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357821129C96E00B5A128 /* event.cpp */; };
@@ -1656,8 +1654,6 @@
 		CA3357761129C96E00B5A128 /* dialogueloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dialogueloader.h; path = ../dialogueloader.h; sourceTree = "<group>"; };
 		CA3357771129C96E00B5A128 /* direction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = direction.cpp; path = ../direction.cpp; sourceTree = "<group>"; };
 		CA3357781129C96E00B5A128 /* direction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = direction.h; path = ../direction.h; sourceTree = "<group>"; };
-		CA3357791129C96E00B5A128 /* dngview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dngview.cpp; path = ../dngview.cpp; sourceTree = "<group>"; };
-		CA33577A1129C96E00B5A128 /* dngview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dngview.h; path = ../dngview.h; sourceTree = "<group>"; };
 		CA33577B1129C96E00B5A128 /* dungeon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dungeon.cpp; path = ../dungeon.cpp; sourceTree = "<group>"; };
 		CA33577C1129C96E00B5A128 /* dungeon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dungeon.h; path = ../dungeon.h; sourceTree = "<group>"; };
 		CA33577D1129C96E00B5A128 /* dungeonview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dungeonview.cpp; path = ../dungeonview.cpp; sourceTree = "<group>"; };
@@ -2441,8 +2437,6 @@
 				CA3357761129C96E00B5A128 /* dialogueloader.h */,
 				CA3357771129C96E00B5A128 /* direction.cpp */,
 				CA3357781129C96E00B5A128 /* direction.h */,
-				CA3357791129C96E00B5A128 /* dngview.cpp */,
-				CA33577A1129C96E00B5A128 /* dngview.h */,
 				CA33577B1129C96E00B5A128 /* dungeon.cpp */,
 				CA33577C1129C96E00B5A128 /* dungeon.h */,
 				CA33577D1129C96E00B5A128 /* dungeonview.cpp */,
@@ -3446,7 +3440,6 @@
 				CA3357F51129C96E00B5A128 /* dialogueloader_tlk.cpp in Sources */,
 				CA3357F61129C96E00B5A128 /* dialogueloader.cpp in Sources */,
 				CA3357F71129C96E00B5A128 /* direction.cpp in Sources */,
-				CA3357F81129C96E00B5A128 /* dngview.cpp in Sources */,
 				CA3357F91129C96E00B5A128 /* dungeon.cpp in Sources */,
 				CA3357FA1129C96E00B5A128 /* dungeonview.cpp in Sources */,
 				CA3357FB1129C96E00B5A128 /* error.cpp in Sources */,
@@ -3540,7 +3533,6 @@
 				CA9935971142EB9B00AEFE37 /* dialogueloader_tlk.cpp in Sources */,
 				CA9935981142EB9B00AEFE37 /* dialogueloader.cpp in Sources */,
 				CA9935991142EB9B00AEFE37 /* direction.cpp in Sources */,
-				CA99359A1142EB9B00AEFE37 /* dngview.cpp in Sources */,
 				CA99359B1142EB9B00AEFE37 /* dungeon.cpp in Sources */,
 				CA99359C1142EB9B00AEFE37 /* dungeonview.cpp in Sources */,
 				CA99359F1142EB9B00AEFE37 /* event.cpp in Sources */,

@@ -44,7 +44,7 @@ Image *U4RawImageLoader::load(U4FILE *file, int width, int height, int bpp) {
     if (rawLen < requiredLength) {
         if (raw)
             free(raw);
-        errorWarning("u4Raw Image of size %d does not fit anticipated size %d", rawLen, requiredLength);
+        errorWarning("u4Raw Image of size %ld does not fit anticipated size %ld", rawLen, requiredLength);
         return NULL;
     }
 
