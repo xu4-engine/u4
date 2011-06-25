@@ -130,8 +130,8 @@ void Tile::loadImage() {
         	info->image->alphaOff();
 
         if (info) {
-            w = (subimage ? subimage->width * scale : info->width * scale);
-            h = (subimage ? (subimage->height * scale) / frames : (info->height * scale) / frames);
+            w = (subimage ? subimage->width * scale : info->width * scale / info->prescale);
+            h = (subimage ? (subimage->height * scale) / frames : (info->height * scale / info->prescale) / frames);
             image = Image::create(w, h * frames, false, Image::HARDWARE);
 
 
