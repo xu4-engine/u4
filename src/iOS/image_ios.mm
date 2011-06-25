@@ -274,16 +274,18 @@ void Image::setTransparentIndex(unsigned int index) {
      */
 }
 
-void Image::performTransparencyHack(unsigned int colourValue, unsigned int numFrames, unsigned int currentFrameIndex,
+void Image::performTransparencyHack(unsigned int colorValue, unsigned int numFrames, unsigned int currentFrameIndex,
                                     unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance) {
-    ;
+    // ### Ignore this for now since we are using already transparent things.
 }
 
 /* The iOS variant seems to have its own way of handling transparency */
-void Image::initializeToBackgroundColour(RGBA backgroundColour) {
+void Image::initializeToBackgroundColor(RGBA backgroundColor) {
+    
 }
 
-void Image::makeBackgroundColourTransparent(int haloSize, int shadowOpacity) {
+void Image::makeBackgroundColorTransparent(int haloSize, int shadowOpacity) {
+    // ### Ignore this for now since we are using already transparent things.
 }
 
 bool Image::isAlphaOn() const {

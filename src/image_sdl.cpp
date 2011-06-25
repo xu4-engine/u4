@@ -97,7 +97,7 @@ Image *Image::duplicate(Image *image) {
     if (alphaOn)
         image->alphaOn();
 
-    im->backgroundColour = image->backgroundColour;
+    im->backgroundColor = image->backgroundColor;
 
     return im;
 }
@@ -259,37 +259,37 @@ bool Image::getTransparentIndex(unsigned int &index) const {
     return true;
 }
 
-void Image::initializeToBackgroundColour(RGBA backgroundColour)
+void Image::initializeToBackgroundColor(RGBA backgroundColor)
 {
 	if (indexed)
 		throw "Not supported"; //TODO, this better
-	this->backgroundColour = backgroundColour;
+	this->backgroundColor = backgroundColor;
     this->fillRect(0,0,this->w,this->h,
-    		backgroundColour.r,
-    		backgroundColour.g,
-    		backgroundColour.b,
-    		backgroundColour.a);
+    		backgroundColor.r,
+    		backgroundColor.g,
+    		backgroundColor.b,
+    		backgroundColor.a);
 }
 
-void Image::makeBackgroundColourTransparent(int haloSize, int shadowOpacity)
+void Image::makeBackgroundColorTransparent(int haloSize, int shadowOpacity)
 {
 	int bgColor = SDL_MapRGBA(surface->format,
-			static_cast<Uint8>(backgroundColour.r),
-			static_cast<Uint8>(backgroundColour.g),
-			static_cast<Uint8>(backgroundColour.b),
-			static_cast<Uint8>(backgroundColour.a));
+			static_cast<Uint8>(backgroundColor.r),
+			static_cast<Uint8>(backgroundColor.g),
+			static_cast<Uint8>(backgroundColor.b),
+			static_cast<Uint8>(backgroundColor.a));
 
 	performTransparencyHack(bgColor, 1, 0, haloSize,shadowOpacity);
 }
 
 //TODO Separate functionalities found in here
-void Image::performTransparencyHack(unsigned int colourValue, unsigned int numFrames, unsigned int currentFrameIndex, unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance)
+void Image::performTransparencyHack(unsigned int colorValue, unsigned int numFrames, unsigned int currentFrameIndex, unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance)
 {
     std::list<std::pair<unsigned int,unsigned int> > opaqueXYs;
     unsigned int x, y;
     Uint8 t_r, t_g, t_b;
 
-    SDL_GetRGB(colourValue, surface->format, &t_r, &t_g, &t_b);
+    SDL_GetRGB(colorValue, surface->format, &t_r, &t_g, &t_b);
 
 
     unsigned int frameHeight = h / numFrames;

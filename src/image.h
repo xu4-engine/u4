@@ -67,7 +67,7 @@ public:
     void setPalette(const RGBA *colors, unsigned n_colors);
     void setPaletteFromImage(const Image *src);
     bool getTransparentIndex(unsigned int &index) const;
-    void performTransparencyHack(unsigned int colourValue, unsigned int numFrames, unsigned int currentFrameIndex, unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance);
+    void performTransparencyHack(unsigned int colorValue, unsigned int numFrames, unsigned int currentFrameIndex, unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance);
     void setTransparentIndex(unsigned int index);
 //    void invokeTransparencyHack(ImageInfo * info);
 
@@ -87,10 +87,10 @@ public:
     void alphaOff();
 
 
-    /* Will clear the image to the background colour, and set the internal backgroundColour variable */
-    void initializeToBackgroundColour(RGBA backgroundColour = DARK_GRAY_HALO);
-    /* Will make the pixels that match the background colour disappear, with a blur halo */
-    void makeBackgroundColourTransparent(int haloSize = 0,  int shadowOpacity = 255);
+    /* Will clear the image to the background color, and set the internal backgroundColor variable */
+    void initializeToBackgroundColor(RGBA backgroundColor = DARK_GRAY_HALO);
+    /* Will make the pixels that match the background color disappear, with a blur halo */
+    void makeBackgroundColorTransparent(int haloSize = 0,  int shadowOpacity = 255);
 
 
     //void finalizeAlphaSurface(RGBA * key = NULL);
@@ -131,7 +131,7 @@ public:
 private:
     unsigned int w, h;
     bool indexed;
-    RGBA backgroundColour;
+    RGBA backgroundColor;
 #ifdef IOS
     mutable char *cachedImageData;
     void clearCachedImageData() const;

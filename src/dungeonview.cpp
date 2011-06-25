@@ -129,8 +129,8 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
 
     const int *dscale = tiledWall ? lscale : nscale;
 
-    //Clear scratchpad and set a background colour
-    animated->initializeToBackgroundColour();
+    //Clear scratchpad and set a background color
+    animated->initializeToBackgroundColor();
     //Put tile on animated scratchpad
     if (tile->getAnim()) {
         MapTile mt = tile->id;
@@ -140,8 +140,8 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
     {
         tile->getImage()->drawOn(animated, 0, 0);
     }
-    animated->makeBackgroundColourTransparent();
-    //This process involving the background colour is only required for drawing in the dungeon.
+    animated->makeBackgroundColorTransparent();
+    //This process involving the background color is only required for drawing in the dungeon.
     //It will not play well with semi-transparent graphics.
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
