@@ -163,6 +163,83 @@ void InnController::begin() {
     heal();
 
     /* Is there a special encounter during your stay? */
+    // mwinterrowd suggested code, based on u4dos
+    if (c->party->member(0)->isDead()) {
+    	maybeMeetIsaac();
+    }
+    else {
+        if (xu4_random(8) != 0) {
+        	maybeMeetIsaac();
+        }
+        else {
+        	maybeAmbush();
+        }
+    }
+
+    screenMessage("\nMorning!\n");
+    screenPrompt();
+    screenRedrawScreen();
+
+    musicMgr->fadeIn(INN_FADE_IN_TIME, true);
+}
+
+bool InnController::heal() {
+    // restore each party member to max mp, and restore some hp
+    bool healed = false;
+    for (int i = 0; i < c->party->size(); i++) {
+        PartyMember *m = c->party->member(i);
+        m->setMp(m->getMaxMp());
+        if ((m->getHp() < m->getMaxHp()) && m->heal(HT_INNHEAL))
+            healed = true;
+    }
+
+    return healed;
+}
+
+
+void InnController::maybeMeetIsaac()
+{
+    // Does Isaac the Ghost pay a visit to the Avatar?
+	//	if ((location == skara_brae) && (random(4) = 0) {
+	//			// create Isaac the Ghost
+	//	}
+    if ((c->location->map->id == 11) && (xu4_random(4) == 0)) {
+        City *city = dynamic_cast<City*>(c->location->map);
+
+        if (city->extraDialogues.size() == 1 &&
+            city->extraDialogues[0]->getName() == "Isaac") {
+
+            Coords coords(27, xu4_random(3) + 10, c->location->coords.z);
+
+            // If Isaac is already around, just bring him back to the inn
+            for (ObjectDeque::iterator i = c->location->map->objects.begin();
+                 i != c->location->map->objects.end();
+                 i++) {
+                Person *p = dynamic_cast<Person*>(*i);
+                if (p && p->getName() == "Isaac") {
+                    p->setCoords(coords);
+                    return;
+                }
+            }
+
+            // Otherwise, we need to create Isaac
+            Person *Isaac;
+            Isaac = new Person(creatureMgr->getById(GHOST_ID)->getTile());
+
+            Isaac->setMovementBehavior(MOVEMENT_WANDER);
+
+            Isaac->setDialogue(city->extraDialogues[0]);
+            Isaac->getStart() = coords;
+            Isaac->setPrevTile(Isaac->getTile());
+
+            // Add Isaac near the Avatar
+            city->addPerson(Isaac);
+        }
+    }
+}
+
+void InnController::maybeAmbush()
+{
     if (settings.innAlwaysCombat || (xu4_random(8) == 0)) {
         MapId mapid;
         Creature *creature;
@@ -189,63 +266,6 @@ void InnController::begin() {
         showCombatMessage(showMessage);
         CombatController::begin();
     }
-    
-    else {
-        screenMessage("\nMorning!\n");
-        screenPrompt();
-        screenRedrawScreen();
-
-        // Does Isaac the Ghost pay a visit to the Avatar?
-        if (c->location->map->id == 11) {// && (xu4_random(4) == 0)) {
-            City *city = dynamic_cast<City*>(c->location->map);
-
-            if (city->extraDialogues.size() == 1 &&
-                city->extraDialogues[0]->getName() == "Isaac") {
-
-                Coords coords(27, xu4_random(3) + 10, c->location->coords.z);
-
-                // If Isaac is already around, just bring him back to the inn
-                for (ObjectDeque::iterator i = c->location->map->objects.begin();
-                     i != c->location->map->objects.end();
-                     i++) {
-                    Person *p = dynamic_cast<Person*>(*i);
-                    if (p && p->getName() == "Isaac") {
-                        p->setCoords(coords);
-                        return;
-                    }
-                }
-
-                // Otherwise, we need to create Isaac
-                Person *Isaac;
-                Isaac = new Person(creatureMgr->getById(GHOST_ID)->getTile());
-
-                Isaac->setMovementBehavior(MOVEMENT_WANDER);
-
-                Isaac->setDialogue(city->extraDialogues[0]);
-                Isaac->getStart() = coords;
-                Isaac->setPrevTile(Isaac->getTile());
-
-                // Add Isaac near the Avatar
-                city->addPerson(Isaac);
-            }
-        }
-        delete this;
-    }
-    
-    musicMgr->fadeIn(INN_FADE_IN_TIME, true);
-}
-
-bool InnController::heal() {
-    // restore each party member to max mp, and restore some hp
-    bool healed = false;
-    for (int i = 0; i < c->party->size(); i++) {
-        PartyMember *m = c->party->member(i);
-        m->setMp(m->getMaxMp());
-        if ((m->getHp() < m->getMaxHp()) && m->heal(HT_INNHEAL))
-            healed = true;
-    }
-
-    return healed;
 }
 
 void InnController::awardLoot() {

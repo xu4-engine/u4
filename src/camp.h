@@ -27,8 +27,12 @@ public:
     virtual void begin();
     virtual void awardLoot();
 
+
 private:
     bool heal();
+    void maybeMeetIsaac();
+    void maybeAmbush();
+
 };
 
 #endif
