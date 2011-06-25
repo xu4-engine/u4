@@ -151,9 +151,9 @@ void TileAnimScrollTransform::draw(Image *dest, Tile *tile, MapTile &mapTile) {
  */ 
 bool TileAnimFrameTransform::drawsTile() const { return true; }
 void TileAnimFrameTransform::draw(Image *dest, Tile *tile, MapTile &mapTile) {
-    if (++mapTile.frame >= tile->getFrames())
-        mapTile.frame = 0;
-    tile->getImage()->drawSubRectOn(dest, 0, 0, 0, mapTile.frame * tile->getHeight(), tile->getWidth(), tile->getHeight());
+    if (++currentFrame >= tile->getFrames())
+    	currentFrame = 0;
+    tile->getImage()->drawSubRectOn(dest, 0, 0, 0, currentFrame * tile->getHeight(), tile->getWidth(), tile->getHeight());
 
 
 }

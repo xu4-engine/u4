@@ -83,8 +83,11 @@ private:
  */ 
 class TileAnimFrameTransform : public TileAnimTransform {
 public:
+	TileAnimFrameTransform() : currentFrame(0){}
     virtual void draw(Image *dest, Tile *tile, MapTile &mapTile);
     virtual bool drawsTile() const;
+protected:
+    int currentFrame;
 };
 
 /**
