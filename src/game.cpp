@@ -54,6 +54,7 @@
 #include "utils.h"
 #include "script.h"
 #include "weapon.h"
+#include "dungeonview.h"
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -1006,10 +1007,8 @@ bool GameController::keyPressed(int key) {
 
         case 22:                    /* ctrl-V */
             {
-                extern int screen3dDungeonView;
                 if (settings.debug && c->location->context == CTX_DUNGEON) {
-                    screen3dDungeonView = screen3dDungeonView ? 0 : 1;
-                    screenMessage("3-D view %s\n", screen3dDungeonView ? "on" : "off");
+                    screenMessage("3-D view %s\n", DungeonViewer.toggle3DDungeonView() ? "on" : "off");
                     endTurn = 0;
                 }
                 else valid = false;

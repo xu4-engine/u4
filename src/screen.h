@@ -25,9 +25,9 @@
 #define SCREEN_H
 
 #include <vector>
+#include <string>
 
 #include "direction.h"
-#include "dngview.h"
 #include "types.h"
 #include "u4file.h"
 
@@ -85,12 +85,12 @@ void screenReInit(void);
 
 void screenIconify(void);
 
-const std::vector<string> &screenGetGemLayoutNames();
-const std::vector<string> &screenGetFilterNames();
-const std::vector<string> &screenGetLineOfSightStyles();
+const std::vector<std::string> &screenGetGemLayoutNames();
+const std::vector<std::string> &screenGetFilterNames();
+const std::vector<std::string> &screenGetLineOfSightStyles();
 
-void screenDrawImage(const string &name, int x = 0, int y = 0);
-void screenDrawImageInMapArea(const string &bkgd);
+void screenDrawImage(const std::string &name, int x = 0, int y = 0);
+void screenDrawImageInMapArea(const std::string &bkgd);
 
 void screenCycle(void);
 void screenEraseMapArea(void);
@@ -119,9 +119,6 @@ void screenHideCursor(void);
 void screenEnableCursor(void);
 void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);
-
-void screenDungeonDrawTile(Tile *tile, int x_offset, int distance, Direction orientation);
-void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
 
 void screenSetMouseCursor(MouseCursor cursor);
 int screenPointInMouseArea(int x, int y, MouseArea *area);

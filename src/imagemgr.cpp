@@ -583,8 +583,6 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     if (info->image != NULL)
         return info;
 
-
-
     U4FILE *file = getImageFile(info);
     Image *unscaled = NULL;
     if (file) {

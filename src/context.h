@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "location.h"
 #include "aura.h"
 #include "names.h"
 #include "person.h"
@@ -14,7 +15,6 @@
 #include "types.h"
 #include "savegame.h"
 
-class Location;
 class Object;
 class Party;
 class Person;

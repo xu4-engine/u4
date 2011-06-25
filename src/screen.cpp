@@ -15,7 +15,6 @@
 #include "config.h"
 #include "context.h"
 #include "debug.h"
-#include "dngview.h"
 #include "dungeonview.h"
 #include "error.h"
 #include "event.h"
@@ -54,95 +53,7 @@ struct Layout {
     } viewport;
 };
 
-const struct {
-    const char *subimage;
-    int ega_x2, ega_y2;
-    int vga_x2, vga_y2;
-    const char *subimage2;
-} dngGraphicInfo[] = {
-    { "dung0_lft_ew" },
-    { "dung0_lft_ns" },
-    { "dung0_mid_ew" },
-    { "dung0_mid_ns" },
-    { "dung0_rgt_ew" },
-    { "dung0_rgt_ns" },
-    
-    { "dung1_lft_ew", 0, 32, 0, 8, "dung1_xxx_ew" },
-    { "dung1_lft_ns", 0, 32, 0, 8, "dung1_xxx_ns" },
-    { "dung1_mid_ew" },
-    { "dung1_mid_ns" },
-    { "dung1_rgt_ew", 144, 32, 160, 8, "dung1_xxx_ew" },
-    { "dung1_rgt_ns", 144, 32, 160, 8, "dung1_xxx_ns" },
-    
-    { "dung2_lft_ew", 0, 64, 0, 48, "dung2_xxx_ew" },
-    { "dung2_lft_ns", 0, 64, 0, 48, "dung2_xxx_ns" },
-    { "dung2_mid_ew" },
-    { "dung2_mid_ns" },
-    { "dung2_rgt_ew", 112, 64, 128, 48, "dung2_xxx_ew" },
-    { "dung2_rgt_ns", 112, 64, 128, 48, "dung2_xxx_ns" },
-    
-    { "dung3_lft_ew", 0, 80, 48, 72, "dung3_xxx_ew" },
-    { "dung3_lft_ns", 0, 80, 48, 72, "dung3_xxx_ns" },
-    { "dung3_mid_ew" },
-    { "dung3_mid_ns" },
-    { "dung3_rgt_ew", 96, 80, 104, 72, "dung3_xxx_ew" },
-    { "dung3_rgt_ns", 96, 80, 104, 72, "dung3_xxx_ns" },
-    
-    { "dung0_lft_ew_door" },
-    { "dung0_lft_ns_door" },
-    { "dung0_mid_ew_door" },
-    { "dung0_mid_ns_door" },
-    { "dung0_rgt_ew_door" },
-    { "dung0_rgt_ns_door" },
-    
-    { "dung1_lft_ew_door", 0, 32, 0, 8, "dung1_xxx_ew" },
-    { "dung1_lft_ns_door", 0, 32, 0, 8, "dung1_xxx_ns" },
-    { "dung1_mid_ew_door" },
-    { "dung1_mid_ns_door" },
-    { "dung1_rgt_ew_door", 144, 32, 160, 8, "dung1_xxx_ew" },
-    { "dung1_rgt_ns_door", 144, 32, 160, 8, "dung1_xxx_ns" },
-    
-    { "dung2_lft_ew_door", 0, 64, 0, 48, "dung2_xxx_ew" },
-    { "dung2_lft_ns_door", 0, 64, 0, 48, "dung2_xxx_ns" },
-    { "dung2_mid_ew_door" },
-    { "dung2_mid_ns_door" },
-    { "dung2_rgt_ew_door", 112, 64, 128, 48, "dung2_xxx_ew" },
-    { "dung2_rgt_ns_door", 112, 64, 128, 48, "dung2_xxx_ns" },
-    
-    { "dung3_lft_ew_door", 0, 80, 48, 72, "dung3_xxx_ew" },
-    { "dung3_lft_ns_door", 0, 80, 48, 72, "dung3_xxx_ns" },
-    { "dung3_mid_ew_door" },
-    { "dung3_mid_ns_door" },
-    { "dung3_rgt_ew_door", 96, 80, 104, 72, "dung3_xxx_ew" },
-    { "dung3_rgt_ns_door", 96, 80, 104, 72, "dung3_xxx_ns" },
-    
-    { "dung0_ladderup" },
-    { "dung0_ladderup_side" },
-    { "dung1_ladderup" },
-    { "dung1_ladderup_side" },
-    { "dung2_ladderup" },
-    { "dung2_ladderup_side" },
-    { "dung3_ladderup" },
-    { "dung3_ladderup_side" },
-    
-    { "dung0_ladderdown" },
-    { "dung0_ladderdown_side" },
-    { "dung1_ladderdown" },
-    { "dung1_ladderdown_side" },
-    { "dung2_ladderdown" },
-    { "dung2_ladderdown_side" },
-    { "dung3_ladderdown" },
-    { "dung3_ladderdown_side" },
-    
-    { "dung0_ladderupdown" },
-    { "dung0_ladderupdown_side" },
-    { "dung1_ladderupdown" },
-    { "dung1_ladderupdown_side" },
-    { "dung2_ladderupdown" },
-    { "dung2_ladderupdown_side" },
-    { "dung3_ladderupdown" },
-    { "dung3_ladderupdown_side" },
-};
+
 
 using std::vector;
 
@@ -172,7 +83,6 @@ int screenCursorY = 0;
 int screenCursorStatus = 0;
 int screenCursorEnabled = 1;
 int screenLos[VIEWPORT_W][VIEWPORT_H];
-int screen3dDungeonView = 1;
 
 static const int BufferSize = 1024;
 
@@ -493,82 +403,26 @@ vector<MapTile> screenViewportTile(unsigned int width, unsigned int height, int 
  * neither is set, the map area is left untouched.
  */
 void screenUpdate(TileView *view, bool showmap, bool blackout) {
-    vector<MapTile> tiles;
-    int x, y;
 
-    static MapTile black = c->location->map->tileset->getByName("black")->id;
-    static MapTile avatar = c->location->map->tileset->getByName("avatar")->id;
 
-    //Note: This shouldn't go above 4, unless we check opaque tiles each step of the way.
-    const int farthest_non_wall_tile_visibility = 4;
 
     ASSERT(c != NULL, "context has not yet been initialized");
 
-
-    if (c->location->map->flags & FIRST_PERSON) {
-        
-        /* 1st-person perspective */
-        if (screen3dDungeonView) {
-            screenEraseMapArea();
-            if (c->party->getTorchDuration() > 0 && !blackout) {
-                for (y = 3; y >= 0; y--) {
-                    DungeonGraphicType type;
-
-                    //FIXME: Maybe this should be in a loop
-					tiles = dungeonViewGetTiles(y, -1);
-                    type = dungeonViewTilesToGraphic(tiles);
-					screenDungeonDrawWall(-1, y, (Direction)c->saveGame->orientation, type);
-
-					tiles = dungeonViewGetTiles(y, 1);
-                    type = dungeonViewTilesToGraphic(tiles);
-					screenDungeonDrawWall(1, y, (Direction)c->saveGame->orientation, type);
-
-                    tiles = dungeonViewGetTiles(y, 0);
-                    type = dungeonViewTilesToGraphic(tiles);
-                    screenDungeonDrawWall(0, y, (Direction)c->saveGame->orientation, type);
-
-                    //This only checks that the tile at y==3 is opaque
-                    if (y == 3 && !tiles.front().getTileType()->isOpaque())
-                   	{
-                   		for (int y_obj = farthest_non_wall_tile_visibility; y_obj > y; y_obj--)
-                   		{
-                   		vector<MapTile> distant_tiles = dungeonViewGetTiles(y_obj     , 0);
-                   		DungeonGraphicType distant_type = dungeonViewTilesToGraphic(distant_tiles);
-
-						if ((distant_type == DNGGRAPHIC_DNGTILE) || (distant_type == DNGGRAPHIC_BASETILE))
-							screenDungeonDrawTile(c->location->map->tileset->get(distant_tiles.front().id),0, y_obj, Direction(c->saveGame->orientation));
-                   		}
-                   	}
-					if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
-						screenDungeonDrawTile(c->location->map->tileset->get(tiles.front().id), 0, y, Direction(c->saveGame->orientation));
-                }
-            }
-        }
-
-        /* 3rd-person perspective */
-        else {
-            for (y = 0; y < VIEWPORT_H; y++) {
-                for (x = 0; x < VIEWPORT_W; x++) {
-//                    if (x < 2 || y < 2 || x >= 10 || y >= 10)
-//                        view->drawTile(black, false, x, y);
-//                    else {
-                        tiles = dungeonViewGetTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
-
-                        /* Only show blackness if there is no light */
-                        if (c->party->getTorchDuration() <= 0 || blackout)
-                            view->drawTile(black, false, x, y);
-                        else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
-                            view->drawTile(avatar, false, x, y);
-                        else
-                            view->drawTile(tiles, false, x, y);
-//                    }
-                }
-            }
-        }
+    if (blackout)
+    {
+    	//screenEraseMapArea();
+    }
+    else if (c->location->map->flags & FIRST_PERSON) {
+    	DungeonViewer.display(c, view);
         screenRedrawMapArea();
     }
 
     else if (showmap) {
+        static MapTile black = c->location->map->tileset->getByName("black")->id;
+        static MapTile avatar = c->location->map->tileset->getByName("avatar")->id;
+
+        int x, y;
+
         vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H];
         bool viewportFocus[VIEWPORT_W][VIEWPORT_H];
 
@@ -578,12 +432,11 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
             }
         }
 
-        if (!blackout)
-            screenFindLineOfSight(viewportTiles);
+		screenFindLineOfSight(viewportTiles);
 
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
-                if (!blackout && screenLos[x][y])
+                if (screenLos[x][y])
                     view->drawTile(viewportTiles[x][y], viewportFocus[x][y], x, y);
                 else
                     view->drawTile(black, false, x, y);
@@ -1261,79 +1114,6 @@ void screenShake(int iterations) {
         }
         // free the bottom row image
         delete bottom;
-    }
-}
-
-int screenDungeonGraphicIndex(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
-    int index;
-    
-    index = 0;
-    
-    if (type == DNGGRAPHIC_LADDERUP && xoffset == 0)
-        return 48 + 
-        (distance * 2) + 
-        (DIR_IN_MASK(orientation, MASK_DIR_SOUTH | MASK_DIR_NORTH) ? 1 : 0);
-    
-    if (type == DNGGRAPHIC_LADDERDOWN && xoffset == 0)
-        return 56 + 
-        (distance * 2) +
-        (DIR_IN_MASK(orientation, MASK_DIR_SOUTH | MASK_DIR_NORTH) ? 1 : 0);
-    
-    if (type == DNGGRAPHIC_LADDERUPDOWN && xoffset == 0)
-        return 64 + 
-        (distance * 2) +
-        (DIR_IN_MASK(orientation, MASK_DIR_SOUTH | MASK_DIR_NORTH) ? 1 : 0);
-    
-    /* FIXME */
-    if (type != DNGGRAPHIC_WALL && type != DNGGRAPHIC_DOOR)
-        return -1;    
-    
-    if (type == DNGGRAPHIC_DOOR)
-        index += 24;
-    
-    index += (xoffset + 1) * 2;
-    
-    index += distance * 6;
-    
-    if (DIR_IN_MASK(orientation, MASK_DIR_SOUTH | MASK_DIR_NORTH))
-        index++;
-    
-    return index;
-}
-
-void screenDungeonDrawTile(Tile *tile, int x_offset, int distance, Direction orientation) {
-    DungeonView view(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H);
-    
-    // Draw the tile to the screen
-    view.drawInDungeon(tile, x_offset, distance, orientation, tile->isTiledInDungeon());
-}
-
-void screenDungeonDrawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
-    int index;
-
-    index = screenDungeonGraphicIndex(xoffset, distance, orientation, type);
-    if (index == -1 || distance >= 4)
-        return;
-    
-    int x = 0, y = 0;
-    SubImage *subimage = imageMgr->getSubImage(dngGraphicInfo[index].subimage);
-    if (subimage) {
-        x = subimage->x;
-        y = subimage->y;
-    }
-    
-    screenDrawImage(dngGraphicInfo[index].subimage, (BORDER_WIDTH + x) * settings.scale,
-                    (BORDER_HEIGHT + y) * settings.scale);
-    if (dngGraphicInfo[index].subimage2 != NULL) {
-        // FIXME: subimage2 is a horrible hack, needs to be cleaned up
-        if (settings.videoType == "EGA")
-            screenDrawImage(dngGraphicInfo[index].subimage2, 
-                            (8 + dngGraphicInfo[index].ega_x2) * settings.scale,
-                            (8 + dngGraphicInfo[index].ega_y2) * settings.scale);
-        else
-            screenDrawImage(dngGraphicInfo[index].subimage2,
-                            (8 + dngGraphicInfo[index].vga_x2) * settings.scale,
-                            (8 + dngGraphicInfo[index].vga_y2) * settings.scale);
     }
 }
 

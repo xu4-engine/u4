@@ -13,6 +13,7 @@
 #include "tileanim.h"
 #include "u4.h"
 #include "utils.h"
+#include "tile.h"
 
 using std::string;
 using std::vector;

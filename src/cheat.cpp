@@ -5,9 +5,10 @@
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include "cheat.h"
+#include "location.h"
+#include "map.h"
 #include "context.h"
 #include "game.h"
-#include "map.h"
 #include "mapmgr.h"
 #include "moongate.h"
 #include "portal.h"
@@ -17,6 +18,7 @@
 #include "tileset.h"
 #include "utils.h"
 #include "weapon.h"
+
 
 CheatMenuController::CheatMenuController(GameController *game) : game(game) {
 }

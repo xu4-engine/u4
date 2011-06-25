@@ -32,7 +32,6 @@
 #include "screen.h"
 #include "tileanim.h"
 #include "tileset.h"
-#include "dngview.h"
 #include "u4.h"
 #include "u4_sdl.h"
 #include "u4file.h"
