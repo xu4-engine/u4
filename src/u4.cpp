@@ -45,6 +45,11 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
     Debug::initGlobal("debug/global.txt");
+    
+#if defined(MACOSX)
+    osxInit(argv[0]);
+#endif
+    
     if (!u4fopen("AVATAR.EXE"))
 	{
         errorFatal(	"xu4 requires the PC version of Ultima IV to be present. "
@@ -58,11 +63,6 @@ int main(int argc, char *argv[]) {
 
 	unsigned int i;
     int skipIntro = 0;
-
-
-#if defined(MACOSX)
-    osxInit(argv[0]);
-#endif
 
 
     /*
