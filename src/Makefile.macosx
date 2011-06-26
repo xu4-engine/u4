@@ -76,6 +76,7 @@ bundle: u4
 	mkdir -p $(bundle_name)/Contents/Resources
 	mkdir -p $(bundle_name)/Contents/Resources/dtd
 	mkdir -p $(bundle_name)/Contents/Resources/ega
+	mkdir -p $(bundle_name)/Contents/Resources/fmtowns
 	mkdir -p $(bundle_name)/Contents/Resources/hires
 	mkdir -p $(bundle_name)/Contents/Resources/png
 	mkdir -p $(bundle_name)/Contents/Resources/vga
@@ -88,6 +89,7 @@ bundle: u4
 	cp ../conf/dtd/*.dtd $(bundle_name)/Contents/Resources/dtd
 	cp ../icons/xu4.icns $(bundle_name)/Contents/Resources
 	cp ../graphics/ega/*.png $(bundle_name)/Contents/Resources/ega
+	cp ../graphics/fmtowns/*.TIF $(bundle_name)/Contents/Resources/fmtowns
 	cp ../graphics/hires/*.png $(bundle_name)/Contents/Resources/hires
 	cp ../graphics/hires/*.vga $(bundle_name)/Contents/Resources/hires
 	cp ../graphics/png/*.png $(bundle_name)/Contents/Resources/png
