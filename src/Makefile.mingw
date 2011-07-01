@@ -20,7 +20,7 @@ CXX=g++
 CC=gcc
 CXXFLAGS=-Wall -g -I. $(SDL_CXXFLAGS) $(XML_CXXFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
 CFLAGS=$(CXXFLAGS)
-LFLAGS=-static-libgcc -static-libstdc++
+LDFLAGS=-static-libgcc -static-libstdc++
 LIBS=-lmingw32 $(SDL_LIBS) $(XML_LIBS) -lpng -mwindows
 EXEEXT	:=.exe
 OBJS= xu4ico.o
