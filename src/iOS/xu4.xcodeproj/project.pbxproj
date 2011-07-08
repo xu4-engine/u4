@@ -13,6 +13,15 @@
 		CA069EA011498D6E00CB4AE8 /* image_ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA069E9F11498D6E00CB4AE8 /* image_ios.mm */; };
 		CA117C691269BF7300BC272E /* ConversationChoiceController.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA117C671269BF7300BC272E /* ConversationChoiceController.mm */; };
 		CA117C6A1269BF7300BC272E /* ConversationChoiceController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CA117C681269BF7300BC272E /* ConversationChoiceController.xib */; };
+		CA2CF39B13C76525009B514C /* Castles.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CA2CF39213C76525009B514C /* Castles.mp3 */; };
+		CA2CF39C13C76525009B514C /* Combat.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CA2CF39313C76525009B514C /* Combat.mp3 */; };
+		CA2CF39D13C76525009B514C /* Dungeon.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CA2CF39413C76525009B514C /* Dungeon.mp3 */; };
+		CA2CF39E13C76525009B514C /* Fanfare_Of_Lord_British.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CA2CF39513C76525009B514C /* Fanfare_Of_Lord_British.mp3 */; };
+		CA2CF39F13C76525009B514C /* Rule_Britannia.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CA2CF39613C76525009B514C /* Rule_Britannia.mp3 */; };
+		CA2CF3A013C76525009B514C /* Shopping.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CA2CF39713C76525009B514C /* Shopping.mp3 */; };
+		CA2CF3A113C76525009B514C /* Shrines.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CA2CF39813C76525009B514C /* Shrines.mp3 */; };
+		CA2CF3A213C76525009B514C /* Towns.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CA2CF39913C76525009B514C /* Towns.mp3 */; };
+		CA2CF3A313C76525009B514C /* Wanderer.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CA2CF39A13C76525009B514C /* Wanderer.mp3 */; };
 		CA314DC91364553900B90AA7 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA314DC81364553900B90AA7 /* QuartzCore.framework */; };
 		CA3260541396BC1C002C7741 /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = CA3260531396BC1C002C7741 /* Entitlements.plist */; };
 		CA3357571129C8B900B5A128 /* annotation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA3357461129C8B900B5A128 /* annotation.cpp */; };
@@ -226,15 +235,6 @@
 		CA469F9E112DEFAF00D69F1A /* libSDL_mixer-1.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CA469F9C112DEFAF00D69F1A /* libSDL_mixer-1.2.0.dylib */; };
 		CA469F9F112DEFAF00D69F1A /* libSDL-1.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CA469F9D112DEFAF00D69F1A /* libSDL-1.2.0.dylib */; };
 		CA469FAB112DF09100D69F1A /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = CA469FAA112DF09100D69F1A /* SDLMain.m */; };
-		CA4764AE1306C985001D54B0 /* Castles.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CA4764A51306C985001D54B0 /* Castles.m4a */; };
-		CA4764AF1306C985001D54B0 /* Combat.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CA4764A61306C985001D54B0 /* Combat.m4a */; };
-		CA4764B01306C985001D54B0 /* Dungeon.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CA4764A71306C985001D54B0 /* Dungeon.m4a */; };
-		CA4764B11306C985001D54B0 /* Fanfare_Of_Lord_British.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CA4764A81306C985001D54B0 /* Fanfare_Of_Lord_British.m4a */; };
-		CA4764B21306C985001D54B0 /* Rule_Britannia.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CA4764A91306C985001D54B0 /* Rule_Britannia.m4a */; };
-		CA4764B31306C985001D54B0 /* Shopping.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CA4764AA1306C985001D54B0 /* Shopping.m4a */; };
-		CA4764B41306C985001D54B0 /* Shrines.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CA4764AB1306C985001D54B0 /* Shrines.m4a */; };
-		CA4764B51306C985001D54B0 /* Towns.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CA4764AC1306C985001D54B0 /* Towns.m4a */; };
-		CA4764B61306C985001D54B0 /* Wanderer.m4a in Resources */ = {isa = PBXBuildFile; fileRef = CA4764AD1306C985001D54B0 /* Wanderer.m4a */; };
 		CA4764C61306E993001D54B0 /* error.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA4764BA1306E993001D54B0 /* error.caf */; };
 		CA4764C71306E993001D54B0 /* evade.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA4764BB1306E993001D54B0 /* evade.caf */; };
 		CA4764C81306E993001D54B0 /* flee.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA4764BC1306E993001D54B0 /* flee.caf */; };
@@ -1611,6 +1611,15 @@
 		CA117C661269BF7300BC272E /* ConversationChoiceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConversationChoiceController.h; sourceTree = "<group>"; };
 		CA117C671269BF7300BC272E /* ConversationChoiceController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ConversationChoiceController.mm; sourceTree = "<group>"; };
 		CA117C681269BF7300BC272E /* ConversationChoiceController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ConversationChoiceController.xib; sourceTree = "<group>"; };
+		CA2CF39213C76525009B514C /* Castles.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = Castles.mp3; path = ../../mid/Castles.mp3; sourceTree = "<group>"; };
+		CA2CF39313C76525009B514C /* Combat.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = Combat.mp3; path = ../../mid/Combat.mp3; sourceTree = "<group>"; };
+		CA2CF39413C76525009B514C /* Dungeon.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = Dungeon.mp3; path = ../../mid/Dungeon.mp3; sourceTree = "<group>"; };
+		CA2CF39513C76525009B514C /* Fanfare_Of_Lord_British.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = Fanfare_Of_Lord_British.mp3; path = ../../mid/Fanfare_Of_Lord_British.mp3; sourceTree = "<group>"; };
+		CA2CF39613C76525009B514C /* Rule_Britannia.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = Rule_Britannia.mp3; path = ../../mid/Rule_Britannia.mp3; sourceTree = "<group>"; };
+		CA2CF39713C76525009B514C /* Shopping.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = Shopping.mp3; path = ../../mid/Shopping.mp3; sourceTree = "<group>"; };
+		CA2CF39813C76525009B514C /* Shrines.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = Shrines.mp3; path = ../../mid/Shrines.mp3; sourceTree = "<group>"; };
+		CA2CF39913C76525009B514C /* Towns.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = Towns.mp3; path = ../../mid/Towns.mp3; sourceTree = "<group>"; };
+		CA2CF39A13C76525009B514C /* Wanderer.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = Wanderer.mp3; path = ../../mid/Wanderer.mp3; sourceTree = "<group>"; };
 		CA314DC81364553900B90AA7 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = ../../Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.2.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		CA3260531396BC1C002C7741 /* Entitlements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Entitlements.plist; sourceTree = "<group>"; };
 		CA3357461129C8B900B5A128 /* annotation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = annotation.cpp; path = ../annotation.cpp; sourceTree = "<group>"; };
@@ -1910,15 +1919,6 @@
 		CA469F9D112DEFAF00D69F1A /* libSDL-1.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libSDL-1.2.0.dylib"; path = "/opt/local/lib/libSDL-1.2.0.dylib"; sourceTree = "<absolute>"; };
 		CA469FA9112DF09100D69F1A /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDLMain.h; path = ../macosx/SDLMain.h; sourceTree = SOURCE_ROOT; };
 		CA469FAA112DF09100D69F1A /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDLMain.m; path = ../macosx/SDLMain.m; sourceTree = SOURCE_ROOT; };
-		CA4764A51306C985001D54B0 /* Castles.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = Castles.m4a; path = ../../mid/Castles.m4a; sourceTree = "<group>"; };
-		CA4764A61306C985001D54B0 /* Combat.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = Combat.m4a; path = ../../mid/Combat.m4a; sourceTree = "<group>"; };
-		CA4764A71306C985001D54B0 /* Dungeon.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = Dungeon.m4a; path = ../../mid/Dungeon.m4a; sourceTree = "<group>"; };
-		CA4764A81306C985001D54B0 /* Fanfare_Of_Lord_British.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = Fanfare_Of_Lord_British.m4a; path = ../../mid/Fanfare_Of_Lord_British.m4a; sourceTree = "<group>"; };
-		CA4764A91306C985001D54B0 /* Rule_Britannia.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = Rule_Britannia.m4a; path = ../../mid/Rule_Britannia.m4a; sourceTree = "<group>"; };
-		CA4764AA1306C985001D54B0 /* Shopping.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = Shopping.m4a; path = ../../mid/Shopping.m4a; sourceTree = "<group>"; };
-		CA4764AB1306C985001D54B0 /* Shrines.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = Shrines.m4a; path = ../../mid/Shrines.m4a; sourceTree = "<group>"; };
-		CA4764AC1306C985001D54B0 /* Towns.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = Towns.m4a; path = ../../mid/Towns.m4a; sourceTree = "<group>"; };
-		CA4764AD1306C985001D54B0 /* Wanderer.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = Wanderer.m4a; path = ../../mid/Wanderer.m4a; sourceTree = "<group>"; };
 		CA4764BA1306E993001D54B0 /* error.caf */ = {isa = PBXFileReference; lastKnownFileType = file; name = error.caf; path = ../../sound/error.caf; sourceTree = "<group>"; };
 		CA4764BB1306E993001D54B0 /* evade.caf */ = {isa = PBXFileReference; lastKnownFileType = file; name = evade.caf; path = ../../sound/evade.caf; sourceTree = "<group>"; };
 		CA4764BC1306E993001D54B0 /* flee.caf */ = {isa = PBXFileReference; lastKnownFileType = file; name = flee.caf; path = ../../sound/flee.caf; sourceTree = "<group>"; };
@@ -2820,6 +2820,15 @@
 		CA9DADC4131A9D8B00D81CB3 /* Music */ = {
 			isa = PBXGroup;
 			children = (
+				CA2CF39213C76525009B514C /* Castles.mp3 */,
+				CA2CF39313C76525009B514C /* Combat.mp3 */,
+				CA2CF39413C76525009B514C /* Dungeon.mp3 */,
+				CA2CF39513C76525009B514C /* Fanfare_Of_Lord_British.mp3 */,
+				CA2CF39613C76525009B514C /* Rule_Britannia.mp3 */,
+				CA2CF39713C76525009B514C /* Shopping.mp3 */,
+				CA2CF39813C76525009B514C /* Shrines.mp3 */,
+				CA2CF39913C76525009B514C /* Towns.mp3 */,
+				CA2CF39A13C76525009B514C /* Wanderer.mp3 */,
 				CA3359C81129CD3000B5A128 /* Wanderer.mid */,
 				CAD5C7F6131973F300506D09 /* castle.it */,
 				CAD5C7F7131973F300506D09 /* combat4.it */,
@@ -2829,15 +2838,6 @@
 				CAD5C7FB131973F300506D09 /* shrine.it */,
 				CAD5C7FC131973F300506D09 /* towne_2.it */,
 				CAD5C7FD131973F300506D09 /* wander4.it */,
-				CA4764A51306C985001D54B0 /* Castles.m4a */,
-				CA4764A61306C985001D54B0 /* Combat.m4a */,
-				CA4764A71306C985001D54B0 /* Dungeon.m4a */,
-				CA4764A81306C985001D54B0 /* Fanfare_Of_Lord_British.m4a */,
-				CA4764A91306C985001D54B0 /* Rule_Britannia.m4a */,
-				CA4764AA1306C985001D54B0 /* Shopping.m4a */,
-				CA4764AB1306C985001D54B0 /* Shrines.m4a */,
-				CA4764AC1306C985001D54B0 /* Towns.m4a */,
-				CA4764AD1306C985001D54B0 /* Wanderer.m4a */,
 				CA3359C01129CD3000B5A128 /* Castles.mid */,
 				CA3359C11129CD3000B5A128 /* Combat.mid */,
 				CA3359C21129CD3000B5A128 /* Dungeon.mid */,
@@ -3376,15 +3376,6 @@
 				CAC8CAD912AAD12900510BAC /* CharacterChoiceController.xib in Resources */,
 				CAFCFBF812D8B94300AC49B2 /* U4WeaponChoiceDialog.xib in Resources */,
 				CAFCFCF412D8F41B00AC49B2 /* U4ArmorChoiceDialog.xib in Resources */,
-				CA4764AE1306C985001D54B0 /* Castles.m4a in Resources */,
-				CA4764AF1306C985001D54B0 /* Combat.m4a in Resources */,
-				CA4764B01306C985001D54B0 /* Dungeon.m4a in Resources */,
-				CA4764B11306C985001D54B0 /* Fanfare_Of_Lord_British.m4a in Resources */,
-				CA4764B21306C985001D54B0 /* Rule_Britannia.m4a in Resources */,
-				CA4764B31306C985001D54B0 /* Shopping.m4a in Resources */,
-				CA4764B41306C985001D54B0 /* Shrines.m4a in Resources */,
-				CA4764B51306C985001D54B0 /* Towns.m4a in Resources */,
-				CA4764B61306C985001D54B0 /* Wanderer.m4a in Resources */,
 				CA4764C61306E993001D54B0 /* error.caf in Resources */,
 				CA4764C71306E993001D54B0 /* evade.caf in Resources */,
 				CA4764C81306E993001D54B0 /* flee.caf in Resources */,
@@ -3411,6 +3402,15 @@
 				CA9DADD9131A9E4800D81CB3 /* spell_precast_R_with_mp45.caf in Resources */,
 				CA9DADDA131A9E4800D81CB3 /* walk_normal.caf in Resources */,
 				CA3260541396BC1C002C7741 /* Entitlements.plist in Resources */,
+				CA2CF39B13C76525009B514C /* Castles.mp3 in Resources */,
+				CA2CF39C13C76525009B514C /* Combat.mp3 in Resources */,
+				CA2CF39D13C76525009B514C /* Dungeon.mp3 in Resources */,
+				CA2CF39E13C76525009B514C /* Fanfare_Of_Lord_British.mp3 in Resources */,
+				CA2CF39F13C76525009B514C /* Rule_Britannia.mp3 in Resources */,
+				CA2CF3A013C76525009B514C /* Shopping.mp3 in Resources */,
+				CA2CF3A113C76525009B514C /* Shrines.mp3 in Resources */,
+				CA2CF3A213C76525009B514C /* Towns.mp3 in Resources */,
+				CA2CF3A313C76525009B514C /* Wanderer.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
