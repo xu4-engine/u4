@@ -13,11 +13,9 @@
 
 Image *View::screen = NULL;
 
-View::View(int x, int y, int width, int height) {
-    this->x = x;
-    this->y = y;
-    this->width = width;
-    this->height = height;
+View::View(int x, int y, int width, int height)
+: x(x), y(y), width(width), height(height), highlighted(false), highlightX(0), highlightY(0), highlightW(0), highlightH(0)
+{
     if (screen == NULL)
         screen = imageMgr->get("screen")->image;
 }
@@ -33,6 +31,7 @@ void View::reinit() {
  * Clear the view to black.
  */
 void View::clear() {
+    unhighlight();
     screen->fillRect(SCALED(x), SCALED(y), SCALED(width), SCALED(height), 0, 0, 0);
 }
 
@@ -40,6 +39,8 @@ void View::clear() {
  * Update the view to the screen.
  */
 void View::update() {
+    if (highlighted)
+        drawHighlighted();
 #ifndef IOS
     SDL_UpdateRect(SDL_GetVideoSurface(), SCALED(x), SCALED(y), SCALED(width), SCALED(height));
 #else
@@ -51,6 +52,8 @@ void View::update() {
  * Update a piece of the view to the screen.
  */
 void View::update(int x, int y, int width, int height) {
+    if (highlighted)
+        drawHighlighted();
 #ifndef IOS
     SDL_UpdateRect(SDL_GetVideoSurface(), SCALED(this->x + x), SCALED(this->y + y), SCALED(width), SCALED(height));
 #else
@@ -62,16 +65,30 @@ void View::update(int x, int y, int width, int height) {
  * Highlight a piece of the screen by drawing it in inverted colors.
  */ 
 void View::highlight(int x, int y, int width, int height) {
-    Image *screen = imageMgr->get("screen")->image;
+    highlighted = true;
+    highlightX = x;
+    highlightY = y;
+    highlightW = width;
+    highlightH = height;
+    
+    update(x, y, width, height);
+}
 
-    Image *tmp = Image::create(SCALED(width), SCALED(height), false, Image::SOFTWARE);
+void View::unhighlight() {
+    highlighted = false;
+    update(highlightX, highlightY, highlightW, highlightH);
+    highlightX = highlightY = highlightW = highlightH = 0;
+}
+
+void View::drawHighlighted() {
+    Image *screen = imageMgr->get("screen")->image;
+    
+    Image *tmp = Image::create(SCALED(highlightW), SCALED(highlightH), false, Image::SOFTWARE);
     if (!tmp)
         return;
-
-    screen->drawSubRectOn(tmp, 0, 0, SCALED(this->x + x), SCALED(this->y + y), SCALED(width), SCALED(height));
+    
+    screen->drawSubRectOn(tmp, 0, 0, SCALED(this->x + highlightX), SCALED(this->y + highlightY), SCALED(highlightW), SCALED(highlightH));
     tmp->drawHighlighted();
-    tmp->draw(SCALED(this->x + x), SCALED(this->y + y));
-    delete tmp;
-
-    update(x, y, width, height);
+    tmp->draw(SCALED(this->x + highlightX), SCALED(this->y + highlightY));
+    delete tmp;    
 }

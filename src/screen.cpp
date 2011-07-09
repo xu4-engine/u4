@@ -1056,6 +1056,10 @@ int screenPointInMouseArea(int x, int y, MouseArea *area) {
     return 0;
 }
 
+void screenRedrawMapArea() {
+    game->mapArea.update();
+}
+
 void screenEraseMapArea() {
     Image *screen = imageMgr->get("screen")->image;
     screen->fillRect(BORDER_WIDTH * settings.scale,

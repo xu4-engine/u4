@@ -27,9 +27,13 @@ public:
     virtual void update();
     virtual void update(int x, int y, int width, int height);
     virtual void highlight(int x, int y, int width, int height);
+    virtual void unhighlight();
 
 protected:
     int x, y, width, height;
+    bool highlighted;
+    int highlightX, highlightY, highlightW, highlightH;
+    void drawHighlighted();
 #ifdef IOS
     friend void U4IOS::updateScreenView();
 #endif

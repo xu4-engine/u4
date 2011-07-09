@@ -110,9 +110,9 @@ public:
     void initMoons();
     void updateMoons(bool showmoongates);
 
-    static void doScreenAnimationsWhilePausing(int timeFactor);
     static void flashTile(const Coords &coords, MapTile tile, int timeFactor);
     static void flashTile(const Coords &coords, const std::string &tilename, int timeFactor);
+    static void doScreenAnimationsWhilePausing(int timeFactor);
 
     TileView mapArea;
     bool paused;

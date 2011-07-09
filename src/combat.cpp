@@ -703,7 +703,7 @@ void CombatController::doScreenAnimationsWhilePausing(int timeFactor)
     for (i = 0; i < timeFactor; i++) {        
         /* do screen animations while we're pausing */
         if (i % divisor == 0)
-        	gameUpdateScreen();
+               gameUpdateScreen();
         EventHandler::wait_msecs(eventTimerGranularity/divisor);
     }
 }

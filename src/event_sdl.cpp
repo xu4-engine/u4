@@ -215,11 +215,152 @@ void TimedEventMgr::start() {
 EventHandler::EventHandler() : timer(eventTimerGranularity), updateScreen(NULL) {
 }
 
+static void handleMouseMotionEvent(const SDL_Event &event) {    
+    if (!settings.mouseOptions.enabled)
+        return;
+
+    MouseArea *area;
+    area = eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
+    if (area)
+        screenSetMouseCursor(area->cursor);
+    else
+        screenSetMouseCursor(MC_DEFAULT);
+}
+
+static void handleActiveEvent(const SDL_Event &event, updateScreenCallback updateScreen) {
+    if (event.active.state & SDL_APPACTIVE) {            
+        // application was previously iconified and is now being restored
+        if (event.active.gain) {
+            if (updateScreen)
+                (*updateScreen)();
+            screenRedrawScreen();
+        }                
+    }
+}
+
+static void handleMouseButtonDownEvent(const SDL_Event &event, Controller *controller, updateScreenCallback updateScreen) {
+    int button = event.button.button - 1;
+    
+    if (!settings.mouseOptions.enabled)
+        return;
+    
+    if (button > 2)
+        button = 0;
+    MouseArea *area = eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
+    if (!area || area->command[button] == 0)
+        return;
+    controller->keyPressed(area->command[button]);            
+    if (updateScreen)
+        (*updateScreen)();
+    screenRedrawScreen();
+}
+
+static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, updateScreenCallback updateScreen) {
+    int processed;
+    int key;
+    
+    if (event.key.keysym.unicode != 0)
+        key = event.key.keysym.unicode & 0x7F;
+    else
+        key = event.key.keysym.sym;
+    
+    if (event.key.keysym.mod & KMOD_ALT)
+#if defined(MACOSX)
+        key = U4_ALT + event.key.keysym.sym; // macosx translates alt keys into strange unicode chars
+#else
+    key += U4_ALT;
+#endif
+    if (event.key.keysym.mod & KMOD_META)
+        key += U4_META;
+    
+    if (event.key.keysym.sym == SDLK_UP)
+        key = U4_UP;
+    else if (event.key.keysym.sym == SDLK_DOWN)
+        key = U4_DOWN;
+    else if (event.key.keysym.sym == SDLK_LEFT)
+        key = U4_LEFT;
+    else if (event.key.keysym.sym == SDLK_RIGHT)
+        key = U4_RIGHT;
+    else if (event.key.keysym.sym == SDLK_BACKSPACE ||
+             event.key.keysym.sym == SDLK_DELETE)
+        key = U4_BACKSPACE;
+    
+#if defined(MACOSX)
+    // Mac OS X translates function keys weirdly too
+    if ((event.key.keysym.sym >= SDLK_F1) && (event.key.keysym.sym <= SDLK_F15))
+        key = U4_FKEY + (event.key.keysym.sym - SDLK_F1);
+#endif
+    
+    if (verbose)
+        printf("key event: unicode = %d, sym = %d, mod = %d; translated = %d\n", 
+               event.key.keysym.unicode, 
+               event.key.keysym.sym, 
+               event.key.keysym.mod, 
+               key);
+    
+    /* handle the keypress */
+    processed = controller->notifyKeyPressed(key);
+    
+    if (processed) {
+        if (updateScreen)
+            (*updateScreen)();
+        screenRedrawScreen();
+    }
+    
+}
+
+static Uint32 sleepTimerCallback(Uint32 interval, void *) {
+    SDL_Event stopEvent;
+    stopEvent.type = SDL_USEREVENT;
+    stopEvent.user.code = 1;
+    stopEvent.user.data1 = 0;
+    stopEvent.user.data2 = 0;
+    SDL_PushEvent(&stopEvent);
+    return 0;
+}
+
 /**
  * Delays program execution for the specified number of milliseconds.
+ * This doesn't actually stop events, but it stops the user from interacting
+ * While some important event happens (e.g., getting hit by a cannon ball or a spell effect).
  */
 void EventHandler::sleep(unsigned int usec) {
-    SDL_Delay(usec);
+    // Start a timer for the amount of time we want to sleep from user input.
+    static bool stopUserInput = true; // Make this static so that all instance stop. (e.g., sleep calling sleep).
+    SDL_TimerID sleepingTimer = SDL_AddTimer(usec, sleepTimerCallback, 0);
+    
+    stopUserInput = true;
+    while (stopUserInput) {
+        SDL_Event event;
+        SDL_WaitEvent(&event);
+        switch (event.type) {
+        default:
+            break;
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+            // Discard the event.
+            break;
+        case SDL_MOUSEMOTION:
+            handleMouseMotionEvent(event);
+            break;
+        case SDL_ACTIVEEVENT:
+            handleActiveEvent(event, eventHandler->updateScreen);
+            break;
+        case SDL_USEREVENT:
+            if (event.user.code == 0) {
+                eventHandler->getTimer()->tick();
+            } else if (event.user.code == 1) {
+                SDL_RemoveTimer(sleepingTimer);
+                stopUserInput = false;
+            }
+            break;
+        case SDL_QUIT:
+            ::exit(0);
+            break;
+        }
+    }
 }
 
 void EventHandler::run() {
@@ -228,113 +369,32 @@ void EventHandler::run() {
     screenRedrawScreen();
 
     while (!ended && !controllerDone) {
-        int processed = 0;
         SDL_Event event;
-        MouseArea *area;
-        Controller *controller = getController();
 
         SDL_WaitEvent(&event);
 
         switch (event.type) {
-        case SDL_KEYDOWN: {
-            int key;
-
-            if (event.key.keysym.unicode != 0)
-                key = event.key.keysym.unicode & 0x7F;
-            else
-                key = event.key.keysym.sym;
-
-            if (event.key.keysym.mod & KMOD_ALT)
-#if defined(MACOSX)
-                key = U4_ALT + event.key.keysym.sym; // macosx translates alt keys into strange unicode chars
-#else
-                key += U4_ALT;
-#endif
-            if (event.key.keysym.mod & KMOD_META)
-                key += U4_META;
-
-            if (event.key.keysym.sym == SDLK_UP)
-                key = U4_UP;
-            else if (event.key.keysym.sym == SDLK_DOWN)
-                key = U4_DOWN;
-            else if (event.key.keysym.sym == SDLK_LEFT)
-                key = U4_LEFT;
-            else if (event.key.keysym.sym == SDLK_RIGHT)
-                key = U4_RIGHT;
-            else if (event.key.keysym.sym == SDLK_BACKSPACE ||
-                     event.key.keysym.sym == SDLK_DELETE)
-                key = U4_BACKSPACE;
-
-#if defined(MACOSX)
-            // Mac OS X translates function keys weirdly too
-            if ((event.key.keysym.sym >= SDLK_F1) && (event.key.keysym.sym <= SDLK_F15))
-                key = U4_FKEY + (event.key.keysym.sym - SDLK_F1);
-#endif
-
-            if (verbose)
-                printf("key event: unicode = %d, sym = %d, mod = %d; translated = %d\n", 
-                       event.key.keysym.unicode, 
-                       event.key.keysym.sym, 
-                       event.key.keysym.mod, 
-                       key);
-
-            /* handle the keypress */
-            processed = controller->notifyKeyPressed(key);
-
-            if (processed) {
-                if (updateScreen)
-                    (*updateScreen)();
-                screenRedrawScreen();
-            }
+        default:
             break;
-        }
-
-        case SDL_MOUSEBUTTONDOWN: {
-            int button = event.button.button - 1;
-
-            if (!settings.mouseOptions.enabled)
-                break;
-
-            if (button > 2)
-                button = 0;
-            area = eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
-            if (!area || area->command[button] == 0)
-                break;
-            controller->keyPressed(area->command[button]);            
-            if (updateScreen)
-                (*updateScreen)();
-            screenRedrawScreen();
+        case SDL_KEYDOWN:
+            handleKeyDownEvent(event, getController(), updateScreen);
             break;
-        }
 
-        case SDL_MOUSEMOTION: {
-            if (!settings.mouseOptions.enabled)
-                break;
-
-            area = eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
-            if (area)
-                screenSetMouseCursor(area->cursor);
-            else
-                screenSetMouseCursor(MC_DEFAULT);
+        case SDL_MOUSEBUTTONDOWN:
+            handleMouseButtonDownEvent(event, getController(), updateScreen);
             break;
-        }
 
-        case SDL_USEREVENT: {
+        case SDL_MOUSEMOTION:
+            handleMouseMotionEvent(event);
+            break;
+
+        case SDL_USEREVENT:
             eventHandler->getTimer()->tick();
             break;
-        }
 
-        case SDL_ACTIVEEVENT: {
-            if (event.active.state & SDL_APPACTIVE) {            
-                // application was previously iconified and is now being restored
-                if (event.active.gain) {
-                    if (updateScreen)
-                        (*updateScreen)();
-                    screenRedrawScreen();
-                }                
-            }
+        case SDL_ACTIVEEVENT:
+            handleActiveEvent(event, updateScreen);
             break;
-        }
 
         case SDL_QUIT:
             ::exit(0);

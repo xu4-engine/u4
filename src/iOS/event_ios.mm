@@ -294,18 +294,25 @@ bool TimedEventMgr::hasActiveTimer() const
 EventHandler::EventHandler() : timer(eventTimerGranularity), updateScreen(NULL) {
 }
 
+class DisableButtonHelper {
+public:
+    DisableButtonHelper() {
+        U4IOS::disableGameButtons();
+    }
+    ~DisableButtonHelper() {
+        U4IOS::enableGameButtons();
+    }
+};
+
+
 /**
  * Delays program execution for the specified number of milliseconds.
  */
 void EventHandler::sleep(unsigned int usec) {
-    bool combatControllerRunning = dynamic_cast<CombatController *>(instance->getController());
-    if (combatControllerRunning)
-        U4IOS::disableGameButtons();
+    DisableButtonHelper disableButtons;
     NSRunLoop *runloop = [NSRunLoop mainRunLoop];
     NSDate *date = [NSDate dateWithTimeIntervalSinceNow:usec / 1000.0];
     [runloop runUntilDate:date];
-    if (combatControllerRunning)
-        U4IOS::enableGameButtons();
 }
 
 void EventHandler::run() {

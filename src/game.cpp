@@ -680,7 +680,6 @@ void GameController::finishTurn() {
         }
     }
     
-    doScreenAnimationsWhilePausing(12);
 
     /* draw a prompt */
     screenPrompt();
@@ -706,7 +705,6 @@ void GameController::flashTile(const Coords &coords, const string &tilename, int
     flashTile(coords, tile->id, timeFactor);
 }
 
-
 void GameController::doScreenAnimationsWhilePausing(int timeFactor)
 {
     int i;
@@ -714,11 +712,10 @@ void GameController::doScreenAnimationsWhilePausing(int timeFactor)
     for (i = 0; i < timeFactor; i++) {
         /* do screen animations while we're pausing */
         if (i % divisor == 0)
-        	gameUpdateScreen();
+               gameUpdateScreen();
         EventHandler::wait_msecs(eventTimerGranularity/divisor);
     }
 }
-
 
 /**
  * Provide feedback to user after a party event happens.
@@ -800,6 +797,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
         gameUpdateScreen();
         game->mapArea.highlight(0, 0, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
         EventHandler::sleep(time);
+        game->mapArea.unhighlight();
         screenRedrawScreen();
 
         if (effect == Spell::SFX_TREMOR) {

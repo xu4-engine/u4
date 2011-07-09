@@ -71,13 +71,6 @@ void screenRedrawScreen() {
     [U4IOS::frontU4View() setNeedsDisplay];
 }
 
-void screenRedrawMapArea() {
-    [U4IOS::frontU4View() setNeedsDisplayInRect:CGRectMake(BORDER_WIDTH * settings.scale, 
-                                                        BORDER_HEIGHT * settings.scale, 
-                                                        VIEWPORT_W * TILE_WIDTH * settings.scale,
-                                                        VIEWPORT_H * TILE_HEIGHT * settings.scale)];
-}
-
 void screenRedrawTextArea(int x, int y, int width, int height) {
     [U4IOS::frontU4View() setNeedsDisplayInRect:CGRectMake(x * CHAR_WIDTH * settings.scale,
                                                         y * CHAR_HEIGHT * settings.scale,
