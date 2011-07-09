@@ -371,7 +371,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     UIPopoverController *popoverController = [[[UIPopoverController alloc] initWithContentViewController:directionPopup] autorelease];
     popoverController.delegate = self;
     self.actionDirectionController = popoverController;
-    [self.actionDirectionController presentPopoverFromRect:button.frame inView:self.view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    [self.actionDirectionController presentPopoverFromRect:button.frame inView:button.superview permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void)dismissDirectionPopup {
