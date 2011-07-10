@@ -371,12 +371,13 @@ bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDama
 
         /* show the 'hit' tile */
         soundPlay(SOUND_NPC_STRUCK);
-        GameController::flashTile(coords, attackTile, 6);
+        GameController::flashTile(coords, attackTile, 3);
 
 
         /* apply the damage to the creature */
         CombatController *controller = spellCombatController();
         controller->getCurrentPlayer()->dealDamage(creature, attackDamage);
+        GameController::flashTile(coords, attackTile, 1);
     }
 
     return objectHit;

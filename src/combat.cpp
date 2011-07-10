@@ -564,10 +564,12 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
         soundPlay(SOUND_NPC_STRUCK, false,-1);                                    // NPC_STRUCK, melee hit
         GameController::flashTile(coords, hittile, 3);
 
-
         /* apply the damage to the creature */
         if (!attacker->dealDamage(creature, attacker->getDamage()))
+        {
             creature = NULL;
+            GameController::flashTile(coords, hittile, 1);
+        }
     }
 
     return true;
@@ -592,7 +594,7 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
 
     GameController::flashTile(coords, misstile, 1);
     /* show the 'hit' tile */
-    GameController::flashTile(coords, hittile, 4);
+    GameController::flashTile(coords, hittile, 3);
 
     /* These effects happen whether or not the opponent was hit */
     switch(effect) {
@@ -646,8 +648,8 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
         else screenMessage("\n%s Hit!\n", target->getName().c_str());
         attacker->dealDamage(target, attacker->getDamage());
         break;
-    }       
-
+    }
+    GameController::flashTile(coords, hittile, 1);
     return true;
 }
 

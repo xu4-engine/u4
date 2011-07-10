@@ -802,6 +802,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
             gameUpdateScreen();
             soundPlay(SOUND_RUMBLE, false);
             screenShake(8);
+
         }
 
         break;

@@ -1279,7 +1279,7 @@
         <image prescale="2" name="tile_moongate_opening" filename="new/tile_moongate_rising.png" xu4Graphic="true"/>
         <image prescale="2" name="tile_moongate" filename="new/tile_moongate.png" xu4Graphic="true"/>
         <image prescale="2" name="tile_brush" filename="new/tile_bush.png" xu4Graphic="true"/>
-        <image prescale="2" name="tile_forest" filename="new/tile_forest.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_forest" filename="new/tile_forest.png" xu4Graphic="true"/> 
         <image prescale="2" name="tile_poison_field" filename="new/tile_poison_field.png" xu4Graphic="true"/>
         <image prescale="2" name="tile_energy_field" filename="new/tile_electric_field.png" xu4Graphic="true"/>
         <image prescale="2" name="tile_fire_field" filename="new/tile_fire_field.png" xu4Graphic="true"/>
