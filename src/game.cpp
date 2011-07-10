@@ -703,7 +703,7 @@ void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
    	EventHandler::wait_msecs(msecPerFrame);//settings.gameCyclesPerSecond);
     c->location->map->annotations->remove(coords, tile);
 
-    screenTileUpdate(&game->mapArea, coords);
+    screenTileUpdate(&game->mapArea, coords, false);
 }
 
 void GameController::flashTile(const Coords &coords, const string &tilename, int timeFactor) {

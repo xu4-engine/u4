@@ -415,10 +415,13 @@ void screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
 		y = y - c->location->coords.y + VIEWPORT_H / 2;
 	}
 
-	view->drawTile(tiles, focus, x, y);
+	if (x >= 0 && y >= 0 && x < VIEWPORT_W && y < VIEWPORT_H)
+	{
+		view->drawTile(tiles, focus, x, y);
 
-	if (redraw)
-		screenRedrawMapArea();
+		if (redraw)
+			screenRedrawMapArea();
+	}
 }
 
 /**
