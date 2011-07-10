@@ -693,10 +693,17 @@ void GameController::finishTurn() {
  * This is used for 'being hit' or 'being missed'
  * by weapons, cannon fire, spells, etc.
  */
-void GameController::flashTile(const Coords &coords, MapTile tile, int timeFactor) {
+void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
     c->location->map->annotations->add(coords, tile, true);
-    doScreenAnimationsWhilePausing(timeFactor);
+    //doScreenAnimationsWhilePausing(timeFactor);
+
+    int msecPerFrame = frames * 33;
+
+    screenTileUpdate(&game->mapArea, coords);
+   	EventHandler::wait_msecs(msecPerFrame);//settings.gameCyclesPerSecond);
     c->location->map->annotations->remove(coords, tile);
+
+    screenTileUpdate(&game->mapArea, coords);
 }
 
 void GameController::flashTile(const Coords &coords, const string &tilename, int timeFactor) {
@@ -705,17 +712,6 @@ void GameController::flashTile(const Coords &coords, const string &tilename, int
     flashTile(coords, tile->id, timeFactor);
 }
 
-void GameController::doScreenAnimationsWhilePausing(int timeFactor)
-{
-    int i;
-    int divisor = 20;
-    for (i = 0; i < timeFactor; i++) {
-        /* do screen animations while we're pausing */
-        if (i % divisor == 0)
-               gameUpdateScreen();
-        EventHandler::wait_msecs(eventTimerGranularity/divisor);
-    }
-}
 
 /**
  * Provide feedback to user after a party event happens.
@@ -771,7 +767,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
     if (player >= 0)
         c->stats->highlightPlayer(player);
 
-    time = settings.spellEffectSpeed * 1000 / settings.gameCyclesPerSecond;
+    time = settings.spellEffectSpeed * 800 / settings.gameCyclesPerSecond;
     soundPlay(sound, false, time);
 
     ///The following effect multipliers are not accurate
@@ -1909,7 +1905,8 @@ bool fireAt(const Coords &coords, bool originAvatar) {
     Object *obj = NULL;
 
 
-    CombatController::attackFlash(coords, "miss_flash", 1);
+    MapTile tile(c->location->map->tileset->getByName("miss_flash")->id);
+    GameController::flashTile(coords, tile, 1);
 
     obj = c->location->map->objectAt(coords);
     Creature *m = dynamic_cast<Creature*>(obj);
@@ -1933,7 +1930,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
         
         /* Is is a pirate ship firing at US? */
         if (hitsAvatar) {
-            CombatController::attackFlash(coords, "hit_flash", 4);
+        	GameController::flashTile(coords, "hit_flash", 4);
 
             if (c->transportContext == TRANSPORT_SHIP)
                 gameDamageShip(-1, 10);
@@ -1941,13 +1938,13 @@ bool fireAt(const Coords &coords, bool originAvatar) {
         }          
         /* inanimate objects get destroyed instantly, while creatures get a chance */
         else if (obj->getType() == Object::UNKNOWN) {
-            CombatController::attackFlash(coords, "hit_flash", 4);
+        	GameController::flashTile(coords, "hit_flash", 4);
             c->location->map->removeObject(obj);
         }
             
         /* only the avatar can hurt other creatures with cannon fire */
         else if (originAvatar) {
-            CombatController::attackFlash(coords, "hit_flash", 4);
+        	GameController::flashTile(coords, "hit_flash", 4);
             if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
                 c->location->map->removeObject(obj);
         }
@@ -1955,8 +1952,6 @@ bool fireAt(const Coords &coords, bool originAvatar) {
         objectHit = true;
     }
         
-    c->location->map->annotations->remove(coords, c->location->map->tileset->getByName("miss_flash")->id);
-
     return objectHit;
 }
 
@@ -3228,6 +3223,8 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
                                                       m->getWorldrangedtile() : 
                                                       "hit_flash")->id);
 
+    GameController::flashTile(coords, tile, 1);
+
     // See if the attack hits the avatar
     Object *obj = c->location->map->objectAt(coords);        
     m = dynamic_cast<Creature*>(obj);
@@ -3235,7 +3232,7 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
     // Does the attack hit the avatar?
     if (coords == c->location->coords) {
         /* always displays as a 'hit' */
-        CombatController::attackFlash(coords, tile, 3);
+    	GameController::flashTile(coords, tile, 3);
 
         /* FIXME: check actual damage from u4dos -- values here are guessed */
         if (c->transportContext == TRANSPORT_SHIP)
@@ -3249,24 +3246,12 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
         if ((obj->getType() == Object::CREATURE && m->isAttackable()) ||
             obj->getType() == Object::UNKNOWN) {
                 
-            CombatController::attackFlash(coords, tile, 3);
+        	GameController::flashTile(coords, tile, 3);
             c->location->map->removeObject(obj);
 
             return true;
         }            
     }
-        
-    // Show the attack annotation
-    c->location->map->annotations->add(coords, tile, true);
-    gameUpdateScreen();
-
-    /* Based on attack speed setting in setting struct, make a delay for
-       the attack annotation */
-    //if (attackdelay > 0)
-    //    EventHandler::wait_msecs(attackdelay * 4);
-
-    c->location->map->annotations->remove(coords, tile);
-
     return false;    
 }
 
@@ -3347,11 +3332,11 @@ void gameDamageParty(int minDamage, int maxDamage) {
             c->party->member(i)->applyDamage(damage);
             c->stats->highlightPlayer(i);
             lastdmged = i;
-            EventHandler::wait_msecs(100);
+            EventHandler::sleep(50);
         }
     }
     
-    screenShake(2);
+    screenShake(1);
     
     // Un-highlight the last player
     if (lastdmged != -1) c->stats->highlightPlayer(lastdmged);

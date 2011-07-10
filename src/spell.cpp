@@ -315,7 +315,7 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
 		/* recalculate spell speed - based on 5/sec */
 		float MP_OF_LARGEST_SPELL = 45;
 		int spellMp = spells[spell].mp;
-		time = 50000.0 / settings.spellEffectSpeed / settings.gameCyclesPerSecond *  spellMp / MP_OF_LARGEST_SPELL;
+		time = 10000.0 / settings.spellEffectSpeed  *  spellMp / MP_OF_LARGEST_SPELL;
 		soundPlay(SOUND_PREMAGIC_MANA_JUMBLE, false, time);
 		EventHandler::wait_msecs(time);
 
@@ -364,14 +364,14 @@ bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDama
     Creature *creature = cm->creatureAt(coords);
 
     if (!creature) {
-        CombatController::attackFlash(coords, attackTile,2);
+    	GameController::flashTile(coords, attackTile,2);
     }
     else {
         objectHit = true;
 
         /* show the 'hit' tile */
         soundPlay(SOUND_NPC_STRUCK);
-        CombatController::attackFlash(coords, attackTile, 6);
+        GameController::flashTile(coords, attackTile, 6);
 
 
         /* apply the damage to the creature */
@@ -446,7 +446,7 @@ static int spellBlink(int dir) {
 static int spellCure(int player) {
     ASSERT(player < 8, "player out of range: %d", player);
 
-    GameController::flashTile(c->party->member(player)->getCoords(), "moongate", 8);
+    GameController::flashTile(c->party->member(player)->getCoords(), "wisp", 1);
     return c->party->member(player)->heal(HT_CURE);
 }
 
@@ -464,7 +464,7 @@ static int spellDispel(int dir) {
      */
     field.move((Direction)dir, c->location->map);    
 
-    GameController::flashTile(field, "wisp", 16);
+    GameController::flashTile(field, "wisp", 2);
     /*
      * if there is a field annotation, remove it and replace it with a valid
      * replacement annotation.  We do this because sometimes dungeon triggers
@@ -568,7 +568,7 @@ static int spellFireball(int dir) {
 static int spellGate(int phase) {
     const Coords *moongate;
 
-    GameController::flashTile(c->location->coords, "moongate", 32);
+    GameController::flashTile(c->location->coords, "moongate", 2);
 
     moongate = moongateGetGateCoordsForPhase(phase);
     if (moongate) 
@@ -580,7 +580,7 @@ static int spellGate(int phase) {
 static int spellHeal(int player) {
     ASSERT(player < 8, "player out of range: %d", player);
 
-    GameController::flashTile(c->party->member(player)->getCoords(), "wisp", 16);
+    GameController::flashTile(c->party->member(player)->getCoords(), "wisp", 1);
     c->party->member(player)->heal(HT_HEAL);
     return 1;
 }
@@ -646,13 +646,13 @@ static int spellSleep(int unused) {
     for (i = creatures.begin(); i != creatures.end(); i++) {         
         Creature *m = *i;
         Coords coords = m->getCoords();
-        GameController::flashTile(coords, "wisp", 6);
+        GameController::flashTile(coords, "wisp", 1);
         if ((m->getResists() != EFFECT_SLEEP) &&
             xu4_random(0xFF) >= m->getHp())
         {
         	soundPlay(SOUND_POISON_EFFECT);
             m->putToSleep();
-            GameController::flashTile(coords, "sleep_field", 32);
+            GameController::flashTile(coords, "sleep_field", 3);
         }
         else
         	soundPlay(SOUND_EVADE);
@@ -671,7 +671,7 @@ static int spellTremor(int unused) {
 
 
         Coords coords = m->getCoords();
-        CombatController::attackFlash(coords, "rocks", 6);
+        //GameController::flashTile(coords, "rocks", 1);
 
         /* creatures with over 192 hp are unaffected */
         if (m->getHp() > 192) {
@@ -682,13 +682,13 @@ static int spellTremor(int unused) {
             /* Deal maximum damage to creature */
             if (xu4_random(2) == 0) {
                 soundPlay(SOUND_NPC_STRUCK);
-                CombatController::attackFlash(coords, "hit_flash", 32);
+                GameController::flashTile(coords, "hit_flash", 3);
                 ct->getCurrentPlayer()->dealDamage(m, 0xFF);
             }
             /* Deal enough damage to creature to make it flee */
             else if (xu4_random(2) == 0) {
                 soundPlay(SOUND_NPC_STRUCK);
-                CombatController::attackFlash(coords, "hit_flash", 16);
+                GameController::flashTile(coords, "hit_flash", 2);
                 if (m->getHp() > 23)
                     ct->getCurrentPlayer()->dealDamage(m, m->getHp()-23);
             }

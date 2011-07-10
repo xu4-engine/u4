@@ -35,6 +35,7 @@ class Image;
 class Map;
 class Tile;
 class TileView;
+class Coords;
 
 #if __GNUC__
 #define PRINTF_LIKE(x,y)  __attribute__ ((format (printf, (x), (y))))
@@ -108,6 +109,7 @@ void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
 void screenTextAt(int x, int y, const char *fmt, ...) PRINTF_LIKE(3, 4);
 void screenTextColor(int color);
+void screenTileUpdate(TileView *view, const Coords &coords, bool redraw = true);
 void screenUpdate(TileView *view, bool showmap, bool blackout);
 void screenUpdateCursor(void);
 void screenUpdateMoons(void);

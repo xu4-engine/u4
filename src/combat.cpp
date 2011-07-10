@@ -431,7 +431,7 @@ void CombatController::moveCreatures() {
     // if a jinxed monster kills another
     for (unsigned int i = 0; i < map->getCreatures().size(); i++) {
         m = map->getCreatures().at(i);
-        doScreenAnimationsWhilePausing(1);
+        //GameController::doScreenAnimationsWhilePausing(1);
         m->act(this);
         if (i < map->getCreatures().size() && map->getCreatures().at(i) != m) {
             // don't skip a later creature when an earlier one flees
@@ -542,7 +542,7 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
         
         /* If the weapon is shown as it travels, show it now */
         if (weapon->showTravel()) {
-        	attackFlash(coords, misstile, 1);
+        	GameController::flashTile(coords, misstile, 1);
         }
 
         // no target found
@@ -555,13 +555,13 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
         screenMessage("Missed!\n");
 
         /* show the 'miss' tile */
-        attackFlash(coords, misstile, 1);
+        GameController::flashTile(coords, misstile, 1);
     } else { /* The weapon hit! */
 
         /* show the 'hit' tile */
-        attackFlash(coords, misstile, 1);
+    	GameController::flashTile(coords, misstile, 1);
         soundPlay(SOUND_NPC_STRUCK, false,-1);                                    // NPC_STRUCK, melee hit
-        attackFlash(coords, hittile, 4);
+        GameController::flashTile(coords, hittile, 3);
 
 
         /* apply the damage to the creature */
@@ -580,7 +580,7 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
 
     /* If we haven't hit something valid, stop now */
     if (!target) {
-    	attackFlash(coords, misstile, 1);
+    	GameController::flashTile(coords, misstile, 1);
         return false;
     }
 
@@ -589,9 +589,9 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
   
     /* Monster's ranged attacks never miss */
 
-    attackFlash(coords, misstile, 1);
+    GameController::flashTile(coords, misstile, 1);
     /* show the 'hit' tile */
-    attackFlash(coords, hittile, 4);
+    GameController::flashTile(coords, hittile, 4);
 
     /* These effects happen whether or not the opponent was hit */
     switch(effect) {
@@ -681,31 +681,6 @@ bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, i
     gameUpdateScreen();
 
     return true;
-}
-
-/**
- * Show an attack flash at x, y on the current map.
- * This is used for 'being hit' or 'being missed' 
- * by weapons, cannon fire, spells, etc.
- */
-void CombatController::attackFlash(const Coords &coords, MapTile tile, int timeFactor) {
-	GameController::flashTile(coords, tile, timeFactor);
-}
-
-void CombatController::attackFlash(const Coords &coords, const string &tilename, int timeFactor) {
-    GameController::flashTile(coords, tilename, timeFactor);
-}
-
-void CombatController::doScreenAnimationsWhilePausing(int timeFactor)
-{
-    int i;
-    int divisor = settings.battleSpeed;
-    for (i = 0; i < timeFactor; i++) {        
-        /* do screen animations while we're pausing */
-        if (i % divisor == 0)
-               gameUpdateScreen();
-        EventHandler::wait_msecs(eventTimerGranularity/divisor);
-    }
 }
 
 void CombatController::finishTurn() {
@@ -1155,7 +1130,7 @@ void CombatController::attack() {
 
     /* show the 'miss' tile */
     if (!foundTarget) {
-        attackFlash(targetCoords, weapon->getMissTile(), 1);
+    	GameController::flashTile(targetCoords, weapon->getMissTile(), 1);
         /* This goes here so messages are shown in the original order */
         screenMessage("Missed!\n");
     }

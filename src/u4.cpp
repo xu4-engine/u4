@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 #if defined(MACOSX)
     osxInit(argv[0]);
 #endif
-    
+
     if (!u4fopen("AVATAR.EXE"))
 	{
         errorFatal(	"xu4 requires the PC version of Ultima IV to be present. "

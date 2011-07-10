@@ -30,6 +30,7 @@
 #include "tileanim.h"
 #include "tileset.h"
 #include "tileview.h"
+#include "annotation.h"
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -397,6 +398,29 @@ vector<MapTile> screenViewportTile(unsigned int width, unsigned int height, int 
     return c->location->tilesAt(tc, focus);
 }
 
+void screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
+{
+	bool focus;
+	MapCoords mc(coords);
+	mc.wrap(c->location->map);
+	vector<MapTile> tiles = c->location->tilesAt(mc, focus);
+
+	int x = coords.x;
+	int y = coords.y;
+
+	if (c->location->map->width > VIEWPORT_W || c->location->map->height > VIEWPORT_H)
+	{
+		//Center the coordinates to the viewport if you're on centered-view map.
+		x = x - c->location->coords.x + VIEWPORT_W / 2;
+		y = y - c->location->coords.y + VIEWPORT_H / 2;
+	}
+
+	view->drawTile(tiles, focus, x, y);
+
+	if (redraw)
+		screenRedrawMapArea();
+}
+
 /**
  * Redraw the screen.  If showmap is set, the normal map is drawn in
  * the map area.  If blackout is set, the map area is blacked out. If
@@ -410,7 +434,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 
     if (blackout)
     {
-    	//screenEraseMapArea();
+    	screenEraseMapArea();
     }
     else if (c->location->map->flags & FIRST_PERSON) {
     	DungeonViewer.display(c, view);
@@ -436,8 +460,9 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
-                if (screenLos[x][y])
-                    view->drawTile(viewportTiles[x][y], viewportFocus[x][y], x, y);
+                if (screenLos[x][y]) {
+               		view->drawTile(viewportTiles[x][y], viewportFocus[x][y], x, y);
+                }
                 else
                     view->drawTile(black, false, x, y);
             }
