@@ -1271,7 +1271,6 @@
     <imageset name="new" extends="VGA2" > 
         <!-- tiles, charset, and game border 
         -->
-        <image prescale="2" name="tile_poison_field" filename="new/tile_poison_field.png" xu4Graphic="true"/>
         <image prescale="2" name="tile_grass" filename="new/tile_grass.png" xu4Graphic="true"/>
         <image prescale="2" name="tile_water" filename="new/tile_water.png" xu4Graphic="true"/>
         <image prescale="2" name="tile_sea" filename="new/tile_sea.png" xu4Graphic="true"/>
@@ -1281,6 +1280,15 @@
         <image prescale="2" name="tile_moongate" filename="new/tile_moongate.png" xu4Graphic="true"/>
         <image prescale="2" name="tile_brush" filename="new/tile_bush.png" xu4Graphic="true"/>
         <image prescale="2" name="tile_forest" filename="new/tile_forest.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_poison_field" filename="new/tile_poison_field.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_energy_field" filename="new/tile_electric_field.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_fire_field" filename="new/tile_fire_field.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_sleep_field" filename="new/tile_sleep_field.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_lava" filename="new/tile_lava.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_magic_flash" filename="new/tile_magic_flash.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_hit_flash" filename="new/tile_hit_flash.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_miss_flash" filename="new/tile_miss_flash.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_whirlpool" filename="new/tile_whirlpool3.png" xu4Graphic="true"/>
 
         <image name="tiles"    filename="new/hires_transparency_fix.png"  filetype="image/png" tiles="256" prescale="2" xu4Graphic="true" fixup="blackTransparencyHack">
             <subimage name="tile_sea" x="0" y="0" width="16" height="16"/>
