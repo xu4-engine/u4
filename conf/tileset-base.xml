@@ -14,7 +14,7 @@
     <tile name="sea" rule="water" animation="scroll"/>
     <tile name="water" rule="water" animation="scroll"/>
     <tile name="shallows" rule="shallows" animation="scroll"/>
-    <tile name="swamp" rule="swamp"/>
+    <tile name="swamp" rule="swamp" />
     <tile name="grass" rule="grass"/>
     <tile name="brush" rule="brush"/>
     <tile name="forest" rule="brush" opaque="true"/>
@@ -30,9 +30,9 @@
     <tile name="ship" rule="ship" frames="4" directions="wnes" animation="shipflag"/>
     <tile name="horse" rule="horse" frames="2" directions="we"/>
     <tile name="dungeon_floor" rule="floors"/>
-    <tile name="bridge"/>
+    <tile name="bridge" usesWaterReplacementTileAsBackground="true" usesReplacementTileAsBackground="true"/>
     <tile name="balloon" rule="balloon"/>
-    <tile name="bridge_pieces" frames="2"/>
+    <tile name="bridge_pieces" frames="2" usesWaterReplacementTileAsBackground="true" usesReplacementTileAsBackground="true"/>
     <tile name="up_ladder" usesReplacementTileAsBackground="true"/>
     <tile name="down_ladder" usesReplacementTileAsBackground="true"/>
     <tile name="ruins" usesReplacementTileAsBackground="true"/>

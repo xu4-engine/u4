@@ -35,3 +35,14 @@ void Object::remove() {
         else maps[i]->removeObject(this, false);
     }
 }
+
+
+#include "screen.h"
+#include "game.h"
+void Object::animateMovement()
+{
+	//TODO abstract movement - also make screen.h and game.h not required
+    screenTileUpdate(&game->mapArea, prevCoords, false);
+    if (screenTileUpdate(&game->mapArea, coords, true))
+    	EventHandler::wait_msecs(11);
+}

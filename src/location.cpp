@@ -153,7 +153,7 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
 TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
     std::map<TileId, int> validMapTileCount;
 
-    int dirs[][2] = {{-1,0},{0,-1},{0,1},{1,0}};
+    int dirs[][2] = {{-1,0},{1,0},{0,-1},{0,1}};
     int dirs_per_step = 4; //
 
     std::set<MapCoords> searched;

@@ -440,7 +440,7 @@ bool PartyMember::applyDamage(int damage, bool) {
     if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();                    
         Map *map = getMap();
-        map->annotations->add(p, Tileset::findTileByName("corpse")->id)->setTTL(party->size());
+        map->annotations->add(p, Tileset::findTileByName("corpse")->id)->setTTL(party->size() * 2);
 
         if (party) {
             party->setChanged();

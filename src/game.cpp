@@ -625,6 +625,8 @@ void GameController::finishTurn() {
         /* update party stats */
         c->stats->setView(STATS_PARTY_OVERVIEW);
 
+        screenUpdate(&this->mapArea, true, false);
+
         /* Creatures cannot spawn, move or attack while the avatar is on the balloon */        
         if (!c->party->isFlying()) {
 

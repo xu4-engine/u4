@@ -398,7 +398,7 @@ vector<MapTile> screenViewportTile(unsigned int width, unsigned int height, int 
     return c->location->tilesAt(tc, focus);
 }
 
-void screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
+bool screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
 {
 	bool focus;
 	MapCoords mc(coords);
@@ -415,13 +415,17 @@ void screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
 		y = y - c->location->coords.y + VIEWPORT_H / 2;
 	}
 
-	if (x >= 0 && y >= 0 && x < VIEWPORT_W && y < VIEWPORT_H)
+	if (x >= 0 && y >= 0 && x < VIEWPORT_W && y < VIEWPORT_H && screenLos[x][y])
 	{
 		view->drawTile(tiles, focus, x, y);
 
 		if (redraw)
+		{
 			screenRedrawMapArea();
+			return true;
+		}
 	}
+	return false;
 }
 
 /**

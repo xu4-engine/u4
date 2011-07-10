@@ -66,7 +66,9 @@ public:
     void remove();  /**< Removes itself from any maps that it is a part of */
 
     bool setDirection(Direction d);
-        
+
+    void animateMovement();
+
     // Properties
 protected:
     MapTile tile, prevTile;

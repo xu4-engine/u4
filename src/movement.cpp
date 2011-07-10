@@ -244,8 +244,9 @@ int moveObject(Map *map, Creature *obj, MapCoords avatar) {
      */ 
     if (!(new_coords == obj->getCoords()) && 
         !MAP_IS_OOB(map, new_coords))
-        obj->setCoords(new_coords);    
-
+    {
+    	obj->setCoords(new_coords);
+    }
     return 1;
 }
 
@@ -308,8 +309,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
     /* if the object wan't slowed... */
     if (!slowed) {        
         // Set the new coordinates
-        obj->setCoords(new_coords);
-
+    	obj->setCoords(new_coords);
         return 1;
     }
 

@@ -1268,6 +1268,192 @@
         -->
         
 	</imageset>
+    <imageset name="new" extends="VGA2" > 
+        <!-- tiles, charset, and game border 
+        -->
+        <image prescale="2" name="tile_poison_field" filename="new/tile_poison_field.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_grass" filename="new/tile_grass.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_water" filename="new/tile_water.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_sea" filename="new/tile_sea.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_shallows" filename="new/tile_shallows.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_wisp" filename="new/tile_wisp.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_moongate_opening" filename="new/tile_moongate_rising.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_moongate" filename="new/tile_moongate.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_brush" filename="new/tile_bush.png" xu4Graphic="true"/>
+        <image prescale="2" name="tile_forest" filename="new/tile_forest.png" xu4Graphic="true"/>
+
+        <image name="tiles"    filename="new/hires_transparency_fix.png"  filetype="image/png" tiles="256" prescale="2" xu4Graphic="true" fixup="blackTransparencyHack">
+            <subimage name="tile_sea" x="0" y="0" width="16" height="16"/>
+            <subimage name="tile_water"         width="16" height="16"/>
+            <subimage name="tile_shallows"      width="16" height="16"/>
+            <subimage name="tile_swamp"         width="16" height="16"/>
+            <subimage name="tile_grass"         width="16" height="16"/>
+            <subimage name="tile_brush"         width="16" height="16"/>
+            <subimage name="tile_forest"        width="16" height="16"/>
+            <subimage name="tile_hills"         width="16" height="16"/>
+            <subimage name="tile_mountains"     width="16" height="16"/>
+            <subimage name="tile_dungeon"       width="16" height="16"/>
+            <subimage name="tile_city"          width="16" height="16"/>
+            <subimage name="tile_castle"        width="16" height="16"/>
+            <subimage name="tile_town"          width="16" height="16"/>
+            <subimage name="tile_lcb_west"      width="16" height="16"/>
+            <subimage name="tile_lcb_entrance"  width="16" height="16"/>
+            <subimage name="tile_lcb_east"      width="16" height="16"/>
+            <subimage name="tile_ship"          width="16" height="64"/>
+            <subimage name="tile_horse"         width="16" height="32"/>
+            <subimage name="tile_dungeon_floor" width="16" height="16"/>    
+            <subimage name="tile_bridge"        width="16" height="16"/>
+            <subimage name="tile_balloon"       width="16" height="16"/>
+            <subimage name="tile_bridge_pieces" width="16" height="32"/>
+            <subimage name="tile_up_ladder"     width="16" height="16"/>
+            <subimage name="tile_down_ladder"   width="16" height="16"/>
+            <subimage name="tile_ruins"         width="16" height="16"/>    
+            <subimage name="tile_shrine"        width="16" height="16"/>
+            <subimage name="tile_avatar"        width="16" height="16"/>
+            <subimage name="tile_mage"          width="16" height="32"/>
+            <subimage name="tile_bard"          width="16" height="32"/>
+            <subimage name="tile_fighter"       width="16" height="32"/>
+            <subimage name="tile_druid"         width="16" height="32"/>
+            <subimage name="tile_tinker"        width="16" height="32"/>
+            <subimage name="tile_paladin"       width="16" height="32"/>
+            <subimage name="tile_ranger"        width="16" height="32"/>
+            <subimage name="tile_shepherd"      width="16" height="32"/>
+            <subimage name="tile_column"        width="16" height="16"/>
+            <subimage name="tile_solids"        width="16" height="64"/>
+            <subimage name="tile_shipmast"      width="16" height="16"/>
+            <subimage name="tile_shipwheel"     width="16" height="16"/>
+            <subimage name="tile_rocks"         width="16" height="16"/>
+            <subimage name="tile_corpse"        width="16" height="16"/>
+            <subimage name="tile_stone_wall"    width="16" height="16"/>
+            <subimage name="tile_locked_door"   width="16" height="16"/>
+            <subimage name="tile_door"          width="16" height="16"/>
+            <subimage name="tile_chest"         width="16" height="16"/>
+            <subimage name="tile_ankh"          width="16" height="16"/>
+            <subimage name="tile_brick_floor"   width="16" height="16"/>
+            <subimage name="tile_wood_floor"    width="16" height="16"/>
+            <subimage name="tile_moongate_opening" width="16" height="48"/>
+            <subimage name="tile_moongate"      width="16" height="16"/>
+            <subimage name="tile_poison_field"  width="16" height="16"/>
+            <subimage name="tile_energy_field"  width="16" height="16"/>
+            <subimage name="tile_fire_field"    width="16" height="16"/>
+            <subimage name="tile_sleep_field"   width="16" height="16"/>
+            <subimage name="tile_solid"         width="16" height="16"/>
+            <subimage name="tile_secret_door"   width="16" height="16"/>
+            <subimage name="tile_altar"         width="16" height="16"/>
+            <subimage name="tile_campfire"      width="16" height="16"/>
+            <subimage name="tile_lava"          width="16" height="16"/>
+            <subimage name="tile_miss_flash"    width="16" height="16"/>
+            <subimage name="tile_magic_flash"   width="16" height="16"/>
+            <subimage name="tile_hit_flash"     width="16" height="16"/>
+            <subimage name="tile_unused"        width="16" height="32"/>
+            <subimage name="tile_villager"      width="16" height="32"/>
+            <subimage name="tile_bard_singing"  width="16" height="32"/>
+            <subimage name="tile_jester"        width="16" height="32"/>
+            <subimage name="tile_beggar"        width="16" height="32"/>
+            <subimage name="tile_child"         width="16" height="32"/>
+            <subimage name="tile_bull"          width="16" height="32"/>
+            <subimage name="tile_lord_british"  width="16" height="32"/>
+            <subimage name="tile_A"             width="16" height="16"/>
+            <subimage name="tile_B"             width="16" height="16"/>
+            <subimage name="tile_C"             width="16" height="16"/>
+            <subimage name="tile_D"             width="16" height="16"/>
+            <subimage name="tile_E"             width="16" height="16"/>
+            <subimage name="tile_F"             width="16" height="16"/>
+            <subimage name="tile_G"             width="16" height="16"/>
+            <subimage name="tile_H"             width="16" height="16"/>
+            <subimage name="tile_I"             width="16" height="16"/>
+            <subimage name="tile_J"             width="16" height="16"/>
+            <subimage name="tile_K"             width="16" height="16"/>
+            <subimage name="tile_L"             width="16" height="16"/>
+            <subimage name="tile_M"             width="16" height="16"/>
+            <subimage name="tile_N"             width="16" height="16"/>
+            <subimage name="tile_O"             width="16" height="16"/>
+            <subimage name="tile_P"             width="16" height="16"/>
+            <subimage name="tile_Q"             width="16" height="16"/>
+            <subimage name="tile_R"             width="16" height="16"/>
+            <subimage name="tile_S"             width="16" height="16"/>
+            <subimage name="tile_T"             width="16" height="16"/>
+            <subimage name="tile_U"             width="16" height="16"/>
+            <subimage name="tile_V"             width="16" height="16"/>
+            <subimage name="tile_W"             width="16" height="16"/>
+            <subimage name="tile_X"             width="16" height="16"/>
+            <subimage name="tile_Y"             width="16" height="16"/>
+            <subimage name="tile_Z"             width="16" height="16"/>
+            <subimage name="tile_space"         width="16" height="16"/>
+            <subimage name="tile_spacers"       width="16" height="48"/>
+            <subimage name="tile_black"         width="16" height="16"/>
+            <subimage name="tile_brick_wall"    width="16" height="16"/>
+
+            <!-- Water monsters -->
+            <subimage name="tile_pirate_ship"   width="16" height="64"/>
+            <subimage name="tile_nixie"         width="16" height="32"/>
+            <subimage name="tile_giant_squid"   width="16" height="32"/>
+            <subimage name="tile_sea_serpent"   width="16" height="32"/>
+            <subimage name="tile_sea_horse"     width="16" height="32"/>
+            <subimage name="tile_whirlpool"     width="16" height="32"/>
+            <subimage name="tile_storm"         width="16" height="32"/>
+    
+            <!-- Land monsters -->
+            <subimage name="tile_rat"           width="16" height="64"/>
+            <subimage name="tile_bat"           width="16" height="64"/>
+            <subimage name="tile_spider"        width="16" height="64"/>
+            <subimage name="tile_ghost"         width="16" height="64"/>
+            <subimage name="tile_slime"         width="16" height="64"/>
+            <subimage name="tile_troll"         width="16" height="64"/>
+            <subimage name="tile_gremlin"       width="16" height="64"/>
+            <subimage name="tile_mimic"         width="16" height="64"/>
+            <subimage name="tile_reaper"        width="16" height="64"/>
+            <subimage name="tile_insect_swarm"  width="16" height="64"/>
+            <subimage name="tile_gazer"         width="16" height="64"/>
+            <subimage name="tile_phantom"       width="16" height="64"/>
+            <subimage name="tile_orc"           width="16" height="64"/>
+            <subimage name="tile_skeleton"      width="16" height="64"/>
+            <subimage name="tile_rogue"         width="16" height="64"/>
+            <subimage name="tile_python"        width="16" height="64"/>
+            <subimage name="tile_ettin"         width="16" height="64"/>
+            <subimage name="tile_headless"      width="16" height="64"/>
+            <subimage name="tile_cyclops"       width="16" height="64"/>
+            <subimage name="tile_wisp"          width="16" height="64"/>
+            <subimage name="tile_evil_mage"     width="16" height="64"/>
+            <subimage name="tile_liche"         width="16" height="64"/>
+            <subimage name="tile_lava_lizard"   width="16" height="64"/>
+            <subimage name="tile_zorn"          width="16" height="64"/>
+            <subimage name="tile_daemon"        width="16" height="64"/>
+            <subimage name="tile_hydra"         width="16" height="64"/>
+            <subimage name="tile_dragon"        width="16" height="64"/>
+            <subimage name="tile_balron"        width="16" height="64"/>
+        </image>
+        <image name="tile_guard" filename="hires/mytile_guard.png" tiles="4" xu4Graphic="true" prescale="2" fixup="blackTransparencyHack"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	</imageset>
+
 
     <layout type="gem" name="Standard">
         <tileshape width="4" height="4"/>
@@ -1570,6 +1756,66 @@
 
 	<!-- TODO 'extends' for animsets -->
     <tileanimset name="FMTOWNS-Test">
+        <tileanim name="scroll">
+            <transform type="scroll" increment="1"/>
+        </tileanim>
+        <tileanim name="frame" random="50">
+            <transform type="frame"/>
+        </tileanim>
+        <tileanim name="slow_frame" random="5">
+            <transform type="frame"/>
+        </tileanim>
+        <tileanim name="cityflag" random="50">
+            <transform type="invert" x="5" y="2" width="5" height="4"/>
+        </tileanim>
+        <tileanim name="lcbflag" random="50">
+            <transform type="invert" x="5" y="0" width="7" height="4"/>
+        </tileanim>
+        <tileanim name="castleflag" random="50">
+            <transform type="invert" x="5" y="0" width="4" height="4"/>
+        </tileanim>
+        <tileanim name="shipflag" random="50">
+            <context type="frame" frame="0">
+                <transform type="invert" x="10" y="1" width="5" height="4"/>
+            </context>
+            <context type="frame" frame="1">
+                <transform type="invert" x="6" y="1" width="3" height="3"/>
+            </context>
+            <context type="frame" frame="2">
+                <transform type="invert" x="7" y="2" width="5" height="2"/>
+            </context>
+            <context type="frame" frame="3">
+                <transform type="invert" x="6" y="2" width="2" height="2"/>
+            </context>
+        </tileanim>
+        <tileanim name="pirateflag" random="50">
+            <context type="frame" frame="0">
+                <transform type="invert" x="10" y="2" width="6" height="2"/>
+            </context>
+            <context type="frame" frame="1">
+                <transform type="invert" x="6" y="2" width="3" height="2"/>
+            </context>
+            <context type="frame" frame="2">
+                <transform type="invert" x="7" y="2" width="5" height="2"/>
+            </context>
+            <context type="frame" frame="3">
+                <transform type="invert" x="6" y="2" width="2" height="2"/>
+            </context>
+        </tileanim>
+        <tileanim name="campfire">
+            <transform type="pixel_color" x="4" y="7" width="5" height="7">
+                <color red="97" green="0" blue="0"/>
+                <color red="256" green="200" blue="0"/>                
+            </transform>
+            <transform type="pixel_color" x="4" y="7" width="5" height="7">
+                <color red="0" green="0" blue="0"/>
+                <color red="156" green="0" blue="0"/>                
+            </transform>
+        </tileanim>
+    </tileanimset>
+    
+    
+    <tileanimset name="new">
         <tileanim name="scroll">
             <transform type="scroll" increment="1"/>
         </tileanim>

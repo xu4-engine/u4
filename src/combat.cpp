@@ -433,6 +433,7 @@ void CombatController::moveCreatures() {
         m = map->getCreatures().at(i);
         //GameController::doScreenAnimationsWhilePausing(1);
         m->act(this);
+
         if (i < map->getCreatures().size() && map->getCreatures().at(i) != m) {
             // don't skip a later creature when an earlier one flees
             i--;
@@ -668,15 +669,7 @@ bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, i
     for (int i = distance; i > 1; i--) {
         new_coords.move(returnDir, map);        
         
-        map->annotations->add(new_coords, misstile, true);
-        gameUpdateScreen();
-
-        /* Based on attack speed setting in setting struct, make a delay for
-           the attack annotation */
-        //if (attackdelay > 0)
-        //    EventHandler::wait_msecs(attackdelay * 2);
-        
-        map->annotations->remove(new_coords, misstile);
+        GameController::flashTile(new_coords, misstile, 1);
     }
     gameUpdateScreen();
 
