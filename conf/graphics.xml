@@ -1290,7 +1290,7 @@
         <image prescale="2" name="tile_miss_flash" filename="new/tile_miss_flash.png" xu4Graphic="true"/>
         <image prescale="2" name="tile_whirlpool" filename="new/tile_whirlpool3.png" xu4Graphic="true"/>
 
-        <image name="tiles"    filename="new/hires_transparency_fix.png"  filetype="image/png" tiles="256" prescale="2" xu4Graphic="true" fixup="blackTransparencyHack">
+        <image name="tiles"    filename="new/hires_transparency_fix.png"  filetype="image/png" tiles="256" prescale="2" xu4Graphic="true" >
             <subimage name="tile_sea" x="0" y="0" width="16" height="16"/>
             <subimage name="tile_water"         width="16" height="16"/>
             <subimage name="tile_shallows"      width="16" height="16"/>
