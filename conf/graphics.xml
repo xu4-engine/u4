@@ -1431,8 +1431,7 @@
             <subimage name="tile_dragon"        width="16" height="64"/>
             <subimage name="tile_balron"        width="16" height="64"/>
         </image>
-        <image name="tile_guard" filename="hires/mytile_guard.png" tiles="4" xu4Graphic="true" prescale="2" fixup="blackTransparencyHack"/>
-
+        <image prescale="2" name="tile_guard" filename="new/tile_guard.png" xu4Graphic="true"/>
 
         <image name="charset" filename="vga2/charset.png" tiles="128" prescale="2" xu4Graphic="true"/>
         <image name="borders" filename="vga2/start.png" prescale="2" xu4Graphic="true"/>
