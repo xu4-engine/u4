@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1056</int>
-		<string key="IBDocument.SystemVersion">10J869</string>
-		<string key="IBDocument.InterfaceBuilderVersion">1305</string>
-		<string key="IBDocument.AppKitVersion">1038.35</string>
+		<string key="IBDocument.SystemVersion">10K540</string>
+		<string key="IBDocument.InterfaceBuilderVersion">1306</string>
+		<string key="IBDocument.AppKitVersion">1038.36</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
-			<string key="NS.object.0">300</string>
+			<string key="NS.object.0">301</string>
 		</object>
 		<object class="NSArray" key="IBDocument.IntegratedClassDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -78,7 +78,7 @@
 						<string key="NSFrame">{{275, 790}, {218, 37}}</string>
 						<reference key="NSSuperview" ref="766721923"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView"/>
+						<reference key="NSNextKeyView" ref="419591521"/>
 						<bool key="IBUIOpaque">NO</bool>
 						<string key="targetRuntimeIdentifier">IBIPadFramework</string>
 						<int key="IBUIContentHorizontalAlignment">0</int>
@@ -87,6 +87,26 @@
 						<string key="IBUINormalTitle">Load Game</string>
 						<reference key="IBUIHighlightedTitleColor" ref="404172983"/>
 						<reference key="IBUINormalTitleColor" ref="565267606"/>
+						<reference key="IBUINormalTitleShadowColor" ref="1042593267"/>
+					</object>
+					<object class="IBUIButton" id="419591521">
+						<reference key="NSNextResponder" ref="766721923"/>
+						<int key="NSvFlags">271</int>
+						<string key="NSFrame">{{275, 835}, {218, 37}}</string>
+						<reference key="NSSuperview" ref="766721923"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView"/>
+						<bool key="IBUIOpaque">NO</bool>
+						<string key="targetRuntimeIdentifier">IBIPadFramework</string>
+						<int key="IBUIContentHorizontalAlignment">0</int>
+						<int key="IBUIContentVerticalAlignment">0</int>
+						<reference key="IBUIFont" ref="393298046"/>
+						<string key="IBUINormalTitle">Credits</string>
+						<reference key="IBUIHighlightedTitleColor" ref="404172983"/>
+						<object class="NSColor" key="IBUINormalTitleColor">
+							<int key="NSColorSpace">1</int>
+							<bytes key="NSRGB">MC42IDAuNiAwLjYgMC42AA</bytes>
+						</object>
 						<reference key="IBUINormalTitleShadowColor" ref="1042593267"/>
 					</object>
 					<object class="IBUIButton" id="513747628">
@@ -275,6 +295,23 @@
 					</object>
 					<int key="connectionID">20</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBCocoaTouchOutletConnection" key="connection">
+						<string key="label">creditsButton</string>
+						<reference key="source" ref="841351856"/>
+						<reference key="destination" ref="419591521"/>
+					</object>
+					<int key="connectionID">23</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBCocoaTouchEventConnection" key="connection">
+						<string key="label">showCredits:</string>
+						<reference key="source" ref="419591521"/>
+						<reference key="destination" ref="841351856"/>
+						<int key="IBEventType">7</int>
+					</object>
+					<int key="connectionID">24</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -307,6 +344,7 @@
 							<reference ref="513747628"/>
 							<reference ref="798588592"/>
 							<reference ref="654620142"/>
+							<reference ref="419591521"/>
 						</object>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -340,6 +378,11 @@
 						<reference key="object" ref="728241804"/>
 						<reference key="parent" ref="766721923"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">21</int>
+						<reference key="object" ref="419591521"/>
+						<reference key="parent" ref="766721923"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -353,6 +396,8 @@
 					<string>19.IBPluginDependency</string>
 					<string>2.IBEditorWindowLastContentRect</string>
 					<string>2.IBPluginDependency</string>
+					<string>21.CustomClassName</string>
+					<string>21.IBPluginDependency</string>
 					<string>4.CustomClassName</string>
 					<string>4.IBPluginDependency</string>
 					<string>5.CustomClassName</string>
@@ -374,6 +419,8 @@
 					<string>U4Button</string>
 					<string>com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 					<string>U4Button</string>
+					<string>com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
+					<string>U4Button</string>
 					<string>U4Button</string>
 				</object>
 			</object>
@@ -389,7 +436,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">20</int>
+			<int key="maxID">24</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -413,10 +460,12 @@
 							<string>choiceBClicked:</string>
 							<string>continuePressed:</string>
 							<string>loadGame:</string>
+							<string>showCredits:</string>
 							<string>startGame:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -432,6 +481,7 @@
 							<string>choiceBClicked:</string>
 							<string>continuePressed:</string>
 							<string>loadGame:</string>
+							<string>showCredits:</string>
 							<string>startGame:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -453,6 +503,10 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
+								<string key="name">showCredits:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
 								<string key="name">startGame:</string>
 								<string key="candidateClassName">id</string>
 							</object>
@@ -465,12 +519,14 @@
 							<string>choiceAButton</string>
 							<string>choiceBButton</string>
 							<string>continueButton</string>
+							<string>creditsButton</string>
 							<string>loadButton</string>
 							<string>startButton</string>
 							<string>u4view</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>UIButton</string>
 							<string>UIButton</string>
 							<string>UIButton</string>
 							<string>UIButton</string>
@@ -486,6 +542,7 @@
 							<string>choiceAButton</string>
 							<string>choiceBButton</string>
 							<string>continueButton</string>
+							<string>creditsButton</string>
 							<string>loadButton</string>
 							<string>startButton</string>
 							<string>u4view</string>
@@ -502,6 +559,10 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">continueButton</string>
+								<string key="candidateClassName">UIButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">creditsButton</string>
 								<string key="candidateClassName">UIButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
@@ -541,6 +602,6 @@
 		</object>
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
-		<string key="IBCocoaTouchPluginVersion">300</string>
+		<string key="IBCocoaTouchPluginVersion">301</string>
 	</data>
 </archive>

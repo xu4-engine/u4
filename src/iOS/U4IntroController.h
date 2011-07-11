@@ -32,15 +32,17 @@
 #import <UIKit/UIKit.h>
 
 #import "U4StartDialog.h"
+#import "CreditsViewController.h"
 
 @class U4View;
-@interface U4IntroController : UIViewController  <StartGameDialogDelegate> {
+@interface U4IntroController : UIViewController  <StartGameDialogDelegate, CreditsViewControllerDelegate> {
     U4StartDialogController *startGame;
     UIButton *startButton;
     UIButton *loadButton;
     UIButton *continueButton;
     UIButton *choiceAButton;
     UIButton *choiceBButton;
+    UIButton *creditsButton;
     U4View *u4view;
     BOOL finishFirstTimeLoad;
 }
@@ -52,12 +54,14 @@
 - (void)switchToContinueButtons;
 - (void)switchToChoiceButtons;
 - (void)launchGameController;
+- (IBAction)showCredits:(id)sender;
 
 @property (nonatomic, retain) IBOutlet UIButton *startButton;
 @property (nonatomic, retain) IBOutlet UIButton *loadButton;
 @property (nonatomic, retain) IBOutlet UIButton *continueButton;
 @property (nonatomic, retain) IBOutlet UIButton *choiceAButton;
 @property (nonatomic, retain) IBOutlet UIButton *choiceBButton;
+@property (nonatomic, retain) IBOutlet UIButton *creditsButton;
 @property (nonatomic, retain) IBOutlet U4View *u4view;
 
 @end

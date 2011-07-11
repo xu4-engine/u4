@@ -293,6 +293,10 @@
 		CA7D59FB128F1E9A0061DA33 /* Xit.txt in Copy Spell Descriptions */ = {isa = PBXBuildFile; fileRef = CA7D59E1128F1E9A0061DA33 /* Xit.txt */; };
 		CA7D59FC128F1E9A0061DA33 /* Y-Up.txt in Copy Spell Descriptions */ = {isa = PBXBuildFile; fileRef = CA7D59E2128F1E9A0061DA33 /* Y-Up.txt */; };
 		CA7D59FD128F1E9A0061DA33 /* Z-Down.txt in Copy Spell Descriptions */ = {isa = PBXBuildFile; fileRef = CA7D59E3128F1E9A0061DA33 /* Z-Down.txt */; };
+		CA82042F13C9EE0100E5A386 /* CreditsViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA82042D13C9EE0100E5A386 /* CreditsViewController.mm */; };
+		CA82043013C9EE0100E5A386 /* CreditsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CA82042E13C9EE0100E5A386 /* CreditsViewController.xib */; };
+		CA82044713CA093400E5A386 /* credits.html in Resources */ = {isa = PBXBuildFile; fileRef = CA82044613CA093400E5A386 /* credits.html */; };
+		CA82044A13CA09B700E5A386 /* COPYING in Resources */ = {isa = PBXBuildFile; fileRef = CA82044913CA09B700E5A386 /* COPYING */; };
 		CA870FD61139A80C00207119 /* abacus.png in Copy PNG Files */ = {isa = PBXBuildFile; fileRef = CA870F881139A7EC00207119 /* abacus.png */; };
 		CA870FD71139A80C00207119 /* beasties.png in Copy PNG Files */ = {isa = PBXBuildFile; fileRef = CA870F891139A7EC00207119 /* beasties.png */; };
 		CA870FD81139A80C00207119 /* borders.png in Copy PNG Files */ = {isa = PBXBuildFile; fileRef = CA870F8A1139A7EC00207119 /* borders.png */; };
@@ -1984,6 +1988,11 @@
 		CA7D59E1128F1E9A0061DA33 /* Xit.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Xit.txt; sourceTree = "<group>"; };
 		CA7D59E2128F1E9A0061DA33 /* Y-Up.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Y-Up.txt"; sourceTree = "<group>"; };
 		CA7D59E3128F1E9A0061DA33 /* Z-Down.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Z-Down.txt"; sourceTree = "<group>"; };
+		CA82042C13C9EE0100E5A386 /* CreditsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CreditsViewController.h; sourceTree = "<group>"; };
+		CA82042D13C9EE0100E5A386 /* CreditsViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CreditsViewController.mm; sourceTree = "<group>"; };
+		CA82042E13C9EE0100E5A386 /* CreditsViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CreditsViewController.xib; sourceTree = "<group>"; };
+		CA82044613CA093400E5A386 /* credits.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = credits.html; path = ../../credits.html; sourceTree = "<group>"; };
+		CA82044913CA09B700E5A386 /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = COPYING; path = ../../COPYING; sourceTree = "<group>"; };
 		CA870F881139A7EC00207119 /* abacus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = abacus.png; sourceTree = "<group>"; };
 		CA870F891139A7EC00207119 /* beasties.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = beasties.png; sourceTree = "<group>"; };
 		CA870F8A1139A7EC00207119 /* borders.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = borders.png; sourceTree = "<group>"; };
@@ -3080,6 +3089,9 @@
 		CABE6F0E113C5A360085A8DF /* iPad */ = {
 			isa = PBXGroup;
 			children = (
+				CA82044913CA09B700E5A386 /* COPYING */,
+				CA82044613CA093400E5A386 /* credits.html */,
+				CA82042E13C9EE0100E5A386 /* CreditsViewController.xib */,
 				CAFCFCF212D8F41B00AC49B2 /* U4ArmorChoiceDialog.xib */,
 				CAFCFBF612D8B94300AC49B2 /* U4WeaponChoiceDialog.xib */,
 				CAA905CD12AA861D00ACA77D /* CastSpellController.xib */,
@@ -3111,6 +3123,8 @@
 				CAC8CAD612AAD12900510BAC /* CharacterChoiceController.mm */,
 				CAA905CB12AA861D00ACA77D /* CastSpellController.h */,
 				CAA905CC12AA861D00ACA77D /* CastSpellController.mm */,
+				CA82042C13C9EE0100E5A386 /* CreditsViewController.h */,
+				CA82042D13C9EE0100E5A386 /* CreditsViewController.mm */,
 				CAF474321291CB87008571C9 /* SpellInfoPickerLabelLabel.h */,
 				CAF474331291CB88008571C9 /* SpellInfoPickerLabelLabel.m */,
 				CAF4742F1291B5D0008571C9 /* SpellInfoPickerLabel.h */,
@@ -3411,6 +3425,9 @@
 				CA2CF3A113C76525009B514C /* Shrines.mp3 in Resources */,
 				CA2CF3A213C76525009B514C /* Towns.mp3 in Resources */,
 				CA2CF3A313C76525009B514C /* Wanderer.mp3 in Resources */,
+				CA82043013C9EE0100E5A386 /* CreditsViewController.xib in Resources */,
+				CA82044713CA093400E5A386 /* credits.html in Resources */,
+				CA82044A13CA09B700E5A386 /* COPYING in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3612,6 +3629,7 @@
 				CAFCFCF312D8F41B00AC49B2 /* U4ArmorChoiceDialog.mm in Sources */,
 				CA4764DE1306ECEB001D54B0 /* U4AudioController.mm in Sources */,
 				CAF707481365C3C700F4E7BC /* U4Button.mm in Sources */,
+				CA82042F13C9EE0100E5A386 /* CreditsViewController.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -54,6 +54,7 @@
 @synthesize continueButton;
 @synthesize choiceAButton;
 @synthesize choiceBButton;
+@synthesize creditsButton;
 @synthesize u4view;
 
 /*
@@ -156,6 +157,7 @@
 
 - (void)viewDidUnload {
     [self setU4view:nil];
+    [self setCreditsButton:nil];
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -169,6 +171,7 @@
 
 - (void)dealloc {
     [u4view release];
+    [creditsButton release];
     [super dealloc];
 }
 
@@ -190,6 +193,17 @@
 
 - (IBAction)continuePressed:(id)sender {
     EventHandler::getInstance()->getController()->notifyKeyPressed('\n');
+}
+
+- (IBAction)showCredits:(id)sender {
+    intro->skipTitles();
+    CreditsViewController *credits = [[[CreditsViewController alloc] initWithNibName:@"CreditsViewController" bundle:nil] autorelease];
+    credits.delegate = self;
+    [self presentModalViewController:credits animated:YES];
+}
+
+- (void)CreditsViewControllerDidFinish:(CreditsViewController *)controller {
+    [controller dismissModalViewControllerAnimated:YES];
 }
 
 - (void)startDialogControllerDidFinish:(U4StartDialogController *)controller {
@@ -222,6 +236,7 @@
     [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
         self.startButton.alpha = 0.0;
         self.loadButton.alpha = 0.0;
+        self.creditsButton.alpha = 0.0;
         self.choiceAButton.alpha = 0.0;
         self.choiceBButton.alpha = 0.0;
         self.continueButton.hidden = NO;
@@ -238,6 +253,7 @@
     [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
         self.startButton.alpha = 0.0;
         self.loadButton.alpha = 0.0;
+        self.creditsButton.alpha = 0.0;
         self.choiceAButton.hidden = NO;
         self.choiceBButton.hidden = NO;
         self.choiceAButton.alpha = 1.0;
