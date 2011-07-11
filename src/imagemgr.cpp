@@ -366,7 +366,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
         x = sigData[i] + 0x14;
         y = 0xBF - sigData[i+1];
 
-        if (settings.videoType == "VGA" || settings.videoType == "VGA-ALLPNG")
+        if (settings.videoType != "EGA")
         {
             // yellow gradient
             color = im->setColor(255, (y == 1 ? 250 : 255), blue[y]);
@@ -382,7 +382,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
      * draw the red line between "Origin Systems, Inc." and "present"
      * -------------------------------------------------------------- */
     /* we're still working with an unscaled surface */
-    if (settings.videoType == "VGA")
+    if (settings.videoType != "EGA")
     {
         color = im->setColor(0, 0, 161);    // dark blue
     }

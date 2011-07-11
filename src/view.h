@@ -30,7 +30,7 @@ public:
     virtual void unhighlight();
 
 protected:
-    int x, y, width, height;
+    const int x, y, width, height;
     bool highlighted;
     int highlightX, highlightY, highlightW, highlightH;
     void drawHighlighted();

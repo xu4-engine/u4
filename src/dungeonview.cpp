@@ -33,6 +33,8 @@ DungeonView * DungeonView::getInstance()
 
 void DungeonView::display(Context * c, TileView *view)
 {
+	int x,y;
+
     /* 1st-person perspective */
     if (screen3dDungeonViewEnabled) {
         //Note: This shouldn't go above 4, unless we check opaque tiles each step of the way.
@@ -155,7 +157,7 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
     }
 
     if (tiledWall) {
-    	int i_x = SCALED((VIEWPORT_W * tileWidth / 2.0) + this->x) - (scaled->width() / 2.0);
+    	int i_x = SCALED((VIEWPORT_W * tileWidth  / 2.0) + this->x) - (scaled->width() / 2.0);
     	int i_y = SCALED((VIEWPORT_H * tileHeight / 2.0) + this->y) - (scaled->height() / 2.0);
     	int f_x = i_x + scaled->width();
     	int f_y = i_y + scaled->height();
@@ -164,7 +166,14 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
 
     	for (int x = i_x; x < f_x; x+=d_x)
     		for (int y = i_y; y < f_y; y+=d_y)
-    			animated->drawSubRectOn(this->screen,x,y,0,0,f_x - x,f_y - y);
+    			animated->drawSubRectOn(this->screen,
+    					x,
+    					y,
+    					0,
+    					0,
+    					f_x - x,
+    					f_y - y
+    			);
     }
     else {
     	int y_offset = std::max(0,(dscale[distance] - offset_adj) * offset_multiplier);

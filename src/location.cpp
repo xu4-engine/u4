@@ -133,12 +133,14 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     }
 	tiles.push_back(tileFromMapData);
 
-
-
+	/* But if the base tile requires a background, we must find it */
     if (tileType->isLandForeground()	||
     	tileType->isWaterForeground()	||
     	tileType->isLivingObject())
+    {
+
     	tiles.push_back(getReplacementTile(coords, tileType));
+    }
 
     return tiles;
 }
@@ -159,6 +161,8 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
     std::set<MapCoords> searched;
     std::list<MapCoords> searchQueue;
 
+    bool focus = false;
+
     //Pathfinding to closest traversable tile with appropriate replacement properties.
     //For tiles marked water-replaceable, pathfinding includes swimmables.
     searchQueue.push_back(atCoords);
@@ -174,13 +178,11 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
 			MapCoords newStep(currentStep);
 			newStep.move(dirs[i][0], dirs[i][1], map);
 
-		    if (MAP_IS_OOB(map, newStep))
-		    	continue;
-			Tile const * tileType = map->tileAt(newStep, WITHOUT_OBJECTS)->getTileType();
+			Tile const * tileType = map->tileTypeAt(newStep,WITHOUT_OBJECTS);
 
-			if ((tileType->isWalkable() || (tileType->isSwimable() && forTile->isWaterForeground()))) {
-				if (searched.find(newStep) == searched.end())
-					searchQueue.push_back(newStep);
+			if (!tileType->isOpaque()) {
+				//if (searched.find(newStep) == searched.end()) -- the find mechanism doesn't work.
+				searchQueue.push_back(newStep);
 			}
 
 			if ((tileType->isReplacement() && (forTile->isLandForeground() || forTile->isLivingObject())) ||
@@ -221,7 +223,7 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
 	} while (searchQueue.size() > 0 && searchQueue.size() < 64);
 
     /* couldn't find a tile, give it the sad default */
-    return map->tileset->getByName("brick_floor")->id;
+    return map->tileset->getByName("grass")->id;
 }
 
 /**
