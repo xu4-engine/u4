@@ -432,6 +432,10 @@ void Image::drawOn(Image *d, int x, int y) const {
 void Image::drawSubRectOn(Image *d, int x, int y, int rx, int ry, int rw, int rh) const {
     if (d == 0)
         d = [U4IOS::frontU4View() image];
+    
+    if (!surface)
+        return;
+    
     boost::intrusive_ptr<CGLayer> currentSurface = surface;
     if (d == this) {
         // If we are drawing on ourselves, we could run into potential data integrity issues

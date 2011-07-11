@@ -146,6 +146,8 @@ void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
 			frontTileType->getAnim()->draw(animated, frontTileType, frontTile, DIR_NONE);
 		}
 		else {
+            if (!image)
+                return; //This is a problem //FIXME, error message it. 
 			image->drawSubRectOn(animated,
 								0, 0,
 								0, SCALED(tileHeight * frontTile.frame),

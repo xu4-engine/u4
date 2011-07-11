@@ -32,7 +32,7 @@ using std::string;
 #ifndef IOS
 #define DEFAULT_VIDEO_TYPE              "VGA"
 #else
-#define DEFAULT_VIDEO_TYPE              "VGA-ALLPNG"
+#define DEFAULT_VIDEO_TYPE              "new"
 #endif
 #define DEFAULT_GEM_LAYOUT              "Standard"
 #define DEFAULT_LINEOFSIGHT             "DOS"
