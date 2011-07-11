@@ -2,7 +2,7 @@
 AppCopyright=2011
 AppName=xu4
 AppVerName=xu4 SVN
-AppPublisher=The ScummVM Team
+AppPublisher=The XU4 Team
 AppPublisherURL=http://xu4.sourceforge.net/
 AppSupportURL=http://xu4.sourceforge.net/
 AppUpdatesURL=http://xu4.sourceforge.net/
