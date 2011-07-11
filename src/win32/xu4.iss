@@ -1,17 +1,23 @@
 [Setup]
-OutputDir=C:\xu4
-OutputBaseFilename=xu4win32
-SolidCompression=true
-DefaultDirName={pf}\xu4
-DirExistsWarning=no
-AppendDefaultDirName=false
-AllowNoIcons=true
 AppCopyright=2011
 AppName=xu4
 AppVerName=xu4 SVN
-MergeDuplicateFiles=false
-ShowLanguageDialog=yes
+AppPublisher=The ScummVM Team
+AppPublisherURL=http://xu4.sourceforge.net/
+AppSupportURL=http://xu4.sourceforge.net/
+AppUpdatesURL=http://xu4.sourceforge.net/
+DefaultDirName={pf}\xu4
 DefaultGroupName=xu4
+AllowNoIcons=true
+AlwaysUsePersonalGroup=false
+EnableDirDoesntExistWarning=false
+OutputDir=C:\xu4
+OutputBaseFilename=xu4win32
+DisableStartupPrompt=true
+AppendDefaultDirName=false
+SolidCompression=true
+DirExistsWarning=no
+
 [Icons]
 Name: {group}\xu4; Filename: {app}\u4.exe; WorkingDir: {app}; Comment: u4; Flags: createonlyiffileexists; IconIndex: 0
 Name: {group}\{cm:UninstallProgram, xu4}; Filename: {uninstallexe}
@@ -118,7 +124,18 @@ Source: graphics\hires\mytile_guard.png; DestDir: {app}\graphics\hires; Flags: i
 Source: graphics\hires\mytitle.vga; DestDir: {app}\graphics\hires; Flags: ignoreversion
 Source: graphics\hires\sachonor.vga; DestDir: {app}\graphics\hires; Flags: ignoreversion
 Source: graphics\hires\spirhum.vga; DestDir: {app}\graphics\hires; Flags: ignoreversion
-Source: graphics\hires\valjus.vga; DestDir: {app}\graphics\hires; Flags: ignoreversion                              
+Source: graphics\hires\valjus.vga; DestDir: {app}\graphics\hires; Flags: ignoreversion   
+Source: graphics\new\hires_transparency_fix.png; DestDir: {app}\graphics\new; Flags: ignoreversion
+Source: graphics\new\tile_bush.png; DestDir: {app}\graphics\new; Flags: ignoreversion
+Source: graphics\new\tile_forest.png; DestDir: {app}\graphics\new; Flags: ignoreversion
+Source: graphics\new\tile_grass.png; DestDir: {app}\graphics\new; Flags: ignoreversion
+Source: graphics\new\tile_moongate.png; DestDir: {app}\graphics\new; Flags: ignoreversion
+Source: graphics\new\tile_moongate_rising.png; DestDir: {app}\graphics\new; Flags: ignoreversion
+Source: graphics\new\tile_poison_field.png; DestDir: {app}\graphics\new; Flags: ignoreversion
+Source: graphics\new\tile_sea.png; DestDir: {app}\graphics\new; Flags: ignoreversion
+Source: graphics\new\tile_shallows.png; DestDir: {app}\graphics\new; Flags: ignoreversion
+Source: graphics\new\tile_water.png; DestDir: {app}\graphics\new; Flags: ignoreversion
+Source: graphics\new\tile_wisp.png; DestDir: {app}\graphics\new; Flags: ignoreversion                       
 Source: graphics\png\abacus.png; DestDir: {app}\graphics\png; Flags: ignoreversion
 Source: graphics\png\actions.png; DestDir: {app}\graphics\png; Flags: ignoreversion
 Source: graphics\png\beasties.png; DestDir: {app}\graphics\png; Flags: ignoreversion
