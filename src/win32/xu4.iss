@@ -127,6 +127,7 @@ Source: graphics\hires\spirhum.vga; DestDir: {app}\graphics\hires; Flags: ignore
 Source: graphics\hires\valjus.vga; DestDir: {app}\graphics\hires; Flags: ignoreversion   
 Source: graphics\new\hires_transparency_fix.png; DestDir: {app}\graphics\new; Flags: ignoreversion
 Source: graphics\new\tile_bush.png; DestDir: {app}\graphics\new; Flags: ignoreversion
+Source: graphics\new\tile_electric_field.png; DestDir: {app}\graphics\new; Flags: ignoreversion
 Source: graphics\new\tile_fire_field.png; DestDir: {app}\graphics\new; Flags: ignoreversion
 Source: graphics\new\tile_forest.png; DestDir: {app}\graphics\new; Flags: ignoreversion
 Source: graphics\new\tile_grass.png; DestDir: {app}\graphics\new; Flags: ignoreversion
