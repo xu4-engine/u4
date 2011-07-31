@@ -55,7 +55,7 @@ public:
     static void callback(void *);    
 	static bool isPlaying();
 
-    void init() {};
+    void init() {}
     void play();
     void stop();
     void fadeOut(int msecs);
@@ -110,7 +110,7 @@ public:
     OSMusicMixer *playing;
     Debug *logger;
 };
-;
+
 
 
 

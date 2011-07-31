@@ -79,7 +79,7 @@ public:
 #define u4Path (*U4PATH::getInstance())
 class U4PATH {
 public:
-	U4PATH() : defaultsHaveBeenInitd(false){};
+	U4PATH() : defaultsHaveBeenInitd(false){}
     void initDefaultPaths();
 
     static U4PATH * instance;

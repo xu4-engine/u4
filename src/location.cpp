@@ -161,8 +161,6 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
     std::set<MapCoords> searched;
     std::list<MapCoords> searchQueue;
 
-    bool focus = false;
-
     //Pathfinding to closest traversable tile with appropriate replacement properties.
     //For tiles marked water-replaceable, pathfinding includes swimmables.
     searchQueue.push_back(atCoords);
