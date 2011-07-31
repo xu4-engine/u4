@@ -1666,25 +1666,35 @@
         <image name="dung3_ladderupdown_side_image" filename="vga/ladderupdown3_side.png" transparentIndex="0" xu4Graphic="true">
             <subimage name="dung3_ladderupdown_side" x="84" y="82" width="8" height="12"/>
         </image>
+        <image name="borders" filename="vga2/start.png" prescale="2" xu4Graphic="true"/>
+        <image name="charset" filename="vga2/charset.png" tiles="128" prescale="2" xu4Graphic="true"/>
+        <image name="honcom" filename="vga2/honcom.png" introOnly="true" prescale="2" xu4Graphic="true">
+            <subimage name="honestycard"    x="24"  y="24" width="180" height="248"/>
+            <subimage name="compassioncard" x="436" y="24" width="180" height="248"/>
+        </image>
+        <image name="sachonor" filename="vga2/sachonor.png" introOnly="true" prescale="2" xu4Graphic="true">
+            <subimage name="sacrificecard"  x="26"  y="26" width="178" height="244"/>
+            <subimage name="honorcard"      x="438" y="26" width="178" height="244"/>
+        </image>
+        <image name="spirhum"  filename="vga2/spirhum.png" introOnly="true" prescale="2" xu4Graphic="true">
+            <subimage name="spiritualitycard" x="26"  y="26" width="178" height="244"/>
+            <subimage name="humilitycard"   x="438" y="26" width="178" height="244"/>
+        </image>
+        <image name="valjus" filename="vga2/valjus.png" introOnly="true" prescale="2" xu4Graphic="true">
+            <subimage name="valorcard"      x="26"  y="26" width="178" height="244"/>
+            <subimage name="justicecard"    x="438" y="26" width="178" height="244"/>
+        </image>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        <image name="rune0" filename="vga2/rune_0.png" prescale="2" xu4Graphic="true"/>
+        <image name="rune1" filename="vga2/rune_1.png" prescale="2" xu4Graphic="true"/>
+        <image name="rune2" filename="vga2/rune_2.png" prescale="2" xu4Graphic="true"/>
+        <image name="rune3" filename="vga2/rune_3.png" prescale="2" xu4Graphic="true"/>
+        <image name="rune4" filename="vga2/rune_4.png" prescale="2" xu4Graphic="true"/>
+        <image name="rune5" filename="vga2/rune_5.png" prescale="2" xu4Graphic="true"/>
+        <image name="rune6" filename="vga2/rune_6.png" prescale="2" xu4Graphic="true"/>
+        <image name="rune7" filename="vga2/rune_7.png" prescale="2" xu4Graphic="true"/>
+        <image name="rune8" filename="vga2/rune_8.png" prescale="2" xu4Graphic="true"/>
+        <image name="key" filename="vga2/key7.png" prescale="2" xu4Graphic="true"/>
 
 
 	</imageset>
