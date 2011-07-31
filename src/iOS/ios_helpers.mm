@@ -35,12 +35,18 @@
 #import "U4AppDelegate.h"
 #import "U4IntroController.h"
 #import "U4GameController.h"
+#import "U4PlayerTableController.h"
+#import "PartyStatusImageView.h"
 #import "U4ViewController.h"
 #import <UIKit/UIKit.h>
 #include <sys/time.h>
 #include "U4CFHelper.h"
+#include "aura.h"
+#include "context.h"
+#include "player.h"
 #include "imagemgr.h"
 #include "view.h"
+#include "CGContextGStateSaver.h"
 #include <CoreFoundation/CoreFoundation.h>
 
 struct timeval start;
@@ -261,8 +267,290 @@ void enableGameButtons() {
     [gameController() enableGameButtons];        
 }
 
+void updatePartyMemberData(const SaveGamePlayerRecord *partyMember) {
+    [gameController().playerTableController updatePartyMemberData:partyMember];
+}
+
+void reloadPartyMembers() {
+    [gameController().playerTableController reloadPartyMembers];
+}
+
+void updateActivePartyMember(int row) {
+    [gameController().playerTableController updateActivePartyMember:row];
+}
+    
+void updateOtherPartyStats() {
+    [gameController().playerTableController updateOtherPartyStats];
+}
+
 void updateGameControllerContext(LocationContext context) {
     [gameController() updateGameControllerLocationContext:context];
+}
+
+IOSObserver *IOSObserver::instance = 0;
+
+IOSObserver::IOSObserver() {
+    
+}
+    
+IOSObserver *IOSObserver::sharedInstance() {
+    if (instance == 0) {
+        instance = new IOSObserver();
+    }
+    return  instance;
+}
+    
+void IOSObserver::update(Aura *aura) {
+    switch (aura->getType()) {
+    case Aura::NONE:
+        [gameController().playerTableController.partyStatusImage drawEigths];
+        break;
+    case Aura::HORN:
+        [gameController().playerTableController.partyStatusImage drawHorn];
+        break;
+    case Aura::JINX:
+        [gameController().playerTableController.partyStatusImage drawJinx];
+        break;
+    case Aura::NEGATE:
+        [gameController().playerTableController.partyStatusImage drawNegate];
+        break;
+    case Aura::PROTECTION:
+        [gameController().playerTableController.partyStatusImage drawProtection];
+        break;
+    case Aura::QUICKNESS:
+        [gameController().playerTableController.partyStatusImage drawQuickness];
+        break;
+    }
+}
+    
+class ObservantPartyMember : public PartyMember {
+public:
+    explicit ObservantPartyMember(const PartyMember *pm) : PartyMember(*pm) { }
+    SaveGamePlayerRecord *player() const { return PartyMember::player; }
+};
+    
+void IOSObserver::update(Party *party, PartyEvent &event) {
+
+    switch (event.type) {
+        case PartyEvent::MEMBER_JOINED:
+            reloadPartyMembers();
+            break;
+        case PartyEvent::GENERIC:
+        case PartyEvent::ADVANCED_LEVEL:
+        case PartyEvent::ACTIVE_PLAYER_CHANGED:
+            if (event.player) {
+                ObservantPartyMember pm(event.player);
+                updatePartyMemberData(pm.player());
+            }
+            break;
+        case PartyEvent::LOST_EIGHTH:
+            update(c->aura);
+            break;
+        default:
+            NSLog(@"Unhandled PartyEvent type %d reloading everything", event.type);
+            reloadPartyMembers();
+            break;
+    }
+    updateOtherPartyStats();
+}
+
+CFStringRef playerStatusAsString(StatusType status) {
+    NSString *statusString = nil;
+    switch (status) {
+        case STAT_DEAD:
+            statusString = NSLocalizedString(@"Dead", "Character Status");
+            break;
+        case STAT_GOOD:
+            statusString = NSLocalizedString(@"Good", "Character Status");
+            break;
+        case STAT_POISONED:
+            statusString = NSLocalizedString(@"Poisoned", "Character Status");
+            break;
+        case STAT_SLEEPING:
+            statusString = NSLocalizedString(@"Sleeping", "Character Status");
+            break;            
+        default:
+            break;
+    }
+    return reinterpret_cast<CFStringRef>(statusString);
+}
+    
+CFStringRef playerClassAsString(ClassType cclass) {
+    NSString *classString = nil;
+    switch (cclass) {
+    case CLASS_BARD:
+        classString = NSLocalizedString(@"Bard", "Character Class");
+        break;
+    case CLASS_DRUID:
+        classString = NSLocalizedString(@"Druid", "Character Class");
+        break;
+    case CLASS_FIGHTER:
+        classString = NSLocalizedString(@"Fighter", "Character Class");
+        break;
+    case CLASS_MAGE:
+        classString = NSLocalizedString(@"Mage", "Character Class");
+        break;
+    case CLASS_PALADIN:
+        classString = NSLocalizedString(@"Paladin", "Character Class");
+        break;
+    case CLASS_RANGER:
+        classString = NSLocalizedString(@"Ranger", "Character Class");
+        break;
+    case CLASS_SHEPHERD:
+        classString = NSLocalizedString(@"Shepard", "Character Class");
+        break;
+    case CLASS_TINKER:
+        classString = NSLocalizedString(@"Tinker", "Character Class");
+        break;            
+    default:
+        break;
+    }
+    return reinterpret_cast<CFStringRef>(classString);
+}
+    
+CFStringRef weaponAsString(WeaponType weapon) {
+    NSString *weaponString = nil;
+    switch (weapon) {
+    case WEAP_HANDS:
+        weaponString = NSLocalizedString(@"Hands", "Weapon Type");
+        break;
+    case WEAP_DAGGER:
+        weaponString = NSLocalizedString(@"Dagger", "Weapon Type");
+        break;
+    case WEAP_MACE:
+        weaponString = NSLocalizedString(@"Mace", "Weapon Type");
+        break;
+    case WEAP_AXE:
+        weaponString = NSLocalizedString(@"Axe", "Weapon Type");
+        break;
+    case WEAP_OIL:
+        weaponString = NSLocalizedString(@"Flaming Oil", "Weapon Type");
+        break;
+    case WEAP_STAFF:
+        weaponString = NSLocalizedString(@"Staff", "Weapon Type");
+        break;
+    case WEAP_SLING:
+        weaponString = NSLocalizedString(@"Sling", "Weapon Type");
+        break;
+    case WEAP_SWORD:
+        weaponString = NSLocalizedString(@"Sword", "Weapon Type");
+        break;
+    case WEAP_BOW:
+        weaponString = NSLocalizedString(@"Bow", "Weapon Type");
+        break;
+    case WEAP_CROSSBOW:
+        weaponString = NSLocalizedString(@"Crossbow", "Weapon Type");
+        break;
+    case WEAP_HALBERD:
+        weaponString = NSLocalizedString(@"Halberd", "Weapon Type");
+        break;
+    case WEAP_MAGICAXE:
+        weaponString = NSLocalizedString(@"Magic Axe", "Weapon Type");
+        break;
+    case WEAP_MAGICBOW:
+        weaponString = NSLocalizedString(@"Magic Bow", "Weapon Type");
+        break;            
+    case WEAP_MAGICSWORD:
+        weaponString = NSLocalizedString(@"Magic Sword", "Weapon Type");
+        break;            
+    case WEAP_MAGICWAND:
+        weaponString = NSLocalizedString(@"Magic Wand", "Weapon Type");
+        break;            
+    case WEAP_MYSTICSWORD:
+        weaponString = NSLocalizedString(@"Mystic Sword", "Weapon Type");
+        break;
+    default:
+        break;
+    }
+    return  reinterpret_cast<CFStringRef>(weaponString);
+}
+
+CFStringRef armorAsString(ArmorType armor) {
+    NSString *armorString = nil;
+    switch (armor) {
+    case ARMR_NONE:
+        armorString = NSLocalizedString(@"None", "Armor Type");
+        break;
+    case ARMR_CLOTH:
+        armorString = NSLocalizedString(@"Cloth", "Armor Type");
+        break;
+    case ARMR_LEATHER:
+        armorString = NSLocalizedString(@"Leather", "Armor Type");
+        break;
+    case ARMR_CHAIN:
+        armorString = NSLocalizedString(@"Chain", "Armor Type");
+        break;
+    case ARMR_PLATE:
+        armorString = NSLocalizedString(@"Plate", "Armor Type");
+        break;
+    case ARMR_MAGICCHAIN:
+        armorString = NSLocalizedString(@"Magic Chain", "Armor Type");
+        break;
+    case ARMR_MAGICPLATE:
+        armorString = NSLocalizedString(@"Magic Plate", "Armor Type");
+        break;
+    case ARMR_MYSTICROBES:
+        armorString = NSLocalizedString(@"Mystic Robes", "Armor Type");
+        break;
+    default:
+        break;
+    }
+    return  reinterpret_cast<CFStringRef>(armorString);
+}
+    
+CFStringRef reagentAsString(Reagent reagent) {
+    NSString *reagentString = nil;
+    switch (reagent) {
+    default:
+        break;
+    case REAG_ASH:
+        reagentString = NSLocalizedString(@"Sulphorous Ash", @"Reagent Type");
+        break;
+    case REAG_GINSENG:
+        reagentString = NSLocalizedString(@"Ginseng", @"Reagent Type");
+        break;
+    case REAG_GARLIC:
+        reagentString = NSLocalizedString(@"Garlic", @"Reagent Type");
+        break;
+    case REAG_SILK:
+        reagentString = NSLocalizedString(@"Spider Silk", @"Reagent Type");
+        break;
+    case REAG_MOSS:
+        reagentString = NSLocalizedString(@"Blood Moss", @"Reagent Type");
+        break;
+    case REAG_PEARL:
+        reagentString = NSLocalizedString(@"Black Pearl", @"Reagent Type");
+        break;
+    case REAG_NIGHTSHADE:
+        reagentString = NSLocalizedString(@"Nightshade", @"Reagent Type");
+        break;
+    case REAG_MANDRAKE:
+        reagentString = NSLocalizedString(@"Mandrake Root", @"Reagent Type");
+        break;
+    }
+    return  reinterpret_cast<CFStringRef>(reagentString);
+}
+    
+void HIViewDrawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage)
+{
+    CGContextGStateSaver saver(inContext);
+    CGContextTranslateCTM (inContext, 0, inBounds->origin.y + CGRectGetMaxY(*inBounds));
+    CGContextScaleCTM(inContext, 1, -1);
+    
+    CGContextDrawImage(inContext, *inBounds, inImage);
+}
+
+CGColorSpaceRef genericColorSpace = 0;
+CGColorSpaceRef u4colorSpace() {
+    if (genericColorSpace == 0) {
+        genericColorSpace = CGColorSpaceCreateDeviceRGB();
+    }
+    return genericColorSpace;
+}
+    
+void syncPartyMembersWithSaveGame() {
+    c->party->syncMembers();
+    c->party->notifyOfChange(0);
 }
 
 }

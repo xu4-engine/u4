@@ -263,6 +263,12 @@
 		CA335B5A1129D0C600B5A128 /* tilesets.xml in Resources */ = {isa = PBXBuildFile; fileRef = CA3359FD1129CD8A00B5A128 /* tilesets.xml */; };
 		CA335B5B1129D0C600B5A128 /* vendorScript.xml in Resources */ = {isa = PBXBuildFile; fileRef = CA3359FE1129CD8A00B5A128 /* vendorScript.xml */; };
 		CA335B661129D16200B5A128 /* weapons.xml in Resources */ = {isa = PBXBuildFile; fileRef = CA335B651129D16200B5A128 /* weapons.xml */; };
+		CA3E6A9713DC188A0041C10C /* U4PartyArmor.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA3E6A9613DC188A0041C10C /* U4PartyArmor.mm */; };
+		CA3E6A9B13DC18A30041C10C /* U4PartyWeapon.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA3E6A9A13DC18A30041C10C /* U4PartyWeapon.mm */; };
+		CA3E6A9D13DC27240041C10C /* U4ArmorCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CA3E6A9C13DC27240041C10C /* U4ArmorCell.xib */; };
+		CA3E6AA013DC27680041C10C /* U4ArmorCell.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA3E6A9F13DC27680041C10C /* U4ArmorCell.mm */; };
+		CA3E6AA213DC2C580041C10C /* U4WeaponCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CA3E6AA113DC2C570041C10C /* U4WeaponCell.xib */; };
+		CA3E6AA513DC2C820041C10C /* U4WeaponCell.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA3E6AA413DC2C820041C10C /* U4WeaponCell.mm */; };
 		CA44A8FD127C961F004851DA /* actions.png in Resources */ = {isa = PBXBuildFile; fileRef = CA44A8FC127C961F004851DA /* actions.png */; };
 		CA469F9E112DEFAF00D69F1A /* libSDL_mixer-1.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CA469F9C112DEFAF00D69F1A /* libSDL_mixer-1.2.0.dylib */; };
 		CA469F9F112DEFAF00D69F1A /* libSDL-1.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CA469F9D112DEFAF00D69F1A /* libSDL-1.2.0.dylib */; };
@@ -287,6 +293,8 @@
 		CA4CAA27128EEEFC00731E73 /* SpellReagent.m in Sources */ = {isa = PBXBuildFile; fileRef = CA4CAA26128EEEFC00731E73 /* SpellReagent.m */; };
 		CA576709129855B50034C51F /* SpellReagentTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CA576708129855B50034C51F /* SpellReagentTableCell.m */; };
 		CA57670B129855CB0034C51F /* SpellReagentTableCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CA57670A129855CB0034C51F /* SpellReagentTableCell.xib */; };
+		CA5960DC13DEEBA400AC5226 /* PartyStatusImageView.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA5960DB13DEEBA300AC5226 /* PartyStatusImageView.mm */; };
+		CA5960DF13DF07F300AC5226 /* ankh.png in Resources */ = {isa = PBXBuildFile; fileRef = CA5960DE13DF07F300AC5226 /* ankh.png */; };
 		CA640BD2123277800049CA17 /* U4IntroController.mm in Sources */ = {isa = PBXBuildFile; fileRef = CAFB771B12325F9100ADFF0B /* U4IntroController.mm */; };
 		CA640BD3123277880049CA17 /* U4IntroController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CAFB771C12325F9100ADFF0B /* U4IntroController.xib */; };
 		CA6D0D6211E656AE003B29AE /* U4GameController.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA6D0D6011E656AE003B29AE /* U4GameController.mm */; };
@@ -710,6 +718,13 @@
 		CA9DADD8131A9E4800D81CB3 /* spell_flash_25.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA9DADD1131A9E4800D81CB3 /* spell_flash_25.caf */; };
 		CA9DADD9131A9E4800D81CB3 /* spell_precast_R_with_mp45.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA9DADD2131A9E4800D81CB3 /* spell_precast_R_with_mp45.caf */; };
 		CA9DADDA131A9E4800D81CB3 /* walk_normal.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA9DADD3131A9E4800D81CB3 /* walk_normal.caf */; };
+		CAA1116913D1E878004FB0C2 /* U4PlayerCell.mm in Sources */ = {isa = PBXBuildFile; fileRef = CAA1116413D1E878004FB0C2 /* U4PlayerCell.mm */; };
+		CAA1116A13D1E878004FB0C2 /* U4PlayerCharacter.mm in Sources */ = {isa = PBXBuildFile; fileRef = CAA1116613D1E878004FB0C2 /* U4PlayerCharacter.mm */; };
+		CAA1116B13D1E878004FB0C2 /* U4PlayerTableController.mm in Sources */ = {isa = PBXBuildFile; fileRef = CAA1116813D1E878004FB0C2 /* U4PlayerTableController.mm */; };
+		CAA1116F13D1E898004FB0C2 /* U4PlayerCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CAA1116D13D1E898004FB0C2 /* U4PlayerCell.xib */; };
+		CAA1117013D1E898004FB0C2 /* U4PlayerTableController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CAA1116E13D1E898004FB0C2 /* U4PlayerTableController.xib */; };
+		CAA1118C13D20AA0004FB0C2 /* U4PlayerDetailView.mm in Sources */ = {isa = PBXBuildFile; fileRef = CAA1118A13D20AA0004FB0C2 /* U4PlayerDetailView.mm */; };
+		CAA1118D13D20AA0004FB0C2 /* U4PlayerDetailView.xib in Resources */ = {isa = PBXBuildFile; fileRef = CAA1118B13D20AA0004FB0C2 /* U4PlayerDetailView.xib */; };
 		CAA905CE12AA861D00ACA77D /* CastSpellController.mm in Sources */ = {isa = PBXBuildFile; fileRef = CAA905CC12AA861D00ACA77D /* CastSpellController.mm */; };
 		CAA905CF12AA861D00ACA77D /* CastSpellController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CAA905CD12AA861D00ACA77D /* CastSpellController.xib */; };
 		CAB95B6011396F8000C5D5FB /* tile_A.png in Copy PNG Files */ = {isa = PBXBuildFile; fileRef = CAB95A5011396F2000C5D5FB /* tile_A.png */; };
@@ -2010,6 +2025,16 @@
 		CA335A6F1129CDBE00B5A128 /* ladderupdown3_side.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ladderupdown3_side.png; sourceTree = "<group>"; };
 		CA335A701129CDBE00B5A128 /* tile_guard.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tile_guard.png; sourceTree = "<group>"; };
 		CA335B651129D16200B5A128 /* weapons.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = weapons.xml; path = ../../conf/weapons.xml; sourceTree = SOURCE_ROOT; };
+		CA3E6A9513DC188A0041C10C /* U4PartyArmor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4PartyArmor.h; sourceTree = "<group>"; };
+		CA3E6A9613DC188A0041C10C /* U4PartyArmor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4PartyArmor.mm; sourceTree = "<group>"; };
+		CA3E6A9913DC18A30041C10C /* U4PartyWeapon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4PartyWeapon.h; sourceTree = "<group>"; };
+		CA3E6A9A13DC18A30041C10C /* U4PartyWeapon.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4PartyWeapon.mm; sourceTree = "<group>"; };
+		CA3E6A9C13DC27240041C10C /* U4ArmorCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = U4ArmorCell.xib; sourceTree = "<group>"; };
+		CA3E6A9E13DC27680041C10C /* U4ArmorCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4ArmorCell.h; sourceTree = "<group>"; };
+		CA3E6A9F13DC27680041C10C /* U4ArmorCell.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4ArmorCell.mm; sourceTree = "<group>"; };
+		CA3E6AA113DC2C570041C10C /* U4WeaponCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = U4WeaponCell.xib; sourceTree = "<group>"; };
+		CA3E6AA313DC2C820041C10C /* U4WeaponCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4WeaponCell.h; sourceTree = "<group>"; };
+		CA3E6AA413DC2C820041C10C /* U4WeaponCell.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4WeaponCell.mm; sourceTree = "<group>"; };
 		CA44A8FC127C961F004851DA /* actions.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = actions.png; sourceTree = "<group>"; };
 		CA469F9C112DEFAF00D69F1A /* libSDL_mixer-1.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libSDL_mixer-1.2.0.dylib"; path = "/opt/local/lib/libSDL_mixer-1.2.0.dylib"; sourceTree = "<absolute>"; };
 		CA469F9D112DEFAF00D69F1A /* libSDL-1.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libSDL-1.2.0.dylib"; path = "/opt/local/lib/libSDL-1.2.0.dylib"; sourceTree = "<absolute>"; };
@@ -2039,6 +2064,9 @@
 		CA576707129855B50034C51F /* SpellReagentTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpellReagentTableCell.h; sourceTree = "<group>"; };
 		CA576708129855B50034C51F /* SpellReagentTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellReagentTableCell.m; sourceTree = "<group>"; };
 		CA57670A129855CB0034C51F /* SpellReagentTableCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SpellReagentTableCell.xib; sourceTree = "<group>"; };
+		CA5960DA13DEEBA300AC5226 /* PartyStatusImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PartyStatusImageView.h; sourceTree = "<group>"; };
+		CA5960DB13DEEBA300AC5226 /* PartyStatusImageView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PartyStatusImageView.mm; sourceTree = "<group>"; };
+		CA5960DE13DF07F300AC5226 /* ankh.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ankh.png; sourceTree = "<group>"; };
 		CA6D0D5F11E656AE003B29AE /* U4GameController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4GameController.h; sourceTree = "<group>"; };
 		CA6D0D6011E656AE003B29AE /* U4GameController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4GameController.mm; sourceTree = "<group>"; };
 		CA6D0D6111E656AE003B29AE /* U4GameController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = U4GameController.xib; sourceTree = "<group>"; };
@@ -2140,6 +2168,17 @@
 		CA9DADD1131A9E4800D81CB3 /* spell_flash_25.caf */ = {isa = PBXFileReference; lastKnownFileType = file; name = spell_flash_25.caf; path = ../../sound/spell_flash_25.caf; sourceTree = "<group>"; };
 		CA9DADD2131A9E4800D81CB3 /* spell_precast_R_with_mp45.caf */ = {isa = PBXFileReference; lastKnownFileType = file; name = spell_precast_R_with_mp45.caf; path = ../../sound/spell_precast_R_with_mp45.caf; sourceTree = "<group>"; };
 		CA9DADD3131A9E4800D81CB3 /* walk_normal.caf */ = {isa = PBXFileReference; lastKnownFileType = file; name = walk_normal.caf; path = ../../sound/walk_normal.caf; sourceTree = "<group>"; };
+		CAA1116313D1E878004FB0C2 /* U4PlayerCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4PlayerCell.h; sourceTree = "<group>"; };
+		CAA1116413D1E878004FB0C2 /* U4PlayerCell.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4PlayerCell.mm; sourceTree = "<group>"; };
+		CAA1116513D1E878004FB0C2 /* U4PlayerCharacter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4PlayerCharacter.h; sourceTree = "<group>"; };
+		CAA1116613D1E878004FB0C2 /* U4PlayerCharacter.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4PlayerCharacter.mm; sourceTree = "<group>"; };
+		CAA1116713D1E878004FB0C2 /* U4PlayerTableController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4PlayerTableController.h; sourceTree = "<group>"; };
+		CAA1116813D1E878004FB0C2 /* U4PlayerTableController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4PlayerTableController.mm; sourceTree = "<group>"; };
+		CAA1116D13D1E898004FB0C2 /* U4PlayerCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = U4PlayerCell.xib; sourceTree = "<group>"; };
+		CAA1116E13D1E898004FB0C2 /* U4PlayerTableController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = U4PlayerTableController.xib; sourceTree = "<group>"; };
+		CAA1118913D20AA0004FB0C2 /* U4PlayerDetailView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4PlayerDetailView.h; sourceTree = "<group>"; };
+		CAA1118A13D20AA0004FB0C2 /* U4PlayerDetailView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4PlayerDetailView.mm; sourceTree = "<group>"; };
+		CAA1118B13D20AA0004FB0C2 /* U4PlayerDetailView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = U4PlayerDetailView.xib; sourceTree = "<group>"; };
 		CAA905CB12AA861D00ACA77D /* CastSpellController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CastSpellController.h; sourceTree = "<group>"; };
 		CAA905CC12AA861D00ACA77D /* CastSpellController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CastSpellController.mm; sourceTree = "<group>"; };
 		CAA905CD12AA861D00ACA77D /* CastSpellController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CastSpellController.xib; sourceTree = "<group>"; };
@@ -2993,6 +3032,7 @@
 		CAB95A4F11396F2000C5D5FB /* png */ = {
 			isa = PBXGroup;
 			children = (
+				CA5960DE13DF07F300AC5226 /* ankh.png */,
 				CAEFEBAA13645D1D0098DAB5 /* scroll.png */,
 				CA44A8FC127C961F004851DA /* actions.png */,
 				CA870F881139A7EC00207119 /* abacus.png */,
@@ -3220,6 +3260,11 @@
 		CABE6F0E113C5A360085A8DF /* iPad */ = {
 			isa = PBXGroup;
 			children = (
+				CA3E6AA113DC2C570041C10C /* U4WeaponCell.xib */,
+				CA3E6A9C13DC27240041C10C /* U4ArmorCell.xib */,
+				CAA1118B13D20AA0004FB0C2 /* U4PlayerDetailView.xib */,
+				CAA1116D13D1E898004FB0C2 /* U4PlayerCell.xib */,
+				CAA1116E13D1E898004FB0C2 /* U4PlayerTableController.xib */,
 				CA82044913CA09B700E5A386 /* COPYING */,
 				CA82044613CA093400E5A386 /* credits.html */,
 				CA82042E13C9EE0100E5A386 /* CreditsViewController.xib */,
@@ -3297,6 +3342,24 @@
 				CA4764DD1306ECEB001D54B0 /* U4AudioController.mm */,
 				CAF707461365C3C700F4E7BC /* U4Button.h */,
 				CAF707471365C3C700F4E7BC /* U4Button.mm */,
+				CAA1116313D1E878004FB0C2 /* U4PlayerCell.h */,
+				CAA1116413D1E878004FB0C2 /* U4PlayerCell.mm */,
+				CAA1116513D1E878004FB0C2 /* U4PlayerCharacter.h */,
+				CAA1116613D1E878004FB0C2 /* U4PlayerCharacter.mm */,
+				CAA1116713D1E878004FB0C2 /* U4PlayerTableController.h */,
+				CAA1116813D1E878004FB0C2 /* U4PlayerTableController.mm */,
+				CAA1118913D20AA0004FB0C2 /* U4PlayerDetailView.h */,
+				CAA1118A13D20AA0004FB0C2 /* U4PlayerDetailView.mm */,
+				CA3E6A9513DC188A0041C10C /* U4PartyArmor.h */,
+				CA3E6A9613DC188A0041C10C /* U4PartyArmor.mm */,
+				CA3E6A9913DC18A30041C10C /* U4PartyWeapon.h */,
+				CA3E6A9A13DC18A30041C10C /* U4PartyWeapon.mm */,
+				CA3E6A9E13DC27680041C10C /* U4ArmorCell.h */,
+				CA3E6A9F13DC27680041C10C /* U4ArmorCell.mm */,
+				CA3E6AA313DC2C820041C10C /* U4WeaponCell.h */,
+				CA3E6AA413DC2C820041C10C /* U4WeaponCell.mm */,
+				CA5960DA13DEEBA300AC5226 /* PartyStatusImageView.h */,
+				CA5960DB13DEEBA300AC5226 /* PartyStatusImageView.mm */,
 			);
 			name = iPad;
 			sourceTree = "<group>";
@@ -3576,6 +3639,12 @@
 				CA82044713CA093400E5A386 /* credits.html in Resources */,
 				CA82044A13CA09B700E5A386 /* COPYING in Resources */,
 				9576786113CB4F8900A19379 /* icon.png in Resources */,
+				CAA1116F13D1E898004FB0C2 /* U4PlayerCell.xib in Resources */,
+				CAA1117013D1E898004FB0C2 /* U4PlayerTableController.xib in Resources */,
+				CAA1118D13D20AA0004FB0C2 /* U4PlayerDetailView.xib in Resources */,
+				CA3E6A9D13DC27240041C10C /* U4ArmorCell.xib in Resources */,
+				CA3E6AA213DC2C580041C10C /* U4WeaponCell.xib in Resources */,
+				CA5960DF13DF07F300AC5226 /* ankh.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3778,6 +3847,15 @@
 				CA4764DE1306ECEB001D54B0 /* U4AudioController.mm in Sources */,
 				CAF707481365C3C700F4E7BC /* U4Button.mm in Sources */,
 				CA82042F13C9EE0100E5A386 /* CreditsViewController.mm in Sources */,
+				CAA1116913D1E878004FB0C2 /* U4PlayerCell.mm in Sources */,
+				CAA1116A13D1E878004FB0C2 /* U4PlayerCharacter.mm in Sources */,
+				CAA1116B13D1E878004FB0C2 /* U4PlayerTableController.mm in Sources */,
+				CAA1118C13D20AA0004FB0C2 /* U4PlayerDetailView.mm in Sources */,
+				CA3E6A9713DC188A0041C10C /* U4PartyArmor.mm in Sources */,
+				CA3E6A9B13DC18A30041C10C /* U4PartyWeapon.mm in Sources */,
+				CA3E6AA013DC27680041C10C /* U4ArmorCell.mm in Sources */,
+				CA3E6AA513DC2C820041C10C /* U4WeaponCell.mm in Sources */,
+				CA5960DC13DEEBA400AC5226 /* PartyStatusImageView.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

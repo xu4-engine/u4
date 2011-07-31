@@ -39,6 +39,6 @@
 }
 
 @property(nonatomic,copy) NSString *name;
-@property NSInteger amount;
+@property(nonatomic) NSInteger amount;
 
 @end

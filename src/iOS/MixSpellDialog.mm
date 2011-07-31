@@ -35,29 +35,7 @@
 #import "SpellInfoPickerLabel.h"
 #include "event.h"
 #include "spell.h"
-
-static NSString *reagentForIndex(int index) {
-    switch (index) {
-    default:
-        return nil;
-    case REAG_ASH:
-        return @"Sulphorous Ash";
-    case REAG_GINSENG:
-        return @"Ginseng";
-    case REAG_GARLIC:
-        return @"Garlic";
-    case REAG_SILK:
-        return @"Spider Silk";
-    case REAG_MOSS:
-        return @"Blood Moss";
-    case REAG_PEARL:
-        return @"Black Pearl";
-    case REAG_NIGHTSHADE:
-        return @"Nightshade";
-    case REAG_MANDRAKE:
-        return @"Mandrake Root";
-    }
-}
+#include "ios_helpers.h"
 
 @implementation MixSpellDialog
 @synthesize spellPicker;
@@ -98,7 +76,7 @@ static NSString *reagentForIndex(int index) {
             int reagentCount = saveGame->reagents[i];
             if (reagentCount > 0) {
                 SpellReagent *regen = [[SpellReagent alloc] init];
-                regen.name = reagentForIndex(i);
+                regen.name = const_cast<NSString *>(reinterpret_cast<const NSString *>(U4IOS::reagentAsString(Reagent(i))));
                 regen.amount = reagentCount;
                 regen.selected = NO;
                 regen.index = i;

@@ -31,45 +31,23 @@
 
 #import <UIKit/UIKit.h>
 
+@class U4WeaponCell;
+@class U4PlayerCharacter;
+@class U4PartyWeapon;
 
-@interface U4WeaponChoiceDialog : UIViewController {
-    IBOutlet UIButton *handsButton;
-    IBOutlet UIButton *staffButton;
-    IBOutlet UIButton *daggerButton;
-    IBOutlet UIButton *slingButton;
-    IBOutlet UIButton *maceButton;
-    IBOutlet UIButton *axeButton;
-    IBOutlet UIButton *swordButton;
-    IBOutlet UIButton *bowButton;
-    IBOutlet UIButton *crossBowButton;
-    IBOutlet UIButton *oilButton;
-    IBOutlet UIButton *halberdButton;
-    IBOutlet UIButton *magicAxeButton;
-    IBOutlet UIButton *magicSwordButton;
-    IBOutlet UIButton *magicBowButton;
-    IBOutlet UIButton *magicWandButton;
-    IBOutlet UIButton *mysticSwordButton;
-    IBOutlet UIButton *cancelButton;
-    NSDictionary *weaponDict;
+@protocol U4WeaponChoiceDialogDelegate
+- (void)didChooseWeapon:(U4PartyWeapon *)weapon;
+@end
+
+@interface U4WeaponChoiceDialog : UITableViewController {
+    NSArray *partyWeapons;
+    U4PlayerCharacter *partyMember;
+    U4WeaponCell *tableCell;
+    id<U4WeaponChoiceDialogDelegate> delegate;
 }
-@property (nonatomic, retain) IBOutlet UIButton *handsButton;
-@property (nonatomic, retain) IBOutlet UIButton *staffButton;
-@property (nonatomic, retain) IBOutlet UIButton *daggerButton;
-@property (nonatomic, retain) IBOutlet UIButton *slingButton;
-@property (nonatomic, retain) IBOutlet UIButton *maceButton;
-@property (nonatomic, retain) IBOutlet UIButton *axeButton;
-@property (nonatomic, retain) IBOutlet UIButton *swordButton;
-@property (nonatomic, retain) IBOutlet UIButton *bowButton;
-@property (nonatomic, retain) IBOutlet UIButton *crossBowButton;
-@property (nonatomic, retain) IBOutlet UIButton *oilButton;
-@property (nonatomic, retain) IBOutlet UIButton *halberdButton;
-@property (nonatomic, retain) IBOutlet UIButton *magicAxeButton;
-@property (nonatomic, retain) IBOutlet UIButton *magicSwordButton;
-@property (nonatomic, retain) IBOutlet UIButton *magicBowButton;
-@property (nonatomic, retain) IBOutlet UIButton *magicWandButton;
-@property (nonatomic, retain) IBOutlet UIButton *mysticSwordButton;
-@property (nonatomic, retain) IBOutlet UIButton *cancelButton;
-@property (nonatomic, retain) NSDictionary *weaponDict;
-
--(IBAction) buttonPressed:(id) sender;
+@property(nonatomic, retain) IBOutlet U4WeaponCell *tableCell;
+@property(nonatomic, assign) IBOutlet id<U4WeaponChoiceDialogDelegate> delegate;
+- (id)initWithPartyMember:(U4PlayerCharacter *)character nibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
+- (void)reloadWeaponData;
+- (void)clearSelection;
 @end

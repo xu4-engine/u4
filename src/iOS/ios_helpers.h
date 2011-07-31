@@ -36,14 +36,23 @@
 #ifndef IOS_HELPERS_H
 #define IOS_HELPERS_H
 #include <string>
+#include "observer.h"
 #include "location.h"
 typedef const struct __CFURL *CFURLRef;
 typedef const struct __CFDictionary *CFDictionaryRef;
 typedef const struct __CFArray *CFArrayRef;
 typedef const struct __CFString *CFStringRef;
+typedef struct CGContext * CGContextRef;
+typedef struct CGColorSpace * CGColorSpaceRef;
+typedef struct CGImage *CGImageRef;
 typedef double NSTimeInterval;
+struct CGRect;
 void startTicks();
 int getTicks();
+class Aura;
+class Party;
+class PartyEvent;
+
 
 #if __OBJC__
 @class U4View;
@@ -109,6 +118,21 @@ namespace U4IOS {
     void disableGameButtons();
     void enableGameButtons();
     void updateGameControllerContext(LocationContext context);
+    
+    void updatePartyMemberData(const SaveGamePlayerRecord *partyMember);
+    void reloadPartyMembers();
+    void updateActivePartyMember(int row);
+    void HIViewDrawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
+    
+    class IOSObserver : public Observer<Aura *>, public Observer<Party *, PartyEvent &> {
+    public:
+        void update(Aura *aura);
+        void update(Party *party, PartyEvent &event);
+        static IOSObserver *sharedInstance();
+    private:
+        IOSObserver();
+        static IOSObserver *instance;
+    };
     
     class IOSDisableGameControllerHelper {
     public:
@@ -221,6 +245,14 @@ namespace U4IOS {
             hideArmorDialog();
         }
     };
+    CGColorSpaceRef u4colorSpace();
+    CFStringRef playerStatusAsString(StatusType status);
+    CFStringRef playerClassAsString(ClassType cclass);
+    CFStringRef weaponAsString(WeaponType weapon);
+    CFStringRef armorAsString(ArmorType armor);
+    CFStringRef reagentAsString(Reagent reagent);
+    void updateOtherPartyStats();
+    void syncPartyMembersWithSaveGame();
 }
 #endif // IOS_HELPERS_H
 #endif // IOS

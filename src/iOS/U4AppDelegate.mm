@@ -32,10 +32,12 @@
 #import "U4AppDelegate.h"
 #import "U4IntroController.h"
 #import "U4GameController.h"
+#import "U4PlayerTableController.h"
 
 
 #include "u4.h"
 
+#include "context.h"
 #include "debug.h"
 #include "error.h"
 #include "event.h"
@@ -137,6 +139,15 @@ string profileName = "";
     intro->deleteIntro();
     game = new GameController();
     game->init();
+    [gameController.playerTableController loadPartyDataFromSave];
+    
+    // Depending on the orientation, our views may have already loaded, updated the information.
+    if (gameController.playerTableController.isViewLoaded) {
+        [gameController.playerTableController.tableView reloadData];
+        [gameController.playerTableController updateOtherPartyStats];
+        U4IOS::IOSObserver::sharedInstance()->update(c->aura);
+    }
+
     eventHandler->pushController(game);
 }
 

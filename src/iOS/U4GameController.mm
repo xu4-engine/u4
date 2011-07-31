@@ -30,6 +30,8 @@
 //
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <QuartzCore/QuartzCore.h>
+#include "context.h"
 #include "game.h"
 #include "screen.h"
 #include "tileset.h"
@@ -41,6 +43,7 @@
 #import "U4ChooseDirectionPopup.h"
 #import "U4GameController.h"
 #import "U4WeaponChoiceDialog.h"
+#import "U4PlayerTableController.h"
 #import "U4View.h"
 #include "U4CFHelper.h"
 #include "ios_helpers.h"
@@ -95,6 +98,22 @@ static NSUInteger computeLineCount(NSString *lines) {
     return count;
 }
 
+@implementation U4GameController(NavControllerDelegate)
+
+- (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
+    if (viewController == playerTableController) {
+        [navigationController setNavigationBarHidden:YES animated:YES];
+        if (game) // The first time we are called the game hasn't been created yet, guard against that.
+            game->paused = false;
+    } else {
+        [navigationController setNavigationBarHidden:NO animated:YES];
+        game->paused = true;
+    }
+}
+
+@end
+
+
 extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); // game.cpp
 
 @implementation U4GameController
@@ -113,14 +132,10 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 @synthesize searchButton;
 @synthesize peerAtGemButton;
 @synthesize superButton;
-@synthesize useWeaponButton;
 @synthesize fireCannonButton;
 @synthesize lightTorchButton;
-@synthesize partyOrderButton;
-@synthesize wearArmorButton;
 @synthesize currentPosButton;
 @synthesize pickLockButton;
-@synthesize statsButton;
 @synthesize mixSpellButton;
 @synthesize yellButton;
 @synthesize useItemButton;
@@ -134,8 +149,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 @synthesize u4view;
 @synthesize gameText;
 @synthesize scrollImage;
-@synthesize weaponPanel;
-@synthesize armorPanel;
+@synthesize playerTableController;
 /*
  // The designated initializer.  Override if you create the controller programmatically and want to perform customization that is not appropriate for viewDidLoad.
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -154,12 +168,12 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     
     NSArray *gameButtons = [self allButtons];
 
-    UInt8 keysForButtons[] = { 'a', 'c', U4_ENTER, 'f', 'h', 'i', 'j', 'l', 'm', 'n', 'o', 'p', 'q',
-                               'r', 's', 't', 'u', 'w', 'y', 'z', U4_UP, U4_DOWN, U4_LEFT,
+    UInt8 keysForButtons[] = { 'a', 'c', U4_ENTER, 'f', 'h', 'i', 'j', 'l', 'm', 'o', 'p', 'q',
+                               's', 't', 'u', 'y', U4_UP, U4_DOWN, U4_LEFT,
                                U4_RIGHT };
     boost::intrusive_ptr<CFString> allKeys = cftypeFromCreateOrCopy(
                                                 CFStringCreateWithBytesNoCopy(kCFAllocatorDefault,
-                                                                              keysForButtons, 24,
+                                                                              keysForButtons, 20,
                                                                               kCFStringEncodingUTF8,
                                                                               false,
                                                                               kCFAllocatorNull));
@@ -168,7 +182,21 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
                                                         reinterpret_cast<CFArrayRef>(gameButtons),
                                                         allKeys.get(), passButton)));
     U4AppDelegate *appDelegate = static_cast<U4AppDelegate *>([UIApplication sharedApplication].delegate);
+    playerNavController = [[UINavigationController alloc] initWithRootViewController:self.playerTableController];
+    playerNavController.navigationBar.hidden = YES;
+    playerNavController.delegate = self;
+    playerNavController.view.frame = CGRectMake(468, 21, 300, 410);
+    playerNavController.view.layer.borderWidth = 2.;
+    playerNavController.view.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    
+    [self.view addSubview:playerNavController.view];
     [appDelegate pushU4View:self.u4view];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    [self.gameText flashScrollIndicators];
 }
 
 - (NSArray *)allButtons {
@@ -185,9 +213,9 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 - (NSArray *)allButtonsButDirectionButtons {
     return [NSArray arrayWithObjects:attackButton, castButton, superButton,
                      fireCannonButton, makeCampButton, lightTorchButton, pickLockButton,
-                     currentPosButton, mixSpellButton, partyOrderButton, openDoorButton,
-                     peerAtGemButton, saveButton, useWeaponButton, searchButton, talkButton,
-                     useItemButton, wearArmorButton, yellButton, statsButton, nil];
+                     currentPosButton, mixSpellButton, openDoorButton,
+                     peerAtGemButton, saveButton, searchButton, talkButton,
+                     useItemButton, yellButton, nil];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
@@ -214,6 +242,11 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     [self setU4view:nil];
     [self setGameText:nil];
     [self setScrollImage:nil];
+    [playerTableController release];
+    playerTableController = nil;
+    [self setPlayerTableController:nil];
+    [playerNavController release];
+    playerNavController = nil;
     [super viewDidUnload];
     if (viewsReadytoFadeOutSet != nil) {
         [viewsReadytoFadeOutSet removeAllObjects];
@@ -226,6 +259,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 }
 
 - (void)dealloc {
+    [playerNavController release];
     [makeCampButton release];
     [attackButton release];
     [talkButton release];
@@ -234,14 +268,10 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     [searchButton release];
     [peerAtGemButton release];
     [superButton release];
-    [useWeaponButton release];
     [fireCannonButton release];
     [lightTorchButton release];
-    [partyOrderButton release];
-    [wearArmorButton release];
     [currentPosButton release];
     [pickLockButton release];
-    [statsButton release];
     [mixSpellButton release];
     [yellButton release];
     [useItemButton release];
@@ -255,6 +285,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     [u4view release];
     [gameText release];
     [scrollImage release];
+    [playerTableController release];
     [super dealloc];
 }
 
@@ -278,7 +309,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation) && UIInterfaceOrientationIsPortrait(toInterfaceOrientation))
         return;
 
-    static const CGPoint PortaitPoint = CGPointMake(193., 12.);
+    static const CGPoint PortaitPoint = CGPointMake(106., 12.);
     static const CGPoint LandscapePoint = CGPointMake(5, 10.);
     
     static const CGRect PortraitLogRect = CGRectMake(216., 332., 649., 229.);
@@ -290,22 +321,31 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     static const CGRect PortraitEditRect = CGRectMake(360., 540., 728, 31);
     static const CGRect LandscapeEditRect = CGRectMake(435, 415, 320, 31);
     
+    static const CGRect PortraitPartyTableRect = CGRectMake(468, 21, 556, 153);
+    static const CGRect LandscapePartyTableRect = CGRectMake(400, 10, 10, 660);
+    
     CGRect u4frame = self.u4view.frame;
     if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
         u4frame.origin = LandscapePoint;
         self.gameText.frame = LandscapeLogRect;
         self.conversationEdit.frame = LandscapeEditRect;
         self.scrollImage.frame = LandscapeScrollRect;
+        playerNavController.view.frame = LandscapePartyTableRect;
     } else {
         u4frame.origin = PortaitPoint;
         self.gameText.frame = PortraitLogRect;
         self.conversationEdit.frame = PortraitEditRect;
         self.scrollImage.frame = PortraitScrollRect;
+        playerNavController.view.frame = PortraitPartyTableRect;
     }
     self.u4view.frame = u4frame;
 }
 
 - (IBAction)buttonPressed:(id)sender {
+    if (playerNavController.topViewController != playerTableController)
+        [playerNavController popToViewController:playerTableController animated:YES];
+    else
+        [playerTableController finishPartyOrderEditing];
     self.currentPressedButton = sender;
     NSString *gameLetter = static_cast<NSString *>([gameButtonDict objectForKey:sender]);
     assert(gameLetter != nil || sender == helpButton);
@@ -565,10 +605,6 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
             } else if (self.characterChoiceController != nil
                        && self.characterChoiceController.view == view) {
                 self.characterChoiceController = nil;
-            } else if (self.weaponPanel != nil && self.weaponPanel.view == view) {
-                self.weaponPanel = nil;
-            } else if (self.armorPanel != nil && self.armorPanel.view == view) {
-                self.armorPanel = nil;
             }
             [viewsReadytoFadeOutSet removeObject:view];
         }}];
@@ -599,25 +635,15 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 }
 
 - (void)bringUpWeaponChoicePanel {
-    if (self.weaponPanel == nil) {
-        weaponPanel = [[U4WeaponChoiceDialog alloc] initWithNibName:@"U4WeaponChoiceDialog" bundle:nil];
-    }
-    [self finishBringUpPanel:self.weaponPanel.view halfSized:NO];
 }
 
 - (void)dismissWeaponChoicePanel {
-    [self finishDismissPanel:self.weaponPanel.view];
 }
 
 - (void)bringUpArmorChoicePanel {
-    if (self.armorPanel == nil) {
-        armorPanel = [[U4ArmorChoiceDialog alloc] initWithNibName:@"U4ArmorChoiceDialog" bundle:nil];
-    }
-    [self finishBringUpPanel:self.armorPanel.view halfSized:NO];
 }
 
 - (void)dismissArmorChoicePanel {
-    [self finishDismissPanel:self.armorPanel.view];
 }
 
 - (void)showMessage:(NSString *)message {
@@ -661,13 +687,13 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 
         [buttonsToShow addObject:self.currentPosButton];
         [buttonsToShow addObject:self.talkButton];
-        [buttonsToShow addObject:self.partyOrderButton];
         [buttonsToShow addObject:self.pickLockButton];
         [buttonsToShow addObject:self.yellButton];
         [buttonsToShow addObject:self.searchButton];
         [buttonsToShow addObject:self.mixSpellButton];
         [buttonsToShow addObject:self.openDoorButton];
-        [buttonsToShow addObject:self.wearArmorButton];
+        if ([self.playerTableController orderButton])
+            [buttonsToShow addObject:[self.playerTableController orderButton]];
         break;
     case CTX_COMBAT:
         [buttonsToHide addObject:self.currentPosButton];
@@ -677,12 +703,12 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         [buttonsToHide addObject:self.fireCannonButton];
         [buttonsToHide addObject:self.pickLockButton];
         [buttonsToHide addObject:self.peerAtGemButton];
-        [buttonsToHide addObject:self.partyOrderButton];
         [buttonsToHide addObject:self.yellButton];
         [buttonsToHide addObject:self.searchButton];
         [buttonsToHide addObject:self.mixSpellButton];
         [buttonsToHide addObject:self.openDoorButton];
-        [buttonsToHide addObject:self.wearArmorButton];
+        if ([self.playerTableController orderButton])
+            [buttonsToHide addObject:[self.playerTableController orderButton]];
         break;
     case CTX_DUNGEON:
         [buttonsToHide addObject:self.currentPosButton];
@@ -691,14 +717,14 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         [buttonsToHide addObject:self.pickLockButton];
         [buttonsToHide addObject:self.yellButton];
         [buttonsToHide addObject:self.openDoorButton];
-        
+
         [buttonsToShow addObject:self.peerAtGemButton];
-        [buttonsToShow addObject:self.partyOrderButton];
         [buttonsToShow addObject:self.searchButton];
         [buttonsToShow addObject:self.mixSpellButton];
-        [buttonsToShow addObject:self.wearArmorButton];
         [buttonsToShow addObject:self.lightTorchButton];
         [buttonsToShow addObject:self.makeCampButton];
+        if ([self.playerTableController orderButton])
+            [buttonsToShow addObject:[self.playerTableController orderButton]];
         break;
     case CTX_WORLDMAP:
         [buttonsToHide addObject:self.lightTorchButton];
@@ -706,31 +732,31 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         [buttonsToHide addObject:self.pickLockButton];
         [buttonsToHide addObject:self.peerAtGemButton];
         [buttonsToHide addObject:self.openDoorButton];
-        
+
         [buttonsToShow addObject:self.currentPosButton];
         [buttonsToShow addObject:self.makeCampButton];
         [buttonsToShow addObject:self.fireCannonButton];
-        [buttonsToShow addObject:self.partyOrderButton];
         [buttonsToShow addObject:self.yellButton];
         [buttonsToShow addObject:self.searchButton];
         [buttonsToShow addObject:self.mixSpellButton];
-        [buttonsToShow addObject:self.wearArmorButton];
+        if ([self.playerTableController orderButton])           
+            [buttonsToShow addObject:[self.playerTableController orderButton]];
         break;
     case CTX_ALTAR_ROOM:
         [buttonsToShow addObject:self.currentPosButton];
-        
+
         [buttonsToHide addObject:self.lightTorchButton];
         [buttonsToHide addObject:self.makeCampButton];
         [buttonsToHide addObject:self.talkButton];
         [buttonsToHide addObject:self.fireCannonButton];
         [buttonsToHide addObject:self.pickLockButton];
         [buttonsToHide addObject:self.peerAtGemButton];
-        [buttonsToHide addObject:self.partyOrderButton];
         [buttonsToHide addObject:self.yellButton];
         [buttonsToHide addObject:self.searchButton];
         [buttonsToHide addObject:self.mixSpellButton];
         [buttonsToHide addObject:self.openDoorButton];
-        [buttonsToHide addObject:self.wearArmorButton];
+        if ([self.playerTableController orderButton])
+            [buttonsToHide addObject:[self.playerTableController orderButton]];
         break;
     default:
         break;
@@ -743,9 +769,9 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     }
     
     [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
-        for (UIButton *button in buttonsToHide)
+        for (UIButton *button in buttonsToHide) {
             button.alpha = 0.0;
-        
+        }
         for (UIButton *button in buttonsToShow)
             button.alpha = 1.0;
     }];

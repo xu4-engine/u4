@@ -178,6 +178,9 @@ void StatsArea::update(Menu *menu, MenuEvent &event) {
 void StatsArea::highlightPlayer(int player) {
     ASSERT(player < c->party->size(), "player number out of range: %d", player);
     mainArea.highlight(0, player * CHAR_HEIGHT, STATS_AREA_WIDTH * CHAR_WIDTH, CHAR_HEIGHT);
+#ifdef IOS
+    U4IOS::updateActivePartyMember(player);
+#endif
 }
 
 void StatsArea::clear() {

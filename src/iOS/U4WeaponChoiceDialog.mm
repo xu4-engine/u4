@@ -30,48 +30,77 @@
 //
 
 #import "U4WeaponChoiceDialog.h"
+#import "U4PartyWeapon.h"
+#import "U4WeaponCell.h"
+#import "U4PlayerCharacter.h"
 #include "context.h"
 #include "event.h"
 #include "ios_helpers.h"
+#include "weapon.h"
+
+@implementation U4WeaponChoiceDialog(privateStuff)
+
+- (void)loadData
+{
+    NSMutableArray *tmpArray = [NSMutableArray arrayWithCapacity:WEAP_MAX];
+    const SaveGame * const savegame = c->saveGame;
+
+    // We always have our hands
+    [tmpArray addObject:[[[U4PartyWeapon alloc] initWithWeapon:Weapon::get(WeaponType(0))
+                                                        amount:-1] autorelease]];
+    // Now start at one.
+    for (int i = 1; i < WEAP_MAX; ++i) {
+        short weaponCount = savegame->weapons[i];
+        if (weaponCount > 0) {
+            [tmpArray addObject:[[[U4PartyWeapon alloc] initWithWeapon:Weapon::get(WeaponType(i))
+                                                                amount:weaponCount] autorelease]];
+        }
+    }
+    partyWeapons = tmpArray;
+    [partyWeapons retain];
+}
+
+- (void)updateCell:(U4WeaponCell *)weaponCell withRecord:(U4PartyWeapon *)weapon;
+{
+    weaponCell.weaponName.text = [NSString stringWithUTF8String:[weapon weapon]->getName().c_str()];
+    if (weapon.amount > 0)
+        weaponCell.amount.text = [NSString stringWithFormat:@"%d", weapon.amount];
+    else
+        weaponCell.amount.text = @"";
+    
+    UIColor *colorCell;
+    if ([weapon weapon]->canReady([partyMember playerRecordSheet]->klass)) {
+        colorCell = [UIColor darkTextColor];
+    } else {
+        colorCell = [UIColor darkGrayColor];
+    }
+    weaponCell.weaponName.textColor = colorCell;
+    weaponCell.amount.textColor = colorCell;
+}
+
+
+@end
 
 @implementation U4WeaponChoiceDialog
-@synthesize handsButton, staffButton, daggerButton, slingButton, maceButton, axeButton,
-            swordButton, bowButton, crossBowButton, oilButton, halberdButton, magicAxeButton,
-            magicSwordButton, magicBowButton, magicWandButton, mysticSwordButton, cancelButton,
-            weaponDict;
+@synthesize tableCell, delegate;
 
  // The designated initializer.  Override if you create the controller programmatically and want to perform customization that is not appropriate for viewDidLoad.
-/*
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
+
+- (id)initWithPartyMember:(U4PlayerCharacter *)character nibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        // Custom initialization.
+        [self loadData];
+        partyMember = character;
+        [partyMember retain];
     }
     return self;
 }
-*/
 
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
-    [super viewDidLoad];
-    const SaveGame * const savegame = c->saveGame;
-    NSArray *allButtons = [NSArray arrayWithObjects:handsButton, staffButton, daggerButton, slingButton, maceButton,
-                           axeButton, swordButton, bowButton, crossBowButton, oilButton, halberdButton, magicAxeButton,
-                           magicSwordButton, magicBowButton, magicWandButton, mysticSwordButton, nil];
-    weaponDict
-        = const_cast<NSDictionary *>(reinterpret_cast<const NSDictionary *>(U4IOS::createDictionaryForButtons(reinterpret_cast<CFArrayRef>(allButtons),
-                                                                                                           CFSTR("ABCDEFGHIJKLMNOP"), cancelButton)));
-    
-    int i = 0;
-    for (UIButton *button in allButtons) {
-        if (i != 0) { // // You always have your hands, don't bother with this count stuff.
-            short weaponCount = savegame->weapons[i];
-            [button setTitle:[NSString stringWithFormat:@"%@ (%d)", button.currentTitle, weaponCount]
-                    forState:UIControlStateNormal];
-            button.hidden = (weaponCount == 0);
-        }
-        ++i;
-    }
+    self.title = [NSString stringWithFormat:NSLocalizedString(@"Using %@", "Party member's current weapon"),
+                  reinterpret_cast<const NSString *>(U4IOS::weaponAsString([partyMember playerRecordSheet]->weapon))];
+
 }
 
 
@@ -91,50 +120,88 @@
 
 - (void)viewDidUnload {
     [super viewDidUnload];
-    self.handsButton = nil;
-    self.staffButton = nil;
-    self.daggerButton = nil;
-    self.slingButton = nil;
-    self.maceButton = nil;
-    self.axeButton = nil;
-    self.swordButton = nil;
-    self.bowButton = nil;
-    self.crossBowButton = nil;
-    self.oilButton = nil;
-    self.halberdButton = nil;
-    self.magicAxeButton = nil;
-    self.magicSwordButton = nil;
-    self.magicBowButton = nil;
-    self.magicWandButton = nil;
-    self.mysticSwordButton = nil;
-    self.weaponDict = nil;
 }
 
--(IBAction) buttonPressed:(id)sender {
-    NSString *weaponLetter = static_cast<NSString *>([weaponDict objectForKey:sender]);
-    assert(weaponLetter != nil);
-    EventHandler::getInstance()->getController()->notifyKeyPressed(char([weaponLetter characterAtIndex:0]));
-}
 
 - (void)dealloc {
-    [handsButton release];
-    [staffButton release];
-    [daggerButton release];
-    [slingButton release];
-    [maceButton release];
-    [axeButton release];
-    [swordButton release];
-    [bowButton release];
-    [crossBowButton release];
-    [oilButton release];
-    [halberdButton release];
-    [magicAxeButton release];
-    [magicSwordButton release];
-    [magicBowButton release];
-    [magicWandButton release];
-    [mysticSwordButton release];
-    [weaponDict release];
+    [partyWeapons release];
+    [partyMember release];
     [super dealloc];
+}
+
+- (void)reloadWeaponData
+{
+    [partyWeapons release];
+    [self reloadWeaponData];
+    [self.tableView reloadData];
+}
+
+- (void)clearSelection
+{
+    [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
+}
+
+
+#pragma mark - Table View Delegate
+
+// Display customization
+
+// Section header & footer information. Views are preferred over title should you decide to provide both
+
+// custom view for header. will be adjusted to default or specified header height
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    return nil;
+}
+// custom view for footer. will be adjusted to default or specified footer height
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    return nil;
+}
+
+// Accessories (disclosures). 
+- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
+    ;
+}
+
+// Selection
+
+// Called before the user changes the selection. Return a new indexPath, or nil, to change the proposed selection.
+- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    return indexPath;
+}
+
+- (NSIndexPath *)tableView:(UITableView *)tableView willDeselectRowAtIndexPath:(NSIndexPath *)indexPath {
+    return indexPath;
+}
+// Called after the user changes the selection.
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [delegate didChooseWeapon:[partyWeapons objectAtIndex:indexPath.row]];
+}
+
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return UITableViewCellEditingStyleNone;
+}
+
+#pragma mark - UITableViewSource
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return [partyWeapons count];
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView { 
+    return 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *U4WeaponCellID = @"U4WeaponCell";
+    U4WeaponCell *armorCell = static_cast<U4WeaponCell *>([self.tableView dequeueReusableCellWithIdentifier:U4WeaponCellID]);
+    
+    if (armorCell == nil) {
+        [[NSBundle mainBundle] loadNibNamed:U4WeaponCellID owner:self options:nil];
+        self.tableCell.selectionStyle = UITableViewCellSelectionStyleGray;
+        armorCell = [[self.tableCell retain] autorelease];
+        self.tableCell = nil;
+    }
+    [self updateCell:armorCell withRecord:[partyWeapons objectAtIndex:indexPath.row]];
+    return armorCell;
 }
 
 

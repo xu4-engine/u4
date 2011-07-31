@@ -21,6 +21,10 @@
 #include "utils.h"
 #include "weapon.h"
 
+#ifdef IOS
+#include "ios_helpers.h"
+#endif
+
 bool isPartyMember(Object *punknown) {
     PartyMember *pm;
     if ((pm = dynamic_cast<PartyMember*>(punknown)) != NULL)
@@ -51,7 +55,7 @@ PartyMember::~PartyMember() {
  */
 void PartyMember::notifyOfChange() {
     if (party) {
-        party->notifyOfChange();
+        party->notifyOfChange(this);
     }
 }
 
@@ -242,7 +246,7 @@ void PartyMember::advanceLevel() {
 
     if (party) {
         party->setChanged();
-        PartyEvent event(PartyEvent::ADVANCED_LEVEL);
+        PartyEvent event(PartyEvent::ADVANCED_LEVEL, this);
         event.player = this;
         party->notifyObservers(event);
     }    
@@ -444,7 +448,7 @@ bool PartyMember::applyDamage(int damage, bool) {
 
         if (party) {
             party->setChanged();
-            PartyEvent event(PartyEvent::PLAYER_KILLED);
+            PartyEvent event(PartyEvent::PLAYER_KILLED, this);
             event.player = this;
             party->notifyObservers(event);
         }
@@ -616,9 +620,9 @@ Party::~Party() {
 /**
  * Notify the party that something about it has changed
  */
-void Party::notifyOfChange() {
+void Party::notifyOfChange(PartyMember *pm) {
     setChanged();
-    PartyEvent event(PartyEvent::GENERIC);
+    PartyEvent event(PartyEvent::GENERIC, pm);
     notifyObservers(event);
 }
 
@@ -834,7 +838,7 @@ void Party::adjustKarma(KarmaAction action) {
             if (newKarma[v] < 100) { /* but lost it */
                 saveGame->karma[v] = newKarma[v];
                 setChanged();
-                PartyEvent event(PartyEvent::LOST_EIGHTH);
+                PartyEvent event(PartyEvent::LOST_EIGHTH, 0);
                 notifyObservers(event);
             }
             else saveGame->karma[v] = 0; /* return to u4dos compatibility */
@@ -995,7 +999,7 @@ void Party::endTurn() {
     /* The party is starving! */
     if ((saveGame->food == 0) && ((c->location->context & CTX_NON_COMBAT) == c->location->context)) {
         setChanged();
-        PartyEvent event(PartyEvent::STARVING);
+        PartyEvent event(PartyEvent::STARVING, 0);
         notifyObservers(event);
     }
     
@@ -1110,10 +1114,10 @@ CannotJoinError Party::join(string name) {
             tmp = saveGame->players[saveGame->members];
             saveGame->players[saveGame->members] = saveGame->players[i];
             saveGame->players[i] = tmp;            
-            notifyOfChange();
 
             members.push_back(new PartyMember(this, &saveGame->players[saveGame->members++]));
-
+            PartyEvent event(PartyEvent::MEMBER_JOINED, members.back());
+            notifyObservers(event);
             return JOIN_SUCCEEDED;
         }
     }
@@ -1230,7 +1234,7 @@ short* Party::getReagentPtr(int reagent) const {
 void Party::setActivePlayer(int p) {
     activePlayer = p;
     setChanged();
-    PartyEvent event(PartyEvent::ACTIVE_PLAYER_CHANGED);
+    PartyEvent event(PartyEvent::ACTIVE_PLAYER_CHANGED, activePlayer < 0 ? 0 : members[activePlayer] );
     notifyObservers(event);
 }
 
@@ -1246,22 +1250,22 @@ void Party::swapPlayers(int p1, int p2) {
     saveGame->players[p1] = c->saveGame->players[p2];
     c->saveGame->players[p2] = tmp;
 
-    members.clear();
-    for (int i = 0; i < saveGame->members; i++) {
-        // add the members to the party
-        members.push_back(new PartyMember(this, &saveGame->players[i]));
-    }    
 
     if (p1 == activePlayer)
         activePlayer = p2;
     else if (p2 == activePlayer)
         activePlayer = p1;
 
-    setChanged();
-    PartyEvent event(PartyEvent::GENERIC);
-    notifyObservers(event);
+    notifyOfChange(0);
 }
 
+void Party::syncMembers() {
+    members.clear();
+    for (int i = 0; i < saveGame->members; i++) {
+        // add the members to the party
+        members.push_back(new PartyMember(this, &saveGame->players[i]));
+    }
+}
 
 /**
  * Returns the size of the party

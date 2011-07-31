@@ -325,6 +325,10 @@ void GameController::init() {
     /* add some observers */
     c->aura->addObserver(c->stats);
     c->party->addObserver(c->stats);
+#ifdef IOS
+    c->aura->addObserver(U4IOS::IOSObserver::sharedInstance());
+    c->party->addObserver(U4IOS::IOSObserver::sharedInstance());
+#endif
 
 
 
@@ -611,6 +615,7 @@ int GameController::exitToParentMap() {
  * moves, etc.
  */
 void GameController::finishTurn() {
+    c->lastCommandTime = time(NULL);
     Creature *attacker = NULL;    
 
     while (1) {
@@ -686,8 +691,6 @@ void GameController::finishTurn() {
     /* draw a prompt */
     screenPrompt();
     screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
-
-    c->lastCommandTime = time(NULL);
 }
 
 /**

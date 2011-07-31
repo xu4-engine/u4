@@ -31,29 +31,24 @@
 
 #import <UIKit/UIKit.h>
 
+@class U4PartyArmor;
+@class U4ArmorCell;
+@class U4PlayerCharacter;
 
-@interface U4ArmorChoiceDialog : UIViewController {
-    IBOutlet UIButton *noneButton;
-    IBOutlet UIButton *clothButton;
-    IBOutlet UIButton *leatherButton;
-    IBOutlet UIButton *chainButton;
-    IBOutlet UIButton *plateButton;
-    IBOutlet UIButton *magicChainButton;
-    IBOutlet UIButton *magicPlateButton;
-    IBOutlet UIButton *mysticRobesButton;
-    IBOutlet UIButton *cancelButton;
-    NSDictionary *armorDict;
+@protocol U4ArmorChoiceDialogDelegate
+- (void)didChooseArmor:(U4PartyArmor *)armor;
+@end
+
+@interface U4ArmorChoiceDialog : UITableViewController {
+@private
+    NSArray *partyArmor;
+    U4ArmorCell *tableCell;
+    U4PlayerCharacter *partyMember;
+    id<U4ArmorChoiceDialogDelegate> delegate;
 }
-@property (nonatomic, retain) IBOutlet UIButton *noneButton;
-@property (nonatomic, retain) IBOutlet UIButton *clothButton;
-@property (nonatomic, retain) IBOutlet UIButton *leatherButton;
-@property (nonatomic, retain) IBOutlet UIButton *chainButton;
-@property (nonatomic, retain) IBOutlet UIButton *plateButton;
-@property (nonatomic, retain) IBOutlet UIButton *magicChainButton;
-@property (nonatomic, retain) IBOutlet UIButton *magicPlateButton;
-@property (nonatomic, retain) IBOutlet UIButton *mysticRobesButton;
-@property (nonatomic, retain) IBOutlet UIButton *cancelButton;
-@property (nonatomic, retain) NSDictionary *armorDict;
-
--(IBAction) buttonPressed:(id) sender;
+@property (nonatomic, retain) IBOutlet U4ArmorCell *tableCell;
+@property(nonatomic, assign) id<U4ArmorChoiceDialogDelegate> delegate;
+- (id)initWithPartyMember:(U4PlayerCharacter *)character nibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
+- (void)reloadArmorData;
+- (void)clearSelection;
 @end

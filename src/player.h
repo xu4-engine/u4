@@ -16,6 +16,9 @@
 #include "script.h"
 #include "tile.h"
 #include "types.h"
+#ifdef IOS
+#include "ios_helpers.h"
+#endif
 
 class Armor;
 class Party;
@@ -158,7 +161,7 @@ public:
     Party(SaveGame *saveGame);
     virtual ~Party();
 
-    void notifyOfChange();
+    void notifyOfChange(PartyMember *partyMember = 0);
     
     // Used to translate script values into something useful
     virtual string translate(std::vector<string>& parts);
@@ -205,11 +208,15 @@ public:
     PartyMember *member(int index) const;    
     
 private:
+    void syncMembers();
     PartyMemberVector members;
     SaveGame *saveGame;
     MapTile transport;
     int torchduration;
     int activePlayer;
+#ifdef IOS
+    friend void U4IOS::syncPartyMembersWithSaveGame();
+#endif
 };
 
 class PartyEvent {
@@ -221,10 +228,11 @@ public:
         STARVING,
         TRANSPORT_CHANGED,
         PLAYER_KILLED,
-        ACTIVE_PLAYER_CHANGED
+        ACTIVE_PLAYER_CHANGED,
+        MEMBER_JOINED
     };
 
-    PartyEvent(Type type) { this->type = type; }
+    PartyEvent(Type type, PartyMember *partyMember) : type(type), player(partyMember) { }
 
     Type type;
     PartyMember *player;

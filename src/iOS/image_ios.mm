@@ -58,7 +58,7 @@ Image::Image() : surface(0), cachedImageData(0) {}
  */
 Image *Image::create(int w, int h, bool indexed, Image::Type type) {
     if (genericColorSpace == 0)
-        genericColorSpace = CGColorSpaceCreateDeviceRGB();
+        genericColorSpace = U4IOS::u4colorSpace();
     Image *im = new Image();
     boost::scoped_array<char> data(new char[w * h * 4]);
     {
@@ -86,15 +86,6 @@ Image *Image::createScreenImage() {
     screen->h = int(size.height);
     screen->indexed = false;
     return screen;
-}
-
-static void HIViewDrawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage)
-{
-    CGContextGStateSaver saver(inContext);
-    CGContextTranslateCTM (inContext, 0, inBounds->origin.y + CGRectGetMaxY(*inBounds));
-    CGContextScaleCTM(inContext, 1, -1);
-    
-    CGContextDrawImage(inContext, *inBounds, inImage);
 }
 
 static void clearSurfaceToBlack(CGLayerRef surface) {
@@ -404,7 +395,7 @@ void Image::drawSubRectInverted(int x, int y, int rx, int ry, int rw, int rh) co
 void Image::initWithImage(CGImageRef image) {
     CGContextRef context = CGLayerGetContext(surface);
     CGRect rect = CGRectMake(0, 0, width(), height());
-    HIViewDrawCGImage(context, &rect, image);    
+    U4IOS::HIViewDrawCGImage(context, &rect, image);    
 }
 
 void Image::clearImageContents() {

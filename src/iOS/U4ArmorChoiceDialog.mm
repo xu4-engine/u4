@@ -30,53 +30,76 @@
 //
 
 #import "U4ArmorChoiceDialog.h"
+#import "U4PartyArmor.h"
+#import "U4ArmorCell.h"
+#import "U4PlayerCharacter.h"
 #include "context.h"
 #include "event.h"
 #include "ios_helpers.h"
+#include "armor.h"
+
+@implementation U4ArmorChoiceDialog(privateStuff)
+
+- (void)loadArmorData
+{
+    NSMutableArray *tmpArray = [NSMutableArray arrayWithCapacity:ARMR_MAX];
+    const SaveGame * const saveGame = c->saveGame;
+
+    // We always have "No Armor."
+    [tmpArray addObject:[[[U4PartyArmor alloc] initWithArmor:Armor::get(ArmorType(0))
+                                                      amount:0] autorelease]];
+
+    // Now start at one.
+    for (int i = 1; i < ARMR_MAX; ++i) {
+        short armorCount = saveGame->armor[i];
+        if (armorCount != 0) {
+            [tmpArray addObject:[[[U4PartyArmor alloc] initWithArmor:Armor::get(ArmorType(i))
+                                                              amount:armorCount] autorelease]];
+        }
+    }
+    partyArmor = tmpArray;
+    [partyArmor retain];
+}
+
+- (void)updateCell:(U4ArmorCell *)armorCell withRecord:(U4PartyArmor *)armor
+{
+    armorCell.armorName.text = [NSString stringWithUTF8String:[armor armor]->getName().c_str()];
+    if (armor.amount > 0)
+        armorCell.amount.text = [NSString stringWithFormat:@"%d", armor.amount];
+    else
+        armorCell.amount.text = @"";
+
+    UIColor *cellTextColor;
+    if ([armor armor]->canWear([partyMember playerRecordSheet]->klass))
+        cellTextColor = [UIColor darkTextColor];
+    else
+        cellTextColor = [UIColor darkGrayColor];
+
+    armorCell.armorName.textColor = cellTextColor;
+    armorCell.amount.textColor = cellTextColor;
+}
+
+@end
+
 
 @implementation U4ArmorChoiceDialog
-@synthesize noneButton;
-@synthesize clothButton;
-@synthesize leatherButton;
-@synthesize chainButton;
-@synthesize plateButton;
-@synthesize magicChainButton;
-@synthesize magicPlateButton;
-@synthesize mysticRobesButton;
-@synthesize cancelButton;
-@synthesize armorDict;
+@synthesize tableCell, delegate;
 
  // The designated initializer.  Override if you create the controller programmatically and want to perform customization that is not appropriate for viewDidLoad.
-/*
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
+- (id)initWithPartyMember:(U4PlayerCharacter *)character nibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        // Custom initialization.
+        partyMember = character;
+        [partyMember retain];
+        [self loadArmorData];
     }
     return self;
 }
-*/
 
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
-    [super viewDidLoad];
-    const SaveGame * const savegame = c->saveGame;
-    NSArray *allButtons = [NSArray arrayWithObjects:noneButton, clothButton, leatherButton, 
-                                                    chainButton, plateButton, magicChainButton,
-                                                    magicPlateButton, mysticRobesButton, nil];
-    armorDict
-        = const_cast<NSDictionary *>(reinterpret_cast<const NSDictionary *>(U4IOS::createDictionaryForButtons(reinterpret_cast<CFArrayRef>(allButtons),
-                                                                                                           CFSTR("ABCDEFGH"), cancelButton)));    
-    int i = 0;
-    for (UIButton *button in allButtons) {
-        if (i != 0) { // // You always have your skin, don't bother with this count stuff.
-            short armorCount = savegame->armor[i];
-            [button setTitle:[NSString stringWithFormat:@"%@ (%d)", button.currentTitle, armorCount]
-                    forState:UIControlStateNormal];
-            button.hidden = (armorCount == 0);
-        }
-        ++i;
-    }
+    self.title = [NSString stringWithFormat:NSLocalizedString(@"Wearing %@", "Party member's current armor"),
+                  reinterpret_cast<const NSString *>(U4IOS::armorAsString([partyMember playerRecordSheet]->armor))];
 }
 
 
@@ -97,38 +120,89 @@
 - (void)viewDidUnload {
     [super viewDidUnload];
     // Release any retained subviews of the main view.
-    self.noneButton = nil;
-    self.clothButton = nil;
-    self.leatherButton = nil;
-    self.chainButton = nil;
-    self.plateButton = nil;
-    self.magicChainButton = nil;
-    self.magicPlateButton = nil;
-    self.mysticRobesButton = nil;
-    self.cancelButton = nil;
-    self.armorDict = nil;
-    
 }
 
-
 - (void)dealloc {
-    [noneButton release];
-    [clothButton release];
-    [leatherButton release];
-    [chainButton release];
-    [plateButton release];
-    [magicChainButton release];
-    [magicPlateButton release];
-    [mysticRobesButton release];
-    [cancelButton release];
-    [armorDict release];
+    [partyArmor release];
+    [partyMember release];
     [super dealloc];
 }
 
--(IBAction) buttonPressed:(id)sender {
-    NSString *armorLetter = static_cast<NSString *>([armorDict objectForKey:sender]);
-    assert(armorLetter != nil);
-    EventHandler::getInstance()->getController()->notifyKeyPressed(char([armorLetter characterAtIndex:0]));
+- (void)clearSelection
+{
+    [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
 }
+
+#pragma mark - Table View Delegate
+
+// Display customization
+
+// Section header & footer information. Views are preferred over title should you decide to provide both
+
+// custom view for header. will be adjusted to default or specified header height
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    return nil;
+}
+// custom view for footer. will be adjusted to default or specified footer height
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    return nil;
+}
+
+// Accessories (disclosures). 
+- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
+    ;
+}
+
+// Selection
+
+// Called before the user changes the selection. Return a new indexPath, or nil, to change the proposed selection.
+- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    return indexPath;
+}
+
+- (NSIndexPath *)tableView:(UITableView *)tableView willDeselectRowAtIndexPath:(NSIndexPath *)indexPath {
+    return indexPath;
+}
+
+// Called after the user changes the selection.
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [delegate didChooseArmor:[partyArmor objectAtIndex:indexPath.row]];
+}
+
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return UITableViewCellEditingStyleNone;
+}
+
+#pragma mark - UITableViewSource
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return [partyArmor count];
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView { 
+    return 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *U4ArmorCellID = @"U4ArmorCell";
+    U4ArmorCell *armorCell = static_cast<U4ArmorCell *>([self.tableView dequeueReusableCellWithIdentifier:U4ArmorCellID]);
+    
+    if (armorCell == nil) {
+        [[NSBundle mainBundle] loadNibNamed:U4ArmorCellID owner:self options:nil];
+        self.tableCell.selectionStyle = UITableViewCellSelectionStyleGray;
+        armorCell = [[self.tableCell retain] autorelease];
+        self.tableCell = nil;
+    }
+    [self updateCell:armorCell withRecord:[partyArmor objectAtIndex:indexPath.row]];
+    return armorCell;
+}
+
+- (void)reloadArmorData
+{
+    [partyMember release];
+    [partyArmor release];
+    [self loadArmorData];
+    [self.tableView reloadData];
+}
+
 
 @end

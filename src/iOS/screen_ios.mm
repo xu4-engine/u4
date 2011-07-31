@@ -103,11 +103,10 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
                                             CGDataProviderCreateWithData(0, src->cachedImageData,
                                                                          srcHeight * bytesPerLine,
                                                                          releaseScaleData));
-    boost::intrusive_ptr<CGColorSpace> colorSpace = cftypeFromCreateOrCopy(CGColorSpaceCreateDeviceRGB());
     boost::intrusive_ptr<CGImage> cgimage = cftypeFromCreateOrCopy(
                                                         CGImageCreate(srcWidth, srcHeight,
                                                                       8, 32, bytesPerLine,
-                                                                      colorSpace.get(),
+                                                                      U4IOS::u4colorSpace(),
                                                                       kCGImageAlphaPremultipliedLast | kCGBitmapByteOrderDefault,
                                                                       dataProvider.get(),
                                                                       0, true,
