@@ -441,6 +441,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 - (void)endConversation {
     if (conversationEdit.hidden == NO) {
         [self showAllButtons];
+        [self updateGameControllerLocationContext:c->location->context];
         conversationEdit.text = nil;
         [conversationEdit resignFirstResponder];
         conversationEdit.hidden = YES;
@@ -594,6 +595,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 - (void)finishDismissPanel:(UIView *)view {
     [self slideViewOut:view];
     [self showAllButtons];
+    [self updateGameControllerLocationContext:c->location->context];
 }
 
 - (void)bringUpWeaponChoicePanel {
