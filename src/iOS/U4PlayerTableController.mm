@@ -170,6 +170,10 @@
 
 // Called before the user changes the selection. Return a new indexPath, or nil, to change the proposed selection.
 - (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (c->location->context & CTX_COMBAT) {
+        if (indexPath != [self.tableView indexPathForSelectedRow])
+            return nil;
+    }
     return indexPath;
 }
 

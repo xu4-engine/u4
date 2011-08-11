@@ -334,6 +334,11 @@
     [self.navigationController pushViewController:armorPanel animated:YES];
 }
 
+- (void)choseWeaponInCombat:(id)sender
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 - (void)didChooseWeapon:(U4PartyWeapon *)weapon {
     if ([weapon weapon]->canReady([player playerRecordSheet]->klass)) {
         PartyMember *pm = c->party->member(rowInTable);
@@ -342,6 +347,8 @@
         [weaponButton setTitle:const_cast<NSString *>(reinterpret_cast<const NSString *>(U4IOS::weaponAsString([player playerRecordSheet]->weapon))) forState:UIControlStateNormal];
         [weaponPanel release];
         [self setupWeapons];
+        if (c->location->context & CTX_COMBAT)
+            [self performSelector:@selector(choseWeaponInCombat:) withObject:self afterDelay:0.4f]; // Jump us out back to the character selection, since we are going to be change selection.
         c->location->turnCompleter->finishTurn();
     } else {
         [weaponPanel clearSelection];
