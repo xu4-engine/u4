@@ -846,7 +846,7 @@
             <subimage name="tile_sea_serpent"   width="16" height="32"/>
             <subimage name="tile_sea_horse"     width="16" height="32"/>
             <subimage name="tile_whirlpool"     width="16" height="32"/>
-            <subimage name="tile_storm"         width="16" height="32"/>
+            <subimage name="tile_twister"         width="16" height="32"/>
     
             <!-- Land monsters -->
             <subimage name="tile_rat"           width="16" height="64"/>
@@ -1092,7 +1092,7 @@
         <image name="tile_sea_serpent" filename="png/tile_sea_serpent.png" xu4Graphic="true"/>
         <image name="tile_sea_horse" filename="png/tile_sea_horse.png" xu4Graphic="true"/>
         <image name="tile_whirlpool" filename="png/tile_whirlpool.png" xu4Graphic="true"/>
-        <image name="tile_storm" filename="png/tile_storm.png" xu4Graphic="true"/>
+        <image name="tile_twister" filename="png/tile_storm.png" xu4Graphic="true"/>
         <!-- Land monsters -->
         <image name="tile_rat"           filename="png/tile_rat.png" xu4Graphic="true"/>
         <image name="tile_bat"           filename="png/tile_bat.png" xu4Graphic="true"/>
@@ -1399,7 +1399,7 @@
             <subimage name="tile_sea_serpent"   width="16" height="32"/>
             <subimage name="tile_sea_horse"     width="16" height="32"/>
             <subimage name="tile_whirlpool"     width="16" height="32"/>
-            <subimage name="tile_storm"         width="16" height="32"/>
+            <subimage name="tile_twister"         width="16" height="32"/>
     
             <!-- Land monsters -->
             <subimage name="tile_rat"           width="16" height="64"/>
