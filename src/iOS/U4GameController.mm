@@ -679,6 +679,9 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     NSMutableArray *buttonsToShow = [NSMutableArray arrayWithCapacity:32];
     
     switch (locationContext) {
+    case CTX_SHRINE:
+        [buttonsToHide addObjectsFromArray:[self allButtons]];
+        break;
     case CTX_CITY:
         [buttonsToHide addObject:self.lightTorchButton];
         [buttonsToHide addObject:self.makeCampButton];

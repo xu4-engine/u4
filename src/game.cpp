@@ -550,6 +550,10 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
         viewMode = VIEW_NORMAL;
         activePlayer = -1; /* different active player for combat, defaults to 'None' */
         break;
+    case Map::SHRINE:
+        context = CTX_SHRINE;
+        viewMode = VIEW_NORMAL;
+        break;
     case Map::CITY:    
     default:
         context = CTX_CITY;
