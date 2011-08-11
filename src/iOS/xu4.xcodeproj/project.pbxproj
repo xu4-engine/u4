@@ -271,6 +271,26 @@
 		CA4CAA27128EEEFC00731E73 /* SpellReagent.m in Sources */ = {isa = PBXBuildFile; fileRef = CA4CAA26128EEEFC00731E73 /* SpellReagent.m */; };
 		CA576709129855B50034C51F /* SpellReagentTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CA576708129855B50034C51F /* SpellReagentTableCell.m */; };
 		CA57670B129855CB0034C51F /* SpellReagentTableCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CA57670A129855CB0034C51F /* SpellReagentTableCell.xib */; };
+		CA5783EB13F3F236000E6C46 /* hires_transparency_fix.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576786813CB6E5E00A19379 /* hires_transparency_fix.png */; };
+		CA5783EC13F3F236000E6C46 /* tile_bush.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576786913CB6E5E00A19379 /* tile_bush.png */; };
+		CA5783ED13F3F236000E6C46 /* tile_fire_field.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576786A13CB6E5E00A19379 /* tile_fire_field.png */; };
+		CA5783EE13F3F236000E6C46 /* tile_forest.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576786B13CB6E5E00A19379 /* tile_forest.png */; };
+		CA5783EF13F3F236000E6C46 /* tile_grass.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576786C13CB6E5E00A19379 /* tile_grass.png */; };
+		CA5783F013F3F236000E6C46 /* tile_guard.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576786D13CB6E5E00A19379 /* tile_guard.png */; };
+		CA5783F113F3F236000E6C46 /* tile_hit_flash.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576786E13CB6E5E00A19379 /* tile_hit_flash.png */; };
+		CA5783F213F3F236000E6C46 /* tile_lava.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576786F13CB6E5E00A19379 /* tile_lava.png */; };
+		CA5783F313F3F236000E6C46 /* tile_magic_flash.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576787013CB6E5E00A19379 /* tile_magic_flash.png */; };
+		CA5783F413F3F236000E6C46 /* tile_miss_flash.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576787113CB6E5E00A19379 /* tile_miss_flash.png */; };
+		CA5783F513F3F236000E6C46 /* tile_moongate_rising.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576787213CB6E5E00A19379 /* tile_moongate_rising.png */; };
+		CA5783F613F3F236000E6C46 /* tile_moongate.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576787313CB6E5E00A19379 /* tile_moongate.png */; };
+		CA5783F713F3F236000E6C46 /* tile_poison_field.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576787413CB6E5E00A19379 /* tile_poison_field.png */; };
+		CA5783F813F3F236000E6C46 /* tile_sea.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576787513CB6E5E00A19379 /* tile_sea.png */; };
+		CA5783F913F3F236000E6C46 /* tile_shallows.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576787613CB6E5E00A19379 /* tile_shallows.png */; };
+		CA5783FA13F3F236000E6C46 /* tile_sleep_field.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576787713CB6E5E00A19379 /* tile_sleep_field.png */; };
+		CA5783FB13F3F236000E6C46 /* tile_water.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576787813CB6E5E00A19379 /* tile_water.png */; };
+		CA5783FC13F3F236000E6C46 /* tile_whirlpool3.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576787913CB6E5F00A19379 /* tile_whirlpool3.png */; };
+		CA5783FD13F3F236000E6C46 /* tile_wisp.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576787A13CB6E5F00A19379 /* tile_wisp.png */; };
+		CA5783FE13F3F236000E6C46 /* icon.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576785F13CB4F8900A19379 /* icon.png */; };
 		CA5960DC13DEEBA400AC5226 /* PartyStatusImageView.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA5960DB13DEEBA300AC5226 /* PartyStatusImageView.mm */; };
 		CA5960DF13DF07F300AC5226 /* ankh.png in Resources */ = {isa = PBXBuildFile; fileRef = CA5960DE13DF07F300AC5226 /* ankh.png */; };
 		CA5B85D013F2867600F56CC4 /* hires_transparency_fix.png in Copy new graphics files */ = {isa = PBXBuildFile; fileRef = 9576786813CB6E5E00A19379 /* hires_transparency_fix.png */; };
@@ -940,6 +960,36 @@
 				CA335B451129D08800B5A128 /* ladderupdown3_side.png in Copy EGA Files */,
 			);
 			name = "Copy EGA Files";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CA5783EA13F3F21F000E6C46 /* Copy New Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = new;
+			dstSubfolderSpec = 7;
+			files = (
+				CA5783EB13F3F236000E6C46 /* hires_transparency_fix.png in Copy New Files */,
+				CA5783EC13F3F236000E6C46 /* tile_bush.png in Copy New Files */,
+				CA5783ED13F3F236000E6C46 /* tile_fire_field.png in Copy New Files */,
+				CA5783EE13F3F236000E6C46 /* tile_forest.png in Copy New Files */,
+				CA5783EF13F3F236000E6C46 /* tile_grass.png in Copy New Files */,
+				CA5783F013F3F236000E6C46 /* tile_guard.png in Copy New Files */,
+				CA5783F113F3F236000E6C46 /* tile_hit_flash.png in Copy New Files */,
+				CA5783F213F3F236000E6C46 /* tile_lava.png in Copy New Files */,
+				CA5783F313F3F236000E6C46 /* tile_magic_flash.png in Copy New Files */,
+				CA5783F413F3F236000E6C46 /* tile_miss_flash.png in Copy New Files */,
+				CA5783F513F3F236000E6C46 /* tile_moongate_rising.png in Copy New Files */,
+				CA5783F613F3F236000E6C46 /* tile_moongate.png in Copy New Files */,
+				CA5783F713F3F236000E6C46 /* tile_poison_field.png in Copy New Files */,
+				CA5783F813F3F236000E6C46 /* tile_sea.png in Copy New Files */,
+				CA5783F913F3F236000E6C46 /* tile_shallows.png in Copy New Files */,
+				CA5783FA13F3F236000E6C46 /* tile_sleep_field.png in Copy New Files */,
+				CA5783FB13F3F236000E6C46 /* tile_water.png in Copy New Files */,
+				CA5783FC13F3F236000E6C46 /* tile_whirlpool3.png in Copy New Files */,
+				CA5783FD13F3F236000E6C46 /* tile_wisp.png in Copy New Files */,
+				CA5783FE13F3F236000E6C46 /* icon.png in Copy New Files */,
+			);
+			name = "Copy New Files";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		CA7D59C9128F1B020061DA33 /* Copy Spell Descriptions */ = {
@@ -3024,6 +3074,7 @@
 				8D11072E0486CEB800E47090 /* Frameworks */,
 				CAFC5262134725D6000A5749 /* Copy VGA2 Files */,
 				CAFC5274134725F2000A5749 /* Copy HIRES Files */,
+				CA5783EA13F3F21F000E6C46 /* Copy New Files */,
 			);
 			buildRules = (
 				CAE272B41129D31B00C3FEA6 /* PBXBuildRule */,
