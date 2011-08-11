@@ -211,7 +211,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
 
     sigData = intro->getSigData();
     im->alphaOff();
-    if (settings.videoType != "VGA-ALLPNG") {
+    if (settings.videoType != "VGA-ALLPNG" && settings.videoType != "new") {
         /* ----------------------------
          * update the position of "and"
          * ---------------------------- */
