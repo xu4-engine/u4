@@ -1116,6 +1116,7 @@ CannotJoinError Party::join(string name) {
             saveGame->players[i] = tmp;            
 
             members.push_back(new PartyMember(this, &saveGame->players[saveGame->members++]));
+            setChanged();
             PartyEvent event(PartyEvent::MEMBER_JOINED, members.back());
             notifyObservers(event);
             return JOIN_SUCCEEDED;
