@@ -39,10 +39,8 @@
 #import "CharacterChoiceController.h"
 #import "ConversationChoiceController.h"
 #import "U4AppDelegate.h"
-#import "U4ArmorChoiceDialog.h"
 #import "U4ChooseDirectionPopup.h"
 #import "U4GameController.h"
-#import "U4WeaponChoiceDialog.h"
 #import "U4PlayerTableController.h"
 #import "U4View.h"
 #include "U4CFHelper.h"
@@ -160,6 +158,21 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 }
 */
 
+- (void)incrementConversationCount {
+    conversationCount++;
+    if (conversationCount > 0) {
+        [self hideAllButtons];
+    }
+}
+
+- (void)decrementConversationCount {
+    ASSERT(conversationCount != 0, "Conversation count asked to decrement when it is ZERO");
+    conversationCount--;
+    if (conversationCount == 0) {
+        [self endConversation];
+    }
+}
+
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
     [super viewDidLoad];    
@@ -199,14 +212,18 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     [self.gameText flashScrollIndicators];
 }
 
+- (NSArray *)directionButtons {
+    return [NSArray arrayWithObjects:upButton, downButton,
+            leftButton,
+            rightBUtton,
+            passButton,
+            helpButton,
+            nil];
+}
+
 - (NSArray *)allButtons {
     NSArray *buttons = [self allButtonsButDirectionButtons];
-    buttons = [buttons arrayByAddingObjectsFromArray:[NSArray arrayWithObjects:upButton, downButton,
-                                                                               leftButton,
-                                                                               rightBUtton,
-                                                                               passButton,
-                                                                               helpButton,
-                                                                               nil]];
+    buttons = [buttons arrayByAddingObjectsFromArray:[self directionButtons]];
     return buttons;
 }
 
@@ -430,14 +447,12 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         conversationEdit.placeholder = greeting;
         conversationEdit.keyboardType = conversationType;
     }
-    [self hideAllButtons];
     [conversationEdit becomeFirstResponder];
     
 }
 
 - (void)hideAllButtons {
-    buttonHideCount++;
-    if (buttonHideCount == 1) {
+    if (self.superButton.alpha > 0.5) {
         [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
             for (UIButton *button in [self allButtons]) {
                 button.alpha = 0.0;
@@ -447,9 +462,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 }
 
 - (void)showAllButtons {
-    buttonHideCount--;
-    assert(buttonHideCount > -1);
-    if (buttonHideCount == 0) {
+    if (self.superButton.alpha < 0.9) {
         [UIView animateWithDuration:U4IOS::ALPHA_DURATION animations:^{
             for (UIButton *button in [self allButtons]) {
                 button.alpha = 1.0;
@@ -479,13 +492,12 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 }
 
 - (void)endConversation {
-    if (conversationEdit.hidden == NO) {
-        [self showAllButtons];
+    if (conversationCount == 0) {
         [self updateGameControllerLocationContext:c->location->context];
-        conversationEdit.text = nil;
-        [conversationEdit resignFirstResponder];
-        conversationEdit.hidden = YES;
     }
+    conversationEdit.text = nil;
+    [conversationEdit resignFirstResponder];
+    conversationEdit.hidden = YES;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
@@ -630,20 +642,9 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 
 - (void)finishDismissPanel:(UIView *)view {
     [self slideViewOut:view];
-    [self showAllButtons];
-    [self updateGameControllerLocationContext:c->location->context];
-}
-
-- (void)bringUpWeaponChoicePanel {
-}
-
-- (void)dismissWeaponChoicePanel {
-}
-
-- (void)bringUpArmorChoicePanel {
-}
-
-- (void)dismissArmorChoicePanel {
+    if (conversationCount == 0) {
+        [self updateGameControllerLocationContext:c->location->context];
+    }
 }
 
 - (void)showMessage:(NSString *)message {
@@ -678,6 +679,8 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     NSMutableArray *buttonsToHide = [NSMutableArray arrayWithCapacity:32];
     NSMutableArray *buttonsToShow = [NSMutableArray arrayWithCapacity:32];
     
+    // Since we do not call "show all buttons" anymore, we need to decrement the counter here.
+    // However, we call this all over the place, so we can't just decrement it like crazy.
     switch (locationContext) {
     case CTX_SHRINE:
         [buttonsToHide addObjectsFromArray:[self allButtons]];
@@ -688,6 +691,11 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         [buttonsToHide addObject:self.fireCannonButton];
         [buttonsToHide addObject:self.peerAtGemButton];
 
+        [buttonsToShow addObjectsFromArray:[self directionButtons]];
+        [buttonsToShow addObject:self.attackButton];
+        [buttonsToShow addObject:self.superButton];
+        [buttonsToShow addObject:self.useItemButton];
+        [buttonsToShow addObject:self.castButton];
         [buttonsToShow addObject:self.currentPosButton];
         [buttonsToShow addObject:self.talkButton];
         [buttonsToShow addObject:self.pickLockButton];
@@ -699,6 +707,10 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
             [buttonsToShow addObject:[self.playerTableController orderButton]];
         break;
     case CTX_COMBAT:
+        [buttonsToShow addObjectsFromArray:[self directionButtons]];
+        [buttonsToShow addObject:self.attackButton];
+        [buttonsToShow addObject:self.castButton];
+
         [buttonsToHide addObject:self.currentPosButton];
         [buttonsToHide addObject:self.lightTorchButton];
         [buttonsToHide addObject:self.makeCampButton];
@@ -721,6 +733,11 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         [buttonsToHide addObject:self.yellButton];
         [buttonsToHide addObject:self.openDoorButton];
 
+        [buttonsToShow addObjectsFromArray:[self directionButtons]];
+        [buttonsToShow addObject:self.attackButton];
+        [buttonsToShow addObject:self.castButton];
+        [buttonsToShow addObject:self.superButton];
+        [buttonsToShow addObject:self.useItemButton];
         [buttonsToShow addObject:self.peerAtGemButton];
         [buttonsToShow addObject:self.searchButton];
         [buttonsToShow addObject:self.mixSpellButton];
@@ -736,6 +753,10 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         [buttonsToHide addObject:self.peerAtGemButton];
         [buttonsToHide addObject:self.openDoorButton];
 
+        [buttonsToShow addObjectsFromArray:[self directionButtons]];
+        [buttonsToShow addObject:self.attackButton];
+        [buttonsToShow addObject:self.castButton];
+        [buttonsToShow addObject:self.superButton];
         [buttonsToShow addObject:self.currentPosButton];
         [buttonsToShow addObject:self.makeCampButton];
         [buttonsToShow addObject:self.fireCannonButton];

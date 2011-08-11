@@ -2458,10 +2458,6 @@ void readyWeapon(int player) {
     // get the weapon to use
     c->stats->setView(STATS_WEAPONS);
     screenMessage("Weapon: ");
-#ifdef IOS
-    // ### Put the iPad stuff here.
-    U4IOS::IOSWeaponDialogHelper helper;
-#endif
     WeaponType weapon = (WeaponType) AlphaActionController::get(WEAP_MAX + 'a' - 1, "Weapon: ");
     c->stats->setView(STATS_PARTY_OVERVIEW);
     if (weapon == -1)
@@ -2789,7 +2785,7 @@ bool talkAt(const Coords &coords) {
         c->party->member(0)->heal(HT_FULLHEAL);
         gameSpellEffect('r', -1, SOUND_LBHEAL);
     }
-    
+
     Conversation conv;
     TRACE_LOCAL(gameDbg, "Setting up script information providers.");
     conv.script->addProvider("party", c->party);
@@ -2807,10 +2803,6 @@ bool talkAt(const Coords &coords) {
  * Executes the current conversation until it is done.
  */
 void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
-#ifdef IOS
-     // Just add an extra layer of hiding. This stops a lot of flashing during a conversation.
-    U4IOS::IOSHideGameControllerHelper hideButtonsHelper;
-#endif
     while (conv.state != Conversation::DONE) {
         // TODO: instead of calculating linesused again, cache the
         // result in person.cpp somewhere.
@@ -2926,9 +2918,6 @@ void wearArmor(int player) {
             return;
     }
 
-#ifdef IOS
-    U4IOS::IOSArmorDialogHelper helper;
-#endif
     c->stats->setView(STATS_ARMOR);
     screenMessage("Armour: ");
     ArmorType armor = (ArmorType) AlphaActionController::get(ARMR_MAX + 'a' - 1, "Armour: ");

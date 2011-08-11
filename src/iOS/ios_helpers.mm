@@ -187,6 +187,14 @@ IOSHideActionKeysHelper::IOSHideActionKeysHelper() {
 IOSHideActionKeysHelper::~IOSHideActionKeysHelper() {
     [gameController() showAllButtonsMinusDirections];     
 }
+    
+void incrementConversationCount() {
+    [gameController() incrementConversationCount];
+}
+
+void decrementConversationCount() {
+    [gameController() decrementConversationCount];
+}
 
 void maximizeChoicePanel() {
     [gameController() fullSizeChoicePanel];
@@ -233,22 +241,6 @@ void bringUpDirectionPopup(bool climbMode) {
 
 void dismissDirectionPop() {
     [gameController() dismissDirectionPopup];
-}
-
-void showWeaponDialog() {
-    [gameController() bringUpWeaponChoicePanel];
-}
-
-void hideWeaponDialog() {
-    [gameController() dismissWeaponChoicePanel];
-}
-
-void showArmorDialog() {
-    [gameController() bringUpArmorChoicePanel];
-}
-
-void hideArmorDialog() {
-    [gameController() dismissArmorChoicePanel];
 }
     
 void beginMixSpellController() {

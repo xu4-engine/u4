@@ -118,6 +118,7 @@ namespace U4IOS {
     void disableGameButtons();
     void enableGameButtons();
     void updateGameControllerContext(LocationContext context);
+
     
     void updatePartyMemberData(const SaveGamePlayerRecord *partyMember);
     void reloadPartyMembers();
@@ -153,6 +154,9 @@ namespace U4IOS {
             showGameButtons();
         }
     };
+    
+    void incrementConversationCount();
+    void decrementConversationCount();
 
     class IOSHideActionKeysHelper {
     public:
@@ -226,25 +230,6 @@ namespace U4IOS {
         }
     };
     
-    class IOSWeaponDialogHelper {
-    public:
-        IOSWeaponDialogHelper() {
-            showWeaponDialog();
-        }
-        ~IOSWeaponDialogHelper() {
-            hideWeaponDialog();
-        }
-    };
-    
-    class IOSArmorDialogHelper {
-    public:
-        IOSArmorDialogHelper() {
-            showArmorDialog();
-        }
-        ~IOSArmorDialogHelper() {
-            hideArmorDialog();
-        }
-    };
     CGColorSpaceRef u4colorSpace();
     CFStringRef playerStatusAsString(StatusType status);
     CFStringRef playerClassAsString(ClassType cclass);

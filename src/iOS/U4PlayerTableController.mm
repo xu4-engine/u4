@@ -270,9 +270,13 @@
 }
 
 - (void)updateActivePartyMember:(NSInteger)row {
-    if (row == -1)
-        return;
-    [self.tableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:0] animated:YES scrollPosition:UITableViewScrollPositionNone];
+    if (row == -1) {
+        NSIndexPath *path = [self.tableView indexPathForSelectedRow];
+        if (path != nil)
+            [self.tableView deselectRowAtIndexPath:path animated:YES];
+    } else {
+        [self.tableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:0] animated:YES scrollPosition:UITableViewScrollPositionNone];
+    }
 }
 
 - (void)reloadPartyMembers {
