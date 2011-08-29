@@ -275,6 +275,37 @@ U4ZipPackageMgr::U4ZipPackageMgr() {
 			break;
 		}
 
+		//search for the ultimaforever.com zip and variations
+		pathname = u4find_path("UltimaIV.zip", u4Path.u4ZipPaths);
+		if (!pathname.empty()) {
+		    flag = 1;
+			break;
+		}
+		
+		pathname = u4find_path("Ultimaiv.zip", u4Path.u4ZipPaths);
+		if (!pathname.empty()) {
+		    flag = 1;
+			break;
+		}
+		
+		pathname = u4find_path("ULTIMAIV.zip", u4Path.u4ZipPaths);
+		if (!pathname.empty()) {
+		    flag = 1;
+			break;
+		}
+		
+		pathname = u4find_path("ultimaIV.zip", u4Path.u4ZipPaths);
+		if (!pathname.empty()) {
+		    flag = 1;
+			break;
+		}
+		
+		pathname = u4find_path("ultimaiv.zip", u4Path.u4ZipPaths);
+		if (!pathname.empty()) {
+		    flag = 1;
+			break;
+		}
+		
 		// If it's not found by this point, give up.
 		break;
 		
