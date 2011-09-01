@@ -38,6 +38,9 @@ Things you only have to do once
 5. Grab libpng (universal).dmg
    http://ethan.tira-thompson.org/Mac_OS_X_Ports.html
    Mount the disk image by doubleclicking and install the libpng framework.
+   Unfortunately this package is now only for intel machines. If you want to 
+   compile for PPC machines, please grab 
+   http://xu4.sourceforge.net/download/libpng(ppcintel).dmg
 
 6. Download the Ultima IV data files and gfx update (if desired) and copy
    them into the directory where you put xu4:
@@ -79,3 +82,13 @@ Things you have to do every time the xu4 source code changes
       make -f Makefile.macosx clean-local
       make -f Makefile.macosx install
 
+
+----------------
+Issues with Lion
+-----------------
+
+SDL 1.2.14 is broken on OS XLion when you switch to fullscreen (it crashes). I compiled a 
+framework package from SDL 1.2 mercurial which fixes this behavior. Unfortunately it breaks 
+fullscreen (shwos only part of the screen) on PPC machines.
+So if you want to compile for Lion, please download http://xu4.sourceforge.net/download/SDL.dmg 
+and replace the SDL 1.2.14 framework with the one on this disk image.

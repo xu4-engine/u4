@@ -7,13 +7,18 @@ No special installation procedure is required for xu4 versions 0.8 and higher.
 Simply drag the xu4 application to anywhere you like on your hard drive.
 
 
-The OS X version of XU4 no longer comes bundled with Ultima 4. Please download
-the Ultima4.zip (or Ultima4-1.01.zip) seperately and place it in 
+The OS X version of XU4 no longer comes bundled with Ultima 4. Please go to 
+www.ultimaforever.com, the official download site for Ultima 4, and download 
+the game. Place the zip file UltimaIV.zip in 
 ~/library/Application Support/xu4 and XU4 will automatically find and use it.
 Alternatively if you want to enable all users of your mac to play with this zip
 you can place it in /Library/Application Support/xu4.
 (~/Library/... is in your userspace /Library/... is in the root of your hd)
 
+Please note that on OS X Lion, Apple hid ~/Library, to access this folder you 
+need to press and hold the Option/ALT key on your keyboard while clicking on 
+the "Go To" menu of Finder. Library will be shown in the drop down menu then
+(as long as you hold the Option/ALT key)
 
 If you have had a version of XU4 prior to 0.7 installed, please see
 the "Removing Old (<0.7) Versions of XU4" section of this document. Make
