@@ -187,10 +187,10 @@ RUNNING
 
 The actual data files from Ultima 4 are loaded at runtime, which means
 that a copy of Ultima 4 for DOS must be present at runtime.
-Fortunately, Ultima IV is available as closed-source freeware on the
-internet (legally).  A copy is mirrored at xu4.sourceforge.net.
+Fortunately, Ultima IV is available as closed-source freeware from
+www.ultimaforever.com.
 
-Download ultima4.zip and (optionally) u4upgrad.zip, and place them in
+Download UltimaIV.zip and (optionally) u4upgrad.zip, and place them in
 the same directory as the u4 executable.  xu4 will read the Ultima IV
 data files straight out of the zipfile.
 
@@ -258,13 +258,11 @@ Britannia", a general introduction to the world of Ultima IV.
 WISDOM.TXT contains "The Book of Mystic Wisdom", which explains the
 system of magic and provides descriptions of the spells and reagents.
 
-PDF versions of these books may be available from:
-http://members.aol.com/trigonman3/u4.html
+PDF versions of these books are included in the official download in
+the EXTRA folder of the zip file
 
-An image of the cloth map from the original Ultima IV box can be found
-at either of these sites:
-http://members.aol.com/trigonman3/u4.html
-http://www.dengler.net/xedragon/hrump/
+An image of the cloth map from the original Ultima IV box is also
+included in the EXTRA folder.
 
 
 DEBUG MODE (CHEATS)
