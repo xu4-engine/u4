@@ -87,8 +87,7 @@ Things you have to do every time the xu4 source code changes
 Issues with Lion
 -----------------
 
-SDL 1.2.14 is broken on OS XLion when you switch to fullscreen (it crashes). I compiled a 
-framework package from SDL 1.2 mercurial which fixes this behavior. Unfortunately it breaks 
-fullscreen (shwos only part of the screen) on PPC machines.
+SDL 1.2.14 is broken on OS X Lion when you switch to fullscreen (it crashes). I compiled a 
+framework package from SDL 1.2 mercurial which fixes this behavior.
 So if you want to compile for Lion, please download http://xu4.sourceforge.net/download/SDL.dmg 
 and replace the SDL 1.2.14 framework with the one on this disk image.
