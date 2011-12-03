@@ -38,6 +38,13 @@
 #include <string>
 #include "observer.h"
 #include "location.h"
+
+
+#define XU4_DISABLE_COPY(Class) \
+Class(const Class &); \
+Class &operator=(const Class &);
+
+
 typedef const struct __CFURL *CFURLRef;
 typedef const struct __CFDictionary *CFDictionaryRef;
 typedef const struct __CFArray *CFArrayRef;
@@ -134,6 +141,7 @@ namespace U4IOS {
     private:
         IOSObserver();
         static IOSObserver *instance;
+        XU4_DISABLE_COPY(IOSObserver)
     };
     
     class IOSDisableGameControllerHelper {
@@ -144,6 +152,7 @@ namespace U4IOS {
         ~IOSDisableGameControllerHelper() {
             enableGameButtons();
         }
+        XU4_DISABLE_COPY(IOSDisableGameControllerHelper)
     };
 
     class IOSHideGameControllerHelper {
@@ -154,6 +163,8 @@ namespace U4IOS {
         ~IOSHideGameControllerHelper() {
             showGameButtons();
         }
+    private:
+        XU4_DISABLE_COPY(IOSHideGameControllerHelper)
     };
     
     void incrementConversationCount();
@@ -163,6 +174,8 @@ namespace U4IOS {
     public:
         IOSHideActionKeysHelper();
         ~IOSHideActionKeysHelper();
+    private:
+        XU4_DISABLE_COPY(IOSHideActionKeysHelper)
     };
 
     class IOSConversationHelper {
@@ -182,6 +195,7 @@ namespace U4IOS {
         void beginConversation(U4IOS::IPadKeyboardType conversationType, const std::string &intro = "");
     private:
         void endConversation();
+        XU4_DISABLE_COPY(IOSConversationHelper)
     };
     
     class IOSConversationChoiceHelper {
@@ -202,6 +216,8 @@ namespace U4IOS {
         void halfSizeControlPanel() {
             restoreChoicePanel();
         }
+    private:
+        XU4_DISABLE_COPY(IOSConversationChoiceHelper)
     };
     
     class IOSCastSpellHelper {
@@ -212,6 +228,8 @@ namespace U4IOS {
         ~IOSCastSpellHelper() {
             endCastSpellController();
         }
+    private:
+        XU4_DISABLE_COPY(IOSCastSpellHelper)
     };
     
     class IOSDirectionHelper {
@@ -222,6 +240,8 @@ namespace U4IOS {
         virtual ~IOSDirectionHelper() {
             dismissDirectionPop();
         }
+    private:
+        XU4_DISABLE_COPY(IOSDirectionHelper)
     };
     
     class IOSClimbHelper : public IOSDirectionHelper {
@@ -229,6 +249,7 @@ namespace U4IOS {
         IOSClimbHelper() {
             bringUpDirectionPopup(true);
         }
+        XU4_DISABLE_COPY(IOSClimbHelper)
     };
     
     CGColorSpaceRef u4colorSpace();
