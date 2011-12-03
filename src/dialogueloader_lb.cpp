@@ -68,7 +68,11 @@ Dialogue* U4LBDialogueLoader::load(void *source) {
     heal->add(ResponsePart::HEALCONFIRM);
     dlg->addKeyword("heal", heal);
 
-    Response *bye = new Response("Lord British says: Fare thee well my friends!");
+    Response *bye;
+    if (c->party->size() > 1)
+        bye = new Response("Lord British says: Fare thee well my friends!");
+    else
+        bye = new Response("Lord British says: Fare thee well my friend!");
     bye->add(ResponsePart::STOPMUSIC);
     bye->add(ResponsePart::END);
     dlg->addKeyword("bye", bye);

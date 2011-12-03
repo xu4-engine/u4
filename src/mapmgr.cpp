@@ -71,6 +71,21 @@ MapMgr::~MapMgr() {
     delete logger;
 }
 
+void MapMgr::unloadMap(MapId id) {
+    delete mapList[id];
+    const Config *config = Config::getInstance();
+    vector<ConfigElement> maps = config->getElement("maps").getChildren();
+
+    for (std::vector<ConfigElement>::const_iterator i = maps.begin(); i != maps.end(); ++i) {
+        if (id == static_cast<MapId>((*i).getInt("id"))) {
+            Map *map = initMapFromConf(*i);
+            mapList[id] = map;
+            break;
+        }
+    }
+
+}
+
 Map *MapMgr::initMap(Map::Type type) {
     Map *map;
 

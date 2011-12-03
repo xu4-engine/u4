@@ -56,7 +56,7 @@ Response *Response::addref() {
 
 void Response::release() {
     references--;
-    if (--references <= 0)
+    if (references <= 0)
         delete this;
 }
 
