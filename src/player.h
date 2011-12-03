@@ -229,7 +229,8 @@ public:
         TRANSPORT_CHANGED,
         PLAYER_KILLED,
         ACTIVE_PLAYER_CHANGED,
-        MEMBER_JOINED
+        MEMBER_JOINED,
+        PARTY_REVIVED
     };
 
     PartyEvent(Type type, PartyMember *partyMember) : type(type), player(partyMember) { }

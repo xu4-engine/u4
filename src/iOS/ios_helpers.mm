@@ -329,6 +329,7 @@ public:
 void IOSObserver::update(Party *party, PartyEvent &event) {
 
     switch (event.type) {
+        case PartyEvent::PARTY_REVIVED:
         case PartyEvent::MEMBER_JOINED:
             reloadPartyMembers();
             break;

@@ -1172,7 +1172,9 @@ void Party::reviveParty() {
     saveGame->food = 20099;
     saveGame->gold = 200;
     setTransport(Tileset::findTileByName("avatar")->id);
-    notifyOfChange();
+    setChanged();
+    PartyEvent event(PartyEvent::PARTY_REVIVED, 0);
+    notifyObservers(event);
 }
 
 MapTile Party::getTransport() const {
