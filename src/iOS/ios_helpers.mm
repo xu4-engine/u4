@@ -329,12 +329,25 @@ public:
 void IOSObserver::update(Party *party, PartyEvent &event) {
 
     switch (event.type) {
+        case PartyEvent::MEMBER_JOINED: {
+            const SaveGamePlayerRecord &p = c->saveGame->players[c->saveGame->members - 1];
+            testFlightPassCheckPoint(p.name + std::string(" joined the party"));
+        }
+        // Fall Through.    
         case PartyEvent::PARTY_REVIVED:
-        case PartyEvent::MEMBER_JOINED:
             reloadPartyMembers();
             break;
-        case PartyEvent::GENERIC:
         case PartyEvent::ADVANCED_LEVEL:
+            if (event.player) {
+                ObservantPartyMember pm(event.player);
+                static const int MaxStringLength = 42;
+                char levelString[MaxStringLength];
+                snprintf(levelString, MaxStringLength, "%s advanced to level %d",
+                         pm.player()->name, pm.player()->hpMax / 100);
+                testFlightPassCheckPoint(levelString);
+            }
+            // Fall Through.
+        case PartyEvent::GENERIC:
         case PartyEvent::ACTIVE_PLAYER_CHANGED:
             if (event.player) {
                 ObservantPartyMember pm(event.player);
@@ -343,6 +356,7 @@ void IOSObserver::update(Party *party, PartyEvent &event) {
             break;
         case PartyEvent::LOST_EIGHTH:
             update(c->aura);
+            testFlightPassCheckPoint("Avatar lost an eighth");
             break;
         default:
             NSLog(@"Unhandled PartyEvent type %d reloading everything", event.type);

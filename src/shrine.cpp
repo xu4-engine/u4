@@ -233,6 +233,8 @@ void Shrine::askMantra() {
 #ifdef IOS
         U4IOS::IOSConversationChoiceHelper choiceDialog;
         choiceDialog.updateChoices(" ");
+        U4IOS::testFlightPassCheckPoint(std::string("Gained avatarhood in: ")
+                                        + getVirtueName(getVirtue()));
 #endif
         ReadChoiceController::get("");
         showVision(elevated);

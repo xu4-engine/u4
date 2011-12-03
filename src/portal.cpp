@@ -102,6 +102,9 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
                 screenMessage("Enter the %s!\n\n", destination->getName().c_str());
                 break;
             case Map::DUNGEON:
+#ifdef IOS
+                U4IOS::testFlightPassCheckPoint("Enter " + destination->getName());
+#endif
                 screenMessage("Enter dungeon!\n\n%s\n\n", destination->getName().c_str());
                 break;
             default:

@@ -416,6 +416,7 @@ void codexHandleInfinity(const string &answer) {
         U4IOS::hideGameButtons();
         U4IOS::beginChoiceConversation();
         U4IOS::updateChoicesInDialog(" ", "", -1);
+        U4IOS::testFlightPassCheckPoint("Game won!");
 #endif
         eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey); 
     }

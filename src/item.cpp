@@ -145,6 +145,37 @@ void putRuneInInventory(int virt) {
     c->party->member(0)->awardXp(100);    
     c->party->adjustKarma(KA_FOUND_ITEM);
     c->saveGame->runes |= virt;
+#ifdef IOS
+    std::string virtueName;
+    switch (virt) {
+        default:
+        case RUNE_HONESTY:
+            virtueName = "Honesty";
+            break;
+        case RUNE_HONOR:
+            virtueName = "Honor";
+            break;
+        case RUNE_HUMILITY:
+            virtueName = "Humility";
+            break;
+        case RUNE_JUSTICE:
+            virtueName = "Justice";
+            break;
+        case RUNE_SACRIFICE:
+            virtueName = "Sacrifice";
+            break;
+        case RUNE_SPIRITUALITY:
+            virtueName = "Spirituality";
+            break;
+        case RUNE_VALOR:
+            virtueName = "Valor";
+            break;
+        case RUNE_COMPASSION:
+            virtueName = "Compassion";
+            break;
+    }
+    U4IOS::testFlightPassCheckPoint("Player got stone: " + virtueName);
+#endif
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
@@ -160,6 +191,37 @@ void putStoneInInventory(int virt) {
     c->party->member(0)->awardXp(200);
     c->party->adjustKarma(KA_FOUND_ITEM);
     c->saveGame->stones |= virt;
+#ifdef IOS
+    std::string stoneName;
+    switch (virt) {
+        default:
+        case STONE_BLACK:
+            stoneName = "Black";
+            break;
+        case STONE_BLUE:
+            stoneName = "Blue";
+            break;
+        case STONE_GREEN:
+            stoneName = "Green";
+            break;
+        case STONE_ORANGE:
+            stoneName = "Orange";
+            break;
+        case STONE_PURPLE:
+            stoneName = "Purple";
+            break;
+        case STONE_RED:
+            stoneName = "Red";
+            break;
+        case STONE_WHITE:
+            stoneName = "White";
+            break;
+        case STONE_YELLOW:
+            stoneName = "Yellow";
+            break;
+    }
+    U4IOS::testFlightPassCheckPoint("Player got rune: " + stoneName);
+#endif
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
@@ -175,6 +237,41 @@ void putItemInInventory(int item) {
     c->party->member(0)->awardXp(400);
     c->party->adjustKarma(KA_FOUND_ITEM);
     c->saveGame->items |= item;
+#ifdef IOS
+    std::string itemName;
+    switch (item) {
+        default:
+        case ITEM_BELL:
+            itemName = "Bell";
+            break;
+        case ITEM_BOOK:
+            itemName = "Book";
+            break;
+        case ITEM_CANDLE:
+            itemName = "Candle";
+            break;
+        case ITEM_HORN:
+            itemName = "Horn";
+            break;
+        case ITEM_KEY_C:
+            itemName = "Key Courage";
+            break;
+        case ITEM_KEY_L:
+            itemName = "Key Love";
+            break;
+        case ITEM_KEY_T:
+            itemName = "Key Truth";
+            break;
+        case ITEM_SKULL:
+            itemName = "Skull";
+            break;
+        case ITEM_WHEEL:
+            itemName = "Wheel";
+            break;
+
+    }
+    U4IOS::testFlightPassCheckPoint("Player got rune: " + itemName);
+#endif    
     c->saveGame->lastreagent = c->saveGame->moves & 0xF0;
 }
 
@@ -187,17 +284,26 @@ void useBBC(int item) {
     if (c->location->coords == abyssEntrance) {
         /* must use bell first */
         if (item == ITEM_BELL) {
+#ifdef IOS
+            U4IOS::testFlightPassCheckPoint("The Bell rings on and on!");
+#endif
             screenMessage("\nThe Bell rings on and on!\n");
             c->saveGame->items |= ITEM_BELL_USED;
         }
         /* then the book */
         else if ((item == ITEM_BOOK) && (c->saveGame->items & ITEM_BELL_USED)) {
+#ifdef IOS
+            U4IOS::testFlightPassCheckPoint("The words resonate with the ringing!");
+#endif
             screenMessage("\nThe words resonate with the ringing!\n");
             c->saveGame->items |= ITEM_BOOK_USED;
         }
         /* then the candle */
         else if ((item == ITEM_CANDLE) && (c->saveGame->items & ITEM_BOOK_USED)) {
             screenMessage("\nAs you light the Candle the Earth Trembles!\n");    
+#ifdef IOS
+            U4IOS::testFlightPassCheckPoint("As you light the Candle the Earth Trembles!");
+#endif
             c->saveGame->items |= ITEM_CANDLE_USED;
         }
         else screenMessage("\nHmm...No effect!\n");
@@ -242,6 +348,9 @@ void useSkull(int item) {
     /* destroy the skull! pat yourself on the back */
     if (c->location->coords.x == 0xe9 && c->location->coords.y == 0xe9) {
         screenMessage("\n\nYou cast the Skull of Mondain into the Abyss!\n");
+#ifdef IOS
+        U4IOS::testFlightPassCheckPoint("You cast the Skull of Mondain into the Abyss!");
+#endif
 
         c->saveGame->items = (c->saveGame->items & ~ITEM_SKULL) | ITEM_SKULL_DESTROYED;
         c->party->adjustKarma(KA_DESTROYED_SKULL);
@@ -249,7 +358,10 @@ void useSkull(int item) {
 
     /* use the skull... bad, very bad */
     else {
-        screenMessage("\n\nYou hold the evil Skull of Mondain the Wizard aloft....\n");
+        screenMessage("\n\nYou hold the evil Skull of Mondain the Wizard aloft...\n");
+#ifdef IOS
+        U4IOS::testFlightPassCheckPoint("You hold the evil Skull of Mondain the Wizard aloft...");
+#endif
     
         /* destroy all creatures */    
         (*destroyAllCreaturesCallback)();
@@ -327,6 +439,21 @@ void useStone(int item) {
 
                     /* in an altar room, named all of the stones, and don't have the key yet... */
                     if (attr && (stoneMask == *attr) && !(c->saveGame->items & key)) {
+#ifdef IOS
+                        std::string keyName;
+                        switch (key) {
+                        case ITEM_KEY_C:
+                            keyName = "Key Courage";
+                            break;
+                        case ITEM_KEY_L:
+                            keyName = "Key Love";
+                            break;
+                        case ITEM_KEY_T:
+                            keyName = "Key Truth";
+                            break;
+                        }
+                        U4IOS::testFlightPassCheckPoint("Receive a key: " + keyName);
+#endif
                         screenMessage("\nThou doth find one third of the Three Part Key!\n");
                         c->saveGame->items |= key;
                     }
