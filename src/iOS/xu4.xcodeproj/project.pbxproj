@@ -269,6 +269,9 @@
 		CA4CAA23128ED7FC00731E73 /* MixSpellDialog.mm in Sources */ = {isa = PBXBuildFile; fileRef = CA4CAA21128ED7FC00731E73 /* MixSpellDialog.mm */; };
 		CA4CAA24128ED7FC00731E73 /* MixSpellDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = CA4CAA22128ED7FC00731E73 /* MixSpellDialog.xib */; };
 		CA4CAA27128EEEFC00731E73 /* SpellReagent.m in Sources */ = {isa = PBXBuildFile; fileRef = CA4CAA26128EEEFC00731E73 /* SpellReagent.m */; };
+		CA53F54A145BFD8B0094B858 /* libTestFlight.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CA53F546145BFD8B0094B858 /* libTestFlight.a */; };
+		CA53F54B145BFD8B0094B858 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = CA53F547145BFD8B0094B858 /* README.txt */; };
+		CA53F54C145BFD8B0094B858 /* release_notes.txt in Resources */ = {isa = PBXBuildFile; fileRef = CA53F548145BFD8B0094B858 /* release_notes.txt */; };
 		CA576709129855B50034C51F /* SpellReagentTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CA576708129855B50034C51F /* SpellReagentTableCell.m */; };
 		CA57670B129855CB0034C51F /* SpellReagentTableCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = CA57670A129855CB0034C51F /* SpellReagentTableCell.xib */; };
 		CA5783EB13F3F236000E6C46 /* hires_transparency_fix.png in Copy New Files */ = {isa = PBXBuildFile; fileRef = 9576786813CB6E5E00A19379 /* hires_transparency_fix.png */; };
@@ -1766,6 +1769,10 @@
 		CA4CAA22128ED7FC00731E73 /* MixSpellDialog.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MixSpellDialog.xib; sourceTree = "<group>"; };
 		CA4CAA25128EEEFC00731E73 /* SpellReagent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpellReagent.h; sourceTree = "<group>"; };
 		CA4CAA26128EEEFC00731E73 /* SpellReagent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellReagent.m; sourceTree = "<group>"; };
+		CA53F546145BFD8B0094B858 /* libTestFlight.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libTestFlight.a; path = TestFlightSDK/libTestFlight.a; sourceTree = SOURCE_ROOT; };
+		CA53F547145BFD8B0094B858 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.txt; path = TestFlightSDK/README.txt; sourceTree = SOURCE_ROOT; };
+		CA53F548145BFD8B0094B858 /* release_notes.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = release_notes.txt; path = TestFlightSDK/release_notes.txt; sourceTree = SOURCE_ROOT; };
+		CA53F549145BFD8B0094B858 /* TestFlight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestFlight.h; path = TestFlightSDK/TestFlight.h; sourceTree = SOURCE_ROOT; };
 		CA576707129855B50034C51F /* SpellReagentTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpellReagentTableCell.h; sourceTree = "<group>"; };
 		CA576708129855B50034C51F /* SpellReagentTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellReagentTableCell.m; sourceTree = "<group>"; };
 		CA57670A129855CB0034C51F /* SpellReagentTableCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SpellReagentTableCell.xib; sourceTree = "<group>"; };
@@ -2140,6 +2147,7 @@
 				CA71D43213069CEE00803262 /* AVFoundation.framework in Frameworks */,
 				CA71D43413069CF600803262 /* AudioToolbox.framework in Frameworks */,
 				CA314DC91364553900B90AA7 /* QuartzCore.framework in Frameworks */,
+				CA53F54A145BFD8B0094B858 /* libTestFlight.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2188,6 +2196,7 @@
 		29B97314FDCFA39411CA2CEA /* xu4 */ = {
 			isa = PBXGroup;
 			children = (
+				CA53F53E145BFCA50094B858 /* TestFlightSDK */,
 				CA791831114BE8EF0071F53D /* ios_helpers.h */,
 				CA791832114BE8EF0071F53D /* ios_helpers.mm */,
 				080E96DDFE201D6D7F000001 /* Classes */,
@@ -2550,6 +2559,18 @@
 			name = vga;
 			path = ../../graphics/vga;
 			sourceTree = SOURCE_ROOT;
+		};
+		CA53F53E145BFCA50094B858 /* TestFlightSDK */ = {
+			isa = PBXGroup;
+			children = (
+				CA53F546145BFD8B0094B858 /* libTestFlight.a */,
+				CA53F547145BFD8B0094B858 /* README.txt */,
+				CA53F548145BFD8B0094B858 /* release_notes.txt */,
+				CA53F549145BFD8B0094B858 /* TestFlight.h */,
+			);
+			name = TestFlightSDK;
+			path = TestFlightSDK0.7.2;
+			sourceTree = "<group>";
 		};
 		CA7AACF6133E3CD5005DF01C /* conf */ = {
 			isa = PBXGroup;
@@ -3116,7 +3137,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0410;
+				LastUpgradeCheck = 0420;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "xu4" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -3314,6 +3335,8 @@
 				CA3E6A9D13DC27240041C10C /* U4ArmorCell.xib in Resources */,
 				CA3E6AA213DC2C580041C10C /* U4WeaponCell.xib in Resources */,
 				CA5960DF13DF07F300AC5226 /* ankh.png in Resources */,
+				CA53F54B145BFD8B0094B858 /* README.txt in Resources */,
+				CA53F54C145BFD8B0094B858 /* release_notes.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3673,7 +3696,7 @@
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CODE_SIGN_ENTITLEMENTS = Entitlements.plist;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				COPY_PHASE_STRIP = YES;
+				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1.3.1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -3691,7 +3714,11 @@
 				INFOPLIST_FILE = "Ultima4-iPad.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.2;
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/TestFlightSDK0.7.2\"",
+					"\"$(SRCROOT)/TestFlightSDK\"",
+				);
 				OTHER_CFLAGS = (
 					"-DIOS",
 					"-DMACOSX_USER_FILES_PATH=\\\"/Library/Application\\ Support/xu4\\\"",
@@ -3738,7 +3765,11 @@
 				INFOPLIST_FILE = "Ultima4-iPad.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.2;
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/TestFlightSDK0.7.2\"",
+					"\"$(SRCROOT)/TestFlightSDK\"",
+				);
 				OTHER_CFLAGS = (
 					"-DIOS",
 					"-DMACOSX_USER_FILES_PATH=\\\"/Library/Application\\ Support/xu4\\\"",
@@ -3782,7 +3813,11 @@
 				INFOPLIST_FILE = "Ultima4-iPad.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.2;
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/TestFlightSDK0.7.2\"",
+					"\"$(SRCROOT)/TestFlightSDK\"",
+				);
 				OTHER_CFLAGS = (
 					"-DIOS",
 					"-DMACOSX_USER_FILES_PATH=\\\"/Library/Application\\ Support/xu4\\\"",

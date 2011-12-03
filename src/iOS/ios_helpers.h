@@ -86,6 +86,7 @@ namespace U4IOS {
                                                  ::CFStringRef arrayOfLetters, void * uibuttonCancelButton);
     U4View *frontU4View();
     void updateScreenView();
+    void testFlightPassCheckPoint(const std::string &checkPointName);
     
     void beginChoiceConversation();
     void maximizeChoicePanel();

@@ -48,6 +48,7 @@
 #include "view.h"
 #include "CGContextGStateSaver.h"
 #include <CoreFoundation/CoreFoundation.h>
+#import "TestFlight.h"
 
 struct timeval start;
 void startTicks()
@@ -66,6 +67,10 @@ int getTicks()
 }
 
 namespace U4IOS {
+    
+void testFlightPassCheckPoint(const std::string &checkPointName) {
+    [TestFlight passCheckpoint:[NSString stringWithUTF8String:checkPointName.c_str()]];
+}
     
 std::string IOSConversationHelper::introString;
     

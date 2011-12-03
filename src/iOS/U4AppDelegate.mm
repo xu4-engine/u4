@@ -53,6 +53,7 @@
 #include "imagemgr.h"
 #include "image.h"
 #import "U4View.h"
+#include "TestFlight.h"
 
 #if defined(MACOSX)
 #include "macosx/osxinit.h"
@@ -72,7 +73,7 @@ string profileName = "";
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {    
-    
+    [TestFlight takeOff:@"436f0b9458ec27dd945423eb48aff336_NzE2MDIwMTEtMTAtMjkgMDU6Mjg6MjAuNTA0MzUy"];
     Debug::initGlobal("debug/global.txt");
     
     /* initialize the settings */
