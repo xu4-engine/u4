@@ -2879,6 +2879,9 @@ void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
         switch (conv.getInputRequired(&maxlen)) {
         case Conversation::INPUT_STRING: {
             conv.playerInput = gameGetInput(maxlen);
+#ifdef IOS
+            screenMessage("%s", conv.playerInput.c_str()); // Since we put this in a different window, we need to show it again.
+#endif
             conv.reply = talker->getConversationText(&conv, conv.playerInput.c_str());
             conv.playerInput.erase();
             showPrompt = true;
