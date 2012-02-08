@@ -19,7 +19,12 @@
 
 using namespace std;
 
+#ifdef IOS
+// Seems that iOS hands-off event loop means we need to fire a bit more slowly.
+int eventTimerGranularity = 300;
+#else
 int eventTimerGranularity = 250;
+#endif
 
 extern bool quit;
 bool EventHandler::controllerDone = false;
