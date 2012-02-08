@@ -173,6 +173,15 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     }
 }
 
+- (NSArray *)directionButtons {
+    return [NSArray arrayWithObjects:upButton, downButton,
+            leftButton,
+            rightBUtton,
+            passButton,
+            helpButton,
+            nil];
+}
+
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
     [super viewDidLoad];    
@@ -202,6 +211,13 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     playerNavController.view.layer.borderWidth = 2.;
     playerNavController.view.layer.borderColor = [UIColor lightGrayColor].CGColor;
     
+    for (UIButton *button in [self directionButtons]) {
+        if (button == passButton)
+            break;
+        [button addTarget:self action:@selector(repeatButtonPressed:) forControlEvents:UIControlEventTouchDown];
+        [button addTarget:self action:@selector(repeatButtonReleased:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    
     [self.view addSubview:playerNavController.view];
     [appDelegate pushU4View:self.u4view];
 }
@@ -210,15 +226,6 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 {
     [super viewDidAppear:animated];
     [self.gameText flashScrollIndicators];
-}
-
-- (NSArray *)directionButtons {
-    return [NSArray arrayWithObjects:upButton, downButton,
-            leftButton,
-            rightBUtton,
-            passButton,
-            helpButton,
-            nil];
 }
 
 - (NSArray *)allButtons {
@@ -303,6 +310,10 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     [gameText release];
     [scrollImage release];
     [playerTableController release];
+    if (repeatButtonTimer) {
+        [repeatButtonTimer invalidate];
+        [repeatButtonTimer release];
+    }
     [super dealloc];
 }
 
@@ -799,6 +810,35 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         for (UIButton *button in buttonsToShow)
             button.alpha = 1.0;
     }];
+}
+
+- (IBAction)repeatButtonPressed:(id)sender {
+    if (!repeatButtonTimer) {
+        SEL selctor;
+        if (sender == upButton) {
+            selctor = @selector(goUpPressed:);
+        } else if (sender == downButton) {
+            selctor = @selector(goDownPressed:);
+        } else if (sender == leftButton) {
+            selctor = @selector(goLeftPressed:);
+        } else {
+            selctor = @selector(goRightPressed:);
+        }
+
+        repeatButtonTimer = [NSTimer timerWithTimeInterval:0.33 target:self
+                                                  selector:selctor userInfo:sender repeats:YES];
+        [repeatButtonTimer retain];
+        [[NSRunLoop currentRunLoop] addTimer:repeatButtonTimer forMode:NSDefaultRunLoopMode];
+        [self performSelector:selctor];
+    }
+}
+
+- (IBAction)repeatButtonReleased:(id)sender {
+    if (repeatButtonTimer) {
+        [repeatButtonTimer invalidate];
+        [repeatButtonTimer release];
+        repeatButtonTimer = nil;
+    }
 }
   
 @end

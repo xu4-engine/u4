@@ -81,6 +81,7 @@ class GameController;
     NSMutableSet *viewsReadytoFadeOutSet;
     NSUInteger lineCount;
     NSUInteger conversationCount;
+    NSTimer *repeatButtonTimer;
 }
 @property (nonatomic, retain) CastSpellController *castSpellController;
 @property (nonatomic, retain) ConversationChoiceController *choiceController;
@@ -123,6 +124,8 @@ class GameController;
 - (IBAction)goRightPressed:(id)sender;
 - (IBAction)klimbPressed:(id)sender;
 - (IBAction)descendPressed:(id)sender;
+- (IBAction)repeatButtonPressed:(id)sender;
+- (IBAction)repeatButtonReleased:(id)sender;
 - (void)bringUpMixReagentsController;
 - (void)cleanUp;
 - (void)bringUpDirectionPopupWithClimbMode:(BOOL)climbMode;
