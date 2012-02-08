@@ -1578,14 +1578,14 @@ bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients) {
 
     screenMessage("\nYou mix the Reagents, and...\n");
     if (spellMix(spell, ingredients)) {
-        screenMessage("Success!");
+        screenMessage("Success!\n\n");
         /* mix the extra spells */
         ingredients->multiply(num);
         for (i = 0; i < num-1; i++)
             spellMix(spell, ingredients);
     }
     else 
-        screenMessage("It Fizzles!");
+        screenMessage("It Fizzles!\n\n");
 
     return true;        
 }
