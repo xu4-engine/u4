@@ -34,6 +34,7 @@
 #import "SpellReagent.h"
 #import "SpellInfoPickerLabel.h"
 #include "event.h"
+#include "game.h"
 #include "spell.h"
 #include "ios_helpers.h"
 
@@ -47,6 +48,11 @@
 @synthesize tableCell;
 @synthesize delegate;
 @synthesize pickerLabel;
+
+static void finishTurn() {
+    c->location->turnCompleter->finishTurn();
+    game->paused = false;
+}
 
  // The designated initializer.  Override if you create the controller programmatically and want to perform customization that is not appropriate for viewDidLoad.
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -102,6 +108,7 @@
 
 - (void)cancelMix:(id)sender {
     [delegate mixWasCanceled:self];
+    finishTurn();
 }
 
 - (void)mixSpell:(id)sender {
@@ -111,6 +118,7 @@
             ingred.addReagent(Reagent(reagent.index));
     }
     [delegate mixSpellDialog:self chooseSpell:[self.spellPicker selectedRowInComponent:0] reagents:&ingred numberOfSpells:int([spellSlider value])];
+    finishTurn();
 }
 
 
@@ -146,6 +154,7 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     [componentView flashScrollIndicators];
+    game->paused = true;
 }
 
 
@@ -215,13 +224,14 @@
     return 1;
 }
 
-// ### Just leave this here for the moment.
-//- (CGFloat)pickerView:(UIPickerView *)pickerView widthForComponent:(NSInteger)component {
+- (CGFloat)pickerView:(UIPickerView *)pickerView widthForComponent:(NSInteger)component {
+    return [pickerView bounds].size.width;
 //    return 740.;
-//}
-//- (CGFloat)pickerView:(UIPickerView *)pickerView rowHeightForComponent:(NSInteger)component {
-//    return 56.;
-//}
+}
+
+- (CGFloat)pickerView:(UIPickerView *)pickerView rowHeightForComponent:(NSInteger)component {
+    return 56.;
+}
 
 - (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component {
     return [allSpells count];

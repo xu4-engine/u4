@@ -1174,6 +1174,11 @@ bool GameController::keyPressed(int key) {
 
         case 'm':
             mixReagents();
+#ifdef IOS
+            // The iOS MixSpell dialog needs control of the event loop, so it is its
+            // job to complete the turn.
+            endTurn = false;
+#endif
             break;
 
         case 'n':
@@ -2538,10 +2543,11 @@ void mixReagents() {
     bool done = false;
 
     while (!done) {
+        screenMessage("Mix reagents\n");
 #ifdef IOS
         U4IOS::beginMixSpellController();
+        return; // Just return, the dialog takes control from here.
 #endif
-        screenMessage("Mix reagents\n");
 
         // Verify that there are reagents remaining in the inventory
         bool found = false;

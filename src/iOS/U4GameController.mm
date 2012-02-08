@@ -34,6 +34,7 @@
 #include "context.h"
 #include "game.h"
 #include "screen.h"
+#include "spell.h"
 #include "tileset.h"
 #import "CastSpellController.h"
 #import "CharacterChoiceController.h"
@@ -416,13 +417,12 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
 
 -(void)mixSpellDialog:(MixSpellDialog *)dialog chooseSpell:(NSInteger)spellIndex reagents:(Ingredients *)reagents numberOfSpells:(NSInteger)amount {
     [self dismissModalViewControllerAnimated:YES];
+    screenMessage("%s\n", spellGetName(spellIndex));
     gameSpellMixHowMany(spellIndex, amount, reagents);
-    [self buttonPressed:passButton];
 }
 
 -(void)mixWasCanceled:(MixSpellDialog *)dialog {
     [self dismissModalViewControllerAnimated:YES];
-    [self buttonPressed:passButton];
 }
 
 - (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
