@@ -13,7 +13,7 @@
  * Seed the random number generator.
  */
 void xu4_srandom() {
-    srand(time(NULL));
+    srandom(time(NULL));
 }
 
 /**
@@ -23,7 +23,7 @@ void xu4_srandom() {
  * lower bits (e.g. MacOS X).
  */
 int xu4_random(int upperRange) {
-    int r = rand();
+    int r = random();
     return (int) ((((double)upperRange) * r) / (RAND_MAX+1.0));
 }
 

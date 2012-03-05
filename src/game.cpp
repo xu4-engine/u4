@@ -3427,7 +3427,11 @@ void GameController::creatureCleanup() {
  */
 void GameController::checkRandomCreatures() {
     int canSpawnHere = c->location->map->isWorldMap() || c->location->context & CTX_DUNGEON;
+#ifdef IOS
+    int spawnDivisor = c->location->context & CTX_DUNGEON ? (53 - (c->location->coords.z << 2)) : 53;
+#else
     int spawnDivisor = c->location->context & CTX_DUNGEON ? (32 - (c->location->coords.z << 2)) : 32;
+#endif
 
     /* If there are too many creatures already,
        or we're not on the world map, don't worry about it! */
