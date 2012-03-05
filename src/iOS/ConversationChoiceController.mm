@@ -231,7 +231,7 @@
         // ### *Sigh* This exposes sextants! But on the other hand, I would rather make the game beatable NOW then
         // not make it possible as an alternate interface is devised.
         [self buildButtonsFromArray:[NSArray arrayWithObjects:@"Torches", @"Magic Gems",
-                                                              @"Magic Keys" @"Sextant", nil]
+                                                              @"Magic Keys", @"Sextant", nil]
                   calculateIndex:NO];
         break;
     default:
