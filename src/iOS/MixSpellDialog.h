@@ -67,6 +67,7 @@ class Ingredients;
 @property (nonatomic, retain) IBOutlet SpellReagentTableCell *tableCell;
 @property (nonatomic, retain) IBOutlet SpellInfoPickerLabel *pickerLabel;
 - (IBAction)spellCountChanged:(id)sender;
+- (void)updateComponentCount;
 - (void)cancelMix:(id)sender;
 - (void)mixSpell:(id)sender;
 - (void)updateSelectedForCell:(SpellReagentTableCell *)tableCell;

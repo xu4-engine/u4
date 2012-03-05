@@ -193,7 +193,13 @@ static void finishTurn() {
 
     static const unichar CheckMark = 0x2713;
     cell.reagentSelectedLabel.text = [NSString stringWithCharacters:&CheckMark length:1];
-    cell.reagentCountLabel.text = [NSString stringWithFormat:@"%d", selected ? reagent.amount - 1 : reagent.amount];
+    cell.reagentCountLabel.text = [NSString stringWithFormat:@"%d", reagent.amount];
+    UIFont *font = reagent.amount < 0 ? [UIFont boldSystemFontOfSize:[UIFont labelFontSize]] : [UIFont systemFontOfSize:[UIFont labelFontSize]];
+    UIColor *textColor = reagent.amount < 0 ? [UIColor redColor] : [UIColor darkTextColor];
+    cell.reagentNameLabel.font = font;
+    cell.reagentCountLabel.font = font;
+    cell.reagentCountLabel.textColor = textColor;
+    cell.reagentNameLabel.textColor = textColor;
     // ### Animate?
     cell.reagentSelectedLabel.hidden = !selected;
 }
@@ -210,7 +216,6 @@ static void finishTurn() {
     SpellReagent *reagent = [allComponents objectAtIndex:indexPath.row];
     cell.reagent = reagent;
     cell.reagentNameLabel.text = reagent.name;
-    cell.reagentCountLabel.text = [NSString stringWithFormat:@"%d", reagent.amount];
     [self updateSelectedForCell:cell];
     return cell;
 }
@@ -218,7 +223,14 @@ static void finishTurn() {
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     SpellReagentTableCell *thisCell = static_cast<SpellReagentTableCell *>([tableView cellForRowAtIndexPath:indexPath]);
     SpellReagent *reagent = thisCell.reagent;
-    reagent.selected = !reagent.selected;
+    int componentCountChange = int([spellSlider value]);
+    if (reagent.selected) {
+        reagent.selected = NO;
+        reagent.amount += componentCountChange;
+    } else {
+        reagent.selected = YES;
+        reagent.amount -= componentCountChange;
+    }
     [self updateSelectedForCell:thisCell];
 }
 
@@ -269,5 +281,23 @@ static void finishTurn() {
 
 - (IBAction)spellCountChanged:(id)sender {
     totalSpells.text = [NSString stringWithFormat:@"%d", int([spellSlider value])];
+    [self updateComponentCount];
+}
+
+- (void)updateComponentCount {
+    int componentCountChange = int([spellSlider value]);
+    const SaveGame * const saveGame = c->saveGame;
+    BOOL reallyReload = NO;
+
+    for (SpellReagent *reagent in allComponents) {
+        if (reagent.selected) {
+            reallyReload = YES;
+            reagent.amount = saveGame->reagents[[reagent index]] - componentCountChange;
+        }
+    }
+
+    if (reallyReload)
+        [componentView reloadData];
+    
 }
 @end
