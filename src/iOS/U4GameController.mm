@@ -383,20 +383,28 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     EventHandler::getInstance()->getController()->notifyKeyPressed(gameChar);
 }
 
+- (void)doButtonPressWithRepeatCheck:(UIButton *)button {
+    if (repeatButtonTimer && !button.highlighted) {
+        [self repeatButtonReleased:button];
+        return;
+    }
+    [self buttonPressed:button];    
+}
+
 - (IBAction)goUpPressed:(id)sender {
-    [self buttonPressed:upButton];
+    [self doButtonPressWithRepeatCheck:upButton];
 }
 
 - (IBAction)goLeftPressed:(id)sender {
-    [self buttonPressed:leftButton];
+    [self doButtonPressWithRepeatCheck:leftButton];
 }
 
 - (IBAction)goDownPressed:(id)sender {
-    [self buttonPressed:downButton];
+    [self doButtonPressWithRepeatCheck:downButton];
 }
 
 - (IBAction)goRightPressed:(id)sender {
-    [self buttonPressed:rightBUtton];
+    [self doButtonPressWithRepeatCheck:rightBUtton];
 }
 
 - (IBAction)klimbPressed:(id)sender {
