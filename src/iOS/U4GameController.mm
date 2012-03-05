@@ -43,6 +43,7 @@
 #import "U4ChooseDirectionPopup.h"
 #import "U4GameController.h"
 #import "U4PlayerTableController.h"
+#import "U4SuperButtonBreakdown.h"
 #import "U4View.h"
 #include "U4CFHelper.h"
 #include "ios_helpers.h"
@@ -408,6 +409,11 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     EventHandler::getInstance()->getController()->notifyKeyPressed('d');
 }
 
+- (IBAction)exitPressed:(id)sender {
+    self.currentPressedButton = sender;
+    EventHandler::getInstance()->getController()->notifyKeyPressed('x');    
+}
+
 - (void)bringUpMixReagentsController {
     MixSpellDialog *mixSpellDialog = [[MixSpellDialog alloc] initWithNibName:@"MixSpellDialog" bundle:nil];
     mixSpellDialog.delegate = self;
@@ -448,6 +454,18 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         self.actionDirectionController = nil;
     }
     self.currentPressedButton = nil;
+}
+
+- (void)bringUpSuperButtonBreakdown {
+    [self bringUpSuperButtonBreakdownForButton:self.currentPressedButton];
+}
+
+- (void)bringUpSuperButtonBreakdownForButton:(UIButton *)button {
+    U4SuperButtonBreakdown *breakdownPopup = [[[U4SuperButtonBreakdown alloc] initWithNibName:@"U4SuperButtonBreakdown" bundle:nil gameController:self] autorelease];
+    UIPopoverController *popoverController = [[[UIPopoverController alloc] initWithContentViewController:breakdownPopup] autorelease];
+    popoverController.delegate = self;
+    self.actionDirectionController = popoverController;
+    [self.actionDirectionController presentPopoverFromRect:button.frame inView:button.superview permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void)beginConversation:(UIKeyboardType)conversationType withGreeting:(NSString *)greeting {

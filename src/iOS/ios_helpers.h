@@ -112,6 +112,8 @@ namespace U4IOS {
     void bringUpDirectionPopup(bool climbMode = false);
     void dismissDirectionPop();
     
+    void bringUpSuperButtonPopup();
+    
     void hideGameButtons();
     void showGameButtons();
     
@@ -152,6 +154,7 @@ namespace U4IOS {
         ~IOSDisableGameControllerHelper() {
             enableGameButtons();
         }
+    private:
         XU4_DISABLE_COPY(IOSDisableGameControllerHelper)
     };
 
@@ -249,9 +252,22 @@ namespace U4IOS {
         IOSClimbHelper() {
             bringUpDirectionPopup(true);
         }
+    private:
         XU4_DISABLE_COPY(IOSClimbHelper)
     };
-    
+
+    class IOSSuperButtonHelper {
+    public:
+        IOSSuperButtonHelper() {
+            bringUpSuperButtonPopup();
+        }
+        ~IOSSuperButtonHelper() {
+            dismissDirectionPop(); // ### This dismisses the "super" popup as well.
+        }
+    private:
+        XU4_DISABLE_COPY(IOSSuperButtonHelper)
+    };
+
     CGColorSpaceRef u4colorSpace();
     CFStringRef playerStatusAsString(StatusType status);
     CFStringRef playerClassAsString(ClassType cclass);

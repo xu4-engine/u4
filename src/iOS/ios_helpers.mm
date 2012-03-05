@@ -239,6 +239,10 @@ void beginCastSpellController() {
 void endCastSpellController() {
     [gameController() endCastSpellController];
 }
+    
+void bringUpSuperButtonPopup() {
+    [gameController() bringUpSuperButtonBreakdown];
+}
 
 void bringUpDirectionPopup(bool climbMode) {
     [gameController() bringUpDirectionPopupWithClimbMode:climbMode];

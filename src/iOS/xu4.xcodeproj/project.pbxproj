@@ -786,6 +786,8 @@
 		CAF4742E1291B015008571C9 /* SpellInfoPickerLabel.xib in Resources */ = {isa = PBXBuildFile; fileRef = CAF4742D1291B015008571C9 /* SpellInfoPickerLabel.xib */; };
 		CAF474311291B5D0008571C9 /* SpellInfoPickerLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = CAF474301291B5D0008571C9 /* SpellInfoPickerLabel.m */; };
 		CAF474341291CB89008571C9 /* SpellInfoPickerLabelLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = CAF474331291CB88008571C9 /* SpellInfoPickerLabelLabel.m */; };
+		CAF4FF5614F6C0A500A66C09 /* U4SuperButtonBreakdown.mm in Sources */ = {isa = PBXBuildFile; fileRef = CAF4FF5414F6C0A500A66C09 /* U4SuperButtonBreakdown.mm */; };
+		CAF4FF5714F6C0A500A66C09 /* U4SuperButtonBreakdown.xib in Resources */ = {isa = PBXBuildFile; fileRef = CAF4FF5514F6C0A500A66C09 /* U4SuperButtonBreakdown.xib */; };
 		CAF707481365C3C700F4E7BC /* U4Button.mm in Sources */ = {isa = PBXBuildFile; fileRef = CAF707471365C3C700F4E7BC /* U4Button.mm */; };
 		CAFC5264134725ED000A5749 /* charset.png in Copy VGA2 Files */ = {isa = PBXBuildFile; fileRef = CABB19641343BF0D00158A3D /* charset.png */; };
 		CAFC5265134725ED000A5749 /* honcom.png in Copy VGA2 Files */ = {isa = PBXBuildFile; fileRef = CABB19651343BF0D00158A3D /* honcom.png */; };
@@ -2105,6 +2107,9 @@
 		CAF474301291B5D0008571C9 /* SpellInfoPickerLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellInfoPickerLabel.m; sourceTree = "<group>"; };
 		CAF474321291CB87008571C9 /* SpellInfoPickerLabelLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpellInfoPickerLabelLabel.h; sourceTree = "<group>"; };
 		CAF474331291CB88008571C9 /* SpellInfoPickerLabelLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellInfoPickerLabelLabel.m; sourceTree = "<group>"; };
+		CAF4FF5314F6C0A500A66C09 /* U4SuperButtonBreakdown.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4SuperButtonBreakdown.h; sourceTree = "<group>"; };
+		CAF4FF5414F6C0A500A66C09 /* U4SuperButtonBreakdown.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4SuperButtonBreakdown.mm; sourceTree = "<group>"; };
+		CAF4FF5514F6C0A500A66C09 /* U4SuperButtonBreakdown.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = U4SuperButtonBreakdown.xib; sourceTree = "<group>"; };
 		CAF5816711C3DC43004045D0 /* CGContextGStateSaver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGContextGStateSaver.h; sourceTree = "<group>"; };
 		CAF707461365C3C700F4E7BC /* U4Button.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = U4Button.h; sourceTree = "<group>"; };
 		CAF707471365C3C700F4E7BC /* U4Button.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = U4Button.mm; sourceTree = "<group>"; };
@@ -2990,6 +2995,7 @@
 				CAF4742D1291B015008571C9 /* SpellInfoPickerLabel.xib */,
 				CA4CAA22128ED7FC00731E73 /* MixSpellDialog.xib */,
 				CABA4DA41285479B00195CFD /* U4ChooseDirectionPopup.xib */,
+				CAF4FF5514F6C0A500A66C09 /* U4SuperButtonBreakdown.xib */,
 				CAFB771C12325F9100ADFF0B /* U4IntroController.xib */,
 				CAEC59F712296F27008095DC /* U4StartDialog.xib */,
 				CA6D0D6111E656AE003B29AE /* U4GameController.xib */,
@@ -3006,6 +3012,8 @@
 		CABE6F11113C5A990085A8DF /* iPad */ = {
 			isa = PBXGroup;
 			children = (
+				CAF4FF5314F6C0A500A66C09 /* U4SuperButtonBreakdown.h */,
+				CAF4FF5414F6C0A500A66C09 /* U4SuperButtonBreakdown.mm */,
 				CAFCFCF012D8F41B00AC49B2 /* U4ArmorChoiceDialog.h */,
 				CAFCFCF112D8F41B00AC49B2 /* U4ArmorChoiceDialog.mm */,
 				CAFCFBF412D8B94300AC49B2 /* U4WeaponChoiceDialog.h */,
@@ -3337,6 +3345,7 @@
 				CA5960DF13DF07F300AC5226 /* ankh.png in Resources */,
 				CA53F54B145BFD8B0094B858 /* README.txt in Resources */,
 				CA53F54C145BFD8B0094B858 /* release_notes.txt in Resources */,
+				CAF4FF5714F6C0A500A66C09 /* U4SuperButtonBreakdown.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3548,6 +3557,7 @@
 				CA3E6AA013DC27680041C10C /* U4ArmorCell.mm in Sources */,
 				CA3E6AA513DC2C820041C10C /* U4WeaponCell.mm in Sources */,
 				CA5960DC13DEEBA400AC5226 /* PartyStatusImageView.mm in Sources */,
+				CAF4FF5614F6C0A500A66C09 /* U4SuperButtonBreakdown.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

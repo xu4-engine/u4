@@ -851,10 +851,17 @@ bool GameController::keyPressed(int key) {
                 key = 'b';
         }
         /* Klimb/Descend Balloon */
-        else if (c->transportContext == TRANSPORT_BALLOON) {            
+        else if (c->transportContext == TRANSPORT_BALLOON) {
             if (c->party->isFlying())
                 key = 'd';
-            else key = 'k';
+            else {
+#ifdef IOS
+                U4IOS::IOSSuperButtonHelper superHelper;
+                key = ReadChoiceController::get("xk \033\n");
+#else
+                key = 'k';
+#endif
+            }
         }
         /* X-it transport */
         else key = 'x';        
