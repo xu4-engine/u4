@@ -23,9 +23,9 @@ void errorFatal(const char *fmt, ...) {
     NSRunCriticalAlertPanel(@"XU4 Error", [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding], @"OK", NULL, NULL);
     exit(1);
 #else
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Ultima4 iPad"
+    UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Ultima4 iPad"
                                                     message:[NSString stringWithCString:buffer encoding:NSUTF8StringEncoding]
-                              delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
+                              delegate:nil cancelButtonTitle:nil otherButtonTitles:nil] autorelease];
     [alert show];    
 #endif
 }
@@ -40,9 +40,9 @@ void errorWarning(const char *fmt, ...) {
 #ifdef MACOSX
     NSRunAlertPanel(@"XU4 Error", [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding], @"OK", NULL, NULL);
 #else
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Ultima4 iPad"
+    UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"Ultima4 iPad"
                                                     message:[NSString stringWithCString:buffer encoding:NSUTF8StringEncoding]
-                                                   delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
+                                                   delegate:nil cancelButtonTitle:nil otherButtonTitles:nil] autorelease];
     [alert show];    
 #endif
 }

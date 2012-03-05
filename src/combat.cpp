@@ -725,7 +725,6 @@ void CombatController::finishTurn() {
                 
                 /* reset the focus to the avatar and start the party's turn over again */
                 focus = 0;
-                player = getCurrentPlayer();
 
                 gameUpdateScreen();
                 EventHandler::sleep(50); /* give a slight pause in case party members are asleep for awhile */

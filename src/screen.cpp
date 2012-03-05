@@ -109,15 +109,9 @@ void screenInit() {
     
     screenLoadGraphicsFromConf();
     
-    /* set up scaling parameters */
-    int scale = settings.scale;
-
     if (verbose)
         printf("using %s scaler\n", settings.filter.c_str());
-    
-    if (scale < 1 || scale > 5)
-        scale = 2;
-    
+      
     screenInit_sys();
     
     /* if we can't use vga, reset to default:ega */

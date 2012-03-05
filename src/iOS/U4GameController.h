@@ -43,7 +43,6 @@ class GameController;
 
 @interface U4GameController : UIViewController<UITextFieldDelegate, UIPopoverControllerDelegate, MixSpellDialogDelegate, UINavigationControllerDelegate> {
 @private
-    GameController *gameController;
     UITextField *conversationEdit;
     ConversationChoiceController *choiceController;
     UIPopoverController *actionDirectionController;

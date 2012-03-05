@@ -40,7 +40,6 @@
     UIView *equipmentView;
     UIView *itemsView;
     U4PlayerCharacter *player;
-    UIButton *armorPressed;
     NSInteger rowInTable;
     U4ArmorChoiceDialog *armorPanel;
     U4WeaponChoiceDialog *weaponPanel;

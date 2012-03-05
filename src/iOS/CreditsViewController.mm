@@ -50,7 +50,7 @@
 {
     [super viewDidLoad];
     UINavigationItem *myItem = navBar.topItem;
-    myItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismissCredits)];
+    myItem.rightBarButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismissCredits)] autorelease];
     NSURL *creditsPath = [[NSBundle mainBundle] URLForResource:@"credits" withExtension:@"html"];
     NSData *data = [NSData dataWithContentsOfURL:creditsPath];
     [webView loadData:data MIMEType:@"text/html" textEncodingName:@"UTF-8" baseURL:creditsPath];

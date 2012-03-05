@@ -2829,11 +2829,10 @@ void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
         // result in person.cpp somewhere.
         int linesused = linecount(conv.reply.front(), TEXT_AREA_W);
         screenMessage("%s", conv.reply.front().c_str());
-        int size = conv.reply.size();
         conv.reply.pop_front();
 
         /* if all chunks haven't been shown, wait for a key and process next chunk*/    
-        size = conv.reply.size();
+        int size = conv.reply.size();
         if (size > 0) {
 #ifdef IOS
             U4IOS::IOSConversationChoiceHelper continueDialog;
@@ -3131,7 +3130,7 @@ void GameController::checkSpecialCreatures(Direction dir) {
         c->location->coords.y < 217 &&
         *c->aura != Aura::HORN) {
         for (i = 0; i < 8; i++)            
-            obj = c->location->map->addCreature(creatureMgr->getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));                    
+            c->location->map->addCreature(creatureMgr->getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));                    
     }
 }
 

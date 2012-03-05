@@ -101,8 +101,8 @@ static void finishTurn() {
 - (void)viewDidLoad {
     [super viewDidLoad];
     UINavigationItem *myItem = navBar.topItem;
-    myItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelMix:)];
-    myItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(mixSpell:)];
+    myItem.leftBarButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelMix:)] autorelease];
+    myItem.rightBarButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(mixSpell:)] autorelease];
     [self pickerView:spellPicker didSelectRow:0 inComponent:0];
 }
 

@@ -183,12 +183,11 @@
 // Called after the user changes the selection.
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     U4PlayerCharacter *character = [playerArray objectAtIndex:indexPath.row];
-    UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 350, 400)];
-    scrollView.contentSize = CGSizeMake(350, 800);
     U4PlayerDetailView *detailView = [[U4PlayerDetailView alloc] initWithPlayerRecord:character forRow:indexPath.row nibName:@"U4PlayerDetailView" bundle:nil];
     [self.navigationController pushViewController:detailView animated:YES];
     [detailView.scrollView flashScrollIndicators];
     [detailView release];
+    
 }
 
 - (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath {

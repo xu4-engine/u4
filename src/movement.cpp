@@ -265,12 +265,12 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
     if (obj->getMovementBehavior() == MOVEMENT_FIXED)
         return 0;
 
-    if (action == CA_FLEE)
+    if (action == CA_FLEE) {
         /* run away from our target instead! */
         dir = new_coords.pathAway(target, valid_dirs);
     
-    else if (action == CA_ADVANCE)
-    {
+    } else {
+        ASSERT(action == CA_ADVANCE, "action must be CA_ADVANCE or CA_FLEE");
         // If they're not fleeing, make sure they don't flee on accident
         if (new_coords.x == 0)
             valid_dirs = DIR_REMOVE_FROM_MASK(DIR_WEST, valid_dirs);
