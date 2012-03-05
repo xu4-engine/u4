@@ -187,6 +187,16 @@ static void finishTurn() {
     return @"Reagents";
 }
 
+- (void)updateSelectedForCell:(SpellReagentTableCell *)cell {
+    SpellReagent *reagent = cell.reagent;
+    BOOL selected = reagent.selected;
+
+    static const unichar CheckMark = 0x2713;
+    cell.reagentSelectedLabel.text = [NSString stringWithCharacters:&CheckMark length:1];
+    cell.reagentCountLabel.text = [NSString stringWithFormat:@"%d", selected ? reagent.amount - 1 : reagent.amount];
+    // ### Animate?
+    cell.reagentSelectedLabel.hidden = !selected;
+}
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     static NSString *MyIdentifier = @"SpellReagentTableCell";
@@ -201,21 +211,15 @@ static void finishTurn() {
     cell.reagent = reagent;
     cell.reagentNameLabel.text = reagent.name;
     cell.reagentCountLabel.text = [NSString stringWithFormat:@"%d", reagent.amount];
+    [self updateSelectedForCell:cell];
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     SpellReagentTableCell *thisCell = static_cast<SpellReagentTableCell *>([tableView cellForRowAtIndexPath:indexPath]);
     SpellReagent *reagent = thisCell.reagent;
-    BOOL selected = !reagent.selected;
-    reagent.selected = selected;
-    
-    static const unichar CheckMark = 0x2713;
-    thisCell.reagentSelectedLabel.text = [NSString stringWithCharacters:&CheckMark length:1];
-    thisCell.reagentCountLabel.text = [NSString stringWithFormat:@"%d", selected ? reagent.amount - 1 : reagent.amount];
-    // ### Animate?
-    thisCell.reagentSelectedLabel.hidden = !selected;
-
+    reagent.selected = !reagent.selected;
+    [self updateSelectedForCell:thisCell];
 }
 
 

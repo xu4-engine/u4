@@ -69,5 +69,5 @@ class Ingredients;
 - (IBAction)spellCountChanged:(id)sender;
 - (void)cancelMix:(id)sender;
 - (void)mixSpell:(id)sender;
-
+- (void)updateSelectedForCell:(SpellReagentTableCell *)tableCell;
 @end
