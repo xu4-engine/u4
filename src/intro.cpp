@@ -70,7 +70,7 @@ public:
 /* temporary place-holder for settings changes */
 SettingsData settingsChanged;
 
-const int IntroBinData::INTRO_TEXT_OFFSET = 17445;
+const int IntroBinData::INTRO_TEXT_OFFSET = 17445 - 1;  // (start at zero)
 const int IntroBinData::INTRO_MAP_OFFSET = 30339;
 const int IntroBinData::INTRO_FIXUPDATA_OFFSET = 29806;
 const int IntroBinData::INTRO_SCRIPT_TABLE_SIZE = 548;
