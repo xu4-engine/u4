@@ -240,17 +240,20 @@ namespace U4IOS {
         IOSDirectionHelper() {
             bringUpDirectionPopup();
         }
-        virtual ~IOSDirectionHelper() {
+        ~IOSDirectionHelper() {
             dismissDirectionPop();
         }
     private:
         XU4_DISABLE_COPY(IOSDirectionHelper)
     };
     
-    class IOSClimbHelper : public IOSDirectionHelper {
+    class IOSClimbHelper {
     public:
         IOSClimbHelper() {
             bringUpDirectionPopup(true);
+        }
+        ~IOSClimbHelper() {
+            dismissDirectionPop();
         }
     private:
         XU4_DISABLE_COPY(IOSClimbHelper)
