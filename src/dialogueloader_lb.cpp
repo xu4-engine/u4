@@ -167,22 +167,22 @@ Response *lordBritishGetIntro(const DynamicResponse *resp) {
     if (c->saveGame->lbintro) {
         if (c->saveGame->members == 1) {
             intro->add(string("\n\n\nLord British\nsays:  Welcome\n") + 
-                       c->party->member(0)->getName());
+                       c->party->member(0)->getName() + "!\n\n");
         }
         else if (c->saveGame->members == 2) {
             intro->add(string("\n\nLord British\nsays:  Welcome\n") +
                        c->party->member(0)->getName() + 
                        " and thee also " + 
                        c->party->member(1)->getName() + 
-                       "!"); 
+                       "!\n\n"); 
         }
         else {
             intro->add(string("\n\n\nLord British\nsays:  Welcome\n") +
                        c->party->member(0)->getName() +
-                       " and thy\nworthy\nAdventurers!");
+                       " and thy\nworthy\nAdventurers!\n\n");
         }
 
-        intro->add(string("\nWhat would thou ask of me?\n"));
+        // Lord British automatically adds "What would thou ask of me?"
 
         // Check levels here, just like the original!
         intro->add(ResponsePart::ADVANCELEVELS);
