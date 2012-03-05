@@ -276,6 +276,9 @@ static void finishTurn() {
     NSError *ignored;
     spellDescription.text = [NSString stringWithContentsOfFile:spellDescriptionPath encoding:NSUTF8StringEncoding error:&ignored];
     [spellDescription flashScrollIndicators];
+    spellSlider.maximumValue = 99. - spI.amount;
+    spellSlider.value = std::min(spellSlider.value, spellSlider.maximumValue);
+    [self spellCountChanged:spellSlider];
 }
 
 
