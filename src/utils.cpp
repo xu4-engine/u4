@@ -13,7 +13,11 @@
  * Seed the random number generator.
  */
 void xu4_srandom() {
+#ifdef IOS
     srandom(time(NULL));
+#else
+    srand(time(NULL));
+#endif
 }
 
 /**
@@ -23,7 +27,11 @@ void xu4_srandom() {
  * lower bits (e.g. MacOS X).
  */
 int xu4_random(int upperRange) {
+#ifdef IOS
     int r = random();
+#else
+    int r = rand();
+#endif
     return (int) ((((double)upperRange) * r) / (RAND_MAX+1.0));
 }
 
