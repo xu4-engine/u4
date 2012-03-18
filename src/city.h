@@ -26,7 +26,7 @@ typedef std::list<PersonRole*> PersonRoleList;
 
 class City : public Map {
 public:
-    City() : Map() {}
+    City();
     ~City();
 
     // Members

@@ -1,6 +1,6 @@
 
 add_executable (xu4 annotation.cpp armor.cpp aura.cpp camp.cpp cheat.cpp city.cpp codex.cpp
-	combat.cpp config.cpp controller.cpp conversation.cpp creature.cpp death.cpp
+	combat.cpp config.cpp controller.cpp context.cpp conversation.cpp creature.cpp death.cpp
 	debug.cpp dialogueloader.cpp dialogueloader_hw.cpp dialogueloader_lb.cpp dialogueloader_tlk.cpp
 	direction.cpp dungeon.cpp dungeonview.cpp error.cpp event.cpp event_sdl.cpp filesystem.cpp
 	game.cpp imageloader.cpp imageloader_fmtowns.cpp imageloader_png.cpp imageloader_u4.cpp

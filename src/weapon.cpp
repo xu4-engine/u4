@@ -46,7 +46,17 @@ const Weapon *Weapon::get(const string &name) {
     return NULL;
 }
 
-Weapon::Weapon(const ConfigElement &conf) {
+Weapon::Weapon(const ConfigElement &conf)
+	: type (static_cast<WeaponType>(weapons.size()))
+	, name (conf.getString("name"))
+	, abbr (conf.getString("abbr"))
+	, canuse (0xFF)
+	, range (0)
+	, damage (conf.getInt("damage"))
+	, hittile ("hit_flash")
+	, misstile ("miss_flash")
+	, leavetile ("")
+	, flags (0) {
     static const struct {
         const char *name;
         unsigned int flag;
@@ -60,16 +70,6 @@ Weapon::Weapon(const ConfigElement &conf) {
         { "returns", WEAP_RETURNS },
         { "dontshowtravel", WEAP_DONTSHOWTRAVEL }
     };    
-
-    type = static_cast<WeaponType>(weapons.size());
-    name = conf.getString("name");
-    abbr = conf.getString("abbr");
-    canuse = 0xFF;
-    damage = conf.getInt("damage");
-    hittile = "hit_flash";
-    misstile = "miss_flash";
-    leavetile = "";
-    flags = 0;
 
     /* Get the range of the weapon, whether it is absolute or normal range */
     string _range = conf.getString("range");

@@ -18,12 +18,29 @@
 #include "tilemap.h"
 #include "tileset.h"
 #include "utils.h"
+#include "assert.h"
 
-TileId Tile::nextId = 0;
+TileId Tile::nextId;
 
-Tile::Tile(Tileset *tileset) : 
-    id(nextId++), tileset(tileset), w(0), h(0), frames(0), scale(1), 
-    anim(NULL), opaque(false), rule(NULL), image(NULL), tiledInDungeon(false), animationRule("") {
+Tile::Tile(Tileset *tileset)
+    : id(nextId++)
+    , name()
+    , tileset(tileset)
+    , w(0)
+    , h(0)
+    , frames(0)
+    , scale(1)
+    , anim(NULL)
+    , opaque(false)
+    , foreground()
+    , waterForeground()
+    , rule(NULL)
+    , imageName()
+    , looks_like()
+    , image(NULL)
+    , tiledInDungeon(false)
+    , directions()
+    , animationRule("") {
 }
 
 /**
@@ -163,12 +180,12 @@ void Tile::loadImage() {
 
 void Tile::deleteImage()
 {
-	delete this->image;
-	this->image = NULL;
-	this->scale = settings.scale;
-
+    if(image) {
+        delete image;
+        image = NULL;
+    }
+    scale = settings.scale;
 }
-
 
 /**
  * MapTile Class Implementation

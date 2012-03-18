@@ -20,6 +20,7 @@ CXXSRCS=\
         combat.cpp \
         config.cpp \
         controller.cpp \
+        context.cpp \
         conversation.cpp \
         creature.cpp \
         death.cpp \

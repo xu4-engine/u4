@@ -148,7 +148,11 @@ bool Dialogue::Keyword::operator==(const string &kw) const {
  * Dialogue class 
  */ 
 
-Dialogue::Dialogue() : intro(NULL), longIntro(NULL), defaultAnswer(NULL), question(NULL) {
+Dialogue::Dialogue()
+	: intro(NULL)
+	, longIntro(NULL)
+	, defaultAnswer(NULL)
+	, question(NULL) {
 }
 
 Dialogue::~Dialogue() {

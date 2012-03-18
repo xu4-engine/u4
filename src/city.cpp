@@ -17,6 +17,11 @@
 
 using std::string;
 
+City::City() : Map() {
+
+}
+
+
 City::~City() {
     for (PersonList::iterator i = persons.begin(); i != persons.end(); i++)
         delete *i;
