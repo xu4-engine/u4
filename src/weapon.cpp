@@ -125,16 +125,13 @@ Weapon::Weapon(const ConfigElement &conf)
         else
             canuse &= ~mask;
     }
-
-    
 }
 
 void Weapon::loadConf() {
-    if (!confLoaded)
-        confLoaded = true;
-    else
+    if (confLoaded)
         return;
 
+    confLoaded = true;
     const Config *config = Config::getInstance();
 
     vector<ConfigElement> weaponConfs = config->getElement("weapons").getChildren();
