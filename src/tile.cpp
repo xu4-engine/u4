@@ -20,7 +20,7 @@
 #include "utils.h"
 #include "assert.h"
 
-TileId Tile::nextId;
+TileId Tile::nextId = 0;
 
 Tile::Tile(Tileset *tileset)
     : id(nextId++)
