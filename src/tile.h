@@ -47,7 +47,7 @@ class TileAnim;
  * A Tile object represents a specific tile type.  Every tile is a
  * member of a Tileset.  
  */
-class Tile {
+class Tile : private Uncopyable {
 public:
     Tile(Tileset *tileset);
 
@@ -138,9 +138,6 @@ public:
     bool tiledInDungeon;
     vector<Direction> directions;
 
-    // disallow assignments, copy contruction
-    Tile(const Tile&);
-    const Tile &operator=(const Tile&);
     string animationRule;
 
 

@@ -65,11 +65,26 @@ public:
 
     const Tile *getTileType() const;
 
-
     // Properties
     TileId id;
     unsigned char frame;
     bool freezeAnimation;
+};
+
+/**
+ * An Uncopyable has no default copy constructor of operator=.  A subclass may derive from
+ * Uncopyable at any level of visibility, even private, and subclasses will not have a default copy
+ * constructor or operator=. See also, boost::noncopyable Uncopyable (from the Boost project) and
+ * Item 6 from Scott Meyers Effective C++.
+ */
+class Uncopyable {
+protected:
+    Uncopyable() {}
+    ~Uncopyable() {}
+
+private:
+    Uncopyable(const Uncopyable&);
+    const Uncopyable &operator=(const Uncopyable&);
 };
 
 #endif
