@@ -53,7 +53,7 @@ DungeonToken Dungeon::tokenForTile(MapTile tile) {
     const static std::string fieldNames[] = { "poison_field", "energy_field", "fire_field", "sleep_field", "" };
 
     int i;
-    Tile *t = tileset->get(tile.id);
+    Tile *t = tileset->get(tile.getId());
 
     for (i = 0; !tileNames[i].empty(); i++) {        
         if (t->getName() == tileNames[i])
@@ -291,7 +291,7 @@ bool Dungeon::ladderUpAt(MapCoords coords) {
     if (a.size() > 0) {
         Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == tileset->getByName("up_ladder")->id)
+            if (i->getTile() == tileset->getByName("up_ladder")->getId())
                 return true;
         }
     }
@@ -311,7 +311,7 @@ bool Dungeon::ladderDownAt(MapCoords coords) {
     if (a.size() > 0) {
         Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == tileset->getByName("down_ladder")->id)
+            if (i->getTile() == tileset->getByName("down_ladder")->getId())
                 return true;
         }
     }

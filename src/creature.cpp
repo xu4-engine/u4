@@ -982,12 +982,12 @@ Creature *CreatureMgr::randomForTile(const Tile *tile) {
     TileId randTile;
 
     if (tile->isSailable()) {        
-        randTile = creatures.find(PIRATE_ID)->second->getTile().id;
+		randTile = creatures.find(PIRATE_ID)->second->getTile().getId();
         randTile += xu4_random(7);
         return getByTile(randTile);        
     }
     else if (tile->isSwimable()) {
-        randTile = creatures.find(NIXIE_ID)->second->getTile().id;
+		randTile = creatures.find(NIXIE_ID)->second->getTile().getId();
         randTile += xu4_random(5);
         return getByTile(randTile);
     }
@@ -1003,7 +1003,7 @@ Creature *CreatureMgr::randomForTile(const Tile *tile) {
     else
         era = 0x03;
 
-    randTile = creatures.find(ORC_ID)->second->getTile().id;
+	randTile = creatures.find(ORC_ID)->second->getTile().getId();
     randTile += era & xu4_random(0x10) & xu4_random(0x10);
     return getByTile(randTile);
 }

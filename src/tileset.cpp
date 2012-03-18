@@ -285,7 +285,7 @@ void Tileset::load(const ConfigElement &tilesetConf) {
         TRACE_LOCAL(dbg, string("\t\tLoaded '") + tile->getName() + "'");
 
         /* add the tile to our tileset */
-        tiles[tile->id] = tile;
+        tiles[tile->getId()] = tile;
         nameMap[tile->getName()] = tile;
         
         index += tile->getFrames();

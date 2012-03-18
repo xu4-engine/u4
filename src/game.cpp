@@ -718,7 +718,7 @@ void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
 void GameController::flashTile(const Coords &coords, const string &tilename, int timeFactor) {
     Tile *tile = c->location->map->tileset->getByName(tilename);
     ASSERT(tile, "no tile named '%s' found in tileset", tilename.c_str());
-    flashTile(coords, tile->id, timeFactor);
+    flashTile(coords, tile->getId(), timeFactor);
 }
 
 
@@ -1274,7 +1274,7 @@ bool GameController::keyPressed(int key) {
 
                 Tile *avatar = c->location->map->tileset->getByName("avatar");
                 ASSERT(avatar, "no avatar tile found in tileset");
-                c->party->setTransport(avatar->id);
+                c->party->setTransport(avatar->getId());
                 c->horseSpeed = 0;
                 screenMessage("X-it\n");
             } else
@@ -1935,7 +1935,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
     Object *obj = NULL;
 
 
-    MapTile tile(c->location->map->tileset->getByName("miss_flash")->id);
+    MapTile tile(c->location->map->tileset->getByName("miss_flash")->getId());
     GameController::flashTile(coords, tile, 1);
 
     obj = c->location->map->objectAt(coords);
@@ -2403,7 +2403,7 @@ bool jimmyAt(const Coords &coords) {
         Tile *door = c->location->map->tileset->getByName("door");
         ASSERT(door, "no door tile found in tileset");
         c->saveGame->keys--;
-        c->location->map->annotations->add(coords, door->id);
+        c->location->map->annotations->add(coords, door->getId());
         screenMessage("\nUnlocked!\n");
     } else
         screenMessage("%cNo keys left!%c\n", FG_GREY, FG_WHITE);
@@ -2454,7 +2454,7 @@ bool openAt(const Coords &coords) {
     
     Tile *floor = c->location->map->tileset->getByName("brick_floor");
     ASSERT(floor, "no floor tile found in tileset");
-    c->location->map->annotations->add(coords, floor->id, false, true)->setTTL(4);
+    c->location->map->annotations->add(coords, floor->getId(), false, true)->setTTL(4);
 
     screenMessage("\nOpened!\n");
 
@@ -3243,7 +3243,7 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
     // Figure out what the ranged attack should look like
     MapTile tile(c->location->map->tileset->getByName((m && !m->getWorldrangedtile().empty()) ? 
                                                       m->getWorldrangedtile() : 
-                                                      "hit_flash")->id);
+                                                      "hit_flash")->getId());
 
     GameController::flashTile(coords, tile, 1);
 
@@ -3453,7 +3453,7 @@ void GameController::checkBridgeTrolls() {
 
     // TODO: CHEST: Make a user option to not make chests block bridge trolls
     if (!c->location->map->isWorldMap() ||
-        c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->id != bridge->id ||
+        c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->id != bridge->getId() ||
         xu4_random(8) != 0)
         return;
 
@@ -3633,7 +3633,7 @@ bool GameController::createBalloon(Map *map) {
     
     const Tile *balloon = map->tileset->getByName("balloon");
     ASSERT(balloon, "no balloon tile found in tileset");
-    map->addObject(balloon->id, balloon->id, map->getLabel("balloon"));
+    map->addObject(balloon->getId(), balloon->getId(), map->getLabel("balloon"));
     return true;
 }
 

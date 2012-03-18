@@ -438,7 +438,7 @@ bool PartyMember::applyDamage(int damage, bool) {
     if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();                    
         Map *map = getMap();
-        map->annotations->add(p, Tileset::findTileByName("corpse")->id)->setTTL(party->size() * 2);
+        map->annotations->add(p, Tileset::findTileByName("corpse")->getId())->setTTL(party->size() * 2);
 
         if (party) {
             party->setChanged();
@@ -542,7 +542,7 @@ void PartyMember::putToSleep() {
     if (getStatus() != STAT_DEAD) {
         soundPlay(SOUND_SLEEP, false);
         addStatus(STAT_SLEEPING);
-        setTile(Tileset::findTileByName("corpse")->id);
+        setTile(Tileset::findTileByName("corpse")->getId());
     }
 }
 
@@ -588,7 +588,7 @@ MapTile PartyMember::tileForClass(int klass) {
 
     const Tile *tile = Tileset::get("base")->getByName(name);
     ASSERT(tile, "no tile found for class %d", klass);
-    return tile->id;
+    return tile->getId();
 }
 
 /**
@@ -1165,7 +1165,7 @@ void Party::reviveParty() {
         saveGame->weapons[i] = 0;
     saveGame->food = 20099;
     saveGame->gold = 200;
-    setTransport(Tileset::findTileByName("avatar")->id);
+    setTransport(Tileset::findTileByName("avatar")->getId());
     setChanged();
     PartyEvent event(PartyEvent::PARTY_REVIVED, 0);
     notifyObservers(event);

@@ -342,7 +342,7 @@ void spellMagicAttack(const string &tilename, Direction dir, int minDamage, int 
     CombatController *controller = spellCombatController();
     PartyMemberVector *party = controller->getParty();
 
-    MapTile tile = c->location->map->tileset->getByName(tilename)->id;
+    MapTile tile = c->location->map->tileset->getByName(tilename)->getId();
 
     int attackDamage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
         xu4_random((maxDamage + 1) - minDamage) + minDamage :
@@ -521,10 +521,10 @@ static int spellEField(int param) {
     
     /* Make sure params valid */
     switch (fieldType) {
-        case ENERGYFIELD_FIRE: fieldTile = c->location->map->tileset->getByName("fire_field")->id; break;
-        case ENERGYFIELD_LIGHTNING: fieldTile = c->location->map->tileset->getByName("energy_field")->id; break;
-        case ENERGYFIELD_POISON: fieldTile = c->location->map->tileset->getByName("poison_field")->id; break;
-        case ENERGYFIELD_SLEEP: fieldTile = c->location->map->tileset->getByName("sleep_field")->id; break;
+        case ENERGYFIELD_FIRE: fieldTile = c->location->map->tileset->getByName("fire_field")->getId(); break;
+        case ENERGYFIELD_LIGHTNING: fieldTile = c->location->map->tileset->getByName("energy_field")->getId(); break;
+        case ENERGYFIELD_POISON: fieldTile = c->location->map->tileset->getByName("poison_field")->getId(); break;
+        case ENERGYFIELD_SLEEP: fieldTile = c->location->map->tileset->getByName("sleep_field")->getId(); break;
         default: return 0; break;
     }
 

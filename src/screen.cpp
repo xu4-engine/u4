@@ -365,7 +365,7 @@ Layout *screenLoadLayoutFromConf(const ConfigElement &conf) {
 
 vector<MapTile> screenViewportTile(unsigned int width, unsigned int height, int x, int y, bool &focus) {
     MapCoords center = c->location->coords;    
-    static MapTile grass = c->location->map->tileset->getByName("grass")->id;
+    static MapTile grass = c->location->map->tileset->getByName("grass")->getId();
     
     if (c->location->map->width <= width &&
         c->location->map->height <= height) {
@@ -449,8 +449,8 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
     }
 
     else if (showmap) {
-        static MapTile black = c->location->map->tileset->getByName("black")->id;
-        static MapTile avatar = c->location->map->tileset->getByName("avatar")->id;
+        static MapTile black = c->location->map->tileset->getByName("black")->getId();
+        static MapTile avatar = c->location->map->tileset->getByName("avatar")->getId();
 
         int x, y;
 
@@ -1160,7 +1160,7 @@ void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, 
     // Make sure we account for tiles that look like other tiles (dungeon tiles, mainly)
     string looks_like = t.getTileType()->getLooksLike();
     if (!looks_like.empty())
-        t = map->tileset->getByName(looks_like)->id;
+        t = map->tileset->getByName(looks_like)->getId();
     
     unsigned int tile = map->translateToRawTileIndex(t);
     
@@ -1272,14 +1272,14 @@ void screenGemUpdate() {
                                                        layout->viewport.height, x - center_x + avt_x, y - center_y + avt_y, focus);
 			tile = tiles.front();
             
-			TileId avatarTileId = c->location->map->tileset->getByName("avatar")->id;
+			TileId avatarTileId = c->location->map->tileset->getByName("avatar")->getId();
             
             
 			if (!weAreDrawingTheAvatarTile)
 			{
 				//Hack to avoid showing the avatar tile multiple times in cycling dungeon maps
-				if (tile.id == avatarTileId)
-					tile = c->location->map->getTileFromData(c->location->coords)->id;
+				if (tile.getId() == avatarTileId)
+					tile = c->location->map->getTileFromData(c->location->coords)->getId();
 			}
             
 			screenShowGemTile(layout, c->location->map, tile, focus, x, y);

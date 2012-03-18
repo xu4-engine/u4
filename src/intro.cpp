@@ -479,11 +479,11 @@ void IntroController::drawMap() {
                 // See if the tile id needs to be recalculated 
                 if ((binData->scriptTable[scrPos+1] >> 5) >= binData->baseTileTable[dataNibble]->getFrames()) {
                     int frame = (binData->scriptTable[scrPos+1] >> 5) - binData->baseTileTable[dataNibble]->getFrames();
-                    objectStateTable[dataNibble].tile = MapTile(binData->baseTileTable[dataNibble]->id + 1);
+                    objectStateTable[dataNibble].tile = MapTile(binData->baseTileTable[dataNibble]->getId() + 1);
                     objectStateTable[dataNibble].tile.frame = frame;
                 }
                 else {
-                    objectStateTable[dataNibble].tile = MapTile(binData->baseTileTable[dataNibble]->id);
+                    objectStateTable[dataNibble].tile = MapTile(binData->baseTileTable[dataNibble]->getId());
                     objectStateTable[dataNibble].tile.frame = (binData->scriptTable[scrPos+1] >> 5);
                 }
                 

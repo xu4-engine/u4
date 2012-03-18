@@ -69,11 +69,11 @@ void DungeonView::display(Context * c, TileView *view)
                		DungeonGraphicType distant_type = tilesToGraphic(distant_tiles);
 
 					if ((distant_type == DNGGRAPHIC_DNGTILE) || (distant_type == DNGGRAPHIC_BASETILE))
-						drawTile(c->location->map->tileset->get(distant_tiles.front().id),0, y_obj, Direction(c->saveGame->orientation));
+						drawTile(c->location->map->tileset->get(distant_tiles.front().getId()),0, y_obj, Direction(c->saveGame->orientation));
                		}
                	}
 				if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
-					drawTile(c->location->map->tileset->get(tiles.front().id), 0, y, Direction(c->saveGame->orientation));
+					drawTile(c->location->map->tileset->get(tiles.front().getId()), 0, y, Direction(c->saveGame->orientation));
             }
         }
     }
@@ -82,8 +82,8 @@ void DungeonView::display(Context * c, TileView *view)
     else {
     	vector<MapTile> tiles;
 
-        static MapTile black = c->location->map->tileset->getByName("black")->id;
-        static MapTile avatar = c->location->map->tileset->getByName("avatar")->id;
+        static MapTile black = c->location->map->tileset->getByName("black")->getId();
+        static MapTile avatar = c->location->map->tileset->getByName("avatar")->getId();
 
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
@@ -135,7 +135,7 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
     animated->initializeToBackgroundColor();
     //Put tile on animated scratchpad
     if (tile->getAnim()) {
-        MapTile mt = tile->id;
+        MapTile mt = tile->getId();
         tile->getAnim()->draw(animated, tile, mt, orientation);
     }
     else
@@ -274,10 +274,10 @@ std::vector<MapTile> DungeonView::getTiles(int fwd, int side) {
 DungeonGraphicType DungeonView::tilesToGraphic(const std::vector<MapTile> &tiles) {
     MapTile tile = tiles.front();
 
-    static const MapTile corridor = c->location->map->tileset->getByName("brick_floor")->id;
-    static const MapTile up_ladder = c->location->map->tileset->getByName("up_ladder")->id;
-    static const MapTile down_ladder = c->location->map->tileset->getByName("down_ladder")->id;
-    static const MapTile updown_ladder = c->location->map->tileset->getByName("up_down_ladder")->id;
+    static const MapTile corridor = c->location->map->tileset->getByName("brick_floor")->getId();
+    static const MapTile up_ladder = c->location->map->tileset->getByName("up_ladder")->getId();
+    static const MapTile down_ladder = c->location->map->tileset->getByName("down_ladder")->getId();
+    static const MapTile updown_ladder = c->location->map->tileset->getByName("up_down_ladder")->getId();
 
     /*
      * check if the dungeon tile has an annotation or object on top

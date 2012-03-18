@@ -1094,7 +1094,7 @@ Script::ReturnCode Script::add(xmlNodePtr script, xmlNodePtr current) {
         c->party->adjustFood(quant);
     }
     else if (type == "horse")
-        c->party->setTransport(Tileset::findTileByName("horse")->id);
+        c->party->setTransport(Tileset::findTileByName("horse")->getId());
     else if (type == "torch") {
         AdjustValueMax(c->saveGame->torches, quant, 99);
         c->party->notifyOfChange();

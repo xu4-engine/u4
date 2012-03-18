@@ -93,7 +93,7 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     /* then camouflaged creatures that have a disguise */
     if (obj && (obj->getType() == Object::CREATURE) && !obj->isVisible() && (!m->getCamouflageTile().empty())) {
         focus = focus || obj->hasFocus();
-        tiles.push_back(map->tileset->getByName(m->getCamouflageTile())->id);
+        tiles.push_back(map->tileset->getByName(m->getCamouflageTile())->getId());
     }
     /* then visible creatures and objects */
     else if (obj && obj->isVisible()) {
@@ -186,15 +186,15 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
 			if ((tileType->isReplacement() && (forTile->isLandForeground() || forTile->isLivingObject())) ||
 				(tileType->isWaterReplacement() && forTile->isWaterForeground()))
 			{
-				std::map<TileId, int>::iterator validCount = validMapTileCount.find(tileType->id);
+				std::map<TileId, int>::iterator validCount = validMapTileCount.find(tileType->getId());
 
 				if (validCount == validMapTileCount.end())
 				{
-					validMapTileCount[tileType->id] = 1;
+					validMapTileCount[tileType->getId()] = 1;
 				}
 				else
 				{
-					validMapTileCount[tileType->id]++;
+					validMapTileCount[tileType->getId()]++;
 				}
 			}
 		}
@@ -221,7 +221,7 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
 	} while (searchQueue.size() > 0 && searchQueue.size() < 64);
 
     /* couldn't find a tile, give it the sad default */
-    return map->tileset->getByName("grass")->id;
+    return map->tileset->getByName("grass")->getId();
 }
 
 /**

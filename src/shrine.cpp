@@ -149,14 +149,14 @@ void Shrine::enter() {
 
 void Shrine::enhancedSequence() {
     /* replace the 'static' avatar tile with grass */        
-    annotations->add(Coords(5, 6, c->location->coords.z), tileset->getByName("grass")->id, false, true);
+    annotations->add(Coords(5, 6, c->location->coords.z), tileset->getByName("grass")->getId(), false, true);
 
     screenDisableCursor();
     screenMessage("You approach\nthe ancient\nshrine...\n");
     gameUpdateScreen(); EventHandler::wait_cycles(settings.gameCyclesPerSecond);
         
     Object *obj = addCreature(creatureMgr->getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
-    obj->setTile(tileset->getByName("avatar")->id);
+    obj->setTile(tileset->getByName("avatar")->getId());
 
     gameUpdateScreen(); EventHandler::wait_msecs(400);        
     c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(400);

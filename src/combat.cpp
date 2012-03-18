@@ -506,12 +506,12 @@ void CombatController::awardLoot() {
     if (creature->leavesChest() && 
         ground->isCreatureWalkable() &&
         (!(c->location->context & CTX_DUNGEON) || ground->isDungeonFloor())) {
-        MapTile chest = c->location->map->tileset->getByName("chest")->id;
+        MapTile chest = c->location->map->tileset->getByName("chest")->getId();
         c->location->map->addObject(chest, chest, coords);
     }
     /* add a ship if you just defeated a pirate ship */
     else if (creature->getTile().getTileType()->isPirateShip()) {
-        MapTile ship = c->location->map->tileset->getByName("ship")->id;
+        MapTile ship = c->location->map->tileset->getByName("ship")->getId();
         ship.setDirection(creature->getTile().getDirection());
         c->location->map->addObject(ship, ship, coords);
     }
@@ -531,8 +531,8 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
     const Weapon *weapon = attacker->getWeapon();
     bool wrongRange = weapon->rangeAbsolute() && (distance != range);
 
-    MapTile hittile = map->tileset->getByName(weapon->getHitTile())->id;
-    MapTile misstile = map->tileset->getByName(weapon->getMissTile())->id;
+    MapTile hittile = map->tileset->getByName(weapon->getHitTile())->getId();
+    MapTile misstile = map->tileset->getByName(weapon->getMissTile())->getId();
 
     // Check to see if something hit
     Creature *creature = map->creatureAt(coords);
@@ -576,8 +576,8 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
 }
 
 bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
-    MapTile hittile = map->tileset->getByName(attacker->getHitTile())->id;
-    MapTile misstile = map->tileset->getByName(attacker->getMissTile())->id;
+    MapTile hittile = map->tileset->getByName(attacker->getHitTile())->getId();
+    MapTile misstile = map->tileset->getByName(attacker->getMissTile())->getId();
 
     Creature *target = isCreature(attacker) ? map->partyMemberAt(coords) : map->creatureAt(coords);
 
@@ -643,7 +643,7 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
     default: 
         /* show the appropriate 'hit' message */
         // soundPlay(SOUND_PC_STRUCK, false);
-        if (hittile == Tileset::findTileByName("magic_flash")->id)
+        if (hittile == Tileset::findTileByName("magic_flash")->getId())
             screenMessage("\n%s %cMagical Hit%c!\n", target->getName().c_str(), FG_BLUE, FG_WHITE);
         else screenMessage("\n%s Hit!\n", target->getName().c_str());
         attacker->dealDamage(target, attacker->getDamage());
@@ -657,13 +657,13 @@ void CombatController::rangedMiss(const Coords &coords, Creature *attacker) {
     /* If the creature leaves a tile behind, do it here! (lava lizard, etc) */
     const Tile *ground = map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
     if (attacker->leavesTile() && ground->isWalkable())
-        map->annotations->add(coords, map->tileset->getByName(attacker->getHitTile())->id);
+        map->annotations->add(coords, map->tileset->getByName(attacker->getHitTile())->getId());
 }
 
 bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, int dir, const Weapon *weapon) {
     MapCoords new_coords = coords;
 
-    MapTile misstile = map->tileset->getByName(weapon->getMissTile())->id;
+    MapTile misstile = map->tileset->getByName(weapon->getMissTile())->getId();
 
     /* reverse the direction of the weapon */
     Direction returnDir = dirReverse(dirFromMask(dir));
@@ -1120,7 +1120,7 @@ void CombatController::attack() {
     // does weapon leave a tile behind? (e.g. flaming oil)
     const Tile *ground = map->tileTypeAt(targetCoords, WITHOUT_OBJECTS);
     if (!weapon->leavesTile().empty() && ground->isWalkable())
-        map->annotations->add(targetCoords, map->tileset->getByName(weapon->leavesTile())->id);
+        map->annotations->add(targetCoords, map->tileset->getByName(weapon->leavesTile())->getId());
 
     /* show the 'miss' tile */
     if (!foundTarget) {

@@ -108,8 +108,6 @@ public:
     Direction directionForFrame(int frame) const;
     int frameForDirection(Direction d) const;
 
-    TileId id;          /**< an id that is unique across all tilesets */
-
     static void resetNextId()                       {nextId = 0;}
     static bool canTalkOverTile(const Tile *tile)   {return tile->canTalkOver();}
     static bool canAttackOverTile(const Tile *tile) {return tile->canAttackOver();}
@@ -118,7 +116,8 @@ public:
 private:
     void loadImage();
 
-public:
+private:
+    TileId id;          /**< an id that is unique across all tilesets */
     string name;        /**< The name of this tile */
     Tileset *tileset;   /**< The tileset this tile belongs to */
     int w, h;           /**< width and height of the tile */
