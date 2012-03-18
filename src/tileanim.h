@@ -120,7 +120,7 @@ public:
     
     void add(TileAnimTransform*);
     virtual bool isInContext(Tile *t, MapTile &mapTile, Direction d) = 0;
-    TileAnimTransformList& getTransforms();
+	TileAnimTransformList& getTransforms() {return animTransforms;}	/**< Returns a list of transformations under the context. */
     virtual ~TileAnimContext() {}
 private:    
     

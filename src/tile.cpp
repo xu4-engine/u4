@@ -91,8 +91,6 @@ Image *Tile::getImage() {
     return image;
 }
 
-bool Tile::isTiledInDungeon() const  { return tiledInDungeon; }
-
 /**
  * Loads the tile image
  */ 
@@ -194,44 +192,6 @@ bool MapTile::setDirection(Direction d) {
     return false;
 }
 
-bool Tile::canWalkOn(Direction d) const {    
-    return DIR_IN_MASK(d, rule->walkonDirs) ? true : false;
-}
-
-bool Tile::canWalkOff(Direction d) const {        
-    return DIR_IN_MASK(d, rule->walkoffDirs) ? true : false;
-}
-
-bool Tile::canAttackOver() const {
-    /* All tiles that you can walk, swim, or sail on, can be attacked over.
-       All others must declare themselves */    
-    return isWalkable() || isSwimable() || isSailable() || (rule->mask & MASK_ATTACKOVER); 
-}
-
-bool Tile::canLandBalloon() const {    
-    return (rule->mask & MASK_CANLANDBALLOON);
-}
-
-bool Tile::isReplacement() const {    
-    return (rule->mask & MASK_REPLACEMENT);
-}
-
-bool Tile::isWaterReplacement() const {
-    return (rule->mask & MASK_WATER_REPLACEMENT);
-}
-
-bool Tile::isWalkable() const {        
-    return rule->walkonDirs > 0;
-}
-
-bool Tile::isLivingObject() const {
-	return rule->mask & MASK_LIVING_THING;
-}
-
-bool Tile::isCreatureWalkable() const {
-    return canWalkOn(DIR_ADVANCE) && !(rule->movementMask & MASK_CREATURE_UNWALKABLE);
-}
-
 bool Tile::isDungeonFloor() const {
     Tile *floor = tileset->getByName("brick_floor");
     if (id == floor->id)
@@ -239,82 +199,10 @@ bool Tile::isDungeonFloor() const {
     return false;
 }
 
-bool Tile::isSwimable() const {    
-    return (rule->movementMask & MASK_SWIMABLE);
-}
-
-bool Tile::isSailable() const {    
-    return (rule->movementMask & MASK_SAILABLE);
-}
-
-bool Tile::isWater() const {
-    return (isSwimable() || isSailable());
-}
-
-bool Tile::isFlyable() const {    
-    return !(rule->movementMask & MASK_UNFLYABLE);
-}
-
-bool Tile::isDoor() const {    
-    return (rule->mask & MASK_DOOR);
-}
-
-bool Tile::isLockedDoor() const {    
-    return (rule->mask & MASK_LOCKEDDOOR);
-}
-
-bool Tile::isChest() const {    
-    return (rule->mask & MASK_CHEST);
-}
-
-bool Tile::isShip() const {    
-    return (rule->mask & MASK_SHIP);
-}
-
-bool Tile::isPirateShip() const {
-    return name == "pirate_ship";
-}
-
-bool Tile::isHorse() const {    
-    return (rule->mask & MASK_HORSE);
-}
-
-bool Tile::isBalloon() const {    
-    return (rule->mask & MASK_BALLOON);
-}
-
-bool Tile::canDispel() const {    
-    return (rule->mask & MASK_DISPEL);
-}
-
-bool Tile::canTalkOver() const {    
-    return (rule->mask & MASK_TALKOVER);
-}
-
-TileSpeed Tile::getSpeed() const {     
-    return rule->speed;
-}
-
-TileEffect Tile::getEffect() const {    
-    return rule->effect;
-}
-
 bool Tile::isOpaque() const {
     extern Context *c;
-
-    if (c->opacity)
-        return opaque;
-    else
-        return false;
+    return c->opacity ? opaque : false;
 }
-
-bool Tile::isLandForeground() const{
-	return this->foreground;
-}
-bool Tile::isWaterForeground() const{
-	return this->waterForeground;
-}
-
 
 /**
  * Is tile a foreground tile (i.e. has transparent parts).
@@ -339,12 +227,6 @@ int Tile::frameForDirection(Direction d) const {
     return -1;
 }
 
-bool Tile::canTalkOverTile(const Tile *tile) {
-    return tile->canTalkOver();
-}
-bool Tile::canAttackOverTile(const Tile *tile) {
-    return tile->canAttackOver();
-}
 
 const Tile *MapTile::getTileType() const {
     return Tileset::findTileById(id);

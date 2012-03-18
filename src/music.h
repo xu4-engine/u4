@@ -5,6 +5,7 @@
 #ifndef MUSIC_H
 #define MUSIC_H
 
+#include <SDL_mixer.h>
 #include <string>
 #include <vector>
 
@@ -51,51 +52,59 @@ public:
     ~Music();
     
 
-    static Music *getInstance();    
+    /** Returns an instance of the Music class */
+    static Music *getInstance() {
+        if (!instance)
+            instance = new Music();
+        return instance;
+    }
+
+    /** Returns true if the mixer is playing any audio. */
+    static bool isPlaying() {return getInstance()->isPlaying_sys();}
     static void callback(void *);    
-	static bool isPlaying();
 
     void init() {}
     void play();
-    void stop();
+    void stop()         {on = false; stopMid();} /**< Stop playing music */
     void fadeOut(int msecs);
     void fadeIn(int msecs, bool loadFromMap);
-    void lordBritish();
-    void hawkwind();
-    void camp();
-    void shopping();
-    void intro();
+    void lordBritish()  {playMid(RULEBRIT); } /**< Music when you talk to Lord British */
+    void hawkwind()     {playMid(SHOPPING); } /**< Music when you talk to Hawkwind */
+    void camp()         {fadeOut(1000);     } /**< Music that plays while camping */
+    void shopping()     {playMid(SHOPPING); } /**< Music when talking to a vendor */
+    void intro()        {playMid(introMid); } /**< Play the introduction music on title loadup */
     void introSwitch(int n);
     bool toggle();
 
     int decreaseMusicVolume();
     int increaseMusicVolume();
-    void setMusicVolume(int volume);
+    void setMusicVolume(int volume) {setMusicVolume_sys(volume);}
     int decreaseSoundVolume();
     int increaseSoundVolume();
-    void setSoundVolume(int volume);
+    void setSoundVolume(int volume) {setSoundVolume_sys(volume);}
 
 
     /*
      * Static variables
      */
 private:
-	void create_sys();
-	void destroy_sys();
-	void setMusicVolume_sys(int volume);
-	void setSoundVolume_sys(int volume);
-	void fadeOut_sys(int msecs);
-	void fadeIn_sys(int msecs, bool loadFromMap);
-    bool isPlaying_sys();
+    void create_sys();
+    void destroy_sys();
+    void setMusicVolume_sys(int volume);
+    void setSoundVolume_sys(int volume);
+    void fadeOut_sys(int msecs);
+    void fadeIn_sys(int msecs, bool loadFromMap);
+    bool isPlaying_sys()    {return Mix_PlayingMusic();} /**< Returns true if the mixer is playing any audio */
 
     static Music *instance;
     static bool fading;
     static bool on;
 
 
-	bool load_sys(const string &pathname);
+    bool load_sys(const string &pathname);
     void playMid(Type music);
-	void stopMid();
+    void stopMid()          {Mix_HaltMusic();}          /**< Stop playing music */
+
     bool load(Type music);
 
 public:
@@ -106,7 +115,7 @@ public:
      */
     std::vector<std::string> filenames;
     Type introMid;
-	Type current;
+    Type current;
     OSMusicMixer *playing;
     Debug *logger;
 };

@@ -236,13 +236,6 @@ void TileAnimContext::add(TileAnimTransform* transform) {
 }
 
 /**
- * Returns a list of transformations under the context
- */
-TileAnimContext::TileAnimTransformList& TileAnimContext::getTransforms() {
-    return animTransforms;
-}
-
-/**
  * A context which depends on the tile's current frame for animation
  */
 TileAnimFrameContext::TileAnimFrameContext(int f) : frame(f) {}

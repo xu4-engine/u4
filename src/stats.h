@@ -56,8 +56,8 @@ public:
     void nextItem();
     void update(bool avatarOnly = false);
     virtual void update(Aura *aura);
-    virtual void update(Party *party, PartyEvent &event);
-    virtual void update(Menu *menu, MenuEvent &event);
+    virtual void update(Party *party, PartyEvent &event)    {update(); /* do a full update */}
+    virtual void update(Menu *menu, MenuEvent &event)       {update(); /* do a full update */}
     void highlightPlayer(int player);
     void redraw();
 

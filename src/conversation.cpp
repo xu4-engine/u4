@@ -144,14 +144,6 @@ bool Dialogue::Keyword::operator==(const string &kw) const {
     return false;
 }
 
-string Dialogue::Keyword::getKeyword() { 
-    return keyword; 
-}
-
-Response *Dialogue::Keyword::getResponse() { 
-    return response; 
-}
-
 /*
  * Dialogue class 
  */ 
@@ -164,23 +156,6 @@ Dialogue::~Dialogue() {
         delete i->second;
     }
 }
-
-const string &Dialogue::getName() const         { return name; }
-const string &Dialogue::getPronoun() const      { return pronoun; }
-const string &Dialogue::getPrompt() const       { return prompt; }
-Response *Dialogue::getIntro(bool familiar)     { return intro; }
-Response *Dialogue::getLongIntro(bool familiar) { return longIntro; }
-Response *Dialogue::getDefaultAnswer()          { return defaultAnswer; }
-Dialogue::Question *Dialogue::getQuestion()     { return question; }
-
-void Dialogue::setName(const string &n)       { name = n; }
-void Dialogue::setPronoun(const string &pn)   { pronoun = pn; }
-void Dialogue::setPrompt(const string &prompt) { this->prompt = prompt; }
-void Dialogue::setIntro(Response *i)          { intro = i; }
-void Dialogue::setLongIntro(Response *i)      { longIntro = i; }
-void Dialogue::setDefaultAnswer(Response *a)  { defaultAnswer = a; }
-void Dialogue::setTurnAwayProb(int prob)      { turnAwayProb = prob; }
-void Dialogue::setQuestion(Question *q)       { question = q; }
 
 void Dialogue::addKeyword(const string &kw, Response *response) {
     if (keywords.find(kw) != keywords.end())

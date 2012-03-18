@@ -94,31 +94,3 @@ void Armor::loadConf() {
     }
 }
 
-/**
- * Returns the ArmorType of the armor
- */
-ArmorType Armor::getType() const {
-    return type;
-}
-
-/**
- * Returns the name of the armor
- */
-const string &Armor::getName() const {
-    return name;
-}
-
-/**
- * Returns the defense value of the armor
- */ 
-int Armor::getDefense() const {
-    return defense;
-}
-
-/**
- * Returns true if the class given can wear the armor
- */
-bool Armor::canWear(ClassType klass) const {
-    return (canuse & (1 << klass)) != 0;
-}
-

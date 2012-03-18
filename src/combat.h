@@ -138,14 +138,16 @@ public:
     
     static MapId mapForTile(const Tile *ground, const Tile *transport, Object *obj);
 
-    bool isDungeonRoom() const;
-    bool isAltarRoom() const;
-    bool isContextual() const;
-    
-    BaseVirtue getAltarRoom() const;
-    void setAltarRoom(BaseVirtue ar);
-    void setDungeonRoom(bool d);    
-    void setContextual(bool c = true);
+    // Getters
+    bool isDungeonRoom() const      {return dungeonRoom;}
+    bool isAltarRoom() const        {return altarRoom != VIRT_NONE;}
+    bool isContextual() const       {return contextual;}
+    BaseVirtue getAltarRoom() const {return altarRoom;}
+
+    // Setters
+    void setAltarRoom(BaseVirtue ar){altarRoom = ar;}
+    void setDungeonRoom(bool d)     {dungeonRoom = d;}
+    void setContextual(bool c)      {contextual = c;}
     
     // Properties
 protected:

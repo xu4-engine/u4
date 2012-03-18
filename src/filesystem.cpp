@@ -101,20 +101,6 @@ bool Path::isDir() const {
 }
 
 /**
- * Returns the full translated path
- */
-string Path::getPath() const {
-    return path;
-}
-
-/**
- * Returns the list of directories for the path
- */
-std::list<string>* Path::getDirTree() {
-    return &dirs;
-}
-
-/**
  * Returns the directory indicated in the path.
  */
 string Path::getDir() const {

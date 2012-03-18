@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "tilemap.h"
+#include "tile.h"
 
 #include "config.h"
 #include "debug.h"

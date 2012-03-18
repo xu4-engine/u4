@@ -36,15 +36,6 @@ bool Music::fading = false;
 bool Music::on = false;
 bool Music::functional = true;
 
-/**
- * Returns an instance of the Music class
- */
-Music *Music::getInstance() {
-    if (!instance)
-        instance = new Music();
-    return instance;
-}
-
 /*
  * Constructors/Destructors
  */
@@ -135,60 +126,10 @@ void Music::callback(void *data) {
 }
     
 /**
- * Returns true if the mixer is playing any audio
- */
-bool Music::isPlaying() {
-    return getInstance()->isPlaying_sys();
-}
-
-/**
  * Main music loop
  */
 void Music::play() {
     playMid(c->location->map->music);
-}
-
-/**
- * Stop playing music
- */
-void Music::stop() {
-    on = false;
-	stopMid();
-}
-
-/**
- * Music when you talk to Lord British
- */
-void Music::lordBritish() {
-    playMid(RULEBRIT);
-}
-
-/**
- * Music when you talk to Hawkwind
- */
-void Music::hawkwind() {
-    playMid(SHOPPING);
-}
-
-/**
- * Music that plays while camping
- */
-void Music::camp() {
-    fadeOut(1000);
-}
-
-/**
- * Music when talking to a vendor
- */
-void Music::shopping() {
-    playMid(SHOPPING);
-}
-
-/**
- * Play the introduction music on title loadup
- */
-void Music::intro() {
-    playMid(introMid);
 }
 
 /**
@@ -252,14 +193,6 @@ void Music::fadeIn(int msecs, bool loadFromMap) {
 			fadeIn_sys(msecs, loadFromMap);
 		}
 	}
-}
-
-void Music::setMusicVolume(int volume) {
-	setMusicVolume_sys(volume);
-}
-
-void Music::setSoundVolume(int volume) {
-	setSoundVolume_sys(volume);
 }
 
 int Music::increaseMusicVolume() {

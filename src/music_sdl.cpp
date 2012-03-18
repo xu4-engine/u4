@@ -81,20 +81,6 @@ bool Music::load_sys(const string &pathname) {
 }
 
 /**
- * Stop playing music
- */
-void Music::stopMid() {
-	Mix_HaltMusic();
-}
-
-/**
- * Returns true if the mixer is playing any audio
- */
-bool Music::isPlaying_sys() {
-	return Mix_PlayingMusic();
-}
-
-/**
  * Play a midi file
  */
 void Music::playMid(Type music) {

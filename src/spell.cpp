@@ -789,8 +789,4 @@ static int spellZdown(int unused) {
     return 0;
 }
 
-const Spell*
-getSpell(int i) {
-  return &spells[i];
-}
-
+const Spell* getSpell(int i) {return &spells[i];}

@@ -7,8 +7,10 @@
 
 #include <string>
 #include <vector>
+
 #include "direction.h"
 #include "types.h"
+#include "tileset.h"
 
 using std::string;
 using std::vector;
@@ -17,7 +19,6 @@ class ConfigElement;
 class Image;
 class Tileset;
 class TileAnim;
-class TileRule;
 
 /* attr masks */
 #define MASK_SHIP               	0x0001
@@ -52,61 +53,72 @@ public:
 
     void loadProperties(const ConfigElement &conf);
 
-    const string &getName() const { return name; }
-    int getWidth() const { return w; }
-    int getHeight() const { return h; }
-    int getFrames() const { return frames; }
-    int getScale() const { return scale; }
-    TileAnim *getAnim() const { return anim; }
+    TileId getId() const                {return id;}
+    const string &getName() const       {return name;}
+    int getWidth() const                {return w;}
+    int getHeight() const               {return h;}
+    int getFrames() const               {return frames;}
+    int getScale() const                {return scale;}
+    TileAnim *getAnim() const           {return anim;}
     Image *getImage();
-    const string &getLooksLike() const { return looks_like; }
+    const string &getLooksLike() const  {return looks_like;}
 
-    bool isTiledInDungeon() const;
+    bool isTiledInDungeon() const       {return tiledInDungeon;}
+    bool isLandForeground() const       {return foreground;}
+    bool isWaterForeground() const      {return waterForeground;}
 
-    bool isLandForeground() const;
-    bool isWaterForeground() const;
+    bool canWalkOn(Direction d) const   {return DIR_IN_MASK(d, rule->walkonDirs);}
+    bool canWalkOff(Direction d) const  {return DIR_IN_MASK(d, rule->walkoffDirs);}
 
-    bool canWalkOn(Direction d) const;
-    bool canWalkOff(Direction d) const;
-    bool canAttackOver() const;
-    bool canLandBalloon() const;
-    bool isLivingObject() const;
-    bool isReplacement() const;
-    bool isWaterReplacement() const;
+    /**
+     * All tiles that you can walk, swim, or sail on, can be attacked over. All others must declare
+     * themselves
+     */
+    bool canAttackOver() const {
+        return isWalkable() || (rule->mask & (MASK_ATTACKOVER | MASK_SAILABLE | MASK_SWIMABLE));
+    }
 
-    bool isWalkable() const;
-    bool isCreatureWalkable() const;
+    bool canLandBalloon() const     {return rule->mask & MASK_CANLANDBALLOON;}
+    bool isLivingObject() const     {return rule->mask & MASK_LIVING_THING;}
+    bool isReplacement() const      {return rule->mask & MASK_REPLACEMENT;}
+    bool isWaterReplacement() const {return rule->mask & MASK_WATER_REPLACEMENT;}
+
+    bool isWalkable() const         {return rule->walkonDirs > 0;}
+    bool isCreatureWalkable() const {return canWalkOn(DIR_ADVANCE) && !(rule->movementMask & MASK_CREATURE_UNWALKABLE);}
     bool isDungeonWalkable() const;
     bool isDungeonFloor() const;
-    bool isSwimable() const;
-    bool isSailable() const;
-    bool isWater() const;
-    bool isFlyable() const;
-    bool isDoor() const;
-    bool isLockedDoor() const;
-    bool isChest() const;    
-    bool isShip() const;    
-    bool isPirateShip() const;
-    bool isHorse() const;    
-    bool isBalloon() const;    
-    bool canDispel() const;
-    bool canTalkOver() const;
-    TileSpeed getSpeed() const;
-    TileEffect getEffect() const;
+    bool isSwimable() const         {return rule->movementMask & MASK_SWIMABLE;}
+    bool isSailable() const         {return rule->movementMask & MASK_SAILABLE;}
+    bool isWater() const            {return (isSwimable() || isSailable());}
+    bool isFlyable() const          {return !(rule->movementMask & MASK_UNFLYABLE);}
+    bool isDoor() const             {return rule->mask & MASK_DOOR;}
+    bool isLockedDoor() const       {return rule->mask & MASK_LOCKEDDOOR;}
+    bool isChest() const            {return rule->mask & MASK_CHEST;}
+    bool isShip() const             {return rule->mask & MASK_SHIP;}
+    bool isPirateShip() const       {return name == "pirate_ship";}
+    bool isHorse() const            {return rule->mask & MASK_HORSE;}
+    bool isBalloon() const          {return rule->mask & MASK_BALLOON;}
+    bool canDispel() const          {return rule->mask & MASK_DISPEL;}
+    bool canTalkOver() const        {return rule->mask & MASK_TALKOVER;}
+    TileSpeed getSpeed() const      {return rule->speed;}
+    TileEffect getEffect() const    {return rule->effect;}
+
     bool isOpaque() const;
     bool isForeground() const;
     Direction directionForFrame(int frame) const;
     int frameForDirection(Direction d) const;
 
-    static void resetNextId() { nextId = 0; }
-    static bool canTalkOverTile(const Tile *tile);
-    static bool canAttackOverTile(const Tile *tile);
-
     TileId id;          /**< an id that is unique across all tilesets */
 
+    static void resetNextId()                       {nextId = 0;}
+    static bool canTalkOverTile(const Tile *tile)   {return tile->canTalkOver();}
+    static bool canAttackOverTile(const Tile *tile) {return tile->canAttackOver();}
     void deleteImage();
 
 private:
+    void loadImage();
+
+public:
     string name;        /**< The name of this tile */
     Tileset *tileset;   /**< The tileset this tile belongs to */
     int w, h;           /**< width and height of the tile */
@@ -115,14 +127,12 @@ private:
     TileAnim *anim;     /**< The tile animation for this tile */    
     bool opaque;        /**< Is this tile opaque? */
 
-    bool foreground;		/**< As a maptile, is a foreground that will search neighbour maptiles for a land-based background replacement. ex: chests */
-    bool waterForeground;	/**< As a maptile, is a foreground that will search neighbour maptiles for a water-based background replacement. ex: chests */
+    bool foreground;    /**< As a maptile, is a foreground that will search neighbour maptiles for a land-based background replacement. ex: chests */
+    bool waterForeground;/**< As a maptile, is a foreground that will search neighbour maptiles for a water-based background replacement. ex: chests */
 
     TileRule *rule;     /**< The rules that govern the behavior of this tile */
     string imageName;   /**< The name of the image that belongs to this tile */
     string looks_like;  /**< The name of the tile that this tile looks exactly like (if any) */    
-
-    void loadImage();
 
     Image *image;       /**< The original image for this tile (with all of its frames) */
     bool tiledInDungeon;
@@ -136,5 +146,6 @@ private:
 
     static TileId nextId;
 };
+
 
 #endif

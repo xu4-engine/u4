@@ -121,12 +121,6 @@ string PartyMember::translate(std::vector<string>& parts) {
 }
 
 int PartyMember::getHp() const      { return player->hp; }
-int PartyMember::getMaxHp() const   { return player->hpMax; }
-int PartyMember::getExp() const     { return player->xp; }
-int PartyMember::getStr() const     { return player->str; }
-int PartyMember::getDex() const     { return player->dex; }
-int PartyMember::getInt() const     { return player->intel; }
-int PartyMember::getMp() const      { return player->mp; }
 
 /**
  * Determine the most magic points a character could have

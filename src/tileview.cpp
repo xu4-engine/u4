@@ -9,6 +9,7 @@
 #include "imagemgr.h"
 #include "settings.h"
 #include "screen.h"
+#include "tile.h"
 #include "tileanim.h"
 #include "tileset.h"
 #include "tileview.h"

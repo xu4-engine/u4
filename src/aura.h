@@ -27,16 +27,16 @@ public:
 
     Aura();
 
-    int getDuration() const;
-    Type getType() const;
-    bool isActive() const;
+    int getDuration() const         { return duration; }
+    Aura::Type getType() const      { return type; }
+    bool isActive() const           { return duration > 0; }
 
     void setDuration(int d);
     void set(Type = NONE, int d = 0);
     void setType(Type t);
 
-    bool operator==(const Type &t) const;
-    bool operator!=(const Type &t) const;
+    bool operator==(const Type &t) const    { return type == t; }
+    bool operator!=(const Type &t) const    { return !operator==(t); }
 
     void passTurn();
 

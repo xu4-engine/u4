@@ -164,17 +164,6 @@ void StatsArea::update(Aura *aura) {
     summary.update();
 }
 
-void StatsArea::update(Party *party, PartyEvent &event) {
-    // do a full update
-    update();
-}
-
-void StatsArea::update(Menu *menu, MenuEvent &event) {
-    // do a full update
-    update();
-}
-
-
 void StatsArea::highlightPlayer(int player) {
     ASSERT(player < c->party->size(), "player number out of range: %d", player);
     mainArea.highlight(0, player * CHAR_HEIGHT, STATS_AREA_WIDTH * CHAR_WIDTH, CHAR_HEIGHT);

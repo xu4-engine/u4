@@ -5,6 +5,8 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#include <SDL.h>
+
 #include <string>
 #include <stdint.h>
 #include "types.h"
@@ -82,9 +84,9 @@ public:
 
 
     /* alpha handling */
-    bool isAlphaOn() const;
-    void alphaOn();
-    void alphaOff();
+    bool isAlphaOn() const  {return surface->flags & SDL_SRCALPHA;}
+    void alphaOn()          {surface->flags |= SDL_SRCALPHA;}
+    void alphaOff()         {surface->flags &= ~SDL_SRCALPHA;}
 
 
     /* Will clear the image to the background color, and set the internal backgroundColor variable */
@@ -96,7 +98,13 @@ public:
     //void finalizeAlphaSurface(RGBA * key = NULL);
 
     /* writing to image */
-    void putPixel(int x, int y, int r, int g, int b, int a);
+
+    /**
+     * Sets the color of a single pixel.
+     */
+    void putPixel(int x, int y, int r, int g, int b, int a) { //TODO Consider using &
+        putPixelIndex(x, y, SDL_MapRGBA(surface->format, static_cast<Uint8>(r), static_cast<Uint8>(g), static_cast<Uint8>(b), static_cast<Uint8>(a)));
+    }
     void putPixelIndex(int x, int y, unsigned int index);
 
 
@@ -107,9 +115,30 @@ public:
     void getPixelIndex(int x, int y, unsigned int &index) const;
 
     /* image drawing methods */
-    void draw(int x, int y) const;
-    void drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const;
-    void drawSubRectInverted(int x, int y, int rx, int ry, int rw, int rh) const;
+    /**
+     * Draws the entire image onto the screen at the given offset.
+     */
+    void draw(int x, int y) const {
+        drawOn(NULL, x, y);
+    }
+
+    /**
+     * Draws a piece of the image onto the screen at the given offset.
+     * The area of the image to draw is defined by the rectangle rx, ry,
+     * rw, rh.
+     */
+    void drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const {
+        drawSubRectOn(NULL, x, y, rx, ry, rw, rh);
+    }
+
+    /**
+     * Draws a piece of the image onto the screen at the given offset, inverted.
+     * The area of the image to draw is defined by the rectangle rx, ry,
+     * rw, rh.
+     */
+    void drawSubRectInverted(int x, int y, int rx, int ry, int rw, int rh) const {
+        drawSubRectInvertedOn(NULL, x, y, rx, ry, rw, rh);
+    }
 
     /* image drawing methods for drawing onto another image instead of the screen */
     void drawOn(Image *d, int x, int y) const;

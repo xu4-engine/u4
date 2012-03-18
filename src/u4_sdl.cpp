@@ -2,16 +2,17 @@
  * $Id$
  */
 
+
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include <SDL.h>
 #include "u4_sdl.h"
 
-int u4_SDL_Init() {
+static inline int u4_SDL_Init() {
     return SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
 }
 
-void u4_SDL_Delete() {
+static inline void u4_SDL_Delete() {
     SDL_Quit();
 }
 

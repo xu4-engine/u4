@@ -225,52 +225,6 @@ void Creature::load(const ConfigElement &conf) {
         slowedType = SLOWED_BY_NOTHING;
 }
 
-string Creature::getName() const         { return name; }
-CreatureId Creature::getId() const       { return id; }
-CreatureId Creature::getLeader() const   { return leader; }
-const string &Creature::getHitTile() const         { return rangedhittile; }
-const string &Creature::getMissTile() const        { return rangedmisstile; }
-int Creature::getHp() const              { return hp; }
-int Creature::getXp() const              { return xp; }
-const string &Creature::getWorldrangedtile() const { return worldrangedtile; }
-SlowedType Creature::getSlowedType() const         { return slowedType; }
-int Creature::getEncounterSize() const   { return encounterSize; }
-unsigned char Creature::getResists() const         { return resists; }
-
-void Creature::setName(string s)         { name = s; }
-void Creature::setHitTile(const string &t)     { rangedhittile = t; }
-void Creature::setMissTile(const string &t)    { rangedmisstile = t; }
-void Creature::setHp(int points)         { hp = points; }
-
-bool Creature::isGood() const        { return (mattr & MATTR_GOOD) ? true : false; }
-bool Creature::isEvil() const        { return !isGood(); }
-bool Creature::isUndead() const      { return (mattr & MATTR_UNDEAD) ? true : false; }
-
-bool Creature::isForceOfNature() const		{return mattr & MATTR_FORCE_OF_NATURE;}
-
-bool Creature::leavesChest() const {
-    if (isAquatic())
-        return true;
-    else return (mattr & MATTR_NOCHEST) ? false : true;
-}
-
-bool Creature::isAquatic() const     { return (mattr & MATTR_WATER) ? true : false; }
-bool Creature::wanders() const       { return (movementAttr & MATTR_WANDERS) ? true : false; }
-bool Creature::isStationary() const  { return (movementAttr & MATTR_STATIONARY) ? true : false; }
-bool Creature::flies() const         { return (movementAttr & MATTR_FLIES) ? true : false; }
-bool Creature::teleports() const     { return (movementAttr & MATTR_TELEPORT) ? true : false; }
-bool Creature::swims() const         { return (movementAttr & MATTR_SWIMS) ? true : false; }
-bool Creature::sails() const         { return (movementAttr & MATTR_SAILS) ? true : false; }
-
-bool Creature::walks() const {
-    return (flies() || swims() || sails()) ? false : true;
-}
-
-bool Creature::divides() const       { return mattr & MATTR_DIVIDES; }
-bool Creature::spawnsOnDeath() const { return mattr & MATTR_SPAWNSONDEATH; }
-bool Creature::canMoveOntoCreatures() const { return (movementAttr & MATTR_CANMOVECREATURES) ? true : false; }
-bool Creature::canMoveOntoPlayer() const   { return (movementAttr & MATTR_CANMOVEAVATAR) ? true : false; }
-
 bool Creature::isAttackable() const  { 
     if (mattr & MATTR_NONATTACKABLE)
         return false;
@@ -279,18 +233,6 @@ bool Creature::isAttackable() const  {
         return false;
     return true; 
 }
-
-bool Creature::willAttack() const    { return (mattr & MATTR_NOATTACK) ? false : true; }
-bool Creature::stealsGold() const    { return (mattr & MATTR_STEALGOLD) ? true : false; }
-bool Creature::stealsFood() const    { return (mattr & MATTR_STEALFOOD) ? true : false; }
-bool Creature::negates() const       { return (mattr & MATTR_NEGATE) ? true : false; }
-bool Creature::camouflages() const   { return (mattr & MATTR_CAMOUFLAGE) ? true : false; }
-bool Creature::ambushes() const      { return (mattr & MATTR_AMBUSHES) ? true : false; }
-bool Creature::isIncorporeal() const { return (mattr & MATTR_INCORPOREAL) ? true : false; }
-bool Creature::hasRandomRanged() const { return (mattr & MATTR_RANDOMRANGED) ? true : false; }
-bool Creature::leavesTile() const    { return leavestile; }
-bool Creature::castsSleep() const { return (mattr & MATTR_CASTS_SLEEP) ? true : false; }
-const string &Creature::getCamouflageTile() { return camouflageTile; }
 
 int  Creature::getDamage() const {
     int damage, val, x;

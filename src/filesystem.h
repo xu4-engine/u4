@@ -31,8 +31,8 @@ public:
     bool exists() const;
     bool isFile() const;
     bool isDir() const;
-    string getPath() const;
-    std::list<string>* getDirTree();
+    string getPath() const          {return path; } /**< Returns the full translated path */
+    std::list<string>* getDirTree() {return &dirs;} /**< Returns the list of directories for the path */
     string getDir() const;
     string getFilename() const;
     string getBaseFilename() const;

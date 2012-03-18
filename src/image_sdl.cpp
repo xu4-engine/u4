@@ -352,25 +352,6 @@ void Image::setTransparentIndex(unsigned int index)//, unsigned int numFrames, u
     }
 }
 
-bool Image::isAlphaOn() const {
-    return (surface->flags & SDL_SRCALPHA) ? true : false;
-}
-
-void Image::alphaOn() {
-    surface->flags |= SDL_SRCALPHA;
-}
-
-void Image::alphaOff() {
-    surface->flags &= ~SDL_SRCALPHA;
-}
-
-/**
- * Sets the color of a single pixel.
- */
-void Image::putPixel(int x, int y, int r, int g, int b, int a) { //TODO Consider using &
-    putPixelIndex(x, y, SDL_MapRGBA(surface->format, static_cast<Uint8>(r), static_cast<Uint8>(g), static_cast<Uint8>(b), static_cast<Uint8>(a)));
-}
-
 /**
  * Sets the palette index of a single pixel.  If the image is in
  * indexed mode, then the index is simply the palette entry number.
@@ -474,31 +455,6 @@ void Image::getPixelIndex(int x, int y, unsigned int &index) const {
     default:
         return;
     }
-}
-
-/**
- * Draws the entire image onto the screen at the given offset.
- */
-void Image::draw(int x, int y) const {
-    drawOn(NULL, x, y);
-}
-
-/**
- * Draws a piece of the image onto the screen at the given offset.
- * The area of the image to draw is defined by the rectangle rx, ry,
- * rw, rh.
- */
-void Image::drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const {
-    drawSubRectOn(NULL, x, y, rx, ry, rw, rh);
-}
-
-/**
- * Draws a piece of the image onto the screen at the given offset, inverted.
- * The area of the image to draw is defined by the rectangle rx, ry,
- * rw, rh.
- */
-void Image::drawSubRectInverted(int x, int y, int rx, int ry, int rw, int rh) const {
-    drawSubRectInvertedOn(NULL, x, y, rx, ry, rw, rh);
 }
 
 /**

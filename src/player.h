@@ -101,12 +101,12 @@ public:
     
     // Accessor methods
     virtual int getHp() const;
-    int getMaxHp() const;
-    int getExp() const;
-    int getStr() const;
-    int getDex() const;
-    int getInt() const;
-    int getMp() const;
+    int getMaxHp() const   { return player->hpMax; }
+    int getExp() const     { return player->xp; }
+    int getStr() const     { return player->str; }
+    int getDex() const     { return player->dex; }
+    int getInt() const     { return player->intel; }
+    int getMp() const      { return player->mp; }
     int getMaxMp() const;
     const Weapon *getWeapon() const;
     const Armor *getArmor() const;

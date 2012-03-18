@@ -7,12 +7,12 @@
 
 #include <string>
 #include <map>
-#include "tile.h"
 #include "types.h"
 
 using std::string;
 
 class ConfigElement;
+class Tile;
 
 typedef std::map<string, class TileRule *> TileRuleMap;
 

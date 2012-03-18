@@ -1277,31 +1277,3 @@ MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Objec
 
     return MAP_BRICK_CON;
 }
-
-bool CombatMap::isDungeonRoom() const {
-    return dungeonRoom;
-}
-
-bool CombatMap::isAltarRoom() const {
-    return (altarRoom != VIRT_NONE) ? true : false;
-}
-
-bool CombatMap::isContextual() const {
-    return contextual;
-}
-
-BaseVirtue CombatMap::getAltarRoom() const {
-    return altarRoom;
-}
-
-void CombatMap::setAltarRoom(BaseVirtue ar) {
-    altarRoom = ar;
-}
-
-void CombatMap::setDungeonRoom(bool d) {
-    dungeonRoom = d;
-}
-
-void CombatMap::setContextual(bool c) {
-    contextual = c;
-}

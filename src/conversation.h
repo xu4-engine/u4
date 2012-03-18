@@ -133,8 +133,8 @@ public:
         /*
          * Accessor methods
          */
-        string      getKeyword();
-        Response*   getResponse();
+		const string &getKeyword()	{return keyword;}
+		Response *getResponse()		{return response;}
         
     private:
         string keyword;
@@ -155,26 +155,27 @@ public:
     /*
      * Accessor methods
      */ 
-    const string &getName() const;
-    const string &getPronoun() const;
-    const string &getPrompt() const;
-    Response *getIntro(bool familiar = false);
-    Response *getLongIntro(bool familiar = false);
-    Response *getDefaultAnswer();
-    Question *getQuestion();
+    const string &getName() const                   {return name;}
+    const string &getPronoun() const                {return pronoun;}
+    const string &getPrompt() const                 {return prompt;}
+    Response *getIntro(bool familiar = false)       {return intro;}
+    Response *getLongIntro(bool familiar = false)   {return longIntro;}
+    Response *getDefaultAnswer()                    {return defaultAnswer;}
+    Dialogue::Question *getQuestion()               {return question;}
 
     /*
-     * Member functions 
+     * Getters
      */ 
-    void  setName(const string &n);
-    void  setPronoun(const string &pn);
-    void  setPrompt(const string &prompt);
-    void  setIntro(Response *i);
-    void  setLongIntro(Response *i);
-    void  setDefaultAnswer(Response *a);
-    void  setTurnAwayProb(int prob);
-    void  addKeyword(const string &kw, Response *response);
-    void  setQuestion(Question *q);
+    void setName(const string &n)       {name           = n;}
+    void setPronoun(const string &pn)   {pronoun        = pn;}
+    void setPrompt(const string &prompt){this->prompt   = prompt;}
+    void setIntro(Response *i)          {intro          = i;}
+    void setLongIntro(Response *i)      {longIntro      = i;}
+    void setDefaultAnswer(Response *a)  {defaultAnswer  = a;}
+    void setTurnAwayProb(int prob)      {turnAwayProb   = prob;}
+    void setQuestion(Question *q)       {question       = q;}
+    void addKeyword(const string &kw, Response *response);
+
     const ResponsePart &getAction() const;
     string dump(const string &arg);
 

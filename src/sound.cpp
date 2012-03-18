@@ -62,10 +62,6 @@ int SoundManager::init() {
     return init_sys();
 }
 
-void SoundManager::del() {
-    del_sys();
-}
-
 bool SoundManager::load(Sound sound) {
     ASSERT(sound < SOUND_MAX, "Attempted to load an invalid sound in soundLoad()");
     

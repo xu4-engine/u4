@@ -6,9 +6,9 @@
 #define TYPEDEFS_H
 
 #include "direction.h"
+//#include "tileset.h"
 
 class Tile;
-class Tileset;
 
 typedef unsigned int TileId;
 typedef unsigned char MapId;
@@ -49,6 +49,10 @@ public:
     MapTile() : id(0), frame(0) {}
     MapTile(const TileId &i, unsigned char f = 0) : id(i), frame(f), freezeAnimation(false) {}
     MapTile(const MapTile &t) : id(t.id), frame(t.frame), freezeAnimation(t.freezeAnimation) {}
+
+    TileId getId() const			{return id;}
+    unsigned char getFrame() const	{return frame;}
+    bool getFreezeAnimation() const {return freezeAnimation;}
 
     bool operator==(const MapTile &m) const  { return id == m.id; }
     bool operator==(const TileId &i) const   { return id == i; }

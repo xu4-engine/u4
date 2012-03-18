@@ -20,13 +20,6 @@
 #include "u4file.h"
 #include "music_sdl.h"
 
-int SoundManager::init_sys() {
-	return 1;
-}
-
-void SoundManager::del_sys() {
-    ;
-}
 
 bool SoundManager::load_sys(Sound sound, const string &pathname) {
     soundChunk[sound] = Mix_LoadWAV(pathname.c_str());

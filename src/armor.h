@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+
 #include "savegame.h"
 
 class ConfigElement;
@@ -18,10 +19,12 @@ public:
     static const Armor *get(ArmorType a);
     static const Armor *get(const string &name);
 
-    ArmorType getType() const;
-    const string &getName() const;
-    int getDefense() const;
-    bool canWear(ClassType klass) const;
+    // Getters
+    ArmorType getType() const       {return type;   } /**< Returns the ArmorType of the armor */
+    const string &getName() const   {return name;   } /**< Returns the name of the armor */
+    int getDefense() const          {return defense;} /**< Returns the defense value of the armor */
+                                                      /** Returns true if the class given can wear the armor */
+    bool canWear(ClassType klass) const {return canuse & (1 << klass);}
 
 private:
     Armor(const ConfigElement &conf);

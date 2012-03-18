@@ -6,6 +6,7 @@
 #define ANNOTATION_H
 
 #include <list>
+
 #include "coords.h"
 #include "types.h"
 
@@ -24,17 +25,21 @@ public:
 
     Annotation(const Coords &coords, MapTile tile, bool visual = false, bool coverUp = false);
 
-    void             debug_output() const;
-    const Coords&    getCoords() const;
-    MapTile&         getTile();
-    const bool       isVisualOnly() const;
-    const int        getTTL() const;
-    void             setCoords(const Coords &);
-    void             setTile(const MapTile &);
-    void             setVisualOnly(bool visual = true);
-    void             setTTL(int turns);
-    void             passTurn();
-    bool			 isCoverUp();
+    void debug_output() const;
+
+    // Getters
+    const Coords& getCoords() const {return coords; } /**< Returns the coordinates of the annotation */
+    MapTile& getTile()              {return tile;   } /**< Returns the annotation's tile */
+    const bool isVisualOnly() const {return visual; } /**< Returns true for visual-only annotations */
+    const int getTTL() const        {return ttl;    } /**< Returns the number of turns the annotation has left to live */
+    bool isCoverUp()                {return coverUp;}
+
+    // Setters
+    void setCoords(const Coords &c) {coords = c;    } /**< Sets the coordinates for the annotation */
+    void setTile(const MapTile &t)  {tile = t;      } /**< Sets the tile for the annotation */
+    void setVisualOnly(bool v)      {visual = v;    } /**< Sets whether or not the annotation is visual-only */
+    void setTTL(int turns)          {ttl = turns;   } /**< Sets the number of turns the annotation will live */
+    void passTurn()                 {if (ttl > 0) ttl--; } /**< Passes a turn for the annotation */
 
     bool operator==(const Annotation&) const;    
 

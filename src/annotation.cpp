@@ -38,16 +38,6 @@ void Annotation::debug_output() const {
     printf("visual: %s\n", visual ? "Yes" : "No");
 }
 
-const Coords& Annotation::getCoords() const         { return coords;      } /**< Returns the coordinates of the annotation */
-MapTile& Annotation::getTile()                      { return tile;        } /**< Returns the annotation's tile */
-const bool Annotation::isVisualOnly() const         { return visual;      } /**< Returns true for visual-only annotations */
-const int Annotation::getTTL() const                { return ttl;         } /**< Returns the number of turns the annotation has left to live */
-void Annotation::setCoords(const Coords &c)         { coords = c;         } /**< Sets the coordinates for the annotation */
-void Annotation::setTile(const MapTile &t)          { tile = t;           } /**< Sets the tile for the annotation */
-void Annotation::setVisualOnly(bool v)              { visual = v;         } /**< Sets whether or not the annotation is visual-only */
-void Annotation::setTTL(int turns)                  { ttl = turns;        } /**< Sets the number of turns the annotation will live */
-void Annotation::passTurn()                         { if (ttl > 0) ttl--; } /**< Passes a turn for the annotation */
-bool Annotation::isCoverUp()						{ return this->coverUp;}
 /**
  * Operators
  */ 
