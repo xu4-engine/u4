@@ -1007,7 +1007,7 @@ Creature *CreatureMgr::randomForTile(const Tile *tile) {
     randTile += era & xu4_random(0x10) & xu4_random(0x10);
     return getByTile(randTile);
 }
-
+#if 0
 /**
  * Creates a random creature based on the dungeon level given
  */ 
@@ -1033,6 +1033,20 @@ Creature *CreatureMgr::randomForDungeon(int dngLevel) {
     /* FIXME: how does u4dos do it? */
     return getById(id_list[xu4_random(id_list.size())]);
 }
+#endif
+/**
+ * Creates a random creature based on the dungeon level given
+ */
+Creature *CreatureMgr::randomForDungeon(int dngLevel) {
+	size_t range = dngLevel < 5 ? 3 : 4;
+	CreatureId monster = STORM_ID + dngLevel + xu4_random(range);
+
+	if(monster >= MIMIC_ID)
+		++monster;
+
+	return getById(monster);
+}
+
 
 /**
  * Creates a random ambushing creature
