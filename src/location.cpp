@@ -155,8 +155,9 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
 TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
     std::map<TileId, int> validMapTileCount;
 
-    int dirs[][2] = {{-1,0},{1,0},{0,-1},{0,1}};
-    int dirs_per_step = 4; //
+    const static int dirs[][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+    const static int dirs_per_step = sizeof(dirs) / sizeof(*dirs);
+    int loop_count = 0;
 
     std::set<MapCoords> searched;
     std::list<MapCoords> searchQueue;
@@ -217,8 +218,8 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
 
 			return winner;
 		}
-
-	} while (searchQueue.size() > 0 && searchQueue.size() < 64);
+		/* loop_count is an ugly hack to temporarily fix infinite loop */
+	} while (++loop_count < 128 && searchQueue.size() > 0 && searchQueue.size() < 64);
 
     /* couldn't find a tile, give it the sad default */
     return map->tileset->getByName("grass")->getId();

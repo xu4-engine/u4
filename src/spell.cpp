@@ -86,7 +86,7 @@ static const struct {
     { CASTERR_WORLDMAPONLY, "Outdoors only!\nFailed!\n" }
 };
 
-const Spell spells[] = {
+static const Spell spells[] = {
     { "Awaken",       GINSENG | GARLIC,         CTX_ANY,        TRANSPORT_ANY,  &spellAwaken,  Spell::PARAM_PLAYER,  5 },
     { "Blink",        SILK | MOSS,              CTX_WORLDMAP,   TRANSPORT_FOOT_OR_HORSE,
                                                                                 &spellBlink,   Spell::PARAM_DIR,     15 },
