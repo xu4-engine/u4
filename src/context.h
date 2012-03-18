@@ -25,11 +25,10 @@ typedef enum {
     TRANSPORT_FOOT      = 0x1,
     TRANSPORT_HORSE     = 0x2,
     TRANSPORT_SHIP      = 0x4,
-    TRANSPORT_BALLOON   = 0x8
+    TRANSPORT_BALLOON		= 0x8,
+    TRANSPORT_FOOT_OR_HORSE	= TRANSPORT_FOOT | TRANSPORT_HORSE,
+    TRANSPORT_ANY			= 0xffff
 } TransportContext;
-
-#define TRANSPORT_ANY               (TransportContext)(0xFFFF)
-#define TRANSPORT_FOOT_OR_HORSE     (TransportContext)(TRANSPORT_FOOT | TRANSPORT_HORSE)
 
 /**
  * Context class

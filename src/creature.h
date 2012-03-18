@@ -30,62 +30,64 @@ typedef std::vector<class Creature *> CreatureVector;
 
 /* Creature ids */
 
-#define HORSE1_ID       0
-#define HORSE2_ID       1
+typedef enum {
+    HORSE1_ID		= 0,
+    HORSE2_ID       = 1,
 
-#define MAGE_ID         2
-#define BARD_ID         3
-#define FIGHTER_ID      4
-#define DRUID_ID        5
-#define TINKER_ID       6
-#define PALADIN_ID      7
-#define RANGER_ID       8
-#define SHEPHERD_ID     9
+    MAGE_ID         = 2,
+    BARD_ID         = 3,
+    FIGHTER_ID      = 4,
+    DRUID_ID        = 5,
+    TINKER_ID       = 6,
+    PALADIN_ID      = 7,
+    RANGER_ID       = 8,
+    SHEPHERD_ID     = 9,
 
-#define GUARD_ID        10
-#define VILLAGER_ID     11
-#define SINGINGBARD_ID  12
-#define JESTER_ID       13
-#define BEGGAR_ID       14
-#define CHILD_ID        15
-#define BULL_ID         16
-#define LORDBRITISH_ID  17
+    GUARD_ID        = 10,
+    VILLAGER_ID     = 11,
+    SINGINGBARD_ID  = 12,
+    JESTER_ID       = 13,
+    BEGGAR_ID       = 14,
+    CHILD_ID        = 15,
+    BULL_ID         = 16,
+    LORDBRITISH_ID  = 17,
 
-#define PIRATE_ID       18
-#define NIXIE_ID        19
-#define GIANT_SQUID_ID  20
-#define SEA_SERPENT_ID  21
-#define SEAHORSE_ID     22
-#define WHIRLPOOL_ID    23
-#define STORM_ID        24
-#define RAT_ID          25
-#define BAT_ID          26
-#define GIANT_SPIDER_ID 27
-#define GHOST_ID        28
-#define SLIME_ID        29
-#define TROLL_ID        30
-#define GREMLIN_ID      31
-#define MIMIC_ID        32
-#define REAPER_ID       33
-#define INSECT_SWARM_ID 34
-#define GAZER_ID        35
-#define PHANTOM_ID      36
-#define ORC_ID          37
-#define SKELETON_ID     38
-#define ROGUE_ID        39
-#define PYTHON_ID       40
-#define ETTIN_ID        41
-#define HEADLESS_ID     42
-#define CYCLOPS_ID      43
-#define WISP_ID         44
-#define EVILMAGE_ID     45
-#define LICH_ID         46
-#define LAVA_LIZARD_ID  47
-#define ZORN_ID         48
-#define DAEMON_ID       49
-#define HYDRA_ID        50
-#define DRAGON_ID       51
-#define BALRON_ID       52
+    PIRATE_ID       = 18,
+    NIXIE_ID        = 19,
+    GIANT_SQUID_ID  = 20,
+    SEA_SERPENT_ID  = 21,
+    SEAHORSE_ID     = 22,
+    WHIRLPOOL_ID    = 23,
+    STORM_ID        = 24,
+    RAT_ID          = 25,
+    BAT_ID          = 26,
+    GIANT_SPIDER_ID = 27,
+    GHOST_ID        = 28,
+    SLIME_ID        = 29,
+    TROLL_ID        = 30,
+    GREMLIN_ID      = 31,
+    MIMIC_ID        = 32,
+    REAPER_ID       = 33,
+    INSECT_SWARM_ID = 34,
+    GAZER_ID        = 35,
+    PHANTOM_ID      = 36,
+    ORC_ID          = 37,
+    SKELETON_ID     = 38,
+    ROGUE_ID        = 39,
+    PYTHON_ID       = 40,
+    ETTIN_ID        = 41,
+    HEADLESS_ID     = 42,
+    CYCLOPS_ID      = 43,
+    WISP_ID         = 44,
+    EVILMAGE_ID     = 45,
+    LICH_ID         = 46,
+    LAVA_LIZARD_ID  = 47,
+    ZORN_ID         = 48,
+    DAEMON_ID       = 49,
+    HYDRA_ID        = 50,
+    DRAGON_ID       = 51,
+    BALRON_ID       = 52,
+} CreatureType;
 
 typedef enum {
     MATTR_STEALFOOD     = 0x1,
