@@ -75,7 +75,7 @@ public:
      * themselves
      */
     bool canAttackOver() const {
-        return isWalkable() || (rule->mask & (MASK_ATTACKOVER | MASK_SAILABLE | MASK_SWIMABLE));
+        return isWalkable() || ((rule->mask & MASK_ATTACKOVER) || (rule->movementMask | MASK_SAILABLE | MASK_SWIMABLE));
     }
 
     bool canLandBalloon() const     {return rule->mask & MASK_CANLANDBALLOON;}
