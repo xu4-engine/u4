@@ -74,10 +74,7 @@ public:
      * All tiles that you can walk, swim, or sail on, can be attacked over. All others must declare
      * themselves
      */
-    bool canAttackOver() const {
-        return isWalkable() || ((rule->mask & MASK_ATTACKOVER) || (rule->movementMask | MASK_SAILABLE | MASK_SWIMABLE));
-    }
-
+    bool canAttackOver() const      {return isWalkable() || isSwimable() || isSailable() || (rule->mask & MASK_ATTACKOVER);}
     bool canLandBalloon() const     {return rule->mask & MASK_CANLANDBALLOON;}
     bool isLivingObject() const     {return rule->mask & MASK_LIVING_THING;}
     bool isReplacement() const      {return rule->mask & MASK_REPLACEMENT;}
