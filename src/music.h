@@ -5,7 +5,6 @@
 #ifndef MUSIC_H
 #define MUSIC_H
 
-#include <SDL_mixer.h>
 #include <string>
 #include <vector>
 
@@ -94,7 +93,7 @@ private:
     void setSoundVolume_sys(int volume);
     void fadeOut_sys(int msecs);
     void fadeIn_sys(int msecs, bool loadFromMap);
-    bool isPlaying_sys()    {return Mix_PlayingMusic();} /**< Returns true if the mixer is playing any audio */
+    bool isPlaying_sys();
 
     static Music *instance;
     static bool fading;
@@ -103,7 +102,7 @@ private:
 
     bool load_sys(const string &pathname);
     void playMid(Type music);
-    void stopMid()          {Mix_HaltMusic();}          /**< Stop playing music */
+    void stopMid();
 
     bool load(Type music);
 

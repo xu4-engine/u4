@@ -271,6 +271,26 @@ void Image::initializeToBackgroundColor(RGBA backgroundColor)
     		backgroundColor.a);
 }
 
+bool Image::isAlphaOn() const
+{
+    return surface->flags & SDL_SRCALPHA;
+}
+
+void Image::alphaOn()
+{
+    surface->flags |= SDL_SRCALPHA;
+}
+
+void Image::alphaOff()
+{
+    surface->flags &= ~SDL_SRCALPHA;
+}
+
+void Image::putPixel(int x, int y, int r, int g, int b, int a) {
+    putPixelIndex(x, y, SDL_MapRGBA(surface->format, Uint8(r), Uint8(g), Uint8(b), Uint8(a)));
+}
+
+
 void Image::makeBackgroundColorTransparent(int haloSize, int shadowOpacity)
 {
 	int bgColor = SDL_MapRGBA(surface->format,

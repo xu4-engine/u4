@@ -5,8 +5,6 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <SDL.h>
-
 #include <string>
 #include <stdint.h>
 #include "types.h"
@@ -84,9 +82,9 @@ public:
 
 
     /* alpha handling */
-    bool isAlphaOn() const  {return surface->flags & SDL_SRCALPHA;}
-    void alphaOn()          {surface->flags |= SDL_SRCALPHA;}
-    void alphaOff()         {surface->flags &= ~SDL_SRCALPHA;}
+    bool isAlphaOn() const;
+    void alphaOn();
+    void alphaOff();
 
 
     /* Will clear the image to the background color, and set the internal backgroundColor variable */
@@ -102,9 +100,9 @@ public:
     /**
      * Sets the color of a single pixel.
      */
-    void putPixel(int x, int y, int r, int g, int b, int a) { //TODO Consider using &
-        putPixelIndex(x, y, SDL_MapRGBA(surface->format, static_cast<Uint8>(r), static_cast<Uint8>(g), static_cast<Uint8>(b), static_cast<Uint8>(a)));
-    }
+    void putPixel(int x, int y, int r, int g, int b, int a); //TODO Consider using &
+
+
     void putPixelIndex(int x, int y, unsigned int index);
 
 

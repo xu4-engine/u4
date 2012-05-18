@@ -50,3 +50,12 @@ void SoundManager::stop_sys(int channel)
     if (Mix_Playing(channel))
         Mix_HaltChannel(channel);
 }
+
+int SoundManager::init_sys()
+{
+    return 1;
+}
+
+void SoundManager::del_sys()
+{
+}

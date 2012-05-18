@@ -59,9 +59,9 @@ public:
     void stop(int channel = 1);
 private:
     bool load(Sound sound);
-	int init_sys()	{return 1;}
+	int init_sys();
 	void del()		{del_sys();}
-	void del_sys()	{}
+	void del_sys();
     void play_sys(Sound sound, bool onlyOnce, int specificDurationInTicks);
     bool load_sys(Sound sound, const std::string &soundPathName);
     void stop_sys(int channel);

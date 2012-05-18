@@ -94,6 +94,14 @@ void Music::playMid(Type music) {
     }
 }
 
+
+/**
+ * Stop playing a MIDI file.
+ */
+void Music::stopMid()
+{
+    Mix_HaltMusic();
+}
 /**
  * Set, increase, and decrease sound volume
  */
@@ -103,6 +111,14 @@ void Music::setSoundVolume_sys(int volume) {
      */
     Mix_Volume(1, int((float)MIX_MAX_VOLUME / MAX_VOLUME * volume));
 }
+
+/**
+ * System specific version to check if the version is still playing.
+ */
+bool Music::isPlaying_sys()
+{
+    return Mix_PlayingMusic();
+} /**< Returns true if the mixer is playing any audio */
 
 
 /**

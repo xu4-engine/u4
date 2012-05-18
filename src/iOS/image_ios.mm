@@ -367,31 +367,6 @@ void Image::getPixelIndex(int x, int y, unsigned int &index) const {
     index = 0;
 }
 
-/**
- * Draws the entire image onto the screen at the given offset.
- */
-void Image::draw(int x, int y) const {
-    drawOn(NULL, x, y);
-}
-
-/**
- * Draws a piece of the image onto the screen at the given offset.
- * The area of the image to draw is defined by the rectangle rx, ry,
- * rw, rh.
- */
-void Image::drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const {
-    drawSubRectOn(NULL, x, y, rx, ry, rw, rh);
-}
-
-/**
- * Draws a piece of the image onto the screen at the given offset, inverted.
- * The area of the image to draw is defined by the rectangle rx, ry,
- * rw, rh.
- */
-void Image::drawSubRectInverted(int x, int y, int rx, int ry, int rw, int rh) const {
-    drawSubRectInvertedOn(NULL, x, y, rx, ry, rw, rh);
-}
-
 void Image::initWithImage(CGImageRef image) {
     CGContextRef context = CGLayerGetContext(surface);
     CGRect rect = CGRectMake(0, 0, width(), height());

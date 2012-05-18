@@ -339,6 +339,8 @@
 		CA82043013C9EE0100E5A386 /* CreditsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = CA82042E13C9EE0100E5A386 /* CreditsViewController.xib */; };
 		CA82044713CA093400E5A386 /* credits.html in Resources */ = {isa = PBXBuildFile; fileRef = CA82044613CA093400E5A386 /* credits.html */; };
 		CA82044A13CA09B700E5A386 /* COPYING in Resources */ = {isa = PBXBuildFile; fileRef = CA82044913CA09B700E5A386 /* COPYING */; };
+		CA84EBFC1566D5BF005D1167 /* context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA84EBFB1566D5BF005D1167 /* context.cpp */; };
+		CA84EBFD1566D5BF005D1167 /* context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA84EBFB1566D5BF005D1167 /* context.cpp */; };
 		CA870FD61139A80C00207119 /* abacus.png in Copy PNG Files */ = {isa = PBXBuildFile; fileRef = CA870F881139A7EC00207119 /* abacus.png */; };
 		CA870FD71139A80C00207119 /* beasties.png in Copy PNG Files */ = {isa = PBXBuildFile; fileRef = CA870F891139A7EC00207119 /* beasties.png */; };
 		CA870FD81139A80C00207119 /* borders.png in Copy PNG Files */ = {isa = PBXBuildFile; fileRef = CA870F8A1139A7EC00207119 /* borders.png */; };
@@ -1827,6 +1829,7 @@
 		CA82042E13C9EE0100E5A386 /* CreditsViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CreditsViewController.xib; sourceTree = "<group>"; };
 		CA82044613CA093400E5A386 /* credits.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = credits.html; path = ../../credits.html; sourceTree = "<group>"; };
 		CA82044913CA09B700E5A386 /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = COPYING; path = ../../COPYING; sourceTree = "<group>"; };
+		CA84EBFB1566D5BF005D1167 /* context.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = context.cpp; path = ../context.cpp; sourceTree = "<group>"; };
 		CA870F881139A7EC00207119 /* abacus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = abacus.png; sourceTree = "<group>"; };
 		CA870F891139A7EC00207119 /* beasties.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = beasties.png; sourceTree = "<group>"; };
 		CA870F8A1139A7EC00207119 /* borders.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = borders.png; sourceTree = "<group>"; };
@@ -2289,6 +2292,7 @@
 		CA17F84B123246940077A5CD /* xu4 Classes */ = {
 			isa = PBXGroup;
 			children = (
+				CA84EBFB1566D5BF005D1167 /* context.cpp */,
 				CAFC528113474B82000A5749 /* sound_p.h */,
 				CAD5C7E31319735C00506D09 /* sound_sdl.cpp */,
 				CAD5C7E41319735C00506D09 /* sound_sdl.h */,
@@ -3439,6 +3443,7 @@
 				CA469FAB112DF09100D69F1A /* SDLMain.m in Sources */,
 				CAD5C7E21319733E00506D09 /* music_sdl.cpp in Sources */,
 				CAD5C7E51319735C00506D09 /* sound_sdl.cpp in Sources */,
+				CA84EBFC1566D5BF005D1167 /* context.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3558,6 +3563,7 @@
 				CA3E6AA513DC2C820041C10C /* U4WeaponCell.mm in Sources */,
 				CA5960DC13DEEBA400AC5226 /* PartyStatusImageView.mm in Sources */,
 				CAF4FF5614F6C0A500A66C09 /* U4SuperButtonBreakdown.mm in Sources */,
+				CA84EBFD1566D5BF005D1167 /* context.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
