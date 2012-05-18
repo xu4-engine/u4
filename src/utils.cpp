@@ -4,6 +4,10 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#if (defined(__unix__) || defined(unix)) && !defined(USG)
+#include <sys/param.h>
+#endif
+
 #include "utils.h"
 #include <cctype>
 #include <cstdlib>
@@ -13,7 +17,7 @@
  * Seed the random number generator.
  */
 void xu4_srandom() {
-#ifdef IOS
+#if (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS)) 
     srandom(time(NULL));
 #else
     srand(time(NULL));
@@ -27,7 +31,7 @@ void xu4_srandom() {
  * lower bits (e.g. MacOS X).
  */
 int xu4_random(int upperRange) {
-#ifdef IOS
+#if (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS)) 
     int r = random();
 #else
     int r = rand();
