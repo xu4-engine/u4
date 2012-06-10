@@ -614,9 +614,9 @@ Party::~Party() {
 /**
  * Notify the party that something about it has changed
  */
-void Party::notifyOfChange(PartyMember *pm) {
+void Party::notifyOfChange(PartyMember *pm, PartyEvent::Type eventType) {
     setChanged();
-    PartyEvent event(PartyEvent::GENERIC, pm);
+    PartyEvent event(eventType, pm);
     notifyObservers(event);
 }
 

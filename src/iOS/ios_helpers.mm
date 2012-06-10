@@ -36,6 +36,7 @@
 #import "U4IntroController.h"
 #import "U4GameController.h"
 #import "U4PlayerTableController.h"
+#import "U4PlayerDetailView.h"
 #import "PartyStatusImageView.h"
 #import "U4ViewController.h"
 #import <UIKit/UIKit.h>
@@ -361,6 +362,13 @@ void IOSObserver::update(Party *party, PartyEvent &event) {
         case PartyEvent::LOST_EIGHTH:
             update(c->aura);
             testFlightPassCheckPoint("Avatar lost an eighth");
+            break;
+        case PartyEvent::INVENTORY_ADDED:
+            if ([gameController().playerTableController.navigationController.visibleViewController 
+                 isKindOfClass:[U4PlayerDetailView class]]) {
+                U4PlayerDetailView *detailController = static_cast<U4PlayerDetailView *>(gameController().playerTableController.navigationController.visibleViewController);
+                [detailController setupOtherLists];
+            }
             break;
         default:
             NSLog(@"Unhandled PartyEvent type %d reloading everything", event.type);

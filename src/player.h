@@ -152,7 +152,27 @@ protected:
 /**
  * Party class
  */ 
-class PartyEvent;
+class PartyEvent {
+public:
+    enum Type {
+        GENERIC,
+        LOST_EIGHTH,
+        ADVANCED_LEVEL,
+        STARVING,
+        TRANSPORT_CHANGED,
+        PLAYER_KILLED,
+        ACTIVE_PLAYER_CHANGED,
+        MEMBER_JOINED,
+        PARTY_REVIVED,
+        INVENTORY_ADDED,
+    };
+    
+    PartyEvent(Type type, PartyMember *partyMember) : type(type), player(partyMember) { }
+    
+    Type type;
+    PartyMember *player;
+};
+
 typedef std::vector<PartyMember *> PartyMemberVector;
 
 class Party : public Observable<Party *, PartyEvent &>, public Script::Provider {
@@ -161,7 +181,7 @@ public:
     Party(SaveGame *saveGame);
     virtual ~Party();
 
-    void notifyOfChange(PartyMember *partyMember = 0);
+    void notifyOfChange(PartyMember *partyMember = 0, PartyEvent::Type = PartyEvent::GENERIC);
     
     // Used to translate script values into something useful
     virtual string translate(std::vector<string>& parts);
@@ -217,26 +237,6 @@ private:
 #ifdef IOS
     friend void U4IOS::syncPartyMembersWithSaveGame();
 #endif
-};
-
-class PartyEvent {
-public:
-    enum Type {
-        GENERIC,
-        LOST_EIGHTH,
-        ADVANCED_LEVEL,
-        STARVING,
-        TRANSPORT_CHANGED,
-        PLAYER_KILLED,
-        ACTIVE_PLAYER_CHANGED,
-        MEMBER_JOINED,
-        PARTY_REVIVED
-    };
-
-    PartyEvent(Type type, PartyMember *partyMember) : type(type), player(partyMember) { }
-
-    Type type;
-    PartyMember *player;
 };
 
 bool isPartyMember(Object *punknown);

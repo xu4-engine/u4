@@ -50,7 +50,7 @@
 
 - (void)resizeLabel:(UILabel *)label forText:(NSString *)text
 {
-    const CGSize ContraintSize = CGSizeMake(label.frame.size.width, label.superview.frame.size.height - 20);
+    const CGSize ContraintSize = CGSizeMake(label.superview.frame.size.width, label.superview.frame.size.height - 20);
     CGSize textSize = [text sizeWithFont:label.font constrainedToSize:ContraintSize lineBreakMode:label.lineBreakMode];
     CGRect frame = label.frame;
     frame.size = textSize;

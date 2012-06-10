@@ -74,7 +74,7 @@
 
 - (IBAction)weaponPressed:(id)sender;
 - (IBAction)armorPressed:(id)sender;
-
+- (void)setupOtherLists;
 
 - (id)initWithPlayerRecord:(U4PlayerCharacter *)player forRow:(NSInteger)row nibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 @end
